@@ -389,6 +389,63 @@ CUSTOMERS_LIGHT_PLANS: List[dict] = [
 ]
 
 
+# ── Retreat fork (Fase 1.3 — kill-list) ─────────────────────────────────────
+# Piani aggiuntivi per i commercial plan retreat_free / retreat_pro:
+#  · ai_assistant_disabled / cashflow_monitor_disabled — tutti i limiti a 0:
+#    il gating esistente nasconde il modulo dalla UI (nessun limite positivo).
+#  · commerce_retreat — ordini illimitati (la monetizzazione è la fee
+#    transazionale via application_fee_percent, non la quota ordini),
+#    1 store, Stripe abilitato.
+# Additivi e idempotenti: nessun piano legacy viene toccato.
+
+AI_ASSISTANT_PLANS.append({
+    "module_key": "ai_assistant",
+    "slug": "ai_assistant_disabled",
+    "name": "AI Disabled",
+    "price_monthly": 0.0,
+    "currency": "EUR",
+    "limits": {
+        "chat": 0,
+        "digest": 0,
+        "alert_analysis": 0,
+        "health_explanation": 0,
+    },
+    "sort_order": 99,
+})
+
+CASHFLOW_MONITOR_PLANS.append({
+    "module_key": "cashflow_monitor",
+    "slug": "cashflow_monitor_disabled",
+    "name": "Cashflow Disabled",
+    "price_monthly": 0.0,
+    "currency": "EUR",
+    "limits": {
+        "analytics": 0,
+        "data_rows": 0,
+        "export": 0,
+        "email_alerts": 0,
+        "email_digest": 0,
+        "alert_config": 0,
+    },
+    "sort_order": 99,
+})
+
+COMMERCE_PLANS.append({
+    "module_key": "commerce",
+    "slug": "commerce_retreat",
+    "name": "Commerce Retreat",
+    "price_monthly": 0.0,
+    "currency": "EUR",
+    "limits": {
+        "analytics": -1,
+        "orders_monthly": -1,   # fee transazionale, non quota
+        "stores_max": 1,
+        "checkout_stripe": -1,
+    },
+    "sort_order": 10,
+})
+
+
 # ── Target limits for migration ────────────────────────────────────────────
 # Maps slug -> (module_key, target_limits). Used by migrate_pricing_plans()
 # to update existing plans in DB to match current seed definitions.
@@ -414,25 +471,38 @@ async def seed_pricing_plans_if_empty() -> None:
 
 
 async def _seed_module_plans(module_key: str, plans: List[dict]) -> None:
-    """Seed plans for a single module.  Skips if any plans already exist."""
-    count = await subscription_repository.count_plans_by_module(module_key)
-    if count > 0:
+    """Seed plans for a single module.  Idempotente PER PIANO (retreat fork).
+
+    Comportamento storico: skip dell'intero modulo se esisteva anche un solo
+    piano — così un piano aggiunto al seed dopo il primo avvio non veniva mai
+    inserito nei DB già inizializzati. Ora: inserisce solo gli slug mancanti,
+    non tocca MAI i piani esistenti (protegge le modifiche fatte da admin).
+    """
+    existing = {
+        p["slug"]
+        for p in await subscription_repository.list_plans_by_module(module_key)
+    }
+    missing = [p for p in plans if p["slug"] not in existing]
+    if not missing:
         logger.info(
-            "Pricing plans for '%s' already exist (%d plans) — skipping seed.",
-            module_key, count,
+            "Pricing plans for '%s' up to date (%d plans) — nothing to seed.",
+            module_key, len(existing),
         )
         return
 
-    logger.info("Seeding %d pricing plans for module '%s'...", len(plans), module_key)
+    logger.info(
+        "Seeding %d missing pricing plans for module '%s' (existing: %d)...",
+        len(missing), module_key, len(existing),
+    )
 
-    for plan_data in plans:
+    for plan_data in missing:
         plan = PricingPlan(**plan_data)
         doc = plan.model_dump()
         doc["created_at"] = doc["created_at"].isoformat()
         doc["updated_at"] = doc["updated_at"].isoformat()
         await subscription_repository.insert_pricing_plan(doc)
 
-    logger.info("Seeded %d pricing plans for '%s'.", len(plans), module_key)
+    logger.info("Seeded %d pricing plans for '%s'.", len(missing), module_key)
 
 
 async def migrate_pricing_plans() -> None:

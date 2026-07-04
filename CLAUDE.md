@@ -26,8 +26,15 @@ Fork indipendente (hard fork) del codebase AFianco, ripartito con history pulita
 
 ## Convenzioni
 - Conventional commits (`feat:`, `fix:`, `chore:`...), branch `feat/s<fase>-<tema>`.
-- Test backend: `cd backend && python -m pytest` (venv in `backend/venv` se presente).
 - Il branch `main` non riceve push diretti dopo la Fase 0 — feature branch + merge.
+
+## Comandi dev (verificati 4/7/2026)
+- **Invocare SEMPRE `backend/venv/bin/python -m ...`** — gli shebang degli script del venv (pip/pytest diretti) puntano ancora al path BI_PMI: mai usare `venv/bin/pip` o `venv/bin/pytest` direttamente.
+- Backend: `cd backend && venv/bin/python -m uvicorn server:app --port 8000` (Mongo locale attivo; `.env` → DB `retreat_dev`).
+- Bootstrap dev (seed + org "Masseria Montanari Dev" su retreat_free + verifica kill-list): `cd backend && venv/bin/python scripts/bootstrap_dev_org.py`.
+- Test backend: `cd backend && venv/bin/python -m pytest -q --ignore=tests/test_new_features.py` (baseline verde: 3796). `tests/test_new_features.py` è e2e e richiede il server su :8000 con `REACT_APP_BACKEND_URL` impostata.
+- Frontend: `cd frontend && pnpm start` (proxy verso :8000).
+- Nota ereditata: il warning `bcrypt has no attribute __about__` all'avvio è rumore di passlib, innocuo.
 
 ## Contesto business (per capire le priorità)
 Primo cliente e location-faro: Masseria Montanari (ritiri olistici in Puglia, progetto di famiglia del founder). Le fasi 0–2 del piano tecnico corrono in parallelo alla validazione commerciale (interviste organizzatori); il motore dei soldi (Fase 2) si costruisce per primo perché è il valore immediato per l'operatore.
