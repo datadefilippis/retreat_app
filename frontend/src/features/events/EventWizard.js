@@ -73,6 +73,24 @@ const TABS = [
   { key: 'publish',  n: 5 },
 ];
 
+// Fase 3 (retreat) — preset campi partecipante: un click al posto della
+// configurazione a mano. id slug stabili (schema FieldConfig).
+const ATTENDEE_PRESETS = {
+  base: [],
+  residenziale: [
+    { id: 'allergie', label: 'Allergie o intolleranze', type: 'text',
+      required: false, placeholder: 'Es. glutine, frutta secca…' },
+    { id: 'dieta', label: 'Preferenza alimentare', type: 'select',
+      required: true, options: ['Onnivora', 'Vegetariana', 'Vegana', 'Senza glutine'] },
+  ],
+  attivita: [
+    { id: 'esperienza', label: 'Livello di esperienza', type: 'select',
+      required: true, options: ['Principiante', 'Intermedio', 'Avanzato'] },
+    { id: 'taglia', label: 'Taglia (per il kit)', type: 'select',
+      required: false, options: ['S', 'M', 'L', 'XL'] },
+  ],
+};
+
 // Fase 2 — default del piano di pagamento, allineati al backend
 // (models/payment_plan.py: stessi default, stessa policy).
 const DEFAULT_PAYMENT_PLAN = {
@@ -1070,6 +1088,31 @@ export default function EventWizard() {
               </div>
             )}
           </div>
+
+          {/* Fase 3 — preset a un click per i campi partecipante */}
+          {requiresAttendeeDetails && (
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
+              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                {t('wizards.event.tickets.presetsHeading')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {['base', 'residenziale', 'attivita'].map(key => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setAttendeeFieldsCfg(
+                      ATTENDEE_PRESETS[key].map(f => ({ ...f })))}
+                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-900"
+                  >
+                    {t(`wizards.event.tickets.presets.${key}`)}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-gray-500 mt-2">
+                {t('wizards.event.tickets.presetsHint')}
+              </p>
+            </div>
+          )}
 
           {/* F2: Custom fields (only when F1 toggle is ON) */}
           {requiresAttendeeDetails && (

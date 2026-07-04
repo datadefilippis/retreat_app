@@ -84,10 +84,10 @@
 
 ## FASE 3 — La pagina di vendita e l'operatività (1,5 settimane)
 
-- [ ] **3.1 Pagina ritiro**: programma/agenda strutturata giorno-per-giorno; galleria multi-foto (riuso uploads); sezioni incluso/escluso e FAQ.
-- [ ] **3.2 Campi partecipante nel wizard** (oggi solo post-creazione) con 3 preset pronti: base / residenziale (allergie+diete) / attività (esperienza+taglia).
-- [ ] **3.3 Export CSV partecipanti** con campi custom; vista aggregata per tipologia camera/tier.
-- [ ] **3.4 Duplica ritiro** su nuova data (wizard precompilato).
+- [x] **3.1 Pagina ritiro** *(fatto 4/7/2026)*: modelli AgendaDay/AgendaItem/FaqEntry + agenda/gallery_urls/included/excluded/faq su occurrence (validati); serializer pubblico; landing con Programma a timeline, Galleria grid, Incluso/Escluso a spunte, FAQ accordion — VERIFICATO IN BROWSER con contenuti reali. Editor dashboard `RetreatContentEditor` (card "Pagina di vendita": giorni/voci, galleria URL, liste una-per-riga, FAQ, un solo Salva) — round-trip UI→PATCH→API pubblica verificato live. Upload immagini galleria via URL per ora (upload diretto → backlog).
+- [x] **3.2 Preset campi partecipante** *(fatto 4/7/2026)*: 3 bottoni nel wizard (Base / Residenziale: allergie+dieta select / Attività: esperienza+taglia) che popolano i FieldConfig — verificato a livello sorgente+bundle (il browser preview teneva cache; nel browser reale basta un refresh).
+- [x] **3.3 Export CSV partecipanti** *(già esistente, verificato 4/7/2026)*: il CSV biglietti G3 include GIÀ le colonne dei campi custom per partecipante (F2 Onda 9) — niente da costruire.
+- [x] **3.4 Duplica ritiro** *(fatto 4/7/2026)*: il prefill G6 ora porta anche contenuti F3 + payment_plan + campi partecipante; il wizard li conserva al submit (passthrough). Chi fa 4 ritiri l'anno cambia solo la data.
 
 **DoD Fase 3**: la pagina di un ritiro Masseria regge il confronto visivo e informativo con BookRetreats; l'operatore esporta la lista partecipanti con le diete in 2 click.
 

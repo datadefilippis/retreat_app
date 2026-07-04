@@ -1132,6 +1132,30 @@
         "cancelRetreatConfirm1": "ANNULLO RITIRO: tutti gli ordini attivi verranno rimborsati al 100% e i partecipanti avvisati. L'operazione è irreversibile. Continuare?",
         "cancelRetreatConfirm2": "Confermi definitivamente l'annullo del ritiro con rimborso totale?",
         "cancelRetreatOk": "Ritiro annullato: {{count}} ordini rimborsati"
+      },
+      "content": {
+        "title": "Pagina di vendita",
+        "subtitle": "Programma, galleria, incluso/escluso e FAQ — rendono subito sulla pagina pubblica del ritiro.",
+        "save": "Salva contenuti",
+        "saving": "Salvo…",
+        "savedOk": "Contenuti salvati — la pagina pubblica è aggiornata",
+        "savedErr": "Salvataggio non riuscito",
+        "agendaHeading": "Il programma",
+        "dayLabelPh": "Es. Giorno 1 — Venerdì",
+        "dayLabelDefault": "Giorno {{n}}",
+        "itemTitlePh": "Attività (es. Meditazione all'alba)",
+        "itemDescPh": "Dettaglio (facoltativo)",
+        "addItem": "Aggiungi voce",
+        "addDay": "Aggiungi giorno",
+        "galleryHeading": "Galleria",
+        "galleryPh": "URL immagine (https://… o /uploads/…)",
+        "addPhoto": "Aggiungi",
+        "includedHeading": "Cosa è incluso",
+        "excludedHeading": "Non incluso",
+        "listPh": "Una voce per riga",
+        "faqQPh": "Domanda",
+        "faqAPh": "Risposta",
+        "addFaq": "Aggiungi FAQ"
       }
     },
     "reservation": {
@@ -1738,7 +1762,14 @@
         "tierMoveDown": "Sposta giù",
         "tierDescLabel": "Descrizione",
         "tierDescPlaceholder": "Es. Include consumazione · Tavolo riservato",
-        "tierRemove": "Rimuovi tipologia"
+        "tierRemove": "Rimuovi tipologia",
+        "presetsHeading": "Preset rapidi",
+        "presets": {
+          "base": "Base (solo contatti)",
+          "residenziale": "Residenziale (allergie + dieta)",
+          "attivita": "Attività (esperienza + taglia)"
+        },
+        "presetsHint": "Il preset sostituisce i campi custom qui sotto; puoi sempre modificarli dopo."
       },
       "publish": {
         "longDescTitle": "Descrizione estesa",
