@@ -790,8 +790,10 @@ function OrderDetailPanel({ order, onClose, onAction, onEdit, onSettleManual, t 
 
             {/* Payment operations (inline in context, not a separate section) */}
             {order.payment_intent && order.payment_intent !== 'none' && (
-              <PaymentOpsSection order={order} onAction={onAction} />
-              <OrderScheduleSection order={order} t={t} />
+              <>
+                <PaymentOpsSection order={order} onAction={onAction} />
+                <OrderScheduleSection order={order} t={t} />
+              </>
             )}
           </div>
 
