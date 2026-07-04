@@ -346,6 +346,64 @@ def pending_charge_row(schedule_doc: Optional[Dict[str, Any]]) -> Optional[Dict[
     return first
 
 
+async def find_schedule_by_pay_token(token: str) -> Optional[tuple]:
+    """Risolve /pay/{token} → (schedule_doc, row_dict). None se sconosciuto.
+    Il token è per-riga e non enumerabile (uuid4)."""
+    if not token or len(token) < 16:
+        return None
+    schedules, _ = _collections()
+    doc = await schedules.find_one({"rows.pay_token": token}, {"_id": 0})
+    if not doc:
+        return None
+    row = next((r for r in doc.get("rows", []) if r.get("pay_token") == token), None)
+    return (doc, row) if row else None
+
+
+async def ensure_row_pay_tokens(schedule_doc: Dict[str, Any]) -> Dict[str, Any]:
+    """Backfill lazy dei pay_token per schedule pre-S3 (righe senza token)."""
+    from models.common import generate_id as _gen
+    rows = schedule_doc.get("rows") or []
+    missing = [r for r in rows if not r.get("pay_token")]
+    if not missing:
+        return schedule_doc
+    for r in missing:
+        r["pay_token"] = _gen()
+    schedules, _ = _collections()
+    await schedules.update_one(
+        {"id": schedule_doc["id"]},
+        {"$set": {"rows": rows, "updated_at": utc_now().isoformat()}},
+    )
+    return schedule_doc
+
+
+# Stati da cui una riga è pagabile via link.
+PAYABLE_STATES = {RowStatus.PENDING.value, RowStatus.PROCESSING.value,
+                  RowStatus.OVERDUE.value, RowStatus.AT_RISK.value}
+
+
+async def refresh_row_session_id(
+    schedule_doc: Dict[str, Any], row_seq: int, session_id: str, *, actor: str,
+) -> None:
+    """Aggiorna stripe_session_id su una riga GIÀ processing (link ricliccato
+    dopo scadenza della session precedente). Non è una transizione di stato:
+    evento dedicato row_session_refreshed, update mirato."""
+    schedules, _ = _collections()
+    await schedules.update_one(
+        {"id": schedule_doc["id"], "rows.seq": row_seq},
+        {"$set": {"rows.$.stripe_session_id": session_id,
+                  "updated_at": utc_now().isoformat()}},
+    )
+    await record_event(PaymentEvent(
+        organization_id=schedule_doc["organization_id"],
+        order_id=schedule_doc["order_id"],
+        schedule_id=schedule_doc["id"],
+        row_seq=row_seq,
+        action="row_session_refreshed",
+        actor=actor,
+        detail={"session_id": session_id},
+    ))
+
+
 async def apply_stripe_payment_to_schedule(
     order_id: str,
     organization_id: str,

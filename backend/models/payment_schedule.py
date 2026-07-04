@@ -53,10 +53,13 @@ ALLOWED_TRANSITIONS: Dict[RowStatus, set] = {
     RowStatus.OVERDUE: {
         RowStatus.PROCESSING, RowStatus.PAID, RowStatus.PAID_MANUAL,
         RowStatus.AT_RISK, RowStatus.WAIVED, RowStatus.CANCELLED,
+        # proroga: l'operatore sposta la scadenza nel futuro → si riparte
+        RowStatus.PENDING,
     },
     RowStatus.AT_RISK: {
         RowStatus.PROCESSING, RowStatus.PAID, RowStatus.PAID_MANUAL,
         RowStatus.WAIVED, RowStatus.CANCELLED,
+        RowStatus.PENDING,   # proroga
     },
     RowStatus.PAID: {RowStatus.REFUNDED},
     RowStatus.PAID_MANUAL: {RowStatus.REFUNDED, RowStatus.CANCELLED},
@@ -74,6 +77,10 @@ class RowRefund(BaseModel):
     reason: str = ""
     by: str = ""                     # actor id ("operator:<user_id>", "system:cascade")
     at: str = ""                     # ISO datetime
+    stripe_refund_id: Optional[str] = None
+    # True per righe paid_manual: il rimborso avviene fuori piattaforma
+    # (bonifico dell'operatore) — a libro risulta, a Stripe no.
+    out_of_platform: bool = False
 
 
 class ReminderMark(BaseModel):
@@ -90,6 +97,11 @@ class ScheduleRow(BaseModel):
     amount_minor: int = Field(gt=0)
     due_at: str                      # ISO datetime UTC
     status: RowStatus = RowStatus.PENDING
+    # S3 — token pubblico del link /pay/{token}: al click si genera la
+    # Checkout Session fresca (mai link Stripe grezzi nelle email, che
+    # scadono in 24h). Un token per riga, stabile per tutta la vita
+    # della riga; le righe legacy pre-S3 lo ricevono lazy al primo uso.
+    pay_token: str = Field(default_factory=generate_id)
     stripe_session_id: Optional[str] = None
     stripe_payment_intent: Optional[str] = None
     paid_at: Optional[str] = None

@@ -81,6 +81,78 @@ function PaymentsCard({ occurrenceId }) {
   const fmt = (minor) => formatPrice((minor || 0) / 100, data?.orders?.[0]?.currency || 'EUR', i18n.language);
   const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString(i18n.language) : '';
 
+  const postponeRow = async (orderId, seq) => {
+    const date = window.prompt(t('dashboards.event.payments.postponePrompt'));
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) return;
+    setBusyRow(`${orderId}:${seq}`);
+    try {
+      await ordersAPI.postponeScheduleRow(orderId, seq, `${date.trim()}T12:00:00+00:00`);
+      toast.success(t('dashboards.event.payments.postponeOk'));
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || t('dashboards.event.payments.actionErr'));
+    } finally { setBusyRow(null); }
+  };
+
+  const waiveRow = async (orderId, seq) => {
+    const reason = window.prompt(t('dashboards.event.payments.waivePrompt'));
+    if (!reason || !reason.trim()) return;
+    setBusyRow(`${orderId}:${seq}`);
+    try {
+      await ordersAPI.waiveScheduleRow(orderId, seq, reason.trim());
+      toast.success(t('dashboards.event.payments.waiveOk'));
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || t('dashboards.event.payments.actionErr'));
+    } finally { setBusyRow(null); }
+  };
+
+  const refundOrder = async (o) => {
+    if (!window.confirm(t('dashboards.event.payments.refundConfirm',
+        { percent: '—', amount: '—' }))) return;
+    const reason = window.prompt(t('dashboards.event.payments.refundReasonPrompt')) || '';
+    setBusyRow(o.order_id);
+    try {
+      const res = await ordersAPI.refundOrder(o.order_id, { reason: reason.trim() });
+      toast.success(t('dashboards.event.payments.refundOk'));
+      const manual = res.data?.refunded_manual_minor || 0;
+      if (manual > 0) {
+        toast.warning(t('dashboards.event.payments.refundManualNote',
+          { amount: fmt(manual) }), { duration: 9000 });
+      }
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || t('dashboards.event.payments.actionErr'));
+    } finally { setBusyRow(null); }
+  };
+
+  const cancelRetreat = async () => {
+    if (!window.confirm(t('dashboards.event.payments.cancelRetreatConfirm1'))) return;
+    if (!window.confirm(t('dashboards.event.payments.cancelRetreatConfirm2'))) return;
+    setBusyRow('cascade');
+    try {
+      const res = await eventOccurrencesAPI.cancelCascade(occurrenceId);
+      toast.success(t('dashboards.event.payments.cancelRetreatOk',
+        { count: res.data?.orders_processed ?? 0 }));
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || t('dashboards.event.payments.actionErr'));
+    } finally { setBusyRow(null); }
+  };
+
+  const exportCsv = async () => {
+    try {
+      const res = await api.get(eventOccurrencesAPI.paymentsCsvUrl(occurrenceId),
+        { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url; a.download = `incassi-${occurrenceId.slice(0, 8)}.csv`;
+      a.click(); URL.revokeObjectURL(url);
+    } catch {
+      toast.error(t('dashboards.event.payments.actionErr'));
+    }
+  };
+
   const markPaid = async (orderId, seq) => {
     const note = window.prompt(t('dashboards.event.payments.markPaidPrompt'));
     if (!note || !note.trim()) return;
@@ -132,7 +204,20 @@ function PaymentsCard({ occurrenceId }) {
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {o.customer_name || o.order_number || o.order_id.slice(0, 8)}
                   </p>
-                  <span className="text-[11px] text-gray-500">{o.order_number}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-[11px] text-gray-500">{o.order_number}</span>
+                    {['deposit_paid', 'fully_paid'].includes(o.payment_state)
+                      && o.order_status !== 'cancelled' && (
+                      <button
+                        type="button"
+                        disabled={busyRow === o.order_id}
+                        onClick={() => refundOrder(o)}
+                        className="rounded border border-red-200 px-2 py-0.5 text-[11px] font-medium text-red-700 hover:border-red-500 disabled:opacity-50"
+                      >
+                        {t('dashboards.event.payments.refund')}
+                      </button>
+                    )}
+                  </span>
                 </div>
                 <div className="mt-1 space-y-1">
                   {(o.rows || []).map(r => (
@@ -154,14 +239,32 @@ function PaymentsCard({ occurrenceId }) {
                         )}
                       </span>
                       {['pending', 'overdue', 'at_risk'].includes(r.status) && (
-                        <button
-                          type="button"
-                          disabled={busyRow === `${o.order_id}:${r.seq}`}
-                          onClick={() => markPaid(o.order_id, r.seq)}
-                          className="shrink-0 rounded border border-gray-300 px-2 py-0.5 text-[11px] font-medium text-gray-700 hover:border-gray-900 disabled:opacity-50"
-                        >
-                          {t('dashboards.event.payments.markPaid')}
-                        </button>
+                        <span className="shrink-0 flex gap-1">
+                          <button
+                            type="button"
+                            disabled={busyRow === `${o.order_id}:${r.seq}`}
+                            onClick={() => markPaid(o.order_id, r.seq)}
+                            className="rounded border border-gray-300 px-2 py-0.5 text-[11px] font-medium text-gray-700 hover:border-gray-900 disabled:opacity-50"
+                          >
+                            {t('dashboards.event.payments.markPaid')}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={busyRow === `${o.order_id}:${r.seq}`}
+                            onClick={() => postponeRow(o.order_id, r.seq)}
+                            className="rounded border border-gray-300 px-2 py-0.5 text-[11px] font-medium text-gray-700 hover:border-gray-900 disabled:opacity-50"
+                          >
+                            {t('dashboards.event.payments.postpone')}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={busyRow === `${o.order_id}:${r.seq}`}
+                            onClick={() => waiveRow(o.order_id, r.seq)}
+                            className="rounded border border-gray-300 px-2 py-0.5 text-[11px] font-medium text-gray-700 hover:border-gray-900 disabled:opacity-50"
+                          >
+                            {t('dashboards.event.payments.waive')}
+                          </button>
+                        </span>
                       )}
                     </div>
                   ))}
@@ -174,6 +277,23 @@ function PaymentsCard({ occurrenceId }) {
               {t('dashboards.event.payments.abandonedNote', { count: data.abandoned_drafts })}
             </p>
           )}
+          <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={exportCsv}
+              className="rounded border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-900"
+            >
+              {t('dashboards.event.payments.exportCsv')}
+            </button>
+            <button
+              type="button"
+              disabled={busyRow === 'cascade'}
+              onClick={cancelRetreat}
+              className="rounded border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:border-red-500 disabled:opacity-50"
+            >
+              {t('dashboards.event.payments.cancelRetreat')}
+            </button>
+          </div>
         </>
       )}
     </div>

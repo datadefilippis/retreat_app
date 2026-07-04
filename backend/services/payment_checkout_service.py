@@ -620,6 +620,116 @@ async def verify_commerce_order_payment(order_id: str, org_id: str) -> dict:
 
 # ── Webhook Reconciliation ─────────────────────────────────────────────────
 
+async def create_row_checkout_session(
+    org_id: str, order: dict, schedule_doc: dict, row: dict,
+) -> Optional[dict]:
+    """Checkout Session per UNA riga dello schedule (saldo/rata) — S3.
+
+    Usata dalla pagina pubblica /pay/{token} e dal job promemoria: genera
+    la session FRESCA al momento del bisogno (le session scadono in 24h,
+    per questo nelle email viaggia il token, mai l'URL Stripe).
+
+    Differenze dal checkout-ordine:
+      · line item = la sola riga (label + prodotto), fee piattaforma sul
+        suo importo;
+      · la session id NON sovrascrive payment_checkout.reference (che
+        appartiene alla session-caparra): finisce sulla riga e in
+        payment_checkout.row_sessions — il reconcile valida contro quelli.
+    """
+    from decimal import Decimal as _Decimal
+    from payment_providers import (
+        CheckoutLineItem, CheckoutSessionRequest,
+        PaymentProviderRegistry, ProviderError,
+    )
+    from models.payment_schedule import RowStatus
+    from services.payment_schedule_service import (
+        PAYABLE_STATES, apply_row_transition, refresh_row_session_id,
+    )
+
+    if row.get("status") not in PAYABLE_STATES:
+        return None
+    if order.get("status") == "draft" and row.get("seq", 0) != 0:
+        # saldo/rate esistono solo su ordini confermati (caparra pagata)
+        return None
+
+    connected_account_id = await _get_connected_account_id(org_id)
+    if not connected_account_id:
+        return None
+    org_doc_for_provider = await _resolve_org_doc_for_provider(org_id)
+    provider = PaymentProviderRegistry.get_for_org(org_doc_for_provider)
+    application_fee_percent = _Decimal(str(
+        (org_doc_for_provider or {}).get("application_fee_percent", 0) or 0))
+
+    from services.currency_service import get_currency_for_order
+    order_id = order["id"]
+    row_seq = row["seq"]
+    first_item_name = (order.get("items") or [{}])[0].get("product_name") or "ritiro"
+    amount_eur = _Decimal(row["amount_minor"]) / _Decimal(100)
+    frontend_url = _get_frontend_url()
+
+    request = CheckoutSessionRequest(
+        org_id=org_id,
+        order_id=order_id,
+        currency=get_currency_for_order(order),
+        line_items=[CheckoutLineItem(
+            name=f"{row.get('label', 'Pagamento')} — {first_item_name}",
+            quantity=1, unit_amount=amount_eur,
+        )],
+        success_url=f"{frontend_url}/s/checkout-success?order_id={order_id}",
+        cancel_url=f"{frontend_url}/s/checkout-cancel?order_id={order_id}",
+        customer_email=await _lookup_customer_email(order.get("customer_id"), org_id),
+        # chiave per-riga: dopo le 24h Stripe la considera nuova (come la
+        # session scaduta) — il link /pay resta quindi sempre vivo
+        idempotency_key=f"checkout:{order_id}:row:{row_seq}",
+        application_fee_percent=application_fee_percent,
+        discount_amount=_Decimal("0"),
+        metadata={
+            "checkout_type": "commerce",
+            "order_id": order_id,
+            "org_id": org_id,
+            "source": "afianco",
+            "flow_version": FLOW_VERSION,
+            "connected_account_id": connected_account_id,
+            "schedule_id": schedule_doc["id"],
+            "schedule_row_seq": str(row_seq),
+        },
+    )
+    try:
+        result = await provider.create_checkout_session(request)
+    except ProviderError as exc:
+        logger.error("row checkout: provider rejected order=%s row=%s: %s",
+                     order_id, row_seq, exc)
+        return None
+
+    # traccia la session: sulla riga + nel set noto all'ordine (reconcile)
+    from database import orders_collection
+    from models.common import utc_now as _now
+    await orders_collection.update_one(
+        {"id": order_id, "organization_id": org_id},
+        {"$addToSet": {"payment_checkout.row_sessions": result.session_id},
+         "$set": {"updated_at": _now()}},
+    )
+    try:
+        if row.get("status") == RowStatus.PENDING.value or row.get("status") in (
+                RowStatus.OVERDUE.value, RowStatus.AT_RISK.value):
+            await apply_row_transition(
+                schedule_doc, row_seq, RowStatus.PROCESSING,
+                actor="system:pay-link",
+                action="row_session_created",
+                row_updates={"stripe_session_id": result.session_id},
+                detail={"session_id": result.session_id},
+            )
+        else:  # già processing: session precedente scaduta, refresh id
+            await refresh_row_session_id(
+                schedule_doc, row_seq, result.session_id, actor="system:pay-link")
+    except Exception as exc:
+        logger.warning("row checkout: row mark failed order=%s row=%s: %s",
+                       order_id, row_seq, exc)
+
+    return {"url": result.url, "session_id": result.session_id,
+            "connected_account": result.connected_account or connected_account_id}
+
+
 async def reconcile_checkout_event(event: dict) -> dict:
     """Central reconciliation entry point for commerce checkout webhooks.
 
@@ -671,9 +781,13 @@ async def reconcile_checkout_event(event: dict) -> dict:
     if not order:
         raise ValueError(f"Order {order_id} not found for org {org_id}")
 
-    # Validate session reference matches what we stored
+    # Validate session reference matches what we stored.
+    # S3: oltre alla session-ordine (caparra/unico) esistono session
+    # PER-RIGA (saldo/rate via /pay/{token}) tracciate in row_sessions —
+    # una session nota in quel set è altrettanto legittima.
     stored_ref = (order.get("payment_checkout") or {}).get("reference")
-    if stored_ref and stored_ref != session_id:
+    known_row_sessions = set((order.get("payment_checkout") or {}).get("row_sessions") or [])
+    if stored_ref and stored_ref != session_id and session_id not in known_row_sessions:
         logger.warning(
             "payment_reconcile: session mismatch — stored=%s received=%s for order %s",
             stored_ref, session_id, order_id,
@@ -714,9 +828,39 @@ async def reconcile_checkout_event(event: dict) -> dict:
         return {"action": "skipped", "reason": "event_already_processed", "order_id": order_id}
 
     if order.get("payment_intent") == "collected":
+        # S3 — l'ordine è già incassato (caparra) ma QUESTA session può
+        # essere il pagamento di una riga successiva (saldo/rata): la
+        # transizione della riga va applicata comunque, altrimenti il
+        # saldo pagato non verrebbe mai registrato a libro.
+        row_seq_raw = metadata.get("schedule_row_seq")
+        if row_seq_raw is not None:
+            try:
+                from services.payment_schedule_service import (
+                    apply_stripe_payment_to_schedule,
+                )
+                updated_schedule = await apply_stripe_payment_to_schedule(
+                    order_id, org_id, int(row_seq_raw),
+                    stripe_payment_intent=session.get("payment_intent"),
+                    stripe_session_id=session_id,
+                )
+                if updated_schedule:
+                    await orders_collection.update_one(
+                        {"id": order_id, "organization_id": org_id},
+                        {"$set": {"payment_state": updated_schedule.get("payment_state")}},
+                    )
+                    logger.info(
+                        "payment_reconcile: row %s paid on collected order %s (state=%s)",
+                        row_seq_raw, order_id, updated_schedule.get("payment_state"),
+                    )
+            except Exception as exc_sched:
+                logger.error(
+                    "payment_reconcile: row transition on collected order %s failed: %s",
+                    order_id, exc_sched,
+                )
         logger.info("payment_reconcile: order %s already collected — recording event only", order_id)
         await _record_event(orders_collection, order_id, org_id, event_id, session_id)
-        return {"action": "skipped", "reason": "already_collected", "order_id": order_id}
+        return {"action": "skipped", "reason": "already_collected", "order_id": order_id,
+                "row_seq": row_seq_raw}
 
     # ── Apply payment ──────────────────────────────────────────────────────
     from models.common import utc_now
