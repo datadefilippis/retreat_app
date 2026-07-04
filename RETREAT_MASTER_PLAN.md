@@ -28,12 +28,12 @@
 
 **Obiettivo: questo repo diventa un progetto indipendente, pulito e sicuro. Nessuna feature.**
 
-- [ ] **0.1 Repo nuovo**: creare repo GitHub privato (es. `datadefilippis/retreat-app`) → `git remote set-url origin <nuovo>` → push `main`. Verifica: `git remote -v` non menziona più BI_PMI.
-- [ ] **0.2 Pulizia file ereditati**: rimuovere dal working tree (non sono tracciati): `AFIANCO_Presentation_Report.docx`, `Codice 2FA Demo.command`, `mongodb-macos-x86_64-7.0.17.tgz` + cartella estratta (74MB+), `.emergent/`, `test_reports/` vecchi. Spostare i doc AFianco non pertinenti (piani embed/newsletter/fiduciari, cutover, financial model v1) in `docs/legacy-afianco/` per consultazione, fuori dai piedi.
-- [ ] **0.3 Segreti nuovi, tutti**: generare da zero JWT secret, `BREVO_WEBHOOK_SECRET`, eventuali salt/chiavi interne. Regola: **nessun segreto di AFianco viene mai riusato**, nemmeno in dev. Compilare un nuovo `.env.example` brand-neutro con TUTTE le variabili documentate.
-- [ ] **0.4 Policy hard-fork scritta**: da oggi BI_PMI e retreat_app divergono. Fix di sicurezza critici su codice condiviso → cherry-pick, annotato nel Registro in fondo. Tutto il resto: no.
-- [ ] **0.5 `CLAUDE.md` nuovo** alla radice: contesto ritiri, link ai 3 doc strategia + questo piano, convenzioni (lingua dominio: *ritiro, partecipante, caparra, saldo*), comandi dev.
-- [ ] **0.6 Branch model**: `main` protetto (no push diretto dopo il primo push), feature branch `feat/s1-scheduler` ecc., conventional commits (già in uso in AFianco).
+- [x] **0.1 Repo nuovo** *(fatto 4/7/2026)*: origin ripuntato su `datadefilippis/retreat_app`, push riuscito. **Nota: history AZZERATA di proposito** — la push protection di GitHub ha rilevato segreti reali (API key Anthropic + chiave Stripe in `backend/.env`, commit vecchi); ripartiti da un commit iniziale pulito (`8c33573`). La history completa resta in BI_PMI e nel branch locale `afianco-history` (mai pushare quel branch). ⚠️ Follow-up in BI_PMI: ruotare le chiavi esposte.
+- [x] **0.2 Pulizia file ereditati** *(fatto 4/7/2026)*: rimossi docx/2FA/mongodb tgz+dir/.emergent/test_reports; doc AFianco non pertinenti spostati in `docs/legacy-afianco/` (embed plans, newsletter, CH/fiduciari, billing runbook storici, cashflow, financial model, MVP plan).
+- [x] **0.3 Segreti nuovi** *(fatto 4/7/2026)*: `.env.example` root+backend riscritti brand-neutri e documentati; `backend/.env` dev rigenerato con JWT fresco e zero chiavi AFianco; `frontend/.env` ripulito dal DSN Sentry AFianco. I segreti di prod (Brevo webhook, metrics token, Mongo password) si generano in Fase 6.3 alla creazione dell'ambiente.
+- [x] **0.4 Policy hard-fork** *(in vigore dal 4/7/2026)*: BI_PMI e retreat_app divergono. Fix di sicurezza critici su codice condiviso → cherry-pick, annotato nel Registro in fondo. Tutto il resto: no.
+- [x] **0.5 `CLAUDE.md` nuovo** *(fatto 4/7/2026)* alla radice: contesto, regole non negoziabili, stack, convenzioni.
+- [x] **0.6 Branch model** *(attivo dal 4/7/2026)*: da ora niente push diretti su `main` — feature branch `feat/s<fase>-<tema>` + merge, conventional commits. (Protezione lato GitHub da attivare se il piano account lo consente — su repo privati free non disponibile: vale la regola operativa.)
 
 **DoD Fase 0**: `git remote -v` pulito; repo pushato; `.env.example` completo; working tree senza file estranei; CLAUDE.md presente.
 
