@@ -129,7 +129,7 @@
     },
     "event_ticket": {
       "title": "Ritiro",
-      "desc": "Biglietti, date, capienza e check-in"
+      "desc": "Date, posti, capienza e check-in"
     },
     "service": {
       "title": "Servizio",
@@ -324,8 +324,8 @@
       "archivedBadge": "📦 Archiviato",
       "soldCount": "{{reserved}} / {{cap}} venduti",
       "unlimitedCapacity": "Capienza illimitata",
-      "tierCount_one": "{{count}} tipologia biglietto",
-      "tierCount_other": "{{count}} tipologie biglietto",
+      "tierCount_one": "{{count}} tipologia di posto",
+      "tierCount_other": "{{count}} tipologie di posto",
       "stateLabel": "Stato",
       "dashboardCta": "Dashboard",
       "checkInCta": "Check-in",
@@ -786,7 +786,7 @@
         "imageUrlPlaceholder": "oppure incolla URL…",
         "priceLabel": "Prezzo base (€)",
         "pricePlaceholder": "0.00",
-        "priceHint": "Ignorato se hai tipologie biglietto",
+        "priceHint": "Ignorato se hai tipologie di posto",
         "modeLabel": "Modalità acquisto",
         "modeDirect": "Diretto",
         "modeRequest": "Richiesta",
@@ -799,7 +799,7 @@
         "phoneRequired": "Obbligatorio",
         "noEmailWarning": "⚠ Senza email, il partecipante non riceverà il biglietto personale.",
         "attendeeFieldsTitle": "Campi aggiuntivi per ogni partecipante",
-        "attendeeFieldsSubtitle": "Chiesti per ogni biglietto (es. allergie, pasto, taglia)",
+        "attendeeFieldsSubtitle": "Chiesti per ogni partecipante (es. allergie, pasto, taglia)",
         "saveBtn": "Salva prodotto"
       },
       "occurrence": {
@@ -834,9 +834,9 @@
         "salesLast30": "Vendite ultimi 30 giorni"
       },
       "tiers": {
-        "title": "Tipologie biglietto",
+        "title": "Tipologie di posto",
         "addBtn": "+ Aggiungi tipologia",
-        "emptyHint": "Nessuna tipologia — il ritiro usa prezzo unico. Aggiungine una per abilitare biglietti differenziati.",
+        "emptyHint": "Nessuna tipologia — il ritiro usa prezzo unico. Aggiungine una per differenziare i posti (es. camera condivisa/doppia/singola).",
         "disabled": "Disattivato",
         "depleted": "Esaurito",
         "soldCount": "venduti",

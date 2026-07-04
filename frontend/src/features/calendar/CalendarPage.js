@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppLayout, Header } from '../../components/Layout';
+import { useEntitlements } from '../../hooks/useEntitlements';
 import { PageSubheader } from '../../components/PageSubheader';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -697,8 +698,21 @@ export default function CalendarPage() {
     fetchProducts();
   }, []);
 
-  const rentalProducts = useMemo(() => calendarProducts.filter(p => p.item_type === 'rental'), [calendarProducts]);
+  // Consolidamento WS-3 — i noleggi seguono il piano (coerente con menu e
+  // type-picker): se disabilitati, rentalProducts è vuoto e tutta la vista
+  // rentals del calendario (tab, badge, dialog target) sparisce. Fonte unica.
+  const { canUse } = useEntitlements();
+  const rentalsEnabled = canUse('commerce', 'rentals');
+  const rentalProducts = useMemo(
+    () => rentalsEnabled ? calendarProducts.filter(p => p.item_type === 'rental') : [],
+    [calendarProducts, rentalsEnabled]);
   const hasRentals = rentalProducts.length > 0;
+
+  // Se la vista rentals era attiva e i noleggi vengono disabilitati,
+  // torna all'agenda (evita una vista vuota).
+  useEffect(() => {
+    if (!hasRentals && calView === 'rentals') setCalView('agenda');
+  }, [hasRentals, calView]);
 
   // Count of blocked slots per rental product in the currently loaded range.
   // Used by the rental filter chip badges so the merchant sees at a glance

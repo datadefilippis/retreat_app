@@ -61,7 +61,7 @@
       "behavior": "Pagamento diretto",
       "runtime": "Il cliente acquista direttamente. Dopo aver salvato, apri il prodotto per aggiungere le date e i luoghi del ritiro.",
       "post_save": "Aggiungi almeno una data ritiro dalla sezione \"Date ritiro\" qui sotto.",
-      "hint_unit_price": "Prezzo base per biglietto (può essere sovrascritto per singola data)",
+      "hint_unit_price": "Prezzo base per posto (può essere sovrascritto per singola data)",
       "setup_cue_dates": "Aggiungi almeno una data ritiro",
       "setup_cue_publish": "Pubblica le date per renderle visibili nel catalogo",
       "no_occurrences_warning": "Nessuna data ritiro — il prodotto non è ancora prenotabile"
@@ -72,7 +72,7 @@
       "behavior": "Verifica posti",
       "runtime": "Il cliente richiede posti. Dopo aver salvato, imposta le date e la capienza massima dalla sezione \"Date ritiro\". Le richieste arrivano negli Ordini.",
       "post_save": "Aggiungi le date ritiro e imposta la capienza per ciascuna dalla sezione qui sotto.",
-      "hint_unit_price": "Prezzo base per biglietto (può essere sovrascritto per singola data)",
+      "hint_unit_price": "Prezzo base per posto (può essere sovrascritto per singola data)",
       "setup_cue_dates": "Aggiungi le date ritiro con capienza massima",
       "setup_cue_capacity": "Imposta la capienza su ogni data ritiro",
       "setup_cue_publish": "Pubblica le date per renderle visibili nel catalogo",
