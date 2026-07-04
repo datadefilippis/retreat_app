@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { billingAPI } from '../api/billing';
 import { useBilling } from '../hooks/useBilling';
 import PlansAddonsSection from '../components/PlansAddonsSection';
+import RetreatPlansPage from './RetreatPlansPage';
 
 const PLAN_TIERS = { free: 0, starter: 1, core: 2, pro: 3, enterprise: 4 };
 
@@ -227,6 +228,13 @@ export const PlansPage = () => {
   const [interval, setInterval] = useState('month');
   const [error, setError] = useState(null);
   const [confirmPlan, setConfirmPlan] = useState(null);
+
+  // Retreat fork (Blocco B) — le org sul catalogo ritiri vedono la pagina
+  // piani dedicata (2 card + fee trasparente), non la matrice legacy
+  // AFianco. Hook sopra, early-return sotto: ordine hook invariato.
+  if ((currentPlan || '').startsWith('retreat_')) {
+    return <RetreatPlansPage />;
+  }
 
   const isDowngrade = (slug) => (PLAN_TIERS[slug] || 0) < (PLAN_TIERS[currentPlan] || 0);
 

@@ -94,6 +94,18 @@ class CommercialPlan(BaseModel):
     # packs for a total of +250 chat). 1 = single-use add-on.
     max_quantity: int = 1
 
+    # -- Retreat fork: fee transazionale legata al piano -------------------------
+    # Percentuale di application_fee applicata ai pagamenti Connect degli
+    # operatori su questo piano (Gratis=5, Pro/Founding=2). None = il piano
+    # non governa la fee (piani legacy AFianco: resta il valore manuale su
+    # org). Al provisioning (plan_provisioning, entry point canonico di OGNI
+    # cambio piano) il valore viene sincronizzato su
+    # organization.application_fee_percent — che resta l'unico punto letto
+    # dal checkout a runtime. La fee piattaforma è SEPARATA dalle commissioni
+    # di processing Stripe (che Stripe applica per conto suo sull'account
+    # connesso): la UI le dichiara distinte.
+    transaction_fee_percent: Optional[float] = None
+
     # -- Governance (Phase 2a) --------------------------------------------------
     is_archived: bool = False                  # Archived plans: not available for new subs
     admin_modified_at: Optional[datetime] = None  # Set when admin edits via catalog UI
