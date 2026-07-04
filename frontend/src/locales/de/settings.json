@@ -3,7 +3,7 @@
   "subtitle": "Organisation und Konto konfigurieren",
   "language": {
     "title": "Sprache der Oberflaeche",
-    "description": "Waehlen Sie die Sprache fuer die AFianco-Oberflaeche.",
+    "description": "Waehlen Sie die Sprache fuer die Retreat App-Oberflaeche.",
     "updated": "Sprache aktualisiert"
   },
   "organization": {
@@ -106,7 +106,7 @@
     "monthly": "Monatlich",
     "yearly": "Jaehrlich",
     "upgrade_title": "Waehlen Sie den richtigen Plan",
-    "upgrade_desc": "Schalten Sie alle AFianco-Funktionen fuer Ihre Organisation frei.",
+    "upgrade_desc": "Schalten Sie alle Retreat App-Funktionen fuer Ihre Organisation frei.",
     "upgrade_cta": "Auf einen kostenpflichtigen Plan wechseln",
     "change_plan": "Plan aendern",
     "manage_billing": "Abrechnung verwalten",

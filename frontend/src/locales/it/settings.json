@@ -3,7 +3,7 @@
   "subtitle": "Configura la tua organizzazione e il tuo account",
   "language": {
     "title": "Lingua dell'interfaccia",
-    "description": "Scegli la lingua in cui visualizzare l'interfaccia di AFianco.",
+    "description": "Scegli la lingua in cui visualizzare l'interfaccia di Retreat App.",
     "updated": "Lingua aggiornata"
   },
   "organization": {
@@ -106,7 +106,7 @@
     "monthly": "Mensile",
     "yearly": "Annuale",
     "upgrade_title": "Scegli il piano giusto per te",
-    "upgrade_desc": "Sblocca tutte le funzionalita di AFianco per la tua organizzazione.",
+    "upgrade_desc": "Sblocca tutte le funzionalita di Retreat App per la tua organizzazione.",
     "upgrade_cta": "Passa a un piano a pagamento",
     "change_plan": "Cambia piano",
     "manage_billing": "Gestisci fatturazione",

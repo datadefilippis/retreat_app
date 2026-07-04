@@ -51,7 +51,7 @@
   },
   "empty": {
     "title": "Analyse clients non active",
-    "description": "Pour activer l'analyse clients :\n1. Creez vos clients dans Donnees de base > Clients\n2. Importez les ventes avec une colonne \"client\" correspondante\nAFianco liera automatiquement les ventes aux clients.",
+    "description": "Pour activer l'analyse clients :\n1. Creez vos clients dans Donnees de base > Clients\n2. Importez les ventes avec une colonne \"client\" correspondante\nRetreat App liera automatiquement les ventes aux clients.",
     "upload_cta": "Charger les ventes",
     "manage_customers": "Gerer les clients"
   },

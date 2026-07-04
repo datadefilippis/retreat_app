@@ -687,7 +687,7 @@
       },
       "pageList": {
         "title": "Video courses",
-        "subtitle": "Create and manage your video learning paths. Videos stay on Bunny; AFianco manages structure, access and player.",
+        "subtitle": "Create and manage your video learning paths. Videos stay on Bunny; Retreat App manages structure, access and player.",
         "showArchived": "Show archived",
         "newCourse": "+ New course",
         "expiringDays": "{{count}} days",

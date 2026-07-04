@@ -1,6 +1,6 @@
 {
   "widget": {
-    "title": "Setup AFianco",
+    "title": "Setup Retreat App",
     "progress_label": "{{done}} di {{total}} fatti",
     "next_label": "Prossimo:",
     "remaining_count_one": "{{count}} rimasto",
@@ -53,7 +53,7 @@
     "global": {
       "verify_email": {
         "title": "Verifica il tuo indirizzo email",
-        "body": "Conferma la tua email per sbloccare tutte le funzionalità di AFianco."
+        "body": "Conferma la tua email per sbloccare tutte le funzionalità di Retreat App."
       },
       "brand_identity": {
         "title": "Personalizza il tuo brand",

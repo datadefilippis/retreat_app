@@ -1,6 +1,5 @@
 {
   "_comment": "Italian translations for the admin Products area. Hierarchy: list / extras / options / fields / wizards.<type> / dashboard.<type>",
-
   "extras": {
     "title": "Extras & opzioni",
     "kindLabel": {
@@ -40,7 +39,6 @@
       "emptyHint": "Nessun gruppo radio. Crea un gruppo sopra (es. \"assicurazione\") per iniziare."
     }
   },
-
   "options": {
     "title": "Opzioni del servizio",
     "subtitle": "Il cliente ne sceglie una sola (radio).",
@@ -61,7 +59,6 @@
       "remove": "Rimuovi opzione"
     }
   },
-
   "fields": {
     "addButton": "+ Aggiungi campo",
     "emptyHint": "Nessun campo configurato.",
@@ -85,21 +82,19 @@
       "idPlaceholder": "auto"
     }
   },
-
   "typeLabels": {
     "physical": "Fisico",
     "service": "Servizio",
     "rental": "Noleggio",
     "booking": "Prenotazione",
     "digital": "Digitale",
-    "event_ticket": "Evento",
+    "event_ticket": "Ritiro",
     "course": "Corso"
   },
-
   "list": {
     "typeFilter": {
       "physical": "📦 Fisici",
-      "event_ticket": "🎫 Eventi",
+      "event_ticket": "🎫 Ritiri",
       "service": "🛠 Servizi",
       "rental": "🏠 Affitti",
       "digital": "💾 Digitali",
@@ -116,7 +111,6 @@
     "deactivateTitle": "Disattiva",
     "dashboardLink": "Dashboard"
   },
-
   "status": {
     "online": "Online",
     "offline": "Offline",
@@ -127,7 +121,6 @@
     "visibleInCatalog": "Visibile nel catalogo pubblico",
     "notVisibleToCustomers": "Non visibile ai clienti"
   },
-
   "typePicker": {
     "title": "Che tipo di prodotto vuoi creare?",
     "physical": {
@@ -135,7 +128,7 @@
       "desc": "Oggetti spedibili o da ritirare"
     },
     "event_ticket": {
-      "title": "Evento",
+      "title": "Ritiro",
       "desc": "Biglietti, date, capienza e check-in"
     },
     "service": {
@@ -159,17 +152,15 @@
       "desc": "Moduli e lezioni video con Bunny"
     }
   },
-
   "form": {
     "unitPlaceholder": "pz, kg, h",
     "unitLabelPlaceholder": "pz, servizio, giorno",
     "stockUnlimited": "Vuoto = illimitato",
     "stockHint": "Lascia vuoto per non tracciare lo stock",
-    "openEventDashboard": "Apri dashboard evento",
+    "openEventDashboard": "Apri dashboard ritiro",
     "manageLink": "Gestisci",
     "fieldsCounter": "{{count}}/4 campi"
   },
-
   "grids": {
     "common": {
       "loading": "Caricamento…",
@@ -185,7 +176,6 @@
       "newCta": "+ Nuovo prodotto",
       "firstCreateCta": "+ Crea primo prodotto"
     },
-
     "physical": {
       "title": "Prodotti fisici",
       "subtitle": "Gestisci i prodotti fisici: stock, spedizione, ritiro.",
@@ -209,7 +199,6 @@
         "outOfStock": "❌ Esauriti"
       }
     },
-
     "digital": {
       "title": "Prodotti digitali",
       "subtitle": "Ebook, template, file scaricabili.",
@@ -237,7 +226,6 @@
         "missingFile": "⚠️ Mancanti"
       }
     },
-
     "service": {
       "title": "Servizi",
       "subtitle": "Gestisci tutti i tuoi servizi e la loro disponibilità.",
@@ -258,7 +246,6 @@
       "stateLabel": "Stato",
       "dashboardCta": "Dashboard"
     },
-
     "reservation": {
       "title": "Affitti",
       "subtitle": "Gestisci i prodotti affittabili: a periodo (multi-giorno) o a slot (orari).",
@@ -277,7 +264,6 @@
       "typeBadgeRange": "🏠 Affitto · periodo",
       "typeBadgeSlot": "📅 Affitto · slot"
     },
-
     "course": {
       "title": "Corsi video",
       "subtitle": "Moduli e lezioni con Bunny Stream.",
@@ -322,20 +308,19 @@
         "errorTitle": "Problema con la configurazione Bunny — clicca per controllare"
       }
     },
-
     "event": {
-      "title": "Eventi",
-      "subtitle": "Gestisci tutti i tuoi eventi, date e check-in in un'unica schermata.",
-      "newCta": "+ Nuovo evento",
-      "firstCreateCta": "+ Crea primo evento",
-      "errorLoad": "Errore caricamento eventi",
-      "emptyTitle": "Nessun evento trovato",
-      "emptyDescFirst": "Crea il tuo primo evento per iniziare a venderlo online.",
-      "emptyDescPast": "Non ci sono eventi passati da mostrare.",
-      "searchPlaceholder": "Cerca evento…",
-      "count_one": "{{count}} evento",
-      "count_other": "{{count}} eventi",
-      "fallbackName": "Evento senza nome",
+      "title": "Ritiri",
+      "subtitle": "Gestisci tutti i tuoi ritiri, date e check-in in un'unica schermata.",
+      "newCta": "+ Nuovo ritiro",
+      "firstCreateCta": "+ Crea primo ritiro",
+      "errorLoad": "Errore caricamento ritiri",
+      "emptyTitle": "Nessun ritiro trovato",
+      "emptyDescFirst": "Crea il tuo primo ritiro per iniziare a venderlo online.",
+      "emptyDescPast": "Non ci sono ritiri passati da mostrare.",
+      "searchPlaceholder": "Cerca ritiro…",
+      "count_one": "{{count}} ritiro",
+      "count_other": "{{count}} ritiri",
+      "fallbackName": "Ritiro senza nome",
       "archivedBadge": "📦 Archiviato",
       "soldCount": "{{reserved}} / {{cap}} venduti",
       "unlimitedCapacity": "Capienza illimitata",
@@ -366,7 +351,6 @@
       }
     }
   },
-
   "dashboards": {
     "common": {
       "loading": "Caricamento…",
@@ -393,7 +377,6 @@
       "imageUrlPlaceholder": "oppure incolla URL…",
       "backToProducts": "← Torna ai prodotti"
     },
-
     "course": {
       "back": "← Prodotti corsi",
       "newTitle": "Nuovo corso",
@@ -687,7 +670,7 @@
       },
       "pageList": {
         "title": "Corsi video",
-        "subtitle": "Crea e gestisci i tuoi percorsi formativi video. I video restano su Bunny; AFianco gestisce struttura, accessi e player.",
+        "subtitle": "Crea e gestisci i tuoi percorsi formativi video. I video restano su Bunny; Retreat App gestisce struttura, accessi e player.",
         "showArchived": "Mostra archiviati",
         "newCourse": "+ Nuovo corso",
         "expiringDays": "{{count}} giorni",
@@ -742,33 +725,32 @@
         "courseUpdated": "Corso aggiornato"
       }
     },
-
     "event": {
-      "back": "← Torna agli eventi",
-      "typeLabel": "Evento",
-      "fallbackName": "Evento",
-      "notFound": "Evento non trovato",
+      "back": "← Torna ai ritiri",
+      "typeLabel": "Ritiro",
+      "fallbackName": "Ritiro",
+      "notFound": "Ritiro non trovato",
       "notFoundDesc": "L'occorrenza richiesta non esiste o non appartiene alla tua organizzazione.",
       "notFoundBackToProducts": "Torna ai prodotti",
       "errorPrefix": "Errore: {{detail}}",
-      "notVisibleWarning": "⚠ Evento non visibile al pubblico",
+      "notVisibleWarning": "⚠ Ritiro non visibile al pubblico",
       "statusBadge": {
         "draft": "Offline",
         "published": "Online",
         "closed": "Chiuso",
         "cancelled": "Annullato"
       },
-      "statusTitle": "Stato evento",
-      "statusOnlineDesc": "L'evento è online e visibile al pubblico.",
-      "statusClosedDesc": "Le vendite sono chiuse. L'evento resta visibile.",
-      "statusCancelledDesc": "Evento annullato. Non visibile al pubblico.",
-      "statusOfflineDesc": "L'evento è offline. Non visibile al pubblico.",
+      "statusTitle": "Stato ritiro",
+      "statusOnlineDesc": "Il ritiro è online e visibile al pubblico.",
+      "statusClosedDesc": "Le vendite sono chiuse. Il ritiro resta visibile.",
+      "statusCancelledDesc": "Ritiro annullato. Non visibile al pubblico.",
+      "statusOfflineDesc": "Il ritiro è offline. Non visibile al pubblico.",
       "diagnostic": {
         "noStoreSlug": "Lo slug dello store/organizzazione non è configurato (Impostazioni → Store)",
-        "noEventSlug": "Lo slug dell'evento non è impostato (apri ✏️ Data, luogo e capienza)",
-        "statusNotPublished": "Stato evento: \"{{status}}\" — imposta su \"Online\" per renderlo visibile",
-        "productDisabled": "Il prodotto padre è disabilitato — si ripara automaticamente mettendo l'evento Online",
-        "productDeactivated": "Il prodotto padre è disattivato (soft-deleted) — si ripara automaticamente mettendo l'evento Online"
+        "noEventSlug": "Lo slug del ritiro non è impostato (apri ✏️ Data, luogo e capienza)",
+        "statusNotPublished": "Stato ritiro: \"{{status}}\" — imposta su \"Online\" per renderlo visibile",
+        "productDisabled": "Il prodotto padre è disabilitato — si ripara automaticamente mettendo il ritiro Online",
+        "productDeactivated": "Il prodotto padre è disattivato (soft-deleted) — si ripara automaticamente mettendo il ritiro Online"
       },
       "emailDelivery": {
         "title": "Email partecipanti",
@@ -783,20 +765,20 @@
         "landingUnavailable": "Landing non disponibile",
         "landingCopy": "📋 Copia link landing",
         "checkInOpen": "🎟 Apri check-in",
-        "editEvent": "✏️ Modifica evento",
+        "editEvent": "✏️ Modifica ritiro",
         "exportingCsv": "📥 Esportazione…",
         "exportCsv": "📥 Export partecipanti (CSV)",
         "ticketsManage": "🎫 Gestione biglietti",
         "duplicateLoading": "⏳ Apertura…",
-        "duplicateBtn": "🧬 Duplica evento",
+        "duplicateBtn": "🧬 Duplica ritiro",
         "archivingLoading": "⏳ …",
         "unarchive": "📤 Ripristina",
         "archive": "📦 Archivia",
-        "archiveBanner": "📦 Evento archiviato — nascosto dalla lista principale degli eventi. Resta accessibile da qui e dal tab Archivio."
+        "archiveBanner": "📦 Ritiro archiviato — nascosto dalla lista principale dei ritiri. Resta accessibile da qui e dal tab Archivio."
       },
       "product": {
         "title": "✏️ Prodotto",
-        "nameLabel": "Nome evento *",
+        "nameLabel": "Nome ritiro *",
         "shortDescLabel": "Descrizione breve",
         "imageLabel": "Immagine catalogo",
         "uploading": "⏳ Caricamento…",
@@ -810,7 +792,7 @@
         "modeRequest": "Richiesta",
         "requireDetailsTitle": "Richiedi nome dei partecipanti",
         "requireDetailsDescOn": "Il checkout raccoglie nome + email + telefono per ogni biglietto. Ogni ospite con email riceve il suo biglietto personale.",
-        "requireDetailsDescOff": "Il cliente principale riceve tutti i biglietti. Abilita per eventi con posto nominativo.",
+        "requireDetailsDescOff": "Il cliente principale riceve tutti i biglietti. Abilita per ritiri con posto nominativo.",
         "baseFieldsHeading": "Campi base partecipante",
         "alwaysRequired": "Sempre obbligatorio",
         "emailRequired": "Obbligatoria",
@@ -826,7 +808,7 @@
         "venueHeader": "Luogo",
         "venuePlaceholder": "Es. Masseria Montanari",
         "countryDefault": "IT",
-        "coverLabel": "Cover image evento",
+        "coverLabel": "Cover image ritiro",
         "coverUploaded": "Cover caricata",
         "coverUploadError": "Errore nel caricamento",
         "coverUrlPlaceholder": "oppure incolla URL…",
@@ -854,7 +836,7 @@
       "tiers": {
         "title": "Tipologie biglietto",
         "addBtn": "+ Aggiungi tipologia",
-        "emptyHint": "Nessuna tipologia — l'evento usa prezzo unico. Aggiungine una per abilitare biglietti differenziati.",
+        "emptyHint": "Nessuna tipologia — il ritiro usa prezzo unico. Aggiungine una per abilitare biglietti differenziati.",
         "disabled": "Disattivato",
         "depleted": "Esaurito",
         "soldCount": "venduti",
@@ -879,8 +861,8 @@
         "addAction": "Aggiungi"
       },
       "history": {
-        "title": "Confronto con eventi passati",
-        "subtitle": "Ultime {{count}} edizioni dello stesso evento — per capire l'andamento.",
+        "title": "Confronto con ritiri passati",
+        "subtitle": "Ultime {{count}} edizioni dello stesso ritiro — per capire l'andamento.",
         "colDate": "Data",
         "colTickets": "Biglietti",
         "colRevenue": "Incasso",
@@ -917,26 +899,26 @@
       "description": {
         "title": "✏️ Descrizione completa",
         "empty": "Nessuna descrizione · clicca per aggiungerne una",
-        "placeholder": "Descrivi l'evento in dettaglio: programma, speaker, dress code…",
+        "placeholder": "Descrivi il ritiro in dettaglio: programma, speaker, dress code…",
         "saveBtn": "Salva descrizione"
       },
       "distribution": {
         "title": "Distribuzione",
-        "subtitle": "In quali commerce è visibile questo evento.",
+        "subtitle": "In quali commerce è visibile questo ritiro.",
         "currentlyAll": "Attualmente visibile in tutti gli store.",
         "noneSelected": "Nessuno selezionato → visibile in tutti gli store"
       },
       "ticketsPage": {
         "loading": "Caricamento…",
-        "notFoundTitle": "Evento non trovato",
-        "backToEvents": "Torna agli eventi",
-        "headerBack": "← Dashboard evento",
+        "notFoundTitle": "Ritiro non trovato",
+        "backToEvents": "Torna ai ritiri",
+        "headerBack": "← Dashboard ritiro",
         "headerTitle": "Biglietti — {{event}}",
         "headerSubtitle": "Rinvio email, annullamento puntuale, messaggi ai partecipanti.",
-        "fallbackEventName": "Evento",
+        "fallbackEventName": "Ritiro",
         "checkInBtn": "🎟 Check-in",
         "broadcastTitle": "Messaggio ai partecipanti",
-        "broadcastSubtitle": "Invia un'email a tutti i partecipanti dell'evento. Un'email per ogni indirizzo (se un cliente ha più biglietti riceve una sola comunicazione).",
+        "broadcastSubtitle": "Invia un'email a tutti i partecipanti del ritiro. Un'email per ogni indirizzo (se un cliente ha più biglietti riceve una sola comunicazione).",
         "broadcastTemplates": {
           "reminder": {
             "label": "Reminder",
@@ -948,7 +930,7 @@
           },
           "cancellation": {
             "label": "Cancellazione",
-            "hint": "L'evento è stato annullato, istruzioni rimborso."
+            "hint": "Il ritiro è stato annullato, istruzioni rimborso."
           },
           "custom": {
             "label": "Personalizzato",
@@ -961,7 +943,7 @@
         "messagePlaceholderOptional": "Aggiungi qualche riga personale in fondo al template…",
         "broadcastSendingBtn": "Invio in corso…",
         "broadcastSendBtn": "✉️ Invia a tutti",
-        "broadcastConfirm": "Inviare l'email a tutti i partecipanti dell'evento?\nModello: {{template}}",
+        "broadcastConfirm": "Inviare l'email a tutti i partecipanti del ritiro?\nModello: {{template}}",
         "broadcastCustomEmpty": "Scrivi il messaggio prima di inviare",
         "broadcastResultPrefix": "Ultimo invio:",
         "broadcastSentLabel": "inviate",
@@ -1022,7 +1004,7 @@
           "alreadyCheckedIn": "Già entrato",
           "voided": "Biglietto annullato",
           "notFound": "Codice non trovato",
-          "wrongOccurrence": "Codice per un altro evento",
+          "wrongOccurrence": "Codice per un altro ritiro",
           "invalidStatus": "Stato imprevisto"
         },
         "ticketStatus": {
@@ -1030,8 +1012,8 @@
           "checkedIn": "Entrato",
           "voided": "Annullato"
         },
-        "headerKicker": "Check-in evento",
-        "fallbackEventName": "Evento",
+        "headerKicker": "Check-in ritiro",
+        "fallbackEventName": "Ritiro",
         "headerEntered": "Entrati",
         "loadError": "Errore caricamento",
         "summary": {
@@ -1047,7 +1029,7 @@
         "manualPlaceholder": "EVT-XXXX-XXXX",
         "verifyingBtn": "Verifica…",
         "submitBtn": "Fai entrare",
-        "lockToOccurrence": "Accetta solo biglietti di questo evento",
+        "lockToOccurrence": "Accetta solo biglietti di questo ritiro",
         "openScanner": "📷 Avvia scanner fotocamera",
         "listTitle": "Lista partecipanti ({{count}})",
         "filterAll": "Tutti",
@@ -1083,10 +1065,10 @@
         "statusError": "Errore nel cambio stato",
         "emailResendError": "Errore nel rinvio delle email",
         "duplicateError": "Errore nella duplicazione",
-        "archiveConfirm": "Archiviare questo evento? Sparirà dalla lista principale ma resterà accessibile dall'Archivio.",
-        "unarchiveConfirm": "Ripristinare questo evento? Tornerà nella lista principale.",
-        "archived": "Evento archiviato",
-        "unarchived": "Evento ripristinato",
+        "archiveConfirm": "Archiviare questo ritiro? Sparirà dalla lista principale ma resterà accessibile dall'Archivio.",
+        "unarchiveConfirm": "Ripristinare questo ritiro? Tornerà nella lista principale.",
+        "archived": "Ritiro archiviato",
+        "unarchived": "Ritiro ripristinato",
         "genericError": "Errore",
         "csvDownloaded": "CSV partecipanti scaricato",
         "csvError": "Errore export CSV",
@@ -1096,7 +1078,7 @@
         "imageUploadError": "Errore nel caricamento",
         "productUpdated": "Prodotto aggiornato",
         "productSaveError": "Errore nel salvataggio",
-        "occurrenceUpdated": "Evento aggiornato",
+        "occurrenceUpdated": "Ritiro aggiornato",
         "tierAdded": "Tipologia aggiunta",
         "tierUpdated": "Tipologia aggiornata",
         "tierRemoved": "Tipologia rimossa",
@@ -1106,7 +1088,6 @@
         "distributionUpdated": "Distribuzione aggiornata"
       }
     },
-
     "reservation": {
       "back": "← Torna agli affitti",
       "fallbackName": "Affitto",
@@ -1211,7 +1192,6 @@
         "extrasError": "Errore nel salvataggio extras"
       }
     },
-
     "digital": {
       "back": "← Torna ai prodotti",
       "typeLabel": "💾 Prodotto digitale",
@@ -1315,7 +1295,6 @@
         "extrasError": "Errore nel salvataggio extras"
       }
     },
-
     "physical": {
       "back": "← Torna ai prodotti",
       "typeLabel": "📦 Prodotto fisico",
@@ -1402,7 +1381,6 @@
         "extrasError": "Errore nel salvataggio extras"
       }
     },
-
     "service": {
       "back": "← Torna ai servizi",
       "typeLabel": "Servizio",
@@ -1477,7 +1455,6 @@
       }
     }
   },
-
   "wizards": {
     "common": {
       "stepCounter": "Passo {{current}} di {{total}}",
@@ -1561,7 +1538,6 @@
         "retrySuccess": "Immagine caricata correttamente."
       }
     },
-
     "physical": {
       "title": "Nuovo prodotto fisico",
       "tabs": {
@@ -1609,12 +1585,11 @@
         "publishToggleDesc": "Il prodotto diventa visibile e acquistabile nello storefront pubblico. Se disattivato, il prodotto viene salvato come bozza."
       }
     },
-
     "event": {
-      "title": "Nuovo evento",
-      "duplicateTitle": "Duplica evento",
+      "title": "Nuovo ritiro",
+      "duplicateTitle": "Duplica ritiro",
       "duplicateBanner": "🧬 Basato su <0>{{source}}</0> — verifica la data e pubblica quando sei pronto.",
-      "back": "← Torna agli eventi",
+      "back": "← Torna ai ritiri",
       "tabs": {
         "base": "Cosa offri",
         "where": "Quando e dove",
@@ -1630,17 +1605,17 @@
         "longitudeRange": "Longitudine fuori range (-180 / 180)",
         "tierMin": "Min 1",
         "capacityWarning": "La somma delle capienze dei tier ({{tierSum}}) supera la capienza totale ({{occCap}}). La capienza totale ha priorità: extra biglietti NON saranno vendibili.",
-        "uploadFailedSuffix": "Evento creato, ma il caricamento di {{which}} è fallito. Puoi aggiungerla dal pannello Modifica.",
+        "uploadFailedSuffix": "Ritiro creato, ma il caricamento di {{which}} è fallito. Puoi aggiungerla dal pannello Modifica.",
         "uploadProductImage": "immagine prodotto",
-        "uploadCoverImage": "cover evento",
-        "creationFailed": "Errore nella creazione dell'evento"
+        "uploadCoverImage": "cover ritiro",
+        "creationFailed": "Errore nella creazione del ritiro"
       },
-      "createdToast": "Evento creato!",
-      "publishCta": "Pubblica evento",
+      "createdToast": "Ritiro creato!",
+      "publishCta": "Pubblica ritiro",
       "base": {
         "title": "Cosa offri",
-        "subtitle": "Informazioni principali dell'evento.",
-        "nameLabel": "Nome evento *",
+        "subtitle": "Informazioni principali del ritiro.",
+        "nameLabel": "Nome ritiro *",
         "namePlaceholder": "Es. Cena in Masseria — edizione autunno",
         "descriptionLabel": "Descrizione breve",
         "descriptionPlaceholder": "1-2 righe che appaiono nel card del catalogo.",
@@ -1656,7 +1631,7 @@
       },
       "where": {
         "title": "Quando e dove",
-        "subtitle": "Data, ora, capienza e luogo dell'evento.",
+        "subtitle": "Data, ora, capienza e luogo del ritiro.",
         "startLabel": "Inizio *",
         "endLabel": "Fine (opzionale)",
         "capacityLabel": "Capienza totale",
@@ -1677,14 +1652,14 @@
         "longitudeLabel": "Longitudine",
         "longitudePlaceholder": "18.1742",
         "coordsHint": "Incolla le coordinate da Google Maps (tasto destro → \"Che cos'è questo posto?\"). Non indispensabile, ma sblocca la mappa sulla landing.",
-        "coverLabel": "Immagine di copertina evento",
+        "coverLabel": "Immagine di copertina ritiro",
         "coverFileLabel": "Carica cover (jpg/png/webp, max 5MB)",
         "coverUrlPlaceholder": "oppure incolla URL… (vuota = usa immagine prodotto)"
       },
       "tickets": {
         "requireDetailsTitle": "Richiedi nome dei partecipanti",
         "requireDetailsDescOn": "Al checkout il cliente inserirà i dati di ogni partecipante. Ogni ospite con email riceverà il suo biglietto personale.",
-        "requireDetailsDescOff": "Il cliente principale riceve tutti i biglietti. Abilita questa opzione per eventi con posto nominativo (cena, corso, concerto).",
+        "requireDetailsDescOff": "Il cliente principale riceve tutti i biglietti. Abilita questa opzione per ritiri con posto nominativo (cena, corso, concerto).",
         "baseFieldsHeading": "Campi base per ogni partecipante",
         "nameField": "Nome",
         "alwaysRequired": "Sempre obbligatorio",
@@ -1700,11 +1675,11 @@
         "orderFieldsSubtitle": "Chiesti una volta sola al cliente durante il checkout (es. azienda, partita IVA)",
         "orderFieldsEmpty": "Nessun campo ordine. Aggiungi campi per raccogliere info custom a livello d'ordine.",
         "tiersTitle": "Tipologie biglietto",
-        "tiersSubtitle": "Più tipologie = più scelta. Vuote? L'evento vende al prezzo base dello step 1.",
+        "tiersSubtitle": "Più tipologie = più scelta. Vuote? Il ritiro vende al prezzo base dello step 1.",
         "addTierBtn": "+ Aggiungi",
         "noTiersTitle": "Nessuna tipologia biglietto.",
-        "noTiersDescWithPrice": "L'evento userà il prezzo base di {{price}} €.",
-        "noTiersDescNoPrice": "L'evento userà il prezzo base di … (step 1).",
+        "noTiersDescWithPrice": "Il ritiro userà il prezzo base di {{price}} €.",
+        "noTiersDescNoPrice": "Il ritiro userà il prezzo base di … (step 1).",
         "dragHint": "Trascina per riordinare",
         "tierNameLabel": "Nome *",
         "tierNamePlaceholder": "Standard / VIP / Early-bird",
@@ -1720,29 +1695,28 @@
       },
       "publish": {
         "longDescTitle": "Descrizione estesa",
-        "longDescDescPrefix": "Quello che compare sulla landing dell'evento. Markdown supportato: ",
+        "longDescDescPrefix": "Quello che compare sulla landing del ritiro. Markdown supportato: ",
         "longDescDescSuffix": " per titoli, ",
         "longDescBoldNote": "**grassetto**",
         "longDescItalicNote": "*corsivo*",
         "longDescListNote": "- lista",
         "longDescPlaceholder": "## Il concept\n\nSerata intima con menù degustazione a 4 portate…\n\n## Cosa include\n\n- Aperitivo di benvenuto\n- Vino in abbinamento\n- Musica live",
         "termsTitle": "Termini e condizioni (opzionale)",
-        "termsDesc": "Se compili questo campo, il cliente dovrà accettarli al checkout specifici per questo evento. Se vuoto, si useranno quelli dello store (se abilitati). Markdown supportato.",
-        "termsPlaceholder": "## Regolamento\n\n- Vietato l'ingresso ai minori di 18 anni\n- Divieto di riprese video\n- Nessun rimborso dopo 72h dall'evento",
+        "termsDesc": "Se compili questo campo, il cliente dovrà accettarli al checkout specifici per questo ritiro. Se vuoto, si useranno quelli dello store (se abilitati). Markdown supportato.",
+        "termsPlaceholder": "## Regolamento\n\n- Vietato l'ingresso ai minori di 18 anni\n- Divieto di riprese video\n- Nessun rimborso dopo 72h dal ritiro",
         "summaryDate": "Data",
         "summaryCapacity": "Capienza",
         "summaryCapacityUnlimited": "Illimitata",
         "summaryLocation": "Luogo",
         "summaryTiersLabel": "Tipologie biglietto",
         "summaryTiersNone": "Nessuna (prezzo base)",
-        "distributionDesc": "Dove sarà visibile l'evento ai clienti.",
-        "distributionMultiDesc": "In quali store è visibile l'evento.",
+        "distributionDesc": "Dove sarà visibile il ritiro ai clienti.",
+        "distributionMultiDesc": "In quali store è visibile il ritiro.",
         "publishToggleTitle": "Pubblica subito",
-        "publishToggleDesc": "Se spuntato, l'evento è visibile sul catalogo e acquistabile dai clienti. Puoi sempre cambiarlo dalla dashboard dell'evento.",
+        "publishToggleDesc": "Se spuntato, il ritiro è visibile sul catalogo e acquistabile dai clienti. Puoi sempre cambiarlo dalla dashboard del ritiro.",
         "validationErrorBanner": "Alcuni campi precedenti richiedono attenzione. Torna indietro per correggere."
       }
     },
-
     "digital": {
       "title": "Nuovo prodotto digitale",
       "tabs": {
@@ -1804,7 +1778,6 @@
         "publishToggleDesc": "Il prodotto diventa visibile e acquistabile nello storefront pubblico. Se disattivato, il prodotto viene salvato come bozza."
       }
     },
-
     "reservation": {
       "title": "Nuovo affitto",
       "tabs": {
@@ -1888,7 +1861,6 @@
         "publishToggleDesc": "Il prodotto diventa visibile e prenotabile nello storefront pubblico. Se disattivato, il prodotto viene salvato come bozza."
       }
     },
-
     "service": {
       "title": "Nuovo servizio",
       "back": "← Torna ai servizi",
@@ -1935,7 +1907,7 @@
         "summaryOptionsNone": "Nessuna (prezzo base)",
         "longDescTitle": "Descrizione estesa (landing)",
         "longDescDesc": "Quello che compare sulla pagina pubblica del servizio. Markdown supportato.",
-        "longDescPlaceholder": "## Cosa include\n\n- Prima valutazione gratuita\n- Sessione di ipnosi guidata (60 min)\n- Follow-up via email nei giorni successivi\n\n## Per chi\u00a0\n\nPersone che vogliono migliorare la qualit\u00e0 del sonno, smettere di fumare, gestire l'ansia.",
+        "longDescPlaceholder": "## Cosa include\n\n- Prima valutazione gratuita\n- Sessione di ipnosi guidata (60 min)\n- Follow-up via email nei giorni successivi\n\n## Per chi \n\nPersone che vogliono migliorare la qualità del sonno, smettere di fumare, gestire l'ansia.",
         "coverUrlLabel": "URL cover landing (opzionale)",
         "coverUrlPlaceholder": "https://… immagine hero della pagina pubblica",
         "coverUrlHint": "Se vuoto, si usa l'immagine del prodotto (step 1).",
@@ -1952,9 +1924,8 @@
       }
     }
   },
-
   "venue": {
-    "title": "Dettagli evento (facoltativo)",
+    "title": "Dettagli ritiro (facoltativo)",
     "venueName": "Nome del luogo",
     "venueNamePlaceholder": "Masseria del Sole",
     "address": "Indirizzo",
@@ -1971,7 +1942,7 @@
     "longitudePlaceholder": "18.1742",
     "coordsHint": "Incolla le coordinate da Google Maps (tasto destro → \"Che cos'è questo posto?\")",
     "coverUrl": "URL immagine di copertina",
-    "coverUrlPlaceholder": "https://… o /uploads/eventi/hero.jpg",
+    "coverUrlPlaceholder": "https://… o /uploads/ritiri/hero.jpg",
     "longDescription": "Descrizione estesa (markdown supportato)",
     "longDescriptionPlaceholder": "## Il concept\n\nSerata di degustazione con menù degustazione a 4 portate e accompagnamento musicale live…",
     "markdownHint": "Userà ## per titoli, **grassetto**, *corsivo*, - per elenchi."

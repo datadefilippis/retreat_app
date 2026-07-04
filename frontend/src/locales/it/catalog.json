@@ -3,14 +3,14 @@
     "physical": "Prodotto fisico",
     "service": "Servizio",
     "rental": "Noleggio",
-    "event_ticket": "Evento/biglietto",
+    "event_ticket": "Ritiro/biglietto",
     "booking": "Prenotazione 1:1",
     "digital": "Prodotto digitale"
   },
   "item_type_short": {
     "service": "Servizio",
     "rental": "Noleggio",
-    "event_ticket": "Evento",
+    "event_ticket": "Ritiro",
     "digital": "Digitale"
   },
   "price_mode": {
@@ -56,34 +56,34 @@
       "setup_cue_price": "Definisci il prezzo per unità"
     },
     "open_event": {
-      "label": "Evento aperto",
-      "description": "Evento senza limite di posti, acquistabile direttamente",
+      "label": "Ritiro aperto",
+      "description": "Ritiro senza limite di posti, acquistabile direttamente",
       "behavior": "Pagamento diretto",
-      "runtime": "Il cliente acquista direttamente. Dopo aver salvato, apri il prodotto per aggiungere le date e i luoghi dell'evento.",
-      "post_save": "Aggiungi almeno una data evento dalla sezione \"Date evento\" qui sotto.",
+      "runtime": "Il cliente acquista direttamente. Dopo aver salvato, apri il prodotto per aggiungere le date e i luoghi del ritiro.",
+      "post_save": "Aggiungi almeno una data ritiro dalla sezione \"Date ritiro\" qui sotto.",
       "hint_unit_price": "Prezzo base per biglietto (può essere sovrascritto per singola data)",
-      "setup_cue_dates": "Aggiungi almeno una data evento",
+      "setup_cue_dates": "Aggiungi almeno una data ritiro",
       "setup_cue_publish": "Pubblica le date per renderle visibili nel catalogo",
-      "no_occurrences_warning": "Nessuna data evento — il prodotto non è ancora prenotabile"
+      "no_occurrences_warning": "Nessuna data ritiro — il prodotto non è ancora prenotabile"
     },
     "capped_event": {
-      "label": "Evento con posti limitati",
-      "description": "Evento con capienza, il cliente richiede e tu verifichi i posti",
+      "label": "Ritiro con posti limitati",
+      "description": "Ritiro con capienza, il cliente richiede e tu verifichi i posti",
       "behavior": "Verifica posti",
-      "runtime": "Il cliente richiede posti. Dopo aver salvato, imposta le date e la capienza massima dalla sezione \"Date evento\". Le richieste arrivano negli Ordini.",
-      "post_save": "Aggiungi le date evento e imposta la capienza per ciascuna dalla sezione qui sotto.",
+      "runtime": "Il cliente richiede posti. Dopo aver salvato, imposta le date e la capienza massima dalla sezione \"Date ritiro\". Le richieste arrivano negli Ordini.",
+      "post_save": "Aggiungi le date ritiro e imposta la capienza per ciascuna dalla sezione qui sotto.",
       "hint_unit_price": "Prezzo base per biglietto (può essere sovrascritto per singola data)",
-      "setup_cue_dates": "Aggiungi le date evento con capienza massima",
-      "setup_cue_capacity": "Imposta la capienza su ogni data evento",
+      "setup_cue_dates": "Aggiungi le date ritiro con capienza massima",
+      "setup_cue_capacity": "Imposta la capienza su ogni data ritiro",
       "setup_cue_publish": "Pubblica le date per renderle visibili nel catalogo",
-      "no_occurrences_warning": "Nessuna data evento — il prodotto non è ancora prenotabile"
+      "no_occurrences_warning": "Nessuna data ritiro — il prodotto non è ancora prenotabile"
     }
   },
   "issue": {
     "direct_inquiry": "Modalità diretta non compatibile con prezzo su richiesta",
     "direct_no_price": "Prezzo mancante per checkout diretto",
     "rental_no_unit": "Unità noleggio non impostata",
-    "event_unpublished": "Evento non pubblicato — non visibile nel catalogo",
+    "event_unpublished": "Ritiro non pubblicato — non visibile nel catalogo",
     "no_price": "Nessun prezzo impostato"
   },
   "storefront": {
@@ -214,10 +214,10 @@
     "notes_placeholder": "es. Cauzione richiesta"
   },
   "occurrence_section": {
-    "title": "Date evento",
-    "subtitle": "Gestisci le date e i luoghi per questo evento",
+    "title": "Date ritiro",
+    "subtitle": "Gestisci le date e i luoghi per questo ritiro",
     "add_new": "+ Nuova",
-    "empty": "Nessuna occorrenza. Aggiungi date per questo evento.",
+    "empty": "Nessuna occorrenza. Aggiungi date per questo ritiro.",
     "seats": "posti",
     "info_create_first": "Dopo aver creato il prodotto, potrai aggiungere le date (occorrenze) dalla modifica.",
     "form_start": "Inizio",
