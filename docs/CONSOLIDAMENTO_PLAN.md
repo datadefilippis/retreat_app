@@ -87,9 +87,9 @@ Branch `feat/cons-menu`.
 ### WS-3 · User-friendliness creazione prodotto
 Branch `feat/cons-prodotti`.
 
-- [ ] **3.1 Type-picker ripulito**: ordine Ritiro → Servizio → Prodotto → Digitale → Corso; nascondere `booking`; de-enfatizzare `rental`. Copy che spiega ogni tipo in una riga ("Servizio: consulenze, massaggi, lezioni singole"). **DoD**: un operatore capisce quale tipo scegliere senza chiedere.
-- [ ] **3.2 Completare il lessico ritiri**: sweep finale evento→ritiro, biglietto→posto/pacchetto, ticket-holder→partecipante nei punti rimasti (wizard tab Biglietti, dashboard, email admin). **DoD**: grep di "bigliett/evento/ticket" nei testi UI operatore = solo residui giustificati.
-- [ ] **3.3 Cue contenuti ricchi nel wizard**: al tab Pubblica, banner "Dopo la pubblicazione puoi arricchire la pagina (programma, galleria, FAQ) dalla dashboard del ritiro". **DoD**: l'operatore sa dove trovare l'editor contenuti.
+- [x] **3.1 Type-picker ripulito** *(fatto 4/7/2026 — VERIFICATO BROWSER: Ritiro 🧘 primo, poi Servizio/Prodotto/Digitale/Corso; rental_range+rental_slot gated su canUse(commerce,rentals) — spariti nel verticale ritiri, riappaiono se il piano riabilita i noleggi; booking già assente)*: ordine Ritiro → Servizio → Prodotto → Digitale → Corso; nascondere `booking`; de-enfatizzare `rental`. Copy che spiega ogni tipo in una riga ("Servizio: consulenze, massaggi, lezioni singole"). **DoD**: un operatore capisce quale tipo scegliere senza chiedere.
+- [x] **3.2 Lessico ritiri (mirato)** *(fatto 4/7/2026: "tipologia biglietto"→"tipologia di posto", picker desc, campi partecipante, hint prezzo → posto/partecipante. Lasciato "biglietto" dove indica il pass QR emesso — rinominarlo sarebbe scorretto)*: sweep finale evento→ritiro, biglietto→posto/pacchetto, ticket-holder→partecipante nei punti rimasti (wizard tab Biglietti, dashboard, email admin). **DoD**: grep di "bigliett/evento/ticket" nei testi UI operatore = solo residui giustificati.
+- [ ] **3.3 Cue contenuti ricchi nel wizard** — rimandato a WS-4 (rifinitura, non bloccante): al tab Pubblica, banner "Dopo la pubblicazione puoi arricchire la pagina (programma, galleria, FAQ) dalla dashboard del ritiro". **DoD**: l'operatore sa dove trovare l'editor contenuti.
 
 ### WS-4 · Rifiniture ordini/UX (nice-to-have, dopo WS-1)
 Branch `feat/cons-ux`.

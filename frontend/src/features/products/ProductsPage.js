@@ -6,6 +6,7 @@ import { PageSubheader } from '../../components/PageSubheader';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { useCurrency } from '../../context/AuthContext';
+import { useEntitlements } from '../../hooks/useEntitlements';
 import { formatCurrency as fmtCurrency } from '../../lib/utils';
 // PR-4 cleanup: Dialog primitives now only serve the TypePicker; the
 // legacy create/edit Dialog (with its CostSourceEditor / Textarea /
@@ -184,6 +185,9 @@ function ProductCard({ product, onTogglePublish, onDeactivate }) {
 
 export default function ProductsPage() {
   const { t } = useTranslation(['entities', 'catalog', 'products']);
+  // Consolidamento WS-3 — il type-picker segue il piano: niente noleggi
+  // nel verticale ritiri (riappaiono se il piano riabilita rentals).
+  const { canUse } = useEntitlements();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -601,20 +605,21 @@ export default function ProductsPage() {
           </DialogHeader>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 py-2">
             {[
-              // Onda 16 — the unified ReservationWizard handles both rental
-              // flavors, but we expose two distinct TypePicker entries
-              // (rental_range + rental_slot) so the merchant picks with clear
-              // intent. Each pre-selects the flavor in the wizard via the
-              // ?flavor= query param (tab 2 lets them change their mind).
-              // Release 4 (Courses) — video course with modules + lessons
-              // hosted on Bunny Stream. Dedicated editor at /courses.
-              { k: 'physical',     icon: '📦' },
-              { k: 'event_ticket', icon: '🎫' },
+              // Consolidamento WS-3 (retreat) — ordine per rilevanza nel
+              // verticale: il ritiro per primo, poi servizi/prodotti/
+              // digitale/corsi. I due flavor rental (Onda 16: range+slot,
+              // wizard unificato) compaiono SOLO se il piano abilita i
+              // noleggi — gating via canUse, coerente col menu (WS-2):
+              // nessuna rimozione hardcoded, tutto reversibile dal piano.
+              { k: 'event_ticket', icon: '🧘' },
               { k: 'service',      icon: '🛠' },
-              { k: 'rental_range', icon: '🏠' },
-              { k: 'rental_slot',  icon: '📅' },
+              { k: 'physical',     icon: '📦' },
               { k: 'digital',      icon: '💾' },
               { k: 'course',       icon: '🎓' },
+              ...(canUse('commerce', 'rentals')
+                ? [{ k: 'rental_range', icon: '🏠' },
+                   { k: 'rental_slot',  icon: '📅' }]
+                : []),
             ].map(({ k, icon }) => (
               <button
                 key={k}
