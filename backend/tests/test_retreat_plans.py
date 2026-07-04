@@ -54,9 +54,9 @@ def _plan(slug: str) -> dict:
 
 
 class TestRetreatPlansPresence:
-    def test_both_retreat_plans_seeded(self):
+    def test_all_three_retreat_plans_seeded(self):
         slugs = {p["slug"] for p in RETREAT_COMMERCIAL_PLANS}
-        assert slugs == {"retreat_free", "retreat_pro"}
+        assert slugs == {"retreat_free", "retreat_pro", "retreat_founding"}
 
     def test_retreat_slugs_do_not_collide_with_legacy(self):
         legacy = {p["slug"] for p in COMMERCIAL_PLANS + ADDON_PLANS}
@@ -151,3 +151,103 @@ class TestPricingPositioning:
 
     def test_pro_is_self_serve(self):
         assert _plan("retreat_pro")["is_self_serve"] is True
+
+
+class TestRetreatBusinessModel:
+    """Decisioni founder 4/7/2026: fee legata al piano, founding dedicato.
+
+    La fee piattaforma è SEPARATA dalle commissioni Stripe (che Stripe
+    applica per conto suo sull'account connesso): qui si valida solo la
+    parte piattaforma; la UI le dichiara distinte.
+    """
+
+    def test_free_fee_5_percent(self):
+        assert _plan("retreat_free")["transaction_fee_percent"] == 5.0
+        assert _plan("retreat_free")["price_monthly"] == 0.0
+
+    def test_pro_fee_2_percent_price_29(self):
+        pro = _plan("retreat_pro")
+        assert pro["transaction_fee_percent"] == 2.0
+        assert pro["price_monthly"] == 29.0
+        assert pro["price_yearly"] == 290.0
+        assert pro["is_self_serve"] is True
+
+    def test_founding_is_dedicated_hidden_plan(self):
+        f = _plan("retreat_founding")
+        assert f["price_monthly"] == 0.0
+        assert f["transaction_fee_percent"] == 2.0   # trattamento Pro
+        assert f["is_public"] is False               # non in pagina pricing
+        assert f["is_self_serve"] is False           # solo assegnazione admin
+        # founding = tutto Pro: stessi module_plans
+        assert f["module_plans"] == _plan("retreat_pro")["module_plans"]
+
+    def test_all_retreat_plans_declare_fee(self):
+        # Ogni piano retreat DEVE dichiarare la fee: il provisioning la
+        # sincronizza su org.application_fee_percent a ogni cambio piano.
+        for p in RETREAT_COMMERCIAL_PLANS:
+            assert p.get("transaction_fee_percent") is not None, p["slug"]
+            assert 0 <= p["transaction_fee_percent"] <= 10
+
+    def test_legacy_plans_do_not_govern_fee(self):
+        # I piani legacy non devono toccare la fee org (None sul modello).
+        for p in COMMERCIAL_PLANS + ADDON_PLANS:
+            assert p.get("transaction_fee_percent") is None, p["slug"]
+
+    def test_features_display_present_and_keyed(self):
+        # Le card piani mostrano "cosa è incluso" — ogni piano deve avere
+        # bullet i18n non vuoti con il prefisso billing.features.
+        for p in RETREAT_COMMERCIAL_PLANS:
+            feats = p["features_display"]
+            assert len(feats) >= 3, p["slug"]
+            for f in feats:
+                assert f.startswith("billing.features."), f
+
+
+class TestFeeSyncOnProvisioning:
+    """La fee segue il piano: provision_commercial_plan (entry point
+    canonico di OGNI cambio piano: signup, admin, webhook Stripe) deve
+    sincronizzare org.application_fee_percent dal piano."""
+
+    @staticmethod
+    def _run(plan_doc):
+        import asyncio
+        from unittest.mock import AsyncMock, patch
+        from services import plan_provisioning
+
+        captured = {}
+
+        async def fake_update(org_id, fields):
+            captured.update(fields)
+
+        with patch.object(plan_provisioning.billing_repository,
+                          "get_commercial_plan",
+                          AsyncMock(return_value=plan_doc)), \
+             patch.object(plan_provisioning.subscription_repository,
+                          "list_subscriptions_by_org",
+                          AsyncMock(return_value=[])), \
+             patch.object(plan_provisioning.billing_repository,
+                          "update_org_billing_fields",
+                          AsyncMock(side_effect=fake_update)), \
+             patch.object(plan_provisioning,
+                          "reconcile_stores_to_plan_limit",
+                          AsyncMock(return_value={})):
+            asyncio.run(
+                plan_provisioning.provision_commercial_plan(
+                    "org-x", plan_doc["slug"], "test"))
+        return captured
+
+    def test_retreat_plan_syncs_fee_to_org(self):
+        fields = self._run({"slug": "retreat_pro", "module_plans": {},
+                            "transaction_fee_percent": 2.0})
+        assert fields["application_fee_percent"] == 2.0
+
+    def test_free_plan_syncs_5(self):
+        fields = self._run({"slug": "retreat_free", "module_plans": {},
+                            "transaction_fee_percent": 5.0})
+        assert fields["application_fee_percent"] == 5.0
+
+    def test_legacy_plan_leaves_org_fee_untouched(self):
+        # Piano senza transaction_fee_percent → il campo NON deve comparire
+        # nell'update (il valore manuale su org resta com'è).
+        fields = self._run({"slug": "core", "module_plans": {}})
+        assert "application_fee_percent" not in fields

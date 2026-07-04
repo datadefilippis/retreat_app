@@ -122,6 +122,12 @@ async def provision_commercial_plan(
         "plan_assigned_by": assigned_by,
         "plan_assigned_at": now.isoformat(),
     }
+    # Retreat fork — fee transazionale agganciata al piano: se il piano la
+    # definisce, sovrascrive il campo org (unico punto letto dal checkout).
+    # None = piano legacy che non governa la fee → il valore org resta.
+    plan_fee = plan.get("transaction_fee_percent")
+    if plan_fee is not None:
+        org_fields["application_fee_percent"] = float(plan_fee)
     if stripe_subscription_id is not None:
         org_fields["stripe_subscription_id"] = stripe_subscription_id
     if trial_ends_at is not None:

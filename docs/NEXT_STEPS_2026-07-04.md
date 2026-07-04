@@ -28,9 +28,11 @@ La macchina self-serve ereditata ESISTE (checkout/modify/cancel/portal in billin
 | Annuale | sconto ~2 mesi (290€/anno)? | serve al lancio o dopo? |
 | Limiti Free vs Pro | oggi identici tranne fee — differenziare? (es. Free max N ritiri attivi, no comms automatiche?) | cosa mettere dietro Pro |
 
-**B.1** Fee agganciata al piano: al cambio piano (upgrade/downgrade/webhook Stripe Billing) → sync `org.application_fee_percent` dal commercial plan. Un solo punto di verità, transizione tracciata (audit log).
+**B.0 — DECISO (founder, 4/7/2026):** Free 0€+5% · Pro 29€/290€+2% · Founding = piano dedicato (retreat_founding: tutto Pro a 0€, non pubblico, assegnazione admin) · fee piattaforma dichiarata SEPARATA dalle commissioni Stripe in tutta la UI piani.
+
+**B.1 ✅ (4/7/2026)** Fee agganciata al piano: al cambio piano (upgrade/downgrade/webhook Stripe Billing) → sync `org.application_fee_percent` dal commercial plan. Un solo punto di verità, transizione tracciata (audit log).
 **B.2** Prodotti/prezzi Stripe Billing per retreat_pro (test → poi live), `stripe_price_id` sui piani, `is_self_serve=True` su retreat_pro.
-**B.3** Pagina piano/upgrade nell'admin (riuso UI billing ereditata, copy ritiri) + banner upgrade in dashboard sopra 1.000€/mese di transato ("con Pro avresti risparmiato X€ questo mese" — il banner si paga da solo).
+**B.3 ✅ parziale (4/7/2026 — pagina piani retreat con fee split, cosa-è-incluso, esempio 100€; manca solo il banner upgrade in dashboard)** Pagina piano/upgrade nell'admin (riuso UI billing ereditata, copy ritiri) + banner upgrade in dashboard sopra 1.000€/mese di transato ("con Pro avresti risparmiato X€ questo mese" — il banner si paga da solo).
 **B.4** Test: cambio piano → fee corretta sul prossimo checkout; downgrade → torna 5%; webhook subscription cancellata → downgrade automatico a Free.
 
 ## Blocco C — Fase 6: la fase interrotta (≈2 settimane)

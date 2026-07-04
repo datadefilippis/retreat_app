@@ -252,7 +252,22 @@
       "everything_in_pro": "Everything in Pro, plus:",
       "dedicated_support": "Dedicated support",
       "custom_integrations": "Custom integrations",
-      "sla": "Guaranteed SLA"
+      "sla": "Guaranteed SLA",
+      "retreat_unlimited_listings": "Unlimited retreats and products",
+      "retreat_public_page": "Bookable page + public calendar",
+      "retreat_deposits_payments": "Deposits, instalments and payment links",
+      "retreat_participants": "Participants, check-in and QR passes",
+      "retreat_comms": "Automatic pre/post retreat emails",
+      "retreat_cashflow": "Revenue management (Cashflow + Data)",
+      "retreat_newsletter": "Newsletter and signup forms",
+      "retreat_everything_free": "Everything in Free",
+      "retreat_featured": "Featured in the public calendar",
+      "retreat_catalog_extended": "Extended catalog (Pro limits)",
+      "retreat_customers_pro": "Advanced customer insights",
+      "retreat_priority_support": "Priority support",
+      "retreat_everything_pro": "Everything in Pro",
+      "retreat_founding_free": "Free for 3 months",
+      "retreat_founding_feedback": "Weekly direct line with the team"
     },
     "quota": {
       "warning_title": "Approaching the limit",
@@ -443,7 +458,28 @@
       "cta_upgrade": "View plans"
     },
     "legacy_lock_badge": "🔒 Legacy pricing",
-    "legacy_lock_tooltip": "You're paying the original price. When you change plan, this rate is preserved."
+    "legacy_lock_tooltip": "You're paying the original price. When you change plan, this rate is preserved.",
+    "retreat": {
+      "title": "Plans and fees",
+      "subtitle": "Simple: one plan, one fee on what you collect. No hidden costs.",
+      "fee_label": "Platform fee",
+      "fee_value": "{{pct}}% of transactions",
+      "fee_free_note": "You only pay when you get paid",
+      "included_title": "What's included",
+      "stripe_fees_title": "Stripe fees (separate)",
+      "stripe_fees_body": "Online payments also carry Stripe's processing fees (for European cards ≈ 1.5% + €0.25), charged by Stripe directly on your account. They are separate from the platform fee and apply on any plan.",
+      "example_title": "Example on a €100 payment",
+      "example_platform": "Platform fee ({{pct}}%)",
+      "example_stripe": "Stripe fees (≈)",
+      "example_net": "You keep (≈)",
+      "founding_badge": "Founding plan active",
+      "founding_note": "You are on a plan reserved for founding members: everything in Pro, free. Thank you for building the platform with us.",
+      "current": "Current plan",
+      "cta_upgrade": "Upgrade to Pro",
+      "cta_downgrade": "Back to Free",
+      "downgrade_hint": "To go back to the Free plan, manage your subscription from the billing portal.",
+      "yearly_hint": "€290/year (2 months free)"
+    }
   },
   "prefs": {
     "title": "Alert & Report Preferences",

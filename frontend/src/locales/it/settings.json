@@ -252,7 +252,22 @@
       "everything_in_pro": "Tutto in Pro, piu:",
       "dedicated_support": "Supporto dedicato",
       "custom_integrations": "Integrazioni personalizzate",
-      "sla": "SLA garantito"
+      "sla": "SLA garantito",
+      "retreat_unlimited_listings": "Ritiri e prodotti illimitati",
+      "retreat_public_page": "Pagina prenotabile + calendario pubblico",
+      "retreat_deposits_payments": "Caparre, rate e link di pagamento",
+      "retreat_participants": "Partecipanti, check-in e pass QR",
+      "retreat_comms": "Email automatiche pre e post ritiro",
+      "retreat_cashflow": "Gestionale incassi (Cashflow + Dati)",
+      "retreat_newsletter": "Newsletter e moduli iscrizione",
+      "retreat_everything_free": "Tutto il piano Gratis",
+      "retreat_featured": "Evidenza nel calendario pubblico",
+      "retreat_catalog_extended": "Catalogo esteso (limiti Pro)",
+      "retreat_customers_pro": "Insight clienti avanzati",
+      "retreat_priority_support": "Supporto prioritario",
+      "retreat_everything_pro": "Tutto il piano Pro",
+      "retreat_founding_free": "Gratis per 3 mesi",
+      "retreat_founding_feedback": "Confronto diretto col team, ogni settimana"
     },
     "quota": {
       "warning_title": "Stai per raggiungere il limite",
@@ -443,7 +458,28 @@
       "cta_upgrade": "Vedi piani"
     },
     "legacy_lock_badge": "🔒 Prezzo legacy",
-    "legacy_lock_tooltip": "Stai pagando il prezzo originale. Quando aggiorni piano, manteniamo questa tariffa."
+    "legacy_lock_tooltip": "Stai pagando il prezzo originale. Quando aggiorni piano, manteniamo questa tariffa.",
+    "retreat": {
+      "title": "Piani e commissioni",
+      "subtitle": "Semplice: un piano, una fee sul transato. Nessun costo nascosto.",
+      "fee_label": "Fee piattaforma",
+      "fee_value": "{{pct}}% sul transato",
+      "fee_free_note": "Paghi solo quando incassi",
+      "included_title": "Cosa è incluso",
+      "stripe_fees_title": "Commissioni Stripe (separate)",
+      "stripe_fees_body": "Ai pagamenti online si applicano anche le commissioni di Stripe (per le carte europee ≈ 1,5% + 0,25 €), addebitate da Stripe direttamente sul tuo account. Sono separate dalla fee piattaforma e valgono per qualsiasi piano.",
+      "example_title": "Esempio su un incasso di 100 €",
+      "example_platform": "Fee piattaforma ({{pct}}%)",
+      "example_stripe": "Commissioni Stripe (≈)",
+      "example_net": "A te restano (≈)",
+      "founding_badge": "Piano Founding attivo",
+      "founding_note": "Sei su un piano riservato ai founding member: tutto Pro, gratis. Grazie di costruire la piattaforma con noi.",
+      "current": "Piano attuale",
+      "cta_upgrade": "Passa a Pro",
+      "cta_downgrade": "Torna a Gratis",
+      "downgrade_hint": "Per tornare al piano Gratis gestisci l'abbonamento dal portale di fatturazione.",
+      "yearly_hint": "290 €/anno (2 mesi gratis)"
+    }
   },
   "prefs": {
     "title": "Preferenze Alert e Report",

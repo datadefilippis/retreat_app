@@ -353,7 +353,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
     {
         "slug": "retreat_free",
         "name": "Gratis",
-        "description": "Pubblica i tuoi ritiri e incassa online. Fee 5% sul transato.",
+        "description": "Tutto per pubblicare e incassare i tuoi ritiri. Paghi solo quando incassi.",
         "tagline": "Tutto incluso, paghi solo quando incassi",
         "price_monthly": 0.0,
         "price_yearly": None,
@@ -362,6 +362,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_public": True,
         "is_self_serve": False,   # baseline al signup, non un target di checkout
         "sort_order": 10,
+        "transaction_fee_percent": 5.0,
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
             "ai_assistant": "ai_assistant_disabled",
@@ -371,15 +372,18 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         },
         "features_display": [
             "billing.features.retreat_unlimited_listings",
+            "billing.features.retreat_public_page",
             "billing.features.retreat_deposits_payments",
             "billing.features.retreat_participants",
-            "billing.features.retreat_fee_5",
+            "billing.features.retreat_comms",
+            "billing.features.retreat_cashflow",
+            "billing.features.retreat_newsletter",
         ],
     },
     {
         "slug": "retreat_pro",
         "name": "Pro",
-        "description": "Fee ridotta al 2%, evidenza nel calendario, newsletter illimitata.",
+        "description": "Fee ridotta al 2%, evidenza nel calendario pubblico e limiti estesi.",
         "tagline": "Per chi organizza più ritiri l'anno",
         "price_monthly": 29.0,
         "price_yearly": 290.0,
@@ -388,6 +392,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_public": True,
         "is_self_serve": True,
         "sort_order": 11,
+        "transaction_fee_percent": 2.0,
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
             "ai_assistant": "ai_assistant_disabled",
@@ -397,9 +402,40 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         },
         "features_display": [
             "billing.features.retreat_everything_free",
-            "billing.features.retreat_fee_2",
             "billing.features.retreat_featured",
-            "billing.features.retreat_newsletter_unlimited",
+            "billing.features.retreat_catalog_extended",
+            "billing.features.retreat_customers_pro",
+            "billing.features.retreat_priority_support",
+        ],
+    },
+    # Founding — piano DEDICATO per i primi organizzatori (decisione founder
+    # 4/7/2026: niente coupon, piano a sé). Tutto Pro a 0€, assegnato solo
+    # dall'admin (non pubblico, non self-serve); la scadenza dei 3 mesi si
+    # gestisce con trial_ends_at/notes al momento dell'assegnazione admin.
+    {
+        "slug": "retreat_founding",
+        "name": "Founding",
+        "description": "Piano riservato ai primi organizzatori: tutto Pro, gratis per 3 mesi.",
+        "tagline": "Per chi costruisce la piattaforma con noi",
+        "price_monthly": 0.0,
+        "price_yearly": None,
+        "currency": "EUR",
+        "trial_days": 0,
+        "is_public": False,
+        "is_self_serve": False,
+        "sort_order": 12,
+        "transaction_fee_percent": 2.0,
+        "module_plans": {
+            "cashflow_monitor": "cashflow_monitor_retreat",
+            "ai_assistant": "ai_assistant_disabled",
+            "product_catalog": "product_catalog_pro",
+            "commerce": "commerce_retreat",
+            "customers_light": "customers_light_pro",
+        },
+        "features_display": [
+            "billing.features.retreat_everything_pro",
+            "billing.features.retreat_founding_free",
+            "billing.features.retreat_founding_feedback",
         ],
     },
 ]
@@ -423,8 +459,20 @@ async def seed_commercial_plans() -> None:
         doc["updated_at"] = doc["updated_at"].isoformat()
         await billing_repository.upsert_commercial_plan(doc)
 
+    # Retreat fork — i piani legacy AFianco (main + add-on) escono dalla
+    # pagina pricing pubblica: la piattaforma ritiri espone SOLO i piani
+    # retreat_*. Demozione sul DB (le costanti restano is_public=True per
+    # compatibilità con i test del catalogo legacy); idempotente a ogni boot.
+    from database import commercial_plans_collection
+    legacy_slugs = ([p["slug"] for p in COMMERCIAL_PLANS]
+                    + [p["slug"] for p in ADDON_PLANS])
+    await commercial_plans_collection.update_many(
+        {"slug": {"$in": legacy_slugs}, "is_public": True},
+        {"$set": {"is_public": False}},
+    )
+
     logger.info(
-        "Seeded %d commercial plans (upsert) — %d main + %d add-ons + %d retreat.",
+        "Seeded %d commercial plans (upsert) — %d main + %d add-ons + %d retreat; legacy nascosti dal pricing.",
         len(all_plans), len(COMMERCIAL_PLANS), len(ADDON_PLANS),
         len(RETREAT_COMMERCIAL_PLANS),
     )
