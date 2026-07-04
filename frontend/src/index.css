@@ -6,40 +6,45 @@
 
 @layer base {
     :root {
-        --background: 220 20% 97%;
-        --foreground: 224 32% 14%;
+        /* ── Palette olistica «Salvia & Terracotta» (D1, 4/7/2026) ──────
+           Decisione founder: i colori devono riflettere il mondo dei
+           ritiri — salvia profonda per le azioni, terracotta per le
+           evidenze, crema/sabbia per gli sfondi. Il blu AFianco è
+           ritirato. Vedi docs/DESIGN_REFRESH_PLAN.md §2. */
+        --background: 42 35% 97%;
+        --foreground: 160 15% 15%;
 
         --card: 0 0% 100%;
-        --card-foreground: 224 32% 14%;
+        --card-foreground: 160 15% 15%;
 
         --popover: 0 0% 100%;
-        --popover-foreground: 224 32% 14%;
+        --popover-foreground: 160 15% 15%;
 
-        --primary: 230 75% 57%;
-        --primary-foreground: 0 0% 100%;
+        --primary: 158 28% 30%;
+        --primary-foreground: 42 35% 97%;
 
-        --secondary: 220 16% 93%;
-        --secondary-foreground: 224 32% 14%;
+        --secondary: 42 25% 92%;
+        --secondary-foreground: 160 15% 15%;
 
-        --muted: 220 16% 95%;
-        --muted-foreground: 218 15% 50%;
+        --muted: 42 20% 94%;
+        --muted-foreground: 160 8% 45%;
 
-        --accent: 168 72% 40%;
+        --accent: 20 55% 55%;
         --accent-foreground: 0 0% 100%;
 
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 100%;
 
-        --border: 220 16% 88%;
-        --input: 220 16% 88%;
-        --ring: 230 75% 57%;
-        --radius: 0.625rem;
+        --border: 42 18% 87%;
+        --input: 42 18% 87%;
+        --ring: 158 28% 30%;
+        --radius: 0.75rem;
 
-        /* Chart colors (HSL) */
-        --chart-sales: 230 75% 57%;
-        --chart-expenses: 0 84% 60%;
-        --chart-net: 160 65% 45%;
-        --chart-projection: 218 15% 65%;
+        /* Chart colors (HSL) — vendite salvia, uscite terracotta */
+        --chart-sales: 158 28% 38%;
+        --chart-expenses: 20 55% 55%;
+        --chart-net: 158 40% 30%;
+        --chart-projection: 42 10% 60%;
 
         /* Shadow system */
         --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
@@ -48,11 +53,11 @@
         --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
         --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
 
-        /* Gradient tokens */
-        --gradient-primary: linear-gradient(135deg, hsl(230 75% 57%), hsl(250 70% 55%));
-        --gradient-accent: linear-gradient(135deg, hsl(168 72% 40%), hsl(180 60% 45%));
-        --gradient-page: linear-gradient(180deg, hsl(220 25% 96%) 0%, hsl(220 15% 99%) 100%);
-        --gradient-sidebar: linear-gradient(180deg, hsl(228 40% 16%) 0%, hsl(232 35% 22%) 100%);
+        /* Gradient tokens — famiglia salvia/crema */
+        --gradient-primary: linear-gradient(135deg, hsl(158 28% 30%), hsl(168 30% 26%));
+        --gradient-accent: linear-gradient(135deg, hsl(20 55% 55%), hsl(28 60% 52%));
+        --gradient-page: linear-gradient(180deg, hsl(42 32% 96%) 0%, hsl(42 40% 99%) 100%);
+        --gradient-sidebar: linear-gradient(180deg, hsl(160 28% 13%) 0%, hsl(158 22% 19%) 100%);
     }
 }
 
