@@ -398,6 +398,26 @@ async def create_indexes():
     - Phase-1 additions are clearly marked and append-only.
     """
 
+    # ── Fase 5 (retreat) — indici del calendario pubblico ────────────────────
+    # Decisi ORA perché costosi da cambiare dopo (master plan §note scalabilità):
+    # la query del calendario filtra status+start_at (+region) e ordina per
+    # start_at — compound index dedicati, append-only.
+    await event_occurrences_collection.create_index(
+        [("status", 1), ("start_at", 1)], name="f5_calendar_status_start")
+    await event_occurrences_collection.create_index(
+        [("region", 1), ("status", 1), ("start_at", 1)],
+        name="f5_calendar_region", sparse=True)
+    # payment_schedules: lookup per ordine (hot path webhook/dashboard) e
+    # per occurrence (dashboard incassi), eventi per ordine (tracciabilità)
+    await db.payment_schedules.create_index(
+        [("order_id", 1), ("organization_id", 1)], name="f5_sched_order")
+    await db.payment_schedules.create_index(
+        [("organization_id", 1), ("occurrence_id", 1)], name="f5_sched_occ")
+    await db.payment_schedules.create_index(
+        [("rows.pay_token", 1)], name="f5_sched_paytoken", sparse=True)
+    await db.payment_events.create_index(
+        [("order_id", 1), ("at", 1)], name="f5_events_order")
+
     # ── EXISTING INDEXES (unchanged) ─────────────────────────────────────────
 
     # Users

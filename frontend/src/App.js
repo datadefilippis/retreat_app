@@ -44,6 +44,8 @@ import ProductsPage from "./features/products/ProductsPage";
 import CheckInPage from "./features/events/CheckInPage";
 import EventDashboardPage from "./features/events/EventDashboardPage";
 import EventWizard from "./features/events/EventWizard";
+import RetreatsCalendarPage from "./features/storefront/RetreatsCalendarPage";
+import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
 import ServiceWizard from "./features/services/ServiceWizard";
 import ReservationWizard from "./features/reservations/ReservationWizard";
 import PhysicalWizard from "./features/physicals/PhysicalWizard";
@@ -307,6 +309,11 @@ function AppRoutes() {
       {/* E3: public event landing page — deep-link per-occurrence.
           Has StorefrontHeader → its inline switcher covers /e, no
           floating dup. */}
+      <Route path="/ritiri" element={<RetreatsCalendarPage />} />
+      <Route path="/ritiri/:categoria" element={<RetreatsCalendarPage />} />
+      <Route path="/ritiri/:categoria/:regione" element={<RetreatsCalendarPage />} />
+      <Route path="/o/:org_slug" element={<OperatorProfilePage />} />
+
       <Route path="/e/:org_slug/:slug" element={
         <PublicStorefrontShell showFloatingSwitcher={false}><EventLandingPage /></PublicStorefrontShell>
       } />

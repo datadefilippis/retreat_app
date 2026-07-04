@@ -3294,3 +3294,183 @@ async def pay_by_token(token: str):
             detail="Pagamento momentaneamente non disponibile. Riprova tra poco.",
         )
     return RedirectResponse(session["url"], status_code=303)
+
+
+# ── Fase 5 (retreat) — calendario pubblico cross-organizzatore ───────────────
+
+@router.get("/retreats")
+async def list_public_retreats(
+    category: Optional[str] = Query(default=None, max_length=30),
+    region: Optional[str] = Query(default=None, max_length=30),
+    month: Optional[str] = Query(default=None, pattern=r"^\d{4}-\d{2}$"),
+    price_max: Optional[int] = Query(default=None, ge=0, le=100000),
+    limit: int = Query(default=60, ge=1, le=120),
+    offset: int = Query(default=0, ge=0),
+):
+    """IL calendario dei ritiri: occurrence pubblicate e future di TUTTE
+    le organizzazioni, filtrabili per categoria (tassonomia), regione,
+    mese (YYYY-MM) e prezzo massimo (EUR). Card pronte per la griglia
+    /ritiri: titolo, date, luogo, prezzo-da, posti rimasti, link landing.
+
+    Vende solo ciò che è vendibile: prodotto attivo+pubblicato, org con
+    storefront pubblico raggiungibile (store slug o public_slug legacy).
+    """
+    from datetime import datetime, timezone
+    from database import (
+        event_occurrences_collection,
+        organizations_collection,
+        products_collection,
+        stores_collection,
+    )
+    from models.retreat_taxonomy import RETREAT_CATEGORIES
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    occ_query: Dict[str, Any] = {
+        "status": "published",
+        "start_at": {"$gte": now_iso[:16]},   # future (ISO confronta bene)
+    }
+    if region:
+        occ_query["region"] = region
+    if month:
+        # start_at ISO: il prefisso YYYY-MM seleziona il mese
+        occ_query["start_at"] = {"$gte": max(now_iso[:16], month + "-01"),
+                                 "$lt": _next_month(month)}
+
+    cursor = event_occurrences_collection.find(
+        occ_query, {"_id": 0},
+    ).sort("start_at", 1).limit(500)
+    occs = await cursor.to_list(500)
+    if not occs:
+        return {"items": [], "total": 0, "categories": RETREAT_CATEGORIES}
+
+    # prodotti (categoria + prezzo + nome) — solo vendibili
+    product_ids = list({o["product_id"] for o in occs})
+    prods = await products_collection.find(
+        {"id": {"$in": product_ids}, "is_active": True, "is_published": True,
+         "item_type": "event_ticket",
+         **({"category": category} if category else {})},
+        {"_id": 0, "id": 1, "name": 1, "category": 1, "unit_price": 1,
+         "image_url": 1, "organization_id": 1, "metadata.payment_plan": 1},
+    ).to_list(1000)
+    prod_by_id = {p["id"]: p for p in prods}
+
+    # org slug pubblici (store multi-store o legacy public_slug)
+    org_ids = list({p["organization_id"] for p in prods})
+    org_slug: Dict[str, str] = {}
+    org_name: Dict[str, str] = {}
+    stores = await stores_collection.find(
+        {"organization_id": {"$in": org_ids}, "is_published": True,
+         "is_active": True, "visibility": "public"},
+        {"_id": 0, "organization_id": 1, "slug": 1},
+    ).to_list(1000)
+    for s in stores:
+        org_slug.setdefault(s["organization_id"], s["slug"])
+    orgs = await organizations_collection.find(
+        {"id": {"$in": org_ids}, "is_active": {"$ne": False}},
+        {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
+         "store_settings.is_storefront_published": 1,
+         "store_settings.display_name": 1},
+    ).to_list(1000)
+    for o in orgs:
+        org_name[o["id"]] = (o.get("store_settings") or {}).get("display_name") or o.get("name") or ""
+        if o["id"] not in org_slug and o.get("public_slug") and \
+                (o.get("store_settings") or {}).get("is_storefront_published"):
+            org_slug[o["id"]] = o["public_slug"]
+
+    items = []
+    for occ in occs:
+        prod = prod_by_id.get(occ["product_id"])
+        if not prod:
+            continue
+        slug_org = org_slug.get(prod["organization_id"])
+        if not slug_org or not occ.get("slug"):
+            continue   # senza landing raggiungibile non si lista
+        price_from = occ.get("price_override") or prod.get("unit_price")
+        if price_max is not None and price_from is not None and price_from > price_max:
+            continue
+        cap = occ.get("capacity")
+        reserved = occ.get("reserved_seats") or 0
+        items.append({
+            "title": prod.get("name"),
+            "category": prod.get("category"),
+            "org_name": org_name.get(prod["organization_id"], ""),
+            "org_slug": slug_org,
+            "slug": occ["slug"],
+            "url": f"/e/{slug_org}/{occ['slug']}",
+            "start_at": occ.get("start_at"),
+            "end_at": occ.get("end_at"),
+            "city": occ.get("city"),
+            "region": occ.get("region"),
+            "venue_name": occ.get("venue_name"),
+            "cover_image_url": occ.get("cover_image_url") or prod.get("image_url"),
+            "price_from": price_from,
+            "remaining": (cap - reserved) if cap else None,
+            "deposit_mode": bool(((prod.get("metadata") or {}).get("payment_plan")
+                                  or {}).get("mode", "full") != "full"),
+        })
+
+    total = len(items)
+    return {
+        "items": items[offset:offset + limit],
+        "total": total,
+        "categories": RETREAT_CATEGORIES,
+    }
+
+
+def _next_month(month: str) -> str:
+    y, m = int(month[:4]), int(month[5:7])
+    return f"{y + (1 if m == 12 else 0)}-{(1 if m == 12 else m + 1):02d}-01"
+
+
+@router.get("/operator/{org_slug}")
+async def public_operator_profile(org_slug: str):
+    """Profilo pubblico organizzatore: bio, brand, prossimi ritiri.
+    L'org_slug è quello dello storefront (store slug o public_slug)."""
+    from datetime import datetime, timezone
+    from database import event_occurrences_collection, products_collection
+
+    org = await _resolve_org(org_slug)   # 404 se non pubblico
+    org_id = org["id"]
+    store = org.get("_store") or {}
+    ss = org.get("store_settings") or {}
+
+    now_iso = datetime.now(timezone.utc).isoformat()[:16]
+    occs = await event_occurrences_collection.find(
+        {"organization_id": org_id, "status": "published",
+         "start_at": {"$gte": now_iso}},
+        {"_id": 0, "id": 1, "slug": 1, "product_id": 1, "start_at": 1,
+         "end_at": 1, "city": 1, "region": 1, "cover_image_url": 1,
+         "price_override": 1},
+    ).sort("start_at", 1).to_list(60)
+    prod_ids = list({o["product_id"] for o in occs})
+    prods = await products_collection.find(
+        {"id": {"$in": prod_ids}, "is_active": True, "is_published": True},
+        {"_id": 0, "id": 1, "name": 1, "category": 1, "unit_price": 1, "image_url": 1},
+    ).to_list(200)
+    prod_by_id = {p["id"]: p for p in prods}
+
+    upcoming = []
+    for o in occs:
+        p = prod_by_id.get(o["product_id"])
+        if not p or not o.get("slug"):
+            continue
+        upcoming.append({
+            "title": p["name"], "category": p.get("category"),
+            "url": f"/e/{org_slug}/{o['slug']}",
+            "start_at": o["start_at"], "end_at": o.get("end_at"),
+            "city": o.get("city"), "region": o.get("region"),
+            "cover_image_url": o.get("cover_image_url") or p.get("image_url"),
+            "price_from": o.get("price_override") or p.get("unit_price"),
+        })
+
+    return {
+        "org_slug": org_slug,
+        "name": store.get("name") or store.get("display_name") or ss.get("display_name") or org.get("name") or "",
+        "bio": store.get("description") or ss.get("store_description"),
+        "logo_url": store.get("logo_url") or ss.get("logo_url"),
+        "brand_color": store.get("brand_color") or ss.get("brand_color"),
+        "city": ss.get("city"),
+        "upcoming": upcoming,
+        "upcoming_count": len(upcoming),
+    }

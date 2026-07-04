@@ -1725,7 +1725,8 @@
         "coordsHint": "Incolla le coordinate da Google Maps (tasto destro → \"Che cos'è questo posto?\"). Non indispensabile, ma sblocca la mappa sulla landing.",
         "coverLabel": "Immagine di copertina ritiro",
         "coverFileLabel": "Carica cover (jpg/png/webp, max 5MB)",
-        "coverUrlPlaceholder": "oppure incolla URL… (vuota = usa immagine prodotto)"
+        "coverUrlPlaceholder": "oppure incolla URL… (vuota = usa immagine prodotto)",
+        "regionLabel": "Regione (per il calendario)"
       },
       "tickets": {
         "requireDetailsTitle": "Richiedi nome dei partecipanti",

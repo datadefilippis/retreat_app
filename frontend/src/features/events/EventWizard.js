@@ -265,6 +265,7 @@ export default function EventWizard() {
       latitude: toInput(o.latitude),
       longitude: toInput(o.longitude),
       cover_image_url: o.cover_image_url || '',
+      region: o.region || '',
     };
   });
 
@@ -577,6 +578,7 @@ export default function EventWizard() {
           venue_name: where.venue_name?.trim() || null,
           address: where.address?.trim() || null,
           city: where.city?.trim() || null,
+          region: where.region || null,
           postal_code: where.postal_code?.trim() || null,
           country: where.country?.trim() || null,
           latitude: where.latitude !== '' ? Number(where.latitude) : null,
@@ -938,6 +940,19 @@ export default function EventWizard() {
                     maxLength={100} placeholder={t('wizards.event.where.cityPlaceholder')}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
                   />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.where.regionLabel')}</label>
+                  <select
+                    value={where.region || ''}
+                    onChange={e => setWhere({ ...where, region: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                  >
+                    <option value="">—</option>
+                    {['Abruzzo','Basilicata','Calabria','Campania','Emilia-Romagna','Friuli-Venezia Giulia','Lazio','Liguria','Lombardia','Marche','Molise','Piemonte','Puglia','Sardegna','Sicilia','Toscana','Trentino-Alto Adige','Umbria',"Valle d'Aosta",'Veneto'].map(r => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.where.postalCodeLabel')}</label>

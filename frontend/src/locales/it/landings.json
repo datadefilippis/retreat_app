@@ -420,5 +420,25 @@
         "too_long": "Troppo lungo (max {{duration}})"
       }
     }
+  },
+  "calendar": {
+    "title": "Ritiri in Italia",
+    "subtitle": "Trova il tuo prossimo ritiro: yoga, meditazione, detox, suono e altro — e prenota subito il tuo posto con la caparra.",
+    "allCategories": "Tutte le categorie",
+    "allRegions": "Tutte le regioni",
+    "clearFilters": "Azzera filtri",
+    "loading": "Cerco i ritiri…",
+    "emptyTitle": "Nessun ritiro trovato",
+    "emptyBody": "Prova ad allargare i filtri, o torna presto: il calendario cresce ogni settimana.",
+    "priceFrom": "da {{price}}",
+    "depositBadge": "Prenoti con caparra",
+    "fewLeft": "Solo {{count}} posti rimasti"
+  },
+  "operator": {
+    "notFound": "Organizzatore non trovato",
+    "backToCalendar": "Vedi tutti i ritiri",
+    "upcoming": "Prossimi ritiri",
+    "upcoming_plural": "Prossimi ritiri ({{count}})",
+    "noUpcoming": "Nessun ritiro in programma al momento. Torna presto."
   }
 }
