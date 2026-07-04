@@ -1105,6 +1105,9 @@ export default function OrdersPage() {
   const [datePreset, setDatePreset] = useState('');          // '7d' | '30d' | 'thismonth' | 'custom'
   const [filterCustomerId, setFilterCustomerId] = useState(null);
   const [triageContext, setTriageContext] = useState(null); // 'drafts' | 'review' | 'fulfillment' | null
+  // D2 (4/7/2026) — i filtri secondari vivono in un pannello collassabile:
+  // sopra la tabella resta UNA riga (chips vita + ricerca + Filtri).
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   // Release 1 (Physical) — tracking capture dialog, opened on mark_shipped
   // instead of dispatching the fulfillment PATCH directly.
   const [trackingDialog, setTrackingDialog] = useState(null); // { orderId, orderRef } | null
@@ -1175,7 +1178,8 @@ export default function OrdersPage() {
   const filteredOrders = useMemo(() => {
     let list = orders;
     if (filterCustomerId) list = list.filter(o => o.customer_id === filterCustomerId);
-    if (filterStatus !== 'all') list = list.filter(o => o.status === filterStatus);
+    if (filterStatus === 'active') list = list.filter(o => o.status === 'draft' || o.status === 'confirmed');
+    else if (filterStatus !== 'all') list = list.filter(o => o.status === filterStatus);
     if (filterSource === 'storefront') list = list.filter(o => o.source?.startsWith('storefront'));
     else if (filterSource === 'manual') list = list.filter(o => !o.source?.startsWith('storefront'));
     if (filterPayment === 'needs_attention') list = list.filter(o => o.payment_intent === 'collected' && o.status === 'draft');
@@ -1485,43 +1489,6 @@ export default function OrdersPage() {
               );
             })()}
 
-            {/* Queue summary strip */}
-            {(() => {
-              const drafts = orders.filter(o => o.status === 'draft').length;
-              const confirmed = orders.filter(o => o.status === 'confirmed').length;
-              const attention = orders.filter(o => o.review_state).length;
-              const critical = orders.filter(o => o.review_state === 'paid_needs_confirm').length;
-              if (drafts === 0 && confirmed === 0) return null;
-              return (
-                <div className="flex items-center gap-3 text-xs">
-                  <button onClick={() => { setFilterStatus('draft'); setFilterReview('all'); setFilterPayment('all'); setFilterSource('all'); setTriageContext(null); }}
-                    className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 hover:bg-muted/50 transition-colors">
-                    <span className="text-muted-foreground">{t('queue.drafts')}</span>
-                    <span className="font-bold">{drafts}</span>
-                  </button>
-                  <button onClick={() => { setFilterStatus('confirmed'); setFilterReview('all'); setFilterPayment('all'); setFilterSource('all'); setTriageContext(null); }}
-                    className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 hover:bg-muted/50 transition-colors">
-                    <span className="text-muted-foreground">{t('queue.confirmed')}</span>
-                    <span className="font-bold">{confirmed}</span>
-                  </button>
-                  {attention > 0 && (
-                    <button onClick={() => { setFilterStatus('all'); setFilterReview('any'); setFilterPayment('all'); setFilterSource('all'); setTriageContext(null); }}
-                      className="flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 hover:bg-amber-100 transition-colors text-amber-700">
-                      <span>{t('queue.needs_action')}</span>
-                      <span className="font-bold">{attention}</span>
-                    </button>
-                  )}
-                  {critical > 0 && (
-                    <button onClick={() => { setFilterStatus('all'); setFilterReview('all'); setFilterPayment('needs_attention'); setFilterSource('all'); setTriageContext(null); }}
-                      className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 hover:bg-red-100 transition-colors text-red-700 animate-pulse">
-                      <span>{t('queue.urgent')}</span>
-                      <span className="font-bold">{critical}</span>
-                    </button>
-                  )}
-                </div>
-              );
-            })()}
-
             {/* Triage context banner — shown when arriving from dashboard signal */}
             {triageContext && (
               <div className="flex items-center justify-between rounded-lg border px-3 py-2 text-xs bg-primary/5 border-primary/20">
@@ -1540,220 +1507,219 @@ export default function OrdersPage() {
               </div>
             )}
 
-            {/* Filters */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Onda 14 — Search box: filters by order_number, customer name/email, id.
-                  Purely client-side; does not touch the API. */}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder={t('list.search_placeholder', { defaultValue: 'Cerca ordine o cliente…' })}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8 pl-2.5 pr-7 rounded-lg border bg-card text-xs w-56 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-sm leading-none px-1"
-                    title={t('filter.clear', { defaultValue: 'Pulisci' })}
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
-                {['all', 'draft', 'confirmed', 'completed', 'cancelled'].map(v => (
-                  <button
-                    key={v}
-                    onClick={() => setFilterStatus(v)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                      filterStatus === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {v === 'all' ? t('list.filter_all') : t(`status.${v}`)}
-                  </button>
-                ))}
-              </div>
-              {/* Onda 14 — Item type filter: only shows types actually present in the orders.
-                  No backend call; purely reflects what's already in memory. */}
-              {(() => {
-                const typesPresent = new Set();
-                orders.forEach(o => (o.items || []).forEach(it => typesPresent.add(it.item_type || 'physical')));
-                if (typesPresent.size <= 1) return null;
-                const TYPE_LABELS = {
-                  event_ticket: t('filter.type_events', { defaultValue: 'Eventi' }),
-                  service: t('filter.type_services', { defaultValue: 'Consulenze' }),
-                  rental: t('filter.type_rentals', { defaultValue: 'Noleggi' }),
-                  booking: t('filter.type_bookings', { defaultValue: 'Prenotazioni' }),
-                  physical: t('filter.type_physical', { defaultValue: 'Prodotti' }),
-                };
-                const order = ['all', 'event_ticket', 'service', 'rental', 'booking', 'physical'];
-                const options = order.filter(v => v === 'all' || typesPresent.has(v));
-                return (
-                  <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
-                    {options.map(v => (
-                      <button
-                        key={v}
-                        onClick={() => setFilterItemType(v)}
-                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                          filterItemType === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        {v === 'all' ? t('list.filter_all') : (TYPE_LABELS[v] || v)}
-                      </button>
-                    ))}
-                  </div>
-                );
-              })()}
-              {/* Onda 14 — Date range filter with presets. Purely client-side,
-                  filters the already-fetched orders list on order_date. */}
-              <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
-                {(() => {
-                  const today = new Date();
-                  const toISO = (d) => {
-                    const y = d.getFullYear();
-                    const m = String(d.getMonth() + 1).padStart(2, '0');
-                    const dd = String(d.getDate()).padStart(2, '0');
-                    return `${y}-${m}-${dd}`;
-                  };
-                  const applyPreset = (preset) => {
-                    setDatePreset(preset);
-                    if (preset === '') {
-                      setFilterDateFrom(''); setFilterDateTo(''); return;
-                    }
-                    if (preset === 'today') {
-                      const iso = toISO(today);
-                      setFilterDateFrom(iso); setFilterDateTo(iso); return;
-                    }
-                    if (preset === '7d') {
-                      const from = new Date(today); from.setDate(from.getDate() - 6);
-                      setFilterDateFrom(toISO(from)); setFilterDateTo(toISO(today)); return;
-                    }
-                    if (preset === '30d') {
-                      const from = new Date(today); from.setDate(from.getDate() - 29);
-                      setFilterDateFrom(toISO(from)); setFilterDateTo(toISO(today)); return;
-                    }
-                    if (preset === 'thismonth') {
-                      const from = new Date(today.getFullYear(), today.getMonth(), 1);
-                      setFilterDateFrom(toISO(from)); setFilterDateTo(toISO(today)); return;
-                    }
-                  };
-                  const PRESETS = [
-                    { key: '', label: t('filter.date_all', { defaultValue: 'Sempre' }) },
-                    { key: 'today', label: t('filter.date_today', { defaultValue: 'Oggi' }) },
-                    { key: '7d', label: t('filter.date_7d', { defaultValue: '7gg' }) },
-                    { key: '30d', label: t('filter.date_30d', { defaultValue: '30gg' }) },
-                    { key: 'thismonth', label: t('filter.date_thismonth', { defaultValue: 'Mese' }) },
-                  ];
-                  return PRESETS.map(p => (
+            {/* D2 (4/7/2026) — UNA riga di controllo: chips vita + ricerca +
+                Filtri. Tutti i filtri secondari (stato fine, tipo, periodo,
+                canale, pagamento) vivono nel pannello collassabile sotto:
+                niente piu' 7 file di controlli ridondanti sopra la tabella. */}
+            {(() => {
+              const attention = orders.filter(o => o.review_state).length;
+              const advancedActive = [
+                filterStatus !== 'all' && filterStatus !== 'active',
+                filterItemType !== 'all',
+                filterSource !== 'all',
+                filterPayment !== 'all',
+                Boolean(filterDateFrom || filterDateTo),
+              ].filter(Boolean).length;
+              const anyFilter = advancedActive > 0 || filterStatus !== 'all' || filterReview !== 'all' || searchQuery;
+              const chipCls = (active, tone) => `flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                active
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : tone === 'warn'
+                    ? 'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100'
+                    : 'bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`;
+              const resetLife = () => { setFilterReview('all'); setTriageContext(null); };
+              return (
+                <div className="flex flex-wrap items-center gap-2">
+                  {attention > 0 && (
                     <button
-                      key={p.key || 'all'}
-                      onClick={() => applyPreset(p.key)}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                        datePreset === p.key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                      }`}
+                      onClick={() => { resetLife(); setFilterReview('any'); setFilterStatus('all'); }}
+                      className={chipCls(filterReview === 'any', 'warn')}
                     >
-                      {p.label}
+                      {t('queue.needs_action')}
+                      <span className="font-bold">{attention}</span>
                     </button>
-                  ));
-                })()}
-              </div>
-              {/* Custom date range inputs — show when user wants explicit control */}
-              <div className="flex items-center gap-1">
-                <input
-                  type="date"
-                  value={filterDateFrom}
-                  onChange={(e) => { setFilterDateFrom(e.target.value); setDatePreset('custom'); }}
-                  className="h-8 px-2 rounded-lg border bg-card text-xs"
-                  title={t('filter.date_from', { defaultValue: 'Da' })}
-                />
-                <span className="text-xs text-muted-foreground">→</span>
-                <input
-                  type="date"
-                  value={filterDateTo}
-                  onChange={(e) => { setFilterDateTo(e.target.value); setDatePreset('custom'); }}
-                  className="h-8 px-2 rounded-lg border bg-card text-xs"
-                  title={t('filter.date_to', { defaultValue: 'A' })}
-                />
-                {(filterDateFrom || filterDateTo) && (
+                  )}
                   <button
-                    onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); setDatePreset(''); }}
-                    className="text-xs text-muted-foreground hover:text-foreground px-1"
-                    title={t('filter.clear', { defaultValue: 'Pulisci' })}
-                  >×</button>
-                )}
-              </div>
-              <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
-                {['all', 'manual', 'storefront'].map(v => (
+                    onClick={() => { resetLife(); setFilterStatus('active'); }}
+                    className={chipCls(filterStatus === 'active' && filterReview !== 'any')}
+                  >
+                    {t('filter.life_active', { defaultValue: 'In corso' })}
+                  </button>
                   <button
-                    key={v}
-                    onClick={() => setFilterSource(v)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                      filterSource === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                    onClick={() => { resetLife(); setFilterStatus('all'); }}
+                    className={chipCls(filterStatus === 'all' && filterReview !== 'any' && advancedActive === 0)}
+                  >
+                    {t('list.filter_all')}
+                  </button>
+
+                  <div className="relative flex-1 min-w-[180px] max-w-xs">
+                    <input
+                      type="text"
+                      placeholder={t('list.search_placeholder', { defaultValue: 'Cerca ordine o cliente…' })}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-8 w-full pl-2.5 pr-7 rounded-full border bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-sm leading-none"
+                      >×</button>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setAdvancedOpen(v => !v)}
+                    className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      advancedOpen || advancedActive > 0
+                        ? 'border-primary/40 bg-primary/5 text-primary'
+                        : 'bg-card text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    {v === 'all' ? t('list.filter_all') : t(`source.${v}`)}
+                    {t('filter.advanced', { defaultValue: 'Filtri' })}
+                    {advancedActive > 0 && (
+                      <span className="rounded-full bg-primary text-primary-foreground px-1.5 text-[10px] font-bold">{advancedActive}</span>
+                    )}
                   </button>
-                ))}
-              </div>
-              {/* Payment filter — only shown if any orders have payment_intent */}
-              {orders.some(o => o.payment_intent && o.payment_intent !== 'none') && (
-                <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
-                  {[
-                    { key: 'all', labelKey: 'list.filter_all' },
-                    { key: 'needs_attention', labelKey: 'filter.payment_collected' },
-                    { key: 'awaiting', labelKey: 'filter.awaiting_payment' },
-                  ].map(v => (
-                    <button
-                      key={v.key}
-                      onClick={() => setFilterPayment(v.key)}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                        filterPayment === v.key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {t(v.labelKey)}
+
+                  {anyFilter && (
+                    <span className="text-xs text-muted-foreground">{filteredOrders.length} / {orders.length}</span>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Pannello filtri avanzati — collassabile, righe etichettate */}
+            {advancedOpen && (
+              <div className="rounded-xl border bg-card p-3 space-y-2.5 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="w-20 text-muted-foreground">{t('filter.label_status', { defaultValue: 'Stato' })}</span>
+                  {['all', 'draft', 'confirmed', 'completed', 'cancelled'].map(v => (
+                    <button key={v} onClick={() => setFilterStatus(v)}
+                      className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                        filterStatus === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      }`}>
+                      {v === 'all' ? t('list.filter_all') : t(`status.${v}`)}
                     </button>
                   ))}
                 </div>
-              )}
-              {/* Review filter — only shown if any orders have review_state */}
-              {orders.some(o => o.review_state) && (() => {
-                const reviewCounts = {
-                  any: orders.filter(o => o.review_state).length,
-                  needs_approval: orders.filter(o => o.review_state === 'needs_approval').length,
-                  critical: orders.filter(o => o.review_state === 'paid_needs_confirm').length,
-                };
-                return (
-                  <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
+
+                {(() => {
+                  const typesPresent = new Set();
+                  orders.forEach(o => (o.items || []).forEach(it => typesPresent.add(it.item_type || 'physical')));
+                  if (typesPresent.size <= 1) return null;
+                  const TYPE_LABELS = {
+                    event_ticket: t('filter.type_events', { defaultValue: 'Ritiri' }),
+                    service: t('filter.type_services', { defaultValue: 'Servizi' }),
+                    rental: t('filter.type_rentals', { defaultValue: 'Noleggi' }),
+                    booking: t('filter.type_bookings', { defaultValue: 'Prenotazioni' }),
+                    physical: t('filter.type_physical', { defaultValue: 'Prodotti' }),
+                  };
+                  const order = ['all', 'event_ticket', 'service', 'rental', 'booking', 'physical'];
+                  return (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="w-20 text-muted-foreground">{t('filter.label_type', { defaultValue: 'Tipo' })}</span>
+                      {order.filter(v => v === 'all' || typesPresent.has(v)).map(v => (
+                        <button key={v} onClick={() => setFilterItemType(v)}
+                          className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                            filterItemType === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}>
+                          {v === 'all' ? t('list.filter_all') : TYPE_LABELS[v]}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="w-20 text-muted-foreground">{t('filter.label_period', { defaultValue: 'Periodo' })}</span>
+                  {(() => {
+                    const today = new Date();
+                    const toISO = (d) => {
+                      const y = d.getFullYear();
+                      const m = String(d.getMonth() + 1).padStart(2, '0');
+                      const dd = String(d.getDate()).padStart(2, '0');
+                      return `${y}-${m}-${dd}`;
+                    };
+                    const applyPreset = (preset) => {
+                      setDatePreset(preset);
+                      if (preset === '') { setFilterDateFrom(''); setFilterDateTo(''); return; }
+                      if (preset === 'today') { const iso = toISO(today); setFilterDateFrom(iso); setFilterDateTo(iso); return; }
+                      if (preset === '7d') { const from = new Date(today); from.setDate(from.getDate() - 6); setFilterDateFrom(toISO(from)); setFilterDateTo(toISO(today)); return; }
+                      if (preset === '30d') { const from = new Date(today); from.setDate(from.getDate() - 29); setFilterDateFrom(toISO(from)); setFilterDateTo(toISO(today)); return; }
+                      if (preset === 'thismonth') { const from = new Date(today.getFullYear(), today.getMonth(), 1); setFilterDateFrom(toISO(from)); setFilterDateTo(toISO(today)); return; }
+                    };
+                    const PRESETS = [
+                      { key: '', label: t('filter.date_all', { defaultValue: 'Sempre' }) },
+                      { key: 'today', label: t('filter.date_today', { defaultValue: 'Oggi' }) },
+                      { key: '7d', label: t('filter.date_7d', { defaultValue: '7gg' }) },
+                      { key: '30d', label: t('filter.date_30d', { defaultValue: '30gg' }) },
+                      { key: 'thismonth', label: t('filter.date_thismonth', { defaultValue: 'Mese' }) },
+                    ];
+                    return PRESETS.map(p => (
+                      <button key={p.key || 'all'} onClick={() => applyPreset(p.key)}
+                        className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                          datePreset === p.key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        }`}>
+                        {p.label}
+                      </button>
+                    ));
+                  })()}
+                  <input type="date" value={filterDateFrom}
+                    onChange={(e) => { setFilterDateFrom(e.target.value); setDatePreset('custom'); }}
+                    className="h-7 px-2 rounded-md border bg-card" />
+                  <span className="text-muted-foreground">→</span>
+                  <input type="date" value={filterDateTo}
+                    onChange={(e) => { setFilterDateTo(e.target.value); setDatePreset('custom'); }}
+                    className="h-7 px-2 rounded-md border bg-card" />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="w-20 text-muted-foreground">{t('filter.label_channel', { defaultValue: 'Canale' })}</span>
+                  {['all', 'manual', 'storefront'].map(v => (
+                    <button key={v} onClick={() => setFilterSource(v)}
+                      className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                        filterSource === v ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      }`}>
+                      {v === 'all' ? t('list.filter_all') : t(`source.${v}`)}
+                    </button>
+                  ))}
+                </div>
+
+                {orders.some(o => o.payment_intent && o.payment_intent !== 'none') && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="w-20 text-muted-foreground">{t('filter.label_payment', { defaultValue: 'Pagamento' })}</span>
                     {[
-                      { key: 'all', labelKey: 'list.filter_all', count: null },
-                      { key: 'any', labelKey: 'filter.needs_action', count: reviewCounts.any },
-                      { key: 'needs_approval', labelKey: 'filter.needs_approval', count: reviewCounts.needs_approval },
-                    ].filter(v => v.key === 'all' || v.count > 0).map(v => (
-                      <button
-                        key={v.key}
-                        onClick={() => setFilterReview(v.key)}
-                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                          filterReview === v.key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
+                      { key: 'all', labelKey: 'list.filter_all' },
+                      { key: 'needs_attention', labelKey: 'filter.payment_collected' },
+                      { key: 'awaiting', labelKey: 'filter.awaiting_payment' },
+                    ].map(v => (
+                      <button key={v.key} onClick={() => setFilterPayment(v.key)}
+                        className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                          filterPayment === v.key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        }`}>
                         {t(v.labelKey)}
-                        {v.count > 0 && <span className={`ml-1 ${filterReview === v.key ? 'opacity-80' : 'opacity-50'}`}>({v.count})</span>}
                       </button>
                     ))}
-                    {reviewCounts.critical > 0 && filterReview === 'all' && (
-                      <span className="ml-1 flex items-center gap-1 text-[10px] text-red-600 font-medium animate-pulse">
-                        {t('filter.paid_needs_confirm_count', { count: reviewCounts.critical })}
-                      </span>
-                    )}
                   </div>
-                );
-              })()}
-              {(filterStatus !== 'all' || filterSource !== 'all' || filterPayment !== 'all' || filterReview !== 'all' || filterItemType !== 'all' || searchQuery || filterDateFrom || filterDateTo) && (
-                <span className="text-xs text-muted-foreground">{filteredOrders.length} / {orders.length}</span>
-              )}
-            </div>
+                )}
+
+                <div className="flex justify-end border-t pt-2">
+                  <button
+                    onClick={() => {
+                      setFilterStatus('all'); setFilterSource('all'); setFilterPayment('all');
+                      setFilterReview('all'); setFilterItemType('all');
+                      setFilterDateFrom(''); setFilterDateTo(''); setDatePreset('');
+                      setSearchQuery(''); setAdvancedOpen(false);
+                    }}
+                    className="text-muted-foreground hover:text-foreground underline"
+                  >
+                    {t('filter.reset_all', { defaultValue: 'Azzera filtri' })}
+                  </button>
+                </div>
+              </div>
+            )}
 
           <div className="rounded-xl border bg-card overflow-hidden">
             <div className="overflow-x-auto">
@@ -1776,10 +1742,14 @@ export default function OrdersPage() {
                     <tr key={o.id} className="border-b last:border-0 hover:bg-muted/20 cursor-pointer" onClick={() => setSelectedOrder(o)}>
                       <td className="px-4 py-3 font-mono text-xs">
                         {o.order_number || '-'}
-                        <span className="ml-1.5">{sourceBadge(getSource(o), t)}</span>
-                        {[...new Set((o.items || []).map(it => it.item_type).filter(t => t && t !== 'physical' && ITEM_TYPE_LABELS[t]))].map(t => (
-                          <Badge key={t} className={`ml-1 text-[10px] px-1.5 py-0 ${getItemTypeBadgeClass(t)}`}>{ITEM_TYPE_LABELS[t]}</Badge>
-                        ))}
+                        {/* D2 — un solo badge per riga (lo stato): canale e
+                            tipo diventano testo discreto, il colore torna a
+                            significare qualcosa. */}
+                        <div className="mt-0.5 text-[10px] font-sans text-muted-foreground">
+                          {t(`source.${(SOURCE[getSource(o)] || SOURCE.manual).key}`)}
+                          {[...new Set((o.items || []).map(it => it.item_type).filter(k => k && k !== 'physical' && ITEM_TYPE_LABELS[k]))]
+                            .map(k => ` · ${ITEM_TYPE_LABELS[k]}`).join('')}
+                        </div>
                       </td>
                       <td className="px-4 py-3 font-medium">
                         <div className="flex items-center gap-1.5">
