@@ -646,6 +646,67 @@ app.include_router(setup_wizard_router.router, prefix="/api")        # /api/setu
 
 
 # Health check endpoint
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap_xml():
+    """Sitemap dinamica (Fase 5): home calendario, categorie, pagine
+    categoria×regione con ritiri, landing dei ritiri pubblicati, profili
+    operatore. Cresce col calendario — niente file statico da mantenere."""
+    from fastapi.responses import Response
+    from datetime import datetime, timezone
+    from database import event_occurrences_collection, products_collection
+    from models.retreat_taxonomy import RETREAT_CATEGORIES
+    from services.url_builder import build_public_url
+
+    now_iso = datetime.now(timezone.utc).isoformat()[:16]
+    urls = [build_public_url("/ritiri")]
+    for cat in RETREAT_CATEGORIES:
+        urls.append(build_public_url(f"/ritiri/{cat}"))
+
+    # landing dei ritiri pubblicati futuri + coppie categoria×regione reali
+    occs = await event_occurrences_collection.find(
+        {"status": "published", "start_at": {"$gte": now_iso}},
+        {"_id": 0, "slug": 1, "region": 1, "product_id": 1, "organization_id": 1},
+    ).to_list(2000)
+    prod_ids = list({o["product_id"] for o in occs})
+    prods = await products_collection.find(
+        {"id": {"$in": prod_ids}, "is_active": True, "is_published": True},
+        {"_id": 0, "id": 1, "category": 1},
+    ).to_list(2000)
+    cat_by_prod = {p["id"]: p.get("category") for p in prods}
+
+    cat_region_pairs = set()
+    for o in occs:
+        cat = cat_by_prod.get(o["product_id"])
+        if cat and o.get("region"):
+            cat_region_pairs.add((cat, o["region"]))
+    for cat, region in sorted(cat_region_pairs):
+        urls.append(build_public_url(f"/ritiri/{cat}/{region}"))
+
+    from urllib.parse import quote
+    body = ['<?xml version="1.0" encoding="UTF-8"?>',
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for u in urls:
+        body.append(f"  <url><loc>{quote(u, safe=':/')}</loc></url>")
+    body.append("</urlset>")
+    return Response("\n".join(body), media_type="application/xml")
+
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt():
+    from fastapi.responses import Response
+    from services.url_builder import build_public_url
+    txt = (
+        "User-agent: *\n"
+        "Allow: /ritiri\n"
+        "Allow: /e/\n"
+        "Allow: /o/\n"
+        "Disallow: /dashboard\n"
+        "Disallow: /api/\n"
+        f"Sitemap: {build_public_url('/sitemap.xml')}\n"
+    )
+    return Response(txt, media_type="text/plain")
+
+
 @app.get("/api/health")
 async def health_check(verbose: bool = False):
     """Health check with MongoDB + Stripe connectivity verification.

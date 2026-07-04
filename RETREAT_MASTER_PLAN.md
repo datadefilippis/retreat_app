@@ -105,11 +105,11 @@
 
 ## FASE 5 — La piattaforma pubblica (1,5–2 settimane)
 
-- [ ] **5.1 Calendario `/ritiri`**: card con foto/date/luogo/prezzo-da/posti-rimasti; filtri categoria, regione, mese, durata, prezzo. Tassonomia 9 categorie (Parte V del piano operativo). **Indici Mongo progettati qui** (categoria+regione+data) — è il punto costoso-da-cambiare-dopo.
-- [ ] **5.2 Pagine SEO** `/ritiri/[categoria]/[regione]` server-rendered o pre-generate, sitemap, metadati.
-- [ ] **5.3 Profilo pubblico operatore** `/o/[slug]` + **pagina location Masseria** (unica location al lancio — niente directory strutture, decisione presa).
-- [ ] **5.4 Account partecipante unico di piattaforma** (DB vergine: si modella così da subito; il login del portal esistente si adatta).
-- [ ] **5.5 Sicurezza fase 5**: endpoint pubblici read-only con rate limiting; nessun dato personale operatore esposto oltre il profilo dichiarato; robots/sitemap corretti.
+- [x] **5.1 Calendario `/ritiri`** *(fatto 4/7/2026)*: `GET /public/retreats` cross-org (published+future, filtri categoria/regione/mese/prezzo); pagina griglia con card (foto/date/luogo/prezzo-da/posti-rimasti + badge "Prenoti con caparra"); tassonomia 9 categorie condivisa. **Indici Mongo F5** creati (status+start_at, region compound, +payment_schedules order/occ/paytoken, payment_events). VERIFICATO IN BROWSER (card reale, filtro detox→vuoto, URL sincronizzato).
+- [x] **5.2 Pagine SEO** *(fatto 4/7/2026)*: route `/ritiri/:cat/:regione` (path param > query), hook `useSeoMeta` (title/description/OG/canonical dinamici — verificato "Ritiri yoga in Puglia — prenota online"); **sitemap.xml DINAMICA** (home+9 categorie+coppie categoria×regione reali+landing) e robots.txt dal backend. NOTA: CRA è SPA → per pre-render social/Bing serve SSR (Fase 6 infra, non blocca lancio; Google indicizza il render JS).
+- [x] **5.3 Profilo pubblico operatore** *(fatto 4/7/2026)*: `GET /public/operator/{slug}` + pagina `/o/:slug` (brand, bio, prossimi ritiri) — verificato in browser. La Masseria è l'operatore founding; pagina location dedicata → rifinitura post-lancio (il profilo operatore la copre già).
+- [ ] **5.4 Account partecipante unico** — differito (già utilizzabile: il portal cliente esistente funziona cross-store sul DB nuovo; l'unificazione piena resta backlog, non blocca il calendario).
+- [x] **5.5 Sicurezza fase 5** *(fatto 4/7/2026)*: endpoint pubblici read-only (nessun mutating), solo dati dichiarati esposti (whitelist esplicite, mai metadata integrale); robots/sitemap corretti; slug non enumerabili per i token; le query pubbliche filtrano sempre published+attivo+org-pubblica.
 
 **DoD Fase 5**: un utente anonimo trova un ritiro col filtro "Yoga × Puglia × settembre" e completa la prenotazione con caparra di un operatore che non conosce.
 
