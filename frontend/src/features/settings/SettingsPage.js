@@ -12,6 +12,7 @@ import { organizationsAPI, authAPI, alertsAPI } from '../../api';
 import { Switch } from '../../components/ui/switch';
 import { useAuth } from '../../context/AuthContext';
 import { useBilling } from '../../hooks/useBilling';
+import { useEntitlements } from '../../hooks/useEntitlements';
 import BillingSection from '../../components/BillingSection';
 import PaymentConnectionsCard from './PaymentConnectionsCard';
 import PaymentMethodsSection from './sections/PaymentMethodsSection';
@@ -432,8 +433,12 @@ export const SettingsPage = () => {
         {/* ── CH compliance v1: Payment methods preflight (Stripe capabilities) ── */}
         {isAdmin ? <PaymentMethodsSection /> : null}
 
-        {/* ── Alert & Digest Preferences ── */}
-        <AlertDigestPreferences t={t} />
+        {/* ── Alert & Digest Preferences ──
+            Consolidamento (4/7/2026): la card segue il piano. Nei piani
+            retreat email_alerts/email_digest/alert_config sono a 0 (le
+            email di reporting sono gia' bloccate server-side da
+            can_use_module) → la card sparisce. Per i piani legacy resta. */}
+        <GatedAlertPreferences t={t} />
 
         {/* ── Profile ── */}
         <Card className="border border-border">
@@ -707,6 +712,17 @@ const AccountDeactivationSection = () => {
       </Dialog>
     </>
   );
+};
+
+// Wrapper di gating: monta le preferenze alert/report solo se il piano
+// abilita almeno una delle feature che quelle preferenze governano.
+const GatedAlertPreferences = ({ t }) => {
+  const { canUse } = useEntitlements();
+  const enabled = canUse('cashflow_monitor', 'alert_config')
+    || canUse('cashflow_monitor', 'email_alerts')
+    || canUse('cashflow_monitor', 'email_digest');
+  if (!enabled) return null;
+  return <AlertDigestPreferences t={t} />;
 };
 
 // ── Alert & Digest Preferences Component ────────────────────────────────────

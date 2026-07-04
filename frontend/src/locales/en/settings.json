@@ -365,7 +365,8 @@
           "label": "Native Stripe checkout",
           "desc": "Sell online with integrated payment (no contact-request)"
         }
-      }
+      },
+      "subtitle_retreat": "What's active in your plan"
     },
     "active_addons": {
       "section_title": "Active add-ons",
@@ -467,7 +468,7 @@
       "fee_free_note": "You only pay when you get paid",
       "included_title": "What's included",
       "stripe_fees_title": "Stripe fees (separate)",
-      "stripe_fees_body": "Online payments also carry Stripe's processing fees (for European cards ≈ 1.5% + €0.25), charged by Stripe directly on your account. They are separate from the platform fee and apply on any plan.",
+      "stripe_fees_body": "Online payments also carry Stripe's processing fees (for European cards ≈ 1.5% + €0.25), charged by Stripe directly on your account: Stripe collects them, not us. They are separate from the platform fee and apply on any plan.",
       "example_title": "Example on a €100 payment",
       "example_platform": "Platform fee ({{pct}}%)",
       "example_stripe": "Stripe fees (≈)",
@@ -478,7 +479,8 @@
       "cta_upgrade": "Upgrade to Pro",
       "cta_downgrade": "Back to Free",
       "downgrade_hint": "To go back to the Free plan, manage your subscription from the billing portal.",
-      "yearly_hint": "€290/year (2 months free)"
+      "yearly_hint": "€290/year (2 months free)",
+      "hero_fee_line": "Platform fee {{pct}}% of transactions · Stripe fees are separate (Stripe collects them, not us)"
     }
   },
   "prefs": {

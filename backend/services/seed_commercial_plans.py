@@ -363,6 +363,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_self_serve": False,   # baseline al signup, non un target di checkout
         "sort_order": 10,
         "transaction_fee_percent": 5.0,
+        "platform_limits": {"team_members": 2},
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
             "ai_assistant": "ai_assistant_disabled",
@@ -393,6 +394,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_self_serve": True,
         "sort_order": 11,
         "transaction_fee_percent": 2.0,
+        "platform_limits": {"team_members": 5},
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
             "ai_assistant": "ai_assistant_disabled",
@@ -425,6 +427,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_self_serve": False,
         "sort_order": 12,
         "transaction_fee_percent": 2.0,
+        "platform_limits": {"team_members": 5},
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
             "ai_assistant": "ai_assistant_disabled",

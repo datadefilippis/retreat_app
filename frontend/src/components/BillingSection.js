@@ -349,9 +349,14 @@ export default function BillingSection() {
                   <span className="text-base font-semibold leading-none">
                     {planDetails?.name || billing.plan}
                   </span>
-                  <Badge className={`${planColor} border-0 text-[10px] uppercase`}>
-                    {billing.plan}
-                  </Badge>
+                  {/* Badge slug: solo per i piani legacy — per i retreat il
+                      nome commerciale (Gratis/Pro/Founding) basta, lo slug
+                      grezzo "retreat_free" sarebbe rumore. */}
+                  {!(billing.plan || '').startsWith('retreat_') && (
+                    <Badge className={`${planColor} border-0 text-[10px] uppercase`}>
+                      {billing.plan}
+                    </Badge>
+                  )}
                   {/* Onda 14 — distinguish "trial active" from "trial cancelled but
                       still running until trial_end". Without this, a user who
                       cancelled during a trial would still see "In prova" and
@@ -371,6 +376,18 @@ export default function BillingSection() {
                 <div className="text-2xl font-bold tracking-tight mt-1">
                   {priceLabel}
                 </div>
+
+                {/* Retreat fork — la fee transazionale è parte del prezzo:
+                    va detta QUI, con la distinzione dalle commissioni Stripe
+                    (che incassa Stripe, non noi). */}
+                {planDetails?.transaction_fee_percent != null && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t('billing.retreat.hero_fee_line', {
+                      pct: planDetails.transaction_fee_percent,
+                      defaultValue: 'Fee piattaforma {{pct}}% sul transato · le commissioni Stripe sono separate (le incassa Stripe, non noi)',
+                    })}
+                  </div>
+                )}
 
                 {/* Subline: trial countdown OR renewal info OR canceled */}
                 <div className="text-xs text-muted-foreground mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
