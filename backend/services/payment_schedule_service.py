@@ -202,6 +202,62 @@ async def create_schedule_for_order(
     return schedule
 
 
+async def create_schedule_for_new_order(
+    order_doc: Dict[str, Any],
+    org_id: str,
+    event_ctx: Optional[Dict[str, Any]],
+) -> Optional[PaymentSchedule]:
+    """Hook di integrazione col checkout esistente (Fase 2, S1 task 2.4).
+
+    Chiamato da order_service.create_order DOPO l'insert dell'ordine, per
+    gli ordini che contengono una riga event_ticket con data (= un ritiro).
+    Ordini senza eventi o a totale zero (richieste di contatto): nessuno
+    schedule, flusso invariato.
+
+    Il piano si legge da product.metadata["payment_plan"] (snapshot passato
+    in event_ctx); se assente o invalido → default pagamento unico.
+
+    S1: la modalità è FORZATA a `full` — il checkout oggi incassa l'intero
+    totale in una volta, e il libro mastro deve riflettere ciò che accade
+    davvero, non ciò che accadrà. S2 (checkout caparra) rimuove il forcing
+    e attiva le modalità deposit_*. Consistenza > feature.
+    """
+    if not event_ctx or not event_ctx.get("start_at"):
+        return None
+    total = float(order_doc.get("total") or 0)
+    if total <= 0:
+        return None
+    total_minor = int(round(total * 100))
+
+    plan_raw = event_ctx.get("plan_raw")
+    plan = None
+    if isinstance(plan_raw, dict) and plan_raw:
+        try:
+            plan = PaymentPlan(**plan_raw)
+        except Exception as exc:
+            logger.warning(
+                "payment_plan invalido su prodotto (order %s): %s — fallback full",
+                order_doc.get("id"), exc,
+            )
+    if plan is None:
+        plan = PaymentPlan(mode=PaymentPlanMode.FULL)
+
+    # S1 forcing (vedi docstring). Rimosso in S2 col checkout caparra.
+    if plan.mode != PaymentPlanMode.FULL:
+        plan = plan.model_copy(update={"mode": PaymentPlanMode.FULL})
+
+    return await create_schedule_for_order(
+        order_id=order_doc["id"],
+        organization_id=org_id,
+        occurrence_id=event_ctx.get("occurrence_id"),
+        plan=plan,
+        total_minor=total_minor,
+        start_at=event_ctx["start_at"],
+        currency=order_doc.get("currency") or "EUR",
+        actor="system:checkout",
+    )
+
+
 class InvalidTransition(Exception):
     pass
 

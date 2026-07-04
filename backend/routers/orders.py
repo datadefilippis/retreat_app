@@ -1002,3 +1002,31 @@ async def import_orders_with_mapping(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Errore durante l'importazione. Riprova più tardi.",
         )
+
+
+# ── Fase 2 (retreat) — libro mastro pagamenti dell'ordine ────────────────────
+
+@router.get("/{order_id}/payment-schedule")
+@limiter.limit("60/minute")
+async def get_order_payment_schedule(
+    order_id: str,
+    request: Request,
+    current_user: dict = Depends(get_verified_user),
+):
+    """Schedule pagamenti + storia eventi (append-only) di un ordine.
+
+    La coppia (stato corrente, storia) è la vista di tracciabilità completa:
+    lo schedule dice DOVE siamo, payment_events dice COME ci siamo arrivati
+    (ogni transizione con attore e timestamp). Ordini senza schedule
+    (non-evento, o precedenti alla Fase 2) → schedule null, events [].
+    """
+    from database import db
+
+    org_id = current_user["organization_id"]
+    schedule = await db.payment_schedules.find_one(
+        {"order_id": order_id, "organization_id": org_id}, {"_id": 0},
+    )
+    events = await db.payment_events.find(
+        {"order_id": order_id, "organization_id": org_id}, {"_id": 0},
+    ).sort("at", 1).to_list(500)
+    return {"schedule": schedule, "events": events}
