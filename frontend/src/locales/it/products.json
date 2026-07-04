@@ -1086,6 +1086,35 @@
         "tierSaveError": "Errore nel salvataggio",
         "descriptionUpdated": "Descrizione aggiornata",
         "distributionUpdated": "Distribuzione aggiornata"
+      },
+      "payments": {
+        "title": "Incassi",
+        "loading": "Caricamento incassi…",
+        "empty": "Nessun pagamento ancora: gli incassi compaiono qui alla prima prenotazione.",
+        "chipIncassato": "Incassato",
+        "chipInArrivo": "In arrivo",
+        "chipInRitardo": "In ritardo",
+        "chipARischio": "A rischio",
+        "ordersHeading": "Per partecipante",
+        "rowDue": "entro il {{date}}",
+        "rowPaidAt": "pagata il {{date}}",
+        "manualNoteLabel": "nota: {{note}}",
+        "markPaid": "Segna pagato",
+        "markPaidPrompt": "Nota obbligatoria (es. 'bonifico ricevuto il 4/7'):",
+        "markPaidOk": "Scadenza segnata come pagata",
+        "markPaidErr": "Impossibile segnare come pagato",
+        "abandonedNote": "{{count}} carrelli abbandonati esclusi dalle metriche",
+        "statusLabels": {
+          "pending": "in attesa",
+          "processing": "in corso",
+          "paid": "pagata",
+          "paid_manual": "pagata (manuale)",
+          "overdue": "in ritardo",
+          "at_risk": "a rischio",
+          "waived": "condonata",
+          "refunded": "rimborsata",
+          "cancelled": "annullata"
+        }
       }
     },
     "reservation": {

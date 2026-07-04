@@ -294,7 +294,21 @@
     "tiersHint": "Puoi combinare tipologie diverse (es. 2 Standard + 1 VIP).",
     "footerOrganizedBy": "Organizzato da <1>{{name}}</1>",
     "toastAdded": "Aggiunto al carrello",
-    "toastAction": "Vai al checkout"
+    "toastAction": "Vai al checkout",
+    "deposit": {
+      "payNow": "Oggi paghi solo la caparra: {{amount}}",
+      "restBalance": "Il resto ({{amount}}) entro il {{date}}, con promemoria via email.",
+      "restInstallments": "Il resto ({{amount}}) in {{count}} rate, ultima entro il {{date}}, con promemoria via email."
+    },
+    "paymentPlan": {
+      "heading": "Come paghi",
+      "depositPercent": "Prenoti con una caparra del {{percent}}%; il saldo entro {{days}} giorni dall'inizio.",
+      "depositFixed": "Prenoti con una caparra di {{amount}}; il saldo entro {{days}} giorni dall'inizio.",
+      "installmentsNote": "Il saldo è suddiviso in {{count}} rate con promemoria automatici.",
+      "policyHeading": "Politica di cancellazione",
+      "policyTier": "Fino a {{days}} giorni prima: rimborso {{percent}}%",
+      "policyLast": "Oltre: rimborso {{percent}}%"
+    }
   },
   "product": {
     "loading": "Caricamento…",

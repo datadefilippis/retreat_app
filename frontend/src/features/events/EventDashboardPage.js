@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import api from '../../api/client';
 import { eventOccurrencesAPI, eventTicketTiersAPI } from '../../api/eventOccurrences';
 import { ticketsAPI } from '../../api/tickets';
+import { ordersAPI } from '../../api/orders';
 import { storesAPI } from '../../api/stores';
 import { productsAPI } from '../../api';
 import FieldEditorList from './components/FieldEditorList';
@@ -56,6 +57,129 @@ function formatPrice(n, currency = 'EUR', locale = 'it-IT') {
     return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(n);
   } catch { return `${n} ${currency}`; }
 }
+
+// ── Fase 2 S2 (retreat) — card Incassi ─────────────────────────────────────
+// Autonoma: carica GET /event-occurrences/{id}/payments per conto suo, così
+// non tocca il Promise.all principale. Fonte di verità: payment_schedules.
+
+function PaymentsCard({ occurrenceId }) {
+  const { t, i18n } = useTranslation('products');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [busyRow, setBusyRow] = useState(null);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await eventOccurrencesAPI.payments(occurrenceId);
+      setData(res.data);
+    } catch { setData(null); }
+    finally { setLoading(false); }
+  }, [occurrenceId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const fmt = (minor) => formatPrice((minor || 0) / 100, data?.orders?.[0]?.currency || 'EUR', i18n.language);
+  const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString(i18n.language) : '';
+
+  const markPaid = async (orderId, seq) => {
+    const note = window.prompt(t('dashboards.event.payments.markPaidPrompt'));
+    if (!note || !note.trim()) return;
+    setBusyRow(`${orderId}:${seq}`);
+    try {
+      await ordersAPI.markSchedulePaidManual(orderId, seq, note.trim());
+      toast.success(t('dashboards.event.payments.markPaidOk'));
+      await load();
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || t('dashboards.event.payments.markPaidErr'));
+    } finally { setBusyRow(null); }
+  };
+
+  if (loading) return (
+    <div className="rounded-xl border border-gray-200 bg-white px-5 py-4 text-sm text-gray-500">
+      {t('dashboards.event.payments.loading')}
+    </div>
+  );
+  const summary = data?.summary;
+  const orders = (data?.orders || []).filter(o => o.order_status !== 'draft' || o.payment_state !== 'none');
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
+      <h2 className="text-sm font-semibold text-gray-900 mb-3">{t('dashboards.event.payments.title')}</h2>
+      {!summary || orders.length === 0 ? (
+        <p className="text-sm text-gray-500">{t('dashboards.event.payments.empty')}</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            {[
+              ['chipIncassato', summary.incassato_minor, 'text-emerald-700 bg-emerald-50 border-emerald-200'],
+              ['chipInArrivo', summary.in_arrivo_minor, 'text-gray-700 bg-gray-50 border-gray-200'],
+              ['chipInRitardo', summary.in_ritardo_minor, 'text-amber-700 bg-amber-50 border-amber-200'],
+              ['chipARischio', summary.a_rischio_minor, 'text-red-700 bg-red-50 border-red-200'],
+            ].map(([key, minor, cls]) => (
+              <div key={key} className={`rounded-lg border px-3 py-2 ${cls}`}>
+                <p className="text-[11px] font-semibold uppercase tracking-wide">{t(`dashboards.event.payments.${key}`)}</p>
+                <p className="text-lg font-bold tabular-nums">{fmt(minor)}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+            {t('dashboards.event.payments.ordersHeading')}
+          </p>
+          <div className="space-y-3">
+            {orders.map(o => (
+              <div key={o.order_id} className="rounded-lg border border-gray-100 px-3 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {o.customer_name || o.order_number || o.order_id.slice(0, 8)}
+                  </p>
+                  <span className="text-[11px] text-gray-500">{o.order_number}</span>
+                </div>
+                <div className="mt-1 space-y-1">
+                  {(o.rows || []).map(r => (
+                    <div key={r.seq} className="flex items-center justify-between gap-2 text-xs">
+                      <span className="text-gray-600">
+                        {r.label} · <span className="tabular-nums">{fmt(r.amount_minor)}</span>
+                        {' — '}
+                        {['paid', 'paid_manual'].includes(r.status)
+                          ? t('dashboards.event.payments.rowPaidAt', { date: fmtDate(r.paid_at) })
+                          : ['pending', 'processing', 'overdue', 'at_risk'].includes(r.status)
+                            ? t('dashboards.event.payments.rowDue', { date: fmtDate(r.due_at) })
+                            : null}
+                        {' '}
+                        <span className="font-semibold">
+                          {t(`dashboards.event.payments.statusLabels.${r.status}`)}
+                        </span>
+                        {r.manual_note && (
+                          <span className="text-gray-400"> · {t('dashboards.event.payments.manualNoteLabel', { note: r.manual_note })}</span>
+                        )}
+                      </span>
+                      {['pending', 'overdue', 'at_risk'].includes(r.status) && (
+                        <button
+                          type="button"
+                          disabled={busyRow === `${o.order_id}:${r.seq}`}
+                          onClick={() => markPaid(o.order_id, r.seq)}
+                          className="shrink-0 rounded border border-gray-300 px-2 py-0.5 text-[11px] font-medium text-gray-700 hover:border-gray-900 disabled:opacity-50"
+                        >
+                          {t('dashboards.event.payments.markPaid')}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          {data.abandoned_drafts > 0 && (
+            <p className="text-[11px] text-gray-400 mt-3">
+              {t('dashboards.event.payments.abandonedNote', { count: data.abandoned_drafts })}
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 
 function StatusBadge({ status }) {
   const { t } = useTranslation('products');
@@ -437,6 +561,9 @@ export default function EventDashboardPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5 sm:py-8 space-y-5">
         {/* Diagnostic banner — shown when landing or store visibility is blocked */}
+        {/* Fase 2 S2 — Incassi in cima: la prima cosa che l'operatore guarda */}
+        <PaymentsCard occurrenceId={occurrenceId} />
+
         {landingBlockers.length > 0 && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
             <p className="text-xs font-semibold text-amber-900 mb-1">{t('dashboards.event.notVisibleWarning')}</p>

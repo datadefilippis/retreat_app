@@ -1072,7 +1072,7 @@ async def mark_schedule_row_paid_manual(
     try:
         updated = await apply_row_transition(
             schedule, row_seq, RowStatus.PAID_MANUAL,
-            actor=f"operator:{current_user.get('id', 'unknown')}",
+            actor=f"operator:{current_user.get('user_id') or current_user.get('id', 'unknown')}",
             row_updates={"manual_note": note},
             detail={"note": note},
         )

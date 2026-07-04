@@ -250,6 +250,11 @@ class PublicEventProduct(BaseModel):
     order_fields: List[FieldConfig] = Field(default_factory=list)
     # F4 Onda 11 — pre-resolved T&C markdown (product override or store default)
     terms_content: Optional[str] = None
+    # Fase 2 S2 (retreat) — piano di pagamento pubblico (caparra/rate/policy).
+    # Informazione per l'acquirente: la landing mostra "come paghi" e la
+    # policy di cancellazione PRIMA della prenotazione. Whitelist esplicita
+    # (mai metadata integrale sul pubblico).
+    payment_plan: Optional[Dict[str, Any]] = None
 
 
 class PublicEventLanding(BaseModel):
@@ -1299,6 +1304,8 @@ async def get_public_event_landing(org_slug: str, slug: str):
             terms_content=resolve_effective_terms_sync(
                 product=product, store=org.get("_store") or {},
             ),
+            # Fase 2 S2 — piano pagamenti pubblico
+            payment_plan=(product.get("metadata") or {}).get("payment_plan"),
         ),
         occurrence=public_occ,
         is_buyable=is_buyable,
