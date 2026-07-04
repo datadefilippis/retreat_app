@@ -199,7 +199,13 @@ class StripeProvider(PaymentProvider):
                 net_minor * float(request.application_fee_percent) / 100
             ))
             if fee_minor > 0:
-                session_kwargs["application_fee_amount"] = fee_minor
+                # BUG EREDITATO (fix retreat 4/7/2026): per le Checkout
+                # Session la fee va in payment_intent_data, non top-level
+                # (Stripe: "Received unknown parameter"). Mai emerso in
+                # BI_PMI perché v1 aveva fee=0 → ramo mai eseguito.
+                session_kwargs.setdefault("payment_intent_data", {})[
+                    "application_fee_amount"
+                ] = fee_minor
 
         try:
             create_kwargs = {}
