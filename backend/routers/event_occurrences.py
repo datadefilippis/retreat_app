@@ -1433,3 +1433,29 @@ async def get_occurrence_payments(
         "abandoned_drafts": len(schedules) - len(live),
         "orders": detail,
     }
+
+
+@router.post("/{occurrence_id}/cancel-cascade")
+@limiter.limit("5/minute")
+async def cancel_occurrence_with_cascade(
+    occurrence_id: str,
+    request: Request,
+    body: dict = None,
+    current_user: dict = Depends(get_verified_user),
+):
+    """Annulla il ritiro CON cascata: rimborso 100% a tutti gli ordini
+    attivi, biglietti annullati, broadcast ai partecipanti. Richiede
+    conferma esplicita nel body ({confirm: true}) — irreversibile."""
+    from services.payment_refund_service import cancel_occurrence_cascade
+
+    if not (body or {}).get("confirm"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Conferma esplicita richiesta: {\"confirm\": true}",
+        )
+    org_id = current_user["organization_id"]
+    actor = f"operator:{current_user.get('user_id') or 'unknown'}"
+    try:
+        return await cancel_occurrence_cascade(org_id, occurrence_id, actor=actor)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))

@@ -237,6 +237,40 @@ class StripeProvider(PaymentProvider):
 
     # ── Capabilities ──────────────────────────────────────────────────────
 
+    async def create_refund(
+        self,
+        *,
+        payment_intent: str,
+        amount_minor: int,
+        connected_account: str | None = None,
+        idempotency_key: str | None = None,
+    ) -> str:
+        """Rimborso (parziale o totale) su un PaymentIntent — Fase 2 S3.
+
+        Unico punto del codebase autorizzato a chiamare stripe.Refund
+        (linter di isolamento). Ritorna l'id del Refund Stripe.
+        """
+        import asyncio
+
+        stripe = _get_stripe()
+        kwargs = {
+            "payment_intent": payment_intent,
+            "amount": amount_minor,
+        }
+        if connected_account:
+            kwargs["stripe_account"] = connected_account
+        if idempotency_key:
+            kwargs["idempotency_key"] = idempotency_key
+        try:
+            refund = await asyncio.to_thread(stripe.Refund.create, **kwargs)
+        except Exception as exc:
+            from payment_providers.exceptions import ProviderError
+            raise ProviderError(
+                f"Stripe Refund.create failed: {exc}",
+                code=getattr(exc, "code", None),
+            )
+        return refund["id"]
+
     async def get_account_capabilities(
         self,
         connected_account_id: str,

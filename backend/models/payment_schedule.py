@@ -53,10 +53,13 @@ ALLOWED_TRANSITIONS: Dict[RowStatus, set] = {
     RowStatus.OVERDUE: {
         RowStatus.PROCESSING, RowStatus.PAID, RowStatus.PAID_MANUAL,
         RowStatus.AT_RISK, RowStatus.WAIVED, RowStatus.CANCELLED,
+        # proroga: l'operatore sposta la scadenza nel futuro → si riparte
+        RowStatus.PENDING,
     },
     RowStatus.AT_RISK: {
         RowStatus.PROCESSING, RowStatus.PAID, RowStatus.PAID_MANUAL,
         RowStatus.WAIVED, RowStatus.CANCELLED,
+        RowStatus.PENDING,   # proroga
     },
     RowStatus.PAID: {RowStatus.REFUNDED},
     RowStatus.PAID_MANUAL: {RowStatus.REFUNDED, RowStatus.CANCELLED},
@@ -74,6 +77,10 @@ class RowRefund(BaseModel):
     reason: str = ""
     by: str = ""                     # actor id ("operator:<user_id>", "system:cascade")
     at: str = ""                     # ISO datetime
+    stripe_refund_id: Optional[str] = None
+    # True per righe paid_manual: il rimborso avviene fuori piattaforma
+    # (bonifico dell'operatore) — a libro risulta, a Stripe no.
+    out_of_platform: bool = False
 
 
 class ReminderMark(BaseModel):

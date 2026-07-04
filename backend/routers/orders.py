@@ -1086,3 +1086,149 @@ async def mark_schedule_row_paid_manual(
         {"$set": {"payment_state": updated.get("payment_state")}},
     )
     return {"schedule": updated}
+
+
+@router.post("/{order_id}/refund")
+@limiter.limit("20/minute")
+async def refund_order_endpoint(
+    order_id: str,
+    request: Request,
+    body: dict = None,
+    current_user: dict = Depends(get_verified_user),
+):
+    """Rimborso secondo policy snapshot (default) o override tracciato.
+
+    Body: {reason?: str, override_amount_minor?: int, keep_order?: bool}
+    Default: calcola dalla policy di cancellazione fotografata sull'ordine
+    e ANNULLA l'ordine (posti liberati, biglietti void, email cliente).
+    keep_order=true → solo rimborso, l'ordine resta confermato (casi
+    speciali: sconto post-vendita concordato).
+    """
+    from services.payment_refund_service import refund_order
+
+    org_id = current_user["organization_id"]
+    body = body or {}
+    actor = f"operator:{current_user.get('user_id') or 'unknown'}"
+    try:
+        result = await refund_order(
+            org_id, order_id,
+            actor=actor,
+            reason=(body.get("reason") or "").strip(),
+            override_amount_minor=body.get("override_amount_minor"),
+            cancel_the_order=not body.get("keep_order", False),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=str(exc))
+    return result
+
+
+@router.post("/{order_id}/schedule/{row_seq}/postpone")
+@limiter.limit("30/minute")
+async def postpone_schedule_row(
+    order_id: str,
+    row_seq: int,
+    request: Request,
+    body: dict = None,
+    current_user: dict = Depends(get_verified_user),
+):
+    """Proroga una scadenza: nuova due_at futura, promemoria azzerati
+    (la nuova scadenza merita la sua sequenza), riga torna pending."""
+    from datetime import datetime, timezone
+    from models.payment_schedule import RowStatus
+    from services.payment_schedule_service import (
+        InvalidTransition, apply_row_transition, get_schedule_for_order,
+    )
+    from models.common import utc_now
+
+    org_id = current_user["organization_id"]
+    new_due = ((body or {}).get("due_at") or "").strip()
+    try:
+        due_dt = datetime.fromisoformat(new_due)
+        if due_dt.tzinfo is None:
+            due_dt = due_dt.replace(tzinfo=timezone.utc)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="due_at non valida (ISO)")
+    if due_dt <= utc_now():
+        raise HTTPException(status_code=422, detail="La nuova scadenza deve essere nel futuro")
+
+    schedule = await get_schedule_for_order(order_id, org_id)
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Nessun piano pagamenti")
+    row = next((r for r in schedule["rows"] if r["seq"] == row_seq), None)
+    if not row:
+        raise HTTPException(status_code=404, detail="Scadenza inesistente")
+
+    actor = f"operator:{current_user.get('user_id') or 'unknown'}"
+    updates = {"due_at": due_dt.isoformat(), "reminders_sent": []}
+    try:
+        if row["status"] in ("overdue", "at_risk", "processing"):
+            schedule = await apply_row_transition(
+                schedule, row_seq, RowStatus.PENDING,
+                actor=actor, action="row_postponed", row_updates=updates,
+                detail={"new_due_at": due_dt.isoformat()},
+            )
+        elif row["status"] == "pending":
+            # niente cambio stato: update mirato + evento dedicato
+            from database import db
+            from models.payment_event import PaymentEvent
+            from services.payment_schedule_service import record_event
+            await db.payment_schedules.update_one(
+                {"id": schedule["id"], "rows.seq": row_seq},
+                {"$set": {"rows.$.due_at": updates["due_at"],
+                          "rows.$.reminders_sent": [],
+                          "updated_at": utc_now().isoformat()}},
+            )
+            await record_event(PaymentEvent(
+                organization_id=org_id, order_id=order_id,
+                schedule_id=schedule["id"], row_seq=row_seq,
+                action="row_postponed", actor=actor,
+                detail={"new_due_at": due_dt.isoformat()},
+            ))
+        else:
+            raise HTTPException(status_code=409,
+                                detail=f"Scadenza in stato {row['status']}: non prorogabile")
+    except InvalidTransition as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return {"ok": True, "row_seq": row_seq, "due_at": due_dt.isoformat()}
+
+
+@router.post("/{order_id}/schedule/{row_seq}/waive")
+@limiter.limit("30/minute")
+async def waive_schedule_row(
+    order_id: str,
+    row_seq: int,
+    request: Request,
+    body: dict = None,
+    current_user: dict = Depends(get_verified_user),
+):
+    """Condona una scadenza (sconto concordato): l'ordine risulta saldato
+    senza quell'incasso. Motivo obbligatorio, tracciato."""
+    from models.payment_schedule import RowStatus
+    from services.payment_schedule_service import (
+        InvalidTransition, apply_row_transition, get_schedule_for_order,
+    )
+    from database import orders_collection
+
+    org_id = current_user["organization_id"]
+    reason = ((body or {}).get("reason") or "").strip()
+    if not reason:
+        raise HTTPException(status_code=422, detail="Il motivo è obbligatorio")
+    schedule = await get_schedule_for_order(order_id, org_id)
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Nessun piano pagamenti")
+    actor = f"operator:{current_user.get('user_id') or 'unknown'}"
+    try:
+        updated = await apply_row_transition(
+            schedule, row_seq, RowStatus.WAIVED,
+            actor=actor, action="row_waived", detail={"reason": reason},
+        )
+    except InvalidTransition as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    await orders_collection.update_one(
+        {"id": order_id, "organization_id": org_id},
+        {"$set": {"payment_state": updated.get("payment_state")}},
+    )
+    return {"schedule": updated}
