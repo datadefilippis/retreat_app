@@ -87,7 +87,7 @@ toccare la leggibilità dell'admin.
 - [ ] Il pin/moduli resta come personalizzazione avanzata, non come primo impatto
 - **DoD**: primo login → si capisce in 5 secondi come va il business.
 
-### D4 · Rifiniture coerenza (0,5–1 gg, assorbe WS-4 restante) — PROSSIMO PASSO
+### D4 · Rifiniture coerenza ✅ (fatto 5/7/2026 — merge su main)
 - [ ] Emoji→lucide dove stonano; empty states col nuovo tono (caldi, operativi)
 - [ ] Wizard: cue contenuti ricchi (WS-4/A.3) + tab Biglietti split (A.2)
 - [ ] Microcopy sweep finale (A.4)

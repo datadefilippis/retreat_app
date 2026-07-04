@@ -1770,7 +1770,9 @@
           "residenziale": "Residenziale (allergie + dieta)",
           "attivita": "Attività (esperienza + taglia)"
         },
-        "presetsHint": "Il preset sostituisce i campi custom qui sotto; puoi sempre modificarli dopo."
+        "presetsHint": "Il preset sostituisce i campi custom qui sotto; puoi sempre modificarli dopo.",
+        "sectionSeats": "Posti e pacchetti",
+        "sectionAttendees": "Dati dei partecipanti"
       },
       "publish": {
         "longDescTitle": "Descrizione estesa",
@@ -1793,7 +1795,8 @@
         "distributionMultiDesc": "In quali store è visibile il ritiro.",
         "publishToggleTitle": "Pubblica subito",
         "publishToggleDesc": "Se spuntato, il ritiro è visibile sul catalogo e acquistabile dai clienti. Puoi sempre cambiarlo dalla dashboard del ritiro.",
-        "validationErrorBanner": "Alcuni campi precedenti richiedono attenzione. Torna indietro per correggere."
+        "validationErrorBanner": "Alcuni campi precedenti richiedono attenzione. Torna indietro per correggere.",
+        "enrichLaterCue": "Pubblica quando sei pronto: programma, galleria foto e FAQ si possono aggiungere e modificare in ogni momento dalla dashboard del ritiro."
       },
       "payments": {
         "modeHeading": "Come vuoi incassare questo ritiro?",
