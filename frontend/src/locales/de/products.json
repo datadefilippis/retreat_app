@@ -687,7 +687,7 @@
       },
       "pageList": {
         "title": "Videokurse",
-        "subtitle": "Erstellen und verwalten Sie Ihre Lernpfade. Videos bleiben auf Bunny; AFianco verwaltet Struktur, Zugang und Player.",
+        "subtitle": "Erstellen und verwalten Sie Ihre Lernpfade. Videos bleiben auf Bunny; Retreat App verwaltet Struktur, Zugang und Player.",
         "showArchived": "Archivierte anzeigen",
         "newCourse": "+ Neuer Kurs",
         "expiringDays": "{{count}} Tage",

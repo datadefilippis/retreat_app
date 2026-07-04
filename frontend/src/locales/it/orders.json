@@ -115,7 +115,7 @@
     "awaiting_payment": "In attesa di pagamento",
     "approval_required": "Approvazione richiesta — verificare disponibilità prima di confermare",
     "rental_availability": "Verificare disponibilità date noleggio prima di confermare",
-    "event_availability": "Verificare disponibilità posti evento prima di confermare",
+    "event_availability": "Verificare disponibilità posti ritiro prima di confermare",
     "delivered_not_paid": "Consegnato ma pagamento non registrato"
   },
   "action_confirm": {

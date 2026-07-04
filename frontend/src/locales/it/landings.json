@@ -43,7 +43,7 @@
     "addToCalendar": "📅 Aggiungi al calendario",
     "offlineHint": "Conserva questa pagina: potrai riaprirla anche offline se il tuo telefono l'ha aperta almeno una volta.",
     "icsFilenamePrefix": "biglietto",
-    "icsFallbackEventName": "Evento",
+    "icsFallbackEventName": "Ritiro",
     "icsCodePrefix": "Biglietto",
     "missingHolder": "—"
   },
@@ -255,12 +255,12 @@
     "toastAction": "Vai al checkout"
   },
   "event": {
-    "loadingEvent": "Caricamento evento…",
-    "notFoundTitle": "Evento non trovato",
-    "notFoundBody": "Questo evento potrebbe essere stato rimosso o non esiste più.",
-    "seeOtherEvents": "Vedi altri eventi",
+    "loadingEvent": "Caricamento ritiro…",
+    "notFoundTitle": "Ritiro non trovato",
+    "notFoundBody": "Questo ritiro potrebbe essere stato rimosso o non esiste più.",
+    "seeOtherEvents": "Vedi altri ritiri",
     "errorBody": "Errore nel caricamento. Riprova tra qualche istante.",
-    "headerSubtitle": "Evento",
+    "headerSubtitle": "Ritiro",
     "catalogLink": "← Catalogo",
     "soldOutBadge": "Esaurito",
     "tier": {
@@ -281,7 +281,7 @@
     "ctaSelectTier": "Scegli un biglietto",
     "checkoutHint": "Al checkout ti verranno richiesti nome, email e modalità di consegna; qui completi anche eventuali codici sconto.",
     "soldOutTitle": "Esaurito",
-    "soldOutBody": "Questo evento è al completo. Dai un'occhiata agli altri eventi in programma.",
+    "soldOutBody": "Questo ritiro è al completo. Dai un'occhiata agli altri ritiri in programma.",
     "ataGlance": "A colpo d'occhio",
     "dateLabel": "Data",
     "timeLabel": "Orario",

@@ -33,9 +33,9 @@
   "create": {
     "title": "Crea un nuovo store",
     "name": "Nome store",
-    "name_placeholder": "Es: Store Eventi, Ecommerce, POS...",
+    "name_placeholder": "Es: Store Ritiri, Ecommerce, POS...",
     "slug": "URL slug",
-    "slug_placeholder": "es: eventi-macelleria",
+    "slug_placeholder": "es: ritiri-masseria",
     "slug_hint": "L'indirizzo pubblico del tuo store (solo lettere minuscole, numeri e trattini)",
     "visibility": "Tipo di store",
     "cancel": "Annulla",
@@ -102,7 +102,7 @@
     "revenue_by_type_title": "Ricavo per tipo prodotto",
     "item_types": {
       "physical": "Fisici",
-      "event_ticket": "Eventi",
+      "event_ticket": "Ritiri",
       "booking": "Prenotazioni",
       "rental": "Noleggi",
       "service": "Servizi"

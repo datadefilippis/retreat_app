@@ -4,7 +4,10 @@ from pathlib import Path
 import os
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env', override=True)
+# override=False: l'ambiente della shell/container vince sul file .env
+# (12-factor; allineato a server.py). Con override=True un .env con valori
+# vuoti azzerava le variabili passate da shell/CI — bug ereditato dal fork.
+load_dotenv(ROOT_DIR / '.env', override=False)
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']

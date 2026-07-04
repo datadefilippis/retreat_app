@@ -51,7 +51,7 @@
   },
   "empty": {
     "title": "Kundenanalyse nicht aktiv",
-    "description": "Um die Kundenanalyse zu aktivieren:\n1. Erstellen Sie Ihre Kunden in Stammdaten > Kunden\n2. Importieren Sie Verkaufe mit einer Spalte \"Kunde\"\nAFianco verknupft Verkaufe automatisch mit Kunden.",
+    "description": "Um die Kundenanalyse zu aktivieren:\n1. Erstellen Sie Ihre Kunden in Stammdaten > Kunden\n2. Importieren Sie Verkaufe mit einer Spalte \"Kunde\"\nRetreat App verknupft Verkaufe automatisch mit Kunden.",
     "upload_cta": "Verkaufsdaten hochladen",
     "manage_customers": "Kunden verwalten"
   },

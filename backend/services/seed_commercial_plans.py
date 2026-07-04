@@ -334,16 +334,87 @@ ADDON_PLANS: List[dict] = [
 ]
 
 
+# ── Retreat fork (Fase 1.3 — kill-list) ─────────────────────────────────────
+#
+# I due piani della piattaforma ritiri. Modello di business (vedi
+# docs/BUSINESS_CONCEPT_RITIRI_2026-07.md §6): il piano Gratis include TUTTO
+# il funzionale (pubblicazione, prenotazioni, caparre, partecipanti) ed è
+# monetizzato con la fee transazionale (application_fee_percent=5); il Pro
+# a 29€/mese abbassa la fee al 2% e aggiunge evidenza/limiti estesi.
+# Il collegamento piano→fee viene implementato in Fase 6.2.
+#
+# I moduli AFianco non pertinenti (AI, cashflow) puntano ai pricing plan
+# *_disabled (tutti i limiti a 0 → moduli invisibili nella UI). I piani
+# legacy (free/starter/core/pro/enterprise) restano nel catalogo per
+# compatibilità con fallback e test; la loro rimozione dalla pagina pricing
+# è pianificata in Fase 6.2 del RETREAT_MASTER_PLAN.
+
+RETREAT_COMMERCIAL_PLANS: List[dict] = [
+    {
+        "slug": "retreat_free",
+        "name": "Gratis",
+        "description": "Pubblica i tuoi ritiri e incassa online. Fee 5% sul transato.",
+        "tagline": "Tutto incluso, paghi solo quando incassi",
+        "price_monthly": 0.0,
+        "price_yearly": None,
+        "currency": "EUR",
+        "trial_days": 0,
+        "is_public": True,
+        "is_self_serve": False,   # baseline al signup, non un target di checkout
+        "sort_order": 10,
+        "module_plans": {
+            "cashflow_monitor": "cashflow_monitor_disabled",
+            "ai_assistant": "ai_assistant_disabled",
+            "product_catalog": "product_catalog_starter",
+            "commerce": "commerce_retreat",
+            "customers_light": "customers_light_free",
+        },
+        "features_display": [
+            "billing.features.retreat_unlimited_listings",
+            "billing.features.retreat_deposits_payments",
+            "billing.features.retreat_participants",
+            "billing.features.retreat_fee_5",
+        ],
+    },
+    {
+        "slug": "retreat_pro",
+        "name": "Pro",
+        "description": "Fee ridotta al 2%, evidenza nel calendario, newsletter illimitata.",
+        "tagline": "Per chi organizza più ritiri l'anno",
+        "price_monthly": 29.0,
+        "price_yearly": 290.0,
+        "currency": "EUR",
+        "trial_days": 0,
+        "is_public": True,
+        "is_self_serve": True,
+        "sort_order": 11,
+        "module_plans": {
+            "cashflow_monitor": "cashflow_monitor_disabled",
+            "ai_assistant": "ai_assistant_disabled",
+            "product_catalog": "product_catalog_pro",
+            "commerce": "commerce_retreat",
+            "customers_light": "customers_light_pro",
+        },
+        "features_display": [
+            "billing.features.retreat_everything_free",
+            "billing.features.retreat_fee_2",
+            "billing.features.retreat_featured",
+            "billing.features.retreat_newsletter_unlimited",
+        ],
+    },
+]
+
+
 async def seed_commercial_plans() -> None:
     """Seed the commercial plan catalog.  Idempotent (upsert by slug).
 
     Safe to call on every startup.  Updates existing plans if seed data changes.
-    Both the main bundle plans (free/starter/core/pro/enterprise) and the
-    add-on plans (addon_*) are upserted in one pass.
+    Main bundle plans (free/starter/core/pro/enterprise), add-on plans
+    (addon_*) and retreat fork plans (retreat_*) are upserted in one pass.
 
     Stripe IDs are deliberately NOT seeded — see ADDON_PLANS docstring.
     """
-    all_plans = COMMERCIAL_PLANS + ADDON_PLANS
+    all_plans = COMMERCIAL_PLANS + ADDON_PLANS + RETREAT_COMMERCIAL_PLANS
     for plan_data in all_plans:
         plan = CommercialPlan(**plan_data)
         doc = plan.model_dump()
@@ -353,6 +424,7 @@ async def seed_commercial_plans() -> None:
         await billing_repository.upsert_commercial_plan(doc)
 
     logger.info(
-        "Seeded %d commercial plans (upsert) — %d main + %d add-ons.",
+        "Seeded %d commercial plans (upsert) — %d main + %d add-ons + %d retreat.",
         len(all_plans), len(COMMERCIAL_PLANS), len(ADDON_PLANS),
+        len(RETREAT_COMMERCIAL_PLANS),
     )

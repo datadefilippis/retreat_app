@@ -4,10 +4,10 @@
   },
   "category": {
     "eventi": {
-      "label": "Eventi",
-      "title": "Eventi",
-      "empty": "Nessun evento al momento",
-      "emptyHint": "{{org}} non ha eventi in programma. Torna a trovarci presto."
+      "label": "Ritiri",
+      "title": "Ritiri",
+      "empty": "Nessun ritiro al momento",
+      "emptyHint": "{{org}} non ha ritiri in programma. Torna a trovarci presto."
     },
     "corsi": {
       "label": "Corsi",
@@ -204,9 +204,9 @@
   },
   "sections": {
     "events": {
-      "title": "Prossimi eventi",
-      "count_one": "{{count}} evento in programma",
-      "count_other": "{{count}} eventi in programma"
+      "title": "Prossimi ritiri",
+      "count_one": "{{count}} ritiro in programma",
+      "count_other": "{{count}} ritiri in programma"
     },
     "services": {
       "title": "Consulenze",
@@ -238,7 +238,7 @@
     }
   },
   "footer": {
-    "poweredBy": "Powered by AFianco"
+    "poweredBy": "Powered by Retreat App"
   },
   "openCheckoutBtn": {
     "goCheckout": "Vai al checkout →",
@@ -271,7 +271,7 @@
       "statusSoldOut": "Esaurito",
       "statusLastN": "Ultimi {{count}}",
       "ctaSoldOut": "Esaurito",
-      "ctaSee": "Vedi evento →"
+      "ctaSee": "Vedi ritiro →"
     },
     "service": {
       "typeBadge": "Consulenza",

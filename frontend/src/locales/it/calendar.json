@@ -1,19 +1,48 @@
 {
   "page": {
     "title": "Calendario",
-    "subtitle": "Visione temporale di eventi e affitti"
+    "subtitle": "Visione temporale di ritiri e affitti"
   },
-  "months": ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
-  "days": ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"],
-  "days_full": ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+  "months": [
+    "Gennaio",
+    "Febbraio",
+    "Marzo",
+    "Aprile",
+    "Maggio",
+    "Giugno",
+    "Luglio",
+    "Agosto",
+    "Settembre",
+    "Ottobre",
+    "Novembre",
+    "Dicembre"
+  ],
+  "days": [
+    "Lun",
+    "Mar",
+    "Mer",
+    "Gio",
+    "Ven",
+    "Sab",
+    "Dom"
+  ],
+  "days_full": [
+    "Domenica",
+    "Lunedì",
+    "Martedì",
+    "Mercoledì",
+    "Giovedì",
+    "Venerdì",
+    "Sabato"
+  ],
   "type": {
-    "event_occurrence": "Evento",
+    "event_occurrence": "Ritiro",
     "rental_order": "Affitto"
   },
   "views": {
     "agenda": "Agenda",
     "rentals": "Affitti",
-    "agenda_subtitle": "Eventi, prenotazioni e blocchi personali",
+    "agenda_subtitle": "Ritiri, prenotazioni e blocchi personali",
     "filter_all": "Tutti"
   },
   "actions": {
@@ -29,8 +58,8 @@
     "month": "Nessun elemento questo mese"
   },
   "summary": {
-    "events_one": "{{count}} evento",
-    "events_other": "{{count}} eventi",
+    "events_one": "{{count}} ritiro",
+    "events_other": "{{count}} ritiri",
     "rentals_one": "{{count}} affitto",
     "rentals_other": "{{count}} affitti",
     "blocks_one": "{{count}} blocco",
@@ -47,7 +76,7 @@
     "personal": "Personale",
     "holiday": "Ferie / Festivo",
     "booking": "Prenotazione",
-    "event": "Evento"
+    "event": "Ritiro"
   },
   "block_dialog": {
     "title": "Blocca disponibilità",

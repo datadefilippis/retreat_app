@@ -53,6 +53,18 @@ async def count_plans_by_module(module_key: str) -> int:
     )
 
 
+async def list_plans_by_module(module_key: str) -> list:
+    """List all pricing plans for a module (any is_active state).
+
+    Used by the per-plan idempotent seed: the caller diffs seed slugs
+    against existing ones and inserts only the missing plans.
+    """
+    cursor = pricing_plans_collection.find(
+        {"module_key": module_key}, {"_id": 0}
+    )
+    return await cursor.to_list(500)
+
+
 async def insert_pricing_plan(doc: dict) -> None:
     """Insert a pricing plan document."""
     await pricing_plans_collection.insert_one(doc)
