@@ -308,6 +308,18 @@ def _render_template(
             + f'<p>{_t("event_email_broadcast_cancellation_outro", locale)}</p>'
             + extra_block
         )
+    elif template_key == "followup":
+        # Fase 4 (retreat) — grazie post-ritiro (T+2), transazionale e
+        # sobrio: ringraziamento + invito a restare in contatto. Nessun
+        # contenuto promozionale spinto (niente obblighi di unsubscribe
+        # oltre il gate già attivo).
+        subject = _t("event_email_broadcast_followup_subject", locale, event=event_name)
+        body = (
+            greeting
+            + f'<p>{_t("event_email_broadcast_followup_body", locale, event=event_name)}</p>'
+            + f'<p>{_t("event_email_broadcast_followup_outro", locale)}</p>'
+            + extra_block
+        )
     else:
         # custom: no prebuilt body, merchant provides everything
         if extra_message:

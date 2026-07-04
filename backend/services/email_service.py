@@ -265,7 +265,11 @@ EMAIL_TRANSLATIONS = {
         "pay_atrisk_merchant_subject": "Pagamento a rischio: {customer} — {amount}",
         "pay_atrisk_merchant_body": "Il pagamento <strong>{label}</strong> di <strong>{amount}</strong> per l'ordine <strong>{order_ref}</strong> ({customer}) era dovuto entro il {due_date}. Dopo 3 promemoria automatici non risulta ancora pagato.",
         "pay_atrisk_merchant_actions": "Cosa puoi fare dalla dashboard incassi del ritiro: segnarlo pagato (se ha pagato con bonifico), condonarlo, prorogare la scadenza o liberare il posto. Nessuna azione automatica verra' presa senza di te.",
-        "order_cancelled_subject": "Ordine annullato — {store_name}",
+
+        # Fase 4 — follow-up post ritiro
+        "event_email_broadcast_followup_subject": "Grazie per aver partecipato — {event}",
+        "event_email_broadcast_followup_body": "Grazie di cuore per aver fatto parte di <strong>{event}</strong>. Speriamo che l'esperienza ti abbia lasciato qualcosa di buono.",
+        "event_email_broadcast_followup_outro": "Se ti va di restare in contatto e sapere dei prossimi appuntamenti, rispondi pure a questa email: ci fa sempre piacere.",        "order_cancelled_subject": "Ordine annullato — {store_name}",
         "order_cancelled_body": "Il tuo ordine e' stato annullato.",
         "order_cancelled_ref": "Riferimento: <strong>{order_ref}</strong>",
         "order_cancelled_contact": "Per qualsiasi domanda, rispondi a questa email.",
@@ -542,7 +546,10 @@ EMAIL_TRANSLATIONS = {
         "pay_atrisk_merchant_subject": "Payment at risk: {customer} — {amount}",
         "pay_atrisk_merchant_body": "The payment <strong>{label}</strong> of <strong>{amount}</strong> for order <strong>{order_ref}</strong> ({customer}) was due by {due_date}. After 3 automatic reminders it is still unpaid.",
         "pay_atrisk_merchant_actions": "From the retreat payments dashboard you can: mark it paid (bank transfer), waive it, postpone the due date, or free the seat. No automatic action will be taken without you.",
-        "order_cancelled_subject": "Order cancelled — {store_name}",
+
+        "event_email_broadcast_followup_subject": "Thank you for joining — {event}",
+        "event_email_broadcast_followup_body": "Thank you for being part of <strong>{event}</strong>. We hope the experience left you something good.",
+        "event_email_broadcast_followup_outro": "If you'd like to stay in touch and hear about upcoming dates, just reply to this email — we always love that.",        "order_cancelled_subject": "Order cancelled — {store_name}",
         "order_cancelled_body": "Your order has been cancelled.",
         "order_cancelled_ref": "Reference: <strong>{order_ref}</strong>",
         "order_cancelled_contact": "For any questions, please reply to this email.",

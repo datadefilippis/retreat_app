@@ -95,9 +95,9 @@
 
 ## FASE 4 — Comunicazioni automatiche (0,5 settimane)
 
-- [ ] **4.1 Reminder automatici**: T-7 e T-1 pre-ritiro (template broadcast esistenti agganciati allo scheduler).
-- [ ] **4.2 Follow-up post-ritiro** T+2 (ringraziamento + invito newsletter/prossimo ritiro).
-- [ ] **4.3 Unsubscribe**: link nelle email marketing + suppression list rispettata (GDPR, obbligatorio prima del lancio pubblico).
+- [x] **4.1 Reminder automatici** *(fatto 4/7/2026)*: job orario `event-comms-scan` — T-7 (template reminder) e T-1 (logistics: venue+indirizzo+note) su occurrence published; planner PURO con finestre precise (scoperta tardiva → recupera entrambe; mai reminder post-inizio; eventi closed niente pre-reminder) + write-ahead atomico su `occurrence.comms_sent` (stesso pattern del dunning: mai doppi invii). 11 test.
+- [x] **4.2 Follow-up post-ritiro** *(fatto 4/7/2026)*: T+2 dalla FINE (template followup nuovo, i18n it/en) — tono sobrio, niente marketing spinto; non parte oltre T+7 (un grazie tardivo è peggio di niente); vale anche per eventi closed.
+- [x] **4.3 Unsubscribe/suppression** *(EREDITATO, verificato 4/7/2026)*: `email_gate` blocca bounced/blocked/unsubscribed su ogni invio; webhook Brevo aggiorna gli stati; endpoint unsubscribe pubblico per i footer newsletter già esistente. I broadcast automatici passano da broadcast_to_attendees → gate rispettato.
 
 **DoD Fase 4**: ritiro di test riceve l'intera sequenza email senza azioni manuali; l'unsubscribe funziona.
 
