@@ -65,13 +65,13 @@ toccare la leggibilità dell'admin.
 
 ## 3 · Piano operativo (fasi isolate, ognuna verificabile e mergiabile da sola)
 
-### D1 · Retheme token (impatto massimo, rischio minimo — 0,5 gg)
+### D1 · Retheme token ✅ (fatto 4/7/2026 — merge su main)
 - [ ] Nuove variabili in `index.css` (palette scelta) + gradient sidebar + charts
 - [ ] Landing pubbliche: emerald/gray-900 hardcoded → token (sweep mirato)
 - [ ] Verifica browser di TUTTE le pagine admin + store + landing + /ritiri
 - **DoD**: nessun blu AFianco residuo; contrasto AA sui testi primari.
 
-### D2 · Ordini: da 7 file di filtri a 1 (il caso citato — 1 gg)
+### D2 · Ordini: da 7 file di filtri a 1 ✅ (fatto 4/7/2026 — merge su main)
 - [ ] Riga unica: search + 3 chips di stato-vita: **Da gestire (n) · In corso · Tutti**
 - [ ] Bottone "Filtri" (popover) per: stato dettagliato, periodo, canale, pagamento
       — con badge conteggio filtri attivi; chips-riassunto rimovibili quando attivi
@@ -80,14 +80,14 @@ toccare la leggibilità dell'admin.
 - **DoD**: sopra la tabella al massimo 2 file; ogni info compare UNA volta.
 - Assorbe WS-4.1 (vista "richiede attenzione" = chip "Da gestire" di default).
 
-### D3 · Dashboard = home dell'operatore (1 gg)
+### D3 · Dashboard = home dell'operatore ✅ (fatto 4/7/2026 — merge su main; nuovo endpoint /orders/payments-overview)
 - [ ] Default non vuoto: **Prossimi ritiri** (data, posti venduti/capienza),
       **In arrivo** (caparre+saldi attesi 30gg dal ledger), **Da fare**
       (ordini da gestire, saldi scaduti) — 3 card, zero configurazione
 - [ ] Il pin/moduli resta come personalizzazione avanzata, non come primo impatto
 - **DoD**: primo login → si capisce in 5 secondi come va il business.
 
-### D4 · Rifiniture coerenza (0,5–1 gg, assorbe WS-4 restante)
+### D4 · Rifiniture coerenza (0,5–1 gg, assorbe WS-4 restante) — PROSSIMO PASSO
 - [ ] Emoji→lucide dove stonano; empty states col nuovo tono (caldi, operativi)
 - [ ] Wizard: cue contenuti ricchi (WS-4/A.3) + tab Biglietti split (A.2)
 - [ ] Microcopy sweep finale (A.4)
