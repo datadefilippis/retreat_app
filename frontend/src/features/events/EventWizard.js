@@ -308,6 +308,20 @@ export default function EventWizard() {
     return merged;
   });
 
+  // Fase 3 — contenuti ricchi (agenda/galleria/incluso/faq): il wizard non
+  // li edita (si curano dalla dashboard), ma il prefill "Duplica" li porta
+  // e il payload li conserva — niente perdite al submit.
+  const [richContent] = useState(() => {
+    const occ = location.state?.prefillData?.occurrence || {};
+    return {
+      agenda: occ.agenda || [],
+      gallery_urls: occ.gallery_urls || [],
+      included: occ.included || [],
+      excluded: occ.excluded || [],
+      faq: occ.faq || [],
+    };
+  });
+
   const [longDescription, setLongDescription] = useState(() =>
     prefillRef.current?.occurrence?.long_description || ''
   );
@@ -551,6 +565,7 @@ export default function EventWizard() {
           longitude: where.longitude !== '' ? Number(where.longitude) : null,
           cover_image_url: where.cover_image_url?.trim() || null,
           long_description: longDescription?.trim() || null,
+          ...richContent,   // Fase 3 — passthrough dal Duplica
         },
         tiers: tiers.map((t, i) => ({
           label: t.label.trim(),

@@ -488,6 +488,104 @@ export default function EventLandingPage() {
             </div>
           )}
 
+          {/* Fase 3 — Programma giorno per giorno */}
+          {(occurrence.agenda || []).length > 0 && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">{t('landings:event.program.heading')}</h2>
+              <div className="space-y-5">
+                {occurrence.agenda.map((day, di) => (
+                  <div key={di}>
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-2">{day.label}</h3>
+                    <div className="space-y-2 border-l-2 border-gray-100 pl-4">
+                      {(day.items || []).map((item, ii) => (
+                        <div key={ii} className="text-sm">
+                          <span className="text-gray-500 tabular-nums mr-2">{item.time}</span>
+                          <span className="font-medium text-gray-900">{item.title}</span>
+                          {item.description && (
+                            <p className="text-gray-600 text-xs mt-0.5">{item.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Fase 3 — Galleria */}
+          {(occurrence.gallery_urls || []).length > 0 && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <h2 className="text-base font-semibold text-gray-900 mb-3">{t('landings:event.gallery.heading')}</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {occurrence.gallery_urls.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-32 sm:h-36 object-cover rounded-lg"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Fase 3 — Incluso / Non incluso */}
+          {((occurrence.included || []).length > 0 || (occurrence.excluded || []).length > 0) && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <h2 className="text-base font-semibold text-gray-900 mb-3">{t('landings:event.includes.heading')}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {(occurrence.included || []).length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1.5">
+                      {t('landings:event.includes.included')}
+                    </p>
+                    <ul className="space-y-1">
+                      {occurrence.included.map((x, i) => (
+                        <li key={i} className="text-sm text-gray-700 flex gap-2">
+                          <span className="text-emerald-600" aria-hidden>✓</span>{x}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(occurrence.excluded || []).length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                      {t('landings:event.includes.excluded')}
+                    </p>
+                    <ul className="space-y-1">
+                      {occurrence.excluded.map((x, i) => (
+                        <li key={i} className="text-sm text-gray-500 flex gap-2">
+                          <span aria-hidden>—</span>{x}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Fase 3 — FAQ */}
+          {(occurrence.faq || []).length > 0 && (
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <h2 className="text-base font-semibold text-gray-900 mb-3">{t('landings:event.faq.heading')}</h2>
+              <div className="space-y-3">
+                {occurrence.faq.map((entry, i) => (
+                  <details key={i} className="group">
+                    <summary className="text-sm font-medium text-gray-900 cursor-pointer list-none flex items-center justify-between">
+                      {entry.q}
+                      <span className="text-gray-400 group-open:rotate-45 transition-transform" aria-hidden>+</span>
+                    </summary>
+                    <p className="text-sm text-gray-600 mt-1.5">{entry.a}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Fase 2 S2 — Come paghi + policy di cancellazione (dal piano
               configurato sul prodotto; la policy si mostra SEMPRE quando
               presente, anche in modalità pagamento unico: guida i rimborsi) */}

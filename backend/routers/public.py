@@ -71,6 +71,13 @@ class PublicOccurrence(BaseModel):
     # F2: slug exposed so the storefront card can deep-link to
     # /e/:org_slug/:slug without a second fetch.
     slug: Optional[str] = None
+    # Fase 3 (retreat) — pagina di vendita ricca (tutti opzionali; la
+    # landing salta le sezioni vuote)
+    agenda: List[Dict[str, Any]] = Field(default_factory=list)
+    gallery_urls: List[str] = Field(default_factory=list)
+    included: List[str] = Field(default_factory=list)
+    excluded: List[str] = Field(default_factory=list)
+    faq: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class PublicServiceOption(BaseModel):
@@ -1250,6 +1257,12 @@ async def get_public_event_landing(org_slug: str, slug: str):
         map_url=map_url,
         cover_image_url=occ.get("cover_image_url"),
         long_description=occ.get("long_description"),
+        # Fase 3 — contenuti pagina di vendita
+        agenda=occ.get("agenda") or [],
+        gallery_urls=occ.get("gallery_urls") or [],
+        included=occ.get("included") or [],
+        excluded=occ.get("excluded") or [],
+        faq=occ.get("faq") or [],
     )
 
     # Store info (branding) — same logic as the catalog handler

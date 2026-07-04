@@ -90,6 +90,13 @@ class WizardOccurrencePayload(BaseModel):
     longitude: Optional[float] = Field(default=None, ge=-180, le=180)
     cover_image_url: Optional[str] = Field(default=None, max_length=500)
     long_description: Optional[str] = Field(default=None, max_length=5000)
+    # Fase 3 (retreat) — contenuti pagina di vendita (passthrough dal
+    # prefill "Duplica"; il wizard non li edita ancora, li conserva)
+    agenda: List[Dict[str, Any]] = Field(default_factory=list, max_length=21)
+    gallery_urls: List[str] = Field(default_factory=list, max_length=12)
+    included: List[str] = Field(default_factory=list, max_length=20)
+    excluded: List[str] = Field(default_factory=list, max_length=20)
+    faq: List[Dict[str, Any]] = Field(default_factory=list, max_length=15)
 
 
 class WizardTierPayload(BaseModel):
@@ -475,6 +482,15 @@ async def duplicate_occurrence_data(
         "price_mode": product.get("price_mode", "fixed"),
         "transaction_mode": product.get("transaction_mode", "direct"),
         "is_published": False,  # safer default: duplicated event starts unpublished
+        # Fase 3 (retreat): il piano di pagamento e i campi partecipante
+        # viaggiano nel duplicato — chi fa 4 ritiri l'anno non riconfigura
+        # caparre e policy ogni volta. Il wizard li idrata dal prefill.
+        "metadata": {
+            k: v for k, v in (product.get("metadata") or {}).items()
+            if k in ("payment_plan", "requires_attendee_details",
+                     "require_attendee_email", "require_attendee_phone",
+                     "attendee_fields", "order_fields", "terms_content")
+        },
     }
     occurrence_clean = {
         # start_at intentionally blanked — merchant must pick a new date
@@ -492,6 +508,12 @@ async def duplicate_occurrence_data(
         "longitude": occ.get("longitude"),
         "cover_image_url": occ.get("cover_image_url"),
         "long_description": occ.get("long_description"),
+        # Fase 3 — contenuti pagina di vendita nel duplicato
+        "agenda": occ.get("agenda") or [],
+        "gallery_urls": occ.get("gallery_urls") or [],
+        "included": occ.get("included") or [],
+        "excluded": occ.get("excluded") or [],
+        "faq": occ.get("faq") or [],
     }
     tiers_clean = [
         {

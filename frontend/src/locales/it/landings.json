@@ -308,6 +308,20 @@
       "policyHeading": "Politica di cancellazione",
       "policyTier": "Fino a {{days}} giorni prima: rimborso {{percent}}%",
       "policyLast": "Oltre: rimborso {{percent}}%"
+    },
+    "program": {
+      "heading": "Il programma"
+    },
+    "gallery": {
+      "heading": "La location e i momenti"
+    },
+    "includes": {
+      "heading": "Cosa è incluso",
+      "included": "Incluso",
+      "excluded": "Non incluso"
+    },
+    "faq": {
+      "heading": "Domande frequenti"
     }
   },
   "product": {
