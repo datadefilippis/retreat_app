@@ -59,8 +59,8 @@
 > Design completo in `docs/PIANO_OPERATIVO_RITIRI_2026-07.md` Parte III. Qui gli step esecutivi.
 
 ### S1 — Scheduler + modelli pagamento (1 settimana)
-- [ ] **2.1 APScheduler in-process** con lock su Mongo (collection `scheduler_locks`): un solo runner attivo, job idempotenti, ogni run logga inizio/fine/esito. Job heartbeat di prova.
-- [ ] **2.2 Modelli**: `PaymentPlan` (full / deposit+balance / installments; deposit % o fisso; `balance_due_days_before`; policy cancellazione a scaglioni) e `PaymentSchedule` per-ordine (righe con `seq, label, amount, due_at, status, stripe_ref`). Stati e transizioni documentati nel codice.
+- [x] **2.1 APScheduler in-process** *(fatto 4/7/2026)*: lock a lease atomico su Mongo (`try_acquire_lock` via find_one_and_update — burst di 10 acquisizioni concorrenti → 1 solo vincitore, testato); lease scaduto viene rubato; journal `scheduler_job_runs` append-only; job heartbeat; avvio nel lifespan server, spento con ENVIRONMENT=test. 6 test integrazione (skip puliti in CI senza Mongo). `services/scheduler_service.py`
+- [x] **2.2 Modelli** *(fatto 4/7/2026)*: `PaymentPlan` + `PaymentSchedule` + **`PaymentEvent` append-only** (tracciabilità totale richiesta dal founder: ogni transizione = 1 evento con attore esplicito webhook/scheduler/operator/system, scritto NEL momento). Macchina a stati sole-andata con **guardia ottimistica anti-webhook-doppio** ($elemMatch sullo stato di partenza). `apply_row_transition` = unica porta di modifica: valida, ricalcola totali DAI FATTI, logga. 158 test: invariante somma==totale su totali "cattivi" × modalità × % × rate; collapse last-minute; policy a scaglioni; snapshot congelato; concorrenza. Suite totale: 3960 verdi
 - [ ] **2.3 Wizard**: tab "Come incassi" nel wizard ritiro (scelta piano + policy). Snapshot congelato di piano+policy sull'ordine alla prenotazione (pattern consensi già esistente).
 - [ ] **2.4 Test**: unit su generazione schedule (caparra 30%, rate 3×, arrotondamenti, fusi orari/scadenze).
 

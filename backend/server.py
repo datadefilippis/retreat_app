@@ -340,9 +340,23 @@ async def lifespan(app: FastAPI):
     # Configure via env: BACKGROUND_ALERT_INTERVAL_HOURS (6), BILLING_SWEEP_INTERVAL_HOURS (1).
     bg_tasks = background_service.start()
 
+    # Fase 2 (retreat) — scheduler con lock Mongo per i job pagamenti
+    # (dunning, session saldo, promemoria). Disabilitato con ENVIRONMENT=test
+    # o SCHEDULER_ENABLED=false. Vedi services/scheduler_service.py.
+    try:
+        from services.scheduler_service import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        logging.error("scheduler start failed: %s", e)
+
     yield
 
     # ── Shutdown ──────────────────────────────────────────────────────────────
+    try:
+        from services.scheduler_service import stop_scheduler
+        await stop_scheduler()
+    except Exception:
+        pass
     background_service.stop(bg_tasks)
     for task in bg_tasks:
         try:
