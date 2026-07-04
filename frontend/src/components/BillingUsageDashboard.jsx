@@ -222,6 +222,14 @@ export default function BillingUsageDashboard({ onAddonRemoved }) {
   const visibleMetrics = (data.metrics || []).filter(
     (m) => m.limit > 0 || m.status === 'unlimited' || m.status === 'exceeded',
   );
+  // Retreat fork (4/7/2026) — nel catalogo ritiri le feature legacy spente
+  // (alert AI, fornitori, qualita' dati, noleggi...) non sono sbloccabili
+  // con NESSUN upgrade: mostrarle bloccate con CTA sarebbe fuorviante.
+  // Per le org retreat si vedono solo le feature davvero incluse.
+  const isRetreatPlan = (billing.plan || '').startsWith('retreat_');
+  const visibleFeatures = (data.features || []).filter(
+    (f) => (isRetreatPlan ? f.included : true),
+  );
   const activeAddons = data.active_addons || [];
 
   return (
@@ -282,16 +290,18 @@ export default function BillingUsageDashboard({ onAddonRemoved }) {
           would be misleading — they're sì/no flags. Locked items show an
           upgrade CTA so the user discovers what's available on higher
           plans without scrolling away. */}
-      {(data.features || []).length > 0 && (
+      {visibleFeatures.length > 0 && (
         <section>
           <h3 className="text-sm font-semibold text-foreground mb-1">
             {t('billing.features_section.title', 'Features incluse nel piano')}
           </h3>
           <p className="text-xs text-muted-foreground mb-3">
-            {t('billing.features_section.subtitle', 'Cosa e\' attivo (e cosa puoi sbloccare con un upgrade)')}
+            {isRetreatPlan
+              ? t('billing.features_section.subtitle_retreat', 'Cosa è attivo nel tuo piano')
+              : t('billing.features_section.subtitle', 'Cosa e\' attivo (e cosa puoi sbloccare con un upgrade)')}
           </p>
           <div className="space-y-1">
-            {(data.features || []).map((f) => {
+            {visibleFeatures.map((f) => {
               const label = t(
                 `billing.features_section.feature.${f.key}.label`,
                 t(`billing.quota.metric.${f.key}`, { defaultValue: f.key })
@@ -345,7 +355,11 @@ export default function BillingUsageDashboard({ onAddonRemoved }) {
         </section>
       )}
 
-      {/* ── Section: ADD-ON ATTIVI ────────────────────────────────────────── */}
+      {/* ── Section: ADD-ON ATTIVI ──────────────────────────────────────────
+          Gli add-on sono pacchetti del catalogo legacy AFianco: per le org
+          retreat la sezione sparisce (a meno di add-on gia' attivi da
+          mostrare comunque, per trasparenza). */}
+      {(!isRetreatPlan || activeAddons.length > 0) && (
       <section>
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-sm font-semibold text-foreground">
@@ -416,6 +430,7 @@ export default function BillingUsageDashboard({ onAddonRemoved }) {
           </div>
         )}
       </section>
+      )}
     </div>
   );
 }

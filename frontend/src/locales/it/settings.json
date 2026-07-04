@@ -365,7 +365,8 @@
           "label": "Checkout Stripe nativo",
           "desc": "Vendi online con pagamento integrato (no contact-request)"
         }
-      }
+      },
+      "subtitle_retreat": "Cosa è attivo nel tuo piano"
     },
     "active_addons": {
       "section_title": "Add-on attivi",
@@ -467,7 +468,7 @@
       "fee_free_note": "Paghi solo quando incassi",
       "included_title": "Cosa è incluso",
       "stripe_fees_title": "Commissioni Stripe (separate)",
-      "stripe_fees_body": "Ai pagamenti online si applicano anche le commissioni di Stripe (per le carte europee ≈ 1,5% + 0,25 €), addebitate da Stripe direttamente sul tuo account. Sono separate dalla fee piattaforma e valgono per qualsiasi piano.",
+      "stripe_fees_body": "Ai pagamenti online si applicano anche le commissioni di Stripe (per le carte europee ≈ 1,5% + 0,25 €), addebitate da Stripe direttamente sul tuo account: le incassa Stripe, non noi. Sono separate dalla fee piattaforma e valgono per qualsiasi piano.",
       "example_title": "Esempio su un incasso di 100 €",
       "example_platform": "Fee piattaforma ({{pct}}%)",
       "example_stripe": "Commissioni Stripe (≈)",
@@ -478,7 +479,8 @@
       "cta_upgrade": "Passa a Pro",
       "cta_downgrade": "Torna a Gratis",
       "downgrade_hint": "Per tornare al piano Gratis gestisci l'abbonamento dal portale di fatturazione.",
-      "yearly_hint": "290 €/anno (2 mesi gratis)"
+      "yearly_hint": "290 €/anno (2 mesi gratis)",
+      "hero_fee_line": "Fee piattaforma {{pct}}% sul transato · le commissioni Stripe sono separate (le incassa Stripe, non noi)"
     }
   },
   "prefs": {
