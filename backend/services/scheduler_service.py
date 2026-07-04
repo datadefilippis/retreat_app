@@ -189,6 +189,12 @@ def start_scheduler() -> bool:
         return False
     if _engine is not None:
         return True
+    # I moduli che registrano job via @register_job vanno importati PRIMA
+    # di avviare l'engine (la registry si popola all'import).
+    try:
+        from services import payment_dunning_service  # noqa: F401
+    except Exception as exc:
+        logger.error("scheduler: import job modules failed: %s", exc)
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
     _engine = AsyncIOScheduler(timezone="UTC")
     for job in registered_jobs():

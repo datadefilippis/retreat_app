@@ -3228,3 +3228,56 @@ async def clear_or_delete_cart(
             detail="Cart non trovato.",
         )
     return cart_service.build_response(updated)
+
+
+# ── Fase 2 S3 (retreat) — link eterno paga-adesso ────────────────────────────
+
+@router.get("/pay/{token}")
+async def pay_by_token(token: str):
+    """Il link che viaggia nelle email di promemoria: /pay/{token}.
+
+    Al click genera la Checkout Session FRESCA per la riga (saldo/rata) e
+    reindirizza — così il link non scade mai, mentre le session Stripe
+    durano 24h. Token per-riga, non enumerabile (uuid4), risolto contro
+    payment_schedules. Risposte:
+      · riga pagabile  → 303 verso Stripe Checkout
+      · riga già pagata → 303 verso la pagina di successo dello storefront
+      · token ignoto / ordine mancante → 404 secco (nessun oracle)
+    """
+    from fastapi.responses import RedirectResponse
+    from database import orders_collection
+    from services.payment_schedule_service import (
+        PAYABLE_STATES, find_schedule_by_pay_token,
+    )
+    from services.payment_checkout_service import create_row_checkout_session
+    from services.url_builder import build_public_url
+
+    resolved = await find_schedule_by_pay_token(token)
+    if not resolved:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link non valido")
+    schedule_doc, row = resolved
+
+    order = await orders_collection.find_one(
+        {"id": schedule_doc["order_id"],
+         "organization_id": schedule_doc["organization_id"]},
+        {"_id": 0},
+    )
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link non valido")
+
+    if row.get("status") in ("paid", "paid_manual", "refunded", "waived", "cancelled"):
+        return RedirectResponse(
+            build_public_url(f"/s/checkout-success?order_id={order['id']}&already_paid=1"),
+            status_code=303,
+        )
+    if row.get("status") not in PAYABLE_STATES:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link non valido")
+
+    session = await create_row_checkout_session(
+        schedule_doc["organization_id"], order, schedule_doc, row)
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Pagamento momentaneamente non disponibile. Riprova tra poco.",
+        )
+    return RedirectResponse(session["url"], status_code=303)

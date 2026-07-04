@@ -90,6 +90,11 @@ class ScheduleRow(BaseModel):
     amount_minor: int = Field(gt=0)
     due_at: str                      # ISO datetime UTC
     status: RowStatus = RowStatus.PENDING
+    # S3 — token pubblico del link /pay/{token}: al click si genera la
+    # Checkout Session fresca (mai link Stripe grezzi nelle email, che
+    # scadono in 24h). Un token per riga, stabile per tutta la vita
+    # della riga; le righe legacy pre-S3 lo ricevono lazy al primo uso.
+    pay_token: str = Field(default_factory=generate_id)
     stripe_session_id: Optional[str] = None
     stripe_payment_intent: Optional[str] = None
     paid_at: Optional[str] = None
