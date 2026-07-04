@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useEntitlements } from '../hooks/useEntitlements';
 import {
   LayoutDashboard,
   Blocks,
@@ -141,6 +142,8 @@ const NavGroup = ({ item, navLinkClass, location }) => {
 
 export const Sidebar = () => {
   const { user, logout } = useAuth();
+  // Consolidamento WS-2 — gating a grana fine del menu (feature-key)
+  const { canUse } = useEntitlements();
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const location = useLocation();
@@ -211,7 +214,10 @@ export const Sidebar = () => {
   if (activeSet.has('commerce')) {
     dynamicOpsNav.push(
       { nameKey: 'nav.orders', href: '/orders', icon: ShoppingCart, end: true },
-      { nameKey: 'nav.reservations', href: '/reservations', icon: BookMarked, end: true },
+      // WS-2: Affitti solo se il piano abilita i noleggi (retreat: no)
+      ...(canUse('commerce', 'rentals')
+        ? [{ nameKey: 'nav.reservations', href: '/reservations', icon: BookMarked, end: true }]
+        : []),
       { nameKey: 'nav.calendar', href: '/calendar', icon: CalendarDays, end: true },
       { nameKey: 'nav.stores', href: '/stores', icon: Globe, end: true },
       { nameKey: 'nav.newsletter', href: '/newsletter', icon: Mail, end: true },
@@ -263,15 +269,28 @@ export const Sidebar = () => {
     });
   }
 
-  // Suppliers: only with cashflow
-  if (activeSet.has('cashflow_monitor')) {
+  // Suppliers: cashflow attivo E feature abilitata (WS-2: nel verticale
+  // ritiri il cashflow core resta — gestionale — ma i fornitori no)
+  if (activeSet.has('cashflow_monitor') && canUse('cashflow_monitor', 'suppliers')) {
     entityNav.push({ nameKey: 'nav.suppliers', href: '/suppliers', icon: Truck, end: true });
   }
 
-  // System nav: filter by modules
+  // System nav: filtro a grana fine (WS-2). Cashflow core può essere
+  // acceso (gestionale) senza trascinarsi anomalie/AI/qualità dati.
   const dynamicSystemNav = systemNav.filter(item => {
-    if (item.href === '/alerts' || item.href === '/analisi-ai' || item.href === '/data-integrity') {
-      return activeSet.has('cashflow_monitor');
+    if (item.href === '/alerts') {
+      return activeSet.has('cashflow_monitor') && canUse('cashflow_monitor', 'alert_config');
+    }
+    if (item.href === '/data-integrity') {
+      return activeSet.has('cashflow_monitor') && canUse('cashflow_monitor', 'data_quality');
+    }
+    if (item.href === '/analisi-ai') {
+      // è la pagina del modulo AI: gating sul modulo giusto
+      return activeSet.has('ai_assistant');
+    }
+    if (item.href === '/modules') {
+      // piani retreat fissi: l'operatore non deve (ri)attivare moduli a mano
+      return user?.role === 'system_admin';
     }
     return true;
   });

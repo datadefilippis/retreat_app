@@ -18,6 +18,9 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
 DEV_ORG_ID = "org_masseria_dev"
+# L'org dell'utente demo della UI (admin@demo.com) — va provisionata anche
+# lei sui piani retreat, altrimenti il browser gira sul piano legacy free.
+DEMO_UI_ORG_ID = "2393033b-80a8-47c9-8529-b7810c0b2123"
 DEV_ORG_NAME = "Masseria Montanari Dev"
 
 
@@ -46,21 +49,25 @@ async def main() -> int:
         upsert=True,
     )
 
-    # 3. Provisioning piano retreat_free
-    result = await provision_commercial_plan(
-        org_id=DEV_ORG_ID,
-        plan_slug="retreat_free",
-        assigned_by="script:bootstrap_dev_org",
-        billing_status="manual",
-        notes="org dev bootstrap (Fase 1)",
-    )
-    print(f"Provisioning: {result.get('plan_slug', result)}")
+    # 3. Provisioning piano retreat_free (org script + org UI demo)
+    for oid in (DEV_ORG_ID, DEMO_UI_ORG_ID):
+        result = await provision_commercial_plan(
+            org_id=oid,
+            plan_slug="retreat_free",
+            assigned_by="script:bootstrap_dev_org",
+            billing_status="manual",
+            notes="org dev bootstrap",
+        )
+        print(f"Provisioning {oid[:12]}…: {result.get('plan_slug', result)}")
 
     # 4. Matrice gating — la DoD della kill-list
     org_doc = await db.organizations.find_one({"id": DEV_ORG_ID})
     expected = {
         "ai_assistant": False,
-        "cashflow_monitor": False,
+        # WS-2 (decisione founder): il cashflow core è il gestionale → ON;
+        # le sotto-feature (alert/fornitori/qualità) sono spente a livello
+        # di feature-key nel piano cashflow_monitor_retreat.
+        "cashflow_monitor": True,
         "product_catalog": True,
         "commerce": True,
         "customers_light": True,
@@ -78,7 +85,7 @@ async def main() -> int:
     if failures:
         print(f"\nKILL-LIST NON RISPETTATA: {failures}")
         return 1
-    print("\nDoD kill-list verificata: AI e cashflow spenti, vendita accesa.")
+    print("\nDoD verificata: AI spento, cashflow core acceso (gestionale), vendita accesa.")
     return 0
 
 

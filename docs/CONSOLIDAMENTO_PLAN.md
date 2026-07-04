@@ -80,9 +80,9 @@ Il pezzo che dà all'operatore il "pieno controllo" che chiedi. Branch `feat/con
 ### WS-2 · Snellimento menu (grana fine su cashflow)
 Branch `feat/cons-menu`.
 
-- [ ] **2.1 Feature-key retreat**: introdurre flag `retreat_hidden` (o riuso feature-key esistenti) per disaccoppiare Fornitori/Anomalie/AnalisiAI/QualitàDati dal modulo cashflow. Nei piani retreat: cashflow core ON, quelle 4 OFF. **DoD**: con cashflow acceso, quelle 4 voci NON compaiono; Cashflow+Dati sì.
-- [ ] **2.2 Nascondere Affitti e Moduli** dal menu per i piani retreat (route restano raggiungibili per sicurezza, ma fuori dalla sidebar). **DoD**: sidebar retreat = Dashboard, Ordini, Calendario, Store, Newsletter, Prodotti, Corsi, Clienti, Cashflow+Dati, Team, Impostazioni.
-- [ ] **2.3 Rinominare le voci** in ottica ritiri dove serve (es. "Calendario" resta, ma verificare che non evochi "affitti"). **DoD**: nessuna label fuori-dominio nella sidebar.
+- [x] **2.1 Feature-key retreat** *(fatto 4/7/2026: piano `cashflow_monitor_retreat` — core gestionale ON (analytics/dati/export -1), sotto-feature OFF (email_alerts/digest/alert_config/suppliers/data_quality=0); `rentals:0` su commerce_retreat; nuove chiavi nel registro usage-summary — canUse è ottimista sulle ignote; org demo UI provisionata)*: introdurre flag `retreat_hidden` (o riuso feature-key esistenti) per disaccoppiare Fornitori/Anomalie/AnalisiAI/QualitàDati dal modulo cashflow. Nei piani retreat: cashflow core ON, quelle 4 OFF. **DoD**: con cashflow acceso, quelle 4 voci NON compaiono; Cashflow+Dati sì.
+- [x] **2.2 Nascondere Affitti e Moduli** *(fatto 4/7/2026 — VERIFICATO IN BROWSER: sidebar = Dashboard, Cashflow Monitor, Ordini, Calendario, Store, Newsletter, Prodotti, Corsi, Clienti, Team, Impostazioni; spariti Affitti/Fornitori/Anomalie/AnalisiAI/QualitàDati/Moduli — Moduli visibile solo a system_admin; route raggiungibili, solo fuori sidebar)* dal menu per i piani retreat (route restano raggiungibili per sicurezza, ma fuori dalla sidebar). **DoD**: sidebar retreat = Dashboard, Ordini, Calendario, Store, Newsletter, Prodotti, Corsi, Clienti, Cashflow+Dati, Team, Impostazioni.
+- [x] **2.3 Verifica label** *(fatto 4/7/2026: nessuna label fuori-dominio residua nella sidebar snellita)* in ottica ritiri dove serve (es. "Calendario" resta, ma verificare che non evochi "affitti"). **DoD**: nessuna label fuori-dominio nella sidebar.
 
 ### WS-3 · User-friendliness creazione prodotto
 Branch `feat/cons-prodotti`.

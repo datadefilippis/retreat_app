@@ -348,6 +348,12 @@ async def billing_usage_summary(
         ("alert_config",       "cashflow_monitor", "alert_config",       "starter"),
         ("export",             "cashflow_monitor", "export",             "starter"),
         ("checkout_stripe",    "commerce",         "checkout_stripe",    "core"),
+        # Consolidamento WS-2 (retreat) — feature-key per il gating fine del
+        # menu: canUse() è ottimista sulle chiavi ignote, quindi DEVONO
+        # passare dal summary per poter nascondere le voci.
+        ("suppliers",          "cashflow_monitor", "suppliers",          "starter"),
+        ("data_quality",       "cashflow_monitor", "data_quality",       "starter"),
+        ("rentals",            "commerce",         "rentals",            "core"),
     ]
     for feat_key, mod_key, label_key, requires_plan in feature_specs:
         try:
