@@ -91,7 +91,7 @@ export default function RetreatsCalendarPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-gray-900 text-white">
+      <header className="bg-gradient-sidebar text-white">
         <div className="max-w-6xl mx-auto px-4 py-10">
           <h1 className="text-3xl font-bold">{t('landings:calendar.title')}</h1>
           <p className="text-gray-300 mt-2 max-w-xl">{t('landings:calendar.subtitle')}</p>
