@@ -251,3 +251,27 @@ class TestFeeSyncOnProvisioning:
         # nell'update (il valore manuale su org resta com'è).
         fields = self._run({"slug": "core", "module_plans": {}})
         assert "application_fee_percent" not in fields
+
+
+class TestPaymentsOverviewRoute:
+    """D3 — /orders/payments-overview deve stare PRIMA di /{order_id}
+    (FastAPI matcha in ordine di definizione: dopo, verrebbe catturato
+    come order_id='payments-overview' → 404)."""
+
+    def test_route_defined_before_dynamic_order_id(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..", "routers", "orders.py")
+        src = open(path).read()
+        assert src.index('@router.get("/payments-overview")') \
+            < src.index('@router.get("/{order_id}")')
+
+    def test_overview_uses_derived_review_state(self):
+        # review_state non e' persistito: il conteggio DEVE passare da
+        # derive_review_info, non da un count_documents sul campo.
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..", "routers", "orders.py")
+        src = open(path).read()
+        i = src.index('@router.get("/payments-overview")')
+        block = src[i:i + 2500]
+        assert "derive_review_info" in block
+        assert 'count_documents(\n        {"organization_id": org_id, "review_state"' not in block
