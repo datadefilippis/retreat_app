@@ -38,6 +38,7 @@ import FieldEditorList from './components/FieldEditorList';
 import { pruneFieldConfigs } from './components/fieldConfigUtils';
 // W1.S5/Phase 2.9 — additive cost composition editor for edits.
 import CostSourceEditor from '../products/components/CostSourceEditor';
+import RetreatContentEditor from './components/RetreatContentEditor';
 
 
 function formatDateTime(iso, locale = 'it-IT') {
@@ -683,6 +684,9 @@ export default function EventDashboardPage() {
         {/* Diagnostic banner — shown when landing or store visibility is blocked */}
         {/* Fase 2 S2 — Incassi in cima: la prima cosa che l'operatore guarda */}
         <PaymentsCard occurrenceId={occurrenceId} />
+
+        {/* Fase 3 — editor contenuti pagina di vendita */}
+        <RetreatContentEditor occurrenceId={occurrenceId} occurrence={occurrence} />
 
         {landingBlockers.length > 0 && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
