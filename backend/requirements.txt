@@ -47,7 +47,7 @@ prometheus-client>=0.20.0
 xlrd==2.0.2
 slowapi>=0.1.9
 stripe>=8.0.0
-qrcode[pil]>=7.4  # E4 — ticket QR generation (Pillow for PNG output)
+qrcode[pil]>=8.2  # E4 — ticket QR generation (Pillow for PNG output)
 
 # Observability (Phase 1 — Step A1)
 # Sentry SDK for error tracking + performance monitoring.
