@@ -414,6 +414,31 @@ AI_ASSISTANT_PLANS.append({
 })
 
 CASHFLOW_MONITOR_PLANS.append({
+    # Consolidamento WS-2 (decisione founder): il cashflow È il gestionale
+    # contabile dell'operatore → core acceso (analytics/dati/export), ma
+    # le sotto-feature che non servono al verticale restano spente:
+    # alert/anomalie, digest email, fornitori, qualità dati. I feature-key
+    # "suppliers" e "data_quality" nascono qui (il menu li usa via
+    # canUse(): chiave assente = ottimista, quindi VANNO definiti a 0).
+    "module_key": "cashflow_monitor",
+    "slug": "cashflow_monitor_retreat",
+    "name": "Cashflow Retreat (gestionale)",
+    "price_monthly": 0.0,
+    "currency": "EUR",
+    "limits": {
+        "analytics": -1,
+        "data_rows": -1,
+        "export": -1,
+        "email_alerts": 0,
+        "email_digest": 0,
+        "alert_config": 0,
+        "suppliers": 0,
+        "data_quality": 0,
+    },
+    "sort_order": 11,
+})
+
+CASHFLOW_MONITOR_PLANS.append({
     "module_key": "cashflow_monitor",
     "slug": "cashflow_monitor_disabled",
     "name": "Cashflow Disabled",
@@ -441,6 +466,8 @@ COMMERCE_PLANS.append({
         "orders_monthly": -1,   # fee transazionale, non quota
         "stores_max": 1,
         "checkout_stripe": -1,
+        # WS-2: la voce Affitti/noleggi non serve al verticale ritiri
+        "rentals": 0,
     },
     "sort_order": 10,
 })

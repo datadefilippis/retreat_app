@@ -100,10 +100,28 @@ class TestKillList:
     def test_retreat_plans_point_killed_modules_to_disabled(self):
         for plan in RETREAT_COMMERCIAL_PLANS:
             assert plan["module_plans"]["ai_assistant"] == "ai_assistant_disabled"
+            # Consolidamento WS-2 (decisione founder): il cashflow core resta
+            # acceso — è il gestionale contabile — ma con le sotto-feature
+            # non pertinenti spente (vedi test dedicato sotto).
             assert (
                 plan["module_plans"]["cashflow_monitor"]
-                == "cashflow_monitor_disabled"
+                == "cashflow_monitor_retreat"
             )
+
+    def test_cashflow_retreat_core_on_subfeatures_off(self):
+        """WS-2: gestionale acceso (analytics/dati/export), anomalie/alert/
+        digest/fornitori/qualità-dati spenti — anche a modulo attivo."""
+        limits = PRICING_BY_SLUG["cashflow_monitor_retreat"]["limits"]
+        assert limits["analytics"] == -1
+        assert limits["data_rows"] == -1
+        assert limits["export"] == -1
+        for off in ("email_alerts", "email_digest", "alert_config",
+                    "suppliers", "data_quality"):
+            assert limits[off] == 0, f"{off} deve essere spento"
+
+    def test_commerce_retreat_rentals_off(self):
+        """WS-2: la voce Affitti non serve al verticale ritiri."""
+        assert PRICING_BY_SLUG["commerce_retreat"]["limits"]["rentals"] == 0
 
     def test_commerce_retreat_enables_selling(self):
         limits = PRICING_BY_SLUG["commerce_retreat"]["limits"]
