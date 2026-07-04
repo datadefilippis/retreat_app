@@ -65,10 +65,10 @@
 - [x] **2.4 Test** *(fatto 4/7/2026)*: coperti in 2.2 (158 unit generazione/stati) + 5 test hook checkout + 6 lock scheduler. Suite: 3965 verdi.
 
 ### S2 — Caparra + riserva posti (1 settimana)
-- [ ] **2.5 Checkout caparra**: Checkout Session esistente con line item caparra; webhook conferma → **riserva atomica dei posti alla caparra** (sposta il momento della riserva: chiude anche il bug oversell "pagato-ma-non-confermato" documentato).
-- [ ] **2.6 Biglietti in stato "confermato — saldo dovuto"**; email conferma con riepilogo scadenze.
-- [ ] **2.7 Dashboard incassi v1** per l'operatore: per ritiro — incassato, in scadenza, in ritardo; per partecipante — stato pagamenti.
-- [ ] **2.8 Test e2e Stripe test mode**: prenotazione con caparra → posti scalati → ticket emesso → schedule corretto.
+- [x] **2.5 Checkout caparra** *(fatto 4/7/2026)*: session schedule-aware ("Caparra — {ritiro}", idempotency per-riga, metadata schedule_row_seq, riga→processing); webhook → riga→paid nel punto in cui il denaro è certo + conferma ordine (= riserva posti alla caparra) + mirror payment_state sull'ordine. Collasso sotto minimo Stripe (50 cent). **2 fix ereditati**: application_fee_amount top-level (Stripe lo rifiuta: va in payment_intent_data — la monetizzazione AFianco sarebbe fallita alla prima accensione; corretto anche il test che codificava il bug) + lookup schedule limitato a ordini-evento.
+- [ ] **2.6 Biglietti in stato "confermato — saldo dovuto"**; email conferma con riepilogo scadenze — PROSSIMO.
+- [ ] **2.7 Dashboard incassi v1** per l'operatore + mark-paid-manual — PROSSIMO.
+- [x] **2.8 Test e2e Stripe test mode** *(fatto 4/7/2026, PAGAMENTO REALE in test)*: bootstrap Connect dev (`scripts/bootstrap_dev_stripe.py`: account custom abilitato, fee 5%) + driver `scripts/e2e_deposit_checkout.py`. Esito: ordine ORD-0001 da 800€ → session da 240€ verificata contro Stripe → pagamento carta 4242 dal founder → riga 0 paid / riga 1 pending, payment_state=deposit_paid, biglietto EVT-AU5K-SKXD emesso, **fee piattaforma 1200 minor (5% esatto) sul PaymentIntent**, event log completo (schedule_created → row_session_created → row_paid webhook:stripe). Nota: riserva posti skippata perché l'occurrence era in bozza (lo storefront non vende bozze; il driver la bypassa — comportamento corretto).
 
 ### S3 — Saldo, dunning, rimborsi, cascate (1,5 settimane)
 - [ ] **2.9 Saldo via link**: alla scadenza lo scheduler genera Checkout Session del saldo + email "salda con un click" (niente carte salvate nell'MVP — decisione presa, opzione B in fase 2).
