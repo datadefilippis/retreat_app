@@ -1,0 +1,321 @@
+{
+  "layout": {
+    "menu": "Menu",
+    "closeMenu": "Chiudi menu"
+  },
+  "topbar": {
+    "title": "Area riservata",
+    "openMenu": "Apri menu",
+    "goOrdersAria": "Vai ai miei ordini"
+  },
+  "sidebar": {
+    "navAria": "Navigazione area utente",
+    "courses": "I miei corsi",
+    "orders": "Ordini",
+    "profile": "Profilo",
+    "backToCatalog": "Torna al catalogo",
+    "logout": "Esci"
+  },
+  "emailBanner": {
+    "title": "Verifica la tua email per proteggere il tuo account",
+    "body": "Abbiamo inviato un link a <strong>{{email}}</strong>. Cliccalo per confermare la registrazione. Senza verifica non potrai accedere nuovamente dopo aver effettuato logout.",
+    "resendBtn": "Reinvia email",
+    "sending": "Invio…",
+    "sent": "✓ Inviata",
+    "storeUnknown": "Store non identificato. Riprova dopo il login.",
+    "resentToast": "Email di verifica reinviata. Controlla la tua casella.",
+    "resendError": "Impossibile reinviare l'email. Riprova più tardi."
+  },
+  "orders": {
+    "title": "I miei ordini",
+    "description": "Storico degli acquisti e stato di ciascun ordine.",
+    "errorTitle": "Non sono riuscito a caricare i tuoi ordini",
+    "errorBody": "Riprova tra un momento. Se il problema persiste, contatta il supporto del merchant.",
+    "retry": "Riprova",
+    "loadingAria": "Caricamento ordini",
+    "emptyTitle": "Nessun ordine ancora",
+    "emptyDescription": "Quando completerai un acquisto lo troverai qui con stato e dettagli.",
+    "exploreCatalog": "Esplora il catalogo"
+  },
+  "courses": {
+    "title": "I miei corsi",
+    "descriptionWithCount_one": "{{count}} corso attivo. Clicca per riprendere da dove eri.",
+    "descriptionWithCount_other": "{{count}} corsi attivi. Clicca per riprendere da dove eri.",
+    "descriptionEmpty": "Quando acquisterai un corso lo troverai qui.",
+    "loadingAria": "Caricamento corsi",
+    "emptyTitle": "Nessun corso ancora",
+    "emptyDescription": "Esplora il catalogo per scoprire i corsi video disponibili. Una volta acquistato, lo seguirai da qui con player + tracking dei progressi.",
+    "exploreCatalog": "Esplora il catalogo",
+    "openCta": "Apri"
+  },
+  "profile": {
+    "pageTitle": "Profilo",
+    "pageDescription": "Gestisci i tuoi dati personali e la sicurezza del tuo account.",
+    "account": {
+      "title": "Dati account",
+      "description": "Modifica il tuo nome o telefono.",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Mario Rossi",
+      "nameRequired": "Il nome è obbligatorio.",
+      "phoneLabel": "Telefono",
+      "phoneHint": "Facoltativo, usato dal merchant per contattarti se necessario.",
+      "phonePlaceholder": "+39 333 1234567",
+      "emailLabel": "Email",
+      "emailHint": "Per cambiare l'email contatta il supporto del merchant.",
+      "localeLabel": "Lingua",
+      "saving": "Salvo…",
+      "saveDirty": "Salva modifiche",
+      "saveClean": "Salvato",
+      "updatedToast": "Profilo aggiornato.",
+      "updateError": "Impossibile aggiornare il profilo.",
+      "localeSelectAria": "Seleziona lingua",
+      "localeUpdatedToast": "Lingua aggiornata.",
+      "localeUpdateError": "Impossibile aggiornare la lingua."
+    },
+    "password": {
+      "title": "Sicurezza",
+      "description": "Cambia la tua password.",
+      "currentLabel": "Password attuale",
+      "newLabel": "Nuova password",
+      "newHint": "Almeno 8 caratteri.",
+      "minLengthError": "Minimo 8 caratteri",
+      "confirmLabel": "Conferma nuova password",
+      "mismatchError": "Le password non coincidono",
+      "submit": "Aggiorna password",
+      "submitting": "Aggiorno…",
+      "updatedToast": "Password aggiornata.",
+      "updateError": "Impossibile aggiornare la password."
+    },
+    "verify": {
+      "title": "Verifica email",
+      "description": "Per la sicurezza del tuo account.",
+      "body": "La tua email <strong>{{email}}</strong> non è ancora verificata.",
+      "hint": "Cerca nella tua casella di posta il messaggio inviato al momento della registrazione. Se non lo trovi, possiamo reinviartelo.",
+      "resendBtn": "Reinvia email di verifica",
+      "sending": "Invio…",
+      "sent": "✓ Inviata",
+      "storeUnknown": "Store non identificato.",
+      "resentToast": "Email di verifica reinviata.",
+      "resendError": "Impossibile reinviare l'email."
+    }
+  },
+  "orderStatus": {
+    "draft": "Bozza",
+    "confirmed": "✓ Confermato",
+    "completed": "✓ Completato",
+    "cancelled": "Annullato",
+    "pendingConfirmation": "⏳ In attesa di conferma",
+    "awaitingPayment": "💳 Attesa pagamento",
+    "itemsOne": "1 articolo",
+    "itemsOther": "{{count}} articoli"
+  },
+  "fulfillmentStatus": {
+    "pending": "In attesa",
+    "shipped": "Spedito",
+    "delivered": "Consegnato",
+    "ready_for_pickup": "Pronto per il ritiro",
+    "picked_up": "Ritirato",
+    "fulfilled": "Completato"
+  },
+  "fulfillmentMode": {
+    "shipping": "Spedizione",
+    "local_pickup": "Ritiro",
+    "manual_arrangement": "Accordo manuale"
+  },
+  "nav": {
+    "back": "Indietro"
+  },
+  "orderCard": {
+    "courseBadge": "🎓 Corso",
+    "openCourse": "Apri corso →"
+  },
+  "coursePreview": {
+    "fallbackTitle": "Corso"
+  },
+  "orderDetail": {
+    "notFoundTitle": "Ordine non trovato",
+    "notFoundDescription": "Forse il link non è più valido o l'ordine appartiene a un altro account. Torna alla tua lista ordini per ritrovarlo.",
+    "backToOrders": "Torna ai miei ordini",
+    "courseCta": {
+      "title": "Accedi ai tuoi corsi",
+      "body": "Il corso è pronto. Aprilo dall'area \"I miei corsi\" per seguire le lezioni e tenere traccia dei progressi.",
+      "openShort": "Apri →"
+    },
+    "addressLabel": "Indirizzo:",
+    "addressInline": "Indirizzo: {{address}}",
+    "notesInline": "Note: {{notes}}",
+    "shippedAt": "Spedito {{rel}} ({{date}})",
+    "deliveredAt": "Consegnato {{rel}} ({{date}})",
+    "pickedUpAt": "Ritirato {{rel}} ({{date}})",
+    "fulfilledAt": "Completato {{rel}} ({{date}})",
+    "trackingLabel": "Tracking:",
+    "trackShipment": "Traccia spedizione →",
+    "itemsTitle": "Articoli",
+    "total": "Totale",
+    "notesHeading": "Note",
+    "relative": {
+      "today": "oggi",
+      "yesterday": "ieri",
+      "daysAgo_one": "{{count}} giorno fa",
+      "daysAgo_other": "{{count}} giorni fa"
+    }
+  },
+  "orderItemEvent": {
+    "pendingHint": "I biglietti saranno disponibili dopo la conferma del pagamento.",
+    "openTicket": "Apri biglietto →",
+    "seatLine": "posto {{index}} / {{total}}",
+    "status": {
+      "checkedIn": "Entrato",
+      "checkedInAt": "Entrato il {{time}}",
+      "voided": "Annullato",
+      "toUse": "Da utilizzare"
+    }
+  },
+  "orderItemService": {
+    "pendingHint": "La prenotazione sarà confermata dopo il pagamento.",
+    "openShort": "Apri →",
+    "addToCalendar": "📅 Aggiungi al calendario",
+    "status": {
+      "confirmed": "Confermata",
+      "completed": "Completata",
+      "noShow": "Mancata",
+      "cancelled": "Annullata"
+    }
+  },
+  "orderItemRental": {
+    "pendingHint": "La prenotazione sarà confermata dopo il pagamento.",
+    "status": {
+      "active": "Attiva",
+      "cancelled": "Annullata"
+    }
+  },
+  "orderItemDigital": {
+    "pendingHint": "Il download sarà disponibile dopo la conferma del pagamento.",
+    "downloadCta": "Scarica →",
+    "fallbackFilename": "File",
+    "expiresLabel": "Disponibile fino al {{date}}",
+    "status": {
+      "cancelled": "Annullato",
+      "exhausted": "Limite raggiunto",
+      "available": "Disponibile",
+      "usage": "{{used}} / {{max}} usati"
+    }
+  },
+  "orderItemCourse": {
+    "pendingHint": "L'accesso al corso sarà attivato dopo la conferma del pagamento.",
+    "openCourse": "Vai al corso →",
+    "fallbackTitle": "Corso",
+    "access": {
+      "revoked": "Accesso revocato",
+      "expired": "Accesso scaduto",
+      "expiresOn": "Scade il {{date}}",
+      "lifetime": "Accesso a vita"
+    }
+  },
+  "player": {
+    "backToCourses": "← I miei corsi",
+    "shortcutsTitle": "Scorciatoie da tastiera (?)",
+    "shortcutsAria": "Mostra scorciatoie da tastiera",
+    "lessonsHeading": "Lezioni",
+    "closeLessonsAria": "Chiudi lezioni",
+    "closeShort": "Chiudi",
+    "readyTitle": "Pronto a iniziare?",
+    "pickLessonMobile": "Tocca 📚 qui sopra per scegliere una lezione, oppure inizia con la prima.",
+    "pickLessonDesktop": "Scegli una lezione dal menu a sinistra, oppure inizia con la prima.",
+    "startFirstLesson": "Inizia con la prima lezione",
+    "noLessonsYet": "Il docente non ha ancora aggiunto lezioni.",
+    "toast": {
+      "accessRevoked": "Accesso al corso revocato.",
+      "accessExpired": "Accesso al corso scaduto.",
+      "lessonCompleted": "Lezione completata 🎉",
+      "lessonCompletedAuto": "Hai finito la lezione 🎉",
+      "progressError": "Impossibile salvare il progresso."
+    }
+  },
+  "actionBar": {
+    "openLessonsAria": "Apri lezioni",
+    "alreadyCompletedTitle": "Lezione già completata",
+    "alreadyCompletedAria": "Lezione già completata",
+    "markCompletedTitle": "Segna come completata",
+    "completedLabel": "Completata",
+    "completeLabel": "Completa",
+    "prevTitle": "Lezione precedente",
+    "prevShort": "Precedente",
+    "nextTitle": "Lezione successiva",
+    "nextShort": "Successiva"
+  },
+  "lessonDetails": {
+    "durationLabel": "Durata: {{duration}}",
+    "resources": "Risorse",
+    "completedOn": "✓ Lezione completata il {{date}}"
+  },
+  "lessonPlayer": {
+    "iframeTitleFallback": "Lezione",
+    "preparing": "Preparo il video…",
+    "errors": {
+      "noVideo": {
+        "title": "Video non ancora disponibile",
+        "body": "Il docente sta ancora caricando questa lezione. Torna più tardi o scegli un'altra lezione dal menù laterale."
+      },
+      "bunnyMissing": {
+        "title": "Servizio video temporaneamente non disponibile",
+        "body": "Stiamo risolvendo un problema di configurazione. Contatta il merchant se il problema persiste."
+      },
+      "generic": {
+        "title": "Errore nel caricamento del video",
+        "retry": "Riprova"
+      }
+    }
+  },
+  "courseSidebar": {
+    "lessonsCompleted_one": "{{completed}}/{{total}} completata",
+    "lessonsCompleted_other": "{{completed}}/{{total}} completate",
+    "headlineDone": "Corso completato 🎉",
+    "headlineProgress": "Continua a studiare",
+    "headlineStart": "Inizia il corso",
+    "percentCompletedAria": "{{pct}}% completato",
+    "lessonsRatio": "{{completed}} di {{total}} lezioni",
+    "tile": {
+      "duration": "Durata",
+      "access": "Accesso",
+      "accessLifetime": "A vita"
+    },
+    "row": {
+      "inProgress": "In corso"
+    }
+  },
+  "courseError": {
+    "notFound": {
+      "title": "Corso non trovato",
+      "body": "Il link potrebbe non essere valido."
+    },
+    "revoked": {
+      "title": "Accesso revocato",
+      "body": "L'accesso a questo corso è stato revocato."
+    },
+    "expired": {
+      "title": "Accesso scaduto",
+      "body": "Il periodo di accesso a questo corso è terminato."
+    },
+    "courseUnavailable": {
+      "title": "Contenuto non disponibile",
+      "body": "Il merchant ha rimosso questo corso."
+    },
+    "generic": {
+      "title": "Errore",
+      "body": "Impossibile caricare il corso. Riprova più tardi."
+    },
+    "backCta": "Torna a I miei corsi"
+  },
+  "helpCheatsheet": {
+    "title": "Scorciatoie da tastiera",
+    "closeAria": "Chiudi",
+    "shortcutPrev": "Lezione precedente",
+    "shortcutNext": "Lezione successiva",
+    "shortcutMark": "Segna come completata",
+    "footnote": "Le scorciatoie non funzionano quando stai scrivendo in un campo o quando il player video ha il focus (in quel caso, i tasti vanno al video). Le lezioni vengono inoltre marcate automaticamente quando il video finisce."
+  },
+  "playerSkeleton": {
+    "loadingAria": "Caricamento corso"
+  }
+}

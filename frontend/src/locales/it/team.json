@@ -1,0 +1,78 @@
+{
+  "page": {
+    "title": "Team",
+    "subtitle": "Gestisci i membri della tua organizzazione"
+  },
+  "invite": {
+    "button": "Invita membro",
+    "dialog_title": "Invita un nuovo membro",
+    "dialog_desc": "Verra creato un account con una password temporanea che dovrai condividere con il nuovo membro.",
+    "name": "Nome",
+    "name_placeholder": "Mario Rossi",
+    "email": "Email",
+    "email_placeholder": "mario@azienda.it",
+    "role": "Ruolo",
+    "submit": "Crea account e mostra password",
+    "submitting": "Creazione account..."
+  },
+  "members": {
+    "card_title": "Membri del team",
+    "count_one": "{{count}} membro nell'organizzazione",
+    "count_other": "{{count}} membri nell'organizzazione",
+    "col_member": "Membro",
+    "col_role": "Ruolo",
+    "col_added": "Aggiunto il",
+    "col_status": "Stato",
+    "col_actions": "Azioni",
+    "you_badge": "Tu"
+  },
+  "roles": {
+    "admin": "Admin",
+    "user": "Utente",
+    "user_analyst": "Utente / Analista"
+  },
+  "status": {
+    "active": "Attivo",
+    "inactive": "Disattivo"
+  },
+  "actions": {
+    "reactivate": "Riattiva"
+  },
+  "permissions": {
+    "card_title": "Permessi per ruolo",
+    "admin_title": "Admin",
+    "admin_p1": "Gestisce i membri del team",
+    "admin_p2": "Carica e rimuove dataset",
+    "admin_p3": "Attiva e configura i moduli",
+    "admin_p4": "Aggiorna le impostazioni dell'organizzazione",
+    "admin_p5": "Accede a dashboard, alert e insight AI",
+    "user_title": "Utente / Analista",
+    "user_p1": "Visualizza dashboard e KPI",
+    "user_p2": "Legge alert e anomalie",
+    "user_p3": "Consulta gli insight AI",
+    "user_p4": "Carica dataset (se autorizzato dall'admin)"
+  },
+  "remove": {
+    "dialog_title": "Rimuovi membro",
+    "dialog_desc": "Stai per disattivare l'account di {{name}}. Non potra piu accedere alla piattaforma. Potrai riattivarlo in seguito.",
+    "cancel": "Annulla",
+    "confirm": "Si, rimuovi"
+  },
+  "created": {
+    "dialog_title": "Account creato",
+    "dialog_desc": "L'account di {{name}} e stato creato. Condividi la password temporanea qui sotto — verra mostrata solo adesso.",
+    "temp_password": "Password temporanea",
+    "hint": "Il membro dovra cambiarla al primo accesso. Non e memorizzata in chiaro nel sistema.",
+    "confirm": "Ho copiato la password"
+  },
+  "toast": {
+    "load_error": "Impossibile caricare il team",
+    "invite_error": "Errore durante l'invito",
+    "role_updated": "Ruolo aggiornato",
+    "role_error": "Errore aggiornamento ruolo",
+    "member_removed": "Membro rimosso",
+    "remove_error": "Errore rimozione membro",
+    "member_reactivated": "Membro riattivato",
+    "reactivate_error": "Errore riattivazione"
+  }
+}

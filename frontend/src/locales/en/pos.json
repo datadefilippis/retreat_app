@@ -1,0 +1,20 @@
+{
+  "subtitle": "Point of sale",
+  "back": "Back to stores",
+  "cart": {
+    "title": "Cart",
+    "empty": "Select products from the grid",
+    "total": "Total",
+    "customer_placeholder": "Customer name",
+    "complete": "Complete order"
+  },
+  "order_done": "Order {{number}} completed",
+  "new_order": "New order",
+  "toast": {
+    "completed": "Order completed and confirmed",
+    "error": "Error creating order"
+  },
+  "error": {
+    "load": "Error loading"
+  }
+}

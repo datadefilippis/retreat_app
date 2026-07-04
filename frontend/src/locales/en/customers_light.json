@@ -1,0 +1,119 @@
+{
+  "page": {
+    "title": "Customers",
+    "subtitle": "Customer intelligence: segmentation, concentration and revenue attribution"
+  },
+  "segments": {
+    "top": "Top",
+    "active": "Active",
+    "new": "New",
+    "occasional": "Occasional",
+    "inactive": "Inactive"
+  },
+  "kpis": {
+    "total_customers": "Total Customers",
+    "active_customers": "Active Customers",
+    "inactive_rate": "Inactivity Rate",
+    "new_customers": "New Customers",
+    "concentration_top10": "Top 10 Concentration",
+    "avg_customer_value": "Avg Customer Value",
+    "avg_ltv": "Average LTV",
+    "high_churn_risk": "High Churn Risk"
+  },
+  "churn": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "customer_status": {
+    "healthy": "Healthy",
+    "watch": "Watch",
+    "at_risk": "At risk",
+    "lost": "Lost"
+  },
+  "trend": {
+    "growing": "Growing",
+    "stable": "Stable",
+    "declining": "Declining",
+    "new": "New"
+  },
+  "quick_view": {
+    "all": "All",
+    "needs_attention": "Needs attention",
+    "at_risk": "At risk",
+    "declining": "Declining",
+    "growing": "Growing",
+    "new": "New"
+  },
+  "table": {
+    "title": "Top Customers by Revenue",
+    "title_loading": "Top Customers",
+    "empty_filter": "No customers match this filter.",
+    "col_rank": "#",
+    "col_customer": "Customer",
+    "col_revenue": "Revenue",
+    "col_transactions": "Transactions",
+    "col_share": "Share %",
+    "col_segment": "Segment",
+    "col_ltv": "LTV",
+    "col_churn": "Churn Risk"
+  },
+  "profile": {
+    "churn_risk": "Churn Risk",
+    "churn_score": "Churn score",
+    "payment_reliability": "Payment reliability",
+    "first_purchase": "First purchase",
+    "last_purchase": "Last purchase",
+    "days_since": "Days since last purchase",
+    "avg_order": "Avg order",
+    "frequency": "Monthly frequency",
+    "frequency_suffix": "orders/month",
+    "preferred_products": "Preferred products",
+    "preferred_categories": "Preferred categories",
+    "longer_than_usual": "Longer than usual without purchases",
+    "create_order": "Create order for this customer",
+    "view_orders": "View orders for this customer",
+    "activity": "Activity"
+  },
+  "charts": {
+    "segments_title": "Customer Segments",
+    "concentration_title": "Revenue Concentration",
+    "concentration_desc": "The top 10 customers generate {{pct}}% of revenue across {{total}} total customers",
+    "concentration_top5": "Top 5",
+    "concentration_top610": "Top 6-10",
+    "concentration_others": "Others",
+    "tooltip_customers": "{{count}} customers — {{amount}}"
+  },
+  "empty": {
+    "title": "Customer analysis not active",
+    "description": "To activate customer analysis:\n1. Create your customers in Master data > Customers\n2. Import sales with a \"customer\" column matching the names you created\nAFianco will automatically link sales to customers.",
+    "upload_cta": "Upload sales data",
+    "manage_customers": "Manage customers"
+  },
+  "coverage": {
+    "label": "Customer data coverage",
+    "detail": "{{linked}} of {{total}} sales linked to a customer"
+  },
+  "error": {
+    "load": "Error loading customer data.",
+    "refresh": "Error refreshing metrics."
+  },
+  "refresh": {
+    "idle": "Refresh metrics",
+    "loading": "Refreshing..."
+  },
+  "widgets": {
+    "customers_label": "Customers",
+    "active_label": "Active",
+    "inactive_pct_label": "Inactive %",
+    "top10_pct_label": "Top 10 %",
+    "no_data": "No customer data",
+    "no_data_short": "No data",
+    "col_customer": "Customer",
+    "col_revenue": "Revenue",
+    "col_share": "Share",
+    "header_kpi": "Customer KPIs",
+    "header_top_customers": "Top Customers",
+    "header_segments": "Customer Segments"
+  }
+}

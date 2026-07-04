@@ -1,0 +1,48 @@
+# Track S Step 4.4 — pytest-cov configuration
+#
+# Scope: backend Python application code only.
+# Excluded: venv, tests, cache, scripts (one-off operational tooling).
+
+# line coverage only — branch coverage adds noise + slowdown
+[run]
+source = .
+branch = False
+
+# Exclude non-app directories from coverage measurement
+omit =
+    venv/*
+    venv-pre-py314/*
+    tests/*
+    scripts/*
+    __pycache__/*
+    */__pycache__/*
+    setup.py
+    conftest.py
+    # Auto-generated stubs / migrations
+    */migrations/*
+
+[report]
+# Skip files with 100% coverage in the terminal report (less noise)
+skip_covered = True
+
+# Exclude lines that aren't meaningful to cover
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
+    \.\.\.$
+    pass$
+
+# Show missing line numbers in terminal report
+show_missing = True
+
+# Precision for the coverage percentage
+precision = 1
+
+[xml]
+output = coverage.xml
+
+[html]
+directory = htmlcov

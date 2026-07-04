@@ -1,0 +1,69 @@
+{
+  "tabs": {
+    "login": "Connexion",
+    "signup": "Inscription"
+  },
+  "fields": {
+    "email": "Email",
+    "password": "Mot de passe",
+    "name": "Nom"
+  },
+  "passwordChecks": {
+    "minLength": "Au moins 12 caractères",
+    "lowercase": "Une lettre minuscule",
+    "uppercase": "Une lettre majuscule",
+    "digit": "Un chiffre"
+  },
+  "login": {
+    "submit": "Connexion",
+    "forgotPassword": "Mot de passe oublié ?",
+    "verifyFirst": "Vérifiez votre email avant de vous connecter.",
+    "resendVerification": "Renvoyer l'email de vérification",
+    "accountLockedTitle": "Compte temporairement bloqué",
+    "accountLockedCountdown": "Trop de tentatives échouées. Réessaie dans {{minutes}} minutes.",
+    "accountLockedForgotHint": "Ou, si tu as oublié ton mot de passe,"
+  },
+  "signup": {
+    "submit": "S'inscrire",
+    "consent_required": "Vous devez accepter les Conditions et la Politique de confidentialité pour continuer.",
+    "accept_terms_prefix": "J'accepte les",
+    "terms_link": "Conditions générales",
+    "accept_privacy_prefix": "J'ai lu la",
+    "privacy_link": "Politique de confidentialité",
+    "accept_marketing": "Je souhaite recevoir des communications promotionnelles (optionnel, révocable à tout moment)"
+  },
+  "verificationSent": {
+    "title": "Vérifiez votre email",
+    "body": "Nous avons envoyé un lien de vérification à <strong>{{email}}</strong>. Cliquez sur le lien pour activer votre compte.",
+    "goLogin": "Aller à la connexion"
+  },
+  "forgot": {
+    "title": "Mot de passe oublié",
+    "submit": "Envoyer le lien de réinitialisation",
+    "sentMsg": "Si l'email existe, vous recevrez un lien pour réinitialiser votre mot de passe.",
+    "backToLogin": "Retour à la connexion"
+  },
+  "reset": {
+    "title": "Nouveau mot de passe",
+    "newPasswordLabel": "Nouveau mot de passe",
+    "passwordRules": "Au moins 12 caractères, une majuscule, une minuscule, un chiffre.",
+    "submit": "Enregistrer le nouveau mot de passe",
+    "successMsg": "Mot de passe réinitialisé avec succès.",
+    "tokenInvalid": "Jeton invalide ou expiré."
+  },
+  "verify": {
+    "verifying": "Vérification en cours...",
+    "success": "Email vérifié avec succès !",
+    "tokenInvalid": "Jeton invalide ou expiré.",
+    "goLogin": "Aller à la connexion"
+  },
+  "errors": {
+    "storeUnknown": "Magasin non identifié.",
+    "invalidCredentials": "Email ou mot de passe incorrect.",
+    "verificationEmailSent": "Email de vérification envoyé.",
+    "emailSendFailed": "Erreur lors de l'envoi de l'email.",
+    "signupGeneric": "Erreur d'inscription.",
+    "genericRetry": "Erreur. Veuillez réessayer.",
+    "accountLockedGeneric": "Compte bloqué pour trop de tentatives échouées. Réessaie plus tard."
+  }
+}

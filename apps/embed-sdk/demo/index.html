@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Afianco Embed SDK — Demo</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        max-width: 720px;
+        margin: 40px auto;
+        padding: 0 20px;
+        line-height: 1.6;
+        color: #1a202c;
+      }
+      h1 { font-size: 24px; letter-spacing: -0.02em; }
+      h2 { font-size: 18px; margin-top: 32px; }
+      .grid { display: grid; gap: 16px; margin-top: 16px; }
+      .note { background: #f7fafc; padding: 12px 16px; border-radius: 8px; font-size: 14px; }
+      code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <h1>Afianco Embed SDK — Demo</h1>
+    <p class="note">
+      Local dev playground. Run <code>pnpm --filter @afianco/embed-sdk dev</code>
+      e visita questa pagina. Lit hot-reload attivo via Vite.
+    </p>
+
+    <h2>1. With store + message</h2>
+    <div class="grid">
+      <afianco-test-card store="acme" message="Hello from acme!"></afianco-test-card>
+    </div>
+
+    <h2>2. Default message</h2>
+    <div class="grid">
+      <afianco-test-card store="beta-store"></afianco-test-card>
+    </div>
+
+    <h2>3. Missing store (warning state)</h2>
+    <div class="grid">
+      <afianco-test-card></afianco-test-card>
+    </div>
+
+    <hr style="margin: 48px 0; border: none; border-top: 1px solid #e2e8f0;">
+
+    <h2>4. <code>&lt;afianco-storefront-init&gt;</code> — bootstrap (Step 22)</h2>
+    <p class="note">
+      Root provider del widget Stream A. Chiama <code>/api/public/embed/init/{slug}</code>
+      al mount, espone il context via Lit a tutti i child components.
+      <br><br>
+      Per testare con backend locale: assicurati che <code>bottega-demo</code>
+      abbia <code>store.allowed_origins</code> con <code>http://localhost:3001</code>
+      (porta dev di Vite). Vedi snippet python in commit msg per setup.
+    </p>
+
+    <div class="grid">
+      <afianco-storefront-init
+        slug="bottega-demo"
+        base-url="http://localhost:8000"
+        id="demo-storefront-init">
+        <!-- Step 24: product grid con filter nav -->
+        <afianco-product-grid
+          show-filter-nav
+          sort="name"
+          limit="20">
+        </afianco-product-grid>
+        <!-- Step 25: cart drawer (always-mounted, slide-in da destra) -->
+        <afianco-cart-drawer></afianco-cart-drawer>
+        <!-- Step 26: checkout button (modal form + Stripe popup) -->
+        <afianco-checkout-button></afianco-checkout-button>
+      </afianco-storefront-init>
+    </div>
+
+    <h2>4b. <code>&lt;afianco-product-card&gt;</code> standalone (.product property)</h2>
+    <p class="note">
+      Card singolo iniettato come property — niente fetch. Usato dal product-grid
+      futuro (Step 24) per renderizzare ogni elemento senza N+1 round-trip.
+      Click "Aggiungi al carrello" emette evento <code>afianco:add-to-cart</code>.
+    </p>
+    <div class="grid">
+      <afianco-product-card id="standalone-card"></afianco-product-card>
+    </div>
+    <script>
+      (function () {
+        // Inject mock product into the standalone card so the demo
+        // works senza backend in volo.
+        document.addEventListener('DOMContentLoaded', () => {
+          const card = document.getElementById('standalone-card');
+          if (card) {
+            card.product = {
+              id: 'demo-1',
+              name: 'Demo Espresso',
+              description: 'Caffe italiano premium torrefatto a mano. ' +
+                'Esempio di product card standalone, no backend fetch.',
+              currency: 'EUR',
+              unit_price: 12.5,
+              category: 'Bevande',
+              category_slug: 'bevande',
+              image_url: null,
+              item_type: 'physical',
+              price_mode: 'fixed',
+              transaction_mode: 'direct',
+              stock_quantity: 8,
+              unit_label: 'kg',
+            };
+          }
+        });
+        document.addEventListener('afianco:add-to-cart', (e) => {
+          console.log('[demo] add-to-cart event:', e.detail);
+          alert(`Add to cart: ${e.detail.product.name} × ${e.detail.quantity}`);
+        });
+      })();
+    </script>
+
+    <h2>5. Storefront-init senza slug (warning state)</h2>
+    <div class="grid">
+      <afianco-storefront-init></afianco-storefront-init>
+    </div>
+
+    <hr style="margin: 48px 0; border: none; border-top: 1px solid #e2e8f0;">
+
+    <h2>6. <code>&lt;afianco-login&gt;</code> + <code>&lt;afianco-signup&gt;</code> (Step 27)</h2>
+    <p class="note">
+      Customer auth standalone — utili per merchant che vogliono offrire
+      pagine dedicate /accedi e /registrati. Token JWT salvato automaticamente
+      in <code>localStorage[afianco_token_&lt;slug&gt;]</code>.
+    </p>
+    <afianco-storefront-init slug="bottega-demo" base-url="http://localhost:8000">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <afianco-login></afianco-login>
+        <afianco-signup></afianco-signup>
+      </div>
+    </afianco-storefront-init>
+
+    <hr style="margin: 48px 0; border: none; border-top: 1px solid #e2e8f0;">
+
+    <h2>7. <code>&lt;afianco-customer-portal&gt;</code> (Step 28 — Track C completion)</h2>
+    <p class="note">
+      Area Personale auth-gated. Mostra profilo + storico ordini (read-only V1).
+      Se il customer non e' loggato (no token in <code>localStorage[afianco_token_&lt;slug&gt;]</code>)
+      mostra un prompt "Accedi" e dispatcha <code>afianco:auth-required</code>.
+      Per testare il flow completo, fai login con <code>&lt;afianco-login&gt;</code>
+      sopra, poi ricarica la pagina.
+      <br><br>
+      Attributi: <code>initial-tab="profile|orders"</code>, <code>show-logout</code>,
+      <code>title</code>.
+    </p>
+    <afianco-storefront-init slug="bottega-demo" base-url="http://localhost:8000">
+      <afianco-customer-portal initial-tab="profile"></afianco-customer-portal>
+    </afianco-storefront-init>
+
+    <script type="module" src="/src/index.ts"></script>
+    <script>
+      // Subscribe to init events for demo purposes
+      document.addEventListener('afianco:init-ready', (e) => {
+        console.log('[demo] storefront ready:', e.detail);
+      });
+      document.addEventListener('afianco:init-error', (e) => {
+        console.warn('[demo] storefront error:', e.detail);
+      });
+      // Step 28 portal events
+      document.addEventListener('afianco:portal-loaded', (e) => {
+        console.log('[demo] portal loaded:', e.detail);
+      });
+      document.addEventListener('afianco:portal-logout', (e) => {
+        console.log('[demo] portal logout:', e.detail);
+      });
+      document.addEventListener('afianco:auth-required', () => {
+        console.log('[demo] portal requires auth');
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,297 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Phase 0 e-commerce evolution observability. Tracks cart operations, order conversion, dynamic CORS rejections, idempotency cache effectiveness, and API latency on the public storefront / embed / ai-site surface. Source metrics: backend/core/observability/metrics.py exposed via /metrics endpoint. Phase 0 Step 10 — 2026-05-28.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          },
+          "unit": "ops"
+        }
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "title": "Orders / hour (success)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(orders_created_total{status=\"success\"}[1h])) * 3600",
+          "refId": "A",
+          "legendFormat": "orders/h"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0},
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "title": "Cart operations / min",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(cart_operations_total[1m])) * 60",
+          "refId": "A",
+          "legendFormat": "ops/min"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
+      "id": 3,
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 10},
+              {"color": "red", "value": 50}
+            ]
+          },
+          "unit": "ops"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "title": "CORS blocks / hour",
+      "description": "If sustained > 50/h investigate: a merchant added a domain to allowed_origins[] but it's not propagating, OR an attacker is probing.",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(cors_blocked_total[1h])) * 3600",
+          "refId": "A",
+          "legendFormat": "blocks/h"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0},
+      "id": 4,
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 0.05},
+              {"color": "green", "value": 0.20}
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "title": "Idempotency cache hit rate (1h)",
+      "description": "Higher = clients are retrying with same Idempotency-Key. ~0% = either no retries (healthy) or clients regenerating keys (bug).",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(idempotency_cache_total{result=\"hit\"}[1h])) / clamp_min(sum(rate(idempotency_cache_total{result=~\"hit|miss\"}[1h])), 1)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 5},
+      "id": 5,
+      "title": "Orders created — rate by source",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 10}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "expr": "sum by (source) (rate(orders_created_total[5m]))",
+          "refId": "A",
+          "legendFormat": "{{source}}"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 5},
+      "id": 6,
+      "title": "Cart operations — by operation type",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 10}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "expr": "sum by (operation) (rate(cart_operations_total[5m]))",
+          "refId": "A",
+          "legendFormat": "{{operation}}"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 14},
+      "id": 7,
+      "title": "CORS rejections — by reason",
+      "description": "Spikes in 'origin_not_allowed' are merchant onboarding issues; spikes in 'no_origin_header' are bots or misconfigured clients.",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 20, "stacking": {"mode": "normal"}}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "expr": "sum by (reason) (rate(cors_blocked_total[5m]))",
+          "refId": "A",
+          "legendFormat": "{{reason}}"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 14},
+      "id": 8,
+      "title": "Idempotency cache — hit / miss / reject",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 20, "stacking": {"mode": "normal"}}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "expr": "sum by (result) (rate(idempotency_cache_total[5m]))",
+          "refId": "A",
+          "legendFormat": "{{result}}"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 23},
+      "id": 9,
+      "title": "API latency — p50 / p95 / p99 (public endpoints)",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 5},
+          "unit": "s"
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi"}
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, endpoint) (rate(api_response_time_seconds_bucket[5m])))",
+          "refId": "A",
+          "legendFormat": "p50 {{endpoint}}"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, endpoint) (rate(api_response_time_seconds_bucket[5m])))",
+          "refId": "B",
+          "legendFormat": "p95 {{endpoint}}"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le, endpoint) (rate(api_response_time_seconds_bucket[5m])))",
+          "refId": "C",
+          "legendFormat": "p99 {{endpoint}}"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["afianco", "phase-0", "e-commerce", "observability"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "AFianco — Phase 0 E-commerce",
+  "uid": "afianco-phase0-ecommerce",
+  "version": 1,
+  "weekStart": ""
+}

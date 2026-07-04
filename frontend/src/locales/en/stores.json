@@ -1,0 +1,287 @@
+{
+  "title": "Your stores",
+  "subtitle": "Manage your shops and storefronts",
+  "empty": {
+    "title": "No stores yet",
+    "desc": "Create your first store to start selling."
+  },
+  "status": {
+    "published": "Online",
+    "default": "Primary",
+    "slug": "Slug"
+  },
+  "plan_violation": {
+    "title": "Store hidden: plan limit exceeded",
+    "body": "This store has been automatically deactivated because it exceeds the number of stores allowed by your current plan. The data is preserved and the store will be reactivated automatically when you upgrade your plan (or buy a +1 store add-on).",
+    "cta_upgrade": "Upgrade plan to reactivate",
+    "badge": "Plan limit",
+    "badge_tooltip": "Deactivated by plan limit"
+  },
+  "actions": {
+    "create": "New store",
+    "create_short": "New",
+    "edit": "Edit",
+    "publish": "Publish",
+    "unpublish": "Suspend",
+    "view": "Open",
+    "open_pos": "Open POS",
+    "global_settings": "Global settings",
+    "more": "More actions",
+    "shipping": "Shipping",
+    "gdpr": "Privacy & GDPR"
+  },
+  "create": {
+    "title": "Create a new store",
+    "name": "Store name",
+    "name_placeholder": "E.g.: Events Store, Ecommerce, POS...",
+    "slug": "URL slug",
+    "slug_placeholder": "e.g.: bakery-events",
+    "slug_hint": "The public URL for your store (lowercase letters, numbers and dashes only)",
+    "visibility": "Store type",
+    "cancel": "Cancel",
+    "submit": "Create store"
+  },
+  "edit": {
+    "title": "Edit store",
+    "section_identity": "Identity",
+    "description": "Description",
+    "contact_email": "Contact email",
+    "contact_phone": "Phone",
+    "save": "Save"
+  },
+  "toast": {
+    "created": "Store created",
+    "updated": "Store updated",
+    "published": "Store published",
+    "unpublished": "Store suspended",
+    "error": "Operation error"
+  },
+  "visibility": {
+    "public": {
+      "label": "Public",
+      "desc": "Visible to everyone via public URL"
+    },
+    "private": {
+      "label": "Private",
+      "desc": "Accessible only via direct link"
+    },
+    "pos": {
+      "label": "POS",
+      "desc": "Point-of-sale interface for the merchant"
+    }
+  },
+  "tabs": {
+    "stores": "Stores",
+    "stats": "Statistics",
+    "coupons": "Coupons"
+  },
+  "tabs_short": {
+    "stores": "Stores",
+    "stats": "Stats",
+    "coupons": "Coupons"
+  },
+  "all_stores": "All stores",
+  "products_one": "{{count}} product",
+  "products_other": "{{count}} products",
+  "stats": {
+    "title": "Commerce Statistics",
+    "revenue_confirmed": "Confirmed revenue",
+    "last_30d": "last 30d",
+    "orders_today": "Orders today",
+    "completion": "Completion",
+    "cancellations_7d": "Cancellations 7d",
+    "no_orders": "No orders found.",
+    "no_orders_store": "No orders found for this store.",
+    "pipeline_title": "Order pipeline",
+    "pipeline": {
+      "draft": "Drafts",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "revenue_by_type_title": "Revenue by product type",
+    "item_types": {
+      "physical": "Physical",
+      "event_ticket": "Events",
+      "booking": "Bookings",
+      "rental": "Rentals",
+      "service": "Services"
+    },
+    "payment_at_risk": "Payments at risk: {{count}} orders for €{{amount}}"
+  },
+  "coupons": {
+    "title": "Promotional Coupons",
+    "new_btn": "New Coupon",
+    "new_btn_short": "New",
+    "empty": "No coupons. Click \"New Coupon\" to create one.",
+    "empty_store": "No coupons for this store. Click \"New Coupon\" to create one.",
+    "inactive": "Inactive",
+    "all_stores_badge": "All stores",
+    "uses": "Uses",
+    "min_order": "Min",
+    "expires": "Expires",
+    "delete_confirm": "Delete this coupon?",
+    "dialog": {
+      "edit_title": "Edit Coupon",
+      "create_title": "New Coupon",
+      "code": "Code",
+      "discount_pct": "Discount %",
+      "discount_fixed": "Fixed discount €",
+      "min_order": "Minimum order €",
+      "max_uses": "Max uses",
+      "unlimited_placeholder": "Unlimited",
+      "valid_from": "Valid from",
+      "valid_until": "Valid until",
+      "valid_stores": "Valid stores",
+      "valid_stores_hint": "Leave empty to make the coupon valid on all stores",
+      "cancel": "Cancel",
+      "save": "Save",
+      "create": "Create"
+    },
+    "toast": {
+      "created": "Coupon created",
+      "updated": "Coupon updated",
+      "deleted": "Coupon deleted",
+      "error": "Error"
+    }
+  },
+  "branding": {
+    "title": "Branding",
+    "logo_upload": "Upload logo",
+    "logo_replace": "Change logo",
+    "logo_uploaded": "Logo uploaded",
+    "logo_error": "Error",
+    "brand_color": "Brand color",
+    "text_color": "Text color",
+    "preview": "Preview"
+  },
+  "seo": {
+    "title": "SEO",
+    "seo_title": "SEO title",
+    "seo_desc": "SEO description",
+    "seo_desc_placeholder": "Description for search engines"
+  },
+  "email": {
+    "title": "Email",
+    "sender_name": "Sender name",
+    "notifications": "Notification email",
+    "reply_to": "Reply-to",
+    "placeholder": {
+      "sender": "Your store",
+      "notifications": "admin@...",
+      "reply_to": "reply@..."
+    }
+  },
+  "fulfillment": {
+    "title": "Fulfillment",
+    "shipping": "Shipping",
+    "pickup": "Local pickup"
+  },
+  "languages": {
+    "title": "Storefront languages",
+    "hint": "Choose which languages are available in the public catalog",
+    "min_one": "At least one language must be selected",
+    "it": "Italiano",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français",
+    "singleSelectHint": "Main language of the store. The current selection drives the language of every public catalog and landing surface.",
+    "legacyBannerTitle": "Multi-language active (legacy configuration)",
+    "legacyBannerBody": "This store has {{count}} active languages ({{langs}}). Selecting a new language below will reduce the store to a single language and the others will stop being visible in the public catalog. Save changes to confirm."
+  },
+  "inheritance": {
+    "tooltip": "Inherited from global settings",
+    "logo_alt": "Logo inherited from global settings"
+  },
+  "org_branding": {
+    "title": "Global settings",
+    "title_emoji": "⚙ Global settings",
+    "banner": {
+      "heading": "How global settings work",
+      "body": "The values below apply to <1>all stores</1> that don't have their own logo or color set. If an individual store configures its own branding, it overrides the global only on that store."
+    },
+    "logo": {
+      "label": "Logo",
+      "hint": "Uploaded here, it appears on every store without its own logo and on the login pages of the customer area.",
+      "alt": "Organization logo",
+      "placeholder": "Logo",
+      "upload": "Upload logo",
+      "replace": "Replace",
+      "remove": "Remove logo",
+      "format_hint": "JPG, PNG, WebP or SVG · max 2MB"
+    },
+    "colors": {
+      "label": "Brand colors",
+      "hint": "Used as graphic accents on storefronts and in the customer area header.",
+      "brand_color": "Brand color",
+      "text_color": "Text color",
+      "remove_brand_aria": "Remove brand color",
+      "remove_text_aria": "Remove text color",
+      "remove_short": "Remove"
+    },
+    "preview": "Header preview",
+    "future": {
+      "summary": "Future extensions",
+      "body": "Favicon, default email sender, legal footer and other global fields will land here — the data plan is already in place, they just need to be activated when needed."
+    },
+    "clear_all": {
+      "button": "Remove all global settings",
+      "confirm": "Remove ALL global settings? Stores without their own branding will revert to the neutral default."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "toast": {
+      "logo_uploaded": "Logo uploaded.",
+      "logo_upload_error": "Error uploading the logo.",
+      "logo_removed": "Logo removed.",
+      "logo_remove_error": "Error removing the logo.",
+      "saved": "Global settings saved.",
+      "save_error": "Error saving.",
+      "cleared": "Global settings removed.",
+      "clear_error": "Error."
+    }
+  },
+  "shipping": {
+    "title": "Shipping — {{storeName}}",
+    "description": "Configure the shipping options shown to the customer during checkout. They only appear on orders with at least one physical product.",
+    "tabs": {
+      "store": "🏪 This store",
+      "global": "🌍 Global"
+    },
+    "hint": {
+      "store": "Options in this tab appear <1>only</1> at checkout of <2>{{storeName}}</2>.",
+      "global": "Global options appear at checkout of <1>all</1> stores in your organization, in addition to those specific to each store."
+    },
+    "actions": {
+      "close": "Close",
+      "save_store": "Save for this store",
+      "save_global": "Save global"
+    },
+    "toast": {
+      "load_error": "Error loading shipping options",
+      "name_required": "Every option must have a name.",
+      "price_negative": "The shipping price must be ≥ 0.",
+      "row_warning": "Option \"{{label}}\" not saved: {{detail}}",
+      "row_warning_generic": "error",
+      "saved": "Shipping updated",
+      "save_error": "Error saving"
+    },
+    "editor": {
+      "empty_global": "No shipping option configured globally.",
+      "empty_store": "No shipping option configured for this store.",
+      "empty_hint": "Add at least one option to enable checkout of physical products.",
+      "move_up_aria": "Move up",
+      "move_down_aria": "Move down",
+      "name_placeholder": "Option name (e.g. 24h express courier)",
+      "active_label": "Active",
+      "delete_title": "Delete",
+      "price_label": "Shipping price (€)",
+      "free_threshold_label": "Free over (€) — optional",
+      "free_threshold_placeholder": "e.g. 50.00 (empty = no threshold)",
+      "description_placeholder": "Description shown to the customer (optional)",
+      "add": "+ Add shipping option"
+    }
+  }
+}

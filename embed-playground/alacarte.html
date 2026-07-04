@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo sito merchant — Embed à-la-carte</title>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       CONFIG DI PAGINA (una volta sola): slug + base-url locale.
+       Da qui in poi gli elementi afianco-* NON ripetono lo slug.
+       ════════════════════════════════════════════════════════════════ -->
+  <script type="module" src="./afianco-embed.es.js"
+          data-afianco-slug="marco-conti-coaching"
+          data-afianco-base-url="http://localhost:8000"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a202c; }
+    /* MENU del sito merchant (HTML del merchant, NON afianco) */
+    .site-menu {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 12px 24px; background: #0f172a; color: #fff;
+      box-shadow: 0 1px 6px rgba(0,0,0,.15);
+    }
+    .site-menu .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+    .site-menu nav { display: flex; gap: 18px; flex: 1; margin-left: 24px; }
+    .site-menu nav a { color: #cbd5e1; text-decoration: none; font-size: 14px; }
+    .site-menu nav a:hover { color: #fff; }
+    .site-menu .actions { display: flex; gap: 8px; align-items: center; }
+    main { max-width: 1000px; margin: 0 auto; padding: 32px 24px 80px; }
+    section { margin-bottom: 56px; scroll-margin-top: 70px; }
+    h1 { font-size: 26px; letter-spacing: -0.02em; }
+    h2 { font-size: 20px; margin-top: 0; }
+    .lead { color: #64748b; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+           letter-spacing: .05em; color: #2563eb; background: #eff6ff; padding: 3px 8px; border-radius: 6px; }
+    .single-product { max-width: 420px; }
+    footer { border-top: 1px solid #e2e8f0; padding: 24px; text-align: center; color: #94a3b8; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <!-- ─── MENU del merchant: carrello + account FISSI, ovunque ─── -->
+  <header class="site-menu">
+    <span class="brand">🏔️ Studio Conti</span>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#workshop">Workshop</a>
+      <a href="#prodotto">In evidenza</a>
+    </nav>
+    <div class="actions">
+      <!-- Carrello e account incollati nel menu, niente wrapper -->
+      <afianco-cart-button></afianco-cart-button>
+      <afianco-account-button></afianco-account-button>
+    </div>
+  </header>
+
+  <main>
+    <section id="home">
+      <span class="tag">Pagina Home</span>
+      <h1>Coaching 1:1</h1>
+      <p class="lead">Categoria <code>coaching-1-1</code> embeddata in questa pagina.</p>
+      <afianco-product-grid category="coaching-1-1"></afianco-product-grid>
+    </section>
+
+    <section id="workshop">
+      <span class="tag">Altra pagina</span>
+      <h2>Workshop</h2>
+      <p class="lead">Categoria <code>workshop</code> — stessa logica, categoria diversa.</p>
+      <afianco-product-grid category="workshop"></afianco-product-grid>
+    </section>
+
+    <section id="prodotto">
+      <span class="tag">Pagina prodotto singolo</span>
+      <h2>Prodotto in evidenza</h2>
+      <p class="lead">Un solo prodotto via <code>&lt;afianco-product product-id&gt;</code>.</p>
+      <div class="single-product">
+        <afianco-product product-id="35133e3d-db00-4f9c-947c-b6652e79039f"></afianco-product>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Demo embed à-la-carte · carrello + account nel menu · categorie per pagina · prodotto singolo
+  </footer>
+
+  <!-- ─── Singleton: UNA volta sola, a fine pagina ─── -->
+  <afianco-cart-drawer hide-trigger></afianco-cart-drawer>
+  <afianco-account hide-trigger></afianco-account>
+  <afianco-product-detail></afianco-product-detail>
+  <afianco-checkout-button></afianco-checkout-button>
+
+  <script>
+    // Log eventi per debug (facoltativo)
+    ['afianco:init-ready','afianco:init-error','afianco:cart-updated','afianco:add-to-cart']
+      .forEach((n) => document.addEventListener(n, (e) => console.log('[demo]', n, e.detail)));
+  </script>
+</body>
+</html>

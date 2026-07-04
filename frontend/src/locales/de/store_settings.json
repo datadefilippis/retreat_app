@@ -1,0 +1,166 @@
+{
+  "page": {
+    "title": "Store-Konfiguration",
+    "subtitle": "Identität, Benachrichtigungen und Bereitschaft Ihres Shops"
+  },
+  "deprecation": {
+    "title": "Diese Seite wird ersetzt",
+    "body": "Die Store-Einstellungen ziehen auf die Seite „Stores“ um, wo Branding, Sprachen und Fulfillment-Modi pro Standort verwaltet werden. Hier gespeicherte Änderungen bleiben synchron.",
+    "cta": "Stores-Seite öffnen"
+  },
+  "ai_memory": {
+    "clear": "Beschreibung löschen"
+  },
+  "setup_review": {
+    "title": "KI-Konfiguration angewendet",
+    "identity_done": "Store-Identität angewendet",
+    "products_done": "{{count}} Produkte als Entwurf erstellt",
+    "fulfillment_done": "Lieferarten angewendet",
+    "next_title": "Nächste Schritte",
+    "auto_saved": "Einstellungen automatisch gespeichert",
+    "step_products": "Preise vervollständigen und Produkte veröffentlichen",
+    "go_products": "Zu den Produkten",
+    "step_payments": "Zahlungsanbieter verknüpfen",
+    "go_payments": "Zu den Zahlungen",
+    "step_publish": "Store veröffentlichen"
+  },
+  "url_extract": {
+    "placeholder": "https://www.ihrewebsite.de",
+    "btn": "Extrahieren",
+    "hint": "Haben Sie eine Website? Fügen Sie die URL ein und wir extrahieren Informationen, um die Beschreibung vorab auszufüllen.",
+    "success": "Text aus der Website extrahiert. Sie können ihn vor dem Generieren bearbeiten.",
+    "success_multi": "Aus {{count}} Seiten extrahiert. Sie können den Text vor dem Generieren bearbeiten.",
+    "empty": "Unzureichender Inhalt von der Website. Beschreibung manuell schreiben.",
+    "error": "Website konnte nicht gelesen werden. Versuchen Sie eine andere URL oder schreiben Sie die Beschreibung."
+  },
+  "unified_setup": {
+    "title": "Richten Sie Ihren Store mit KI ein",
+    "desc": "Beschreiben Sie Ihr Geschäft und wir generieren Identität, Produkte und Lieferarten in einem Zug.",
+    "placeholder": "z. B.: Handwerksbäckerei in Zürich mit Direktverkauf von frischem Brot, Backwaren und typischen Produkten. Lieferung nach Hause und Abholung im Geschäft.",
+    "generate_btn": "Konfiguration generieren",
+    "generating": "Wird generiert...",
+    "preview_title": "Vorgeschlagene Konfiguration",
+    "section_identity": "Store-Identität",
+    "section_products": "Produkte",
+    "section_fulfillment": "Lieferung",
+    "apply_btn": "Ausgewählte anwenden",
+    "regenerate_btn": "Erneut generieren",
+    "skip_btn": "Abbrechen",
+    "applied": "Konfiguration angewendet. Vergessen Sie nicht zu speichern.",
+    "apply_error": "Fehler beim Anwenden der Konfiguration.",
+    "error": "Fehler bei der Generierung. Bitte erneut versuchen.",
+    "manual_hint": "Oder unten alles manuell konfigurieren"
+  },
+  "ai_draft": {
+    "title": "Mit KI generieren",
+    "desc": "Beschreiben Sie Ihr Geschäft in wenigen Worten und wir generieren einen Identitätsentwurf für Ihren Store.",
+    "placeholder": "z. B.: Handwerksbäckerei mit Direktverkauf von frischem Brot, Backwaren und typischen Produkten. Lieferung nach Hause und Abholung im Geschäft in Zürich.",
+    "generate_btn": "Entwurf generieren",
+    "generating": "Wird generiert...",
+    "apply_btn": "Diesen Entwurf verwenden",
+    "regenerate_btn": "Erneut generieren",
+    "skip_btn": "Manuell fortfahren",
+    "applied": "Entwurf in die Felder übernommen. Vergessen Sie nicht zu speichern.",
+    "error": "Fehler bei der Generierung. Bitte erneut versuchen.",
+    "manual_hint": "Sie können die Felder auch unten manuell ausfüllen"
+  },
+  "identity": {
+    "title": "Öffentliche Identität",
+    "display_name": "Öffentlicher Geschäftsname",
+    "display_name_hint": "Wird Kunden im Storefront und in E-Mails angezeigt",
+    "contact_email": "Öffentliche Kontakt-E-Mail",
+    "contact_phone": "Kontakttelefon",
+    "required_for_publish": "Für Veröffentlichung erforderlich",
+    "store_description": "Store-Beschreibung",
+    "store_description_hint": "Kurze Vorstellung, die Kunden im Storefront angezeigt wird (max. 500 Zeichen)",
+    "store_description_placeholder": "Beschreiben Sie Ihren Store in wenigen Worten..."
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "notification_email": "Benachrichtigungs-E-Mail",
+    "notification_email_hint": "Wo Sie Bestell-, Anfrage- und Zahlungsbenachrichtigungen erhalten. Wenn leer, werden sie an Admins gesendet."
+  },
+  "email": {
+    "title": "Kunden-E-Mails",
+    "sender_display_name": "Absendername",
+    "sender_display_name_hint": "Der Name, den Kunden als E-Mail-Absender sehen",
+    "reply_to_email": "Antwort-E-Mail",
+    "reply_to_email_hint": "Wohin Kunden auf E-Mails antworten",
+    "email_delivery": "Versandmodus",
+    "email_delivery_platform": "Plattformverwaltet",
+    "email_delivery_custom": "Eigene Domain (zukünftig)",
+    "platform_managed_title": "E-Mail-Versand verwaltet von AFianco",
+    "platform_managed_desc": "Kunden-E-Mails werden über die AFianco-Infrastruktur versendet. Sie können den Absendernamen und die Antwortadresse anpassen. Keine DNS- oder SMTP-Konfiguration erforderlich.",
+    "preview_title": "E-Mail-Vorschau",
+    "preview_from": "Von",
+    "preview_reply_to": "Antworten an",
+    "preview_notifications": "Store-Benachrichtigungen an",
+    "preview_not_configured": "nicht konfiguriert",
+    "preview_admin_fallback": "Organisations-Admin"
+  },
+  "ai_fulfillment": {
+    "title": "Lieferung mit KI vorschlagen",
+    "desc": "Beschreiben Sie Ihr Geschäft und wir schlagen die am besten geeigneten Lieferarten vor.",
+    "placeholder": "z. B.: Lebensmittelladen mit Lieferung nach Hause und Abholung vor Ort...",
+    "generate_btn": "Vorschlagen",
+    "generating": "Wird generiert...",
+    "result_title": "Liefer-Vorschlag",
+    "apply_btn": "Diesen Vorschlag verwenden",
+    "skip_btn": "Überspringen",
+    "applied": "Lieferarten aktualisiert. Vergessen Sie nicht zu speichern.",
+    "error": "Fehler bei der Generierung. Bitte erneut versuchen.",
+    "none_suggested": "Keine Lieferarten für diese Geschäftstyp vorgeschlagen."
+  },
+  "fulfillment": {
+    "title": "Lieferung",
+    "modes_label": "Unterstützte Lieferarten",
+    "modes_hint": "Wählen Sie aus, welche Lieferoptionen Kunden beim Checkout wählen können",
+    "mode_shipping": "Versand",
+    "mode_local_pickup": "Abholung vor Ort"
+  },
+  "readiness": {
+    "title": "Verkaufsbereitschaft",
+    "overall_ready": "Bereit zum Verkaufen",
+    "overall_needs_setup": "Konfiguration empfohlen",
+    "overall_blocked": "Konfiguration erforderlich",
+    "group": {
+      "storefront": "Storefront",
+      "trust": "Vertrauen & Kommunikation",
+      "commerce": "Handel"
+    },
+    "check": {
+      "public_slug": "Öffentliche Storefront-Adresse",
+      "display_name": "Öffentlicher Geschäftsname",
+      "contact_email": "Öffentliche Kontakt-E-Mail",
+      "notification_email": "Benachrichtigungs-E-Mail",
+      "reply_to_email": "Kunden-Antwort-E-Mail",
+      "payment_provider": "Zahlungsanbieter verbunden",
+      "publishable_offer": "Mindestens ein gültiges veröffentlichtes Produkt"
+    },
+    "status_ok": "Konfiguriert",
+    "status_missing": "Zu konfigurieren",
+    "status_blocking": "Erforderlich",
+    "action_configure": "Konfigurieren"
+  },
+  "publish": {
+    "title": "Store-Veröffentlichung",
+    "published_badge": "Veröffentlicht",
+    "unpublished_badge": "Nicht veröffentlicht",
+    "publish_btn": "Store veröffentlichen",
+    "unpublish_btn": "Veröffentlichung aussetzen",
+    "publish_confirm": "Möchten Sie Ihren Store öffentlich sichtbar machen?",
+    "unpublish_confirm": "Öffentliche Sichtbarkeit aussetzen? Ihr Katalog ist dann nicht mehr zugänglich.",
+    "blocked_hint": "Schließen Sie die erforderlichen Konfigurationen ab, um zu veröffentlichen.",
+    "published_hint": "Ihr Storefront ist öffentlich sichtbar.",
+    "ready_hint": "Ihr Store ist bereit zur Veröffentlichung."
+  },
+  "actions": {
+    "save": "Speichern",
+    "saving": "Speichert..."
+  },
+  "toast": {
+    "saved": "Store-Einstellungen gespeichert",
+    "back_to_setup": "Zurück zum Setup",
+    "error": "Fehler beim Speichern"
+  }
+}

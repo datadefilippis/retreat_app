@@ -1,0 +1,256 @@
+{
+  "page": {
+    "title": "Clienti",
+    "subtitle": "Stato dei clienti, segmenti, azioni suggerite",
+    "loading": "Caricamento insight…",
+    "empty": "Nessun cliente con dati ancora collegati",
+    "errorTitle": "Errore caricamento",
+    "errorBody": "Impossibile caricare i dati. Riprova fra qualche istante.",
+    "refreshButton": "Aggiorna"
+  },
+  "period": {
+    "label": "Periodo",
+    "7d": "7 giorni",
+    "30d": "30 giorni",
+    "90d": "90 giorni",
+    "180d": "6 mesi",
+    "12m": "12 mesi",
+    "24m": "24 mesi",
+    "all": "Sempre",
+    "custom": "Personalizzato",
+    "comparedTo": "vs periodo precedente"
+  },
+  "filters": {
+    "title": "Filtri",
+    "segmentLabel": "Segmento",
+    "statusLabel": "Stato",
+    "minRevenueLabel": "Spesa minima",
+    "minRevenuePlaceholder": "es. 100",
+    "hasContactLabel": "Contatto",
+    "hasEmail": "Ha email",
+    "hasPhone": "Ha telefono",
+    "search": "Cerca cliente",
+    "searchPlaceholder": "Nome cliente…",
+    "clearAll": "Pulisci filtri",
+    "applied": "Filtri attivi",
+    "accountLabel": "Account:",
+    "accountAll": "Tutti",
+    "accountRegistered": "Registrati",
+    "accountGuest": "Solo guest",
+    "marketingLabel": "Marketing:",
+    "marketingAll": "Tutti",
+    "marketingOptedIn": "Iscritti",
+    "marketingNotOptedIn": "Non iscritti"
+  },
+  "segment": {
+    "all": "Tutti",
+    "top": "Top",
+    "active": "Attivi",
+    "occasional": "Occasionali",
+    "inactive": "Inattivi",
+    "new": "Nuovi",
+    "lead": "Lead",
+    "unknown": "Non classificato"
+  },
+  "status": {
+    "all": "Tutti",
+    "healthy": "In salute",
+    "watch": "Da monitorare",
+    "atRisk": "A rischio",
+    "lost": "Persi"
+  },
+  "kpi": {
+    "activeCustomers": {
+      "title": "Clienti attivi",
+      "def": "Clienti con almeno un acquisto negli ultimi 60 giorni alla fine del periodo.",
+      "calc": "Conteggio distinto su sales_records con last_purchase ≥ end - 60g.",
+      "read": "Più alti = base attiva più larga. Soglia configurabile in Impostazioni."
+    },
+    "newCustomers": {
+      "title": "Nuovi clienti",
+      "def": "Clienti acquisiti nel periodo (primo acquisto in assoluto cade qui).",
+      "calc": "Conteggio distinto su customer_id con MIN(date) ∈ [start, end].",
+      "read": "Più alti = acquisizione che cresce."
+    },
+    "purchasingCustomers": {
+      "title": "Clienti che hanno comprato",
+      "def": "Clienti con almeno una vendita nel periodo selezionato.",
+      "calc": "Conteggio distinto su customer_id presente in sales_records nel periodo.",
+      "read": "Più alti = base che ha generato cassa nel periodo."
+    },
+    "totalRevenue": {
+      "title": "Ricavi periodo",
+      "def": "Somma delle vendite registrate nel periodo selezionato.",
+      "calc": "Σ amount su sales_records con date ∈ [start, end].",
+      "read": "Più alti = più cassa generata. Confronta con il periodo precedente."
+    },
+    "avgCustomerValue": {
+      "title": "Valore medio cliente",
+      "def": "Ricavi medi per cliente nel periodo.",
+      "calc": "ricavi_periodo / clienti_che_hanno_comprato_nel_periodo.",
+      "read": "Più alti = clienti che spendono di più. Cresce con upsell."
+    },
+    "top10Share": {
+      "title": "Concentrazione top 10",
+      "def": "Quota di ricavi assorbita dai 10 clienti più grandi nel periodo.",
+      "calc": "Σ ricavi top10 / ricavi_periodo × 100.",
+      "read": "Sopra 60 % = rischio alto: pochi clienti reggono il fatturato."
+    },
+    "atRiskCount": {
+      "title": "Clienti a rischio",
+      "def": "Clienti con churn risk score ≥ 60 (su 100).",
+      "calc": "Recency + frequenza + penalità acquisto singolo + cancellazioni.",
+      "read": "Contattali per evitare la perdita. Vedi card sotto per dettagli."
+    },
+    "inactiveRate": {
+      "title": "Tasso inattivi",
+      "def": "Percentuale di clienti senza acquisti da oltre 180 giorni.",
+      "calc": "clienti_inattivi / totale_clienti × 100.",
+      "read": "Sotto 30 % = base sana. Sopra 50 % = serve riattivazione."
+    }
+  },
+  "concentration": {
+    "title": "Concentrazione ricavi",
+    "top5": "Top 5",
+    "top10": "Top 10",
+    "totalCustomers": "Totale clienti",
+    "totalRevenue": "Ricavi totali",
+    "infobox": {
+      "def": "Indica quanto i tuoi ricavi dipendono dai clienti più grandi.",
+      "calc": "Quota dei top N clienti sul totale ricavi.",
+      "read": "Top 5 sopra 50 % = molto dipendente. Sotto 30 % = ben distribuito."
+    }
+  },
+  "segments": {
+    "title": "Distribuzione per segmento",
+    "infobox": {
+      "def": "Quanti clienti ci sono in ogni segmento e quanto pesano sui ricavi.",
+      "calc": "Conteggio + somma ricavi raggruppata per segmento.",
+      "read": "Click su una fetta per filtrare la tabella sotto."
+    },
+    "countLabel": "clienti",
+    "revenueLabel": "ricavi",
+    "shareLabel": "% ricavi"
+  },
+  "table": {
+    "title": "Lista clienti",
+    "columnName": "Nome",
+    "columnSegment": "Segmento",
+    "columnStatus": "Stato",
+    "columnRevenue": "Ricavi",
+    "columnTransactions": "Acquisti",
+    "columnLastPurchase": "Ultimo acquisto",
+    "columnDaysSince": "Giorni da",
+    "columnChurnRisk": "Rischio",
+    "columnTrend": "Trend",
+    "columnEmail": "Email",
+    "columnPhone": "Telefono",
+    "columnAccount": "Account",
+    "columnMarketing": "Marketing",
+    "accountRegistered": "Account registrato",
+    "accountGuest": "Cliente guest",
+    "guestShort": "Guest",
+    "marketingOptedIn": "Iscritto al marketing",
+    "marketingNotOptedIn": "Non iscritto al marketing",
+    "marketingNotApplicable": "Non applicabile (cliente guest)",
+    "marketingGuestNotOptedIn": "Cliente guest (nessun consenso al marketing)",
+    "viewProfile": "Profilo",
+    "totalCount": "Totale: {{count}} clienti",
+    "page": "Pagina {{current}} di {{total}}",
+    "previousPage": "Precedente",
+    "nextPage": "Successiva",
+    "noResults": "Nessun cliente corrisponde ai filtri",
+    "exportCsv": "Esporta CSV",
+    "exportCsvGdprHint": "Il CSV include una colonna unsubscribe_url con un link di disiscrizione per ogni cliente. Inseriscila come merge tag nei footer delle tue campagne marketing (es. {{unsubscribe_url}} su Mailchimp / Brevo) per rispettare l'Art. 7(3) GDPR."
+  },
+  "profile": {
+    "title": "Profilo cliente",
+    "totalRevenue": "Ricavi totali",
+    "transactionCount": "Numero acquisti",
+    "avgValue": "Valore medio",
+    "lastPurchase": "Ultimo acquisto",
+    "firstPurchase": "Primo acquisto",
+    "preferredProducts": "Prodotti preferiti",
+    "noPreferred": "Nessuno ancora",
+    "timelineTitle": "Storia eventi",
+    "timelineEmpty": "Nessun evento da mostrare",
+    "timelineLoadMore": "Carica altri",
+    "kindOrder": "Ordine",
+    "kindSale": "Vendita",
+    "close": "Chiudi",
+    "emailLabel": "Email",
+    "phoneLabel": "Telefono",
+    "noEmail": "nessuna email",
+    "noPhone": "nessun telefono",
+    "accountSection": "Account",
+    "accountRegistered": "Account registrato",
+    "accountRegisteredOn": "dal {{date}}",
+    "accountGuest": "Cliente guest (nessun account registrato)",
+    "marketingOptedIn": "Iscritto al marketing",
+    "marketingNotOptedIn": "Non iscritto al marketing"
+  },
+  "trend": {
+    "growing": "In crescita",
+    "declining": "In calo",
+    "stable": "Stabile",
+    "new": "Nuovo"
+  },
+  "actions": {
+    "comingSoon": "Disponibile dalla Fase 3",
+    "comingSoonHint": "I bottoni email / WhatsApp / promemoria saranno attivi nel prossimo rilascio."
+  },
+  "cohort": {
+    "title": "Tabella retention per coorte",
+    "subtitle": "Quanti dei clienti acquisiti in ciascun mese sono ancora attivi i mesi successivi.",
+    "bucketLabel": "Granularità",
+    "bucketMonth": "Mese",
+    "bucketQuarter": "Trimestre",
+    "bucketWeek": "Settimana",
+    "horizonLabel": "Orizzonte",
+    "acquisitionColumn": "Mese di acquisizione",
+    "sizeColumn": "Dim.",
+    "infobox": {
+      "def": "Mostra quanti dei clienti acquisiti in un mese sono ancora attivi nei mesi successivi.",
+      "calc": "Per ogni cohort: # clienti attivi al mese N / cohort size × 100.",
+      "read": "Curva piatta = retention stabile. Curva ripida = perdita rapida."
+    },
+    "empty": "Dati insufficienti per la tabella coorte."
+  },
+  "insightCard": {
+    "infoButton": "Info",
+    "backButton": "Indietro"
+  },
+  "outreach": {
+    "emailButton": "Email",
+    "whatsappButton": "WhatsApp",
+    "changeTemplate": "Scegli messaggio",
+    "noEmail": "Cliente senza email",
+    "noPhone": "Cliente senza telefono valido",
+    "noTemplates": "Nessun messaggio disponibile",
+    "templates": {
+      "at_risk_followup": "Cliente a rischio — follow-up",
+      "new_welcome": "Benvenuto nuovo cliente",
+      "top_personal_note": "Nota personale top cliente",
+      "promo_mid_season": "Proposta promozionale",
+      "appointment_reminder": "Promemoria appuntamento",
+      "feedback_request": "Richiesta feedback",
+      "thank_you_purchase": "Ringraziamento acquisto",
+      "general_check_in": "Saluto generico"
+    },
+    "dialog": {
+      "titleEmail": "Anteprima email",
+      "titleWhatsapp": "Anteprima WhatsApp",
+      "toLabel": "A:",
+      "subjectLabel": "Oggetto",
+      "bodyLabel": "Messaggio",
+      "copy": "Copia testo",
+      "copied": "Copiato",
+      "openGmail": "Apri Gmail web",
+      "openOutlook": "Apri Outlook web",
+      "openDefault": "Mail di default",
+      "openWhatsApp": "Apri WhatsApp",
+      "mailtoTooltip": "Apre il programma email impostato come predefinito sul sistema (Mail / Outlook / Thunderbird). Funziona solo se ne hai uno configurato.",
+      "hint": "Gmail web e Outlook web aprono il compose nel tuo browser (sempre funziona). \"Mail di default\" funziona solo se hai un programma email come predefinito di sistema."
+    }
+  }
+}

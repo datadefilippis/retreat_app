@@ -1,0 +1,57 @@
+{
+  "page": {
+    "title": "Alertes",
+    "subtitle": "Surveillez et gerez les anomalies detectees"
+  },
+  "actions": {
+    "run_analysis": "Lancer l'analyse",
+    "run_analysis_short": "Analyser",
+    "analyzing": "Analyse en cours...",
+    "analyzing_short": "Analyse...",
+    "acknowledge": "Prendre en charge",
+    "resolve": "Resoudre",
+    "suggestion": "Action suggeree"
+  },
+  "severity": {
+    "high": "Haute",
+    "medium": "Moyenne",
+    "low": "Basse"
+  },
+  "status": {
+    "new": "Nouvelle",
+    "acknowledged": "Prise en charge",
+    "resolved": "Resolue"
+  },
+  "summary": {
+    "total": "Total",
+    "new": "Nouvelles",
+    "acknowledged": "En charge",
+    "resolved": "Resolues"
+  },
+  "filters": {
+    "all_statuses": "Tous les statuts",
+    "new": "Nouvelles",
+    "acknowledged": "En charge",
+    "resolved": "Resolues",
+    "all_severities": "Toutes les severites",
+    "high": "Haute",
+    "medium": "Moyenne",
+    "low": "Basse",
+    "all_categories": "Toutes les categories",
+    "category_a": "Liquidite",
+    "category_b": "Rentabilite",
+    "category_c": "Cycle de tresorerie",
+    "category_d": "Tendances",
+    "category_e": "Dependances"
+  },
+  "empty": {
+    "title": "Aucune anomalie trouvee",
+    "filtered_desc": "Essayez de modifier les filtres",
+    "clean_desc": "Vos donnees sont normales !"
+  },
+  "toast": {
+    "load_error": "Erreur lors du chargement des anomalies",
+    "update_error": "Erreur lors de la mise a jour",
+    "generate_error": "Erreur lors de la generation des anomalies"
+  }
+}

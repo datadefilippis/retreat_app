@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- 
+      ANELLO BIANCO: gradiente radiale cross-section.
+      Centro radiale spostato in alto-sinistra rispetto al centro dell'anello (196,256)
+      → simula luce da alto-sinistra.
+      Stroke largo 44, raggio 110, quindi va da r=88 a r=132.
+    -->
+    <radialGradient id="whiteRingGrad" 
+                    cx="180" cy="240" r="138" 
+                    gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#3A3A45"/>
+      <stop offset="55%"  stop-color="#3A3A45"/>
+      <stop offset="64%"  stop-color="#5A5A66"/>
+      <stop offset="78%"  stop-color="#FAFAFC"/>
+      <stop offset="96%"  stop-color="#4A4A55"/>
+      <stop offset="100%" stop-color="#3A3A45"/>
+    </radialGradient>
+
+    <!-- 
+      ANELLO BLU: stesso schema cross-section ma in tonalità blu.
+      Centro radiale (300, 240) = alto-sinistra rispetto al centro dell'anello (316, 256).
+      Toni: blu navy scuro ai bordi, blu acceso al centro dello stroke.
+    -->
+    <radialGradient id="blueRingGrad" 
+                    cx="300" cy="240" r="138" 
+                    gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#0F1A4D"/>
+      <stop offset="55%"  stop-color="#0F1A4D"/>
+      <!-- Bordo interno stroke -->
+      <stop offset="64%"  stop-color="#1F2D7A"/>
+      <!-- Centro stroke (parte luminosa) -->
+      <stop offset="78%"  stop-color="#6B82F5"/>
+      <!-- Bordo esterno stroke -->
+      <stop offset="96%"  stop-color="#1A2670"/>
+      <stop offset="100%" stop-color="#0F1A4D"/>
+    </radialGradient>
+
+    <filter id="ringShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="6"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.55"/></feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 2026-05-22 mobile blur fix: removed filter="url(#ringShadow)" from
+       the <g>. When a SVG with raster filters is loaded via <img>, the
+       browser rasterises the entire SVG into a bitmap. On mobile (low
+       DPR + small render size) the feGaussianBlur shadow forces a
+       low-resolution raster pass that bleeds blur into the crisp ring
+       strokes. The <filter> definition stays in <defs> (harmless,
+       unreferenced) so we can re-enable the shadow later if we render
+       the logo at a larger canvas size. -->
+  <g fill="none" stroke-width="44" stroke-linecap="round">
+    <circle cx="196" cy="256" r="110" stroke="url(#whiteRingGrad)"/>
+    <circle cx="316" cy="256" r="110" stroke="url(#blueRingGrad)"/>
+    <path d="M 224.6 362.2 A 110 110 0 0 0 281.6 325.1" stroke="url(#whiteRingGrad)"/>
+  </g>
+</svg>

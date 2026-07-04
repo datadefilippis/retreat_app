@@ -1,0 +1,287 @@
+{
+  "title": "I tuoi store",
+  "subtitle": "Gestisci i tuoi negozi e storefront",
+  "empty": {
+    "title": "Nessuno store ancora",
+    "desc": "Crea il tuo primo store per iniziare a vendere."
+  },
+  "status": {
+    "published": "Online",
+    "default": "Principale",
+    "slug": "Slug"
+  },
+  "plan_violation": {
+    "title": "Store nascosto: limite del piano superato",
+    "body": "Lo store e' stato disattivato automaticamente perche' supera il numero di store del tuo piano attuale. I dati sono conservati e lo store si riattivera' automaticamente quando aggiorni il piano (o aggiungi un pack +1 store).",
+    "cta_upgrade": "Aggiorna piano per riattivare",
+    "badge": "Limite piano",
+    "badge_tooltip": "Disattivato per limite piano"
+  },
+  "actions": {
+    "create": "Nuovo store",
+    "create_short": "Nuovo",
+    "edit": "Modifica",
+    "publish": "Pubblica",
+    "unpublish": "Sospendi",
+    "view": "Apri",
+    "open_pos": "Apri POS",
+    "global_settings": "Impostazioni globali",
+    "more": "Altre azioni",
+    "shipping": "Spedizioni",
+    "gdpr": "Privacy & GDPR"
+  },
+  "create": {
+    "title": "Crea un nuovo store",
+    "name": "Nome store",
+    "name_placeholder": "Es: Store Eventi, Ecommerce, POS...",
+    "slug": "URL slug",
+    "slug_placeholder": "es: eventi-macelleria",
+    "slug_hint": "L'indirizzo pubblico del tuo store (solo lettere minuscole, numeri e trattini)",
+    "visibility": "Tipo di store",
+    "cancel": "Annulla",
+    "submit": "Crea store"
+  },
+  "edit": {
+    "title": "Modifica store",
+    "section_identity": "Identità",
+    "description": "Descrizione",
+    "contact_email": "Email contatto",
+    "contact_phone": "Telefono",
+    "save": "Salva"
+  },
+  "toast": {
+    "created": "Store creato",
+    "updated": "Store aggiornato",
+    "published": "Store pubblicato",
+    "unpublished": "Store sospeso",
+    "error": "Errore nell'operazione"
+  },
+  "visibility": {
+    "public": {
+      "label": "Pubblico",
+      "desc": "Visibile a tutti tramite URL pubblico"
+    },
+    "private": {
+      "label": "Privato",
+      "desc": "Accessibile solo con link diretto"
+    },
+    "pos": {
+      "label": "POS",
+      "desc": "Interfaccia vendita per il merchant"
+    }
+  },
+  "tabs": {
+    "stores": "Store",
+    "stats": "Statistiche",
+    "coupons": "Coupon"
+  },
+  "tabs_short": {
+    "stores": "Store",
+    "stats": "Stats",
+    "coupons": "Coupon"
+  },
+  "all_stores": "Tutti gli store",
+  "products_one": "{{count}} prodotto",
+  "products_other": "{{count}} prodotti",
+  "stats": {
+    "title": "Statistiche Commerce",
+    "revenue_confirmed": "Ricavo confermato",
+    "last_30d": "ultimi 30gg",
+    "orders_today": "Ordini oggi",
+    "completion": "Completamento",
+    "cancellations_7d": "Cancellazioni 7gg",
+    "no_orders": "Nessun ordine trovato.",
+    "no_orders_store": "Nessun ordine trovato per questo store.",
+    "pipeline_title": "Pipeline ordini",
+    "pipeline": {
+      "draft": "Bozze",
+      "confirmed": "Confermati",
+      "completed": "Completati",
+      "cancelled": "Annullati"
+    },
+    "revenue_by_type_title": "Ricavo per tipo prodotto",
+    "item_types": {
+      "physical": "Fisici",
+      "event_ticket": "Eventi",
+      "booking": "Prenotazioni",
+      "rental": "Noleggi",
+      "service": "Servizi"
+    },
+    "payment_at_risk": "Pagamenti a rischio: {{count}} ordini per €{{amount}}"
+  },
+  "coupons": {
+    "title": "Coupon Promozionali",
+    "new_btn": "Nuovo Coupon",
+    "new_btn_short": "Nuovo",
+    "empty": "Nessun coupon. Clicca \"Nuovo Coupon\" per crearne uno.",
+    "empty_store": "Nessun coupon per questo store. Clicca \"Nuovo Coupon\" per crearne uno.",
+    "inactive": "Disattivo",
+    "all_stores_badge": "Tutti gli store",
+    "uses": "Utilizzi",
+    "min_order": "Min",
+    "expires": "Scade",
+    "delete_confirm": "Eliminare questo coupon?",
+    "dialog": {
+      "edit_title": "Modifica Coupon",
+      "create_title": "Nuovo Coupon",
+      "code": "Codice",
+      "discount_pct": "Sconto %",
+      "discount_fixed": "Sconto fisso €",
+      "min_order": "Ordine minimo €",
+      "max_uses": "Max utilizzi",
+      "unlimited_placeholder": "Illimitati",
+      "valid_from": "Valido dal",
+      "valid_until": "Valido fino al",
+      "valid_stores": "Store validi",
+      "valid_stores_hint": "Lascia vuoto per rendere il coupon valido su tutti gli store",
+      "cancel": "Annulla",
+      "save": "Salva",
+      "create": "Crea"
+    },
+    "toast": {
+      "created": "Coupon creato",
+      "updated": "Coupon aggiornato",
+      "deleted": "Coupon eliminato",
+      "error": "Errore"
+    }
+  },
+  "branding": {
+    "title": "Branding",
+    "logo_upload": "Carica logo",
+    "logo_replace": "Cambia logo",
+    "logo_uploaded": "Logo caricato",
+    "logo_error": "Errore",
+    "brand_color": "Colore brand",
+    "text_color": "Colore testo",
+    "preview": "Anteprima"
+  },
+  "seo": {
+    "title": "SEO",
+    "seo_title": "Titolo SEO",
+    "seo_desc": "Descrizione SEO",
+    "seo_desc_placeholder": "Descrizione per motori di ricerca"
+  },
+  "email": {
+    "title": "Email",
+    "sender_name": "Nome mittente",
+    "notifications": "Email notifiche",
+    "reply_to": "Reply-to",
+    "placeholder": {
+      "sender": "Il tuo store",
+      "notifications": "admin@...",
+      "reply_to": "reply@..."
+    }
+  },
+  "fulfillment": {
+    "title": "Fulfillment",
+    "shipping": "Spedizione",
+    "pickup": "Ritiro in sede"
+  },
+  "languages": {
+    "title": "Lingue storefront",
+    "hint": "Scegli le lingue disponibili nel catalogo pubblico",
+    "min_one": "Almeno una lingua deve essere selezionata",
+    "it": "Italiano",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français",
+    "singleSelectHint": "Lingua principale dello store. La selezione corrente determina la lingua di tutte le superfici pubbliche del catalogo e dei landing.",
+    "legacyBannerTitle": "Multi-lingua attivo (configurazione precedente)",
+    "legacyBannerBody": "Questo store ha {{count}} lingue attive ({{langs}}). Selezionando una nuova lingua qui sotto, lo store sarà ridotto a una singola lingua e le altre smetteranno di essere visibili nel catalogo pubblico. Salva le modifiche per confermare."
+  },
+  "inheritance": {
+    "tooltip": "Ereditato dalle impostazioni globali",
+    "logo_alt": "Logo ereditato dalle impostazioni globali"
+  },
+  "org_branding": {
+    "title": "Impostazioni globali",
+    "title_emoji": "⚙ Impostazioni globali",
+    "banner": {
+      "heading": "Come funzionano le impostazioni globali",
+      "body": "I valori qui sotto si applicano a <1>tutti gli store</1> che non hanno un proprio logo o colore impostato. Se un singolo store configura il proprio branding, quello sovrascrive il globale solo su quello store."
+    },
+    "logo": {
+      "label": "Logo",
+      "hint": "Caricato qui, appare su ogni store senza logo proprio e nelle pagine di login dell'area riservata.",
+      "alt": "Logo organizzazione",
+      "placeholder": "Logo",
+      "upload": "Carica logo",
+      "replace": "Sostituisci",
+      "remove": "Rimuovi logo",
+      "format_hint": "JPG, PNG, WebP o SVG · max 2MB"
+    },
+    "colors": {
+      "label": "Colori brand",
+      "hint": "Usati come accenti grafici sugli storefront e nell'header dell'area riservata.",
+      "brand_color": "Colore brand",
+      "text_color": "Colore testo",
+      "remove_brand_aria": "Rimuovi colore brand",
+      "remove_text_aria": "Rimuovi colore testo",
+      "remove_short": "Rimuovi"
+    },
+    "preview": "Anteprima header",
+    "future": {
+      "summary": "Estensioni future",
+      "body": "Favicon, mittente email predefinito, footer legale e altri campi globali arriveranno qui — il piano dati è già pronto, basta attivarli quando servono."
+    },
+    "clear_all": {
+      "button": "Rimuovi tutte le impostazioni globali",
+      "confirm": "Vuoi rimuovere TUTTE le impostazioni globali? Gli store senza branding proprio torneranno al default neutro."
+    },
+    "actions": {
+      "cancel": "Annulla",
+      "save": "Salva"
+    },
+    "toast": {
+      "logo_uploaded": "Logo caricato.",
+      "logo_upload_error": "Errore nel caricamento del logo.",
+      "logo_removed": "Logo rimosso.",
+      "logo_remove_error": "Errore nella rimozione del logo.",
+      "saved": "Impostazioni globali salvate.",
+      "save_error": "Errore nel salvataggio.",
+      "cleared": "Impostazioni globali rimosse.",
+      "clear_error": "Errore."
+    }
+  },
+  "shipping": {
+    "title": "Spedizioni — {{storeName}}",
+    "description": "Configura le opzioni di spedizione mostrate al cliente durante il checkout. Appaiono solo negli ordini con almeno un prodotto fisico.",
+    "tabs": {
+      "store": "🏪 Questo store",
+      "global": "🌍 Globali"
+    },
+    "hint": {
+      "store": "Le opzioni in questo tab appaiono <1>solo</1> al checkout di <2>{{storeName}}</2>.",
+      "global": "Le opzioni globali appaiono al checkout di <1>tutti</1> gli store della tua organizzazione, in aggiunta a quelle specifiche per ogni store."
+    },
+    "actions": {
+      "close": "Chiudi",
+      "save_store": "Salva per questo store",
+      "save_global": "Salva globali"
+    },
+    "toast": {
+      "load_error": "Errore nel caricamento spedizioni",
+      "name_required": "Ogni opzione deve avere un nome.",
+      "price_negative": "Il prezzo di spedizione deve essere ≥ 0.",
+      "row_warning": "Opzione \"{{label}}\" non salvata: {{detail}}",
+      "row_warning_generic": "errore",
+      "saved": "Spedizioni aggiornate",
+      "save_error": "Errore nel salvataggio"
+    },
+    "editor": {
+      "empty_global": "Nessuna opzione di spedizione configurata come globale.",
+      "empty_store": "Nessuna opzione di spedizione configurata per questo store.",
+      "empty_hint": "Aggiungi almeno un'opzione per abilitare il checkout dei prodotti fisici.",
+      "move_up_aria": "Sposta su",
+      "move_down_aria": "Sposta giù",
+      "name_placeholder": "Nome opzione (es. Corriere espresso 24h)",
+      "active_label": "Attiva",
+      "delete_title": "Elimina",
+      "price_label": "Prezzo spedizione (€)",
+      "free_threshold_label": "Gratis sopra (€) — opzionale",
+      "free_threshold_placeholder": "es. 50.00 (vuoto = nessuna soglia)",
+      "description_placeholder": "Descrizione visibile al cliente (facoltativa)",
+      "add": "+ Aggiungi opzione di spedizione"
+    }
+  }
+}

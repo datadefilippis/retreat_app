@@ -1,0 +1,106 @@
+{
+  "title": "Newsletter & Formulaires",
+  "subtitle": "Créez des formulaires d'inscription à intégrer sur n'importe quel site",
+  "refresh": "Actualiser",
+  "new_form": "Nouveau formulaire",
+  "empty_title": "Aucun formulaire newsletter",
+  "empty_subtitle": "Créez votre premier formulaire et intégrez-le où vous voulez.",
+  "actions": {
+    "embed": "Intégrer",
+    "subscribers": "Abonnés",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "create": "Créer le formulaire",
+    "close": "Fermer",
+    "copy": "Copier",
+    "filter": "Filtrer"
+  },
+  "badge": {
+    "inactive": "Inactif",
+    "no_origins": "Aucun domaine autorisé"
+  },
+  "list": {
+    "extra_fields": "{{count}} champs supplémentaires",
+    "with_name": "+ nom",
+    "with_phone": "+ téléphone",
+    "origins": "{{count}} domaines"
+  },
+  "dialog": {
+    "new_title": "Nouveau formulaire newsletter",
+    "edit_title": "Modifier le formulaire",
+    "name": "Nom",
+    "name_ph": "Ex : Inscrivez-vous à la newsletter",
+    "collected_fields": "Champs collectés",
+    "email_always": "E-mail",
+    "email_always_hint": "(toujours requis)",
+    "field_name": "Nom",
+    "field_phone": "Téléphone",
+    "require_consent": "Exiger le consentement vie privée (recommandé)",
+    "consent_text": "Texte de consentement",
+    "consent_text_ph": "J'accepte le traitement de mes données pour recevoir des communications.",
+    "success_message": "Message de succès",
+    "success_message_ph": "Inscription terminée. Merci !",
+    "extra_fields_title": "Champs supplémentaires",
+    "extra_fields_subtitle": "En plus de l'e-mail, du nom et du téléphone",
+    "allowed_origins": "Domaines autorisés (un par ligne)",
+    "allowed_origins_hint": "Seuls ces domaines pourront envoyer des inscriptions depuis le formulaire intégré (sécurité CORS)."
+  },
+  "layout": {
+    "label": "Disposition du formulaire",
+    "vertical": "Vertical",
+    "horizontal": "Horizontal",
+    "inline": "Inline"
+  },
+  "colors": {
+    "toggle": "Personnaliser les couleurs du bouton",
+    "button": "Couleur du bouton",
+    "button_text": "Couleur du texte du bouton"
+  },
+  "privacy": {
+    "label": "Lien politique de confidentialité",
+    "mode_none": "Aucun lien",
+    "mode_store": "Utiliser la confidentialité d'une boutique",
+    "mode_custom": "Lien personnalisé",
+    "choose_store": "— Choisir une boutique —",
+    "custom_ph": "https://www.monsite.com/confidentialite",
+    "no_stores": "Vous n'avez encore aucune boutique. Créez d'abord une boutique (section « Mes boutiques ») avec sa politique de confidentialité, ou utilisez un lien personnalisé.",
+    "checking": "Vérification de la confidentialité…",
+    "published": "✓ Confidentialité publiée — elle sera liée dans le formulaire.",
+    "not_configured": "Confidentialité pas encore configurée pour cette boutique.",
+    "create": "Créer la confidentialité"
+  },
+  "preview": {
+    "title": "Aperçu",
+    "loading": "Chargement de l'aperçu…",
+    "unavailable": "Aperçu indisponible."
+  },
+  "embed": {
+    "title": "Intégrer le formulaire",
+    "desc": "Collez ce code sur votre site là où vous voulez afficher le formulaire.",
+    "warning": "⚠️ Ajoutez d'abord les domaines autorisés (Modifier), sinon le navigateur bloquera l'envoi."
+  },
+  "subs": {
+    "title": "Abonnés — {{name}}",
+    "filter_label": "Filtrer par source",
+    "filter_ph": "Ex : blog-footer ou https://monsite.com",
+    "empty": "Aucune inscription.",
+    "from": "depuis {{source}}",
+    "status_subscribed": "Inscrit",
+    "status_unsubscribed": "Désinscrit"
+  },
+  "toast": {
+    "created": "Formulaire créé",
+    "updated": "Formulaire mis à jour",
+    "save_error": "Erreur lors de l'enregistrement",
+    "name_required": "Saisissez un nom pour le formulaire",
+    "deleted": "Formulaire supprimé",
+    "snippet_copied": "Snippet copié",
+    "copy_failed": "Échec de la copie",
+    "error": "Erreur"
+  },
+  "confirm_delete": "Supprimer le formulaire « {{name}} » ? Les inscriptions restent dans le CRM."
+}

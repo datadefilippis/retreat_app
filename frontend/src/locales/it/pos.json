@@ -1,0 +1,20 @@
+{
+  "subtitle": "Punto vendita",
+  "back": "Torna agli store",
+  "cart": {
+    "title": "Carrello",
+    "empty": "Seleziona i prodotti dalla griglia",
+    "total": "Totale",
+    "customer_placeholder": "Nome cliente",
+    "complete": "Completa ordine"
+  },
+  "order_done": "Ordine {{number}} completato",
+  "new_order": "Nuovo ordine",
+  "toast": {
+    "completed": "Ordine completato e confermato",
+    "error": "Errore nella creazione ordine"
+  },
+  "error": {
+    "load": "Errore nel caricamento"
+  }
+}

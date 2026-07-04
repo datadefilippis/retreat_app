@@ -1,0 +1,48 @@
+{
+  "page": {
+    "title": "Qualità dati",
+    "subtitle": "Copertura collegamenti e collegamento retroattivo"
+  },
+  "dataset": {
+    "sales": "Vendite",
+    "purchases": "Acquisti",
+    "expenses": "Spese"
+  },
+  "entity": {
+    "customer_id": "Clienti",
+    "product_id": "Prodotti",
+    "supplier_id": "Fornitori"
+  },
+  "coverage": {
+    "title": "Copertura collegamenti",
+    "no_data": "Nessun dato disponibile.",
+    "total_records": "record totali"
+  },
+  "relink": {
+    "title": "Collegamento retroattivo",
+    "description": "Scansiona i record storici non collegati e prova a collegarli alle entità esistenti usando la corrispondenza esatta.",
+    "admin_only": "Solo gli amministratori possono eseguire il collegamento retroattivo.",
+    "dataset_label": "Dataset",
+    "preview": "Anteprima",
+    "scan_result": "Risultato scansione",
+    "candidates": "candidati",
+    "no_candidates": "Nessun candidato",
+    "scanned": "Scansionati",
+    "candidates_label": "Candidati",
+    "resolver": "Entità resolver",
+    "by_entity": "Per tipo entità",
+    "samples": "Esempi",
+    "apply": "Applica",
+    "links_one": "{{count}} collegamento",
+    "links_other": "{{count}} collegamenti",
+    "confirm_title": "Confermi?",
+    "confirm_desc": "Verranno aggiornati {{count}} record con collegamento esatto.",
+    "confirm_audit": "Ogni modifica viene tracciata nei metadati del record.",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "toast_applied_one": "{{count}} collegamento applicato",
+    "toast_applied_other": "{{count}} collegamenti applicati",
+    "toast_scan_error": "Errore durante la scansione",
+    "toast_apply_error": "Errore durante il collegamento"
+  }
+}

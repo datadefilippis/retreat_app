@@ -1,0 +1,432 @@
+/**
+ * CustomerInsightsPage — Phase 2 of the customer insights restructuring.
+ *
+ * Replaces the legacy CustomersLightPage at the /customers route. The
+ * legacy page stays mounted at /customers-legacy for 30 days as
+ * safety-net (cf. PHASE_2 plan in CUSTOMER_INSIGHTS_FORMULAS.md).
+ *
+ * Layout
+ * ──────
+ *   [period selector]  ───────────────────────────  [refresh]
+ *   ┌─ KPI grid ────────────────────────────────────────────┐
+ *   │  Each card has 3-part info-box (def / calc / read)    │
+ *   │  Cards for risk segments are clickable → drill        │
+ *   └───────────────────────────────────────────────────────┘
+ *   [segment filters]  [status filters]
+ *   ┌─ Concentration ──┐ ┌─ Segment distribution ──────────┐
+ *   │ top5 / top10     │ │ list + bar widget               │
+ *   └──────────────────┘ └──────────────────────────────────┘
+ *   ┌─ Customer table  ────────────────────────────────────┐
+ *   │  filters + pagination + export CSV                    │
+ *   └───────────────────────────────────────────────────────┘
+ *
+ * State stays local (URL search params later in Phase 2.5 if it adds
+ * value — for v1 the page-mount-default works fine).
+ */
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { RefreshCw, AlertTriangle, Info } from 'lucide-react';
+import { useCurrency } from '../../context/AuthContext';
+import { formatCurrency } from '../../lib/utils';
+import { AppLayout, Header } from '../../components/Layout';
+import { customerInsightsAPI } from '../../api/customerInsights';
+import { useLocale } from './hooks/useLocale';
+import { PeriodSelector } from '../../components/insights/PeriodSelector';
+// SegmentFilters is now rendered inside CustomerTable (filters apply
+// to the table only, not to the KPI grid above).
+import { KpiOverviewSection } from './components/KpiOverviewSection';
+import { CustomerTable } from './components/CustomerTable';
+import { CustomerProfileSlide } from './components/CustomerProfileSlide';
+
+const PAGE_SIZE = 50;
+
+export default function CustomerInsightsPage() {
+  const { t } = useTranslation('customerInsights');
+  const currency = useCurrency();
+
+  // Filter state
+  const [period, setPeriod] = useState('30d');
+  const [segment, setSegment] = useState(null);
+  const [customerStatus, setCustomerStatus] = useState(null);
+  // CI-admin-vis: two new filter states, null = no filter (default).
+  // Owned at page level so they participate in the list-fetch
+  // useEffect, the page-reset useEffect, AND the export call.
+  const [hasAccount, setHasAccount] = useState(null);
+  const [marketingOptedIn, setMarketingOptedIn] = useState(null);
+
+  // Data state
+  const [overview, setOverview] = useState(null);
+  const [overviewLoading, setOverviewLoading] = useState(true);
+  const [overviewError, setOverviewError] = useState(null);
+
+  const [customersData, setCustomersData] = useState(null);
+  const [customersLoading, setCustomersLoading] = useState(true);
+  const [page, setPage] = useState(1);
+
+  // Profile slide state
+  const [profileCustomerId, setProfileCustomerId] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  // ── Fetch overview ────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    setOverviewLoading(true);
+    setOverviewError(null);
+    customerInsightsAPI.getOverview({ period })
+      .then((res) => {
+        if (cancelled) return;
+        setOverview(res.data);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setOverviewError(err?.response?.data?.detail || err?.message || 'unknown');
+      })
+      .finally(() => {
+        if (!cancelled) setOverviewLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [period]);
+
+  // ── Fetch customer list ───────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    setCustomersLoading(true);
+    customerInsightsAPI.getCustomers({
+      segment,
+      customerStatus,
+      hasAccount,
+      marketingOptedIn,
+      page,
+      pageSize: PAGE_SIZE,
+    })
+      .then((res) => {
+        if (cancelled) return;
+        setCustomersData(res.data);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCustomersData({ total: 0, rows: [], page: 1 });
+      })
+      .finally(() => {
+        if (!cancelled) setCustomersLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [segment, customerStatus, hasAccount, marketingOptedIn, page]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [segment, customerStatus, hasAccount, marketingOptedIn]);
+
+  // ── Drill-down from KPI cards ────────────────────────────────────
+  const onSegmentDrill = (drillKey) => {
+    if (drillKey === 'at_risk_status') {
+      setCustomerStatus('at_risk');
+      setSegment(null);
+    } else if (drillKey === 'inactive_segment') {
+      setSegment('inactive');
+      setCustomerStatus(null);
+    }
+  };
+
+  const onSelectCustomer = (customerId) => {
+    setProfileCustomerId(customerId);
+    setProfileOpen(true);
+  };
+
+  const profileCustomerSummary = useMemo(() => {
+    if (!profileCustomerId || !customersData?.rows) return null;
+    return customersData.rows.find((r) => r.customer_id === profileCustomerId) || null;
+  }, [profileCustomerId, customersData]);
+
+  const onExportCsv = async () => {
+    // Goes through axios so the JWT bearer token is attached. Using
+    // window.open would skip the Authorization header → 403 from the
+    // backend. The helper triggers the actual download via a hidden
+    // <a download> element backed by an object URL.
+    try {
+      // CI-admin-vis: the export now respects the two new filters too,
+      // so a merchant who filtered "Iscritti al marketing" gets a CSV
+      // ready to feed Mailchimp/Brevo without manual post-processing.
+      await customerInsightsAPI.exportCustomers({
+        segment,
+        customerStatus,
+        hasAccount,
+        marketingOptedIn,
+      });
+    } catch (err) {
+      // Surface the failure inline; very rare path so a soft alert is OK.
+      // eslint-disable-next-line no-alert
+      alert(t('page.errorBody'));
+      // eslint-disable-next-line no-console
+      console.error('exportCustomers failed', err);
+    }
+  };
+
+  const onRefresh = () => {
+    setOverviewLoading(true);
+    setCustomersLoading(true);
+    customerInsightsAPI.getOverview({ period })
+      .then((res) => setOverview(res.data))
+      .finally(() => setOverviewLoading(false));
+    customerInsightsAPI.getCustomers({
+      segment, customerStatus, hasAccount, marketingOptedIn,
+      page, pageSize: PAGE_SIZE,
+    })
+      .then((res) => setCustomersData(res.data))
+      .finally(() => setCustomersLoading(false));
+  };
+
+  // ── Render ────────────────────────────────────────────────────────
+  return (
+    <AppLayout>
+      <Header
+        title={t('page.title')}
+        subtitle={t('page.subtitle')}
+      />
+      <div className="p-4 md:p-6 space-y-5 max-w-7xl mx-auto">
+        {/* Period selector + refresh row */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <PeriodSelector value={period} onChange={setPeriod} />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onRefresh}
+            disabled={overviewLoading || customersLoading}
+            className="h-7 text-xs self-start md:self-auto"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${
+              (overviewLoading || customersLoading) ? 'animate-spin' : ''
+            }`} />
+            {t('page.refreshButton')}
+          </Button>
+        </div>
+
+      {/* Error banner */}
+      {overviewError && (
+        <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/10">
+          <CardContent className="p-3 flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 mt-0.5 text-red-600 shrink-0" />
+            <div className="text-sm">
+              <p className="font-medium text-red-900 dark:text-red-300">
+                {t('page.errorTitle')}
+              </p>
+              <p className="text-xs text-red-800 dark:text-red-400/80 mt-0.5">
+                {String(overviewError)}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* KPI grid */}
+      <KpiOverviewSection
+        kpis={overview?.kpis}
+        loading={overviewLoading}
+        period={overview?.period}
+        onSegmentDrill={onSegmentDrill}
+      />
+
+      {/* Concentration + segment side-by-side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ConcentrationCard data={overview?.concentration} loading={overviewLoading} currency={currency} />
+        <SegmentDistributionCard
+          segments={overview?.segments}
+          loading={overviewLoading}
+          onSegmentClick={(s) => setSegment(s)}
+          currency={currency}
+        />
+      </div>
+
+      {/* Customer table — filters live INSIDE the card so it's
+          visually obvious they only affect this list, not the KPI
+          grid above. */}
+      <CustomerTable
+        data={customersData}
+        loading={customersLoading}
+        page={page}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+        onSelectCustomer={onSelectCustomer}
+        onExportCsv={onExportCsv}
+        segment={segment}
+        onSegmentChange={setSegment}
+        customerStatus={customerStatus}
+        onStatusChange={setCustomerStatus}
+        hasAccount={hasAccount}
+        onHasAccountChange={setHasAccount}
+        marketingOptedIn={marketingOptedIn}
+        onMarketingOptedInChange={setMarketingOptedIn}
+      />
+
+      {/* Profile slide-over */}
+      <CustomerProfileSlide
+        customerId={profileCustomerId}
+        customerSummary={profileCustomerSummary}
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+      />
+      </div>
+    </AppLayout>
+  );
+}
+
+
+// ── Sub-section: concentration card ──────────────────────────────────────
+
+
+function ConcentrationCard({ data, loading, currency }) {
+  const { t } = useTranslation('customerInsights');
+  const locale = useLocale();
+  const [showInfo, setShowInfo] = useState(false);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-sm font-medium flex items-center gap-1.5">
+          {t('concentration.title')}
+          <button
+            onClick={() => setShowInfo((v) => !v)}
+            className="text-muted-foreground/40 hover:text-primary"
+            aria-label={t('insightCard.infoButton')}
+            type="button"
+          >
+            <Info className="h-3 w-3" />
+          </button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {showInfo ? (
+          <div className="space-y-1.5 text-xs text-muted-foreground bg-primary/[0.02] rounded p-3 border border-primary/20">
+            <p>{t('concentration.infobox.def')}</p>
+            <p className="italic text-muted-foreground/70">{t('concentration.infobox.calc')}</p>
+            <p className="font-medium text-foreground/70">{t('concentration.infobox.read')}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <Metric
+              label={t('concentration.top5')}
+              value={loading ? '\u2026' : formatPct(data?.top_5_share_pct, locale)}
+            />
+            <Metric
+              label={t('concentration.top10')}
+              value={loading ? '\u2026' : formatPct(data?.top_10_share_pct, locale)}
+            />
+            <Metric
+              label={t('concentration.totalCustomers')}
+              value={loading ? '\u2026' : (data?.total_customers ?? 0).toLocaleString(locale)}
+            />
+            <Metric
+              label={t('concentration.totalRevenue')}
+              value={loading ? '\u2026' : formatCurrency(data?.total_revenue || 0, currency)}
+            />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+
+// ── Sub-section: segment distribution card ─────────────────────────────
+
+
+function SegmentDistributionCard({ segments, loading, onSegmentClick, currency }) {
+  const { t } = useTranslation('customerInsights');
+  const locale = useLocale();
+  const [showInfo, setShowInfo] = useState(false);
+
+  const total = (segments || []).reduce((sum, s) => sum + (s.revenue || 0), 0);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-sm font-medium flex items-center gap-1.5">
+          {t('segments.title')}
+          <button
+            onClick={() => setShowInfo((v) => !v)}
+            className="text-muted-foreground/40 hover:text-primary"
+            aria-label={t('insightCard.infoButton')}
+            type="button"
+          >
+            <Info className="h-3 w-3" />
+          </button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {showInfo ? (
+          <div className="space-y-1.5 text-xs text-muted-foreground bg-primary/[0.02] rounded p-3 border border-primary/20">
+            <p>{t('segments.infobox.def')}</p>
+            <p className="italic text-muted-foreground/70">{t('segments.infobox.calc')}</p>
+            <p className="font-medium text-foreground/70">{t('segments.infobox.read')}</p>
+          </div>
+        ) : loading ? (
+          <p className="text-sm text-muted-foreground">\u2026</p>
+        ) : !segments || segments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t('page.empty')}
+          </p>
+        ) : (
+          <ul className="space-y-1.5">
+            {segments.map((s) => (
+              <li
+                key={s.segment}
+                onClick={() => onSegmentClick(s.segment)}
+                className="flex items-center justify-between text-sm cursor-pointer hover:bg-muted/40 rounded px-2 py-1.5 transition-colors"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-medium">
+                    {t(`segment.${s.segment}`, { defaultValue: s.segment })}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {s.count} {t('segments.countLabel')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="tabular-nums text-muted-foreground">
+                    {formatCurrency(s.revenue || 0, currency)}
+                  </span>
+                  <BarSparkline pct={(s.revenue / total) * 100 || 0} />
+                  <span className="font-medium tabular-nums w-12 text-right">
+                    {formatPct(s.pct_of_revenue, locale)}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+
+function Metric({ label, value }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="font-heading text-lg font-semibold mt-0.5">{value}</p>
+    </div>
+  );
+}
+
+
+function BarSparkline({ pct }) {
+  const width = Math.max(0, Math.min(100, pct));
+  return (
+    <span className="inline-block w-16 h-1.5 rounded bg-muted overflow-hidden align-middle">
+      <span
+        className="block h-full bg-primary/60"
+        style={{ width: `${width}%` }}
+      />
+    </span>
+  );
+}
+
+
+function formatPct(v, locale = 'it-IT') {
+  if (v == null) return '\u2014';
+  return `${v.toLocaleString(locale, { maximumFractionDigits: 1 })}\u00A0%`;
+}

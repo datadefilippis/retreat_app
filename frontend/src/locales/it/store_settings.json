@@ -1,0 +1,166 @@
+{
+  "page": {
+    "title": "Configurazione Store",
+    "subtitle": "Identità, notifiche e prontezza del tuo negozio"
+  },
+  "deprecation": {
+    "title": "Questa pagina sarà sostituita",
+    "body": "Le configurazioni store si stanno spostando sulla pagina “Store”, dove puoi gestire branding, lingue e modalità di evasione per ogni punto vendita. Le modifiche fatte qui restano sincronizzate.",
+    "cta": "Apri la pagina Store"
+  },
+  "ai_memory": {
+    "clear": "Svuota descrizione"
+  },
+  "setup_review": {
+    "title": "Configurazione AI applicata",
+    "identity_done": "Identita store applicata",
+    "products_done": "{{count}} prodotti creati come bozza",
+    "fulfillment_done": "Modalita consegna applicata",
+    "next_title": "Prossimi passi",
+    "auto_saved": "Impostazioni salvate automaticamente",
+    "step_products": "Completa prezzi e pubblica i prodotti",
+    "go_products": "Vai ai prodotti",
+    "step_payments": "Collega un provider di pagamento",
+    "go_payments": "Vai ai pagamenti",
+    "step_publish": "Pubblica il tuo store"
+  },
+  "url_extract": {
+    "placeholder": "https://www.tuosito.it",
+    "btn": "Estrai",
+    "hint": "Hai un sito web? Incolla l'URL e estrarremo le informazioni per pre-compilare la descrizione.",
+    "success": "Testo estratto dal sito. Puoi modificarlo prima di generare.",
+    "success_multi": "Estratto da {{count}} pagine. Puoi modificare il testo prima di generare.",
+    "empty": "Contenuto insufficiente nel sito. Scrivi la descrizione manualmente.",
+    "error": "Impossibile leggere il sito. Prova con un altro URL o scrivi la descrizione."
+  },
+  "unified_setup": {
+    "title": "Configura il tuo store con AI",
+    "desc": "Descrivi la tua attivita e genereremo identita, prodotti e modalita di consegna in un colpo solo.",
+    "placeholder": "Es: Macelleria artigianale a Lugano con vendita diretta di carni fresche, insaccati e prodotti tipici. Consegna a domicilio e ritiro in negozio.",
+    "generate_btn": "Genera configurazione",
+    "generating": "Generazione in corso...",
+    "preview_title": "Configurazione suggerita",
+    "section_identity": "Identita store",
+    "section_products": "Prodotti",
+    "section_fulfillment": "Consegna",
+    "apply_btn": "Applica selezionati",
+    "regenerate_btn": "Rigenera",
+    "skip_btn": "Annulla",
+    "applied": "Configurazione applicata. Ricorda di salvare le impostazioni.",
+    "apply_error": "Errore nell'applicazione.",
+    "error": "Errore nella generazione. Riprova.",
+    "manual_hint": "Oppure configura tutto manualmente qui sotto"
+  },
+  "ai_draft": {
+    "title": "Genera con AI",
+    "desc": "Descrivi la tua attivita in poche parole e genereremo una bozza di identita per il tuo store.",
+    "placeholder": "Es: Macelleria artigianale con vendita diretta di carni fresche, insaccati e prodotti tipici. Consegna a domicilio e ritiro in negozio a Lugano.",
+    "generate_btn": "Genera bozza",
+    "generating": "Generazione...",
+    "apply_btn": "Usa questa bozza",
+    "regenerate_btn": "Rigenera",
+    "skip_btn": "Continua manualmente",
+    "applied": "Bozza applicata ai campi. Ricorda di salvare.",
+    "error": "Errore nella generazione. Riprova.",
+    "manual_hint": "Puoi anche compilare i campi manualmente qui sotto"
+  },
+  "identity": {
+    "title": "Identità pubblica",
+    "display_name": "Nome pubblico del business",
+    "display_name_hint": "Mostrato ai clienti nello storefront e nelle email",
+    "contact_email": "Email di contatto pubblica",
+    "contact_phone": "Telefono di contatto",
+    "required_for_publish": "Necessario per pubblicare",
+    "store_description": "Descrizione negozio",
+    "store_description_hint": "Breve presentazione mostrata ai clienti nello storefront (max 500 caratteri)",
+    "store_description_placeholder": "Descrivi il tuo negozio in poche parole..."
+  },
+  "notifications": {
+    "title": "Notifiche",
+    "notification_email": "Email notifiche",
+    "notification_email_hint": "Dove ricevere notifiche di ordini, richieste e pagamenti. Se vuoto, vengono inviate agli admin."
+  },
+  "email": {
+    "title": "Email ai clienti",
+    "sender_display_name": "Nome mittente",
+    "sender_display_name_hint": "Il nome che i clienti vedono come mittente",
+    "reply_to_email": "Email di risposta",
+    "reply_to_email_hint": "Dove i clienti rispondono alle email",
+    "email_delivery": "Modalità invio",
+    "email_delivery_platform": "Gestito dalla piattaforma",
+    "email_delivery_custom": "Dominio personalizzato (futuro)",
+    "platform_managed_title": "Invio email gestito da AFianco",
+    "platform_managed_desc": "Le email ai clienti vengono inviate dall'infrastruttura AFianco. Puoi personalizzare il nome mittente e l'indirizzo di risposta. Non serve configurare DNS o server SMTP.",
+    "preview_title": "Anteprima email",
+    "preview_from": "Da",
+    "preview_reply_to": "Risposte a",
+    "preview_notifications": "Notifiche store a",
+    "preview_not_configured": "non configurato",
+    "preview_admin_fallback": "admin organizzazione"
+  },
+  "ai_fulfillment": {
+    "title": "Suggerisci consegna con AI",
+    "desc": "Descrivi la tua attivita e ti suggeriremo le modalita di consegna piu adatte.",
+    "placeholder": "Es: Negozio di alimentari con consegna a domicilio e ritiro in sede...",
+    "generate_btn": "Suggerisci",
+    "generating": "Generazione...",
+    "result_title": "Suggerimento consegna",
+    "apply_btn": "Usa questo suggerimento",
+    "skip_btn": "Ignora",
+    "applied": "Modalita consegna aggiornate. Ricorda di salvare.",
+    "error": "Errore nella generazione. Riprova.",
+    "none_suggested": "Nessuna modalita di consegna suggerita per questa tipologia di attivita."
+  },
+  "fulfillment": {
+    "title": "Consegna",
+    "modes_label": "Modalita di consegna supportate",
+    "modes_hint": "Seleziona le opzioni di consegna che i clienti possono scegliere al checkout",
+    "mode_shipping": "Spedizione",
+    "mode_local_pickup": "Ritiro in sede"
+  },
+  "readiness": {
+    "title": "Prontezza commerciale",
+    "overall_ready": "Pronto per vendere",
+    "overall_needs_setup": "Configurazione consigliata",
+    "overall_blocked": "Configurazione necessaria",
+    "group": {
+      "storefront": "Vetrina",
+      "trust": "Fiducia e comunicazione",
+      "commerce": "Commercio"
+    },
+    "check": {
+      "public_slug": "Indirizzo pubblico storefront",
+      "display_name": "Nome pubblico del business",
+      "contact_email": "Email di contatto pubblica",
+      "notification_email": "Email notifiche",
+      "reply_to_email": "Email di risposta clienti",
+      "payment_provider": "Provider di pagamento connesso",
+      "publishable_offer": "Almeno un prodotto pubblicato e valido"
+    },
+    "status_ok": "Configurato",
+    "status_missing": "Da configurare",
+    "status_blocking": "Necessario",
+    "action_configure": "Configura"
+  },
+  "publish": {
+    "title": "Pubblicazione store",
+    "published_badge": "Pubblicato",
+    "unpublished_badge": "Non pubblicato",
+    "publish_btn": "Pubblica store",
+    "unpublish_btn": "Sospendi pubblicazione",
+    "publish_confirm": "Vuoi rendere il tuo store visibile pubblicamente?",
+    "unpublish_confirm": "Vuoi sospendere la visibilita' pubblica del tuo store? Il catalogo non sara' piu' accessibile.",
+    "blocked_hint": "Completa le configurazioni necessarie per poter pubblicare.",
+    "published_hint": "Il tuo storefront e' visibile pubblicamente.",
+    "ready_hint": "Il tuo store e' pronto per essere pubblicato."
+  },
+  "actions": {
+    "save": "Salva",
+    "saving": "Salvataggio..."
+  },
+  "toast": {
+    "saved": "Impostazioni store salvate",
+    "back_to_setup": "Torna al setup",
+    "error": "Errore nel salvataggio"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "title": "Newsletter & Form",
+  "subtitle": "Crea form di iscrizione embeddabili su qualsiasi sito",
+  "refresh": "Aggiorna",
+  "new_form": "Nuovo Form",
+  "empty_title": "Nessun form newsletter",
+  "empty_subtitle": "Crea il tuo primo form e incorporalo dove vuoi.",
+  "actions": {
+    "embed": "Incorpora",
+    "subscribers": "Iscritti",
+    "activate": "Attiva",
+    "deactivate": "Disattiva",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "create": "Crea form",
+    "close": "Chiudi",
+    "copy": "Copia",
+    "filter": "Filtra"
+  },
+  "badge": {
+    "inactive": "Disattivo",
+    "no_origins": "Nessun dominio autorizzato"
+  },
+  "list": {
+    "extra_fields": "{{count}} campi extra",
+    "with_name": "+ nome",
+    "with_phone": "+ telefono",
+    "origins": "{{count}} domini"
+  },
+  "dialog": {
+    "new_title": "Nuovo form newsletter",
+    "edit_title": "Modifica form",
+    "name": "Nome",
+    "name_ph": "Es: Iscriviti alla newsletter",
+    "collected_fields": "Campi raccolti",
+    "email_always": "Email",
+    "email_always_hint": "(sempre richiesta)",
+    "field_name": "Nome",
+    "field_phone": "Telefono",
+    "require_consent": "Richiedi consenso privacy (consigliato)",
+    "consent_text": "Testo consenso",
+    "consent_text_ph": "Acconsento al trattamento dei dati per ricevere comunicazioni.",
+    "success_message": "Messaggio di successo",
+    "success_message_ph": "Iscrizione completata. Grazie!",
+    "extra_fields_title": "Campi aggiuntivi",
+    "extra_fields_subtitle": "Oltre a email, nome e telefono",
+    "allowed_origins": "Domini autorizzati (uno per riga)",
+    "allowed_origins_hint": "Solo questi domini potranno inviare iscrizioni dal form embeddato (sicurezza CORS)."
+  },
+  "layout": {
+    "label": "Layout del form",
+    "vertical": "Verticale",
+    "horizontal": "Orizzontale",
+    "inline": "Inline"
+  },
+  "colors": {
+    "toggle": "Personalizza i colori del bottone",
+    "button": "Colore bottone",
+    "button_text": "Colore testo bottone"
+  },
+  "privacy": {
+    "label": "Link informativa privacy",
+    "mode_none": "Nessun link",
+    "mode_store": "Usa la privacy di uno store",
+    "mode_custom": "Link personalizzato",
+    "choose_store": "— Scegli uno store —",
+    "custom_ph": "https://www.miosito.com/privacy",
+    "no_stores": "Non hai ancora nessuno store. Devi prima creare uno store (sezione \"I miei Store\") con la sua privacy policy, oppure usa un link personalizzato.",
+    "checking": "Verifica privacy…",
+    "published": "✓ Privacy pubblicata — verrà linkata nel form.",
+    "not_configured": "Privacy non ancora configurata per questo store.",
+    "create": "Crea privacy"
+  },
+  "preview": {
+    "title": "Anteprima",
+    "loading": "Caricamento anteprima…",
+    "unavailable": "Anteprima non disponibile."
+  },
+  "embed": {
+    "title": "Incorpora il form",
+    "desc": "Incolla questo codice nel tuo sito dove vuoi mostrare il form.",
+    "warning": "⚠️ Aggiungi prima i domini autorizzati (Modifica), altrimenti il browser bloccherà l'invio."
+  },
+  "subs": {
+    "title": "Iscritti — {{name}}",
+    "filter_label": "Filtra per sorgente",
+    "filter_ph": "Es: blog-footer o https://miosito.com",
+    "empty": "Nessuna iscrizione.",
+    "from": "da {{source}}",
+    "status_subscribed": "Iscritto",
+    "status_unsubscribed": "Disiscritto"
+  },
+  "toast": {
+    "created": "Form creato",
+    "updated": "Form aggiornato",
+    "save_error": "Errore nel salvataggio",
+    "name_required": "Inserisci un nome per il form",
+    "deleted": "Form eliminato",
+    "snippet_copied": "Snippet copiato",
+    "copy_failed": "Copia non riuscita",
+    "error": "Errore"
+  },
+  "confirm_delete": "Eliminare il form \"{{name}}\"? Le iscrizioni restano nel CRM."
+}

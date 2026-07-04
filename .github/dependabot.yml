@@ -1,0 +1,99 @@
+# Dependabot configuration for AFianco — Phase 1 Step D4
+#
+# Scans backend (pip) + frontend (npm) dependencies weekly for known CVEs
+# and opens auto-PRs with version bumps. GitHub Dependabot is FREE on all
+# repository tiers.
+#
+# Policy (see docs/operations/security-updates.md):
+#   - Critical / High CVE  → patch within 7 days of PR opening
+#   - Medium CVE           → patch within 30 days
+#   - Low CVE              → batch monthly
+#   - Major version bumps  → review impact, no auto-merge
+#   - Minor / patch        → safe to merge after CI passes
+#
+# Tuning:
+#   - Schedule "weekly" on Monday morning so PRs land at start of week
+#   - open-pull-requests-limit: 10 to avoid PR storm on large dep trees
+#   - Group minor/patch updates per ecosystem to reduce review noise
+#   - Ignore 'cra-template' — bootstrap-only, never updates in practice
+
+version: 2
+updates:
+  # ── Backend (Python) ────────────────────────────────────────────────────────
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Europe/Rome"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "backend"
+    # Group minor + patch updates into one PR per ecosystem
+    groups:
+      backend-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    # Pin major-version updates for manual review (they may break compat)
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+      # Track S Step 4.3 audit — pandas update fails repeatedly with
+      # "Error processing pandas (RuntimeError)" in Dependabot runs
+      # (run #1388141645 + earlier). Likely numpy compat or wheel build
+      # issue. Block updates until manual investigation in V2.
+      - dependency-name: "pandas"
+    # Uncomment GitHub Actions (workflow versions) when Track E (CDN) adds
+    # actions-version pinning. For Track S workflows (test.yml + security.yml)
+    # the major action versions @v4/v5 are stable enough for manual tracking.
+    commit-message:
+      prefix: "deps(backend)"
+      include: "scope"
+
+  # ── Frontend (JavaScript / npm) ─────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Europe/Rome"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+    groups:
+      frontend-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # cra-template is bootstrap-only — pinned forever to its initial version
+      - dependency-name: "cra-template"
+      # React major bumps require manual migration (e.g. 18 → 19)
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      # Block ALL major bumps by default, review case-by-case
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+    commit-message:
+      prefix: "deps(frontend)"
+      include: "scope"
+
+  # ── GitHub Actions (future) ─────────────────────────────────────────────────
+  # When CI/CD pipeline is added in Phase 4, uncomment to keep workflow
+  # action versions current.
+  # - package-ecosystem: "github-actions"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "monthly"
+  #   labels:
+  #     - "dependencies"
+  #     - "ci"

@@ -1,0 +1,84 @@
+{
+  "page": {
+    "title": "Clients",
+    "subtitle": "Intelligence clients : segmentation, concentration et attribution du chiffre d'affaires"
+  },
+  "segments": {
+    "top": "Top",
+    "active": "Actifs",
+    "new": "Nouveaux",
+    "occasional": "Occasionnels",
+    "inactive": "Inactifs"
+  },
+  "kpis": {
+    "total_customers": "Clients totaux",
+    "active_customers": "Clients actifs",
+    "inactive_rate": "Taux d'inactivite",
+    "new_customers": "Nouveaux clients",
+    "concentration_top10": "Concentration Top 10",
+    "avg_customer_value": "Valeur moyenne client",
+    "avg_ltv": "LTV Moyen",
+    "high_churn_risk": "Risque Churn Eleve"
+  },
+  "table": {
+    "title": "Top clients par chiffre d'affaires",
+    "title_loading": "Top clients",
+    "col_rank": "#",
+    "col_customer": "Client",
+    "col_revenue": "CA",
+    "col_transactions": "Transactions",
+    "col_share": "Part %",
+    "col_segment": "Segment",
+    "col_ltv": "LTV",
+    "col_churn": "Risque Churn"
+  },
+  "profile": {
+    "churn_risk": "Risque Churn",
+    "churn_score": "Score churn",
+    "payment_reliability": "Fiabilite paiements",
+    "first_purchase": "Premier achat",
+    "last_purchase": "Dernier achat",
+    "days_since": "Jours depuis dernier achat"
+  },
+  "charts": {
+    "segments_title": "Segments clients",
+    "concentration_title": "Concentration du CA",
+    "concentration_desc": "Les 10 premiers clients generent {{pct}}% du CA sur {{total}} clients au total",
+    "concentration_top5": "Top 5",
+    "concentration_top610": "Top 6-10",
+    "concentration_others": "Autres",
+    "tooltip_customers": "{{count}} clients — {{amount}}"
+  },
+  "empty": {
+    "title": "Analyse clients non active",
+    "description": "Pour activer l'analyse clients :\n1. Creez vos clients dans Donnees de base > Clients\n2. Importez les ventes avec une colonne \"client\" correspondante\nAFianco liera automatiquement les ventes aux clients.",
+    "upload_cta": "Charger les ventes",
+    "manage_customers": "Gerer les clients"
+  },
+  "coverage": {
+    "label": "Couverture donnees clients",
+    "detail": "{{linked}} ventes sur {{total}} liees a un client"
+  },
+  "error": {
+    "load": "Erreur lors du chargement des donnees clients.",
+    "refresh": "Erreur lors de la mise a jour des metriques."
+  },
+  "refresh": {
+    "idle": "Actualiser les metriques",
+    "loading": "Mise a jour..."
+  },
+  "widgets": {
+    "customers_label": "Clients",
+    "active_label": "Actifs",
+    "inactive_pct_label": "Inactifs %",
+    "top10_pct_label": "Top 10 %",
+    "no_data": "Aucune donnee client",
+    "no_data_short": "Aucune donnee",
+    "col_customer": "Client",
+    "col_revenue": "CA",
+    "col_share": "Part",
+    "header_kpi": "KPI Clients",
+    "header_top_customers": "Top Clients",
+    "header_segments": "Segments Clients"
+  }
+}

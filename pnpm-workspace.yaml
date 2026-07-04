@@ -1,0 +1,36 @@
+# pnpm workspaces — Phase 0 Step 6 (2026-05-28)
+#
+# Conservative monorepo: existing frontend/ (yarn) and backend/ (Python) are
+# NOT included as pnpm workspaces. They keep their existing build tooling
+# untouched to minimize migration risk.
+#
+# Workspaces qui dichiarate sono:
+#   - packages/* — librerie TS condivise (shared-types, design-tokens,
+#     api-client, slot-elements, embed-runtime)
+#   - apps/*    — applicazioni TS nuove (embed-sdk, ai-site-renderer)
+#
+# Orchestrazione cross-workspace via Turborepo (vedi turbo.json).
+# Esempi:
+#   pnpm install                       — installa deps per tutti i workspaces
+#   pnpm --filter @afianco/embed-sdk dev — dev di un workspace specifico
+#   turbo run build                    — build di tutti i workspaces
+#
+# La struttura apps/* + packages/* segue il pattern Nx/Turborepo standard
+# adottato da Shopify, Vercel, Linear. Future refactor potrà spostare
+# frontend/ → apps/admin/ + backend/ → apps/backend/ ma è separato da
+# questo step per ridurre il blast radius.
+
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+# pnpm 11+ — explicit approval of postinstall scripts (security feature).
+# Without this pnpm refuses to run esbuild's postinstall (which downloads its
+# native binary) → Vite build fails. Setting true is the equivalent of running
+# `pnpm approve-builds` interactively, but committed for reproducibility.
+allowBuilds:
+  esbuild: true
+
+# Compatibility with older pnpm 9 syntax (deprecato in pnpm 11 ma innocuo).
+onlyBuiltDependencies:
+  - esbuild

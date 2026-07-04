@@ -1,0 +1,53 @@
+{
+  "dashboard": {
+    "title": "Rentals",
+    "subtitle": "Period and slot rentals issued to your customers.",
+    "empty": "No rentals issued yet.",
+    "empty_cta": "Create a rentable product",
+    "loading": "Loading rentals…",
+    "error": "Unable to load rentals.",
+    "retry": "Retry",
+    "load_more": "Load more"
+  },
+  "filters": {
+    "status_all": "All statuses",
+    "status_active": "Active",
+    "status_cancelled": "Cancelled",
+    "flavor_all": "All types",
+    "flavor_range": "By period",
+    "flavor_slot": "By slot",
+    "date_from": "From",
+    "date_to": "To",
+    "search_placeholder": "Search code, customer, product…",
+    "clear": "Clear"
+  },
+  "columns": {
+    "code": "Code",
+    "product": "Product",
+    "customer": "Customer",
+    "type": "Type",
+    "when": "When",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "status": {
+    "active": "Active",
+    "cancelled": "Cancelled"
+  },
+  "flavor": {
+    "range": "By period",
+    "slot": "By slot"
+  },
+  "actions": {
+    "copy_code": "Copy code",
+    "open_landing": "Open landing",
+    "resend": "Resend email",
+    "open_order": "Open order",
+    "download_ics": "Download ICS"
+  },
+  "resend": {
+    "success": "Email re-sent to the customer.",
+    "error": "Resend failed. Try again.",
+    "cancelled_not_allowed": "Cancelled rental — resend unavailable."
+  }
+}

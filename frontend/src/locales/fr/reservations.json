@@ -1,0 +1,53 @@
+{
+  "dashboard": {
+    "title": "Locations",
+    "subtitle": "Locations à période et à créneau émises pour vos clients.",
+    "empty": "Aucune location émise pour l'instant.",
+    "empty_cta": "Créer un produit à louer",
+    "loading": "Chargement des locations…",
+    "error": "Impossible de charger les locations.",
+    "retry": "Réessayer",
+    "load_more": "Charger plus"
+  },
+  "filters": {
+    "status_all": "Tous les statuts",
+    "status_active": "Actives",
+    "status_cancelled": "Annulées",
+    "flavor_all": "Tous les types",
+    "flavor_range": "À la période",
+    "flavor_slot": "Au créneau",
+    "date_from": "Du",
+    "date_to": "Au",
+    "search_placeholder": "Rechercher code, client, produit…",
+    "clear": "Réinitialiser"
+  },
+  "columns": {
+    "code": "Code",
+    "product": "Produit",
+    "customer": "Client",
+    "type": "Type",
+    "when": "Quand",
+    "status": "Statut",
+    "actions": "Actions"
+  },
+  "status": {
+    "active": "Active",
+    "cancelled": "Annulée"
+  },
+  "flavor": {
+    "range": "À la période",
+    "slot": "Au créneau"
+  },
+  "actions": {
+    "copy_code": "Copier le code",
+    "open_landing": "Ouvrir la page",
+    "resend": "Renvoyer l'email",
+    "open_order": "Ouvrir la commande",
+    "download_ics": "Télécharger ICS"
+  },
+  "resend": {
+    "success": "Email renvoyé au client.",
+    "error": "Échec de l'envoi. Réessayez.",
+    "cancelled_not_allowed": "Location annulée — renvoi indisponible."
+  }
+}

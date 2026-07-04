@@ -1,0 +1,396 @@
+{
+  "download": {
+    "loading": "Loading…",
+    "invalidLink": {
+      "title": "Invalid link",
+      "body": "This link no longer exists or was never generated. If you just made a purchase, check your confirmation email."
+    },
+    "eyebrow": "💾 Digital download",
+    "title": {
+      "active": "Your download is ready",
+      "exhausted": "Link exhausted",
+      "expired": "Link expired",
+      "cancelled": "Order cancelled",
+      "fallback": "Download"
+    },
+    "fallbackFilename": "File",
+    "ctaDownload": "Download now →",
+    "remaining": "Downloads remaining: <1>{{remaining}}</1> of {{max}}",
+    "unlimited": "Unlimited downloads",
+    "validUntil": "Valid until {{date}}",
+    "exhaustedNotice": "You've reached the maximum number of downloads. If you've lost the file, contact the merchant.",
+    "exhaustedNoticeWithMax": "You've reached the maximum number of downloads ({{max}}). If you've lost the file, contact the merchant.",
+    "expiredNotice": "This link is no longer valid (expired on {{date}}). Contact the merchant for a new link.",
+    "cancelledNotice": "The associated order has been cancelled and the download is no longer available.",
+    "orderCodeLabel": "Order code: {{code}}"
+  },
+  "ticket": {
+    "loadingTicket": "Loading ticket…",
+    "invalidTitle": "Invalid ticket",
+    "invalidBody": "The link may be expired or the ticket may have been cancelled. Contact the organizer if you have questions.",
+    "errorBody": "Error loading the ticket. Please try again.",
+    "eyebrow": "Ticket",
+    "holderLabel": "Holder",
+    "seatLine": "Ticket {{index}} of {{total}}",
+    "status": {
+      "checkedIn": "Checked in",
+      "voided": "Voided",
+      "valid": "Valid"
+    },
+    "qrAlt": "Ticket QR code",
+    "qrHint": "Show this QR at the entrance for check-in.",
+    "locationLabel": "Location",
+    "addToCalendar": "📅 Add to calendar",
+    "offlineHint": "Keep this page: you'll be able to reopen it offline if your phone has loaded it at least once.",
+    "icsFilenamePrefix": "ticket",
+    "icsFallbackEventName": "Event",
+    "icsCodePrefix": "Ticket",
+    "missingHolder": "—"
+  },
+  "booking": {
+    "loading": "Loading…",
+    "notFoundTitle": "Booking not found",
+    "notFoundBody": "The link may be expired or the booking has been cancelled. Contact the store if you need assistance.",
+    "errorTitle": "Error",
+    "errorBody": "Unable to load the booking. Please try again later.",
+    "eyebrow": "Booking",
+    "status": {
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "noShow": "No show"
+    },
+    "whenHeading": "When",
+    "whereHeading": "Where",
+    "holderHeading": "Holder",
+    "codeHeading": "Code",
+    "codeHint": "Show it to the professional when you arrive.",
+    "addToCalendar": "📅 Add to calendar",
+    "privateLinkHint": "Private link — keep it to consult your booking details."
+  },
+  "digital": {
+    "stockOut": "Out of stock",
+    "stockLow_one": "Only {{count}} license left",
+    "stockLow_other": "Only {{count}} licenses left",
+    "stockAvailable": "Available",
+    "loading": "Loading…",
+    "notFoundTitle": "Product not found",
+    "notFoundBody": "The link may not be valid or the product has been removed.",
+    "errorTitle": "Error",
+    "errorBody": "Unable to load the product. Please try again later.",
+    "backToCatalog": "← Back to catalog",
+    "cartBadgeAria": "🛒 {{count}}",
+    "eyebrow": "💾 Digital",
+    "skuLabel": "· SKU {{sku}}",
+    "priceLabel": "Price",
+    "howItWorks": {
+      "title": "How it works",
+      "linkAfterPayment": "🔒 After payment you'll receive a personal download link by email.",
+      "notPublic": "🛡️ The file is never publicly accessible: only your authorized link can download it.",
+      "policyPrefix": "⏱ "
+    },
+    "policyDownloads_one": "{{count}} download available",
+    "policyDownloads_other": "{{count}} downloads available",
+    "policyValidity_one": "link valid for {{count}} day",
+    "policyValidity_other": "link valid for {{count}} days",
+    "qty": {
+      "heading": "Quantity",
+      "decAria": "Decrease",
+      "incAria": "Increase",
+      "maxLabel": "Max {{n}}"
+    },
+    "toast": {
+      "added": "Added to cart",
+      "action": "Go to checkout"
+    },
+    "cta": {
+      "add": "Add to cart",
+      "lockedQty": "🔒 Choose a quantity",
+      "lockedOOS": "🔒 Out of stock"
+    },
+    "checkoutHint": "At checkout you'll be asked for name and email to receive the download link."
+  },
+  "physical": {
+    "stockOut": "Out of stock",
+    "stockLow_one": "Last {{count}} available",
+    "stockLow_other": "Last {{count}} available",
+    "stockAvailable": "Available",
+    "loading": "Loading…",
+    "notFoundTitle": "Product not found",
+    "notFoundBody": "The link may not be valid or the product has been removed.",
+    "errorTitle": "Error",
+    "errorBody": "Unable to load the product. Please try again later.",
+    "backToCatalog": "← Back to catalog",
+    "cartBadgeAria": "🛒 {{count}}",
+    "eyebrow": "📦 Product",
+    "skuLabel": "· SKU {{sku}}",
+    "priceLabel": "Unit price",
+    "qty": {
+      "heading": "Quantity",
+      "outOfStock": "Product out of stock.",
+      "decAria": "Decrease quantity",
+      "incAria": "Increase quantity",
+      "maxLabel": "Max {{n}}"
+    },
+    "fulfillment": {
+      "title": "Delivery method",
+      "body": "At checkout you can choose from the available methods:",
+      "shippingPrefix": "📦 ",
+      "shippingLabel": "Shipping",
+      "shippingTail": " — enter your address at checkout.",
+      "localPickupPrefix": "🏪 ",
+      "localPickupLabel": "In-store pickup",
+      "localPickupTail": ".",
+      "fallback": "Delivery details to be agreed with the merchant."
+    },
+    "toast": {
+      "added": "Added to cart",
+      "action": "Go to checkout"
+    },
+    "cta": {
+      "add": "Add to cart",
+      "lockedQty": "🔒 Choose a quantity",
+      "lockedOOS": "🔒 Out of stock"
+    },
+    "checkoutHint": "At checkout you'll be asked for name, email and delivery method."
+  },
+  "reservationConfirmation": {
+    "loading": "Loading…",
+    "notFoundTitle": "Reservation not found",
+    "notFoundBody": "The link may be expired or the reservation has been cancelled. Contact the store if you need assistance.",
+    "errorTitle": "Error",
+    "errorBody": "Unable to load the reservation. Please try again later.",
+    "stage": {
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "today": "Today"
+    },
+    "kind": {
+      "mandatory": "Mandatory",
+      "optional": "Optional",
+      "radioVariant": "Variant"
+    },
+    "eyebrowRange": "Rental",
+    "eyebrowSlot": "Reservation",
+    "whenHeading": "When",
+    "rangeFrom": "From {{date}}",
+    "rangeTo": "to {{date}}",
+    "whereHeading": "Where",
+    "holderHeading": "Holder",
+    "detailsHeading": "Reservation details",
+    "codeHeading": "Code",
+    "codeHint": "Show it on arrival or when requested.",
+    "addToCalendar": "📅 Add to calendar",
+    "privateLinkHint": "Private link — keep it to consult your reservation details."
+  },
+  "course": {
+    "loading": "Loading…",
+    "notFoundTitle": "Course not found",
+    "notFoundBody": "The link may not be valid or the course has been removed.",
+    "errorTitle": "Error",
+    "errorBody": "Unable to load the course. Please try again later.",
+    "backToCatalog": "← Back to catalog",
+    "module": {
+      "lessons_one": "{{count}} lesson",
+      "lessons_other": "{{count}} lessons"
+    },
+    "moduleCount_one": "{{count}} module",
+    "moduleCount_other": "{{count}} modules",
+    "lessonPreview": "preview",
+    "eyebrow": "🎓 Course",
+    "headerCount_one": "· {{count}} lesson",
+    "headerCount_other": "· {{count}} lessons",
+    "headerDuration": "· {{duration}}",
+    "byInstructor": "by <1>{{name}}</1>",
+    "longDescriptionHeading": "What you'll learn",
+    "curriculumHeading": "Course curriculum",
+    "instructorHeadingNamed": "By {{name}}",
+    "instructorHeadingFallback": "The instructor",
+    "priceLabel": "Price",
+    "accessLabel": "Access",
+    "accessExpiring_one": "Valid for {{count}} day from enrollment",
+    "accessExpiring_other": "Valid for {{count}} days from enrollment",
+    "accessLifetime": "Lifetime — no expiry",
+    "accountRequired": {
+      "title": "Account required",
+      "body": "At checkout we'll ask you to log in or sign up to follow the course from your customer area."
+    },
+    "ctaAdd": "🎓 Add to cart",
+    "ctaUnavailable": "🔒 Course unavailable",
+    "afterPurchaseHint": "After purchase the course will appear in your customer area under \"My courses\".",
+    "toastAdded": "Added to cart",
+    "toastAction": "Go to checkout",
+    "fmt": {
+      "durationLessThanHour": "{{m}} min",
+      "durationHourOnly": "{{h}}h",
+      "durationHourMin": "{{h}}h {{m}}min",
+      "durationZero": "0 min"
+    }
+  },
+  "reservation": {
+    "loading": "Loading…",
+    "notFoundTitle": "Product not found",
+    "notFoundBody": "The link may not be valid or the product has been removed.",
+    "errorTitle": "Error",
+    "errorBody": "Unable to load the product. Please try again later.",
+    "backToCatalog": "← Back to catalog",
+    "eyebrowRange": "Rental",
+    "eyebrowSlot": "Slot booking",
+    "perUnit": "· per {{unit}}",
+    "basePrice": "Base price",
+    "basePriceUnitSuffix": " / {{unit}}",
+    "whenHeadingRange": "When do you want to book",
+    "whenHeadingSlot": "Choose date and time",
+    "rangePicker": {
+      "hintStart": "Click a day to start and then a second day to select the range. Days in red are already booked.",
+      "hintEnd": "Great, now pick the end day. Days in red are already booked and not selectable.",
+      "selected": "Selected range: <1>{{from}}</1> → <2>{{to}}</2>"
+    },
+    "ctaAdd": "Add to cart",
+    "ctaLockedRange": "🔒 Pick the dates",
+    "ctaLockedSlot": "🔒 Pick date and time",
+    "checkoutHint": "At checkout you'll be asked for name, email and terms acceptance.",
+    "toastAdded": "Added to cart",
+    "toastAction": "Go to checkout"
+  },
+  "event": {
+    "loadingEvent": "Loading event…",
+    "notFoundTitle": "Event not found",
+    "notFoundBody": "This event may have been removed or no longer exists.",
+    "seeOtherEvents": "See other events",
+    "errorBody": "Error loading. Please try again in a moment.",
+    "headerSubtitle": "Event",
+    "catalogLink": "← Catalog",
+    "soldOutBadge": "Sold out",
+    "tier": {
+      "remainingUnlimited": "Seats available",
+      "remaining_one": "{{count}} seat left",
+      "remaining_other": "{{count}} seats left",
+      "decAria": "Decrease quantity",
+      "incAria": "Increase quantity",
+      "inCart": "in cart"
+    },
+    "summaryHeading": "Summary",
+    "noTicketSelected": "No tickets selected",
+    "ticketsCount_one": "{{count}} ticket",
+    "ticketsCount_other": "{{count}} tickets",
+    "tierLine": "{{qty}} × {{label}}",
+    "plainLine": "{{qty}} × {{name}}",
+    "ctaAdd": "Add to cart",
+    "ctaSelectTier": "Pick a ticket",
+    "checkoutHint": "At checkout you'll be asked for name, email and delivery method; you can also enter discount codes there.",
+    "soldOutTitle": "Sold out",
+    "soldOutBody": "This event is fully booked. Take a look at the other upcoming events.",
+    "ataGlance": "At a glance",
+    "dateLabel": "Date",
+    "timeLabel": "Time",
+    "locationLabel": "Location",
+    "openInMaps": "🗺️ Open in Google Maps",
+    "descriptionHeading": "Description",
+    "ticketHeading": "Ticket",
+    "qtyLabel": "Quantity",
+    "tiersHeading": "Pick your tickets",
+    "tiersHint": "You can combine tier types (e.g. 2 Standard + 1 VIP).",
+    "footerOrganizedBy": "Organized by <1>{{name}}</1>",
+    "toastAdded": "Added to cart",
+    "toastAction": "Go to checkout"
+  },
+  "product": {
+    "loading": "Loading…",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The requested product is no longer available.",
+    "backToCatalogShort": "← Back to catalog",
+    "errorBody": "Error loading. Please try again.",
+    "catalogLink": "← Catalog",
+    "eyebrowService": "Service",
+    "eyebrowProduct": "Product",
+    "durationLabel": "⏱ Duration: {{minutes}} minutes",
+    "descriptionHeading": "Description",
+    "optionsHeading": "Choose an option",
+    "optionsHint": "Only one option can be selected.",
+    "optionDuration": "⏱ {{minutes}} minutes",
+    "scheduleHeading": "Pick date and time",
+    "scheduleHint": "Slots available in the next 30 days.",
+    "loadingSlots": "Loading slots…",
+    "customRequestToggle": "No suitable time? Propose a custom date →",
+    "customRequestPanelHeading": "Propose a custom date",
+    "customRequestCancel": "Cancel",
+    "customRequest": {
+      "headingNoSlots": "Propose date and time",
+      "hintNoSlots": "No preconfigured slots. Indicate your preferred time; the request will be confirmed by the merchant.",
+      "preferredDate": "Preferred date",
+      "preferredTime": "Preferred time",
+      "selectPlaceholder": "— select —",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Add info useful to the merchant (e.g. flexibility, preferences…)",
+      "footerHint": "⏳ The booking will remain pending merchant confirmation. Expected duration: {{minutes}} minutes."
+    },
+    "scenario4": {
+      "heading": "How to proceed",
+      "body": "Product ready to purchase. To agree on date and time, write to the merchant directly or proceed to checkout: the merchant will contact you to schedule.",
+      "writeTo": "✉️ Write to {{email}}"
+    },
+    "scenarioOptionsOnly": "Proceed to checkout. The merchant will contact you to agree on date and time.",
+    "summary": {
+      "heading": "Summary",
+      "selectOption": "Select an option",
+      "lineOption": "1 × {{label}}",
+      "customBadge": "(request)",
+      "ctaAdd": "Add to cart",
+      "ctaLockedNeedsOption": "🔒 Pick an option first",
+      "ctaLockedNeedsSchedule": "🔒 Pick date and time first",
+      "lockedTitle": "Complete the selections above to proceed",
+      "checkoutHintActive": "At checkout you'll be asked for name, email and terms acceptance.",
+      "checkoutHintLocked": "The Proceed button activates after you've made your choices."
+    },
+    "footerOrganizedBy": "Organized by <1>{{name}}</1>",
+    "toastAdded": "Added to cart",
+    "toastAction": "Go to checkout"
+  },
+  "priceSummary": {
+    "heading": "Price summary",
+    "nights_one": "{{count}} night",
+    "nights_other": "{{count}} nights",
+    "base": "Base",
+    "total": "Total",
+    "error": "Price preview unavailable"
+  },
+  "availability": {
+    "empty_30d": "No slots available in the next 30 days.",
+    "empty_hint": "Contact the merchant for custom availability.",
+    "no_slots_today": "No times available on this day.",
+    "pick_day": "Pick the day",
+    "pick_day_for_slots": "Pick a day from the calendar to see available times.",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "range": {
+      "from": "Start",
+      "to": "End",
+      "restart": "Restart",
+      "duration_label": "Duration: {{duration}}",
+      "disabled_step_hint": "Complete the previous step",
+      "banner": {
+        "step1": "Pick <1>start day and time</1> in the <2>Start</2> panel.",
+        "step2": "Now pick the <1>end time</1> in the <2>End</2> panel (can be on a different day).",
+        "done": "Selected. Total duration: {{duration}}"
+      },
+      "help": {
+        "from_pick": "Click to set the start",
+        "to_pick": "Click to set the end",
+        "to_pick_first": "Pick the start first",
+        "from_after_to": "Pick start day and time first"
+      },
+      "aria": {
+        "from_selected": "Start selected",
+        "to_selected": "End selected",
+        "not_enough_space": "Not enough room for the minimum duration",
+        "between": "In the selected period",
+        "before_start": "Before the start",
+        "too_short": "Too short (min {{duration}})",
+        "too_long": "Too long (max {{duration}})"
+      }
+    }
+  }
+}

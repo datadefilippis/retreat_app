@@ -1,0 +1,121 @@
+{
+  "page": {
+    "title": "Calendario",
+    "subtitle": "Visione temporale di eventi e affitti"
+  },
+  "months": ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+  "days": ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"],
+  "days_full": ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+  "type": {
+    "event_occurrence": "Evento",
+    "rental_order": "Affitto"
+  },
+  "views": {
+    "agenda": "Agenda",
+    "rentals": "Affitti",
+    "agenda_subtitle": "Eventi, prenotazioni e blocchi personali",
+    "filter_all": "Tutti"
+  },
+  "actions": {
+    "today": "Oggi",
+    "close": "Chiudi",
+    "go_to_order": "Vai all'ordine",
+    "go_to_product": "Vai al prodotto",
+    "block_slot": "Blocca slot",
+    "all_day": "Tutto il giorno"
+  },
+  "empty": {
+    "day": "Nessun elemento in questa data.",
+    "month": "Nessun elemento questo mese"
+  },
+  "summary": {
+    "events_one": "{{count}} evento",
+    "events_other": "{{count}} eventi",
+    "rentals_one": "{{count}} affitto",
+    "rentals_other": "{{count}} affitti",
+    "blocks_one": "{{count}} blocco",
+    "blocks_other": "{{count}} blocchi",
+    "seats": "posti",
+    "overflow": "+{{count}} altri"
+  },
+  "review": {
+    "rental_availability": "Disponibilità da verificare",
+    "rental_needs_availability": "Disponibilità da verificare",
+    "default": "Da verificare"
+  },
+  "reasons": {
+    "personal": "Personale",
+    "holiday": "Ferie / Festivo",
+    "booking": "Prenotazione",
+    "event": "Evento"
+  },
+  "block_dialog": {
+    "title": "Blocca disponibilità",
+    "modes": {
+      "single": "Giorno singolo",
+      "range": "Periodo (da → a)",
+      "weekly": "Ogni settimana"
+    },
+    "labels": {
+      "date": "Data",
+      "from": "Dal",
+      "to": "Al",
+      "starting_from": "A partire dal",
+      "until": "Fino al",
+      "reason": "Motivo",
+      "note": "Titolo",
+      "apply_to": "Applica a",
+      "rental_product": "Prodotto in affitto",
+      "all_rental_products": "Tutti i prodotti in affitto"
+    },
+    "targets": {
+      "agenda": "Agenda",
+      "rentals": "Affitti",
+      "both": "Entrambi"
+    },
+    "reasons": {
+      "personal": "Personale",
+      "holiday": "Ferie / Festivo"
+    },
+    "time_from": "Dalle",
+    "time_to": "Alle",
+    "note_placeholder": "Es: Vacanze estive, Riunione...",
+    "preview_range_days_one": "giorno consecutivo verrà bloccato",
+    "preview_range_days_other": "giorni consecutivi verranno bloccati",
+    "preview_weekly_prefix": "Ogni",
+    "preview_weekly_suffix_one": "giorno verrà bloccato",
+    "preview_weekly_suffix_other": "giorni verranno bloccati",
+    "cancel": "Annulla",
+    "submit_single": "Blocca",
+    "submit_batch": "Blocca {{count}} giorni"
+  },
+  "blocked_slots": {
+    "heading": "Slot bloccati",
+    "all_day": "Tutto il giorno",
+    "recurring": "Ricorrente",
+    "remove_title": "Rimuovi blocco"
+  },
+  "confirm_delete": {
+    "recurring_message": "Questo blocco fa parte di una serie ricorrente ({{count}} giorni).",
+    "recurring_question": "Cosa vuoi eliminare?",
+    "only_this_day": "Solo questo giorno",
+    "all_days": "Tutti i {{count}} giorni",
+    "cancel": "Annulla"
+  },
+  "validation": {
+    "select_date": "Seleziona una data",
+    "end_time_after_start": "L'orario di fine deve essere dopo l'orario di inizio",
+    "end_date_gte_start": "La data di fine deve essere uguale o successiva a quella di inizio",
+    "until_date_after_start": "La data \"fino al\" deve essere successiva alla data di inizio"
+  },
+  "toast": {
+    "block_created": "Slot bloccato",
+    "block_created_error": "Errore nel blocco dello slot",
+    "blocks_created": "Slot bloccati",
+    "blocks_created_error": "Errore nel blocco degli slot",
+    "block_removed": "Blocco rimosso",
+    "block_removed_error": "Errore nella rimozione del blocco",
+    "blocks_removed": "Blocchi rimossi",
+    "blocks_removed_error": "Errore nella rimozione dei blocchi"
+  }
+}

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="description" content="AFianco - Business Intelligence per PMI" />
+        <!--
+        Referrer-Policy override
+        ------------------------
+        Default policy in modern browsers (strict-origin-when-cross-origin)
+        sometimes degrades to no-referrer for cross-origin sub-requests
+        when the user has hardened privacy settings (Brave Shields, FF
+        ETP strict, enterprise privacy policies). The Bunny Stream pull
+        zone CDN rejects requests without a Referer header — even though
+        any referrer value works, the header MUST be present. The
+        default sometimes strips it entirely => 403 on the HLS manifest
+        => "This content is blocked" inside the Bunny iframe.
+
+        "no-referrer-when-downgrade" mirrors the pre-2020 default: send
+        the full Referer for every same-scheme request, omit it only on
+        an HTTPS->HTTP downgrade. This does NOT loosen privacy compared
+        to the 2020 default in any meaningful way — the Pull Zone host
+        already saw the iframe's URL anyway via the Origin header — but
+        guarantees a Referer is present on the wire so the CDN's
+        hotlink protection accepts the fetch.
+
+        Same value as the iframe's referrerPolicy attribute, applied
+        globally as a safety net: some browsers (or third-party scripts
+        that overwrite the iframe element after mount) ignore the per-
+        element attribute. This meta tag is the document-level fallback.
+        -->
+        <meta name="referrer" content="no-referrer-when-downgrade" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet" />
+        <!--
+        manifest.json provides metadata used when your web app is installed on a
+        user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+        -->
+        <!--
+        Notice the use of %PUBLIC_URL% in the tags above.
+        It will be replaced with the URL of the `public` folder during the build.
+        Only files inside the `public` folder can be referenced from the HTML.
+
+        Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+        work correctly both with client-side routing and a non-root public URL.
+        Learn how to configure a non-root public URL by running `npm run build`.
+        -->
+        <title>AFianco</title>
+        <!--
+        Phase 1 Step D1 — Chrome DataCloneError workaround moved to an
+        external file so it complies with the strict CSP (script-src 'self'
+        'unsafe-eval'; no 'unsafe-inline'). See chrome-error-handler.js.
+        -->
+        <script src="%PUBLIC_URL%/chrome-error-handler.js"></script>
+    </head>
+    <body>
+        <noscript>You need to enable JavaScript to run this app.</noscript>
+        <div id="root"></div>
+        <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+    </body>
+</html>

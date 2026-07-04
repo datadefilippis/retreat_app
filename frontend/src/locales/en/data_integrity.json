@@ -1,0 +1,48 @@
+{
+  "page": {
+    "title": "Data Quality",
+    "subtitle": "Linking coverage and retroactive linking"
+  },
+  "dataset": {
+    "sales": "Sales",
+    "purchases": "Purchases",
+    "expenses": "Expenses"
+  },
+  "entity": {
+    "customer_id": "Customers",
+    "product_id": "Products",
+    "supplier_id": "Suppliers"
+  },
+  "coverage": {
+    "title": "Linking Coverage",
+    "no_data": "No data available.",
+    "total_records": "total records"
+  },
+  "relink": {
+    "title": "Retroactive Linking",
+    "description": "Scan unlinked historical records and try to link them to existing entities using exact matching.",
+    "admin_only": "Only administrators can run retroactive linking.",
+    "dataset_label": "Dataset",
+    "preview": "Preview",
+    "scan_result": "Scan result",
+    "candidates": "candidates",
+    "no_candidates": "No candidates",
+    "scanned": "Scanned",
+    "candidates_label": "Candidates",
+    "resolver": "Entity resolver",
+    "by_entity": "By entity type",
+    "samples": "Samples",
+    "apply": "Apply",
+    "links_one": "{{count}} link",
+    "links_other": "{{count}} links",
+    "confirm_title": "Confirm?",
+    "confirm_desc": "{{count}} records will be updated with exact matching.",
+    "confirm_audit": "Every change is tracked in record metadata.",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "toast_applied_one": "{{count}} link applied",
+    "toast_applied_other": "{{count}} links applied",
+    "toast_scan_error": "Error during scan",
+    "toast_apply_error": "Error during linking"
+  }
+}

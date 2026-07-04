@@ -1,0 +1,78 @@
+{
+  "page": {
+    "title": "Team",
+    "subtitle": "Verwalten Sie die Mitglieder Ihrer Organisation"
+  },
+  "invite": {
+    "button": "Mitglied einladen",
+    "dialog_title": "Neues Mitglied einladen",
+    "dialog_desc": "Es wird ein Konto mit einem temporaeren Passwort erstellt, das Sie dem neuen Mitglied mitteilen muessen.",
+    "name": "Name",
+    "name_placeholder": "Max Mustermann",
+    "email": "E-Mail",
+    "email_placeholder": "max@firma.de",
+    "role": "Rolle",
+    "submit": "Konto erstellen und Passwort anzeigen",
+    "submitting": "Konto wird erstellt..."
+  },
+  "members": {
+    "card_title": "Teammitglieder",
+    "count_one": "{{count}} Mitglied in der Organisation",
+    "count_other": "{{count}} Mitglieder in der Organisation",
+    "col_member": "Mitglied",
+    "col_role": "Rolle",
+    "col_added": "Hinzugefuegt am",
+    "col_status": "Status",
+    "col_actions": "Aktionen",
+    "you_badge": "Sie"
+  },
+  "roles": {
+    "admin": "Admin",
+    "user": "Benutzer",
+    "user_analyst": "Benutzer / Analyst"
+  },
+  "status": {
+    "active": "Aktiv",
+    "inactive": "Inaktiv"
+  },
+  "actions": {
+    "reactivate": "Reaktivieren"
+  },
+  "permissions": {
+    "card_title": "Rollenberechtigungen",
+    "admin_title": "Admin",
+    "admin_p1": "Verwaltet Teammitglieder",
+    "admin_p2": "Laedt Datensaetze hoch und entfernt sie",
+    "admin_p3": "Aktiviert und konfiguriert Module",
+    "admin_p4": "Aktualisiert Organisationseinstellungen",
+    "admin_p5": "Zugriff auf Dashboard, Warnungen und KI-Einblicke",
+    "user_title": "Benutzer / Analyst",
+    "user_p1": "Sieht Dashboard und KPIs",
+    "user_p2": "Liest Warnungen und Anomalien",
+    "user_p3": "Nutzt KI-Einblicke",
+    "user_p4": "Laedt Datensaetze hoch (wenn vom Admin genehmigt)"
+  },
+  "remove": {
+    "dialog_title": "Mitglied entfernen",
+    "dialog_desc": "Sie sind dabei, das Konto von {{name}} zu deaktivieren. Die Person kann nicht mehr auf die Plattform zugreifen. Sie koennen es spaeter reaktivieren.",
+    "cancel": "Abbrechen",
+    "confirm": "Ja, entfernen"
+  },
+  "created": {
+    "dialog_title": "Konto erstellt",
+    "dialog_desc": "Das Konto von {{name}} wurde erstellt. Teilen Sie das temporaere Passwort unten mit — es wird nur jetzt angezeigt.",
+    "temp_password": "Temporaeres Passwort",
+    "hint": "Das Mitglied muss es beim ersten Login aendern. Es wird nicht im Klartext gespeichert.",
+    "confirm": "Passwort kopiert"
+  },
+  "toast": {
+    "load_error": "Team konnte nicht geladen werden",
+    "invite_error": "Fehler bei der Einladung",
+    "role_updated": "Rolle aktualisiert",
+    "role_error": "Fehler bei Rollenaktualisierung",
+    "member_removed": "Mitglied entfernt",
+    "remove_error": "Fehler beim Entfernen",
+    "member_reactivated": "Mitglied reaktiviert",
+    "reactivate_error": "Fehler bei Reaktivierung"
+  }
+}

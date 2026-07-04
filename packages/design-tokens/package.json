@@ -1,0 +1,41 @@
+{
+  "name": "@afianco/design-tokens",
+  "version": "0.1.0",
+  "description": "CSS variables + Lit base mixin for afianco-* Web Components.",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist node_modules .tsup"
+  },
+  "peerDependencies": {
+    "lit": "^3.2.0"
+  },
+  "devDependencies": {
+    "lit": "^3.2.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.4.5",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

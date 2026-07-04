@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "products": "Produkte",
+    "customers": "Kunden",
+    "suppliers": "Lieferanten"
+  },
+  "products": {
+    "title": "Produkte",
+    "subtitle": "Produktstammdaten — fur automatische Verknupfung beim Datenimport",
+    "guide": "Durch Anlegen von Produkten hier verknupft AFianco importierte Verkaufe und Einkaufe automatisch mit den entsprechenden Produkten.",
+    "add": "Produkt hinzufugen",
+    "edit": "Produkt bearbeiten",
+    "empty": "Noch keine Produkte angelegt",
+    "empty_desc": "Fugen Sie Ihre Produkte hinzu, um die automatische Verknupfung beim Import zu aktivieren.",
+    "search": "Nach Name suchen...",
+    "name": "Name", "sku": "SKU", "category": "Kategorie", "unit_price": "Verkaufspreis",
+    "cost_price": "Einkaufspreis", "unit": "Einheit", "description": "Beschreibung",
+    "status": "Status", "active": "Aktiv", "inactive": "Inaktiv",
+    "deactivate_confirm": "Dieses Produkt deaktivieren?",
+    "save_success": "Produkt gespeichert", "save_error": "Fehler beim Speichern",
+    "delete_success": "Produkt deaktiviert", "delete_error": "Fehler beim Deaktivieren"
+  },
+  "customers": {
+    "title": "Kunden",
+    "subtitle": "Kundenstammdaten — fur automatische Verknupfung beim Datenimport",
+    "guide": "Durch Anlegen von Kunden hier verknupft AFianco importierte Verkaufe automatisch mit den entsprechenden Kunden.",
+    "add": "Kunde hinzufugen", "edit": "Kunde bearbeiten",
+    "empty": "Noch keine Kunden angelegt",
+    "empty_desc": "Fugen Sie Ihre Kunden hinzu, um die automatische Verknupfung beim Import zu aktivieren.",
+    "search": "Nach Name suchen...",
+    "name": "Name", "external_id": "Externer Code", "email": "E-Mail", "phone": "Telefon", "address": "Adresse",
+    "status": "Status", "active": "Aktiv", "inactive": "Inaktiv",
+    "deactivate_confirm": "Diesen Kunden deaktivieren?",
+    "save_success": "Kunde gespeichert", "save_error": "Fehler beim Speichern",
+    "delete_success": "Kunde deaktiviert", "delete_error": "Fehler beim Deaktivieren"
+  },
+  "suppliers": {
+    "title": "Lieferanten",
+    "subtitle": "Lieferantenstammdaten — fur automatische Verknupfung beim Datenimport",
+    "guide": "Durch Anlegen von Lieferanten hier verknupft AFianco importierte Ausgaben und Einkaufe automatisch mit den entsprechenden Lieferanten.",
+    "add": "Lieferant hinzufugen", "edit": "Lieferant bearbeiten",
+    "empty": "Noch keine Lieferanten angelegt",
+    "empty_desc": "Fugen Sie Ihre Lieferanten hinzu, um die automatische Verknupfung beim Import zu aktivieren.",
+    "search": "Nach Name suchen...",
+    "name": "Name", "external_id": "Externer Code", "email": "E-Mail", "phone": "Telefon",
+    "address": "Adresse", "category": "Kategorie",
+    "status": "Status", "active": "Aktiv", "inactive": "Inaktiv",
+    "deactivate_confirm": "Diesen Lieferanten deaktivieren?",
+    "save_success": "Lieferant gespeichert", "save_error": "Fehler beim Speichern",
+    "delete_success": "Lieferant deaktiviert", "delete_error": "Fehler beim Deaktivieren",
+    "total_spend": "Gesamtausgaben",
+    "purchase_count": "Einkaeufe",
+    "last_purchase": "Letzter Einkauf",
+    "view_purchases": "Einkaeufe anzeigen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "create": "Erstellen",
+    "external_id_placeholder": "z.B. LIEF-001",
+    "category_placeholder": "z.B. Rohstoffe"
+  }
+}

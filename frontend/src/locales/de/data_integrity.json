@@ -1,0 +1,48 @@
+{
+  "page": {
+    "title": "Datenqualitaet",
+    "subtitle": "Verknuepfungsabdeckung und retroaktive Verknuepfung"
+  },
+  "dataset": {
+    "sales": "Verkaeufe",
+    "purchases": "Einkaeufe",
+    "expenses": "Ausgaben"
+  },
+  "entity": {
+    "customer_id": "Kunden",
+    "product_id": "Produkte",
+    "supplier_id": "Lieferanten"
+  },
+  "coverage": {
+    "title": "Verknuepfungsabdeckung",
+    "no_data": "Keine Daten verfuegbar.",
+    "total_records": "Datensaetze insgesamt"
+  },
+  "relink": {
+    "title": "Retroaktive Verknuepfung",
+    "description": "Scannen Sie nicht verknuepfte historische Datensaetze und versuchen Sie, sie mit exakter Uebereinstimmung vorhandenen Entitaeten zuzuordnen.",
+    "admin_only": "Nur Administratoren koennen die retroaktive Verknuepfung ausfuehren.",
+    "dataset_label": "Datensatz",
+    "preview": "Vorschau",
+    "scan_result": "Scan-Ergebnis",
+    "candidates": "Kandidaten",
+    "no_candidates": "Keine Kandidaten",
+    "scanned": "Gescannt",
+    "candidates_label": "Kandidaten",
+    "resolver": "Entitaets-Resolver",
+    "by_entity": "Nach Entitaetstyp",
+    "samples": "Beispiele",
+    "apply": "Anwenden",
+    "links_one": "{{count}} Verknuepfung",
+    "links_other": "{{count}} Verknuepfungen",
+    "confirm_title": "Bestaetigen?",
+    "confirm_desc": "{{count}} Datensaetze werden mit exakter Uebereinstimmung aktualisiert.",
+    "confirm_audit": "Jede Aenderung wird in den Datensatz-Metadaten protokolliert.",
+    "cancel": "Abbrechen",
+    "confirm": "Bestaetigen",
+    "toast_applied_one": "{{count}} Verknuepfung angewendet",
+    "toast_applied_other": "{{count}} Verknuepfungen angewendet",
+    "toast_scan_error": "Fehler beim Scannen",
+    "toast_apply_error": "Fehler bei der Verknuepfung"
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "page": {
+    "title": "Kunden",
+    "subtitle": "Kundenstatus, Segmente, vorgeschlagene Aktionen",
+    "loading": "Insights werden geladen…",
+    "empty": "Noch keine Kunden mit verknüpften Daten",
+    "errorTitle": "Ladefehler",
+    "errorBody": "Daten konnten nicht geladen werden. Bitte in Kürze erneut versuchen.",
+    "refreshButton": "Aktualisieren"
+  },
+  "period": {
+    "label": "Zeitraum",
+    "7d": "7 Tage",
+    "30d": "30 Tage",
+    "90d": "90 Tage",
+    "180d": "6 Monate",
+    "12m": "12 Monate",
+    "24m": "24 Monate",
+    "all": "Gesamt",
+    "custom": "Benutzerdefiniert",
+    "comparedTo": "vs Vorperiode"
+  },
+  "filters": {
+    "title": "Filter",
+    "segmentLabel": "Segment",
+    "statusLabel": "Status",
+    "minRevenueLabel": "Mindestumsatz",
+    "minRevenuePlaceholder": "z. B. 100",
+    "hasContactLabel": "Kontakt",
+    "hasEmail": "Hat E-Mail",
+    "hasPhone": "Hat Telefon",
+    "search": "Kunden suchen",
+    "searchPlaceholder": "Kundenname…",
+    "clearAll": "Filter zurücksetzen",
+    "applied": "Aktive Filter",
+    "accountLabel": "Konto:",
+    "accountAll": "Alle",
+    "accountRegistered": "Registriert",
+    "accountGuest": "Nur Gäste",
+    "marketingLabel": "Marketing:",
+    "marketingAll": "Alle",
+    "marketingOptedIn": "Angemeldet",
+    "marketingNotOptedIn": "Abgemeldet"
+  },
+  "segment": {
+    "all": "Alle",
+    "top": "Top",
+    "active": "Aktiv",
+    "occasional": "Gelegentlich",
+    "inactive": "Inaktiv",
+    "new": "Neu",
+    "lead": "Lead",
+    "unknown": "Unklassifiziert"
+  },
+  "status": {
+    "all": "Alle",
+    "healthy": "Gesund",
+    "watch": "Beobachten",
+    "atRisk": "Gefährdet",
+    "lost": "Verloren"
+  },
+  "kpi": {
+    "activeCustomers": {
+      "title": "Aktive Kunden",
+      "def": "Kunden mit mindestens einem Kauf in den letzten 60 Tagen am Periodenende.",
+      "calc": "Eindeutige customer_id mit last_purchase ≥ end − 60 T.",
+      "read": "Höher = breitere aktive Basis. Schwelle in Einstellungen anpassbar."
+    },
+    "newCustomers": {
+      "title": "Neue Kunden",
+      "def": "In der Periode neu gewonnene Kunden (erster Kauf liegt hier).",
+      "calc": "Eindeutige customer_id mit MIN(date) ∈ [start, end].",
+      "read": "Höher = Akquise wächst."
+    },
+    "purchasingCustomers": {
+      "title": "Kaufende Kunden",
+      "def": "Kunden mit mindestens einem Verkauf in der gewählten Periode.",
+      "calc": "Eindeutige customer_id in sales_records während der Periode.",
+      "read": "Höher = Basis, die im Zeitraum Cash erzeugt hat."
+    },
+    "totalRevenue": {
+      "title": "Umsatz Periode",
+      "def": "Summe der in der gewählten Periode erfassten Verkäufe.",
+      "calc": "Σ amount über sales_records mit date ∈ [start, end].",
+      "read": "Höher = mehr generiertes Cash. Vergleich mit Vorperiode."
+    },
+    "avgCustomerValue": {
+      "title": "Durchschnittlicher Kundenwert",
+      "def": "Durchschnittsumsatz pro Kunde im Zeitraum.",
+      "calc": "Periodenumsatz / Anzahl kaufender Kunden in der Periode.",
+      "read": "Höher = Kunden geben mehr aus. Wächst mit Upsell."
+    },
+    "top10Share": {
+      "title": "Top-10 Konzentration",
+      "def": "Umsatzanteil der 10 grössten Kunden im Zeitraum.",
+      "calc": "Σ Top-10-Umsatz / Periodenumsatz × 100.",
+      "read": "Über 60 % = hohes Risiko: wenige Kunden tragen den Umsatz."
+    },
+    "atRiskCount": {
+      "title": "Gefährdete Kunden",
+      "def": "Kunden mit Churn-Score ≥ 60 (von 100).",
+      "calc": "Recency + Frequenz + Einzelkauf-Strafe + Stornierungen.",
+      "read": "Kontaktieren, um Verlust zu vermeiden. Details in der Karte unten."
+    },
+    "inactiveRate": {
+      "title": "Inaktivitätsrate",
+      "def": "Anteil der Kunden ohne Kauf seit 180+ Tagen.",
+      "calc": "inaktive_kunden / total_kunden × 100.",
+      "read": "Unter 30 % = gesund. Über 50 % = Reaktivierung nötig."
+    }
+  },
+  "concentration": {
+    "title": "Umsatzkonzentration",
+    "top5": "Top 5",
+    "top10": "Top 10",
+    "totalCustomers": "Kunden gesamt",
+    "totalRevenue": "Gesamtumsatz",
+    "infobox": {
+      "def": "Wie stark der Umsatz von den grössten Kunden abhängt.",
+      "calc": "Anteil der Top-N-Kunden am Gesamtumsatz.",
+      "read": "Top 5 über 50 % = stark abhängig. Unter 30 % = gut verteilt."
+    }
+  },
+  "segments": {
+    "title": "Verteilung nach Segment",
+    "infobox": {
+      "def": "Wie viele Kunden in jedem Segment und ihr Umsatzanteil.",
+      "calc": "Anzahl + Umsatzsumme gruppiert nach Segment.",
+      "read": "Klick auf einen Sektor, um die Tabelle unten zu filtern."
+    },
+    "countLabel": "Kunden",
+    "revenueLabel": "Umsatz",
+    "shareLabel": "% Umsatz"
+  },
+  "table": {
+    "title": "Kundenliste",
+    "columnName": "Name",
+    "columnSegment": "Segment",
+    "columnStatus": "Status",
+    "columnRevenue": "Umsatz",
+    "columnTransactions": "Käufe",
+    "columnLastPurchase": "Letzter Kauf",
+    "columnDaysSince": "Tage seit",
+    "columnChurnRisk": "Risiko",
+    "columnTrend": "Trend",
+    "columnEmail": "E-Mail",
+    "columnPhone": "Telefon",
+    "columnAccount": "Konto",
+    "columnMarketing": "Marketing",
+    "accountRegistered": "Registriertes Konto",
+    "accountGuest": "Gastkunde",
+    "guestShort": "Gast",
+    "marketingOptedIn": "Marketing angemeldet",
+    "marketingNotOptedIn": "Marketing abgemeldet",
+    "marketingNotApplicable": "Nicht zutreffend (Gastkunde)",
+    "marketingGuestNotOptedIn": "Gastkunde (keine Marketing-Einwilligung)",
+    "viewProfile": "Profil",
+    "totalCount": "Gesamt: {{count}} Kunden",
+    "page": "Seite {{current}} von {{total}}",
+    "previousPage": "Zurück",
+    "nextPage": "Weiter",
+    "noResults": "Kein Kunde entspricht den Filtern",
+    "exportCsv": "CSV exportieren",
+    "exportCsvGdprHint": "Die CSV-Datei enthält eine Spalte unsubscribe_url mit einem Abmeldelink pro Kunde. Verwenden Sie diese als Merge-Tag in den Fußzeilen Ihrer Marketing-Kampagnen (z. B. {{unsubscribe_url}} bei Mailchimp / Brevo), um Art. 7 Abs. 3 DSGVO zu erfüllen."
+  },
+  "profile": {
+    "title": "Kundenprofil",
+    "totalRevenue": "Gesamtumsatz",
+    "transactionCount": "Anzahl Käufe",
+    "avgValue": "Durchschnittswert",
+    "lastPurchase": "Letzter Kauf",
+    "firstPurchase": "Erster Kauf",
+    "preferredProducts": "Bevorzugte Produkte",
+    "noPreferred": "Noch keine",
+    "timelineTitle": "Ereignisverlauf",
+    "timelineEmpty": "Keine Ereignisse anzuzeigen",
+    "timelineLoadMore": "Mehr laden",
+    "kindOrder": "Bestellung",
+    "kindSale": "Verkauf",
+    "close": "Schliessen",
+    "emailLabel": "E-Mail",
+    "phoneLabel": "Telefon",
+    "noEmail": "keine E-Mail",
+    "noPhone": "kein Telefon",
+    "accountSection": "Konto",
+    "accountRegistered": "Registriertes Konto",
+    "accountRegisteredOn": "seit {{date}}",
+    "accountGuest": "Gastkunde (kein registriertes Konto)",
+    "marketingOptedIn": "Marketing angemeldet",
+    "marketingNotOptedIn": "Marketing abgemeldet"
+  },
+  "trend": {
+    "growing": "Wachsend",
+    "declining": "Rückläufig",
+    "stable": "Stabil",
+    "new": "Neu"
+  },
+  "actions": {
+    "comingSoon": "Verfügbar ab Phase 3",
+    "comingSoonHint": "E-Mail / WhatsApp / Erinnerungs-Schaltflächen werden im nächsten Release aktiv."
+  },
+  "cohort": {
+    "title": "Kohorten-Retention-Tabelle",
+    "subtitle": "Wie viele der in einem Monat gewonnenen Kunden in den Folgemonaten noch aktiv sind.",
+    "bucketLabel": "Granularität",
+    "bucketMonth": "Monat",
+    "bucketQuarter": "Quartal",
+    "bucketWeek": "Woche",
+    "horizonLabel": "Horizont",
+    "acquisitionColumn": "Akquisemonat",
+    "sizeColumn": "Grösse",
+    "infobox": {
+      "def": "Zeigt, wie viele in einem Monat gewonnene Kunden in den Folgemonaten noch aktiv sind.",
+      "calc": "Pro Kohorte: # aktive Kunden in Monat N / Kohortengrösse × 100.",
+      "read": "Flache Kurve = stabile Retention. Steil = schneller Verlust."
+    },
+    "empty": "Unzureichende Daten für die Kohortentabelle."
+  },
+  "insightCard": {
+    "infoButton": "Info",
+    "backButton": "Zurück"
+  },
+  "outreach": {
+    "emailButton": "E-Mail",
+    "whatsappButton": "WhatsApp",
+    "changeTemplate": "Nachricht wählen",
+    "noEmail": "Kunde ohne E-Mail",
+    "noPhone": "Kunde ohne gültige Telefonnummer",
+    "noTemplates": "Keine Nachrichten verfügbar",
+    "templates": {
+      "at_risk_followup": "Gefährdeter Kunde — Follow-up",
+      "new_welcome": "Willkommen neuer Kunde",
+      "top_personal_note": "Persönliche Notiz an Top-Kunden",
+      "promo_mid_season": "Werbeangebot",
+      "appointment_reminder": "Termin-Erinnerung",
+      "feedback_request": "Feedback-Anfrage",
+      "thank_you_purchase": "Dankeschön für den Kauf",
+      "general_check_in": "Allgemeiner Gruss"
+    },
+    "dialog": {
+      "titleEmail": "E-Mail-Vorschau",
+      "titleWhatsapp": "WhatsApp-Vorschau",
+      "toLabel": "An:",
+      "subjectLabel": "Betreff",
+      "bodyLabel": "Nachricht",
+      "copy": "Text kopieren",
+      "copied": "Kopiert",
+      "openGmail": "Gmail Web öffnen",
+      "openOutlook": "Outlook Web öffnen",
+      "openDefault": "Standard-Mail",
+      "openWhatsApp": "WhatsApp öffnen",
+      "mailtoTooltip": "Öffnet das auf dem System als Standard eingestellte E-Mail-Programm (Mail / Outlook / Thunderbird). Funktioniert nur, wenn eines konfiguriert ist.",
+      "hint": "Gmail Web und Outlook Web öffnen das Verfassen-Fenster im Browser (funktioniert immer). \"Standard-Mail\" funktioniert nur, wenn ein E-Mail-Programm als Systemstandard hinterlegt ist."
+    }
+  }
+}

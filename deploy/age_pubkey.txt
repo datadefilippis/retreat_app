@@ -1,0 +1,15 @@
+# AFianco backup encryption — public key (Phase 1 Step C1)
+#
+# This file is COMMITTABLE: it contains ONLY the public half of the age key
+# pair. The corresponding PRIVATE key is stored OFFLINE only:
+#   - 1Password vault: "AFianco / Production / age backup key"
+#   - USB key (cassaforte personale)
+#
+# The backup script at /opt/margin-sentinel/deploy/backup.sh reads this file
+# and encrypts every backup archive (db_*, uploads_*, config_*) before
+# uploading to Hetzner Storage Box. Without the matching private key, the
+# encrypted .age files are unrecoverable — even if the Storage Box itself
+# is fully compromised.
+#
+# Rotating the key: see docs/operations/backup-recovery.md → "Key rotation"
+age1j9u3de33a3j5ls6q3qrm4mpn824rml8eqsgez0wseym06q5t4udq3fg6e2

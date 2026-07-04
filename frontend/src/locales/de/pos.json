@@ -1,0 +1,20 @@
+{
+  "subtitle": "Verkaufsstelle",
+  "back": "Zurück zu den Stores",
+  "cart": {
+    "title": "Warenkorb",
+    "empty": "Produkte aus dem Raster auswählen",
+    "total": "Gesamt",
+    "customer_placeholder": "Kundenname",
+    "complete": "Bestellung abschließen"
+  },
+  "order_done": "Bestellung {{number}} abgeschlossen",
+  "new_order": "Neue Bestellung",
+  "toast": {
+    "completed": "Bestellung abgeschlossen und bestätigt",
+    "error": "Fehler beim Erstellen der Bestellung"
+  },
+  "error": {
+    "load": "Fehler beim Laden"
+  }
+}

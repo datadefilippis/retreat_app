@@ -1,0 +1,107 @@
+{
+  "forms": {
+    "quota_exhausted_hint": "Data row limit reached. Upgrade your plan.",
+    "quota_exhausted_body": "You have reached the limit of {{used}}/{{limit}} data rows this month.",
+    "quota_exhausted_cta": "Upgrade plan"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "modules": "Modules",
+    "alerts": "Alerts",
+    "ai_analysis": "AI Analysis",
+    "team": "Team",
+    "settings": "Settings",
+    "logout": "Log out",
+    "admin": "Admin",
+    "data": "Data",
+    "orders": "Orders",
+    "reservations": "Rentals",
+    "calendar": "Calendar",
+    "store_settings": "Store Settings",
+    "stores": "My Stores",
+    "newsletter": "Newsletter",
+    "data_integrity": "Data Quality",
+    "master_data": "Master data",
+    "products": "Products",
+    "courses": "Courses",
+    "events": "Events",
+    "customers": "Customers",
+    "suppliers": "Suppliers"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "refresh": "Refresh",
+    "upload": "Upload",
+    "back": "Back",
+    "maybe_later": "Maybe later"
+  },
+  "copied": "Copied to clipboard",
+  "copy_url": "Copy URL",
+  "copy_failed": "Could not copy",
+  "status": {
+    "loading": "Loading...",
+    "error": "An error occurred.",
+    "no_data": "No data available.",
+    "success": "Operation completed."
+  },
+  "modules": {
+    "cashflow_monitor": "Cashflow Monitor",
+    "customers_light": "Customer Insights",
+    "commerce_signals": "Commerce Signals",
+    "product_catalog": "Product Performance"
+  },
+  "period": {
+    "7d": "Last 7 days",
+    "30d": "Last 30 days",
+    "90d": "Last 90 days",
+    "ytd": "Year to date",
+    "mtd": "Month to date",
+    "custom": "Custom",
+    "data_range": "All data ({{days}}d)"
+  },
+  "widget_actions": {
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "remove": "Remove from dashboard"
+  },
+  "quota": {
+    "banner_title": "Limit reached",
+    "banner_default": "You have reached the limit of your plan. Upgrade to continue.",
+    "banner_upgrade": "Upgrade plan",
+    "banner_dismiss": "Dismiss",
+    "dialog_title": "Import limit reached",
+    "dialog_description": "The free plan limit has been exhausted. You can change your plan in Settings to increase the limits.",
+    "dialog_go_settings": "Go to Settings",
+    "dialog_close": "Close"
+  },
+  "stripeAlert": {
+    "configureBtn": "Configure Stripe Connect",
+    "defaultMessage": "Stripe Connect is not yet configured. Direct-payment orders will fall back to request mode until you complete onboarding in settings.",
+    "reason": {
+      "no_connection": "No payment provider configured",
+      "connection_inactive": "Payment connection inactive",
+      "no_default": "No provider set as default",
+      "runtime_unavailable": "Runtime authorization not completed",
+      "runtime_needs_auth": "Runtime authorization in progress",
+      "runtime_error": "Error verifying provider",
+      "provider_not_configured": "Provider not configured in the system"
+    }
+  },
+  "language": {
+    "it": "Italiano",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français"
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "ariaLabel": "Change language"
+  }
+}

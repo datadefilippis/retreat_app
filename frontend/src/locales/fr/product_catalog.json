@@ -1,0 +1,267 @@
+{
+  "page": {
+    "title": "Performance Produits",
+    "subtitle": "Marge réelle, produits qui vendent, où le chiffre d'affaires se concentre"
+  },
+  "period": {
+    "label": "Période",
+    "7d": "7 jours",
+    "30d": "30 jours",
+    "90d": "90 jours",
+    "12m": "12 mois",
+    "all": "Tout",
+    "comparedTo": "vs période précédente"
+  },
+  "sections": {
+    "headline": "Performance globale",
+    "operational": "Insights opérationnels",
+    "distribution": "Distribution et mix",
+    "products_table": "Détail produits"
+  },
+  "infoBox": {
+    "def": "Définition",
+    "calc": "Calcul",
+    "read": "Comment lire"
+  },
+  "intelligenceBanner": {
+    "title_all_good": "Tout est en ordre ({{passed}}/{{total}} contrôles réussis)",
+    "title_all_good_sub": "Marges fiables et alignement Cashflow OK",
+    "section_secondary": "À surveiller ({{count}})",
+    "section_housekeeping": "Nettoyage recommandé ({{count}})",
+    "category": {
+      "data_quality": "Qualité des données",
+      "cashflow_coherence": "Cohérence avec Cashflow",
+      "purchases_coherence": "Cohérence avec Achats",
+      "trends": "Tendances et anomalies"
+    },
+    "severity": {
+      "critical": "Critique",
+      "warning": "À surveiller",
+      "info": "Info"
+    },
+    "drill": {
+      "products_revenue": "CA produits (ici)",
+      "cashflow_revenue": "CA total (Cashflow Monitor)",
+      "orphan_sales": "Ventes sans produit lié",
+      "see_more": "Voir tous ({{count}})",
+      "see_details": "Voir détails",
+      "no_drill": "Aucun détail disponible"
+    },
+    "actions": {
+      "configure_all": "Configurer les coûts maintenant",
+      "open_products": "Ouvrir gestion produits",
+      "open_cashflow": "Ouvrir Cashflow Monitor",
+      "see_orphan_sales": "Voir ventes orphelines",
+      "open_orders": "Ouvrir commandes",
+      "refresh_metrics": "Actualiser les métriques maintenant",
+      "dismiss": "Masquer pour 30 jours",
+      "dismissed": "Masqué",
+      "expand": "Développer",
+      "collapse": "Réduire"
+    }
+  },
+  "checks": {
+    "products_without_cost": {
+      "title": "Vous ne savez pas si vos produits sont rentables",
+      "body": "Vous vendez des produits pour {{blind_revenue_formatted}} — {{blind_revenue_pct}}% du CA — sans pouvoir calculer la marge. Vous ne savez pas si ces ventes sont en profit ou en perte.",
+      "cause": "Les {{count}} produits listés n'ont pas de « Coût du produit » configuré. Définissez-le dans la fiche pour voir immédiatement les marges réelles."
+    },
+    "products_without_sku": {
+      "title": "{{count}} produits actifs sans SKU",
+      "body": "Les produits sans code SKU ne peuvent pas être automatiquement associés aux lignes d'import CSV et sont plus difficiles à rechercher. Ne casse pas les marges, mais c'est une hygiène recommandée.",
+      "cause": "Le SKU n'est pas obligatoire à la création, mais nécessaire pour les imports en masse."
+    },
+    "suspicious_margins": {
+      "title": "Marges hors de la plage normale",
+      "body": "{{negative_count}} produits se vendent à perte (coût supérieur au prix) et {{high_count}} ont une marge supérieure à 90% — il manque probablement des coûts (packaging, main-d'œuvre, overhead).",
+      "cause": "Ouvrez chaque produit suspect : vérifiez que le « Coût du produit » inclut tous les postes réels (matières premières, main-d'œuvre, énergie, packaging)."
+    },
+    "cashflow_mismatch": {
+      "title": "Écart avec Cashflow Monitor",
+      "body": "Le CA produits ici ({{products_revenue_formatted}}) diffère du CA total Cashflow Monitor ({{cashflow_revenue_formatted}}) de {{diff_amount_formatted}} ({{diff_pct}}%). Les deux vues devraient s'aligner.",
+      "cause": "{{orphan_count}} ventes de la période ne sont liées à aucun produit spécifique, donc elles apparaissent dans Cashflow mais pas ici."
+    },
+    "orphan_sales": {
+      "title": "{{count}} ventes sans produit lié",
+      "body": "Vous avez {{count}} ventes dans la période totalisant {{amount_formatted}} non attribuées à un produit spécifique. Elles apparaissent dans les totaux Cashflow mais ne sont pas comptées dans les métriques Performance Produits.",
+      "cause": "Typiquement des lignes CSV importées sans SKU, ou des ventes manuelles saisies sans sélectionner un produit du catalogue."
+    },
+    "confirmed_orders_without_sales": {
+      "title": "{{missing_count}} commandes avec métriques à actualiser",
+      "body": "Vous avez {{missing_count}} commandes confirmées dont le CA n'est pas encore inclus dans les totaux de cette page.",
+      "cause": "Arrive quand une commande est confirmée sans mise à jour automatique des métriques. Cliquez sur « Actualiser les métriques maintenant » et leur CA apparaîtra dans les totaux."
+    },
+    "purchases_unattributed": {
+      "title": "{{unattr_pct}}% des achats non liés aux produits",
+      "body": "Vous avez {{unattr_amount_formatted}} d'achats dans la période non liés à un produit spécifique. Cela signifie que les coûts ne sont pas directement attribués et peuvent seulement être estimés.",
+      "cause": "Pour attribuer correctement les coûts, configurez les produits avec des composants « Depuis produit acheté » référençant les catégories ci-dessous."
+    },
+    "unlinked_purchase_categories": {
+      "title": "{{count}} catégories d'achat non liées aux produits",
+      "body": "Il y a des catégories d'achat qui ne sont utilisées dans aucune configuration de coût produit. Les catégories typiquement overhead (loyer, utilités, logiciels, etc.) sont exclues.",
+      "cause": "Pour améliorer la précision des marges, envisagez de lier les catégories les plus pertinentes aux produits qui les consomment (ex. ingrédients → plat)."
+    },
+    "coverage_drop": {
+      "title": "Couverture des coûts en baisse",
+      "body": "La part de produits avec coût configuré est passée de {{previous_pct}}% à {{current_pct}}% par rapport à la période précédente ({{drop_pp}} points de pourcentage en moins).",
+      "cause": "Probablement vous avez ajouté de nouveaux produits sans configurer leurs coûts, ou supprimé des configurations existantes."
+    },
+    "margin_deterioration": {
+      "title": "Marge en détérioration",
+      "body": "La marge pondérée est passée de {{previous_pct}}% à {{current_pct}}% par rapport à la période précédente ({{drop_pp}} points de pourcentage en moins).",
+      "cause": "Causes possibles : coûts d'achat en hausse, remises plus agressives, mix de ventes déplacé vers des produits à faible marge."
+    }
+  },
+  "actions": {
+    "refresh": "Actualiser les métriques",
+    "refreshing": "Actualisation…",
+    "refresh_success": "Métriques produits actualisées",
+    "refresh_error": "Échec de l'actualisation",
+    "view_product": "Ouvrir le produit",
+    "filter": "Filtrer",
+    "search_placeholder": "Rechercher un produit…",
+    "all_categories": "Toutes catégories",
+    "all_abc_classes": "Toutes classes ABC"
+  },
+  "empty": {
+    "title": "Aucune donnée produit",
+    "description": "Les données apparaîtront après avoir téléchargé des ventes avec une colonne SKU correspondant à vos produits, ou après qu'une commande confirmée sur votre storefront génère des enregistrements de vente.",
+    "cta_manage": "Gérer les produits",
+    "cta_refresh": "Forcer l'actualisation"
+  },
+  "banners": {
+    "no_cost_data_title": "Marges non calculables",
+    "no_cost_data_body": "Vous n'avez pas encore configuré le coût de vos produits. Ouvrez la fiche produit et utilisez la section « Coût du produit » pour saisir le coût unitaire ou lier des éléments d'Achats.",
+    "partial_coverage_title": "Marges partielles",
+    "partial_coverage_body": "Vous calculez la marge pour {{pct}}% de vos produits. Configurez le coût des restants pour une analyse complète."
+  },
+  "kpi": {
+    "totalRevenue": {
+      "title": "Chiffre d'affaires produits",
+      "def": "Somme des chiffres d'affaires générés par les produits vendus sur la période sélectionnée. Exclut les CA non liés à un produit spécifique.",
+      "calc": "Σ ventes × prix unitaire (sur tous les produits, dans la période).",
+      "read": "C'est le volume de vente de vos produits, pas le chiffre d'affaires total. Si le chiffre semble faible, vérifiez que vos ventes ont le SKU lié à un produit."
+    },
+    "totalCost": {
+      "title": "Coût produits (COGS)",
+      "def": "Coût total des produits vendus. Basé sur le « Coût du produit » configuré dans la fiche (manuel ou calculé depuis Achats).",
+      "calc": "Σ (coût unitaire × quantité vendue) pour chaque produit avec coût configuré.",
+      "read": "Le « vrai » coût de revient. Si N/D, vous n'avez pas encore configuré les coûts — ouvrez la fiche produit pour les définir."
+    },
+    "weightedMargin": {
+      "title": "Marge pondérée",
+      "def": "La marge % globale de vos produits, pondérée par le CA de chacun. Reflète la marge réelle du business.",
+      "calc": "(CA total − Coût total) ÷ CA total × 100",
+      "read": "Au-dessus de 30% : excellent pour la plupart des secteurs. 10%–30% : dans la norme. En-dessous de 10% : les produits pourraient ne pas couvrir les coûts indirects — révisez prix ou coûts."
+    },
+    "avgMargin": {
+      "title": "Marge moyenne par produit",
+      "def": "Moyenne simple de la marge % de vos produits. Chaque produit pèse également, quel que soit son volume de vente.",
+      "calc": "(Σ marge % par produit) ÷ nombre de produits avec données",
+      "read": "Si très différent de la Marge pondérée, votre mix produits est hétérogène. Comparez avec la marge pondérée pour voir si vos « stars » battent la moyenne ou non."
+    },
+    "activeProducts": {
+      "title": "Produits actifs",
+      "def": "Nombre de produits publiés ou disponibles dans le catalogue. Ne considère pas les ventes générées.",
+      "calc": "Comptage des produits avec is_active = true à la lecture.",
+      "read": "Le « périmètre » de votre catalogue. Comparez avec « Produits avec ventes » ci-dessous pour voir quelle part du catalogue travaille réellement."
+    },
+    "productsWithSales": {
+      "title": "Produits avec ventes",
+      "def": "Nombre de produits ayant généré au moins une vente sur la période sélectionnée.",
+      "calc": "Comptage des produits avec ≥1 enregistrement de vente dans la période.",
+      "read": "Si bien inférieur aux « Produits actifs », vous avez du stock mort : produits qui occupent l'espace catalogue sans produire de CA. Suspendez ou promouvez les inactifs."
+    },
+    "topSeller": {
+      "title": "Top vendeur",
+      "def": "Le produit ayant généré le plus de CA sur la période sélectionnée.",
+      "calc": "argmax(CA par produit) dans la période.",
+      "read": "Votre produit locomotive. Connaître le top vendeur aide à décider où investir en marketing, stocks et attention opérationnelle."
+    },
+    "mostProfitable": {
+      "title": "Plus rentable",
+      "def": "Le produit ayant généré le profit absolu le plus élevé (CA moins coût) sur la période sélectionnée.",
+      "calc": "argmax(CA − coût) par produit avec coût configuré.",
+      "read": "Pas forcément le top vendeur : un produit peut moins se vendre mais avec une marge si élevée qu'il génère plus de profit. Ce sont vos « champions de rentabilité »."
+    },
+    "costCoverage": {
+      "title": "Couverture données coût",
+      "def": "Pourcentage des produits avec ventes pour lesquels vous avez configuré un « Coût du produit » dans la fiche.",
+      "calc": "(Produits avec coût configuré ÷ Produits avec ventes) × 100",
+      "read": "100% : marges fiables à 100%. En-dessous de 70% : une partie des marges est estimée ou absente. Pour une analyse complète, finissez de configurer les coûts."
+    },
+    "top10Concentration": {
+      "title": "Concentration top 10",
+      "def": "Quelle part de votre CA provient des 10 produits les plus vendus.",
+      "calc": "(Σ CA top 10 produits ÷ CA total) × 100",
+      "read": "Au-dessus de 80% : forte dépendance à quelques top — si l'un baisse, le CA souffre. En-dessous de 40% : portefeuille bien réparti, plus résilient mais avec moins de levier commercial."
+    }
+  },
+  "abc": {
+    "title": "Distribution ABC",
+    "def": "Classe les produits selon leur contribution au CA. Application du principe de Pareto (80/20) à votre catalogue.",
+    "calc": "Triez les produits par CA décroissant, puis : A = top qui cumulent 80% du CA ; B = les suivants jusqu'à 95% ; C = les 5% restants.",
+    "read": "Classe A : produits sur lesquels concentrer attention, stocks et marketing. Classe B : produits utiles mais non critiques. Classe C : candidats à la réduction ou élimination sauf raisons stratégiques.",
+    "class_a": "Classe A (80% CA)",
+    "class_a_desc": "80% du CA",
+    "class_b": "Classe B (15% CA)",
+    "class_b_desc": "15% du CA",
+    "class_c": "Classe C (5% CA)",
+    "class_c_desc": "5% du CA",
+    "products_count": "{{count}} produits",
+    "products": "produits",
+    "avg_margin": "marge moyenne"
+  },
+  "categories": {
+    "title": "Top catégories",
+    "def": "Les catégories de produits qui génèrent le plus de CA dans la période.",
+    "calc": "Agrégé par Product.category, trié par CA décroissant.",
+    "read": "Montre où le business se concentre par famille de produits. Utile pour les décisions d'assortiment et marketing.",
+    "no_category": "Sans catégorie"
+  },
+  "table": {
+    "name": "Produit",
+    "sku": "SKU",
+    "category": "Catégorie",
+    "revenue": "Chiffre d'affaires",
+    "cost": "Coût",
+    "margin": "Marge %",
+    "margin_amount": "Profit",
+    "units": "Unités vendues",
+    "trend": "Tendance 30j",
+    "abc": "ABC",
+    "no_data": "Aucun produit avec données de vente",
+    "no_data_desc": "Les données apparaîtront après avoir téléchargé des ventes avec la colonne SKU liée aux produits créés dans Données de base.",
+    "load_more": "Afficher plus",
+    "manage_products": "Gérer les produits",
+    "margin_unavailable": "Les marges ne sont pas encore disponibles. Pour calculer les marges par produit, configurez le « Coût du produit » dans la fiche de vos produits."
+  },
+  "profile": {
+    "title": "Détail produit",
+    "performance_section": "Performance de la période",
+    "cost_breakdown_section": "Composition du coût",
+    "cost_breakdown_empty": "Coût du produit non encore configuré. Ouvrez-le dans la fiche pour le définir.",
+    "cost_unconfigured": "Coût non configuré",
+    "open_in_anagrafica": "Ouvrir dans la fiche",
+    "open_product_profile": "Ouvrir la fiche produit",
+    "open_events_list": "Voir tous les événements",
+    "open_course": "Ouvrir le cours"
+  },
+  "kpis": {
+    "active_products": "Produits actifs",
+    "products_with_sales": "Avec ventes",
+    "total_revenue": "CA total",
+    "weighted_margin": "Marge pondérée",
+    "avg_margin": "Marge moyenne",
+    "top_seller": "Top vendeur"
+  },
+  "cost": {
+    "coverage_label": "Couverture données coût",
+    "coverage_detail": "{{with_cost}} produits sur {{total}} avec coûts configurés",
+    "partial_coverage": "Les marges sont calculées uniquement pour {{pct}}% des produits. Configurez le coût des produits restants pour une analyse complète."
+  },
+  "filters": {
+    "all_categories": "Toutes les catégories",
+    "all_classes": "Toutes les classes"
+  }
+}

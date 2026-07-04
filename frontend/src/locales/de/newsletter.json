@@ -1,0 +1,106 @@
+{
+  "title": "Newsletter & Formulare",
+  "subtitle": "Erstelle Anmeldeformulare zum Einbetten auf jeder Website",
+  "refresh": "Aktualisieren",
+  "new_form": "Neues Formular",
+  "empty_title": "Keine Newsletter-Formulare",
+  "empty_subtitle": "Erstelle dein erstes Formular und bette es überall ein.",
+  "actions": {
+    "embed": "Einbetten",
+    "subscribers": "Abonnenten",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "create": "Formular erstellen",
+    "close": "Schließen",
+    "copy": "Kopieren",
+    "filter": "Filtern"
+  },
+  "badge": {
+    "inactive": "Inaktiv",
+    "no_origins": "Keine autorisierte Domain"
+  },
+  "list": {
+    "extra_fields": "{{count}} zusätzliche Felder",
+    "with_name": "+ Name",
+    "with_phone": "+ Telefon",
+    "origins": "{{count}} Domains"
+  },
+  "dialog": {
+    "new_title": "Neues Newsletter-Formular",
+    "edit_title": "Formular bearbeiten",
+    "name": "Name",
+    "name_ph": "Z. B. Newsletter abonnieren",
+    "collected_fields": "Erfasste Felder",
+    "email_always": "E-Mail",
+    "email_always_hint": "(immer erforderlich)",
+    "field_name": "Name",
+    "field_phone": "Telefon",
+    "require_consent": "Datenschutz-Einwilligung verlangen (empfohlen)",
+    "consent_text": "Einwilligungstext",
+    "consent_text_ph": "Ich stimme der Verarbeitung meiner Daten zum Erhalt von Mitteilungen zu.",
+    "success_message": "Erfolgsmeldung",
+    "success_message_ph": "Anmeldung abgeschlossen. Danke!",
+    "extra_fields_title": "Zusätzliche Felder",
+    "extra_fields_subtitle": "Neben E-Mail, Name und Telefon",
+    "allowed_origins": "Autorisierte Domains (eine pro Zeile)",
+    "allowed_origins_hint": "Nur diese Domains können Anmeldungen aus dem eingebetteten Formular senden (CORS-Sicherheit)."
+  },
+  "layout": {
+    "label": "Formular-Layout",
+    "vertical": "Vertikal",
+    "horizontal": "Horizontal",
+    "inline": "Inline"
+  },
+  "colors": {
+    "toggle": "Button-Farben anpassen",
+    "button": "Button-Farbe",
+    "button_text": "Button-Textfarbe"
+  },
+  "privacy": {
+    "label": "Datenschutz-Link",
+    "mode_none": "Kein Link",
+    "mode_store": "Datenschutz eines Stores verwenden",
+    "mode_custom": "Eigener Link",
+    "choose_store": "— Store wählen —",
+    "custom_ph": "https://www.meineseite.com/datenschutz",
+    "no_stores": "Du hast noch keinen Store. Erstelle zuerst einen Store (Bereich \"Meine Stores\") mit seiner Datenschutzrichtlinie, oder verwende einen eigenen Link.",
+    "checking": "Datenschutz wird geprüft…",
+    "published": "✓ Datenschutz veröffentlicht — wird im Formular verlinkt.",
+    "not_configured": "Datenschutz für diesen Store noch nicht konfiguriert.",
+    "create": "Datenschutz erstellen"
+  },
+  "preview": {
+    "title": "Vorschau",
+    "loading": "Vorschau wird geladen…",
+    "unavailable": "Vorschau nicht verfügbar."
+  },
+  "embed": {
+    "title": "Formular einbetten",
+    "desc": "Füge diesen Code auf deiner Website ein, wo das Formular erscheinen soll.",
+    "warning": "⚠️ Füge zuerst die autorisierten Domains hinzu (Bearbeiten), sonst blockiert der Browser den Versand."
+  },
+  "subs": {
+    "title": "Abonnenten — {{name}}",
+    "filter_label": "Nach Quelle filtern",
+    "filter_ph": "Z. B. blog-footer oder https://meineseite.com",
+    "empty": "Keine Anmeldungen.",
+    "from": "von {{source}}",
+    "status_subscribed": "Angemeldet",
+    "status_unsubscribed": "Abgemeldet"
+  },
+  "toast": {
+    "created": "Formular erstellt",
+    "updated": "Formular aktualisiert",
+    "save_error": "Fehler beim Speichern",
+    "name_required": "Gib einen Namen für das Formular ein",
+    "deleted": "Formular gelöscht",
+    "snippet_copied": "Snippet kopiert",
+    "copy_failed": "Kopieren fehlgeschlagen",
+    "error": "Fehler"
+  },
+  "confirm_delete": "Formular \"{{name}}\" löschen? Anmeldungen bleiben im CRM."
+}

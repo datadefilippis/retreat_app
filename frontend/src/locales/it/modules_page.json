@@ -1,0 +1,80 @@
+{
+  "page": {
+    "title": "Moduli",
+    "subtitle": "Attiva e gestisci i moduli di analisi"
+  },
+  "sections": {
+    "active_modules": "Moduli attivi",
+    "available_modules": "Moduli disponibili"
+  },
+  "status": {
+    "active": "Attivo",
+    "coming_soon": "In arrivo",
+    "available": "Disponibile"
+  },
+  "actions": {
+    "activate": "Attiva modulo",
+    "deactivate": "Disattiva",
+    "activating": "Attivazione...",
+    "open_module": "Apri modulo",
+    "view_dashboard": "Vai alla dashboard"
+  },
+  "confirm": {
+    "deactivate": "Disattivare {{name}}?\n\nLe sezioni del modulo non saranno più visibili nel menu. I dati non verranno cancellati.",
+    "deactivate_cashflow": "Attenzione: questo è il modulo fondazionale. La dashboard cashflow e la gestione dati non saranno più accessibili.",
+    "activate_commerce": "Attivando Commerce, verranno attivati anche: Catalogo Prodotti e Analisi Clienti.",
+    "activate_customers_light": "Attivando Analisi Clienti, verranno attivati anche i Segnali Commerciali.",
+    "proceed": "Procedere?"
+  },
+  "toast": {
+    "load_error": "Impossibile caricare i moduli",
+    "activated": "Modulo attivato!",
+    "activate_error": "Errore nell'attivazione del modulo",
+    "deactivated": "Modulo disattivato",
+    "deactivate_error": "Errore nella disattivazione del modulo"
+  },
+  "empty": {
+    "no_modules": "Nessun modulo disponibile"
+  },
+  "catalog": {
+    "cashflow_monitor": {
+      "name": "Cashflow Monitor",
+      "desc": "Monitora e analizza entrate e uscite giornaliere con insight basati su AI.",
+      "category": "Finanza",
+      "unlocks": "Sblocca: dashboard cashflow, gestione dati vendite/spese/acquisti, analytics AI"
+    },
+    "customers_light": {
+      "name": "Clienti Intelligence",
+      "desc": "Analisi clienti operativa: trend, rischio churn, segmentazione, priorità di follow-up.",
+      "category": "Intelligence",
+      "unlocks": "Sblocca: dashboard clienti dentro la sezione Clienti con metriche, filtri e triage"
+    },
+    "product_catalog": {
+      "name": "Catalogo Prodotti",
+      "desc": "Analytics prodotto: margini, copertura costi, analisi ABC, performance per categoria.",
+      "category": "Intelligence",
+      "unlocks": "Sblocca: analytics catalogo dentro la sezione Prodotti con margini e classificazione"
+    },
+    "commerce_signals": {
+      "name": "Segnali Commerciali",
+      "desc": "Segnali commerciali prioritizzati: riattivazione clienti, rischio concentrazione, conversione nuovi clienti.",
+      "category": "Intelligence",
+      "unlocks": "Sblocca: dashboard segnali commerciali con priorità di azione"
+    },
+    "revenue_forecasting": {
+      "name": "Previsione Ricavi",
+      "desc": "Previsioni di ricavo basate su AI, dati storici e trend di mercato.",
+      "category": "Finanza"
+    },
+    "expense_optimizer": {
+      "name": "Ottimizzatore Spese",
+      "desc": "Identifica opportunita di risparmio e ottimizza i pattern di spesa.",
+      "category": "Finanza"
+    },
+    "inventory_tracker": {
+      "name": "Gestione Magazzino",
+      "desc": "Monitora le scorte, prevedi carenze e ottimizza il riordino.",
+      "category": "Operazioni"
+    }
+  }
+}

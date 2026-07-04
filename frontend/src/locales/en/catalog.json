@@ -1,0 +1,245 @@
+{
+  "item_type": {
+    "physical": "Physical product",
+    "service": "Service",
+    "rental": "Rental",
+    "event_ticket": "Event/ticket",
+    "booking": "1:1 Booking",
+    "digital": "Digital product"
+  },
+  "item_type_short": {
+    "service": "Service",
+    "rental": "Rental",
+    "event_ticket": "Event",
+    "digital": "Digital"
+  },
+  "price_mode": {
+    "fixed": "Fixed price",
+    "inquiry": "On request"
+  },
+  "transaction_mode": {
+    "request": "On request",
+    "direct": "Direct",
+    "approval": "With approval"
+  },
+  "profile": {
+    "direct_sale": {
+      "label": "Direct sale",
+      "description": "Product or service with immediate payment",
+      "behavior": "Direct payment",
+      "runtime": "Customer pays directly. Order is confirmed after payment.",
+      "hint_unit_price": "Required for direct checkout"
+    },
+    "request_sale": {
+      "label": "Sale on request",
+      "description": "Customer requests, you confirm and manage payment",
+      "behavior": "Manual confirmation",
+      "runtime": "Customer sends a request. You review and confirm from the Orders page."
+    },
+    "quote": {
+      "label": "Quote / On request",
+      "description": "Customer asks for info, price is defined later",
+      "behavior": "Quote",
+      "runtime": "Customer asks for info without seeing a price. Manage the request from Orders and contact with a quote.",
+      "hint_unit_price": "Not required — price is on request"
+    },
+    "rental": {
+      "label": "Rental",
+      "description": "Customer requests a period, you verify availability",
+      "behavior": "Availability check",
+      "runtime": "Customer picks dates from catalog. Requests arrive in Orders where you can verify availability before confirming.",
+      "post_save": "When requests arrive, check dates in the Orders page and Calendar before confirming.",
+      "hint_unit_price": "Price per rental unit (day, hour, week)",
+      "hint_unit_label": "Rental unit: day, hour, week",
+      "hint_rental_unit": "How the rental period is measured",
+      "setup_cue_unit": "Set the rental unit (day, hour, week)",
+      "setup_cue_price": "Define the price per unit"
+    },
+    "open_event": {
+      "label": "Open event",
+      "description": "Unlimited seats event, direct purchase",
+      "behavior": "Direct payment",
+      "runtime": "Customer purchases directly. After saving, open the product to add event dates and locations.",
+      "post_save": "Add at least one event date from the \"Event dates\" section below.",
+      "hint_unit_price": "Base ticket price (can be overridden per date)",
+      "setup_cue_dates": "Add at least one event date",
+      "setup_cue_publish": "Publish dates to make them visible in the catalog",
+      "no_occurrences_warning": "No event dates — product is not yet bookable"
+    },
+    "capped_event": {
+      "label": "Limited capacity event",
+      "description": "Event with capacity, customer requests and you verify seats",
+      "behavior": "Seat verification",
+      "runtime": "Customer requests seats. After saving, set dates and max capacity from the \"Event dates\" section. Requests arrive in Orders.",
+      "post_save": "Add event dates and set capacity for each from the section below.",
+      "hint_unit_price": "Base ticket price (can be overridden per date)",
+      "setup_cue_dates": "Add event dates with max capacity",
+      "setup_cue_capacity": "Set capacity on each event date",
+      "setup_cue_publish": "Publish dates to make them visible in the catalog",
+      "no_occurrences_warning": "No event dates — product is not yet bookable"
+    }
+  },
+  "issue": {
+    "direct_inquiry": "Direct mode not compatible with on-request pricing",
+    "direct_no_price": "Price missing for direct checkout",
+    "rental_no_unit": "Rental unit not set",
+    "event_unpublished": "Event not published — not visible in catalog",
+    "no_price": "No price set"
+  },
+  "storefront": {
+    "request_header": "Request order",
+    "request_modal": "Request order",
+    "request_desc": "This is an order request. You will receive confirmation before finalization.",
+    "request_submit": "Send request",
+    "request_inquiry": "Request info",
+    "direct_header": "Order",
+    "direct_modal": "Send order",
+    "direct_desc": "Your order will be processed quickly. You will be contacted for details.",
+    "direct_submit": "Send order",
+    "approval_header": "Check availability",
+    "approval_modal": "Check availability",
+    "approval_desc": "This request will be verified. You will receive availability confirmation.",
+    "approval_submit": "Send request",
+    "rental_header": "Request rental",
+    "rental_modal": "Request rental",
+    "rental_desc": "Rental availability will be verified. You will receive confirmation."
+  },
+  "form": {
+    "offer_type": "Offer type",
+    "type": "Type",
+    "price_mode_label": "Price mode",
+    "unit_label": "Unit label",
+    "transaction_mode_label": "Transaction mode",
+    "advanced_show": "Advanced configuration",
+    "advanced_hide": "Hide advanced configuration",
+    "name_required": "Name is required",
+    "rental_unit_hint": "Recommended for the public catalog",
+    "deactivate": "Deactivate",
+    "all_stores": "All stores",
+    "select_specific_stores": "Select specific stores",
+    "stock_quantity": "Stock quantity"
+  },
+  "image": {
+    "upload": "Upload image",
+    "replace": "Replace image",
+    "uploaded_toast": "Image uploaded",
+    "error_toast": "Upload error",
+    "max_hint": "Max 5MB, JPG/PNG/WebP"
+  },
+  "booking_section": {
+    "title": "Booking",
+    "duration_label": "Session duration (minutes)",
+    "default_duration": "Default (from rules)",
+    "duration_15": "15 minutes",
+    "duration_30": "30 minutes",
+    "duration_45": "45 minutes",
+    "duration_60": "60 minutes",
+    "duration_90": "90 minutes",
+    "duration_120": "120 minutes",
+    "duration_label_field": "Duration label"
+  },
+  "dialog": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Create"
+  },
+  "summary": {
+    "products_one": "{{count}} product",
+    "products_other": "{{count}} products",
+    "online": "online",
+    "needs_setup": "needs setup",
+    "storefront_errors": "storefront issues",
+    "visible_one": "{{count}} visible",
+    "visible_other": "{{count}} visible"
+  },
+  "triage": {
+    "banner_storefront_errors": "Published products with errors"
+  },
+  "ai_enrich": {
+    "btn": "Improve with AI",
+    "applied": "Description and category improved",
+    "error": "AI improvement error"
+  },
+  "completion": {
+    "title": "{{count}} products to complete",
+    "hint": "Add the price and publish",
+    "publish_btn": "Publish",
+    "published": "{{name}} published",
+    "publish_error": "Error publishing",
+    "price_error": "Error saving price",
+    "publish_all_btn": "Publish all completed",
+    "publish_all_confirm": "Publish {{count}} products?",
+    "published_all": "{{count}} products published",
+    "no_publishable": "Complete prices before publishing",
+    "back_to_setup": "Back to setup"
+  },
+  "ai_products": {
+    "title": "Generate products with AI",
+    "desc": "Describe what you sell or offer and we will generate suggestions for your catalog.",
+    "placeholder": "E.g.: Artisan bakery with fresh bread, pastries, tasting boxes and home delivery...",
+    "generate_btn": "Generate suggestions",
+    "generating": "Generating...",
+    "preview_title": "Suggested products",
+    "apply_btn": "Create as draft",
+    "regenerate_btn": "Regenerate",
+    "skip_btn": "Cancel",
+    "created": "{{count}} products created as draft",
+    "error": "Generation error. Please try again.",
+    "create_error": "Error creating products.",
+    "manual_hint": "You can also add products manually",
+    "clear_desc": "Clear description"
+  },
+  "family": {
+    "instant": "Instant purchase",
+    "manual": "Manual confirmation",
+    "dialogue": "Quote / Dialogue"
+  },
+  "service_section": {
+    "title": "Service details",
+    "duration": "Indicative duration",
+    "duration_placeholder": "e.g. 60 min, half day",
+    "notes": "Service notes",
+    "notes_placeholder": "e.g. By appointment"
+  },
+  "rental_section": {
+    "title": "Rental details",
+    "unit": "Rental unit",
+    "unit_field_label": "Rental unit",
+    "unit_select": "— Select —",
+    "unit_hour": "Hour",
+    "unit_day": "Day",
+    "unit_week": "Week",
+    "unit_month": "Month",
+    "notes": "Rental notes",
+    "notes_placeholder": "e.g. Deposit required"
+  },
+  "occurrence_section": {
+    "title": "Event dates",
+    "subtitle": "Manage dates and locations for this event",
+    "add_new": "+ New",
+    "empty": "No occurrences. Add dates for this event.",
+    "seats": "seats",
+    "info_create_first": "After creating the product, you can add dates (occurrences) from the edit view.",
+    "form_start": "Start",
+    "form_end": "End",
+    "form_location": "Location",
+    "form_location_placeholder": "e.g. Main hall",
+    "form_capacity": "Capacity",
+    "form_price_override": "Price override",
+    "form_create": "Create",
+    "form_cancel": "Cancel",
+    "toast_created": "Occurrence created",
+    "toast_create_error": "Error creating occurrence",
+    "toast_status_error": "Error updating status"
+  },
+  "occurrence_status": {
+    "draft": "Draft",
+    "published": "Published",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
+  },
+  "publish": {
+    "online": "● Online",
+    "offline": "○ Offline"
+  }
+}

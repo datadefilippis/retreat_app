@@ -1,0 +1,57 @@
+{
+  "page": {
+    "title": "Alerts",
+    "subtitle": "Monitor and manage detected anomalies"
+  },
+  "actions": {
+    "run_analysis": "Run Analysis",
+    "run_analysis_short": "Analyze",
+    "analyzing": "Analyzing...",
+    "analyzing_short": "Analyzing...",
+    "acknowledge": "Acknowledge",
+    "resolve": "Resolve",
+    "suggestion": "Suggested action"
+  },
+  "severity": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "status": {
+    "new": "New",
+    "acknowledged": "Acknowledged",
+    "resolved": "Resolved"
+  },
+  "summary": {
+    "total": "Total",
+    "new": "New",
+    "acknowledged": "Acknowledged",
+    "resolved": "Resolved"
+  },
+  "filters": {
+    "all_statuses": "All statuses",
+    "new": "New",
+    "acknowledged": "Acknowledged",
+    "resolved": "Resolved",
+    "all_severities": "All severities",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "all_categories": "All categories",
+    "category_a": "Liquidity",
+    "category_b": "Profitability",
+    "category_c": "Cash cycle",
+    "category_d": "Patterns",
+    "category_e": "Dependencies"
+  },
+  "empty": {
+    "title": "No anomalies found",
+    "filtered_desc": "Try changing the filters",
+    "clean_desc": "Your data looks normal!"
+  },
+  "toast": {
+    "load_error": "Error loading anomalies",
+    "update_error": "Error updating status",
+    "generate_error": "Error generating anomalies"
+  }
+}

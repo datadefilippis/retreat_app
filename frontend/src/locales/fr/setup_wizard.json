@@ -1,0 +1,127 @@
+{
+  "widget": {
+    "title": "Configuration AFianco",
+    "progress_label": "{{done}} sur {{total}} effectués",
+    "next_label": "Suivant :",
+    "remaining_count_one": "{{count}} restant",
+    "remaining_count_other": "{{count}} restants",
+    "remaining_count": "{{count}} restants",
+    "expand": "Afficher les détails",
+    "collapse": "Masquer les détails",
+    "refresh": "Actualiser",
+    "optional": "Recommandé",
+    "status_done": "Terminé",
+    "status_pending": "À faire",
+    "complete_title": "Configuration terminée 🎉",
+    "complete_subtitle": "Tout est prêt. Vous pouvez retirer ce widget du tableau de bord.",
+    "empty_title": "Rien à configurer pour le moment.",
+    "error_title": "Impossible de charger la configuration",
+    "error_generic": "Réessayez dans quelques secondes.",
+    "retry": "Réessayer",
+    "remove_widget": "Retirer du tableau de bord"
+  },
+  "plans": {
+    "free": "Free",
+    "starter": "Solo",
+    "core": "Commerce Starter",
+    "pro": "Commerce Pro",
+    "enterprise": "Custom",
+    "unknown": "Standard"
+  },
+  "sections": {
+    "global": {
+      "title": "Configuration générale"
+    },
+    "cashflow_monitor": {
+      "title": "Cashflow Monitor",
+      "description": "Surveillez les revenus, les dépenses et la trésorerie."
+    },
+    "commerce": {
+      "title": "Boutique & Ventes",
+      "description": "Vendez en ligne : produits, commandes, Stripe et livraison."
+    },
+    "customers_light": {
+      "title": "Customers Light",
+      "description": "Identifiez vos meilleurs clients."
+    },
+    "ai_assistant": {
+      "title": "AI Assistant",
+      "description": "Demandez des insights et recevez des résumés périodiques."
+    }
+  },
+  "steps": {
+    "global": {
+      "verify_email": {
+        "title": "Vérifiez votre adresse email",
+        "body": "Confirmez votre email pour débloquer toutes les fonctionnalités d'AFianco."
+      },
+      "brand_identity": {
+        "title": "Personnalisez votre marque",
+        "body": "Importez un logo et choisissez les couleurs de votre boutique.",
+        "hint": "2 minutes suffisent et l'expérience client s'améliore immédiatement."
+      }
+    },
+    "cashflow_monitor": {
+      "upload_first_data": {
+        "title": "Importez vos premières données de trésorerie",
+        "body": "Visualisez immédiatement les KPI personnalisés sur votre activité.",
+        "hint": "Commencez par les ventes : c'est le tableau le plus simple. Vous pouvez aussi importer un CSV/Excel."
+      },
+      "first_alert": {
+        "title": "Configurez votre première alerte email",
+        "body": "Recevez une notification lorsqu'un KPI dépasse un seuil."
+      }
+    },
+    "commerce": {
+      "identity": {
+        "title": "Définissez l'identité de votre boutique",
+        "body": "Le nom et l'email de contact sont visibles par vos clients."
+      },
+      "first_product": {
+        "title": "Créez votre premier produit",
+        "body": "Configurez un produit prêt à la vente.",
+        "hint": "Renseignez le prix, la description et une photo pour le mettre en ligne tout de suite."
+      },
+      "email_sender": {
+        "title": "Configurez l'expéditeur des emails",
+        "body": "Le nom et l'adresse depuis lesquels partent les emails à vos clients."
+      },
+      "stripe_connect": {
+        "title": "Connectez Stripe pour les paiements",
+        "body": "Nécessaire pour recevoir les paiements directs des clients."
+      },
+      "publish_storefront": {
+        "title": "Publiez votre boutique",
+        "body": "Rendez votre boutique publiquement visible et accessible."
+      },
+      "first_order": {
+        "title": "Recevez votre première commande",
+        "body": "Vous avez trois façons de gérer les commandes : choisissez la vôtre.",
+        "hint": "Saisie manuelle (sans paiement), import CSV, ou commandes automatiques via Stripe."
+      }
+    },
+    "ai_assistant": {
+      "first_chat": {
+        "title": "Essayez le chat IA",
+        "body": "Posez une question à votre assistant pour découvrir ses capacités."
+      }
+    }
+  },
+  "ctas": {
+    "verify_email_now": "Vérifier maintenant",
+    "go_to_settings": "Aller aux paramètres",
+    "manual_entry": "Saisir manuellement",
+    "import_csv": "Importer un CSV",
+    "configure_alert": "Configurer l'alerte",
+    "fill_identity": "Remplir l'identité",
+    "create_product_manually": "Créer un produit",
+    "import_products_csv": "Importer la liste CSV",
+    "configure_email": "Configurer l'email",
+    "connect_stripe": "Connecter Stripe",
+    "publish_now": "Publier maintenant",
+    "create_manual_order": "Créer une commande manuelle",
+    "import_orders_csv": "Importer un CSV de commandes",
+    "configure_stripe_auto": "Configurer Stripe auto",
+    "try_ai_chat": "Ouvrir le chat IA"
+  }
+}

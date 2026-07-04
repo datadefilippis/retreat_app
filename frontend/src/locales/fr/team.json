@@ -1,0 +1,78 @@
+{
+  "page": {
+    "title": "Equipe",
+    "subtitle": "Gerez les membres de votre organisation"
+  },
+  "invite": {
+    "button": "Inviter un membre",
+    "dialog_title": "Inviter un nouveau membre",
+    "dialog_desc": "Un compte sera cree avec un mot de passe temporaire que vous devrez partager avec le nouveau membre.",
+    "name": "Nom",
+    "name_placeholder": "Jean Dupont",
+    "email": "E-mail",
+    "email_placeholder": "jean@entreprise.fr",
+    "role": "Role",
+    "submit": "Creer le compte et afficher le mot de passe",
+    "submitting": "Creation du compte..."
+  },
+  "members": {
+    "card_title": "Membres de l'equipe",
+    "count_one": "{{count}} membre dans l'organisation",
+    "count_other": "{{count}} membres dans l'organisation",
+    "col_member": "Membre",
+    "col_role": "Role",
+    "col_added": "Ajoute le",
+    "col_status": "Statut",
+    "col_actions": "Actions",
+    "you_badge": "Vous"
+  },
+  "roles": {
+    "admin": "Admin",
+    "user": "Utilisateur",
+    "user_analyst": "Utilisateur / Analyste"
+  },
+  "status": {
+    "active": "Actif",
+    "inactive": "Inactif"
+  },
+  "actions": {
+    "reactivate": "Reactiver"
+  },
+  "permissions": {
+    "card_title": "Permissions par role",
+    "admin_title": "Admin",
+    "admin_p1": "Gere les membres de l'equipe",
+    "admin_p2": "Charge et supprime les jeux de donnees",
+    "admin_p3": "Active et configure les modules",
+    "admin_p4": "Met a jour les parametres de l'organisation",
+    "admin_p5": "Accede au tableau de bord, alertes et analyses IA",
+    "user_title": "Utilisateur / Analyste",
+    "user_p1": "Consulte le tableau de bord et les KPIs",
+    "user_p2": "Lit les alertes et anomalies",
+    "user_p3": "Consulte les analyses IA",
+    "user_p4": "Charge des jeux de donnees (si autorise par l'admin)"
+  },
+  "remove": {
+    "dialog_title": "Retirer le membre",
+    "dialog_desc": "Vous etes sur le point de desactiver le compte de {{name}}. Cette personne ne pourra plus acceder a la plateforme. Vous pourrez le reactiver plus tard.",
+    "cancel": "Annuler",
+    "confirm": "Oui, retirer"
+  },
+  "created": {
+    "dialog_title": "Compte cree",
+    "dialog_desc": "Le compte de {{name}} a ete cree. Partagez le mot de passe temporaire ci-dessous — il ne sera affiche qu'une seule fois.",
+    "temp_password": "Mot de passe temporaire",
+    "hint": "Le membre devra le changer lors de sa premiere connexion. Il n'est pas stocke en clair.",
+    "confirm": "J'ai copie le mot de passe"
+  },
+  "toast": {
+    "load_error": "Impossible de charger l'equipe",
+    "invite_error": "Erreur lors de l'invitation",
+    "role_updated": "Role mis a jour",
+    "role_error": "Erreur de mise a jour du role",
+    "member_removed": "Membre retire",
+    "remove_error": "Erreur lors du retrait",
+    "member_reactivated": "Membre reactive",
+    "reactivate_error": "Erreur de reactivation"
+  }
+}

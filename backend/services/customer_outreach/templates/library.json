@@ -1,0 +1,153 @@
+{
+  "at_risk_followup": {
+    "it": {
+      "subject": "Ciao {customer_name}, ci sei mancato/a",
+      "body": "Ciao {customer_name},\n\nho notato che non ci sentiamo da un po' e volevo solo controllare che tutto fosse a posto. Se posso esserti d'aiuto, fammi sapere.\n\nA presto,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "Hi {customer_name}, we have missed you",
+      "body": "Hi {customer_name},\n\nI noticed it has been a while since we last connected and just wanted to check in. If there is anything I can help with, let me know.\n\nTalk soon,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Hallo {customer_name}, wir haben dich vermisst",
+      "body": "Hallo {customer_name},\n\nmir ist aufgefallen, dass wir uns eine Weile nicht mehr ausgetauscht haben — ich wollte nur kurz nachfragen, ob bei dir alles in Ordnung ist. Lass es mich wissen, falls ich helfen kann.\n\nViele Grüsse,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Bonjour {customer_name}, vous nous avez manqué",
+      "body": "Bonjour {customer_name},\n\nje me suis aperçu(e) que nous n'avions pas échangé depuis un moment et je voulais simplement prendre de vos nouvelles. Si je peux vous être utile, faites-moi signe.\n\nÀ bientôt,\n{merchant_name}"
+    }
+  },
+
+  "new_welcome": {
+    "it": {
+      "subject": "Benvenuto/a {customer_name}!",
+      "body": "Ciao {customer_name},\n\ngrazie per la tua scelta — è un piacere averti tra i miei clienti. Se hai domande o vuoi consigli su cosa fare dopo, scrivimi pure.\n\nA presto,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "Welcome {customer_name}!",
+      "body": "Hi {customer_name},\n\nthanks for choosing me — it is a pleasure to have you on board. If you have questions or would like a tip on what to do next, just reply to this message.\n\nTalk soon,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Willkommen {customer_name}!",
+      "body": "Hallo {customer_name},\n\nvielen Dank für dein Vertrauen — schön, dass du da bist. Wenn du Fragen hast oder wissen möchtest, wie es am besten weitergeht, melde dich einfach.\n\nViele Grüsse,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Bienvenue {customer_name} !",
+      "body": "Bonjour {customer_name},\n\nmerci pour votre confiance — c'est un plaisir de vous compter parmi mes clients. Si vous avez des questions ou souhaitez un conseil sur la suite, n'hésitez pas à répondre à ce message.\n\nÀ bientôt,\n{merchant_name}"
+    }
+  },
+
+  "top_personal_note": {
+    "it": {
+      "subject": "Grazie {customer_name}",
+      "body": "Ciao {customer_name},\n\nvolevo solo dirti grazie. Sei tra i clienti che mi accompagnano da più tempo e vederti tornare ogni volta significa molto. Se posso fare qualcosa di speciale per te, dimmelo.\n\nUn saluto,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "Thank you {customer_name}",
+      "body": "Hi {customer_name},\n\nI just wanted to say thank you. You are one of the customers who has been with me the longest and seeing you come back means a lot. If there is anything special I can do for you, please let me know.\n\nBest,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Danke {customer_name}",
+      "body": "Hallo {customer_name},\n\nich wollte einfach Danke sagen. Du gehörst zu den Kunden, die mich am längsten begleiten, und es bedeutet mir viel, dass du immer wieder zurückkommst. Wenn ich etwas Besonderes für dich tun kann, sag Bescheid.\n\nViele Grüsse,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Merci {customer_name}",
+      "body": "Bonjour {customer_name},\n\nje voulais simplement vous remercier. Vous êtes l'un(e) des clients qui m'accompagnent depuis le plus longtemps et vous voir revenir compte beaucoup pour moi. Si je peux faire quelque chose de spécial pour vous, faites-le moi savoir.\n\nCordialement,\n{merchant_name}"
+    }
+  },
+
+  "promo_mid_season": {
+    "it": {
+      "subject": "Una proposta per te, {customer_name}",
+      "body": "Ciao {customer_name},\n\nho un'offerta che pensavo potesse interessarti. Rispondimi se vuoi i dettagli.\n\nA presto,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "A quick offer for you, {customer_name}",
+      "body": "Hi {customer_name},\n\nI have an offer I thought you might like. Reply to this message if you would like the details.\n\nTalk soon,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Ein kurzes Angebot für dich, {customer_name}",
+      "body": "Hallo {customer_name},\n\nich habe ein Angebot, das dich interessieren könnte. Schreib mir, wenn du Details möchtest.\n\nViele Grüsse,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Une proposition pour vous, {customer_name}",
+      "body": "Bonjour {customer_name},\n\nj'ai une offre qui pourrait vous intéresser. Répondez-moi si vous souhaitez les détails.\n\nÀ bientôt,\n{merchant_name}"
+    }
+  },
+
+  "appointment_reminder": {
+    "it": {
+      "subject": "Promemoria appuntamento — {customer_name}",
+      "body": "Ciao {customer_name},\n\nti ricordo il nostro appuntamento. Se hai bisogno di spostarlo, fammi sapere appena puoi.\n\nA presto,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "Appointment reminder — {customer_name}",
+      "body": "Hi {customer_name},\n\nthis is a quick reminder of our appointment. If you need to reschedule, let me know as soon as you can.\n\nTalk soon,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Termin-Erinnerung — {customer_name}",
+      "body": "Hallo {customer_name},\n\nkurze Erinnerung an unseren Termin. Falls du verschieben musst, melde dich so bald wie möglich.\n\nViele Grüsse,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Rappel de rendez-vous — {customer_name}",
+      "body": "Bonjour {customer_name},\n\npetit rappel de notre rendez-vous. Si vous devez le déplacer, dites-le moi dès que possible.\n\nÀ bientôt,\n{merchant_name}"
+    }
+  },
+
+  "feedback_request": {
+    "it": {
+      "subject": "Una domanda veloce, {customer_name}",
+      "body": "Ciao {customer_name},\n\nposso chiederti un breve feedback su com'è andato il nostro ultimo lavoro insieme? Anche solo due righe mi aiutano davvero a migliorare.\n\nGrazie,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "A quick question, {customer_name}",
+      "body": "Hi {customer_name},\n\ncould I ask for a quick bit of feedback on our last session/order? Even two lines really help me improve.\n\nThanks,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Eine kurze Frage, {customer_name}",
+      "body": "Hallo {customer_name},\n\ndarf ich dich um ein kurzes Feedback zu unserer letzten Zusammenarbeit bitten? Auch nur zwei Zeilen helfen mir wirklich.\n\nDanke,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Une question rapide, {customer_name}",
+      "body": "Bonjour {customer_name},\n\npourrais-je vous demander un retour rapide sur notre dernière collaboration ? Même deux lignes m'aident vraiment à m'améliorer.\n\nMerci,\n{merchant_name}"
+    }
+  },
+
+  "thank_you_purchase": {
+    "it": {
+      "subject": "Grazie per il tuo acquisto!",
+      "body": "Ciao {customer_name},\n\ngrazie per l'acquisto — ti sono davvero riconoscente. Se hai domande o ti serve aiuto, scrivimi pure.\n\nA presto,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "Thanks for your purchase!",
+      "body": "Hi {customer_name},\n\nthank you for your purchase — I really appreciate it. If you have any questions or need help, just reply.\n\nTalk soon,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Danke für deinen Einkauf!",
+      "body": "Hallo {customer_name},\n\nvielen Dank für deinen Einkauf — das bedeutet mir viel. Wenn du Fragen hast oder Hilfe brauchst, schreib mir einfach.\n\nViele Grüsse,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Merci pour votre achat !",
+      "body": "Bonjour {customer_name},\n\nmerci pour votre achat — cela compte beaucoup pour moi. Si vous avez des questions ou besoin d'aide, répondez-moi simplement.\n\nÀ bientôt,\n{merchant_name}"
+    }
+  },
+
+  "general_check_in": {
+    "it": {
+      "subject": "Ciao {customer_name}, come va?",
+      "body": "Ciao {customer_name},\n\nci sentiamo dopo un po' — solo per chiederti come va. Quando hai voglia, scrivimi due righe.\n\nA presto,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "Hi {customer_name}, how's it going?",
+      "body": "Hi {customer_name},\n\nlong time no chat — just wanted to say hi and see how things are. Whenever you have a minute, drop me a line.\n\nTalk soon,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Hallo {customer_name}, wie geht's?",
+      "body": "Hallo {customer_name},\n\nlange nicht gehört — wollte mich einfach kurz melden und fragen, wie es dir geht. Wenn du Zeit hast, schreib mir ein paar Zeilen.\n\nViele Grüsse,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Bonjour {customer_name}, comment ça va ?",
+      "body": "Bonjour {customer_name},\n\nça fait un moment — je voulais simplement prendre de vos nouvelles. Quand vous avez un instant, écrivez-moi quelques lignes.\n\nÀ bientôt,\n{merchant_name}"
+    }
+  }
+}

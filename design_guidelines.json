@@ -1,0 +1,138 @@
+{
+  "project_name": "AFianco",
+  "design_philosophy": {
+    "identity": "E1: The Anti-AI Designer",
+    "core_principles": [
+      "Fusion over Imitation: Swiss Print Design x Wall Street Terminal",
+      "Emotion First: Trust, Precision, Alertness",
+      "Content is King: Data is the hero, UI is the frame",
+      "Contrast: High-contrast borders over soft shadows",
+      "Negative Space: Density for data, breath for navigation"
+    ],
+    "anti_patterns": [
+      "No 'Inter' for Headings",
+      "No centered layouts for main content",
+      "No generic 'smooth' gradients - use noise or solid blocks",
+      "No soft, muddy shadows - use hard 1px borders"
+    ]
+  },
+  "typography": {
+    "font_family_heading": "Manrope",
+    "font_family_body": "Public Sans",
+    "font_family_code": "JetBrains Mono",
+    "import_instruction": "Add to index.css: @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;700;800&family=Public+Sans:wght@300;400;500;600&display=swap');",
+    "usage_rules": {
+      "headings": "font-heading font-bold tracking-tight text-primary",
+      "body": "font-body text-base leading-relaxed text-muted-foreground",
+      "data_tables": "font-code text-sm tracking-wide",
+      "kpi_numbers": "font-heading font-extrabold tracking-tighter"
+    }
+  },
+  "colors": {
+    "theme": "light",
+    "palette_name": "Archetype 4: Swiss & High-Contrast (Financial Variant)",
+    "tailwind_config_extension": {
+      "colors": {
+        "border": "hsl(214, 32%, 91%)",
+        "input": "hsl(214, 32%, 91%)",
+        "ring": "hsl(222, 47%, 11%)",
+        "background": "hsl(0, 0%, 100%)",
+        "foreground": "hsl(222, 47%, 11%)",
+        "primary": {
+          "DEFAULT": "hsl(222, 47%, 11%)",
+          "foreground": "hsl(210, 40%, 98%)"
+        },
+        "secondary": {
+          "DEFAULT": "hsl(210, 40%, 96.1%)",
+          "foreground": "hsl(222, 47%, 11%)"
+        },
+        "destructive": {
+          "DEFAULT": "hsl(0, 84%, 60%)",
+          "foreground": "hsl(210, 40%, 98%)"
+        },
+        "muted": {
+          "DEFAULT": "hsl(210, 40%, 96.1%)",
+          "foreground": "hsl(215, 16%, 47%)"
+        },
+        "accent": {
+          "DEFAULT": "hsl(210, 40%, 96.1%)",
+          "foreground": "hsl(222, 47%, 11%)"
+        },
+        "popover": {
+          "DEFAULT": "hsl(0, 0%, 100%)",
+          "foreground": "hsl(222, 47%, 11%)"
+        },
+        "card": {
+          "DEFAULT": "hsl(0, 0%, 100%)",
+          "foreground": "hsl(222, 47%, 11%)"
+        }
+      }
+    },
+    "chart_colors": {
+      "sales": "#0F172A",
+      "expenses": "#EF4444",
+      "net_flow": "#22C55E",
+      "projection": "#94A3B8"
+    }
+  },
+  "visual_enhancers": {
+    "surface_strategy": "The 'Grid Borders' (Technical Look)",
+    "borders": "1px solid border-border (No soft shadows)",
+    "texture": "Subtle noise overlay on the sidebar or specific hero sections to kill digital flatness",
+    "glassmorphism": "Only for sticky headers: bg-white/80 backdrop-blur-md border-b border-black/5"
+  },
+  "grids": {
+    "dashboard_layout": "Bento Grid Mode B (High Density)",
+    "marketing_layout": "Bento Grid Mode A (Tetris)",
+    "spacing_scale": "Generous: p-6 or p-8 for cards, gap-6 for grids"
+  },
+  "components": {
+    "buttons": {
+      "style": "Sharp edges or minimal rounded-md (max 4px). No pills.",
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-none border border-transparent",
+      "secondary": "bg-white text-secondary-foreground border border-input hover:bg-accent hover:text-accent-foreground"
+    },
+    "cards": {
+      "style": "Flat, 1px border, no shadow by default. Hover: border-primary/50 transition-colors duration-300",
+      "padding": "p-6"
+    },
+    "inputs": {
+      "style": "bg-white border-input focus:ring-2 focus:ring-ring focus:border-transparent rounded-md h-11"
+    }
+  },
+  "layout_structure": {
+    "sidebar": "Fixed left, w-64, border-r border-border bg-muted/30",
+    "header": "Sticky top, h-16, border-b border-border bg-white/80 backdrop-blur",
+    "main_content": "max-w-7xl mx-auto p-8"
+  },
+  "media": {
+    "image_urls": {
+      "hero_mockup": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "login_background": "https://images.unsplash.com/photo-1762279389020-eeeb69c25813?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "empty_state": "https://images.unsplash.com/photo-1592495989226-03f88104f8cc?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "team_section": "https://images.unsplash.com/photo-1758518725921-1eb74ed293be?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "feature_analytics": "https://images.unsplash.com/photo-1771012788703-d310cdf189bb?crop=entropy&cs=srgb&fm=jpg&q=85"
+    },
+    "icon_library": "lucide-react (Default), Phosphor Icons (for Dashboard if needed)"
+  },
+  "motion": {
+    "page_transition": "opacity-0 to opacity-100 duration-300 ease-in-out",
+    "hover_effects": "translate-y-[-2px] transition-transform duration-200",
+    "charts": "Recharts with animationActive={true} animationDuration={1000}"
+  },
+  "instructions_to_main_agent": [
+    "INSTALL: yarn add @phosphor-icons/react recharts clsx tailwind-merge framer-motion sonner",
+    "CONFIG: Update tailwind.config.js to use the 'Swiss' color palette provided above.",
+    "FONTS: Add the Google Fonts import to index.css immediately.",
+    "LAYOUT: Do not use a centered container for the app. Use a full-width layout with a max-w-screen-2xl wrapper for content.",
+    "COMPONENTS: Customize Shadcn UI components to remove heavy radii. Set --radius: 0.25rem in CSS variables.",
+    "NAVIGATION: Create a 'Module Switcher' in the sidebar (like a workspace switcher) to handle the 'Cashflow Monitor' activation.",
+    "CHARTS: Use Recharts. Style them minimally. No grid lines (or very subtle). Axis lines should be muted.",
+    "AI EXPLANATION: Use a 'Sheet' (Slide-over) or a dedicated 'Insights' card for GPT-4o outputs. Do not hide it in a tooltip."
+  ],
+  "accessibility": {
+    "contrast_check": "Ensure text-muted-foreground has at least 4.5:1 contrast against background.",
+    "focus_states": "ring-2 ring-offset-2 ring-primary",
+    "testing": "Add data-testid to all interactive elements."
+  }
+}

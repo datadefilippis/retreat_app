@@ -1,0 +1,23 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Ueberwachen Sie die Leistung Ihres Unternehmens",
+  "toast": {
+    "save_error": "Fehler beim Speichern der Einstellungen",
+    "widget_removed": "Widget vom Dashboard entfernt"
+  },
+  "date_range": {
+    "from": "Von",
+    "to": "Bis"
+  },
+  "empty": {
+    "no_modules_title": "Aktivieren Sie ein Modul, um zu beginnen",
+    "no_modules_desc": "Module fuegen KPIs, Diagramme und Analysen hinzu. Waehlen Sie das erste aus der Bibliothek.",
+    "go_to_modules": "Zu den Modulen",
+    "no_data_title": "Laden Sie Ihre Daten hoch",
+    "no_data_desc": "Sie haben {{count}} Modul(e) aktiviert. Laden Sie Daten hoch, um KPIs und Diagramme zu sehen.",
+    "upload_data": "{{label}}-Daten hochladen",
+    "no_widgets_title": "Dashboard anpassen",
+    "no_widgets_desc": "Ihr Dashboard ist leer. Fuegen Sie Diagramme und KPIs ueber den Pin-Button hinzu.",
+    "go_to_module": "Zu {{label}}"
+  }
+}

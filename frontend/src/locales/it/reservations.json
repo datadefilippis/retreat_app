@@ -1,0 +1,53 @@
+{
+  "dashboard": {
+    "title": "Affitti",
+    "subtitle": "Affitti a periodo e a slot emessi per i tuoi clienti.",
+    "empty": "Nessun affitto emesso ancora.",
+    "empty_cta": "Crea un prodotto affittabile",
+    "loading": "Caricamento affitti…",
+    "error": "Impossibile caricare gli affitti.",
+    "retry": "Riprova",
+    "load_more": "Carica altri"
+  },
+  "filters": {
+    "status_all": "Tutti gli stati",
+    "status_active": "Attivi",
+    "status_cancelled": "Annullati",
+    "flavor_all": "Tutti i tipi",
+    "flavor_range": "A periodo",
+    "flavor_slot": "A slot",
+    "date_from": "Dal",
+    "date_to": "Al",
+    "search_placeholder": "Cerca codice, cliente, prodotto…",
+    "clear": "Reimposta"
+  },
+  "columns": {
+    "code": "Codice",
+    "product": "Prodotto",
+    "customer": "Cliente",
+    "type": "Tipo",
+    "when": "Quando",
+    "status": "Stato",
+    "actions": "Azioni"
+  },
+  "status": {
+    "active": "Attivo",
+    "cancelled": "Annullato"
+  },
+  "flavor": {
+    "range": "A periodo",
+    "slot": "A slot"
+  },
+  "actions": {
+    "copy_code": "Copia codice",
+    "open_landing": "Apri landing",
+    "resend": "Rinvia email",
+    "open_order": "Apri ordine",
+    "download_ics": "Scarica ICS"
+  },
+  "resend": {
+    "success": "Email rinviata al cliente.",
+    "error": "Rinvio fallito. Riprova.",
+    "cancelled_not_allowed": "Affitto annullato — rinvio non disponibile."
+  }
+}

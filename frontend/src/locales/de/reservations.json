@@ -1,0 +1,53 @@
+{
+  "dashboard": {
+    "title": "Mieten",
+    "subtitle": "Zeitraum- und Slot-Mieten für Ihre Kunden.",
+    "empty": "Noch keine Mieten ausgestellt.",
+    "empty_cta": "Ein vermietbares Produkt erstellen",
+    "loading": "Mieten werden geladen…",
+    "error": "Mieten konnten nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "load_more": "Mehr laden"
+  },
+  "filters": {
+    "status_all": "Alle Status",
+    "status_active": "Aktiv",
+    "status_cancelled": "Storniert",
+    "flavor_all": "Alle Typen",
+    "flavor_range": "Nach Zeitraum",
+    "flavor_slot": "Nach Slot",
+    "date_from": "Von",
+    "date_to": "Bis",
+    "search_placeholder": "Code, Kunde, Produkt suchen…",
+    "clear": "Zurücksetzen"
+  },
+  "columns": {
+    "code": "Code",
+    "product": "Produkt",
+    "customer": "Kunde",
+    "type": "Typ",
+    "when": "Wann",
+    "status": "Status",
+    "actions": "Aktionen"
+  },
+  "status": {
+    "active": "Aktiv",
+    "cancelled": "Storniert"
+  },
+  "flavor": {
+    "range": "Nach Zeitraum",
+    "slot": "Nach Slot"
+  },
+  "actions": {
+    "copy_code": "Code kopieren",
+    "open_landing": "Seite öffnen",
+    "resend": "E-Mail erneut senden",
+    "open_order": "Bestellung öffnen",
+    "download_ics": "ICS herunterladen"
+  },
+  "resend": {
+    "success": "E-Mail erneut an den Kunden gesendet.",
+    "error": "Erneutes Senden fehlgeschlagen. Bitte erneut versuchen.",
+    "cancelled_not_allowed": "Stornierte Miete — erneutes Senden nicht verfügbar."
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "page": {
+    "title": "Store Configuration",
+    "subtitle": "Identity, notifications and store readiness"
+  },
+  "deprecation": {
+    "title": "This page will be replaced",
+    "body": "Store settings are moving to the “Stores” page, where you can manage branding, languages and fulfillment modes per outlet. Changes saved here stay in sync.",
+    "cta": "Open the Stores page"
+  },
+  "ai_memory": {
+    "clear": "Clear description"
+  },
+  "setup_review": {
+    "title": "AI setup applied",
+    "identity_done": "Store identity applied",
+    "products_done": "{{count}} products created as draft",
+    "fulfillment_done": "Fulfillment modes applied",
+    "next_title": "Next steps",
+    "auto_saved": "Settings saved automatically",
+    "step_products": "Complete prices and publish products",
+    "go_products": "Go to products",
+    "step_payments": "Connect a payment provider",
+    "go_payments": "Go to payments",
+    "step_publish": "Publish your store"
+  },
+  "url_extract": {
+    "placeholder": "https://www.yoursite.com",
+    "btn": "Extract",
+    "hint": "Have a website? Paste the URL and we will extract information to pre-fill the description.",
+    "success": "Text extracted from site. You can edit it before generating.",
+    "success_multi": "Extracted from {{count}} pages. You can edit the text before generating.",
+    "empty": "Insufficient content from site. Write the description manually.",
+    "error": "Unable to read the site. Try another URL or write the description."
+  },
+  "unified_setup": {
+    "title": "Set up your store with AI",
+    "desc": "Describe your business and we will generate identity, products and fulfillment in one go.",
+    "placeholder": "E.g.: Artisan bakery in Zurich with direct sales of fresh bread, pastries and typical products. Home delivery and in-store pickup.",
+    "generate_btn": "Generate setup",
+    "generating": "Generating...",
+    "preview_title": "Suggested setup",
+    "section_identity": "Store identity",
+    "section_products": "Products",
+    "section_fulfillment": "Fulfillment",
+    "apply_btn": "Apply selected",
+    "regenerate_btn": "Regenerate",
+    "skip_btn": "Cancel",
+    "applied": "Setup applied. Remember to save settings.",
+    "apply_error": "Error applying setup.",
+    "error": "Generation error. Please try again.",
+    "manual_hint": "Or configure everything manually below"
+  },
+  "ai_draft": {
+    "title": "Generate with AI",
+    "desc": "Describe your business in a few words and we will generate a draft identity for your store.",
+    "placeholder": "E.g.: Artisan bakery with direct sales of fresh bread, pastries and typical products. Home delivery and in-store pickup.",
+    "generate_btn": "Generate draft",
+    "generating": "Generating...",
+    "apply_btn": "Use this draft",
+    "regenerate_btn": "Regenerate",
+    "skip_btn": "Continue manually",
+    "applied": "Draft applied to fields. Remember to save.",
+    "error": "Generation error. Please try again.",
+    "manual_hint": "You can also fill in the fields manually below"
+  },
+  "identity": {
+    "title": "Public Identity",
+    "display_name": "Public business name",
+    "display_name_hint": "Shown to customers in the storefront and emails",
+    "contact_email": "Public contact email",
+    "contact_phone": "Contact phone",
+    "required_for_publish": "Required to publish",
+    "store_description": "Store description",
+    "store_description_hint": "Brief introduction shown to customers on the storefront (max 500 characters)",
+    "store_description_placeholder": "Describe your store in a few words..."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "notification_email": "Notification email",
+    "notification_email_hint": "Where to receive order, request and payment notifications. If empty, sent to admins."
+  },
+  "email": {
+    "title": "Customer Emails",
+    "sender_display_name": "Sender name",
+    "sender_display_name_hint": "The name customers see as email sender",
+    "reply_to_email": "Reply-to email",
+    "reply_to_email_hint": "Where customers reply to emails",
+    "email_delivery": "Delivery mode",
+    "email_delivery_platform": "Platform managed",
+    "email_delivery_custom": "Custom domain (future)",
+    "platform_managed_title": "Email delivery managed by AFianco",
+    "platform_managed_desc": "Customer emails are sent from AFianco infrastructure. You can customize the sender name and reply-to address. No DNS or SMTP configuration needed.",
+    "preview_title": "Email preview",
+    "preview_from": "From",
+    "preview_reply_to": "Replies to",
+    "preview_notifications": "Store notifications to",
+    "preview_not_configured": "not configured",
+    "preview_admin_fallback": "organization admin"
+  },
+  "ai_fulfillment": {
+    "title": "Suggest fulfillment with AI",
+    "desc": "Describe your business and we will suggest the most suitable fulfillment modes.",
+    "placeholder": "E.g.: Grocery store with home delivery and in-store pickup...",
+    "generate_btn": "Suggest",
+    "generating": "Generating...",
+    "result_title": "Fulfillment suggestion",
+    "apply_btn": "Use this suggestion",
+    "skip_btn": "Skip",
+    "applied": "Fulfillment modes updated. Remember to save.",
+    "error": "Generation error. Please try again.",
+    "none_suggested": "No fulfillment modes suggested for this type of business."
+  },
+  "fulfillment": {
+    "title": "Fulfillment",
+    "modes_label": "Supported fulfillment modes",
+    "modes_hint": "Select which fulfillment options customers can choose at checkout",
+    "mode_shipping": "Shipping",
+    "mode_local_pickup": "Local pickup"
+  },
+  "readiness": {
+    "title": "Commerce Readiness",
+    "overall_ready": "Ready to sell",
+    "overall_needs_setup": "Setup recommended",
+    "overall_blocked": "Setup required",
+    "group": {
+      "storefront": "Storefront",
+      "trust": "Trust & communication",
+      "commerce": "Commerce"
+    },
+    "check": {
+      "public_slug": "Public storefront address",
+      "display_name": "Public business name",
+      "contact_email": "Public contact email",
+      "notification_email": "Notification email",
+      "reply_to_email": "Customer reply-to email",
+      "payment_provider": "Payment provider connected",
+      "publishable_offer": "At least one valid published product"
+    },
+    "status_ok": "Configured",
+    "status_missing": "To configure",
+    "status_blocking": "Required",
+    "action_configure": "Configure"
+  },
+  "publish": {
+    "title": "Store publication",
+    "published_badge": "Published",
+    "unpublished_badge": "Not published",
+    "publish_btn": "Publish store",
+    "unpublish_btn": "Suspend publication",
+    "publish_confirm": "Make your store publicly visible?",
+    "unpublish_confirm": "Suspend public visibility? Your catalog will no longer be accessible.",
+    "blocked_hint": "Complete the required configurations to publish.",
+    "published_hint": "Your storefront is publicly visible.",
+    "ready_hint": "Your store is ready to be published."
+  },
+  "actions": {
+    "save": "Save",
+    "saving": "Saving..."
+  },
+  "toast": {
+    "saved": "Store settings saved",
+    "back_to_setup": "Back to setup",
+    "error": "Error saving settings"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-c", "import subprocess; subprocess.run(['/Users/davidedefilippis/Desktop/BI_PMI/backend/venv/bin/uvicorn', 'server:app', '--reload', '--host', '0.0.0.0', '--port', '8000'], cwd='/Users/davidedefilippis/Desktop/BI_PMI/backend')"],
+      "port": 8000
+    },
+    {
+      "name": "frontend",
+      "autoPort": false,
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-c", "import os, subprocess; os.environ['PORT']='3000'; os.environ['BROWSER']='none'; os.environ['PATH']='/Users/davidedefilippis/.nvm/versions/node/v22.13.1/bin:'+os.environ.get('PATH',''); subprocess.run(['/Users/davidedefilippis/.nvm/versions/node/v22.13.1/bin/node', 'node_modules/.bin/craco', 'start'], cwd='/Users/davidedefilippis/Desktop/BI_PMI/frontend')"],
+      "port": 3000
+    },
+    {
+      "name": "masseria",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8091", "--directory", "/Users/davidedefilippis/Desktop/Masseria/Masseria_webiste"],
+      "port": 8091
+    },
+    {
+      "name": "embed-playground",
+      "autoPort": false,
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8090", "--directory", "/Users/davidedefilippis/Desktop/BI_PMI/embed-playground"],
+      "port": 8090
+    }
+  ]
+}

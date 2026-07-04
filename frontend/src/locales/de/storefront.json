@@ -1,0 +1,409 @@
+{
+  "common": {
+    "loading": "Wird geladen..."
+  },
+  "category": {
+    "eventi": {
+      "label": "Veranstaltungen",
+      "title": "Veranstaltungen",
+      "empty": "Keine Veranstaltungen verfügbar",
+      "emptyHint": "{{org}} hat derzeit keine Veranstaltungen geplant. Schauen Sie bald wieder vorbei."
+    },
+    "corsi": {
+      "label": "Kurse",
+      "title": "Kurse",
+      "empty": "Keine Kurse verfügbar",
+      "emptyHint": "{{org}} hat noch keine Kurse veröffentlicht."
+    },
+    "servizi": {
+      "label": "Dienstleistungen",
+      "title": "Dienstleistungen",
+      "empty": "Keine buchbaren Dienstleistungen",
+      "emptyHint": "{{org}} hat derzeit keine buchbaren Dienstleistungen."
+    },
+    "affitti": {
+      "label": "Vermietungen",
+      "title": "Vermietungen",
+      "empty": "Keine Mietartikel",
+      "emptyHint": "{{org}} hat derzeit keine Artikel zur Vermietung."
+    },
+    "prodotti": {
+      "label": "Produkte",
+      "title": "Produkte",
+      "empty": "Keine Produkte im Verkauf",
+      "emptyHint": "{{org}} hat derzeit keine Produkte zum Verkauf."
+    }
+  },
+  "transactionMode": {
+    "direct": {
+      "headerCta": "Bestellen",
+      "modalTitle": "Bestellung absenden",
+      "modalDesc": "Ihre Bestellung wird umgehend bearbeitet. Sie werden für die Details kontaktiert.",
+      "submitBtn": "Bestellung absenden",
+      "inquiryToggle": "Info anfordern"
+    },
+    "request": {
+      "headerCta": "Bestellung anfragen",
+      "modalTitle": "Bestellung anfragen",
+      "modalDesc": "Dies ist eine Bestellanfrage. Sie erhalten eine Bestätigung vor der Finalisierung.",
+      "submitBtn": "Anfrage senden",
+      "inquiryToggle": "Info anfordern"
+    },
+    "approval": {
+      "headerCta": "Verfügbarkeit anfragen",
+      "modalTitle": "Verfügbarkeit anfragen",
+      "modalDesc": "Diese Anfrage wird geprüft. Sie erhalten eine Verfügbarkeitsbestätigung.",
+      "submitBtn": "Anfrage senden",
+      "inquiryToggle": "Info anfordern"
+    },
+    "rentalOverride": {
+      "headerCta": "Mietanfrage",
+      "modalTitle": "Mietanfrage",
+      "modalDesc": "Die Mietverfügbarkeit wird geprüft. Sie erhalten eine Bestätigung.",
+      "submitBtn": "Anfrage senden",
+      "inquiryToggle": "Info anfordern"
+    }
+  },
+  "calendar": {
+    "pickerTitle": "Datum und Uhrzeit wählen",
+    "noSlots": "Keine Slots verfügbar",
+    "confirmWithDate": "Bestätigen · {{date}} {{start}}–{{end}}",
+    "confirmPlaceholder": "Datum und Uhrzeit auswählen",
+    "weekdayShort": {
+      "mon": "Mo",
+      "tue": "Di",
+      "wed": "Mi",
+      "thu": "Do",
+      "fri": "Fr",
+      "sat": "Sa",
+      "sun": "So"
+    }
+  },
+  "product": {
+    "selected": "Ausgewählt",
+    "soldOut": "Ausverkauft",
+    "lastN_one": "Letztes {{count}} verfügbar",
+    "lastN_other": "Letzte {{count}} verfügbar",
+    "perUnit": "Pro {{unit}}",
+    "priceOnRequest": "Preis auf Anfrage",
+    "discoverCta": "Entdecken →"
+  },
+  "rental": {
+    "periodLabel": "Gewünschter Zeitraum",
+    "fromLabel": "Von",
+    "toLabel": "Bis (optional)",
+    "notesPlaceholder": "Notizen (optional)",
+    "unitFallback": "Tage"
+  },
+  "booking": {
+    "openPickerCta": "📅 Datum und Uhrzeit wählen",
+    "changeBtn": "Ändern"
+  },
+  "event": {
+    "pickDate": "Datum wählen",
+    "selectDateOption": "— Datum auswählen —",
+    "soldOut": "Ausverkauft",
+    "soldOutSuffix": "— AUSVERKAUFT",
+    "noDates": "Kein Termin verfügbar",
+    "seatsRemaining_one": "{{count}} Platz",
+    "seatsRemaining_other": "{{count}} Plätze",
+    "seatsRemainingFull_one": "{{count}} Platz verbleibend",
+    "seatsRemainingFull_other": "{{count}} Plätze verbleibend"
+  },
+  "summary": {
+    "title": "Zusammenfassung",
+    "qtyLine": "{{name}} x {{count}}",
+    "rentalLine": "{{name}} x {{count}} {{unit}}",
+    "onRequest": "Auf Anfrage",
+    "removeAria": "{{name}} aus dem Warenkorb entfernen",
+    "removeFallbackName": "Produkt",
+    "removeTitle": "Aus dem Warenkorb entfernen",
+    "tierLine": "Kategorie: {{label}}",
+    "optionLine": "Option: {{label}}",
+    "shipping": "Versand",
+    "shippingFree": "GRATIS",
+    "addMoreForFree": "{{amount}} hinzufügen für kostenlosen Versand.",
+    "subtotalEstimate": "Geschätzte Zwischensumme",
+    "totalEstimate": "Geschätzte Summe"
+  },
+  "errors": {
+    "verifyUrl": "Überprüfen Sie die Adresse und versuchen Sie es erneut.",
+    "catalogNotFound": "Katalog nicht gefunden.",
+    "catalogLoadError": "Fehler beim Laden des Katalogs.",
+    "selectServiceOptionAndSlot": "Wählen Sie Option und Slot für jeden Service.",
+    "completeAddress": "Vervollständigen Sie die Lieferadresse: {{missing}}.",
+    "invalidPostalCodeIT": "Italienische PLZ ungültig (muss 5 Ziffern haben).",
+    "emailAlreadyForCourse": "E-Mail bereits registriert. Melden Sie sich über „Mein Konto“ an, bevor Sie den Kurs kaufen.",
+    "emailAlreadyInfo": "E-Mail bereits registriert: Sie können sich anmelden und die Bestellung wiederfinden.",
+    "signupFailed": "Registrierung fehlgeschlagen. Bitte erneut versuchen.",
+    "signupNotCompleted": "Registrierung nicht abgeschlossen. Die Bestellung wird trotzdem als Gast gesendet.",
+    "submitGeneric": "Fehler beim Senden der Anfrage. Bitte erneut versuchen.",
+    "fillAttendees": "Geben Sie Name und E-Mail für jeden Teilnehmer ein.",
+    "termsRequired": "Sie müssen die Allgemeinen Geschäftsbedingungen akzeptieren, um fortzufahren.",
+    "selectShippingOption": "Wählen Sie eine Versandoption."
+  },
+  "submitted": {
+    "orderReceived": "Bestellung erhalten",
+    "requestRegistered": "Anfrage registriert",
+    "reference": "Referenz: {{ref}}",
+    "confirmEmailSoon": "Sie erhalten in Kürze eine Bestätigungs-E-Mail.",
+    "myOrders": "Meine Bestellungen",
+    "backToCatalog": "Zurück zum Katalog",
+    "created": {
+      "title": "✉️ Bestätigen Sie Ihre Registrierung",
+      "body": "Wir haben Ihnen eine E-Mail zur Verifizierung Ihrer Registrierung gesendet. Nach der Verifizierung können Sie sich anmelden und Ihre Bestellungen hier wiederfinden.",
+      "loginLink": "Zur Anmeldung"
+    },
+    "already": {
+      "title": "Konto existiert bereits",
+      "body": "Die von Ihnen verwendete E-Mail ist bereits registriert. Melden Sie sich an, um diese Bestellung in Ihrem Profil zu finden.",
+      "loginLink": "Bei Ihrem Konto anmelden"
+    },
+    "failed": {
+      "body": "Die Registrierung wurde nicht abgeschlossen. Die Bestellung wurde als Gast gesendet. Sie können sich später registrieren."
+    },
+    "body": {
+      "request": "Anfrage gesendet. Wir kontaktieren dich zur Bestätigung.",
+      "direct": "Bestellung erhalten. Wir melden uns in Kürze.",
+      "approval": "Anfrage gesendet. Wir prüfen die Verfügbarkeit und melden uns."
+    }
+  },
+  "catalog": {
+    "noProducts": "Keine Produkte verfügbar",
+    "noProductsHint": "Der Katalog von {{name}} hat noch keine veröffentlichten Produkte.",
+    "headerSubtitle": "Produktkatalog",
+    "seoFallback": "Katalog"
+  },
+  "header": {
+    "myAccount": "Mein Konto",
+    "loginOrSignup": "Anmelden oder registrieren",
+    "loginSignupShort": "Anmelden / Registrieren",
+    "emptyCartToast": "Leerer Warenkorb — wählen Sie Produkte aus",
+    "cartAria": "Warenkorb ({{count}})"
+  },
+  "miniCart": {
+    "itemsInCart_one": "{{count}} Produkt im Warenkorb",
+    "itemsInCart_other": "{{count}} Produkte im Warenkorb",
+    "reduce": "Reduzieren",
+    "details": "Details"
+  },
+  "sections": {
+    "events": {
+      "title": "Kommende Veranstaltungen",
+      "count_one": "{{count}} geplante Veranstaltung",
+      "count_other": "{{count}} geplante Veranstaltungen"
+    },
+    "services": {
+      "title": "Beratungen",
+      "count_one": "{{count}} Beratung verfügbar",
+      "count_other": "{{count}} Beratungen verfügbar"
+    },
+    "reservations": {
+      "title": "Reservierungen",
+      "count_one": "{{count}} verfügbar",
+      "count_other": "{{count}} verfügbar"
+    },
+    "physicals": {
+      "title": "Produkte",
+      "count_one": "{{count}} verfügbar",
+      "count_other": "{{count}} verfügbar"
+    },
+    "digitals": {
+      "title": "Digitale Downloads",
+      "count_one": "{{count}} verfügbar",
+      "count_other": "{{count}} verfügbar"
+    },
+    "courses": {
+      "title": "Videokurse",
+      "count_one": "{{count}} Kurs",
+      "count_other": "{{count}} Kurse"
+    },
+    "catalog": {
+      "title": "Katalog"
+    }
+  },
+  "footer": {
+    "poweredBy": "Powered by AFianco"
+  },
+  "openCheckoutBtn": {
+    "goCheckout": "Zur Kasse →",
+    "openCheckoutAria": "Kasse öffnen",
+    "checkoutShort": "Kasse"
+  },
+  "checkoutResult": {
+    "orderLine": "Bestellung",
+    "backToStore": "← Zurück zum Shop",
+    "backToStoreNamed": "← Zurück zu {{name}}",
+    "loadingTitle": "Wird geladen…",
+    "loadingDesc": "Wir rufen die Details Ihrer Bestellung ab.",
+    "paymentReceived": "Zahlung eingegangen",
+    "errorDesc": "Die Zahlung ist eingegangen. Die Details konnten nicht geladen werden, aber Sie erhalten in Kürze eine Bestätigungs-E-Mail.",
+    "confirmedTitle": "Zahlung bestätigt",
+    "confirmedDesc": "Ihre Bestellung wurde bestätigt. Sie erhalten in Kürze die Bestätigung per E-Mail.",
+    "pendingDesc": "Wir bestätigen die Bestellung. Das kann einige Sekunden dauern…",
+    "lateWebhookDesc": "Die Zahlung ist eingegangen. Die endgültige Bestellbestätigung wird per E-Mail gesendet.",
+    "cancelTitle": "Zahlung nicht abgeschlossen",
+    "cancelDesc": "Die Zahlung wurde nicht abgeschlossen. Ihre Anfrage wurde trotzdem registriert und Sie werden kontaktiert, um fortzufahren."
+  },
+  "cards": {
+    "common": {
+      "price": "Preis",
+      "priceFrom": "Ab",
+      "ctaUnpublished": "Nicht veröffentlicht",
+      "ctaUnavailable": "Nicht verfügbar"
+    },
+    "event": {
+      "statusSoldOut": "Ausverkauft",
+      "statusLastN": "Letzte {{count}}",
+      "ctaSoldOut": "Ausverkauft",
+      "ctaSee": "Veranstaltung ansehen →"
+    },
+    "service": {
+      "typeBadge": "Beratung",
+      "ctaDiscover": "Entdecken →"
+    },
+    "physical": {
+      "typeBadge": "Produkt",
+      "stockOut": "❌ Ausverkauft",
+      "stockLastN": "⚠️ Letzte {{count}}",
+      "stockAvailable": "✅ Verfügbar",
+      "skuLine": "SKU {{sku}}",
+      "ctaSoldOut": "Ausverkauft",
+      "ctaBuy": "Kaufen →"
+    },
+    "digital": {
+      "typeBadge": "💾 Digital",
+      "instantDownload": "Sofort-Download",
+      "licensesLeft_one": "⚠️ Nur {{count}} Lizenz",
+      "licensesLeft_other": "⚠️ Nur {{count}} Lizenzen"
+    },
+    "course": {
+      "typeBadge": "🎓 Kurs",
+      "videoCourse": "Videokurs",
+      "accessLifetime": "Lebenslanger Zugang",
+      "accessDays_one": "{{count}} Tag Zugang",
+      "accessDays_other": "{{count}} Tage Zugang",
+      "lessonsCount_one": "{{count}} Lektion",
+      "lessonsCount_other": "{{count}} Lektionen",
+      "minutes": "{{count}} Min",
+      "hoursOnly": "{{count}} Std.",
+      "hoursMinutes": "{{hours}} Std. {{minutes}} Min.",
+      "ctaSee": "Kurs ansehen →"
+    },
+    "reservation": {
+      "typeRange": "Miete",
+      "typeSlot": "Reservierung",
+      "unitFallback": "Tag",
+      "slot": "Slot",
+      "minutes": "{{count}} Min",
+      "perUnit": "Pro {{unit}}",
+      "priceFromUnit": "Ab / {{unit}}",
+      "pricePerSlot": "Preis / Slot",
+      "ctaBook": "Reservieren →"
+    }
+  },
+  "cart": {
+    "removedToast": "„{{name}}“ aus dem Warenkorb entfernt",
+    "undoAction": "Rückgängig",
+    "restoredToast": "Wieder im Warenkorb"
+  },
+  "password": {
+    "enter": "Passwort eingeben",
+    "minLength": "Mindestens 12 Zeichen",
+    "upper": "Mindestens ein Großbuchstabe",
+    "lower": "Mindestens ein Kleinbuchstabe",
+    "digit": "Mindestens eine Zahl"
+  },
+  "checkout": {
+    "gdpr": {
+      "already_opted_in": "Sie sind bereits für den Newsletter angemeldet. Zum Abmelden verwenden Sie den Link am Ende jeder E-Mail."
+    },
+    "submittingBtn": "Wird gesendet...",
+    "notesLabel": "Notizen",
+    "notesPlaceholder": "Besondere Wünsche...",
+    "couponLabel": "Promo-Code",
+    "couponPlaceholder": "z. B. SUMMER2026",
+    "service": {
+      "editLink": "Bearbeiten →",
+      "optionPrefix": "Option:",
+      "selectionRequired": "⚠ Option und/oder Datum auswählen, bevor Sie fortfahren.",
+      "openProductLink": "Produktseite öffnen →"
+    },
+    "attendees": {
+      "title": "Teilnehmerdaten — {{name}}",
+      "subtitle": "Jeder Teilnehmer erhält sein persönliches Ticket per E-Mail.",
+      "ticketIndex": "Ticket {{index}}",
+      "fullNamePlaceholder": "Vor- und Nachname *",
+      "emailRequired": "E-Mail *",
+      "emailOptional": "E-Mail (optional)",
+      "phoneRequired": "Telefon *",
+      "phoneOptional": "Telefon (optional)",
+      "seatLabelWithTier": "Ticket {{index}} — {{tier}}",
+      "tierFallback": "Kategorie"
+    },
+    "customer": {
+      "nameLabel": "Name *",
+      "namePlaceholder": "Ihr Name",
+      "emailLabel": "E-Mail *",
+      "emailPlaceholder": "Ihre E-Mail",
+      "phoneLabel": "Telefon",
+      "phoneOptional": "Optional"
+    },
+    "fulfillment": {
+      "label": "Lieferart *",
+      "shipping": "Versand",
+      "localPickup": "Abholung vor Ort"
+    },
+    "address": {
+      "label": "Lieferadresse *",
+      "recipientPlaceholder": "Empfänger (Vor- und Nachname)",
+      "streetPlaceholder": "Straße / Platz *",
+      "civicPlaceholder": "Hausnr. *",
+      "postalCodePlaceholder": "PLZ *",
+      "cityPlaceholder": "Stadt *",
+      "provincePlaceholder": "Prov.",
+      "streetField": "Straße",
+      "civicField": "Hausnr.",
+      "postalCodeField": "PLZ",
+      "cityField": "Stadt",
+      "country": {
+        "IT": "Italien",
+        "FR": "Frankreich",
+        "DE": "Deutschland",
+        "CH": "Schweiz",
+        "AT": "Österreich",
+        "ES": "Spanien",
+        "SI": "Slowenien",
+        "HR": "Kroatien"
+      }
+    },
+    "shippingOptions": {
+      "label": "Versandoptionen *",
+      "empty": "⚠️ Keine Versandoptionen konfiguriert. Kontaktieren Sie den Merchant, um fortzufahren, oder wählen Sie Abholung vor Ort (falls verfügbar)."
+    },
+    "terms": {
+      "prefix": "Ich habe gelesen und akzeptiere die",
+      "linkLabel": "Allgemeinen Geschäftsbedingungen"
+    },
+    "signup": {
+      "courseAlertTitle": "Der Warenkorb enthält einen Videokurs.",
+      "courseAlertBody": "Sie benötigen ein Konto, um ihn aus Ihrem Kundenbereich zu verfolgen.",
+      "createAccountRequired": "Konto erstellen (erforderlich)",
+      "createAccount": "Konto erstellen",
+      "suffixCourse": " um nach dem Kauf auf den Kurs zuzugreifen",
+      "suffixOrders": " um Ihre Bestellungen zu verfolgen",
+      "fillEmailFirst": "Geben Sie zuerst Ihre E-Mail-Adresse oben ein",
+      "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
+      "loginLink": "Anmelden",
+      "passwordLabel": "Passwort",
+      "passwordPlaceholder": "Mindestens 12 Zeichen",
+      "showPw": "Anzeigen",
+      "hidePw": "Verbergen",
+      "passwordConfirmLabel": "Passwort bestätigen",
+      "passwordConfirmPlaceholder": "Passwort wiederholen",
+      "passwordMismatch": "Die beiden Passwörter stimmen nicht überein",
+      "confirmEmailHint": "Sie erhalten eine E-Mail zur Bestätigung der Registrierung. Die Bestellung wird trotzdem gesendet.",
+      "passwordRequirementsToast": "Das Passwort erfüllt die Mindestanforderungen nicht."
+    }
+  }
+}

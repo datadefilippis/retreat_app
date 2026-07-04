@@ -1,0 +1,36 @@
+{
+  "name": "afianco",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AFianco — Business Operating System per PMI italiane (monorepo root)",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@11.4.0",
+  "scripts": {
+    "// monorepo orchestration": "Phase 0 Step 6 — pnpm workspaces + Turborepo",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "// frontend & backend wrappers (existing folders not yet in pnpm workspaces)": "",
+    "frontend:build": "cd frontend && yarn build",
+    "frontend:dev": "cd frontend && yarn start",
+    "backend:test": "cd backend && REACT_APP_BACKEND_URL=http://localhost:8000 ./venv/bin/pytest --ignore=tests/test_new_features.py -q",
+    "backend:dev": "cd backend && set -a && source .env && set +a && ./venv/bin/uvicorn server:app --host 0.0.0.0 --port 8000 --reload",
+    "// Track E Step 2.4 — embed-SDK bundle local-serve in dev": "",
+    "embed:build": "cd apps/embed-sdk && pnpm build",
+    "embed:sync-dev": "mkdir -p frontend/public/embed/v1 && cp apps/embed-sdk/dist/afianco-embed.es.js frontend/public/embed/v1/ && cp apps/embed-sdk/dist/afianco-embed.umd.js frontend/public/embed/v1/ && echo 'Bundle synced to frontend/public/embed/v1/'",
+    "embed:rebuild": "pnpm embed:build && pnpm embed:sync-dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.6"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
+}

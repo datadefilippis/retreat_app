@@ -1,0 +1,87 @@
+# ── Production dependencies for AFianco backend ──
+# This file is used by the Docker build. Dev tools (pytest, black, etc.) excluded.
+
+# Web framework
+fastapi==0.110.1
+uvicorn==0.25.0
+python-multipart>=0.0.9
+
+# Database
+pymongo==4.5.0
+motor==3.3.1
+
+# Auth & security
+python-jose>=3.3.0
+bcrypt==4.1.3
+passlib>=1.7.4
+slowapi>=0.1.9
+
+# Data model & validation
+pydantic>=2.6.4
+email-validator>=2.2.0
+
+# Config
+python-dotenv>=1.0.1
+
+# Data processing (CSV/XLSX parsing)
+pandas==3.0.1
+numpy>=1.26.0
+openpyxl==3.1.5
+xlrd==2.0.2
+
+# AWS S3 (optional upload backup)
+boto3>=1.34.129
+
+# HTTP client
+requests>=2.31.0
+# requests-oauthlib>=2.0.0  — not imported anywhere in the codebase
+
+# AI / LLM
+anthropic>=0.40.0
+
+# Report generation (PDF + charts)
+matplotlib>=3.8
+reportlab>=4.0
+
+# Crypto
+cryptography>=42.0.8
+pyjwt>=2.10.1
+
+# QR code generation for event tickets — services/ticket_service.py:407
+# `[pil]` extra pulls in Pillow which the qrcode lib needs to emit PNG.
+# Without this dependency the backend silently falls back to a 1x1
+# transparent PNG, leaving the public ticket landing showing an empty
+# 256x256 box above the textual code (see /t/<token> page).
+qrcode[pil]>=7.4
+
+# Misc
+tzdata>=2024.2
+# jq>=1.6.0  — not imported anywhere in the codebase; requires libjq-dev system lib
+# typer>=0.9.0  — not imported anywhere (create_system_admin.py uses argparse)
+
+# Billing (Stripe)
+stripe>=8.0.0
+
+# Gunicorn (production ASGI process manager)
+gunicorn>=21.2.0
+
+# Observability (Phase 1 — Step A1)
+# Sentry SDK for error tracking + performance monitoring.
+# Opt-in: only active if SENTRY_DSN env var is set in .env.production.
+# When unset, the app boots and runs identically — no events captured,
+# no outbound calls, zero latency overhead.
+sentry-sdk[fastapi]>=2.18.0
+
+# Observability (Phase 1 — Step A3)
+# Structured JSON logging with per-request context (request_id, user_id, org_id).
+# Active when LOG_FORMAT=json (recommended in production for Loki/Datadog/ELK
+# ingestion). With LOG_FORMAT=text (default) the existing text format is used
+# and this dependency stays loaded but unused.
+python-json-logger>=2.0.7
+
+# Observability (Phase 0 — Step 10)
+# Prometheus exposition for metrics. /metrics endpoint serves text format
+# scrapable by Prometheus / Grafana Cloud / Datadog Agent.
+# Soft dependency: if missing at import time, observability module falls
+# back to a no-op shim (server boots, counters are silently dropped).
+prometheus-client>=0.20.0

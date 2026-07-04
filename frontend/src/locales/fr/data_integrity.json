@@ -1,0 +1,48 @@
+{
+  "page": {
+    "title": "Qualite des donnees",
+    "subtitle": "Couverture de liaison et liaison retroactive"
+  },
+  "dataset": {
+    "sales": "Ventes",
+    "purchases": "Achats",
+    "expenses": "Depenses"
+  },
+  "entity": {
+    "customer_id": "Clients",
+    "product_id": "Produits",
+    "supplier_id": "Fournisseurs"
+  },
+  "coverage": {
+    "title": "Couverture de liaison",
+    "no_data": "Aucune donnee disponible.",
+    "total_records": "enregistrements totaux"
+  },
+  "relink": {
+    "title": "Liaison retroactive",
+    "description": "Analysez les enregistrements historiques non lies et essayez de les lier aux entites existantes par correspondance exacte.",
+    "admin_only": "Seuls les administrateurs peuvent executer la liaison retroactive.",
+    "dataset_label": "Jeu de donnees",
+    "preview": "Apercu",
+    "scan_result": "Resultat de l'analyse",
+    "candidates": "candidats",
+    "no_candidates": "Aucun candidat",
+    "scanned": "Analyses",
+    "candidates_label": "Candidats",
+    "resolver": "Resolveur d'entites",
+    "by_entity": "Par type d'entite",
+    "samples": "Exemples",
+    "apply": "Appliquer",
+    "links_one": "{{count}} liaison",
+    "links_other": "{{count}} liaisons",
+    "confirm_title": "Confirmer ?",
+    "confirm_desc": "{{count}} enregistrements seront mis a jour avec correspondance exacte.",
+    "confirm_audit": "Chaque modification est suivie dans les metadonnees de l'enregistrement.",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "toast_applied_one": "{{count}} liaison appliquee",
+    "toast_applied_other": "{{count}} liaisons appliquees",
+    "toast_scan_error": "Erreur lors de l'analyse",
+    "toast_apply_error": "Erreur lors de la liaison"
+  }
+}

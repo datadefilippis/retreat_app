@@ -1,0 +1,107 @@
+{
+  "forms": {
+    "quota_exhausted_hint": "Datenzeilen-Limit erreicht. Tarif aktualisieren.",
+    "quota_exhausted_body": "Sie haben das Limit von {{used}}/{{limit}} Datenzeilen für diesen Monat erreicht.",
+    "quota_exhausted_cta": "Tarif aktualisieren"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "modules": "Module",
+    "alerts": "Warnungen",
+    "ai_analysis": "KI-Analyse",
+    "team": "Team",
+    "settings": "Einstellungen",
+    "logout": "Abmelden",
+    "admin": "Admin",
+    "data": "Daten",
+    "orders": "Bestellungen",
+    "reservations": "Mieten",
+    "calendar": "Kalender",
+    "data_integrity": "Datenqualität",
+    "master_data": "Stammdaten",
+    "products": "Produkte",
+    "courses": "Kurse",
+    "events": "Events",
+    "customers": "Kunden",
+    "suppliers": "Lieferanten",
+    "store_settings": "Store-Einstellungen",
+    "stores": "Meine Stores",
+    "newsletter": "Newsletter"
+  },
+  "actions": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "loading": "Laden...",
+    "saving": "Speichern...",
+    "confirm": "Bestaetigen",
+    "delete": "Loeschen",
+    "edit": "Bearbeiten",
+    "close": "Schliessen",
+    "refresh": "Aktualisieren",
+    "upload": "Hochladen",
+    "back": "Zurueck",
+    "maybe_later": "Vielleicht spaeter"
+  },
+  "copied": "In die Zwischenablage kopiert",
+  "copy_url": "URL kopieren",
+  "copy_failed": "Kopieren nicht moeglich",
+  "status": {
+    "loading": "Wird geladen...",
+    "error": "Ein Fehler ist aufgetreten.",
+    "no_data": "Keine Daten verfuegbar.",
+    "success": "Vorgang abgeschlossen."
+  },
+  "modules": {
+    "cashflow_monitor": "Cashflow-Monitor",
+    "customers_light": "Kunden-Insights",
+    "commerce_signals": "Handelssignale",
+    "product_catalog": "Produkt-Performance"
+  },
+  "period": {
+    "7d": "Letzte 7 Tage",
+    "30d": "Letzte 30 Tage",
+    "90d": "Letzte 90 Tage",
+    "ytd": "Seit Jahresbeginn",
+    "mtd": "Seit Monatsbeginn",
+    "custom": "Benutzerdefiniert",
+    "data_range": "Alle Daten ({{days}}T)"
+  },
+  "widget_actions": {
+    "move_up": "Nach oben",
+    "move_down": "Nach unten",
+    "remove": "Vom Dashboard entfernen"
+  },
+  "quota": {
+    "banner_title": "Limit erreicht",
+    "banner_default": "Sie haben das Limit Ihres Plans erreicht. Upgraden Sie um fortzufahren.",
+    "banner_upgrade": "Plan upgraden",
+    "banner_dismiss": "Schliessen",
+    "dialog_title": "Importlimit erreicht",
+    "dialog_description": "Das Limit des kostenlosen Plans ist ausgeschöpft. Sie können Ihren Plan in den Einstellungen ändern, um die Limits zu erhöhen.",
+    "dialog_go_settings": "Zu den Einstellungen",
+    "dialog_close": "Schliessen"
+  },
+  "stripeAlert": {
+    "configureBtn": "Stripe Connect konfigurieren",
+    "defaultMessage": "Stripe Connect ist noch nicht konfiguriert. Direktzahlungs-Bestellungen werden in den Anfragemodus zurückgestuft, bis Sie das Onboarding in den Einstellungen abgeschlossen haben.",
+    "reason": {
+      "no_connection": "Kein Zahlungsanbieter konfiguriert",
+      "connection_inactive": "Zahlungsverbindung nicht aktiv",
+      "no_default": "Kein Anbieter als Standard festgelegt",
+      "runtime_unavailable": "Laufzeitauthentifizierung nicht abgeschlossen",
+      "runtime_needs_auth": "Laufzeitauthentifizierung läuft",
+      "runtime_error": "Fehler bei der Anbieterprüfung",
+      "provider_not_configured": "Anbieter im System nicht konfiguriert"
+    }
+  },
+  "language": {
+    "it": "Italiano",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français"
+  },
+  "languageSwitcher": {
+    "label": "Sprache",
+    "ariaLabel": "Sprache ändern"
+  }
+}

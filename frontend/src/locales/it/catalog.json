@@ -1,0 +1,245 @@
+{
+  "item_type": {
+    "physical": "Prodotto fisico",
+    "service": "Servizio",
+    "rental": "Noleggio",
+    "event_ticket": "Evento/biglietto",
+    "booking": "Prenotazione 1:1",
+    "digital": "Prodotto digitale"
+  },
+  "item_type_short": {
+    "service": "Servizio",
+    "rental": "Noleggio",
+    "event_ticket": "Evento",
+    "digital": "Digitale"
+  },
+  "price_mode": {
+    "fixed": "Prezzo fisso",
+    "inquiry": "Su richiesta"
+  },
+  "transaction_mode": {
+    "request": "Su richiesta",
+    "direct": "Diretto",
+    "approval": "Con approvazione"
+  },
+  "profile": {
+    "direct_sale": {
+      "label": "Vendita diretta",
+      "description": "Prodotto o servizio acquistabile con pagamento immediato",
+      "behavior": "Pagamento diretto",
+      "runtime": "Il cliente paga direttamente. L'ordine viene confermato dopo il pagamento.",
+      "hint_unit_price": "Obbligatorio per il checkout diretto"
+    },
+    "request_sale": {
+      "label": "Vendita su richiesta",
+      "description": "Il cliente richiede, tu confermi e gestisci il pagamento",
+      "behavior": "Conferma manuale",
+      "runtime": "Il cliente invia una richiesta. Tu la rivedi e confermi dalla pagina Ordini."
+    },
+    "quote": {
+      "label": "Preventivo / Su richiesta",
+      "description": "Il cliente chiede informazioni, il prezzo viene definito dopo",
+      "behavior": "Preventivo",
+      "runtime": "Il cliente chiede info senza vedere il prezzo. Gestisci la richiesta dalla pagina Ordini e contatta il cliente con il preventivo.",
+      "hint_unit_price": "Non necessario — il prezzo è su richiesta"
+    },
+    "rental": {
+      "label": "Noleggio",
+      "description": "Il cliente richiede un periodo, tu verifichi la disponibilità",
+      "behavior": "Verifica disponibilità",
+      "runtime": "Il cliente sceglie le date dal catalogo. Le richieste arrivano negli Ordini dove puoi verificare la disponibilità prima di confermare.",
+      "post_save": "Quando arrivano richieste, verifica le date nella pagina Ordini e nel Calendario prima di confermare.",
+      "hint_unit_price": "Prezzo per unità di noleggio (giorno, ora, settimana)",
+      "hint_unit_label": "Unità di noleggio: giorno, ora, settimana",
+      "hint_rental_unit": "Come viene misurato il periodo di noleggio",
+      "setup_cue_unit": "Imposta l'unità di noleggio (giorno, ora, settimana)",
+      "setup_cue_price": "Definisci il prezzo per unità"
+    },
+    "open_event": {
+      "label": "Evento aperto",
+      "description": "Evento senza limite di posti, acquistabile direttamente",
+      "behavior": "Pagamento diretto",
+      "runtime": "Il cliente acquista direttamente. Dopo aver salvato, apri il prodotto per aggiungere le date e i luoghi dell'evento.",
+      "post_save": "Aggiungi almeno una data evento dalla sezione \"Date evento\" qui sotto.",
+      "hint_unit_price": "Prezzo base per biglietto (può essere sovrascritto per singola data)",
+      "setup_cue_dates": "Aggiungi almeno una data evento",
+      "setup_cue_publish": "Pubblica le date per renderle visibili nel catalogo",
+      "no_occurrences_warning": "Nessuna data evento — il prodotto non è ancora prenotabile"
+    },
+    "capped_event": {
+      "label": "Evento con posti limitati",
+      "description": "Evento con capienza, il cliente richiede e tu verifichi i posti",
+      "behavior": "Verifica posti",
+      "runtime": "Il cliente richiede posti. Dopo aver salvato, imposta le date e la capienza massima dalla sezione \"Date evento\". Le richieste arrivano negli Ordini.",
+      "post_save": "Aggiungi le date evento e imposta la capienza per ciascuna dalla sezione qui sotto.",
+      "hint_unit_price": "Prezzo base per biglietto (può essere sovrascritto per singola data)",
+      "setup_cue_dates": "Aggiungi le date evento con capienza massima",
+      "setup_cue_capacity": "Imposta la capienza su ogni data evento",
+      "setup_cue_publish": "Pubblica le date per renderle visibili nel catalogo",
+      "no_occurrences_warning": "Nessuna data evento — il prodotto non è ancora prenotabile"
+    }
+  },
+  "issue": {
+    "direct_inquiry": "Modalità diretta non compatibile con prezzo su richiesta",
+    "direct_no_price": "Prezzo mancante per checkout diretto",
+    "rental_no_unit": "Unità noleggio non impostata",
+    "event_unpublished": "Evento non pubblicato — non visibile nel catalogo",
+    "no_price": "Nessun prezzo impostato"
+  },
+  "storefront": {
+    "request_header": "Richiedi ordine",
+    "request_modal": "Richiedi ordine",
+    "request_desc": "Questa è una richiesta d'ordine. Riceverai conferma prima della finalizzazione.",
+    "request_submit": "Invia richiesta",
+    "request_inquiry": "Richiedi info",
+    "direct_header": "Ordina",
+    "direct_modal": "Invia ordine",
+    "direct_desc": "Il tuo ordine sarà elaborato rapidamente. Sarai contattato per i dettagli.",
+    "direct_submit": "Invia ordine",
+    "approval_header": "Richiedi disponibilità",
+    "approval_modal": "Richiedi disponibilità",
+    "approval_desc": "Questa richiesta verrà verificata. Riceverai conferma di disponibilità.",
+    "approval_submit": "Invia richiesta",
+    "rental_header": "Richiedi noleggio",
+    "rental_modal": "Richiedi noleggio",
+    "rental_desc": "La disponibilità del noleggio verrà verificata. Riceverai conferma."
+  },
+  "form": {
+    "offer_type": "Tipo di offerta",
+    "type": "Tipo",
+    "price_mode_label": "Modalità prezzo",
+    "unit_label": "Etichetta unità",
+    "transaction_mode_label": "Modalità transazione",
+    "advanced_show": "Configurazione avanzata",
+    "advanced_hide": "Nascondi configurazione avanzata",
+    "name_required": "Il nome è obbligatorio",
+    "rental_unit_hint": "Consigliato per il catalogo pubblico",
+    "deactivate": "Disattiva",
+    "all_stores": "Tutti gli store",
+    "select_specific_stores": "Seleziona store specifici",
+    "stock_quantity": "Giacenza (stock)"
+  },
+  "image": {
+    "upload": "Carica immagine",
+    "replace": "Cambia immagine",
+    "uploaded_toast": "Immagine caricata",
+    "error_toast": "Errore nel caricamento",
+    "max_hint": "Max 5MB, JPG/PNG/WebP"
+  },
+  "booking_section": {
+    "title": "Prenotazione",
+    "duration_label": "Durata sessione (minuti)",
+    "default_duration": "Default (da regole)",
+    "duration_15": "15 minuti",
+    "duration_30": "30 minuti",
+    "duration_45": "45 minuti",
+    "duration_60": "60 minuti",
+    "duration_90": "90 minuti",
+    "duration_120": "120 minuti",
+    "duration_label_field": "Etichetta durata"
+  },
+  "dialog": {
+    "cancel": "Annulla",
+    "save": "Salva",
+    "create": "Crea"
+  },
+  "summary": {
+    "products_one": "{{count}} prodotto",
+    "products_other": "{{count}} prodotti",
+    "online": "online",
+    "needs_setup": "da completare",
+    "storefront_errors": "problemi storefront",
+    "visible_one": "{{count}} visibile",
+    "visible_other": "{{count}} visibili"
+  },
+  "triage": {
+    "banner_storefront_errors": "Prodotti pubblicati con errori"
+  },
+  "ai_enrich": {
+    "btn": "Migliora con AI",
+    "applied": "Descrizione e categoria migliorate",
+    "error": "Errore nel miglioramento AI"
+  },
+  "completion": {
+    "title": "{{count}} prodotti da completare",
+    "hint": "Aggiungi il prezzo e pubblica",
+    "publish_btn": "Pubblica",
+    "published": "{{name}} pubblicato",
+    "publish_error": "Errore nella pubblicazione",
+    "price_error": "Errore nel salvataggio prezzo",
+    "publish_all_btn": "Pubblica tutti i completati",
+    "publish_all_confirm": "Pubblicare {{count}} prodotti?",
+    "published_all": "{{count}} prodotti pubblicati",
+    "no_publishable": "Completa i prezzi prima di pubblicare",
+    "back_to_setup": "Torna al setup"
+  },
+  "ai_products": {
+    "title": "Genera prodotti con AI",
+    "desc": "Descrivi cosa vendi o offri e genereremo suggerimenti per il tuo catalogo.",
+    "placeholder": "Es: Macelleria con carni fresche, insaccati, box degustazione e consegna a domicilio...",
+    "generate_btn": "Genera suggerimenti",
+    "generating": "Generazione...",
+    "preview_title": "Prodotti suggeriti",
+    "apply_btn": "Crea come bozza",
+    "regenerate_btn": "Rigenera",
+    "skip_btn": "Annulla",
+    "created": "{{count}} prodotti creati come bozza",
+    "error": "Errore nella generazione. Riprova.",
+    "create_error": "Errore nella creazione prodotti.",
+    "manual_hint": "Puoi anche aggiungere prodotti manualmente",
+    "clear_desc": "Svuota descrizione"
+  },
+  "family": {
+    "instant": "Acquisto immediato",
+    "manual": "Conferma manuale",
+    "dialogue": "Preventivo / Dialogo"
+  },
+  "service_section": {
+    "title": "Dettagli servizio",
+    "duration": "Durata indicativa",
+    "duration_placeholder": "es. 60 min, mezza giornata",
+    "notes": "Note servizio",
+    "notes_placeholder": "es. Su appuntamento"
+  },
+  "rental_section": {
+    "title": "Dettagli noleggio",
+    "unit": "Unità noleggio",
+    "unit_field_label": "Unità noleggio",
+    "unit_select": "— Seleziona —",
+    "unit_hour": "Ora",
+    "unit_day": "Giorno",
+    "unit_week": "Settimana",
+    "unit_month": "Mese",
+    "notes": "Note noleggio",
+    "notes_placeholder": "es. Cauzione richiesta"
+  },
+  "occurrence_section": {
+    "title": "Date evento",
+    "subtitle": "Gestisci le date e i luoghi per questo evento",
+    "add_new": "+ Nuova",
+    "empty": "Nessuna occorrenza. Aggiungi date per questo evento.",
+    "seats": "posti",
+    "info_create_first": "Dopo aver creato il prodotto, potrai aggiungere le date (occorrenze) dalla modifica.",
+    "form_start": "Inizio",
+    "form_end": "Fine",
+    "form_location": "Luogo",
+    "form_location_placeholder": "es. Sala principale",
+    "form_capacity": "Capienza",
+    "form_price_override": "Prezzo override",
+    "form_create": "Crea",
+    "form_cancel": "Annulla",
+    "toast_created": "Occorrenza creata",
+    "toast_create_error": "Errore creazione",
+    "toast_status_error": "Errore aggiornamento stato"
+  },
+  "occurrence_status": {
+    "draft": "Bozza",
+    "published": "Pubblicato",
+    "closed": "Chiuso",
+    "cancelled": "Annullato"
+  },
+  "publish": {
+    "online": "● Online",
+    "offline": "○ Offline"
+  }
+}

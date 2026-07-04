@@ -1,0 +1,1 @@
+../frontend/public/embed/v1/afianco-embed.es.js

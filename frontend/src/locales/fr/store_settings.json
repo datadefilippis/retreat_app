@@ -1,0 +1,166 @@
+{
+  "page": {
+    "title": "Configuration du magasin",
+    "subtitle": "Identité, notifications et préparation de votre magasin"
+  },
+  "deprecation": {
+    "title": "Cette page va être remplacée",
+    "body": "La configuration des magasins est en train d’être déplacée vers la page « Magasins », où vous pouvez gérer le branding, les langues et les modes de livraison par point de vente. Les modifications enregistrées ici restent synchronisées.",
+    "cta": "Ouvrir la page Magasins"
+  },
+  "ai_memory": {
+    "clear": "Effacer la description"
+  },
+  "setup_review": {
+    "title": "Configuration IA appliquée",
+    "identity_done": "Identité du magasin appliquée",
+    "products_done": "{{count}} produits créés en brouillon",
+    "fulfillment_done": "Modes de livraison appliqués",
+    "next_title": "Prochaines étapes",
+    "auto_saved": "Paramètres enregistrés automatiquement",
+    "step_products": "Compléter les prix et publier les produits",
+    "go_products": "Aller aux produits",
+    "step_payments": "Connecter un fournisseur de paiement",
+    "go_payments": "Aller aux paiements",
+    "step_publish": "Publier votre magasin"
+  },
+  "url_extract": {
+    "placeholder": "https://www.votresite.fr",
+    "btn": "Extraire",
+    "hint": "Avez-vous un site web ? Collez l'URL et nous extrairons les informations pour pré-remplir la description.",
+    "success": "Texte extrait du site. Vous pouvez le modifier avant de générer.",
+    "success_multi": "Extrait de {{count}} pages. Vous pouvez modifier le texte avant de générer.",
+    "empty": "Contenu insuffisant sur le site. Écrivez la description manuellement.",
+    "error": "Impossible de lire le site. Essayez une autre URL ou écrivez la description."
+  },
+  "unified_setup": {
+    "title": "Configurez votre magasin avec l'IA",
+    "desc": "Décrivez votre activité et nous générerons identité, produits et modes de livraison en un seul coup.",
+    "placeholder": "Ex. : Boulangerie artisanale à Genève avec vente directe de pain frais, pâtisseries et produits typiques. Livraison à domicile et retrait en magasin.",
+    "generate_btn": "Générer la configuration",
+    "generating": "Génération en cours...",
+    "preview_title": "Configuration suggérée",
+    "section_identity": "Identité du magasin",
+    "section_products": "Produits",
+    "section_fulfillment": "Livraison",
+    "apply_btn": "Appliquer la sélection",
+    "regenerate_btn": "Régénérer",
+    "skip_btn": "Annuler",
+    "applied": "Configuration appliquée. N'oubliez pas d'enregistrer.",
+    "apply_error": "Erreur d'application.",
+    "error": "Erreur de génération. Veuillez réessayer.",
+    "manual_hint": "Ou configurez tout manuellement ci-dessous"
+  },
+  "ai_draft": {
+    "title": "Générer avec l'IA",
+    "desc": "Décrivez votre activité en quelques mots et nous générerons un brouillon d'identité pour votre magasin.",
+    "placeholder": "Ex. : Boulangerie artisanale avec vente directe de pain frais, pâtisseries et produits typiques. Livraison à domicile et retrait en magasin à Genève.",
+    "generate_btn": "Générer le brouillon",
+    "generating": "Génération...",
+    "apply_btn": "Utiliser ce brouillon",
+    "regenerate_btn": "Régénérer",
+    "skip_btn": "Continuer manuellement",
+    "applied": "Brouillon appliqué aux champs. N'oubliez pas d'enregistrer.",
+    "error": "Erreur de génération. Veuillez réessayer.",
+    "manual_hint": "Vous pouvez aussi remplir les champs manuellement ci-dessous"
+  },
+  "identity": {
+    "title": "Identité publique",
+    "display_name": "Nom public de l'entreprise",
+    "display_name_hint": "Affiché aux clients dans la vitrine et les e-mails",
+    "contact_email": "E-mail de contact public",
+    "contact_phone": "Téléphone de contact",
+    "required_for_publish": "Requis pour publier",
+    "store_description": "Description du magasin",
+    "store_description_hint": "Brève présentation montrée aux clients dans la vitrine (500 caractères max.)",
+    "store_description_placeholder": "Décrivez votre magasin en quelques mots..."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "notification_email": "E-mail de notifications",
+    "notification_email_hint": "Où recevoir les notifications de commandes, demandes et paiements. Si vide, envoyé aux admins."
+  },
+  "email": {
+    "title": "E-mails aux clients",
+    "sender_display_name": "Nom de l'expéditeur",
+    "sender_display_name_hint": "Le nom que les clients voient comme expéditeur",
+    "reply_to_email": "E-mail de réponse",
+    "reply_to_email_hint": "Où les clients répondent aux e-mails",
+    "email_delivery": "Mode d'envoi",
+    "email_delivery_platform": "Géré par la plateforme",
+    "email_delivery_custom": "Domaine personnalisé (futur)",
+    "platform_managed_title": "Envoi d'e-mails géré par AFianco",
+    "platform_managed_desc": "Les e-mails clients sont envoyés depuis l'infrastructure AFianco. Vous pouvez personnaliser le nom de l'expéditeur et l'adresse de réponse. Aucune configuration DNS ou SMTP nécessaire.",
+    "preview_title": "Aperçu de l'e-mail",
+    "preview_from": "De",
+    "preview_reply_to": "Réponses à",
+    "preview_notifications": "Notifications du magasin à",
+    "preview_not_configured": "non configuré",
+    "preview_admin_fallback": "admin de l'organisation"
+  },
+  "ai_fulfillment": {
+    "title": "Suggérer la livraison avec l'IA",
+    "desc": "Décrivez votre activité et nous suggérerons les modes de livraison les plus adaptés.",
+    "placeholder": "Ex. : Épicerie avec livraison à domicile et retrait sur place...",
+    "generate_btn": "Suggérer",
+    "generating": "Génération...",
+    "result_title": "Suggestion de livraison",
+    "apply_btn": "Utiliser cette suggestion",
+    "skip_btn": "Ignorer",
+    "applied": "Modes de livraison mis à jour. N'oubliez pas d'enregistrer.",
+    "error": "Erreur de génération. Veuillez réessayer.",
+    "none_suggested": "Aucun mode de livraison suggéré pour ce type d'activité."
+  },
+  "fulfillment": {
+    "title": "Livraison",
+    "modes_label": "Modes de livraison pris en charge",
+    "modes_hint": "Sélectionnez les options de livraison que les clients peuvent choisir au paiement",
+    "mode_shipping": "Expédition",
+    "mode_local_pickup": "Retrait sur place"
+  },
+  "readiness": {
+    "title": "Préparation commerciale",
+    "overall_ready": "Prêt à vendre",
+    "overall_needs_setup": "Configuration recommandée",
+    "overall_blocked": "Configuration requise",
+    "group": {
+      "storefront": "Vitrine",
+      "trust": "Confiance et communication",
+      "commerce": "Commerce"
+    },
+    "check": {
+      "public_slug": "Adresse publique de la vitrine",
+      "display_name": "Nom public de l'entreprise",
+      "contact_email": "E-mail de contact public",
+      "notification_email": "E-mail de notifications",
+      "reply_to_email": "E-mail de réponse aux clients",
+      "payment_provider": "Fournisseur de paiement connecté",
+      "publishable_offer": "Au moins un produit publié et valide"
+    },
+    "status_ok": "Configuré",
+    "status_missing": "À configurer",
+    "status_blocking": "Requis",
+    "action_configure": "Configurer"
+  },
+  "publish": {
+    "title": "Publication du magasin",
+    "published_badge": "Publié",
+    "unpublished_badge": "Non publié",
+    "publish_btn": "Publier le magasin",
+    "unpublish_btn": "Suspendre la publication",
+    "publish_confirm": "Voulez-vous rendre votre magasin publiquement visible ?",
+    "unpublish_confirm": "Suspendre la visibilité publique ? Votre catalogue ne sera plus accessible.",
+    "blocked_hint": "Complétez les configurations requises pour publier.",
+    "published_hint": "Votre vitrine est publiquement visible.",
+    "ready_hint": "Votre magasin est prêt à être publié."
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "saving": "Enregistrement..."
+  },
+  "toast": {
+    "saved": "Paramètres du magasin enregistrés",
+    "back_to_setup": "Retour à la configuration",
+    "error": "Erreur lors de l'enregistrement"
+  }
+}

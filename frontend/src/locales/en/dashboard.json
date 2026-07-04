@@ -1,0 +1,92 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Monitor your business performance",
+  "toast": {
+    "save_error": "Error saving preferences",
+    "widget_removed": "Widget removed from dashboard"
+  },
+  "date_range": {
+    "from": "From",
+    "to": "To"
+  },
+  "empty": {
+    "no_modules_title": "Get started by activating a module",
+    "no_modules_desc": "Modules add KPIs, charts and analysis to your account. Choose your first from the library.",
+    "go_to_modules": "Go to Modules",
+    "no_data_title": "Upload your data to get started",
+    "no_data_desc": "You have activated {{count}} module(s). Upload data to see KPIs, charts and alerts.",
+    "upload_data": "Upload {{label}} data",
+    "no_widgets_title": "Customize your dashboard",
+    "no_widgets_desc": "Your dashboard is empty. Add charts and KPIs from your modules using the pin button.",
+    "go_to_module": "Go to {{label}}"
+  },
+  "activation": {
+    "title": "Complete your store setup",
+    "blocking_desc": "{{count}} required configurations to go live",
+    "advisory_desc": "Recommended configurations to improve your store",
+    "action": "Configure",
+    "degraded_title": "Warning: your store has issues",
+    "degraded_desc": "Your storefront is accessible but {{count}} critical configurations need attention",
+    "check_public_slug": "Public storefront address",
+    "check_display_name": "Public business name",
+    "check_contact_email": "Public contact email",
+    "check_notification_email": "Order notification email",
+    "check_reply_to_email": "Customer reply-to email",
+    "check_payment_provider": "Payment provider",
+    "check_publishable_offer": "At least one published product",
+    "ready_to_publish_title": "Your store is ready!",
+    "ready_to_publish_desc": "All configurations are in place. Publish your store to make it visible.",
+    "publish_cta": "Publish store"
+  },
+  "store_panel": {
+    "title": "Your store",
+    "published": "Published",
+    "publish_cta": "Publish",
+    "open_store": "Open store",
+    "manage": "Manage",
+    "issues_degraded": "Issues to resolve:",
+    "issues_setup": "To go live:",
+    "products_online": "products online",
+    "ops_drafts": "drafts",
+    "ops_needs_review": "needs attention",
+    "ops_fulfillment": "pending fulfillment",
+    "ops_paid_unconfirmed": "paid, awaiting confirmation",
+    "ops_catalog_broken": "products with errors",
+    "all_clear": "No action needed",
+    "attention_urgent": "{{urgent}} urgent out of {{total}} items to manage",
+    "attention_normal": "{{count}} items need attention"
+  },
+  "first_live": {
+    "title": "Your store is online!",
+    "hint_storefront": "You can open your storefront from the link above.",
+    "hint_orders": "New orders will appear in the Orders section.",
+    "hint_manage": "You can suspend or update your store at any time from Store Settings."
+  },
+  "smart_setup": {
+    "title": "Store setup",
+    "action": "Configure",
+    "step_identity": "Store identity",
+    "step_products": "Products",
+    "step_email": "Email",
+    "step_payments": "Payments",
+    "step_fulfillment": "Fulfillment",
+    "step_published": "Publish",
+    "hint_products_price": "{{count}} products without price",
+    "hint_products_empty": "Add at least one product",
+    "ai_action": "Generate with AI",
+    "ai_identity": "Generate identity with AI",
+    "ai_products": "Generate products with AI",
+    "manual_action": "Manual",
+    "publish_btn": "Publish your store",
+    "publish_confirm": "Publish your store and make it visible?",
+    "publish_success": "Store published!",
+    "publish_error": "Error publishing"
+  },
+  "setup": {
+    "title": "To go live:",
+    "step_identity": "1. Configure store identity",
+    "step_products": "2. Add at least one product",
+    "step_payments": "3. Connect payments",
+    "step_publish": "4. Publish your store"
+  }
+}

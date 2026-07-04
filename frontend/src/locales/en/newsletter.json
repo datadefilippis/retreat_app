@@ -1,0 +1,106 @@
+{
+  "title": "Newsletter & Forms",
+  "subtitle": "Create signup forms embeddable on any website",
+  "refresh": "Refresh",
+  "new_form": "New Form",
+  "empty_title": "No newsletter forms",
+  "empty_subtitle": "Create your first form and embed it anywhere.",
+  "actions": {
+    "embed": "Embed",
+    "subscribers": "Subscribers",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Create form",
+    "close": "Close",
+    "copy": "Copy",
+    "filter": "Filter"
+  },
+  "badge": {
+    "inactive": "Inactive",
+    "no_origins": "No authorized domain"
+  },
+  "list": {
+    "extra_fields": "{{count}} extra fields",
+    "with_name": "+ name",
+    "with_phone": "+ phone",
+    "origins": "{{count}} domains"
+  },
+  "dialog": {
+    "new_title": "New newsletter form",
+    "edit_title": "Edit form",
+    "name": "Name",
+    "name_ph": "E.g. Subscribe to our newsletter",
+    "collected_fields": "Collected fields",
+    "email_always": "Email",
+    "email_always_hint": "(always required)",
+    "field_name": "Name",
+    "field_phone": "Phone",
+    "require_consent": "Require privacy consent (recommended)",
+    "consent_text": "Consent text",
+    "consent_text_ph": "I agree to the processing of my data to receive communications.",
+    "success_message": "Success message",
+    "success_message_ph": "Subscription complete. Thank you!",
+    "extra_fields_title": "Additional fields",
+    "extra_fields_subtitle": "Besides email, name and phone",
+    "allowed_origins": "Authorized domains (one per line)",
+    "allowed_origins_hint": "Only these domains can submit signups from the embedded form (CORS security)."
+  },
+  "layout": {
+    "label": "Form layout",
+    "vertical": "Vertical",
+    "horizontal": "Horizontal",
+    "inline": "Inline"
+  },
+  "colors": {
+    "toggle": "Customize button colors",
+    "button": "Button color",
+    "button_text": "Button text color"
+  },
+  "privacy": {
+    "label": "Privacy policy link",
+    "mode_none": "No link",
+    "mode_store": "Use a store's privacy policy",
+    "mode_custom": "Custom link",
+    "choose_store": "— Choose a store —",
+    "custom_ph": "https://www.mysite.com/privacy",
+    "no_stores": "You don't have any store yet. First create a store (\"My Stores\" section) with its privacy policy, or use a custom link.",
+    "checking": "Checking privacy…",
+    "published": "✓ Privacy published — it will be linked in the form.",
+    "not_configured": "Privacy not yet configured for this store.",
+    "create": "Create privacy"
+  },
+  "preview": {
+    "title": "Preview",
+    "loading": "Loading preview…",
+    "unavailable": "Preview unavailable."
+  },
+  "embed": {
+    "title": "Embed the form",
+    "desc": "Paste this code on your site where you want the form to appear.",
+    "warning": "⚠️ First add the authorized domains (Edit), otherwise the browser will block submission."
+  },
+  "subs": {
+    "title": "Subscribers — {{name}}",
+    "filter_label": "Filter by source",
+    "filter_ph": "E.g. blog-footer or https://mysite.com",
+    "empty": "No subscriptions.",
+    "from": "from {{source}}",
+    "status_subscribed": "Subscribed",
+    "status_unsubscribed": "Unsubscribed"
+  },
+  "toast": {
+    "created": "Form created",
+    "updated": "Form updated",
+    "save_error": "Error saving",
+    "name_required": "Enter a name for the form",
+    "deleted": "Form deleted",
+    "snippet_copied": "Snippet copied",
+    "copy_failed": "Copy failed",
+    "error": "Error"
+  },
+  "confirm_delete": "Delete the form \"{{name}}\"? Subscriptions remain in the CRM."
+}

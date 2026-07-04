@@ -1,0 +1,1979 @@
+{
+  "_comment": "German translations for the admin Products area.",
+
+  "extras": {
+    "title": "Extras & Optionen",
+    "kindLabel": {
+      "mandatory": "Obligatorisch",
+      "optional": "Optional",
+      "radio_variant": "Varianten (Auswahl)"
+    },
+    "kindHint": {
+      "mandatory": "Werden bei jeder Buchung automatisch angewendet. Der Kunde sieht sie, kann sie aber nicht entfernen.",
+      "optional": "Der Kunde entscheidet per Checkbox, ob er sie hinzufügen möchte.",
+      "radio_variant": "Sich gegenseitig ausschliessende Alternativen (Radio-Auswahl)."
+    },
+    "modifier": {
+      "flat": "Fix",
+      "per_day": "Pro Tag",
+      "per_unit": "Pro Stück"
+    },
+    "row": {
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "remove": "Entfernen",
+      "namePlaceholder": "Name (z. B. Endreinigung)",
+      "descriptionPlaceholder": "Kurze Beschreibung (optional)",
+      "isDefault": "Vorausgewählt",
+      "isDefaultRadio": "Standardauswahl",
+      "isActive": "Aktiv"
+    },
+    "addMandatory": "+ Obligatorisches Extra hinzufügen",
+    "addOptional": "+ Optionales Extra hinzufügen",
+    "addRadioVariant": "+ Variante in {{group}} hinzufügen",
+    "emptyList": "Noch keine Einträge. Fügen Sie unten einen hinzu.",
+    "radio": {
+      "groupLabel": "Gruppe:",
+      "newGroupPlaceholder": "Name der neuen Gruppe (z. B. Versicherung)",
+      "newGroupButton": "+ Neue Gruppe",
+      "groupHint": "Gruppe {{group}} — der Kunde wählt genau eine Alternative unten.",
+      "emptyHint": "Keine Radio-Gruppe vorhanden. Erstellen Sie oben eine (z. B. \"Versicherung\"), um zu beginnen."
+    }
+  },
+
+  "options": {
+    "title": "Service-Optionen",
+    "subtitle": "Der Kunde wählt genau eine (Radio).",
+    "addButton": "+ Option hinzufügen",
+    "emptyHint": "Noch keine Optionen. Fügen Sie mindestens eine hinzu, um die Radio-Auswahl beim Checkout zu aktivieren.",
+    "row": {
+      "labelLabel": "Optionsname *",
+      "labelPlaceholder": "z. B. 30-minütige Beratung",
+      "priceLabel": "Preis (€) *",
+      "pricePlaceholder": "0",
+      "durationLabel": "Dauer (Min.)",
+      "durationPlaceholder": "Standard",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "z. B. Ideal für die Erstberatung",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "isActive": "Aktiv",
+      "remove": "Option entfernen"
+    }
+  },
+
+  "fields": {
+    "addButton": "+ Feld hinzufügen",
+    "emptyHint": "Noch keine Felder konfiguriert.",
+    "typeLabel": {
+      "text": "Kurzer Text",
+      "textarea": "Langer Text",
+      "number": "Zahl"
+    },
+    "row": {
+      "labelLabel": "Bezeichnung *",
+      "labelPlaceholder": "z. B. Allergien",
+      "typeLabel": "Typ",
+      "required": "Pflichtfeld",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "remove": "Entfernen",
+      "placeholderLabel": "Platzhalter (optional)",
+      "placeholderPlaceholder": "Beispieltext, der im Eingabefeld angezeigt wird",
+      "idLabel": "ID",
+      "idDuplicate": "· doppelt",
+      "idPlaceholder": "auto"
+    }
+  },
+
+  "typeLabels": {
+    "physical": "Physisch",
+    "service": "Dienstleistung",
+    "rental": "Vermietung",
+    "booking": "Buchung",
+    "digital": "Digital",
+    "event_ticket": "Veranstaltung",
+    "course": "Kurs"
+  },
+
+  "list": {
+    "typeFilter": {
+      "physical": "📦 Physisch",
+      "event_ticket": "🎫 Veranstaltungen",
+      "service": "🛠 Dienstleistungen",
+      "rental": "🏠 Vermietungen",
+      "digital": "💾 Digital",
+      "course": "🎓 Kurse"
+    },
+    "publishedCount": "{{count}} online",
+    "productsCount_one": "{{count}} Produkt",
+    "productsCount_other": "{{count}} Produkte",
+    "aiEnrichApplied": "Beschreibung und Kategorie verbessert",
+    "aiEnrichError": "KI-Fehler",
+    "aiEnrichBtn": "Mit KI verbessern",
+    "visibleIn": "Sichtbar in",
+    "editButton": "Bearbeiten",
+    "deactivateTitle": "Deaktivieren",
+    "dashboardLink": "Dashboard"
+  },
+
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "clickToOffline": "Klicken, um auf Offline zu setzen",
+    "clickToOnline": "Klicken, um auf Online zu setzen",
+    "onlineEmoji": "🟢 Online",
+    "offlineEmoji": "⚫ Offline",
+    "visibleInCatalog": "Im öffentlichen Katalog sichtbar",
+    "notVisibleToCustomers": "Für Kunden nicht sichtbar"
+  },
+
+  "typePicker": {
+    "title": "Welche Produktart möchten Sie erstellen?",
+    "physical": {
+      "title": "Physisches Produkt",
+      "desc": "Versand- oder Abholartikel"
+    },
+    "event_ticket": {
+      "title": "Veranstaltung",
+      "desc": "Tickets, Termine, Kapazität und Check-in"
+    },
+    "service": {
+      "title": "Dienstleistung",
+      "desc": "Beratungen, Sitzungen, Termine"
+    },
+    "rental_range": {
+      "title": "Periodische Vermietung",
+      "desc": "B&Bs, Autos, Geräte — pro Tag/Woche"
+    },
+    "rental_slot": {
+      "title": "Slot-Vermietung",
+      "desc": "Räume, Plätze — pro Stunde/Slot"
+    },
+    "digital": {
+      "title": "Digital",
+      "desc": "Downloads, Lizenzen, Zugänge"
+    },
+    "course": {
+      "title": "Videokurs",
+      "desc": "Module und Videolektionen mit Bunny"
+    }
+  },
+
+  "form": {
+    "unitPlaceholder": "Stk., kg, h",
+    "unitLabelPlaceholder": "Stk., Service, Tag",
+    "stockUnlimited": "Leer = unbegrenzt",
+    "stockHint": "Leer lassen, um den Bestand nicht zu verfolgen",
+    "openEventDashboard": "Event-Dashboard öffnen",
+    "manageLink": "Verwalten",
+    "fieldsCounter": "{{count}}/4 Felder"
+  },
+
+  "grids": {
+    "common": {
+      "loading": "Wird geladen…",
+      "statusOnline": "Online",
+      "statusOffline": "Offline",
+      "statusFilterAll": "Alle",
+      "toggleToOffline": "Klicken zum Deaktivieren",
+      "toggleToOnline": "Klicken zum Veröffentlichen",
+      "statusChangeError": "Fehler beim Statuswechsel",
+      "noName": "Ohne Namen",
+      "previewLanding": "Landing-Vorschau",
+      "tryRemoveFilters": "Versuchen Sie, einige Filter zu entfernen.",
+      "newCta": "+ Neues Produkt",
+      "firstCreateCta": "+ Erstes Produkt erstellen"
+    },
+
+    "physical": {
+      "title": "Physische Produkte",
+      "subtitle": "Physische Produkte verwalten: Bestand, Versand, Abholung.",
+      "typeBadge": "📦 Physisches Produkt",
+      "errorLoad": "Fehler beim Laden der physischen Produkte",
+      "emptyTitle": "Keine Produkte gefunden",
+      "emptyDescFirst": "Erstellen Sie Ihr erstes physisches Produkt, um zu beginnen.",
+      "searchPlaceholder": "Produkt, SKU, Kategorie suchen…",
+      "count_one": "{{count}} Produkt",
+      "count_other": "{{count}} Produkte",
+      "stockOverline": {
+        "depleted": "❌ Ausverkauft",
+        "lastN": "⚠️ Letzte {{count}}",
+        "inStock": "✅ {{count}} auf Lager"
+      },
+      "stockFilter": {
+        "any": "Bestand: beliebig",
+        "tracked": "Verfolgt",
+        "untracked": "Nicht verfolgt",
+        "lowStock": "⚠️ Niedriger Bestand",
+        "outOfStock": "❌ Ausverkauft"
+      }
+    },
+
+    "digital": {
+      "title": "Digitale Produkte",
+      "subtitle": "E-Books, Vorlagen, herunterladbare Dateien.",
+      "typeBadge": "💾 Digitales Produkt",
+      "newCta": "+ Neues Digital",
+      "firstCreateCta": "+ Erstes Digital erstellen",
+      "errorLoad": "Fehler beim Laden der digitalen Produkte",
+      "emptyTitle": "Keine digitalen Produkte",
+      "emptyDescFirst": "Erstellen Sie Ihr erstes digitales Produkt, um zu beginnen.",
+      "searchPlaceholder": "Suchen…",
+      "count_one": "{{count}} Produkt",
+      "count_other": "{{count}} Produkte",
+      "fileMissingPublish": "Bitte zuerst die digitale Datei hochladen.",
+      "uploadToPublish": "Datei hochladen, um zu veröffentlichen",
+      "fileOverline": {
+        "ready": "📁 Datei bereit",
+        "missing": "⚠️ Datei fehlt",
+        "depleted": "❌ Ausverkauft",
+        "lastN": "⚠️ Letzte {{count}}",
+        "copies": "{{count}} Kopien"
+      },
+      "fileFilter": {
+        "any": "Datei: alle",
+        "withFile": "📁 Hochgeladen",
+        "missingFile": "⚠️ Fehlend"
+      }
+    },
+
+    "service": {
+      "title": "Dienstleistungen",
+      "subtitle": "Verwalten Sie alle Ihre Dienstleistungen und deren Verfügbarkeit.",
+      "typeBadge": "🛠 Dienstleistung",
+      "newCta": "+ Neue Dienstleistung",
+      "firstCreateCta": "+ Erste Dienstleistung erstellen",
+      "errorLoad": "Fehler beim Laden der Dienstleistungen",
+      "emptyTitle": "Keine Dienstleistungen gefunden",
+      "emptyDescFirst": "Erstellen Sie Ihre erste Dienstleistung, um online zu verkaufen.",
+      "searchPlaceholder": "Dienstleistung suchen…",
+      "count_one": "{{count}} Dienstleistung",
+      "count_other": "{{count}} Dienstleistungen",
+      "fallbackName": "Dienstleistung ohne Namen",
+      "modeDirect": "Direkte Zahlung",
+      "modeRequest": "Auf Anfrage",
+      "durationSuffix": "{{minutes}} Min.",
+      "fromPrice": "Ab",
+      "stateLabel": "Status",
+      "dashboardCta": "Dashboard"
+    },
+
+    "reservation": {
+      "title": "Vermietungen",
+      "subtitle": "Verwalten Sie vermietbare Produkte: nach Zeitraum (mehrtägig) oder Slot (Stunden).",
+      "newCta": "+ Neue Vermietung",
+      "firstCreateCta": "+ Erste Vermietung erstellen",
+      "errorLoad": "Fehler beim Laden der Buchungen",
+      "emptyTitle": "Keine Vermietungen gefunden",
+      "emptyDescFirst": "Erstellen Sie Ihre erste Vermietung, um zu beginnen.",
+      "searchPlaceholder": "Vermietung suchen…",
+      "count_one": "{{count}} Vermietung",
+      "count_other": "{{count}} Vermietungen",
+      "flavorRange": "Periodische Vermietung",
+      "flavorSlot": "Slot-Vermietung",
+      "perRentalUnit": "pro {{unit}}",
+      "slotMinutes": "{{minutes}} Min.",
+      "typeBadgeRange": "🏠 Vermietung · Zeitraum",
+      "typeBadgeSlot": "📅 Vermietung · Slot"
+    },
+
+    "course": {
+      "title": "Videokurse",
+      "subtitle": "Module und Lektionen mit Bunny Stream.",
+      "typeBadge": "🎓 Videokurs",
+      "newCta": "+ Neuer Kurs",
+      "firstCreateCta": "+ Ersten Kurs erstellen",
+      "errorLoad": "Fehler beim Laden der Kurse",
+      "emptyTitle": "Keine Videokurse",
+      "emptyDescFirst": "Erstellen Sie Ihren ersten Videokurs, um zu beginnen.",
+      "searchPlaceholder": "Kurse suchen…",
+      "count_one": "{{count}} Kurs",
+      "count_other": "{{count}} Kurse",
+      "moduleCount_one": "{{count}} Modul",
+      "moduleCount_other": "{{count}} Module",
+      "lessonCount_one": "{{count}} Lektion",
+      "lessonCount_other": "{{count}} Lektionen",
+      "videoMissingCount": "⚠️ {{count}} Videos fehlen",
+      "noLessons": "⚠️ Keine Lektionen",
+      "publishBlocker": {
+        "noPrice": "Legen Sie einen Preis fest, bevor Sie veröffentlichen",
+        "noLessons": "Fügen Sie mindestens eine Lektion hinzu, bevor Sie veröffentlichen",
+        "noVideos": "Verknüpfen Sie mindestens ein Bunny-Video, bevor Sie veröffentlichen"
+      },
+      "previewLandingPublic": "Öffentliche Landing-Vorschau",
+      "broken": {
+        "title": "Das Kursprodukt ist nicht mit einem Inhalt verknüpft.",
+        "openCourses": "den Kursbereich",
+        "rebuildLink": ", um den Link wiederherzustellen."
+      },
+      "videoFilter": {
+        "any": "Videos: alle",
+        "complete": "🎬 Vollständig",
+        "missing": "⚠️ Fehlend"
+      },
+      "bunny": {
+        "connected": "Bunny ✓ Verbunden",
+        "connectedTitle": "Bunny verbunden — zum Bearbeiten klicken",
+        "configure": "Bunny konfigurieren",
+        "configureTitle": "Bunny konfigurieren, um Videos zu aktivieren",
+        "offline": "Bunny ⏱ offline",
+        "error": "Bunny ⚠ Fehler",
+        "errorTitle": "Problem mit der Bunny-Konfiguration — zum Überprüfen klicken"
+      }
+    },
+
+    "event": {
+      "title": "Veranstaltungen",
+      "subtitle": "Verwalten Sie alle Ihre Veranstaltungen, Termine und Check-ins in einer einzigen Ansicht.",
+      "newCta": "+ Neue Veranstaltung",
+      "firstCreateCta": "+ Erste Veranstaltung erstellen",
+      "errorLoad": "Fehler beim Laden der Veranstaltungen",
+      "emptyTitle": "Keine Veranstaltungen gefunden",
+      "emptyDescFirst": "Erstellen Sie Ihre erste Veranstaltung, um online zu verkaufen.",
+      "emptyDescPast": "Es gibt keine vergangenen Veranstaltungen.",
+      "searchPlaceholder": "Veranstaltung suchen…",
+      "count_one": "{{count}} Veranstaltung",
+      "count_other": "{{count}} Veranstaltungen",
+      "fallbackName": "Veranstaltung ohne Namen",
+      "archivedBadge": "📦 Archiviert",
+      "soldCount": "{{reserved}} / {{cap}} verkauft",
+      "unlimitedCapacity": "Unbegrenzte Kapazität",
+      "tierCount_one": "{{count}} Ticket-Tier",
+      "tierCount_other": "{{count}} Ticket-Tiers",
+      "stateLabel": "Status",
+      "dashboardCta": "Dashboard",
+      "checkInCta": "Check-in",
+      "editProductTitle": "Produktdetails bearbeiten",
+      "whenFilter": {
+        "upcoming": "Kommende",
+        "past": "Vergangene",
+        "all": "Alle"
+      },
+      "archiveFilter": "📦 Archiv",
+      "statusFilter": {
+        "all": "Alle Status",
+        "draft": "Entwurf",
+        "published": "Veröffentlicht",
+        "closed": "Geschlossen",
+        "cancelled": "Storniert"
+      },
+      "statusBadge": {
+        "draft": "Offline",
+        "published": "Online",
+        "closed": "Geschlossen",
+        "cancelled": "Storniert"
+      }
+    }
+  },
+
+  "dashboards": {
+    "common": {
+      "loading": "Wird geladen…",
+      "saving": "Wird gespeichert…",
+      "save": "Speichern",
+      "saveProduct": "Produkt speichern",
+      "saveError": "Fehler beim Speichern",
+      "productUpdated": "Produkt aktualisiert",
+      "statusOnline": "Online",
+      "statusOffline": "Offline",
+      "linkCopied": "Link kopiert",
+      "linkCopyError": "Link manuell kopieren",
+      "imageUploaded": "Bild hochgeladen",
+      "imageUploadError": "Upload-Fehler",
+      "distributionTitle": "🏪 Verteilung",
+      "distributionVisibleAutoPrefix": "Automatisch sichtbar in:",
+      "distributionAllStoresFallback": "alle Stores",
+      "distributionAllStoresLabel": "Alle Stores",
+      "saveDistribution": "Verteilung speichern",
+      "termsHint": "Wenn leer, gelten die AGB des Stores. Markdown unterstützt.",
+      "saveTerms": "AGB speichern",
+      "saveDescription": "Beschreibung speichern",
+      "uploadButton": "📁 Hochladen",
+      "imageUrlPlaceholder": "oder URL einfügen…",
+      "backToProducts": "← Zurück zu den Produkten"
+    },
+
+    "course": {
+      "back": "← Kursprodukte",
+      "newTitle": "Neuer Kurs",
+      "loading": "Wird geladen…",
+      "active": "Aktiv",
+      "archived": "Archiviert",
+      "tabs": {
+        "edit": "📝 Kurs bearbeiten",
+        "editHint": "Kursdaten, Module, Lektionen, Verkauf, Bunny",
+        "users": "👥 Eingeschriebene Nutzer",
+        "usersHint": "Wer hat den Kurs gekauft und folgt ihm"
+      },
+      "panels": {
+        "basics": "📝 Kursdaten",
+        "modulesLessons": "📚 Module und Lektionen",
+        "enrollments": "👥 Eingeschriebene Nutzer"
+      },
+      "basics": {
+        "titleLabel": "Titel *",
+        "titlePlaceholder": "z. B. Systemische Biowissenschaften — Grundkurs",
+        "slugLabel": "Slug-URL *",
+        "slugPlaceholder": "systemische-biowissenschaften",
+        "slugHint": "Kleinbuchstaben, Ziffern und Bindestriche. Sichtbar in der öffentlichen URL. Eindeutig für Ihren Store.",
+        "instructorLabel": "Dozent",
+        "instructorPlaceholder": "z. B. Michele Rossi",
+        "coverImageUrlLabel": "Cover-Bild-URL",
+        "coverImageUrlPlaceholder": "https://...",
+        "shortDescLabel": "Kurzbeschreibung",
+        "shortDescPlaceholder": "Ein Satz, der den Kurs beschreibt (im Katalog sichtbar).",
+        "longDescLabel": "Ausführliche Beschreibung",
+        "longDescPlaceholder": "Was Sie lernen, an wen er sich richtet, Voraussetzungen usw.",
+        "instructorBioLabel": "Dozenten-Bio",
+        "policyLabel": "Zugriffsrichtlinie *",
+        "policyLifetime": "Lebenslanger Zugang",
+        "policyExpiring": "Temporärer Zugang",
+        "expiryLabel": "Gültigkeit (Tage) *",
+        "savingBtn": "Wird gespeichert…",
+        "createBtn": "Kurs erstellen",
+        "saveBtn": "Speichern"
+      },
+      "lesson": {
+        "videoOk": "✓ Video",
+        "videoMissing": "⚠ kein Video",
+        "preview": "Vorschau",
+        "moveUp": "Nach oben",
+        "moveDown": "Nach unten",
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "titlePlaceholder": "Lektionstitel",
+        "durationLabel": "Dauer (Sekunden)",
+        "guidLabel": "Bunny-Video-GUID",
+        "guidFormatError": "UUID-Format erforderlich",
+        "libraryLabel": "Bunny-Bibliothek",
+        "libraryDefault": "Standard (erste verfügbare Bibliothek)",
+        "descPlaceholder": "Beschreibung (optional)",
+        "previewToggle": "Als kostenlose Vorschau auf der Landingpage anzeigen",
+        "cancel": "Abbrechen",
+        "saving": "Wird gespeichert…",
+        "saveBtn": "Lektion speichern"
+      },
+      "module": {
+        "titlePlaceholder": "Modultitel",
+        "descPlaceholder": "Beschreibung (optional)",
+        "cancel": "Abbrechen",
+        "saving": "Wird gespeichert…",
+        "saveBtn": "Speichern",
+        "lessonCountSuffix": "Lektion",
+        "moveUp": "Nach oben",
+        "moveDown": "Nach unten",
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "addLessonHeader": "+ Lektion hinzufügen",
+        "newLessonPlaceholder": "Lektionstitel (Eingabe zum Speichern)",
+        "newLessonDuration": "Dauer (s)",
+        "newLessonGuid": "Bunny-GUID (optional)",
+        "libraryLabel": "Bunny-Bibliothek",
+        "kbdHintBefore": "💡 Drücken Sie",
+        "kbdEnter": "Enter",
+        "kbdHintAfter": "zum schnellen Hinzufügen",
+        "addingLesson": "Wird hinzugefügt…",
+        "addLessonBtn": "+ Lektion hinzufügen"
+      },
+      "modules": {
+        "onboardingTitle": "Bauen Sie den Kurs Modul für Modul auf",
+        "onboardingStep1": "1️⃣ Beginnen Sie mit dem Titel des ersten Moduls unten",
+        "onboardingStep2": "2️⃣ Fügen Sie im Modul Lektionen hinzu (Bunny-GUID einfügen)",
+        "onboardingStep3": "3️⃣ Wenn bereit, Preis festlegen und über die Karte „Verkauf“ veröffentlichen →",
+        "addModuleLabel": "Modul hinzufügen",
+        "newModulePlaceholder": "Titel des neuen Moduls (Eingabe zum Speichern)",
+        "addingModule": "Wird hinzugefügt…",
+        "addModuleBtn": "+ Modul"
+      },
+      "enrollments": {
+        "title": "👥 Eingeschriebene Nutzer",
+        "subtitle": "Wer den Kurs gekauft hat, Fortschrittsstatus und Widerrufe. E-Mail/Name-Daten kommen aus dem Kundenkonto; ein Widerruf sperrt den Zugang bei der nächsten Player-Anfrage."
+      },
+      "createHint": {
+        "label": "So funktioniert es:",
+        "text": "nach Erstellung des Kurses können Sie Module und Lektionen hinzufügen. Videos bleiben auf Bunny — hier fügen Sie nur die GUID jedes Videos ein (zu finden im Bunny-Stream-Panel)."
+      },
+      "notFound": "Kurs nicht gefunden",
+      "bunnyManager": {
+        "loading": "Bunny-Konfiguration wird geladen…",
+        "listHeader": "🐰 Bunny-Stream-Bibliotheken",
+        "addLibraryBtn": "+ Bibliothek hinzufügen",
+        "defaultHint": "Lektionen ohne ausdrückliche Bibliothek verwenden die <strong>Standard</strong>-Bibliothek. Ändern Sie den Standard, indem Sie auf ⭐ der Bibliothek klicken, die Sie befördern möchten.",
+        "defaultBadge": "⭐ Standard",
+        "videoSuffix": "Videos",
+        "testBtn": "↻ Test",
+        "testingBtn": "Wird geprüft…",
+        "testTitle": "Verbindung prüfen",
+        "setDefaultBtn": "⭐ Standard",
+        "setDefaultTitle": "Als Standard festlegen",
+        "editBtn": "Bearbeiten",
+        "removeTitle": "Diese Bibliothek entfernen",
+        "dialogTitle": "Bunny-Stream-Konfiguration",
+        "empty": {
+          "title": "Bunny Stream konfigurieren, um Kurse zu aktivieren",
+          "text": "Verbinden Sie Ihre erste Bunny-Bibliothek. Sie können jederzeit weitere hinzufügen, falls vorhanden.",
+          "addBtn": "+ Bibliothek hinzufügen"
+        },
+        "legacy": {
+          "title": "Sie verwenden die Legacy-Bunny-Konfiguration (1 Bibliothek)",
+          "text": "Befördern Sie zur Multi-Library, um weitere Bunny-Bibliotheken hinzuzufügen. Die aktuelle Bibliothek bleibt funktionsfähig und wird zur „Standard“. Der Vorgang ist umkehrbar.",
+          "later": "Später",
+          "promote": "Zur Multi-Library befördern"
+        },
+        "form": {
+          "aliasLabel": "Name (Alias) *",
+          "aliasPlaceholder": "z. B. Masterclass, Free content, …",
+          "aliasHint": "Interner Name zur Erkennung dieser Bibliothek im Admin. Jederzeit umbenennbar.",
+          "aliasRequired": "Geben Sie einen Namen (Alias) für die Bibliothek ein",
+          "libIdLabelEdit": "Library ID (leer lassen, um nichts zu ändern)",
+          "libIdLabelCreate": "Library ID *",
+          "libIdPlaceholder": "98765",
+          "apiKeyLabelEdit": "API-Schlüssel (leer lassen, um nichts zu ändern)",
+          "apiKeyLabelCreate": "API-Schlüssel *",
+          "apiKeyPlaceholder": "bunny-stream-library-api-key",
+          "apiKeyMaskPlaceholder": "••••••••",
+          "credsRequired": "Library ID und API-Schlüssel sind erforderlich",
+          "tokenLabelEdit": "Token Authentication Key (leer lassen, um nichts zu ändern)",
+          "tokenLabelCreate": "Token Authentication Key (erforderlich für Videowiedergabe)",
+          "tokenPlaceholder": "z. B. 9f3c5b2a-…",
+          "tokenHint": "Anders als der API-Schlüssel. Im Bunny-Panel → Stream → Ihre Library → Tab API, Feld <strong>Token Authentication Key</strong>. Ohne diesen sehen Kunden „This content is blocked“.",
+          "cdnLabel": "CDN-Hostname (optional)",
+          "cdnPlaceholder": "vz-xxxx-yyy.b-cdn.net",
+          "watermarkToggle": "Dynamisches Wasserzeichen mit Kunden-E-Mail (empfohlen)",
+          "testCredsRequired": "Geben Sie Library ID und API-Schlüssel ein, um zu testen",
+          "checkApi": "API-Schlüssel + Library ID",
+          "checkEmbed": "Token Authentication Key",
+          "checkCdn": "Pull Zone CDN (Referrer afianco.app)",
+          "checkSkippedSuffix": "— nicht testbar",
+          "probeOk": "✓ Verbunden",
+          "probeOkVideos": "✓ Verbunden · {{count}} Videos in der Library",
+          "probeNoVideos": "⚠ Library erreichbar, aber leer",
+          "probeFailed": "Test fehlgeschlagen",
+          "openBunnyPanel": "Bunny-Bibliothekseinstellungen öffnen →",
+          "testBtn": "Verbindung testen",
+          "testingBtn": "Wird geprüft…",
+          "cancelBtn": "Abbrechen",
+          "saveCreate": "Bibliothek hinzufügen",
+          "saveEdit": "Änderungen speichern",
+          "savingBtn": "Wird gespeichert und geprüft…"
+        },
+        "status": {
+          "ok": "Verbunden",
+          "unauthorized": "Falsche Zugangsdaten",
+          "library_not_found": "Bibliothek nicht gefunden",
+          "network_error": "Bunny nicht erreichbar",
+          "unknown": "Fehler",
+          "default": "Nie getestet"
+        },
+        "timeAgo": {
+          "now": "jetzt",
+          "minutes": "vor {{count}} Min.",
+          "hours": "vor {{count}} Std.",
+          "days_one": "vor {{count}} Tag",
+          "days_other": "vor {{count}} Tagen"
+        },
+        "toasts": {
+          "migrateConfirm": "Möchten Sie die aktuelle Bunny-Konfiguration auf Multi-Library befördern? Die Integration bleibt funktionsfähig und Sie können weitere Bibliotheken hinzufügen. Die Aktion ist umkehrbar, solange die beförderte Bibliothek nicht gelöscht wird.",
+          "migrated": "Konfiguration auf Multi-Library befördert",
+          "noMigrationNeeded": "Keine Migration erforderlich",
+          "migrateError": "Fehler bei der Migration",
+          "connectedWithCount": "{{alias}}: verbunden · {{count}} Videos",
+          "connected": "{{alias}}: verbunden",
+          "testError": "Fehler beim Test",
+          "adHocConnectedWithCount": "Verbunden · {{count}} Videos",
+          "adHocConnected": "Verbunden",
+          "setDefaultSuccess": "{{alias}} ist jetzt die Standardbibliothek",
+          "setDefaultError": "Fehler beim Festlegen des Standards",
+          "deleteConfirm": "Bibliothek „{{alias}}“ entfernen? Lektionen, die explizit darauf verweisen, blockieren die Entfernung.",
+          "deleted": "Bibliothek „{{alias}}“ entfernt",
+          "deleteError": "Fehler beim Löschen",
+          "createConnectedWithCount": "{{alias}}: verbunden · {{count}} Videos",
+          "createSavedAlias": "{{alias}}: Konfiguration gespeichert",
+          "savedWithWarning": "Gespeichert, aber: {{error}}",
+          "configSaved": "Konfiguration gespeichert",
+          "saveError": "Speicherfehler",
+          "updated": "{{alias}}: aktualisiert",
+          "updatedGeneric": "Aktualisiert"
+        }
+      },
+      "bunnyWidget": {
+        "loading": "Bunny wird geladen…",
+        "header": "🐰 Bunny Stream",
+        "emptyDesc": "Konfigurieren Sie die Anmeldedaten, um die Videowiedergabe zu aktivieren.",
+        "configureBtn": "Jetzt konfigurieren",
+        "videoCount_one": "{{count}} Video",
+        "videoCount_other": "{{count}} Videos",
+        "labelLibrary": "Bibliothek",
+        "labelApiKey": "API-Schlüssel",
+        "labelWatermark": "Wasserzeichen",
+        "watermarkOn": "Aktiv",
+        "watermarkOff": "Inaktiv",
+        "moreLibraries_one": "+{{count}} weitere Bibliothek konfiguriert",
+        "moreLibraries_other": "+{{count}} weitere Bibliotheken konfiguriert",
+        "manageLegacy": "Konfiguration verwalten",
+        "manageMulti": "Bibliotheken verwalten",
+        "legacyAlias": "Bunny (Legacy)"
+      },
+      "enrollmentsSection": {
+        "title": "Eingeschrieben",
+        "showRevoked": "Widerrufene anzeigen",
+        "loadError": "Fehler beim Laden der Einschreibungen",
+        "loading": "Wird geladen…",
+        "emptyAll": "Kein Kunde in diesem Kurs eingeschrieben.",
+        "emptyHidingRevoked": "Kein Kunde in diesem Kurs eingeschrieben (oder alle widerrufen).",
+        "colCustomer": "Kunde",
+        "colEnrolled": "Eingeschrieben am",
+        "colExpiry": "Ablauf",
+        "colLastAccess": "Letzter Zugriff",
+        "colProgress": "Fortschritt",
+        "colStatus": "Status",
+        "lifetime": "Lebenslang",
+        "revokeAction": "Widerrufen",
+        "statusRevoked": "Widerrufen",
+        "statusCompleted": "Abgeschlossen",
+        "statusInProgress": "Laufend",
+        "statusToStart": "Nicht begonnen",
+        "revokeModal": {
+          "title": "Einschreibung widerrufen",
+          "warning": "Der Kunde verliert sofort den Zugang zum Kurs. Die Aktion ist umkehrbar durch erneute Auftragserstellung. Der Grund bleibt privat (internes Audit-Log).",
+          "customer": "Kunde:",
+          "email": "E-Mail:",
+          "enrolled": "Eingeschrieben am:",
+          "reasonLabel": "Begründung *",
+          "reasonPlaceholder": "z. B. Rückerstattung via Stripe ausgegeben",
+          "reasonDefault": "Vom Kunden angeforderte Rückerstattung",
+          "reasonRequired": "Begründung ist erforderlich",
+          "cancel": "Abbrechen",
+          "submit": "Zugang widerrufen",
+          "submitting": "Wird widerrufen…",
+          "successToast": "Einschreibung widerrufen",
+          "errorToast": "Fehler beim Widerruf"
+        }
+      },
+      "salesCard": {
+        "title": "💰 Verkauf",
+        "subtitle": "Wie er im Storefront erscheint und wie er gekauft wird.",
+        "statusOnline": "🟢 Online",
+        "statusOffline": "🔴 Offline",
+        "loadError": "Verkaufsdaten konnten nicht geladen werden.",
+        "productMissing": "Verknüpftes Produkt nicht gefunden. Bitte Seite neu laden.",
+        "priceLabel": "Preis *",
+        "pricePlaceholder": "49.00",
+        "currencyLabel": "Währung",
+        "modeLabel": "Kaufmodus",
+        "modeDirect": "Sofortzahlung (Stripe)",
+        "modeRequest": "Anfrage — Merchant bestätigt",
+        "modeApproval": "Anfrage mit Genehmigung",
+        "storesLabel": "Stores, in denen verkauft wird",
+        "storesEmpty": "Kein Store konfiguriert. Erstellen Sie einen Store über „Stores“ im Hauptmenü.",
+        "storePublished": "veröffentlicht",
+        "storeDraft": "Entwurf",
+        "noneSelectedWarn": "⚠️ Kein Store ausgewählt — der Kurs ist in allen Stores der Organisation sichtbar.",
+        "urlLabel": "Öffentliche Landing-URL",
+        "storeDraftWarn": "Der Store „{{name}}“ ist im Entwurfsmodus — die Landing ist noch nicht öffentlich.",
+        "publishLabel": "Kurs online im Storefront",
+        "publishBlockers": "Zur Veröffentlichung fehlt noch:",
+        "blockerPrice": "Preis > 0 setzen",
+        "blockerLessons": "Mindestens 1 Lektion hinzufügen",
+        "blockerVideos": "Mindestens 1 Bunny-Video verknüpfen",
+        "blockerActive": "Der Kurs ist archiviert — reaktivieren",
+        "toastPublishedOk": "Gespeichert — der Kurs ist online 🎉",
+        "toastSaved": "Verkauf aktualisiert",
+        "toastPublishBlocked": "Lösen Sie die Anforderungen für die Veröffentlichung.",
+        "toastSaveError": "Fehler beim Speichern des Verkaufs",
+        "saveDirty": "Änderungen speichern",
+        "saveClean": "Gespeichert"
+      },
+      "pageList": {
+        "title": "Videokurse",
+        "subtitle": "Erstellen und verwalten Sie Ihre Lernpfade. Videos bleiben auf Bunny; AFianco verwaltet Struktur, Zugang und Player.",
+        "showArchived": "Archivierte anzeigen",
+        "newCourse": "+ Neuer Kurs",
+        "expiringDays": "{{count}} Tage",
+        "policyLifetime": "Lebenslanger Zugang",
+        "statusActive": "Aktiv",
+        "statusArchived": "Archiviert",
+        "errorLoad": "Kurse konnten nicht geladen werden",
+        "archiveConfirm": "Kurs „{{title}}“ archivieren?",
+        "archived": "Kurs archiviert",
+        "archiveError": "Kurs konnte nicht archiviert werden",
+        "emptyTitle": "Noch keine Kurse",
+        "emptyText": "Erstellen Sie Ihren ersten Kurs: Module, Lektionen hinzufügen und mit Ihren Bunny-Videos verknüpfen.",
+        "emptyCta": "Ersten Kurs erstellen",
+        "minutesSuffix": "{{minutes}} Min.",
+        "colTitle": "Titel",
+        "colSlug": "Slug",
+        "colModules": "Module",
+        "colLessons": "Lektionen",
+        "colDuration": "Dauer",
+        "colAccess": "Zugang",
+        "colStatus": "Status",
+        "colUpdated": "Aktualisiert",
+        "editAction": "Bearbeiten",
+        "archiveAction": "Archivieren"
+      },
+      "validation": {
+        "lessonTitleRequired": "Lektionstitel erforderlich",
+        "guidInvalid": "Ungültige Bunny-GUID (UUID-Format)",
+        "guidInvalidShort": "Ungültige Bunny-GUID",
+        "moduleTitleRequired": "Titel erforderlich",
+        "courseTitleRequired": "Titel erforderlich",
+        "slugRequired": "Slug erforderlich",
+        "expiryRequired": "Geben Sie die Gültigkeit in Tagen an"
+      },
+      "toasts": {
+        "lessonUpdated": "Lektion aktualisiert",
+        "lessonAdded": "Lektion hinzugefügt",
+        "lessonDeleted": "Lektion entfernt",
+        "lessonDeleteConfirm": "\"{{title}}\" löschen?",
+        "lessonDeleteError": "Löschfehler",
+        "lessonReorderError": "Reihenfolge-Fehler",
+        "lessonAddError": "Hinzufügen-Fehler",
+        "moduleUpdated": "Modul aktualisiert",
+        "moduleDeleted": "Modul entfernt",
+        "moduleDeleteConfirm": "Modul \"{{title}}\" und alle seine Lektionen löschen?",
+        "moduleDeleteError": "Löschfehler",
+        "moduleReorderError": "Reihenfolge-Fehler",
+        "moduleAdded": "Modul hinzugefügt",
+        "moduleAddError": "Modul-Hinzufügen-Fehler",
+        "saveError": "Speicherfehler",
+        "courseCreated": "Kurs erstellt",
+        "courseUpdated": "Kurs aktualisiert"
+      }
+    },
+
+    "event": {
+      "back": "← Zurück zu den Veranstaltungen",
+      "typeLabel": "Veranstaltung",
+      "fallbackName": "Veranstaltung",
+      "notFound": "Veranstaltung nicht gefunden",
+      "notFoundDesc": "Das angeforderte Vorkommnis existiert nicht oder gehört nicht zu Ihrer Organisation.",
+      "notFoundBackToProducts": "Zurück zu den Produkten",
+      "errorPrefix": "Fehler: {{detail}}",
+      "notVisibleWarning": "⚠ Veranstaltung nicht öffentlich sichtbar",
+      "statusBadge": {
+        "draft": "Offline",
+        "published": "Online",
+        "closed": "Geschlossen",
+        "cancelled": "Storniert"
+      },
+      "statusTitle": "Veranstaltungsstatus",
+      "statusOnlineDesc": "Die Veranstaltung ist online und für die Öffentlichkeit sichtbar.",
+      "statusClosedDesc": "Verkäufe geschlossen. Die Veranstaltung bleibt sichtbar.",
+      "statusCancelledDesc": "Veranstaltung storniert. Nicht öffentlich sichtbar.",
+      "statusOfflineDesc": "Die Veranstaltung ist offline. Nicht öffentlich sichtbar.",
+      "diagnostic": {
+        "noStoreSlug": "Der Store-/Organisationsslug ist nicht konfiguriert (Einstellungen → Store)",
+        "noEventSlug": "Der Veranstaltungs-Slug ist nicht festgelegt (öffnen Sie ✏️ Datum, Ort und Kapazität)",
+        "statusNotPublished": "Veranstaltungsstatus: \"{{status}}\" — auf \"Online\" setzen, um sie sichtbar zu machen",
+        "productDisabled": "Das übergeordnete Produkt ist deaktiviert — automatisch behoben durch Setzen der Veranstaltung auf Online",
+        "productDeactivated": "Das übergeordnete Produkt ist deaktiviert (soft-deleted) — automatisch behoben durch Setzen der Veranstaltung auf Online"
+      },
+      "emailDelivery": {
+        "title": "Teilnehmer-E-Mails",
+        "pending": "ausstehend",
+        "failed": "fehlgeschlagen",
+        "sent": "E-Mails gesendet",
+        "resending": "Wird gesendet…",
+        "resendBtn": "↻ An alle erneut senden"
+      },
+      "actionBar": {
+        "landingPreview": "🔗 Landing-Vorschau",
+        "landingUnavailable": "Landing nicht verfügbar",
+        "landingCopy": "📋 Landing-Link kopieren",
+        "checkInOpen": "🎟 Check-in öffnen",
+        "editEvent": "✏️ Veranstaltung bearbeiten",
+        "exportingCsv": "📥 Wird exportiert…",
+        "exportCsv": "📥 Teilnehmer exportieren (CSV)",
+        "ticketsManage": "🎫 Tickets verwalten",
+        "duplicateLoading": "⏳ Wird geöffnet…",
+        "duplicateBtn": "🧬 Veranstaltung duplizieren",
+        "archivingLoading": "⏳ …",
+        "unarchive": "📤 Wiederherstellen",
+        "archive": "📦 Archivieren",
+        "archiveBanner": "📦 Veranstaltung archiviert — aus der Hauptliste der Veranstaltungen ausgeblendet. Bleibt von hier und vom Archiv-Tab zugänglich."
+      },
+      "product": {
+        "title": "✏️ Produkt",
+        "nameLabel": "Veranstaltungsname *",
+        "shortDescLabel": "Kurzbeschreibung",
+        "imageLabel": "Katalogbild",
+        "uploading": "⏳ Wird hochgeladen…",
+        "uploadLabel": "📁 Bild hochladen (jpg/png/webp, max. 5 MB)",
+        "imageUrlPlaceholder": "oder URL einfügen…",
+        "priceLabel": "Grundpreis (€)",
+        "pricePlaceholder": "0.00",
+        "priceHint": "Ignoriert, wenn Sie Ticket-Tiers haben",
+        "modeLabel": "Kaufmodus",
+        "modeDirect": "Direkt",
+        "modeRequest": "Auf Anfrage",
+        "requireDetailsTitle": "Teilnehmernamen erfordern",
+        "requireDetailsDescOn": "Der Checkout sammelt Name + E-Mail + Telefon für jedes Ticket. Jeder Gast mit E-Mail erhält sein persönliches Ticket.",
+        "requireDetailsDescOff": "Der Hauptkunde erhält alle Tickets. Aktivieren für Veranstaltungen mit namentlicher Sitzplatzzuweisung.",
+        "baseFieldsHeading": "Basisfelder Teilnehmer",
+        "alwaysRequired": "Immer erforderlich",
+        "emailRequired": "Erforderlich",
+        "phoneRequired": "Erforderlich",
+        "noEmailWarning": "⚠ Ohne E-Mail erhält der Teilnehmer kein persönliches Ticket.",
+        "attendeeFieldsTitle": "Zusätzliche Felder pro Teilnehmer",
+        "attendeeFieldsSubtitle": "Pro Ticket gefragt (z. B. Allergien, Mahlzeit, Größe)",
+        "saveBtn": "Produkt speichern"
+      },
+      "occurrence": {
+        "title": "✏️ Datum, Ort und Kapazität",
+        "statusLabel": "Status",
+        "venueHeader": "Veranstaltungsort",
+        "venuePlaceholder": "z. B. Masseria Montanari",
+        "countryDefault": "IT",
+        "coverLabel": "Cover-Bild der Veranstaltung",
+        "coverUploaded": "Cover hochgeladen",
+        "coverUploadError": "Upload-Fehler",
+        "coverUrlPlaceholder": "oder URL einfügen…",
+        "latitudePlaceholder": "z. B. 40.3515",
+        "longitudePlaceholder": "z. B. 18.1750",
+        "slugPlaceholder": "z. B. jazz-abend-april",
+        "publicLandingHeader": "Öffentliche Landingpage",
+        "slugLabel": "URL-Slug",
+        "slugExample": "z. B. jazz-abend-april",
+        "landingAvailable": "✓ Landing wird verfügbar sein unter:",
+        "publishStoreFirst": "⚠ Veröffentliche einen Store, um die Landingpage zu aktivieren.",
+        "slugMissingHint": "Ohne Slug ist die öffentliche Landingpage nicht erreichbar.",
+        "saveBtn": "Datum und Ort speichern"
+      },
+      "revenue": {
+        "title": "Einnahmen",
+        "ticketSold_one": "Ticket verkauft",
+        "ticketSold_other": "Tickets verkauft",
+        "fromTickets_one": "von {{count}} verkauftem Ticket",
+        "fromTickets_other": "von {{count}} verkauften Tickets",
+        "perTier": "Pro Tier",
+        "basePrice": "Grundpreis",
+        "salesLast30": "Verkäufe letzte 30 Tage"
+      },
+      "tiers": {
+        "title": "Ticket-Tiers",
+        "addBtn": "+ Tier hinzufügen",
+        "emptyHint": "Keine Tiers — die Veranstaltung verwendet einen Einheitspreis. Fügen Sie einen hinzu, um differenzierte Tickets zu aktivieren.",
+        "disabled": "Deaktiviert",
+        "depleted": "Ausverkauft",
+        "soldCount": "verkauft",
+        "labelLabel": "Bezeichnung *",
+        "priceLabel": "Preis (€) *",
+        "capacityLabel": "Kapazität (leer = unbegrenzt)",
+        "activeToggle": "Aktiv",
+        "activeBadge": "✓ Aktiv",
+        "disabledBadge": "Deaktiviert",
+        "descriptionLabel": "Beschreibung (optional)",
+        "descriptionPlaceholder": "z. B. Inkl. Getränk",
+        "softDeleteWarning": "Dieser Tier hat verkaufte Tickets. Er wird deaktiviert (soft-delete) statt gelöscht.",
+        "deleteConfirm": "Diesen Tier löschen?",
+        "removeBtn": "🗑 Löschen",
+        "removingBtn": "Wird entfernt…",
+        "cancelBtn": "Abbrechen",
+        "saveBtn": "Speichern",
+        "newTitle": "Neuer Tier",
+        "newLabelPlaceholder": "z. B. Standard, VIP, Early-bird",
+        "newPricePlaceholder": "0.00",
+        "newDescPlaceholder": "z. B. Inkl. Getränk",
+        "addAction": "Hinzufügen"
+      },
+      "history": {
+        "title": "Vergleich mit vergangenen Veranstaltungen",
+        "subtitle": "Letzte {{count}} Editionen derselben Veranstaltung — um den Trend zu verstehen.",
+        "colDate": "Datum",
+        "colTickets": "Tickets",
+        "colRevenue": "Umsatz",
+        "colAttendance": "Anwesenheit",
+        "compareNow": "Jetzt vs. Vergangenheitsdurchschnitt:",
+        "comparedTickets": "Tickets",
+        "comparedRevenue": "Umsatz"
+      },
+      "participants": {
+        "title": "Teilnehmer",
+        "result_one": "Ergebnis",
+        "result_other": "Ergebnisse",
+        "searchPlaceholder": "Suche nach Name, E-Mail, Code oder Tier…",
+        "filterAll": "Alle Status",
+        "filterPending": "Zu prüfen",
+        "filterEntered": "Eingelassen",
+        "filterCancelled": "Storniert",
+        "empty": "Kein Teilnehmer entspricht den Filtern.",
+        "colName": "Name",
+        "colCode": "Code",
+        "colTier": "Tier",
+        "colStatus": "Status",
+        "statusEntered": "Eingelassen",
+        "statusCancelled": "Storniert",
+        "statusPending": "Zu prüfen",
+        "pageLabel": "Seite {{current}} von {{total}}",
+        "prev": "← Zurück",
+        "next": "Weiter →"
+      },
+      "location": {
+        "title": "Ort",
+        "openMaps": "🗺️ In Google Maps öffnen →"
+      },
+      "description": {
+        "title": "✏️ Vollständige Beschreibung",
+        "empty": "Keine Beschreibung · klicken, um eine hinzuzufügen",
+        "placeholder": "Beschreiben Sie die Veranstaltung im Detail: Programm, Sprecher, Dresscode…",
+        "saveBtn": "Beschreibung speichern"
+      },
+      "distribution": {
+        "title": "Verteilung",
+        "subtitle": "In welchen Storefronts diese Veranstaltung sichtbar ist.",
+        "currentlyAll": "Derzeit in allen Stores sichtbar.",
+        "noneSelected": "Keine ausgewählt → in allen Stores sichtbar"
+      },
+      "ticketsPage": {
+        "loading": "Wird geladen…",
+        "notFoundTitle": "Veranstaltung nicht gefunden",
+        "backToEvents": "Zurück zu Veranstaltungen",
+        "headerBack": "← Veranstaltungs-Dashboard",
+        "headerTitle": "Tickets — {{event}}",
+        "headerSubtitle": "E-Mail erneut senden, einzelnes Ticket annullieren, Nachrichten an Teilnehmer.",
+        "fallbackEventName": "Veranstaltung",
+        "checkInBtn": "🎟 Check-in",
+        "broadcastTitle": "Nachricht an Teilnehmer",
+        "broadcastSubtitle": "Senden Sie eine E-Mail an alle Teilnehmer der Veranstaltung. Eine E-Mail pro Adresse (wenn ein Kunde mehrere Tickets hat, erhält er nur eine Nachricht).",
+        "broadcastTemplates": {
+          "reminder": {
+            "label": "Erinnerung",
+            "hint": "„Bis bald“ + Datum, Ort, Code."
+          },
+          "logistics": {
+            "label": "Praktische Infos",
+            "hint": "Anreisehinweise, Parken, Dresscode…"
+          },
+          "cancellation": {
+            "label": "Absage",
+            "hint": "Die Veranstaltung wurde abgesagt, Erstattungshinweise."
+          },
+          "custom": {
+            "label": "Benutzerdefiniert",
+            "hint": "Sie schreiben den gesamten Inhalt. Erste Zeile = Betreff."
+          }
+        },
+        "messageLabelCustom": "Benutzerdefinierte Nachricht *",
+        "messageLabelOptional": "Zusätzliche Notiz (optional)",
+        "messagePlaceholderCustom": "Erste Zeile → E-Mail-Betreff.\n\nNachrichtentext…",
+        "messagePlaceholderOptional": "Fügen Sie ein paar persönliche Zeilen am Ende der Vorlage hinzu…",
+        "broadcastSendingBtn": "Wird gesendet…",
+        "broadcastSendBtn": "✉️ An alle senden",
+        "broadcastConfirm": "E-Mail an alle Teilnehmer der Veranstaltung senden?\nVorlage: {{template}}",
+        "broadcastCustomEmpty": "Schreiben Sie die Nachricht vor dem Senden",
+        "broadcastResultPrefix": "Letzter Versand:",
+        "broadcastSentLabel": "gesendet",
+        "broadcastErrorsLabel": "Fehler",
+        "broadcastNoEmailLabel": "ohne E-Mail",
+        "broadcastSummary": "{{sent}} E-Mails gesendet · {{errors}} Fehler · {{noEmail}} ohne E-Mail",
+        "broadcastSendError": "Fehler beim Senden des Broadcasts",
+        "broadcastErrorPrefix": "Fehler: {{message}}",
+        "ticketsTitle": "Tickets ({{count}})",
+        "searchPlaceholder": "Suche nach Name, E-Mail, Code oder Tier…",
+        "filterAll": "Alle Status",
+        "filterValid": "Zu prüfen",
+        "filterCheckedIn": "Eingelassen",
+        "filterVoided": "Annulliert",
+        "emptyFilter": "Keine Tickets entsprechen den Filtern.",
+        "colName": "Name",
+        "colCode": "Code",
+        "colTier": "Tier",
+        "colStatus": "Status",
+        "colActions": "Aktionen",
+        "statusValid": "Zu prüfen",
+        "statusCheckedIn": "Eingelassen",
+        "statusVoided": "Annulliert",
+        "resendBtn": "✉️ Erneut senden",
+        "resendNoEmailTitle": "Keine E-Mail auf dem Ticket",
+        "resendTitle": "E-Mail erneut senden",
+        "resendSuccess": "E-Mail erneut gesendet",
+        "resendNotFound": "Code nicht gefunden",
+        "resendNoEmail": "Das Ticket hat keine E-Mail-Adresse",
+        "resendVoided": "Ticket annulliert — kein Versand",
+        "resendFailed": "E-Mail-Versand fehlgeschlagen",
+        "resendErrorPrefix": "Fehler: {{reason}}",
+        "errorNetwork": "Netzwerkfehler",
+        "voidBtn": "❌ Annullieren",
+        "voidConfirm": "Ticket von {{name}} annullieren?\n\nDas Ticket kann nicht mehr beim Check-in verwendet werden. Die Bestellung bleibt gültig (verwenden Sie den Bestellungs-Flow, um die gesamte Bestellung zu stornieren).",
+        "voidedTitleAlready": "Bereits annulliert",
+        "voidedTitleCheckedIn": "Bereits eingelassen, kann nicht annulliert werden",
+        "voidedTitleAnnul": "Dieses Ticket annullieren",
+        "voidedSuccess": "Ticket annulliert",
+        "voidedAlready": "Bereits annulliert",
+        "voidedCheckedIn": "Kann nicht annulliert werden — das Ticket wurde bereits eingecheckt",
+        "voidedNotFound": "Code nicht gefunden",
+        "voidedInvalidStatus": "Status nicht behandelt",
+        "voidedFallback": "Annulliert",
+        "expandSeat": "Platz",
+        "expandSeatVal": "{{index}} von {{total}}",
+        "expandIssued": "Ausgestellt",
+        "expandCheckIn": "Check-in",
+        "expandVoidedAt": "Annulliert am",
+        "expandOrder": "Bestellung"
+      },
+      "checkIn": {
+        "scannerUnavailable": "Scanner auf diesem Gerät nicht verfügbar",
+        "scannerUnavailableHint": "Verwenden Sie die manuelle Eingabe oben, um den Ticket-Code einzugeben.",
+        "scannerCloseBtn": "Schließen",
+        "feedback": {
+          "ok": "Eingelassen",
+          "alreadyCheckedIn": "Bereits eingelassen",
+          "voided": "Ticket annulliert",
+          "notFound": "Code nicht gefunden",
+          "wrongOccurrence": "Code für eine andere Veranstaltung",
+          "invalidStatus": "Unerwarteter Status"
+        },
+        "ticketStatus": {
+          "valid": "Zu prüfen",
+          "checkedIn": "Eingelassen",
+          "voided": "Annulliert"
+        },
+        "headerKicker": "Veranstaltungs-Check-in",
+        "fallbackEventName": "Veranstaltung",
+        "headerEntered": "Eingelassen",
+        "loadError": "Ladefehler",
+        "summary": {
+          "toEnter": "Einzulassen",
+          "entered": "Eingelassen",
+          "voided": "Annulliert"
+        },
+        "tierLabel": "Typ: {{tier}}",
+        "checkedInAt": "Eingelassen um {{time}}",
+        "closeBtn": "Schließen",
+        "errorNetwork": "Netzwerkfehler",
+        "manualLabel": "Code eingeben",
+        "manualPlaceholder": "EVT-XXXX-XXXX",
+        "verifyingBtn": "Wird geprüft…",
+        "submitBtn": "Einlassen",
+        "lockToOccurrence": "Nur Tickets dieser Veranstaltung akzeptieren",
+        "openScanner": "📷 Kamera-Scanner starten",
+        "listTitle": "Teilnehmerliste ({{count}})",
+        "filterAll": "Alle",
+        "filterPending": "Zu prüfen",
+        "filterEntered": "Eingelassen",
+        "loading": "Wird geladen…",
+        "listEmpty": "Keine Tickets.",
+        "guestPlaceholder": "Gast",
+        "rowEnterBtn": "Einlassen",
+        "backToProducts": "← Zurück zu den Produkten",
+        "scanner": {
+          "title": "Kamera-Scanner",
+          "closeBtn": "Schließen",
+          "errorTitle": "Kamera nicht verfügbar",
+          "errors": {
+            "unknown": "Unbekannter Fehler.",
+            "insecure_context": "Die Kamera erfordert eine sichere Verbindung (HTTPS). Öffnen Sie diese Seite über https:// oder verwenden Sie die manuelle Eingabe unten.",
+            "no_media_api": "Der Browser unterstützt keinen Kamerazugriff. Verwenden Sie die manuelle Eingabe unten.",
+            "permission_denied": "Kamerazugriff verweigert. Tippen Sie auf das Schlosssymbol in der Adressleiste, erlauben Sie die Kamera und laden Sie neu.",
+            "permission_denied_short": "Kamerazugriff verweigert.",
+            "no_camera": "Keine Kamera auf diesem Gerät verfügbar. Verwenden Sie die manuelle Eingabe.",
+            "no_camera_short": "Keine Kamera verfügbar.",
+            "camera_busy": "Die Kamera wird von einer anderen App oder einem anderen Tab verwendet. Schließen Sie die anderen Apps und versuchen Sie es erneut.",
+            "constraints_unmet": "Rückkamera kann nicht verwendet werden. Erneut versuchen oder manuelle Eingabe verwenden.",
+            "security": "Kamerazugriff durch die Browser-Richtlinien blockiert. Überprüfen Sie die Seiten-Einstellungen.",
+            "aborted": "Kamerastart unterbrochen.",
+            "fallback": "Fehler beim Kamerastart. Verwenden Sie die manuelle Eingabe unten."
+          }
+        }
+      },
+      "toasts": {
+        "statusUpdated": "Status aktualisiert",
+        "statusError": "Fehler beim Statuswechsel",
+        "emailResendError": "Fehler beim erneuten Senden der E-Mails",
+        "duplicateError": "Duplizierungsfehler",
+        "archiveConfirm": "Diese Veranstaltung archivieren? Sie verschwindet aus der Hauptliste, bleibt aber im Archiv zugänglich.",
+        "unarchiveConfirm": "Diese Veranstaltung wiederherstellen? Sie kehrt in die Hauptliste zurück.",
+        "archived": "Veranstaltung archiviert",
+        "unarchived": "Veranstaltung wiederhergestellt",
+        "genericError": "Fehler",
+        "csvDownloaded": "Teilnehmer-CSV heruntergeladen",
+        "csvError": "CSV-Export-Fehler",
+        "linkCopied": "Link in die Zwischenablage kopiert",
+        "linkCopyError": "Link manuell kopieren",
+        "imageUploaded": "Bild hochgeladen",
+        "imageUploadError": "Upload-Fehler",
+        "productUpdated": "Produkt aktualisiert",
+        "productSaveError": "Speicherfehler",
+        "occurrenceUpdated": "Veranstaltung aktualisiert",
+        "tierAdded": "Tier hinzugefügt",
+        "tierUpdated": "Tier aktualisiert",
+        "tierRemoved": "Tier entfernt",
+        "tierRemoveError": "Entfernungsfehler",
+        "tierSaveError": "Speicherfehler",
+        "descriptionUpdated": "Beschreibung aktualisiert",
+        "distributionUpdated": "Verteilung aktualisiert"
+      }
+    },
+
+    "reservation": {
+      "back": "← Zurück zu den Vermietungen",
+      "fallbackName": "Vermietung",
+      "notFound": "Vermietung nicht gefunden",
+      "invalidType": "Ungültiger Typ",
+      "invalidTypeDesc": "Diese Seite verwaltet nur Produkte vom Typ \"Vermietung\".",
+      "flavorLabel": {
+        "range": "Periodische Vermietung",
+        "slot": "Slot-Vermietung"
+      },
+      "perRentalUnit": "Pro {{unit}}",
+      "slotDurationDisplay": "⏱ {{minutes}} Minuten",
+      "statusTitle": "Vermietungsstatus",
+      "statusOnlineDesc": "Die Vermietung ist online und für die Öffentlichkeit sichtbar.",
+      "statusOfflineDesc": "Die Vermietung ist offline. Nicht öffentlich sichtbar.",
+      "landingPreview": "🔗 Landing-Vorschau",
+      "landingUnavailable": "Landing nicht verfügbar",
+      "landingCopy": "📋 Landing-Link kopieren",
+      "duplicateLoading": "⏳ Wird geöffnet…",
+      "duplicateBtn": "🧬 Vermietung duplizieren",
+      "upcoming": {
+        "title": "📅 Bevorstehende Buchungen",
+        "loading": "Buchungen werden geladen…",
+        "empty": "Keine aktiven Vermietungen. Neue erscheinen hier.",
+        "openLanding": "Landing öffnen →",
+        "seeAll": "Alle im Buchungs-Dashboard ansehen →"
+      },
+      "identity": {
+        "title": "Identität",
+        "nameLabel": "Name *",
+        "shortDescLabel": "Kurzbeschreibung",
+        "imageLabel": "URL des Karten-Bilds",
+        "coverLabel": "URL des Heldenbilds (Landingpage)",
+        "longDescLabel": "Ausführliche Beschreibung (Landingpage)",
+        "saveBtn": "Änderungen speichern"
+      },
+      "pricing": {
+        "title": "Typ & Preis",
+        "flavorTitle": "Vermietungstyp",
+        "flavorRange": "Periodische Vermietung (mehrtägig)",
+        "flavorSlot": "Slot-Vermietung (Stunde/Zeitfenster)",
+        "flavorRangeDesc": "Der Kunde wählt einen Datumsbereich (B&B, Auto, Geräte).",
+        "flavorSlotDesc": "Der Kunde wählt ein Datum + Uhrzeit (Besprechungsraum, Sportplatz).",
+        "priceLabelRange": "Grundpreis (pro Einheit)",
+        "priceLabelSlot": "Grundpreis (pro Slot)",
+        "currentLabel": "Aktuell: {{value}}",
+        "rentalUnitLabel": "Mieteinheit",
+        "rentalUnits": {
+          "giorno": "Tag",
+          "notte": "Nacht",
+          "settimana": "Woche",
+          "mese": "Monat",
+          "ora": "Stunde"
+        },
+        "slotDurationLabel": "Empfohlene Dauer (Minuten)",
+        "slotDurationOption": "{{minutes}} Min.",
+        "slotDurationFallback": "Standard und Fallback, wenn Min./Schritt/Max. leer sind.",
+        "variableTitle": "Variable Dauer",
+        "variableDesc": "Der Kunde wählt Beginn und Ende frei (auch über mehrere Tage). Stundenpreis: {{price}} €/Stunde × Dauer.",
+        "minDurationLabel": "Mindestdauer (Min.)",
+        "minDurationPlaceholder": "z. B. 30",
+        "stepLabel": "Schritt (Min.)",
+        "stepPlaceholder": "z. B. 15",
+        "maxDurationLabel": "Maximaldauer (Min.)",
+        "maxDurationPlaceholder": "leer = unbegrenzt",
+        "modeLabel": "Kaufmodus",
+        "modeRequest": "Auf Anfrage (manuelle Bestätigung)",
+        "modeDirect": "Direkt (Online-Zahlung)",
+        "modeApproval": "Mit Bestätigung",
+        "saveBtn": "Änderungen speichern"
+      },
+      "availability": {
+        "title": "Verfügbarkeit (wöchentliche Slots)"
+      },
+      "extras": {
+        "title": "Extras & Optionen",
+        "saveBtn": "Extras speichern",
+        "unsavedHint": "Änderungen werden erst gespeichert, wenn Sie auf \"Extras speichern\" klicken."
+      },
+      "terms": {
+        "title": "Geschäftsbedingungen",
+        "termsLabel": "Spezifische Bedingungen (überschreiben die des Stores)",
+        "termsHint": "Leer lassen, um die AGB des Stores zu verwenden.",
+        "orderFieldsLabel": "Zusätzliche Checkout-Felder",
+        "saveBtn": "Änderungen speichern"
+      },
+      "distribution": {
+        "title": "Verteilung (Stores)",
+        "noStores": "Kein Store verfügbar.",
+        "multiDesc": "In welchen Stores die Buchung sichtbar ist."
+      },
+      "toasts": {
+        "updated": "Vermietung aktualisiert",
+        "online": "Vermietung online",
+        "offline": "Vermietung offline",
+        "statusError": "Fehler beim Statuswechsel",
+        "duplicated": "Vermietung dupliziert",
+        "duplicateError": "Duplizierungsfehler",
+        "availabilityUpdated": "Verfügbarkeit aktualisiert",
+        "availabilityError": "Fehler beim Speichern der Verfügbarkeit",
+        "extrasUpdated": "Extras aktualisiert",
+        "extrasError": "Fehler beim Speichern der Extras"
+      }
+    },
+
+    "digital": {
+      "back": "← Zurück zu den Produkten",
+      "typeLabel": "💾 Digitales Produkt",
+      "fallbackName": "Produkt",
+      "notFound": "Produkt nicht gefunden",
+      "invalidType": "Ungültiger Typ",
+      "invalidTypeDesc": "Diese Seite verwaltet nur Produkte vom Typ \"digital\".",
+      "fileMissingBadge": "⚠️ Datei fehlt",
+      "statusTitle": "Produktstatus",
+      "statusOnlineDesc": "Das Produkt ist online und kaufbar.",
+      "statusOfflineDesc": "Das Produkt ist offline. Nicht öffentlich sichtbar.",
+      "statusFileMissingDesc": "Sie können nicht veröffentlichen, bevor Sie die digitale Datei hochladen.",
+      "landingPreview": "🔗 Landing-Vorschau",
+      "landingUnavailable": "Landing nicht verfügbar",
+      "landingCopy": "📋 Landing-Link kopieren",
+      "duplicateLoading": "⏳ Wird geöffnet…",
+      "duplicateBtn": "🧬 Produkt duplizieren",
+      "downloadStatus": {
+        "active": "Aktiv",
+        "exhausted": "Erschöpft",
+        "cancelled": "Storniert"
+      },
+      "file": {
+        "title": "📁 Digitale Datei",
+        "missingWarning": "⚠️ Keine Datei hochgeladen. Das Produkt kann nicht veröffentlicht werden.",
+        "replaceLabel": "Datei ersetzen (max. 100 MB)",
+        "uploadLabel": "Datei hochladen (max. 100 MB)",
+        "uploadingBtn": "Wird hochgeladen…",
+        "replaceBtn": "Ersetzen",
+        "uploadBtn": "Hochladen",
+        "cancelBtn": "Abbrechen",
+        "privacyHint": "Die Datei wird in einem privaten Bereich gespeichert: Nur der nach dem Kauf generierte persönliche Link (jede Anfrage wird vom Backend überprüft) kann darauf zugreifen."
+      },
+      "downloads": {
+        "title": "🧾 Lieferungen",
+        "empty": "Keine Lieferungen für dieses Produkt.",
+        "downloadCount": "Downloads",
+        "exhaustedCount": "erschöpft",
+        "resending": "Wird gesendet…",
+        "resendBtn": "E-Mail erneut senden"
+      },
+      "inventory": {
+        "title": "📦 Kopienlimit",
+        "trackStockTitle": "Anzahl der Downloads begrenzen",
+        "trackStockDesc": "Reduziert atomar bei jeder bestätigten Bestellung.",
+        "stockLabel": "Verfügbare Kopien",
+        "saveBtn": "Limit speichern"
+      },
+      "identity": {
+        "title": "🪪 Identität",
+        "nameLabel": "Name",
+        "shortDescLabel": "Kurzbeschreibung",
+        "longDescLabel": "Ausführliche Beschreibung (Landingpage)",
+        "skuLabel": "SKU",
+        "categoryLabel": "Kategorie",
+        "imageLabel": "Bild",
+        "coverLabel": "Landingpage-Cover",
+        "saveBtn": "Identität speichern"
+      },
+      "pricing": {
+        "title": "💶 Preis & Modus",
+        "priceLabel": "Preis (€)",
+        "modeLabel": "Bestellmodus",
+        "modeDirect": "Direkt (sofortige Zahlung)",
+        "modeApproval": "Mit Bestätigung",
+        "modeRequest": "Auf Anfrage",
+        "saveBtn": "Preis speichern"
+      },
+      "policy": {
+        "title": "🔒 Zugriffsrichtlinie",
+        "hint": "Gilt nur für neue Lieferungen. Bereits ausgegebene Lieferungen behalten die Regeln zum Zeitpunkt des Kaufs (Snapshot).",
+        "maxDownloadsLabel": "Max. Downloads pro Kunde",
+        "maxDownloadsPlaceholder": "leer = unbegrenzt",
+        "expiryLabel": "Link-Gültigkeit (Tage)",
+        "expiryPlaceholder": "leer = kein Ablaufdatum",
+        "saveBtn": "Richtlinie speichern"
+      },
+      "extras": {
+        "title": "➕ Extras & Varianten"
+      },
+      "terms": {
+        "title": "📜 AGB",
+        "placeholder": "Lizenz, Nutzungseinschränkungen, Rückerstattungen…"
+      },
+      "distribution": {
+        "visibleIn": "Sichtbar in:"
+      },
+      "toasts": {
+        "fileMissingPublish": "Bitte zuerst die digitale Datei hochladen.",
+        "online": "Produkt online",
+        "offline": "Produkt offline",
+        "statusError": "Fehler beim Statuswechsel",
+        "fileReplaced": "Datei ersetzt",
+        "uploadFailed": "Upload fehlgeschlagen",
+        "emailResent": "E-Mail erneut gesendet",
+        "resendError": "Erneutes Senden nicht möglich",
+        "copyError": "Kopieren nicht möglich",
+        "duplicated": "Kopie erstellt (vergessen Sie nicht, die Datei hochzuladen)",
+        "duplicateError": "Duplizierungsfehler",
+        "extrasUpdated": "Extras aktualisiert",
+        "extrasError": "Fehler beim Speichern der Extras"
+      }
+    },
+
+    "physical": {
+      "back": "← Zurück zu den Produkten",
+      "typeLabel": "📦 Physisches Produkt",
+      "fallbackName": "Produkt",
+      "notFound": "Produkt nicht gefunden",
+      "invalidType": "Ungültiger Typ",
+      "invalidTypeDesc": "Diese Seite verwaltet nur Produkte vom Typ \"physisch\".",
+      "statusTitle": "Produktstatus",
+      "statusOnlineDesc": "Das Produkt ist online und kaufbar.",
+      "statusOfflineDesc": "Das Produkt ist offline. Nicht öffentlich sichtbar.",
+      "landingPreview": "🔗 Landing-Vorschau",
+      "landingUnavailable": "Landing nicht verfügbar",
+      "landingCopy": "📋 Landing-Link kopieren",
+      "duplicateLoading": "⏳ Wird geöffnet…",
+      "duplicateBtn": "🧬 Produkt duplizieren",
+      "stockBadge": {
+        "notTracked": "Bestand nicht verfolgt",
+        "depleted": "Ausverkauft",
+        "lastN": "Letzte {{count}}",
+        "inStock": "{{count}} auf Lager"
+      },
+      "inventory": {
+        "title": "📦 Inventar",
+        "trackStockTitle": "Bestand verfolgen",
+        "trackStockDesc": "Das Backend reduziert die Menge atomar bei jeder bestätigten Bestellung und stellt sie beim Abbruch wieder her.",
+        "stockLabel": "Verfügbare Menge",
+        "saveBtn": "Inventar speichern"
+      },
+      "identity": {
+        "title": "🪪 Identität",
+        "nameLabel": "Name",
+        "shortDescLabel": "Kurzbeschreibung",
+        "longDescLabel": "Ausführliche Beschreibung (Landingpage)",
+        "skuLabel": "SKU",
+        "categoryLabel": "Kategorie",
+        "imageLabel": "Bild",
+        "imageUrlLabel": "Bild-URL",
+        "coverLabel": "Landingpage-Cover (optional)",
+        "coverUrlPlaceholder": "Cover-Bild-URL (Landingpage-Override)",
+        "saveBtn": "Identität speichern"
+      },
+      "pricing": {
+        "title": "💶 Preis & Modus",
+        "priceLabel": "Grundpreis (€)",
+        "modeLabel": "Bestellmodus",
+        "modeDirect": "Direkt (sofortige Zahlung)",
+        "modeApproval": "Mit Bestätigung",
+        "modeRequest": "Auf Anfrage",
+        "saveBtn": "Preis speichern"
+      },
+      "fulfillment": {
+        "title": "🚚 Lieferung",
+        "modesEnabled": "Aktivierte Modi:",
+        "noStoresShort": "Kein Store konfiguriert.",
+        "shippingShort": "📦 Versand",
+        "pickupShort": "🏪 Abholung vor Ort",
+        "modesHint": "Über die Store-Einstellungen bearbeitbar.",
+        "notesLabel": "Liefernotizen",
+        "notesPlaceholder": "z. B. Versand nur innerhalb Italiens · Abholung Di–Fr 10–18",
+        "saveBtn": "Lieferung speichern"
+      },
+      "extras": {
+        "title": "➕ Extras & Varianten"
+      },
+      "terms": {
+        "title": "📜 AGB",
+        "hint": "Rückgabe, Garantie, Versand — produktspezifisch. Wenn leer, gelten die Store-AGB."
+      },
+      "distribution": {
+        "visibleIn": "Sichtbar in:"
+      },
+      "orders": {
+        "title": "🧾 Neueste Bestellungen",
+        "empty": "Keine Bestellungen für dieses Produkt."
+      },
+      "toasts": {
+        "online": "Produkt online",
+        "offline": "Produkt offline",
+        "statusError": "Fehler beim Statuswechsel",
+        "copyError": "Kopieren fehlgeschlagen",
+        "duplicated": "Kopie erstellt",
+        "duplicateError": "Duplizierungsfehler",
+        "extrasUpdated": "Extras aktualisiert",
+        "extrasError": "Fehler beim Speichern der Extras"
+      }
+    },
+
+    "service": {
+      "back": "← Zurück zu den Services",
+      "typeLabel": "Service",
+      "fallbackName": "Service",
+      "notFound": "Service nicht gefunden",
+      "invalidType": "Ungültiger Typ",
+      "invalidTypeDesc": "Diese Seite verwaltet nur Produkte vom Typ \"Service\".",
+      "statusTitle": "Service-Status",
+      "statusOnlineDesc": "Der Service ist online und für die Öffentlichkeit sichtbar.",
+      "statusOfflineDesc": "Der Service ist offline. Nicht öffentlich sichtbar.",
+      "upcomingTitle": "📅 Bevorstehende Termine",
+      "upcomingLoading": "Termine werden geladen…",
+      "upcomingEmpty": "Keine geplanten Termine. Kunden können über die Landingpage buchen.",
+      "bookingConfirmed": "✓ Bestätigt",
+      "bookingPending": "⏳ Ausstehend",
+      "customerAnonymous": "Anonymer Kunde",
+      "seeAllInCalendar": "Alle im Kalender ansehen →",
+      "landingPreview": "🔗 Landing-Vorschau",
+      "landingUnavailable": "Landing nicht verfügbar",
+      "landingCopy": "📋 Landing-Link kopieren",
+      "duplicateLoading": "⏳ Wird geöffnet…",
+      "duplicateBtn": "🧬 Service duplizieren",
+      "longDescTitle": "✏️ Ausführliche Beschreibung",
+      "longDescDescPrefix": "Was auf der Service-Landingpage erscheint. Markdown unterstützt: ",
+      "longDescDescSuffix": " für Überschriften, ",
+      "longDescBoldNote": "**fett**",
+      "longDescListNote": "- Liste",
+      "longDescPlaceholder": "## Was enthalten ist\n\n- Erstbewertung\n- Geführte Hypnose-Sitzung\n- E-Mail-Follow-up",
+      "calendarTitle": "📅 Standardkalender verwenden",
+      "calendarDesc": "Der Service ist auf allen freien Slots Ihres Kalenders buchbar. Blockieren Sie nicht verfügbare Zeiten direkt im Kalender.",
+      "calendarFilterHint": "Nicht verfügbare Slots werden basierend auf den Kalendersperren gefiltert.",
+      "openCalendar": "Kalender öffnen →",
+      "optionsTitle": "Service-Optionen",
+      "optionsSubtitle": "Der Kunde wählt genau eine beim Checkout. Ohne Optionen wird der Grundpreis verwendet.",
+      "distributionDesc": "Wo der Service für die Kunden sichtbar ist.",
+      "distributionMultiDesc": "In welchen Stores dieser Service sichtbar ist.",
+      "termsTitle": "✏️ AGB",
+      "orderFieldsTitle": "Zusätzliche Checkout-Felder",
+      "orderFieldsSubtitle": "Einmal während der Bestellung gefragt (z. B. Problembeschreibung, Beruf)",
+      "orderFieldsEmpty": "Keine Felder.",
+      "orderFieldsHint": "Zusätzliche Felder werden gespeichert, wenn Sie oben auf \"Produkt speichern\" klicken.",
+      "toasts": {
+        "updated": "Service aktualisiert",
+        "online": "Service online",
+        "offline": "Service offline",
+        "statusError": "Fehler beim Statuswechsel",
+        "duplicated": "Service dupliziert",
+        "duplicateError": "Duplizierungsfehler",
+        "availabilityUpdated": "Verfügbarkeit aktualisiert",
+        "availabilityError": "Fehler beim Speichern der Verfügbarkeit",
+        "optionsUpdated": "Optionen aktualisiert",
+        "optionsError": "Fehler beim Speichern der Optionen",
+        "calendarOn": "Standardkalender aktiviert",
+        "calendarOff": "Individuelle Zeiten"
+      },
+      "product": {
+        "title": "✏️ Produkt",
+        "nameLabel": "Name *",
+        "descriptionLabel": "Kurzbeschreibung",
+        "imageLabel": "Produktbild",
+        "coverLabel": "Landingpage-Cover",
+        "coverPlaceholder": "Heldenbild-URL der öffentlichen Seite",
+        "coverHint": "Wenn leer, wird das Produktbild verwendet.",
+        "priceLabel": "Grundpreis (€)",
+        "priceHint": "Ignoriert, wenn Sie Optionen haben",
+        "durationLabel": "Slot-Dauer (Min.)",
+        "modeLabel": "Kaufmodus",
+        "modeRequest": "Auf Anfrage",
+        "modeDirect": "Direkt",
+        "allowCustomTitle": "Benutzerdefinierte Datum/Uhrzeit-Anfragen erlauben",
+        "allowCustomHint": "Zusätzlich zu den aus der Verfügbarkeit berechneten Slots."
+      }
+    }
+  },
+
+  "wizards": {
+    "common": {
+      "stepCounter": "Schritt {{current}} von {{total}}",
+      "back": "← Zurück",
+      "next": "Weiter →",
+      "creating": "Wird erstellt…",
+      "saveDraft": "Als Entwurf speichern",
+      "correctErrors": "Bitte beheben Sie die Fehler, bevor Sie fortfahren",
+      "imageUploadFailed": "Produkt erstellt, aber der Bild-Upload ist fehlgeschlagen.",
+      "creationError": "Fehler bei der Erstellung",
+      "imageFileLabel": "📁 Bild hochladen (jpg/png/webp, max. 5 MB)",
+      "imageUrlPlaceholder": "oder URL einfügen…",
+      "publishNow": "Sofort veröffentlichen",
+      "validation": {
+        "nameRequired": "Name ist erforderlich",
+        "priceInvalid": "Ungültiger Preis"
+      },
+      "distribution": {
+        "title": "🏪 Verteilung",
+        "visibleAutoPrefix": "Automatisch sichtbar in:",
+        "allStoresFallback": "alle Stores",
+        "allStoresLabel": "Alle Stores"
+      },
+      "summary": {
+        "title": "Zusammenfassung",
+        "name": "Name",
+        "mode": "Modus",
+        "modeDirect": "Direkt",
+        "modeRequest": "Auf Anfrage",
+        "basePrice": "Grundpreis",
+        "emptyValue": "—"
+      },
+      "productCreated": "Produkt erstellt!",
+      "backToProducts": "← Zurück zu den Produkten",
+      "createPublishCta": "Erstellen und veröffentlichen",
+      "createDraftCta": "Als Entwurf erstellen",
+      "identityTitle": "Produktidentität",
+      "identitySubtitle": "Wie Ihre Kunden es sehen werden.",
+      "nameLabel": "Name *",
+      "shortDescriptionLabel": "Kurzbeschreibung",
+      "shortDescriptionPlaceholder": "1–2 Zeilen, die im Katalog sichtbar sind",
+      "imageLabel": "Bild",
+      "skuLabel": "SKU (interner Code)",
+      "categoryLabel": "Kategorie",
+      "basePriceLabel": "Grundpreis (€)",
+      "transactionModeLabel": "Bestellmodus",
+      "transactionMode": {
+        "direct": "Direkt (sofortige Zahlung)",
+        "approval": "Mit Bestätigung (Sie bestätigen vorher)",
+        "request": "Auf Anfrage (manueller Kontakt)"
+      },
+      "termsTitle": "AGB (optional)",
+      "termsHint": "Wenn leer, gelten die allgemeinen AGB des Stores.",
+      "publishTitle": "Veröffentlichen",
+      "publishSubtitle": "Letzte Details vor dem Veröffentlichen.",
+      "extras": {
+        "notCreated": "Extra \"{{label}}\" nicht erstellt"
+      },
+      "draft": {
+        "title": "Nicht gespeicherter Entwurf verfügbar",
+        "subtitle": "Sie haben vor {{ago}} ein Formular begonnen. Fortsetzen oder neu beginnen?",
+        "restore": "Entwurf fortsetzen",
+        "discard": "Entwurf verwerfen"
+      },
+      "unsaved": {
+        "title": "Nicht gespeicherte Änderungen",
+        "message": "Wenn Sie jetzt gehen, gehen Ihre Eingaben verloren. Trotzdem verlassen?",
+        "stay": "Hier bleiben",
+        "leave": "Verlassen und verwerfen"
+      },
+      "sku": {
+        "checking": "Wird geprüft",
+        "available": "SKU verfügbar",
+        "taken": "SKU bereits vergeben",
+        "takenHint": "Diese SKU wird bereits von einem anderen Produkt verwendet. Bitte wählen Sie eine andere."
+      },
+      "imageUpload": {
+        "failed": "Bild-Upload fehlgeschlagen. Das Produkt wurde erstellt, jedoch ohne Bild.",
+        "retry": "Erneut versuchen",
+        "ignore": "Verwerfen",
+        "retrySuccess": "Bild erfolgreich hochgeladen."
+      }
+    },
+
+    "physical": {
+      "title": "Neues physisches Produkt",
+      "tabs": {
+        "identity": "Identität",
+        "pricing": "Preis & Bestand",
+        "fulfillment": "Lieferung",
+        "extras": "Extras",
+        "publish": "Veröffentlichen"
+      },
+      "validation": {
+        "stockInvalid": "Ungültige Menge (verwenden Sie eine ganze Zahl ≥ 0)"
+      },
+      "identity": {
+        "namePlaceholder": "z. B. Logo-T-Shirt / Natives Olivenöl 750 ml / Lötset",
+        "skuPlaceholder": "z. B. TS-LOGO-M",
+        "categoryPlaceholder": "z. B. Bekleidung, Lebensmittel, Hardware"
+      },
+      "pricing": {
+        "title": "Preis & Bestand",
+        "subtitle": "Grundpreis pro Einheit. Verfolgen Sie den Bestand bei begrenzter Verfügbarkeit.",
+        "trackStockTitle": "Bestand verfolgen",
+        "trackStockDesc": "Aktiv: Das Backend reduziert die Menge bei jeder bestätigten Bestellung und blockiert Bestellungen bei erschöpftem Bestand. Inaktiv: Das Produkt ist immer verfügbar.",
+        "stockQuantityLabel": "Verfügbare Menge"
+      },
+      "fulfillment": {
+        "title": "Lieferoptionen",
+        "subtitle": "Die Methoden (Versand / Abholung) werden auf Store-Ebene verwaltet. Hier können Sie produktspezifische Hinweise hinzufügen.",
+        "modesEnabled": "Für den Kunden aktivierte Modi:",
+        "noStores": "Kein Store konfiguriert. Gehen Sie zu <em>Store</em>, um Versand oder Abholung zu aktivieren.",
+        "shipping": "<strong>Versand</strong> — der Kunde gibt die Adresse beim Checkout an.",
+        "localPickup": "<strong>Abholung vor Ort</strong> — der Kunde holt das Produkt persönlich ab.",
+        "modesHint": "Um sie zu ändern, bearbeiten Sie die Store-Einstellungen.",
+        "notesLabel": "Liefernotizen (optional)",
+        "notesPlaceholder": "z. B. Versand nur innerhalb Italiens · Abholung nach Vereinbarung Di–Fr 10–18",
+        "notesHint": "Werden dem Kunden in der Bestellbestätigung und in Update-E-Mails angezeigt."
+      },
+      "extras": {
+        "title": "Extras & Varianten"
+      },
+      "publish": {
+        "termsPlaceholder": "Rückgabe, Garantie, produktspezifische Versandrichtlinien…",
+        "distributionDesc": "Wo das Produkt für die Kunden sichtbar sein wird.",
+        "distributionMultiDesc": "In welchen Stores das Produkt sichtbar ist.",
+        "publishToggleTitle": "Sofort online veröffentlichen",
+        "publishToggleDesc": "Das Produkt wird im öffentlichen Storefront sichtbar und kaufbar. Wenn deaktiviert, wird es als Entwurf gespeichert."
+      }
+    },
+
+    "event": {
+      "title": "Neue Veranstaltung",
+      "duplicateTitle": "Veranstaltung duplizieren",
+      "duplicateBanner": "🧬 Basierend auf <0>{{source}}</0> — überprüfen Sie das Datum und veröffentlichen Sie, wenn Sie bereit sind.",
+      "back": "← Zurück zu den Veranstaltungen",
+      "tabs": {
+        "base": "Was Sie anbieten",
+        "where": "Wann und wo",
+        "tickets": "Tickets",
+        "publish": "Veröffentlichen"
+      },
+      "validation": {
+        "priceNegative": "Der Preis darf nicht negativ sein",
+        "startRequired": "Startdatum und -uhrzeit sind erforderlich",
+        "endAfterStart": "Das Ende muss nach dem Beginn liegen",
+        "capacityMin": "Die Kapazität muss mindestens 1 betragen",
+        "latitudeRange": "Breitengrad außerhalb des Bereichs (-90 / 90)",
+        "longitudeRange": "Längengrad außerhalb des Bereichs (-180 / 180)",
+        "tierMin": "Min. 1",
+        "capacityWarning": "Die Summe der Tier-Kapazitäten ({{tierSum}}) übersteigt die Gesamtkapazität ({{occCap}}). Die Gesamtkapazität hat Vorrang: zusätzliche Tickets sind NICHT verkaufbar.",
+        "uploadFailedSuffix": "Veranstaltung erstellt, aber das Hochladen von {{which}} ist fehlgeschlagen. Sie können es im Bearbeitungspanel hinzufügen.",
+        "uploadProductImage": "Produktbild",
+        "uploadCoverImage": "Veranstaltungs-Cover",
+        "creationFailed": "Fehler beim Erstellen der Veranstaltung"
+      },
+      "createdToast": "Veranstaltung erstellt!",
+      "publishCta": "Veranstaltung veröffentlichen",
+      "base": {
+        "title": "Was Sie anbieten",
+        "subtitle": "Hauptinformationen der Veranstaltung.",
+        "nameLabel": "Veranstaltungsname *",
+        "namePlaceholder": "z. B. Abendessen in der Masseria — Herbstedition",
+        "descriptionLabel": "Kurzbeschreibung",
+        "descriptionPlaceholder": "1–2 Zeilen, die in der Katalogkarte erscheinen.",
+        "imageLabel": "Produktbild",
+        "imageFileLabel": "Bild hochladen (jpg/png/webp, max. 5 MB)",
+        "imageHint": "Wird im Katalog und als Fallback für die Landingpage verwendet.",
+        "priceLabel": "Grundpreis (€)",
+        "pricePlaceholder": "z. B. 50",
+        "priceHint": "Wird nur verwendet, wenn Sie in Schritt 3 keine Ticket-Tiers erstellen.",
+        "modeLabel": "Kaufmodus",
+        "modeDirect": "Direkt (sofortige Kasse)",
+        "modeRequest": "Auf Anfrage (manuelle Genehmigung)"
+      },
+      "where": {
+        "title": "Wann und wo",
+        "subtitle": "Datum, Uhrzeit, Kapazität und Veranstaltungsort.",
+        "startLabel": "Beginn *",
+        "endLabel": "Ende (optional)",
+        "capacityLabel": "Gesamtkapazität",
+        "capacityPlaceholder": "Leer lassen für unbegrenzte Kapazität",
+        "locationHeader": "Veranstaltungsort",
+        "venueNameLabel": "Name des Veranstaltungsorts",
+        "venueNamePlaceholder": "Masseria del Sole",
+        "addressLabel": "Adresse",
+        "addressPlaceholder": "Roma-Straße 10",
+        "cityLabel": "Stadt",
+        "cityPlaceholder": "Lecce",
+        "postalCodeLabel": "PLZ",
+        "postalCodePlaceholder": "73100",
+        "countryLabel": "Land (ISO)",
+        "countryPlaceholder": "IT",
+        "latitudeLabel": "Breitengrad",
+        "latitudePlaceholder": "40.3528",
+        "longitudeLabel": "Längengrad",
+        "longitudePlaceholder": "18.1742",
+        "coordsHint": "Koordinaten aus Google Maps einfügen (Rechtsklick → \"Was ist hier?\"). Nicht zwingend, aber schaltet die Karte auf der Landingpage frei.",
+        "coverLabel": "Cover-Bild der Veranstaltung",
+        "coverFileLabel": "Cover hochladen (jpg/png/webp, max. 5 MB)",
+        "coverUrlPlaceholder": "oder URL einfügen… (leer = Produktbild verwenden)"
+      },
+      "tickets": {
+        "requireDetailsTitle": "Teilnehmernamen erfordern",
+        "requireDetailsDescOn": "Beim Checkout gibt der Kunde die Daten jedes Teilnehmers ein. Jeder Gast mit E-Mail erhält sein persönliches Ticket.",
+        "requireDetailsDescOff": "Der Hauptkunde erhält alle Tickets. Aktivieren Sie diese Option für Veranstaltungen mit namentlicher Sitzplatzzuweisung (Abendessen, Kurs, Konzert).",
+        "baseFieldsHeading": "Basisfelder für jeden Teilnehmer",
+        "nameField": "Name",
+        "alwaysRequired": "Immer erforderlich",
+        "emailField": "E-Mail",
+        "emailRequired": "Erforderlich",
+        "phoneField": "Telefon",
+        "phoneRequired": "Erforderlich",
+        "noEmailWarning": "⚠ Ohne E-Mail erhält der Teilnehmer kein persönliches Ticket (er bleibt in der Übersichts-E-Mail des Hauptkunden).",
+        "attendeeFieldsTitle": "Zusätzliche Felder pro Teilnehmer",
+        "attendeeFieldsSubtitle": "Pro Ticket gefragt (z. B. Allergien, Mahlzeit, T-Shirt-Größe)",
+        "attendeeFieldsEmpty": "Keine zusätzlichen Felder. Fügen Sie Felder hinzu, um benutzerdefinierte Infos zu jedem Teilnehmer zu sammeln.",
+        "orderFieldsTitle": "Zusätzliche Bestellfelder",
+        "orderFieldsSubtitle": "Einmal beim Checkout gefragt (z. B. Firma, USt-IdNr.)",
+        "orderFieldsEmpty": "Keine Bestellfelder. Fügen Sie Felder hinzu, um benutzerdefinierte Infos auf Bestellebene zu sammeln.",
+        "tiersTitle": "Ticket-Tiers",
+        "tiersSubtitle": "Mehr Tiers = mehr Auswahl. Leer? Die Veranstaltung verkauft zum Grundpreis aus Schritt 1.",
+        "addTierBtn": "+ Hinzufügen",
+        "noTiersTitle": "Keine Ticket-Tiers.",
+        "noTiersDescWithPrice": "Die Veranstaltung verwendet den Grundpreis von {{price}} €.",
+        "noTiersDescNoPrice": "Die Veranstaltung verwendet den Grundpreis aus … (Schritt 1).",
+        "dragHint": "Zum Neuordnen ziehen",
+        "tierNameLabel": "Name *",
+        "tierNamePlaceholder": "Standard / VIP / Early-bird",
+        "tierPriceLabel": "Preis (€) *",
+        "tierPricePlaceholder": "0",
+        "tierCapacityLabel": "Kapazität",
+        "tierCapacityPlaceholder": "leer",
+        "tierMoveUp": "Nach oben",
+        "tierMoveDown": "Nach unten",
+        "tierDescLabel": "Beschreibung",
+        "tierDescPlaceholder": "z. B. Inkl. Getränk · Reservierter Tisch",
+        "tierRemove": "Tier entfernen"
+      },
+      "publish": {
+        "longDescTitle": "Ausführliche Beschreibung",
+        "longDescDescPrefix": "Was auf der Veranstaltungs-Landingpage erscheint. Markdown unterstützt: ",
+        "longDescDescSuffix": " für Überschriften, ",
+        "longDescBoldNote": "**fett**",
+        "longDescItalicNote": "*kursiv*",
+        "longDescListNote": "- Liste",
+        "longDescPlaceholder": "## Das Konzept\n\nIntimer Abend mit 4-Gänge-Verkostungsmenü…\n\n## Was inbegriffen ist\n\n- Begrüßungsaperitif\n- Weinbegleitung\n- Live-Musik",
+        "termsTitle": "Geschäftsbedingungen (optional)",
+        "termsDesc": "Wenn Sie dieses Feld ausfüllen, muss der Kunde diese spezifischen Bedingungen beim Checkout akzeptieren. Wenn leer, werden die Store-AGB verwendet (falls aktiviert). Markdown unterstützt.",
+        "termsPlaceholder": "## Hausordnung\n\n- Eintritt erst ab 18 Jahren\n- Keine Videoaufnahmen\n- Keine Erstattung innerhalb von 72 Std. vor der Veranstaltung",
+        "summaryDate": "Datum",
+        "summaryCapacity": "Kapazität",
+        "summaryCapacityUnlimited": "Unbegrenzt",
+        "summaryLocation": "Ort",
+        "summaryTiersLabel": "Ticket-Tiers",
+        "summaryTiersNone": "Keine (Grundpreis)",
+        "distributionDesc": "Wo die Veranstaltung für die Kunden sichtbar sein wird.",
+        "distributionMultiDesc": "In welchen Stores die Veranstaltung sichtbar ist.",
+        "publishToggleTitle": "Sofort veröffentlichen",
+        "publishToggleDesc": "Wenn aktiviert, ist die Veranstaltung im Katalog sichtbar und für Kunden kaufbar. Sie können dies jederzeit im Veranstaltungs-Dashboard ändern.",
+        "validationErrorBanner": "Einige vorherige Felder erfordern Aufmerksamkeit. Gehen Sie zurück, um sie zu korrigieren."
+      }
+    },
+
+    "digital": {
+      "title": "Neues digitales Produkt",
+      "tabs": {
+        "identity": "Identität",
+        "pricing": "Preis & Bestand",
+        "file": "Digitale Datei",
+        "policy": "Zugang",
+        "extras": "Extras",
+        "publish": "Veröffentlichen"
+      },
+      "validation": {
+        "stockInvalid": "Ungültige Menge (verwenden Sie eine ganze Zahl ≥ 0)",
+        "maxDownloadsRange": "Muss zwischen 1 und 100 liegen",
+        "expiryRange": "Muss zwischen 1 und 3650 Tagen liegen",
+        "uploadFailed": "Datei-Upload fehlgeschlagen",
+        "draftFallback": "Produkt als Entwurf gespeichert: {{detail}}"
+      },
+      "createdToast": "Digitales Produkt erstellt!",
+      "identity": {
+        "namePlaceholder": "z. B. E-Book 'Cashflow-Leitfaden' / Excel-Vorlage / Audiokurs",
+        "categoryPlaceholder": "z. B. E-Book, Software, Vorlage",
+        "imageLabel": "Coverbild"
+      },
+      "pricing": {
+        "title": "Preis & Verfügbarkeit",
+        "subtitle": "Aktivieren Sie das Tracking nur, wenn Sie die Anzahl der verkaufbaren Kopien begrenzen möchten (z. B. insgesamt 100 Downloads).",
+        "priceLabel": "Preis (€)",
+        "trackStockTitle": "Anzahl der Downloads begrenzen",
+        "trackStockDesc": "Aktiv: Der Zähler sinkt bei jeder bestätigten Bestellung um 1 und blockiert neue Bestellungen bei 0. Inaktiv: Das Produkt ist immer erhältlich.",
+        "stockQuantityLabel": "Verfügbare Kopien"
+      },
+      "file": {
+        "title": "Zu liefernde Datei",
+        "subtitle": "Laden Sie die Datei hoch, die an den Kunden gesendet wird. Sie wird in einem geschützten Bereich gespeichert und nur über einen persönlichen Link nach dem Kauf bereitgestellt.",
+        "placeholder": "Datei auswählen (PDF, ZIP, Audio, Video, Archive… max. 100 MB)",
+        "removeButton": "Datei entfernen",
+        "privacyHint": "🔒 Die Datei wird nie öffentlich bereitgestellt. Sie wird nur über den nach der Zahlung generierten persönlichen Link geliefert und vom Backend bei jedem Zugriff überprüft."
+      },
+      "policy": {
+        "title": "Zugriffsrichtlinie",
+        "subtitle": "Optionale Regeln, die auf den persönlichen Link des Kunden angewendet werden.",
+        "maxDownloadsLabel": "Max. Downloads pro Kunde",
+        "maxDownloadsPlaceholder": "leer = unbegrenzt",
+        "expiryLabel": "Link-Gültigkeit (Tage)",
+        "expiryPlaceholder": "leer = kein Ablaufdatum",
+        "longDescLabel": "Ausführliche Beschreibung (für Landingpage)",
+        "longDescPlaceholder": "Unterstützt **Markdown**. z. B. Inhaltsverzeichnis, Vorschau dessen, was der Kunde erhält."
+      },
+      "extras": {
+        "title": "Extras & Varianten"
+      },
+      "publish": {
+        "fileMissingWarning": "⚠️ Sie können nicht veröffentlichen, ohne die digitale Datei hochzuladen. Gehen Sie zu Schritt <strong>3. Digitale Datei</strong>.",
+        "termsPlaceholder": "Nutzungslizenz, Weitergabebeschränkungen, Rückerstattungsrichtlinie…",
+        "distributionDesc": "Wo das Produkt sichtbar sein wird.",
+        "distributionMultiDesc": "In welchen Stores das Produkt sichtbar ist.",
+        "publishToggleTitle": "Sofort online veröffentlichen",
+        "publishToggleDisabledHint": "(benötigt hochgeladene Datei)",
+        "publishToggleDesc": "Das Produkt wird im öffentlichen Storefront sichtbar und kaufbar. Wenn deaktiviert, wird es als Entwurf gespeichert."
+      }
+    },
+
+    "reservation": {
+      "title": "Neue Vermietung",
+      "tabs": {
+        "identity": "Identität",
+        "flavor": "Typ",
+        "pricing": "Preis & Einheit",
+        "when": "Verfügbarkeit",
+        "extras": "Extras",
+        "publish": "Veröffentlichen"
+      },
+      "validation": {
+        "rentalUnitRequired": "Wählen Sie die Mieteinheit",
+        "slotDurationRange": "Slot-Dauer zwischen 5 und 480 Minuten",
+        "ruleNotCreated": "Verfügbarkeitsregel für Tag {{day}} nicht erstellt"
+      },
+      "createdToast": "Vermietung erstellt!",
+      "flavorOptions": {
+        "range": {
+          "label": "Periodische Vermietung",
+          "desc": "Der Kunde mietet über einen Zeitraum. Ideal für B&Bs, Zimmer, Autos, Geräte.",
+          "example": "B&B Doppelzimmer · 90 €/Nacht · Kalender Tag für Tag blockiert."
+        },
+        "slot": {
+          "label": "Slot-Vermietung",
+          "desc": "Der Kunde mietet einen bestimmten Zeitabschnitt. Ideal für Räume, Sportplätze, buchbare Bereiche.",
+          "example": "Besprechungsraum A · 20 €/Stunde · 2 Stunden buchbar von 10 bis 12."
+        }
+      },
+      "rentalUnits": {
+        "giorno": "Tag",
+        "settimana": "Woche",
+        "mese": "Monat"
+      },
+      "identity": {
+        "namePlaceholder": "z. B. Doppelzimmer / Fiat Panda / Besprechungsraum A"
+      },
+      "flavor": {
+        "title": "Vermietungstyp",
+        "subtitle": "Wie buchen Ihre Kunden dieses Produkt?",
+        "selected": "Ausgewählt"
+      },
+      "pricing": {
+        "title": "Preis & Einheit",
+        "subtitleRange": "Grundpreis pro Mieteinheit. Extras werden zum Gesamtbetrag addiert.",
+        "subtitleSlot": "Grundpreis pro Slot. Extras werden zum Gesamtbetrag addiert.",
+        "priceLabelRange": "Grundpreis (€) / {{unit}}",
+        "priceLabelSlot": "Grundpreis (€) / Slot",
+        "rentalUnitLabel": "Mieteinheit *",
+        "slotDurationLabel": "Empfohlene Dauer (Min.) *",
+        "slotDurationHint": "Wird als Standarddauer und als Fallback verwendet, wenn Sie Min./Schritt/Max. nicht ausfüllen.",
+        "variableTitle": "Variable Dauer",
+        "variableDescPrefix": "Der Kunde wählt Beginn und Ende frei (auch über mehrere Tage) unter Beachtung dieser Einschränkungen. Der Preis ist ",
+        "variableDescHourly": "stündlich",
+        "variableDescSuffix": " €/Stunde × tatsächliche Dauer.",
+        "minDurationLabel": "Mindestdauer (Min.)",
+        "minDurationPlaceholder": "z. B. 30",
+        "stepLabel": "Schritt (Min.)",
+        "stepPlaceholder": "z. B. 15",
+        "maxDurationLabel": "Maximaldauer (Min.)",
+        "maxDurationPlaceholder": "leer = unbegrenzt",
+        "notesLabel": "Interne Produktnotizen",
+        "notesPlaceholder": "z. B. Abholung 10 Uhr · Rückgabe 18 Uhr · Kaution 100 €"
+      },
+      "when": {
+        "title": "Verfügbarkeit",
+        "subtitleRange": "Bei periodischen Vermietungen kommt die Verfügbarkeit aus dem Kalender: Das System blockiert gebuchte Tage. Sie können manuelle Blöcke (Urlaub, Ausfallzeiten) nach dem Erstellen des Produkts auf der Kalender-Seite hinzufügen.",
+        "subtitleSlot": "Definieren Sie die wöchentlichen Zeitfenster, in denen der Slot buchbar ist. Der Kunde sieht nur freie Slots im Kalender.",
+        "useStoreCalendarTitle": "Store-Kalender verwenden",
+        "useStoreCalendarDesc": "Verwendet die bereits auf Store-Ebene konfigurierten wöchentlichen Regeln (offizielle Öffnungszeiten). Deaktivieren, um benutzerdefinierte Regeln nur für diese Buchung festzulegen.",
+        "storeCalendarHint": "ℹ️ Slots werden aus dem Kalender Ihres Stores generiert. Wenn Sie spezifische Zeiten nur für diese Buchung festlegen müssen, deaktivieren Sie das obige Kontrollkästchen.",
+        "rangeNoRulesHint": "ℹ️ Vorerst sind keine Regeln erforderlich. Jede bestätigte Buchung erstellt automatisch einen Kalenderblock für die vom Kunden ausgewählten Daten."
+      },
+      "extras": {
+        "title": "Extras & Varianten"
+      },
+      "publish": {
+        "termsPlaceholder": "Stornierung, Kautionen, produktspezifische Richtlinien…",
+        "distributionDesc": "Wo die Vermietung für die Kunden sichtbar sein wird.",
+        "distributionMultiDesc": "In welchen Stores die Vermietung sichtbar ist.",
+        "publishToggleTitle": "Sofort online veröffentlichen",
+        "publishToggleDesc": "Das Produkt wird im öffentlichen Storefront sichtbar und buchbar. Wenn deaktiviert, wird es als Entwurf gespeichert."
+      }
+    },
+
+    "service": {
+      "title": "Neuer Service",
+      "back": "← Zurück zu den Services",
+      "createdToast": "Service erstellt!",
+      "publishCta": "Service veröffentlichen",
+      "tabs": {
+        "base": "Was Sie anbieten",
+        "when": "Verfügbarkeit",
+        "options": "Optionen",
+        "publish": "Veröffentlichen"
+      },
+      "validation": {
+        "durationRange": "Dauer zwischen 5 und 1440 Minuten",
+        "creationFailed": "Fehler beim Erstellen des Services",
+        "ruleNotCreated": "Verfügbarkeitsregel für Tag {{day}} nicht erstellt",
+        "optionNotCreated": "Option \"{{label}}\" nicht erstellt"
+      },
+      "base": {
+        "title": "Was Sie anbieten",
+        "subtitle": "Hauptinformationen des Services.",
+        "name": "Servicename *",
+        "namePlaceholder": "z. B. Hypnose-Beratung",
+        "descriptionLabel": "Kurzbeschreibung",
+        "descriptionPlaceholder": "1–2 Zeilen, die im Katalog sichtbar sind",
+        "imageLabel": "Produktbild",
+        "priceLabel": "Grundpreis (€)",
+        "priceHint": "Ignoriert, wenn Sie Optionen haben",
+        "durationLabel": "Slot-Dauer (Min.) *",
+        "modeLabel": "Kaufmodus"
+      },
+      "when": {
+        "useDefaultTitle": "📅 Standardkalender verwenden",
+        "useDefaultDesc": "Der Service ist auf allen freien Slots Ihres Kalenders buchbar. Blockieren Sie nicht verfügbare Zeiten direkt im Kalender.",
+        "useDefaultHint": "💡 Deaktivieren Sie diese Option nur, wenn Sie exklusive Zeiten für diesen Service festlegen möchten."
+      },
+      "publish": {
+        "summaryDuration": "Slot-Dauer",
+        "summaryAvailability": "Verfügbarkeit",
+        "summaryAvailabilityCalendar": "Standardkalender",
+        "summaryAvailabilityRules_one": "{{count}} individueller Zeitplan",
+        "summaryAvailabilityRules_other": "{{count}} individuelle Zeitpläne",
+        "summaryAvailabilityNone": "Keine",
+        "summaryOptions": "Optionen",
+        "summaryOptionsNone": "Keine (Grundpreis)",
+        "longDescTitle": "Ausführliche Beschreibung (Landingpage)",
+        "longDescDesc": "Was auf der öffentlichen Service-Seite angezeigt wird. Markdown unterstützt.",
+        "longDescPlaceholder": "## Was enthalten ist\n\n- Kostenlose Erstbewertung\n- Geführte Hypnose-Sitzung (60 Min.)\n- E-Mail-Follow-up in den Folgetagen\n\n## Für wen\u00a0\n\nMenschen, die ihre Schlafqualität verbessern, mit dem Rauchen aufhören oder Ängste bewältigen möchten.",
+        "coverUrlLabel": "Landingpage-Cover-URL (optional)",
+        "coverUrlPlaceholder": "https://… Heldenbild der öffentlichen Seite",
+        "coverUrlHint": "Wenn leer, wird das Produktbild aus Schritt 1 verwendet.",
+        "distributionDesc": "Wo der Service für die Kunden sichtbar sein wird.",
+        "distributionMultiDesc": "In welchen Stores der Service sichtbar ist.",
+        "termsTitle": "Geschäftsbedingungen (optional)",
+        "termsDesc": "Override für diesen Service. Wenn leer, gelten die Store-Bedingungen. Markdown unterstützt.",
+        "termsPlaceholder": "## Datenschutz und Einwilligung\n\n- Mit Fortfahren stimmen Sie der Datenverarbeitung gemäß der Datenschutzerklärung zu\n- Keine Erstattung innerhalb von 48 Std. vor der Sitzung",
+        "orderFieldsTitle": "Zusätzliche Checkout-Felder",
+        "orderFieldsSubtitle": "Einmal während der Bestellung gefragt (z. B. Beruf, Firma, Problembeschreibung)",
+        "orderFieldsEmpty": "Keine zusätzlichen Felder.",
+        "allowCustomTitle": "Kunden erlauben, einen individuellen Termin anzufragen",
+        "allowCustomDesc": "Zusätzlich zu den berechneten Slots kann der Kunde einen freien Termin vorschlagen, den Sie manuell bestätigen."
+      }
+    }
+  },
+
+  "venue": {
+    "title": "Veranstaltungsdetails (optional)",
+    "venueName": "Veranstaltungsort",
+    "venueNamePlaceholder": "Masseria del Sole",
+    "address": "Adresse",
+    "addressPlaceholder": "Roma-Straße 10",
+    "city": "Stadt",
+    "cityPlaceholder": "Lecce",
+    "postalCode": "PLZ",
+    "postalCodePlaceholder": "73100",
+    "country": "Land (ISO)",
+    "countryPlaceholder": "IT",
+    "latitude": "Breitengrad",
+    "latitudePlaceholder": "40.3528",
+    "longitude": "Längengrad",
+    "longitudePlaceholder": "18.1742",
+    "coordsHint": "Koordinaten aus Google Maps einfügen (Rechtsklick → \"Was ist hier?\")",
+    "coverUrl": "URL des Titelbilds",
+    "coverUrlPlaceholder": "https://… oder /uploads/events/hero.jpg",
+    "longDescription": "Ausführliche Beschreibung (Markdown unterstützt)",
+    "longDescriptionPlaceholder": "## Das Konzept\n\nEin Verkostungsabend mit 4-Gänge-Menü und Live-Musik…",
+    "markdownHint": "Verwenden Sie ## für Überschriften, **fett**, *kursiv*, - für Listen."
+  }
+}

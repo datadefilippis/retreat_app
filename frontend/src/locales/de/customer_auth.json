@@ -1,0 +1,69 @@
+{
+  "tabs": {
+    "login": "Anmelden",
+    "signup": "Registrieren"
+  },
+  "fields": {
+    "email": "E-Mail",
+    "password": "Passwort",
+    "name": "Name"
+  },
+  "passwordChecks": {
+    "minLength": "Mindestens 12 Zeichen",
+    "lowercase": "Ein Kleinbuchstabe",
+    "uppercase": "Ein Großbuchstabe",
+    "digit": "Eine Zahl"
+  },
+  "login": {
+    "submit": "Anmelden",
+    "forgotPassword": "Passwort vergessen?",
+    "verifyFirst": "Bestätigen Sie Ihre E-Mail vor der Anmeldung.",
+    "resendVerification": "Bestätigungs-E-Mail erneut senden",
+    "accountLockedTitle": "Konto vorübergehend gesperrt",
+    "accountLockedCountdown": "Zu viele fehlgeschlagene Versuche. Versuche es in {{minutes}} Minuten erneut.",
+    "accountLockedForgotHint": "Oder, wenn du dein Passwort vergessen hast,"
+  },
+  "signup": {
+    "submit": "Registrieren",
+    "consent_required": "Sie müssen die AGB und die Datenschutzerklärung akzeptieren, um fortzufahren.",
+    "accept_terms_prefix": "Ich akzeptiere die",
+    "terms_link": "Allgemeinen Geschäftsbedingungen",
+    "accept_privacy_prefix": "Ich habe die",
+    "privacy_link": "Datenschutzerklärung gelesen",
+    "accept_marketing": "Ich möchte Werbe-E-Mails erhalten (optional, jederzeit widerruflich)"
+  },
+  "verificationSent": {
+    "title": "Überprüfen Sie Ihre E-Mail",
+    "body": "Wir haben einen Bestätigungslink an <strong>{{email}}</strong> gesendet. Klicken Sie auf den Link, um Ihr Konto zu aktivieren.",
+    "goLogin": "Zur Anmeldung"
+  },
+  "forgot": {
+    "title": "Passwort vergessen",
+    "submit": "Reset-Link senden",
+    "sentMsg": "Falls die E-Mail existiert, erhalten Sie einen Link zum Zurücksetzen des Passworts.",
+    "backToLogin": "Zurück zur Anmeldung"
+  },
+  "reset": {
+    "title": "Neues Passwort",
+    "newPasswordLabel": "Neues Passwort",
+    "passwordRules": "Mindestens 12 Zeichen, ein Großbuchstabe, ein Kleinbuchstabe, eine Zahl.",
+    "submit": "Neues Passwort speichern",
+    "successMsg": "Passwort erfolgreich zurückgesetzt.",
+    "tokenInvalid": "Ungültiges oder abgelaufenes Token."
+  },
+  "verify": {
+    "verifying": "Wird verifiziert...",
+    "success": "E-Mail erfolgreich verifiziert!",
+    "tokenInvalid": "Ungültiges oder abgelaufenes Token.",
+    "goLogin": "Zur Anmeldung"
+  },
+  "errors": {
+    "storeUnknown": "Store nicht identifiziert.",
+    "invalidCredentials": "Falsche E-Mail oder Passwort.",
+    "verificationEmailSent": "Bestätigungs-E-Mail gesendet.",
+    "emailSendFailed": "Fehler beim Senden der E-Mail.",
+    "signupGeneric": "Registrierungsfehler.",
+    "genericRetry": "Fehler. Bitte erneut versuchen.",
+    "accountLockedGeneric": "Konto wegen zu vieler fehlgeschlagener Versuche gesperrt. Bitte später erneut versuchen."
+  }
+}

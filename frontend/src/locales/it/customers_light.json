@@ -1,0 +1,119 @@
+{
+  "page": {
+    "title": "Clienti",
+    "subtitle": "Intelligence clienti: segmentazione, concentrazione e attribuzione fatturato"
+  },
+  "segments": {
+    "top": "Top",
+    "active": "Attivi",
+    "new": "Nuovi",
+    "occasional": "Occasionali",
+    "inactive": "Inattivi"
+  },
+  "kpis": {
+    "total_customers": "Clienti Totali",
+    "active_customers": "Clienti Attivi",
+    "inactive_rate": "Tasso Inattivita",
+    "new_customers": "Nuovi Clienti",
+    "concentration_top10": "Concentrazione Top 10",
+    "avg_customer_value": "Valore Medio Cliente",
+    "avg_ltv": "LTV Medio",
+    "high_churn_risk": "Rischio Churn Alto"
+  },
+  "churn": {
+    "high": "Alto",
+    "medium": "Medio",
+    "low": "Basso"
+  },
+  "customer_status": {
+    "healthy": "Sano",
+    "watch": "Monitorare",
+    "at_risk": "A rischio",
+    "lost": "Perso"
+  },
+  "trend": {
+    "growing": "In crescita",
+    "stable": "Stabile",
+    "declining": "In calo",
+    "new": "Nuovo"
+  },
+  "quick_view": {
+    "all": "Tutti",
+    "needs_attention": "Da seguire",
+    "at_risk": "A rischio",
+    "declining": "In calo",
+    "growing": "In crescita",
+    "new": "Nuovi"
+  },
+  "table": {
+    "title": "Top Clienti per Fatturato",
+    "title_loading": "Top Clienti",
+    "empty_filter": "Nessun cliente corrisponde a questo filtro.",
+    "col_rank": "#",
+    "col_customer": "Cliente",
+    "col_revenue": "Fatturato",
+    "col_transactions": "Transazioni",
+    "col_share": "Quota %",
+    "col_ltv": "LTV",
+    "col_churn": "Rischio Churn",
+    "col_segment": "Segmento"
+  },
+  "profile": {
+    "churn_risk": "Rischio Churn",
+    "churn_score": "Score churn",
+    "payment_reliability": "Affidabilità pagamenti",
+    "first_purchase": "Primo acquisto",
+    "last_purchase": "Ultimo acquisto",
+    "days_since": "Giorni dall'ultimo acquisto",
+    "avg_order": "Ordine medio",
+    "frequency": "Frequenza mensile",
+    "frequency_suffix": "ordini/mese",
+    "preferred_products": "Prodotti preferiti",
+    "preferred_categories": "Categorie preferite",
+    "longer_than_usual": "Più del solito senza acquisti",
+    "create_order": "Crea ordine per questo cliente",
+    "view_orders": "Vedi ordini di questo cliente",
+    "activity": "Attività"
+  },
+  "charts": {
+    "segments_title": "Segmenti Clienti",
+    "concentration_title": "Concentrazione Fatturato",
+    "concentration_desc": "I top 10 clienti generano il {{pct}}% del fatturato su {{total}} clienti totali",
+    "concentration_top5": "Top 5",
+    "concentration_top610": "Top 6-10",
+    "concentration_others": "Altri",
+    "tooltip_customers": "{{count}} clienti — {{amount}}"
+  },
+  "empty": {
+    "title": "Analisi clienti non attiva",
+    "description": "Per attivare l'analisi clienti:\n1. Crea i tuoi clienti in Dati base > Clienti\n2. Importa vendite con la colonna \"cliente\" che corrisponda ai nomi creati\nAFianco colleghera automaticamente le vendite ai clienti.",
+    "upload_cta": "Carica dati vendite",
+    "manage_customers": "Gestisci clienti"
+  },
+  "coverage": {
+    "label": "Copertura dati clienti",
+    "detail": "{{linked}} vendite su {{total}} collegate a un cliente"
+  },
+  "error": {
+    "load": "Errore nel caricamento dei dati clienti.",
+    "refresh": "Errore durante l'aggiornamento delle metriche."
+  },
+  "refresh": {
+    "idle": "Aggiorna metriche",
+    "loading": "Aggiornamento..."
+  },
+  "widgets": {
+    "customers_label": "Clienti",
+    "active_label": "Attivi",
+    "inactive_pct_label": "Inattivi %",
+    "top10_pct_label": "Top 10 %",
+    "no_data": "Nessun dato cliente",
+    "no_data_short": "Nessun dato",
+    "col_customer": "Cliente",
+    "col_revenue": "Fatturato",
+    "col_share": "Quota",
+    "header_kpi": "KPI Clienti",
+    "header_top_customers": "Top Clienti",
+    "header_segments": "Segmenti Clienti"
+  }
+}

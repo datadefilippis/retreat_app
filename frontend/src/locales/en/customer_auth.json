@@ -1,0 +1,69 @@
+{
+  "tabs": {
+    "login": "Log in",
+    "signup": "Sign up"
+  },
+  "fields": {
+    "email": "Email",
+    "password": "Password",
+    "name": "Name"
+  },
+  "passwordChecks": {
+    "minLength": "At least 12 characters",
+    "lowercase": "One lowercase letter",
+    "uppercase": "One uppercase letter",
+    "digit": "One number"
+  },
+  "login": {
+    "submit": "Log in",
+    "forgotPassword": "Forgot password?",
+    "verifyFirst": "Verify your email before logging in.",
+    "resendVerification": "Resend verification email",
+    "accountLockedTitle": "Account temporarily locked",
+    "accountLockedCountdown": "Too many failed attempts. Try again in {{minutes}} minutes.",
+    "accountLockedForgotHint": "Or, if you forgot your password,"
+  },
+  "signup": {
+    "submit": "Sign up",
+    "consent_required": "You must accept the Terms and Privacy Policy to continue.",
+    "accept_terms_prefix": "I accept the",
+    "terms_link": "Terms and Conditions",
+    "accept_privacy_prefix": "I have read the",
+    "privacy_link": "Privacy Policy",
+    "accept_marketing": "I would like to receive promotional communications (optional, revocable at any time)"
+  },
+  "verificationSent": {
+    "title": "Check your email",
+    "body": "We sent a verification link to <strong>{{email}}</strong>. Click the link to activate your account.",
+    "goLogin": "Go to login"
+  },
+  "forgot": {
+    "title": "Forgot password",
+    "submit": "Send reset link",
+    "sentMsg": "If the email exists, you'll receive a link to reset your password.",
+    "backToLogin": "Back to login"
+  },
+  "reset": {
+    "title": "New password",
+    "newPasswordLabel": "New password",
+    "passwordRules": "At least 12 characters, one uppercase, one lowercase, one number.",
+    "submit": "Save new password",
+    "successMsg": "Password reset successfully.",
+    "tokenInvalid": "Invalid or expired token."
+  },
+  "verify": {
+    "verifying": "Verifying...",
+    "success": "Email verified successfully!",
+    "tokenInvalid": "Invalid or expired token.",
+    "goLogin": "Go to login"
+  },
+  "errors": {
+    "storeUnknown": "Store not identified.",
+    "invalidCredentials": "Wrong email or password.",
+    "verificationEmailSent": "Verification email sent.",
+    "emailSendFailed": "Error sending email.",
+    "signupGeneric": "Sign-up error.",
+    "genericRetry": "Error. Please try again.",
+    "accountLockedGeneric": "Account locked due to too many failed attempts. Please try again later."
+  }
+}

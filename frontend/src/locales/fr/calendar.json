@@ -1,0 +1,121 @@
+{
+  "page": {
+    "title": "Calendrier",
+    "subtitle": "Vue temporelle des evenements et locations"
+  },
+  "months": ["Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre"],
+  "days": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+  "days_full": ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+  "type": {
+    "event_occurrence": "Evenement",
+    "rental_order": "Location"
+  },
+  "views": {
+    "agenda": "Agenda",
+    "rentals": "Locations",
+    "agenda_subtitle": "Evenements, reservations et blocages personnels",
+    "filter_all": "Tous"
+  },
+  "actions": {
+    "today": "Aujourd'hui",
+    "close": "Fermer",
+    "go_to_order": "Aller a la commande",
+    "go_to_product": "Aller au produit",
+    "block_slot": "Bloquer un creneau",
+    "all_day": "Toute la journee"
+  },
+  "empty": {
+    "day": "Aucun element a cette date.",
+    "month": "Aucun element ce mois-ci"
+  },
+  "summary": {
+    "events_one": "{{count}} evenement",
+    "events_other": "{{count}} evenements",
+    "rentals_one": "{{count}} location",
+    "rentals_other": "{{count}} locations",
+    "blocks_one": "{{count}} blocage",
+    "blocks_other": "{{count}} blocages",
+    "seats": "places",
+    "overflow": "+{{count}} autres"
+  },
+  "review": {
+    "rental_availability": "Disponibilite a verifier",
+    "rental_needs_availability": "Disponibilite a verifier",
+    "default": "A verifier"
+  },
+  "reasons": {
+    "personal": "Personnel",
+    "holiday": "Conge / Jour ferie",
+    "booking": "Reservation",
+    "event": "Evenement"
+  },
+  "block_dialog": {
+    "title": "Bloquer la disponibilite",
+    "modes": {
+      "single": "Jour unique",
+      "range": "Periode (du → au)",
+      "weekly": "Chaque semaine"
+    },
+    "labels": {
+      "date": "Date",
+      "from": "Du",
+      "to": "Au",
+      "starting_from": "A partir du",
+      "until": "Jusqu'au",
+      "reason": "Motif",
+      "note": "Titre",
+      "apply_to": "Appliquer a",
+      "rental_product": "Produit de location",
+      "all_rental_products": "Tous les produits de location"
+    },
+    "targets": {
+      "agenda": "Agenda",
+      "rentals": "Locations",
+      "both": "Les deux"
+    },
+    "reasons": {
+      "personal": "Personnel",
+      "holiday": "Conge"
+    },
+    "time_from": "De",
+    "time_to": "A",
+    "note_placeholder": "Ex : Vacances d'ete, Reunion...",
+    "preview_range_days_one": "jour consecutif sera bloque",
+    "preview_range_days_other": "jours consecutifs seront bloques",
+    "preview_weekly_prefix": "Chaque",
+    "preview_weekly_suffix_one": "jour sera bloque",
+    "preview_weekly_suffix_other": "jours seront bloques",
+    "cancel": "Annuler",
+    "submit_single": "Bloquer",
+    "submit_batch": "Bloquer {{count}} jours"
+  },
+  "blocked_slots": {
+    "heading": "Creneaux bloques",
+    "all_day": "Toute la journee",
+    "recurring": "Recurrent",
+    "remove_title": "Supprimer le blocage"
+  },
+  "confirm_delete": {
+    "recurring_message": "Ce blocage fait partie d'une serie recurrente ({{count}} jours).",
+    "recurring_question": "Que souhaitez-vous supprimer ?",
+    "only_this_day": "Seulement ce jour",
+    "all_days": "Tous les {{count}} jours",
+    "cancel": "Annuler"
+  },
+  "validation": {
+    "select_date": "Selectionnez une date",
+    "end_time_after_start": "L'heure de fin doit etre apres l'heure de debut",
+    "end_date_gte_start": "La date de fin doit etre egale ou posterieure a la date de debut",
+    "until_date_after_start": "La date \"jusqu'au\" doit etre posterieure a la date de debut"
+  },
+  "toast": {
+    "block_created": "Creneau bloque",
+    "block_created_error": "Erreur lors du blocage du creneau",
+    "blocks_created": "Creneaux bloques",
+    "blocks_created_error": "Erreur lors du blocage des creneaux",
+    "block_removed": "Blocage supprime",
+    "block_removed_error": "Erreur lors de la suppression du blocage",
+    "blocks_removed": "Blocages supprimes",
+    "blocks_removed_error": "Erreur lors de la suppression des blocages"
+  }
+}

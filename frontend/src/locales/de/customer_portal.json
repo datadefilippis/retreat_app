@@ -1,0 +1,321 @@
+{
+  "layout": {
+    "menu": "Menü",
+    "closeMenu": "Menü schließen"
+  },
+  "topbar": {
+    "title": "Kundenbereich",
+    "openMenu": "Menü öffnen",
+    "goOrdersAria": "Zu meinen Bestellungen"
+  },
+  "sidebar": {
+    "navAria": "Kundenbereich-Navigation",
+    "courses": "Meine Kurse",
+    "orders": "Bestellungen",
+    "profile": "Profil",
+    "backToCatalog": "Zurück zum Katalog",
+    "logout": "Abmelden"
+  },
+  "emailBanner": {
+    "title": "Verifizieren Sie Ihre E-Mail, um Ihr Konto zu schützen",
+    "body": "Wir haben einen Link an <strong>{{email}}</strong> gesendet. Klicken Sie darauf, um die Registrierung zu bestätigen. Ohne Verifizierung können Sie sich nach dem Abmelden nicht erneut anmelden.",
+    "resendBtn": "E-Mail erneut senden",
+    "sending": "Wird gesendet…",
+    "sent": "✓ Gesendet",
+    "storeUnknown": "Store nicht identifiziert. Bitte nach der Anmeldung erneut versuchen.",
+    "resentToast": "Bestätigungs-E-Mail erneut gesendet. Überprüfen Sie Ihren Posteingang.",
+    "resendError": "E-Mail konnte nicht erneut gesendet werden. Bitte später erneut versuchen."
+  },
+  "orders": {
+    "title": "Meine Bestellungen",
+    "description": "Kaufverlauf und Status jeder Bestellung.",
+    "errorTitle": "Ihre Bestellungen konnten nicht geladen werden",
+    "errorBody": "Versuchen Sie es in einem Moment erneut. Wenn das Problem weiterhin besteht, kontaktieren Sie den Support des Merchants.",
+    "retry": "Erneut versuchen",
+    "loadingAria": "Bestellungen werden geladen",
+    "emptyTitle": "Noch keine Bestellungen",
+    "emptyDescription": "Wenn Sie einen Kauf abschließen, finden Sie ihn hier mit Status und Details.",
+    "exploreCatalog": "Katalog entdecken"
+  },
+  "courses": {
+    "title": "Meine Kurse",
+    "descriptionWithCount_one": "{{count}} aktiver Kurs. Klicken Sie, um dort weiterzumachen, wo Sie aufgehört haben.",
+    "descriptionWithCount_other": "{{count}} aktive Kurse. Klicken Sie, um dort weiterzumachen, wo Sie aufgehört haben.",
+    "descriptionEmpty": "Wenn Sie einen Kurs kaufen, finden Sie ihn hier.",
+    "loadingAria": "Kurse werden geladen",
+    "emptyTitle": "Noch keine Kurse",
+    "emptyDescription": "Entdecken Sie im Katalog die verfügbaren Videokurse. Nach dem Kauf folgen Sie ihm hier mit Player + Fortschritts-Tracking.",
+    "exploreCatalog": "Katalog entdecken",
+    "openCta": "Öffnen"
+  },
+  "profile": {
+    "pageTitle": "Profil",
+    "pageDescription": "Verwalten Sie Ihre persönlichen Daten und die Sicherheit Ihres Kontos.",
+    "account": {
+      "title": "Kontodaten",
+      "description": "Bearbeiten Sie Ihren Namen oder Ihr Telefon.",
+      "nameLabel": "Name",
+      "namePlaceholder": "Max Mustermann",
+      "nameRequired": "Name ist erforderlich.",
+      "phoneLabel": "Telefon",
+      "phoneHint": "Optional, vom Merchant zur Kontaktaufnahme verwendet, falls erforderlich.",
+      "phonePlaceholder": "+49 30 12345678",
+      "emailLabel": "E-Mail",
+      "emailHint": "Um die E-Mail zu ändern, kontaktieren Sie den Support des Merchants.",
+      "localeLabel": "Sprache",
+      "saving": "Speichert…",
+      "saveDirty": "Änderungen speichern",
+      "saveClean": "Gespeichert",
+      "updatedToast": "Profil aktualisiert.",
+      "updateError": "Profil konnte nicht aktualisiert werden.",
+      "localeSelectAria": "Sprache auswählen",
+      "localeUpdatedToast": "Sprache aktualisiert.",
+      "localeUpdateError": "Sprache konnte nicht aktualisiert werden."
+    },
+    "password": {
+      "title": "Sicherheit",
+      "description": "Passwort ändern.",
+      "currentLabel": "Aktuelles Passwort",
+      "newLabel": "Neues Passwort",
+      "newHint": "Mindestens 8 Zeichen.",
+      "minLengthError": "Mindestens 8 Zeichen",
+      "confirmLabel": "Neues Passwort bestätigen",
+      "mismatchError": "Passwörter stimmen nicht überein",
+      "submit": "Passwort aktualisieren",
+      "submitting": "Wird aktualisiert…",
+      "updatedToast": "Passwort aktualisiert.",
+      "updateError": "Passwort konnte nicht aktualisiert werden."
+    },
+    "verify": {
+      "title": "E-Mail-Verifizierung",
+      "description": "Für die Sicherheit Ihres Kontos.",
+      "body": "Ihre E-Mail <strong>{{email}}</strong> wurde noch nicht verifiziert.",
+      "hint": "Suchen Sie in Ihrem Posteingang nach der Nachricht, die bei der Registrierung gesendet wurde. Falls Sie sie nicht finden, können wir sie erneut senden.",
+      "resendBtn": "Bestätigungs-E-Mail erneut senden",
+      "sending": "Wird gesendet…",
+      "sent": "✓ Gesendet",
+      "storeUnknown": "Store nicht identifiziert.",
+      "resentToast": "Bestätigungs-E-Mail erneut gesendet.",
+      "resendError": "E-Mail konnte nicht erneut gesendet werden."
+    }
+  },
+  "orderStatus": {
+    "draft": "Entwurf",
+    "confirmed": "✓ Bestätigt",
+    "completed": "✓ Abgeschlossen",
+    "cancelled": "Storniert",
+    "pendingConfirmation": "⏳ Wartet auf Bestätigung",
+    "awaitingPayment": "💳 Wartet auf Zahlung",
+    "itemsOne": "1 Artikel",
+    "itemsOther": "{{count}} Artikel"
+  },
+  "fulfillmentStatus": {
+    "pending": "Ausstehend",
+    "shipped": "Versendet",
+    "delivered": "Zugestellt",
+    "ready_for_pickup": "Abholbereit",
+    "picked_up": "Abgeholt",
+    "fulfilled": "Abgeschlossen"
+  },
+  "fulfillmentMode": {
+    "shipping": "Versand",
+    "local_pickup": "Abholung",
+    "manual_arrangement": "Manuelle Vereinbarung"
+  },
+  "nav": {
+    "back": "Zurück"
+  },
+  "orderCard": {
+    "courseBadge": "🎓 Kurs",
+    "openCourse": "Kurs öffnen →"
+  },
+  "coursePreview": {
+    "fallbackTitle": "Kurs"
+  },
+  "orderDetail": {
+    "notFoundTitle": "Bestellung nicht gefunden",
+    "notFoundDescription": "Vielleicht ist der Link nicht mehr gültig oder die Bestellung gehört zu einem anderen Konto. Gehen Sie zurück zu Ihrer Bestellliste, um sie zu finden.",
+    "backToOrders": "Zurück zu meinen Bestellungen",
+    "courseCta": {
+      "title": "Zu Ihren Kursen",
+      "body": "Der Kurs ist bereit. Öffnen Sie ihn unter „Meine Kurse“, um die Lektionen zu verfolgen und Ihren Fortschritt zu verfolgen.",
+      "openShort": "Öffnen →"
+    },
+    "addressLabel": "Adresse:",
+    "addressInline": "Adresse: {{address}}",
+    "notesInline": "Notizen: {{notes}}",
+    "shippedAt": "Versendet {{rel}} ({{date}})",
+    "deliveredAt": "Zugestellt {{rel}} ({{date}})",
+    "pickedUpAt": "Abgeholt {{rel}} ({{date}})",
+    "fulfilledAt": "Abgeschlossen {{rel}} ({{date}})",
+    "trackingLabel": "Sendungsnummer:",
+    "trackShipment": "Sendung verfolgen →",
+    "itemsTitle": "Artikel",
+    "total": "Gesamt",
+    "notesHeading": "Notizen",
+    "relative": {
+      "today": "heute",
+      "yesterday": "gestern",
+      "daysAgo_one": "vor {{count}} Tag",
+      "daysAgo_other": "vor {{count}} Tagen"
+    }
+  },
+  "orderItemEvent": {
+    "pendingHint": "Tickets sind nach Zahlungsbestätigung verfügbar.",
+    "openTicket": "Ticket öffnen →",
+    "seatLine": "Platz {{index}} / {{total}}",
+    "status": {
+      "checkedIn": "Eingelassen",
+      "checkedInAt": "Eingelassen am {{time}}",
+      "voided": "Annulliert",
+      "toUse": "Zu verwenden"
+    }
+  },
+  "orderItemService": {
+    "pendingHint": "Die Buchung wird nach der Zahlung bestätigt.",
+    "openShort": "Öffnen →",
+    "addToCalendar": "📅 Zum Kalender hinzufügen",
+    "status": {
+      "confirmed": "Bestätigt",
+      "completed": "Abgeschlossen",
+      "noShow": "Nicht erschienen",
+      "cancelled": "Storniert"
+    }
+  },
+  "orderItemRental": {
+    "pendingHint": "Die Reservierung wird nach der Zahlung bestätigt.",
+    "status": {
+      "active": "Aktiv",
+      "cancelled": "Storniert"
+    }
+  },
+  "orderItemDigital": {
+    "pendingHint": "Der Download ist nach Zahlungsbestätigung verfügbar.",
+    "downloadCta": "Herunterladen →",
+    "fallbackFilename": "Datei",
+    "expiresLabel": "Verfügbar bis {{date}}",
+    "status": {
+      "cancelled": "Storniert",
+      "exhausted": "Limit erreicht",
+      "available": "Verfügbar",
+      "usage": "{{used}} / {{max}} verwendet"
+    }
+  },
+  "orderItemCourse": {
+    "pendingHint": "Der Kurszugang wird nach Zahlungsbestätigung aktiviert.",
+    "openCourse": "Zum Kurs →",
+    "fallbackTitle": "Kurs",
+    "access": {
+      "revoked": "Zugang widerrufen",
+      "expired": "Zugang abgelaufen",
+      "expiresOn": "Läuft am {{date}} ab",
+      "lifetime": "Lebenslanger Zugang"
+    }
+  },
+  "player": {
+    "backToCourses": "← Meine Kurse",
+    "shortcutsTitle": "Tastenkürzel (?)",
+    "shortcutsAria": "Tastenkürzel anzeigen",
+    "lessonsHeading": "Lektionen",
+    "closeLessonsAria": "Lektionen schließen",
+    "closeShort": "Schließen",
+    "readyTitle": "Bereit zum Starten?",
+    "pickLessonMobile": "Tippe oben auf 📚, um eine Lektion zu wählen, oder beginne mit der ersten.",
+    "pickLessonDesktop": "Wähle eine Lektion aus dem linken Menü oder beginne mit der ersten.",
+    "startFirstLesson": "Mit der ersten Lektion beginnen",
+    "noLessonsYet": "Der Dozent hat noch keine Lektionen hinzugefügt.",
+    "toast": {
+      "accessRevoked": "Kurszugang widerrufen.",
+      "accessExpired": "Kurszugang abgelaufen.",
+      "lessonCompleted": "Lektion abgeschlossen 🎉",
+      "lessonCompletedAuto": "Du hast die Lektion beendet 🎉",
+      "progressError": "Fortschritt konnte nicht gespeichert werden."
+    }
+  },
+  "actionBar": {
+    "openLessonsAria": "Lektionen öffnen",
+    "alreadyCompletedTitle": "Lektion bereits abgeschlossen",
+    "alreadyCompletedAria": "Lektion bereits abgeschlossen",
+    "markCompletedTitle": "Als abgeschlossen markieren",
+    "completedLabel": "Abgeschlossen",
+    "completeLabel": "Abschließen",
+    "prevTitle": "Vorherige Lektion",
+    "prevShort": "Zurück",
+    "nextTitle": "Nächste Lektion",
+    "nextShort": "Weiter"
+  },
+  "lessonDetails": {
+    "durationLabel": "Dauer: {{duration}}",
+    "resources": "Ressourcen",
+    "completedOn": "✓ Lektion abgeschlossen am {{date}}"
+  },
+  "lessonPlayer": {
+    "iframeTitleFallback": "Lektion",
+    "preparing": "Video wird vorbereitet…",
+    "errors": {
+      "noVideo": {
+        "title": "Video noch nicht verfügbar",
+        "body": "Der Dozent lädt diese Lektion noch hoch. Schau später wieder vorbei oder wähle eine andere Lektion aus dem Seitenmenü."
+      },
+      "bunnyMissing": {
+        "title": "Videodienst vorübergehend nicht verfügbar",
+        "body": "Wir beheben ein Konfigurationsproblem. Kontaktiere den Händler, falls das Problem weiterhin besteht."
+      },
+      "generic": {
+        "title": "Fehler beim Laden des Videos",
+        "retry": "Erneut versuchen"
+      }
+    }
+  },
+  "courseSidebar": {
+    "lessonsCompleted_one": "{{completed}}/{{total}} abgeschlossen",
+    "lessonsCompleted_other": "{{completed}}/{{total}} abgeschlossen",
+    "headlineDone": "Kurs abgeschlossen 🎉",
+    "headlineProgress": "Weiterlernen",
+    "headlineStart": "Kurs beginnen",
+    "percentCompletedAria": "{{pct}}% abgeschlossen",
+    "lessonsRatio": "{{completed}} von {{total}} Lektionen",
+    "tile": {
+      "duration": "Dauer",
+      "access": "Zugang",
+      "accessLifetime": "Lebenslang"
+    },
+    "row": {
+      "inProgress": "In Bearbeitung"
+    }
+  },
+  "courseError": {
+    "notFound": {
+      "title": "Kurs nicht gefunden",
+      "body": "Der Link ist möglicherweise nicht mehr gültig."
+    },
+    "revoked": {
+      "title": "Zugang widerrufen",
+      "body": "Der Zugang zu diesem Kurs wurde widerrufen."
+    },
+    "expired": {
+      "title": "Zugang abgelaufen",
+      "body": "Der Zugangszeitraum für diesen Kurs ist beendet."
+    },
+    "courseUnavailable": {
+      "title": "Inhalt nicht verfügbar",
+      "body": "Der Händler hat diesen Kurs entfernt."
+    },
+    "generic": {
+      "title": "Fehler",
+      "body": "Kurs kann nicht geladen werden. Bitte später erneut versuchen."
+    },
+    "backCta": "Zurück zu Meine Kurse"
+  },
+  "helpCheatsheet": {
+    "title": "Tastenkürzel",
+    "closeAria": "Schließen",
+    "shortcutPrev": "Vorherige Lektion",
+    "shortcutNext": "Nächste Lektion",
+    "shortcutMark": "Als abgeschlossen markieren",
+    "footnote": "Tastenkürzel funktionieren nicht, wenn du gerade in einem Feld tippst oder der Videoplayer den Fokus hat (in dem Fall gehen die Tasten an das Video). Lektionen werden außerdem automatisch markiert, wenn das Video endet."
+  },
+  "playerSkeleton": {
+    "loadingAria": "Kurs wird geladen"
+  }
+}

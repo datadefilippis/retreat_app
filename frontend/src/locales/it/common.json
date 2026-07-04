@@ -1,0 +1,107 @@
+{
+  "forms": {
+    "quota_exhausted_hint": "Limite righe dati raggiunto. Aggiorna piano.",
+    "quota_exhausted_body": "Hai raggiunto il limite di {{used}}/{{limit}} righe dati questo mese.",
+    "quota_exhausted_cta": "Aggiorna piano"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "modules": "Moduli",
+    "alerts": "Anomalie",
+    "ai_analysis": "Analisi AI",
+    "team": "Team",
+    "settings": "Impostazioni",
+    "logout": "Esci",
+    "admin": "Admin",
+    "data": "Dati",
+    "orders": "Ordini",
+    "reservations": "Affitti",
+    "calendar": "Calendario",
+    "store_settings": "Impostazioni Store",
+    "stores": "I miei Store",
+    "newsletter": "Newsletter",
+    "data_integrity": "Qualità dati",
+    "master_data": "Dati base",
+    "products": "Prodotti",
+    "courses": "Corsi",
+    "events": "Eventi",
+    "customers": "Clienti",
+    "suppliers": "Fornitori"
+  },
+  "actions": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "loading": "Caricamento...",
+    "saving": "Salvataggio...",
+    "confirm": "Conferma",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "refresh": "Aggiorna",
+    "upload": "Carica",
+    "back": "Indietro",
+    "maybe_later": "Forse piu' tardi"
+  },
+  "copied": "Copiato negli appunti",
+  "copy_url": "Copia URL",
+  "copy_failed": "Impossibile copiare",
+  "status": {
+    "loading": "Caricamento in corso...",
+    "error": "Si e verificato un errore.",
+    "no_data": "Nessun dato disponibile.",
+    "success": "Operazione completata."
+  },
+  "modules": {
+    "cashflow_monitor": "Cashflow Monitor",
+    "customers_light": "Insight Clienti",
+    "commerce_signals": "Segnali Commerciali",
+    "product_catalog": "Performance Prodotti"
+  },
+  "period": {
+    "7d": "Ultimi 7 giorni",
+    "30d": "Ultimi 30 giorni",
+    "90d": "Ultimi 90 giorni",
+    "ytd": "Da inizio anno",
+    "mtd": "Da inizio mese",
+    "custom": "Personalizzato",
+    "data_range": "Tutti i dati ({{days}}gg)"
+  },
+  "widget_actions": {
+    "move_up": "Sposta su",
+    "move_down": "Sposta giu",
+    "remove": "Rimuovi dalla dashboard"
+  },
+  "quota": {
+    "banner_title": "Limite raggiunto",
+    "banner_default": "Hai raggiunto il limite del tuo piano. Aggiorna per continuare.",
+    "banner_upgrade": "Aggiorna il piano",
+    "banner_dismiss": "Chiudi",
+    "dialog_title": "Limite di importazione raggiunto",
+    "dialog_description": "Il limite del piano gratuito è stato esaurito. Puoi cambiare il tuo piano nelle Impostazioni per aumentare i limiti.",
+    "dialog_go_settings": "Vai a Impostazioni",
+    "dialog_close": "Chiudi"
+  },
+  "stripeAlert": {
+    "configureBtn": "Configura Stripe Connect",
+    "defaultMessage": "Stripe Connect non è ancora configurato. Gli ordini con pagamento diretto cadranno in modalità richiesta finché non completi l'onboarding nelle impostazioni.",
+    "reason": {
+      "no_connection": "Nessun provider di pagamento configurato",
+      "connection_inactive": "Connessione pagamento non attiva",
+      "no_default": "Nessun provider impostato come predefinito",
+      "runtime_unavailable": "Autorizzazione runtime non completata",
+      "runtime_needs_auth": "Autorizzazione runtime in corso",
+      "runtime_error": "Errore nella verifica del provider",
+      "provider_not_configured": "Provider non configurato nel sistema"
+    }
+  },
+  "language": {
+    "it": "Italiano",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français"
+  },
+  "languageSwitcher": {
+    "label": "Lingua",
+    "ariaLabel": "Cambia lingua"
+  }
+}

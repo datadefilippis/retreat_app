@@ -1,0 +1,321 @@
+{
+  "layout": {
+    "menu": "Menu",
+    "closeMenu": "Close menu"
+  },
+  "topbar": {
+    "title": "My account",
+    "openMenu": "Open menu",
+    "goOrdersAria": "Go to my orders"
+  },
+  "sidebar": {
+    "navAria": "Customer area navigation",
+    "courses": "My courses",
+    "orders": "Orders",
+    "profile": "Profile",
+    "backToCatalog": "Back to catalog",
+    "logout": "Log out"
+  },
+  "emailBanner": {
+    "title": "Verify your email to protect your account",
+    "body": "We sent a link to <strong>{{email}}</strong>. Click it to confirm your registration. Without verification you won't be able to log back in after logging out.",
+    "resendBtn": "Resend email",
+    "sending": "Sending…",
+    "sent": "✓ Sent",
+    "storeUnknown": "Store not identified. Please retry after logging in.",
+    "resentToast": "Verification email resent. Check your inbox.",
+    "resendError": "Unable to resend the email. Please try again later."
+  },
+  "orders": {
+    "title": "My orders",
+    "description": "Purchase history and status of each order.",
+    "errorTitle": "I couldn't load your orders",
+    "errorBody": "Try again in a moment. If the problem persists, contact the merchant's support.",
+    "retry": "Retry",
+    "loadingAria": "Loading orders",
+    "emptyTitle": "No orders yet",
+    "emptyDescription": "When you complete a purchase you'll find it here with status and details.",
+    "exploreCatalog": "Explore the catalog"
+  },
+  "courses": {
+    "title": "My courses",
+    "descriptionWithCount_one": "{{count}} active course. Click to resume where you left off.",
+    "descriptionWithCount_other": "{{count}} active courses. Click to resume where you left off.",
+    "descriptionEmpty": "When you purchase a course you'll find it here.",
+    "loadingAria": "Loading courses",
+    "emptyTitle": "No courses yet",
+    "emptyDescription": "Explore the catalog to discover available video courses. Once purchased, you'll watch it here with player + progress tracking.",
+    "exploreCatalog": "Explore the catalog",
+    "openCta": "Open"
+  },
+  "profile": {
+    "pageTitle": "Profile",
+    "pageDescription": "Manage your personal data and account security.",
+    "account": {
+      "title": "Account data",
+      "description": "Edit your name or phone.",
+      "nameLabel": "Name",
+      "namePlaceholder": "John Doe",
+      "nameRequired": "Name is required.",
+      "phoneLabel": "Phone",
+      "phoneHint": "Optional, used by the merchant to contact you if needed.",
+      "phonePlaceholder": "+1 555 123 4567",
+      "emailLabel": "Email",
+      "emailHint": "To change the email contact the merchant's support.",
+      "localeLabel": "Language",
+      "saving": "Saving…",
+      "saveDirty": "Save changes",
+      "saveClean": "Saved",
+      "updatedToast": "Profile updated.",
+      "updateError": "Unable to update the profile.",
+      "localeSelectAria": "Select language",
+      "localeUpdatedToast": "Language updated.",
+      "localeUpdateError": "Unable to update the language."
+    },
+    "password": {
+      "title": "Security",
+      "description": "Change your password.",
+      "currentLabel": "Current password",
+      "newLabel": "New password",
+      "newHint": "At least 8 characters.",
+      "minLengthError": "Minimum 8 characters",
+      "confirmLabel": "Confirm new password",
+      "mismatchError": "Passwords do not match",
+      "submit": "Update password",
+      "submitting": "Updating…",
+      "updatedToast": "Password updated.",
+      "updateError": "Unable to update the password."
+    },
+    "verify": {
+      "title": "Email verification",
+      "description": "For your account security.",
+      "body": "Your email <strong>{{email}}</strong> is not verified yet.",
+      "hint": "Look in your inbox for the message sent at registration. If you can't find it, we can resend it.",
+      "resendBtn": "Resend verification email",
+      "sending": "Sending…",
+      "sent": "✓ Sent",
+      "storeUnknown": "Store not identified.",
+      "resentToast": "Verification email resent.",
+      "resendError": "Unable to resend the email."
+    }
+  },
+  "orderStatus": {
+    "draft": "Draft",
+    "confirmed": "✓ Confirmed",
+    "completed": "✓ Completed",
+    "cancelled": "Cancelled",
+    "pendingConfirmation": "⏳ Awaiting confirmation",
+    "awaitingPayment": "💳 Awaiting payment",
+    "itemsOne": "1 item",
+    "itemsOther": "{{count}} items"
+  },
+  "fulfillmentStatus": {
+    "pending": "Pending",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "ready_for_pickup": "Ready for pickup",
+    "picked_up": "Picked up",
+    "fulfilled": "Fulfilled"
+  },
+  "fulfillmentMode": {
+    "shipping": "Shipping",
+    "local_pickup": "Pickup",
+    "manual_arrangement": "Manual arrangement"
+  },
+  "nav": {
+    "back": "Back"
+  },
+  "orderCard": {
+    "courseBadge": "🎓 Course",
+    "openCourse": "Open course →"
+  },
+  "coursePreview": {
+    "fallbackTitle": "Course"
+  },
+  "orderDetail": {
+    "notFoundTitle": "Order not found",
+    "notFoundDescription": "Maybe the link is no longer valid or the order belongs to another account. Go back to your orders list to find it.",
+    "backToOrders": "Back to my orders",
+    "courseCta": {
+      "title": "Access your courses",
+      "body": "The course is ready. Open it from the \"My courses\" area to follow the lessons and track your progress.",
+      "openShort": "Open →"
+    },
+    "addressLabel": "Address:",
+    "addressInline": "Address: {{address}}",
+    "notesInline": "Notes: {{notes}}",
+    "shippedAt": "Shipped {{rel}} ({{date}})",
+    "deliveredAt": "Delivered {{rel}} ({{date}})",
+    "pickedUpAt": "Picked up {{rel}} ({{date}})",
+    "fulfilledAt": "Fulfilled {{rel}} ({{date}})",
+    "trackingLabel": "Tracking:",
+    "trackShipment": "Track shipment →",
+    "itemsTitle": "Items",
+    "total": "Total",
+    "notesHeading": "Notes",
+    "relative": {
+      "today": "today",
+      "yesterday": "yesterday",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago"
+    }
+  },
+  "orderItemEvent": {
+    "pendingHint": "Tickets will be available after payment confirmation.",
+    "openTicket": "Open ticket →",
+    "seatLine": "seat {{index}} / {{total}}",
+    "status": {
+      "checkedIn": "Entered",
+      "checkedInAt": "Entered on {{time}}",
+      "voided": "Voided",
+      "toUse": "To use"
+    }
+  },
+  "orderItemService": {
+    "pendingHint": "The booking will be confirmed after payment.",
+    "openShort": "Open →",
+    "addToCalendar": "📅 Add to calendar",
+    "status": {
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "noShow": "No show",
+      "cancelled": "Cancelled"
+    }
+  },
+  "orderItemRental": {
+    "pendingHint": "The reservation will be confirmed after payment.",
+    "status": {
+      "active": "Active",
+      "cancelled": "Cancelled"
+    }
+  },
+  "orderItemDigital": {
+    "pendingHint": "Download will be available after payment confirmation.",
+    "downloadCta": "Download →",
+    "fallbackFilename": "File",
+    "expiresLabel": "Available until {{date}}",
+    "status": {
+      "cancelled": "Cancelled",
+      "exhausted": "Limit reached",
+      "available": "Available",
+      "usage": "{{used}} / {{max}} used"
+    }
+  },
+  "orderItemCourse": {
+    "pendingHint": "Course access will be activated after payment confirmation.",
+    "openCourse": "Go to course →",
+    "fallbackTitle": "Course",
+    "access": {
+      "revoked": "Access revoked",
+      "expired": "Access expired",
+      "expiresOn": "Expires on {{date}}",
+      "lifetime": "Lifetime access"
+    }
+  },
+  "player": {
+    "backToCourses": "← My courses",
+    "shortcutsTitle": "Keyboard shortcuts (?)",
+    "shortcutsAria": "Show keyboard shortcuts",
+    "lessonsHeading": "Lessons",
+    "closeLessonsAria": "Close lessons",
+    "closeShort": "Close",
+    "readyTitle": "Ready to start?",
+    "pickLessonMobile": "Tap 📚 above to pick a lesson, or start with the first one.",
+    "pickLessonDesktop": "Pick a lesson from the menu on the left, or start with the first one.",
+    "startFirstLesson": "Start with the first lesson",
+    "noLessonsYet": "The instructor hasn't added any lessons yet.",
+    "toast": {
+      "accessRevoked": "Course access revoked.",
+      "accessExpired": "Course access expired.",
+      "lessonCompleted": "Lesson completed 🎉",
+      "lessonCompletedAuto": "You finished the lesson 🎉",
+      "progressError": "Unable to save progress."
+    }
+  },
+  "actionBar": {
+    "openLessonsAria": "Open lessons",
+    "alreadyCompletedTitle": "Lesson already completed",
+    "alreadyCompletedAria": "Lesson already completed",
+    "markCompletedTitle": "Mark as completed",
+    "completedLabel": "Completed",
+    "completeLabel": "Complete",
+    "prevTitle": "Previous lesson",
+    "prevShort": "Previous",
+    "nextTitle": "Next lesson",
+    "nextShort": "Next"
+  },
+  "lessonDetails": {
+    "durationLabel": "Duration: {{duration}}",
+    "resources": "Resources",
+    "completedOn": "✓ Lesson completed on {{date}}"
+  },
+  "lessonPlayer": {
+    "iframeTitleFallback": "Lesson",
+    "preparing": "Preparing the video…",
+    "errors": {
+      "noVideo": {
+        "title": "Video not available yet",
+        "body": "The instructor is still uploading this lesson. Come back later or pick another lesson from the side menu."
+      },
+      "bunnyMissing": {
+        "title": "Video service temporarily unavailable",
+        "body": "We're fixing a configuration issue. Contact the merchant if the problem persists."
+      },
+      "generic": {
+        "title": "Error loading the video",
+        "retry": "Retry"
+      }
+    }
+  },
+  "courseSidebar": {
+    "lessonsCompleted_one": "{{completed}}/{{total}} completed",
+    "lessonsCompleted_other": "{{completed}}/{{total}} completed",
+    "headlineDone": "Course completed 🎉",
+    "headlineProgress": "Keep studying",
+    "headlineStart": "Start the course",
+    "percentCompletedAria": "{{pct}}% completed",
+    "lessonsRatio": "{{completed}} of {{total}} lessons",
+    "tile": {
+      "duration": "Duration",
+      "access": "Access",
+      "accessLifetime": "Lifetime"
+    },
+    "row": {
+      "inProgress": "In progress"
+    }
+  },
+  "courseError": {
+    "notFound": {
+      "title": "Course not found",
+      "body": "The link may no longer be valid."
+    },
+    "revoked": {
+      "title": "Access revoked",
+      "body": "Access to this course has been revoked."
+    },
+    "expired": {
+      "title": "Access expired",
+      "body": "The access period for this course has ended."
+    },
+    "courseUnavailable": {
+      "title": "Content unavailable",
+      "body": "The merchant has removed this course."
+    },
+    "generic": {
+      "title": "Error",
+      "body": "Unable to load the course. Please try again later."
+    },
+    "backCta": "Back to My courses"
+  },
+  "helpCheatsheet": {
+    "title": "Keyboard shortcuts",
+    "closeAria": "Close",
+    "shortcutPrev": "Previous lesson",
+    "shortcutNext": "Next lesson",
+    "shortcutMark": "Mark as completed",
+    "footnote": "Shortcuts don't work when you're typing in a field or when the video player has focus (in that case keys go to the video). Lessons are also marked automatically when the video ends."
+  },
+  "playerSkeleton": {
+    "loadingAria": "Loading course"
+  }
+}

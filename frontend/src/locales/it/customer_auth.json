@@ -1,0 +1,69 @@
+{
+  "tabs": {
+    "login": "Accedi",
+    "signup": "Registrati"
+  },
+  "fields": {
+    "email": "Email",
+    "password": "Password",
+    "name": "Nome"
+  },
+  "passwordChecks": {
+    "minLength": "Almeno 12 caratteri",
+    "lowercase": "Una lettera minuscola",
+    "uppercase": "Una lettera maiuscola",
+    "digit": "Un numero"
+  },
+  "login": {
+    "submit": "Accedi",
+    "forgotPassword": "Password dimenticata?",
+    "verifyFirst": "Verifica la tua email prima di accedere.",
+    "resendVerification": "Rinvia email di verifica",
+    "accountLockedTitle": "Account temporaneamente bloccato",
+    "accountLockedCountdown": "Per troppi tentativi falliti, riprova fra {{minutes}} minuti.",
+    "accountLockedForgotHint": "Oppure, se hai dimenticato la password,"
+  },
+  "signup": {
+    "submit": "Registrati",
+    "consent_required": "Devi accettare i Termini e l'Informativa sulla Privacy per procedere.",
+    "accept_terms_prefix": "Accetto i",
+    "terms_link": "Termini e Condizioni",
+    "accept_privacy_prefix": "Ho letto l'",
+    "privacy_link": "Informativa sulla Privacy",
+    "accept_marketing": "Desidero ricevere comunicazioni promozionali (opzionale, revocabile in qualsiasi momento)"
+  },
+  "verificationSent": {
+    "title": "Controlla la tua email",
+    "body": "Abbiamo inviato un link di verifica a <strong>{{email}}</strong>. Clicca sul link per attivare il tuo account.",
+    "goLogin": "Vai al login"
+  },
+  "forgot": {
+    "title": "Password dimenticata",
+    "submit": "Invia link di reset",
+    "sentMsg": "Se l'email esiste, riceverai un link per reimpostare la password.",
+    "backToLogin": "Torna al login"
+  },
+  "reset": {
+    "title": "Nuova password",
+    "newPasswordLabel": "Nuova password",
+    "passwordRules": "Almeno 12 caratteri, una maiuscola, una minuscola, un numero.",
+    "submit": "Salva nuova password",
+    "successMsg": "Password reimpostata con successo.",
+    "tokenInvalid": "Token non valido o scaduto."
+  },
+  "verify": {
+    "verifying": "Verifica in corso...",
+    "success": "Email verificata con successo!",
+    "tokenInvalid": "Token non valido o scaduto.",
+    "goLogin": "Vai al login"
+  },
+  "errors": {
+    "storeUnknown": "Store non identificato.",
+    "invalidCredentials": "Email o password non corretti.",
+    "verificationEmailSent": "Email di verifica inviata.",
+    "emailSendFailed": "Errore nell'invio dell'email.",
+    "signupGeneric": "Errore nella registrazione.",
+    "genericRetry": "Errore. Riprova.",
+    "accountLockedGeneric": "Account bloccato per troppi tentativi falliti. Riprova più tardi."
+  }
+}

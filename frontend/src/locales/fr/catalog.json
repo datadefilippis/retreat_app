@@ -1,0 +1,245 @@
+{
+  "item_type": {
+    "physical": "Produit physique",
+    "service": "Service",
+    "rental": "Location",
+    "event_ticket": "Evenement/billet",
+    "booking": "Reservation 1:1",
+    "digital": "Produit numerique"
+  },
+  "item_type_short": {
+    "service": "Service",
+    "rental": "Location",
+    "event_ticket": "Evenement",
+    "digital": "Numerique"
+  },
+  "price_mode": {
+    "fixed": "Prix fixe",
+    "inquiry": "Sur demande"
+  },
+  "transaction_mode": {
+    "request": "Sur demande",
+    "direct": "Direct",
+    "approval": "Avec approbation"
+  },
+  "profile": {
+    "direct_sale": {
+      "label": "Vente directe",
+      "description": "Produit ou service achetable avec paiement immediat",
+      "behavior": "Paiement direct",
+      "runtime": "Le client paie directement. La commande est confirmee apres le paiement.",
+      "hint_unit_price": "Obligatoire pour le paiement direct"
+    },
+    "request_sale": {
+      "label": "Vente sur demande",
+      "description": "Le client demande, vous confirmez et gerez le paiement",
+      "behavior": "Confirmation manuelle",
+      "runtime": "Le client envoie une demande. Vous l'examinez et la confirmez depuis la page Commandes."
+    },
+    "quote": {
+      "label": "Devis / Sur demande",
+      "description": "Le client demande des informations, le prix est defini apres",
+      "behavior": "Devis",
+      "runtime": "Le client demande des infos sans voir le prix. Gerez la demande depuis la page Commandes et contactez le client avec le devis.",
+      "hint_unit_price": "Non necessaire — prix sur demande"
+    },
+    "rental": {
+      "label": "Location",
+      "description": "Le client demande une periode, vous verifiez la disponibilite",
+      "behavior": "Verification de disponibilite",
+      "runtime": "Le client choisit les dates dans le catalogue. Les demandes arrivent dans les Commandes ou vous pouvez verifier la disponibilite avant de confirmer.",
+      "post_save": "Lorsque les demandes arrivent, verifiez les dates dans la page Commandes et dans le Calendrier avant de confirmer.",
+      "hint_unit_price": "Prix par unite de location (jour, heure, semaine)",
+      "hint_unit_label": "Unite de location : jour, heure, semaine",
+      "hint_rental_unit": "Comment la periode de location est mesuree",
+      "setup_cue_unit": "Definissez l'unite de location (jour, heure, semaine)",
+      "setup_cue_price": "Definissez le prix par unite"
+    },
+    "open_event": {
+      "label": "Evenement ouvert",
+      "description": "Evenement sans limite de places, achetable directement",
+      "behavior": "Paiement direct",
+      "runtime": "Le client achete directement. Apres avoir enregistre, ouvrez le produit pour ajouter les dates et lieux de l'evenement.",
+      "post_save": "Ajoutez au moins une date d'evenement depuis la section \"Dates evenement\" ci-dessous.",
+      "hint_unit_price": "Prix de base par billet (peut etre remplace pour chaque date)",
+      "setup_cue_dates": "Ajoutez au moins une date d'evenement",
+      "setup_cue_publish": "Publiez les dates pour les rendre visibles dans le catalogue",
+      "no_occurrences_warning": "Aucune date d'evenement — le produit n'est pas encore reservable"
+    },
+    "capped_event": {
+      "label": "Evenement a places limitees",
+      "description": "Evenement avec capacite, le client demande et vous verifiez les places",
+      "behavior": "Verification des places",
+      "runtime": "Le client demande des places. Apres avoir enregistre, definissez les dates et la capacite maximale depuis la section \"Dates evenement\". Les demandes arrivent dans les Commandes.",
+      "post_save": "Ajoutez les dates d'evenement et definissez la capacite pour chacune depuis la section ci-dessous.",
+      "hint_unit_price": "Prix de base par billet (peut etre remplace pour chaque date)",
+      "setup_cue_dates": "Ajoutez les dates d'evenement avec capacite maximale",
+      "setup_cue_capacity": "Definissez la capacite pour chaque date d'evenement",
+      "setup_cue_publish": "Publiez les dates pour les rendre visibles dans le catalogue",
+      "no_occurrences_warning": "Aucune date d'evenement — le produit n'est pas encore reservable"
+    }
+  },
+  "issue": {
+    "direct_inquiry": "Mode direct non compatible avec prix sur demande",
+    "direct_no_price": "Prix manquant pour le paiement direct",
+    "rental_no_unit": "Unite de location non definie",
+    "event_unpublished": "Evenement non publie — non visible dans le catalogue",
+    "no_price": "Aucun prix defini"
+  },
+  "storefront": {
+    "request_header": "Demander une commande",
+    "request_modal": "Demander une commande",
+    "request_desc": "Ceci est une demande de commande. Vous recevrez une confirmation avant la finalisation.",
+    "request_submit": "Envoyer la demande",
+    "request_inquiry": "Demander des infos",
+    "direct_header": "Commander",
+    "direct_modal": "Envoyer la commande",
+    "direct_desc": "Votre commande sera traitee rapidement. Vous serez contacte pour les details.",
+    "direct_submit": "Envoyer la commande",
+    "approval_header": "Demander la disponibilite",
+    "approval_modal": "Demander la disponibilite",
+    "approval_desc": "Cette demande sera verifiee. Vous recevrez une confirmation de disponibilite.",
+    "approval_submit": "Envoyer la demande",
+    "rental_header": "Demander la location",
+    "rental_modal": "Demander la location",
+    "rental_desc": "La disponibilite de la location sera verifiee. Vous recevrez une confirmation."
+  },
+  "form": {
+    "offer_type": "Type d'offre",
+    "type": "Type",
+    "price_mode_label": "Mode de prix",
+    "unit_label": "Etiquette d'unite",
+    "transaction_mode_label": "Mode de transaction",
+    "advanced_show": "Configuration avancee",
+    "advanced_hide": "Masquer la configuration avancee",
+    "name_required": "Le nom est obligatoire",
+    "rental_unit_hint": "Recommande pour le catalogue public",
+    "deactivate": "Desactiver",
+    "all_stores": "Tous les stores",
+    "select_specific_stores": "Selectionner des stores specifiques",
+    "stock_quantity": "Quantite en stock"
+  },
+  "image": {
+    "upload": "Telecharger une image",
+    "replace": "Remplacer l'image",
+    "uploaded_toast": "Image telechargee",
+    "error_toast": "Erreur lors du telechargement",
+    "max_hint": "Max 5 Mo, JPG/PNG/WebP"
+  },
+  "booking_section": {
+    "title": "Reservation",
+    "duration_label": "Duree de session (minutes)",
+    "default_duration": "Par defaut (d'apres les regles)",
+    "duration_15": "15 minutes",
+    "duration_30": "30 minutes",
+    "duration_45": "45 minutes",
+    "duration_60": "60 minutes",
+    "duration_90": "90 minutes",
+    "duration_120": "120 minutes",
+    "duration_label_field": "Etiquette de duree"
+  },
+  "dialog": {
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "create": "Creer"
+  },
+  "summary": {
+    "products_one": "{{count}} produit",
+    "products_other": "{{count}} produits",
+    "online": "en ligne",
+    "needs_setup": "a completer",
+    "storefront_errors": "problemes storefront",
+    "visible_one": "{{count}} visible",
+    "visible_other": "{{count}} visibles"
+  },
+  "triage": {
+    "banner_storefront_errors": "Produits publies avec erreurs"
+  },
+  "ai_enrich": {
+    "btn": "Ameliorer avec IA",
+    "applied": "Description et categorie ameliorees",
+    "error": "Erreur lors de l'amelioration IA"
+  },
+  "completion": {
+    "title": "{{count}} produits a completer",
+    "hint": "Ajoutez le prix et publiez",
+    "publish_btn": "Publier",
+    "published": "{{name}} publie",
+    "publish_error": "Erreur lors de la publication",
+    "price_error": "Erreur lors de l'enregistrement du prix",
+    "publish_all_btn": "Publier tous les completes",
+    "publish_all_confirm": "Publier {{count}} produits ?",
+    "published_all": "{{count}} produits publies",
+    "no_publishable": "Completez les prix avant de publier",
+    "back_to_setup": "Retour au setup"
+  },
+  "ai_products": {
+    "title": "Generer des produits avec IA",
+    "desc": "Decrivez ce que vous vendez ou offrez et nous genererons des suggestions pour votre catalogue.",
+    "placeholder": "Ex : Boucherie avec viandes fraiches, charcuterie, box degustation et livraison a domicile...",
+    "generate_btn": "Generer des suggestions",
+    "generating": "Generation...",
+    "preview_title": "Produits suggeres",
+    "apply_btn": "Creer comme brouillon",
+    "regenerate_btn": "Regenerer",
+    "skip_btn": "Annuler",
+    "created": "{{count}} produits crees comme brouillon",
+    "error": "Erreur lors de la generation. Reessayez.",
+    "create_error": "Erreur lors de la creation des produits.",
+    "manual_hint": "Vous pouvez aussi ajouter des produits manuellement",
+    "clear_desc": "Effacer la description"
+  },
+  "family": {
+    "instant": "Achat immediat",
+    "manual": "Confirmation manuelle",
+    "dialogue": "Devis / Dialogue"
+  },
+  "service_section": {
+    "title": "Details du service",
+    "duration": "Duree indicative",
+    "duration_placeholder": "ex. 60 min, demi-journee",
+    "notes": "Notes du service",
+    "notes_placeholder": "ex. Sur rendez-vous"
+  },
+  "rental_section": {
+    "title": "Details de location",
+    "unit": "Unite de location",
+    "unit_field_label": "Unite de location",
+    "unit_select": "— Selectionner —",
+    "unit_hour": "Heure",
+    "unit_day": "Jour",
+    "unit_week": "Semaine",
+    "unit_month": "Mois",
+    "notes": "Notes de location",
+    "notes_placeholder": "ex. Caution requise"
+  },
+  "occurrence_section": {
+    "title": "Dates evenement",
+    "subtitle": "Gerez les dates et lieux pour cet evenement",
+    "add_new": "+ Nouveau",
+    "empty": "Aucune occurrence. Ajoutez des dates pour cet evenement.",
+    "seats": "places",
+    "info_create_first": "Apres avoir cree le produit, vous pourrez ajouter les dates (occurrences) depuis la modification.",
+    "form_start": "Debut",
+    "form_end": "Fin",
+    "form_location": "Lieu",
+    "form_location_placeholder": "ex. Salle principale",
+    "form_capacity": "Capacite",
+    "form_price_override": "Prix override",
+    "form_create": "Creer",
+    "form_cancel": "Annuler",
+    "toast_created": "Occurrence creee",
+    "toast_create_error": "Erreur de creation",
+    "toast_status_error": "Erreur de mise a jour du statut"
+  },
+  "occurrence_status": {
+    "draft": "Brouillon",
+    "published": "Publie",
+    "closed": "Ferme",
+    "cancelled": "Annule"
+  },
+  "publish": {
+    "online": "● En ligne",
+    "offline": "○ Hors ligne"
+  }
+}

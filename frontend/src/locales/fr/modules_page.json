@@ -1,0 +1,80 @@
+{
+  "page": {
+    "title": "Modules",
+    "subtitle": "Activez et gerez les modules d'analyse"
+  },
+  "sections": {
+    "active_modules": "Modules actifs",
+    "available_modules": "Modules disponibles"
+  },
+  "status": {
+    "active": "Actif",
+    "coming_soon": "Bientot disponible",
+    "available": "Disponible"
+  },
+  "actions": {
+    "activate": "Activer",
+    "deactivate": "Desactiver",
+    "activating": "Activation...",
+    "open_module": "Ouvrir le module",
+    "view_dashboard": "Voir le tableau de bord"
+  },
+  "confirm": {
+    "deactivate": "Desactiver {{name}} ?\n\nLes sections du module ne seront plus visibles dans le menu. Vos donnees ne seront pas supprimees.",
+    "deactivate_cashflow": "Attention : c'est le module fondateur. Le tableau de bord cashflow et la gestion des donnees ne seront plus accessibles.",
+    "activate_commerce": "En activant Commerce, seront egalement actives : Catalogue Produits et Analyse Clients.",
+    "activate_customers_light": "En activant Analyse Clients, les Signaux Commerciaux seront egalement actives.",
+    "proceed": "Continuer ?"
+  },
+  "toast": {
+    "load_error": "Impossible de charger les modules",
+    "activated": "Module active !",
+    "activate_error": "Erreur lors de l'activation du module",
+    "deactivated": "Module desactive",
+    "deactivate_error": "Erreur lors de la desactivation"
+  },
+  "empty": {
+    "no_modules": "Aucun module disponible"
+  },
+  "catalog": {
+    "cashflow_monitor": {
+      "name": "Cashflow Monitor",
+      "desc": "Suivez et analysez les flux de tresorerie quotidiens avec des analyses basees sur l'IA.",
+      "category": "Finance",
+      "unlocks": "Debloque : tableau de bord cashflow, gestion des donnees ventes/depenses/achats, analyses IA"
+    },
+    "customers_light": {
+      "name": "Intelligence Clients",
+      "desc": "Analyse clients operationnelle : tendances, risque de churn, segmentation, priorites de suivi.",
+      "category": "Intelligence",
+      "unlocks": "Debloque : tableau de bord clients dans la section Clients avec metriques, filtres et triage"
+    },
+    "product_catalog": {
+      "name": "Catalogue Produits",
+      "desc": "Analyse produit : marges, couverture des couts, analyse ABC, performance par categorie.",
+      "category": "Intelligence",
+      "unlocks": "Debloque : analyse du catalogue dans la section Produits avec marges et classification"
+    },
+    "commerce_signals": {
+      "name": "Signaux Commerciaux",
+      "desc": "Signaux commerciaux prioritaires : reactivation clients, risque de concentration, conversion nouveaux clients.",
+      "category": "Intelligence",
+      "unlocks": "Debloque : tableau de bord des signaux commerciaux avec priorites d'action"
+    },
+    "revenue_forecasting": {
+      "name": "Prevision de Revenus",
+      "desc": "Previsions de revenus basees sur l'IA, les donnees historiques et les tendances du marche.",
+      "category": "Finance"
+    },
+    "expense_optimizer": {
+      "name": "Optimiseur de Depenses",
+      "desc": "Identifiez les opportunites d'economie et optimisez les habitudes de depenses.",
+      "category": "Finance"
+    },
+    "inventory_tracker": {
+      "name": "Suivi des Stocks",
+      "desc": "Surveillez les niveaux de stock, prevoyez les penuries et optimisez les reapprovisionnements.",
+      "category": "Operations"
+    }
+  }
+}

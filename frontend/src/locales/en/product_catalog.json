@@ -1,0 +1,267 @@
+{
+  "page": {
+    "title": "Product Performance",
+    "subtitle": "Real margin, products that sell, where revenue concentrates"
+  },
+  "period": {
+    "label": "Period",
+    "7d": "7 days",
+    "30d": "30 days",
+    "90d": "90 days",
+    "12m": "12 months",
+    "all": "All time",
+    "comparedTo": "vs previous period"
+  },
+  "sections": {
+    "headline": "Overall performance",
+    "operational": "Operational insights",
+    "distribution": "Distribution and mix",
+    "products_table": "Product details"
+  },
+  "infoBox": {
+    "def": "Definition",
+    "calc": "Calculation",
+    "read": "How to read it"
+  },
+  "intelligenceBanner": {
+    "title_all_good": "All good ({{passed}}/{{total}} checks passed)",
+    "title_all_good_sub": "Margins reliable and Cashflow alignment OK",
+    "section_secondary": "Keep an eye on ({{count}})",
+    "section_housekeeping": "Suggested cleanup ({{count}})",
+    "category": {
+      "data_quality": "Data quality",
+      "cashflow_coherence": "Cashflow coherence",
+      "purchases_coherence": "Purchases coherence",
+      "trends": "Trends and anomalies"
+    },
+    "severity": {
+      "critical": "Critical",
+      "warning": "Keep an eye",
+      "info": "Info"
+    },
+    "drill": {
+      "products_revenue": "Products revenue (here)",
+      "cashflow_revenue": "Total revenue (Cashflow Monitor)",
+      "orphan_sales": "Sales without linked product",
+      "see_more": "See all ({{count}})",
+      "see_details": "See details",
+      "no_drill": "No detail available"
+    },
+    "actions": {
+      "configure_all": "Configure costs now",
+      "open_products": "Open product management",
+      "open_cashflow": "Open Cashflow Monitor",
+      "see_orphan_sales": "See orphan sales",
+      "open_orders": "Open orders",
+      "refresh_metrics": "Refresh metrics now",
+      "dismiss": "Hide for 30 days",
+      "dismissed": "Hidden",
+      "expand": "Expand",
+      "collapse": "Collapse"
+    }
+  },
+  "checks": {
+    "products_without_cost": {
+      "title": "You can't tell if your products are profitable",
+      "body": "You're selling products worth {{blind_revenue_formatted}} — {{blind_revenue_pct}}% of revenue — without being able to compute the margin. You don't know whether those sales are in profit or in loss.",
+      "cause": "The {{count}} listed products don't have a \"Product cost\" configured. Set it in the anagraphic to see real margins immediately."
+    },
+    "products_without_sku": {
+      "title": "{{count}} active products without SKU",
+      "body": "Products without an SKU code can't be automatically matched against CSV import rows and are harder to search. Doesn't break margins, but it's recommended hygiene.",
+      "cause": "SKU is not required at product creation, but it's needed for bulk imports."
+    },
+    "suspicious_margins": {
+      "title": "Margins outside the normal range",
+      "body": "{{negative_count}} products are selling at a loss (cost greater than price) and {{high_count}} have margin above 90% — likely missing some cost (packaging, labour, overhead).",
+      "cause": "Open each suspect product: verify the \"Product cost\" includes all real items (raw materials, labour, energy, packaging)."
+    },
+    "cashflow_mismatch": {
+      "title": "Mismatch with Cashflow Monitor",
+      "body": "Products revenue here ({{products_revenue_formatted}}) differs from total revenue in Cashflow Monitor ({{cashflow_revenue_formatted}}) by {{diff_amount_formatted}} ({{diff_pct}}%). The two views should align.",
+      "cause": "{{orphan_count}} sales in the period are not linked to a specific product, so they appear in Cashflow but not here."
+    },
+    "orphan_sales": {
+      "title": "{{count}} sales without linked product",
+      "body": "You have {{count}} sales in the period totalling {{amount_formatted}} not attributed to a specific product. They show up in Cashflow totals but are not counted in Product Performance metrics.",
+      "cause": "Typically CSV rows imported without SKU, or manual sales entered without picking a product from the catalog."
+    },
+    "confirmed_orders_without_sales": {
+      "title": "{{missing_count}} orders with metrics to refresh",
+      "body": "You have {{missing_count}} confirmed orders whose revenue isn't included in this page's totals yet.",
+      "cause": "Happens when an order is confirmed without an automatic metrics update. Click \"Refresh metrics now\" and their revenue will appear in the totals."
+    },
+    "purchases_unattributed": {
+      "title": "{{unattr_pct}}% of purchases not linked to products",
+      "body": "You have {{unattr_amount_formatted}} of purchases in the period that are not tied to a specific product. This means costs are not directly attributed and can only be estimated.",
+      "cause": "To attribute costs correctly, configure products with \"From purchased item\" components referencing the categories below."
+    },
+    "unlinked_purchase_categories": {
+      "title": "{{count}} purchase categories not linked to products",
+      "body": "There are purchase categories that aren't used in any product's cost configuration. Categories that are typically overhead (rent, utilities, software, etc.) are excluded.",
+      "cause": "To improve margin precision, consider linking the most relevant categories to the products that consume them (e.g. ingredients → dish)."
+    },
+    "coverage_drop": {
+      "title": "Cost coverage dropping",
+      "body": "The share of products with cost configured dropped from {{previous_pct}}% to {{current_pct}}% vs the previous period ({{drop_pp}} percentage points less).",
+      "cause": "Likely you've added new products without configuring cost, or removed existing configurations."
+    },
+    "margin_deterioration": {
+      "title": "Margin deteriorating",
+      "body": "Weighted margin dropped from {{previous_pct}}% to {{current_pct}}% vs the previous period ({{drop_pp}} percentage points less).",
+      "cause": "Possible causes: rising purchase costs, more aggressive discounts, sales mix shifted toward lower-margin products."
+    }
+  },
+  "actions": {
+    "refresh": "Refresh metrics",
+    "refreshing": "Refreshing…",
+    "refresh_success": "Product metrics refreshed",
+    "refresh_error": "Refresh failed",
+    "view_product": "Open product",
+    "filter": "Filter",
+    "search_placeholder": "Search products…",
+    "all_categories": "All categories",
+    "all_abc_classes": "All ABC classes"
+  },
+  "empty": {
+    "title": "No product data yet",
+    "description": "Data will appear once you upload sales with an SKU column matching your products, or once a confirmed storefront order generates sales records.",
+    "cta_manage": "Manage products",
+    "cta_refresh": "Force refresh now"
+  },
+  "banners": {
+    "no_cost_data_title": "Margins not computable",
+    "no_cost_data_body": "You haven't configured the cost of your products yet. Open the product anagraphic and use the \"Product cost\" section to set the unit cost or link items from Purchases.",
+    "partial_coverage_title": "Partial margins",
+    "partial_coverage_body": "You're computing margin for {{pct}}% of your products. Configure the cost of the remaining ones for complete analysis."
+  },
+  "kpi": {
+    "totalRevenue": {
+      "title": "Product revenue",
+      "def": "Sum of revenue generated by sold products in the selected period. Excludes any revenue not tied to a specific product.",
+      "calc": "Σ sales × unit price (across all products, in the period).",
+      "read": "This is the sales volume of your products, not the total business turnover. If the figure seems low, check that your sales records have the SKU linked to a product."
+    },
+    "totalCost": {
+      "title": "Product cost (COGS)",
+      "def": "Total cost of sold products. Based on the \"Product cost\" configured in the product anagraphic (manual or computed from purchases).",
+      "calc": "Σ (unit cost × quantity sold) for each product with a configured cost.",
+      "read": "The \"true\" cost of goods sold. If N/A, you haven't configured costs yet — open the product anagraphic to set them."
+    },
+    "weightedMargin": {
+      "title": "Weighted margin",
+      "def": "The overall margin % of your products, weighted by each product's revenue. Reflects the real business margin.",
+      "calc": "(Total revenue − Total cost) ÷ Total revenue × 100",
+      "read": "Above 30%: excellent for most sectors. 10%–30%: in the norm. Below 10%: products may not cover indirect costs — consider revising prices or costs."
+    },
+    "avgMargin": {
+      "title": "Average margin per product",
+      "def": "Simple mean of your products' margin %. Each product weighs equally regardless of sales volume.",
+      "calc": "(Σ margin % per product) ÷ number of products with data",
+      "read": "If significantly different from Weighted margin, you have a heterogeneous product mix. Compare with the weighted margin to see if your \"stars\" outperform the average or not."
+    },
+    "activeProducts": {
+      "title": "Active products",
+      "def": "Number of published or available products in the catalog. Does not consider sales generated.",
+      "calc": "Count of products with is_active = true at read time.",
+      "read": "The \"perimeter\" of your catalog. Compare with \"Products with sales\" below to see how much of the catalog is actually working."
+    },
+    "productsWithSales": {
+      "title": "Products with sales",
+      "def": "Number of products that generated at least one sale in the selected period.",
+      "calc": "Count of products with ≥1 sale record in the period.",
+      "read": "If much lower than \"Active products\", you have dead-stock: products occupying catalog space without producing revenue. Consider suspending or promoting the inactive ones."
+    },
+    "topSeller": {
+      "title": "Top seller",
+      "def": "The product that generated the most revenue in the selected period.",
+      "calc": "argmax(revenue per product) in the period.",
+      "read": "Your locomotive product. Knowing the top seller helps decide where to invest in marketing, stock and operational attention."
+    },
+    "mostProfitable": {
+      "title": "Most profitable",
+      "def": "The product that generated the highest absolute profit (revenue minus cost) in the selected period.",
+      "calc": "argmax(revenue − cost) per product with configured cost.",
+      "read": "Not necessarily the top seller: a product can sell less but with a margin so high it generates more profit. These are your \"profitability champions\"."
+    },
+    "costCoverage": {
+      "title": "Cost data coverage",
+      "def": "Percentage of products with sales for which you have configured a \"Product cost\" in the anagraphic.",
+      "calc": "(Products with cost configured ÷ Products with sales) × 100",
+      "read": "100%: margins are 100% reliable. Below 70%: part of the margins is estimated or missing. For complete analysis, finish configuring costs on the remaining products."
+    },
+    "top10Concentration": {
+      "title": "Top 10 concentration",
+      "def": "How much of your revenue comes from the 10 best-selling products.",
+      "calc": "(Σ revenue of top 10 products ÷ Total revenue) × 100",
+      "read": "Above 80%: strong dependency on a few top — if one of them dips, revenue suffers. Below 40%: well-distributed portfolio, more resilient but with less commercial leverage."
+    }
+  },
+  "abc": {
+    "title": "ABC distribution",
+    "def": "Classifies products by their contribution to revenue. An application of the Pareto principle (80/20) to your catalog.",
+    "calc": "Sort products by descending revenue, then: A = top that cumulate 80% of revenue; B = next ones up to 95%; C = the remaining 5%.",
+    "read": "Class A: products to focus attention, stock and marketing on. Class B: useful but not critical products. Class C: candidates to reduce or eliminate unless they have strategic reasons to stay.",
+    "class_a": "Class A (80% revenue)",
+    "class_a_desc": "80% of revenue",
+    "class_b": "Class B (15% revenue)",
+    "class_b_desc": "15% of revenue",
+    "class_c": "Class C (5% revenue)",
+    "class_c_desc": "5% of revenue",
+    "products_count": "{{count}} products",
+    "products": "products",
+    "avg_margin": "average margin"
+  },
+  "categories": {
+    "title": "Top categories",
+    "def": "The product categories that generate the most revenue in the period.",
+    "calc": "Aggregated by Product.category, sorted by descending revenue.",
+    "read": "Shows where the business concentrates by product family. Useful for assortment and marketing decisions.",
+    "no_category": "Uncategorised"
+  },
+  "table": {
+    "name": "Product",
+    "sku": "SKU",
+    "category": "Category",
+    "revenue": "Revenue",
+    "cost": "Cost",
+    "margin": "Margin %",
+    "margin_amount": "Profit",
+    "units": "Units sold",
+    "trend": "30d trend",
+    "abc": "ABC",
+    "no_data": "No product with sales data",
+    "no_data_desc": "Data will appear once you upload sales with the SKU column linked to products created in Master data.",
+    "load_more": "Show more",
+    "manage_products": "Manage products",
+    "margin_unavailable": "Margins are not yet available. To compute per-product margins, configure the \"Product cost\" in the anagraphic of your products."
+  },
+  "profile": {
+    "title": "Product detail",
+    "performance_section": "Period performance",
+    "cost_breakdown_section": "Cost composition",
+    "cost_breakdown_empty": "Product cost not yet configured. Open it in the anagraphic to set it.",
+    "cost_unconfigured": "Cost not configured",
+    "open_in_anagrafica": "Open in anagraphic",
+    "open_product_profile": "Open product profile",
+    "open_events_list": "View all events",
+    "open_course": "Open course"
+  },
+  "kpis": {
+    "active_products": "Active products",
+    "products_with_sales": "With sales",
+    "total_revenue": "Total revenue",
+    "weighted_margin": "Weighted margin",
+    "avg_margin": "Average margin",
+    "top_seller": "Top seller"
+  },
+  "cost": {
+    "coverage_label": "Cost data coverage",
+    "coverage_detail": "{{with_cost}} of {{total}} products with cost configured",
+    "partial_coverage": "Margins are computed only for {{pct}}% of products. Configure the cost of the remaining products for complete analysis."
+  },
+  "filters": {
+    "all_categories": "All categories",
+    "all_classes": "All classes"
+  }
+}

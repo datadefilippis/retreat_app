@@ -1,0 +1,92 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Monitora le performance della tua azienda",
+  "toast": {
+    "save_error": "Errore nel salvare le preferenze",
+    "widget_removed": "Widget rimosso dalla dashboard"
+  },
+  "date_range": {
+    "from": "Da",
+    "to": "A"
+  },
+  "empty": {
+    "no_modules_title": "Per iniziare, attiva almeno un modulo",
+    "no_modules_desc": "I moduli aggiungono KPI, grafici e analisi al tuo account. Scegli il primo dalla libreria.",
+    "go_to_modules": "Vai ai Moduli",
+    "no_data_title": "Carica i tuoi dati per iniziare",
+    "no_data_desc": "Hai attivato {{count}} modulo/i. Carica i dati per vedere KPI, grafici e alert.",
+    "upload_data": "Carica dati {{label}}",
+    "no_widgets_title": "Personalizza la tua dashboard",
+    "no_widgets_desc": "La tua dashboard e vuota. Aggiungi grafici e KPI dai tuoi moduli usando il pulsante pin.",
+    "go_to_module": "Vai a {{label}}"
+  },
+  "activation": {
+    "title": "Completa la configurazione del tuo store",
+    "blocking_desc": "{{count}} configurazioni necessarie per andare live",
+    "advisory_desc": "Configurazioni consigliate per migliorare il tuo store",
+    "action": "Configura",
+    "degraded_title": "Attenzione: il tuo store ha problemi",
+    "degraded_desc": "Il tuo storefront e' accessibile ma {{count}} configurazioni critiche richiedono attenzione",
+    "check_public_slug": "Indirizzo pubblico storefront",
+    "check_display_name": "Nome pubblico del business",
+    "check_contact_email": "Email di contatto pubblica",
+    "check_notification_email": "Email notifiche ordini",
+    "check_reply_to_email": "Email di risposta clienti",
+    "check_payment_provider": "Provider di pagamento",
+    "check_publishable_offer": "Almeno un prodotto pubblicato",
+    "ready_to_publish_title": "Il tuo store e' pronto!",
+    "ready_to_publish_desc": "Tutte le configurazioni sono a posto. Pubblica il tuo store per renderlo visibile.",
+    "publish_cta": "Pubblica store"
+  },
+  "store_panel": {
+    "title": "Il tuo store",
+    "published": "Pubblicato",
+    "publish_cta": "Pubblica",
+    "open_store": "Apri store",
+    "manage": "Gestisci",
+    "issues_degraded": "Problemi da risolvere:",
+    "issues_setup": "Per andare live:",
+    "products_online": "prodotti online",
+    "ops_drafts": "bozze",
+    "ops_needs_review": "da gestire",
+    "ops_fulfillment": "consegne in attesa",
+    "ops_paid_unconfirmed": "pagati da confermare",
+    "ops_catalog_broken": "prodotti con errori",
+    "all_clear": "Nessuna azione necessaria",
+    "attention_urgent": "{{urgent}} urgenti su {{total}} elementi da gestire",
+    "attention_normal": "{{count}} elementi richiedono attenzione"
+  },
+  "first_live": {
+    "title": "Il tuo store e' online!",
+    "hint_storefront": "Puoi aprire il tuo storefront dal link qui sopra.",
+    "hint_orders": "I nuovi ordini appariranno nella sezione Ordini.",
+    "hint_manage": "Puoi sospendere o aggiornare lo store in qualsiasi momento da Impostazioni Store."
+  },
+  "smart_setup": {
+    "title": "Setup del tuo store",
+    "action": "Configura",
+    "step_identity": "Identita store",
+    "step_products": "Prodotti",
+    "step_email": "Email",
+    "step_payments": "Pagamenti",
+    "step_fulfillment": "Consegna",
+    "step_published": "Pubblica",
+    "hint_products_price": "{{count}} prodotti senza prezzo",
+    "hint_products_empty": "Aggiungi almeno un prodotto",
+    "ai_action": "Genera con AI",
+    "ai_identity": "Genera identita con AI",
+    "ai_products": "Genera prodotti con AI",
+    "manual_action": "Manuale",
+    "publish_btn": "Pubblica il tuo store",
+    "publish_confirm": "Vuoi pubblicare il tuo store e renderlo visibile?",
+    "publish_success": "Store pubblicato!",
+    "publish_error": "Errore nella pubblicazione"
+  },
+  "setup": {
+    "title": "Per andare live:",
+    "step_identity": "1. Configura identita store",
+    "step_products": "2. Aggiungi almeno un prodotto",
+    "step_payments": "3. Collega pagamenti",
+    "step_publish": "4. Pubblica il tuo store"
+  }
+}

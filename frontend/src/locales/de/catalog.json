@@ -1,0 +1,245 @@
+{
+  "item_type": {
+    "physical": "Physisches Produkt",
+    "service": "Dienstleistung",
+    "rental": "Vermietung",
+    "event_ticket": "Event/Ticket",
+    "booking": "1:1 Buchung",
+    "digital": "Digitales Produkt"
+  },
+  "item_type_short": {
+    "service": "Dienstleistung",
+    "rental": "Vermietung",
+    "event_ticket": "Event",
+    "digital": "Digital"
+  },
+  "price_mode": {
+    "fixed": "Festpreis",
+    "inquiry": "Auf Anfrage"
+  },
+  "transaction_mode": {
+    "request": "Auf Anfrage",
+    "direct": "Direkt",
+    "approval": "Mit Genehmigung"
+  },
+  "profile": {
+    "direct_sale": {
+      "label": "Direktverkauf",
+      "description": "Produkt oder Dienstleistung mit sofortiger Zahlung",
+      "behavior": "Direkte Zahlung",
+      "runtime": "Der Kunde zahlt direkt. Die Bestellung wird nach der Zahlung bestaetigt.",
+      "hint_unit_price": "Erforderlich fuer den direkten Checkout"
+    },
+    "request_sale": {
+      "label": "Verkauf auf Anfrage",
+      "description": "Der Kunde fragt an, Sie bestaetigen und verwalten die Zahlung",
+      "behavior": "Manuelle Bestaetigung",
+      "runtime": "Der Kunde sendet eine Anfrage. Sie pruefen und bestaetigen sie auf der Bestellungen-Seite."
+    },
+    "quote": {
+      "label": "Angebot / Auf Anfrage",
+      "description": "Der Kunde fragt Informationen an, der Preis wird spaeter definiert",
+      "behavior": "Angebot",
+      "runtime": "Der Kunde fragt ohne Preis an. Verwalten Sie die Anfrage auf der Bestellungen-Seite und kontaktieren Sie den Kunden mit dem Angebot.",
+      "hint_unit_price": "Nicht erforderlich — Preis auf Anfrage"
+    },
+    "rental": {
+      "label": "Vermietung",
+      "description": "Der Kunde fragt einen Zeitraum an, Sie pruefen die Verfuegbarkeit",
+      "behavior": "Verfuegbarkeitspruefung",
+      "runtime": "Der Kunde waehlt die Daten aus dem Katalog. Anfragen erscheinen in den Bestellungen, wo Sie die Verfuegbarkeit vor der Bestaetigung pruefen koennen.",
+      "post_save": "Wenn Anfragen eingehen, pruefen Sie die Daten auf der Bestellungen-Seite und im Kalender, bevor Sie bestaetigen.",
+      "hint_unit_price": "Preis pro Mieteinheit (Tag, Stunde, Woche)",
+      "hint_unit_label": "Mieteinheit: Tag, Stunde, Woche",
+      "hint_rental_unit": "Wie der Mietzeitraum gemessen wird",
+      "setup_cue_unit": "Legen Sie die Mieteinheit fest (Tag, Stunde, Woche)",
+      "setup_cue_price": "Definieren Sie den Preis pro Einheit"
+    },
+    "open_event": {
+      "label": "Offenes Event",
+      "description": "Event ohne Platzlimit, direkt buchbar",
+      "behavior": "Direkte Zahlung",
+      "runtime": "Der Kunde kauft direkt. Nach dem Speichern oeffnen Sie das Produkt, um Event-Daten und Orte hinzuzufuegen.",
+      "post_save": "Fuegen Sie mindestens ein Event-Datum ueber den Abschnitt \"Event-Daten\" unten hinzu.",
+      "hint_unit_price": "Basispreis pro Ticket (kann fuer einzelne Daten ueberschrieben werden)",
+      "setup_cue_dates": "Fuegen Sie mindestens ein Event-Datum hinzu",
+      "setup_cue_publish": "Veroeffentlichen Sie die Daten, damit sie im Katalog sichtbar sind",
+      "no_occurrences_warning": "Keine Event-Daten — das Produkt ist noch nicht buchbar"
+    },
+    "capped_event": {
+      "label": "Event mit begrenzten Plaetzen",
+      "description": "Event mit Kapazitaet, der Kunde fragt an und Sie pruefen die Plaetze",
+      "behavior": "Platzpruefung",
+      "runtime": "Der Kunde fragt Plaetze an. Nach dem Speichern legen Sie die Daten und die maximale Kapazitaet im Abschnitt \"Event-Daten\" fest. Anfragen erscheinen in den Bestellungen.",
+      "post_save": "Fuegen Sie die Event-Daten hinzu und legen Sie die Kapazitaet fuer jede im Abschnitt unten fest.",
+      "hint_unit_price": "Basispreis pro Ticket (kann fuer einzelne Daten ueberschrieben werden)",
+      "setup_cue_dates": "Fuegen Sie die Event-Daten mit maximaler Kapazitaet hinzu",
+      "setup_cue_capacity": "Legen Sie die Kapazitaet fuer jedes Event-Datum fest",
+      "setup_cue_publish": "Veroeffentlichen Sie die Daten, damit sie im Katalog sichtbar sind",
+      "no_occurrences_warning": "Keine Event-Daten — das Produkt ist noch nicht buchbar"
+    }
+  },
+  "issue": {
+    "direct_inquiry": "Direktmodus nicht kompatibel mit Preis auf Anfrage",
+    "direct_no_price": "Preis fehlt fuer direkten Checkout",
+    "rental_no_unit": "Mieteinheit nicht festgelegt",
+    "event_unpublished": "Event nicht veroeffentlicht — nicht im Katalog sichtbar",
+    "no_price": "Kein Preis festgelegt"
+  },
+  "storefront": {
+    "request_header": "Bestellung anfragen",
+    "request_modal": "Bestellung anfragen",
+    "request_desc": "Dies ist eine Bestellanfrage. Sie erhalten eine Bestaetigung vor der Finalisierung.",
+    "request_submit": "Anfrage senden",
+    "request_inquiry": "Info anfragen",
+    "direct_header": "Bestellen",
+    "direct_modal": "Bestellung senden",
+    "direct_desc": "Ihre Bestellung wird schnell bearbeitet. Sie werden fuer Details kontaktiert.",
+    "direct_submit": "Bestellung senden",
+    "approval_header": "Verfuegbarkeit anfragen",
+    "approval_modal": "Verfuegbarkeit anfragen",
+    "approval_desc": "Diese Anfrage wird ueberprueft. Sie erhalten eine Verfuegbarkeitsbestaetigung.",
+    "approval_submit": "Anfrage senden",
+    "rental_header": "Vermietung anfragen",
+    "rental_modal": "Vermietung anfragen",
+    "rental_desc": "Die Verfuegbarkeit der Vermietung wird geprueft. Sie erhalten eine Bestaetigung."
+  },
+  "form": {
+    "offer_type": "Angebotstyp",
+    "type": "Typ",
+    "price_mode_label": "Preismodus",
+    "unit_label": "Einheitenbezeichnung",
+    "transaction_mode_label": "Transaktionsmodus",
+    "advanced_show": "Erweiterte Konfiguration",
+    "advanced_hide": "Erweiterte Konfiguration ausblenden",
+    "name_required": "Name ist erforderlich",
+    "rental_unit_hint": "Empfohlen fuer den oeffentlichen Katalog",
+    "deactivate": "Deaktivieren",
+    "all_stores": "Alle Stores",
+    "select_specific_stores": "Bestimmte Stores auswaehlen",
+    "stock_quantity": "Lagerbestand"
+  },
+  "image": {
+    "upload": "Bild hochladen",
+    "replace": "Bild ersetzen",
+    "uploaded_toast": "Bild hochgeladen",
+    "error_toast": "Upload-Fehler",
+    "max_hint": "Max 5MB, JPG/PNG/WebP"
+  },
+  "booking_section": {
+    "title": "Buchung",
+    "duration_label": "Sitzungsdauer (Minuten)",
+    "default_duration": "Standard (aus Regeln)",
+    "duration_15": "15 Minuten",
+    "duration_30": "30 Minuten",
+    "duration_45": "45 Minuten",
+    "duration_60": "60 Minuten",
+    "duration_90": "90 Minuten",
+    "duration_120": "120 Minuten",
+    "duration_label_field": "Dauer-Etikett"
+  },
+  "dialog": {
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "create": "Erstellen"
+  },
+  "summary": {
+    "products_one": "{{count}} Produkt",
+    "products_other": "{{count}} Produkte",
+    "online": "online",
+    "needs_setup": "zu vervollstaendigen",
+    "storefront_errors": "Storefront-Probleme",
+    "visible_one": "{{count}} sichtbar",
+    "visible_other": "{{count}} sichtbar"
+  },
+  "triage": {
+    "banner_storefront_errors": "Veroeffentlichte Produkte mit Fehlern"
+  },
+  "ai_enrich": {
+    "btn": "Mit KI verbessern",
+    "applied": "Beschreibung und Kategorie verbessert",
+    "error": "Fehler bei der KI-Verbesserung"
+  },
+  "completion": {
+    "title": "{{count}} Produkte zu vervollstaendigen",
+    "hint": "Fuegen Sie den Preis hinzu und veroeffentlichen Sie",
+    "publish_btn": "Veroeffentlichen",
+    "published": "{{name}} veroeffentlicht",
+    "publish_error": "Fehler bei der Veroeffentlichung",
+    "price_error": "Fehler beim Speichern des Preises",
+    "publish_all_btn": "Alle abgeschlossenen veroeffentlichen",
+    "publish_all_confirm": "{{count}} Produkte veroeffentlichen?",
+    "published_all": "{{count}} Produkte veroeffentlicht",
+    "no_publishable": "Vervollstaendigen Sie die Preise vor der Veroeffentlichung",
+    "back_to_setup": "Zum Setup zurueckkehren"
+  },
+  "ai_products": {
+    "title": "Produkte mit KI generieren",
+    "desc": "Beschreiben Sie, was Sie verkaufen oder anbieten, und wir generieren Vorschlaege fuer Ihren Katalog.",
+    "placeholder": "Z.B.: Metzgerei mit frischem Fleisch, Wurstwaren, Verkostungsboxen und Lieferung nach Hause...",
+    "generate_btn": "Vorschlaege generieren",
+    "generating": "Generierung...",
+    "preview_title": "Vorgeschlagene Produkte",
+    "apply_btn": "Als Entwurf erstellen",
+    "regenerate_btn": "Neu generieren",
+    "skip_btn": "Abbrechen",
+    "created": "{{count}} Produkte als Entwurf erstellt",
+    "error": "Fehler bei der Generierung. Versuchen Sie es erneut.",
+    "create_error": "Fehler bei der Produkterstellung.",
+    "manual_hint": "Sie koennen Produkte auch manuell hinzufuegen",
+    "clear_desc": "Beschreibung loeschen"
+  },
+  "family": {
+    "instant": "Sofortkauf",
+    "manual": "Manuelle Bestaetigung",
+    "dialogue": "Angebot / Dialog"
+  },
+  "service_section": {
+    "title": "Dienstleistungsdetails",
+    "duration": "Indikative Dauer",
+    "duration_placeholder": "z.B. 60 Min., halber Tag",
+    "notes": "Dienstleistungsnotizen",
+    "notes_placeholder": "z.B. Nach Vereinbarung"
+  },
+  "rental_section": {
+    "title": "Vermietungsdetails",
+    "unit": "Mieteinheit",
+    "unit_field_label": "Mieteinheit",
+    "unit_select": "— Auswaehlen —",
+    "unit_hour": "Stunde",
+    "unit_day": "Tag",
+    "unit_week": "Woche",
+    "unit_month": "Monat",
+    "notes": "Mietnotizen",
+    "notes_placeholder": "z.B. Kaution erforderlich"
+  },
+  "occurrence_section": {
+    "title": "Event-Daten",
+    "subtitle": "Verwalten Sie die Daten und Orte fuer dieses Event",
+    "add_new": "+ Neu",
+    "empty": "Keine Vorkommen. Fuegen Sie Daten fuer dieses Event hinzu.",
+    "seats": "Plaetze",
+    "info_create_first": "Nach dem Erstellen des Produkts koennen Sie die Daten (Vorkommen) aus der Bearbeitung hinzufuegen.",
+    "form_start": "Beginn",
+    "form_end": "Ende",
+    "form_location": "Ort",
+    "form_location_placeholder": "z.B. Hauptsaal",
+    "form_capacity": "Kapazitaet",
+    "form_price_override": "Preis-Override",
+    "form_create": "Erstellen",
+    "form_cancel": "Abbrechen",
+    "toast_created": "Vorkommen erstellt",
+    "toast_create_error": "Fehler bei der Erstellung",
+    "toast_status_error": "Fehler bei der Statusaktualisierung"
+  },
+  "occurrence_status": {
+    "draft": "Entwurf",
+    "published": "Veroeffentlicht",
+    "closed": "Geschlossen",
+    "cancelled": "Abgebrochen"
+  },
+  "publish": {
+    "online": "● Online",
+    "offline": "○ Offline"
+  }
+}

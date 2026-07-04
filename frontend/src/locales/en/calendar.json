@@ -1,0 +1,121 @@
+{
+  "page": {
+    "title": "Calendar",
+    "subtitle": "Temporal view of events and rentals"
+  },
+  "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  "days_full": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+  "type": {
+    "event_occurrence": "Event",
+    "rental_order": "Rental"
+  },
+  "views": {
+    "agenda": "Agenda",
+    "rentals": "Rentals",
+    "agenda_subtitle": "Events, bookings and personal blocks",
+    "filter_all": "All"
+  },
+  "actions": {
+    "today": "Today",
+    "close": "Close",
+    "go_to_order": "Go to order",
+    "go_to_product": "Go to product",
+    "block_slot": "Block slot",
+    "all_day": "All day"
+  },
+  "empty": {
+    "day": "No items on this date.",
+    "month": "No items this month"
+  },
+  "summary": {
+    "events_one": "{{count}} event",
+    "events_other": "{{count}} events",
+    "rentals_one": "{{count}} rental",
+    "rentals_other": "{{count}} rentals",
+    "blocks_one": "{{count}} block",
+    "blocks_other": "{{count}} blocks",
+    "seats": "seats",
+    "overflow": "+{{count}} more"
+  },
+  "review": {
+    "rental_availability": "Availability to verify",
+    "rental_needs_availability": "Availability to verify",
+    "default": "To verify"
+  },
+  "reasons": {
+    "personal": "Personal",
+    "holiday": "Holiday / Bank holiday",
+    "booking": "Booking",
+    "event": "Event"
+  },
+  "block_dialog": {
+    "title": "Block availability",
+    "modes": {
+      "single": "Single day",
+      "range": "Period (from → to)",
+      "weekly": "Every week"
+    },
+    "labels": {
+      "date": "Date",
+      "from": "From",
+      "to": "To",
+      "starting_from": "Starting from",
+      "until": "Until",
+      "reason": "Reason",
+      "note": "Title",
+      "apply_to": "Apply to",
+      "rental_product": "Rental product",
+      "all_rental_products": "All rental products"
+    },
+    "targets": {
+      "agenda": "Agenda",
+      "rentals": "Rentals",
+      "both": "Both"
+    },
+    "reasons": {
+      "personal": "Personal",
+      "holiday": "Holiday"
+    },
+    "time_from": "From",
+    "time_to": "To",
+    "note_placeholder": "E.g.: Summer vacation, Meeting...",
+    "preview_range_days_one": "consecutive day will be blocked",
+    "preview_range_days_other": "consecutive days will be blocked",
+    "preview_weekly_prefix": "Every",
+    "preview_weekly_suffix_one": "day will be blocked",
+    "preview_weekly_suffix_other": "days will be blocked",
+    "cancel": "Cancel",
+    "submit_single": "Block",
+    "submit_batch": "Block {{count}} days"
+  },
+  "blocked_slots": {
+    "heading": "Blocked slots",
+    "all_day": "All day",
+    "recurring": "Recurring",
+    "remove_title": "Remove block"
+  },
+  "confirm_delete": {
+    "recurring_message": "This block is part of a recurring series ({{count}} days).",
+    "recurring_question": "What do you want to delete?",
+    "only_this_day": "Only this day",
+    "all_days": "All {{count}} days",
+    "cancel": "Cancel"
+  },
+  "validation": {
+    "select_date": "Select a date",
+    "end_time_after_start": "End time must be after start time",
+    "end_date_gte_start": "End date must be equal to or after start date",
+    "until_date_after_start": "The \"until\" date must be after the start date"
+  },
+  "toast": {
+    "block_created": "Slot blocked",
+    "block_created_error": "Error blocking the slot",
+    "blocks_created": "Slots blocked",
+    "blocks_created_error": "Error blocking the slots",
+    "block_removed": "Block removed",
+    "block_removed_error": "Error removing the block",
+    "blocks_removed": "Blocks removed",
+    "blocks_removed_error": "Error removing the blocks"
+  }
+}

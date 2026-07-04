@@ -1,0 +1,80 @@
+{
+  "page": {
+    "title": "Modules",
+    "subtitle": "Activate and manage analysis modules"
+  },
+  "sections": {
+    "active_modules": "Active Modules",
+    "available_modules": "Available Modules"
+  },
+  "status": {
+    "active": "Active",
+    "coming_soon": "Coming Soon",
+    "available": "Available"
+  },
+  "actions": {
+    "activate": "Activate Module",
+    "deactivate": "Deactivate",
+    "activating": "Activating...",
+    "open_module": "Open Module",
+    "view_dashboard": "View Dashboard"
+  },
+  "confirm": {
+    "deactivate": "Deactivate {{name}}?\n\nThe module sections will no longer be visible in the menu. Your data will not be deleted.",
+    "deactivate_cashflow": "Warning: this is the foundational module. The cashflow dashboard and data management will no longer be accessible.",
+    "activate_commerce": "Activating Commerce will also activate: Product Catalog and Customer Analytics.",
+    "activate_customers_light": "Activating Customer Analytics will also activate Commerce Signals.",
+    "proceed": "Proceed?"
+  },
+  "toast": {
+    "load_error": "Failed to load modules",
+    "activated": "Module activated!",
+    "activate_error": "Failed to activate module",
+    "deactivated": "Module deactivated",
+    "deactivate_error": "Failed to deactivate module"
+  },
+  "empty": {
+    "no_modules": "No modules available"
+  },
+  "catalog": {
+    "cashflow_monitor": {
+      "name": "Cashflow Monitor",
+      "desc": "Track and analyze daily cash inflows and outflows with AI-powered insights.",
+      "category": "Finance",
+      "unlocks": "Unlocks: cashflow dashboard, sales/expenses/purchases data management, AI analytics"
+    },
+    "customers_light": {
+      "name": "Customer Intelligence",
+      "desc": "Operational customer analysis: trends, churn risk, segmentation, follow-up priorities.",
+      "category": "Intelligence",
+      "unlocks": "Unlocks: customer dashboard inside the Customers section with metrics, filters and triage"
+    },
+    "product_catalog": {
+      "name": "Product Catalog",
+      "desc": "Product analytics: margins, cost coverage, ABC analysis, category performance.",
+      "category": "Intelligence",
+      "unlocks": "Unlocks: catalog analytics inside the Products section with margins and classification"
+    },
+    "commerce_signals": {
+      "name": "Commerce Signals",
+      "desc": "Prioritized commercial signals: customer reactivation, concentration risk, new customer conversion.",
+      "category": "Intelligence",
+      "unlocks": "Unlocks: commerce signals dashboard with prioritized actions"
+    },
+    "revenue_forecasting": {
+      "name": "Revenue Forecasting",
+      "desc": "AI-powered revenue predictions based on historical data and market trends.",
+      "category": "Finance"
+    },
+    "expense_optimizer": {
+      "name": "Expense Optimizer",
+      "desc": "Identify cost-saving opportunities and optimize spending patterns.",
+      "category": "Finance"
+    },
+    "inventory_tracker": {
+      "name": "Inventory Tracker",
+      "desc": "Monitor stock levels, predict shortages, and optimize reordering.",
+      "category": "Operations"
+    }
+  }
+}

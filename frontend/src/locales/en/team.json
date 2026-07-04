@@ -1,0 +1,78 @@
+{
+  "page": {
+    "title": "Team",
+    "subtitle": "Manage your organization members"
+  },
+  "invite": {
+    "button": "Invite member",
+    "dialog_title": "Invite a new member",
+    "dialog_desc": "An account will be created with a temporary password that you'll need to share with the new member.",
+    "name": "Name",
+    "name_placeholder": "John Smith",
+    "email": "Email",
+    "email_placeholder": "john@company.com",
+    "role": "Role",
+    "submit": "Create account and show password",
+    "submitting": "Creating account..."
+  },
+  "members": {
+    "card_title": "Team members",
+    "count_one": "{{count}} member in the organization",
+    "count_other": "{{count}} members in the organization",
+    "col_member": "Member",
+    "col_role": "Role",
+    "col_added": "Added on",
+    "col_status": "Status",
+    "col_actions": "Actions",
+    "you_badge": "You"
+  },
+  "roles": {
+    "admin": "Admin",
+    "user": "User",
+    "user_analyst": "User / Analyst"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "actions": {
+    "reactivate": "Reactivate"
+  },
+  "permissions": {
+    "card_title": "Role permissions",
+    "admin_title": "Admin",
+    "admin_p1": "Manages team members",
+    "admin_p2": "Uploads and removes datasets",
+    "admin_p3": "Activates and configures modules",
+    "admin_p4": "Updates organization settings",
+    "admin_p5": "Accesses dashboard, alerts and AI insights",
+    "user_title": "User / Analyst",
+    "user_p1": "Views dashboard and KPIs",
+    "user_p2": "Reads alerts and anomalies",
+    "user_p3": "Consults AI insights",
+    "user_p4": "Uploads datasets (if authorized by admin)"
+  },
+  "remove": {
+    "dialog_title": "Remove member",
+    "dialog_desc": "You are about to deactivate {{name}}'s account. They will no longer be able to access the platform. You can reactivate them later.",
+    "cancel": "Cancel",
+    "confirm": "Yes, remove"
+  },
+  "created": {
+    "dialog_title": "Account created",
+    "dialog_desc": "{{name}}'s account has been created. Share the temporary password below — it will only be shown now.",
+    "temp_password": "Temporary password",
+    "hint": "The member will need to change it on first login. It is not stored in plain text.",
+    "confirm": "I've copied the password"
+  },
+  "toast": {
+    "load_error": "Failed to load team",
+    "invite_error": "Error during invitation",
+    "role_updated": "Role updated",
+    "role_error": "Error updating role",
+    "member_removed": "Member removed",
+    "remove_error": "Error removing member",
+    "member_reactivated": "Member reactivated",
+    "reactivate_error": "Error reactivating"
+  }
+}

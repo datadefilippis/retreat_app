@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;700;800&family=Public+Sans:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 220 20% 97%;
+        --foreground: 224 32% 14%;
+
+        --card: 0 0% 100%;
+        --card-foreground: 224 32% 14%;
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 224 32% 14%;
+
+        --primary: 230 75% 57%;
+        --primary-foreground: 0 0% 100%;
+
+        --secondary: 220 16% 93%;
+        --secondary-foreground: 224 32% 14%;
+
+        --muted: 220 16% 95%;
+        --muted-foreground: 218 15% 50%;
+
+        --accent: 168 72% 40%;
+        --accent-foreground: 0 0% 100%;
+
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 220 16% 88%;
+        --input: 220 16% 88%;
+        --ring: 230 75% 57%;
+        --radius: 0.625rem;
+
+        /* Chart colors (HSL) */
+        --chart-sales: 230 75% 57%;
+        --chart-expenses: 0 84% 60%;
+        --chart-net: 160 65% 45%;
+        --chart-projection: 218 15% 65%;
+
+        /* Shadow system */
+        --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+        --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+
+        /* Gradient tokens */
+        --gradient-primary: linear-gradient(135deg, hsl(230 75% 57%), hsl(250 70% 55%));
+        --gradient-accent: linear-gradient(135deg, hsl(168 72% 40%), hsl(180 60% 45%));
+        --gradient-page: linear-gradient(180deg, hsl(220 25% 96%) 0%, hsl(220 15% 99%) 100%);
+        --gradient-sidebar: linear-gradient(180deg, hsl(228 40% 16%) 0%, hsl(232 35% 22%) 100%);
+    }
+}
+
+body {
+    margin: 0;
+    font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--gradient-page);
+    min-height: 100vh;
+}
+
+.font-heading {
+    font-family: 'Manrope', sans-serif;
+}
+
+.font-body {
+    font-family: 'Public Sans', sans-serif;
+}
+
+.font-code {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply text-foreground;
+    }
+}
+
+/* ── Layout utility classes ────────────────────────────────────────────────── */
+
+@layer components {
+    /* Standard page content padding — use on every page wrapper */
+    .page-container {
+        @apply p-4 md:p-8;
+    }
+
+    /* Standard section vertical spacing */
+    .section-gap {
+        @apply space-y-6 md:space-y-8;
+    }
+}
+
+/* ── Gradient utilities ─────────────────────────────────────────────────────── */
+
+.bg-gradient-primary {
+    background: var(--gradient-primary);
+}
+.bg-gradient-accent {
+    background: var(--gradient-accent);
+}
+.bg-gradient-sidebar {
+    background: var(--gradient-sidebar);
+}
+
+/* ── Hover lift effect ─────────────────────────────────────────────────────── */
+
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ── Custom scrollbar ──────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* Scrollbar nascosta per tab scrollabili */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* ── Animations ────────────────────────────────────────────────────────────── */
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.3s ease-in-out;
+}
+
+.animate-slide-up {
+    animation: slide-up 0.4s ease-out;
+}
+
+/* Staggered animations */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* ── iOS mobile input fixes ───────────────────────────────────────────────── */
+/* 1. Prevent iOS Safari auto-zoom on inputs (requires font-size >= 16px)    */
+/* 2. Force inputs to respect grid/flex container width on small screens     */
+@media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea,
+    .select-trigger {
+        font-size: 16px !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}

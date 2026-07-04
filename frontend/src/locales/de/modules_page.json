@@ -1,0 +1,80 @@
+{
+  "page": {
+    "title": "Module",
+    "subtitle": "Analysemodule aktivieren und verwalten"
+  },
+  "sections": {
+    "active_modules": "Aktive Module",
+    "available_modules": "Verfuegbare Module"
+  },
+  "status": {
+    "active": "Aktiv",
+    "coming_soon": "Demnaechst",
+    "available": "Verfuegbar"
+  },
+  "actions": {
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
+    "activating": "Aktivierung...",
+    "open_module": "Modul oeffnen",
+    "view_dashboard": "Zum Dashboard"
+  },
+  "confirm": {
+    "deactivate": "{{name}} deaktivieren?\n\nDie Modul-Sektionen sind nicht mehr im Menue sichtbar. Ihre Daten werden nicht geloescht.",
+    "deactivate_cashflow": "Achtung: Dies ist das Basismodul. Das Cashflow-Dashboard und die Datenverwaltung sind nicht mehr zugaenglich.",
+    "activate_commerce": "Wenn Sie Commerce aktivieren, werden auch aktiviert: Produktkatalog und Kundenanalyse.",
+    "activate_customers_light": "Wenn Sie Kundenanalyse aktivieren, werden auch Handelssignale aktiviert.",
+    "proceed": "Fortfahren?"
+  },
+  "toast": {
+    "load_error": "Module konnten nicht geladen werden",
+    "activated": "Modul aktiviert!",
+    "activate_error": "Fehler bei der Modulaktivierung",
+    "deactivated": "Modul deaktiviert",
+    "deactivate_error": "Fehler bei der Deaktivierung"
+  },
+  "empty": {
+    "no_modules": "Keine Module verfuegbar"
+  },
+  "catalog": {
+    "cashflow_monitor": {
+      "name": "Cashflow Monitor",
+      "desc": "Taegliche Geldstroeme verfolgen und analysieren mit KI-gestuetzten Einblicken.",
+      "category": "Finanzen",
+      "unlocks": "Schaltet frei: Cashflow-Dashboard, Datenverwaltung fuer Verkaeufe/Ausgaben/Einkaeufe, KI-Analytik"
+    },
+    "customers_light": {
+      "name": "Kunden-Intelligenz",
+      "desc": "Operative Kundenanalyse: Trends, Abwanderungsrisiko, Segmentierung, Follow-up-Prioritaeten.",
+      "category": "Intelligenz",
+      "unlocks": "Schaltet frei: Kunden-Dashboard im Bereich Kunden mit Metriken, Filtern und Triage"
+    },
+    "product_catalog": {
+      "name": "Produktkatalog",
+      "desc": "Produkt-Analytik: Margen, Kostendeckung, ABC-Analyse, Performance nach Kategorie.",
+      "category": "Intelligenz",
+      "unlocks": "Schaltet frei: Katalog-Analytik im Bereich Produkte mit Margen und Klassifizierung"
+    },
+    "commerce_signals": {
+      "name": "Handelssignale",
+      "desc": "Priorisierte Handelssignale: Kundenreaktivierung, Konzentrationsrisiko, Neukunden-Konversion.",
+      "category": "Intelligenz",
+      "unlocks": "Schaltet frei: Handelssignale-Dashboard mit Handlungsprioritaeten"
+    },
+    "revenue_forecasting": {
+      "name": "Umsatzprognose",
+      "desc": "KI-basierte Umsatzvorhersagen auf Basis historischer Daten und Markttrends.",
+      "category": "Finanzen"
+    },
+    "expense_optimizer": {
+      "name": "Ausgabenoptimierer",
+      "desc": "Einsparpotenziale erkennen und Ausgabemuster optimieren.",
+      "category": "Finanzen"
+    },
+    "inventory_tracker": {
+      "name": "Bestandsverwaltung",
+      "desc": "Lagerbestaende ueberwachen, Engpaesse vorhersagen und Nachbestellungen optimieren.",
+      "category": "Betrieb"
+    }
+  }
+}

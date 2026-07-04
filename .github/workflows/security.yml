@@ -1,0 +1,167 @@
+# Track S Step 4.3 — Security scanning workflow
+#
+# Static + supply-chain security gates. Runs weekly on schedule + on
+# PR/push to main + on demand.
+#
+# Jobs:
+#   1. bandit       — Python SAST (Static Application Security Testing)
+#   2. pip-audit    — Python dependency CVE check (PyPA official)
+#   3. pnpm-audit   — Node/JS dependency CVE check
+#
+# Severity policy:
+#   · HIGH / CRITICAL → fail the job (gate the PR/merge)
+#   · MEDIUM / LOW    → report only (non-blocking, surfaced in summary)
+#
+# This complements GitHub Dependabot (automated dep updates) by adding
+# active scanning in CI instead of just PR-creation post-event.
+
+name: security
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Weekly Monday 06:00 UTC (after Dependabot's Monday 07:00 CET window)
+    # so any auto-merged Dependabot PR landed on main is re-scanned here.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:  # manual trigger
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Track O Step 5.4 — opt-in Node.js 24 runtime per JavaScript actions.
+# GitHub deprecated Node.js 20 actions (warning su ogni run dal 2026).
+# Da Sept 2026 Node 20 sara' completely removed dal runner. Settando
+# env var FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true forziamo TUTTE le
+# action JS-based (actions/checkout, actions/setup-python, ecc.) a
+# girare su Node 24 anche se la loro action.yml dichiara node20.
+# Backward compatible: action code immutato, solo runtime upgraded.
+# Reference: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  # ─── Bandit — Python SAST ──────────────────────────────────────────
+  bandit:
+    name: security / bandit (Python SAST)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit (HIGH/CRITICAL gate)
+        run: |
+          # -r recursive
+          # -lll = level HIGH only (gate severe issues, Medium reported but
+          #        non-blocking — many B108/B310 in scripts/ are utility
+          #        one-off, not production surface)
+          # -iii = confidence HIGH only (skip ambiguous matches)
+          # Exclude: tests (assert/fixtures), venv, __pycache__, scripts
+          #          (operational utilities not in production runtime path)
+          # Skip codes:
+          #   B101 (assert) — useful in test files
+          #   B104 (0.0.0.0 bind) — intentional uvicorn dev
+          #   B311 (pseudo-random) — intentional retry jitter (non-crypto)
+          bandit -r backend/ \
+            -lll \
+            -iii \
+            --skip B101,B104,B311 \
+            --exclude backend/tests,backend/venv,backend/__pycache__,backend/scripts \
+            -f txt
+
+  # ─── pip-audit — Python dependency CVE scan ────────────────────────
+  pip-audit:
+    name: security / pip-audit (Python deps)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit on backend/requirements.txt
+        # Fail on any vulnerability not in accepted-risk allowlist.
+        #
+        # Track S Step 4.3 — accepted residual risk (V1):
+        #   starlette 0.37.2 (transitive di FastAPI 0.110.1):
+        #     - CVE-2024-47874 (multipart DoS) — V2 upgrade FastAPI > 0.115
+        #     - PYSEC-2026-161 — V2 upgrade
+        #     - CVE-2025-54121 — V2 upgrade
+        #   Tutti richiedono major bump FastAPI → starlette 1.x (breaking
+        #   compat con il custom middleware stack). Mitigato dal global
+        #   exception handler (S1.4) + request size limits via nginx.
+        #
+        # pymongo CVE-2024-5629 → fixed in commit (upgrade to 4.6.3).
+        #
+        # Aggiungi --ignore-vuln <ID> qui se accetti nuovi residual risk.
+        run: |
+          pip-audit -r backend/requirements.txt --strict \
+            --ignore-vuln CVE-2024-47874 \
+            --ignore-vuln PYSEC-2026-161 \
+            --ignore-vuln CVE-2025-54121
+
+  # ─── pnpm audit — Node/JS dependency CVE scan ──────────────────────
+  pnpm-audit:
+    name: security / pnpm audit (JS deps)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 11.4.0
+          run_install: false
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit (HIGH severity gate)
+        # --audit-level high → fails only on high/critical
+        # --prod → skip devDependencies (test tools have higher
+        # tolerance for transient vulns)
+        run: pnpm audit --audit-level high --prod
+
+  # ─── Aggregate security gate ───────────────────────────────────────
+  security-passed:
+    name: security / all-passed
+    needs: [bandit, pip-audit, pnpm-audit]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check job results
+        run: |
+          if [ "${{ needs.bandit.result }}" != "success" ] || \
+             [ "${{ needs.pip-audit.result }}" != "success" ] || \
+             [ "${{ needs.pnpm-audit.result }}" != "success" ]; then
+            echo "One or more security scans failed"
+            exit 1
+          fi
+          echo "All security scans passed ✓"

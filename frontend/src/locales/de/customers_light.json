@@ -1,0 +1,84 @@
+{
+  "page": {
+    "title": "Kunden",
+    "subtitle": "Kundenintelligenz: Segmentierung, Konzentration und Umsatzzuordnung"
+  },
+  "segments": {
+    "top": "Top",
+    "active": "Aktiv",
+    "new": "Neu",
+    "occasional": "Gelegentlich",
+    "inactive": "Inaktiv"
+  },
+  "kpis": {
+    "total_customers": "Kunden gesamt",
+    "active_customers": "Aktive Kunden",
+    "inactive_rate": "Inaktivitaetsrate",
+    "new_customers": "Neue Kunden",
+    "concentration_top10": "Konzentration Top 10",
+    "avg_customer_value": "Durchschn. Kundenwert",
+    "avg_ltv": "Durchschn. LTV",
+    "high_churn_risk": "Hohes Abwanderungsrisiko"
+  },
+  "table": {
+    "title": "Top-Kunden nach Umsatz",
+    "title_loading": "Top-Kunden",
+    "col_rank": "#",
+    "col_customer": "Kunde",
+    "col_revenue": "Umsatz",
+    "col_transactions": "Transaktionen",
+    "col_share": "Anteil %",
+    "col_segment": "Segment",
+    "col_ltv": "LTV",
+    "col_churn": "Abwanderungsrisiko"
+  },
+  "profile": {
+    "churn_risk": "Abwanderungsrisiko",
+    "churn_score": "Abwanderungsscore",
+    "payment_reliability": "Zahlungszuverlassigkeit",
+    "first_purchase": "Erster Kauf",
+    "last_purchase": "Letzter Kauf",
+    "days_since": "Tage seit letztem Kauf"
+  },
+  "charts": {
+    "segments_title": "Kundensegmente",
+    "concentration_title": "Umsatzkonzentration",
+    "concentration_desc": "Die Top 10 Kunden generieren {{pct}}% des Umsatzes bei {{total}} Kunden insgesamt",
+    "concentration_top5": "Top 5",
+    "concentration_top610": "Top 6-10",
+    "concentration_others": "Andere",
+    "tooltip_customers": "{{count}} Kunden — {{amount}}"
+  },
+  "empty": {
+    "title": "Kundenanalyse nicht aktiv",
+    "description": "Um die Kundenanalyse zu aktivieren:\n1. Erstellen Sie Ihre Kunden in Stammdaten > Kunden\n2. Importieren Sie Verkaufe mit einer Spalte \"Kunde\"\nAFianco verknupft Verkaufe automatisch mit Kunden.",
+    "upload_cta": "Verkaufsdaten hochladen",
+    "manage_customers": "Kunden verwalten"
+  },
+  "coverage": {
+    "label": "Kundendaten-Abdeckung",
+    "detail": "{{linked}} von {{total}} Verkaufen mit einem Kunden verknupft"
+  },
+  "error": {
+    "load": "Fehler beim Laden der Kundendaten.",
+    "refresh": "Fehler beim Aktualisieren der Metriken."
+  },
+  "refresh": {
+    "idle": "Metriken aktualisieren",
+    "loading": "Aktualisierung..."
+  },
+  "widgets": {
+    "customers_label": "Kunden",
+    "active_label": "Aktiv",
+    "inactive_pct_label": "Inaktiv %",
+    "top10_pct_label": "Top 10 %",
+    "no_data": "Keine Kundendaten",
+    "no_data_short": "Keine Daten",
+    "col_customer": "Kunde",
+    "col_revenue": "Umsatz",
+    "col_share": "Anteil",
+    "header_kpi": "KPI Kunden",
+    "header_top_customers": "Top-Kunden",
+    "header_segments": "Kundensegmente"
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "widget": {
+    "title": "Setup AFianco",
+    "progress_label": "{{done}} di {{total}} fatti",
+    "next_label": "Prossimo:",
+    "remaining_count_one": "{{count}} rimasto",
+    "remaining_count_other": "{{count}} rimasti",
+    "remaining_count": "{{count}} rimasti",
+    "expand": "Mostra dettagli",
+    "collapse": "Nascondi dettagli",
+    "refresh": "Aggiorna",
+    "optional": "Consigliato",
+    "status_done": "Completato",
+    "status_pending": "Da completare",
+    "complete_title": "Setup completato 🎉",
+    "complete_subtitle": "Tutto pronto. Puoi rimuovere questo widget dalla dashboard.",
+    "empty_title": "Niente da configurare al momento.",
+    "error_title": "Impossibile caricare il setup",
+    "error_generic": "Riprova tra qualche secondo.",
+    "retry": "Riprova",
+    "remove_widget": "Rimuovi dalla dashboard"
+  },
+  "plans": {
+    "free": "Free",
+    "starter": "Solo",
+    "core": "Commerce Starter",
+    "pro": "Commerce Pro",
+    "enterprise": "Custom",
+    "unknown": "Standard"
+  },
+  "sections": {
+    "global": {
+      "title": "Configurazione generale"
+    },
+    "cashflow_monitor": {
+      "title": "Cashflow Monitor",
+      "description": "Tieni d'occhio entrate, spese e flusso di cassa."
+    },
+    "commerce": {
+      "title": "Storefront & Vendite",
+      "description": "Vendi online: prodotti, ordini, Stripe e fulfillment."
+    },
+    "customers_light": {
+      "title": "Customers Light",
+      "description": "Capisci chi sono i tuoi clienti migliori."
+    },
+    "ai_assistant": {
+      "title": "AI Assistant",
+      "description": "Chiedi insight e ricevi digest periodici."
+    }
+  },
+  "steps": {
+    "global": {
+      "verify_email": {
+        "title": "Verifica il tuo indirizzo email",
+        "body": "Conferma la tua email per sbloccare tutte le funzionalità di AFianco."
+      },
+      "brand_identity": {
+        "title": "Personalizza il tuo brand",
+        "body": "Carica un logo e scegli i colori del tuo store.",
+        "hint": "Suggerimento: bastano 2 minuti e migliora subito l'esperienza dei clienti."
+      }
+    },
+    "cashflow_monitor": {
+      "upload_first_data": {
+        "title": "Carica i tuoi primi dati cashflow",
+        "body": "Vedi subito i KPI personalizzati sul tuo business.",
+        "hint": "Parti dalle vendite: è la tabella più semplice. Puoi anche importare un CSV/Excel se ce l'hai pronto."
+      },
+      "first_alert": {
+        "title": "Configura il tuo primo alert email",
+        "body": "Ricevi una notifica quando un KPI supera la soglia."
+      }
+    },
+    "commerce": {
+      "identity": {
+        "title": "Imposta l'identità dello store",
+        "body": "Nome dello store ed email di contatto sono visibili ai tuoi clienti."
+      },
+      "first_product": {
+        "title": "Crea il tuo primo prodotto",
+        "body": "Configura un prodotto pronto per la vendita.",
+        "hint": "Compila prezzo, descrizione e una foto per metterlo subito online."
+      },
+      "email_sender": {
+        "title": "Configura il mittente delle email",
+        "body": "Nome e indirizzo da cui partono le email per i tuoi clienti."
+      },
+      "stripe_connect": {
+        "title": "Connetti Stripe per i pagamenti",
+        "body": "Necessario per ricevere pagamenti diretti dai clienti."
+      },
+      "publish_storefront": {
+        "title": "Pubblica il tuo storefront",
+        "body": "Rendi il tuo store visibile e raggiungibile pubblicamente."
+      },
+      "first_order": {
+        "title": "Ricevi il tuo primo ordine",
+        "body": "Hai tre modi per gestire gli ordini: scegli quello adatto a te.",
+        "hint": "Inserimento manuale (senza pagamento), import da CSV, oppure ordini automatici via Stripe."
+      }
+    },
+    "ai_assistant": {
+      "first_chat": {
+        "title": "Prova la chat AI",
+        "body": "Fai una domanda al tuo assistente per scoprire cosa può fare."
+      }
+    }
+  },
+  "ctas": {
+    "verify_email_now": "Verifica ora",
+    "go_to_settings": "Vai alle impostazioni",
+    "manual_entry": "Inserisci manualmente",
+    "import_csv": "Importa file CSV",
+    "configure_alert": "Configura alert",
+    "fill_identity": "Compila identità",
+    "create_product_manually": "Crea prodotto manualmente",
+    "import_products_csv": "Importa lista CSV",
+    "configure_email": "Configura email",
+    "connect_stripe": "Connetti Stripe",
+    "publish_now": "Pubblica ora",
+    "create_manual_order": "Crea ordine manuale",
+    "import_orders_csv": "Importa CSV ordini",
+    "configure_stripe_auto": "Configura Stripe automatico",
+    "try_ai_chat": "Apri chat AI"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "subtitle": "Point de vente",
+  "back": "Retour aux magasins",
+  "cart": {
+    "title": "Panier",
+    "empty": "Sélectionnez des produits dans la grille",
+    "total": "Total",
+    "customer_placeholder": "Nom du client",
+    "complete": "Finaliser la commande"
+  },
+  "order_done": "Commande {{number}} terminée",
+  "new_order": "Nouvelle commande",
+  "toast": {
+    "completed": "Commande terminée et confirmée",
+    "error": "Erreur lors de la création de la commande"
+  },
+  "error": {
+    "load": "Erreur de chargement"
+  }
+}

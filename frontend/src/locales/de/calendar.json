@@ -1,0 +1,121 @@
+{
+  "page": {
+    "title": "Kalender",
+    "subtitle": "Zeitliche Ubersicht von Events und Mieten"
+  },
+  "months": ["Januar", "Februar", "Marz", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+  "days": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+  "days_full": ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+  "type": {
+    "event_occurrence": "Event",
+    "rental_order": "Miete"
+  },
+  "views": {
+    "agenda": "Agenda",
+    "rentals": "Mieten",
+    "agenda_subtitle": "Events, Buchungen und personliche Blocker",
+    "filter_all": "Alle"
+  },
+  "actions": {
+    "today": "Heute",
+    "close": "Schliessen",
+    "go_to_order": "Zur Bestellung",
+    "go_to_product": "Zum Produkt",
+    "block_slot": "Slot sperren",
+    "all_day": "Ganztagig"
+  },
+  "empty": {
+    "day": "Keine Eintraege an diesem Datum.",
+    "month": "Keine Eintraege in diesem Monat"
+  },
+  "summary": {
+    "events_one": "{{count}} Event",
+    "events_other": "{{count}} Events",
+    "rentals_one": "{{count}} Miete",
+    "rentals_other": "{{count}} Mieten",
+    "blocks_one": "{{count}} Sperre",
+    "blocks_other": "{{count}} Sperren",
+    "seats": "Platze",
+    "overflow": "+{{count}} weitere"
+  },
+  "review": {
+    "rental_availability": "Verfugbarkeit prufen",
+    "rental_needs_availability": "Verfugbarkeit prufen",
+    "default": "Zu prufen"
+  },
+  "reasons": {
+    "personal": "Personlich",
+    "holiday": "Urlaub / Feiertag",
+    "booking": "Buchung",
+    "event": "Event"
+  },
+  "block_dialog": {
+    "title": "Verfugbarkeit sperren",
+    "modes": {
+      "single": "Einzelner Tag",
+      "range": "Zeitraum (von → bis)",
+      "weekly": "Jede Woche"
+    },
+    "labels": {
+      "date": "Datum",
+      "from": "Von",
+      "to": "Bis",
+      "starting_from": "Ab",
+      "until": "Bis",
+      "reason": "Grund",
+      "note": "Titel",
+      "apply_to": "Anwenden auf",
+      "rental_product": "Mietprodukt",
+      "all_rental_products": "Alle Mietprodukte"
+    },
+    "targets": {
+      "agenda": "Agenda",
+      "rentals": "Mieten",
+      "both": "Beides"
+    },
+    "reasons": {
+      "personal": "Personlich",
+      "holiday": "Urlaub"
+    },
+    "time_from": "Von",
+    "time_to": "Bis",
+    "note_placeholder": "Z.B.: Sommerurlaub, Besprechung...",
+    "preview_range_days_one": "aufeinanderfolgender Tag wird gesperrt",
+    "preview_range_days_other": "aufeinanderfolgende Tage werden gesperrt",
+    "preview_weekly_prefix": "Jeden",
+    "preview_weekly_suffix_one": "Tag wird gesperrt",
+    "preview_weekly_suffix_other": "Tage werden gesperrt",
+    "cancel": "Abbrechen",
+    "submit_single": "Sperren",
+    "submit_batch": "{{count}} Tage sperren"
+  },
+  "blocked_slots": {
+    "heading": "Gesperrte Slots",
+    "all_day": "Ganztagig",
+    "recurring": "Wiederkehrend",
+    "remove_title": "Sperre entfernen"
+  },
+  "confirm_delete": {
+    "recurring_message": "Diese Sperre ist Teil einer Wiederholungsserie ({{count}} Tage).",
+    "recurring_question": "Was mochtest du loschen?",
+    "only_this_day": "Nur diesen Tag",
+    "all_days": "Alle {{count}} Tage",
+    "cancel": "Abbrechen"
+  },
+  "validation": {
+    "select_date": "Bitte Datum auswahlen",
+    "end_time_after_start": "Endzeit muss nach Startzeit liegen",
+    "end_date_gte_start": "Enddatum muss gleich oder nach dem Startdatum sein",
+    "until_date_after_start": "Das \"Bis\"-Datum muss nach dem Startdatum liegen"
+  },
+  "toast": {
+    "block_created": "Slot gesperrt",
+    "block_created_error": "Fehler beim Sperren des Slots",
+    "blocks_created": "Slots gesperrt",
+    "blocks_created_error": "Fehler beim Sperren der Slots",
+    "block_removed": "Sperre entfernt",
+    "block_removed_error": "Fehler beim Entfernen der Sperre",
+    "blocks_removed": "Sperren entfernt",
+    "blocks_removed_error": "Fehler beim Entfernen der Sperren"
+  }
+}
