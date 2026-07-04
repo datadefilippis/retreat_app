@@ -46,8 +46,8 @@
  *   );
  */
 
-import { useEffect } from 'react';
-import { useBlocker } from 'react-router-dom';
+import { useContext, useEffect } from 'react';
+import { UNSAFE_DataRouterContext, useBlocker } from 'react-router-dom';
 
 
 // Browser-controlled default message. Modern browsers ignore the string
@@ -55,18 +55,30 @@ import { useBlocker } from 'react-router-dom';
 // but we keep the value here for older browsers + clarity.
 const DEFAULT_BEFOREUNLOAD_MSG = 'Hai modifiche non salvate. Sei sicuro di voler uscire?';
 
+// Blocker inerte per quando l'app NON gira dentro un data router.
+const NOOP_BLOCKER = { state: 'unblocked', proceed: () => {}, reset: () => {} };
+
 
 export function useUnsavedChangesPrompt(isDirty, message = DEFAULT_BEFOREUNLOAD_MSG) {
   // ── In-app navigation (React Router 7 useBlocker) ─────────────────
   //
-  // The blocker callback runs on EVERY navigation attempt. We block iff:
-  //   · isDirty is true, AND
-  //   · the next location is different from the current one (the router
-  //     occasionally re-asserts the current pathname after a query-string
-  //     change — we don't want to prompt for that).
-  const blocker = useBlocker(({ currentLocation, nextLocation }) => (
+  // BUG EREDITATO (fix retreat fork 4/7/2026): useBlocker richiede un
+  // DATA router (createBrowserRouter/RouterProvider), ma App.js monta il
+  // classico <BrowserRouter> → OGNI wizard che usa questo hook crashava
+  // al mount con "useBlocker must be used within a data router" (mai
+  // visto in BI_PMI: la CI non girava e l'error boundary lo mascherava).
+  // Finché l'app non migra al data router, degradiamo con grazia: senza
+  // contesto → blocker no-op (resta comunque la protezione beforeunload
+  // su chiusura/reload del tab, che copre il caso peggiore).
+  //
+  // La presenza del contesto è FISSA per tutta la vita dell'app (il tipo
+  // di router non cambia a runtime), quindi la chiamata condizionale
+  // dell'hook ha ordine stabile ed è sicura.
+  const dataRouterCtx = useContext(UNSAFE_DataRouterContext);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const blocker = dataRouterCtx ? useBlocker(({ currentLocation, nextLocation }) => (
     isDirty && currentLocation.pathname !== nextLocation.pathname
-  ));
+  )) : NOOP_BLOCKER;
 
   // ── Native tab close / reload (beforeunload) ──────────────────────
   useEffect(() => {

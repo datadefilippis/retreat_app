@@ -152,6 +152,23 @@ async def create_event_wizard(
             detail="Modalità diretta non compatibile con prezzo su richiesta.",
         )
 
+    # Fase 2 (retreat) — se il wizard invia un piano di pagamento, DEVE
+    # essere valido: un piano malformato in metadata produrrebbe ordini
+    # col fallback silenzioso a pagamento unico (sorpresa per l'operatore).
+    # Meglio 422 esplicito alla creazione che sorpresa all'incasso.
+    plan_raw = (body.product.metadata or {}).get("payment_plan")
+    if plan_raw is not None:
+        from models.payment_plan import PaymentPlan
+        try:
+            validated_plan = PaymentPlan(**plan_raw)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Piano di pagamento non valido: {exc}",
+            )
+        # Persistiamo la forma normalizzata (default espliciti inclusi).
+        body.product.metadata["payment_plan"] = validated_plan.model_dump(mode="json")
+
     # v5.8 / Onda 9.L — This wrapper creates a Product as part of an event
     # occurrence wizard flow; same catalog quota gate as POST /products.
     from services.module_access import enforce_count_quota

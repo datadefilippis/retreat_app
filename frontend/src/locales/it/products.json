@@ -1594,7 +1594,8 @@
         "base": "Cosa offri",
         "where": "Quando e dove",
         "tickets": "Biglietti",
-        "publish": "Pubblica"
+        "publish": "Pubblica",
+        "payments": "Come incassi"
       },
       "validation": {
         "priceNegative": "Il prezzo non può essere negativo",
@@ -1715,6 +1716,47 @@
         "publishToggleTitle": "Pubblica subito",
         "publishToggleDesc": "Se spuntato, il ritiro è visibile sul catalogo e acquistabile dai clienti. Puoi sempre cambiarlo dalla dashboard del ritiro.",
         "validationErrorBanner": "Alcuni campi precedenti richiedono attenzione. Torna indietro per correggere."
+      },
+      "payments": {
+        "modeHeading": "Come vuoi incassare questo ritiro?",
+        "modes": {
+          "full": {
+            "title": "Pagamento unico",
+            "desc": "Il partecipante paga l'intero importo alla prenotazione."
+          },
+          "deposit_balance": {
+            "title": "Caparra + saldo",
+            "desc": "Caparra alla prenotazione, saldo automatico entro la scadenza che decidi tu. Promemoria inclusi."
+          },
+          "deposit_installments": {
+            "title": "Caparra + rate",
+            "desc": "Caparra alla prenotazione, il resto in rate con promemoria automatici."
+          }
+        },
+        "depositType": "Tipo di caparra",
+        "depositPercent": "Percentuale del totale",
+        "depositFixed": "Importo fisso (€)",
+        "depositValuePercent": "Caparra (%)",
+        "depositValueFixed": "Caparra (€)",
+        "balanceDays": "Saldo entro (giorni prima dell'inizio)",
+        "installmentsCount": "Numero di rate",
+        "lastMinuteNote": "Prenotazioni a meno di {{days}} giorni dall'inizio: pagamento unico automatico (niente caparra all'ultimo momento).",
+        "policyHeading": "Politica di cancellazione",
+        "policyDesc": "Mostrata sulla pagina del ritiro e applicata automaticamente ai rimborsi. Niente discussioni: quello che prometti è quello che il sistema fa.",
+        "policyUpTo": "Fino a",
+        "policyAfter": "Oltre, o dopo",
+        "policyDaysBefore": "giorni prima:",
+        "policyRefund": "rimborso",
+        "previewTitle": "Anteprima:",
+        "previewBalance": "su un prezzo di {{sample}}, il partecipante paga {{deposit}} alla prenotazione e {{rest}} entro il {{deadline}}.",
+        "previewInstallments": "su un prezzo di {{sample}}, il partecipante paga {{deposit}} alla prenotazione e {{rest}} in {{count}} rate (ultima entro il {{deadline}}).",
+        "validation": {
+          "depositPercentRange": "La percentuale deve essere tra 1 e 90",
+          "depositFixedPositive": "L'importo della caparra deve essere positivo",
+          "balanceDaysRange": "I giorni devono essere tra 1 e 180",
+          "installmentsRange": "Le rate devono essere tra 2 e 6",
+          "policyOrder": "Gli scaglioni devono avere giorni decrescenti e rimborsi non crescenti"
+        }
       }
     },
     "digital": {
