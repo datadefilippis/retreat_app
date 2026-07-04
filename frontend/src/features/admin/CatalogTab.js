@@ -91,6 +91,14 @@ const PlanCard = ({ plan, onManage }) => (
             €{plan.price_monthly ?? 0}/mo
           </span>
           {plan.price_yearly && <span>€{plan.price_yearly}/yr</span>}
+          {/* Fee transazionale (piani retreat): governata dal seed
+              (source of truth nel codice), qui in sola lettura — al
+              provisioning si sincronizza su org.application_fee_percent. */}
+          {plan.transaction_fee_percent != null && (
+            <span className="block text-emerald-700 font-medium">
+              fee {plan.transaction_fee_percent}%
+            </span>
+          )}
         </div>
         <div>
           <span className="block font-medium text-foreground">

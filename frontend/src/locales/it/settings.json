@@ -267,7 +267,18 @@
       "retreat_priority_support": "Supporto prioritario",
       "retreat_everything_pro": "Tutto il piano Pro",
       "retreat_founding_free": "Gratis per 3 mesi",
-      "retreat_founding_feedback": "Confronto diretto col team, ogni settimana"
+      "retreat_founding_feedback": "Confronto diretto col team, ogni settimana",
+      "retreat_ecommerce": "Negozio online incluso (e-commerce completo)",
+      "retreat_product_types": "Vendi anche servizi, prodotti, digitale e corsi video",
+      "retreat_payment_reminders": "Promemoria di pagamento automatici",
+      "retreat_customers": "Anagrafica e storico clienti",
+      "retreat_coupons": "Coupon e codici sconto",
+      "retreat_catalog_100": "Fino a 100 prodotti a catalogo",
+      "retreat_stores_1": "1 negozio online",
+      "retreat_team_2": "2 membri del team",
+      "retreat_catalog_unlimited": "Prodotti a catalogo illimitati",
+      "retreat_stores_3": "Fino a 3 negozi online",
+      "retreat_team_5": "5 membri del team"
     },
     "quota": {
       "warning_title": "Stai per raggiungere il limite",
