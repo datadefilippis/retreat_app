@@ -152,6 +152,13 @@
 3. **Scheduler con lock distribuito** dal giorno 1: aggiungere un secondo nodo non richiederà refactor.
 4. Tutto il resto (CDN, repliche, sharding): **esplicitamente rimandato** — sotto i 100k visitatori/mese il VPS singolo regge, e i soldi vanno in prodotto.
 
+## Debito ereditato tracciato
+
+| Data | Cosa | Dove | Quando si salda |
+|---|---|---|---|
+| 4/7/2026 | 15 test embed-sdk stale vs refactor embed 2026-06 di BI_PMI (CTA card→"Scopri di più", DOM pills, portal profile) — CI BI_PMI mai girata sugli ultimi 48 commit, rotture mai viste | `apps/embed-sdk/tests/*.test.ts` marcati `it.skip` con nota | Fase 3+, quando si riprende il modulo embed |
+| 4/7/2026 | CI `security` rossa: pip-audit segnala CVE nelle dipendenze pinnate | PR Dependabot già aperte sul repo | Igiene parallela a Fase 2 (merge coi test come rete) |
+
 ## Registro cherry-pick da BI_PMI (vuoto = buon segno)
 
 | Data | Commit BI_PMI | Motivo | Esito |
