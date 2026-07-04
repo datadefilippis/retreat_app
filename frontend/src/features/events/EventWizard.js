@@ -1040,113 +1040,11 @@ export default function EventWizard() {
         {activeTab === 'tickets' && (
           <div className="space-y-4">
 
-          {/* F1: Attendee details policy — separate card above tiers */}
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={requiresAttendeeDetails}
-                onChange={e => setRequiresAttendeeDetails(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
-              />
-              <div className="flex-1">
-                <span className="block text-sm font-semibold text-gray-900">
-                  {t('wizards.event.tickets.requireDetailsTitle')}
-                </span>
-                <span className="block text-xs text-gray-500 mt-0.5">
-                  {requiresAttendeeDetails
-                    ? t('wizards.event.tickets.requireDetailsDescOn')
-                    : t('wizards.event.tickets.requireDetailsDescOff')}
-                </span>
-              </div>
-            </label>
-
-            {/* F2: contacts required-ness + custom fields (visible when policy is ON) */}
-            {requiresAttendeeDetails && (
-              <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-                <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                  {t('wizards.event.tickets.baseFieldsHeading')}
-                </p>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-900">{t('wizards.event.tickets.nameField')}</span>
-                  <span className="text-xs text-gray-500">{t('wizards.event.tickets.alwaysRequired')}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-900">{t('wizards.event.tickets.emailField')}</span>
-                  <label className="flex items-center gap-2 text-xs cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={requireAttendeeEmail}
-                      onChange={e => setRequireAttendeeEmail(e.target.checked)}
-                      className="rounded border-gray-300"
-                    />
-                    <span>{t('wizards.event.tickets.emailRequired')}</span>
-                  </label>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-900">{t('wizards.event.tickets.phoneField')}</span>
-                  <label className="flex items-center gap-2 text-xs cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={requireAttendeePhone}
-                      onChange={e => setRequireAttendeePhone(e.target.checked)}
-                      className="rounded border-gray-300"
-                    />
-                    <span>{t('wizards.event.tickets.phoneRequired')}</span>
-                  </label>
-                </div>
-                {!requireAttendeeEmail && (
-                  <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1">
-                    {t('wizards.event.tickets.noEmailWarning')}
-                  </p>
-                )}
-              </div>
-            )}
+          {/* D4/A.2 — sezione 1: la cosa principale del tab */}
+          <div className="flex items-center gap-2 pt-1">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">1</span>
+            <h3 className="text-sm font-semibold">{t('wizards.event.tickets.sectionSeats', { defaultValue: 'Posti e pacchetti' })}</h3>
           </div>
-
-          {/* Fase 3 — preset a un click per i campi partecipante */}
-          {requiresAttendeeDetails && (
-            <div className="rounded-xl border border-gray-200 bg-white p-4">
-              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                {t('wizards.event.tickets.presetsHeading')}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {['base', 'residenziale', 'attivita'].map(key => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setAttendeeFieldsCfg(
-                      ATTENDEE_PRESETS[key].map(f => ({ ...f })))}
-                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-900"
-                  >
-                    {t(`wizards.event.tickets.presets.${key}`)}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[11px] text-gray-500 mt-2">
-                {t('wizards.event.tickets.presetsHint')}
-              </p>
-            </div>
-          )}
-
-          {/* F2: Custom fields (only when F1 toggle is ON) */}
-          {requiresAttendeeDetails && (
-            <FieldEditorList
-              fields={attendeeFieldsCfg}
-              onChange={setAttendeeFieldsCfg}
-              title={t('wizards.event.tickets.attendeeFieldsTitle')}
-              subtitle={t('wizards.event.tickets.attendeeFieldsSubtitle')}
-              emptyHint={t('wizards.event.tickets.attendeeFieldsEmpty')}
-            />
-          )}
-
-          <FieldEditorList
-            fields={orderFieldsCfg}
-            onChange={setOrderFieldsCfg}
-            title={t('wizards.event.tickets.orderFieldsTitle')}
-            subtitle={t('wizards.event.tickets.orderFieldsSubtitle')}
-            emptyHint={t('wizards.event.tickets.orderFieldsEmpty')}
-          />
 
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
             <div className="flex items-start justify-between">
@@ -1288,6 +1186,118 @@ export default function EventWizard() {
                 {t('product_cost:section.subtitle', 'Definisci come calcolare il margine per questo prodotto.')}
               </p>
             </div>
+          {/* D4/A.2 — sezione 2: cosa chiediamo a chi partecipa */}
+          <div className="flex items-center gap-2 pt-3">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">2</span>
+            <h3 className="text-sm font-semibold">{t('wizards.event.tickets.sectionAttendees', { defaultValue: 'Dati dei partecipanti' })}</h3>
+          </div>
+          {/* F1: Attendee details policy — separate card above tiers */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={requiresAttendeeDetails}
+                onChange={e => setRequiresAttendeeDetails(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+              />
+              <div className="flex-1">
+                <span className="block text-sm font-semibold text-gray-900">
+                  {t('wizards.event.tickets.requireDetailsTitle')}
+                </span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  {requiresAttendeeDetails
+                    ? t('wizards.event.tickets.requireDetailsDescOn')
+                    : t('wizards.event.tickets.requireDetailsDescOff')}
+                </span>
+              </div>
+            </label>
+
+            {/* F2: contacts required-ness + custom fields (visible when policy is ON) */}
+            {requiresAttendeeDetails && (
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  {t('wizards.event.tickets.baseFieldsHeading')}
+                </p>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-900">{t('wizards.event.tickets.nameField')}</span>
+                  <span className="text-xs text-gray-500">{t('wizards.event.tickets.alwaysRequired')}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-900">{t('wizards.event.tickets.emailField')}</span>
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={requireAttendeeEmail}
+                      onChange={e => setRequireAttendeeEmail(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <span>{t('wizards.event.tickets.emailRequired')}</span>
+                  </label>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-900">{t('wizards.event.tickets.phoneField')}</span>
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={requireAttendeePhone}
+                      onChange={e => setRequireAttendeePhone(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <span>{t('wizards.event.tickets.phoneRequired')}</span>
+                  </label>
+                </div>
+                {!requireAttendeeEmail && (
+                  <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1">
+                    {t('wizards.event.tickets.noEmailWarning')}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Fase 3 — preset a un click per i campi partecipante */}
+          {requiresAttendeeDetails && (
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
+              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                {t('wizards.event.tickets.presetsHeading')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {['base', 'residenziale', 'attivita'].map(key => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setAttendeeFieldsCfg(
+                      ATTENDEE_PRESETS[key].map(f => ({ ...f })))}
+                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-900"
+                  >
+                    {t(`wizards.event.tickets.presets.${key}`)}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-gray-500 mt-2">
+                {t('wizards.event.tickets.presetsHint')}
+              </p>
+            </div>
+          )}
+
+          {/* F2: Custom fields (only when F1 toggle is ON) */}
+          {requiresAttendeeDetails && (
+            <FieldEditorList
+              fields={attendeeFieldsCfg}
+              onChange={setAttendeeFieldsCfg}
+              title={t('wizards.event.tickets.attendeeFieldsTitle')}
+              subtitle={t('wizards.event.tickets.attendeeFieldsSubtitle')}
+              emptyHint={t('wizards.event.tickets.attendeeFieldsEmpty')}
+            />
+          )}
+
+          <FieldEditorList
+            fields={orderFieldsCfg}
+            onChange={setOrderFieldsCfg}
+            title={t('wizards.event.tickets.orderFieldsTitle')}
+            subtitle={t('wizards.event.tickets.orderFieldsSubtitle')}
+            emptyHint={t('wizards.event.tickets.orderFieldsEmpty')}
+          />
             <CostSourceEditor
               value={costSource}
               onChange={setCostSource}
@@ -1500,6 +1510,14 @@ export default function EventWizard() {
         {/* ── TAB 5: Pubblica ──────────────────────────────────────── */}
         {activeTab === 'publish' && (
           <div className="space-y-4">
+            {/* D4/A.3 — cue contenuti ricchi: l'operatore deve sapere che
+                la pagina si arricchisce DOPO la pubblicazione, senza
+                sentirsi obbligato a fare tutto ora. */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-foreground/80">
+              {t('wizards.event.publish.enrichLaterCue', {
+                defaultValue: 'Pubblica quando sei pronto: programma, galleria foto e FAQ si possono aggiungere e modificare in ogni momento dalla dashboard del ritiro.',
+              })}
+            </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.event.publish.longDescTitle')}</h2>
               <p className="text-xs text-gray-500">

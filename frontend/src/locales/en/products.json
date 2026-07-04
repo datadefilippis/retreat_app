@@ -1,6 +1,5 @@
 {
   "_comment": "English translations for the admin Products area.",
-
   "extras": {
     "title": "Extras & options",
     "kindLabel": {
@@ -40,7 +39,6 @@
       "emptyHint": "No radio groups yet. Create one above (e.g. \"insurance\") to get started."
     }
   },
-
   "options": {
     "title": "Service options",
     "subtitle": "The customer picks exactly one (radio).",
@@ -61,7 +59,6 @@
       "remove": "Remove option"
     }
   },
-
   "fields": {
     "addButton": "+ Add field",
     "emptyHint": "No fields configured yet.",
@@ -85,7 +82,6 @@
       "idPlaceholder": "auto"
     }
   },
-
   "typeLabels": {
     "physical": "Physical",
     "service": "Service",
@@ -95,7 +91,6 @@
     "event_ticket": "Event",
     "course": "Course"
   },
-
   "list": {
     "typeFilter": {
       "physical": "📦 Physical",
@@ -116,7 +111,6 @@
     "deactivateTitle": "Deactivate",
     "dashboardLink": "Dashboard"
   },
-
   "status": {
     "online": "Online",
     "offline": "Offline",
@@ -127,7 +121,6 @@
     "visibleInCatalog": "Visible in the public catalog",
     "notVisibleToCustomers": "Not visible to customers"
   },
-
   "typePicker": {
     "title": "What type of product do you want to create?",
     "physical": {
@@ -159,7 +152,6 @@
       "desc": "Modules and video lessons via Bunny"
     }
   },
-
   "form": {
     "unitPlaceholder": "pcs, kg, h",
     "unitLabelPlaceholder": "pcs, service, day",
@@ -169,7 +161,6 @@
     "manageLink": "Manage",
     "fieldsCounter": "{{count}}/4 fields"
   },
-
   "grids": {
     "common": {
       "loading": "Loading…",
@@ -185,7 +176,6 @@
       "newCta": "+ New product",
       "firstCreateCta": "+ Create first product"
     },
-
     "physical": {
       "title": "Physical products",
       "subtitle": "Manage physical products: stock, shipping, pickup.",
@@ -209,7 +199,6 @@
         "outOfStock": "❌ Sold out"
       }
     },
-
     "digital": {
       "title": "Digital products",
       "subtitle": "Ebooks, templates, downloadable files.",
@@ -237,7 +226,6 @@
         "missingFile": "⚠️ Missing"
       }
     },
-
     "service": {
       "title": "Services",
       "subtitle": "Manage all your services and their availability.",
@@ -258,7 +246,6 @@
       "stateLabel": "Status",
       "dashboardCta": "Dashboard"
     },
-
     "reservation": {
       "title": "Rentals",
       "subtitle": "Manage rentable products: per period (multi-day) or slot (hourly).",
@@ -277,7 +264,6 @@
       "typeBadgeRange": "🏠 Rental · period",
       "typeBadgeSlot": "📅 Rental · slot"
     },
-
     "course": {
       "title": "Video courses",
       "subtitle": "Modules and lessons with Bunny Stream.",
@@ -322,7 +308,6 @@
         "errorTitle": "Bunny configuration issue — click to check"
       }
     },
-
     "event": {
       "title": "Events",
       "subtitle": "Manage all your events, dates and check-in in a single view.",
@@ -366,7 +351,6 @@
       }
     }
   },
-
   "dashboards": {
     "common": {
       "loading": "Loading…",
@@ -393,7 +377,6 @@
       "imageUrlPlaceholder": "or paste a URL…",
       "backToProducts": "← Back to products"
     },
-
     "course": {
       "back": "← Course products",
       "newTitle": "New course",
@@ -742,7 +725,6 @@
         "courseUpdated": "Course updated"
       }
     },
-
     "event": {
       "back": "← Back to events",
       "typeLabel": "Event",
@@ -1106,7 +1088,6 @@
         "distributionUpdated": "Distribution updated"
       }
     },
-
     "reservation": {
       "back": "← Back to rentals",
       "fallbackName": "Rental",
@@ -1211,7 +1192,6 @@
         "extrasError": "Error saving extras"
       }
     },
-
     "digital": {
       "back": "← Back to products",
       "typeLabel": "💾 Digital product",
@@ -1315,7 +1295,6 @@
         "extrasError": "Error saving extras"
       }
     },
-
     "physical": {
       "back": "← Back to products",
       "typeLabel": "📦 Physical product",
@@ -1402,7 +1381,6 @@
         "extrasError": "Error saving extras"
       }
     },
-
     "service": {
       "back": "← Back to services",
       "typeLabel": "Service",
@@ -1477,7 +1455,6 @@
       }
     }
   },
-
   "wizards": {
     "common": {
       "stepCounter": "Step {{current}} of {{total}}",
@@ -1561,7 +1538,6 @@
         "retrySuccess": "Image uploaded successfully."
       }
     },
-
     "physical": {
       "title": "New physical product",
       "tabs": {
@@ -1609,7 +1585,6 @@
         "publishToggleDesc": "The product becomes visible and purchasable on the public storefront. If off, it is saved as a draft."
       }
     },
-
     "event": {
       "title": "New event",
       "duplicateTitle": "Duplicate event",
@@ -1716,7 +1691,9 @@
         "tierMoveDown": "Move down",
         "tierDescLabel": "Description",
         "tierDescPlaceholder": "E.g. Includes drink · Reserved table",
-        "tierRemove": "Remove tier"
+        "tierRemove": "Remove tier",
+        "sectionSeats": "Seats and packages",
+        "sectionAttendees": "Attendee details"
       },
       "publish": {
         "longDescTitle": "Long description",
@@ -1739,10 +1716,10 @@
         "distributionMultiDesc": "In which stores the event is visible.",
         "publishToggleTitle": "Publish now",
         "publishToggleDesc": "If checked, the event is visible in the catalog and purchasable. You can always change this from the event dashboard.",
-        "validationErrorBanner": "Some previous fields need attention. Go back to fix them."
+        "validationErrorBanner": "Some previous fields need attention. Go back to fix them.",
+        "enrichLaterCue": "Publish when you're ready: program, photo gallery and FAQ can be added and edited anytime from the retreat dashboard."
       }
     },
-
     "digital": {
       "title": "New digital product",
       "tabs": {
@@ -1804,7 +1781,6 @@
         "publishToggleDesc": "The product becomes visible and purchasable on the public storefront. If off, it is saved as a draft."
       }
     },
-
     "reservation": {
       "title": "New rental",
       "tabs": {
@@ -1888,7 +1864,6 @@
         "publishToggleDesc": "The product becomes visible and bookable on the public storefront. If off, it is saved as a draft."
       }
     },
-
     "service": {
       "title": "New service",
       "back": "← Back to services",
@@ -1935,7 +1910,7 @@
         "summaryOptionsNone": "None (base price)",
         "longDescTitle": "Long description (landing)",
         "longDescDesc": "What appears on the public service page. Markdown supported.",
-        "longDescPlaceholder": "## What's included\n\n- Free first assessment\n- Guided hypnosis session (60 min)\n- Email follow-up in the days after\n\n## Who it's for\u00a0\n\nPeople who want to improve sleep quality, quit smoking, manage anxiety.",
+        "longDescPlaceholder": "## What's included\n\n- Free first assessment\n- Guided hypnosis session (60 min)\n- Email follow-up in the days after\n\n## Who it's for \n\nPeople who want to improve sleep quality, quit smoking, manage anxiety.",
         "coverUrlLabel": "Landing cover URL (optional)",
         "coverUrlPlaceholder": "https://… hero image of the public page",
         "coverUrlHint": "If empty, the product image (step 1) is used.",
@@ -1952,7 +1927,6 @@
       }
     }
   },
-
   "venue": {
     "title": "Event details (optional)",
     "venueName": "Venue name",
