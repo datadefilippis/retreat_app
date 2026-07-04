@@ -155,6 +155,13 @@ class PublicProduct(BaseModel):
     course_access_policy: Optional[str] = None            # "lifetime" | "expiring"
     course_access_expiry_days: Optional[int] = None
 
+    # Fix caparra (4/7/2026) — piano pagamenti pubblico anche nel catalogo
+    # (prima esisteva solo su PublicEventProduct: il serializer lo passava
+    # ma Pydantic lo scartava in silenzio). Serve al riepilogo checkout per
+    # la riga "oggi paghi solo la caparra". Solo dati pubblicabili: modalità,
+    # percentuale/importo, scadenza saldo — nessun dato interno.
+    payment_plan: Optional[Dict[str, Any]] = None
+
 
 class StoreInfo(BaseModel):
     """Public-safe store identity fields. Only populated fields are included."""
@@ -963,6 +970,13 @@ async def get_public_catalog(request: Request, slug: str):
 
         # Onda 16 — expose reservation_flavor + extras for rental products.
         doc["reservation_flavor"] = meta.get("reservation_flavor")
+        # Fix caparra (4/7/2026) — il checkout dello store deve poter dire
+        # "oggi paghi solo la caparra": senza il piano nel catalogo, il
+        # riepilogo mostrava il totale e il cliente credeva di pagarlo tutto
+        # (la session Stripe chiedeva comunque la caparra giusta — bug di
+        # comunicazione, non di soldi). Stesso campo già esposto dalla
+        # landing evento (PublicEventLanding).
+        doc["payment_plan"] = meta.get("payment_plan")
         doc["extras"] = []
         if doc.get("item_type") == "rental":
             doc["extras"] = extras_by_product.get(doc["id"], [])

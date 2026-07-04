@@ -37,9 +37,9 @@
   "transactionMode": {
     "direct": {
       "headerCta": "Ordina",
-      "modalTitle": "Invia ordine",
-      "modalDesc": "Il tuo ordine sarà elaborato rapidamente. Sarai contattato per i dettagli.",
-      "submitBtn": "Invia ordine",
+      "modalTitle": "Completa l'ordine",
+      "modalDesc": "Dopo la conferma verrai reindirizzato al pagamento sicuro con carta (Stripe).",
+      "submitBtn": "Vai al pagamento",
       "inquiryToggle": "Richiedi info"
     },
     "request": {
@@ -124,7 +124,10 @@
     "shippingFree": "GRATIS",
     "addMoreForFree": "Aggiungi {{amount}} per spedizione gratuita.",
     "subtotalEstimate": "Subtotale stimato",
-    "totalEstimate": "Totale stimato"
+    "totalEstimate": "Totale stimato",
+    "depositToday": "Oggi paghi solo la caparra",
+    "depositBalance": "Saldo di {{amount}} entro il {{date}} — ti invieremo il link di pagamento via email",
+    "qtyAria": "Quantità per {{name}}"
   },
   "errors": {
     "verifyUrl": "Verifica l'indirizzo e riprova.",
