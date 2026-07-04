@@ -1114,7 +1114,24 @@
           "waived": "condonata",
           "refunded": "rimborsata",
           "cancelled": "annullata"
-        }
+        },
+        "refund": "Rimborsa",
+        "refundConfirm": "Rimborso secondo la politica di cancellazione ({{percent}}%: {{amount}}) e annullo dell'ordine (posto liberato, biglietti annullati, email al partecipante). Continuare?",
+        "refundReasonPrompt": "Motivo del rimborso (facoltativo):",
+        "refundOk": "Rimborso eseguito",
+        "refundManualNote": "Attenzione: {{amount}} pagati con bonifico — il rimborso di quella parte è fuori piattaforma, a tuo carico.",
+        "postpone": "Proroga",
+        "postponePrompt": "Nuova scadenza (AAAA-MM-GG):",
+        "postponeOk": "Scadenza prorogata — i promemoria ripartiranno",
+        "waive": "Condona",
+        "waivePrompt": "Motivo del condono (obbligatorio):",
+        "waiveOk": "Scadenza condonata",
+        "actionErr": "Operazione non riuscita",
+        "exportCsv": "Esporta CSV",
+        "cancelRetreat": "Annulla ritiro e rimborsa tutti",
+        "cancelRetreatConfirm1": "ANNULLO RITIRO: tutti gli ordini attivi verranno rimborsati al 100% e i partecipanti avvisati. L'operazione è irreversibile. Continuare?",
+        "cancelRetreatConfirm2": "Confermi definitivamente l'annullo del ritiro con rimborso totale?",
+        "cancelRetreatOk": "Ritiro annullato: {{count}} ordini rimborsati"
       }
     },
     "reservation": {

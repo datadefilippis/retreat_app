@@ -4,6 +4,13 @@ export const ordersAPI = {
   // Fase 2 S2 (retreat) — segna una scadenza pagata fuori piattaforma
   markSchedulePaidManual: (orderId, rowSeq, note) =>
     api.post(`/orders/${orderId}/schedule/${rowSeq}/mark-paid-manual`, { note }),
+  // Fase 2 S3 — rimborso da policy (o override), proroga, condono
+  refundOrder: (orderId, body = {}) =>
+    api.post(`/orders/${orderId}/refund`, body),
+  postponeScheduleRow: (orderId, rowSeq, dueAt) =>
+    api.post(`/orders/${orderId}/schedule/${rowSeq}/postpone`, { due_at: dueAt }),
+  waiveScheduleRow: (orderId, rowSeq, reason) =>
+    api.post(`/orders/${orderId}/schedule/${rowSeq}/waive`, { reason }),
   list: (status, limit = 200) =>
     api.get('/orders', { params: { status, limit } }),
   get: (orderId) =>

@@ -25,6 +25,11 @@ export const eventOccurrencesAPI = {
   // Fase 2 S2 (retreat) — dashboard incassi: aggregato + dettaglio per ordine
   payments: (occurrenceId) =>
     api.get(`/event-occurrences/${occurrenceId}/payments`),
+  // Fase 2 S3 — annullo ritiro con cascata rimborsi (conferma esplicita)
+  cancelCascade: (occurrenceId) =>
+    api.post(`/event-occurrences/${occurrenceId}/cancel-cascade`, { confirm: true }),
+  paymentsCsvUrl: (occurrenceId) =>
+    `/event-occurrences/${occurrenceId}/payments/export.csv`,
   // G2 — atomic create: product + occurrence + tiers in one call.
   // Body: { product:{...}, occurrence:{...}, tiers:[...] }
   // Returns: { product_id, occurrence_id, tier_ids, slug }

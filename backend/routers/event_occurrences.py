@@ -1459,3 +1459,72 @@ async def cancel_occurrence_with_cascade(
         return await cancel_occurrence_cascade(org_id, occurrence_id, actor=actor)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+
+
+@router.get("/{occurrence_id}/payments/export.csv")
+@limiter.limit("10/minute")
+async def export_occurrence_payments_csv(
+    occurrence_id: str,
+    request: Request,
+    current_user: dict = Depends(get_verified_user),
+):
+    """Export movimenti per il commercialista (F11 del business concept):
+    una riga per scadenza — ordine, partecipante, tipo, importo, stato,
+    canale, date, fee, rimborso."""
+    import csv
+    import io
+    from fastapi.responses import StreamingResponse
+    from database import db, orders_collection
+
+    org_id = current_user["organization_id"]
+    schedules = await db.payment_schedules.find(
+        {"organization_id": org_id, "occurrence_id": occurrence_id},
+        {"_id": 0},
+    ).to_list(1000)
+    order_ids = [s["order_id"] for s in schedules]
+    orders = await orders_collection.find(
+        {"organization_id": org_id, "id": {"$in": order_ids}},
+        {"_id": 0, "id": 1, "customer_name": 1, "order_number": 1, "status": 1},
+    ).to_list(1000)
+    order_by_id = {o["id"]: o for o in orders}
+
+    buf = io.StringIO()
+    writer = csv.writer(buf, delimiter=";")
+    writer.writerow([
+        "ordine", "partecipante", "stato_ordine", "voce", "tipo",
+        "importo_eur", "stato", "canale", "scadenza", "pagata_il",
+        "fee_piattaforma_eur", "rimborso_eur", "nota",
+    ])
+    for s in schedules:
+        o = order_by_id.get(s["order_id"], {})
+        if o.get("status") == "draft" and s.get("payment_state") in (None, "none"):
+            continue   # carrelli abbandonati fuori anche dal CSV
+        for r in s.get("rows") or []:
+            channel = ""
+            if r.get("status") == "paid_manual":
+                channel = "manuale"
+            elif r.get("stripe_payment_intent"):
+                channel = "stripe"
+            refund = (r.get("refund") or {}).get("amount_minor", 0)
+            writer.writerow([
+                o.get("order_number") or s["order_id"][:8],
+                o.get("customer_name") or "",
+                o.get("status") or "",
+                r.get("label") or "",
+                r.get("kind") or "",
+                f'{r.get("amount_minor", 0) / 100:.2f}'.replace(".", ","),
+                r.get("status") or "",
+                channel,
+                (r.get("due_at") or "")[:10],
+                (r.get("paid_at") or "")[:10],
+                f'{r.get("fee_minor", 0) / 100:.2f}'.replace(".", ","),
+                f'{refund / 100:.2f}'.replace(".", ",") if refund else "",
+                r.get("manual_note") or (r.get("refund") or {}).get("reason") or "",
+            ])
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition":
+                 f'attachment; filename="incassi-{occurrence_id[:8]}.csv"'},
+    )
