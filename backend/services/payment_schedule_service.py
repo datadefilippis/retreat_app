@@ -266,6 +266,57 @@ async def create_schedule_for_new_order(
     )
 
 
+def aggregate_schedules(schedule_docs: List[Dict[str, Any]], now_iso: Optional[str] = None) -> Dict[str, Any]:
+    """Aggregato dashboard incassi per un ritiro (funzione PURA, testata).
+
+    incassato  = righe paid/paid_manual
+    in_arrivo  = righe pending con scadenza futura
+    in_ritardo = righe pending scadute (il job dunning le porterà a overdue,
+                 ma la dashboard non deve aspettare il job) + overdue
+    a_rischio  = righe at_risk
+    """
+    now_iso = now_iso or utc_now().isoformat()
+    agg = {
+        "orders_count": len(schedule_docs),
+        "incassato_minor": 0,
+        "in_arrivo_minor": 0,
+        "in_ritardo_minor": 0,
+        "a_rischio_minor": 0,
+        "rimborsato_minor": 0,
+        "fully_paid_orders": 0,
+        "deposit_paid_orders": 0,
+    }
+    for doc in schedule_docs:
+        state = doc.get("payment_state")
+        if state == "fully_paid":
+            agg["fully_paid_orders"] += 1
+        elif state == "deposit_paid":
+            agg["deposit_paid_orders"] += 1
+        for row in doc.get("rows") or []:
+            status = row.get("status")
+            amount = row.get("amount_minor", 0)
+            if status in ("paid", "paid_manual"):
+                agg["incassato_minor"] += amount
+            elif status == "pending":
+                if (row.get("due_at") or "") < now_iso:
+                    agg["in_ritardo_minor"] += amount
+                else:
+                    agg["in_arrivo_minor"] += amount
+            elif status in ("overdue", "processing"):
+                agg["in_ritardo_minor"] += amount if status == "overdue" else 0
+                if status == "processing":
+                    # session emessa non conclusa: è denaro atteso
+                    if (row.get("due_at") or "") < now_iso:
+                        agg["in_ritardo_minor"] += amount
+                    else:
+                        agg["in_arrivo_minor"] += amount
+            elif status == "at_risk":
+                agg["a_rischio_minor"] += amount
+            if row.get("refund"):
+                agg["rimborsato_minor"] += (row["refund"] or {}).get("amount_minor", 0)
+    return agg
+
+
 async def get_schedule_for_order(order_id: str, organization_id: str) -> Optional[Dict[str, Any]]:
     """Schedule corrente di un ordine (None se assente — ordini non-ritiro)."""
     schedules, _ = _collections()
