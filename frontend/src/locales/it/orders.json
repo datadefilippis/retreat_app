@@ -106,7 +106,9 @@
     "mark_unpaid": "Ripristina non pagato",
     "confirm_dialog": "Confermare questo ordine? Verra generata la registrazione nel cashflow.",
     "cancel_dialog": "Annullare questo ordine?",
-    "complete_dialog": "Segnare questo ordine come completato e pagato?"
+    "complete_dialog": "Segnare questo ordine come completato e pagato?",
+    "settle_manual": "Segna incassato (bonifico/contanti)",
+    "settle_manual_hint": "Conferma l'ordine e registra l'incasso ricevuto fuori piattaforma."
   },
   "review": {
     "confirm_failed": "Pagamento incassato — conferma ordine non completata",
@@ -128,7 +130,8 @@
     "warn_payment_collected": "Il pagamento è stato già incassato",
     "warn_storno": "Genera storno nel cashflow",
     "mark_paid_confirm": "Registrare il pagamento ricevuto per questo ordine?",
-    "mark_unpaid_confirm": "Ripristinare lo stato di pagamento a 'in attesa'?"
+    "mark_unpaid_confirm": "Ripristinare lo stato di pagamento a 'in attesa'?",
+    "settle_manual_confirm": "Registrare l'incasso ricevuto fuori piattaforma? L'ordine verrà confermato (posti riservati, biglietti emessi)."
   },
   "toast": {
     "created": "Ordine creato",
@@ -227,5 +230,31 @@
     "cancel": "Annulla",
     "submit": "Importa",
     "close": "Chiudi"
+  },
+  "settle": {
+    "scope_question": "Il cliente ha pagato SOLO la caparra? OK = solo caparra (il saldo seguirà i promemoria) · Annulla = ha pagato tutto",
+    "note_prompt": "Nota obbligatoria (es. 'bonifico ricevuto il 5/7'):",
+    "ok": "Incasso registrato"
+  },
+  "schedule": {
+    "title": "Piano pagamenti",
+    "due": "entro il {{date}}",
+    "mark_paid": "Segna pagato",
+    "postpone": "Proroga",
+    "postpone_prompt": "Nuova scadenza (AAAA-MM-GG):",
+    "postpone_ok": "Scadenza prorogata",
+    "copy_link": "Copia link",
+    "link_copied": "Link di pagamento copiato",
+    "status": {
+      "pending": "in attesa",
+      "processing": "in corso",
+      "paid": "pagata",
+      "paid_manual": "pagata (manuale)",
+      "overdue": "in ritardo",
+      "at_risk": "a rischio",
+      "waived": "condonata",
+      "refunded": "rimborsata",
+      "cancelled": "annullata"
+    }
   }
 }

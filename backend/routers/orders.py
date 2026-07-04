@@ -1232,3 +1232,31 @@ async def waive_schedule_row(
         {"$set": {"payment_state": updated.get("payment_state")}},
     )
     return {"schedule": updated}
+
+
+@router.post("/{order_id}/settle-manual")
+@limiter.limit("30/minute")
+async def settle_order_manual_endpoint(
+    order_id: str,
+    request: Request,
+    body: dict = None,
+    current_user: dict = Depends(get_verified_user),
+):
+    """WS-1.1 — "il cliente ha pagato fuori piattaforma" in un'azione:
+    conferma l'ordine (posti, biglietti, email) e registra l'incasso
+    manuale. scope='deposit' = solo la caparra (il saldo prosegue coi
+    promemoria); scope='full' = tutto saldato. Nota obbligatoria."""
+    from services.order_service import settle_order_manual
+
+    org_id = current_user["organization_id"]
+    body = body or {}
+    try:
+        order = await settle_order_manual(
+            org_id, order_id,
+            actor=f"operator:{current_user.get('user_id') or 'unknown'}",
+            note=(body.get("note") or ""),
+            scope=body.get("scope", "full"),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    return order
