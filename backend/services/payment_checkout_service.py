@@ -250,6 +250,45 @@ async def create_checkout_session(org_id: str, order: dict) -> Optional[dict]:
     # collapse them is precisely what idempotency keys are for.
     idempotency_key = f"checkout:{order_id}"
 
+    # ── Fase 2 S2 (retreat) — checkout schedule-aware ──────────────────────
+    # Se l'ordine ha un PaymentSchedule con riga caparra addebitabile, la
+    # session incassa SOLO la caparra: una riga "Caparra — {ritiro}", niente
+    # discount separato (il coupon è già dentro il totale su cui la caparra
+    # è stata calcolata alla generazione dello schedule). Il saldo viaggerà
+    # su session dedicate generate dallo scheduler (S3). Metadata estesa con
+    # schedule_row_seq così il webhook fa la transizione della riga giusta.
+    from services.payment_schedule_service import (
+        get_schedule_for_order,
+        pending_charge_row,
+    )
+    # Solo gli ordini-ritiro (riga evento con data) possono avere una caparra:
+    # per tutto il resto niente lookup — zero costo e zero deviazioni sul
+    # flusso storico.
+    has_event_line = any(
+        (it or {}).get("occurrence_id") for it in (order.get("items") or [])
+    )
+    schedule_doc = await get_schedule_for_order(order_id, org_id) if has_event_line else None
+    deposit_row = pending_charge_row(schedule_doc)
+    schedule_metadata = {}
+    if deposit_row is not None:
+        deposit_eur = _Decimal(deposit_row["amount_minor"]) / _Decimal(100)
+        first_item_name = (order.get("items") or [{}])[0].get("product_name") or "ritiro"
+        line_item_models = [CheckoutLineItem(
+            name=f"Caparra — {first_item_name}",
+            quantity=1,
+            unit_amount=deposit_eur,
+        )]
+        discount_amount = _Decimal("0")
+        idempotency_key = f"checkout:{order_id}:row:{deposit_row['seq']}"
+        schedule_metadata = {
+            "schedule_id": schedule_doc["id"],
+            "schedule_row_seq": str(deposit_row["seq"]),
+        }
+        logger.info(
+            "payment_checkout: deposit mode for order %s — charging row %s (%s minor)",
+            order_id, deposit_row["seq"], deposit_row["amount_minor"],
+        )
+
     request = CheckoutSessionRequest(
         org_id=org_id,
         order_id=order_id,
@@ -269,6 +308,8 @@ async def create_checkout_session(org_id: str, order: dict) -> Optional[dict]:
             "flow_version": FLOW_VERSION,
             # Carrier — provider strips this from outgoing Stripe metadata.
             "connected_account_id": connected_account_id,
+            # Fase 2 S2 — presente solo per session-caparra (vuoto = full).
+            **schedule_metadata,
         },
     )
 
@@ -299,6 +340,27 @@ async def create_checkout_session(org_id: str, order: dict) -> Optional[dict]:
             result.session_id, connected_account_id, order_id, org_id,
             result.provider, ",".join(result.payment_method_types) or "default",
         )
+
+        # Fase 2 S2 — riga caparra → processing (session emessa, esito non
+        # noto). Evita session duplicate applicative; best-effort: un fallo
+        # qui non blocca il checkout (la guardia vera è l'idempotency key).
+        if deposit_row is not None:
+            try:
+                from models.payment_schedule import RowStatus
+                from services.payment_schedule_service import apply_row_transition
+                if deposit_row.get("status") == RowStatus.PENDING.value:
+                    await apply_row_transition(
+                        schedule_doc, deposit_row["seq"], RowStatus.PROCESSING,
+                        actor="system:checkout",
+                        action="row_session_created",
+                        row_updates={"stripe_session_id": result.session_id},
+                        detail={"session_id": result.session_id},
+                    )
+            except Exception as exc_row:
+                logger.warning(
+                    "payment_checkout: row processing mark failed for order %s: %s",
+                    order_id, exc_row,
+                )
 
         # Sub-stream 2.7: audit trail. Best-effort write to the
         # ``audit_logs`` collection so customer-support and finance can
@@ -679,6 +741,38 @@ async def reconcile_checkout_event(event: dict) -> dict:
     )
 
     logger.info("payment_reconcile: payment_intent=collected for order %s (pi=%s)", order_id, stripe_pi)
+
+    # ── Fase 2 S2 — transizione riga schedule (caparra o pagamento unico) ──
+    # La session porta schedule_row_seq quando è una session-caparra; per i
+    # piani full la riga 0 è comunque il pagamento intero. Il ledger passa a
+    # paid QUI, nel punto in cui il denaro è certo. Idempotente: il webhook
+    # doppio perde sulla guardia ottimistica e non tocca nulla.
+    try:
+        from services.payment_schedule_service import (
+            apply_stripe_payment_to_schedule,
+            get_schedule_for_order,
+        )
+        row_seq_raw = metadata.get("schedule_row_seq")
+        target_seq = int(row_seq_raw) if row_seq_raw is not None else 0
+        updated_schedule = await apply_stripe_payment_to_schedule(
+            order_id, org_id, target_seq,
+            stripe_payment_intent=stripe_pi,
+            stripe_session_id=session_id,
+        )
+        if updated_schedule:
+            # Mirror denormalizzato per le liste admin: la fonte di verità
+            # resta lo schedule; l'ordine espone lo stato derivato.
+            await orders_collection.update_one(
+                {"id": order_id, "organization_id": org_id},
+                {"$set": {"payment_state": updated_schedule.get("payment_state")}},
+            )
+    except Exception as exc_sched:
+        # Il ledger non deve MAI bloccare la conferma di un pagamento reale;
+        # l'evento resta ricostruibile da Stripe + audit. Log severo.
+        logger.error(
+            "payment_reconcile: schedule transition failed for order %s: %s",
+            order_id, exc_sched,
+        )
 
     # ── Confirm order ──────────────────────────────────────────────────────
     from services.order_service import confirm_order
