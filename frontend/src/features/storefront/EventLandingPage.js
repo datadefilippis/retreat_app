@@ -35,6 +35,7 @@ import StorefrontHeader from './components/StorefrontHeader';
 import MarkdownLite from '../../components/MarkdownLite';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
+import { effectivePlan } from './lib/paymentPlan';
 
 
 // ── Utilities ──────────────────────────────────────────────────────────────
@@ -236,6 +237,34 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
         <p className="text-2xl font-bold text-gray-900 mt-2">
           {formatPrice(totalPrice, currency, i18n.language)}
         </p>
+        {/* Fase 2 S2 — messaging caparra: "oggi paghi solo X" (calcolo
+            speculare al backend; l'importo autoritativo resta server-side) */}
+        {(() => {
+          const ep = effectivePlan(
+            product?.payment_plan, totalPrice, occurrence.start_at);
+          if (ep.mode !== 'deposit' || totalPrice <= 0) return null;
+          return (
+            <div className="mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-900">
+              <p className="font-semibold">
+                {t('landings:event.deposit.payNow', {
+                  amount: formatPrice(ep.depositMinor / 100, currency, i18n.language),
+                })}
+              </p>
+              <p className="text-xs mt-0.5">
+                {ep.installments
+                  ? t('landings:event.deposit.restInstallments', {
+                      amount: formatPrice(ep.balanceMinor / 100, currency, i18n.language),
+                      count: ep.installments,
+                      date: ep.balanceDueDate.toLocaleDateString(i18n.language),
+                    })
+                  : t('landings:event.deposit.restBalance', {
+                      amount: formatPrice(ep.balanceMinor / 100, currency, i18n.language),
+                      date: ep.balanceDueDate.toLocaleDateString(i18n.language),
+                    })}
+              </p>
+            </div>
+          );
+        })()}
       </div>
 
       <button
@@ -458,6 +487,61 @@ export default function EventLandingPage() {
               <p className="text-gray-700 leading-relaxed">{product.description}</p>
             </div>
           )}
+
+          {/* Fase 2 S2 — Come paghi + policy di cancellazione (dal piano
+              configurato sul prodotto; la policy si mostra SEMPRE quando
+              presente, anche in modalità pagamento unico: guida i rimborsi) */}
+          {(() => {
+            const plan = product?.payment_plan;
+            if (!plan) return null;
+            const showDeposit = plan.mode && plan.mode !== 'full';
+            const policy = plan.cancellation_policy || [];
+            if (!showDeposit && policy.length === 0) return null;
+            return (
+              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <h2 className="text-base font-semibold text-gray-900 mb-3">
+                  {t('landings:event.paymentPlan.heading')}
+                </h2>
+                {showDeposit && (
+                  <p className="text-sm text-gray-700 mb-3">
+                    {plan.deposit_type === 'percent'
+                      ? t('landings:event.paymentPlan.depositPercent', {
+                          percent: plan.deposit_value,
+                          days: plan.balance_due_days_before,
+                        })
+                      : t('landings:event.paymentPlan.depositFixed', {
+                          amount: formatPrice((plan.deposit_value || 0) / 100, effectiveCurrency, i18n.language),
+                          days: plan.balance_due_days_before,
+                        })}
+                    {plan.mode === 'deposit_installments' &&
+                      ' ' + t('landings:event.paymentPlan.installmentsNote', {
+                        count: plan.installments_count,
+                      })}
+                  </p>
+                )}
+                {policy.length > 0 && (
+                  <>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-1.5">
+                      {t('landings:event.paymentPlan.policyHeading')}
+                    </h3>
+                    <ul className="text-sm text-gray-600 space-y-0.5">
+                      {policy.map((tier, i) => (
+                        <li key={i}>
+                          {i < policy.length - 1
+                            ? t('landings:event.paymentPlan.policyTier', {
+                                days: tier.days_before, percent: tier.refund_percent,
+                              })
+                            : t('landings:event.paymentPlan.policyLast', {
+                                percent: tier.refund_percent,
+                              })}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Right column — tiers + checkout (sticky on desktop) */}

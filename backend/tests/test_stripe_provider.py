@@ -439,6 +439,7 @@ async def test_create_checkout_session_application_fee_zero_omits_field():
 
     call_kwargs = fake_stripe.checkout.Session.create.call_args.kwargs
     assert "application_fee_amount" not in call_kwargs
+    assert "application_fee_amount" not in (call_kwargs.get("payment_intent_data") or {})
 
 
 @pytest.mark.asyncio
@@ -466,7 +467,11 @@ async def test_create_checkout_session_application_fee_calculated():
 
     call_kwargs = fake_stripe.checkout.Session.create.call_args.kwargs
     # 100 EUR → 10000 cents. 2.5% fee → 250 cents.
-    assert call_kwargs.get("application_fee_amount") == 250
+    # Fix retreat 4/7/2026: per le Checkout Session la fee vive in
+    # payment_intent_data (top-level Stripe la rifiuta: "unknown parameter",
+    # verificato live in test mode — il vecchio assert codificava il bug).
+    assert "application_fee_amount" not in call_kwargs
+    assert call_kwargs.get("payment_intent_data", {}).get("application_fee_amount") == 250
 
 
 @pytest.mark.asyncio

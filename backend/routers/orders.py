@@ -1030,3 +1030,59 @@ async def get_order_payment_schedule(
         {"order_id": order_id, "organization_id": org_id}, {"_id": 0},
     ).sort("at", 1).to_list(500)
     return {"schedule": schedule, "events": events}
+
+
+@router.post("/{order_id}/schedule/{row_seq}/mark-paid-manual")
+@limiter.limit("30/minute")
+async def mark_schedule_row_paid_manual(
+    order_id: str,
+    row_seq: int,
+    request: Request,
+    body: dict = None,
+    current_user: dict = Depends(get_verified_user),
+):
+    """Segna una scadenza come pagata FUORI piattaforma (bonifico, contanti).
+
+    Realtà operativa italiana: qualcuno pagherà sempre con bonifico. La
+    riga va in stato paid_manual (fee piattaforma NON applicata), con nota
+    obbligatoria e attore tracciato nel log eventi. La transizione passa
+    dall'unica porta (apply_row_transition): macchina a stati + guardia
+    concorrenza + evento append-only.
+    """
+    from database import orders_collection
+    from models.payment_schedule import RowStatus
+    from services.payment_schedule_service import (
+        InvalidTransition,
+        apply_row_transition,
+        get_schedule_for_order,
+    )
+
+    org_id = current_user["organization_id"]
+    note = ((body or {}).get("note") or "").strip()
+    if not note:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="La nota è obbligatoria (es. 'bonifico ricevuto il 4/7').",
+        )
+
+    schedule = await get_schedule_for_order(order_id, org_id)
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Nessun piano pagamenti per questo ordine.")
+
+    try:
+        updated = await apply_row_transition(
+            schedule, row_seq, RowStatus.PAID_MANUAL,
+            actor=f"operator:{current_user.get('user_id') or current_user.get('id', 'unknown')}",
+            row_updates={"manual_note": note},
+            detail={"note": note},
+        )
+    except InvalidTransition as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    await orders_collection.update_one(
+        {"id": order_id, "organization_id": org_id},
+        {"$set": {"payment_state": updated.get("payment_state")}},
+    )
+    return {"schedule": updated}

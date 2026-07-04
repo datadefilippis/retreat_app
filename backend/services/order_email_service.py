@@ -1606,6 +1606,58 @@ def _render_fulfillment_section(order: dict, locale: str, store_name: str) -> st
     )
 
 
+# ── Fase 2 S2 (retreat) — piano pagamenti nell'email di conferma ────────────
+
+async def _render_payment_schedule_section(order: dict, org_id: str, locale: str) -> str:
+    """Blocco "Il tuo piano di pagamenti" per ordini con schedule multi-riga.
+
+    Vuoto per: ordini senza schedule (non-ritiro / legacy) e piani a riga
+    unica gia' saldata (nessun piano da raccontare). Mostra righe pagate
+    (con spunta) e future (con scadenza) + nota promemoria. Nessun link di
+    pagamento qui: i link /pay/{token} viaggiano nei promemoria (S3),
+    generati freschi a ridosso della scadenza.
+    """
+    try:
+        from services.payment_schedule_service import get_schedule_for_order
+        schedule = await get_schedule_for_order(order.get("id"), org_id)
+        if not schedule:
+            return ""
+        rows = schedule.get("rows") or []
+        if len(rows) < 2:
+            return ""  # pagamento unico: niente sezione
+        currency = schedule.get("currency") or "EUR"
+
+        items_html = []
+        for row in rows:
+            status = row.get("status")
+            if status in ("cancelled",):
+                continue
+            amount = _fmt_total(row.get("amount_minor", 0) / 100.0, currency, locale)
+            if status in ("paid", "paid_manual"):
+                items_html.append(
+                    "<li>" + _t("payment_plan_paid_row", locale,
+                                label=row.get("label", ""), amount=amount) + "</li>"
+                )
+            else:
+                due = _fmt_short_date_localized((row.get("due_at") or "")[:10], locale)
+                items_html.append(
+                    "<li>" + _t("payment_plan_pending_row", locale,
+                                label=row.get("label", ""), amount=amount,
+                                due_date=due) + "</li>"
+                )
+        if not items_html:
+            return ""
+        return (
+            '<h3 style="margin:24px 0 8px;">' + _t("payment_plan_heading", locale) + "</h3>"
+            + '<ul style="margin:0 0 8px; padding-left:20px;">' + "".join(items_html) + "</ul>"
+            + '<p style="color:#666; font-size:13px;">'
+            + _t("payment_plan_reminder_note", locale) + "</p>"
+        )
+    except Exception as exc:
+        logger.warning("order_email: payment schedule section failed: %s", exc)
+        return ""
+
+
 async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
     """Send "your order has been confirmed" email to the customer.
 
@@ -1650,12 +1702,15 @@ async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
         courses_html = await _render_courses_section(order, org_id, locale)
         # Release 1 (Physical): inline shipping / pickup summary
         fulfillment_html = _render_fulfillment_section(order, locale, store_name)
+        # Fase 2 S2 (retreat): piano pagamenti (caparra pagata + scadenze)
+        payments_html = await _render_payment_schedule_section(order, org_id, locale)
 
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>
             <p>{_t("order_confirmed_body", locale)}</p>
             <p>{_t("order_confirmed_ref", locale, order_ref=order_ref)}</p>
             {summary_html}
+            {payments_html}
             {fulfillment_html}
             {tickets_html}
             {bookings_html}

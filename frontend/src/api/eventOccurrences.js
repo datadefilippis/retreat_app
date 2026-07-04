@@ -22,6 +22,9 @@ export const eventOccurrencesAPI = {
   // Dashboard uses a tiny fetch+blob helper below.
   ticketsCsvUrl: (occurrenceId) =>
     `/event-occurrences/${occurrenceId}/tickets-csv`,
+  // Fase 2 S2 (retreat) — dashboard incassi: aggregato + dettaglio per ordine
+  payments: (occurrenceId) =>
+    api.get(`/event-occurrences/${occurrenceId}/payments`),
   // G2 — atomic create: product + occurrence + tiers in one call.
   // Body: { product:{...}, occurrence:{...}, tiers:[...] }
   // Returns: { product_id, occurrence_id, tier_ids, slug }

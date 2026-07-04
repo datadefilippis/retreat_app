@@ -1,6 +1,9 @@
 import api from './client';
 
 export const ordersAPI = {
+  // Fase 2 S2 (retreat) — segna una scadenza pagata fuori piattaforma
+  markSchedulePaidManual: (orderId, rowSeq, note) =>
+    api.post(`/orders/${orderId}/schedule/${rowSeq}/mark-paid-manual`, { note }),
   list: (status, limit = 200) =>
     api.get('/orders', { params: { status, limit } }),
   get: (orderId) =>

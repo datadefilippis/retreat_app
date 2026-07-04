@@ -67,6 +67,11 @@ def effective_mode(plan: PaymentPlan, start_at: datetime, now: datetime) -> Paym
     return plan.mode
 
 
+# Sotto questa soglia Stripe rifiuta l'addebito (minimo EUR ~0,50€).
+# Una caparra sotto soglia fa collassare il piano in pagamento unico.
+MIN_CHARGE_MINOR = 50
+
+
 def compute_deposit_minor(plan: PaymentPlan, total_minor: int) -> int:
     if plan.deposit_type == DepositType.PERCENT:
         deposit = _round_half_up(total_minor * plan.deposit_value, 100)
@@ -100,6 +105,13 @@ def generate_rows(
         )], collapsed)
 
     deposit = compute_deposit_minor(plan, total_minor)
+    # Caparra o saldo sotto il minimo addebitabile Stripe → pagamento unico
+    # (una riga da 30 centesimi non è incassabile: meglio un piano onesto).
+    if deposit < MIN_CHARGE_MINOR or (total_minor - deposit) < MIN_CHARGE_MINOR:
+        return ([ScheduleRow(
+            seq=0, kind=RowKind.FULL, label="Pagamento",
+            amount_minor=total_minor, due_at=now.isoformat(),
+        )], True)
     balance_total = total_minor - deposit
     deadline = start - timedelta(days=plan.balance_due_days_before)
     rows = [ScheduleRow(
@@ -217,10 +229,10 @@ async def create_schedule_for_new_order(
     Il piano si legge da product.metadata["payment_plan"] (snapshot passato
     in event_ctx); se assente o invalido → default pagamento unico.
 
-    S1: la modalità è FORZATA a `full` — il checkout oggi incassa l'intero
-    totale in una volta, e il libro mastro deve riflettere ciò che accade
-    davvero, non ciò che accadrà. S2 (checkout caparra) rimuove il forcing
-    e attiva le modalità deposit_*. Consistenza > feature.
+    S2: le modalità deposit_* sono ATTIVE — il checkout addebita la sola
+    riga caparra (create_checkout_session è schedule-aware) e il webhook
+    fa la transizione della riga. Il forcing S1 è stato rimosso qui e il
+    test marcato è stato invertito insieme (consistenza ledger↔realtà).
     """
     if not event_ctx or not event_ctx.get("start_at"):
         return None
@@ -242,10 +254,6 @@ async def create_schedule_for_new_order(
     if plan is None:
         plan = PaymentPlan(mode=PaymentPlanMode.FULL)
 
-    # S1 forcing (vedi docstring). Rimosso in S2 col checkout caparra.
-    if plan.mode != PaymentPlanMode.FULL:
-        plan = plan.model_copy(update={"mode": PaymentPlanMode.FULL})
-
     return await create_schedule_for_order(
         order_id=order_doc["id"],
         organization_id=org_id,
@@ -256,6 +264,120 @@ async def create_schedule_for_new_order(
         currency=order_doc.get("currency") or "EUR",
         actor="system:checkout",
     )
+
+
+def aggregate_schedules(schedule_docs: List[Dict[str, Any]], now_iso: Optional[str] = None) -> Dict[str, Any]:
+    """Aggregato dashboard incassi per un ritiro (funzione PURA, testata).
+
+    incassato  = righe paid/paid_manual
+    in_arrivo  = righe pending con scadenza futura
+    in_ritardo = righe pending scadute (il job dunning le porterà a overdue,
+                 ma la dashboard non deve aspettare il job) + overdue
+    a_rischio  = righe at_risk
+    """
+    now_iso = now_iso or utc_now().isoformat()
+    agg = {
+        "orders_count": len(schedule_docs),
+        "incassato_minor": 0,
+        "in_arrivo_minor": 0,
+        "in_ritardo_minor": 0,
+        "a_rischio_minor": 0,
+        "rimborsato_minor": 0,
+        "fully_paid_orders": 0,
+        "deposit_paid_orders": 0,
+    }
+    for doc in schedule_docs:
+        state = doc.get("payment_state")
+        if state == "fully_paid":
+            agg["fully_paid_orders"] += 1
+        elif state == "deposit_paid":
+            agg["deposit_paid_orders"] += 1
+        for row in doc.get("rows") or []:
+            status = row.get("status")
+            amount = row.get("amount_minor", 0)
+            if status in ("paid", "paid_manual"):
+                agg["incassato_minor"] += amount
+            elif status == "pending":
+                if (row.get("due_at") or "") < now_iso:
+                    agg["in_ritardo_minor"] += amount
+                else:
+                    agg["in_arrivo_minor"] += amount
+            elif status in ("overdue", "processing"):
+                agg["in_ritardo_minor"] += amount if status == "overdue" else 0
+                if status == "processing":
+                    # session emessa non conclusa: è denaro atteso
+                    if (row.get("due_at") or "") < now_iso:
+                        agg["in_ritardo_minor"] += amount
+                    else:
+                        agg["in_arrivo_minor"] += amount
+            elif status == "at_risk":
+                agg["a_rischio_minor"] += amount
+            if row.get("refund"):
+                agg["rimborsato_minor"] += (row["refund"] or {}).get("amount_minor", 0)
+    return agg
+
+
+async def get_schedule_for_order(order_id: str, organization_id: str) -> Optional[Dict[str, Any]]:
+    """Schedule corrente di un ordine (None se assente — ordini non-ritiro)."""
+    schedules, _ = _collections()
+    return await schedules.find_one(
+        {"order_id": order_id, "organization_id": organization_id}, {"_id": 0},
+    )
+
+
+def pending_charge_row(schedule_doc: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """La riga da addebitare ADESSO al checkout, se il piano lo prevede.
+
+    Ritorna la prima riga (seq 0) quando è una caparra in stato addebitabile
+    (pending o processing — processing = session precedente abbandonata,
+    l'idempotency key Stripe collassa i duplicati). Per piani `full` ritorna
+    None: il checkout classico addebita l'intero totale, zero deviazioni.
+    """
+    if not schedule_doc:
+        return None
+    rows = schedule_doc.get("rows") or []
+    if not rows:
+        return None
+    first = rows[0]
+    if first.get("kind") != RowKind.DEPOSIT.value:
+        return None
+    if first.get("status") not in (RowStatus.PENDING.value, RowStatus.PROCESSING.value):
+        return None
+    return first
+
+
+async def apply_stripe_payment_to_schedule(
+    order_id: str,
+    organization_id: str,
+    row_seq: int,
+    *,
+    stripe_payment_intent: Optional[str],
+    stripe_session_id: Optional[str],
+) -> Optional[Dict[str, Any]]:
+    """Transizione riga → PAID dal webhook Stripe. Idempotente: se la riga
+    non è più in uno stato pagabile (webhook doppio), logga e ritorna lo
+    schedule invariato — MAI un doppio incasso a libro."""
+    schedule_doc = await get_schedule_for_order(order_id, organization_id)
+    if not schedule_doc:
+        return None
+    rows = schedule_doc.get("rows") or []
+    row = next((r for r in rows if r.get("seq") == row_seq), None)
+    if row is None:
+        logger.error("apply_stripe_payment: riga %s inesistente (order %s)",
+                     row_seq, order_id)
+        return schedule_doc
+    try:
+        return await apply_row_transition(
+            schedule_doc, row_seq, RowStatus.PAID,
+            actor="webhook:stripe",
+            row_updates={
+                "stripe_payment_intent": stripe_payment_intent,
+                "stripe_session_id": stripe_session_id,
+            },
+        )
+    except InvalidTransition as exc:
+        logger.info("apply_stripe_payment: transizione ignorata (%s)", exc)
+        return schedule_doc
 
 
 class InvalidTransition(Exception):

@@ -1367,3 +1367,69 @@ async def upload_occurrence_cover_image(
         {"$set": {"cover_image_url": cover_image_url, "updated_at": utc_now().isoformat()}},
     )
     return {"cover_image_url": cover_image_url, "size": len(contents)}
+
+
+# ── Fase 2 S2 (retreat) — dashboard incassi per ritiro ──────────────────────
+
+@router.get("/{occurrence_id}/payments")
+@limiter.limit("60/minute")
+async def get_occurrence_payments(
+    occurrence_id: str,
+    request: Request,
+    current_user: dict = Depends(get_verified_user),
+):
+    """Dashboard incassi del ritiro: aggregato (incassato / in arrivo /
+    in ritardo / a rischio) + dettaglio per ordine con stato di ogni
+    scadenza. Fonte di verità: payment_schedules; i nomi cliente vengono
+    dagli ordini (snapshot)."""
+    from database import db, orders_collection
+    from services.payment_schedule_service import aggregate_schedules
+
+    org_id = current_user["organization_id"]
+    schedules = await db.payment_schedules.find(
+        {"organization_id": org_id, "occurrence_id": occurrence_id},
+        {"_id": 0},
+    ).to_list(1000)
+
+    order_ids = [s["order_id"] for s in schedules]
+    orders = await orders_collection.find(
+        {"organization_id": org_id, "id": {"$in": order_ids}},
+        {"_id": 0, "id": 1, "customer_name": 1, "order_number": 1, "status": 1},
+    ).to_list(1000)
+    order_by_id = {o["id"]: o for o in orders}
+
+    # Carrelli abbandonati (ordine draft, nessun incasso) fuori dalle
+    # metriche: una caparra mai pagata di una bozza non è un "ritardo".
+    live = [
+        s for s in schedules
+        if not (
+            order_by_id.get(s["order_id"], {}).get("status") == "draft"
+            and s.get("payment_state") in (None, "none")
+        )
+    ]
+
+    detail = []
+    for s in live:
+        o = order_by_id.get(s["order_id"], {})
+        detail.append({
+            "order_id": s["order_id"],
+            "order_number": o.get("order_number"),
+            "customer_name": o.get("customer_name"),
+            "order_status": o.get("status"),
+            "payment_state": s.get("payment_state"),
+            "currency": s.get("currency"),
+            "totals": s.get("totals"),
+            "rows": [
+                {k: r.get(k) for k in (
+                    "seq", "kind", "label", "amount_minor", "due_at",
+                    "status", "paid_at", "manual_note")}
+                for r in (s.get("rows") or [])
+            ],
+        })
+
+    return {
+        "occurrence_id": occurrence_id,
+        "summary": aggregate_schedules(live),
+        "abandoned_drafts": len(schedules) - len(live),
+        "orders": detail,
+    }
