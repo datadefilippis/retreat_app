@@ -117,6 +117,9 @@ async def create_order(
 
     # Build lines with product snapshots
     lines = []
+    # Fase 2 (retreat): contesto della prima riga event_ticket con data —
+    # serve per generare il PaymentSchedule (libro mastro) post-insert.
+    first_event_ctx = None
     for item in data.items:
         product = await product_repository.find_by_id(item.product_id, org_id)
         if not product:
@@ -174,6 +177,15 @@ async def create_order(
                         if tp is not None:
                             if source == "storefront" or item.unit_price is None:
                                 unit_price = float(tp)
+
+                # Fase 2 (retreat): snapshot del piano di pagamento del
+                # prodotto per lo schedule. Prima riga evento con data vince.
+                if occurrence_id and occurrence_start_at and first_event_ctx is None:
+                    first_event_ctx = {
+                        "occurrence_id": occurrence_id,
+                        "start_at": occurrence_start_at,
+                        "plan_raw": (getattr(product, "metadata", None) or {}).get("payment_plan"),
+                    }
 
         # Rental duration multiplier: compute from date range + rental_unit
         item_type = getattr(product, 'item_type', None) or 'physical'
@@ -440,6 +452,20 @@ async def create_order(
         raise
 
     logger.info("order_service: created draft order %s for org=%s", order.id, org_id)
+
+    # Fase 2 (retreat): l'ordine-ritiro nasce col suo libro mastro pagamenti.
+    # S1: best-effort (lo schedule non guida ancora gli incassi); da S2, con
+    # il checkout caparra, un fallimento qui diventa bloccante.
+    if first_event_ctx:
+        try:
+            from services.payment_schedule_service import create_schedule_for_new_order
+            await create_schedule_for_new_order(doc, org_id, first_event_ctx)
+        except Exception as exc:
+            logger.error(
+                "payment schedule creation failed for order %s: %s",
+                doc.get("id"), exc,
+            )
+
     return doc
 
 

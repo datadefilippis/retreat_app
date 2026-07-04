@@ -66,11 +66,27 @@ import { showImageUploadFailedToast } from '../../lib/imageUploadFailedToast';
 // in the JSON catalog.
 
 const TABS = [
-  { key: 'base',    n: 1 },
-  { key: 'where',   n: 2 },
-  { key: 'tickets', n: 3 },
-  { key: 'publish', n: 4 },
+  { key: 'base',     n: 1 },
+  { key: 'where',    n: 2 },
+  { key: 'tickets',  n: 3 },
+  { key: 'payments', n: 4 },   // Fase 2 (retreat) — "Come incassi"
+  { key: 'publish',  n: 5 },
 ];
+
+// Fase 2 — default del piano di pagamento, allineati al backend
+// (models/payment_plan.py: stessi default, stessa policy).
+const DEFAULT_PAYMENT_PLAN = {
+  mode: 'full',
+  deposit_type: 'percent',
+  deposit_value: 30,
+  balance_due_days_before: 30,
+  installments_count: 3,
+  cancellation_policy: [
+    { days_before: 60, refund_percent: 100 },
+    { days_before: 30, refund_percent: 50 },
+    { days_before: 0, refund_percent: 0 },
+  ],
+};
 
 
 // ── Validation helpers ────────────────────────────────────────────────────
@@ -135,6 +151,41 @@ function validateTiers(tiers, occCapacity, t) {
   }
   errors.rows = rowErrors;
   if (capWarning) errors.warning = capWarning;
+  return errors;
+}
+
+// Fase 2 — validazione piano di pagamento (specchia models/payment_plan.py:
+// stesse soglie, così il 422 server non arriva mai a sorpresa).
+function validatePayments(plan, t) {
+  const errors = {};
+  if (plan.mode === 'full') return errors;
+  const v = Number(plan.deposit_value);
+  if (plan.deposit_type === 'percent') {
+    if (!Number.isFinite(v) || v < 1 || v > 90) {
+      errors.deposit_value = t('wizards.event.payments.validation.depositPercentRange');
+    }
+  } else if (!Number.isFinite(v) || v <= 0) {
+    errors.deposit_value = t('wizards.event.payments.validation.depositFixedPositive');
+  }
+  const days = Number(plan.balance_due_days_before);
+  if (!Number.isFinite(days) || days < 1 || days > 180) {
+    errors.balance_due_days_before = t('wizards.event.payments.validation.balanceDaysRange');
+  }
+  if (plan.mode === 'deposit_installments') {
+    const n = Number(plan.installments_count);
+    if (!Number.isFinite(n) || n < 2 || n > 6) {
+      errors.installments_count = t('wizards.event.payments.validation.installmentsRange');
+    }
+  }
+  // Policy: giorni decrescenti, percentuali non crescenti.
+  const tiers = plan.cancellation_policy || [];
+  for (let i = 1; i < tiers.length; i++) {
+    if (Number(tiers[i].days_before) >= Number(tiers[i - 1].days_before)
+        || Number(tiers[i].refund_percent) > Number(tiers[i - 1].refund_percent)) {
+      errors.cancellation_policy = t('wizards.event.payments.validation.policyOrder');
+      break;
+    }
+  }
   return errors;
 }
 
@@ -243,6 +294,20 @@ export default function EventWizard() {
   );
 
   // Tab 4 — publish + store assignment
+  // Fase 2 — piano di pagamento ("Come incassi"). Idratato dal prefill
+  // (duplica ritiro) quando presente, altrimenti default allineati al BE.
+  // UNITÀ: nello stato UI deposit_value è in EURO quando fixed (l'operatore
+  // ragiona in euro); il backend lo vuole in CENTESIMI — conversione ai
+  // confini (qui in ingresso, nel payload in uscita).
+  const [paymentPlan, setPaymentPlan] = useState(() => {
+    const incoming = location.state?.prefillData?.product?.metadata?.payment_plan || {};
+    const merged = { ...DEFAULT_PAYMENT_PLAN, ...incoming };
+    if (incoming.deposit_type === 'fixed' && incoming.deposit_value) {
+      merged.deposit_value = incoming.deposit_value / 100;   // cent → EUR
+    }
+    return merged;
+  });
+
   const [longDescription, setLongDescription] = useState(() =>
     prefillRef.current?.occurrence?.long_description || ''
   );
@@ -336,15 +401,19 @@ export default function EventWizard() {
   const errorsWhere = useMemo(() => validateWhere(where, t), [where, t]);
   const errorsTiers = useMemo(() => validateTiers(tiers, where.capacity, t), [tiers, where.capacity, t]);
 
+  const errorsPayments = useMemo(() => validatePayments(paymentPlan, t), [paymentPlan, t]);
+
   const baseValid = Object.keys(errorsBase).length === 0;
   const whereValid = Object.keys(errorsWhere).length === 0;
   const tiersValid = errorsTiers.rows.every(r => !r || Object.keys(r).length === 0);
-  const allValid = baseValid && whereValid && tiersValid;
+  const paymentsValid = Object.keys(errorsPayments).length === 0;
+  const allValid = baseValid && whereValid && tiersValid && paymentsValid;
 
   const tabHasErrors = {
     base: !baseValid,
     where: !whereValid,
     tickets: !tiersValid,
+    payments: !paymentsValid,
     publish: !allValid,
   };
 
@@ -446,6 +515,22 @@ export default function EventWizard() {
             // F4 (Onda 11) — optional per-event T&C override (markdown).
             // Empty → fallback to store-level T&C at checkout.
             terms_content: termsContent?.trim() || null,
+            // Fase 2 (retreat) — piano di pagamento + policy cancellazione.
+            // Sempre presente (anche mode=full: la policy guida i rimborsi).
+            // Validato server-side nel wizard endpoint (422 se malformato).
+            payment_plan: {
+              ...paymentPlan,
+              // fixed: EUR (UI) → centesimi (backend); percent: intero puro
+              deposit_value: paymentPlan.deposit_type === 'fixed'
+                ? Math.round(Number(paymentPlan.deposit_value) * 100)
+                : Number(paymentPlan.deposit_value),
+              balance_due_days_before: Number(paymentPlan.balance_due_days_before),
+              installments_count: Number(paymentPlan.installments_count),
+              cancellation_policy: paymentPlan.cancellation_policy.map(p => ({
+                days_before: Number(p.days_before),
+                refund_percent: Number(p.refund_percent),
+              })),
+            },
           },
           // Wave 1 (W1.S5/Phase 2.4) — additive cost composition. Null
           // when unconfigured. Backend resolver returns margin=N/D for
@@ -1138,7 +1223,208 @@ export default function EventWizard() {
           </div>
         )}
 
-        {/* ── TAB 4: Pubblica ──────────────────────────────────────── */}
+        {/* ── TAB 4: Come incassi (Fase 2 retreat) ─────────────────── */}
+        {activeTab === 'payments' && (
+          <div className="space-y-4">
+            {/* Modalità */}
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <p className="text-sm font-semibold text-gray-900 mb-3">
+                {t('wizards.event.payments.modeHeading')}
+              </p>
+              <div className="space-y-2">
+                {['full', 'deposit_balance', 'deposit_installments'].map(m => (
+                  <label
+                    key={m}
+                    className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                      paymentPlan.mode === m
+                        ? 'border-gray-900 bg-gray-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment-mode"
+                      checked={paymentPlan.mode === m}
+                      onChange={() => setPaymentPlan(p => ({ ...p, mode: m }))}
+                      className="mt-0.5 h-4 w-4 border-gray-300 text-gray-900 focus:ring-gray-900"
+                    />
+                    <div className="flex-1">
+                      <span className="block text-sm font-semibold text-gray-900">
+                        {t(`wizards.event.payments.modes.${m}.title`)}
+                      </span>
+                      <span className="block text-xs text-gray-500 mt-0.5">
+                        {t(`wizards.event.payments.modes.${m}.desc`)}
+                      </span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Config caparra/saldo/rate */}
+            {paymentPlan.mode !== 'full' && (
+              <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      {t('wizards.event.payments.depositType')}
+                    </label>
+                    <select
+                      value={paymentPlan.deposit_type}
+                      onChange={e => setPaymentPlan(p => ({ ...p, deposit_type: e.target.value }))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:ring-gray-900"
+                    >
+                      <option value="percent">{t('wizards.event.payments.depositPercent')}</option>
+                      <option value="fixed">{t('wizards.event.payments.depositFixed')}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      {paymentPlan.deposit_type === 'percent'
+                        ? t('wizards.event.payments.depositValuePercent')
+                        : t('wizards.event.payments.depositValueFixed')}
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max={paymentPlan.deposit_type === 'percent' ? 90 : undefined}
+                      value={paymentPlan.deposit_value}
+                      onChange={e => setPaymentPlan(p => ({ ...p, deposit_value: e.target.value }))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:ring-gray-900"
+                    />
+                    {errorsPayments.deposit_value && (
+                      <p className="text-xs text-red-600 mt-1">{errorsPayments.deposit_value}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      {t('wizards.event.payments.balanceDays')}
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="180"
+                      value={paymentPlan.balance_due_days_before}
+                      onChange={e => setPaymentPlan(p => ({ ...p, balance_due_days_before: e.target.value }))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:ring-gray-900"
+                    />
+                    {errorsPayments.balance_due_days_before && (
+                      <p className="text-xs text-red-600 mt-1">{errorsPayments.balance_due_days_before}</p>
+                    )}
+                  </div>
+                </div>
+                {paymentPlan.mode === 'deposit_installments' && (
+                  <div className="w-full sm:w-1/3">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      {t('wizards.event.payments.installmentsCount')}
+                    </label>
+                    <select
+                      value={paymentPlan.installments_count}
+                      onChange={e => setPaymentPlan(p => ({ ...p, installments_count: e.target.value }))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:ring-gray-900"
+                    >
+                      {[2, 3, 4, 5, 6].map(n => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">
+                  {t('wizards.event.payments.lastMinuteNote', { days: paymentPlan.balance_due_days_before || 30 })}
+                </p>
+              </div>
+            )}
+
+            {/* Policy di cancellazione */}
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <p className="text-sm font-semibold text-gray-900">
+                {t('wizards.event.payments.policyHeading')}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5 mb-3">
+                {t('wizards.event.payments.policyDesc')}
+              </p>
+              <div className="space-y-2">
+                {paymentPlan.cancellation_policy.map((tier, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-500 w-28 shrink-0">
+                      {idx === paymentPlan.cancellation_policy.length - 1
+                        ? t('wizards.event.payments.policyAfter')
+                        : t('wizards.event.payments.policyUpTo')}
+                    </span>
+                    {idx < paymentPlan.cancellation_policy.length - 1 && (
+                      <input
+                        type="number"
+                        min="0"
+                        value={tier.days_before}
+                        onChange={e => setPaymentPlan(p => {
+                          const cp = p.cancellation_policy.map((x, i) =>
+                            i === idx ? { ...x, days_before: e.target.value } : x);
+                          return { ...p, cancellation_policy: cp };
+                        })}
+                        className="w-20 rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+                      />
+                    )}
+                    <span className="text-gray-500">
+                      {idx < paymentPlan.cancellation_policy.length - 1
+                        ? t('wizards.event.payments.policyDaysBefore')
+                        : ''}
+                    </span>
+                    <span className="text-gray-500 ml-auto">{t('wizards.event.payments.policyRefund')}</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={tier.refund_percent}
+                      onChange={e => setPaymentPlan(p => {
+                        const cp = p.cancellation_policy.map((x, i) =>
+                          i === idx ? { ...x, refund_percent: e.target.value } : x);
+                        return { ...p, cancellation_policy: cp };
+                      })}
+                      className="w-20 rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+                    />
+                    <span className="text-gray-500">%</span>
+                  </div>
+                ))}
+              </div>
+              {errorsPayments.cancellation_policy && (
+                <p className="text-xs text-red-600 mt-2">{errorsPayments.cancellation_policy}</p>
+              )}
+            </div>
+
+            {/* Anteprima live */}
+            {(() => {
+              const sample = Number(tiers?.[0]?.price) || Number(base.unit_price) || 0;
+              if (!sample || paymentPlan.mode === 'full' || !paymentsValid) return null;
+              const dep = paymentPlan.deposit_type === 'percent'
+                ? Math.round(sample * Number(paymentPlan.deposit_value)) / 100
+                : Number(paymentPlan.deposit_value);
+              const rest = Math.max(0, sample - dep);
+              const fmt = v => v.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+              let deadline = null;
+              if (where.start_at) {
+                const d = new Date(where.start_at);
+                d.setDate(d.getDate() - Number(paymentPlan.balance_due_days_before || 30));
+                deadline = d.toLocaleDateString('it-IT');
+              }
+              return (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                  <span className="font-semibold">{t('wizards.event.payments.previewTitle')}</span>{' '}
+                  {paymentPlan.mode === 'deposit_balance'
+                    ? t('wizards.event.payments.previewBalance', {
+                        sample: fmt(sample), deposit: fmt(dep), rest: fmt(rest),
+                        deadline: deadline || '—',
+                      })
+                    : t('wizards.event.payments.previewInstallments', {
+                        sample: fmt(sample), deposit: fmt(dep), rest: fmt(rest),
+                        count: paymentPlan.installments_count, deadline: deadline || '—',
+                      })}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* ── TAB 5: Pubblica ──────────────────────────────────────── */}
         {activeTab === 'publish' && (
           <div className="space-y-4">
             <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
