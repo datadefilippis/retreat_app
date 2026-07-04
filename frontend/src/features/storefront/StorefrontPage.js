@@ -21,6 +21,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { effectivePlan } from './lib/paymentPlan';
 import { storefrontAPI } from '../../api/storefront';
 // Wave GDPR-Commerce CG-5 — fetch the merchant's legal status to know
 // whether to render the GDPR consent block on checkout.
@@ -120,7 +121,7 @@ function TrashIcon({ size = 14 }) {
 }
 
 
-function OrderSummary({ items, products, selectedOccurrences, selectedTiers, rentalDates, bookingSlots, currency, shipping, onRemove, couponDiscount = 0, couponLabel = null }) {
+function OrderSummary({ items, products, selectedOccurrences, selectedTiers, rentalDates, bookingSlots, currency, shipping, onRemove, onQtyChange, couponDiscount = 0, couponLabel = null }) {
   const { t, i18n } = useTranslation('storefront');
   if (items.length === 0) return null;
   const hasInquiry = items.some(it => products.find(pp => pp.id === it.product_id)?.price_mode === 'inquiry');
@@ -184,6 +185,24 @@ function OrderSummary({ items, products, selectedOccurrences, selectedTiers, ren
               <div className="flex justify-between items-start gap-2">
                 <span className="flex-1 min-w-0">{lineLabel}{tier ? ` — ${tier.label}` : (serviceOption ? ` — ${serviceOption.label}` : '')}</span>
                 <span className="font-medium whitespace-nowrap">{isInq ? t('storefront:summary.onRequest') : fmtPrice(price * it.quantity * rentalMult, currency)}</span>
+                {/* Fix qty (4/7/2026) — una persona prenota per 2: la
+                    quantità si corregge QUI, senza tornare alla landing.
+                    Solo per righe a quantità semplice (no tier/rental/
+                    slot: quelle hanno i loro selettori dedicati). */}
+                {onQtyChange && !it.ticket_tier_id && !it.service_option_id
+                  && ['event_ticket', 'physical', 'digital'].includes(p?.item_type) && (
+                  <span className="shrink-0 inline-flex items-center border rounded-md overflow-hidden"
+                        aria-label={t('storefront:summary.qtyAria', { name: p?.name })}>
+                    <button type="button"
+                      onClick={() => onQtyChange(it.product_id, Math.max(1, it.quantity - 1))}
+                      className="px-1.5 py-0.5 text-xs hover:bg-gray-100 disabled:opacity-40"
+                      disabled={it.quantity <= 1}>−</button>
+                    <span className="px-1.5 text-xs font-semibold tabular-nums">{it.quantity}</span>
+                    <button type="button"
+                      onClick={() => onQtyChange(it.product_id, Math.min(99, it.quantity + 1))}
+                      className="px-1.5 py-0.5 text-xs hover:bg-gray-100">+</button>
+                  </span>
+                )}
                 {onRemove && (
                   <button
                     type="button"
@@ -274,6 +293,41 @@ function OrderSummary({ items, products, selectedOccurrences, selectedTiers, ren
           currency,
         )}</span>
       </div>
+      {/* Fix caparra (4/7/2026) — se l'ordine ha un piano acconto, dirlo
+          QUI: senza questa riga il cliente vede "Totale 1600€" e crede di
+          pagarlo subito (Stripe chiede la caparra giusta, ma la fiducia è
+          già persa). Stesso estimator della landing (effectivePlan) sulla
+          stessa base del backend: totale ordine, piano della prima riga
+          evento (create_schedule_for_new_order fa identico). */}
+      {!hasInquiry && (() => {
+        const evIt = items.find(it => {
+          const p = products.find(pp => pp.id === it.product_id);
+          return p?.item_type === 'event_ticket' && p?.payment_plan && selectedOccurrences?.[it.product_id];
+        });
+        if (!evIt) return null;
+        const p = products.find(pp => pp.id === evIt.product_id);
+        const occ = selectedOccurrences[evIt.product_id];
+        const netTotal = Math.max(0, total + (shipping?.active ? shipping.cost : 0) - (couponDiscount || 0));
+        const ep = effectivePlan(p.payment_plan, netTotal, occ?.start_at);
+        if (ep.mode !== 'deposit') return null;
+        const dueDate = ep.balanceDueDate
+          ? ep.balanceDueDate.toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' })
+          : '';
+        return (
+          <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-200 p-3">
+            <div className="flex justify-between items-baseline font-bold text-emerald-800">
+              <span>{t('storefront:summary.depositToday')}</span>
+              <span>{fmtPrice(ep.depositMinor / 100, currency)}</span>
+            </div>
+            <p className="text-xs text-emerald-700 mt-1">
+              {t('storefront:summary.depositBalance', {
+                amount: fmtPrice(ep.balanceMinor / 100, currency),
+                date: dueDate,
+              })}
+            </p>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -2112,6 +2166,7 @@ export default function StorefrontPage() {
                 currency={catalog.currency}
                 shipping={shippingSummary}
                 onRemove={removeFromCart}
+                onQtyChange={(pid, q) => setQuantities(prev => ({ ...prev, [pid]: q }))}
                 couponDiscount={couponValidationState?.discountAmount || 0}
                 couponLabel={couponValidationState?.code || null}
               />

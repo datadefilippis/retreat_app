@@ -37,10 +37,10 @@
   "transactionMode": {
     "direct": {
       "headerCta": "Bestellen",
-      "modalTitle": "Bestellung absenden",
-      "modalDesc": "Ihre Bestellung wird umgehend bearbeitet. Sie werden für die Details kontaktiert.",
-      "submitBtn": "Bestellung absenden",
-      "inquiryToggle": "Info anfordern"
+      "modalTitle": "Bestellung abschließen",
+      "modalDesc": "Nach der Bestätigung wirst du zur sicheren Kartenzahlung weitergeleitet (Stripe).",
+      "submitBtn": "Zur Zahlung",
+      "inquiryToggle": "Info anfragen"
     },
     "request": {
       "headerCta": "Bestellung anfragen",
@@ -124,7 +124,10 @@
     "shippingFree": "GRATIS",
     "addMoreForFree": "{{amount}} hinzufügen für kostenlosen Versand.",
     "subtotalEstimate": "Geschätzte Zwischensumme",
-    "totalEstimate": "Geschätzte Summe"
+    "totalEstimate": "Geschätzte Summe",
+    "depositToday": "Heute zahlst du nur die Anzahlung",
+    "depositBalance": "Restbetrag von {{amount}} fällig bis {{date}} — wir senden dir den Zahlungslink per E-Mail",
+    "qtyAria": "Menge für {{name}}"
   },
   "errors": {
     "verifyUrl": "Überprüfen Sie die Adresse und versuchen Sie es erneut.",

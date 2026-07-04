@@ -37,10 +37,10 @@
   "transactionMode": {
     "direct": {
       "headerCta": "Order",
-      "modalTitle": "Place order",
-      "modalDesc": "Your order will be processed promptly. You will be contacted for details.",
-      "submitBtn": "Place order",
-      "inquiryToggle": "Request info"
+      "modalTitle": "Complete your order",
+      "modalDesc": "After confirming you will be redirected to secure card payment (Stripe).",
+      "submitBtn": "Go to payment",
+      "inquiryToggle": "Ask for info"
     },
     "request": {
       "headerCta": "Request order",
@@ -124,7 +124,10 @@
     "shippingFree": "FREE",
     "addMoreForFree": "Add {{amount}} for free shipping.",
     "subtotalEstimate": "Estimated subtotal",
-    "totalEstimate": "Estimated total"
+    "totalEstimate": "Estimated total",
+    "depositToday": "Today you only pay the deposit",
+    "depositBalance": "Balance of {{amount}} due by {{date}} — we'll email you the payment link",
+    "qtyAria": "Quantity for {{name}}"
   },
   "errors": {
     "verifyUrl": "Check the URL and try again.",

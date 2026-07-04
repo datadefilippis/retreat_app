@@ -37,9 +37,9 @@
   "transactionMode": {
     "direct": {
       "headerCta": "Commander",
-      "modalTitle": "Passer commande",
-      "modalDesc": "Votre commande sera traitée rapidement. Vous serez contacté pour les détails.",
-      "submitBtn": "Passer commande",
+      "modalTitle": "Finaliser la commande",
+      "modalDesc": "Après confirmation, vous serez redirigé vers le paiement sécurisé par carte (Stripe).",
+      "submitBtn": "Aller au paiement",
       "inquiryToggle": "Demander des infos"
     },
     "request": {
@@ -124,7 +124,10 @@
     "shippingFree": "GRATUIT",
     "addMoreForFree": "Ajoutez {{amount}} pour la livraison gratuite.",
     "subtotalEstimate": "Sous-total estimé",
-    "totalEstimate": "Total estimé"
+    "totalEstimate": "Total estimé",
+    "depositToday": "Aujourd'hui vous ne payez que l'acompte",
+    "depositBalance": "Solde de {{amount}} à régler avant le {{date}} — nous vous enverrons le lien de paiement par e-mail",
+    "qtyAria": "Quantité pour {{name}}"
   },
   "errors": {
     "verifyUrl": "Vérifiez l'adresse et réessayez.",
