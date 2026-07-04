@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import OperatorHome from './OperatorHome';
 
 // Map module_key → { dataHref, moduleHref }
 const MODULE_META = {
@@ -327,7 +328,12 @@ export const DashboardPage = () => {
         />
       )}
 
-      <div className="p-4 md:p-8 animate-fade-in">
+      <div className="p-4 md:p-8 animate-fade-in space-y-6">
+        {/* D3 — home operatore: sempre in testa, zero configurazione.
+            I widget pinnati / empty states dei moduli restano sotto come
+            personalizzazione avanzata. */}
+        <OperatorHome />
+
         {/* Custom date range inputs */}
         {period === 'custom' && hasPinnedWidgets && (
           <div className="flex flex-wrap items-center gap-2 p-3 mb-6 bg-muted/50 rounded-lg">

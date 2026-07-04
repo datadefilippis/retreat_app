@@ -415,6 +415,40 @@ async def price_preview(
     return result.to_dict()
 
 
+@router.get("/payments-overview")
+async def payments_overview(current_user: dict = Depends(get_verified_user)):
+    """D3 dashboard operatore — aggregato incassi org-wide dal libro
+    mastro (payment_schedules): incassato / in arrivo / in ritardo /
+    a rischio. Riusa aggregate_schedules (pura, testata); una query,
+    proiezione minima, nessuna pipeline."""
+    from database import db
+    from services.payment_schedule_service import aggregate_schedules
+
+    org_id = current_user["organization_id"]
+    schedules = await db.payment_schedules.find(
+        {"organization_id": org_id},
+        {"_id": 0, "payment_state": 1, "rows.status": 1,
+         "rows.amount_minor": 1, "rows.due_at": 1},
+    ).to_list(2000)
+    agg = aggregate_schedules(schedules)
+    # Conteggi "da fare" per la card azioni della home operatore.
+    # review_state NON e' persistito: e' derivato al volo (come nella
+    # lista ordini) da derive_review_info — stessa semantica della chip
+    # "Da gestire". Ordini aperti soltanto: bozze e confermati.
+    from database import orders_collection
+    from services.commerce_rules import derive_review_info
+    open_orders = await orders_collection.find(
+        {"organization_id": org_id, "status": {"$in": ["draft", "confirmed"]}},
+        {"_id": 0, "status": 1, "payment_intent": 1, "payment_status": 1,
+         "source": 1, "total": 1, "items": 1, "fulfillment_status": 1},
+    ).to_list(2000)
+    agg["needs_action_count"] = sum(
+        1 for o in open_orders if (derive_review_info(o) or {}).get("state")
+    )
+    agg["draft_count"] = sum(1 for o in open_orders if o.get("status") == "draft")
+    return agg
+
+
 @router.get("/{order_id}")
 async def get_order(
     order_id: str,
