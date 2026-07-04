@@ -1253,9 +1253,142 @@ async def mark_order_paid(org_id: str, order_id: str) -> dict:
     await order_repository.update(order_id, org_id, updates)
     await sync_payment_to_sales(org_id, order_id, OrderPaymentStatus.PAID.value)
 
+    # WS-1.4 consolidamento — coerenza col libro mastro: "ordine pagato"
+    # con scadenze ancora aperte sarebbe una divergenza (dashboard incassi
+    # che sollecita un ordine già segnato pagato). Le righe pagabili
+    # diventano paid_manual con nota di sistema.
+    try:
+        from models.payment_schedule import RowStatus
+        from services.payment_schedule_service import (
+            InvalidTransition, apply_row_transition, get_schedule_for_order,
+        )
+        schedule = await get_schedule_for_order(order_id, org_id)
+        if schedule:
+            payable = {"pending", "processing", "overdue", "at_risk"}
+            for row in list(schedule.get("rows") or []):
+                if row.get("status") in payable:
+                    try:
+                        schedule = await apply_row_transition(
+                            schedule, row["seq"], RowStatus.PAID_MANUAL,
+                            actor="operator:mark-paid",
+                            action="row_paid_manual",
+                            row_updates={"manual_note":
+                                         "segnato pagato a livello ordine"},
+                            detail={"via": "mark_order_paid"},
+                        )
+                    except InvalidTransition:
+                        pass
+            await order_repository.update(order_id, org_id, {
+                "payment_state": schedule.get("payment_state"),
+            })
+    except Exception:
+        logger.exception("mark_paid: sync schedule fallito per %s", order_id)
+
     order.update(updates)
     logger.info("order_service: marked paid order %s for org=%s", order_id, org_id)
     return order
+
+
+async def settle_order_manual(
+    org_id: str,
+    order_id: str,
+    *,
+    actor: str,
+    note: str,
+    scope: str = "full",          # "full" | "deposit"
+) -> dict:
+    """Consolidamento WS-1.1 — "il cliente ha pagato fuori piattaforma".
+
+    IL caso reale italiano: prenotazione online (ordine draft + link Stripe)
+    ma pagamento con bonifico. Prima di questa funzione l'ordine restava in
+    limbo (mark-paid rifiuta i draft, skip_payment_check non era esposto).
+
+    In UN'azione, con nota obbligatoria e attore tracciato:
+      1. se draft → conferma con skip_payment_check=True (posti riservati,
+         biglietti emessi, email cliente — la cascata esistente);
+      2. payment_intent → collected (il link Stripe non serve più);
+      3. schedule: righe pagabili → paid_manual (scope "deposit" = solo la
+         prima riga: bonifico della caparra, il saldo prosegue col flusso
+         normale di promemoria; "full" = tutte);
+      4. scope full → payment_status=paid + sync SalesRecords.
+
+    Fee piattaforma NON applicata (incasso fuori Stripe — regola di
+    business della Fase 2).
+    """
+    from repositories import order_repository
+    from services.payment_sync import sync_payment_to_sales
+
+    if not note or not note.strip():
+        raise ValueError("La nota è obbligatoria (es. 'bonifico ricevuto il 5/7')")
+    if scope not in ("full", "deposit"):
+        raise ValueError("scope deve essere 'full' o 'deposit'")
+
+    order = await order_repository.find_one(order_id, org_id)
+    if not order:
+        raise ValueError("Order not found")
+    if order.get("status") == "cancelled":
+        raise ValueError("Ordine annullato: non registrabile come incassato")
+
+    note = note.strip()
+
+    # 1. Conferma (se serve) — riserva posti, emette biglietti, email.
+    if order.get("status") == "draft":
+        order = await confirm_order(org_id, order_id, skip_payment_check=True)
+
+    # 2. Il link Stripe non deve più incassare nulla.
+    now = utc_now()
+    await order_repository.update(order_id, org_id, {
+        "payment_intent": "collected",
+        "updated_at": now,
+    })
+
+    # 3. Righe schedule → paid_manual (quando esiste un piano).
+    settled_rows = []
+    try:
+        from models.payment_schedule import RowStatus
+        from services.payment_schedule_service import (
+            InvalidTransition, apply_row_transition, get_schedule_for_order,
+        )
+        schedule = await get_schedule_for_order(order_id, org_id)
+        if schedule:
+            payable = {"pending", "processing", "overdue", "at_risk"}
+            for row in list(schedule.get("rows") or []):
+                if row.get("status") not in payable:
+                    continue
+                if scope == "deposit" and row.get("seq", 0) != 0:
+                    continue
+                try:
+                    schedule = await apply_row_transition(
+                        schedule, row["seq"], RowStatus.PAID_MANUAL,
+                        actor=actor, action="row_paid_manual",
+                        row_updates={"manual_note": note},
+                        detail={"via": "settle_order_manual", "scope": scope},
+                    )
+                    settled_rows.append(row["seq"])
+                except InvalidTransition as exc:
+                    logger.warning("settle_manual: riga %s saltata: %s",
+                                   row.get("seq"), exc)
+            await order_repository.update(order_id, org_id, {
+                "payment_state": schedule.get("payment_state"),
+            })
+    except Exception:
+        logger.exception("settle_manual: schedule handling fallito per %s", order_id)
+
+    # 4. Saldato per intero → ordine pagato + SalesRecords.
+    if scope == "full":
+        await order_repository.update(order_id, org_id, {
+            "payment_status": OrderPaymentStatus.PAID.value,
+            "updated_at": utc_now(),
+        })
+        await sync_payment_to_sales(org_id, order_id, OrderPaymentStatus.PAID.value)
+
+    updated = await order_repository.find_one(order_id, org_id)
+    logger.info(
+        "order_service: settle_manual order=%s scope=%s rows=%s actor=%s",
+        order_id, scope, settled_rows, actor,
+    )
+    updated["_settled_rows"] = settled_rows
+    return updated
 
 
 async def mark_order_unpaid(org_id: str, order_id: str) -> dict:
@@ -1272,6 +1405,26 @@ async def mark_order_unpaid(org_id: str, order_id: str) -> dict:
         raise ValueError(f"Modifica pagamento non consentita per ordini in stato '{status}'")
     if order.get("payment_status") == "pending":
         return order  # idempotent
+
+    # WS-1.4 — il libro mastro non si falsifica a ritroso: se ci sono
+    # incassi registrati (Stripe o manuali), il "segna non pagato" secco
+    # creerebbe una divergenza. Correzioni puntuali: rimborso o gestione
+    # per-scadenza dal dettaglio ordine.
+    try:
+        from services.payment_schedule_service import get_schedule_for_order
+        schedule = await get_schedule_for_order(order_id, org_id)
+        if schedule and any(
+            r.get("status") in ("paid", "paid_manual")
+            for r in schedule.get("rows") or []
+        ):
+            raise ValueError(
+                "Questo ordine ha incassi registrati nel piano pagamenti: "
+                "usa il rimborso o le azioni sulle singole scadenze."
+            )
+    except ValueError:
+        raise
+    except Exception:
+        logger.exception("mark_unpaid: check schedule fallito per %s", order_id)
 
     now = utc_now()
     updates = {"payment_status": OrderPaymentStatus.PENDING.value, "updated_at": now}

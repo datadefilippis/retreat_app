@@ -7,6 +7,11 @@ export const ordersAPI = {
   // Fase 2 S3 — rimborso da policy (o override), proroga, condono
   refundOrder: (orderId, body = {}) =>
     api.post(`/orders/${orderId}/refund`, body),
+  // WS-1.1 consolidamento — bonifico/contanti fuori piattaforma
+  settleManual: (orderId, note, scope) =>
+    api.post(`/orders/${orderId}/settle-manual`, { note, scope }),
+  getPaymentSchedule: (orderId) =>
+    api.get(`/orders/${orderId}/payment-schedule`),
   postponeScheduleRow: (orderId, rowSeq, dueAt) =>
     api.post(`/orders/${orderId}/schedule/${rowSeq}/postpone`, { due_at: dueAt }),
   waiveScheduleRow: (orderId, rowSeq, reason) =>

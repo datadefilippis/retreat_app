@@ -52,18 +52,26 @@ def get_order_actions(order: dict) -> Dict[str, dict]:
         "edit":       _action(),
         "mark_paid":  _action(),
         "mark_unpaid": _action(),
+        # WS-1.1 consolidamento — "il cliente ha pagato fuori piattaforma"
+        # (bonifico/contanti): conferma + registra l'incasso in un'azione.
+        "settle_manual": _action(),
     }
 
     if status == "draft":
         # Confirm
         if pi == "required":
             actions["confirm"] = _action(reason="payment_not_collected")
+            # ...ma il bonifico esterno deve avere una via d'uscita:
+            actions["settle_manual"] = _action(allowed=True,
+                confirm_text="settle_manual_confirm")
         elif pi == "collected":
             actions["confirm"] = _action(allowed=True,
                 warn_text="confirm_retry_safe")
         else:
             actions["confirm"] = _action(allowed=True,
                 confirm_text="confirm_draft")
+            actions["settle_manual"] = _action(allowed=True,
+                confirm_text="settle_manual_confirm")
 
         # Complete: never from draft
         actions["complete"] = _action(reason="not_confirmed")

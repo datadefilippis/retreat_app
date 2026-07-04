@@ -17,6 +17,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { ordersAPI, customersAPI, productsAPI } from '../../api';
+import { eventOccurrencesAPI } from '../../api/eventOccurrences';
 import { toast } from 'sonner';
 import QuotaProgressBanner from '../../components/QuotaProgressBanner';
 import { useEntitlements } from '../../hooks/useEntitlements';
@@ -111,19 +112,33 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
             product_id: it.product_id,
             quantity: it.quantity,
             unit_price: it.unit_price,
+            occurrence_id: it.occurrence_id || '',
           })),
         });
       } else {
         setForm({
           customer_id: prefillCustomerId || '',
           notes: '', due_date: '',
-          items: [{ product_id: '', quantity: 1, unit_price: '' }],
+          items: [{ product_id: '', quantity: 1, unit_price: '', occurrence_id: '' }],
         });
       }
     }
   }, [open, editing]);
 
-  const addItem = () => setForm(f => ({ ...f, items: [...f.items, { product_id: '', quantity: 1, unit_price: '' }] }));
+  // WS-1.3 — date disponibili per i prodotti-ritiro nel form manuale:
+  // scegliendo la data, l'ordine genera lo schedule (caparra/saldo) come
+  // dal sito. Prenotazione telefonica con piano pagamenti in un form.
+  const [occByProduct, setOccByProduct] = React.useState({});
+  const loadOccurrences = React.useCallback(async (productId) => {
+    if (!productId || occByProduct[productId]) return;
+    try {
+      const res = await eventOccurrencesAPI.list(productId);
+      const occs = (res.data || []).filter(o => ['draft', 'published'].includes(o.status));
+      setOccByProduct(m => ({ ...m, [productId]: occs }));
+    } catch { /* prodotto non-evento: nessuna data */ }
+  }, [occByProduct]);
+
+  const addItem = () => setForm(f => ({ ...f, items: [...f.items, { product_id: '', quantity: 1, unit_price: '', occurrence_id: '' }] }));
   const removeItem = (i) => setForm(f => ({ ...f, items: f.items.filter((_, idx) => idx !== i) }));
   const updateItem = (i, field, value) => setForm(f => ({
     ...f, items: f.items.map((it, idx) => idx === i ? { ...it, [field]: value } : it),
@@ -152,6 +167,8 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
           product_id: it.product_id,
           quantity: parseFloat(it.quantity),
           unit_price: it.unit_price !== '' ? parseFloat(it.unit_price) : null,
+          // WS-1.3: la data del ritiro attiva lo schedule pagamenti
+          occurrence_id: it.occurrence_id || null,
         })),
       };
       if (editing) {
@@ -292,13 +309,29 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
                           onChange={e => {
                             const p = products.find(pp => pp.id === e.target.value);
                             updateItem(i, 'product_id', e.target.value);
+                            updateItem(i, 'occurrence_id', '');
                             if (p?.unit_price) updateItem(i, 'unit_price', p.unit_price);
+                            if (p?.item_type === 'event_ticket') loadOccurrences(p.id);
                           }}
                           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
                         >
                           <option value="">{t('form.product_placeholder')}</option>
                           {products.map(p => <option key={p.id} value={p.id}>{p.name}{p.sku ? ` (${p.sku})` : ''}</option>)}
                         </select>
+                        {prod?.item_type === 'event_ticket' && (
+                          <select
+                            value={item.occurrence_id || ''}
+                            onChange={e => updateItem(i, 'occurrence_id', e.target.value)}
+                            className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+                          >
+                            <option value="">{t('form.occurrence_placeholder')}</option>
+                            {(occByProduct[prod.id] || []).map(o => (
+                              <option key={o.id} value={o.id}>
+                                {new Date(o.start_at).toLocaleDateString('it-IT')} {o.venue_name || o.city || ''}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                       </div>
                       <div className="w-16">
                         <Label className="text-xs">{t('form.quantity')}</Label>
@@ -567,7 +600,99 @@ function PaymentOpsSection({ order, onAction }) {
 
 /* ── Order Detail Panel (slide-over) ────────────────────────────────────────── */
 
-function OrderDetailPanel({ order, onClose, onAction, onEdit, t }) {
+
+// ── WS-1.2 consolidamento — scadenze pagamenti nel dettaglio ordine ─────────
+// Prima lo schedule (caparra/saldo/rate) si vedeva SOLO nella dashboard del
+// ritiro: chi apriva l'ordine dalla lista non vedeva nulla. Ora è qui, con
+// le stesse azioni (segna pagato, proroga, condona, copia link pagamento).
+
+function OrderScheduleSection({ order, t }) {
+  const [schedule, setSchedule] = React.useState(null);
+  const [events, setEvents] = React.useState([]);
+  const [busy, setBusy] = React.useState(null);
+
+  const load = React.useCallback(async () => {
+    try {
+      const res = await ordersAPI.getPaymentSchedule(order.id);
+      setSchedule(res.data?.schedule || null);
+      setEvents(res.data?.events || []);
+    } catch { setSchedule(null); }
+  }, [order.id]);
+
+  React.useEffect(() => { load(); }, [load]);
+
+  if (!schedule || (schedule.rows || []).length < 2) return null;
+
+  const fmt = (m) => new Intl.NumberFormat('it-IT',
+    { style: 'currency', currency: schedule.currency || 'EUR' }).format((m || 0) / 100);
+  const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('it-IT') : '';
+
+  const act = async (fn, okMsg) => {
+    setBusy(true);
+    try { await fn(); toast.success(okMsg); await load(); }
+    catch (err) { toast.error(err?.response?.data?.detail || t('toast.error')); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="border-t pt-3">
+      <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+        {t('schedule.title')}
+      </p>
+      <div className="space-y-1.5">
+        {(schedule.rows || []).map(r => (
+          <div key={r.seq} className="flex items-center justify-between gap-2 text-xs">
+            <span className="text-gray-600">
+              {r.label} · <span className="tabular-nums font-medium">{fmt(r.amount_minor)}</span>
+              {' — '}
+              <span className="font-semibold">{t(`schedule.status.${r.status}`, { defaultValue: r.status })}</span>
+              {['pending', 'processing', 'overdue', 'at_risk'].includes(r.status)
+                ? <span className="text-gray-400"> · {t('schedule.due', { date: fmtDate(r.due_at) })}</span>
+                : r.paid_at
+                  ? <span className="text-gray-400"> · {fmtDate(r.paid_at)}</span>
+                  : null}
+              {r.manual_note && <span className="text-gray-400"> · {r.manual_note}</span>}
+            </span>
+            {['pending', 'overdue', 'at_risk'].includes(r.status) && (
+              <span className="shrink-0 flex gap-1">
+                <button type="button" disabled={busy}
+                  className="rounded border border-gray-300 px-1.5 py-0.5 text-[10px] hover:border-gray-900"
+                  onClick={() => {
+                    const note = window.prompt(t('settle.note_prompt'));
+                    if (note && note.trim())
+                      act(() => ordersAPI.markSchedulePaidManual(order.id, r.seq, note.trim()), t('settle.ok'));
+                  }}>
+                  {t('schedule.mark_paid')}
+                </button>
+                <button type="button" disabled={busy}
+                  className="rounded border border-gray-300 px-1.5 py-0.5 text-[10px] hover:border-gray-900"
+                  onClick={() => {
+                    const d = window.prompt(t('schedule.postpone_prompt'));
+                    if (d && /^\d{4}-\d{2}-\d{2}$/.test(d.trim()))
+                      act(() => ordersAPI.postponeScheduleRow(order.id, r.seq, `${d.trim()}T12:00:00+00:00`), t('schedule.postpone_ok'));
+                  }}>
+                  {t('schedule.postpone')}
+                </button>
+                {r.pay_token && (
+                  <button type="button" disabled={busy}
+                    className="rounded border border-gray-300 px-1.5 py-0.5 text-[10px] hover:border-gray-900"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/api/public/pay/${r.pay_token}`);
+                      toast.success(t('schedule.link_copied'));
+                    }}>
+                    {t('schedule.copy_link')}
+                  </button>
+                )}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OrderDetailPanel({ order, onClose, onAction, onEdit, onSettleManual, t }) {
   const navigate = useNavigate();
   if (!order) return null;
 
@@ -666,13 +791,14 @@ function OrderDetailPanel({ order, onClose, onAction, onEdit, t }) {
             {/* Payment operations (inline in context, not a separate section) */}
             {order.payment_intent && order.payment_intent !== 'none' && (
               <PaymentOpsSection order={order} onAction={onAction} />
+              <OrderScheduleSection order={order} t={t} />
             )}
           </div>
 
           {/* ═══ SECTION 2: Actions (before content — decide, then review details) ═══ */}
           {(() => {
             const a = order.actions || {};
-            const anyAction = a.confirm?.allowed || a.complete?.allowed || a.cancel?.allowed || a.edit?.allowed;
+            const anyAction = a.confirm?.allowed || a.complete?.allowed || a.cancel?.allowed || a.edit?.allowed || a.settle_manual?.allowed;
             if (!anyAction) return null;
             return (
               <div className="border-t border-b py-3 space-y-2">
@@ -682,6 +808,18 @@ function OrderDetailPanel({ order, onClose, onAction, onEdit, t }) {
                       <Check className="h-4 w-4" /> {t('actions.confirm')}
                     </Button>
                     {a.confirm?.warn_text && <p className="text-[11px] text-muted-foreground text-center">{t(`action_confirm.${a.confirm.warn_text}`, { defaultValue: a.confirm.warn_text })}</p>}
+                  </>
+                )}
+                {a.settle_manual?.allowed && (
+                  <>
+                    <Button size="sm" variant="outline"
+                      className="w-full gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                      onClick={() => onSettleManual(order)}>
+                      <Check className="h-4 w-4" /> {t('actions.settle_manual')}
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground text-center">
+                      {t('actions.settle_manual_hint')}
+                    </p>
                   </>
                 )}
                 {a.complete?.allowed && (
@@ -1142,6 +1280,26 @@ export default function OrdersPage() {
       setSearchParams(searchParams, { replace: true });
     }
   }, [loading, customers, searchParams, setSearchParams]);
+
+  const handleSettleManual = async (order) => {
+    // Il caso bonifico: scope caparra o tutto, nota obbligatoria.
+    const hasSchedule = !!order.payment_state || undefined;
+    let scope = 'full';
+    if (window.confirm(t('settle.scope_question'))) {
+      scope = 'deposit';
+    }
+    const note = window.prompt(t('settle.note_prompt'));
+    if (!note || !note.trim()) return;
+    try {
+      await ordersAPI.settleManual(order.id, note.trim(), scope);
+      toast.success(t('settle.ok'));
+      setSelectedOrder(null);
+      await load();
+      setPendingReselect(order.id);
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || t('toast.error'));
+    }
+  };
 
   const handleAction = async (orderId, action, ffStatus) => {
     // Fulfillment action (v10.0)
@@ -1718,6 +1876,7 @@ export default function OrdersPage() {
           onClose={() => setSelectedOrder(null)}
           onAction={(id, action, ffStatus) => handleAction(id, action, ffStatus)}
           onEdit={(o) => { setSelectedOrder(null); openEdit(o); }}
+          onSettleManual={(o) => handleSettleManual(o)}
           t={t}
         />
       )}
