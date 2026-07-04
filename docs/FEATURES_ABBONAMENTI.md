@@ -27,6 +27,8 @@ Source of truth tecnico: `seed_pricing.py` (tier `*_retreat_*`) +
 | Storefront multilingua (it/en/de/fr) | ✓ | ✓ | ✓ |
 | Supporto | standard | prioritario | prioritario + feedback settimanale |
 | **Fee piattaforma sul transato** | **5%** | **2%** | **2%** |
+
+**Piano Partner** (5/7/2026): quarto piano NASCOSTO — tutto Pro, 0€ e **0% di fee** — per org proprie (Masseria) e partnership. Mai in pagina pricing, assegnabile solo dal system admin (PUT /admin/organizations/{id}/commercial-plan, slug `retreat_partner`); il provider Stripe omette application_fee quando la fee è 0 (testato).
 | Canone | 0€ | 29€/mese (290€/anno) | 0€ per 3 mesi (poi Pro) |
 
 Le commissioni Stripe (≈1,5% + 0,25€ carte EU) sono SEPARATE e le incassa

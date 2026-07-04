@@ -54,9 +54,10 @@ def _plan(slug: str) -> dict:
 
 
 class TestRetreatPlansPresence:
-    def test_all_three_retreat_plans_seeded(self):
+    def test_all_retreat_plans_seeded(self):
         slugs = {p["slug"] for p in RETREAT_COMMERCIAL_PLANS}
-        assert slugs == {"retreat_free", "retreat_pro", "retreat_founding"}
+        assert slugs == {"retreat_free", "retreat_pro",
+                         "retreat_founding", "retreat_partner"}
 
     def test_retreat_slugs_do_not_collide_with_legacy(self):
         legacy = {p["slug"] for p in COMMERCIAL_PLANS + ADDON_PLANS}
@@ -307,3 +308,26 @@ class TestRetreatDedicatedTiers:
         feats = _plan("retreat_free")["features_display"]
         assert "billing.features.retreat_ecommerce" in feats
         assert len(feats) >= 12   # inventario completo, non tre voci
+
+
+class TestPartnerZeroFeePlan:
+    """Richiesta founder 5/7/2026: piano 0% fee nascosto, assegnabile
+    on demand solo dal system admin."""
+
+    def test_partner_zero_fee_hidden_admin_only(self):
+        p = _plan("retreat_partner")
+        assert p["transaction_fee_percent"] == 0.0
+        assert p["price_monthly"] == 0.0
+        assert p["is_public"] is False       # mai in pagina pricing
+        assert p["is_self_serve"] is False   # solo assegnazione admin
+        # tutto Pro: stessi tier
+        assert p["module_plans"] == _plan("retreat_pro")["module_plans"]
+
+    def test_provider_omits_fee_when_zero(self):
+        # Stripe rifiuta application_fee_amount=0: il provider DEVE
+        # includerlo solo quando la fee e' positiva.
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "payment_providers", "stripe", "provider.py")
+        src = open(path).read()
+        assert "request.application_fee_percent and request.application_fee_percent > 0" in src

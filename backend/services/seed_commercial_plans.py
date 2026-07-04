@@ -454,6 +454,38 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
             "billing.features.retreat_founding_feedback",
         ],
     },
+    # Partner — piano 0% fee (richiesta founder 5/7/2026): NASCOSTO dal
+    # pricing pubblico e assegnabile SOLO dal system admin, on demand
+    # (org proprie come la Masseria, partnership strategiche). Tutto Pro,
+    # nessuna fee piattaforma: il provider Stripe omette
+    # application_fee_amount quando la fee e' 0 (gia' gestito, testato).
+    {
+        "slug": "retreat_partner",
+        "name": "Partner",
+        "description": "Piano riservato assegnato dall'admin: tutto Pro, 0% di fee piattaforma.",
+        "tagline": "Per le strutture partner della piattaforma",
+        "price_monthly": 0.0,
+        "price_yearly": None,
+        "currency": "EUR",
+        "trial_days": 0,
+        "is_public": False,
+        "is_self_serve": False,
+        "sort_order": 13,
+        "transaction_fee_percent": 0.0,
+        "platform_limits": {"team_members": 5},
+        "module_plans": {
+            "cashflow_monitor": "cashflow_monitor_retreat",
+            "ai_assistant": "ai_assistant_disabled",
+            "product_catalog": "product_catalog_retreat_pro",
+            "commerce": "commerce_retreat_pro",
+            "customers_light": "customers_light_pro",
+        },
+        "features_display": [
+            "billing.features.retreat_everything_pro",
+            "billing.features.retreat_zero_fee",
+            "billing.features.retreat_no_monthly",
+        ],
+    },
 ]
 
 

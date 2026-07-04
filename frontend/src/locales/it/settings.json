@@ -278,7 +278,9 @@
       "retreat_team_2": "2 membri del team",
       "retreat_catalog_unlimited": "Prodotti a catalogo illimitati",
       "retreat_stores_3": "Fino a 3 negozi online",
-      "retreat_team_5": "5 membri del team"
+      "retreat_team_5": "5 membri del team",
+      "retreat_zero_fee": "0% di fee piattaforma",
+      "retreat_no_monthly": "Nessun canone mensile"
     },
     "quota": {
       "warning_title": "Stai per raggiungere il limite",
