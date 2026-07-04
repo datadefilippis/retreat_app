@@ -275,3 +275,35 @@ class TestPaymentsOverviewRoute:
         block = src[i:i + 2500]
         assert "derive_review_info" in block
         assert 'count_documents(\n        {"organization_id": org_id, "review_state"' not in block
+
+
+class TestRetreatDedicatedTiers:
+    """Consolidamento 4/7/2026 — i limiti di 'Uso corrente' sono decisi
+    da tier DEDICATI al verticale, non ereditati dai tier AFianco."""
+
+    def test_catalog_tiers(self):
+        free = PRICING_BY_SLUG["product_catalog_retreat_free"]
+        pro = PRICING_BY_SLUG["product_catalog_retreat_pro"]
+        assert free["limits"]["products"] == 100
+        assert pro["limits"]["products"] == -1
+
+    def test_commerce_pro_tier(self):
+        pro = PRICING_BY_SLUG["commerce_retreat_pro"]
+        assert pro["limits"]["stores_max"] == 3
+        assert pro["limits"]["rentals"] == 0          # coerenza WS-3
+        assert pro["limits"]["orders_monthly"] == -1  # fee, non quota
+
+    def test_plans_use_dedicated_tiers(self):
+        assert _plan("retreat_free")["module_plans"]["product_catalog"] \
+            == "product_catalog_retreat_free"
+        for slug in ("retreat_pro", "retreat_founding"):
+            mp = _plan(slug)["module_plans"]
+            assert mp["product_catalog"] == "product_catalog_retreat_pro"
+            assert mp["commerce"] == "commerce_retreat_pro"
+
+    def test_free_features_mention_ecommerce(self):
+        # Richiesta founder: le voci non devono essere fuorvianti per
+        # omissione — l'e-commerce incluso VA detto.
+        feats = _plan("retreat_free")["features_display"]
+        assert "billing.features.retreat_ecommerce" in feats
+        assert len(feats) >= 12   # inventario completo, non tre voci

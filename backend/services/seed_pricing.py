@@ -455,6 +455,34 @@ CASHFLOW_MONITOR_PLANS.append({
     "sort_order": 99,
 })
 
+# Consolidamento abbonamenti (4/7/2026) — tier DEDICATI al verticale
+# ritiri: i limiti di "Uso corrente" sono decisi qui, non ereditati dai
+# tier AFianco (che potrebbero cambiare per conto loro).
+PRODUCT_CATALOG_PLANS.append({
+    "module_key": "product_catalog",
+    "slug": "product_catalog_retreat_free",
+    "name": "Catalogo Retreat Gratis",
+    "price_monthly": 0.0,
+    "currency": "EUR",
+    "limits": {
+        "analytics": -1,
+        "products": 100,     # ampio per un operatore ritiri, spinge il Pro
+    },
+    "sort_order": 11,
+})
+PRODUCT_CATALOG_PLANS.append({
+    "module_key": "product_catalog",
+    "slug": "product_catalog_retreat_pro",
+    "name": "Catalogo Retreat Pro",
+    "price_monthly": 0.0,
+    "currency": "EUR",
+    "limits": {
+        "analytics": -1,
+        "products": -1,
+    },
+    "sort_order": 12,
+})
+
 COMMERCE_PLANS.append({
     "module_key": "commerce",
     "slug": "commerce_retreat",
@@ -470,6 +498,22 @@ COMMERCE_PLANS.append({
         "rentals": 0,
     },
     "sort_order": 10,
+})
+
+COMMERCE_PLANS.append({
+    "module_key": "commerce",
+    "slug": "commerce_retreat_pro",
+    "name": "Commerce Retreat Pro",
+    "price_monthly": 0.0,
+    "currency": "EUR",
+    "limits": {
+        "analytics": -1,
+        "orders_monthly": -1,
+        "stores_max": 3,        # Pro: piu' negozi online (brand multipli)
+        "checkout_stripe": -1,
+        "rentals": 0,
+    },
+    "sort_order": 11,
 })
 
 

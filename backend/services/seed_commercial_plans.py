@@ -367,18 +367,29 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
             "ai_assistant": "ai_assistant_disabled",
-            "product_catalog": "product_catalog_starter",
+            "product_catalog": "product_catalog_retreat_free",
             "commerce": "commerce_retreat",
             "customers_light": "customers_light_free",
         },
+        # Inventario olistico funzionalita' (4/7/2026, richiesta founder):
+        # TUTTO cio' che il piano include, senza omissioni fuorvianti —
+        # incluso l'e-commerce, che prima non era menzionato.
         "features_display": [
             "billing.features.retreat_unlimited_listings",
+            "billing.features.retreat_ecommerce",
+            "billing.features.retreat_product_types",
             "billing.features.retreat_public_page",
             "billing.features.retreat_deposits_payments",
+            "billing.features.retreat_payment_reminders",
             "billing.features.retreat_participants",
             "billing.features.retreat_comms",
-            "billing.features.retreat_cashflow",
             "billing.features.retreat_newsletter",
+            "billing.features.retreat_cashflow",
+            "billing.features.retreat_customers",
+            "billing.features.retreat_coupons",
+            "billing.features.retreat_catalog_100",
+            "billing.features.retreat_stores_1",
+            "billing.features.retreat_team_2",
         ],
     },
     {
@@ -398,14 +409,16 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
             "ai_assistant": "ai_assistant_disabled",
-            "product_catalog": "product_catalog_pro",
-            "commerce": "commerce_retreat",
+            "product_catalog": "product_catalog_retreat_pro",
+            "commerce": "commerce_retreat_pro",
             "customers_light": "customers_light_pro",
         },
         "features_display": [
             "billing.features.retreat_everything_free",
             "billing.features.retreat_featured",
-            "billing.features.retreat_catalog_extended",
+            "billing.features.retreat_catalog_unlimited",
+            "billing.features.retreat_stores_3",
+            "billing.features.retreat_team_5",
             "billing.features.retreat_customers_pro",
             "billing.features.retreat_priority_support",
         ],
@@ -431,8 +444,8 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
             "ai_assistant": "ai_assistant_disabled",
-            "product_catalog": "product_catalog_pro",
-            "commerce": "commerce_retreat",
+            "product_catalog": "product_catalog_retreat_pro",
+            "commerce": "commerce_retreat_pro",
             "customers_light": "customers_light_pro",
         },
         "features_display": [
