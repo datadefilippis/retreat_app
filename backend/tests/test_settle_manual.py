@@ -179,3 +179,75 @@ class TestSettleOrchestration:
             with pytest.raises(ValueError, match="annullato"):
                 await osvc.settle_order_manual("org", "o3", actor="a",
                                                note="x", scope="full")
+
+
+class TestMarkPaidCoherence:
+    """WS-1.4 — mark_paid/unpaid coerenti col libro mastro."""
+
+    @pytest.mark.asyncio
+    async def test_mark_paid_settles_open_schedule_rows(self):
+        from services import order_service as osvc
+        from services import payment_schedule_service as psvc
+        from tests.test_payment_state_machine import FakeCollection
+
+        order_doc = {"id": "o4", "status": "confirmed",
+                     "payment_status": "pending"}
+        async def fake_find(order_id, org_id): return dict(order_doc)
+        async def fake_update(order_id, org_id, updates):
+            order_doc.update(updates); return True
+        async def fake_sync(org_id, order_id, status): pass
+
+        schedules, events = FakeCollection(), FakeCollection()
+        schedules.docs.append({
+            "id": "s4", "order_id": "o4", "organization_id": "org",
+            "occurrence_id": "occ", "currency": "EUR",
+            "plan_snapshot": {"mode": "deposit_balance", "deposit_type": "percent",
+                              "deposit_value": 30, "balance_due_days_before": 30,
+                              "installments_count": 3,
+                              "cancellation_policy": [
+                                  {"days_before": 0, "refund_percent": 0}]},
+            "collapsed_last_minute": False, "payment_state": "deposit_paid",
+            "created_at": "x", "updated_at": "x",
+            "totals": {"due_minor": 80000, "paid_minor": 24000,
+                       "refunded_minor": 0, "fee_minor": 0},
+            "rows": [
+                {"seq": 0, "kind": "deposit", "label": "Caparra",
+                 "amount_minor": 24000, "due_at": "2026-07-01T00:00:00+00:00",
+                 "status": "paid", "paid_at": "x", "fee_minor": 0,
+                 "reminders_sent": [], "pay_token": "t0"},
+                {"seq": 1, "kind": "balance", "label": "Saldo",
+                 "amount_minor": 56000, "due_at": "2026-09-02T00:00:00+00:00",
+                 "status": "pending", "fee_minor": 0, "reminders_sent": [],
+                 "pay_token": "t1"},
+            ],
+        })
+        async def fake_sched_find(order_id, org_id):
+            return dict(schedules.docs[0])
+
+        with patch("repositories.order_repository.find_one", fake_find), \
+             patch("repositories.order_repository.update", fake_update), \
+             patch("services.payment_sync.sync_payment_to_sales", fake_sync), \
+             patch.object(psvc, "_collections", return_value=(schedules, events)), \
+             patch.object(psvc, "get_schedule_for_order", fake_sched_find):
+            await osvc.mark_order_paid("org", "o4")
+
+        doc = schedules.docs[0]
+        assert doc["rows"][1]["status"] == "paid_manual"   # saldo chiuso
+        assert doc["payment_state"] == "fully_paid"
+        assert order_doc["payment_status"] == "paid"
+
+    @pytest.mark.asyncio
+    async def test_mark_unpaid_blocked_when_ledger_has_income(self):
+        from services import order_service as osvc
+        from services import payment_schedule_service as psvc
+
+        order_doc = {"id": "o5", "status": "confirmed",
+                     "payment_status": "paid"}
+        async def fake_find(order_id, org_id): return dict(order_doc)
+        async def fake_sched_find(order_id, org_id):
+            return {"rows": [{"seq": 0, "status": "paid"}]}
+
+        with patch("repositories.order_repository.find_one", fake_find), \
+             patch.object(psvc, "get_schedule_for_order", fake_sched_find):
+            with pytest.raises(ValueError, match="incassi registrati"):
+                await osvc.mark_order_unpaid("org", "o5")

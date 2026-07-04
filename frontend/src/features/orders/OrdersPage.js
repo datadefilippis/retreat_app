@@ -17,6 +17,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { ordersAPI, customersAPI, productsAPI } from '../../api';
+import { eventOccurrencesAPI } from '../../api/eventOccurrences';
 import { toast } from 'sonner';
 import QuotaProgressBanner from '../../components/QuotaProgressBanner';
 import { useEntitlements } from '../../hooks/useEntitlements';
@@ -111,19 +112,33 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
             product_id: it.product_id,
             quantity: it.quantity,
             unit_price: it.unit_price,
+            occurrence_id: it.occurrence_id || '',
           })),
         });
       } else {
         setForm({
           customer_id: prefillCustomerId || '',
           notes: '', due_date: '',
-          items: [{ product_id: '', quantity: 1, unit_price: '' }],
+          items: [{ product_id: '', quantity: 1, unit_price: '', occurrence_id: '' }],
         });
       }
     }
   }, [open, editing]);
 
-  const addItem = () => setForm(f => ({ ...f, items: [...f.items, { product_id: '', quantity: 1, unit_price: '' }] }));
+  // WS-1.3 — date disponibili per i prodotti-ritiro nel form manuale:
+  // scegliendo la data, l'ordine genera lo schedule (caparra/saldo) come
+  // dal sito. Prenotazione telefonica con piano pagamenti in un form.
+  const [occByProduct, setOccByProduct] = React.useState({});
+  const loadOccurrences = React.useCallback(async (productId) => {
+    if (!productId || occByProduct[productId]) return;
+    try {
+      const res = await eventOccurrencesAPI.list(productId);
+      const occs = (res.data || []).filter(o => ['draft', 'published'].includes(o.status));
+      setOccByProduct(m => ({ ...m, [productId]: occs }));
+    } catch { /* prodotto non-evento: nessuna data */ }
+  }, [occByProduct]);
+
+  const addItem = () => setForm(f => ({ ...f, items: [...f.items, { product_id: '', quantity: 1, unit_price: '', occurrence_id: '' }] }));
   const removeItem = (i) => setForm(f => ({ ...f, items: f.items.filter((_, idx) => idx !== i) }));
   const updateItem = (i, field, value) => setForm(f => ({
     ...f, items: f.items.map((it, idx) => idx === i ? { ...it, [field]: value } : it),
@@ -152,6 +167,8 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
           product_id: it.product_id,
           quantity: parseFloat(it.quantity),
           unit_price: it.unit_price !== '' ? parseFloat(it.unit_price) : null,
+          // WS-1.3: la data del ritiro attiva lo schedule pagamenti
+          occurrence_id: it.occurrence_id || null,
         })),
       };
       if (editing) {
@@ -292,13 +309,29 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
                           onChange={e => {
                             const p = products.find(pp => pp.id === e.target.value);
                             updateItem(i, 'product_id', e.target.value);
+                            updateItem(i, 'occurrence_id', '');
                             if (p?.unit_price) updateItem(i, 'unit_price', p.unit_price);
+                            if (p?.item_type === 'event_ticket') loadOccurrences(p.id);
                           }}
                           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
                         >
                           <option value="">{t('form.product_placeholder')}</option>
                           {products.map(p => <option key={p.id} value={p.id}>{p.name}{p.sku ? ` (${p.sku})` : ''}</option>)}
                         </select>
+                        {prod?.item_type === 'event_ticket' && (
+                          <select
+                            value={item.occurrence_id || ''}
+                            onChange={e => updateItem(i, 'occurrence_id', e.target.value)}
+                            className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+                          >
+                            <option value="">{t('form.occurrence_placeholder')}</option>
+                            {(occByProduct[prod.id] || []).map(o => (
+                              <option key={o.id} value={o.id}>
+                                {new Date(o.start_at).toLocaleDateString('it-IT')} {o.venue_name || o.city || ''}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                       </div>
                       <div className="w-16">
                         <Label className="text-xs">{t('form.quantity')}</Label>

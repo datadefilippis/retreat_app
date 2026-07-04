@@ -1253,6 +1253,37 @@ async def mark_order_paid(org_id: str, order_id: str) -> dict:
     await order_repository.update(order_id, org_id, updates)
     await sync_payment_to_sales(org_id, order_id, OrderPaymentStatus.PAID.value)
 
+    # WS-1.4 consolidamento — coerenza col libro mastro: "ordine pagato"
+    # con scadenze ancora aperte sarebbe una divergenza (dashboard incassi
+    # che sollecita un ordine già segnato pagato). Le righe pagabili
+    # diventano paid_manual con nota di sistema.
+    try:
+        from models.payment_schedule import RowStatus
+        from services.payment_schedule_service import (
+            InvalidTransition, apply_row_transition, get_schedule_for_order,
+        )
+        schedule = await get_schedule_for_order(order_id, org_id)
+        if schedule:
+            payable = {"pending", "processing", "overdue", "at_risk"}
+            for row in list(schedule.get("rows") or []):
+                if row.get("status") in payable:
+                    try:
+                        schedule = await apply_row_transition(
+                            schedule, row["seq"], RowStatus.PAID_MANUAL,
+                            actor="operator:mark-paid",
+                            action="row_paid_manual",
+                            row_updates={"manual_note":
+                                         "segnato pagato a livello ordine"},
+                            detail={"via": "mark_order_paid"},
+                        )
+                    except InvalidTransition:
+                        pass
+            await order_repository.update(order_id, org_id, {
+                "payment_state": schedule.get("payment_state"),
+            })
+    except Exception:
+        logger.exception("mark_paid: sync schedule fallito per %s", order_id)
+
     order.update(updates)
     logger.info("order_service: marked paid order %s for org=%s", order_id, org_id)
     return order
@@ -1374,6 +1405,26 @@ async def mark_order_unpaid(org_id: str, order_id: str) -> dict:
         raise ValueError(f"Modifica pagamento non consentita per ordini in stato '{status}'")
     if order.get("payment_status") == "pending":
         return order  # idempotent
+
+    # WS-1.4 — il libro mastro non si falsifica a ritroso: se ci sono
+    # incassi registrati (Stripe o manuali), il "segna non pagato" secco
+    # creerebbe una divergenza. Correzioni puntuali: rimborso o gestione
+    # per-scadenza dal dettaglio ordine.
+    try:
+        from services.payment_schedule_service import get_schedule_for_order
+        schedule = await get_schedule_for_order(order_id, org_id)
+        if schedule and any(
+            r.get("status") in ("paid", "paid_manual")
+            for r in schedule.get("rows") or []
+        ):
+            raise ValueError(
+                "Questo ordine ha incassi registrati nel piano pagamenti: "
+                "usa il rimborso o le azioni sulle singole scadenze."
+            )
+    except ValueError:
+        raise
+    except Exception:
+        logger.exception("mark_unpaid: check schedule fallito per %s", order_id)
 
     now = utc_now()
     updates = {"payment_status": OrderPaymentStatus.PENDING.value, "updated_at": now}

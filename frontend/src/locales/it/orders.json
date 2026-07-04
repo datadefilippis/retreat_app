@@ -93,7 +93,8 @@
     "zero_total_hint": "totale a zero, verifica i prezzi",
     "hint_select_customer": "Seleziona un cliente",
     "hint_add_product": "Aggiungi almeno un prodotto",
-    "hint_complete_lines": "Completa tutte le righe prodotto"
+    "hint_complete_lines": "Completa tutte le righe prodotto",
+    "occurrence_placeholder": "Scegli la data del ritiro (attiva caparra/saldo)…"
   },
   "actions": {
     "create": "Nuovo ordine",
