@@ -729,7 +729,11 @@ async def get_public_marketing_status(
 
 @router.get("/catalog/{slug}", response_model=CatalogResponse)
 @limiter.limit("30/minute")
-async def get_public_catalog(request: Request, slug: str):
+async def get_public_catalog(request: Request, slug: str,
+    # en|de|fr: filtra e traduce i prodotti offerti in quella lingua.
+    # Default semplice (non Query()) cosi' le chiamate dirette nei test
+    # ricevono None reale e non l'oggetto Query (che e' truthy).
+    lang: str = None):
     """Return published products for an organization. No auth required."""
     org = await _resolve_org(slug)
 
@@ -773,8 +777,15 @@ async def get_public_catalog(request: Request, slug: str):
         {"_id": 0, "id": 1, "slug": 1, "name": 1, "description": 1, "image_url": 1,
          "unit_price": 1, "category": 1, "unit": 1,
          "item_type": 1, "unit_label": 1, "price_mode": 1, "transaction_mode": 1,
-         "metadata": 1, "stock_quantity": 1},
+         "metadata": 1, "stock_quantity": 1, "translations": 1},
     ).sort("name", 1).to_list(200)
+
+    # Multilingua manuale (6/7) — vista store in lingua X: solo i
+    # prodotti offerti in X, coi campi tradotti dall'operatore.
+    if lang and lang != "it":
+        from services.manual_translations import is_available_in, merge_language
+        raw_products = [merge_language(p, lang) for p in raw_products
+                        if is_available_in(p, lang)]
 
     # Bucket product ids by item_type for the batched side-fetches.
     service_product_ids: list[str] = []
@@ -980,6 +991,7 @@ async def get_public_catalog(request: Request, slug: str):
         # comunicazione, non di soldi). Stesso campo già esposto dalla
         # landing evento (PublicEventLanding).
         doc["payment_plan"] = meta.get("payment_plan")
+        doc.pop("translations", None)   # interne: il merge e' gia' fatto
         doc["extras"] = []
         if doc.get("item_type") == "rental":
             doc["extras"] = extras_by_product.get(doc["id"], [])
@@ -1156,7 +1168,8 @@ async def get_public_catalog(request: Request, slug: str):
 
 @router.get("/events/{org_slug}/{slug}", response_model=PublicEventLanding)
 async def get_public_event_landing(org_slug: str, slug: str,
-    lang: str = Query(None, description="en|de|fr per contenuti tradotti")):
+    # en|de|fr per contenuti tradotti (default semplice: vedi catalog)
+    lang: str = None):
     """Public landing page payload for a single event occurrence.
 
     Returns 404 when:
@@ -1205,6 +1218,8 @@ async def get_public_event_landing(org_slug: str, slug: str,
             "metadata": 1,  # F1 Onda 8 — needed for requires_attendee_details
             # Onda 15 — unit_price exposed for mono-tier event totals.
             "unit_price": 1,
+            # Multilingua manuale — serve al merge_language per ?lang=
+            "translations": 1,
         },
     )
     if not product:
@@ -1254,29 +1269,20 @@ async def get_public_event_landing(org_slug: str, slug: str,
     # Auto-derive map_url if admin did not explicitly set one
     from models.event_occurrence import build_map_url
     map_url = occ.get("map_url") or build_map_url(occ)
-    # F5 (5/7/2026) — contenuti tradotti: merge della traduzione valida
-    # (stesso source hash) sui campi traducibili; fallback = originale.
+    # Multilingua MANUALE (6/7, decisione founder: zero LLM) — merge dei
+    # campi tradotti DALL'OPERATORE; il badge auto-translated non serve
+    # piu' (sono parole sue). La pipeline LLM resta dormiente e spenta.
     _auto_translated = False
     if lang and lang in ("en", "de", "fr"):
-        try:
-            from services.content_translation_service import (
-                build_source_fields, get_translation, source_hash,
-            )
-            _src_fields = build_source_fields(occ, product)
-            _tr = await get_translation(occ["id"], lang, source_hash(_src_fields))
-            if _tr and _tr.get("fields"):
-                tf = _tr["fields"]
-                occ = {**occ,
-                       "long_description": tf.get("long_description") or occ.get("long_description"),
-                       "agenda": tf.get("agenda") or occ.get("agenda"),
-                       "included": tf.get("included") or occ.get("included"),
-                       "excluded": tf.get("excluded") or occ.get("excluded"),
-                       "faq": tf.get("faq") or occ.get("faq")}
-                if tf.get("description"):
-                    product = {**product, "description": tf["description"]}
-                _auto_translated = True
-        except Exception:
-            logger.warning("merge traduzione fallito per occ %s", occ.get("id"))
+        from services.manual_translations import merge_language
+        merged = merge_language(product, lang)
+        if merged is not product:
+            product = merged
+            # il racconto lungo tradotto vive sul product.translations:
+            # sovrascrive quello dell'occurrence quando presente
+            tr = (product.get("translations") or {}).get(lang) or {}
+            if tr.get("long_description"):
+                occ = {**occ, "long_description": tr["long_description"]}
 
 
     public_occ = PublicOccurrence(
@@ -3349,6 +3355,7 @@ async def list_public_retreats(
     price_max: Optional[int] = Query(default=None, ge=0, le=100000),
     limit: int = Query(default=60, ge=1, le=120),
     offset: int = Query(default=0, ge=0),
+    lang: str = None,  # en|de|fr: solo i ritiri offerti in quella lingua (default semplice: vedi catalog)
 ):
     """IL calendario dei ritiri: occurrence pubblicate e future di TUTTE
     le organizzazioni, filtrabili per categoria (tassonomia), regione,
@@ -3394,8 +3401,16 @@ async def list_public_retreats(
          "item_type": "event_ticket",
          **({"category": category} if category else {})},
         {"_id": 0, "id": 1, "name": 1, "category": 1, "unit_price": 1,
-         "image_url": 1, "organization_id": 1, "metadata.payment_plan": 1},
+         "image_url": 1, "organization_id": 1, "metadata.payment_plan": 1,
+         "translations": 1},
     ).to_list(1000)
+
+    # Multilingua manuale (6/7) — vista in lingua X: SOLO i ritiri che
+    # l'operatore offre in X (traduzione manuale presente). IT = tutti.
+    if lang and lang != "it":
+        from services.manual_translations import is_available_in
+        prods = [p for p in prods if is_available_in(p, lang)]
+
     prod_by_id = {p["id"]: p for p in prods}
 
     # org slug pubblici (store multi-store o legacy public_slug)

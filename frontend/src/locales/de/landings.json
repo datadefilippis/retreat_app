@@ -299,7 +299,35 @@
     "viewProfile": "Profil ansehen",
     "findMoreRetreats": "Weitere Retreats entdecken",
     "autoTranslated": "Inhalte automatisch aus dem Italienischen übersetzt.",
-    "seeOriginal": "Original ansehen"
+    "seeOriginal": "Original ansehen",
+    "deposit": {
+      "payNow": "Heute zahlst du nur die Anzahlung: {{amount}}",
+      "restBalance": "Der Rest ({{amount}}) bis {{date}}, mit E-Mail-Erinnerungen.",
+      "restInstallments": "Der Rest ({{amount}}) in {{count}} Raten, die letzte bis {{date}}, mit E-Mail-Erinnerungen."
+    },
+    "paymentPlan": {
+      "heading": "So bezahlst du",
+      "depositPercent": "Buche mit einer Anzahlung von {{percent}}%; der Restbetrag ist {{days}} Tage vor Beginn fällig.",
+      "depositFixed": "Buche mit einer Anzahlung von {{amount}}; der Restbetrag ist {{days}} Tage vor Beginn fällig.",
+      "installmentsNote": "Der Restbetrag ist in {{count}} Raten mit automatischen Erinnerungen aufgeteilt.",
+      "policyHeading": "Stornierungsbedingungen",
+      "policyTier": "Bis {{days}} Tage vorher: {{percent}}% Erstattung",
+      "policyLast": "Danach: {{percent}}% Erstattung"
+    },
+    "program": {
+      "heading": "Das Programm"
+    },
+    "gallery": {
+      "heading": "Der Ort und die Momente"
+    },
+    "includes": {
+      "heading": "Was enthalten ist",
+      "included": "Enthalten",
+      "excluded": "Nicht enthalten"
+    },
+    "faq": {
+      "heading": "Häufige Fragen"
+    }
   },
   "product": {
     "loading": "Laden…",
@@ -403,11 +431,27 @@
     "resultsCount": "{{count}} Retreats",
     "emptyFiltered": "Erweitere die Suche: entferne einen Filter oder schau in einen anderen Monat.",
     "showAll": "Alle Retreats anzeigen",
-    "searchShort": "Suchen…"
+    "searchShort": "Suchen…",
+    "title": "Retreats in Italien",
+    "subtitle": "Finde dein nächstes Retreat: Yoga, Meditation, Detox, Sound und mehr — und sichere dir deinen Platz sofort mit einer Anzahlung.",
+    "allCategories": "Alle Kategorien",
+    "allRegions": "Alle Regionen",
+    "clearFilters": "Filter zurücksetzen",
+    "loading": "Suche Retreats…",
+    "emptyTitle": "Keine Retreats gefunden",
+    "emptyBody": "Erweitere die Filter oder schau bald wieder vorbei: der Kalender wächst jede Woche.",
+    "priceFrom": "ab {{price}}",
+    "depositBadge": "Mit Anzahlung buchen",
+    "fewLeft": "Nur noch {{count}} Plätze"
   },
   "operator": {
     "website": "Webseite",
-    "visitStore": "Zum Shop"
+    "visitStore": "Zum Shop",
+    "notFound": "Veranstalter nicht gefunden",
+    "backToCalendar": "Alle Retreats ansehen",
+    "upcoming": "Kommende Retreats",
+    "upcoming_plural": "Kommende Retreats ({{count}})",
+    "noUpcoming": "Derzeit keine Retreats geplant. Schau bald wieder vorbei."
   },
   "account": {
     "title": "Meine Buchungen",
@@ -434,5 +478,16 @@
     "rowDue": "fällig bis",
     "payNow": "Jetzt zahlen",
     "ticketN": "Pass {{n}}"
+  },
+  "categories": {
+    "yoga": "Yoga",
+    "meditazione": "Meditation & Achtsamkeit",
+    "detox": "Detox & Fasten",
+    "suono": "Sound Healing",
+    "massaggio": "Massage & Bodywork",
+    "breathwork": "Breathwork",
+    "cammini": "Wandern & Natur",
+    "femminile": "Frauenkreise",
+    "aziendale": "Betriebliches Wohlbefinden"
   }
 }

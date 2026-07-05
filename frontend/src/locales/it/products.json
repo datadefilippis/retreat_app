@@ -2074,5 +2074,11 @@
     "longDescription": "Descrizione estesa (markdown supportato)",
     "longDescriptionPlaceholder": "## Il concept\n\nSerata di degustazione con menù degustazione a 4 portate e accompagnamento musicale live…",
     "markdownHint": "Userà ## per titoli, **grassetto**, *corsivo*, - per elenchi."
+  },
+  "multilang": {
+    "remove": "Rimuovi questa lingua",
+    "placeholder": "Scrivi qui il testo in {{lang}}…",
+    "hint": "Offri questo testo anche in:",
+    "visibility": "Il prodotto apparirà nelle viste in queste lingue. Senza traduzione resta visibile solo in italiano."
   }
 }

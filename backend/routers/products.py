@@ -168,6 +168,11 @@ async def create_product(
         from services.store_guard import require_public_home
         await require_public_home(org_id)
 
+    # Multilingua manuale (6/7) — whitelist lingue/campi/lunghezze
+    if getattr(data, "translations", None) is not None:
+        from services.manual_translations import sanitize_translations
+        data.translations = sanitize_translations(data.translations)
+
     from services.module_access import enforce_count_quota
     from database import products_collection
     current_count = await products_collection.count_documents({"organization_id": org_id})
@@ -347,10 +352,10 @@ async def update_product(
 
     # V4 — gate store-first sulla transizione a pubblicato + categoria
     # dalla tassonomia (stessa logica del create; fonte unica).
-    if getattr(data, "is_published", None) is True:
+    if getattr(updates, "is_published", None) is True:
         from services.store_guard import require_public_home
         await require_public_home(org_id)
-    if getattr(data, "category", None):
+    if getattr(updates, "category", None):
         from database import products_collection as _pc
         from models.retreat_taxonomy import PRODUCT_TAXONOMIES, RETREAT_CATEGORIES
         _existing = await _pc.find_one(
@@ -360,11 +365,14 @@ async def update_product(
         _it = (_existing or {}).get("item_type")
         _tax = PRODUCT_TAXONOMIES.get(_it) or (
             RETREAT_CATEGORIES if _it == "event_ticket" else None)
-        if _tax is not None and data.category not in _tax:
+        if _tax is not None and updates.category not in _tax:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Categoria non valida. Scegli una categoria dall'elenco.",
             )
+    if getattr(updates, "translations", None) is not None:
+        from services.manual_translations import sanitize_translations
+        updates.translations = sanitize_translations(updates.translations)
     update_dict = updates.model_dump(exclude_unset=True)
 
     # Onda 16 Fase 6: soft-deprecate item_type=booking on updates too.

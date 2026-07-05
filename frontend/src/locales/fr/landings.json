@@ -299,7 +299,35 @@
     "viewProfile": "Voir le profil",
     "findMoreRetreats": "Découvrir d'autres retraites",
     "autoTranslated": "Contenus traduits automatiquement de l'italien.",
-    "seeOriginal": "Voir l'original"
+    "seeOriginal": "Voir l'original",
+    "deposit": {
+      "payNow": "Aujourd'hui tu ne paies que l'acompte : {{amount}}",
+      "restBalance": "Le reste ({{amount}}) avant le {{date}}, avec rappels par e-mail.",
+      "restInstallments": "Le reste ({{amount}}) en {{count}} versements, le dernier avant le {{date}}, avec rappels par e-mail."
+    },
+    "paymentPlan": {
+      "heading": "Comment tu paies",
+      "depositPercent": "Réserve avec un acompte de {{percent}}% ; le solde est dû {{days}} jours avant le début.",
+      "depositFixed": "Réserve avec un acompte de {{amount}} ; le solde est dû {{days}} jours avant le début.",
+      "installmentsNote": "Le solde est réparti en {{count}} versements avec rappels automatiques.",
+      "policyHeading": "Politique d'annulation",
+      "policyTier": "Jusqu'à {{days}} jours avant : remboursement {{percent}}%",
+      "policyLast": "Au-delà : remboursement {{percent}}%"
+    },
+    "program": {
+      "heading": "Le programme"
+    },
+    "gallery": {
+      "heading": "Le lieu et les moments"
+    },
+    "includes": {
+      "heading": "Ce qui est inclus",
+      "included": "Inclus",
+      "excluded": "Non inclus"
+    },
+    "faq": {
+      "heading": "Questions fréquentes"
+    }
   },
   "product": {
     "loading": "Chargement…",
@@ -403,11 +431,27 @@
     "resultsCount": "{{count}} retraites",
     "emptyFiltered": "Élargis ta recherche : retire un filtre ou regarde un autre mois.",
     "showAll": "Voir toutes les retraites",
-    "searchShort": "Chercher…"
+    "searchShort": "Chercher…",
+    "title": "Retraites en Italie",
+    "subtitle": "Trouve ta prochaine retraite : yoga, méditation, détox, son et plus — et réserve ta place tout de suite avec un acompte.",
+    "allCategories": "Toutes les catégories",
+    "allRegions": "Toutes les régions",
+    "clearFilters": "Réinitialiser les filtres",
+    "loading": "Recherche des retraites…",
+    "emptyTitle": "Aucune retraite trouvée",
+    "emptyBody": "Élargis les filtres ou reviens bientôt : le calendrier s'enrichit chaque semaine.",
+    "priceFrom": "à partir de {{price}}",
+    "depositBadge": "Réserver avec acompte",
+    "fewLeft": "Plus que {{count}} places"
   },
   "operator": {
     "website": "Site web",
-    "visitStore": "Visiter la boutique"
+    "visitStore": "Visiter la boutique",
+    "notFound": "Organisateur introuvable",
+    "backToCalendar": "Voir toutes les retraites",
+    "upcoming": "Prochaines retraites",
+    "upcoming_plural": "Prochaines retraites ({{count}})",
+    "noUpcoming": "Aucune retraite prévue pour le moment. Reviens bientôt."
   },
   "account": {
     "title": "Mes réservations",
@@ -434,5 +478,16 @@
     "rowDue": "avant le",
     "payNow": "Payer",
     "ticketN": "Pass {{n}}"
+  },
+  "categories": {
+    "yoga": "Yoga",
+    "meditazione": "Méditation & Pleine conscience",
+    "detox": "Détox & Jeûne",
+    "suono": "Sound Healing",
+    "massaggio": "Massage & Bodywork",
+    "breathwork": "Breathwork",
+    "cammini": "Randonnée & Nature",
+    "femminile": "Cercles de femmes",
+    "aziendale": "Bien-être en entreprise"
   }
 }

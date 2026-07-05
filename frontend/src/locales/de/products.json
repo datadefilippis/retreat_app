@@ -1,6 +1,5 @@
 {
   "_comment": "German translations for the admin Products area.",
-
   "extras": {
     "title": "Extras & Optionen",
     "kindLabel": {
@@ -40,7 +39,6 @@
       "emptyHint": "Keine Radio-Gruppe vorhanden. Erstellen Sie oben eine (z. B. \"Versicherung\"), um zu beginnen."
     }
   },
-
   "options": {
     "title": "Service-Optionen",
     "subtitle": "Der Kunde wählt genau eine (Radio).",
@@ -61,7 +59,6 @@
       "remove": "Option entfernen"
     }
   },
-
   "fields": {
     "addButton": "+ Feld hinzufügen",
     "emptyHint": "Noch keine Felder konfiguriert.",
@@ -85,7 +82,6 @@
       "idPlaceholder": "auto"
     }
   },
-
   "typeLabels": {
     "physical": "Physisch",
     "service": "Dienstleistung",
@@ -95,7 +91,6 @@
     "event_ticket": "Veranstaltung",
     "course": "Kurs"
   },
-
   "list": {
     "typeFilter": {
       "physical": "📦 Physisch",
@@ -116,7 +111,6 @@
     "deactivateTitle": "Deaktivieren",
     "dashboardLink": "Dashboard"
   },
-
   "status": {
     "online": "Online",
     "offline": "Offline",
@@ -127,7 +121,6 @@
     "visibleInCatalog": "Im öffentlichen Katalog sichtbar",
     "notVisibleToCustomers": "Für Kunden nicht sichtbar"
   },
-
   "typePicker": {
     "title": "Welche Produktart möchten Sie erstellen?",
     "physical": {
@@ -159,7 +152,6 @@
       "desc": "Module und Videolektionen mit Bunny"
     }
   },
-
   "form": {
     "unitPlaceholder": "Stk., kg, h",
     "unitLabelPlaceholder": "Stk., Service, Tag",
@@ -169,7 +161,6 @@
     "manageLink": "Verwalten",
     "fieldsCounter": "{{count}}/4 Felder"
   },
-
   "grids": {
     "common": {
       "loading": "Wird geladen…",
@@ -185,7 +176,6 @@
       "newCta": "+ Neues Produkt",
       "firstCreateCta": "+ Erstes Produkt erstellen"
     },
-
     "physical": {
       "title": "Physische Produkte",
       "subtitle": "Physische Produkte verwalten: Bestand, Versand, Abholung.",
@@ -209,7 +199,6 @@
         "outOfStock": "❌ Ausverkauft"
       }
     },
-
     "digital": {
       "title": "Digitale Produkte",
       "subtitle": "E-Books, Vorlagen, herunterladbare Dateien.",
@@ -237,7 +226,6 @@
         "missingFile": "⚠️ Fehlend"
       }
     },
-
     "service": {
       "title": "Dienstleistungen",
       "subtitle": "Verwalten Sie alle Ihre Dienstleistungen und deren Verfügbarkeit.",
@@ -258,7 +246,6 @@
       "stateLabel": "Status",
       "dashboardCta": "Dashboard"
     },
-
     "reservation": {
       "title": "Vermietungen",
       "subtitle": "Verwalten Sie vermietbare Produkte: nach Zeitraum (mehrtägig) oder Slot (Stunden).",
@@ -277,7 +264,6 @@
       "typeBadgeRange": "🏠 Vermietung · Zeitraum",
       "typeBadgeSlot": "📅 Vermietung · Slot"
     },
-
     "course": {
       "title": "Videokurse",
       "subtitle": "Module und Lektionen mit Bunny Stream.",
@@ -322,7 +308,6 @@
         "errorTitle": "Problem mit der Bunny-Konfiguration — zum Überprüfen klicken"
       }
     },
-
     "event": {
       "title": "Veranstaltungen",
       "subtitle": "Verwalten Sie alle Ihre Veranstaltungen, Termine und Check-ins in einer einzigen Ansicht.",
@@ -366,7 +351,6 @@
       }
     }
   },
-
   "dashboards": {
     "common": {
       "loading": "Wird geladen…",
@@ -393,7 +377,6 @@
       "imageUrlPlaceholder": "oder URL einfügen…",
       "backToProducts": "← Zurück zu den Produkten"
     },
-
     "course": {
       "back": "← Kursprodukte",
       "newTitle": "Neuer Kurs",
@@ -742,7 +725,6 @@
         "courseUpdated": "Kurs aktualisiert"
       }
     },
-
     "event": {
       "back": "← Zurück zu den Veranstaltungen",
       "typeLabel": "Veranstaltung",
@@ -1106,7 +1088,6 @@
         "distributionUpdated": "Verteilung aktualisiert"
       }
     },
-
     "reservation": {
       "back": "← Zurück zu den Vermietungen",
       "fallbackName": "Vermietung",
@@ -1211,7 +1192,6 @@
         "extrasError": "Fehler beim Speichern der Extras"
       }
     },
-
     "digital": {
       "back": "← Zurück zu den Produkten",
       "typeLabel": "💾 Digitales Produkt",
@@ -1315,7 +1295,6 @@
         "extrasError": "Fehler beim Speichern der Extras"
       }
     },
-
     "physical": {
       "back": "← Zurück zu den Produkten",
       "typeLabel": "📦 Physisches Produkt",
@@ -1402,7 +1381,6 @@
         "extrasError": "Fehler beim Speichern der Extras"
       }
     },
-
     "service": {
       "back": "← Zurück zu den Services",
       "typeLabel": "Service",
@@ -1477,7 +1455,6 @@
       }
     }
   },
-
   "wizards": {
     "common": {
       "stepCounter": "Schritt {{current}} von {{total}}",
@@ -1561,7 +1538,6 @@
         "retrySuccess": "Bild erfolgreich hochgeladen."
       }
     },
-
     "physical": {
       "title": "Neues physisches Produkt",
       "tabs": {
@@ -1609,7 +1585,6 @@
         "publishToggleDesc": "Das Produkt wird im öffentlichen Storefront sichtbar und kaufbar. Wenn deaktiviert, wird es als Entwurf gespeichert."
       }
     },
-
     "event": {
       "title": "Neue Veranstaltung",
       "duplicateTitle": "Veranstaltung duplizieren",
@@ -1742,7 +1717,6 @@
         "validationErrorBanner": "Einige vorherige Felder erfordern Aufmerksamkeit. Gehen Sie zurück, um sie zu korrigieren."
       }
     },
-
     "digital": {
       "title": "Neues digitales Produkt",
       "tabs": {
@@ -1804,7 +1778,6 @@
         "publishToggleDesc": "Das Produkt wird im öffentlichen Storefront sichtbar und kaufbar. Wenn deaktiviert, wird es als Entwurf gespeichert."
       }
     },
-
     "reservation": {
       "title": "Neue Vermietung",
       "tabs": {
@@ -1888,7 +1861,6 @@
         "publishToggleDesc": "Das Produkt wird im öffentlichen Storefront sichtbar und buchbar. Wenn deaktiviert, wird es als Entwurf gespeichert."
       }
     },
-
     "service": {
       "title": "Neuer Service",
       "back": "← Zurück zu den Services",
@@ -1935,7 +1907,7 @@
         "summaryOptionsNone": "Keine (Grundpreis)",
         "longDescTitle": "Ausführliche Beschreibung (Landingpage)",
         "longDescDesc": "Was auf der öffentlichen Service-Seite angezeigt wird. Markdown unterstützt.",
-        "longDescPlaceholder": "## Was enthalten ist\n\n- Kostenlose Erstbewertung\n- Geführte Hypnose-Sitzung (60 Min.)\n- E-Mail-Follow-up in den Folgetagen\n\n## Für wen\u00a0\n\nMenschen, die ihre Schlafqualität verbessern, mit dem Rauchen aufhören oder Ängste bewältigen möchten.",
+        "longDescPlaceholder": "## Was enthalten ist\n\n- Kostenlose Erstbewertung\n- Geführte Hypnose-Sitzung (60 Min.)\n- E-Mail-Follow-up in den Folgetagen\n\n## Für wen \n\nMenschen, die ihre Schlafqualität verbessern, mit dem Rauchen aufhören oder Ängste bewältigen möchten.",
         "coverUrlLabel": "Landingpage-Cover-URL (optional)",
         "coverUrlPlaceholder": "https://… Heldenbild der öffentlichen Seite",
         "coverUrlHint": "Wenn leer, wird das Produktbild aus Schritt 1 verwendet.",
@@ -1952,7 +1924,6 @@
       }
     }
   },
-
   "venue": {
     "title": "Veranstaltungsdetails (optional)",
     "venueName": "Veranstaltungsort",
@@ -1975,5 +1946,11 @@
     "longDescription": "Ausführliche Beschreibung (Markdown unterstützt)",
     "longDescriptionPlaceholder": "## Das Konzept\n\nEin Verkostungsabend mit 4-Gänge-Menü und Live-Musik…",
     "markdownHint": "Verwenden Sie ## für Überschriften, **fett**, *kursiv*, - für Listen."
+  },
+  "multilang": {
+    "remove": "Diese Sprache entfernen",
+    "placeholder": "Schreibe hier den Text auf {{lang}}…",
+    "hint": "Diesen Text auch anbieten auf:",
+    "visibility": "Das Produkt erscheint in den Ansichten dieser Sprachen. Ohne Übersetzung bleibt es nur auf Italienisch sichtbar."
   }
 }

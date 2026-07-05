@@ -75,6 +75,15 @@ export default function OperatorProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* T2 — la via del ritorno: sempre visibile, sticky */}
+      <div className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur">
+        <div className="max-w-5xl mx-auto px-4 py-2.5">
+          <Link to="/ritiri" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900">
+            ← {t('landings:operator.backToCalendar')}
+          </Link>
+        </div>
+      </div>
+
       {/* F2.0 — cover del profilo (se curata) sopra il brand header */}
       <header className="text-white relative" style={{ backgroundColor: accent }}>
         {data.cover_url && (

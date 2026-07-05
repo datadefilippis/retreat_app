@@ -34,8 +34,11 @@ MAX_TRANSLATIONS_PER_RUN = 12   # cap per run: 4 ritiri x 3 lingue
 
 
 def _enabled() -> bool:
-    return os.environ.get("CONTENT_TRANSLATIONS_ENABLED", "true").lower() \
-        not in ("0", "false", "off")
+    # 6/7/2026 — decisione founder: traduzioni MANUALI, zero LLM, zero
+    # costi. La pipeline resta nel codice ma e' SPENTA di default;
+    # il serving pubblico non la legge piu' (manual_translations).
+    return os.environ.get("CONTENT_TRANSLATIONS_ENABLED", "false").lower() \
+        in ("1", "true", "on")
 
 
 def build_source_fields(occ: Dict[str, Any],

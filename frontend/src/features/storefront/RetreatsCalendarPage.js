@@ -93,12 +93,16 @@ export default function RetreatsCalendarPage() {
     if (category) q.category = category;
     if (region) q.region = region;
     if (month) q.month = month;
+    // Multilingua manuale: la vista in lingua X mostra solo i ritiri
+    // offerti in X (l'italiano mostra tutto)
+    const uiLang = (i18n.language || 'it').slice(0, 2);
+    if (uiLang !== 'it') q.lang = uiLang;
     api.get('/public/retreats', { params: q })
       .then(res => { if (mounted) setData(res.data); })
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [category, region, month]);
+  }, [category, region, month, i18n.language]);
 
   const setFilter = (key, value) => {
     const next = new URLSearchParams(params);
@@ -212,7 +216,8 @@ export default function RetreatsCalendarPage() {
                   }`}
                 >
                   <span aria-hidden className="mr-1.5">{CATEGORY_ICONS[key] || '✨'}</span>
-                  {label}
+                  {/* T3 — label categoria via i18n (fallback: label backend) */}
+                  {t(`landings:categories.${key}`, { defaultValue: label })}
                 </button>
               ))}
             </div>
@@ -336,7 +341,9 @@ export default function RetreatsCalendarPage() {
                       }}
                       className="text-[11px] font-semibold text-primary uppercase tracking-wide hover:underline w-fit"
                     >
-                      {(data.categories || {})[item.category] || item.category || ''}
+                      {t(`landings:categories.${item.category}`, {
+                        defaultValue: (data.categories || {})[item.category] || item.category || '',
+                      })}
                     </p>
                     <h2 className="font-semibold text-foreground mt-0.5 line-clamp-2">{item.title}</h2>
                     <p className="text-sm text-muted-foreground mt-1">

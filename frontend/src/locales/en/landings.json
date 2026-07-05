@@ -299,7 +299,35 @@
     "viewProfile": "View profile",
     "findMoreRetreats": "Discover more retreats",
     "autoTranslated": "Content automatically translated from Italian.",
-    "seeOriginal": "See original"
+    "seeOriginal": "See original",
+    "deposit": {
+      "payNow": "Today you only pay the deposit: {{amount}}",
+      "restBalance": "The rest ({{amount}}) by {{date}}, with email reminders.",
+      "restInstallments": "The rest ({{amount}}) in {{count}} instalments, last one by {{date}}, with email reminders."
+    },
+    "paymentPlan": {
+      "heading": "How you pay",
+      "depositPercent": "Book with a {{percent}}% deposit; the balance is due {{days}} days before the start.",
+      "depositFixed": "Book with a {{amount}} deposit; the balance is due {{days}} days before the start.",
+      "installmentsNote": "The balance is split into {{count}} instalments with automatic reminders.",
+      "policyHeading": "Cancellation policy",
+      "policyTier": "Up to {{days}} days before: {{percent}}% refund",
+      "policyLast": "After that: {{percent}}% refund"
+    },
+    "program": {
+      "heading": "The program"
+    },
+    "gallery": {
+      "heading": "The venue and the moments"
+    },
+    "includes": {
+      "heading": "What's included",
+      "included": "Included",
+      "excluded": "Not included"
+    },
+    "faq": {
+      "heading": "Frequently asked questions"
+    }
   },
   "product": {
     "loading": "Loading…",
@@ -403,11 +431,27 @@
     "resultsCount": "{{count}} retreats",
     "emptyFiltered": "Try widening your search: remove a filter or check another month.",
     "showAll": "Show all retreats",
-    "searchShort": "Search…"
+    "searchShort": "Search…",
+    "title": "Retreats in Italy",
+    "subtitle": "Find your next retreat: yoga, meditation, detox, sound and more — and book your spot right away with a deposit.",
+    "allCategories": "All categories",
+    "allRegions": "All regions",
+    "clearFilters": "Clear filters",
+    "loading": "Looking for retreats…",
+    "emptyTitle": "No retreats found",
+    "emptyBody": "Try widening the filters, or come back soon: the calendar grows every week.",
+    "priceFrom": "from {{price}}",
+    "depositBadge": "Book with a deposit",
+    "fewLeft": "Only {{count}} spots left"
   },
   "operator": {
     "website": "Website",
-    "visitStore": "Visit the shop"
+    "visitStore": "Visit the shop",
+    "notFound": "Organizer not found",
+    "backToCalendar": "See all retreats",
+    "upcoming": "Upcoming retreats",
+    "upcoming_plural": "Upcoming retreats ({{count}})",
+    "noUpcoming": "No retreats scheduled right now. Come back soon."
   },
   "account": {
     "title": "My bookings",
@@ -434,5 +478,16 @@
     "rowDue": "due by",
     "payNow": "Pay now",
     "ticketN": "Pass {{n}}"
+  },
+  "categories": {
+    "yoga": "Yoga",
+    "meditazione": "Meditation & Mindfulness",
+    "detox": "Detox & Fasting",
+    "suono": "Sound Healing",
+    "massaggio": "Massage & Bodywork",
+    "breathwork": "Breathwork",
+    "cammini": "Hiking & Nature",
+    "femminile": "Women's Circles",
+    "aziendale": "Corporate wellbeing"
   }
 }

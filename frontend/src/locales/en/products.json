@@ -1954,5 +1954,11 @@
     "longDescription": "Long description (markdown supported)",
     "longDescriptionPlaceholder": "## The concept\n\nA tasting evening with a 4-course menu and live music…",
     "markdownHint": "Use ## for headings, **bold**, *italic*, - for lists."
+  },
+  "multilang": {
+    "remove": "Remove this language",
+    "placeholder": "Write the {{lang}} text here…",
+    "hint": "Offer this text also in:",
+    "visibility": "The product will appear in views in these languages. Without a translation it stays visible in Italian only."
   }
 }

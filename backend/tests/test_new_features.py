@@ -16,7 +16,7 @@ assert BASE_URL, "REACT_APP_BACKEND_URL environment variable must be set"
 
 # Test credentials
 TEST_EMAIL = "admin@demo.com"
-TEST_PASSWORD = "demo123"
+TEST_PASSWORD = "demo1234"  # allineata a seed.py (era demo123: 401 + lockout)
 
 
 class TestAuth:

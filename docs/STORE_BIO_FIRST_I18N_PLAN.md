@@ -1,6 +1,18 @@
 # Store bio-first + navigazione directory + multilingua VERO (piano, 6 luglio 2026)
 
-Tre richieste founder + la domanda chiave sui costi di traduzione.
+> **ESITO (6/7/2026)** — T1 ✅ T2 ✅ T3 ✅. T4: decisione founder = **traduzioni
+> MANUALI, zero LLM, zero costi** ("non voglio pagare neanche un centesimo").
+> Implementato `services/manual_translations.py` + `MultiLangText.jsx`:
+> l'operatore inserisce lui stesso i testi in en/de/fr nel wizard evento E
+> nella dashboard evento (pill per lingua → textarea). Le lingue tradotte
+> sono le lingue che ACCETTA: vista directory/store in lingua X → compaiono
+> SOLO i prodotti con traduzione X (de senza traduzione = prodotto assente,
+> mai fallback silenzioso). Il merge serve description/long_description
+> tradotte su landing e catalogo. La pipeline LLM resta nel codice ma è
+> SPENTA di default (CONTENT_TRANSLATIONS_ENABLED=false) e il serving
+> pubblico non la legge più. Nota T1: CategoryNav ora si rende anche per
+> store mono-categoria (con bio-first la nav è l'unica via al catalogo).
+> Suite: 4128 verdi (13 nuovi test manual_translations).
 
 ## T1 · Store: la bio come PRIMA pagina (0,25 gg)
 Oggi /s/:slug apre la home V1 (hero + prossimi ritiri). Decisione founder:
