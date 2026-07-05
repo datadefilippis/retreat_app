@@ -1343,7 +1343,7 @@ async def reactivate_account(request: Request, body: _ReactivateBody):
         from services.plan_provisioning import provision_commercial_plan
         await provision_commercial_plan(
             org_id=org_id,
-            plan_slug="free",
+            plan_slug="retreat_free",   # O1: baseline del verticale ritiri
             assigned_by="reactivation",
             billing_status="none",
         )

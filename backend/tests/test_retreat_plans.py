@@ -386,3 +386,28 @@ class TestStoreFirstGate:
         assert src.count("store_required") == 2
         assert "Salvare in BOZZA resta sempre permesso" in src \
             or "bozza" in src.lower()
+
+
+class TestOnboarding:
+    """O1/O2 — signup sul piano giusto, stato derivato dai dati."""
+
+    def test_signup_provisions_retreat_free(self):
+        import os
+        src = open(os.path.join(os.path.dirname(__file__), "..",
+                                "services", "auth_service.py")).read()
+        i = src.index("assigned_by=\"signup\"")
+        block = src[max(0, i-300):i]
+        assert 'plan_slug="retreat_free"' in block
+        assert 'plan_slug="free"' not in block   # mai il legacy AFianco
+
+    def test_onboarding_status_is_derived_not_stored(self):
+        # lo stato NON si scrive mai: niente update/insert nell'endpoint
+        import os
+        src = open(os.path.join(os.path.dirname(__file__), "..",
+                                "routers", "organizations.py")).read()
+        i = src.index("async def onboarding_status")
+        block = src[i:i + 3000]
+        assert "update_one" not in block and "insert_one" not in block
+        for step in ("stripe_connected", "store_created", "retreat_created",
+                     "retreat_published", "profile_completed"):
+            assert step in block

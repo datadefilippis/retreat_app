@@ -1823,3 +1823,71 @@ async def upload_profile_cover(
         {"id": org_id}, {"$set": {"public_profile.cover_url": cover_url}},
     )
     return {"cover_url": cover_url}
+
+
+# ── O2 Onboarding operatore (5/7/2026) ───────────────────────────────────────
+# docs/ONBOARDING_PLAN.md — stato SEMPRE derivato dai dati (mai flag):
+# chi salta la checklist e fa a modo suo la vede comunque aggiornarsi.
+
+@router.get("/current/onboarding-status")
+async def onboarding_status(current_user: dict = Depends(require_admin)):
+    from database import (
+        event_occurrences_collection,
+        payment_connections_collection,
+        stores_collection,
+    )
+
+    org_id = current_user["organization_id"]
+    org_doc = await organization_repository.find_by_id(org_id) or {}
+
+    # 1. Stripe collegato: connection attiva
+    conn = await payment_connections_collection.find_one(
+        {"organization_id": org_id, "provider": "stripe", "status": "active"},
+        {"_id": 1},
+    )
+
+    # 2. Store: attivo, o public_slug legacy (org migrate)
+    store = await stores_collection.find_one(
+        {"organization_id": org_id, "is_active": True},
+        {"_id": 0, "slug": 1},
+    )
+    store_slug = (store or {}).get("slug") or org_doc.get("public_slug")
+
+    # 3/4. Ritiri: creato (anche bozza) / pubblicato
+    any_occ = await event_occurrences_collection.find_one(
+        {"organization_id": org_id}, {"_id": 1},
+    )
+    pub_occ = await event_occurrences_collection.find_one(
+        {"organization_id": org_id, "status": "published",
+         "slug": {"$nin": [None, ""]}},
+        {"_id": 0, "slug": 1}, sort=[("start_at", 1)],
+    )
+
+    # 5. Profilo: bio + (cover o almeno un social) = "presentabile"
+    pp = org_doc.get("public_profile") or {}
+    profile_ok = bool(pp.get("bio")) and bool(
+        pp.get("cover_url") or pp.get("instagram")
+        or pp.get("website") or pp.get("facebook"))
+
+    steps = {
+        "stripe_connected": bool(conn),
+        "store_created": bool(store_slug),
+        "retreat_created": bool(any_occ),
+        "retreat_published": bool(pub_occ),
+        "profile_completed": profile_ok,
+    }
+    completed = sum(1 for v in steps.values() if v)
+
+    # I link espliciti di dove vivono le pagine (richiesta founder):
+    # si mostrano nella card "Sei online!"
+    links = {}
+    if store_slug:
+        links["store"] = f"/s/{store_slug}"
+        links["profile"] = f"/o/{store_slug}"
+        if pub_occ:
+            links["landing"] = f"/e/{store_slug}/{pub_occ['slug']}"
+    links["directory"] = "/ritiri"
+
+    return {"steps": steps, "completed_count": completed,
+            "total": len(steps), "is_complete": completed == len(steps),
+            "links": links}
