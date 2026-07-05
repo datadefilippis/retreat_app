@@ -310,6 +310,14 @@ function AppRoutes() {
           <StorefrontPage />
         </PublicStorefrontShell>
       } />
+      {/* S3 — Chi siamo DENTRO il guscio store: stessa shell, stesso
+          carrello; il contenuto e' il profilo pubblico. /o/:slug resta
+          per il contesto directory. */}
+      <Route path="/s/:slug/chi-siamo" element={
+        <PublicStorefrontShell slugParamName="slug" showFloatingSwitcher={false}>
+          <StorefrontPage aboutMode />
+        </PublicStorefrontShell>
+      } />
       {/* E3: public event landing page — deep-link per-occurrence.
           Has StorefrontHeader → its inline switcher covers /e, no
           floating dup. */}

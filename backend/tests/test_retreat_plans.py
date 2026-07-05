@@ -443,3 +443,18 @@ class TestV4WizardUnification:
                                 "routers", "products.py")).read()
         assert src.index('@router.get("/taxonomies")') \
             < src.index('@router.get("/{product_id}"')
+
+
+class TestStoreLegacyMigration:
+    """S1 — fine del phantom store: GET /stores materializza il legacy."""
+
+    def test_list_stores_invokes_lazy_migration(self):
+        import os
+        src = open(os.path.join(os.path.dirname(__file__), "..",
+                                "routers", "stores.py")).read()
+        i = src.index("async def list_stores")
+        block = src[i:i + 2500]
+        assert "_ensure_default_store" in block          # richiamata
+        assert "public_slug" in block                     # solo org legacy
+        # e mai per org nuove: il ramo scatta solo con slug/settings
+        assert 'org.get("public_slug") or org.get("store_settings")' in block

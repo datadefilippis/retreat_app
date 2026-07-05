@@ -22,7 +22,7 @@ slug legacy) è debito tecnico che LEAKA nella UX. Ogni funzione nuova
 deve gestire due forme (l'abbiamo fatto 3 volte: guard, sitemap,
 onboarding) e l'operatore non capisce cosa possiede.
 
-### Fix S1 · Materializzare il legacy (0,5 gg)
+### Fix S1 · Materializzare il legacy ✅ (fatto 5/7/2026)
 - [ ] GET /stores richiama la migrazione lazy `_ensure_default_store`
       quando l'org ha public_slug/store_settings e zero store doc
       (la funzione c'è già, è idempotente, gestisce anche la race)
@@ -38,7 +38,7 @@ La home (V1) mostra le card "Esplora" (Ritiri · Prodotti) MENTRE la nav
 in alto mostra le stesse voci → duplicazione. Decisione founder: **via
 le card, resta il menu**.
 
-### Fix S2 · Home snella (0,25 gg)
+### Fix S2 · Home snella ✅ (fatto 5/7/2026)
 - [ ] Rimuovere la sezione "Esplora" dalla home
 - [ ] Resta: hero brand (chi sei) + Prossimi ritiri (cosa c'è di vivo)
 - [ ] Controllo anti-doppione ulteriore: il vecchio blocco "Merchant
@@ -54,7 +54,7 @@ Il visitatore "esce" dal negozio senza accorgersene e non sa tornare.
 Nel commerce la regola è: **dentro lo store non si esce mai** — ogni
 pagina ha lo stesso guscio (header, nav, footer, carrello).
 
-### Fix S3 · "Chi siamo" DENTRO lo store (0,75 gg)
+### Fix S3 · "Chi siamo" DENTRO lo store ✅ (fatto 5/7/2026)
 - [ ] Nuova route **/s/:slug/chi-siamo**: il CONTENUTO del profilo
       pubblico (cover, bio, social, contatti, prossimi ritiri) reso
       DENTRO la shell dello store (StorefrontHeader + CategoryNav +

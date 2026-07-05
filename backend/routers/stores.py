@@ -192,11 +192,10 @@ async def list_stores(current_user: dict = Depends(get_verified_user)):
     see an empty list until they explicitly create their first store
     via POST /stores. The frontend renders an empty-state CTA.
 
-    The legacy `_ensure_default_store` helper is preserved in this
-    file (still callable manually) for one-shot migration of orgs
-    that were created before the stores collection existed and only
-    have `org.store_settings`. Not invoked from any HTTP endpoint
-    automatically.
+    S1 (5/7/2026): per le org nel formato legacy mono-store la
+    migrazione `_ensure_default_store` viene richiamata QUI (lazy,
+    idempotente) cosi' lo store esiste come documento reale e
+    l'operatore lo gestisce dalla UI — fine del phantom store.
     """
     org_id = current_user["organization_id"]
 
@@ -206,6 +205,27 @@ async def list_stores(current_user: dict = Depends(get_verified_user)):
     ).sort("created_at", 1)
 
     stores = await cursor.to_list(50)
+
+    # S1 (5/7/2026) — fine del "phantom store": se l'org e' nel formato
+    # legacy mono-store (public_slug/store_settings, zero store doc), la
+    # migrazione lazy materializza lo store REALE cosi' l'operatore lo
+    # VEDE e lo gestisce. Idempotente e race-safe (_ensure_default_store
+    # gestisce il duplicato). Le org nuove restano a lista vuota + CTA.
+    if not stores:
+        org = await organizations_collection.find_one(
+            {"id": org_id},
+            {"_id": 0, "public_slug": 1, "store_settings": 1},
+        )
+        if org and (org.get("public_slug") or org.get("store_settings")):
+            try:
+                migrated = await _ensure_default_store(org_id, current_user)
+                if migrated:
+                    stores = [migrated]
+                    logger.info("stores: legacy org %s materializzata (S1)", org_id)
+            except Exception as exc:
+                logger.warning("stores: migrazione legacy fallita per %s: %s",
+                               org_id, exc)
+
     return {"stores": stores, "total": len(stores)}
 
 

@@ -61,6 +61,7 @@ import useCouponValidation from './hooks/useCouponValidation';
 // from StorefrontCards so the OrderSummary block below keeps working.
 import ProductGrid from './ProductGrid';
 import StoreHome from './components/StoreHome';
+import StoreAbout from './components/StoreAbout';
 import {
   BookingCalendarModal,
   fmtPrice,
@@ -335,7 +336,7 @@ function OrderSummary({ items, products, selectedOccurrences, selectedTiers, ren
 
 /* ── Main Storefront Page ──────────────────────────────────────────────────── */
 
-export default function StorefrontPage() {
+export default function StorefrontPage({ aboutMode = false } = {}) {
   // Phase 7.5 — `category` is set when mounted on `/s/:slug/c/:category`,
   // null when mounted on the bare `/s/:slug` root. Two different routes
   // mount the SAME component (App.js); the component branches on this
@@ -419,6 +420,7 @@ export default function StorefrontPage() {
   // empty, the redirect skips. The page then renders the existing
   // empty-state UI ("no products published yet"), unchanged.
   useEffect(() => {
+    if (aboutMode) return;                      // S3: chi-siamo, niente redirect
     if (category) return;                       // already on a category page
     if (loading) return;                        // wait for catalog
     if (!availableCategories || availableCategories.length === 0) return;
@@ -432,7 +434,7 @@ export default function StorefrontPage() {
   }, [category, loading, availableCategories, catalog, slug, navigate]);
 
   // V1 — home mode: root con catalogo multi-categoria (o ricco)
-  const isHome = !category && !loading
+  const isHome = !aboutMode && !category && !loading
     && (availableCategories || []).length > 0
     && !((availableCategories || []).length === 1
          && (catalog?.products || []).length <= 6);
@@ -2016,8 +2018,9 @@ export default function StorefrontPage() {
           stays available inside the checkout modal's OrderSummary
           which already lists items + remove buttons. */}
 
-      {/* Merchant info section */}
-      {(() => {
+      {/* Merchant info section — S2: sulla home duplica l'hero brand,
+          quindi si mostra solo sulle pagine categoria */}
+      {!isHome && !aboutMode && (() => {
         const si = catalog?.store_info;
         if (!si?.store_description && !si?.contact_email && !si?.contact_phone) return null;
         return (
@@ -2056,6 +2059,13 @@ export default function StorefrontPage() {
         </div>
       )}
 
+      {/* S3 — Chi siamo nel guscio store */}
+      {aboutMode && (
+        <div className="max-w-6xl mx-auto px-4 pt-2 pb-4">
+          <StoreAbout slug={slug} />
+        </div>
+      )}
+
       {/* V1 — home vetrina: hero brand + categorie + prossimi ritiri */}
       {isHome && (
         <div className="max-w-6xl mx-auto px-4 pt-6 pb-4">
@@ -2075,7 +2085,7 @@ export default function StorefrontPage() {
           fallback. The BookingCalendarModal stays at the page level
           (below) because it's a global modal — only ONE picker is open
           at a time across all booking products. */}
-      {!isHome && <ProductGrid
+      {!isHome && !aboutMode && <ProductGrid
         products={products}
         currency={catalog.currency}
         orgSlug={slug}
@@ -2125,7 +2135,7 @@ export default function StorefrontPage() {
           <p className="text-xs text-gray-400 text-center">
             {/* F2.1 — ecosistema: profilo organizzatore + directory
                 (solo footer: mai dentro il funnel di checkout) */}
-            <a href={`/o/${slug}`} className="hover:underline">
+            <a href={`/s/${slug}/chi-siamo`} className="hover:underline">
               {t('storefront:footer.operatorProfile', { defaultValue: 'Chi siamo' })}
             </a>
             <span aria-hidden className="mx-1.5">·</span>
