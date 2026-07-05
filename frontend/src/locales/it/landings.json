@@ -441,7 +441,8 @@
     "searchPlaceholder": "Cerca un ritiro, un luogo, un organizzatore…",
     "resultsCount": "{{count}} ritiri",
     "emptyFiltered": "Prova ad allargare la ricerca: togli un filtro o guarda un altro mese.",
-    "showAll": "Mostra tutti i ritiri"
+    "showAll": "Mostra tutti i ritiri",
+    "searchShort": "Cerca…"
   },
   "operator": {
     "notFound": "Organizzatore non trovato",

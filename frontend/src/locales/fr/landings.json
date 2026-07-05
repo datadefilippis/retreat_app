@@ -402,7 +402,8 @@
     "searchPlaceholder": "Cherche une retraite, un lieu, un organisateur…",
     "resultsCount": "{{count}} retraites",
     "emptyFiltered": "Élargis ta recherche : retire un filtre ou regarde un autre mois.",
-    "showAll": "Voir toutes les retraites"
+    "showAll": "Voir toutes les retraites",
+    "searchShort": "Chercher…"
   },
   "operator": {
     "website": "Site web",

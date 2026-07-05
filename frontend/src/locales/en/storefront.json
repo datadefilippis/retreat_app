@@ -433,5 +433,8 @@
     "itemCount": "{{count}} items",
     "upcomingTitle": "Upcoming retreats",
     "seeAll": "See all"
+  },
+  "nav": {
+    "about": "About us"
   }
 }

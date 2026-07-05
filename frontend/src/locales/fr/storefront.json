@@ -417,5 +417,8 @@
     "itemCount": "{{count}} offres",
     "upcomingTitle": "Prochaines retraites",
     "seeAll": "Voir tout"
+  },
+  "nav": {
+    "about": "Qui sommes-nous"
   }
 }

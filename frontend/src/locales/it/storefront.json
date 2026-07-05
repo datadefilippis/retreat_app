@@ -433,5 +433,8 @@
     "itemCount": "{{count}} proposte",
     "upcomingTitle": "Prossimi ritiri",
     "seeAll": "Vedi tutti"
+  },
+  "nav": {
+    "about": "Chi siamo"
   }
 }

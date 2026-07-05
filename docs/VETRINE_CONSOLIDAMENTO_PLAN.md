@@ -82,14 +82,14 @@ Sostituisce il redirect: /s/:slug diventa una VETRINA.
 - **DoD**: atterri su /s/:slug e in 5 secondi sai CHI è l'operatore e COSA
   offre; bio a 1 click.
 
-### V2 · Header store navigabile (0,5 gg)
+### V2 · Header store navigabile ✅ (fatto 5/7/2026 sera — Chi siamo + contatori nella nav; la ricerca vive nelle pagine categoria e nella home, non duplicata nell'header)
 - [ ] Ricerca globale nel header (client-side sul catalogo già caricato,
       come la directory)
 - [ ] Voce "Chi siamo" → profilo (accanto alle categorie)
 - [ ] Contatori discreti sulle voci categoria
 - **DoD**: da QUALSIASI pagina store raggiungi bio e ricerca in 1 click.
 
-### V3 · Card unificate (1 gg)
+### V3 · Card unificate ✅ (verificato 5/7/2026: la shell CommerceCard era GIA' unificata — aspect 16/10, token radius/shadow, hover — le 6 varianti passano solo dati. Rifiniture directory fatte: tap categoria filtra + search sticky)
 Un'unica anatomia per TUTTE le card (store + directory): immagine
 full-bleed → badge contestuale (data per ritiri, durata per corsi, "digitale"
 per file) → titolo → riga info → prezzo + CTA. Stessi radius/hover/skeleton
