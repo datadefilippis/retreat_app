@@ -88,5 +88,20 @@
     "step_products": "2. Add at least one product",
     "step_payments": "3. Connect payments",
     "step_publish": "4. Publish your store"
+  },
+  "home": {
+    "upcoming_title": "Upcoming retreats",
+    "upcoming_empty": "No retreats scheduled.",
+    "upcoming_cta": "Create your first retreat",
+    "upcoming_all": "All retreats",
+    "payments_title": "Revenue",
+    "payments_collected": "collected",
+    "payments_expected": "Expected",
+    "payments_overdue": "Overdue",
+    "payments_all": "Go to orders",
+    "todo_title": "To do",
+    "todo_empty": "All clear. Nothing to handle.",
+    "todo_review": "Orders to review",
+    "todo_drafts": "Open drafts"
   }
 }

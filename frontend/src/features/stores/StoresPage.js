@@ -457,7 +457,16 @@ export default function StoresPage() {
 
   return (
     <AppLayout>
-      <Header title={t('title')} subtitle={t('subtitle')} />
+      <Header title={t('title')} subtitle={t('subtitle')}>
+        {/* UX round 5/7 — il profilo pubblico e' PERTINENTE qui: e' la
+            vetrina dell'operatore, accanto ai suoi store. (Resta anche
+            in Impostazioni, ma questo e' il posto dove lo cerchi.) */}
+        <Link to="/public-profile">
+          <Button variant="outline" size="sm">
+            {t('publicProfileCta', { defaultValue: '🌿 Il tuo profilo pubblico' })}
+          </Button>
+        </Link>
+      </Header>
       <PageSubheader
         tabs={subheaderTabs}
         activeTab={activeTab}

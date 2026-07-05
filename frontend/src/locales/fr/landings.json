@@ -294,7 +294,12 @@
     "tiersHint": "Vous pouvez combiner plusieurs catégories (ex. 2 Standard + 1 VIP).",
     "footerOrganizedBy": "Organisé par <1>{{name}}</1>",
     "toastAdded": "Ajouté au panier",
-    "toastAction": "Aller au paiement"
+    "toastAction": "Aller au paiement",
+    "organizedBy": "Organisé par",
+    "viewProfile": "Voir le profil",
+    "findMoreRetreats": "Découvrir d'autres retraites",
+    "autoTranslated": "Contenus traduits automatiquement de l'italien.",
+    "seeOriginal": "Voir l'original"
   },
   "product": {
     "loading": "Chargement…",
@@ -392,5 +397,41 @@
         "too_long": "Trop long (max {{duration}})"
       }
     }
+  },
+  "calendar": {
+    "searchPlaceholder": "Cherche une retraite, un lieu, un organisateur…",
+    "resultsCount": "{{count}} retraites",
+    "emptyFiltered": "Élargis ta recherche : retire un filtre ou regarde un autre mois.",
+    "showAll": "Voir toutes les retraites"
+  },
+  "operator": {
+    "website": "Site web",
+    "visitStore": "Visiter la boutique"
+  },
+  "account": {
+    "title": "Mes réservations",
+    "loginTitle": "Tes réservations",
+    "loginBody": "Pas de mot de passe : nous t'envoyons un lien de connexion par e-mail.",
+    "emailPlaceholder": "Ton e-mail",
+    "sendLink": "Envoyer le lien",
+    "sending": "Envoi…",
+    "sentTitle": "Vérifie tes e-mails",
+    "sentBody": "Si un compte existe pour cette adresse, tu recevras un lien valable 15 minutes.",
+    "expiredTitle": "Lien expiré ou déjà utilisé",
+    "expiredBody": "Pas de souci : saisis ton e-mail et nous t'en envoyons un nouveau.",
+    "requestNew": "Demander un nouveau lien",
+    "verifying": "Un instant, connexion en cours…",
+    "backToRetreats": "← Retour aux retraites",
+    "requestError": "Quelque chose n'a pas fonctionné. Réessaie dans une minute.",
+    "loadError": "Impossible de charger les réservations. Réessaie bientôt.",
+    "dueTitle": "Paiements à venir",
+    "upcomingTitle": "Prochaines retraites",
+    "pastTitle": "Passées",
+    "noUpcoming": "Aucune retraite prévue.",
+    "browse": "Découvrir les prochaines retraites →",
+    "rowPaid": "payé",
+    "rowDue": "avant le",
+    "payNow": "Payer",
+    "ticketN": "Pass {{n}}"
   }
 }

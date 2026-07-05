@@ -226,7 +226,9 @@
     }
   },
   "footer": {
-    "poweredBy": "Powered by Retreat App"
+    "poweredBy": "Powered by Retreat App",
+    "operatorProfile": "Über uns",
+    "findRetreats": "Weitere Retreats entdecken"
   },
   "openCheckoutBtn": {
     "goCheckout": "Zur Kasse →",

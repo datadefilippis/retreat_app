@@ -1679,7 +1679,8 @@
         "uploadFailedSuffix": "Ritiro creato, ma il caricamento di {{which}} è fallito. Puoi aggiungerla dal pannello Modifica.",
         "uploadProductImage": "immagine prodotto",
         "uploadCoverImage": "cover ritiro",
-        "creationFailed": "Errore nella creazione del ritiro"
+        "creationFailed": "Errore nella creazione del ritiro",
+        "categoryRequired": "Scegli la categoria del ritiro"
       },
       "createdToast": "Ritiro creato!",
       "publishCta": "Pubblica ritiro",
@@ -1698,7 +1699,10 @@
         "priceHint": "Usato solo se non crei tipologie di biglietto nello step 3.",
         "modeLabel": "Modalità acquisto",
         "modeDirect": "Diretto (checkout immediato)",
-        "modeRequest": "Richiesta (approvazione manuale)"
+        "modeRequest": "Richiesta (approvazione manuale)",
+        "categoryLabel": "Categoria",
+        "categoryPlaceholder": "Seleziona la categoria…",
+        "categoryHint": "Decide dove appare nel calendario pubblico dei ritiri."
       },
       "where": {
         "title": "Quando e dove",

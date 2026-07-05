@@ -241,7 +241,9 @@
     }
   },
   "footer": {
-    "poweredBy": "Powered by Retreat App"
+    "poweredBy": "Powered by Retreat App",
+    "operatorProfile": "About us",
+    "findRetreats": "Discover more retreats"
   },
   "openCheckoutBtn": {
     "goCheckout": "Go to checkout →",

@@ -88,5 +88,20 @@
     "step_products": "2. Aggiungi almeno un prodotto",
     "step_payments": "3. Collega pagamenti",
     "step_publish": "4. Pubblica il tuo store"
+  },
+  "home": {
+    "upcoming_title": "Prossimi ritiri",
+    "upcoming_empty": "Nessun ritiro in programma.",
+    "upcoming_cta": "Crea il primo ritiro",
+    "upcoming_all": "Tutti i ritiri",
+    "payments_title": "Incassi",
+    "payments_collected": "incassati",
+    "payments_expected": "In arrivo",
+    "payments_overdue": "In ritardo",
+    "payments_all": "Vai agli ordini",
+    "todo_title": "Da fare",
+    "todo_empty": "Tutto in ordine. Niente da gestire.",
+    "todo_review": "Ordini da gestire",
+    "todo_drafts": "Bozze aperte"
   }
 }

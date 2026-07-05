@@ -283,5 +283,6 @@
       "description_placeholder": "Description shown to the customer (optional)",
       "add": "+ Add shipping option"
     }
-  }
+  },
+  "publicProfileCta": "🌿 Your public profile"
 }

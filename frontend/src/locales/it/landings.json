@@ -322,7 +322,12 @@
     },
     "faq": {
       "heading": "Domande frequenti"
-    }
+    },
+    "organizedBy": "Organizzato da",
+    "viewProfile": "Vedi profilo",
+    "findMoreRetreats": "Scopri altri ritiri",
+    "autoTranslated": "Contenuti tradotti automaticamente dall'italiano.",
+    "seeOriginal": "Vedi originale"
   },
   "product": {
     "loading": "Caricamento…",
@@ -432,13 +437,45 @@
     "emptyBody": "Prova ad allargare i filtri, o torna presto: il calendario cresce ogni settimana.",
     "priceFrom": "da {{price}}",
     "depositBadge": "Prenoti con caparra",
-    "fewLeft": "Solo {{count}} posti rimasti"
+    "fewLeft": "Solo {{count}} posti rimasti",
+    "searchPlaceholder": "Cerca un ritiro, un luogo, un organizzatore…",
+    "resultsCount": "{{count}} ritiri",
+    "emptyFiltered": "Prova ad allargare la ricerca: togli un filtro o guarda un altro mese.",
+    "showAll": "Mostra tutti i ritiri"
   },
   "operator": {
     "notFound": "Organizzatore non trovato",
     "backToCalendar": "Vedi tutti i ritiri",
     "upcoming": "Prossimi ritiri",
     "upcoming_plural": "Prossimi ritiri ({{count}})",
-    "noUpcoming": "Nessun ritiro in programma al momento. Torna presto."
+    "noUpcoming": "Nessun ritiro in programma al momento. Torna presto.",
+    "website": "Sito web",
+    "visitStore": "Visita il negozio"
+  },
+  "account": {
+    "title": "Le mie prenotazioni",
+    "loginTitle": "Le tue prenotazioni",
+    "loginBody": "Niente password: ti mandiamo un link di accesso via email.",
+    "emailPlaceholder": "La tua email",
+    "sendLink": "Inviami il link",
+    "sending": "Invio…",
+    "sentTitle": "Controlla la tua email",
+    "sentBody": "Se esiste un account per questo indirizzo, riceverai un link di accesso valido 15 minuti.",
+    "expiredTitle": "Link scaduto o già usato",
+    "expiredBody": "Nessun problema: inserisci la tua email e te ne mandiamo uno nuovo.",
+    "requestNew": "Richiedi un nuovo link",
+    "verifying": "Un attimo, ti facciamo entrare…",
+    "backToRetreats": "← Torna ai ritiri",
+    "requestError": "Qualcosa non ha funzionato. Riprova tra un minuto.",
+    "loadError": "Non riusciamo a caricare le prenotazioni. Riprova tra poco.",
+    "dueTitle": "Pagamenti in scadenza",
+    "upcomingTitle": "Prossimi ritiri",
+    "pastTitle": "Passati",
+    "noUpcoming": "Nessun ritiro in programma.",
+    "browse": "Scopri i prossimi ritiri →",
+    "rowPaid": "pagato",
+    "rowDue": "entro il",
+    "payNow": "Paga ora",
+    "ticketN": "Pass {{n}}"
   }
 }

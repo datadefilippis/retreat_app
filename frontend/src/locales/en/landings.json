@@ -294,7 +294,12 @@
     "tiersHint": "You can combine tier types (e.g. 2 Standard + 1 VIP).",
     "footerOrganizedBy": "Organized by <1>{{name}}</1>",
     "toastAdded": "Added to cart",
-    "toastAction": "Go to checkout"
+    "toastAction": "Go to checkout",
+    "organizedBy": "Organized by",
+    "viewProfile": "View profile",
+    "findMoreRetreats": "Discover more retreats",
+    "autoTranslated": "Content automatically translated from Italian.",
+    "seeOriginal": "See original"
   },
   "product": {
     "loading": "Loading…",
@@ -392,5 +397,41 @@
         "too_long": "Too long (max {{duration}})"
       }
     }
+  },
+  "calendar": {
+    "searchPlaceholder": "Search a retreat, a place, an organizer…",
+    "resultsCount": "{{count}} retreats",
+    "emptyFiltered": "Try widening your search: remove a filter or check another month.",
+    "showAll": "Show all retreats"
+  },
+  "operator": {
+    "website": "Website",
+    "visitStore": "Visit the shop"
+  },
+  "account": {
+    "title": "My bookings",
+    "loginTitle": "Your bookings",
+    "loginBody": "No password needed: we'll email you a sign-in link.",
+    "emailPlaceholder": "Your email",
+    "sendLink": "Send me the link",
+    "sending": "Sending…",
+    "sentTitle": "Check your email",
+    "sentBody": "If an account exists for this address, you'll receive a sign-in link valid for 15 minutes.",
+    "expiredTitle": "Link expired or already used",
+    "expiredBody": "No problem: enter your email and we'll send a new one.",
+    "requestNew": "Request a new link",
+    "verifying": "One moment, signing you in…",
+    "backToRetreats": "← Back to retreats",
+    "requestError": "Something went wrong. Try again in a minute.",
+    "loadError": "We can't load your bookings right now. Try again shortly.",
+    "dueTitle": "Payments due",
+    "upcomingTitle": "Upcoming retreats",
+    "pastTitle": "Past",
+    "noUpcoming": "No retreats scheduled.",
+    "browse": "Discover upcoming retreats →",
+    "rowPaid": "paid",
+    "rowDue": "due by",
+    "payNow": "Pay now",
+    "ticketN": "Pass {{n}}"
   }
 }
