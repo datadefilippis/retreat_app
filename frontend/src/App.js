@@ -78,6 +78,8 @@ import PosPage from "./features/stores/PosPage";
 import StorefrontPage from "./features/storefront/StorefrontPage";
 import EventLandingPage from "./features/storefront/EventLandingPage";
 import TicketLandingPage from "./features/storefront/TicketLandingPage";
+import AccountLoginPage from './features/account/AccountLoginPage';
+import AccountPage from './features/account/AccountPage';
 import BookingLandingPage from "./features/storefront/BookingLandingPage";
 import ReservationConfirmationPage from "./features/storefront/ReservationConfirmationPage";
 import ProductLandingPage from "./features/storefront/ProductLandingPage";
@@ -324,6 +326,9 @@ function AppRoutes() {
       } />
       {/* F1 Onda 8: public ticket landing — QR + event details for one holder */}
       <Route path="/t/:token" element={<TicketLandingPage />} />
+      {/* P3 Passaporto Ritiri — area personale utente finale (pubblica, noindex) */}
+      <Route path="/account/accedi" element={<AccountLoginPage />} />
+      <Route path="/account" element={<AccountPage />} />
       {/* Onda 14: public booking landing — service appointment details + .ics */}
       <Route path="/b/:token" element={<BookingLandingPage />} />
       {/* Onda 16: public reservation landing (rental range + slot) */}

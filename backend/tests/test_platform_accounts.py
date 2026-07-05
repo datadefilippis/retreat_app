@@ -249,3 +249,40 @@ class TestP2ClaimEmail:
         assert out is True and sent["email"] == "a@b.it"
         tokens.insert_one.assert_called_once()
         accounts.update_one.assert_called_once()  # claim_last_sent_at
+
+
+class TestP3AccountArea:
+    """P3 — /platform/me/orders: solo dati lato-cliente, pay link solo
+    su righe pagabili, stati allineati al motore /pay."""
+
+    def _endpoint_src(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "routers", "platform_accounts.py")
+        src = open(path).read()
+        i = src.index('@router.get("/me/orders")')
+        return src[i:i + 4000]
+
+    def test_no_internal_fields_exposed(self):
+        block = self._endpoint_src()
+        # mai esporre dati interni operatore o fee piattaforma
+        for banned in ("cost_price", "application_fee", "notes",
+                       "internal", "customer_id"):
+            assert f'"{banned}"' not in block, banned
+
+    def test_payable_states_come_from_engine(self):
+        # fonte di verita' unica: PAYABLE_STATES del motore /pay —
+        # niente liste duplicate che divergono
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "routers", "platform_accounts.py")
+        src = open(path).read()
+        assert "from services.payment_schedule_service import PAYABLE_STATES" in src
+
+    def test_cancelled_orders_excluded(self):
+        block = self._endpoint_src()
+        assert '"$ne": "cancelled"' in block
+
+    def test_voided_tickets_excluded(self):
+        block = self._endpoint_src()
+        assert '"$ne": "voided"' in block

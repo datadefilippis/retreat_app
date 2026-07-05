@@ -124,3 +124,89 @@ async def logout_all(account: dict = Depends(get_current_platform_account)):
         {"$set": {"sessions_invalidated_at": utc_now().isoformat()}},
     )
     return {"status": "ok"}
+
+
+# Stessa fonte di verita' del motore /pay: una riga con session gia'
+# emessa (processing) resta pagabile — il /pay genera una session fresca.
+from services.payment_schedule_service import PAYABLE_STATES as PAYABLE_ROW_STATES  # noqa: E402
+
+
+@router.get("/me/orders")
+async def get_my_orders(account: dict = Depends(get_current_platform_account)):
+    """P3 — le prenotazioni dell'utente su TUTTI gli operatori.
+
+    Aggregazione via orders.platform_account_id (stamp di P2). Espone
+    SOLO dati lato-cliente: niente costi interni, note operatore, fee o
+    dati di altri clienti. Le righe pagamento aperte portano il
+    pay_token (link /pay eterno) — un solo posto per pagare tutto.
+    """
+    _flag_enabled()
+    from database import (
+        db,
+        issued_tickets_collection,
+        orders_collection,
+        organizations_collection,
+    )
+
+    orders = await orders_collection.find(
+        {"platform_account_id": account["id"],
+         "status": {"$ne": "cancelled"}},
+        {"_id": 0, "id": 1, "order_number": 1, "organization_id": 1,
+         "status": 1, "total": 1, "currency": 1, "created_at": 1,
+         "payment_state": 1,
+         "items.product_name": 1, "items.quantity": 1,
+         "items.occurrence_start_at": 1, "items.occurrence_location": 1,
+         "items.item_type": 1},
+    ).sort("created_at", -1).to_list(200)
+
+    if not orders:
+        return {"orders": [], "total": 0}
+
+    org_ids = list({o["organization_id"] for o in orders})
+    orgs = {o["id"]: o async for o in organizations_collection.find(
+        {"id": {"$in": org_ids}}, {"_id": 0, "id": 1, "name": 1})}
+
+    order_ids = [o["id"] for o in orders]
+    schedules = {s["order_id"]: s async for s in db.payment_schedules.find(
+        {"order_id": {"$in": order_ids}},
+        {"_id": 0, "order_id": 1, "payment_state": 1,
+         "rows.kind": 1, "rows.amount_minor": 1, "rows.status": 1,
+         "rows.due_at": 1, "rows.pay_token": 1, "rows.seq": 1})}
+
+    tickets_by_order: dict = {}
+    async for tk in issued_tickets_collection.find(
+            {"order_id": {"$in": order_ids}, "status": {"$ne": "voided"}},
+            {"_id": 0, "order_id": 1, "access_token": 1, "code": 1}):
+        tickets_by_order.setdefault(tk["order_id"], []).append(
+            {"access_token": tk.get("access_token"), "code": tk.get("code")})
+
+    out = []
+    for o in orders:
+        sched = schedules.get(o["id"])
+        rows = []
+        for r in (sched or {}).get("rows", []):
+            row = {"kind": r.get("kind"), "amount_minor": r.get("amount_minor"),
+                   "status": r.get("status"), "due_at": r.get("due_at")}
+            # pay link SOLO per righe realmente pagabili
+            if r.get("status") in PAYABLE_ROW_STATES and r.get("pay_token"):
+                row["pay_token"] = r["pay_token"]
+            rows.append(row)
+        ev = next((it for it in o.get("items", [])
+                   if it.get("occurrence_start_at")), None)
+        out.append({
+            "id": o["id"],
+            "order_number": o.get("order_number"),
+            "operator_name": orgs.get(o["organization_id"], {}).get("name"),
+            "status": o.get("status"),
+            "total": o.get("total"),
+            "currency": o.get("currency", "EUR"),
+            "created_at": o.get("created_at"),
+            "payment_state": (sched or {}).get("payment_state") or o.get("payment_state"),
+            "retreat_title": (ev or (o.get("items") or [{}])[0]).get("product_name"),
+            "start_at": (ev or {}).get("occurrence_start_at"),
+            "location": (ev or {}).get("occurrence_location"),
+            "seats": (ev or {}).get("quantity"),
+            "payment_rows": rows,
+            "tickets": tickets_by_order.get(o["id"], []),
+        })
+    return {"orders": out, "total": len(out)}
