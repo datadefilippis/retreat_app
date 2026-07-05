@@ -1091,6 +1091,10 @@
         "trHint": "Übersetze nur die Texte: Struktur, Zeiten und Fotos werden auf Italienisch verwaltet. Leere Felder bleiben auf der öffentlichen Seite italienisch.",
         "trLineHint": "Eine Zeile pro Eintrag, in derselben Reihenfolge wie im Italienischen.",
         "trEmpty": "Fülle zuerst die italienischen Inhalte aus: hier erscheinen dieselben Felder zur Übersetzung."
+      },
+      "createdBanner": {
+        "text": "Retreat erstellt! Baue jetzt deine Verkaufsseite: Tagesprogramm, Fotogalerie, Leistungen und FAQ.",
+        "cta": "Programm hinzufügen →"
       }
     },
     "reservation": {
@@ -1719,7 +1723,8 @@
         "distributionMultiDesc": "In welchen Stores die Veranstaltung sichtbar ist.",
         "publishToggleTitle": "Sofort veröffentlichen",
         "publishToggleDesc": "Wenn aktiviert, ist die Veranstaltung im Katalog sichtbar und für Kunden kaufbar. Sie können dies jederzeit im Veranstaltungs-Dashboard ändern.",
-        "validationErrorBanner": "Einige vorherige Felder erfordern Aufmerksamkeit. Gehen Sie zurück, um sie zu korrigieren."
+        "validationErrorBanner": "Einige vorherige Felder erfordern Aufmerksamkeit. Gehen Sie zurück, um sie zu korrigieren.",
+        "enrichLaterCue": "Hier erstellst du das Retreat mit den wichtigsten Angaben. Programm, Fotogalerie und FAQ fügst du DIREKT DANACH hinzu: nach dem Speichern bringen wir dich zur Retreat-Seite, Bereich \"Verkaufsseite\"."
       }
     },
     "digital": {

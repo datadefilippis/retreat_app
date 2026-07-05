@@ -325,6 +325,10 @@ export default function EventDashboardPage() {
   const { occurrence_id: occurrenceId } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  // Banner one-shot post-creazione (?creato=1 dal wizard): porta
+  // l'operatore dritto alla Pagina di vendita per programma/foto/FAQ.
+  const [showCreatedBanner, setShowCreatedBanner] = useState(
+    searchParams.get('creato') === '1');
   const { t, i18n } = useTranslation('products');
   const [occurrence, setOccurrence] = useState(null);
 
@@ -706,12 +710,50 @@ export default function EventDashboardPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5 sm:py-8 space-y-5">
+        {showCreatedBanner && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-emerald-900">
+              🎉 {t('dashboards.event.createdBanner.text', {
+                defaultValue: 'Ritiro creato! Ora costruisci la pagina di vendita: programma giorno per giorno, galleria foto, cosa è incluso e FAQ.',
+              })}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  // niente behavior:'smooth': su alcuni browser lo scroll
+                  // animato viene ignorato/cancellato — il salto secco
+                  // funziona ovunque
+                  document.getElementById('pagina-di-vendita')
+                    ?.scrollIntoView({ block: 'start' });
+                }}
+                className="rounded-md bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold hover:bg-emerald-800"
+              >
+                {t('dashboards.event.createdBanner.cta', {
+                  defaultValue: 'Aggiungi il programma →',
+                })}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCreatedBanner(false);
+                  searchParams.delete('creato');
+                  setSearchParams(searchParams, { replace: true });
+                }}
+                className="text-emerald-700 hover:text-emerald-900 text-sm px-1"
+                aria-label="Chiudi"
+              >×</button>
+            </div>
+          </div>
+        )}
         {/* Diagnostic banner — shown when landing or store visibility is blocked */}
         {/* Fase 2 S2 — Incassi in cima: la prima cosa che l'operatore guarda */}
         <PaymentsCard occurrenceId={occurrenceId} />
 
         {/* Fase 3 — editor contenuti pagina di vendita */}
-        <RetreatContentEditor occurrenceId={occurrenceId} occurrence={occurrence} />
+        <div id="pagina-di-vendita">
+          <RetreatContentEditor occurrenceId={occurrenceId} occurrence={occurrence} />
+        </div>
 
         {landingBlockers.length > 0 && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
