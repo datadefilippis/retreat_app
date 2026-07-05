@@ -35,7 +35,15 @@
     "needs_approval": "Da approvare",
     "paid_needs_confirm_count": "{{count}} pagati da confermare",
     "by_customer": "Ordini di {{name}}",
-    "clear": "Mostra tutti"
+    "clear": "Mostra tutti",
+    "advanced": "Filtri",
+    "life_active": "In corso",
+    "reset_all": "Azzera filtri",
+    "label_status": "Stato",
+    "label_type": "Tipo",
+    "label_period": "Periodo",
+    "label_channel": "Canale",
+    "label_payment": "Pagamento"
   },
   "queue": {
     "drafts": "Bozze",

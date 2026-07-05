@@ -294,7 +294,12 @@
     "tiersHint": "Du kannst verschiedene Kategorien kombinieren (z. B. 2 Standard + 1 VIP).",
     "footerOrganizedBy": "Organisiert von <1>{{name}}</1>",
     "toastAdded": "Zum Warenkorb hinzugefügt",
-    "toastAction": "Zur Kasse"
+    "toastAction": "Zur Kasse",
+    "organizedBy": "Veranstaltet von",
+    "viewProfile": "Profil ansehen",
+    "findMoreRetreats": "Weitere Retreats entdecken",
+    "autoTranslated": "Inhalte automatisch aus dem Italienischen übersetzt.",
+    "seeOriginal": "Original ansehen"
   },
   "product": {
     "loading": "Laden…",
@@ -392,5 +397,41 @@
         "too_long": "Zu lang (max {{duration}})"
       }
     }
+  },
+  "calendar": {
+    "searchPlaceholder": "Suche ein Retreat, einen Ort, einen Veranstalter…",
+    "resultsCount": "{{count}} Retreats",
+    "emptyFiltered": "Erweitere die Suche: entferne einen Filter oder schau in einen anderen Monat.",
+    "showAll": "Alle Retreats anzeigen"
+  },
+  "operator": {
+    "website": "Webseite",
+    "visitStore": "Zum Shop"
+  },
+  "account": {
+    "title": "Meine Buchungen",
+    "loginTitle": "Deine Buchungen",
+    "loginBody": "Kein Passwort nötig: wir senden dir einen Anmeldelink per E-Mail.",
+    "emailPlaceholder": "Deine E-Mail",
+    "sendLink": "Link senden",
+    "sending": "Wird gesendet…",
+    "sentTitle": "Prüfe deine E-Mails",
+    "sentBody": "Falls ein Konto für diese Adresse existiert, erhältst du einen 15 Minuten gültigen Anmeldelink.",
+    "expiredTitle": "Link abgelaufen oder bereits verwendet",
+    "expiredBody": "Kein Problem: gib deine E-Mail ein und wir senden dir einen neuen.",
+    "requestNew": "Neuen Link anfordern",
+    "verifying": "Einen Moment, du wirst angemeldet…",
+    "backToRetreats": "← Zurück zu den Retreats",
+    "requestError": "Etwas ist schiefgelaufen. Versuche es in einer Minute erneut.",
+    "loadError": "Buchungen können gerade nicht geladen werden. Versuche es gleich noch einmal.",
+    "dueTitle": "Fällige Zahlungen",
+    "upcomingTitle": "Kommende Retreats",
+    "pastTitle": "Vergangene",
+    "noUpcoming": "Keine Retreats geplant.",
+    "browse": "Kommende Retreats entdecken →",
+    "rowPaid": "bezahlt",
+    "rowDue": "fällig bis",
+    "payNow": "Jetzt zahlen",
+    "ticketN": "Pass {{n}}"
   }
 }

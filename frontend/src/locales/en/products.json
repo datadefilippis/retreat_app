@@ -1608,7 +1608,8 @@
         "uploadFailedSuffix": "Event created, but upload of {{which}} failed. You can add it from the Edit panel.",
         "uploadProductImage": "product image",
         "uploadCoverImage": "event cover",
-        "creationFailed": "Error creating the event"
+        "creationFailed": "Error creating the event",
+        "categoryRequired": "Choose the retreat category"
       },
       "createdToast": "Event created!",
       "publishCta": "Publish event",
@@ -1627,7 +1628,10 @@
         "priceHint": "Only used if you don't create ticket tiers in step 3.",
         "modeLabel": "Purchase mode",
         "modeDirect": "Direct (immediate checkout)",
-        "modeRequest": "On request (manual approval)"
+        "modeRequest": "On request (manual approval)",
+        "categoryLabel": "Category",
+        "categoryPlaceholder": "Select a category…",
+        "categoryHint": "Determines where it appears in the public retreats calendar."
       },
       "where": {
         "title": "When and where",

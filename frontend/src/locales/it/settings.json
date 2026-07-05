@@ -637,5 +637,30 @@
     "activeBadge": "Attivo",
     "activateOnStripe": "Attiva su Stripe",
     "connectedAccountLabel": "Account collegato"
+  },
+  "publicProfile": {
+    "title": "Profilo pubblico",
+    "subtitle": "La tua pagina biglietto-da-visita nella directory dei ritiri",
+    "saved": "Profilo salvato",
+    "saveError": "Errore nel salvataggio",
+    "coverUploaded": "Cover caricata",
+    "coverError": "Errore nel caricamento",
+    "copied": "Copiato!",
+    "copyLink": "Copia link",
+    "view": "Apri",
+    "completeness": "Profilo completo al",
+    "completenessHint": "Foto, bio e social aumentano la fiducia — e le prenotazioni.",
+    "cover": "Foto di copertina",
+    "coverHint": "Clicca per caricare (max 2MB)",
+    "bio": "Chi sei (bio)",
+    "bioPlaceholder": "Racconta chi sei e che esperienze crei — 2-3 frasi bastano.",
+    "bioEmpty": "La tua bio apparirà qui…",
+    "city": "Città",
+    "region": "Regione",
+    "socials": "Social e sito",
+    "showContacts": "Mostra contatti sul profilo",
+    "showContactsHint": "Decidi tu cosa esporre pubblicamente.",
+    "save": "Salva profilo",
+    "preview": "Anteprima"
   }
 }

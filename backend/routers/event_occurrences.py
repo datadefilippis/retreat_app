@@ -57,6 +57,10 @@ class WizardProductPayload(BaseModel):
     """Product fields the wizard collects on the "Cosa offri" tab."""
     model_config = ConfigDict(extra="ignore")
     name: str = Field(min_length=1, max_length=255)
+    # UX round 5/7/2026 — categoria OBBLIGATORIA dalla tassonomia standard
+    # (models/retreat_taxonomy): e' cio' che rende navigabile la directory.
+    # Passa al Product via model_dump() come gli altri campi.
+    category: str = Field(min_length=1, max_length=40)
     description: Optional[str] = Field(default=None, max_length=2000)
     image_url: Optional[str] = Field(default=None, max_length=500)
     unit_price: Optional[float] = Field(default=None, ge=0)
@@ -157,6 +161,15 @@ async def create_event_wizard(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Modalità diretta non compatibile con prezzo su richiesta.",
+        )
+
+    # UX round 5/7 — categoria: solo chiavi della tassonomia standard
+    # (fonte unica models/retreat_taxonomy, la stessa della directory)
+    from models.retreat_taxonomy import RETREAT_CATEGORIES
+    if body.product.category not in RETREAT_CATEGORIES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Categoria non valida. Scegli una categoria dall'elenco.",
         )
 
     # Fase 2 (retreat) — se il wizard invia un piano di pagamento, DEVE

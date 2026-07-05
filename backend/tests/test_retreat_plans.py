@@ -331,3 +331,22 @@ class TestPartnerZeroFeePlan:
                             "payment_providers", "stripe", "provider.py")
         src = open(path).read()
         assert "request.application_fee_percent and request.application_fee_percent > 0" in src
+
+
+class TestWizardCategory:
+    """UX round 5/7 — categoria obbligatoria dalla tassonomia standard."""
+
+    def test_payload_requires_category(self):
+        from routers.event_occurrences import WizardProductPayload
+        import pytest as _pt
+        from pydantic import ValidationError
+        with _pt.raises(ValidationError):
+            WizardProductPayload(name="Ritiro X")     # senza categoria → 422
+
+    def test_taxonomy_is_single_source(self):
+        # la stessa costante alimenta directory E validazione wizard
+        from models.retreat_taxonomy import RETREAT_CATEGORIES
+        assert len(RETREAT_CATEGORIES) >= 9
+        src = open(__file__.replace("tests/test_retreat_plans.py",
+                                    "routers/event_occurrences.py")).read()
+        assert "from models.retreat_taxonomy import RETREAT_CATEGORIES" in src

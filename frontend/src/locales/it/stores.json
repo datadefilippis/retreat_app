@@ -283,5 +283,6 @@
       "description_placeholder": "Descrizione visibile al cliente (facoltativa)",
       "add": "+ Aggiungi opzione di spedizione"
     }
-  }
+  },
+  "publicProfileCta": "🌿 Il tuo profilo pubblico"
 }

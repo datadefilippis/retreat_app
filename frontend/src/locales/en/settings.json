@@ -637,5 +637,30 @@
     "activeBadge": "Active",
     "activateOnStripe": "Enable on Stripe",
     "connectedAccountLabel": "Connected account"
+  },
+  "publicProfile": {
+    "title": "Public profile",
+    "subtitle": "Your business-card page in the retreats directory",
+    "saved": "Profile saved",
+    "saveError": "Error while saving",
+    "coverUploaded": "Cover uploaded",
+    "coverError": "Upload error",
+    "copied": "Copied!",
+    "copyLink": "Copy link",
+    "view": "Open",
+    "completeness": "Profile complete at",
+    "completenessHint": "Photo, bio and socials build trust — and bookings.",
+    "cover": "Cover photo",
+    "coverHint": "Click to upload (max 2MB)",
+    "bio": "Who you are (bio)",
+    "bioPlaceholder": "Tell who you are and what experiences you create — 2-3 sentences.",
+    "bioEmpty": "Your bio will appear here…",
+    "city": "City",
+    "region": "Region",
+    "socials": "Socials and website",
+    "showContacts": "Show contacts on the profile",
+    "showContactsHint": "You decide what to expose publicly.",
+    "save": "Save profile",
+    "preview": "Preview"
   }
 }

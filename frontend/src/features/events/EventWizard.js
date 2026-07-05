@@ -112,6 +112,7 @@ const DEFAULT_PAYMENT_PLAN = {
 function validateBase(state, t) {
   const errors = {};
   if (!state.name?.trim()) errors.name = t('wizards.common.validation.nameRequired');
+  if (!state.category) errors.category = t('wizards.event.validation.categoryRequired', { defaultValue: 'Scegli la categoria del ritiro' });
   if (state.unit_price !== '' && state.unit_price !== null
       && state.unit_price !== undefined && Number(state.unit_price) < 0) {
     errors.unit_price = t('wizards.event.validation.priceNegative');
@@ -233,12 +234,24 @@ export default function EventWizard() {
     const p = prefillRef.current?.product || {};
     return {
       name: p.name || '',
+      category: p.category || '',
       description: p.description || '',
       image_url: p.image_url || '',
       unit_price: toInput(p.unit_price),
       transaction_mode: p.transaction_mode || 'direct',
     };
   });
+
+  // UX round 5/7 — tassonomia categorie dal backend (fonte unica)
+  const [categoryOptions, setCategoryOptions] = useState({});
+  useEffect(() => {
+    let mounted = true;
+    import('../../api/client').then(({ default: api }) =>
+      api.get('/public/retreats', { params: { month: '1900-01' } })
+        .then(res => { if (mounted) setCategoryOptions(res.data?.categories || {}); })
+        .catch(() => {}));
+    return () => { mounted = false; };
+  }, []);
 
   // Pending image files — uploaded after wizard creates the product_id / occurrence_id
   // 2026-05-20 — Blob preview URLs are now managed by useObjectURL, which
@@ -522,6 +535,7 @@ export default function EventWizard() {
       const payload = {
         product: {
           name: base.name.trim(),
+          category: base.category,
           description: base.description?.trim() || null,
           image_url: base.image_url?.trim() || null,
           unit_price: base.unit_price !== '' ? Number(base.unit_price) : null,
@@ -769,6 +783,31 @@ export default function EventWizard() {
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
               />
               {fieldError(errorsBase.name)}
+            </div>
+
+            {/* UX round 5/7 — categoria OBBLIGATORIA dalla tassonomia
+                standard (backend, la stessa che alimenta la directory):
+                senza categoria il ritiro non e' navigabile su /ritiri. */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t('wizards.event.base.categoryLabel', { defaultValue: 'Categoria' })} *
+              </label>
+              <select
+                value={base.category}
+                onChange={e => setBase({ ...base, category: e.target.value })}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none bg-white"
+              >
+                <option value="">
+                  {t('wizards.event.base.categoryPlaceholder', { defaultValue: 'Seleziona la categoria…' })}
+                </option>
+                {Object.entries(categoryOptions).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+              <p className="text-[11px] text-gray-400 mt-0.5">
+                {t('wizards.event.base.categoryHint', { defaultValue: 'Decide dove appare nel calendario pubblico dei ritiri.' })}
+              </p>
+              {fieldError(errorsBase.category)}
             </div>
 
             <div>

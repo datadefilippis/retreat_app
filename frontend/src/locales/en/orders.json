@@ -35,7 +35,15 @@
     "needs_approval": "Needs approval",
     "paid_needs_confirm_count": "{{count}} paid to confirm",
     "by_customer": "Orders for {{name}}",
-    "clear": "Show all"
+    "clear": "Show all",
+    "advanced": "Filters",
+    "life_active": "Active",
+    "reset_all": "Clear filters",
+    "label_status": "Status",
+    "label_type": "Type",
+    "label_period": "Period",
+    "label_channel": "Channel",
+    "label_payment": "Payment"
   },
   "queue": {
     "drafts": "Drafts",
