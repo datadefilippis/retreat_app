@@ -80,34 +80,13 @@ export default function StoreHome({ slug, catalog, availableCategories, currency
             {operator?.bio && (
               <p className="text-white/85 text-sm mt-2 line-clamp-2 max-w-xl">{operator.bio}</p>
             )}
-            <Link to={`/o/${slug}`}
+            <Link to={`/s/${slug}/chi-siamo`}
                   className="mt-3 inline-block rounded-full bg-white/15 hover:bg-white/25 px-4 py-1.5 text-sm font-semibold transition-colors">
               {t('storefront:home.aboutCta', { defaultValue: 'Scopri chi siamo' })} →
             </Link>
           </div>
         </div>
       </section>
-
-      {/* ── Categorie visuali ── */}
-      {availableCategories.length > 0 && (
-        <section>
-          <h2 className="text-base font-semibold text-gray-900 mb-3">
-            {t('storefront:home.browseTitle', { defaultValue: 'Esplora' })}
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {availableCategories.map(cat => (
-              <Link key={cat.slug} to={`/s/${slug}/c/${cat.slug}`}
-                    className="rounded-2xl border border-gray-200 bg-white p-4 hover:border-primary/50 hover:shadow-md transition-all">
-                <span aria-hidden className="text-2xl">{CATEGORY_ICONS[cat.slug] || '✨'}</span>
-                <p className="font-semibold text-gray-900 mt-2">{t(cat.labelKey)}</p>
-                <p className="text-xs text-gray-500">
-                  {t('storefront:home.itemCount', { count: cat.count, defaultValue: '{{count}} proposte' })}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* ── Prossimi ritiri in evidenza ── */}
       {upcoming.length > 0 && (

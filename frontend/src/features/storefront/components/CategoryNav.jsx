@@ -208,7 +208,7 @@ export default function CategoryNav({
             })}
             {/* V2 — la bio dell'operatore a 1 click da QUALSIASI pagina */}
             <Link
-              to={`/o/${orgSlug}`}
+              to={`/s/${orgSlug}/chi-siamo`}
               className="shrink-0 rounded-full px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all whitespace-nowrap min-h-[36px] flex items-center"
             >
               {t('storefront:nav.about', { defaultValue: 'Chi siamo' })}
