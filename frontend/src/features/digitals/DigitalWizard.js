@@ -22,6 +22,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import useProductTaxonomies from '../../hooks/useProductTaxonomies';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { toast } from 'sonner';
@@ -110,6 +111,7 @@ function formatBytes(n) {
 
 
 export default function DigitalWizard() {
+  const taxonomies = useProductTaxonomies();
   const navigate = useNavigate();
   const { t } = useTranslation('products');
 
@@ -481,13 +483,17 @@ export default function DigitalWizard() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.common.categoryLabel')}</label>
-                <input
-                  type="text" value={identity.category}
+                {/* V4 — dropdown dalla tassonomia (mai testo libero) */}
+                <select
+                  value={identity.category || ''}
                   onChange={e => setIdentity({ ...identity, category: e.target.value })}
-                  maxLength={120}
-                  placeholder={t('wizards.digital.identity.categoryPlaceholder')}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                />
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none bg-white"
+                >
+                  <option value="">{t('wizards.common.categoryNone', { defaultValue: 'Nessuna categoria' })}</option>
+                  {Object.entries(taxonomies.digital || {}).map(([k, label]) => (
+                    <option key={k} value={k}>{label}</option>
+                  ))}
+                </select>
               </div>
             </div>
 

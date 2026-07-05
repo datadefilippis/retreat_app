@@ -96,7 +96,7 @@ per file) → titolo → riga info → prezzo + CTA. Stessi radius/hover/skeleto
 del tema. Le 6 variants restano (i DATI cambiano), l'anatomia si unifica.
 - **DoD**: mettendo 6 card di tipi diversi in griglia sembrano UNA famiglia.
 
-### V4 · Wizard unificati (1,5 gg) — il consolidamento processi
+### V4 · Wizard unificati ✅ (fatto 5/7/2026 sera — PIANO VETRINE COMPLETO V1-V4)
 - [ ] **Spina dorsale comune**: tab 1 sempre "Cosa offri" (nome, categoria,
       descrizione, foto, prezzo base), tab centrali specifici per tipo
       (INVARIATI nella sostanza), tab finale sempre "Pubblica" con lo STESSO

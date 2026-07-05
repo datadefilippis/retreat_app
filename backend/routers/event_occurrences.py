@@ -54,17 +54,10 @@ router = APIRouter(prefix="/event-occurrences", tags=["Event Occurrences"])
 
 
 async def _org_has_public_home(org_id: str) -> bool:
-    """True se l'org ha un posto pubblico dove il ritiro puo' vivere:
-    uno store attivo, o il public_slug legacy (org migrate pre-multistore)."""
-    store = await stores_collection.find_one(
-        {"organization_id": org_id, "is_active": True}, {"_id": 1},
-    )
-    if store:
-        return True
-    org = await organizations_collection.find_one(
-        {"id": org_id}, {"_id": 0, "public_slug": 1},
-    )
-    return bool((org or {}).get("public_slug"))
+    """V4 — delega alla guard CONDIVISA (services/store_guard): un solo
+    criterio per tutte le porte di pubblicazione."""
+    from services.store_guard import org_has_public_home
+    return await org_has_public_home(org_id)
 
 
 class WizardProductPayload(BaseModel):
