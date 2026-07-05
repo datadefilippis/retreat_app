@@ -32,7 +32,7 @@ internal linking = la struttura che Google premia di più, gratis.
 
 ## 2 · Le fasi
 
-### F1 · Directory /ritiri — redesign (2 gg)
+### F1 · Directory /ritiri — redesign ✅ (fatto 5/7/2026 — merge su main)
 Obiettivo: da "lista funzionale" a "posto dove è bello cercare il prossimo ritiro".
 - [ ] **Hero** con la palette olistica (gradient salvia), payoff, search bar
       prominente (cerca per titolo/luogo — client-side sul dataset già caricato)
