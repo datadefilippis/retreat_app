@@ -69,7 +69,7 @@ Problemi concreti:
 
 ## 3 · Il piano — V1→V4 (senza sfasciare: additivo + unificazione graduale)
 
-### V1 · La home dello store (1,5 gg) — l'impatto maggiore
+### V1 · La home dello store ✅ (fatto 5/7/2026 sera — merge su main)
 Sostituisce il redirect: /s/:slug diventa una VETRINA.
 - [ ] **Hero brand**: cover del profilo pubblico (o gradient brand), logo,
       nome, bio breve + "Scopri chi siamo" → profilo — il negozio ha una

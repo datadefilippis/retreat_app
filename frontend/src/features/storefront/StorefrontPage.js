@@ -60,6 +60,7 @@ import useCouponValidation from './hooks/useCouponValidation';
 // computeRentalMultiplier / resolveTransactionModeCopy are re-exported
 // from StorefrontCards so the OrderSummary block below keeps working.
 import ProductGrid from './ProductGrid';
+import StoreHome from './components/StoreHome';
 import {
   BookingCalendarModal,
   fmtPrice,
@@ -421,8 +422,20 @@ export default function StorefrontPage() {
     if (category) return;                       // already on a category page
     if (loading) return;                        // wait for catalog
     if (!availableCategories || availableCategories.length === 0) return;
-    navigate(`/s/${slug}/c/${availableCategories[0].slug}`, { replace: true });
-  }, [category, loading, availableCategories, slug, navigate]);
+    // V1 (5/7 sera) — la root e' una HOME vetrina: si redirige alla
+    // categoria SOLO per store mono-categoria piccoli (li portiamo
+    // dritti al sodo); per tutti gli altri /s/:slug rende StoreHome.
+    const totalProducts = (catalog?.products || []).length;
+    if (availableCategories.length === 1 && totalProducts <= 6) {
+      navigate(`/s/${slug}/c/${availableCategories[0].slug}`, { replace: true });
+    }
+  }, [category, loading, availableCategories, catalog, slug, navigate]);
+
+  // V1 — home mode: root con catalogo multi-categoria (o ricco)
+  const isHome = !category && !loading
+    && (availableCategories || []).length > 0
+    && !((availableCategories || []).length === 1
+         && (catalog?.products || []).length <= 6);
 
   // Phase 7.5 — unknown-category guard.
   //
@@ -2043,6 +2056,18 @@ export default function StorefrontPage() {
         </div>
       )}
 
+      {/* V1 — home vetrina: hero brand + categorie + prossimi ritiri */}
+      {isHome && (
+        <div className="max-w-6xl mx-auto px-4 pt-6 pb-4">
+          <StoreHome
+            slug={slug}
+            catalog={catalog}
+            availableCategories={availableCategories}
+            currency={catalog?.currency}
+          />
+        </div>
+      )}
+
       {/* Phase 7.3 — entire product grid extracted into ProductGrid.jsx
           so CategoryPage (Phase 7.5) can render the same sections with
           a pre-filtered product subset. The grid handles the bucketing
@@ -2050,7 +2075,7 @@ export default function StorefrontPage() {
           fallback. The BookingCalendarModal stays at the page level
           (below) because it's a global modal — only ONE picker is open
           at a time across all booking products. */}
-      <ProductGrid
+      {!isHome && <ProductGrid
         products={products}
         currency={catalog.currency}
         orgSlug={slug}
@@ -2070,7 +2095,7 @@ export default function StorefrontPage() {
         bookingSlots={bookingSlots}
         setBookingSlots={setBookingSlots}
         availableSlots={availableSlots}
-      />
+      />}
 
 
       {/* Cleanup pass (post-Phase-7): the mobile FAB carrello that
