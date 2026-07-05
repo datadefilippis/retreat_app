@@ -51,7 +51,26 @@ Obiettivo: da "lista funzionale" a "posto dove è bello cercare il prossimo riti
 - **DoD**: la directory regge il confronto con i portali verticali moderni;
   Lighthouse mobile ≥ 90 performance/accessibility.
 
-### F2 · Ecosistema collegato (1 gg)
+### F2 · Ecosistema collegato + EDITOR PROFILO OPERATORE (2 gg)
+**Condizione founder (5/7): l'operatore deve configurare la sua pagina
+profilo in modo semplice e completo.** Oggi esiste solo il branding
+(logo/colori): l'editor del profilo NON esiste — si costruisce qui.
+
+**F2.0 · Editor "Profilo pubblico"** (nuova sezione admin, linkata da
+Impostazioni e dalla dashboard):
+- [ ] Campi: foto cover, logo (riusa branding), bio (breve, con contatore),
+      città/regione, social (Instagram, sito, Facebook), contatti pubblici
+      (email/telefono opzionali — l'operatore DECIDE cosa esporre)
+- [ ] Backend: organizations.public_profile {bio, city, region, cover_url,
+      socials{}, show_contacts} + PATCH admin + /public/operator li legge
+- [ ] **Anteprima live** del profilo dentro l'editor + bottone "Copia link"
+      (/o/:slug) — l'operatore lo usa come SUO biglietto da visita
+- [ ] Progress hint: "Profilo completo al N%" (foto+bio+social = più fiducia
+      = più conversioni — glielo diciamo)
+- **DoD**: un operatore compila il profilo in <5 minuti senza documentazione.
+
+**F2.1 · Collegamenti ecosistema** (1 gg)
+
 - [ ] Landing ritiro: blocco "Organizzato da" con avatar/logo, bio breve,
       link a /o/:slug ("Vedi il profilo e gli altri ritiri")
 - [ ] Profilo operatore: sezione "Il negozio di {nome}" → /s/:slug (visibile
