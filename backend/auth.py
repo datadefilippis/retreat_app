@@ -509,3 +509,77 @@ async def get_current_customer(
         "name": account["name"],
         "locale": account.get("locale", "it"),
     }
+
+
+# ── Platform Account (P1 marketplace, 5/7/2026) ──────────────────────────────
+# Identita' unica dell'utente finale sul marketplace, SOPRA i customer
+# account org-scoped. Token con type="platform": la dependency rifiuta
+# ogni altro type (admin/customer), e viceversa le dependency esistenti
+# rifiutano questi — isolamento garantito dallo stesso meccanismo del
+# discriminante type. Vedi docs/PLATFORM_ACCOUNT_PLAN.md.
+
+platform_security = HTTPBearer()
+
+
+def create_platform_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """JWT per un platform account. data DEVE includere: sub (account_id), email."""
+    token_data = {**data, "type": "platform"}
+    return create_access_token(token_data, expires_delta)
+
+
+async def get_current_platform_account(
+    credentials: HTTPAuthorizationCredentials = Depends(platform_security),
+) -> dict:
+    """Valida un Bearer token piattaforma e ritorna l'account.
+
+    Garanzie:
+    - accetta SOLO type="platform" (token admin/customer rifiutati)
+    - account esistente, attivo, email verificata
+    - sessions_invalidated_at: token emessi prima vengono rifiutati
+    """
+    token = credentials.credentials
+    payload = decode_token(token)
+
+    if payload.get("type") != "platform":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token type",
+        )
+
+    account_id = payload.get("sub")
+    if not account_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+
+    from services.platform_account_service import get_account  # noqa: PLC0415
+
+    account = await get_account(account_id)
+    if not account or not account.get("is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not account.get("email_verified"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email not verified",
+        )
+
+    # logout-all: rifiuta token emessi prima dell'invalidazione
+    inv = account.get("sessions_invalidated_at")
+    iat = payload.get("iat")
+    if inv and iat:
+        from datetime import datetime as _dt, timezone as _tz
+        inv_dt = _dt.fromisoformat(inv) if isinstance(inv, str) else inv
+        if inv_dt.tzinfo is None:
+            inv_dt = inv_dt.replace(tzinfo=_tz.utc)
+        if _dt.fromtimestamp(iat, tz=_tz.utc) < inv_dt:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session invalidated",
+            )
+
+    return account
