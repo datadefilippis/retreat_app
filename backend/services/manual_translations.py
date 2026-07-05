@@ -12,7 +12,10 @@ lingue che ACCETTA per il suo prodotto:
 from typing import Any, Dict, List, Optional
 
 SUPPORTED_LANGS = ("en", "de", "fr")
-TRANSLATABLE_FIELDS = {"description": 2000, "long_description": 5000}
+# Il founder (7/7): anche il TITOLO si traduce — "voglio poter modificare
+# in multilingua entrambe". La description resta il gate delle lingue
+# accettate (available_languages): il titolo da solo non accende la lingua.
+TRANSLATABLE_FIELDS = {"name": 255, "description": 2000, "long_description": 5000}
 
 
 def sanitize_translations(raw: Optional[dict]) -> Optional[dict]:

@@ -49,7 +49,7 @@ import { useUnsavedChangesPrompt } from '../../hooks/useUnsavedChangesPrompt';
 import { useWizardDraft } from '../../hooks/useWizardDraft';
 import { useAbortableUpload } from '../../hooks/useAbortableUpload';
 import { showImageUploadFailedToast } from '../../lib/imageUploadFailedToast';
-import MultiLangText from '../../components/MultiLangText';
+import MultiLangSection from '../../components/MultiLangSection';
 
 
 // Tabs are addressed by stable `key`. Visible labels are resolved at
@@ -154,6 +154,7 @@ export default function DigitalWizard() {
   });
 
   // Multilingua manuale — le lingue offerte decidono dove il prodotto appare
+  const [trName, setTrName] = useState({});
   const [trDescription, setTrDescription] = useState({});
   const [trLong, setTrLong] = useState({});
 
@@ -291,10 +292,11 @@ export default function DigitalWizard() {
         name: identity.name.trim(),
         description: identity.description?.trim() || null,
         translations: (() => {
-          const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+          const langs = new Set([...Object.keys(trName), ...Object.keys(trDescription), ...Object.keys(trLong)]);
           const out = {};
           langs.forEach(l => {
             const e = {};
+            if ((trName[l] || '').trim()) e.name = trName[l].trim();
             if ((trDescription[l] || '').trim()) e.description = trDescription[l].trim();
             if ((trLong[l] || '').trim()) e.long_description = trLong[l].trim();
             if (Object.keys(e).length) out[l] = e;
@@ -465,6 +467,12 @@ export default function DigitalWizard() {
               <p className="text-xs text-gray-500 mt-0.5">{t('wizards.common.identitySubtitle')}</p>
             </div>
 
+            <MultiLangSection fields={[
+              { key: 'name', label: t('wizards.common.nameLabel'), it: identity.name,
+                value: trName, onChange: setTrName, input: true, maxLength: 255 },
+              { key: 'description', label: t('wizards.common.shortDescriptionLabel'), it: identity.description,
+                value: trDescription, onChange: setTrDescription, rows: 2, maxLength: 2000 },
+            ]}>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.common.nameLabel')}</label>
               <input
@@ -485,8 +493,8 @@ export default function DigitalWizard() {
                 rows={2} maxLength={2000}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
               />
-              <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
             </div>
+            </MultiLangSection>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -704,6 +712,10 @@ export default function DigitalWizard() {
 
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.digital.policy.longDescLabel')}</label>
+              <MultiLangSection fields={[
+                { key: 'long_description', label: null, it: policy.long_description,
+                  value: trLong, onChange: setTrLong, rows: 5, maxLength: 5000 },
+              ]}>
               <textarea
                 value={policy.long_description}
                 onChange={e => setPolicy({ ...policy, long_description: e.target.value })}
@@ -711,7 +723,7 @@ export default function DigitalWizard() {
                 placeholder={t('wizards.digital.policy.longDescPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
               />
-              <MultiLangText value={trLong} onChange={setTrLong} rows={4} maxLength={5000} />
+              </MultiLangSection>
             </div>
           </div>
         )}

@@ -110,6 +110,9 @@ class WizardOccurrencePayload(BaseModel):
     included: List[str] = Field(default_factory=list, max_length=20)
     excluded: List[str] = Field(default_factory=list, max_length=20)
     faq: List[Dict[str, Any]] = Field(default_factory=list, max_length=15)
+    # Traduzioni manuali dei contenuti (tab lingua nel wizard) —
+    # whitelist in sanitize_occurrence_translations.
+    translations: Optional[Dict[str, Any]] = None
 
 
 class WizardTierPayload(BaseModel):
@@ -248,6 +251,10 @@ async def create_event_wizard(
 
         # ── 2. Create occurrence (auto-slug from product name + date) ──
         occ_data = body.occurrence.model_dump()
+        if occ_data.get("translations") is not None:
+            from services.manual_translations import sanitize_occurrence_translations
+            occ_data["translations"] = sanitize_occurrence_translations(
+                occ_data["translations"])
         occ_model = EventOccurrence(
             organization_id=org_id,
             product_id=product_id,

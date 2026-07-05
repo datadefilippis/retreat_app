@@ -32,10 +32,16 @@ class TestSanitize:
         assert set(out.keys()) == {"en"}
 
     def test_whitelist_campi(self):
+        # name E description sono traducibili (founder 7/7); price no.
         out = sanitize_translations({
-            "en": {"description": "ok", "name": "NO", "price": 1}
+            "en": {"description": "ok", "name": "Title EN", "price": 1}
         })
-        assert out == {"en": {"description": "ok"}}
+        assert out == {"en": {"description": "ok", "name": "Title EN"}}
+
+    def test_name_da_solo_non_accende_la_lingua(self):
+        prod = {"translations": {"en": {"name": "Only title"}}}
+        assert available_languages(prod) == ["it"]
+        assert is_available_in(prod, "en") is False
 
     def test_taglio_lunghezze(self):
         desc_max = TRANSLATABLE_FIELDS["description"]

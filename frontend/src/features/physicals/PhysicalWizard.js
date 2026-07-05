@@ -54,7 +54,7 @@ import { useUnsavedChangesPrompt } from '../../hooks/useUnsavedChangesPrompt';
 import { useWizardDraft } from '../../hooks/useWizardDraft';
 import { useAbortableUpload } from '../../hooks/useAbortableUpload';
 import { showImageUploadFailedToast } from '../../lib/imageUploadFailedToast';
-import MultiLangText from '../../components/MultiLangText';
+import MultiLangSection from '../../components/MultiLangSection';
 
 
 // Tabs are addressed by stable `key`. Visible labels are resolved at
@@ -108,6 +108,7 @@ export default function PhysicalWizard() {
   });
   const [imageFile, setImageFile] = useState(null);
   // Multilingua manuale — le lingue offerte decidono dove il prodotto appare
+  const [trName, setTrName] = useState({});
   const [trDescription, setTrDescription] = useState({});
   const [storeIds, setStoreIds] = useState([]);
   const [availableStores, setAvailableStores] = useState([]);
@@ -290,9 +291,13 @@ export default function PhysicalWizard() {
         name: identity.name.trim(),
         description: identity.description?.trim() || null,
         translations: (() => {
+          const langs = new Set([...Object.keys(trName), ...Object.keys(trDescription)]);
           const out = {};
-          Object.entries(trDescription).forEach(([l, v]) => {
-            if ((v || '').trim()) out[l] = { description: v.trim() };
+          langs.forEach(l => {
+            const e = {};
+            if ((trName[l] || '').trim()) e.name = trName[l].trim();
+            if ((trDescription[l] || '').trim()) e.description = trDescription[l].trim();
+            if (Object.keys(e).length) out[l] = e;
           });
           return out;
         })(),
@@ -462,6 +467,12 @@ export default function PhysicalWizard() {
               <p className="text-xs text-gray-500 mt-0.5">{t('wizards.common.identitySubtitle')}</p>
             </div>
 
+            <MultiLangSection fields={[
+              { key: 'name', label: t('wizards.common.nameLabel'), it: identity.name,
+                value: trName, onChange: setTrName, input: true, maxLength: 255 },
+              { key: 'description', label: t('wizards.common.shortDescriptionLabel'), it: identity.description,
+                value: trDescription, onChange: setTrDescription, rows: 2, maxLength: 2000 },
+            ]}>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.common.nameLabel')}</label>
               <input
@@ -483,8 +494,8 @@ export default function PhysicalWizard() {
                 placeholder={t('wizards.common.shortDescriptionPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
               />
-              <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
             </div>
+            </MultiLangSection>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>

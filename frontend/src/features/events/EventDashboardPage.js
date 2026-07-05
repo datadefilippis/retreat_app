@@ -39,7 +39,7 @@ import { pruneFieldConfigs } from './components/fieldConfigUtils';
 // W1.S5/Phase 2.9 — additive cost composition editor for edits.
 import CostSourceEditor from '../products/components/CostSourceEditor';
 import RetreatContentEditor from './components/RetreatContentEditor';
-import MultiLangText from '../../components/MultiLangText';
+import MultiLangSection from '../../components/MultiLangSection';
 
 
 function formatDateTime(iso, locale = 'it-IT') {
@@ -363,13 +363,15 @@ export default function EventDashboardPage() {
   const [longDescForm, setLongDescForm] = useState('');
   // Multilingua manuale — le lingue offerte dall'operatore (per campo);
   // la fonte e' product.translations, il salvataggio passa dal PATCH prodotto
+  const [trName, setTrName] = useState({});
   const [trDescription, setTrDescription] = useState({});
   const [trLong, setTrLong] = useState({});
   const buildTranslationsPayload = () => {
-    const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+    const langs = new Set([...Object.keys(trName), ...Object.keys(trDescription), ...Object.keys(trLong)]);
     const out = {};
     langs.forEach(l => {
       const entry = {};
+      if ((trName[l] || '').trim()) entry.name = trName[l].trim();
       if ((trDescription[l] || '').trim()) entry.description = trDescription[l].trim();
       if ((trLong[l] || '').trim()) entry.long_description = trLong[l].trim();
       if (Object.keys(entry).length) out[l] = entry;
@@ -470,11 +472,13 @@ export default function EventDashboardPage() {
         setLongDescForm(occ.long_description || '');
         // multilingua manuale: split per campo per i due editor
         const ptr = occ.product_translations || {};
-        const d = {}, ld = {};
+        const nm = {}, d = {}, ld = {};
         Object.entries(ptr).forEach(([l, f]) => {
+          if (f?.name) nm[l] = f.name;
           if (f?.description) d[l] = f.description;
           if (f?.long_description) ld[l] = f.long_description;
         });
+        setTrName(nm);
         setTrDescription(d);
         setTrLong(ld);
         // E4: tier forms
@@ -982,6 +986,13 @@ export default function EventDashboardPage() {
             <div className="border-t border-gray-100 px-5 py-4 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
+                <MultiLangSection fields={[
+                  { key: 'name', label: t('dashboards.event.product.nameLabel'), it: productForm.name,
+                    value: trName, onChange: setTrName, input: true, maxLength: 255 },
+                  { key: 'description', label: t('dashboards.event.product.shortDescLabel'), it: productForm.description,
+                    value: trDescription, onChange: setTrDescription, rows: 2, maxLength: 2000 },
+                ]}>
+                <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">{t('dashboards.event.product.nameLabel')}</label>
                   <input type="text" value={productForm.name}
                     onChange={e => setProductForm(f => ({ ...f, name: e.target.value }))}
@@ -989,14 +1000,15 @@ export default function EventDashboardPage() {
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
                   />
                 </div>
-                <div className="sm:col-span-2">
+                <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">{t('dashboards.event.product.shortDescLabel')}</label>
                   <textarea value={productForm.description}
                     onChange={e => setProductForm(f => ({ ...f, description: e.target.value }))}
                     rows={2} maxLength={2000}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
                   />
-                  <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
+                </div>
+                </MultiLangSection>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">{t('dashboards.event.product.imageLabel')}</label>
@@ -2028,6 +2040,10 @@ export default function EventDashboardPage() {
 
           {editLongDescOpen && (
             <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+              <MultiLangSection fields={[
+                { key: 'long_description', label: null, it: longDescForm,
+                  value: trLong, onChange: setTrLong, rows: 6, maxLength: 5000 },
+              ]}>
               <textarea
                 value={longDescForm}
                 onChange={e => setLongDescForm(e.target.value)}
@@ -2035,7 +2051,7 @@ export default function EventDashboardPage() {
                 placeholder={t('dashboards.event.description.placeholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-y"
               />
-              <MultiLangText value={trLong} onChange={setTrLong} rows={5} maxLength={5000} />
+              </MultiLangSection>
               <div className="flex justify-end">
                 <button
                   type="button"

@@ -1603,7 +1603,8 @@
         "base": "Ce que vous offrez",
         "where": "Quand et où",
         "tickets": "Billets",
-        "publish": "Publier"
+        "publish": "Publier",
+        "program": "Programme"
       },
       "validation": {
         "priceNegative": "Le prix ne peut pas être négatif",
@@ -1725,6 +1726,10 @@
         "publishToggleDesc": "Si coché, l'événement est visible dans le catalogue et achetable. Vous pouvez toujours le modifier depuis le tableau de bord de l'événement.",
         "validationErrorBanner": "Certains champs précédents nécessitent votre attention. Revenez en arrière pour les corriger.",
         "enrichLaterCue": "Ici tu crées la retraite avec l'essentiel. Le programme jour par jour, la galerie photo et la FAQ s'ajoutent JUSTE APRÈS : à l'enregistrement, on t'amène à la page de la retraite, section « Page de vente »."
+      },
+      "program": {
+        "title": "Programme et page de vente",
+        "subtitle": "Programme jour par jour, inclus et FAQ. Tu peux aussi les compléter plus tard, depuis la page de la retraite."
       }
     },
     "digital": {
@@ -1961,6 +1966,7 @@
     "remove": "Supprimer cette langue",
     "placeholder": "Écris ici le texte en {{lang}}…",
     "hint": "Proposer ce texte aussi en :",
-    "visibility": "Le produit apparaîtra dans les vues de ces langues. Sans traduction, il reste visible uniquement en italien."
+    "visibility": "Le produit apparaîtra dans les vues de ces langues. Sans traduction, il reste visible uniquement en italien.",
+    "sectionHint": "Le texte italien sert de suggestion dans le champ. Les langues avec la description remplie sont celles où le produit est visible ; les champs vides restent en italien."
   }
 }

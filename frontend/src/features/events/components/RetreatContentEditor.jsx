@@ -31,7 +31,12 @@ function linesToList(text) {
   return text.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 20);
 }
 
-export default function RetreatContentEditor({ occurrenceId, occurrence }) {
+/**
+ * Modalità embedded (wizard, 7/7): niente card/salva proprio — i valori
+ * risalgono via onSnapshot(payload) a ogni modifica e finiscono nel
+ * payload di creazione. Stesso editor, stesse tab lingua.
+ */
+export default function RetreatContentEditor({ occurrenceId, occurrence, embedded = false, onSnapshot }) {
   const { t } = useTranslation('products');
   const [agenda, setAgenda] = useState([]);
   const [gallery, setGallery] = useState([]);
@@ -110,12 +115,10 @@ export default function RetreatContentEditor({ occurrenceId, occurrence }) {
     return false;
   };
 
-  const save = async () => {
-    setSaving(true);
-    try {
-      // Righe sorgente che entrano nel payload (stessa logica del filtro
-      // sotto): servono anche per proiettare le traduzioni sugli stessi
-      // indici, così backend e landing restano allineati.
+  // Righe sorgente che entrano nel payload (stessa logica del filtro
+  // sotto): servono anche per proiettare le traduzioni sugli stessi
+  // indici, così backend e landing restano allineati.
+  const buildPayload = () => {
       const srcDays = agenda
         .map((d, di) => ({ d, di }))
         .filter(({ d }) => d.label.trim())
@@ -183,7 +186,19 @@ export default function RetreatContentEditor({ occurrenceId, occurrence }) {
         faq: srcFaq.map(({ f }) => ({ q: f.q.trim(), a: f.a.trim() })),
         translations,
       };
-      await eventOccurrencesAPI.update(occurrenceId, payload);
+      return payload;
+  };
+
+  // Embedded: ogni modifica risale al wizard (create payload).
+  useEffect(() => {
+    if (embedded && onSnapshot && dirty) onSnapshot(buildPayload());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [embedded, dirty, agenda, gallery, includedText, excludedText, faq, trContent]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await eventOccurrencesAPI.update(occurrenceId, buildPayload());
       toast.success(t('dashboards.event.content.savedOk'));
       setDirty(false);
     } catch (err) {
@@ -197,20 +212,22 @@ export default function RetreatContentEditor({ occurrenceId, occurrence }) {
   const isIt = contentLang === 'it';
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="text-sm font-semibold text-gray-900">
-          {t('dashboards.event.content.title')}
-        </h2>
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving || !dirty}
-          className="rounded-md bg-gray-900 text-white px-4 py-1.5 text-xs font-semibold disabled:opacity-40"
-        >
-          {saving ? t('dashboards.event.content.saving') : t('dashboards.event.content.save')}
-        </button>
-      </div>
+    <div className={embedded ? '' : 'rounded-xl border border-gray-200 bg-white px-5 py-4'}>
+      {!embedded && (
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-sm font-semibold text-gray-900">
+            {t('dashboards.event.content.title')}
+          </h2>
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving || !dirty}
+            className="rounded-md bg-gray-900 text-white px-4 py-1.5 text-xs font-semibold disabled:opacity-40"
+          >
+            {saving ? t('dashboards.event.content.saving') : t('dashboards.event.content.save')}
+          </button>
+        </div>
+      )}
       <p className="text-xs text-gray-500 mb-3">{t('dashboards.event.content.subtitle')}</p>
 
       {/* ── Tab lingua ── */}

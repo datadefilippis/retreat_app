@@ -35,7 +35,7 @@ import useLandingUrl from '../products/hooks/useLandingUrl';
 import CostSourceEditor from '../products/components/CostSourceEditor';
 import { useCurrency } from '../../context/AuthContext';
 import { formatAmount } from '../../utils/currency';
-import MultiLangText from '../../components/MultiLangText';
+import MultiLangSection from '../../components/MultiLangSection';
 
 
 function formatEuro(n, currency = 'EUR', locale = 'it-IT') {
@@ -109,13 +109,15 @@ export default function PhysicalDashboardPage() {
 
   // Multilingua manuale — lingue offerte dall'operatore (per campo);
   // salvate sul prodotto via PATCH translations
+  const [trName, setTrName] = useState({});
   const [trDescription, setTrDescription] = useState({});
   const [trLong, setTrLong] = useState({});
   const buildTranslationsPayload = () => {
-    const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+    const langs = new Set([...Object.keys(trName), ...Object.keys(trDescription), ...Object.keys(trLong)]);
     const out = {};
     langs.forEach(l => {
       const e = {};
+      if ((trName[l] || '').trim()) e.name = trName[l].trim();
       if ((trDescription[l] || '').trim()) e.description = trDescription[l].trim();
       if ((trLong[l] || '').trim()) e.long_description = trLong[l].trim();
       if (Object.keys(e).length) out[l] = e;
@@ -183,11 +185,13 @@ export default function PhysicalDashboardPage() {
 
       const meta = prod.metadata || {};
       const ptr = prod.translations || {};
-      const trD = {}, trL = {};
+      const trN = {}, trD = {}, trL = {};
       Object.entries(ptr).forEach(([l, f]) => {
+        if (f?.name) trN[l] = f.name;
         if (f?.description) trD[l] = f.description;
         if (f?.long_description) trL[l] = f.long_description;
       });
+      setTrName(trN);
       setTrDescription(trD);
       setTrLong(trL);
       setProductForm({
@@ -603,7 +607,6 @@ export default function PhysicalDashboardPage() {
                   onChange={e => setProductForm({ ...productForm, description: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white resize-none"
                 />
-                <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{t('dashboards.physical.identity.longDescLabel')}</label>
@@ -613,8 +616,15 @@ export default function PhysicalDashboardPage() {
                   onChange={e => setProductForm({ ...productForm, long_description: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white resize-none"
                 />
-                <MultiLangText value={trLong} onChange={setTrLong} rows={4} maxLength={5000} />
               </div>
+              <MultiLangSection fields={[
+                { key: 'name', label: t('dashboards.physical.identity.nameLabel', { defaultValue: 'Nome' }), it: productForm.name,
+                  value: trName, onChange: setTrName, input: true, maxLength: 255 },
+                { key: 'description', label: t('dashboards.physical.identity.shortDescLabel'), it: productForm.description,
+                  value: trDescription, onChange: setTrDescription, rows: 2, maxLength: 2000 },
+                { key: 'long_description', label: t('dashboards.physical.identity.longDescLabel'), it: productForm.long_description,
+                  value: trLong, onChange: setTrLong, rows: 4, maxLength: 5000 },
+              ]}>{null}</MultiLangSection>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">{t('dashboards.physical.identity.skuLabel')}</label>

@@ -29,7 +29,8 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import MultiLangText from '../../components/MultiLangText';
+import MultiLangSection from '../../components/MultiLangSection';
+import RetreatContentEditor from './components/RetreatContentEditor';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { toast } from 'sonner';
@@ -70,8 +71,9 @@ const TABS = [
   { key: 'base',     n: 1 },
   { key: 'where',    n: 2 },
   { key: 'tickets',  n: 3 },
-  { key: 'payments', n: 4 },   // Fase 2 (retreat) — "Come incassi"
-  { key: 'publish',  n: 5 },
+  { key: 'program',  n: 4 },   // 7/7 founder: il programma GIÀ in creazione
+  { key: 'payments', n: 5 },   // Fase 2 (retreat) — "Come incassi"
+  { key: 'publish',  n: 6 },
 ];
 
 // Fase 3 (retreat) — preset campi partecipante: un click al posto della
@@ -245,6 +247,12 @@ export default function EventWizard() {
 
   // Multilingua manuale (6/7) — {en: testo, de: ...} per campo;
   // prefill dal product.translations su modifica/duplica
+  const [trName, setTrName] = useState(() => {
+    const tr = prefillRef.current?.product?.translations || {};
+    const out = {};
+    Object.entries(tr).forEach(([l, f]) => { if (f?.name) out[l] = f.name; });
+    return out;
+  });
   const [trDescription, setTrDescription] = useState(() => {
     const tr = prefillRef.current?.product?.translations || {};
     const out = {};
@@ -378,8 +386,12 @@ export default function EventWizard() {
       included: occ.included || [],
       excluded: occ.excluded || [],
       faq: occ.faq || [],
+      translations: occ.translations || {},
     };
   });
+  // 7/7 — il programma si edita GIÀ nel wizard (tab Programma): l'editor
+  // embedded risale qui il payload aggiornato a ogni modifica.
+  const [salesContent, setSalesContent] = useState(null);
 
   const [longDescription, setLongDescription] = useState(() =>
     prefillRef.current?.occurrence?.long_description || ''
@@ -567,10 +579,11 @@ export default function EventWizard() {
           category: base.category,
           // Multilingua manuale: le lingue compilate = lingue offerte
           translations: (() => {
-            const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+            const langs = new Set([...Object.keys(trName), ...Object.keys(trDescription), ...Object.keys(trLong)]);
             const out = {};
             langs.forEach(l => {
               const entry = {};
+              if ((trName[l] || '').trim()) entry.name = trName[l].trim();
               if ((trDescription[l] || '').trim()) entry.description = trDescription[l].trim();
               if ((trLong[l] || '').trim()) entry.long_description = trLong[l].trim();
               if (Object.keys(entry).length) out[l] = entry;
@@ -640,7 +653,8 @@ export default function EventWizard() {
           longitude: where.longitude !== '' ? Number(where.longitude) : null,
           cover_image_url: where.cover_image_url?.trim() || null,
           long_description: longDescription?.trim() || null,
-          ...richContent,   // Fase 3 — passthrough dal Duplica
+          ...richContent,          // Fase 3 — passthrough dal Duplica
+          ...(salesContent || {}), // 7/7 — programma editato nel wizard
         },
         tiers: tiers.map((t, i) => ({
           label: t.label.trim(),
@@ -817,6 +831,12 @@ export default function EventWizard() {
               <p className="text-xs text-gray-500 mt-0.5">{t('wizards.event.base.subtitle')}</p>
             </div>
 
+            <MultiLangSection fields={[
+              { key: 'name', label: t('wizards.event.base.nameLabel'), it: base.name,
+                value: trName, onChange: setTrName, input: true, maxLength: 255 },
+              { key: 'description', label: t('wizards.event.base.descriptionLabel'), it: base.description,
+                value: trDescription, onChange: setTrDescription, rows: 2, maxLength: 2000 },
+            ]}>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.base.nameLabel')}</label>
               <input
@@ -863,15 +883,8 @@ export default function EventWizard() {
                 placeholder={t('wizards.event.base.descriptionPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
               />
-              {/* Multilingua manuale (6/7) — l'operatore offre le lingue
-                  che vuole; quelle decidono dove il ritiro appare */}
-              <MultiLangText
-                value={trDescription}
-                onChange={setTrDescription}
-                rows={2}
-                maxLength={2000}
-              />
             </div>
+            </MultiLangSection>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -1398,6 +1411,25 @@ export default function EventWizard() {
         )}
 
         {/* ── TAB 4: Come incassi (Fase 2 retreat) ─────────────────── */}
+        {/* ── TAB 4: Programma (7/7 founder: già in creazione) ─────── */}
+        {activeTab === 'program' && (
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="mb-3">
+              <h2 className="text-base font-semibold text-gray-900">
+                {t('wizards.event.program.title', { defaultValue: 'Programma e pagina di vendita' })}
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {t('wizards.event.program.subtitle', { defaultValue: 'Programma giorno per giorno, cosa è incluso e FAQ. Puoi completarli anche dopo, dalla pagina del ritiro.' })}
+              </p>
+            </div>
+            <RetreatContentEditor
+              embedded
+              occurrence={richContent}
+              onSnapshot={setSalesContent}
+            />
+          </div>
+        )}
+
         {activeTab === 'payments' && (
           <div className="space-y-4">
             {/* Modalità */}
@@ -1615,6 +1647,10 @@ export default function EventWizard() {
                 {t('wizards.event.publish.longDescDescPrefix')}<code>##</code>{t('wizards.event.publish.longDescDescSuffix')}
                 <code> {t('wizards.event.publish.longDescBoldNote')}</code>, <code>{t('wizards.event.publish.longDescItalicNote')}</code>, <code>{t('wizards.event.publish.longDescListNote')}</code>.
               </p>
+              <MultiLangSection fields={[
+                { key: 'long_description', label: null, it: longDescription,
+                  value: trLong, onChange: setTrLong, rows: 6, maxLength: 5000 },
+              ]}>
               <textarea
                 value={longDescription}
                 onChange={e => setLongDescription(e.target.value)}
@@ -1622,12 +1658,7 @@ export default function EventWizard() {
                 placeholder={t('wizards.event.publish.longDescPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:border-gray-900 focus:outline-none resize-y"
               />
-              <MultiLangText
-                value={trLong}
-                onChange={setTrLong}
-                rows={5}
-                maxLength={5000}
-              />
+              </MultiLangSection>
             </div>
 
             {/* F4 Onda 11 — per-event Terms & Conditions override */}
