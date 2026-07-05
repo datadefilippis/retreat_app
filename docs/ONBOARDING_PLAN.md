@@ -39,13 +39,13 @@ GET /organizations/current/onboarding-status  →  {
 
 ## 2 · Il percorso utente
 
-### O1 · Signup verticale (0,5 gg)
+### O1 · Signup verticale ✅ (fatto 5/7/2026 — signup e riattivazione provisionano retreat_free; redirect a /inizia da fare col copy signup in O4)
 - [ ] Il signup provisiona **retreat_free** (verificare: oggi che piano
       assegna? deve essere il baseline retreat) + org con defaults sensati
 - [ ] Copy della pagina signup nel linguaggio ritiri (non "azienda/SaaS")
 - [ ] Post-verifica email → redirect a **/inizia** (non alla dashboard nuda)
 
-### O2 · Pagina "/inizia" — la checklist guidata (1,5 gg)
+### O2 · Pagina "/inizia" ✅ (fatto 5/7/2026 — merge su main)
 La spina dorsale. 5 card-step numerate, ognuna con: stato (✓/da fare),
 spiegazione in 1 riga "perché serve", CTA che porta ESATTAMENTE al punto
 giusto, e ritorno automatico a /inizia dopo il completamento.
@@ -80,7 +80,7 @@ suggerimento, e' il binario:
       contano (landing, profilo, directory) + cosa succede ora (email
       automatiche, caparre, dove vede gli ordini)
 
-### O3 · Aggancio in dashboard (0,5 gg)
+### O3 · Aggancio in dashboard ✅ (fatto 5/7/2026 — banner data-driven)
 - [ ] Se onboarding incompleto: banner in cima alla home operatore (D3)
       "Completa la configurazione — ti mancano N passi" → /inizia
 - [ ] Voce menu "Inizia" visibile finché incompleto, poi sparisce

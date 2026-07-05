@@ -102,6 +102,7 @@ import AnalisiAIPage from "./features/ai/AnalisiAIPage";
 import TeamPage from "./features/team/TeamPage";
 import SettingsPage from "./features/settings/SettingsPage";
 import PublicProfilePage from "./features/settings/PublicProfilePage";
+import IniziaPage from "./features/onboarding/IniziaPage";
 import AdminPage from "./features/admin/AdminPage";
 import PlansPage from "./pages/PlansPage";
 
@@ -703,6 +704,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* O2 — onboarding guidato: la checklist del primo avvio */}
+      <Route
+        path="/inizia"
+        element={
+          <ProtectedRoute>
+            <IniziaPage />
           </ProtectedRoute>
         }
       />

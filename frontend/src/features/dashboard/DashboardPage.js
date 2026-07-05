@@ -38,6 +38,7 @@ import {
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import OperatorHome from './OperatorHome';
+import OnboardingBanner from './OnboardingBanner';
 
 // Map module_key → { dataHref, moduleHref }
 const MODULE_META = {
@@ -329,6 +330,10 @@ export const DashboardPage = () => {
       )}
 
       <div className="p-4 md:p-8 animate-fade-in space-y-6">
+        {/* O3 — aggancio onboarding: banner finche' la configurazione
+            non e' completa (stato derivato, sparisce da solo) */}
+        <OnboardingBanner />
+
         {/* D3 — home operatore: sempre in testa, zero configurazione.
             I widget pinnati / empty states dei moduli restano sotto come
             personalizzazione avanzata. */}

@@ -104,7 +104,9 @@ async def signup(
         from services.plan_provisioning import provision_commercial_plan
         await provision_commercial_plan(
             org_id=organization.id,
-            plan_slug="free",
+            # O1 (5/7/2026) — il verticale ritiri: baseline retreat_free
+            # (fee 5%, tutto incluso), non il legacy AFianco "free".
+            plan_slug="retreat_free",
             assigned_by="signup",
             billing_status="none",
         )
