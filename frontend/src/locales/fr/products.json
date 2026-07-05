@@ -1091,6 +1091,10 @@
         "trHint": "Traduis uniquement les textes : structure, horaires et photos se gèrent en italien. Les champs laissés vides restent en italien sur la page publique.",
         "trLineHint": "Une ligne par élément, dans le même ordre que l'italien.",
         "trEmpty": "Remplis d'abord les contenus en italien : les mêmes champs apparaîtront ici à traduire."
+      },
+      "createdBanner": {
+        "text": "Retraite créée ! Construis maintenant ta page de vente : programme jour par jour, galerie photo, inclus et FAQ.",
+        "cta": "Ajouter le programme →"
       }
     },
     "reservation": {
@@ -1719,7 +1723,8 @@
         "distributionMultiDesc": "Dans quels magasins l'événement est visible.",
         "publishToggleTitle": "Publier maintenant",
         "publishToggleDesc": "Si coché, l'événement est visible dans le catalogue et achetable. Vous pouvez toujours le modifier depuis le tableau de bord de l'événement.",
-        "validationErrorBanner": "Certains champs précédents nécessitent votre attention. Revenez en arrière pour les corriger."
+        "validationErrorBanner": "Certains champs précédents nécessitent votre attention. Revenez en arrière pour les corriger.",
+        "enrichLaterCue": "Ici tu crées la retraite avec l'essentiel. Le programme jour par jour, la galerie photo et la FAQ s'ajoutent JUSTE APRÈS : à l'enregistrement, on t'amène à la page de la retraite, section « Page de vente »."
       }
     },
     "digital": {

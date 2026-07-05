@@ -1091,6 +1091,10 @@
         "trHint": "Translate the texts only: structure, times and photos are managed in Italian. Fields left empty stay in Italian on the public page.",
         "trLineHint": "One line per entry, in the same order as the Italian.",
         "trEmpty": "Fill in the Italian content first: the same fields will appear here for translation."
+      },
+      "createdBanner": {
+        "text": "Retreat created! Now build your sales page: day-by-day program, photo gallery, what's included and FAQ.",
+        "cta": "Add the program →"
       }
     },
     "reservation": {
@@ -1727,7 +1731,7 @@
         "publishToggleTitle": "Publish now",
         "publishToggleDesc": "If checked, the event is visible in the catalog and purchasable. You can always change this from the event dashboard.",
         "validationErrorBanner": "Some previous fields need attention. Go back to fix them.",
-        "enrichLaterCue": "Publish when you're ready: program, photo gallery and FAQ can be added and edited anytime from the retreat dashboard."
+        "enrichLaterCue": "Here you create the retreat with the essentials. The day-by-day program, photo gallery and FAQ come RIGHT AFTER: on save we take you to the retreat page, \"Sales page\" section."
       }
     },
     "digital": {

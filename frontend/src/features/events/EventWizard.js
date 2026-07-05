@@ -710,8 +710,11 @@ export default function EventWizard() {
       draft.discard();
       setSubmittedSuccessfully(true);
       toast.success(t('wizards.event.createdToast'));
-      // Jump straight to the dashboard the merchant just created
-      navigate(`/events/${occurrenceId}`);
+      // Jump straight to the dashboard the merchant just created.
+      // ?creato=1 accende il banner "ora costruisci la pagina di
+      // vendita" (il founder non trovava il programma: il cue nel
+      // wizard da solo non bastava).
+      navigate(`/events/${occurrenceId}?creato=1`);
     } catch (err) {
       toast.error(err?.response?.data?.detail || t('wizards.event.validation.creationFailed'));
     } finally {
@@ -1603,7 +1606,7 @@ export default function EventWizard() {
                 sentirsi obbligato a fare tutto ora. */}
             <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-foreground/80">
               {t('wizards.event.publish.enrichLaterCue', {
-                defaultValue: 'Pubblica quando sei pronto: programma, galleria foto e FAQ si possono aggiungere e modificare in ogni momento dalla dashboard del ritiro.',
+                defaultValue: 'Qui crei il ritiro con le informazioni essenziali. Il programma giorno per giorno, la galleria foto e le FAQ li aggiungi SUBITO DOPO: al salvataggio ti portiamo nella pagina del ritiro, sezione "Pagina di vendita".',
               })}
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">

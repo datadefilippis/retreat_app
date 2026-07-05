@@ -1159,6 +1159,10 @@
         "trHint": "Traduci solo i testi: struttura, orari e foto si gestiscono in Italiano. I campi lasciati vuoti restano in italiano sulla pagina pubblica.",
         "trLineHint": "Una riga per voce, nello stesso ordine dell'italiano.",
         "trEmpty": "Prima compila i contenuti in Italiano: qui appariranno gli stessi campi da tradurre."
+      },
+      "createdBanner": {
+        "text": "Ritiro creato! Ora costruisci la pagina di vendita: programma giorno per giorno, galleria foto, cosa è incluso e FAQ.",
+        "cta": "Aggiungi il programma →"
       }
     },
     "reservation": {
@@ -1804,7 +1808,7 @@
         "publishToggleTitle": "Pubblica subito",
         "publishToggleDesc": "Se spuntato, il ritiro è visibile sul catalogo e acquistabile dai clienti. Puoi sempre cambiarlo dalla dashboard del ritiro.",
         "validationErrorBanner": "Alcuni campi precedenti richiedono attenzione. Torna indietro per correggere.",
-        "enrichLaterCue": "Pubblica quando sei pronto: programma, galleria foto e FAQ si possono aggiungere e modificare in ogni momento dalla dashboard del ritiro."
+        "enrichLaterCue": "Qui crei il ritiro con le informazioni essenziali. Il programma giorno per giorno, la galleria foto e le FAQ li aggiungi SUBITO DOPO: al salvataggio ti portiamo nella pagina del ritiro, sezione \"Pagina di vendita\"."
       },
       "payments": {
         "modeHeading": "Come vuoi incassare questo ritiro?",
