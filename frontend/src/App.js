@@ -101,6 +101,7 @@ import AlertsPage from "./features/alerts/AlertsPage";
 import AnalisiAIPage from "./features/ai/AnalisiAIPage";
 import TeamPage from "./features/team/TeamPage";
 import SettingsPage from "./features/settings/SettingsPage";
+import PublicProfilePage from "./features/settings/PublicProfilePage";
 import AdminPage from "./features/admin/AdminPage";
 import PlansPage from "./pages/PlansPage";
 
@@ -702,6 +703,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* F2.0 — editor del profilo pubblico operatore (/o/:slug) */}
+      <Route
+        path="/public-profile"
+        element={
+          <ProtectedRoute>
+            <PublicProfilePage />
           </ProtectedRoute>
         }
       />

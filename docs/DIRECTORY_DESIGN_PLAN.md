@@ -56,8 +56,7 @@ Obiettivo: da "lista funzionale" a "posto dove è bello cercare il prossimo riti
 profilo in modo semplice e completo.** Oggi esiste solo il branding
 (logo/colori): l'editor del profilo NON esiste — si costruisce qui.
 
-**F2.0 · Editor "Profilo pubblico"** (nuova sezione admin, linkata da
-Impostazioni e dalla dashboard):
+**F2.0 · Editor "Profilo pubblico"** ✅ (fatto 5/7/2026 — merge su main; incluso link profilo→store di F2.1):
 - [ ] Campi: foto cover, logo (riusa branding), bio (breve, con contatore),
       città/regione, social (Instagram, sito, Facebook), contatti pubblici
       (email/telefono opzionali — l'operatore DECIDE cosa esporre)

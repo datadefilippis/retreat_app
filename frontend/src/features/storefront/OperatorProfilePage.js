@@ -49,25 +49,72 @@ export default function OperatorProfilePage() {
     );
   }
 
-  const accent = data.brand_color || '#111827';
+  const accent = data.brand_color || '#16281F';
+  const socials = data.socials || {};
+  const extUrl = (u) => (u && !u.startsWith('http') ? `https://${u}` : u);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="text-white" style={{ backgroundColor: accent }}>
-        <div className="max-w-5xl mx-auto px-4 py-10 flex items-center gap-4">
+      {/* F2.0 — cover del profilo (se curata) sopra il brand header */}
+      <header className="text-white relative" style={{ backgroundColor: accent }}>
+        {data.cover_url && (
+          <>
+            <img src={data.cover_url} alt=""
+                 className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/45" />
+          </>
+        )}
+        <div className="relative max-w-5xl mx-auto px-4 py-12 flex items-center gap-4">
           {data.logo_url && (
-            <img src={data.logo_url} alt="" className="h-16 w-16 rounded-full object-cover bg-white/10" />
+            <img src={data.logo_url} alt="" className="h-16 w-16 rounded-full object-cover bg-white/10 border-2 border-white/40" />
           )}
           <div>
             <h1 className="text-2xl font-bold">{data.name}</h1>
-            {data.city && <p className="text-white/80 text-sm mt-0.5">{data.city}</p>}
+            {(data.city || data.region) && (
+              <p className="text-white/80 text-sm mt-0.5">
+                {[data.city, data.region].filter(Boolean).join(', ')}
+              </p>
+            )}
           </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {data.bio && (
-          <p className="text-gray-700 leading-relaxed mb-6 max-w-2xl">{data.bio}</p>
+          <p className="text-gray-700 leading-relaxed mb-4 max-w-2xl whitespace-pre-line">{data.bio}</p>
+        )}
+
+        {/* F2.0/F2.1 — social, contatti (opt-in) e link allo store */}
+        {(Object.keys(socials).length > 0 || data.contacts || data.store_slug) && (
+          <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            {socials.instagram && (
+              <a href={extUrl(socials.instagram)} target="_blank" rel="noreferrer"
+                 className="text-emerald-700 hover:underline">Instagram</a>
+            )}
+            {socials.website && (
+              <a href={extUrl(socials.website)} target="_blank" rel="noreferrer"
+                 className="text-emerald-700 hover:underline">
+                {t('landings:operator.website', { defaultValue: 'Sito web' })}
+              </a>
+            )}
+            {socials.facebook && (
+              <a href={extUrl(socials.facebook)} target="_blank" rel="noreferrer"
+                 className="text-emerald-700 hover:underline">Facebook</a>
+            )}
+            {data.contacts?.public_email && (
+              <a href={`mailto:${data.contacts.public_email}`}
+                 className="text-gray-600 hover:underline">{data.contacts.public_email}</a>
+            )}
+            {data.contacts?.public_phone && (
+              <span className="text-gray-600">{data.contacts.public_phone}</span>
+            )}
+            {data.store_slug && (
+              <Link to={`/s/${data.store_slug}`}
+                    className="ml-auto rounded-full bg-emerald-700 text-white px-4 py-1.5 text-sm font-semibold hover:bg-emerald-800 transition-colors">
+                {t('landings:operator.visitStore', { defaultValue: 'Visita il negozio' })} →
+              </Link>
+            )}
+          </div>
         )}
 
         <h2 className="text-base font-semibold text-gray-900 mb-3">

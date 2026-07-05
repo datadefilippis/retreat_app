@@ -10,6 +10,7 @@ import { Skeleton } from '../../components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { organizationsAPI, authAPI, alertsAPI } from '../../api';
 import { Switch } from '../../components/ui/switch';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useBilling } from '../../hooks/useBilling';
 import { useEntitlements } from '../../hooks/useEntitlements';
@@ -252,7 +253,14 @@ export const SettingsPage = () => {
 
   return (
     <AppLayout>
-      <Header title={t('title')} subtitle={t('subtitle')} />
+      <Header title={t('title')} subtitle={t('subtitle')}>
+        {/* F2.0 — accesso rapido all'editor del profilo pubblico */}
+        <Link to="/public-profile">
+          <Button variant="outline" size="sm">
+            {t('publicProfile.title', { defaultValue: 'Profilo pubblico' })}
+          </Button>
+        </Link>
+      </Header>
 
       <div className="p-4 md:p-8 space-y-6 animate-fade-in max-w-2xl">
 
