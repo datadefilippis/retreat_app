@@ -134,6 +134,18 @@ export default function RetreatsCalendarPage() {
     description: `Trova e prenota ${catLabel ? catLabel.toLowerCase() + ' ' : ''}ritiri${region ? ' in ' + region : ' in Italia'}: date, prezzi e disponibilità in tempo reale, con prenotazione e caparra online.`,
     canonicalPath: (routeParams.categoria || routeParams.regione)
       ? window.location.pathname : '/ritiri',
+    // F3 — ItemList dei ritiri visibili (max 20: ai crawler serve il
+    // segnale di lista, non l'inventario completo)
+    jsonLd: (data?.items || []).length > 0 ? {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: (data.items || []).slice(0, 20).map((it, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: it.title,
+        url: `${window.location.origin}${it.url}`,
+      })),
+    } : undefined,
   });
 
   const anyFilter = category || region || month || query;

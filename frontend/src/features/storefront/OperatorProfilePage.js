@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
+import useSeoMeta from './lib/useSeoMeta';
 
 function fmtPrice(n) {
   if (n == null) return null;
@@ -38,6 +39,25 @@ export default function OperatorProfilePage() {
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, [org_slug]);
+
+  // F3 — SEO profilo: title/description + JSON-LD Organization.
+  // Hook chiamato incondizionatamente (prima dei return condizionali).
+  useSeoMeta({
+    title: data?.name ? `${data.name} — ritiri e profilo organizzatore` : undefined,
+    description: data?.bio ? String(data.bio).slice(0, 155) : undefined,
+    image: data?.cover_url || data?.logo_url || undefined,
+    canonicalPath: `/o/${org_slug}`,
+    jsonLd: data?.name ? {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: data.name,
+      url: `${window.location.origin}/o/${org_slug}`,
+      ...(data.logo_url ? { logo: data.logo_url } : {}),
+      ...(data.bio ? { description: String(data.bio).slice(0, 300) } : {}),
+      ...(Object.keys(data.socials || {}).length > 0
+        ? { sameAs: Object.values(data.socials) } : {}),
+    } : undefined,
+  });
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">…</div>;
   if (notFound || !data) {

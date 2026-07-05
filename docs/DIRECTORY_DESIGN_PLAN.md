@@ -68,7 +68,7 @@ profilo in modo semplice e completo.** Oggi esiste solo il branding
       = più conversioni — glielo diciamo)
 - **DoD**: un operatore compila il profilo in <5 minuti senza documentazione.
 
-**F2.1 · Collegamenti ecosistema** (1 gg)
+**F2.1 · Collegamenti ecosistema** ✅ (fatto 5/7/2026)
 
 - [ ] Landing ritiro: blocco "Organizzato da" con avatar/logo, bio breve,
       link a /o/:slug ("Vedi il profilo e gli altri ritiri")
@@ -81,7 +81,7 @@ profilo in modo semplice e completo.** Oggi esiste solo il branding
 - [ ] Card directory: nome operatore → /o/:slug (stop propagation sul click card)
 - **DoD**: da ogni superficie raggiungo le adiacenti in 1 click, nei due sensi.
 
-### F3 · SEO automatico (2 gg) — "automatico" = derivato dai dati, zero lavoro operatore
+### F3 · SEO automatico ✅ (fatto 5/7/2026 — JSON-LD+sitemap+robots+OG; prerender-for-bots resta legato a Fase 6.3)
 - [ ] **JSON-LD** generato dai dati reali: `Event` (nome, date, luogo,
       offerta/prezzo, disponibilità) sulle landing; `Organization` sul
       profilo; `Product` sulle schede store; `BreadcrumbList` ovunque;
