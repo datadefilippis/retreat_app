@@ -13,8 +13,9 @@
 import customerApi from './customerClient';
 
 export const storefrontAPI = {
-  getCatalog: (slug) =>
-    customerApi.get(`/api/public/catalog/${slug}`),
+  getCatalog: (slug, lang) =>
+    customerApi.get(`/api/public/catalog/${slug}`,
+      lang && lang !== 'it' ? { params: { lang } } : undefined),
 
   // i18n + branding bootstrap. Lightweight payload (~250 bytes) consumed
   // by `StoreMetaContext` to drive the language resolver across every

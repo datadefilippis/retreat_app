@@ -424,20 +424,13 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     if (category) return;                       // already on a category page
     if (loading) return;                        // wait for catalog
     if (!availableCategories || availableCategories.length === 0) return;
-    // V1 (5/7 sera) — la root e' una HOME vetrina: si redirige alla
-    // categoria SOLO per store mono-categoria piccoli (li portiamo
-    // dritti al sodo); per tutti gli altri /s/:slug rende StoreHome.
-    const totalProducts = (catalog?.products || []).length;
-    if (availableCategories.length === 1 && totalProducts <= 6) {
-      navigate(`/s/${slug}/c/${availableCategories[0].slug}`, { replace: true });
-    }
+    // T1 (6/7) — bio-first: la root e' SEMPRE la pagina Chi-siamo
+    // (identita' prima del catalogo). Nessun redirect.
   }, [category, loading, availableCategories, catalog, slug, navigate]);
 
-  // V1 — home mode: root con catalogo multi-categoria (o ricco)
-  const isHome = !aboutMode && !category && !loading
-    && (availableCategories || []).length > 0
-    && !((availableCategories || []).length === 1
-         && (catalog?.products || []).length <= 6);
+  // T1 — la root rende il Chi-siamo (bio-first, decisione founder)
+  const isHome = false;
+  const isRootAbout = !category && !loading;
 
   // Phase 7.5 — unknown-category guard.
   //
@@ -706,7 +699,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
       setLoading(true);
       setError(null);
       try {
-        const res = await storefrontAPI.getCatalog(slug);
+        const res = await storefrontAPI.getCatalog(slug, (i18n.language || 'it').slice(0, 2));
         setCatalog(res.data);
         // Shipping options (non-blocking) — fetched once per store.
         // Empty array on failure keeps the catalog usable; the checkout
@@ -732,7 +725,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
       } finally { setLoading(false); }
     };
     load();
-  }, [slug]);
+  }, [slug, i18n.language]);
 
   // Consolidation: hydrate cart from landing-page hand-off.
   //
@@ -2020,7 +2013,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
 
       {/* Merchant info section — S2: sulla home duplica l'hero brand,
           quindi si mostra solo sulle pagine categoria */}
-      {!isHome && !aboutMode && (() => {
+      {!isHome && !aboutMode && !isRootAbout && (() => {
         const si = catalog?.store_info;
         if (!si?.store_description && !si?.contact_email && !si?.contact_phone) return null;
         return (
@@ -2059,8 +2052,9 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
         </div>
       )}
 
-      {/* S3 — Chi siamo nel guscio store */}
-      {aboutMode && (
+      {/* S3+T1 — Chi siamo nel guscio store: su /chi-siamo E sulla root
+          (bio-first: la prima pagina dello store e' l'identita') */}
+      {(aboutMode || isRootAbout) && (
         <div className="max-w-6xl mx-auto px-4 pt-2 pb-4">
           <StoreAbout slug={slug} />
         </div>
@@ -2085,7 +2079,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
           fallback. The BookingCalendarModal stays at the page level
           (below) because it's a global modal — only ONE picker is open
           at a time across all booking products. */}
-      {!isHome && !aboutMode && <ProductGrid
+      {!isHome && !aboutMode && !isRootAbout && <ProductGrid
         products={products}
         currency={catalog.currency}
         orgSlug={slug}

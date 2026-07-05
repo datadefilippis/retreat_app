@@ -478,5 +478,16 @@
     "rowDue": "entro il",
     "payNow": "Paga ora",
     "ticketN": "Pass {{n}}"
+  },
+  "categories": {
+    "yoga": "Yoga",
+    "meditazione": "Meditazione & Mindfulness",
+    "detox": "Detox & Digiuno",
+    "suono": "Suono & Sound Healing",
+    "massaggio": "Massaggio & Bodywork",
+    "breathwork": "Breathwork",
+    "cammini": "Cammini & Natura",
+    "femminile": "Cerchi & Femminile",
+    "aziendale": "Benessere aziendale"
   }
 }

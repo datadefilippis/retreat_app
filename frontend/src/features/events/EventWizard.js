@@ -29,6 +29,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import MultiLangText from '../../components/MultiLangText';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { toast } from 'sonner';
@@ -240,6 +241,21 @@ export default function EventWizard() {
       unit_price: toInput(p.unit_price),
       transaction_mode: p.transaction_mode || 'direct',
     };
+  });
+
+  // Multilingua manuale (6/7) — {en: testo, de: ...} per campo;
+  // prefill dal product.translations su modifica/duplica
+  const [trDescription, setTrDescription] = useState(() => {
+    const tr = prefillRef.current?.product?.translations || {};
+    const out = {};
+    Object.entries(tr).forEach(([l, f]) => { if (f?.description !== undefined) out[l] = f.description; });
+    return out;
+  });
+  const [trLong, setTrLong] = useState(() => {
+    const tr = prefillRef.current?.product?.translations || {};
+    const out = {};
+    Object.entries(tr).forEach(([l, f]) => { if (f?.long_description !== undefined) out[l] = f.long_description; });
+    return out;
   });
 
   // Store-first (fix 5/7) — stesso criterio del backend
@@ -549,6 +565,18 @@ export default function EventWizard() {
         product: {
           name: base.name.trim(),
           category: base.category,
+          // Multilingua manuale: le lingue compilate = lingue offerte
+          translations: (() => {
+            const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+            const out = {};
+            langs.forEach(l => {
+              const entry = {};
+              if ((trDescription[l] || '').trim()) entry.description = trDescription[l].trim();
+              if ((trLong[l] || '').trim()) entry.long_description = trLong[l].trim();
+              if (Object.keys(entry).length) out[l] = entry;
+            });
+            return Object.keys(out).length ? out : null;
+          })(),
           description: base.description?.trim() || null,
           image_url: base.image_url?.trim() || null,
           unit_price: base.unit_price !== '' ? Number(base.unit_price) : null,
@@ -831,6 +859,14 @@ export default function EventWizard() {
                 rows={2} maxLength={2000}
                 placeholder={t('wizards.event.base.descriptionPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
+              />
+              {/* Multilingua manuale (6/7) — l'operatore offre le lingue
+                  che vuole; quelle decidono dove il ritiro appare */}
+              <MultiLangText
+                value={trDescription}
+                onChange={setTrDescription}
+                rows={2}
+                maxLength={2000}
               />
             </div>
 
@@ -1582,6 +1618,12 @@ export default function EventWizard() {
                 rows={8} maxLength={5000}
                 placeholder={t('wizards.event.publish.longDescPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:border-gray-900 focus:outline-none resize-y"
+              />
+              <MultiLangText
+                value={trLong}
+                onChange={setTrLong}
+                rows={5}
+                maxLength={5000}
               />
             </div>
 

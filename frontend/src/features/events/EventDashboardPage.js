@@ -39,6 +39,7 @@ import { pruneFieldConfigs } from './components/fieldConfigUtils';
 // W1.S5/Phase 2.9 — additive cost composition editor for edits.
 import CostSourceEditor from '../products/components/CostSourceEditor';
 import RetreatContentEditor from './components/RetreatContentEditor';
+import MultiLangText from '../../components/MultiLangText';
 
 
 function formatDateTime(iso, locale = 'it-IT') {
@@ -356,6 +357,21 @@ export default function EventDashboardPage() {
   // E3: long description edit
   const [editLongDescOpen, setEditLongDescOpen] = useState(false);
   const [longDescForm, setLongDescForm] = useState('');
+  // Multilingua manuale — le lingue offerte dall'operatore (per campo);
+  // la fonte e' product.translations, il salvataggio passa dal PATCH prodotto
+  const [trDescription, setTrDescription] = useState({});
+  const [trLong, setTrLong] = useState({});
+  const buildTranslationsPayload = () => {
+    const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+    const out = {};
+    langs.forEach(l => {
+      const entry = {};
+      if ((trDescription[l] || '').trim()) entry.description = trDescription[l].trim();
+      if ((trLong[l] || '').trim()) entry.long_description = trLong[l].trim();
+      if (Object.keys(entry).length) out[l] = entry;
+    });
+    return out;
+  };
   const [savingLongDesc, setSavingLongDesc] = useState(false);
 
   // E4: tier CRUD inline
@@ -448,6 +464,15 @@ export default function EventDashboardPage() {
         });
         // E3: long description
         setLongDescForm(occ.long_description || '');
+        // multilingua manuale: split per campo per i due editor
+        const ptr = occ.product_translations || {};
+        const d = {}, ld = {};
+        Object.entries(ptr).forEach(([l, f]) => {
+          if (f?.description) d[l] = f.description;
+          if (f?.long_description) ld[l] = f.long_description;
+        });
+        setTrDescription(d);
+        setTrLong(ld);
         // E4: tier forms
         const tiersData = tiersRes.data.tiers || [];
         setTiers(tiersData);
@@ -929,6 +954,7 @@ export default function EventDashboardPage() {
                     rows={2} maxLength={2000}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
                   />
+                  <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">{t('dashboards.event.product.imageLabel')}</label>
@@ -1122,6 +1148,7 @@ export default function EventDashboardPage() {
                       const upd = {
                         name: productForm.name.trim(),
                         description: productForm.description?.trim() || null,
+                        translations: buildTranslationsPayload(),
                         image_url: productForm.image_url?.trim() || null,
                         unit_price: productForm.unit_price !== '' ? Number(productForm.unit_price) : null,
                         transaction_mode: productForm.transaction_mode,
@@ -1966,6 +1993,7 @@ export default function EventDashboardPage() {
                 placeholder={t('dashboards.event.description.placeholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-y"
               />
+              <MultiLangText value={trLong} onChange={setTrLong} rows={5} maxLength={5000} />
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -1974,6 +2002,10 @@ export default function EventDashboardPage() {
                     setSavingLongDesc(true);
                     try {
                       await eventOccurrencesAPI.update(occurrenceId, { long_description: longDescForm || null });
+                      // le traduzioni del racconto lungo vivono sul prodotto
+                      if (occurrence?.product_id) {
+                        await productsAPI.update(occurrence.product_id, { translations: buildTranslationsPayload() });
+                      }
                       setOccurrence(prev => prev ? { ...prev, long_description: longDescForm || null } : prev);
                       toast.success(t('dashboards.event.toasts.descriptionUpdated'));
                       setEditLongDescOpen(false);

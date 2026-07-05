@@ -1,6 +1,5 @@
 {
   "_comment": "French translations for the admin Products area.",
-
   "extras": {
     "title": "Extras et options",
     "kindLabel": {
@@ -40,7 +39,6 @@
       "emptyHint": "Aucun groupe créé. Créez-en un ci-dessus (ex. \"assurance\") pour commencer."
     }
   },
-
   "options": {
     "title": "Options du service",
     "subtitle": "Le client en choisit une seule (radio).",
@@ -61,7 +59,6 @@
       "remove": "Retirer l'option"
     }
   },
-
   "fields": {
     "addButton": "+ Ajouter un champ",
     "emptyHint": "Aucun champ configuré.",
@@ -85,7 +82,6 @@
       "idPlaceholder": "auto"
     }
   },
-
   "typeLabels": {
     "physical": "Physique",
     "service": "Service",
@@ -95,7 +91,6 @@
     "event_ticket": "Événement",
     "course": "Cours"
   },
-
   "list": {
     "typeFilter": {
       "physical": "📦 Physiques",
@@ -116,7 +111,6 @@
     "deactivateTitle": "Désactiver",
     "dashboardLink": "Tableau de bord"
   },
-
   "status": {
     "online": "En ligne",
     "offline": "Hors ligne",
@@ -127,7 +121,6 @@
     "visibleInCatalog": "Visible dans le catalogue public",
     "notVisibleToCustomers": "Non visible par les clients"
   },
-
   "typePicker": {
     "title": "Quel type de produit voulez-vous créer ?",
     "physical": {
@@ -159,7 +152,6 @@
       "desc": "Modules et leçons vidéo via Bunny"
     }
   },
-
   "form": {
     "unitPlaceholder": "pcs, kg, h",
     "unitLabelPlaceholder": "pcs, service, jour",
@@ -169,7 +161,6 @@
     "manageLink": "Gérer",
     "fieldsCounter": "{{count}}/4 champs"
   },
-
   "grids": {
     "common": {
       "loading": "Chargement…",
@@ -185,7 +176,6 @@
       "newCta": "+ Nouveau produit",
       "firstCreateCta": "+ Créer le premier produit"
     },
-
     "physical": {
       "title": "Produits physiques",
       "subtitle": "Gérez les produits physiques : stock, expédition, retrait.",
@@ -209,7 +199,6 @@
         "outOfStock": "❌ Épuisés"
       }
     },
-
     "digital": {
       "title": "Produits numériques",
       "subtitle": "Ebooks, modèles, fichiers téléchargeables.",
@@ -237,7 +226,6 @@
         "missingFile": "⚠️ Manquants"
       }
     },
-
     "service": {
       "title": "Services",
       "subtitle": "Gérez tous vos services et leur disponibilité.",
@@ -258,7 +246,6 @@
       "stateLabel": "Statut",
       "dashboardCta": "Tableau de bord"
     },
-
     "reservation": {
       "title": "Locations",
       "subtitle": "Gérez les produits louables : à la période (multi-jours) ou au créneau (horaire).",
@@ -277,7 +264,6 @@
       "typeBadgeRange": "🏠 Location · période",
       "typeBadgeSlot": "📅 Location · créneau"
     },
-
     "course": {
       "title": "Cours vidéo",
       "subtitle": "Modules et leçons avec Bunny Stream.",
@@ -322,7 +308,6 @@
         "errorTitle": "Problème avec la configuration Bunny — cliquez pour vérifier"
       }
     },
-
     "event": {
       "title": "Événements",
       "subtitle": "Gérez tous vos événements, dates et check-in dans une vue unique.",
@@ -366,7 +351,6 @@
       }
     }
   },
-
   "dashboards": {
     "common": {
       "loading": "Chargement…",
@@ -393,7 +377,6 @@
       "imageUrlPlaceholder": "ou collez une URL…",
       "backToProducts": "← Retour aux produits"
     },
-
     "course": {
       "back": "← Produits cours",
       "newTitle": "Nouveau cours",
@@ -742,7 +725,6 @@
         "courseUpdated": "Cours mis à jour"
       }
     },
-
     "event": {
       "back": "← Retour aux événements",
       "typeLabel": "Événement",
@@ -1106,7 +1088,6 @@
         "distributionUpdated": "Distribution mise à jour"
       }
     },
-
     "reservation": {
       "back": "← Retour aux locations",
       "fallbackName": "Location",
@@ -1211,7 +1192,6 @@
         "extrasError": "Erreur d'enregistrement des extras"
       }
     },
-
     "digital": {
       "back": "← Retour aux produits",
       "typeLabel": "💾 Produit numérique",
@@ -1315,7 +1295,6 @@
         "extrasError": "Erreur d'enregistrement des extras"
       }
     },
-
     "physical": {
       "back": "← Retour aux produits",
       "typeLabel": "📦 Produit physique",
@@ -1402,7 +1381,6 @@
         "extrasError": "Erreur d'enregistrement des extras"
       }
     },
-
     "service": {
       "back": "← Retour aux services",
       "typeLabel": "Service",
@@ -1477,7 +1455,6 @@
       }
     }
   },
-
   "wizards": {
     "common": {
       "stepCounter": "Étape {{current}} sur {{total}}",
@@ -1561,7 +1538,6 @@
         "retrySuccess": "Image téléversée avec succès."
       }
     },
-
     "physical": {
       "title": "Nouveau produit physique",
       "tabs": {
@@ -1609,7 +1585,6 @@
         "publishToggleDesc": "Le produit devient visible et achetable dans la vitrine publique. Si désactivé, il est enregistré comme brouillon."
       }
     },
-
     "event": {
       "title": "Nouvel événement",
       "duplicateTitle": "Dupliquer l'événement",
@@ -1742,7 +1717,6 @@
         "validationErrorBanner": "Certains champs précédents nécessitent votre attention. Revenez en arrière pour les corriger."
       }
     },
-
     "digital": {
       "title": "Nouveau produit numérique",
       "tabs": {
@@ -1804,7 +1778,6 @@
         "publishToggleDesc": "Le produit devient visible et achetable dans la vitrine publique. Si désactivé, il est enregistré comme brouillon."
       }
     },
-
     "reservation": {
       "title": "Nouvelle location",
       "tabs": {
@@ -1888,7 +1861,6 @@
         "publishToggleDesc": "Le produit devient visible et réservable dans la vitrine publique. Si désactivé, il est enregistré comme brouillon."
       }
     },
-
     "service": {
       "title": "Nouveau service",
       "back": "← Retour aux services",
@@ -1935,7 +1907,7 @@
         "summaryOptionsNone": "Aucune (prix de base)",
         "longDescTitle": "Description longue (landing)",
         "longDescDesc": "Ce qui apparaît sur la page publique du service. Markdown pris en charge.",
-        "longDescPlaceholder": "## Ce qui est inclus\n\n- Première évaluation gratuite\n- Séance d'hypnose guidée (60 min)\n- Suivi par email les jours suivants\n\n## Pour qui\u00a0\n\nLes personnes qui souhaitent améliorer la qualité du sommeil, arrêter de fumer, gérer l'anxiété.",
+        "longDescPlaceholder": "## Ce qui est inclus\n\n- Première évaluation gratuite\n- Séance d'hypnose guidée (60 min)\n- Suivi par email les jours suivants\n\n## Pour qui \n\nLes personnes qui souhaitent améliorer la qualité du sommeil, arrêter de fumer, gérer l'anxiété.",
         "coverUrlLabel": "URL de la cover landing (facultatif)",
         "coverUrlPlaceholder": "https://… image hero de la page publique",
         "coverUrlHint": "Si vide, l'image du produit (étape 1) est utilisée.",
@@ -1952,7 +1924,6 @@
       }
     }
   },
-
   "venue": {
     "title": "Détails de l'événement (facultatif)",
     "venueName": "Nom du lieu",
@@ -1975,5 +1946,11 @@
     "longDescription": "Description longue (markdown pris en charge)",
     "longDescriptionPlaceholder": "## Le concept\n\nUne soirée dégustation avec menu 4 services et musique live…",
     "markdownHint": "Utilisez ## pour les titres, **gras**, *italique*, - pour les listes."
+  },
+  "multilang": {
+    "remove": "Supprimer cette langue",
+    "placeholder": "Écris ici le texte en {{lang}}…",
+    "hint": "Proposer ce texte aussi en :",
+    "visibility": "Le produit apparaîtra dans les vues de ces langues. Sans traduction, il reste visible uniquement en italien."
   }
 }

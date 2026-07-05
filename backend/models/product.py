@@ -31,6 +31,14 @@ class ProductBase(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     sku: Optional[str] = Field(default=None, max_length=50)
     category: Optional[str] = None
+
+    # Multilingua MANUALE (6/7/2026, decisione founder: zero LLM, zero
+    # costi): l'operatore scrive le traduzioni che vuole offrire.
+    # {"en": {"description": ..., "long_description": ...}, "de": ...}
+    # Le lingue presenti = le lingue che l'operatore ACCETTA: nelle
+    # viste in lingua X compaiono solo prodotti con la traduzione X
+    # (l'italiano e' sempre disponibile).
+    translations: Optional[dict] = None
     unit_price: Optional[float] = None
     # DEPRECATED (Wave 1, W1.S1): authoritative cost is now ``cost_source``
     # below. ``cost_price`` is retained for backward compatibility during
@@ -173,6 +181,9 @@ class ProductUpdate(BaseModel):
     name: Optional[str] = None
     sku: Optional[str] = None
     category: Optional[str] = None
+    # Traduzioni manuali {lang: {description, long_description}} — la
+    # whitelist (lingue/campi/lunghezze) e' in services/manual_translations.
+    translations: Optional[Dict[str, Any]] = None
     unit_price: Optional[float] = None
     # DEPRECATED — see ProductBase for the rationale. Accepted on PATCH
     # only so existing clients keep working during the migration window;

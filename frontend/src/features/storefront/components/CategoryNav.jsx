@@ -123,12 +123,13 @@ export default function CategoryNav({
   // Self-hide cases:
   //  - no slug (parent forgot to pass it — defensive)
   //  - no categories AND no custom links → nothing to render
-  //  - one category + zero custom links → single-category store, no nav needed
-  // Note: WITH custom links we render the strip even with 1 category,
-  // so the merchant's custom links are reachable.
-  const hasMultipleCategories = Array.isArray(categories) && categories.length >= 2;
+  // T1 bio-first (6/7/2026): la root dello store e' la BIO, non il
+  // catalogo — la nav e' l'unica strada verso i prodotti, quindi si
+  // rende anche per gli store mono-categoria (prima si nascondeva
+  // sotto le 2 categorie perche' la root ERA gia' il catalogo).
+  const hasCategories = Array.isArray(categories) && categories.length >= 1;
   const hasCustomLinks = visibleCustomLinks.length > 0;
-  if (!orgSlug || (!hasMultipleCategories && !hasCustomLinks)) {
+  if (!orgSlug || (!hasCategories && !hasCustomLinks)) {
     return null;
   }
 
@@ -166,7 +167,7 @@ export default function CategoryNav({
         <div className="flex items-center justify-between gap-3 overflow-x-auto py-2 -mx-1">
           {/* Category pills (auto-generated from catalog inventory) */}
           <div className="flex items-center gap-1 shrink-0">
-            {hasMultipleCategories && categories.map((cat) => {
+            {hasCategories && categories.map((cat) => {
               const isActive = activeSlug === cat.slug;
               return (
                 <Link

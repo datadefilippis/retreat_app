@@ -69,6 +69,8 @@ class WizardProductPayload(BaseModel):
     # Passa al Product via model_dump() come gli altri campi.
     category: str = Field(min_length=1, max_length=40)
     description: Optional[str] = Field(default=None, max_length=2000)
+    # Multilingua manuale (6/7): {"en": {"description", "long_description"}}
+    translations: Optional[Dict[str, Any]] = None
     image_url: Optional[str] = Field(default=None, max_length=500)
     unit_price: Optional[float] = Field(default=None, ge=0)
     price_mode: str = "fixed"
@@ -169,6 +171,11 @@ async def create_event_wizard(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Modalità diretta non compatibile con prezzo su richiesta.",
         )
+
+    # Multilingua manuale (6/7) — whitelist lingue/campi/lunghezze
+    if body.product.translations is not None:
+        from services.manual_translations import sanitize_translations
+        body.product.translations = sanitize_translations(body.product.translations)
 
     # UX round 5/7 — categoria: solo chiavi della tassonomia standard
     # (fonte unica models/retreat_taxonomy, la stessa della directory)
@@ -952,11 +959,13 @@ async def get_occurrence(
         {"_id": 0, "name": 1, "image_url": 1, "description": 1,
          "is_published": 1, "is_active": 1, "store_ids": 1,
          "unit_price": 1, "transaction_mode": 1,
-         "metadata": 1},  # E1 + F1: needed for full product edit + attendee policy
+         "metadata": 1,  # E1 + F1: needed for full product edit + attendee policy
+         "translations": 1},  # multilingua manuale — editor in dashboard
     ) or {}
     doc["product_name"] = prod.get("name")
     doc["product_image_url"] = prod.get("image_url")
     doc["product_description"] = prod.get("description")
+    doc["product_translations"] = prod.get("translations") or {}
     doc["product_is_published"] = prod.get("is_published", False)
     doc["product_is_active"] = prod.get("is_active", True)
     doc["product_store_ids"] = prod.get("store_ids") or []
