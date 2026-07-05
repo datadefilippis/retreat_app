@@ -1094,6 +1094,12 @@ async def update_occurrence(
 
     updates = body.model_dump(exclude_unset=True)
 
+    # Multilingua manuale — whitelist di lingue/forma/lunghezze sui
+    # contenuti tradotti della pagina di vendita.
+    if "translations" in updates:
+        from services.manual_translations import sanitize_occurrence_translations
+        updates["translations"] = sanitize_occurrence_translations(updates["translations"])
+
     # Validate status transition if changing
     if "status" in updates:
         if updates["status"] not in OCCURRENCE_STATUSES:

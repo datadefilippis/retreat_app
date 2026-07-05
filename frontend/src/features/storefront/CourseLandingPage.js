@@ -19,6 +19,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
+import i18nInstance from '../../i18n';
 import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
@@ -146,7 +147,7 @@ export default function CourseLandingPage() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    storefrontAPI.getProductLanding(orgSlug, productSlug)
+    storefrontAPI.getProductLanding(orgSlug, productSlug, (i18nInstance.language || 'it').slice(0, 2))
       .then(res => { if (mounted) { setData(res.data); setLoading(false); } })
       .catch(err => {
         if (!mounted) return;
@@ -154,7 +155,7 @@ export default function CourseLandingPage() {
         setLoading(false);
       });
     return () => { mounted = false; };
-  }, [orgSlug, productSlug]);
+  }, [orgSlug, productSlug, i18nInstance.language]);
 
   const product = data?.product;
   const course = data?.course_preview;

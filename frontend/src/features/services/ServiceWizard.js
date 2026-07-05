@@ -50,6 +50,7 @@ import StripeRequiredAlert from '../../components/StripeRequiredAlert';
 // Mounted inside Tab 1 "base" alongside unit_price so the merchant
 // configures the sale price AND its cost basis on the same screen.
 import CostSourceEditor from '../products/components/CostSourceEditor';
+import MultiLangText from '../../components/MultiLangText';
 
 
 // Tabs are addressed by stable `key`. Visible labels are resolved at
@@ -122,6 +123,9 @@ export default function ServiceWizard() {
   const [serviceAllowCustomRequest, setServiceAllowCustomRequest] = useState(false);
   // Onda 13 — long description + cover image for the public landing
   const [longDescription, setLongDescription] = useState('');
+  // Multilingua manuale — le lingue offerte decidono dove il servizio appare
+  const [trDescription, setTrDescription] = useState({});
+  const [trLong, setTrLong] = useState({});
   const [coverImageUrl, setCoverImageUrl] = useState('');
 
   const loadStores = useCallback(async () => {
@@ -235,6 +239,17 @@ export default function ServiceWizard() {
         name: base.name.trim(),
         category: base.category || null,
         description: base.description?.trim() || null,
+        translations: (() => {
+          const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+          const out = {};
+          langs.forEach(l => {
+            const e = {};
+            if ((trDescription[l] || '').trim()) e.description = trDescription[l].trim();
+            if ((trLong[l] || '').trim()) e.long_description = trLong[l].trim();
+            if (Object.keys(e).length) out[l] = e;
+          });
+          return out;
+        })(),
         image_url: base.image_url?.trim() || null,
         unit_price: base.unit_price !== '' ? Number(base.unit_price) : null,
         item_type: 'service',
@@ -445,6 +460,7 @@ export default function ServiceWizard() {
                   placeholder={t('wizards.service.base.descriptionPlaceholder')}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
                 />
+                <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
               </div>
 
               <div>
@@ -609,6 +625,7 @@ export default function ServiceWizard() {
                   placeholder={t('wizards.service.publish.longDescPlaceholder')}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-xs font-mono focus:border-gray-900 focus:outline-none resize-y"
                 />
+                <MultiLangText value={trLong} onChange={setTrLong} rows={4} maxLength={5000} />
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1 mt-2">{t('wizards.service.publish.coverUrlLabel')}</label>
                   <input

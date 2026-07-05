@@ -1086,6 +1086,11 @@
         "tierSaveError": "Speicherfehler",
         "descriptionUpdated": "Beschreibung aktualisiert",
         "distributionUpdated": "Verteilung aktualisiert"
+      },
+      "content": {
+        "trHint": "Übersetze nur die Texte: Struktur, Zeiten und Fotos werden auf Italienisch verwaltet. Leere Felder bleiben auf der öffentlichen Seite italienisch.",
+        "trLineHint": "Eine Zeile pro Eintrag, in derselben Reihenfolge wie im Italienischen.",
+        "trEmpty": "Fülle zuerst die italienischen Inhalte aus: hier erscheinen dieselben Felder zur Übersetzung."
       }
     },
     "reservation": {

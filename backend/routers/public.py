@@ -1274,7 +1274,9 @@ async def get_public_event_landing(org_slug: str, slug: str,
     # piu' (sono parole sue). La pipeline LLM resta dormiente e spenta.
     _auto_translated = False
     if lang and lang in ("en", "de", "fr"):
-        from services.manual_translations import merge_language
+        from services.manual_translations import (
+            merge_language, merge_occurrence_language,
+        )
         merged = merge_language(product, lang)
         if merged is not product:
             product = merged
@@ -1283,6 +1285,10 @@ async def get_public_event_landing(org_slug: str, slug: str,
             tr = (product.get("translations") or {}).get(lang) or {}
             if tr.get("long_description"):
                 occ = {**occ, "long_description": tr["long_description"]}
+        # Traduzione olistica pagina di vendita: agenda / incluso /
+        # escluso / FAQ dall'operatore; blocchi non tradotti (o con
+        # struttura divergente) restano in italiano — mai sfasati.
+        occ = merge_occurrence_language(occ, lang)
 
 
     public_occ = PublicOccurrence(
@@ -2244,7 +2250,9 @@ class PublicProductLanding(BaseModel):
 
 
 @router.get("/products/{org_slug}/{product_slug}", response_model=PublicProductLanding)
-async def get_product_landing(org_slug: str, product_slug: str):
+async def get_product_landing(org_slug: str, product_slug: str,
+    # en|de|fr per contenuti tradotti (default semplice: vedi catalog)
+    lang: str = None):
     """Public landing page for a product deep-link.
 
     Used by the storefront route /p/:org_slug/:product_slug. Returns 404
@@ -2286,6 +2294,14 @@ async def get_product_landing(org_slug: str, product_slug: str):
 
     # Build PublicProduct (same enrichment pipeline as the catalog)
     meta = prod.get("metadata") or {}
+    # Multilingua manuale — merge dei campi tradotti dall'operatore quando
+    # la lingua e' offerta; il racconto lungo vive in metadata.
+    if lang and lang != "it":
+        _tr = (prod.get("translations") or {}).get(lang) or {}
+        if _tr.get("description"):
+            prod = {**prod, "description": _tr["description"]}
+        if _tr.get("long_description"):
+            meta = {**meta, "long_description": _tr["long_description"]}
     pp_dict = {
         "id": prod["id"],
         "slug": prod.get("slug"),

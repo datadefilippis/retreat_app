@@ -25,6 +25,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
+import i18nInstance from '../../i18n';
 import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
 import StorefrontHeader from './components/StorefrontHeader';
@@ -330,7 +331,7 @@ export default function ProductLandingPage() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    storefrontAPI.getProductLanding(orgSlug, productSlug)
+    storefrontAPI.getProductLanding(orgSlug, productSlug, (i18nInstance.language || 'it').slice(0, 2))
       .then(res => { if (mounted) { setData(res.data); setLoading(false); } })
       .catch(err => {
         if (!mounted) return;
@@ -338,7 +339,7 @@ export default function ProductLandingPage() {
         setLoading(false);
       });
     return () => { mounted = false; };
-  }, [orgSlug, productSlug]);
+  }, [orgSlug, productSlug, i18nInstance.language]);
 
   // Fetch slots when landing has a service product with availability
   useEffect(() => {

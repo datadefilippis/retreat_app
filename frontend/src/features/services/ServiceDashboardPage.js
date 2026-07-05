@@ -32,6 +32,7 @@ import AvailabilityRulesEditor from './components/AvailabilityRulesEditor';
 import useLandingUrl from '../products/hooks/useLandingUrl';
 // W1.S5/Phase 2.6 — additive cost composition editor for edits.
 import CostSourceEditor from '../products/components/CostSourceEditor';
+import MultiLangText from '../../components/MultiLangText';
 
 
 function formatEuro(n, locale = 'it-IT') {
@@ -61,6 +62,22 @@ export default function ServiceDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
+  // Multilingua manuale — lingue offerte dall'operatore (per campo);
+  // salvate sul prodotto via PATCH translations
+  const [trDescription, setTrDescription] = useState({});
+  const [trLong, setTrLong] = useState({});
+  const buildTranslationsPayload = () => {
+    const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+    const out = {};
+    langs.forEach(l => {
+      const e = {};
+      if ((trDescription[l] || '').trim()) e.description = trDescription[l].trim();
+      if ((trLong[l] || '').trim()) e.long_description = trLong[l].trim();
+      if (Object.keys(e).length) out[l] = e;
+    });
+    return out;
+  };
   const [productForm, setProductForm] = useState({
     name: '', description: '', image_url: '',
     unit_price: '', transaction_mode: 'request', is_published: false,
@@ -109,6 +126,14 @@ export default function ServiceDashboardPage() {
       // First published store slug — for the landing URL.
 
       const meta = prod.metadata || {};
+      const ptr = prod.translations || {};
+      const trD = {}, trL = {};
+      Object.entries(ptr).forEach(([l, f]) => {
+        if (f?.description) trD[l] = f.description;
+        if (f?.long_description) trL[l] = f.long_description;
+      });
+      setTrDescription(trD);
+      setTrLong(trL);
       setProductForm({
         name: prod.name || '',
         description: prod.description || '',
@@ -168,6 +193,7 @@ export default function ServiceDashboardPage() {
       const upd = {
         name: productForm.name.trim(),
         description: productForm.description?.trim() || null,
+        translations: buildTranslationsPayload(),
         image_url: productForm.image_url?.trim() || null,
         unit_price: productForm.unit_price !== '' ? Number(productForm.unit_price) : null,
         transaction_mode: productForm.transaction_mode,
@@ -535,6 +561,7 @@ export default function ServiceDashboardPage() {
                     onChange={e => setProductForm(f => ({ ...f, description: e.target.value }))}
                     rows={2}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none" />
+                  <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
                 </div>
 
                 {/* Product image */}
@@ -676,6 +703,7 @@ export default function ServiceDashboardPage() {
                 placeholder={t('dashboards.service.longDescPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-xs font-mono focus:border-gray-900 focus:outline-none resize-y"
               />
+              <MultiLangText value={trLong} onChange={setTrLong} rows={4} maxLength={5000} />
               <div className="flex justify-end">
                 <button type="button" onClick={saveProduct}
                   disabled={savingProduct}

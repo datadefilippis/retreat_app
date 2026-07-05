@@ -49,6 +49,7 @@ import { useUnsavedChangesPrompt } from '../../hooks/useUnsavedChangesPrompt';
 import { useWizardDraft } from '../../hooks/useWizardDraft';
 import { useAbortableUpload } from '../../hooks/useAbortableUpload';
 import { showImageUploadFailedToast } from '../../lib/imageUploadFailedToast';
+import MultiLangText from '../../components/MultiLangText';
 
 
 // Tabs are addressed by stable `key`. Visible labels are resolved at
@@ -151,6 +152,10 @@ export default function DigitalWizard() {
     access_expiry_days: '',
     long_description: '',
   });
+
+  // Multilingua manuale — le lingue offerte decidono dove il prodotto appare
+  const [trDescription, setTrDescription] = useState({});
+  const [trLong, setTrLong] = useState({});
 
   // Step 5 — extras
   const [extras, setExtras] = useState([]);
@@ -285,6 +290,17 @@ export default function DigitalWizard() {
       const productPayload = {
         name: identity.name.trim(),
         description: identity.description?.trim() || null,
+        translations: (() => {
+          const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+          const out = {};
+          langs.forEach(l => {
+            const e = {};
+            if ((trDescription[l] || '').trim()) e.description = trDescription[l].trim();
+            if ((trLong[l] || '').trim()) e.long_description = trLong[l].trim();
+            if (Object.keys(e).length) out[l] = e;
+          });
+          return out;
+        })(),
         image_url: identity.image_url?.trim() || null,
         unit_price: pricing.unit_price !== '' ? Number(pricing.unit_price) : null,
         sku: identity.sku?.trim() || null,
@@ -469,6 +485,7 @@ export default function DigitalWizard() {
                 rows={2} maxLength={2000}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
               />
+              <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -694,6 +711,7 @@ export default function DigitalWizard() {
                 placeholder={t('wizards.digital.policy.longDescPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
               />
+              <MultiLangText value={trLong} onChange={setTrLong} rows={4} maxLength={5000} />
             </div>
           </div>
         )}
