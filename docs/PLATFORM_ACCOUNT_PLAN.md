@@ -100,7 +100,7 @@ org opzionale, come oggi.
 - **DoD**: compro da 2 operatori con la stessa email → 1 account piattaforma,
   2 customer org linkati, entrambi gli ordini stampati.
 
-### P3 · Area personale /account (~3 gg)
+### P3 · Area personale /account ✅ (fatto 5/7/2026 — merge su main)
 - [ ] Pagina /account: i miei ritiri cross-operatore (prossimi/passati),
       saldi in scadenza con /pay links, pass QR, profilo
 - [ ] SEO-safe: noindex; mobile-first (si apre dal telefono, dall'email)
