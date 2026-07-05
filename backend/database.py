@@ -245,6 +245,11 @@ newsletter_subscriptions_collection = db.newsletter_subscriptions
 # `customers` records and `orders` via customer_account_id FK.
 customer_accounts_collection = db.customer_accounts
 
+# Platform accounts (P1, 5/7/2026) — identita' unica marketplace, sopra
+# i customer_accounts org-scoped. Vedi docs/PLATFORM_ACCOUNT_PLAN.md.
+platform_accounts_collection = db.platform_accounts
+platform_magic_tokens_collection = db.platform_magic_tokens
+
 
 # ── Phase 3 (Store consolidation) — slug-index lifecycle helpers ────────────
 #
@@ -1433,6 +1438,10 @@ async def create_indexes():
     # Fallback: lookup helper filters expired manually. Acceptable since
     # collection is small (24h window × low write rate).
 
+
+    # Platform accounts (P1 marketplace) — email unica, token magic, TTL
+    from services.platform_account_service import ensure_indexes as _pa_idx
+    await _pa_idx()
 
 def close_db():
     client.close()

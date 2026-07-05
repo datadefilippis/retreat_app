@@ -79,7 +79,7 @@ org opzionale, come oggi.
 
 ## 4 · Fasi (isolate, ognuna mergiabile e testabile da sola)
 
-### P1 · Fondamenta identità (~3 gg)
+### P1 · Fondamenta identità ✅ (fatto 5/7/2026 — merge su main)
 - [ ] Modello `platform_accounts` + indici (email unica, case-insensitive)
 - [ ] Auth magic-link: request → email con token one-shot TTL 15' →
       sessione; rate-limit + enumeration-safe (pattern 202 esistente);
