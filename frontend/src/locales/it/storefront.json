@@ -426,5 +426,12 @@
       "confirmEmailHint": "Riceverai un'email per confermare la registrazione. L'ordine verrà sottomesso comunque.",
       "passwordRequirementsToast": "La password non rispetta i requisiti minimi."
     }
+  },
+  "home": {
+    "aboutCta": "Scopri chi siamo",
+    "browseTitle": "Esplora",
+    "itemCount": "{{count}} proposte",
+    "upcomingTitle": "Prossimi ritiri",
+    "seeAll": "Vedi tutti"
   }
 }

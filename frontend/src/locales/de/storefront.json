@@ -410,5 +410,12 @@
       "confirmEmailHint": "Sie erhalten eine E-Mail zur Bestätigung der Registrierung. Die Bestellung wird trotzdem gesendet.",
       "passwordRequirementsToast": "Das Passwort erfüllt die Mindestanforderungen nicht."
     }
+  },
+  "home": {
+    "aboutCta": "Über uns",
+    "browseTitle": "Entdecken",
+    "itemCount": "{{count}} Angebote",
+    "upcomingTitle": "Kommende Retreats",
+    "seeAll": "Alle ansehen"
   }
 }

@@ -426,5 +426,12 @@
       "confirmEmailHint": "You will receive an email to confirm your registration. The order will be submitted regardless.",
       "passwordRequirementsToast": "The password does not meet the minimum requirements."
     }
+  },
+  "home": {
+    "aboutCta": "About us",
+    "browseTitle": "Browse",
+    "itemCount": "{{count}} items",
+    "upcomingTitle": "Upcoming retreats",
+    "seeAll": "See all"
   }
 }

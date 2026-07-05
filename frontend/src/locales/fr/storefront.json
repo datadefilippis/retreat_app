@@ -410,5 +410,12 @@
       "confirmEmailHint": "Vous recevrez un email pour confirmer l'inscription. La commande sera quand même soumise.",
       "passwordRequirementsToast": "Le mot de passe ne respecte pas les exigences minimales."
     }
+  },
+  "home": {
+    "aboutCta": "Qui sommes-nous",
+    "browseTitle": "Explorer",
+    "itemCount": "{{count}} offres",
+    "upcomingTitle": "Prochaines retraites",
+    "seeAll": "Voir tout"
   }
 }
