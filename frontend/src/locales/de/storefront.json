@@ -417,5 +417,8 @@
     "itemCount": "{{count}} Angebote",
     "upcomingTitle": "Kommende Retreats",
     "seeAll": "Alle ansehen"
+  },
+  "nav": {
+    "about": "Über uns"
   }
 }

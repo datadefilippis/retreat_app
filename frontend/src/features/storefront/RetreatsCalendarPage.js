@@ -233,6 +233,14 @@ export default function RetreatsCalendarPage() {
             onChange={e => setFilter('mese', e.target.value)}
             className={selCls}
           />
+          {/* V3 — la ricerca segue lo scroll (era solo nell'hero) */}
+          <input
+            type="search"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder={t('landings:calendar.searchShort', { defaultValue: 'Cerca…' })}
+            className="rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm w-32 focus:w-48 transition-all focus:border-primary focus:outline-none"
+          />
           {anyFilter && (
             <button
               type="button"
@@ -312,7 +320,22 @@ export default function RetreatsCalendarPage() {
                     )}
                   </div>
                   <div className="p-4">
-                    <p className="text-[11px] font-semibold text-primary uppercase tracking-wide">
+                    {/* V3 — tap sulla categoria → filtra la directory */}
+                    <p
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        setFilter('categoria', item.category);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault(); e.stopPropagation();
+                          setFilter('categoria', item.category);
+                        }
+                      }}
+                      className="text-[11px] font-semibold text-primary uppercase tracking-wide hover:underline w-fit"
+                    >
                       {(data.categories || {})[item.category] || item.category || ''}
                     </p>
                     <h2 className="font-semibold text-foreground mt-0.5 line-clamp-2">{item.title}</h2>

@@ -196,9 +196,23 @@ export default function CategoryNav({
                   }
                 >
                   {t(cat.labelKey)}
+                  {/* V2 — contatore discreto (il count arriva gia'
+                      da useAvailableCategories) */}
+                  {typeof cat.count === 'number' && cat.count > 0 && (
+                    <span className={`ml-1.5 text-[11px] ${isActive ? 'opacity-80' : 'text-gray-400'}`}>
+                      {cat.count}
+                    </span>
+                  )}
                 </Link>
               );
             })}
+            {/* V2 — la bio dell'operatore a 1 click da QUALSIASI pagina */}
+            <Link
+              to={`/o/${orgSlug}`}
+              className="shrink-0 rounded-full px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all whitespace-nowrap min-h-[36px] flex items-center"
+            >
+              {t('storefront:nav.about', { defaultValue: 'Chi siamo' })}
+            </Link>
           </div>
 
           {/* Phase 8.2 — Custom navigation links (merchant-configured).

@@ -402,7 +402,8 @@
     "searchPlaceholder": "Search a retreat, a place, an organizer…",
     "resultsCount": "{{count}} retreats",
     "emptyFiltered": "Try widening your search: remove a filter or check another month.",
-    "showAll": "Show all retreats"
+    "showAll": "Show all retreats",
+    "searchShort": "Search…"
   },
   "operator": {
     "website": "Website",
