@@ -242,6 +242,17 @@ export default function EventWizard() {
     };
   });
 
+  // Store-first (fix 5/7) — stesso criterio del backend
+  // (_org_has_public_home): store attivo O public_slug legacy.
+  const [legacySlug, setLegacySlug] = useState(null);
+  useEffect(() => {
+    let mounted = true;
+    import('../../api/client').then(({ default: api }) =>
+      api.get('/organizations/current')
+        .then(res => { if (mounted) setLegacySlug(res.data?.public_slug || null); })
+        .catch(() => {}));
+    return () => { mounted = false; };
+  }, []);
   // UX round 5/7 — tassonomia categorie dal backend (fonte unica)
   const [categoryOptions, setCategoryOptions] = useState({});
   useEffect(() => {
@@ -363,6 +374,8 @@ export default function EventWizard() {
     prefillRef.current?.product?.store_ids || []
   );
   const [availableStores, setAvailableStores] = useState([]);
+  // Store-first — derivato DOPO la dichiarazione di availableStores (TDZ)
+  const hasPublicHome = availableStores.length > 0 || Boolean(legacySlug);
   const loadStores = useCallback(async () => {
     try {
       const res = await storesAPI.list();
@@ -1600,6 +1613,22 @@ export default function EventWizard() {
               </dl>
             </div>
 
+            {/* Store-first (fix 5/7) — senza store non si pubblica:
+                banner con CTA, il salvataggio in bozza resta permesso. */}
+            {!hasPublicHome && (
+              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
+                <p className="text-sm font-semibold text-amber-900">
+                  {t('wizards.event.publish.storeRequiredTitle', { defaultValue: 'Prima di pubblicare, crea il tuo store' })}
+                </p>
+                <p className="text-xs text-amber-800 mt-1">
+                  {t('wizards.event.publish.storeRequiredBody', { defaultValue: 'È l\'indirizzo pubblico delle tue pagine: senza, il ritiro non ha un posto dove vivere online. Puoi salvare come bozza intanto — non perdi nulla.' })}
+                </p>
+                <a href="/stores" className="mt-2 inline-block rounded-lg bg-amber-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-amber-700">
+                  {t('wizards.event.publish.storeRequiredCta', { defaultValue: 'Crea il tuo store →' })}
+                </a>
+              </div>
+            )}
+
             {/* F4 — Store assignment. Canonical pattern shared with
                 ServiceWizard + ReservationWizard: checkbox "Tutti gli store"
                 + one checkbox per store. Always visible so the merchant
@@ -1658,9 +1687,10 @@ export default function EventWizard() {
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <label className="flex items-start gap-3">
                 <input
-                  type="checkbox" checked={publishNow}
+                  type="checkbox" checked={publishNow && hasPublicHome}
                   onChange={e => setPublishNow(e.target.checked)}
-                  className="mt-1"
+                  disabled={!hasPublicHome}
+                  className="mt-1 disabled:opacity-50"
                 />
                 <span className="text-sm">
                   <span className="font-semibold text-gray-900">{t('wizards.event.publish.publishToggleTitle')}</span>
