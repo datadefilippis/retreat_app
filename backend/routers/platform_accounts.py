@@ -210,3 +210,24 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
             "tickets": tickets_by_order.get(o["id"], []),
         })
     return {"orders": out, "total": len(out)}
+
+
+@router.get("/me/export")
+async def export_my_data(account: dict = Depends(get_current_platform_account)):
+    """GDPR — export JSON dei dati dell'identita' piattaforma + vista
+    cliente delle prenotazioni. I dati interni degli operatori non
+    escono da qui (titolarita' loro)."""
+    _flag_enabled()
+    from services.platform_account_service import export_account_data
+    return await export_account_data(account)
+
+
+@router.delete("/me", status_code=200)
+async def delete_my_account(account: dict = Depends(get_current_platform_account)):
+    """GDPR — cancella l'identita' piattaforma e scollega gli stamp.
+    Ordini e documenti fiscali degli operatori restano (obblighi di
+    legge loro): cancellazione a due livelli, vedi piano §3."""
+    _flag_enabled()
+    from services.platform_account_service import delete_account
+    result = await delete_account(account)
+    return {"status": "deleted", **result}
