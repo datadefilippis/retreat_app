@@ -1606,12 +1606,13 @@
         "retry": "Riprova",
         "ignore": "Ignora",
         "retrySuccess": "Immagine caricata correttamente."
-      }
+      },
+      "categoryNone": "Nessuna categoria"
     },
     "physical": {
       "title": "Nuovo prodotto fisico",
       "tabs": {
-        "identity": "Identità",
+        "identity": "Cosa offri",
         "pricing": "Prezzo & stock",
         "fulfillment": "Consegna",
         "extras": "Extras",
@@ -1847,7 +1848,7 @@
     "digital": {
       "title": "Nuovo prodotto digitale",
       "tabs": {
-        "identity": "Identità",
+        "identity": "Cosa offri",
         "pricing": "Prezzo & stock",
         "file": "File digitale",
         "policy": "Accesso",

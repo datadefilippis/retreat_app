@@ -153,6 +153,21 @@ async def create_product(
     # that makes that promise real. Without this, the limit was a marketing
     # claim with no enforcement (Free user could create unlimited products).
     org_id = current_user["organization_id"]
+
+    # V4 (5/7/2026) — categoria dalla tassonomia per-tipo (mai testo
+    # libero) e gate store-first su OGNI pubblicazione, non solo ritiri.
+    from models.retreat_taxonomy import PRODUCT_TAXONOMIES, RETREAT_CATEGORIES
+    _tax = PRODUCT_TAXONOMIES.get(data.item_type) or (
+        RETREAT_CATEGORIES if data.item_type == "event_ticket" else None)
+    if _tax is not None and data.category and data.category not in _tax:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Categoria non valida. Scegli una categoria dall'elenco.",
+        )
+    if getattr(data, "is_published", False):
+        from services.store_guard import require_public_home
+        await require_public_home(org_id)
+
     from services.module_access import enforce_count_quota
     from database import products_collection
     current_count = await products_collection.count_documents({"organization_id": org_id})
@@ -245,6 +260,14 @@ async def create_product(
     return ProductResponse(**product.model_dump())
 
 
+@router.get("/taxonomies")
+async def get_product_taxonomies(current_user: dict = Depends(get_verified_user)):
+    """V4 — le tassonomie categoria per tipo, per i dropdown dei wizard.
+    Fonte unica: models/retreat_taxonomy (la stessa che valida)."""
+    from models.retreat_taxonomy import PRODUCT_TAXONOMIES, RETREAT_CATEGORIES
+    return {"event_ticket": RETREAT_CATEGORIES, **PRODUCT_TAXONOMIES}
+
+
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product(
     product_id: str,
@@ -321,6 +344,27 @@ async def update_product(
     current_user: dict = Depends(get_verified_user),
 ):
     org_id = current_user["organization_id"]
+
+    # V4 — gate store-first sulla transizione a pubblicato + categoria
+    # dalla tassonomia (stessa logica del create; fonte unica).
+    if getattr(data, "is_published", None) is True:
+        from services.store_guard import require_public_home
+        await require_public_home(org_id)
+    if getattr(data, "category", None):
+        from database import products_collection as _pc
+        from models.retreat_taxonomy import PRODUCT_TAXONOMIES, RETREAT_CATEGORIES
+        _existing = await _pc.find_one(
+            {"id": product_id, "organization_id": org_id},
+            {"_id": 0, "item_type": 1},
+        )
+        _it = (_existing or {}).get("item_type")
+        _tax = PRODUCT_TAXONOMIES.get(_it) or (
+            RETREAT_CATEGORIES if _it == "event_ticket" else None)
+        if _tax is not None and data.category not in _tax:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Categoria non valida. Scegli una categoria dall'elenco.",
+            )
     update_dict = updates.model_dump(exclude_unset=True)
 
     # Onda 16 Fase 6: soft-deprecate item_type=booking on updates too.

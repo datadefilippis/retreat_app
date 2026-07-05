@@ -1536,12 +1536,13 @@
         "retry": "Retry",
         "ignore": "Dismiss",
         "retrySuccess": "Image uploaded successfully."
-      }
+      },
+      "categoryNone": "No category"
     },
     "physical": {
       "title": "New physical product",
       "tabs": {
-        "identity": "Identity",
+        "identity": "What you offer",
         "pricing": "Price & stock",
         "fulfillment": "Delivery",
         "extras": "Extras",
@@ -1727,7 +1728,7 @@
     "digital": {
       "title": "New digital product",
       "tabs": {
-        "identity": "Identity",
+        "identity": "What you offer",
         "pricing": "Price & stock",
         "file": "Digital file",
         "policy": "Access",

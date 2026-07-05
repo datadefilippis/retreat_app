@@ -15,3 +15,28 @@ RETREAT_CATEGORIES = {
     "femminile": "Cerchi & Femminile",
     "aziendale": "Benessere aziendale",
 }
+
+
+# V4 (5/7/2026) — tassonomie per gli ALTRI tipi prodotto (decise dal
+# founder): dropdown nei wizard, MAI testo libero. Le chiavi sono slug
+# stabili; le label le risolve il frontend (i18n) con questi default.
+PRODUCT_TAXONOMIES = {
+    "service": {
+        "trattamenti": "Trattamenti & Massaggi",
+        "consulenze": "Consulenze",
+        "lezioni": "Lezioni private",
+        "cerimonie": "Cerimonie",
+    },
+    "physical": {
+        "cura_di_se": "Cura di sé",
+        "casa_benessere": "Casa & Benessere",
+        "cibo_tisane": "Cibo & Tisane",
+        "abbigliamento": "Abbigliamento",
+        "artigianato": "Artigianato",
+    },
+    "digital": {
+        "guide_ebook": "Guide & E-book",
+        "audio_meditazioni": "Audio & Meditazioni",
+        "video": "Video",
+    },
+}

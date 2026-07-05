@@ -20,6 +20,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import useProductTaxonomies from '../../hooks/useProductTaxonomies';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -75,6 +76,7 @@ function validateBase(base, t) {
 
 
 export default function ServiceWizard() {
+  const taxonomies = useProductTaxonomies();
   const orgCurrency = useCurrency();
   const navigate = useNavigate();
   const { t } = useTranslation('products');
@@ -86,6 +88,7 @@ export default function ServiceWizard() {
   // Tab 1
   const [base, setBase] = useState({
     name: '',
+    category: '',
     description: '',
     image_url: '',
     unit_price: '',
@@ -230,6 +233,7 @@ export default function ServiceWizard() {
       // Step 1 — create the product (item_type=service)
       const productPayload = {
         name: base.name.trim(),
+        category: base.category || null,
         description: base.description?.trim() || null,
         image_url: base.image_url?.trim() || null,
         unit_price: base.unit_price !== '' ? Number(base.unit_price) : null,
@@ -414,6 +418,23 @@ export default function ServiceWizard() {
                 />
                 {fieldError(errorsBase.name)}
               </div>
+
+            {/* V4 — categoria dalla tassonomia servizi (opzionale) */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t('wizards.common.categoryLabel', { defaultValue: 'Categoria' })}
+              </label>
+              <select
+                value={base.category || ''}
+                onChange={e => setBase({ ...base, category: e.target.value })}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none bg-white"
+              >
+                <option value="">{t('wizards.common.categoryNone', { defaultValue: 'Nessuna categoria' })}</option>
+                {Object.entries(taxonomies.service || {}).map(([k, label]) => (
+                  <option key={k} value={k}>{label}</option>
+                ))}
+              </select>
+            </div>
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.service.base.descriptionLabel')}</label>

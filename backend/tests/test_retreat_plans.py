@@ -361,12 +361,12 @@ class TestStoreFirstGate:
     def _has_home(store_doc, org_doc):
         import asyncio
         from unittest.mock import AsyncMock, patch
-        from routers import event_occurrences as mod
+        from services import store_guard
         stores = AsyncMock(); stores.find_one = AsyncMock(return_value=store_doc)
         orgs = AsyncMock(); orgs.find_one = AsyncMock(return_value=org_doc)
-        with patch.object(mod, "stores_collection", stores), \
-             patch.object(mod, "organizations_collection", orgs):
-            return asyncio.run(mod._org_has_public_home("org-x"))
+        with patch("database.stores_collection", stores), \
+             patch("database.organizations_collection", orgs):
+            return asyncio.run(store_guard.org_has_public_home("org-x"))
 
     def test_active_store_allows(self):
         assert self._has_home({"_id": 1}, None) is True
@@ -411,3 +411,35 @@ class TestOnboarding:
         for step in ("stripe_connected", "store_created", "retreat_created",
                      "retreat_published", "profile_completed"):
             assert step in block
+
+
+class TestV4WizardUnification:
+    """V4 — tassonomie per tipo + gate store-first su tutte le porte."""
+
+    def test_taxonomies_defined_per_type(self):
+        from models.retreat_taxonomy import PRODUCT_TAXONOMIES
+        assert set(PRODUCT_TAXONOMIES) == {"service", "physical", "digital"}
+        for tax in PRODUCT_TAXONOMIES.values():
+            assert len(tax) >= 3
+
+    def test_products_router_validates_and_gates(self):
+        import os
+        src = open(os.path.join(os.path.dirname(__file__), "..",
+                                "routers", "products.py")).read()
+        assert "PRODUCT_TAXONOMIES" in src
+        assert src.count("await require_public_home") == 2   # POST + PATCH
+
+    def test_single_guard_source(self):
+        # una sola implementazione del criterio (services/store_guard):
+        # event_occurrences DELEGA, non duplica
+        import os
+        src = open(os.path.join(os.path.dirname(__file__), "..",
+                                "routers", "event_occurrences.py")).read()
+        assert "from services.store_guard import org_has_public_home" in src
+
+    def test_taxonomies_route_before_dynamic(self):
+        import os
+        src = open(os.path.join(os.path.dirname(__file__), "..",
+                                "routers", "products.py")).read()
+        assert src.index('@router.get("/taxonomies")') \
+            < src.index('@router.get("/{product_id}"')
