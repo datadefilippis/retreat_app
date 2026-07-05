@@ -3478,13 +3478,26 @@ async def public_operator_profile(org_slug: str):
             "price_from": o.get("price_override") or p.get("unit_price"),
         })
 
-    return {
+    # F2.0 (5/7/2026) — il profilo curato dall'operatore (public_profile)
+    # VINCE sui fallback derivati dallo store; contatti solo se opt-in.
+    pp = org.get("public_profile") or {}
+    out = {
         "org_slug": org_slug,
         "name": store.get("name") or store.get("display_name") or ss.get("display_name") or org.get("name") or "",
-        "bio": store.get("description") or ss.get("store_description"),
+        "bio": pp.get("bio") or store.get("description") or ss.get("store_description"),
         "logo_url": store.get("logo_url") or ss.get("logo_url"),
+        "cover_url": pp.get("cover_url"),
         "brand_color": store.get("brand_color") or ss.get("brand_color"),
-        "city": ss.get("city"),
+        "city": pp.get("city") or ss.get("city"),
+        "region": pp.get("region"),
+        "socials": {k: pp.get(k) for k in ("instagram", "website", "facebook")
+                    if pp.get(k)},
         "upcoming": upcoming,
         "upcoming_count": len(upcoming),
+        # F2.1 ecosistema — link allo store dell'operatore (se pubblicato)
+        "store_slug": store.get("slug") if store.get("is_published", True) else None,
     }
+    if pp.get("show_contacts"):
+        out["contacts"] = {k: pp.get(k) for k in ("public_email", "public_phone")
+                           if pp.get(k)}
+    return out

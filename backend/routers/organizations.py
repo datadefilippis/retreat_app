@@ -1728,3 +1728,98 @@ async def reactivate_team_member(
     ))
 
     return {"message": "User reactivated successfully"}
+
+
+# ── F2.0 Profilo pubblico operatore (5/7/2026) ───────────────────────────────
+# docs/DIRECTORY_DESIGN_PLAN.md — l'operatore configura la SUA pagina
+# /o/:slug: bio, cover, citta'/regione, social, contatti opzionali.
+# Vive su organizations.public_profile (dict whitelisted). Il pubblico
+# la legge da /public/operator/{slug}.
+
+_PUBLIC_PROFILE_FIELDS = {
+    "bio": 600, "city": 80, "region": 40, "cover_url": 500,
+    "instagram": 120, "website": 200, "facebook": 200,
+    "public_email": 254, "public_phone": 40,
+}
+
+PROFILE_COVER_DIR = os.path.join(
+    os.path.dirname(ORG_LOGO_DIR), "profile-covers",
+)
+
+
+@router.get("/current/public-profile")
+async def get_public_profile(current_user: dict = Depends(require_admin)):
+    org_doc = await organization_repository.find_by_id(current_user["organization_id"])
+    if not org_doc:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    pp = org_doc.get("public_profile") or {}
+    return {**{k: pp.get(k) for k in _PUBLIC_PROFILE_FIELDS},
+            "show_contacts": bool(pp.get("show_contacts"))}
+
+
+@router.patch("/current/public-profile")
+async def update_public_profile(
+    body: dict,
+    current_user: dict = Depends(require_admin),
+):
+    """Whitelist rigida + limiti lunghezza: nessun campo arbitrario
+    puo' entrare nel documento org da un endpoint pubblico-facing."""
+    updates = {}
+    for field, max_len in _PUBLIC_PROFILE_FIELDS.items():
+        if field in body:
+            val = body[field]
+            if val is None or val == "":
+                updates[f"public_profile.{field}"] = None
+            elif isinstance(val, str):
+                updates[f"public_profile.{field}"] = val.strip()[:max_len]
+    if "show_contacts" in body:
+        updates["public_profile.show_contacts"] = bool(body["show_contacts"])
+    if not updates:
+        raise HTTPException(status_code=400, detail="Nessun campo valido")
+
+    from database import organizations_collection
+    await organizations_collection.update_one(
+        {"id": current_user["organization_id"]}, {"$set": updates},
+    )
+    return await get_public_profile(current_user)
+
+
+@router.post("/current/public-profile/cover")
+@limiter.limit("5/minute")
+async def upload_profile_cover(
+    request: Request,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(require_admin),
+):
+    """Upload cover del profilo — stesso pattern (e stesse difese) del
+    logo org: whitelist estensioni/MIME, max 2MB, un file per org."""
+    org_id = current_user["organization_id"]
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    allowed = {".jpg", ".jpeg", ".png", ".webp"}   # niente svg per le cover
+    if ext not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Formato non supportato. Usa: {', '.join(sorted(allowed))}",
+        )
+    if file.content_type and file.content_type not in ORG_LOGO_MIMES:
+        raise HTTPException(status_code=400,
+                            detail=f"Tipo file non supportato: {file.content_type}")
+    contents = await file.read()
+    if len(contents) > ORG_LOGO_MAX_BYTES:
+        raise HTTPException(status_code=400, detail="Immagine troppo grande. Max 2MB.")
+
+    os.makedirs(PROFILE_COVER_DIR, exist_ok=True)
+    for old_ext in allowed:
+        old = os.path.join(PROFILE_COVER_DIR, f"{org_id}{old_ext}")
+        if os.path.exists(old) and old_ext != ext:
+            os.remove(old)
+    path = os.path.join(PROFILE_COVER_DIR, f"{org_id}{ext}")
+    with open(path, "wb") as fh:
+        fh.write(contents)
+
+    cover_url = f"/uploads/profile-covers/{org_id}{ext}"
+    from database import organizations_collection
+    await organizations_collection.update_one(
+        {"id": org_id}, {"$set": {"public_profile.cover_url": cover_url}},
+    )
+    return {"cover_url": cover_url}
