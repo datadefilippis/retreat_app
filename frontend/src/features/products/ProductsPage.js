@@ -455,10 +455,13 @@ export default function ProductsPage() {
             // service, rental (covers both range and slot post Onda 16
             // Fase 6 migration), digital (Release 3), course (Release 4
             // — redirects to /courses for the dedicated admin area).
+            // Il chip Affitti segue lo stesso gating del type-picker:
+            // i piani retreat hanno rentals=0 → sparisce (hide-not-delete,
+            // riattivabile dal piano senza toccare codice).
             'physical',
             'event_ticket',
             'service',
-            'rental',
+            ...(canUse('commerce', 'rentals') ? ['rental'] : []),
             'digital',
             'course',
           ].map(chipKey => (
