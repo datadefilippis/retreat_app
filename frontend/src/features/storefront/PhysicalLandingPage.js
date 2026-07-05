@@ -18,6 +18,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import i18nInstance from '../../i18n';
 import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
 import ProductExtrasPicker from './components/ProductExtrasPicker';
@@ -74,7 +75,7 @@ export default function PhysicalLandingPage() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    storefrontAPI.getProductLanding(orgSlug, productSlug)
+    storefrontAPI.getProductLanding(orgSlug, productSlug, (i18nInstance.language || 'it').slice(0, 2))
       .then(res => { if (mounted) { setData(res.data); setLoading(false); } })
       .catch(err => {
         if (!mounted) return;
@@ -82,7 +83,7 @@ export default function PhysicalLandingPage() {
         setLoading(false);
       });
     return () => { mounted = false; };
-  }, [orgSlug, productSlug]);
+  }, [orgSlug, productSlug, i18nInstance.language]);
 
   const product = data?.product;
 

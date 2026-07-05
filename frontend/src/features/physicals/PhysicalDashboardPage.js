@@ -35,6 +35,7 @@ import useLandingUrl from '../products/hooks/useLandingUrl';
 import CostSourceEditor from '../products/components/CostSourceEditor';
 import { useCurrency } from '../../context/AuthContext';
 import { formatAmount } from '../../utils/currency';
+import MultiLangText from '../../components/MultiLangText';
 
 
 function formatEuro(n, currency = 'EUR', locale = 'it-IT') {
@@ -105,6 +106,22 @@ export default function PhysicalDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
+  // Multilingua manuale — lingue offerte dall'operatore (per campo);
+  // salvate sul prodotto via PATCH translations
+  const [trDescription, setTrDescription] = useState({});
+  const [trLong, setTrLong] = useState({});
+  const buildTranslationsPayload = () => {
+    const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+    const out = {};
+    langs.forEach(l => {
+      const e = {};
+      if ((trDescription[l] || '').trim()) e.description = trDescription[l].trim();
+      if ((trLong[l] || '').trim()) e.long_description = trLong[l].trim();
+      if (Object.keys(e).length) out[l] = e;
+    });
+    return out;
+  };
   const [productForm, setProductForm] = useState({
     name: '',
     description: '',
@@ -165,6 +182,14 @@ export default function PhysicalDashboardPage() {
 
 
       const meta = prod.metadata || {};
+      const ptr = prod.translations || {};
+      const trD = {}, trL = {};
+      Object.entries(ptr).forEach(([l, f]) => {
+        if (f?.description) trD[l] = f.description;
+        if (f?.long_description) trL[l] = f.long_description;
+      });
+      setTrDescription(trD);
+      setTrLong(trL);
       setProductForm({
         name: prod.name || '',
         description: prod.description || '',
@@ -233,6 +258,7 @@ export default function PhysicalDashboardPage() {
       const upd = {
         name: productForm.name.trim(),
         description: productForm.description?.trim() || null,
+        translations: buildTranslationsPayload(),
         image_url: productForm.image_url?.trim() || null,
         unit_price: productForm.unit_price !== '' ? Number(productForm.unit_price) : null,
         sku: productForm.sku?.trim() || null,
@@ -577,6 +603,7 @@ export default function PhysicalDashboardPage() {
                   onChange={e => setProductForm({ ...productForm, description: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white resize-none"
                 />
+                <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">{t('dashboards.physical.identity.longDescLabel')}</label>
@@ -586,6 +613,7 @@ export default function PhysicalDashboardPage() {
                   onChange={e => setProductForm({ ...productForm, long_description: e.target.value })}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white resize-none"
                 />
+                <MultiLangText value={trLong} onChange={setTrLong} rows={4} maxLength={5000} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>

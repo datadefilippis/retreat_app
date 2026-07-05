@@ -20,7 +20,7 @@ E2 — structured event details:
 """
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
-from typing import Optional, List
+from typing import Any, Dict, Optional, List
 from datetime import datetime
 from .common import generate_id, utc_now
 
@@ -102,6 +102,10 @@ class EventOccurrenceBase(BaseModel):
     excluded: List[str] = Field(default_factory=list, max_length=20)
     # Domande frequenti.
     faq: List[FaqEntry] = Field(default_factory=list, max_length=15)
+    # Traduzioni manuali dei contenuti pagina di vendita
+    # {lang: {agenda, included, excluded, faq}} — whitelist e merge in
+    # services/manual_translations (sanitize_occurrence_translations).
+    translations: Optional[Dict[str, Any]] = None
     # Fase 5 — regione (filtro primario del calendario pubblico /ritiri).
     region: Optional[str] = Field(default=None, max_length=30)
 
@@ -163,6 +167,8 @@ class EventOccurrenceUpdate(BaseModel):
     included: Optional[List[str]] = Field(default=None, max_length=20)
     excluded: Optional[List[str]] = Field(default=None, max_length=20)
     faq: Optional[List[FaqEntry]] = Field(default=None, max_length=15)
+    # Traduzioni manuali contenuti (vedi EventOccurrenceBase.translations)
+    translations: Optional[Dict[str, Any]] = None
     region: Optional[str] = Field(default=None, max_length=30)
 
     @field_validator("country", mode="before")

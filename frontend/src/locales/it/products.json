@@ -1155,7 +1155,10 @@
         "listPh": "Una voce per riga",
         "faqQPh": "Domanda",
         "faqAPh": "Risposta",
-        "addFaq": "Aggiungi FAQ"
+        "addFaq": "Aggiungi FAQ",
+        "trHint": "Traduci solo i testi: struttura, orari e foto si gestiscono in Italiano. I campi lasciati vuoti restano in italiano sulla pagina pubblica.",
+        "trLineHint": "Una riga per voce, nello stesso ordine dell'italiano.",
+        "trEmpty": "Prima compila i contenuti in Italiano: qui appariranno gli stessi campi da tradurre."
       }
     },
     "reservation": {

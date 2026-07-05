@@ -54,6 +54,7 @@ import { useUnsavedChangesPrompt } from '../../hooks/useUnsavedChangesPrompt';
 import { useWizardDraft } from '../../hooks/useWizardDraft';
 import { useAbortableUpload } from '../../hooks/useAbortableUpload';
 import { showImageUploadFailedToast } from '../../lib/imageUploadFailedToast';
+import MultiLangText from '../../components/MultiLangText';
 
 
 // Tabs are addressed by stable `key`. Visible labels are resolved at
@@ -106,6 +107,8 @@ export default function PhysicalWizard() {
     category: '',
   });
   const [imageFile, setImageFile] = useState(null);
+  // Multilingua manuale — le lingue offerte decidono dove il prodotto appare
+  const [trDescription, setTrDescription] = useState({});
   const [storeIds, setStoreIds] = useState([]);
   const [availableStores, setAvailableStores] = useState([]);
 
@@ -286,6 +289,13 @@ export default function PhysicalWizard() {
       const productPayload = {
         name: identity.name.trim(),
         description: identity.description?.trim() || null,
+        translations: (() => {
+          const out = {};
+          Object.entries(trDescription).forEach(([l, v]) => {
+            if ((v || '').trim()) out[l] = { description: v.trim() };
+          });
+          return out;
+        })(),
         image_url: identity.image_url?.trim() || null,
         unit_price: pricing.unit_price !== '' ? Number(pricing.unit_price) : null,
         sku: identity.sku?.trim() || null,
@@ -473,6 +483,7 @@ export default function PhysicalWizard() {
                 placeholder={t('wizards.common.shortDescriptionPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
               />
+              <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -51,8 +51,9 @@ export const storefrontAPI = {
       lang && lang !== 'it' ? { params: { lang } } : undefined),
 
   // Onda 13: full landing page payload for a generic product (primarily services).
-  getProductLanding: (orgSlug, productSlug) =>
-    customerApi.get(`/api/public/products/${orgSlug}/${productSlug}`),
+  getProductLanding: (orgSlug, productSlug, lang) =>
+    customerApi.get(`/api/public/products/${orgSlug}/${productSlug}`,
+      lang && lang !== 'it' ? { params: { lang } } : undefined),
 
   // F5 Onda 12: available service slots for a given product (used by landing).
   getServiceSlots: (productId, days = 30) =>

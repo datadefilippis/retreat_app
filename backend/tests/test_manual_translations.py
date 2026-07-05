@@ -109,3 +109,75 @@ class TestMerge:
     def test_supported_langs_stabili(self):
         # il frontend (MultiLangText) e le viste pubbliche assumono queste tre
         assert SUPPORTED_LANGS == ("en", "de", "fr")
+
+
+class TestOccurrenceSanitize:
+    def _occ_tr(self):
+        from services.manual_translations import sanitize_occurrence_translations
+        return sanitize_occurrence_translations
+
+    def test_whitelist_lingue_e_blocchi(self):
+        out = self._occ_tr()({
+            "en": {"included": ["Breakfast"], "junk": ["no"]},
+            "ru": {"included": ["нет"]},
+        })
+        assert set(out.keys()) == {"en"}
+        assert out["en"] == {"included": ["Breakfast"]}
+
+    def test_agenda_forma_e_lunghezze(self):
+        out = self._occ_tr()({"en": {"agenda": [
+            {"label": "Day 1", "items": [
+                {"title": "x" * 999, "description": "d", "time": "07:00"}]},
+        ]}})
+        day = out["en"]["agenda"][0]
+        assert day["label"] == "Day 1"
+        assert len(day["items"][0]["title"]) == 200      # clamp
+        assert "time" not in day["items"][0]              # orari solo in it
+
+    def test_vuoto_ritorna_none(self):
+        assert self._occ_tr()(None) is None
+        assert self._occ_tr()({}) is None
+        assert self._occ_tr()({"en": {"included": ["", "  "]}}) is None
+
+
+class TestOccurrenceMerge:
+    OCC = {
+        "agenda": [{"label": "Giorno 1", "items": [
+            {"time": "07:30", "title": "Yoga all'alba", "description": "In sala"}]}],
+        "included": ["Colazione", "Cena"],
+        "excluded": ["Viaggio"],
+        "faq": [{"q": "Serve esperienza?", "a": "No"}],
+        "translations": {"en": {
+            "agenda": [{"label": "Day 1", "items": [
+                {"title": "Sunrise yoga", "description": None}]}],
+            "included": ["Breakfast", ""],
+            "excluded": ["Travel"],
+            "faq": [{"q": "Experience needed?", "a": None}],
+        }},
+    }
+
+    def test_merge_completo_con_fallback_per_campo(self):
+        from services.manual_translations import merge_occurrence_language
+        m = merge_occurrence_language(self.OCC, "en")
+        day = m["agenda"][0]
+        assert day["label"] == "Day 1"
+        assert day["items"][0]["title"] == "Sunrise yoga"
+        assert day["items"][0]["description"] == "In sala"   # vuoto → italiano
+        assert day["items"][0]["time"] == "07:30"             # struttura dalla sorgente
+        assert m["included"] == ["Breakfast", "Cena"]         # riga vuota → italiano
+        assert m["excluded"] == ["Travel"]
+        assert m["faq"][0]["q"] == "Experience needed?"
+        assert m["faq"][0]["a"] == "No"
+
+    def test_cardinalita_divergente_blocco_torna_italiano(self):
+        from services.manual_translations import merge_occurrence_language
+        occ = {**self.OCC,
+               "included": ["Colazione", "Cena", "Transfer"]}  # 3 vs 2 tradotte
+        m = merge_occurrence_language(occ, "en")
+        assert m["included"] == ["Colazione", "Cena", "Transfer"]  # fallback intero
+        assert m["agenda"][0]["label"] == "Day 1"                  # gli altri blocchi ok
+
+    def test_lingua_assente_ritorna_originale(self):
+        from services.manual_translations import merge_occurrence_language
+        assert merge_occurrence_language(self.OCC, "de") is self.OCC
+        assert merge_occurrence_language(self.OCC, "it") is self.OCC

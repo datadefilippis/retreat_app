@@ -1086,6 +1086,11 @@
         "tierSaveError": "Erreur d'enregistrement",
         "descriptionUpdated": "Description mise à jour",
         "distributionUpdated": "Distribution mise à jour"
+      },
+      "content": {
+        "trHint": "Traduis uniquement les textes : structure, horaires et photos se gèrent en italien. Les champs laissés vides restent en italien sur la page publique.",
+        "trLineHint": "Une ligne par élément, dans le même ordre que l'italien.",
+        "trEmpty": "Remplis d'abord les contenus en italien : les mêmes champs apparaîtront ici à traduire."
       }
     },
     "reservation": {
