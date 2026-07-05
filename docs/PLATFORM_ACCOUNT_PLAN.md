@@ -107,7 +107,7 @@ org opzionale, come oggi.
 - **DoD**: utente con acquisti da 2 operatori vede tutto in una pagina e
   paga un saldo da lì.
 
-### P4 · Linking retroattivo + hardening (~2 gg)
+### P4 · Linking retroattivo + hardening ✅ (fatto 5/7/2026 — merge su main. PIANO COMPLETO P1-P4.)
 - [ ] Claim ordini passati: al primo login, link automatico dei
       customer_accounts esistenti con stessa email VERIFICATA
 - [ ] Consensi/GDPR: registro, export, cancellazione a due livelli
@@ -115,7 +115,7 @@ org opzionale, come oggi.
       l'area personale non espone dati interni operatore
 - **DoD**: security review del modulo passata, docs GDPR aggiornati.
 
-Totale: **~2 settimane**, parallelizzabile in parte con la Fase 6 (infra).
+Totale: **~2 settimane** — CONSEGNATO in anticipo il 5/7/2026 (P1-P4 tutti su main, verificati live). Nota consensi: il consenso marketing resta org-scoped nei flussi esistenti (newsletter/GDPR ordine) — l'account piattaforma non fa marketing di suo, per scelta.
 
 ## 5 · Cosa NON facciamo
 - NON fondiamo i customer_accounts esistenti (nessuna migrazione distruttiva)

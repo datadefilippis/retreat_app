@@ -148,6 +148,13 @@ async def consume_magic_link(token: str) -> Optional[Dict[str, Any]]:
     )
     if account:
         logger.info("platform_account: login magic-link per %s", account["id"])
+        # P4 — claim retroattivo: l'email e' APPENA stata verificata, e'
+        # il momento sicuro per agganciare account org e ordini passati.
+        # Best-effort: un errore qui non blocca mai il login.
+        try:
+            await retroactive_claim(account)
+        except Exception:
+            logger.exception("claim retroattivo fallito per %s", account["id"])
     return account
 
 
@@ -291,3 +298,107 @@ def _send_claim_email(email: str, token: str, name: Optional[str]) -> None:
     """
     send_email(email, "Le tue prenotazioni, in un unico posto", html,
                bypass_gate=True)
+
+
+# ── P4 — claim retroattivo + GDPR ────────────────────────────────────────────
+
+async def retroactive_claim(account: Dict[str, Any]) -> Dict[str, int]:
+    """Al login (email APPENA verificata dal magic link): aggancia tutto
+    cio' che esiste gia' per questa email.
+
+    1. customer_accounts org con stessa email → platform_account_id
+    2. ordini passati: via CRM customers (l'ordine non porta l'email) —
+       stamp platform_account_id dove assente
+
+    Idempotente e additivo: $exists False → mai sovrascritture. Chiamata
+    best-effort dal consume (mai bloccare un login).
+    """
+    from database import (
+        customer_accounts_collection,
+        customers_collection,
+        orders_collection,
+    )
+
+    email_n = _normalize_email(account.get("email") or "")
+    if not email_n:
+        return {"customer_accounts": 0, "orders": 0}
+
+    r1 = await customer_accounts_collection.update_many(
+        {"email": email_n, "platform_account_id": {"$exists": False}},
+        {"$set": {"platform_account_id": account["id"]}},
+    )
+
+    crm_ids = [c["id"] async for c in customers_collection.find(
+        {"email": email_n}, {"_id": 0, "id": 1})]
+    r2_count = 0
+    if crm_ids:
+        r2 = await orders_collection.update_many(
+            {"customer_id": {"$in": crm_ids},
+             "platform_account_id": {"$exists": False}},
+            {"$set": {"platform_account_id": account["id"]}},
+        )
+        r2_count = getattr(r2, "modified_count", 0)
+
+    claimed = {"customer_accounts": getattr(r1, "modified_count", 0),
+               "orders": r2_count}
+    if claimed["customer_accounts"] or claimed["orders"]:
+        logger.info("platform_account %s: claim retroattivo %s",
+                    account["id"], claimed)
+    return claimed
+
+
+async def export_account_data(account: Dict[str, Any]) -> Dict[str, Any]:
+    """GDPR export: i dati dell'IDENTITA' piattaforma + la vista cliente
+    delle prenotazioni (stessi campi safe dell'area personale). I dati
+    interni degli operatori (loro CRM, costi, note) NON sono dell'utente
+    e non escono da qui."""
+    from database import orders_collection
+
+    orders = await orders_collection.find(
+        {"platform_account_id": account["id"]},
+        {"_id": 0, "id": 1, "order_number": 1, "status": 1, "total": 1,
+         "currency": 1, "created_at": 1,
+         "items.product_name": 1, "items.quantity": 1,
+         "items.occurrence_start_at": 1},
+    ).sort("created_at", -1).to_list(500)
+
+    return {
+        "account": {k: account.get(k) for k in
+                    ("id", "email", "name", "phone", "language",
+                     "email_verified", "created_at", "last_login_at")},
+        "orders": orders,
+        "exported_at": utc_now().isoformat(),
+    }
+
+
+async def delete_account(account: Dict[str, Any]) -> Dict[str, int]:
+    """GDPR cancellazione a DUE livelli (docs/PLATFORM_ACCOUNT_PLAN.md §3):
+
+    CANCELLA l'identita' piattaforma (account + token magic) e SCOLLEGA
+    gli stamp (unset platform_account_id da ordini e customer_accounts).
+    NON tocca i dati degli operatori: ordini, CRM e documenti fiscali
+    restano — sono obblighi di legge LORO, titolarita' loro.
+    """
+    from database import (
+        customer_accounts_collection,
+        orders_collection,
+        platform_accounts_collection,
+        platform_magic_tokens_collection,
+    )
+
+    aid = account["id"]
+    r_ord = await orders_collection.update_many(
+        {"platform_account_id": aid},
+        {"$unset": {"platform_account_id": ""}},
+    )
+    r_cust = await customer_accounts_collection.update_many(
+        {"platform_account_id": aid},
+        {"$unset": {"platform_account_id": ""}},
+    )
+    await platform_magic_tokens_collection.delete_many({"account_id": aid})
+    await platform_accounts_collection.delete_one({"id": aid})
+
+    result = {"orders_unlinked": getattr(r_ord, "modified_count", 0),
+              "customer_accounts_unlinked": getattr(r_cust, "modified_count", 0)}
+    logger.info("platform_account %s CANCELLATO (GDPR): %s", aid, result)
+    return result

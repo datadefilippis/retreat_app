@@ -286,3 +286,94 @@ class TestP3AccountArea:
     def test_voided_tickets_excluded(self):
         block = self._endpoint_src()
         assert '"$ne": "voided"' in block
+
+
+class TestP4RetroactiveClaim:
+    def test_claim_links_accounts_and_orders_additively(self):
+        calls = {}
+        cust_acc = AsyncMock()
+        async def _ca(f, u): calls["cust"] = f; return type("R", (), {"modified_count": 2})()
+        cust_acc.update_many = AsyncMock(side_effect=_ca)
+
+        class _Cursor:
+            def __init__(self, docs): self._docs = docs
+            def __aiter__(self): return self._gen()
+            async def _gen(self):
+                for d in self._docs: yield d
+        customers = AsyncMock()
+        customers.find = lambda *a, **k: _Cursor([{"id": "crm-1"}, {"id": "crm-2"}])
+
+        orders = AsyncMock()
+        async def _om(f, u): calls["orders"] = f; return type("R", (), {"modified_count": 3})()
+        orders.update_many = AsyncMock(side_effect=_om)
+
+        with patch("database.customer_accounts_collection", cust_acc), \
+             patch("database.customers_collection", customers), \
+             patch("database.orders_collection", orders):
+            out = asyncio.run(svc.retroactive_claim(
+                {"id": "acc-1", "email": "anna@mail.it"}))
+
+        assert out == {"customer_accounts": 2, "orders": 3}
+        # additivo: mai sovrascrivere link esistenti
+        assert calls["cust"]["platform_account_id"] == {"$exists": False}
+        assert calls["orders"]["platform_account_id"] == {"$exists": False}
+        assert calls["orders"]["customer_id"] == {"$in": ["crm-1", "crm-2"]}
+
+    def test_claim_is_best_effort_in_consume(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "services", "platform_account_service.py")
+        src = open(path).read()
+        i = src.index("await retroactive_claim(account)")
+        assert "try:" in src[max(0, i-300):i]
+
+
+class TestP4Gdpr:
+    def test_delete_unlinks_but_never_deletes_operator_data(self):
+        orders = AsyncMock()
+        captured = {}
+        async def _om(f, u): captured["orders_update"] = u; return type("R", (), {"modified_count": 1})()
+        orders.update_many = AsyncMock(side_effect=_om)
+        orders.delete_many = AsyncMock()   # NON deve mai essere chiamata
+        cust = AsyncMock()
+        cust.update_many = AsyncMock(return_value=type("R", (), {"modified_count": 1})())
+        cust.delete_many = AsyncMock()
+        pa = AsyncMock(); pa.delete_one = AsyncMock()
+        tok = AsyncMock(); tok.delete_many = AsyncMock()
+
+        with patch("database.orders_collection", orders), \
+             patch("database.customer_accounts_collection", cust), \
+             patch("database.platform_accounts_collection", pa), \
+             patch("database.platform_magic_tokens_collection", tok):
+            out = asyncio.run(svc.delete_account({"id": "acc-1"}))
+
+        assert "$unset" in captured["orders_update"]     # scollega, non cancella
+        orders.delete_many.assert_not_called()           # MAI dati operatore
+        cust.delete_many.assert_not_called()
+        pa.delete_one.assert_called_once()               # identita' via
+        tok.delete_many.assert_called_once()             # token via
+        assert out["orders_unlinked"] == 1
+
+    def test_export_contains_no_operator_internals(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "services", "platform_account_service.py")
+        src = open(path).read()
+        i = src.index("async def export_account_data")
+        block = src[i:i + 1500]
+        for banned in ("cost_price", "application_fee", "notes"):
+            assert banned not in block
+
+
+class TestP4CrossOrgIsolation:
+    def test_me_orders_filters_by_platform_account_only(self):
+        # L'aggregazione DEVE filtrare per platform_account_id
+        # dell'account autenticato: nessun parametro utente puo'
+        # allargare il filtro (niente org_id/email dal client).
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "routers", "platform_accounts.py")
+        src = open(path).read()
+        i = src.index('@router.get("/me/orders")')
+        block = src[i:i + 1500]
+        assert '"platform_account_id": account["id"]' in block
