@@ -1604,7 +1604,8 @@
         "base": "What you offer",
         "where": "When and where",
         "tickets": "Tickets",
-        "publish": "Publish"
+        "publish": "Publish",
+        "program": "Program"
       },
       "validation": {
         "priceNegative": "The price cannot be negative",
@@ -1732,6 +1733,10 @@
         "publishToggleDesc": "If checked, the event is visible in the catalog and purchasable. You can always change this from the event dashboard.",
         "validationErrorBanner": "Some previous fields need attention. Go back to fix them.",
         "enrichLaterCue": "Here you create the retreat with the essentials. The day-by-day program, photo gallery and FAQ come RIGHT AFTER: on save we take you to the retreat page, \"Sales page\" section."
+      },
+      "program": {
+        "title": "Program and sales page",
+        "subtitle": "Day-by-day program, what's included and FAQ. You can also complete them later, from the retreat page."
       }
     },
     "digital": {
@@ -1968,6 +1973,7 @@
     "remove": "Remove this language",
     "placeholder": "Write the {{lang}} text here…",
     "hint": "Offer this text also in:",
-    "visibility": "The product will appear in views in these languages. Without a translation it stays visible in Italian only."
+    "visibility": "The product will appear in views in these languages. Without a translation it stays visible in Italian only.",
+    "sectionHint": "The Italian text is the placeholder in each field. Languages with a filled description are the languages where the product is visible; empty fields stay in Italian."
   }
 }

@@ -32,7 +32,7 @@ import AvailabilityRulesEditor from './components/AvailabilityRulesEditor';
 import useLandingUrl from '../products/hooks/useLandingUrl';
 // W1.S5/Phase 2.6 — additive cost composition editor for edits.
 import CostSourceEditor from '../products/components/CostSourceEditor';
-import MultiLangText from '../../components/MultiLangText';
+import MultiLangSection from '../../components/MultiLangSection';
 
 
 function formatEuro(n, locale = 'it-IT') {
@@ -65,13 +65,15 @@ export default function ServiceDashboardPage() {
 
   // Multilingua manuale — lingue offerte dall'operatore (per campo);
   // salvate sul prodotto via PATCH translations
+  const [trName, setTrName] = useState({});
   const [trDescription, setTrDescription] = useState({});
   const [trLong, setTrLong] = useState({});
   const buildTranslationsPayload = () => {
-    const langs = new Set([...Object.keys(trDescription), ...Object.keys(trLong)]);
+    const langs = new Set([...Object.keys(trName), ...Object.keys(trDescription), ...Object.keys(trLong)]);
     const out = {};
     langs.forEach(l => {
       const e = {};
+      if ((trName[l] || '').trim()) e.name = trName[l].trim();
       if ((trDescription[l] || '').trim()) e.description = trDescription[l].trim();
       if ((trLong[l] || '').trim()) e.long_description = trLong[l].trim();
       if (Object.keys(e).length) out[l] = e;
@@ -127,11 +129,13 @@ export default function ServiceDashboardPage() {
 
       const meta = prod.metadata || {};
       const ptr = prod.translations || {};
-      const trD = {}, trL = {};
+      const trN = {}, trD = {}, trL = {};
       Object.entries(ptr).forEach(([l, f]) => {
+        if (f?.name) trN[l] = f.name;
         if (f?.description) trD[l] = f.description;
         if (f?.long_description) trL[l] = f.long_description;
       });
+      setTrName(trN);
       setTrDescription(trD);
       setTrLong(trL);
       setProductForm({
@@ -561,7 +565,12 @@ export default function ServiceDashboardPage() {
                     onChange={e => setProductForm(f => ({ ...f, description: e.target.value }))}
                     rows={2}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none" />
-                  <MultiLangText value={trDescription} onChange={setTrDescription} rows={2} maxLength={2000} />
+                  <MultiLangSection fields={[
+                    { key: 'name', label: t('dashboards.service.product.nameLabel'), it: productForm.name,
+                      value: trName, onChange: setTrName, input: true, maxLength: 255 },
+                    { key: 'description', label: t('dashboards.service.product.descriptionLabel'), it: productForm.description,
+                      value: trDescription, onChange: setTrDescription, rows: 2, maxLength: 2000 },
+                  ]}>{null}</MultiLangSection>
                 </div>
 
                 {/* Product image */}
@@ -703,7 +712,10 @@ export default function ServiceDashboardPage() {
                 placeholder={t('dashboards.service.longDescPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-xs font-mono focus:border-gray-900 focus:outline-none resize-y"
               />
-              <MultiLangText value={trLong} onChange={setTrLong} rows={4} maxLength={5000} />
+              <MultiLangSection fields={[
+                { key: 'long_description', label: null, it: productForm.long_description,
+                  value: trLong, onChange: setTrLong, rows: 5, maxLength: 5000 },
+              ]}>{null}</MultiLangSection>
               <div className="flex justify-end">
                 <button type="button" onClick={saveProduct}
                   disabled={savingProduct}

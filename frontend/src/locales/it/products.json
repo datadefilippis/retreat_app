@@ -1673,7 +1673,8 @@
         "where": "Quando e dove",
         "tickets": "Biglietti",
         "publish": "Pubblica",
-        "payments": "Come incassi"
+        "payments": "Come incassi",
+        "program": "Programma"
       },
       "validation": {
         "priceNegative": "Il prezzo non può essere negativo",
@@ -1850,6 +1851,10 @@
           "installmentsRange": "Le rate devono essere tra 2 e 6",
           "policyOrder": "Gli scaglioni devono avere giorni decrescenti e rimborsi non crescenti"
         }
+      },
+      "program": {
+        "title": "Programma e pagina di vendita",
+        "subtitle": "Programma giorno per giorno, cosa è incluso e FAQ. Puoi completarli anche dopo, dalla pagina del ritiro."
       }
     },
     "digital": {
@@ -2086,6 +2091,7 @@
     "remove": "Rimuovi questa lingua",
     "placeholder": "Scrivi qui il testo in {{lang}}…",
     "hint": "Offri questo testo anche in:",
-    "visibility": "Il prodotto apparirà nelle viste in queste lingue. Senza traduzione resta visibile solo in italiano."
+    "visibility": "Il prodotto apparirà nelle viste in queste lingue. Senza traduzione resta visibile solo in italiano.",
+    "sectionHint": "Il testo italiano è il suggerimento nel campo. Le lingue con la descrizione compilata sono le lingue in cui il prodotto appare al pubblico; i campi vuoti restano in italiano."
   }
 }

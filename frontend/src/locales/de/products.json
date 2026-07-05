@@ -1603,7 +1603,8 @@
         "base": "Was Sie anbieten",
         "where": "Wann und wo",
         "tickets": "Tickets",
-        "publish": "Veröffentlichen"
+        "publish": "Veröffentlichen",
+        "program": "Programm"
       },
       "validation": {
         "priceNegative": "Der Preis darf nicht negativ sein",
@@ -1725,6 +1726,10 @@
         "publishToggleDesc": "Wenn aktiviert, ist die Veranstaltung im Katalog sichtbar und für Kunden kaufbar. Sie können dies jederzeit im Veranstaltungs-Dashboard ändern.",
         "validationErrorBanner": "Einige vorherige Felder erfordern Aufmerksamkeit. Gehen Sie zurück, um sie zu korrigieren.",
         "enrichLaterCue": "Hier erstellst du das Retreat mit den wichtigsten Angaben. Programm, Fotogalerie und FAQ fügst du DIREKT DANACH hinzu: nach dem Speichern bringen wir dich zur Retreat-Seite, Bereich \"Verkaufsseite\"."
+      },
+      "program": {
+        "title": "Programm und Verkaufsseite",
+        "subtitle": "Tagesprogramm, Leistungen und FAQ. Du kannst sie auch später von der Retreat-Seite aus vervollständigen."
       }
     },
     "digital": {
@@ -1961,6 +1966,7 @@
     "remove": "Diese Sprache entfernen",
     "placeholder": "Schreibe hier den Text auf {{lang}}…",
     "hint": "Diesen Text auch anbieten auf:",
-    "visibility": "Das Produkt erscheint in den Ansichten dieser Sprachen. Ohne Übersetzung bleibt es nur auf Italienisch sichtbar."
+    "visibility": "Das Produkt erscheint in den Ansichten dieser Sprachen. Ohne Übersetzung bleibt es nur auf Italienisch sichtbar.",
+    "sectionHint": "Der italienische Text ist der Platzhalter im Feld. Sprachen mit ausgefüllter Beschreibung sind die Sprachen, in denen das Produkt sichtbar ist; leere Felder bleiben italienisch."
   }
 }

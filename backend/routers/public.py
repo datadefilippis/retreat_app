@@ -3424,8 +3424,8 @@ async def list_public_retreats(
     # Multilingua manuale (6/7) — vista in lingua X: SOLO i ritiri che
     # l'operatore offre in X (traduzione manuale presente). IT = tutti.
     if lang and lang != "it":
-        from services.manual_translations import is_available_in
-        prods = [p for p in prods if is_available_in(p, lang)]
+        from services.manual_translations import is_available_in, merge_language
+        prods = [merge_language(p, lang) for p in prods if is_available_in(p, lang)]
 
     prod_by_id = {p["id"]: p for p in prods}
 
