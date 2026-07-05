@@ -50,17 +50,29 @@ La spina dorsale. 5 card-step numerate, ognuna con: stato (✓/da fare),
 spiegazione in 1 riga "perché serve", CTA che porta ESATTAMENTE al punto
 giusto, e ritorno automatico a /inizia dopo il completamento.
 
-1. **Collega i pagamenti** (~5 min) — "È dove arrivano i tuoi incassi:
-   direttamente sul tuo conto." CTA → Stripe Express (start → hosted
-   onboarding Stripe → complete → torna qui col ✓)
-2. **Il tuo negozio online** (~2 min) — "L'indirizzo pubblico delle tue
-   pagine." Nome + slug (propone dal nome org), crea+pubblica in un passo
-3. **Il tuo primo ritiro** (~5 min) — CTA → wizard ritiro (già a 5 tab
-   con cue). Al salvataggio come bozza lo step diventa "quasi fatto"
-4. **Pubblica** (~1 min) — CTA al tab Pubblica del ritiro in bozza;
-   quando published: ✓ + coriandoli + link alla landing e alla directory
-5. **Fatti conoscere** (~3 min) — CTA → /public-profile (editor F2.0,
-   riusa la completezza %); step "consigliato", non blocca
+Ordine RAFFINATO dal founder (5/7 sera) — e RINFORZATO dal codice: dal
+fix store-first la pubblicazione E' BLOCCATA senza store (409
+store_required + banner nel wizard), quindi l'ordine non e' un
+suggerimento, e' il binario:
+
+1. **Collega i pagamenti** (~5 min, in Impostazioni) — "È dove arrivano
+   i tuoi incassi: direttamente sul tuo conto." CTA → Stripe Express
+   (start → hosted onboarding → complete → torna qui col ✓)
+2. **Crea il tuo store + profilo pubblico** (~4 min) — "L'indirizzo
+   pubblico delle tue pagine + la pagina Chi siamo." Nome + slug
+   (proposto dal nome org), poi CTA secondaria → /public-profile.
+   Il profilo pubblico E' la pagina "Chi siamo" dello store (gia'
+   linkata dal footer store → /o/:slug)
+3. **Il tuo primo ritiro** (~5 min) — CTA → wizard (categoria
+   obbligatoria; allocazione allo store nel tab Pubblica). Bozza
+   sempre permessa; senza store il toggle Pubblica e' disabilitato
+   col banner "Crea il tuo store"
+4. **Metti online** (~1 min) — quando published: ✓ + card "Sei online!"
+   con i LINK ESPLICITI di dove appare: landing (/e/...), store
+   (/s/...), directory (/ritiri) e profilo (/o/...) — il founder vuole
+   che l'operatore VEDA dove vivono le sue pagine
+5. **Rifinisci il profilo** (~3 min) — completezza % (se non fatto
+   allo step 2); consigliato, non blocca
 
 - [ ] Barra progresso in alto ("3 di 5 completati")
 - [ ] Stato SEMPRE derivato (endpoint sopra); zero scrittura

@@ -53,6 +53,20 @@ router = APIRouter(prefix="/event-occurrences", tags=["Event Occurrences"])
 # ── G2: Event Wizard — atomic product + occurrence + tiers create ──────────
 
 
+async def _org_has_public_home(org_id: str) -> bool:
+    """True se l'org ha un posto pubblico dove il ritiro puo' vivere:
+    uno store attivo, o il public_slug legacy (org migrate pre-multistore)."""
+    store = await stores_collection.find_one(
+        {"organization_id": org_id, "is_active": True}, {"_id": 1},
+    )
+    if store:
+        return True
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "public_slug": 1},
+    )
+    return bool((org or {}).get("public_slug"))
+
+
 class WizardProductPayload(BaseModel):
     """Product fields the wizard collects on the "Cosa offri" tab."""
     model_config = ConfigDict(extra="ignore")
@@ -171,6 +185,20 @@ async def create_event_wizard(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Categoria non valida. Scegli una categoria dall'elenco.",
         )
+
+    # Store-first (fix founder 5/7): PUBBLICARE richiede un indirizzo
+    # pubblico — uno store creato dall'operatore (o il public_slug legacy
+    # delle org migrate). Niente auto-creazione implicita: il processo e'
+    # store PRIMA, prodotti POI. Salvare in BOZZA resta sempre permesso.
+    if body.occurrence.status == "published":
+        if not await _org_has_public_home(org_id):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"code": "store_required",
+                        "message": "Prima di pubblicare crea il tuo store: "
+                                   "è l'indirizzo pubblico delle tue pagine. "
+                                   "Puoi salvare come bozza intanto."},
+            )
 
     # Fase 2 (retreat) — se il wizard invia un piano di pagamento, DEVE
     # essere valido: un piano malformato in metadata produrrebbe ordini
@@ -1043,6 +1071,17 @@ async def update_occurrence(
 ):
     """Update an event occurrence."""
     org_id = current_user["organization_id"]
+
+    # Store-first (fix founder 5/7) — stesso gate del wizard: la
+    # transizione a published richiede un indirizzo pubblico.
+    if getattr(body, "status", None) == "published":
+        if not await _org_has_public_home(org_id):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"code": "store_required",
+                        "message": "Prima di pubblicare crea il tuo store: "
+                                   "è l'indirizzo pubblico delle tue pagine."},
+            )
 
     existing = await event_occurrences_collection.find_one(
         {"id": occurrence_id, "organization_id": org_id},

@@ -350,3 +350,39 @@ class TestWizardCategory:
         src = open(__file__.replace("tests/test_retreat_plans.py",
                                     "routers/event_occurrences.py")).read()
         assert "from models.retreat_taxonomy import RETREAT_CATEGORIES" in src
+
+
+class TestStoreFirstGate:
+    """Fix founder 5/7 — niente auto-creazione store: PUBBLICARE richiede
+    un indirizzo pubblico (store attivo o public_slug legacy); la bozza
+    resta sempre permessa."""
+
+    @staticmethod
+    def _has_home(store_doc, org_doc):
+        import asyncio
+        from unittest.mock import AsyncMock, patch
+        from routers import event_occurrences as mod
+        stores = AsyncMock(); stores.find_one = AsyncMock(return_value=store_doc)
+        orgs = AsyncMock(); orgs.find_one = AsyncMock(return_value=org_doc)
+        with patch.object(mod, "stores_collection", stores), \
+             patch.object(mod, "organizations_collection", orgs):
+            return asyncio.run(mod._org_has_public_home("org-x"))
+
+    def test_active_store_allows(self):
+        assert self._has_home({"_id": 1}, None) is True
+
+    def test_legacy_slug_allows(self):
+        assert self._has_home(None, {"public_slug": "masseria"}) is True
+
+    def test_nothing_blocks(self):
+        assert self._has_home(None, {"public_slug": None}) is False
+        assert self._has_home(None, None) is False
+
+    def test_wizard_and_patch_both_gated(self):
+        import os
+        src = open(os.path.join(os.path.dirname(__file__), "..",
+                                "routers", "event_occurrences.py")).read()
+        # due gate: creazione wizard con published + transizione PATCH
+        assert src.count("store_required") == 2
+        assert "Salvare in BOZZA resta sempre permesso" in src \
+            or "bozza" in src.lower()
