@@ -117,7 +117,7 @@
 
 ## FASE 6 — Onboarding, pricing e lancio tecnico (2 settimane)
 
-- [ ] **6.1 Onboarding operatore**: registrazione → Stripe Connect Express → primo ritiro pubblicato. Metrica nord: **meno di 15 minuti**. Test con persona reale non tecnica.
+- [ ] **6.1 Onboarding operatore**: registrazione → Stripe Connect Express → primo ritiro pubblicato. Metrica nord: **meno di 15 minuti**. Test con persona reale non tecnica. → PIANO ESECUTIVO in docs/ONBOARDING_PLAN.md (O1-O4, ~3gg: checklist /inizia con stato derivato dai dati).
 - [ ] **6.2 Fee transazionale**: `application_fee_percent` collegata al piano (retreat_free=5, retreat_pro=2) al cambio piano; upgrade Pro self-service (riuso Stripe Billing piattaforma esistente); banner upgrade nella dashboard incassi sopra 1.000€/mese di transato.
 - [ ] **6.3 Infrastruttura prod**: VPS nuovo, docker-compose prod adattato, dominio+TLS, Brevo nuovo (SPF/DKIM verificati), account Stripe piattaforma LIVE, monitoraggio di base (uptime + alert email).
 - [ ] **6.4 Backup**: mongodump notturno + copia offsite (es. object storage), restore PROVATO una volta (un backup non testato non è un backup).
