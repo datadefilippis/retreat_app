@@ -280,6 +280,9 @@ class PublicEventLanding(BaseModel):
     """
     org_slug: str
     org_name: str
+    # F5 — True quando i contenuti serviti vengono dalla traduzione
+    # automatica (?lang=en/de/fr): il frontend mostra il badge trasparenza
+    auto_translated: bool = False
     store_info: Optional[StoreInfo] = None
     product: PublicEventProduct
     occurrence: PublicOccurrence
@@ -1152,7 +1155,8 @@ async def get_public_catalog(request: Request, slug: str):
 
 
 @router.get("/events/{org_slug}/{slug}", response_model=PublicEventLanding)
-async def get_public_event_landing(org_slug: str, slug: str):
+async def get_public_event_landing(org_slug: str, slug: str,
+    lang: str = Query(None, description="en|de|fr per contenuti tradotti")):
     """Public landing page payload for a single event occurrence.
 
     Returns 404 when:
@@ -1250,6 +1254,30 @@ async def get_public_event_landing(org_slug: str, slug: str):
     # Auto-derive map_url if admin did not explicitly set one
     from models.event_occurrence import build_map_url
     map_url = occ.get("map_url") or build_map_url(occ)
+    # F5 (5/7/2026) — contenuti tradotti: merge della traduzione valida
+    # (stesso source hash) sui campi traducibili; fallback = originale.
+    _auto_translated = False
+    if lang and lang in ("en", "de", "fr"):
+        try:
+            from services.content_translation_service import (
+                build_source_fields, get_translation, source_hash,
+            )
+            _src_fields = build_source_fields(occ, product)
+            _tr = await get_translation(occ["id"], lang, source_hash(_src_fields))
+            if _tr and _tr.get("fields"):
+                tf = _tr["fields"]
+                occ = {**occ,
+                       "long_description": tf.get("long_description") or occ.get("long_description"),
+                       "agenda": tf.get("agenda") or occ.get("agenda"),
+                       "included": tf.get("included") or occ.get("included"),
+                       "excluded": tf.get("excluded") or occ.get("excluded"),
+                       "faq": tf.get("faq") or occ.get("faq")}
+                if tf.get("description"):
+                    product = {**product, "description": tf["description"]}
+                _auto_translated = True
+        except Exception:
+            logger.warning("merge traduzione fallito per occ %s", occ.get("id"))
+
 
     public_occ = PublicOccurrence(
         id=occ["id"],
@@ -1308,6 +1336,7 @@ async def get_public_event_landing(org_slug: str, slug: str):
     return PublicEventLanding(
         org_slug=org_slug,
         org_name=org.get("name", ""),
+        auto_translated=_auto_translated,
         store_info=si if has_info else None,
         product=PublicEventProduct(
             id=product["id"],

@@ -45,8 +45,9 @@ export const storefrontAPI = {
     customerApi.get(`/api/public/orders/${orderId}/status`),
 
   // E3: full landing page payload for a single event occurrence.
-  getEventLanding: (orgSlug, slug) =>
-    customerApi.get(`/api/public/events/${orgSlug}/${slug}`),
+  getEventLanding: (orgSlug, slug, lang) =>
+    customerApi.get(`/api/public/events/${orgSlug}/${slug}`,
+      lang && lang !== 'it' ? { params: { lang } } : undefined),
 
   // Onda 13: full landing page payload for a generic product (primarily services).
   getProductLanding: (orgSlug, productSlug) =>

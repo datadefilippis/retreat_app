@@ -104,7 +104,7 @@ profilo in modo semplice e completo.** Oggi esiste solo il branding
 - **DoD**: Rich Results Test verde su landing/profilo/store; sitemap valida
   in Search Console; share su WhatsApp/Facebook mostra foto+titolo giusti.
 
-### F4 · Refinement e-commerce (1 gg — senza rompere nulla)
+### F4 · Refinement e-commerce — PARZIALE (5/7/2026: footer ecosistema fatto in F2.1, card/tema gia' D1; restano header store curato e breadcrumb come rifinitura minore post-lancio)
 Regola: SOLO additivo/estetico, zero cambi a checkout/carrello/pagamenti
 (appena consolidati e testati con soldi veri).
 - [ ] Header store: logo/nome più curati, link profilo, lingua
@@ -116,7 +116,7 @@ Regola: SOLO additivo/estetico, zero cambi a checkout/carrello/pagamenti
 - **DoD**: browser sweep completo del funnel acquisto INVARIATO (stessi
   test del fix caparra); nessun file di checkout logic toccato.
 
-### F5 · Multilingua directory + traduzione automatica contenuti (2-3 gg)
+### F5 · Multilingua + traduzione automatica ✅ CORE (fatto 5/7/2026 — pipeline+serving+badge; hreflang/URL-prefix restano legati al prerender di Fase 6.3; il job LLM si attiva configurando la chiave in produzione)
 **Verdetto fattibilità: SÌ, ed economico.** Il client LLM è già nel codebase
 (claude_client.py: budget guard, circuit breaker, cost tracking). Architettura:
 

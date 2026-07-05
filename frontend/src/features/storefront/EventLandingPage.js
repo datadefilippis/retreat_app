@@ -373,7 +373,7 @@ export default function EventLandingPage() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    storefrontAPI.getEventLanding(orgSlug, slug)
+    storefrontAPI.getEventLanding(orgSlug, slug, (i18n.language || 'it').slice(0, 2))
       .then(res => { if (mounted) { setData(res.data); setLoading(false); } })
       .catch(err => {
         if (!mounted) return;
@@ -381,7 +381,7 @@ export default function EventLandingPage() {
         setLoading(false);
       });
     return () => { mounted = false; };
-  }, [orgSlug, slug]);
+  }, [orgSlug, slug, i18n.language]);
 
   const dt = useMemo(() => data ? formatDateTime(data.occurrence.start_at, i18n.language) : null, [data, i18n.language]);
   const dtEnd = useMemo(() => data?.occurrence.end_at ? formatDateTime(data.occurrence.end_at, i18n.language) : null, [data, i18n.language]);
@@ -780,6 +780,18 @@ export default function EventLandingPage() {
           )}
         </aside>
       </div>
+
+      {/* F5 — trasparenza: contenuti tradotti automaticamente */}
+      {data.auto_translated && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-2">
+          <p className="text-[11px] text-gray-500 text-center">
+            {t('landings:event.autoTranslated', { defaultValue: 'Contenuti tradotti automaticamente dall\'italiano.' })}{' '}
+            <button type="button" onClick={() => i18n.changeLanguage('it')} className="underline hover:text-gray-700">
+              {t('landings:event.seeOriginal', { defaultValue: 'Vedi originale' })}
+            </button>
+          </p>
+        </div>
+      )}
 
       {/* F2.1 — Organizzato da: la card fiducia che porta al profilo */}
       {operator?.name && (
