@@ -36,6 +36,8 @@ import MarkdownLite from '../../components/MarkdownLite';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
 import { effectivePlan } from './lib/paymentPlan';
+import useSeoMeta from './lib/useSeoMeta';
+import api from '../../api/client';
 
 
 // ── Utilities ──────────────────────────────────────────────────────────────
@@ -302,6 +304,71 @@ export default function EventLandingPage() {
   // legacy mono-qty counter via `plainQty`.
   const [tierQuantities, setTierQuantities] = useState({});
   const [plainQty, setPlainQty] = useState(1);
+  // F2.1 — blocco "Organizzato da": profilo operatore (fetch leggero,
+  // best-effort: se fallisce la landing vive senza)
+  const [operator, setOperator] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    api.get(`/public/operator/${orgSlug}`)
+      .then(res => { if (mounted) setOperator(res.data); })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, [orgSlug]);
+
+  // F3 — SEO automatico della landing: title/description/og:image dai
+  // dati del ritiro + JSON-LD Event (schema.org) per i rich results.
+  const seoProduct = data?.product;
+  const seoOcc = data?.occurrence;
+  useSeoMeta({
+    title: seoProduct ? `${seoProduct.name} — prenota online` : undefined,
+    description: seoProduct?.description
+      ? String(seoProduct.description).slice(0, 155)
+      : (seoProduct ? `Prenota ${seoProduct.name}: date, prezzi e disponibilità in tempo reale.` : undefined),
+    image: seoOcc?.cover_image_url || seoProduct?.image_url || undefined,
+    canonicalPath: `/e/${orgSlug}/${slug}`,
+    jsonLd: (seoProduct && seoOcc) ? {
+      '@context': 'https://schema.org',
+      '@type': 'Event',
+      name: seoProduct.name,
+      startDate: seoOcc.start_at,
+      ...(seoOcc.end_at ? { endDate: seoOcc.end_at } : {}),
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+      ...(seoOcc.cover_image_url || seoProduct.image_url
+        ? { image: [seoOcc.cover_image_url || seoProduct.image_url] } : {}),
+      ...(seoProduct.description
+        ? { description: String(seoProduct.description).slice(0, 500) } : {}),
+      location: {
+        '@type': 'Place',
+        name: seoOcc.venue_name || seoOcc.city || 'Italia',
+        address: {
+          '@type': 'PostalAddress',
+          ...(seoOcc.city ? { addressLocality: seoOcc.city } : {}),
+          ...(seoOcc.region ? { addressRegion: seoOcc.region } : {}),
+          addressCountry: 'IT',
+        },
+      },
+      ...(operator?.name ? {
+        organizer: {
+          '@type': 'Organization',
+          name: operator.name,
+          url: `${window.location.origin}/o/${orgSlug}`,
+        },
+      } : {}),
+      ...(seoProduct.unit_price != null ? {
+        offers: {
+          '@type': 'Offer',
+          price: seoProduct.unit_price,
+          priceCurrency: data?.currency || 'EUR',
+          availability: data?.is_buyable
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/SoldOut',
+          url: `${window.location.origin}/e/${orgSlug}/${slug}`,
+        },
+      } : {}),
+    } : undefined,
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -714,6 +781,30 @@ export default function EventLandingPage() {
         </aside>
       </div>
 
+      {/* F2.1 — Organizzato da: la card fiducia che porta al profilo */}
+      {operator?.name && (
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-4">
+          <Link to={`/o/${orgSlug}`}
+                className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
+            {operator.logo_url
+              ? <img src={operator.logo_url} alt="" className="h-14 w-14 rounded-full object-cover shrink-0" />
+              : <div className="h-14 w-14 rounded-full bg-emerald-50 flex items-center justify-center text-2xl shrink-0" aria-hidden>🧘</div>}
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                {t('landings:event.organizedBy', { defaultValue: 'Organizzato da' })}
+              </p>
+              <p className="font-semibold text-gray-900 truncate">{operator.name}</p>
+              {operator.bio && (
+                <p className="text-sm text-gray-600 line-clamp-2 mt-0.5">{operator.bio}</p>
+              )}
+            </div>
+            <span className="shrink-0 text-sm font-medium text-emerald-700">
+              {t('landings:event.viewProfile', { defaultValue: 'Vedi profilo' })} →
+            </span>
+          </Link>
+        </section>
+      )}
+
       <footer className="max-w-4xl mx-auto px-4 sm:px-6 py-8 text-center text-xs text-gray-500">
         <Trans
           i18nKey="landings:event.footerOrganizedBy"
@@ -722,6 +813,10 @@ export default function EventLandingPage() {
         />
         <span aria-hidden className="mx-2">·</span>
         <Link to={`/s/${orgSlug}`} className="underline hover:text-gray-900">{t('landings:event.seeOtherEvents')}</Link>
+        <span aria-hidden className="mx-2">·</span>
+        <Link to="/ritiri" className="underline hover:text-gray-900">
+          {t('landings:event.findMoreRetreats', { defaultValue: 'Scopri altri ritiri' })}
+        </Link>
       </footer>
     </div>
   );

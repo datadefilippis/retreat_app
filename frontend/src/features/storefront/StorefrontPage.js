@@ -2098,6 +2098,16 @@ export default function StorefrontPage() {
             </Link>
           </div>
           <p className="text-xs text-gray-400 text-center">
+            {/* F2.1 — ecosistema: profilo organizzatore + directory
+                (solo footer: mai dentro il funnel di checkout) */}
+            <a href={`/o/${slug}`} className="hover:underline">
+              {t('storefront:footer.operatorProfile', { defaultValue: 'Chi siamo' })}
+            </a>
+            <span aria-hidden className="mx-1.5">·</span>
+            <a href="/ritiri" className="hover:underline">
+              {t('storefront:footer.findRetreats', { defaultValue: 'Scopri altri ritiri' })}
+            </a>
+            <span aria-hidden className="mx-1.5">·</span>
             {t('storefront:footer.poweredBy')}
           </p>
         </div>

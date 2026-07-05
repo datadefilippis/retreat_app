@@ -25,7 +25,7 @@ function setMeta(attr, key, content) {
   el.setAttribute('content', content);
 }
 
-export default function useSeoMeta({ title, description, image, canonicalPath }) {
+export default function useSeoMeta({ title, description, image, canonicalPath, jsonLd }) {
   useEffect(() => {
     if (title) document.title = title;
     setMeta('name', 'description', description);
@@ -45,4 +45,24 @@ export default function useSeoMeta({ title, description, image, canonicalPath })
       link.setAttribute('href', window.location.origin + canonicalPath);
     }
   }, [title, description, image, canonicalPath]);
+
+  // F3 (5/7/2026) — JSON-LD schema.org generato dai DATI (Event,
+  // Organization, ItemList, BreadcrumbList): il "SEO automatico" del
+  // piano. Un solo <script> gestito da questo hook, sostituito a ogni
+  // cambio pagina e rimosso all'unmount (le pagine pubbliche montano
+  // una alla volta, ma il cleanup evita residui tra SPA-navigations).
+  useEffect(() => {
+    const ID = 'seo-jsonld';
+    document.getElementById(ID)?.remove();
+    if (!jsonLd) return undefined;
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = ID;
+    script.textContent = JSON.stringify(jsonLd);
+    document.head.appendChild(script);
+    return () => { document.getElementById(ID)?.remove(); };
+    // Nota: jsonLd viene serializzato per il confronto — gli oggetti
+    // inline cambierebbero identita' a ogni render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(jsonLd || null)]);
 }

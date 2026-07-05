@@ -1,0 +1,14 @@
+# Retreat platform — robots (F3, 5/7/2026)
+User-agent: *
+Allow: /
+# aree private e link tokenizzati: mai indicizzare
+Disallow: /account
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /orders
+Disallow: /settings
+Disallow: /t/
+Disallow: /b/
+Disallow: /api/
+
+Sitemap: /api/public/sitemap.xml
