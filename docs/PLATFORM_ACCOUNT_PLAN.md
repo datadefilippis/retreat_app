@@ -89,7 +89,7 @@ org opzionale, come oggi.
       endpoint org accetta token piattaforma
 - **DoD**: signup/login magic link funzionante dietro feature flag, suite verde.
 
-### P2 · Aggancio acquisto (~2-3 gg)
+### P2 · Aggancio acquisto ✅ (fatto 5/7/2026 — merge su main; prefill checkout rimandato a P3 dove nasce la superficie di login)
 - [ ] Checkout: se sessione piattaforma → prefill nome/email/telefono
 - [ ] Post-acquisto: email "gestisci le tue prenotazioni" con magic link
       (riuso template transazionali Brevo); claim = verifica email implicita

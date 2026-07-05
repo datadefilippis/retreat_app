@@ -47,6 +47,10 @@ class PlatformAccount(BaseModel):
     created_at: datetime = Field(default_factory=_utc_now)
     last_login_at: Optional[datetime] = None
 
+    # P2 — anti-spam per l'email "Gestisci le tue prenotazioni": una
+    # sola claim email nelle 24h, anche con acquisti multipli ravvicinati.
+    claim_last_sent_at: Optional[datetime] = None
+
 
 class MagicLinkToken(BaseModel):
     """Token magic-link: salvato SOLO l'hash sha256. One-shot + TTL."""

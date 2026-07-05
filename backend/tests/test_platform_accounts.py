@@ -141,3 +141,111 @@ class TestFeatureFlag:
         from routers.platform_accounts import _flag_enabled
         os.environ.pop("PLATFORM_ACCOUNTS_ENABLED", None)
         _flag_enabled()   # nessuna eccezione
+
+
+class TestP2OrderLinking:
+    """P2 — stamp additivo su ordini + link CRM org. DoD: stessa email
+    su DUE operatori diversi → UN solo platform account."""
+
+    @staticmethod
+    def _run_link(order, org_id, existing_account=None):
+        captured = {"order_updates": [], "cust_updates": [], "inserted": None}
+
+        accounts = AsyncMock()
+        accounts.find_one = AsyncMock(return_value=existing_account)
+        async def _ins(doc): captured["inserted"] = doc
+        accounts.insert_one = AsyncMock(side_effect=_ins)
+
+        orders = AsyncMock()
+        async def _ou(f, u): captured["order_updates"].append((f, u))
+        orders.update_one = AsyncMock(side_effect=_ou)
+
+        customers = AsyncMock()
+        async def _cu(f, u): captured["cust_updates"].append((f, u))
+        customers.update_many = AsyncMock(side_effect=_cu)
+
+        with patch("database.platform_accounts_collection", accounts), \
+             patch("database.orders_collection", orders), \
+             patch("database.customer_accounts_collection", customers):
+            out = asyncio.run(svc.link_order_to_platform_account(order, org_id))
+        return out, captured
+
+    def test_same_email_two_orgs_one_account(self):
+        # primo acquisto org A: account creato
+        order_a = {"id": "ord-A", "customer_email": "Anna@Mail.IT",
+                   "customer_name": "Anna"}
+        aid, cap_a = self._run_link(order_a, "org-A")
+        assert cap_a["inserted"]["email"] == "anna@mail.it"
+        assert aid == cap_a["inserted"]["id"]
+
+        # secondo acquisto org B, stessa email: NESSUN nuovo account
+        existing = {"id": aid, "email": "anna@mail.it"}
+        order_b = {"id": "ord-B", "customer_email": "anna@mail.it"}
+        aid_b, cap_b = self._run_link(order_b, "org-B", existing_account=existing)
+        assert aid_b == aid                      # stessa identita'
+        assert cap_b["inserted"] is None         # niente doppioni
+
+    def test_stamp_is_additive_and_never_overwrites(self):
+        existing = {"id": "acc-1", "email": "a@b.it"}
+        _, cap = self._run_link({"id": "o1", "customer_email": "a@b.it"},
+                                "org-X", existing_account=existing)
+        f_order, _ = cap["order_updates"][0]
+        assert f_order["platform_account_id"] == {"$exists": False}
+        f_cust, _ = cap["cust_updates"][0]
+        assert f_cust["platform_account_id"] == {"$exists": False}
+
+    def test_no_email_is_noop(self):
+        out, cap = self._run_link({"id": "o1", "customer_email": ""}, "org-X")
+        assert out is None and not cap["order_updates"]
+
+    def test_hooks_are_best_effort_in_source(self):
+        # I chiamanti DEVONO avvolgere in try/except: il Passaporto non
+        # blocca mai un ordine ne' un incasso.
+        import os
+        for fname, marker in [
+            ("services/order_creation_service.py", "link_order_to_platform_account"),
+            ("services/payment_checkout_service.py", "send_claim_email_if_needed"),
+        ]:
+            src = open(os.path.join(os.path.dirname(__file__), "..", fname)).read()
+            i = src.index(marker)
+            assert "try:" in src[max(0, i-500):i], fname
+
+
+class TestP2ClaimEmail:
+    def test_verified_account_gets_no_claim_email(self):
+        accounts = AsyncMock()
+        accounts.find_one = AsyncMock(return_value={"id": "a1",
+                                                    "email_verified": True})
+        with patch("database.platform_accounts_collection", accounts):
+            out = asyncio.run(svc.send_claim_email_if_needed(
+                {"customer_email": "a@b.it"}))
+        assert out is False
+
+    def test_cooldown_blocks_repeat_within_24h(self):
+        from models.common import utc_now
+        accounts = AsyncMock()
+        accounts.find_one = AsyncMock(return_value={
+            "id": "a1", "email_verified": False,
+            "claim_last_sent_at": utc_now().isoformat()})
+        with patch("database.platform_accounts_collection", accounts):
+            out = asyncio.run(svc.send_claim_email_if_needed(
+                {"customer_email": "a@b.it"}))
+        assert out is False
+
+    def test_unverified_account_gets_email_and_timestamp(self):
+        accounts = AsyncMock()
+        accounts.find_one = AsyncMock(return_value={
+            "id": "a1", "email": "a@b.it", "email_verified": False})
+        accounts.update_one = AsyncMock()
+        tokens = AsyncMock()
+        tokens.insert_one = AsyncMock()
+        sent = {}
+        with patch("database.platform_accounts_collection", accounts), \
+             patch("database.platform_magic_tokens_collection", tokens), \
+             patch.object(svc, "_send_claim_email",
+                          lambda e, t, n: sent.update({"email": e, "token": t})):
+            out = asyncio.run(svc.send_claim_email_if_needed(
+                {"customer_email": "a@b.it"}))
+        assert out is True and sent["email"] == "a@b.it"
+        tokens.insert_one.assert_called_once()
+        accounts.update_one.assert_called_once()  # claim_last_sent_at

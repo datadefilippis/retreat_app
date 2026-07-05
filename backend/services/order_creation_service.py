@@ -464,6 +464,31 @@ async def submit_order_from_storefront(
             terms_accepted_at=terms_ts,
         )
 
+        # ── P2 Passaporto Ritiri (5/7/2026) — stamp additivo ──────────
+        # find-or-create platform account (pending) sulla email + stamp
+        # platform_account_id su ordine e customer_accounts org esistenti.
+        # BEST-EFFORT: il Passaporto non deve MAI bloccare un ordine —
+        # la pipeline ordini/pagamenti consolidata resta intoccata.
+        if order:
+            try:
+                from services.platform_account_service import (
+                    link_order_to_platform_account,
+                )
+                # l'ordine non porta l'email (vive sul CRM customers):
+                # la prendo dal body della richiesta checkout
+                pa_id = await link_order_to_platform_account(
+                    {**order,
+                     "customer_email": body.customer_email,
+                     "customer_name": order.get("customer_name") or body.customer_name},
+                    org_id)
+                if pa_id:
+                    order["platform_account_id"] = pa_id
+            except Exception as exc_pa:
+                logger.warning(
+                    "platform_account link fallito per ordine %s: %s",
+                    order.get("id"), exc_pa,
+                )
+
         # ── Wave GDPR-Commerce CG-5 (2026-05-19) ──────────────────────
         # Stamp per-order GDPR consent snapshot AND write the immutable
         # audit records. We do this AFTER create_order returns so the
