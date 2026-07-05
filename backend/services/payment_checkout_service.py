@@ -943,6 +943,21 @@ async def reconcile_checkout_event(event: dict) -> dict:
                 order_id, exc_email,
             )
 
+        # P2 Passaporto Ritiri — al primo pagamento riuscito, invito il
+        # cliente a reclamare il suo account unico ("Gestisci le tue
+        # prenotazioni", magic link). Idempotente: solo account non
+        # verificati, cooldown 24h. Best-effort: mai bloccare l'incasso.
+        try:
+            from services.platform_account_service import (
+                send_claim_email_if_needed,
+            )
+            await send_claim_email_if_needed(confirmed)
+        except Exception as exc_claim:
+            logger.warning(
+                "payment_reconcile: claim email piattaforma fallita per %s: %s",
+                order_id, exc_claim,
+            )
+
         return {
             "action": "confirmed",
             "order_id": order_id,
