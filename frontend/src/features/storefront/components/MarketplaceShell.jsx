@@ -151,6 +151,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 <li><Link to="/ritiri?categoria=meditazione" className="hover:text-primary">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>
                 <li><Link to="/ritiri?categoria=detox" className="hover:text-primary">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>
                 <li><Link to="/" className="hover:text-primary">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>
+                <li><Link to="/operatori" className="hover:text-primary">{t('marketplace.footerOperators', { defaultValue: 'Tutti gli organizzatori' })}</Link></li>
               </ul>
             </div>
             <div>

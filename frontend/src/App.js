@@ -44,6 +44,7 @@ import EventDashboardPage from "./features/events/EventDashboardPage";
 import EventWizard from "./features/events/EventWizard";
 import RetreatsCalendarPage from "./features/storefront/RetreatsCalendarPage";
 import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
+import OperatorsIndexPage from "./features/storefront/OperatorsIndexPage";
 import ServiceWizard from "./features/services/ServiceWizard";
 import ReservationWizard from "./features/reservations/ReservationWizard";
 import PhysicalWizard from "./features/physicals/PhysicalWizard";
@@ -331,6 +332,9 @@ function AppRoutes() {
       <Route path="/ritiri" element={<RedirectPreservingQuery to="/" />} />
       <Route path="/ritiri/:categoria" element={<RetreatsCalendarPage />} />
       <Route path="/ritiri/:categoria/:regione" element={<RetreatsCalendarPage />} />
+      {/* S2 — aggregatore pubblico degli organizzatori */}
+      <Route path="/operatori" element={<OperatorsIndexPage />} />
+      <Route path="/operatori/:categoria" element={<OperatorsIndexPage />} />
       <Route path="/o/:org_slug" element={<OperatorProfilePage />} />
 
       <Route path="/e/:org_slug/:slug" element={
