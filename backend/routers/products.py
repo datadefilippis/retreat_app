@@ -355,6 +355,24 @@ async def update_product(
     if getattr(updates, "is_published", None) is True:
         from services.store_guard import require_public_home
         await require_public_home(org_id)
+        # S3 — IndexNow al publish (best-effort, no-op senza chiave)
+        try:
+            from services.indexnow import ping_urls_async
+            from routers.public import _resolve_public_slug_for_org
+            from routers.seo import _PRODUCT_PREFIX
+            from database import products_collection as _pc_seo
+            _prod = await _pc_seo.find_one(
+                {"id": product_id, "organization_id": org_id},
+                {"_id": 0, "slug": 1, "item_type": 1})
+            _prefix = _PRODUCT_PREFIX.get((_prod or {}).get("item_type"))
+            if _prod and _prod.get("slug") and _prefix:
+                _org_slug = await _resolve_public_slug_for_org(org_id)
+                if _org_slug:
+                    import asyncio as _aio
+                    _aio.create_task(ping_urls_async(
+                        [f"/{_prefix}/{_org_slug}/{_prod['slug']}"]))
+        except Exception:  # noqa: BLE001 — mai bloccare un publish
+            pass
     if getattr(updates, "category", None):
         from database import products_collection as _pc
         from models.retreat_taxonomy import PRODUCT_TAXONOMIES, RETREAT_CATEGORIES

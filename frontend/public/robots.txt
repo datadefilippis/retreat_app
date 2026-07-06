@@ -11,4 +11,4 @@ Disallow: /t/
 Disallow: /b/
 Disallow: /api/
 
-Sitemap: /api/public/sitemap.xml
+Sitemap: https://aurya.life/api/public/sitemap.xml

@@ -395,6 +395,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 #
 # Pin: tests/test_invariants_security.py::TestSEC_S1_4_GlobalExceptionHandler
 from fastapi import Request as _Req
+from fastapi import Response as _Resp
 from fastapi.responses import JSONResponse as _JSONResp
 
 _global_handler_logger = logging.getLogger("afianco.global_exception")
@@ -788,6 +789,20 @@ def _metrics_auth_required() -> bool:
     """True in production/staging where /metrics MUST be authenticated."""
     env = (os.environ.get("ENVIRONMENT") or "development").strip().lower()
     return env in ("production", "staging")
+
+
+# ── R S3 — IndexNow key file (verifica di proprietà del protocollo) ─────────
+# Il motore controlla https://host/{key}.txt: il proxy instrada
+# /*.txt sconosciuti qui (regola in DEPLOY_CHECKLIST).
+@app.get("/indexnow-key.txt", include_in_schema=False)
+@app.get("/{key_txt}.txt", include_in_schema=False)
+async def indexnow_key_file(key_txt: str = ""):
+    from services.indexnow import indexnow_key
+    key = indexnow_key()
+    if key and (key_txt == key or not key_txt):
+        return _Resp(content=key, media_type="text/plain")
+    from fastapi import HTTPException as _HTTPExc
+    raise _HTTPExc(status_code=404, detail="Not found")
 
 
 @app.get("/metrics", include_in_schema=False)
