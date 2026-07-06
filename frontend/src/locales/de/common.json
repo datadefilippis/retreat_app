@@ -138,5 +138,12 @@
     "emptyBody": "Kunden können dich über deine Profilseite bewerten. Teile sie nach jedem Retreat: der schnellste Weg, Vertrauen aufzubauen.",
     "loadError": "Fehler beim Laden",
     "genericError": "Fehler, bitte erneut versuchen"
+  },
+  "charts": {
+    "empty": "Noch keine Daten: sie kommen mit der ersten Bestellung.",
+    "vsPrev": "vs. Vorperiode",
+    "expected": "Erwartet",
+    "actual": "Ist",
+    "other": "Sonstige"
   }
 }
