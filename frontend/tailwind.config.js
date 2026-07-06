@@ -10,6 +10,7 @@ module.exports = {
             fontFamily: {
                 heading: ['Manrope', 'sans-serif'],
                 body: ['Public Sans', 'sans-serif'],
+                brand: ['Cinzel', 'Iowan Old Style', 'Palatino Linotype', 'serif'],
                 code: ['JetBrains Mono', 'monospace'],
             },
             borderRadius: {

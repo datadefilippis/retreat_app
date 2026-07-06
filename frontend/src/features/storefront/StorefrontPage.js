@@ -2276,8 +2276,8 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
       {mktpCheckout && formOpen && (
         <div className="fixed inset-0 z-40 bg-gray-50">
           <div className="h-14 border-b border-gray-200 bg-white flex items-center px-4">
-            <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-9 w-9 mr-2 select-none" draggable={false} />
-            <span className="font-bold text-gray-900 tracking-tight">{BRAND_NAME}</span>
+            <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-9 w-9 mr-2.5 select-none" draggable={false} />
+            <span className="font-brand font-medium uppercase tracking-[0.28em] text-lg leading-none text-[#8a7440] select-none">{BRAND_NAME}</span>
             <span className="ml-auto text-xs text-gray-500">
               🔒 {t('storefront:checkout.securePayment', { defaultValue: 'Pagamento sicuro' })}
             </span>

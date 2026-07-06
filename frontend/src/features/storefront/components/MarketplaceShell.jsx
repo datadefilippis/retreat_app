@@ -17,7 +17,7 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BRAND_NAME } from '../../../config/brand';
+import { BRAND_NAME, BRAND_MOTTO } from '../../../config/brand';
 import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
 
 const LANGS = ['it', 'en', 'de', 'fr'];
@@ -81,9 +81,9 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link to="/ritiri" className="flex items-center gap-2 shrink-0" aria-label={BRAND_NAME}>
+          <Link to="/ritiri" className="flex items-center gap-2.5 shrink-0" aria-label={BRAND_NAME}>
             <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-9 w-9 select-none" draggable={false} />
-            <span className="font-bold text-gray-900 tracking-tight">{BRAND_NAME}</span>
+            <span className="font-brand font-medium uppercase tracking-[0.28em] text-lg leading-none text-[#8a7440] select-none">{BRAND_NAME}</span>
           </Link>
 
           {minimal ? (
@@ -131,10 +131,13 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
         <footer className="border-t border-gray-200 bg-white mt-12">
           <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
             <div>
-              <p className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-7 w-7 select-none" draggable={false} />
-                {BRAND_NAME}
-              </p>
+              <div className="mb-2 flex items-center gap-2.5">
+                <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-8 w-8 select-none" draggable={false} />
+                <span className="flex flex-col select-none">
+                  <span className="font-brand font-medium uppercase tracking-[0.28em] text-base leading-none text-[#8a7440]">{BRAND_NAME}</span>
+                  <span className="font-brand uppercase tracking-[0.3em] text-[9px] mt-1 text-[#8a7440]/80">{BRAND_MOTTO}</span>
+                </span>
+              </div>
               <p className="text-gray-500 text-xs leading-relaxed">
                 {t('marketplace.tagline', { defaultValue: 'Trova e prenota ritiri olistici in tutto il mondo — con caparra, senza pensieri.' })}
               </p>
