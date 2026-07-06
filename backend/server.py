@@ -433,6 +433,27 @@ app.add_exception_handler(Exception, _global_exception_handler)
 from core.middleware.request_context_middleware import RequestContextMiddleware
 app.add_middleware(RequestContextMiddleware)
 
+
+# ── R5 — security headers baseline ───────────────────────────────────────────
+# Header universali e a rischio zero. NIENTE X-Frame-Options globale:
+# l'embed SDK vive dentro iframe su siti terzi e lo romperebbe. La CSP
+# completa richiede l'audit degli asset → R6 (mini security pass).
+@app.middleware("http")
+async def _security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault(
+        "Permissions-Policy", "camera=(), microphone=(), payment=(self)"
+    )
+    # HSTS solo in produzione (dietro HTTPS): su localhost HTTP il browser
+    # lo ignora, ma meglio non insegnare mai il dominio dev al preload.
+    if os.environ.get("ENVIRONMENT", "development").lower() == "production":
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+        )
+    return response
+
 # ── Static files (product images, logos) ─────────────────────────────────────
 import os
 from fastapi.staticfiles import StaticFiles

@@ -255,6 +255,9 @@ function AppRoutes() {
       {/* Static legal pages — always accessible, no auth wrapper */}
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
+      {/* R5 — il footer marketplace punta a /termini (URL italiano):
+          prima era un 404. Stessa pagina di /terms. */}
+      <Route path="/termini" element={<TermsOfServicePage />} />
       {/* Wave GDPR-Admin Phase E — public sub-processor registry
           (GDPR Art. 28.3.i + 13.1.f). Discoverable independently from
           the full Privacy Policy text. */}
