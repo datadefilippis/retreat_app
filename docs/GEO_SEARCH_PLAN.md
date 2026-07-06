@@ -1,5 +1,12 @@
 # Ricerca geografica — directory e eventi (piano, 8 luglio 2026)
 
+> **ESITO (8/7/2026)** — G1 ✅ G2 ✅ G3 ✅ G4 ✅, tutto su main, suite 4143
+> verdi, verificato live in browser (autocomplete 'ostuni' → raggio →
+> badge distanza → vista mappa → popup → landing con mini-mappa; wizard:
+> 'Ostuni' → pin in 4s, trascinabile). Zero costi confermato. Note
+> operative: il backfill dev è girato (1 occurrence); in produzione va
+> rilanciato dopo il deploy. Cluster marker rimandato (>20 pin).
+
 Richiesta founder: il filtro "regione italiana" non ha senso (gli operatori
 possono creare eventi in tutto il mondo). Serve posizione precisa, mappa
 integrata, raggio di ricerca — come i grandi booking system. Vincolo duro:
