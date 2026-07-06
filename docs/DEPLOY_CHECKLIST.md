@@ -26,6 +26,14 @@
       e `SEO_SHELL_INDEX_PATH=/percorso/frontend/build/index.html` nel
       .env del backend. Verifica: `curl -A WhatsApp https://aurya.life/e/...`
       deve mostrare title e og:image del ritiro.
+- [ ] **Sitemap + IndexNow (S3)** — regole proxy aggiuntive:
+      ```
+      rewrite /sitemap*.xml /api/public{path}
+      rewrite /*.txt /{path}   # → backend per il key file IndexNow
+      ```
+      e `INDEXNOW_KEY=$(openssl rand -hex 16)` nel .env: al publish di
+      un prodotto/ritiro l'URL viene pingato a Bing&co in automatico.
+      Verifica: `curl https://aurya.life/{INDEXNOW_KEY}.txt` → la chiave.
 
 ## 2 · Variabili d'ambiente backend (.env di produzione)
 

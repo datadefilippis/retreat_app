@@ -3507,6 +3507,25 @@ async def public_geo_search(request: Request,
     return {"results": await search_places(q, limit=5)}
 
 
+async def _resolve_public_slug_for_org(org_id: str):
+    """Slug pubblico dell'org (store pubblicato → slug; fallback
+    public_slug legacy). None se l'org non ha superficie pubblica."""
+    from database import stores_collection, organizations_collection
+    store = await stores_collection.find_one(
+        {"organization_id": org_id, "is_published": True,
+         "is_active": True, "visibility": "public",
+         "slug": {"$nin": [None, ""]}},
+        {"_id": 0, "slug": 1},
+    )
+    if store:
+        return store["slug"]
+    org = await organizations_collection.find_one(
+        {"id": org_id, "public_slug": {"$nin": [None, ""]}},
+        {"_id": 0, "public_slug": 1},
+    )
+    return (org or {}).get("public_slug")
+
+
 def _place_slug(name: str) -> str:
     """Slug URL-safe per i nomi luogo ('Greve in Chianti' → greve-in-chianti)."""
     import re as _re

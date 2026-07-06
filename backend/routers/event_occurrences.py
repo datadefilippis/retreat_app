@@ -1249,6 +1249,25 @@ async def update_occurrence(
         {"id": occurrence_id, "organization_id": org_id},
         {"_id": 0},
     )
+
+    # S3 — IndexNow: al publish la landing entra nei motori in ore, non
+    # giorni. Best-effort, mai bloccante; no-op senza INDEXNOW_KEY.
+    if updates.get("status") == "published" and (updated or {}).get("slug"):
+        try:
+            from services.indexnow import ping_urls_async
+            from routers.public import _resolve_public_slug_for_org
+        except ImportError:
+            pass
+        else:
+            try:
+                org_slug = await _resolve_public_slug_for_org(org_id)
+                if org_slug:
+                    import asyncio
+                    asyncio.create_task(ping_urls_async(
+                        [f"/e/{org_slug}/{updated['slug']}"]))
+            except Exception:  # noqa: BLE001
+                pass
+
     return updated
 
 
