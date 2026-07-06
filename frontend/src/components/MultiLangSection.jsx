@@ -52,6 +52,15 @@ export default function MultiLangSection({ fields, children, hint }) {
             }`}
           >
             <span aria-hidden className="mr-0.5">{l.flag}</span>{l.label}
+            {/* L'italiano e' la lingua SORGENTE dei contenuti pubblici:
+                dirlo esplicitamente evita che un admin non italiano lo
+                scambi per una preferenza sua (feedback founder 7/7). */}
+            {l.code === 'it' && (
+              <span className={`ml-1 text-[9px] uppercase tracking-wide ${lang === 'it' ? 'text-white/70' : 'text-gray-400'}`}
+                    title={t('multilang.primaryHint', { defaultValue: "L'italiano è la lingua principale dei contenuti pubblici." })}>
+                {t('multilang.primaryTag', { defaultValue: 'principale' })}
+              </span>
+            )}
             {l.code !== 'it' && langFilled(l.code) && (
               <span className={`ml-1 ${lang === l.code ? 'text-white/80' : 'text-emerald-600'}`}>●</span>
             )}
@@ -60,7 +69,7 @@ export default function MultiLangSection({ fields, children, hint }) {
       </div>
 
       {lang === 'it' ? children : (
-        <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50/60 p-3">
+        <div className="space-y-3 rounded-lg border border-primary/25 bg-primary/5 p-3">
           {fields.map(f => (
             <div key={f.key}>
               {f.label && (

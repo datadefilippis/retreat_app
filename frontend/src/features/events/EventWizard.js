@@ -791,14 +791,14 @@ export default function EventWizard() {
                 key={tab.key}
                 type="button"
                 onClick={() => goToTab(tab.key)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
                   active
-                    ? 'bg-gray-900 text-white'
+                    ? 'bg-primary text-white shadow-sm'
                     : err
                       ? 'bg-red-100 text-red-800 border border-red-200'
                       : done
-                        ? 'bg-green-100 text-green-900'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                 }`}
               >
                 <span className="tabular-nums">{tab.n}</span>
@@ -808,6 +808,14 @@ export default function EventWizard() {
               </button>
             );
           })}
+        </div>
+        {/* Refinement 7/7 — barra di avanzamento: colpo d'occhio su
+            "dove sono" senza leggere le pill */}
+        <div className="h-1 bg-gray-100">
+          <div
+            className="h-full bg-primary transition-all duration-300"
+            style={{ width: `${((currentTabIdx + 1) / TABS.length) * 100}%` }}
+          />
         </div>
       </div>
 
@@ -826,7 +834,7 @@ export default function EventWizard() {
         {/* ── TAB 1: Cosa offri ─────────────────────────────────────── */}
         {activeTab === 'base' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.event.base.title')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">{t('wizards.event.base.subtitle')}</p>
             </div>
@@ -849,6 +857,19 @@ export default function EventWizard() {
               {fieldError(errorsBase.name)}
             </div>
 
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.base.descriptionLabel')}</label>
+              <textarea
+                value={base.description}
+                onChange={e => setBase({ ...base, description: e.target.value })}
+                rows={2} maxLength={2000}
+                placeholder={t('wizards.event.base.descriptionPlaceholder')}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
+              />
+            </div>
+            </MultiLangSection>
+
+
             {/* UX round 5/7 — categoria OBBLIGATORIA dalla tassonomia
                 standard (backend, la stessa che alimenta la directory):
                 senza categoria il ritiro non e' navigabile su /ritiri. */}
@@ -865,7 +886,7 @@ export default function EventWizard() {
                   {t('wizards.event.base.categoryPlaceholder', { defaultValue: 'Seleziona la categoria…' })}
                 </option>
                 {Object.entries(categoryOptions).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
+                  <option key={key} value={key}>{t(`taxonomy.${key}`, { defaultValue: label })}</option>
                 ))}
               </select>
               <p className="text-[11px] text-gray-400 mt-0.5">
@@ -873,18 +894,6 @@ export default function EventWizard() {
               </p>
               {fieldError(errorsBase.category)}
             </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.base.descriptionLabel')}</label>
-              <textarea
-                value={base.description}
-                onChange={e => setBase({ ...base, description: e.target.value })}
-                rows={2} maxLength={2000}
-                placeholder={t('wizards.event.base.descriptionPlaceholder')}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
-              />
-            </div>
-            </MultiLangSection>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -974,7 +983,7 @@ export default function EventWizard() {
         {/* ── TAB 2: Quando e dove ──────────────────────────────────── */}
         {activeTab === 'where' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.event.where.title')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">{t('wizards.event.where.subtitle')}</p>
             </div>
@@ -1152,7 +1161,7 @@ export default function EventWizard() {
 
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
             <div className="flex items-start justify-between">
-              <div>
+              <div className="border-l-[3px] border-primary/60 pl-3">
                 <h2 className="text-base font-semibold text-gray-900">{t('wizards.event.tickets.tiersTitle')}</h2>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {t('wizards.event.tickets.tiersSubtitle')}

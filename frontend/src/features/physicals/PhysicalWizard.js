@@ -462,7 +462,7 @@ export default function PhysicalWizard() {
         {/* ── TAB 1: Identity ─────────────────────────────────────────── */}
         {activeTab === 'identity' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.common.identityTitle')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">{t('wizards.common.identitySubtitle')}</p>
             </div>
@@ -522,7 +522,7 @@ export default function PhysicalWizard() {
                 >
                   <option value="">{t('wizards.common.categoryNone', { defaultValue: 'Nessuna categoria' })}</option>
                   {Object.entries(taxonomies.physical || {}).map(([k, label]) => (
-                    <option key={k} value={k}>{label}</option>
+                    <option key={k} value={k}>{t(`taxonomy.${k}`, { defaultValue: label })}</option>
                   ))}
                 </select>
               </div>
@@ -551,7 +551,7 @@ export default function PhysicalWizard() {
         {/* ── TAB 2: Pricing + Stock ──────────────────────────────────── */}
         {activeTab === 'pricing' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.physical.pricing.title')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">
                 {t('wizards.physical.pricing.subtitle')}
@@ -668,7 +668,7 @@ export default function PhysicalWizard() {
         {/* ── TAB 3: Fulfillment ──────────────────────────────────────── */}
         {activeTab === 'fulfillment' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.physical.fulfillment.title')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">
                 {t('wizards.physical.fulfillment.subtitle')}
@@ -739,7 +739,7 @@ export default function PhysicalWizard() {
         {/* ── TAB 5: Publish ──────────────────────────────────────────── */}
         {activeTab === 'publish' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.common.publishTitle')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">{t('wizards.common.publishSubtitle')}</p>
             </div>

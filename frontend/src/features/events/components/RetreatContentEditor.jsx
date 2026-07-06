@@ -244,6 +244,12 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
             }`}
           >
             <span aria-hidden className="mr-1">{l.flag}</span>{l.label}
+            {l.code === 'it' && (
+              <span className={`ml-1 text-[9px] uppercase tracking-wide ${contentLang === 'it' ? 'text-white/70' : 'text-gray-400'}`}
+                    title={t('multilang.primaryHint', { defaultValue: "L'italiano è la lingua principale dei contenuti pubblici." })}>
+                {t('multilang.primaryTag', { defaultValue: 'principale' })}
+              </span>
+            )}
             {l.code !== 'it' && langHasContent(l.code) && (
               <span className={`ml-1 ${contentLang === l.code ? 'text-white/80' : 'text-emerald-600'}`}>●</span>
             )}
@@ -262,7 +268,7 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
       {isIt ? (<>
       {/* ── Programma ── */}
       <section className="mb-5">
-        <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+        <h3 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
           {t('dashboards.event.content.agendaHeading')}
         </h3>
         <div className="space-y-3">
@@ -335,7 +341,7 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
 
       {/* ── Galleria ── */}
       <section className="mb-5">
-        <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+        <h3 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
           {t('dashboards.event.content.galleryHeading')}
         </h3>
         <div className="flex flex-wrap gap-2 mb-2">
@@ -370,7 +376,7 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
       {/* ── Incluso / Non incluso ── */}
       <section className="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+          <h3 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
             {t('dashboards.event.content.includedHeading')}
           </h3>
           <textarea
@@ -382,7 +388,7 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
           />
         </div>
         <div>
-          <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+          <h3 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
             {t('dashboards.event.content.excludedHeading')}
           </h3>
           <textarea
@@ -397,7 +403,7 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
 
       {/* ── FAQ ── */}
       <section>
-        <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+        <h3 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
           FAQ
         </h3>
         <div className="space-y-2">
@@ -435,7 +441,7 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
       {/* ── Programma (traduzione) ── */}
       {agenda.length > 0 && (
         <section className="mb-5">
-          <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+          <h3 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
             {t('dashboards.event.content.agendaHeading')}
           </h3>
           <div className="space-y-3">
@@ -500,7 +506,7 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
         <section className="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {includedText.trim() && (
             <div>
-              <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+              <h3 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
                 {t('dashboards.event.content.includedHeading')}
               </h3>
               <textarea
@@ -519,7 +525,7 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
           )}
           {excludedText.trim() && (
             <div>
-              <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+              <h3 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
                 {t('dashboards.event.content.excludedHeading')}
               </h3>
               <textarea
@@ -537,7 +543,7 @@ export default function RetreatContentEditor({ occurrenceId, occurrence, embedde
       {/* ── FAQ (traduzione) ── */}
       {faq.length > 0 && (
         <section>
-          <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+          <h3 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
             FAQ
           </h3>
           <div className="space-y-2">

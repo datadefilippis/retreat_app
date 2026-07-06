@@ -2092,6 +2092,31 @@
     "placeholder": "Scrivi qui il testo in {{lang}}…",
     "hint": "Offri questo testo anche in:",
     "visibility": "Il prodotto apparirà nelle viste in queste lingue. Senza traduzione resta visibile solo in italiano.",
-    "sectionHint": "Il testo italiano è il suggerimento nel campo. Le lingue con la descrizione compilata sono le lingue in cui il prodotto appare al pubblico; i campi vuoti restano in italiano."
+    "sectionHint": "Il testo italiano è il suggerimento nel campo. Le lingue con la descrizione compilata sono le lingue in cui il prodotto appare al pubblico; i campi vuoti restano in italiano.",
+    "primaryTag": "principale",
+    "primaryHint": "L'italiano è la lingua principale dei contenuti pubblici: è il testo di partenza e il fallback quando una traduzione manca."
+  },
+  "taxonomy": {
+    "yoga": "Yoga",
+    "meditazione": "Meditazione & Mindfulness",
+    "detox": "Detox & Digiuno",
+    "suono": "Suono & Sound Healing",
+    "massaggio": "Massaggio & Bodywork",
+    "breathwork": "Breathwork",
+    "cammini": "Cammini & Natura",
+    "femminile": "Cerchi & Femminile",
+    "aziendale": "Benessere aziendale",
+    "trattamenti": "Trattamenti & Massaggi",
+    "consulenze": "Consulenze",
+    "lezioni": "Lezioni private",
+    "cerimonie": "Cerimonie",
+    "cura_di_se": "Cura di sé",
+    "casa_benessere": "Casa & Benessere",
+    "cibo_tisane": "Cibo & Tisane",
+    "abbigliamento": "Abbigliamento",
+    "artigianato": "Artigianato",
+    "guide_ebook": "Guide & E-book",
+    "audio_meditazioni": "Audio & Meditazioni",
+    "video": "Video"
   }
 }

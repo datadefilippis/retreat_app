@@ -1967,6 +1967,31 @@
     "placeholder": "Schreibe hier den Text auf {{lang}}…",
     "hint": "Diesen Text auch anbieten auf:",
     "visibility": "Das Produkt erscheint in den Ansichten dieser Sprachen. Ohne Übersetzung bleibt es nur auf Italienisch sichtbar.",
-    "sectionHint": "Der italienische Text ist der Platzhalter im Feld. Sprachen mit ausgefüllter Beschreibung sind die Sprachen, in denen das Produkt sichtbar ist; leere Felder bleiben italienisch."
+    "sectionHint": "Der italienische Text ist der Platzhalter im Feld. Sprachen mit ausgefüllter Beschreibung sind die Sprachen, in denen das Produkt sichtbar ist; leere Felder bleiben italienisch.",
+    "primaryTag": "Hauptsprache",
+    "primaryHint": "Italienisch ist die Hauptsprache der öffentlichen Inhalte: Ausgangstext und Fallback, wenn eine Übersetzung fehlt."
+  },
+  "taxonomy": {
+    "yoga": "Yoga",
+    "meditazione": "Meditation & Achtsamkeit",
+    "detox": "Detox & Fasten",
+    "suono": "Klangheilung",
+    "massaggio": "Massage & Bodywork",
+    "breathwork": "Breathwork",
+    "cammini": "Wandern & Natur",
+    "femminile": "Frauenkreise",
+    "aziendale": "Betriebliches Wohlbefinden",
+    "trattamenti": "Behandlungen & Massagen",
+    "consulenze": "Beratungen",
+    "lezioni": "Privatstunden",
+    "cerimonie": "Zeremonien",
+    "cura_di_se": "Selbstfürsorge",
+    "casa_benessere": "Zuhause & Wellness",
+    "cibo_tisane": "Lebensmittel & Kräutertees",
+    "abbigliamento": "Bekleidung",
+    "artigianato": "Handwerk",
+    "guide_ebook": "Guides & E-Books",
+    "audio_meditazioni": "Audio & Meditationen",
+    "video": "Videos"
   }
 }
