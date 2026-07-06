@@ -428,7 +428,8 @@
       "confirmEmailHint": "You will receive an email to confirm your registration. The order will be submitted regardless.",
       "passwordRequirementsToast": "The password does not meet the minimum requirements."
     },
-    "passportHint": "All your trips in one place: after purchase you'll get an email link to your Passport — no password needed."
+    "passportHint": "All your trips in one place: after purchase you'll get an email link to your Passport — no password needed.",
+    "securePayment": "Secure payment"
   },
   "home": {
     "aboutCta": "About us",

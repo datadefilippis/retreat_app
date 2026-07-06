@@ -412,7 +412,8 @@
       "confirmEmailHint": "Vous recevrez un email pour confirmer l'inscription. La commande sera quand même soumise.",
       "passwordRequirementsToast": "Le mot de passe ne respecte pas les exigences minimales."
     },
-    "passportHint": "Tous tes voyages au même endroit : après l'achat tu reçois par e-mail le lien vers ton Passeport — sans mot de passe."
+    "passportHint": "Tous tes voyages au même endroit : après l'achat tu reçois par e-mail le lien vers ton Passeport — sans mot de passe.",
+    "securePayment": "Paiement sécurisé"
   },
   "home": {
     "aboutCta": "Qui sommes-nous",

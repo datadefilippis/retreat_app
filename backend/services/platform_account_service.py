@@ -78,11 +78,15 @@ async def request_magic_link(email: str, *, name: Optional[str] = None,
         await platform_accounts_collection.insert_one(doc)
         account = doc
 
-    # token in chiaro SOLO nell'email; a DB va l'hash
+    # token in chiaro SOLO nell'email; a DB va l'hash. Stessa email,
+    # DUE strade: codice a 6 cifre (immediato, si digita sul posto) e
+    # link (fallback classico).
     token = secrets.token_urlsafe(32)
+    code = f"{secrets.randbelow(1_000_000):06d}"
     t = MagicLinkToken(
         account_id=account["id"],
         token_hash=_hash_token(token),
+        code_hash=_hash_token(code),
         expires_at=utc_now() + timedelta(minutes=MAGIC_TOKEN_TTL_MINUTES),
     )
     tdoc = t.model_dump()
@@ -91,20 +95,33 @@ async def request_magic_link(email: str, *, name: Optional[str] = None,
             tdoc[f] = _iso(tdoc[f])
     await platform_magic_tokens_collection.insert_one(tdoc)
 
-    _send_magic_link_email(email_n, token, account.get("name"))
+    _send_magic_link_email(email_n, token, account.get("name"), code=code)
 
 
-def _send_magic_link_email(email: str, token: str, name: Optional[str]) -> None:
-    """Email transazionale col link. In dev (niente Brevo) viene loggata."""
+def _send_magic_link_email(email: str, token: str, name: Optional[str],
+                           code: Optional[str] = None) -> None:
+    """Email transazionale: CODICE a 6 cifre in evidenza + link fallback.
+    In dev (niente Brevo) viene loggata."""
     import os
     from services.email_service import send_email
 
     base = os.environ.get("PUBLIC_APP_URL", "http://localhost:3000")
     link = f"{base}/account/accedi?token={token}"
     greeting = f"Ciao {name}," if name else "Ciao,"
+    code_block = ""
+    if code:
+        code_block = f"""
+    <p>Il tuo codice di accesso (vale {MAGIC_TOKEN_TTL_MINUTES} minuti):</p>
+    <p style="font-size:32px;letter-spacing:8px;font-weight:bold;
+    background:#f4f6f4;border-radius:10px;padding:14px 18px;
+    display:inline-block">{code}</p>
+    <p style="color:#666;font-size:13px">Digitalo nella pagina da cui
+    l'hai richiesto — oppure usa il link qui sotto.</p>
+    """
     html = f"""
     <p>{greeting}</p>
-    <p>Ecco il tuo link di accesso — vale {MAGIC_TOKEN_TTL_MINUTES} minuti
+    {code_block}
+    <p>Link di accesso — vale {MAGIC_TOKEN_TTL_MINUTES} minuti
     e funziona una volta sola:</p>
     <p><a href="{link}" style="display:inline-block;padding:10px 18px;
     background:#376254;color:#fff;border-radius:8px;text-decoration:none">
@@ -151,6 +168,61 @@ async def consume_magic_link(token: str) -> Optional[Dict[str, Any]]:
         # P4 — claim retroattivo: l'email e' APPENA stata verificata, e'
         # il momento sicuro per agganciare account org e ordini passati.
         # Best-effort: un errore qui non blocca mai il login.
+        try:
+            await retroactive_claim(account)
+        except Exception:
+            logger.exception("claim retroattivo fallito per %s", account["id"])
+    return account
+
+
+async def verify_login_code(email: str, code: str) -> Optional[Dict[str, Any]]:
+    """Verifica il codice a 6 cifre per l'email. One-shot, max 5 tentativi.
+
+    Il tentativo fallito INCREMENTA il contatore sul token piu' recente
+    (superati i 5, il token muore anche se il codice era giusto): il
+    brute-force sul codice corto e' chiuso da tentativi+TTL+rate-limit.
+    """
+    from database import (
+        platform_accounts_collection,
+        platform_magic_tokens_collection,
+    )
+
+    email_n = _normalize_email(email)
+    code = (code or "").strip()
+    if not email_n or not code.isdigit() or len(code) != 6:
+        return None
+    account = await platform_accounts_collection.find_one(
+        {"email": email_n, "is_active": True}, {"_id": 0})
+    if not account:
+        return None
+
+    now = utc_now()
+    # match atomico: codice giusto + non usato + non scaduto + tentativi ok
+    result = await platform_magic_tokens_collection.find_one_and_update(
+        {"account_id": account["id"],
+         "code_hash": _hash_token(code),
+         "used_at": None,
+         "code_attempts": {"$lt": 5},
+         "expires_at": {"$gt": _iso(now)}},
+        {"$set": {"used_at": _iso(now)}},
+    )
+    if not result:
+        # tentativo fallito: brucia un tentativo sull'ultimo token vivo
+        await platform_magic_tokens_collection.update_one(
+            {"account_id": account["id"], "used_at": None,
+             "expires_at": {"$gt": _iso(now)}},
+            {"$inc": {"code_attempts": 1}},
+        )
+        return None
+
+    await platform_accounts_collection.update_one(
+        {"id": account["id"]},
+        {"$set": {"email_verified": True, "last_login_at": _iso(now)}},
+    )
+    account = await platform_accounts_collection.find_one(
+        {"id": account["id"], "is_active": True}, {"_id": 0})
+    if account:
+        logger.info("platform_account: login via codice per %s", account["id"])
         try:
             await retroactive_claim(account)
         except Exception:

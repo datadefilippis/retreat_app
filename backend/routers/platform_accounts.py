@@ -91,6 +91,36 @@ async def verify_magic_link(body: MagicLinkVerify, request: Request):
     }
 
 
+class CodeVerify(BaseModel):
+    email: str
+    code: str
+
+
+@router.post("/auth/code/verify")
+@limiter.limit("10/minute")
+async def verify_login_code_ep(body: CodeVerify, request: Request):
+    """Login col codice a 6 cifre (stessa email del magic link)."""
+    _flag_enabled()
+    from services.platform_account_service import verify_login_code
+    account = await verify_login_code(body.email, body.code)
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Codice non valido o scaduto. Richiedine uno nuovo.",
+        )
+    token = create_platform_token(
+        {"sub": account["id"], "email": account["email"]},
+        expires_delta=timedelta(days=PLATFORM_SESSION_DAYS),
+    )
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "account": {"id": account["id"], "email": account["email"],
+                    "name": account.get("name"),
+                    "language": account.get("language", "it")},
+    }
+
+
 @router.get("/me")
 async def get_me(account: dict = Depends(get_current_platform_account)):
     _flag_enabled()

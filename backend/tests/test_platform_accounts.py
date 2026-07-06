@@ -78,8 +78,9 @@ class TestMagicLinkService:
 
         sent = {}
 
-        def fake_send(email, token, name):
+        def fake_send(email, token, name, code=None):
             sent["token"] = token
+            sent["code"] = code
 
         accounts = AsyncMock()
         accounts.find_one = AsyncMock(return_value={"id": "acc-1",
@@ -95,6 +96,10 @@ class TestMagicLinkService:
         assert sent["token"]                       # in chiaro solo nell'email
         assert inserted["token_hash"] == svc._hash_token(sent["token"])
         assert sent["token"] not in str(inserted)  # MAI in chiaro a DB
+        # OTP: 6 cifre, in chiaro solo nell'email, a DB solo l'hash
+        assert sent["code"] and len(sent["code"]) == 6 and sent["code"].isdigit()
+        assert inserted["code_hash"] == svc._hash_token(sent["code"])
+        assert sent["code"] not in str(inserted)
 
     def test_invalid_email_is_silent_noop(self):
         accounts = AsyncMock()
@@ -377,3 +382,45 @@ class TestP4CrossOrgIsolation:
         i = src.index('@router.get("/me/orders")')
         block = src[i:i + 1500]
         assert '"platform_account_id": account["id"]' in block
+
+
+class TestLoginCode:
+    """OTP a 6 cifre (9/7): la strada immediata; il link resta fallback."""
+
+    def _run_verify(self, *, find_update_result, email="a@b.it", code="123456",
+                    account={"id": "acc-1", "email": "a@b.it", "is_active": True}):
+        accounts = AsyncMock()
+        accounts.find_one = AsyncMock(return_value=account)
+        accounts.update_one = AsyncMock()
+        tokens = AsyncMock()
+        tokens.find_one_and_update = AsyncMock(return_value=find_update_result)
+        tokens.update_one = AsyncMock()
+        with patch("database.platform_accounts_collection", accounts), \
+             patch("database.platform_magic_tokens_collection", tokens), \
+             patch.object(svc, "retroactive_claim", AsyncMock()):
+            out = asyncio.run(svc.verify_login_code(email, code))
+        return out, tokens
+
+    def test_codice_valido_logga(self):
+        out, tokens = self._run_verify(
+            find_update_result={"account_id": "acc-1"})
+        assert out and out["id"] == "acc-1"
+        # il match atomico include one-shot + tentativi + scadenza
+        q = tokens.find_one_and_update.call_args[0][0]
+        assert q["used_at"] is None
+        assert q["code_attempts"] == {"$lt": 5}
+        assert "expires_at" in q
+
+    def test_codice_sbagliato_brucia_un_tentativo(self):
+        out, tokens = self._run_verify(find_update_result=None)
+        assert out is None
+        upd = tokens.update_one.call_args[0][1]
+        assert upd == {"$inc": {"code_attempts": 1}}
+
+    def test_input_malformato_scartato_senza_db(self):
+        for bad in ("", "12345", "abcdef", "1234567"):
+            accounts = AsyncMock()
+            with patch("database.platform_accounts_collection", accounts):
+                out = asyncio.run(svc.verify_login_code("a@b.it", bad))
+            assert out is None
+            accounts.find_one.assert_not_called()

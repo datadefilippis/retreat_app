@@ -480,7 +480,7 @@
   "account": {
     "title": "Le mie prenotazioni",
     "loginTitle": "Le tue prenotazioni",
-    "loginBody": "Niente password: ti mandiamo un link di accesso via email.",
+    "loginBody": "Niente password: ti mandiamo un codice via email, lo digiti qui e sei dentro.",
     "emailPlaceholder": "La tua email",
     "sendLink": "Inviami il link",
     "sending": "Invio…",
@@ -501,7 +501,13 @@
     "rowPaid": "pagato",
     "rowDue": "entro il",
     "payNow": "Paga ora",
-    "ticketN": "Pass {{n}}"
+    "ticketN": "Pass {{n}}",
+    "sendCode": "Inviami il codice",
+    "sentCodeTitle": "Inserisci il codice",
+    "sentCodeBody": "Ti abbiamo inviato un codice a 6 cifre (vale 15 minuti). Nella stessa email c'è anche un link, se preferisci.",
+    "codeError": "Codice non valido o scaduto. Controlla e riprova.",
+    "verifyingCode": "Verifico…",
+    "enter": "Entra"
   },
   "categories": {
     "yoga": "Yoga",

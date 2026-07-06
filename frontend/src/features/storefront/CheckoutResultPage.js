@@ -230,12 +230,22 @@ export function CheckoutSuccessPage() {
           let mktp = false;
           try { mktp = sessionStorage.getItem('storefront:mktp_ctx') === '1'; } catch { /* no-op */ }
           if (!mktp) return null;
+          let mktpEmail = null;
+          try { mktpEmail = sessionStorage.getItem('storefront:mktp_email'); } catch { /* no-op */ }
+          const activate = async () => {
+            if (!mktpEmail) { window.location.assign('/account/accedi'); return; }
+            try {
+              const { default: platformApi } = await import('../../api/platformClient');
+              await platformApi.post('/platform/auth/magic-link', { email: mktpEmail });
+            } catch { /* enumeration-safe: si prosegue comunque */ }
+            window.location.assign(`/account/accedi?email=${encodeURIComponent(mktpEmail)}&sent=1`);
+          };
           return (
             <div className="mt-6 space-y-2">
-              <Link to="/account/accedi"
+              <button type="button" onClick={activate}
                 className="block w-full rounded-full bg-primary text-white px-5 py-2.5 text-sm font-bold hover:opacity-90">
                 🌿 {t('storefront:checkoutResult.activatePassport', { defaultValue: 'Attiva il tuo Passaporto — tutti i tuoi viaggi in un posto solo' })}
-              </Link>
+              </button>
               <Link to="/ritiri"
                 className="block w-full rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary">
                 {t('storefront:checkoutResult.backToRetreats', { defaultValue: 'Torna ai ritiri' })}

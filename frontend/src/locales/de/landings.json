@@ -480,7 +480,7 @@
   "account": {
     "title": "Meine Buchungen",
     "loginTitle": "Deine Buchungen",
-    "loginBody": "Kein Passwort nötig: wir senden dir einen Anmeldelink per E-Mail.",
+    "loginBody": "Kein Passwort: wir schicken dir einen Code per E-Mail, du tippst ihn hier ein und bist drin.",
     "emailPlaceholder": "Deine E-Mail",
     "sendLink": "Link senden",
     "sending": "Wird gesendet…",
@@ -501,7 +501,13 @@
     "rowPaid": "bezahlt",
     "rowDue": "fällig bis",
     "payNow": "Jetzt zahlen",
-    "ticketN": "Pass {{n}}"
+    "ticketN": "Pass {{n}}",
+    "sendCode": "Code senden",
+    "sentCodeTitle": "Code eingeben",
+    "sentCodeBody": "Wir haben dir einen 6-stelligen Code geschickt (15 Minuten gültig). Dieselbe E-Mail enthält auch einen Link.",
+    "codeError": "Ungültiger oder abgelaufener Code. Prüfe und versuche es erneut.",
+    "verifyingCode": "Prüfe…",
+    "enter": "Anmelden"
   },
   "categories": {
     "yoga": "Yoga",

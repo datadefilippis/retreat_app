@@ -412,7 +412,8 @@
       "confirmEmailHint": "Sie erhalten eine E-Mail zur Bestätigung der Registrierung. Die Bestellung wird trotzdem gesendet.",
       "passwordRequirementsToast": "Das Passwort erfüllt die Mindestanforderungen nicht."
     },
-    "passportHint": "Alle deine Reisen an einem Ort: nach dem Kauf bekommst du per E-Mail den Link zu deinem Passport — ohne Passwort."
+    "passportHint": "Alle deine Reisen an einem Ort: nach dem Kauf bekommst du per E-Mail den Link zu deinem Passport — ohne Passwort.",
+    "securePayment": "Sichere Zahlung"
   },
   "home": {
     "aboutCta": "Über uns",

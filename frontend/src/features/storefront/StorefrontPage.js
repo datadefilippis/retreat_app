@@ -74,6 +74,7 @@ import { resolveDominantMode } from '../../constants/itemTypes';
 import { formatAmount } from '../../utils/currency';
 import { User, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
+import { BRAND_NAME, BRAND_GLYPH } from '../../config/brand';
 
 // `resolveTransactionModeCopy` and `fmtPrice` moved to
 // components/StorefrontCards.jsx (Phase 7.3) so the new ProductGrid
@@ -1492,6 +1493,11 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
   }, [form.name, form.email, form.phone, itemsRequiringAttendees.length]);
 
   const handleSubmit = async (e) => {
+    // K3+ — in contesto marketplace il success attiva il Passaporto con
+    // l'email dell'ordine (one-click, senza ridigitarla)
+    if (mktpCheckout && form?.email) {
+      try { sessionStorage.setItem('storefront:mktp_email', form.email); } catch { /* no-op */ }
+    }
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || selectedItems.length === 0) return;
     if (!attendeesValid) {
@@ -2186,6 +2192,21 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
       })()}
 
       {/* Order request modal */}
+      {/* K1+ — sipario marketplace: in contesto mktp il visitatore non
+          deve vedere la vetrina dietro il checkout (feedback founder:
+          'sembra di essere da un'altra parte'). Copre TUTTA la pagina
+          store; il dialog sta sopra (z-50 > z-40). */}
+      {mktpCheckout && formOpen && (
+        <div className="fixed inset-0 z-40 bg-gray-50">
+          <div className="h-14 border-b border-gray-200 bg-white flex items-center px-4">
+            <span aria-hidden className="text-xl mr-1.5">{BRAND_GLYPH}</span>
+            <span className="font-bold text-gray-900 tracking-tight">{BRAND_NAME}</span>
+            <span className="ml-auto text-xs text-gray-500">
+              🔒 {t('storefront:checkout.securePayment', { defaultValue: 'Pagamento sicuro' })}
+            </span>
+          </div>
+        </div>
+      )}
       {formOpen && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
