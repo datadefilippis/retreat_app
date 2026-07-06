@@ -20,6 +20,7 @@
  */
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, Link, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
+import useSeoMeta from './lib/useSeoMeta';
 import { useTranslation } from 'react-i18next';
 import { effectivePlan } from './lib/paymentPlan';
 import { storefrontAPI } from '../../api/storefront';
@@ -365,6 +366,21 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
   useStorefrontLocaleSync({
     storeSlug: slug,
     supportedLanguages: catalog?.storefront_languages,
+  });
+
+  // S7 (SEO_MASTER_PLAN) — SOLO il JSON-LD LocalBusiness: title/
+  // description/canonical li governa già l'effetto Phase 7.6 qui sotto
+  // (due writer sul title si pestano — lezione imparata sul campo).
+  useSeoMeta({
+    jsonLd: (catalog?.store_info?.display_name || catalog?.org_name) ? {
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: catalog?.store_info?.display_name || catalog?.org_name,
+      url: `${window.location.origin}/s/${slug}`,
+      ...(catalog?.store_info?.logo_url ? { image: catalog.store_info.logo_url } : {}),
+      ...(catalog?.store_info?.store_description
+        ? { description: String(catalog.store_info.store_description).slice(0, 300) } : {}),
+    } : undefined,
   });
 
   // Phase 7.4 — derive the list of categories with ≥1 published product
