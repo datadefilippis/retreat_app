@@ -30,6 +30,7 @@ import {
   Ticket,
   BookMarked,
   UserCircle,
+  Star,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { ScrollArea } from '../components/ui/scroll-area';
@@ -216,6 +217,8 @@ export const Sidebar = () => {
       { nameKey: 'nav.stores', href: '/stores', icon: Globe, end: true },
       // PR1 — la vetrina dell'operatore raggiungibile dal menu
       { nameKey: 'nav.public_profile', href: '/public-profile', icon: UserCircle, end: true },
+      // PR3 — plancia recensioni
+      { nameKey: 'nav.reviews', href: '/reviews', icon: Star, end: true },
       { nameKey: 'nav.newsletter', href: '/newsletter', icon: Mail, end: true },
     );
   }

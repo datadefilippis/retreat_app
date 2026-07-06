@@ -27,7 +27,8 @@
     "events": "Events",
     "customers": "Customers",
     "suppliers": "Suppliers",
-    "public_profile": "Public profile"
+    "public_profile": "Public profile",
+    "reviews": "Reviews"
   },
   "actions": {
     "save": "Save",

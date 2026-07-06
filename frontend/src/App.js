@@ -75,6 +75,7 @@ const DpaPage = lazy(() => import("./pages/DpaPage"));
 // stale links/emails pointing at /setup.
 const StoresPage = lazy(() => import("./features/stores/StoresPage"));
 const NewsletterPage = lazy(() => import("./features/newsletter/NewsletterPage"));
+const ReviewsAdminPage = lazy(() => import("./features/reviews/ReviewsAdminPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
 import EventLandingPage from "./features/storefront/EventLandingPage";
@@ -693,6 +694,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PublicProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      {/* PR3 — plancia recensioni operatore */}
+      <Route
+        path="/reviews"
+        element={
+          <ProtectedRoute>
+            <ReviewsAdminPage />
           </ProtectedRoute>
         }
       />
