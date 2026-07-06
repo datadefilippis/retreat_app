@@ -268,6 +268,9 @@ async def create_event_wizard(
             product_name=body.product.name,
             start_at=occ_doc.get("start_at"),
         )
+        # G1 — geocoding best-effort + campo geo per l'indice 2dsphere
+        from services.geocoding import enrich_occurrence_geo
+        await enrich_occurrence_geo(occ_doc)
         await event_occurrences_collection.insert_one(occ_doc)
         occurrence_id = occ_model.id
 
@@ -940,6 +943,21 @@ async def export_tickets_csv(
     )
 
 
+@router.get("/geocode")
+async def geocode_address(
+    q: str = Query(min_length=2, max_length=300),
+    current_user: dict = Depends(get_verified_user),
+):
+    """Geocoding per il wizard (pin sulla mini-mappa). Auth: evita di
+    esporre un proxy Nominatim aperto. Cache+rate-limit nel service.
+    NB: route statica PRIMA di /{occurrence_id} (guard-test pattern)."""
+    from services.geocoding import geocode
+    hit = await geocode(q)
+    if not hit:
+        return {"found": False}
+    return {"found": True, "lat": hit["lat"], "lng": hit["lng"]}
+
+
 @router.get("/{occurrence_id}")
 async def get_occurrence(
     occurrence_id: str,
@@ -1061,6 +1079,10 @@ async def create_occurrence(
             product_name=product.get("name", ""),
             start_at=doc.get("start_at"),
         )
+
+    # G1 — geocoding best-effort + campo geo per l'indice 2dsphere
+    from services.geocoding import enrich_occurrence_geo
+    await enrich_occurrence_geo(doc)
 
     await event_occurrences_collection.insert_one(doc)
     doc.pop("_id", None)
@@ -1185,6 +1207,27 @@ async def update_occurrence(
                 updates["slug"] = sanitized
 
     updates["updated_at"] = utc_now().isoformat()
+
+    # G1 — se cambiano indirizzo/coordinate, ricalcola lat/lng+geo sul
+    # documento RISULTANTE (merge con l'esistente: un PATCH parziale non
+    # deve perdere il pin).
+    _geo_fields = ("address", "city", "postal_code", "country",
+                   "latitude", "longitude")
+    if any(f in updates for f in _geo_fields):
+        from services.geocoding import enrich_occurrence_geo
+        merged = {**existing, **updates}
+        if "latitude" in updates or "longitude" in updates:
+            # coordinate toccate esplicitamente: niente geocoding sopra
+            pass
+        else:
+            # indirizzo cambiato: si ri-geocoda da zero
+            merged["latitude"] = updates.get("latitude")
+            merged["longitude"] = updates.get("longitude")
+        await enrich_occurrence_geo(merged)
+        for f in ("latitude", "longitude", "geo"):
+            if f in merged:
+                updates[f] = merged[f]
+
     await event_occurrences_collection.update_one(
         {"id": occurrence_id, "organization_id": org_id},
         {"$set": updates},

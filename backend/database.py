@@ -412,6 +412,14 @@ async def create_indexes():
     await event_occurrences_collection.create_index(
         [("region", 1), ("status", 1), ("start_at", 1)],
         name="f5_calendar_region", sparse=True)
+    # G1 (geo search) — ricerca per raggio sul calendario pubblico.
+    # `geo` e' il GeoJSON Point derivato da latitude/longitude al save
+    # (services/geocoding.enrich_occurrence_geo). Sparse: gli eventi
+    # senza pin restano fuori dall'indice ma visibili in lista.
+    await event_occurrences_collection.create_index(
+        [("geo", "2dsphere")], name="g1_geo", sparse=True)
+    # cache geocoding Nominatim (policy OSM: mai ri-geocodare)
+    await db.geocode_cache.create_index("query", unique=True, name="g1_geocache")
     # payment_schedules: lookup per ordine (hot path webhook/dashboard) e
     # per occurrence (dashboard incassi), eventi per ordine (tracciabilità)
     await db.payment_schedules.create_index(

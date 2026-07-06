@@ -442,7 +442,18 @@
     "resultsCount": "{{count}} ritiri",
     "emptyFiltered": "Prova ad allargare la ricerca: togli un filtro o guarda un altro mese.",
     "showAll": "Mostra tutti i ritiri",
-    "searchShort": "Cerca…"
+    "searchShort": "Cerca…",
+    "wherePlaceholder": "📍 Dove? Città o zona…",
+    "nearMe": "Vicino a me",
+    "nearMeBtn": "📍 Vicino a me",
+    "locating": "Ti localizzo…",
+    "clearWhere": "Rimuovi il filtro luogo",
+    "viewMap": "🗺 Mappa",
+    "viewList": "☰ Lista",
+    "distanceAway": "a {{km}} km",
+    "mapEmpty": "Nessun ritiro con posizione sulla mappa per questi filtri.",
+    "mapSee": "Vedi il ritiro →",
+    "fromPrice": "da {{price}} €"
   },
   "operator": {
     "notFound": "Organizzatore non trovato",

@@ -1993,5 +1993,10 @@
     "guide_ebook": "Guides & E-Books",
     "audio_meditazioni": "Audio & Meditationen",
     "video": "Videos"
+  },
+  "locationMap": {
+    "searching": "Suche die Position…",
+    "empty": "Stadt oder Adresse ausfüllen: der Pin erscheint hier auf der Karte.",
+    "dragHint": "Ziehe den Pin, um die genaue Position zu korrigieren."
   }
 }

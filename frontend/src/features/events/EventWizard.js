@@ -31,6 +31,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import MultiLangSection from '../../components/MultiLangSection';
 import RetreatContentEditor from './components/RetreatContentEditor';
+import LocationPickerMap from '../../components/LocationPickerMap';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { toast } from 'sonner';
@@ -396,6 +397,19 @@ export default function EventWizard() {
   const [longDescription, setLongDescription] = useState(() =>
     prefillRef.current?.occurrence?.long_description || ''
   );
+
+  // G2 — query per il pin automatico: indirizzo+citta' debounced 800ms
+  // (il geocoding parte solo quando l'operatore smette di scrivere)
+  const [geoQuery, setGeoQuery] = useState('');
+  useEffect(() => {
+    const parts = [where.address, where.city, where.postal_code,
+                   where.country].filter(p => p && p.trim());
+    if (!where.city && !where.address) return;
+    const q = parts.join(', ');
+    const timer = setTimeout(() => setGeoQuery(q), 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [where.address, where.city, where.postal_code, where.country]);
   const [publishNow, setPublishNow] = useState(false);
   // F4: store assignment — which storefronts carry this event product
   const [storeIds, setStoreIds] = useState(() =>
@@ -1086,6 +1100,16 @@ export default function EventWizard() {
                   />
                 </div>
               </div>
+
+              {/* G2 — il pin che si sistema da solo: geocoding automatico
+                  dall'indirizzo, pin trascinabile per la correzione fine */}
+              <LocationPickerMap
+                latitude={where.latitude}
+                longitude={where.longitude}
+                geocodeQuery={geoQuery}
+                onChange={(la, ln) => setWhere(prev => ({
+                  ...prev, latitude: String(la), longitude: String(ln) }))}
+              />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>

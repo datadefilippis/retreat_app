@@ -2000,5 +2000,10 @@
     "guide_ebook": "Guides & E-books",
     "audio_meditazioni": "Audio & Meditations",
     "video": "Videos"
+  },
+  "locationMap": {
+    "searching": "Finding the location…",
+    "empty": "Fill in city or address: the pin will appear here on the map.",
+    "dragHint": "Drag the pin to fine-tune the exact position."
   }
 }

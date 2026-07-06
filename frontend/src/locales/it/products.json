@@ -2118,5 +2118,10 @@
     "guide_ebook": "Guide & E-book",
     "audio_meditazioni": "Audio & Meditazioni",
     "video": "Video"
+  },
+  "locationMap": {
+    "searching": "Cerco la posizione…",
+    "empty": "Compila città o indirizzo: il pin apparirà qui sulla mappa.",
+    "dragHint": "Trascina il pin per correggere la posizione esatta."
   }
 }

@@ -3367,6 +3367,12 @@ async def pay_by_token(token: str):
 async def list_public_retreats(
     category: Optional[str] = Query(default=None, max_length=30),
     region: Optional[str] = Query(default=None, max_length=30),
+    # G1 — ricerca per raggio (docs/GEO_SEARCH_PLAN.md): lat+lng+radius_km
+    # attivano il filtro geografico; country raggruppa/filtra per paese.
+    lat: Optional[float] = Query(default=None, ge=-90, le=90),
+    lng: Optional[float] = Query(default=None, ge=-180, le=180),
+    radius_km: int = Query(default=100, ge=1, le=3000),
+    country: Optional[str] = Query(default=None, min_length=2, max_length=2),
     month: Optional[str] = Query(default=None, pattern=r"^\d{4}-\d{2}$"),
     price_max: Optional[int] = Query(default=None, ge=0, le=100000),
     limit: int = Query(default=60, ge=1, le=120),
@@ -3398,6 +3404,13 @@ async def list_public_retreats(
     }
     if region:
         occ_query["region"] = region
+    if country:
+        occ_query["country"] = country.upper()
+    _geo_active = lat is not None and lng is not None
+    if _geo_active:
+        # $centerSphere vuole il raggio in RADIANTI (raggio terrestre ~6371km)
+        occ_query["geo"] = {"$geoWithin": {
+            "$centerSphere": [[lng, lat], radius_km / 6371.0]}}
     if month:
         # start_at ISO: il prefisso YYYY-MM seleziona il mese
         occ_query["start_at"] = {"$gte": max(now_iso[:16], month + "-01"),
@@ -3465,7 +3478,16 @@ async def list_public_retreats(
             continue
         cap = occ.get("capacity")
         reserved = occ.get("reserved_seats") or 0
+        distance_km = None
+        if _geo_active and occ.get("latitude") is not None \
+                and occ.get("longitude") is not None:
+            distance_km = round(_haversine_km(
+                lat, lng, occ["latitude"], occ["longitude"]), 1)
         items.append({
+            "distance_km": distance_km,
+            "country": occ.get("country"),
+            "latitude": occ.get("latitude"),
+            "longitude": occ.get("longitude"),
             "title": prod.get("name"),
             "category": prod.get("category"),
             "org_name": org_name.get(prod["organization_id"], ""),
@@ -3484,6 +3506,11 @@ async def list_public_retreats(
                                   or {}).get("mode", "full") != "full"),
         })
 
+    # con una posizione attiva: i piu' vicini prima (poi per data)
+    if _geo_active:
+        items.sort(key=lambda i: (i["distance_km"] is None,
+                                  i["distance_km"] or 0, i["start_at"] or ""))
+
     total = len(items)
     return {
         "items": items[offset:offset + limit],
@@ -3492,9 +3519,30 @@ async def list_public_retreats(
     }
 
 
+def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Distanza great-circle in km. Pura, testabile."""
+    import math
+    rlat1, rlat2 = math.radians(lat1), math.radians(lat2)
+    dlat = rlat2 - rlat1
+    dlng = math.radians(lng2 - lng1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(rlat1) * math.cos(rlat2) \
+        * math.sin(dlng / 2) ** 2
+    return 2 * 6371.0 * math.asin(math.sqrt(a))
+
+
 def _next_month(month: str) -> str:
     y, m = int(month[:4]), int(month[5:7])
     return f"{y + (1 if m == 12 else 0)}-{(1 if m == 12 else m + 1):02d}-01"
+
+
+@router.get("/geo/search")
+@limiter.limit("20/minute")
+async def public_geo_search(request: Request,
+    q: str = Query(min_length=2, max_length=120)):
+    """Autocomplete localita' per la barra "Dove?" della directory.
+    Nominatim con cache aggressiva + rate limit: gratis e sostenibile."""
+    from services.geocoding import search_places
+    return {"results": await search_places(q, limit=5)}
 
 
 @router.get("/operator/{org_slug}")

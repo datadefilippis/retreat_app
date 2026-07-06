@@ -442,7 +442,18 @@
     "emptyBody": "Erweitere die Filter oder schau bald wieder vorbei: der Kalender wächst jede Woche.",
     "priceFrom": "ab {{price}}",
     "depositBadge": "Mit Anzahlung buchen",
-    "fewLeft": "Nur noch {{count}} Plätze"
+    "fewLeft": "Nur noch {{count}} Plätze",
+    "wherePlaceholder": "📍 Wo? Stadt oder Gegend…",
+    "nearMe": "In meiner Nähe",
+    "nearMeBtn": "📍 In meiner Nähe",
+    "locating": "Standort wird ermittelt…",
+    "clearWhere": "Ortsfilter entfernen",
+    "viewMap": "🗺 Karte",
+    "viewList": "☰ Liste",
+    "distanceAway": "{{km}} km entfernt",
+    "mapEmpty": "Keine Retreats mit Kartenposition für diese Filter.",
+    "mapSee": "Retreat ansehen →",
+    "fromPrice": "ab {{price}} €"
   },
   "operator": {
     "website": "Webseite",
