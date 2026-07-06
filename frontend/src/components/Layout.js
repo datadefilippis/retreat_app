@@ -54,15 +54,8 @@ const fixedNavTop = [
 // ── Module-aware nav entries (merged entity + intelligence) ──────────────
 
 const moduleNavMap = {
-  cashflow_monitor: {
-    name: 'Cashflow Monitor',
-    icon: TrendingUp,
-    children: [
-      { name: 'Cashflow Monitor', href: '/modules/cashflow', end: true },
-      { nameKey: 'nav.data', href: '/modules/cashflow/data', icon: Database },
-    ],
-  },
-  // commerce_signals: integrated into customers_light group (no standalone nav)
+  // R4: cashflow_monitor rimosso (BI legacy); commerce_signals dentro
+  // customers_light (nessuna voce standalone).
 };
 
 // Operations — always visible
@@ -76,8 +69,6 @@ const operationsNav = [
 // System — admin tools
 const systemNav = [
   { nameKey: 'nav.modules',         href: '/modules',         icon: Blocks,      end: true },
-  { nameKey: 'nav.alerts',          href: '/alerts',          icon: Bell,        end: true },
-  { nameKey: 'nav.ai_analysis',     href: '/analisi-ai',      icon: Sparkles,    end: true },
   { nameKey: 'nav.data_integrity',  href: '/data-integrity',  icon: ShieldCheck, end: true },
   { nameKey: 'nav.team',            href: '/team',            icon: Users },
   { nameKey: 'nav.settings',        href: '/settings',        icon: Settings },
@@ -278,15 +269,8 @@ export const Sidebar = () => {
   // System nav: filtro a grana fine (WS-2). Cashflow core può essere
   // acceso (gestionale) senza trascinarsi anomalie/AI/qualità dati.
   const dynamicSystemNav = systemNav.filter(item => {
-    if (item.href === '/alerts') {
-      return activeSet.has('cashflow_monitor') && canUse('cashflow_monitor', 'alert_config');
-    }
     if (item.href === '/data-integrity') {
       return activeSet.has('cashflow_monitor') && canUse('cashflow_monitor', 'data_quality');
-    }
-    if (item.href === '/analisi-ai') {
-      // è la pagina del modulo AI: gating sul modulo giusto
-      return activeSet.has('ai_assistant');
     }
     if (item.href === '/modules') {
       // piani retreat fissi: l'operatore non deve (ri)attivare moduli a mano

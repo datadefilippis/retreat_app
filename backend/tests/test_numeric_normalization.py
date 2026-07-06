@@ -5,7 +5,7 @@ Covers:
   1. core.numeric.parse_locale_number — the canonical parser
   2. core.numeric.coerce_locale_number — the Pydantic BeforeValidator wrapper
   3. Pydantic model integration — Create/Update models accept locale strings
-  4. dataset_service.clean_amount() delegation — same logic, same results
+  4. file_parsing.clean_amount() delegation — same logic, same results
 
 Run with: pytest tests/test_numeric_normalization.py -v
 """
@@ -231,7 +231,7 @@ class TestPydanticModelIntegration:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 4. dataset_service.clean_amount delegation
+# 4. file_parsing.clean_amount delegation
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _motor_available = False
@@ -244,35 +244,35 @@ except ImportError:
 
 @pytest.mark.skipif(not _motor_available, reason="motor not installed (integration env only)")
 class TestCleanAmountDelegation:
-    """Verify that dataset_service.clean_amount still works after refactor.
+    """Verify that file_parsing.clean_amount still works after refactor.
 
     Skipped in lightweight test environments where motor (MongoDB driver)
     is not installed.  These run in Docker / CI where all deps are present.
     """
 
     def test_clean_amount_european(self):
-        from services.dataset_service import clean_amount
+        from services.file_parsing import clean_amount
         assert clean_amount("1.234,56") == 1234.56
 
     def test_clean_amount_us(self):
-        from services.dataset_service import clean_amount
+        from services.file_parsing import clean_amount
         assert clean_amount("1,234.56") == 1234.56
 
     def test_clean_amount_comma_decimal(self):
-        from services.dataset_service import clean_amount
+        from services.file_parsing import clean_amount
         assert clean_amount("12,50") == 12.50
 
     def test_clean_amount_none(self):
-        from services.dataset_service import clean_amount
+        from services.file_parsing import clean_amount
         assert clean_amount(None) is None
 
     def test_clean_amount_float_passthrough(self):
-        from services.dataset_service import clean_amount
+        from services.file_parsing import clean_amount
         assert clean_amount(42.0) == 42.0
 
     def test_clean_amount_pandas_na(self):
         """pandas NA values must return None (handled by pd.isna guard)."""
         import pandas as pd
-        from services.dataset_service import clean_amount
+        from services.file_parsing import clean_amount
         assert clean_amount(pd.NA) is None
         assert clean_amount(float('nan')) is None

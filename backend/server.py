@@ -27,8 +27,7 @@ init_sentry()
 init_logging()
 
 # ── Legacy routers (unchanged) ────────────────────────────────────────────────
-from routers import auth, organizations, datasets, modules, alerts, insights, purchases, fixed_costs, sales, expenses
-from modules.cashflow_monitor.router import router as cashflow_router
+from routers import auth, organizations, modules, purchases, fixed_costs, sales, expenses
 # NOTE: customers_light legacy package removed during Phase-3 single-brain
 # consolidation. Its identity (module_key="customers_light") is preserved
 # inside customer_insights/__init__.py — orgs activations, pricing plans,
@@ -43,14 +42,7 @@ from routers import catalog as catalog_router
 from routers import tickets as tickets_router
 
 # ── Phase-4 new routers ───────────────────────────────────────────────────────
-from routers import validation_rules
 from routers import preferences
-
-# ── AI Chat router (v2.5) ───────────────────────────────────────────────────
-from routers import chat as chat_router
-
-# ── AI Digest router (v2.5) ────────────────────────────────────────────────
-from routers import digests as digests_router
 
 # ── System Admin control panel (v2.9) ────────────────────────────────────────
 # All routes in this router are protected by require_system_admin.
@@ -118,7 +110,6 @@ from services.seed_pricing import (
 from services.seed_commercial_plans import seed_commercial_plans
 from repositories.usage_repository import backfill_module_key as backfill_usage_module_key
 from repositories.usage_repository import setup_indexes as setup_usage_indexes
-from repositories.ai_budget_repository import setup_indexes as setup_budget_indexes
 
 
 @asynccontextmanager
@@ -208,26 +199,6 @@ async def lifespan(app: FastAPI):
         await setup_usage_indexes()
     except Exception as e:
         logging.error(f"Failed to set up AI usage indices: {e}")
-    # Wave 8B — ensure ai_budgets indices.
-    try:
-        await setup_budget_indexes()
-    except Exception as e:
-        logging.error(f"Failed to set up AI budget indices: {e}")
-    # Wave 10.B.2 — ensure ai_budget_counters unique index for the atomic
-    # spend counter (replaces per-call aggregation in check_budget_or_raise).
-    try:
-        from repositories import budget_counter_repository as _bcr
-        await _bcr.setup_indexes()
-    except Exception as e:
-        logging.error(f"Failed to set up AI budget counter indices: {e}")
-    # Wave 10.A.8 — seed conservative default AI budgets if the collection
-    # is empty. Idempotent: skips silently once any budget exists, so
-    # operator changes via the dashboard are never overwritten.
-    try:
-        from services.seed_ai_budgets import seed_default_ai_budgets_if_empty
-        await seed_default_ai_budgets_if_empty()
-    except Exception as e:
-        logging.error(f"Failed to seed default AI budgets: {e}")
     # Onda 16 Fase 6: warn when legacy item_type=booking products still exist.
     # Informational only — not a migration — nudges the operator to run
     # `python scripts/migrate_booking_to_rental_slot.py` at their convenience.
@@ -544,13 +515,9 @@ app.add_middleware(_UploadsCacheControlMiddleware)
 # ── Legacy routes (prefix /api — do not change) ───────────────────────────────
 app.include_router(auth.router, prefix="/api")
 app.include_router(organizations.router, prefix="/api")
-app.include_router(datasets.router, prefix="/api")
 app.include_router(modules.router, prefix="/api")
-app.include_router(cashflow_router, prefix="/api")           # /api/analytics/* (legacy prefix)
 app.include_router(customer_insights_router, prefix="/api")  # /api/customer-insights/*
 app.include_router(product_catalog_router, prefix="/api")    # /api/modules/product-catalog/*
-app.include_router(alerts.router, prefix="/api")
-app.include_router(insights.router, prefix="/api")
 app.include_router(purchases.router, prefix="/api")
 app.include_router(fixed_costs.router, prefix="/api")
 app.include_router(sales.router, prefix="/api")
@@ -566,14 +533,11 @@ app.include_router(purchase_records.router, prefix="/api")   # /api/purchase-rec
 app.include_router(column_mappings.router, prefix="/api")    # /api/column-mappings
 
 # ── Phase-4 routes (new paths — fully backward-compatible) ────────────────────
-app.include_router(validation_rules.router, prefix="/api")   # /api/validation-rules
 app.include_router(preferences.router, prefix="/api")        # /api/preferences/*
 
 # ── AI Chat route (v2.5) ─────────────────────────────────────────────────────
-app.include_router(chat_router.router, prefix="/api")        # /api/ai/chat
 
 # ── AI Digest routes (v2.5) ────────────────────────────────────────────────
-app.include_router(digests_router.router, prefix="/api")     # /api/digests/*
 
 # ── Export routes (Blocco 1) ─────────────────────────────────────────────────
 app.include_router(export_router.router, prefix="/api")      # /api/export/*

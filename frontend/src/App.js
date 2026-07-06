@@ -34,8 +34,6 @@ import ModulesPage from "./pages/ModulesPage";
 
 // Features
 import DashboardPage from "./features/dashboard/DashboardPage";
-import CashflowModulePage from "./features/cashflow/CashflowModulePage";
-import CashflowDataPage from "./features/cashflow/CashflowDataPage";
 // CustomersLightPage legacy removed during Phase-3 single-brain
 // consolidation. Its routes are served by CustomerInsightsPage.
 import CustomerInsightsPage from "./features/customer-insights/CustomerInsightsPage";
@@ -93,12 +91,6 @@ import CourseLandingPage from "./features/storefront/CourseLandingPage";
 import PublicStorefrontShell from "./features/storefront/PublicStorefrontShell";
 import DownloadLandingPage from "./features/storefront/DownloadLandingPage";
 import { CheckoutSuccessPage, CheckoutCancelPage } from "./features/storefront/CheckoutResultPage";
-import UploadPage from "./features/datasets/UploadPage";
-import DatasetsPage from "./features/datasets/DatasetsPage";
-import ColumnMappingsPage from "./features/datasets/ColumnMappingsPage";
-import ValidationRulesPage from "./features/datasets/ValidationRulesPage";
-import AlertsPage from "./features/alerts/AlertsPage";
-import AnalisiAIPage from "./features/ai/AnalisiAIPage";
 import TeamPage from "./features/team/TeamPage";
 import SettingsPage from "./features/settings/SettingsPage";
 import PublicProfilePage from "./features/settings/PublicProfilePage";
@@ -448,22 +440,6 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/modules/cashflow"
-        element={
-          <ProtectedRoute>
-            <CashflowModulePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/modules/cashflow/data/:tab?"
-        element={
-          <ProtectedRoute>
-            <CashflowDataPage />
-          </ProtectedRoute>
-        }
-      />
       {/* Customer insights — both URLs serve the same component:
             • /modules/customers-light   canonical merchant URL
               (preserved across the legacy cutover; the sidebar menu
@@ -493,38 +469,6 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ProductPerformancePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/upload"
-        element={
-          <ProtectedRoute>
-            <UploadPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/datasets"
-        element={
-          <ProtectedRoute>
-            <DatasetsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/column-mappings"
-        element={
-          <ProtectedRoute>
-            <ColumnMappingsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/validation-rules"
-        element={
-          <ProtectedRoute>
-            <ValidationRulesPage />
           </ProtectedRoute>
         }
       />
@@ -674,22 +618,6 @@ function AppRoutes() {
       <Route
         path="/pos/:storeId"
         element={<ProtectedRoute><PosPage /></ProtectedRoute>}
-      />
-      <Route
-        path="/alerts"
-        element={
-          <ProtectedRoute>
-            <AlertsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/analisi-ai/:tab?"
-        element={
-          <ProtectedRoute>
-            <AnalisiAIPage />
-          </ProtectedRoute>
-        }
       />
       <Route
         path="/team"

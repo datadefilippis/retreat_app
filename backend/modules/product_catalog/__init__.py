@@ -9,7 +9,6 @@ from core.module_registry import register, ModuleDefinition
 from .snapshot_builder import build_snapshot
 from .hooks import post_upload_hook
 from .service import build_overview
-from .ai_tools import TOOL_DEFINITIONS, execute_tool
 
 register(ModuleDefinition(
     module_key="product_catalog",
@@ -21,6 +20,4 @@ register(ModuleDefinition(
     snapshot_builder=build_snapshot,
     post_upload_hooks=[post_upload_hook],
     overview_builder=build_overview,
-    ai_tool_definitions=TOOL_DEFINITIONS,
-    ai_tool_executor=execute_tool,
 ))

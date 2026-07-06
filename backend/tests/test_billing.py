@@ -702,67 +702,6 @@ class TestAdminBillingEndpoints:
         assert patch.billing_email is None  # non-specified fields are None
 
 
-class TestAIHasDataFlags:
-    """v5.2: AI drill-down tools include has_data flags."""
-
-    def test_ai_tools_return_has_data(self):
-        """All drill-down tool branches should return has_data."""
-        import inspect
-        from modules.cashflow_monitor import ai_tools
-        source = inspect.getsource(ai_tools.execute_tool)
-        # Count has_data assignments for each tool type
-        tools_with_has_data = source.count("has_data")
-        # At least 6 tools: revenue, expenses, purchases, fixed_costs, cashflow, receivables
-        assert tools_with_has_data >= 6, (
-            f"Expected at least 6 has_data flags, found {tools_with_has_data}"
-        )
-
-    def test_ai_tools_return_caveat(self):
-        """All drill-down tool branches should return _caveat."""
-        import inspect
-        from modules.cashflow_monitor import ai_tools
-        source = inspect.getsource(ai_tools.execute_tool)
-        caveat_count = source.count('"_caveat"')
-        assert caveat_count >= 6, (
-            f"Expected at least 6 _caveat fields, found {caveat_count}"
-        )
-
-
-class TestEpistemicCaveats:
-    """v5.2: AI prompts include epistemic caveats for proxy metrics."""
-
-    def test_digest_prompt_warns_giorni_autonomia(self):
-        """Digest system prompt must warn that days-of-autonomy is estimated.
-
-        The template uses English keys (locale text injected at runtime),
-        so we check for the English epistemic caveat.
-        """
-        from modules.cashflow_monitor.digest_builder import _SYSTEM_PROMPT
-        lower = _SYSTEM_PROMPT.lower()
-        assert "days of autonomy" in lower or "giorni" in lower
-        assert "estimate" in lower or "stima" in lower
-
-    def test_digest_prompt_warns_dso_dpo(self):
-        """Digest system prompt must warn about DSO/DPO data quality."""
-        from modules.cashflow_monitor.digest_builder import _SYSTEM_PROMPT
-        assert "DSO" in _SYSTEM_PROMPT
-        assert "DPO" in _SYSTEM_PROMPT
-
-    def test_health_explanation_warns_proxy(self):
-        """Health AI prompt must note the score is directional."""
-        import inspect
-        from modules.cashflow_monitor.health_explanation import _build_system_prompt
-        source = inspect.getsource(_build_system_prompt)
-        assert "directional" in source or "proxy" in source
-
-    def test_alert_analysis_warns_proxy(self):
-        """Alert analysis prompt must warn about proxy metrics."""
-        import inspect
-        from modules.cashflow_monitor.alert_analysis import _build_system_prompt
-        source = inspect.getsource(_build_system_prompt)
-        assert "burn rate" in source or "estimated" in source
-
-
 class TestFreePlanIntegrity:
     """v5.2: Free plan seed validation."""
 

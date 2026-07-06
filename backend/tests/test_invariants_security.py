@@ -5426,20 +5426,6 @@ class TestSEC_O_3_2_CaptureWithTagsHelper:
             "Webhook capture non usa action='payment_webhook' — tag mismatch."
         )
 
-    def test_anthropic_provider_invokes_capture_with_tags(self):
-        """Anthropic provider final failures invocano helper con ai_complete."""
-        import inspect
-        from services.llm.providers import anthropic
-
-        src = inspect.getsource(anthropic)
-        assert "capture_with_tags" in src, (
-            "services/llm/providers/anthropic.py non invoca capture_with_tags "
-            "— AI failures dopo retry non triggerano alert."
-        )
-        assert 'action="ai_complete"' in src or "action='ai_complete'" in src, (
-            "Anthropic capture non usa action='ai_complete'."
-        )
-
     def test_capture_with_tags_uses_scoped_capture(self):
         """Helper usa scope CM per scoping dei tag (no global pollution).
 
@@ -5722,16 +5708,6 @@ class TestSEC_O_3_4_UptimeMonitoringRunbook:
         assert '@router.get("/ready")' in src, (
             "Endpoint /ready rimosso — UptimeRobot Monitor 2 (MongoDB) "
             "fail."
-        )
-
-    def test_health_router_exposes_ai_endpoint(self):
-        """Endpoint /ai esiste nel router health.py."""
-        import inspect
-        from routers import health
-
-        src = inspect.getsource(health)
-        assert '@router.get("/ai")' in src, (
-            "Endpoint /ai rimosso — UptimeRobot Monitor 3 fail."
         )
 
     def test_liveness_response_contains_uptime_seconds_key(self):

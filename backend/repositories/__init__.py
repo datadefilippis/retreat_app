@@ -1,8 +1,5 @@
 from . import user_repository
 from . import organization_repository
-from . import dataset_repository
-from . import alert_repository
-from . import insight_repository
 from . import module_repository
 from . import analytics_repository
 from . import audit_repository
@@ -22,9 +19,6 @@ __all__ = [
     # Legacy
     'user_repository',
     'organization_repository',
-    'dataset_repository',
-    'alert_repository',
-    'insight_repository',
     'module_repository',
     'analytics_repository',
     'audit_repository',
@@ -48,7 +42,6 @@ from . import purchase_record_repository
 from . import fixed_cost_repository
 
 # ── Phase-4 new repositories ──────────────────────────────────────────────────
-from . import data_validation_rule_repository
 
 # ── System Admin repositories (v2.9) ──────────────────────────────────────────
 # Cross-org queries. Import ONLY from routes protected by require_system_admin.
@@ -62,7 +55,6 @@ from . import subscription_repository
 from . import usage_repository
 
 # ── AI Chat Session persistence ──────────────────────────────────────────────
-from . import chat_session_repository
 
 # ── Controlled Access (v6.0) ─────────────────────────────────────────────────
 from . import platform_settings_repository

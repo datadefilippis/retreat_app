@@ -13,8 +13,6 @@ bookings and rentals. These tools are now correctly gated by the
 """
 
 from core.module_registry import register, ModuleDefinition
-from modules.commerce.ai_tools import TOOL_DEFINITIONS as commerce_tool_defs
-from modules.commerce.ai_tools import execute_tool as commerce_execute_tool
 
 register(ModuleDefinition(
     module_key="commerce",
@@ -23,6 +21,4 @@ register(ModuleDefinition(
     description="Gestione ordini, store, calendario e prodotti. Sblocca le funzionalita di vendita online e in negozio.",
     category="operations",
     icon="shopping-bag",
-    ai_tool_definitions=commerce_tool_defs,
-    ai_tool_executor=commerce_execute_tool,
 ))

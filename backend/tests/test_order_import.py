@@ -91,7 +91,7 @@ class TestOrderAliasResolution:
         assert _ORDER_ALIASES["e_mail"] == "customer_email"
 
     def test_normalize_accented_columns(self):
-        from services.dataset_service import _normalize_col
+        from services.file_parsing import _normalize_col
         # These accented columns should normalize to alias keys
         assert _normalize_col("Quantità") == "quantita"
         assert _normalize_col("Prezzo Unitàrio") == "prezzo_unitario"
