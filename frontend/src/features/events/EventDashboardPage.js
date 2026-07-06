@@ -38,6 +38,8 @@ import FieldEditorList from './components/FieldEditorList';
 import { pruneFieldConfigs } from './components/fieldConfigUtils';
 // W1.S5/Phase 2.9 — additive cost composition editor for edits.
 import CostSourceEditor from '../products/components/CostSourceEditor';
+import { MiniBars } from '../../components/charts';
+import ContactActions from '../../components/ContactActions';
 import RetreatContentEditor from './components/RetreatContentEditor';
 import MultiLangSection from '../../components/MultiLangSection';
 
@@ -608,6 +610,21 @@ export default function EventDashboardPage() {
   useEffect(() => { setParticipantsPage(1); }, [participantSearch, participantStatusFilter]);
 
   const dt = useMemo(() => occurrence ? formatDateTime(occurrence.start_at, i18n.language) : null, [occurrence, i18n.language]);
+  // CF5 — ritiro concluso? Decide il contesto del contatto partecipante:
+  // prima = info pratiche (pre_retreat), dopo = invito recensione.
+  const isPastEvent = useMemo(() => {
+    const ref = occurrence?.end_at || occurrence?.start_at;
+    return Boolean(ref && new Date(ref) < new Date());
+  }, [occurrence]);
+  const outreachVars = useMemo(() => {
+    // formatDateTime restituisce {date, time} — le vars outreach vogliono stringhe
+    const fd = occurrence?.start_at ? formatDateTime(occurrence.start_at, i18n.language) : null;
+    return {
+      retreat_name: occurrence?.product_name || '',
+      start_date: fd ? `${fd.date}${fd.time ? `, ${fd.time}` : ''}` : '',
+      location: occurrence?.location ? `, ${occurrence.location}` : '',
+    };
+  }, [occurrence, i18n.language]);
   const dtEnd = useMemo(() => occurrence?.end_at ? formatDateTime(occurrence.end_at, i18n.language) : null, [occurrence, i18n.language]);
 
   // Prefer store slug (multi-store) over legacy org public_slug.
@@ -1500,22 +1517,11 @@ export default function EventDashboardPage() {
                 <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
                   {t('dashboards.event.revenue.salesLast30')}
                 </p>
-                <div className="flex items-end gap-1 h-16">
-                  {(() => {
-                    const maxQty = Math.max(...analytics.sales_timeline.map(t => t.tickets_sold), 1);
-                    return analytics.sales_timeline.map(d => {
-                      const h = Math.max(4, Math.round((d.tickets_sold / maxQty) * 56));
-                      return (
-                        <div
-                          key={d.date}
-                          className="flex-1 bg-gray-900 rounded-sm min-w-[3px] opacity-80 hover:opacity-100"
-                          style={{ height: `${h}px` }}
-                          title={`${d.date} · ${t('dashboards.event.history.comparedTickets')} ${d.tickets_sold} · ${formatPrice(d.revenue, analytics.currency)}`}
-                        />
-                      );
-                    });
-                  })()}
-                </div>
+                <MiniBars
+                  height={64}
+                  data={analytics.sales_timeline.map(d => ({ label: d.date, value: d.tickets_sold }))}
+                  valueFormatter={(n) => `${n} · ${t('dashboards.event.history.comparedTickets')}`}
+                />
                 <div className="flex justify-between text-[10px] text-gray-500 mt-1">
                   <span>{analytics.sales_timeline[0]?.date}</span>
                   <span>{analytics.sales_timeline[analytics.sales_timeline.length - 1]?.date}</span>
@@ -1880,6 +1886,21 @@ export default function EventDashboardPage() {
           </div>
         )}
 
+        {/* CF5 — ritiro concluso: il momento giusto per chiedere una recensione */}
+        {isPastEvent && participants.length > 0 && (
+          <div className="rounded-xl border border-[#376254]/30 bg-[#376254]/5 p-4 flex items-start gap-3">
+            <span className="text-xl" aria-hidden>🌿</span>
+            <div>
+              <p className="text-sm font-semibold text-[#376254]">
+                {t('dashboards.event.reviewAsk.title', { defaultValue: 'Ritiro concluso — chiedi una recensione' })}
+              </p>
+              <p className="text-xs text-gray-600 mt-0.5">
+                {t('dashboards.event.reviewAsk.hint', { defaultValue: 'I bottoni di contatto qui sotto hanno già il messaggio pronto: ringraziamento + link alla tua pagina per recensire. Il momento migliore è nei primi giorni dopo il rientro.' })}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* G3: Lista partecipanti inline */}
         {participants.length > 0 && (
           <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -1930,6 +1951,7 @@ export default function EventDashboardPage() {
                         .map(fc => (
                           <th key={fc.id} className="px-2 py-2 font-semibold">{fc.label}</th>
                         ))}
+                      <th className="px-2 py-2 font-semibold">{t('dashboards.event.participants.colContact', { defaultValue: 'Contatta' })}</th>
                       <th className="px-5 py-2 font-semibold text-right">{t('dashboards.event.participants.colStatus')}</th>
                     </tr>
                   </thead>
@@ -1954,6 +1976,15 @@ export default function EventDashboardPage() {
                               </td>
                             );
                           })}
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <ContactActions
+                            name={p.holder_name}
+                            email={p.contact_email || p.holder_email}
+                            phone={p.contact_phone || p.holder_phone}
+                            context={isPastEvent ? 'post_retreat_review' : 'pre_retreat'}
+                            vars={outreachVars}
+                          />
+                        </td>
                         <td className="px-5 py-2 text-right whitespace-nowrap">
                           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                             p.status === 'checked_in' ? 'bg-green-100 text-green-900'

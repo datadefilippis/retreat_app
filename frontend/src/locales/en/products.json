@@ -890,7 +890,8 @@
         "statusPending": "To check",
         "pageLabel": "Page {{current}} of {{total}}",
         "prev": "← Prev",
-        "next": "Next →"
+        "next": "Next →",
+        "colContact": "Contact"
       },
       "location": {
         "title": "Location",
@@ -1095,6 +1096,10 @@
       "createdBanner": {
         "text": "Retreat created! Now build your sales page: day-by-day program, photo gallery, what's included and FAQ.",
         "cta": "Add the program →"
+      },
+      "reviewAsk": {
+        "title": "Retreat over — ask for a review",
+        "hint": "The contact buttons below come with the message ready: a thank-you plus the link to your page to leave a review. The best moment is within a few days of returning home."
       }
     },
     "reservation": {

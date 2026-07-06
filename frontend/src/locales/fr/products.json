@@ -890,7 +890,8 @@
         "statusPending": "À vérifier",
         "pageLabel": "Page {{current}} sur {{total}}",
         "prev": "← Préc",
-        "next": "Suiv →"
+        "next": "Suiv →",
+        "colContact": "Contact"
       },
       "location": {
         "title": "Lieu",
@@ -1095,6 +1096,10 @@
       "createdBanner": {
         "text": "Retraite créée ! Construis maintenant ta page de vente : programme jour par jour, galerie photo, inclus et FAQ.",
         "cta": "Ajouter le programme →"
+      },
+      "reviewAsk": {
+        "title": "Retraite terminée — demandez un avis",
+        "hint": "Les boutons de contact ci-dessous ont déjà le message prêt : remerciement + lien vers votre page pour laisser un avis. Le meilleur moment : les premiers jours après le retour."
       }
     },
     "reservation": {
