@@ -161,7 +161,8 @@
     "nextPage": "Weiter",
     "noResults": "Kein Kunde entspricht den Filtern",
     "exportCsv": "CSV exportieren",
-    "exportCsvGdprHint": "Die CSV-Datei enthält eine Spalte unsubscribe_url mit einem Abmeldelink pro Kunde. Verwenden Sie diese als Merge-Tag in den Fußzeilen Ihrer Marketing-Kampagnen (z. B. {{unsubscribe_url}} bei Mailchimp / Brevo), um Art. 7 Abs. 3 DSGVO zu erfüllen."
+    "exportCsvGdprHint": "Die CSV-Datei enthält eine Spalte unsubscribe_url mit einem Abmeldelink pro Kunde. Verwenden Sie diese als Merge-Tag in den Fußzeilen Ihrer Marketing-Kampagnen (z. B. {{unsubscribe_url}} bei Mailchimp / Brevo), um Art. 7 Abs. 3 DSGVO zu erfüllen.",
+    "columnContact": "Kontakt"
   },
   "profile": {
     "title": "Kundenprofil",
@@ -252,5 +253,15 @@
       "mailtoTooltip": "Öffnet das auf dem System als Standard eingestellte E-Mail-Programm (Mail / Outlook / Thunderbird). Funktioniert nur, wenn eines konfiguriert ist.",
       "hint": "Gmail Web und Outlook Web öffnen das Verfassen-Fenster im Browser (funktioniert immer). \"Standard-Mail\" funktioniert nur, wenn ein E-Mail-Programm als Systemstandard hinterlegt ist."
     }
+  },
+  "essential": {
+    "total": "Kunden gesamt",
+    "new": "Neu (Zeitraum)",
+    "recontact": "Zu reaktivieren",
+    "recontactSub": "inaktiv mit Einwilligung",
+    "recontactHint": "Inaktive mit Marketing-Einwilligung: klicken für die Liste",
+    "withPhone": "Mit Telefon",
+    "withPhoneSub": "per WhatsApp erreichbar",
+    "advanced": "Erweiterte Analyse (detaillierte KPIs, Konzentration, Umsatz je Segment)"
   }
 }

@@ -28,6 +28,7 @@ import {
 import { useCurrency } from '../../../context/AuthContext';
 import { formatCurrency } from '../../../lib/utils';
 import { SegmentFilters } from './SegmentFilters';
+import ContactActions from '../../../components/ContactActions';
 
 const SEGMENT_VARIANT = {
   top: 'default',
@@ -172,6 +173,8 @@ export const CustomerTable = ({
                       "Last purchase" — no mobile impact. */}
                   <th className="text-center px-3 py-2 font-medium hidden lg:table-cell">{t('table.columnAccount', { defaultValue: 'Account' })}</th>
                   <th className="text-center px-3 py-2 font-medium hidden lg:table-cell">{t('table.columnMarketing', { defaultValue: 'Marketing' })}</th>
+                  {/* CF6 — l'azione accanto all'insight: contatto one-click */}
+                  <th className="text-center px-3 py-2 font-medium">{t('table.columnContact', { defaultValue: 'Contatta' })}</th>
                   <th className="text-right px-4 py-2 font-medium"></th>
                 </tr>
               </thead>
@@ -277,6 +280,16 @@ export const CustomerTable = ({
                           <Minus className="h-4 w-4" />
                         </span>
                       )}
+                    </td>
+                    <td className="px-3 py-2 text-center whitespace-nowrap">
+                      <ContactActions
+                        name={row.customer_name}
+                        email={row.email}
+                        phone={row.phone}
+                        customerId={row.customer_id}
+                        context={row.segment === 'inactive' ? 'winback' : 'generic'}
+                        marketingConsent={row.segment === 'inactive' ? Boolean(row.marketing_opted_in) : undefined}
+                      />
                     </td>
                     <td className="px-4 py-2 text-right">
                       <Button

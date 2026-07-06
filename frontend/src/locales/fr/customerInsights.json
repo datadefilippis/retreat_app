@@ -161,7 +161,8 @@
     "nextPage": "Suivant",
     "noResults": "Aucun client ne correspond aux filtres",
     "exportCsv": "Exporter CSV",
-    "exportCsvGdprHint": "Le CSV inclut une colonne unsubscribe_url avec un lien de désabonnement par client. Utilisez-la comme balise de fusion dans les pieds de page de vos campagnes marketing (par ex. {{unsubscribe_url}} sur Mailchimp / Brevo) pour respecter l'art. 7(3) du RGPD."
+    "exportCsvGdprHint": "Le CSV inclut une colonne unsubscribe_url avec un lien de désabonnement par client. Utilisez-la comme balise de fusion dans les pieds de page de vos campagnes marketing (par ex. {{unsubscribe_url}} sur Mailchimp / Brevo) pour respecter l'art. 7(3) du RGPD.",
+    "columnContact": "Contact"
   },
   "profile": {
     "title": "Profil client",
@@ -252,5 +253,15 @@
       "mailtoTooltip": "Ouvre le programme e-mail configuré par défaut sur le système (Mail / Outlook / Thunderbird). Ne fonctionne que si vous en avez un configuré.",
       "hint": "Gmail web et Outlook web ouvrent la fenêtre de composition dans votre navigateur (fonctionne toujours). « Mail par défaut » ne fonctionne que si vous avez un programme e-mail défini par défaut sur le système."
     }
+  },
+  "essential": {
+    "total": "Clients au total",
+    "new": "Nouveaux (période)",
+    "recontact": "À relancer",
+    "recontactSub": "inactifs avec consentement",
+    "recontactHint": "Inactifs avec consentement marketing : cliquez pour voir la liste",
+    "withPhone": "Avec téléphone",
+    "withPhoneSub": "joignables sur WhatsApp",
+    "advanced": "Analyse avancée (KPI détaillés, concentration, revenu par segment)"
   }
 }
