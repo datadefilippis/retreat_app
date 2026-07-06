@@ -147,6 +147,41 @@ async def list_attendance(
     tickets = await list_tickets_for_occurrence(
         occurrence_id, org_id, include_voided=include_voided,
     )
+    # CF5 — contatto azionabile per riga: molti biglietti nascono senza
+    # holder_email/phone (checkout guest: il contatto vive sull'ordine).
+    # contact_email/contact_phone = holder_* con fallback all'acquirente,
+    # così i bottoni WhatsApp/email del dashboard usano il meglio che
+    # esiste davvero (se non c'è nulla, restano disabilitati).
+    missing = [t for t in tickets
+               if not (t.get("holder_email") or "").strip()
+               or not (t.get("holder_phone") or "").strip()]
+    order_ids = list({t.get("order_id") for t in missing if t.get("order_id")})
+    buyers: dict = {}
+    if order_ids:
+        from database import orders_collection, customers_collection
+        cust_by_order: dict = {}
+        async for o in orders_collection.find(
+                {"id": {"$in": order_ids}, "organization_id": org_id},
+                {"_id": 0, "id": 1, "customer_id": 1, "contact_phone": 1}):
+            cust_by_order[o["id"]] = o
+        cust_ids = list({o.get("customer_id") for o in cust_by_order.values()
+                         if o.get("customer_id")})
+        cust_docs = {}
+        if cust_ids:
+            async for c in customers_collection.find(
+                    {"id": {"$in": cust_ids}, "organization_id": org_id},
+                    {"_id": 0, "id": 1, "email": 1, "phone": 1}):
+                cust_docs[c["id"]] = c
+        for oid, o in cust_by_order.items():
+            c = cust_docs.get(o.get("customer_id")) or {}
+            buyers[oid] = {
+                "email": c.get("email"),
+                "phone": c.get("phone") or o.get("contact_phone"),
+            }
+    for t in tickets:
+        buyer = buyers.get(t.get("order_id")) or {}
+        t["contact_email"] = (t.get("holder_email") or "").strip() or buyer.get("email")
+        t["contact_phone"] = (t.get("holder_phone") or "").strip() or buyer.get("phone")
     return {"tickets": tickets, "total": len(tickets)}
 
 

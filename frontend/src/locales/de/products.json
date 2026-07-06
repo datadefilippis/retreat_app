@@ -890,7 +890,8 @@
         "statusPending": "Zu prüfen",
         "pageLabel": "Seite {{current}} von {{total}}",
         "prev": "← Zurück",
-        "next": "Weiter →"
+        "next": "Weiter →",
+        "colContact": "Kontakt"
       },
       "location": {
         "title": "Ort",
@@ -1095,6 +1096,10 @@
       "createdBanner": {
         "text": "Retreat erstellt! Baue jetzt deine Verkaufsseite: Tagesprogramm, Fotogalerie, Leistungen und FAQ.",
         "cta": "Programm hinzufügen →"
+      },
+      "reviewAsk": {
+        "title": "Retreat vorbei — bitte um eine Bewertung",
+        "hint": "Die Kontakt-Buttons unten haben die Nachricht schon fertig: Dank plus Link zu deiner Seite für die Bewertung. Der beste Moment sind die ersten Tage nach der Rückkehr."
       }
     },
     "reservation": {

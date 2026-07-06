@@ -164,19 +164,19 @@
   "pre_retreat": {
     "it": {
       "subject": "Ci vediamo presto — {retreat_name}",
-      "body": "Ciao {customer_name},\n\nmanca poco a \"{retreat_name}\" ({start_date}, {location}) e non vediamo l'ora di accoglierti!\n\nSe hai domande su cosa portare, orari di arrivo o esigenze particolari (alimentari o altro), scrivimi pure: sono qui.\n\nA prestissimo,\n{merchant_name}"
+      "body": "Ciao {customer_name},\n\nmanca poco a \"{retreat_name}\" ({start_date}{location}) e non vediamo l'ora di accoglierti!\n\nSe hai domande su cosa portare, orari di arrivo o esigenze particolari (alimentari o altro), scrivimi pure: sono qui.\n\nA prestissimo,\n{merchant_name}"
     },
     "en": {
       "subject": "See you soon — {retreat_name}",
-      "body": "Hi {customer_name},\n\n\"{retreat_name}\" ({start_date}, {location}) is coming up and we can't wait to welcome you!\n\nIf you have any questions about what to bring, arrival times or special needs (dietary or otherwise), just reply here — happy to help.\n\nSee you very soon,\n{merchant_name}"
+      "body": "Hi {customer_name},\n\n\"{retreat_name}\" ({start_date}{location}) is coming up and we can't wait to welcome you!\n\nIf you have any questions about what to bring, arrival times or special needs (dietary or otherwise), just reply here — happy to help.\n\nSee you very soon,\n{merchant_name}"
     },
     "de": {
       "subject": "Bis bald — {retreat_name}",
-      "body": "Hallo {customer_name},\n\n\"{retreat_name}\" ({start_date}, {location}) steht bevor und wir freuen uns sehr auf dich!\n\nBei Fragen zu Packliste, Ankunftszeiten oder besonderen Bedürfnissen (Ernährung o. Ä.) melde dich gerne.\n\nBis ganz bald,\n{merchant_name}"
+      "body": "Hallo {customer_name},\n\n\"{retreat_name}\" ({start_date}{location}) steht bevor und wir freuen uns sehr auf dich!\n\nBei Fragen zu Packliste, Ankunftszeiten oder besonderen Bedürfnissen (Ernährung o. Ä.) melde dich gerne.\n\nBis ganz bald,\n{merchant_name}"
     },
     "fr": {
       "subject": "À très vite — {retreat_name}",
-      "body": "Bonjour {customer_name},\n\n« {retreat_name} » ({start_date}, {location}) approche et nous avons hâte de vous accueillir !\n\nPour toute question sur quoi apporter, les horaires d'arrivée ou des besoins particuliers (alimentaires ou autres), écrivez-moi.\n\nÀ très bientôt,\n{merchant_name}"
+      "body": "Bonjour {customer_name},\n\n« {retreat_name} » ({start_date}{location}) approche et nous avons hâte de vous accueillir !\n\nPour toute question sur quoi apporter, les horaires d'arrivée ou des besoins particuliers (alimentaires ou autres), écrivez-moi.\n\nÀ très bientôt,\n{merchant_name}"
     }
   },
   "post_retreat_review": {

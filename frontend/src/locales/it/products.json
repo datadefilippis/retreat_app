@@ -890,7 +890,8 @@
         "statusPending": "Da controllare",
         "pageLabel": "Pagina {{current}} di {{total}}",
         "prev": "← Prec",
-        "next": "Succ →"
+        "next": "Succ →",
+        "colContact": "Contatta"
       },
       "location": {
         "title": "Luogo",
@@ -1163,6 +1164,10 @@
       "createdBanner": {
         "text": "Ritiro creato! Ora costruisci la pagina di vendita: programma giorno per giorno, galleria foto, cosa è incluso e FAQ.",
         "cta": "Aggiungi il programma →"
+      },
+      "reviewAsk": {
+        "title": "Ritiro concluso — chiedi una recensione",
+        "hint": "I bottoni di contatto qui sotto hanno già il messaggio pronto: ringraziamento + link alla tua pagina per recensire. Il momento migliore è nei primi giorni dopo il rientro."
       }
     },
     "reservation": {
