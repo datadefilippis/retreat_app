@@ -1,5 +1,12 @@
 # Marketplace ritiri — refinement olistico del design (piano PM, 8 luglio 2026)
 
+> **ESITO (8/7/2026)** — M1 ✅ M2 ✅ M3 ✅ M4 ✅ M5 ✅ M6 ✅ su main, suite
+> 4143 verdi, verifiche browser (desktop+mobile 390px) su ogni fase.
+> **M0 APERTO**: nome piattaforma da decidere (founder) — placeholder in
+> frontend/src/config/brand.js, UNA riga da cambiare. Rimandati (per
+> scelta): recensioni vere (post-lancio), wishlist, "In evidenza"
+> editoriale (serve flag admin), scroll-spy sezioni landing.
+
 Lente: product manager di un marketplace di prenotazioni. Obiettivo
 founder: "piattaforma di riferimento per prenotare ritiri olistici in
 tutto il mondo — moderna, professionale, user-friendly, design
