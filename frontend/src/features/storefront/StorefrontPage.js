@@ -74,7 +74,7 @@ import { resolveDominantMode } from '../../constants/itemTypes';
 import { formatAmount } from '../../utils/currency';
 import { User, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
-import { BRAND_NAME, BRAND_GLYPH } from '../../config/brand';
+import { BRAND_NAME } from '../../config/brand';
 
 // `resolveTransactionModeCopy` and `fmtPrice` moved to
 // components/StorefrontCards.jsx (Phase 7.3) so the new ProductGrid
@@ -2276,7 +2276,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
       {mktpCheckout && formOpen && (
         <div className="fixed inset-0 z-40 bg-gray-50">
           <div className="h-14 border-b border-gray-200 bg-white flex items-center px-4">
-            <span aria-hidden className="text-xl mr-1.5">{BRAND_GLYPH}</span>
+            <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-9 w-9 mr-2 select-none" draggable={false} />
             <span className="font-bold text-gray-900 tracking-tight">{BRAND_NAME}</span>
             <span className="ml-auto text-xs text-gray-500">
               🔒 {t('storefront:checkout.securePayment', { defaultValue: 'Pagamento sicuro' })}
@@ -2960,7 +2960,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
                     il viaggiatore ha il Passaporto (post-acquisto, zero campi) */}
                 {mktpCheckout && !requiresCustomerAccount && !isCustomerAuthenticated && (
                   <div className="rounded-lg border border-primary/25 bg-primary/5 p-3 flex items-start gap-2">
-                    <span aria-hidden>🌿</span>
+                    <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-5 w-5 mt-0.5 select-none" draggable={false} />
                     <p className="text-xs text-gray-700">
                       {t('storefront:checkout.passportHint', { defaultValue: 'I tuoi viaggi in un posto solo: dopo l\'acquisto ricevi via email il link al tuo Passaporto — senza password.' })}
                     </p>

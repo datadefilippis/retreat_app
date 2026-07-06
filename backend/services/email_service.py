@@ -1573,13 +1573,18 @@ def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, st
     else:
         footer_line = _t("footer_auto", lang)
     # Header: store-branded when context available, platform-only otherwise.
-    # R2b: il glifo 🌿 è il wordmark (BRAND_GLYPH del frontend).
+    # Logo ufficiale (loto+sole, 13/7/2026) hostato sul dominio: risolve
+    # appena il sito è deployato; il testo accanto copre il frattempo e
+    # i client che bloccano le immagini.
+    from core.brand import BRAND_DOMAIN
+    logo_img = (f'<img src="https://{BRAND_DOMAIN}/logo-aurya-128.png" alt="" '
+                f'width="34" height="34" style="vertical-align:middle;'
+                f'border-radius:50%;margin-right:9px;" />')
     if store_name:
         header_html = (f'<h1>{store_name}</h1>'
-                       f'<p class="via">🌿 via Aurya</p>')
+                       f'<p class="via">{logo_img}via Aurya</p>')
     else:
-        header_html = '<h1><span class="glyph">🌿</span>Aurya</h1>'
-    from core.brand import BRAND_DOMAIN
+        header_html = f'<h1>{logo_img}Aurya</h1>'
     return f"""<!DOCTYPE html>
 <html lang="{lang}">
 <head><meta charset="utf-8">{_BASE_STYLE}</head>

@@ -41,13 +41,11 @@ import OperatorHome from './OperatorHome';
 import OnboardingBanner from './OnboardingBanner';
 
 // Map module_key → { dataHref, moduleHref }
+// R4: il vecchio upload BI non esiste più — Customer Insights si popola
+// dagli ordini; il link porta al modulo, non a un upload.
 const MODULE_META = {
-  cashflow_monitor: {
-    dataHref: '/modules/cashflow/data',
-    moduleHref: '/modules/cashflow',
-  },
   customers_light: {
-    dataHref: '/modules/cashflow/data',  // uploads via cashflow data page
+    dataHref: '/modules/customers-light',
     moduleHref: '/modules/customers-light',
   },
 };
@@ -103,8 +101,8 @@ const NoDataEmpty = ({ activeModules }) => {
         return (
           <Link key={mod.module_key} to={meta.dataHref}>
             <Button variant="outline" className="gap-2">
-              <UploadCloud className="h-4 w-4" />
-              {t('empty.upload_data', { label })}
+              {label}
+              <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         );
