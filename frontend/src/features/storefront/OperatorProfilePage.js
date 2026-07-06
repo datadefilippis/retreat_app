@@ -8,6 +8,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import useSeoMeta from './lib/useSeoMeta';
+import MarketplaceShell from './components/MarketplaceShell';
 
 function fmtPrice(n) {
   if (n == null) return null;
@@ -74,14 +75,19 @@ export default function OperatorProfilePage() {
   const extUrl = (u) => (u && !u.startsWith('http') ? `https://${u}` : u);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* T2 — la via del ritorno: sempre visibile, sticky */}
-      <div className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur">
-        <div className="max-w-5xl mx-auto px-4 py-2.5">
-          <Link to="/ritiri" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900">
-            ← {t('landings:operator.backToCalendar')}
+    <MarketplaceShell>
+    <div className="bg-gray-50">
+      {/* M1 — la barra "← Tutti i ritiri" (T2) e' stata assorbita dal
+          guscio marketplace: il logo in header E il breadcrumb sotto
+          riportano alla directory. */}
+      <div className="max-w-5xl mx-auto px-4 pt-3">
+        <nav className="text-xs text-gray-500">
+          <Link to="/ritiri" className="hover:text-primary hover:underline">
+            {t('landings:calendar.title', { defaultValue: 'Ritiri' })}
           </Link>
-        </div>
+          <span className="mx-1.5" aria-hidden>›</span>
+          <span className="text-gray-700">{data.name}</span>
+        </nav>
       </div>
 
       {/* F2.0 — cover del profilo (se curata) sopra il brand header */}
@@ -179,5 +185,6 @@ export default function OperatorProfilePage() {
         )}
       </main>
     </div>
+    </MarketplaceShell>
   );
 }

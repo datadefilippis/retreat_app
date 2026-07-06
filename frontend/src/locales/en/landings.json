@@ -500,5 +500,20 @@
     "cammini": "Hiking & Nature",
     "femminile": "Women's Circles",
     "aziendale": "Corporate wellbeing"
+  },
+  "marketplace": {
+    "tagline": "Find and book holistic retreats worldwide — deposit-based, worry-free.",
+    "searchShortcut": "Where? · When? · What retreat?",
+    "forOrganizers": "Are you an organizer?",
+    "myTrips": "My trips",
+    "signIn": "Sign in",
+    "securePayment": "Secure payment",
+    "footerExplore": "Explore",
+    "footerAll": "All retreats",
+    "footerAccount": "Your account",
+    "footerOrganizers": "Organizers",
+    "startSelling": "Bring your retreats online",
+    "operatorLogin": "Operator area",
+    "terms": "Terms"
   }
 }

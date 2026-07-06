@@ -500,5 +500,20 @@
     "cammini": "Wandern & Natur",
     "femminile": "Frauenkreise",
     "aziendale": "Betriebliches Wohlbefinden"
+  },
+  "marketplace": {
+    "tagline": "Finde und buche holistische Retreats weltweit — mit Anzahlung, sorgenfrei.",
+    "searchShortcut": "Wo? · Wann? · Welches Retreat?",
+    "forOrganizers": "Bist du Veranstalter?",
+    "myTrips": "Meine Reisen",
+    "signIn": "Anmelden",
+    "securePayment": "Sichere Zahlung",
+    "footerExplore": "Entdecken",
+    "footerAll": "Alle Retreats",
+    "footerAccount": "Dein Konto",
+    "footerOrganizers": "Veranstalter",
+    "startSelling": "Bring deine Retreats online",
+    "operatorLogin": "Veranstalter-Bereich",
+    "terms": "AGB"
   }
 }

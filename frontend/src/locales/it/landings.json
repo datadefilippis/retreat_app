@@ -500,5 +500,20 @@
     "cammini": "Cammini & Natura",
     "femminile": "Cerchi & Femminile",
     "aziendale": "Benessere aziendale"
+  },
+  "marketplace": {
+    "tagline": "Trova e prenota ritiri olistici in tutto il mondo — con caparra, senza pensieri.",
+    "searchShortcut": "Dove? · Quando? · Che ritiro?",
+    "forOrganizers": "Sei un organizzatore?",
+    "myTrips": "I miei viaggi",
+    "signIn": "Accedi",
+    "securePayment": "Pagamento sicuro",
+    "footerExplore": "Esplora",
+    "footerAll": "Tutti i ritiri",
+    "footerAccount": "Il tuo account",
+    "footerOrganizers": "Organizzatori",
+    "startSelling": "Porta i tuoi ritiri online",
+    "operatorLogin": "Area operatori",
+    "terms": "Termini"
   }
 }

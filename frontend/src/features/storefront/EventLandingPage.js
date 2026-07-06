@@ -39,6 +39,7 @@ import { effectivePlan } from './lib/paymentPlan';
 import useSeoMeta from './lib/useSeoMeta';
 import api from '../../api/client';
 import StoreContextNav from './components/StoreContextNav';
+import MarketplaceShell from './components/MarketplaceShell';
 // G4 — mappa lazy: Leaflet non pesa sul first paint della landing
 const StaticMiniMap = React.lazy(() => import('./components/StaticMiniMap'));
 
@@ -430,30 +431,37 @@ export default function EventLandingPage() {
   const effectiveCurrency = product.currency || 'EUR';
   const heroImage = occurrence.cover_image_url || product.image_url;
 
+  // M1 — doppio guscio: store (?store=1) tiene header+nav del negozio;
+  // marketplace (directory, Google, link condivisi) indossa il guscio
+  // comune: "dentro il marketplace non ti perdi mai".
+  const Wrap = fromStore ? React.Fragment : MarketplaceShell;
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Persistent storefront header — consistent brand across surfaces.
-          Logo + store name click back to /s/:orgSlug (home). */}
-      <StorefrontHeader
-        orgSlug={orgSlug}
-        storeInfo={storeInfo}
-        orgName={orgName}
-        subtitle={t('landings:event.headerSubtitle')}
-        rightSlot={
-          <Link
-            to={`/s/${orgSlug}`}
-            className="text-xs sm:text-sm font-medium opacity-80 hover:opacity-100 underline-offset-2 hover:underline inline-flex items-center gap-2"
-            style={storeInfo?.brand_color ? { color: storeInfo.brand_color_text || '#fff' } : { color: '#374151' }}
-          >
-            <span>{t('landings:event.catalogLink')}</span>
-            {cartCount > 0 && (
-              <span className="inline-flex items-center rounded-full bg-white text-gray-900 text-[10px] font-bold px-2 py-0.5">
-                🛒 {cartCount}
-              </span>
-            )}
-          </Link>
-        }
-      />
+    <Wrap>
+    <div className={fromStore ? 'min-h-screen bg-gray-50' : 'bg-gray-50'}>
+      {fromStore && (<>
+        {/* Persistent storefront header — consistent brand across surfaces.
+            Logo + store name click back to /s/:orgSlug (home). */}
+        <StorefrontHeader
+          orgSlug={orgSlug}
+          storeInfo={storeInfo}
+          orgName={orgName}
+          subtitle={t('landings:event.headerSubtitle')}
+          rightSlot={
+            <Link
+              to={`/s/${orgSlug}`}
+              className="text-xs sm:text-sm font-medium opacity-80 hover:opacity-100 underline-offset-2 hover:underline inline-flex items-center gap-2"
+              style={storeInfo?.brand_color ? { color: storeInfo.brand_color_text || '#fff' } : { color: '#374151' }}
+            >
+              <span>{t('landings:event.catalogLink')}</span>
+              {cartCount > 0 && (
+                <span className="inline-flex items-center rounded-full bg-white text-gray-900 text-[10px] font-bold px-2 py-0.5">
+                  🛒 {cartCount}
+                </span>
+              )}
+            </Link>
+          }
+        />
+      </>)}
       {fromStore && <StoreContextNav slug={orgSlug} />}
 
       {/* "Vai al checkout" banner — appears when the cart has items. Gives
@@ -847,5 +855,6 @@ export default function EventLandingPage() {
         </Link>
       </footer>
     </div>
+    </Wrap>
   );
 }
