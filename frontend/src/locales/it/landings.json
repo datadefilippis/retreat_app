@@ -327,7 +327,12 @@
     "viewProfile": "Vedi profilo",
     "findMoreRetreats": "Scopri altri ritiri",
     "autoTranslated": "Contenuti tradotti automaticamente dall'italiano.",
-    "seeOriginal": "Vedi originale"
+    "seeOriginal": "Vedi originale",
+    "share": "Condividi",
+    "morePhotos": "foto",
+    "trustSecure": "Pagamento sicuro con carta — i tuoi dati non passano mai dall'organizzatore.",
+    "trustDeposit": "Dove previsto, blocchi il posto con la caparra e saldi più avanti.",
+    "trustTicket": "Biglietto e promemoria via email, subito dopo la prenotazione."
   },
   "product": {
     "loading": "Caricamento…",

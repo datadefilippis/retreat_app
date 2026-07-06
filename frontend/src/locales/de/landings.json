@@ -327,7 +327,12 @@
     },
     "faq": {
       "heading": "Häufige Fragen"
-    }
+    },
+    "share": "Teilen",
+    "morePhotos": "Fotos",
+    "trustSecure": "Sichere Kartenzahlung — deine Daten gehen nie an den Veranstalter.",
+    "trustDeposit": "Wo vorgesehen, sicherst du dir den Platz mit einer Anzahlung und zahlst den Rest später.",
+    "trustTicket": "Ticket und Erinnerungen per E-Mail, direkt nach der Buchung."
   },
   "product": {
     "loading": "Laden…",

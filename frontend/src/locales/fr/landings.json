@@ -327,7 +327,12 @@
     },
     "faq": {
       "heading": "Questions fréquentes"
-    }
+    },
+    "share": "Partager",
+    "morePhotos": "photos",
+    "trustSecure": "Paiement sécurisé par carte — tes données ne passent jamais par l'organisateur.",
+    "trustDeposit": "Si prévu, tu bloques ta place avec un acompte et règles le solde plus tard.",
+    "trustTicket": "Billet et rappels par e-mail, juste après la réservation."
   },
   "product": {
     "loading": "Chargement…",

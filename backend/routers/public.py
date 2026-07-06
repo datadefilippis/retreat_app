@@ -249,6 +249,8 @@ class PublicEventProduct(BaseModel):
     image_url: Optional[str] = None
     transaction_mode: str = "direct"
     currency: str = "EUR"
+    # M2 — breadcrumb della landing (Ritiri › categoria › titolo)
+    category: Optional[str] = None
     # Onda 15 — base unit_price surfaced so the landing can compute the
     # total for mono-tier events (general-price events without tiers).
     # Fallback chain on the frontend: occurrence.price_override ?? product.unit_price ?? 0.
@@ -1220,6 +1222,8 @@ async def get_public_event_landing(org_slug: str, slug: str,
             "unit_price": 1,
             # Multilingua manuale — serve al merge_language per ?lang=
             "translations": 1,
+            # M2 — breadcrumb Ritiri › categoria › titolo
+            "category": 1,
         },
     )
     if not product:
@@ -1356,6 +1360,7 @@ async def get_public_event_landing(org_slug: str, slug: str,
             description=product.get("description"),
             image_url=product.get("image_url"),
             transaction_mode=product.get("transaction_mode", "direct"),
+            category=product.get("category"),   # M2 — breadcrumb landing
             currency=get_currency_for_org(org),
             # Onda 15 — base unit_price for mono-tier events (no tiers &
             # no per-occurrence override). The landing riepilogo falls
