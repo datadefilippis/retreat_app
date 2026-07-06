@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { Mail, MessageCircle } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { customerInsightsAPI } from '../../../api/customerInsights';
-import { OutreachConfirmDialog } from './OutreachConfirmDialog';
+import { OutreachConfirmDialog } from '../../../components/OutreachConfirmDialog';
 
 // Defaults for the per-channel "quick send" template if the user just
 // clicks the button without opening the picker. Aligned to the merchant's

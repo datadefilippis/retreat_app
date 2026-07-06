@@ -145,5 +145,13 @@
     "expected": "Atteso",
     "actual": "Reale",
     "other": "Altro"
+  },
+  "outreachShared": {
+    "whatsapp": "Scrivi su WhatsApp",
+    "email": "Scrivi una email",
+    "noPhone": "Nessun telefono",
+    "noEmail": "Nessuna email",
+    "noConsent": "Questo cliente non ha dato il consenso marketing",
+    "error": "Impossibile preparare il messaggio, riprova"
   }
 }

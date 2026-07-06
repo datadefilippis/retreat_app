@@ -17,7 +17,6 @@
       "body": "Bonjour {customer_name},\n\nje me suis aperçu(e) que nous n'avions pas échangé depuis un moment et je voulais simplement prendre de vos nouvelles. Si je peux vous être utile, faites-moi signe.\n\nÀ bientôt,\n{merchant_name}"
     }
   },
-
   "new_welcome": {
     "it": {
       "subject": "Benvenuto/a {customer_name}!",
@@ -36,7 +35,6 @@
       "body": "Bonjour {customer_name},\n\nmerci pour votre confiance — c'est un plaisir de vous compter parmi mes clients. Si vous avez des questions ou souhaitez un conseil sur la suite, n'hésitez pas à répondre à ce message.\n\nÀ bientôt,\n{merchant_name}"
     }
   },
-
   "top_personal_note": {
     "it": {
       "subject": "Grazie {customer_name}",
@@ -55,7 +53,6 @@
       "body": "Bonjour {customer_name},\n\nje voulais simplement vous remercier. Vous êtes l'un(e) des clients qui m'accompagnent depuis le plus longtemps et vous voir revenir compte beaucoup pour moi. Si je peux faire quelque chose de spécial pour vous, faites-le moi savoir.\n\nCordialement,\n{merchant_name}"
     }
   },
-
   "promo_mid_season": {
     "it": {
       "subject": "Una proposta per te, {customer_name}",
@@ -74,7 +71,6 @@
       "body": "Bonjour {customer_name},\n\nj'ai une offre qui pourrait vous intéresser. Répondez-moi si vous souhaitez les détails.\n\nÀ bientôt,\n{merchant_name}"
     }
   },
-
   "appointment_reminder": {
     "it": {
       "subject": "Promemoria appuntamento — {customer_name}",
@@ -93,7 +89,6 @@
       "body": "Bonjour {customer_name},\n\npetit rappel de notre rendez-vous. Si vous devez le déplacer, dites-le moi dès que possible.\n\nÀ bientôt,\n{merchant_name}"
     }
   },
-
   "feedback_request": {
     "it": {
       "subject": "Una domanda veloce, {customer_name}",
@@ -112,7 +107,6 @@
       "body": "Bonjour {customer_name},\n\npourrais-je vous demander un retour rapide sur notre dernière collaboration ? Même deux lignes m'aident vraiment à m'améliorer.\n\nMerci,\n{merchant_name}"
     }
   },
-
   "thank_you_purchase": {
     "it": {
       "subject": "Grazie per il tuo acquisto!",
@@ -131,7 +125,6 @@
       "body": "Bonjour {customer_name},\n\nmerci pour votre achat — cela compte beaucoup pour moi. Si vous avez des questions ou besoin d'aide, répondez-moi simplement.\n\nÀ bientôt,\n{merchant_name}"
     }
   },
-
   "general_check_in": {
     "it": {
       "subject": "Ciao {customer_name}, come va?",
@@ -148,6 +141,78 @@
     "fr": {
       "subject": "Bonjour {customer_name}, comment ça va ?",
       "body": "Bonjour {customer_name},\n\nça fait un moment — je voulais simplement prendre de vos nouvelles. Quand vous avez un instant, écrivez-moi quelques lignes.\n\nÀ bientôt,\n{merchant_name}"
+    }
+  },
+  "payment_reminder": {
+    "it": {
+      "subject": "Promemoria pagamento — {merchant_name}",
+      "body": "Ciao {customer_name},\n\nti scrivo da {merchant_name}: risulta ancora in sospeso il pagamento di {amount} con scadenza {due_date} (ordine {order_number}).\n\nSe hai già provveduto, ignora pure questo messaggio. Per qualsiasi dubbio sono qui.\n\nGrazie!"
+    },
+    "en": {
+      "subject": "Payment reminder — {merchant_name}",
+      "body": "Hi {customer_name},\n\nthis is {merchant_name}: the payment of {amount} due on {due_date} (order {order_number}) still appears outstanding.\n\nIf you've already taken care of it, please ignore this message. Happy to help with any questions.\n\nThank you!"
+    },
+    "de": {
+      "subject": "Zahlungserinnerung — {merchant_name}",
+      "body": "Hallo {customer_name},\n\nhier ist {merchant_name}: die Zahlung von {amount}, fällig am {due_date} (Bestellung {order_number}), ist noch offen.\n\nFalls du sie bereits veranlasst hast, ignoriere diese Nachricht bitte. Bei Fragen bin ich gerne da.\n\nDanke!"
+    },
+    "fr": {
+      "subject": "Rappel de paiement — {merchant_name}",
+      "body": "Bonjour {customer_name},\n\nc'est {merchant_name} : le paiement de {amount}, dû le {due_date} (commande {order_number}), semble encore en attente.\n\nSi vous l'avez déjà effectué, ignorez ce message. Je reste disponible pour toute question.\n\nMerci !"
+    }
+  },
+  "pre_retreat": {
+    "it": {
+      "subject": "Ci vediamo presto — {retreat_name}",
+      "body": "Ciao {customer_name},\n\nmanca poco a \"{retreat_name}\" ({start_date}, {location}) e non vediamo l'ora di accoglierti!\n\nSe hai domande su cosa portare, orari di arrivo o esigenze particolari (alimentari o altro), scrivimi pure: sono qui.\n\nA prestissimo,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "See you soon — {retreat_name}",
+      "body": "Hi {customer_name},\n\n\"{retreat_name}\" ({start_date}, {location}) is coming up and we can't wait to welcome you!\n\nIf you have any questions about what to bring, arrival times or special needs (dietary or otherwise), just reply here — happy to help.\n\nSee you very soon,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Bis bald — {retreat_name}",
+      "body": "Hallo {customer_name},\n\n\"{retreat_name}\" ({start_date}, {location}) steht bevor und wir freuen uns sehr auf dich!\n\nBei Fragen zu Packliste, Ankunftszeiten oder besonderen Bedürfnissen (Ernährung o. Ä.) melde dich gerne.\n\nBis ganz bald,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "À très vite — {retreat_name}",
+      "body": "Bonjour {customer_name},\n\n« {retreat_name} » ({start_date}, {location}) approche et nous avons hâte de vous accueillir !\n\nPour toute question sur quoi apporter, les horaires d'arrivée ou des besoins particuliers (alimentaires ou autres), écrivez-moi.\n\nÀ très bientôt,\n{merchant_name}"
+    }
+  },
+  "post_retreat_review": {
+    "it": {
+      "subject": "Grazie di essere stato con noi — {retreat_name}",
+      "body": "Ciao {customer_name},\n\ngrazie di cuore per aver partecipato a \"{retreat_name}\": è stato bello averti con noi.\n\nSe ti va, una tua recensione aiuta altre persone a trovarci e noi a crescere. Bastano due minuti:\n{review_link}\n\nCon gratitudine,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "Thank you for being with us — {retreat_name}",
+      "body": "Hi {customer_name},\n\nthank you so much for joining \"{retreat_name}\" — it was wonderful to have you with us.\n\nIf you feel like it, a review from you helps others find us and helps us grow. It only takes two minutes:\n{review_link}\n\nWith gratitude,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Danke, dass du bei uns warst — {retreat_name}",
+      "body": "Hallo {customer_name},\n\nherzlichen Dank für deine Teilnahme an \"{retreat_name}\" — es war schön, dich bei uns zu haben.\n\nWenn du magst: eine Bewertung von dir hilft anderen, uns zu finden, und uns, zu wachsen. Es dauert nur zwei Minuten:\n{review_link}\n\nMit Dankbarkeit,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Merci d'avoir été des nôtres — {retreat_name}",
+      "body": "Bonjour {customer_name},\n\nmerci infiniment d'avoir participé à « {retreat_name} » — c'était un plaisir de vous accueillir.\n\nSi le cœur vous en dit, votre avis aide d'autres personnes à nous trouver et nous aide à grandir. Deux minutes suffisent :\n{review_link}\n\nAvec gratitude,\n{merchant_name}"
+    }
+  },
+  "winback": {
+    "it": {
+      "subject": "Ci manchi — {merchant_name}",
+      "body": "Ciao {customer_name},\n\nè passato un po' di tempo dall'ultima volta e ci farebbe piacere rivederti.\n\nStiamo preparando nuove esperienze e ritiri: se ti va di dare un'occhiata, trovi tutto sulla nostra pagina. E se c'è qualcosa che vorresti vivere con noi, scrivimelo!\n\nUn caro saluto,\n{merchant_name}"
+    },
+    "en": {
+      "subject": "We miss you — {merchant_name}",
+      "body": "Hi {customer_name},\n\nit's been a while since your last visit and we'd love to see you again.\n\nWe're preparing new experiences and retreats: feel free to have a look at our page. And if there's something you'd love to experience with us, just tell me!\n\nWarm regards,\n{merchant_name}"
+    },
+    "de": {
+      "subject": "Wir vermissen dich — {merchant_name}",
+      "body": "Hallo {customer_name},\n\nseit deinem letzten Besuch ist einige Zeit vergangen und wir würden uns freuen, dich wiederzusehen.\n\nWir bereiten neue Erlebnisse und Retreats vor: schau gerne auf unserer Seite vorbei. Und wenn du etwas Bestimmtes mit uns erleben möchtest, schreib mir!\n\nHerzliche Grüße,\n{merchant_name}"
+    },
+    "fr": {
+      "subject": "Vous nous manquez — {merchant_name}",
+      "body": "Bonjour {customer_name},\n\nun certain temps s'est écoulé depuis votre dernière visite et nous serions ravis de vous revoir.\n\nNous préparons de nouvelles expériences et retraites : n'hésitez pas à jeter un œil à notre page. Et s'il y a quelque chose que vous aimeriez vivre avec nous, dites-le-moi !\n\nChaleureusement,\n{merchant_name}"
     }
   }
 }
