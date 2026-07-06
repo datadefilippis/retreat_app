@@ -188,10 +188,10 @@ export default function PhysicalLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {fromStore && <StoreContextNav slug={orgSlug} />}
       {/* Back link — carries a cart badge when the customer has items
           saved in sessionStorage, so they know the in-progress cart
           survives the drill-in into this landing. */}
+      {fromStore && <StoreContextNav slug={orgSlug} />}
       <div className="max-w-5xl mx-auto px-4 py-4">
         <button
           onClick={() => navigate(`/s/${orgSlug}`)}

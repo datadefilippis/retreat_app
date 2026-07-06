@@ -404,8 +404,8 @@ export default function ProductLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {fromStore && <StoreContextNav slug={orgSlug} />}
       <StorefrontHeader orgName={orgName} orgSlug={orgSlug} storeInfo={storeInfo} />
+      {fromStore && <StoreContextNav slug={orgSlug} />}
 
       {/* Hero */}
       <div className="relative bg-gray-900 text-white overflow-hidden">
