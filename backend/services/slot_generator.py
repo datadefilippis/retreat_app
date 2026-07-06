@@ -113,7 +113,7 @@ async def generate_available_slots(
         {"organization_id": org_id,
          "$or": [{"product_id": product_id}, {"product_id": None}]},
         {"_id": 0},
-    ).to_list(None)
+    ).to_list(1000)
 
     # Onda 15 — "Usa calendario standard" fallback. When the product has no
     # rules of its own AND admin opted into default schedule, synthesize a
@@ -178,7 +178,7 @@ async def generate_available_slots(
         blocked = await blocked_slots_collection.find(
             blocked_query,
             {"_id": 0, "start_time": 1, "end_time": 1},
-        ).to_list(None)
+        ).to_list(1000)
 
         for rule in rules:
             if rule.get("day_of_week") != weekday:
@@ -330,7 +330,7 @@ async def generate_availability_windows(
         {"organization_id": org_id,
          "$or": [{"product_id": product_id}, {"product_id": None}]},
         {"_id": 0},
-    ).to_list(None)
+    ).to_list(1000)
 
     # Onda 15 default-schedule fallback — same as generate_available_slots.
     if not rules and bool(meta.get("use_default_schedule")):
@@ -387,7 +387,7 @@ async def generate_availability_windows(
              "$or": [{"product_id": product_id}, {"product_id": None},
                      {"product_id": {"$exists": False}}]},
             {"_id": 0, "start_time": 1, "end_time": 1},
-        ).to_list(None)
+        ).to_list(1000)
         blocked_intervals: List[Tuple[int, int]] = []
         for b in blocked_rows:
             bs = _hhmm_to_min(b.get("start_time") or "")

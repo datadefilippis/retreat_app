@@ -379,7 +379,7 @@ async def price_preview(
     extras_catalog = await product_extras_collection.find(
         {"organization_id": org_id, "product_id": body.product_id, "is_active": True},
         {"_id": 0},
-    ).to_list(None)
+    ).to_list(200)
 
     # Rental multiplier parity with order_service.create_order (see lines ~155-176).
     # compute_line_total itself computes `base = quantity * unit_price * (1-discount)`

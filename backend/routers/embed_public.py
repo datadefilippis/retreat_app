@@ -1281,7 +1281,7 @@ async def get_embed_price_preview(
             "is_active": True,
         },
         {"_id": 0},
-    ).to_list(None)
+    ).to_list(200)
 
     # Rental multiplier per flavor=range / flavor=slot
     rental_multiplier = compute_rental_multiplier(

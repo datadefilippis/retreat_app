@@ -513,7 +513,7 @@ async def duplicate_product(
         option_docs = await service_options_collection.find(
             {"organization_id": org_id, "product_id": product_id},
             {"_id": 0},
-        ).to_list(None)
+        ).to_list(500)
         for opt in option_docs:
             clone = {k: v for k, v in opt.items() if k not in ("id", "product_id", "created_at", "updated_at")}
             clone.update({
@@ -528,7 +528,7 @@ async def duplicate_product(
         rule_docs = await availability_rules_collection.find(
             {"organization_id": org_id, "product_id": product_id},
             {"_id": 0},
-        ).to_list(None)
+        ).to_list(500)
         for r in rule_docs:
             clone = {k: v for k, v in r.items() if k not in ("id", "product_id", "created_at", "updated_at")}
             clone.update({
@@ -668,12 +668,10 @@ async def upload_product_image(
 
     # Save file
     filename = f"{product_id}{ext}"
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(contents)
-
-    # Update product.image_url
-    image_url = f"/uploads/products/{filename}"
+    # R3 — adapter storage: S3 se configurato, filesystem locale in dev
+    from services.object_storage import save_public_upload
+    image_url = save_public_upload("products", filename, contents,
+                                   content_type=f"image/{ext.lstrip('.')}")
     from database import products_collection
     from models.common import utc_now
     await products_collection.update_one(

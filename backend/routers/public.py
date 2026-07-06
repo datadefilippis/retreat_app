@@ -2360,7 +2360,7 @@ async def get_product_landing(org_slug: str, product_slug: str,
             {"_id": 0, "id": 1, "label": 1, "description": 1, "price": 1,
              "duration_minutes_override": 1, "sort_order": 1},
         ).sort("sort_order", 1)
-        pp_dict["service_options"] = await options_cursor.to_list(None)
+        pp_dict["service_options"] = await options_cursor.to_list(200)
         # Onda 15 parity — use_default_schedule counts as "has slots" so the
         # storefront shows the picker even without explicit DB rules (the slot
         # generator synthesizes a 7-day 9-18 grid at fetch time).
@@ -2404,7 +2404,7 @@ async def get_product_landing(org_slug: str, product_slug: str,
              "description": 1, "price": 1, "price_modifier_type": 1,
              "duration_minutes_override": 1, "is_default": 1, "sort_order": 1},
         ).sort("sort_order", 1)
-        pp_dict["extras"] = await extras_cursor.to_list(None)
+        pp_dict["extras"] = await extras_cursor.to_list(200)
         # Slot flavor also needs availability rules for the hh:mm picker.
         if meta.get("reservation_flavor") == "slot":
             rule_exists = await availability_rules_collection.find_one(
@@ -3032,7 +3032,7 @@ async def public_price_preview(request: Request, body: _PublicPricePreviewReques
         {"organization_id": product["organization_id"],
          "product_id": body.product_id, "is_active": True},
         {"_id": 0},
-    ).to_list(None)
+    ).to_list(200)
 
     # Rental multiplier parity with the admin preview + order_service.create_order.
     # Pre-inflates `quantity` so `base` reflects the full rental span (e.g. 4 nights

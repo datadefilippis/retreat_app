@@ -1389,10 +1389,9 @@ async def upload_org_logo(
                 pass
 
     filename = f"{org_id}{ext}"
-    with open(os.path.join(ORG_LOGO_DIR, filename), "wb") as f:
-        f.write(contents)
-
-    logo_url = f"/uploads/logos/org/{filename}"
+    from services.object_storage import save_public_upload
+    logo_url = save_public_upload("logos/org", filename, contents,
+                                  content_type=f"image/{ext.lstrip('.')}")
 
     # Auto-set on the org so the next /catalog request picks it up
     # immediately. Merge with any existing branding fields.
@@ -1813,11 +1812,9 @@ async def upload_profile_cover(
         old = os.path.join(PROFILE_COVER_DIR, f"{org_id}{old_ext}")
         if os.path.exists(old) and old_ext != ext:
             os.remove(old)
-    path = os.path.join(PROFILE_COVER_DIR, f"{org_id}{ext}")
-    with open(path, "wb") as fh:
-        fh.write(contents)
-
-    cover_url = f"/uploads/profile-covers/{org_id}{ext}"
+    from services.object_storage import save_public_upload
+    cover_url = save_public_upload("profile-covers", f"{org_id}{ext}", contents,
+                                   content_type=f"image/{ext.lstrip('.')}")
     from database import organizations_collection
     await organizations_collection.update_one(
         {"id": org_id}, {"$set": {"public_profile.cover_url": cover_url}},
