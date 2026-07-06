@@ -11,7 +11,6 @@
  * un solo round-trip extra, solo in contesto store.
  */
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { storefrontAPI } from '../../../api/storefront';
 import useAvailableCategories from '../hooks/useAvailableCategories';
@@ -33,29 +32,16 @@ export default function StoreContextNav({ slug }) {
   if (!catalog) return null;
 
   const si = catalog.store_info || {};
-  const brandBg = si.brand_color || null;
-  const brandFg = si.brand_color_text || (brandBg ? '#ffffff' : null);
 
+  // Solo la CategoryNav: il NOME dello store sta gia' nella barra del
+  // titolo della landing (feedback founder 7/7 — via il doppione blu;
+  // il menu si posiziona SOTTO la barra del titolo).
   return (
-    <div className="sticky top-0 z-20">
-      <div
-        className="px-4 py-2.5"
-        style={brandBg
-          ? { backgroundColor: brandBg, color: brandFg }
-          : { backgroundColor: '#111827', color: '#ffffff' }}
-      >
-        <div className="max-w-6xl mx-auto flex items-center gap-2">
-          <Link to={`/s/${slug}`} className="font-semibold text-sm hover:opacity-80 truncate">
-            {si.display_name || catalog.org_name}
-          </Link>
-        </div>
-      </div>
-      <CategoryNav
-        orgSlug={slug}
-        categories={categories}
-        storeInfo={si}
-        customLinks={catalog.custom_nav_links}
-      />
-    </div>
+    <CategoryNav
+      orgSlug={slug}
+      categories={categories}
+      storeInfo={si}
+      customLinks={catalog.custom_nav_links}
+    />
   );
 }

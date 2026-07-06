@@ -430,7 +430,6 @@ export default function EventLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {fromStore && <StoreContextNav slug={orgSlug} />}
       {/* Persistent storefront header — consistent brand across surfaces.
           Logo + store name click back to /s/:orgSlug (home). */}
       <StorefrontHeader
@@ -453,6 +452,7 @@ export default function EventLandingPage() {
           </Link>
         }
       />
+      {fromStore && <StoreContextNav slug={orgSlug} />}
 
       {/* "Vai al checkout" banner — appears when the cart has items. Gives
           customers a clear way to exit the multi-add flow and proceed. */}
