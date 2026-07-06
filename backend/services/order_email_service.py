@@ -184,6 +184,10 @@ async def _get_customer_email_and_locale(order: dict) -> tuple:
     Returns (email, locale). Email may be None if not found.
 
     Locale resolution chain (matches frontend resolver in spirit):
+      0. order.locale — R2a: the buyer's UI language frozen at checkout.
+         The strongest signal we have: a DE traveller buying a retreat
+         from an IT operator gets DE emails, including the deposit
+         reminders that fire weeks later.
       1. customer_account.locale — when the buyer is logged in. Their
          explicit preference wins over store defaults.
       2. store.storefront_languages[0] — the storefront the order came
@@ -210,11 +214,12 @@ async def _get_customer_email_and_locale(order: dict) -> tuple:
         email = (customer or {}).get("email")
 
     # ── Locale resolution chain ──────────────────────────────────────
-    locale: Optional[str] = None
+    # Priority 0: buyer's UI language frozen on the order at checkout (R2a)
+    locale: Optional[str] = _normalize_locale(order.get("locale"))
 
     # Priority 1: linked customer account
     account_id = order.get("customer_account_id")
-    if account_id:
+    if locale is None and account_id:
         try:
             account = await customer_accounts_collection.find_one(
                 {"id": account_id},

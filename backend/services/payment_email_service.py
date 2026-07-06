@@ -103,7 +103,14 @@ async def send_at_risk_to_operator(
         if not recipients:
             return
 
-        locale = "it"
+        # R2a: lingua dell'OPERATORE (stessa catena delle notifiche
+        # nuovo-ordine: user.locale del destinatario → lingua storefront
+        # → it) al posto dello storico hardcoded "it".
+        from services.order_email_service import _resolve_merchant_locale
+        locale = await _resolve_merchant_locale(
+            order, org_id,
+            notification_user_email=recipients[0] if recipients else None,
+        )
         currency = schedule_doc.get("currency") or "EUR"
         amount = _fmt_total(row.get("amount_minor", 0) / 100.0, currency, locale)
         due = _fmt_short_date_localized((row.get("due_at") or "")[:10], locale)

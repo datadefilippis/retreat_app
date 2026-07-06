@@ -23,7 +23,13 @@ import MarketplaceShell from '../storefront/components/MarketplaceShell';
 const attemptedTokens = new Set();
 
 export default function AccountLoginPage() {
-  const { t } = useTranslation('landings');
+  const { t, i18n } = useTranslation('landings');
+  // R2a — la lingua UI viaggia con la richiesta OTP: il backend la salva
+  // come preferenza del Passaporto e localizza l'email del codice.
+  const emailLang = () => {
+    const lang = (i18n.language || '').slice(0, 2).toLowerCase();
+    return ['it', 'en', 'de', 'fr'].includes(lang) ? lang : undefined;
+  };
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const token = params.get('token');
@@ -92,7 +98,8 @@ export default function AccountLoginPage() {
     e.preventDefault();
     setSending(true); setError(null);
     try {
-      await platformApi.post('/platform/auth/magic-link', { email });
+      await platformApi.post('/platform/auth/magic-link',
+        { email, language: emailLang() });
       setState('sent');
     } catch {
       setError(t('landings:account.requestError', {
