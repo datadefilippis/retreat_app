@@ -19,7 +19,7 @@
  *     → Frontend renders text from those codes via i18n.
  */
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { effectivePlan } from './lib/paymentPlan';
 import { storefrontAPI } from '../../api/storefront';
@@ -346,6 +346,10 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
   const { slug, category } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  // L2 — 'POP' = back/forward del browser: serve alla guardia
+  // anti-vetrina per distinguere il ritorno accidentale sull'entry
+  // /s/:slug dalle visite deliberate (PUSH) alla vetrina.
+  const navType = useNavigationType();
   const { t, i18n } = useTranslation('storefront');
   const { customer, isCustomerAuthenticated, login: customerLogin, signup: customerSignup } = useCustomerAuth();
   const [catalog, setCatalog] = useState(null);
@@ -827,14 +831,26 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     }
     if (preload.mktp === true) {
       setMktpCheckout({ returnTo: preload.returnTo || '/ritiri' });
-      try { sessionStorage.setItem('storefront:mktp_ctx', '1'); } catch { /* no-op */ }
+      try {
+        sessionStorage.setItem('storefront:mktp_ctx', '1');
+        // L2 — meta del ritorno per la guardia anti-vetrina (back del
+        // browser sull'entry /s/:slug dopo la chiusura del checkout)
+        sessionStorage.setItem('storefront:mktp_return', preload.returnTo || '/ritiri');
+      } catch { /* no-op */ }
     }
 
     // Strip the Router state so a manual refresh stays on the plain
     // storefront without re-hydrating the same pre-fill. We preserve the
     // query string so ?checkout=1 (if present) can still be consumed by
     // the dedicated effect below.
-    window.history.replaceState({}, '', window.location.pathname + window.location.search);
+    // L2 — si azzera SOLO lo state utente (usr): key/idx sono i metadati
+    // di React Router — cancellarli con {} faceva sembrare 'default'
+    // (= cold start) la key di questa entry al ritorno con back/forward,
+    // accecando la guardia anti-vetrina qui sotto.
+    window.history.replaceState(
+      { ...(window.history.state || {}), usr: undefined },
+      '', window.location.pathname + window.location.search,
+    );
     // Onda 15 — include location.state in deps so the effect also fires
     // when the user re-enters /s/:slug with fresh preloadCart while the
     // catalog is already cached (SPA navigation back from /p/:org/:slug).
@@ -1046,9 +1062,45 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     if (submitted) { mktpWasOpenRef.current = false; return; }
     if (mktpWasOpenRef.current) {
       mktpWasOpenRef.current = false;
-      navigate(mktpCheckout.returnTo);
+      // L2 — replace, non push: l'entry /s/:slug (la vetrina nuda) non
+      // deve restare nella history — il back del browser dopo la
+      // chiusura riportava sull'ecommerce dell'operatore.
+      navigate(mktpCheckout.returnTo, { replace: true });
     }
   }, [formOpen, mktpCheckout, submitted, navigate]);
+
+  // L2 — guardia anti-vetrina: nel percorso directory l'utente non deve
+  // MAI trovarsi sulla vetrina dell'operatore. Se questa pagina renderizza
+  // in contesto marketplace (flag di sessione) SENZA un checkout mktp
+  // attivo ne' uno in arrivo (preload/riapertura/?checkout=1), e ci si è
+  // arrivati con back/forward del browser (POP su entry SPA — l'entry
+  // /s/:slug ripulita dello state), si torna alla landing. Le visite
+  // DELIBERATE alla vetrina (click su link = PUSH, o URL diretto =
+  // location.key 'default') non vengono toccate: chiudono il contesto
+  // marketplace, coerente con la pulizia del flag qui sotto.
+  useEffect(() => {
+    if (mktpCheckout || formOpen) return;
+    if (location.state?.preloadCart || location.state?.mktpOpen) return;
+    if (new URLSearchParams(location.search).get('checkout') === '1') return;
+    let inMktp = false;
+    let back = '/ritiri';
+    try {
+      inMktp = sessionStorage.getItem('storefront:mktp_ctx') === '1';
+      back = sessionStorage.getItem('storefront:mktp_return') || back;
+    } catch { /* no-op */ }
+    if (!inMktp) return;
+    if (navType === 'POP' && location.key !== 'default') {
+      navigate(back, { replace: true });
+    } else {
+      // Vetrina raggiunta di proposito: il viaggio directory è finito,
+      // il flag non deve più perseguitare questa tab.
+      try {
+        sessionStorage.removeItem('storefront:mktp_ctx');
+        sessionStorage.removeItem('storefront:mktp_return');
+      } catch { /* no-op */ }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mktpCheckout, formOpen, location.state, location.search, navType, location.key]);
 
   // K1+ — riapertura del checkout in contesto marketplace dal banner
   // della landing (carrello gia' pieno: niente preload prodotto).
@@ -1057,9 +1109,16 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     if (!mo) return;
     if (selectedItems.length === 0) return;   // aspetta l'idratazione del carrello
     setMktpCheckout({ returnTo: mo.returnTo || '/ritiri' });
-    try { sessionStorage.setItem('storefront:mktp_ctx', '1'); } catch { /* no-op */ }
+    try {
+      sessionStorage.setItem('storefront:mktp_ctx', '1');
+      sessionStorage.setItem('storefront:mktp_return', mo.returnTo || '/ritiri');
+    } catch { /* no-op */ }
     setFormOpen(true);
-    window.history.replaceState({}, '', window.location.pathname + window.location.search);
+    // L2 — come sopra: azzera solo usr, preserva key/idx del router.
+    window.history.replaceState(
+      { ...(window.history.state || {}), usr: undefined },
+      '', window.location.pathname + window.location.search,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state, selectedItems.length]);
 
