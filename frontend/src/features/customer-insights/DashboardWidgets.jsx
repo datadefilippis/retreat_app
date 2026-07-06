@@ -8,16 +8,17 @@ import { Badge } from '../../components/ui/badge';
 import { Skeleton } from '../../components/ui/skeleton';
 import { Users, UserCheck, UserX, Target } from 'lucide-react';
 import { formatCurrency } from '../../lib/utils';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { DonutSplit } from '../../components/charts';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/AuthContext';
 
+// Semantica fissa nella palette del kit: inattivi = terracotta (attenzione)
 const SEGMENT_COLORS = {
-  top: '#3B82F6',
-  active: '#22C55E',
-  new: '#8B5CF6',
-  occasional: '#F59E0B',
-  inactive: '#EF4444',
+  top: '#376254',
+  active: '#5E8073',
+  new: '#B9A96B',
+  occasional: '#A9695B',
+  inactive: '#C97B5D',
 };
 
 
@@ -125,30 +126,10 @@ export function SegmentChartWidget({ segments, loading }) {
   }
 
   const data = segments.map((s) => ({
-    name: t(`segments.${s.segment}`, { defaultValue: s.segment }),
+    key: s.segment,
+    label: t(`segments.${s.segment}`, { defaultValue: s.segment }),
     value: s.count,
-    fill: SEGMENT_COLORS[s.segment] || '#94A3B8',
   }));
 
-  return (
-    <ResponsiveContainer width="100%" height={180}>
-      <PieChart>
-        <Pie
-          data={data}
-          dataKey="value"
-          nameKey="name"
-          cx="50%"
-          cy="50%"
-          outerRadius={60}
-          label={({ name, value }) => `${name}: ${value}`}
-        >
-          {data.map((entry, i) => (
-            <Cell key={i} fill={entry.fill} />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend wrapperStyle={{ fontSize: '12px' }} />
-      </PieChart>
-    </ResponsiveContainer>
-  );
+  return <DonutSplit data={data} colors={SEGMENT_COLORS} height={180} />;
 }

@@ -138,5 +138,12 @@
     "emptyBody": "I clienti possono recensirti dalla tua pagina profilo. Condividila dopo ogni ritiro: è il modo più veloce per costruire fiducia.",
     "loadError": "Errore nel caricamento",
     "genericError": "Errore, riprova"
+  },
+  "charts": {
+    "empty": "Ancora nessun dato: arriverà col primo ordine.",
+    "vsPrev": "vs periodo prec.",
+    "expected": "Atteso",
+    "actual": "Reale",
+    "other": "Altro"
   }
 }

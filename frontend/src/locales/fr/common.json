@@ -138,5 +138,12 @@
     "emptyBody": "Les clients peuvent vous laisser un avis depuis votre page de profil. Partagez-la après chaque retraite : le moyen le plus rapide de créer la confiance.",
     "loadError": "Erreur de chargement",
     "genericError": "Erreur, réessayez"
+  },
+  "charts": {
+    "empty": "Pas encore de données : elles arriveront avec la première commande.",
+    "vsPrev": "vs période préc.",
+    "expected": "Attendu",
+    "actual": "Réel",
+    "other": "Autre"
   }
 }

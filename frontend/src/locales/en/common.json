@@ -138,5 +138,12 @@
     "emptyBody": "Customers can review you from your profile page. Share it after every retreat: it is the fastest way to build trust.",
     "loadError": "Loading error",
     "genericError": "Error, please try again"
+  },
+  "charts": {
+    "empty": "No data yet: it will arrive with the first order.",
+    "vsPrev": "vs previous period",
+    "expected": "Expected",
+    "actual": "Actual",
+    "other": "Other"
   }
 }
