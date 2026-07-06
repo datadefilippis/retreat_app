@@ -18,7 +18,7 @@
  *     → Backend sends semantic codes (transaction_mode, payment_reason).
  *     → Frontend renders text from those codes via i18n.
  */
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { effectivePlan } from './lib/paymentPlan';
@@ -660,6 +660,11 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
   // Strictly scoped to the storefront flow — NEVER touches admin auth.
   // Account creation is handled by POST /api/customer-auth/signup (org-scoped via slug).
   const [wantRegister, setWantRegister] = useState(false);
+  // K1 — contesto MARKETPLACE (arrivo dalla landing directory): il
+  // checkout e' l'unica cosa che l'utente deve vedere; alla chiusura
+  // si torna alla landing. Il flag persiste in sessionStorage per la
+  // success page (redirect Stripe = full reload).
+  const [mktpCheckout, setMktpCheckout] = useState(null);   // {returnTo} | null
   const [regPassword, setRegPassword] = useState('');
   const [regPasswordConfirm, setRegPasswordConfirm] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
@@ -818,6 +823,10 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     // (or by navigating to /s/:slug?checkout=1, handled by the effect below).
     if (preload.openCheckout === true) {
       setFormOpen(true);
+    }
+    if (preload.mktp === true) {
+      setMktpCheckout({ returnTo: preload.returnTo || '/ritiri' });
+      try { sessionStorage.setItem('storefront:mktp_ctx', '1'); } catch { /* no-op */ }
     }
 
     // Strip the Router state so a manual refresh stays on the plain
@@ -1014,6 +1023,26 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
       setWantRegister(true);
     }
   }, [requiresCustomerAccount, isCustomerAuthenticated, wantRegister]);
+
+  // K1 — in contesto marketplace la chiusura del checkout riporta alla
+  // landing: l'utente non deve mai "restare" nella vetrina.
+  const mktpWasOpenRef = useRef(false);
+  // il flag di contesto e' per-checkout: un checkout NORMALE dello store
+  // nella stessa tab lo pulisce (niente CTA marketplace stantie sul
+  // success di un acquisto da vetrina)
+  useEffect(() => {
+    if (formOpen && !mktpCheckout) {
+      try { sessionStorage.removeItem('storefront:mktp_ctx'); } catch { /* no-op */ }
+    }
+  }, [formOpen, mktpCheckout]);
+  useEffect(() => {
+    if (!mktpCheckout) return;
+    if (formOpen) { mktpWasOpenRef.current = true; return; }
+    if (mktpWasOpenRef.current) {
+      mktpWasOpenRef.current = false;
+      navigate(mktpCheckout.returnTo);
+    }
+  }, [formOpen, mktpCheckout, navigate]);
 
   // Deep-link trigger: `?checkout=1` opens the modal from any entry point
   // (OpenCheckoutButton, toast action, shared link). Consumed once and
@@ -2829,7 +2858,17 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
                     Visible only for guest shoppers: a logged-in customer has
                     nothing to do here. Isolated from admin auth by using the
                     customer-auth endpoints (handled in Fase C2). */}
-                {!isCustomerAuthenticated && (() => {
+                {/* K2 — contesto marketplace: niente account del negozio;
+                    il viaggiatore ha il Passaporto (post-acquisto, zero campi) */}
+                {mktpCheckout && !requiresCustomerAccount && !isCustomerAuthenticated && (
+                  <div className="rounded-lg border border-primary/25 bg-primary/5 p-3 flex items-start gap-2">
+                    <span aria-hidden>🌿</span>
+                    <p className="text-xs text-gray-700">
+                      {t('storefront:checkout.passportHint', { defaultValue: 'I tuoi viaggi in un posto solo: dopo l\'acquisto ricevi via email il link al tuo Passaporto — senza password.' })}
+                    </p>
+                  </div>
+                )}
+                {(!mktpCheckout || requiresCustomerAccount) && !isCustomerAuthenticated && (() => {
                   const emailOk = !!form.email && form.email.includes('@');
                   const strength = computePasswordStrength(regPassword);
                   const mismatch = wantRegister && regPassword && regPasswordConfirm && regPassword !== regPasswordConfirm;

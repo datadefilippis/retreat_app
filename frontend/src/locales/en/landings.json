@@ -333,7 +333,11 @@
     "trustSecure": "Secure card payment — your details never go through the organizer.",
     "trustDeposit": "Where available, secure your spot with a deposit and pay the balance later.",
     "trustTicket": "Ticket and reminders by email, right after booking.",
-    "mobileBook": "Book"
+    "mobileBook": "Book",
+    "otherCartTitle": "You have another open cart",
+    "otherCartBody": "You buy from one organizer at a time: each booking goes directly to its organizer. Your other cart stays saved — you can complete it later.",
+    "otherCartContinue": "Continue with this retreat",
+    "otherCartFinish": "Finish the other cart first"
   },
   "product": {
     "loading": "Loading…",

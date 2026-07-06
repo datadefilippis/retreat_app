@@ -333,7 +333,11 @@
     "trustSecure": "Pagamento sicuro con carta — i tuoi dati non passano mai dall'organizzatore.",
     "trustDeposit": "Dove previsto, blocchi il posto con la caparra e saldi più avanti.",
     "trustTicket": "Biglietto e promemoria via email, subito dopo la prenotazione.",
-    "mobileBook": "Prenota"
+    "mobileBook": "Prenota",
+    "otherCartTitle": "Hai un altro carrello aperto",
+    "otherCartBody": "Si acquista da un organizzatore alla volta: ogni prenotazione va direttamente al suo organizzatore. L'altro carrello resta salvato — puoi completarlo dopo.",
+    "otherCartContinue": "Continua con questo ritiro",
+    "otherCartFinish": "Completa prima l'altro carrello"
   },
   "product": {
     "loading": "Caricamento…",

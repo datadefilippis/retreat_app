@@ -248,7 +248,9 @@
     "pendingDesc": "Wir bestätigen die Bestellung. Das kann einige Sekunden dauern…",
     "lateWebhookDesc": "Die Zahlung ist eingegangen. Die endgültige Bestellbestätigung wird per E-Mail gesendet.",
     "cancelTitle": "Zahlung nicht abgeschlossen",
-    "cancelDesc": "Die Zahlung wurde nicht abgeschlossen. Ihre Anfrage wurde trotzdem registriert und Sie werden kontaktiert, um fortzufahren."
+    "cancelDesc": "Die Zahlung wurde nicht abgeschlossen. Ihre Anfrage wurde trotzdem registriert und Sie werden kontaktiert, um fortzufahren.",
+    "activatePassport": "Aktiviere deinen Passport — alle Reisen an einem Ort",
+    "backToRetreats": "Zurück zu den Retreats"
   },
   "cards": {
     "common": {
@@ -409,7 +411,8 @@
       "passwordMismatch": "Die beiden Passwörter stimmen nicht überein",
       "confirmEmailHint": "Sie erhalten eine E-Mail zur Bestätigung der Registrierung. Die Bestellung wird trotzdem gesendet.",
       "passwordRequirementsToast": "Das Passwort erfüllt die Mindestanforderungen nicht."
-    }
+    },
+    "passportHint": "Alle deine Reisen an einem Ort: nach dem Kauf bekommst du per E-Mail den Link zu deinem Passport — ohne Passwort."
   },
   "home": {
     "aboutCta": "Über uns",

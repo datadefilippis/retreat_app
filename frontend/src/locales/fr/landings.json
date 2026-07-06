@@ -333,7 +333,11 @@
     "trustSecure": "Paiement sécurisé par carte — tes données ne passent jamais par l'organisateur.",
     "trustDeposit": "Si prévu, tu bloques ta place avec un acompte et règles le solde plus tard.",
     "trustTicket": "Billet et rappels par e-mail, juste après la réservation.",
-    "mobileBook": "Réserver"
+    "mobileBook": "Réserver",
+    "otherCartTitle": "Tu as un autre panier ouvert",
+    "otherCartBody": "On achète auprès d'un organisateur à la fois : chaque réservation va directement à son organisateur. Ton autre panier reste enregistré — tu pourras le finaliser plus tard.",
+    "otherCartContinue": "Continuer avec cette retraite",
+    "otherCartFinish": "Finaliser d'abord l'autre panier"
   },
   "product": {
     "loading": "Chargement…",
