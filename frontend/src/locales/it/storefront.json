@@ -428,7 +428,8 @@
       "confirmEmailHint": "Riceverai un'email per confermare la registrazione. L'ordine verrà sottomesso comunque.",
       "passwordRequirementsToast": "La password non rispetta i requisiti minimi."
     },
-    "passportHint": "I tuoi viaggi in un posto solo: dopo l'acquisto ricevi via email il link al tuo Passaporto — senza password."
+    "passportHint": "I tuoi viaggi in un posto solo: dopo l'acquisto ricevi via email il link al tuo Passaporto — senza password.",
+    "securePayment": "Pagamento sicuro"
   },
   "home": {
     "aboutCta": "Scopri chi siamo",

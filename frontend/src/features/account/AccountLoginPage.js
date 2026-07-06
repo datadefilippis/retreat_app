@@ -54,6 +54,40 @@ export default function AccountLoginPage() {
       .catch(() => setState('expired'));
   }, [token, navigate]);
 
+  // OTP a 6 cifre: la strada IMMEDIATA (il link resta come fallback
+  // nella stessa email)
+  const [code, setCode] = useState('');
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const verifyCode = async (e) => {
+    e.preventDefault();
+    if (code.trim().length !== 6) return;
+    setVerifyingCode(true); setError(null);
+    try {
+      const res = await platformApi.post('/platform/auth/code/verify',
+        { email, code: code.trim() });
+      localStorage.setItem(PLATFORM_TOKEN_KEY, res.data.access_token);
+      navigate('/account');
+    } catch {
+      setError(t('landings:account.codeError', {
+        defaultValue: 'Codice non valido o scaduto. Controlla e riprova.',
+      }));
+    } finally {
+      setVerifyingCode(false);
+    }
+  };
+
+  // arrivo dal success di un acquisto: codice GIA' inviato all'email
+  // dell'ordine → dritti all'input del codice
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const em = p.get('email');
+    if (em && p.get('sent') === '1') {
+      setEmail(em);
+      setState('sent');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const requestLink = async (e) => {
     e.preventDefault();
     setSending(true); setError(null);
@@ -104,7 +138,7 @@ export default function AccountLoginPage() {
               {t('landings:account.loginTitle', { defaultValue: 'Le tue prenotazioni' })}
             </h1>
             <p className="mt-1 text-sm text-gray-600">
-              {t('landings:account.loginBody', { defaultValue: 'Niente password: ti mandiamo un link di accesso via email.' })}
+              {t('landings:account.loginBody', { defaultValue: 'Niente password: ti mandiamo un codice via email, lo digiti qui e sei dentro.' })}
             </p>
             <form onSubmit={requestLink} className="mt-4 space-y-3">
               <input
@@ -118,7 +152,7 @@ export default function AccountLoginPage() {
                 className="w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold disabled:opacity-60">
                 {sending
                   ? t('landings:account.sending', { defaultValue: 'Invio…' })
-                  : t('landings:account.sendLink', { defaultValue: 'Inviami il link' })}
+                  : t('landings:account.sendCode', { defaultValue: 'Inviami il codice' })}
               </button>
             </form>
           </>
@@ -128,11 +162,28 @@ export default function AccountLoginPage() {
           <>
             <CheckCircle2 className="h-8 w-8 text-primary mx-auto" />
             <h1 className="mt-3 text-lg font-bold text-gray-900">
-              {t('landings:account.sentTitle', { defaultValue: 'Controlla la tua email' })}
+              {t('landings:account.sentCodeTitle', { defaultValue: 'Inserisci il codice' })}
             </h1>
             <p className="mt-2 text-sm text-gray-600">
-              {t('landings:account.sentBody', { defaultValue: 'Se esiste un account per questo indirizzo, riceverai un link di accesso valido 15 minuti.' })}
+              {t('landings:account.sentCodeBody', { defaultValue: 'Ti abbiamo inviato un codice a 6 cifre (vale 15 minuti). Nella stessa email c\'è anche un link, se preferisci.' })}
             </p>
+            <form onSubmit={verifyCode} className="mt-4 space-y-3">
+              <input
+                type="text" inputMode="numeric" autoComplete="one-time-code"
+                maxLength={6} value={code}
+                onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="••••••"
+                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-center text-2xl tracking-[0.5em] font-bold focus:border-primary focus:outline-none"
+                autoFocus
+              />
+              {error && <p className="text-xs text-red-600">{error}</p>}
+              <button type="submit" disabled={verifyingCode || code.length !== 6}
+                className="w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold disabled:opacity-60">
+                {verifyingCode
+                  ? t('landings:account.verifyingCode', { defaultValue: 'Verifico…' })
+                  : t('landings:account.enter', { defaultValue: 'Entra' })}
+              </button>
+            </form>
           </>
         )}
 

@@ -60,6 +60,11 @@ class MagicLinkToken(BaseModel):
     id: str = Field(default_factory=generate_id)
     account_id: str
     token_hash: str                              # sha256 hex del token in chiaro
+    # OTP a 6 cifre (stessa email del link): hash + contatore tentativi.
+    # Il codice e' corto → brute-force mitigato da MAX 5 tentativi,
+    # TTL breve e rate-limit sull'endpoint.
+    code_hash: Optional[str] = None
+    code_attempts: int = 0
     expires_at: datetime
     used_at: Optional[datetime] = None           # one-shot: set al primo uso
     created_at: datetime = Field(default_factory=_utc_now)
