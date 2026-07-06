@@ -1542,17 +1542,25 @@ def send_email_with_attachment(
 
 # ── Email templates ───────────────────────────────────────────────────────────
 
+# R2b (2026-07-06) — template Salvia & Terracotta, la stessa faccia
+# della piattaforma: salvia profonda per la struttura (#376254, il
+# primary dell'app), terracotta per le azioni (#CB774D, l'accent),
+# crema come carta (#F6F3EC). UNA modifica qui veste tutte le email.
 _BASE_STYLE = """
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f4f6f9; }
-  .container { max-width: 560px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  .header { background: #4f5dca; padding: 28px 32px; }
-  .header h1 { color: #ffffff; font-size: 22px; margin: 0; font-weight: 600; }
-  .body { padding: 32px; color: #374151; font-size: 15px; line-height: 1.6; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f6f3ec; }
+  .container { max-width: 560px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e7e1d4; }
+  .header { background: #376254; background: linear-gradient(135deg, #376254, #2e564e); padding: 26px 32px; }
+  .header h1 { color: #f8f5ef; font-size: 21px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+  .header .glyph { font-size: 18px; margin-right: 6px; }
+  .header .via { margin: 4px 0 0; font-size: 12px; color: rgba(248,245,239,0.75); }
+  .body { padding: 32px; color: #37463f; font-size: 15px; line-height: 1.65; }
   .body p { margin: 0 0 16px; }
-  .btn { display: inline-block; background: #4f5dca; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; margin: 8px 0 24px; }
-  .footer { padding: 20px 32px; background: #f9fafb; text-align: center; color: #9ca3af; font-size: 12px; }
-  .code { background: #f3f4f6; padding: 4px 10px; border-radius: 6px; font-family: monospace; font-size: 14px; }
+  .body strong { color: #212c28; }
+  .btn { display: inline-block; background: #cb774d; color: #ffffff !important; text-decoration: none; padding: 12px 30px; border-radius: 999px; font-weight: 600; font-size: 15px; margin: 8px 0 24px; }
+  .footer { padding: 22px 32px; background: #f6f3ec; border-top: 1px solid #e7e1d4; text-align: center; color: #8a9088; font-size: 12px; line-height: 1.7; }
+  .footer a { color: #376254; text-decoration: none; }
+  .code { background: #f1ede3; padding: 4px 10px; border-radius: 6px; font-family: monospace; font-size: 14px; color: #212c28; }
 </style>
 """
 
@@ -1564,11 +1572,14 @@ def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, st
         footer_line = _t("footer_reply_to", lang, email=reply_to)
     else:
         footer_line = _t("footer_auto", lang)
-    # Header: store-branded when context available, platform-only otherwise
+    # Header: store-branded when context available, platform-only otherwise.
+    # R2b: il glifo 🌿 è il wordmark (BRAND_GLYPH del frontend).
     if store_name:
-        header_html = f'<h1>{store_name}</h1><p style="margin:4px 0 0;font-size:12px;color:rgba(255,255,255,0.7);">via Aurya</p>'
+        header_html = (f'<h1>{store_name}</h1>'
+                       f'<p class="via">🌿 via Aurya</p>')
     else:
-        header_html = '<h1>Aurya</h1>'
+        header_html = '<h1><span class="glyph">🌿</span>Aurya</h1>'
+    from core.brand import BRAND_DOMAIN
     return f"""<!DOCTYPE html>
 <html lang="{lang}">
 <head><meta charset="utf-8">{_BASE_STYLE}</head>
@@ -1578,6 +1589,7 @@ def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, st
     <div class="body">{content}</div>
     <div class="footer">
       &copy; {_t("footer_brand", lang)}<br>
+      <a href="https://{BRAND_DOMAIN}">{BRAND_DOMAIN}</a><br>
       {footer_line}
     </div>
   </div>
@@ -1999,7 +2011,7 @@ def _reservation_block_html(reservation: dict, product_name: str, landing_url: s
       <p style="margin:8px 0 4px 0;color:#555;">{_t("reservation_code_label", locale)}: <b>{reservation.get("code", "")}</b></p>
       {f'<table style="width:100%;margin-top:8px;font-size:13px;">{extras_rows}</table>' if extras_rows else ''}
       <p style="margin:12px 0 0 0;">
-        <a href="{landing_url}" style="display:inline-block;padding:8px 14px;background:#111;color:#fff;border-radius:6px;text-decoration:none;">
+        <a href="{landing_url}" class="btn" style="margin:0;">
           {_t("reservation_view_cta", locale)}
         </a>
       </p>

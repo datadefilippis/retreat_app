@@ -1172,7 +1172,7 @@ async def _send_catalog_drift_email(
     We dispatch it on a thread to avoid stalling the event loop.
     """
     from services.email_service import send_email
-    subject = f"[AFianco] Catalog drift digest — {high} HIGH, {medium} MEDIUM in {scanned} orgs"
+    subject = f"[Aurya] Catalog drift digest — {high} HIGH, {medium} MEDIUM in {scanned} orgs"
     rows = []
     for o in issues_per_org:
         issue_lines = "<br>".join(
