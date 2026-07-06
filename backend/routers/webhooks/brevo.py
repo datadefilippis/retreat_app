@@ -81,7 +81,13 @@ def _mask_email(email: str) -> str:
     return f"{local[:2]}***@{domain}"
 
 
+from routers.auth import limiter  # noqa: E402 — R5 rate limit esplicito
+
+
 @router.post("/brevo")
+# R5 — limite esplicito e alto: il secret nel header è il vero gate; il
+# default 60/min poteva strozzare i burst di eventi email (invii massivi).
+@limiter.limit("300/minute")
 async def brevo_webhook(
     request: Request,
     authorization: Optional[str] = Header(default=None, alias="Authorization"),

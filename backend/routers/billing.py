@@ -22,6 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
 from pydantic import BaseModel
 
 from auth import get_current_user, get_verified_user, require_admin
+from routers.auth import limiter
 from repositories import billing_repository
 from services import stripe_service
 
@@ -879,6 +880,10 @@ async def verify_addon_state(
     summary="Stripe webhook receiver",
     include_in_schema=False,  # Don't expose in OpenAPI docs
 )
+# R5 — limite ESPLICITO e alto: la firma Stripe è il vero gate di
+# sicurezza; il default 60/min per-IP poteva respingere burst legittimi
+# di eventi (es. dunning di fine mese o replay dal dashboard Stripe).
+@limiter.limit("300/minute")
 async def stripe_webhook(
     request: Request,
     stripe_signature: Optional[str] = Header(None, alias="stripe-signature"),
