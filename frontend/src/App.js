@@ -76,6 +76,7 @@ const DpaPage = lazy(() => import("./pages/DpaPage"));
 const StoresPage = lazy(() => import("./features/stores/StoresPage"));
 const NewsletterPage = lazy(() => import("./features/newsletter/NewsletterPage"));
 const ReviewsAdminPage = lazy(() => import("./features/reviews/ReviewsAdminPage"));
+const IncassiPage = lazy(() => import("./features/cashflow/IncassiPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
 import EventLandingPage from "./features/storefront/EventLandingPage";
@@ -703,6 +704,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ReviewsAdminPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* CF3 — tesoreria operatore */}
+      <Route
+        path="/incassi"
+        element={
+          <ProtectedRoute>
+            <IncassiPage />
           </ProtectedRoute>
         }
       />

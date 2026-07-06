@@ -86,6 +86,7 @@ from routers import seo as seo_router
 from routers import seo_shell as seo_shell_router
 from routers import reviews as reviews_router
 from routers import outreach as outreach_router
+from routers import cashflow as cashflow_router
 from routers import customer_portal as customer_portal_router
 # Phase 1 Step A4 — healthcheck endpoints for load balancer / uptime monitor
 from routers import health as health_router
@@ -631,6 +632,7 @@ app.include_router(seo_router.router, prefix="/api")                  # /api/pub
 app.include_router(seo_shell_router.router)                            # /__seo/* — HTML pubblico con meta server-side (S0.2)
 app.include_router(reviews_router.router, prefix="/api")               # recensioni operatore (PR2)
 app.include_router(outreach_router.router, prefix="/api")              # outreach contestuale (CF2)
+app.include_router(cashflow_router.router, prefix="/api")              # cashflow consolidato (CF3)
 app.include_router(customer_portal_router.router, prefix="/api")     # /api/customer/*
 # Phase 1 Step A4 — /api/health/live + /api/health/ready (no auth, for probes)
 app.include_router(health_router.router, prefix="/api")              # /api/health/*

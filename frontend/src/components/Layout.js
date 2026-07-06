@@ -31,6 +31,7 @@ import {
   BookMarked,
   UserCircle,
   Star,
+  Wallet,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { ScrollArea } from '../components/ui/scroll-area';
@@ -209,6 +210,8 @@ export const Sidebar = () => {
   if (activeSet.has('commerce')) {
     dynamicOpsNav.push(
       { nameKey: 'nav.orders', href: '/orders', icon: ShoppingCart, end: true },
+      // CF3 — la tesoreria dell'operatore
+      { nameKey: 'nav.cashflow', href: '/incassi', icon: Wallet, end: true },
       // WS-2: Affitti solo se il piano abilita i noleggi (retreat: no)
       ...(canUse('commerce', 'rentals')
         ? [{ nameKey: 'nav.reservations', href: '/reservations', icon: BookMarked, end: true }]

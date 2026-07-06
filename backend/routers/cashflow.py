@@ -1,0 +1,233 @@
+"""Cashflow consolidato — GET /analytics/cashflow (CF3, INSIGHTS_ACTION_PLAN).
+
+UNA chiamata per la pagina /incassi: la tesoreria dell'operatore
+letta dal libro mastro payment_schedules (la stessa fonte di verità
+di payments-overview / aggregate_schedules — nessun KPI parallelo).
+
+Payload:
+  summary   incassato (12 mesi) / in arrivo / in ritardo / ticket medio
+  months    12 bucket (-8..+3 mesi): incassato per paid_at,
+            atteso per due_at delle righe non pagate — la curva
+            tratteggiata mostra anche le caparre/saldi FUTURI già
+            contrattualizzati (il dato di pianificazione)
+  overdue   righe scadute non pagate + contatto cliente → sollecito
+  upcoming  righe in scadenza nei prossimi 30 giorni + contatto
+  by_product venduto per prodotto (ordini confermati 12 mesi)
+
+Realtà dei dati: solo somme dal ledger e dagli ordini, niente stime.
+Cache in-process 60s per org (pattern R13): la pagina è di lettura
+frequente, il dato non cambia al secondo.
+"""
+
+import logging
+import time
+from collections import defaultdict
+from datetime import timedelta
+from typing import Any, Dict, Optional
+
+from fastapi import APIRouter, Depends
+
+from auth import get_verified_user
+from models.common import utc_now
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/analytics", tags=["Analytics"])
+
+_CACHE_TTL = 60.0
+_cache: Dict[str, "tuple[float, dict]"] = {}
+
+_UNPAID = ("pending", "overdue", "processing")
+_PAID = ("paid", "paid_manual")
+
+# cap difensivi (org singola: numeri reali molto sotto)
+_MAX_SCHEDULES = 5000
+_MAX_LIST_ROWS = 50
+
+
+def _month_key(iso: str) -> str:
+    return (iso or "")[:7]  # YYYY-MM
+
+
+def _month_buckets(now) -> list:
+    """12 bucket: 8 mesi passati + corrente + 3 futuri."""
+    y, m = now.year, now.month
+    out = []
+    for off in range(-8, 4):
+        mm = m + off
+        yy = y + (mm - 1) // 12
+        mm = (mm - 1) % 12 + 1
+        out.append(f"{yy:04d}-{mm:02d}")
+    return out
+
+
+async def _build(org_id: str) -> Dict[str, Any]:
+    from database import db, orders_collection, customers_collection
+
+    now = utc_now()
+    now_iso = now.isoformat()
+    horizon_30d = (now + timedelta(days=30)).isoformat()
+    twelve_months_ago = (now - timedelta(days=365)).isoformat()
+
+    schedules = await db.payment_schedules.find(
+        {"organization_id": org_id},
+        {"_id": 0, "order_id": 1, "currency": 1,
+         "rows.kind": 1, "rows.label": 1, "rows.amount_minor": 1,
+         "rows.due_at": 1, "rows.status": 1, "rows.paid_at": 1},
+    ).to_list(_MAX_SCHEDULES)
+
+    # ── mesi + summary dal ledger ────────────────────────────────────
+    buckets = _month_buckets(now)
+    incassato_by_month = defaultdict(int)
+    atteso_by_month = defaultdict(int)
+    summary = {"incassato_minor": 0, "in_arrivo_minor": 0, "in_ritardo_minor": 0}
+    overdue_rows, upcoming_rows = [], []
+
+    for doc in schedules:
+        for row in doc.get("rows") or []:
+            amount = row.get("amount_minor", 0)
+            status = row.get("status")
+            if status in _PAID:
+                paid_at = row.get("paid_at") or ""
+                if paid_at >= twelve_months_ago:
+                    summary["incassato_minor"] += amount
+                incassato_by_month[_month_key(paid_at)] += amount
+            elif status in _UNPAID:
+                due_at = row.get("due_at") or ""
+                atteso_by_month[_month_key(due_at)] += amount
+                entry = {
+                    "order_id": doc.get("order_id"),
+                    "kind": row.get("kind"),
+                    "label": row.get("label"),
+                    "amount_minor": amount,
+                    "due_at": due_at,
+                }
+                if due_at < now_iso:
+                    summary["in_ritardo_minor"] += amount
+                    overdue_rows.append(entry)
+                else:
+                    summary["in_arrivo_minor"] += amount
+                    if due_at <= horizon_30d:
+                        upcoming_rows.append(entry)
+
+    overdue_rows.sort(key=lambda r: r["due_at"])
+    upcoming_rows.sort(key=lambda r: r["due_at"])
+    overdue_rows = overdue_rows[:_MAX_LIST_ROWS]
+    upcoming_rows = upcoming_rows[:_MAX_LIST_ROWS]
+
+    months = [{
+        "month": b,
+        "incassato": incassato_by_month.get(b, 0) / 100.0,
+        "atteso": atteso_by_month.get(b, 0) / 100.0,
+    } for b in buckets]
+
+    # ── contatti per le righe azionabili ─────────────────────────────
+    order_ids = list({r["order_id"] for r in overdue_rows + upcoming_rows if r["order_id"]})
+    orders_by_id: Dict[str, dict] = {}
+    customers_by_id: Dict[str, dict] = {}
+    if order_ids:
+        async for o in orders_collection.find(
+                {"id": {"$in": order_ids}, "organization_id": org_id},
+                {"_id": 0, "id": 1, "order_number": 1, "customer_id": 1,
+                 "contact_phone": 1, "items.product_name": 1, "locale": 1}):
+            orders_by_id[o["id"]] = o
+        cust_ids = list({o.get("customer_id") for o in orders_by_id.values() if o.get("customer_id")})
+        if cust_ids:
+            async for c in customers_collection.find(
+                    {"id": {"$in": cust_ids}, "organization_id": org_id},
+                    {"_id": 0, "id": 1, "name": 1, "email": 1, "phone": 1}):
+                customers_by_id[c["id"]] = c
+
+    def _enrich(rows: list) -> list:
+        out = []
+        for r in rows:
+            o = orders_by_id.get(r["order_id"]) or {}
+            c = customers_by_id.get(o.get("customer_id")) or {}
+            items = o.get("items") or []
+            out.append({
+                **r,
+                "amount": r["amount_minor"] / 100.0,
+                "order_number": o.get("order_number"),
+                "product_name": (items[0].get("product_name") if items else None),
+                "customer_id": c.get("id"),
+                "customer_name": c.get("name"),
+                "customer_email": c.get("email"),
+                "customer_phone": c.get("phone") or o.get("contact_phone"),
+            })
+        return out
+
+    # ── venduto per prodotto (ordini confermati, 12 mesi) ────────────
+    # order_date è stringa ISO (default: data di created_at) su tutti i
+    # doc — confronto lessicografico affidabile; created_at ha tipi misti
+    # (datetime/str) sui dati storici.
+    by_product = []
+    order_date_cutoff = twelve_months_ago[:10]
+    pipeline = [
+        {"$match": {
+            "organization_id": org_id,
+            "status": {"$in": ["confirmed", "completed"]},
+            "order_date": {"$gte": order_date_cutoff},
+        }},
+        {"$unwind": "$items"},
+        {"$group": {"_id": "$items.product_name",
+                    "revenue": {"$sum": "$items.line_total"},
+                    "orders": {"$sum": 1}}},
+        {"$sort": {"revenue": -1}},
+        {"$limit": 8},
+    ]
+    try:
+        async for g in orders_collection.aggregate(pipeline):
+            by_product.append({
+                "product_name": g["_id"] or "—",
+                "revenue": round(g.get("revenue") or 0, 2),
+                "orders": g.get("orders", 0),
+            })
+    except Exception as exc:  # created_at può essere str su doc legacy
+        logger.warning("cashflow by_product aggregate failed: %s", exc)
+
+    # ── ticket medio (ordini confermati 12 mesi) ─────────────────────
+    ticket = None
+    try:
+        agg = await orders_collection.aggregate([
+            {"$match": {
+                "organization_id": org_id,
+                "status": {"$in": ["confirmed", "completed"]},
+                "order_date": {"$gte": order_date_cutoff},
+            }},
+            {"$group": {"_id": None, "avg": {"$avg": "$total"}, "n": {"$sum": 1}}},
+        ]).to_list(1)
+        if agg and agg[0].get("n"):
+            ticket = round(agg[0]["avg"], 2)
+    except Exception as exc:
+        logger.warning("cashflow ticket aggregate failed: %s", exc)
+
+    return {
+        "summary": {
+            "incassato": summary["incassato_minor"] / 100.0,
+            "in_arrivo": summary["in_arrivo_minor"] / 100.0,
+            "in_ritardo": summary["in_ritardo_minor"] / 100.0,
+            "ticket_medio": ticket,
+        },
+        "months": months,
+        "overdue": _enrich(overdue_rows),
+        "upcoming": _enrich(upcoming_rows),
+        "by_product": by_product,
+        "generated_at": now_iso,
+    }
+
+
+@router.get("/cashflow")
+async def get_cashflow(
+    current_user: dict = Depends(get_verified_user),
+    fresh: Optional[bool] = False,
+):
+    """La tesoreria in una chiamata. ``fresh=true`` bypassa la cache
+    (dopo un'azione di pagamento manuale)."""
+    org_id = current_user["organization_id"]
+    now = time.monotonic()
+    cached = _cache.get(org_id)
+    if cached and not fresh and (now - cached[0]) < _CACHE_TTL:
+        return cached[1]
+    payload = await _build(org_id)
+    _cache[org_id] = (now, payload)
+    return payload
