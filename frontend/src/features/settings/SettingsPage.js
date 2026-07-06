@@ -592,7 +592,7 @@ const AccountDeactivationSection = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `afianco_export_${new Date().toISOString().slice(0, 10)}.zip`;
+      a.download = `aurya_export_${new Date().toISOString().slice(0, 10)}.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

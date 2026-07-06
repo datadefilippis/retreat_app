@@ -412,7 +412,7 @@ export default function StoreSettingsPage() {
             {/* Email preview */}
             <div className="rounded-lg bg-muted/30 border border-dashed border-border p-3 text-xs space-y-1.5">
               <p className="font-medium text-muted-foreground text-[10px] uppercase tracking-wider mb-1">{t('email.preview_title')}</p>
-              <p><span className="text-muted-foreground">{t('email.preview_from')}:</span> <span className="font-medium">{form.sender_display_name || data?.org_name || 'AFianco'}</span> <span className="text-muted-foreground/60">via AFianco</span></p>
+              <p><span className="text-muted-foreground">{t('email.preview_from')}:</span> <span className="font-medium">{form.sender_display_name || data?.org_name || 'Aurya'}</span> <span className="text-muted-foreground/60">via Aurya</span></p>
               <p><span className="text-muted-foreground">{t('email.preview_reply_to')}:</span> <span className="font-medium">{form.reply_to_email || <span className="text-muted-foreground/60 italic">{t('email.preview_not_configured')}</span>}</span></p>
               <p><span className="text-muted-foreground">{t('email.preview_notifications')}:</span> <span className="font-medium">{form.notification_email || <span className="text-muted-foreground/60 italic">{t('email.preview_admin_fallback')}</span>}</span></p>
             </div>

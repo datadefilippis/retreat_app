@@ -1,8 +1,8 @@
 {
   "reconsent": {
     "title": "Conditions mises à jour",
-    "intro_first": "Pour utiliser afianco, vous devez accepter notre Politique de confidentialité et les Conditions générales d'utilisation.",
-    "intro_update": "Nous avons mis à jour notre Politique de confidentialité et nos Conditions générales d'utilisation. Pour continuer à utiliser afianco, veuillez accepter la nouvelle version.",
+    "intro_first": "Pour utiliser Aurya, vous devez accepter notre Politique de confidentialité et les Conditions générales d'utilisation.",
+    "intro_update": "Nous avons mis à jour notre Politique de confidentialité et nos Conditions générales d'utilisation. Pour continuer à utiliser Aurya, veuillez accepter la nouvelle version.",
     "what_changed_title": "Ce qui a changé",
     "what_changed_body": "La nouvelle version précise comment nous traitons vos données, énumère nos sous-traitants par leur nom (Hetzner, Anthropic, Stripe, Brevo) et formalise vos droits RGPD (accès, portabilité, effacement).",
     "read_privacy": "Lire la Politique de confidentialité",
@@ -157,7 +157,7 @@
   },
   "sub_processors": {
     "page_title": "Sous-traitants des données",
-    "page_subtitle": "Liste complète des prestataires qui traitent des données personnelles pour le compte d'afianco, conformément à l'art. 28.3.i RGPD.",
+    "page_subtitle": "Liste complète des prestataires qui traitent des données personnelles pour le compte d'Aurya, conformément à l'art. 28.3.i RGPD.",
     "controller_label": "Responsable du traitement",
     "version_label": "Version des documents légaux",
     "binding_locale_label": "Langue juridiquement contraignante",
@@ -189,6 +189,6 @@
     "error_other_body": "Nous n'avons pas pu enregistrer votre demande. Veuillez réessayer dans quelques secondes.",
     "retry_button": "Réessayer",
     "merchant_fallback": "la boutique",
-    "footer_privacy": "Confidentialité d'afianco"
+    "footer_privacy": "Confidentialité d'Aurya"
   }
 }

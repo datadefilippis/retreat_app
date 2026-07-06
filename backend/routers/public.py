@@ -1738,7 +1738,7 @@ async def download_booking_ics(access_token: str):
     if not ics_text:
         raise HTTPException(status_code=500, detail="Impossibile generare calendario")
 
-    filename = f"prenotazione-{booking.get('code', 'afianco')}.ics"
+    filename = f"prenotazione-{booking.get('code', 'aurya')}.ics"
     return Response(
         content=ics_text,
         media_type="text/calendar; charset=utf-8",
@@ -1876,7 +1876,7 @@ async def download_reservation_ics(access_token: str):
     if not ics_text:
         raise HTTPException(status_code=500, detail="Impossibile generare calendario")
 
-    filename = f"prenotazione-{reservation.get('code', 'afianco')}.ics"
+    filename = f"prenotazione-{reservation.get('code', 'aurya')}.ics"
     return Response(
         content=ics_text,
         media_type="text/calendar; charset=utf-8",
@@ -2730,7 +2730,9 @@ async def submit_order_request(request: Request, response: Response, body: Order
     # R10 (2026-06-19) — rimosso il dual-path + flag USE_ORDER_CREATION_SERVICE:
     # ``order_creation_service`` è ora l'UNICO path (legacy inline eliminato),
     # così storefront ed embed condividono la stessa pipeline senza drift.
-    cart_id_cookie = request.cookies.get("afianco_cart_id")
+    from services.cart_service import CART_COOKIE_NAME, LEGACY_CART_COOKIE_NAME
+    cart_id_cookie = (request.cookies.get(CART_COOKIE_NAME)
+                      or request.cookies.get(LEGACY_CART_COOKIE_NAME))
 
     result = await submit_order_from_storefront(
         org=org,

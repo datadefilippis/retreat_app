@@ -318,7 +318,14 @@ class TestCartService:
             set_cart_cookie,
             clear_cart_cookie,
         )
-        assert CART_COOKIE_NAME == "afianco_cart_id", (
+        assert CART_COOKIE_NAME == "aurya_cart_id", (   # R1 rebrand 11/7
+            "cookie rinominato col rebrand Aurya"
+        )
+        # migrazione dolce: il nome legacy resta LEGGIBILE finche' i
+        # carrelli pre-rebrand sono vivi (TTL 60gg)
+        from services.cart_service import LEGACY_CART_COOKIE_NAME
+        assert LEGACY_CART_COOKIE_NAME == "afianco_cart_id"
+        _dummy = (
             "Cookie name changed — frontend dual-write logic (Step 4b) "
             "rompe. Update both atomically."
         )

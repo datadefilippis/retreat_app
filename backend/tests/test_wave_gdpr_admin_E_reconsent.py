@@ -434,7 +434,7 @@ class TestSubProcessorsEndpoint:
         body = json.loads(response.body)
         assert body["controller"]["name"] == "Davide De Filippis"
         assert body["controller"]["country"] == "Switzerland"
-        assert body["controller"]["email"] == "davide@afianco.ch"
+        assert body["controller"]["email"] == "info@aurya.life"   # R1 rebrand
 
     @pytest.mark.asyncio
     async def test_cache_header_set(self):

@@ -115,7 +115,7 @@ export default function AuthShell({ children, storeInfo, orgName, slug, storefro
       {/* Centered auth card */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          {/* Shop name + "by AFianco" above the card */}
+          {/* Shop name + "by Aurya" above the card */}
           <div className="flex flex-col items-center mb-5 gap-0.5">
             {shopName ? (
               <>
@@ -125,10 +125,10 @@ export default function AuthShell({ children, storeInfo, orgName, slug, storefro
                 >
                   {shopName}
                 </span>
-                <span className="text-[11px] text-muted-foreground">by AFianco</span>
+                <span className="text-[11px] text-muted-foreground">by Aurya</span>
               </>
             ) : (
-              <span className="font-heading text-xl font-bold tracking-tight">AFianco</span>
+              <span className="font-heading text-xl font-bold tracking-tight">Aurya</span>
             )}
           </div>
           {children}

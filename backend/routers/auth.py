@@ -1444,7 +1444,7 @@ async def export_data(
     org_doc = await organization_repository.find_by_id(org_id)
     org_name = (org_doc.get("name", "org") if org_doc else "org").replace(" ", "_")[:30]
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    filename = f"afianco_export_{org_name}_{date_str}.zip"
+    filename = f"aurya_export_{org_name}_{date_str}.zip"
 
     # Audit log
     try:

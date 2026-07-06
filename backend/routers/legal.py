@@ -353,7 +353,7 @@ async def get_sub_processors(
                 "name": "Davide De Filippis",
                 "city": "Lugano",
                 "country": "Switzerland",
-                "email": "davide@afianco.ch",
+                "email": "info@aurya.life",
             },
             "sub_processors": enriched,
         },
@@ -863,7 +863,7 @@ async def _load_dpa_vars(current_user: dict) -> dict:
         # Platform side — same defaults as merchant_legal_template_service.
         "platform_name": "afianco",
         "platform_controller_name": "Davide De Filippis",
-        "platform_controller_email": "davide@afianco.ch",
+        "platform_controller_email": "info@aurya.life",
         "platform_controller_country": "Switzerland",
     }
 

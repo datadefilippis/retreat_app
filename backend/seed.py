@@ -22,7 +22,7 @@ async def seed_demo_data():
     """Create demo organization with sample data"""
     
     # Check if demo org exists
-    existing = await organizations_collection.find_one({"name": "Demo Restaurant"})
+    existing = await organizations_collection.find_one({"name": "Aurya Demo"})
     if existing:
         print("Demo data already exists")
         return existing['id']
@@ -30,7 +30,7 @@ async def seed_demo_data():
     print("Creating demo data...")
     
     # Create organization
-    org = Organization(name="Demo Restaurant", industry="Food & Beverage")
+    org = Organization(name="Aurya Demo", industry="Food & Beverage")
     org_doc = org.model_dump()
     org_doc['created_at'] = org_doc['created_at'].isoformat()
     org_doc['updated_at'] = org_doc['updated_at'].isoformat()
