@@ -19,6 +19,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BRAND_NAME, BRAND_MOTTO } from '../../../config/brand';
 import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
+import api from '../../../api/client';
+
+// S5 — destinazioni top nel footer (link programmatici): cache a livello
+// modulo, il footer è su ogni pagina e non deve rifetchare a ogni nav.
+let _destCache = null;
 
 const LANGS = ['it', 'en', 'de', 'fr'];
 
@@ -60,6 +65,19 @@ function LangSwitcher() {
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
   const { t, i18n } = useTranslation('landings');
   const navigate = useNavigate();
+  const [destinations, setDestinations] = React.useState(_destCache || []);
+
+  useEffect(() => {
+    if (_destCache) return;
+    let mounted = true;
+    api.get('/public/destinations')
+      .then(res => {
+        _destCache = (res.data?.items || []).slice(0, 4);
+        if (mounted) setDestinations(_destCache);
+      })
+      .catch(() => { _destCache = []; });
+    return () => { mounted = false; };
+  }, []);
 
   // L1 — ogni superficie marketplace riafferma al mount la lingua del
   // viaggiatore: la scelta salvata (aurya_lang) o l'italiano, la faccia
@@ -69,7 +87,16 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   // resolver dello store (PublicStorefrontShell, effetto padre → gira
   // dopo) resta l'ultima parola quando il negozio non offre la lingua.
   useEffect(() => {
-    const wanted = getMarketplaceLang() || 'it';
+    // S4 — ?lang= esplicito (deep-link, hreflang) VINCE e diventa la
+    // preferenza: rende oneste le alternate ?lang=xx delle sitemap/head.
+    let fromQuery = null;
+    try {
+      const q = (new URLSearchParams(window.location.search).get('lang') || '')
+        .slice(0, 2).toLowerCase();
+      if (['it', 'en', 'de', 'fr'].includes(q)) fromQuery = q;
+    } catch { /* no-op */ }
+    if (fromQuery) persistMarketplaceLang(fromQuery);
+    const wanted = fromQuery || getMarketplaceLang() || 'it';
     if ((i18n.language || '').slice(0, 2) !== wanted) {
       i18n.changeLanguage(wanted);
     }
@@ -153,6 +180,13 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 <li><Link to="/" className="hover:text-primary">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>
                 <li><Link to="/operatori" className="hover:text-primary">{t('marketplace.footerOperators', { defaultValue: 'Tutti gli organizzatori' })}</Link></li>
                 <li><Link to="/destinazioni" className="hover:text-primary">{t('marketplace.footerDestinations', { defaultValue: 'Destinazioni' })}</Link></li>
+                {destinations.map(d => (
+                  <li key={d.slug}>
+                    <Link to={`/destinazioni/${d.slug}`} className="hover:text-primary pl-3 text-xs">
+                      {d.label}
+                    </Link>
+                  </li>
+                ))}
                 <li><Link to="/esperienze" className="hover:text-primary">{t('marketplace.footerExperiences', { defaultValue: 'Esperienze' })}</Link></li>
               </ul>
             </div>

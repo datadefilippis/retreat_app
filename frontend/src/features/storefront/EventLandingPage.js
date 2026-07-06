@@ -152,6 +152,50 @@ function TierCard({ tier, currency, qty, onQtyChange }) {
 // fulfillment, Stripe redirect — all the flows the storefront already
 // supports). Exactly one form in the whole app handles payment.
 
+// S5 — linking interno: "Altri ritiri di {categoria}" SOLO in contesto
+// marketplace (nel guscio store non si mandano i clienti dai concorrenti).
+// 3 link a foglie sorelle: equity interna + scoperta.
+function RelatedRetreats({ category, excludePath, t }) {
+  const [items, setItems] = React.useState([]);
+  React.useEffect(() => {
+    if (!category) return;
+    let mounted = true;
+    import('../../api/client').then(({ default: api }) =>
+      api.get('/public/retreats', { params: { category } })
+    ).then(res => {
+      if (!mounted) return;
+      setItems((res.data?.items || [])
+        .filter(it => it.url !== excludePath)
+        .slice(0, 3));
+    }).catch(() => { /* best-effort */ });
+    return () => { mounted = false; };
+  }, [category, excludePath]);
+
+  if (items.length === 0) return null;
+  return (
+    <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-10">
+      <h2 className="font-heading text-lg font-bold text-gray-900 mb-3">
+        {t('landings:event.relatedHeading', {
+          cat: t(`landings:categories.${category}`, { defaultValue: category }),
+          defaultValue: 'Altri ritiri di {{cat}}',
+        })}
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {items.map(it => (
+          <Link key={it.url} to={it.url}
+                className="rounded-2xl border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
+            <p className="font-semibold text-gray-900 line-clamp-2">{it.title}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {(it.city || it.region || '')}{it.price_from != null ? ` · da ${it.price_from} €` : ''}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+
 function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, plainQty, currency }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('landings');
@@ -1003,6 +1047,15 @@ export default function EventLandingPage() {
             </span>
           </Link>
         </section>
+      )}
+
+      {/* S5 — correlati per categoria (solo marketplace) */}
+      {!fromStore && product?.category && (
+        <RelatedRetreats
+          category={product.category}
+          excludePath={`/e/${orgSlug}/${slug}`}
+          t={t}
+        />
       )}
 
       {/* M6 — mobile: prezzo+CTA sempre a portata di pollice */}
