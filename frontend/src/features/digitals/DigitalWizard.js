@@ -462,7 +462,7 @@ export default function DigitalWizard() {
         {/* ── TAB 1: Identity ─────────────────────────────────────────── */}
         {activeTab === 'identity' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.common.identityTitle')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">{t('wizards.common.identitySubtitle')}</p>
             </div>
@@ -516,7 +516,7 @@ export default function DigitalWizard() {
                 >
                   <option value="">{t('wizards.common.categoryNone', { defaultValue: 'Nessuna categoria' })}</option>
                   {Object.entries(taxonomies.digital || {}).map(([k, label]) => (
-                    <option key={k} value={k}>{label}</option>
+                    <option key={k} value={k}>{t(`taxonomy.${k}`, { defaultValue: label })}</option>
                   ))}
                 </select>
               </div>
@@ -545,7 +545,7 @@ export default function DigitalWizard() {
         {/* ── TAB 2: Pricing + Stock ──────────────────────────────────── */}
         {activeTab === 'pricing' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.digital.pricing.title')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">
                 {t('wizards.digital.pricing.subtitle')}
@@ -640,7 +640,7 @@ export default function DigitalWizard() {
         {/* ── TAB 3: File ─────────────────────────────────────────────── */}
         {activeTab === 'file' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.digital.file.title')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">
                 {t('wizards.digital.file.subtitle')}
@@ -678,7 +678,7 @@ export default function DigitalWizard() {
         {/* ── TAB 4: Policy ───────────────────────────────────────────── */}
         {activeTab === 'policy' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.digital.policy.title')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">
                 {t('wizards.digital.policy.subtitle')}
@@ -743,7 +743,7 @@ export default function DigitalWizard() {
         {/* ── TAB 6: Publish ──────────────────────────────────────────── */}
         {activeTab === 'publish' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <div>
+            <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.common.publishTitle')}</h2>
               <p className="text-xs text-gray-500 mt-0.5">{t('wizards.common.publishSubtitle')}</p>
             </div>

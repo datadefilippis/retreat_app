@@ -419,7 +419,7 @@ export default function ServiceWizard() {
           {/* ── TAB 1: Cosa offri ───────────────────────────────────── */}
           {activeTab === 'base' && (
             <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-              <div>
+              <div className="border-l-[3px] border-primary/60 pl-3">
                 <h2 className="text-base font-semibold text-gray-900">{t('wizards.service.base.title')}</h2>
                 <p className="text-xs text-gray-500 mt-0.5">{t('wizards.service.base.subtitle')}</p>
               </div>
@@ -442,6 +442,19 @@ export default function ServiceWizard() {
                 {fieldError(errorsBase.name)}
               </div>
 
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.service.base.descriptionLabel')}</label>
+                <textarea
+                  value={base.description}
+                  onChange={e => setBase({ ...base, description: e.target.value })}
+                  rows={2} maxLength={2000}
+                  placeholder={t('wizards.service.base.descriptionPlaceholder')}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
+                />
+              </div>
+              </MultiLangSection>
+
+
             {/* V4 — categoria dalla tassonomia servizi (opzionale) */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -454,22 +467,10 @@ export default function ServiceWizard() {
               >
                 <option value="">{t('wizards.common.categoryNone', { defaultValue: 'Nessuna categoria' })}</option>
                 {Object.entries(taxonomies.service || {}).map(([k, label]) => (
-                  <option key={k} value={k}>{label}</option>
+                  <option key={k} value={k}>{t(`taxonomy.${k}`, { defaultValue: label })}</option>
                 ))}
               </select>
             </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.service.base.descriptionLabel')}</label>
-                <textarea
-                  value={base.description}
-                  onChange={e => setBase({ ...base, description: e.target.value })}
-                  rows={2} maxLength={2000}
-                  placeholder={t('wizards.service.base.descriptionPlaceholder')}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
-                />
-              </div>
-              </MultiLangSection>
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.service.base.imageLabel')}</label>

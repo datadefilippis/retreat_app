@@ -1974,6 +1974,31 @@
     "placeholder": "Write the {{lang}} text here…",
     "hint": "Offer this text also in:",
     "visibility": "The product will appear in views in these languages. Without a translation it stays visible in Italian only.",
-    "sectionHint": "The Italian text is the placeholder in each field. Languages with a filled description are the languages where the product is visible; empty fields stay in Italian."
+    "sectionHint": "The Italian text is the placeholder in each field. Languages with a filled description are the languages where the product is visible; empty fields stay in Italian.",
+    "primaryTag": "primary",
+    "primaryHint": "Italian is the primary language of public content: it's the source text and the fallback when a translation is missing."
+  },
+  "taxonomy": {
+    "yoga": "Yoga",
+    "meditazione": "Meditation & Mindfulness",
+    "detox": "Detox & Fasting",
+    "suono": "Sound Healing",
+    "massaggio": "Massage & Bodywork",
+    "breathwork": "Breathwork",
+    "cammini": "Hiking & Nature",
+    "femminile": "Women's Circles",
+    "aziendale": "Corporate wellbeing",
+    "trattamenti": "Treatments & Massages",
+    "consulenze": "Consultations",
+    "lezioni": "Private lessons",
+    "cerimonie": "Ceremonies",
+    "cura_di_se": "Self-care",
+    "casa_benessere": "Home & Wellness",
+    "cibo_tisane": "Food & Herbal teas",
+    "abbigliamento": "Apparel",
+    "artigianato": "Crafts",
+    "guide_ebook": "Guides & E-books",
+    "audio_meditazioni": "Audio & Meditations",
+    "video": "Videos"
   }
 }
