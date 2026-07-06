@@ -3507,6 +3507,99 @@ async def public_geo_search(request: Request,
     return {"results": await search_places(q, limit=5)}
 
 
+@router.get("/operators")
+async def public_operators_index(category: str = Query(default=None, max_length=50)):
+    """S2 (SEO_MASTER_PLAN) — aggregatore pubblico degli operatori.
+
+    Elenca le organizzazioni con vetrina pubblica: identita', categorie
+    REALI (derivate dai prodotti attivi) e conteggi. Alimenta /operatori
+    e /operatori/{categoria}; le categorie tornano anche in aggregato
+    cosi' il frontend mostra solo filtri con contenuto (anti thin-content).
+    """
+    from datetime import datetime, timezone
+    from database import (stores_collection, organizations_collection,
+                          products_collection, event_occurrences_collection)
+
+    stores = await stores_collection.find(
+        {"is_published": True, "is_active": True, "visibility": "public",
+         "slug": {"$nin": [None, ""]}},
+        {"_id": 0, "organization_id": 1, "slug": 1, "name": 1,
+         "description": 1, "logo_url": 1},
+    ).to_list(500)
+    org_ids = [s["organization_id"] for s in stores]
+    orgs = {o["id"]: o for o in await organizations_collection.find(
+        {"id": {"$in": org_ids}, "is_active": {"$ne": False},
+         "deactivated_at": None},
+        {"_id": 0, "id": 1, "name": 1, "public_profile": 1,
+         "store_settings": 1},
+    ).to_list(500)}
+
+    prods = await products_collection.find(
+        {"organization_id": {"$in": org_ids}, "is_active": True,
+         "is_published": True},
+        {"_id": 0, "id": 1, "organization_id": 1, "category": 1,
+         "item_type": 1},
+    ).to_list(2000)
+
+    now_iso = datetime.now(timezone.utc).isoformat()[:16]
+    occs = await event_occurrences_collection.find(
+        {"organization_id": {"$in": org_ids}, "status": "published",
+         "start_at": {"$gte": now_iso}},
+        {"_id": 0, "organization_id": 1, "region": 1, "product_id": 1},
+    ).to_list(2000)
+
+    by_org: dict = {}
+    for p in prods:
+        b = by_org.setdefault(p["organization_id"],
+                              {"categories": set(), "retreats": 0,
+                               "products": 0, "regions": set()})
+        if p.get("category"):
+            b["categories"].add(p["category"])
+        if p.get("item_type") != "event":
+            b["products"] += 1
+    for o in occs:
+        b = by_org.setdefault(o["organization_id"],
+                              {"categories": set(), "retreats": 0,
+                               "products": 0, "regions": set()})
+        b["retreats"] += 1
+        if o.get("region"):
+            b["regions"].add(o["region"])
+
+    items = []
+    all_categories: dict = {}
+    for s in stores:
+        org = orgs.get(s["organization_id"])
+        if not org:
+            continue
+        b = by_org.get(s["organization_id"],
+                       {"categories": set(), "retreats": 0,
+                        "products": 0, "regions": set()})
+        cats = sorted(b["categories"])
+        for c in cats:
+            all_categories[c] = all_categories.get(c, 0) + 1
+        if category and category not in b["categories"]:
+            continue
+        pp = org.get("public_profile") or {}
+        ss = org.get("store_settings") or {}
+        items.append({
+            "org_slug": s["slug"],
+            "name": (ss.get("display_name") or s.get("name")
+                     or org.get("name") or s["slug"]),
+            "bio": ((pp.get("bio") or s.get("description") or "")[:200]) or None,
+            "logo_url": s.get("logo_url") or ss.get("logo_url")
+                        or pp.get("logo_url"),
+            "cover_url": pp.get("cover_url"),
+            "categories": cats,
+            "upcoming_retreats": b["retreats"],
+            "other_products": b["products"],
+            "regions": sorted(b["regions"]),
+        })
+
+    items.sort(key=lambda x: (-x["upcoming_retreats"], x["name"].lower()))
+    return {"items": items, "total": len(items),
+            "categories": all_categories}
+
+
 @router.get("/operator/{org_slug}")
 async def public_operator_profile(org_slug: str):
     """Profilo pubblico organizzatore: bio, brand, prossimi ritiri.

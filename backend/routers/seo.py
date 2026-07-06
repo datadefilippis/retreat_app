@@ -109,6 +109,14 @@ async def build_sitemap() -> str:
         urls.append(_url(f"{base}/o/{org_slug}", priority="0.6"))
         urls.append(_url(f"{base}/s/{org_slug}", priority="0.5"))
 
+    # S2 — aggregatore operatori: indice + categorie CON contenuto
+    # (le categorie derivano dai prodotti attivi delle org pubbliche)
+    if slug_by_org:
+        urls.append(_url(f"{base}/operatori", priority="0.8"))
+        op_cats = {p.get("category") for p in prods.values() if p.get("category")}
+        for cat in sorted(op_cats):
+            urls.append(_url(f"{base}/operatori/{cat}", priority="0.6"))
+
     return (
         '<?xml version="1.0" encoding="UTF-8"?>'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'

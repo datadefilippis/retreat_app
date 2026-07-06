@@ -257,6 +257,21 @@ async def _meta_product(kind: str, org_slug: str, product_slug: str) -> Optional
     }
 
 
+async def _meta_operators_index(category: Optional[str] = None) -> dict:
+    base = _base_url()
+    label = category.replace("-", " ").title() if category else None
+    path = "/operatori" + (f"/{category}" if category else "")
+    return {
+        "title": (f"Operatori di {label} | Aurya" if label
+                  else "Tutti gli organizzatori di ritiri ed esperienze | Aurya"),
+        "description": ("Scopri gli organizzatori di ritiri ed esperienze "
+                        "olistiche su Aurya: profili, prossime date e "
+                        "prenotazione online con caparra."),
+        "canonical": f"{base}{path}",
+        "image": f"{base}/logo-aurya.png",
+    }
+
+
 async def _meta_operator(org_slug: str) -> Optional[dict]:
     from database import stores_collection, organizations_collection
     base = _base_url()
@@ -342,6 +357,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_event(parts[1], parts[2])
     if head in _PRODUCT_KINDS and len(parts) >= 3:
         return await _meta_product(head, parts[1], parts[2])
+    if head == "operatori":
+        return await _meta_operators_index(parts[1] if len(parts) > 1 else None)
     if head == "o" and len(parts) >= 2:
         return await _meta_operator(parts[1])
     if head == "s" and len(parts) >= 2:
