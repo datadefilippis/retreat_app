@@ -546,7 +546,7 @@ export default function EventLandingPage() {
       {!fromStore && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3 pb-1 flex items-center justify-between gap-2">
           <nav className="text-xs text-gray-500 truncate">
-            <Link to="/ritiri" className="hover:text-primary hover:underline">
+            <Link to="/" className="hover:text-primary hover:underline">
               {t('landings:calendar.title', { defaultValue: 'Ritiri' })}
             </Link>
             {product.category && (<>
@@ -1028,7 +1028,7 @@ export default function EventLandingPage() {
         <span aria-hidden className="mx-2">·</span>
         <Link to={`/s/${orgSlug}`} className="underline hover:text-gray-900">{t('landings:event.seeOtherEvents')}</Link>
         <span aria-hidden className="mx-2">·</span>
-        <Link to="/ritiri" className="underline hover:text-gray-900">
+        <Link to="/" className="underline hover:text-gray-900">
           {t('landings:event.findMoreRetreats', { defaultValue: 'Scopri altri ritiri' })}
         </Link>
       </footer>

@@ -45,7 +45,9 @@ async def build_sitemap() -> str:
 
     base = _base_url()
     now_iso = datetime.now(timezone.utc).isoformat()[:16]
-    urls = [_url(f"{base}/ritiri", priority="0.9")]
+    # S0.1 — la home È la directory (priorità massima); /ritiri è un
+    # redirect e NON va in sitemap. Le pagine categoria restano su /ritiri/*.
+    urls = [_url(f"{base}/", priority="1.0")]
 
     # Landing pubblicate e future + coppie categoria×regione REALI
     # (solo combinazioni con contenuto: pagine indice vuote = thin content)

@@ -195,7 +195,7 @@ export default function AccountLoginPage() {
         )}
 
         <p className="mt-6 text-xs text-gray-400">
-          <Link to="/ritiri" className="hover:underline">
+          <Link to="/" className="hover:underline">
             {t('landings:account.backToRetreats', { defaultValue: '← Torna ai ritiri' })}
           </Link>
         </p>

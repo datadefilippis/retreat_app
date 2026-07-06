@@ -81,7 +81,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link to="/ritiri" className="flex items-center gap-2.5 shrink-0" aria-label={BRAND_NAME}>
+          <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label={BRAND_NAME}>
             <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-9 w-9 select-none" draggable={false} />
             <span className="font-brand font-medium uppercase tracking-[0.28em] text-lg leading-none text-[#8a7440] select-none">{BRAND_NAME}</span>
           </Link>
@@ -96,7 +96,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               {!noSearch && (
                 <button
                   type="button"
-                  onClick={() => navigate('/ritiri')}
+                  onClick={() => navigate('/')}
                   className="hidden sm:flex items-center gap-2 rounded-full border border-gray-300 bg-white pl-4 pr-2 py-1.5 text-sm text-gray-500 hover:shadow-md transition-shadow"
                 >
                   <span>{t('marketplace.searchShortcut', { defaultValue: 'Dove? · Quando? · Che ritiro?' })}</span>
@@ -150,7 +150,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 <li><Link to="/ritiri?categoria=yoga" className="hover:text-primary">Yoga</Link></li>
                 <li><Link to="/ritiri?categoria=meditazione" className="hover:text-primary">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>
                 <li><Link to="/ritiri?categoria=detox" className="hover:text-primary">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>
-                <li><Link to="/ritiri" className="hover:text-primary">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>
+                <li><Link to="/" className="hover:text-primary">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>
               </ul>
             </div>
             <div>
