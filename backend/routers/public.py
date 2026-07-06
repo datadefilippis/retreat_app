@@ -3507,6 +3507,100 @@ async def public_geo_search(request: Request,
     return {"results": await search_places(q, limit=5)}
 
 
+def _place_slug(name: str) -> str:
+    """Slug URL-safe per i nomi luogo ('Greve in Chianti' → greve-in-chianti)."""
+    import re as _re
+    import unicodedata as _ud
+    s = _ud.normalize("NFKD", name.lower()).encode("ascii", "ignore").decode()
+    return _re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+
+
+@router.get("/destinations")
+async def public_destinations_index():
+    """S2b (SEO_MASTER_PLAN) — destinazioni con ritiri REALI in futuro.
+
+    Le pagine /destinazioni/{luogo} esistono SOLO se c'è contenuto
+    (anti thin-content): questa lista è la fonte, derivata dalle
+    occorrenze future pubblicate (region + city)."""
+    from datetime import datetime, timezone
+    from database import event_occurrences_collection
+
+    now_iso = datetime.now(timezone.utc).isoformat()[:16]
+    occs = await event_occurrences_collection.find(
+        {"status": "published", "start_at": {"$gte": now_iso}},
+        {"_id": 0, "region": 1, "city": 1},
+    ).to_list(2000)
+
+    counts: dict = {}
+    for o in occs:
+        for name in {o.get("region"), o.get("city")}:
+            if not name:
+                continue
+            k = _place_slug(name)
+            if not k:
+                continue
+            e = counts.setdefault(k, {"slug": k, "label": name, "retreats": 0})
+            e["retreats"] += 1
+    items = sorted(counts.values(), key=lambda x: (-x["retreats"], x["label"]))
+    return {"items": items, "total": len(items)}
+
+
+_EXPERIENCE_TYPES = ("service", "rental", "course")
+_EXPERIENCE_PREFIX = {"service": "p", "rental": "r", "course": "co"}
+
+
+@router.get("/experiences")
+async def public_experiences_index(category: str = Query(default=None, max_length=50)):
+    """S2b — hub delle esperienze NON-evento (servizi, prenotazioni,
+    corsi) degli operatori con vetrina pubblica. I fisici/digitali
+    restano indicizzati a livello di landing e store (scelta commerce
+    del piano: niente aggregatore retail cross-store)."""
+    from database import stores_collection, products_collection
+
+    stores = await stores_collection.find(
+        {"is_published": True, "is_active": True, "visibility": "public",
+         "slug": {"$nin": [None, ""]}},
+        {"_id": 0, "organization_id": 1, "slug": 1, "name": 1},
+    ).to_list(500)
+    slug_by_org = {s["organization_id"]: s["slug"] for s in stores}
+    name_by_org = {s["organization_id"]: s.get("name") or s["slug"]
+                   for s in stores}
+
+    q = {"organization_id": {"$in": list(slug_by_org)},
+         "is_active": True, "is_published": True,
+         "item_type": {"$in": list(_EXPERIENCE_TYPES)},
+         "slug": {"$nin": [None, ""]}}
+    prods = await products_collection.find(
+        q, {"_id": 0, "name": 1, "slug": 1, "description": 1, "images": 1,
+            "image_url": 1, "unit_price": 1, "category": 1, "item_type": 1,
+            "organization_id": 1},
+    ).to_list(1000)
+
+    items = []
+    all_categories: dict = {}
+    for p in prods:
+        org_slug = slug_by_org.get(p["organization_id"])
+        if not org_slug:
+            continue
+        if p.get("category"):
+            all_categories[p["category"]] = all_categories.get(p["category"], 0) + 1
+        if category and p.get("category") != category:
+            continue
+        prefix = _EXPERIENCE_PREFIX[p["item_type"]]
+        items.append({
+            "title": p["name"],
+            "url": f"/{prefix}/{org_slug}/{p['slug']}",
+            "item_type": p["item_type"],
+            "category": p.get("category"),
+            "description": (p.get("description") or "")[:160] or None,
+            "image": (p.get("images") or [None])[0] or p.get("image_url"),
+            "price_from": p.get("unit_price"),
+            "operator": name_by_org.get(p["organization_id"]),
+        })
+    items.sort(key=lambda x: x["title"].lower())
+    return {"items": items, "total": len(items), "categories": all_categories}
+
+
 @router.get("/operators")
 async def public_operators_index(category: str = Query(default=None, max_length=50)):
     """S2 (SEO_MASTER_PLAN) — aggregatore pubblico degli operatori.
