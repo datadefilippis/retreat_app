@@ -346,6 +346,10 @@ export default function ProductLandingPage() {
     return () => { mounted = false; };
   }, [orgSlug, productSlug, i18nInstance.language]);
 
+  // S1 — parità SEO: meta + JSON-LD Service (vedi SEO_MASTER_PLAN)
+  useProductSeo({ kind: 'p', orgSlug, productSlug, product: data?.product,
+    storeName: data?.store_info?.display_name, currency: data?.currency });
+
   // Fetch slots when landing has a service product with availability
   useEffect(() => {
     if (!data?.product?.id) return;

@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import i18nInstance from '../../i18n';
 import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
+import useProductSeo from './lib/useProductSeo';
 import ProductExtrasPicker from './components/ProductExtrasPicker';
 import PricePreview, { usePricePreview } from './components/PricePreview';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
@@ -91,6 +92,10 @@ export default function PhysicalLandingPage() {
   }, [orgSlug, productSlug, i18nInstance.language]);
 
   const product = data?.product;
+
+  // S1 — parità SEO: meta + JSON-LD (vedi SEO_MASTER_PLAN)
+  useProductSeo({ kind: 'ph', orgSlug, productSlug, product,
+    storeName: data?.store_info?.display_name, currency: data?.currency });
 
   // Seed default radio picks from is_default flags on first load — identical
   // pattern to ReservationLandingPage so a "default variant" is pre-selected.

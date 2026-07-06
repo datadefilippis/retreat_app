@@ -20,6 +20,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import i18nInstance from '../../i18n';
 import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
+import useProductSeo from './lib/useProductSeo';
 import ProductExtrasPicker from './components/ProductExtrasPicker';
 import PricePreview, { usePricePreview } from './components/PricePreview';
 import AvailabilityDayPicker from './components/AvailabilityDayPicker';
@@ -185,6 +186,10 @@ export default function ReservationLandingPage() {
   }, [orgSlug, productSlug, i18nInstance.language]);
 
   const product = data?.product;
+
+  // S1 — parità SEO: meta + JSON-LD (vedi SEO_MASTER_PLAN)
+  useProductSeo({ kind: 'r', orgSlug, productSlug, product,
+    storeName: data?.store_info?.display_name, currency: data?.currency });
   const flavor = useMemo(() => {
     if (!product) return 'range';
     const f = product.reservation_flavor;

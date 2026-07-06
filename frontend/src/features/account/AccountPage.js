@@ -47,7 +47,7 @@ export default function AccountPage() {
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState(false);
 
-  useSeoMeta({ title: 'Le mie prenotazioni' });
+  useSeoMeta({ title: 'Le mie esperienze', noindex: true });
   useEffect(() => {
     const meta = document.createElement('meta');
     meta.name = 'robots'; meta.content = 'noindex';

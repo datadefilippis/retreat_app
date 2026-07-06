@@ -25,7 +25,7 @@ function setMeta(attr, key, content) {
   el.setAttribute('content', content);
 }
 
-export default function useSeoMeta({ title, description, image, canonicalPath, jsonLd }) {
+export default function useSeoMeta({ title, description, image, canonicalPath, jsonLd, noindex }) {
   useEffect(() => {
     if (title) document.title = title;
     setMeta('name', 'description', description);
@@ -34,6 +34,8 @@ export default function useSeoMeta({ title, description, image, canonicalPath, j
     setMeta('property', 'og:type', 'website');
     if (image) setMeta('property', 'og:image', image);
     setMeta('name', 'twitter:card', image ? 'summary_large_image' : 'summary');
+    // S1 — pagine di stato/flusso: mai in SERP
+    if (noindex) setMeta('name', 'robots', 'noindex');
 
     if (canonicalPath) {
       let link = document.head.querySelector('link[rel="canonical"]');
@@ -44,7 +46,7 @@ export default function useSeoMeta({ title, description, image, canonicalPath, j
       }
       link.setAttribute('href', window.location.origin + canonicalPath);
     }
-  }, [title, description, image, canonicalPath]);
+  }, [title, description, image, canonicalPath, noindex]);
 
   // F3 (5/7/2026) — JSON-LD schema.org generato dai DATI (Event,
   // Organization, ItemList, BreadcrumbList): il "SEO automatico" del

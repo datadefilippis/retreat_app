@@ -39,7 +39,7 @@ export default function AccountLoginPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
 
-  useSeoMeta({ title: 'Accedi — le tue prenotazioni' });
+  useSeoMeta({ title: 'Accedi — le tue esperienze', noindex: true });
   useEffect(() => {
     const meta = document.createElement('meta');
     meta.name = 'robots'; meta.content = 'noindex';

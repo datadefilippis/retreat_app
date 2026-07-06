@@ -399,7 +399,19 @@ export default function EventLandingPage() {
       : (seoProduct ? `Prenota ${seoProduct.name}: date, prezzi e disponibilità in tempo reale.` : undefined),
     image: seoOcc?.cover_image_url || seoProduct?.image_url || undefined,
     canonicalPath: `/e/${orgSlug}/${slug}`,
-    jsonLd: (seoProduct && seoOcc) ? {
+    // S1 — array JSON-LD: Event + FAQPage (le FAQ del ritiro sono già
+    // nei dati → rich results "FAQ" sotto lo snippet in SERP).
+    jsonLd: (seoProduct && seoOcc) ? [
+      ...((seoOcc.faq || []).filter(f => f?.q && f?.a).length > 0 ? [{
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: (seoOcc.faq || []).filter(f => f?.q && f?.a).map(f => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      }] : []),
+      {
       '@context': 'https://schema.org',
       '@type': 'Event',
       name: seoProduct.name,
@@ -439,7 +451,7 @@ export default function EventLandingPage() {
           url: `${window.location.origin}/e/${orgSlug}/${slug}`,
         },
       } : {}),
-    } : undefined,
+    }] : undefined,
   });
 
   useEffect(() => {

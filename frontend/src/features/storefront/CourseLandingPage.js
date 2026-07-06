@@ -22,6 +22,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import i18nInstance from '../../i18n';
 import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
+import useProductSeo from './lib/useProductSeo';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -163,6 +164,10 @@ export default function CourseLandingPage() {
   }, [orgSlug, productSlug, i18nInstance.language]);
 
   const product = data?.product;
+
+  // S1 — parità SEO: meta + JSON-LD (vedi SEO_MASTER_PLAN)
+  useProductSeo({ kind: 'co', orgSlug, productSlug, product,
+    storeName: data?.store_info?.display_name, currency: data?.currency });
   const course = data?.course_preview;
   const currency = data?.currency || data?.store_info?.currency || 'EUR';
 
