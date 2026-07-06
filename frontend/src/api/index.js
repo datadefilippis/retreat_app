@@ -28,7 +28,6 @@ import { productCatalogAPI } from './productCatalog';
 import { validationRulesAPI } from './validationRules';
 
 // ── User Preferences API ──────────────────────────────────────────────────────
-import { preferencesAPI } from './preferences';
 
 // ── AI Chat API (v2.5) ──────────────────────────────────────────────────────
 import { aiAPI } from './ai';
@@ -90,7 +89,6 @@ export {
   // Phase-4
   validationRulesAPI,
   // Preferences
-  preferencesAPI,
   // AI Chat
   aiAPI,
   // AI Digest

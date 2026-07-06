@@ -102,7 +102,11 @@
     "todo_title": "To do",
     "todo_empty": "All clear. Nothing to handle.",
     "todo_review": "Orders to review",
-    "todo_drafts": "Open drafts"
+    "todo_drafts": "Open drafts",
+    "payments_collected12m": "collected (12 months)",
+    "payments_all_cf": "Go to Payments",
+    "todo_overdue": "Overdue payments",
+    "todo_reviews": "Pending reviews"
   },
   "onboarding": {
     "title": "Start here",
