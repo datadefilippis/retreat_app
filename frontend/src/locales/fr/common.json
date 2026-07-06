@@ -105,5 +105,38 @@
   "languageSwitcher": {
     "label": "Langue",
     "ariaLabel": "Changer de langue"
+  },
+  "reviews": {
+    "title": "Avis",
+    "subtitle": "Ce que les voyageurs disent de vous — et comment vous répondez.",
+    "total_one": "{{count}} avis",
+    "total_other": "{{count}} avis",
+    "openToggle": "Accepter les avis de personnes n'ayant pas encore réservé",
+    "openToggleHint": "Ils n’apparaîtront qu’après votre approbation et sans le badge « Client vérifié ».",
+    "openOn": "Désormais tout le monde peut laisser un avis (avec votre approbation)",
+    "openOff": "Seuls les clients peuvent laisser un avis",
+    "tabPublished": "Publiés",
+    "tabPending": "En attente",
+    "tabFlagged": "Signalés",
+    "verified": "Client vérifié",
+    "unverified": "Non client",
+    "reply": "Répondre",
+    "editReply": "Modifier la réponse",
+    "yourReply": "Votre réponse",
+    "replyPlaceholder": "Remerciez, clarifiez, invitez à revenir — la réponse est publique.",
+    "sendReply": "Publier la réponse",
+    "replySent": "Réponse publiée",
+    "cancel": "Annuler",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "approved": "Avis publié",
+    "rejected": "Avis refusé",
+    "flag": "Signaler un abus",
+    "flagged": "Signalé",
+    "flaggedOk": "Signalé : masqué en attente de vérification",
+    "emptyTitle": "Aucun avis ici",
+    "emptyBody": "Les clients peuvent vous laisser un avis depuis votre page de profil. Partagez-la après chaque retraite : le moyen le plus rapide de créer la confiance.",
+    "loadError": "Erreur de chargement",
+    "genericError": "Erreur, réessayez"
   }
 }

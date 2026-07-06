@@ -59,6 +59,8 @@ def _read(locale: str, namespace: str) -> dict:
 @pytest.mark.parametrize("namespace,subpath", [
     ("settings", "paymentMethods"),
     ("customerInsights", ""),
+    ("common", "reviews"),      # PR5 — plancia recensioni back-office
+    ("landings", "reviews"),    # PR5 — flusso recensioni pubblico
 ])
 def test_locales_have_identical_key_topology(namespace, subpath):
     """All locales expose the same dot-path key set under ``subpath``."""
@@ -94,6 +96,8 @@ def test_locales_have_identical_key_topology(namespace, subpath):
 @pytest.mark.parametrize("namespace,subpath", [
     ("settings", "paymentMethods"),
     ("customerInsights", ""),
+    ("common", "reviews"),
+    ("landings", "reviews"),
 ])
 def test_locales_have_no_empty_string_translations(namespace, subpath):
     """An empty string slips through silently in the UI (renders blank).
@@ -137,6 +141,53 @@ def test_payment_methods_translates_twint_cta_to_each_locale():
             f"{loc}.paymentMethods.twintCta.title is identical to IT — "
             f"likely a missed translation."
         )
+
+
+# ── PR5 — le chiavi recensioni usate nel JSX esistono nei locales ────────
+
+
+def _keys_used_in(component_path: str, pattern: str) -> set:
+    """Extract i18n keys referenced by a component via ``t('<pattern>...')``."""
+    import re
+    src = (REPO_ROOT / "frontend" / "src" / component_path).read_text()
+    return set(re.findall(pattern, src))
+
+
+def _resolves(section: dict, key: str) -> bool:
+    """A key resolves if present as-is or via plural forms (_one/_other)."""
+    return key in section or (
+        f"{key}_one" in section and f"{key}_other" in section)
+
+
+def test_reviews_admin_page_keys_exist_in_common_locales():
+    """Every ``t('reviews.X')`` in ReviewsAdminPage must resolve in all 4
+    common.json files — otherwise the UI silently falls back to the
+    Italian defaultValue for non-IT operators."""
+    used = _keys_used_in("features/reviews/ReviewsAdminPage.js",
+                         r"t\('reviews\.([a-zA-Z]+)'")
+    assert used, "no reviews.* keys found — component moved? update the guard"
+    missing = []
+    for loc in LOCALES:
+        section = _read(loc, "common").get("reviews", {})
+        missing += [f"{loc}.reviews.{k}" for k in sorted(used)
+                    if not _resolves(section, k)]
+    assert not missing, "reviews keys missing in common.json:\n" + \
+        "\n".join(f"  {m}" for m in missing)
+
+
+def test_public_reviews_flow_keys_exist_in_landings_locales():
+    """Same guard for the public flow on OperatorProfilePage
+    (``landings:reviews.*``)."""
+    used = _keys_used_in("features/storefront/OperatorProfilePage.js",
+                         r"'landings:reviews\.([a-zA-Z]+)'")
+    assert used, "no landings:reviews.* keys found — update the guard"
+    missing = []
+    for loc in LOCALES:
+        section = _read(loc, "landings").get("reviews", {})
+        missing += [f"{loc}.reviews.{k}" for k in sorted(used)
+                    if not _resolves(section, k)]
+    assert not missing, "reviews keys missing in landings.json:\n" + \
+        "\n".join(f"  {m}" for m in missing)
 
 
 def test_payment_methods_active_badge_is_short_word():

@@ -475,7 +475,9 @@
     "noUpcoming": "Derzeit keine Retreats geplant. Schau bald wieder vorbei.",
     "memberSince": "Veranstalter seit {{year}}",
     "retreatsOrganized_one": "{{count}} Retreat organisiert",
-    "retreatsOrganized_other": "{{count}} Retreats organisiert"
+    "retreatsOrganized_other": "{{count}} Retreats organisiert",
+    "about": "Über uns",
+    "gallery": "Fotos"
   },
   "account": {
     "title": "Meine Buchungen",
@@ -536,5 +538,29 @@
     "terms": "AGB",
     "langFilterNote": "Wähle deine Sprache: du siehst Retreats und Erlebnisse, die in dieser Sprache stattfinden.",
     "langFilterCaption": "Angezeigt werden Retreats und Erlebnisse auf {{lang}} — wechsle oben die Sprache für weitere."
+  },
+  "reviews": {
+    "heading": "Bewertungen",
+    "writeCta": "Bewertung schreiben",
+    "writeTitle": "Bewertung schreiben",
+    "emailIntro": "Nutze die E-Mail deiner Buchung: wir senden dir einen Code zur Bestätigung.",
+    "sendCode": "Code zusenden",
+    "codeIntro": "Wir haben dir einen 6-stelligen Code gesendet. Gib ihn hier ein:",
+    "continue": "Weiter",
+    "namePlaceholder": "Dein Name (sichtbar)",
+    "bodyPlaceholder": "Wie war es? Erzähle von deiner Erfahrung (min. 20 Zeichen)…",
+    "publish": "Bewertung veröffentlichen",
+    "thanks": "Danke für deine Bewertung!",
+    "close": "Schließen",
+    "basedOn_one": "basierend auf {{count}} Bewertung",
+    "basedOn_other": "basierend auf {{count}} Bewertungen",
+    "countShort_one": "{{count}} Bewertung",
+    "countShort_other": "{{count}} Bewertungen",
+    "empty": "Noch keine Bewertungen. Hast du bei diesem Anbieter gebucht? Erzähle, wie es war.",
+    "verified": "Verifizierter Kunde",
+    "edited": "aktualisiert",
+    "operatorReply": "Antwort des Veranstalters",
+    "showMore": "Mehr anzeigen",
+    "genericError": "Etwas hat nicht funktioniert, bitte erneut versuchen."
   }
 }

@@ -475,7 +475,9 @@
     "visitStore": "Visita il negozio",
     "memberSince": "Organizzatore dal {{year}}",
     "retreatsOrganized_one": "{{count}} ritiro organizzato",
-    "retreatsOrganized_other": "{{count}} ritiri organizzati"
+    "retreatsOrganized_other": "{{count}} ritiri organizzati",
+    "about": "Chi siamo",
+    "gallery": "Foto"
   },
   "account": {
     "title": "Le mie prenotazioni",
@@ -536,5 +538,29 @@
     "terms": "Termini",
     "langFilterNote": "Scegli la lingua: vedrai i ritiri e le esperienze tenuti in quella lingua.",
     "langFilterCaption": "Mostriamo i ritiri e le esperienze tenuti in {{lang}} — cambia lingua in alto per vederne altri."
+  },
+  "reviews": {
+    "heading": "Recensioni",
+    "writeCta": "Scrivi una recensione",
+    "writeTitle": "Scrivi una recensione",
+    "emailIntro": "Usa l'email con cui hai prenotato: ti mandiamo un codice per verificare che sia tu.",
+    "sendCode": "Inviami il codice",
+    "codeIntro": "Ti abbiamo inviato un codice a 6 cifre. Inseriscilo qui:",
+    "continue": "Continua",
+    "namePlaceholder": "Il tuo nome (visibile)",
+    "bodyPlaceholder": "Com'è andata? Racconta la tua esperienza (min 20 caratteri)…",
+    "publish": "Pubblica la recensione",
+    "thanks": "Grazie della tua recensione!",
+    "close": "Chiudi",
+    "basedOn_one": "su {{count}} recensione",
+    "basedOn_other": "su {{count}} recensioni",
+    "countShort_one": "{{count}} recensione",
+    "countShort_other": "{{count}} recensioni",
+    "empty": "Ancora nessuna recensione. Hai prenotato con questo operatore? Racconta com'è andata.",
+    "verified": "Cliente verificato",
+    "edited": "aggiornata",
+    "operatorReply": "Risposta dell'organizzatore",
+    "showMore": "Mostra altre",
+    "genericError": "Qualcosa non ha funzionato, riprova."
   }
 }

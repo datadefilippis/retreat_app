@@ -475,7 +475,9 @@
     "noUpcoming": "Aucune retraite prévue pour le moment. Reviens bientôt.",
     "memberSince": "Organisateur depuis {{year}}",
     "retreatsOrganized_one": "{{count}} retraite organisée",
-    "retreatsOrganized_other": "{{count}} retraites organisées"
+    "retreatsOrganized_other": "{{count}} retraites organisées",
+    "about": "Qui sommes-nous",
+    "gallery": "Photos"
   },
   "account": {
     "title": "Mes réservations",
@@ -536,5 +538,29 @@
     "terms": "Conditions",
     "langFilterNote": "Choisissez votre langue : vous verrez les retraites et expériences tenues dans cette langue.",
     "langFilterCaption": "Nous affichons les retraites et expériences tenues en {{lang}} — changez de langue en haut pour en voir d’autres."
+  },
+  "reviews": {
+    "heading": "Avis",
+    "writeCta": "Écrire un avis",
+    "writeTitle": "Écrire un avis",
+    "emailIntro": "Utilisez l’email de votre réservation : nous vous envoyons un code pour vérifier que c’est bien vous.",
+    "sendCode": "Envoyer le code",
+    "codeIntro": "Nous vous avons envoyé un code à 6 chiffres. Saisissez-le ici :",
+    "continue": "Continuer",
+    "namePlaceholder": "Votre nom (visible)",
+    "bodyPlaceholder": "Comment ça s’est passé ? Racontez votre expérience (min 20 caractères)…",
+    "publish": "Publier l’avis",
+    "thanks": "Merci pour votre avis !",
+    "close": "Fermer",
+    "basedOn_one": "sur {{count}} avis",
+    "basedOn_other": "sur {{count}} avis",
+    "countShort_one": "{{count}} avis",
+    "countShort_other": "{{count}} avis",
+    "empty": "Pas encore d’avis. Vous avez réservé avec cet organisateur ? Racontez comment ça s’est passé.",
+    "verified": "Client vérifié",
+    "edited": "mis à jour",
+    "operatorReply": "Réponse de l’organisateur",
+    "showMore": "Afficher plus",
+    "genericError": "Quelque chose n’a pas fonctionné, réessayez."
   }
 }

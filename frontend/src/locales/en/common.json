@@ -105,5 +105,38 @@
   "languageSwitcher": {
     "label": "Language",
     "ariaLabel": "Change language"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "subtitle": "What travellers say about you — and how you respond.",
+    "total_one": "{{count}} review",
+    "total_other": "{{count}} reviews",
+    "openToggle": "Accept reviews from people who have not booked yet",
+    "openToggleHint": "They will only appear after your approval and without the \"Verified customer\" badge.",
+    "openOn": "Now anyone can leave a review (with your approval)",
+    "openOff": "Only customers can leave reviews",
+    "tabPublished": "Published",
+    "tabPending": "Pending",
+    "tabFlagged": "Flagged",
+    "verified": "Verified customer",
+    "unverified": "Not a customer",
+    "reply": "Reply",
+    "editReply": "Edit reply",
+    "yourReply": "Your reply",
+    "replyPlaceholder": "Thank them, clarify, invite them back — the reply is public.",
+    "sendReply": "Publish reply",
+    "replySent": "Reply published",
+    "cancel": "Cancel",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approved": "Review published",
+    "rejected": "Review rejected",
+    "flag": "Report abuse",
+    "flagged": "Flagged",
+    "flaggedOk": "Flagged: hidden pending review",
+    "emptyTitle": "No reviews here",
+    "emptyBody": "Customers can review you from your profile page. Share it after every retreat: it is the fastest way to build trust.",
+    "loadError": "Loading error",
+    "genericError": "Error, please try again"
   }
 }
