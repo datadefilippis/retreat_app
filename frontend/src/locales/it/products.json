@@ -670,7 +670,7 @@
       },
       "pageList": {
         "title": "Corsi video",
-        "subtitle": "Crea e gestisci i tuoi percorsi formativi video. I video restano su Bunny; Retreat App gestisce struttura, accessi e player.",
+        "subtitle": "Crea e gestisci i tuoi percorsi formativi video. I video restano su Bunny; Aurya gestisce struttura, accessi e player.",
         "showArchived": "Mostra archiviati",
         "newCourse": "+ Nuovo corso",
         "expiringDays": "{{count}} giorni",

@@ -7,7 +7,7 @@
   "products": {
     "title": "Produkte",
     "subtitle": "Produktstammdaten — fur automatische Verknupfung beim Datenimport",
-    "guide": "Durch Anlegen von Produkten hier verknupft Retreat App importierte Verkaufe und Einkaufe automatisch mit den entsprechenden Produkten.",
+    "guide": "Durch Anlegen von Produkten hier verknupft Aurya importierte Verkaufe und Einkaufe automatisch mit den entsprechenden Produkten.",
     "add": "Produkt hinzufugen",
     "edit": "Produkt bearbeiten",
     "empty": "Noch keine Produkte angelegt",
@@ -23,7 +23,7 @@
   "customers": {
     "title": "Kunden",
     "subtitle": "Kundenstammdaten — fur automatische Verknupfung beim Datenimport",
-    "guide": "Durch Anlegen von Kunden hier verknupft Retreat App importierte Verkaufe automatisch mit den entsprechenden Kunden.",
+    "guide": "Durch Anlegen von Kunden hier verknupft Aurya importierte Verkaufe automatisch mit den entsprechenden Kunden.",
     "add": "Kunde hinzufugen", "edit": "Kunde bearbeiten",
     "empty": "Noch keine Kunden angelegt",
     "empty_desc": "Fugen Sie Ihre Kunden hinzu, um die automatische Verknupfung beim Import zu aktivieren.",
@@ -37,7 +37,7 @@
   "suppliers": {
     "title": "Lieferanten",
     "subtitle": "Lieferantenstammdaten — fur automatische Verknupfung beim Datenimport",
-    "guide": "Durch Anlegen von Lieferanten hier verknupft Retreat App importierte Ausgaben und Einkaufe automatisch mit den entsprechenden Lieferanten.",
+    "guide": "Durch Anlegen von Lieferanten hier verknupft Aurya importierte Ausgaben und Einkaufe automatisch mit den entsprechenden Lieferanten.",
     "add": "Lieferant hinzufugen", "edit": "Lieferant bearbeiten",
     "empty": "Noch keine Lieferanten angelegt",
     "empty_desc": "Fugen Sie Ihre Lieferanten hinzu, um die automatische Verknupfung beim Import zu aktivieren.",

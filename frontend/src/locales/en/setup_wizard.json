@@ -1,6 +1,6 @@
 {
   "widget": {
-    "title": "Retreat App Setup",
+    "title": "Aurya Setup",
     "progress_label": "{{done}} of {{total}} done",
     "next_label": "Next:",
     "remaining_count_one": "{{count}} remaining",
@@ -53,7 +53,7 @@
     "global": {
       "verify_email": {
         "title": "Verify your email address",
-        "body": "Confirm your email to unlock all Retreat App features."
+        "body": "Confirm your email to unlock all Aurya features."
       },
       "brand_identity": {
         "title": "Customise your brand",

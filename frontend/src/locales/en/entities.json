@@ -7,7 +7,7 @@
   "products": {
     "title": "Products",
     "subtitle": "Product master data — used for automatic linking during data import",
-    "guide": "By creating products here, Retreat App will automatically link imported sales and purchases to the corresponding products, calculating margins and per-product performance.",
+    "guide": "By creating products here, Aurya will automatically link imported sales and purchases to the corresponding products, calculating margins and per-product performance.",
     "add": "Add product",
     "edit": "Edit product",
     "empty": "No products created yet",
@@ -32,7 +32,7 @@
   "customers": {
     "title": "Customers",
     "subtitle": "Customer master data — used for automatic linking during data import",
-    "guide": "By creating customers here, Retreat App will automatically link imported sales to the corresponding customers, calculating LTV, segmentation and churn risk.",
+    "guide": "By creating customers here, Aurya will automatically link imported sales to the corresponding customers, calculating LTV, segmentation and churn risk.",
     "add": "Add customer",
     "edit": "Edit customer",
     "empty": "No customers created yet",
@@ -55,7 +55,7 @@
   "suppliers": {
     "title": "Suppliers",
     "subtitle": "Supplier master data — used for automatic linking during data import",
-    "guide": "By creating suppliers here, Retreat App will automatically link imported expenses and purchases to the corresponding suppliers.",
+    "guide": "By creating suppliers here, Aurya will automatically link imported expenses and purchases to the corresponding suppliers.",
     "add": "Add supplier",
     "edit": "Edit supplier",
     "empty": "No suppliers created yet",

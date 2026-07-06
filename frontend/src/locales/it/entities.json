@@ -7,7 +7,7 @@
   "products": {
     "title": "Prodotti",
     "subtitle": "Anagrafica prodotti — usata per il linking automatico durante l'import dati",
-    "guide": "Creando i prodotti qui, Retreat App colleghera automaticamente le vendite e gli acquisti importati ai prodotti corrispondenti, calcolando margini e performance per prodotto.",
+    "guide": "Creando i prodotti qui, Aurya colleghera automaticamente le vendite e gli acquisti importati ai prodotti corrispondenti, calcolando margini e performance per prodotto.",
     "add": "Aggiungi prodotto",
     "edit": "Modifica prodotto",
     "empty": "Nessun prodotto ancora creato",
@@ -32,7 +32,7 @@
   "customers": {
     "title": "Clienti",
     "subtitle": "Anagrafica clienti — usata per il linking automatico durante l'import dati",
-    "guide": "Creando i clienti qui, Retreat App colleghera automaticamente le vendite importate ai clienti corrispondenti, calcolando LTV, segmentazione e rischio churn.",
+    "guide": "Creando i clienti qui, Aurya colleghera automaticamente le vendite importate ai clienti corrispondenti, calcolando LTV, segmentazione e rischio churn.",
     "add": "Aggiungi cliente",
     "edit": "Modifica cliente",
     "empty": "Nessun cliente ancora creato",
@@ -55,7 +55,7 @@
   "suppliers": {
     "title": "Fornitori",
     "subtitle": "Anagrafica fornitori — usata per il linking automatico durante l'import dati",
-    "guide": "Creando i fornitori qui, Retreat App colleghera automaticamente le spese e gli acquisti importati ai fornitori corrispondenti.",
+    "guide": "Creando i fornitori qui, Aurya colleghera automaticamente le spese e gli acquisti importati ai fornitori corrispondenti.",
     "add": "Aggiungi fornitore",
     "edit": "Modifica fornitore",
     "empty": "Nessun fornitore ancora creato",

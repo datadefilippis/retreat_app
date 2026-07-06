@@ -1,6 +1,6 @@
 {
   "widget": {
-    "title": "Retreat App-Einrichtung",
+    "title": "Aurya-Einrichtung",
     "progress_label": "{{done}} von {{total}} erledigt",
     "next_label": "Nächster Schritt:",
     "remaining_count_one": "{{count}} offen",
@@ -53,7 +53,7 @@
     "global": {
       "verify_email": {
         "title": "Bestätige deine E-Mail-Adresse",
-        "body": "Bestätige deine E-Mail, um alle Retreat App-Funktionen freizuschalten."
+        "body": "Bestätige deine E-Mail, um alle Aurya-Funktionen freizuschalten."
       },
       "brand_identity": {
         "title": "Personalisiere deine Marke",

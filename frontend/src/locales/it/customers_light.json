@@ -86,7 +86,7 @@
   },
   "empty": {
     "title": "Analisi clienti non attiva",
-    "description": "Per attivare l'analisi clienti:\n1. Crea i tuoi clienti in Dati base > Clienti\n2. Importa vendite con la colonna \"cliente\" che corrisponda ai nomi creati\nRetreat App colleghera automaticamente le vendite ai clienti.",
+    "description": "Per attivare l'analisi clienti:\n1. Crea i tuoi clienti in Dati base > Clienti\n2. Importa vendite con la colonna \"cliente\" che corrisponda ai nomi creati\nAurya colleghera automaticamente le vendite ai clienti.",
     "upload_cta": "Carica dati vendite",
     "manage_customers": "Gestisci clienti"
   },
