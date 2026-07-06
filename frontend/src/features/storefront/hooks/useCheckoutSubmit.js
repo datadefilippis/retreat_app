@@ -39,7 +39,21 @@
  */
 
 import { useState, useCallback } from 'react';
+import i18n from '../../../i18n';
 import { storefrontAPI } from '../../../api/storefront';
+
+
+// R2a — lingua UI al momento del checkout, timbrata sull'ordine
+// (order.locale) lato backend: guida la lingua di TUTTE le email verso
+// il compratore, compresi i promemoria caparra che partono settimane
+// dopo. Il hook è l'imbuto unico di ogni submit (store, landing,
+// marketplace): timbrando qui la ereditano tutte le superfici.
+const EMAIL_LOCALES = ['it', 'en', 'de', 'fr'];
+
+function currentEmailLocale() {
+  const lang = (i18n.language || '').slice(0, 2).toLowerCase();
+  return EMAIL_LOCALES.includes(lang) ? lang : undefined;
+}
 
 
 const DEFAULT_ERROR = 'Errore durante la prenotazione. Riprova.';
@@ -85,7 +99,10 @@ export function useCheckoutSubmit(defaults = {}) {
 
     setSubmitting(true);
     try {
-      const res = await storefrontAPI.submitOrder(payload);
+      const locale = payload.locale || currentEmailLocale();
+      const res = await storefrontAPI.submitOrder(
+        locale ? { ...payload, locale } : payload
+      );
       const data = res?.data || {};
 
       // Stripe / gateway redirect path. The backend returns

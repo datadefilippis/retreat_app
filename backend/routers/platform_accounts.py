@@ -37,7 +37,10 @@ def _flag_enabled() -> None:
 class MagicLinkRequest(BaseModel):
     email: str = Field(..., max_length=254)
     name: Optional[str] = Field(None, max_length=120)
-    language: str = Field("it", max_length=5)
+    # R2a: lingua UI del frontend alla richiesta. None = client legacy →
+    # il service usa la lingua gia' salvata sull'account (fallback it).
+    # Quando presente e valida aggiorna la preferenza dell'account.
+    language: Optional[str] = Field(None, max_length=5)
 
 
 class MagicLinkVerify(BaseModel):

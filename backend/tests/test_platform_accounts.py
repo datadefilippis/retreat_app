@@ -78,7 +78,7 @@ class TestMagicLinkService:
 
         sent = {}
 
-        def fake_send(email, token, name, code=None):
+        def fake_send(email, token, name, code=None, locale="it"):  # R2a: nuovo kwarg
             sent["token"] = token
             sent["code"] = code
 
@@ -248,7 +248,7 @@ class TestP2ClaimEmail:
         with patch("database.platform_accounts_collection", accounts), \
              patch("database.platform_magic_tokens_collection", tokens), \
              patch.object(svc, "_send_claim_email",
-                          lambda e, t, n: sent.update({"email": e, "token": t})):
+                          lambda e, t, n, locale="it": sent.update({"email": e, "token": t})):
             out = asyncio.run(svc.send_claim_email_if_needed(
                 {"customer_email": "a@b.it"}))
         assert out is True and sent["email"] == "a@b.it"

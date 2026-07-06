@@ -236,7 +236,14 @@ export function CheckoutSuccessPage() {
             if (!mktpEmail) { window.location.assign('/account/accedi'); return; }
             try {
               const { default: platformApi } = await import('../../api/platformClient');
-              await platformApi.post('/platform/auth/magic-link', { email: mktpEmail });
+              // R2a — lingua UI insieme alla richiesta: l'email OTP del
+              // Passaporto parte nella lingua con cui l'utente ha comprato.
+              const { default: i18nInst } = await import('../../i18n');
+              const lang = (i18nInst.language || '').slice(0, 2).toLowerCase();
+              await platformApi.post('/platform/auth/magic-link', {
+                email: mktpEmail,
+                language: ['it', 'en', 'de', 'fr'].includes(lang) ? lang : undefined,
+              });
             } catch { /* enumeration-safe: si prosegue comunque */ }
             window.location.assign(`/account/accedi?email=${encodeURIComponent(mktpEmail)}&sent=1`);
           };

@@ -462,6 +462,9 @@ async def submit_order_from_storefront(
             store_id=org.get("_store", {}).get("id"),
             order_fields_data=body.order_fields or None,
             terms_accepted_at=terms_ts,
+            # R2a — lingua UI al checkout (getattr: i chiamanti legacy che
+            # passano payload senza il campo continuano a funzionare)
+            locale=getattr(body, "locale", None),
         )
 
         # ── P2 Passaporto Ritiri (5/7/2026) — stamp additivo ──────────

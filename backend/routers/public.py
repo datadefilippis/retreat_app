@@ -405,6 +405,15 @@ class OrderRequestPayload(BaseModel):
     gdpr_privacy_accepted: bool = False
     gdpr_marketing_accepted: bool = False
 
+    # ── R2a (2026-07-06) — lingua UI dell'utente al momento del checkout.
+    # Timbrata sull'ordine (order.locale) e usata come priorità 1 per la
+    # lingua di TUTTE le email verso il compratore (conferma, promemoria
+    # caparre, rimborsi): il dunning di settembre parla la lingua con cui
+    # hai comprato a luglio, non quella del negozio. Additiva: i client
+    # che non la mandano cadono sulla catena esistente (account store →
+    # lingua negozio → it). Valori fuori da {it,en,de,fr} vengono ignorati.
+    locale: Optional[str] = Field(default=None, max_length=5)
+
 
 class OrderRequestResponse(BaseModel):
     success: bool = True

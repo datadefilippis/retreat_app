@@ -267,6 +267,24 @@ EMAIL_TRANSLATIONS = {
         "pay_atrisk_merchant_subject": "Pagamento a rischio: {customer} — {amount}",
         "pay_atrisk_merchant_body": "Il pagamento <strong>{label}</strong> di <strong>{amount}</strong> per l'ordine <strong>{order_ref}</strong> ({customer}) era dovuto entro il {due_date}. Dopo 3 promemoria automatici non risulta ancora pagato.",
         "pay_atrisk_merchant_actions": "Cosa puoi fare dalla dashboard incassi del ritiro: segnarlo pagato (se ha pagato con bonifico), condonarlo, prorogare la scadenza o liberare il posto. Nessuna azione automatica verra' presa senza di te.",
+        # R2a — conferma prenotazione (Onda 16), prima hardcoded it
+        "reservation_confirm_subject": "Prenotazione confermata — {product}",
+        "reservation_confirm_body": "La tua prenotazione e' confermata. Trovi tutti i dettagli qui sotto.",
+        "reservation_keep_note": "Conserva questa email, il link sopra e' privato.",
+        "reservation_code_label": "Codice",
+        "reservation_view_cta": "Vedi prenotazione",
+        # R2a — Passaporto: login OTP/magic link + claim post-acquisto
+        # (l'email piu' vista dai viaggiatori — prima hardcoded it)
+        "passport_login_subject": "Il tuo accesso — un click e sei dentro",
+        "passport_code_intro": "Il tuo codice di accesso (vale {minutes} minuti):",
+        "passport_code_hint": "Digitalo nella pagina da cui l'hai richiesto — oppure usa il link qui sotto.",
+        "passport_link_intro": "Link di accesso — vale {minutes} minuti e funziona una volta sola:",
+        "passport_login_cta": "Accedi al tuo account",
+        "passport_login_ignore": "Se non hai richiesto tu questo link, ignora questa email: nessuno puo' accedere senza di essa.",
+        "passport_claim_subject": "Le tue prenotazioni, in un unico posto",
+        "passport_claim_body": "Grazie della tua prenotazione! Con un click attivi il tuo account: ritrovi tutte le prenotazioni, i pagamenti e i biglietti in un unico posto — anche se prenoti con organizzatori diversi.",
+        "passport_claim_cta": "Gestisci le tue prenotazioni",
+        "passport_claim_footer": "Il link vale {minutes} minuti. Nessuna password da ricordare: quando ti serve, te ne mandiamo uno nuovo.",
 
         # Fase 4 — follow-up post ritiro
         "event_email_broadcast_followup_subject": "Grazie per aver partecipato — {event}",
@@ -548,6 +566,23 @@ EMAIL_TRANSLATIONS = {
         "pay_atrisk_merchant_subject": "Payment at risk: {customer} — {amount}",
         "pay_atrisk_merchant_body": "The payment <strong>{label}</strong> of <strong>{amount}</strong> for order <strong>{order_ref}</strong> ({customer}) was due by {due_date}. After 3 automatic reminders it is still unpaid.",
         "pay_atrisk_merchant_actions": "From the retreat payments dashboard you can: mark it paid (bank transfer), waive it, postpone the due date, or free the seat. No automatic action will be taken without you.",
+        # R2a — reservation confirmation (Onda 16), previously hardcoded it
+        "reservation_confirm_subject": "Booking confirmed — {product}",
+        "reservation_confirm_body": "Your booking is confirmed. All the details are below.",
+        "reservation_keep_note": "Keep this email — the link above is private.",
+        "reservation_code_label": "Code",
+        "reservation_view_cta": "View booking",
+        # R2a — Passport: OTP/magic-link login + post-purchase claim
+        "passport_login_subject": "Your sign-in — one click and you're in",
+        "passport_code_intro": "Your access code (valid for {minutes} minutes):",
+        "passport_code_hint": "Type it on the page where you requested it — or use the link below.",
+        "passport_link_intro": "Sign-in link — valid for {minutes} minutes, works once:",
+        "passport_login_cta": "Sign in to your account",
+        "passport_login_ignore": "If you didn't request this link, just ignore this email: nobody can sign in without it.",
+        "passport_claim_subject": "All your bookings, in one place",
+        "passport_claim_body": "Thanks for your booking! One click activates your account: find all your bookings, payments and tickets in one place — even across different organizers.",
+        "passport_claim_cta": "Manage your bookings",
+        "passport_claim_footer": "The link is valid for {minutes} minutes. No password to remember: whenever you need one, we'll send you a fresh link.",
 
         "event_email_broadcast_followup_subject": "Thank you for joining — {event}",
         "event_email_broadcast_followup_body": "Thank you for being part of <strong>{event}</strong>. We hope the experience left you something good.",
@@ -961,6 +996,38 @@ EMAIL_TRANSLATIONS = {
         "quota_addon_offer_stores_max": "Paket +1 Store fuer nur 19 EUR/Monat",
         "quota_addon_offer_fallback": "Upgrade deinen Plan, um das Limit zu erweitern",
         "quota_period_label": "Zeitraum: {period}",
+        # R2a — Zahlungsplan + Erinnerungen (vorher nur it/en: _t fiel auf
+        # Italienisch zurueck — genau der Fall, den order.locale jetzt
+        # korrekt bedienen muss)
+        "payment_plan_heading": "Dein Zahlungsplan",
+        "payment_plan_paid_row": "{label}: <strong>{amount}</strong> — bezahlt &#10003;",
+        "payment_plan_pending_row": "{label}: <strong>{amount}</strong> — bis zum {due_date}",
+        "payment_plan_reminder_note": "Wir senden dir vor jeder Faelligkeit eine Erinnerung mit dem Zahlungslink: du musst jetzt nichts tun.",
+        "pay_reminder_subject_t7": "Erinnerung: {amount} wird faellig — {store_name}",
+        "pay_reminder_subject_t0": "Heute faellig: {amount} — {store_name}",
+        "pay_sollecito_subject": "Zahlung ueberfaellig: {amount} — {store_name}",
+        "pay_reminder_body": "Erinnerung an die Faelligkeit fuer Bestellung <strong>{order_ref}</strong>: {label} ueber <strong>{amount}</strong> bis zum <strong>{due_date}</strong>. Mit dem Button unten kannst du in einem Klick bezahlen.",
+        "pay_sollecito_body": "Die Faelligkeit fuer Bestellung <strong>{order_ref}</strong> ist verstrichen: {label} ueber <strong>{amount}</strong> war bis zum <strong>{due_date}</strong> faellig. Bitte begleiche die Zahlung ueber den Button unten.",
+        "pay_now_cta": "Jetzt bezahlen",
+        "pay_reminder_footer": "Der Link oeffnet eine sichere Stripe-Zahlung. Falls du bereits per Ueberweisung bezahlt hast, ignoriere diese E-Mail: der Veranstalter aktualisiert deinen Stand.",
+        "pay_atrisk_merchant_subject": "Zahlung gefaehrdet: {customer} — {amount}",
+        "pay_atrisk_merchant_body": "Die Zahlung <strong>{label}</strong> ueber <strong>{amount}</strong> fuer Bestellung <strong>{order_ref}</strong> ({customer}) war bis zum {due_date} faellig. Nach 3 automatischen Erinnerungen ist sie weiterhin offen.",
+        "pay_atrisk_merchant_actions": "Was du im Zahlungs-Dashboard des Retreats tun kannst: als bezahlt markieren (bei Ueberweisung), erlassen, die Faelligkeit verschieben oder den Platz freigeben. Ohne dich passiert nichts automatisch.",
+        "reservation_confirm_subject": "Buchung bestaetigt — {product}",
+        "reservation_confirm_body": "Deine Buchung ist bestaetigt. Alle Details findest du unten.",
+        "reservation_keep_note": "Bewahre diese E-Mail auf — der Link oben ist privat.",
+        "reservation_code_label": "Code",
+        "reservation_view_cta": "Buchung ansehen",
+        "passport_login_subject": "Dein Zugang — ein Klick und du bist drin",
+        "passport_code_intro": "Dein Zugangscode (gueltig fuer {minutes} Minuten):",
+        "passport_code_hint": "Gib ihn auf der Seite ein, auf der du ihn angefordert hast — oder nutze den Link unten.",
+        "passport_link_intro": "Anmeldelink — gueltig fuer {minutes} Minuten, funktioniert einmal:",
+        "passport_login_cta": "In deinem Konto anmelden",
+        "passport_login_ignore": "Wenn du diesen Link nicht angefordert hast, ignoriere diese E-Mail: ohne ihn kann sich niemand anmelden.",
+        "passport_claim_subject": "Alle deine Buchungen, an einem Ort",
+        "passport_claim_body": "Danke fuer deine Buchung! Ein Klick aktiviert dein Konto: alle Buchungen, Zahlungen und Tickets an einem Ort — auch bei verschiedenen Veranstaltern.",
+        "passport_claim_cta": "Buchungen verwalten",
+        "passport_claim_footer": "Der Link ist {minutes} Minuten gueltig. Kein Passwort noetig: wenn du einen brauchst, senden wir dir einen neuen Link.",
     },
     "fr": {
         "greeting": "Bonjour",
@@ -1210,6 +1277,37 @@ EMAIL_TRANSLATIONS = {
         "quota_addon_offer_stores_max": "Pack +1 store pour seulement 19 EUR/mois",
         "quota_addon_offer_fallback": "Mettez a niveau votre plan pour etendre la limite",
         "quota_period_label": "periode : {period}",
+        # R2a — plan de paiement + rappels (avant: seulement it/en, _t
+        # retombait sur l'italien)
+        "payment_plan_heading": "Votre plan de paiement",
+        "payment_plan_paid_row": "{label} : <strong>{amount}</strong> — payee &#10003;",
+        "payment_plan_pending_row": "{label} : <strong>{amount}</strong> — avant le {due_date}",
+        "payment_plan_reminder_note": "Nous vous enverrons un rappel avec le lien de paiement avant chaque echeance : vous n'avez rien a faire pour l'instant.",
+        "pay_reminder_subject_t7": "Rappel : {amount} arrive a echeance — {store_name}",
+        "pay_reminder_subject_t0": "Echeance aujourd'hui : {amount} — {store_name}",
+        "pay_sollecito_subject": "Paiement en retard : {amount} — {store_name}",
+        "pay_reminder_body": "Rappel de l'echeance pour la commande <strong>{order_ref}</strong> : {label} de <strong>{amount}</strong> avant le <strong>{due_date}</strong>. Vous pouvez payer en un clic avec le bouton ci-dessous.",
+        "pay_sollecito_body": "L'echeance de la commande <strong>{order_ref}</strong> est depassee : {label} de <strong>{amount}</strong> etait due avant le <strong>{due_date}</strong>. Merci de regulariser le paiement avec le bouton ci-dessous.",
+        "pay_now_cta": "Payer maintenant",
+        "pay_reminder_footer": "Le lien ouvre un paiement securise via Stripe. Si vous avez deja paye par virement, ignorez cet email : l'organisateur mettra votre dossier a jour.",
+        "pay_atrisk_merchant_subject": "Paiement a risque : {customer} — {amount}",
+        "pay_atrisk_merchant_body": "Le paiement <strong>{label}</strong> de <strong>{amount}</strong> pour la commande <strong>{order_ref}</strong> ({customer}) etait du avant le {due_date}. Apres 3 rappels automatiques, il reste impaye.",
+        "pay_atrisk_merchant_actions": "Depuis le tableau de bord des encaissements de la retraite, vous pouvez : le marquer paye (virement), l'annuler, reporter l'echeance ou liberer la place. Aucune action automatique ne sera prise sans vous.",
+        "reservation_confirm_subject": "Reservation confirmee — {product}",
+        "reservation_confirm_body": "Votre reservation est confirmee. Tous les details sont ci-dessous.",
+        "reservation_keep_note": "Conservez cet email — le lien ci-dessus est prive.",
+        "reservation_code_label": "Code",
+        "reservation_view_cta": "Voir la reservation",
+        "passport_login_subject": "Votre acces — un clic et vous y etes",
+        "passport_code_intro": "Votre code d'acces (valable {minutes} minutes) :",
+        "passport_code_hint": "Saisissez-le sur la page ou vous l'avez demande — ou utilisez le lien ci-dessous.",
+        "passport_link_intro": "Lien de connexion — valable {minutes} minutes, utilisable une seule fois :",
+        "passport_login_cta": "Acceder a votre compte",
+        "passport_login_ignore": "Si vous n'avez pas demande ce lien, ignorez cet email : personne ne peut se connecter sans lui.",
+        "passport_claim_subject": "Toutes vos reservations, au meme endroit",
+        "passport_claim_body": "Merci pour votre reservation ! Un clic active votre compte : retrouvez toutes vos reservations, paiements et billets au meme endroit — meme avec des organisateurs differents.",
+        "passport_claim_cta": "Gerer vos reservations",
+        "passport_claim_footer": "Le lien est valable {minutes} minutes. Aucun mot de passe a retenir : quand vous en avez besoin, nous vous en envoyons un nouveau.",
     },
 }
 
@@ -1860,7 +1958,8 @@ async def send_account_lockout_alert(
 # ── Onda 16: Reservation confirmation email ────────────────────────────────
 
 
-def _reservation_block_html(reservation: dict, product_name: str, landing_url: str) -> str:
+def _reservation_block_html(reservation: dict, product_name: str, landing_url: str,
+                            locale: str = "it") -> str:
     """Render the reservation summary block embedded in confirmation emails.
 
     Used both by the dedicated resend endpoint and by order_email_service
@@ -1897,11 +1996,11 @@ def _reservation_block_html(reservation: dict, product_name: str, landing_url: s
       <p style="margin:0 0 8px 0;font-weight:600;">{product_name}</p>
       <p style="margin:0 0 4px 0;color:#333;">📅 {when}</p>
       {location_html}
-      <p style="margin:8px 0 4px 0;color:#555;">Codice: <b>{reservation.get("code", "")}</b></p>
+      <p style="margin:8px 0 4px 0;color:#555;">{_t("reservation_code_label", locale)}: <b>{reservation.get("code", "")}</b></p>
       {f'<table style="width:100%;margin-top:8px;font-size:13px;">{extras_rows}</table>' if extras_rows else ''}
       <p style="margin:12px 0 0 0;">
         <a href="{landing_url}" style="display:inline-block;padding:8px 14px;background:#111;color:#fff;border-radius:6px;text-decoration:none;">
-          Vedi prenotazione
+          {_t("reservation_view_cta", locale)}
         </a>
       </p>
     </div>
@@ -1952,16 +2051,31 @@ async def send_reservation_confirmation_email(
     token = reservation.get("access_token") or ""
     landing_url = f"{APP_URL}/rsv/{token}" if token else APP_URL
 
-    block = _reservation_block_html(reservation, product_name, landing_url)
+    # R2a — lingua del compratore dall'ordine collegato (order.locale →
+    # account store → lingua negozio → it), prima hardcoded "it".
     locale = "it"
+    try:
+        from database import orders_collection as _orders
+        from services.order_email_service import _get_customer_email_and_locale
+        _order = await _orders.find_one(
+            {"id": reservation.get("order_id")},
+            {"_id": 0, "locale": 1, "customer_account_id": 1,
+             "organization_id": 1, "store_id": 1, "customer_id": 1},
+        )
+        if _order:
+            _, locale = await _get_customer_email_and_locale(_order)
+    except Exception as _exc:  # noqa: BLE001 — best-effort, mai bloccare l'invio
+        logger.debug("reservation email: locale resolution failed: %s", _exc)
+
+    block = _reservation_block_html(reservation, product_name, landing_url, locale)
     html = _wrap_template(f"""
         <p>{_t("greeting", locale)},</p>
-        <p>La tua prenotazione è confermata. Trovi tutti i dettagli qui sotto.</p>
+        <p>{_t("reservation_confirm_body", locale)}</p>
         {block}
-        <p style="color:#666;font-size:12px;">Conserva questa email, il link sopra è privato.</p>
+        <p style="color:#666;font-size:12px;">{_t("reservation_keep_note", locale)}</p>
     """, locale, reply_to=reply_to, store_name=store_name)
 
-    subject = f"Prenotazione confermata — {product_name}"
+    subject = _t("reservation_confirm_subject", locale, product=product_name)
     ok = send_email(email, subject, html, reply_to=reply_to, sender_name=sender_name)
 
     # Update delivery audit.

@@ -91,6 +91,7 @@ async def create_order(
     store_id: str = None,
     order_fields_data: dict = None,  # F2 Onda 9 — order-level custom fields
     terms_accepted_at: str = None,   # F4 Onda 11 — T&C acceptance timestamp
+    locale: str = None,              # R2a — lingua UI del compratore al checkout
 ) -> dict:
     """Create a draft order with validated FKs and computed snapshots/totals."""
     from repositories import (
@@ -362,6 +363,10 @@ async def create_order(
     # v9.0: link to customer account if authenticated (null = guest order)
     if customer_account_id:
         doc["customer_account_id"] = customer_account_id
+    # R2a: lingua UI del compratore, congelata sull'ordine — priorità 1
+    # nella risoluzione della lingua email (order_email_service).
+    if locale in ("it", "en", "de", "fr"):
+        doc["locale"] = locale
     # v10.0: derive fulfillment from item composition + customer choice
     fulfillment_doc = derive_fulfillment(lines, fulfillment_input)
 

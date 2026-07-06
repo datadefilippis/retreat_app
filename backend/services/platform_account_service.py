@@ -53,12 +53,19 @@ async def get_account(account_id: str) -> Optional[Dict[str, Any]]:
 
 
 async def request_magic_link(email: str, *, name: Optional[str] = None,
-                             language: str = "it") -> None:
+                             language: Optional[str] = None) -> None:
     """Find-or-create account + emette il magic link via email.
 
     NON ritorna nulla e non solleva per email malformate/duplicate:
     l'endpoint risponde sempre 202 (enumeration-safe). Gli errori interni
     vengono loggati, mai esposti.
+
+    R2a — ``language`` e' la lingua UI del frontend al momento della
+    richiesta (None = client legacy che non la manda). Quando valida:
+    viene salvata come preferenza dell'account (il viaggiatore che cambia
+    lingua nel marketplace cambia anche la lingua delle sue email) e
+    l'email OTP parte in quella lingua. Altrimenti si usa la lingua gia'
+    sull'account, con fallback it.
     """
     from database import (
         platform_accounts_collection,
@@ -69,14 +76,22 @@ async def request_magic_link(email: str, *, name: Optional[str] = None,
     if not email_n or "@" not in email_n:
         return
 
+    lang_n = language if language in ("it", "en", "de", "fr") else None
+
     account = await platform_accounts_collection.find_one({"email": email_n})
     if not account:
-        doc = PlatformAccount(email=email_n, name=name, language=language).model_dump()
+        doc = PlatformAccount(email=email_n, name=name,
+                              language=lang_n or "it").model_dump()
         for f in ("created_at", "last_login_at", "sessions_invalidated_at"):
             if isinstance(doc.get(f), datetime):
                 doc[f] = _iso(doc[f])
         await platform_accounts_collection.insert_one(doc)
         account = doc
+    elif lang_n and account.get("language") != lang_n:
+        await platform_accounts_collection.update_one(
+            {"id": account["id"]}, {"$set": {"language": lang_n}},
+        )
+        account["language"] = lang_n
 
     # token in chiaro SOLO nell'email; a DB va l'hash. Stessa email,
     # DUE strade: codice a 6 cifre (immediato, si digita sul posto) e
@@ -95,41 +110,42 @@ async def request_magic_link(email: str, *, name: Optional[str] = None,
             tdoc[f] = _iso(tdoc[f])
     await platform_magic_tokens_collection.insert_one(tdoc)
 
-    _send_magic_link_email(email_n, token, account.get("name"), code=code)
+    _send_magic_link_email(email_n, token, account.get("name"), code=code,
+                           locale=account.get("language") or "it")
 
 
 def _send_magic_link_email(email: str, token: str, name: Optional[str],
-                           code: Optional[str] = None) -> None:
+                           code: Optional[str] = None,
+                           locale: str = "it") -> None:
     """Email transazionale: CODICE a 6 cifre in evidenza + link fallback.
-    In dev (niente Brevo) viene loggata."""
+    In dev (niente Brevo) viene loggata. R2a: localizzata in 4 lingue
+    sulla preferenza dell'account (e' l'email piu' vista dai viaggiatori)."""
     import os
-    from services.email_service import send_email
+    from services.email_service import send_email, _t
 
     base = os.environ.get("PUBLIC_APP_URL", "http://localhost:3000")
     link = f"{base}/account/accedi?token={token}"
-    greeting = f"Ciao {name}," if name else "Ciao,"
+    greeting = (_t("greeting_name", locale, name=name) if name
+                else _t("greeting", locale) + ",")
     code_block = ""
     if code:
         code_block = f"""
-    <p>Il tuo codice di accesso (vale {MAGIC_TOKEN_TTL_MINUTES} minuti):</p>
+    <p>{_t("passport_code_intro", locale, minutes=MAGIC_TOKEN_TTL_MINUTES)}</p>
     <p style="font-size:32px;letter-spacing:8px;font-weight:bold;
     background:#f4f6f4;border-radius:10px;padding:14px 18px;
     display:inline-block">{code}</p>
-    <p style="color:#666;font-size:13px">Digitalo nella pagina da cui
-    l'hai richiesto — oppure usa il link qui sotto.</p>
+    <p style="color:#666;font-size:13px">{_t("passport_code_hint", locale)}</p>
     """
     html = f"""
     <p>{greeting}</p>
     {code_block}
-    <p>Link di accesso — vale {MAGIC_TOKEN_TTL_MINUTES} minuti
-    e funziona una volta sola:</p>
+    <p>{_t("passport_link_intro", locale, minutes=MAGIC_TOKEN_TTL_MINUTES)}</p>
     <p><a href="{link}" style="display:inline-block;padding:10px 18px;
     background:#376254;color:#fff;border-radius:8px;text-decoration:none">
-    Accedi al tuo account</a></p>
-    <p style="color:#666;font-size:13px">Se non hai richiesto tu questo
-    link, ignora questa email: nessuno puo' accedere senza di essa.</p>
+    {_t("passport_login_cta", locale)}</a></p>
+    <p style="color:#666;font-size:13px">{_t("passport_login_ignore", locale)}</p>
     """
-    send_email(email, "Il tuo accesso — un click e sei dentro", html,
+    send_email(email, _t("passport_login_subject", locale), html,
                bypass_gate=True)
 
 
@@ -341,7 +357,14 @@ async def send_claim_email_if_needed(order: Dict[str, Any]) -> bool:
             tdoc[f] = _iso(tdoc[f])
     await platform_magic_tokens_collection.insert_one(tdoc)
 
-    _send_claim_email(email_n, token, account.get("name"))
+    # R2a — lingua: la lingua UI con cui l'utente ha COMPRATO (order.locale)
+    # e' il segnale piu' fresco; fallback sulla preferenza account, poi it.
+    _claim_locale = order.get("locale")
+    if _claim_locale not in ("it", "en", "de", "fr"):
+        _claim_locale = account.get("language") if account.get("language") in (
+            "it", "en", "de", "fr") else "it"
+
+    _send_claim_email(email_n, token, account.get("name"), locale=_claim_locale)
     await platform_accounts_collection.update_one(
         {"id": account["id"]},
         {"$set": {"claim_last_sent_at": _iso(utc_now())}},
@@ -349,26 +372,25 @@ async def send_claim_email_if_needed(order: Dict[str, Any]) -> bool:
     return True
 
 
-def _send_claim_email(email: str, token: str, name: Optional[str]) -> None:
+def _send_claim_email(email: str, token: str, name: Optional[str],
+                      locale: str = "it") -> None:
     import os
-    from services.email_service import send_email
+    from services.email_service import send_email, _t
 
     base = os.environ.get("PUBLIC_APP_URL", "http://localhost:3000")
     link = f"{base}/account/accedi?token={token}"
-    greeting = f"Ciao {name}," if name else "Ciao,"
+    greeting = (_t("greeting_name", locale, name=name) if name
+                else _t("greeting", locale) + ",")
     html = f"""
     <p>{greeting}</p>
-    <p>Grazie della tua prenotazione! Con un click attivi il tuo account:
-    ritrovi tutte le prenotazioni, i pagamenti e i biglietti in un unico
-    posto — anche se prenoti con organizzatori diversi.</p>
+    <p>{_t("passport_claim_body", locale)}</p>
     <p><a href="{link}" style="display:inline-block;padding:10px 18px;
     background:#376254;color:#fff;border-radius:8px;text-decoration:none">
-    Gestisci le tue prenotazioni</a></p>
-    <p style="color:#666;font-size:13px">Il link vale {MAGIC_TOKEN_TTL_MINUTES}
-    minuti. Nessuna password da ricordare: quando ti serve, te ne mandiamo
-    uno nuovo.</p>
+    {_t("passport_claim_cta", locale)}</a></p>
+    <p style="color:#666;font-size:13px">{_t("passport_claim_footer", locale,
+                                             minutes=MAGIC_TOKEN_TTL_MINUTES)}</p>
     """
-    send_email(email, "Le tue prenotazioni, in un unico posto", html,
+    send_email(email, _t("passport_claim_subject", locale), html,
                bypass_gate=True)
 
 
