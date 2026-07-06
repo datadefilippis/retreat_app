@@ -524,7 +524,7 @@
     "tagline": "Find and book holistic retreats worldwide — deposit-based, worry-free.",
     "searchShortcut": "Where? · When? · What retreat?",
     "forOrganizers": "Are you an organizer?",
-    "myTrips": "My trips",
+    "myTrips": "My experiences",
     "signIn": "Sign in",
     "securePayment": "Secure payment",
     "footerExplore": "Explore",
@@ -533,6 +533,8 @@
     "footerOrganizers": "Organizers",
     "startSelling": "Bring your retreats online",
     "operatorLogin": "Operator area",
-    "terms": "Terms"
+    "terms": "Terms",
+    "langFilterNote": "Choose your language: you will see retreats and experiences held in that language.",
+    "langFilterCaption": "Showing retreats and experiences held in {{lang}} — switch language above to see others."
   }
 }

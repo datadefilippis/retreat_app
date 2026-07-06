@@ -524,7 +524,7 @@
     "tagline": "Finde und buche holistische Retreats weltweit — mit Anzahlung, sorgenfrei.",
     "searchShortcut": "Wo? · Wann? · Welches Retreat?",
     "forOrganizers": "Bist du Veranstalter?",
-    "myTrips": "Meine Reisen",
+    "myTrips": "Meine Erlebnisse",
     "signIn": "Anmelden",
     "securePayment": "Sichere Zahlung",
     "footerExplore": "Entdecken",
@@ -533,6 +533,8 @@
     "footerOrganizers": "Veranstalter",
     "startSelling": "Bring deine Retreats online",
     "operatorLogin": "Veranstalter-Bereich",
-    "terms": "AGB"
+    "terms": "AGB",
+    "langFilterNote": "Wähle deine Sprache: du siehst Retreats und Erlebnisse, die in dieser Sprache stattfinden.",
+    "langFilterCaption": "Angezeigt werden Retreats und Erlebnisse auf {{lang}} — wechsle oben die Sprache für weitere."
   }
 }

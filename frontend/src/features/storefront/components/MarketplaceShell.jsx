@@ -14,23 +14,36 @@
  *   noSearch — nasconde la scorciatoia ricerca (es. sulla directory
  *              stessa, che HA già la ricerca in hero)
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BRAND_NAME, BRAND_GLYPH } from '../../../config/brand';
+import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
 
 const LANGS = ['it', 'en', 'de', 'fr'];
 
 function LangSwitcher() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('landings');
   const cur = (i18n.language || 'it').slice(0, 2);
+  // L1 — la scelta viene persistita (aurya_lang) e vince sui default
+  // dello store in contesto marketplace: niente più flip di lingua
+  // entrando in un prodotto o al checkout.
+  const choose = (l) => {
+    persistMarketplaceLang(l);
+    i18n.changeLanguage(l);
+  };
   return (
-    <div className="flex items-center gap-0.5">
+    <div
+      className="flex items-center gap-0.5"
+      title={t('marketplace.langFilterNote', {
+        defaultValue: 'Scegli la lingua: vedrai i ritiri e le esperienze tenuti in quella lingua.',
+      })}
+    >
       {LANGS.map(l => (
         <button
           key={l}
           type="button"
-          onClick={() => i18n.changeLanguage(l)}
+          onClick={() => choose(l)}
           className={`rounded-full px-2 py-1 text-[11px] font-semibold uppercase transition-colors ${
             cur === l
               ? 'bg-primary text-white'
@@ -45,8 +58,23 @@ function LangSwitcher() {
 }
 
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
-  const { t } = useTranslation('landings');
+  const { t, i18n } = useTranslation('landings');
   const navigate = useNavigate();
+
+  // L1 — ogni superficie marketplace riafferma al mount la lingua del
+  // viaggiatore: la scelta salvata (aurya_lang) o l'italiano, la faccia
+  // di default della piattaforma. Copre sia il ritorno da una vetrina
+  // negozio sia la navigazione SPA dall'admin (il cui AuthContext non
+  // ri-scatta e lascerebbe la lingua dell'operatore). Sulle landing il
+  // resolver dello store (PublicStorefrontShell, effetto padre → gira
+  // dopo) resta l'ultima parola quando il negozio non offre la lingua.
+  useEffect(() => {
+    const wanted = getMarketplaceLang() || 'it';
+    if ((i18n.language || '').slice(0, 2) !== wanted) {
+      i18n.changeLanguage(wanted);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -88,7 +116,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                   to="/account"
                   className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
                 >
-                  {t('marketplace.myTrips', { defaultValue: 'I miei viaggi' })}
+                  {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
                 </Link>
               </div>
             </>
@@ -124,7 +152,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 {t('marketplace.footerAccount', { defaultValue: 'Il tuo account' })}
               </p>
               <ul className="space-y-1.5 text-gray-600">
-                <li><Link to="/account" className="hover:text-primary">{t('marketplace.myTrips', { defaultValue: 'I miei viaggi' })}</Link></li>
+                <li><Link to="/account" className="hover:text-primary">{t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}</Link></li>
                 <li><Link to="/account/accedi" className="hover:text-primary">{t('marketplace.signIn', { defaultValue: 'Accedi' })}</Link></li>
               </ul>
             </div>

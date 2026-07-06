@@ -524,7 +524,7 @@
     "tagline": "Trova e prenota ritiri olistici in tutto il mondo — con caparra, senza pensieri.",
     "searchShortcut": "Dove? · Quando? · Che ritiro?",
     "forOrganizers": "Sei un organizzatore?",
-    "myTrips": "I miei viaggi",
+    "myTrips": "Le mie esperienze",
     "signIn": "Accedi",
     "securePayment": "Pagamento sicuro",
     "footerExplore": "Esplora",
@@ -533,6 +533,8 @@
     "footerOrganizers": "Organizzatori",
     "startSelling": "Porta i tuoi ritiri online",
     "operatorLogin": "Area operatori",
-    "terms": "Termini"
+    "terms": "Termini",
+    "langFilterNote": "Scegli la lingua: vedrai i ritiri e le esperienze tenuti in quella lingua.",
+    "langFilterCaption": "Mostriamo i ritiri e le esperienze tenuti in {{lang}} — cambia lingua in alto per vederne altri."
   }
 }

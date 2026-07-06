@@ -160,6 +160,48 @@ function _localStorageKey(slug) {
 }
 
 
+// ── L1 — preferenza lingua di MARKETPLACE (traveler-first) ──────────────────
+//
+// Il lato directory ha un suo pubblico: il viaggiatore sceglie la lingua
+// nel guscio marketplace e quella scelta deve seguirlo su landing e
+// checkout raggiunti DALLA directory. Chiave unica (non per-store: il
+// viaggiatore attraversa più operatori). Nel contesto STORE (?store=1 o
+// visita diretta della vetrina) resta merchant-first come da Step 8.
+
+export const MARKETPLACE_LANG_KEY = 'aurya_lang';
+
+export function getMarketplaceLang() {
+  try {
+    return _normalize(localStorage.getItem(MARKETPLACE_LANG_KEY));
+  } catch { return null; /* private mode */ }
+}
+
+export function persistMarketplaceLang(locale) {
+  const normalized = _normalize(locale);
+  if (!normalized) return;
+  try {
+    localStorage.setItem(MARKETPLACE_LANG_KEY, normalized);
+  } catch { /* non-fatal */ }
+}
+
+
+/**
+ * True quando la superficie corrente è in contesto STORE (vetrina di un
+ * operatore): ?store=1 sulla landing, oppure una pagina /s/:slug che NON
+ * è il checkout marketplace (flag sessionStorage storefront:mktp_ctx,
+ * posato quando il viaggiatore arriva al checkout dalla directory).
+ */
+function _inStoreContext(searchParams) {
+  if (searchParams.get('store') === '1') return true;
+  try {
+    if (window.location.pathname.startsWith('/s/')) {
+      return sessionStorage.getItem('storefront:mktp_ctx') !== '1';
+    }
+  } catch { /* window/sessionStorage unavailable */ }
+  return false;
+}
+
+
 /**
  * Resolve the active storefront locale.
  *
@@ -236,6 +278,21 @@ export function useStorefrontLocale({ storeSlug, supportedLanguages } = {}) {
     // 2. Customer preference (only when logged in).
     const customerLang = _normalize(customer?.locale);
     if (inSupported(customerLang)) return { locale: customerLang, source: 'customer' };
+
+    // 2.5 (L1) — contesto MARKETPLACE: la lingua scelta dal viaggiatore
+    //     nel guscio directory (aurya_lang) vince sui segnali dello
+    //     store. Vale su landing raggiunte dalla directory (no ?store=1)
+    //     e sul checkout marketplace (/s/:slug con flag mktp_ctx).
+    //     NON vincolata a merchantSupported: qui il viaggiatore è
+    //     ospite della PIATTAFORMA (la UI parla tutte e 4 le lingue e i
+    //     contenuti prodotto hanno fallback per campo), non del negozio
+    //     — un checkout inglese su scelta italiana perché lo store è
+    //     configurato en-only era esattamente il bug. Nel guscio store
+    //     (?store=1 / vetrina) resta merchant-first come da Step 8.
+    if (!_inStoreContext(searchParams)) {
+      const mktpLang = getMarketplaceLang();
+      if (mktpLang) return { locale: mktpLang, source: 'marketplace' };
+    }
 
     // 3. Per-store guest persistence — the visitor's previous explicit
     //    choice on THIS store via the floating switcher.
