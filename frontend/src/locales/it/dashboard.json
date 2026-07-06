@@ -102,7 +102,11 @@
     "todo_title": "Da fare",
     "todo_empty": "Tutto in ordine. Niente da gestire.",
     "todo_review": "Ordini da gestire",
-    "todo_drafts": "Bozze aperte"
+    "todo_drafts": "Bozze aperte",
+    "payments_collected12m": "incassati (12 mesi)",
+    "payments_all_cf": "Vai a Incassi",
+    "todo_overdue": "Pagamenti in ritardo",
+    "todo_reviews": "Recensioni in attesa"
   },
   "onboarding": {
     "title": "Inizia qui",

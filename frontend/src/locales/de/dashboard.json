@@ -19,5 +19,11 @@
     "no_widgets_title": "Dashboard anpassen",
     "no_widgets_desc": "Ihr Dashboard ist leer. Fuegen Sie Diagramme und KPIs ueber den Pin-Button hinzu.",
     "go_to_module": "Zu {{label}}"
+  },
+  "home": {
+    "payments_collected12m": "eingenommen (12 Monate)",
+    "payments_all_cf": "Zu Einnahmen",
+    "todo_overdue": "Überfällige Zahlungen",
+    "todo_reviews": "Ausstehende Bewertungen"
   }
 }

@@ -19,5 +19,11 @@
     "no_widgets_title": "Personnalisez votre tableau de bord",
     "no_widgets_desc": "Votre tableau de bord est vide. Ajoutez des graphiques et KPIs avec le bouton epingle.",
     "go_to_module": "Aller a {{label}}"
+  },
+  "home": {
+    "payments_collected12m": "encaissés (12 mois)",
+    "payments_all_cf": "Voir Encaissements",
+    "todo_overdue": "Paiements en retard",
+    "todo_reviews": "Avis en attente"
   }
 }
