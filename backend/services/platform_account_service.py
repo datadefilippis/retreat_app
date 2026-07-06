@@ -119,9 +119,10 @@ def _send_magic_link_email(email: str, token: str, name: Optional[str],
                            locale: str = "it") -> None:
     """Email transazionale: CODICE a 6 cifre in evidenza + link fallback.
     In dev (niente Brevo) viene loggata. R2a: localizzata in 4 lingue
-    sulla preferenza dell'account (e' l'email piu' vista dai viaggiatori)."""
+    sulla preferenza dell'account (e' l'email piu' vista dai viaggiatori).
+    R2b: dentro il template comune (header Aurya + footer marketplace)."""
     import os
-    from services.email_service import send_email, _t
+    from services.email_service import send_email, _t, _wrap_template
 
     base = os.environ.get("PUBLIC_APP_URL", "http://localhost:3000")
     link = f"{base}/account/accedi?token={token}"
@@ -132,21 +133,19 @@ def _send_magic_link_email(email: str, token: str, name: Optional[str],
         code_block = f"""
     <p>{_t("passport_code_intro", locale, minutes=MAGIC_TOKEN_TTL_MINUTES)}</p>
     <p style="font-size:32px;letter-spacing:8px;font-weight:bold;
-    background:#f4f6f4;border-radius:10px;padding:14px 18px;
+    background:#f1ede3;color:#212c28;border-radius:12px;padding:14px 18px;
     display:inline-block">{code}</p>
-    <p style="color:#666;font-size:13px">{_t("passport_code_hint", locale)}</p>
+    <p style="color:#8a9088;font-size:13px">{_t("passport_code_hint", locale)}</p>
     """
-    html = f"""
+    content = f"""
     <p>{greeting}</p>
     {code_block}
     <p>{_t("passport_link_intro", locale, minutes=MAGIC_TOKEN_TTL_MINUTES)}</p>
-    <p><a href="{link}" style="display:inline-block;padding:10px 18px;
-    background:#376254;color:#fff;border-radius:8px;text-decoration:none">
-    {_t("passport_login_cta", locale)}</a></p>
-    <p style="color:#666;font-size:13px">{_t("passport_login_ignore", locale)}</p>
+    <p><a href="{link}" class="btn">{_t("passport_login_cta", locale)}</a></p>
+    <p style="color:#8a9088;font-size:13px">{_t("passport_login_ignore", locale)}</p>
     """
-    send_email(email, _t("passport_login_subject", locale), html,
-               bypass_gate=True)
+    send_email(email, _t("passport_login_subject", locale),
+               _wrap_template(content, locale), bypass_gate=True)
 
 
 async def consume_magic_link(token: str) -> Optional[Dict[str, Any]]:
@@ -375,23 +374,21 @@ async def send_claim_email_if_needed(order: Dict[str, Any]) -> bool:
 def _send_claim_email(email: str, token: str, name: Optional[str],
                       locale: str = "it") -> None:
     import os
-    from services.email_service import send_email, _t
+    from services.email_service import send_email, _t, _wrap_template
 
     base = os.environ.get("PUBLIC_APP_URL", "http://localhost:3000")
     link = f"{base}/account/accedi?token={token}"
     greeting = (_t("greeting_name", locale, name=name) if name
                 else _t("greeting", locale) + ",")
-    html = f"""
+    content = f"""
     <p>{greeting}</p>
     <p>{_t("passport_claim_body", locale)}</p>
-    <p><a href="{link}" style="display:inline-block;padding:10px 18px;
-    background:#376254;color:#fff;border-radius:8px;text-decoration:none">
-    {_t("passport_claim_cta", locale)}</a></p>
-    <p style="color:#666;font-size:13px">{_t("passport_claim_footer", locale,
-                                             minutes=MAGIC_TOKEN_TTL_MINUTES)}</p>
+    <p><a href="{link}" class="btn">{_t("passport_claim_cta", locale)}</a></p>
+    <p style="color:#8a9088;font-size:13px">{_t("passport_claim_footer", locale,
+                                                minutes=MAGIC_TOKEN_TTL_MINUTES)}</p>
     """
-    send_email(email, _t("passport_claim_subject", locale), html,
-               bypass_gate=True)
+    send_email(email, _t("passport_claim_subject", locale),
+               _wrap_template(content, locale), bypass_gate=True)
 
 
 # ── P4 — claim retroattivo + GDPR ────────────────────────────────────────────

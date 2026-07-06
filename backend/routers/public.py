@@ -2867,60 +2867,6 @@ async def get_public_availability(
     return {"available": result}
 
 
-# ── Storefront order notification ───────────────────────────────────────────
-
-async def _notify_storefront_order(org_id: str, org_name: str, order: dict, request_body) -> None:
-    """Send email to org admins when a storefront order arrives. Best-effort."""
-    from database import users_collection
-    from services.email_service import send_email
-
-    admin_cursor = users_collection.find(
-        {"organization_id": org_id, "role": {"$in": ["admin", "system_admin"]}},
-        {"_id": 0, "email": 1},
-    )
-    admins = await admin_cursor.to_list(10)
-    if not admins:
-        return
-
-    total = order.get("total", 0)
-    total_fmt = f"{total:,.2f}".replace(",", ".")
-
-    subject = f"Nuova richiesta ordine dal catalogo — {request_body.customer_name}"
-
-    body_html = f"""
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 500px;">
-      <h2 style="color: #1a1a1a; margin-bottom: 8px;">Nuova richiesta ordine</h2>
-      <p style="color: #666; margin-top: 0;">Una richiesta è arrivata dal tuo catalogo pubblico.</p>
-
-      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-        <tr><td style="padding: 6px 0; color: #888;">Cliente</td><td style="padding: 6px 0; font-weight: 600;">{request_body.customer_name}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Email</td><td style="padding: 6px 0;">{request_body.customer_email}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Prodotti</td><td style="padding: 6px 0;">{len(request_body.items)} articoli</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Totale stimato</td><td style="padding: 6px 0; font-weight: 600;">&euro; {total_fmt}</td></tr>
-      </table>
-
-      {f'<p style="color: #666; font-size: 14px;"><strong>Note:</strong> {request_body.notes}</p>' if request_body.notes else ''}
-
-      <p style="margin-top: 20px;">
-        <a href="https://afianco.app/orders" style="background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 14px;">
-          Vai agli ordini
-        </a>
-      </p>
-
-      <p style="color: #aaa; font-size: 12px; margin-top: 24px;">
-        Questo ordine è in stato bozza. Confermalo dalla pagina Ordini per registrarlo nel cashflow.
-      </p>
-    </div>
-    """
-
-    for admin in admins:
-        ok = send_email(admin["email"], subject, body_html)
-        if ok:
-            logger.info("public: storefront notification sent to %s for org=%s", admin["email"], org_id)
-        else:
-            logger.warning("public: storefront notification FAILED for %s org=%s", admin["email"], org_id)
-
-
 # ── Public Order Status (Fase 2 — Stripe checkout redirect UX) ─────────────
 
 @router.get("/orders/{order_id}/status", response_model=PublicOrderStatus)

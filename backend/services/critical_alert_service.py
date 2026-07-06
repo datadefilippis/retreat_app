@@ -151,7 +151,7 @@ async def emit_charge_disputed(
             return
 
         subject = (
-            f"[AFianco] 🚨 Contestazione pagamento ricevuta — "
+            f"[Aurya] 🚨 Contestazione pagamento ricevuta — "
             f"{order_number or order_id[:8]}"
         )
         html = _build_dispute_html(
@@ -215,7 +215,7 @@ def _build_dispute_html(
         "<div style='font-family:-apple-system,Arial,sans-serif;max-width:600px'>"
         "<h2 style='color:#b91c1c'>🚨 Contestazione pagamento ricevuta</h2>"
         "<p>Un cliente ha aperto una contestazione (dispute) su un pagamento "
-        "ricevuto tramite AFianco. "
+        "ricevuto tramite Aurya. "
         "<b>Hai tipicamente 7 giorni per inviare le prove a Stripe, "
         "altrimenti la disputa verrà persa automaticamente e l'importo "
         "sarà restituito al cliente (più eventuali commissioni).</b></p>"
@@ -304,7 +304,7 @@ async def _send_notifications(
         )
         return
 
-    subject = f"[AFianco] Pagamento incassato — conferma ordine fallita: {order_number or order_id[:8]}"
+    subject = f"[Aurya] Pagamento incassato — conferma ordine fallita: {order_number or order_id[:8]}"
     html = _build_alert_html(
         order_id=order_id,
         order_number=order_number,
@@ -393,7 +393,7 @@ def _build_alert_html(
         f"<tr><td style='padding:4px 8px;vertical-align:top'><b>Errore</b></td>"
         f"<td style='padding:4px 8px;font-family:monospace;color:#b91c1c'>{error_detail}</td></tr>"
         "</table>"
-        "<p style='margin-top:16px'><b>Azione consigliata:</b> apri l'ordine in AFianco → "
+        "<p style='margin-top:16px'><b>Azione consigliata:</b> apri l'ordine in Aurya → "
         "sezione Pagamento → \"Riprova conferma ordine\". L'operazione è idempotente e sicura.</p>"
         "</div>"
     )

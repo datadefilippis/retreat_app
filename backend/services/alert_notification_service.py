@@ -31,20 +31,20 @@ _STRUCTURAL_PATTERNS = ("supplier_", "product_", "revenue_conc_")
 # Email subject templates per locale
 _SUBJECTS = {
     "it": {
-        "high_alert": "AFianco — {count} alert critici richiedono attenzione",
-        "weekly_digest": "AFianco — Riepilogo settimanale alert",
+        "high_alert": "Aurya — {count} alert critici richiedono attenzione",
+        "weekly_digest": "Aurya — Riepilogo settimanale alert",
     },
     "en": {
-        "high_alert": "AFianco — {count} critical alerts need attention",
-        "weekly_digest": "AFianco — Weekly alert digest",
+        "high_alert": "Aurya — {count} critical alerts need attention",
+        "weekly_digest": "Aurya — Weekly alert digest",
     },
     "de": {
-        "high_alert": "AFianco — {count} kritische Alerts erfordern Aufmerksamkeit",
-        "weekly_digest": "AFianco — Woechentliche Alert-Uebersicht",
+        "high_alert": "Aurya — {count} kritische Alerts erfordern Aufmerksamkeit",
+        "weekly_digest": "Aurya — Woechentliche Alert-Uebersicht",
     },
     "fr": {
-        "high_alert": "AFianco — {count} alertes critiques necessitent attention",
-        "weekly_digest": "AFianco — Resume hebdomadaire des alertes",
+        "high_alert": "Aurya — {count} alertes critiques necessitent attention",
+        "weekly_digest": "Aurya — Resume hebdomadaire des alertes",
     },
 }
 
@@ -67,9 +67,9 @@ def _render_alert_footer(locale: str) -> str:
     return f"""
 <div style="margin-top:30px; padding-top:20px; border-top:1px solid #E5E7EB; font-size:12px; color:#9CA3AF;">
     <p>
-        <a href="{alerts_url}" style="color:#2563EB; text-decoration:none;">{view}</a>
+        <a href="{alerts_url}" style="color:#376254; text-decoration:none;">{view}</a>
         &nbsp;\u00b7&nbsp;
-        <a href="{settings_url}" style="color:#2563EB; text-decoration:none;">{settings}</a>
+        <a href="{settings_url}" style="color:#376254; text-decoration:none;">{settings}</a>
     </p>
     <p style="margin-top:8px;">{disable}</p>
 </div>
@@ -234,7 +234,7 @@ async def notify_high_severity_batch(
                         {cat_html}
                         <br>
                         <span style="color:#666; font-size:14px;">{summary}</span>
-                        {"<br><em style='color:#2563EB; font-size:13px;'>&#x2192; " + suggestion + "</em>" if suggestion else ""}
+                        {"<br><em style='color:#376254; font-size:13px;'>&#x2192; " + suggestion + "</em>" if suggestion else ""}
                     </td>
                 </tr>"""
 
@@ -261,7 +261,7 @@ async def notify_high_severity_batch(
                 {remaining_note}
                 <p style="margin-top:20px;">
                     <a href="{alerts_view_url}"
-                       style="background:#2563EB; color:#fff; padding:10px 20px;
+                       style="background:#cb774d; color:#fff; padding:10px 20px;
                               text-decoration:none; border-radius:6px; display:inline-block;">
                         {view_cta}
                     </a>
@@ -404,7 +404,7 @@ async def send_weekly_alert_digest(org_id: str, locale: str = "it") -> int:
                 </table>
                 <p style="margin-top:20px;">
                     <a href="{alerts_view_url}"
-                       style="background:#2563EB; color:#fff; padding:10px 20px;
+                       style="background:#cb774d; color:#fff; padding:10px 20px;
                               text-decoration:none; border-radius:6px; display:inline-block;">
                         {view_cta}
                     </a>
@@ -448,10 +448,10 @@ async def send_weekly_alert_digest(org_id: str, locale: str = "it") -> int:
 # ── Digest Report Email ──────────────────────────────────────────────────────
 
 _DIGEST_SUBJECTS = {
-    "it": {"weekly": "Il tuo report settimanale AFianco", "monthly": "Il tuo report mensile AFianco"},
-    "en": {"weekly": "Your weekly AFianco report", "monthly": "Your monthly AFianco report"},
-    "de": {"weekly": "Ihr woechentlicher AFianco-Bericht", "monthly": "Ihr monatlicher AFianco-Bericht"},
-    "fr": {"weekly": "Votre rapport hebdomadaire AFianco", "monthly": "Votre rapport mensuel AFianco"},
+    "it": {"weekly": "Il tuo report settimanale Aurya", "monthly": "Il tuo report mensile Aurya"},
+    "en": {"weekly": "Your weekly Aurya report", "monthly": "Your monthly Aurya report"},
+    "de": {"weekly": "Ihr woechentlicher Aurya-Bericht", "monthly": "Ihr monatlicher Aurya-Bericht"},
+    "fr": {"weekly": "Votre rapport hebdomadaire Aurya", "monthly": "Votre rapport mensuel Aurya"},
 }
 
 
@@ -514,7 +514,7 @@ async def send_digest_report_email(
 
         body_html = f"""
         <div style="font-family:Arial,sans-serif; max-width:500px; margin:0 auto; padding:20px;">
-            <h2 style="color:#2563EB; margin-bottom:5px;">AFianco Report</h2>
+            <h2 style="color:#376254; margin-bottom:5px;">Aurya Report</h2>
             <p style="color:#6B7280; font-size:13px;">{period_label}</p>
             <div style="text-align:center; margin:20px 0;">
                 <div style="display:inline-block; width:80px; height:80px; border-radius:50%;
@@ -548,7 +548,7 @@ async def send_digest_report_email(
             </p>
             <div style="text-align:center; margin:20px 0;">
                 <a href="https://afianco.app/modules/cashflow?tab=digest"
-                   style="background:#2563EB; color:#fff; padding:10px 24px;
+                   style="background:#cb774d; color:#fff; padding:10px 24px;
                           text-decoration:none; border-radius:6px; font-size:14px; display:inline-block;">
                     Apri Dashboard
                 </a>

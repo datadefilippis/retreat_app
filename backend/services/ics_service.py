@@ -117,7 +117,7 @@ def _wrap_vcalendar(vevent_lines: list[str]) -> str:
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        "PRODID:-//AFianco//Commerce//EN",
+        "PRODID:-//Aurya//Commerce//EN",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
     ]
