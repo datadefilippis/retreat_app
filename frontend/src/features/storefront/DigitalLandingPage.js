@@ -21,6 +21,7 @@ import PricePreview, { usePricePreview } from './components/PricePreview';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
 import { formatAmount } from '../../utils/currency';
+import StoreContextNav from './components/StoreContextNav';
 
 
 function StockIndicator({ stockQuantity }) {
@@ -51,6 +52,10 @@ function StockIndicator({ stockQuantity }) {
 
 export default function DigitalLandingPage() {
   const { org_slug: orgSlug, product_slug: productSlug } = useParams();
+  // 7/7 — contesto negozio: i link delle card store portano ?store=1;
+  // la landing mantiene la barra menu dello store (mai uscire).
+  const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
+
   const navigate = useNavigate();
   const { t } = useTranslation('landings');
   const cartCount = useCartCount(orgSlug);
@@ -184,6 +189,7 @@ export default function DigitalLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
+      {fromStore && <StoreContextNav slug={orgSlug} />}
       <div className="max-w-5xl mx-auto px-4 py-4">
         <button
           onClick={() => navigate(`/s/${orgSlug}`)}

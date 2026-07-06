@@ -26,6 +26,7 @@ import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { formatAmount } from '../../utils/currency';
+import StoreContextNav from './components/StoreContextNav';
 
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
@@ -135,6 +136,10 @@ function ModuleAccordion({ mod, defaultOpen = false }) {
 
 export default function CourseLandingPage() {
   const { org_slug: orgSlug, product_slug: productSlug } = useParams();
+  // 7/7 — contesto negozio: i link delle card store portano ?store=1;
+  // la landing mantiene la barra menu dello store (mai uscire).
+  const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
+
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('landings');
   const cartCount = useCartCount(orgSlug);
@@ -218,6 +223,7 @@ export default function CourseLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
+      {fromStore && <StoreContextNav slug={orgSlug} />}
       {/* Back link with cart badge */}
       <div className="max-w-5xl mx-auto px-4 py-4">
         <Link

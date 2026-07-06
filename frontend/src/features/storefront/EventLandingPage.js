@@ -38,6 +38,7 @@ import useCartCount from './hooks/useCartCount';
 import { effectivePlan } from './lib/paymentPlan';
 import useSeoMeta from './lib/useSeoMeta';
 import api from '../../api/client';
+import StoreContextNav from './components/StoreContextNav';
 
 
 // ── Utilities ──────────────────────────────────────────────────────────────
@@ -293,6 +294,10 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
 
 export default function EventLandingPage() {
   const { org_slug: orgSlug, slug } = useParams();
+  // 7/7 — contesto negozio: i link delle card store portano ?store=1;
+  // la landing mantiene la barra menu dello store (mai uscire).
+  const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
+
   const { t, i18n } = useTranslation('landings');
   const cartCount = useCartCount(orgSlug);
   const [data, setData] = useState(null);
@@ -425,6 +430,7 @@ export default function EventLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {fromStore && <StoreContextNav slug={orgSlug} />}
       {/* Persistent storefront header — consistent brand across surfaces.
           Logo + store name click back to /s/:orgSlug (home). */}
       <StorefrontHeader
@@ -796,7 +802,9 @@ export default function EventLandingPage() {
       {/* F2.1 — Organizzato da: la card fiducia che porta al profilo */}
       {operator?.name && (
         <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-4">
-          <Link to={`/o/${orgSlug}`}
+          {/* Nel contesto store il profilo e' la pagina Chi siamo DENTRO
+              il guscio del negozio; /o/ resta per la directory */}
+          <Link to={fromStore ? `/s/${orgSlug}/chi-siamo` : `/o/${orgSlug}`}
                 className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
             {operator.logo_url
               ? <img src={operator.logo_url} alt="" className="h-14 w-14 rounded-full object-cover shrink-0" />

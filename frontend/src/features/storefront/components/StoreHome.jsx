@@ -101,7 +101,7 @@ export default function StoreHome({ slug, catalog, availableCategories, currency
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {upcoming.map(({ product, occ }) => (
-              <Link key={occ.id} to={`/e/${slug}/${occ.slug}`}
+              <Link key={occ.id} to={`/e/${slug}/${occ.slug}?store=1`}
                     className="group rounded-2xl border border-gray-200 bg-white overflow-hidden hover-lift">
                 <div className="relative h-36 bg-gray-100 overflow-hidden">
                   {(occ.cover_image_url || product.image_url) ? (

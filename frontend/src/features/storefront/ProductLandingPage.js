@@ -33,6 +33,7 @@ import AvailabilityCalendarSlotPicker from './components/AvailabilityCalendarSlo
 import MarkdownLite from '../../components/MarkdownLite';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
+import StoreContextNav from './components/StoreContextNav';
 
 
 function formatPrice(n, currency = 'EUR', locale = 'it-IT') {
@@ -313,6 +314,10 @@ function ProceedToCheckoutBar({
 
 export default function ProductLandingPage() {
   const { org_slug: orgSlug, product_slug: productSlug } = useParams();
+  // 7/7 — contesto negozio: i link delle card store portano ?store=1;
+  // la landing mantiene la barra menu dello store (mai uscire).
+  const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
+
   const { t } = useTranslation('landings');
   const cartCount = useCartCount(orgSlug);
   const [data, setData] = useState(null);
@@ -399,6 +404,7 @@ export default function ProductLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {fromStore && <StoreContextNav slug={orgSlug} />}
       <StorefrontHeader orgName={orgName} orgSlug={orgSlug} storeInfo={storeInfo} />
 
       {/* Hero */}

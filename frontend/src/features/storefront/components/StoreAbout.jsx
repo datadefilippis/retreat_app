@@ -5,7 +5,6 @@
  * (stessa fonte di /o/:slug, guscio diverso).
  */
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../../api/client';
 
@@ -97,34 +96,6 @@ export default function StoreAbout({ slug }) {
             <span className="text-gray-600">{data.contacts.public_phone}</span>
           )}
         </div>
-      )}
-
-      {/* Prossimi ritiri — restando NEL guscio store */}
-      {(data.upcoming || []).length > 0 && (
-        <section>
-          <h2 className="text-base font-semibold text-gray-900 mb-3">
-            {t('landings:operator.upcoming', { count: data.upcoming_count })}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.upcoming.map(item => (
-              <Link key={item.url} to={item.url}
-                    className="rounded-2xl border border-gray-200 bg-white overflow-hidden hover-lift">
-                <div className="h-32 bg-gray-100">
-                  {item.cover_image_url
-                    ? <img src={item.cover_image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center text-3xl" aria-hidden>🧘</div>}
-                </div>
-                <div className="p-3">
-                  <h3 className="font-semibold text-gray-900 line-clamp-2">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mt-0.5">
-                    {new Date(item.start_at).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })}
-                    {(item.city || item.region) && <> · {[item.city, item.region].filter(Boolean).join(', ')}</>}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
       )}
     </div>
   );
