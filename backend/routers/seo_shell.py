@@ -257,6 +257,39 @@ async def _meta_product(kind: str, org_slug: str, product_slug: str) -> Optional
     }
 
 
+async def _meta_destination(place_slug: Optional[str] = None) -> dict:
+    base = _base_url()
+    label = place_slug.replace("-", " ").title() if place_slug else None
+    path = "/destinazioni" + (f"/{place_slug}" if place_slug else "")
+    return {
+        "title": (f"Ritiri ed esperienze a {label} | Aurya" if label
+                  else "Destinazioni — dove vuoi ritrovarti? | Aurya"),
+        "description": ((f"Ritiri di yoga, meditazione ed esperienze "
+                         f"olistiche a {label}: date, prezzi e "
+                         f"disponibilità reali. Prenota online con la caparra.")
+                        if label else
+                        ("Scegli la destinazione del tuo prossimo ritiro: i "
+                         "luoghi con ritiri ed esperienze in programma su Aurya.")),
+        "canonical": f"{base}{path}",
+        "image": f"{base}/logo-aurya.png",
+    }
+
+
+async def _meta_experiences(category: Optional[str] = None) -> dict:
+    base = _base_url()
+    label = category.replace("-", " ").title() if category else None
+    path = "/esperienze" + (f"/{category}" if category else "")
+    return {
+        "title": (f"Esperienze di {label} | Aurya" if label
+                  else "Esperienze olistiche: massaggi, corsi e soggiorni | Aurya"),
+        "description": ("Massaggi, trattamenti, corsi e soggiorni olistici "
+                        "dagli organizzatori di Aurya. Prenoti online, paghi "
+                        "in sicurezza."),
+        "canonical": f"{base}{path}",
+        "image": f"{base}/logo-aurya.png",
+    }
+
+
 async def _meta_operators_index(category: Optional[str] = None) -> dict:
     base = _base_url()
     label = category.replace("-", " ").title() if category else None
@@ -359,6 +392,10 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_product(head, parts[1], parts[2])
     if head == "operatori":
         return await _meta_operators_index(parts[1] if len(parts) > 1 else None)
+    if head == "destinazioni":
+        return await _meta_destination(parts[1] if len(parts) > 1 else None)
+    if head == "esperienze":
+        return await _meta_experiences(parts[1] if len(parts) > 1 else None)
     if head == "o" and len(parts) >= 2:
         return await _meta_operator(parts[1])
     if head == "s" and len(parts) >= 2:

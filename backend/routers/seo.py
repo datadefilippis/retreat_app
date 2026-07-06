@@ -54,7 +54,7 @@ async def build_sitemap() -> str:
     occs = await event_occurrences_collection.find(
         {"status": "published", "start_at": {"$gte": now_iso},
          "slug": {"$nin": [None, ""]}},
-        {"_id": 0, "product_id": 1, "slug": 1, "region": 1, "updated_at": 1},
+        {"_id": 0, "product_id": 1, "slug": 1, "region": 1, "city": 1, "updated_at": 1},
     ).to_list(2000)
 
     prod_ids = list({o["product_id"] for o in occs})
@@ -105,6 +105,21 @@ async def build_sitemap() -> str:
         path = f"/ritiri/{cat}" + (f"/{reg}" if reg else "")
         urls.append(_url(f"{base}{path}", priority="0.7"))
 
+    # S2b — destinazioni con ritiri reali (region + city)
+    from routers.public import _place_slug
+    places = set()
+    for o in occs:
+        p_doc = prods.get(o["product_id"])
+        if not p_doc or not slug_by_org.get(p_doc["organization_id"]):
+            continue
+        for name in {o.get("region"), o.get("city")}:
+            if name:
+                places.add(_place_slug(name))
+    if places:
+        urls.append(_url(f"{base}/destinazioni", priority="0.8"))
+        for pl in sorted(places):
+            urls.append(_url(f"{base}/destinazioni/{pl}", priority="0.7"))
+
     for org_slug in sorted(set(slug_by_org.values())):
         urls.append(_url(f"{base}/o/{org_slug}", priority="0.6"))
         urls.append(_url(f"{base}/s/{org_slug}", priority="0.5"))
@@ -113,6 +128,7 @@ async def build_sitemap() -> str:
     # (le categorie derivano dai prodotti attivi delle org pubbliche)
     if slug_by_org:
         urls.append(_url(f"{base}/operatori", priority="0.8"))
+        urls.append(_url(f"{base}/esperienze", priority="0.7"))
         op_cats = {p.get("category") for p in prods.values() if p.get("category")}
         for cat in sorted(op_cats):
             urls.append(_url(f"{base}/operatori/{cat}", priority="0.6"))
