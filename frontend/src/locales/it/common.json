@@ -27,7 +27,8 @@
     "events": "Ritiri",
     "customers": "Clienti",
     "suppliers": "Fornitori",
-    "public_profile": "Profilo pubblico"
+    "public_profile": "Profilo pubblico",
+    "reviews": "Recensioni"
   },
   "actions": {
     "save": "Salva",
