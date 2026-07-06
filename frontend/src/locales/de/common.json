@@ -145,5 +145,13 @@
     "expected": "Erwartet",
     "actual": "Ist",
     "other": "Sonstige"
+  },
+  "outreachShared": {
+    "whatsapp": "Per WhatsApp schreiben",
+    "email": "E-Mail schreiben",
+    "noPhone": "Keine Telefonnummer",
+    "noEmail": "Keine E-Mail",
+    "noConsent": "Dieser Kunde hat keine Marketing-Einwilligung erteilt",
+    "error": "Nachricht konnte nicht vorbereitet werden, bitte erneut versuchen"
   }
 }

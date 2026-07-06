@@ -18,8 +18,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '../../../components/ui/dialog';
-import { Button } from '../../../components/ui/button';
+} from './ui/dialog';
+import { Button } from './ui/button';
 import { Mail, MessageCircle, ExternalLink, Copy, Check } from 'lucide-react';
 
 export function OutreachConfirmDialog({

@@ -93,8 +93,14 @@ def render(
     customer_name: str,
     merchant_name: str = "",
     days_since_last: Optional[int] = None,
+    extra: Optional[dict] = None,
 ) -> Optional[dict]:
     """Render a template into ``{"subject": str, "body": str}``.
+
+    ``extra`` (CF2) — variabili contestuali addizionali (es.
+    {retreat_name}, {amount}, {due_date}, {review_link}); il chiamante
+    è responsabile del whitelisting. Missing → stringa vuota, come
+    tutte le altre.
 
     Falls back to ``it`` when the key exists but the requested locale
     is missing. Returns None if the template_key is unknown — caller
@@ -116,6 +122,7 @@ def render(
         return None
 
     ctx = _DefaultDict({
+        **{k: str(v) for k, v in (extra or {}).items()},
         "customer_name": customer_name,
         "merchant_name": merchant_name,
         "days_since_last": str(days_since_last) if days_since_last is not None else "",
