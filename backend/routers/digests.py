@@ -232,7 +232,7 @@ async def download_digest_pdf(
     if not pdf_bytes:
         raise HTTPException(status_code=404, detail="PDF non trovato.")
 
-    filename = f"afianco_report_{doc.get('digest_type', 'weekly')}_{doc.get('period_start', '')}.pdf"
+    filename = f"aurya_report_{doc.get('digest_type', 'weekly')}_{doc.get('period_start', '')}.pdf"
 
     return Response(
         content=pdf_bytes,

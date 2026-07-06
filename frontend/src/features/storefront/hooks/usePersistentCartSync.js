@@ -74,12 +74,17 @@ export function isPersistentCartEnabled() {
 // ── Storage key per cart_id mirror ──────────────────────────────────────
 
 
-const CART_ID_LOCALSTORAGE_PREFIX = 'afianco_cart_id:';
+// R1 rebrand — prefisso nuovo; il vecchio viene letto in fallback una
+// volta (migrazione dolce, niente carrelli persi) e riscritto col nuovo.
+const CART_ID_LOCALSTORAGE_PREFIX = 'aurya_cart_id:';
+const LEGACY_CART_ID_PREFIX = 'afianco_cart_id:';
 
 function _readCartId(slug) {
   if (!slug) return null;
   try {
-    return sessionStorage.getItem(CART_ID_LOCALSTORAGE_PREFIX + slug) || null;
+    return sessionStorage.getItem(CART_ID_LOCALSTORAGE_PREFIX + slug)
+      || sessionStorage.getItem(LEGACY_CART_ID_PREFIX + slug)   // migrazione R1
+      || null;
   } catch {
     return null;
   }

@@ -1,8 +1,8 @@
 {
   "reconsent": {
     "title": "Aggiornamento condizioni",
-    "intro_first": "Per usare afianco devi accettare la nostra Informativa sulla Privacy e i Termini di Servizio.",
-    "intro_update": "Abbiamo aggiornato la nostra Informativa sulla Privacy e i Termini di Servizio. Per continuare a usare afianco accetta la nuova versione.",
+    "intro_first": "Per usare Aurya devi accettare la nostra Informativa sulla Privacy e i Termini di Servizio.",
+    "intro_update": "Abbiamo aggiornato la nostra Informativa sulla Privacy e i Termini di Servizio. Per continuare a usare Aurya accetta la nuova versione.",
     "what_changed_title": "Cosa è cambiato",
     "what_changed_body": "La nuova versione chiarisce come trattiamo i tuoi dati, elenca per nome i nostri sub-responsabili (Hetzner, Anthropic, Stripe, Brevo) e formalizza i tuoi diritti GDPR (accesso, portabilità, cancellazione).",
     "read_privacy": "Leggi l'Informativa sulla Privacy",
@@ -157,7 +157,7 @@
   },
   "sub_processors": {
     "page_title": "Sub-responsabili del trattamento",
-    "page_subtitle": "Elenco completo dei fornitori che trattano dati personali per conto di afianco, ai sensi dell'art. 28.3.i del GDPR.",
+    "page_subtitle": "Elenco completo dei fornitori che trattano dati personali per conto di Aurya, ai sensi dell'art. 28.3.i del GDPR.",
     "controller_label": "Titolare del trattamento",
     "version_label": "Versione documenti legali",
     "binding_locale_label": "Lingua di riferimento legale",
@@ -189,6 +189,6 @@
     "error_other_body": "Non siamo riusciti a registrare la richiesta. Riprova fra qualche secondo.",
     "retry_button": "Riprova",
     "merchant_fallback": "il negozio",
-    "footer_privacy": "Privacy di afianco"
+    "footer_privacy": "Privacy di Aurya"
   }
 }

@@ -231,7 +231,7 @@ export const PlansPage = () => {
 
   // Retreat fork (Blocco B) — le org sul catalogo ritiri vedono la pagina
   // piani dedicata (2 card + fee trasparente), non la matrice legacy
-  // AFianco. Hook sopra, early-return sotto: ordine hook invariato.
+  // Aurya. Hook sopra, early-return sotto: ordine hook invariato.
   if ((currentPlan || '').startsWith('retreat_')) {
     return <RetreatPlansPage />;
   }
@@ -245,7 +245,7 @@ export const PlansPage = () => {
 
     const selectedPlan = plans.find((p) => p.slug === planSlug);
     if (selectedPlan && !selectedPlan.is_self_serve) {
-      window.location.href = 'mailto:support@afian.co?subject=Piano%20Enterprise%20AFianco';
+      window.location.href = 'mailto:info@aurya.life?subject=Piano%20Enterprise%20Aurya';
       return;
     }
     if (!billingEnabled) {

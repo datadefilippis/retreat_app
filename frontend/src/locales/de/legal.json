@@ -1,8 +1,8 @@
 {
   "reconsent": {
     "title": "Aktualisierte Bedingungen",
-    "intro_first": "Um afianco zu nutzen, müssen Sie unsere Datenschutzerklärung und die Allgemeinen Geschäftsbedingungen akzeptieren.",
-    "intro_update": "Wir haben unsere Datenschutzerklärung und die Allgemeinen Geschäftsbedingungen aktualisiert. Bitte akzeptieren Sie die neue Version, um afianco weiterhin zu nutzen.",
+    "intro_first": "Um Aurya zu nutzen, müssen Sie unsere Datenschutzerklärung und die Allgemeinen Geschäftsbedingungen akzeptieren.",
+    "intro_update": "Wir haben unsere Datenschutzerklärung und die Allgemeinen Geschäftsbedingungen aktualisiert. Bitte akzeptieren Sie die neue Version, um Aurya weiterhin zu nutzen.",
     "what_changed_title": "Was hat sich geändert",
     "what_changed_body": "Die neue Version präzisiert, wie wir Ihre Daten verarbeiten, listet unsere Auftragsverarbeiter namentlich auf (Hetzner, Anthropic, Stripe, Brevo) und formalisiert Ihre DSGVO-Rechte (Auskunft, Übertragbarkeit, Löschung).",
     "read_privacy": "Datenschutzerklärung lesen",
@@ -157,7 +157,7 @@
   },
   "sub_processors": {
     "page_title": "Datenauftragsverarbeiter",
-    "page_subtitle": "Vollständige Liste der Anbieter, die im Auftrag von afianco personenbezogene Daten verarbeiten, gemäß Art. 28.3.i DSGVO.",
+    "page_subtitle": "Vollständige Liste der Anbieter, die im Auftrag von Aurya personenbezogene Daten verarbeiten, gemäß Art. 28.3.i DSGVO.",
     "controller_label": "Verantwortlicher",
     "version_label": "Version der rechtlichen Dokumente",
     "binding_locale_label": "Rechtlich verbindliche Sprache",
@@ -189,6 +189,6 @@
     "error_other_body": "Wir konnten Ihre Anfrage nicht erfassen. Bitte versuchen Sie es in ein paar Sekunden erneut.",
     "retry_button": "Erneut versuchen",
     "merchant_fallback": "dem Geschäft",
-    "footer_privacy": "Datenschutz von afianco"
+    "footer_privacy": "Datenschutz von Aurya"
   }
 }

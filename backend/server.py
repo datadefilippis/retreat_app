@@ -399,7 +399,7 @@ _docs_url, _redoc_url, _openapi_url = _docs_urls_for_env(
 
 # Create the main app
 app = FastAPI(
-    title="AFianco",
+    title="Aurya",
     description="AI-powered business monitoring platform",
     version="2.0.0",
     lifespan=lifespan,
@@ -726,7 +726,7 @@ async def health_check(verbose: bool = False):
     import asyncio as _asyncio
 
     result = {
-        "service": "afianco",
+        "service": "aurya",
         "version": "2.0.0",
         "checks": {},
     }

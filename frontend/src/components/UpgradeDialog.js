@@ -62,7 +62,7 @@ export const UpgradeDialog = ({ open, onOpenChange }) => {
 
     // Enterprise: contact sales
     if (selectedPlan && !selectedPlan.is_self_serve) {
-      window.location.href = 'mailto:support@afian.co?subject=Piano%20Enterprise%20AFianco';
+      window.location.href = 'mailto:info@aurya.life?subject=Piano%20Enterprise%20Aurya';
       return;
     }
 
@@ -144,7 +144,7 @@ export const UpgradeDialog = ({ open, onOpenChange }) => {
             {t('billing.upgrade_title', 'Scegli il piano giusto per te')}
           </DialogTitle>
           <DialogDescription>
-            {t('billing.upgrade_desc', 'Sblocca tutte le funzionalita di AFianco per la tua organizzazione.')}
+            {t('billing.upgrade_desc', 'Sblocca tutte le funzionalita di Aurya per la tua organizzazione.')}
           </DialogDescription>
         </DialogHeader>
 

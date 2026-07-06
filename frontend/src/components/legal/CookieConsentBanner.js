@@ -26,7 +26,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Cookie, X } from 'lucide-react';
 
-const STORAGE_KEY = 'afianco_cookie_disclosure_v1';
+const STORAGE_KEY = 'aurya_cookie_disclosure_v1';
 
 export default function CookieConsentBanner() {
   const { t, i18n } = useTranslation('legal');

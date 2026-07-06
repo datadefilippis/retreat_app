@@ -527,7 +527,7 @@
           "testCredsRequired": "Geben Sie Library ID und API-Schlüssel ein, um zu testen",
           "checkApi": "API-Schlüssel + Library ID",
           "checkEmbed": "Token Authentication Key",
-          "checkCdn": "Pull Zone CDN (Referrer afianco.app)",
+          "checkCdn": "Pull Zone CDN (Referrer aurya.life)",
           "checkSkippedSuffix": "— nicht testbar",
           "probeOk": "✓ Verbunden",
           "probeOkVideos": "✓ Verbunden · {{count}} Videos in der Library",

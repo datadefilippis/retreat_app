@@ -44,7 +44,11 @@ logger = logging.getLogger(__name__)
 
 # ── Cookie configuration ─────────────────────────────────────────────────
 
-CART_COOKIE_NAME = "afianco_cart_id"
+# R1 rebrand — nuovo nome cookie; il vecchio viene ancora LETTO in
+# fallback (migrazione dolce: i carrelli in corso sopravvivono al rebrand;
+# alla prima risposta il Set-Cookie scrive gia' il nome nuovo).
+CART_COOKIE_NAME = "aurya_cart_id"
+LEGACY_CART_COOKIE_NAME = "afianco_cart_id"
 CART_COOKIE_MAX_AGE_SECONDS = CART_TTL_DAYS * 24 * 60 * 60  # 60 giorni in secondi
 
 

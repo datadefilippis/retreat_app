@@ -1,8 +1,8 @@
 {
   "reconsent": {
     "title": "Updated terms",
-    "intro_first": "To use afianco you need to accept our Privacy Policy and Terms of Service.",
-    "intro_update": "We have updated our Privacy Policy and Terms of Service. To continue using afianco, please accept the new version.",
+    "intro_first": "To use Aurya you need to accept our Privacy Policy and Terms of Service.",
+    "intro_update": "We have updated our Privacy Policy and Terms of Service. To continue using Aurya, please accept the new version.",
     "what_changed_title": "What changed",
     "what_changed_body": "The new version clarifies how we process your data, lists our sub-processors by name (Hetzner, Anthropic, Stripe, Brevo) and formalises your GDPR rights (access, portability, erasure).",
     "read_privacy": "Read the Privacy Policy",
@@ -157,7 +157,7 @@
   },
   "sub_processors": {
     "page_title": "Data sub-processors",
-    "page_subtitle": "Complete list of providers that process personal data on behalf of afianco, under GDPR Art. 28.3.i.",
+    "page_subtitle": "Complete list of providers that process personal data on behalf of Aurya, under GDPR Art. 28.3.i.",
     "controller_label": "Data Controller",
     "version_label": "Legal documents version",
     "binding_locale_label": "Legal reference language",
@@ -189,6 +189,6 @@
     "error_other_body": "We could not record your request. Please try again in a few seconds.",
     "retry_button": "Retry",
     "merchant_fallback": "the store",
-    "footer_privacy": "afianco Privacy"
+    "footer_privacy": "Aurya Privacy"
   }
 }
