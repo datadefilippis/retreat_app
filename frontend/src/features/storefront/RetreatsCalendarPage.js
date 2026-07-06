@@ -162,7 +162,7 @@ export default function RetreatsCalendarPage() {
     title: seoTitle,
     description: `Trova e prenota ${catLabel ? catLabel.toLowerCase() + ' ' : ''}ritiri${region ? ' in ' + region : ' in Italia'}: date, prezzi e disponibilità in tempo reale, con prenotazione e caparra online.`,
     canonicalPath: (routeParams.categoria || routeParams.regione)
-      ? window.location.pathname : '/ritiri',
+      ? window.location.pathname : '/',
     // F3 — ItemList dei ritiri visibili (max 20: ai crawler serve il
     // segnale di lista, non l'inventario completo)
     jsonLd: (data?.items || []).length > 0 ? {

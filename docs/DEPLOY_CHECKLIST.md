@@ -16,6 +16,16 @@
       `aurya.life` → frontend build statica; `/api` e `/metrics` →
       backend :8000. Bloccare `/metrics` dall'esterno (ACL) — c'è anche
       il token app-level, doppia difesa.
+- [ ] **SEO shell (S0.2)** — le route PUBBLICHE vanno al backend, che
+      serve l'HTML con i meta già iniettati (`/__seo/*`):
+      ```
+      @public path / /ritiri* /e/* /p/* /ph/* /dg/* /co/* /r/* /o/* /s/*
+      rewrite @public /__seo{path}
+      reverse_proxy @public 127.0.0.1:8000
+      ```
+      e `SEO_SHELL_INDEX_PATH=/percorso/frontend/build/index.html` nel
+      .env del backend. Verifica: `curl -A WhatsApp https://aurya.life/e/...`
+      deve mostrare title e og:image del ritiro.
 
 ## 2 · Variabili d'ambiente backend (.env di produzione)
 

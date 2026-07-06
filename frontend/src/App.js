@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AiAccessProvider } from "./hooks/useAiAccess";
 import { BillingProvider } from "./hooks/useBilling";
@@ -149,7 +149,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Onda 28 — email verification gate. Strictly compare to false so
@@ -183,7 +183,7 @@ const RequireAuthOnly = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Already verified (or system_admin) → no reason to stay on the
@@ -209,7 +209,7 @@ const SystemAdminRoute = ({ children }) => {
   }
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (user.role !== "system_admin") {
@@ -217,6 +217,13 @@ const SystemAdminRoute = ({ children }) => {
   }
 
   return children;
+};
+
+// S0.1 — redirect che porta la query string con sé (Navigate 'to' string
+// la perderebbe: i link /ritiri?categoria=yoga devono filtrare la home).
+const RedirectPreservingQuery = ({ to }) => {
+  const location = useLocation();
+  return <Navigate to={{ pathname: to, search: location.search }} replace />;
 };
 
 // Public Route (redirect if authenticated)
@@ -241,17 +248,20 @@ const PublicRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* S0.1 — la ROOT è il marketplace: la pagina con l'autorità
+          del dominio è la directory pubblica, non la login operatori.
+          Chi è loggato vede comunque la home pubblica (il back-office
+          si raggiunge dal menu / da /dashboard). */}
+      <Route path="/" element={<RetreatsCalendarPage />} />
+      {/* S0.1 — la login operatori vive su /login (via dalla root) */}
       <Route
-        path="/"
+        path="/login"
         element={
           <PublicRoute>
             <LoginPage />
           </PublicRoute>
         }
       />
-      {/* Backward compat — old /login bookmarks */}
-      <Route path="/login" element={<Navigate to="/" replace />} />
       {/* Static legal pages — always accessible, no auth wrapper */}
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
@@ -316,7 +326,9 @@ function AppRoutes() {
       {/* E3: public event landing page — deep-link per-occurrence.
           Has StorefrontHeader → its inline switcher covers /e, no
           floating dup. */}
-      <Route path="/ritiri" element={<RetreatsCalendarPage />} />
+      {/* /ritiri → home: la directory È la home (S0.1). Redirect che
+          PRESERVA la query (?categoria=... dai link footer/condivisi). */}
+      <Route path="/ritiri" element={<RedirectPreservingQuery to="/" />} />
       <Route path="/ritiri/:categoria" element={<RetreatsCalendarPage />} />
       <Route path="/ritiri/:categoria/:regione" element={<RetreatsCalendarPage />} />
       <Route path="/o/:org_slug" element={<OperatorProfilePage />} />

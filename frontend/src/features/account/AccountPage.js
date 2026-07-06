@@ -85,7 +85,7 @@ export default function AccountPage() {
 
   const logout = () => {
     localStorage.removeItem(PLATFORM_TOKEN_KEY);
-    navigate('/ritiri');
+    navigate('/');
   };
 
   if (error) {
@@ -228,7 +228,7 @@ export default function AccountPage() {
               <p className="text-sm text-gray-600">
                 {t('landings:account.noUpcoming', { defaultValue: 'Nessun ritiro in programma.' })}
               </p>
-              <Link to="/ritiri" className="text-sm font-medium text-primary hover:underline">
+              <Link to="/" className="text-sm font-medium text-primary hover:underline">
                 {t('landings:account.browse', { defaultValue: 'Scopri i prossimi ritiri →' })}
               </Link>
             </div>

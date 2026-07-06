@@ -65,7 +65,7 @@ export default function OperatorProfilePage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-2">
         <p className="text-lg font-semibold text-gray-900">{t('landings:operator.notFound')}</p>
-        <Link to="/ritiri" className="text-emerald-700 underline">{t('landings:operator.backToCalendar')}</Link>
+        <Link to="/" className="text-emerald-700 underline">{t('landings:operator.backToCalendar')}</Link>
       </div>
     );
   }
@@ -82,7 +82,7 @@ export default function OperatorProfilePage() {
           riportano alla directory. */}
       <div className="max-w-5xl mx-auto px-4 pt-3">
         <nav className="text-xs text-gray-500">
-          <Link to="/ritiri" className="hover:text-primary hover:underline">
+          <Link to="/" className="hover:text-primary hover:underline">
             {t('landings:calendar.title', { defaultValue: 'Ritiri' })}
           </Link>
           <span className="mx-1.5" aria-hidden>›</span>

@@ -254,7 +254,7 @@ export function CheckoutSuccessPage() {
                 <img src="/logo-aurya-128.png" alt="" aria-hidden className="inline h-5 w-5 mr-1 -mt-0.5 select-none" draggable={false} />
                 {t('storefront:checkoutResult.activatePassport', { defaultValue: 'Attiva il tuo Passaporto — tutti i tuoi viaggi in un posto solo' })}
               </button>
-              <Link to="/ritiri"
+              <Link to="/"
                 className="block w-full rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary">
                 {t('storefront:checkoutResult.backToRetreats', { defaultValue: 'Torna ai ritiri' })}
               </Link>
