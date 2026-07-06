@@ -207,12 +207,14 @@ export default function RetreatsCalendarPage() {
             />
           </div>
 
-          {/* Categorie visuali — dalle categorie REALI del backend */}
+          {/* Categorie visuali — dalle categorie REALI del backend.
+              L1: niente strip a scorrimento (era overflow-x-auto, con
+              jank ai reload): riga statica che va a capo. */}
           {categories.length > 0 && (
-            <div className="mt-7 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 justify-start md:justify-center">
+            <div className="mt-7 flex flex-wrap gap-2 justify-center">
               <button
                 onClick={() => setFilter('categoria', '')}
-                className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                   !category ? 'bg-white text-gray-900' : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
@@ -222,7 +224,7 @@ export default function RetreatsCalendarPage() {
                 <button
                   key={key}
                   onClick={() => setFilter('categoria', key)}
-                  className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     category === key ? 'bg-white text-gray-900' : 'bg-white/10 text-white hover:bg-white/20'
                   }`}
                 >
@@ -284,6 +286,19 @@ export default function RetreatsCalendarPage() {
             </span>
           )}
         </div>
+        {/* L1 — nota filtro lingua: in lingua ≠ it la vista è filtrata
+            ai ritiri TENUTI in quella lingua; va detto, o l'elenco
+            ridotto sembra un bug. */}
+        {(i18n.language || 'it').slice(0, 2) !== 'it' && (
+          <div className="max-w-6xl mx-auto px-4 pb-2 -mt-0.5">
+            <p className="text-xs text-muted-foreground">
+              🌐 {t('marketplace.langFilterCaption', {
+                lang: (i18n.language || '').slice(0, 2).toUpperCase(),
+                defaultValue: 'Mostriamo i ritiri e le esperienze tenuti in {{lang}} — cambia lingua in alto per vederne altri.',
+              })}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ── Griglia ──────────────────────────────────────────────────── */}

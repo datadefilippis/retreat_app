@@ -230,12 +230,40 @@ function _detectColdStartLanguage() {
   //   /r/:slug/..., /ph/:slug/..., /dg/:slug/...
   // Token routes (/t, /b, /d, /rsv) don't have the slug in the URL.
   let pathSlug = null;
+  let inStoreCtx = false;
+  let isMarketplaceRoute = false;
   try {
     const m = window.location.pathname.match(/^\/(?:s|e|p|co|r|ph|dg)\/([^/]+)/);
     if (m) pathSlug = m[1];
+    // ?store=1 = guscio negozio (merchant-first); /s/ diretto idem.
+    inStoreCtx = new URLSearchParams(window.location.search).get('store') === '1'
+      || window.location.pathname.startsWith('/s/');
+    // Superfici del marketplace senza slug nel path.
+    isMarketplaceRoute = /^\/(?:ritiri|o\/|account)/.test(window.location.pathname);
   } catch {
     // pathname unavailable — fall through.
   }
+
+  // ── L1 — preferenza lingua di marketplace (aurya_lang) ──────────
+  // In contesto MARKETPLACE (directory, profili operatore, Passaporto,
+  // landing raggiunte senza ?store=1) la scelta del viaggiatore vince
+  // al boot, coerente con la priorità 2.5 del resolver runtime. In
+  // contesto store resta la catena merchant-first qui sotto.
+  if (!inStoreCtx && (isMarketplaceRoute || pathSlug) && typeof localStorage !== 'undefined') {
+    try {
+      const mktp = localStorage.getItem('aurya_lang');
+      if (mktp) {
+        const norm = String(mktp).toLowerCase().split('-')[0];
+        if (SUPPORTED_CODES.includes(norm)) return norm;
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Le superfici marketplace SENZA una scelta salvata partono in
+  // italiano (fallbackLng), NON nella lingua del browser: è la faccia
+  // della piattaforma, e lo switcher è a un click — la scelta viene
+  // poi ricordata per sempre (aurya_lang).
+  if (isMarketplaceRoute) return null;
 
   if (pathSlug && typeof localStorage !== 'undefined') {
     // 1. The visitor's most-recent explicit choice for THIS store.

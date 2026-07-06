@@ -524,7 +524,7 @@
     "tagline": "Trouve et réserve des retraites holistiques dans le monde entier — avec acompte, sans souci.",
     "searchShortcut": "Où ? · Quand ? · Quelle retraite ?",
     "forOrganizers": "Tu es organisateur ?",
-    "myTrips": "Mes voyages",
+    "myTrips": "Mes expériences",
     "signIn": "Connexion",
     "securePayment": "Paiement sécurisé",
     "footerExplore": "Explorer",
@@ -533,6 +533,8 @@
     "footerOrganizers": "Organisateurs",
     "startSelling": "Mets tes retraites en ligne",
     "operatorLogin": "Espace organisateurs",
-    "terms": "Conditions"
+    "terms": "Conditions",
+    "langFilterNote": "Choisissez votre langue : vous verrez les retraites et expériences tenues dans cette langue.",
+    "langFilterCaption": "Nous affichons les retraites et expériences tenues en {{lang}} — changez de langue en haut pour en voir d’autres."
   }
 }

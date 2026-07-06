@@ -78,7 +78,12 @@ export const AuthProvider = ({ children }) => {
       // happen to start with the same letter.
       const isStorefrontRoute = /^\/(?:s|e|p|co|r|ph|dg|t|b|d|rsv)\/[^/]+/.test(path);
       const isCustomerArea = /^\/account(?:\/|$)/.test(path);
-      if (isStorefrontRoute || isCustomerArea) return;
+      // L1 — anche le superfici MARKETPLACE (directory /ritiri, profili
+      // operatore /o/) hanno il loro driver (aurya_lang, default it):
+      // senza questo gate un admin loggato con locale en vedeva la
+      // directory in inglese — il bug "non parte in italiano".
+      const isMarketplaceRoute = /^\/(?:ritiri(?:\/|$)|o\/[^/]+)/.test(path);
+      if (isStorefrontRoute || isCustomerArea || isMarketplaceRoute) return;
     }
     i18n.changeLanguage(user.locale);
   }, [user?.locale]);
