@@ -183,6 +183,9 @@ ai_usage_events_collection = db.ai_usage_events
 
 # AI Chat Sessions (persisted conversation history, replaces in-memory storage)
 chat_sessions_collection = db.chat_sessions
+# PR2 — recensioni operatore + OTP di verifica email
+reviews_collection = db.reviews
+review_otps_collection = db.review_otps
 
 # ── Modular Subscription Architecture (v4.0) ──────────────────────────────────
 # Pricing plans: admin-managed plans per module_key (replaces hardcoded PLAN_LIMITS)
@@ -1244,6 +1247,19 @@ async def create_indexes():
         "updated_at", expireAfterSeconds=30 * 24 * 3600,
         name="r4_chat_sessions_ttl",
     )
+
+    # ── PR2 — recensioni operatore ───────────────────────────────────────────
+    await reviews_collection.create_index(
+        [("organization_id", 1), ("status", 1), ("created_at", -1)],
+        name="pr2_reviews_org_status")
+    await reviews_collection.create_index(
+        [("organization_id", 1), ("author_email_hash", 1)],
+        unique=True, name="pr2_reviews_one_per_email")
+    # OTP: TTL a 1h (i documenti scaduti/usati si puliscono da soli)
+    await review_otps_collection.create_index(
+        "created_at", expireAfterSeconds=3600, name="pr2_review_otps_ttl")
+    await review_otps_collection.create_index(
+        [("org_slug", 1), ("email_hash", 1)], name="pr2_review_otps_lookup")
 
     # ── v5.0: COMMERCIAL BILLING INDEXES ─────────────────────────────────────
     await commercial_plans_collection.create_index("slug", unique=True)

@@ -285,6 +285,10 @@ EMAIL_TRANSLATIONS = {
         "passport_claim_body": "Grazie della tua prenotazione! Con un click attivi il tuo account: ritrovi tutte le prenotazioni, i pagamenti e i biglietti in un unico posto — anche se prenoti con organizzatori diversi.",
         "passport_claim_cta": "Gestisci le tue prenotazioni",
         "passport_claim_footer": "Il link vale {minutes} minuti. Nessuna password da ricordare: quando ti serve, te ne mandiamo uno nuovo.",
+        # PR2 — OTP recensione operatore
+        "review_otp_subject": "Il tuo codice per lasciare una recensione",
+        "review_otp_body": "Stai per lasciare una recensione. Ecco il tuo codice di verifica:",
+        "review_otp_hint": "Vale {minutes} minuti. Se non hai richiesto tu questo codice, ignora questa email.",
 
         # Fase 4 — follow-up post ritiro
         "event_email_broadcast_followup_subject": "Grazie per aver partecipato — {event}",
@@ -583,6 +587,9 @@ EMAIL_TRANSLATIONS = {
         "passport_claim_body": "Thanks for your booking! One click activates your account: find all your bookings, payments and tickets in one place — even across different organizers.",
         "passport_claim_cta": "Manage your bookings",
         "passport_claim_footer": "The link is valid for {minutes} minutes. No password to remember: whenever you need one, we'll send you a fresh link.",
+        "review_otp_subject": "Your code to leave a review",
+        "review_otp_body": "You are about to leave a review. Here is your verification code:",
+        "review_otp_hint": "Valid for {minutes} minutes. If you didn't request this code, just ignore this email.",
 
         "event_email_broadcast_followup_subject": "Thank you for joining — {event}",
         "event_email_broadcast_followup_body": "Thank you for being part of <strong>{event}</strong>. We hope the experience left you something good.",
@@ -1028,6 +1035,9 @@ EMAIL_TRANSLATIONS = {
         "passport_claim_body": "Danke fuer deine Buchung! Ein Klick aktiviert dein Konto: alle Buchungen, Zahlungen und Tickets an einem Ort — auch bei verschiedenen Veranstaltern.",
         "passport_claim_cta": "Buchungen verwalten",
         "passport_claim_footer": "Der Link ist {minutes} Minuten gueltig. Kein Passwort noetig: wenn du einen brauchst, senden wir dir einen neuen Link.",
+        "review_otp_subject": "Dein Code fuer eine Bewertung",
+        "review_otp_body": "Du bist dabei, eine Bewertung zu hinterlassen. Hier ist dein Bestaetigungscode:",
+        "review_otp_hint": "Gueltig fuer {minutes} Minuten. Wenn du diesen Code nicht angefordert hast, ignoriere diese E-Mail.",
     },
     "fr": {
         "greeting": "Bonjour",
@@ -1308,6 +1318,9 @@ EMAIL_TRANSLATIONS = {
         "passport_claim_body": "Merci pour votre reservation ! Un clic active votre compte : retrouvez toutes vos reservations, paiements et billets au meme endroit — meme avec des organisateurs differents.",
         "passport_claim_cta": "Gerer vos reservations",
         "passport_claim_footer": "Le lien est valable {minutes} minutes. Aucun mot de passe a retenir : quand vous en avez besoin, nous vous en envoyons un nouveau.",
+        "review_otp_subject": "Votre code pour laisser un avis",
+        "review_otp_body": "Vous etes sur le point de laisser un avis. Voici votre code de verification :",
+        "review_otp_hint": "Valable {minutes} minutes. Si vous n'avez pas demande ce code, ignorez cet email.",
     },
 }
 
