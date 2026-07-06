@@ -309,7 +309,7 @@ export default function RetreatsCalendarPage() {
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-20 max-w-md mx-auto">
-            <span aria-hidden className="text-4xl">🌿</span>
+            <img src="/logo-aurya-128.png" alt="" aria-hidden className="mx-auto h-14 w-14 select-none opacity-80" draggable={false} />
             <p className="mt-3 text-lg font-semibold text-foreground">
               {t('landings:calendar.emptyTitle')}
             </p>
