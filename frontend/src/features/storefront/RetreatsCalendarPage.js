@@ -16,13 +16,12 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import useSeoMeta from './lib/useSeoMeta';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
+import GeoSearchBar from './components/GeoSearchBar';
+// G3 — vista mappa lazy (Leaflet caricato solo quando serve)
+const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'));
 
-const REGIONS = [
-  'Abruzzo', 'Basilicata', 'Calabria', 'Campania', 'Emilia-Romagna',
-  'Friuli-Venezia Giulia', 'Lazio', 'Liguria', 'Lombardia', 'Marche',
-  'Molise', 'Piemonte', 'Puglia', 'Sardegna', 'Sicilia', 'Toscana',
-  'Trentino-Alto Adige', 'Umbria', "Valle d'Aosta", 'Veneto',
-];
+// G3 — il filtro regioni e' stato sostituito dalla ricerca geografica
+// (GeoSearchBar); il param backend `region` resta per i vecchi link SEO.
 
 // Icone per le categorie note (chiavi backend) — fallback ✨ per le nuove.
 const CATEGORY_ICONS = {
@@ -86,6 +85,28 @@ export default function RetreatsCalendarPage() {
   const month = params.get('mese') || '';
   const [query, setQuery] = useState('');
 
+  // G3 — posizione+raggio dall'URL (condivisibile): ?lat&lng&r&luogo
+  const geoLat = params.get('lat');
+  const geoLng = params.get('lng');
+  const geoRadius = Number(params.get('r')) || 100;
+  const geoLabel = params.get('luogo') || '';
+  const geoValue = (geoLat && geoLng)
+    ? { lat: Number(geoLat), lng: Number(geoLng), label: geoLabel, radius: geoRadius }
+    : null;
+  const setGeo = (next) => {
+    const nx = new URLSearchParams(params);
+    if (next) {
+      nx.set('lat', String(next.lat)); nx.set('lng', String(next.lng));
+      nx.set('r', String(next.radius || 100));
+      if (next.label) nx.set('luogo', next.label); else nx.delete('luogo');
+    } else {
+      ['lat', 'lng', 'r', 'luogo'].forEach(k => nx.delete(k));
+    }
+    setParams(nx, { replace: true });
+  };
+  // vista lista/mappa
+  const view = params.get('vista') === 'mappa' ? 'mappa' : 'lista';
+
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -93,6 +114,9 @@ export default function RetreatsCalendarPage() {
     if (category) q.category = category;
     if (region) q.region = region;
     if (month) q.month = month;
+    if (geoLat && geoLng) {
+      q.lat = geoLat; q.lng = geoLng; q.radius_km = geoRadius;
+    }
     // Multilingua manuale: la vista in lingua X mostra solo i ritiri
     // offerti in X (l'italiano mostra tutto)
     const uiLang = (i18n.language || 'it').slice(0, 2);
@@ -102,7 +126,7 @@ export default function RetreatsCalendarPage() {
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [category, region, month, i18n.language]);
+  }, [category, region, month, geoLat, geoLng, geoRadius, i18n.language]);
 
   const setFilter = (key, value) => {
     const next = new URLSearchParams(params);
@@ -228,10 +252,9 @@ export default function RetreatsCalendarPage() {
       {/* ── Barra filtri sticky ──────────────────────────────────────── */}
       <div className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-2">
-          <select value={region} onChange={e => setFilter('regione', e.target.value)} className={selCls}>
-            <option value="">{t('landings:calendar.allRegions')}</option>
-            {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
+          {/* G3 — "Dove?" con autocomplete+raggio al posto delle regioni
+              (gli eventi possono essere in tutto il mondo) */}
+          <GeoSearchBar value={geoValue} onChange={setGeo} />
           <input
             type="month"
             value={month}
@@ -255,6 +278,19 @@ export default function RetreatsCalendarPage() {
               {t('landings:calendar.clearFilters')}
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => setFilter('vista', view === 'mappa' ? '' : 'mappa')}
+            className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+              view === 'mappa'
+                ? 'bg-primary text-white'
+                : 'border border-gray-300 bg-white text-gray-700 hover:border-primary'
+            }`}
+          >
+            {view === 'mappa'
+              ? t('landings:calendar.viewList', { defaultValue: '☰ Lista' })
+              : t('landings:calendar.viewMap', { defaultValue: '🗺 Mappa' })}
+          </button>
           {!loading && (
             <span className="ml-auto text-xs text-muted-foreground">
               {t('landings:calendar.resultsCount', { count: items.length, defaultValue: '{{count}} ritiri' })}
@@ -289,6 +325,11 @@ export default function RetreatsCalendarPage() {
               </button>
             )}
           </div>
+        ) : view === 'mappa' ? (
+          /* G3 — la directory sulla mappa */
+          <React.Suspense fallback={<div className="h-[520px] rounded-2xl bg-gray-100 animate-pulse" />}>
+            <RetreatsMapView items={items} />
+          </React.Suspense>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {items.map(item => {
@@ -350,6 +391,12 @@ export default function RetreatsCalendarPage() {
                       {fmtDates(item.start_at, item.end_at, i18n.language)}
                       {(item.city || item.region) && (
                         <> · {[item.city, item.region].filter(Boolean).join(', ')}</>
+                      )}
+                      {item.distance_km != null && (
+                        <span className="ml-1.5 inline-block rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[11px] font-semibold align-middle">
+                          {t('landings:calendar.distanceAway', {
+                            defaultValue: 'a {{km}} km', km: item.distance_km })}
+                        </span>
                       )}
                     </p>
                     <div className="flex items-center justify-between mt-3">

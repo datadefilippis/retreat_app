@@ -442,7 +442,18 @@
     "emptyBody": "Élargis les filtres ou reviens bientôt : le calendrier s'enrichit chaque semaine.",
     "priceFrom": "à partir de {{price}}",
     "depositBadge": "Réserver avec acompte",
-    "fewLeft": "Plus que {{count}} places"
+    "fewLeft": "Plus que {{count}} places",
+    "wherePlaceholder": "📍 Où ? Ville ou zone…",
+    "nearMe": "Près de moi",
+    "nearMeBtn": "📍 Près de moi",
+    "locating": "Localisation…",
+    "clearWhere": "Retirer le filtre lieu",
+    "viewMap": "🗺 Carte",
+    "viewList": "☰ Liste",
+    "distanceAway": "à {{km}} km",
+    "mapEmpty": "Aucune retraite avec position sur la carte pour ces filtres.",
+    "mapSee": "Voir la retraite →",
+    "fromPrice": "dès {{price}} €"
   },
   "operator": {
     "website": "Site web",

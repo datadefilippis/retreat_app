@@ -39,6 +39,8 @@ import { effectivePlan } from './lib/paymentPlan';
 import useSeoMeta from './lib/useSeoMeta';
 import api from '../../api/client';
 import StoreContextNav from './components/StoreContextNav';
+// G4 — mappa lazy: Leaflet non pesa sul first paint della landing
+const StaticMiniMap = React.lazy(() => import('./components/StaticMiniMap'));
 
 
 // ── Utilities ──────────────────────────────────────────────────────────────
@@ -535,6 +537,12 @@ export default function EventLandingPage() {
                 </div>
               )}
             </dl>
+            {/* G4 — DOVE si svolge, senza uscire dalla pagina */}
+            {occurrence.latitude != null && occurrence.longitude != null && (
+              <React.Suspense fallback={null}>
+                <StaticMiniMap latitude={occurrence.latitude} longitude={occurrence.longitude} />
+              </React.Suspense>
+            )}
             {occurrence.map_url && (
               <a
                 href={occurrence.map_url} target="_blank" rel="noopener noreferrer"

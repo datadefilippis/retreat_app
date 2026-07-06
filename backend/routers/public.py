@@ -3535,6 +3535,16 @@ def _next_month(month: str) -> str:
     return f"{y + (1 if m == 12 else 0)}-{(1 if m == 12 else m + 1):02d}-01"
 
 
+@router.get("/geo/search")
+@limiter.limit("20/minute")
+async def public_geo_search(request: Request,
+    q: str = Query(min_length=2, max_length=120)):
+    """Autocomplete localita' per la barra "Dove?" della directory.
+    Nominatim con cache aggressiva + rate limit: gratis e sostenibile."""
+    from services.geocoding import search_places
+    return {"results": await search_places(q, limit=5)}
+
+
 @router.get("/operator/{org_slug}")
 async def public_operator_profile(org_slug: str):
     """Profilo pubblico organizzatore: bio, brand, prossimi ritiri.

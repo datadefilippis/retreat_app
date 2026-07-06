@@ -442,7 +442,18 @@
     "emptyBody": "Try widening the filters, or come back soon: the calendar grows every week.",
     "priceFrom": "from {{price}}",
     "depositBadge": "Book with a deposit",
-    "fewLeft": "Only {{count}} spots left"
+    "fewLeft": "Only {{count}} spots left",
+    "wherePlaceholder": "📍 Where? City or area…",
+    "nearMe": "Near me",
+    "nearMeBtn": "📍 Near me",
+    "locating": "Locating you…",
+    "clearWhere": "Clear location filter",
+    "viewMap": "🗺 Map",
+    "viewList": "☰ List",
+    "distanceAway": "{{km}} km away",
+    "mapEmpty": "No retreats with a map position for these filters.",
+    "mapSee": "See the retreat →",
+    "fromPrice": "from €{{price}}"
   },
   "operator": {
     "website": "Website",

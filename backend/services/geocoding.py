@@ -130,3 +130,50 @@ async def enrich_occurrence_geo(doc: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as exc:
         logger.warning("enrich_occurrence_geo: %s", exc)
     return doc
+
+
+async def search_places(q: str, limit: int = 5) -> list:
+    """Autocomplete localita' (directory "Dove?"): lista di
+    {label, lat, lng}. Cache-first, best-effort → [] su errore."""
+    query = (q or "").strip().lower()
+    if len(query) < 2:
+        return []
+    from database import db
+    cache_key = f"search:{query}:{limit}"
+    cached = await db.geocode_cache.find_one({"query": cache_key}, {"_id": 0})
+    if cached is not None:
+        return cached.get("results") or []
+
+    global _last_call_ts
+    try:
+        async with _lock:
+            wait = 1.0 - (time.monotonic() - _last_call_ts)
+            if wait > 0:
+                await asyncio.sleep(wait)
+            _last_call_ts = time.monotonic()
+            async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
+                resp = await client.get(NOMINATIM_URL, params={
+                    "q": query, "format": "json", "limit": limit,
+                    # solo luoghi "contenitore": citta', paesi, regioni
+                    "featureType": "settlement",
+                }, headers={"User-Agent": USER_AGENT})
+        resp.raise_for_status()
+        raw = resp.json()
+    except Exception as exc:
+        logger.warning("search_places fallito per %r: %s", query, exc)
+        return []
+
+    results = []
+    for r in raw:
+        try:
+            results.append({
+                "label": r.get("display_name", ""),
+                "lat": float(r["lat"]),
+                "lng": float(r["lon"]),
+            })
+        except (KeyError, TypeError, ValueError):
+            continue
+    await db.geocode_cache.update_one(
+        {"query": cache_key},
+        {"$set": {"query": cache_key, "results": results}}, upsert=True)
+    return results
