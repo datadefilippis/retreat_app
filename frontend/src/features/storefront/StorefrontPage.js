@@ -1039,11 +1039,16 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
   useEffect(() => {
     if (!mktpCheckout) return;
     if (formOpen) { mktpWasOpenRef.current = true; return; }
+    // BUG beccato dalla simulazione E2E (9/7): dopo un submit in
+    // request-mode (niente redirect Stripe) il dialog si chiude per
+    // mostrare la CONFERMA — il ritorno alla landing vale solo per la
+    // chiusura senza acquisto.
+    if (submitted) { mktpWasOpenRef.current = false; return; }
     if (mktpWasOpenRef.current) {
       mktpWasOpenRef.current = false;
       navigate(mktpCheckout.returnTo);
     }
-  }, [formOpen, mktpCheckout, navigate]);
+  }, [formOpen, mktpCheckout, submitted, navigate]);
 
   // K1+ — riapertura del checkout in contesto marketplace dal banner
   // della landing (carrello gia' pieno: niente preload prodotto).

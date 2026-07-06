@@ -193,8 +193,18 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
         return {"orders": [], "total": 0}
 
     org_ids = list({o["organization_id"] for o in orders})
+    # Il nome PUBBLICO dell'operatore e' quello dello store (display
+    # name), non org.name (interno/legacy: la simulazione E2E 9/7 ha
+    # mostrato 'Demo Restaurant' al posto di 'Masseria Montanari Demo').
     orgs = {o["id"]: o async for o in organizations_collection.find(
-        {"id": {"$in": org_ids}}, {"_id": 0, "id": 1, "name": 1})}
+        {"id": {"$in": org_ids}},
+        {"_id": 0, "id": 1, "name": 1, "store_settings.display_name": 1})}
+    from database import stores_collection
+    async for s in stores_collection.find(
+            {"organization_id": {"$in": org_ids}, "is_published": True},
+            {"_id": 0, "organization_id": 1, "name": 1}):
+        if s.get("name") and s["organization_id"] in orgs:
+            orgs[s["organization_id"]]["public_name"] = s["name"]
 
     order_ids = [o["id"] for o in orders]
     schedules = {s["order_id"]: s async for s in db.payment_schedules.find(
@@ -226,7 +236,9 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
         out.append({
             "id": o["id"],
             "order_number": o.get("order_number"),
-            "operator_name": orgs.get(o["organization_id"], {}).get("name"),
+            "operator_name": (lambda og: og.get("public_name")
+                              or (og.get("store_settings") or {}).get("display_name")
+                              or og.get("name"))(orgs.get(o["organization_id"], {})),
             "status": o.get("status"),
             "total": o.get("total"),
             "currency": o.get("currency", "EUR"),
