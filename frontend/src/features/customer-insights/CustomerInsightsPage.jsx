@@ -27,7 +27,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
-import { RefreshCw, AlertTriangle, Info } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Info, ChevronDown, Users, UserPlus, MessageCircle, Phone } from 'lucide-react';
 import { useCurrency } from '../../context/AuthContext';
 import { formatCurrency } from '../../lib/utils';
 import { AppLayout, Header } from '../../components/Layout';
@@ -39,6 +39,16 @@ import { PeriodSelector } from '../../components/insights/PeriodSelector';
 import { KpiOverviewSection } from './components/KpiOverviewSection';
 import { CustomerTable } from './components/CustomerTable';
 import { CustomerProfileSlide } from './components/CustomerProfileSlide';
+import { StatCard, DonutSplit } from '../../components/charts';
+
+// CF6 — semantica fissa segmenti nella palette del kit (inattivi = terracotta)
+const SEGMENT_COLORS = {
+  top: '#376254',
+  active: '#5E8073',
+  new: '#B9A96B',
+  occasional: '#A9695B',
+  inactive: '#C97B5D',
+};
 
 const PAGE_SIZE = 50;
 
@@ -68,6 +78,31 @@ export default function CustomerInsightsPage() {
   // Profile slide state
   const [profileCustomerId, setProfileCustomerId] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  // CF6 — conteggi azionabili (totali da liste filtrate, pageSize=1)
+  const [recontactCount, setRecontactCount] = useState(null);
+  const [withPhoneCount, setWithPhoneCount] = useState(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.allSettled([
+      customerInsightsAPI.getCustomers({ segment: 'inactive', marketingOptedIn: true, page: 1, pageSize: 1 }),
+      customerInsightsAPI.getCustomers({ hasPhone: true, page: 1, pageSize: 1 }),
+    ]).then(([rec, ph]) => {
+      if (cancelled) return;
+      setRecontactCount(rec.status === 'fulfilled' ? (rec.value.data?.total ?? 0) : 0);
+      setWithPhoneCount(ph.status === 'fulfilled' ? (ph.value.data?.total ?? 0) : 0);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Filtro pronto "Da ricontattare": la lista È il piano di ricontatto
+  const applyRecontactFilter = () => {
+    setSegment('inactive');
+    setCustomerStatus(null);
+    setMarketingOptedIn(true);
+  };
 
   // ── Fetch overview ────────────────────────────────────────────────
   useEffect(() => {
@@ -221,24 +256,58 @@ export default function CustomerInsightsPage() {
         </Card>
       )}
 
-      {/* KPI grid */}
-      <KpiOverviewSection
-        kpis={overview?.kpis}
-        loading={overviewLoading}
-        period={overview?.period}
-        onSegmentDrill={onSegmentDrill}
-      />
-
-      {/* Concentration + segment side-by-side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ConcentrationCard data={overview?.concentration} loading={overviewLoading} currency={currency} />
-        <SegmentDistributionCard
-          segments={overview?.segments}
+      {/* CF6 — 4 numeri essenziali: come va + dove agire */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard
           loading={overviewLoading}
-          onSegmentClick={(s) => setSegment(s)}
-          currency={currency}
+          icon={Users}
+          label={t('essential.total', { defaultValue: 'Clienti totali' })}
+          value={overview?.concentration?.total_customers?.toLocaleString()}
+        />
+        <StatCard
+          loading={overviewLoading}
+          icon={UserPlus}
+          label={t('essential.new', { defaultValue: 'Nuovi (periodo)' })}
+          value={overview?.kpis?.new_customers?.value?.toLocaleString()}
+          delta={overview?.kpis?.new_customers?.delta_pct}
+        />
+        <button type="button" onClick={applyRecontactFilter} className="text-left"
+                title={t('essential.recontactHint', { defaultValue: 'Inattivi con consenso marketing: clicca per vedere la lista' })}>
+          <StatCard
+            loading={recontactCount === null}
+            icon={MessageCircle}
+            accent={Boolean(recontactCount)}
+            label={t('essential.recontact', { defaultValue: 'Da ricontattare' })}
+            value={recontactCount?.toLocaleString()}
+            sublabel={t('essential.recontactSub', { defaultValue: 'inattivi con consenso' })}
+          />
+        </button>
+        <StatCard
+          loading={withPhoneCount === null}
+          icon={Phone}
+          label={t('essential.withPhone', { defaultValue: 'Con telefono' })}
+          value={withPhoneCount?.toLocaleString()}
+          sublabel={t('essential.withPhoneSub', { defaultValue: 'raggiungibili su WhatsApp' })}
         />
       </div>
+
+      {/* CF6 — UN grafico: composizione clienti per segmento */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">{t('segments.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DonutSplit
+            height={190}
+            colors={SEGMENT_COLORS}
+            data={(overview?.segments || []).map((sg) => ({
+              key: sg.segment,
+              label: t(`segment.${sg.segment}`, { defaultValue: sg.segment }),
+              value: sg.count,
+            }))}
+          />
+        </CardContent>
+      </Card>
 
       {/* Customer table — filters live INSIDE the card so it's
           visually obvious they only affect this list, not the KPI
@@ -260,6 +329,37 @@ export default function CustomerInsightsPage() {
         marketingOptedIn={marketingOptedIn}
         onMarketingOptedInChange={setMarketingOptedIn}
       />
+
+      {/* CF6 — l'analitica pesante resta, ma non fa rumore: accordion chiuso */}
+      <div className="rounded-2xl border border-border">
+        <button
+          type="button"
+          onClick={() => setAdvancedOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/40 rounded-2xl transition-colors"
+        >
+          {t('essential.advanced', { defaultValue: 'Analisi avanzata (KPI dettagliati, concentrazione, ricavo per segmento)' })}
+          <ChevronDown className={`h-4 w-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {advancedOpen && (
+          <div className="p-4 pt-1 space-y-4">
+            <KpiOverviewSection
+              kpis={overview?.kpis}
+              loading={overviewLoading}
+              period={overview?.period}
+              onSegmentDrill={onSegmentDrill}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <ConcentrationCard data={overview?.concentration} loading={overviewLoading} currency={currency} />
+              <SegmentDistributionCard
+                segments={overview?.segments}
+                loading={overviewLoading}
+                onSegmentClick={(s) => setSegment(s)}
+                currency={currency}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Profile slide-over */}
       <CustomerProfileSlide

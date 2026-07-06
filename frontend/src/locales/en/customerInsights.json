@@ -161,7 +161,8 @@
     "nextPage": "Next",
     "noResults": "No customer matches the filters",
     "exportCsv": "Export CSV",
-    "exportCsvGdprHint": "The CSV includes an unsubscribe_url column with a one-click revocation link per customer. Use it as a merge tag in your marketing campaign footers (e.g. {{unsubscribe_url}} on Mailchimp / Brevo) to comply with GDPR Art. 7(3)."
+    "exportCsvGdprHint": "The CSV includes an unsubscribe_url column with a one-click revocation link per customer. Use it as a merge tag in your marketing campaign footers (e.g. {{unsubscribe_url}} on Mailchimp / Brevo) to comply with GDPR Art. 7(3).",
+    "columnContact": "Contact"
   },
   "profile": {
     "title": "Customer profile",
@@ -252,5 +253,15 @@
       "mailtoTooltip": "Opens the email program set as your system default (Mail / Outlook / Thunderbird). Only works if one is configured.",
       "hint": "Gmail web and Outlook web open the compose window in your browser (always works). \"Default mail\" only works if you have a system-default email program."
     }
+  },
+  "essential": {
+    "total": "Total customers",
+    "new": "New (period)",
+    "recontact": "To re-engage",
+    "recontactSub": "inactive with consent",
+    "recontactHint": "Inactive with marketing consent: click to see the list",
+    "withPhone": "With phone",
+    "withPhoneSub": "reachable on WhatsApp",
+    "advanced": "Advanced analysis (detailed KPIs, concentration, revenue by segment)"
   }
 }
