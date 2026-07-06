@@ -120,6 +120,15 @@ def _abs_image(url: Optional[str]) -> str:
 
 # ── Resolver per tipo di route ───────────────────────────────────────────────
 
+def _hub_hreflang(canonical: str) -> dict:
+    """Hub UI-translated in tutte e 4 le lingue (i18n files completi):
+    alternates piene, x-default italiano."""
+    out = {"it": canonical, "x-default": canonical}
+    for lang in ("en", "de", "fr"):
+        out[lang] = f"{canonical}?lang={lang}"
+    return out
+
+
 async def _meta_home() -> dict:
     base = _base_url()
     return {
@@ -128,6 +137,7 @@ async def _meta_home() -> dict:
                         "ed esperienze olistiche in tutta Italia: date, prezzi "
                         "e disponibilità reali, prenoti online con la caparra."),
         "canonical": f"{base}/",
+        "hreflang": _hub_hreflang(f"{base}/"),
         "image": f"{base}/logo-aurya.png",
         "jsonld": {
             "@context": "https://schema.org",
@@ -149,6 +159,7 @@ async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
                         "date, prezzi e posti disponibili. Prenota online "
                         "con la caparra su Aurya."),
         "canonical": f"{base}{path}",
+        "hreflang": _hub_hreflang(f"{base}{path}"),
         "image": f"{base}/logo-aurya.png",
     }
 
@@ -271,6 +282,7 @@ async def _meta_destination(place_slug: Optional[str] = None) -> dict:
                         ("Scegli la destinazione del tuo prossimo ritiro: i "
                          "luoghi con ritiri ed esperienze in programma su Aurya.")),
         "canonical": f"{base}{path}",
+        "hreflang": _hub_hreflang(f"{base}{path}"),
         "image": f"{base}/logo-aurya.png",
     }
 
@@ -286,6 +298,7 @@ async def _meta_experiences(category: Optional[str] = None) -> dict:
                         "dagli organizzatori di Aurya. Prenoti online, paghi "
                         "in sicurezza."),
         "canonical": f"{base}{path}",
+        "hreflang": _hub_hreflang(f"{base}{path}"),
         "image": f"{base}/logo-aurya.png",
     }
 
@@ -301,6 +314,7 @@ async def _meta_operators_index(category: Optional[str] = None) -> dict:
                         "olistiche su Aurya: profili, prossime date e "
                         "prenotazione online con caparra."),
         "canonical": f"{base}{path}",
+        "hreflang": _hub_hreflang(f"{base}{path}"),
         "image": f"{base}/logo-aurya.png",
     }
 
