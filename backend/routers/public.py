@@ -3777,6 +3777,15 @@ async def public_operator_profile(org_slug: str):
         "member_since": (str(org.get("created_at") or "")[:4] or None),
         "retreats_organized": await event_occurrences_collection.count_documents(
             {"organization_id": org_id, "status": {"$in": ["published", "closed"]}}),
+        # PR1 — carta d'identità
+        "tagline": pp.get("tagline"),
+        "portrait_url": pp.get("portrait_url"),
+        "photos": pp.get("photos") or [],
+        "founded_year": pp.get("founded_year"),
+        "languages": pp.get("languages") or [],
+        # PR2 — rating denormalizzato (None finché non ci sono recensioni)
+        "reviews_stats": org.get("reviews_stats"),
+        "reviews_open": bool(org.get("reviews_open")),
     }
     if pp.get("show_contacts"):
         out["contacts"] = {k: pp.get(k) for k in ("public_email", "public_phone")

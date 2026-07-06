@@ -26,7 +26,8 @@
     "suppliers": "Fournisseurs",
     "store_settings": "Paramètres du magasin",
     "stores": "Mes boutiques",
-    "newsletter": "Newsletter"
+    "newsletter": "Newsletter",
+    "public_profile": "Profil public"
   },
   "actions": {
     "save": "Enregistrer",

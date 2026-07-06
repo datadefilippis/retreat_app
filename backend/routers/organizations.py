@@ -1739,7 +1739,13 @@ _PUBLIC_PROFILE_FIELDS = {
     "bio": 600, "city": 80, "region": 40, "cover_url": 500,
     "instagram": 120, "website": 200, "facebook": 200,
     "public_email": 254, "public_phone": 40,
+    # PR1 — carta d'identità
+    "tagline": 80, "portrait_url": 500, "founded_year": 4,
 }
+
+# PR1 — campi LISTA (validati a parte: la whitelist sopra è solo stringhe)
+_PP_PHOTOS_MAX = 8
+_PP_LANGS = ("it", "en", "de", "fr", "es", "pt")
 
 PROFILE_COVER_DIR = os.path.join(
     os.path.dirname(ORG_LOGO_DIR), "profile-covers",
@@ -1753,6 +1759,8 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
         raise HTTPException(status_code=404, detail="Organization not found")
     pp = org_doc.get("public_profile") or {}
     return {**{k: pp.get(k) for k in _PUBLIC_PROFILE_FIELDS},
+            "photos": pp.get("photos") or [],
+            "languages": pp.get("languages") or [],
             "show_contacts": bool(pp.get("show_contacts"))}
 
 
@@ -1773,6 +1781,17 @@ async def update_public_profile(
                 updates[f"public_profile.{field}"] = val.strip()[:max_len]
     if "show_contacts" in body:
         updates["public_profile.show_contacts"] = bool(body["show_contacts"])
+    # PR1 — liste con validazione dedicata
+    if "photos" in body:
+        photos = body["photos"] if isinstance(body["photos"], list) else []
+        updates["public_profile.photos"] = [
+            str(u).strip()[:500] for u in photos
+            if isinstance(u, str) and u.strip()
+        ][:_PP_PHOTOS_MAX]
+    if "languages" in body:
+        langs = body["languages"] if isinstance(body["languages"], list) else []
+        updates["public_profile.languages"] = [
+            l for l in langs if l in _PP_LANGS][:6]
     if not updates:
         raise HTTPException(status_code=400, detail="Nessun campo valido")
 
@@ -1820,6 +1839,74 @@ async def upload_profile_cover(
         {"id": org_id}, {"$set": {"public_profile.cover_url": cover_url}},
     )
     return {"cover_url": cover_url}
+
+
+# PR1 — ritratto (foto a lato) + galleria: stesse difese della cover.
+# Le foto passano dalla pipeline WebP di S6 (save_public_upload).
+
+_PROFILE_IMG_EXT = {".jpg", ".jpeg", ".png", ".webp"}
+
+
+async def _read_profile_image(file: UploadFile) -> tuple:
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in _PROFILE_IMG_EXT:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Formato non supportato. Usa: {', '.join(sorted(_PROFILE_IMG_EXT))}")
+    if file.content_type and file.content_type not in ORG_LOGO_MIMES:
+        raise HTTPException(status_code=400,
+                            detail=f"Tipo file non supportato: {file.content_type}")
+    contents = await file.read()
+    if len(contents) > ORG_LOGO_MAX_BYTES:
+        raise HTTPException(status_code=400,
+                            detail="Immagine troppo grande. Max 2MB.")
+    return ext, contents
+
+
+@router.post("/current/public-profile/portrait")
+@limiter.limit("5/minute")
+async def upload_profile_portrait(
+    request: Request,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(require_admin),
+):
+    org_id = current_user["organization_id"]
+    ext, contents = await _read_profile_image(file)
+    from services.object_storage import save_public_upload
+    url = save_public_upload("profile-portraits", f"{org_id}{ext}", contents,
+                             content_type=f"image/{ext.lstrip('.')}")
+    from database import organizations_collection
+    await organizations_collection.update_one(
+        {"id": org_id}, {"$set": {"public_profile.portrait_url": url}})
+    return {"portrait_url": url}
+
+
+@router.post("/current/public-profile/photos")
+@limiter.limit("10/minute")
+async def upload_profile_photo(
+    request: Request,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(require_admin),
+):
+    """Aggiunge UNA foto alla galleria (max 8: il client manda un file
+    per volta, ordine gestito dal PATCH photos)."""
+    import uuid as _uuid
+    org_id = current_user["organization_id"]
+    ext, contents = await _read_profile_image(file)
+    from database import organizations_collection
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "public_profile.photos": 1})
+    photos = ((org or {}).get("public_profile") or {}).get("photos") or []
+    if len(photos) >= _PP_PHOTOS_MAX:
+        raise HTTPException(status_code=400,
+                            detail=f"Massimo {_PP_PHOTOS_MAX} foto in galleria")
+    from services.object_storage import save_public_upload
+    url = save_public_upload(
+        "profile-photos", f"{org_id}-{_uuid.uuid4().hex[:10]}{ext}", contents,
+        content_type=f"image/{ext.lstrip('.')}")
+    await organizations_collection.update_one(
+        {"id": org_id}, {"$push": {"public_profile.photos": url}})
+    return {"photos": photos + [url]}
 
 
 # ── O2 Onboarding operatore (5/7/2026) ───────────────────────────────────────

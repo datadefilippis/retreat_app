@@ -19,7 +19,10 @@ import {
 import { toast } from 'sonner';
 import api from '../../api/client';
 
-const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'facebook', 'public_email', 'public_phone'];
+const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'facebook', 'public_email', 'public_phone',
+  // PR1 — carta d'identità
+  'tagline', 'portrait_url', 'founded_year'];
+const PROFILE_LANGS = ['it', 'en', 'de', 'fr', 'es', 'pt'];
 
 export default function PublicProfilePage() {
   const { t } = useTranslation('settings');
@@ -69,6 +72,8 @@ export default function PublicProfilePage() {
       const payload = {};
       FIELDS.forEach(k => { payload[k] = form[k] || null; });
       payload.show_contacts = Boolean(form.show_contacts);
+      payload.photos = form.photos || [];
+      payload.languages = form.languages || [];
       const res = await api.patch('/organizations/current/public-profile', payload);
       setForm({ show_contacts: false, ...res.data });
       toast.success(t('publicProfile.saved', { defaultValue: 'Profilo salvato' }));
@@ -97,6 +102,40 @@ export default function PublicProfilePage() {
       setUploading(false);
     }
   };
+
+  // PR1 — ritratto (foto a lato nella carta d'identità)
+  const uploadPortrait = async (file) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await api.post('/organizations/current/public-profile/portrait', fd,
+        { headers: { 'Content-Type': 'multipart/form-data' } });
+      set('portrait_url', res.data.portrait_url);
+      toast.success(t('publicProfile.portraitUploaded', { defaultValue: 'Ritratto caricato' }));
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || t('publicProfile.coverError', { defaultValue: 'Errore nel caricamento' }));
+    } finally { setUploading(false); }
+  };
+
+  // PR1 — galleria (max 8, un file per volta; ordine = ordine di lista)
+  const uploadPhoto = async (file) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await api.post('/organizations/current/public-profile/photos', fd,
+        { headers: { 'Content-Type': 'multipart/form-data' } });
+      set('photos', res.data.photos);
+      toast.success(t('publicProfile.photoUploaded', { defaultValue: 'Foto aggiunta' }));
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || t('publicProfile.coverError', { defaultValue: 'Errore nel caricamento' }));
+    } finally { setUploading(false); }
+  };
+
+  const removePhoto = (url) => set('photos', (form.photos || []).filter(u => u !== url));
 
   const copyLink = async () => {
     if (!profileUrl) return;
@@ -183,6 +222,86 @@ export default function PublicProfilePage() {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* PR1 — Carta d'identità: tagline, ritratto, galleria, anno, lingue */}
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <div>
+              <Label>{t('publicProfile.tagline', { defaultValue: 'Tagline (una frase che ti descrive)' })}</Label>
+              <input
+                value={form.tagline || ''}
+                onChange={e => set('tagline', e.target.value.slice(0, 80))}
+                maxLength={80}
+                placeholder={t('publicProfile.taglinePlaceholder', { defaultValue: 'Es. "Yoga e silenzio tra gli ulivi di Ostuni"' })}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>{t('publicProfile.foundedYear', { defaultValue: 'Attivo dal (anno)' })}</Label>
+                <input
+                  value={form.founded_year || ''}
+                  onChange={e => set('founded_year', e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  inputMode="numeric" maxLength={4} placeholder="2018"
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <Label>{t('publicProfile.languages', { defaultValue: 'Lingue parlate' })}</Label>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {PROFILE_LANGS.map(l => {
+                    const active = (form.languages || []).includes(l);
+                    return (
+                      <button key={l} type="button"
+                        onClick={() => set('languages', active
+                          ? (form.languages || []).filter(x => x !== l)
+                          : [...(form.languages || []), l])}
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase transition-colors ${
+                          active ? 'bg-primary text-white' : 'border border-border text-muted-foreground hover:border-primary'}`}>
+                        {l}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            <div>
+              <Label>{t('publicProfile.portrait', { defaultValue: 'Ritratto (foto a lato del profilo)' })}</Label>
+              <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" id="pp-portrait"
+                     onChange={e => uploadPortrait(e.target.files?.[0])} />
+              <label htmlFor="pp-portrait"
+                     className="mt-1 block h-32 w-32 rounded-xl border-2 border-dashed border-border bg-muted/40 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors">
+                {form.portrait_url
+                  ? <img src={form.portrait_url} alt="" className="w-full h-full object-cover" />
+                  : <span className="h-full flex items-center justify-center text-xs text-muted-foreground px-2 text-center">
+                      {t('publicProfile.portraitHint', { defaultValue: 'Carica (max 2MB)' })}
+                    </span>}
+              </label>
+            </div>
+            <div>
+              <Label>{t('publicProfile.gallery', { defaultValue: 'Galleria foto (max 8)' })}</Label>
+              <div className="mt-1 grid grid-cols-4 gap-2">
+                {(form.photos || []).map(url => (
+                  <div key={url} className="relative h-20 rounded-lg overflow-hidden group">
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => removePhoto(url)}
+                            aria-label="Rimuovi"
+                            className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/60 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                  </div>
+                ))}
+                {(form.photos || []).length < 8 && (
+                  <>
+                    <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" id="pp-photo"
+                           onChange={e => { uploadPhoto(e.target.files?.[0]); e.target.value = ''; }} />
+                    <label htmlFor="pp-photo"
+                           className="h-20 rounded-lg border-2 border-dashed border-border bg-muted/40 flex items-center justify-center text-xl text-muted-foreground cursor-pointer hover:border-primary/50 transition-colors">+</label>
+                  </>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {t('publicProfile.galleryHint', { defaultValue: 'Ricorda: rimuovere una foto qui richiede Salva per rendere effettivo.' })}
+              </p>
             </div>
           </div>
 

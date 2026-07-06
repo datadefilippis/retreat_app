@@ -26,7 +26,8 @@
     "courses": "Courses",
     "events": "Events",
     "customers": "Customers",
-    "suppliers": "Suppliers"
+    "suppliers": "Suppliers",
+    "public_profile": "Public profile"
   },
   "actions": {
     "save": "Save",
