@@ -3609,6 +3609,11 @@ async def public_operator_profile(org_slug: str):
         "upcoming_count": len(upcoming),
         # F2.1 ecosistema — link allo store dell'operatore (se pubblicato)
         "store_slug": store.get("slug") if store.get("is_published", True) else None,
+        # M3 — segnali di fiducia: anzianita' e ritiri organizzati (tutti,
+        # anche passati: e' l'esperienza che conta)
+        "member_since": (str(org.get("created_at") or "")[:4] or None),
+        "retreats_organized": await event_occurrences_collection.count_documents(
+            {"organization_id": org_id, "status": {"$in": ["published", "closed"]}}),
     }
     if pp.get("show_contacts"):
         out["contacts"] = {k: pp.get(k) for k in ("public_email", "public_phone")

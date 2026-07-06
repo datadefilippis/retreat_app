@@ -523,7 +523,7 @@ export default function EventLandingPage() {
           <div className="text-white">
             {/* store name already shown in header; skip the eyebrow
                 here to avoid the duplicate label */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
               {product.name}
             </h1>
             {dt && (
@@ -555,14 +555,18 @@ export default function EventLandingPage() {
       {/* M2 — griglia foto (1 grande + 4): le foto vendono i ritiri */}
       {allPhotos.length > 1 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6">
-          <div className="grid grid-cols-4 grid-rows-2 gap-2 rounded-2xl overflow-hidden" style={{ height: 320 }}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 rounded-2xl overflow-hidden h-56 sm:h-80">
             <button type="button" onClick={() => setLightbox(0)}
                     className="col-span-2 row-span-2 relative group">
               <img src={allPhotos[0]} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
+              {/* mobile: le miniature sono nascoste — il contatore invita al lightbox */}
+              <span className="sm:hidden absolute bottom-2 right-2 rounded-full bg-black/60 text-white text-[11px] font-semibold px-2.5 py-1">
+                1 / {allPhotos.length}
+              </span>
             </button>
             {allPhotos.slice(1, 5).map((url, i) => (
               <button key={i} type="button" onClick={() => setLightbox(i + 1)}
-                      className="relative group">
+                      className="relative group hidden sm:block">
                 <img src={url} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
                 {i === 3 && allPhotos.length > 5 && (
                   <span className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-sm font-semibold">
@@ -800,7 +804,7 @@ export default function EventLandingPage() {
         </div>
 
         {/* Right column — tiers + checkout (sticky on desktop) */}
-        <aside className="md:sticky md:top-20 md:self-start space-y-4">
+        <aside id="prenota" className="md:sticky md:top-20 md:self-start space-y-4 scroll-mt-20">
           {!isBuyable ? (
             <div className="rounded-xl border-2 border-red-200 bg-red-50 p-5 text-center">
               <p className="text-lg font-bold text-red-900 mb-1">{t('landings:event.soldOutTitle')}</p>
@@ -923,6 +927,32 @@ export default function EventLandingPage() {
             </span>
           </Link>
         </section>
+      )}
+
+      {/* M6 — mobile: prezzo+CTA sempre a portata di pollice */}
+      {isBuyable && (
+        <div className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 flex items-center justify-between gap-3">
+          <div className="leading-tight">
+            {(() => {
+              const base = occurrence.price_override ?? product.unit_price;
+              return base != null ? (<>
+                <span className="text-[11px] text-gray-500 block">
+                  {t('landings:calendar.from', { defaultValue: 'da' })}
+                </span>
+                <span className="font-bold text-gray-900">{Number(base).toLocaleString('it-IT')} €</span>
+              </>) : (
+                <span className="text-sm text-gray-600">{t('landings:event.tiersHeading')}</span>
+              );
+            })()}
+          </div>
+          <button
+            type="button"
+            onClick={() => document.getElementById('prenota')?.scrollIntoView({ block: 'start' })}
+            className="rounded-full bg-accent text-accent-foreground px-6 py-2.5 text-sm font-bold shadow-md"
+          >
+            {t('landings:event.mobileBook', { defaultValue: 'Prenota' })}
+          </button>
+        </div>
       )}
 
       <footer className="max-w-4xl mx-auto px-4 sm:px-6 py-8 text-center text-xs text-gray-500">

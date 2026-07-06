@@ -104,12 +104,25 @@ export default function OperatorProfilePage() {
             <img src={data.logo_url} alt="" className="h-16 w-16 rounded-full object-cover bg-white/10 border-2 border-white/40" />
           )}
           <div>
-            <h1 className="text-2xl font-bold">{data.name}</h1>
+            <h1 className="font-display text-3xl font-bold">{data.name}</h1>
             {(data.city || data.region) && (
               <p className="text-white/80 text-sm mt-0.5">
                 {[data.city, data.region].filter(Boolean).join(', ')}
               </p>
             )}
+            {/* M3 — segnali di fiducia: la valuta dei marketplace */}
+            <div className="flex flex-wrap items-center gap-2 mt-2.5">
+              {data.member_since && (
+                <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
+                  ✓ {t('landings:operator.memberSince', { defaultValue: 'Organizzatore dal {{year}}', year: data.member_since })}
+                </span>
+              )}
+              {data.retreats_organized > 0 && (
+                <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
+                  🧘 {t('landings:operator.retreatsOrganized', { defaultValue: '{{count}} ritiri organizzati', count: data.retreats_organized })}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </header>

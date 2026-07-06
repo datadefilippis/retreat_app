@@ -332,7 +332,8 @@
     "morePhotos": "Fotos",
     "trustSecure": "Sichere Kartenzahlung — deine Daten gehen nie an den Veranstalter.",
     "trustDeposit": "Wo vorgesehen, sicherst du dir den Platz mit einer Anzahlung und zahlst den Rest später.",
-    "trustTicket": "Ticket und Erinnerungen per E-Mail, direkt nach der Buchung."
+    "trustTicket": "Ticket und Erinnerungen per E-Mail, direkt nach der Buchung.",
+    "mobileBook": "Buchen"
   },
   "product": {
     "loading": "Laden…",
@@ -467,7 +468,10 @@
     "backToCalendar": "Alle Retreats ansehen",
     "upcoming": "Kommende Retreats",
     "upcoming_plural": "Kommende Retreats ({{count}})",
-    "noUpcoming": "Derzeit keine Retreats geplant. Schau bald wieder vorbei."
+    "noUpcoming": "Derzeit keine Retreats geplant. Schau bald wieder vorbei.",
+    "memberSince": "Veranstalter seit {{year}}",
+    "retreatsOrganized_one": "{{count}} Retreat organisiert",
+    "retreatsOrganized_other": "{{count}} Retreats organisiert"
   },
   "account": {
     "title": "Meine Buchungen",

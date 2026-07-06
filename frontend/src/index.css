@@ -207,3 +207,15 @@ body {
         box-sizing: border-box !important;
     }
 }
+
+/* ── M5 (marketplace design) — tipografia display per i titoli PUBBLICI.
+   Serif umanista di sistema: calore olistico, zero font da scaricare.
+   Si applica con la classe .font-display sui soli titoli lato
+   viaggiatore (hero directory, titolo landing, nome operatore). */
+@layer utilities {
+    .font-display {
+        font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino,
+                     Georgia, Cambria, 'Times New Roman', serif;
+        letter-spacing: -0.01em;
+    }
+}
