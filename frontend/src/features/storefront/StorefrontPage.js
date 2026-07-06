@@ -1045,6 +1045,19 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     }
   }, [formOpen, mktpCheckout, navigate]);
 
+  // K1+ — riapertura del checkout in contesto marketplace dal banner
+  // della landing (carrello gia' pieno: niente preload prodotto).
+  useEffect(() => {
+    const mo = location.state?.mktpOpen;
+    if (!mo) return;
+    if (selectedItems.length === 0) return;   // aspetta l'idratazione del carrello
+    setMktpCheckout({ returnTo: mo.returnTo || '/ritiri' });
+    try { sessionStorage.setItem('storefront:mktp_ctx', '1'); } catch { /* no-op */ }
+    setFormOpen(true);
+    window.history.replaceState({}, '', window.location.pathname + window.location.search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state, selectedItems.length]);
+
   // Deep-link trigger: `?checkout=1` opens the modal from any entry point
   // (OpenCheckoutButton, toast action, shared link). Consumed once and
   // stripped from the URL so a refresh does not re-open the checkout.

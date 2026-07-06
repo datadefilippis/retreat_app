@@ -537,7 +537,8 @@ export default function EventLandingPage() {
           customers a clear way to exit the multi-add flow and proceed. */}
       {cartCount > 0 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
-          <OpenCheckoutButton slug={orgSlug} itemCount={cartCount} variant="landing" />
+          <OpenCheckoutButton slug={orgSlug} itemCount={cartCount} variant="landing"
+            mktpReturnTo={!fromStore ? window.location.pathname : null} />
         </div>
       )}
 

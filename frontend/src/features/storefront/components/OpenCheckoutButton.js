@@ -44,16 +44,22 @@ export default function OpenCheckoutButton({
   itemCount,
   variant = 'bar',
   className = '',
+  // K1+ — contesto marketplace: il checkout si apre col SIPARIO (la
+  // vetrina resta invisibile) e alla chiusura si torna a questo path.
+  mktpReturnTo = null,
 }) {
   const { t } = useTranslation('storefront');
   if (!slug || !itemCount) return null;
 
   const href = `/s/${encodeURIComponent(slug)}?checkout=1`;
+  const linkProps = mktpReturnTo
+    ? { to: `/s/${encodeURIComponent(slug)}`, state: { mktpOpen: { returnTo: mktpReturnTo } } }
+    : { to: href };
 
   if (variant === 'landing') {
     return (
       <Link
-        to={href}
+        {...linkProps}
         className={`flex items-center justify-between gap-3 rounded-xl bg-[var(--sf-accent,#111827)] text-[var(--sf-accent-fg,#ffffff)] px-4 py-3 shadow-md hover:bg-[var(--sf-accent-hover,#1f2937)] transition-colors ${className}`}
       >
         <span className="flex items-center gap-2 font-semibold text-sm">
