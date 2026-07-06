@@ -1,5 +1,5 @@
 import React from 'react';
-import { BRAND_NAME } from '../config/brand';
+import { BRAND_NAME, BRAND_MOTTO } from '../config/brand';
 
 /**
  * BrandLogo — il marchio Aurya (loto + sole nel cerchio dorato) con
@@ -22,14 +22,19 @@ import { BRAND_NAME } from '../config/brand';
  *   className  classi extra per il wrapper
  */
 export function BrandLogo({ size = 'md', variant = 'dark', className = '' }) {
+  // Wordmark in capitali romane (Cinzel, stile Trajan) molto spaziate +
+  // motto sotto, come da direzione visiva del founder (13/7/2026).
+  // Il motto compare da 'sm' in su: nella sidebar (xs) non ci sta.
   const SIZE_MAP = {
-    xs: { icon: 'h-[42px]', word: 'text-xl' },   // sidebar
-    sm: { icon: 'h-[52px]', word: 'text-2xl' },
-    md: { icon: 'h-[64px]', word: 'text-3xl' },  // pagine auth
+    xs: { icon: 'h-[42px]', word: 'text-lg',  motto: null },          // sidebar
+    sm: { icon: 'h-[52px]', word: 'text-2xl', motto: 'text-[9px]' },
+    md: { icon: 'h-[64px]', word: 'text-3xl', motto: 'text-[11px]' }, // pagine auth
   };
-  const { icon: iconHeight, word: wordSize } = SIZE_MAP[size] || SIZE_MAP.md;
+  const { icon: iconHeight, word: wordSize, motto: mottoSize } = SIZE_MAP[size] || SIZE_MAP.md;
 
-  const wordColor = variant === 'light' ? 'text-white' : 'text-foreground';
+  // Oro del wordmark: profondo su sfondi chiari, chiaro su sfondi scuri.
+  const gold = variant === 'light' ? 'text-[#cbb578]' : 'text-[#8a7440]';
+  const goldSoft = variant === 'light' ? 'text-[#cbb578]/80' : 'text-[#8a7440]/80';
 
   // Nitidezza su mobile (composite-layer rasterisation, vedi storia del
   // file): il PNG 512px scala bene, i due hint restano innocui altrove.
@@ -40,7 +45,7 @@ export function BrandLogo({ size = 'md', variant = 'dark', className = '' }) {
   };
 
   return (
-    <div className={`flex items-center gap-2.5 ${className}`}>
+    <div className={`flex items-center gap-3 ${className}`}>
       <img
         src="/logo-aurya-512.png"
         alt=""
@@ -49,8 +54,15 @@ export function BrandLogo({ size = 'md', variant = 'dark', className = '' }) {
         style={crispImg}
         draggable={false}
       />
-      <span className={`${wordSize} ${wordColor} font-bold tracking-tight select-none`}>
-        {BRAND_NAME}
+      <span className="flex flex-col select-none">
+        <span className={`font-brand font-medium uppercase leading-none tracking-[0.3em] ${wordSize} ${gold}`}>
+          {BRAND_NAME}
+        </span>
+        {mottoSize && (
+          <span className={`font-brand uppercase tracking-[0.32em] mt-1.5 ${mottoSize} ${goldSoft}`}>
+            {BRAND_MOTTO}
+          </span>
+        )}
       </span>
     </div>
   );

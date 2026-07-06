@@ -1552,7 +1552,8 @@ _BASE_STYLE = """
   .container { max-width: 560px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e7e1d4; }
   .header { background: #376254; background: linear-gradient(135deg, #376254, #2e564e); padding: 26px 32px; }
   .header h1 { color: #f8f5ef; font-size: 21px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
-  .header .glyph { font-size: 18px; margin-right: 6px; }
+  .header .wordmark { font-family: 'Cinzel', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; text-transform: uppercase; letter-spacing: 0.3em; font-weight: 500; font-size: 22px; color: #cbb578; vertical-align: middle; }
+  .header .motto { margin: 7px 0 0; font-family: 'Cinzel', 'Palatino Linotype', Georgia, serif; text-transform: uppercase; letter-spacing: 0.3em; font-size: 10px; color: rgba(203,181,120,0.85); }
   .header .via { margin: 4px 0 0; font-size: 12px; color: rgba(248,245,239,0.75); }
   .body { padding: 32px; color: #37463f; font-size: 15px; line-height: 1.65; }
   .body p { margin: 0 0 16px; }
@@ -1582,9 +1583,11 @@ def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, st
                 f'border-radius:50%;margin-right:9px;" />')
     if store_name:
         header_html = (f'<h1>{store_name}</h1>'
-                       f'<p class="via">{logo_img}via Aurya</p>')
+                       f'<p class="via">{logo_img}via '
+                       f'<span class="wordmark" style="font-size:13px;">Aurya</span></p>')
     else:
-        header_html = f'<h1>{logo_img}Aurya</h1>'
+        header_html = (f'<h1>{logo_img}<span class="wordmark">Aurya</span></h1>'
+                       f'<p class="motto">Connect. Heal. Grow.</p>')
     return f"""<!DOCTYPE html>
 <html lang="{lang}">
 <head><meta charset="utf-8">{_BASE_STYLE}</head>
