@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import { storefrontAPI } from '../../api/storefront';
@@ -223,7 +223,31 @@ export function CheckoutSuccessPage() {
         <h2 className="text-xl font-bold text-gray-900">{title}</h2>
         <p className="text-gray-600 mt-2">{description}</p>
         <OrderSummary status={status} />
-        <StoreBackLink storeSlug={status?.store_slug} storeName={status?.store_name} />
+
+        {/* K3 — contesto marketplace (flag messo dal checkout mktp):
+            il viaggio continua sulla piattaforma, non nella vetrina */}
+        {(() => {
+          let mktp = false;
+          try { mktp = sessionStorage.getItem('storefront:mktp_ctx') === '1'; } catch { /* no-op */ }
+          if (!mktp) return null;
+          return (
+            <div className="mt-6 space-y-2">
+              <Link to="/account/accedi"
+                className="block w-full rounded-full bg-primary text-white px-5 py-2.5 text-sm font-bold hover:opacity-90">
+                🌿 {t('storefront:checkoutResult.activatePassport', { defaultValue: 'Attiva il tuo Passaporto — tutti i tuoi viaggi in un posto solo' })}
+              </Link>
+              <Link to="/ritiri"
+                className="block w-full rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary">
+                {t('storefront:checkoutResult.backToRetreats', { defaultValue: 'Torna ai ritiri' })}
+              </Link>
+            </div>
+          );
+        })()}
+
+        {(() => {
+          try { if (sessionStorage.getItem('storefront:mktp_ctx') === '1') return null; } catch { /* no-op */ }
+          return <StoreBackLink storeSlug={status?.store_slug} storeName={status?.store_name} />;
+        })()}
       </div>
     </div>
   );

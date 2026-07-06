@@ -180,8 +180,31 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
 
   const needsTierSelection = hasTiers && totalSeats === 0;
 
-  const handleProceed = () => {
+  // K5 — carrello aperto di un ALTRO operatore? Un checkout serve un
+  // operatore alla volta (un direct charge per org): meglio dirlo prima.
+  const findOtherCartSlug = () => {
+    try {
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (!k || !k.startsWith('storefront:cart:')) continue;
+        const other = k.slice('storefront:cart:'.length);
+        if (other === orgSlug) continue;
+        const items = JSON.parse(sessionStorage.getItem(k) || '[]');
+        if (Array.isArray(items) && items.length > 0) return other;
+      }
+    } catch { /* storage inaccessibile: nessun avviso */ }
+    return null;
+  };
+  const [otherCartSlug, setOtherCartSlug] = useState(null);
+  // contesto negozio? (param dei link delle card store — vedi M1)
+  const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
+
+  const handleProceed = (skipOtherCartCheck = false) => {
     if (needsTierSelection) return;
+    if (!skipOtherCartCheck) {
+      const other = findOtherCartSlug();
+      if (other) { setOtherCartSlug(other); return; }
+    }
     // F3: pass the full tier_quantities map so StorefrontPage can
     // hydrate a multi-tier cart. Legacy single-tier/plain path is
     // backward-compatible via the `qty` field.
@@ -197,6 +220,15 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
         if (Number(q) > 0) tq[tid] = Number(q);
       }
       preloadCart.tier_quantities = tq;
+    }
+    if (!fromStore) {
+      // K1 — contesto MARKETPLACE: il checkout si apre subito, senza
+      // passare per la vetrina; alla chiusura si torna QUI.
+      preloadCart.openCheckout = true;
+      preloadCart.mktp = true;
+      preloadCart.returnTo = window.location.pathname;
+      navigate(`/s/${orgSlug}`, { state: { preloadCart } });
+      return;
     }
     navigate(`/s/${orgSlug}`, { state: { preloadCart } });
     toast.success(t('landings:event.toastAdded'), {
@@ -218,6 +250,7 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
     : [];
 
   return (
+    <>
     <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3 shadow-sm">
       <div>
         <h3 className="font-semibold text-gray-900">{t('landings:event.summaryHeading')}</h3>
@@ -275,7 +308,7 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
 
       <button
         type="button"
-        onClick={handleProceed}
+        onClick={() => handleProceed(false)}
         disabled={needsTierSelection}
         className="w-full rounded-md bg-[var(--sf-accent,#111827)] text-[var(--sf-accent-fg,#ffffff)] px-4 py-3 text-sm font-semibold hover:bg-[var(--sf-accent-hover,#1f2937)] disabled:opacity-50 flex items-center justify-center gap-2"
       >
@@ -289,6 +322,36 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
         {t('landings:event.checkoutHint')}
       </p>
     </div>
+    {/* K5 — avviso: hai gia' un carrello con un altro operatore */}
+      {otherCartSlug && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+             role="dialog" aria-modal="true" onClick={() => setOtherCartSlug(null)}>
+          <div className="max-w-sm w-full rounded-2xl bg-white p-5 shadow-xl"
+               onClick={(e) => e.stopPropagation()}>
+            <p className="font-semibold text-gray-900 mb-1.5">
+              {t('landings:event.otherCartTitle', { defaultValue: 'Hai un altro carrello aperto' })}
+            </p>
+            <p className="text-sm text-gray-600 mb-4">
+              {t('landings:event.otherCartBody', {
+                defaultValue: 'Si acquista da un organizzatore alla volta: ogni prenotazione va direttamente al suo organizzatore. L\'altro carrello resta salvato — puoi completarlo dopo.',
+              })}
+            </p>
+            <div className="space-y-2">
+              <button type="button"
+                onClick={() => { setOtherCartSlug(null); handleProceed(true); }}
+                className="w-full rounded-full bg-accent text-accent-foreground px-4 py-2.5 text-sm font-bold">
+                {t('landings:event.otherCartContinue', { defaultValue: 'Continua con questo ritiro' })}
+              </button>
+              <button type="button"
+                onClick={() => navigate(`/s/${otherCartSlug}?checkout=1`)}
+                className="w-full rounded-full border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary">
+                {t('landings:event.otherCartFinish', { defaultValue: 'Completa prima l\'altro carrello' })}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

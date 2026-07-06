@@ -248,7 +248,9 @@
     "pendingDesc": "Nous confirmons la commande. Cela peut prendre quelques secondes…",
     "lateWebhookDesc": "Le paiement a été reçu. La confirmation finale de la commande sera envoyée par email.",
     "cancelTitle": "Paiement non complété",
-    "cancelDesc": "Le paiement n'a pas été complété. Votre demande a été enregistrée quand même et vous serez contacté pour continuer."
+    "cancelDesc": "Le paiement n'a pas été complété. Votre demande a été enregistrée quand même et vous serez contacté pour continuer.",
+    "activatePassport": "Active ton Passeport — tous tes voyages au même endroit",
+    "backToRetreats": "Retour aux retraites"
   },
   "cards": {
     "common": {
@@ -409,7 +411,8 @@
       "passwordMismatch": "Les deux mots de passe ne correspondent pas",
       "confirmEmailHint": "Vous recevrez un email pour confirmer l'inscription. La commande sera quand même soumise.",
       "passwordRequirementsToast": "Le mot de passe ne respecte pas les exigences minimales."
-    }
+    },
+    "passportHint": "Tous tes voyages au même endroit : après l'achat tu reçois par e-mail le lien vers ton Passeport — sans mot de passe."
   },
   "home": {
     "aboutCta": "Qui sommes-nous",

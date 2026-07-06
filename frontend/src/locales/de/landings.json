@@ -333,7 +333,11 @@
     "trustSecure": "Sichere Kartenzahlung — deine Daten gehen nie an den Veranstalter.",
     "trustDeposit": "Wo vorgesehen, sicherst du dir den Platz mit einer Anzahlung und zahlst den Rest später.",
     "trustTicket": "Ticket und Erinnerungen per E-Mail, direkt nach der Buchung.",
-    "mobileBook": "Buchen"
+    "mobileBook": "Buchen",
+    "otherCartTitle": "Du hast einen weiteren offenen Warenkorb",
+    "otherCartBody": "Du kaufst bei einem Veranstalter nach dem anderen: jede Buchung geht direkt an ihren Veranstalter. Dein anderer Warenkorb bleibt gespeichert — du kannst ihn später abschließen.",
+    "otherCartContinue": "Mit diesem Retreat fortfahren",
+    "otherCartFinish": "Erst den anderen Warenkorb abschließen"
   },
   "product": {
     "loading": "Laden…",
