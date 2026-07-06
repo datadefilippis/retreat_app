@@ -327,7 +327,12 @@
     },
     "faq": {
       "heading": "Häufige Fragen"
-    }
+    },
+    "share": "Teilen",
+    "morePhotos": "Fotos",
+    "trustSecure": "Sichere Kartenzahlung — deine Daten gehen nie an den Veranstalter.",
+    "trustDeposit": "Wo vorgesehen, sicherst du dir den Platz mit einer Anzahlung und zahlst den Rest später.",
+    "trustTicket": "Ticket und Erinnerungen per E-Mail, direkt nach der Buchung."
   },
   "product": {
     "loading": "Laden…",
@@ -500,5 +505,20 @@
     "cammini": "Wandern & Natur",
     "femminile": "Frauenkreise",
     "aziendale": "Betriebliches Wohlbefinden"
+  },
+  "marketplace": {
+    "tagline": "Finde und buche holistische Retreats weltweit — mit Anzahlung, sorgenfrei.",
+    "searchShortcut": "Wo? · Wann? · Welches Retreat?",
+    "forOrganizers": "Bist du Veranstalter?",
+    "myTrips": "Meine Reisen",
+    "signIn": "Anmelden",
+    "securePayment": "Sichere Zahlung",
+    "footerExplore": "Entdecken",
+    "footerAll": "Alle Retreats",
+    "footerAccount": "Dein Konto",
+    "footerOrganizers": "Veranstalter",
+    "startSelling": "Bring deine Retreats online",
+    "operatorLogin": "Veranstalter-Bereich",
+    "terms": "AGB"
   }
 }

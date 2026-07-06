@@ -327,7 +327,12 @@
     "viewProfile": "Vedi profilo",
     "findMoreRetreats": "Scopri altri ritiri",
     "autoTranslated": "Contenuti tradotti automaticamente dall'italiano.",
-    "seeOriginal": "Vedi originale"
+    "seeOriginal": "Vedi originale",
+    "share": "Condividi",
+    "morePhotos": "foto",
+    "trustSecure": "Pagamento sicuro con carta — i tuoi dati non passano mai dall'organizzatore.",
+    "trustDeposit": "Dove previsto, blocchi il posto con la caparra e saldi più avanti.",
+    "trustTicket": "Biglietto e promemoria via email, subito dopo la prenotazione."
   },
   "product": {
     "loading": "Caricamento…",
@@ -500,5 +505,20 @@
     "cammini": "Cammini & Natura",
     "femminile": "Cerchi & Femminile",
     "aziendale": "Benessere aziendale"
+  },
+  "marketplace": {
+    "tagline": "Trova e prenota ritiri olistici in tutto il mondo — con caparra, senza pensieri.",
+    "searchShortcut": "Dove? · Quando? · Che ritiro?",
+    "forOrganizers": "Sei un organizzatore?",
+    "myTrips": "I miei viaggi",
+    "signIn": "Accedi",
+    "securePayment": "Pagamento sicuro",
+    "footerExplore": "Esplora",
+    "footerAll": "Tutti i ritiri",
+    "footerAccount": "Il tuo account",
+    "footerOrganizers": "Organizzatori",
+    "startSelling": "Porta i tuoi ritiri online",
+    "operatorLogin": "Area operatori",
+    "terms": "Termini"
   }
 }

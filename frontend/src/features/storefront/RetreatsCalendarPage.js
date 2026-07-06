@@ -17,6 +17,7 @@ import useSeoMeta from './lib/useSeoMeta';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import GeoSearchBar from './components/GeoSearchBar';
+import MarketplaceShell from './components/MarketplaceShell';
 // G3 — vista mappa lazy (Leaflet caricato solo quando serve)
 const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'));
 
@@ -180,29 +181,12 @@ export default function RetreatsCalendarPage() {
   const selCls = 'rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm focus:border-primary focus:outline-none';
 
   return (
-    <div className="min-h-screen bg-background">
+    <MarketplaceShell noSearch>
+    <div className="bg-background">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <header className="bg-gradient-sidebar text-white">
         <div className="max-w-6xl mx-auto px-4 pt-12 pb-8">
-          {/* UX round 5/7 — selettore lingua in alto: la directory parla
-              la lingua del visitatore (UI subito, contenuti via F5) */}
-          <div className="flex justify-end -mt-6 mb-4">
-            <div className="inline-flex rounded-full bg-white/10 p-0.5">
-              {['it', 'en', 'de', 'fr'].map(l => (
-                <button
-                  key={l}
-                  onClick={() => i18n.changeLanguage(l)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold uppercase transition-colors ${
-                    (i18n.language || 'it').startsWith(l)
-                      ? 'bg-white text-gray-900'
-                      : 'text-white/70 hover:text-white'
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* M1 — il selettore lingua ora vive nell'header del guscio */}
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
             {catLabel || region
               ? seoTitle.replace(' — prenota online', '')
@@ -250,7 +234,7 @@ export default function RetreatsCalendarPage() {
       </header>
 
       {/* ── Barra filtri sticky ──────────────────────────────────────── */}
-      <div className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
+      <div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-2">
           {/* G3 — "Dove?" con autocomplete+raggio al posto delle regioni
               (gli eventi possono essere in tutto il mondo) */}
@@ -441,5 +425,6 @@ export default function RetreatsCalendarPage() {
         )}
       </main>
     </div>
+    </MarketplaceShell>
   );
 }

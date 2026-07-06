@@ -39,6 +39,7 @@ import { effectivePlan } from './lib/paymentPlan';
 import useSeoMeta from './lib/useSeoMeta';
 import api from '../../api/client';
 import StoreContextNav from './components/StoreContextNav';
+import MarketplaceShell from './components/MarketplaceShell';
 // G4 — mappa lazy: Leaflet non pesa sul first paint della landing
 const StaticMiniMap = React.lazy(() => import('./components/StaticMiniMap'));
 
@@ -299,6 +300,7 @@ export default function EventLandingPage() {
   // 7/7 — contesto negozio: i link delle card store portano ?store=1;
   // la landing mantiene la barra menu dello store (mai uscire).
   const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
+  const [lightbox, setLightbox] = useState(null);   // indice foto aperta | null
 
   const { t, i18n } = useTranslation('landings');
   const cartCount = useCartCount(orgSlug);
@@ -429,31 +431,43 @@ export default function EventLandingPage() {
   const { product, occurrence, is_buyable: isBuyable, store_info: storeInfo, org_name: orgName, currency } = data;
   const effectiveCurrency = product.currency || 'EUR';
   const heroImage = occurrence.cover_image_url || product.image_url;
+  // M2 — le foto vendono i ritiri: cover + galleria in un'unica griglia
+  // hero stile marketplace; lightbox senza dipendenze.
+  const allPhotos = [heroImage, ...(occurrence.gallery_urls || [])]
+    .filter(Boolean)
+    .filter((u, i, a) => a.indexOf(u) === i);
 
+  // M1 — doppio guscio: store (?store=1) tiene header+nav del negozio;
+  // marketplace (directory, Google, link condivisi) indossa il guscio
+  // comune: "dentro il marketplace non ti perdi mai".
+  const Wrap = fromStore ? React.Fragment : MarketplaceShell;
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Persistent storefront header — consistent brand across surfaces.
-          Logo + store name click back to /s/:orgSlug (home). */}
-      <StorefrontHeader
-        orgSlug={orgSlug}
-        storeInfo={storeInfo}
-        orgName={orgName}
-        subtitle={t('landings:event.headerSubtitle')}
-        rightSlot={
-          <Link
-            to={`/s/${orgSlug}`}
-            className="text-xs sm:text-sm font-medium opacity-80 hover:opacity-100 underline-offset-2 hover:underline inline-flex items-center gap-2"
-            style={storeInfo?.brand_color ? { color: storeInfo.brand_color_text || '#fff' } : { color: '#374151' }}
-          >
-            <span>{t('landings:event.catalogLink')}</span>
-            {cartCount > 0 && (
-              <span className="inline-flex items-center rounded-full bg-white text-gray-900 text-[10px] font-bold px-2 py-0.5">
-                🛒 {cartCount}
-              </span>
-            )}
-          </Link>
-        }
-      />
+    <Wrap>
+    <div className={fromStore ? 'min-h-screen bg-gray-50' : 'bg-gray-50'}>
+      {fromStore && (<>
+        {/* Persistent storefront header — consistent brand across surfaces.
+            Logo + store name click back to /s/:orgSlug (home). */}
+        <StorefrontHeader
+          orgSlug={orgSlug}
+          storeInfo={storeInfo}
+          orgName={orgName}
+          subtitle={t('landings:event.headerSubtitle')}
+          rightSlot={
+            <Link
+              to={`/s/${orgSlug}`}
+              className="text-xs sm:text-sm font-medium opacity-80 hover:opacity-100 underline-offset-2 hover:underline inline-flex items-center gap-2"
+              style={storeInfo?.brand_color ? { color: storeInfo.brand_color_text || '#fff' } : { color: '#374151' }}
+            >
+              <span>{t('landings:event.catalogLink')}</span>
+              {cartCount > 0 && (
+                <span className="inline-flex items-center rounded-full bg-white text-gray-900 text-[10px] font-bold px-2 py-0.5">
+                  🛒 {cartCount}
+                </span>
+              )}
+            </Link>
+          }
+        />
+      </>)}
       {fromStore && <StoreContextNav slug={orgSlug} />}
 
       {/* "Vai al checkout" banner — appears when the cart has items. Gives
@@ -461,6 +475,38 @@ export default function EventLandingPage() {
       {cartCount > 0 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
           <OpenCheckoutButton slug={orgSlug} itemCount={cartCount} variant="landing" />
+        </div>
+      )}
+
+      {/* M2 — breadcrumb + condividi (solo guscio marketplace) */}
+      {!fromStore && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3 pb-1 flex items-center justify-between gap-2">
+          <nav className="text-xs text-gray-500 truncate">
+            <Link to="/ritiri" className="hover:text-primary hover:underline">
+              {t('landings:calendar.title', { defaultValue: 'Ritiri' })}
+            </Link>
+            {product.category && (<>
+              <span className="mx-1.5" aria-hidden>›</span>
+              <Link to={`/ritiri?categoria=${product.category}`} className="hover:text-primary hover:underline">
+                {t(`landings:categories.${product.category}`, { defaultValue: product.category })}
+              </Link>
+            </>)}
+            <span className="mx-1.5" aria-hidden>›</span>
+            <span className="text-gray-700">{product.name}</span>
+          </nav>
+          <button
+            type="button"
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({ title: product.name, url: window.location.href }).catch(() => {});
+              } else {
+                navigator.clipboard?.writeText(window.location.href);
+              }
+            }}
+            className="shrink-0 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:border-primary hover:text-primary transition-colors"
+          >
+            {t('landings:event.share', { defaultValue: 'Condividi' })} ↗
+          </button>
         </div>
       )}
 
@@ -505,6 +551,52 @@ export default function EventLandingPage() {
           </div>
         </div>
       </div>
+
+      {/* M2 — griglia foto (1 grande + 4): le foto vendono i ritiri */}
+      {allPhotos.length > 1 && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6">
+          <div className="grid grid-cols-4 grid-rows-2 gap-2 rounded-2xl overflow-hidden" style={{ height: 320 }}>
+            <button type="button" onClick={() => setLightbox(0)}
+                    className="col-span-2 row-span-2 relative group">
+              <img src={allPhotos[0]} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
+            </button>
+            {allPhotos.slice(1, 5).map((url, i) => (
+              <button key={i} type="button" onClick={() => setLightbox(i + 1)}
+                      className="relative group">
+                <img src={url} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
+                {i === 3 && allPhotos.length > 5 && (
+                  <span className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-sm font-semibold">
+                    +{allPhotos.length - 5} {t('landings:event.morePhotos', { defaultValue: 'foto' })}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* M2 — lightbox essenziale, zero dipendenze */}
+      {lightbox != null && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+             role="dialog" aria-modal="true"
+             onClick={() => setLightbox(null)}>
+          <button type="button" aria-label="Chiudi"
+                  className="absolute top-4 right-5 text-white text-3xl leading-none"
+                  onClick={() => setLightbox(null)}>×</button>
+          {allPhotos.length > 1 && (<>
+            <button type="button" aria-label="Precedente"
+                    className="absolute left-3 text-white text-4xl px-3 py-6"
+                    onClick={(e) => { e.stopPropagation(); setLightbox((lightbox - 1 + allPhotos.length) % allPhotos.length); }}>‹</button>
+            <button type="button" aria-label="Successiva"
+                    className="absolute right-3 text-white text-4xl px-3 py-6"
+                    onClick={(e) => { e.stopPropagation(); setLightbox((lightbox + 1) % allPhotos.length); }}>›</button>
+          </>)}
+          <img src={allPhotos[lightbox]} alt=""
+               className="max-h-full max-w-full object-contain rounded-lg"
+               onClick={(e) => e.stopPropagation()} />
+          <span className="absolute bottom-4 text-white/70 text-xs">{lightbox + 1} / {allPhotos.length}</span>
+        </div>
+      )}
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left column — content */}
@@ -594,23 +686,7 @@ export default function EventLandingPage() {
             </div>
           )}
 
-          {/* Fase 3 — Galleria */}
-          {(occurrence.gallery_urls || []).length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="text-base font-semibold text-gray-900 mb-3">{t('landings:event.gallery.heading')}</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {occurrence.gallery_urls.map((url, i) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt=""
-                    loading="lazy"
-                    className="w-full h-32 sm:h-36 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          {/* M2 — la galleria vive nella griglia hero + lightbox */}
 
           {/* Fase 3 — Incluso / Non incluso */}
           {((occurrence.included || []).length > 0 || (occurrence.excluded || []).length > 0) && (
@@ -724,7 +800,7 @@ export default function EventLandingPage() {
         </div>
 
         {/* Right column — tiers + checkout (sticky on desktop) */}
-        <aside className="md:sticky md:top-4 md:self-start space-y-4">
+        <aside className="md:sticky md:top-20 md:self-start space-y-4">
           {!isBuyable ? (
             <div className="rounded-xl border-2 border-red-200 bg-red-50 p-5 text-center">
               <p className="text-lg font-bold text-red-900 mb-1">{t('landings:event.soldOutTitle')}</p>
@@ -790,6 +866,22 @@ export default function EventLandingPage() {
                 plainQty={plainQty}
                 currency={effectiveCurrency}
               />
+
+              {/* M2 — blocco fiducia: la promessa di piattaforma sotto la CTA */}
+              <ul className="rounded-xl border border-gray-200 bg-white p-4 space-y-2 text-xs text-gray-600">
+                <li className="flex items-start gap-2">
+                  <span aria-hidden>🛡️</span>
+                  <span>{t('landings:event.trustSecure', { defaultValue: 'Pagamento sicuro con carta — i tuoi dati non passano mai dall\'organizzatore.' })}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span aria-hidden>🌱</span>
+                  <span>{t('landings:event.trustDeposit', { defaultValue: 'Dove previsto, blocchi il posto con la caparra e saldi più avanti.' })}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span aria-hidden>✉️</span>
+                  <span>{t('landings:event.trustTicket', { defaultValue: 'Biglietto e promemoria via email, subito dopo la prenotazione.' })}</span>
+                </li>
+              </ul>
             </>
           )}
         </aside>
@@ -847,5 +939,6 @@ export default function EventLandingPage() {
         </Link>
       </footer>
     </div>
+    </Wrap>
   );
 }

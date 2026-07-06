@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, Mail, CheckCircle2 } from 'lucide-react';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
+import MarketplaceShell from '../storefront/components/MarketplaceShell';
 
 // Guard module-level: il magic token e' ONE-SHOT lato server, ma in dev
 // React StrictMode monta l'effect due volte → due verify concorrenti, la
@@ -69,6 +70,7 @@ export default function AccountLoginPage() {
   };
 
   return (
+    <MarketplaceShell>
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 text-center">
         {state === 'verifying' && (
@@ -141,5 +143,6 @@ export default function AccountLoginPage() {
         </p>
       </div>
     </div>
+    </MarketplaceShell>
   );
 }

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
+import MarketplaceShell from '../storefront/components/MarketplaceShell';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || '';
 
@@ -178,6 +179,7 @@ export default function AccountPage() {
   );
 
   return (
+    <MarketplaceShell>
     <div className="min-h-screen bg-gray-50">
       <header className="bg-gradient-sidebar text-white">
         <div className="max-w-2xl mx-auto px-4 py-6 flex items-center justify-between">
@@ -249,5 +251,6 @@ export default function AccountPage() {
         )}
       </main>
     </div>
+    </MarketplaceShell>
   );
 }

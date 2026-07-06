@@ -327,7 +327,12 @@
     },
     "faq": {
       "heading": "Questions fréquentes"
-    }
+    },
+    "share": "Partager",
+    "morePhotos": "photos",
+    "trustSecure": "Paiement sécurisé par carte — tes données ne passent jamais par l'organisateur.",
+    "trustDeposit": "Si prévu, tu bloques ta place avec un acompte et règles le solde plus tard.",
+    "trustTicket": "Billet et rappels par e-mail, juste après la réservation."
   },
   "product": {
     "loading": "Chargement…",
@@ -500,5 +505,20 @@
     "cammini": "Randonnée & Nature",
     "femminile": "Cercles de femmes",
     "aziendale": "Bien-être en entreprise"
+  },
+  "marketplace": {
+    "tagline": "Trouve et réserve des retraites holistiques dans le monde entier — avec acompte, sans souci.",
+    "searchShortcut": "Où ? · Quand ? · Quelle retraite ?",
+    "forOrganizers": "Tu es organisateur ?",
+    "myTrips": "Mes voyages",
+    "signIn": "Connexion",
+    "securePayment": "Paiement sécurisé",
+    "footerExplore": "Explorer",
+    "footerAll": "Toutes les retraites",
+    "footerAccount": "Ton compte",
+    "footerOrganizers": "Organisateurs",
+    "startSelling": "Mets tes retraites en ligne",
+    "operatorLogin": "Espace organisateurs",
+    "terms": "Conditions"
   }
 }
