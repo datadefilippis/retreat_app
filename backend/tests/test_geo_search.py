@@ -54,3 +54,16 @@ class TestHaversine:
     def test_radius_radianti(self):
         # il filtro $centerSphere usa km/6371: 100km ≈ 0.0157 rad
         assert abs(100 / 6371.0 - 0.0157) < 0.001
+
+
+class TestGeocodeRouteOrder:
+    """G2 — /event-occurrences/geocode deve stare PRIMA di
+    /{occurrence_id} (stesso morso di payments-overview e taxonomies)."""
+
+    def test_route_defined_before_dynamic_id(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "routers", "event_occurrences.py")
+        src = open(path).read()
+        assert src.index('@router.get("/geocode")') \
+            < src.index('@router.get("/{occurrence_id}")')

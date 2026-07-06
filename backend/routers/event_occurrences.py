@@ -943,6 +943,21 @@ async def export_tickets_csv(
     )
 
 
+@router.get("/geocode")
+async def geocode_address(
+    q: str = Query(min_length=2, max_length=300),
+    current_user: dict = Depends(get_verified_user),
+):
+    """Geocoding per il wizard (pin sulla mini-mappa). Auth: evita di
+    esporre un proxy Nominatim aperto. Cache+rate-limit nel service.
+    NB: route statica PRIMA di /{occurrence_id} (guard-test pattern)."""
+    from services.geocoding import geocode
+    hit = await geocode(q)
+    if not hit:
+        return {"found": False}
+    return {"found": True, "lat": hit["lat"], "lng": hit["lng"]}
+
+
 @router.get("/{occurrence_id}")
 async def get_occurrence(
     occurrence_id: str,
