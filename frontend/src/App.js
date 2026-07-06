@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AiAccessProvider } from "./hooks/useAiAccess";
@@ -17,7 +17,7 @@ import QuotaExceededPaywall from "./components/QuotaExceededPaywall";
 import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from "./pages/AuthPages";
 // Onda 28 — blocking page for authenticated users who haven't verified
 // their email yet. Wrapped by RequireAuthOnly (defined in this file).
-import VerifyEmailRequiredPage from "./features/auth/VerifyEmailRequiredPage";
+const VerifyEmailRequiredPage = lazy(() => import("./features/auth/VerifyEmailRequiredPage"));
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import SubProcessorsPage from "./pages/SubProcessorsPage";
@@ -30,52 +30,52 @@ import CustomerReconsentModal from "./features/customer-portal/CustomerReconsent
 // Wave GDPR-Admin Phase E — re-consent modal + cookie disclosure
 import ReconsentModal from "./components/legal/ReconsentModal";
 import CookieConsentBanner from "./components/legal/CookieConsentBanner";
-import ModulesPage from "./pages/ModulesPage";
+const ModulesPage = lazy(() => import("./pages/ModulesPage"));
 
 // Features
-import DashboardPage from "./features/dashboard/DashboardPage";
+const DashboardPage = lazy(() => import("./features/dashboard/DashboardPage"));
 // CustomersLightPage legacy removed during Phase-3 single-brain
 // consolidation. Its routes are served by CustomerInsightsPage.
-import CustomerInsightsPage from "./features/customer-insights/CustomerInsightsPage";
-import ProductPerformancePage from "./features/product-catalog/ProductPerformancePage";
-import ProductsPage from "./features/products/ProductsPage";
-import CheckInPage from "./features/events/CheckInPage";
-import EventDashboardPage from "./features/events/EventDashboardPage";
-import EventWizard from "./features/events/EventWizard";
+const CustomerInsightsPage = lazy(() => import("./features/customer-insights/CustomerInsightsPage"));
+const ProductPerformancePage = lazy(() => import("./features/product-catalog/ProductPerformancePage"));
+const ProductsPage = lazy(() => import("./features/products/ProductsPage"));
+const CheckInPage = lazy(() => import("./features/events/CheckInPage"));
+const EventDashboardPage = lazy(() => import("./features/events/EventDashboardPage"));
+const EventWizard = lazy(() => import("./features/events/EventWizard"));
 import RetreatsCalendarPage from "./features/storefront/RetreatsCalendarPage";
 import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
 import OperatorsIndexPage from "./features/storefront/OperatorsIndexPage";
 import DestinationsPage from "./features/storefront/DestinationsPage";
 import ExperiencesPage from "./features/storefront/ExperiencesPage";
-import ServiceWizard from "./features/services/ServiceWizard";
-import ReservationWizard from "./features/reservations/ReservationWizard";
-import PhysicalWizard from "./features/physicals/PhysicalWizard";
-import PhysicalDashboardPage from "./features/physicals/PhysicalDashboardPage";
-import DigitalWizard from "./features/digitals/DigitalWizard";
-import DigitalDashboardPage from "./features/digitals/DigitalDashboardPage";
+const ServiceWizard = lazy(() => import("./features/services/ServiceWizard"));
+const ReservationWizard = lazy(() => import("./features/reservations/ReservationWizard"));
+const PhysicalWizard = lazy(() => import("./features/physicals/PhysicalWizard"));
+const PhysicalDashboardPage = lazy(() => import("./features/physicals/PhysicalDashboardPage"));
+const DigitalWizard = lazy(() => import("./features/digitals/DigitalWizard"));
+const DigitalDashboardPage = lazy(() => import("./features/digitals/DigitalDashboardPage"));
 // Release 4 (Courses) Step 2 — admin UI for video courses
-import CoursesPage from "./features/courses/CoursesPage";
-import CourseEditor from "./features/courses/CourseEditor";
-import ReservationsDashboard from "./features/reservations/ReservationsDashboard";
-import ReservationDashboardPage from "./features/reservations/ReservationDashboardPage";
-import ServiceDashboardPage from "./features/services/ServiceDashboardPage";
-import TicketsManagementPage from "./features/events/TicketsManagementPage";
-import CustomersMgmtPage from "./features/customers-mgmt/CustomersMgmtPage";
-import SuppliersPage from "./features/suppliers/SuppliersPage";
-import OrdersPage from "./features/orders/OrdersPage";
-import CalendarPage from "./features/calendar/CalendarPage";
-import CouponsPage from "./features/coupons/CouponsPage";
-import DataIntegrityPage from "./features/data-integrity/DataIntegrityPage";
-import StoreSettingsPage from "./features/store-settings/StoreSettingsPage";
+const CoursesPage = lazy(() => import("./features/courses/CoursesPage"));
+const CourseEditor = lazy(() => import("./features/courses/CourseEditor"));
+const ReservationsDashboard = lazy(() => import("./features/reservations/ReservationsDashboard"));
+const ReservationDashboardPage = lazy(() => import("./features/reservations/ReservationDashboardPage"));
+const ServiceDashboardPage = lazy(() => import("./features/services/ServiceDashboardPage"));
+const TicketsManagementPage = lazy(() => import("./features/events/TicketsManagementPage"));
+const CustomersMgmtPage = lazy(() => import("./features/customers-mgmt/CustomersMgmtPage"));
+const SuppliersPage = lazy(() => import("./features/suppliers/SuppliersPage"));
+const OrdersPage = lazy(() => import("./features/orders/OrdersPage"));
+const CalendarPage = lazy(() => import("./features/calendar/CalendarPage"));
+const CouponsPage = lazy(() => import("./features/coupons/CouponsPage"));
+const DataIntegrityPage = lazy(() => import("./features/data-integrity/DataIntegrityPage"));
+const StoreSettingsPage = lazy(() => import("./features/store-settings/StoreSettingsPage"));
 // Wave GDPR-Commerce CG-7 — admin DPA page
-import DpaPage from "./pages/DpaPage";
+const DpaPage = lazy(() => import("./pages/DpaPage"));
 // SetupPage removed in Fase 2 Track F Step 9 (replaced by the dynamic
 // dashboard SetupWizardWidget in features/setup-wizard/). The /setup
 // route below now redirects to /dashboard for backward-compat with any
 // stale links/emails pointing at /setup.
-import StoresPage from "./features/stores/StoresPage";
-import NewsletterPage from "./features/newsletter/NewsletterPage";
-import PosPage from "./features/stores/PosPage";
+const StoresPage = lazy(() => import("./features/stores/StoresPage"));
+const NewsletterPage = lazy(() => import("./features/newsletter/NewsletterPage"));
+const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
 import EventLandingPage from "./features/storefront/EventLandingPage";
 import TicketLandingPage from "./features/storefront/TicketLandingPage";
@@ -94,12 +94,12 @@ import CourseLandingPage from "./features/storefront/CourseLandingPage";
 import PublicStorefrontShell from "./features/storefront/PublicStorefrontShell";
 import DownloadLandingPage from "./features/storefront/DownloadLandingPage";
 import { CheckoutSuccessPage, CheckoutCancelPage } from "./features/storefront/CheckoutResultPage";
-import TeamPage from "./features/team/TeamPage";
-import SettingsPage from "./features/settings/SettingsPage";
-import PublicProfilePage from "./features/settings/PublicProfilePage";
+const TeamPage = lazy(() => import("./features/team/TeamPage"));
+const SettingsPage = lazy(() => import("./features/settings/SettingsPage"));
+const PublicProfilePage = lazy(() => import("./features/settings/PublicProfilePage"));
 import IniziaPage from "./features/onboarding/IniziaPage";
-import AdminPage from "./features/admin/AdminPage";
-import PlansPage from "./pages/PlansPage";
+const AdminPage = lazy(() => import("./features/admin/AdminPage"));
+const PlansPage = lazy(() => import("./pages/PlansPage"));
 
 // Customer Identity Foundation (v9.0)
 import { CustomerAuthProvider } from "./context/CustomerAuthContext";
@@ -229,6 +229,15 @@ const RedirectPreservingQuery = ({ to }) => {
   return <Navigate to={{ pathname: to, search: location.search }} replace />;
 };
 
+// S6 — fallback dei chunk lazy del back-office: stesso spinner delle
+// route guard. Le pagine PUBBLICHE restano nel bundle principale (sono
+// la superficie SEO e devono idratare subito).
+const RouteFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
+
 // Public Route (redirect if authenticated)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -250,6 +259,7 @@ const PublicRoute = ({ children }) => {
 
 function AppRoutes() {
   return (
+    <Suspense fallback={<RouteFallback />}>
     <Routes>
       {/* S0.1 — la ROOT è il marketplace: la pagina con l'autorità
           del dominio è la directory pubblica, non la login operatori.
@@ -700,6 +710,7 @@ function AppRoutes() {
       {/* Catch all - redirect to login */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 }
 

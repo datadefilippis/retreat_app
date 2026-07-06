@@ -56,6 +56,41 @@ def _client():
     return _s3_client
 
 
+# S6 (SEO_MASTER_PLAN, Core Web Vitals) — le foto vendono i ritiri ma
+# pesano: al momento dell'UPLOAD (una volta per sempre, non on-the-fly)
+# jpeg/png vengono ridimensionati a max 1600px e convertiti in WebP
+# (qualità 82 ≈ -60/70% di peso a parità visiva). Fail-safe: qualsiasi
+# errore → si salva l'originale com'era.
+_OPTIMIZE_TYPES = {"image/jpeg", "image/png"}
+_MAX_DIMENSION = 1600
+_WEBP_QUALITY = 82
+
+
+def _optimize_image(filename: str, content: bytes,
+                    content_type: Optional[str]):
+    if content_type not in _OPTIMIZE_TYPES:
+        return filename, content, content_type
+    try:
+        import io
+        from PIL import Image
+        img = Image.open(io.BytesIO(content))
+        if img.mode in ("P", "LA"):
+            img = img.convert("RGBA")
+        if max(img.size) > _MAX_DIMENSION:
+            img.thumbnail((_MAX_DIMENSION, _MAX_DIMENSION))
+        out = io.BytesIO()
+        img.save(out, format="WEBP", quality=_WEBP_QUALITY, method=4)
+        data = out.getvalue()
+        if len(data) >= len(content):
+            return filename, content, content_type  # non ci guadagniamo
+        base = filename.rsplit(".", 1)[0]
+        return f"{base}.webp", data, "image/webp"
+    except Exception as exc:  # noqa: BLE001 — mai bloccare un upload
+        logger.debug("object_storage: ottimizzazione saltata (%s): %s",
+                     filename, exc)
+        return filename, content, content_type
+
+
 def save_public_upload(category: str, filename: str, content: bytes,
                        content_type: Optional[str] = None) -> str:
     """Salva un asset pubblico e ritorna l'URL da persistere sul documento.
@@ -64,6 +99,8 @@ def save_public_upload(category: str, filename: str, content: bytes,
     rigida: e' un namespace, non input utente — i chiamanti passano
     costanti). filename: gia' sanitizzato dai chiamanti (uuid + ext).
     """
+    filename, content, content_type = _optimize_image(
+        filename, content, content_type)
     key = f"uploads/{category}/{filename}"
     if is_s3_enabled():
         _client().put_object(

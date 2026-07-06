@@ -678,7 +678,7 @@ export default function EventLandingPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 rounded-2xl overflow-hidden h-56 sm:h-80">
             <button type="button" onClick={() => setLightbox(0)}
                     className="col-span-2 row-span-2 relative group">
-              <img src={allPhotos[0]} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
+              <img src={allPhotos[0]} alt="" fetchpriority="high" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
               {/* mobile: le miniature sono nascoste — il contatore invita al lightbox */}
               <span className="sm:hidden absolute bottom-2 right-2 rounded-full bg-black/60 text-white text-[11px] font-semibold px-2.5 py-1">
                 1 / {allPhotos.length}
