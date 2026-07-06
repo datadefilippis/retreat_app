@@ -28,7 +28,8 @@
     "customers": "Customers",
     "suppliers": "Suppliers",
     "public_profile": "Public profile",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "cashflow": "Payments"
   },
   "actions": {
     "save": "Save",
@@ -153,5 +154,25 @@
     "noEmail": "No email",
     "noConsent": "This customer has not given marketing consent",
     "error": "Could not prepare the message, please retry"
+  },
+  "cashflow": {
+    "title": "Payments",
+    "subtitle": "Your treasury: what came in, what is coming, what to chase.",
+    "collected": "Collected (12 months)",
+    "incoming": "Incoming",
+    "overdue": "Overdue",
+    "avgTicket": "Average order",
+    "trendTitle": "Collected and expected, month by month",
+    "trendActual": "Collected",
+    "trendExpected": "Expected",
+    "trendHint": "The dashed line includes deposits and balances already agreed: this is your planning.",
+    "dueTitle": "To collect",
+    "dueHint": "Overdue and due within the next 30 days. The reminder is one click away — the message is already written.",
+    "dueEmpty": "No pending payments. All collected ✓",
+    "colCustomer": "Customer",
+    "colDue": "Due date",
+    "colAmount": "Amount",
+    "colAction": "Remind",
+    "byProductTitle": "Sales by experience (12 months)"
   }
 }

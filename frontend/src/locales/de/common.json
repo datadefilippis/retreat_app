@@ -28,7 +28,8 @@
     "stores": "Meine Stores",
     "newsletter": "Newsletter",
     "public_profile": "Oeffentliches Profil",
-    "reviews": "Bewertungen"
+    "reviews": "Bewertungen",
+    "cashflow": "Einnahmen"
   },
   "actions": {
     "save": "Speichern",
@@ -153,5 +154,25 @@
     "noEmail": "Keine E-Mail",
     "noConsent": "Dieser Kunde hat keine Marketing-Einwilligung erteilt",
     "error": "Nachricht konnte nicht vorbereitet werden, bitte erneut versuchen"
+  },
+  "cashflow": {
+    "title": "Einnahmen",
+    "subtitle": "Deine Kasse: was eingegangen ist, was kommt, was anzumahnen ist.",
+    "collected": "Eingenommen (12 Monate)",
+    "incoming": "Erwartet",
+    "overdue": "Überfällig",
+    "avgTicket": "Ø Bestellwert",
+    "trendTitle": "Eingenommen und erwartet, Monat für Monat",
+    "trendActual": "Eingenommen",
+    "trendExpected": "Erwartet",
+    "trendHint": "Die gestrichelte Linie enthält bereits vereinbarte Anzahlungen und Restbeträge: deine Planung.",
+    "dueTitle": "Ausstehend",
+    "dueHint": "Überfällig und fällig in den nächsten 30 Tagen. Die Erinnerung ist einen Klick entfernt — die Nachricht ist schon geschrieben.",
+    "dueEmpty": "Keine offenen Zahlungen. Alles eingenommen ✓",
+    "colCustomer": "Kunde",
+    "colDue": "Fälligkeit",
+    "colAmount": "Betrag",
+    "colAction": "Erinnern",
+    "byProductTitle": "Umsatz nach Erlebnis (12 Monate)"
   }
 }

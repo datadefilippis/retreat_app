@@ -28,7 +28,8 @@
     "customers": "Clienti",
     "suppliers": "Fornitori",
     "public_profile": "Profilo pubblico",
-    "reviews": "Recensioni"
+    "reviews": "Recensioni",
+    "cashflow": "Incassi"
   },
   "actions": {
     "save": "Salva",
@@ -153,5 +154,25 @@
     "noEmail": "Nessuna email",
     "noConsent": "Questo cliente non ha dato il consenso marketing",
     "error": "Impossibile preparare il messaggio, riprova"
+  },
+  "cashflow": {
+    "title": "Incassi",
+    "subtitle": "La tua tesoreria: cosa è entrato, cosa arriva, cosa sollecitare.",
+    "collected": "Incassato (12 mesi)",
+    "incoming": "In arrivo",
+    "overdue": "In ritardo",
+    "avgTicket": "Ticket medio",
+    "trendTitle": "Incassato e atteso, mese per mese",
+    "trendActual": "Incassato",
+    "trendExpected": "Atteso",
+    "trendHint": "La linea tratteggiata include caparre e saldi futuri già concordati: è la tua pianificazione.",
+    "dueTitle": "Da incassare",
+    "dueHint": "Scaduti e in scadenza nei prossimi 30 giorni. Il sollecito è a un click — il messaggio è già scritto.",
+    "dueEmpty": "Nessun pagamento in sospeso. Tutto incassato ✓",
+    "colCustomer": "Cliente",
+    "colDue": "Scadenza",
+    "colAmount": "Importo",
+    "colAction": "Sollecita",
+    "byProductTitle": "Venduto per esperienza (12 mesi)"
   }
 }

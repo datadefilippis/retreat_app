@@ -146,19 +146,19 @@
   "payment_reminder": {
     "it": {
       "subject": "Promemoria pagamento — {merchant_name}",
-      "body": "Ciao {customer_name},\n\nti scrivo da {merchant_name}: risulta ancora in sospeso il pagamento di {amount} con scadenza {due_date} (ordine {order_number}).\n\nSe hai già provveduto, ignora pure questo messaggio. Per qualsiasi dubbio sono qui.\n\nGrazie!"
+      "body": "Ciao {customer_name},\n\nti scrivo da {merchant_name}: risulta ancora in sospeso il pagamento di {amount} con scadenza {due_date} {order_number}.\n\nSe hai già provveduto, ignora pure questo messaggio. Per qualsiasi dubbio sono qui.\n\nGrazie!"
     },
     "en": {
       "subject": "Payment reminder — {merchant_name}",
-      "body": "Hi {customer_name},\n\nthis is {merchant_name}: the payment of {amount} due on {due_date} (order {order_number}) still appears outstanding.\n\nIf you've already taken care of it, please ignore this message. Happy to help with any questions.\n\nThank you!"
+      "body": "Hi {customer_name},\n\nthis is {merchant_name}: the payment of {amount} due on {due_date} {order_number} still appears outstanding.\n\nIf you've already taken care of it, please ignore this message. Happy to help with any questions.\n\nThank you!"
     },
     "de": {
       "subject": "Zahlungserinnerung — {merchant_name}",
-      "body": "Hallo {customer_name},\n\nhier ist {merchant_name}: die Zahlung von {amount}, fällig am {due_date} (Bestellung {order_number}), ist noch offen.\n\nFalls du sie bereits veranlasst hast, ignoriere diese Nachricht bitte. Bei Fragen bin ich gerne da.\n\nDanke!"
+      "body": "Hallo {customer_name},\n\nhier ist {merchant_name}: die Zahlung von {amount}, fällig am {due_date} {order_number}, ist noch offen.\n\nFalls du sie bereits veranlasst hast, ignoriere diese Nachricht bitte. Bei Fragen bin ich gerne da.\n\nDanke!"
     },
     "fr": {
       "subject": "Rappel de paiement — {merchant_name}",
-      "body": "Bonjour {customer_name},\n\nc'est {merchant_name} : le paiement de {amount}, dû le {due_date} (commande {order_number}), semble encore en attente.\n\nSi vous l'avez déjà effectué, ignorez ce message. Je reste disponible pour toute question.\n\nMerci !"
+      "body": "Bonjour {customer_name},\n\nc'est {merchant_name} : le paiement de {amount}, dû le {due_date} {order_number}, semble encore en attente.\n\nSi vous l'avez déjà effectué, ignorez ce message. Je reste disponible pour toute question.\n\nMerci !"
     }
   },
   "pre_retreat": {

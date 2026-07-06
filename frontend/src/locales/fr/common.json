@@ -28,7 +28,8 @@
     "stores": "Mes boutiques",
     "newsletter": "Newsletter",
     "public_profile": "Profil public",
-    "reviews": "Avis"
+    "reviews": "Avis",
+    "cashflow": "Encaissements"
   },
   "actions": {
     "save": "Enregistrer",
@@ -153,5 +154,25 @@
     "noEmail": "Pas d’email",
     "noConsent": "Ce client n’a pas donné son consentement marketing",
     "error": "Impossible de préparer le message, réessayez"
+  },
+  "cashflow": {
+    "title": "Encaissements",
+    "subtitle": "Votre trésorerie : ce qui est entré, ce qui arrive, ce qu’il faut relancer.",
+    "collected": "Encaissé (12 mois)",
+    "incoming": "À venir",
+    "overdue": "En retard",
+    "avgTicket": "Panier moyen",
+    "trendTitle": "Encaissé et attendu, mois par mois",
+    "trendActual": "Encaissé",
+    "trendExpected": "Attendu",
+    "trendHint": "La ligne pointillée inclut les acomptes et soldes déjà convenus : c’est votre planification.",
+    "dueTitle": "À encaisser",
+    "dueHint": "En retard et à échéance sous 30 jours. La relance est à un clic — le message est déjà écrit.",
+    "dueEmpty": "Aucun paiement en attente. Tout est encaissé ✓",
+    "colCustomer": "Client",
+    "colDue": "Échéance",
+    "colAmount": "Montant",
+    "colAction": "Relancer",
+    "byProductTitle": "Ventes par expérience (12 mois)"
   }
 }
