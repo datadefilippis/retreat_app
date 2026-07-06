@@ -332,7 +332,8 @@
     "morePhotos": "photos",
     "trustSecure": "Secure card payment — your details never go through the organizer.",
     "trustDeposit": "Where available, secure your spot with a deposit and pay the balance later.",
-    "trustTicket": "Ticket and reminders by email, right after booking."
+    "trustTicket": "Ticket and reminders by email, right after booking.",
+    "mobileBook": "Book"
   },
   "product": {
     "loading": "Loading…",
@@ -467,7 +468,10 @@
     "backToCalendar": "See all retreats",
     "upcoming": "Upcoming retreats",
     "upcoming_plural": "Upcoming retreats ({{count}})",
-    "noUpcoming": "No retreats scheduled right now. Come back soon."
+    "noUpcoming": "No retreats scheduled right now. Come back soon.",
+    "memberSince": "Organizer since {{year}}",
+    "retreatsOrganized_one": "{{count}} retreat organized",
+    "retreatsOrganized_other": "{{count}} retreats organized"
   },
   "account": {
     "title": "My bookings",

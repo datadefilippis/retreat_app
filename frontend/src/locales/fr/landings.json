@@ -332,7 +332,8 @@
     "morePhotos": "photos",
     "trustSecure": "Paiement sécurisé par carte — tes données ne passent jamais par l'organisateur.",
     "trustDeposit": "Si prévu, tu bloques ta place avec un acompte et règles le solde plus tard.",
-    "trustTicket": "Billet et rappels par e-mail, juste après la réservation."
+    "trustTicket": "Billet et rappels par e-mail, juste après la réservation.",
+    "mobileBook": "Réserver"
   },
   "product": {
     "loading": "Chargement…",
@@ -467,7 +468,10 @@
     "backToCalendar": "Voir toutes les retraites",
     "upcoming": "Prochaines retraites",
     "upcoming_plural": "Prochaines retraites ({{count}})",
-    "noUpcoming": "Aucune retraite prévue pour le moment. Reviens bientôt."
+    "noUpcoming": "Aucune retraite prévue pour le moment. Reviens bientôt.",
+    "memberSince": "Organisateur depuis {{year}}",
+    "retreatsOrganized_one": "{{count}} retraite organisée",
+    "retreatsOrganized_other": "{{count}} retraites organisées"
   },
   "account": {
     "title": "Mes réservations",

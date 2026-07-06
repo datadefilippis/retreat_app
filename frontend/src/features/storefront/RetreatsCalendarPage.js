@@ -183,30 +183,33 @@ export default function RetreatsCalendarPage() {
   return (
     <MarketplaceShell noSearch>
     <div className="bg-background">
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <header className="bg-gradient-sidebar text-white">
-        <div className="max-w-6xl mx-auto px-4 pt-12 pb-8">
-          {/* M1 — il selettore lingua ora vive nell'header del guscio */}
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+      {/* ── Hero (M4: evocativo, search-first, centrato) ─────────────── */}
+      <header className="relative bg-gradient-sidebar text-white overflow-hidden">
+        {/* texture d'atmosfera: due aloni radiali nella palette, zero asset */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={{
+          background: 'radial-gradient(ellipse 60% 80% at 15% 10%, rgba(255,255,255,0.10), transparent 60%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(193,102,61,0.25), transparent 55%)',
+        }} />
+        <div className="relative max-w-6xl mx-auto px-4 pt-14 pb-10 text-center">
+          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight leading-tight">
             {catLabel || region
               ? seoTitle.replace(' — prenota online', '')
               : t('landings:calendar.title')}
           </h1>
-          <p className="text-white/75 mt-2 max-w-xl">{t('landings:calendar.subtitle')}</p>
+          <p className="text-white/75 mt-3 max-w-xl mx-auto">{t('landings:calendar.subtitle')}</p>
 
-          <div className="mt-6 max-w-lg">
+          <div className="mt-7 max-w-xl mx-auto">
             <input
               type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder={t('landings:calendar.searchPlaceholder', { defaultValue: 'Cerca un ritiro, un luogo, un organizzatore…' })}
-              className="w-full rounded-full border-0 bg-white/95 px-5 py-3 text-sm text-gray-900 shadow-lg focus:outline-none focus:ring-2 focus:ring-white/60"
+              className="w-full rounded-full border-0 bg-white/95 px-6 py-3.5 text-base text-gray-900 shadow-xl focus:outline-none focus:ring-2 focus:ring-white/60"
             />
           </div>
 
           {/* Categorie visuali — dalle categorie REALI del backend */}
           {categories.length > 0 && (
-            <div className="mt-6 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            <div className="mt-7 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 justify-start md:justify-center">
               <button
                 onClick={() => setFilter('categoria', '')}
                 className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
@@ -322,9 +325,9 @@ export default function RetreatsCalendarPage() {
                 <Link
                   key={`${item.org_slug}/${item.slug}`}
                   to={item.url}
-                  className="group rounded-2xl border border-border bg-card overflow-hidden hover-lift"
+                  className="group rounded-2xl border border-border bg-card overflow-hidden hover-lift transition-shadow hover:shadow-lg"
                 >
-                  <div className="relative h-48 bg-muted overflow-hidden">
+                  <div className="relative h-56 bg-muted overflow-hidden">
                     {item.cover_image_url ? (
                       <img
                         src={item.cover_image_url}

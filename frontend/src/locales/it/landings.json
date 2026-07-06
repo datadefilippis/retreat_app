@@ -332,7 +332,8 @@
     "morePhotos": "foto",
     "trustSecure": "Pagamento sicuro con carta — i tuoi dati non passano mai dall'organizzatore.",
     "trustDeposit": "Dove previsto, blocchi il posto con la caparra e saldi più avanti.",
-    "trustTicket": "Biglietto e promemoria via email, subito dopo la prenotazione."
+    "trustTicket": "Biglietto e promemoria via email, subito dopo la prenotazione.",
+    "mobileBook": "Prenota"
   },
   "product": {
     "loading": "Caricamento…",
@@ -467,7 +468,10 @@
     "upcoming_plural": "Prossimi ritiri ({{count}})",
     "noUpcoming": "Nessun ritiro in programma al momento. Torna presto.",
     "website": "Sito web",
-    "visitStore": "Visita il negozio"
+    "visitStore": "Visita il negozio",
+    "memberSince": "Organizzatore dal {{year}}",
+    "retreatsOrganized_one": "{{count}} ritiro organizzato",
+    "retreatsOrganized_other": "{{count}} ritiri organizzati"
   },
   "account": {
     "title": "Le mie prenotazioni",
