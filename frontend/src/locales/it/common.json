@@ -26,7 +26,8 @@
     "courses": "Corsi",
     "events": "Ritiri",
     "customers": "Clienti",
-    "suppliers": "Fornitori"
+    "suppliers": "Fornitori",
+    "public_profile": "Profilo pubblico"
   },
   "actions": {
     "save": "Salva",

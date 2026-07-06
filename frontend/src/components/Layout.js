@@ -29,6 +29,7 @@ import {
   Tag,
   Ticket,
   BookMarked,
+  UserCircle,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { ScrollArea } from '../components/ui/scroll-area';
@@ -63,6 +64,8 @@ const operationsNav = [
   { nameKey: 'nav.orders',          href: '/orders',          icon: ShoppingCart, end: true },
   { nameKey: 'nav.calendar',        href: '/calendar',        icon: CalendarDays, end: true },
   { nameKey: 'nav.stores',          href: '/stores',           icon: Globe,        end: true },
+  // PR1 — la vetrina dell'operatore raggiungibile dal menu
+  { nameKey: 'nav.public_profile',  href: '/public-profile',    icon: UserCircle,   end: true },
   { nameKey: 'nav.newsletter',      href: '/newsletter',       icon: Mail,         end: true },
 ];
 
@@ -211,6 +214,8 @@ export const Sidebar = () => {
         : []),
       { nameKey: 'nav.calendar', href: '/calendar', icon: CalendarDays, end: true },
       { nameKey: 'nav.stores', href: '/stores', icon: Globe, end: true },
+      // PR1 — la vetrina dell'operatore raggiungibile dal menu
+      { nameKey: 'nav.public_profile', href: '/public-profile', icon: UserCircle, end: true },
       { nameKey: 'nav.newsletter', href: '/newsletter', icon: Mail, end: true },
     );
   }
