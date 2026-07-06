@@ -1317,6 +1317,14 @@ async def create_indexes():
     await availability_rules_collection.create_index(
         [("organization_id", 1), ("store_id", 1), ("day_of_week", 1)],
     )
+    # R3 (audit scalabilita' 10/7) — hot path del catalogo servizi:
+    # lookup regole per (org, product_id) sul public catalog.
+    await availability_rules_collection.create_index(
+        [("organization_id", 1), ("product_id", 1)], name="r3_rules_org_product")
+    # blocked_slots per prodotto nel range date (checkout servizi)
+    await blocked_slots_collection.create_index(
+        [("organization_id", 1), ("product_id", 1), ("date", 1)],
+        name="r3_blocks_org_product_date", sparse=True)
     await blocked_slots_collection.create_index("organization_id")
     await blocked_slots_collection.create_index(
         [("organization_id", 1), ("date", 1)],

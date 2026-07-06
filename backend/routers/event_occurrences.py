@@ -1489,11 +1489,9 @@ async def upload_occurrence_cover_image(
                 pass
 
     filename = f"{occurrence_id}{ext}"
-    filepath = os.path.join(COVER_UPLOAD_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(contents)
-
-    cover_image_url = f"/uploads/occurrences/{filename}"
+    from services.object_storage import save_public_upload
+    cover_image_url = save_public_upload("occurrences", filename, contents,
+                                         content_type=f"image/{ext.lstrip('.')}")
     await event_occurrences_collection.update_one(
         {"id": occurrence_id, "organization_id": org_id},
         {"$set": {"cover_image_url": cover_image_url, "updated_at": utc_now().isoformat()}},

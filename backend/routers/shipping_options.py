@@ -129,7 +129,7 @@ async def list_shipping_options(
     cursor = shipping_options_collection.find(query, {"_id": 0}).sort(
         [("store_id", 1), ("sort_order", 1), ("label", 1)]
     )
-    options = await cursor.to_list(None)
+    options = await cursor.to_list(100)
     return ShippingOptionListResponse(options=options)
 
 

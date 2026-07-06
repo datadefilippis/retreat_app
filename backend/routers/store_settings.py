@@ -679,11 +679,9 @@ async def upload_store_logo(
                 pass
 
     filename = f"{org_id}{ext}"
-    filepath = os.path.join(LOGO_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(contents)
-
-    logo_url = f"/uploads/logos/{filename}"
+    from services.object_storage import save_public_upload
+    logo_url = save_public_upload("logos", filename, contents,
+                                  content_type=f"image/{ext.lstrip('.')}")
 
     from database import organizations_collection
     from models.common import utc_now

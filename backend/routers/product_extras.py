@@ -67,7 +67,7 @@ async def list_extras(
     rows = await product_extras_collection.find(
         {"organization_id": org_id, "product_id": product_id},
         {"_id": 0},
-    ).sort("sort_order", 1).to_list(None)
+    ).sort("sort_order", 1).to_list(200)
     return {"extras": rows}
 
 

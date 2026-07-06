@@ -74,7 +74,7 @@ async def list_options(
         {"organization_id": org_id, "product_id": product_id},
         {"_id": 0},
     ).sort("sort_order", 1)
-    options = await cursor.to_list(None)
+    options = await cursor.to_list(200)
     return ServiceOptionListResponse(options=options)
 
 

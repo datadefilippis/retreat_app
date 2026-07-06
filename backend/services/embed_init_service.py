@@ -892,7 +892,7 @@ async def get_embed_product_detail_data(
                     "price": 1, "duration_minutes_override": 1, "sort_order": 1,
                 },
             ).sort("sort_order", 1)
-            detail["service_options"] = await options_cursor.to_list(None)
+            detail["service_options"] = await options_cursor.to_list(300)
         except Exception as exc:
             logger.warning(
                 "embed_product_detail: service_options fetch failed: %s", exc,
@@ -934,7 +934,7 @@ async def get_embed_product_detail_data(
                 },
                 {"_id": 0},
             ).sort("start_at", 1)
-            occurrences = await occ_cursor.to_list(None)
+            occurrences = await occ_cursor.to_list(300)
             # Filtro safe field whitelist (mirrora PublicOccurrence)
             safe_occ = []
             for o in occurrences:
@@ -1033,7 +1033,7 @@ async def get_embed_product_detail_data(
                     "is_default": 1, "sort_order": 1,
                 },
             ).sort("sort_order", 1)
-            detail["extras"] = await extras_cursor.to_list(None)
+            detail["extras"] = await extras_cursor.to_list(300)
         except Exception as exc:
             logger.warning(
                 "embed_product_detail: extras fetch failed (type=%s): %s",
