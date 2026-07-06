@@ -41,8 +41,6 @@ and any remaining import in the codebase is a bug.
 
 from core.module_registry import ModuleDefinition, register
 
-from .ai_tools import TOOL_DEFINITIONS as ci_tool_defs
-from .ai_tools import execute_tool as ci_execute_tool
 from .hooks import post_upload_hook
 from .legacy_overview import build_overview
 from .snapshot_builder import build_snapshot
@@ -61,8 +59,6 @@ register(ModuleDefinition(
     snapshot_builder=build_snapshot,
     post_upload_hooks=[post_upload_hook],
     overview_builder=build_overview,
-    ai_tool_definitions=ci_tool_defs,
-    ai_tool_executor=ci_execute_tool,
 ))
 
 

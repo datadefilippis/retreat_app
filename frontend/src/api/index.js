@@ -4,7 +4,6 @@ import { authAPI } from './auth';
 import { analyticsAPI, analyticsSnapshotAPI } from './analytics';
 import { datasetsAPI } from './datasets';
 import { modulesAPI } from './modules';
-import { alertsAPI } from './alerts';
 import { insightsAPI } from './insights';
 import { organizationsAPI } from './organizations';
 import { purchasesAPI } from './purchases';
@@ -76,7 +75,6 @@ export {
   analyticsSnapshotAPI,
   datasetsAPI,
   modulesAPI,
-  alertsAPI,
   insightsAPI,
   organizationsAPI,
   purchasesAPI,

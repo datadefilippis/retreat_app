@@ -8,12 +8,12 @@ from database import (
     organizations_collection, users_collection, datasets_collection,
     sales_records_collection, expense_records_collection,
     purchase_records_collection, fixed_costs_collection,
-    organization_modules_collection, alerts_collection, insights_collection
+    organization_modules_collection
 )
 from models import (
     Organization, User, UserRole, Dataset, DatasetType,
     SalesRecord, ExpenseRecord, PurchaseRecord, FixedCost,
-    OrganizationModule, Alert, AlertSeverity, Insight
+    OrganizationModule
 )
 from auth import get_password_hash
 
@@ -258,71 +258,6 @@ async def seed_demo_data():
         await fixed_costs_collection.insert_many(fc_docs)
     print(f"Created {len(fc_docs)} fixed cost entries")
 
-    # Create sample alerts
-    alerts = [
-        Alert(
-            organization_id=org.id,
-            module_key="cashflow_monitor",
-            severity=AlertSeverity.HIGH,
-            title="Daily sales 35% below average",
-            summary=f"Sales on {(today - timedelta(days=3)).isoformat()} were $1,625, which is 35% below the 30-day average of $2,500.",
-            date_reference=(today - timedelta(days=3)).isoformat(),
-            metric_payload={"actual": 1625, "average": 2500, "deviation_pct": 35}
-        ),
-        Alert(
-            organization_id=org.id,
-            module_key="cashflow_monitor",
-            severity=AlertSeverity.MEDIUM,
-            title="Daily expenses 25% above average",
-            summary=f"Expenses on {(today - timedelta(days=5)).isoformat()} were $2,250, which is 25% above the 30-day average of $1,800.",
-            date_reference=(today - timedelta(days=5)).isoformat(),
-            metric_payload={"actual": 2250, "average": 1800, "deviation_pct": 25}
-        ),
-        Alert(
-            organization_id=org.id,
-            module_key="cashflow_monitor",
-            severity=AlertSeverity.LOW,
-            title="3 consecutive days with negative cashflow",
-            summary="Your business has had negative cashflow for 3 consecutive days. Monitor closely to prevent cash crunch.",
-            date_reference=(today - timedelta(days=7)).isoformat(),
-            metric_payload={"consecutive_days": 3}
-        )
-    ]
-    
-    for alert in alerts:
-        alert_doc = alert.model_dump()
-        alert_doc['created_at'] = alert_doc['created_at'].isoformat()
-        await alerts_collection.insert_one(alert_doc)
-    
-    print(f"Created {len(alerts)} sample alerts")
-    
-    # Create sample insight
-    insight = Insight(
-        organization_id=org.id,
-        module_key="cashflow_monitor",
-        title="Cashflow Analysis",
-        content="""**Summary**
-Your cashflow over this period is healthy with positive net income. Total sales of $75,000 against expenses of $54,000 resulted in a net cashflow of $21,000.
-
-**Key Findings**
-- Sales are +8.5% compared to the previous period, showing strong growth momentum
-- Expenses are +3.2% compared to the previous period, well controlled
-- Only 4 days had negative cashflow during this period, mostly due to rent payment
-
-**Recommendation**
-Continue your current strategy while building a cash reserve for unexpected expenses. Consider investing in marketing during slower weekdays to boost mid-week sales.""",
-        metrics_context={
-            "period": {"start": (today - timedelta(days=30)).isoformat(), "end": today.isoformat(), "days": 30},
-            "totals": {"sales": 75000, "expenses": 54000, "net_cashflow": 21000}
-        },
-        period_start=(today - timedelta(days=30)).isoformat(),
-        period_end=today.isoformat()
-    )
-    insight_doc = insight.model_dump()
-    insight_doc['created_at'] = insight_doc['created_at'].isoformat()
-    await insights_collection.insert_one(insight_doc)
-    
-    print("Created sample insight")
     print("\n✓ Demo data seeding complete!")
     print("Login with: admin@demo.com / demo1234")
     

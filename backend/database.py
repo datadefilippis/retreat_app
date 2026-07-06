@@ -1232,21 +1232,17 @@ async def create_indexes():
         [("organization_id", 1), ("is_default", 1)]
     )
 
-    # ── AI Chat Sessions ─────────────────────────────────────────────────────
-    await chat_sessions_collection.create_index(
-        [("organization_id", 1), ("session_id", 1)], unique=True
-    )
-    # Per-user session listing (sidebar)
-    await chat_sessions_collection.create_index(
-        [("organization_id", 1), ("user_id", 1), ("updated_at", -1)]
-    )
-    # Migrate TTL: drop old fixed-7d index on updated_at, use per-document expires_at
+    # ── AI Chat Sessions (R4: feature RIMOSSA — resta solo la pulizia) ──────
+    # La chat AI non esiste più; i documenti legacy si auto-eliminano.
+    # TTL 30 giorni su updated_at: entro un mese la collection si svuota
+    # da sola, senza migrazione.
     try:
-        await chat_sessions_collection.drop_index("updated_at_1")
+        await chat_sessions_collection.drop_index("expires_at_1")
     except Exception:
-        pass  # Index may not exist yet (fresh deploy)
+        pass  # indice del vecchio sistema per-document, può non esserci
     await chat_sessions_collection.create_index(
-        "expires_at", expireAfterSeconds=0  # per-document TTL via expires_at field
+        "updated_at", expireAfterSeconds=30 * 24 * 3600,
+        name="r4_chat_sessions_ttl",
     )
 
     # ── v5.0: COMMERCIAL BILLING INDEXES ─────────────────────────────────────

@@ -12,7 +12,7 @@ import {
 import { ordersAPI } from '../../api';
 import { toast } from 'sonner';
 import { isPaywallHandled } from '../../utils/handleApiError';
-import { ColumnMappingDialog } from '../datasets/ColumnMappingDialog';
+import { ColumnMappingDialog } from './ColumnMappingDialog';
 
 // ── Example CSV template ──────────────────────────────────────────────────────
 const EXAMPLE_CSV = `cliente,email,data,prodotto,quantita,prezzo_unitario,sconto,categoria,note,scadenza,stato_pagamento
