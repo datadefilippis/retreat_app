@@ -475,7 +475,9 @@
     "noUpcoming": "No retreats scheduled right now. Come back soon.",
     "memberSince": "Organizer since {{year}}",
     "retreatsOrganized_one": "{{count}} retreat organized",
-    "retreatsOrganized_other": "{{count}} retreats organized"
+    "retreatsOrganized_other": "{{count}} retreats organized",
+    "about": "About us",
+    "gallery": "Photos"
   },
   "account": {
     "title": "My bookings",
@@ -536,5 +538,29 @@
     "terms": "Terms",
     "langFilterNote": "Choose your language: you will see retreats and experiences held in that language.",
     "langFilterCaption": "Showing retreats and experiences held in {{lang}} — switch language above to see others."
+  },
+  "reviews": {
+    "heading": "Reviews",
+    "writeCta": "Write a review",
+    "writeTitle": "Write a review",
+    "emailIntro": "Use the email you booked with: we will send you a code to verify it is you.",
+    "sendCode": "Send me the code",
+    "codeIntro": "We sent you a 6-digit code. Enter it here:",
+    "continue": "Continue",
+    "namePlaceholder": "Your name (visible)",
+    "bodyPlaceholder": "How did it go? Tell us about your experience (min 20 characters)…",
+    "publish": "Publish review",
+    "thanks": "Thank you for your review!",
+    "close": "Close",
+    "basedOn_one": "based on {{count}} review",
+    "basedOn_other": "based on {{count}} reviews",
+    "countShort_one": "{{count}} review",
+    "countShort_other": "{{count}} reviews",
+    "empty": "No reviews yet. Have you booked with this organizer? Tell us how it went.",
+    "verified": "Verified customer",
+    "edited": "updated",
+    "operatorReply": "Reply from the organizer",
+    "showMore": "Show more",
+    "genericError": "Something went wrong, please try again."
   }
 }

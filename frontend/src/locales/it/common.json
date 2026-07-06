@@ -105,5 +105,38 @@
   "languageSwitcher": {
     "label": "Lingua",
     "ariaLabel": "Cambia lingua"
+  },
+  "reviews": {
+    "title": "Recensioni",
+    "subtitle": "Cosa dicono di te i viaggiatori — e come rispondi.",
+    "total_one": "{{count}} recensione",
+    "total_other": "{{count}} recensioni",
+    "openToggle": "Accetta recensioni da chi non ha ancora prenotato",
+    "openToggleHint": "Appariranno solo dopo la tua approvazione e senza il badge \"Cliente verificato\".",
+    "openOn": "Ora chiunque può lasciare una recensione (con la tua approvazione)",
+    "openOff": "Solo i clienti possono recensire",
+    "tabPublished": "Pubblicate",
+    "tabPending": "In attesa",
+    "tabFlagged": "Segnalate",
+    "verified": "Cliente verificato",
+    "unverified": "Non cliente",
+    "reply": "Rispondi",
+    "editReply": "Modifica risposta",
+    "yourReply": "La tua risposta",
+    "replyPlaceholder": "Ringrazia, chiarisci, invita a tornare — la risposta è pubblica.",
+    "sendReply": "Pubblica risposta",
+    "replySent": "Risposta pubblicata",
+    "cancel": "Annulla",
+    "approve": "Approva",
+    "reject": "Rifiuta",
+    "approved": "Recensione pubblicata",
+    "rejected": "Recensione rifiutata",
+    "flag": "Segnala abuso",
+    "flagged": "Segnalata",
+    "flaggedOk": "Segnalata: nascosta in attesa di revisione",
+    "emptyTitle": "Nessuna recensione qui",
+    "emptyBody": "I clienti possono recensirti dalla tua pagina profilo. Condividila dopo ogni ritiro: è il modo più veloce per costruire fiducia.",
+    "loadError": "Errore nel caricamento",
+    "genericError": "Errore, riprova"
   }
 }
