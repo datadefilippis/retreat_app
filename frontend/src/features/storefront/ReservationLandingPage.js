@@ -27,6 +27,7 @@ import AvailabilityRangeSlotPicker from './components/AvailabilityRangeSlotPicke
 import OpenCheckoutButton from './components/OpenCheckoutButton';
 import { formatAmount } from '../../utils/currency';
 import useCartCount from './hooks/useCartCount';
+import StoreContextNav from './components/StoreContextNav';
 
 
 function isoToday(offsetDays = 0) {
@@ -128,6 +129,10 @@ function RangePicker({ dateFrom, dateTo, onChange, blockedDates = [] }) {
 
 export default function ReservationLandingPage() {
   const { org_slug: orgSlug, product_slug: productSlug } = useParams();
+  // 7/7 — contesto negozio: i link delle card store portano ?store=1;
+  // la landing mantiene la barra menu dello store (mai uscire).
+  const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
+
   const navigate = useNavigate();
   const { t } = useTranslation('landings');
   // Live cart count for the back-link badge (see hooks/useCartCount.js).
@@ -351,6 +356,7 @@ export default function ReservationLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
+      {fromStore && <StoreContextNav slug={orgSlug} />}
       {/* Back link with optional cart badge (hidden when cart is empty). */}
       <div className="max-w-5xl mx-auto px-4 py-4">
         <button

@@ -62,7 +62,9 @@ export function buildEventCardProps({ product, occurrence, orgSlug, currency, t,
     .filter(Boolean)
     .join(' · ') || occurrence.location || '';
 
-  const href = orgSlug && occurrence.slug ? `/e/${orgSlug}/${occurrence.slug}` : null;
+  // ?store=1 — contesto negozio: la landing mantiene la barra menu dello
+  // store e i link profilo puntano a /s/:slug/chi-siamo (mai uscire).
+  const href = orgSlug && occurrence.slug ? `/e/${orgSlug}/${occurrence.slug}?store=1` : null;
 
   let statusBadge = null;
   if (isSoldOut) statusBadge = { variant: 'danger', label: t('storefront:cards.event.statusSoldOut') };
@@ -111,7 +113,7 @@ export function buildServiceCardProps({ product, orgSlug, currency, t, locale = 
   const isMultiPrice = optionPrices.length > 1 && new Set(optionPrices).size > 1;
   const priceFormatted = fmtCurrency(displayPrice, currency, locale);
 
-  const href = orgSlug && product.slug ? `/p/${orgSlug}/${product.slug}` : null;
+  const href = orgSlug && product.slug ? `/p/${orgSlug}/${product.slug}?store=1` : null;
 
   // Subtitle: prefer a location hint (store city) then fall back to category.
   const subtitleParts = [];
@@ -146,7 +148,7 @@ export function buildServiceCardProps({ product, orgSlug, currency, t, locale = 
  * customer can decide quickly without drilling in.
  */
 export function buildPhysicalCardProps({ product, orgSlug, currency, t, locale = 'it-IT' }) {
-  const href = orgSlug && product.slug ? `/ph/${orgSlug}/${product.slug}` : null;
+  const href = orgSlug && product.slug ? `/ph/${orgSlug}/${product.slug}?store=1` : null;
   const displayPrice = product.unit_price ?? null;
   const priceFormatted = fmtCurrency(displayPrice, currency, locale);
 
@@ -194,7 +196,7 @@ export function buildPhysicalCardProps({ product, orgSlug, currency, t, locale =
  * customers know what to expect before entering the landing.
  */
 export function buildDigitalCardProps({ product, orgSlug, currency, t, locale = 'it-IT' }) {
-  const href = orgSlug && product.slug ? `/dg/${orgSlug}/${product.slug}` : null;
+  const href = orgSlug && product.slug ? `/dg/${orgSlug}/${product.slug}?store=1` : null;
   const displayPrice = product.unit_price ?? null;
   const priceFormatted = fmtCurrency(displayPrice, currency, locale);
 
@@ -240,7 +242,7 @@ export function buildDigitalCardProps({ product, orgSlug, currency, t, locale = 
  * immediate sense of the content length before drilling in.
  */
 export function buildCourseCardProps({ product, orgSlug, currency, t, locale = 'it-IT' }) {
-  const href = orgSlug && product.slug ? `/co/${orgSlug}/${product.slug}` : null;
+  const href = orgSlug && product.slug ? `/co/${orgSlug}/${product.slug}?store=1` : null;
   const displayPrice = product.unit_price ?? null;
   const priceFormatted = fmtCurrency(displayPrice, currency, locale);
 
@@ -303,7 +305,7 @@ export function buildCourseCardProps({ product, orgSlug, currency, t, locale = '
 export function buildReservationCardProps({ product, orgSlug, currency, t, locale = 'it-IT' }) {
   const flavor = product.reservation_flavor
     || (product.rental_unit === 'ora' ? 'slot' : 'range');
-  const href = orgSlug && product.slug ? `/r/${orgSlug}/${product.slug}` : null;
+  const href = orgSlug && product.slug ? `/r/${orgSlug}/${product.slug}?store=1` : null;
 
   const displayPrice = product.unit_price ?? null;
   const priceFormatted = fmtCurrency(displayPrice, currency, locale);
