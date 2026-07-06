@@ -86,7 +86,7 @@
   },
   "empty": {
     "title": "Customer analysis not active",
-    "description": "To activate customer analysis:\n1. Create your customers in Master data > Customers\n2. Import sales with a \"customer\" column matching the names you created\nRetreat App will automatically link sales to customers.",
+    "description": "To activate customer analysis:\n1. Create your customers in Master data > Customers\n2. Import sales with a \"customer\" column matching the names you created\nAurya will automatically link sales to customers.",
     "upload_cta": "Upload sales data",
     "manage_customers": "Manage customers"
   },

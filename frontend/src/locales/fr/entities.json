@@ -7,7 +7,7 @@
   "products": {
     "title": "Produits",
     "subtitle": "Donnees de base produits — utilisees pour le lien automatique lors de l'import",
-    "guide": "En creant vos produits ici, Retreat App liera automatiquement les ventes et achats importes aux produits correspondants.",
+    "guide": "En creant vos produits ici, Aurya liera automatiquement les ventes et achats importes aux produits correspondants.",
     "add": "Ajouter un produit", "edit": "Modifier le produit",
     "empty": "Aucun produit cree", "empty_desc": "Ajoutez vos produits pour activer le lien automatique.",
     "search": "Rechercher par nom...",
@@ -21,7 +21,7 @@
   "customers": {
     "title": "Clients",
     "subtitle": "Donnees de base clients — utilisees pour le lien automatique lors de l'import",
-    "guide": "En creant vos clients ici, Retreat App liera automatiquement les ventes importees aux clients correspondants.",
+    "guide": "En creant vos clients ici, Aurya liera automatiquement les ventes importees aux clients correspondants.",
     "add": "Ajouter un client", "edit": "Modifier le client",
     "empty": "Aucun client cree", "empty_desc": "Ajoutez vos clients pour activer le lien automatique.",
     "search": "Rechercher par nom...",
@@ -34,7 +34,7 @@
   "suppliers": {
     "title": "Fournisseurs",
     "subtitle": "Donnees de base fournisseurs — utilisees pour le lien automatique lors de l'import",
-    "guide": "En creant vos fournisseurs ici, Retreat App liera automatiquement les depenses et achats importes aux fournisseurs correspondants.",
+    "guide": "En creant vos fournisseurs ici, Aurya liera automatiquement les depenses et achats importes aux fournisseurs correspondants.",
     "add": "Ajouter un fournisseur", "edit": "Modifier le fournisseur",
     "empty": "Aucun fournisseur cree", "empty_desc": "Ajoutez vos fournisseurs pour activer le lien automatique.",
     "search": "Rechercher par nom...",

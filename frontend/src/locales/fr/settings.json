@@ -3,7 +3,7 @@
   "subtitle": "Configurez votre organisation et votre compte",
   "language": {
     "title": "Langue de l'interface",
-    "description": "Choisissez la langue d'affichage de l'interface Retreat App.",
+    "description": "Choisissez la langue d'affichage de l'interface Aurya.",
     "updated": "Langue mise a jour"
   },
   "organization": {
@@ -106,7 +106,7 @@
     "monthly": "Mensuel",
     "yearly": "Annuel",
     "upgrade_title": "Choisissez le bon plan pour vous",
-    "upgrade_desc": "Debloquez toutes les fonctionnalites Retreat App pour votre organisation.",
+    "upgrade_desc": "Debloquez toutes les fonctionnalites Aurya pour votre organisation.",
     "upgrade_cta": "Passer a un plan payant",
     "change_plan": "Changer de plan",
     "manage_billing": "Gerer la facturation",
