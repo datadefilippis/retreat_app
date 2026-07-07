@@ -1257,6 +1257,14 @@ async def mark_order_paid(org_id: str, order_id: str) -> dict:
     status = order.get("status", "draft")
     if status not in ("confirmed", "completed"):
         raise ValueError(f"Pagamento manuale non consentito per ordini in stato '{status}'")
+    # GT1 — regola del canale (decisione founder): gli ordini nati dal
+    # MARKETPLACE si incassano solo online (caparra/saldo via link di
+    # pagamento). Il gestionale resta libero per store proprio, manuale
+    # e POS: la fee esiste solo dove Aurya porta il cliente.
+    if order.get("sales_channel") == "marketplace":
+        raise ValueError(
+            "marketplace_online_only: gli ordini dal calendario pubblico "
+            "si incassano online — invia il link di pagamento al cliente")
     if order.get("payment_status") == "paid":
         return order  # idempotent
 

@@ -1739,6 +1739,12 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
         customer_phone: form.phone.trim() || null,
         items: selectedItems,
         notes: form.notes.trim() || null,
+        // GT1 — il canale viaggia con l'ordine: gli ordini nati dal
+        // marketplace (K1: mktp_ctx) si incassano SOLO online.
+        channel: (() => {
+          try { return sessionStorage.getItem('storefront:mktp_ctx') === '1' ? 'marketplace' : 'store'; }
+          catch { return 'store'; }
+        })(),
       };
       // F2 Onda 9 — send order-level custom fields only if we collected any
       if (orderFieldsData && Object.keys(orderFieldsData).length > 0) {

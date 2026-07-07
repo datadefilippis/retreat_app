@@ -386,6 +386,10 @@ class OrderRequestPayload(BaseModel):
     # True when the effective T&C (see services/terms_resolver.py) are
     # non-empty; the endpoint rejects the order otherwise.
     terms_accepted: bool = False
+    # GT1 — canale di provenienza: "marketplace" (directory/calendario)
+    # o "store" (vetrina propria dell'operatore). Governa la regola
+    # d'incasso: gli ordini marketplace si chiudono SOLO online.
+    channel: Optional[str] = Field(default=None, pattern="^(marketplace|store)$")
 
     # ── Wave GDPR-Commerce CG-5 (2026-05-19) — per-order consent flags ──
     #

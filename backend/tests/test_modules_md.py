@@ -203,3 +203,26 @@ class TestPromiseEnforcementMd4:
         free/pro): non deve tornare nel seed."""
         for plan in self._retreat_plans():
             assert "billing.features.retreat_customers_pro" not in plan.get("features_display", []), plan["slug"]
+
+
+class TestMarketplaceChannelGt1:
+    """GT1 — il canale marketplace si incassa SOLO online (founder)."""
+
+    def test_payload_accepts_channel(self):
+        from routers.public import OrderRequestPayload
+        assert "channel" in OrderRequestPayload.model_fields
+
+    def test_order_stamped_with_sales_channel(self):
+        import inspect
+        from services import order_creation_service as ocs
+        src = inspect.getsource(ocs.submit_order_from_storefront)
+        assert "sales_channel" in src
+
+    def test_mark_paid_blocked_for_marketplace_orders(self):
+        """Il gestionale resta libero (store/manuale/POS), ma un ordine
+        marketplace non si chiude con mark-paid: link di pagamento."""
+        import inspect
+        from services import order_service as osvc
+        src = inspect.getsource(osvc.mark_order_paid)
+        assert "marketplace_online_only" in src
+        assert '"marketplace"' in src
