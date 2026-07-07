@@ -135,33 +135,38 @@ export default function DestinationsPage() {
 
   return (
     <MarketplaceShell>
-      <header className="aura-corner bg-gradient-to-b from-[#376254]/12 via-[#f6f3ec]/70 to-transparent">
-        <div className="max-w-6xl mx-auto px-4 pt-10 pb-6">
-          <nav className="text-xs text-muted-foreground mb-3">
-            <Link to="/" className="hover:text-primary hover:underline">Aurya</Link>
+      <header className="relative text-white overflow-hidden">
+        {/* la verticale sul mare del founder: la promessa del viaggio */}
+        <img aria-hidden src="/media/hero-destination.webp" alt="" fetchpriority="high"
+             className="absolute inset-0 w-full h-full object-cover" />
+        {/* velatura salvia più densa a sinistra, dove vive il testo */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#14231d]/90 via-[#14231d]/60 to-[#14231d]/30" />
+        <div className="relative max-w-6xl mx-auto px-4 pt-12 pb-10 md:pt-16 md:pb-14">
+          <nav className="text-xs text-white/70 mb-3">
+            <Link to="/" className="hover:text-white hover:underline">Aurya</Link>
             <span className="mx-1.5">›</span>
             {luogo ? (
               <>
-                <Link to="/destinazioni" className="hover:text-primary hover:underline">
+                <Link to="/destinazioni" className="hover:text-white hover:underline">
                   {t('landings:destinations.heading', { defaultValue: 'Destinazioni' })}
                 </Link>
                 <span className="mx-1.5">›</span>
-                <span className="text-foreground">{label}</span>
+                <span className="text-white">{label}</span>
               </>
             ) : (
-              <span className="text-foreground">
+              <span className="text-white">
                 {t('landings:destinations.heading', { defaultValue: 'Destinazioni' })}
               </span>
             )}
           </nav>
-          <p aria-hidden className="eyebrow mb-2">Connect · Heal · Grow</p>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
+          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-xs md:text-sm text-[#ecd9a8] mb-2 select-none text-hero-shadow">Connect · Heal · Grow</p>
+          <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
             {luogo
               ? t('landings:destinations.headingPlace', {
                   place: label, defaultValue: 'Ritiri ed esperienze a {{place}}' })
               : t('landings:destinations.heading', { defaultValue: 'Destinazioni' })}
           </h1>
-          <p className="mt-2 text-muted-foreground max-w-2xl">
+          <p className="mt-2.5 text-white/90 max-w-2xl text-hero-shadow">
             {luogo
               ? t('landings:destinations.subtitlePlace', {
                   place: label,

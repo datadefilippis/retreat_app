@@ -474,3 +474,17 @@ class TestPlaceFilterCoherence:
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "DestinationsPage.js").read_text()
         assert ".toLowerCase()" in page
+
+
+    def test_one_destination_per_occurrence(self):
+        """Città E regione dello stesso ritiro = doppione fuorviante
+        (founder 7/7): ogni occorrenza contribuisce a UNA destinazione,
+        la città se c'è, la regione altrimenti. Stessa regola nel
+        sitemap (build_core)."""
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        idx = src.index("async def public_destinations_index")
+        body = src[idx:idx + 4000]
+        assert 'o.get("city") or o.get("region")' in body
+        assert '{o.get("region"), o.get("city")}' not in body
+        seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        assert '{o.get("region"), o.get("city")}' not in seo

@@ -3648,14 +3648,17 @@ async def public_destinations_index():
 
     counts: dict = {}
     for o in occs:
-        for name in {o.get("region"), o.get("city")}:
-            if not name:
-                continue
-            k = _place_slug(name)
-            if not k:
-                continue
-            e = counts.setdefault(k, {"slug": k, "label": name, "retreats": 0})
-            e["retreats"] += 1
+        # UNA destinazione per ritiro (feedback founder 7/7: Ostuni E
+        # Puglia con lo stesso evento = duplicazione fuorviante): vince
+        # la città, la regione solo se la città manca.
+        name = o.get("city") or o.get("region")
+        if not name:
+            continue
+        k = _place_slug(name)
+        if not k:
+            continue
+        e = counts.setdefault(k, {"slug": k, "label": name, "retreats": 0})
+        e["retreats"] += 1
     items = sorted(counts.values(), key=lambda x: (-x["retreats"], x["label"]))
     return {"items": items, "total": len(items)}
 
