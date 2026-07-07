@@ -18,7 +18,7 @@ import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BRAND_NAME, BRAND_MOTTO } from '../../../config/brand';
-import { Search, Menu, X, Lock } from 'lucide-react';
+import { Search, Menu, X, Lock, Globe, Check, ChevronDown } from 'lucide-react';
 import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
 import api from '../../../api/client';
 
@@ -26,39 +26,76 @@ import api from '../../../api/client';
 // modulo, il footer è su ogni pagina e non deve rifetchare a ogni nav.
 let _destCache = null;
 
-const LANGS = ['it', 'en', 'de', 'fr'];
+const LANGS = [
+  { code: 'it', label: 'Italiano' },
+  { code: 'en', label: 'English' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'fr', label: 'Français' },
+];
 
 function LangSwitcher() {
   const { t, i18n } = useTranslation('landings');
+  const [open, setOpen] = React.useState(false);
+  const boxRef = React.useRef(null);
   const cur = (i18n.language || 'it').slice(0, 2);
+
+  // DS5 (founder 8/7) — un globo al posto della fila IT EN DE FR:
+  // l'header respira, la scelta si apre solo quando serve.
+  React.useEffect(() => {
+    if (!open) return undefined;
+    const close = (e) => {
+      if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
   // L1 — la scelta viene persistita (aurya_lang) e vince sui default
   // dello store in contesto marketplace: niente più flip di lingua
   // entrando in un prodotto o al checkout.
   const choose = (l) => {
     persistMarketplaceLang(l);
     i18n.changeLanguage(l);
+    setOpen(false);
   };
+
   return (
-    <div
-      className="flex items-center gap-0.5"
-      title={t('marketplace.langFilterNote', {
-        defaultValue: 'Scegli la lingua: vedrai i ritiri e le esperienze tenuti in quella lingua.',
-      })}
-    >
-      {LANGS.map(l => (
-        <button
-          key={l}
-          type="button"
-          onClick={() => choose(l)}
-          className={`rounded-full px-2 py-1 text-[11px] font-semibold uppercase transition-colors ${
-            cur === l
-              ? 'bg-primary text-white'
-              : 'text-gray-500 hover:bg-gray-100'
-          }`}
-        >
-          {l}
-        </button>
-      ))}
+    <div className="relative" ref={boxRef}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        title={t('marketplace.langFilterNote', {
+          defaultValue: 'Scegli la lingua: vedrai i ritiri e le esperienze tenuti in quella lingua.',
+        })}
+        className="flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:border-primary hover:text-primary transition-colors"
+      >
+        <Globe className="h-4 w-4" aria-hidden />
+        <span className="uppercase">{cur}</span>
+        <ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
+      </button>
+      {open && (
+        <ul role="listbox" aria-label="lingua"
+            className="absolute right-0 mt-1.5 w-40 rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden z-50">
+          {LANGS.map(l => (
+            <li key={l.code}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={cur === l.code}
+                onClick={() => choose(l.code)}
+                className={`w-full flex items-center justify-between px-3.5 py-2 text-sm transition-colors ${
+                  cur === l.code ? 'text-[#376254] font-semibold bg-[#376254]/5' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {l.label}
+                {cur === l.code && <Check className="h-4 w-4" aria-hidden />}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

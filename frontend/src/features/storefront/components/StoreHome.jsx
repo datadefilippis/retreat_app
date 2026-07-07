@@ -108,7 +108,7 @@ export default function StoreHome({ slug, catalog, availableCategories, currency
                     <img src={occ.cover_image_url || product.image_url} alt="" loading="lazy"
                          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center" aria-hidden><TypeIcon type="eventi" className="h-10 w-10 text-[#376254]/40" /></div>
+                    <div className="w-full h-full flex items-center justify-center" aria-hidden><TypeIcon type="eventi" className="h-10 w-10 opacity-70" /></div>
                   )}
                   <span className="absolute top-2.5 left-2.5 rounded-lg bg-white/95 px-2 py-1 text-[11px] font-bold text-gray-900 shadow">
                     {fmtDate(occ.start_at, i18n.language)}
