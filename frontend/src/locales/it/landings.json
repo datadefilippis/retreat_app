@@ -463,7 +463,8 @@
     "distanceAway": "a {{km}} km",
     "mapEmpty": "Nessun ritiro con posizione sulla mappa per questi filtri.",
     "mapSee": "Vedi il ritiro →",
-    "fromPrice": "da {{price}} €"
+    "fromPrice": "da {{price}} €",
+    "featured": "In evidenza"
   },
   "operator": {
     "notFound": "Organizzatore non trovato",

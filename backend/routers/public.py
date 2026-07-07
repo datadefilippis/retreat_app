@@ -3418,11 +3418,14 @@ async def list_public_retreats(
     orgs = await organizations_collection.find(
         {"id": {"$in": org_ids}, "is_active": {"$ne": False}},
         {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
+         "directory_featured": 1,
          "store_settings.is_storefront_published": 1,
          "store_settings.display_name": 1},
     ).to_list(1000)
+    org_featured: Dict[str, bool] = {}
     for o in orgs:
         org_name[o["id"]] = (o.get("store_settings") or {}).get("display_name") or o.get("name") or ""
+        org_featured[o["id"]] = bool(o.get("directory_featured"))
         if o["id"] not in org_slug and o.get("public_slug") and \
                 (o.get("store_settings") or {}).get("is_storefront_published"):
             org_slug[o["id"]] = o["public_slug"]
@@ -3454,6 +3457,8 @@ async def list_public_retreats(
             "category": prod.get("category"),
             "org_name": org_name.get(prod["organization_id"], ""),
             "org_slug": slug_org,
+            # MD3 — promessa Pro resa vera: badge + boost nel calendario
+            "featured": org_featured.get(prod["organization_id"], False),
             "slug": occ["slug"],
             "url": f"/e/{slug_org}/{occ['slug']}",
             "start_at": occ.get("start_at"),
@@ -3468,10 +3473,19 @@ async def list_public_retreats(
                                   or {}).get("mode", "full") != "full"),
         })
 
-    # con una posizione attiva: i piu' vicini prima (poi per data)
+    # MD3 — boost "In evidenza": il calendario resta cronologico
+    # (un calendario che non rispetta le date tradisce il visitatore),
+    # ma A PARITÀ DI GIORNO i ritiri dei piani featured vengono prima.
+    items.sort(key=lambda i: ((i["start_at"] or "")[:10],
+                              not i.get("featured"),
+                              i["start_at"] or ""))
+
+    # con una posizione attiva: i piu' vicini prima (featured a parità)
     if _geo_active:
         items.sort(key=lambda i: (i["distance_km"] is None,
-                                  i["distance_km"] or 0, i["start_at"] or ""))
+                                  i["distance_km"] or 0,
+                                  not i.get("featured"),
+                                  i["start_at"] or ""))
 
     total = len(items)
     return {

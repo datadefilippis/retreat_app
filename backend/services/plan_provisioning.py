@@ -30,6 +30,13 @@ from repositories import billing_repository, subscription_repository
 logger = logging.getLogger(__name__)
 
 
+# MD3 — piani con visibilità "In evidenza" nella directory pubblica.
+# La promessa retreat_featured del Pro era SOLO testo: da qui diventa
+# un flag denormalizzato sull'org (directory_featured), letto dal
+# listing /public/retreats per boost di ordinamento + badge.
+FEATURED_PLAN_SLUGS = {"retreat_pro", "retreat_founding", "retreat_partner"}
+
+
 async def sync_module_activation(org_id: str, module_plans: dict) -> dict:
     """MD1 — allinea organization_modules al piano commerciale.
 
@@ -165,6 +172,8 @@ async def provision_commercial_plan(
     # Retreat fork — fee transazionale agganciata al piano: se il piano la
     # definisce, sovrascrive il campo org (unico punto letto dal checkout).
     # None = piano legacy che non governa la fee → il valore org resta.
+    # MD3 — la promessa "In evidenza" segue il piano, automaticamente
+    org_fields["directory_featured"] = plan_slug in FEATURED_PLAN_SLUGS
     plan_fee = plan.get("transaction_fee_percent")
     if plan_fee is not None:
         org_fields["application_fee_percent"] = float(plan_fee)
@@ -607,6 +616,9 @@ async def reconcile_all_module_activations() -> dict:
         if not plan:
             continue
         result = await sync_module_activation(org["id"], plan.get("module_plans", {}))
+        await organizations_collection.update_one(
+            {"id": org["id"]},
+            {"$set": {"directory_featured": slug in FEATURED_PLAN_SLUGS}})
         orgs += 1
         deactivated += len(result.get("deactivated", []))
     logger.info("MD1 reconcile: %d org allineate (moduli disabled disattivati: %d)", orgs, deactivated)

@@ -463,7 +463,8 @@
     "distanceAway": "à {{km}} km",
     "mapEmpty": "Aucune retraite avec position sur la carte pour ces filtres.",
     "mapSee": "Voir la retraite →",
-    "fromPrice": "dès {{price}} €"
+    "fromPrice": "dès {{price}} €",
+    "featured": "En vedette"
   },
   "operator": {
     "website": "Site web",
