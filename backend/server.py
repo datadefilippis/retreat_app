@@ -141,6 +141,9 @@ async def lifespan(app: FastAPI):
     # Migrate existing plan limits to current feature_keys (idempotent)
     try:
         await migrate_pricing_plans()
+        # MD1 — organization_modules allineate al piano (self-healing)
+        from services.plan_provisioning import reconcile_all_module_activations
+        await reconcile_all_module_activations()
     except Exception as e:
         logging.error(f"Failed to migrate pricing plans: {e}")
     # Ensure all pricing plans exist (inserts missing slugs individually)
