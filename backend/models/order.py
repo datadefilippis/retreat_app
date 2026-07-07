@@ -241,8 +241,18 @@ class OrderBase(BaseModel):
 
 
 class OrderCreate(OrderBase):
-    """Input model for POST /orders."""
+    """Input model for POST /orders.
+
+    RF2 — fulfillment opzionale per gli ordini manuali admin: senza
+    indicazione i fisici defaultano a shipping (comportamento storico);
+    con mode=local_pickup l'ordine al banco/telefono non richiede
+    l'opzione di spedizione.
+    """
     items: List[OrderLineCreate] = Field(min_length=1)
+    fulfillment_mode: Optional[str] = Field(
+        default=None, pattern="^(shipping|local_pickup)$")
+    shipping_address: Optional[str] = Field(default=None, max_length=500)
+    shipping_option_id: Optional[str] = Field(default=None, max_length=64)
 
 
 class OrderUpdate(BaseModel):

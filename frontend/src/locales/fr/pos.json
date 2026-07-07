@@ -6,7 +6,12 @@
     "empty": "Sélectionnez des produits dans la grille",
     "total": "Total",
     "customer_placeholder": "Nom du client",
-    "complete": "Finaliser la commande"
+    "complete": "Finaliser la commande",
+    "pickup": "Retrait sur place",
+    "shipping": "Expédition",
+    "no_options": "aucune option configurée",
+    "pick_option": "Choisir une option d’expédition…",
+    "address_placeholder": "Adresse de livraison"
   },
   "order_done": "Commande {{number}} terminée",
   "new_order": "Nouvelle commande",

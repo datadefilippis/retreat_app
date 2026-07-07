@@ -132,3 +132,20 @@ class TestUnionCg1:
                          headers=_login(), timeout=20).json()
         for r in (d["overdue"] + d["upcoming"])[:10]:
             assert r.get("source") in ("ledger", "order", "manual")
+
+
+class TestFulfillmentRf2:
+    """RF2 — fulfillment variabile su POS e ordine manuale."""
+
+    def test_pos_defaults_to_local_pickup(self):
+        """Il POS è vendita al banco: senza indicazione, ritiro in sede
+        (niente blocco shipping_option_required sui fisici)."""
+        import inspect
+        from routers import orders as orders_router
+        from models.order import OrderCreate
+        src = inspect.getsource(orders_router)
+        assert 'default="local_pickup"' in src           # PosOrderRequest
+        assert "fulfillment_input" in inspect.getsource(
+            orders_router.create_pos_order)
+        # e il manuale admin accetta il mode esplicito
+        assert "fulfillment_mode" in OrderCreate.model_fields

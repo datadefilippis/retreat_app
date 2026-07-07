@@ -328,8 +328,15 @@ async def create_order(
     )
 
     from services.order_service import create_order as svc_create
+    # RF2 — fulfillment esplicito dell'admin (es. local_pickup al telefono)
+    fulfillment_input = None
+    if body.fulfillment_mode:
+        fulfillment_input = {"mode": body.fulfillment_mode}
+        if body.fulfillment_mode == "shipping":
+            fulfillment_input["shipping_address"] = body.shipping_address
+            fulfillment_input["shipping_option_id"] = body.shipping_option_id
     try:
-        order = await svc_create(org_id, body)
+        order = await svc_create(org_id, body, fulfillment_input=fulfillment_input)
         return order
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -737,12 +744,22 @@ class PosOrderItem(BaseModel):
 
 
 class PosOrderRequest(BaseModel):
-    """Quick order creation for POS mode. Creates + confirms in one step."""
+    """Quick order creation for POS mode. Creates + confirms in one step.
+
+    RF2 — fulfillment VARIABILE: al banco il default è il ritiro in
+    sede (local_pickup), ma l'admin può battere un ordine telefonico
+    con spedizione scegliendo l'opzione (mode=shipping +
+    shipping_option_id + indirizzo).
+    """
     customer_name: str = Field(min_length=1, max_length=255)
     customer_email: Optional[str] = None
     items: List[PosOrderItem] = Field(min_length=1)
     notes: Optional[str] = None
     store_id: Optional[str] = None
+    fulfillment_mode: str = Field(default="local_pickup",
+                                  pattern="^(shipping|local_pickup)$")
+    shipping_address: Optional[str] = Field(default=None, max_length=500)
+    shipping_option_id: Optional[str] = Field(default=None, max_length=64)
 
 
 @router.post("/pos", status_code=status.HTTP_201_CREATED)
@@ -845,11 +862,19 @@ async def create_pos_order(
         ],
     )
 
+    # RF2 — fulfillment variabile: default ritiro in sede (è un POS),
+    # spedizione solo se richiesta esplicitamente con opzione+indirizzo.
+    fulfillment_input = {"mode": body.fulfillment_mode}
+    if body.fulfillment_mode == "shipping":
+        fulfillment_input["shipping_address"] = body.shipping_address
+        fulfillment_input["shipping_option_id"] = body.shipping_option_id
+
     try:
         order = await svc_create(
             org_id, order_create,
             source="pos",
             payment_intent="none",  # POS: no online payment
+            fulfillment_input=fulfillment_input,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
