@@ -30,6 +30,37 @@ from repositories import billing_repository, subscription_repository
 logger = logging.getLogger(__name__)
 
 
+async def sync_module_activation(org_id: str, module_plans: dict) -> dict:
+    """MD1 — allinea organization_modules al piano commerciale.
+
+    Il fork aveva DUE strati mai riconciliati: ModuleSubscription
+    (billing/quote, automatico) e organization_modules (attivazione,
+    che guida menu e pagine — scrivibile solo dalla pagina /modules,
+    system_admin). Risultato: signup fresco = menu vuoto.
+
+    Regola: ogni modulo del piano con pricing plan NON `*_disabled`
+    viene ATTIVATO (upsert); i `*_disabled` vengono disattivati.
+    Idempotente — è il default "tutto acceso" chiesto dal founder,
+    ma il meccanismo attiva/disattiva resta intero.
+    """
+    from database import organization_modules_collection
+    from models.common import generate_id
+
+    activated, deactivated = [], []
+    now_iso = utc_now().isoformat()
+    for module_key, pricing_slug in (module_plans or {}).items():
+        enabled = not str(pricing_slug).endswith("_disabled")
+        await organization_modules_collection.update_one(
+            {"organization_id": org_id, "module_key": module_key},
+            {"$set": {"is_active": enabled},
+             "$setOnInsert": {"id": generate_id(),
+                              "activated_at": now_iso}},
+            upsert=True,
+        )
+        (activated if enabled else deactivated).append(module_key)
+    return {"activated": activated, "deactivated": deactivated}
+
+
 async def provision_commercial_plan(
     org_id: str,
     plan_slug: str,
@@ -112,6 +143,15 @@ async def provision_commercial_plan(
                 doc[dt_field] = val.isoformat()
         await subscription_repository.create_subscription(doc)
         created_subs.append({"module_key": module_key, "plan_slug": pricing_plan_slug})
+
+    # 3.5 MD1 — attiva/disattiva i moduli in base al piano (vedi
+    # sync_module_activation). Best-effort ma loggato: senza questo
+    # passo l'operatore nuovo aveva il menu vuoto.
+    try:
+        activation = await sync_module_activation(org_id, module_plans)
+    except Exception as e:
+        logger.warning("module activation sync failed for org=%s: %s", org_id, e)
+        activation = {"error": str(e)}
 
     # 4. Update org billing fields
     now = utc_now()
@@ -543,3 +583,31 @@ async def admin_set_plan(
     if cancelled_sub:
         result["cancelled_stripe_sub"] = cancelled_sub
     return result
+
+
+async def reconcile_all_module_activations() -> dict:
+    """MD1 — riconciliazione a startup (idempotente, self-healing).
+
+    Per ogni org con un piano commerciale assegnato, riallinea
+    organization_modules al piano. Copre le org create PRIMA di MD1
+    (signup che scriveva solo le subscription) e ripara derive manuali.
+    Costo: un upsert per (org × modulo) — trascurabile ai volumi lancio.
+    """
+    from database import organizations_collection
+
+    plans_cache: dict = {}
+    orgs = deactivated = 0
+    async for org in organizations_collection.find(
+            {"commercial_plan_slug": {"$ne": None}},
+            {"_id": 0, "id": 1, "commercial_plan_slug": 1}).limit(10000):
+        slug = org["commercial_plan_slug"]
+        if slug not in plans_cache:
+            plans_cache[slug] = await billing_repository.get_commercial_plan(slug)
+        plan = plans_cache[slug]
+        if not plan:
+            continue
+        result = await sync_module_activation(org["id"], plan.get("module_plans", {}))
+        orgs += 1
+        deactivated += len(result.get("deactivated", []))
+    logger.info("MD1 reconcile: %d org allineate (moduli disabled disattivati: %d)", orgs, deactivated)
+    return {"orgs": orgs}
