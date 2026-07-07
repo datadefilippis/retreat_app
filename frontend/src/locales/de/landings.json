@@ -538,7 +538,13 @@
     "operatorLogin": "Veranstalter-Bereich",
     "terms": "AGB",
     "langFilterNote": "Wähle deine Sprache: du siehst Retreats und Erlebnisse, die in dieser Sprache stattfinden.",
-    "langFilterCaption": "Angezeigt werden Retreats und Erlebnisse auf {{lang}} — wechsle oben die Sprache für weitere."
+    "langFilterCaption": "Angezeigt werden Retreats und Erlebnisse auf {{lang}} — wechsle oben die Sprache für weitere.",
+    "navRetreats": "Retreats",
+    "navExperiences": "Erlebnisse",
+    "navOperators": "Veranstalter",
+    "navDestinations": "Reiseziele",
+    "navMenu": "Menü",
+    "navClose": "Menü schließen"
   },
   "reviews": {
     "heading": "Bewertungen",
