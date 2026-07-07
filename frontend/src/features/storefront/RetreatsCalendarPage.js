@@ -198,7 +198,7 @@ export default function RetreatsCalendarPage() {
             Connect · Heal · Grow
             <span aria-hidden className="hidden sm:block h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-[#d6c49a]/80" />
           </p>
-          <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight leading-tight text-hero-shadow">
+          <h1 className="font-display text-4xl md:text-6xl font-medium tracking-tight leading-tight text-hero-shadow">
             {catLabel || region
               ? seoTitle.replace(' — prenota online', '')
               : t('landings:calendar.title')}
