@@ -24,6 +24,9 @@
     "payments_collected12m": "encaissés (12 mois)",
     "payments_all_cf": "Voir Encaissements",
     "todo_overdue": "Paiements en retard",
-    "todo_reviews": "Avis en attente"
+    "todo_reviews": "Avis en attente",
+    "calendar_blocked_title": "Vos retraites n’apparaissent pas dans le calendrier public",
+    "calendar_blocked_body": "Seules les retraites réservables en ligne figurent dans le calendrier Aurya. Activez les paiements pour être visible et recevoir des réservations.",
+    "calendar_blocked_cta": "Activer les paiements en ligne"
   }
 }

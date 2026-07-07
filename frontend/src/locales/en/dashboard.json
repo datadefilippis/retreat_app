@@ -106,7 +106,10 @@
     "payments_collected12m": "collected (12 months)",
     "payments_all_cf": "Go to Payments",
     "todo_overdue": "Overdue payments",
-    "todo_reviews": "Pending reviews"
+    "todo_reviews": "Pending reviews",
+    "calendar_blocked_title": "Your retreats are not showing in the public calendar",
+    "calendar_blocked_body": "Only retreats bookable online appear in the Aurya calendar. Enable payments to be visible and receive bookings.",
+    "calendar_blocked_cta": "Enable online payments"
   },
   "onboarding": {
     "title": "Start here",

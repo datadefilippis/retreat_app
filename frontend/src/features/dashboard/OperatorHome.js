@@ -43,6 +43,7 @@ export default function OperatorHome() {
   const [payments, setPayments] = useState(null);   // conteggi da-fare ordini
   const [cashflow, setCashflow] = useState(null);   // fonte unica incassi
   const [reviewsPending, setReviewsPending] = useState(0);
+  const [obSteps, setObSteps] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -51,13 +52,15 @@ export default function OperatorHome() {
       api.get('/orders/payments-overview'),
       api.get('/analytics/cashflow'),
       api.get('/reviews', { params: { status: 'pending' } }),
-    ]).then(([occRes, payRes, cfRes, revRes]) => {
+      api.get('/organizations/current/onboarding-status'),
+    ]).then(([occRes, payRes, cfRes, revRes, obRes]) => {
       if (!mounted) return;
       const occData = occRes.status === 'fulfilled' ? occRes.value.data : null;
       setRetreats(Array.isArray(occData) ? occData : (occData?.events || []));
       setPayments(payRes.status === 'fulfilled' ? payRes.value.data : {});
       setCashflow(cfRes.status === 'fulfilled' ? cfRes.value.data : {});
       setReviewsPending(revRes.status === 'fulfilled' ? (revRes.value.data?.pending_count || 0) : 0);
+      setObSteps(obRes.status === 'fulfilled' ? (obRes.value.data?.steps || null) : null);
     });
     return () => { mounted = false; };
   }, []);
@@ -76,7 +79,28 @@ export default function OperatorHome() {
   const headCls = 'flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3';
   const todoRow = 'flex items-center justify-between rounded-lg border px-3 py-2 transition-colors';
 
+  // GT1b — il calendario pubblico mostra solo ritiri prenotabili online:
+  // se hai pubblicato ma Stripe non è attivo, i tuoi ritiri NON compaiono.
+  const calendarBlocked = obSteps && obSteps.retreat_published && !obSteps.stripe_connected;
+
   return (
+    <div className="space-y-4">
+    {calendarBlocked && (
+      <div className="rounded-2xl border border-[#C97B5D]/50 bg-[#C97B5D]/10 p-4 flex items-start gap-3">
+        <span aria-hidden>⚠️</span>
+        <div className="text-sm">
+          <p className="font-semibold text-[#8a4a33]">
+            {t('home.calendar_blocked_title', { defaultValue: 'I tuoi ritiri non compaiono nel calendario pubblico' })}
+          </p>
+          <p className="text-[#8a4a33]/90 mt-0.5">
+            {t('home.calendar_blocked_body', { defaultValue: 'Nel calendario di Aurya entrano solo i ritiri prenotabili online. Attiva i pagamenti per essere visibile e ricevere prenotazioni.' })}
+          </p>
+          <Link to="/settings" className="inline-block mt-1.5 text-sm font-semibold text-[#376254] hover:underline">
+            {t('home.calendar_blocked_cta', { defaultValue: 'Attiva i pagamenti online' })} →
+          </Link>
+        </div>
+      </div>
+    )}
     <div className="grid gap-4 md:grid-cols-3">
       {/* ── Prossimi ritiri ── */}
       <div className={cardCls}>
@@ -205,6 +229,7 @@ export default function OperatorHome() {
           </ul>
         )}
       </div>
+    </div>
     </div>
   );
 }

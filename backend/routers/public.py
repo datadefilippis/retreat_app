@@ -3389,11 +3389,17 @@ async def list_public_retreats(
     if not occs:
         return {"items": [], "total": 0, "categories": RETREAT_CATEGORIES}
 
-    # prodotti (categoria + prezzo + nome) — solo vendibili
+    # prodotti (categoria + prezzo + nome) — solo vendibili.
+    # GT1b (decisione founder) — il calendario pubblico elenca SOLO
+    # ritiri prenotabili online all'istante (transaction_mode=direct):
+    # ogni card è denaro prenotabile subito, l'esperienza è Booking-like
+    # e la fee si cattura al momento della transazione. Il flusso
+    # "richiesta prima" resta disponibile sullo store PROPRIO.
     product_ids = list({o["product_id"] for o in occs})
     prods = await products_collection.find(
         {"id": {"$in": product_ids}, "is_active": True, "is_published": True,
          "item_type": "event_ticket",
+         "transaction_mode": "direct",
          **({"category": category} if category else {})},
         {"_id": 0, "id": 1, "name": 1, "category": 1, "unit_price": 1,
          "image_url": 1, "organization_id": 1, "metadata.payment_plan": 1,
@@ -3433,6 +3439,19 @@ async def list_public_retreats(
         if o["id"] not in org_slug and o.get("public_slug") and \
                 (o.get("store_settings") or {}).get("is_storefront_published"):
             org_slug[o["id"]] = o["public_slug"]
+
+    # GT1b — nel calendario compaiono solo org che possono INCASSARE
+    # online adesso: payment connection attiva e pronta (stessa
+    # condizione del checkout). Niente card che portano a un vicolo
+    # cieco di pagamento.
+    from database import payment_connections_collection
+    pay_ready: set = set()
+    async for pc in payment_connections_collection.find(
+            {"organization_id": {"$in": org_ids},
+             "status": "active", "runtime_status": "ready"},
+            {"_id": 0, "organization_id": 1}):
+        pay_ready.add(pc["organization_id"])
+    org_slug = {oid: s for oid, s in org_slug.items() if oid in pay_ready}
 
     items = []
     for occ in occs:

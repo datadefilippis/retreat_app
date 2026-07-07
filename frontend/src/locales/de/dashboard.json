@@ -24,6 +24,9 @@
     "payments_collected12m": "eingenommen (12 Monate)",
     "payments_all_cf": "Zu Einnahmen",
     "todo_overdue": "Überfällige Zahlungen",
-    "todo_reviews": "Ausstehende Bewertungen"
+    "todo_reviews": "Ausstehende Bewertungen",
+    "calendar_blocked_title": "Deine Retreats erscheinen nicht im öffentlichen Kalender",
+    "calendar_blocked_body": "In den Aurya-Kalender kommen nur online buchbare Retreats. Aktiviere Zahlungen, um sichtbar zu sein und Buchungen zu erhalten.",
+    "calendar_blocked_cta": "Online-Zahlungen aktivieren"
   }
 }
