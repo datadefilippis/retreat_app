@@ -414,6 +414,12 @@ export default function OperatorProfilePage() {
               <p className="text-white/90 mt-1">{data.tagline}</p>
             )}
             <div className="flex flex-wrap items-center gap-2 mt-3">
+              {/* GT3 — badge dei piani "In evidenza" sul profilo */}
+              {data.featured && (
+                <span className="rounded-full bg-white/25 backdrop-blur px-2.5 py-1 text-[11px] font-semibold">
+                  ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
+                </span>
+              )}
               {rs?.count > 0 && (
                 <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
                   ★ {rs.avg} · {t('landings:reviews.countShort', { count: rs.count, defaultValue: '{{count}} recensioni' })}

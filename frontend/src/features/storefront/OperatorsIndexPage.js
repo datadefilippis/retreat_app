@@ -31,6 +31,12 @@ function OperatorCard({ op, t }) {
         {op.cover_url && (
           <img src={op.cover_url} alt="" className="w-full h-full object-cover" loading="lazy" />
         )}
+        {/* GT3 — badge dei piani "In evidenza" anche nell'aggregatore */}
+        {op.featured && (
+          <span className="absolute top-2 right-2 rounded-full bg-[#376254] text-white px-2.5 py-1 text-[11px] font-semibold shadow">
+            ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
+          </span>
+        )}
         <div className="absolute -bottom-6 left-4 h-14 w-14 rounded-full border-2 border-white bg-white shadow overflow-hidden flex items-center justify-center">
           {op.logo_url
             ? <img src={op.logo_url} alt="" className="h-full w-full object-cover" loading="lazy" />

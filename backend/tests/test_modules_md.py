@@ -306,3 +306,31 @@ class TestFeeSaverGt2:
             cf = data.get("cashflow") or {}
             for key in ("feeSaverTitle", "feeSaverBody", "feeSaverCta"):
                 assert cf.get(key), f"{lang}: cashflow.{key} mancante"
+
+
+class TestFeaturedBoostGt3:
+    """GT3 — la promessa Pro "In evidenza" diventa percepibile:
+    strip in testa alla directory, priorita' nell'aggregatore
+    operatori, badge sul profilo pubblico."""
+
+    PUB_SRC = (BACKEND_DIR / "routers" / "public.py").read_text()
+    FRONT = BACKEND_DIR.parent / "frontend" / "src" / "features" / "storefront"
+
+    def test_listing_returns_featured_strip(self):
+        assert '"featured_items"' in self.PUB_SRC
+        page = (self.FRONT / "RetreatsCalendarPage.js").read_text()
+        assert "featured_items" in page
+
+    def test_operators_index_prioritizes_featured(self):
+        """L'aggregatore ordina i featured per primi e li marca."""
+        assert 'not x["featured"]' in self.PUB_SRC
+        page = (self.FRONT / "OperatorsIndexPage.js").read_text()
+        assert "op.featured" in page
+
+    def test_operator_profile_shows_badge(self):
+        """Il payload del profilo espone il flag e la pagina lo mostra."""
+        # il flag e' nel payload di public_operator_profile (dopo reviews_open)
+        idx = self.PUB_SRC.index('"reviews_open"')
+        assert '"featured"' in self.PUB_SRC[idx:idx + 400]
+        page = (self.FRONT / "OperatorProfilePage.js").read_text()
+        assert "data.featured" in page
