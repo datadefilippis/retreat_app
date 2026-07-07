@@ -131,3 +131,24 @@ class TestPlatformOverviewSa2:
         assert "/admin/platform/overview" in tab
         # riuso kit grafico condiviso, non recharts diretto
         assert "components/charts" in tab
+
+
+class TestDirectoryTabSa3:
+    """SA3 — la plancia directory: una riga per org, motivi del gate,
+    polso degli ordini che il calendario porta."""
+
+    def test_snapshot_includes_marketplace_pulse(self):
+        insights = (BACKEND_DIR / "services" / "platform_insights.py").read_text()
+        assert '"orders_marketplace_30d"' in insights
+        assert '"orders_total_30d"' in insights
+
+    def test_directory_tab_wired_with_reason_labels(self):
+        base = BACKEND_DIR.parent / "frontend" / "src" / "features" / "admin"
+        page = (base / "AdminPage.js").read_text()
+        assert "DirectoryAdminTab" in page
+        tab = (base / "DirectoryAdminTab.js").read_text()
+        assert "/admin/platform/directory" in tab
+        # ogni reason code del backend ha la sua etichetta
+        for code in ("stripe_not_ready", "no_public_page",
+                     "no_direct_retreats"):
+            assert code in tab, f"etichetta mancante per {code}"

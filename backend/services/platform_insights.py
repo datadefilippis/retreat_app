@@ -168,6 +168,25 @@ async def directory_snapshot() -> Dict[str, Any]:
         else:
             future_other[occ["organization_id"]] += 1
 
+    # ordini 30gg per org: quanti dal calendario pubblico vs totale
+    # (il polso di quanto la directory PORTA a ogni operatore)
+    from database import orders_collection
+    cutoff_30d = (utc_now() - timedelta(days=30)).isoformat()[:10]
+    orders_30d: Dict[str, Dict[str, int]] = {}
+    async for g in orders_collection.aggregate([
+        {"$match": {"organization_id": {"$in": org_ids},
+                    "status": {"$in": ["confirmed", "completed"]},
+                    "order_date": {"$gte": cutoff_30d}}},
+        {"$group": {"_id": {"org": "$organization_id",
+                            "ch": {"$ifNull": ["$sales_channel", "store"]}},
+                    "n": {"$sum": 1}}},
+    ]):
+        slot = orders_30d.setdefault(g["_id"]["org"],
+                                     {"marketplace": 0, "total": 0})
+        slot["total"] += g["n"]
+        if g["_id"]["ch"] == "marketplace":
+            slot["marketplace"] += g["n"]
+
     rows = []
     for oid, o in orgs.items():
         n_direct = future_direct.get(oid, 0)
@@ -180,6 +199,7 @@ async def directory_snapshot() -> Dict[str, Any]:
         if n_direct == 0:
             reasons.append("no_direct_retreats")
         listed = not reasons and n_direct > 0
+        o30 = orders_30d.get(oid, {"marketplace": 0, "total": 0})
         rows.append({
             "organization_id": oid,
             "name": o.get("name"),
@@ -189,6 +209,8 @@ async def directory_snapshot() -> Dict[str, Any]:
             "reasons": reasons,
             "retreats_listed": n_direct if listed else 0,
             "retreats_excluded": (n_direct if not listed else 0) + n_other,
+            "orders_marketplace_30d": o30["marketplace"],
+            "orders_total_30d": o30["total"],
             "reviews_stats": o.get("reviews_stats"),
         })
     rows.sort(key=lambda r: (not r["listed"], not r["featured"],
