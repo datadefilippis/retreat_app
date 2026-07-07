@@ -163,7 +163,10 @@ function PaymentsCard({ occurrenceId }) {
     setBusyRow(`${orderId}:${seq}`);
     try {
       await ordersAPI.markSchedulePaidManual(orderId, seq, note.trim());
-      toast.success(t('dashboards.event.payments.markPaidOk'));
+      // GT4 — recensioni-moat: nudge discreto sull'incasso manuale
+      toast.success(t('dashboards.event.payments.markPaidOk'), {
+        description: t('common:cashflow.reviewNudge', { defaultValue: 'Gli incassi manuali non generano recensioni verificate: porta la prossima prenotazione sul calendario pubblico.' }),
+      });
       await load();
     } catch (err) {
       toast.error(err?.response?.data?.detail || t('dashboards.event.payments.markPaidErr'));

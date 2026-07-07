@@ -135,7 +135,11 @@ export default function IncassiPage() {
   const markPaid = useCallback(async (orderId) => {
     try {
       await api.post(`/orders/${orderId}/mark-paid`);
-      toast.success(t('cashflow.markPaidOk', { defaultValue: 'Pagamento registrato' }));
+      // GT4 — recensioni-moat: l'incasso manuale non genera recensioni
+      // verificate; il nudge lo ricorda senza bloccare niente
+      toast.success(t('cashflow.markPaidOk', { defaultValue: 'Pagamento registrato' }), {
+        description: t('cashflow.reviewNudge', { defaultValue: 'Gli incassi manuali non generano recensioni verificate: porta la prossima prenotazione sul calendario pubblico.' }),
+      });
       load(true);
     } catch {
       toast.error(t('cashflow.markPaidError', { defaultValue: 'Impossibile registrare il pagamento' }));

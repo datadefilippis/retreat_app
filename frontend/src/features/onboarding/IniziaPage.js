@@ -49,11 +49,21 @@ export default function IniziaPage() {
   const links = status.links || {};
   const pct = Math.round((status.completed_count / status.total) * 100);
 
+  // GT6 — scala del valore profilo-first: il gradino 0 è la VETRINA,
+  // completabile senza store, prodotti o Stripe (salvi la bio → sei
+  // online su /o/…). Il resto segue nell'ordine del percorso reale.
   const STEPS = [
+    {
+      key: 'profile_completed', icon: Sparkles, minutes: 10,
+      title: t('onboarding.profile_title', { defaultValue: 'La tua vetrina' }),
+      why: t('onboarding.profile_why', { defaultValue: 'Bio, foto e social: la tua pagina professionale in 4 lingue, indicizzata su Google. Senza store, senza prodotti — salvi e sei online.' }),
+      cta: t('onboarding.profile_cta', { defaultValue: 'Crea la vetrina' }),
+      href: '/public-profile',
+    },
     {
       key: 'stripe_connected', icon: CreditCard, minutes: 5,
       title: t('onboarding.stripe_title', { defaultValue: 'Collega i pagamenti' }),
-      why: t('onboarding.stripe_why', { defaultValue: 'È dove arrivano i tuoi incassi: direttamente sul tuo conto, con caparre e saldi gestiti in automatico.' }),
+      why: t('onboarding.stripe_why', { defaultValue: 'È dove arrivano i tuoi incassi: direttamente sul tuo conto, con caparre e saldi gestiti in automatico. Serve anche per comparire nel calendario pubblico.' }),
       cta: t('onboarding.stripe_cta', { defaultValue: 'Collega Stripe' }),
       href: '/settings',
     },
@@ -63,7 +73,6 @@ export default function IniziaPage() {
       why: t('onboarding.store_why', { defaultValue: "L'indirizzo pubblico delle tue pagine — con il profilo che diventa la tua pagina Chi siamo." }),
       cta: t('onboarding.store_cta', { defaultValue: 'Crea lo store' }),
       href: '/stores',
-      secondary: { label: t('onboarding.store_profile', { defaultValue: 'poi cura il profilo pubblico' }), href: '/public-profile' },
     },
     {
       key: 'retreat_created', icon: Tent, minutes: 5,
@@ -78,14 +87,6 @@ export default function IniziaPage() {
       why: t('onboarding.publish_why', { defaultValue: 'Un click e il ritiro è prenotabile: appare nel tuo store E nella directory dei ritiri.' }),
       cta: t('onboarding.publish_cta', { defaultValue: 'Vai ai tuoi ritiri' }),
       href: '/events',
-    },
-    {
-      key: 'profile_completed', icon: Sparkles, minutes: 3,
-      title: t('onboarding.profile_title', { defaultValue: 'Fatti conoscere' }),
-      why: t('onboarding.profile_why', { defaultValue: 'Foto, bio e social sul tuo profilo pubblico: più fiducia, più prenotazioni.' }),
-      cta: t('onboarding.profile_cta', { defaultValue: 'Cura il profilo' }),
-      href: '/public-profile',
-      optional: true,
     },
   ];
 

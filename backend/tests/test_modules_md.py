@@ -334,3 +334,73 @@ class TestFeaturedBoostGt3:
         assert '"featured"' in self.PUB_SRC[idx:idx + 400]
         page = (self.FRONT / "OperatorProfilePage.js").read_text()
         assert "data.featured" in page
+
+
+class TestReviewNudgeGt4:
+    """GT4 — recensioni-moat: ogni mark-paid manuale ricorda che gli
+    incassi fuori piattaforma non generano recensioni verificate."""
+
+    SRC_DIR = BACKEND_DIR.parent / "frontend" / "src"
+
+    def test_nudge_on_all_manual_paid_sites(self):
+        sites = [
+            "features/cashflow/IncassiPage.js",
+            "features/orders/OrdersPage.js",
+            "features/events/EventDashboardPage.js",
+        ]
+        for rel in sites:
+            src = (self.SRC_DIR / rel).read_text()
+            assert "reviewNudge" in src, f"{rel}: nudge mancante"
+
+    def test_nudge_copy_in_four_languages(self):
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads(
+                (self.SRC_DIR / "locales" / lang / "common.json").read_text())
+            assert (data.get("cashflow") or {}).get("reviewNudge"), \
+                f"{lang}: cashflow.reviewNudge mancante"
+
+
+class TestProfileFirstGt6:
+    """GT6 — la scala del valore parte dalla vetrina: il profilo con
+    bio accende /o/{slug} senza store, e /inizia lo mette al gradino 0."""
+
+    ORG_SRC = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+    SRC_DIR = BACKEND_DIR.parent / "frontend" / "src"
+
+    def test_profile_save_provisions_public_surface(self):
+        """Salvare il profilo (con bio) assegna public_slug + flag
+        published legacy: la vetrina esiste senza store."""
+        assert "_ensure_public_surface" in self.ORG_SRC
+        idx = self.ORG_SRC.index("async def _ensure_public_surface")
+        block = self.ORG_SRC[idx:idx + 2500]
+        assert "public_slug" in block
+        assert "is_storefront_published" in block
+
+    def test_onboarding_store_step_means_real_store(self):
+        """Il gradino 0 NON deve spuntare 'store creato': lo step
+        legge lo store vero, non il fallback public_slug."""
+        idx = self.ORG_SRC.index('"store_created"')
+        line = self.ORG_SRC[idx:idx + 60]
+        assert "bool(store)" in line
+
+    def test_inizia_checklist_is_profile_first(self):
+        page = (self.SRC_DIR / "features" / "onboarding" / "IniziaPage.js").read_text()
+        first = page.index("'profile_completed'")
+        assert first < page.index("'stripe_connected'")
+        assert first < page.index("'store_created'")
+
+    def test_onboarding_copy_in_four_languages(self):
+        """de/fr non avevano AFFATTO la sezione onboarding (fallback
+        italiano silenzioso) — mai piu': parita' chiave per chiave."""
+        import json
+        blocks = {}
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads(
+                (self.SRC_DIR / "locales" / lang / "dashboard.json").read_text())
+            blocks[lang] = data.get("onboarding") or {}
+        base = set(blocks["it"])
+        assert base, "sezione onboarding mancante in it"
+        for lang in ("en", "de", "fr"):
+            missing = base - set(blocks[lang])
+            assert not missing, f"{lang}: chiavi onboarding mancanti {sorted(missing)}"
