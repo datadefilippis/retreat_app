@@ -68,16 +68,18 @@ export default function BlogIndexPage() {
   return (
     <MarketplaceShell noSearch>
       <div className="bg-background min-h-[60vh]">
-        <header className="relative bg-gradient-sidebar text-white overflow-hidden">
-        <div aria-hidden className="absolute inset-0 pointer-events-none" style={{
-          background: 'radial-gradient(ellipse 60% 80% at 15% 10%, rgba(255,255,255,0.08), transparent 60%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(193,102,61,0.22), transparent 55%)',
-        }} />
-          <div className="relative max-w-4xl mx-auto px-4 py-12 text-center">
-            <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#d6c49a] mb-3 select-none">Connect · Heal · Grow</p>
-            <h1 className="font-display text-3xl md:text-4xl font-bold">
+        <header className="relative text-white overflow-hidden">
+          {/* la foto del founder per il blog */}
+          <img aria-hidden src="/media/hero-blog.webp" alt="" fetchpriority="high"
+               className="absolute inset-0 w-full h-full object-cover" />
+          {/* testo centrato: velatura simmetrica come l'hero della home */}
+          <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/85 via-[#14231d]/55 to-[#0e1a15]/85" />
+          <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-20 text-center">
+            <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-xs md:text-sm text-[#ecd9a8] mb-3 select-none text-hero-shadow">Connect · Heal · Grow</p>
+            <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
               {t('blog.title', { defaultValue: 'Il blog di Aurya' })}
             </h1>
-            <p className="text-white/85 mt-3 text-lg leading-relaxed max-w-2xl mx-auto">
+            <p className="text-white/90 mt-3 text-lg leading-relaxed max-w-2xl mx-auto text-hero-shadow">
               {t('blog.subtitle', { defaultValue: 'Storie, pratiche e sapere olistico da chi i ritiri li organizza e li vive.' })}
             </p>
           </div>
