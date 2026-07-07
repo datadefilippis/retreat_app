@@ -25,10 +25,6 @@ export const adminAPI = {
   setOrgStatus: (orgId, isActive) =>
     api.put(`/admin/organizations/${orgId}/status`, { is_active: isActive }),
 
-  /** @deprecated Use setOrgCommercialPlan instead — this writes the legacy plan field. */
-  setOrgPlan: (orgId, plan) =>
-    api.put(`/admin/organizations/${orgId}/plan`, { plan }),
-
   activateModule: (orgId, moduleKey) =>
     api.post(`/admin/organizations/${orgId}/modules/${moduleKey}/activate`),
 

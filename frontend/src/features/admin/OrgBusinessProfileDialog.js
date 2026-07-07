@@ -36,13 +36,19 @@ function Stat({ label, value, accent }) {
 
 export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange }) {
   const [data, setData] = useState(null);
+  const [trials, setTrials] = useState(null);
 
   useEffect(() => {
     if (!open || !orgId) return;
     setData(null);
+    setTrials(null);
     api.get(`/admin/platform/organizations/${orgId}/business-profile`)
       .then((res) => setData(res.data))
       .catch(() => setData({ error: true }));
+    // SA6 — il trial-history esisteva solo via API: ora vive qui
+    api.get(`/admin/organizations/${orgId}/trial-history`)
+      .then((res) => setTrials(res.data))
+      .catch(() => setTrials(null));
   }, [open, orgId]);
 
   const t = data?.transactions || {};
@@ -144,11 +150,15 @@ export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange }) 
             {/* relazione */}
             <section>
               <h3 className="text-sm font-semibold text-foreground mb-2">Relazione</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <Stat label="Recensioni"
                       value={r.reviews_stats?.count > 0 ? `★ ${r.reviews_stats.avg} (${r.reviews_stats.count})` : '—'} />
                 <Stat label="Iscritti newsletter" value={r.newsletter_subscribers ?? 0} />
                 <Stat label="Ultimo accesso" value={(r.last_login_at || '—').slice(0, 10)} />
+                <Stat label="Trial"
+                      value={(trials?.trials?.length ?? trials?.history?.length ?? 0) > 0
+                        ? `${(trials.trials || trials.history).length} assegnati`
+                        : 'mai'} />
               </div>
             </section>
 

@@ -435,43 +435,22 @@ async def set_org_status(
 
 @router.put(
     "/organizations/{org_id}/plan",
-    summary="Change an organization's subscription plan",
+    summary="[RITIRATO] usa /commercial-plan",
+    deprecated=True,
 )
 async def set_org_plan(
     org_id: str,
     body: OrgPlanUpdate,
     current_user: dict = Depends(require_system_admin),
 ) -> dict:
-    """
-    Update the subscription plan for an organization.
-    Valid values: free | starter | pro | enterprise.
-    """
-    if body.plan not in VALID_PLANS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"plan must be one of {sorted(VALID_PLANS)}",
-        )
-
-    org_doc = await admin_repository.get_organization_detail(org_id)
-    if not org_doc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Organization '{org_id}' not found",
-        )
-
-    previous_plan = org_doc.get("plan")
-    await admin_repository.set_org_plan(org_id, body.plan)
-
-    await audit_repository.create(AuditLog(
-        organization_id=None,
-        user_id=current_user["user_id"],
-        action="admin_change_org_plan",
-        resource_type="organization",
-        resource_id=org_id,
-        details={"previous_plan": previous_plan, "new_plan": body.plan, "org_name": org_doc.get("name")},
-    ))
-
-    return {"ok": True, "org_id": org_id, "plan": body.plan}
+    """SA6 — endpoint dell'era pre-catalogo (campo legacy `plan` con
+    valori free/starter/pro/enterprise), superato dal provisioning
+    commerciale. 410 esplicito: chi lo chiama da uno script vecchio
+    deve capire subito dove andare, non scrivere un campo morto."""
+    raise HTTPException(
+        status_code=status.HTTP_410_GONE,
+        detail="Endpoint ritirato: usa PUT /admin/organizations/{org_id}/commercial-plan",
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════

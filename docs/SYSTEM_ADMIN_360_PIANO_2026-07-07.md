@@ -69,11 +69,11 @@ La lista che ti dice OGNI GIORNO a chi proporre cosa (motore del GTM 1-a-1):
 - **In crescita**: org con GMV in accelerazione → candidate featured/casi studio.
 Ogni segnale con azione one-click (assegna trial, apri scheda, copia email operatore).
 
-### SA6 — Pulizie di coerenza (~½ giornata, spalmabile)
-- Migrare/etichettare le org con piano legacy `free` (in dev: 1 org) e ritirare `PUT /plan` deprecato.
-- Esporre in UI le zone morte utili: trial-history dentro SA4 (fatto lì), bulk actions dietro un pannello "Operazioni" minimale SE serve pre-lancio (altrimenti restano API).
-- Rinominare il tab "AI Governance" in "AI & Traduzioni" (oggi il consumo è quasi solo traduzione LLM) — nessuna rimozione.
-- Guardia i18n: l'area admin è EN/IT? verificare e allineare (namespace admin).
+### SA6 — Pulizie di coerenza (~½ giornata, spalmabile) — FATTO
+- ✅ Org con piano legacy `free` migrata a `retreat_free` via provisioning; `PUT /organizations/{id}/plan` ritirato con **410 esplicito** (+ helper frontend rimosso).
+- ✅ Trial-history esposto nella scheda 360° (SA4); bulk actions restano API-only (nessun bisogno pre-lancio).
+- ✅ Tab "AI Governance" → "AI & Traduzioni".
+- **Decisione i18n admin**: l'area /admin resta in lingua mista (EN storico + IT nelle tab nuove) — è una superficie founder-only e la traduzione ×4 non ha ROI pre-lancio. Si rivaluta se mai entrerà un secondo admin non italofono.
 
 ## PARTE 5 — Ordine e razionale
 
