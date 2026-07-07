@@ -6,7 +6,12 @@
     "empty": "Produkte aus dem Raster auswählen",
     "total": "Gesamt",
     "customer_placeholder": "Kundenname",
-    "complete": "Bestellung abschließen"
+    "complete": "Bestellung abschließen",
+    "pickup": "Abholung vor Ort",
+    "shipping": "Versand",
+    "no_options": "keine Option konfiguriert",
+    "pick_option": "Versandoption wählen…",
+    "address_placeholder": "Lieferadresse"
   },
   "order_done": "Bestellung {{number}} abgeschlossen",
   "new_order": "Neue Bestellung",

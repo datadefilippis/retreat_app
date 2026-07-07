@@ -6,7 +6,12 @@
     "empty": "Select products from the grid",
     "total": "Total",
     "customer_placeholder": "Customer name",
-    "complete": "Complete order"
+    "complete": "Complete order",
+    "pickup": "Local pickup",
+    "shipping": "Shipping",
+    "no_options": "no option configured",
+    "pick_option": "Choose a shipping option…",
+    "address_placeholder": "Shipping address"
   },
   "order_done": "Order {{number}} completed",
   "new_order": "New order",

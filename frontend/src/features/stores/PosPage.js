@@ -39,6 +39,18 @@ export default function PosPage() {
   // Cart: { productId: { product, quantity } }
   const [cart, setCart] = useState({});
   const [customerName, setCustomerName] = useState('');
+  // RF2 — fulfillment variabile: default ritiro in sede, spedizione a scelta
+  const [fulfillmentMode, setFulfillmentMode] = useState('local_pickup');
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [shippingOptionId, setShippingOptionId] = useState('');
+  const [shippingOptions, setShippingOptions] = useState([]);
+  useEffect(() => {
+    let alive = true;
+    shippingOptionsAPI.list().then((res) => {
+      if (alive) setShippingOptions(res.data?.options || res.data || []);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
   const [submitting, setSubmitting] = useState(false);
   const [orderDone, setOrderDone] = useState(null); // order object after completion
 
@@ -105,6 +117,9 @@ export default function PosPage() {
       const res = await ordersAPI.pos({
         customer_name: customerName.trim(),
         store_id: storeId,
+        fulfillment_mode: fulfillmentMode,
+        shipping_address: fulfillmentMode === 'shipping' ? shippingAddress.trim() : undefined,
+        shipping_option_id: fulfillmentMode === 'shipping' ? (shippingOptionId || undefined) : undefined,
         items: cartItems.map(({ product, quantity }) => ({
           product_id: product.id,
           quantity,
@@ -226,10 +241,54 @@ export default function PosPage() {
                   onChange={e => setCustomerName(e.target.value)}
                 />
 
+                {/* RF2 — consegna: ritiro in sede (default) o spedizione */}
+                {cartItems.some(({ product }) => (product.item_type || 'physical') === 'physical') && (
+                  <div className="space-y-2 rounded-lg border border-border p-2.5">
+                    <div className="flex gap-3 text-xs">
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" name="pos-ff" className="accent-[#376254]"
+                               checked={fulfillmentMode === 'local_pickup'}
+                               onChange={() => setFulfillmentMode('local_pickup')} />
+                        {t('cart.pickup', { defaultValue: 'Ritiro in sede' })}
+                      </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" name="pos-ff" className="accent-[#376254]"
+                               checked={fulfillmentMode === 'shipping'}
+                               onChange={() => setFulfillmentMode('shipping')}
+                               disabled={shippingOptions.length === 0} />
+                        <span className={shippingOptions.length === 0 ? 'text-muted-foreground' : ''}>
+                          {t('cart.shipping', { defaultValue: 'Spedizione' })}
+                          {shippingOptions.length === 0 && ` (${t('cart.no_options', { defaultValue: 'nessuna opzione configurata' })})`}
+                        </span>
+                      </label>
+                    </div>
+                    {fulfillmentMode === 'shipping' && (
+                      <>
+                        <select
+                          className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs"
+                          value={shippingOptionId}
+                          onChange={(e) => setShippingOptionId(e.target.value)}
+                        >
+                          <option value="">{t('cart.pick_option', { defaultValue: 'Scegli opzione di spedizione…' })}</option>
+                          {shippingOptions.map((o) => (
+                            <option key={o.id} value={o.id}>{o.label || o.name} {o.price != null ? `— ${fmtPrice(o.price)}` : ''}</option>
+                          ))}
+                        </select>
+                        <Input
+                          placeholder={t('cart.address_placeholder', { defaultValue: 'Indirizzo di spedizione' })}
+                          value={shippingAddress}
+                          onChange={(e) => setShippingAddress(e.target.value)}
+                        />
+                      </>
+                    )}
+                  </div>
+                )}
+
                 {/* Submit */}
                 <Button
                   className="w-full gap-1.5"
-                  disabled={submitting || cartItems.length === 0 || !customerName.trim()}
+                  disabled={submitting || cartItems.length === 0 || !customerName.trim()
+                    || (fulfillmentMode === 'shipping' && (!shippingOptionId || !shippingAddress.trim()))}
                   onClick={handleSubmit}
                 >
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}

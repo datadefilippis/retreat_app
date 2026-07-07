@@ -6,7 +6,12 @@
     "empty": "Seleziona i prodotti dalla griglia",
     "total": "Totale",
     "customer_placeholder": "Nome cliente",
-    "complete": "Completa ordine"
+    "complete": "Completa ordine",
+    "pickup": "Ritiro in sede",
+    "shipping": "Spedizione",
+    "no_options": "nessuna opzione configurata",
+    "pick_option": "Scegli opzione di spedizione…",
+    "address_placeholder": "Indirizzo di spedizione"
   },
   "order_done": "Ordine {{number}} completato",
   "new_order": "Nuovo ordine",
