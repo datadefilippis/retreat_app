@@ -153,7 +153,7 @@ async def build_core() -> str:
         urls.append(_url(f"{base}/operatori", priority="0.8"))
         for cat in sorted(op_cats):
             urls.append(_url(f"{base}/operatori/{cat}", priority="0.6"))
-        urls.append(_url(f"{base}/esperienze", priority="0.7"))
+        # DS3: /esperienze fuori dal sitemap finché il founder non la riapre
     if places:
         urls.append(_url(f"{base}/destinazioni", priority="0.8"))
         for pl in sorted(places):

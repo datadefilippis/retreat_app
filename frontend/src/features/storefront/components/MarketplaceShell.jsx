@@ -68,7 +68,6 @@ function LangSwitcher() {
 // definizione: chi aggiunge una superficie la aggiunge QUI.
 const NAV_ITEMS = [
   { to: '/', key: 'marketplace.navRetreats', fallback: 'Ritiri' },
-  { to: '/esperienze', key: 'marketplace.navExperiences', fallback: 'Esperienze' },
   { to: '/operatori', key: 'marketplace.navOperators', fallback: 'Organizzatori' },
   { to: '/destinazioni', key: 'marketplace.navDestinations', fallback: 'Destinazioni' },
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Blog' },
@@ -295,7 +294,6 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     </Link>
                   </li>
                 ))}
-                <li><Link to="/esperienze" className="hover:text-white">{t('marketplace.footerExperiences', { defaultValue: 'Esperienze' })}</Link></li>
                 <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Blog' })}</Link></li>
               </ul>
             </div>

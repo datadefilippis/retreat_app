@@ -115,7 +115,7 @@ class TestUnifiedNavAn2:
         (chi aggiunge una superficie la aggiunge in un posto solo)."""
         assert "NAV_ITEMS" in self.SHELL
         assert self.SHELL.count("NAV_ITEMS.map") == 2   # desktop + mobile
-        for path in ("/esperienze", "/operatori", "/destinazioni"):
+        for path in ("/operatori", "/destinazioni"):
             assert f"to: '{path}'" in self.SHELL
 
     def test_mobile_menu_keeps_organizer_cta(self):
@@ -431,3 +431,26 @@ class TestDs2Polish:
         assert _LOGO_PATH.exists()          # la firma loto+sole viaggia col repo
         src = (BACKEND_DIR / "services" / "article_cover.py").read_text()
         assert "A U R Y A" in src           # wordmark in Cinzel oro
+
+
+class TestDs3EsperienzeOut:
+    """DS3 (decisione founder 7/7) — /esperienze fuori dal pubblico per
+    ora: niente menu, footer, sitemap né SEO shell. La pagina resta nel
+    repo pronta a tornare; il vecchio URL redirige alla home."""
+
+    def test_esperienze_not_in_nav_or_footer(self):
+        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "MarketplaceShell.jsx").read_text()
+        assert "'/esperienze'" not in shell
+        assert '"/esperienze"' not in shell
+
+    def test_esperienze_route_redirects(self):
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert "ExperiencesPage" not in app          # niente route attiva
+        assert '"/esperienze/*"' in app              # redirect esplicito
+
+    def test_esperienze_out_of_seo(self):
+        seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        assert 'f"{base}/esperienze"' not in seo
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert 'head == "esperienze"' not in shell

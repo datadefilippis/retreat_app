@@ -50,7 +50,6 @@ import RetreatsCalendarPage from "./features/storefront/RetreatsCalendarPage";
 import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
 import OperatorsIndexPage from "./features/storefront/OperatorsIndexPage";
 import DestinationsPage from "./features/storefront/DestinationsPage";
-import ExperiencesPage from "./features/storefront/ExperiencesPage";
 const ServiceWizard = lazy(() => import("./features/services/ServiceWizard"));
 const ReservationWizard = lazy(() => import("./features/reservations/ReservationWizard"));
 const PhysicalWizard = lazy(() => import("./features/physicals/PhysicalWizard"));
@@ -374,8 +373,9 @@ function AppRoutes() {
       <Route path="/operatori/:categoria" element={<OperatorsIndexPage />} />
       <Route path="/destinazioni" element={<DestinationsPage />} />
       <Route path="/destinazioni/:luogo" element={<DestinationsPage />} />
-      <Route path="/esperienze" element={<ExperiencesPage />} />
-      <Route path="/esperienze/:categoria" element={<ExperiencesPage />} />
+      {/* DS3 (decisione founder 7/7): /esperienze fuori per ora — la
+          pagina resta nel repo (storefront/), pronta a tornare */}
+      <Route path="/esperienze/*" element={<Navigate to="/" replace />} />
       <Route path="/o/:org_slug" element={<OperatorProfilePage />} />
 
       <Route path="/e/:org_slug/:slug" element={
