@@ -504,8 +504,7 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_operators_index(parts[1] if len(parts) > 1 else None)
     if head == "destinazioni":
         return await _meta_destination(parts[1] if len(parts) > 1 else None)
-    if head == "esperienze":
-        return await _meta_experiences(parts[1] if len(parts) > 1 else None)
+    # DS3: /esperienze fuori per ora (redirect alla home lato SPA)
     if head == "o" and len(parts) >= 2:
         return await _meta_operator(parts[1])
     if head == "s" and len(parts) >= 2:
