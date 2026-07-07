@@ -3,15 +3,15 @@
 
 **Version:** v1.0
 **Datum des Inkrafttretens:** {{date}}
-**Organisations-Referenz (afianco):** {{org_id}}
+**Organisations-Referenz (Aurya):** {{org_id}}
 
 ---
 
 ## 1. Gegenstand und Zweck
 
-Diese Auftragsverarbeitungsvereinbarung ("**AVV**") regelt die Verarbeitung personenbezogener Daten durch **afianco**, eine von {{platform_controller_name}} ({{platform_controller_country}}) bereitgestellte SaaS-Plattform, im Auftrag des Verantwortlichen **{{merchant_name}}**, gemäss Art. 28 der Verordnung (EU) 2016/679 ("**DSGVO**").
+Diese Auftragsverarbeitungsvereinbarung ("**AVV**") regelt die Verarbeitung personenbezogener Daten durch **Aurya**, eine von {{platform_controller_name}} ({{platform_controller_country}}) bereitgestellte Marktplatz- und Verwaltungsplattform, im Auftrag des Verantwortlichen **{{merchant_name}}**, gemäss Art. 28 der Verordnung (EU) 2016/679 ("**DSGVO**").
 
-Die AVV ist integraler Bestandteil der afianco-Nutzungsbedingungen, die der Verantwortliche bei der Registrierung akzeptiert hat.
+Die AVV ist integraler Bestandteil der Aurya-Nutzungsbedingungen, die der Verantwortliche bei der Registrierung akzeptiert hat.
 
 ---
 
@@ -28,10 +28,10 @@ Die AVV ist integraler Bestandteil der afianco-Nutzungsbedingungen, die der Vera
 
 ## 3. Rolle der Parteien
 
-- Der **Verantwortliche** bestimmt die Zwecke und Mittel der Verarbeitung der personenbezogenen Daten seiner Endkunden, die über die afianco-Plattform erhoben werden.
+- Der **Verantwortliche** bestimmt die Zwecke und Mittel der Verarbeitung der personenbezogenen Daten seiner Endkunden, die über die Aurya-Plattform erhoben werden.
 - Der **Auftragsverarbeiter** verarbeitet personenbezogene Daten ausschliesslich im Auftrag des Verantwortlichen und nach dokumentierten Weisungen, vorbehaltlich abweichender gesetzlicher Pflichten.
 
-afianco hat **keine** direkte vertragliche Beziehung zu den Endkunden des Verantwortlichen. Die Beziehung Kunde ↔ Verantwortlicher verbleibt ausschliesslich beim Verantwortlichen.
+Aurya hat **keine** direkte vertragliche Beziehung zu den Endkunden des Verantwortlichen. Die Beziehung Kunde ↔ Verantwortlicher verbleibt ausschliesslich beim Verantwortlichen.
 
 ---
 
@@ -42,10 +42,10 @@ Der Auftragsverarbeiter verarbeitet im Auftrag des Verantwortlichen folgende Kat
 - **Endkundenkonto**: E-Mail, Name, gehashtes Passwort, bevorzugte Sprache
 - **Bestelldaten**: gekaufte Produkte, Mengen, Preise, Lieferadresse (falls zutreffend), Bestelldatum
 - **Technische Metadaten**: IP-Adresse, User-Agent, Anmelde-Zeitstempel (für Sicherheit und Audit-Protokoll)
-- **Zahlungen**: über Stripe (externer Auftragsverarbeiter) — afianco speichert keine Kartendaten
+- **Zahlungen**: über Stripe (externer Auftragsverarbeiter) — Aurya speichert keine Kartendaten
 - **Marketing-Präferenzen**: nur wenn ausdrücklich vom Verantwortlichen erhoben
 
-afianco verarbeitet **keine** besonderen Kategorien (Art. 9 DSGVO) und keine Daten über strafrechtliche Verurteilungen (Art. 10 DSGVO).
+Aurya verarbeitet **keine** besonderen Kategorien (Art. 9 DSGVO) und keine Daten über strafrechtliche Verurteilungen (Art. 10 DSGVO).
 
 ---
 
@@ -57,7 +57,7 @@ Die Verarbeitung hat folgende Zwecke:
 - Ermöglichung der Registrierung von Endkunden, Bestellungen, transaktionaler Kommunikation
 - Erstellung von Sicherheits- und Integritäts-Audit-Protokollen
 
-**Dauer**: für die Dauer des SaaS-Vertrags zwischen Verantwortlichem und afianco. Bei Beendigung werden personenbezogene Daten gemäss Abschn. 11 zurückgegeben oder gelöscht.
+**Dauer**: für die Dauer des SaaS-Vertrags zwischen Verantwortlichem und Aurya. Bei Beendigung werden personenbezogene Daten gemäss Abschn. 11 zurückgegeben oder gelöscht.
 
 ---
 
@@ -87,7 +87,7 @@ Der Verantwortliche **erteilt allgemein die Genehmigung** für den Auftragsverar
 | **Brevo SAS** | Frankreich | Transaktions-E-Mail-Versand |
 | **Anthropic PBC** | USA | KI-Modelle (Chat-Assistent, Analyse) — nur aggregierte Daten |
 
-Die aktualisierte Liste ist verfügbar unter: https://afianco.app/legal/sub-processors
+Die aktualisierte Liste ist verfügbar unter: https://aurya.life/legal/sub-processors
 
 Bei **Änderungen** der Liste (Hinzufügung oder Ersetzung) informiert der Auftragsverarbeiter den Verantwortlichen mit **30 Tagen** Vorankündigung per E-Mail. Der Verantwortliche kann innerhalb dieser Frist widersprechen; bei Widerspruch kann der Auftragsverarbeiter Alternativlösungen vorschlagen oder den Vertrag kündigen.
 
@@ -156,7 +156,7 @@ Der Verantwortliche hat das Recht:
 
 ## 13. Haftung und Beschränkungen
 
-Die in den afianco-Nutzungsbedingungen festgelegten Haftungsbeschränkungen gelten auch für diese AVV, unbeschadet zwingender gesetzlicher Pflichten und Fällen von Vorsatz oder grober Fahrlässigkeit.
+Die in den Aurya-Nutzungsbedingungen festgelegten Haftungsbeschränkungen gelten auch für diese AVV, unbeschadet zwingender gesetzlicher Pflichten und Fällen von Vorsatz oder grober Fahrlässigkeit.
 
 Der Auftragsverarbeiter haftet nur für Schäden, die durch seine Nichteinhaltung der Auftragsverarbeitern durch die DSGVO speziell auferlegten Pflichten oder durch Handeln ausserhalb oder entgegen den rechtmässigen Weisungen des Verantwortlichen verursacht wurden (Art. 82.2 DSGVO).
 
@@ -170,7 +170,7 @@ Der Auftragsverarbeiter kann diese AVV aktualisieren, um Folgendes widerzuspiege
 - Hinzufügung/Ersetzung von Unter-Auftragsverarbeitern (mit Vorankündigung gemäss Abschn. 7)
 - Verbesserungen der Sicherheitsmassnahmen
 
-Wesentliche Änderungen werden dem Verantwortlichen per E-Mail mit **30 Tagen** Vorankündigung mitgeteilt und erfordern eine neue Zustimmung. Technische/redaktionelle Änderungen werden veröffentlicht unter: https://afianco.app/legal/dpa
+Wesentliche Änderungen werden dem Verantwortlichen per E-Mail mit **30 Tagen** Vorankündigung mitgeteilt und erfordern eine neue Zustimmung. Technische/redaktionelle Änderungen werden veröffentlicht unter: https://aurya.life/legal/dpa
 
 ---
 
@@ -189,11 +189,11 @@ Für alle Streitigkeiten ist das Gericht von **Lugano (CH)** zuständig, unbesch
 {{merchant_country}}
 E-Mail: {{merchant_email}}
 
-**Auftragsverarbeiter (afianco)**
+**Auftragsverarbeiter (Aurya)**
 {{platform_controller_name}}
 {{platform_controller_country}}
 E-Mail: {{platform_controller_email}}
 
 ---
 
-*Diese AVV gilt als vom Verantwortlichen akzeptiert mit der Bestätigung über das afianco-Admin-Panel. Die Bestätigung wird in einem unveränderlichen Audit-Protokoll mit Zeitstempel, IP und User-Agent des Bestätigenden festgehalten.*
+*Diese AVV gilt als vom Verantwortlichen akzeptiert mit der Bestätigung über das Aurya-Admin-Panel. Die Bestätigung wird in einem unveränderlichen Audit-Protokoll mit Zeitstempel, IP und User-Agent des Bestätigenden festgehalten.*

@@ -38,7 +38,7 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v1.0"
+CURRENT_VERSION_TAG: Final[str] = "v2.0"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
@@ -56,9 +56,16 @@ History:
     20 sections; Terms 24 sections per locale). Italian remains the
     legally binding reference language per the disclosure in each
     document header. Controller: Davide De Filippis, Lugano (CH).
+  - v2.0 (AN4, 2026-07-07) — riscrittura integrale per il pivot
+    Aurya marketplace: 4 ruoli (Titolare/Operatore/Cliente-Passaporto/
+    Visitatore), Stripe Connect + application fee 5%/2% solo sul
+    calendario pubblico, caparre e piani di pagamento, recensioni
+    verificate OTP, AI ridimensionata alle traduzioni, sub-processor
+    Nominatim, Aurya intermediario tecnico + DAC7. Zero AFianco.
+    EN/DE/FR ritradotti dal bundle IT v2.0.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "48eaf31ba7826c92"
+CURRENT_VERSION_HASH: Final[str] = "abf8fc2c42c9cb00"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

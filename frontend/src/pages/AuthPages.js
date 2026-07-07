@@ -436,6 +436,10 @@ export const SignupPage = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [verificationRequired, setVerificationRequired] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  // AN4 — consenso granulare: privacy e termini sono accettazioni
+  // DISTINTE (GDPR art. 7); il payload accepted_terms parte solo
+  // quando entrambe sono vere (bundle versionato v2.0)
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   // ── Invite request form ──────────────────────────────────────────────
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [requestName, setRequestName] = useState('');
@@ -475,7 +479,7 @@ export const SignupPage = () => {
     setLoading(true);
 
     try {
-      const result = await signup(email, password, name, organizationName, inviteToken || undefined, acceptedTerms, i18n.language, website);
+      const result = await signup(email, password, name, organizationName, inviteToken || undefined, acceptedTerms && acceptedPrivacy, i18n.language, website);
       if (result === 'verification_required') {
         setVerificationRequired(true);
         return;
@@ -781,6 +785,26 @@ export const SignupPage = () => {
                       </p>
                     )}
                   </div>
+                  {/* AN4 — due consensi distinti (granularita' art. 7 GDPR),
+                      come gia' fa il signup cliente. Il locale passa nei
+                      link cosi' l'utente legge il documento nella SUA lingua
+                      (backend fallback IT, defense in depth). */}
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      id="accept-privacy"
+                      checked={acceptedPrivacy}
+                      onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-border"
+                      data-testid="signup-privacy-checkbox"
+                    />
+                    <label htmlFor="accept-privacy" className="text-xs text-muted-foreground leading-relaxed">
+                      {t('signup.accept_privacy', "Ho letto l'informativa sulla")}{' '}
+                      <a href={`/privacy?lang=${i18n.language || 'it'}`} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
+                        {t('signup.privacy_policy', 'Privacy Policy')}
+                      </a>
+                    </label>
+                  </div>
                   <div className="flex items-start gap-2">
                     <input
                       type="checkbox"
@@ -791,15 +815,7 @@ export const SignupPage = () => {
                       data-testid="signup-terms-checkbox"
                     />
                     <label htmlFor="accept-terms" className="text-xs text-muted-foreground leading-relaxed">
-                      {t('signup.accept_terms', 'Ho letto e accetto la')}{' '}
-                      {/* Wave GDPR-Admin Phase C — pass the current i18n locale
-                          so the user sees the document in the language they
-                          selected on the signup form. Backend falls back to
-                          IT if the locale is invalid (defense in depth). */}
-                      <a href={`/privacy?lang=${i18n.language || 'it'}`} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
-                        {t('signup.privacy_policy', 'Privacy Policy')}
-                      </a>{' '}
-                      {t('signup.and', 'e i')}{' '}
+                      {t('signup.accept_terms_only', 'Accetto i')}{' '}
                       <a href={`/terms?lang=${i18n.language || 'it'}`} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
                         {t('signup.terms_of_service', 'Termini di Servizio')}
                       </a>
@@ -808,7 +824,7 @@ export const SignupPage = () => {
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={loading || !acceptedTerms}
+                    disabled={loading || !acceptedTerms || !acceptedPrivacy}
                     data-testid="signup-submit-btn"
                   >
                     {loading ? t('signup.loading') : t('signup.submit')}

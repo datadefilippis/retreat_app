@@ -210,3 +210,65 @@ class TestOperatorGeoAn3:
         src = (BACKEND_DIR / "scripts" / "backfill_org_geo.py").read_text()
         assert "--dry-run" in src
         assert "asyncio.sleep(1.1)" in src   # policy OSM 1 req/s
+
+
+class TestLegalAn4:
+    """AN4 — il legal racconta il business VERO: Aurya marketplace,
+    caparre, fee, Passaporto, recensioni. Zero AFianco. Versione
+    consensi v2.0 con hash che DEVE combaciare coi file."""
+
+    LEGAL_DIR = BACKEND_DIR / "legal"
+
+    def test_no_afianco_in_legal_bundle(self):
+        """Le 12 superfici legal (privacy+terms+DPA x4 lingue) non
+        contengono più il vecchio brand."""
+        for doc in ("privacy", "terms", "dpa"):
+            for lang in LANGS:
+                text = (self.LEGAL_DIR / f"{doc}_{lang}.md").read_text().lower()
+                assert "afianco" not in text, f"{doc}_{lang}.md: AFianco residuo"
+
+    def test_legal_describes_the_real_business(self):
+        """I contenuti IT (vincolanti) parlano del marketplace: caparra,
+        commissione, Stripe, Passaporto, recensioni."""
+        privacy = (self.LEGAL_DIR / "privacy_it.md").read_text().lower()
+        terms = (self.LEGAL_DIR / "terms_it.md").read_text().lower()
+        for token in ("aurya", "caparr", "stripe"):
+            assert token in privacy, f"privacy_it: manca '{token}'"
+        for token in ("aurya", "caparr", "commission", "passaporto",
+                      "recension"):
+            assert token in terms, f"terms_it: manca '{token}'"
+        # e il vecchio prodotto non c'è più
+        assert "business intelligence" not in privacy
+        assert "business intelligence" not in terms
+
+    def test_consent_version_bumped_and_hash_matches_files(self):
+        """v2.0 e hash RICALCOLATO dal bundle IT: se qualcuno cambia i
+        testi senza bumpare, questa guardia diventa rossa."""
+        import hashlib
+        from core.legal_versions import (CURRENT_VERSION_TAG,
+                                         CURRENT_VERSION_HASH)
+        assert CURRENT_VERSION_TAG == "v2.0"
+        priv = (self.LEGAL_DIR / "privacy_it.md").read_text("utf-8")
+        terms = (self.LEGAL_DIR / "terms_it.md").read_text("utf-8")
+        expected = hashlib.sha256(
+            (priv + "\n\n--- TERMS BUNDLE ---\n\n" + terms).encode()
+        ).hexdigest()[:16]
+        assert CURRENT_VERSION_HASH == expected, (
+            f"hash consensi {CURRENT_VERSION_HASH} != bundle {expected}: "
+            "testi cambiati senza ricomputare l'hash")
+
+    def test_legal_pages_show_aurya_not_afianco(self):
+        for rel in ("pages/PrivacyPolicyPage.js",
+                    "pages/TermsOfServicePage.js"):
+            src = (FRONTEND_SRC / rel).read_text()
+            assert "AFianco" not in src
+            assert "afianco.ch" not in src
+            assert "Aurya" in src
+
+    def test_operator_signup_has_granular_consent(self):
+        """Due checkbox distinte (art. 7 GDPR), submit bloccato finché
+        entrambe non sono vere — come già fa il signup cliente."""
+        src = (FRONTEND_SRC / "pages" / "AuthPages.js").read_text()
+        assert "signup-privacy-checkbox" in src
+        assert "signup-terms-checkbox" in src
+        assert "!acceptedTerms || !acceptedPrivacy" in src

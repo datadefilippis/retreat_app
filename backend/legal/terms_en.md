@@ -1,154 +1,181 @@
 # Terms and Conditions of Service
 
-**Version:** v1.0
-**Effective from:** 16 May 2026
-**Legal reference language:** Italian (the Italian version prevails for legal interpretation purposes)
+**Version:** v2.0
+**Effective date:** 7 July 2026
+**Legally binding language:** Italian — this English version is provided for convenience only. In the event of any discrepancy, the Italian version prevails.
 
-**Service provider (Provider):**
+**Service owner (Provider):**
 Davide De Filippis, Lugano, Switzerland
-Email: davide@afianco.ch
+Email: info@aurya.life
 
 ---
 
 ## 1. Definitions
 
-For the purposes of these Terms, the following expressions shall have the meaning set out below:
+For the purposes of these Terms, the following expressions have the meaning set out below:
 
-- **AFianco** (or "the Platform" or "the Service"): the web-based Business Intelligence platform accessible at https://afianco.app, owned by the Provider.
+- **Aurya** (or "the Platform" or "the Service"): the marketplace of holistic retreats and the management software for operators accessible at https://aurya.life, owned by the Provider.
 - **Provider** (or "We"): Davide De Filippis, based in Lugano, Switzerland.
-- **User** (or "You", "Your"): the adult natural person who registers on the Platform on their own behalf or on behalf of a legal entity / sole proprietorship / professional.
-- **Organization**: the legal entity, sole proprietorship, or professional on whose behalf the User registers (including where the User coincides with the legal entity / sole proprietorship / professional).
-- **Administrator**: the User who initially registers the Organization and assumes full management powers.
-- **Team Member**: additional Users invited by the Administrator.
-- **End-customer**: the natural or legal person who makes purchases via the public storefront operated by the Organization using the Commerce Module (art. 13).
-- **User Content**: all data, files, master data, configurations and other materials uploaded or entered by the User or Team Members into the Platform.
-- **AI Service**: features for analysis, chat and automatic reporting based on third-party language models (Anthropic).
-- **Plans**: the different subscription levels (Free, Core, Pro, Enterprise) described on the public Platform page.
-- **Terms**: these Terms and Conditions of Service, including all annexes and any additional product specifications.
-- **Privacy Policy**: the privacy notice accessible at https://afianco.app/privacy, which is an integral and substantive part of these Terms.
+- **Operator** (or "Organizer"): the professional, teacher or venue — an adult natural person, sole proprietorship or legal entity — that registers with the Platform to publish and sell retreats, experiences, products and courses. The Operator is a customer of the Provider.
+- **End Customer** (or "Participant"): the natural or legal person who books, purchases or takes part in an Operator's offering through the Platform.
+- **Retreat Passport (Passaporto Ritiri)**: the End Customer's optional personal account, valid with all Operators on the Platform, with orders, QR tickets and experience history.
+- **Visitor**: anyone who browses the public pages of the Platform without registering.
+- **User**: any party who uses the Platform (Operator, End Customer or Visitor); where a provision concerns only one role, this is expressly indicated.
+- **Offering**: the retreats, experiences, products and courses published by the Operator on the Platform.
+- **Public calendar** (or "Directory"): the public pages of Aurya that aggregate and make searchable the online-bookable Offerings of all Operators.
+- **Platform fee** (or "application fee"): the percentage withheld by the Provider, via Stripe Connect, exclusively on bookings originating from the Public calendar (Art. 7.2).
+- **Operator Content**: all data, texts, images, prices, terms, customer records and other materials uploaded or entered by the Operator into the Platform.
+- **Plans**: the service tiers for Operators (Free, Pro, and plans by assignment such as Founding/Partner), described in Art. 7.
+- **Terms**: these Terms and Conditions of Service, including all annexes and any further product specifications.
+- **Privacy Policy**: the information on the processing of personal data, accessible at https://aurya.life/privacy, an integral and substantial part of these Terms.
 
 ---
 
-## 2. Contract subject matter and acceptance
+## 2. Subject matter of the contract and acceptance
 
-These Terms govern the relationship between the Provider and the User in relation to access to and use of the AFianco Platform.
+These Terms govern the relationship between the Provider and the User in relation to access to and use of the Aurya Platform: for the Operator, the publication and sale of their Offering and the use of the management software; for the End Customer, booking and purchasing through the Platform and the optional Retreat Passport account.
 
 Acceptance of the Terms takes place by:
-1. Ticking the appropriate box ("I have read and accept the Privacy Policy and the Terms of Service") at registration
-2. Entering the data required in the registration form
-3. Completing the email address verification
+1. Ticking the dedicated checkbox ("I have read and accept the Privacy Policy and the Terms of Service") upon registration or at checkout
+2. Entering the required data in the registration or booking form
+3. For accounts: completing the verification of the email address
 
 Acceptance constitutes an express declaration of:
 - Having fully read and understood these Terms and the Privacy Policy
-- Possessing the legal capacity to enter into a binding contract (art. 6)
-- Acting — where applicable — as the legal representative or authorized person of the Organization that registers
+- Having the legal capacity to enter into a binding contract (Art. 5)
+- Acting — where applicable — as the legal representative or authorized person of the venue being registered
 
-The preservation of acceptance proof (timestamp, document version, language, IP, User-Agent) is governed by art. 4 of the Privacy Policy.
+The retention of proof of acceptance (timestamp, document version, language, IP, User-Agent) is governed by the Privacy Policy (Art. 4).
+
+**The contract for the sale of the retreat, experience, product or course is concluded directly between the Operator and the End Customer.** The Provider is not a party to that contract (see Art. 13).
 
 ---
 
-## 3. Contract formation
+## 3. Conclusion of the contract
 
-The contract is concluded upon completion of the registration procedure and email address verification by the User.
+The contract between the Provider and the Operator is deemed concluded upon completion of the registration procedure and verification of the email address. The contract between the Provider and an End Customer holding a Retreat Passport is concluded upon creation of the account.
 
-The Provider reserves the right to refuse registration or to revoke an account at any time where:
-- There is reasonable suspicion of fraudulent use
+The Provider reserves the right to refuse a registration or revoke an account at any time where:
+- There are well-founded suspicions of fraudulent use
 - The credentials are already associated with a pre-existing account deactivated for breach of the Terms
-- There are measures of competent authorities
+- Orders of competent authorities so require
 
 ---
 
 ## 4. Minimum age
 
-The Service is reserved for adult natural persons (age >= 18). By registering, the User declares to be at least 18 years old. This Platform is intended exclusively for professional and business purposes; it is not intended for consumer use.
+The registration of an account (Operator or Retreat Passport) and the making of bookings and payments are reserved for adult natural persons (age >= 18 years). By registering or booking, the User declares to be at least 18 years old. Any minors may be indicated as participants in a retreat exclusively by an adult who makes the booking and assumes responsibility for them; the admission of minors to the activities is governed by the Operator.
 
 ---
 
 ## 5. Legal capacity and powers of representation
 
-The User declares to have the legal capacity to conclude a binding contract and, if acting on behalf of the Organization (legal entity, sole proprietorship, or professional), to have the necessary powers of representation or internal authorization. Failing such powers, the User is personally liable to the Provider for the obligations undertaken.
+The User declares that they have the legal capacity to conclude a binding contract and, if acting on behalf of a venue (legal entity, sole proprietorship or professional), that they hold the necessary powers of representation or internal authorization. In the absence of such powers, the User is personally liable towards the Provider for the obligations undertaken.
 
 ---
 
-## 6. Service description
+## 6. Description of the Service
 
-The AFianco Service offers the following main features, organized into **modules** activatable depending on the Plan:
+### 6.1 Directory and public calendar
 
-### 6.1 Cashflow Monitor
-- Upload of business financial data (sales, purchases, operating expenses, fixed costs) via CSV/XLSX file or manual entry
-- Cashflow dashboard with KPIs (operating margin, net result, financial health, accounts receivable/payable)
-- Automatic alerts on anomalies and configurable thresholds
-- Period-over-period and Year-over-Year (YoY) comparison
+Aurya displays a public directory of holistic retreats and experiences in Italy, searchable by location, date and type. The visibility of the Offering in the Public calendar is **conditional on online bookability**: the Offerings aggregated are those with real dates, prices and availability, bookable and payable directly through the Platform. The Provider may define minimum-quality editorial criteria for inclusion in the directory (completeness of the listing, photos, consistency of the content).
 
-### 6.2 Customer Insights
-- Customer master data
-- Segmentation, top customer, churn risk, concentration, product affinity
+### 6.2 Operator's storefront and store
 
-### 6.3 Product Catalog
-- Product master data with costs, prices, categories
-- Margin analysis, recommendations, trends
+Each Operator has a personal public storefront (profile, offering, reviews) and a store with dedicated pages for retreats, experiences, products and courses, available in the four languages of the Platform (IT/EN/DE/FR). The storefront is also reachable directly (via the Operator's own link), independently of the Public calendar.
 
-### 6.4 Commerce
-- Public storefront for sales to end-customers (Commerce Module — see art. 13)
-- Order management, invoicing, bookings, events, rentals
-- Payment integration via Stripe
+### 6.3 Bookings, deposits and payment plans
 
-### 6.5 AI Service
-- Interactive chat with AI assistant (based on Anthropic — Claude)
-- Generation of periodic digests (weekly, monthly) with analysis and recommendations
-- Financial health score
-- AI use is subject to the User's explicit consent (Privacy Policy art. 4.1)
+The End Customer books online with real-time availability. The Operator may configure:
+- A **deposit** (down payment) due at booking, with the balance paid later
+- **Payment plans** in instalments, with defined due dates
+- **Automatic email reminders** for balances and instalments, sent by the Platform on behalf of the Operator
 
-### 6.6 Data export (Art. 20 GDPR)
-- Self-service export of all one's data in a ZIP archive containing JSON files
+The booking confirmation, the ticket with QR code and the receipts are sent by email to the End Customer.
 
-### 6.7 Team management
-- Possibility to invite additional users as "admin" or "user"
+### 6.4 Payments (Stripe Connect) and platform fees
 
-The features actually available vary according to the subscribed Plan, as described on the public Plans page. The Provider reserves the right to evolve the Service over time, adding or modifying features within the limits of this article.
+Online payments are handled via **Stripe Connect** (PCI-DSS Level 1):
+- The End Customer pays by card; funds are credited **directly to the Operator's Stripe account**. The Provider does not collect nor hold booking funds.
+- The Provider withholds a **Platform fee** (application fee) exclusively on bookings originating from the Public calendar: **5% on the Free plan, 2% on the Pro plan** (Art. 7).
+- Orders and bookings that the Operator handles outside the Public calendar (e.g. direct customers, sales recorded manually in the management software) **are not subject to any fee**.
+- Payment card data never passes through the Provider's or the Operator's servers (see Privacy Policy Art. 9).
+
+The use of payments requires the Operator to open and maintain a Stripe Connect account, subject to Stripe's terms (https://stripe.com/connect-account/legal), including the identity verifications (KYC) required by Stripe.
+
+### 6.5 Retreat Passport
+
+The End Customer may create, free of charge, a personal account valid with all Operators on the Platform, with: order history, QR tickets, reminders and pre-filled booking data. Creating the account is optional: it is also possible to book as a guest.
+
+### 6.6 Verified reviews
+
+- A review may be published **exclusively by someone who has actually booked** through the Platform; authenticity is verified via an OTP code sent to the email address associated with the order.
+- Reviews are published on the Platform with the reviewer's name, rating and text.
+- It is forbidden to offer or receive compensation, discounts or benefits in exchange for reviews, as well as to publish reviews on behalf of third parties or to review oneself.
+- The Provider reserves the right to remove reviews containing unlawful, defamatory or discriminatory content, content unrelated to the reviewed experience, or reviews obtained in breach of the rules above. The Operator may not edit or delete the reviews received; they may report their unlawfulness to the Provider.
+
+### 6.7 Operator's management software
+
+The Operator has access to management software for: orders and bookings, customer records, deposits and due dates, newsletter with per-operator signup forms (explicit consent and automatic unsubscription via personal link). For End Customer data processed in the management software, the Operator is the Data Controller and the Provider acts as Processor pursuant to Art. 28 GDPR (Privacy Policy Arts. 2.2 and 18).
+
+### 6.8 Automatic translations
+
+At the Operator's request, the Platform generates automatic translations of the public storefront content into the supported languages (IT/EN/DE/FR), via third-party language models (Anthropic — see Art. 10 and Privacy Policy Art. 7). The Operator may review and correct the translations.
+
+### 6.9 Data export (Art. 20 GDPR)
+
+The Operator has a self-service feature for exporting their own data (orders, customers, content) in a structured format.
+
+The features actually available vary according to the subscribed Plan (Art. 7). The Provider reserves the right to evolve the Service over time, adding or modifying features within the limits of Art. 20.
 
 ---
 
-## 7. Plans, prices and billing
+## 7. Plans, prices, fees and billing
 
-### 7.1 Available plans
+### 7.1 Available Plans
 
-The Service is offered with the following Plans: **Free**, **Core**, **Pro**, **Enterprise**. Features included, usage limits and prices for each Plan are described on the public page https://afianco.app/pricing.
+The Service for Operators is offered under the following Plans:
 
-### 7.2 Subscription terms
+- **Free**: with no subscription fee. Platform fee of **5%** on bookings originating from the Public calendar.
+- **Pro**: monthly subscription fee, with the Platform fee reduced to **2%** on bookings originating from the Public calendar and additional features.
+- **Plans by assignment** (e.g. Founding, Partner): special conditions granted by the Provider to specific Operators; their terms prevail, to the extent regulated therein, over these Terms.
 
-Paid Plans are subscribed on a monthly or annual basis, with automatic tacit renewal until explicit cancellation.
+The included features, usage limits and up-to-date prices of each Plan are described on the public page https://aurya.life/pricing.
 
-### 7.3 Payment provider
+### 7.2 Platform fee
 
-Payments are handled via **Stripe Payments Europe Ltd.** (PCI-DSS Level 1). The Provider does not store payment card data (see Privacy Policy art. 9).
+The Platform fee applies **exclusively to bookings originating from the Public calendar** and is withheld automatically via Stripe Connect (application fee) at the time of payment, including deposits and subsequent instalments relating to such bookings. Orders handled outside the Public calendar do not generate any fee. The percentage applied is that of the Plan active at the time of payment.
 
-### 7.4 Trial period / Free tier
+### 7.3 Subscription and Plan changes
 
-The Free Plan is offered indefinitely with limited features. Any free trial periods of higher Plans are indicated at the time of subscription.
+The Pro plan can be subscribed on a monthly basis, with automatic tacit renewal until explicit cancellation, via **Stripe Billing**. The upgrade from Free to Pro takes effect immediately; the downgrade to Free takes effect at the end of the current billing period, with no refund of the remaining amounts except as provided in Art. 7.8.
+
+### 7.4 Payment provider
+
+Payments (bookings and subscriptions) are handled via **Stripe** (PCI-DSS Level 1). The Provider does not store payment card data (see Privacy Policy Art. 9).
 
 ### 7.5 Price changes
 
-The Provider reserves the right to modify the Plan prices. Changes are communicated with at least **30 days' prior notice** by email to the Administrator. Changes will take effect at the next renewal cycle. The User may cancel the subscription before renewal if not agreeing with the new price.
+The Provider reserves the right to change subscription fees and fee percentages. Changes are communicated with at least **30 days' notice** by email to the Operator and take effect at the next renewal cycle (for subscription fees) or upon expiry of the notice period (for platform fees). The Operator may terminate before the effective date if they do not agree with the new conditions.
 
-### 7.6 Invoicing
+### 7.6 Billing
 
-Invoices are issued in electronic format (PDF) and made available through the Stripe customer portal. Billing data is required at the time of subscription to the first paid Plan.
+Receipts and invoices for the Pro subscription fee and the platform fees are issued in electronic format and made available via the Stripe customer portal. Billing details are requested upon subscription to the first paid Plan.
 
-### 7.7 Late payment
+### 7.7 Late payments
 
-In case of failure to pay on the due date:
-- The Provider sends an initial reminder by email
-- After 7 days from the reminder without payment, the subscription is suspended and the account automatically reverts to the Free Plan (with possible feature limitation)
-- After a further 30 days without payment, the Provider may proceed with debt recovery according to legal procedures
+In the event of non-payment of the subscription fee when due:
+- The Provider sends a first reminder by email
+- After 7 days from the reminder without payment, the subscription is suspended and the account automatically reverts to the Free plan (with the corresponding 5% fee and limitation of Pro features)
+- After a further 30 days without payment, the Provider may proceed with debt recovery in accordance with legal procedures
 
-### 7.8 Refunds
+### 7.8 Subscription fee refunds
 
-Payments already made are not refundable in case of voluntary cancellation mid-billing-cycle, except as provided by applicable law or in case of substantial Service defect attributable to the Provider.
+Subscription fees already paid are not refundable in the event of voluntary cancellation in the middle of the billing period, except as provided by applicable law or in the case of a substantial defect of the Service attributable to the Provider. Refunds of bookings to End Customers are governed by Art. 13.3.
 
 ### 7.9 VAT / taxes
 
-All prices indicated are inclusive of applicable local taxes, unless otherwise stated. For Users declaring to purchase within a commercial activity subject to reverse charge (intra-Community B2B), the resulting VAT regime upon issuance of a valid VAT ID will apply.
+All prices indicated are inclusive of applicable local taxes, unless otherwise indicated. For Operators who declare that they are purchasing in the context of a commercial activity subject to the reverse charge mechanism (intra-Community B2B reverse charge), the applicable VAT regime will apply upon provision of a valid VAT number.
 
 ---
 
@@ -156,85 +183,75 @@ All prices indicated are inclusive of applicable local taxes, unless otherwise s
 
 ### 8.1 Confidentiality of credentials
 
-The User is responsible for the confidentiality of their access credentials. All activities performed through one's account are attributed to the User.
+The User is responsible for the confidentiality of their access credentials. All activities carried out through their account are attributed to the User.
 
 ### 8.2 Minimum password requirements
 
-The password must comply with the technical requirements imposed by the Platform (at least 12 characters, containing uppercase, lowercase letters and digits).
+The password must comply with the technical requirements imposed by the Platform (at least 12 characters, containing uppercase letters, lowercase letters and digits).
 
 ### 8.3 Email verification
 
-Access to the Service requires email address verification via a link sent at registration.
+Access to the Service requires verification of the email address via a link sent upon registration.
 
-### 8.4 Security communications
+### 8.4 Security notifications
 
-The User must communicate without delay via email to `davide@afianco.ch` any suspected unauthorized use of their account, loss of credentials, or suspected data breach.
+The User must notify the Provider without delay by email at `info@aurya.life` of any suspected unauthorized use of their account, loss of credentials or suspected data breach.
 
-### 8.5 Team management
+### 8.5 Operator's Stripe account
 
-The Administrator who invites Team Members guarantees that each invitee has reviewed and accepted these Terms upon first access. The Administrator is responsible for the activities of Team Members attributable to their Organization.
+The Operator is responsible for their own Stripe Connect account, for the information provided to Stripe during verification (KYC) and for keeping it up to date. The suspension or closure of the Stripe account by Stripe may make it impossible to receive payments through the Platform, without any liability on the part of the Provider.
 
 ---
 
-## 9. User Content and data ownership
+## 9. Operator Content and data ownership
 
 ### 9.1 Ownership
 
-The Content uploaded to the Platform remains the **exclusive property** of the User / Organization. The Provider does not claim any ownership rights to such Content.
+The Content uploaded to the Platform remains the **exclusive property** of the Operator. The Provider claims no ownership rights over such Content.
 
 ### 9.2 License to the Provider
 
-The User grants the Provider a license that is:
+The Operator grants the Provider a license that is:
 - Non-exclusive
 - Limited to the duration of the contract
 - Revocable at any time by deactivating the account
-- Limited to the purposes of delivering the Service (storage, processing, presentation, execution of features requested by the User, including AI processing)
+- Limited to the purposes of providing the Service (storage, processing, publication on the storefront and in the Public calendar, automatic translation upon request, promotion of the directory with reference to the published Offering)
 
-The license does not include the right to use for the Provider's own commercial purposes nor to transfer to third parties.
+The license does not include the right to use the Content for the Provider's own commercial purposes unrelated to the Platform, nor to assign it to third parties.
 
 ### 9.3 Data portability
 
-The Administrator may at any time export their Content in a structured format (ZIP/JSON) through the feature available in the account Settings.
+The Operator may export their Content at any time in a structured format via the feature available in the account Settings.
 
-### 9.4 Responsibility for the Content
+### 9.4 Responsibility for Content
 
-The User is the **sole responsible party** for the legality, accuracy, completeness and timeliness of the Content uploaded. The Provider does not verify or control the Content. The User declares and warrants:
-- Having the right to process the personal data contained in the Content
-- Having obtained the necessary consents or having another legal basis for processing such data under GDPR/FADP
-- Not to upload illegal, defamatory content, or content infringing third-party rights
-- Not to upload special categories of data under art. 9 GDPR except for a legitimate business need and in full compliance with applicable law
+The Operator is **solely responsible** for the lawfulness, accuracy, completeness and timeliness of the published Content (descriptions, photos, prices, dates, availability, cancellation terms). The Provider does not review Content in advance. The Operator declares and warrants that they:
+- Have the right to publish the texts and images uploaded (including copyright and the consent of the persons portrayed)
+- Have the right to process the personal data contained in the Content and in their own customer records, with an appropriate legal basis under the GDPR/FADP
+- Will not publish unlawful, misleading, defamatory content or content infringing third-party rights
+- Will not record in the Platform special categories of data within the meaning of Art. 9 GDPR (e.g. participants' health data — see Privacy Policy Art. 3.4)
 
-In case of breach, the User indemnifies and holds harmless the Provider as provided in art. 17.
+In the event of a breach, the Operator indemnifies and holds the Provider harmless as provided in Art. 17.
 
 ---
 
-## 10. AI Service: specific terms
+## 10. Automatic translations: specific terms
 
-### 10.1 Informational nature
+### 10.1 Nature of the service
 
-The AI processing provided by the Platform (chat, digest, health score, automatic analysis) has a **purely informational and advisory character**. It does not constitute:
-- Professional financial, tax or accounting advice
-- Legal advice
-- Technical opinions from licensed professionals
-- Autonomous decisions with binding effects on the User
+The automatic translations of storefront content (Art. 6.8) are generated by third-party language models (Anthropic) and are in the nature of **editorial support**. They do not constitute sworn translations nor professional advice.
 
-The User is the sole responsible party for decisions made based on AI analyses.
+### 10.2 Transmission of data to Anthropic
 
-### 10.2 Data transmission to Anthropic
+The use of the feature entails the transmission of only the public texts to be translated to Anthropic, PBC (USA), as described in Privacy Policy Art. 7. End Customer, order or payment data is never transmitted.
 
-The use of the AI Service involves the transmission of aggregated data to Anthropic, PBC (USA), as described in Privacy Policy art. 7.
+### 10.3 Accuracy limitations and Operator's responsibility
 
-### 10.3 Accuracy limitations
+The Provider does not guarantee the accuracy or completeness of the generated translations, which may contain errors. The Operator is required to review the translations before relying on them and is responsible for the content published in every language. In the event of discrepancies between the language versions of a listing, the Operator's original drafting language prevails.
 
-The Provider does not guarantee the accuracy, completeness or relevance of AI-generated responses. AI models may produce inaccurate information ("hallucinations"). While adopting technical measures to minimize this risk (built-in anti-hallucination rules, response validation), the Provider does not warrant the absence of errors.
+### 10.4 Absence of automated decision-making (Art. 22 GDPR)
 
-### 10.4 Optional use
-
-Use of the AI Service is **optional** and may be disabled at any time from the Settings. The core AFianco Service operates also without AI.
-
-### 10.5 Automated decision-making (art. 22 GDPR)
-
-AFianco's AI Service does not make autonomous decisions with legal effects on the User under art. 22 GDPR. The User retains full decision-making control at all times.
+The Platform does not use AI for automated decisions with legal effects on Users (discriminatory ranking, scoring, automatic approvals or rejections). See Privacy Policy Art. 7.3.
 
 ---
 
@@ -242,22 +259,23 @@ AFianco's AI Service does not make autonomous decisions with legal effects on th
 
 ### 11.1 Commitment
 
-The Provider commits to ensuring a high level of Service continuity by actively monitoring the infrastructure and sub-processors.
+The Provider undertakes to ensure a high level of continuity of the Service, actively monitoring the infrastructure and the sub-processors.
 
 ### 11.2 Disclaimer
 
-The Service is provided "**as-is**" and "**as-available**". The Provider does not warrant:
+The Service is provided "**as is**" and "**as available**". The Provider does not guarantee:
 - Uninterrupted or error-free operation
-- Absence of temporary slowdowns due to scheduled maintenance, force majeure, sub-processor issues or causes beyond the Provider's control
-- Specific response time or guaranteed uptime levels (except as may be provided in Enterprise Plans with a dedicated contractual SLA)
+- The absence of temporary slowdowns due to scheduled maintenance, force majeure, sub-processor issues or causes not attributable to the Provider
+- Specific response-time levels or guaranteed uptime
+- Minimum volumes of visibility, traffic or bookings for the Operator
 
 ### 11.3 Maintenance
 
-Scheduled maintenance is planned outside standard CET working hours and announced with at least 48 hours' prior notice via Platform notice, except for urgent security interventions.
+Scheduled maintenance is planned outside standard CET business hours and announced with at least 48 hours' notice via a notice in the Platform, except for urgent security interventions.
 
 ### 11.4 Force majeure
 
-The Provider is not liable for failures due to force majeure (natural disasters, government acts, strikes, massive cyberattacks, unavailability of sub-processors beyond the Provider's control).
+The Provider is not liable for non-performance due to force majeure (natural disasters, governmental acts, strikes, large-scale cyberattacks, unavailability of sub-processors beyond the Provider's control).
 
 ---
 
@@ -266,93 +284,100 @@ The Provider is not liable for failures due to force majeure (natural disasters,
 The User undertakes to:
 
 1. Use the Service exclusively for lawful purposes and in compliance with the Terms
-2. Not attempt to access data of other Organizations or Users
-3. Not upload illegal, defamatory, immoral content or content infringing third-party rights
-4. Not use automated systems (bots, crawlers, scrapers) to access the Service unless authorized for official API integrations
-5. Not attempt to circumvent security measures, Plan limits or multi-tenant isolation
-6. Not resell, sublicense or redistribute Service access to third parties without the Provider's written authorization
-7. Not use the Service for direct competition (e.g. analyzing the Platform to build a competing service)
-8. Not overload the infrastructure with manifestly excessive requests
+2. Not attempt to access data of other Operators or Users
+3. Not publish unlawful, misleading, defamatory content, content contrary to public decency or infringing third-party rights
+4. Not publish false, compensated or third-party reviews, nor solicit them (Art. 6.6)
+5. Not circumvent the Platform to evade the Platform fee on bookings originating from the Public calendar (e.g. systematically diverting customers acquired through the directory off-Platform for the sole purpose of avoiding the fee)
+6. Not use automated systems (bots, crawlers, scrapers) to access the Service unless authorized for official integrations
+7. Not attempt to circumvent security measures, Plan limits or multi-tenant isolation
+8. Not resell, sublicense or redistribute access to the Service to third parties without the Provider's written authorization
+9. Not use the Service for direct competitive activities (e.g. analyzing the Platform to build a competing service)
+10. Not overload the infrastructure with manifestly excessive requests
 
-Breaches of this article may result in immediate account suspension (art. 14.4) and possible compensation claim.
+Breaches of this article may result in the immediate suspension of the account (Art. 14.4) and a possible claim for damages.
 
 ---
 
-## 13. Commerce Module: specific provisions
+## 13. Marketplace: roles and responsibilities of the Operator
 
-When the Organization uses the Commerce Module to operate a public storefront:
+### 13.1 Aurya as technical intermediary
 
-### 13.1 Role of the Organization
+The Provider makes available the technical intermediation infrastructure (directory, storefront, bookings, payments, management software). **The Provider is not the organizer, seller or supplier of the retreats, experiences, products or courses published.** The contract relating to the Offering is concluded directly and exclusively between the Operator and the End Customer; the Operator is solely responsible for it, including its performance (running of the retreat, quality, safety of participants, delivery of products, suitability of premises, insurance coverage, any professional qualifications required).
 
-The Organization is the Controller of its own end-customer data (see Privacy Policy art. 18). The Provider acts as Processor under art. 28 GDPR.
+### 13.2 Operator's obligations
 
-### 13.2 Organization's obligations
+The Operator is required to:
+- Describe the Offering truthfully, completely and in a non-misleading manner (prices, dates, what is included, participation requirements)
+- Provide their own End Customers with their own GDPR-compliant privacy policy and handle requests for the exercise of rights (Privacy Policy Art. 18)
+- Comply with the rules applicable to their activity: consumer rights (Italian Consumer Code, Directive 2011/83/EU, Swiss law on consumer credit), pre-contractual information, any regulations on package travel and accommodation facilities, hygiene, health and safety rules
+- Honour confirmed bookings and the terms published at the time of booking
+- Enter into the **Data Processing Agreement (DPA)** pursuant to Art. 28 GDPR with the Provider for their customers' data; use of the management software entails acceptance of the standard DPA, available upon request at `info@aurya.life`
 
-The Organization (Merchant) is required to:
+### 13.3 Cancellation and refund policy towards the End Customer
 
-- Provide its end-customers with a complete and GDPR-compliant privacy notice of its own
-- Correctly indicate its own contact details and customers' rights
-- Directly handle requests to exercise rights (arts. 15-22 GDPR) coming from end-customers
-- Comply with applicable rules on e-commerce, consumer rights (Italian Consumer Code, Directive 2011/83/EU, Swiss LCC), pre-contractual information, withdrawal conditions
-- Correctly configure sales terms, delivery conditions, warranties, return and refund policies at store or single-product level using the Platform features
-- Correctly pay the taxes applicable to sales (VAT, Swiss VAT, etc.)
+- The cancellation and refund terms (including the fate of the deposit) are **defined by the Operator and published on the retreat or product page**; they directly govern the relationship between the Operator and the End Customer and must comply with applicable consumer law.
+- Refunds due are **processed by the Operator via Stripe**, from their own account. In the event of a refund, the Platform fee follows Stripe's rules on application fee refunds.
+- The Provider does not decide on refunds and is not obliged to refund the End Customer in place of the Operator; it may facilitate communication between the parties in the event of a dispute, with no obligation as to the outcome.
+- Any chargebacks and disputes with the payment network are handled on the Operator's Stripe account, and the Operator bears their outcomes and costs.
 
-### 13.3 Data Processing Agreement
+### 13.4 Operator's tax obligations
 
-The Organization and the Provider enter into a separate **Data Processing Agreement (DPA)** under art. 28 GDPR. The Provider's standard DPA is provided upon request to `davide@afianco.ch`. Use of the Commerce Module entails tacit acceptance of the DPA under art. 28(3) GDPR (explicit acceptance may be formalized upon written request).
+The Operator is solely responsible for their own tax and accounting obligations relating to sales made through the Platform: issuing receipts/invoices to End Customers where due, declaring revenues, paying VAT/value added tax and any other applicable tax, and any reporting obligations (e.g. DAC7 where applicable through the competent channels). The Provider invoices the Operator exclusively for the subscription fee and the fees due to it.
 
-### 13.4 Sales terms toward end-customer
-
-Sales terms configured by the Organization directly govern the Organization – end-customer relationship. The Provider provides the technical container for presenting such terms, but is not a party to the sales contract nor involved in its performance (delivery, warranties, returns).
-
-### 13.5 Provider's liability exemption
+### 13.5 Exclusion of the Provider's liability
 
 The Provider is not liable for:
-- Disputes from end-customers toward the Organization
-- Non-delivery, delays, disputes on product/service quality
-- The Organization's tax obligations toward competent authorities
-- The Organization's compliance with applicable sales law
+- Claims by the End Customer against the Operator (quality, cancellation, non-performance, injuries, damage during the retreat)
+- The truthfulness and lawfulness of the Content published by the Operator
+- The Operator's tax, insurance and authorization obligations
+- The Operator's compliance with the rules applicable to the sale and supply of the Offering
 
 ---
 
 ## 14. Deactivation, suspension, termination
 
-### 14.1 Self-service deactivation by the User
+### 14.1 Self-service deactivation by the Operator
 
-The Administrator may deactivate the account at any time from the Settings. Deactivation entails:
+The Operator may deactivate their account at any time from the Settings. Deactivation entails:
 
-1. Immediate access block for the Administrator and Team Members
-2. Immediate cancellation of any active Stripe subscriptions (without refund of the remaining quotas of the period already paid)
-3. Sending notification by email
-4. **30-day grace period** during which the account may be reactivated
-5. **Reminder email 7 days before definitive deletion** with instructions to export data
-6. After 30 days: **definitive and irreversible deletion** of all Organization data (financial records, uploaded files, AI conversations, alerts, user data). Audit logs are anonymized and kept for the residual retention period for legal protection and security.
+1. Immediate blocking of access and removal of the storefront and the Offering from the public pages
+2. Immediate cancellation of any active Stripe subscriptions (with no refund of the remaining amounts of the period already paid)
+3. Sending of an email notification
+4. A **30-day grace period** during which the account can be reactivated
+5. A **reminder email 7 days before permanent deletion** with instructions for exporting data
+6. After 30 days: **permanent and irreversible deletion** of all the Operator's data (content, orders, customer records, user data). Audit logs are anonymized and retained for the remainder of their retention period for the purposes of legal protection and security.
+
+The Operator's obligations towards End Customers for bookings already confirmed at the time of deactivation remain unaffected (performance or refund pursuant to Art. 13.3).
+
+The End Customer may request the closure of their Retreat Passport account in the manner and within the timeframes indicated in the Privacy Policy (Art. 12).
 
 ### 14.2 Reactivation
 
-During the grace period the Administrator may reactivate the account by contacting the Provider. Reactivation restores the data but not any subscription, which must be re-subscribed.
+During the grace period the Operator may reactivate the account by contacting the Provider. Reactivation restores the data but not any subscription, which must be re-subscribed.
 
-### 14.3 Termination by the Provider for breach
+### 14.3 Termination by the Provider
 
-The Provider may terminate the contract at any time, with at least 30 days' prior notice and via email, in case of:
+The Provider may terminate the contract at any time, with at least 30 days' notice and by email notification, in the event of:
 - Substantial breach of these Terms by the User
-- Prolonged non-payment (see art. 7.7)
-- Use of the Service for illegal activities
+- Prolonged non-payment (see Art. 7.7)
+- Use of the Service for unlawful activities
+- Repeated and well-founded complaints by End Customers for unfulfilled bookings
 
-In case of termination, the Administrator will be entitled to export their data within the notice period.
+In the event of termination, the Operator will be entitled to export their data within the notice period.
 
 ### 14.4 Immediate suspension
 
-The Provider reserves the right to immediately suspend, without notice, the account in case of:
-- Suspected security violations that put the Platform or other Users at risk
+The Provider reserves the right to immediately suspend, without notice, the account in the event of:
+- Suspected security breaches endangering the Platform or other Users
+- Suspected fraud in payments or reviews
 - Requests from competent authorities
-- Upload of manifestly illegal content
+- Publication of manifestly illegal content
 
-The suspension is provisional; if 72 hours elapse from suspension without clarification from the User, the Provider may proceed with termination under art. 14.3.
+The suspension is provisional; after 72 hours from the suspension without clarification from the User, the Provider may proceed with termination pursuant to Art. 14.3.
 
-### 14.5 Termination due to Provider closure
+### 14.5 Cessation of the Provider's activity
 
-In case of cessation of the Provider's activity, the User will be notified with at least **60 days' prior notice** to allow full data export. The Provider commits to keeping the export feature available also during the closure period.
+In the event of cessation of the Provider's activity, the User will be notified with at least **60 days' notice** to allow the complete export of their data. The Provider undertakes to keep the export feature available also during the wind-down period.
 
 ---
 
@@ -360,7 +385,7 @@ In case of cessation of the Provider's activity, the User will be notified with 
 
 ### 15.1 Provider's rights
 
-All intellectual property rights related to the Platform (source code, design, interfaces, "AFianco" trademark, editorial content, documentation, algorithms) are and remain the exclusive property of the Provider or its licensors.
+All intellectual property rights relating to the Platform (source code, design, interfaces, "Aurya" trademark and logo, editorial content, documentation, algorithms) are and remain the exclusive property of the Provider or its licensors.
 
 ### 15.2 License to the User
 
@@ -368,13 +393,13 @@ The Provider grants the User a license that is:
 - Non-exclusive
 - Non-transferable
 - Limited to the duration of the contract
-- For the use of the Service in the manners provided by the Terms
+- For the use of the Service in the manner provided for by the Terms
 
-The User does not acquire any rights to the Platform beyond the granted right of use.
+The User acquires no rights over the Platform beyond the license of use.
 
 ### 15.3 Feedback
 
-Any suggestion, idea, report, improvement proposed by the User in relation to the Platform may be used by the Provider freely, without any obligation of compensation, attribution or confidentiality.
+Any suggestion, idea, report or improvement proposed by the User in relation to the Platform may be used by the Provider freely, without any obligation of compensation, attribution or confidentiality.
 
 ---
 
@@ -382,115 +407,117 @@ Any suggestion, idea, report, improvement proposed by the User in relation to th
 
 ### 16.1 Exclusion of implied warranties
 
-To the maximum extent permitted by applicable law, the Provider excludes any implied warranty of merchantability, fitness for a particular purpose, accuracy of obtainable results.
+To the maximum extent permitted by applicable law, the Provider excludes any implied warranty of merchantability, fitness for a particular purpose, or accuracy of the results obtainable.
 
 ### 16.2 Maximum liability cap
 
-To the maximum extent permitted by applicable law, the Provider's total liability toward the User for any cause arising from or connected to the Service (including direct, indirect, incidental damages, lost profits, data loss, reputational harm) **shall not exceed the total amount paid by the User to the Provider in the 12 months preceding the event giving rise to liability**.
+To the maximum extent permitted by applicable law, the Provider's aggregate liability towards the User for any cause arising from or connected with the Service (including direct, indirect and incidental damages, loss of profit, loss of data, reputational damage) **shall not exceed the total amount paid by the User to the Provider (subscription fees and platform fees) in the 12 months preceding the event giving rise to the liability**.
 
-For Users on the Free Plan who have never paid any amount, the maximum liability cap is set at **CHF 200** (two hundred Swiss francs).
+For Users who have never paid any amount to the Provider, the maximum liability cap is set at **CHF 200** (two hundred Swiss francs).
 
 ### 16.3 Express exclusions
 
-Except in cases of intent or gross negligence, the Provider is not liable for:
+Except in cases of willful misconduct or gross negligence, the Provider is not liable for:
 
-- **Data loss** due to User actions, configuration errors, accidental deletions
-- **Business, financial, fiscal or legal decisions** taken based on Platform or AI Service analyses
-- **Lost profits**, loss of clientele, reputational harm
-- **Unauthorized accesses** caused by User negligence in credential custody
-- **Service interruptions** due to force majeure, scheduled maintenance, massive cyberattacks beyond the Provider's control
-- **Sub-processor failures** that do not constitute a breach of the respective agreement (Privacy Policy art. 6)
-- **Disputes between Organization and Commerce Module end-customers** (art. 13.5)
-- **Tax or regulatory compliance** of the Organization
+- **Loss of data** due to the User's actions, configuration errors, accidental deletions
+- **Performance of retreats and Offerings**: cancellations, quality, safety, damage or injuries during the Operator's activities (Art. 13)
+- **Business decisions** taken by the Operator on the basis of information from the Platform
+- **Loss of profit**, loss of customers, reputational damage
+- **Unauthorized access** caused by the User's negligence in safeguarding their credentials
+- **Service interruptions** due to force majeure, scheduled maintenance, large-scale cyberattacks beyond the Provider's control
+- **Non-performance by sub-processors** that does not constitute a contractual breach of the respective agreement (Privacy Policy Art. 6)
+- **Suspension or closure of the Operator's Stripe account** by Stripe (Art. 8.5)
+- **Disputes between the Operator and End Customers** (Art. 13.5)
+- The Operator's **tax or regulatory compliance**
 
-### 16.4 Non-derogable limitations
+### 16.4 Mandatory limitations
 
-The above limitations do not apply where applicable mandatory law excludes or limits such exemptions. In particular, nothing in these Terms limits liability for intent, gross negligence, personal injury or cases of liability that cannot be limited under applicable law.
+The above limitations do not apply where mandatory applicable law excludes or limits such exemptions. In particular, nothing in these Terms limits liability for willful misconduct, gross negligence, personal injury or cases of liability that cannot be limited under applicable law. Mandatory consumer protections remain unaffected (Art. 22.3).
 
 ---
 
 ## 17. Indemnification
 
-The User undertakes to indemnify and hold harmless the Provider (including its representatives, agents, sub-processors) from any claim, dispute, legal action, loss, damage, cost or expense (including reasonable legal costs) arising from:
+The Operator undertakes to indemnify and hold harmless the Provider (including its representatives, auxiliaries and sub-processors) from any claim, dispute, legal action, loss, damage, cost or expense (including reasonable legal fees) arising from:
 
-1. Breach of these Terms by the User
-2. Use of the Service in violation of applicable law
-3. Infringement of third-party rights caused by the User Content or its use
-4. Claims by Organization's end-customers related to the Organization's contractual relationship (Commerce Module — art. 13)
-5. Third-party claims related to the User's failures toward its own data subjects (e.g. lack of privacy notice provided to its own customers)
+1. Breach of these Terms by the Operator
+2. Use of the Service in breach of applicable legal provisions
+3. Infringement of third-party rights caused by the Operator Content or its use
+4. Claims by End Customers relating to the contractual relationship with the Operator (performance of the Offering, cancellations, refunds, damages — Art. 13)
+5. Third-party claims relating to the Operator's non-compliance towards their own data subjects (e.g. failure to provide a privacy policy to their customers, marketing communications sent without consent)
 
-The Provider will promptly notify the User of any third-party claims and will reasonably cooperate in the defense.
+The Provider will promptly notify the Operator of any third-party claims and will reasonably cooperate in the defence.
 
 ---
 
 ## 18. Confidentiality
 
-The Parties undertake to keep confidential the confidential information received from the counterparty within the contractual relationship, except as required by:
+The Parties undertake to keep confidential the confidential information received from the other party in the context of the contractual relationship, except as required by:
 - Competent judicial or administrative authorities
 - Mandatory tax and accounting obligations
-- Service performance (e.g. authorized sub-processors)
+- The performance of the Service (e.g. authorized sub-processors)
 
-The confidentiality obligation survives the termination of the contractual relationship for an additional **3 years**.
+The confidentiality obligation survives the termination of the contractual relationship for a further **3 years**.
 
 ---
 
 ## 19. Communications
 
-### 19.1 Provider notifications to the User
+### 19.1 Notices from the Provider to the User
 
-Provider's communications take place via email to the address registered by the User. The User is required to keep their email address updated.
+Communications from the Provider are made by email to the address registered by the User. The User is required to keep their email address up to date.
 
-### 19.2 User notifications to the Provider
+### 19.2 Notices from the User to the Provider
 
-User's communications to the Provider take place via email at `davide@afianco.ch`.
+Communications from the User to the Provider are made by email to `info@aurya.life`.
 
 ### 19.3 Transactional emails
 
-The Provider sends transactional communications necessary for Service delivery (account verification, password reset, team invites, deactivation notices, cancellation reminders, changes to Terms, invoices). Such communications **cannot be disabled** as they are instrumental to the contractual relationship.
+The Provider sends transactional communications necessary for the delivery of the Service (account verification, password reset, order confirmations, tickets, balance and instalment reminders, review OTP codes, deactivation notices, deletion reminders, changes to the Terms, receipts). Such communications **cannot be disabled** as they are instrumental to the contractual relationship.
 
-### 19.4 Absence of marketing communications
+### 19.4 Marketing communications
 
-The Provider **does not send** newsletters, promotions or marketing emails without the User's prior explicit consent.
+The Provider **does not send** newsletters, promotions or marketing emails without the prior explicit consent of the data subject. Operators' newsletters are sent exclusively to subscribers who have given consent, with self-service unsubscription in every email (Privacy Policy Art. 4.1).
 
 ---
 
 ## 20. Changes to the Terms
 
-The Provider reserves the right to modify these Terms.
+The Provider reserves the right to amend these Terms.
 
-### 20.1 Material changes
+### 20.1 Substantial changes
 
-For material changes (e.g. price change, significant feature reduction, new data processing purposes, new sub-processors) the Provider communicates with at least **30 days' prior notice**:
+For substantial changes (e.g. changes to subscription fees or platform fees, significant reduction of features, new data processing purposes, new sub-processors) the Provider gives at least **30 days' notice** via:
 
-1. Email to the Administrator
-2. Notice on the Platform at the next login
-3. Publication of the new version at https://afianco.app/terms
+1. Email to the registered User
+2. A notice in the Platform at the next login
+3. Publication of the new version at https://aurya.life/terms
 
-Continued use of the Service after the effective date of the changes constitutes acceptance of the new provisions. In case of disagreement, the User may withdraw without penalty by the effective date.
+Continued use of the Service after the effective date of the changes constitutes acceptance of the new provisions. In case of disagreement, the User may terminate without penalty by the effective date.
 
 ### 20.2 Minor changes
 
-For minor changes (typo corrections, rewordings that do not alter substance, contact data updates), the notice is **15 days**.
+For minor changes (correction of typos, rewording that does not alter the substance, updating of contact details), the notice period is **15 days**.
 
 ### 20.3 Urgent changes
 
-For changes imposed by mandatory law or by competent authorities' measures, the Provider may implement the changes with immediate effect, with subsequent communication to the User.
+For changes required by mandatory legal provisions or by orders of competent authorities, the Provider may implement the changes with immediate effect, with subsequent communication to the User.
 
 ---
 
-## 21. Assignment and subcontract
+## 21. Assignment and subcontracting
 
-### 21.1 Contract assignment
+### 21.1 Assignment of the contract
 
-The User may not assign their account or rights deriving from this contract to third parties without the Provider's written consent.
+The User may not assign their account or the rights arising from this contract to third parties without the Provider's written consent.
 
 ### 21.2 Assignment by the Provider
 
-The Provider may assign the contract to third parties in the context of extraordinary operations (merger, demerger, business transfer) with 30 days' prior notice. The User shall have the right to withdraw within the notice period.
+The Provider may assign the contract to third parties in the context of extraordinary transactions (merger, demerger, transfer of business) with 30 days' notice. The User will have the right to terminate within the notice period.
 
 ### 21.3 Sub-processors
 
-The Provider's use of sub-processors is governed by Privacy Policy art. 6.
+The use of sub-processors by the Provider is governed by Privacy Policy Art. 6.
 
 ---
 
@@ -498,15 +525,15 @@ The Provider's use of sub-processors is governed by Privacy Policy art. 6.
 
 ### 22.1 Governing law
 
-These Terms are governed exclusively by **Swiss law**, excluding the conflict-of-laws rules and the 1980 Vienna Convention on International Sale of Goods (CISG).
+These Terms are governed exclusively by **Swiss law**, excluding conflict-of-law rules and the 1980 Vienna Convention on Contracts for the International Sale of Goods (CISG).
 
 ### 22.2 Jurisdiction
 
-For any dispute arising from these Terms or the use of the Service, the Parties agree on the **exclusive jurisdiction of the courts of Lugano**, Switzerland.
+For any dispute arising from these Terms or from the use of the Service, the Parties agree on the **exclusive jurisdiction of the courts of Lugano**, Switzerland.
 
-### 22.3 Consumer carve-out
+### 22.3 Consumer protection reservation
 
-The application of mandatory law provisions applicable in favor of Users residing in other States that recognize more favorable consumer protection remains unaffected, where the User can be qualified as a consumer.
+The application of mandatory legal provisions applicable in favour of Users qualifying as consumers (in particular End Customers) remains unaffected, including the consumer's forum and the protections of the country of habitual residence where more favourable and mandatory. It remains understood that the contract relating to the Offering is between the End Customer and the Operator (Art. 13).
 
 ---
 
@@ -514,30 +541,31 @@ The application of mandatory law provisions applicable in favor of Users residin
 
 ### 23.1 Entire agreement
 
-These Terms, together with the Privacy Policy and any Data Processing Agreement, constitute the **entire agreement** between the Parties in relation to the Service, replacing any prior written or oral understanding.
+These Terms, together with the Privacy Policy and any Data Processing Agreement, constitute the **entire agreement** between the Parties in relation to the Service, superseding any prior written or verbal understanding.
 
 ### 23.2 Severability
 
-If a provision of these Terms is deemed invalid, illegal or unenforceable by the competent authority, the remaining provisions will remain fully in force. The invalid provision will be replaced by the legitimate provision closest to the Parties' original intent.
+Should any provision of these Terms be held invalid, unlawful or unenforceable by a competent authority, the remaining provisions shall remain in full force and effect. The invalid provision shall be replaced by the lawful provision closest to the original intent of the Parties.
 
 ### 23.3 Waiver
 
-Failure to exercise or delayed exercise of a right under these Terms does not constitute a waiver of such right. Any waivers must be expressed in writing.
+The failure to exercise, or the delayed exercise of, a right provided for by these Terms does not constitute a waiver of that right. Any waivers must be made expressly in writing.
 
 ### 23.4 Survival
 
-The following provisions survive termination of the contractual relationship:
+The following provisions survive the termination of the contractual relationship:
+- Art. 13 (Marketplace: roles and responsibilities), limited to bookings already concluded
 - Art. 15 (Intellectual property)
 - Art. 16 (Limitation of liability)
 - Art. 17 (Indemnification)
 - Art. 18 (Confidentiality)
 - Art. 22 (Governing law and jurisdiction)
 - Art. 24 (Contacts)
-- Privacy Policy: in particular retention of audit logs and fulfillment of data subject rights
+- Privacy Policy: in particular the retention of audit logs and the fulfilment of the data subject's rights
 
 ### 23.5 Language
 
-In case of discrepancies between the Italian version and the EN/DE/FR translations, the Italian version prevails for legal interpretation purposes, being the language of original drafting.
+The Platform is available in IT/EN/DE/FR. In the event of discrepancies between the Italian version and the EN/DE/FR translations, the Italian version prevails for the purposes of legal interpretation, as the original drafting language.
 
 ---
 
@@ -546,14 +574,13 @@ In case of discrepancies between the Italian version and the EN/DE/FR translatio
 **Provider:**
 Davide De Filippis
 Lugano, Switzerland
-Email: `davide@afianco.ch`
+Email: `info@aurya.life`
 
-For any question relating to these Terms, technical support, disputes, exercise of contractual rights: write to the email address above. The Provider commits to respond within 5 business days of receipt.
+For any question relating to these Terms, technical support, complaints, or the exercise of contractual rights: write to the email address indicated above. The Provider undertakes to respond within 5 business days of receipt.
 
 ---
 
 ## Annexes
 
-- **Privacy Policy** — accessible at https://afianco.app/privacy
-- **Data Processing Agreement (DPA)** — available on request for Users of the Commerce Module
-- **Sub-processors list** — accessible at https://afianco.app/legal/subprocessors
+- **Privacy Policy** — accessible at https://aurya.life/privacy
+- **Data Processing Agreement (DPA)** — available upon request for Operators (Art. 13.2)

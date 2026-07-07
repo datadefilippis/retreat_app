@@ -3,15 +3,15 @@
 
 **Version:** v1.0
 **Effective date:** {{date}}
-**Organization reference (afianco):** {{org_id}}
+**Organization reference (Aurya):** {{org_id}}
 
 ---
 
 ## 1. Subject matter and purpose
 
-This Data Processing Agreement ("**DPA**") governs the processing of personal data carried out by **afianco**, a SaaS platform provided by {{platform_controller_name}} ({{platform_controller_country}}), on behalf of the Data Controller **{{merchant_name}}**, pursuant to Art. 28 of Regulation (EU) 2016/679 ("**GDPR**").
+This Data Processing Agreement ("**DPA**") governs the processing of personal data carried out by **Aurya**, a marketplace and management platform provided by {{platform_controller_name}} ({{platform_controller_country}}), on behalf of the Data Controller **{{merchant_name}}**, pursuant to Art. 28 of Regulation (EU) 2016/679 ("**GDPR**").
 
-The DPA is an integral part of the afianco Terms of Service accepted by the Controller at the time of registration.
+The DPA is an integral part of the Aurya Terms of Service accepted by the Controller at the time of registration.
 
 ---
 
@@ -28,10 +28,10 @@ The DPA is an integral part of the afianco Terms of Service accepted by the Cont
 
 ## 3. Role of the parties
 
-- The **Controller** determines the purposes and means of processing the Personal Data of its end-customers collected through the afianco platform.
+- The **Controller** determines the purposes and means of processing the Personal Data of its end-customers collected through the Aurya platform.
 - The **Processor** processes Personal Data exclusively on behalf of the Controller and according to documented instructions, except for differing legal obligations.
 
-afianco has **no** direct contractual relationship with the Controller's end-customers. The customer ↔ Controller relationship remains entirely with the Controller.
+Aurya has **no** direct contractual relationship with the Controller's end-customers. The customer ↔ Controller relationship remains entirely with the Controller.
 
 ---
 
@@ -42,10 +42,10 @@ The Processor, on behalf of the Controller, processes the following categories o
 - **End-customer account**: email, name, hashed password, preferred language
 - **Order data**: products purchased, quantities, prices, shipping address (if applicable), order date
 - **Technical metadata**: IP address, user-agent, login timestamps (for security and audit log)
-- **Payments**: via Stripe (external Processor) — afianco does not store card data
+- **Payments**: via Stripe (external Processor) — Aurya does not store card data
 - **Marketing preferences**: only if explicitly collected by the Controller
 
-afianco does **not** process special categories (Art. 9 GDPR) or data on criminal convictions (Art. 10 GDPR).
+Aurya does **not** process special categories (Art. 9 GDPR) or data on criminal convictions (Art. 10 GDPR).
 
 ---
 
@@ -57,7 +57,7 @@ The processing has the following purposes:
 - Allowing end-customers to register, place orders, receive transactional communications
 - Generating security and integrity audit logs
 
-**Duration**: for the duration of the SaaS contract between Controller and afianco. Upon termination, Personal Data are returned or deleted per Sec. 11.
+**Duration**: for the duration of the SaaS contract between Controller and Aurya. Upon termination, Personal Data are returned or deleted per Sec. 11.
 
 ---
 
@@ -87,7 +87,7 @@ The Controller **generally authorises** the Processor to use the sub-processors 
 | **Brevo SAS** | France | Transactional email delivery |
 | **Anthropic PBC** | USA | AI models (chat assistant, analysis) — aggregated data only |
 
-The updated list is published at: https://afianco.app/legal/sub-processors
+The updated list is published at: https://aurya.life/legal/sub-processors
 
 In case of **changes** to the list (addition or replacement), the Processor informs the Controller with **30 days** notice via email. The Controller may object within that period; in case of objection the Processor may propose alternative solutions or terminate the contract.
 
@@ -156,7 +156,7 @@ The Controller has the right to:
 
 ## 13. Liability and limitations
 
-The limitations of liability set out in the afianco Terms of Service also apply to this DPA, without prejudice to mandatory legal obligations and cases of wilful misconduct or gross negligence.
+The limitations of liability set out in the Aurya Terms of Service also apply to this DPA, without prejudice to mandatory legal obligations and cases of wilful misconduct or gross negligence.
 
 The Processor is liable only for damages caused by its non-compliance with obligations specifically imposed by the GDPR on processors, or for acting outside or contrary to the lawful instructions of the Controller (Art. 82.2 GDPR).
 
@@ -170,7 +170,7 @@ The Processor may update this DPA to reflect:
 - Addition/replacement of sub-processors (with notice per Sec. 7)
 - Improvements to security measures
 
-Substantial changes are communicated via email to the Controller with **30 days** notice and require new acceptance. Technical/editorial changes are published at: https://afianco.app/legal/dpa
+Substantial changes are communicated via email to the Controller with **30 days** notice and require new acceptance. Technical/editorial changes are published at: https://aurya.life/legal/dpa
 
 ---
 
@@ -189,11 +189,11 @@ For any dispute the court of **Lugano (CH)** has jurisdiction, without prejudice
 {{merchant_country}}
 Email: {{merchant_email}}
 
-**Data Processor (afianco)**
+**Data Processor (Aurya)**
 {{platform_controller_name}}
 {{platform_controller_country}}
 Email: {{platform_controller_email}}
 
 ---
 
-*This DPA is deemed accepted by the Controller upon confirmation via the afianco admin panel. The confirmation is recorded in an immutable audit log with timestamp, IP and User-Agent of the confirming party.*
+*This DPA is deemed accepted by the Controller upon confirmation via the Aurya admin panel. The confirmation is recorded in an immutable audit log with timestamp, IP and User-Agent of the confirming party.*

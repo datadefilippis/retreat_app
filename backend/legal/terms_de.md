@@ -1,154 +1,181 @@
-# Allgemeine Geschäftsbedingungen (AGB)
+# Allgemeine Geschäftsbedingungen (Nutzungsbedingungen)
 
-**Version:** v1.0
-**Gültig ab:** 16. Mai 2026
-**Rechtliche Referenzsprache:** Italienisch (die italienische Fassung ist für rechtliche Auslegungszwecke massgeblich)
+**Version:** v2.0
+**Gültig ab:** 7. Juli 2026
+**Rechtlich maßgebende Sprache:** Italienisch — die italienische Fassung dieses Dokuments ist die rechtlich verbindliche Version; die vorliegende deutsche Übersetzung dient ausschließlich der Information.
 
-**Dienstanbieter (Anbieter):**
+**Inhaber des Dienstes (Anbieter):**
 Davide De Filippis, Lugano, Schweiz
-E-Mail: davide@afianco.ch
+E-Mail: info@aurya.life
 
 ---
 
 ## 1. Begriffsbestimmungen
 
-Im Sinne dieser AGB haben die folgenden Begriffe die nachstehend angegebene Bedeutung:
+Für die Zwecke dieser Bedingungen haben die folgenden Ausdrücke die nachstehend angegebene Bedeutung:
 
-- **AFianco** (oder „die Plattform" oder „der Dienst"): die unter https://afianco.app zugängliche webbasierte Business-Intelligence-Plattform, im Eigentum des Anbieters.
+- **Aurya** (oder „die Plattform" oder „der Dienst"): der Marktplatz für holistische Retreats und die Verwaltungssoftware für Anbieter, erreichbar unter https://aurya.life, im Eigentum des Anbieters.
 - **Anbieter** (oder „Wir"): Davide De Filippis, mit Sitz in Lugano, Schweiz.
-- **Nutzer** (oder „Sie", „Ihr"): die volljährige natürliche Person, die sich auf der Plattform im eigenen Namen oder im Namen und für Rechnung einer juristischen Person / eines Einzelunternehmens / einer freiberuflichen Tätigkeit registriert.
-- **Organisation**: die juristische Person, das Einzelunternehmen oder der Berufsausübende, für die/den sich der Nutzer registriert (auch wenn der Nutzer mit der juristischen Person / dem Einzelunternehmen / dem Berufsausübenden zusammenfällt).
-- **Administrator**: der Nutzer, der die Organisation zunächst registriert und die vollen Verwaltungsbefugnisse übernimmt.
-- **Teammitglied**: die weiteren vom Administrator eingeladenen Nutzer.
-- **Endkunde**: die natürliche oder juristische Person, die über den von der Organisation mittels Commerce-Modul betriebenen öffentlichen Storefront Käufe tätigt (Art. 13).
-- **Nutzer-Inhalt**: alle Daten, Dateien, Stammdaten, Konfigurationen und sonstigen Materialien, die vom Nutzer oder von Teammitgliedern in die Plattform hochgeladen oder eingegeben werden.
-- **KI-Dienst**: die Funktionen für Analyse, Chat und automatische Berichterstattung auf Basis von Sprachmodellen Dritter (Anthropic).
-- **Pläne**: die verschiedenen Abonnementstufen (Free, Core, Pro, Enterprise), beschrieben auf der öffentlichen Seite der Plattform.
-- **AGB**: die vorliegenden AGB einschliesslich aller Anhänge und etwaiger zusätzlicher Produktspezifikationen.
-- **Datenschutzerklärung**: die unter https://afianco.app/privacy zugängliche Datenschutzerklärung, die integraler und wesentlicher Bestandteil dieser AGB ist.
+- **Veranstalter**: der Fachmann bzw. die Fachfrau, die Lehrperson oder die Einrichtung — volljährige natürliche Person, Einzelunternehmen oder juristische Person —, die sich auf der Plattform registriert, um Retreats, Erlebnisse, Produkte und Kurse zu veröffentlichen und zu verkaufen. Der Veranstalter ist Kunde des Anbieters.
+- **Endkunde** (oder „Teilnehmer"): die natürliche oder juristische Person, die ein Angebot eines Veranstalters über die Plattform bucht, kauft oder daran teilnimmt.
+- **Retreat-Pass (Passaporto Ritiri)**: das optionale persönliche Konto des Endkunden, gültig bei allen Veranstaltern der Plattform, mit Bestellungen, QR-Tickets und Historie der Erlebnisse.
+- **Besucher**: jede Person, die die öffentlichen Seiten der Plattform ohne Registrierung besucht.
+- **Nutzer**: jede Person, die die Plattform nutzt (Veranstalter, Endkunde oder Besucher); betrifft eine Bestimmung nur eine Rolle, wird dies ausdrücklich angegeben.
+- **Angebot**: die vom Veranstalter auf der Plattform veröffentlichten Retreats, Erlebnisse, Produkte und Kurse.
+- **Öffentlicher Kalender** (oder „Verzeichnis"): die öffentlichen Seiten von Aurya, die die online buchbaren Angebote aller Veranstalter aggregieren und durchsuchbar machen.
+- **Plattformgebühr** (oder „Application Fee"): der Prozentsatz, den der Anbieter über Stripe Connect ausschließlich auf Buchungen einbehält, die über den öffentlichen Kalender zustande kommen (Art. 7.2).
+- **Inhalte des Veranstalters**: alle Daten, Texte, Bilder, Preise, Bedingungen, Kundenstammdaten und sonstigen Materialien, die der Veranstalter in die Plattform hochlädt oder eingibt.
+- **Pläne**: die Leistungsstufen für die Veranstalter (Gratis, Pro sowie Pläne auf Zuweisung wie Founding/Partner), beschrieben in Art. 7.
+- **Bedingungen**: die vorliegenden Allgemeinen Geschäftsbedingungen, einschließlich aller Anhänge und etwaiger weiterer Produktspezifikationen.
+- **Datenschutzerklärung (Privacy Policy)**: die Informationen zur Verarbeitung personenbezogener Daten, erreichbar unter https://aurya.life/privacy, wesentlicher und integraler Bestandteil dieser Bedingungen.
 
 ---
 
 ## 2. Vertragsgegenstand und Annahme
 
-Die vorliegenden AGB regeln das Verhältnis zwischen Anbieter und Nutzer in Bezug auf den Zugriff auf und die Nutzung der AFianco-Plattform.
+Diese Bedingungen regeln das Verhältnis zwischen dem Anbieter und dem Nutzer in Bezug auf den Zugang zur und die Nutzung der Plattform Aurya: für den Veranstalter die Veröffentlichung und den Verkauf des eigenen Angebots sowie die Nutzung der Verwaltungssoftware; für den Endkunden die Buchung und den Kauf über die Plattform sowie das etwaige Retreat-Pass-Konto.
 
-Die Annahme der AGB erfolgt durch:
-1. Setzen des entsprechenden Häkchens („Ich habe die Datenschutzerklärung und die AGB gelesen und akzeptiere sie") bei der Registrierung
-2. Eingabe der im Registrierungsformular geforderten Daten
-3. Abschluss der E-Mail-Adressen-Verifikation
+Die Annahme der Bedingungen erfolgt durch:
+1. Setzen des entsprechenden Häkchens („Ich habe die Datenschutzerklärung und die Nutzungsbedingungen gelesen und akzeptiere sie") bei der Registrierung oder beim Checkout
+2. Eingabe der erforderlichen Daten im Registrierungs- oder Buchungsformular
+3. Für Konten: Abschluss der Verifizierung der E-Mail-Adresse
 
-Die Annahme stellt eine ausdrückliche Erklärung dar:
-- Diese AGB und die Datenschutzerklärung vollständig gelesen und verstanden zu haben
-- Die Rechtsfähigkeit zum Abschluss eines bindenden Vertrags zu besitzen (Art. 6)
-- Soweit anwendbar, als gesetzlicher Vertreter oder berechtigte Person der sich registrierenden Organisation zu handeln
+Die Annahme stellt die ausdrückliche Erklärung dar:
+- Die vorliegenden Bedingungen und die Datenschutzerklärung vollständig zur Kenntnis genommen und verstanden zu haben
+- Über die Rechtsfähigkeit zum Abschluss eines verbindlichen Vertrags zu verfügen (Art. 5)
+- — soweit anwendbar — als gesetzlicher Vertreter oder bevollmächtigte Person der sich registrierenden Einrichtung zu handeln
 
-Die Aufbewahrung des Annahmebeweises (Zeitstempel, Dokumentversion, Sprache, IP, User-Agent) ist in Art. 4 der Datenschutzerklärung geregelt.
+Die Aufbewahrung des Nachweises der Annahme (Zeitstempel, Version des Dokuments, Sprache, IP, User-Agent) ist in der Datenschutzerklärung geregelt (Art. 4).
+
+**Der Kaufvertrag über das Retreat, das Erlebnis, das Produkt oder den Kurs kommt direkt zwischen Veranstalter und Endkunde zustande.** Der Anbieter ist nicht Partei dieses Vertrags (siehe Art. 13).
 
 ---
 
 ## 3. Vertragsschluss
 
-Der Vertrag gilt als geschlossen mit Abschluss des Registrierungsverfahrens und der E-Mail-Adressen-Verifikation durch den Nutzer.
+Der Vertrag zwischen Anbieter und Veranstalter gilt mit Abschluss des Registrierungsverfahrens und der Verifizierung der E-Mail-Adresse als geschlossen. Der Vertrag zwischen Anbieter und Endkunde als Inhaber eines Retreat-Pass kommt mit der Erstellung des Kontos zustande.
 
-Der Anbieter behält sich das Recht vor, die Registrierung abzulehnen oder ein Konto jederzeit zu widerrufen, sofern:
-- Begründete Verdachtsmomente einer betrügerischen Nutzung bestehen
-- Die Anmeldedaten bereits mit einem zuvor wegen Verletzung der AGB deaktivierten Konto verknüpft sind
-- Anordnungen zuständiger Behörden bestehen
+Der Anbieter behält sich das Recht vor, die Registrierung abzulehnen oder ein Konto jederzeit zu widerrufen, wenn:
+- Ein begründeter Verdacht auf betrügerische Nutzung besteht
+- Die Zugangsdaten bereits mit einem vorbestehenden, wegen Verstoßes gegen die Bedingungen deaktivierten Konto verknüpft sind
+- Anordnungen zuständiger Behörden vorliegen
 
 ---
 
 ## 4. Mindestalter
 
-Der Dienst ist volljährigen natürlichen Personen (Alter >= 18 Jahre) vorbehalten. Mit der Registrierung erklärt der Nutzer, mindestens 18 Jahre alt zu sein. Die vorliegende Plattform ist ausschliesslich für professionelle und unternehmerische Zwecke bestimmt; sie ist nicht für die Nutzung durch Verbraucher bestimmt.
+Die Registrierung eines Kontos (Veranstalter oder Retreat-Pass) sowie die Vornahme von Buchungen und Zahlungen sind volljährigen natürlichen Personen (Alter >= 18 Jahre) vorbehalten. Mit der Registrierung oder der Buchung erklärt der Nutzer, mindestens 18 Jahre alt zu sein. Etwaige Minderjährige können ausschließlich von einem Erwachsenen, der die Buchung vornimmt und die Verantwortung dafür übernimmt, als Teilnehmer eines Retreats angegeben werden; die Zulassung Minderjähriger zu den Aktivitäten wird vom Veranstalter geregelt.
 
 ---
 
-## 5. Rechtsfähigkeit und Vertretungsbefugnisse
+## 5. Rechtsfähigkeit und Vertretungsbefugnis
 
-Der Nutzer erklärt, die zum Abschluss eines bindenden Vertrags erforderliche Rechtsfähigkeit zu besitzen und, sofern er für die Organisation (juristische Person, Einzelunternehmen oder Berufsausübender) handelt, über die erforderlichen Vertretungsbefugnisse oder die interne Befugnis zu verfügen. Bei Fehlen solcher Befugnisse haftet der Nutzer persönlich gegenüber dem Anbieter für die übernommenen Verpflichtungen.
-
----
-
-## 6. Dienstbeschreibung
-
-Der AFianco-Dienst bietet die folgenden Hauptfunktionen, organisiert in **Module**, die je nach Plan aktivierbar sind:
-
-### 6.1 Cashflow Monitor
-- Upload von Finanzdaten des Unternehmens (Verkäufe, Einkäufe, Betriebsausgaben, Fixkosten) via CSV/XLSX-Datei oder manueller Eintrag
-- Cashflow-Dashboard mit KPIs (operative Marge, Nettogewinn, Finanzgesundheit, Zahlungsplan)
-- Automatische Warnungen bei Anomalien und konfigurierbaren Schwellenwerten
-- Vergleich Periode-über-Periode und Year-over-Year (YoY)
-
-### 6.2 Customer Insights
-- Kunden-Stammdaten
-- Segmentierung, Top-Kunden, Churn-Risiko, Konzentration, Produkt-Affinität
-
-### 6.3 Product Catalog
-- Produkt-Stammdaten mit Kosten, Preisen, Kategorien
-- Margenanalyse, Empfehlungen, Trends
-
-### 6.4 Commerce
-- Öffentlicher Storefront für den Verkauf an Endkunden (Commerce-Modul — siehe Art. 13)
-- Verwaltung von Bestellungen, Rechnungsstellung, Buchungen, Events, Vermietungen
-- Zahlungsintegration via Stripe
-
-### 6.5 KI-Dienst
-- Interaktiver Chat mit KI-Assistent (basierend auf Anthropic — Claude)
-- Generierung periodischer Digests (wöchentlich, monatlich) mit Analyse und Empfehlungen
-- Score der Finanzgesundheit
-- Die KI-Nutzung erfordert die ausdrückliche Einwilligung des Nutzers (Datenschutzerklärung Art. 4.1)
-
-### 6.6 Datenexport (Art. 20 DSGVO)
-- Self-Service-Export aller eigenen Daten in ZIP-Archiv mit JSON-Dateien
-
-### 6.7 Team-Management
-- Möglichkeit, weitere Nutzer als „admin" oder „user" einzuladen
-
-Die tatsächlich verfügbaren Funktionen variieren je nach abonniertem Plan, wie auf der öffentlichen Pläne-Seite beschrieben. Der Anbieter behält sich das Recht vor, den Dienst im Laufe der Zeit weiterzuentwickeln, indem er Funktionen innerhalb der Grenzen dieses Artikels hinzufügt oder ändert.
+Der Nutzer erklärt, über die Rechtsfähigkeit zum Abschluss eines verbindlichen Vertrags zu verfügen und, falls er im Namen einer Einrichtung handelt (juristische Person, Einzelunternehmen oder Freiberufler), über die erforderliche Vertretungsbefugnis oder interne Ermächtigung zu verfügen. Fehlen diese Befugnisse, haftet der Nutzer gegenüber dem Anbieter persönlich für die eingegangenen Verpflichtungen.
 
 ---
 
-## 7. Pläne, Preise und Abrechnung
+## 6. Beschreibung des Dienstes
+
+### 6.1 Verzeichnis und öffentlicher Kalender
+
+Aurya betreibt ein öffentliches Verzeichnis holistischer Retreats und Erlebnisse in Italien, mit Suche nach Ort, Datum und Art. Die Sichtbarkeit des Angebots im öffentlichen Kalender ist **an die Online-Buchbarkeit geknüpft**: Aggregiert werden Angebote mit realen Terminen, Preisen und Verfügbarkeiten, die direkt über die Plattform buchbar und bezahlbar sind. Der Anbieter kann redaktionelle Mindestqualitätskriterien für die Aufnahme in das Verzeichnis festlegen (Vollständigkeit der Beschreibung, Fotos, Kohärenz der Inhalte).
+
+### 6.2 Schaufenster und Store des Veranstalters
+
+Jeder Veranstalter verfügt über ein persönliches öffentliches Schaufenster (Profil, Angebot, Bewertungen) und einen Store mit eigenen Seiten für Retreats, Erlebnisse, Produkte und Kurse, verfügbar in den vier Sprachen der Plattform (IT/EN/DE/FR). Das Schaufenster ist auch direkt erreichbar (eigener Link des Veranstalters), unabhängig vom öffentlichen Kalender.
+
+### 6.3 Buchungen, Anzahlungen und Zahlungspläne
+
+Der Endkunde bucht online mit Verfügbarkeit in Echtzeit. Der Veranstalter kann konfigurieren:
+- **Anzahlung**, fällig bei der Buchung, mit späterer Restzahlung
+- **Zahlungspläne** in Raten, mit festgelegten Fälligkeiten
+- **Automatische E-Mail-Erinnerungen** für Restzahlung und Raten, von der Plattform im Auftrag des Veranstalters versandt
+
+Die Buchungsbestätigung, das Ticket mit QR-Code und die Quittungen werden dem Endkunden per E-Mail zugesandt.
+
+### 6.4 Zahlungen (Stripe Connect) und Plattformgebühren
+
+Die Online-Zahlungen werden über **Stripe Connect** abgewickelt (PCI-DSS Level 1):
+- Der Endkunde zahlt per Karte; die Gelder werden **direkt dem Stripe-Konto des Veranstalters** gutgeschrieben. Der Anbieter vereinnahmt und verwahrt die Gelder der Buchungen nicht.
+- Der Anbieter behält eine **Plattformgebühr** (Application Fee) ausschließlich auf Buchungen ein, die über den öffentlichen Kalender zustande kommen: **5 % im Gratis-Plan, 2 % im Pro-Plan** (Art. 7).
+- Bestellungen und Buchungen, die der Veranstalter außerhalb des öffentlichen Kalenders abwickelt (z. B. Direktkunden, manuell in der Verwaltungssoftware erfasste Verkäufe), **unterliegen keinerlei Gebühr**.
+- Die Zahlungskartendaten durchlaufen niemals die Server des Anbieters oder des Veranstalters (siehe Datenschutzerklärung Art. 9).
+
+Die Nutzung der Zahlungsfunktionen erfordert vom Veranstalter die Eröffnung und Aufrechterhaltung eines Stripe-Connect-Kontos, das den Stripe-Bedingungen unterliegt (https://stripe.com/connect-account/legal), einschließlich der von Stripe verlangten Identitätsprüfungen (KYC).
+
+### 6.5 Retreat-Pass
+
+Der Endkunde kann kostenlos ein persönliches Konto erstellen, das bei allen Veranstaltern der Plattform gültig ist, mit: Bestellhistorie, QR-Tickets, Erinnerungen und vorausgefüllten Buchungsdaten. Die Erstellung des Kontos ist freiwillig: Es ist auch möglich, als Gast zu buchen.
+
+### 6.6 Verifizierte Bewertungen
+
+- Eine Bewertung kann **ausschließlich veröffentlichen, wer tatsächlich** über die Plattform gebucht hat; die Echtheit wird mittels OTP-Code verifiziert, der an die mit der Bestellung verknüpfte E-Mail-Adresse gesendet wird.
+- Die Bewertungen werden mit Name der bewertenden Person, Bewertung und Text auf der Plattform veröffentlicht.
+- Es ist untersagt, Vergütungen, Rabatte oder Vorteile im Austausch für Bewertungen anzubieten oder anzunehmen, ebenso wie Bewertungen im Auftrag Dritter zu veröffentlichen oder sich selbst zu bewerten.
+- Der Anbieter behält sich das Recht vor, Bewertungen mit rechtswidrigen, verleumderischen oder diskriminierenden Inhalten, ohne Bezug zum bewerteten Erlebnis oder unter Verstoß gegen die vorstehenden Regeln erlangte Bewertungen zu entfernen. Der Veranstalter kann erhaltene Bewertungen weder ändern noch löschen; er kann deren Rechtswidrigkeit dem Anbieter melden.
+
+### 6.7 Verwaltungssoftware des Veranstalters
+
+Der Veranstalter verfügt über eine Verwaltungssoftware für: Bestellungen und Buchungen, Kundenstammdaten, Anzahlungen und Fälligkeiten, Newsletter mit veranstalterspezifischem Anmeldeformular (ausdrückliche Einwilligung und automatische Abmeldung über persönlichen Link). Für die in der Verwaltungssoftware verarbeiteten Daten der Endkunden ist der Veranstalter Verantwortlicher der Verarbeitung und der Anbieter handelt als Auftragsverarbeiter gemäß Art. 28 DSGVO (Datenschutzerklärung Art. 2.2 und 18).
+
+### 6.8 Automatische Übersetzungen
+
+Auf Anforderung des Veranstalters generiert die Plattform automatische Übersetzungen der öffentlichen Inhalte des Schaufensters in die unterstützten Sprachen (IT/EN/DE/FR), mittels Sprachmodellen von Drittanbietern (Anthropic — siehe Art. 10 und Datenschutzerklärung Art. 7). Der Veranstalter kann die Übersetzungen überprüfen und korrigieren.
+
+### 6.9 Datenexport (Art. 20 DSGVO)
+
+Der Veranstalter verfügt über eine Self-Service-Funktion zum Export der eigenen Daten (Bestellungen, Kunden, Inhalte) in strukturiertem Format.
+
+Die tatsächlich verfügbaren Funktionen variieren je nach abonniertem Plan (Art. 7). Der Anbieter behält sich das Recht vor, den Dienst im Laufe der Zeit weiterzuentwickeln und Funktionen hinzuzufügen oder zu ändern, in den Grenzen von Art. 20.
+
+---
+
+## 7. Pläne, Preise, Gebühren und Abrechnung
 
 ### 7.1 Verfügbare Pläne
 
-Der Dienst wird mit folgenden Plänen angeboten: **Free**, **Core**, **Pro**, **Enterprise**. Die enthaltenen Funktionen, Nutzungslimits und Preise jedes Plans sind auf der öffentlichen Seite https://afianco.app/pricing beschrieben.
+Der Dienst für die Veranstalter wird mit den folgenden Plänen angeboten:
 
-### 7.2 Abonnementmodalitäten
+- **Gratis**: ohne jegliche Grundgebühr. Plattformgebühr von **5 %** auf Buchungen, die über den öffentlichen Kalender zustande kommen.
+- **Pro**: monatliche Gebühr, mit auf **2 %** reduzierter Plattformgebühr auf Buchungen, die über den öffentlichen Kalender zustande kommen, und zusätzlichen Funktionen.
+- **Pläne auf Zuweisung** (z. B. Founding, Partner): besondere Konditionen, die der Anbieter bestimmten Veranstaltern gewährt; deren Bedingungen gehen, soweit dort geregelt, den vorliegenden vor.
 
-Bezahlpläne sind mit monatlicher oder jährlicher Abrechnung abonnierbar, mit automatischer stillschweigender Verlängerung bis zur ausdrücklichen Kündigung.
+Die enthaltenen Funktionen, Nutzungslimits und aktuellen Preise jedes Plans sind auf der öffentlichen Seite https://aurya.life/pricing beschrieben.
 
-### 7.3 Zahlungsanbieter
+### 7.2 Plattformgebühr
 
-Zahlungen werden über **Stripe Payments Europe Ltd.** abgewickelt (PCI-DSS Level 1). Der Anbieter speichert keine Zahlungskartendaten (siehe Datenschutzerklärung Art. 9).
+Die Plattformgebühr gilt **ausschließlich für Buchungen, die über den öffentlichen Kalender zustande kommen**, und wird automatisch über Stripe Connect (Application Fee) zum Zeitpunkt der Zahlung einbehalten, einschließlich der Anzahlungen und der nachfolgenden Raten zu solchen Buchungen. Außerhalb des öffentlichen Kalenders abgewickelte Bestellungen erzeugen keinerlei Gebühr. Angewandt wird der Prozentsatz des zum Zeitpunkt der Zahlung aktiven Plans.
 
-### 7.4 Testperiode / Free Tier
+### 7.3 Abonnement und Planwechsel
 
-Der Free-Plan wird unbefristet mit eingeschränkten Funktionen angeboten. Etwaige kostenlose Testperioden höherer Pläne werden bei der Subskription angegeben.
+Der Pro-Plan kann monatlich abonniert werden, mit automatischer stillschweigender Verlängerung bis zur ausdrücklichen Kündigung, über **Stripe Billing**. Der Wechsel von Gratis zu Pro wird sofort wirksam; die Rückkehr zu Gratis wird zum Ende des laufenden Abrechnungszeitraums wirksam, ohne Erstattung der Restbeträge, vorbehaltlich Art. 7.8.
+
+### 7.4 Zahlungsdienstleister
+
+Die Zahlungen (Buchungen und Abonnements) werden über **Stripe** abgewickelt (PCI-DSS Level 1). Der Anbieter speichert keine Zahlungskartendaten (siehe Datenschutzerklärung Art. 9).
 
 ### 7.5 Preisänderungen
 
-Der Anbieter behält sich das Recht vor, die Plan-Preise zu ändern. Änderungen werden mit einer Vorankündigungsfrist von mindestens **30 Tagen** per E-Mail an den Administrator kommuniziert. Änderungen treten zum nächsten Verlängerungszyklus in Kraft. Der Nutzer kann das Abonnement vor der Verlängerung kündigen, falls er mit dem neuen Preis nicht einverstanden ist.
+Der Anbieter behält sich das Recht vor, die Grundgebühren und die Gebührensätze zu ändern. Änderungen werden mit einer Vorankündigung von mindestens **30 Tagen** per E-Mail an den Veranstalter mitgeteilt und treten mit dem nächsten Verlängerungszyklus (bei Grundgebühren) bzw. mit Ablauf der Ankündigungsfrist (bei Gebührensätzen) in Kraft. Der Veranstalter kann vor dem Wirksamkeitsdatum kündigen, wenn er mit den neuen Konditionen nicht einverstanden ist.
 
-### 7.6 Rechnungsstellung
+### 7.6 Abrechnung
 
-Rechnungen werden in elektronischem Format (PDF) ausgestellt und über das Stripe-Kundenportal zur Verfügung gestellt. Rechnungsdaten werden bei der Subskription des ersten Bezahlplans angefordert.
+Quittungen und Rechnungen für die Pro-Gebühr und die Plattformgebühren werden in elektronischer Form ausgestellt und über das Stripe-Kundenportal bereitgestellt. Die Rechnungsdaten werden beim Abschluss des ersten kostenpflichtigen Plans abgefragt.
 
 ### 7.7 Zahlungsverzug
 
-Bei nicht fristgerechter Zahlung:
-- Sendet der Anbieter eine erste Mahnung per E-Mail
-- Nach 7 Tagen ab Mahnung ohne Zahlung wird das Abonnement ausgesetzt und das Konto kehrt automatisch zum Free-Plan zurück (mit möglicher Funktionseinschränkung)
-- Nach weiteren 30 Tagen ohne Zahlung kann der Anbieter zur Forderungseinziehung gemäss den gesetzlichen Verfahren übergehen
+Bei ausbleibender Zahlung der Grundgebühr zur Fälligkeit:
+- Der Anbieter versendet eine erste Mahnung per E-Mail
+- Nach 7 Tagen ab der Mahnung ohne Zahlung wird das Abonnement ausgesetzt und das Konto kehrt automatisch zum Gratis-Plan zurück (mit entsprechender Gebühr von 5 % und Einschränkung der Pro-Funktionen)
+- Nach weiteren 30 Tagen ohne Zahlung kann der Anbieter die Forderung nach den gesetzlichen Verfahren beitreiben
 
-### 7.8 Rückerstattungen
+### 7.8 Erstattung der Grundgebühr
 
-Bereits getätigte Zahlungen sind im Falle freiwilliger Kündigung mitten im Abrechnungszeitraum nicht erstattungsfähig, ausser nach anwendbarem Recht oder bei wesentlichem Mangel des Dienstes, der dem Anbieter zurechenbar ist.
+Bereits entrichtete Grundgebühren sind bei freiwilliger Kündigung mitten im Abrechnungszeitraum nicht erstattungsfähig, vorbehaltlich zwingender Vorschriften des anwendbaren Rechts oder eines wesentlichen, dem Anbieter zurechenbaren Mangels des Dienstes. Die Erstattungen von Buchungen an Endkunden sind in Art. 13.3 geregelt.
 
-### 7.9 MwSt. / Steuern
+### 7.9 Mehrwertsteuer / Steuern
 
-Alle angegebenen Preise verstehen sich einschliesslich der anwendbaren lokalen Steuern, soweit nicht anders angegeben. Für Nutzer, die erklären, im Rahmen einer dem Reverse-Charge-Verfahren unterliegenden gewerblichen Tätigkeit (innergemeinschaftliches B2B) zu kaufen, gilt die sich aus der Erteilung einer gültigen USt-IdNr. ergebende MwSt.-Regelung.
+Alle angegebenen Preise verstehen sich einschließlich der anwendbaren lokalen Steuern, sofern nicht anders angegeben. Für Veranstalter, die erklären, im Rahmen einer dem Reverse-Charge-Verfahren unterliegenden gewerblichen Tätigkeit zu erwerben (innergemeinschaftliches B2B-Reverse-Charge), gilt die Mehrwertsteuerregelung nach Vorlage einer gültigen USt-IdNr.
 
 ---
 
@@ -160,105 +187,95 @@ Der Nutzer ist für die Vertraulichkeit der eigenen Zugangsdaten verantwortlich.
 
 ### 8.2 Mindestanforderungen an Passwörter
 
-Das Passwort muss die von der Plattform vorgegebenen technischen Anforderungen erfüllen (mindestens 12 Zeichen, mit Gross- und Kleinbuchstaben sowie Ziffern).
+Das Passwort muss die von der Plattform vorgegebenen technischen Anforderungen erfüllen (mindestens 12 Zeichen, mit Groß- und Kleinbuchstaben und Ziffern).
 
-### 8.3 E-Mail-Verifikation
+### 8.3 E-Mail-Verifizierung
 
-Der Zugriff auf den Dienst erfordert die Verifikation der E-Mail-Adresse mittels eines bei der Registrierung gesendeten Links.
+Der Zugang zum Dienst erfordert die Verifizierung der E-Mail-Adresse über einen bei der Registrierung versandten Link.
 
 ### 8.4 Sicherheitsmitteilungen
 
-Der Nutzer ist verpflichtet, jeden Verdacht auf unbefugte Nutzung des eigenen Kontos, Verlust der Zugangsdaten oder Verdacht auf Datenschutzverletzung unverzüglich per E-Mail an `davide@afianco.ch` mitzuteilen.
+Der Nutzer ist verpflichtet, jede vermutete unbefugte Nutzung des eigenen Kontos, den Verlust der Zugangsdaten oder eine vermutete Datenschutzverletzung unverzüglich per E-Mail an `info@aurya.life` zu melden.
 
-### 8.5 Team-Management
+### 8.5 Stripe-Konto des Veranstalters
 
-Der Administrator, der Teammitglieder einlädt, gewährleistet, dass jeder Eingeladene diese AGB beim ersten Zugriff zur Kenntnis genommen und akzeptiert hat. Der Administrator ist für die der eigenen Organisation zurechenbaren Aktivitäten der Teammitglieder verantwortlich.
+Der Veranstalter ist für sein Stripe-Connect-Konto, die Stripe im Rahmen der Verifizierung (KYC) bereitgestellten Informationen und deren Aktualisierung verantwortlich. Die Aussetzung oder Schließung des Stripe-Kontos durch Stripe kann dazu führen, dass über die Plattform keine Zahlungen empfangen werden können, ohne dass der Anbieter dafür haftet.
 
 ---
 
-## 9. Nutzer-Inhalt und Eigentum der Daten
+## 9. Inhalte des Veranstalters und Eigentum an den Daten
 
 ### 9.1 Eigentum
 
-Der auf die Plattform hochgeladene Inhalt bleibt **ausschliessliches Eigentum** des Nutzers / der Organisation. Der Anbieter erhebt keinerlei Eigentumsanspruch auf diesen Inhalt.
+Die auf die Plattform hochgeladenen Inhalte bleiben **ausschließliches Eigentum** des Veranstalters. Der Anbieter beansprucht keinerlei Eigentumsrechte an diesen Inhalten.
 
 ### 9.2 Lizenz an den Anbieter
 
-Der Nutzer gewährt dem Anbieter eine Lizenz, die:
-- Nicht ausschliesslich ist
-- Auf die Vertragslaufzeit beschränkt ist
-- Jederzeit durch Konto-Deaktivierung widerruflich ist
-- Auf die Diensterbringungszwecke beschränkt ist (Speicherung, Verarbeitung, Präsentation, Ausführung der vom Nutzer angeforderten Funktionen, einschliesslich KI-Verarbeitung)
+Der Veranstalter räumt dem Anbieter eine Lizenz ein:
+- Nicht ausschließlich
+- Beschränkt auf die Vertragsdauer
+- Jederzeit widerruflich durch Deaktivierung des Kontos
+- Beschränkt auf die Zwecke der Erbringung des Dienstes (Speicherung, Verarbeitung, Veröffentlichung im Schaufenster und im öffentlichen Kalender, automatische Übersetzung auf Anforderung, Bewerbung des Verzeichnisses unter Bezugnahme auf das veröffentlichte Angebot)
 
-Die Lizenz schliesst nicht das Recht zur Nutzung für eigene gewerbliche Zwecke des Anbieters noch zur Übertragung an Dritte ein.
+Die Lizenz umfasst weder das Recht der Nutzung für eigene kommerzielle, plattformfremde Zwecke des Anbieters noch der Übertragung an Dritte.
 
-### 9.3 Datenübertragbarkeit
+### 9.3 Datenportabilität
 
-Der Administrator kann jederzeit den eigenen Inhalt in strukturiertem Format (ZIP/JSON) über die in den Konto-Einstellungen verfügbare Funktion exportieren.
+Der Veranstalter kann seine Inhalte jederzeit über die Funktion in den Kontoeinstellungen in strukturiertem Format exportieren.
 
-### 9.4 Verantwortung für den Inhalt
+### 9.4 Verantwortung für die Inhalte
 
-Der Nutzer ist der **alleinige Verantwortliche** für die Rechtmässigkeit, Genauigkeit, Vollständigkeit und Aktualität des hochgeladenen Inhalts. Der Anbieter überprüft oder kontrolliert den Inhalt nicht. Der Nutzer erklärt und gewährleistet:
-- Das Recht zur Verarbeitung der im Inhalt enthaltenen personenbezogenen Daten zu haben
-- Die erforderlichen Einwilligungen oder eine andere Rechtsgrundlage für die Verarbeitung dieser Daten gemäss DSGVO/DSG eingeholt zu haben
-- Keine illegalen, diffamierenden Inhalte oder Inhalte hochzuladen, die Rechte Dritter verletzen
-- Keine besonderen Datenkategorien gemäss Art. 9 DSGVO hochzuladen, ausser bei berechtigtem geschäftlichem Bedarf und unter vollständiger Beachtung der anwendbaren Vorschriften
+Der Veranstalter ist der **alleinige Verantwortliche** für Rechtmäßigkeit, Richtigkeit, Vollständigkeit und Aktualität der veröffentlichten Inhalte (Beschreibungen, Fotos, Preise, Termine, Verfügbarkeiten, Stornobedingungen). Der Anbieter prüft die Inhalte nicht vorab. Der Veranstalter erklärt und garantiert:
+- Das Recht zur Veröffentlichung der hochgeladenen Texte und Bilder zu besitzen (einschließlich der Urheberrechte und der Einwilligungen der abgebildeten Personen)
+- Das Recht zur Verarbeitung der in den Inhalten und in den eigenen Kundenstammdaten enthaltenen personenbezogenen Daten zu besitzen, mit geeigneter Rechtsgrundlage gemäß DSGVO/DSG
+- Keine rechtswidrigen, irreführenden, verleumderischen oder Rechte Dritter verletzenden Inhalte zu veröffentlichen
+- Keine besonderen Datenkategorien im Sinne von Art. 9 DSGVO in der Plattform zu erfassen (z. B. Gesundheitsdaten der Teilnehmer — siehe Datenschutzerklärung Art. 3.4)
 
-Im Verletzungsfall stellt der Nutzer den Anbieter gemäss Art. 17 schad- und klaglos.
+Im Falle eines Verstoßes stellt der Veranstalter den Anbieter gemäß Art. 17 frei und hält ihn schadlos.
 
 ---
 
-## 10. KI-Dienst: spezifische Bedingungen
+## 10. Automatische Übersetzungen: besondere Bedingungen
 
-### 10.1 Informativer Charakter
+### 10.1 Art des Dienstes
 
-Die von der Plattform bereitgestellten KI-Verarbeitungen (Chat, Digest, Health Score, automatische Analyse) haben **rein informativen und beratenden Charakter**. Sie stellen keine:
-- Professionelle Finanz-, Steuer- oder Buchhaltungsberatung
-- Rechtsberatung
-- Fachgutachten autorisierter Fachpersonen
-- Autonome Entscheidungen mit verbindlichen Wirkungen für den Nutzer
-dar.
-
-Der Nutzer ist der alleinige Verantwortliche für Entscheidungen auf Basis von KI-Analysen.
+Die automatischen Übersetzungen der Inhalte des Schaufensters (Art. 6.8) werden von Sprachmodellen von Drittanbietern (Anthropic) generiert und haben den Charakter einer **redaktionellen Unterstützung**. Sie stellen weder beglaubigte Übersetzungen noch professionelle Beratung dar.
 
 ### 10.2 Datenübermittlung an Anthropic
 
-Die Nutzung des KI-Dienstes beinhaltet die Übermittlung aggregierter Daten an Anthropic, PBC (USA), wie in der Datenschutzerklärung Art. 7 beschrieben.
+Die Nutzung der Funktion bringt die Übermittlung ausschließlich der zu übersetzenden öffentlichen Texte an Anthropic, PBC (USA) mit sich, wie in der Datenschutzerklärung Art. 7 beschrieben. Es werden niemals Daten von Endkunden, Bestellungen oder Zahlungen übermittelt.
 
-### 10.3 Genauigkeitsbeschränkungen
+### 10.3 Einschränkungen der Genauigkeit und Verantwortung des Veranstalters
 
-Der Anbieter garantiert nicht die Genauigkeit, Vollständigkeit oder Relevanz der von der KI generierten Antworten. KI-Modelle können ungenaue Informationen erzeugen („Halluzinationen"). Obwohl der Anbieter technische Massnahmen zur Minimierung dieses Risikos einsetzt (integrierte Anti-Halluzinations-Regeln, Antwortvalidierung), übernimmt der Anbieter keine Garantie für die Fehlerfreiheit.
+Der Anbieter garantiert weder die Genauigkeit noch die Vollständigkeit der generierten Übersetzungen, die Fehler enthalten können. Der Veranstalter ist verpflichtet, die Übersetzungen zu überprüfen, bevor er sich darauf verlässt, und ist für die in jeder Sprache veröffentlichten Inhalte verantwortlich. Bei Abweichungen zwischen den Sprachfassungen einer Angebotsseite hat die ursprüngliche Redaktionssprache des Veranstalters Vorrang.
 
-### 10.4 Optionalität
+### 10.4 Keine automatisierten Entscheidungen (Art. 22 DSGVO)
 
-Die Nutzung des KI-Dienstes ist **optional** und kann jederzeit in den Einstellungen deaktiviert werden. Der Hauptdienst von AFianco funktioniert auch ohne KI.
-
-### 10.5 Automatisierte Entscheidungen (Art. 22 DSGVO)
-
-Der KI-Dienst von AFianco trifft keine autonomen Entscheidungen mit rechtlichen Wirkungen auf den Nutzer im Sinne von Art. 22 DSGVO. Der Nutzer behält jederzeit die volle Entscheidungskontrolle.
+Die Plattform verwendet die KI nicht für automatisierte Entscheidungen mit rechtlichen Wirkungen gegenüber den Nutzern (diskriminierendes Ranking, Scoring, automatische Genehmigungen oder Ablehnungen). Siehe Datenschutzerklärung Art. 7.3.
 
 ---
 
-## 11. Dienstverfügbarkeit (Best-Effort SLA)
+## 11. Verfügbarkeit des Dienstes (Best-Effort-SLA)
 
 ### 11.1 Verpflichtung
 
-Der Anbieter verpflichtet sich, eine hohe Kontinuität des Dienstes zu gewährleisten und Infrastruktur und Unter-Auftragsverarbeiter aktiv zu überwachen.
+Der Anbieter verpflichtet sich, eine hohe Kontinuität des Dienstes zu gewährleisten und die Infrastruktur sowie die Unterauftragsverarbeiter aktiv zu überwachen.
 
-### 11.2 Disclaimer
+### 11.2 Haftungsausschluss
 
-Der Dienst wird „**wie er ist**" (as-is) und „**wie verfügbar**" (as-available) bereitgestellt. Der Anbieter garantiert nicht:
-- Unterbrechungs- oder fehlerfreien Betrieb
-- Abwesenheit vorübergehender Verlangsamungen aufgrund geplanter Wartung, höherer Gewalt, Problemen bei Unter-Auftragsverarbeitern oder Ursachen ausserhalb der Kontrolle des Anbieters
-- Spezifische Antwortzeiten oder garantierte Uptime-Level (ausser sofern in Enterprise-Plänen mit dediziertem vertraglichem SLA vorgesehen)
+Der Dienst wird „**wie besehen**" (as-is) und „**wie verfügbar**" (as-available) bereitgestellt. Der Anbieter garantiert nicht:
+- Ununterbrochenen oder fehlerfreien Betrieb
+- Das Ausbleiben vorübergehender Verlangsamungen aufgrund geplanter Wartung, höherer Gewalt, Problemen bei Unterauftragsverarbeitern oder nicht dem Anbieter zurechenbaren Ursachen
+- Bestimmte Antwortzeiten oder eine garantierte Uptime
+- Mindestvolumina an Sichtbarkeit, Traffic oder Buchungen für den Veranstalter
 
 ### 11.3 Wartung
 
-Geplante Wartungen werden ausserhalb der Standard-CET-Geschäftszeiten geplant und mit mindestens 48 Stunden Vorankündigung per Plattform-Hinweis angekündigt, ausser bei dringenden Sicherheitseingriffen.
+Geplante Wartungsarbeiten werden außerhalb der üblichen Arbeitszeiten (CET) angesetzt und mit mindestens 48 Stunden Vorlauf über einen Hinweis in der Plattform angekündigt, vorbehaltlich dringender Sicherheitseingriffe.
 
 ### 11.4 Höhere Gewalt
 
-Der Anbieter haftet nicht für Versäumnisse aufgrund höherer Gewalt (Naturkatastrophen, behördliche Massnahmen, Streiks, massive Cyberangriffe, Unverfügbarkeit von Unter-Auftragsverarbeitern ausserhalb der Kontrolle des Anbieters).
+Der Anbieter haftet nicht für Nichterfüllungen aufgrund höherer Gewalt (Naturkatastrophen, behördliche Maßnahmen, Streiks, massive Cyberangriffe, Nichtverfügbarkeit von Unterauftragsverarbeitern außerhalb des Einflussbereichs des Anbieters).
 
 ---
 
@@ -266,94 +283,101 @@ Der Anbieter haftet nicht für Versäumnisse aufgrund höherer Gewalt (Naturkata
 
 Der Nutzer verpflichtet sich:
 
-1. Den Dienst ausschliesslich zu rechtmässigen Zwecken und in Übereinstimmung mit den AGB zu nutzen
-2. Keinen Zugriff auf Daten anderer Organisationen oder Nutzer zu versuchen
-3. Keine illegalen, diffamierenden, gegen die guten Sitten verstossenden oder Rechte Dritter verletzenden Inhalte hochzuladen
-4. Keine automatisierten Systeme (Bots, Crawler, Scraper) für den Zugriff auf den Dienst zu nutzen, sofern nicht für offizielle API-Integrationen autorisiert
-5. Nicht zu versuchen, die Sicherheitsmassnahmen, die Plan-Limits oder die Multi-Tenant-Isolation zu umgehen
-6. Den Dienstzugang nicht ohne schriftliche Genehmigung des Anbieters weiterzuverkaufen, zu unterlizenzieren oder an Dritte weiterzuverteilen
-7. Den Dienst nicht für direkten Wettbewerb zu nutzen (z. B. Analyse der Plattform zur Erstellung eines konkurrierenden Dienstes)
-8. Die Infrastruktur nicht mit offensichtlich übermässigen Anfragen zu überlasten
+1. Den Dienst ausschließlich für rechtmäßige Zwecke und in Übereinstimmung mit den Bedingungen zu nutzen
+2. Nicht zu versuchen, auf Daten anderer Veranstalter oder Nutzer zuzugreifen
+3. Keine rechtswidrigen, irreführenden, verleumderischen, sittenwidrigen oder Rechte Dritter verletzenden Inhalte zu veröffentlichen
+4. Keine falschen, vergüteten oder im Auftrag Dritter erstellten Bewertungen zu veröffentlichen oder solche anzuwerben (Art. 6.6)
+5. Die Plattform nicht zu umgehen, um die Plattformgebühr auf über den öffentlichen Kalender zustande gekommene Buchungen zu vermeiden (z. B. über das Verzeichnis gewonnene Kunden systematisch aus der Plattform herauszuleiten, allein um die Gebühr zu vermeiden)
+6. Keine automatisierten Systeme (Bots, Crawler, Scraper) für den Zugriff auf den Dienst zu verwenden, sofern nicht für offizielle Integrationen autorisiert
+7. Nicht zu versuchen, die Sicherheitsmaßnahmen, die Limits der Pläne oder die Multi-Tenant-Isolierung zu umgehen
+8. Den Zugang zum Dienst nicht ohne schriftliche Genehmigung des Anbieters an Dritte weiterzuverkaufen, unterzulizenzieren oder weiterzuverteilen
+9. Den Dienst nicht für Tätigkeiten des direkten Wettbewerbs zu nutzen (z. B. Analyse der Plattform zum Aufbau eines konkurrierenden Dienstes)
+10. Die Infrastruktur nicht mit offenkundig übermäßigen Anfragen zu überlasten
 
-Verstösse gegen diesen Artikel können zur sofortigen Konto-Sperre (Art. 14.4) und etwaiger Schadensersatzforderung führen.
+Verstöße gegen diesen Artikel können die sofortige Sperrung des Kontos (Art. 14.4) und die etwaige Geltendmachung von Schadensersatz zur Folge haben.
 
 ---
 
-## 13. Commerce-Modul: besondere Bestimmungen
+## 13. Marktplatz: Rollen und Verantwortlichkeiten des Veranstalters
 
-Wenn die Organisation das Commerce-Modul nutzt, um einen öffentlichen Storefront zu betreiben:
+### 13.1 Aurya als technischer Vermittler
 
-### 13.1 Rolle der Organisation
+Der Anbieter stellt die technische Vermittlungsinfrastruktur bereit (Verzeichnis, Schaufenster, Buchungen, Zahlungen, Verwaltungssoftware). **Der Anbieter ist weder Organisator, Verkäufer noch Erbringer der veröffentlichten Retreats, Erlebnisse, Produkte oder Kurse.** Der Vertrag über das Angebot kommt direkt und ausschließlich zwischen Veranstalter und Endkunde zustande; der Veranstalter ist dafür der alleinige Verantwortliche, einschließlich der Durchführung (Ablauf des Retreats, Qualität, Sicherheit der Teilnehmer, Lieferung der Produkte, Eignung der Räumlichkeiten, Versicherungsschutz, etwaige erforderliche berufliche Zulassungen).
 
-Die Organisation ist Verantwortlicher für die Daten ihrer Endkunden (siehe Datenschutzerklärung Art. 18). Der Anbieter handelt als Auftragsverarbeiter gemäss Art. 28 DSGVO.
+### 13.2 Pflichten des Veranstalters
 
-### 13.2 Pflichten der Organisation
+Der Veranstalter ist verpflichtet:
+- Das Angebot wahrheitsgemäß, vollständig und nicht irreführend zu beschreiben (Preise, Termine, Leistungsumfang, Teilnahmevoraussetzungen)
+- Seinen Endkunden eine eigene, der DSGVO entsprechende Datenschutzerklärung bereitzustellen und die Anträge auf Ausübung der Rechte zu bearbeiten (Datenschutzerklärung Art. 18)
+- Die auf die eigene Tätigkeit anwendbaren Vorschriften einzuhalten: Verbraucherrechte (italienischer Codice del Consumo, Richtlinie 2011/83/EU, schweizerisches Konsumkreditrecht), vorvertragliche Informationspflichten, etwaige Vorschriften über Pauschalreisen und Beherbergungsbetriebe, Hygiene- und Sicherheitsvorschriften
+- Bestätigte Buchungen und die zum Zeitpunkt der Buchung veröffentlichten Bedingungen einzuhalten
+- Mit dem Anbieter das **Data Processing Agreement (DPA)** gemäß Art. 28 DSGVO für die Daten der eigenen Kunden abzuschließen; die Nutzung der Verwaltungssoftware bewirkt die Annahme des Standard-DPA, verfügbar auf Anfrage an `info@aurya.life`
 
-Die Organisation (Merchant) ist verpflichtet:
+### 13.3 Storno- und Rückerstattungsrichtlinie gegenüber dem Endkunden
 
-- Ihren Endkunden eine vollständige und DSGVO-konforme eigene Datenschutzerklärung zur Verfügung zu stellen
-- Die eigenen Kontaktdaten und die Rechte der Kunden korrekt anzugeben
-- Die Anfragen zur Ausübung der Rechte (Art. 15-22 DSGVO) seitens Endkunden direkt zu bearbeiten
-- Die anwendbare Disziplin im Bereich E-Commerce, Verbraucherrechte (Italienisches Verbraucherrecht, Richtlinie 2011/83/EU, Schweizer KKG), vorvertragliche Information, Widerrufsbedingungen einzuhalten
-- Verkaufsbedingungen, Lieferbedingungen, Garantien, Rückgabe- und Erstattungsrichtlinien auf Store- oder einzelner Produktebene mit den Funktionen der Plattform korrekt zu konfigurieren
-- Die auf Verkäufe anwendbaren Steuern korrekt zu entrichten (MwSt., schweizerische MwSt. usw.)
+- Die Storno- und Rückerstattungsbedingungen (einschließlich des Schicksals der Anzahlung) werden **vom Veranstalter festgelegt und auf der Seite des Retreats oder des Produkts veröffentlicht**; sie regeln unmittelbar das Verhältnis zwischen Veranstalter und Endkunde und müssen dem anwendbaren Verbraucherrecht entsprechen.
+- Geschuldete Rückerstattungen werden **vom Veranstalter über Stripe** aus dem eigenen Konto abgewickelt. Im Falle einer Rückerstattung folgt die Plattformgebühr den Stripe-Regeln zu Application-Fee-Refunds.
+- Der Anbieter entscheidet nicht über Rückerstattungen und ist nicht verpflichtet, den Endkunden anstelle des Veranstalters zu entschädigen; er kann im Streitfall die Kommunikation zwischen den Parteien erleichtern, ohne Erfolgspflicht.
+- Etwaige Chargebacks und Beanstandungen beim Zahlungsnetzwerk werden über das Stripe-Konto des Veranstalters abgewickelt, der deren Ergebnisse und Kosten trägt.
 
-### 13.3 Auftragsverarbeitungsvereinbarung
+### 13.4 Steuerliche Pflichten des Veranstalters
 
-Die Organisation und der Anbieter schliessen eine separate **Auftragsverarbeitungsvereinbarung (DPA)** gemäss Art. 28 DSGVO ab. Das Standard-DPA des Anbieters wird auf Anfrage an `davide@afianco.ch` bereitgestellt. Die Nutzung des Commerce-Moduls bewirkt die stillschweigende Annahme des DPA gemäss Art. 28(3) DSGVO (die ausdrückliche Annahme kann auf schriftliche Anfrage formalisiert werden).
+Der Veranstalter ist allein verantwortlich für seine steuerlichen und buchhalterischen Pflichten im Zusammenhang mit den über die Plattform getätigten Verkäufen: Ausstellung von Quittungen/Rechnungen an die Endkunden, soweit geschuldet, Erklärung der Entgelte, Abführung der Mehrwertsteuer und aller sonstigen anwendbaren Steuern, etwaige Meldepflichten (z. B. DAC7, soweit anwendbar, über die zuständigen Kanäle). Der Anbieter stellt dem Veranstalter ausschließlich die ihm zustehende Grundgebühr und die Gebühren in Rechnung.
 
-### 13.4 Verkaufsbedingungen gegenüber dem Endkunden
-
-Die von der Organisation konfigurierten Verkaufsbedingungen regeln direkt das Verhältnis zwischen Organisation und Endkunde. Der Anbieter stellt den technischen Container für die Präsentation solcher Bedingungen zur Verfügung, ist aber weder Vertragspartei des Kaufvertrags noch in dessen Erfüllung (Lieferung, Garantien, Rückgabe) involviert.
-
-### 13.5 Haftungsausschluss des Anbieters
+### 13.5 Haftungsfreistellung des Anbieters
 
 Der Anbieter haftet nicht für:
-- Beschwerden des Endkunden gegenüber der Organisation
-- Nichtlieferung, Verspätungen, Beschwerden über die Qualität des Produkts/der Dienstleistung
-- Steuerliche Pflichten der Organisation gegenüber den zuständigen Behörden
-- Compliance der Organisation mit den auf den Verkauf anwendbaren Vorschriften
+- Beanstandungen des Endkunden gegenüber dem Veranstalter (Qualität, Absage, Nichtdurchführung, Unfälle, Schäden während des Retreats)
+- Wahrheitsgehalt und Rechtmäßigkeit der vom Veranstalter veröffentlichten Inhalte
+- Steuerliche, versicherungstechnische und genehmigungsrechtliche Pflichten des Veranstalters
+- Die Einhaltung der auf den Verkauf und die Erbringung des Angebots anwendbaren Vorschriften durch den Veranstalter
 
 ---
 
-## 14. Deaktivierung, Aussetzung, Beendigung
+## 14. Deaktivierung, Sperrung, Kündigung
 
-### 14.1 Self-Service-Deaktivierung durch den Nutzer
+### 14.1 Self-Service-Deaktivierung durch den Veranstalter
 
-Der Administrator kann das Konto jederzeit in den Einstellungen deaktivieren. Die Deaktivierung umfasst:
+Der Veranstalter kann sein Konto jederzeit in den Einstellungen deaktivieren. Die Deaktivierung bewirkt:
 
-1. Sofortige Zugriffssperre für den Administrator und die Teammitglieder
-2. Sofortige Stornierung etwaiger aktiver Stripe-Abonnements (ohne Erstattung der verbleibenden Quoten des bereits bezahlten Zeitraums)
+1. Sofortige Sperrung des Zugangs und Entfernung des Schaufensters und des Angebots von den öffentlichen Seiten
+2. Sofortige Kündigung etwaiger aktiver Stripe-Abonnements (ohne Erstattung der Restbeträge des bereits bezahlten Zeitraums)
 3. Versand einer Benachrichtigung per E-Mail
-4. **30-Tage-Karenzfrist**, während der das Konto reaktiviert werden kann
-5. **Erinnerungs-E-Mail 7 Tage vor endgültiger Löschung** mit Anweisungen zum Exportieren der Daten
-6. Nach 30 Tagen: **endgültige und unwiderrufliche Löschung** aller Daten der Organisation (Finanzdatensätze, hochgeladene Dateien, KI-Konversationen, Warnungen, Nutzerdaten). Audit-Protokolle werden anonymisiert und für den verbleibenden Zeitraum ihrer Aufbewahrung zu Zwecken des Rechtsschutzes und der Sicherheit aufbewahrt.
+4. **30-tägige Karenzfrist**, während der das Konto reaktiviert werden kann
+5. **Erinnerungs-E-Mail 7 Tage vor der endgültigen Löschung** mit Anweisungen zum Export der Daten
+6. Nach Ablauf von 30 Tagen: **endgültige und unwiderrufliche Löschung** aller Daten des Veranstalters (Inhalte, Bestellungen, Stammdaten, Nutzerdaten). Die Audit-Logs werden anonymisiert und für die verbleibende Dauer ihrer Aufbewahrungsfrist zum Zweck der Rechtsverteidigung und Sicherheit aufbewahrt.
+
+Unberührt bleiben die Pflichten des Veranstalters gegenüber den Endkunden für die zum Zeitpunkt der Deaktivierung bereits bestätigten Buchungen (Durchführung oder Rückerstattung gemäß Art. 13.3).
+
+Der Endkunde kann die Schließung seines Retreat-Pass-Kontos nach den in der Datenschutzerklärung (Art. 12) angegebenen Modalitäten und Fristen beantragen.
 
 ### 14.2 Reaktivierung
 
-Während der Karenzfrist kann der Administrator das Konto durch Kontaktaufnahme mit dem Anbieter reaktivieren. Die Reaktivierung stellt die Daten wieder her, jedoch nicht ein etwaiges Abonnement, das neu abgeschlossen werden muss.
+Während der Karenzfrist kann der Veranstalter das Konto durch Kontaktaufnahme mit dem Anbieter reaktivieren. Die Reaktivierung stellt die Daten wieder her, nicht jedoch das etwaige Abonnement, das neu abgeschlossen werden muss.
 
-### 14.3 Beendigung wegen Nichterfüllung durch den Anbieter
+### 14.3 Kündigung durch den Anbieter
 
-Der Anbieter kann den Vertrag jederzeit mit einer Vorankündigungsfrist von mindestens 30 Tagen und per E-Mail-Mitteilung beenden, im Falle von:
-- Wesentlichem Verstoss gegen die vorliegenden AGB seitens des Nutzers
-- Längerem Zahlungsverzug (siehe Art. 7.7)
-- Nutzung des Dienstes für illegale Aktivitäten
+Der Anbieter kann den Vertrag jederzeit, mit einer Vorankündigung von mindestens 30 Tagen und durch Mitteilung per E-Mail, kündigen im Falle von:
+- Wesentlichem Verstoß gegen die vorliegenden Bedingungen durch den Nutzer
+- Anhaltendem Zahlungsverzug (siehe Art. 7.7)
+- Nutzung des Dienstes für rechtswidrige Tätigkeiten
+- Wiederholten und begründeten Beanstandungen der Endkunden wegen nicht eingehaltener Buchungen
 
-Im Beendigungsfall hat der Administrator das Recht, die eigenen Daten innerhalb der Vorankündigungsfrist zu exportieren.
+Im Falle der Kündigung hat der Veranstalter das Recht, seine Daten innerhalb der Ankündigungsfrist zu exportieren.
 
-### 14.4 Sofortige Aussetzung
+### 14.4 Sofortige Sperrung
 
-Der Anbieter behält sich das Recht vor, das Konto sofort und ohne Vorankündigung auszusetzen, im Falle von:
+Der Anbieter behält sich das Recht vor, das Konto sofort und ohne Vorankündigung zu sperren im Falle von:
 - Vermuteten Sicherheitsverletzungen, die die Plattform oder andere Nutzer gefährden
-- Anfragen zuständiger Behörden
-- Hochladen offensichtlich illegaler Inhalte
+- Vermutetem Betrug bei Zahlungen oder Bewertungen
+- Anordnungen zuständiger Behörden
+- Veröffentlichung offenkundig rechtswidriger Inhalte
 
-Die Aussetzung ist vorläufig; sollten 72 Stunden ab der Aussetzung ohne Klarstellung seitens des Nutzers vergehen, kann der Anbieter zur Beendigung gemäss Art. 14.3 übergehen.
+Die Sperrung ist vorläufig; nach Ablauf von 72 Stunden ab der Sperrung ohne Klärung seitens des Nutzers kann der Anbieter die Kündigung gemäß Art. 14.3 vornehmen.
 
-### 14.5 Beendigung wegen Einstellung der Tätigkeit des Anbieters
+### 14.5 Einstellung der Tätigkeit des Anbieters
 
-Im Falle der Einstellung der Tätigkeit des Anbieters wird der Nutzer mit einer Vorankündigungsfrist von mindestens **60 Tagen** benachrichtigt, um den vollständigen Datenexport zu ermöglichen. Der Anbieter verpflichtet sich, die Exportfunktion auch während des Schliessungszeitraums verfügbar zu halten.
+Im Falle der Einstellung der Tätigkeit des Anbieters wird der Nutzer mit einer Vorankündigung von mindestens **60 Tagen** informiert, um den vollständigen Export der Daten zu ermöglichen. Der Anbieter verpflichtet sich, die Exportfunktion auch während des Schließungszeitraums verfügbar zu halten.
 
 ---
 
@@ -361,137 +385,139 @@ Im Falle der Einstellung der Tätigkeit des Anbieters wird der Nutzer mit einer 
 
 ### 15.1 Rechte des Anbieters
 
-Alle Rechte des geistigen Eigentums an der Plattform (Quellcode, Design, Schnittstellen, Marke „AFianco", redaktionelle Inhalte, Dokumentation, Algorithmen) sind und bleiben ausschliessliches Eigentum des Anbieters oder seiner Lizenzgeber.
+Alle Rechte des geistigen Eigentums an der Plattform (Quellcode, Design, Schnittstellen, Marke und Logo „Aurya", redaktionelle Inhalte, Dokumentation, Algorithmen) sind und bleiben ausschließliches Eigentum des Anbieters oder seiner Lizenzgeber.
 
 ### 15.2 Lizenz an den Nutzer
 
-Der Anbieter gewährt dem Nutzer eine Lizenz, die:
-- Nicht ausschliesslich ist
-- Nicht übertragbar ist
-- Auf die Vertragslaufzeit beschränkt ist
-- Für die Nutzung des Dienstes in den von den AGB vorgesehenen Modalitäten gilt
+Der Anbieter räumt dem Nutzer eine Lizenz ein:
+- Nicht ausschließlich
+- Nicht übertragbar
+- Beschränkt auf die Vertragsdauer
+- Zur Nutzung des Dienstes in den von den Bedingungen vorgesehenen Modalitäten
 
-Der Nutzer erwirbt keine Rechte an der Plattform ausserhalb des durch die AGB gewährten Nutzungsrechts.
+Der Nutzer erwirbt außerhalb der Nutzungslizenz keinerlei Rechte an der Plattform.
 
 ### 15.3 Feedback
 
-Jegliche Vorschläge, Ideen, Meldungen, Verbesserungen, die vom Nutzer in Bezug auf die Plattform vorgeschlagen werden, können vom Anbieter frei genutzt werden, ohne jegliche Verpflichtung zu Vergütung, Zuschreibung oder Vertraulichkeit.
+Jeder Vorschlag, jede Idee, Meldung oder Verbesserung, die der Nutzer in Bezug auf die Plattform vorschlägt, kann vom Anbieter frei verwendet werden, ohne jegliche Pflicht zu Vergütung, Namensnennung oder Vertraulichkeit.
 
 ---
 
 ## 16. Haftungsbeschränkung
 
-### 16.1 Ausschluss konkludenter Garantien
+### 16.1 Ausschluss stillschweigender Garantien
 
-Im weitestmöglichen Umfang des anwendbaren Rechts schliesst der Anbieter jegliche konkludente Garantie der Marktgängigkeit, Eignung für einen bestimmten Zweck, Genauigkeit der erzielbaren Ergebnisse aus.
+Soweit nach dem anwendbaren Recht maximal zulässig, schließt der Anbieter jede stillschweigende Garantie der Marktgängigkeit, der Eignung für einen bestimmten Zweck und der Genauigkeit der erzielbaren Ergebnisse aus.
 
-### 16.2 Maximale Haftungsobergrenze
+### 16.2 Haftungshöchstgrenze
 
-Im weitestmöglichen Umfang des anwendbaren Rechts kann die Gesamthaftung des Anbieters gegenüber dem Nutzer für jegliche aus dem oder im Zusammenhang mit dem Dienst entstehende Ursache (einschliesslich direkter, indirekter, mittelbarer Schäden, entgangener Gewinn, Datenverlust, Image-Schäden) **den vom Nutzer dem Anbieter in den 12 Monaten vor dem haftungsbegründenden Ereignis gezahlten Gesamtbetrag nicht überschreiten**.
+Soweit nach dem anwendbaren Recht maximal zulässig, darf die Gesamthaftung des Anbieters gegenüber dem Nutzer aus jeglichem Grund, der sich aus dem Dienst ergibt oder damit zusammenhängt (einschließlich unmittelbarer, mittelbarer und beiläufiger Schäden, entgangenen Gewinns, Datenverlusts, Imageschäden), **den Gesamtbetrag nicht übersteigen, den der Nutzer dem Anbieter (Grundgebühren und Plattformgebühren) in den 12 Monaten vor dem haftungsauslösenden Ereignis entrichtet hat**.
 
-Für Nutzer des Free-Plans, die nie einen Betrag gezahlt haben, ist die maximale Haftungsobergrenze auf **CHF 200** (zweihundert Schweizer Franken) festgelegt.
+Für Nutzer, die dem Anbieter niemals einen Betrag entrichtet haben, ist die Haftungshöchstgrenze auf **CHF 200** (zweihundert Schweizer Franken) festgesetzt.
 
 ### 16.3 Ausdrückliche Ausschlüsse
 
-Ausser in Fällen von Vorsatz oder grober Fahrlässigkeit haftet der Anbieter nicht für:
+Außer in Fällen von Vorsatz oder grober Fahrlässigkeit haftet der Anbieter nicht für:
 
-- **Datenverlust** durch Handlungen des Nutzers, Konfigurationsfehler, versehentliche Löschungen
-- **Geschäftliche, finanzielle, steuerliche oder rechtliche Entscheidungen**, die auf Basis von Plattform- oder KI-Analysen getroffen werden
-- **Entgangenen Gewinn**, Kundenverlust, Image-Schäden
-- **Unbefugte Zugriffe**, die durch Fahrlässigkeit des Nutzers bei der Aufbewahrung der Zugangsdaten verursacht werden
-- **Dienstunterbrechungen** aufgrund höherer Gewalt, geplanter Wartung, massiver Cyberangriffe ausserhalb der Kontrolle des Anbieters
-- **Versäumnisse der Unter-Auftragsverarbeiter**, die keinen Vertragsverstoss der jeweiligen Vereinbarung darstellen (Datenschutzerklärung Art. 6)
-- **Streitigkeiten zwischen Organisation und Endkunden** des Commerce-Moduls (Art. 13.5)
-- **Steuerliche oder regulatorische Compliance** der Organisation
+- **Datenverlust** aufgrund von Handlungen des Nutzers, Konfigurationsfehlern, versehentlichen Löschungen
+- **Durchführung der Retreats und der Angebote**: Absagen, Qualität, Sicherheit, Schäden oder Unfälle während der Aktivitäten des Veranstalters (Art. 13)
+- **Geschäftliche Entscheidungen** des Veranstalters auf Grundlage der Informationen der Plattform
+- **Entgangenen Gewinn**, Kundenverlust, Imageschaden
+- **Unbefugte Zugriffe**, verursacht durch die Nachlässigkeit des Nutzers bei der Verwahrung der Zugangsdaten
+- **Unterbrechungen des Dienstes** aufgrund höherer Gewalt, geplanter Wartung, massiver Cyberangriffe außerhalb des Einflussbereichs des Anbieters
+- **Nichterfüllungen der Unterauftragsverarbeiter**, die keinen Vertragsverstoß gegen die jeweilige Vereinbarung darstellen (Datenschutzerklärung Art. 6)
+- **Aussetzung oder Schließung des Stripe-Kontos** des Veranstalters durch Stripe (Art. 8.5)
+- **Streitigkeiten zwischen Veranstalter und Endkunden** (Art. 13.5)
+- **Steuerliche oder regulatorische Compliance** des Veranstalters
 
-### 16.4 Nicht abdingbare Beschränkungen
+### 16.4 Unabdingbare Beschränkungen
 
-Die oben genannten Beschränkungen finden keine Anwendung, soweit das anwendbare zwingende Recht solche Befreiungen ausschliesst oder beschränkt. Insbesondere beschränkt nichts in diesen AGB die Haftung für Vorsatz, grobe Fahrlässigkeit, Personenschäden oder Haftungsfälle, die nach anwendbarem Recht nicht beschränkt werden können.
+Die vorstehenden Beschränkungen gelten nicht, soweit zwingendes anwendbares Recht solche Haftungsausschlüsse ausschließt oder begrenzt. Insbesondere beschränkt nichts in diesen Bedingungen die Haftung für Vorsatz, grobe Fahrlässigkeit, Personenschäden oder Haftungsfälle, die nach dem anwendbaren Recht nicht beschränkt werden können. Unberührt bleiben die unabdingbaren Verbraucherschutzrechte (Art. 22.3).
 
 ---
 
-## 17. Schadloshaltung (Indemnification)
+## 17. Freistellung (Schadloshaltung)
 
-Der Nutzer verpflichtet sich, den Anbieter (einschliesslich seiner Vertreter, Hilfspersonen, Unter-Auftragsverarbeiter) von jeglichen Ansprüchen, Beschwerden, Rechtsstreitigkeiten, Verlusten, Schäden, Kosten oder Aufwendungen (einschliesslich angemessener Rechtsanwaltskosten) freizustellen und schadlos zu halten, die sich ergeben aus:
+Der Veranstalter verpflichtet sich, den Anbieter (einschließlich seiner Vertreter, Hilfspersonen, Unterauftragsverarbeiter) von jeglichen Ansprüchen, Beanstandungen, Klagen, Verlusten, Schäden, Kosten oder Aufwendungen (einschließlich angemessener Anwaltskosten) freizustellen und schadlos zu halten, die sich ergeben aus:
 
-1. Verstoss gegen die vorliegenden AGB seitens des Nutzers
-2. Nutzung des Dienstes unter Verstoss gegen anwendbares Recht
-3. Verletzung von Rechten Dritter, verursacht durch den Nutzer-Inhalt oder dessen Nutzung
-4. Ansprüche von Endkunden der Organisation, die mit dem Vertragsverhältnis mit der Organisation zusammenhängen (Commerce-Modul — Art. 13)
-5. Ansprüche Dritter, die mit Versäumnissen des Nutzers gegenüber den eigenen betroffenen Personen zusammenhängen (z. B. fehlende, den eigenen Kunden bereitgestellte Datenschutzerklärung)
+1. Verstoß gegen die vorliegenden Bedingungen durch den Veranstalter
+2. Nutzung des Dienstes unter Verstoß gegen anwendbare gesetzliche Bestimmungen
+3. Verletzung von Rechten Dritter durch die Inhalte des Veranstalters oder deren Nutzung
+4. Ansprüchen von Endkunden im Zusammenhang mit dem Vertragsverhältnis mit dem Veranstalter (Durchführung des Angebots, Stornierungen, Rückerstattungen, Schäden — Art. 13)
+5. Ansprüchen Dritter im Zusammenhang mit Pflichtverletzungen des Veranstalters gegenüber den eigenen betroffenen Personen (z. B. den eigenen Kunden nicht bereitgestellte Datenschutzerklärung, Marketing-Versand ohne Einwilligung)
 
-Der Anbieter wird den Nutzer unverzüglich über etwaige Ansprüche Dritter informieren und in der Verteidigung angemessen mitwirken.
+Der Anbieter wird dem Veranstalter etwaige Ansprüche Dritter unverzüglich mitteilen und bei der Verteidigung angemessen mitwirken.
 
 ---
 
 ## 18. Vertraulichkeit
 
-Die Parteien verpflichten sich, die im Rahmen des Vertragsverhältnisses von der Gegenpartei erhaltenen vertraulichen Informationen vertraulich zu behandeln, ausser soweit verlangt durch:
+Die Parteien verpflichten sich, die im Rahmen des Vertragsverhältnisses von der Gegenpartei erhaltenen vertraulichen Informationen geheim zu halten, vorbehaltlich dessen, was verlangt wird durch:
 - Zuständige Justiz- oder Verwaltungsbehörden
-- Verpflichtende steuerliche und buchhalterische Auflagen
-- Diensterbringung (z. B. autorisierte Unter-Auftragsverarbeiter)
+- Zwingende steuerliche und buchhalterische Pflichten
+- Die Erbringung des Dienstes (z. B. autorisierte Unterauftragsverarbeiter)
 
-Die Vertraulichkeitspflicht überdauert die Beendigung des Vertragsverhältnisses um weitere **3 Jahre**.
-
----
-
-## 19. Kommunikation
-
-### 19.1 Benachrichtigungen des Anbieters an den Nutzer
-
-Die Mitteilungen des Anbieters erfolgen per E-Mail an die vom Nutzer registrierte Adresse. Der Nutzer ist verpflichtet, die eigene E-Mail-Adresse aktuell zu halten.
-
-### 19.2 Benachrichtigungen des Nutzers an den Anbieter
-
-Die Mitteilungen des Nutzers an den Anbieter erfolgen per E-Mail an `davide@afianco.ch`.
-
-### 19.3 Transaktions-E-Mails
-
-Der Anbieter versendet für die Diensterbringung erforderliche Transaktions-Mitteilungen (Kontoverifizierung, Passwort-Reset, Team-Einladungen, Deaktivierungs-Benachrichtigungen, Erinnerungen an Löschungen, Änderungen der AGB, Rechnungen). Solche Mitteilungen **können nicht deaktiviert werden**, da sie für das Vertragsverhältnis instrumental sind.
-
-### 19.4 Keine Marketing-Kommunikation
-
-Der Anbieter **versendet keine** Newsletter, Werbeaktionen oder Marketing-E-Mails ohne vorherige ausdrückliche Einwilligung des Nutzers.
+Die Vertraulichkeitspflicht überdauert die Beendigung des Vertragsverhältnisses für weitere **3 Jahre**.
 
 ---
 
-## 20. Änderungen der AGB
+## 19. Mitteilungen
 
-Der Anbieter behält sich das Recht vor, die vorliegenden AGB zu ändern.
+### 19.1 Mitteilungen des Anbieters an den Nutzer
+
+Die Mitteilungen des Anbieters erfolgen per E-Mail an die vom Nutzer registrierte Adresse. Der Nutzer ist verpflichtet, seine E-Mail-Adresse aktuell zu halten.
+
+### 19.2 Mitteilungen des Nutzers an den Anbieter
+
+Die Mitteilungen des Nutzers an den Anbieter erfolgen per E-Mail an die Adresse `info@aurya.life`.
+
+### 19.3 Transaktionale E-Mails
+
+Der Anbieter versendet die zur Erbringung des Dienstes erforderlichen transaktionalen Mitteilungen (Kontoverifizierung, Passwort-Reset, Bestellbestätigungen, Tickets, Erinnerungen an Restzahlung und Raten, OTP-Codes für Bewertungen, Deaktivierungsbenachrichtigungen, Löschungserinnerungen, Änderungen der Bedingungen, Quittungen). Diese Mitteilungen **können nicht deaktiviert werden**, da sie dem Vertragsverhältnis dienen.
+
+### 19.4 Marketing-Kommunikation
+
+Der Anbieter **versendet keine** Newsletter, Werbeaktionen oder Marketing-E-Mails ohne vorherige ausdrückliche Einwilligung der betroffenen Person. Die Newsletter der Veranstalter werden ausschließlich an Abonnenten versendet, die ihre Einwilligung erteilt haben, mit Self-Service-Abmeldung in jeder E-Mail (Datenschutzerklärung Art. 4.1).
+
+---
+
+## 20. Änderungen der Bedingungen
+
+Der Anbieter behält sich das Recht vor, die vorliegenden Bedingungen zu ändern.
 
 ### 20.1 Wesentliche Änderungen
 
-Für wesentliche Änderungen (z. B. Preisänderung, signifikante Reduzierung der Funktionen, neue Datenverarbeitungszwecke, neue Unter-Auftragsverarbeiter) kommuniziert der Anbieter mit einer Vorankündigungsfrist von mindestens **30 Tagen**:
+Bei wesentlichen Änderungen (z. B. Änderung der Grundgebühren oder Gebührensätze, erhebliche Reduzierung der Funktionen, neue Zwecke der Datenverarbeitung, neue Unterauftragsverarbeiter) informiert der Anbieter mit einer Vorankündigung von mindestens **30 Tagen** über:
 
-1. E-Mail an den Administrator
-2. Hinweis auf der Plattform beim nächsten Login
-3. Veröffentlichung der neuen Version auf https://afianco.app/terms
+1. E-Mail an den registrierten Nutzer
+2. Hinweis in der Plattform beim nächsten Login
+3. Veröffentlichung der neuen Version unter https://aurya.life/terms
 
-Die fortgesetzte Nutzung des Dienstes nach dem Wirksamkeitsdatum der Änderungen gilt als Annahme der neuen Bestimmungen. Im Falle der Nichtzustimmung kann der Nutzer ohne Vertragsstrafe bis zum Wirksamkeitsdatum kündigen.
+Die fortgesetzte Nutzung des Dienstes nach dem Wirksamkeitsdatum der Änderungen gilt als Annahme der neuen Bestimmungen. Bei Nichteinverständnis kann der Nutzer bis zum Wirksamkeitsdatum ohne Vertragsstrafe kündigen.
 
 ### 20.2 Geringfügige Änderungen
 
-Für geringfügige Änderungen (Tippfehler-Korrekturen, Umformulierungen, die die Substanz nicht ändern, Aktualisierung der Kontaktdaten) beträgt die Vorankündigungsfrist **15 Tage**.
+Bei geringfügigen Änderungen (Korrektur von Tippfehlern, Umformulierungen ohne inhaltliche Änderung, Aktualisierung von Kontaktdaten) beträgt die Vorankündigung **15 Tage**.
 
 ### 20.3 Dringende Änderungen
 
-Für durch zwingende Gesetze oder Massnahmen zuständiger Behörden auferlegte Änderungen kann der Anbieter die Änderungen mit sofortiger Wirkung umsetzen, mit nachfolgender Mitteilung an den Nutzer.
+Bei Änderungen, die durch zwingende gesetzliche Vorschriften oder Anordnungen zuständiger Behörden vorgegeben sind, kann der Anbieter die Änderungen mit sofortiger Wirkung umsetzen, mit anschließender Mitteilung an den Nutzer.
 
 ---
 
 ## 21. Abtretung und Untervergabe
 
-### 21.1 Vertragsabtretung
+### 21.1 Abtretung des Vertrags
 
-Der Nutzer darf das eigene Konto oder die aus diesem Vertrag erwachsenen Rechte ohne schriftliche Zustimmung des Anbieters nicht an Dritte abtreten.
+Der Nutzer darf sein Konto oder die Rechte aus diesem Vertrag ohne schriftliche Zustimmung des Anbieters nicht an Dritte abtreten.
 
 ### 21.2 Abtretung durch den Anbieter
 
-Der Anbieter kann den Vertrag im Rahmen ausserordentlicher Vorgänge (Fusion, Spaltung, Geschäftsübertragung) mit 30 Tagen Vorankündigung an Dritte abtreten. Der Nutzer hat das Recht, innerhalb der Vorankündigungsfrist zu kündigen.
+Der Anbieter kann den Vertrag im Rahmen außerordentlicher Transaktionen (Fusion, Spaltung, Unternehmensveräußerung) mit einer Vorankündigung von 30 Tagen an Dritte abtreten. Der Nutzer hat das Recht, innerhalb der Ankündigungsfrist zu kündigen.
 
-### 21.3 Unter-Auftragsverarbeiter
+### 21.3 Unterauftragsverarbeiter
 
-Die Nutzung von Unter-Auftragsverarbeitern durch den Anbieter ist in der Datenschutzerklärung Art. 6 geregelt.
+Der Einsatz von Unterauftragsverarbeitern durch den Anbieter ist in der Datenschutzerklärung Art. 6 geregelt.
 
 ---
 
@@ -499,62 +525,62 @@ Die Nutzung von Unter-Auftragsverarbeitern durch den Anbieter ist in der Datensc
 
 ### 22.1 Anwendbares Recht
 
-Die vorliegenden AGB unterliegen ausschliesslich dem **Schweizer Recht**, unter Ausschluss der Kollisionsnormen und des Wiener UN-Kaufrechts (CISG) von 1980.
+Die vorliegenden Bedingungen unterliegen ausschließlich **schweizerischem Recht**, unter Ausschluss der Kollisionsnormen und des Wiener Übereinkommens von 1980 über Verträge über den internationalen Warenkauf (CISG).
 
 ### 22.2 Gerichtsstand
 
-Für jede Streitigkeit, die aus den vorliegenden AGB oder aus der Nutzung des Dienstes entsteht, vereinbaren die Parteien die **ausschliessliche Zuständigkeit der Gerichte von Lugano**, Schweiz.
+Für sämtliche Streitigkeiten aus den vorliegenden Bedingungen oder der Nutzung des Dienstes vereinbaren die Parteien die **ausschließliche Zuständigkeit des Gerichtsstands Lugano**, Schweiz.
 
-### 22.3 Verbraucher-Carve-out
+### 22.3 Verbraucherschutzvorbehalt
 
-Die Anwendung der zwingenden Rechtsvorschriften zugunsten von Nutzern mit Wohnsitz in anderen Staaten, die einen für den Verbraucher günstigeren Schutz vorsehen, bleibt unberührt, soweit der Nutzer als Verbraucher qualifiziert werden kann.
+Unberührt bleibt die Anwendung der unabdingbaren gesetzlichen Bestimmungen zugunsten von Nutzern, die als Verbraucher zu qualifizieren sind (insbesondere die Endkunden), einschließlich des Verbrauchergerichtsstands und der Schutzvorschriften des Landes des gewöhnlichen Aufenthalts, soweit günstiger und unabdingbar. Es bleibt dabei, dass der Vertrag über das Angebot zwischen Endkunde und Veranstalter zustande kommt (Art. 13).
 
 ---
 
 ## 23. Schlussbestimmungen
 
-### 23.1 Gesamtvereinbarung
+### 23.1 Gesamte Vereinbarung
 
-Die vorliegenden AGB bilden zusammen mit der Datenschutzerklärung und der etwaigen Auftragsverarbeitungsvereinbarung die **Gesamtvereinbarung** zwischen den Parteien in Bezug auf den Dienst und ersetzen jede vorherige schriftliche oder mündliche Verständigung.
+Die vorliegenden Bedingungen bilden zusammen mit der Datenschutzerklärung und dem etwaigen Data Processing Agreement die **gesamte Vereinbarung** zwischen den Parteien in Bezug auf den Dienst und ersetzen jede frühere schriftliche oder mündliche Abrede.
 
-### 23.2 Salvatorische Klausel
+### 23.2 Salvatorische Klausel (Severability)
 
-Sollte eine Bestimmung der vorliegenden AGB von der zuständigen Behörde für ungültig, rechtswidrig oder nicht durchsetzbar gehalten werden, bleiben die übrigen Bestimmungen vollständig in Kraft. Die ungültige Bestimmung wird durch die der ursprünglichen Absicht der Parteien am nächsten kommende rechtmässige Bestimmung ersetzt.
+Sollte eine Bestimmung der vorliegenden Bedingungen von der zuständigen Behörde für unwirksam, rechtswidrig oder undurchsetzbar erachtet werden, bleiben die übrigen Bestimmungen vollumfänglich in Kraft. Die unwirksame Bestimmung wird durch die rechtmäßige Bestimmung ersetzt, die der ursprünglichen Absicht der Parteien am nächsten kommt.
 
-### 23.3 Verzicht
+### 23.3 Verzicht (Waiver)
 
-Die unterlassene oder verspätete Ausübung eines in den vorliegenden AGB vorgesehenen Rechts stellt keinen Verzicht auf dieses Recht dar. Etwaige Verzichte müssen schriftlich ausgesprochen werden.
+Die Nichtausübung oder verspätete Ausübung eines in den vorliegenden Bedingungen vorgesehenen Rechts stellt keinen Verzicht auf dieses Recht dar. Etwaige Verzichte müssen schriftlich erklärt werden.
 
-### 23.4 Fortwirkung (Survival)
+### 23.4 Fortgeltung (Survival)
 
-Folgende Bestimmungen überdauern die Beendigung des Vertragsverhältnisses:
+Die folgenden Bestimmungen überdauern die Beendigung des Vertragsverhältnisses:
+- Art. 13 (Marktplatz: Rollen und Verantwortlichkeiten), beschränkt auf bereits abgeschlossene Buchungen
 - Art. 15 (Geistiges Eigentum)
 - Art. 16 (Haftungsbeschränkung)
-- Art. 17 (Schadloshaltung)
+- Art. 17 (Freistellung)
 - Art. 18 (Vertraulichkeit)
 - Art. 22 (Anwendbares Recht und Gerichtsstand)
-- Art. 24 (Kontakte)
-- Datenschutzerklärung: insbesondere Aufbewahrung der Audit-Protokolle und Erfüllung der Rechte der betroffenen Person
+- Art. 24 (Kontakt)
+- Datenschutzerklärung: insbesondere die Aufbewahrung der Audit-Logs und die Erfüllung der Rechte der betroffenen Person
 
 ### 23.5 Sprache
 
-Bei Diskrepanzen zwischen der italienischen Fassung und den Übersetzungen in EN/DE/FR ist für rechtliche Auslegungszwecke die italienische Fassung als Sprache der Originalausarbeitung massgeblich.
+Die Plattform ist in IT/EN/DE/FR verfügbar. Bei Abweichungen zwischen der italienischen Fassung und den Übersetzungen in EN/DE/FR hat für die rechtliche Auslegung die italienische Fassung Vorrang, da sie die ursprüngliche Redaktionssprache ist.
 
 ---
 
-## 24. Kontakte
+## 24. Kontakt
 
 **Anbieter:**
 Davide De Filippis
 Lugano, Schweiz
-E-Mail: `davide@afianco.ch`
+E-Mail: `info@aurya.life`
 
-Für jegliche Frage zu den vorliegenden AGB, technischen Support, Streitigkeiten, Ausübung vertraglicher Rechte: an die oben angegebene E-Mail-Adresse schreiben. Der Anbieter verpflichtet sich, innerhalb von 5 Werktagen ab Erhalt zu antworten.
+Für alle Fragen zu den vorliegenden Bedingungen, technischen Support, Beanstandungen und die Ausübung vertraglicher Rechte: an die oben angegebene E-Mail-Adresse schreiben. Der Anbieter verpflichtet sich, innerhalb von 5 Werktagen nach Erhalt zu antworten.
 
 ---
 
 ## Anhänge
 
-- **Datenschutzerklärung** — zugänglich unter https://afianco.app/privacy
-- **Auftragsverarbeitungsvereinbarung (DPA)** — auf Anfrage für Nutzer des Commerce-Moduls verfügbar
-- **Liste der Unter-Auftragsverarbeiter** — zugänglich unter https://afianco.app/legal/subprocessors
+- **Datenschutzerklärung (Privacy Policy)** — erreichbar unter https://aurya.life/privacy
+- **Data Processing Agreement (DPA)** — auf Anfrage für die Veranstalter verfügbar (Art. 13.2)

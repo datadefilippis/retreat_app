@@ -3,15 +3,15 @@
 
 **Version :** v1.0
 **Date d'effet :** {{date}}
-**Référence de l'organisation (afianco) :** {{org_id}}
+**Référence de l'organisation (Aurya) :** {{org_id}}
 
 ---
 
 ## 1. Objet et finalité
 
-Le présent Accord de Traitement des Données ("**DPA**") régit le traitement des données personnelles effectué par **afianco**, plateforme SaaS fournie par {{platform_controller_name}} ({{platform_controller_country}}), pour le compte du Responsable du traitement **{{merchant_name}}**, conformément à l'art. 28 du Règlement (UE) 2016/679 ("**RGPD**").
+Le présent Accord de Traitement des Données ("**DPA**") régit le traitement des données personnelles effectué par **Aurya**, plateforme marketplace et de gestion fournie par {{platform_controller_name}} ({{platform_controller_country}}), pour le compte du Responsable du traitement **{{merchant_name}}**, conformément à l'art. 28 du Règlement (UE) 2016/679 ("**RGPD**").
 
-Le DPA fait partie intégrante des Conditions générales d'utilisation d'afianco acceptées par le Responsable au moment de l'inscription.
+Le DPA fait partie intégrante des Conditions générales d'utilisation d'Aurya acceptées par le Responsable au moment de l'inscription.
 
 ---
 
@@ -28,10 +28,10 @@ Le DPA fait partie intégrante des Conditions générales d'utilisation d'afianc
 
 ## 3. Rôle des parties
 
-- Le **Responsable** détermine les finalités et les moyens du traitement des données personnelles de ses clients finaux collectées via la plateforme afianco.
+- Le **Responsable** détermine les finalités et les moyens du traitement des données personnelles de ses clients finaux collectées via la plateforme Aurya.
 - Le **Sous-traitant** traite les données personnelles exclusivement pour le compte du Responsable et selon des instructions documentées, sauf obligations légales différentes.
 
-afianco n'a **aucune** relation contractuelle directe avec les clients finaux du Responsable. La relation client ↔ Responsable demeure entièrement avec le Responsable.
+Aurya n'a **aucune** relation contractuelle directe avec les clients finaux du Responsable. La relation client ↔ Responsable demeure entièrement avec le Responsable.
 
 ---
 
@@ -42,10 +42,10 @@ Le Sous-traitant, pour le compte du Responsable, traite les catégories suivante
 - **Compte client final** : e-mail, nom, mot de passe haché, langue préférée
 - **Données de commande** : produits achetés, quantités, prix, adresse de livraison (le cas échéant), date de commande
 - **Métadonnées techniques** : adresse IP, user-agent, horodatages de connexion (pour la sécurité et le journal d'audit)
-- **Paiements** : via Stripe (Sous-traitant externe) — afianco ne stocke pas les données de carte
+- **Paiements** : via Stripe (Sous-traitant externe) — Aurya ne stocke pas les données de carte
 - **Préférences marketing** : uniquement si explicitement collectées par le Responsable
 
-afianco ne traite **pas** de catégories particulières (art. 9 RGPD) ni de données relatives aux condamnations pénales (art. 10 RGPD).
+Aurya ne traite **pas** de catégories particulières (art. 9 RGPD) ni de données relatives aux condamnations pénales (art. 10 RGPD).
 
 ---
 
@@ -57,7 +57,7 @@ Le traitement a les finalités suivantes :
 - Permettre aux clients finaux de s'inscrire, passer commande, recevoir des communications transactionnelles
 - Générer des journaux d'audit de sécurité et d'intégrité
 
-**Durée** : pour la durée du contrat SaaS entre Responsable et afianco. À la fin, les données personnelles sont restituées ou supprimées selon la Sec. 11.
+**Durée** : pour la durée du contrat SaaS entre Responsable et Aurya. À la fin, les données personnelles sont restituées ou supprimées selon la Sec. 11.
 
 ---
 
@@ -87,7 +87,7 @@ Le Responsable **autorise de manière générale** le Sous-traitant à recourir 
 | **Brevo SAS** | France | Envoi d'e-mails transactionnels |
 | **Anthropic PBC** | États-Unis | Modèles IA (assistant chat, analyse) — uniquement des données agrégées |
 
-La liste à jour est publiée à l'adresse : https://afianco.app/legal/sub-processors
+La liste à jour est publiée à l'adresse : https://aurya.life/legal/sub-processors
 
 En cas de **modifications** de la liste (ajout ou remplacement), le Sous-traitant informe le Responsable avec un préavis de **30 jours** par e-mail. Le Responsable peut s'y opposer dans ce délai ; en cas d'opposition, le Sous-traitant peut proposer des solutions alternatives ou résilier le contrat.
 
@@ -156,7 +156,7 @@ Le Responsable a le droit de :
 
 ## 13. Responsabilité et limitations
 
-Les limitations de responsabilité prévues dans les Conditions générales d'afianco s'appliquent également au présent DPA, sans préjudice des obligations légales impératives et des cas de faute intentionnelle ou de négligence grave.
+Les limitations de responsabilité prévues dans les Conditions générales d'Aurya s'appliquent également au présent DPA, sans préjudice des obligations légales impératives et des cas de faute intentionnelle ou de négligence grave.
 
 Le Sous-traitant n'est responsable que des dommages causés par son non-respect des obligations spécifiquement imposées par le RGPD aux sous-traitants, ou par le fait d'avoir agi en dehors ou en contradiction avec les instructions légitimes du Responsable (art. 82.2 RGPD).
 
@@ -170,7 +170,7 @@ Le Sous-traitant peut mettre à jour le présent DPA pour refléter :
 - Ajout/remplacement de sous-traitants ultérieurs (avec préavis selon Sec. 7)
 - Améliorations des mesures de sécurité
 
-Les modifications substantielles sont communiquées par e-mail au Responsable avec un préavis de **30 jours** et nécessitent une nouvelle acceptation. Les modifications techniques/rédactionnelles sont publiées à l'adresse : https://afianco.app/legal/dpa
+Les modifications substantielles sont communiquées par e-mail au Responsable avec un préavis de **30 jours** et nécessitent une nouvelle acceptation. Les modifications techniques/rédactionnelles sont publiées à l'adresse : https://aurya.life/legal/dpa
 
 ---
 
@@ -189,11 +189,11 @@ Pour tout litige, la juridiction de **Lugano (CH)** est compétente, sans préju
 {{merchant_country}}
 E-mail : {{merchant_email}}
 
-**Sous-traitant (afianco)**
+**Sous-traitant (Aurya)**
 {{platform_controller_name}}
 {{platform_controller_country}}
 E-mail : {{platform_controller_email}}
 
 ---
 
-*Le présent DPA est réputé accepté par le Responsable lors de la confirmation via le panneau admin d'afianco. La confirmation est enregistrée dans un journal d'audit immuable avec horodatage, IP et User-Agent du signataire.*
+*Le présent DPA est réputé accepté par le Responsable lors de la confirmation via le panneau admin d'Aurya. La confirmation est enregistrée dans un journal d'audit immuable avec horodatage, IP et User-Agent du signataire.*

@@ -1,12 +1,12 @@
 # Termini e Condizioni di Servizio
 
-**Versione:** v1.0
-**In vigore dal:** 16 maggio 2026
+**Versione:** v2.0
+**In vigore dal:** 7 luglio 2026
 **Lingua di riferimento legale:** italiano
 
 **Titolare del servizio (Fornitore):**
 Davide De Filippis, Lugano, Svizzera
-Email: davide@afianco.ch
+Email: info@aurya.life
 
 ---
 
@@ -14,42 +14,46 @@ Email: davide@afianco.ch
 
 Ai fini dei presenti Termini, le seguenti espressioni hanno il significato di seguito indicato:
 
-- **AFianco** (o "la Piattaforma" o "il Servizio"): la piattaforma web di Business Intelligence accessibile all'indirizzo https://afianco.app, di titolarita' del Fornitore.
+- **Aurya** (o "la Piattaforma" o "il Servizio"): il marketplace di ritiri olistici e il gestionale per operatori accessibile all'indirizzo https://aurya.life, di titolarita' del Fornitore.
 - **Fornitore** (o "Noi"): Davide De Filippis, con sede a Lugano, Svizzera.
-- **Utente** (o "Voi", "Vostro"): la persona fisica maggiorenne che si registra alla Piattaforma in nome proprio o in nome e per conto di una persona giuridica/ditta individuale/professionista.
-- **Organizzazione**: l'entita' giuridica, ditta individuale o professionista per conto della quale l'Utente si registra (anche quando l'Utente coincide con la persona giuridica/ditta individuale/professionista).
-- **Amministratore**: l'Utente che si registra inizialmente all'Organizzazione e che ne assume i pieni poteri di gestione.
-- **Membro del team**: gli ulteriori Utenti invitati dall'Amministratore.
-- **Cliente finale**: la persona fisica o giuridica che effettua acquisti tramite lo storefront pubblico esposto dall'Organizzazione utilizzando il Modulo Commerce (art. 13).
-- **Contenuto dell'Utente**: tutti i dati, file, anagrafiche, configurazioni e altri materiali caricati o inseriti dall'Utente o dai Membri del team nella Piattaforma.
-- **Servizio AI**: le funzionalita' di analisi, chat e report automatici basate su modelli linguistici di terze parti (Anthropic).
-- **Piani**: i diversi livelli di abbonamento (Free, Core, Pro, Enterprise) descritti sulla pagina pubblica della Piattaforma.
+- **Operatore** (o "Organizzatore"): il professionista, l'insegnante o la struttura — persona fisica maggiorenne, ditta individuale o persona giuridica — che si registra alla Piattaforma per pubblicare e vendere ritiri, esperienze, prodotti e corsi. L'Operatore e' cliente del Fornitore.
+- **Cliente finale** (o "Partecipante"): la persona fisica o giuridica che prenota, acquista o partecipa a un'offerta di un Operatore tramite la Piattaforma.
+- **Passaporto Ritiri**: l'account personale facoltativo del Cliente finale, valido presso tutti gli Operatori della Piattaforma, con ordini, biglietti QR e storico delle esperienze.
+- **Visitatore**: chiunque navighi le pagine pubbliche della Piattaforma senza registrarsi.
+- **Utente**: qualsiasi soggetto che utilizza la Piattaforma (Operatore, Cliente finale o Visitatore); ove una disposizione riguardi un solo ruolo, questo e' indicato espressamente.
+- **Offerta**: i ritiri, le esperienze, i prodotti e i corsi pubblicati dall'Operatore sulla Piattaforma.
+- **Calendario pubblico** (o "Directory"): le pagine pubbliche di Aurya che aggregano e rendono ricercabili le Offerte prenotabili online di tutti gli Operatori.
+- **Commissione di piattaforma** (o "application fee"): la percentuale trattenuta dal Fornitore, tramite Stripe Connect, sulle sole prenotazioni provenienti dal Calendario pubblico (art. 7.2).
+- **Contenuto dell'Operatore**: tutti i dati, testi, immagini, prezzi, condizioni, anagrafiche e altri materiali caricati o inseriti dall'Operatore nella Piattaforma.
+- **Piani**: i livelli di servizio per gli Operatori (Gratis, Pro e piani su assegnazione quali Founding/Partner), descritti all'art. 7.
 - **Termini**: i presenti Termini e Condizioni di Servizio, comprensivi di tutti gli allegati e di eventuali ulteriori specifiche di prodotto.
-- **Privacy Policy**: l'informativa sul trattamento dei dati personali, accessibile all'indirizzo https://afianco.app/privacy, parte integrante e sostanziale dei presenti Termini.
+- **Privacy Policy**: l'informativa sul trattamento dei dati personali, accessibile all'indirizzo https://aurya.life/privacy, parte integrante e sostanziale dei presenti Termini.
 
 ---
 
 ## 2. Oggetto del contratto e accettazione
 
-I presenti Termini regolano il rapporto tra il Fornitore e l'Utente in relazione all'accesso e all'utilizzo della Piattaforma AFianco.
+I presenti Termini regolano il rapporto tra il Fornitore e l'Utente in relazione all'accesso e all'utilizzo della Piattaforma Aurya: per l'Operatore, la pubblicazione e la vendita della propria Offerta e l'uso del gestionale; per il Cliente finale, la prenotazione e l'acquisto tramite la Piattaforma e l'eventuale account Passaporto Ritiri.
 
 L'accettazione dei Termini avviene mediante:
-1. Spunta dell'apposita casella ("Ho letto e accetto la Privacy Policy e i Termini di Servizio") all'atto della registrazione
-2. Inserimento dei dati richiesti nel modulo di registrazione
-3. Completamento della verifica dell'indirizzo email
+1. Spunta dell'apposita casella ("Ho letto e accetto la Privacy Policy e i Termini di Servizio") all'atto della registrazione o del checkout
+2. Inserimento dei dati richiesti nel modulo di registrazione o di prenotazione
+3. Per gli account: completamento della verifica dell'indirizzo email
 
 L'accettazione costituisce dichiarazione espressa di:
 - Aver preso visione integrale e compreso i presenti Termini e la Privacy Policy
-- Possedere la capacita' giuridica per stipulare un contratto vincolante (art. 6)
-- Agire — laddove applicabile — quale legale rappresentante o soggetto autorizzato dell'Organizzazione che si registra
+- Possedere la capacita' giuridica per stipulare un contratto vincolante (art. 5)
+- Agire — laddove applicabile — quale legale rappresentante o soggetto autorizzato della struttura che si registra
 
-La conservazione della prova dell'accettazione (timestamp, versione del documento, lingua, IP, User-Agent) e' regolata dall'art. 4 della Privacy Policy.
+La conservazione della prova dell'accettazione (timestamp, versione del documento, lingua, IP, User-Agent) e' regolata dalla Privacy Policy (art. 4).
+
+**Il contratto di vendita del ritiro, dell'esperienza, del prodotto o del corso si conclude direttamente tra Operatore e Cliente finale.** Il Fornitore non e' parte di tale contratto (vedi art. 13).
 
 ---
 
 ## 3. Conclusione del contratto
 
-Il contratto si considera perfezionato al termine della procedura di registrazione e verifica dell'indirizzo email da parte dell'Utente.
+Il contratto tra Fornitore e Operatore si considera perfezionato al termine della procedura di registrazione e verifica dell'indirizzo email. Il contratto tra Fornitore e Cliente finale titolare di Passaporto Ritiri si perfeziona con la creazione dell'account.
 
 Il Fornitore si riserva la facolta' di rifiutare la registrazione o di revocare un account in qualsiasi momento qualora:
 - Vi siano fondati sospetti di utilizzo fraudolento
@@ -60,95 +64,118 @@ Il Fornitore si riserva la facolta' di rifiutare la registrazione o di revocare 
 
 ## 4. Eta' minima
 
-Il Servizio e' riservato a persone fisiche maggiorenni (eta' >= 18 anni). Con la registrazione l'Utente dichiara di avere almeno 18 anni. La presente Piattaforma e' destinata esclusivamente a finalita' professionali e imprenditoriali; non e' destinata a uso consumeristico.
+La registrazione di un account (Operatore o Passaporto Ritiri) e l'effettuazione di prenotazioni e pagamenti sono riservate a persone fisiche maggiorenni (eta' >= 18 anni). Con la registrazione o la prenotazione l'Utente dichiara di avere almeno 18 anni. Eventuali minori possono essere indicati come partecipanti a un ritiro esclusivamente da un adulto che effettua la prenotazione e ne assume la responsabilita'; l'ammissione di minori alle attivita' e' regolata dall'Operatore.
 
 ---
 
 ## 5. Capacita' giuridica e poteri di rappresentanza
 
-L'Utente dichiara di avere la capacita' giuridica per concludere un contratto vincolante e, se agisce per conto dell'Organizzazione (persona giuridica, ditta individuale o professionista), di disporre dei necessari poteri di rappresentanza o autorizzazione interna. In difetto di tali poteri, l'Utente risponde personalmente nei confronti del Fornitore per le obbligazioni assunte.
+L'Utente dichiara di avere la capacita' giuridica per concludere un contratto vincolante e, se agisce per conto di una struttura (persona giuridica, ditta individuale o professionista), di disporre dei necessari poteri di rappresentanza o autorizzazione interna. In difetto di tali poteri, l'Utente risponde personalmente nei confronti del Fornitore per le obbligazioni assunte.
 
 ---
 
 ## 6. Descrizione del Servizio
 
-Il Servizio AFianco offre le seguenti funzionalita' principali, organizzate in **moduli** attivabili in funzione del Piano:
+### 6.1 Directory e calendario pubblico
 
-### 6.1 Cashflow Monitor
-- Caricamento di dati finanziari aziendali (vendite, acquisti, spese operative, costi fissi) tramite file CSV/XLSX o inserimento manuale
-- Dashboard cashflow con KPI (margine operativo, risultato netto, salute finanziaria, scadenzario)
-- Alert automatici su anomalie e soglie configurabili
-- Confronto periodo su periodo e Year-over-Year (YoY)
+Aurya espone una directory pubblica di ritiri ed esperienze olistiche in Italia, con ricerca per localita', data e tipologia. La visibilita' dell'Offerta nel Calendario pubblico e' **subordinata alla prenotabilita' online**: vengono aggregate le Offerte con date, prezzi e disponibilita' reali, prenotabili e pagabili direttamente tramite la Piattaforma. Il Fornitore puo' definire criteri editoriali di qualita' minima per l'inclusione nella directory (completezza della scheda, foto, coerenza dei contenuti).
 
-### 6.2 Customer Insights
-- Anagrafica clienti
-- Segmentazione, top customer, churn risk, concentrazione, product affinity
+### 6.2 Vetrina e store dell'Operatore
 
-### 6.3 Product Catalog
-- Anagrafica prodotti con costi, prezzi, categorie
-- Analisi margini, raccomandazioni, andamento
+Ogni Operatore dispone di una vetrina pubblica personale (profilo, offerta, recensioni) e di uno store con pagine dedicate a ritiri, esperienze, prodotti e corsi, disponibile nelle quattro lingue della Piattaforma (IT/EN/DE/FR). La vetrina e' raggiungibile anche direttamente (link proprio dell'Operatore), indipendentemente dal Calendario pubblico.
 
-### 6.4 Commerce
-- Storefront pubblico per la vendita ai clienti finali (Modulo Commerce — vedi art. 13)
-- Gestione ordini, fatturazione, prenotazioni, eventi, noleggi
-- Integrazione pagamenti tramite Stripe
+### 6.3 Prenotazioni, caparre e piani di pagamento
 
-### 6.5 Servizio AI
-- Chat interattiva con assistente AI (basato su Anthropic — Claude)
-- Generazione di digest periodici (settimanali, mensili) con analisi e raccomandazioni
-- Health score di salute finanziaria
-- L'utilizzo dell'AI e' subordinato al consenso esplicito dell'Utente (Privacy Policy art. 4.1)
+Il Cliente finale prenota online con disponibilita' in tempo reale. L'Operatore puo' configurare:
+- **Caparra** (acconto) dovuta alla prenotazione, con saldo successivo
+- **Piani di pagamento** a rate, con scadenze definite
+- **Promemoria automatici via email** per saldo e rate, inviati dalla Piattaforma per conto dell'Operatore
 
-### 6.6 Esportazione dati (Art. 20 GDPR)
-- Funzionalita' self-service di export di tutti i propri dati in archivio ZIP contenente file JSON
+La conferma della prenotazione, il biglietto con codice QR e le ricevute vengono inviati via email al Cliente finale.
 
-### 6.7 Gestione team
-- Possibilita' di invitare ulteriori utenti come "admin" o "user"
+### 6.4 Pagamenti (Stripe Connect) e commissioni di piattaforma
 
-Le funzionalita' effettivamente disponibili variano in funzione del Piano sottoscritto, come descritto sulla pagina pubblica dei Piani. Il Fornitore si riserva il diritto di evolvere il Servizio nel tempo, aggiungendo o modificando funzionalita' nei limiti del presente articolo.
+I pagamenti online sono gestiti tramite **Stripe Connect** (PCI-DSS Level 1):
+- Il Cliente finale paga con carta; i fondi vengono accreditati **direttamente sull'account Stripe dell'Operatore**. Il Fornitore non incassa ne' custodisce i fondi delle prenotazioni.
+- Il Fornitore trattiene una **Commissione di piattaforma** (application fee) esclusivamente sulle prenotazioni provenienti dal Calendario pubblico: **5% con il piano Gratis, 2% con il piano Pro** (art. 7).
+- Gli ordini e le prenotazioni che l'Operatore gestisce fuori dal Calendario pubblico (es. clienti diretti, vendite registrate manualmente nel gestionale) **non sono soggetti ad alcuna commissione**.
+- I dati delle carte di pagamento non transitano mai sui server del Fornitore ne' dell'Operatore (vedi Privacy Policy art. 9).
+
+L'utilizzo dei pagamenti richiede all'Operatore l'apertura e il mantenimento di un account Stripe Connect, soggetto ai termini di Stripe (https://stripe.com/connect-account/legal), incluse le verifiche di identita' (KYC) richieste da Stripe.
+
+### 6.5 Passaporto Ritiri
+
+Il Cliente finale puo' creare gratuitamente un account personale valido presso tutti gli Operatori della Piattaforma, con: storico ordini, biglietti QR, promemoria e dati di prenotazione precompilati. La creazione dell'account e' facoltativa: e' possibile prenotare anche come ospite.
+
+### 6.6 Recensioni verificate
+
+- Puo' pubblicare una recensione **esclusivamente chi ha realmente prenotato** tramite la Piattaforma; l'autenticita' e' verificata tramite codice OTP inviato all'indirizzo email associato all'ordine.
+- Le recensioni sono pubblicate sulla Piattaforma con nome del recensore, valutazione e testo.
+- E' vietato offrire o ricevere compensi, sconti o vantaggi in cambio di recensioni, cosi' come pubblicare recensioni per conto terzi o autorecensirsi.
+- Il Fornitore si riserva il diritto di rimuovere recensioni con contenuti illeciti, diffamatori, discriminatori, estranei all'esperienza recensita o ottenute in violazione delle regole di cui sopra. L'Operatore non puo' modificare ne' cancellare le recensioni ricevute; puo' segnalarne l'illiceita' al Fornitore.
+
+### 6.7 Gestionale dell'Operatore
+
+L'Operatore dispone di un gestionale per: ordini e prenotazioni, anagrafica clienti, caparre e scadenze, newsletter con form di iscrizione per-operatore (consenso esplicito e disiscrizione automatica via link personale). Per i dati dei Clienti finali trattati nel gestionale, l'Operatore e' Titolare del trattamento e il Fornitore agisce come Responsabile ex art. 28 GDPR (Privacy Policy artt. 2.2 e 18).
+
+### 6.8 Traduzioni automatiche
+
+Su richiesta dell'Operatore, la Piattaforma genera traduzioni automatiche dei contenuti pubblici della vetrina nelle lingue supportate (IT/EN/DE/FR), tramite modelli linguistici di terze parti (Anthropic — vedi art. 10 e Privacy Policy art. 7). L'Operatore puo' rivedere e correggere le traduzioni.
+
+### 6.9 Esportazione dati (art. 20 GDPR)
+
+L'Operatore dispone di una funzionalita' self-service di export dei propri dati (ordini, clienti, contenuti) in formato strutturato.
+
+Le funzionalita' effettivamente disponibili variano in funzione del Piano sottoscritto (art. 7). Il Fornitore si riserva il diritto di evolvere il Servizio nel tempo, aggiungendo o modificando funzionalita' nei limiti dell'art. 20.
 
 ---
 
-## 7. Piani, prezzi e fatturazione
+## 7. Piani, prezzi, commissioni e fatturazione
 
 ### 7.1 Piani disponibili
 
-Il Servizio e' offerto con i seguenti Piani: **Free**, **Core**, **Pro**, **Enterprise**. Le funzionalita' incluse, i limiti di utilizzo e i prezzi di ciascun Piano sono descritti sulla pagina pubblica https://afianco.app/pricing.
+Il Servizio per gli Operatori e' offerto con i seguenti Piani:
 
-### 7.2 Modalita' di sottoscrizione
+- **Gratis**: senza alcun canone. Commissione di piattaforma del **5%** sulle prenotazioni provenienti dal Calendario pubblico.
+- **Pro**: canone mensile, con Commissione di piattaforma ridotta al **2%** sulle prenotazioni provenienti dal Calendario pubblico e funzionalita' aggiuntive.
+- **Piani su assegnazione** (es. Founding, Partner): condizioni particolari concesse dal Fornitore a specifici Operatori; i relativi termini prevalgono, per quanto ivi disciplinato, sui presenti.
 
-I Piani a pagamento sono sottoscrivibili con cadenza mensile o annuale, con rinnovo tacito automatico fino a cancellazione esplicita.
+Le funzionalita' incluse, i limiti di utilizzo e i prezzi aggiornati di ciascun Piano sono descritti sulla pagina pubblica https://aurya.life/pricing.
 
-### 7.3 Provider di pagamento
+### 7.2 Commissione di piattaforma
 
-I pagamenti sono gestiti tramite **Stripe Payments Europe Ltd.** (PCI-DSS Level 1). Il Fornitore non memorizza dati delle carte di pagamento (vedi Privacy Policy art. 9).
+La Commissione di piattaforma si applica **esclusivamente alle prenotazioni provenienti dal Calendario pubblico** ed e' trattenuta automaticamente tramite Stripe Connect (application fee) al momento del pagamento, incluse le caparre e le rate successive relative a tali prenotazioni. Gli ordini gestiti fuori dal Calendario pubblico non generano alcuna commissione. La percentuale applicata e' quella del Piano attivo al momento del pagamento.
 
-### 7.4 Periodo di prova / Free tier
+### 7.3 Sottoscrizione e cambio Piano
 
-Il Piano Free e' offerto a tempo indeterminato con funzionalita' limitate. Eventuali periodi di prova gratuita di Piani superiori sono indicati al momento della sottoscrizione.
+Il piano Pro e' sottoscrivibile con cadenza mensile, con rinnovo tacito automatico fino a cancellazione esplicita, tramite **Stripe Billing**. Il passaggio da Gratis a Pro ha effetto immediato; il ritorno a Gratis ha effetto dal termine del periodo di fatturazione in corso, senza rimborso delle quote residue salvo quanto previsto all'art. 7.8.
+
+### 7.4 Provider di pagamento
+
+I pagamenti (prenotazioni e abbonamenti) sono gestiti tramite **Stripe** (PCI-DSS Level 1). Il Fornitore non memorizza dati delle carte di pagamento (vedi Privacy Policy art. 9).
 
 ### 7.5 Modifiche di prezzo
 
-Il Fornitore si riserva il diritto di modificare i prezzi dei Piani. Le modifiche vengono comunicate con almeno **30 giorni di preavviso** tramite email all'Amministratore. Le modifiche entreranno in vigore al successivo ciclo di rinnovo. L'Utente potra' cancellare l'abbonamento prima del rinnovo se non concorda con il nuovo prezzo.
+Il Fornitore si riserva il diritto di modificare i canoni e le percentuali di commissione. Le modifiche vengono comunicate con almeno **30 giorni di preavviso** tramite email all'Operatore ed entrano in vigore al successivo ciclo di rinnovo (per i canoni) o alla scadenza del preavviso (per le commissioni). L'Operatore potra' recedere prima della data di efficacia se non concorda con le nuove condizioni.
 
 ### 7.6 Fatturazione
 
-Le fatture vengono emesse in formato elettronico (PDF) e rese disponibili tramite il portale clienti Stripe. I dati di fatturazione sono richiesti al momento della sottoscrizione del primo Piano a pagamento.
+Le ricevute e fatture del canone Pro e delle commissioni sono emesse in formato elettronico e rese disponibili tramite il portale clienti Stripe. I dati di fatturazione sono richiesti al momento della sottoscrizione del primo Piano a pagamento.
 
 ### 7.7 Ritardo nei pagamenti
 
-In caso di mancato pagamento alla scadenza:
+In caso di mancato pagamento del canone alla scadenza:
 - Il Fornitore invia un primo sollecito via email
-- Trascorsi 7 giorni dal sollecito senza pagamento, l'abbonamento viene sospeso e l'account torna automaticamente al Piano Free (con eventuale limitazione di funzionalita')
+- Trascorsi 7 giorni dal sollecito senza pagamento, l'abbonamento viene sospeso e l'account torna automaticamente al piano Gratis (con relativa commissione del 5% e limitazione delle funzionalita' Pro)
 - Trascorsi ulteriori 30 giorni senza pagamento, il Fornitore puo' procedere al recupero del credito secondo le procedure di legge
 
-### 7.8 Rimborsi
+### 7.8 Rimborsi del canone
 
-I pagamenti gia' effettuati non sono rimborsabili in caso di disdetta volontaria a meta' del periodo di fatturazione, salvo quanto previsto dalla legge applicabile o salvo difetto sostanziale del Servizio imputabile al Fornitore.
+I canoni gia' corrisposti non sono rimborsabili in caso di disdetta volontaria a meta' del periodo di fatturazione, salvo quanto previsto dalla legge applicabile o salvo difetto sostanziale del Servizio imputabile al Fornitore. I rimborsi delle prenotazioni verso i Clienti finali sono regolati dall'art. 13.3.
 
 ### 7.9 IVA / imposte
 
-Tutti i prezzi indicati sono comprensivi delle imposte locali applicabili, salvo diversa indicazione. Per gli Utenti che dichiarino di acquistare nell'ambito di un'attivita' commerciale soggetta a inversione contabile (reverse charge B2B intracomunitario), si applichera' la disciplina IVA conseguente al rilascio di una P.IVA valida.
+Tutti i prezzi indicati sono comprensivi delle imposte locali applicabili, salvo diversa indicazione. Per gli Operatori che dichiarino di acquistare nell'ambito di un'attivita' commerciale soggetta a inversione contabile (reverse charge B2B intracomunitario), si applichera' la disciplina IVA conseguente al rilascio di una P.IVA valida.
 
 ---
 
@@ -168,73 +195,63 @@ L'accesso al Servizio richiede la verifica dell'indirizzo email tramite link inv
 
 ### 8.4 Comunicazioni di sicurezza
 
-L'Utente e' tenuto a comunicare senza ritardo via email a `davide@afianco.ch` qualsiasi sospetto utilizzo non autorizzato del proprio account, smarrimento delle credenziali o sospetta violazione dei dati.
+L'Utente e' tenuto a comunicare senza ritardo via email a `info@aurya.life` qualsiasi sospetto utilizzo non autorizzato del proprio account, smarrimento delle credenziali o sospetta violazione dei dati.
 
-### 8.5 Gestione del team
+### 8.5 Account Stripe dell'Operatore
 
-L'Amministratore che invita Membri del team garantisce che ogni invitato abbia preso visione e accettato i presenti Termini al primo accesso. L'Amministratore e' responsabile per le attivita' dei Membri del team riconducibili alla propria Organizzazione.
+L'Operatore e' responsabile del proprio account Stripe Connect, delle informazioni fornite a Stripe in sede di verifica (KYC) e del loro aggiornamento. La sospensione o chiusura dell'account Stripe da parte di Stripe puo' comportare l'impossibilita' di ricevere pagamenti tramite la Piattaforma, senza responsabilita' del Fornitore.
 
 ---
 
-## 9. Contenuto dell'Utente e proprieta' dei dati
+## 9. Contenuto dell'Operatore e proprieta' dei dati
 
 ### 9.1 Proprieta'
 
-Il Contenuto caricato sulla Piattaforma rimane di **esclusiva proprieta'** dell'Utente / dell'Organizzazione. Il Fornitore non rivendica alcun diritto di proprieta' su tale Contenuto.
+Il Contenuto caricato sulla Piattaforma rimane di **esclusiva proprieta'** dell'Operatore. Il Fornitore non rivendica alcun diritto di proprieta' su tale Contenuto.
 
 ### 9.2 Licenza al Fornitore
 
-L'Utente concede al Fornitore una licenza:
+L'Operatore concede al Fornitore una licenza:
 - Non esclusiva
 - Limitata alla durata del contratto
 - Revocabile in qualsiasi momento mediante disattivazione dell'account
-- Limitata ai fini dell'erogazione del Servizio (storage, elaborazione, presentazione, esecuzione delle funzionalita' richieste dall'Utente, inclusa l'elaborazione AI)
+- Limitata ai fini dell'erogazione del Servizio (storage, elaborazione, pubblicazione sulla vetrina e nel Calendario pubblico, traduzione automatica su richiesta, promozione della directory con riferimento all'Offerta pubblicata)
 
-La licenza non include il diritto di utilizzo per finalita' commerciali proprie del Fornitore ne' di cessione a terzi.
+La licenza non include il diritto di utilizzo per finalita' commerciali proprie del Fornitore estranee alla Piattaforma ne' di cessione a terzi.
 
 ### 9.3 Portabilita' dei dati
 
-L'Amministratore puo' esportare in qualsiasi momento il proprio Contenuto in formato strutturato (ZIP/JSON) tramite la funzionalita' presente nelle Impostazioni dell'account.
+L'Operatore puo' esportare in qualsiasi momento il proprio Contenuto in formato strutturato tramite la funzionalita' presente nelle Impostazioni dell'account.
 
 ### 9.4 Responsabilita' sul Contenuto
 
-L'Utente e' l'**unico responsabile** della liceita', accuratezza, completezza e tempestivita' del Contenuto caricato. Il Fornitore non verifica ne' controlla il Contenuto. L'Utente dichiara e garantisce di:
-- Avere il diritto di trattare i dati personali presenti nel Contenuto
-- Avere ottenuto i necessari consensi o avere altra base giuridica per il trattamento di tali dati ai sensi del GDPR/LPD
-- Non caricare contenuti illegali, diffamatori, lesivi di diritti di terzi
-- Non caricare Categorie particolari di dati ai sensi dell'art. 9 GDPR salvo necessita' aziendale legittima e nel pieno rispetto della normativa applicabile
+L'Operatore e' l'**unico responsabile** della liceita', accuratezza, completezza e tempestivita' del Contenuto pubblicato (descrizioni, foto, prezzi, date, disponibilita', condizioni di cancellazione). Il Fornitore non verifica preventivamente il Contenuto. L'Operatore dichiara e garantisce di:
+- Avere il diritto di pubblicare testi e immagini caricati (inclusi i diritti d'autore e i consensi delle persone ritratte)
+- Avere il diritto di trattare i dati personali presenti nel Contenuto e nelle proprie anagrafiche clienti, con idonea base giuridica ai sensi del GDPR/LPD
+- Non pubblicare contenuti illegali, ingannevoli, diffamatori o lesivi di diritti di terzi
+- Non registrare nella Piattaforma categorie particolari di dati ai sensi dell'art. 9 GDPR (es. dati sanitari dei partecipanti — vedi Privacy Policy art. 3.4)
 
-In caso di violazione, l'Utente manleva e tiene indenne il Fornitore secondo quanto previsto all'art. 17.
+In caso di violazione, l'Operatore manleva e tiene indenne il Fornitore secondo quanto previsto all'art. 17.
 
 ---
 
-## 10. Servizio AI: termini specifici
+## 10. Traduzioni automatiche: termini specifici
 
-### 10.1 Natura informativa
+### 10.1 Natura del servizio
 
-Le elaborazioni AI fornite dalla Piattaforma (chat, digest, health score, analisi automatica) hanno carattere **puramente informativo e consultivo**. Non costituiscono:
-- Consulenza finanziaria, fiscale o contabile professionale
-- Consulenza legale
-- Pareri tecnici da parte di soggetti abilitati
-- Decisioni autonome aventi effetti vincolanti per l'Utente
-
-L'Utente e' l'unico responsabile delle decisioni assunte sulla base delle analisi AI.
+Le traduzioni automatiche dei contenuti della vetrina (art. 6.8) sono generate da modelli linguistici di terze parti (Anthropic) e hanno natura di **supporto redazionale**. Non costituiscono traduzioni giurate ne' consulenza professionale.
 
 ### 10.2 Trasmissione di dati ad Anthropic
 
-L'utilizzo del Servizio AI comporta la trasmissione di dati aggregati ad Anthropic, PBC (USA), come descritto nella Privacy Policy art. 7.
+L'utilizzo della funzionalita' comporta la trasmissione dei soli testi pubblici da tradurre ad Anthropic, PBC (USA), come descritto nella Privacy Policy art. 7. Non vengono mai trasmessi dati di Clienti finali, ordini o pagamenti.
 
-### 10.3 Limitazioni di accuratezza
+### 10.3 Limitazioni di accuratezza e responsabilita' dell'Operatore
 
-Il Fornitore non garantisce l'accuratezza, la completezza o la pertinenza delle risposte generate dall'AI. I modelli AI possono produrre informazioni inesatte ("allucinazioni"). Pur adottando misure tecniche per minimizzare tale rischio (rules anti-hallucination integrate, validazione delle risposte), il Fornitore non si assume garanzia di assenza di errori.
+Il Fornitore non garantisce l'accuratezza o la completezza delle traduzioni generate, che possono contenere errori. L'Operatore e' tenuto a rivedere le traduzioni prima di farvi affidamento ed e' responsabile del contenuto pubblicato in ogni lingua. In caso di discrepanze tra le versioni linguistiche di una scheda, prevale la lingua originale di redazione dell'Operatore.
 
-### 10.4 Facoltativita'
+### 10.4 Assenza di decisioni automatizzate (art. 22 GDPR)
 
-L'utilizzo del Servizio AI e' **facoltativo** e disattivabile in qualsiasi momento dalle Impostazioni. Il Servizio principale di AFianco funziona anche senza l'AI.
-
-### 10.5 Decisioni automatizzate (art. 22 GDPR)
-
-Il Servizio AI di AFianco non prende decisioni autonome con effetti giuridici sull'Utente ai sensi dell'art. 22 GDPR. L'Utente conserva sempre il pieno controllo decisionale.
+La Piattaforma non utilizza l'AI per decisioni automatizzate con effetti giuridici sugli Utenti (ranking discriminatorio, scoring, approvazioni o rifiuti automatici). Vedi Privacy Policy art. 7.3.
 
 ---
 
@@ -249,7 +266,8 @@ Il Fornitore si impegna a garantire una elevata continuita' del Servizio, monito
 Il Servizio e' fornito "**cosi' com'e'**" (as-is) e "**come disponibile**" (as-available). Il Fornitore non garantisce:
 - Funzionamento ininterrotto o privo di errori
 - Assenza di rallentamenti temporanei dovuti a manutenzione programmata, cause di forza maggiore, problemi di sub-responsabili o cause non imputabili al Fornitore
-- Specifici livelli di tempo di risposta o uptime garantito (salvo quanto eventualmente previsto in Piani Enterprise con SLA contrattualizzato dedicato)
+- Specifici livelli di tempo di risposta o uptime garantito
+- Volumi minimi di visibilita', traffico o prenotazioni per l'Operatore
 
 ### 11.3 Manutenzione
 
@@ -266,91 +284,98 @@ Il Fornitore non e' responsabile per inadempimenti dovuti a cause di forza maggi
 L'Utente si impegna a:
 
 1. Utilizzare il Servizio esclusivamente per finalita' lecite e in conformita' ai Termini
-2. Non tentare di accedere a dati di altre Organizzazioni o Utenti
-3. Non caricare contenuti illegali, diffamatori, contrari al buon costume o lesivi di diritti di terzi
-4. Non utilizzare sistemi automatizzati (bot, crawler, scraper) per accedere al Servizio se non autorizzati per integrazioni API ufficiali
-5. Non tentare di aggirare le misure di sicurezza, i limiti dei Piani o l'isolamento multi-tenant
-6. Non rivendere, sublicenziare o redistribuire l'accesso al Servizio a terzi senza autorizzazione scritta del Fornitore
-7. Non utilizzare il Servizio per attivita' di concorrenza diretta (es. analisi della Piattaforma per costruire un servizio concorrente)
-8. Non sovraccaricare l'infrastruttura con richieste manifestamente eccessive
+2. Non tentare di accedere a dati di altri Operatori o Utenti
+3. Non pubblicare contenuti illegali, ingannevoli, diffamatori, contrari al buon costume o lesivi di diritti di terzi
+4. Non pubblicare recensioni false, compensate o per conto terzi, ne' sollecitarle (art. 6.6)
+5. Non aggirare la Piattaforma per eludere la Commissione di piattaforma su prenotazioni originate dal Calendario pubblico (es. dirottare sistematicamente fuori Piattaforma clienti acquisiti tramite la directory al solo fine di evitare la commissione)
+6. Non utilizzare sistemi automatizzati (bot, crawler, scraper) per accedere al Servizio se non autorizzati per integrazioni ufficiali
+7. Non tentare di aggirare le misure di sicurezza, i limiti dei Piani o l'isolamento multi-tenant
+8. Non rivendere, sublicenziare o redistribuire l'accesso al Servizio a terzi senza autorizzazione scritta del Fornitore
+9. Non utilizzare il Servizio per attivita' di concorrenza diretta (es. analisi della Piattaforma per costruire un servizio concorrente)
+10. Non sovraccaricare l'infrastruttura con richieste manifestamente eccessive
 
 Le violazioni del presente articolo possono comportare la sospensione immediata dell'account (art. 14.4) e l'eventuale richiesta di risarcimento del danno.
 
 ---
 
-## 13. Modulo Commerce: disposizioni specifiche
+## 13. Marketplace: ruoli e responsabilita' dell'Operatore
 
-Quando l'Organizzazione utilizza il Modulo Commerce per esporre uno storefront pubblico:
+### 13.1 Aurya come intermediario tecnico
 
-### 13.1 Ruolo dell'Organizzazione
+Il Fornitore mette a disposizione l'infrastruttura tecnica di intermediazione (directory, vetrina, prenotazioni, pagamenti, gestionale). **Il Fornitore non e' organizzatore, venditore ne' erogatore dei ritiri, delle esperienze, dei prodotti o dei corsi pubblicati.** Il contratto relativo all'Offerta si conclude direttamente ed esclusivamente tra Operatore e Cliente finale; l'Operatore ne e' l'unico responsabile, inclusa l'esecuzione (svolgimento del ritiro, qualita', sicurezza dei partecipanti, consegna dei prodotti, idoneita' dei locali, coperture assicurative, abilitazioni professionali eventualmente richieste).
 
-L'Organizzazione e' titolare del trattamento dei dati dei propri clienti finali (vedi Privacy Policy art. 18). Il Fornitore agisce come Responsabile del trattamento ai sensi dell'art. 28 GDPR.
+### 13.2 Obblighi dell'Operatore
 
-### 13.2 Obblighi dell'Organizzazione
+L'Operatore e' tenuto a:
+- Descrivere l'Offerta in modo veritiero, completo e non ingannevole (prezzi, date, cosa e' incluso, requisiti di partecipazione)
+- Fornire ai propri Clienti finali una propria informativa privacy conforme al GDPR e gestire le richieste di esercizio dei diritti (Privacy Policy art. 18)
+- Rispettare la disciplina applicabile alla propria attivita': diritti del consumatore (Codice del Consumo italiano, Direttiva 2011/83/UE, LCC svizzera), informativa precontrattuale, eventuale normativa su pacchetti turistici e strutture ricettive, norme igienico-sanitarie e di sicurezza
+- Onorare le prenotazioni confermate e i termini pubblicati al momento della prenotazione
+- Stipulare con il Fornitore il **Data Processing Agreement (DPA)** ex art. 28 GDPR per i dati dei propri clienti; l'utilizzo del gestionale comporta accettazione del DPA standard, disponibile su richiesta a `info@aurya.life`
 
-L'Organizzazione e' tenuta a:
+### 13.3 Politica di cancellazione e rimborsi verso il Cliente finale
 
-- Fornire ai propri clienti finali una propria informativa privacy completa e conforme al GDPR
-- Indicare correttamente i propri dati di contatto e i diritti dei clienti
-- Gestire direttamente le richieste di esercizio dei diritti (artt. 15-22 GDPR) provenienti dai clienti finali
-- Rispettare la disciplina applicabile in materia di e-commerce, diritti del consumatore (Codice del Consumo italiano, Direttiva 2011/83/UE, LCC svizzera), informativa precontrattuale, condizioni di recesso
-- Configurare correttamente termini di vendita, condizioni di consegna, garanzie, politiche di reso e rimborso a livello di store o di singolo prodotto utilizzando le funzionalita' della Piattaforma
-- Versare correttamente le imposte applicabili alle vendite (IVA, imposta sul valore aggiunto svizzera, ecc.)
+- Le condizioni di cancellazione e rimborso (inclusa la sorte della caparra) sono **definite dall'Operatore e pubblicate sulla pagina del ritiro o del prodotto**; regolano direttamente il rapporto tra Operatore e Cliente finale e devono essere conformi alla normativa consumeristica applicabile.
+- I rimborsi dovuti sono **processati dall'Operatore tramite Stripe**, dal proprio account. In caso di rimborso, la Commissione di piattaforma segue le regole di Stripe sulle application fee refund.
+- Il Fornitore non decide sui rimborsi e non e' tenuto a rimborsare il Cliente finale in luogo dell'Operatore; puo' facilitare la comunicazione tra le parti in caso di controversia, senza obbligo di risultato.
+- Eventuali chargeback e contestazioni presso il circuito di pagamento sono gestiti sull'account Stripe dell'Operatore, che ne sopporta esiti e costi.
 
-### 13.3 Data Processing Agreement
+### 13.4 Obblighi fiscali dell'Operatore
 
-L'Organizzazione e il Fornitore stipulano un **Data Processing Agreement (DPA)** distinto, ai sensi dell'art. 28 GDPR. Il DPA standard del Fornitore e' fornito su richiesta a `davide@afianco.ch`. L'utilizzo del Modulo Commerce comporta accettazione tacita del DPA ai sensi dell'art. 28(3) GDPR (l'accettazione esplicita potra' essere formalizzata su richiesta scritta).
-
-### 13.4 Termini di vendita verso il cliente finale
-
-I termini di vendita configurati dall'Organizzazione regolano direttamente il rapporto tra Organizzazione e cliente finale. Il Fornitore fornisce il container tecnico per la presentazione di tali termini, ma non e' parte del contratto di vendita ne' interviene nella sua esecuzione (consegna, garanzie, reso).
+L'Operatore e' l'unico responsabile dei propri adempimenti fiscali e contabili relativi alle vendite effettuate tramite la Piattaforma: emissione di ricevute/fatture verso i Clienti finali ove dovute, dichiarazione dei corrispettivi, versamento di IVA/imposta sul valore aggiunto e ogni altra imposta applicabile, eventuali obblighi di comunicazione (es. DAC7 ove applicabile tramite i canali competenti). Il Fornitore fattura all'Operatore esclusivamente il canone e le commissioni di propria spettanza.
 
 ### 13.5 Esonero di responsabilita' del Fornitore
 
 Il Fornitore non e' responsabile per:
-- Contestazioni del cliente finale verso l'Organizzazione
-- Mancata consegna, ritardi, contestazioni sulla qualita' del prodotto/servizio
-- Adempimenti fiscali dell'Organizzazione verso le autorita' competenti
-- Compliance dell'Organizzazione con la normativa applicabile alla vendita
+- Contestazioni del Cliente finale verso l'Operatore (qualita', annullamento, mancato svolgimento, infortuni, danni durante il ritiro)
+- Veridicita' e liceita' del Contenuto pubblicato dall'Operatore
+- Adempimenti fiscali, assicurativi e autorizzativi dell'Operatore
+- Compliance dell'Operatore con la normativa applicabile alla vendita e all'erogazione dell'Offerta
 
 ---
 
 ## 14. Disattivazione, sospensione, risoluzione
 
-### 14.1 Disattivazione self-service da parte dell'Utente
+### 14.1 Disattivazione self-service da parte dell'Operatore
 
-L'Amministratore puo' disattivare il proprio account in qualsiasi momento dalle Impostazioni. La disattivazione comporta:
+L'Operatore puo' disattivare il proprio account in qualsiasi momento dalle Impostazioni. La disattivazione comporta:
 
-1. Blocco immediato dell'accesso per l'Amministratore e i Membri del team
+1. Blocco immediato dell'accesso e rimozione della vetrina e dell'Offerta dalle pagine pubbliche
 2. Cancellazione immediata di eventuali abbonamenti Stripe attivi (senza rimborso delle quote residue del periodo gia' pagato)
 3. Invio di una notifica via email
 4. Periodo di **grace di 30 giorni** durante il quale e' possibile riattivare l'account
 5. Email di **promemoria 7 giorni prima della cancellazione definitiva** con istruzioni per esportare i dati
-6. Trascorsi 30 giorni: **cancellazione definitiva e irreversibile** di tutti i dati dell'Organizzazione (record finanziari, file caricati, conversazioni AI, alert, dati utenti). I log di audit vengono anonimizzati e conservati per il periodo residuo della loro retention al fine di tutela giudiziaria e sicurezza.
+6. Trascorsi 30 giorni: **cancellazione definitiva e irreversibile** di tutti i dati dell'Operatore (contenuti, ordini, anagrafiche, dati utenti). I log di audit vengono anonimizzati e conservati per il periodo residuo della loro retention al fine di tutela giudiziaria e sicurezza.
+
+Restano impregiudicati gli obblighi dell'Operatore verso i Clienti finali per le prenotazioni gia' confermate al momento della disattivazione (esecuzione o rimborso ai sensi dell'art. 13.3).
+
+Il Cliente finale puo' richiedere la chiusura del proprio account Passaporto Ritiri con le modalita' e le tempistiche indicate nella Privacy Policy (art. 12).
 
 ### 14.2 Riattivazione
 
-Durante il grace period l'Amministratore puo' riattivare l'account contattando il Fornitore. La riattivazione ripristina i dati ma non l'eventuale abbonamento, che dovra' essere ri-sottoscritto.
+Durante il grace period l'Operatore puo' riattivare l'account contattando il Fornitore. La riattivazione ripristina i dati ma non l'eventuale abbonamento, che dovra' essere ri-sottoscritto.
 
-### 14.3 Risoluzione per inadempimento da parte del Fornitore
+### 14.3 Risoluzione da parte del Fornitore
 
 Il Fornitore puo' risolvere il contratto in qualsiasi momento, con preavviso di almeno 30 giorni e mediante notifica via email, in caso di:
 - Violazione sostanziale dei presenti Termini da parte dell'Utente
 - Mancato pagamento prolungato (vedi art. 7.7)
 - Utilizzo del Servizio per attivita' illecite
+- Reiterate e fondate contestazioni dei Clienti finali per prenotazioni non onorate
 
-In caso di risoluzione, l'Amministratore avra' diritto a esportare i propri dati nel termine di preavviso.
+In caso di risoluzione, l'Operatore avra' diritto a esportare i propri dati nel termine di preavviso.
 
 ### 14.4 Sospensione immediata
 
 Il Fornitore si riserva la facolta' di sospendere immediatamente, senza preavviso, l'account in caso di:
 - Sospette violazioni di sicurezza che mettano a rischio la Piattaforma o altri Utenti
+- Sospette frodi nei pagamenti o nelle recensioni
 - Richieste di autorita' competenti
-- Caricamento di contenuti palesemente illegali
+- Pubblicazione di contenuti palesemente illegali
 
 La sospensione e' provvisoria; trascorse 72 ore dalla sospensione senza chiarimenti da parte dell'Utente, il Fornitore puo' procedere alla risoluzione ai sensi dell'art. 14.3.
 
-### 14.5 Risoluzione per fallimento del Fornitore
+### 14.5 Cessazione dell'attivita' del Fornitore
 
 In caso di cessazione dell'attivita' del Fornitore, l'Utente sara' avvisato con almeno **60 giorni di preavviso** per consentire l'esportazione completa dei dati. Il Fornitore si impegna a mantenere disponibile la funzionalita' di export anche durante il periodo di chiusura.
 
@@ -360,7 +385,7 @@ In caso di cessazione dell'attivita' del Fornitore, l'Utente sara' avvisato con 
 
 ### 15.1 Diritti del Fornitore
 
-Tutti i diritti di proprieta' intellettuale relativi alla Piattaforma (codice sorgente, design, interfacce, marchio "AFianco", contenuti redazionali, documentazione, algoritmi) sono e restano di esclusiva proprieta' del Fornitore o dei suoi licenziatari.
+Tutti i diritti di proprieta' intellettuale relativi alla Piattaforma (codice sorgente, design, interfacce, marchio e logo "Aurya", contenuti redazionali, documentazione, algoritmi) sono e restano di esclusiva proprieta' del Fornitore o dei suoi licenziatari.
 
 ### 15.2 Licenza all'Utente
 
@@ -386,40 +411,42 @@ Nella misura massima consentita dalla legge applicabile, il Fornitore esclude qu
 
 ### 16.2 Limite massimo di responsabilita'
 
-Nella misura massima consentita dalla legge applicabile, la responsabilita' complessiva del Fornitore verso l'Utente per qualsiasi causa derivante o connessa al Servizio (inclusi danni diretti, indiretti, incidentali, mancato guadagno, perdita di dati, danni d'immagine) **non potra' superare l'importo totale corrisposto dall'Utente al Fornitore nei 12 mesi precedenti l'evento che ha dato origine alla responsabilita'**.
+Nella misura massima consentita dalla legge applicabile, la responsabilita' complessiva del Fornitore verso l'Utente per qualsiasi causa derivante o connessa al Servizio (inclusi danni diretti, indiretti, incidentali, mancato guadagno, perdita di dati, danni d'immagine) **non potra' superare l'importo totale corrisposto dall'Utente al Fornitore (canoni e commissioni di piattaforma) nei 12 mesi precedenti l'evento che ha dato origine alla responsabilita'**.
 
-Per gli Utenti del Piano Free che non hanno mai corrisposto alcun importo, il limite massimo di responsabilita' e' fissato in **CHF 200** (duecento franchi svizzeri).
+Per gli Utenti che non hanno mai corrisposto alcun importo al Fornitore, il limite massimo di responsabilita' e' fissato in **CHF 200** (duecento franchi svizzeri).
 
 ### 16.3 Esclusioni espresse
 
 Salvo i casi di dolo o colpa grave, il Fornitore non risponde per:
 
 - **Perdita di dati** dovuta ad azioni dell'Utente, errori di configurazione, eliminazioni accidentali
-- **Decisioni aziendali, finanziarie, fiscali o legali** prese sulla base delle analisi della Piattaforma o del Servizio AI
+- **Esecuzione dei ritiri e delle Offerte**: annullamenti, qualita', sicurezza, danni o infortuni durante le attivita' dell'Operatore (art. 13)
+- **Decisioni commerciali** dell'Operatore prese sulla base delle informazioni della Piattaforma
 - **Mancato guadagno**, perdita di clientela, danno d'immagine
 - **Accessi non autorizzati** causati dalla negligenza dell'Utente nella custodia delle credenziali
 - **Interruzioni del Servizio** dovute a force majeure, manutenzione programmata, attacchi informatici massivi al di fuori del controllo del Fornitore
-- **Inadempimenti dei sub-responsabili** che non costituiscano violazione contrattuale del rispettivo accordo (art. 6 Privacy Policy)
-- **Contenziosi tra Organizzazione e clienti finali** del Modulo Commerce (art. 13.5)
-- **Compliance fiscale o regolatoria** dell'Organizzazione
+- **Inadempimenti dei sub-responsabili** che non costituiscano violazione contrattuale del rispettivo accordo (Privacy Policy art. 6)
+- **Sospensione o chiusura dell'account Stripe** dell'Operatore da parte di Stripe (art. 8.5)
+- **Contenziosi tra Operatore e Clienti finali** (art. 13.5)
+- **Compliance fiscale o regolatoria** dell'Operatore
 
 ### 16.4 Limitazioni inderogabili
 
-Le limitazioni di cui sopra non si applicano laddove la legge applicabile inderogabile escluda o limiti tali esoneri. In particolare, nulla in questi Termini limita la responsabilita' per dolo, colpa grave, danno alla persona o casi di responsabilita' che non possono essere limitati ai sensi della legge applicabile.
+Le limitazioni di cui sopra non si applicano laddove la legge applicabile inderogabile escluda o limiti tali esoneri. In particolare, nulla in questi Termini limita la responsabilita' per dolo, colpa grave, danno alla persona o casi di responsabilita' che non possono essere limitati ai sensi della legge applicabile. Restano salve le tutele inderogabili dei consumatori (art. 22.3).
 
 ---
 
 ## 17. Indennizzo (manleva)
 
-L'Utente si impegna a manlevare e tenere indenne il Fornitore (inclusi suoi rappresentanti, ausiliari, sub-responsabili) da qualsiasi pretesa, contestazione, azione legale, perdita, danno, costo o spesa (incluse ragionevoli spese legali) derivanti da:
+L'Operatore si impegna a manlevare e tenere indenne il Fornitore (inclusi suoi rappresentanti, ausiliari, sub-responsabili) da qualsiasi pretesa, contestazione, azione legale, perdita, danno, costo o spesa (incluse ragionevoli spese legali) derivanti da:
 
-1. Violazione dei presenti Termini da parte dell'Utente
+1. Violazione dei presenti Termini da parte dell'Operatore
 2. Utilizzo del Servizio in violazione di disposizioni di legge applicabili
-3. Violazione di diritti di terzi causata dal Contenuto dell'Utente o dal suo utilizzo
-4. Pretese di clienti finali dell'Organizzazione legate al rapporto contrattuale con l'Organizzazione stessa (Modulo Commerce — art. 13)
-5. Pretese di terzi legate a inadempimenti dell'Utente nei confronti dei propri dati subject (es. mancata informativa privacy fornita ai propri clienti)
+3. Violazione di diritti di terzi causata dal Contenuto dell'Operatore o dal suo utilizzo
+4. Pretese di Clienti finali legate al rapporto contrattuale con l'Operatore (esecuzione dell'Offerta, cancellazioni, rimborsi, danni — art. 13)
+5. Pretese di terzi legate a inadempimenti dell'Operatore nei confronti dei propri interessati (es. mancata informativa privacy fornita ai propri clienti, invii marketing privi di consenso)
 
-Il Fornitore notifichera' tempestivamente all'Utente eventuali pretese di terzi e collaborera' ragionevolmente nella difesa.
+Il Fornitore notifichera' tempestivamente all'Operatore eventuali pretese di terzi e collaborera' ragionevolmente nella difesa.
 
 ---
 
@@ -442,15 +469,15 @@ Le comunicazioni del Fornitore avvengono via email all'indirizzo registrato dall
 
 ### 19.2 Notifiche dell'Utente al Fornitore
 
-Le comunicazioni dell'Utente al Fornitore avvengono via email all'indirizzo `davide@afianco.ch`.
+Le comunicazioni dell'Utente al Fornitore avvengono via email all'indirizzo `info@aurya.life`.
 
 ### 19.3 Email transazionali
 
-Il Fornitore invia comunicazioni transazionali necessarie all'erogazione del Servizio (verifica account, reset password, inviti team, notifiche di disattivazione, promemoria di cancellazione, modifiche ai Termini, fatture). Tali comunicazioni **non possono essere disattivate** in quanto strumentali al rapporto contrattuale.
+Il Fornitore invia comunicazioni transazionali necessarie all'erogazione del Servizio (verifica account, reset password, conferme d'ordine, biglietti, promemoria di saldo e rate, codici OTP per recensioni, notifiche di disattivazione, promemoria di cancellazione, modifiche ai Termini, ricevute). Tali comunicazioni **non possono essere disattivate** in quanto strumentali al rapporto contrattuale.
 
-### 19.4 Assenza di comunicazioni marketing
+### 19.4 Comunicazioni marketing
 
-Il Fornitore **non invia** newsletter, promozioni o email di marketing senza esplicito consenso preventivo dell'Utente.
+Il Fornitore **non invia** newsletter, promozioni o email di marketing senza esplicito consenso preventivo dell'interessato. Le newsletter degli Operatori sono inviate esclusivamente agli iscritti che hanno prestato consenso, con disiscrizione self-service in ogni email (Privacy Policy art. 4.1).
 
 ---
 
@@ -460,11 +487,11 @@ Il Fornitore si riserva il diritto di modificare i presenti Termini.
 
 ### 20.1 Modifiche sostanziali
 
-Per modifiche sostanziali (es. cambiamento di prezzo, riduzione significativa delle funzionalita', nuove finalita' di trattamento dei dati, nuovi sub-responsabili) il Fornitore comunica con almeno **30 giorni di preavviso**:
+Per modifiche sostanziali (es. cambiamento di canoni o commissioni, riduzione significativa delle funzionalita', nuove finalita' di trattamento dei dati, nuovi sub-responsabili) il Fornitore comunica con almeno **30 giorni di preavviso**:
 
-1. Email all'Amministratore
+1. Email all'Utente registrato
 2. Avviso nella Piattaforma al login successivo
-3. Pubblicazione della nuova versione su https://afianco.app/terms
+3. Pubblicazione della nuova versione su https://aurya.life/terms
 
 L'utilizzo continuato del Servizio dopo la data di efficacia delle modifiche costituisce accettazione delle nuove disposizioni. In caso di disaccordo, l'Utente puo' recedere senza penalita' entro la data di efficacia.
 
@@ -506,7 +533,7 @@ Per qualsiasi controversia derivante dai presenti Termini o dall'utilizzo del Se
 
 ### 22.3 Riserva consumeristica
 
-Resta salva l'applicazione delle disposizioni di legge inderogabili applicabili in favore di Utenti residenti in altri Stati che riconoscano una protezione piu' favorevole al consumatore, ove l'Utente possa essere qualificato come tale.
+Resta salva l'applicazione delle disposizioni di legge inderogabili applicabili in favore di Utenti qualificabili come consumatori (in particolare i Clienti finali), inclusi il foro del consumatore e le tutele del Paese di residenza abituale ove piu' favorevoli e inderogabili. Rimane fermo che il contratto relativo all'Offerta intercorre tra Cliente finale e Operatore (art. 13).
 
 ---
 
@@ -527,6 +554,7 @@ Il mancato esercizio o il ritardato esercizio di un diritto previsto dai present
 ### 23.4 Sopravvivenza (survival)
 
 Le seguenti disposizioni sopravvivono alla cessazione del rapporto contrattuale:
+- Art. 13 (Marketplace: ruoli e responsabilita'), limitatamente alle prenotazioni gia' concluse
 - Art. 15 (Proprieta' intellettuale)
 - Art. 16 (Limitazione di responsabilita')
 - Art. 17 (Indennizzo)
@@ -537,7 +565,7 @@ Le seguenti disposizioni sopravvivono alla cessazione del rapporto contrattuale:
 
 ### 23.5 Lingua
 
-In caso di discrepanze tra la versione italiana e le traduzioni in EN/DE/FR, prevale la versione italiana ai fini dell'interpretazione legale, in quanto lingua di stesura originaria.
+La Piattaforma e' disponibile in IT/EN/DE/FR. In caso di discrepanze tra la versione italiana e le traduzioni in EN/DE/FR, prevale la versione italiana ai fini dell'interpretazione legale, in quanto lingua di stesura originaria.
 
 ---
 
@@ -546,7 +574,7 @@ In caso di discrepanze tra la versione italiana e le traduzioni in EN/DE/FR, pre
 **Fornitore:**
 Davide De Filippis
 Lugano, Svizzera
-Email: `davide@afianco.ch`
+Email: `info@aurya.life`
 
 Per qualsiasi domanda relativa ai presenti Termini, supporto tecnico, contestazioni, esercizio dei diritti contrattuali: scrivere all'indirizzo email sopra indicato. Il Fornitore si impegna a rispondere entro 5 giorni lavorativi dal ricevimento.
 
@@ -554,6 +582,5 @@ Per qualsiasi domanda relativa ai presenti Termini, supporto tecnico, contestazi
 
 ## Allegati
 
-- **Privacy Policy** — accessibile a https://afianco.app/privacy
-- **Data Processing Agreement (DPA)** — disponibile su richiesta per gli Utenti del Modulo Commerce
-- **Lista dei sub-responsabili** — accessibile a https://afianco.app/legal/subprocessors
+- **Privacy Policy** — accessibile a https://aurya.life/privacy
+- **Data Processing Agreement (DPA)** — disponibile su richiesta per gli Operatori (art. 13.2)
