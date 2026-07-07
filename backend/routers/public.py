@@ -3511,8 +3511,13 @@ async def list_public_retreats(
                                   i["start_at"] or ""))
 
     total = len(items)
+    # GT3 — strip "In evidenza": i primi ritiri dei piani featured sul
+    # set filtrato corrente (stessi filtri di categoria/luogo: la strip
+    # resta pertinente anche sulle pagine categoria/destinazione).
+    featured_items = [i for i in items if i.get("featured")][:4]
     return {
         "items": items[offset:offset + limit],
+        "featured_items": featured_items,
         "total": total,
         "categories": RETREAT_CATEGORIES,
     }
@@ -3681,7 +3686,7 @@ async def public_operators_index(category: str = Query(default=None, max_length=
         {"id": {"$in": org_ids}, "is_active": {"$ne": False},
          "deactivated_at": None},
         {"_id": 0, "id": 1, "name": 1, "public_profile": 1,
-         "store_settings": 1},
+         "store_settings": 1, "directory_featured": 1},
     ).to_list(500)}
 
     prods = await products_collection.find(
@@ -3743,9 +3748,12 @@ async def public_operators_index(category: str = Query(default=None, max_length=
             "upcoming_retreats": b["retreats"],
             "other_products": b["products"],
             "regions": sorted(b["regions"]),
+            # GT3 — priorita' nell'aggregatore per i piani featured
+            "featured": bool(org.get("directory_featured")),
         })
 
-    items.sort(key=lambda x: (-x["upcoming_retreats"], x["name"].lower()))
+    items.sort(key=lambda x: (not x["featured"],
+                              -x["upcoming_retreats"], x["name"].lower()))
     return {"items": items, "total": len(items),
             "categories": all_categories}
 
@@ -3823,6 +3831,8 @@ async def public_operator_profile(org_slug: str):
         # PR2 — rating denormalizzato (None finché non ci sono recensioni)
         "reviews_stats": org.get("reviews_stats"),
         "reviews_open": bool(org.get("reviews_open")),
+        # GT3 — badge "In evidenza" anche sul profilo (piani featured)
+        "featured": bool(org.get("directory_featured")),
     }
     if pp.get("show_contacts"):
         out["contacts"] = {k: pp.get(k) for k in ("public_email", "public_phone")
