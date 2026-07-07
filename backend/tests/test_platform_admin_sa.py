@@ -218,3 +218,33 @@ class TestSignalsSa5:
         assert "/admin/platform/signals" in tab
         for key in ("pro_ready", "unlockable", "at_risk", "growing"):
             assert key in tab
+
+
+class TestAdminCleanupSa6:
+    """SA6 — coerenza post-pivot dell'area admin."""
+
+    def test_legacy_plan_endpoint_retired(self):
+        """PUT /organizations/{id}/plan risponde 410 e non scrive piu'
+        il campo legacy — la via e' il commercial-plan."""
+        src = (BACKEND_DIR / "routers" / "admin.py").read_text()
+        idx = src.index("async def set_org_plan")
+        body = src[idx:idx + 900]
+        assert "HTTP_410_GONE" in body
+        assert "set_org_plan(org_id, body.plan)" not in body
+
+    def test_legacy_helper_removed_from_frontend(self):
+        api_src = (BACKEND_DIR.parent / "frontend" / "src" / "api"
+                   / "admin.js").read_text()
+        assert "setOrgPlan" not in api_src
+
+    def test_ai_tab_renamed(self):
+        """Il tab dice cosa fa OGGI: il consumo AI e' quasi solo
+        traduzione LLM."""
+        page = (BACKEND_DIR.parent / "frontend" / "src" / "features"
+                / "admin" / "AdminPage.js").read_text()
+        assert "AI & Traduzioni" in page
+
+    def test_trial_history_exposed_in_dialog(self):
+        dlg = (BACKEND_DIR.parent / "frontend" / "src" / "features"
+               / "admin" / "OrgBusinessProfileDialog.js").read_text()
+        assert "trial-history" in dlg

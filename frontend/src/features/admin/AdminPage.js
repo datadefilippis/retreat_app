@@ -84,7 +84,7 @@ const AdminPage = () => {
             </TabsTrigger>
             <TabsTrigger value="ai-governance" className="flex items-center gap-2 shrink-0">
               <Zap className="h-4 w-4" />
-              AI Governance
+              AI & Traduzioni
             </TabsTrigger>
           </TabsList>
 
