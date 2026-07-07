@@ -54,3 +54,44 @@ def test_retreat_free_plan_enables_four_modules():
     disabled = {k for k, v in mp.items() if str(v).endswith("_disabled")}
     assert enabled == {"commerce", "product_catalog", "customers_light", "cashflow_monitor"}
     assert disabled == {"ai_assistant"}
+
+
+class TestModuleOwnershipMd2:
+    """MD2 — ogni feature post-fork dichiara il suo modulo."""
+
+    def test_registry_covers_orphan_features(self):
+        from services.module_access import MODULE_OWNERSHIP
+        assert MODULE_OWNERSHIP == {
+            "reviews": "commerce",
+            "newsletter": "commerce",
+            "outreach": "customers_light",
+            "cashflow_analytics": "cashflow_monitor",
+            "sales_stats": "product_catalog",
+            "cross_sell": "customers_light",
+        }
+
+    def test_gates_wired_on_orphan_routers(self):
+        """I router (o le route) delle feature orfane montano il gate."""
+        import inspect
+        from routers import outreach, cashflow, newsletter_forms, reviews, products
+        for mod, feature in [(outreach, "outreach"),
+                             (cashflow, "cashflow_analytics"),
+                             (newsletter_forms, "newsletter")]:
+            assert f'require_module("{feature}")' in inspect.getsource(mod)
+        assert inspect.getsource(reviews).count('require_module("reviews")') >= 5
+        assert 'require_module("sales_stats")' in inspect.getsource(products)
+        ci_src = (BACKEND_DIR / "modules" / "customer_insights" / "router.py").read_text()
+        assert 'require_module("cross_sell")' in ci_src
+
+    def test_public_review_endpoints_not_gated(self):
+        """Il flusso recensioni PUBBLICO (OTP/submit/lista) resta libero:
+        il gate vale solo per la plancia admin."""
+        import inspect
+        from routers import reviews
+        src = inspect.getsource(reviews)
+        # le route pubbliche non hanno il gate nella loro firma
+        public_block = src.split("# ── Pubblico")[1].split("# admin")[0] if "# admin" in src else src.split('@router.get("/reviews"')[0]
+        # euristica: il gate compare solo insieme a require_admin
+        for line_pair in zip(src.splitlines(), src.splitlines()[1:]):
+            if 'require_module("reviews")' in line_pair[1]:
+                assert "require_admin" in line_pair[0]

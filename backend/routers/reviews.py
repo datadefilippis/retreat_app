@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, EmailStr, Field
 
 from auth import require_admin
+from services.module_access import require_module
 from routers.auth import limiter
 
 logger = logging.getLogger(__name__)
@@ -105,6 +106,7 @@ async def admin_list_reviews(
     status: Optional[str] = Query(default=None, max_length=20),
     page: int = Query(default=1, ge=1, le=500),
     current_user: dict = Depends(require_admin),
+    _module: dict = Depends(require_module("reviews")),
 ):
     from database import reviews_collection, organizations_collection
     org_id = current_user["organization_id"]
@@ -129,7 +131,8 @@ async def admin_list_reviews(
 
 @router.post("/reviews/{review_id}/reply")
 async def admin_reply(review_id: str, body: ReplyBody,
-                      current_user: dict = Depends(require_admin)):
+                      current_user: dict = Depends(require_admin),
+                      _module: dict = Depends(require_module("reviews"))):
     from database import reviews_collection
     from models.common import utc_now
     res = await reviews_collection.update_one(
@@ -145,7 +148,8 @@ async def admin_reply(review_id: str, body: ReplyBody,
 
 @router.patch("/reviews/{review_id}/moderate")
 async def admin_moderate(review_id: str, body: ModerateBody,
-                         current_user: dict = Depends(require_admin)):
+                         current_user: dict = Depends(require_admin),
+                      _module: dict = Depends(require_module("reviews"))):
     """Moderazione SOLO dei pending unverified (le verified pubblicano
     da sole e l'operatore non le governa — credibilità marketplace)."""
     from database import reviews_collection
@@ -167,7 +171,8 @@ async def admin_moderate(review_id: str, body: ModerateBody,
 
 @router.post("/reviews/{review_id}/flag")
 async def admin_flag(review_id: str,
-                     current_user: dict = Depends(require_admin)):
+                     current_user: dict = Depends(require_admin),
+                      _module: dict = Depends(require_module("reviews"))):
     """Segnala un abuso: la recensione sparisce dal pubblico in attesa
     della revisione della piattaforma (notifica interna)."""
     from database import reviews_collection
@@ -188,7 +193,8 @@ async def admin_flag(review_id: str,
 
 @router.patch("/reviews/settings")
 async def admin_review_settings(body: ReviewSettings,
-                                current_user: dict = Depends(require_admin)):
+                                current_user: dict = Depends(require_admin),
+                      _module: dict = Depends(require_module("reviews"))):
     from database import organizations_collection
     await organizations_collection.update_one(
         {"id": current_user["organization_id"]},

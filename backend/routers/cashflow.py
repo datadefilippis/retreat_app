@@ -25,6 +25,7 @@ from collections import defaultdict
 from datetime import timedelta
 from typing import Any, Dict, Optional
 
+from services.module_access import require_module
 from fastapi import APIRouter, Depends
 
 from auth import get_verified_user
@@ -32,7 +33,8 @@ from models.common import utc_now
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
+router = APIRouter(prefix="/analytics", tags=["Analytics"],
+                   dependencies=[Depends(require_module("cashflow_analytics"))])
 
 _CACHE_TTL = 60.0
 _cache: Dict[str, "tuple[float, dict]"] = {}
