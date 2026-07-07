@@ -212,7 +212,12 @@ async def check_a1_products_without_cost(
     # measure. 80% blind = the merchant is flying blind on 80% of sales.
     # Cap at 95 so even worst case leaves headroom for "definitely critical"
     # checks like negative margins.
-    impact = min(int(round(blind_pct)), 95)
+    # RF3 — suggerimento, non allarme: configura i costi per vedere i
+    # margini e' un consiglio di setup, non un'emergenza. Cap a 40 =
+    # tier "secondary" compatto (mai hero rosso a tutta pagina).
+    impact = min(int(round(blind_pct)), 40)
+    if severity == "critical":
+        severity = "warning"
 
     return CheckResult(
         id="products_without_cost",
@@ -1046,10 +1051,11 @@ async def run_all_checks(
         check_a1_products_without_cost(org_id, window),
         check_a2_products_without_sku(org_id),
         check_a3_suspicious_margins(org_id, window),
-        # B — cashflow coherence (IB.2)
-        check_b1_cashflow_mismatch(org_id, window),
-        check_b2_orphan_sales(org_id, window),
-        check_b3_confirmed_orders_without_sales(org_id, window),
+        # B — cashflow coherence: RIMOSSI (RF3). Confrontavano il
+        # fatturato prodotti con l'intero registro sales_records
+        # (incluso il seed del BI potato) e le azioni puntavano al
+        # Cashflow Monitor che non esiste più per gli operatori:
+        # producevano il banner rosso "Discrepanza" con dati fuorvianti.
         # C — purchases coherence (IB.3)
         check_c1_purchases_unattributed(org_id, window),
         check_c2_unlinked_purchase_categories(org_id),
