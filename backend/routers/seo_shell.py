@@ -132,10 +132,12 @@ def _hub_hreflang(canonical: str) -> dict:
 async def _meta_home() -> dict:
     base = _base_url()
     return {
-        "title": "Aurya — Ritiri ed esperienze olistiche",
+        # AN1 — il title porta la promessa, non solo la categoria
+        # (docs/BRAND_AURYA.md): caparra protetta + recensioni verificate.
+        "title": "Aurya — Il marketplace italiano dei ritiri olistici",
         "description": ("Trova e prenota ritiri di yoga, meditazione, detox "
-                        "ed esperienze olistiche in tutta Italia: date, prezzi "
-                        "e disponibilità reali, prenoti online con la caparra."),
+                        "ed esperienze olistiche in Italia: prenoti online "
+                        "con caparra protetta e recensioni solo verificate."),
         "canonical": f"{base}/",
         "hreflang": _hub_hreflang(f"{base}/"),
         "image": f"{base}/logo-aurya.png",
@@ -145,6 +147,37 @@ async def _meta_home() -> dict:
             "name": "Aurya",
             "url": f"{base}/",
         },
+    }
+
+
+# AN1 — pagine istituzionali del brand: meta statiche, hreflang hub
+_BRAND_PAGES = {
+    "chi-siamo": {
+        "title": "Chi siamo — Aurya, il marketplace italiano dei ritiri olistici",
+        "description": ("Aurya connette chi cerca benessere autentico con chi "
+                        "lo crea: ritiri prenotabili online con caparra "
+                        "protetta e recensioni solo verificate."),
+    },
+    "come-funziona": {
+        "title": "Come funziona Aurya — prenota ritiri olistici con caparra protetta",
+        "description": ("Scegli il ritiro, blocca il posto con una caparra "
+                        "protetta da Stripe, vivi l'esperienza e recensisci: "
+                        "su Aurya solo recensioni verificate."),
+    },
+}
+
+
+async def _meta_brand_page(slug: str) -> Optional[dict]:
+    page = _BRAND_PAGES.get(slug)
+    if not page:
+        return None
+    base = _base_url()
+    canonical = f"{base}/{slug}"
+    return {
+        **page,
+        "canonical": canonical,
+        "hreflang": _hub_hreflang(canonical),
+        "image": f"{base}/logo-aurya.png",
     }
 
 
@@ -414,6 +447,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_operator(parts[1])
     if head == "s" and len(parts) >= 2:
         return await _meta_store(parts[1])
+    if head in _BRAND_PAGES and len(parts) == 1:
+        return await _meta_brand_page(head)   # AN1 — /chi-siamo, /come-funziona
     return None
 
 

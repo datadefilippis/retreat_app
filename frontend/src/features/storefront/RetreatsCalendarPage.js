@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import GeoSearchBar from './components/GeoSearchBar';
 import MarketplaceShell from './components/MarketplaceShell';
+import MarketplaceValueSections from './components/MarketplaceValueSections';
 // G3 — vista mappa lazy (Leaflet caricato solo quando serve)
 const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'));
 
@@ -451,6 +452,10 @@ export default function RetreatsCalendarPage() {
           </div>
         )}
       </main>
+
+      {/* AN1 — l'anima di Aurya: come funziona / perché / organizzatori.
+          Solo sulla home "pulita": chi sta filtrando non va interrotto. */}
+      {!anyFilter && view !== 'mappa' && <MarketplaceValueSections />}
     </div>
     </MarketplaceShell>
   );

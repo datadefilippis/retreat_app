@@ -524,7 +524,7 @@
     "aziendale": "Corporate wellbeing"
   },
   "marketplace": {
-    "tagline": "Find and book holistic retreats worldwide — deposit-based, worry-free.",
+    "tagline": "Find and book holistic retreats in Italy — with a protected deposit, worry-free.",
     "searchShortcut": "Where? · When? · What retreat?",
     "forOrganizers": "Are you an organizer?",
     "myTrips": "My experiences",
@@ -563,5 +563,59 @@
     "operatorReply": "Reply from the organizer",
     "showMore": "Show more",
     "genericError": "Something went wrong, please try again."
+  },
+  "brandHome": {
+    "howTitle": "How it works",
+    "how1t": "Choose",
+    "how1b": "Browse retreats and experiences by category, place or date: prices and spots are real, updated live.",
+    "how2t": "Book with a deposit",
+    "how2b": "Secure your spot online by paying just a deposit, protected by Stripe. The balance follows the agreed plan.",
+    "how3t": "Live the retreat",
+    "how3b": "You get your ticket and reminders; the organizer has everything needed to welcome you.",
+    "how4t": "Tell how it went",
+    "how4b": "Only real participants can review: your voice helps the next seeker.",
+    "whyTitle": "Why Aurya",
+    "why1t": "Verified reviews only",
+    "why1b": "Only people who actually attended can review, verified against the order email. Zero bought reviews.",
+    "why2t": "Protected deposit",
+    "why2b": "Payments run on Stripe, never blind bank transfers. The deposit secures your spot, the rest when agreed.",
+    "why3t": "Your Retreat Passport",
+    "why3b": "One account for all your experiences: tickets, history and reminders in one place.",
+    "why4t": "Italian organizers, clear prices",
+    "why4b": "Local teachers and venues, transparent dates and prices, no opaque middlemen.",
+    "orgTitle": "Are you an organizer?",
+    "orgBody": "Your professional showcase in 4 languages, free, in 10 minutes — and you pay only when we bring you a client.",
+    "orgCta": "Start for free"
+  },
+  "aboutPage": {
+    "seoTitle": "About us — Aurya, the Italian marketplace for holistic retreats",
+    "seoDesc": "Aurya connects seekers of authentic wellbeing with those who create it: retreats bookable online with a protected deposit and verified-only reviews.",
+    "title": "About us",
+    "intro": "Aurya is the Italian marketplace for holistic retreats: find the right experience, book it online with a protected deposit, and behind every review there is someone who was really there.",
+    "missionTitle": "Our mission",
+    "missionBody": "To make the meeting between those who seek authentic wellbeing and those who create it simple, transparent and safe — giving Italian holistic organizers the digital tools of a great e-commerce, without asking them to become technicians.",
+    "visionTitle": "Where we are going",
+    "visionBody": "To become the reference point in Italy for holistic experiences: an ecosystem where every retreat, consultation and course can be booked online, every review is verified, and every organizer lives from what they know how to do.",
+    "forSeekersTitle": "For seekers",
+    "forSeekersBody": "Book online right away, with real dates and spots. The deposit is protected by Stripe. Reviews come only from real participants. And the Retreat Passport keeps all your experiences in one place.",
+    "forOrganizersTitle": "For organizers",
+    "forOrganizersBody": "A professional showcase in 4 languages, free, in 10 minutes. No mandatory fee: a small commission only on bookings coming from the public calendar. Plus a complete back office for deposits, clients and reviews.",
+    "cta": "Explore retreats"
+  },
+  "howPage": {
+    "seoTitle": "How Aurya works — book holistic retreats with a protected deposit",
+    "seoDesc": "Choose your retreat, secure your spot with a Stripe-protected deposit, live the experience and review it: on Aurya, verified reviews only.",
+    "title": "How it works",
+    "intro": "From search to review, every step is designed to be simple and safe — for you and for the organizer.",
+    "faqTitle": "Frequently asked questions",
+    "faq1q": "Is my deposit safe?",
+    "faq1a": "Yes. Payments go through Stripe, the same circuit used by major e-commerce: your card is never shared with the organizer. The deposit secures the spot; the balance follows the plan shown on the retreat page.",
+    "faq2q": "Can I trust the reviews?",
+    "faq2a": "Only people who actually booked can leave a review: we verify against the email used for the order. That is why there are no bought reviews on Aurya.",
+    "faq3q": "What is the Retreat Passport?",
+    "faq3a": "Your personal account, valid with every organizer: tickets, experience history and payment reminders, all in one place.",
+    "faq4q": "How much does it cost for organizers?",
+    "faq4a": "Joining is free: profile, showcase and back office with no subscription. We keep a small commission only on bookings brought by the public calendar — if the client is yours, you pay nothing.",
+    "cta": "Find your retreat"
   }
 }

@@ -113,6 +113,9 @@ async def build_core() -> str:
     base = _base_url()
     urls = [
         _url(f"{base}/", priority="1.0"),
+        # AN1 — pagine istituzionali del brand
+        _url(f"{base}/chi-siamo", priority="0.6"),
+        _url(f"{base}/come-funziona", priority="0.6"),
         _url(f"{base}/privacy", priority="0.3"),
         _url(f"{base}/termini", priority="0.3"),
     ]
