@@ -162,7 +162,9 @@
     "noResults": "Nessun cliente corrisponde ai filtri",
     "exportCsv": "Esporta CSV",
     "exportCsvGdprHint": "Il CSV include una colonna unsubscribe_url con un link di disiscrizione per ogni cliente. Inseriscila come merge tag nei footer delle tue campagne marketing (es. {{unsubscribe_url}} su Mailchimp / Brevo) per rispettare l'Art. 7(3) GDPR.",
-    "columnContact": "Contatta"
+    "columnContact": "Contatta",
+    "searchPlaceholder": "Cerca cliente…",
+    "filtersButton": "Filtri"
   },
   "profile": {
     "title": "Profilo cliente",

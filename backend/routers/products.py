@@ -355,6 +355,19 @@ async def update_product(
     if getattr(updates, "is_published", None) is True:
         from services.store_guard import require_public_home
         await require_public_home(org_id)
+        # RF4/B4 — un digitale senza file non si pubblica: il cliente
+        # scoprirebbe l'errore solo al checkout (digital_file_missing).
+        from database import products_collection as _pc_pub
+        _prod_pub = await _pc_pub.find_one(
+            {"id": product_id, "organization_id": org_id},
+            {"_id": 0, "item_type": 1, "metadata": 1})
+        if (_prod_pub or {}).get("item_type") == "digital" and not (
+                (_prod_pub.get("metadata") or {}).get("download_filename")):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": "digital_file_missing",
+                        "message": "Carica il file digitale prima di "
+                                   "pubblicare il prodotto."})
         # S3 — IndexNow al publish (best-effort, no-op senza chiave)
         try:
             from services.indexnow import ping_urls_async

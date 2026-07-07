@@ -162,7 +162,9 @@
     "noResults": "Kein Kunde entspricht den Filtern",
     "exportCsv": "CSV exportieren",
     "exportCsvGdprHint": "Die CSV-Datei enthält eine Spalte unsubscribe_url mit einem Abmeldelink pro Kunde. Verwenden Sie diese als Merge-Tag in den Fußzeilen Ihrer Marketing-Kampagnen (z. B. {{unsubscribe_url}} bei Mailchimp / Brevo), um Art. 7 Abs. 3 DSGVO zu erfüllen.",
-    "columnContact": "Kontakt"
+    "columnContact": "Kontakt",
+    "searchPlaceholder": "Kunde suchen…",
+    "filtersButton": "Filter"
   },
   "profile": {
     "title": "Kundenprofil",

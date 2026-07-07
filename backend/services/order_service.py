@@ -544,6 +544,13 @@ async def confirm_order(org_id: str, order_id: str, skip_payment_check: bool = F
     if not order:
         raise ValueError("Order not found")
 
+    # RF4/B4 — un ordine a totale 0 confermato è quasi sempre un errore
+    # (riga senza prezzo): non blocca, ma lascia traccia.
+    if float(order.get("total") or 0) <= 0:
+        logger.warning(
+            "order_service: confirming order %s with total=0 (org=%s) — "
+            "possibile riga senza prezzo", order_id, org_id)
+
     # Idempotency: already confirmed → no-op
     if order["status"] in (OrderStatus.CONFIRMED, OrderStatus.COMPLETED):
         return order
