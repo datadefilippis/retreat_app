@@ -421,6 +421,11 @@ async def create_indexes():
     # senza pin restano fuori dall'indice ma visibili in lista.
     await event_occurrences_collection.create_index(
         [("geo", "2dsphere")], name="g1_geo", sparse=True)
+    # AN3 — posizione dell'OPERATORE (profilo pubblico): la scoperta
+    # geografica non dipende dai ritiri futuri. Sparse: chi non ha
+    # configurato la località resta fuori dall'indice ma in lista.
+    await organizations_collection.create_index(
+        [("public_profile.geo", "2dsphere")], name="an3_org_geo", sparse=True)
     # cache geocoding Nominatim (policy OSM: mai ri-geocodare)
     await db.geocode_cache.create_index("query", unique=True, name="g1_geocache")
     # payment_schedules: lookup per ordine (hot path webhook/dashboard) e

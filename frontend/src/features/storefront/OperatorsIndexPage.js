@@ -9,11 +9,14 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
+import GeoSearchBar from './components/GeoSearchBar';
 import useSeoMeta from './lib/useSeoMeta';
+
+const OperatorsMapView = React.lazy(() => import('./components/OperatorsMapView'));
 
 const CATEGORY_ICONS = {
   yoga: '🧘', meditazione: '🌿', meditation: '🌿', detox: '🥗',
@@ -45,6 +48,17 @@ function OperatorCard({ op, t }) {
       </div>
       <div className="pt-8 px-4 pb-4">
         <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{op.name}</p>
+        {/* AN3 — posizione dal profilo + distanza quando c'è un punto */}
+        {(op.city || op.region || op.distance_km != null) && (
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            📍 {[op.city, op.region].filter(Boolean).join(', ')}
+            {op.distance_km != null && (
+              <span className="ml-1.5 rounded-full bg-primary/10 text-primary px-2 py-0.5 font-semibold">
+                {op.distance_km} km
+              </span>
+            )}
+          </p>
+        )}
         {op.bio && (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{op.bio}</p>
         )}
@@ -78,18 +92,44 @@ function OperatorCard({ op, t }) {
 export default function OperatorsIndexPage() {
   const { t } = useTranslation('landings');
   const { categoria } = useParams();
+  const [params, setParams] = useSearchParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // AN3 — scoperta geografica: ?lat/lng/r/luogo condivisibili come
+  // sulla directory ritiri, + toggle ?vista=mappa
+  const geoLat = params.get('lat');
+  const geoLng = params.get('lng');
+  const geoRadius = Number(params.get('r')) || 100;
+  const geoLabel = params.get('luogo') || '';
+  const view = params.get('vista') || 'lista';
+  const geoValue = (geoLat && geoLng)
+    ? { lat: Number(geoLat), lng: Number(geoLng), label: geoLabel, radius: geoRadius }
+    : null;
+  const setGeo = (next) => {
+    const q = new URLSearchParams(params);
+    if (next) {
+      q.set('lat', next.lat); q.set('lng', next.lng);
+      q.set('r', next.radius || 100); q.set('luogo', next.label || '');
+    } else {
+      q.delete('lat'); q.delete('lng'); q.delete('r'); q.delete('luogo');
+    }
+    setParams(q, { replace: true });
+  };
 
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    api.get('/public/operators', { params: categoria ? { category: categoria } : {} })
+    const q = categoria ? { category: categoria } : {};
+    if (geoLat && geoLng) {
+      q.lat = geoLat; q.lng = geoLng; q.radius_km = geoRadius;
+    }
+    api.get('/public/operators', { params: q })
       .then(res => { if (mounted) setData(res.data); })
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [categoria]);
+  }, [categoria, geoLat, geoLng, geoRadius]);
 
   const items = data?.items || [];
   const categories = useMemo(
@@ -185,6 +225,24 @@ export default function OperatorsIndexPage() {
               ))}
             </div>
           )}
+
+          {/* AN3 — Dove? + vicino a me + vista mappa */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="w-full sm:w-80"><GeoSearchBar value={geoValue} onChange={setGeo} /></div>
+            <button
+              type="button"
+              onClick={() => {
+                const q = new URLSearchParams(params);
+                if (view === 'mappa') q.delete('vista'); else q.set('vista', 'mappa');
+                setParams(q, { replace: true });
+              }}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
+                view === 'mappa' ? 'bg-primary text-white border-primary' : 'bg-white border-border text-foreground hover:border-primary'
+              }`}
+            >
+              📍 {t('landings:operators.mapToggle', { defaultValue: 'Mappa' })}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -208,6 +266,10 @@ export default function OperatorsIndexPage() {
               {t('landings:operators.backHome', { defaultValue: 'Vai ai ritiri' })}
             </Link>
           </div>
+        ) : view === 'mappa' ? (
+          <React.Suspense fallback={<div className="h-[520px] rounded-2xl bg-gray-100 animate-pulse" />}>
+            <OperatorsMapView items={items} />
+          </React.Suspense>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {items.map(op => <OperatorCard key={op.org_slug} op={op} t={t} />)}

@@ -1761,6 +1761,9 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
     return {**{k: pp.get(k) for k in _PUBLIC_PROFILE_FIELDS},
             "photos": pp.get("photos") or [],
             "languages": pp.get("languages") or [],
+            # AN3 — la posizione configurata (autocomplete o geocoding)
+            "latitude": pp.get("latitude"),
+            "longitude": pp.get("longitude"),
             "show_contacts": bool(pp.get("show_contacts"))}
 
 
@@ -1792,6 +1795,22 @@ async def update_public_profile(
         langs = body["languages"] if isinstance(body["languages"], list) else []
         updates["public_profile.languages"] = [
             l for l in langs if l in _PP_LANGS][:6]
+    # AN3 — posizione dell'operatore: lat/lng espliciti (autocomplete
+    # località nel form) vincono; validati e trasformati in GeoJSON per
+    # l'indice 2dsphere. La scoperta geografica non dipende più dai
+    # ritiri futuri: è il PROFILO a dire dove sei.
+    lat_raw, lng_raw = body.get("latitude"), body.get("longitude")
+    if lat_raw is not None and lng_raw is not None:
+        try:
+            lat_f, lng_f = float(lat_raw), float(lng_raw)
+            if -90 <= lat_f <= 90 and -180 <= lng_f <= 180:
+                updates["public_profile.latitude"] = lat_f
+                updates["public_profile.longitude"] = lng_f
+                updates["public_profile.geo"] = {
+                    "type": "Point", "coordinates": [lng_f, lat_f]}
+        except (TypeError, ValueError):
+            pass
+
     if not updates:
         raise HTTPException(status_code=400, detail="Nessun campo valido")
 
@@ -1799,10 +1818,42 @@ async def update_public_profile(
     await organizations_collection.update_one(
         {"id": current_user["organization_id"]}, {"$set": updates},
     )
+    # AN3 — geocoding best-effort: city presente ma niente coordinate
+    # (form senza autocomplete, profili vecchi) → stessa cache
+    # Nominatim delle occurrence. Mai bloccante.
+    await _geocode_profile_if_needed(current_user["organization_id"])
     # GT6 — gradino 0 profilo-first: il primo profilo con bio accende
     # la vetrina pubblica anche senza store ne' prodotti
     await _ensure_public_surface(current_user["organization_id"])
     return await get_public_profile(current_user)
+
+
+async def _geocode_profile_if_needed(org_id: str) -> None:
+    """AN3 — deriva le coordinate del profilo dalla city quando
+    l'operatore non le ha fornite. Best-effort: timeout/errori
+    assorbiti, il salvataggio del profilo non fallisce mai per il
+    geocoding."""
+    from database import organizations_collection
+    try:
+        org = await organizations_collection.find_one(
+            {"id": org_id},
+            {"_id": 0, "public_profile.city": 1, "public_profile.region": 1,
+             "public_profile.latitude": 1})
+        pp = (org or {}).get("public_profile") or {}
+        if not pp.get("city") or pp.get("latitude") is not None:
+            return
+        from services.geocoding import geocode, to_geojson
+        coords = await geocode(pp.get("region"), city=pp["city"],
+                               country="Italia")
+        if coords:
+            await organizations_collection.update_one(
+                {"id": org_id},
+                {"$set": {"public_profile.latitude": coords["lat"],
+                          "public_profile.longitude": coords["lng"],
+                          "public_profile.geo": to_geojson(
+                              coords["lat"], coords["lng"])}})
+    except Exception:  # noqa: BLE001 — best-effort dichiarato
+        pass
 
 
 async def _ensure_public_surface(org_id: str) -> None:

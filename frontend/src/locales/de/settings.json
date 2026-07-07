@@ -631,5 +631,9 @@
     "activeBadge": "Aktiv",
     "activateOnStripe": "Auf Stripe aktivieren",
     "connectedAccountLabel": "Verbundenes Konto"
+  },
+  "publicProfile": {
+    "locationSearch": "Ort (suchen und auswählen)",
+    "locationPinned": "Position auf der Karte verankert"
   }
 }

@@ -686,6 +686,8 @@
     "showContacts": "Mostra contatti sul profilo",
     "showContactsHint": "Decidi tu cosa esporre pubblicamente.",
     "save": "Salva profilo",
-    "preview": "Anteprima"
+    "preview": "Anteprima",
+    "locationSearch": "Località (cerca e seleziona)",
+    "locationPinned": "Posizione agganciata alla mappa"
   }
 }

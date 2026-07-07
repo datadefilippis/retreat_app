@@ -24,6 +24,51 @@ const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'f
   'tagline', 'portrait_url', 'founded_year'];
 const PROFILE_LANGS = ['it', 'en', 'de', 'fr', 'es', 'pt'];
 
+// AN3 — autocomplete località per il profilo: stesso backend della
+// barra "Dove?" della directory (/public/geo/search, Nominatim+cache).
+function LocationAutocomplete({ value, onSelect, onTextChange }) {
+  const [text, setText] = useState(value || '');
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+  useEffect(() => { setText(value || ''); }, [value]);
+  useEffect(() => {
+    if (!text || text.length < 2) { setResults([]); return undefined; }
+    const timer = setTimeout(() => {
+      api.get('/public/geo/search', { params: { q: text } })
+        .then(res => { setResults(res.data?.results || []); setOpen(true); })
+        .catch(() => setResults([]));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [text]);
+  return (
+    <div className="relative">
+      <Input
+        value={text}
+        onChange={e => { setText(e.target.value); onTextChange?.(e.target.value); }}
+        onFocus={() => results.length && setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Ostuni, Puglia…"
+        className="mt-1"
+      />
+      {open && results.length > 0 && (
+        <ul className="absolute z-20 mt-1 w-full rounded-md border border-border bg-white shadow-lg max-h-52 overflow-auto">
+          {results.map((r) => (
+            <li key={`${r.lat}-${r.lng}`}>
+              <button
+                type="button"
+                onMouseDown={() => { onSelect(r); setOpen(false); }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-muted/60"
+              >
+                📍 {r.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export default function PublicProfilePage() {
   const { t } = useTranslation('settings');
   const [form, setForm] = useState(null);
@@ -71,6 +116,11 @@ export default function PublicProfilePage() {
     try {
       const payload = {};
       FIELDS.forEach(k => { payload[k] = form[k] || null; });
+      // AN3 — coordinate dall'autocomplete (numeri, non stringhe)
+      if (form.latitude != null && form.longitude != null) {
+        payload.latitude = form.latitude;
+        payload.longitude = form.longitude;
+      }
       payload.show_contacts = Boolean(form.show_contacts);
       payload.photos = form.photos || [];
       payload.languages = form.languages || [];
@@ -318,11 +368,30 @@ export default function PublicProfilePage() {
               />
               <p className="text-right text-[11px] text-muted-foreground">{(form.bio || '').length}/600</p>
             </div>
+            {/* AN3 — località con autocomplete (Nominatim via /geo/search):
+                compila città E coordinate → l'operatore compare sulla
+                mappa e nel raggio "vicino a me" della directory */}
+            <div>
+              <Label>{t('publicProfile.locationSearch', { defaultValue: 'Località (cerca e seleziona)' })}</Label>
+              <LocationAutocomplete
+                value={form.city || ''}
+                onSelect={(place) => {
+                  setForm(f => ({
+                    ...f,
+                    city: (place.label || '').split(',')[0].trim(),
+                    latitude: place.lat,
+                    longitude: place.lng,
+                  }));
+                }}
+                onTextChange={(txt) => set('city', txt)}
+              />
+              {form.latitude != null && (
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  📍 {t('publicProfile.locationPinned', { defaultValue: 'Posizione agganciata alla mappa' })} ({Number(form.latitude).toFixed(3)}, {Number(form.longitude).toFixed(3)})
+                </p>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>{t('publicProfile.city', { defaultValue: 'Città' })}</Label>
-                <Input className={inputCls} value={form.city || ''} onChange={e => set('city', e.target.value)} />
-              </div>
               <div>
                 <Label>{t('publicProfile.region', { defaultValue: 'Regione' })}</Label>
                 <Input className={inputCls} value={form.region || ''} onChange={e => set('region', e.target.value)} />

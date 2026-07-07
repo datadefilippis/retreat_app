@@ -623,5 +623,10 @@
     "faq4q": "Was kostet es für Veranstalter?",
     "faq4a": "Der Einstieg ist gratis: Profil, Visitenkarte und Back-Office ohne Abo. Wir behalten eine kleine Provision nur auf Buchungen aus dem öffentlichen Kalender — ist der Kunde deiner, zahlst du nichts.",
     "cta": "Finde dein Retreat"
+  },
+  "operators": {
+    "mapToggle": "Karte",
+    "mapEmpty": "Keine Veranstalter mit Position auf der Karte für diese Filter.",
+    "mapSee": "Profil ansehen →"
   }
 }

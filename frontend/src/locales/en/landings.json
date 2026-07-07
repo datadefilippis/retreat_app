@@ -623,5 +623,10 @@
     "faq4q": "How much does it cost for organizers?",
     "faq4a": "Joining is free: profile, showcase and back office with no subscription. We keep a small commission only on bookings brought by the public calendar — if the client is yours, you pay nothing.",
     "cta": "Find your retreat"
+  },
+  "operators": {
+    "mapToggle": "Map",
+    "mapEmpty": "No organizers with a location on the map for these filters.",
+    "mapSee": "View profile →"
   }
 }
