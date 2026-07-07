@@ -556,7 +556,8 @@
     "navDestinations": "Reiseziele",
     "navMenu": "Menü",
     "navClose": "Menü schließen",
-    "passportLink": "Dein Aurya Passport"
+    "passportLink": "Dein Aurya Passport",
+    "navBlog": "Blog"
   },
   "reviews": {
     "heading": "Bewertungen",
@@ -640,5 +641,17 @@
     "mapToggle": "Karte",
     "mapEmpty": "Keine Veranstalter mit Position auf der Karte für diese Filter.",
     "mapSee": "Profil ansehen →"
+  },
+  "blog": {
+    "seoTitle": "Blog | Aurya",
+    "seoDesc": "Geschichten, Praktiken und holistisches Wissen von denen, die Retreats organisieren und leben.",
+    "title": "Der Aurya Blog",
+    "subtitle": "Geschichten, Praktiken und holistisches Wissen von denen, die Retreats organisieren und leben.",
+    "allArticles": "Alle",
+    "readMore": "Lesen",
+    "empty": "Noch keine Artikel in dieser Sprache. Die Geschichten sind unterwegs.",
+    "notFound": "Artikel nicht gefunden",
+    "backToBlog": "Zurück zum Blog",
+    "italianOnly": "Dieser Artikel ist vorerst nur auf Italienisch verfügbar."
   }
 }

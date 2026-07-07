@@ -556,7 +556,8 @@
     "navDestinations": "Destinations",
     "navMenu": "Menu",
     "navClose": "Close menu",
-    "passportLink": "Your Aurya Passport"
+    "passportLink": "Your Aurya Passport",
+    "navBlog": "Blog"
   },
   "reviews": {
     "heading": "Reviews",
@@ -640,5 +641,17 @@
     "mapToggle": "Map",
     "mapEmpty": "No organizers with a location on the map for these filters.",
     "mapSee": "View profile →"
+  },
+  "blog": {
+    "seoTitle": "Blog | Aurya",
+    "seoDesc": "Stories, practices and holistic wisdom from those who organize and live retreats.",
+    "title": "The Aurya blog",
+    "subtitle": "Stories, practices and holistic wisdom from those who organize and live retreats.",
+    "allArticles": "All",
+    "readMore": "Read",
+    "empty": "No articles in this language yet. The stories are on their way.",
+    "notFound": "Article not found",
+    "backToBlog": "Back to the blog",
+    "italianOnly": "This article is available in Italian only, for now."
   }
 }

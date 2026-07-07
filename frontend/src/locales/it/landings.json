@@ -556,7 +556,8 @@
     "navDestinations": "Destinazioni",
     "navMenu": "Menu",
     "navClose": "Chiudi menu",
-    "passportLink": "Il tuo Passaporto Aurya"
+    "passportLink": "Il tuo Passaporto Aurya",
+    "navBlog": "Blog"
   },
   "reviews": {
     "heading": "Recensioni",
@@ -640,5 +641,17 @@
     "mapToggle": "Mappa",
     "mapEmpty": "Nessun organizzatore con posizione sulla mappa per questi filtri.",
     "mapSee": "Vedi il profilo →"
+  },
+  "blog": {
+    "seoTitle": "Blog | Aurya",
+    "seoDesc": "Storie, pratiche e sapere olistico da chi organizza e vive i ritiri.",
+    "title": "Il blog di Aurya",
+    "subtitle": "Storie, pratiche e sapere olistico da chi i ritiri li organizza e li vive.",
+    "allArticles": "Tutti",
+    "readMore": "Leggi",
+    "empty": "Nessun articolo in questa lingua, per ora. Le storie stanno arrivando.",
+    "notFound": "Articolo non trovato",
+    "backToBlog": "Torna al blog",
+    "italianOnly": "Questo articolo è disponibile solo in italiano, per ora."
   }
 }
