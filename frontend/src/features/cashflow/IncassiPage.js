@@ -14,12 +14,13 @@
  */
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Wallet, TrendingUp, AlertTriangle, Receipt, CheckCircle2 } from 'lucide-react';
+import { Wallet, TrendingUp, AlertTriangle, Receipt, CheckCircle2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../api/client';
 import { AppLayout, Header } from '../../components/Layout';
 import { StatCard, TrendArea, DonutSplit } from '../../components/charts';
 import ContactActions from '../../components/ContactActions';
+import { UpgradeDialog } from '../../components/UpgradeDialog';
 import { formatCurrency } from '../../lib/utils';
 import { useCurrency } from '../../context/AuthContext';
 
@@ -118,6 +119,7 @@ export default function IncassiPage() {
   const currency = useCurrency();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const load = useCallback(async (fresh = false) => {
     setLoading(true);
@@ -161,6 +163,8 @@ export default function IncassiPage() {
   }));
   const typesTotal = types.reduce((s2, x) => s2 + (x.value > 0 ? x.value : 0), 0);
   const mainType = types.filter((x) => x.value > 0).sort((a, b) => b.value - a.value)[0];
+  // GT2 — il banner appare solo quando il Pro conviene DAVVERO (calcolo server)
+  const feeSaver = data?.fee_saver;
 
   return (
     <AppLayout>
@@ -185,6 +189,38 @@ export default function IncassiPage() {
                     label={t('cashflow.avgTicket', { defaultValue: 'Ticket medio' })}
                     value={s.ticket_medio != null ? fmt(s.ticket_medio) : '—'} />
         </div>
+
+        {/* GT2 — calcolatore fee → Pro: numeri veri, mai sotto soglia */}
+        {feeSaver?.show && (
+          <section className="rounded-2xl border border-[#376254]/30 bg-[#376254]/5 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-start gap-3 flex-1">
+              <Sparkles className="h-5 w-5 text-[#376254] mt-0.5 shrink-0" aria-hidden />
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {t('cashflow.feeSaverTitle', {
+                    defaultValue: 'Questo mese hai incassato {{volume}} online',
+                    volume: fmt(feeSaver.online_volume),
+                  })}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t('cashflow.feeSaverBody', {
+                    defaultValue: 'Col piano Pro (commissione {{proFee}}% invece di {{fee}}%) avresti risparmiato {{saving}} questo mese, canone incluso.',
+                    proFee: feeSaver.pro_fee_percent,
+                    fee: feeSaver.current_fee_percent,
+                    saving: fmt(feeSaver.monthly_saving),
+                  })}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setUpgradeOpen(true)}
+              className="shrink-0 inline-flex h-9 items-center justify-center rounded-lg bg-[#376254] px-4 text-sm font-medium text-white hover:bg-[#2c4f43]"
+            >
+              {t('cashflow.feeSaverCta', { defaultValue: 'Scopri il piano Pro' })}
+            </button>
+          </section>
+        )}
 
         {/* 2 — che direzione ha preso */}
         <section className="rounded-2xl border border-border bg-card p-5">
@@ -263,6 +299,7 @@ export default function IncassiPage() {
           </section>
         </div>
       </div>
+      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </AppLayout>
   );
 }

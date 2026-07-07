@@ -265,3 +265,44 @@ class TestCalendarListingGt1b:
             for key in ("calendar_blocked_title", "calendar_blocked_body",
                         "calendar_blocked_cta"):
                 assert home.get(key), f"{lang}: home.{key} mancante"
+
+
+class TestFeeSaverGt2:
+    """GT2 — il Pro si vende da solo quando conviene DAVVERO: banner
+    in /incassi col transato Stripe del mese e il risparmio calcolato
+    lato server. Mai sotto soglia, mai fuori dal piano Gratis."""
+
+    CF_SRC = (BACKEND_DIR / "routers" / "cashflow.py").read_text()
+
+    def test_fee_saver_in_cashflow_payload(self):
+        assert '"fee_saver"' in self.CF_SRC
+
+    def test_only_free_plan_and_real_numbers(self):
+        """Solo sul Gratis, coi numeri del piano Pro presi dal SEED
+        (non hardcoded doppi) e visibile solo a risparmio positivo."""
+        assert '"retreat_free"' in self.CF_SRC
+        assert "RETREAT_COMMERCIAL_PLANS" in self.CF_SRC
+        assert "saving > 0" in self.CF_SRC
+
+    def test_online_volume_excludes_manual_income(self):
+        """Il transato conta SOLO Stripe: righe ledger 'paid' (il
+        mark-paid manuale scrive 'paid_manual') e ordini col
+        payment_intent 'collected' (lo stampa solo il checkout)."""
+        assert 'status == "paid"' in self.CF_SRC
+        assert '"collected"' in self.CF_SRC
+
+    def test_banner_wired_in_incassi_page(self):
+        page = (BACKEND_DIR.parent / "frontend" / "src" / "features"
+                / "cashflow" / "IncassiPage.js").read_text()
+        assert "fee_saver" in page
+        assert "feeSaver?.show" in page or "feeSaver.show" in page
+        assert "UpgradeDialog" in page
+
+    def test_fee_saver_copy_in_four_languages(self):
+        import json
+        locales_dir = BACKEND_DIR.parent / "frontend" / "src" / "locales"
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads((locales_dir / lang / "common.json").read_text())
+            cf = data.get("cashflow") or {}
+            for key in ("feeSaverTitle", "feeSaverBody", "feeSaverCta"):
+                assert cf.get(key), f"{lang}: cashflow.{key} mancante"
