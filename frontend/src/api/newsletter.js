@@ -7,6 +7,7 @@ import api from './client';
  * backend/routers/newsletter_forms.py.
  */
 export const newsletterAPI = {
+  stats: () => api.get('/newsletter-forms/stats'),
   list: (storeId) =>
     api.get('/newsletter-forms', { params: storeId ? { store_id: storeId } : {} }),
   get: (formId) => api.get(`/newsletter-forms/${formId}`),

@@ -81,6 +81,68 @@ async def list_newsletter_forms(
     return await cursor.to_list(200)
 
 
+@router.get("/stats")
+async def newsletter_stats(
+    current_user: dict = Depends(require_verified_admin),
+):
+    """CF7 — i numeri della newsletter (era l'unico modulo senza).
+
+    Org-wide, dal registro eventi newsletter_subscriptions:
+      total        iscritti distinti (per email — un'email iscritta a
+                   2 form conta 1: è UNA persona raggiungibile)
+      new_30d      nuove email distinte negli ultimi 30 giorni
+      months       12 bucket mensili di iscrizioni (eventi)
+      by_source    top 6 provenienze (source_label o origin)
+
+    NB: dichiarata PRIMA di /{form_id} — l'ordine di route conta.
+    """
+    from datetime import timedelta
+    from collections import defaultdict
+    from models.common import utc_now
+    from database import newsletter_subscriptions_collection
+
+    org_id = current_user["organization_id"]
+    now = utc_now()
+    cutoff_iso = (now - timedelta(days=30)).isoformat()
+
+    emails, recent = set(), set()
+    by_month = defaultdict(int)
+    by_source = defaultdict(int)
+    async for s in newsletter_subscriptions_collection.find(
+            {"organization_id": org_id},
+            {"_id": 0, "email": 1, "created_at": 1,
+             "source_label": 1, "source_origin": 1}).limit(50000):
+        email = (s.get("email") or "").strip().lower()
+        if email:
+            emails.add(email)
+        created = s.get("created_at")
+        created_iso = created.isoformat() if hasattr(created, "isoformat") else str(created or "")
+        if created_iso:
+            by_month[created_iso[:7]] += 1
+            if created_iso >= cutoff_iso and email:
+                recent.add(email)
+        src = s.get("source_label") or s.get("source_origin") or "—"
+        by_source[src] += 1
+
+    # 12 bucket consecutivi che finiscono nel mese corrente
+    y, m = now.year, now.month
+    months = []
+    for off in range(-11, 1):
+        mm = m + off
+        yy = y + (mm - 1) // 12
+        mm = (mm - 1) % 12 + 1
+        key = f"{yy:04d}-{mm:02d}"
+        months.append({"month": key, "count": by_month.get(key, 0)})
+
+    top_sources = sorted(by_source.items(), key=lambda kv: -kv[1])[:6]
+    return {
+        "total": len(emails),
+        "new_30d": len(recent),
+        "months": months,
+        "by_source": [{"source": k, "count": v} for k, v in top_sources],
+    }
+
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 @limiter.limit("20/minute")
 async def create_newsletter_form(

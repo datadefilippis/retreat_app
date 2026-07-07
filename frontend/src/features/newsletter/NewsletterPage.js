@@ -17,6 +17,8 @@ import {
 import FieldEditorList from '../events/components/FieldEditorList';
 import { pruneFieldConfigs } from '../events/components/fieldConfigUtils';
 import { newsletterAPI, buildNewsletterSnippet } from '../../api/newsletter';
+import { StatCard, TrendArea } from '../../components/charts';
+import { Users as UsersIcon, UserPlus as UserPlusIcon } from 'lucide-react';
 import { storesAPI, storeLegalAPI } from '../../api/stores';
 import MerchantLegalDialog from '../stores/components/MerchantLegalDialog';
 import NewsletterFormPreview from './components/NewsletterFormPreview';
@@ -44,6 +46,50 @@ const EMPTY_FORM = {
   privacy_store_id: '',
   privacy_custom_url: '',
 };
+
+// CF7 — mini-stats: iscritti distinti, nuovi 30gg, trend iscrizioni
+function NewsletterStats() {
+  const { t, i18n } = useTranslation('newsletter');
+  const [stats, setStats] = React.useState(null);
+  useEffect(() => {
+    let alive = true;
+    newsletterAPI.stats().then((res) => { if (alive) setStats(res.data); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  if (!stats) return null;
+  const monthLabel = (ym) => {
+    try { const [y, m] = ym.split('-').map(Number);
+      return new Date(y, m - 1, 1).toLocaleDateString(i18n.language, { month: 'short' });
+    } catch { return ym; }
+  };
+  const trend = (stats.months || []).map((m) => ({ label: monthLabel(m.month), value: m.count }));
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <StatCard icon={UsersIcon}
+                  label={t('stats.total', { defaultValue: 'Iscritti' })}
+                  value={stats.total?.toLocaleString()} />
+        <StatCard icon={UserPlusIcon}
+                  label={t('stats.new30', { defaultValue: 'Nuovi (30 giorni)' })}
+                  value={stats.new_30d?.toLocaleString()} />
+      </div>
+      {trend.some((x) => x.value > 0) && (
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs font-semibold text-muted-foreground mb-2">
+            {t('stats.trend', { defaultValue: 'Iscrizioni negli ultimi 12 mesi' })}
+          </p>
+          <TrendArea data={trend} height={140} />
+          {(stats.by_source || []).length > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {t('stats.sources', { defaultValue: 'Da dove arrivano:' })}{' '}
+              {stats.by_source.map((s) => `${s.source} (${s.count})`).join(' · ')}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function NewsletterPage() {
   const { t } = useTranslation('newsletter');
@@ -215,6 +261,7 @@ export default function NewsletterPage() {
       />
 
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-4">
+        <NewsletterStats />
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : forms.length === 0 ? (

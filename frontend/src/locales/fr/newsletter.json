@@ -102,5 +102,11 @@
     "copy_failed": "Échec de la copie",
     "error": "Erreur"
   },
-  "confirm_delete": "Supprimer le formulaire « {{name}} » ? Les inscriptions restent dans le CRM."
+  "confirm_delete": "Supprimer le formulaire « {{name}} » ? Les inscriptions restent dans le CRM.",
+  "stats": {
+    "total": "Abonnés",
+    "new30": "Nouveaux (30 jours)",
+    "trend": "Inscriptions sur les 12 derniers mois",
+    "sources": "D’où ils viennent :"
+  }
 }
