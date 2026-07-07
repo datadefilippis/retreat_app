@@ -173,6 +173,12 @@
     "colDue": "Échéance",
     "colAmount": "Montant",
     "colAction": "Relancer",
-    "byProductTitle": "Ventes par expérience (12 mois)"
+    "byProductTitle": "Ventes par expérience (12 mois)",
+    "markPaid": "Enregistrer le paiement (espèces/virement)",
+    "markPaidShort": "Encaissé",
+    "markPaidOk": "Paiement enregistré",
+    "markPaidError": "Impossible d’enregistrer le paiement",
+    "sourceOrder": "Commande",
+    "sourceManual": "Manuel"
   }
 }
