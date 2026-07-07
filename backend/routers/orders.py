@@ -421,15 +421,26 @@ async def payments_overview(current_user: dict = Depends(get_verified_user)):
     mastro (payment_schedules): incassato / in arrivo / in ritardo /
     a rischio. Riusa aggregate_schedules (pura, testata); una query,
     proiezione minima, nessuna pipeline."""
-    from database import db
+    from database import db, orders_collection as _orders
     from services.payment_schedule_service import aggregate_schedules
 
     org_id = current_user["organization_id"]
     schedules = await db.payment_schedules.find(
         {"organization_id": org_id},
-        {"_id": 0, "payment_state": 1, "rows.status": 1,
+        {"_id": 0, "order_id": 1, "payment_state": 1, "rows.status": 1,
          "rows.amount_minor": 1, "rows.due_at": 1},
     ).to_list(2000)
+    # RF1 — come /analytics/cashflow: contano solo le schedule di ordini
+    # confermati/completati (i draft sono carrelli, non denaro atteso).
+    sched_ids = [s.get("order_id") for s in schedules if s.get("order_id")]
+    confirmed_ids: set = set()
+    if sched_ids:
+        async for o in _orders.find(
+                {"id": {"$in": sched_ids}, "organization_id": org_id,
+                 "status": {"$in": ["confirmed", "completed"]}},
+                {"_id": 0, "id": 1}):
+            confirmed_ids.add(o["id"])
+    schedules = [s for s in schedules if s.get("order_id") in confirmed_ids]
     agg = aggregate_schedules(schedules)
     # Conteggi "da fare" per la card azioni della home operatore.
     # review_state NON e' persistito: e' derivato al volo (come nella

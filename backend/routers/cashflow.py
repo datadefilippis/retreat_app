@@ -96,7 +96,22 @@ async def _build(org_id: str) -> Dict[str, Any]:
     overdue_rows, upcoming_rows = [], []
 
     # ── Gamba A: libro mastro ritiri ─────────────────────────────────
+    # RF1 — solo ordini CONFERMATI/COMPLETATI: la schedule nasce alla
+    # creazione dell'ordine (draft), quindi senza questo filtro i
+    # carrelli abbandonati e gli annullati finirebbero in "in arrivo/
+    # in ritardo" (verificato in simulazione: 8.800€ fantasma).
+    # scheduled_order_ids resta su TUTTE le schedule: un ordine draft
+    # col ledger non deve comunque entrare dalla gamba B.
     scheduled_order_ids = {doc.get("order_id") for doc in schedules if doc.get("order_id")}
+    confirmed_ids: set = set()
+    if scheduled_order_ids:
+        async for o in orders_collection.find(
+                {"id": {"$in": list(scheduled_order_ids)},
+                 "organization_id": org_id,
+                 "status": {"$in": ["confirmed", "completed"]}},
+                {"_id": 0, "id": 1}):
+            confirmed_ids.add(o["id"])
+    schedules = [d for d in schedules if d.get("order_id") in confirmed_ids]
     for doc in schedules:
         for row in doc.get("rows") or []:
             amount = row.get("amount_minor", 0)

@@ -107,6 +107,24 @@ class TestUnionCg1:
         src = inspect.getsource(cashflow._build)
         assert '"dataset_id": "manual"' in src
 
+    def test_ledger_leg_filters_draft_and_cancelled_orders(self):
+        """RF1 — i carrelli abbandonati non sono tesoreria: la gamba A
+        deve filtrare le schedule sugli ordini confirmed/completed
+        (la schedule nasce al draft)."""
+        import inspect
+        from routers import cashflow
+        src = inspect.getsource(cashflow._build)
+        assert "confirmed_ids" in src
+        # il filtro applicato alle schedule PRIMA del loop di conteggio
+        assert 'in confirmed_ids]' in src
+
+    def test_payments_overview_same_filter(self):
+        """RF1 — anche la card home filtra i draft."""
+        import inspect
+        from routers import orders as orders_router
+        src = inspect.getsource(orders_router.payments_overview)
+        assert "confirmed_ids" in src
+
     def test_rows_carry_source_discriminator(self):
         """Ogni riga azionabile dichiara la fonte (ledger/order/manual)
         — il frontend decide l'azione (sollecito vs registra pagamento)."""
