@@ -43,6 +43,7 @@ export default function HowItWorksPage() {
       <div className="bg-background">
         <header className="bg-gradient-sidebar text-white">
           <div className="max-w-3xl mx-auto px-4 py-14 text-center">
+            <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#d6c49a] mb-3 select-none">Connect · Heal · Grow</p>
             <h1 className="font-display text-3xl md:text-4xl font-bold">{t('howPage.title')}</h1>
             <p className="text-white/85 mt-4 text-lg leading-relaxed">{t('howPage.intro')}</p>
           </div>

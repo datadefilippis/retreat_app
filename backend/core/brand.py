@@ -19,9 +19,11 @@ BRAND_SUPPORT_EMAIL = os.environ.get("BRAND_SUPPORT_EMAIL", f"info@{BRAND_DOMAIN
 # Tagline nelle 4 lingue (footer email + copy istituzionale).
 # AN1 — allineate a docs/BRAND_AURYA.md: oneste ("in Italia") e con la
 # promessa (caparra protetta), non generiche.
+# RB4 — nessuna geografia imposta (si parte da Italia e Svizzera, ma
+# le esperienze che trasformano non hanno confini) e zero trattini.
 BRAND_TAGLINE = {
-    "it": "Trova e prenota ritiri olistici in Italia — con caparra protetta, senza pensieri.",
-    "en": "Find and book holistic retreats in Italy — with a protected deposit, worry-free.",
-    "de": "Finde und buche holistische Retreats in Italien — mit geschützter Anzahlung, sorgenfrei.",
-    "fr": "Trouvez et réservez des retraites holistiques en Italie — avec un acompte protégé, l'esprit tranquille.",
+    "it": "Trova e prenota ritiri olistici ed esperienze che ti fanno crescere. Con caparra protetta, senza pensieri.",
+    "en": "Find and book holistic retreats and experiences that help you grow. With a protected deposit, worry free.",
+    "de": "Finde und buche holistische Retreats und Erlebnisse, die dich wachsen lassen. Mit geschützter Anzahlung, sorgenfrei.",
+    "fr": "Trouvez et réservez des retraites holistiques et des expériences qui vous font grandir. Avec un acompte protégé, l'esprit tranquille.",
 }
