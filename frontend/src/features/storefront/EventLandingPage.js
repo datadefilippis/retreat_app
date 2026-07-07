@@ -196,6 +196,62 @@ function RelatedRetreats({ category, excludePath, t }) {
 }
 
 
+// AN7 — le voci di chi ha gia' partecipato, dentro la landing: il
+// momento della scelta e' dove la fiducia pesa di piu'. Prime 3
+// recensioni pubbliche dell'organizzatore, con badge verificato.
+function ReviewsSnippet({ orgSlug, rating, t }) {
+  const [reviews, setReviews] = React.useState([]);
+  React.useEffect(() => {
+    let mounted = true;
+    import('../../api/client').then(({ default: api }) =>
+      api.get(`/public/reviews/${orgSlug}`, { params: { page_size: 3 } })
+    ).then(res => {
+      if (mounted) setReviews(res.data?.items || []);
+    }).catch(() => { /* best-effort */ });
+    return () => { mounted = false; };
+  }, [orgSlug]);
+
+  if (!reviews.length) return null;
+  return (
+    <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-6" data-testid="landing-reviews">
+      <div className="flex items-baseline justify-between gap-3 mb-3">
+        <h2 className="font-heading text-lg font-bold text-gray-900">
+          {t('landings:event.reviewsHeading', { defaultValue: 'Cosa dicono i partecipanti' })}
+        </h2>
+        {rating?.count > 0 && (
+          <span className="text-sm text-gray-600 shrink-0">
+            <span className="text-amber-500" aria-hidden>★</span>{' '}
+            <span className="font-semibold text-gray-900">{rating.avg}</span> ({rating.count})
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {reviews.map(r => (
+          <figure key={r.id} className="rounded-2xl border border-gray-200 bg-white p-4 flex flex-col">
+            <p className="text-amber-500 text-sm mb-1.5" aria-label={`${r.rating}/5`}>
+              {'★'.repeat(r.rating)}<span className="text-gray-200">{'★'.repeat(5 - r.rating)}</span>
+            </p>
+            {r.comment && (
+              <blockquote className="text-sm text-gray-700 leading-relaxed line-clamp-4 flex-1">
+                {r.comment}
+              </blockquote>
+            )}
+            <figcaption className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+              <span className="font-medium text-gray-700">{r.author_name}</span>
+              {r.verified && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5 font-medium">
+                  ✓ {t('landings:event.verifiedBadge', { defaultValue: 'Cliente verificato' })}
+                </span>
+              )}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+
 function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, plainQty, currency }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('landings');
@@ -547,7 +603,7 @@ export default function EventLandingPage() {
     );
   }
 
-  const { product, occurrence, is_buyable: isBuyable, store_info: storeInfo, org_name: orgName, currency } = data;
+  const { product, occurrence, is_buyable: isBuyable, store_info: storeInfo, org_name: orgName, org_rating: orgRating, currency } = data;
   const effectiveCurrency = product.currency || 'EUR';
   const heroImage = occurrence.cover_image_url || product.image_url;
   // M2 — le foto vendono i ritiri: cover + galleria in un'unica griglia
@@ -646,6 +702,16 @@ export default function EventLandingPage() {
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
               {product.name}
             </h1>
+            {/* AN7 — la fiducia si vede prima di prenotare */}
+            {orgRating?.count > 0 && (
+              <p className="mt-2 text-sm sm:text-base" data-testid="landing-org-rating">
+                <span className="text-amber-300" aria-hidden>★</span>{' '}
+                <span className="font-semibold">{orgRating.avg}</span>{' '}
+                <span className="opacity-80">
+                  · {t('landings:event.verifiedReviews', { count: orgRating.count, defaultValue: '{{count}} recensioni verificate' })}
+                </span>
+              </p>
+            )}
             {dt && (
               <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm sm:text-base">
                 <span className="flex items-center gap-2">
@@ -995,7 +1061,7 @@ export default function EventLandingPage() {
               <ul className="rounded-xl border border-gray-200 bg-white p-4 space-y-2 text-xs text-gray-600">
                 <li className="flex items-start gap-2">
                   <span aria-hidden>🛡️</span>
-                  <span>{t('landings:event.trustSecure', { defaultValue: 'Pagamento sicuro con carta — i tuoi dati non passano mai dall\'organizzatore.' })}</span>
+                  <span>{t('landings:event.trustSecure', { defaultValue: 'Pagamento sicuro con carta. I tuoi dati non passano mai dall\'organizzatore.' })}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span aria-hidden>🌱</span>
@@ -1006,6 +1072,40 @@ export default function EventLandingPage() {
                   <span>{t('landings:event.trustTicket', { defaultValue: 'Biglietto e promemoria via email, subito dopo la prenotazione.' })}</span>
                 </li>
               </ul>
+
+              {/* AN7 — le domande che frenano una prenotazione, risolte qui */}
+              <div className="rounded-xl border border-gray-200 bg-white p-4" data-testid="booking-faq">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+                  {t('landings:event.faqHeading', { defaultValue: 'Domande frequenti' })}
+                </p>
+                <details className="group border-b border-gray-100 pb-2 mb-2">
+                  <summary className="cursor-pointer text-sm font-medium text-gray-800 list-none flex justify-between items-center">
+                    {t('landings:event.faqDepositQ', { defaultValue: 'Come funziona la caparra?' })}
+                    <span className="text-gray-400 group-open:rotate-180 transition-transform" aria-hidden>⌄</span>
+                  </summary>
+                  <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">
+                    {t('landings:event.faqDepositA', { defaultValue: 'Dove prevista, la caparra blocca il tuo posto: paghi ora solo una parte e saldi il resto secondo gli accordi con chi organizza. Il pagamento passa da Stripe, mai di mano in mano.' })}
+                  </p>
+                </details>
+                <details className="group border-b border-gray-100 pb-2 mb-2">
+                  <summary className="cursor-pointer text-sm font-medium text-gray-800 list-none flex justify-between items-center">
+                    {t('landings:event.faqAfterQ', { defaultValue: 'Cosa succede dopo la prenotazione?' })}
+                    <span className="text-gray-400 group-open:rotate-180 transition-transform" aria-hidden>⌄</span>
+                  </summary>
+                  <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">
+                    {t('landings:event.faqAfterA', { defaultValue: 'Ricevi subito il biglietto via email, con i dettagli del ritiro e i contatti di chi lo organizza. Tutte le tue esperienze restano raccolte nel tuo Passaporto Aurya.' })}
+                  </p>
+                </details>
+                <details className="group">
+                  <summary className="cursor-pointer text-sm font-medium text-gray-800 list-none flex justify-between items-center">
+                    {t('landings:event.faqWhoQ', { defaultValue: 'Con chi posso parlare prima di prenotare?' })}
+                    <span className="text-gray-400 group-open:rotate-180 transition-transform" aria-hidden>⌄</span>
+                  </summary>
+                  <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">
+                    {t('landings:event.faqWhoA', { defaultValue: 'Ogni ritiro ha un volto: trovi la presentazione e il profilo di chi organizza qui sotto, con la sua storia e le recensioni di chi ha già partecipato.' })}
+                  </p>
+                </details>
+              </div>
             </>
           )}
         </aside>
@@ -1047,6 +1147,11 @@ export default function EventLandingPage() {
             </span>
           </Link>
         </section>
+      )}
+
+      {/* AN7 — recensioni verificate dove si decide */}
+      {orgRating?.count > 0 && (
+        <ReviewsSnippet orgSlug={orgSlug} rating={orgRating} t={t} />
       )}
 
       {/* S5 — correlati per categoria (solo marketplace) */}

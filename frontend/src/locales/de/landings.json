@@ -337,7 +337,18 @@
     "otherCartTitle": "Du hast einen weiteren offenen Warenkorb",
     "otherCartBody": "Du kaufst bei einem Veranstalter nach dem anderen: jede Buchung geht direkt an ihren Veranstalter. Dein anderer Warenkorb bleibt gespeichert. du kannst ihn später abschließen.",
     "otherCartContinue": "Mit diesem Retreat fortfahren",
-    "otherCartFinish": "Erst den anderen Warenkorb abschließen"
+    "otherCartFinish": "Erst den anderen Warenkorb abschließen",
+    "reviewsHeading": "Was Teilnehmende sagen",
+    "verifiedBadge": "Verifizierter Gast",
+    "faqHeading": "Häufige Fragen",
+    "faqDepositQ": "Wie funktioniert die Anzahlung?",
+    "faqDepositA": "Wo vorgesehen, sichert die Anzahlung deinen Platz: du zahlst jetzt nur einen Teil und begleichst den Rest wie mit den Veranstaltenden vereinbart. Die Zahlung läuft über Stripe, nie von Hand zu Hand.",
+    "faqAfterQ": "Was passiert nach der Buchung?",
+    "faqAfterA": "Du erhältst dein Ticket sofort per E-Mail, mit allen Details zum Retreat und den Kontakten der Veranstaltenden. Alle deine Erfahrungen bleiben in deinem Aurya Passport gesammelt.",
+    "faqWhoQ": "Mit wem kann ich vor der Buchung sprechen?",
+    "faqWhoA": "Jedes Retreat hat ein Gesicht: unten findest du das Profil der Veranstaltenden, mit ihrer Geschichte und den Bewertungen von Menschen, die schon dabei waren.",
+    "verifiedReviews_one": "1 verifizierte Bewertung",
+    "verifiedReviews_other": "{{count}} verifizierte Bewertungen"
   },
   "product": {
     "loading": "Laden…",
@@ -544,7 +555,8 @@
     "navOperators": "Veranstalter",
     "navDestinations": "Reiseziele",
     "navMenu": "Menü",
-    "navClose": "Menü schließen"
+    "navClose": "Menü schließen",
+    "passportLink": "Dein Aurya Passport"
   },
   "reviews": {
     "heading": "Bewertungen",

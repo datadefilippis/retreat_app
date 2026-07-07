@@ -337,7 +337,18 @@
     "otherCartTitle": "Tu as un autre panier ouvert",
     "otherCartBody": "On achète auprès d'un organisateur à la fois : chaque réservation va directement à son organisateur. Ton autre panier reste enregistré. tu pourras le finaliser plus tard.",
     "otherCartContinue": "Continuer avec cette retraite",
-    "otherCartFinish": "Finaliser d'abord l'autre panier"
+    "otherCartFinish": "Finaliser d'abord l'autre panier",
+    "reviewsHeading": "Ce que disent les participants",
+    "verifiedBadge": "Client vérifié",
+    "faqHeading": "Questions fréquentes",
+    "faqDepositQ": "Comment fonctionne l'acompte ?",
+    "faqDepositA": "Là où il est prévu, l'acompte réserve ta place : tu paies seulement une partie maintenant et tu règles le reste selon les accords avec l'organisateur. Le paiement passe par Stripe, jamais de main en main.",
+    "faqAfterQ": "Que se passe-t-il après la réservation ?",
+    "faqAfterA": "Tu reçois ton billet par email tout de suite, avec les détails de la retraite et les contacts de l'organisateur. Toutes tes expériences restent réunies dans ton Passeport Aurya.",
+    "faqWhoQ": "À qui puis-je parler avant de réserver ?",
+    "faqWhoA": "Chaque retraite a un visage : tu trouves ci-dessous le profil de l'organisateur, avec son histoire et les avis de ceux qui ont déjà participé.",
+    "verifiedReviews_one": "1 avis vérifié",
+    "verifiedReviews_other": "{{count}} avis vérifiés"
   },
   "product": {
     "loading": "Chargement…",
@@ -544,7 +555,8 @@
     "navOperators": "Organisateurs",
     "navDestinations": "Destinations",
     "navMenu": "Menu",
-    "navClose": "Fermer le menu"
+    "navClose": "Fermer le menu",
+    "passportLink": "Ton Passeport Aurya"
   },
   "reviews": {
     "heading": "Avis",

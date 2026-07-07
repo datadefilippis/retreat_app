@@ -282,6 +282,9 @@ class PublicEventLanding(BaseModel):
     """
     org_slug: str
     org_name: str
+    # AN7 — le recensioni verificate DEVONO vedersi dove si decide:
+    # rating denormalizzato dell'organizzatore (None senza recensioni)
+    org_rating: Optional[Dict[str, Any]] = None
     # F5 — True quando i contenuti serviti vengono dalla traduzione
     # automatica (?lang=en/de/fr): il frontend mostra il badge trasparenza
     auto_translated: bool = False
@@ -1362,9 +1365,13 @@ async def get_public_event_landing(org_slug: str, slug: str,
 
     from services.currency_service import get_currency_for_org
 
+    _rs = org.get("reviews_stats") or {}
     return PublicEventLanding(
         org_slug=org_slug,
         org_name=org.get("name", ""),
+        # AN7 — il rating verificato nel momento della decisione
+        org_rating=({"avg": _rs.get("avg"), "count": _rs.get("count")}
+                    if _rs.get("count") else None),
         auto_translated=_auto_translated,
         store_info=si if has_info else None,
         product=PublicEventProduct(
@@ -3428,14 +3435,19 @@ async def list_public_retreats(
     orgs = await organizations_collection.find(
         {"id": {"$in": org_ids}, "is_active": {"$ne": False}},
         {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
-         "directory_featured": 1,
+         "directory_featured": 1, "reviews_stats": 1,
          "store_settings.is_storefront_published": 1,
          "store_settings.display_name": 1},
     ).to_list(1000)
     org_featured: Dict[str, bool] = {}
+    org_rating: Dict[str, Optional[dict]] = {}
     for o in orgs:
         org_name[o["id"]] = (o.get("store_settings") or {}).get("display_name") or o.get("name") or ""
         org_featured[o["id"]] = bool(o.get("directory_featured"))
+        # AN7 — stelle sulla card: solo avg+count, mai la distribuzione
+        rs = o.get("reviews_stats") or {}
+        org_rating[o["id"]] = ({"avg": rs.get("avg"), "count": rs.get("count")}
+                               if rs.get("count") else None)
         if o["id"] not in org_slug and o.get("public_slug") and \
                 (o.get("store_settings") or {}).get("is_storefront_published"):
             org_slug[o["id"]] = o["public_slug"]
@@ -3482,6 +3494,7 @@ async def list_public_retreats(
             "org_slug": slug_org,
             # MD3 — promessa Pro resa vera: badge + boost nel calendario
             "featured": org_featured.get(prod["organization_id"], False),
+            "org_rating": org_rating.get(prod["organization_id"]),
             "slug": occ["slug"],
             "url": f"/e/{slug_org}/{occ['slug']}",
             "start_at": occ.get("start_at"),
