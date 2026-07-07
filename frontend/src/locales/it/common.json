@@ -189,6 +189,9 @@
     "typeCourses": "Corsi",
     "typeRentals": "Noleggi",
     "typeManual": "Entrate manuali",
-    "typeOther": "Altro"
+    "typeOther": "Altro",
+    "feeSaverTitle": "Questo mese hai incassato {{volume}} online",
+    "feeSaverBody": "Col piano Pro (commissione {{proFee}}% invece di {{fee}}%) avresti risparmiato {{saving}} questo mese, canone incluso.",
+    "feeSaverCta": "Scopri il piano Pro"
   }
 }

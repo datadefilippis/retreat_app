@@ -189,6 +189,9 @@
     "typeCourses": "Kurse",
     "typeRentals": "Vermietung",
     "typeManual": "Manuelle Einträge",
-    "typeOther": "Sonstiges"
+    "typeOther": "Sonstiges",
+    "feeSaverTitle": "Diesen Monat hast du {{volume}} online eingenommen",
+    "feeSaverBody": "Mit dem Pro-Plan ({{proFee}} % Gebühr statt {{fee}} %) hättest du diesen Monat {{saving}} gespart, Abo inklusive.",
+    "feeSaverCta": "Pro-Plan entdecken"
   }
 }

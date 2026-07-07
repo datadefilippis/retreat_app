@@ -76,11 +76,14 @@ async def _build(org_id: str) -> Dict[str, Any]:
       dagli ordini (dataset_id='orders') NON si contano mai qui — il loro
       ordine è già in A o B.
     """
-    from database import db, orders_collection, customers_collection
+    from database import (db, orders_collection, customers_collection,
+                          organizations_collection)
 
     now = utc_now()
     now_iso = now.isoformat()
     today = now_iso[:10]
+    current_month = now_iso[:7]
+    stripe_month_minor = 0  # GT2 — transato online (Stripe) del mese
     horizon_30d = (now + timedelta(days=30)).isoformat()
     twelve_months_ago = (now - timedelta(days=365)).isoformat()
 
@@ -123,6 +126,10 @@ async def _build(org_id: str) -> Dict[str, Any]:
                 if paid_at >= twelve_months_ago:
                     summary["incassato_minor"] += amount
                 incassato_by_month[_month_key(paid_at)] += amount
+                # GT2 — 'paid' lo scrive solo il webhook Stripe; il
+                # mark-paid manuale scrive 'paid_manual'
+                if status == "paid" and _month_key(paid_at) == current_month:
+                    stripe_month_minor += amount
             elif status in _UNPAID:
                 due_at = row.get("due_at") or ""
                 atteso_by_month[_month_key(due_at)] += amount
@@ -150,6 +157,7 @@ async def _build(org_id: str) -> Dict[str, Any]:
              "status": {"$in": ["confirmed", "completed"]},
              "id": {"$nin": list(scheduled_order_ids)}},
             {"_id": 0, "id": 1, "total": 1, "payment_status": 1,
+             "payment_intent": 1,
              "order_date": 1, "due_date": 1, "order_number": 1,
              "customer_id": 1, "contact_phone": 1,
              "items.product_name": 1}).limit(_MAX_SCHEDULES):
@@ -161,6 +169,10 @@ async def _build(org_id: str) -> Dict[str, Any]:
             if order_day >= cutoff_day:
                 summary["incassato_minor"] += amount_minor
             incassato_by_month[order_day[:7]] += amount_minor
+            # GT2 — 'collected' lo stampa solo il checkout Stripe
+            if o.get("payment_intent") == "collected" \
+                    and order_day[:7] == current_month:
+                stripe_month_minor += amount_minor
         else:
             # non pagato: scadenza dichiarata, altrimenti la data ordine
             due_day = (o.get("due_date") or order_day or today)[:10]
@@ -349,6 +361,35 @@ async def _build(org_id: str) -> Dict[str, Any]:
     except Exception as exc:
         logger.warning("cashflow ticket aggregate failed: %s", exc)
 
+    # ── GT2: calcolatore fee → Pro ───────────────────────────────────
+    # Il Pro si vende da solo ESATTAMENTE quando conviene: se il
+    # transato Stripe del mese × (fee attuale − fee Pro) supera il
+    # canone, il banner lo dice con i numeri veri. Solo sul Gratis,
+    # mai sotto soglia (niente upsell a chi non ci guadagnerebbe).
+    fee_saver = None
+    org = await organizations_collection.find_one(
+        {"id": org_id},
+        {"_id": 0, "commercial_plan_slug": 1, "application_fee_percent": 1})
+    if org and org.get("commercial_plan_slug") == "retreat_free":
+        from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS
+        pro = next((p for p in RETREAT_COMMERCIAL_PLANS
+                    if p["slug"] == "retreat_pro"), None)
+        if pro:
+            current_fee = float(org.get("application_fee_percent") or 5.0)
+            pro_fee = float(pro.get("transaction_fee_percent") or 2.0)
+            pro_price = float(pro.get("price_monthly") or 29.0)
+            volume = stripe_month_minor / 100.0
+            saving = volume * (current_fee - pro_fee) / 100.0 - pro_price
+            fee_saver = {
+                "month": current_month,
+                "online_volume": round(volume, 2),
+                "current_fee_percent": current_fee,
+                "pro_fee_percent": pro_fee,
+                "pro_price_monthly": pro_price,
+                "monthly_saving": round(saving, 2),
+                "show": saving > 0,
+            }
+
     return {
         "summary": {
             "incassato": summary["incassato_minor"] / 100.0,
@@ -361,6 +402,7 @@ async def _build(org_id: str) -> Dict[str, Any]:
         "upcoming": _enrich(upcoming_rows),
         "by_product": by_product,
         "by_type": by_type,
+        "fee_saver": fee_saver,
         "generated_at": now_iso,
     }
 

@@ -189,6 +189,9 @@
     "typeCourses": "Cours",
     "typeRentals": "Locations",
     "typeManual": "Entrées manuelles",
-    "typeOther": "Autre"
+    "typeOther": "Autre",
+    "feeSaverTitle": "Ce mois-ci, vous avez encaissé {{volume}} en ligne",
+    "feeSaverBody": "Avec le plan Pro (commission de {{proFee}} % au lieu de {{fee}} %), vous auriez économisé {{saving}} ce mois-ci, abonnement inclus.",
+    "feeSaverCta": "Découvrir le plan Pro"
   }
 }
