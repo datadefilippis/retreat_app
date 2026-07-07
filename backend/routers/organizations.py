@@ -1799,7 +1799,54 @@ async def update_public_profile(
     await organizations_collection.update_one(
         {"id": current_user["organization_id"]}, {"$set": updates},
     )
+    # GT6 — gradino 0 profilo-first: il primo profilo con bio accende
+    # la vetrina pubblica anche senza store ne' prodotti
+    await _ensure_public_surface(current_user["organization_id"])
     return await get_public_profile(current_user)
+
+
+async def _ensure_public_surface(org_id: str) -> None:
+    """GT6 — la scala del valore parte dalla VETRINA (gradino 0):
+    «la tua pagina professionale, gratis, 10 minuti — nessuno Stripe,
+    nessun prodotto». Quando l'operatore salva un profilo con bio e
+    non ha ancora uno store, gli diamo un indirizzo pubblico:
+    public_slug dal nome org + flag legacy is_storefront_published,
+    che fanno risolvere /o/{slug} a _resolve_org. Idempotente; con uno
+    store attivo non tocca nulla (lo slug vero e' quello dello store).
+    """
+    from database import organizations_collection, stores_collection
+    from models.event_occurrence import slugify
+
+    org = await organizations_collection.find_one(
+        {"id": org_id},
+        {"_id": 0, "name": 1, "public_slug": 1, "public_profile.bio": 1,
+         "store_settings": 1})
+    if not org or not (org.get("public_profile") or {}).get("bio"):
+        return
+    if await stores_collection.find_one(
+            {"organization_id": org_id, "is_active": True}, {"_id": 1}):
+        return
+    updates = {}
+    if not org.get("public_slug"):
+        base = slugify(org.get("name") or "")[:60] or "operatore"
+        slug, n = base, 2
+        while await organizations_collection.find_one(
+                {"public_slug": slug, "id": {"$ne": org_id}}, {"_id": 1}) \
+                or await stores_collection.find_one({"slug": slug}, {"_id": 1}):
+            slug = f"{base}-{n}"
+            n += 1
+        updates["public_slug"] = slug
+    ss = org.get("store_settings")
+    if not (ss or {}).get("is_storefront_published"):
+        # sulle org fresche store_settings e' null: il path puntato
+        # fallirebbe (WriteError 28) — si scrive l'oggetto intero
+        if isinstance(ss, dict):
+            updates["store_settings.is_storefront_published"] = True
+        else:
+            updates["store_settings"] = {"is_storefront_published": True}
+    if updates:
+        await organizations_collection.update_one(
+            {"id": org_id}, {"$set": updates})
 
 
 @router.post("/current/public-profile/cover")
@@ -1955,7 +2002,9 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
 
     steps = {
         "stripe_connected": bool(conn),
-        "store_created": bool(store_slug),
+        # GT6 — store VERO (il gradino 0 profilo-first assegna un
+        # public_slug anche senza store: non deve spuntare questo step)
+        "store_created": bool(store),
         "retreat_created": bool(any_occ),
         "retreat_published": bool(pub_occ),
         "profile_completed": profile_ok,
@@ -1966,8 +2015,10 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
     # si mostrano nella card "Sei online!"
     links = {}
     if store_slug:
-        links["store"] = f"/s/{store_slug}"
+        # il profilo vive anche sul solo public_slug (gradino 0)
         links["profile"] = f"/o/{store_slug}"
+        if store:
+            links["store"] = f"/s/{store_slug}"
         if pub_occ:
             links["landing"] = f"/e/{store_slug}/{pub_occ['slug']}"
     links["directory"] = "/ritiri"

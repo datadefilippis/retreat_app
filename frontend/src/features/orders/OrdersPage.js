@@ -1380,7 +1380,10 @@ export default function OrdersPage() {
     try {
       const res = await ordersAPI[action](orderId);
       if (action === 'markPaid') {
-        toast.success(t('toast.marked_paid'));
+        // GT4 — recensioni-moat: nudge discreto sull'incasso manuale
+        toast.success(t('toast.marked_paid'), {
+          description: t('common:cashflow.reviewNudge', { defaultValue: 'Gli incassi manuali non generano recensioni verificate: porta la prossima prenotazione sul calendario pubblico.' }),
+        });
       } else if (action === 'markUnpaid') {
         toast.success(t('toast.marked_unpaid'));
       } else if (action === 'confirm') {
