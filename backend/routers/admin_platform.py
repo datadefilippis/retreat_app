@@ -93,6 +93,25 @@ async def platform_directory(
     return payload
 
 
+@router.get("/signals")
+async def platform_signals(
+    current_user: dict = Depends(require_system_admin),
+) -> Dict[str, Any]:
+    """SA5 — i segnali del GTM: a chi proporre cosa, oggi. Quattro
+    liste coi numeri che giustificano la proposta (break-even Pro,
+    sbloccabili-Stripe, a rischio, in crescita)."""
+    cached = _cached("signals")
+    if cached:
+        return cached
+
+    from services.platform_insights import signals
+    from models.common import utc_now
+
+    payload = {**(await signals()), "generated_at": utc_now().isoformat()}
+    _cache["signals"] = (time.monotonic(), payload)
+    return payload
+
+
 @router.get("/organizations/{org_id}/business-profile")
 async def org_business_profile(
     org_id: str,

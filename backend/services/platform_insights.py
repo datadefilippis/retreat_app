@@ -228,3 +228,103 @@ async def directory_snapshot() -> Dict[str, Any]:
             "orgs_blocked_stripe_only": len(stripe_only),
         },
     }
+
+
+# soglia break-even Gratis→Pro: 29 EUR / (5% - 2%) ≈ 967 EUR/mese di
+# transato online (stessa matematica del calcolatore GT2)
+PRO_BREAKEVEN_MONTHLY_EUR = 967.0
+
+
+async def signals() -> Dict[str, Any]:
+    """SA5 — i segnali commerciali del GTM 1-a-1: a chi proporre cosa,
+    OGGI. Quattro liste, ognuna con i numeri che giustificano la
+    proposta. Riusa lo snapshot directory (GT1b) e il ledger SA1 —
+    mai euristiche nuove per dati che esistono gia'."""
+    from database import db, orders_collection, users_collection
+
+    now = utc_now()
+    month_key = now.isoformat()[:7]
+    d30 = (now - timedelta(days=30)).isoformat()[:10]
+    d60 = (now - timedelta(days=60)).isoformat()[:10]
+    d14_iso = (now - timedelta(days=14)).isoformat()
+
+    snap = await directory_snapshot()
+    rows_by_org = {r["organization_id"]: r for r in snap["rows"]}
+    org_ids = list(rows_by_org)
+
+    # transato online del mese per org (ledger SA1)
+    online_month = defaultdict(int)
+    async for e in db.platform_fee_ledger.find(
+            {"organization_id": {"$in": org_ids}},
+            {"_id": 0, "organization_id": 1, "amount_minor": 1,
+             "collected_at": 1}).limit(100_000):
+        if (e.get("collected_at") or "")[:7] == month_key:
+            online_month[e["organization_id"]] += int(e.get("amount_minor") or 0)
+
+    # GMV per finestra (0-30gg vs 31-60gg) + ultimo ordine per org
+    gmv_recent = defaultdict(float)
+    gmv_prev = defaultdict(float)
+    last_order_day: Dict[str, str] = {}
+    async for o in orders_collection.find(
+            {"organization_id": {"$in": org_ids},
+             "status": {"$in": ["confirmed", "completed"]}},
+            {"_id": 0, "organization_id": 1, "total": 1,
+             "order_date": 1}).limit(100_000):
+        oid = o["organization_id"]
+        day = (o.get("order_date") or "")[:10]
+        total = float(o.get("total") or 0)
+        if day >= d30:
+            gmv_recent[oid] += total
+        elif day >= d60:
+            gmv_prev[oid] += total
+        if day > last_order_day.get(oid, ""):
+            last_order_day[oid] = day
+
+    # email del primo admin per il contatto one-click
+    admin_email: Dict[str, str] = {}
+    async for u in users_collection.find(
+            {"organization_id": {"$in": org_ids}, "role": "admin"},
+            {"_id": 0, "organization_id": 1, "email": 1}):
+        admin_email.setdefault(u["organization_id"], u.get("email"))
+
+    def base(oid: str) -> Dict[str, Any]:
+        r = rows_by_org[oid]
+        return {"organization_id": oid, "name": r["name"],
+                "plan_slug": r["plan_slug"],
+                "email": admin_email.get(oid)}
+
+    pro_ready, unlockable, at_risk, growing = [], [], [], []
+    for oid, r in rows_by_org.items():
+        vol = online_month.get(oid, 0) / 100.0
+        if r["plan_slug"] == "retreat_free" and vol > PRO_BREAKEVEN_MONTHLY_EUR:
+            saving = round(vol * 0.03 - 29.0, 2)
+            pro_ready.append({**base(oid), "online_month": round(vol, 2),
+                              "monthly_saving": saving})
+        if not r["listed"] and r["reasons"] == ["stripe_not_ready"]:
+            unlockable.append({**base(oid),
+                               "retreats_ready": r["retreats_excluded"]})
+        # a rischio: aveva ordini ma fermo da 60gg, oppure account
+        # maturo (>14gg) che non ha mai messo nulla online
+        last = last_order_day.get(oid)
+        if last and last < d60:
+            at_risk.append({**base(oid), "kind": "silent_60d",
+                            "last_order": last})
+        elif not last and r["retreats_listed"] == 0 \
+                and r["retreats_excluded"] == 0:
+            org_doc = await db.organizations.find_one(
+                {"id": oid}, {"_id": 0, "created_at": 1})
+            created = str((org_doc or {}).get("created_at") or "")
+            if created and created < d14_iso:
+                at_risk.append({**base(oid), "kind": "never_started",
+                                "created_at": created[:10]})
+        # in crescita: 30gg recenti > 1.5x dei 30 precedenti, sopra
+        # un pavimento che esclude il rumore
+        rec, prev = gmv_recent.get(oid, 0.0), gmv_prev.get(oid, 0.0)
+        if rec >= 500 and rec > prev * 1.5:
+            growing.append({**base(oid), "gmv_30d": round(rec, 2),
+                            "gmv_prev_30d": round(prev, 2)})
+
+    pro_ready.sort(key=lambda x: -x["online_month"])
+    growing.sort(key=lambda x: -x["gmv_30d"])
+    return {"pro_ready": pro_ready, "unlockable": unlockable,
+            "at_risk": at_risk, "growing": growing}

@@ -187,3 +187,34 @@ class TestBusinessProfileSa4:
         assert "pro_breakeven_reached" in dlg
         tab = (base / "DirectoryAdminTab.js").read_text()
         assert "OrgBusinessProfileDialog" in tab
+
+
+class TestSignalsSa5:
+    """SA5 — i segnali del GTM: quattro liste, numeri che
+    giustificano la proposta, mai euristiche su dati che esistono."""
+
+    INSIGHTS_SRC = (BACKEND_DIR / "services" / "platform_insights.py").read_text()
+
+    def test_four_signal_lists(self):
+        for key in ("pro_ready", "unlockable", "at_risk", "growing"):
+            assert f'"{key}"' in self.INSIGHTS_SRC
+
+    def test_breakeven_same_math_as_gt2(self):
+        """La soglia e il risparmio usano la STESSA matematica del
+        calcolatore GT2 (fee 5→2%, canone 29): 967 e 3%."""
+        assert "PRO_BREAKEVEN_MONTHLY_EUR = 967" in self.INSIGHTS_SRC
+        assert "* 0.03 - 29.0" in self.INSIGHTS_SRC
+
+    def test_unlockable_means_stripe_only(self):
+        """'Sbloccabile' = l'UNICO motivo è Stripe — chi ha anche
+        altri blocchi non è una proposta a un-click."""
+        assert '== ["stripe_not_ready"]' in self.INSIGHTS_SRC
+
+    def test_signals_tab_wired(self):
+        base = BACKEND_DIR.parent / "frontend" / "src" / "features" / "admin"
+        page = (base / "AdminPage.js").read_text()
+        assert "SignalsTab" in page
+        tab = (base / "SignalsTab.js").read_text()
+        assert "/admin/platform/signals" in tab
+        for key in ("pro_ready", "unlockable", "at_risk", "growing"):
+            assert key in tab
