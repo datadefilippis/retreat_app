@@ -141,9 +141,10 @@ async def build_core() -> str:
             cat_reg.add((p["category"], None))
             if o.get("region"):
                 cat_reg.add((p["category"], o["region"]))
-        for name in {o.get("region"), o.get("city")}:
-            if name:
-                places.add(_place_slug(name))
+        # stessa regola dell'indice destinazioni: una per occorrenza
+        name = o.get("city") or o.get("region")
+        if name:
+            places.add(_place_slug(name))
 
     for cat, reg in sorted(cat_reg, key=lambda x: (x[0], x[1] or "")):
         path = f"/ritiri/{cat}" + (f"/{reg}" if reg else "")
