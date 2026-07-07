@@ -102,5 +102,11 @@
     "copy_failed": "Kopieren fehlgeschlagen",
     "error": "Fehler"
   },
-  "confirm_delete": "Formular \"{{name}}\" löschen? Anmeldungen bleiben im CRM."
+  "confirm_delete": "Formular \"{{name}}\" löschen? Anmeldungen bleiben im CRM.",
+  "stats": {
+    "total": "Abonnenten",
+    "new30": "Neu (30 Tage)",
+    "trend": "Anmeldungen der letzten 12 Monate",
+    "sources": "Woher sie kommen:"
+  }
 }

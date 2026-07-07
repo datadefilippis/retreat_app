@@ -102,5 +102,11 @@
     "copy_failed": "Copy failed",
     "error": "Error"
   },
-  "confirm_delete": "Delete the form \"{{name}}\"? Subscriptions remain in the CRM."
+  "confirm_delete": "Delete the form \"{{name}}\"? Subscriptions remain in the CRM.",
+  "stats": {
+    "total": "Subscribers",
+    "new30": "New (30 days)",
+    "trend": "Signups over the last 12 months",
+    "sources": "Where they come from:"
+  }
 }

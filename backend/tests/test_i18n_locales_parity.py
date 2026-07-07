@@ -61,6 +61,11 @@ def _read(locale: str, namespace: str) -> dict:
     ("customerInsights", ""),
     ("common", "reviews"),      # PR5 — plancia recensioni back-office
     ("landings", "reviews"),    # PR5 — flusso recensioni pubblico
+    ("common", "charts"),          # CF1 — kit grafico
+    ("common", "outreachShared"),  # CF2 — ContactActions
+    ("common", "cashflow"),        # CF3 — pagina Incassi
+    ("customerInsights", "essential"),  # CF6 — clienti essenziale
+    ("newsletter", "stats"),       # CF7 — mini-stats newsletter
 ])
 def test_locales_have_identical_key_topology(namespace, subpath):
     """All locales expose the same dot-path key set under ``subpath``."""
@@ -98,6 +103,11 @@ def test_locales_have_identical_key_topology(namespace, subpath):
     ("customerInsights", ""),
     ("common", "reviews"),
     ("landings", "reviews"),
+    ("common", "charts"),
+    ("common", "outreachShared"),
+    ("common", "cashflow"),
+    ("customerInsights", "essential"),
+    ("newsletter", "stats"),
 ])
 def test_locales_have_no_empty_string_translations(namespace, subpath):
     """An empty string slips through silently in the UI (renders blank).

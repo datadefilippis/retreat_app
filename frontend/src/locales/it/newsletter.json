@@ -102,5 +102,11 @@
     "copy_failed": "Copia non riuscita",
     "error": "Errore"
   },
-  "confirm_delete": "Eliminare il form \"{{name}}\"? Le iscrizioni restano nel CRM."
+  "confirm_delete": "Eliminare il form \"{{name}}\"? Le iscrizioni restano nel CRM.",
+  "stats": {
+    "total": "Iscritti",
+    "new30": "Nuovi (30 giorni)",
+    "trend": "Iscrizioni negli ultimi 12 mesi",
+    "sources": "Da dove arrivano:"
+  }
 }
