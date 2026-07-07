@@ -62,10 +62,23 @@ def _month_buckets(now) -> list:
 
 
 async def _build(org_id: str) -> Dict[str, Any]:
+    """CG1 — la tesoreria è l'UNIONE di tre registri, senza sovrapposizioni:
+
+      A. payment_schedules  — ritiri con caparra/saldo (verità riga per riga)
+      B. orders SENZA schedule — ordini manuali/POS/servizi/fisici/digitali/
+         corsi: payment_status + due_date (il gestionale classico)
+      C. sales_records manuali — entrate registrate a mano nella pagina Dati
+
+      Anti-double-counting: gli ordini con schedule si leggono SOLO dal
+      ledger (B li esclude via order_id); i sales_records sincronizzati
+      dagli ordini (dataset_id='orders') NON si contano mai qui — il loro
+      ordine è già in A o B.
+    """
     from database import db, orders_collection, customers_collection
 
     now = utc_now()
     now_iso = now.isoformat()
+    today = now_iso[:10]
     horizon_30d = (now + timedelta(days=30)).isoformat()
     twelve_months_ago = (now - timedelta(days=365)).isoformat()
 
@@ -76,13 +89,14 @@ async def _build(org_id: str) -> Dict[str, Any]:
          "rows.due_at": 1, "rows.status": 1, "rows.paid_at": 1},
     ).to_list(_MAX_SCHEDULES)
 
-    # ── mesi + summary dal ledger ────────────────────────────────────
     buckets = _month_buckets(now)
     incassato_by_month = defaultdict(int)
     atteso_by_month = defaultdict(int)
     summary = {"incassato_minor": 0, "in_arrivo_minor": 0, "in_ritardo_minor": 0}
     overdue_rows, upcoming_rows = [], []
 
+    # ── Gamba A: libro mastro ritiri ─────────────────────────────────
+    scheduled_order_ids = {doc.get("order_id") for doc in schedules if doc.get("order_id")}
     for doc in schedules:
         for row in doc.get("rows") or []:
             amount = row.get("amount_minor", 0)
@@ -96,6 +110,7 @@ async def _build(org_id: str) -> Dict[str, Any]:
                 due_at = row.get("due_at") or ""
                 atteso_by_month[_month_key(due_at)] += amount
                 entry = {
+                    "source": "ledger",
                     "order_id": doc.get("order_id"),
                     "kind": row.get("kind"),
                     "label": row.get("label"),
@@ -110,6 +125,84 @@ async def _build(org_id: str) -> Dict[str, Any]:
                     if due_at <= horizon_30d:
                         upcoming_rows.append(entry)
 
+    # ── Gamba B: ordini SENZA schedule (il gestionale) ───────────────
+    horizon_30d_day = horizon_30d[:10]
+    cutoff_day = twelve_months_ago[:10]
+    async for o in orders_collection.find(
+            {"organization_id": org_id,
+             "status": {"$in": ["confirmed", "completed"]},
+             "id": {"$nin": list(scheduled_order_ids)}},
+            {"_id": 0, "id": 1, "total": 1, "payment_status": 1,
+             "order_date": 1, "due_date": 1, "order_number": 1,
+             "customer_id": 1, "contact_phone": 1,
+             "items.product_name": 1}).limit(_MAX_SCHEDULES):
+        amount_minor = int(round(float(o.get("total") or 0) * 100))
+        if amount_minor <= 0:
+            continue
+        order_day = (o.get("order_date") or "")[:10]
+        if o.get("payment_status") == "paid":
+            if order_day >= cutoff_day:
+                summary["incassato_minor"] += amount_minor
+            incassato_by_month[order_day[:7]] += amount_minor
+        else:
+            # non pagato: scadenza dichiarata, altrimenti la data ordine
+            due_day = (o.get("due_date") or order_day or today)[:10]
+            atteso_by_month[due_day[:7]] += amount_minor
+            items = o.get("items") or []
+            entry = {
+                "source": "order",
+                "order_id": o.get("id"),
+                "kind": "order",
+                "label": (items[0].get("product_name") if items else None),
+                "amount_minor": amount_minor,
+                "due_at": due_day,
+            }
+            if due_day < today:
+                summary["in_ritardo_minor"] += amount_minor
+                overdue_rows.append(entry)
+            else:
+                summary["in_arrivo_minor"] += amount_minor
+                if due_day <= horizon_30d_day:
+                    upcoming_rows.append(entry)
+
+    # ── Gamba C: entrate manuali della pagina Dati ───────────────────
+    async for r in db.sales_records.find(
+            {"organization_id": org_id, "dataset_id": "manual"},
+            {"_id": 0, "id": 1, "date": 1, "amount": 1, "description": 1,
+             "category": 1, "payment_status": 1, "payment_date": 1,
+             "due_date": 1, "customer_id": 1}).limit(_MAX_SCHEDULES):
+        amount_minor = int(round(float(r.get("amount") or 0) * 100))
+        if amount_minor == 0:
+            continue
+        day = (r.get("date") or "")[:10]
+        # senza payment_status esplicito un'entrata manuale è incassata:
+        # l'operatore registra ciò che è successo, non una previsione
+        pstat = r.get("payment_status") or "paid"
+        if pstat == "paid":
+            paid_day = (r.get("payment_date") or day)[:10]
+            if paid_day >= cutoff_day:
+                summary["incassato_minor"] += amount_minor
+            incassato_by_month[paid_day[:7]] += amount_minor
+        else:
+            due_day = (r.get("due_date") or day or today)[:10]
+            atteso_by_month[due_day[:7]] += amount_minor
+            entry = {
+                "source": "manual",
+                "order_id": None,
+                "kind": "manual",
+                "label": r.get("description") or r.get("category"),
+                "amount_minor": amount_minor,
+                "due_at": due_day,
+                "customer_id": r.get("customer_id"),
+            }
+            if due_day < today:
+                summary["in_ritardo_minor"] += amount_minor
+                overdue_rows.append(entry)
+            else:
+                summary["in_arrivo_minor"] += amount_minor
+                if due_day <= horizon_30d_day:
+                    upcoming_rows.append(entry)
+
     overdue_rows.sort(key=lambda r: r["due_at"])
     upcoming_rows.sort(key=lambda r: r["due_at"])
     overdue_rows = overdue_rows[:_MAX_LIST_ROWS]
@@ -122,7 +215,7 @@ async def _build(org_id: str) -> Dict[str, Any]:
     } for b in buckets]
 
     # ── contatti per le righe azionabili ─────────────────────────────
-    order_ids = list({r["order_id"] for r in overdue_rows + upcoming_rows if r["order_id"]})
+    order_ids = list({r["order_id"] for r in overdue_rows + upcoming_rows if r.get("order_id")})
     orders_by_id: Dict[str, dict] = {}
     customers_by_id: Dict[str, dict] = {}
     if order_ids:
@@ -131,24 +224,26 @@ async def _build(org_id: str) -> Dict[str, Any]:
                 {"_id": 0, "id": 1, "order_number": 1, "customer_id": 1,
                  "contact_phone": 1, "items.product_name": 1, "locale": 1}):
             orders_by_id[o["id"]] = o
-        cust_ids = list({o.get("customer_id") for o in orders_by_id.values() if o.get("customer_id")})
-        if cust_ids:
-            async for c in customers_collection.find(
-                    {"id": {"$in": cust_ids}, "organization_id": org_id},
-                    {"_id": 0, "id": 1, "name": 1, "email": 1, "phone": 1}):
-                customers_by_id[c["id"]] = c
+    # cliente: dall'ordine oppure diretto sulla riga (record manuali)
+    cust_ids = {o.get("customer_id") for o in orders_by_id.values() if o.get("customer_id")}
+    cust_ids |= {r.get("customer_id") for r in overdue_rows + upcoming_rows if r.get("customer_id")}
+    if cust_ids:
+        async for c in customers_collection.find(
+                {"id": {"$in": list(cust_ids)}, "organization_id": org_id},
+                {"_id": 0, "id": 1, "name": 1, "email": 1, "phone": 1}):
+            customers_by_id[c["id"]] = c
 
     def _enrich(rows: list) -> list:
         out = []
         for r in rows:
-            o = orders_by_id.get(r["order_id"]) or {}
-            c = customers_by_id.get(o.get("customer_id")) or {}
+            o = orders_by_id.get(r.get("order_id")) or {}
+            c = customers_by_id.get(o.get("customer_id") or r.get("customer_id")) or {}
             items = o.get("items") or []
             out.append({
-                **r,
+                **{k: v for k, v in r.items() if k != "customer_id"},
                 "amount": r["amount_minor"] / 100.0,
                 "order_number": o.get("order_number"),
-                "product_name": (items[0].get("product_name") if items else None),
+                "product_name": (items[0].get("product_name") if items else None) or r.get("label"),
                 "customer_id": c.get("id"),
                 "customer_name": c.get("name"),
                 "customer_email": c.get("email"),

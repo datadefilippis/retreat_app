@@ -84,3 +84,33 @@ class TestSourceOfTruth:
         from routers import cashflow
         assert cashflow._CACHE_TTL == 60.0
         assert isinstance(cashflow._cache, dict)
+
+
+class TestUnionCg1:
+    """CG1 — la tesoreria è l'unione di TRE registri senza sovrapposizioni."""
+
+    def test_orders_leg_excludes_scheduled_orders(self):
+        """Anti-double-counting: la gamba ordini DEVE escludere gli
+        order_id presenti nel ledger ($nin scheduled_order_ids)."""
+        import inspect
+        from routers import cashflow
+        src = inspect.getsource(cashflow._build)
+        assert "scheduled_order_ids" in src
+        assert "$nin" in src
+
+    def test_manual_leg_reads_only_manual_records(self):
+        """I sales_records sincronizzati dagli ordini (dataset_id=
+        'orders') NON si contano: il loro ordine è già nelle altre
+        gambe. Solo dataset_id='manual' entra."""
+        import inspect
+        from routers import cashflow
+        src = inspect.getsource(cashflow._build)
+        assert '"dataset_id": "manual"' in src
+
+    def test_rows_carry_source_discriminator(self):
+        """Ogni riga azionabile dichiara la fonte (ledger/order/manual)
+        — il frontend decide l'azione (sollecito vs registra pagamento)."""
+        d = requests.get(f"{BASE_URL}/api/analytics/cashflow?fresh=true",
+                         headers=_login(), timeout=20).json()
+        for r in (d["overdue"] + d["upcoming"])[:10]:
+            assert r.get("source") in ("ledger", "order", "manual")

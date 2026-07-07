@@ -173,6 +173,12 @@
     "colDue": "Scadenza",
     "colAmount": "Importo",
     "colAction": "Sollecita",
-    "byProductTitle": "Venduto per esperienza (12 mesi)"
+    "byProductTitle": "Venduto per esperienza (12 mesi)",
+    "markPaid": "Registra pagamento (contanti/bonifico)",
+    "markPaidShort": "Incassato",
+    "markPaidOk": "Pagamento registrato",
+    "markPaidError": "Impossibile registrare il pagamento",
+    "sourceOrder": "Ordine",
+    "sourceManual": "Manuale"
   }
 }

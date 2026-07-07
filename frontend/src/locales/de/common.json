@@ -173,6 +173,12 @@
     "colDue": "Fälligkeit",
     "colAmount": "Betrag",
     "colAction": "Erinnern",
-    "byProductTitle": "Umsatz nach Erlebnis (12 Monate)"
+    "byProductTitle": "Umsatz nach Erlebnis (12 Monate)",
+    "markPaid": "Zahlung erfassen (bar/Überweisung)",
+    "markPaidShort": "Erhalten",
+    "markPaidOk": "Zahlung erfasst",
+    "markPaidError": "Zahlung konnte nicht erfasst werden",
+    "sourceOrder": "Bestellung",
+    "sourceManual": "Manuell"
   }
 }

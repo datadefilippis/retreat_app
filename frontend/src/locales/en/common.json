@@ -173,6 +173,12 @@
     "colDue": "Due date",
     "colAmount": "Amount",
     "colAction": "Remind",
-    "byProductTitle": "Sales by experience (12 months)"
+    "byProductTitle": "Sales by experience (12 months)",
+    "markPaid": "Record payment (cash/bank transfer)",
+    "markPaidShort": "Received",
+    "markPaidOk": "Payment recorded",
+    "markPaidError": "Could not record the payment",
+    "sourceOrder": "Order",
+    "sourceManual": "Manual"
   }
 }

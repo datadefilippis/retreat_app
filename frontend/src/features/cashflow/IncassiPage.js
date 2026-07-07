@@ -14,7 +14,8 @@
  */
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Wallet, TrendingUp, AlertTriangle, Receipt } from 'lucide-react';
+import { Wallet, TrendingUp, AlertTriangle, Receipt, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 import api from '../../api/client';
 import { AppLayout, Header } from '../../components/Layout';
 import { StatCard, TrendArea, DonutSplit } from '../../components/charts';
@@ -35,12 +36,25 @@ function dayLabel(iso, lang) {
   } catch { return (iso || '').slice(0, 10); }
 }
 
-function DueRow({ row, overdue, t, i18n, currency }) {
+const SOURCE_LABELS = {
+  ledger: null,                      // caparra/saldo: label già nella riga
+  order: 'cashflow.sourceOrder',     // ordine del gestionale
+  manual: 'cashflow.sourceManual',   // entrata manuale pagina Dati
+};
+
+function DueRow({ row, overdue, t, i18n, currency, onMarkPaid }) {
   return (
     <tr className="border-b border-border last:border-0">
       <td className="py-2.5 pr-3">
         <p className="text-sm font-medium text-foreground">{row.customer_name || '—'}</p>
-        <p className="text-xs text-muted-foreground">{row.product_name || row.label || ''}</p>
+        <p className="text-xs text-muted-foreground">
+          {row.product_name || row.label || ''}
+          {SOURCE_LABELS[row.source] && (
+            <span className="ml-1.5 rounded-full border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+              {t(SOURCE_LABELS[row.source], { defaultValue: row.source === 'order' ? 'Ordine' : 'Manuale' })}
+            </span>
+          )}
+        </p>
       </td>
       <td className="py-2.5 pr-3 whitespace-nowrap">
         <span className={`text-xs ${overdue ? 'text-[#C97B5D] font-semibold' : 'text-muted-foreground'}`}>
@@ -50,7 +64,18 @@ function DueRow({ row, overdue, t, i18n, currency }) {
       <td className="py-2.5 pr-3 text-right font-mono text-sm text-foreground whitespace-nowrap">
         {formatCurrency(row.amount, currency)}
       </td>
-      <td className="py-2.5 text-right">
+      <td className="py-2.5 text-right whitespace-nowrap">
+        {row.source === 'order' && row.order_id && (
+          <button
+            type="button"
+            onClick={() => onMarkPaid(row.order_id)}
+            title={t('cashflow.markPaid', { defaultValue: 'Registra pagamento (contanti/bonifico)' })}
+            className="mr-1.5 inline-flex h-7 items-center gap-1 rounded-lg border border-[#376254]/40 px-2 text-xs text-[#376254] hover:bg-[#376254]/10"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+            {t('cashflow.markPaidShort', { defaultValue: 'Incassato' })}
+          </button>
+        )}
         <ContactActions
           name={row.customer_name}
           email={row.customer_email}
@@ -74,14 +99,26 @@ export default function IncassiPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (fresh = false) => {
     setLoading(true);
     try {
-      const res = await api.get('/analytics/cashflow');
+      const res = await api.get('/analytics/cashflow', { params: fresh ? { fresh: true } : {} });
       setData(res.data);
     } catch { /* la pagina mostra gli empty state */ }
     finally { setLoading(false); }
   }, []);
+
+  // CG1 — incasso registrato a mano (contanti/bonifico): la riga ordine
+  // si chiude da qui, senza passare da /orders
+  const markPaid = useCallback(async (orderId) => {
+    try {
+      await api.post(`/orders/${orderId}/mark-paid`);
+      toast.success(t('cashflow.markPaidOk', { defaultValue: 'Pagamento registrato' }));
+      load(true);
+    } catch {
+      toast.error(t('cashflow.markPaidError', { defaultValue: 'Impossibile registrare il pagamento' }));
+    }
+  }, [load, t]);
   useEffect(() => { load(); }, [load]);
 
   const s = data?.summary || {};
@@ -167,7 +204,7 @@ export default function IncassiPage() {
                 <tbody>
                   {dueRows.map((r, i) => (
                     <DueRow key={`${r.order_id}-${r.kind}-${i}`} row={r} overdue={Boolean(r._overdue)}
-                            t={t} i18n={i18n} currency={currency} />
+                            t={t} i18n={i18n} currency={currency} onMarkPaid={markPaid} />
                   ))}
                 </tbody>
               </table>
