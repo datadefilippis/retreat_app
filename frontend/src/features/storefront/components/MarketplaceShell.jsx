@@ -62,10 +62,21 @@ function LangSwitcher() {
   );
 }
 
+// AN2 — il menu principale che mancava: le stesse voci su desktop
+// (inline dopo il logo) e su mobile (pannello hamburger). Una sola
+// definizione: chi aggiunge una superficie la aggiunge QUI.
+const NAV_ITEMS = [
+  { to: '/', key: 'marketplace.navRetreats', fallback: 'Ritiri' },
+  { to: '/esperienze', key: 'marketplace.navExperiences', fallback: 'Esperienze' },
+  { to: '/operatori', key: 'marketplace.navOperators', fallback: 'Organizzatori' },
+  { to: '/destinazioni', key: 'marketplace.navDestinations', fallback: 'Destinazioni' },
+];
+
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
   const { t, i18n } = useTranslation('landings');
   const navigate = useNavigate();
   const [destinations, setDestinations] = React.useState(_destCache || []);
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   useEffect(() => {
     if (_destCache) return;
@@ -119,6 +130,20 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
             </span>
           ) : (
             <>
+              {/* AN2 — menu principale (desktop): gli aggregatori smettono
+                  di essere scopribili solo dal footer */}
+              <nav aria-label="principale" className="hidden lg:flex items-center gap-1 ml-2">
+                {NAV_ITEMS.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className="rounded-full px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 whitespace-nowrap"
+                  >
+                    {t(item.key, { defaultValue: item.fallback })}
+                  </Link>
+                ))}
+              </nav>
+
               {/* Scorciatoia ricerca — riporta alla directory (che ha i filtri) */}
               {!noSearch && (
                 <button
@@ -141,14 +166,70 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 <LangSwitcher />
                 <Link
                   to="/account"
-                  className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
+                  className="hidden sm:block rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
                 >
                   {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
                 </Link>
+                {/* AN2 — hamburger mobile: ricerca e CTA organizzatori non
+                    spariscono più sotto i breakpoint */}
+                <button
+                  type="button"
+                  onClick={() => setMobileNavOpen((o) => !o)}
+                  aria-expanded={mobileNavOpen}
+                  aria-label={mobileNavOpen
+                    ? t('marketplace.navClose', { defaultValue: 'Chiudi menu' })
+                    : t('marketplace.navMenu', { defaultValue: 'Menu' })}
+                  className="lg:hidden rounded-full border border-gray-300 h-8 w-8 flex items-center justify-center text-gray-700 hover:border-primary"
+                >
+                  <span aria-hidden className="text-base leading-none">{mobileNavOpen ? '✕' : '☰'}</span>
+                </button>
               </div>
             </>
           )}
         </div>
+
+        {/* AN2 — pannello mobile */}
+        {!minimal && mobileNavOpen && (
+          <nav aria-label="principale mobile" className="lg:hidden border-t border-gray-200 bg-white px-4 py-3">
+            <ul className="space-y-1">
+              {NAV_ITEMS.map((item) => (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    {t(item.key, { defaultValue: item.fallback })}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link to="/chi-siamo" onClick={() => setMobileNavOpen(false)}
+                      className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
+                  {t('aboutPage.title', { defaultValue: 'Chi siamo' })}
+                </Link>
+              </li>
+              <li>
+                <Link to="/come-funziona" onClick={() => setMobileNavOpen(false)}
+                      className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
+                  {t('howPage.title', { defaultValue: 'Come funziona' })}
+                </Link>
+              </li>
+              <li>
+                <Link to="/account" onClick={() => setMobileNavOpen(false)}
+                      className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
+                  {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
+                </Link>
+              </li>
+              <li className="pt-1">
+                <Link to="/inizia" onClick={() => setMobileNavOpen(false)}
+                      className="block rounded-lg bg-[#C97B5D]/10 border border-[#C97B5D]/40 px-3 py-2 text-sm font-semibold text-[#a8593f] hover:bg-[#C97B5D]/20">
+                  {t('marketplace.forOrganizers', { defaultValue: 'Sei un organizzatore?' })}
+                </Link>
+              </li>
+            </ul>
+          </nav>
+        )}
       </header>
 
       <div className="flex-1">{children}</div>
@@ -179,9 +260,12 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 {t('marketplace.footerExplore', { defaultValue: 'Esplora' })}
               </p>
               <ul className="space-y-1.5 text-gray-600">
-                <li><Link to="/ritiri?categoria=yoga" className="hover:text-primary">Yoga</Link></li>
-                <li><Link to="/ritiri?categoria=meditazione" className="hover:text-primary">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>
-                <li><Link to="/ritiri?categoria=detox" className="hover:text-primary">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>
+                {/* AN2 — link ai PATH SEO (/ritiri/{cat}), non alla query:
+                    i crawler devono trovare le pagine categoria dai link
+                    interni, non solo dalla sitemap */}
+                <li><Link to="/ritiri/yoga" className="hover:text-primary">Yoga</Link></li>
+                <li><Link to="/ritiri/meditazione" className="hover:text-primary">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>
+                <li><Link to="/ritiri/detox" className="hover:text-primary">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>
                 <li><Link to="/" className="hover:text-primary">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>
                 <li><Link to="/operatori" className="hover:text-primary">{t('marketplace.footerOperators', { defaultValue: 'Tutti gli organizzatori' })}</Link></li>
                 <li><Link to="/destinazioni" className="hover:text-primary">{t('marketplace.footerDestinations', { defaultValue: 'Destinazioni' })}</Link></li>

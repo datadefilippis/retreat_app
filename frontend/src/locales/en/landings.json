@@ -538,7 +538,13 @@
     "operatorLogin": "Operator area",
     "terms": "Terms",
     "langFilterNote": "Choose your language: you will see retreats and experiences held in that language.",
-    "langFilterCaption": "Showing retreats and experiences held in {{lang}} — switch language above to see others."
+    "langFilterCaption": "Showing retreats and experiences held in {{lang}} — switch language above to see others.",
+    "navRetreats": "Retreats",
+    "navExperiences": "Experiences",
+    "navOperators": "Organizers",
+    "navDestinations": "Destinations",
+    "navMenu": "Menu",
+    "navClose": "Close menu"
   },
   "reviews": {
     "heading": "Reviews",

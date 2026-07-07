@@ -204,6 +204,18 @@ export default function StorefrontHeader({
             cart pill (Phase 7 cleanup) reads as a single visual block
             with the support icons rather than floating in air. */}
         <div className="flex items-center gap-2.5 shrink-0">
+          {/* AN2 — il ponte verso il marketplace: dentro uno store il
+              visitatore non è più intrappolato. Discreto (lo store
+              resta il protagonista), sparisce sugli schermi stretti
+              dove il logo dello store ha la priorità. */}
+          <Link
+            to="/"
+            className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium whitespace-nowrap opacity-60 hover:opacity-100 transition-opacity"
+            style={brandFg ? { color: brandFg } : { color: '#0a0a0a' }}
+            title="Aurya"
+          >
+            ✦ {t('storefront:partOfAurya', { defaultValue: 'Parte di Aurya' })}
+          </Link>
           <StorefrontLanguageSwitcher
             storeSlug={orgSlug}
             supportedLanguages={supportedLanguages}

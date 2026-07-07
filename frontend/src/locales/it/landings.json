@@ -538,7 +538,13 @@
     "operatorLogin": "Area operatori",
     "terms": "Termini",
     "langFilterNote": "Scegli la lingua: vedrai i ritiri e le esperienze tenuti in quella lingua.",
-    "langFilterCaption": "Mostriamo i ritiri e le esperienze tenuti in {{lang}} — cambia lingua in alto per vederne altri."
+    "langFilterCaption": "Mostriamo i ritiri e le esperienze tenuti in {{lang}} — cambia lingua in alto per vederne altri.",
+    "navRetreats": "Ritiri",
+    "navExperiences": "Esperienze",
+    "navOperators": "Organizzatori",
+    "navDestinations": "Destinazioni",
+    "navMenu": "Menu",
+    "navClose": "Chiudi menu"
   },
   "reviews": {
     "heading": "Recensioni",

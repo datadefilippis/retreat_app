@@ -98,3 +98,55 @@ class TestBrandFoundationsAn1:
         src = (BACKEND_DIR / "routers" / "seo.py").read_text()
         assert "/chi-siamo" in src
         assert "/come-funziona" in src
+
+
+class TestUnifiedNavAn2:
+    """AN2 — un solo menu su tutte le superfici pubbliche: gli
+    aggregatori smettono di essere scopribili solo dal footer, il
+    mobile non perde ricerca/CTA, dallo store si torna sempre."""
+
+    SHELL = (FRONTEND_SRC / "features" / "storefront" / "components"
+             / "MarketplaceShell.jsx").read_text()
+
+    def test_main_nav_single_definition(self):
+        """NAV_ITEMS è LA definizione: desktop e mobile la condividono
+        (chi aggiunge una superficie la aggiunge in un posto solo)."""
+        assert "NAV_ITEMS" in self.SHELL
+        assert self.SHELL.count("NAV_ITEMS.map") == 2   # desktop + mobile
+        for path in ("/esperienze", "/operatori", "/destinazioni"):
+            assert f"to: '{path}'" in self.SHELL
+
+    def test_mobile_menu_keeps_organizer_cta(self):
+        """Il CTA organizzatori su mobile spariva dall'header: ora
+        vive nel pannello hamburger."""
+        assert "mobileNavOpen" in self.SHELL
+        panel = self.SHELL.split("pannello mobile")[1]
+        assert '"/inizia"' in panel
+        assert '"/chi-siamo"' in panel
+
+    def test_footer_links_seo_paths_not_query(self):
+        """I link categoria del footer puntano ai PATH (/ritiri/yoga),
+        non alla query — i crawler seguono i link, non i filtri."""
+        assert '"/ritiri/yoga"' in self.SHELL
+        assert "/ritiri?categoria=" not in self.SHELL
+
+    def test_store_header_bridges_back_to_marketplace(self):
+        """Dentro uno store il visitatore non è più intrappolato:
+        c'è la via di ritorno discreta al marketplace."""
+        header = (FRONTEND_SRC / "features" / "storefront" / "components"
+                  / "StorefrontHeader.js").read_text()
+        assert "partOfAurya" in header
+        assert 'to="/"' in header
+
+    def test_part_of_aurya_in_four_languages(self):
+        for lang in LANGS:
+            data = json.loads((FRONTEND_SRC / "locales" / lang
+                               / "storefront.json").read_text())
+            assert data.get("partOfAurya"), f"{lang}: partOfAurya mancante"
+        # e le voci del menu x4
+        for lang in LANGS:
+            mp = json.loads((FRONTEND_SRC / "locales" / lang
+                             / "landings.json").read_text())["marketplace"]
+            for key in ("navRetreats", "navExperiences", "navOperators",
+                        "navDestinations", "navMenu"):
+                assert mp.get(key), f"{lang}: marketplace.{key} mancante"

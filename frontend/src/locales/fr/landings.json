@@ -538,7 +538,13 @@
     "operatorLogin": "Espace organisateurs",
     "terms": "Conditions",
     "langFilterNote": "Choisissez votre langue : vous verrez les retraites et expériences tenues dans cette langue.",
-    "langFilterCaption": "Nous affichons les retraites et expériences tenues en {{lang}} — changez de langue en haut pour en voir d’autres."
+    "langFilterCaption": "Nous affichons les retraites et expériences tenues en {{lang}} — changez de langue en haut pour en voir d’autres.",
+    "navRetreats": "Retraites",
+    "navExperiences": "Expériences",
+    "navOperators": "Organisateurs",
+    "navDestinations": "Destinations",
+    "navMenu": "Menu",
+    "navClose": "Fermer le menu"
   },
   "reviews": {
     "heading": "Avis",
