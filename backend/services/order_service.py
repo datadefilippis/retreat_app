@@ -357,6 +357,10 @@ async def create_order(
     # mode='json' serialises enums to strings and datetimes to ISO strings,
     # which is required for MongoDB (motor cannot serialise Python enum objects).
     doc = order.model_dump(mode="json")
+    # SA1 — canale di vendita sempre presente: manual/pos dal source,
+    # storefront* lo sovrascrive il chiamante (marketplace|store, GT1)
+    doc["sales_channel"] = {"manual": "manual", "pos": "pos"}.get(
+        source, "store")
     doc["customer_name"] = customer.name
     if store_id:
         doc["store_id"] = store_id

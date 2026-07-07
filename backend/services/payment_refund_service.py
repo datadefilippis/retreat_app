@@ -192,6 +192,28 @@ async def refund_order(
             )
             refund_kwargs["stripe_refund_id"] = refund_id
             refunded_stripe += item["amount_minor"]
+            # SA1 — lo storno online scrive la riga NEGATIVA nel ledger
+            # fee: gli aggregati piattaforma restano onesti dopo un
+            # rimborso. Percentuale = quella corrente dell'org (la fee
+            # Stripe rimborsata segue lo stesso application_fee).
+            # BEST-EFFORT come tutto il ledger: il rimborso al cliente
+            # non si blocca mai per la contabilita' interna.
+            try:
+                from services.platform_fee_ledger import (
+                    record_platform_fee, resolve_fee_percent)
+                await record_platform_fee(
+                    entry_key=f"refund:{order_id}:{seq}",
+                    organization_id=org_id,
+                    order_id=order_id,
+                    kind="refund",
+                    amount_minor=-int(item["amount_minor"]),
+                    fee_percent=await resolve_fee_percent({}, org_id),
+                    currency=(order.get("currency") or "eur"),
+                    row_seq=seq,
+                )
+            except Exception as exc_fee:
+                logger.error("refund: ledger fee non scritto per %s/%s: %s",
+                             order_id, seq, exc_fee)
         else:
             refund_kwargs["out_of_platform"] = True
             refunded_manual += item["amount_minor"]

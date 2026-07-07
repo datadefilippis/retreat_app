@@ -308,6 +308,10 @@ async def create_checkout_session(org_id: str, order: dict) -> Optional[dict]:
             "flow_version": FLOW_VERSION,
             # Carrier — provider strips this from outgoing Stripe metadata.
             "connected_account_id": connected_account_id,
+            # SA1 — la percentuale viaggia con la session: al webhook la
+            # fee si timbra con il valore VERO della creazione, immune
+            # ai cambi piano avvenuti nel frattempo.
+            "application_fee_percent": str(application_fee_percent),
             # Fase 2 S2 — presente solo per session-caparra (vuoto = full).
             **schedule_metadata,
         },
@@ -690,6 +694,8 @@ async def create_row_checkout_session(
             "source": "afianco",
             "flow_version": FLOW_VERSION,
             "connected_account_id": connected_account_id,
+            # SA1 — vedi checkout principale: fee timbrata alla creazione
+            "application_fee_percent": str(application_fee_percent),
             "schedule_id": schedule_doc["id"],
             "schedule_row_seq": str(row_seq),
         },
@@ -857,6 +863,13 @@ async def reconcile_checkout_event(event: dict) -> dict:
                     "payment_reconcile: row transition on collected order %s failed: %s",
                     order_id, exc_sched,
                 )
+        # SA1 — anche il saldo/rata pagato online è transato fee-bearing:
+        # una riga di ledger per QUESTA session (idempotente su session_id)
+        if row_seq_raw is not None:
+            from services.platform_fee_ledger import record_from_session
+            await record_from_session(
+                session, organization_id=org_id, order_id=order_id,
+                kind="schedule_row", row_seq=int(row_seq_raw))
         logger.info("payment_reconcile: order %s already collected — recording event only", order_id)
         await _record_event(orders_collection, order_id, org_id, event_id, session_id)
         return {"action": "skipped", "reason": "already_collected", "order_id": order_id,
@@ -883,6 +896,15 @@ async def reconcile_checkout_event(event: dict) -> dict:
             "payment_checkout.processed_events": event_id,
         }},
     )
+
+    # SA1 — il primo incasso online timbra il ledger fee: transato +
+    # percentuale (dal metadata della session) + fee piattaforma.
+    from services.platform_fee_ledger import record_from_session
+    row_seq_meta = (session.get("metadata") or {}).get("schedule_row_seq")
+    await record_from_session(
+        session, organization_id=org_id, order_id=order_id,
+        kind="schedule_row" if row_seq_meta is not None else "checkout",
+        row_seq=int(row_seq_meta) if row_seq_meta is not None else None)
 
     logger.info("payment_reconcile: payment_intent=collected for order %s (pi=%s)", order_id, stripe_pi)
 

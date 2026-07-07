@@ -473,7 +473,11 @@ async def submit_order_from_storefront(
         # online (mark-paid manuale bloccato in routers/orders.py) —
         # è il patto della fee: paghi quando il cliente lo porta Aurya.
         channel = getattr(body, "channel", None)
-        if order and channel in ("marketplace", "store"):
+        if order and channel not in ("marketplace", "store"):
+            # SA1 — nessun canale dichiarato (payload vecchi/embed):
+            # default onesto 'store', l'ordine arriva dallo storefront
+            channel = "store"
+        if order:
             from database import orders_collection as _oc
             await _oc.update_one({"id": order["id"]},
                                  {"$set": {"sales_channel": channel}})
