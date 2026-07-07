@@ -556,7 +556,8 @@
     "navDestinations": "Destinations",
     "navMenu": "Menu",
     "navClose": "Fermer le menu",
-    "passportLink": "Ton Passeport Aurya"
+    "passportLink": "Ton Passeport Aurya",
+    "navBlog": "Blog"
   },
   "reviews": {
     "heading": "Avis",
@@ -640,5 +641,17 @@
     "mapToggle": "Carte",
     "mapEmpty": "Aucun organisateur avec une position sur la carte pour ces filtres.",
     "mapSee": "Voir le profil →"
+  },
+  "blog": {
+    "seoTitle": "Blog | Aurya",
+    "seoDesc": "Histoires, pratiques et savoir holistique de ceux qui organisent et vivent les retraites.",
+    "title": "Le blog Aurya",
+    "subtitle": "Histoires, pratiques et savoir holistique de ceux qui organisent et vivent les retraites.",
+    "allArticles": "Tous",
+    "readMore": "Lire",
+    "empty": "Pas encore d’articles dans cette langue. Les histoires arrivent.",
+    "notFound": "Article introuvable",
+    "backToBlog": "Retour au blog",
+    "italianOnly": "Cet article est disponible uniquement en italien, pour le moment."
   }
 }

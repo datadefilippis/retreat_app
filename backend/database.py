@@ -428,6 +428,10 @@ async def create_indexes():
         [("public_profile.geo", "2dsphere")], name="an3_org_geo", sparse=True)
     # cache geocoding Nominatim (policy OSM: mai ri-geocodare)
     await db.geocode_cache.create_index("query", unique=True, name="g1_geocache")
+    # AN5 blog: slug unico + listing pubblico per data di pubblicazione
+    await db.articles.create_index("slug", unique=True, name="an5_article_slug")
+    await db.articles.create_index(
+        [("published", 1), ("published_at", -1)], name="an5_article_pub")
     # payment_schedules: lookup per ordine (hot path webhook/dashboard) e
     # per occurrence (dashboard incassi), eventi per ordine (tracciabilità)
     await db.payment_schedules.create_index(

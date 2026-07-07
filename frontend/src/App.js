@@ -20,6 +20,8 @@ import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyEma
 const VerifyEmailRequiredPage = lazy(() => import("./features/auth/VerifyEmailRequiredPage"));
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 const AboutAuryaPage = lazy(() => import("./features/storefront/AboutAuryaPage"));
+const BlogIndexPage = lazy(() => import("./features/storefront/BlogIndexPage"));
+const BlogArticlePage = lazy(() => import("./features/storefront/BlogArticlePage"));
 const HowItWorksPage = lazy(() => import("./features/storefront/HowItWorksPage"));
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import SubProcessorsPage from "./pages/SubProcessorsPage";
@@ -295,6 +297,9 @@ function AppRoutes() {
       {/* AN1 — pagine istituzionali del brand (chi siamo / come funziona) */}
       <Route path="/chi-siamo" element={<AboutAuryaPage />} />
       <Route path="/come-funziona" element={<HowItWorksPage />} />
+      {/* AN5 — il blog di Aurya */}
+      <Route path="/blog" element={<BlogIndexPage />} />
+      <Route path="/blog/:slug" element={<BlogArticlePage />} />
       {/* Static legal pages — always accessible, no auth wrapper */}
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />

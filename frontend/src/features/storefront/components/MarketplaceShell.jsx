@@ -70,6 +70,7 @@ const NAV_ITEMS = [
   { to: '/esperienze', key: 'marketplace.navExperiences', fallback: 'Esperienze' },
   { to: '/operatori', key: 'marketplace.navOperators', fallback: 'Organizzatori' },
   { to: '/destinazioni', key: 'marketplace.navDestinations', fallback: 'Destinazioni' },
+  { to: '/blog', key: 'marketplace.navBlog', fallback: 'Blog' },
 ];
 
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
@@ -277,6 +278,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                   </li>
                 ))}
                 <li><Link to="/esperienze" className="hover:text-primary">{t('marketplace.footerExperiences', { defaultValue: 'Esperienze' })}</Link></li>
+                <li><Link to="/blog" className="hover:text-primary">{t('marketplace.navBlog', { defaultValue: 'Blog' })}</Link></li>
               </ul>
             </div>
             <div>
