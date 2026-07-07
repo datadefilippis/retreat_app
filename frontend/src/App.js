@@ -262,6 +262,18 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+// RB3 — la SPA manteneva la posizione di scroll tra le pagine: chi
+// navigava dal footer atterrava in FONDO alla pagina nuova. Al cambio
+// di pathname si riparte dall'alto; i cambi di sola query (filtri,
+// vista mappa) non scrollano, chi sta filtrando non va disturbato.
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<RouteFallback />}>
@@ -791,6 +803,7 @@ function App() {
                     everyone (public + authenticated), which is what
                     transparency requires under ePrivacy Recital 25. */}
                 <CookieConsentBanner />
+                <ScrollToTop />
                 <AppRoutes />
                 <Toaster position="top-right" richColors />
               </EntitlementsProvider>

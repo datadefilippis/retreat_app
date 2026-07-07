@@ -134,10 +134,10 @@ async def _meta_home() -> dict:
     return {
         # AN1 — il title porta la promessa, non solo la categoria
         # (docs/BRAND_AURYA.md): caparra protetta + recensioni verificate.
-        "title": "Aurya — Il marketplace italiano dei ritiri olistici",
+        "title": "Aurya | Ritiri olistici ed esperienze che fanno crescere",
         "description": ("Trova e prenota ritiri di yoga, meditazione, detox "
-                        "ed esperienze olistiche in Italia: prenoti online "
-                        "con caparra protetta e recensioni solo verificate."),
+                        "ed esperienze olistiche: prenoti online con caparra "
+                        "protetta e recensioni solo verificate."),
         "canonical": f"{base}/",
         "hreflang": _hub_hreflang(f"{base}/"),
         "image": f"{base}/logo-aurya.png",
@@ -153,13 +153,13 @@ async def _meta_home() -> dict:
 # AN1 — pagine istituzionali del brand: meta statiche, hreflang hub
 _BRAND_PAGES = {
     "chi-siamo": {
-        "title": "Chi siamo — Aurya, il marketplace italiano dei ritiri olistici",
+        "title": "Chi siamo | Aurya, il marketplace dei ritiri olistici",
         "description": ("Aurya connette chi cerca benessere autentico con chi "
                         "lo crea: ritiri prenotabili online con caparra "
                         "protetta e recensioni solo verificate."),
     },
     "come-funziona": {
-        "title": "Come funziona Aurya — prenota ritiri olistici con caparra protetta",
+        "title": "Come funziona Aurya: prenota ritiri olistici con caparra protetta",
         "description": ("Scegli il ritiro, blocca il posto con una caparra "
                         "protetta da Stripe, vivi l'esperienza e recensisci: "
                         "su Aurya solo recensioni verificate."),
@@ -184,7 +184,7 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
 async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
     base = _base_url()
     label = cat.replace("-", " ").title()
-    where = f" in {region.title()}" if region else " in Italia"
+    where = f" in {region.title()}" if region else ""
     path = f"/ritiri/{cat}" + (f"/{region}" if region else "")
     return {
         "title": f"Ritiri di {label}{where} | Aurya",

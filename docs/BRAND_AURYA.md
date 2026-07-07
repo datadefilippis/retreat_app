@@ -6,7 +6,7 @@
 
 ## Chi siamo (una frase)
 
-**Aurya è il marketplace italiano dei ritiri olistici: trovi l'esperienza giusta, la prenoti online con una caparra protetta, e dietro ogni recensione c'è una persona che c'era davvero.**
+**Aurya è il marketplace dei ritiri olistici: trovi l'esperienza che ti fa crescere, la prenoti online con una caparra protetta, e dietro ogni recensione c'è una persona che c'era davvero.**
 
 ## Missione
 
@@ -14,7 +14,7 @@ Rendere semplice, trasparente e sicuro l'incontro tra chi cerca benessere autent
 
 ## Visione
 
-Diventare il punto di riferimento in Italia (e per chi viene in Italia) per le esperienze olistiche: un ecosistema dove ogni ritiro, consulenza e percorso è prenotabile online, ogni recensione è verificata, e ogni operatore — dal singolo insegnante alla struttura — vive di ciò che sa fare.
+Diventare il punto di riferimento per le esperienze olistiche (si parte da Italia e Svizzera, senza confini: un operatore può creare esperienze ovunque): un ecosistema dove ogni ritiro, consulenza e percorso è prenotabile online, ogni recensione è verificata, e ogni operatore — dal singolo insegnante alla struttura — vive di ciò che sa fare.
 
 ## La promessa (per chi cerca)
 
@@ -38,7 +38,10 @@ Diventare il punto di riferimento in Italia (e per chi viene in Italia) per le e
 ## Tono di voce
 
 - **Caldo ma concreto**: il benessere è una cosa seria, non fuffa. Niente promesse cosmiche; numeri, date, garanzie.
-- **Onesto fino al pignolo**: se una cosa non è vera, non si scrive (es. non "in tutto il mondo" finché siamo Italia-first).
+- **Onesto fino al pignolo**: se una cosa non è vera, non si scrive.
+- **Senza confini**: mai brandizzare su una geografia (niente "italiano", "in Italia"): si parte da Italia e Svizzera ma la visione è internazionale, e un operatore può organizzare ovunque.
+- **Niente trattini lunghi nei testi** (regola founder, RB4): frasi piene, punti e virgole. Il ritmo lo fa la punteggiatura, non il trattino.
+- **Voce umana e olistica**: investiamo sull'umano, su esperienze che fanno crescere in una società che tende ad allontanarti dall'umano. Energia e visione, mai fuffa: Connect. Heal. Grow.
 - **Rispettoso dell'operatore**: Aurya è il palco, l'operatore è l'artista. Sulle pagine degli operatori il protagonista è lui.
 - Registro: seconda persona singolare ("trovi", "prenoti"); frasi brevi; mai gergo tech verso i visitatori.
 
@@ -48,9 +51,9 @@ Diventare il punto di riferimento in Italia (e per chi viene in Italia) per le e
 - Palette: Salvia profonda `#376254` (primaria) · Terracotta `#C97B5D` (accento) · Crema `#F5F3EE` (fondo)
 - Font: Cinzel (brand) · Manrope (heading) · Public Sans (testo)
 
-## Tagline ufficiali ×4 (aggiornate AN1 — "Italia", non "mondo")
+## Tagline ufficiali ×4 (aggiornate RB4: senza geografia, senza trattini)
 
-- IT: «Trova e prenota ritiri olistici in Italia — con caparra protetta, senza pensieri.»
-- EN: «Find and book holistic retreats in Italy — with a protected deposit, worry-free.»
-- DE: «Finde und buche holistische Retreats in Italien — mit geschützter Anzahlung, sorgenfrei.»
-- FR: «Trouvez et réservez des retraites holistiques en Italie — avec un acompte protégé, l'esprit tranquille.»
+- IT: «Trova e prenota ritiri olistici ed esperienze che ti fanno crescere. Con caparra protetta, senza pensieri.»
+- EN: «Find and book holistic retreats and experiences that help you grow. With a protected deposit, worry free.»
+- DE: «Finde und buche holistische Retreats und Erlebnisse, die dich wachsen lassen. Mit geschützter Anzahlung, sorgenfrei.»
+- FR: «Trouvez et réservez des retraites holistiques et des expériences qui vous font grandir. Avec un acompte protégé, l'esprit tranquille.»

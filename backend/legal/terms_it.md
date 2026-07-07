@@ -78,7 +78,7 @@ L'Utente dichiara di avere la capacita' giuridica per concludere un contratto vi
 
 ### 6.1 Directory e calendario pubblico
 
-Aurya espone una directory pubblica di ritiri ed esperienze olistiche in Italia, con ricerca per localita', data e tipologia. La visibilita' dell'Offerta nel Calendario pubblico e' **subordinata alla prenotabilita' online**: vengono aggregate le Offerte con date, prezzi e disponibilita' reali, prenotabili e pagabili direttamente tramite la Piattaforma. Il Fornitore puo' definire criteri editoriali di qualita' minima per l'inclusione nella directory (completezza della scheda, foto, coerenza dei contenuti).
+Aurya espone una directory pubblica di ritiri ed esperienze olistiche, con ricerca per localita', data e tipologia. La visibilita' dell'Offerta nel Calendario pubblico e' **subordinata alla prenotabilita' online**: vengono aggregate le Offerte con date, prezzi e disponibilita' reali, prenotabili e pagabili direttamente tramite la Piattaforma. Il Fornitore puo' definire criteri editoriali di qualita' minima per l'inclusione nella directory (completezza della scheda, foto, coerenza dei contenuti).
 
 ### 6.2 Vetrina e store dell'Operatore
 

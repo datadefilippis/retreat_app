@@ -30,14 +30,15 @@ class TestBrandFoundationsAn1:
             assert pillar in doc, f"pilastro '{pillar}' mancante nel brand doc"
 
     def test_tagline_is_honest_everywhere(self):
-        """'In tutto il mondo' era falso: la tagline dice Italia, in
-        entrambe le fonti di verita' (backend + i18n IT)."""
+        """RB4 — la tagline non impone geografie (si parte da Italia e
+        Svizzera ma la visione e' internazionale) e non ha trattini."""
         from core.brand import BRAND_TAGLINE
-        assert "Italia" in BRAND_TAGLINE["it"]
-        assert "mondo" not in BRAND_TAGLINE["it"]
+        for lang, tagline in BRAND_TAGLINE.items():
+            assert "Itali" not in tagline, f"{lang}: geografia nella tagline"
+            assert "mondo" not in tagline
+            assert "—" not in tagline
         landings = json.loads((FRONTEND_SRC / "locales" / "it" / "landings.json").read_text())
-        assert "Italia" in landings["marketplace"]["tagline"]
-        assert "mondo" not in landings["marketplace"]["tagline"]
+        assert "Itali" not in landings["marketplace"]["tagline"]
 
     def test_home_mounts_value_sections(self):
         """La home racconta l'anima: come funziona / perche' Aurya /
@@ -91,8 +92,9 @@ class TestBrandFoundationsAn1:
         src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
         assert "_BRAND_PAGES" in src
         assert '"chi-siamo"' in src and '"come-funziona"' in src
-        # e la home porta la promessa, non un title generico
-        assert "marketplace italiano" in src
+        # e la home porta la promessa, non un title generico ne' geografie
+        assert "che fanno crescere" in src
+        assert "marketplace italiano" not in src
 
     def test_sitemap_includes_brand_pages(self):
         src = (BACKEND_DIR / "routers" / "seo.py").read_text()

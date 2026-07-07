@@ -191,6 +191,8 @@ export default function RetreatsCalendarPage() {
           background: 'radial-gradient(ellipse 60% 80% at 15% 10%, rgba(255,255,255,0.10), transparent 60%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(193,102,61,0.25), transparent 55%)',
         }} />
         <div className="relative max-w-6xl mx-auto px-4 pt-14 pb-10 text-center">
+          {/* RB4 — il motto in font-brand, il filo d'oro del wordmark */}
+          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#d6c49a] mb-3 select-none">Connect · Heal · Grow</p>
           <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight leading-tight">
             {catLabel || region
               ? seoTitle.replace(' — prenota online', '')

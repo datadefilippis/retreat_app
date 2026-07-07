@@ -65,7 +65,7 @@ History:
     EN/DE/FR ritradotti dal bundle IT v2.0.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "abf8fc2c42c9cb00"
+CURRENT_VERSION_HASH: Final[str] = "cbbb9cdc2ec25b48"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

@@ -419,7 +419,16 @@ def validate_occurrence_transition(current: str, target: str) -> Tuple[bool, str
     """Validate an occurrence status transition.
 
     Returns (valid: bool, reason: str).
+
+    RB1 — stesso stato = NO-OP idempotente, mai un errore: il form di
+    modifica manda sempre lo status corrente insieme a data/luogo, e
+    salvare un evento published senza cambiarne lo stato NON è una
+    transizione. Prima rispondeva 400 "published → published" e
+    l'operatore non riusciva a modificare data/luogo di un evento
+    pubblicato.
     """
+    if target == current:
+        return True, "no-op"
     allowed = VALID_OCCURRENCE_TRANSITIONS.get(current, set())
     if target not in allowed:
         return False, f"Transizione non valida: {current} → {target}"
