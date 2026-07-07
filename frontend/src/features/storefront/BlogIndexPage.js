@@ -68,8 +68,11 @@ export default function BlogIndexPage() {
   return (
     <MarketplaceShell noSearch>
       <div className="bg-background min-h-[60vh]">
-        <header className="bg-gradient-sidebar text-white">
-          <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+        <header className="relative bg-gradient-sidebar text-white overflow-hidden">
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={{
+          background: 'radial-gradient(ellipse 60% 80% at 15% 10%, rgba(255,255,255,0.08), transparent 60%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(193,102,61,0.22), transparent 55%)',
+        }} />
+          <div className="relative max-w-4xl mx-auto px-4 py-12 text-center">
             <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#d6c49a] mb-3 select-none">Connect · Heal · Grow</p>
             <h1 className="font-display text-3xl md:text-4xl font-bold">
               {t('blog.title', { defaultValue: 'Il blog di Aurya' })}

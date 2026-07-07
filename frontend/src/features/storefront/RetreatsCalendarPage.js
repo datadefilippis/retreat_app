@@ -184,21 +184,25 @@ export default function RetreatsCalendarPage() {
   return (
     <MarketplaceShell noSearch>
     <div className="bg-background">
-      {/* ── Hero (M4: evocativo, search-first, centrato) ─────────────── */}
+      {/* ── Hero (DS: il tramonto di Aurya in sottofondo) ────────────── */}
       <header className="relative bg-gradient-sidebar text-white overflow-hidden">
-        {/* texture d'atmosfera: due aloni radiali nella palette, zero asset */}
-        <div aria-hidden className="absolute inset-0 pointer-events-none" style={{
-          background: 'radial-gradient(ellipse 60% 80% at 15% 10%, rgba(255,255,255,0.10), transparent 60%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(193,102,61,0.25), transparent 55%)',
-        }} />
-        <div className="relative max-w-6xl mx-auto px-4 pt-14 pb-10 text-center">
+        {/* poster sempre sotto: primo dipinto + fallback reduced-motion */}
+        <img aria-hidden src="/media/aurya-hero-poster.jpg" alt=""
+             className="absolute inset-0 w-full h-full object-cover" />
+        <video aria-hidden className="hero-video absolute inset-0 w-full h-full object-cover"
+               autoPlay muted loop playsInline preload="metadata"
+               poster="/media/aurya-hero-poster.jpg" src="/media/aurya-hero.mp4" />
+        {/* scrim salvia: il tramonto è oro acceso, i testi restano leggibili */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/80 via-[#14231d]/40 to-[#0e1a15]/85" />
+        <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
           {/* RB4 — il motto in font-brand, il filo d'oro del wordmark */}
-          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#d6c49a] mb-3 select-none">Connect · Heal · Grow</p>
-          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight leading-tight">
+          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] md:text-xs text-[#ecd9a8] mb-3 select-none text-hero-shadow">Connect · Heal · Grow</p>
+          <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-tight text-hero-shadow">
             {catLabel || region
               ? seoTitle.replace(' — prenota online', '')
               : t('landings:calendar.title')}
           </h1>
-          <p className="text-white/75 mt-3 max-w-xl mx-auto">{t('landings:calendar.subtitle')}</p>
+          <p className="text-white/95 mt-4 max-w-xl mx-auto text-base md:text-lg text-hero-shadow">{t('landings:calendar.subtitle')}</p>
 
           <div className="mt-7 max-w-xl mx-auto">
             <input
@@ -206,7 +210,7 @@ export default function RetreatsCalendarPage() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder={t('landings:calendar.searchPlaceholder', { defaultValue: 'Cerca un ritiro, un luogo, un organizzatore…' })}
-              className="w-full rounded-full border-0 bg-white/95 px-6 py-3.5 text-base text-gray-900 shadow-xl focus:outline-none focus:ring-2 focus:ring-white/60"
+              className="w-full rounded-full border-0 bg-white/95 backdrop-blur px-6 py-3.5 md:py-4 text-base text-gray-900 shadow-2xl focus:outline-none focus:ring-2 focus:ring-[#d6c49a]"
             />
           </div>
 
@@ -217,8 +221,8 @@ export default function RetreatsCalendarPage() {
             <div className="mt-7 flex flex-wrap gap-2 justify-center">
               <button
                 onClick={() => setFilter('categoria', '')}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  !category ? 'bg-white text-gray-900' : 'bg-white/10 text-white hover:bg-white/20'
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors backdrop-blur-sm ${
+                  !category ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'
                 }`}
               >
                 {t('landings:calendar.allCategories')}
@@ -227,8 +231,8 @@ export default function RetreatsCalendarPage() {
                 <button
                   key={key}
                   onClick={() => setFilter('categoria', key)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                    category === key ? 'bg-white text-gray-900' : 'bg-white/10 text-white hover:bg-white/20'
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors backdrop-blur-sm ${
+                    category === key ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'
                   }`}
                 >
                   <span aria-hidden className="mr-1.5">{CATEGORY_ICONS[key] || '✨'}</span>
@@ -346,7 +350,7 @@ export default function RetreatsCalendarPage() {
                 <Link
                   key={`${item.org_slug}/${item.slug}`}
                   to={item.url}
-                  className="group rounded-2xl border border-border bg-card overflow-hidden hover-lift transition-shadow hover:shadow-lg"
+                  className="group card-lift rounded-2xl border border-border bg-card overflow-hidden shadow-sm"
                 >
                   <div className="relative h-56 bg-muted overflow-hidden">
                     {item.cover_image_url ? (
@@ -354,7 +358,7 @@ export default function RetreatsCalendarPage() {
                         src={item.cover_image_url}
                         alt=""
                         loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-secondary to-muted" aria-hidden>
@@ -374,7 +378,7 @@ export default function RetreatsCalendarPage() {
                     )}
                     {/* MD3 — badge dei piani "In evidenza" (promessa Pro resa vera) */}
                     {item.featured && !(item.remaining != null && item.remaining <= 5 && item.remaining > 0) && (
-                      <span className="absolute top-3 right-3 rounded-full bg-[#376254] text-white px-2.5 py-1 text-[11px] font-semibold shadow">
+                      <span className="absolute top-3 right-3 rounded-full bg-gradient-to-r from-[#8a7440] to-[#a98f52] text-[#faf6ec] px-3 py-1 text-[11px] font-semibold shadow-lg">
                         ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
                       </span>
                     )}

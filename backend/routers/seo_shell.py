@@ -140,7 +140,7 @@ async def _meta_home() -> dict:
                         "protetta e recensioni solo verificate."),
         "canonical": f"{base}/",
         "hreflang": _hub_hreflang(f"{base}/"),
-        "image": f"{base}/logo-aurya.png",
+        "image": f"{base}/media/aurya-hero-poster.jpg",
         "jsonld": {
             "@context": "https://schema.org",
             "@type": "WebSite",

@@ -328,3 +328,46 @@ class TestTrustAn7:
         shell = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "MarketplaceShell.jsx").read_text()
         assert "passportLink" in shell
+
+
+class TestDsBrandGlow:
+    """DS (7/7/2026) — il tramonto di Aurya nell'hero e il filo d'oro
+    su tutto il frontend pubblico: gli asset devono esistere e restare
+    leggeri, il video deve rispettare prefers-reduced-motion."""
+
+    def test_hero_video_assets_exist_and_light(self):
+        pub = FRONTEND_SRC.parent / "public" / "media"
+        video = pub / "aurya-hero.mp4"
+        poster = pub / "aurya-hero-poster.jpg"
+        assert video.exists() and poster.exists()
+        # sottofondo, non cinema: mai oltre i 3MB
+        assert video.stat().st_size < 3_000_000
+        assert poster.stat().st_size < 200_000
+
+    def test_home_hero_uses_video_with_scrim(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "RetreatsCalendarPage.js").read_text()
+        assert "aurya-hero.mp4" in page
+        assert "aurya-hero-poster.jpg" in page       # fallback sempre sotto
+        assert "hero-video" in page                  # gate reduced-motion
+        assert "text-hero-shadow" in page            # leggibilita' sul tramonto
+
+    def test_design_utilities_exist(self):
+        css = (FRONTEND_SRC / "index.css").read_text()
+        for util in (".eyebrow", ".gold-rule", ".card-lift", ".aura-corner",
+                     ".text-hero-shadow"):
+            assert util in css, f"{util} mancante in index.css"
+        # il video si spegne per chi preferisce meno movimento
+        assert "prefers-reduced-motion" in css
+
+    def test_footer_is_dark_brand(self):
+        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "MarketplaceShell.jsx").read_text()
+        idx = shell.index("<footer")
+        footer = shell[idx:idx + 400]
+        assert "bg-gradient-sidebar" in footer
+        assert "gold-rule" in footer
+
+    def test_home_og_image_is_sunset(self):
+        src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert "aurya-hero-poster.jpg" in src

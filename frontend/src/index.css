@@ -118,6 +118,67 @@ body {
     background: var(--gradient-sidebar);
 }
 
+/* ── DS brand glow (7/7/2026) — l'oro del wordmark come filo conduttore ──── */
+
+/* Testo sopra media luminosi (video tramonto): leggibile senza box */
+.text-hero-shadow {
+    text-shadow: 0 2px 24px rgba(10, 20, 16, 0.55), 0 1px 3px rgba(10, 20, 16, 0.6);
+}
+
+/* Occhiello di sezione: Cinzel oro, tracking largo (pattern RB4) */
+.eyebrow {
+    font-family: 'Cinzel', 'Palatino', Georgia, serif;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: #8a7440;
+    user-select: none;
+}
+.eyebrow-light { color: #d6c49a; }
+
+/* Filo d'oro orizzontale: separatore di sezione discreto */
+.gold-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #c9b37e 20%, #8a7440 50%, #c9b37e 80%, transparent);
+    opacity: 0.55;
+}
+
+/* Card che respira al passaggio (solo dove il hover esiste davvero) */
+@media (hover: hover) {
+    .card-lift {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .card-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px -12px rgba(30, 47, 40, 0.25);
+    }
+}
+
+/* Aura del logo come texture di sezione: cerchi concentrici, zero asset */
+.aura-corner {
+    position: relative;
+    overflow: hidden;
+}
+.aura-corner::after {
+    content: '';
+    position: absolute;
+    right: -120px;
+    bottom: -140px;
+    width: 420px;
+    height: 420px;
+    border-radius: 9999px;
+    pointer-events: none;
+    background:
+        radial-gradient(circle, transparent 58px, rgba(138, 116, 64, 0.12) 59px, transparent 61px),
+        radial-gradient(circle, transparent 118px, rgba(138, 116, 64, 0.10) 119px, transparent 121px),
+        radial-gradient(circle, transparent 178px, rgba(138, 116, 64, 0.08) 179px, transparent 181px);
+}
+
+/* Il video hero rispetta chi preferisce meno movimento: resta il poster */
+@media (prefers-reduced-motion: reduce) {
+    .hero-video { display: none; }
+}
+
 /* ── Hover lift effect ─────────────────────────────────────────────────────── */
 
 .hover-lift {

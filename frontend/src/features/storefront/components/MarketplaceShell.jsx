@@ -15,7 +15,7 @@
  *              stessa, che HA già la ricerca in hero)
  */
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BRAND_NAME, BRAND_MOTTO } from '../../../config/brand';
 import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
@@ -76,6 +76,7 @@ const NAV_ITEMS = [
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
   const { t, i18n } = useTranslation('landings');
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [destinations, setDestinations] = React.useState(_destCache || []);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
@@ -134,15 +135,25 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               {/* AN2 — menu principale (desktop): gli aggregatori smettono
                   di essere scopribili solo dal footer */}
               <nav aria-label="principale" className="hidden lg:flex items-center gap-1 ml-2">
-                {NAV_ITEMS.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="rounded-full px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 whitespace-nowrap"
-                  >
-                    {t(item.key, { defaultValue: item.fallback })}
-                  </Link>
-                ))}
+                {NAV_ITEMS.map((item) => {
+                  const active = item.to === '/'
+                    ? pathname === '/' || pathname.startsWith('/ritiri')
+                    : pathname.startsWith(item.to);
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      aria-current={active ? 'page' : undefined}
+                      className={`rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                        active
+                          ? 'text-[#2c4f43] bg-[#376254]/10 font-semibold'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      }`}
+                    >
+                      {t(item.key, { defaultValue: item.fallback })}
+                    </Link>
+                  );
+                })}
               </nav>
 
               {/* Scorciatoia ricerca — riporta alla directory (che ha i filtri) */}
@@ -237,76 +248,80 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
 
       {/* ── Footer ─────────────────────────────────────────────────── */}
       {!minimal && (
-        <footer className="border-t border-gray-200 bg-white mt-12">
-          <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+        <footer className="relative mt-12 bg-gradient-sidebar text-white overflow-hidden">
+          <div aria-hidden className="gold-rule absolute top-0 inset-x-0" />
+          <div aria-hidden className="absolute inset-0 pointer-events-none" style={{
+            background: 'radial-gradient(ellipse 55% 75% at 88% 100%, rgba(193,102,61,0.16), transparent 55%)',
+          }} />
+          <div className="relative max-w-6xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
             <div>
               <div className="mb-2 flex items-center gap-2.5">
                 <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-8 w-8 select-none" draggable={false} />
                 <span className="flex flex-col select-none">
-                  <span className="font-brand font-medium uppercase tracking-[0.28em] text-base leading-none text-[#8a7440]">{BRAND_NAME}</span>
-                  <span className="font-brand uppercase tracking-[0.3em] text-[9px] mt-1 text-[#8a7440]/80">{BRAND_MOTTO}</span>
+                  <span className="font-brand font-medium uppercase tracking-[0.28em] text-base leading-none text-[#d6c49a]">{BRAND_NAME}</span>
+                  <span className="font-brand uppercase tracking-[0.3em] text-[9px] mt-1 text-[#d6c49a]/80">{BRAND_MOTTO}</span>
                 </span>
               </div>
-              <p className="text-gray-500 text-xs leading-relaxed">
+              <p className="text-white/60 text-xs leading-relaxed">
                 {t('marketplace.tagline', { defaultValue: 'Trova e prenota ritiri olistici in Italia — con caparra protetta, senza pensieri.' })}
               </p>
               {/* AN1 — le pagine dell'anima */}
-              <ul className="mt-3 space-y-1.5 text-gray-600 text-xs">
-                <li><Link to="/chi-siamo" className="hover:text-primary">{t('aboutPage.title', { defaultValue: 'Chi siamo' })}</Link></li>
-                <li><Link to="/come-funziona" className="hover:text-primary">{t('howPage.title', { defaultValue: 'Come funziona' })}</Link></li>
+              <ul className="mt-3 space-y-1.5 text-white/70 text-xs">
+                <li><Link to="/chi-siamo" className="hover:text-white">{t('aboutPage.title', { defaultValue: 'Chi siamo' })}</Link></li>
+                <li><Link to="/come-funziona" className="hover:text-white">{t('howPage.title', { defaultValue: 'Come funziona' })}</Link></li>
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-900 mb-2 text-xs uppercase tracking-wide">
+              <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
                 {t('marketplace.footerExplore', { defaultValue: 'Esplora' })}
               </p>
-              <ul className="space-y-1.5 text-gray-600">
+              <ul className="space-y-1.5 text-white/70">
                 {/* AN2 — link ai PATH SEO (/ritiri/{cat}), non alla query:
                     i crawler devono trovare le pagine categoria dai link
                     interni, non solo dalla sitemap */}
-                <li><Link to="/ritiri/yoga" className="hover:text-primary">Yoga</Link></li>
-                <li><Link to="/ritiri/meditazione" className="hover:text-primary">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>
-                <li><Link to="/ritiri/detox" className="hover:text-primary">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>
-                <li><Link to="/" className="hover:text-primary">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>
-                <li><Link to="/operatori" className="hover:text-primary">{t('marketplace.footerOperators', { defaultValue: 'Tutti gli organizzatori' })}</Link></li>
-                <li><Link to="/destinazioni" className="hover:text-primary">{t('marketplace.footerDestinations', { defaultValue: 'Destinazioni' })}</Link></li>
+                <li><Link to="/ritiri/yoga" className="hover:text-white">Yoga</Link></li>
+                <li><Link to="/ritiri/meditazione" className="hover:text-white">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>
+                <li><Link to="/ritiri/detox" className="hover:text-white">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>
+                <li><Link to="/" className="hover:text-white">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>
+                <li><Link to="/operatori" className="hover:text-white">{t('marketplace.footerOperators', { defaultValue: 'Tutti gli organizzatori' })}</Link></li>
+                <li><Link to="/destinazioni" className="hover:text-white">{t('marketplace.footerDestinations', { defaultValue: 'Destinazioni' })}</Link></li>
                 {destinations.map(d => (
                   <li key={d.slug}>
-                    <Link to={`/destinazioni/${d.slug}`} className="hover:text-primary pl-3 text-xs">
+                    <Link to={`/destinazioni/${d.slug}`} className="hover:text-white pl-3 text-xs">
                       {d.label}
                     </Link>
                   </li>
                 ))}
-                <li><Link to="/esperienze" className="hover:text-primary">{t('marketplace.footerExperiences', { defaultValue: 'Esperienze' })}</Link></li>
-                <li><Link to="/blog" className="hover:text-primary">{t('marketplace.navBlog', { defaultValue: 'Blog' })}</Link></li>
+                <li><Link to="/esperienze" className="hover:text-white">{t('marketplace.footerExperiences', { defaultValue: 'Esperienze' })}</Link></li>
+                <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Blog' })}</Link></li>
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-900 mb-2 text-xs uppercase tracking-wide">
+              <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
                 {t('marketplace.footerAccount', { defaultValue: 'Il tuo account' })}
               </p>
-              <ul className="space-y-1.5 text-gray-600">
-                <li><Link to="/account" className="hover:text-primary">{t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}</Link></li>
+              <ul className="space-y-1.5 text-white/70">
+                <li><Link to="/account" className="hover:text-white">{t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}</Link></li>
                 {/* AN7 — il Passaporto ha un nome anche in vetrina */}
-                <li><Link to="/account" className="hover:text-primary">{t('marketplace.passportLink', { defaultValue: 'Il tuo Passaporto Aurya' })}</Link></li>
-                <li><Link to="/account/accedi" className="hover:text-primary">{t('marketplace.signIn', { defaultValue: 'Accedi' })}</Link></li>
+                <li><Link to="/account" className="hover:text-white">{t('marketplace.passportLink', { defaultValue: 'Il tuo Passaporto Aurya' })}</Link></li>
+                <li><Link to="/account/accedi" className="hover:text-white">{t('marketplace.signIn', { defaultValue: 'Accedi' })}</Link></li>
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-900 mb-2 text-xs uppercase tracking-wide">
+              <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
                 {t('marketplace.footerOrganizers', { defaultValue: 'Organizzatori' })}
               </p>
-              <ul className="space-y-1.5 text-gray-600">
-                <li><Link to="/inizia" className="hover:text-primary">{t('marketplace.startSelling', { defaultValue: 'Porta i tuoi ritiri online' })}</Link></li>
-                <li><Link to="/login" className="hover:text-primary">{t('marketplace.operatorLogin', { defaultValue: 'Area operatori' })}</Link></li>
+              <ul className="space-y-1.5 text-white/70">
+                <li><Link to="/inizia" className="hover:text-white">{t('marketplace.startSelling', { defaultValue: 'Porta i tuoi ritiri online' })}</Link></li>
+                <li><Link to="/login" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area operatori' })}</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-100">
-            <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+          <div className="relative border-t border-white/10">
+            <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/40">
               <span>© {BRAND_NAME}</span>
-              <Link to="/privacy" className="hover:text-gray-600">Privacy</Link>
-              <Link to="/termini" className="hover:text-gray-600">{t('marketplace.terms', { defaultValue: 'Termini' })}</Link>
+              <Link to="/privacy" className="hover:text-white/80">Privacy</Link>
+              <Link to="/termini" className="hover:text-white/80">{t('marketplace.terms', { defaultValue: 'Termini' })}</Link>
             </div>
           </div>
         </footer>
