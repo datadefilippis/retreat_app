@@ -83,7 +83,7 @@ export function buildEventCardProps({ product, occurrence, orgSlug, currency, t,
     statusBadge,
     overline: (weekday || time) ? `${weekday || ''}${weekday && time ? ' · ' : ''}${time || ''}` : null,
     title: product.name,
-    subtitle: venueLine ? `📍 ${venueLine}` : null,
+    subtitle: venueLine ? `${venueLine}` : null,
     description: !occurrence.long_description ? product.description : null,
     priceCaption: priceFormatted ? (isMultiPrice ? t('storefront:cards.common.priceFrom') : t('storefront:cards.common.price')) : null,
     priceFormatted,
@@ -117,7 +117,7 @@ export function buildServiceCardProps({ product, orgSlug, currency, t, locale = 
 
   // Subtitle: prefer a location hint (store city) then fall back to category.
   const subtitleParts = [];
-  if (product.store_city) subtitleParts.push(`📍 ${product.store_city}`);
+  if (product.store_city) subtitleParts.push(`${product.store_city}`);
   else if (product.category) subtitleParts.push(product.category);
   const subtitle = subtitleParts.join(' · ') || null;
 
@@ -153,7 +153,7 @@ export function buildPhysicalCardProps({ product, orgSlug, currency, t, locale =
   const priceFormatted = fmtCurrency(displayPrice, currency, locale);
 
   const subtitleParts = [];
-  if (product.store_city) subtitleParts.push(`📍 ${product.store_city}`);
+  if (product.store_city) subtitleParts.push(`${product.store_city}`);
   else if (product.category) subtitleParts.push(product.category);
 
   // Stock overline: tracked → badge + count; untracked → SKU (when present).
@@ -315,7 +315,7 @@ export function buildReservationCardProps({ product, orgSlug, currency, t, local
     : t('storefront:cards.reservation.slot');
 
   const subtitleParts = [];
-  if (product.store_city) subtitleParts.push(`📍 ${product.store_city}`);
+  if (product.store_city) subtitleParts.push(`${product.store_city}`);
   else if (product.category) subtitleParts.push(product.category);
 
   // Overline: show slot duration for slot flavor, unit for range.

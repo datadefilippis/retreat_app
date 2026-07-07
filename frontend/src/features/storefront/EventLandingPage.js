@@ -33,6 +33,7 @@ import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
 import StorefrontHeader from './components/StorefrontHeader';
 import MarkdownLite from '../../components/MarkdownLite';
+import { CalendarDays, Clock, MapPin, CreditCard, ShoppingCart, ShieldCheck, Sprout, MailCheck, Flower2 } from 'lucide-react';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
 import { effectivePlan } from './lib/paymentPlan';
@@ -412,7 +413,7 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
         disabled={needsTierSelection}
         className="w-full rounded-md bg-[var(--sf-accent,#111827)] text-[var(--sf-accent-fg,#ffffff)] px-4 py-3 text-sm font-semibold hover:bg-[var(--sf-accent-hover,#1f2937)] disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        {isDirectMode && <span aria-hidden>💳</span>}
+        {isDirectMode && <CreditCard className="h-4 w-4 inline-block" aria-hidden />}
         {needsTierSelection
           ? t('landings:event.ctaSelectTier')
           : t('landings:event.ctaAdd')}
@@ -636,7 +637,7 @@ export default function EventLandingPage() {
               <span>{t('landings:event.catalogLink')}</span>
               {cartCount > 0 && (
                 <span className="inline-flex items-center rounded-full bg-white text-gray-900 text-[10px] font-bold px-2 py-0.5">
-                  🛒 {cartCount}
+                  <ShoppingCart className="h-3 w-3 inline-block mr-0.5 align-[-1px]" aria-hidden /> {cartCount}
                 </span>
               )}
             </Link>
@@ -715,18 +716,18 @@ export default function EventLandingPage() {
             {dt && (
               <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm sm:text-base">
                 <span className="flex items-center gap-2">
-                  <span aria-hidden>📅</span>
+                  <CalendarDays className="h-4 w-4 shrink-0" aria-hidden />
                   <span className="capitalize">{dt.date}</span>
                 </span>
                 <span className="flex items-center gap-2">
-                  <span aria-hidden>🕒</span>
+                  <Clock className="h-4 w-4 shrink-0" aria-hidden />
                   <span>
                     {dt.time}{dtEnd ? ` – ${dtEnd.time}` : ''}
                   </span>
                 </span>
                 {(occurrence.venue_name || occurrence.city) && (
                   <span className="flex items-center gap-2">
-                    <span aria-hidden>📍</span>
+                    <MapPin className="h-4 w-4 shrink-0" aria-hidden />
                     <span>
                       {occurrence.venue_name}{occurrence.venue_name && occurrence.city ? ', ' : ''}{occurrence.city}
                     </span>
@@ -1060,15 +1061,15 @@ export default function EventLandingPage() {
               {/* M2 — blocco fiducia: la promessa di piattaforma sotto la CTA */}
               <ul className="rounded-xl border border-gray-200 bg-white p-4 space-y-2 text-xs text-gray-600">
                 <li className="flex items-start gap-2">
-                  <span aria-hidden>🛡️</span>
+                  <ShieldCheck className="h-4 w-4 shrink-0 text-[#376254]" aria-hidden />
                   <span>{t('landings:event.trustSecure', { defaultValue: 'Pagamento sicuro con carta. I tuoi dati non passano mai dall\'organizzatore.' })}</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span aria-hidden>🌱</span>
+                  <Sprout className="h-4 w-4 shrink-0 text-[#376254]" aria-hidden />
                   <span>{t('landings:event.trustDeposit', { defaultValue: 'Dove previsto, blocchi il posto con la caparra e saldi più avanti.' })}</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span aria-hidden>✉️</span>
+                  <MailCheck className="h-4 w-4 shrink-0 text-[#376254]" aria-hidden />
                   <span>{t('landings:event.trustTicket', { defaultValue: 'Biglietto e promemoria via email, subito dopo la prenotazione.' })}</span>
                 </li>
               </ul>
@@ -1132,7 +1133,7 @@ export default function EventLandingPage() {
                 className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
             {operator.logo_url
               ? <img src={operator.logo_url} alt="" className="h-14 w-14 rounded-full object-cover shrink-0" />
-              : <div className="h-14 w-14 rounded-full bg-emerald-50 flex items-center justify-center text-2xl shrink-0" aria-hidden>🧘</div>}
+              : <div className="h-14 w-14 rounded-full bg-emerald-50 flex items-center justify-center shrink-0" aria-hidden><Flower2 className="h-7 w-7 text-[#376254]/60" /></div>}
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
                 {t('landings:event.organizedBy', { defaultValue: 'Organizzato da' })}

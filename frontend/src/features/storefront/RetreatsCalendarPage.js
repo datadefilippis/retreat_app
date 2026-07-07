@@ -25,12 +25,9 @@ const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'))
 // G3 — il filtro regioni e' stato sostituito dalla ricerca geografica
 // (GeoSearchBar); il param backend `region` resta per i vecchi link SEO.
 
-// Icone per le categorie note (chiavi backend) — fallback ✨ per le nuove.
-const CATEGORY_ICONS = {
-  yoga: '🧘', meditazione: '🌿', meditation: '🌿', detox: '🥗',
-  sound: '🎶', sound_healing: '🎶', breathwork: '🌬️', fitness: '💪',
-  benessere: '🌸', wellness: '🌸', escursioni: '🥾', hiking: '🥾',
-};
+// DS2 — icone categoria professionali (lucide), mappa unica condivisa.
+import { Globe2 } from 'lucide-react';
+import { CategoryIcon } from './lib/categoryIcons';
 
 function fmtPrice(n) {
   if (n === null || n === undefined) return null;
@@ -196,7 +193,11 @@ export default function RetreatsCalendarPage() {
         <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/80 via-[#14231d]/40 to-[#0e1a15]/85" />
         <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
           {/* RB4 — il motto in font-brand, il filo d'oro del wordmark */}
-          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] md:text-xs text-[#ecd9a8] mb-3 select-none text-hero-shadow">Connect · Heal · Grow</p>
+          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-base md:text-2xl text-[#f2dfab] mb-4 select-none text-hero-shadow flex items-center justify-center gap-4">
+            <span aria-hidden className="hidden sm:block h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-[#d6c49a]/80" />
+            Connect · Heal · Grow
+            <span aria-hidden className="hidden sm:block h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-[#d6c49a]/80" />
+          </p>
           <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-tight text-hero-shadow">
             {catLabel || region
               ? seoTitle.replace(' — prenota online', '')
@@ -235,7 +236,7 @@ export default function RetreatsCalendarPage() {
                     category === key ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'
                   }`}
                 >
-                  <span aria-hidden className="mr-1.5">{CATEGORY_ICONS[key] || '✨'}</span>
+                  <CategoryIcon category={key} className="h-4 w-4 mr-1.5 inline-block align-[-2px]" />
                   {/* T3 — label categoria via i18n (fallback: label backend) */}
                   {t(`landings:categories.${key}`, { defaultValue: label })}
                 </button>
@@ -285,7 +286,7 @@ export default function RetreatsCalendarPage() {
           >
             {view === 'mappa'
               ? t('landings:calendar.viewList', { defaultValue: '☰ Lista' })
-              : t('landings:calendar.viewMap', { defaultValue: '🗺 Mappa' })}
+              : t('landings:calendar.viewMap', { defaultValue: 'Mappa' })}
           </button>
           {!loading && (
             <span className="ml-auto text-xs text-muted-foreground">
@@ -299,9 +300,9 @@ export default function RetreatsCalendarPage() {
         {(i18n.language || 'it').slice(0, 2) !== 'it' && (
           <div className="max-w-6xl mx-auto px-4 pb-2 -mt-0.5">
             <p className="text-xs text-muted-foreground">
-              🌐 {t('marketplace.langFilterCaption', {
+              <Globe2 className="h-3.5 w-3.5 inline-block mr-1 align-[-2px]" aria-hidden />{t('marketplace.langFilterCaption', {
                 lang: (i18n.language || '').slice(0, 2).toUpperCase(),
-                defaultValue: 'Mostriamo i ritiri e le esperienze tenuti in {{lang}} — cambia lingua in alto per vederne altri.',
+                defaultValue: 'Mostriamo i ritiri e le esperienze tenuti in {{lang}}. Cambia lingua in alto per vederne altri.',
               })}
             </p>
           </div>
@@ -361,8 +362,8 @@ export default function RetreatsCalendarPage() {
                         className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-secondary to-muted" aria-hidden>
-                        {CATEGORY_ICONS[item.category] || '🧘'}
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-muted" aria-hidden>
+                        <CategoryIcon category={item.category} className="h-14 w-14 text-[#376254]/40" />
                       </div>
                     )}
                     {badge && (

@@ -371,3 +371,63 @@ class TestDsBrandGlow:
     def test_home_og_image_is_sunset(self):
         src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
         assert "aurya-hero-poster.jpg" in src
+
+
+class TestDs2Polish:
+    """DS2 (feedback founder 7/7 sera) — niente emoji nel marketplace
+    (icone lucide), motto in evidenza, destinazioni oneste (i conteggi
+    contano SOLO ciò che la lista mostra), firma logo+wordmark e
+    geometria sacra per categoria nelle cover del blog."""
+
+    _NO_EMOJI_FILES = (
+        "features/storefront/RetreatsCalendarPage.js",
+        "features/storefront/OperatorsIndexPage.js",
+        "features/storefront/ExperiencesPage.js",
+        "features/storefront/EventLandingPage.js",
+        "features/storefront/BlogIndexPage.js",
+        "features/storefront/components/MarketplaceShell.jsx",
+        "features/storefront/components/GeoSearchBar.jsx",
+        "features/storefront/components/StoreHome.jsx",
+    )
+
+    def test_no_emoji_in_marketplace_surfaces(self):
+        import re
+        emoji = re.compile(r"[\U0001F300-\U0001FAFF]")
+        for rel in self._NO_EMOJI_FILES:
+            src = (FRONTEND_SRC / rel).read_text()
+            hits = emoji.findall(src)
+            assert not hits, f"{rel}: emoji residue {hits[:3]}"
+
+    def test_shared_category_icons_module(self):
+        mod = (FRONTEND_SRC / "features" / "storefront" / "lib"
+               / "categoryIcons.js").read_text()
+        assert "lucide-react" in mod
+        from models.retreat_taxonomy import RETREAT_CATEGORIES
+        for slug in RETREAT_CATEGORIES:
+            assert f"{slug}:" in mod, f"categoria {slug} senza icona"
+
+    def test_motto_is_prominent_in_hero(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "RetreatsCalendarPage.js").read_text()
+        idx = page.index("Connect · Heal · Grow")
+        block = page[max(0, idx - 600):idx]
+        # non più micro-etichetta: almeno text-base, con i fili d'oro
+        assert "text-base" in block and "md:text-2xl" in block
+
+    def test_destinations_promise_only_listable(self):
+        """I conteggi di /public/destinations applicano lo STESSO gate
+        GT1b del calendario: direct + org pubblica + pagamenti pronti."""
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        idx = src.index("async def public_destinations_index")
+        body = src[idx:idx + 3000]
+        assert '"transaction_mode": "direct"' in body
+        assert "pay_ready" in body
+        assert "listable_products" in body
+
+    def test_cover_has_brand_signature_and_geometry(self):
+        from models.retreat_taxonomy import RETREAT_CATEGORIES
+        from services.article_cover import CATEGORY_GEOMETRY, _LOGO_PATH
+        assert set(CATEGORY_GEOMETRY) == set(RETREAT_CATEGORIES)
+        assert _LOGO_PATH.exists()          # la firma loto+sole viaggia col repo
+        src = (BACKEND_DIR / "services" / "article_cover.py").read_text()
+        assert "A U R Y A" in src           # wordmark in Cinzel oro

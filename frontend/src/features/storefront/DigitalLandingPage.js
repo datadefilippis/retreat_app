@@ -11,6 +11,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { SearchX, ShoppingCart } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18nInstance from '../../i18n';
@@ -171,7 +172,7 @@ export default function DigitalLandingPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border p-8 text-center">
-          <div className="text-4xl mb-3">🔎</div>
+          <div className="mb-3 flex justify-center"><SearchX className="h-10 w-10 text-gray-300" aria-hidden /></div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">{t('landings:digital.notFoundTitle')}</h1>
           <p className="text-sm text-gray-600">{t('landings:digital.notFoundBody')}</p>
         </div>
@@ -203,7 +204,7 @@ export default function DigitalLandingPage() {
           <span>{t('landings:digital.backToCatalog')}</span>
           {cartCount > 0 && (
             <span className="inline-flex items-center rounded-full bg-gray-900 text-white text-[10px] font-bold px-2 py-0.5">
-              🛒 {cartCount}
+              <ShoppingCart className="h-3 w-3 inline-block mr-0.5 align-[-1px]" aria-hidden /> {cartCount}
             </span>
           )}
         </button>
