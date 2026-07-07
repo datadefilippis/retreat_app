@@ -28,6 +28,9 @@ import {
 import { useCurrency } from '../../../context/AuthContext';
 import { formatCurrency } from '../../../lib/utils';
 import { SegmentFilters } from './SegmentFilters';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/popover';
+import { Input } from '../../../components/ui/input';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import ContactActions from '../../../components/ContactActions';
 
 const SEGMENT_VARIANT = {
@@ -75,6 +78,8 @@ export const CustomerTable = ({
   onHasAccountChange,
   marketingOptedIn = null,
   onMarketingOptedInChange,
+  search = '',
+  onSearchChange,
 }) => {
   const { t } = useTranslation('customerInsights');
   const currency = useCurrency();
@@ -124,22 +129,45 @@ export const CustomerTable = ({
             </span>
           </div>
         )}
-        {/* Filters live in the table card — they only affect the row
-            set below, NOT the KPI grid above the table. */}
+        {/* RF4 — carico cognitivo giù: UNA riga (ricerca + popover Filtri).
+            Le 4 dimensioni (segmento/stato/account/marketing) vivono nel
+            popover — stesso pattern della pagina Ordini (D2). */}
         {onSegmentChange && (
-          <div className="pt-1 border-t border-border">
-            <div className="pt-2">
-              <SegmentFilters
-                selectedSegment={segment}
-                onSegmentChange={onSegmentChange}
-                selectedStatus={customerStatus}
-                onStatusChange={onStatusChange}
-                selectedHasAccount={hasAccount}
-                onHasAccountChange={onHasAccountChange}
-                selectedMarketingOptedIn={marketingOptedIn}
-                onMarketingOptedInChange={onMarketingOptedInChange}
+          <div className="pt-2 border-t border-border flex items-center gap-2">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                placeholder={t('table.searchPlaceholder', { defaultValue: 'Cerca cliente…' })}
+                className="h-8 pl-8 text-xs"
               />
             </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5">
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  {t('table.filtersButton', { defaultValue: 'Filtri' })}
+                  {[segment, customerStatus, hasAccount, marketingOptedIn].filter((v) => v !== null && v !== undefined).length > 0 && (
+                    <span className="rounded-full bg-primary text-white px-1.5 text-[10px] font-bold">
+                      {[segment, customerStatus, hasAccount, marketingOptedIn].filter((v) => v !== null && v !== undefined).length}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-[340px] p-3">
+                <SegmentFilters
+                  selectedSegment={segment}
+                  onSegmentChange={onSegmentChange}
+                  selectedStatus={customerStatus}
+                  onStatusChange={onStatusChange}
+                  selectedHasAccount={hasAccount}
+                  onHasAccountChange={onHasAccountChange}
+                  selectedMarketingOptedIn={marketingOptedIn}
+                  onMarketingOptedInChange={onMarketingOptedInChange}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         )}
       </CardHeader>

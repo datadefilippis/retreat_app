@@ -162,7 +162,9 @@
     "noResults": "No customer matches the filters",
     "exportCsv": "Export CSV",
     "exportCsvGdprHint": "The CSV includes an unsubscribe_url column with a one-click revocation link per customer. Use it as a merge tag in your marketing campaign footers (e.g. {{unsubscribe_url}} on Mailchimp / Brevo) to comply with GDPR Art. 7(3).",
-    "columnContact": "Contact"
+    "columnContact": "Contact",
+    "searchPlaceholder": "Search customer…",
+    "filtersButton": "Filters"
   },
   "profile": {
     "title": "Customer profile",

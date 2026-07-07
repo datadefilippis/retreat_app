@@ -162,7 +162,9 @@
     "noResults": "Aucun client ne correspond aux filtres",
     "exportCsv": "Exporter CSV",
     "exportCsvGdprHint": "Le CSV inclut une colonne unsubscribe_url avec un lien de désabonnement par client. Utilisez-la comme balise de fusion dans les pieds de page de vos campagnes marketing (par ex. {{unsubscribe_url}} sur Mailchimp / Brevo) pour respecter l'art. 7(3) du RGPD.",
-    "columnContact": "Contact"
+    "columnContact": "Contact",
+    "searchPlaceholder": "Rechercher un client…",
+    "filtersButton": "Filtres"
   },
   "profile": {
     "title": "Profil client",

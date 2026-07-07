@@ -58,7 +58,8 @@ export default function CustomerInsightsPage() {
   const currency = useCurrency();
 
   // Filter state
-  const [period, setPeriod] = useState('30d');
+  // RF4 — 12 mesi: il respiro giusto per un'attività stagionale
+  const [period, setPeriod] = useState('12m');
   const [segment, setSegment] = useState(null);
   const [customerStatus, setCustomerStatus] = useState(null);
   // CI-admin-vis: two new filter states, null = no filter (default).
@@ -66,6 +67,7 @@ export default function CustomerInsightsPage() {
   // useEffect, the page-reset useEffect, AND the export call.
   const [hasAccount, setHasAccount] = useState(null);
   const [marketingOptedIn, setMarketingOptedIn] = useState(null);
+  const [search, setSearch] = useState('');
 
   // Data state
   const [overview, setOverview] = useState(null);
@@ -138,6 +140,7 @@ export default function CustomerInsightsPage() {
       customerStatus,
       hasAccount,
       marketingOptedIn,
+      search: search || undefined,
       page,
       pageSize: PAGE_SIZE,
     })
@@ -153,12 +156,12 @@ export default function CustomerInsightsPage() {
         if (!cancelled) setCustomersLoading(false);
       });
     return () => { cancelled = true; };
-  }, [segment, customerStatus, hasAccount, marketingOptedIn, page]);
+  }, [segment, customerStatus, hasAccount, marketingOptedIn, search, page]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [segment, customerStatus, hasAccount, marketingOptedIn]);
+  }, [segment, customerStatus, hasAccount, marketingOptedIn, search]);
 
   // ── Drill-down from KPI cards ────────────────────────────────────
   const onSegmentDrill = (drillKey) => {
@@ -377,6 +380,8 @@ export default function CustomerInsightsPage() {
         onHasAccountChange={setHasAccount}
         marketingOptedIn={marketingOptedIn}
         onMarketingOptedInChange={setMarketingOptedIn}
+        search={search}
+        onSearchChange={setSearch}
       />
 
       {/* CF6 — l'analitica pesante resta, ma non fa rumore: accordion chiuso */}
