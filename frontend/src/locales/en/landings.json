@@ -463,7 +463,8 @@
     "distanceAway": "{{km}} km away",
     "mapEmpty": "No retreats with a map position for these filters.",
     "mapSee": "See the retreat →",
-    "fromPrice": "from €{{price}}"
+    "fromPrice": "from €{{price}}",
+    "featured": "Featured"
   },
   "operator": {
     "website": "Website",

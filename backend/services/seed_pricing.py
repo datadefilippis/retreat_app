@@ -1080,3 +1080,21 @@ async def migrate_plan_relaunch_v5() -> None:
         "snapshotted_legacy_price_ids": snapshotted_count,
     })
     logger.info("migrate_plan_relaunch_v5: done.")
+
+
+async def migrate_retreat_pro_features_md3() -> None:
+    """MD3 one-shot — rimuove la promessa VUOTA 'Insight clienti
+    avanzati' dal piano Pro nei DB esistenti (features_display è
+    protetto dall'upsert, quindi il seed da solo non basta).
+
+    Verificato in audit (docs/MODULI_ABBONAMENTI_ANALISI_2026-07-07):
+    customers_light_free e _pro hanno limiti identici — il free vede
+    già tutti gli insight. La voce restante 'In evidenza' è resa VERA
+    da MD3 (boost+badge directory)."""
+    from database import db
+    result = await db.commercial_plans.update_many(
+        {"slug": {"$in": ["retreat_pro", "retreat_founding"]}},
+        {"$pull": {"features_display": "billing.features.retreat_customers_pro"}},
+    )
+    if result.modified_count:
+        logger.info("MD3: retreat_customers_pro rimossa da %d piani", result.modified_count)

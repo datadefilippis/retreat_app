@@ -144,6 +144,9 @@ async def lifespan(app: FastAPI):
         # MD1 — organization_modules allineate al piano (self-healing)
         from services.plan_provisioning import reconcile_all_module_activations
         await reconcile_all_module_activations()
+        # MD3 — via la promessa vuota dal Pro nei DB esistenti
+        from services.seed_pricing import migrate_retreat_pro_features_md3
+        await migrate_retreat_pro_features_md3()
     except Exception as e:
         logging.error(f"Failed to migrate pricing plans: {e}")
     # Ensure all pricing plans exist (inserts missing slugs individually)

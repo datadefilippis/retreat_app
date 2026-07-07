@@ -419,7 +419,6 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
             "billing.features.retreat_catalog_unlimited",
             "billing.features.retreat_stores_3",
             "billing.features.retreat_team_5",
-            "billing.features.retreat_customers_pro",
             "billing.features.retreat_priority_support",
         ],
     },

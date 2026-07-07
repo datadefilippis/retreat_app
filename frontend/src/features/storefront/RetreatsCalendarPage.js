@@ -366,6 +366,12 @@ export default function RetreatsCalendarPage() {
                         {t('landings:calendar.fewLeft', { count: item.remaining })}
                       </span>
                     )}
+                    {/* MD3 — badge dei piani "In evidenza" (promessa Pro resa vera) */}
+                    {item.featured && !(item.remaining != null && item.remaining <= 5 && item.remaining > 0) && (
+                      <span className="absolute top-3 right-3 rounded-full bg-[#376254] text-white px-2.5 py-1 text-[11px] font-semibold shadow">
+                        ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
+                      </span>
+                    )}
                   </div>
                   <div className="p-4">
                     {/* V3 — tap sulla categoria → filtra la directory */}
