@@ -54,6 +54,8 @@ export default function ProductPerformancePage() {
 
   // ── State ──────────────────────────────────────────────────────────────
   const [period, setPeriod] = useState('30d');
+  // RF3 — ABC/categorie: analisi avanzata, chiusa di default
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   // Drill-down state: which product is in the slide and is it open.
@@ -184,22 +186,30 @@ export default function ProductPerformancePage() {
                 onProductDrill={productDrillFromTable}
               />
 
-              {/* Distribution row */}
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-                  {t('sections.distribution')}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <AbcDistributionCard
-                    abc={overview?.abc_distribution}
-                    loading={loading}
-                  />
-                  <CategoryBreakdownCard
-                    categories={overview?.categories}
-                    totalRevenue={totalRevenue}
-                    loading={loading}
-                  />
-                </div>
+              {/* RF3 — Distribuzione ABC/categorie: utile ma non urgente,
+                  vive in un accordion come l'analisi avanzata dei Clienti */}
+              <div className="rounded-2xl border border-border">
+                <button
+                  type="button"
+                  onClick={() => setAdvancedOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/40 rounded-2xl transition-colors"
+                >
+                  {t('sections.advanced', { defaultValue: 'Analisi avanzata (distribuzione ABC, categorie)' })}
+                  <span className="text-muted-foreground">{advancedOpen ? '\u25B2' : '\u25BC'}</span>
+                </button>
+                {advancedOpen && (
+                  <div className="p-4 pt-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <AbcDistributionCard
+                      abc={overview?.abc_distribution}
+                      loading={loading}
+                    />
+                    <CategoryBreakdownCard
+                      categories={overview?.categories}
+                      totalRevenue={totalRevenue}
+                      loading={loading}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Products table */}

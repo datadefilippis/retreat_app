@@ -107,6 +107,17 @@ export default function ProductKpiSection({ kpi, loading, onProductDrill }) {
     );
   };
 
+  // RF3 — KPI onesti: una card col trattino non decide niente. Le card
+  // dipendenti dai costi (COGS/margini) appaiono solo quando il valore
+  // esiste; finché mancano i costi, la griglia mostra solo fatti veri.
+  const hasValue = ({ key }) => {
+    if (loading) return true;           // skeleton per tutte durante il load
+    const v = kpi?.[key]?.value;
+    return v !== null && v !== undefined;
+  };
+  const tier1 = ORDER_TIER1.filter(hasValue);
+  const tier2 = ORDER_TIER2.filter(hasValue);
+
   return (
     <div className="space-y-4">
       {/* Tier 1 — Headline */}
@@ -115,19 +126,21 @@ export default function ProductKpiSection({ kpi, loading, onProductDrill }) {
           {t('sections.headline')}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {ORDER_TIER1.map(renderCard)}
+          {tier1.map(renderCard)}
         </div>
       </div>
 
       {/* Tier 2 — Operational insights */}
-      <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-          {t('sections.operational')}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          {ORDER_TIER2.map(renderCard)}
+      {tier2.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+            {t('sections.operational')}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            {tier2.map(renderCard)}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

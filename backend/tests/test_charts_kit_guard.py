@@ -58,3 +58,32 @@ def test_palette_is_salvia_terracotta():
     palette = (SRC / "components" / "charts" / "palette.js").read_text(encoding="utf-8")
     assert "#376254" in palette   # salvia
     assert "#C97B5D" in palette   # terracotta
+
+
+def test_product_health_checks_exclude_bi_cashflow_comparisons():
+    """RF3 — i check B (cashflow coherence) confrontavano col registro
+    del BI potato e producevano il banner 'Discrepanza' fuorviante:
+    non devono tornare nell'orchestratore."""
+    import inspect, sys
+    from pathlib import Path
+    backend = Path(__file__).resolve().parent.parent
+    if str(backend) not in sys.path:
+        sys.path.insert(0, str(backend))
+    from modules.product_catalog import health_checks
+    src = inspect.getsource(health_checks.run_all_checks)
+    assert "check_b1_cashflow_mismatch(" not in src
+    assert "check_b2_orphan_sales(" not in src
+    assert "check_b3_confirmed_orders_without_sales(" not in src
+
+
+def test_products_without_cost_is_a_suggestion_not_an_alarm():
+    """RF3 — il check costi non supera mai il tier 'secondary'
+    (impact cap 40) né severity warning."""
+    import inspect, sys
+    from pathlib import Path
+    backend = Path(__file__).resolve().parent.parent
+    if str(backend) not in sys.path:
+        sys.path.insert(0, str(backend))
+    from modules.product_catalog import health_checks
+    src = inspect.getsource(health_checks.check_a1_products_without_cost)
+    assert "40)" in src and 'severity = "warning"' in src
