@@ -216,3 +216,24 @@ def test_payment_methods_active_badge_is_short_word():
             f"{loc}.paymentMethods.activeBadge='{badge}' is {len(badge)} chars; "
             f"must be ≤ 12 to fit the badge UI"
         )
+
+
+def test_retreat_billing_feature_keys_exist_in_all_locales():
+    """MD4 — ogni voce features_display dei piani retreat ha la sua
+    copy in TUTTE le lingue (settings.json → billing.features.*)."""
+    import sys
+    backend = Path(__file__).resolve().parent.parent
+    if str(backend) not in sys.path:
+        sys.path.insert(0, str(backend))
+    from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS
+    keys = set()
+    for plan in RETREAT_COMMERCIAL_PLANS:
+        keys |= set(plan.get("features_display", []))
+    missing = []
+    for loc in LOCALES:
+        feats = _read(loc, "settings").get("billing", {}).get("features", {})
+        for key in sorted(keys):
+            short = key.split("billing.features.")[-1]
+            if short not in feats:
+                missing.append(f"{loc}: {short}")
+    assert not missing, "Copy mancante per voci di pricing:\n" + "\n".join(missing)
