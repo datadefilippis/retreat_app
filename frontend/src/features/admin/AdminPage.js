@@ -1,9 +1,10 @@
 import React from 'react';
 import { AppLayout, Header } from '../../components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Building2, Users, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2 } from 'lucide-react';
+import { Building2, Users, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2, Sparkles } from 'lucide-react';
 import PlatformOverviewTab from './PlatformOverviewTab';
 import DirectoryAdminTab from './DirectoryAdminTab';
+import SignalsTab from './SignalsTab';
 import OrganizationsTab from './OrganizationsTab';
 import UsersTab from './UsersTab';
 import AuditLogTab from './AuditLogTab';
@@ -53,6 +54,10 @@ const AdminPage = () => {
               <Globe2 className="h-4 w-4" />
               Directory
             </TabsTrigger>
+            <TabsTrigger value="signals" className="flex items-center gap-2 shrink-0">
+              <Sparkles className="h-4 w-4" />
+              Segnali
+            </TabsTrigger>
             <TabsTrigger value="organizations" className="flex items-center gap-2 shrink-0">
               <Building2 className="h-4 w-4" />
               Organizations
@@ -89,6 +94,10 @@ const AdminPage = () => {
 
           <TabsContent value="directory">
             <DirectoryAdminTab />
+          </TabsContent>
+
+          <TabsContent value="signals">
+            <SignalsTab />
           </TabsContent>
 
           <TabsContent value="organizations">
