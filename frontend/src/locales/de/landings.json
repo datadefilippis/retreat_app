@@ -524,7 +524,7 @@
     "aziendale": "Betriebliches Wohlbefinden"
   },
   "marketplace": {
-    "tagline": "Finde und buche holistische Retreats weltweit — mit Anzahlung, sorgenfrei.",
+    "tagline": "Finde und buche holistische Retreats in Italien — mit geschützter Anzahlung, sorgenfrei.",
     "searchShortcut": "Wo? · Wann? · Welches Retreat?",
     "forOrganizers": "Bist du Veranstalter?",
     "myTrips": "Meine Erlebnisse",
@@ -563,5 +563,59 @@
     "operatorReply": "Antwort des Veranstalters",
     "showMore": "Mehr anzeigen",
     "genericError": "Etwas hat nicht funktioniert, bitte erneut versuchen."
+  },
+  "brandHome": {
+    "howTitle": "So funktioniert's",
+    "how1t": "Wählen",
+    "how1b": "Entdecke Retreats und Erlebnisse nach Kategorie, Ort oder Datum: Preise und Plätze sind echt und live aktualisiert.",
+    "how2t": "Mit Anzahlung buchen",
+    "how2b": "Sichere dir deinen Platz online mit einer Anzahlung, geschützt durch Stripe. Der Rest folgt dem vereinbarten Plan.",
+    "how3t": "Das Retreat erleben",
+    "how3b": "Du erhältst Ticket und Erinnerungen; der Veranstalter hat alles, um dich zu empfangen.",
+    "how4t": "Erzähl, wie es war",
+    "how4b": "Nur echte Teilnehmer können bewerten: deine Stimme hilft dem Nächsten.",
+    "whyTitle": "Warum Aurya",
+    "why1t": "Nur verifizierte Bewertungen",
+    "why1b": "Bewerten kann nur, wer wirklich teilgenommen hat — verifiziert über die Bestell-E-Mail. Null gekaufte Bewertungen.",
+    "why2t": "Geschützte Anzahlung",
+    "why2b": "Zahlungen laufen über Stripe, nie über blinde Überweisungen. Die Anzahlung sichert den Platz, der Rest wie vereinbart.",
+    "why3t": "Dein Retreat-Pass",
+    "why3b": "Ein Konto für alle deine Erlebnisse: Tickets, Historie und Erinnerungen an einem Ort.",
+    "why4t": "Italienische Veranstalter, klare Preise",
+    "why4b": "Lehrer und Häuser aus der Region, transparente Termine und Preise, keine undurchsichtigen Vermittler.",
+    "orgTitle": "Bist du Veranstalter?",
+    "orgBody": "Deine professionelle Visitenkarte in 4 Sprachen, gratis, in 10 Minuten — du zahlst nur, wenn wir dir einen Kunden bringen.",
+    "orgCta": "Gratis starten"
+  },
+  "aboutPage": {
+    "seoTitle": "Über uns — Aurya, der italienische Marktplatz für holistische Retreats",
+    "seoDesc": "Aurya verbindet Suchende echten Wohlbefindens mit denen, die es schaffen: online buchbare Retreats mit geschützter Anzahlung und nur verifizierten Bewertungen.",
+    "title": "Über uns",
+    "intro": "Aurya ist der italienische Marktplatz für holistische Retreats: Du findest das richtige Erlebnis, buchst es online mit geschützter Anzahlung — und hinter jeder Bewertung steht jemand, der wirklich dabei war.",
+    "missionTitle": "Unsere Mission",
+    "missionBody": "Die Begegnung zwischen Suchenden echten Wohlbefindens und denen, die es schaffen, einfach, transparent und sicher zu machen — mit den digitalen Werkzeugen eines großen E-Commerce für italienische holistische Veranstalter, ohne dass sie Techniker werden müssen.",
+    "visionTitle": "Wohin wir wollen",
+    "visionBody": "Der Bezugspunkt in Italien für holistische Erlebnisse zu werden: ein Ökosystem, in dem jedes Retreat, jede Beratung und jeder Kurs online buchbar ist, jede Bewertung verifiziert ist und jeder Veranstalter von dem lebt, was er kann.",
+    "forSeekersTitle": "Für Suchende",
+    "forSeekersBody": "Buche sofort online, mit echten Terminen und Plätzen. Die Anzahlung ist durch Stripe geschützt. Bewertungen kommen nur von echten Teilnehmern. Und der Retreat-Pass hält alle deine Erlebnisse an einem Ort.",
+    "forOrganizersTitle": "Für Veranstalter",
+    "forOrganizersBody": "Eine professionelle Visitenkarte in 4 Sprachen, gratis, in 10 Minuten. Keine Pflichtgebühr: eine kleine Provision nur auf Buchungen aus dem öffentlichen Kalender. Dazu ein komplettes Back-Office für Anzahlungen, Kunden und Bewertungen.",
+    "cta": "Retreats entdecken"
+  },
+  "howPage": {
+    "seoTitle": "So funktioniert Aurya — holistische Retreats mit geschützter Anzahlung buchen",
+    "seoDesc": "Wähle dein Retreat, sichere deinen Platz mit einer Stripe-geschützten Anzahlung, erlebe es und bewerte: auf Aurya nur verifizierte Bewertungen.",
+    "title": "So funktioniert's",
+    "intro": "Von der Suche bis zur Bewertung ist jeder Schritt einfach und sicher gestaltet — für dich und für den Veranstalter.",
+    "faqTitle": "Häufige Fragen",
+    "faq1q": "Ist meine Anzahlung sicher?",
+    "faq1a": "Ja. Zahlungen laufen über Stripe, denselben Kreislauf großer E-Commerce-Anbieter: Deine Karte wird dem Veranstalter nie mitgeteilt. Die Anzahlung sichert den Platz; der Rest folgt dem Plan auf der Retreat-Seite.",
+    "faq2q": "Kann ich den Bewertungen vertrauen?",
+    "faq2a": "Bewerten kann nur, wer wirklich gebucht hat: Wir verifizieren über die Bestell-E-Mail. Deshalb gibt es auf Aurya keine gekauften Bewertungen.",
+    "faq3q": "Was ist der Retreat-Pass?",
+    "faq3a": "Dein persönliches Konto, gültig bei allen Veranstaltern: Tickets, Erlebnis-Historie und Zahlungserinnerungen an einem Ort.",
+    "faq4q": "Was kostet es für Veranstalter?",
+    "faq4a": "Der Einstieg ist gratis: Profil, Visitenkarte und Back-Office ohne Abo. Wir behalten eine kleine Provision nur auf Buchungen aus dem öffentlichen Kalender — ist der Kunde deiner, zahlst du nichts.",
+    "cta": "Finde dein Retreat"
   }
 }

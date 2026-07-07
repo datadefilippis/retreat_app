@@ -524,7 +524,7 @@
     "aziendale": "Benessere aziendale"
   },
   "marketplace": {
-    "tagline": "Trova e prenota ritiri olistici in tutto il mondo — con caparra, senza pensieri.",
+    "tagline": "Trova e prenota ritiri olistici in Italia — con caparra protetta, senza pensieri.",
     "searchShortcut": "Dove? · Quando? · Che ritiro?",
     "forOrganizers": "Sei un organizzatore?",
     "myTrips": "Le mie esperienze",
@@ -563,5 +563,59 @@
     "operatorReply": "Risposta dell'organizzatore",
     "showMore": "Mostra altre",
     "genericError": "Qualcosa non ha funzionato, riprova."
+  },
+  "brandHome": {
+    "howTitle": "Come funziona",
+    "how1t": "Scegli",
+    "how1b": "Esplora ritiri ed esperienze per categoria, luogo o data: prezzi e posti sono quelli veri, aggiornati in tempo reale.",
+    "how2t": "Prenota con caparra",
+    "how2b": "Blocchi il tuo posto online pagando solo un acconto, protetto da Stripe. Il saldo, secondo il piano concordato.",
+    "how3t": "Vivi il ritiro",
+    "how3b": "Ricevi biglietto e promemoria; l'organizzatore ha tutto ciò che serve per accoglierti.",
+    "how4t": "Racconta com'è andata",
+    "how4b": "Solo chi ha prenotato davvero può recensire: la tua voce aiuta chi cerca dopo di te.",
+    "whyTitle": "Perché Aurya",
+    "why1t": "Recensioni solo verificate",
+    "why1b": "Può recensire solo chi ha davvero partecipato, con verifica sull'email dell'ordine. Zero recensioni comprate.",
+    "why2t": "Caparra protetta",
+    "why2b": "I pagamenti viaggiano su Stripe, mai su bonifici al buio. L'acconto blocca il posto, il resto quando concordato.",
+    "why3t": "Il tuo Passaporto Ritiri",
+    "why3b": "Un solo account per tutte le tue esperienze: biglietti, storico e promemoria in un posto.",
+    "why4t": "Operatori italiani, prezzi chiari",
+    "why4b": "Insegnanti e strutture del territorio, date e prezzi trasparenti, senza intermediari opachi.",
+    "orgTitle": "Sei un organizzatore?",
+    "orgBody": "La tua vetrina professionale in 4 lingue, gratis, in 10 minuti — e paghi solo quando ti portiamo un cliente.",
+    "orgCta": "Inizia gratis"
+  },
+  "aboutPage": {
+    "seoTitle": "Chi siamo — Aurya, il marketplace italiano dei ritiri olistici",
+    "seoDesc": "Aurya connette chi cerca benessere autentico con chi lo crea: ritiri prenotabili online con caparra protetta e recensioni solo verificate.",
+    "title": "Chi siamo",
+    "intro": "Aurya è il marketplace italiano dei ritiri olistici: trovi l'esperienza giusta, la prenoti online con una caparra protetta, e dietro ogni recensione c'è una persona che c'era davvero.",
+    "missionTitle": "La nostra missione",
+    "missionBody": "Rendere semplice, trasparente e sicuro l'incontro tra chi cerca benessere autentico e chi lo crea — dando agli operatori olistici italiani gli strumenti digitali di un grande e-commerce, senza chiedere loro di diventare tecnici.",
+    "visionTitle": "Dove vogliamo arrivare",
+    "visionBody": "Diventare il punto di riferimento in Italia per le esperienze olistiche: un ecosistema dove ogni ritiro, consulenza e percorso è prenotabile online, ogni recensione è verificata, e ogni operatore vive di ciò che sa fare.",
+    "forSeekersTitle": "Per chi cerca",
+    "forSeekersBody": "Prenoti online subito, con date e posti veri. La caparra è protetta da Stripe. Le recensioni sono solo di chi ha partecipato. E il Passaporto Ritiri tiene tutte le tue esperienze in un posto.",
+    "forOrganizersTitle": "Per chi organizza",
+    "forOrganizersBody": "Una vetrina professionale in 4 lingue, gratis, in 10 minuti. Nessun canone obbligatorio: una piccola commissione solo sulle prenotazioni che arrivano dal calendario pubblico. E un gestionale completo per caparre, clienti e recensioni.",
+    "cta": "Esplora i ritiri"
+  },
+  "howPage": {
+    "seoTitle": "Come funziona Aurya — prenota ritiri olistici con caparra protetta",
+    "seoDesc": "Scegli il ritiro, blocca il posto con una caparra protetta da Stripe, vivi l'esperienza e recensisci: su Aurya solo recensioni verificate.",
+    "title": "Come funziona",
+    "intro": "Dalla ricerca alla recensione, ogni passo è pensato per essere semplice e sicuro — per te e per chi organizza.",
+    "faqTitle": "Domande frequenti",
+    "faq1q": "La caparra è al sicuro?",
+    "faq1a": "Sì. I pagamenti passano da Stripe, lo stesso circuito usato dai grandi e-commerce: la carta non viene mai comunicata all'organizzatore. L'acconto blocca il posto; il saldo segue il piano indicato sulla pagina del ritiro.",
+    "faq2q": "Le recensioni sono affidabili?",
+    "faq2a": "Può lasciare una recensione solo chi ha prenotato davvero: chiediamo una verifica sull'email usata per l'ordine. Per questo su Aurya non esistono recensioni comprate.",
+    "faq3q": "Cos'è il Passaporto Ritiri?",
+    "faq3a": "Il tuo account personale, valido con tutti gli organizzatori: biglietti, storico delle esperienze e promemoria dei pagamenti, tutto in un posto.",
+    "faq4q": "Quanto costa per chi organizza?",
+    "faq4a": "Entrare è gratis: profilo, vetrina e gestionale senza canone. Tratteniamo una piccola commissione solo sulle prenotazioni portate dal calendario pubblico — se il cliente è tuo, non paghi nulla.",
+    "cta": "Trova il tuo ritiro"
   }
 }

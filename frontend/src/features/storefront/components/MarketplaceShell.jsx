@@ -166,8 +166,13 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 </span>
               </div>
               <p className="text-gray-500 text-xs leading-relaxed">
-                {t('marketplace.tagline', { defaultValue: 'Trova e prenota ritiri olistici in tutto il mondo — con caparra, senza pensieri.' })}
+                {t('marketplace.tagline', { defaultValue: 'Trova e prenota ritiri olistici in Italia — con caparra protetta, senza pensieri.' })}
               </p>
+              {/* AN1 — le pagine dell'anima */}
+              <ul className="mt-3 space-y-1.5 text-gray-600 text-xs">
+                <li><Link to="/chi-siamo" className="hover:text-primary">{t('aboutPage.title', { defaultValue: 'Chi siamo' })}</Link></li>
+                <li><Link to="/come-funziona" className="hover:text-primary">{t('howPage.title', { defaultValue: 'Come funziona' })}</Link></li>
+              </ul>
             </div>
             <div>
               <p className="font-semibold text-gray-900 mb-2 text-xs uppercase tracking-wide">

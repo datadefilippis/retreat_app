@@ -17,7 +17,6 @@ import { MiniBars } from '../../components/charts';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../../components/ui/dialog';
-import { Badge } from '../../components/ui/badge';
 import { Skeleton } from '../../components/ui/skeleton';
 
 const eur = (v) => `€${Number(v || 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -66,7 +65,13 @@ export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange }) 
             {data?.name || 'Operatore'}
           </DialogTitle>
           <DialogDescription>
-            {data?.plan_slug && <Badge variant="outline" className="mr-2">{data.plan_slug}</Badge>}
+            {/* niente <Badge> (div) dentro DialogDescription (p): nesting
+                HTML invalido — badge inline con span */}
+            {data?.plan_slug && (
+              <span className="mr-2 inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold">
+                {data.plan_slug}
+              </span>
+            )}
             {data?.plan_price_monthly != null && <>canone {eur(data.plan_price_monthly)}/mese · </>}
             fee {data?.fee_percent ?? '—'}% · dal {data?.created_at || '—'}
           </DialogDescription>

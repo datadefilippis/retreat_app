@@ -524,7 +524,7 @@
     "aziendale": "Bien-être en entreprise"
   },
   "marketplace": {
-    "tagline": "Trouve et réserve des retraites holistiques dans le monde entier — avec acompte, sans souci.",
+    "tagline": "Trouvez et réservez des retraites holistiques en Italie — avec un acompte protégé, l'esprit tranquille.",
     "searchShortcut": "Où ? · Quand ? · Quelle retraite ?",
     "forOrganizers": "Tu es organisateur ?",
     "myTrips": "Mes expériences",
@@ -563,5 +563,59 @@
     "operatorReply": "Réponse de l’organisateur",
     "showMore": "Afficher plus",
     "genericError": "Quelque chose n’a pas fonctionné, réessayez."
+  },
+  "brandHome": {
+    "howTitle": "Comment ça marche",
+    "how1t": "Choisissez",
+    "how1b": "Explorez retraites et expériences par catégorie, lieu ou date : prix et places sont réels, mis à jour en direct.",
+    "how2t": "Réservez avec un acompte",
+    "how2b": "Bloquez votre place en ligne en payant un simple acompte, protégé par Stripe. Le solde suit le plan convenu.",
+    "how3t": "Vivez la retraite",
+    "how3b": "Vous recevez billet et rappels ; l'organisateur a tout pour vous accueillir.",
+    "how4t": "Racontez votre expérience",
+    "how4b": "Seuls les vrais participants peuvent laisser un avis : votre voix aide le prochain.",
+    "whyTitle": "Pourquoi Aurya",
+    "why1t": "Avis vérifiés uniquement",
+    "why1b": "Seuls ceux qui ont vraiment participé peuvent évaluer, avec vérification sur l'e-mail de commande. Zéro avis acheté.",
+    "why2t": "Acompte protégé",
+    "why2b": "Les paiements passent par Stripe, jamais par des virements à l'aveugle. L'acompte bloque la place, le reste au moment convenu.",
+    "why3t": "Votre Passeport Retraites",
+    "why3b": "Un seul compte pour toutes vos expériences : billets, historique et rappels au même endroit.",
+    "why4t": "Organisateurs italiens, prix clairs",
+    "why4b": "Enseignants et lieux du territoire, dates et prix transparents, sans intermédiaires opaques.",
+    "orgTitle": "Vous êtes organisateur ?",
+    "orgBody": "Votre vitrine professionnelle en 4 langues, gratuite, en 10 minutes — et vous ne payez que lorsque nous vous apportons un client.",
+    "orgCta": "Commencer gratuitement"
+  },
+  "aboutPage": {
+    "seoTitle": "Qui sommes-nous — Aurya, la marketplace italienne des retraites holistiques",
+    "seoDesc": "Aurya relie ceux qui cherchent un bien-être authentique à ceux qui le créent : retraites réservables en ligne avec acompte protégé et avis uniquement vérifiés.",
+    "title": "Qui sommes-nous",
+    "intro": "Aurya est la marketplace italienne des retraites holistiques : trouvez la bonne expérience, réservez-la en ligne avec un acompte protégé — et derrière chaque avis, il y a quelqu'un qui y était vraiment.",
+    "missionTitle": "Notre mission",
+    "missionBody": "Rendre simple, transparente et sûre la rencontre entre ceux qui cherchent un bien-être authentique et ceux qui le créent — en donnant aux organisateurs holistiques italiens les outils numériques d'un grand e-commerce, sans leur demander de devenir techniciens.",
+    "visionTitle": "Où nous allons",
+    "visionBody": "Devenir la référence en Italie pour les expériences holistiques : un écosystème où chaque retraite, consultation et parcours se réserve en ligne, chaque avis est vérifié, et chaque organisateur vit de ce qu'il sait faire.",
+    "forSeekersTitle": "Pour ceux qui cherchent",
+    "forSeekersBody": "Réservez en ligne tout de suite, avec des dates et des places réelles. L'acompte est protégé par Stripe. Les avis viennent uniquement de vrais participants. Et le Passeport Retraites garde toutes vos expériences au même endroit.",
+    "forOrganizersTitle": "Pour les organisateurs",
+    "forOrganizersBody": "Une vitrine professionnelle en 4 langues, gratuite, en 10 minutes. Aucun abonnement obligatoire : une petite commission uniquement sur les réservations venant du calendrier public. Plus un back-office complet pour acomptes, clients et avis.",
+    "cta": "Explorer les retraites"
+  },
+  "howPage": {
+    "seoTitle": "Comment fonctionne Aurya — réservez des retraites holistiques avec un acompte protégé",
+    "seoDesc": "Choisissez votre retraite, bloquez votre place avec un acompte protégé par Stripe, vivez l'expérience et laissez un avis : sur Aurya, avis vérifiés uniquement.",
+    "title": "Comment ça marche",
+    "intro": "De la recherche à l'avis, chaque étape est pensée pour être simple et sûre — pour vous comme pour l'organisateur.",
+    "faqTitle": "Questions fréquentes",
+    "faq1q": "Mon acompte est-il en sécurité ?",
+    "faq1a": "Oui. Les paiements passent par Stripe, le même circuit que les grands e-commerces : votre carte n'est jamais communiquée à l'organisateur. L'acompte bloque la place ; le solde suit le plan indiqué sur la page de la retraite.",
+    "faq2q": "Puis-je faire confiance aux avis ?",
+    "faq2a": "Seules les personnes ayant vraiment réservé peuvent laisser un avis : nous vérifions l'e-mail utilisé pour la commande. C'est pourquoi il n'existe pas d'avis achetés sur Aurya.",
+    "faq3q": "Qu'est-ce que le Passeport Retraites ?",
+    "faq3a": "Votre compte personnel, valable chez tous les organisateurs : billets, historique des expériences et rappels de paiement, au même endroit.",
+    "faq4q": "Combien ça coûte pour les organisateurs ?",
+    "faq4a": "L'entrée est gratuite : profil, vitrine et back-office sans abonnement. Nous gardons une petite commission uniquement sur les réservations apportées par le calendrier public — si le client est le vôtre, vous ne payez rien.",
+    "cta": "Trouvez votre retraite"
   }
 }

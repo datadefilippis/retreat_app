@@ -19,6 +19,8 @@ import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyEma
 // their email yet. Wrapped by RequireAuthOnly (defined in this file).
 const VerifyEmailRequiredPage = lazy(() => import("./features/auth/VerifyEmailRequiredPage"));
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+const AboutAuryaPage = lazy(() => import("./features/storefront/AboutAuryaPage"));
+const HowItWorksPage = lazy(() => import("./features/storefront/HowItWorksPage"));
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import SubProcessorsPage from "./pages/SubProcessorsPage";
 // Wave GDPR-Commerce Piece 1b (2026-05-19) — tokenised marketing unsubscribe page
@@ -278,6 +280,9 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
+      {/* AN1 — pagine istituzionali del brand (chi siamo / come funziona) */}
+      <Route path="/chi-siamo" element={<AboutAuryaPage />} />
+      <Route path="/come-funziona" element={<HowItWorksPage />} />
       {/* Static legal pages — always accessible, no auth wrapper */}
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
