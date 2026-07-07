@@ -166,33 +166,38 @@ export default function OperatorsIndexPage() {
 
   return (
     <MarketplaceShell>
-      <header className="aura-corner bg-gradient-to-b from-[#376254]/12 via-[#f6f3ec]/70 to-transparent">
-        <div className="max-w-6xl mx-auto px-4 pt-10 pb-6">
-          <nav className="text-xs text-muted-foreground mb-3">
-            <Link to="/" className="hover:text-primary hover:underline">Aurya</Link>
+      <header className="relative text-white overflow-hidden">
+        {/* le mani in mudra del founder: chi organizza è il volto della pagina */}
+        <img aria-hidden src="/media/hero-organizer.webp" alt="" fetchpriority="high"
+             className="absolute inset-0 w-full h-full object-cover" />
+        {/* velatura salvia più densa a sinistra, dove vive il testo */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#14231d]/90 via-[#14231d]/65 to-[#14231d]/35" />
+        <div className="relative max-w-6xl mx-auto px-4 pt-12 pb-8 md:pt-16 md:pb-12">
+          <nav className="text-xs text-white/70 mb-3">
+            <Link to="/" className="hover:text-white hover:underline">Aurya</Link>
             <span className="mx-1.5">›</span>
             {categoria ? (
               <>
-                <Link to="/operatori" className="hover:text-primary hover:underline">
+                <Link to="/operatori" className="hover:text-white hover:underline">
                   {t('landings:operators.heading', { defaultValue: 'Organizzatori' })}
                 </Link>
                 <span className="mx-1.5">›</span>
-                <span className="text-foreground">{catLabel}</span>
+                <span className="text-white">{catLabel}</span>
               </>
             ) : (
-              <span className="text-foreground">
+              <span className="text-white">
                 {t('landings:operators.heading', { defaultValue: 'Organizzatori' })}
               </span>
             )}
           </nav>
-          <p aria-hidden className="eyebrow mb-2">Connect · Heal · Grow</p>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
+          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-xs md:text-sm text-[#ecd9a8] mb-2 select-none text-hero-shadow">Connect · Heal · Grow</p>
+          <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
             {categoria
               ? t('landings:operators.headingCat', {
                   cat: catLabel, defaultValue: 'Organizzatori di {{cat}}' })
               : t('landings:operators.heading', { defaultValue: 'Organizzatori' })}
           </h1>
-          <p className="mt-2 text-muted-foreground max-w-2xl">
+          <p className="mt-2.5 text-white/90 max-w-2xl text-hero-shadow">
             {t('landings:operators.subtitle', {
               defaultValue: 'Le persone e i centri dietro i ritiri: scopri chi organizza, cosa propone e prenota direttamente online.',
             })}
@@ -202,8 +207,8 @@ export default function OperatorsIndexPage() {
             <div className="mt-5 flex flex-wrap gap-2">
               <Link
                 to="/operatori"
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                  !categoria ? 'bg-primary text-white' : 'bg-white border border-border text-foreground hover:border-primary'
+                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${
+                  !categoria ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'
                 }`}
               >
                 {t('landings:calendar.allCategories', { defaultValue: 'Tutte' })}
@@ -212,8 +217,8 @@ export default function OperatorsIndexPage() {
                 <Link
                   key={key}
                   to={`/operatori/${key}`}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                    categoria === key ? 'bg-primary text-white' : 'bg-white border border-border text-foreground hover:border-primary'
+                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${
+                    categoria === key ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'
                   }`}
                 >
                   <CategoryIcon category={key} className="h-3.5 w-3.5 mr-1 inline-block align-[-2px]" />
@@ -234,8 +239,8 @@ export default function OperatorsIndexPage() {
                 if (view === 'mappa') q.delete('vista'); else q.set('vista', 'mappa');
                 setParams(q, { replace: true });
               }}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
-                view === 'mappa' ? 'bg-primary text-white border-primary' : 'bg-white border-border text-foreground hover:border-primary'
+              className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors backdrop-blur-sm ${
+                view === 'mappa' ? 'bg-white text-gray-900 border-white shadow-lg' : 'bg-black/25 border-white/25 text-white hover:bg-black/40'
               }`}
             >
               {t('landings:operators.mapToggle', { defaultValue: 'Mappa' })}
