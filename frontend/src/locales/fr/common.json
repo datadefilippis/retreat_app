@@ -194,5 +194,9 @@
     "feeSaverBody": "Avec le plan Pro (commission de {{proFee}} % au lieu de {{fee}} %), vous auriez économisé {{saving}} ce mois-ci, abonnement inclus.",
     "feeSaverCta": "Découvrir le plan Pro",
     "reviewNudge": "Les encaissements manuels ne génèrent pas d'avis vérifiés : passez votre prochaine réservation par le calendrier public."
+  },
+  "directoryHint": {
+    "request": "Avec la réservation sur demande, cette retraite n'apparaîtra PAS dans le calendrier public : l'annuaire ne liste que les retraites réservables en ligne instantanément. Elle reste réservable depuis votre boutique.",
+    "stripeNote": "Tant que Stripe n'est pas actif, cette retraite n'apparaîtra pas dans le calendrier public, même publiée."
   }
 }

@@ -41,6 +41,7 @@ import { productsAPI } from '../../api';
 import FieldEditorList from './components/FieldEditorList';
 import { pruneFieldConfigs } from './components/fieldConfigUtils';
 import StripeRequiredAlert from '../../components/StripeRequiredAlert';
+import DirectoryListingHint from '../../components/DirectoryListingHint';
 import { useCurrency, useAuth } from '../../context/AuthContext';
 import { formatCurrency as fmtCurrency } from '../../lib/utils';
 // Wave 1 (W1.S5/Phase 2.4) — additive cost composition editor.
@@ -990,6 +991,9 @@ export default function EventWizard() {
                 ))}
               </div>
               <StripeRequiredAlert whenTransactionMode={base.transaction_mode} />
+              {/* GT7 — la conseguenza-directory si vede QUI, non a
+                  pubblicazione avvenuta */}
+              <DirectoryListingHint mode={base.transaction_mode} />
             </div>
           </div>
         )}

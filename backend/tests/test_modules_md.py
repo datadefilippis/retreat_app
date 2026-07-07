@@ -393,6 +393,44 @@ class TestProfileFirstGt6:
         assert first < page.index("'stripe_connected'")
         assert first < page.index("'store_created'")
 
+    def test_gt7_admin_sees_directory_eligibility(self):
+        """GT7 — l'operatore vede in admin perche' un ritiro non e' nel
+        calendario: admin/list calcola directory_listed + reasons con
+        le STESSE condizioni del gate GT1b."""
+        src = (BACKEND_DIR / "routers" / "event_occurrences.py").read_text()
+        assert '"directory_listed"' in src
+        for code in ("mode_request", "stripe_not_ready",
+                     "product_not_published", "occurrence_not_published",
+                     "no_public_page"):
+            assert f'"{code}"' in src, f"reason {code} mancante"
+        # stessa condizione Stripe del checkout/listing
+        assert '"status": "active", "runtime_status": "ready"' in src
+
+    def test_gt7_wizard_and_grid_show_directory_status(self):
+        base = BACKEND_DIR.parent / "frontend" / "src"
+        hint = (base / "components" / "DirectoryListingHint.jsx").read_text()
+        assert "request" in hint and "useStripeReadiness" in hint
+        for rel in ("features/events/EventWizard.js",
+                    "features/events/EventDashboardPage.js"):
+            assert "DirectoryListingHint" in (base / rel).read_text(), rel
+        grid = (base / "features" / "events" / "components" / "EventsGrid.js").read_text()
+        assert "directory_listed" in grid and "directory_reasons" in grid
+
+    def test_gt7_copy_in_four_languages(self):
+        import json
+        base = BACKEND_DIR.parent / "frontend" / "src" / "locales"
+        for lang in ("it", "en", "de", "fr"):
+            common = json.loads((base / lang / "common.json").read_text())
+            dh = common.get("directoryHint") or {}
+            assert dh.get("request") and dh.get("stripeNote"), f"{lang}: directoryHint"
+            products = json.loads((base / lang / "products.json").read_text())
+            d = ((products.get("grids") or {}).get("event") or {}).get("directory") or {}
+            assert d.get("notListed"), f"{lang}: notListed"
+            for code in ("mode_request", "stripe_not_ready",
+                         "product_not_published", "occurrence_not_published",
+                         "no_public_page"):
+                assert (d.get("reason") or {}).get(code), f"{lang}: reason.{code}"
+
     def test_onboarding_copy_in_four_languages(self):
         """de/fr non avevano AFFATTO la sezione onboarding (fallback
         italiano silenzioso) — mai piu': parita' chiave per chiave."""

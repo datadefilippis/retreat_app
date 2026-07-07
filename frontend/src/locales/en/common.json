@@ -194,5 +194,9 @@
     "feeSaverBody": "With the Pro plan ({{proFee}}% fee instead of {{fee}}%) you would have saved {{saving}} this month, subscription included.",
     "feeSaverCta": "Discover the Pro plan",
     "reviewNudge": "Manual payments don't generate verified reviews: bring your next booking through the public calendar."
+  },
+  "directoryHint": {
+    "request": "With request-based booking this retreat will NOT appear in the public calendar: the directory only lists retreats bookable online instantly. It stays bookable from your store.",
+    "stripeNote": "Until Stripe is active this retreat won't appear in the public calendar, even if published."
   }
 }

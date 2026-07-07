@@ -40,6 +40,7 @@ import { pruneFieldConfigs } from './components/fieldConfigUtils';
 import CostSourceEditor from '../products/components/CostSourceEditor';
 import { MiniBars } from '../../components/charts';
 import ContactActions from '../../components/ContactActions';
+import DirectoryListingHint from '../../components/DirectoryListingHint';
 import RetreatContentEditor from './components/RetreatContentEditor';
 import MultiLangSection from '../../components/MultiLangSection';
 
@@ -1097,6 +1098,8 @@ export default function EventDashboardPage() {
                   </div>
                 </div>
               </div>
+              {/* GT7 — conseguenza-directory della modalità scelta */}
+              <DirectoryListingHint mode={productForm.transaction_mode} />
 
               {/* F1 Onda 8 — attendee details policy */}
               <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-gray-200 bg-gray-50 p-3">

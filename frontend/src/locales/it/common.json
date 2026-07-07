@@ -194,5 +194,9 @@
     "feeSaverBody": "Col piano Pro (commissione {{proFee}}% invece di {{fee}}%) avresti risparmiato {{saving}} questo mese, canone incluso.",
     "feeSaverCta": "Scopri il piano Pro",
     "reviewNudge": "Gli incassi manuali non generano recensioni verificate: porta la prossima prenotazione sul calendario pubblico."
+  },
+  "directoryHint": {
+    "request": "Con la prenotazione su richiesta questo ritiro NON comparirà nel calendario pubblico: la directory elenca solo ritiri prenotabili online all'istante. Resta prenotabile dal tuo store.",
+    "stripeNote": "Finché Stripe non è attivo questo ritiro non comparirà nel calendario pubblico, anche se pubblicato."
   }
 }

@@ -348,6 +348,16 @@
         "published": "Online",
         "closed": "Chiuso",
         "cancelled": "Annullato"
+      },
+      "directory": {
+        "notListed": "Non in directory",
+        "reason": {
+          "mode_request": "Modalità su richiesta: la directory elenca solo ritiri prenotabili online",
+          "stripe_not_ready": "Stripe non attivo: collega i pagamenti nelle Impostazioni",
+          "product_not_published": "Prodotto non pubblicato",
+          "occurrence_not_published": "Data non pubblicata",
+          "no_public_page": "Nessuna pagina pubblica: pubblica lo store o la vetrina"
+        }
       }
     }
   },
