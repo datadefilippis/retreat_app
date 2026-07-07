@@ -50,6 +50,7 @@ from routers import preferences
 from routers import admin as admin_router
 from routers import admin_catalog as admin_catalog_router
 from routers import admin_feature_flags as admin_feature_flags_router
+from routers import admin_platform as admin_platform_router
 from routers import export as export_router
 from routers import billing as billing_router
 from routers import orders as orders_router
@@ -578,6 +579,7 @@ app.include_router(export_router.router, prefix="/api")      # /api/export/*
 app.include_router(admin_router.router, prefix="/api")       # /api/admin/*
 app.include_router(admin_catalog_router.router, prefix="/api")  # /api/admin/catalog/*
 app.include_router(admin_feature_flags_router.router, prefix="/api")  # /api/admin/feature-flags/* (Phase 0 Step 9)
+app.include_router(admin_platform_router.router, prefix="/api")  # /api/admin/platform/* (SA2/SA3)
 
 # ── Billing routes (v5.0) ────────────────────────────────────────────────────
 app.include_router(billing_router.router, prefix="/api")     # /api/billing/*

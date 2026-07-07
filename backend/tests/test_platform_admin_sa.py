@@ -87,3 +87,47 @@ class TestSalesChannelAlwaysStamped:
         assert "sales_channel" in src
         assert "entry_key" in src          # upsert idempotente
         assert "--dry-run" in src
+
+
+class TestPlatformOverviewSa2:
+    """SA2 — /admin/platform: panoramica del business, 100%
+    system-admin, solo dati timbrati."""
+
+    ROUTER_SRC = (BACKEND_DIR / "routers" / "admin_platform.py").read_text()
+
+    def test_all_endpoints_require_system_admin(self):
+        """Ogni endpoint del router porta la guardia — nessuna route
+        di piattaforma leggibile da un operatore."""
+        routes = self.ROUTER_SRC.count("@router.get")
+        guards = self.ROUTER_SRC.count("require_system_admin")
+        assert routes >= 2
+        assert guards >= routes + 1  # import + una per endpoint
+
+    def test_router_registered_in_server(self):
+        src = (BACKEND_DIR / "server.py").read_text()
+        assert "admin_platform" in src
+
+    def test_overview_reads_only_stamped_sources(self):
+        """Fee dal ledger SA1, GMV dagli ordini confermati, directory
+        dalle condizioni GT1b — niente stime parallele."""
+        insights = (BACKEND_DIR / "services" / "platform_insights.py").read_text()
+        assert "platform_fee_ledger" in insights
+        assert '"confirmed", "completed"' in insights
+        assert '"status": "active", "runtime_status": "ready"' in insights
+
+    def test_directory_snapshot_reason_codes_stable(self):
+        """I reason code sono il contratto col frontend (SA3)."""
+        insights = (BACKEND_DIR / "services" / "platform_insights.py").read_text()
+        for code in ("stripe_not_ready", "no_public_page",
+                     "no_direct_retreats"):
+            assert f'"{code}"' in insights
+
+    def test_admin_page_has_overview_tab(self):
+        base = BACKEND_DIR.parent / "frontend" / "src" / "features" / "admin"
+        page = (base / "AdminPage.js").read_text()
+        assert "PlatformOverviewTab" in page
+        assert 'defaultValue="overview"' in page
+        tab = (base / "PlatformOverviewTab.js").read_text()
+        assert "/admin/platform/overview" in tab
+        # riuso kit grafico condiviso, non recharts diretto
+        assert "components/charts" in tab

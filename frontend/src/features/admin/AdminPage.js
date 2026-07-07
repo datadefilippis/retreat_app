@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { AppLayout, Header } from '../../components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Card, CardContent } from '../../components/ui/card';
-import { Skeleton } from '../../components/ui/skeleton';
 import { Building2, Users, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap } from 'lucide-react';
-import { adminAPI } from '../../api';
+import PlatformOverviewTab from './PlatformOverviewTab';
 import OrganizationsTab from './OrganizationsTab';
 import UsersTab from './UsersTab';
 import AuditLogTab from './AuditLogTab';
@@ -23,58 +21,6 @@ import AIGovernanceTab from './AIGovernanceTab';
  * every API call would return 403.
  */
 
-// ── Stats row (platform KPIs at a glance) ─────────────────────────────────────
-
-const StatCard = ({ label, value, highlight }) => (
-  <Card className={`border ${highlight ? 'border-red-200' : 'border-border'}`}>
-    <CardContent className="pt-4 pb-4">
-      <div className={`text-2xl font-bold font-heading ${highlight ? 'text-red-600' : ''}`}>
-        {value ?? <Skeleton className="h-7 w-10 inline-block" />}
-      </div>
-      <p className="text-sm text-muted-foreground mt-0.5">{label}</p>
-    </CardContent>
-  </Card>
-);
-
-const AdminStats = () => {
-  const [stats, setStats] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadStats() {
-      try {
-        const [orgsRes, usersRes] = await Promise.all([
-          adminAPI.listOrganizations(0, 200),
-          adminAPI.listUsers({ limit: 1 }),
-        ]);
-        if (cancelled) return;
-        const orgs = orgsRes.data.items ?? [];
-        setStats({
-          totalOrgs:    orgsRes.data.total,
-          suspendedOrgs: orgs.filter((o) => !o.is_active).length,
-          totalUsers:   usersRes.data.total,
-        });
-      } catch {
-        // Stats are non-critical — fail silently
-      }
-    }
-    loadStats();
-    return () => { cancelled = true; };
-  }, []);
-
-  return (
-    <div className="grid grid-cols-3 gap-3 mb-6">
-      <StatCard label="Organizations"  value={stats?.totalOrgs} />
-      <StatCard
-        label="Suspended"
-        value={stats?.suspendedOrgs}
-        highlight={stats != null && stats.suspendedOrgs > 0}
-      />
-      <StatCard label="Total Users"    value={stats?.totalUsers} />
-    </div>
-  );
-};
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const AdminPage = () => {
@@ -91,13 +37,17 @@ const AdminPage = () => {
       </Header>
 
       <div className="p-4 md:p-8 animate-fade-in">
-        <AdminStats />
-
-        {/* Tabs list — becomes horizontally scrollable on phones so all 5
+        {/* SA2 — la vecchia stat row (org/utenti) vive dentro Panoramica:
+            un solo posto per i KPI, niente doppioni sopra i tab. */}
+        {/* Tabs list — becomes horizontally scrollable on phones so all
             tabs stay reachable without wrapping into a jagged multi-row
             block. scrollbar-hide is defined in index.css. */}
-        <Tabs defaultValue="organizations">
+        <Tabs defaultValue="overview">
           <TabsList className="mb-6 w-full sm:w-auto overflow-x-auto scrollbar-hide justify-start">
+            <TabsTrigger value="overview" className="flex items-center gap-2 shrink-0">
+              <TrendingUp className="h-4 w-4" />
+              Panoramica
+            </TabsTrigger>
             <TabsTrigger value="organizations" className="flex items-center gap-2 shrink-0">
               <Building2 className="h-4 w-4" />
               Organizations
@@ -127,6 +77,10 @@ const AdminPage = () => {
               AI Governance
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="overview">
+            <PlatformOverviewTab />
+          </TabsContent>
 
           <TabsContent value="organizations">
             <OrganizationsTab />
