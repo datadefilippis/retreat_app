@@ -229,13 +229,40 @@ async def build_operators() -> str:
     return _wrap(urls, "operators")
 
 
+async def build_articles() -> str:
+    """AN6 — il blog nel sitemap: hub /blog + articoli pubblicati,
+    hreflang solo sulle lingue con traduzione vera (title+content)."""
+    from database import db
+    base = _base_url()
+    urls = [_url(f"{base}/blog", priority="0.6",
+                 hreflang={"it": f"{base}/blog", "x-default": f"{base}/blog",
+                           **{l: f"{base}/blog?lang={l}" for l in _LANGS}})]
+    docs = await (db.articles
+                  .find({"published": True},
+                        {"_id": 0, "slug": 1, "published_at": 1,
+                         "updated_at": 1, "translations": 1})
+                  .sort("published_at", -1).limit(5000).to_list(5000))
+    for d in docs:
+        canonical = f"{base}/blog/{d['slug']}"
+        hl = {"it": canonical, "x-default": canonical}
+        for lang, tr in (d.get("translations") or {}).items():
+            if lang in _LANGS and (tr or {}).get("title") \
+                    and (tr or {}).get("content"):
+                hl[lang] = f"{canonical}?lang={lang}"
+        urls.append(_url(canonical,
+                         lastmod=d.get("updated_at") or d.get("published_at"),
+                         priority="0.6",
+                         hreflang=hl if len(hl) > 2 else None))
+    return _wrap(urls, "articles")
+
+
 def build_index() -> str:
     base = _base_url()
     now = datetime.now(timezone.utc).isoformat()[:10]
     entries = "".join(
         f"<sitemap><loc>{escape(base)}/api/public/sitemap-{name}.xml</loc>"
         f"<lastmod>{now}</lastmod></sitemap>"
-        for name in ("core", "retreats", "products", "operators")
+        for name in ("core", "retreats", "products", "operators", "articles")
     )
     return ('<?xml version="1.0" encoding="UTF-8"?>'
             '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
@@ -278,3 +305,8 @@ async def sitemap_products():
 @router.get("/sitemap-operators.xml")
 async def sitemap_operators():
     return await _cached("operators", build_operators)
+
+
+@router.get("/sitemap-articles.xml")
+async def sitemap_articles():
+    return await _cached("articles", build_articles)

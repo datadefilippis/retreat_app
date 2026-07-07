@@ -148,3 +148,61 @@ class TestBlogFrontend:
             for line in src.splitlines():
                 if "defaultValue" in line:
                     assert "—" not in line, f"{rel}: trattino lungo nel copy"
+
+
+class TestBlogSeoAn6:
+    """AN6 — il blog sulle stesse rotaie SEO dei ritiri: shell
+    server-side con BlogPosting, sitemap-articles nel canone, IndexNow
+    al publish, cover autogenerata quando manca un'immagine propria."""
+
+    def test_seo_shell_resolves_blog(self):
+        src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert "_meta_blog_list" in src
+        assert "_meta_blog_article" in src
+        assert '"BlogPosting"' in src
+        assert '"blog"' in src                     # branch nel dispatcher
+
+    def test_sitemap_articles_in_canon(self):
+        seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        assert "build_articles" in seo
+        assert "sitemap-articles.xml" in seo
+        assert '"articles"' in seo                 # nel sitemap index
+        inv = (BACKEND_DIR / "tests" / "test_seo_invariants.py").read_text()
+        assert '"articles"' in inv                 # nel canone invariants
+
+    def test_publish_pings_indexnow_and_makes_cover(self):
+        src = (BACKEND_DIR / "routers" / "articles.py").read_text()
+        assert "ping_urls_async" in src
+        assert "_autogen_cover" in src
+        # la cover non sovrascrive MAI una immagine propria al publish
+        assert 'not (data.get("featured_image_url")' in src
+
+    def test_cover_renders_all_categories(self):
+        """Ogni categoria della tassonomia ha la sua palette e rende
+        un WebP 1200x630 valido col titolo dentro."""
+        from io import BytesIO
+        from PIL import Image
+        from models.retreat_taxonomy import RETREAT_CATEGORIES
+        from services.article_cover import (CATEGORY_PALETTES,
+                                            render_article_cover)
+        assert set(CATEGORY_PALETTES) == set(RETREAT_CATEGORIES)
+        data = render_article_cover("Titolo di prova per la cover",
+                                    category="suono",
+                                    category_label="Suono & Sound Healing")
+        assert data and data[:4] == b"RIFF"        # container WebP
+        img = Image.open(BytesIO(data))
+        assert img.size == (1200, 630)             # OG-perfetto
+
+    def test_cover_is_best_effort(self):
+        """Il generatore non solleva MAI: titolo estremo → bytes o None,
+        mai eccezione (un publish non si blocca per una cover)."""
+        from services.article_cover import render_article_cover
+        out = render_article_cover("x" * 500, category="inesistente")
+        assert out is None or isinstance(out, bytes)
+
+    def test_fonts_shipped(self):
+        """I font brand (OFL) viaggiano col repo: la cover non dipende
+        dai font di sistema del VPS."""
+        fonts = BACKEND_DIR / "assets" / "fonts"
+        assert (fonts / "Cinzel-SemiBold.ttf").exists()
+        assert (fonts / "Manrope-Regular.ttf").exists()

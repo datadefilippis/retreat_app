@@ -11,6 +11,7 @@ Scrive solo il system admin (require_system_admin); la struttura è
 pronta per autori futuri (author_name sul documento).
 """
 
+import asyncio
 import logging
 from typing import Any, Dict, Optional
 
@@ -140,6 +141,27 @@ async def get_public_article(slug: str, lang: str = "it") -> Dict[str, Any]:
     return out
 
 
+# ─── Cover autogenerata (AN6) ──────────────────────────────────────────
+
+async def _autogen_cover(slug: str, title: str,
+                         category: Optional[str]) -> Optional[str]:
+    """Rende la cover brand (WebP 1200×630) e la salva su object
+    storage. Best-effort SEMPRE: None se qualcosa manca, mai raise."""
+    try:
+        from services.article_cover import render_article_cover
+        from services.object_storage import save_public_upload
+        label = RETREAT_CATEGORIES.get(category or "")
+        data = await asyncio.to_thread(render_article_cover, title,
+                                       category, label)
+        if not data:
+            return None
+        return save_public_upload("article-covers", f"{slug}.webp",
+                                  data, "image/webp")
+    except Exception as exc:          # noqa: BLE001 — mai bloccare un publish
+        logger.warning("article cover skipped for %s: %s", slug, exc)
+        return None
+
+
 # ─── Endpoint admin (system admin only) ────────────────────────────────
 
 @router.get("/admin/articles")
@@ -196,13 +218,56 @@ async def admin_update_article(
         data["slug"] = await _unique_slug(slugify_title(data["slug"]),
                                           exclude_id=article_id)
     # publish: timbra published_at alla PRIMA pubblicazione
+    publishing = bool(data.get("published")) and not doc.get("published")
     if data.get("published") and not doc.get("published_at"):
         data["published_at"] = utc_now()
     data["updated_at"] = utc_now()
 
+    # AN6 — al publish senza immagine propria, la cover Aurya si genera
+    # da sola (titolo dentro, palette di categoria)
+    if publishing and not (data.get("featured_image_url")
+                           or doc.get("featured_image_url")):
+        cover_url = await _autogen_cover(
+            data.get("slug") or doc["slug"],
+            data.get("title") or doc["title"],
+            data.get("category", doc.get("category")))
+        if cover_url:
+            data["featured_image_url"] = cover_url
+
     await db.articles.update_one({"id": article_id}, {"$set": data})
+
+    # AN6 — IndexNow al publish: stesse rotaie di ritiri e prodotti
+    if publishing:
+        try:
+            from services.indexnow import ping_urls_async
+            asyncio.create_task(ping_urls_async(
+                [f"/blog/{data.get('slug') or doc['slug']}"]))
+        except Exception:             # noqa: BLE001 — best-effort
+            pass
     updated = await db.articles.find_one({"id": article_id}, {"_id": 0})
     return updated
+
+
+@router.post("/admin/articles/{article_id}/cover")
+async def admin_regenerate_cover(
+    article_id: str,
+    current_user: dict = Depends(require_system_admin),
+) -> Dict[str, Any]:
+    """AN6 — rigenera la cover autogenerata (sovrascrive anche una
+    immagine propria: è un'azione esplicita dell'admin)."""
+    doc = await db.articles.find_one({"id": article_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Articolo non trovato")
+    cover_url = await _autogen_cover(doc["slug"], doc["title"],
+                                     doc.get("category"))
+    if not cover_url:
+        raise HTTPException(status_code=503,
+                            detail="Generazione cover non disponibile")
+    await db.articles.update_one(
+        {"id": article_id},
+        {"$set": {"featured_image_url": cover_url,
+                  "updated_at": utc_now()}})
+    return {"featured_image_url": cover_url}
 
 
 @router.delete("/admin/articles/{article_id}", status_code=204)
