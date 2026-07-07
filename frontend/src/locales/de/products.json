@@ -348,6 +348,16 @@
         "published": "Online",
         "closed": "Geschlossen",
         "cancelled": "Storniert"
+      },
+      "directory": {
+        "notListed": "Nicht im Verzeichnis",
+        "reason": {
+          "mode_request": "Auf Anfrage: das Verzeichnis listet nur online buchbare Retreats",
+          "stripe_not_ready": "Stripe nicht aktiv: verbinde die Zahlungen in den Einstellungen",
+          "product_not_published": "Produkt nicht veröffentlicht",
+          "occurrence_not_published": "Termin nicht veröffentlicht",
+          "no_public_page": "Keine öffentliche Seite: veröffentliche Store oder Visitenkarte"
+        }
       }
     }
   },

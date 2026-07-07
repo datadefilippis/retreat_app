@@ -432,9 +432,30 @@ async def list_events_admin(
     products = {
         p["id"]: p async for p in products_collection.find(
             {"id": {"$in": product_ids}, "organization_id": org_id},
-            {"_id": 0, "id": 1, "name": 1, "image_url": 1, "is_published": 1},
+            {"_id": 0, "id": 1, "name": 1, "image_url": 1, "is_published": 1,
+             "is_active": 1, "transaction_mode": 1},
         )
     }
+
+    # ── GT7: idoneita' directory (una volta per org) ────────────────
+    # Le stesse condizioni del listing pubblico (GT1b): l'operatore
+    # DEVE vedere in admin perche' un ritiro non e' nel calendario.
+    from database import (payment_connections_collection, stores_collection,
+                          organizations_collection)
+    stripe_ready = bool(await payment_connections_collection.find_one(
+        {"organization_id": org_id,
+         "status": "active", "runtime_status": "ready"}, {"_id": 1}))
+    has_public_page = bool(await stores_collection.find_one(
+        {"organization_id": org_id, "is_published": True,
+         "is_active": True, "visibility": "public"}, {"_id": 1}))
+    if not has_public_page:
+        org_doc = await organizations_collection.find_one(
+            {"id": org_id},
+            {"_id": 0, "public_slug": 1,
+             "store_settings.is_storefront_published": 1}) or {}
+        has_public_page = bool(
+            org_doc.get("public_slug")
+            and (org_doc.get("store_settings") or {}).get("is_storefront_published"))
 
     # ── Batched tier count per occurrence ──────────────────────────
     occ_ids = [o["id"] for o in occurrences]
@@ -454,6 +475,23 @@ async def list_events_admin(
     for occ in occurrences:
         pid = occ.get("product_id")
         prod = products.get(pid) or {}
+
+        # GT7 — perche' questo ritiro (futuro) non e' nel calendario
+        # pubblico? Reason codes stabili, localizzati dal frontend.
+        # Per gli eventi passati il flag e' rumore: si omette.
+        directory_reasons = []
+        if (occ.get("start_at") or "") >= now_iso:
+            if prod.get("transaction_mode") != "direct":
+                directory_reasons.append("mode_request")
+            if not stripe_ready:
+                directory_reasons.append("stripe_not_ready")
+            if not (prod.get("is_published") and prod.get("is_active", True)):
+                directory_reasons.append("product_not_published")
+            if occ.get("status") != "published" or not occ.get("slug"):
+                directory_reasons.append("occurrence_not_published")
+            if not has_public_page:
+                directory_reasons.append("no_public_page")
+
         out.append({
             "id": occ["id"],
             "slug": occ.get("slug"),
@@ -472,6 +510,9 @@ async def list_events_admin(
             "product_is_published": prod.get("is_published", False),
             "tier_count": tier_counts.get(occ["id"], 0),
             "is_archived": bool(occ.get("is_archived", False)),
+            "directory_listed": (occ.get("start_at") or "") >= now_iso
+                                and not directory_reasons,
+            "directory_reasons": directory_reasons,
         })
 
     return {"events": out, "total": len(out)}

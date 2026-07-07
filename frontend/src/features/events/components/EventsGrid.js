@@ -93,6 +93,13 @@ function EventCard({ event, onStatusChange }) {
   const reserved = event.reserved_seats || 0;
   const capacityPct = cap ? Math.min(100, Math.round((reserved / cap) * 100)) : null;
   const venueLine = [event.venue_name, event.city].filter(Boolean).join(' · ') || event.location || '—';
+  // GT7 — l'evento futuro che NON passa il gate della directory (GT1b)
+  // porta un flag rosso coi motivi: creato ma non vivo sul calendario.
+  const dirReasons = event.directory_reasons || [];
+  const notInDirectory = event.directory_listed === false && dirReasons.length > 0;
+  const dirTooltip = dirReasons
+    .map(r => t(`grids.event.directory.reason.${r}`, { defaultValue: r }))
+    .join(' · ');
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col">
@@ -104,6 +111,13 @@ function EventCard({ event, onStatusChange }) {
           <div className="absolute top-2 left-2 flex gap-1">
             <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-gray-200 text-gray-700">
               {t('grids.event.archivedBadge')}
+            </span>
+          </div>
+        )}
+        {notInDirectory && !event.is_archived && (
+          <div className="absolute top-2 right-2" title={dirTooltip}>
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold bg-red-100 text-red-900 border border-red-300">
+              ● {t('grids.event.directory.notListed', { defaultValue: 'Non in directory' })}
             </span>
           </div>
         )}

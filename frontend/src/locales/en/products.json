@@ -348,6 +348,16 @@
         "published": "Online",
         "closed": "Closed",
         "cancelled": "Cancelled"
+      },
+      "directory": {
+        "notListed": "Not in directory",
+        "reason": {
+          "mode_request": "Request mode: the directory only lists retreats bookable online",
+          "stripe_not_ready": "Stripe not active: connect payments in Settings",
+          "product_not_published": "Product not published",
+          "occurrence_not_published": "Date not published",
+          "no_public_page": "No public page: publish your store or showcase"
+        }
       }
     }
   },

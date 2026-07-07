@@ -194,5 +194,9 @@
     "feeSaverBody": "Mit dem Pro-Plan ({{proFee}} % Gebühr statt {{fee}} %) hättest du diesen Monat {{saving}} gespart, Abo inklusive.",
     "feeSaverCta": "Pro-Plan entdecken",
     "reviewNudge": "Manuell erfasste Zahlungen erzeugen keine verifizierten Bewertungen: Hol dir die nächste Buchung über den öffentlichen Kalender."
+  },
+  "directoryHint": {
+    "request": "Mit Buchung auf Anfrage erscheint dieses Retreat NICHT im öffentlichen Kalender: das Verzeichnis listet nur sofort online buchbare Retreats. In deinem Store bleibt es buchbar.",
+    "stripeNote": "Solange Stripe nicht aktiv ist, erscheint dieses Retreat nicht im öffentlichen Kalender, auch wenn es veröffentlicht ist."
   }
 }

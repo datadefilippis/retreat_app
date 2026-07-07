@@ -348,6 +348,16 @@
         "published": "En ligne",
         "closed": "Fermé",
         "cancelled": "Annulé"
+      },
+      "directory": {
+        "notListed": "Absent de l'annuaire",
+        "reason": {
+          "mode_request": "Sur demande : l'annuaire ne liste que les retraites réservables en ligne",
+          "stripe_not_ready": "Stripe inactif : connectez les paiements dans les Réglages",
+          "product_not_published": "Produit non publié",
+          "occurrence_not_published": "Date non publiée",
+          "no_public_page": "Aucune page publique : publiez votre boutique ou vitrine"
+        }
       }
     }
   },
