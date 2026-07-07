@@ -488,3 +488,26 @@ class TestPlaceFilterCoherence:
         assert '{o.get("region"), o.get("city")}' not in body
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
         assert '{o.get("region"), o.get("city")}' not in seo
+
+
+class TestDs5IconsAndLang:
+    """DS5 (founder 8/7) — icone categoria COLORATE (contrasto e
+    riconoscibilità, mai emoji) e lingue ridotte a un globo con menu."""
+
+    def test_category_icons_are_colored(self):
+        import re
+        mod = (FRONTEND_SRC / "features" / "storefront" / "lib"
+               / "categoryIcons.js").read_text()
+        from models.retreat_taxonomy import RETREAT_CATEGORIES
+        for slug in RETREAT_CATEGORIES:
+            assert f"{slug}:" in mod, f"categoria {slug} senza icona"
+        # ogni voce porta il suo colore: [Icona, '#rrggbb']
+        assert len(re.findall(r"#[0-9a-f]{6}", mod)) >= len(RETREAT_CATEGORIES)
+        assert "colored" in mod                     # opt-out esplicito
+
+    def test_lang_switcher_is_dropdown(self):
+        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "MarketplaceShell.jsx").read_text()
+        assert 'role="listbox"' in shell            # menu a tendina
+        assert "Globe" in shell                     # icona globo
+        assert "persistMarketplaceLang" in shell    # L1 resta: scelta persistita

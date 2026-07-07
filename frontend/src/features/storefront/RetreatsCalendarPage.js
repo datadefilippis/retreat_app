@@ -363,7 +363,7 @@ export default function RetreatsCalendarPage() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-muted" aria-hidden>
-                        <CategoryIcon category={item.category} className="h-14 w-14 text-[#376254]/40" />
+                        <CategoryIcon category={item.category} className="h-14 w-14 opacity-70" />
                       </div>
                     )}
                     {badge && (
