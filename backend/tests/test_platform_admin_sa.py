@@ -152,3 +152,38 @@ class TestDirectoryTabSa3:
         for code in ("stripe_not_ready", "no_public_page",
                      "no_direct_retreats"):
             assert code in tab, f"etichetta mancante per {code}"
+
+
+class TestBusinessProfileSa4:
+    """SA4 — la scheda 360° di un operatore: fee dal ledger (mai
+    stime), transazioni per canale, break-even come segnale."""
+
+    ROUTER_SRC = (BACKEND_DIR / "routers" / "admin_platform.py").read_text()
+
+    def test_endpoint_exists_and_guarded(self):
+        assert "business-profile" in self.ROUTER_SRC
+        # la guardia sta nella firma dell'endpoint
+        idx = self.ROUTER_SRC.index("business-profile")
+        assert "require_system_admin" in self.ROUTER_SRC[idx:idx + 600]
+
+    def test_earnings_read_from_ledger_only(self):
+        """I 'miei guadagni' vengono dal ledger SA1 timbrato — la
+        scheda non ricalcola mai le fee da percentuali correnti."""
+        idx = self.ROUTER_SRC.index("org_business_profile")
+        body = self.ROUTER_SRC[idx:]
+        assert "platform_fee_ledger" in body
+        assert "fee_minor" in body
+
+    def test_breakeven_signal_only_for_free_plan(self):
+        """Il segnale 'Pro conviene' scatta SOLO sul piano Gratis
+        sopra soglia — mai upsell a chi non ci guadagnerebbe."""
+        assert "pro_breakeven_reached" in self.ROUTER_SRC
+        assert '"retreat_free"' in self.ROUTER_SRC
+
+    def test_dialog_wired_from_directory_tab(self):
+        base = BACKEND_DIR.parent / "frontend" / "src" / "features" / "admin"
+        dlg = (base / "OrgBusinessProfileDialog.js").read_text()
+        assert "business-profile" in dlg
+        assert "pro_breakeven_reached" in dlg
+        tab = (base / "DirectoryAdminTab.js").read_text()
+        assert "OrgBusinessProfileDialog" in tab

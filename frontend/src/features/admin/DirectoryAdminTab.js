@@ -16,6 +16,7 @@ import { StatCard } from '../../components/charts';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Globe2, CalendarCheck, Zap } from 'lucide-react';
+import OrgBusinessProfileDialog from './OrgBusinessProfileDialog';
 
 const REASON_LABELS = {
   stripe_not_ready: 'Stripe non attivo',
@@ -27,6 +28,7 @@ export default function DirectoryAdminTab() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all | listed | blocked
+  const [profileOrg, setProfileOrg] = useState(null); // SA4 — scheda 360°
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -93,10 +95,15 @@ export default function DirectoryAdminTab() {
             {rows.map((r) => (
               <tr key={r.organization_id} className="border-b border-border last:border-0">
                 <td className="px-4 py-2.5">
-                  <span className="text-sm font-medium text-foreground">
+                  <button
+                    type="button"
+                    onClick={() => setProfileOrg(r.organization_id)}
+                    className="text-sm font-medium text-foreground hover:text-primary hover:underline text-left"
+                    title="Apri scheda operatore 360°"
+                  >
                     {r.featured && <span className="text-[#376254] mr-1" title="In evidenza">✦</span>}
                     {r.name || r.organization_id}
-                  </span>
+                  </button>
                 </td>
                 <td className="px-4 py-2.5">
                   <Badge variant="outline" className="text-[11px]">{r.plan_slug || '—'}</Badge>
@@ -138,8 +145,14 @@ export default function DirectoryAdminTab() {
       </div>
       <p className="text-xs text-muted-foreground">
         <ExternalLink className="inline h-3 w-3 mr-1" aria-hidden />
-        Le azioni per operatore (piano, trial, impersona) vivono nel tab Organizations — qui il polso, lì la leva.
+        Click sul nome per la scheda 360°. Le azioni (piano, trial, impersona) vivono nel tab Organizations.
       </p>
+
+      <OrgBusinessProfileDialog
+        orgId={profileOrg}
+        open={Boolean(profileOrg)}
+        onOpenChange={(o) => { if (!o) setProfileOrg(null); }}
+      />
     </div>
   );
 }
