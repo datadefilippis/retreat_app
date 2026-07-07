@@ -169,7 +169,7 @@ export default function OperatorsIndexPage() {
 
   return (
     <MarketplaceShell>
-      <header className="bg-gradient-to-b from-primary/10 to-transparent">
+      <header className="aura-corner bg-gradient-to-b from-[#376254]/12 via-[#f6f3ec]/70 to-transparent">
         <div className="max-w-6xl mx-auto px-4 pt-10 pb-6">
           <nav className="text-xs text-muted-foreground mb-3">
             <Link to="/" className="hover:text-primary hover:underline">Aurya</Link>
@@ -188,7 +188,8 @@ export default function OperatorsIndexPage() {
               </span>
             )}
           </nav>
-          <h1 className="font-heading text-3xl font-bold text-foreground">
+          <p aria-hidden className="eyebrow mb-2">Connect · Heal · Grow</p>
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
             {categoria
               ? t('landings:operators.headingCat', {
                   cat: catLabel, defaultValue: 'Organizzatori di {{cat}}' })

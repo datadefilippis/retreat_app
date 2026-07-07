@@ -45,14 +45,17 @@ export default function MarketplaceValueSections() {
           <h2 id="how-title" className="font-display text-2xl md:text-3xl font-bold text-foreground text-center">
             {t('brandHome.howTitle')}
           </h2>
+          <div aria-hidden className="gold-rule max-w-xs mx-auto mt-4" />
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {HOW_STEPS.map((s, i) => (
-              <div key={s.t} className="relative rounded-2xl border border-border bg-card p-5">
-                <span aria-hidden className="absolute -top-3 left-5 h-7 w-7 rounded-full bg-[#376254] text-white text-sm font-bold flex items-center justify-center">
+              <div key={s.t} className="card-lift relative rounded-2xl border border-[#8a7440]/20 bg-card p-6 shadow-sm">
+                <span aria-hidden className="absolute -top-3.5 left-6 h-8 w-8 rounded-full bg-gradient-to-br from-[#8a7440] to-[#6d5a30] text-[#f6f3ec] text-sm font-bold flex items-center justify-center shadow-md ring-2 ring-[#f6f3ec]">
                   {i + 1}
                 </span>
-                <s.icon className="h-6 w-6 text-[#376254] mt-2" aria-hidden />
-                <h3 className="font-semibold text-foreground mt-3">{t(s.t)}</h3>
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#376254]/10 mt-2">
+                  <s.icon className="h-6 w-6 text-[#376254]" aria-hidden />
+                </span>
+                <h3 className="font-heading font-semibold text-foreground mt-4">{t(s.t)}</h3>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{t(s.b)}</p>
               </div>
             ))}
@@ -74,11 +77,13 @@ export default function MarketplaceValueSections() {
             <h2 id="why-title" className="font-display text-2xl md:text-3xl font-bold text-center">
               {t('brandHome.whyTitle')}
             </h2>
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {WHY_ITEMS.map((w) => (
-                <div key={w.t}>
-                  <w.icon className="h-7 w-7 text-white/90" aria-hidden />
-                  <h3 className="font-semibold mt-3">{t(w.t)}</h3>
+                <div key={w.t} className="text-center sm:text-left">
+                  <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d6c49a]/50 bg-white/5">
+                    <w.icon className="h-6 w-6 text-[#ecd9a8]" aria-hidden />
+                  </span>
+                  <h3 className="font-heading font-semibold mt-3">{t(w.t)}</h3>
                   <p className="text-sm text-white/75 mt-1.5 leading-relaxed">{t(w.b)}</p>
                 </div>
               ))}
@@ -92,7 +97,7 @@ export default function MarketplaceValueSections() {
         </section>
 
         {/* Sei un organizzatore? */}
-        <section aria-labelledby="org-title" className="rounded-2xl border border-[#C97B5D]/40 bg-[#C97B5D]/5 p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-4">
+        <section aria-labelledby="org-title" className="aura-corner rounded-3xl border border-[#C97B5D]/30 bg-gradient-to-br from-[#C97B5D]/10 via-[#f6f3ec] to-[#f6f3ec] p-6 md:p-10 flex flex-col md:flex-row md:items-center gap-4 shadow-sm">
           <div className="flex-1">
             <h2 id="org-title" className="font-display text-xl md:text-2xl font-bold text-foreground">
               {t('brandHome.orgTitle')}
@@ -101,7 +106,7 @@ export default function MarketplaceValueSections() {
           </div>
           <Link
             to="/inizia"
-            className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full bg-[#C97B5D] text-white px-6 py-2.5 text-sm font-semibold hover:bg-[#b56a4e]"
+            className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full bg-[#C97B5D] text-white px-7 py-3 text-sm font-semibold hover:bg-[#b56a4e] shadow-lg shadow-[#C97B5D]/30 transition-transform hover:-translate-y-0.5"
           >
             {t('brandHome.orgCta')} <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>

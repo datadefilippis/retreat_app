@@ -41,8 +41,11 @@ export default function HowItWorksPage() {
   return (
     <MarketplaceShell noSearch>
       <div className="bg-background">
-        <header className="bg-gradient-sidebar text-white">
-          <div className="max-w-3xl mx-auto px-4 py-14 text-center">
+        <header className="relative bg-gradient-sidebar text-white overflow-hidden">
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={{
+          background: 'radial-gradient(ellipse 60% 80% at 15% 10%, rgba(255,255,255,0.08), transparent 60%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(193,102,61,0.22), transparent 55%)',
+        }} />
+          <div className="relative max-w-3xl mx-auto px-4 py-14 text-center">
             <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#d6c49a] mb-3 select-none">Connect · Heal · Grow</p>
             <h1 className="font-display text-3xl md:text-4xl font-bold">{t('howPage.title')}</h1>
             <p className="text-white/85 mt-4 text-lg leading-relaxed">{t('howPage.intro')}</p>
