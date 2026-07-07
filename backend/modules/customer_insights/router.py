@@ -36,6 +36,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/customer-insights", tags=["Customer Insights"])
 
 
+def _require_cross_sell_module():
+    """MD2 — il cross-sell appartiene a customers_light."""
+    from services.module_access import require_module
+    return require_module("cross_sell")
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # 1. Overview — KPI strip + delta + segments + concentration
 # ──────────────────────────────────────────────────────────────────────────────
@@ -497,6 +503,7 @@ async def cross_sell_candidates(
     missing: str = Query("service", max_length=20),
     customer_id: str = Query(None, max_length=64),
     current_user: dict = Depends(get_current_user),
+    _module: dict = Depends(_require_cross_sell_module()),
 ):
     """Chi ha comprato l'anima X ma mai la Y (default: ritiri ma mai
     consulenze) — LA lista di cross-sell dell'operatore olistico.

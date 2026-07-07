@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query, Request, UploadFile, File, Response
 from routers.auth import limiter
+from services.module_access import require_module
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
@@ -794,7 +795,9 @@ _SALES_STATS_TTL = 60.0
 async def product_sales_stats(
     product_id: str,
     current_user: dict = Depends(get_verified_user),
+    _module: dict = Depends(require_module("sales_stats")),
 ):
+
     """I numeri di UN prodotto, qualunque anima (INSIGHTS/CG3).
 
     Base comune (ordini confermati/completati, 12 mesi):

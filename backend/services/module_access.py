@@ -742,3 +742,47 @@ async def enforce_count_quota(
         )
 
     return effective_max
+
+
+# ── MD2 — cittadinanza delle feature: ogni feature dichiara il modulo ───────
+# Le feature nate dopo il fork (recensioni, outreach, tesoreria, newsletter,
+# sales-stats, cross-sell) erano "apolidi": nessun legame col sistema moduli.
+# Questo registry è la fonte unica di appartenenza; require_module() è il
+# gate leggero — con MD1 (tutto attivo di default) è un no-op, ma il giorno
+# che un piano spegne un modulo, le sue feature lo rispettano da sole.
+
+MODULE_OWNERSHIP = {
+    "reviews": "commerce",
+    "newsletter": "commerce",
+    "outreach": "customers_light",
+    "cashflow_analytics": "cashflow_monitor",
+    "sales_stats": "product_catalog",
+    "cross_sell": "customers_light",
+}
+
+
+def require_module(feature_key: str):
+    """FastAPI dependency: 403 module_not_active se il modulo proprietario
+    della feature è spento per l'org. Da affiancare (non sostituire) alla
+    dependency di autenticazione della route."""
+    from fastapi import Depends, HTTPException, status as http_status
+    from auth import get_current_user
+
+    module_key = MODULE_OWNERSHIP[feature_key]  # KeyError a import time = typo
+
+    async def _gate(current_user: dict = Depends(get_current_user)) -> dict:
+        from database import organization_modules_collection
+        doc = await organization_modules_collection.find_one(
+            {"organization_id": current_user["organization_id"],
+             "module_key": module_key, "is_active": True},
+            {"_id": 1})
+        if not doc:
+            raise HTTPException(
+                status_code=http_status.HTTP_403_FORBIDDEN,
+                detail={"error": "module_not_active",
+                        "module_key": module_key,
+                        "message": f"Il modulo '{module_key}' non è attivo "
+                                   f"per questa organizzazione."})
+        return current_user
+
+    return _gate

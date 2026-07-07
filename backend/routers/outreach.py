@@ -24,6 +24,7 @@ Regole:
 import logging
 from typing import Dict, Optional
 
+from services.module_access import require_module
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
@@ -31,7 +32,8 @@ from auth import require_admin
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/outreach", tags=["Outreach"])
+router = APIRouter(prefix="/outreach", tags=["Outreach"],
+                   dependencies=[Depends(require_module("outreach"))])
 
 # contesto → template in customer_outreach/templates/library.json
 CONTEXT_TEMPLATES = {

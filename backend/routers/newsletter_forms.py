@@ -18,6 +18,7 @@ Endpoints (prefix ``/api/newsletter-forms``):
 import logging
 from typing import Optional, List
 
+from services.module_access import require_module
 from fastapi import APIRouter, HTTPException, Depends, Request, Query, status
 from pydantic import BaseModel
 from pymongo.errors import DuplicateKeyError
@@ -35,7 +36,8 @@ from models.common import utc_now
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/newsletter-forms", tags=["Newsletter Forms"])
+router = APIRouter(prefix="/newsletter-forms", tags=["Newsletter Forms"],
+                   dependencies=[Depends(require_module("newsletter"))])
 
 _MAX_SLUG_ATTEMPTS = 50
 
