@@ -3,15 +3,15 @@
 
 **Versione:** v1.0
 **Data di efficacia:** {{date}}
-**Riferimento organizzazione (afianco):** {{org_id}}
+**Riferimento organizzazione (Aurya):** {{org_id}}
 
 ---
 
 ## 1. Oggetto e finalità
 
-Il presente Accordo di Trattamento Dati ("**DPA**") disciplina il trattamento di dati personali effettuato da **afianco**, piattaforma SaaS fornita da {{platform_controller_name}} ({{platform_controller_country}}), per conto del Titolare del trattamento **{{merchant_name}}**, ai sensi dell'art. 28 del Regolamento (UE) 2016/679 ("**GDPR**").
+Il presente Accordo di Trattamento Dati ("**DPA**") disciplina il trattamento di dati personali effettuato da **Aurya**, piattaforma marketplace e gestionale fornita da {{platform_controller_name}} ({{platform_controller_country}}), per conto del Titolare del trattamento **{{merchant_name}}**, ai sensi dell'art. 28 del Regolamento (UE) 2016/679 ("**GDPR**").
 
-Il DPA è parte integrante dei Termini di Servizio di afianco accettati dal Titolare al momento della registrazione.
+Il DPA è parte integrante dei Termini di Servizio di Aurya accettati dal Titolare al momento della registrazione.
 
 ---
 
@@ -28,10 +28,10 @@ Il DPA è parte integrante dei Termini di Servizio di afianco accettati dal Tito
 
 ## 3. Ruolo delle parti
 
-- Il **Titolare** determina le finalità e i mezzi del trattamento dei Dati Personali dei propri clienti finali raccolti tramite la piattaforma afianco.
+- Il **Titolare** determina le finalità e i mezzi del trattamento dei Dati Personali dei propri clienti finali raccolti tramite la piattaforma Aurya.
 - Il **Responsabile** tratta i Dati Personali esclusivamente per conto del Titolare e secondo le istruzioni documentate, salvo diversi obblighi di legge.
 
-afianco **non** ha alcun rapporto contrattuale diretto con i clienti finali del Titolare. La relazione contrattuale clientela ↔ Titolare resta interamente del Titolare.
+Aurya **non** ha alcun rapporto contrattuale diretto con i clienti finali del Titolare. La relazione contrattuale clientela ↔ Titolare resta interamente del Titolare.
 
 ---
 
@@ -42,10 +42,10 @@ Il Responsabile, per conto del Titolare, tratta le seguenti categorie di Dati Pe
 - **Account cliente finale**: email, nome, password (cifrata), lingua preferita
 - **Dati ordine**: prodotti acquistati, quantità, prezzi, indirizzo di spedizione (se applicabile), data ordine
 - **Metadati tecnici**: indirizzo IP, user-agent, timestamp accessi (per sicurezza e audit log)
-- **Pagamenti**: tramite Stripe (Responsabile esterno) — afianco non conserva dati di carta
+- **Pagamenti**: tramite Stripe (Responsabile esterno) — Aurya non conserva dati di carta
 - **Preferenze marketing**: solo se raccolte esplicitamente dal Titolare
 
-afianco **non** tratta categorie particolari (art. 9 GDPR) né dati relativi a condanne penali (art. 10 GDPR).
+Aurya **non** tratta categorie particolari (art. 9 GDPR) né dati relativi a condanne penali (art. 10 GDPR).
 
 ---
 
@@ -57,7 +57,7 @@ Il trattamento ha le seguenti finalità:
 - Permettere ai clienti finali di registrarsi, effettuare ordini, ricevere comunicazioni transazionali
 - Generare audit log di sicurezza e integrità
 
-**Durata**: per tutta la durata del contratto SaaS tra Titolare e afianco. Al termine, i Dati Personali vengono restituiti o cancellati secondo la sez. 11.
+**Durata**: per tutta la durata del contratto SaaS tra Titolare e Aurya. Al termine, i Dati Personali vengono restituiti o cancellati secondo la sez. 11.
 
 ---
 
@@ -87,7 +87,7 @@ Il Titolare **autorizza in via generale** il Responsabile a ricorrere ai sub-res
 | **Brevo SAS** | Francia | Invio email transazionali |
 | **Anthropic PBC** | USA | Modelli AI (chat assistant, analisi) — solo dati aggregati |
 
-L'elenco aggiornato è pubblicato all'indirizzo: https://afianco.app/legal/sub-processors
+L'elenco aggiornato è pubblicato all'indirizzo: https://aurya.life/legal/sub-processors
 
 In caso di **modifiche** all'elenco (aggiunta o sostituzione), il Responsabile informa il Titolare con preavviso di **30 giorni** via email. Il Titolare può opporsi entro tale termine; in caso di opposizione il Responsabile può proporre soluzioni alternative o risolvere il contratto.
 
@@ -156,7 +156,7 @@ Il Titolare ha diritto di:
 
 ## 13. Responsabilità e limitazioni
 
-Le limitazioni di responsabilità previste dai Termini di Servizio di afianco si applicano anche al presente DPA, fatti salvi gli obblighi imperativi di legge e i casi di dolo o colpa grave.
+Le limitazioni di responsabilità previste dai Termini di Servizio di Aurya si applicano anche al presente DPA, fatti salvi gli obblighi imperativi di legge e i casi di dolo o colpa grave.
 
 Il Responsabile è responsabile solo per i danni causati dal proprio inadempimento agli obblighi specificamente imposti dal GDPR ai responsabili del trattamento, o per aver agito al di fuori o in contrasto con le legittime istruzioni del Titolare (art. 82.2 GDPR).
 
@@ -170,7 +170,7 @@ Il Responsabile può aggiornare il presente DPA per riflettere:
 - Aggiunta/sostituzione di sub-responsabili (con preavviso ex sez. 7)
 - Miglioramenti delle misure di sicurezza
 
-Le modifiche sostanziali vengono comunicate via email al Titolare con preavviso di **30 giorni** e richiedono nuova accettazione. Le modifiche tecniche/redazionali sono pubblicate all'indirizzo: https://afianco.app/legal/dpa
+Le modifiche sostanziali vengono comunicate via email al Titolare con preavviso di **30 giorni** e richiedono nuova accettazione. Le modifiche tecniche/redazionali sono pubblicate all'indirizzo: https://aurya.life/legal/dpa
 
 ---
 
@@ -189,11 +189,11 @@ Per qualsiasi controversia è competente il foro di **Lugano (CH)**, fatti salvi
 {{merchant_country}}
 Email: {{merchant_email}}
 
-**Responsabile del trattamento (afianco)**
+**Responsabile del trattamento (Aurya)**
 {{platform_controller_name}}
 {{platform_controller_country}}
 Email: {{platform_controller_email}}
 
 ---
 
-*Il presente DPA si intende accettato dal Titolare al momento della conferma via il pannello admin di afianco. La conferma viene registrata in un audit log immutabile con timestamp, IP e User-Agent del confermante.*
+*Il presente DPA si intende accettato dal Titolare al momento della conferma via il pannello admin di Aurya. La conferma viene registrata in un audit log immutabile con timestamp, IP e User-Agent del confermante.*

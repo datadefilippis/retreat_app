@@ -66,11 +66,9 @@ const PrivacyPolicyPage = () => {
       <header className="border-b border-border">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-primary">
-              <TrendingUp className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-heading text-xl font-bold tracking-tight">
-              AFianco
+            <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-8 w-8 select-none" draggable={false} />
+            <span className="font-brand font-medium uppercase tracking-[0.28em] text-lg text-[#8a7440]">
+              Aurya
             </span>
           </Link>
           <Link
@@ -95,7 +93,7 @@ const PrivacyPolicyPage = () => {
           <div className="border border-destructive bg-destructive/10 p-4 rounded-md text-sm text-destructive">
             {t(
               'legal.error',
-              'Impossibile caricare l\'informativa. Riprova piu\' tardi o contatta davide@afianco.ch.'
+              'Impossibile caricare l\'informativa. Riprova piu\' tardi o contatta info@aurya.life.'
             )}
           </div>
         )}
