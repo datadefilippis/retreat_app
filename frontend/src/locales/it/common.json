@@ -179,6 +179,16 @@
     "markPaidOk": "Pagamento registrato",
     "markPaidError": "Impossibile registrare il pagamento",
     "sourceOrder": "Ordine",
-    "sourceManual": "Manuale"
+    "sourceManual": "Manuale",
+    "byTypeTitle": "Da cosa guadagni (12 mesi)",
+    "mainType": "Anima principale: {{type}} — {{pct}}% del venduto",
+    "typeRetreats": "Ritiri",
+    "typeServices": "Consulenze",
+    "typePhysical": "Prodotti fisici",
+    "typeDigital": "Digitali",
+    "typeCourses": "Corsi",
+    "typeRentals": "Noleggi",
+    "typeManual": "Entrate manuali",
+    "typeOther": "Altro"
   }
 }

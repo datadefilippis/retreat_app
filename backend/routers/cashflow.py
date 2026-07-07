@@ -280,6 +280,42 @@ async def _build(org_id: str) -> Dict[str, Any]:
     except Exception as exc:  # created_at può essere str su doc legacy
         logger.warning("cashflow by_product aggregate failed: %s", exc)
 
+    # ── CG2: venduto per ANIMA (item_type) — la vista olistica ───────
+    # "Da cosa guadagno: ritiri, consulenze, fisici, digitali o corsi?"
+    # Stessa base del by_product (ordini confermati 12 mesi, tutti i
+    # tipi, inclusi quelli col ledger: qui si misura il VENDUTO) + il
+    # bucket delle entrate manuali della pagina Dati.
+    by_type = []
+    try:
+        async for g in orders_collection.aggregate([
+            {"$match": {
+                "organization_id": org_id,
+                "status": {"$in": ["confirmed", "completed"]},
+                "order_date": {"$gte": order_date_cutoff},
+            }},
+            {"$unwind": "$items"},
+            {"$group": {"_id": {"$ifNull": ["$items.item_type", "physical"]},
+                        "revenue": {"$sum": "$items.line_total"},
+                        "orders": {"$sum": 1}}},
+            {"$sort": {"revenue": -1}},
+        ]):
+            by_type.append({
+                "item_type": g["_id"] or "physical",
+                "revenue": round(g.get("revenue") or 0, 2),
+                "orders": g.get("orders", 0),
+            })
+    except Exception as exc:
+        logger.warning("cashflow by_type aggregate failed: %s", exc)
+    manual_total = 0.0
+    async for r in db.sales_records.find(
+            {"organization_id": org_id, "dataset_id": "manual",
+             "date": {"$gte": order_date_cutoff}},
+            {"_id": 0, "amount": 1}).limit(_MAX_SCHEDULES):
+        manual_total += float(r.get("amount") or 0)
+    if manual_total:
+        by_type.append({"item_type": "manual",
+                        "revenue": round(manual_total, 2), "orders": 0})
+
     # ── ticket medio (ordini confermati 12 mesi) ─────────────────────
     ticket = None
     try:
@@ -307,6 +343,7 @@ async def _build(org_id: str) -> Dict[str, Any]:
         "overdue": _enrich(overdue_rows),
         "upcoming": _enrich(upcoming_rows),
         "by_product": by_product,
+        "by_type": by_type,
         "generated_at": now_iso,
     }
 
