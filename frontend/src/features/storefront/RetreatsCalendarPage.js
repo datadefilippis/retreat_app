@@ -190,7 +190,7 @@ export default function RetreatsCalendarPage() {
                autoPlay muted loop playsInline preload="metadata"
                poster="/media/aurya-hero-poster.jpg" src="/media/aurya-hero.mp4" />
         {/* scrim salvia: il tramonto è oro acceso, i testi restano leggibili */}
-        <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/80 via-[#14231d]/40 to-[#0e1a15]/85" />
+        <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/85 via-[#14231d]/55 to-[#0e1a15]/90" />
         <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
           {/* RB4 — il motto in font-brand, il filo d'oro del wordmark */}
           <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-base md:text-2xl text-[#f2dfab] mb-4 select-none text-hero-shadow flex items-center justify-center gap-4">
@@ -198,7 +198,7 @@ export default function RetreatsCalendarPage() {
             Connect · Heal · Grow
             <span aria-hidden className="hidden sm:block h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-[#d6c49a]/80" />
           </p>
-          <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-tight text-hero-shadow">
+          <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight leading-tight text-hero-shadow">
             {catLabel || region
               ? seoTitle.replace(' — prenota online', '')
               : t('landings:calendar.title')}
