@@ -263,5 +263,19 @@
     "withPhone": "With phone",
     "withPhoneSub": "reachable on WhatsApp",
     "advanced": "Advanced analysis (detailed KPIs, concentration, revenue by segment)"
+  },
+  "crossSell": {
+    "title": "{{count}} customers joined a retreat but never booked a consultation",
+    "hint": "The most natural cross-sell: they already trust you. The message is ready.",
+    "show": "View list",
+    "hide": "Hide"
+  },
+  "anime": {
+    "event_ticket": "Retreats",
+    "service": "Consulting",
+    "physical": "Physical",
+    "digital": "Digital",
+    "course": "Courses",
+    "rental": "Rentals"
   }
 }

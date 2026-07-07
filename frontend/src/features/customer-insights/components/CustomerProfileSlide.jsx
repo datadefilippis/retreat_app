@@ -27,6 +27,17 @@ export const CustomerProfileSlide = ({ customerId, customerSummary, open, onOpen
   const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // CG4 — le anime acquistate dal cliente (badge cross-sell)
+  const [animeTypes, setAnimeTypes] = useState(null);
+  useEffect(() => {
+    if (!open || !customerId) { setAnimeTypes(null); return; }
+    let alive = true;
+    customerInsightsAPI.crossSell({ customer_id: customerId })
+      .then((res) => { if (alive) setAnimeTypes(res.data?.types || []); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [open, customerId]);
+
   useEffect(() => {
     if (!open || !customerId) return;
     let cancelled = false;
@@ -53,6 +64,15 @@ export const CustomerProfileSlide = ({ customerId, customerSummary, open, onOpen
           <SheetTitle className="text-base">
             {customerSummary?.customer_name || t('profile.title')}
           </SheetTitle>
+          {animeTypes && animeTypes.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1" data-testid="anime-badges">
+              {animeTypes.map((k) => (
+                <span key={k} className="rounded-full border border-[#376254]/40 bg-[#376254]/5 px-2 py-0.5 text-[10px] font-medium text-[#376254]">
+                  {t(`anime.${k}`, { defaultValue: k })}
+                </span>
+              ))}
+            </div>
+          )}
         </SheetHeader>
 
         <div className="mt-4 space-y-5">

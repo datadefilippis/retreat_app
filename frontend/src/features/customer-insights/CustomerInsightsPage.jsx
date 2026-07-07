@@ -40,6 +40,7 @@ import { KpiOverviewSection } from './components/KpiOverviewSection';
 import { CustomerTable } from './components/CustomerTable';
 import { CustomerProfileSlide } from './components/CustomerProfileSlide';
 import { StatCard, DonutSplit } from '../../components/charts';
+import ContactActions from '../../components/ContactActions';
 
 // CF6 — semantica fissa segmenti nella palette del kit (inattivi = terracotta)
 const SEGMENT_COLORS = {
@@ -81,6 +82,8 @@ export default function CustomerInsightsPage() {
 
   // CF6 — conteggi azionabili (totali da liste filtrate, pageSize=1)
   const [recontactCount, setRecontactCount] = useState(null);
+  const [crossSell, setCrossSell] = useState(null);
+  const [crossSellOpen, setCrossSellOpen] = useState(false);
   const [withPhoneCount, setWithPhoneCount] = useState(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
@@ -89,10 +92,12 @@ export default function CustomerInsightsPage() {
     Promise.allSettled([
       customerInsightsAPI.getCustomers({ segment: 'inactive', marketingOptedIn: true, page: 1, pageSize: 1 }),
       customerInsightsAPI.getCustomers({ hasPhone: true, page: 1, pageSize: 1 }),
-    ]).then(([rec, ph]) => {
+      customerInsightsAPI.crossSell(),
+    ]).then(([rec, ph, xs]) => {
       if (cancelled) return;
       setRecontactCount(rec.status === 'fulfilled' ? (rec.value.data?.total ?? 0) : 0);
       setWithPhoneCount(ph.status === 'fulfilled' ? (ph.value.data?.total ?? 0) : 0);
+      setCrossSell(xs.status === 'fulfilled' ? xs.value.data : null);
     });
     return () => { cancelled = true; };
   }, []);
@@ -308,6 +313,50 @@ export default function CustomerInsightsPage() {
           />
         </CardContent>
       </Card>
+
+      {/* CG4 — cross-sell: chi ha fatto un ritiro ma mai una consulenza */}
+      {crossSell && crossSell.count > 0 && (
+        <div className="rounded-2xl border border-[#376254]/30 bg-[#376254]/5 p-4">
+          <button type="button" onClick={() => setCrossSellOpen((v) => !v)}
+                  className="w-full text-left flex items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-semibold text-[#376254]">
+                {t('crossSell.title', {
+                  defaultValue: '{{count}} clienti hanno fatto un ritiro ma mai una consulenza',
+                  count: crossSell.count,
+                })}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t('crossSell.hint', { defaultValue: 'Il cross-sell più naturale: hanno già fiducia in te. Il messaggio è pronto.' })}
+              </p>
+            </div>
+            <span className="text-xs text-[#376254] shrink-0">
+              {crossSellOpen
+                ? t('crossSell.hide', { defaultValue: 'Nascondi' })
+                : t('crossSell.show', { defaultValue: 'Vedi lista' })}
+            </span>
+          </button>
+          {crossSellOpen && (
+            <ul className="mt-3 divide-y divide-border">
+              {crossSell.candidates.map((c) => (
+                <li key={c.customer_id} className="flex items-center justify-between gap-2 py-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{c.name || '—'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{c.email || c.phone || ''}</p>
+                  </div>
+                  <ContactActions
+                    name={c.name}
+                    email={c.email}
+                    phone={c.phone}
+                    customerId={c.customer_id}
+                    context="generic"
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* Customer table — filters live INSIDE the card so it's
           visually obvious they only affect this list, not the KPI

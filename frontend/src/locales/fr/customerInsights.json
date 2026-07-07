@@ -263,5 +263,19 @@
     "withPhone": "Avec téléphone",
     "withPhoneSub": "joignables sur WhatsApp",
     "advanced": "Analyse avancée (KPI détaillés, concentration, revenu par segment)"
+  },
+  "crossSell": {
+    "title": "{{count}} clients ont participé à une retraite mais jamais à une consultation",
+    "hint": "Le cross-sell le plus naturel : ils vous font déjà confiance. Le message est prêt.",
+    "show": "Voir la liste",
+    "hide": "Masquer"
+  },
+  "anime": {
+    "event_ticket": "Retraites",
+    "service": "Consultations",
+    "physical": "Physiques",
+    "digital": "Numériques",
+    "course": "Cours",
+    "rental": "Locations"
   }
 }
