@@ -92,12 +92,21 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showInactive, setShowInactive] = useState(false);
+  const [enrollCounts, setEnrollCounts] = useState({});
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const { data } = await coursesAPI.list({ activeOnly: !showInactive });
+      // CG3 — iscritti per corso (best-effort, non blocca la lista)
+      Promise.allSettled(
+        (data || []).map((c) => coursesAPI.listEnrollments(c.id).then((r) => [c.id, r.data?.total ?? (r.data?.enrollments || []).length]))
+      ).then((rs) => {
+        const m = {};
+        rs.forEach((r) => { if (r.status === 'fulfilled') m[r.value[0]] = r.value[1]; });
+        setEnrollCounts(m);
+      });
       setCourses(Array.isArray(data) ? data : []);
     } catch (e) {
       setError(e?.response?.data?.detail || t('dashboards.course.pageList.errorLoad'));
@@ -207,6 +216,7 @@ export default function CoursesPage() {
                   <th className="px-4 py-3 text-left font-semibold">{t('dashboards.course.pageList.colLessons')}</th>
                   <th className="px-4 py-3 text-left font-semibold">{t('dashboards.course.pageList.colDuration')}</th>
                   <th className="px-4 py-3 text-left font-semibold">{t('dashboards.course.pageList.colAccess')}</th>
+                  <th className="px-4 py-3 text-left font-semibold">{t('dashboards.course.pageList.colEnrolled', { defaultValue: 'Iscritti' })}</th>
                   <th className="px-4 py-3 text-left font-semibold">{t('dashboards.course.pageList.colStatus')}</th>
                   <th className="px-4 py-3 text-left font-semibold">{t('dashboards.course.pageList.colUpdated')}</th>
                   <th className="px-4 py-3"></th>
@@ -235,6 +245,7 @@ export default function CoursesPage() {
                       {countDurationMinutes(c) > 0 ? t('dashboards.course.pageList.minutesSuffix', { minutes: countDurationMinutes(c) }) : '—'}
                     </td>
                     <td className="px-4 py-3"><PolicyBadge course={c} /></td>
+                    <td className="px-4 py-3 text-gray-700 tabular-nums">{enrollCounts[c.id] ?? '—'}</td>
                     <td className="px-4 py-3"><StatusBadge isActive={c.is_active} /></td>
                     <td className="px-4 py-3 text-gray-500 text-xs">
                       {formatDateShort(c.updated_at, i18n.language)}

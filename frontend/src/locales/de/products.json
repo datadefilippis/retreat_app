@@ -694,7 +694,8 @@
         "colStatus": "Status",
         "colUpdated": "Aktualisiert",
         "editAction": "Bearbeiten",
-        "archiveAction": "Archivieren"
+        "archiveAction": "Archivieren",
+        "colEnrolled": "Teilnehmer"
       },
       "validation": {
         "lessonTitleRequired": "Lektionstitel erforderlich",
@@ -2003,5 +2004,16 @@
     "searching": "Suche die Position…",
     "empty": "Stadt oder Adresse ausfüllen: der Pin erscheint hier auf der Karte.",
     "dragHint": "Ziehe den Pin, um die genaue Position zu korrigieren."
+  },
+  "salesStats": {
+    "revenue": "Umsatz (12 Monate)",
+    "units": "Verkaufte Einheiten (12 Monate)",
+    "sessionsSold": "Verkaufte Sitzungen (12 Monate)",
+    "upcoming": "Anstehende Sitzungen",
+    "deliveries": "Ausgestellte Lieferungen",
+    "stock": "Aktueller Bestand",
+    "enrollments": "Aktive Teilnehmer",
+    "enrollmentsExpired": "{{count}} abgelaufen",
+    "upcomingTitle": "Nächste Sitzungen — die Erinnerung ist schon geschrieben"
   }
 }

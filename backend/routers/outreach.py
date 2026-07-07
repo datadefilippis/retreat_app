@@ -39,6 +39,7 @@ CONTEXT_TEMPLATES = {
     "pre_retreat": "pre_retreat",
     "post_retreat_review": "post_retreat_review",
     "winback": "winback",
+    "appointment": "appointment_reminder",
     "generic": "general_check_in",
 }
 

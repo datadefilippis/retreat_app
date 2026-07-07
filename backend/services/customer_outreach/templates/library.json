@@ -73,20 +73,20 @@
   },
   "appointment_reminder": {
     "it": {
-      "subject": "Promemoria appuntamento — {customer_name}",
-      "body": "Ciao {customer_name},\n\nti ricordo il nostro appuntamento. Se hai bisogno di spostarlo, fammi sapere appena puoi.\n\nA presto,\n{merchant_name}"
+      "subject": "Promemoria appuntamento — {merchant_name}",
+      "body": "Ciao {customer_name},\n\nti ricordo il nostro appuntamento{retreat_name} in data {start_date}. Se hai bisogno di spostarlo, fammi sapere appena puoi.\n\nA presto,\n{merchant_name}"
     },
     "en": {
-      "subject": "Appointment reminder — {customer_name}",
-      "body": "Hi {customer_name},\n\nthis is a quick reminder of our appointment. If you need to reschedule, let me know as soon as you can.\n\nTalk soon,\n{merchant_name}"
+      "subject": "Appointment reminder — {merchant_name}",
+      "body": "Hi {customer_name},\n\njust a reminder of our appointment{retreat_name} on {start_date}. If you need to reschedule, let me know as soon as you can.\n\nSee you soon,\n{merchant_name}"
     },
     "de": {
-      "subject": "Termin-Erinnerung — {customer_name}",
-      "body": "Hallo {customer_name},\n\nkurze Erinnerung an unseren Termin. Falls du verschieben musst, melde dich so bald wie möglich.\n\nViele Grüsse,\n{merchant_name}"
+      "subject": "Terminerinnerung — {merchant_name}",
+      "body": "Hallo {customer_name},\n\nzur Erinnerung an unseren Termin{retreat_name} am {start_date}. Falls du verschieben musst, sag mir bitte so bald wie möglich Bescheid.\n\nBis bald,\n{merchant_name}"
     },
     "fr": {
-      "subject": "Rappel de rendez-vous — {customer_name}",
-      "body": "Bonjour {customer_name},\n\npetit rappel de notre rendez-vous. Si vous devez le déplacer, dites-le moi dès que possible.\n\nÀ bientôt,\n{merchant_name}"
+      "subject": "Rappel de rendez-vous — {merchant_name}",
+      "body": "Bonjour {customer_name},\n\npetit rappel de notre rendez-vous{retreat_name} le {start_date}. Si vous devez le déplacer, prévenez-moi dès que possible.\n\nÀ bientôt,\n{merchant_name}"
     }
   },
   "feedback_request": {

@@ -11,6 +11,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import ProductSalesStats from '../products/components/ProductSalesStats';
 import { toast } from 'sonner';
 import { productsAPI } from '../../api';
 import { storesAPI } from '../../api/stores';
@@ -463,6 +464,8 @@ export default function DigitalDashboardPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5 sm:py-8 space-y-5">
+        {/* CG3 — i numeri del digitale (ricavo, consegne) */}
+        <ProductSalesStats productId={productId} productName={productForm.name} />
 
         {/* Stato */}
         <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">

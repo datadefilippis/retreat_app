@@ -769,3 +769,115 @@ async def upload_digital_file(
         "size_bytes": snapshot["size_bytes"],
         "mime_type": snapshot["mime_type"],
     }
+
+
+# ── CG3 — mini-stats vendite per prodotto (tutte le anime) ──────────────────
+
+_SALES_STATS_CACHE: dict = {}
+_SALES_STATS_TTL = 60.0
+
+
+@router.get("/{product_id}/sales-stats")
+async def product_sales_stats(
+    product_id: str,
+    current_user: dict = Depends(get_verified_user),
+):
+    """I numeri di UN prodotto, qualunque anima (INSIGHTS/CG3).
+
+    Base comune (ordini confermati/completati, 12 mesi):
+      units_12m / revenue_12m / orders_12m
+    Extra per anima:
+      service  → upcoming_sessions (prossime 5 sessioni con contatto:
+                 il promemoria appuntamento è a un click)
+      digital  → deliveries_12m (consegne emesse)
+      course   → enrollments {active, expired}
+    Realtà dei dati: niente stime — solo conteggi dalle collection
+    di fulfillment già esistenti. Cache 60s per (org, prodotto).
+    """
+    import time as _time
+    from datetime import timedelta as _td
+    from models.common import utc_now as _now
+    from database import (
+        products_collection, orders_collection,
+        issued_bookings_collection, issued_downloads_collection,
+        issued_course_accesses_collection,
+    )
+
+    org_id = current_user["organization_id"]
+    ck = f"{org_id}:{product_id}"
+    hit = _SALES_STATS_CACHE.get(ck)
+    mono = _time.monotonic()
+    if hit and (mono - hit[0]) < _SALES_STATS_TTL:
+        return hit[1]
+
+    product = await products_collection.find_one(
+        {"id": product_id, "organization_id": org_id},
+        {"_id": 0, "id": 1, "item_type": 1, "metadata": 1})
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Product not found")
+
+    now = _now()
+    cutoff_day = (now - _td(days=365)).isoformat()[:10]
+    units = revenue = n_orders = 0
+    async for g in orders_collection.aggregate([
+        {"$match": {"organization_id": org_id,
+                    "status": {"$in": ["confirmed", "completed"]},
+                    "order_date": {"$gte": cutoff_day},
+                    "items.product_id": product_id}},
+        {"$unwind": "$items"},
+        {"$match": {"items.product_id": product_id}},
+        {"$group": {"_id": None,
+                    "units": {"$sum": "$items.quantity"},
+                    "revenue": {"$sum": "$items.line_total"},
+                    "orders": {"$sum": 1}}},
+    ]):
+        units = g.get("units") or 0
+        revenue = round(g.get("revenue") or 0, 2)
+        n_orders = g.get("orders") or 0
+
+    payload = {
+        "item_type": product.get("item_type") or "physical",
+        "units_12m": units,
+        "revenue_12m": revenue,
+        "orders_12m": n_orders,
+    }
+
+    itype = payload["item_type"]
+    if itype == "service":
+        today = now.isoformat()[:10]
+        sessions = await issued_bookings_collection.find(
+            {"organization_id": org_id, "product_id": product_id,
+             "booking_date": {"$gte": today},
+             "status": {"$nin": ["cancelled"]}},
+            {"_id": 0, "booking_date": 1, "booking_start_time": 1,
+             "holder_name": 1, "holder_email": 1, "holder_phone": 1},
+        ).sort([("booking_date", 1), ("booking_start_time", 1)]).to_list(5)
+        payload["upcoming_sessions"] = sessions
+        payload["upcoming_count"] = await issued_bookings_collection.count_documents(
+            {"organization_id": org_id, "product_id": product_id,
+             "booking_date": {"$gte": today},
+             "status": {"$nin": ["cancelled"]}})
+    elif itype == "digital":
+        payload["deliveries_12m"] = await issued_downloads_collection.count_documents(
+            {"organization_id": org_id, "product_id": product_id,
+             "status": {"$ne": "cancelled"}})
+    elif itype == "course":
+        course_id = (product.get("metadata") or {}).get("course_id")
+        if course_id:
+            now_dt = now
+            active = expired = 0
+            async for a in issued_course_accesses_collection.find(
+                    {"organization_id": org_id, "course_id": course_id},
+                    {"_id": 0, "revoked_at": 1, "expires_at": 1}).limit(5000):
+                if a.get("revoked_at"):
+                    continue
+                exp = a.get("expires_at")
+                if exp and str(exp) <= now_dt.isoformat():
+                    expired += 1
+                else:
+                    active += 1
+            payload["enrollments"] = {"active": active, "expired": expired}
+
+    _SALES_STATS_CACHE[ck] = (mono, payload)
+    return payload
