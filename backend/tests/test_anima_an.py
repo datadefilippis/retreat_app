@@ -454,3 +454,23 @@ class TestDs3EsperienzeOut:
         assert 'f"{base}/esperienze"' not in seo
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
         assert 'head == "esperienze"' not in shell
+
+
+class TestPlaceFilterCoherence:
+    """Fix definitivo bug destinazioni (founder 7/7): l'indice promette
+    anche CITTÀ, quindi il filtro ?region= della directory è un filtro
+    LUOGO (region O city, case-insensitive). Contare una città e poi
+    non trovarla al click non deve più poter succedere."""
+
+    def test_region_param_matches_city_too(self):
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        idx = src.index('occ_query["$or"]')
+        block = src[idx - 500:idx + 200]
+        assert '{"region": _place}' in block
+        assert '{"city": _place}' in block
+        assert '"$options": "i"' in block           # slug minuscoli dai link
+
+    def test_destinations_page_filter_case_insensitive(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "DestinationsPage.js").read_text()
+        assert ".toLowerCase()" in page

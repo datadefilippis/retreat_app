@@ -3376,7 +3376,14 @@ async def list_public_retreats(
         "start_at": {"$gte": now_iso[:16]},   # future (ISO confronta bene)
     }
     if region:
-        occ_query["region"] = region
+        # Il param si chiama "region" per compatibilità coi link SEO, ma
+        # è un filtro LUOGO: l'indice destinazioni promette anche CITTÀ
+        # (es. Ostuni) e il click deve trovarle (bug founder 7/7: contava
+        # la città ma il filtro guardava solo la regione → pagina vuota).
+        # Case-insensitive: gli slug arrivano anche minuscoli dai link.
+        import re as _re
+        _place = {"$regex": f"^{_re.escape(region)}$", "$options": "i"}
+        occ_query["$or"] = [{"region": _place}, {"city": _place}]
     if country:
         occ_query["country"] = country.upper()
     _geo_active = lat is not None and lng is not None
