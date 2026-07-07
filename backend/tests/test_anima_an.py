@@ -150,3 +150,63 @@ class TestUnifiedNavAn2:
             for key in ("navRetreats", "navExperiences", "navOperators",
                         "navDestinations", "navMenu"):
                 assert mp.get(key), f"{lang}: marketplace.{key} mancante"
+
+
+class TestOperatorGeoAn3:
+    """AN3 — la scoperta geografica degli operatori vive sul PROFILO,
+    non sui ritiri futuri: coordinate configurabili, geocoding
+    best-effort, /operatori con raggio e mappa."""
+
+    ORG_SRC = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+    PUB_SRC = (BACKEND_DIR / "routers" / "public.py").read_text()
+
+    def test_profile_accepts_validated_coordinates(self):
+        """lat/lng dal form vengono validati e trasformati in GeoJSON
+        per l'indice 2dsphere."""
+        assert '"public_profile.latitude"' in self.ORG_SRC
+        assert '"public_profile.geo"' in self.ORG_SRC
+        assert "-90 <= lat_f <= 90" in self.ORG_SRC
+
+    def test_geocoding_is_best_effort(self):
+        """City senza coordinate → geocoding con la stessa cache
+        Nominatim; MAI bloccante per il salvataggio del profilo."""
+        idx = self.ORG_SRC.index("_geocode_profile_if_needed")
+        block = self.ORG_SRC[idx:idx + 2000]
+        assert "from services.geocoding import geocode" in block
+        assert "except Exception" in block
+
+    def test_org_geo_index_exists(self):
+        src = (BACKEND_DIR / "database.py").read_text()
+        assert '"public_profile.geo"' in src
+        assert "an3_org_geo" in src
+
+    def test_operators_endpoint_has_geo_filters(self):
+        """lat/lng/radius + location: la posizione viene dal profilo,
+        l'operatore senza ritiri futuri resta scopribile."""
+        idx = self.PUB_SRC.index("public_operators_index")
+        block = self.PUB_SRC[idx:idx + 6000]
+        for marker in ("radius_km", '"latitude": pp.get("latitude")',
+                       "distance_km", "prof_regions"):
+            assert marker in block, f"manca {marker}"
+
+    def test_operators_page_wired_with_geo_and_map(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorsIndexPage.js").read_text()
+        assert "GeoSearchBar" in page
+        assert "OperatorsMapView" in page
+        assert "radius_km" in page
+        comp = (FRONTEND_SRC / "features" / "storefront" / "components"
+                / "OperatorsMapView.jsx").read_text()
+        assert "/o/${op.org_slug}" in comp or "/o/" in comp
+
+    def test_profile_editor_has_location_autocomplete(self):
+        editor = (FRONTEND_SRC / "features" / "settings"
+                  / "PublicProfilePage.js").read_text()
+        assert "LocationAutocomplete" in editor
+        assert "/public/geo/search" in editor
+        assert "payload.latitude" in editor
+
+    def test_backfill_script_respects_nominatim(self):
+        src = (BACKEND_DIR / "scripts" / "backfill_org_geo.py").read_text()
+        assert "--dry-run" in src
+        assert "asyncio.sleep(1.1)" in src   # policy OSM 1 req/s

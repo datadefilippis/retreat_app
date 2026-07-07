@@ -623,5 +623,10 @@
     "faq4q": "Quanto costa per chi organizza?",
     "faq4a": "Entrare è gratis: profilo, vetrina e gestionale senza canone. Tratteniamo una piccola commissione solo sulle prenotazioni portate dal calendario pubblico — se il cliente è tuo, non paghi nulla.",
     "cta": "Trova il tuo ritiro"
+  },
+  "operators": {
+    "mapToggle": "Mappa",
+    "mapEmpty": "Nessun organizzatore con posizione sulla mappa per questi filtri.",
+    "mapSee": "Vedi il profilo →"
   }
 }

@@ -623,5 +623,10 @@
     "faq4q": "Combien ça coûte pour les organisateurs ?",
     "faq4a": "L'entrée est gratuite : profil, vitrine et back-office sans abonnement. Nous gardons une petite commission uniquement sur les réservations apportées par le calendrier public — si le client est le vôtre, vous ne payez rien.",
     "cta": "Trouvez votre retraite"
+  },
+  "operators": {
+    "mapToggle": "Carte",
+    "mapEmpty": "Aucun organisateur avec une position sur la carte pour ces filtres.",
+    "mapSee": "Voir le profil →"
   }
 }

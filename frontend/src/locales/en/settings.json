@@ -687,6 +687,8 @@
     "showContacts": "Show contacts on the profile",
     "showContactsHint": "You decide what to expose publicly.",
     "save": "Save profile",
-    "preview": "Preview"
+    "preview": "Preview",
+    "locationSearch": "Location (search and select)",
+    "locationPinned": "Position pinned on the map"
   }
 }

@@ -3658,7 +3658,15 @@ async def public_experiences_index(category: str = Query(default=None, max_lengt
 
 
 @router.get("/operators")
-async def public_operators_index(category: str = Query(default=None, max_length=50)):
+async def public_operators_index(
+    category: str = Query(default=None, max_length=50),
+    # AN3 — scoperta geografica degli operatori: raggio da un punto
+    # (autocomplete/vicino-a-me) o filtro per località testuale
+    lat: float = Query(default=None, ge=-90, le=90),
+    lng: float = Query(default=None, ge=-180, le=180),
+    radius_km: int = Query(default=100, ge=1, le=500),
+    location: str = Query(default=None, max_length=80),
+):
     """S2 (SEO_MASTER_PLAN) — aggregatore pubblico degli operatori.
 
     Elenca le organizzazioni con vetrina pubblica: identita', categorie
@@ -3731,6 +3739,10 @@ async def public_operators_index(category: str = Query(default=None, max_length=
             continue
         pp = org.get("public_profile") or {}
         ss = org.get("store_settings") or {}
+        # AN3 — la località viene dal PROFILO (unione con le regioni
+        # delle occorrenze): l'operatore senza ritiri futuri resta
+        # scopribile geograficamente
+        prof_regions = {r for r in (pp.get("region"), pp.get("city")) if r}
         items.append({
             "org_slug": s["slug"],
             "name": (ss.get("display_name") or s.get("name")
@@ -3742,13 +3754,40 @@ async def public_operators_index(category: str = Query(default=None, max_length=
             "categories": cats,
             "upcoming_retreats": b["retreats"],
             "other_products": b["products"],
-            "regions": sorted(b["regions"]),
+            "city": pp.get("city"),
+            "region": pp.get("region"),
+            "latitude": pp.get("latitude"),
+            "longitude": pp.get("longitude"),
+            "regions": sorted(b["regions"] | prof_regions),
             # GT3 — priorita' nell'aggregatore per i piani featured
             "featured": bool(org.get("directory_featured")),
         })
 
-    items.sort(key=lambda x: (not x["featured"],
-                              -x["upcoming_retreats"], x["name"].lower()))
+    # AN3 — filtro per località testuale (city/region/regioni occorrenze)
+    if location:
+        loc = location.strip().lower()
+        items = [i for i in items
+                 if loc in (i.get("city") or "").lower()
+                 or loc in (i.get("region") or "").lower()
+                 or any(loc in r.lower() for r in i["regions"])]
+
+    # AN3 — raggio da un punto: distanza sul profilo, i più vicini
+    # prima (featured a parità). Chi non ha coordinate esce dal
+    # filtro raggio ma resta nella vista non-geografica.
+    if lat is not None and lng is not None:
+        for i in items:
+            i["distance_km"] = (round(_haversine_km(
+                lat, lng, i["latitude"], i["longitude"]), 1)
+                if i["latitude"] is not None and i["longitude"] is not None
+                else None)
+        items = [i for i in items
+                 if i["distance_km"] is not None
+                 and i["distance_km"] <= radius_km]
+        items.sort(key=lambda x: (x["distance_km"],
+                                  not x["featured"], x["name"].lower()))
+    else:
+        items.sort(key=lambda x: (not x["featured"],
+                                  -x["upcoming_retreats"], x["name"].lower()))
     return {"items": items, "total": len(items),
             "categories": all_categories}
 
