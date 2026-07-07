@@ -467,6 +467,18 @@ async def submit_order_from_storefront(
             locale=getattr(body, "locale", None),
         )
 
+        # GT1 — canale di provenienza sull'ordine: "marketplace" =
+        # arrivato dal calendario pubblico (K1 mktp ctx). Governa la
+        # regola d'incasso: gli ordini marketplace si chiudono SOLO
+        # online (mark-paid manuale bloccato in routers/orders.py) —
+        # è il patto della fee: paghi quando il cliente lo porta Aurya.
+        channel = getattr(body, "channel", None)
+        if order and channel in ("marketplace", "store"):
+            from database import orders_collection as _oc
+            await _oc.update_one({"id": order["id"]},
+                                 {"$set": {"sales_channel": channel}})
+            order["sales_channel"] = channel
+
         # ── P2 Passaporto Ritiri (5/7/2026) — stamp additivo ──────────
         # find-or-create platform account (pending) sulla email + stamp
         # platform_account_id su ordine e customer_accounts org esistenti.
