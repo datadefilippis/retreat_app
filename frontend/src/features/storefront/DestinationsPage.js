@@ -95,7 +95,8 @@ export default function DestinationsPage() {
       // la region della directory matcha la regione; per le città il
       // filtro lato client sulle card (city) tiene la pagina onesta
       const items = (r.data?.items || []).filter(it =>
-        it.region === place.label || it.city === place.label);
+        (it.region || '').toLowerCase() === place.label.toLowerCase()
+        || (it.city || '').toLowerCase() === place.label.toLowerCase());
       setRetreats({ items: items.length > 0 ? items : (r.data?.items || []) });
       setOperators((o.data?.items || []).filter(op =>
         (op.regions || []).includes(place.label)));
