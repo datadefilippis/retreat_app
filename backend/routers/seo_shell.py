@@ -254,6 +254,69 @@ async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
     }
 
 
+async def _meta_blog_list() -> dict:
+    """AN6 — hub del blog: hreflang pieno come gli altri hub."""
+    base = _base_url()
+    canonical = f"{base}/blog"
+    return {
+        "title": "Blog | Aurya",
+        "description": ("Storie, pratiche e sapere olistico da chi "
+                        "organizza e vive i ritiri."),
+        "canonical": canonical,
+        "hreflang": _hub_hreflang(canonical),
+        "image": f"{base}/logo-aurya.png",
+    }
+
+
+async def _meta_blog_article(slug: str) -> Optional[dict]:
+    """AN6 — articolo: BlogPosting JSON-LD, hreflang solo sulle lingue
+    davvero tradotte (title+content, la regola della lista pubblica)."""
+    from database import db
+    base = _base_url()
+    doc = await db.articles.find_one(
+        {"slug": slug, "published": True},
+        {"_id": 0, "title": 1, "description": 1, "featured_image_url": 1,
+         "published_at": 1, "updated_at": 1, "translations": 1,
+         "author_name": 1},
+    )
+    if not doc:
+        return None
+    canonical = f"{base}/blog/{slug}"
+    image = _abs_image(doc.get("featured_image_url"))
+    desc = (doc.get("description") or "")[:300]
+
+    hreflang = {"it": canonical, "x-default": canonical}
+    for lang, tr in (doc.get("translations") or {}).items():
+        if lang in ("en", "de", "fr") and (tr or {}).get("title")                 and (tr or {}).get("content"):
+            hreflang[lang] = f"{canonical}?lang={lang}"
+
+    pub = doc.get("published_at")
+    upd = doc.get("updated_at")
+    jsonld = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": doc["title"],
+        "description": desc,
+        "author": {"@type": "Organization",
+                   "name": doc.get("author_name") or "Aurya"},
+        "publisher": {"@type": "Organization", "name": "Aurya",
+                      "url": f"{base}/"},
+        "datePublished": pub.isoformat() if hasattr(pub, "isoformat") else pub,
+        "dateModified": upd.isoformat() if hasattr(upd, "isoformat") else upd,
+        "url": canonical,
+    }
+    if image:
+        jsonld["image"] = [image]
+    return {
+        "title": f"{doc['title']} | Aurya",
+        "description": desc or "Un articolo dal blog di Aurya.",
+        "canonical": canonical,
+        "image": image,
+        "jsonld": jsonld,
+        "hreflang": hreflang,
+    }
+
+
 def _hreflang_for(translations: Optional[dict], canonical: str) -> dict:
     out = {"it": canonical, "x-default": canonical}
     for lang, tr in (translations or {}).items():
@@ -449,6 +512,10 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_store(parts[1])
     if head in _BRAND_PAGES and len(parts) == 1:
         return await _meta_brand_page(head)   # AN1 — /chi-siamo, /come-funziona
+    if head == "blog":                        # AN6 — il blog sulle stesse rotaie
+        if len(parts) == 1:
+            return await _meta_blog_list()
+        return await _meta_blog_article(parts[1])
     return None
 
 

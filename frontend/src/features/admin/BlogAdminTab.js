@@ -184,9 +184,21 @@ export default function BlogAdminTab() {
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Immagine in evidenza (URL)</label>
             <input type="text" value={form.featured_image_url}
-                   placeholder="https://… (vuoto: cover generata al publish, in arrivo)"
+                   placeholder="https://… (vuoto: al publish si genera la cover Aurya)"
                    onChange={e => setForm({ ...form, featured_image_url: e.target.value })}
                    className={inputCls} />
+            {!isNew && (
+              <button type="button" data-testid="article-regen-cover"
+                      onClick={async () => {
+                        try {
+                          const res = await api.post(`/admin/articles/${editing.id}/cover`);
+                          setForm(f => ({ ...f, featured_image_url: res.data.featured_image_url }));
+                        } catch { setError('Rigenerazione cover non riuscita.'); }
+                      }}
+                      className="mt-1.5 text-xs font-medium text-primary hover:underline">
+                Rigenera la cover Aurya (sovrascrive l'immagine)
+              </button>
+            )}
           </div>
         </div>
 

@@ -25,7 +25,7 @@ os.environ.setdefault("DB_NAME", "test_db")
 import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
-SITEMAPS = ("core", "retreats", "products", "operators")
+SITEMAPS = ("core", "retreats", "products", "operators", "articles")
 
 
 def _get(path: str) -> str:
