@@ -226,3 +226,42 @@ class TestMarketplaceChannelGt1:
         src = inspect.getsource(osvc.mark_order_paid)
         assert "marketplace_online_only" in src
         assert '"marketplace"' in src
+
+
+class TestCalendarListingGt1b:
+    """GT1b — nel calendario pubblico entrano SOLO ritiri prenotabili
+    online all'istante: transaction_mode=direct E org con Stripe
+    attivo e pronto. Il flusso 'richiesta prima' resta sullo store
+    proprio dell'operatore."""
+
+    PUB_SRC = (BACKEND_DIR / "routers" / "public.py").read_text()
+
+    def test_listing_query_filters_direct_mode(self):
+        """La query prodotti del listing pretende transaction_mode=direct."""
+        assert '"transaction_mode": "direct"' in self.PUB_SRC
+
+    def test_listing_gated_on_payment_readiness(self):
+        """Le org senza payment connection attiva+pronta spariscono dal
+        calendario (stessa condizione del checkout: mai un vicolo
+        cieco di pagamento)."""
+        assert "pay_ready" in self.PUB_SRC
+        assert '"status": "active", "runtime_status": "ready"' in self.PUB_SRC
+
+    def test_operator_home_warns_when_calendar_blocked(self):
+        """L'operatore con ritiri pubblicati ma Stripe non collegato vede
+        il banner che spiega perche' non compare nel calendario."""
+        home = (BACKEND_DIR.parent / "frontend" / "src" / "features"
+                / "dashboard" / "OperatorHome.js").read_text()
+        assert "retreat_published" in home
+        assert "stripe_connected" in home
+        assert "calendar_blocked" in home
+
+    def test_calendar_blocked_copy_in_four_languages(self):
+        import json
+        locales_dir = BACKEND_DIR.parent / "frontend" / "src" / "locales"
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads((locales_dir / lang / "dashboard.json").read_text())
+            home = data.get("home") or {}
+            for key in ("calendar_blocked_title", "calendar_blocked_body",
+                        "calendar_blocked_cta"):
+                assert home.get(key), f"{lang}: home.{key} mancante"

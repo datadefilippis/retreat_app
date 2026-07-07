@@ -106,7 +106,10 @@
     "payments_collected12m": "incassati (12 mesi)",
     "payments_all_cf": "Vai a Incassi",
     "todo_overdue": "Pagamenti in ritardo",
-    "todo_reviews": "Recensioni in attesa"
+    "todo_reviews": "Recensioni in attesa",
+    "calendar_blocked_title": "I tuoi ritiri non compaiono nel calendario pubblico",
+    "calendar_blocked_body": "Nel calendario di Aurya entrano solo i ritiri prenotabili online. Attiva i pagamenti per essere visibile e ricevere prenotazioni.",
+    "calendar_blocked_cta": "Attiva i pagamenti online"
   },
   "onboarding": {
     "title": "Inizia qui",
