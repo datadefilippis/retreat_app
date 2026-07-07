@@ -7,6 +7,7 @@
  * value: {lat, lng, label, radius} | null
  * onChange(next | null)
  */
+import { MapPin, LocateFixed } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../../api/client';
@@ -82,7 +83,7 @@ export default function GeoSearchBar({ value, onChange }) {
           value={text}
           onChange={e => setText(e.target.value)}
           onFocus={() => results.length && setOpen(true)}
-          placeholder={t('calendar.wherePlaceholder', { defaultValue: '📍 Dove? Città o zona…' })}
+          placeholder={t('calendar.wherePlaceholder', { defaultValue: 'Dove? Città o zona…' })}
           className="rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm w-44 focus:w-60 transition-all focus:border-primary focus:outline-none"
         />
         {active && (
@@ -102,7 +103,7 @@ export default function GeoSearchBar({ value, onChange }) {
                   onClick={() => pick(r)}
                   className="w-full text-left px-3.5 py-2 text-sm hover:bg-gray-50 truncate"
                 >
-                  📍 {r.label}
+                  <MapPin className="h-3.5 w-3.5 inline-block mr-1 align-[-2px] text-gray-400" aria-hidden />{r.label}
                 </button>
               </li>
             ))}
@@ -117,9 +118,10 @@ export default function GeoSearchBar({ value, onChange }) {
           disabled={locating}
           className="rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
         >
+          <LocateFixed className="h-3.5 w-3.5 inline-block mr-1 align-[-2px]" aria-hidden />
           {locating
             ? t('calendar.locating', { defaultValue: 'Ti localizzo…' })
-            : t('calendar.nearMeBtn', { defaultValue: '📍 Vicino a me' })}
+            : t('calendar.nearMeBtn', { defaultValue: 'Vicino a me' })}
         </button>
       )}
 

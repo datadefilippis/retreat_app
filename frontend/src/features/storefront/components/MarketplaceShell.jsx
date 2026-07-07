@@ -18,6 +18,7 @@ import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BRAND_NAME, BRAND_MOTTO } from '../../../config/brand';
+import { Search, Menu, X, Lock } from 'lucide-react';
 import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
 import api from '../../../api/client';
 
@@ -128,7 +129,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
 
           {minimal ? (
             <span className="ml-auto text-xs text-gray-500 flex items-center gap-1.5">
-              🔒 {t('marketplace.securePayment', { defaultValue: 'Pagamento sicuro' })}
+              <Lock className="h-3.5 w-3.5" aria-hidden /> {t('marketplace.securePayment', { defaultValue: 'Pagamento sicuro' })}
             </span>
           ) : (
             <>
@@ -161,10 +162,12 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 <button
                   type="button"
                   onClick={() => navigate('/')}
-                  className="hidden sm:flex items-center gap-2 rounded-full border border-gray-300 bg-white pl-4 pr-2 py-1.5 text-sm text-gray-500 hover:shadow-md transition-shadow"
+                  className="hidden xl:flex items-center gap-2 rounded-full border border-gray-300 bg-white pl-4 pr-1.5 py-1 text-sm text-gray-500 hover:shadow-md transition-shadow whitespace-nowrap max-w-[240px]"
                 >
-                  <span>{t('marketplace.searchShortcut', { defaultValue: 'Dove? · Quando? · Che ritiro?' })}</span>
-                  <span className="rounded-full bg-primary text-white h-6 w-6 flex items-center justify-center text-xs" aria-hidden>🔍</span>
+                  <span className="truncate">{t('marketplace.searchShortcut', { defaultValue: 'Dove? · Quando? · Che ritiro?' })}</span>
+                  <span className="rounded-full bg-primary text-white h-6 w-6 flex items-center justify-center shrink-0" aria-hidden>
+                    <Search className="h-3.5 w-3.5" />
+                  </span>
                 </button>
               )}
 
@@ -193,7 +196,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     : t('marketplace.navMenu', { defaultValue: 'Menu' })}
                   className="lg:hidden rounded-full border border-gray-300 h-8 w-8 flex items-center justify-center text-gray-700 hover:border-primary"
                 >
-                  <span aria-hidden className="text-base leading-none">{mobileNavOpen ? '✕' : '☰'}</span>
+                  {mobileNavOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
                 </button>
               </div>
             </>

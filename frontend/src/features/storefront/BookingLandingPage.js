@@ -17,6 +17,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { Lock, MapPin } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PublicStorefrontShell from './PublicStorefrontShell';
@@ -75,7 +76,7 @@ export default function BookingLandingPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border p-8 text-center">
-          <div className="text-4xl mb-3">🔒</div>
+          <div className="mb-3 flex justify-center"><Lock className="h-10 w-10 text-gray-300" aria-hidden /></div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">{t('landings:booking.notFoundTitle')}</h1>
           <p className="text-sm text-gray-600">
             {t('landings:booking.notFoundBody')}
@@ -186,7 +187,7 @@ export default function BookingLandingPage() {
                   {t('landings:booking.whereHeading')}
                 </div>
                 <div className="text-sm text-gray-900">
-                  📍 {booking.location}
+                  <MapPin className="h-4 w-4 inline-block mr-1 align-[-2px] text-gray-500" aria-hidden />{booking.location}
                 </div>
               </div>
             )}

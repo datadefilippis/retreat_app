@@ -14,7 +14,7 @@ import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import useSeoMeta from './lib/useSeoMeta';
 
-const TYPE_ICON = { service: '💆', rental: '🏡', course: '🎓' };
+import { TypeIcon } from './lib/categoryIcons';
 
 export default function ExperiencesPage() {
   const { t } = useTranslation('landings');
@@ -140,7 +140,7 @@ export default function ExperiencesPage() {
                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-3xl" aria-hidden>
-                      {TYPE_ICON[item.item_type] || '✨'}
+                      <TypeIcon type={item.item_type} className="h-12 w-12 text-[#376254]/40" />
                     </div>
                   )}
                 </div>

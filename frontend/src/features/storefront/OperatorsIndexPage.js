@@ -18,11 +18,8 @@ import useSeoMeta from './lib/useSeoMeta';
 
 const OperatorsMapView = React.lazy(() => import('./components/OperatorsMapView'));
 
-const CATEGORY_ICONS = {
-  yoga: '🧘', meditazione: '🌿', meditation: '🌿', detox: '🥗',
-  suono: '🎶', massaggio: '💆', breathwork: '🌬️', cammini: '🥾',
-  femminile: '🌸', aziendale: '🏢',
-};
+import { Leaf, MapPin } from 'lucide-react';
+import { CategoryIcon } from './lib/categoryIcons';
 
 function OperatorCard({ op, t }) {
   return (
@@ -43,7 +40,7 @@ function OperatorCard({ op, t }) {
         <div className="absolute -bottom-6 left-4 h-14 w-14 rounded-full border-2 border-white bg-white shadow overflow-hidden flex items-center justify-center">
           {op.logo_url
             ? <img src={op.logo_url} alt="" className="h-full w-full object-cover" loading="lazy" />
-            : <span aria-hidden className="text-xl">🌿</span>}
+            : <Leaf className="h-6 w-6 text-[#376254]/50" aria-hidden />}
         </div>
       </div>
       <div className="pt-8 px-4 pb-4">
@@ -51,7 +48,7 @@ function OperatorCard({ op, t }) {
         {/* AN3 — posizione dal profilo + distanza quando c'è un punto */}
         {(op.city || op.region || op.distance_km != null) && (
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            📍 {[op.city, op.region].filter(Boolean).join(', ')}
+            <MapPin className="h-3 w-3 inline-block mr-0.5 align-[-1px]" aria-hidden />{[op.city, op.region].filter(Boolean).join(', ')}
             {op.distance_km != null && (
               <span className="ml-1.5 rounded-full bg-primary/10 text-primary px-2 py-0.5 font-semibold">
                 {op.distance_km} km
@@ -219,7 +216,7 @@ export default function OperatorsIndexPage() {
                     categoria === key ? 'bg-primary text-white' : 'bg-white border border-border text-foreground hover:border-primary'
                   }`}
                 >
-                  <span aria-hidden className="mr-1">{CATEGORY_ICONS[key] || '✨'}</span>
+                  <CategoryIcon category={key} className="h-3.5 w-3.5 mr-1 inline-block align-[-2px]" />
                   {t(`landings:categories.${key}`, { defaultValue: key })}
                   <span className="ml-1 text-xs opacity-70">({count})</span>
                 </Link>
@@ -241,7 +238,7 @@ export default function OperatorsIndexPage() {
                 view === 'mappa' ? 'bg-primary text-white border-primary' : 'bg-white border-border text-foreground hover:border-primary'
               }`}
             >
-              📍 {t('landings:operators.mapToggle', { defaultValue: 'Mappa' })}
+              {t('landings:operators.mapToggle', { defaultValue: 'Mappa' })}
             </button>
           </div>
         </div>

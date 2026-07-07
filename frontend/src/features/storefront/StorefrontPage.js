@@ -242,7 +242,7 @@ function OrderSummary({ items, products, selectedOccurrences, selectedTiers, ren
                 const crossDay = bs.date_end && bs.date_end !== bs.date;
                 return (
                   <p className="text-xs text-gray-400 ml-1">
-                    📅 {crossDay
+                    {crossDay
                       ? <>{fmtDay(bs.date)} {bs.start} → {fmtDay(bs.date_end)} {bs.end}</>
                       : <>{fmtDay(bs.date)} {bs.start}–{bs.end}</>}
                   </p>
@@ -2301,7 +2301,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
             <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-9 w-9 mr-2.5 select-none" draggable={false} />
             <span className="font-brand font-medium uppercase tracking-[0.28em] text-lg leading-none text-[#8a7440] select-none">{BRAND_NAME}</span>
             <span className="ml-auto text-xs text-gray-500">
-              🔒 {t('storefront:checkout.securePayment', { defaultValue: 'Pagamento sicuro' })}
+              {t('storefront:checkout.securePayment', { defaultValue: 'Pagamento sicuro' })}
             </span>
           </div>
         </div>
@@ -2396,7 +2396,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
                       )}
                       {selectedSlot?.date && (
                         <p className="text-xs text-gray-700 mt-0.5">
-                          📅 <strong>{new Date(selectedSlot.date + 'T12:00').toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}</strong>
+                          <strong>{new Date(selectedSlot.date + 'T12:00').toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}</strong>
                           {' · '}{selectedSlot.start_time}
                           {selectedSlot.end_time ? ` – ${selectedSlot.end_time}` : ''}
                         </p>
@@ -3003,7 +3003,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
                           the checkbox is forced-on and non-dismissable. */}
                       {requiresCustomerAccount && (
                         <div className="flex items-start gap-2 rounded-md bg-blue-100/60 border border-blue-200 px-2 py-1.5">
-                          <span aria-hidden>🎓</span>
+                          <span aria-hidden />
                           <p className="text-xs text-blue-900">
                             <strong>{t('storefront:checkout.signup.courseAlertTitle')}</strong>{' '}
                             {t('storefront:checkout.signup.courseAlertBody')}

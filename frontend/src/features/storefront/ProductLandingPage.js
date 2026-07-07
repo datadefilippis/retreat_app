@@ -23,6 +23,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { ShoppingCart } from 'lucide-react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import i18nInstance from '../../i18n';
@@ -285,7 +286,7 @@ function ProceedToCheckoutBar({
           onClick={handleProceed}
           className="w-full rounded-md bg-[var(--sf-accent,#111827)] text-[var(--sf-accent-fg,#ffffff)] px-4 py-3 text-sm font-semibold hover:bg-[var(--sf-accent-hover,#1f2937)] flex items-center justify-center gap-2 transition-colors"
         >
-          {isDirectMode && <span aria-hidden>🛒</span>}
+          {isDirectMode && <ShoppingCart className="h-4 w-4 inline-block" aria-hidden />}
           {t('landings:product.summary.ctaAdd')}
         </button>
       ) : (
@@ -421,7 +422,7 @@ export default function ProductLandingPage() {
             <span>{t('landings:product.catalogLink')}</span>
             {cartCount > 0 && (
               <span className="inline-flex items-center rounded-full bg-white text-gray-900 text-[10px] font-bold px-2 py-0.5">
-                🛒 {cartCount}
+                <ShoppingCart className="h-3 w-3 inline-block mr-0.5 align-[-1px]" aria-hidden /> {cartCount}
               </span>
             )}
           </Link>

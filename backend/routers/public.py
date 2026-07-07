@@ -3592,13 +3592,52 @@ async def public_destinations_index():
     (anti thin-content): questa lista è la fonte, derivata dalle
     occorrenze future pubblicate (region + city)."""
     from datetime import datetime, timezone
-    from database import event_occurrences_collection
+    from database import (event_occurrences_collection, products_collection,
+                          stores_collection, organizations_collection,
+                          payment_connections_collection)
 
     now_iso = datetime.now(timezone.utc).isoformat()[:16]
     occs = await event_occurrences_collection.find(
         {"status": "published", "start_at": {"$gte": now_iso}},
-        {"_id": 0, "region": 1, "city": 1},
+        {"_id": 0, "region": 1, "city": 1, "product_id": 1},
     ).to_list(2000)
+
+    # Coerenza col calendario (bug founder 7/7: "Ostuni 2 eventi" ma la
+    # pagina era vuota): si conta SOLO ciò che la lista mostrerebbe —
+    # stesso gate GT1b (prodotto direct pubblicato, org con superficie
+    # pubblica e pagamenti pronti). Una destinazione promessa è una
+    # destinazione prenotabile.
+    product_ids = list({o.get("product_id") for o in occs if o.get("product_id")})
+    prods = await products_collection.find(
+        {"id": {"$in": product_ids}, "is_active": True, "is_published": True,
+         "item_type": "event_ticket", "transaction_mode": "direct"},
+        {"_id": 0, "id": 1, "organization_id": 1},
+    ).to_list(2000)
+    org_ids = list({p["organization_id"] for p in prods})
+
+    public_orgs: set = set()
+    async for s in stores_collection.find(
+            {"organization_id": {"$in": org_ids}, "is_published": True,
+             "is_active": True, "visibility": "public"},
+            {"_id": 0, "organization_id": 1}):
+        public_orgs.add(s["organization_id"])
+    async for o in organizations_collection.find(
+            {"id": {"$in": org_ids}, "public_slug": {"$nin": [None, ""]},
+             "store_settings.is_storefront_published": True},
+            {"_id": 0, "id": 1}):
+        public_orgs.add(o["id"])
+
+    pay_ready: set = set()
+    async for pc in payment_connections_collection.find(
+            {"organization_id": {"$in": org_ids},
+             "status": "active", "runtime_status": "ready"},
+            {"_id": 0, "organization_id": 1}):
+        pay_ready.add(pc["organization_id"])
+
+    listable_products = {p["id"] for p in prods
+                         if p["organization_id"] in public_orgs
+                         and p["organization_id"] in pay_ready}
+    occs = [o for o in occs if o.get("product_id") in listable_products]
 
     counts: dict = {}
     for o in occs:

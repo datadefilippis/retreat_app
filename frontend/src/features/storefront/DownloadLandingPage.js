@@ -17,6 +17,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { FolderDown, Lock } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { storefrontAPI } from '../../api/storefront';
@@ -75,7 +76,7 @@ export default function DownloadLandingPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border p-8 text-center">
-          <div className="text-4xl mb-3">🔒</div>
+          <div className="mb-3 flex justify-center"><Lock className="h-10 w-10 text-gray-300" aria-hidden /></div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">{t('landings:download.invalidLink.title')}</h1>
           <p className="text-sm text-gray-600">
             {t('landings:download.invalidLink.body')}
@@ -121,7 +122,7 @@ export default function DownloadLandingPage() {
           {payload.download_filename && (
             <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
               <div className="flex items-center gap-3">
-                <div className="text-2xl">📁</div>
+                <FolderDown className="h-6 w-6 text-gray-500" aria-hidden />
                 <div className="min-w-0 flex-1">
                   <div className="font-semibold text-gray-900 truncate">{filename}</div>
                   {sizeTxt && <div className="text-xs text-gray-500">{sizeTxt}</div>}

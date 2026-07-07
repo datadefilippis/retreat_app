@@ -21,6 +21,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { MapPin, Ticket } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PublicStorefrontShell from './PublicStorefrontShell';
@@ -121,7 +122,7 @@ function TicketLandingInner() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="max-w-md text-center bg-white rounded-xl border p-8">
-          <div className="text-5xl mb-3">🎫</div>
+          <div className="mb-3 flex justify-center"><Ticket className="h-12 w-12 text-gray-300" aria-hidden /></div>
           <h1 className="text-xl font-bold mb-2">{t('landings:ticket.invalidTitle')}</h1>
           <p className="text-sm text-gray-600">
             {t('landings:ticket.invalidBody')}
@@ -220,7 +221,7 @@ function TicketLandingInner() {
         {venueLine && (
           <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
             <p className="text-[11px] uppercase tracking-wide text-gray-500">{t('landings:ticket.locationLabel')}</p>
-            <p className="text-sm text-gray-900 mt-0.5">📍 {venueLine}</p>
+            <p className="text-sm text-gray-900 mt-0.5"><MapPin className="h-4 w-4 inline-block mr-1 align-[-2px] text-gray-500" aria-hidden />{venueLine}</p>
           </div>
         )}
 
