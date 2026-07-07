@@ -212,6 +212,8 @@ export const Sidebar = () => {
       { nameKey: 'nav.orders', href: '/orders', icon: ShoppingCart, end: true },
       // CF3 — la tesoreria dell'operatore
       { nameKey: 'nav.cashflow', href: '/incassi', icon: Wallet, end: true },
+      // CG0 — registro dati (vendite sync+manuale, spese, acquisti, costi fissi)
+      { nameKey: 'nav.data', href: '/modules/cashflow/data/sales', icon: Database, end: false },
       // WS-2: Affitti solo se il piano abilita i noleggi (retreat: no)
       ...(canUse('commerce', 'rentals')
         ? [{ nameKey: 'nav.reservations', href: '/reservations', icon: BookMarked, end: true }]

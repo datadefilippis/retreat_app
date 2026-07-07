@@ -77,6 +77,7 @@ const StoresPage = lazy(() => import("./features/stores/StoresPage"));
 const NewsletterPage = lazy(() => import("./features/newsletter/NewsletterPage"));
 const ReviewsAdminPage = lazy(() => import("./features/reviews/ReviewsAdminPage"));
 const IncassiPage = lazy(() => import("./features/cashflow/IncassiPage"));
+const CashflowDataPage = lazy(() => import("./features/cashflow/CashflowDataPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
 import EventLandingPage from "./features/storefront/EventLandingPage";
@@ -713,6 +714,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <IncassiPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* CG0 — pagina Dati ripristinata: registro vendite (sync ordini +
+          manuale), spese, acquisti, costi fissi */}
+      <Route
+        path="/modules/cashflow/data/:tab?"
+        element={
+          <ProtectedRoute>
+            <CashflowDataPage />
           </ProtectedRoute>
         }
       />
