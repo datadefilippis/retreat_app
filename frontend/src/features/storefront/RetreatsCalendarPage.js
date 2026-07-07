@@ -302,59 +302,10 @@ export default function RetreatsCalendarPage() {
       </div>
 
       {/* ── Griglia ──────────────────────────────────────────────────── */}
+      {/* GT3 (rivisto, scelta founder): niente sezione In evidenza
+          separata — i featured si riconoscono dal badge ✦ sulla card,
+          il calendario resta un'unica lista cronologica senza doppioni. */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* GT3 — sezione "In evidenza" in testa (dichiarata e discreta,
-            stessa scelta di Booking: i Pro visti per primi, il calendario
-            sotto resta cronologico). Filtri categoria/regione già applicati
-            lato server: la strip è sempre pertinente alla pagina. */}
-        {!loading && view !== 'mappa' && !query
-          && (data?.featured_items || []).length > 0 && (
-          <section className="mb-8" aria-label={t('landings:calendar.featured', { defaultValue: 'In evidenza' })}>
-            <h2 className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-[#376254] mb-3">
-              ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
-            </h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {data.featured_items.map(item => {
-                const badge = dateBadge(item.start_at, i18n.language);
-                return (
-                  <Link
-                    key={`fs-${item.org_slug}/${item.slug}`}
-                    to={item.url}
-                    className="group rounded-2xl border border-[#376254]/30 bg-card overflow-hidden hover-lift transition-shadow hover:shadow-lg"
-                  >
-                    <div className="relative h-32 bg-muted overflow-hidden">
-                      {item.cover_image_url ? (
-                        <img src={item.cover_image_url} alt="" loading="lazy"
-                             className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-3xl bg-gradient-to-br from-secondary to-muted" aria-hidden>
-                          {CATEGORY_ICONS[item.category] || '🧘'}
-                        </div>
-                      )}
-                      {badge && (
-                        <div className="absolute top-2 left-2 rounded-lg bg-white/95 px-2 py-1 text-center shadow leading-none">
-                          <span className="block text-sm font-bold text-gray-900">{badge.day}</span>
-                          <span className="block text-[9px] font-semibold uppercase text-gray-500 mt-0.5">{badge.month}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <h3 className="text-sm font-semibold text-foreground line-clamp-1">{item.title}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                        {[item.city, item.region].filter(Boolean).join(', ') || item.org_name}
-                      </p>
-                      {item.price_from != null && (
-                        <p className="text-xs font-bold text-foreground mt-1.5">
-                          {t('landings:calendar.priceFrom', { price: fmtPrice(item.price_from) })}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-        )}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}

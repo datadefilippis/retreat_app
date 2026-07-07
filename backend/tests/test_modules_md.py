@@ -316,10 +316,13 @@ class TestFeaturedBoostGt3:
     PUB_SRC = (BACKEND_DIR / "routers" / "public.py").read_text()
     FRONT = BACKEND_DIR.parent / "frontend" / "src" / "features" / "storefront"
 
-    def test_listing_returns_featured_strip(self):
-        assert '"featured_items"' in self.PUB_SRC
+    def test_featured_is_badge_not_duplicate_section(self):
+        """Scelta founder: NIENTE sezione In evidenza separata (creava
+        doppioni) — il featured e' il badge ✦ sulla card in lista."""
+        assert '"featured_items"' not in self.PUB_SRC
         page = (self.FRONT / "RetreatsCalendarPage.js").read_text()
-        assert "featured_items" in page
+        assert "featured_items" not in page
+        assert "item.featured" in page   # il badge MD3 resta
 
     def test_operators_index_prioritizes_featured(self):
         """L'aggregatore ordina i featured per primi e li marca."""

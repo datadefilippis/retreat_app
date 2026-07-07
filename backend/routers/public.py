@@ -3511,13 +3511,8 @@ async def list_public_retreats(
                                   i["start_at"] or ""))
 
     total = len(items)
-    # GT3 — strip "In evidenza": i primi ritiri dei piani featured sul
-    # set filtrato corrente (stessi filtri di categoria/luogo: la strip
-    # resta pertinente anche sulle pagine categoria/destinazione).
-    featured_items = [i for i in items if i.get("featured")][:4]
     return {
         "items": items[offset:offset + limit],
-        "featured_items": featured_items,
         "total": total,
         "categories": RETREAT_CATEGORIES,
     }
