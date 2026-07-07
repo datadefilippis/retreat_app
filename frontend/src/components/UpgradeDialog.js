@@ -27,7 +27,7 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Check, Sparkles, Loader2 } from 'lucide-react';
+import { Check, Info, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { billingAPI } from '../api/billing';
 import { useBilling } from '../hooks/useBilling';
@@ -201,12 +201,25 @@ export const UpgradeDialog = ({ open, onOpenChange }) => {
                 )}
 
                 <ul className="space-y-1 mb-4">
-                  {features.map((feat, i) => (
-                    <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                      <Check className="h-3 w-3 mt-0.5 text-green-600 flex-shrink-0" />
-                      <span>{t(feat, feat)}</span>
-                    </li>
-                  ))}
+                  {features.map((feat, i) => {
+                    {/* GT5 — ogni voce ha il suo "info circle" col dettaglio:
+                        i piani si capiscono, non si leggono come lista spesa */}
+                    const detail = t(`${feat}_info`, '');
+                    return (
+                      <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                        <Check className="h-3 w-3 mt-0.5 text-green-600 flex-shrink-0" />
+                        <span className="flex-1">{t(feat, feat)}</span>
+                        {detail && (
+                          <span className="group relative shrink-0">
+                            <Info className="h-3 w-3 mt-0.5 text-muted-foreground/50 hover:text-primary cursor-help" />
+                            <span className="pointer-events-none absolute right-0 top-5 z-50 hidden w-60 rounded-lg border border-border bg-popover p-2.5 text-[11px] leading-snug text-popover-foreground shadow-lg group-hover:block">
+                              {detail}
+                            </span>
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <Button

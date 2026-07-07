@@ -236,4 +236,8 @@ def test_retreat_billing_feature_keys_exist_in_all_locales():
             short = key.split("billing.features.")[-1]
             if short not in feats:
                 missing.append(f"{loc}: {short}")
+            # GT5 — ogni voce ha anche il dettaglio "_info" (info circle):
+            # i piani si spiegano, non sono una lista della spesa
+            if f"{short}_info" not in feats:
+                missing.append(f"{loc}: {short}_info")
     assert not missing, "Copy mancante per voci di pricing:\n" + "\n".join(missing)
