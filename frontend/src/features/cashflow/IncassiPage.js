@@ -36,6 +36,26 @@ function dayLabel(iso, lang) {
   } catch { return (iso || '').slice(0, 10); }
 }
 
+// CG2 — semantica fissa: ogni anima ha il suo colore in tutta l'app
+const TYPE_COLORS = {
+  event_ticket: '#376254',  // ritiri — salvia
+  service: '#5E8073',       // consulenze — salvia chiara
+  physical: '#B9A96B',      // fisici — oliva
+  digital: '#A9695B',       // digitali — argilla
+  course: '#C97B5D',        // corsi — terracotta
+  rental: '#8A9088',        // noleggi — neutro
+  manual: '#C9CDC5',        // entrate manuali — grigio
+};
+const TYPE_LABEL_KEYS = {
+  event_ticket: 'cashflow.typeRetreats',
+  service: 'cashflow.typeServices',
+  physical: 'cashflow.typePhysical',
+  digital: 'cashflow.typeDigital',
+  course: 'cashflow.typeCourses',
+  rental: 'cashflow.typeRentals',
+  manual: 'cashflow.typeManual',
+};
+
 const SOURCE_LABELS = {
   ledger: null,                      // caparra/saldo: label già nella riga
   order: 'cashflow.sourceOrder',     // ordine del gestionale
@@ -135,6 +155,12 @@ export default function IncassiPage() {
   const products = (data?.by_product || []).map((p) => ({
     key: p.product_name, label: p.product_name, value: p.revenue,
   }));
+  const typeLabel = (k) => t(TYPE_LABEL_KEYS[k] || 'cashflow.typeOther', { defaultValue: k });
+  const types = (data?.by_type || []).map((x) => ({
+    key: x.item_type, label: typeLabel(x.item_type), value: x.revenue,
+  }));
+  const typesTotal = types.reduce((s2, x) => s2 + (x.value > 0 ? x.value : 0), 0);
+  const mainType = types.filter((x) => x.value > 0).sort((a, b) => b.value - a.value)[0];
 
   return (
     <AppLayout>
@@ -212,13 +238,30 @@ export default function IncassiPage() {
           )}
         </section>
 
-        {/* composizione */}
-        <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="font-heading text-base font-semibold text-foreground mb-3">
-            {t('cashflow.byProductTitle', { defaultValue: 'Venduto per esperienza (12 mesi)' })}
-          </h2>
-          <DonutSplit data={products} valueFormatter={(n) => fmt(n)} />
-        </section>
+        {/* composizione — CG2: prima le ANIME, poi i singoli prodotti */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <section className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="font-heading text-base font-semibold text-foreground mb-1">
+              {t('cashflow.byTypeTitle', { defaultValue: 'Da cosa guadagni (12 mesi)' })}
+            </h2>
+            {mainType && typesTotal > 0 && (
+              <p className="text-xs text-muted-foreground mb-3">
+                {t('cashflow.mainType', {
+                  defaultValue: 'Anima principale: {{type}} — {{pct}}% del venduto',
+                  type: mainType.label,
+                  pct: Math.round((mainType.value / typesTotal) * 100),
+                })}
+              </p>
+            )}
+            <DonutSplit data={types} colors={TYPE_COLORS} valueFormatter={(n) => fmt(n)} />
+          </section>
+          <section className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="font-heading text-base font-semibold text-foreground mb-3">
+              {t('cashflow.byProductTitle', { defaultValue: 'Venduto per esperienza (12 mesi)' })}
+            </h2>
+            <DonutSplit data={products} valueFormatter={(n) => fmt(n)} />
+          </section>
+        </div>
       </div>
     </AppLayout>
   );

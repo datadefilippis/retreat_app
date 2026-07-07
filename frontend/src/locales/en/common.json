@@ -179,6 +179,16 @@
     "markPaidOk": "Payment recorded",
     "markPaidError": "Could not record the payment",
     "sourceOrder": "Order",
-    "sourceManual": "Manual"
+    "sourceManual": "Manual",
+    "byTypeTitle": "Where your revenue comes from (12 months)",
+    "mainType": "Main pillar: {{type}} — {{pct}}% of sales",
+    "typeRetreats": "Retreats",
+    "typeServices": "Consulting",
+    "typePhysical": "Physical goods",
+    "typeDigital": "Digital",
+    "typeCourses": "Courses",
+    "typeRentals": "Rentals",
+    "typeManual": "Manual entries",
+    "typeOther": "Other"
   }
 }

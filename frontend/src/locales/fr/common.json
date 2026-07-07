@@ -179,6 +179,16 @@
     "markPaidOk": "Paiement enregistré",
     "markPaidError": "Impossible d’enregistrer le paiement",
     "sourceOrder": "Commande",
-    "sourceManual": "Manuel"
+    "sourceManual": "Manuel",
+    "byTypeTitle": "D’où viennent vos revenus (12 mois)",
+    "mainType": "Pilier principal : {{type}} — {{pct}}% des ventes",
+    "typeRetreats": "Retraites",
+    "typeServices": "Consultations",
+    "typePhysical": "Produits physiques",
+    "typeDigital": "Numériques",
+    "typeCourses": "Cours",
+    "typeRentals": "Locations",
+    "typeManual": "Entrées manuelles",
+    "typeOther": "Autre"
   }
 }

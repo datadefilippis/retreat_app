@@ -179,6 +179,16 @@
     "markPaidOk": "Zahlung erfasst",
     "markPaidError": "Zahlung konnte nicht erfasst werden",
     "sourceOrder": "Bestellung",
-    "sourceManual": "Manuell"
+    "sourceManual": "Manuell",
+    "byTypeTitle": "Woher dein Umsatz kommt (12 Monate)",
+    "mainType": "Hauptsäule: {{type}} — {{pct}}% des Umsatzes",
+    "typeRetreats": "Retreats",
+    "typeServices": "Beratungen",
+    "typePhysical": "Physische Produkte",
+    "typeDigital": "Digital",
+    "typeCourses": "Kurse",
+    "typeRentals": "Vermietung",
+    "typeManual": "Manuelle Einträge",
+    "typeOther": "Sonstiges"
   }
 }
