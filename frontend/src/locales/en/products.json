@@ -694,7 +694,8 @@
         "colStatus": "Status",
         "colUpdated": "Updated",
         "editAction": "Edit",
-        "archiveAction": "Archive"
+        "archiveAction": "Archive",
+        "colEnrolled": "Enrolled"
       },
       "validation": {
         "lessonTitleRequired": "Lesson title required",
@@ -2010,5 +2011,16 @@
     "searching": "Finding the location…",
     "empty": "Fill in city or address: the pin will appear here on the map.",
     "dragHint": "Drag the pin to fine-tune the exact position."
+  },
+  "salesStats": {
+    "revenue": "Revenue (12 months)",
+    "units": "Units sold (12 months)",
+    "sessionsSold": "Sessions sold (12 months)",
+    "upcoming": "Upcoming sessions",
+    "deliveries": "Deliveries issued",
+    "stock": "Current stock",
+    "enrollments": "Active enrollments",
+    "enrollmentsExpired": "{{count}} expired",
+    "upcomingTitle": "Upcoming sessions — the reminder is already written"
   }
 }

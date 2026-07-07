@@ -694,7 +694,8 @@
         "colStatus": "Stato",
         "colUpdated": "Aggiornato",
         "editAction": "Modifica",
-        "archiveAction": "Archivia"
+        "archiveAction": "Archivia",
+        "colEnrolled": "Iscritti"
       },
       "validation": {
         "lessonTitleRequired": "Titolo lezione obbligatorio",
@@ -2128,5 +2129,16 @@
     "searching": "Cerco la posizione…",
     "empty": "Compila città o indirizzo: il pin apparirà qui sulla mappa.",
     "dragHint": "Trascina il pin per correggere la posizione esatta."
+  },
+  "salesStats": {
+    "revenue": "Ricavo (12 mesi)",
+    "units": "Unità vendute (12 mesi)",
+    "sessionsSold": "Sessioni vendute (12 mesi)",
+    "upcoming": "Sessioni in agenda",
+    "deliveries": "Consegne emesse",
+    "stock": "Giacenza attuale",
+    "enrollments": "Iscritti attivi",
+    "enrollmentsExpired": "{{count}} scaduti",
+    "upcomingTitle": "Prossime sessioni — il promemoria è già scritto"
   }
 }
