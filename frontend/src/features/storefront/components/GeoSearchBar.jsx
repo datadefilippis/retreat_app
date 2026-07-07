@@ -84,7 +84,7 @@ export default function GeoSearchBar({ value, onChange }) {
           onChange={e => setText(e.target.value)}
           onFocus={() => results.length && setOpen(true)}
           placeholder={t('calendar.wherePlaceholder', { defaultValue: 'Dove? Città o zona…' })}
-          className="rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm w-44 focus:w-60 transition-all focus:border-primary focus:outline-none"
+          className="rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 w-44 focus:w-60 transition-all focus:border-primary focus:outline-none"
         />
         {active && (
           <button
@@ -101,7 +101,7 @@ export default function GeoSearchBar({ value, onChange }) {
                 <button
                   type="button"
                   onClick={() => pick(r)}
-                  className="w-full text-left px-3.5 py-2 text-sm hover:bg-gray-50 truncate"
+                  className="w-full text-left px-3.5 py-2 text-sm text-gray-800 hover:bg-gray-50 truncate"
                 >
                   <MapPin className="h-3.5 w-3.5 inline-block mr-1 align-[-2px] text-gray-400" aria-hidden />{r.label}
                 </button>
