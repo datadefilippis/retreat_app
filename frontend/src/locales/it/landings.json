@@ -337,7 +337,18 @@
     "otherCartTitle": "Hai un altro carrello aperto",
     "otherCartBody": "Si acquista da un organizzatore alla volta: ogni prenotazione va direttamente al suo organizzatore. L'altro carrello resta salvato. puoi completarlo dopo.",
     "otherCartContinue": "Continua con questo ritiro",
-    "otherCartFinish": "Completa prima l'altro carrello"
+    "otherCartFinish": "Completa prima l'altro carrello",
+    "reviewsHeading": "Cosa dicono i partecipanti",
+    "verifiedBadge": "Cliente verificato",
+    "faqHeading": "Domande frequenti",
+    "faqDepositQ": "Come funziona la caparra?",
+    "faqDepositA": "Dove prevista, la caparra blocca il tuo posto: paghi ora solo una parte e saldi il resto secondo gli accordi con chi organizza. Il pagamento passa da Stripe, mai di mano in mano.",
+    "faqAfterQ": "Cosa succede dopo la prenotazione?",
+    "faqAfterA": "Ricevi subito il biglietto via email, con i dettagli del ritiro e i contatti di chi lo organizza. Tutte le tue esperienze restano raccolte nel tuo Passaporto Aurya.",
+    "faqWhoQ": "Con chi posso parlare prima di prenotare?",
+    "faqWhoA": "Ogni ritiro ha un volto: trovi la presentazione e il profilo di chi organizza qui sotto, con la sua storia e le recensioni di chi ha già partecipato.",
+    "verifiedReviews_one": "1 recensione verificata",
+    "verifiedReviews_other": "{{count}} recensioni verificate"
   },
   "product": {
     "loading": "Caricamento…",
@@ -544,7 +555,8 @@
     "navOperators": "Organizzatori",
     "navDestinations": "Destinazioni",
     "navMenu": "Menu",
-    "navClose": "Chiudi menu"
+    "navClose": "Chiudi menu",
+    "passportLink": "Il tuo Passaporto Aurya"
   },
   "reviews": {
     "heading": "Recensioni",

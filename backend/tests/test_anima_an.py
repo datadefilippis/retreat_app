@@ -274,3 +274,57 @@ class TestLegalAn4:
         assert "signup-privacy-checkbox" in src
         assert "signup-terms-checkbox" in src
         assert "!acceptedTerms || !acceptedPrivacy" in src
+
+
+class TestTrustAn7:
+    """AN7 — trust in vetrina: il rating verificato compare dove si
+    sceglie (card directory, hero landing), le recensioni parlano
+    dentro la landing, le domande che frenano una prenotazione hanno
+    risposta prima del checkout, il Passaporto ha un nome in vetrina."""
+
+    def test_public_listing_carries_org_rating(self):
+        """/public/retreats espone org_rating {avg, count} costruito da
+        reviews_stats, e la landing evento ha il campo nel modello."""
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        assert '"reviews_stats": 1' in src
+        assert '"org_rating"' in src
+        assert "org_rating: Optional[Dict[str, Any]]" in src
+
+    def test_directory_card_shows_rating(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "RetreatsCalendarPage.js").read_text()
+        assert "item.org_rating" in page
+
+    def test_landing_hero_rating_and_reviews_section(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "EventLandingPage.js").read_text()
+        assert "landing-org-rating" in page
+        assert "ReviewsSnippet" in page
+        assert "/public/reviews/" in page          # fetch delle voci vere
+        assert "verifiedBadge" in page
+
+    def test_landing_has_booking_faq(self):
+        """Il box FAQ vive nella colonna prenotazione e risponde su
+        caparra, dopo-prenotazione e contatto con chi organizza."""
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "EventLandingPage.js").read_text()
+        assert "booking-faq" in page
+        for key in ("faqDepositQ", "faqAfterQ", "faqWhoQ"):
+            assert key in page
+
+    def test_an7_i18n_keys_in_all_langs(self):
+        needed_event = ("verifiedReviews_one", "verifiedReviews_other",
+                        "reviewsHeading", "verifiedBadge",
+                        "faqHeading", "faqDepositQ", "faqDepositA",
+                        "faqAfterQ", "faqAfterA", "faqWhoQ", "faqWhoA")
+        for lang in LANGS:
+            data = json.loads((FRONTEND_SRC / "locales" / lang
+                               / "landings.json").read_text())
+            for key in needed_event:
+                assert key in data["event"], f"{lang}: event.{key} mancante"
+            assert "passportLink" in data["marketplace"], f"{lang}: passportLink"
+
+    def test_passport_promoted_in_footer(self):
+        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "MarketplaceShell.jsx").read_text()
+        assert "passportLink" in shell

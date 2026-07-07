@@ -433,6 +433,13 @@ export default function RetreatsCalendarPage() {
                         className="text-sm text-muted-foreground hover:text-primary hover:underline truncate"
                       >
                         {item.org_name}
+                        {/* AN7 — recensioni verificate visibili dove si sceglie */}
+                        {item.org_rating?.count > 0 && (
+                          <span className="ml-1.5 text-xs text-foreground whitespace-nowrap">
+                            ★ {item.org_rating.avg}
+                            <span className="text-muted-foreground"> ({item.org_rating.count})</span>
+                          </span>
+                        )}
                       </span>
                       <span className="text-right shrink-0 ml-2">
                         {item.price_from != null && (
