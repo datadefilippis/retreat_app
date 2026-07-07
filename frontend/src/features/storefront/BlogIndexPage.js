@@ -82,27 +82,27 @@ export default function BlogIndexPage() {
             <p className="text-white/90 mt-3 text-lg leading-relaxed max-w-2xl mx-auto text-hero-shadow">
               {t('blog.subtitle', { defaultValue: 'Storie, pratiche e sapere olistico da chi i ritiri li organizza e li vive.' })}
             </p>
+            {/* le categorie vivono nell'hero (founder 7/7): il filtro è la porta */}
+            {categoriesWithArticles.length > 1 && (
+              <div className="mt-6 flex flex-wrap gap-2 justify-center" data-testid="blog-category-chips">
+                <button type="button"
+                        onClick={() => setSearchParams({})}
+                        className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${!category ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'}`}>
+                  {t('blog.allArticles', { defaultValue: 'Tutti' })}
+                </button>
+                {categoriesWithArticles.map(slug => (
+                  <button key={slug} type="button"
+                          onClick={() => setSearchParams({ categoria: slug })}
+                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${category === slug ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'}`}>
+                    {t(`categories.${slug}`, { defaultValue: slug })}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </header>
 
         <main className="max-w-4xl mx-auto px-4 py-10">
-          {categoriesWithArticles.length > 1 && (
-            <div className="flex flex-wrap gap-2 mb-8" data-testid="blog-category-chips">
-              <button type="button"
-                      onClick={() => setSearchParams({})}
-                      className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${!category ? 'bg-primary text-white border-primary' : 'border-gray-300 text-gray-600 hover:border-primary'}`}>
-                {t('blog.allArticles', { defaultValue: 'Tutti' })}
-              </button>
-              {categoriesWithArticles.map(slug => (
-                <button key={slug} type="button"
-                        onClick={() => setSearchParams({ categoria: slug })}
-                        className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${category === slug ? 'bg-primary text-white border-primary' : 'border-gray-300 text-gray-600 hover:border-primary'}`}>
-                  {t(`categories.${slug}`, { defaultValue: slug })}
-                </button>
-              ))}
-            </div>
-          )}
-
           {loading ? (
             <p className="text-sm text-muted-foreground py-16 text-center">…</p>
           ) : items.length === 0 ? (

@@ -45,20 +45,28 @@ export default function MarketplaceValueSections() {
           <h2 id="how-title" className="font-display text-2xl md:text-3xl font-bold text-foreground text-center">
             {t('brandHome.howTitle')}
           </h2>
-          <div aria-hidden className="gold-rule max-w-xs mx-auto mt-4" />
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {HOW_STEPS.map((s, i) => (
-              <div key={s.t} className="card-lift relative rounded-2xl border border-[#8a7440]/20 bg-card p-6 shadow-sm">
-                <span aria-hidden className="absolute -top-3.5 left-6 h-8 w-8 rounded-full bg-gradient-to-br from-[#8a7440] to-[#6d5a30] text-[#f6f3ec] text-sm font-bold flex items-center justify-center shadow-md ring-2 ring-[#f6f3ec]">
-                  {i + 1}
-                </span>
-                <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#376254]/10 mt-2">
-                  <s.icon className="h-6 w-6 text-[#376254]" aria-hidden />
-                </span>
-                <h3 className="font-heading font-semibold text-foreground mt-4">{t(s.t)}</h3>
-                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{t(s.b)}</p>
-              </div>
-            ))}
+          <p className="text-muted-foreground text-center mt-3 max-w-xl mx-auto">
+            {t('brandHome.howSub', { defaultValue: 'Quattro passi, un cammino: dal momento in cui senti la chiamata al momento in cui la racconti.' })}
+          </p>
+          <div className="mt-12 relative">
+            {/* il filo d'oro che unisce i passi: un cammino, non 4 card */}
+            <div aria-hidden className="hidden lg:block absolute top-9 left-[13%] right-[13%] gold-rule" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+              {HOW_STEPS.map((s, i) => (
+                <div key={s.t} className="relative text-center px-2">
+                  <div className="relative inline-flex">
+                    <span className="inline-flex h-[72px] w-[72px] items-center justify-center rounded-full bg-white ring-1 ring-[#8a7440]/40 shadow-[0_10px_28px_-10px_rgba(138,116,64,0.45)]">
+                      <s.icon className="h-8 w-8 text-[#376254]" aria-hidden />
+                    </span>
+                    <span aria-hidden className="absolute -top-1.5 -right-1.5 h-7 w-7 rounded-full bg-gradient-to-br from-[#8a7440] to-[#6d5a30] text-[#f6f3ec] text-xs font-bold flex items-center justify-center ring-2 ring-white">
+                      {i + 1}
+                    </span>
+                  </div>
+                  <h3 className="font-heading font-semibold text-lg text-foreground mt-4">{t(s.t)}</h3>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-[260px] mx-auto">{t(s.b)}</p>
+                </div>
+              ))}
+            </div>
           </div>
           <p className="text-center mt-6">
             <Link to="/come-funziona" className="text-sm font-semibold text-[#376254] hover:underline">
@@ -77,6 +85,9 @@ export default function MarketplaceValueSections() {
             <h2 id="why-title" className="font-display text-2xl md:text-3xl font-bold text-center">
               {t('brandHome.whyTitle')}
             </h2>
+            <p className="text-white/80 text-center mt-3 max-w-xl mx-auto">
+              {t('brandHome.whySub', { defaultValue: 'La fiducia non si dichiara: si costruisce. Ecco come custodiamo la tua.' })}
+            </p>
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {WHY_ITEMS.map((w) => (
                 <div key={w.t} className="text-center sm:text-left">
