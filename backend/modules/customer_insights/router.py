@@ -486,3 +486,65 @@ async def list_outreach_templates(
     return {"templates": list_templates(locale)}
 
 
+
+
+# ── CG4 — cross-sell: le anime acquistate da ogni cliente ────────────────────
+
+
+@router.get("/cross-sell")
+async def cross_sell_candidates(
+    have: str = Query("event_ticket", max_length=20),
+    missing: str = Query("service", max_length=20),
+    customer_id: str = Query(None, max_length=64),
+    current_user: dict = Depends(get_current_user),
+):
+    """Chi ha comprato l'anima X ma mai la Y (default: ritiri ma mai
+    consulenze) — LA lista di cross-sell dell'operatore olistico.
+
+    Con ``customer_id``: le anime acquistate da QUEL cliente (per i
+    badge nel profilo). Fonte: ordini confermati/completati, item_type
+    per riga. Realtà dei dati: fatti, nessuno scoring.
+    """
+    from database import orders_collection, customers_collection
+
+    org_id = current_user["organization_id"]
+
+    match: dict = {"organization_id": org_id,
+                   "status": {"$in": ["confirmed", "completed"]}}
+    if customer_id:
+        match["customer_id"] = customer_id
+
+    types_by_customer: dict = {}
+    async for g in orders_collection.aggregate([
+        {"$match": match},
+        {"$unwind": "$items"},
+        {"$group": {"_id": {"c": "$customer_id",
+                            "t": {"$ifNull": ["$items.item_type", "physical"]}}}},
+    ]):
+        cid = g["_id"].get("c")
+        if cid:
+            types_by_customer.setdefault(cid, set()).add(g["_id"].get("t"))
+
+    if customer_id:
+        return {"customer_id": customer_id,
+                "types": sorted(types_by_customer.get(customer_id, set()))}
+
+    candidate_ids = [cid for cid, ts in types_by_customer.items()
+                     if have in ts and missing not in ts]
+    out = []
+    if candidate_ids:
+        async for c in customers_collection.find(
+                {"id": {"$in": candidate_ids[:200]}, "organization_id": org_id},
+                {"_id": 0, "id": 1, "name": 1, "email": 1, "phone": 1,
+                 "accepted_marketing_at": 1, "marketing_revoked_at": 1}):
+            out.append({
+                "customer_id": c["id"],
+                "name": c.get("name"),
+                "email": c.get("email"),
+                "phone": c.get("phone"),
+                "marketing_consent": bool(c.get("accepted_marketing_at"))
+                                     and not c.get("marketing_revoked_at"),
+                "types": sorted(types_by_customer.get(c["id"], set())),
+            })
+    return {"have": have, "missing": missing,
+            "count": len(candidate_ids), "candidates": out}

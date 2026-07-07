@@ -263,5 +263,19 @@
     "withPhone": "Con telefono",
     "withPhoneSub": "raggiungibili su WhatsApp",
     "advanced": "Analisi avanzata (KPI dettagliati, concentrazione, ricavo per segmento)"
+  },
+  "crossSell": {
+    "title": "{{count}} clienti hanno fatto un ritiro ma mai una consulenza",
+    "hint": "Il cross-sell più naturale: hanno già fiducia in te. Il messaggio è pronto.",
+    "show": "Vedi lista",
+    "hide": "Nascondi"
+  },
+  "anime": {
+    "event_ticket": "Ritiri",
+    "service": "Consulenze",
+    "physical": "Fisici",
+    "digital": "Digitali",
+    "course": "Corsi",
+    "rental": "Noleggi"
   }
 }

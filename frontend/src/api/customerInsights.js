@@ -11,6 +11,7 @@
 import api from './client';
 
 export const customerInsightsAPI = {
+  crossSell: (params = {}) => api.get('/customer-insights/cross-sell', { params }),
   /**
    * Period-aware overview: KPIs with delta, segments, concentration,
    * suggested_actions.
