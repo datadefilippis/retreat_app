@@ -142,6 +142,46 @@ class TestOperatorsI18n:
             assert pp.get(k), f"{lang}: publicProfile.{k} mancante"
 
 
+class TestProfileEditorConsolidato:
+    """OP4c-bis — l'editor profilo e' consolidato: UNA sezione
+    multilingua con tutte le bandierine (IT inclusa col badge
+    'principale') e OGNI label della pagina tradotta nelle 4 lingue
+    dell'admin."""
+
+    PAGE = (REPO_ROOT / "frontend" / "src" / "features" / "settings"
+            / "PublicProfilePage.js")
+
+    def test_single_multilang_section_with_children(self):
+        src = self.PAGE.read_text()
+        # children mode = tab Italiano presente (niente sezione
+        # traduzioni separata dalla casella italiana)
+        assert "</MultiLangSection>" in src,             "la sezione multilingua deve avvolgere i campi italiani"
+        # la tagline non deve avere una seconda casella fuori dalle tab
+        assert src.count("set('tagline'") == 1
+        assert src.count("set('bio'") == 1
+
+    @pytest.mark.parametrize("lang", ["it", "en", "de", "fr"])
+    def test_every_page_key_translated(self, lang):
+        """Ogni publicProfile.* usata nella pagina esiste nella lingua:
+        un admin con locale en/de/fr non deve vedere il defaultValue
+        italiano."""
+        import re
+        used = sorted(set(re.findall(r"publicProfile\.([a-zA-Z]+)",
+                                     self.PAGE.read_text())))
+        data = json.loads((LOCALES / lang / "settings.json").read_text())
+        pp = data.get("publicProfile") or {}
+        missing = [k for k in used if not pp.get(k)]
+        assert not missing, f"{lang}: publicProfile.{missing} mancanti"
+
+    @pytest.mark.parametrize("lang", ["it", "en", "de", "fr"])
+    def test_multilang_component_keys(self, lang):
+        data = json.loads(
+            (LOCALES / lang / "products.json").read_text())
+        ml = data.get("multilang") or {}
+        for k in ("primaryTag", "primaryHint", "sectionHint"):
+            assert ml.get(k), f"{lang}: multilang.{k} mancante"
+
+
 # ─── 5. VT7 admin ────────────────────────────────────────────────────────
 
 class TestVt7Admin:

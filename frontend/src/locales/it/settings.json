@@ -692,6 +692,16 @@
     "publicName": "Nome pubblico",
     "publicNameHint": "Compare su directory, profilo e motori di ricerca. Coincide con il nome azienda delle Impostazioni: cambiarlo qui lo cambia ovunque.",
     "visibilityTitle": "Quante persone ti vedono?",
-    "visibilityHint": "Impression, visite e prenotazioni di questo profilo sono nella pagina Visibilità."
+    "visibilityHint": "Impression, visite e prenotazioni di questo profilo sono nella pagina Visibilità.",
+    "tagline": "Tagline (una frase che ti descrive)",
+    "taglinePlaceholder": "Es. \"Yoga e silenzio tra gli ulivi di Ostuni\"",
+    "foundedYear": "Attivo dal (anno)",
+    "languages": "Lingue parlate",
+    "portrait": "Ritratto (foto a lato del profilo)",
+    "portraitHint": "Carica (max 2MB)",
+    "portraitUploaded": "Ritratto caricato",
+    "gallery": "Galleria foto (max 8)",
+    "galleryHint": "Ricorda: rimuovere una foto qui richiede Salva per rendere effettivo.",
+    "photoUploaded": "Foto aggiunta"
   }
 }

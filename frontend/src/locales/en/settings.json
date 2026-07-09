@@ -693,6 +693,16 @@
     "publicName": "Public name",
     "publicNameHint": "Shown on the directory, your profile and search engines. It is the same company name as in Settings: changing it here changes it everywhere.",
     "visibilityTitle": "How many people see you?",
-    "visibilityHint": "Impressions, visits and bookings for this profile are in the Visibility page."
+    "visibilityHint": "Impressions, visits and bookings for this profile are in the Visibility page.",
+    "tagline": "Tagline (one sentence that describes you)",
+    "taglinePlaceholder": "E.g. \"Yoga and silence among the olive trees of Ostuni\"",
+    "foundedYear": "Active since (year)",
+    "languages": "Spoken languages",
+    "portrait": "Portrait (photo next to your profile)",
+    "portraitHint": "Upload (max 2MB)",
+    "portraitUploaded": "Portrait uploaded",
+    "gallery": "Photo gallery (max 8)",
+    "galleryHint": "Note: removing a photo here requires Save to take effect.",
+    "photoUploaded": "Photo added"
   }
 }
