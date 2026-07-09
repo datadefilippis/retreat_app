@@ -15,9 +15,9 @@
 set -euo pipefail
 
 VPS_HOST="${VPS_HOST:?ERROR: Set VPS_HOST env var (e.g. export VPS_HOST=root@1.2.3.4)}"
-VPS_DIR="${VPS_DIR:-/opt/margin-sentinel}"
-SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_ed25519}"
-DOMAIN="${DOMAIN:-afianco.app}"
+VPS_DIR="${VPS_DIR:-/opt/aurya}"
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/aurya_deploy}"
+DOMAIN="${DOMAIN:-aurya.life}"
 COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env.production"
 
 echo "── [1/3] Syncing files to VPS..."
@@ -37,9 +37,6 @@ rsync -avz --delete \
   --exclude='frontend/node_modules' \
   --exclude='backend/uploads/*.csv' \
   --exclude='backend/uploads/*.xlsx' \
-  --exclude='deploy/nginx/nginx.conf' \
-  --exclude='deploy/nginx/nginx-tls.conf' \
-  --exclude='deploy/nginx/nginx-bootstrap.conf' \
   -e "ssh -i $SSH_KEY" \
   ./ "${VPS_HOST}:${VPS_DIR}/"
 
@@ -50,7 +47,9 @@ ssh -i "$SSH_KEY" "$VPS_HOST" "cd $VPS_DIR && $COMPOSE up -d --build"
 echo ""
 echo "── [3/3] Waiting for healthcheck..."
 sleep 15
-ssh -i "$SSH_KEY" "$VPS_HOST" "cd $VPS_DIR && $COMPOSE ps && echo '---' && curl -s http://localhost/api/health"
+# HTTP redirige a HTTPS: il check va fatto in HTTPS (-k: il cert è per
+# il dominio, non per localhost) sull'endpoint /live.
+ssh -i "$SSH_KEY" "$VPS_HOST" "cd $VPS_DIR && $COMPOSE ps && echo '---' && curl -sk https://localhost/api/health/live"
 
 echo ""
 echo "── Deploy complete! https://${DOMAIN}"
