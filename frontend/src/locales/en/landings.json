@@ -644,7 +644,20 @@
   "operators": {
     "mapToggle": "Map",
     "mapEmpty": "No organizers with a location on the map for these filters.",
-    "mapSee": "View profile →"
+    "mapSee": "View profile →",
+    "heading": "Organizers",
+    "headingCat": "{{cat}} organizers",
+    "subtitle": "The people and centres behind the retreats: discover who organizes, what they offer and book directly online.",
+    "seoTitle": "All retreat and experience organizers | Aurya",
+    "seoTitleCat": "{{cat}} organizers | Aurya",
+    "seoDesc": "Discover the organizers of holistic retreats and experiences on Aurya: profiles, upcoming dates and online booking with deposit.",
+    "retreatCount_one": "{{count}} upcoming retreat",
+    "retreatCount_other": "{{count}} upcoming retreats",
+    "productCount_one": "{{count}} experience or product",
+    "productCount_other": "{{count}} experiences and products",
+    "emptyTitle": "No organizers here, yet",
+    "emptyBody": "Try another category or go back to the retreats directory.",
+    "backHome": "Browse retreats"
   },
   "blog": {
     "seoTitle": "Blog | Aurya",

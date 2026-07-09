@@ -688,6 +688,10 @@
     "save": "Salva profilo",
     "preview": "Anteprima",
     "locationSearch": "Località (cerca e seleziona)",
-    "locationPinned": "Posizione agganciata alla mappa"
+    "locationPinned": "Posizione agganciata alla mappa",
+    "publicName": "Nome pubblico",
+    "publicNameHint": "Compare su directory, profilo e motori di ricerca. Coincide con il nome azienda delle Impostazioni: cambiarlo qui lo cambia ovunque.",
+    "visibilityTitle": "Quante persone ti vedono?",
+    "visibilityHint": "Impression, visite e prenotazioni di questo profilo sono nella pagina Visibilità."
   }
 }

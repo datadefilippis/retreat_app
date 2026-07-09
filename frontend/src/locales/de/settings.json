@@ -634,6 +634,10 @@
   },
   "publicProfile": {
     "locationSearch": "Ort (suchen und auswählen)",
-    "locationPinned": "Position auf der Karte verankert"
+    "locationPinned": "Position auf der Karte verankert",
+    "publicName": "Öffentlicher Name",
+    "publicNameHint": "Erscheint im Verzeichnis, auf deinem Profil und in Suchmaschinen. Es ist derselbe Firmenname wie in den Einstellungen: eine Änderung hier ändert ihn überall.",
+    "visibilityTitle": "Wie viele Menschen sehen dich?",
+    "visibilityHint": "Impressionen, Besuche und Buchungen dieses Profils findest du auf der Seite Sichtbarkeit."
   }
 }

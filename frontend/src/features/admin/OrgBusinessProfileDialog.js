@@ -54,6 +54,7 @@ export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange }) 
   const e = data?.platform_earnings || {};
   const p = data?.presence || {};
   const r = data?.relationship || {};
+  const tr = data?.traffic || {};
   const bars = (t.by_month || []).map((m) => ({ label: m.month.slice(5), value: m.gmv }));
 
   return (
@@ -149,6 +150,18 @@ export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange }) 
                     </>
                   )}
                 </p>
+              </div>
+            </section>
+
+            {/* VT7 — traffico: la prova del pitch "ti stiamo gia'
+                portando X visite al mese" */}
+            <section>
+              <h3 className="text-sm font-semibold text-foreground mb-2">Traffico (mese corrente)</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <Stat label="Impression" value={tr.impressions_month ?? 0} />
+                <Stat label="Visite" value={tr.visits_month ?? 0} />
+                <Stat label="Visitatori unici" value={tr.uniques_month ?? 0} />
+                <Stat label="Visite mese prec." value={tr.visits_prev_month ?? 0} />
               </div>
             </section>
 

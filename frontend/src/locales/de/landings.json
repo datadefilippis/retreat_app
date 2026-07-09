@@ -644,7 +644,20 @@
   "operators": {
     "mapToggle": "Karte",
     "mapEmpty": "Keine Veranstalter mit Position auf der Karte für diese Filter.",
-    "mapSee": "Profil ansehen →"
+    "mapSee": "Profil ansehen →",
+    "heading": "Veranstalter",
+    "headingCat": "Veranstalter für {{cat}}",
+    "subtitle": "Die Menschen und Zentren hinter den Retreats: entdecke, wer organisiert, was angeboten wird, und buche direkt online.",
+    "seoTitle": "Alle Veranstalter von Retreats und Erlebnissen | Aurya",
+    "seoTitleCat": "Veranstalter für {{cat}} | Aurya",
+    "seoDesc": "Entdecke die Veranstalter holistischer Retreats und Erlebnisse auf Aurya: Profile, kommende Termine und Online-Buchung mit Anzahlung.",
+    "retreatCount_one": "{{count}} geplantes Retreat",
+    "retreatCount_other": "{{count}} geplante Retreats",
+    "productCount_one": "{{count}} Erlebnis oder Produkt",
+    "productCount_other": "{{count}} Erlebnisse und Produkte",
+    "emptyTitle": "Hier noch keine Veranstalter",
+    "emptyBody": "Versuche eine andere Kategorie oder kehre zum Retreat-Verzeichnis zurück.",
+    "backHome": "Zu den Retreats"
   },
   "blog": {
     "seoTitle": "Blog | Aurya",

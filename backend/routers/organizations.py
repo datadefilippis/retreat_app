@@ -1759,6 +1759,9 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
         raise HTTPException(status_code=404, detail="Organization not found")
     pp = org_doc.get("public_profile") or {}
     return {**{k: pp.get(k) for k in _PUBLIC_PROFILE_FIELDS},
+            # OP4 — il titolo pubblico E' il nome org (settings):
+            # esposto qui cosi' l'editor profilo lo mostra e lo salva
+            "name": org_doc.get("name"),
             "photos": pp.get("photos") or [],
             "languages": pp.get("languages") or [],
             "translations": pp.get("translations") or {},
@@ -1785,6 +1788,11 @@ async def update_public_profile(
                 updates[f"public_profile.{field}"] = val.strip()[:max_len]
     if "show_contacts" in body:
         updates["public_profile.show_contacts"] = bool(body["show_contacts"])
+    # OP4 — nome pubblico = organizations.name (la stessa riga che si
+    # modifica dalle Impostazioni). Il vuoto NON cancella: un titolo
+    # sparito romperebbe email, fatture e SEO.
+    if isinstance(body.get("name"), str) and body["name"].strip():
+        updates["name"] = body["name"].strip()[:120]
     # PR1 — liste con validazione dedicata
     if "photos" in body:
         photos = body["photos"] if isinstance(body["photos"], list) else []

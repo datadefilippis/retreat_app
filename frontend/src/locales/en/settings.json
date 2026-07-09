@@ -689,6 +689,10 @@
     "save": "Save profile",
     "preview": "Preview",
     "locationSearch": "Location (search and select)",
-    "locationPinned": "Position pinned on the map"
+    "locationPinned": "Position pinned on the map",
+    "publicName": "Public name",
+    "publicNameHint": "Shown on the directory, your profile and search engines. It is the same company name as in Settings: changing it here changes it everywhere.",
+    "visibilityTitle": "How many people see you?",
+    "visibilityHint": "Impressions, visits and bookings for this profile are in the Visibility page."
   }
 }

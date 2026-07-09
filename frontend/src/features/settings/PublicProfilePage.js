@@ -13,8 +13,10 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Skeleton } from '../../components/ui/skeleton';
+import { Link } from 'react-router-dom';
 import {
   ExternalLink, Copy, Check, Upload, Loader2, Instagram, Globe, Facebook,
+  Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../api/client';
@@ -104,6 +106,9 @@ export default function PublicProfilePage() {
       setForm(ppRes.status === 'fulfilled'
         ? { show_contacts: false, ...ppRes.value.data }
         : { show_contacts: false });
+      if (ppRes.status === 'fulfilled' && ppRes.value.data?.name) {
+        setOrgName(ppRes.value.data.name);
+      }
       if (orgRes.status === 'fulfilled') {
         const o = orgRes.value.data || {};
         setSlug(o.public_slug || o.store_slug || null);
@@ -130,6 +135,9 @@ export default function PublicProfilePage() {
     try {
       const payload = {};
       FIELDS.forEach(k => { payload[k] = form[k] || null; });
+      // OP4 — il titolo pubblico e' organizations.name (stessa riga
+      // delle Impostazioni): si salva solo se non vuoto
+      if ((orgName || '').trim()) payload.name = orgName.trim();
       // AN3 — coordinate dall'autocomplete (numeri, non stringhe)
       if (form.latitude != null && form.longitude != null) {
         payload.latitude = form.latitude;
@@ -142,6 +150,7 @@ export default function PublicProfilePage() {
       payload.translations = form.translations || {};
       const res = await api.patch('/organizations/current/public-profile', payload);
       setForm({ show_contacts: false, ...res.data });
+      if (res.data?.name) setOrgName(res.data.name);
       toast.success(t('publicProfile.saved', { defaultValue: 'Profilo salvato' }));
     } catch {
       toast.error(t('publicProfile.saveError', { defaultValue: 'Errore nel salvataggio' }));
@@ -265,6 +274,36 @@ export default function PublicProfilePage() {
               {t('publicProfile.completenessHint', { defaultValue: 'Foto, bio e social aumentano la fiducia — e le prenotazioni.' })}
             </p>
           </div>
+
+          {/* OP4 — Nome pubblico: LA stessa riga delle Impostazioni.
+              E' il titolo che il pubblico vede su directory, profilo
+              e nei risultati di ricerca. */}
+          <div className="rounded-xl border bg-card p-4 space-y-2">
+            <Label>{t('publicProfile.publicName', { defaultValue: 'Nome pubblico' })}</Label>
+            <input
+              value={orgName}
+              onChange={e => setOrgName(e.target.value.slice(0, 120))}
+              maxLength={120}
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              {t('publicProfile.publicNameHint', { defaultValue: 'Compare su directory, profilo e motori di ricerca. Coincide con il nome azienda delle Impostazioni: cambiarlo qui lo cambia ovunque.' })}
+            </p>
+          </div>
+
+          {/* VT5 — il ponte verso lo specchietto: quante persone vedono
+              questo profilo */}
+          <Link to="/visibilita" className="flex items-center gap-3 rounded-xl border border-[#376254]/40 bg-[#376254]/5 p-4 hover:bg-[#376254]/10 transition-colors">
+            <Eye className="h-5 w-5 text-[#376254] shrink-0" aria-hidden />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {t('publicProfile.visibilityTitle', { defaultValue: 'Quante persone ti vedono?' })}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t('publicProfile.visibilityHint', { defaultValue: 'Impression, visite e prenotazioni di questo profilo sono nella pagina Visibilità.' })}
+              </p>
+            </div>
+          </Link>
 
           {/* Cover */}
           <div className="rounded-xl border bg-card p-4 space-y-2">

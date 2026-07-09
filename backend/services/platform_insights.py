@@ -280,6 +280,22 @@ async def signals() -> Dict[str, Any]:
         if day > last_order_day.get(oid, ""):
             last_order_day[oid] = day
 
+    # VT7 — visite dallo specchietto (page_views): finestra 0-30gg
+    # vs 31-60gg per i due segnali traffico
+    visits_recent = defaultdict(int)
+    visits_prev = defaultdict(int)
+    async for row in db.page_views.aggregate([
+            {"$match": {"organization_id": {"$in": org_ids},
+                        "day": {"$gte": d60}}},
+            {"$group": {"_id": {"org": "$organization_id",
+                                "recent": {"$gte": ["$day", d30]}},
+                        "visits": {"$sum": "$hits"}}}]):
+        key = row["_id"]
+        if key.get("recent"):
+            visits_recent[key["org"]] = row["visits"]
+        else:
+            visits_prev[key["org"]] = row["visits"]
+
     # email del primo admin per il contatto one-click
     admin_email: Dict[str, str] = {}
     async for u in users_collection.find(
@@ -301,8 +317,11 @@ async def signals() -> Dict[str, Any]:
             pro_ready.append({**base(oid), "online_month": round(vol, 2),
                               "monthly_saving": saving})
         if not r["listed"] and r["reasons"] == ["stripe_not_ready"]:
+            # VT7 — le visite recenti rendono il "sbloccalo" urgente:
+            # traffico vero che oggi finisce in un vicolo cieco
             unlockable.append({**base(oid),
-                               "retreats_ready": r["retreats_excluded"]})
+                               "retreats_ready": r["retreats_excluded"],
+                               "visits_30d": visits_recent.get(oid, 0)})
         # a rischio: aveva ordini ma fermo da 60gg, oppure account
         # maturo (>14gg) che non ha mai messo nulla online
         last = last_order_day.get(oid)
@@ -324,7 +343,20 @@ async def signals() -> Dict[str, Any]:
             growing.append({**base(oid), "gmv_30d": round(rec, 2),
                             "gmv_prev_30d": round(prev, 2)})
 
+    # VT7 — traffico in calo: chi aveva un pubblico e lo sta perdendo
+    # (nudge prima che sparisca). Pavimento anti-rumore: >=20 visite
+    # nella finestra precedente, calo di almeno meta'.
+    traffic_drop = []
+    for oid in rows_by_org:
+        prev_n, rec_n = visits_prev.get(oid, 0), visits_recent.get(oid, 0)
+        if prev_n >= 20 and rec_n < prev_n * 0.5:
+            traffic_drop.append({**base(oid), "visits_30d": rec_n,
+                                 "visits_prev_30d": prev_n})
+    traffic_drop.sort(key=lambda x: -x["visits_prev_30d"])
+
     pro_ready.sort(key=lambda x: -x["online_month"])
     growing.sort(key=lambda x: -x["gmv_30d"])
+    unlockable.sort(key=lambda x: -x.get("visits_30d", 0))
     return {"pro_ready": pro_ready, "unlockable": unlockable,
-            "at_risk": at_risk, "growing": growing}
+            "at_risk": at_risk, "growing": growing,
+            "traffic_drop": traffic_drop}

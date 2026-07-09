@@ -98,6 +98,7 @@ Per i trattamenti in cui Aurya e' Responsabile, l'Operatore e' Titolare verso i 
 - **Indirizzo IP** e **User-Agent**: registrati al momento dell'accettazione dei termini, a fini di prova legale del consenso (audit immutabile, art. 7 GDPR)
 - **Eventi di pagamento**: identificativo della transazione Stripe, importo, esito (non vengono memorizzati dati della carta di pagamento — vedi art. 9)
 - **Codici OTP di verifica recensione**: generati, verificati e scaduti automaticamente; non riutilizzabili
+- **Statistiche di visibilita' in forma aggregata e anonima**: le visualizzazioni delle pagine pubbliche (profili degli Operatori, pagine dei ritiri, store) sono conteggiate direttamente dalla Piattaforma, senza cookie, senza servizi di terze parti e senza memorizzare l'indirizzo IP; viene utilizzato un identificatore tecnico che cambia ogni giorno e non e' riconducibile alla persona. Questi conteggi servono esclusivamente a fornire agli Operatori statistiche aggregate sulla visibilita' ottenuta tramite la Piattaforma
 
 ### 3.3 Geolocalizzazione del Visitatore
 

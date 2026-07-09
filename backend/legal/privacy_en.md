@@ -98,6 +98,7 @@ For processing activities in which Aurya acts as Processor, the Operator is the 
 - **IP address** and **User-Agent**: recorded at the time of acceptance of the terms, for the purpose of legal proof of consent (immutable audit, Art. 7 GDPR)
 - **Payment events**: Stripe transaction identifier, amount, outcome (payment card data is not stored — see Art. 9)
 - **Review verification OTP codes**: generated, verified and expired automatically; not reusable
+- **Aggregated, anonymous visibility statistics**: views of public pages (Operator profiles, retreat pages, stores) are counted directly by the Platform, without cookies, without third-party services and without storing the IP address; a technical identifier that changes every day and cannot be traced back to the person is used. These counts serve exclusively to provide Operators with aggregated statistics on the visibility obtained through the Platform
 
 ### 3.3 Visitor geolocation
 

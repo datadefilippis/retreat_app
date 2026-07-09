@@ -97,7 +97,15 @@ export default function SignalsTab() {
         hint="Ritiri pronti e pagina pubblica ok: manca SOLO il collegamento Stripe per entrare nel calendario."
         items={data?.unlockable || []}
         onOpen={setProfileOrg}
-        renderDetail={(it) => <>{it.retreats_ready} ritiri pronti a entrare in directory</>}
+        renderDetail={(it) => <>{it.retreats_ready} ritiri pronti a entrare in directory{it.visits_30d > 0 && <> · {it.visits_30d} visite negli ultimi 30gg che oggi non possono prenotare</>}</>}
+      />
+      <SignalSection
+        icon={AlertTriangle} accent="text-amber-700"
+        title="Traffico in calo"
+        hint="Visite dimezzate rispetto ai 30 giorni precedenti: un nudge (nuove date, foto, blog) prima che il pubblico sparisca."
+        items={data?.traffic_drop || []}
+        onOpen={setProfileOrg}
+        renderDetail={(it) => <>{it.visits_30d} visite negli ultimi 30gg (prima: {it.visits_prev_30d})</>}
       />
       <SignalSection
         icon={AlertTriangle} accent="text-red-700"

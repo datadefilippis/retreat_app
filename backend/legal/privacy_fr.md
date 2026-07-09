@@ -98,6 +98,7 @@ Pour les traitements dans lesquels Aurya est Sous-traitant, l'Opérateur est Res
 - **Adresse IP** et **User-Agent** : enregistrés au moment de l'acceptation des conditions, à des fins de preuve légale du consentement (audit immuable, art. 7 RGPD)
 - **Événements de paiement** : identifiant de la transaction Stripe, montant, résultat (aucune donnée de carte de paiement n'est mémorisée — voir art. 9)
 - **Codes OTP de vérification d'avis** : générés, vérifiés et expirés automatiquement ; non réutilisables
+- **Statistiques de visibilité agrégées et anonymes** : les consultations des pages publiques (profils des Opérateurs, pages des retraites, stores) sont comptées directement par la Plateforme, sans cookies, sans services tiers et sans enregistrer l'adresse IP ; un identifiant technique qui change chaque jour et ne peut être rattaché à la personne est utilisé. Ces comptages servent exclusivement à fournir aux Opérateurs des statistiques agrégées sur la visibilité obtenue via la Plateforme
 
 ### 3.3 Géolocalisation du Visiteur
 
