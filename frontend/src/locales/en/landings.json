@@ -475,7 +475,8 @@
     "mapEmpty": "No retreats with a map position for these filters.",
     "mapSee": "See the retreat →",
     "fromPrice": "from €{{price}}",
-    "featured": "Featured"
+    "featured": "Featured",
+    "byRegion": "By region:"
   },
   "operator": {
     "website": "Website",
@@ -655,6 +656,9 @@
     "empty": "No articles in this language yet. The stories are on their way.",
     "notFound": "Article not found",
     "backToBlog": "Back to the blog",
-    "italianOnly": "This article is available in Italian only, for now."
+    "italianOnly": "This article is available in Italian only, for now.",
+    "exploreRetreatsTitle": "Live a {{cat}} retreat",
+    "exploreRetreatsBody": "Upcoming dates, with online booking and a protected deposit.",
+    "exploreRetreatsCta": "Discover {{cat}} retreats"
   }
 }

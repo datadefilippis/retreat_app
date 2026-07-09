@@ -511,3 +511,41 @@ class TestDs5IconsAndLang:
         assert 'role="listbox"' in shell            # menu a tendina
         assert "Globe" in shell                     # icona globo
         assert "persistMarketplaceLang" in shell    # L1 resta: scelta persistita
+
+
+class TestSeo3OnPage:
+    """SEO3 (piano SEO Tier 3) — on-page: alt descrittivi, <html lang>
+    dinamico (mai 'en' fisso), internal linking alle pagine local."""
+
+    def test_html_lang_is_italian_not_english(self):
+        html = (FRONTEND_SRC.parent / "public" / "index.html").read_text()
+        assert '<html lang="it">' in html
+        assert '<html lang="en">' not in html
+        i18n = (FRONTEND_SRC / "i18n.js").read_text()
+        assert "documentElement.lang" in i18n
+        assert "languageChanged" in i18n
+
+    def test_descriptive_alt_text(self):
+        op = (FRONTEND_SRC / "features" / "storefront"
+              / "OperatorProfilePage.js").read_text()
+        assert 'alt=""' not in op or "aria-hidden" in op  # solo decorative
+        assert "Logo di" in op                            # logo descrittivo
+        ev = (FRONTEND_SRC / "features" / "storefront"
+              / "EventLandingPage.js").read_text()
+        assert "foto ${" in ev                            # gallery numerata
+
+    def test_category_page_links_regions(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "RetreatsCalendarPage.js").read_text()
+        assert "regionsForCategory" in page
+        assert "/ritiri/${category}/${rg}" in page        # link crawlabile
+        assert 'aria-label="breadcrumb"' in page
+        # niente em-dash né 'in Italia' nel title/description SEO
+        assert "— prenota online" not in page
+        assert "' in Italia'" not in page
+
+    def test_blog_article_links_category_retreats(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "BlogArticlePage.js").read_text()
+        assert "/ritiri/${article.category}" in page
+        assert "exploreRetreatsCta" in page

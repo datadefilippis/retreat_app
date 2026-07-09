@@ -340,4 +340,15 @@ i18n.use(initReactI18next).init({
   },
 });
 
+// SEO3 — <html lang> sempre allineato alla lingua attiva: index.html parte
+// da "it" (default), poi ogni cambio lingua aggiorna documentElement.lang
+// così il crawler capisce in che lingua è la pagina (era hardcoded "en").
+const _syncHtmlLang = (lng) => {
+  try {
+    document.documentElement.lang = (lng || 'it').slice(0, 2);
+  } catch { /* no-DOM: no-op */ }
+};
+_syncHtmlLang(i18n.language);
+i18n.on('languageChanged', _syncHtmlLang);
+
 export default i18n;

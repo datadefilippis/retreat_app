@@ -475,7 +475,8 @@
     "mapEmpty": "Aucune retraite avec position sur la carte pour ces filtres.",
     "mapSee": "Voir la retraite →",
     "fromPrice": "dès {{price}} €",
-    "featured": "En vedette"
+    "featured": "En vedette",
+    "byRegion": "Par région :"
   },
   "operator": {
     "website": "Site web",
@@ -655,6 +656,9 @@
     "empty": "Pas encore d’articles dans cette langue. Les histoires arrivent.",
     "notFound": "Article introuvable",
     "backToBlog": "Retour au blog",
-    "italianOnly": "Cet article est disponible uniquement en italien, pour le moment."
+    "italianOnly": "Cet article est disponible uniquement en italien, pour le moment.",
+    "exploreRetreatsTitle": "Vis une retraite de {{cat}}",
+    "exploreRetreatsBody": "Les dates à venir, avec réservation en ligne et acompte protégé.",
+    "exploreRetreatsCta": "Découvre les retraites de {{cat}}"
   }
 }

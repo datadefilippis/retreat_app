@@ -148,17 +148,30 @@ export default function RetreatsCalendarPage() {
     ));
   }, [data, query]);
 
-  // SEO — title/description dinamici per categoria×regione (INTATTO).
+  // SEO3 — le pagine /ritiri/{cat}/{regione} vanno raggiunte da LINK
+  // interni (non solo dal sitemap): su una pagina categoria elenchiamo
+  // le regioni con ritiri come link crawlabili.
+  const regionsForCategory = useMemo(() => {
+    if (!category || region) return [];
+    const seen = new Set();
+    (data?.items || []).forEach(it => { if (it.region) seen.add(it.region); });
+    return [...seen].sort().slice(0, 12);
+  }, [data, category, region]);
+
+  // SEO — title/description dinamici per categoria×regione. Allineati allo
+  // shell (routers/seo_shell._meta_category): "Ritiri di {cat} in {regione}",
+  // separatore | (mai em-dash), niente "in Italia" (regola brand no-geografia
+  // imposta — la location arriva SOLO quando c'è davvero una regione).
   const catLabel = category ? (data?.categories?.[category] || category) : '';
-  const seoTitle = (() => {
+  const seoHeading = (() => {
     const bits = ['Ritiri'];
-    if (catLabel) bits.push(catLabel.toLowerCase());
+    if (catLabel) bits.push('di ' + catLabel);
     if (region) bits.push('in ' + region);
-    return bits.join(' ') + ' — prenota online';
+    return bits.join(' ');
   })();
   useSeoMeta({
-    title: seoTitle,
-    description: `Trova e prenota ${catLabel ? catLabel.toLowerCase() + ' ' : ''}ritiri${region ? ' in ' + region : ' in Italia'}: date, prezzi e disponibilità in tempo reale, con prenotazione e caparra online.`,
+    title: `${seoHeading} | Aurya`,
+    description: `Trova e prenota ${catLabel ? catLabel.toLowerCase() + ' ' : ''}ritiri${region ? ' a ' + region : ''}: date, prezzi e disponibilità in tempo reale, con prenotazione e caparra online.`,
     canonicalPath: (routeParams.categoria || routeParams.regione)
       ? window.location.pathname : '/',
     // F3 — ItemList dei ritiri visibili (max 20: ai crawler serve il
@@ -199,9 +212,7 @@ export default function RetreatsCalendarPage() {
             <span aria-hidden className="hidden sm:block h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-[#d6c49a]/80" />
           </p>
           <h1 className="font-display text-4xl md:text-6xl font-medium tracking-tight leading-tight text-hero-shadow">
-            {catLabel || region
-              ? seoTitle.replace(' — prenota online', '')
-              : t('landings:calendar.title')}
+            {catLabel || region ? seoHeading : t('landings:calendar.title')}
           </h1>
           <p className="text-white/95 mt-4 max-w-xl mx-auto text-base md:text-lg text-hero-shadow">{t('landings:calendar.subtitle')}</p>
 
@@ -245,6 +256,44 @@ export default function RetreatsCalendarPage() {
           )}
         </div>
       </header>
+
+      {/* SEO3 — breadcrumb navigabile + regioni come LINK crawlabili sulle
+          pagine categoria: i motori raggiungono /ritiri/{cat}/{regione} dai
+          link interni, non solo dal sitemap. */}
+      {(category || region) && (
+        <div className="border-b border-border bg-background">
+          <div className="max-w-6xl mx-auto px-4 py-3">
+            <nav aria-label="breadcrumb" className="text-xs text-muted-foreground">
+              <Link to="/" className="hover:text-primary hover:underline">Aurya</Link>
+              <span className="mx-1.5" aria-hidden>›</span>
+              {category ? (
+                <Link to={`/ritiri/${category}`} className="hover:text-primary hover:underline">
+                  {catLabel || category}
+                </Link>
+              ) : (
+                <span className="text-foreground">{t('landings:calendar.title', { defaultValue: 'Ritiri' })}</span>
+              )}
+              {region && (<>
+                <span className="mx-1.5" aria-hidden>›</span>
+                <span className="text-foreground">{region}</span>
+              </>)}
+            </nav>
+            {regionsForCategory.length > 0 && (
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {t('landings:calendar.byRegion', { defaultValue: 'Per regione:' })}
+                </span>
+                {regionsForCategory.map(rg => (
+                  <Link key={rg} to={`/ritiri/${category}/${rg}`}
+                        className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors">
+                    {rg}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Barra filtri sticky ──────────────────────────────────────── */}
       <div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
