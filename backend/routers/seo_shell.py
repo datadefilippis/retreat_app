@@ -13,8 +13,12 @@ driver della navigazione SPA). Stesso HTML per bot e umani: nessun
 cloaking.
 
 Config:
-  SEO_SHELL_INDEX_PATH  path dell'index.html della build
-                        (default: ../frontend/build/index.html)
+  SEO_SHELL_INDEX_PATH  sorgente dell'index.html della build:
+                        - path su disco (default dev: ../frontend/build/
+                          index.html) → riletto quando cambia (mtime);
+                        - URL http(s):// (deploy Docker split-container:
+                          il backend legge l'index dal container frontend,
+                          es. http://frontend/index.html) → cache TTL.
   PUBLIC_APP_URL        base URL assoluta per canonical/OG
 
 Proxy (Caddy) — vedi docs/DEPLOY_CHECKLIST.md:
@@ -43,6 +47,10 @@ router = APIRouter(prefix="/__seo", tags=["SEO shell"])
 _CACHE: dict = {}          # path → (html, monotonic_ts)
 _CACHE_TTL = 600
 _INDEX_CACHE: dict = {"html": None, "mtime": None}
+# Deploy Docker: l'index vive nel container frontend, letto via HTTP e
+# ricontrollato ogni _INDEX_HTTP_TTL secondi (un redeploy riavvia il
+# backend e svuota comunque la cache).
+_INDEX_HTTP_TTL = 300
 
 # Template minimo per dev/test quando la build non esiste: la shell è
 # testabile senza `pnpm build`.
@@ -59,10 +67,14 @@ def _base_url() -> str:
 
 
 def _index_html() -> str:
-    path = Path(os.environ.get(
+    src = os.environ.get(
         "SEO_SHELL_INDEX_PATH",
-        Path(__file__).resolve().parent.parent.parent / "frontend" / "build" / "index.html",
-    ))
+        str(Path(__file__).resolve().parent.parent.parent
+            / "frontend" / "build" / "index.html"),
+    )
+    if src.startswith("http://") or src.startswith("https://"):
+        return _index_html_http(src)
+    path = Path(src)
     try:
         mtime = path.stat().st_mtime
         if _INDEX_CACHE["html"] is None or _INDEX_CACHE["mtime"] != mtime:
@@ -71,6 +83,26 @@ def _index_html() -> str:
         return _INDEX_CACHE["html"]
     except OSError:
         return _DEV_TEMPLATE
+
+
+def _index_html_http(url: str) -> str:
+    """Deploy Docker: legge l'index dal container frontend via HTTP con
+    cache TTL. Best-effort assoluto: se il frontend non risponde si serve
+    la shell neutra (la SPA idrata comunque quando l'asset torna su)."""
+    import urllib.request
+    now = time.monotonic()
+    cached_at = _INDEX_CACHE["mtime"]
+    if (_INDEX_CACHE["html"] is not None and cached_at is not None
+            and (now - cached_at) < _INDEX_HTTP_TTL):
+        return _INDEX_CACHE["html"]
+    try:
+        with urllib.request.urlopen(url, timeout=5) as resp:
+            _INDEX_CACHE["html"] = resp.read().decode("utf-8")
+            _INDEX_CACHE["mtime"] = now
+        return _INDEX_CACHE["html"]
+    except Exception as exc:                # noqa: BLE001 — mai 500 sulla shell
+        logger.warning("seo_shell: index fetch da %s fallito: %s", url, exc)
+        return _INDEX_CACHE["html"] or _DEV_TEMPLATE
 
 
 def _inject(template: str, meta: dict) -> str:

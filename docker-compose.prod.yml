@@ -80,13 +80,13 @@ services:
       - AWS_REGION=${AWS_REGION:-eu-west-1}
       # Email (Brevo)
       - BREVO_API_KEY=${BREVO_API_KEY:-}
-      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-noreply@yourdomain.com}
-      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-AFianco}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-noreply@aurya.life}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-Aurya}
       # Phase 1 Step B2 — shared secret for inbound /api/webhooks/brevo
       # (validates Brevo's bounce/complaint webhook calls). When unset the
       # endpoint default-denies (503), so unconfigured deployments are safe.
       - BREVO_WEBHOOK_SECRET=${BREVO_WEBHOOK_SECRET:-}
-      - APP_URL=${APP_URL:-https://afianco.app}
+      - APP_URL=${APP_URL:-https://aurya.life}
       # PUBLIC_APP_URL is the customer-facing host embedded in
       # post-purchase email links (/t/<token>, /b/<token>, /rsv/<token>,
       # /d/<token>, /account/courses/...). Without this var the backend
@@ -94,7 +94,7 @@ services:
       # and customers receive ticket emails that point at localhost. Same
       # default as APP_URL today; the dual setting lets us split them
       # later (e.g. if a separate admin host is introduced).
-      - PUBLIC_APP_URL=${PUBLIC_APP_URL:-https://afianco.app}
+      - PUBLIC_APP_URL=${PUBLIC_APP_URL:-https://aurya.life}
       # Stripe (Billing v5.0)
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
@@ -103,7 +103,7 @@ services:
       # STRIPE_CLIENT_ID was used for legacy Standard OAuth and is no longer
       # required. Safe to unset in .env.production.
       - STRIPE_WEBHOOK_SECRET_CONNECT=${STRIPE_WEBHOOK_SECRET_CONNECT:-}
-      - FRONTEND_URL=${FRONTEND_URL:-https://afianco.app}
+      - FRONTEND_URL=${FRONTEND_URL:-https://aurya.life}
       # Observability (Sentry — Phase 1 Step A1)
       # Opt-in: if SENTRY_DSN is empty in .env.production, init_sentry()
       # returns False silently and the app runs identically (no events
@@ -113,8 +113,19 @@ services:
       - RELEASE_SHA=${RELEASE_SHA:-}
       # Logging (Phase 1 Step A3) — JSON in production for Loki/Datadog/ELK
       # readiness. Default text in dev. LOG_LEVEL: DEBUG/INFO/WARNING/ERROR.
-      - LOG_FORMAT=${LOG_FORMAT:-text}
+      - LOG_FORMAT=${LOG_FORMAT:-json}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      # ── Aurya deploy ──────────────────────────────────────────
+      # SEO shell: in Docker la build vive nel container frontend, il
+      # backend legge l'index.html via HTTP sulla rete interna (con
+      # cache TTL). SENZA questo le pagine pubbliche uscirebbero vuote
+      # (shell dev senza <script>). Valore FISSO dall'architettura.
+      - SEO_SHELL_INDEX_PATH=http://frontend/index.html
+      # IndexNow: ping automatico a Bing&co al publish di ritiri/
+      # prodotti/articoli. Chiave da .env.production; senza è no-op.
+      - INDEXNOW_KEY=${INDEXNOW_KEY:-}
+      # /metrics protetto da token (oltre alla ACL di rete).
+      - METRICS_AUTH_TOKEN=${METRICS_AUTH_TOKEN:-}
     volumes:
       - backend_uploads:/app/uploads
     networks:
@@ -164,9 +175,12 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # NGINX_CONF: bootstrap HTTP-only al primo avvio (prima del cert),
+      # poi default = nginx.conf con TLS. Vedi docs/DEPLOY_CHECKLIST.md.
+      - ${NGINX_CONF:-./deploy/nginx/nginx.conf}:/etc/nginx/conf.d/default.conf:ro
+      # certbot deve poter SCRIVERE la challenge in /var/www/certbot (no :ro)
       - certbot_conf:/etc/letsencrypt:ro
-      - certbot_www:/var/www/certbot:ro
+      - certbot_www:/var/www/certbot
     networks:
       - internal
 
