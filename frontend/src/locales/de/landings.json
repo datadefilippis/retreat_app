@@ -475,7 +475,8 @@
     "mapEmpty": "Keine Retreats mit Kartenposition für diese Filter.",
     "mapSee": "Retreat ansehen →",
     "fromPrice": "ab {{price}} €",
-    "featured": "Empfohlen"
+    "featured": "Empfohlen",
+    "byRegion": "Nach Region:"
   },
   "operator": {
     "website": "Webseite",
@@ -655,6 +656,9 @@
     "empty": "Noch keine Artikel in dieser Sprache. Die Geschichten sind unterwegs.",
     "notFound": "Artikel nicht gefunden",
     "backToBlog": "Zurück zum Blog",
-    "italianOnly": "Dieser Artikel ist vorerst nur auf Italienisch verfügbar."
+    "italianOnly": "Dieser Artikel ist vorerst nur auf Italienisch verfügbar.",
+    "exploreRetreatsTitle": "Erlebe ein {{cat}} Retreat",
+    "exploreRetreatsBody": "Kommende Termine, mit Online-Buchung und geschützter Anzahlung.",
+    "exploreRetreatsCta": "Entdecke {{cat}} Retreats"
   }
 }

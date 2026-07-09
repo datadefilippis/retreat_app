@@ -475,7 +475,8 @@
     "mapEmpty": "Nessun ritiro con posizione sulla mappa per questi filtri.",
     "mapSee": "Vedi il ritiro →",
     "fromPrice": "da {{price}} €",
-    "featured": "In evidenza"
+    "featured": "In evidenza",
+    "byRegion": "Per regione:"
   },
   "operator": {
     "notFound": "Organizzatore non trovato",
@@ -655,6 +656,9 @@
     "empty": "Nessun articolo in questa lingua, per ora. Le storie stanno arrivando.",
     "notFound": "Articolo non trovato",
     "backToBlog": "Torna al blog",
-    "italianOnly": "Questo articolo è disponibile solo in italiano, per ora."
+    "italianOnly": "Questo articolo è disponibile solo in italiano, per ora.",
+    "exploreRetreatsTitle": "Vivi un ritiro di {{cat}}",
+    "exploreRetreatsBody": "Le date in programma, con prenotazione online e caparra protetta.",
+    "exploreRetreatsCta": "Scopri i ritiri di {{cat}}"
   }
 }

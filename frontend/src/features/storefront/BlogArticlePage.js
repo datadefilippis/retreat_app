@@ -93,13 +93,37 @@ export default function BlogArticlePage() {
             </header>
 
             {article.featured_image_url && (
-              <img src={article.featured_image_url} alt="" fetchpriority="high"
+              <img src={article.featured_image_url} alt={article.title} fetchpriority="high"
                    className="w-full rounded-2xl mb-8 object-cover max-h-96" />
             )}
 
             <div className="blog-content">
               <LegalMarkdownRenderer content={article.content} />
             </div>
+
+            {/* SEO3 — dal contenuto all'azione: l'articolo linka i ritiri
+                della sua categoria (link interno + intento di prenotazione). */}
+            {article.category && (
+              <aside className="mt-10 rounded-2xl border border-[#8a7440]/25 bg-[#376254]/5 p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex-1">
+                  <p className="font-heading font-semibold text-foreground">
+                    {t('blog.exploreRetreatsTitle', {
+                      cat: t(`categories.${article.category}`, { defaultValue: article.category }),
+                      defaultValue: 'Vivi un ritiro di {{cat}}' })}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t('blog.exploreRetreatsBody', {
+                      defaultValue: 'Le date in programma, con prenotazione online e caparra protetta.' })}
+                  </p>
+                </div>
+                <Link to={`/ritiri/${article.category}`}
+                      className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full bg-[#376254] text-white px-5 py-2.5 text-sm font-semibold hover:bg-[#2c4f43]">
+                  {t('blog.exploreRetreatsCta', {
+                    cat: t(`categories.${article.category}`, { defaultValue: article.category }),
+                    defaultValue: 'Scopri i ritiri di {{cat}}' })} →
+                </Link>
+              </aside>
+            )}
 
             <footer className="mt-12 pt-6 border-t border-gray-200">
               <Link to="/blog" className="text-sm font-medium text-primary hover:underline">

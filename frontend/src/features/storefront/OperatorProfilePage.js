@@ -12,6 +12,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Flower2 } from 'lucide-react';
 import api from '../../api/client';
 import useSeoMeta from './lib/useSeoMeta';
 import MarketplaceShell from './components/MarketplaceShell';
@@ -50,7 +51,7 @@ function Stars({ value, size = 'text-sm' }) {
 
 // ── Galleria + lightbox (pattern M2) ─────────────────────────────────────────
 
-function Gallery({ photos, t }) {
+function Gallery({ photos, name, t }) {
   const [open, setOpen] = useState(null);
   if (!photos?.length) return null;
   return (
@@ -62,7 +63,7 @@ function Gallery({ photos, t }) {
         {photos.map((url, i) => (
           <button key={url} type="button" onClick={() => setOpen(i)}
                   className="h-36 rounded-xl overflow-hidden bg-secondary group">
-            <img src={url} alt="" loading="lazy"
+            <img src={url} alt={`${name} — foto ${i + 1}`} loading="lazy"
                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           </button>
         ))}
@@ -70,7 +71,7 @@ function Gallery({ photos, t }) {
       {open != null && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
              onClick={() => setOpen(null)} role="dialog" aria-modal="true">
-          <img src={photos[open]} alt="" className="max-h-[85vh] max-w-full rounded-lg" />
+          <img src={photos[open]} alt={`${name} — foto ${open + 1}`} className="max-h-[85vh] max-w-full rounded-lg" />
           <button type="button" aria-label="Chiudi"
                   className="absolute top-4 right-5 text-white text-3xl">×</button>
           {photos.length > 1 && (
@@ -417,14 +418,14 @@ export default function OperatorProfilePage() {
       <header className="text-white relative mt-2" style={{ backgroundColor: accent }}>
         {data.cover_url && (
           <>
-            <img src={data.cover_url} alt="" fetchpriority="high"
+            <img src={data.cover_url} alt="" aria-hidden fetchpriority="high"
                  className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/45" />
           </>
         )}
         <div className="relative max-w-6xl mx-auto px-4 py-14 flex items-center gap-5">
           {data.logo_url && (
-            <img src={data.logo_url} alt=""
+            <img src={data.logo_url} alt={`Logo di ${data.name}`}
                  className="h-20 w-20 rounded-full object-cover bg-white/10 border-2 border-white/50 shadow-lg" />
           )}
           <div>
@@ -471,7 +472,7 @@ export default function OperatorProfilePage() {
             </section>
           )}
 
-          <Gallery photos={data.photos} t={t} />
+          <Gallery photos={data.photos} name={data.name} t={t} />
 
           <section id="ritiri" className="mt-8">
             <h2 className="font-heading text-xl font-bold text-foreground mb-3">
@@ -486,8 +487,8 @@ export default function OperatorProfilePage() {
                     className="rounded-2xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition-shadow">
                     <div className="h-36 bg-gray-100">
                       {item.cover_image_url
-                        ? <img src={item.cover_image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center text-3xl">🧘</div>}
+                        ? <img src={item.cover_image_url} alt={item.title} loading="lazy" className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center" aria-hidden><Flower2 className="h-8 w-8 text-[#376254]/40" /></div>}
                     </div>
                     <div className="p-3">
                       <h3 className="font-semibold text-gray-900 line-clamp-2">{item.title}</h3>

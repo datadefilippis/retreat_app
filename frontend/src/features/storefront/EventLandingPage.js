@@ -756,7 +756,7 @@ export default function EventLandingPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 rounded-2xl overflow-hidden h-56 sm:h-80">
             <button type="button" onClick={() => setLightbox(0)}
                     className="col-span-2 row-span-2 relative group">
-              <img src={allPhotos[0]} alt="" fetchpriority="high" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
+              <img src={allPhotos[0]} alt={`${product.name}${occurrence.city ? ` — ${occurrence.city}` : ''}`} fetchpriority="high" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
               {/* mobile: le miniature sono nascoste — il contatore invita al lightbox */}
               <span className="sm:hidden absolute bottom-2 right-2 rounded-full bg-black/60 text-white text-[11px] font-semibold px-2.5 py-1">
                 1 / {allPhotos.length}
@@ -765,7 +765,7 @@ export default function EventLandingPage() {
             {allPhotos.slice(1, 5).map((url, i) => (
               <button key={i} type="button" onClick={() => setLightbox(i + 1)}
                       className="relative group hidden sm:block">
-                <img src={url} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
+                <img src={url} alt={`${product.name} — foto ${i + 2}`} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-95 transition" />
                 {i === 3 && allPhotos.length > 5 && (
                   <span className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-sm font-semibold">
                     +{allPhotos.length - 5} {t('landings:event.morePhotos', { defaultValue: 'foto' })}
@@ -793,7 +793,7 @@ export default function EventLandingPage() {
                     className="absolute right-3 text-white text-4xl px-3 py-6"
                     onClick={(e) => { e.stopPropagation(); setLightbox((lightbox + 1) % allPhotos.length); }}>›</button>
           </>)}
-          <img src={allPhotos[lightbox]} alt=""
+          <img src={allPhotos[lightbox]} alt={`${product.name} — foto ${lightbox + 1}`}
                className="max-h-full max-w-full object-contain rounded-lg"
                onClick={(e) => e.stopPropagation()} />
           <span className="absolute bottom-4 text-white/70 text-xs">{lightbox + 1} / {allPhotos.length}</span>
@@ -1143,7 +1143,7 @@ export default function EventLandingPage() {
           <Link to={fromStore ? `/s/${orgSlug}/chi-siamo` : `/o/${orgSlug}`}
                 className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
             {operator.logo_url
-              ? <img src={operator.logo_url} alt="" className="h-14 w-14 rounded-full object-cover shrink-0" />
+              ? <img src={operator.logo_url} alt={`Logo di ${operator.name}`} className="h-14 w-14 rounded-full object-cover shrink-0" />
               : <div className="h-14 w-14 rounded-full bg-emerald-50 flex items-center justify-center shrink-0" aria-hidden><Flower2 className="h-7 w-7 text-[#376254]/60" /></div>}
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
