@@ -3855,7 +3855,7 @@ async def public_operators_index(
 
 
 @router.get("/operator/{org_slug}")
-async def public_operator_profile(org_slug: str):
+async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
     """Profilo pubblico organizzatore: bio, brand, prossimi ritiri.
     L'org_slug è quello dello storefront (store slug o public_slug)."""
     from datetime import datetime, timezone
@@ -3898,10 +3898,17 @@ async def public_operator_profile(org_slug: str):
     # F2.0 (5/7/2026) — il profilo curato dall'operatore (public_profile)
     # VINCE sui fallback derivati dallo store; contatti solo se opt-in.
     pp = org.get("public_profile") or {}
+    # OP2 — profilo nella lingua del viaggiatore: bio/tagline tradotte se
+    # l'operatore le ha compilate, italiano altrimenti (mai buchi).
+    _tr = (pp.get("translations") or {}).get((lang or "")[:2]) or {}
+    profile_langs = ["it"] + [l for l, f in (pp.get("translations") or {}).items()
+                              if l in ("en", "de", "fr") and (f or {}).get("bio")]
     out = {
         "org_slug": org_slug,
+        "served_lang": (lang or "")[:2] if _tr else "it",
+        "profile_langs": profile_langs,
         "name": store.get("name") or store.get("display_name") or ss.get("display_name") or org.get("name") or "",
-        "bio": pp.get("bio") or store.get("description") or ss.get("store_description"),
+        "bio": _tr.get("bio") or pp.get("bio") or store.get("description") or ss.get("store_description"),
         "logo_url": store.get("logo_url") or ss.get("logo_url"),
         "cover_url": pp.get("cover_url"),
         "brand_color": store.get("brand_color") or ss.get("brand_color"),
@@ -3922,7 +3929,7 @@ async def public_operator_profile(org_slug: str):
         "retreats_organized": await event_occurrences_collection.count_documents(
             {"organization_id": org_id, "status": {"$in": ["published", "closed"]}}),
         # PR1 — carta d'identità
-        "tagline": pp.get("tagline"),
+        "tagline": _tr.get("tagline") or pp.get("tagline"),
         "portrait_url": pp.get("portrait_url"),
         "photos": pp.get("photos") or [],
         "founded_year": pp.get("founded_year"),

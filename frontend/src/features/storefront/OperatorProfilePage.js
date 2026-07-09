@@ -328,14 +328,19 @@ export default function OperatorProfilePage() {
   const [writeOpen, setWriteOpen] = useState(false);
   const [reviewsKey, setReviewsKey] = useState(0);
 
+  // OP2 — il profilo parla la lingua del viaggiatore: fetch con lang e
+  // refetch al cambio lingua (bio/tagline tradotte dove l'operatore le
+  // ha compilate, italiano altrimenti).
+  const uiLang = (i18n.language || 'it').slice(0, 2);
   useEffect(() => {
     let mounted = true;
-    api.get(`/public/operator/${org_slug}`)
+    api.get(`/public/operator/${org_slug}`,
+            { params: uiLang !== 'it' ? { lang: uiLang } : {} })
       .then(res => { if (mounted) setData(res.data); })
       .catch(err => { if (mounted) setNotFound(err?.response?.status === 404); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [org_slug]);
+  }, [org_slug, uiLang]);
 
   const rs = data?.reviews_stats;
   useSeoMeta({
@@ -452,7 +457,7 @@ export default function OperatorProfilePage() {
               )}
               {data.retreats_organized > 0 && (
                 <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
-                  🧘 {t('landings:operator.retreatsOrganized', { defaultValue: '{{count}} ritiri organizzati', count: data.retreats_organized })}
+                  <Flower2 className="inline h-3 w-3 mr-0.5 align-[-1px]" aria-hidden /> {t('landings:operator.retreatsOrganized', { defaultValue: '{{count}} ritiri organizzati', count: data.retreats_organized })}
                 </span>
               )}
             </div>
@@ -462,7 +467,10 @@ export default function OperatorProfilePage() {
 
       {/* ── Due colonne ── */}
       <main className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
-        <div className="min-w-0">
+        {/* mobile: la carta d'identità (foto profilo) sale sotto la
+            copertina, prima della descrizione (order); desktop: torna
+            colonna destra */}
+        <div className="min-w-0 order-2 lg:order-1">
           {data.bio && (
             <section id="chi-siamo">
               <h2 className="font-heading text-xl font-bold text-foreground mb-3">
@@ -514,7 +522,7 @@ export default function OperatorProfilePage() {
         </div>
 
         {/* ── Sidebar carta d'identità ── */}
-        <aside className="lg:sticky lg:top-20 self-start space-y-4">
+        <aside className="order-1 lg:order-2 lg:sticky lg:top-20 self-start space-y-4">
           <div className="rounded-2xl border border-border bg-card p-5">
             {data.portrait_url && (
               <img src={data.portrait_url} alt={data.name}
