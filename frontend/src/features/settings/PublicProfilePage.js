@@ -330,18 +330,9 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          {/* PR1 — Carta d'identità: tagline, ritratto, galleria, anno, lingue */}
+          {/* PR1 — Carta d'identità: ritratto, galleria, anno, lingue
+              (tagline e bio vivono nella sezione multilingua sotto) */}
           <div className="rounded-xl border bg-card p-4 space-y-3">
-            <div>
-              <Label>{t('publicProfile.tagline', { defaultValue: 'Tagline (una frase che ti descrive)' })}</Label>
-              <input
-                value={form.tagline || ''}
-                onChange={e => set('tagline', e.target.value.slice(0, 80))}
-                maxLength={80}
-                placeholder={t('publicProfile.taglinePlaceholder', { defaultValue: 'Es. "Yoga e silenzio tra gli ulivi di Ostuni"' })}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>{t('publicProfile.foundedYear', { defaultValue: 'Attivo dal (anno)' })}</Label>
@@ -410,25 +401,16 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          {/* Bio + luogo */}
+          {/* Tagline + bio + luogo */}
           <div className="rounded-xl border bg-card p-4 space-y-3">
-            <div>
-              <Label>{t('publicProfile.bio', { defaultValue: 'Chi sei (bio)' })}</Label>
-              <textarea
-                value={form.bio || ''}
-                onChange={e => set('bio', e.target.value.slice(0, 600))}
-                rows={4} maxLength={600}
-                placeholder={t('publicProfile.bioPlaceholder', { defaultValue: 'Racconta chi sei e che esperienze crei — 2-3 frasi bastano.' })}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-y"
-              />
-              <p className="text-right text-[11px] text-muted-foreground">{(form.bio || '').length}/600</p>
-            </div>
-            {/* OP2 — profilo multilingua: bio e tagline nelle tab lingua,
-                stesso processo unificato dei prodotti (MultiLangSection).
-                La bio tradotta accende la lingua sul profilo pubblico. */}
+            {/* OP4c — UNA sezione sola con TUTTE le bandierine
+                (🇮🇹 inclusa, col badge "principale"): l'italiano non è
+                più una casella separata che un admin non italiano non
+                sa collocare. Nella tab Italiano si scrive l'originale,
+                nelle altre la traduzione col testo IT come placeholder. */}
             <MultiLangSection
               fields={[
-                { key: 'tagline', label: t('publicProfile.tagline', { defaultValue: 'Tagline' }),
+                { key: 'tagline', label: t('publicProfile.tagline', { defaultValue: 'Tagline (una frase che ti descrive)' }),
                   it: form.tagline, input: true, maxLength: 80,
                   value: Object.fromEntries(['en', 'de', 'fr'].map(l => [l, form.translations?.[l]?.tagline || ''])),
                   onChange: perLang => set('translations', mergeTr(form.translations, 'tagline', perLang)) },
@@ -437,7 +419,31 @@ export default function PublicProfilePage() {
                   value: Object.fromEntries(['en', 'de', 'fr'].map(l => [l, form.translations?.[l]?.bio || ''])),
                   onChange: perLang => set('translations', mergeTr(form.translations, 'bio', perLang)) },
               ]}
-            />
+            >
+              <div className="space-y-3">
+                <div>
+                  <Label>{t('publicProfile.tagline', { defaultValue: 'Tagline (una frase che ti descrive)' })}</Label>
+                  <input
+                    value={form.tagline || ''}
+                    onChange={e => set('tagline', e.target.value.slice(0, 80))}
+                    maxLength={80}
+                    placeholder={t('publicProfile.taglinePlaceholder', { defaultValue: 'Es. "Yoga e silenzio tra gli ulivi di Ostuni"' })}
+                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <Label>{t('publicProfile.bio', { defaultValue: 'Chi sei (bio)' })}</Label>
+                  <textarea
+                    value={form.bio || ''}
+                    onChange={e => set('bio', e.target.value.slice(0, 600))}
+                    rows={4} maxLength={600}
+                    placeholder={t('publicProfile.bioPlaceholder', { defaultValue: 'Racconta chi sei e che esperienze crei: 2-3 frasi bastano.' })}
+                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-y"
+                  />
+                  <p className="text-right text-[11px] text-muted-foreground">{(form.bio || '').length}/600</p>
+                </div>
+              </div>
+            </MultiLangSection>
             {/* AN3 — località con autocomplete (Nominatim via /geo/search):
                 compila città E coordinate → l'operatore compare sulla
                 mappa e nel raggio "vicino a me" della directory */}
