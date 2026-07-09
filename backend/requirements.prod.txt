@@ -10,6 +10,11 @@ python-multipart>=0.0.9
 pymongo==4.5.0
 motor==3.3.1
 
+# Scheduler in-process (Fase 2) — dunning caparre, promemoria pre-ritiro,
+# follow-up. Senza, services/scheduler_service.py non parte in prod
+# ("No module named apscheduler") e i job automatici non girano.
+APScheduler>=3.10,<4
+
 # Auth & security
 python-jose>=3.3.0
 bcrypt==4.1.3
