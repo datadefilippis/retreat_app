@@ -220,13 +220,25 @@ async def build_products() -> str:
 
 
 async def build_operators() -> str:
+    from database import organizations_collection
     base = _base_url()
     slug_by_org = await _public_org_slugs()
+    # SEO2 — lastmod onesto per operatore: quando il profilo/store cambia
+    # il crawler sa che vale la pena ripassare (l'update già pinga IndexNow).
+    lastmod_by_slug: dict = {}
+    async for o in organizations_collection.find(
+            {"id": {"$in": list(slug_by_org)}},
+            {"_id": 0, "id": 1, "updated_at": 1}):
+        slug = slug_by_org.get(o["id"])
+        if slug and o.get("updated_at"):
+            lastmod_by_slug[slug] = o["updated_at"]
     urls = []
     for org_slug in sorted(set(slug_by_org.values())):
-        urls.append(_url(f"{base}/o/{org_slug}", priority="0.6"))
-        urls.append(_url(f"{base}/s/{org_slug}", priority="0.5"))
-        urls.append(_url(f"{base}/s/{org_slug}/chi-siamo", priority="0.4"))
+        lm = lastmod_by_slug.get(org_slug)
+        urls.append(_url(f"{base}/o/{org_slug}", priority="0.6", lastmod=lm))
+        urls.append(_url(f"{base}/s/{org_slug}", priority="0.5", lastmod=lm))
+        urls.append(_url(f"{base}/s/{org_slug}/chi-siamo", priority="0.4",
+                         lastmod=lm))
     return _wrap(urls, "operators")
 
 

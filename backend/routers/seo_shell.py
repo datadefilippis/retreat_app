@@ -100,10 +100,18 @@ def _inject(template: str, meta: dict) -> str:
         extra.append(f'<link rel="alternate" hreflang="{lang}" href="{_html.escape(href)}"/>')
     if meta.get("noindex"):
         extra.append('<meta name="robots" content="noindex"/>')
-    if meta.get("jsonld"):
-        extra.append('<script type="application/ld+json">'
-                     + json.dumps(meta["jsonld"], ensure_ascii=False)
-                     + "</script>")
+    # jsonld può essere un dict singolo o una LISTA di blocchi (es. entità
+    # principale + BreadcrumbList + ItemList): uno <script> per blocco,
+    # come raccomanda Google.
+    blocks = meta.get("jsonld")
+    if blocks:
+        if not isinstance(blocks, list):
+            blocks = [blocks]
+        for block in blocks:
+            if block:
+                extra.append('<script type="application/ld+json">'
+                             + json.dumps(block, ensure_ascii=False)
+                             + "</script>")
 
     return out.replace("</head>", "".join(extra) + "</head>", 1)
 
@@ -182,18 +190,34 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
 
 
 async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
+    from services import seo_schema as sx, seo_listing as sl
     base = _base_url()
     label = cat.replace("-", " ").title()
     where = f" in {region.title()}" if region else ""
     path = f"/ritiri/{cat}" + (f"/{region}" if region else "")
+    canonical = f"{base}{path}"
+    try:
+        retreats = await sl.listable_retreats(category=cat, place=region, limit=20)
+        empty = not retreats
+    except Exception:            # noqa: BLE001 — fail open: un errore DB NON
+        retreats, empty = [], False   # deve deindicizzare una pagina buona
+    crumbs = sx.breadcrumb([
+        ("Aurya", f"{base}/"),
+        (f"Ritiri di {label}", f"{base}/ritiri/{cat}"),
+        *([(region.title(), canonical)] if region else []),
+    ])
+    blocks = [b for b in (crumbs, sx.item_list(retreats, base)) if b]
     return {
         "title": f"Ritiri di {label}{where} | Aurya",
         "description": (f"I migliori ritiri di {label.lower()}{where}: "
                         "date, prezzi e posti disponibili. Prenota online "
                         "con la caparra su Aurya."),
-        "canonical": f"{base}{path}",
-        "hreflang": _hub_hreflang(f"{base}{path}"),
+        "canonical": canonical,
+        "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/logo-aurya.png",
+        "jsonld": blocks or None,
+        # anti thin-content: categoria senza ritiri prenotabili → noindex
+        "noindex": empty,
     }
 
 
@@ -213,7 +237,7 @@ async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
         return None
     prod = await products_collection.find_one(
         {"id": occ["product_id"], "is_published": True},
-        {"_id": 0, "name": 1, "description": 1, "images": 1,
+        {"_id": 0, "name": 1, "description": 1, "images": 1, "category": 1,
          "organization_id": 1, "price": 1, "unit_price": 1, "currency": 1,
          "translations": 1},
     )
@@ -272,12 +296,18 @@ async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
 
     title = f"{prod['name']} · {where} · {when} | Aurya" if when \
         else f"{prod['name']} · {where} | Aurya"
+    cat = prod.get("category")
+    crumbs = sx.breadcrumb([
+        ("Aurya", f"{base}/"),
+        *([(cat.replace("-", " ").title(), f"{base}/ritiri/{cat}")] if cat else []),
+        (prod["name"], canonical),
+    ])
     return {
         "title": title,
         "description": desc or f"Ritiro a {where} il {when}. Prenota su Aurya.",
         "canonical": canonical,
         "image": image,
-        "jsonld": jsonld,
+        "jsonld": [jsonld, crumbs] if crumbs else jsonld,
         # hreflang: solo lingue con description tradotta (multilingua manuale)
         "hreflang": _hreflang_for(prod.get("translations"), canonical),
     }
@@ -285,6 +315,7 @@ async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
 
 async def _meta_blog_list() -> dict:
     """AN6 — hub del blog: hreflang pieno come gli altri hub."""
+    from services import seo_schema as sx
     base = _base_url()
     canonical = f"{base}/blog"
     return {
@@ -294,6 +325,7 @@ async def _meta_blog_list() -> dict:
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/logo-aurya.png",
+        "jsonld": sx.breadcrumb([("Aurya", f"{base}/"), ("Blog", canonical)]),
     }
 
 
@@ -336,12 +368,15 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
     }
     if image:
         jsonld["image"] = [image]
+    from services import seo_schema as sx
+    crumbs = sx.breadcrumb([("Aurya", f"{base}/"), ("Blog", f"{base}/blog"),
+                            (doc["title"], canonical)])
     return {
         "title": f"{doc['title']} | Aurya",
         "description": desc or "Un articolo dal blog di Aurya.",
         "canonical": canonical,
         "image": image,
-        "jsonld": jsonld,
+        "jsonld": [jsonld, crumbs] if crumbs else jsonld,
         "hreflang": hreflang,
     }
 
@@ -358,6 +393,7 @@ async def _meta_product(kind: str, org_slug: str, product_slug: str) -> Optional
     """Landing prodotto generica: /p /ph /dg /co /r — S1 completerà i
     JSON-LD per tipo; la shell intanto dà title/desc/OG/canonical veri."""
     from database import products_collection
+    from services import seo_schema as sx
     base = _base_url()
     prod = await products_collection.find_one(
         {"slug": product_slug, "is_published": True, "is_active": True},
@@ -383,32 +419,61 @@ async def _meta_product(kind: str, org_slug: str, product_slug: str) -> Optional
         jsonld["offers"] = {"@type": "Offer", "price": prod["price"],
                             "priceCurrency": "EUR",
                             "availability": "https://schema.org/InStock"}
+    crumbs = sx.breadcrumb([("Aurya", f"{base}/"), (prod["name"], canonical)])
     return {
         "title": f"{prod['name']} | Aurya",
         "description": desc or prod["name"],
         "canonical": canonical,
         "image": image,
-        "jsonld": jsonld,
+        "jsonld": [jsonld, crumbs] if crumbs else jsonld,
         "hreflang": _hreflang_for(prod.get("translations"), canonical),
     }
 
 
 async def _meta_destination(place_slug: Optional[str] = None) -> dict:
+    from services import seo_schema as sx, seo_listing as sl
     base = _base_url()
     label = place_slug.replace("-", " ").title() if place_slug else None
     path = "/destinazioni" + (f"/{place_slug}" if place_slug else "")
+    canonical = f"{base}{path}"
+
+    if not label:
+        # hub destinazioni: solo breadcrumb (l'indice dei luoghi lo rende
+        # il client; niente noindex, è una pagina hub legittima)
+        return {
+            "title": "Destinazioni · dove vuoi ritrovarti? | Aurya",
+            "description": ("Scegli la destinazione del tuo prossimo ritiro: "
+                            "i luoghi con ritiri ed esperienze in programma "
+                            "su Aurya."),
+            "canonical": canonical,
+            "hreflang": _hub_hreflang(canonical),
+            "image": f"{base}/logo-aurya.png",
+            "jsonld": sx.breadcrumb([("Aurya", f"{base}/"),
+                                     ("Destinazioni", canonical)]),
+        }
+
+    try:
+        retreats = await sl.listable_retreats(place=place_slug, limit=20)
+        empty = not retreats
+    except Exception:            # noqa: BLE001 — fail open, mai deindicizzare
+        retreats, empty = [], False
+    # il nome vero del luogo dal primo ritiro (Ostuni, non "Ostuni" slugato)
+    real = next((r.get("city") or r.get("region") for r in retreats), label)
+    crumbs = sx.breadcrumb([("Aurya", f"{base}/"),
+                            ("Destinazioni", f"{base}/destinazioni"),
+                            (real, canonical)])
+    blocks = [b for b in (crumbs, sx.item_list(retreats, base)) if b]
     return {
-        "title": (f"Ritiri ed esperienze a {label} | Aurya" if label
-                  else "Destinazioni — dove vuoi ritrovarti? | Aurya"),
-        "description": ((f"Ritiri di yoga, meditazione ed esperienze "
-                         f"olistiche a {label}: date, prezzi e "
-                         f"disponibilità reali. Prenota online con la caparra.")
-                        if label else
-                        ("Scegli la destinazione del tuo prossimo ritiro: i "
-                         "luoghi con ritiri ed esperienze in programma su Aurya.")),
-        "canonical": f"{base}{path}",
-        "hreflang": _hub_hreflang(f"{base}{path}"),
+        "title": f"Ritiri ed esperienze a {real} | Aurya",
+        "description": (f"Ritiri di yoga, meditazione ed esperienze olistiche "
+                        f"a {real}: date, prezzi e disponibilità reali. "
+                        "Prenota online con la caparra."),
+        "canonical": canonical,
+        "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/logo-aurya.png",
+        "jsonld": blocks or None,
+        # destinazione senza ritiri prenotabili → noindex (thin content)
+        "noindex": empty,
     }
 
 
@@ -509,12 +574,15 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
         else f"{name} · organizzatore su Aurya"
     desc = bio or (f"Ritiri ed esperienze di {name}"
                    + (f" a {city}" if city else "") + " su Aurya.")
+    crumbs = sx.breadcrumb([("Aurya", f"{base}/"),
+                            ("Organizzatori", f"{base}/operatori"),
+                            (name, canonical)])
     return {
         "title": title,
         "description": desc,
         "canonical": canonical,
         "image": image,
-        "jsonld": jsonld,
+        "jsonld": [jsonld, crumbs] if crumbs else jsonld,
     }
 
 
@@ -556,13 +624,14 @@ async def _meta_store(slug: str) -> Optional[dict]:
                     profile.get("website"))
     if sa:
         jsonld["sameAs"] = sa
+    crumbs = sx.breadcrumb([("Aurya", f"{base}/"), (name, canonical)])
     return {
         "title": f"{name} · negozio su Aurya",
         "description": (store.get("description") or "")[:300]
                        or f"Il negozio di {name} su Aurya.",
         "canonical": canonical,
         "image": f"{base}/logo-aurya.png",
-        "jsonld": jsonld,
+        "jsonld": [jsonld, crumbs] if crumbs else jsonld,
     }
 
 

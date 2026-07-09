@@ -1825,7 +1825,24 @@ async def update_public_profile(
     # GT6 — gradino 0 profilo-first: il primo profilo con bio accende
     # la vetrina pubblica anche senza store ne' prodotti
     await _ensure_public_surface(current_user["organization_id"])
+    # SEO2 — IndexNow: profilo aggiornato → reindicizza /o/ e /s/ (prima
+    # solo publish di ritiri/prodotti pingava; l'operatore che cura la
+    # scheda LocalBusiness merita reindex rapido). Best-effort, mai blocca.
+    await _ping_operator_indexnow(current_user["organization_id"])
     return await get_public_profile(current_user)
+
+
+async def _ping_operator_indexnow(org_id: str) -> None:
+    """Ping IndexNow di /o/{slug} e /s/{slug} dopo un update profilo/store."""
+    try:
+        from routers.public import _resolve_public_slug_for_org
+        from services.indexnow import ping_urls_async
+        import asyncio as _aio
+        slug = await _resolve_public_slug_for_org(org_id)
+        if slug:
+            _aio.create_task(ping_urls_async([f"/o/{slug}", f"/s/{slug}"]))
+    except Exception:            # noqa: BLE001 — best-effort assoluto
+        pass
 
 
 async def _geocode_profile_if_needed(org_id: str) -> None:
