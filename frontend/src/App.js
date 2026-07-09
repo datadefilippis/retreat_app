@@ -80,6 +80,7 @@ const StoresPage = lazy(() => import("./features/stores/StoresPage"));
 const NewsletterPage = lazy(() => import("./features/newsletter/NewsletterPage"));
 const ReviewsAdminPage = lazy(() => import("./features/reviews/ReviewsAdminPage"));
 const IncassiPage = lazy(() => import("./features/cashflow/IncassiPage"));
+const VisibilityPage = lazy(() => import("./features/visibility/VisibilityPage"));
 const CashflowDataPage = lazy(() => import("./features/cashflow/CashflowDataPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
@@ -727,6 +728,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ReviewsAdminPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* VT5 — specchietto visibilita' operatore */}
+      <Route
+        path="/visibilita"
+        element={
+          <ProtectedRoute>
+            <VisibilityPage />
           </ProtectedRoute>
         }
       />

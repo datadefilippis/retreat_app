@@ -21,6 +21,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, Link, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import useSeoMeta from './lib/useSeoMeta';
+import useTrackView from './lib/useTrackView';
 import { useTranslation } from 'react-i18next';
 import { effectivePlan } from './lib/paymentPlan';
 import { storefrontAPI } from '../../api/storefront';
@@ -345,6 +346,8 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
   // value to either filter the grid OR redirect to the first non-empty
   // category once the catalog has loaded.
   const { slug, category } = useParams();
+  // VT2 — visita allo store per lo specchietto Visibilità (ping 3s)
+  useTrackView('store', slug);
   const location = useLocation();
   const navigate = useNavigate();
   // L2 — 'POP' = back/forward del browser: serve alla guardia

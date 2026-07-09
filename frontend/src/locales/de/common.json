@@ -29,7 +29,8 @@
     "newsletter": "Newsletter",
     "public_profile": "Oeffentliches Profil",
     "reviews": "Bewertungen",
-    "cashflow": "Einnahmen"
+    "cashflow": "Einnahmen",
+    "visibility": "Sichtbarkeit"
   },
   "actions": {
     "save": "Speichern",
@@ -110,8 +111,8 @@
   "reviews": {
     "title": "Bewertungen",
     "subtitle": "Was Reisende über dich sagen — und wie du antwortest.",
-    "total_one": "{{count}} Bewertung",
-    "total_other": "{{count}} Bewertungen",
+    "total_one": "{{visits}} Bewertung",
+    "total_other": "{{visits}} Bewertungen",
     "openToggle": "Bewertungen von Personen annehmen, die noch nicht gebucht haben",
     "openToggleHint": "Sie erscheinen erst nach deiner Freigabe und ohne das Abzeichen „Verifizierter Kunde\".",
     "openOn": "Jetzt kann jeder eine Bewertung hinterlassen (mit deiner Freigabe)",
@@ -198,5 +199,42 @@
   "directoryHint": {
     "request": "Mit Buchung auf Anfrage erscheint dieses Retreat NICHT im öffentlichen Kalender: das Verzeichnis listet nur sofort online buchbare Retreats. In deinem Store bleibt es buchbar.",
     "stripeNote": "Solange Stripe nicht aktiv ist, erscheint dieses Retreat nicht im öffentlichen Kalender, auch wenn es veröffentlicht ist."
+  },
+  "visibility": {
+    "title": "Sichtbarkeit",
+    "subtitle": "Wie viele Menschen dich auf Aurya sehen und besuchen, und woher sie kommen.",
+    "impressions": "Impressionen",
+    "impressionsSub": "Erscheinungen in Suchergebnissen",
+    "visits": "Besuche",
+    "uniques": "Einzelne Besucher",
+    "bookings": "Buchungen",
+    "vsPrevMonth": "vs. Vormonat",
+    "channelsTitle": "Woher die Besuche kommen",
+    "chAurya": "Über Aurya",
+    "chStore": "Dein Store",
+    "chSocial": "Social",
+    "chDirect": "Direkt",
+    "ch_directory": "Aurya Verzeichnis",
+    "ch_search": "Suchmaschinen",
+    "ch_store": "Dein Store",
+    "ch_social": "Social",
+    "ch_direct": "Direkt",
+    "proofTitle": "Der Aurya Beweis",
+    "proofBody": "Diesen Monat hat Aurya dir {{visits}} Besuche über Verzeichnis und Suchmaschinen gebracht: Reichweite, die dein Store allein nicht erreicht hätte.",
+    "proofCta": "Pflege dein öffentliches Profil",
+    "trendTitle": "Besuche der letzten 12 Monate",
+    "last30": "Letzte 30 Tage",
+    "perRetreatTitle": "Deine Retreats in diesem Monat",
+    "colRetreat": "Retreat",
+    "colVisits": "Besuche",
+    "colUniques": "Einzeln",
+    "colBookings": "Buchungen",
+    "colConversion": "Konversion",
+    "colChannel": "Hauptkanal",
+    "noData": "Diesen Monat noch keine Besuche.",
+    "earlyTitle": "Die ersten Daten sind unterwegs",
+    "earlyBody": "Hier siehst du, wie oft du in den Suchen auf Aurya erscheinst, wer deine Seiten besucht und wie viele Besuche zu Buchungen werden. Je vollständiger dein Profil, desto besser wirst du gefunden.",
+    "earlyCta": "Profil vervollständigen",
+    "privacyNote": "Anonyme, aggregierte Messung, ohne Cookies und ohne persönliche Daten der Besucher."
   }
 }

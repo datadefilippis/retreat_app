@@ -52,6 +52,7 @@ from routers import admin_catalog as admin_catalog_router
 from routers import admin_feature_flags as admin_feature_flags_router
 from routers import admin_platform as admin_platform_router
 from routers import articles as articles_router
+from routers import tracking as tracking_router
 from routers import export as export_router
 from routers import billing as billing_router
 from routers import orders as orders_router
@@ -582,6 +583,9 @@ app.include_router(admin_catalog_router.router, prefix="/api")  # /api/admin/cat
 app.include_router(admin_feature_flags_router.router, prefix="/api")  # /api/admin/feature-flags/* (Phase 0 Step 9)
 app.include_router(admin_platform_router.router, prefix="/api")  # /api/admin/platform/* (SA2/SA3)
 app.include_router(articles_router.router, prefix="/api")  # /api/public/articles + /api/admin/articles (AN5 blog)
+app.include_router(tracking_router.router, prefix="/api")  # /api/public/track (VT visibilita)
+from routers import visibility as visibility_router  # noqa: E402
+app.include_router(visibility_router.router, prefix="/api")  # /api/analytics/visibility (VT4)
 
 # ── Billing routes (v5.0) ────────────────────────────────────────────────────
 app.include_router(billing_router.router, prefix="/api")     # /api/billing/*

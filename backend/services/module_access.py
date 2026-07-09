@@ -758,6 +758,7 @@ MODULE_OWNERSHIP = {
     "cashflow_analytics": "cashflow_monitor",
     "sales_stats": "product_catalog",
     "cross_sell": "customers_light",
+    "visibility": "commerce",
 }
 
 

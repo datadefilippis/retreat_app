@@ -428,6 +428,18 @@ async def create_indexes():
         [("public_profile.geo", "2dsphere")], name="an3_org_geo", sparse=True)
     # cache geocoding Nominatim (policy OSM: mai ri-geocodare)
     await db.geocode_cache.create_index("query", unique=True, name="g1_geocache")
+    # VT visibilita: dedup visitatore-giorno (unique), letture org-scoped,
+    # TTL 13 mesi sui grezzi (gli aggregati visibility_stats restano)
+    await db.page_views.create_index(
+        [("visitor_hash", 1), ("surface", 1), ("slug", 1), ("day", 1)],
+        unique=True, name="vt_view_dedup")
+    await db.page_views.create_index(
+        [("organization_id", 1), ("day", 1)], name="vt_view_org_day")
+    await db.page_views.create_index(
+        "created_at", expireAfterSeconds=34_186_698, name="vt_view_ttl")
+    await db.visibility_stats.create_index(
+        [("organization_id", 1), ("metric", 1), ("day", 1)],
+        unique=True, name="vt_stats_org_metric_day")
     # AN5 blog: slug unico + listing pubblico per data di pubblicazione
     await db.articles.create_index("slug", unique=True, name="an5_article_slug")
     await db.articles.create_index(

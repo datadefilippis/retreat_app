@@ -29,7 +29,8 @@
     "newsletter": "Newsletter",
     "public_profile": "Profil public",
     "reviews": "Avis",
-    "cashflow": "Encaissements"
+    "cashflow": "Encaissements",
+    "visibility": "Visibilité"
   },
   "actions": {
     "save": "Enregistrer",
@@ -110,8 +111,8 @@
   "reviews": {
     "title": "Avis",
     "subtitle": "Ce que les voyageurs disent de vous — et comment vous répondez.",
-    "total_one": "{{count}} avis",
-    "total_other": "{{count}} avis",
+    "total_one": "{{visits}} avis",
+    "total_other": "{{visits}} avis",
     "openToggle": "Accepter les avis de personnes n'ayant pas encore réservé",
     "openToggleHint": "Ils n’apparaîtront qu’après votre approbation et sans le badge « Client vérifié ».",
     "openOn": "Désormais tout le monde peut laisser un avis (avec votre approbation)",
@@ -198,5 +199,42 @@
   "directoryHint": {
     "request": "Avec la réservation sur demande, cette retraite n'apparaîtra PAS dans le calendrier public : l'annuaire ne liste que les retraites réservables en ligne instantanément. Elle reste réservable depuis votre boutique.",
     "stripeNote": "Tant que Stripe n'est pas actif, cette retraite n'apparaîtra pas dans le calendrier public, même publiée."
+  },
+  "visibility": {
+    "title": "Visibilité",
+    "subtitle": "Combien de personnes te voient et te visitent sur Aurya, et d’où elles viennent.",
+    "impressions": "Impressions",
+    "impressionsSub": "apparitions dans les recherches",
+    "visits": "Visites",
+    "uniques": "Visiteurs uniques",
+    "bookings": "Réservations",
+    "vsPrevMonth": "vs mois précédent",
+    "channelsTitle": "D’où viennent les visites",
+    "chAurya": "Via Aurya",
+    "chStore": "Ton store",
+    "chSocial": "Réseaux sociaux",
+    "chDirect": "Direct",
+    "ch_directory": "Annuaire Aurya",
+    "ch_search": "Moteurs de recherche",
+    "ch_store": "Ton store",
+    "ch_social": "Réseaux sociaux",
+    "ch_direct": "Direct",
+    "proofTitle": "La preuve Aurya",
+    "proofBody": "Ce mois-ci, Aurya t’a apporté {{visits}} visites depuis l’annuaire et les moteurs de recherche : un trafic que ton store seul n’aurait pas atteint.",
+    "proofCta": "Soigne ton profil public",
+    "trendTitle": "Visites des 12 derniers mois",
+    "last30": "30 derniers jours",
+    "perRetreatTitle": "Tes retraites ce mois-ci",
+    "colRetreat": "Retraite",
+    "colVisits": "Visites",
+    "colUniques": "Uniques",
+    "colBookings": "Réservations",
+    "colConversion": "Conversion",
+    "colChannel": "Canal principal",
+    "noData": "Aucune visite pour le moment ce mois-ci.",
+    "earlyTitle": "Les premières données arrivent",
+    "earlyBody": "Ici tu verras combien de fois tu apparais dans les recherches sur Aurya, qui visite tes pages et combien de visites deviennent des réservations. Plus ton profil est complet, plus on te trouve.",
+    "earlyCta": "Complète ton profil",
+    "privacyNote": "Mesure anonyme et agrégée, sans cookies et sans données personnelles des visiteurs."
   }
 }

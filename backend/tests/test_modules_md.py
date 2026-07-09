@@ -68,6 +68,8 @@ class TestModuleOwnershipMd2:
             "cashflow_analytics": "cashflow_monitor",
             "sales_stats": "product_catalog",
             "cross_sell": "customers_light",
+            # VT4 — lo specchietto Visibilita' vive nel modulo commerce
+            "visibility": "commerce",
         }
 
     def test_gates_wired_on_orphan_routers(self):

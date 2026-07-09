@@ -3338,6 +3338,7 @@ async def pay_by_token(token: str):
 
 @router.get("/retreats")
 async def list_public_retreats(
+    request: Request = None,
     category: Optional[str] = Query(default=None, max_length=30),
     region: Optional[str] = Query(default=None, max_length=30),
     # G1 — ricerca per raggio (docs/GEO_SEARCH_PLAN.md): lat+lng+radius_km
@@ -3531,8 +3532,19 @@ async def list_public_retreats(
                                   i["start_at"] or ""))
 
     total = len(items)
+    page_items = items[offset:offset + limit]
+    # VT3 — impression: le card MOSTRATE contano come apparizione per
+    # l'org (Search-Console-style). Batch in memoria, mai bloccante.
+    try:
+        from services.visit_tracking import bump_impressions
+        _slug_to_org = {s: oid for oid, s in org_slug.items()}
+        bump_impressions(
+            [_slug_to_org.get(i["org_slug"]) for i in page_items],
+            request.headers.get("user-agent") if request else None)
+    except Exception:                 # noqa: BLE001
+        pass
     return {
-        "items": items[offset:offset + limit],
+        "items": page_items,
         "total": total,
         "categories": RETREAT_CATEGORIES,
     }
@@ -3721,6 +3733,7 @@ async def public_experiences_index(category: str = Query(default=None, max_lengt
 
 @router.get("/operators")
 async def public_operators_index(
+    request: Request = None,
     category: str = Query(default=None, max_length=50),
     # AN3 — scoperta geografica degli operatori: raggio da un punto
     # (autocomplete/vicino-a-me) o filtro per località testuale
@@ -3850,6 +3863,16 @@ async def public_operators_index(
     else:
         items.sort(key=lambda x: (not x["featured"],
                                   -x["upcoming_retreats"], x["name"].lower()))
+    # VT3 — impression: ogni operatore mostrato nell'aggregatore conta
+    # come apparizione. Batch in memoria, mai bloccante.
+    try:
+        from services.visit_tracking import bump_impressions
+        _slug_to_org = {s["slug"]: s["organization_id"] for s in stores}
+        bump_impressions(
+            [_slug_to_org.get(i["org_slug"]) for i in items],
+            request.headers.get("user-agent") if request else None)
+    except Exception:                 # noqa: BLE001
+        pass
     return {"items": items, "total": len(items),
             "categories": all_categories}
 

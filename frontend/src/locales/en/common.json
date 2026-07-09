@@ -29,7 +29,8 @@
     "suppliers": "Suppliers",
     "public_profile": "Public profile",
     "reviews": "Reviews",
-    "cashflow": "Payments"
+    "cashflow": "Payments",
+    "visibility": "Visibility"
   },
   "actions": {
     "save": "Save",
@@ -110,8 +111,8 @@
   "reviews": {
     "title": "Reviews",
     "subtitle": "What travellers say about you — and how you respond.",
-    "total_one": "{{count}} review",
-    "total_other": "{{count}} reviews",
+    "total_one": "{{visits}} review",
+    "total_other": "{{visits}} reviews",
     "openToggle": "Accept reviews from people who have not booked yet",
     "openToggleHint": "They will only appear after your approval and without the \"Verified customer\" badge.",
     "openOn": "Now anyone can leave a review (with your approval)",
@@ -198,5 +199,42 @@
   "directoryHint": {
     "request": "With request-based booking this retreat will NOT appear in the public calendar: the directory only lists retreats bookable online instantly. It stays bookable from your store.",
     "stripeNote": "Until Stripe is active this retreat won't appear in the public calendar, even if published."
+  },
+  "visibility": {
+    "title": "Visibility",
+    "subtitle": "How many people see and visit you on Aurya, and where they come from.",
+    "impressions": "Impressions",
+    "impressionsSub": "appearances in search results",
+    "visits": "Visits",
+    "uniques": "Unique visitors",
+    "bookings": "Bookings",
+    "vsPrevMonth": "vs previous month",
+    "channelsTitle": "Where visits come from",
+    "chAurya": "Via Aurya",
+    "chStore": "Your store",
+    "chSocial": "Social",
+    "chDirect": "Direct",
+    "ch_directory": "Aurya directory",
+    "ch_search": "Search engines",
+    "ch_store": "Your store",
+    "ch_social": "Social",
+    "ch_direct": "Direct",
+    "proofTitle": "The Aurya proof",
+    "proofBody": "This month Aurya brought you {{visits}} visits from the directory and search engines: traffic your store alone would not have reached.",
+    "proofCta": "Polish your public profile",
+    "trendTitle": "Visits over the last 12 months",
+    "last30": "Last 30 days",
+    "perRetreatTitle": "Your retreats this month",
+    "colRetreat": "Retreat",
+    "colVisits": "Visits",
+    "colUniques": "Unique",
+    "colBookings": "Bookings",
+    "colConversion": "Conversion",
+    "colChannel": "Top channel",
+    "noData": "No visits yet this month.",
+    "earlyTitle": "The first data is on its way",
+    "earlyBody": "Here you will see how often you appear in searches on Aurya, who visits your pages and how many visits become bookings. The more complete your profile, the easier you are to find.",
+    "earlyCta": "Complete your profile",
+    "privacyNote": "Anonymous, aggregated measurement, with no cookies and no personal data about visitors."
   }
 }
