@@ -18,6 +18,20 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../api/client';
+import MultiLangSection from '../../components/MultiLangSection';
+
+// OP2 — dal dict per-campo di MultiLangSection ({en:'testo'}) alla shape
+// backend {en:{bio,tagline}}: un solo posto che fa la conversione.
+const mergeTr = (translations, field, perLang) => {
+  const out = { ...(translations || {}) };
+  for (const lang of ['en', 'de', 'fr']) {
+    const val = (perLang || {})[lang];
+    const entry = { ...(out[lang] || {}) };
+    if (val && val.trim()) entry[field] = val; else delete entry[field];
+    if (Object.keys(entry).length) out[lang] = entry; else delete out[lang];
+  }
+  return out;
+};
 
 const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'facebook', 'public_email', 'public_phone',
   // PR1 — carta d'identità
@@ -124,6 +138,8 @@ export default function PublicProfilePage() {
       payload.show_contacts = Boolean(form.show_contacts);
       payload.photos = form.photos || [];
       payload.languages = form.languages || [];
+      // OP2 — traduzioni manuali bio/tagline (stesso processo dei prodotti)
+      payload.translations = form.translations || {};
       const res = await api.patch('/organizations/current/public-profile', payload);
       setForm({ show_contacts: false, ...res.data });
       toast.success(t('publicProfile.saved', { defaultValue: 'Profilo salvato' }));
@@ -368,6 +384,21 @@ export default function PublicProfilePage() {
               />
               <p className="text-right text-[11px] text-muted-foreground">{(form.bio || '').length}/600</p>
             </div>
+            {/* OP2 — profilo multilingua: bio e tagline nelle tab lingua,
+                stesso processo unificato dei prodotti (MultiLangSection).
+                La bio tradotta accende la lingua sul profilo pubblico. */}
+            <MultiLangSection
+              fields={[
+                { key: 'tagline', label: t('publicProfile.tagline', { defaultValue: 'Tagline' }),
+                  it: form.tagline, input: true, maxLength: 80,
+                  value: Object.fromEntries(['en', 'de', 'fr'].map(l => [l, form.translations?.[l]?.tagline || ''])),
+                  onChange: perLang => set('translations', mergeTr(form.translations, 'tagline', perLang)) },
+                { key: 'bio', label: t('publicProfile.bio', { defaultValue: 'Chi sei (bio)' }),
+                  it: form.bio, rows: 4, maxLength: 600,
+                  value: Object.fromEntries(['en', 'de', 'fr'].map(l => [l, form.translations?.[l]?.bio || ''])),
+                  onChange: perLang => set('translations', mergeTr(form.translations, 'bio', perLang)) },
+              ]}
+            />
             {/* AN3 — località con autocomplete (Nominatim via /geo/search):
                 compila città E coordinate → l'operatore compare sulla
                 mappa e nel raggio "vicino a me" della directory */}

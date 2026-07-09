@@ -549,3 +549,52 @@ class TestSeo3OnPage:
                 / "BlogArticlePage.js").read_text()
         assert "/ritiri/${article.category}" in page
         assert "exploreRetreatsCta" in page
+
+
+class TestOperatorProfileMultilang:
+    """OP2 — il profilo operatore parla le lingue come i prodotti:
+    traduzioni manuali bio/tagline, serving onesto per lingua, hreflang
+    solo dove il contenuto esiste, mobile con la carta sopra la bio."""
+
+    def test_patch_whitelists_translations(self):
+        src = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        assert '"translations" in body' in src
+        # solo en/de/fr, solo bio/tagline, clip alle stesse lunghezze
+        assert '("bio", 600), ("tagline", 80)' in src
+
+    def test_public_endpoint_serves_language(self):
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        idx = src.index("async def public_operator_profile")
+        body = src[idx:idx + 3500]
+        assert "lang: Optional[str]" in body
+        assert '_tr.get("bio")' in body
+        assert '"served_lang"' in body
+        assert '"profile_langs"' in body
+
+    def test_shell_hreflang_only_translated(self):
+        src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        idx = src.index("async def _meta_operator")
+        body = src[idx:idx + 4000]
+        assert '(_f or {}).get("bio")' in body    # gate: bio tradotta
+        assert '"x-default"' in body
+
+    def test_editor_has_multilang_section(self):
+        page = (FRONTEND_SRC / "features" / "settings"
+                / "PublicProfilePage.js").read_text()
+        assert "MultiLangSection" in page
+        assert "payload.translations" in page
+        assert "mergeTr" in page
+
+    def test_profile_page_refetches_on_language(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorProfilePage.js").read_text()
+        assert "[org_slug, uiLang]" in page        # deps: refetch al cambio
+        assert "{ lang: uiLang }" in page
+
+    def test_mobile_card_above_description(self):
+        """OP1 — su mobile la carta d'identità sale sotto la copertina
+        (order-1) e i contenuti scendono (order-2); desktop invariato."""
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorProfilePage.js").read_text()
+        assert "order-2 lg:order-1" in page        # contenuti
+        assert "order-1 lg:order-2" in page        # carta d'identità

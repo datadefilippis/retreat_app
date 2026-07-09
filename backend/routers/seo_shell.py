@@ -577,12 +577,17 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     crumbs = sx.breadcrumb([("Aurya", f"{base}/"),
                             ("Organizzatori", f"{base}/operatori"),
                             (name, canonical)])
+    hreflang = {"it": canonical, "x-default": canonical}
+    for _lang, _f in (profile.get("translations") or {}).items():
+        if _lang in ("en", "de", "fr") and (_f or {}).get("bio"):
+            hreflang[_lang] = f"{canonical}?lang={_lang}"
     return {
         "title": title,
         "description": desc,
         "canonical": canonical,
         "image": image,
         "jsonld": [jsonld, crumbs] if crumbs else jsonld,
+        "hreflang": hreflang,
     }
 
 

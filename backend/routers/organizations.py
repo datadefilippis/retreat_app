@@ -1761,6 +1761,7 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
     return {**{k: pp.get(k) for k in _PUBLIC_PROFILE_FIELDS},
             "photos": pp.get("photos") or [],
             "languages": pp.get("languages") or [],
+            "translations": pp.get("translations") or {},
             # AN3 — la posizione configurata (autocomplete o geocoding)
             "latitude": pp.get("latitude"),
             "longitude": pp.get("longitude"),
@@ -1795,6 +1796,23 @@ async def update_public_profile(
         langs = body["languages"] if isinstance(body["languages"], list) else []
         updates["public_profile.languages"] = [
             l for l in langs if l in _PP_LANGS][:6]
+    # OP2 — profilo multilingua MANUALE, stessa logica dei prodotti:
+    # translations = {en|de|fr: {bio, tagline}}, testi clip alle stesse
+    # lunghezze dell'italiano, lingue sconosciute scartate in silenzio.
+    if "translations" in body:
+        raw = body["translations"] if isinstance(body["translations"], dict) else {}
+        clean = {}
+        for lang, fields in raw.items():
+            if lang not in ("en", "de", "fr") or not isinstance(fields, dict):
+                continue
+            entry = {}
+            for f, max_len in (("bio", 600), ("tagline", 80)):
+                val = fields.get(f)
+                if isinstance(val, str) and val.strip():
+                    entry[f] = val.strip()[:max_len]
+            if entry:
+                clean[lang] = entry
+        updates["public_profile.translations"] = clean or None
     # AN3 — posizione dell'operatore: lat/lng espliciti (autocomplete
     # località nel form) vincono; validati e trasformati in GeoJSON per
     # l'indice 2dsphere. La scoperta geografica non dipende più dai
