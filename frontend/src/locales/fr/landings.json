@@ -644,7 +644,20 @@
   "operators": {
     "mapToggle": "Carte",
     "mapEmpty": "Aucun organisateur avec une position sur la carte pour ces filtres.",
-    "mapSee": "Voir le profil →"
+    "mapSee": "Voir le profil →",
+    "heading": "Organisateurs",
+    "headingCat": "Organisateurs de {{cat}}",
+    "subtitle": "Les personnes et les centres derrière les retraites : découvre qui organise, ce qui est proposé et réserve directement en ligne.",
+    "seoTitle": "Tous les organisateurs de retraites et expériences | Aurya",
+    "seoTitleCat": "Organisateurs de {{cat}} | Aurya",
+    "seoDesc": "Découvre les organisateurs de retraites et expériences holistiques sur Aurya : profils, prochaines dates et réservation en ligne avec acompte.",
+    "retreatCount_one": "{{count}} retraite au programme",
+    "retreatCount_other": "{{count}} retraites au programme",
+    "productCount_one": "{{count}} expérience ou produit",
+    "productCount_other": "{{count}} expériences et produits",
+    "emptyTitle": "Pas encore d'organisateurs ici",
+    "emptyBody": "Essaie une autre catégorie ou reviens au répertoire des retraites.",
+    "backHome": "Voir les retraites"
   },
   "blog": {
     "seoTitle": "Blog | Aurya",

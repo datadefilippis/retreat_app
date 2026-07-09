@@ -528,8 +528,10 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     if not org:
         return None
     profile = org.get("public_profile") or {}
-    name = ((org.get("store_settings") or {}).get("display_name")
-            or org.get("name") or org_slug)
+    # OP4 — stessa risoluzione del pubblico: nome org (settings) prima
+    name = (org.get("name")
+            or (org.get("store_settings") or {}).get("display_name")
+            or org_slug)
     bio = (profile.get("tagline") or profile.get("bio") or "")[:300]
     image = _abs_image(profile.get("logo_url") or profile.get("cover_url")
                        or profile.get("portrait_url"))

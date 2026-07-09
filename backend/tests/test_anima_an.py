@@ -249,7 +249,7 @@ class TestLegalAn4:
         import hashlib
         from core.legal_versions import (CURRENT_VERSION_TAG,
                                          CURRENT_VERSION_HASH)
-        assert CURRENT_VERSION_TAG == "v2.0"
+        assert CURRENT_VERSION_TAG == "v2.1"
         priv = (self.LEGAL_DIR / "privacy_it.md").read_text("utf-8")
         terms = (self.LEGAL_DIR / "terms_it.md").read_text("utf-8")
         expected = hashlib.sha256(

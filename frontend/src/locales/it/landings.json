@@ -644,7 +644,20 @@
   "operators": {
     "mapToggle": "Mappa",
     "mapEmpty": "Nessun organizzatore con posizione sulla mappa per questi filtri.",
-    "mapSee": "Vedi il profilo →"
+    "mapSee": "Vedi il profilo →",
+    "heading": "Organizzatori",
+    "headingCat": "Organizzatori di {{cat}}",
+    "subtitle": "Le persone e i centri dietro i ritiri: scopri chi organizza, cosa propone e prenota direttamente online.",
+    "seoTitle": "Tutti gli organizzatori di ritiri ed esperienze | Aurya",
+    "seoTitleCat": "Operatori di {{cat}} | Aurya",
+    "seoDesc": "Scopri gli organizzatori di ritiri ed esperienze olistiche su Aurya: profili, prossime date e prenotazione online con caparra.",
+    "retreatCount_one": "{{count}} ritiro in programma",
+    "retreatCount_other": "{{count}} ritiri in programma",
+    "productCount_one": "{{count}} esperienza o prodotto",
+    "productCount_other": "{{count}} esperienze e prodotti",
+    "emptyTitle": "Nessun organizzatore qui, per ora",
+    "emptyBody": "Prova un'altra categoria o torna alla directory dei ritiri.",
+    "backHome": "Vai ai ritiri"
   },
   "blog": {
     "seoTitle": "Blog | Aurya",

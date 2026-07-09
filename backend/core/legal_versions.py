@@ -38,7 +38,7 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.0"
+CURRENT_VERSION_TAG: Final[str] = "v2.1"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
@@ -63,9 +63,16 @@ History:
     verificate OTP, AI ridimensionata alle traduzioni, sub-processor
     Nominatim, Aurya intermediario tecnico + DAC7. Zero AFianco.
     EN/DE/FR ritradotti dal bundle IT v2.0.
+  - v2.1 (VT6b, 2026-07-09) — nuova voce informativa in Privacy 3.2:
+    statistiche di visibilita' in forma aggregata e anonima (conteggio
+    first-party delle visualizzazioni pubbliche, niente cookie, niente
+    IP salvati, identificatore giornaliero non riconducibile) per lo
+    specchietto Visibilita' degli Operatori. Base giuridica: legittimo
+    interesse — nessun nuovo consenso richiesto. Stessa riga in
+    EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "cbbb9cdc2ec25b48"
+CURRENT_VERSION_HASH: Final[str] = "6d1edbcf0428639c"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

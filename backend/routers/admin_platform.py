@@ -225,6 +225,19 @@ async def org_business_profile(
     newsletter_subs = await db.newsletter_subscriptions.count_documents(
         {"organization_id": org_id})
 
+    # ── VT7: traffico dallo specchietto Visibilita' (stesse fonti) ───
+    from routers.visibility import (_month_views, _month_impressions,
+                                    _month_prefix, _prev_month)
+    cur_p, prev_p = _month_prefix(now), _month_prefix(_prev_month(now))
+    cur_v = await _month_views(db, org_id, cur_p)
+    prev_v = await _month_views(db, org_id, prev_p)
+    traffic = {
+        "visits_month": cur_v["visits"],
+        "uniques_month": cur_v["uniques"],
+        "visits_prev_month": prev_v["visits"],
+        "impressions_month": await _month_impressions(db, org_id, cur_p),
+    }
+
     return {
         "organization_id": org_id,
         "name": org.get("name"),
@@ -270,5 +283,8 @@ async def org_business_profile(
             "newsletter_subscribers": newsletter_subs,
             "last_login_at": last_login,
         },
+        # VT7 — il traffico che Aurya gli porta (specchietto VT lato
+        # piattaforma): il numero del pitch commerciale
+        "traffic": traffic,
         "generated_at": now.isoformat(),
     }

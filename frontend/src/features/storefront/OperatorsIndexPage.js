@@ -87,8 +87,10 @@ function OperatorCard({ op, t }) {
 }
 
 export default function OperatorsIndexPage() {
-  const { t } = useTranslation('landings');
+  const { t, i18n } = useTranslation('landings');
   const { categoria } = useParams();
+  // OP4 — le bio degli operatori parlano la lingua attiva (refetch al cambio)
+  const uiLang = (i18n.language || 'it').slice(0, 2);
   const [params, setParams] = useSearchParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -121,12 +123,13 @@ export default function OperatorsIndexPage() {
     if (geoLat && geoLng) {
       q.lat = geoLat; q.lng = geoLng; q.radius_km = geoRadius;
     }
+    if (uiLang !== 'it') q.lang = uiLang;
     api.get('/public/operators', { params: q })
       .then(res => { if (mounted) setData(res.data); })
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [categoria, geoLat, geoLng, geoRadius]);
+  }, [categoria, geoLat, geoLng, geoRadius, uiLang]);
 
   const items = data?.items || [];
   const categories = useMemo(

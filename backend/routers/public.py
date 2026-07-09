@@ -3450,7 +3450,8 @@ async def list_public_retreats(
     org_featured: Dict[str, bool] = {}
     org_rating: Dict[str, Optional[dict]] = {}
     for o in orgs:
-        org_name[o["id"]] = (o.get("store_settings") or {}).get("display_name") or o.get("name") or ""
+        # OP4 — stessa fonte del profilo: nome org prima dei nomi store
+        org_name[o["id"]] = o.get("name") or (o.get("store_settings") or {}).get("display_name") or ""
         org_featured[o["id"]] = bool(o.get("directory_featured"))
         # AN7 — stelle sulla card: solo avg+count, mai la distribuzione
         rs = o.get("reviews_stats") or {}
@@ -3735,6 +3736,8 @@ async def public_experiences_index(category: str = Query(default=None, max_lengt
 async def public_operators_index(
     request: Request = None,
     category: str = Query(default=None, max_length=50),
+    # OP4 — l'aggregatore parla la lingua del viaggiatore (bio tradotte)
+    lang: str = Query(default=None, max_length=5),
     # AN3 — scoperta geografica degli operatori: raggio da un punto
     # (autocomplete/vicino-a-me) o filtro per località testuale
     lat: float = Query(default=None, ge=-90, le=90),
@@ -3814,15 +3817,21 @@ async def public_operators_index(
             continue
         pp = org.get("public_profile") or {}
         ss = org.get("store_settings") or {}
+        # OP2/OP4 — bio nella lingua richiesta se l'operatore l'ha
+        # compilata, italiano altrimenti (mai buchi)
+        _tr = (pp.get("translations") or {}).get((lang or "")[:2]) or {}
         # AN3 — la località viene dal PROFILO (unione con le regioni
         # delle occorrenze): l'operatore senza ritiri futuri resta
         # scopribile geograficamente
         prof_regions = {r for r in (pp.get("region"), pp.get("city")) if r}
         items.append({
             "org_slug": s["slug"],
-            "name": (ss.get("display_name") or s.get("name")
-                     or org.get("name") or s["slug"]),
-            "bio": ((pp.get("bio") or s.get("description") or "")[:200]) or None,
+            # OP4 — il TITOLO pubblico e' il nome dell'organizzazione
+            # (settings), unica fonte; i nomi store restano fallback
+            "name": (org.get("name") or ss.get("display_name")
+                     or s.get("name") or s["slug"]),
+            "bio": ((_tr.get("bio") or pp.get("bio")
+                     or s.get("description") or "")[:200]) or None,
             "logo_url": s.get("logo_url") or ss.get("logo_url")
                         or pp.get("logo_url"),
             "cover_url": pp.get("cover_url"),
@@ -3930,7 +3939,9 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         "org_slug": org_slug,
         "served_lang": (lang or "")[:2] if _tr else "it",
         "profile_langs": profile_langs,
-        "name": store.get("name") or store.get("display_name") or ss.get("display_name") or org.get("name") or "",
+        # OP4 — nome pubblico = nome org (settings): stessa fonte
+        # dell'editor profilo, mai piu' incongruenze col nome store
+        "name": org.get("name") or store.get("name") or store.get("display_name") or ss.get("display_name") or "",
         "bio": _tr.get("bio") or pp.get("bio") or store.get("description") or ss.get("store_description"),
         "logo_url": store.get("logo_url") or ss.get("logo_url"),
         "cover_url": pp.get("cover_url"),

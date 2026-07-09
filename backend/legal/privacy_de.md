@@ -98,6 +98,7 @@ Für die Verarbeitungen, bei denen Aurya Auftragsverarbeiter ist, ist der Verans
 - **IP-Adresse** und **User-Agent**: erfasst zum Zeitpunkt der Annahme der Bedingungen, zum rechtlichen Nachweis der Einwilligung (unveränderliches Audit, Art. 7 DSGVO)
 - **Zahlungsereignisse**: Stripe-Transaktionskennung, Betrag, Ergebnis (es werden keine Zahlungskartendaten gespeichert — siehe Art. 9)
 - **OTP-Codes zur Bewertungsverifizierung**: automatisch generiert, verifiziert und ablaufend; nicht wiederverwendbar
+- **Aggregierte, anonyme Sichtbarkeitsstatistiken**: Aufrufe der öffentlichen Seiten (Veranstalterprofile, Retreat-Seiten, Stores) werden direkt von der Plattform gezählt, ohne Cookies, ohne Drittanbieterdienste und ohne Speicherung der IP-Adresse; verwendet wird eine technische Kennung, die täglich wechselt und keiner Person zugeordnet werden kann. Diese Zählungen dienen ausschließlich dazu, den Veranstaltern aggregierte Statistiken über die über die Plattform erzielte Sichtbarkeit bereitzustellen
 
 ### 3.3 Geolokalisierung des Besuchers
 
