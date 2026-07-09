@@ -27,7 +27,12 @@
     "todo_reviews": "Ausstehende Bewertungen",
     "calendar_blocked_title": "Deine Retreats erscheinen nicht im öffentlichen Kalender",
     "calendar_blocked_body": "In den Aurya-Kalender kommen nur online buchbare Retreats. Aktiviere Zahlungen, um sichtbar zu sein und Buchungen zu erhalten.",
-    "calendar_blocked_cta": "Online-Zahlungen aktivieren"
+    "calendar_blocked_cta": "Online-Zahlungen aktivieren",
+    "visibility_title": "Sichtbarkeit",
+    "visibility_impressions": "Impressionen",
+    "visibility_visits": "Besuche",
+    "visibility_bookings": "Buchungen",
+    "visibility_all": "Zur Sichtbarkeit"
   },
   "onboarding": {
     "title": "Starte hier",

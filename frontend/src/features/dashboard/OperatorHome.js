@@ -17,7 +17,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Wallet, ListTodo, ArrowRight, Users } from 'lucide-react';
+import { Calendar, Wallet, ListTodo, ArrowRight, Users, Eye } from 'lucide-react';
 import api from '../../api/client';
 import { MiniBars } from '../../components/charts';
 import { formatCurrency } from '../../lib/utils';
@@ -44,6 +44,7 @@ export default function OperatorHome() {
   const [cashflow, setCashflow] = useState(null);   // fonte unica incassi
   const [reviewsPending, setReviewsPending] = useState(0);
   const [obSteps, setObSteps] = useState(null);
+  const [visibility, setVisibility] = useState(null); // VT5 — specchietto
 
   useEffect(() => {
     let mounted = true;
@@ -53,7 +54,8 @@ export default function OperatorHome() {
       api.get('/analytics/cashflow'),
       api.get('/reviews', { params: { status: 'pending' } }),
       api.get('/organizations/current/onboarding-status'),
-    ]).then(([occRes, payRes, cfRes, revRes, obRes]) => {
+      api.get('/analytics/visibility'),
+    ]).then(([occRes, payRes, cfRes, revRes, obRes, visRes]) => {
       if (!mounted) return;
       const occData = occRes.status === 'fulfilled' ? occRes.value.data : null;
       setRetreats(Array.isArray(occData) ? occData : (occData?.events || []));
@@ -61,6 +63,7 @@ export default function OperatorHome() {
       setCashflow(cfRes.status === 'fulfilled' ? cfRes.value.data : {});
       setReviewsPending(revRes.status === 'fulfilled' ? (revRes.value.data?.pending_count || 0) : 0);
       setObSteps(obRes.status === 'fulfilled' ? (obRes.value.data?.steps || null) : null);
+      setVisibility(visRes.status === 'fulfilled' ? visRes.value.data : null);
     });
     return () => { mounted = false; };
   }, []);
@@ -230,6 +233,33 @@ export default function OperatorHome() {
         )}
       </div>
     </div>
+
+    {/* ── Visibilità (VT5): il funnel del mese in una riga ── */}
+    {(visibility?.summary?.visits?.current || 0) > 0 && (
+      <div className="mt-4 rounded-2xl border bg-card p-4">
+        <div className={headCls}>
+          <Eye className="h-3.5 w-3.5" />
+          {t('home.visibility_title', { defaultValue: 'Visibilità' })}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <span>
+            <span className="font-bold tabular-nums">{visibility.summary.impressions?.current || 0}</span>{' '}
+            <span className="text-muted-foreground">{t('home.visibility_impressions', { defaultValue: 'impression' })}</span>
+          </span>
+          <span>
+            <span className="font-bold tabular-nums">{visibility.summary.visits.current}</span>{' '}
+            <span className="text-muted-foreground">{t('home.visibility_visits', { defaultValue: 'visite' })}</span>
+          </span>
+          <span>
+            <span className="font-bold tabular-nums">{visibility.summary.bookings?.current || 0}</span>{' '}
+            <span className="text-muted-foreground">{t('home.visibility_bookings', { defaultValue: 'prenotazioni' })}</span>
+          </span>
+          <Link to="/visibilita" className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+            {t('home.visibility_all', { defaultValue: 'Vai a Visibilità' })} <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+      </div>
+    )}
     </div>
   );
 }

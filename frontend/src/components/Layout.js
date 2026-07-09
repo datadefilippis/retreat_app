@@ -32,6 +32,7 @@ import {
   UserCircle,
   Star,
   Wallet,
+  Eye,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { ScrollArea } from '../components/ui/scroll-area';
@@ -224,6 +225,8 @@ export const Sidebar = () => {
       { nameKey: 'nav.public_profile', href: '/public-profile', icon: UserCircle, end: true },
       // PR3 — plancia recensioni
       { nameKey: 'nav.reviews', href: '/reviews', icon: Star, end: true },
+      // VT5 — lo specchietto della visibilita' su Aurya
+      { nameKey: 'nav.visibility', href: '/visibilita', icon: Eye, end: true },
       { nameKey: 'nav.newsletter', href: '/newsletter', icon: Mail, end: true },
     );
   }

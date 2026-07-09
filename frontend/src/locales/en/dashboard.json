@@ -109,7 +109,12 @@
     "todo_reviews": "Pending reviews",
     "calendar_blocked_title": "Your retreats are not showing in the public calendar",
     "calendar_blocked_body": "Only retreats bookable online appear in the Aurya calendar. Enable payments to be visible and receive bookings.",
-    "calendar_blocked_cta": "Enable online payments"
+    "calendar_blocked_cta": "Enable online payments",
+    "visibility_title": "Visibility",
+    "visibility_impressions": "impressions",
+    "visibility_visits": "visits",
+    "visibility_bookings": "bookings",
+    "visibility_all": "Go to Visibility"
   },
   "onboarding": {
     "title": "Start here",

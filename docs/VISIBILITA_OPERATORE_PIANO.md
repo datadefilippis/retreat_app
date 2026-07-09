@@ -148,3 +148,29 @@ In SA4 (scheda Operatore 360°): stessa metrica per il pitch commerciale
 Totale VT1-VT7: **~4,5 giornate**. Ordine consigliato: VT1→VT2→VT3 (da
 quel momento i dati si ACCUMULANO anche se la UI non c'è ancora — partire
 presto conta), poi VT4→VT7 con calma.
+
+## 9. Stato implementazione (2026-07-09)
+
+- **VT1 fatto** — `services/visit_tracking.py` (is_bot, visitor_hash con
+  salt giornaliero, record_view con dedup upsert), `routers/tracking.py`
+  (POST /public/track sempre 204, org rivalidata dal db, limiter
+  30/min), indici in database.py (dedup unique, org+day, TTL 13 mesi,
+  stats unique).
+- **VT2 fatto** — `frontend/.../lib/useTrackView.js` (sendBeacon dopo
+  3s, attribuzione 5 canali da ?store=1/referrer HOSTNAME) montato su
+  EventLandingPage, OperatorProfilePage, StorefrontPage.
+- **VT3 fatto** — bump_impressions (batch in memoria, flush pigro 20s)
+  nei listing /public/retreats e /public/operators.
+- **VT4 fatto** — GET /analytics/visibility (routers/visibility.py,
+  org-scoped, require_module("visibility"), cache 60s): funnel mese
+  corrente vs precedente, canali, trend 12m/30gg, per-ritiro con
+  prenotazioni incrociate dagli ordini.
+- **VT5 fatto** — pagina /visibilita (sezioni A-D + prova Aurya +
+  stato vuoto gentile sotto 10 visite + nota privacy), voce menu
+  back-office, widget riassunto in OperatorHome, i18n ×4 lingue.
+- **Guardie** — tests/test_visibility_vt.py (anti-bot, no-PII, salt
+  che ruota, 204 sempre, shape funnel, hook sulle 3 superfici,
+  hostname non host, kit grafico CF1).
+- **Coda (non bloccante):** VT6 report email mensile + riga privacy
+  policy; VT7 traffico in SA4 + segnale SA5. VT8 resta opzionale e
+  separato.

@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { Flower2 } from 'lucide-react';
 import api from '../../api/client';
 import useSeoMeta from './lib/useSeoMeta';
+import useTrackView from './lib/useTrackView';
 import MarketplaceShell from './components/MarketplaceShell';
 
 function fmtPrice(n) {
@@ -321,6 +322,8 @@ function ReviewsSection({ orgSlug, stats, onWrite, refreshKey, t, i18n }) {
 
 export default function OperatorProfilePage() {
   const { org_slug } = useParams();
+  // VT2 — visita al profilo per lo specchietto Visibilità (ping 3s)
+  useTrackView('profile', org_slug);
   const { t, i18n } = useTranslation('landings');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);

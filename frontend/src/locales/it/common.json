@@ -29,7 +29,8 @@
     "suppliers": "Fornitori",
     "public_profile": "Profilo pubblico",
     "reviews": "Recensioni",
-    "cashflow": "Incassi"
+    "cashflow": "Incassi",
+    "visibility": "Visibilità"
   },
   "actions": {
     "save": "Salva",
@@ -110,8 +111,8 @@
   "reviews": {
     "title": "Recensioni",
     "subtitle": "Cosa dicono di te i viaggiatori — e come rispondi.",
-    "total_one": "{{count}} recensione",
-    "total_other": "{{count}} recensioni",
+    "total_one": "{{visits}} recensione",
+    "total_other": "{{visits}} recensioni",
     "openToggle": "Accetta recensioni da chi non ha ancora prenotato",
     "openToggleHint": "Appariranno solo dopo la tua approvazione e senza il badge \"Cliente verificato\".",
     "openOn": "Ora chiunque può lasciare una recensione (con la tua approvazione)",
@@ -198,5 +199,42 @@
   "directoryHint": {
     "request": "Con la prenotazione su richiesta questo ritiro NON comparirà nel calendario pubblico: la directory elenca solo ritiri prenotabili online all'istante. Resta prenotabile dal tuo store.",
     "stripeNote": "Finché Stripe non è attivo questo ritiro non comparirà nel calendario pubblico, anche se pubblicato."
+  },
+  "visibility": {
+    "title": "Visibilità",
+    "subtitle": "Quante persone ti vedono e ti visitano su Aurya, e da dove arrivano.",
+    "impressions": "Impression",
+    "impressionsSub": "apparizioni nelle ricerche",
+    "visits": "Visite",
+    "uniques": "Visitatori unici",
+    "bookings": "Prenotazioni",
+    "vsPrevMonth": "vs mese prec.",
+    "channelsTitle": "Da dove arrivano le visite",
+    "chAurya": "Via Aurya",
+    "chStore": "Tuo store",
+    "chSocial": "Social",
+    "chDirect": "Diretto",
+    "ch_directory": "Directory Aurya",
+    "ch_search": "Motori di ricerca",
+    "ch_store": "Tuo store",
+    "ch_social": "Social",
+    "ch_direct": "Diretto",
+    "proofTitle": "La prova Aurya",
+    "proofBody": "Questo mese Aurya ti ha portato {{visits}} visite da directory e motori di ricerca: traffico che il tuo store da solo non avrebbe raggiunto.",
+    "proofCta": "Cura il tuo profilo pubblico",
+    "trendTitle": "Visite negli ultimi 12 mesi",
+    "last30": "Ultimi 30 giorni",
+    "perRetreatTitle": "I tuoi ritiri questo mese",
+    "colRetreat": "Ritiro",
+    "colVisits": "Visite",
+    "colUniques": "Unici",
+    "colBookings": "Prenotazioni",
+    "colConversion": "Conversione",
+    "colChannel": "Canale principale",
+    "noData": "Ancora nessuna visita questo mese.",
+    "earlyTitle": "I primi dati stanno arrivando",
+    "earlyBody": "Qui vedrai quante volte appari nelle ricerche su Aurya, chi visita le tue pagine e quante visite diventano prenotazioni. Più il tuo profilo è completo, più ti fai trovare.",
+    "earlyCta": "Completa il profilo",
+    "privacyNote": "Misurazione anonima e aggregata, senza cookie e senza dati personali dei visitatori."
   }
 }

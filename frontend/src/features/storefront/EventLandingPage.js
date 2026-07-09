@@ -38,6 +38,7 @@ import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
 import { effectivePlan } from './lib/paymentPlan';
 import useSeoMeta from './lib/useSeoMeta';
+import useTrackView from './lib/useTrackView';
 import api from '../../api/client';
 import StoreContextNav from './components/StoreContextNav';
 import MarketplaceShell from './components/MarketplaceShell';
@@ -461,6 +462,8 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
 
 export default function EventLandingPage() {
   const { org_slug: orgSlug, slug } = useParams();
+  // VT2 — visita alla landing per lo specchietto Visibilità (ping 3s)
+  useTrackView('event', slug);
   // 7/7 — contesto negozio: i link delle card store portano ?store=1;
   // la landing mantiene la barra menu dello store (mai uscire).
   const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
