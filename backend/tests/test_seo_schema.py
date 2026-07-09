@@ -95,3 +95,31 @@ class TestSameAs:
     def test_normalizza_domini_nudi(self):
         out = sx.same_as("instagram.com/x", "https://facebook.com/y", None, "")
         assert out == ["https://instagram.com/x", "https://facebook.com/y"]
+
+
+class TestBreadcrumb:
+    def test_ok(self):
+        b = sx.breadcrumb([("Aurya", "https://a/"), ("Yoga", "https://a/ritiri/yoga"),
+                           ("Ritiro X", "https://a/e/x")])
+        assert b["@type"] == "BreadcrumbList"
+        els = b["itemListElement"]
+        assert [e["position"] for e in els] == [1, 2, 3]
+        assert els[0]["name"] == "Aurya"
+        assert els[2]["item"] == "https://a/e/x"
+
+    def test_none_if_single_level(self):
+        assert sx.breadcrumb([("Aurya", "/")]) is None
+        assert sx.breadcrumb([]) is None
+
+
+class TestItemList:
+    def test_ok_absolutizza_url(self):
+        il = sx.item_list([{"name": "R1", "url": "/e/a/b"},
+                           {"name": "R2", "url": "/e/c/d"}], "https://aurya.life")
+        assert il["@type"] == "ItemList"
+        assert il["itemListElement"][0]["url"] == "https://aurya.life/e/a/b"
+        assert il["itemListElement"][1]["position"] == 2
+
+    def test_none_if_empty(self):
+        assert sx.item_list([]) is None
+        assert sx.item_list(None) is None

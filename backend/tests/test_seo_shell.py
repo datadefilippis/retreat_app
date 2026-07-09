@@ -161,3 +161,39 @@ class TestEndpointLive:
                 assert d["aggregateRating"]["reviewCount"] >= 1
             title = re.search(r"<title>([^<]*)</title>", r.text).group(1)
             assert "—" not in title
+
+    def test_event_has_breadcrumb(self):
+        r = requests.get(
+            f"{BASE_URL}/__seo/e/masseria-demo/ritiro-yoga-test-s1-2026-10-02",
+            timeout=10)
+        assert r.status_code == 200
+        if '"@type": "Event"' in r.text:
+            assert '"BreadcrumbList"' in r.text
+
+    def test_category_itemlist_or_noindex(self):
+        """SEO2 — categoria con ritiri prenotabili → ItemList + niente
+        noindex; categoria vuota → noindex (thin content)."""
+        import re, json
+        pop = requests.get(f"{BASE_URL}/__seo/ritiri/yoga", timeout=10)
+        assert pop.status_code == 200
+        if '"ItemList"' in pop.text:
+            assert 'content="noindex"' not in pop.text
+        # categoria del dominio quasi certamente vuota nel seed → noindex
+        empty = requests.get(f"{BASE_URL}/__seo/ritiri/breathwork", timeout=10)
+        assert empty.status_code == 200
+        if '"ItemList"' not in empty.text:
+            assert 'content="noindex"' in empty.text
+
+    def test_destination_noindex_when_empty(self):
+        r = requests.get(f"{BASE_URL}/__seo/destinazioni/citta-inesistente-xyz",
+                         timeout=10)
+        assert r.status_code == 200
+        assert 'content="noindex"' in r.text
+
+    def test_indexnow_pings_operator_update(self):
+        """SEO2 — l'update del profilo/store pinga IndexNow di /o/ e /s/."""
+        orgs = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        assert "_ping_operator_indexnow" in orgs
+        assert '"/o/{slug}"' in orgs and '"/s/{slug}"' in orgs
+        stores = (BACKEND_DIR / "routers" / "stores.py").read_text()
+        assert "_ping_operator_indexnow" in stores

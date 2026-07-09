@@ -501,6 +501,13 @@ async def update_store(
     )
 
     logger.info("stores: updated store=%s fields=%s org=%s", store_id, list(updates.keys()), org_id)
+    # SEO2 — IndexNow: lo store aggiornato cambia il title/meta di /s/ e
+    # /o/; reindicizza best-effort (mai bloccante).
+    try:
+        from routers.organizations import _ping_operator_indexnow
+        await _ping_operator_indexnow(org_id)
+    except Exception:            # noqa: BLE001
+        pass
     return updated
 
 

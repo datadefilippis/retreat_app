@@ -124,6 +124,41 @@ def aggregate_rating(stats: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]
     }
 
 
+def breadcrumb(items: List[tuple]) -> Optional[Dict[str, Any]]:
+    """BreadcrumbList da [(nome, url), ...]. Il crawler capisce la
+    gerarchia (Aurya › Ritiri › {categoria} › {ritiro}) e mostra il
+    breadcrumb rich result. None se meno di 2 livelli."""
+    items = [(n, u) for n, u in items if n]
+    if len(items) < 2:
+        return None
+    elements = []
+    for i, (name, url) in enumerate(items, 1):
+        el: Dict[str, Any] = {"@type": "ListItem", "position": i, "name": name}
+        if url:
+            el["item"] = url
+        elements.append(el)
+    return {"@context": "https://schema.org", "@type": "BreadcrumbList",
+            "itemListElement": elements}
+
+
+def item_list(items: List[Dict[str, Any]],
+              base_url: str = "") -> Optional[Dict[str, Any]]:
+    """ItemList da [{name, url}]: elenca i ritiri reali della pagina
+    (categoria/destinazione) per la SERP. None se vuoto → il chiamante
+    marca noindex (niente thin content)."""
+    if not items:
+        return None
+    elements = []
+    for i, it in enumerate(items, 1):
+        url = it.get("url") or ""
+        if url.startswith("/") and base_url:
+            url = base_url + url
+        elements.append({"@type": "ListItem", "position": i,
+                         "name": it.get("name"), "url": url})
+    return {"@context": "https://schema.org", "@type": "ItemList",
+            "itemListElement": elements}
+
+
 def same_as(*urls: Optional[str]) -> List[str]:
     """sameAs: normalizza domini nudi (es. 'instagram.com/x') in URL
     assoluti https. Scarta i vuoti."""
