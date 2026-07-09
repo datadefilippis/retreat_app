@@ -200,18 +200,22 @@ async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
 async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
     from database import (event_occurrences_collection, products_collection,
                           organizations_collection)
+    from services import seo_schema as sx
     base = _base_url()
     occ = await event_occurrences_collection.find_one(
         {"slug": occ_slug, "status": "published"},
         {"_id": 0, "product_id": 1, "start_at": 1, "end_at": 1, "city": 1,
-         "region": 1, "cover_image_url": 1, "price_override": 1},
+         "region": 1, "country": 1, "postal_code": 1, "venue_name": 1,
+         "address": 1, "latitude": 1, "longitude": 1, "capacity": 1,
+         "cover_image_url": 1, "price_override": 1},
     )
     if not occ:
         return None
     prod = await products_collection.find_one(
         {"id": occ["product_id"], "is_published": True},
         {"_id": 0, "name": 1, "description": 1, "images": 1,
-         "organization_id": 1, "price": 1, "translations": 1},
+         "organization_id": 1, "price": 1, "unit_price": 1, "currency": 1,
+         "translations": 1},
     )
     if not prod:
         return None
@@ -221,30 +225,55 @@ async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
     org_name = ((org or {}).get("store_settings") or {}).get("display_name") \
         or (org or {}).get("name") or ""
 
-    when = (occ.get("start_at") or "")[:10]
+    when = sx.human_date(occ.get("start_at"))         # data leggibile, no ISO
     where = occ.get("city") or occ.get("region") or "Italia"
     desc = (prod.get("description") or "")[:300]
     image = _abs_image(occ.get("cover_image_url")
                        or (prod.get("images") or [None])[0])
     canonical = f"{base}/e/{org_slug}/{occ_slug}"
 
+    # SEO1 — location strutturata (PostalAddress + GeoCoordinates) e Offer:
+    # è ciò che sblocca il rich result evento con luogo, data e prezzo per
+    # le query "ritiro yoga [città]". Niente aggregateRating sull'Event:
+    # Google non usa le stelle sugli eventi (finirebbe 'invalid').
+    address = sx.postal_address(
+        street=occ.get("venue_name") or occ.get("address"),
+        city=occ.get("city"), region=occ.get("region"),
+        postal_code=occ.get("postal_code"), country=occ.get("country"))
+    location = sx.place(
+        name=occ.get("venue_name") or where, address=address,
+        geo=sx.geo_coordinates(occ.get("latitude"), occ.get("longitude")),
+        fallback_name=where)
+    price = occ.get("price_override")
+    if price is None:
+        price = prod.get("unit_price") if prod.get("unit_price") is not None \
+            else prod.get("price")
+    offer = sx.offer(price=price, currency=prod.get("currency"), url=canonical)
+
     jsonld = {
         "@context": "https://schema.org",
         "@type": "Event",
         "name": prod["name"],
         "startDate": occ.get("start_at"),
-        "endDate": occ.get("end_at"),
         "eventStatus": "https://schema.org/EventScheduled",
         "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "location": {"@type": "Place", "name": where,
-                     "address": where},
+        "location": location,
         "image": [image],
         "description": desc,
         "organizer": {"@type": "Organization", "name": org_name},
         "url": canonical,
     }
+    if occ.get("end_at"):
+        jsonld["endDate"] = occ["end_at"]
+    if offer:
+        jsonld["offers"] = offer
+    if occ.get("capacity"):
+        jsonld["maximumAttendeeCapacity"] = occ["capacity"]
+
+    title = f"{prod['name']} · {where} · {when} | Aurya" if when \
+        else f"{prod['name']} · {where} | Aurya"
     return {
-        "title": f"{prod['name']} — {where}, {when} | Aurya",
+        "title": title,
         "description": desc or f"Ritiro a {where} il {when}. Prenota su Aurya.",
         "canonical": canonical,
         "image": image,
@@ -417,66 +446,123 @@ async def _meta_operators_index(category: Optional[str] = None) -> dict:
 
 async def _meta_operator(org_slug: str) -> Optional[dict]:
     from database import stores_collection, organizations_collection
+    from services import seo_schema as sx
     base = _base_url()
+    _proj = {"_id": 0, "name": 1, "public_profile": 1, "store_settings": 1,
+             "reviews_stats": 1}
     store = await stores_collection.find_one(
         {"slug": org_slug, "is_published": True},
         {"_id": 0, "organization_id": 1, "name": 1, "description": 1},
     )
-    org = None
     if store:
         org = await organizations_collection.find_one(
-            {"id": store["organization_id"]},
-            {"_id": 0, "name": 1, "public_profile": 1, "store_settings": 1})
+            {"id": store["organization_id"]}, _proj)
     else:
         org = await organizations_collection.find_one(
-            {"public_slug": org_slug}, {"_id": 0, "name": 1,
-                                        "public_profile": 1,
-                                        "store_settings": 1})
+            {"public_slug": org_slug}, _proj)
     if not org:
         return None
     profile = org.get("public_profile") or {}
     name = ((org.get("store_settings") or {}).get("display_name")
             or org.get("name") or org_slug)
-    bio = (profile.get("bio") or "")[:300]
-    image = _abs_image(profile.get("logo_url") or profile.get("cover_url"))
+    bio = (profile.get("tagline") or profile.get("bio") or "")[:300]
+    image = _abs_image(profile.get("logo_url") or profile.get("cover_url")
+                       or profile.get("portrait_url"))
     canonical = f"{base}/o/{org_slug}"
+
+    # SEO1 — l'operatore è un LocalBusiness geo-taggato: è ciò che lo fa
+    # comparire su Google nella sua zona (la promessa commerciale). Address
+    # + geo dal profilo, stelle dalle recensioni verificate, social in
+    # sameAs. Solo LocalBusiness/Organization possono portare aggregateRating.
+    city, region = profile.get("city"), profile.get("region")
+    jsonld = {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": name,
+        "url": canonical,
+        "description": bio,
+    }
+    if image:
+        jsonld["image"] = image
+    address = sx.postal_address(city=city, region=region)
+    if address:
+        jsonld["address"] = address
+    geo = sx.geo_coordinates(profile.get("latitude"), profile.get("longitude"))
+    if geo:
+        jsonld["geo"] = geo
+    rating = sx.aggregate_rating(org.get("reviews_stats"))
+    if rating:
+        jsonld["aggregateRating"] = rating
+    sa = sx.same_as(profile.get("instagram"), profile.get("facebook"),
+                    profile.get("website"))
+    if sa:
+        jsonld["sameAs"] = sa
+    if profile.get("show_contacts"):
+        if profile.get("public_phone"):
+            jsonld["telephone"] = profile["public_phone"]
+        if profile.get("public_email"):
+            jsonld["email"] = profile["public_email"]
+
+    # Title local-oriented: "{nome} · ritiri a {città} | Aurya" cattura la
+    # query di brand+luogo dell'operatore.
+    title = f"{name} · ritiri a {city} | Aurya" if city \
+        else f"{name} · organizzatore su Aurya"
+    desc = bio or (f"Ritiri ed esperienze di {name}"
+                   + (f" a {city}" if city else "") + " su Aurya.")
     return {
-        "title": f"{name} — organizzatore su Aurya",
-        "description": bio or f"Ritiri ed esperienze di {name} su Aurya.",
+        "title": title,
+        "description": desc,
         "canonical": canonical,
         "image": image,
-        "jsonld": {
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": name,
-            "url": canonical,
-            "description": bio,
-        },
+        "jsonld": jsonld,
     }
 
 
 async def _meta_store(slug: str) -> Optional[dict]:
-    from database import stores_collection
+    from database import stores_collection, organizations_collection
+    from services import seo_schema as sx
     base = _base_url()
     store = await stores_collection.find_one(
         {"slug": slug, "is_published": True, "visibility": "public"},
-        {"_id": 0, "name": 1, "description": 1},
+        {"_id": 0, "name": 1, "description": 1, "organization_id": 1},
     )
     if not store:
         return None
     canonical = f"{base}/s/{slug}"
+    name = store.get("name") or slug
+    jsonld = {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": name,
+        "url": canonical,
+    }
+    # SEO1 — lo store è la stessa entità dell'operatore: eredita geo,
+    # address, rating e social dal profilo pubblico dell'org collegata.
+    org = await organizations_collection.find_one(
+        {"id": store.get("organization_id")},
+        {"_id": 0, "public_profile": 1, "reviews_stats": 1})
+    profile = (org or {}).get("public_profile") or {}
+    address = sx.postal_address(city=profile.get("city"),
+                                region=profile.get("region"))
+    if address:
+        jsonld["address"] = address
+    geo = sx.geo_coordinates(profile.get("latitude"), profile.get("longitude"))
+    if geo:
+        jsonld["geo"] = geo
+    rating = sx.aggregate_rating((org or {}).get("reviews_stats"))
+    if rating:
+        jsonld["aggregateRating"] = rating
+    sa = sx.same_as(profile.get("instagram"), profile.get("facebook"),
+                    profile.get("website"))
+    if sa:
+        jsonld["sameAs"] = sa
     return {
-        "title": f"{store.get('name') or slug} — negozio su Aurya",
+        "title": f"{name} · negozio su Aurya",
         "description": (store.get("description") or "")[:300]
-                       or f"Il negozio di {store.get('name') or slug} su Aurya.",
+                       or f"Il negozio di {name} su Aurya.",
         "canonical": canonical,
         "image": f"{base}/logo-aurya.png",
-        "jsonld": {
-            "@context": "https://schema.org",
-            "@type": "LocalBusiness",
-            "name": store.get("name") or slug,
-            "url": canonical,
-        },
+        "jsonld": jsonld,
     }
 
 
