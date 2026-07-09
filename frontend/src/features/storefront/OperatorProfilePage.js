@@ -338,21 +338,40 @@ export default function OperatorProfilePage() {
 
   const rs = data?.reviews_stats;
   useSeoMeta({
-    title: data?.name ? `${data.name} — ritiri e profilo organizzatore` : undefined,
+    title: data?.name
+      ? `${data.name}${data.city ? ` · ritiri a ${data.city}` : ''} · profilo organizzatore`
+      : undefined,
     description: (data?.tagline || data?.bio)
       ? String(data.tagline || data.bio).slice(0, 155) : undefined,
     image: data?.cover_url || data?.logo_url || undefined,
     canonicalPath: `/o/${org_slug}`,
+    // SEO1 — LocalBusiness geo-taggato allineato allo shell: address + geo
+    // + rating + sameAs (evita che l'hydration sovrascriva con schema povero).
     jsonLd: data?.name ? {
       '@context': 'https://schema.org',
-      '@type': 'Organization',
+      '@type': 'LocalBusiness',
       name: data.name,
       url: `${window.location.origin}/o/${org_slug}`,
-      ...(data.logo_url ? { logo: data.logo_url } : {}),
+      ...(data.logo_url ? { image: data.logo_url } : {}),
       ...(data.bio ? { description: String(data.bio).slice(0, 300) } : {}),
       ...(data.founded_year ? { foundingDate: String(data.founded_year) } : {}),
+      ...((data.city || data.region) ? {
+        address: {
+          '@type': 'PostalAddress',
+          ...(data.city ? { addressLocality: data.city } : {}),
+          ...(data.region ? { addressRegion: data.region } : {}),
+        },
+      } : {}),
+      ...(data.latitude != null && data.longitude != null ? {
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
+      } : {}),
       ...(Object.keys(data.socials || {}).length > 0
-        ? { sameAs: Object.values(data.socials) } : {}),
+        ? { sameAs: Object.values(data.socials).map(u =>
+            String(u).startsWith('http') ? u : `https://${u}`) } : {}),
       ...(rs?.count > 0 ? {
         aggregateRating: {
           '@type': 'AggregateRating',

@@ -494,7 +494,9 @@ export default function EventLandingPage() {
   const seoProduct = data?.product;
   const seoOcc = data?.occurrence;
   useSeoMeta({
-    title: seoProduct ? `${seoProduct.name} — prenota online` : undefined,
+    title: seoProduct
+      ? `${seoProduct.name}${seoOcc?.city ? ` · ${seoOcc.city}` : ''} · prenota online`
+      : undefined,
     description: seoProduct?.description
       ? String(seoProduct.description).slice(0, 155)
       : (seoProduct ? `Prenota ${seoProduct.name}: date, prezzi e disponibilità in tempo reale.` : undefined),
@@ -529,10 +531,19 @@ export default function EventLandingPage() {
         name: seoOcc.venue_name || seoOcc.city || 'Italia',
         address: {
           '@type': 'PostalAddress',
+          ...(seoOcc.venue_name ? { streetAddress: seoOcc.venue_name } : {}),
           ...(seoOcc.city ? { addressLocality: seoOcc.city } : {}),
           ...(seoOcc.region ? { addressRegion: seoOcc.region } : {}),
           addressCountry: 'IT',
         },
+        // SEO1 — geo allineato allo shell: segnale locale forte
+        ...(seoOcc.latitude != null && seoOcc.longitude != null ? {
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: seoOcc.latitude,
+            longitude: seoOcc.longitude,
+          },
+        } : {}),
       },
       ...(operator?.name ? {
         organizer: {

@@ -20,13 +20,28 @@
 
 | Superficie | Pattern |
 |---|---|
-| Home | `Aurya — Ritiri ed esperienze olistiche` |
-| Landing ritiro | `{nome} — {luogo}, {data} \| Aurya` |
-| Landing prodotto | `{nome} — {store} \| Aurya` |
+| Home | `Aurya \| Ritiri olistici ed esperienze che fanno crescere` |
+| Landing ritiro | `{nome} · {luogo} · {data leggibile} \| Aurya` |
+| Landing prodotto | `{nome} \| Aurya` |
 | Categoria | `Ritiri di {categoria} in {regione} \| Aurya` |
 | Destinazione | `Ritiri ed esperienze a {luogo} \| Aurya` |
-| Operatore | `{nome} — organizzatore su Aurya` |
+| Operatore | `{nome} · ritiri a {città} \| Aurya` |
 | Store | governato da Phase 7.6 in StorefrontPage (seo_title custom) |
+
+> **Separatore `·`, MAI em-dash `—`** (regola brand RB4). Date leggibili
+> via `services/seo_schema.human_date`, MAI ISO grezzo in SERP.
+
+## Dati strutturati (SEO1 — fonte unica `services/seo_schema.py`)
+
+- **Event** (`/e/`): `location` = Place con **PostalAddress + GeoCoordinates**,
+  `offers` (price_override/unit_price), `maximumAttendeeCapacity`. **MAI
+  `aggregateRating` sull'Event** (Google lo segna 'invalid').
+- **Operatore** (`/o/`) e **Store** (`/s/`): `LocalBusiness` con address +
+  geo + `aggregateRating` (reviews_stats) + `sameAs`. Soli tipi eligibili
+  per le stelle in SERP.
+- **Client ≡ shell**: EventLandingPage e OperatorProfilePage emettono lo
+  STESSO schema completo → l'hydration non regredisce ciò che lo shell ha
+  già dato ai crawler.
 
 ## Regole d'oro
 

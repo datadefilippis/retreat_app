@@ -3907,6 +3907,9 @@ async def public_operator_profile(org_slug: str):
         "brand_color": store.get("brand_color") or ss.get("brand_color"),
         "city": pp.get("city") or ss.get("city"),
         "region": pp.get("region"),
+        # SEO1 — coordinate per il GeoCoordinates del LocalBusiness client
+        "latitude": pp.get("latitude"),
+        "longitude": pp.get("longitude"),
         "socials": {k: pp.get(k) for k in ("instagram", "website", "facebook")
                     if pp.get(k)},
         "upcoming": upcoming,

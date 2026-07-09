@@ -123,3 +123,41 @@ class TestEndpointLive:
         if '"@type": "Event"' in r.text:
             assert 'og:image' in r.text
             assert 'rel="canonical"' in r.text
+
+    def test_event_shell_has_location_offers_and_no_emdash(self):
+        """SEO1 — l'evento porta la LOCATION strutturata (PostalAddress +
+        GeoCoordinates) e l'Offer col prezzo: è ciò che sblocca il rich
+        result 'ritiro [città]'. Title senza em-dash, data leggibile."""
+        r = requests.get(
+            f"{BASE_URL}/__seo/e/masseria-demo/ritiro-yoga-test-s1-2026-10-02",
+            timeout=10)
+        assert r.status_code == 200
+        if '"@type": "Event"' in r.text:
+            import re, json
+            m = re.search(r'application/ld\+json">(.*?)</script>', r.text, re.S)
+            d = json.loads(m.group(1))
+            loc = d.get("location", {})
+            assert loc.get("address", {}).get("@type") == "PostalAddress"
+            assert loc.get("geo", {}).get("@type") == "GeoCoordinates"
+            assert d.get("offers", {}).get("@type") == "Offer"
+            # regola brand: mai em-dash nel title pubblico
+            title = re.search(r"<title>([^<]*)</title>", r.text).group(1)
+            assert "—" not in title
+
+    def test_operator_shell_is_localbusiness_geo_rated(self):
+        """SEO1 — l'operatore è un LocalBusiness geo-taggato con stelle:
+        la scheda che lo fa comparire su Google nella sua zona."""
+        r = requests.get(f"{BASE_URL}/__seo/o/masseria-demo", timeout=10)
+        assert r.status_code == 200
+        if '"LocalBusiness"' in r.text:
+            import re, json
+            m = re.search(r'application/ld\+json">(.*?)</script>', r.text, re.S)
+            d = json.loads(m.group(1))
+            assert d.get("@type") == "LocalBusiness"
+            assert d.get("geo", {}).get("@type") == "GeoCoordinates"
+            assert d.get("address", {}).get("@type") == "PostalAddress"
+            # aggregateRating solo se ci sono recensioni (seed demo ne ha 1)
+            if d.get("aggregateRating"):
+                assert d["aggregateRating"]["reviewCount"] >= 1
+            title = re.search(r"<title>([^<]*)</title>", r.text).group(1)
+            assert "—" not in title
