@@ -229,11 +229,28 @@ def test_prelaunch_gates_operators_and_destinations_pages():
     # le route usano i gate, non più le pagine dirette
     assert 'path="/operatori" element={<OperatorsGate />}' in app
     assert 'path="/destinazioni" element={<DestinationsGate />}' in app
+    # PL24 — anche il blog (vuoto) sparisce in pre-lancio
+    assert "function BlogGate(" in app
+    assert "<BlogGate><BlogIndexPage /></BlogGate>" in app
     shell = (frontend / "features" / "storefront" / "components" /
              "MarketplaceShell.jsx").read_text(encoding="utf-8")
-    assert "NAV_ITEMS.filter(i => i.to !== '/operatori'" in shell
+    assert "['/operatori', '/destinazioni', '/blog'].includes(i.to)" in shell
     assert "NAV_ITEMS.map" not in shell, \
         "il menu deve renderizzare navItems (filtrato in pre-lancio)"
+    # noindex pre-lancio copre anche il blog
+    seo = _src("routers/seo_shell.py")
+    assert '"blog")' in seo.split("PL22")[1]
+
+
+def test_prelaunch_copy_has_no_dashes():
+    """PL24 (voce del brand, ribadita dal founder): niente trattini
+    lunghi nel copy pubblico di pre-lancio, in NESSUNA lingua."""
+    frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
+    for lang in ("it", "en", "de", "fr"):
+        txt = (frontend / "locales" / lang / "prelaunch.json").read_text(
+            encoding="utf-8")
+        assert "—" not in txt and "–" not in txt, \
+            f"trattini nel copy di pre-lancio: {lang}/prelaunch.json"
 
 
 def test_operator_landing_transparency_and_direct_contact():

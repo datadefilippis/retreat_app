@@ -1,6 +1,6 @@
 {
   "splash": {
-    "seoTitle": "Aurya — la maison des retraites holistiques va bientôt ouvrir",
+    "seoTitle": "Aurya | La maison des retraites holistiques va bientôt ouvrir",
     "seoDesc": "Aurya réunit les retraites holistiques d’Italie en un seul lieu soigné. Le lancement approche : laisse ton e-mail et sois parmi les premiers.",
     "badge": "Nous préparons le lancement",
     "title": "La maison des retraites holistiques",
@@ -95,11 +95,11 @@
     }
   },
   "op": {
-    "seoTitle": "Aurya pour les opérateurs — tu crées l’expérience, nous la faisons découvrir",
+    "seoTitle": "Aurya pour les opérateurs | Tu crées l'expérience, nous la faisons découvrir",
     "seoDesc": "Aurya va bientôt ouvrir : le point de rencontre italien du bien-être authentique. Les bonnes personnes te trouvent, réservent avec un acompte et un paiement direct en ligne, et tu reviens à l’essentiel : t’occuper d’elles. Les premiers opérateurs partent en fondateurs.",
     "eyebrow": "Pour celles et ceux qui créent des expériences de bien-être",
     "title": "Tu crées l’expérience. Nous la faisons découvrir.",
-    "subtitle": "Tu as construit quelque chose de précieux : un lieu, une pratique, une communauté. Tu mérites d’être trouvé par celles et ceux qui le cherchent, sans courir après les algorithmes. Aurya ouvre bientôt : le point de rencontre italien du bien-être authentique.",
+    "subtitle": "Tu as construit quelque chose de précieux : un lieu, une pratique, une communauté. Tu mérites d'être trouvé par celles et ceux qui le cherchent, sans courir après les algorithmes. Aurya va bientôt ouvrir : la maison des retraites holistiques italiennes, construite aux côtés de celles et ceux qui les créent.",
     "photoCaption": "« Le plus beau métier du monde mérite d’être vu. »",
     "switch": "Tu cherches une retraite ?",
     "foundersT": "Les premiers partent en fondateurs.",
@@ -108,9 +108,9 @@
     "formBody": "Deux lignes sur toi et ton activité. C’est le début d’une conversation, pas un formulaire.",
     "visionEyebrow": "La vision",
     "visionT": "Pas une vitrine de plus. Un écosystème qui travaille pour toi.",
-    "visionB": "Un profil qui raconte ton histoire, des retraites qui se font trouver, des réservations qui arrivent confirmées, de vrais avis qui construisent ta réputation. Chaque partie soutient les autres — comme dans toute pratique holistique digne de ce nom.",
+    "visionB": "Un profil qui raconte ton histoire, des retraites qui se font trouver, des réservations qui arrivent déjà confirmées, de vrais avis qui construisent ta réputation. Chaque partie soutient les autres, comme dans toute pratique holistique digne de ce nom.",
     "b1t": "Les bonnes personnes te trouvent",
-    "b1b": "Ton profil raconte qui tu es, ton lieu et ta pratique — et il apparaît à celles et ceux qui cherchent exactement cela, dans ta région. Sans courir après les algorithmes.",
+    "b1b": "Ton profil raconte qui tu es, ton lieu et ta pratique, et il arrive directement à celles et ceux qui cherchent exactement cela dans ta région. Les bonnes personnes, au bon moment.",
     "b2t": "Des réservations sans friction",
     "b2b": "Qui s’inscrit verse un acompte et paie directement en ligne ; les rappels partent tout seuls. Qui réserve vient vraiment : les places vides cessent d’être le coût caché de ton travail.",
     "b3t": "Ton temps revient aux personnes",
@@ -127,7 +127,7 @@
     "p2q": "Comment gagnons-nous ?",
     "p2a": "Nous gagnons seulement si tu gagnes : une petite commission uniquement sur les réservations apportées par le calendrier public d'Aurya. Si le client est le tien, tu ne paies rien.",
     "p3q": "Qui décide des prix et des règles ?",
-    "p3a": "Toi. Prix, acompte et conditions d'annulation, c'est toi qui les définis — et qui réserve les voit clairement avant de payer. Nous gérons réservations, rappels et avis vérifiés.",
+    "p3a": "Toi. Prix, acompte et conditions d'annulation, c'est toi qui les décides, et qui réserve les voit clairement avant de payer. Nous nous occupons des réservations, des rappels et des avis vérifiés.",
     "p4q": "Pourquoi le faisons-nous ?",
     "p4a": "Nous croyons que le bien-être authentique italien mérite une maison : un lieu où ceux qui créent des expériences de transformation et ceux qui les cherchent se rencontrent sans bruit. Nous grandissons seulement si tu grandis.",
     "pattiEyebrow": "Cartes sur table",
@@ -138,23 +138,23 @@
     "directT": "Tu préfères en parler sans formulaire ?"
   },
   "tr": {
-    "seoTitle": "Aurya — une retraite t’attend quelque part",
+    "seoTitle": "Aurya | Une retraite t'attend quelque part",
     "seoDesc": "Aurya ouvre bientôt : de vraies retraites holistiques, proposées par des opérateurs vérifiés, avec acompte et paiement direct en ligne. Raconte-nous ce que tu cherches et au lancement nous te proposerons des retraites choisies pour toi.",
     "eyebrow": "Pour celles et ceux qui ressentent le besoin de faire une pause",
     "title": "Une retraite t’attend quelque part",
-    "subtitle": "Le silence d’une oliveraie, un cercle de vraies personnes, le souffle qui redevient lent. Aurya ouvre bientôt : raconte-nous ce que tu cherches et nous t’aiderons à le trouver.",
+    "subtitle": "Le silence d'une oliveraie au coucher du soleil. Un cercle de personnes vraies. Le souffle qui ralentit enfin. Quelque part, la retraite que tu attends existe : raconte-nous ce que tu cherches et nous la trouverons ensemble.",
     "heroCta": "Commence ici",
     "switch": "Tu es un opérateur ?",
     "stepsEyebrow": "Simple, humain",
     "stepsTitle": "Pas un portail de plus. Quelqu’un qui t’accompagne.",
     "s1t": "Raconte-nous ce que tu cherches",
-    "s1b": "Où tu vis, ce qui t’appelle, jusqu’où tu veux t’éloigner. Trente secondes, sans engagement.",
+    "s1b": "Où tu vis, ce qui t'appelle, jusqu'où tu veux aller. Trente secondes, sans engagement.",
     "s2t": "Reçois une sélection pensée pour toi",
     "s2b": "Au lancement, nous ne t’envoyons pas un catalogue : nous te proposons les retraites faites pour toi, choisies à la main.",
     "s3t": "Réserve en toute sérénité",
     "s3b": "Tu bloques ta place avec un petit acompte et tu paies directement en ligne, avec des règles claires. Le reste, c’est le chemin.",
     "formTitle": "Raconte-nous ce que tu cherches",
-    "formBody": "Trente secondes suffisent. Dis-nous où tu vis et ce qui t’appelle, et au lancement tu recevras une sélection de retraites pensée pour toi. Pas d’avalanche d’e-mails : seulement l’essentiel.",
+    "formBody": "Trente secondes suffisent. Tu nous racontes où tu vis et ce qui t'appelle, et au lancement tu reçois une sélection de retraites pensée pour toi. Pas d'avalanche d'emails, seulement ce qui compte.",
     "peek": "Jette un œil à l’aperçu des retraites",
     "b1t": "Des personnes, pas des annonces",
     "b1b": "Derrière chaque retraite, il y a un opérateur avec un visage, un lieu réel et des avis de personnes qui y sont vraiment allées. Tu sais à qui tu te confies, avant de partir.",
@@ -162,8 +162,9 @@
     "b2b": "Un petit acompte pour bloquer ta place, le paiement direct en ligne, le solde plus tard. Aucun virement à l’aveugle, aucune surprise.",
     "b3t": "Près de chez toi",
     "b3b": "Dis-nous où tu vis et nous te proposerons des expériences accessibles. Parfois, le voyage dont tu as besoin est à une heure de chez toi.",
-    "why": "Aurya est née d’une conviction simple : prendre soin de soi ne devrait pas demander des heures de recherches entre pages sociales et bouche-à-oreille. Un seul endroit, soigné, où trouver celles et ceux qui font ce métier avec le cœur.",
+    "why": "Nous croyons que toute transformation commence par une rencontre : entre toi, les bonnes personnes et le bon lieu. Aurya existe pour faire naître ces rencontres. Un seul endroit, soigné avec amour, où trouver celles et ceux qui font ce travail avec le cœur.",
     "back": "Retour à l’accueil",
-    "directT": "Tu préfères nous écrire directement ?"
+    "directT": "Tu préfères nous écrire directement ?",
+    "missionEyebrow": "Notre mission"
   }
 }

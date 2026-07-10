@@ -122,7 +122,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   // PL23 — in pre-lancio /operatori e /destinazioni sono gated (redirect
   // in App.js): via anche le voci di menu, resta un solo percorso onesto.
   const navItems = prelaunch
-    ? NAV_ITEMS.filter(i => i.to !== '/operatori' && i.to !== '/destinazioni')
+    ? NAV_ITEMS.filter(i => !['/operatori', '/destinazioni', '/blog'].includes(i.to))
     : NAV_ITEMS;
   const operatorTo = prelaunch ? '/per-operatori' : '/inizia';
   const operatorLabel = prelaunch
@@ -347,7 +347,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     </Link>
                   </li>
                 ))}
-                <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Blog' })}</Link></li>
+                {!prelaunch && <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Blog' })}</Link></li>}
               </ul>
             </div>
             <div>

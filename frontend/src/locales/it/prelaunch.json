@@ -1,6 +1,6 @@
 {
   "splash": {
-    "seoTitle": "Aurya — la casa dei ritiri olistici sta per aprire",
+    "seoTitle": "Aurya | La casa dei ritiri olistici sta per aprire",
     "seoDesc": "Aurya riunisce i ritiri olistici d’Italia in un unico luogo curato. Stiamo preparando il lancio: lascia la tua email e sarai tra i primi.",
     "badge": "Stiamo preparando il lancio",
     "title": "La casa dei ritiri olistici",
@@ -95,11 +95,11 @@
     }
   },
   "op": {
-    "seoTitle": "Aurya per operatori — tu crei l’esperienza, noi la facciamo trovare",
+    "seoTitle": "Aurya per operatori | Tu crei l'esperienza, noi la facciamo trovare",
     "seoDesc": "Aurya sta per aprire: il punto d’incontro italiano del benessere autentico. Ti trovano le persone giuste, prenotano con caparra e pagamento diretto, e tu torni a occuparti di loro. I primi operatori partono da fondatori.",
     "eyebrow": "Per chi crea esperienze di benessere",
     "title": "Tu crei l’esperienza. Noi la facciamo trovare.",
-    "subtitle": "Hai costruito qualcosa di prezioso: un luogo, una pratica, una comunità. Meriti di essere trovato da chi lo sta cercando, senza rincorrere gli algoritmi. Aurya sta per aprire: il punto d’incontro italiano del benessere autentico.",
+    "subtitle": "Hai costruito qualcosa di prezioso: un luogo, una pratica, una comunità. Meriti di essere trovato da chi lo sta cercando, senza rincorrere gli algoritmi. Aurya sta per aprire: la casa dei ritiri olistici italiani, costruita accanto a chi li crea.",
     "photoCaption": "«Il lavoro più bello del mondo merita di essere visto.»",
     "switch": "Cerchi un ritiro?",
     "foundersT": "I primi partono da fondatori.",
@@ -108,9 +108,9 @@
     "formBody": "Due righe su di te e sulla tua attività. È l’inizio di una conversazione, non un modulo.",
     "visionEyebrow": "La visione",
     "visionT": "Non una vetrina in più. Un ecosistema che lavora per te.",
-    "visionB": "Un profilo che racconta la tua storia, ritiri che si fanno trovare, prenotazioni che arrivano confermate, recensioni vere che costruiscono la tua reputazione. Ogni parte sostiene le altre — come in ogni pratica olistica che si rispetti.",
+    "visionB": "Un profilo che racconta la tua storia, ritiri che si fanno trovare, prenotazioni che arrivano già confermate, recensioni vere che costruiscono la tua reputazione. Ogni parte sostiene le altre, come in ogni pratica olistica che si rispetti.",
     "b1t": "Ti trovano le persone giuste",
-    "b1b": "Il tuo profilo racconta chi sei, il tuo luogo e la tua pratica — e appare a chi sta cercando esattamente questo, nella tua zona. Senza rincorrere gli algoritmi.",
+    "b1b": "Il tuo profilo racconta chi sei, il tuo luogo e la tua pratica, e arriva dritto a chi sta cercando proprio questo nella tua zona. Le persone giuste, nel momento giusto.",
     "b2t": "Prenotazioni senza attrito",
     "b2b": "Chi si iscrive versa una caparra e paga direttamente online; i promemoria arrivano da soli. Chi prenota, arriva: i posti vuoti smettono di essere il costo nascosto del tuo lavoro.",
     "b3t": "Il tuo tempo torna alle persone",
@@ -127,7 +127,7 @@
     "p2q": "Come guadagniamo noi?",
     "p2a": "Guadagniamo solo se guadagni tu: una piccola commissione solo sulle prenotazioni portate dal calendario pubblico di Aurya. Se il cliente è tuo, non paghi nulla.",
     "p3q": "Chi decide prezzi e regole?",
-    "p3a": "Tu. Prezzi, caparra e condizioni di cancellazione li definisci tu — e chi prenota li vede chiaramente prima di pagare. Noi gestiamo prenotazioni, promemoria e recensioni verificate.",
+    "p3a": "Tu. Prezzi, caparra e condizioni di cancellazione li decidi tu, e chi prenota li vede chiaramente prima di pagare. Noi ci occupiamo di prenotazioni, promemoria e recensioni verificate.",
     "p4q": "Perché lo facciamo?",
     "p4a": "Crediamo che il benessere autentico italiano meriti una casa: un luogo dove chi crea esperienze di trasformazione e chi le cerca si incontrano senza rumore. Cresciamo solo se cresci tu.",
     "pattiEyebrow": "Patti chiari",
@@ -138,23 +138,23 @@
     "directT": "Preferisci parlarne senza form?"
   },
   "tr": {
-    "seoTitle": "Aurya — c’è un ritiro che ti sta aspettando",
+    "seoTitle": "Aurya | C'è un ritiro che ti sta aspettando",
     "seoDesc": "Aurya sta per aprire: ritiri olistici veri, da operatori verificati, con caparra e pagamento diretto online. Raccontaci cosa cerchi e al lancio ti proponiamo ritiri scelti per te.",
     "eyebrow": "Per chi sente il bisogno di fermarsi",
     "title": "C’è un ritiro che ti sta aspettando",
-    "subtitle": "Il silenzio di un uliveto, un cerchio di persone vere, il respiro che torna lento. Aurya sta per aprire: raccontaci cosa cerchi e ti aiutiamo a trovarlo.",
+    "subtitle": "Il silenzio di un uliveto al tramonto. Un cerchio di persone vere. Il respiro che finalmente rallenta. Da qualche parte c'è il ritiro che aspetti: raccontaci cosa cerchi e lo troveremo insieme.",
     "heroCta": "Inizia da qui",
     "switch": "Sei un operatore?",
     "stepsEyebrow": "Semplice, umano",
     "stepsTitle": "Non un altro portale. Qualcuno che ti accompagna.",
     "s1t": "Raccontaci cosa cerchi",
-    "s1b": "Dove vivi, cosa ti chiama, quanto vuoi allontanarti. Trenta secondi, senza impegno.",
+    "s1b": "Dove vivi, cosa ti chiama, quanto lontano vuoi spingerti. Trenta secondi, senza impegno.",
     "s2t": "Ricevi una selezione pensata per te",
     "s2b": "Al lancio non ti mandiamo un catalogo: ti proponiamo i ritiri giusti per te, scelti a mano.",
     "s3t": "Prenota con serenità",
     "s3b": "Blocchi il posto con una piccola caparra e paghi direttamente online, con regole chiare. Il resto è cammino.",
     "formTitle": "Raccontaci cosa cerchi",
-    "formBody": "Bastano trenta secondi. Ci dici dove vivi e cosa ti chiama, e al lancio ricevi una selezione di ritiri pensata per te. Niente valanghe di email: solo quello che conta.",
+    "formBody": "Bastano trenta secondi. Ci racconti dove vivi e cosa ti chiama, e al lancio ricevi una selezione di ritiri pensata per te. Niente valanghe di email, solo quello che conta.",
     "peek": "Sbircia l’anteprima dei ritiri",
     "b1t": "Persone, non annunci",
     "b1b": "Dietro ogni ritiro c’è un operatore con un volto, un luogo vero e recensioni di chi c’è stato davvero. Sai a chi ti affidi, prima di partire.",
@@ -162,8 +162,9 @@
     "b2b": "Una piccola caparra per bloccare il posto, il pagamento diretto online, il saldo più avanti. Niente bonifici al buio, nessuna sorpresa.",
     "b3t": "Vicino a dove sei",
     "b3b": "Ci dici dove vivi e ti proponiamo esperienze raggiungibili. A volte il viaggio che serve è a un’ora da casa.",
-    "why": "Aurya nasce da una convinzione semplice: prendersi cura di sé non dovrebbe richiedere ore di ricerche tra pagine social e passaparola. Un posto solo, curato, dove trovare chi fa questo lavoro con il cuore.",
+    "why": "Crediamo che ogni trasformazione cominci da un incontro: quello tra te, le persone giuste e il luogo giusto. Aurya esiste per far accadere questi incontri. Un posto solo, curato con amore, dove trovare chi fa questo lavoro con il cuore.",
     "back": "Torna alla home",
-    "directT": "Preferisci scriverci direttamente?"
+    "directT": "Preferisci scriverci direttamente?",
+    "missionEyebrow": "La nostra missione"
   }
 }

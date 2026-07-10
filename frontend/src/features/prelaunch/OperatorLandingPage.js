@@ -22,13 +22,13 @@ const GOLD = '#8a7440';
 export default function OperatorLandingPage() {
   const { t } = useTranslation('prelaunch');
   useSeoMeta({
-    title: t('op.seoTitle', { defaultValue: 'Aurya per operatori — tu crei l’esperienza, noi la facciamo trovare' }),
+    title: t('op.seoTitle', { defaultValue: 'Aurya per operatori | Tu crei l’esperienza, noi la facciamo trovare' }),
     description: t('op.seoDesc', { defaultValue: 'Aurya sta per aprire: il punto d\u2019incontro italiano del benessere autentico. Ti trovano le persone giuste, prenotano con caparra e pagamento diretto, e tu torni a occuparti di loro. I primi operatori partono da fondatori.' }),
   });
 
   const benefits = [
     { icon: Eye, title: t('op.b1t', { defaultValue: 'Ti trovano le persone giuste' }),
-      body: t('op.b1b', { defaultValue: 'Il tuo profilo racconta chi sei, il tuo luogo e la tua pratica — e appare a chi sta cercando esattamente questo, nella tua zona. Senza rincorrere gli algoritmi.' }) },
+      body: t('op.b1b', { defaultValue: 'Il tuo profilo racconta chi sei, il tuo luogo e la tua pratica, e arriva dritto a chi sta cercando proprio questo nella tua zona. Le persone giuste, nel momento giusto.' }) },
     { icon: ShieldCheck, title: t('op.b2t', { defaultValue: 'Prenotazioni senza attrito' }),
       body: t('op.b2b', { defaultValue: 'Chi si iscrive versa una caparra e paga direttamente online; i promemoria arrivano da soli. Chi prenota, arriva: i posti vuoti smettono di essere il costo nascosto del tuo lavoro.' }) },
     { icon: HeartHandshake, title: t('op.b3t', { defaultValue: 'Il tuo tempo torna alle persone' }),
@@ -49,7 +49,7 @@ export default function OperatorLandingPage() {
       a: t('op.p2a', { defaultValue: 'Guadagniamo solo se guadagni tu: una piccola commissione solo sulle prenotazioni portate dal calendario pubblico di Aurya. Se il cliente è tuo, non paghi nulla.' }) },
     { icon: CalendarCheck,
       q: t('op.p3q', { defaultValue: 'Chi decide prezzi e regole?' }),
-      a: t('op.p3a', { defaultValue: 'Tu. Prezzi, caparra e condizioni di cancellazione li definisci tu — e chi prenota li vede chiaramente prima di pagare. Noi gestiamo prenotazioni, promemoria e recensioni verificate.' }) },
+      a: t('op.p3a', { defaultValue: 'Tu. Prezzi, caparra e condizioni di cancellazione li decidi tu, e chi prenota li vede chiaramente prima di pagare. Noi ci occupiamo di prenotazioni, promemoria e recensioni verificate.' }) },
     { icon: Compass,
       q: t('op.p4q', { defaultValue: 'Perché lo facciamo?' }),
       a: t('op.p4a', { defaultValue: 'Crediamo che il benessere autentico italiano meriti una casa: un luogo dove chi crea esperienze di trasformazione e chi le cerca si incontrano senza rumore. Cresciamo solo se cresci tu.' }) },
@@ -90,7 +90,7 @@ export default function OperatorLandingPage() {
             </h1>
             <div className="mt-5 h-px w-16" style={{ background: `${GOLD}88` }} aria-hidden />
             <p className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-              {t('op.subtitle', { defaultValue: 'Hai costruito qualcosa di prezioso: un luogo, una pratica, una comunità. Meriti di essere trovato da chi lo sta cercando, senza rincorrere gli algoritmi. Aurya sta per aprire: il punto d’incontro italiano del benessere autentico.' })}
+              {t('op.subtitle', { defaultValue: 'Hai costruito qualcosa di prezioso: un luogo, una pratica, una comunità. Meriti di essere trovato da chi lo sta cercando, senza rincorrere gli algoritmi. Aurya sta per aprire: la casa dei ritiri olistici italiani, costruita accanto a chi li crea.' })}
             </p>
             <div className="relative mt-7 overflow-hidden rounded-3xl">
               <img src="/media/hero-organizer.webp" alt=""
@@ -150,7 +150,7 @@ export default function OperatorLandingPage() {
             {t('op.visionT', { defaultValue: 'Non una vetrina in più. Un ecosistema che lavora per te.' })}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/85">
-            {t('op.visionB', { defaultValue: 'Un profilo che racconta la tua storia, ritiri che si fanno trovare, prenotazioni che arrivano confermate, recensioni vere che costruiscono la tua reputazione. Ogni parte sostiene le altre — come in ogni pratica olistica che si rispetti.' })}
+            {t('op.visionB', { defaultValue: 'Un profilo che racconta la tua storia, ritiri che si fanno trovare, prenotazioni che arrivano già confermate, recensioni vere che costruiscono la tua reputazione. Ogni parte sostiene le altre, come in ogni pratica olistica che si rispetti.' })}
           </p>
         </div>
       </section>

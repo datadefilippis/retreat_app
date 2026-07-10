@@ -761,7 +761,7 @@ async def seo_shell(full_path: str):
     # con i contenuti veri. Home e landing lead restano indicizzabili.
     if meta and prelaunch_mode():
         head = path.strip("/").split("/")[0]
-        if head in ("ritiri", "operatori", "destinazioni", "esperienze"):
+        if head in ("ritiri", "operatori", "destinazioni", "esperienze", "blog"):
             meta = {**meta, "noindex": True}
 
     template = _index_html()

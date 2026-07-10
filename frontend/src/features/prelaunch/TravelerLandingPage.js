@@ -21,13 +21,13 @@ const GOLD = '#8a7440';
 export default function TravelerLandingPage() {
   const { t } = useTranslation('prelaunch');
   useSeoMeta({
-    title: t('tr.seoTitle', { defaultValue: 'Aurya — c’è un ritiro che ti sta aspettando' }),
+    title: t('tr.seoTitle', { defaultValue: 'Aurya | C’è un ritiro che ti sta aspettando' }),
     description: t('tr.seoDesc', { defaultValue: 'Aurya sta per aprire: ritiri olistici veri, da operatori verificati, con caparra e pagamento diretto online. Raccontaci cosa cerchi e al lancio ti proponiamo ritiri scelti per te.' }),
   });
 
   const steps = [
     { n: '01', title: t('tr.s1t', { defaultValue: 'Raccontaci cosa cerchi' }),
-      body: t('tr.s1b', { defaultValue: 'Dove vivi, cosa ti chiama, quanto vuoi allontanarti. Trenta secondi, senza impegno.' }) },
+      body: t('tr.s1b', { defaultValue: 'Dove vivi, cosa ti chiama, quanto lontano vuoi spingerti. Trenta secondi, senza impegno.' }) },
     { n: '02', title: t('tr.s2t', { defaultValue: 'Ricevi una selezione pensata per te' }),
       body: t('tr.s2b', { defaultValue: 'Al lancio non ti mandiamo un catalogo: ti proponiamo i ritiri giusti per te, scelti a mano.' }) },
     { n: '03', title: t('tr.s3t', { defaultValue: 'Prenota con serenità' }),
@@ -73,7 +73,7 @@ export default function TravelerLandingPage() {
               </h1>
               <div className="mt-5 h-px w-16 bg-[#d6c49a]/70" aria-hidden />
               <p className="mt-5 max-w-md text-base leading-relaxed text-white/90 md:text-lg">
-                {t('tr.subtitle', { defaultValue: 'Il silenzio di un uliveto, un cerchio di persone vere, il respiro che torna lento. Aurya sta per aprire: raccontaci cosa cerchi e ti aiutiamo a trovarlo.' }) }
+                {t('tr.subtitle', { defaultValue: 'Il silenzio di un uliveto al tramonto. Un cerchio di persone vere. Il respiro che finalmente rallenta. Da qualche parte c’è il ritiro che aspetti: raccontaci cosa cerchi e lo troveremo insieme.' }) }
               </p>
               <a href="#racconta"
                  onClick={(e) => { e.preventDefault(); document.getElementById('racconta')?.scrollIntoView({ behavior: 'smooth' }); }}
@@ -115,7 +115,7 @@ export default function TravelerLandingPage() {
               {t('tr.formTitle', { defaultValue: 'Raccontaci cosa cerchi' }) }
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {t('tr.formBody', { defaultValue: 'Bastano trenta secondi. Ci dici dove vivi e cosa ti chiama, e al lancio ricevi una selezione di ritiri pensata per te. Niente valanghe di email: solo quello che conta.' }) }
+              {t('tr.formBody', { defaultValue: 'Bastano trenta secondi. Ci racconti dove vivi e cosa ti chiama, e al lancio ricevi una selezione di ritiri pensata per te. Niente valanghe di email, solo quello che conta.' }) }
             </p>
             <div className="mt-6">
               <LeadForm type="traveler" accent={ACCENT} />
@@ -145,20 +145,30 @@ export default function TravelerLandingPage() {
                 </div>
               </div>
             ))}
-            {/* perché nasce Aurya — la voce umana del progetto */}
-            <div className="rounded-2xl p-6" style={{ background: `${ACCENT}0d` }}>
-              <Quote className="h-5 w-5" style={{ color: ACCENT }} />
-              <p className="mt-2 text-sm italic leading-relaxed text-[#2b3a34]">
-                {t('tr.why', { defaultValue: 'Aurya nasce da una convinzione semplice: prendersi cura di sé non dovrebbe richiedere ore di ricerche tra pagine social e passaparola. Un posto solo, curato, dove trovare chi fa questo lavoro con il cuore.' })}
-              </p>
-              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: GOLD }}>Aurya · Connect · Heal · Grow</p>
-            </div>
           </div>
         </div>
-        <Link to="/" className="mt-12 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      </section>
+
+      {/* ── La missione, a tutta pagina (PL24): il perché di Aurya non
+          sta in una card laterale, chiude la pagina come una promessa */}
+      <section className="py-14" style={{ background: 'linear-gradient(135deg, #2b3a34 0%, #376254 100%)' }}>
+        <div className="mx-auto max-w-3xl px-5 text-center md:px-10">
+          <Quote className="mx-auto h-6 w-6 text-[#d6c49a]" aria-hidden />
+          <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d6c49a]">
+            {t('tr.missionEyebrow', { defaultValue: 'La nostra missione' })}
+          </p>
+          <p className="mx-auto mt-4 font-heading text-xl leading-relaxed text-white md:text-2xl">
+            {t('tr.why', { defaultValue: 'Crediamo che ogni trasformazione cominci da un incontro: quello tra te, le persone giuste e il luogo giusto. Aurya esiste per far accadere questi incontri. Un posto solo, curato con amore, dove trovare chi fa questo lavoro con il cuore.' })}
+          </p>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-[#d6c49a]">Aurya · Connect · Heal · Grow</p>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-6xl px-5 py-8 md:px-10">
+        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> {t('tr.back', { defaultValue: 'Torna alla home' })}
         </Link>
-      </section>
+      </div>
     </div>
   );
 }
