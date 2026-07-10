@@ -202,10 +202,12 @@ export default function OperatorLandingPage() {
             ))}
           </div>
           <p className="mt-5 text-sm text-muted-foreground">
-            {t('op.pattiMore', { defaultValue: 'Domande che non trovi qui?' })}{' '}
+            {t('op.pattiMore', { defaultValue: 'Domande che non trovi qui? Scrivici a' })}{' '}
+            {/* l'indirizzo resta leggibile e copiabile anche se il client
+                di posta non si apre: il link è sull'email stessa */}
             <a href="mailto:info@aurya.life" className="font-semibold underline underline-offset-2" style={{ color: ACCENT }}>
-              {t('op.pattiMoreCta', { defaultValue: 'Scrivici, rispondiamo di persona' })}
-            </a>.
+              info@aurya.life
+            </a>: {t('op.pattiMoreCta', { defaultValue: 'rispondiamo di persona' })}.
           </p>
         </div>
 
