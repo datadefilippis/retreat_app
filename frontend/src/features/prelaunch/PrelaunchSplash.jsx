@@ -80,7 +80,7 @@ export default function PrelaunchSplash() {
               {t('splash.operatorTitle', { defaultValue: 'Sei un operatore olistico?' })}
             </p>
             <p className="mt-1 text-sm text-white/75">
-              {t('splash.operatorText', { defaultValue: 'Porta i tuoi ritiri su Aurya e fatti trovare da chi cerca proprio te.' })}
+              {t('splash.operatorText', { defaultValue: 'Porta i tuoi ritiri su Aurya: entra ora e fai parte del nostro gruppo di operatori fondatori.' })}
             </p>
             <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#d6c49a]">
               {t('splash.discover', { defaultValue: 'Scopri di più' })}

@@ -22,7 +22,7 @@ const GOLD = '#8a7440';
 export default function OperatorLandingPage() {
   const { t } = useTranslation('prelaunch');
   useSeoMeta({
-    title: t('op.seoTitle', { defaultValue: 'Aurya per operatori | Tu crei l’esperienza, noi la facciamo trovare' }),
+    title: t('op.seoTitle', { defaultValue: 'Aurya per operatori | Tu crei l’esperienza, noi la connettiamo con le persone giuste' }),
     description: t('op.seoDesc', { defaultValue: 'Aurya sta per aprire: il punto d\u2019incontro italiano del benessere autentico. Ti trovano le persone giuste, prenotano con caparra e pagamento diretto, e tu torni a occuparti di loro. I primi operatori partono da fondatori.' }),
   });
 
@@ -31,8 +31,8 @@ export default function OperatorLandingPage() {
       body: t('op.b1b', { defaultValue: 'Il tuo profilo racconta chi sei, il tuo luogo e la tua pratica, e arriva dritto a chi sta cercando proprio questo nella tua zona. Le persone giuste, nel momento giusto.' }) },
     { icon: ShieldCheck, title: t('op.b2t', { defaultValue: 'Prenotazioni senza attrito' }),
       body: t('op.b2b', { defaultValue: 'Chi si iscrive versa una caparra e paga direttamente online; i promemoria arrivano da soli. Chi prenota, arriva: i posti vuoti smettono di essere il costo nascosto del tuo lavoro.' }) },
-    { icon: HeartHandshake, title: t('op.b3t', { defaultValue: 'Il tuo tempo torna alle persone' }),
-      body: t('op.b3b', { defaultValue: 'Calendario, partecipanti, recensioni verificate e incassi vivono in un posto solo, in armonia. Le ore perse tra messaggi e fogli di calcolo tornano a chi accompagni.' }) },
+    { icon: HeartHandshake, title: t('op.b3t', { defaultValue: 'Riconquista il tuo tempo. Torna alla presenza.' }),
+      body: t('op.b3b', { defaultValue: 'Gestisci messaggi, pagamenti e calendario da un’unica piattaforma. Le ore perse dietro alla gestione diventano tempo prezioso da dedicare alle persone.' }) },
   ];
 
   /* PL22 — "Patti chiari" (feedback analista): l'operatore vuole sapere
@@ -45,14 +45,15 @@ export default function OperatorLandingPage() {
       q: t('op.p1q', { defaultValue: 'Quanto ti costa?' }),
       a: t('op.p1a', { defaultValue: 'Entrare è gratis: profilo, vetrina e gestionale senza canone. Nessun costo fisso, nessuna sorpresa.' }) },
     { icon: Scale,
-      q: t('op.p2q', { defaultValue: 'Come guadagniamo noi?' }),
-      a: t('op.p2a', { defaultValue: 'Guadagniamo solo se guadagni tu: una piccola commissione solo sulle prenotazioni portate dal calendario pubblico di Aurya. Se il cliente è tuo, non paghi nulla.' }) },
+      q: t('op.p2q', { defaultValue: 'Come sosteniamo la piattaforma?' }),
+      a: t('op.p2a', { defaultValue: 'Cresciamo solo se cresci tu. Prevediamo una piccola commissione esclusivamente sulle prenotazioni che arrivano tramite il calendario pubblico di Aurya. Se il cliente è già tuo, l’utilizzo è completamente gratuito.' }) },
     { icon: CalendarCheck,
       q: t('op.p3q', { defaultValue: 'Chi decide prezzi e regole?' }),
       a: t('op.p3a', { defaultValue: 'Tu. Prezzi, caparra e condizioni di cancellazione li decidi tu, e chi prenota li vede chiaramente prima di pagare. Noi ci occupiamo di prenotazioni, promemoria e recensioni verificate.' }) },
     { icon: Compass,
-      q: t('op.p4q', { defaultValue: 'Perché lo facciamo?' }),
-      a: t('op.p4a', { defaultValue: 'Crediamo che il benessere autentico italiano meriti una casa: un luogo dove chi crea esperienze di trasformazione e chi le cerca si incontrano senza rumore. Cresciamo solo se cresci tu.' }) },
+      q: t('op.p4q', { defaultValue: 'Chi siamo' }),
+      a: t('op.p4a', { defaultValue: 'Un piccolo team italiano che crede nel benessere autentico. Aurya nasce per dare una casa a chi crea esperienze di trasformazione e a chi le cerca.' }),
+      link: { to: '/chi-siamo', label: t('op.p4link', { defaultValue: 'Scopri chi siamo' }) } },
   ];
 
   const founders = [
@@ -86,7 +87,7 @@ export default function OperatorLandingPage() {
               {t('op.eyebrow', { defaultValue: 'Per chi crea esperienze di benessere' })}
             </p>
             <h1 className="mt-4 font-heading text-3xl font-semibold leading-tight text-foreground md:text-5xl">
-              {t('op.title', { defaultValue: 'Tu crei l’esperienza. Noi la facciamo trovare.' })}
+              {t('op.title', { defaultValue: 'Tu crei l’esperienza. Noi la connettiamo con le persone giuste.' })}
             </h1>
             <div className="mt-5 h-px w-16" style={{ background: `${GOLD}88` }} aria-hidden />
             <p className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
@@ -112,9 +113,9 @@ export default function OperatorLandingPage() {
                 <Sparkles className="mt-0.5 h-4 w-4 shrink-0" style={{ color: ACCENT }} />
                 <p className="text-sm text-muted-foreground">
                   <span className="font-semibold text-foreground">
-                    {t('op.foundersT', { defaultValue: 'I primi partono da fondatori.' })}
+                    {t('op.foundersT', { defaultValue: 'Raccontaci di cosa hai bisogno in questo momento.' })}
                   </span>{' '}
-                  {t('op.foundersB', { defaultValue: 'Ti ricontattiamo personalmente prima del lancio. Niente call center, niente spam.' })}
+                  {t('op.foundersB', { defaultValue: 'Bastano due minuti per aiutarci a cucire il ritiro perfetto intorno a te.' })}
                 </p>
               </div>
               <h2 className="font-heading text-xl font-semibold text-foreground">
@@ -180,9 +181,6 @@ export default function OperatorLandingPage() {
             <h3 className="mt-2 font-heading text-xl font-semibold text-foreground md:text-2xl">
               {t('op.pattiTitle', { defaultValue: 'Le cose che vorresti sapere, dette subito' })}
             </h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
-              {t('op.pattiSubtitle', { defaultValue: 'Nessuna clausola nascosta dietro un modulo: ecco come funziona Aurya per chi ci porta i propri ritiri.' })}
-            </p>
           </div>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             {patti.map((p, i) => (
@@ -194,6 +192,11 @@ export default function OperatorLandingPage() {
                 <div>
                   <p className="font-semibold text-foreground">{p.q}</p>
                   <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{p.a}</p>
+                  {p.link && (
+                    <Link to={p.link.to} className="mt-2 inline-flex items-center gap-1 text-sm font-semibold" style={{ color: ACCENT }}>
+                      {p.link.label} <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}
@@ -215,7 +218,7 @@ export default function OperatorLandingPage() {
                 {t('op.foundersEyebrow', { defaultValue: 'Programma fondatori' })}
               </p>
               <h3 className="mt-2 font-heading text-xl font-semibold text-foreground md:text-2xl">
-                {t('op.foundersTitle', { defaultValue: 'Chi semina per primo, raccoglie per primo' })}
+                {t('op.foundersTitle', { defaultValue: 'Diamo valore a chi sceglie di credere in questo inizio.' })}
               </h3>
               <ul className="mt-4 space-y-2.5">
                 {founders.map((f, i) => (

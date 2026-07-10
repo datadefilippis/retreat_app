@@ -273,8 +273,10 @@ def test_operator_landing_transparency_and_direct_contact():
         for key in ('"p1q"', '"p2a"', '"p3a"', '"pattiTitle"', '"directT"'):
             assert key in d, f"patti chiari non tradotti: {lang} manca {key}"
     # il fatto centrale (cliente tuo = zero) non deve annacquarsi
+    # (riformulato dal founder il 10/7: "completamente gratuito")
     it = (frontend / "locales" / "it" / "prelaunch.json").read_text(encoding="utf-8")
-    assert "non paghi nulla" in it
+    assert "completamente gratuito" in it
+    assert "Cresciamo solo se cresci tu" in it
 
 
 def test_wipe_and_seed_share_the_same_flag():
