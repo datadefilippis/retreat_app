@@ -234,8 +234,12 @@ function _detectColdStartLanguage() {
     // ?store=1 = guscio negozio (merchant-first); /s/ diretto idem.
     inStoreCtx = new URLSearchParams(window.location.search).get('store') === '1'
       || window.location.pathname.startsWith('/s/');
-    // Superfici del marketplace senza slug nel path.
-    isMarketplaceRoute = /^\/(?:ritiri|o\/|account)/.test(window.location.pathname);
+    // Superfici del marketplace senza slug nel path. Include la HOME
+    // (splash/directory), le landing di pre-lancio e le pagine pubbliche:
+    // sono la faccia della piattaforma → partono in ITALIANO (fallback),
+    // mai nella lingua del browser; lo switcher è a un click e la scelta
+    // viene ricordata (aurya_lang). Admin e portali restano browser-first.
+    isMarketplaceRoute = /^\/(?:$|ritiri|o\/|account|operatori|destinazioni|esperienze|blog|chi-siamo|come-funziona|cerca-ritiro|per-operatori|privacy|termini)/.test(window.location.pathname);
   } catch {
     // pathname unavailable — fall through.
   }
