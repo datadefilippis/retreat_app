@@ -112,6 +112,10 @@ def _inject(template: str, meta: dict) -> str:
 
     out = re.sub(r"<title>.*?</title>", f"<title>{title}</title>",
                  template, count=1, flags=re.S)
+    # PL21b — via i meta og:/twitter: STATICI di index.html prima di
+    # iniettare i nostri: due og:image = i crawler prendono il primo
+    # (quello generico) e l'immagine per-pagina non appare mai.
+    out = re.sub(r'<meta\s+(?:property="og:[^"]*"|name="twitter:[^"]*")[^>]*/?>\s*', "", out)
     out = re.sub(r'<meta name="description"[^>]*/?>',
                  f'<meta name="description" content="{desc}"/>',
                  out, count=1)
