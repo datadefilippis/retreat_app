@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
-import Redacted from '../prelaunch/Redacted';
 import useSeoMeta from './lib/useSeoMeta';
 
 function fmtDates(start, end, lang = 'it-IT') {
@@ -104,7 +103,11 @@ export default function DestinationsPage() {
     let mounted = true;
     setLoading(true);
     Promise.all([
-      api.get('/public/retreats', { params: { region: place.label } }),
+      // PL18 — la lingua viaggia anche qui: i campioni (e i ritiri veri)
+      // arrivano tradotti come nella directory
+      api.get('/public/retreats', { params: { region: place.label,
+        ...(i18n.language && i18n.language.slice(0, 2) !== 'it'
+          ? { lang: i18n.language.slice(0, 2) } : {}) } }),
       api.get('/public/operators').catch(() => ({ data: { items: [] } })),
     ]).then(([r, o]) => {
       if (!mounted) return;
@@ -119,7 +122,7 @@ export default function DestinationsPage() {
     }).catch(() => { if (mounted) setRetreats({ items: [] }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [luogo, index, place]);
+  }, [luogo, index, place, i18n.language]);
 
   const label = place?.label || (luogo || '').replace(/-/g, ' ');
   const items = retreats?.items || [];

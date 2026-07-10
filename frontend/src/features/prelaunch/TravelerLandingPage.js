@@ -61,7 +61,9 @@ export default function TravelerLandingPage() {
           <div className="rise-in relative overflow-hidden rounded-3xl">
             <img src="/media/hero-destination.webp" alt=""
                  className="h-[460px] w-full object-cover md:h-[540px]" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#1e2b26]/88 via-[#1e2b26]/55 to-[#1e2b26]/10" aria-hidden />
+            {/* PL18 — velatura rinforzata: il sottotitolo deve leggersi
+                bene anche sui punti più chiari della foto */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1e2b26]/95 via-[#1e2b26]/75 to-[#1e2b26]/35" aria-hidden />
             <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-14">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d6c49a]">
                 {t('tr.eyebrow', { defaultValue: 'Per chi sente il bisogno di fermarsi' })}

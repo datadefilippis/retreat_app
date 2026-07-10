@@ -16,8 +16,8 @@ import { LangSwitcher } from '../storefront/components/MarketplaceShell';
 export default function PrelaunchSplash() {
   const { t } = useTranslation('prelaunch');
   useSeoMeta({
-    title: t('splash.seoTitle', { defaultValue: 'Aurya — il marketplace dei ritiri olistici sta per aprire' }),
-    description: t('splash.seoDesc', { defaultValue: 'Aurya connette chi crea ritiri olistici con chi li cerca. Stiamo preparando il lancio: lascia la tua email e sarai tra i primi.' }),
+    title: t('splash.seoTitle', { defaultValue: 'Aurya — la casa dei ritiri olistici sta per aprire' }),
+    description: t('splash.seoDesc', { defaultValue: 'Aurya riunisce i ritiri olistici d\u2019Italia in un unico luogo curato. Stiamo preparando il lancio: lascia la tua email e sarai tra i primi.' }),
   });
 
   return (
@@ -50,10 +50,10 @@ export default function PrelaunchSplash() {
 
         {/* Headline */}
         <h1 className="rise-in rise-d2 mt-6 max-w-3xl font-heading text-3xl font-medium leading-tight text-white text-hero-shadow md:text-5xl">
-          {t('splash.title', { defaultValue: 'Il marketplace dei ritiri olistici sta per aprire' })}
+          {t('splash.title', { defaultValue: 'Il benessere autentico sta per avere una casa' })}
         </h1>
         <p className="rise-in rise-d2 mt-4 max-w-xl text-base text-white/85 md:text-lg">
-          {t('splash.subtitle', { defaultValue: 'Aurya connette chi crea esperienze di benessere autentico con chi le cerca. Scegli la tua strada.' })}
+          {t('splash.subtitle', { defaultValue: 'Aurya riunisce i ritiri olistici d\u2019Italia in un unico luogo: chi li crea si fa trovare, chi li cerca li trova. Scegli la tua strada.' })}
         </p>
 
         {/* Due strade */}

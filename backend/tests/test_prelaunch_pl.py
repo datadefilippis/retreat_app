@@ -165,6 +165,18 @@ def test_seed_uses_local_photos_and_2027_dates():
     assert seed.count('"2027-') >= 10, "ogni ritiro campione data nel 2027"
 
 
+def test_seed_samples_translated_in_all_languages():
+    """PL18 — OGNI ritiro campione ha name+description in en/de/fr: il
+    filtro lingue del marketplace nasconde i prodotti senza traduzione,
+    e la vetrina di pre-lancio deve esistere in TUTTE le lingue (in EN
+    una directory vuota è peggio di una non tradotta)."""
+    seed = _src("scripts/seed_prelaunch_samples.py")
+    for lang in ("en", "de", "fr"):
+        n = seed.count(f'"{lang}": {{"name"')
+        assert n >= 10, f"traduzioni {lang} incomplete nel seed ({n}/10)"
+    assert '"translations": translations' in seed
+
+
 def test_wipe_and_seed_share_the_same_flag():
     """Seed e wipe devono usare lo STESSO marchio, o il wipe lascerebbe
     residui. Guardia contro divergenze."""

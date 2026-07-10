@@ -23,7 +23,7 @@ export default function OperatorLandingPage() {
   const { t } = useTranslation('prelaunch');
   useSeoMeta({
     title: t('op.seoTitle', { defaultValue: 'Aurya per operatori — tu crei l’esperienza, noi la facciamo trovare' }),
-    description: t('op.seoDesc', { defaultValue: 'Aurya sta per aprire: il marketplace italiano dei ritiri olistici. Ti trovano le persone giuste, prenotano con caparra e pagamento diretto, e tu torni a occuparti di loro. I primi operatori partono da fondatori.' }),
+    description: t('op.seoDesc', { defaultValue: 'Aurya sta per aprire: il punto d\u2019incontro italiano del benessere autentico. Ti trovano le persone giuste, prenotano con caparra e pagamento diretto, e tu torni a occuparti di loro. I primi operatori partono da fondatori.' }),
   });
 
   const benefits = [
