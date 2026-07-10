@@ -40,6 +40,8 @@ from typing import Optional
 
 from fastapi import APIRouter, Response
 
+from core.prelaunch import prelaunch_mode
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/__seo", tags=["SEO shell"])
@@ -753,6 +755,14 @@ async def seo_shell(full_path: str):
         meta = await resolve_meta(path)
     except Exception as exc:  # noqa: BLE001 — la shell non deve MAI 500
         logger.warning("seo_shell: resolve failed for %s: %s", path, exc)
+
+    # PL22 — in pre-lancio la directory mostra solo campioni d'esempio:
+    # onestà anche coi motori (noindex), l'indicizzazione parte al lancio
+    # con i contenuti veri. Home e landing lead restano indicizzabili.
+    if meta and prelaunch_mode():
+        head = path.strip("/").split("/")[0]
+        if head in ("ritiri", "operatori", "destinazioni", "esperienze"):
+            meta = {**meta, "noindex": True}
 
     template = _index_html()
     if meta:

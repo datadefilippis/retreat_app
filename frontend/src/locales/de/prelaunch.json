@@ -121,7 +121,21 @@
     "f2": "Persönliche Begleitung beim Aufbau deines Profils",
     "f3": "Konditionen, die denen vorbehalten sind, die von Anfang an dabei sind — für immer",
     "ctaBtn": "Stell dich jetzt vor",
-    "back": "Zurück zur Startseite"
+    "back": "Zurück zur Startseite",
+    "p1q": "Was kostet es dich?",
+    "p1a": "Der Einstieg ist kostenlos: Profil, Schaufenster und Verwaltung ohne Grundgebühr. Keine Fixkosten, keine Überraschungen.",
+    "p2q": "Wie verdienen wir?",
+    "p2a": "Wir verdienen nur, wenn du verdienst: eine kleine Provision nur auf Buchungen, die über Auryas öffentlichen Kalender kommen. Ist der Gast dein eigener, zahlst du nichts.",
+    "p3q": "Wer bestimmt Preise und Regeln?",
+    "p3a": "Du. Preise, Anzahlung und Stornobedingungen legst du fest — und wer bucht, sieht sie klar vor der Zahlung. Wir kümmern uns um Buchungen, Erinnerungen und verifizierte Bewertungen.",
+    "p4q": "Warum machen wir das?",
+    "p4a": "Wir glauben, dass authentisches italienisches Wohlbefinden ein Zuhause verdient: einen Ort, an dem sich Schaffende und Suchende ohne Lärm begegnen. Wir wachsen nur, wenn du wächst.",
+    "pattiEyebrow": "Klare Verhältnisse",
+    "pattiTitle": "Was du wissen willst — gleich gesagt",
+    "pattiSubtitle": "Keine Klauseln hinter einem Formular versteckt: so funktioniert Aurya für alle, die ihre Retreats zu uns bringen.",
+    "pattiMore": "Fragen, die hier fehlen?",
+    "pattiMoreCta": "Schreib uns, wir antworten persönlich",
+    "directT": "Lieber ohne Formular sprechen?"
   },
   "tr": {
     "seoTitle": "Aurya — irgendwo wartet ein Retreat auf dich",
@@ -149,6 +163,7 @@
     "b3t": "Nah bei dir",
     "b3b": "Sag uns, wo du lebst, und wir schlagen dir Erlebnisse vor, die gut erreichbar sind. Manchmal liegt die Reise, die du brauchst, nur eine Stunde von zuhause entfernt.",
     "why": "Aurya entstand aus einer einfachen Überzeugung: Für sich selbst zu sorgen sollte keine stundenlange Suche zwischen Social-Media-Seiten und Mundpropaganda erfordern. Ein einziger, sorgfältig kuratierter Ort, an dem du die Menschen findest, die diese Arbeit mit Herz machen.",
-    "back": "Zurück zur Startseite"
+    "back": "Zurück zur Startseite",
+    "directT": "Lieber direkt schreiben?"
   }
 }

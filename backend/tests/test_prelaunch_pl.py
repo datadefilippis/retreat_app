@@ -191,6 +191,54 @@ def test_no_stripe_in_public_copy():
                 f"Stripe nel copy pubblico: {lang}/{ns}.json"
 
 
+def test_prelaunch_directory_noindex_and_honest_preview():
+    """PL22 (feedback analista) — in pre-lancio la directory è un'ANTEPRIMA
+    onesta, non una finta app funzionante: niente ricerca/filtri su dati
+    d'esempio, poche card, CTA verso le landing; e noindex per i motori
+    (l'indicizzazione parte al lancio, coi contenuti veri)."""
+    src = _src("routers/seo_shell.py")
+    assert "prelaunch_mode()" in src
+    assert '"noindex": True' in src
+    for head in ('"ritiri"', '"operatori"', '"destinazioni"'):
+        assert head in src.split("PL22")[1], f"noindex pre-lancio non copre {head}"
+
+    frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
+    cal = (frontend / "features" / "storefront" / "RetreatsCalendarPage.js").read_text(
+        encoding="utf-8")
+    assert "const { prelaunch } = useSiteConfig();" in cal
+    # ricerca hero, categorie e barra filtri spente in pre-lancio
+    assert cal.count("!prelaunch &&") >= 3, \
+        "regressione: filtri/ricerca tornerebbero visibili sull'anteprima"
+    # poche card bastano a raccontare il concept
+    assert "items.slice(0, 6)" in cal
+    # chiusura onesta: CTA verso le landing lead, non un finto 'mostra altri'
+    assert "prelaunchPreviewNote" in cal
+
+
+def test_operator_landing_transparency_and_direct_contact():
+    """PL22 — patti chiari sulla landing operatori: gratis entrare,
+    guadagniamo solo su prenotazioni dal calendario pubblico, regole di
+    prezzo/cancellazione definite dall'operatore. E un canale diretto
+    (mailto info@) accanto ai form, su ENTRAMBE le landing: c'è chi i
+    form non li compila, e quel lead vale quanto gli altri."""
+    frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
+    op = (frontend / "features" / "prelaunch" / "OperatorLandingPage.js").read_text(
+        encoding="utf-8")
+    tr = (frontend / "features" / "prelaunch" / "TravelerLandingPage.js").read_text(
+        encoding="utf-8")
+    assert "mailto:info@aurya.life" in op
+    assert "mailto:info@aurya.life" in tr
+    assert "pattiTitle" in op
+    # i fatti chiave dei patti chiari, tradotti in TUTTE le lingue
+    for lang in ("it", "en", "de", "fr"):
+        d = (frontend / "locales" / lang / "prelaunch.json").read_text(encoding="utf-8")
+        for key in ('"p1q"', '"p2a"', '"p3a"', '"pattiTitle"', '"directT"'):
+            assert key in d, f"patti chiari non tradotti: {lang} manca {key}"
+    # il fatto centrale (cliente tuo = zero) non deve annacquarsi
+    it = (frontend / "locales" / "it" / "prelaunch.json").read_text(encoding="utf-8")
+    assert "non paghi nulla" in it
+
+
 def test_wipe_and_seed_share_the_same_flag():
     """Seed e wipe devono usare lo STESSO marchio, o il wipe lascerebbe
     residui. Guardia contro divergenze."""

@@ -123,6 +123,13 @@ export default function TravelerLandingPage() {
             <Link to="/ritiri" className="mt-5 inline-flex items-center gap-1 text-sm font-medium" style={{ color: ACCENT }}>
               {t('tr.peek', { defaultValue: 'Sbircia l’anteprima dei ritiri' })} <ArrowRight className="h-4 w-4" />
             </Link>
+            {/* PL22 — canale diretto, discreto: non tutti amano i form */}
+            <p className="mt-3 text-xs text-muted-foreground">
+              {t('tr.directT', { defaultValue: 'Preferisci scriverci direttamente?' })}{' '}
+              <a href="mailto:info@aurya.life" className="font-medium underline underline-offset-2" style={{ color: ACCENT }}>
+                info@aurya.life
+              </a>
+            </p>
           </div>
 
           <div className="flex flex-col gap-4">

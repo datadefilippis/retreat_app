@@ -19,6 +19,7 @@ import api from '../../api/client';
 import GeoSearchBar from './components/GeoSearchBar';
 import MarketplaceShell from './components/MarketplaceShell';
 import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
+import { useSiteConfig } from '../../context/SiteConfigContext';
 import Redacted from '../prelaunch/Redacted';
 import MarketplaceValueSections from './components/MarketplaceValueSections';
 // G3 — vista mappa lazy (Leaflet caricato solo quando serve)
@@ -73,6 +74,10 @@ function SkeletonCard() {
 
 export default function RetreatsCalendarPage() {
   const { t, i18n } = useTranslation('landings');
+  // PL22 — anteprima ONESTA in pre-lancio (feedback analista): niente
+  // ricerca/filtri non funzionanti su dati d'esempio — solo poche card
+  // sfocate che raccontano il concept, e le CTA verso le landing lead.
+  const { prelaunch } = useSiteConfig();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
@@ -220,7 +225,7 @@ export default function RetreatsCalendarPage() {
           </h1>
           <p className="text-white/95 mt-4 max-w-xl mx-auto text-base md:text-lg text-hero-shadow">{t('landings:calendar.subtitle')}</p>
 
-          <div className="mt-7 max-w-xl mx-auto">
+          {!prelaunch && <div className="mt-7 max-w-xl mx-auto">
             <input
               type="search"
               value={query}
@@ -228,12 +233,12 @@ export default function RetreatsCalendarPage() {
               placeholder={t('landings:calendar.searchPlaceholder', { defaultValue: 'Cerca un ritiro, un luogo, un organizzatore…' })}
               className="w-full rounded-full border-0 bg-white/95 backdrop-blur px-6 py-3.5 md:py-4 text-base text-gray-900 shadow-2xl focus:outline-none focus:ring-2 focus:ring-[#d6c49a]"
             />
-          </div>
+          </div>}
 
           {/* Categorie visuali — dalle categorie REALI del backend.
               L1: niente strip a scorrimento (era overflow-x-auto, con
               jank ai reload): riga statica che va a capo. */}
-          {categories.length > 0 && (
+          {!prelaunch && categories.length > 0 && (
             <div className="mt-7 flex flex-wrap gap-2 justify-center">
               <button
                 onClick={() => setFilter('categoria', '')}
@@ -299,8 +304,8 @@ export default function RetreatsCalendarPage() {
         </div>
       )}
 
-      {/* ── Barra filtri sticky ──────────────────────────────────────── */}
-      <div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
+      {/* ── Barra filtri sticky (nascosta in pre-lancio: PL22) ───────── */}
+      {!prelaunch && <div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-2">
           {/* G3 — "Dove?" con autocomplete+raggio al posto delle regioni
               (gli eventi possono essere in tutto il mondo) */}
@@ -360,7 +365,7 @@ export default function RetreatsCalendarPage() {
             </p>
           </div>
         )}
-      </div>
+      </div>}
 
       {/* ── Griglia ──────────────────────────────────────────────────── */}
       {/* GT3 (rivisto, scelta founder): niente sezione In evidenza
@@ -398,7 +403,7 @@ export default function RetreatsCalendarPage() {
           </React.Suspense>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {items.map(item => {
+            {(prelaunch ? items.slice(0, 6) : items).map(item => {
               const badge = dateBadge(item.start_at, i18n.language);
               return (
                 <Link
@@ -530,6 +535,33 @@ export default function RetreatsCalendarPage() {
                 </Link>
               );
             })}
+          </div>
+        )}
+
+        {/* PL22 — chiusura onesta dell'anteprima: niente "mostra altri"
+            finto; diciamo cos'è e riportiamo alle landing (i lead sono
+            l'obiettivo, non far credere che la ricerca funzioni). */}
+        {prelaunch && !loading && items.length > 0 && (
+          <div className="mt-10 text-center max-w-xl mx-auto">
+            <p className="text-sm text-muted-foreground">
+              {t('landings:calendar.prelaunchPreviewNote', {
+                defaultValue: 'Questa è solo un\u2019anteprima di come apparirà Aurya. I primi ritiri reali arrivano al lancio.',
+              })}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/cerca-ritiro"
+                className="rounded-full bg-[#376254] px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#2b4f43] transition-colors"
+              >
+                {t('landings:calendar.prelaunchPreviewCtaTraveler', { defaultValue: 'Avvisami al lancio' })}
+              </Link>
+              <Link
+                to="/per-operatori"
+                className="rounded-full border border-[#C97B5D] px-6 py-2.5 text-sm font-semibold text-[#C97B5D] hover:bg-[#C97B5D]/10 transition-colors"
+              >
+                {t('landings:calendar.prelaunchPreviewCtaOperator', { defaultValue: 'Porta i tuoi ritiri su Aurya' })}
+              </Link>
+            </div>
           </div>
         )}
       </main>

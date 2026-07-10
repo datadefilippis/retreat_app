@@ -477,7 +477,10 @@
     "fromPrice": "from €{{price}}",
     "featured": "Featured",
     "byRegion": "By region:",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "prelaunchPreviewNote": "This is just a preview of what Aurya will look like. The first real retreats arrive at launch.",
+    "prelaunchPreviewCtaTraveler": "Notify me at launch",
+    "prelaunchPreviewCtaOperator": "Bring your retreats to Aurya"
   },
   "operator": {
     "website": "Website",

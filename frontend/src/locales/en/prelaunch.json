@@ -121,7 +121,21 @@
     "f2": "Personal guidance as you build your profile",
     "f3": "Conditions reserved for those here from the start, forever",
     "ctaBtn": "Introduce yourself now",
-    "back": "Back to home"
+    "back": "Back to home",
+    "p1q": "What does it cost you?",
+    "p1a": "Joining is free: profile, storefront and management tools with no monthly fee. No fixed costs, no surprises.",
+    "p2q": "How do we earn?",
+    "p2a": "We earn only when you do: a small commission only on bookings brought by Aurya's public calendar. If the client is yours, you pay nothing.",
+    "p3q": "Who sets prices and rules?",
+    "p3a": "You do. Prices, deposit and cancellation terms are yours to define — and guests see them clearly before paying. We handle bookings, reminders and verified reviews.",
+    "p4q": "Why do we do this?",
+    "p4a": "We believe authentic Italian wellbeing deserves a home: a place where those who create transformative experiences and those seeking them meet without the noise. We grow only if you grow.",
+    "pattiEyebrow": "Fair and clear",
+    "pattiTitle": "The things you'd want to know, said upfront",
+    "pattiSubtitle": "No clauses hidden behind a form: here's how Aurya works for those who bring their retreats.",
+    "pattiMore": "Questions you don't find here?",
+    "pattiMoreCta": "Write to us, we answer personally",
+    "directT": "Prefer to talk without a form?"
   },
   "tr": {
     "seoTitle": "Aurya — there's a retreat out there waiting for you",
@@ -149,6 +163,7 @@
     "b3t": "Close to where you are",
     "b3b": "Tell us where you live and we'll suggest experiences within easy reach. Sometimes the journey you need is an hour from home.",
     "why": "Aurya was born from a simple belief: taking care of yourself shouldn't take hours of digging through social pages and word of mouth. One single, carefully curated place to find the people who do this work with heart.",
-    "back": "Back to home"
+    "back": "Back to home",
+    "directT": "Prefer to write to us directly?"
   }
 }

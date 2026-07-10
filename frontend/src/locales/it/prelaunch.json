@@ -121,7 +121,21 @@
     "f2": "Accompagnamento personale nella costruzione del tuo profilo",
     "f3": "Condizioni riservate a chi c’è dall’inizio, per sempre",
     "ctaBtn": "Presentati ora",
-    "back": "Torna alla home"
+    "back": "Torna alla home",
+    "p1q": "Quanto ti costa?",
+    "p1a": "Entrare è gratis: profilo, vetrina e gestionale senza canone. Nessun costo fisso, nessuna sorpresa.",
+    "p2q": "Come guadagniamo noi?",
+    "p2a": "Guadagniamo solo se guadagni tu: una piccola commissione solo sulle prenotazioni portate dal calendario pubblico di Aurya. Se il cliente è tuo, non paghi nulla.",
+    "p3q": "Chi decide prezzi e regole?",
+    "p3a": "Tu. Prezzi, caparra e condizioni di cancellazione li definisci tu — e chi prenota li vede chiaramente prima di pagare. Noi gestiamo prenotazioni, promemoria e recensioni verificate.",
+    "p4q": "Perché lo facciamo?",
+    "p4a": "Crediamo che il benessere autentico italiano meriti una casa: un luogo dove chi crea esperienze di trasformazione e chi le cerca si incontrano senza rumore. Cresciamo solo se cresci tu.",
+    "pattiEyebrow": "Patti chiari",
+    "pattiTitle": "Le cose che vorresti sapere, dette subito",
+    "pattiSubtitle": "Nessuna clausola nascosta dietro un modulo: ecco come funziona Aurya per chi ci porta i propri ritiri.",
+    "pattiMore": "Domande che non trovi qui?",
+    "pattiMoreCta": "Scrivici, rispondiamo di persona",
+    "directT": "Preferisci parlarne senza form?"
   },
   "tr": {
     "seoTitle": "Aurya — c’è un ritiro che ti sta aspettando",
@@ -149,6 +163,7 @@
     "b3t": "Vicino a dove sei",
     "b3b": "Ci dici dove vivi e ti proponiamo esperienze raggiungibili. A volte il viaggio che serve è a un’ora da casa.",
     "why": "Aurya nasce da una convinzione semplice: prendersi cura di sé non dovrebbe richiedere ore di ricerche tra pagine social e passaparola. Un posto solo, curato, dove trovare chi fa questo lavoro con il cuore.",
-    "back": "Torna alla home"
+    "back": "Torna alla home",
+    "directT": "Preferisci scriverci direttamente?"
   }
 }

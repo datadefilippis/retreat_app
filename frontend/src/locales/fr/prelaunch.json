@@ -121,7 +121,21 @@
     "f2": "Un accompagnement personnel pour construire ton profil",
     "f3": "Des conditions réservées à celles et ceux qui sont là depuis le début, pour toujours",
     "ctaBtn": "Présente-toi maintenant",
-    "back": "Retour à l’accueil"
+    "back": "Retour à l’accueil",
+    "p1q": "Combien ça te coûte ?",
+    "p1a": "Entrer est gratuit : profil, vitrine et outils de gestion sans abonnement. Aucun coût fixe, aucune surprise.",
+    "p2q": "Comment gagnons-nous ?",
+    "p2a": "Nous gagnons seulement si tu gagnes : une petite commission uniquement sur les réservations apportées par le calendrier public d'Aurya. Si le client est le tien, tu ne paies rien.",
+    "p3q": "Qui décide des prix et des règles ?",
+    "p3a": "Toi. Prix, acompte et conditions d'annulation, c'est toi qui les définis — et qui réserve les voit clairement avant de payer. Nous gérons réservations, rappels et avis vérifiés.",
+    "p4q": "Pourquoi le faisons-nous ?",
+    "p4a": "Nous croyons que le bien-être authentique italien mérite une maison : un lieu où ceux qui créent des expériences de transformation et ceux qui les cherchent se rencontrent sans bruit. Nous grandissons seulement si tu grandis.",
+    "pattiEyebrow": "Cartes sur table",
+    "pattiTitle": "Ce que tu voudrais savoir, dit d'emblée",
+    "pattiSubtitle": "Aucune clause cachée derrière un formulaire : voici comment Aurya fonctionne pour qui nous confie ses retraites.",
+    "pattiMore": "Des questions absentes ici ?",
+    "pattiMoreCta": "Écris-nous, nous répondons en personne",
+    "directT": "Tu préfères en parler sans formulaire ?"
   },
   "tr": {
     "seoTitle": "Aurya — une retraite t’attend quelque part",
@@ -149,6 +163,7 @@
     "b3t": "Près de chez toi",
     "b3b": "Dis-nous où tu vis et nous te proposerons des expériences accessibles. Parfois, le voyage dont tu as besoin est à une heure de chez toi.",
     "why": "Aurya est née d’une conviction simple : prendre soin de soi ne devrait pas demander des heures de recherches entre pages sociales et bouche-à-oreille. Un seul endroit, soigné, où trouver celles et ceux qui font ce métier avec le cœur.",
-    "back": "Retour à l’accueil"
+    "back": "Retour à l’accueil",
+    "directT": "Tu préfères nous écrire directement ?"
   }
 }

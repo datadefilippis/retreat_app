@@ -11,7 +11,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Eye, ShieldCheck, HeartHandshake, ArrowLeft, ArrowRight, Sparkles, Check } from 'lucide-react';
+import { Eye, ShieldCheck, HeartHandshake, ArrowLeft, ArrowRight, Sparkles, Check, HandCoins, Scale, CalendarCheck, Compass, Mail } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import { LangSwitcher } from '../storefront/components/MarketplaceShell';
 import LeadForm from './LeadForm';
@@ -33,6 +33,26 @@ export default function OperatorLandingPage() {
       body: t('op.b2b', { defaultValue: 'Chi si iscrive versa una caparra e paga direttamente online; i promemoria arrivano da soli. Chi prenota, arriva: i posti vuoti smettono di essere il costo nascosto del tuo lavoro.' }) },
     { icon: HeartHandshake, title: t('op.b3t', { defaultValue: 'Il tuo tempo torna alle persone' }),
       body: t('op.b3b', { defaultValue: 'Calendario, partecipanti, recensioni verificate e incassi vivono in un posto solo, in armonia. Le ore perse tra messaggi e fogli di calcolo tornano a chi accompagni.' }) },
+  ];
+
+  /* PL22 — "Patti chiari" (feedback analista): l'operatore vuole sapere
+     PRIMA di lasciare un contatto quanto costa, come guadagniamo noi,
+     chi decide le regole e cosa facciamo per lui. Fatti veri, già
+     promessi altrove nel sito (come-funziona faq4a): qui li mettiamo
+     in faccia, senza farli cercare. */
+  const patti = [
+    { icon: HandCoins,
+      q: t('op.p1q', { defaultValue: 'Quanto ti costa?' }),
+      a: t('op.p1a', { defaultValue: 'Entrare è gratis: profilo, vetrina e gestionale senza canone. Nessun costo fisso, nessuna sorpresa.' }) },
+    { icon: Scale,
+      q: t('op.p2q', { defaultValue: 'Come guadagniamo noi?' }),
+      a: t('op.p2a', { defaultValue: 'Guadagniamo solo se guadagni tu: una piccola commissione solo sulle prenotazioni portate dal calendario pubblico di Aurya. Se il cliente è tuo, non paghi nulla.' }) },
+    { icon: CalendarCheck,
+      q: t('op.p3q', { defaultValue: 'Chi decide prezzi e regole?' }),
+      a: t('op.p3a', { defaultValue: 'Tu. Prezzi, caparra e condizioni di cancellazione li definisci tu — e chi prenota li vede chiaramente prima di pagare. Noi gestiamo prenotazioni, promemoria e recensioni verificate.' }) },
+    { icon: Compass,
+      q: t('op.p4q', { defaultValue: 'Perché lo facciamo?' }),
+      a: t('op.p4a', { defaultValue: 'Crediamo che il benessere autentico italiano meriti una casa: un luogo dove chi crea esperienze di trasformazione e chi le cerca si incontrano senza rumore. Cresciamo solo se cresci tu.' }) },
   ];
 
   const founders = [
@@ -106,6 +126,15 @@ export default function OperatorLandingPage() {
               <div className="mt-5">
                 <LeadForm type="operator" accent={ACCENT} />
               </div>
+              {/* PL22 — canale diretto: c'è chi i form non li ama.
+                  Un'email vera vale più di un lead perso. */}
+              <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-sm text-muted-foreground">
+                <Mail className="h-4 w-4 shrink-0" style={{ color: ACCENT }} aria-hidden />
+                {t('op.directT', { defaultValue: 'Preferisci parlarne senza form?' })}{' '}
+                <a href="mailto:info@aurya.life" className="font-semibold underline underline-offset-2" style={{ color: ACCENT }}>
+                  info@aurya.life
+                </a>
+              </p>
             </div>
           </div>
         </div>
@@ -140,6 +169,41 @@ export default function OperatorLandingPage() {
               <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{b.body}</p>
             </div>
           ))}
+        </div>
+
+        {/* ── Patti chiari (PL22): trasparenza totale prima del contatto ── */}
+        <div className="mt-14">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em]" style={{ color: ACCENT }}>
+              {t('op.pattiEyebrow', { defaultValue: 'Patti chiari' })}
+            </p>
+            <h3 className="mt-2 font-heading text-xl font-semibold text-foreground md:text-2xl">
+              {t('op.pattiTitle', { defaultValue: 'Le cose che vorresti sapere, dette subito' })}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
+              {t('op.pattiSubtitle', { defaultValue: 'Nessuna clausola nascosta dietro un modulo: ecco come funziona Aurya per chi ci porta i propri ritiri.' })}
+            </p>
+          </div>
+          <div className="mt-6 grid gap-5 md:grid-cols-2">
+            {patti.map((p, i) => (
+              <div key={i} className="flex items-start gap-4 rounded-2xl border border-border bg-white p-5 shadow-sm">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                     style={{ background: `${GOLD}14`, color: GOLD }}>
+                  <p.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">{p.q}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{p.a}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-5 text-sm text-muted-foreground">
+            {t('op.pattiMore', { defaultValue: 'Domande che non trovi qui?' })}{' '}
+            <a href="mailto:info@aurya.life" className="font-semibold underline underline-offset-2" style={{ color: ACCENT }}>
+              {t('op.pattiMoreCta', { defaultValue: 'Scrivici, rispondiamo di persona' })}
+            </a>.
+          </p>
         </div>
 
         {/* programma fondatori, esplicito */}

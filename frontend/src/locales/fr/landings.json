@@ -477,7 +477,10 @@
     "fromPrice": "dès {{price}} €",
     "featured": "En vedette",
     "byRegion": "Par région :",
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "prelaunchPreviewNote": "Ceci n'est qu'un aperçu de ce à quoi ressemblera Aurya. Les premières retraites réelles arrivent au lancement.",
+    "prelaunchPreviewCtaTraveler": "Prévenez-moi au lancement",
+    "prelaunchPreviewCtaOperator": "Amène tes retraites sur Aurya"
   },
   "operator": {
     "website": "Site web",

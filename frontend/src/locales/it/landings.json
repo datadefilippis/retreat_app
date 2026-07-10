@@ -477,7 +477,10 @@
     "fromPrice": "da {{price}} €",
     "featured": "In evidenza",
     "byRegion": "Per regione:",
-    "comingSoon": "Presto disponibile"
+    "comingSoon": "Presto disponibile",
+    "prelaunchPreviewNote": "Questa è solo un’anteprima di come apparirà Aurya. I primi ritiri reali arrivano al lancio.",
+    "prelaunchPreviewCtaTraveler": "Avvisami al lancio",
+    "prelaunchPreviewCtaOperator": "Porta i tuoi ritiri su Aurya"
   },
   "operator": {
     "notFound": "Organizzatore non trovato",

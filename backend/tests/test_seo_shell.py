@@ -73,8 +73,10 @@ class TestHreflang:
 
 
 class TestAbsImage:
-    def test_fallback_logo(self):
-        assert shell._abs_image(None).endswith("/logo-aurya.png")
+    def test_fallback_og_cover(self):
+        # scelta 10/7: il fallback social è la og-cover 1200x630 (il logo
+        # quadrato renderebbe male nelle anteprime di condivisione)
+        assert shell._abs_image(None).endswith("/og-cover.jpg")
 
     def test_relative_becomes_absolute(self):
         got = shell._abs_image("/uploads/products/x.jpg")
