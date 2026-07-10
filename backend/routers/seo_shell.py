@@ -214,16 +214,17 @@ _BRAND_PAGES = {
         "image": "/media/hero-organizer.webp",
     },
     "chi-siamo": {
-        "title": "Chi siamo | Aurya, il marketplace dei ritiri olistici",
+        "title": "Chi siamo | Aurya, la casa dei ritiri olistici",
         "description": ("Aurya connette chi cerca benessere autentico con chi "
                         "lo crea: ritiri prenotabili online con caparra "
                         "protetta e recensioni solo verificate."),
     },
     "come-funziona": {
-        "title": "Come funziona Aurya: prenota ritiri olistici con caparra protetta",
-        "description": ("Scegli il ritiro, blocca il posto con una caparra "
-                        "protetta da Stripe, vivi l'esperienza e recensisci: "
-                        "su Aurya solo recensioni verificate."),
+        "title": "Come funziona Aurya: prenota ritiri olistici con caparra e pagamento diretto",
+        "description": ("Scegli il ritiro, blocca il posto con una piccola "
+                        "caparra e il pagamento diretto online, vivi "
+                        "l'esperienza e recensisci: su Aurya solo recensioni "
+                        "verificate."),
     },
 }
 
