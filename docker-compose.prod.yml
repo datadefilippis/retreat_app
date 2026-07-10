@@ -57,6 +57,9 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - CORS_ORIGINS=${CORS_ORIGINS}
       - ENVIRONMENT=production
+      # PL — pre-lancio: interruttore runtime della vetrina (flip + restart,
+      # niente rebuild). Al lancio: false + wipe dei sample.
+      - PRELAUNCH_MODE=${PRELAUNCH_MODE:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - BACKGROUND_ALERT_INTERVAL_HOURS=${BACKGROUND_ALERT_INTERVAL_HOURS:-6}
       - BACKGROUND_INITIAL_DELAY_SECONDS=${BACKGROUND_INITIAL_DELAY_SECONDS:-60}
