@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+// PL17 — side-effect: registra i namespace i18n del back-office.
+// Layout è il guscio di OGNI pagina admin (tutte lazy): le traduzioni
+// admin viaggiano nei loro chunk e si registrano prima del render,
+// tenendo ~307KB gzip fuori dal bundle del visitatore pubblico.
+import '../i18n-admin';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useEntitlements } from '../hooks/useEntitlements';

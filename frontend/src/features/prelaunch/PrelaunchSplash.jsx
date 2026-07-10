@@ -39,25 +39,25 @@ export default function PrelaunchSplash() {
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-5 py-16 text-center">
         {/* Wordmark */}
-        <p className="font-brand text-4xl tracking-[0.35em] text-[#d6c49a] md:text-5xl">AURYA</p>
-        <p className="mt-2 text-xs uppercase tracking-[0.3em] text-white/70">Connect · Heal · Grow</p>
+        <p className="rise-in font-brand text-4xl tracking-[0.35em] text-[#d6c49a] md:text-5xl">AURYA</p>
+        <p className="rise-in rise-d1 mt-2 text-xs uppercase tracking-[0.3em] text-white/70">Connect · Heal · Grow</p>
 
         {/* Badge "in preparazione" */}
-        <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/25 px-4 py-1.5 text-xs font-medium text-white backdrop-blur">
+        <div className="rise-in rise-d1 mt-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/25 px-4 py-1.5 text-xs font-medium text-white backdrop-blur">
           <Sparkles className="h-3.5 w-3.5 text-[#d6c49a]" />
           {t('splash.badge', { defaultValue: 'Stiamo preparando il lancio' })}
         </div>
 
         {/* Headline */}
-        <h1 className="mt-6 max-w-3xl font-heading text-3xl font-medium leading-tight text-white text-hero-shadow md:text-5xl">
+        <h1 className="rise-in rise-d2 mt-6 max-w-3xl font-heading text-3xl font-medium leading-tight text-white text-hero-shadow md:text-5xl">
           {t('splash.title', { defaultValue: 'Il marketplace dei ritiri olistici sta per aprire' })}
         </h1>
-        <p className="mt-4 max-w-xl text-base text-white/85 md:text-lg">
+        <p className="rise-in rise-d2 mt-4 max-w-xl text-base text-white/85 md:text-lg">
           {t('splash.subtitle', { defaultValue: 'Aurya connette chi crea esperienze di benessere autentico con chi le cerca. Scegli la tua strada.' })}
         </p>
 
         {/* Due strade */}
-        <div className="mt-10 grid w-full max-w-2xl gap-4 sm:grid-cols-2">
+        <div className="rise-in rise-d3 mt-10 grid w-full max-w-2xl gap-4 sm:grid-cols-2">
           <Link to="/cerca-ritiro"
                 className="group rounded-2xl border border-white/20 bg-white/10 p-6 text-left backdrop-blur transition-colors hover:bg-white/20">
             <Compass className="h-7 w-7 text-[#d6c49a]" />
@@ -92,7 +92,7 @@ export default function PrelaunchSplash() {
         {/* PL12 — sbirciata in evidenza: l'esplorazione porta alla
             directory oscurata, dove il banner riporta alle landing */}
         <Link to="/ritiri"
-              className="group mt-10 inline-flex items-center gap-2 rounded-full border border-[#d6c49a]/70 bg-white/10 px-6 py-3 text-sm font-semibold text-[#d6c49a] backdrop-blur transition-colors hover:bg-[#d6c49a] hover:text-[#1e2b26]">
+              className="rise-in rise-d4 group mt-10 inline-flex items-center gap-2 rounded-full border border-[#d6c49a]/70 bg-white/10 px-6 py-3 text-sm font-semibold text-[#d6c49a] backdrop-blur transition-colors hover:bg-[#d6c49a] hover:text-[#1e2b26]">
           <Compass className="h-4 w-4" aria-hidden />
           {t('splash.peek', { defaultValue: 'Dai un’occhiata all’anteprima dei ritiri' })}
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />

@@ -108,7 +108,9 @@ import { CheckoutSuccessPage, CheckoutCancelPage } from "./features/storefront/C
 const TeamPage = lazy(() => import("./features/team/TeamPage"));
 const SettingsPage = lazy(() => import("./features/settings/SettingsPage"));
 const PublicProfilePage = lazy(() => import("./features/settings/PublicProfilePage"));
-import IniziaPage from "./features/onboarding/IniziaPage";
+// PL17 — lazy come tutte le pagine admin: da eager trascinava Layout
+// (e con lui TUTTE le traduzioni back-office) nel bundle pubblico.
+const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
 const AdminPage = lazy(() => import("./features/admin/AdminPage"));
 const PlansPage = lazy(() => import("./pages/PlansPage"));
 

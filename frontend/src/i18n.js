@@ -22,134 +22,66 @@ import { initReactI18next } from 'react-i18next';
 // ── Translation imports ─────────────────────────────────────────────────────
 import commonIt from './locales/it/common.json';
 import authIt from './locales/it/auth.json';
-import settingsIt from './locales/it/settings.json';
-import dashboardIt from './locales/it/dashboard.json';
-import customersLightIt from './locales/it/customers_light.json';
-import customerInsightsIt from './locales/it/customerInsights.json';
-import newsletterIt from './locales/it/newsletter.json';
-import cashflowMonitorIt from './locales/it/cashflow_monitor.json';
 import prelaunchIt from './locales/it/prelaunch.json';
-import teamIt from './locales/it/team.json';
+// PL17 — restano sincroni: usati dai banner billing/paywall EAGER
+import settingsIt from './locales/it/settings.json';
 import modulesPageIt from './locales/it/modules_page.json';
 
-import productCatalogIt from './locales/it/product_catalog.json';
-import productCostIt from './locales/it/product_cost.json';
-import productsIt from './locales/it/products.json';
 
-import entitiesIt from './locales/it/entities.json';
-import ordersIt from './locales/it/orders.json';
 import catalogIt from './locales/it/catalog.json';
-import calendarIt from './locales/it/calendar.json';
-import dataIntegrityIt from './locales/it/data_integrity.json';
-import storeSettingsIt from './locales/it/store_settings.json';
 // Fase 2 Track F Step 9 — legacy `setup` namespace removed (was used by
 // the deprecated SetupPage.js). The new wizard uses `setup_wizard`.
-import storesIt from './locales/it/stores.json';
-import posIt from './locales/it/pos.json';
-import reservationsIt from './locales/it/reservations.json';
 import storefrontIt from './locales/it/storefront.json';
 import landingsIt from './locales/it/landings.json';
 import customerAuthIt from './locales/it/customer_auth.json';
 import customerPortalIt from './locales/it/customer_portal.json';
 // Fase 2 Track F — Setup Wizard dynamic onboarding widget
-import setupWizardIt from './locales/it/setup_wizard.json';
 // Wave GDPR-Admin Phase E — re-consent modal, cookie banner, sub-processors page
 import legalIt from './locales/it/legal.json';
 
 import commonEn from './locales/en/common.json';
 import authEn from './locales/en/auth.json';
-import settingsEn from './locales/en/settings.json';
-import dashboardEn from './locales/en/dashboard.json';
-import customersLightEn from './locales/en/customers_light.json';
-import customerInsightsEn from './locales/en/customerInsights.json';
-import newsletterEn from './locales/en/newsletter.json';
-import cashflowMonitorEn from './locales/en/cashflow_monitor.json';
 import prelaunchEn from './locales/en/prelaunch.json';
-import teamEn from './locales/en/team.json';
+// PL17 — restano sincroni: usati dai banner billing/paywall EAGER
+import settingsEn from './locales/en/settings.json';
 import modulesPageEn from './locales/en/modules_page.json';
 
-import productCatalogEn from './locales/en/product_catalog.json';
-import productCostEn from './locales/en/product_cost.json';
-import productsEn from './locales/en/products.json';
 
-import entitiesEn from './locales/en/entities.json';
-import ordersEn from './locales/en/orders.json';
 import catalogEn from './locales/en/catalog.json';
-import calendarEn from './locales/en/calendar.json';
-import dataIntegrityEn from './locales/en/data_integrity.json';
-import storeSettingsEn from './locales/en/store_settings.json';
-import storesEn from './locales/en/stores.json';
-import posEn from './locales/en/pos.json';
-import reservationsEn from './locales/en/reservations.json';
 import storefrontEn from './locales/en/storefront.json';
 import landingsEn from './locales/en/landings.json';
 import customerAuthEn from './locales/en/customer_auth.json';
 import customerPortalEn from './locales/en/customer_portal.json';
-import setupWizardEn from './locales/en/setup_wizard.json';
 import legalEn from './locales/en/legal.json';
 
 import commonDe from './locales/de/common.json';
 import authDe from './locales/de/auth.json';
-import settingsDe from './locales/de/settings.json';
-import dashboardDe from './locales/de/dashboard.json';
-import customersLightDe from './locales/de/customers_light.json';
-import customerInsightsDe from './locales/de/customerInsights.json';
-import newsletterDe from './locales/de/newsletter.json';
-import cashflowMonitorDe from './locales/de/cashflow_monitor.json';
 import prelaunchDe from './locales/de/prelaunch.json';
-import teamDe from './locales/de/team.json';
+// PL17 — restano sincroni: usati dai banner billing/paywall EAGER
+import settingsDe from './locales/de/settings.json';
 import modulesPageDe from './locales/de/modules_page.json';
 
-import productCatalogDe from './locales/de/product_catalog.json';
-import productCostDe from './locales/de/product_cost.json';
-import productsDe from './locales/de/products.json';
 
-import entitiesDe from './locales/de/entities.json';
-import ordersDe from './locales/de/orders.json';
-import dataIntegrityDe from './locales/de/data_integrity.json';
 import catalogDe from './locales/de/catalog.json';
-import calendarDe from './locales/de/calendar.json';
-import storeSettingsDe from './locales/de/store_settings.json';
-import storesDe from './locales/de/stores.json';
-import posDe from './locales/de/pos.json';
-import reservationsDe from './locales/de/reservations.json';
 import storefrontDe from './locales/de/storefront.json';
 import landingsDe from './locales/de/landings.json';
 import customerAuthDe from './locales/de/customer_auth.json';
 import customerPortalDe from './locales/de/customer_portal.json';
-import setupWizardDe from './locales/de/setup_wizard.json';
 import legalDe from './locales/de/legal.json';
 
 import commonFr from './locales/fr/common.json';
 import authFr from './locales/fr/auth.json';
-import settingsFr from './locales/fr/settings.json';
-import dashboardFr from './locales/fr/dashboard.json';
-import customersLightFr from './locales/fr/customers_light.json';
-import customerInsightsFr from './locales/fr/customerInsights.json';
-import newsletterFr from './locales/fr/newsletter.json';
-import cashflowMonitorFr from './locales/fr/cashflow_monitor.json';
 import prelaunchFr from './locales/fr/prelaunch.json';
-import teamFr from './locales/fr/team.json';
+// PL17 — restano sincroni: usati dai banner billing/paywall EAGER
+import settingsFr from './locales/fr/settings.json';
 import modulesPageFr from './locales/fr/modules_page.json';
 
-import productCatalogFr from './locales/fr/product_catalog.json';
-import productCostFr from './locales/fr/product_cost.json';
-import productsFr from './locales/fr/products.json';
 
-import entitiesFr from './locales/fr/entities.json';
-import ordersFr from './locales/fr/orders.json';
-import dataIntegrityFr from './locales/fr/data_integrity.json';
 import catalogFr from './locales/fr/catalog.json';
-import calendarFr from './locales/fr/calendar.json';
-import storeSettingsFr from './locales/fr/store_settings.json';
-import storesFr from './locales/fr/stores.json';
-import posFr from './locales/fr/pos.json';
-import reservationsFr from './locales/fr/reservations.json';
 import storefrontFr from './locales/fr/storefront.json';
 import landingsFr from './locales/fr/landings.json';
 import customerAuthFr from './locales/fr/customer_auth.json';
 import customerPortalFr from './locales/fr/customer_portal.json';
-import setupWizardFr from './locales/fr/setup_wizard.json';
 import legalFr from './locales/fr/legal.json';
 
 // ── Supported languages ─────────────────────────────────────────────────────
@@ -320,13 +252,17 @@ const COLD_START_LNG = _detectColdStartLanguage();
 // ── Resources ───────────────────────────────────────────────────────────────
 const resources = {
 
-  it: { common: commonIt, auth: authIt, settings: settingsIt, dashboard: dashboardIt, customers_light: customersLightIt, customerInsights: customerInsightsIt, team: teamIt, modules_page: modulesPageIt, product_catalog: productCatalogIt, product_cost: productCostIt, products: productsIt, entities: entitiesIt, orders: ordersIt, catalog: catalogIt, calendar: calendarIt, data_integrity: dataIntegrityIt, store_settings: storeSettingsIt, setup_wizard: setupWizardIt, stores: storesIt, pos: posIt, reservations: reservationsIt, storefront: storefrontIt, landings: landingsIt, customer_auth: customerAuthIt, customer_portal: customerPortalIt, legal: legalIt, newsletter: newsletterIt, cashflow_monitor: cashflowMonitorIt, prelaunch: prelaunchIt },
-  en: { common: commonEn, auth: authEn, settings: settingsEn, dashboard: dashboardEn, customers_light: customersLightEn, customerInsights: customerInsightsEn, team: teamEn, modules_page: modulesPageEn, product_catalog: productCatalogEn, product_cost: productCostEn, products: productsEn, entities: entitiesEn, orders: ordersEn, catalog: catalogEn, calendar: calendarEn, data_integrity: dataIntegrityEn, store_settings: storeSettingsEn, setup_wizard: setupWizardEn, stores: storesEn, pos: posEn, reservations: reservationsEn, storefront: storefrontEn, landings: landingsEn, customer_auth: customerAuthEn, customer_portal: customerPortalEn, legal: legalEn, newsletter: newsletterEn, cashflow_monitor: cashflowMonitorEn, prelaunch: prelaunchEn },
-  de: { common: commonDe, auth: authDe, settings: settingsDe, dashboard: dashboardDe, customers_light: customersLightDe, customerInsights: customerInsightsDe, team: teamDe, modules_page: modulesPageDe, product_catalog: productCatalogDe, product_cost: productCostDe, products: productsDe, entities: entitiesDe, orders: ordersDe, data_integrity: dataIntegrityDe, catalog: catalogDe, calendar: calendarDe, store_settings: storeSettingsDe, setup_wizard: setupWizardDe, stores: storesDe, pos: posDe, reservations: reservationsDe, storefront: storefrontDe, landings: landingsDe, customer_auth: customerAuthDe, customer_portal: customerPortalDe, legal: legalDe, newsletter: newsletterDe, cashflow_monitor: cashflowMonitorDe, prelaunch: prelaunchDe },
-  fr: { common: commonFr, auth: authFr, settings: settingsFr, dashboard: dashboardFr, customers_light: customersLightFr, customerInsights: customerInsightsFr, team: teamFr, modules_page: modulesPageFr, product_catalog: productCatalogFr, product_cost: productCostFr, products: productsFr, entities: entitiesFr, orders: ordersFr, data_integrity: dataIntegrityFr, catalog: catalogFr, calendar: calendarFr, store_settings: storeSettingsFr, setup_wizard: setupWizardFr, stores: storesFr, pos: posFr, reservations: reservationsFr, storefront: storefrontFr, landings: landingsFr, customer_auth: customerAuthFr, customer_portal: customerPortalFr, legal: legalFr, newsletter: newsletterFr, cashflow_monitor: cashflowMonitorFr, prelaunch: prelaunchFr },
+  it: { common: commonIt, auth: authIt, catalog: catalogIt, storefront: storefrontIt, landings: landingsIt, customer_auth: customerAuthIt, customer_portal: customerPortalIt, legal: legalIt, prelaunch: prelaunchIt, settings: settingsIt, modules_page: modulesPageIt },
+  en: { common: commonEn, auth: authEn, catalog: catalogEn, storefront: storefrontEn, landings: landingsEn, customer_auth: customerAuthEn, customer_portal: customerPortalEn, legal: legalEn, prelaunch: prelaunchEn, settings: settingsEn, modules_page: modulesPageEn },
+  de: { common: commonDe, auth: authDe, catalog: catalogDe, storefront: storefrontDe, landings: landingsDe, customer_auth: customerAuthDe, customer_portal: customerPortalDe, legal: legalDe, prelaunch: prelaunchDe, settings: settingsDe, modules_page: modulesPageDe },
+  fr: { common: commonFr, auth: authFr, catalog: catalogFr, storefront: storefrontFr, landings: landingsFr, customer_auth: customerAuthFr, customer_portal: customerPortalFr, legal: legalFr, prelaunch: prelaunchFr, settings: settingsFr, modules_page: modulesPageFr },
 
 };
 
+// PL17 — qui vive SOLO il pubblico (landing, marketplace, portale
+// cliente, legal, prelaunch). I 20 namespace del back-office sono in
+// i18n-admin.js, caricato dal guscio Layout dentro i chunk lazy admin:
+// ~307KB gzip fuori dal percorso del visitatore.
 // ── Initialize ──────────────────────────────────────────────────────────────
 i18n.use(initReactI18next).init({
   resources,

@@ -61,7 +61,7 @@ export default function OperatorLandingPage() {
       {/* ── Hero: racconto + UNICO form ──────────────────────────── */}
       <section className="relative mx-auto max-w-6xl px-5 pt-6 md:px-10">
         <div className="grid items-start gap-10 lg:grid-cols-2">
-          <div>
+          <div className="rise-in">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em]" style={{ color: ACCENT }}>
               {t('op.eyebrow', { defaultValue: 'Per chi crea esperienze di benessere' })}
             </p>
@@ -84,7 +84,7 @@ export default function OperatorLandingPage() {
           </div>
 
           <div id="presentati" className="scroll-mt-8">
-            <div className="rounded-3xl border bg-white p-6 shadow-lg md:p-8"
+            <div className="rise-in rise-d2 rounded-3xl border bg-white p-6 shadow-lg md:p-8"
                  style={{ borderColor: `${ACCENT}33` }}>
               {/* vantaggio fondatori: la ragione per farlo ORA */}
               <div className="mb-5 flex items-start gap-2 rounded-2xl px-4 py-3"
@@ -130,7 +130,7 @@ export default function OperatorLandingPage() {
       <section className="mx-auto max-w-6xl px-5 py-16 md:px-10">
         <div className="grid gap-6 md:grid-cols-3">
           {benefits.map((b, i) => (
-            <div key={i} className="rounded-2xl border-t-2 border border-border bg-white p-6 shadow-sm"
+            <div key={i} className="rounded-2xl border-t-2 border border-border bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
                  style={{ borderTopColor: `${ACCENT}99` }}>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl"
                    style={{ background: `${ACCENT}14`, color: ACCENT }}>

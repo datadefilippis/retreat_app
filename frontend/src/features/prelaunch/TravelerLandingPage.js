@@ -58,7 +58,7 @@ export default function TravelerLandingPage() {
       {/* ── Hero ──────────────────────────────────────────────────── */}
       <section className="relative">
         <div className="relative mx-auto max-w-6xl overflow-hidden px-5 md:px-10">
-          <div className="relative overflow-hidden rounded-3xl">
+          <div className="rise-in relative overflow-hidden rounded-3xl">
             <img src="/media/hero-destination.webp" alt=""
                  className="h-[460px] w-full object-cover md:h-[540px]" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#1e2b26]/88 via-[#1e2b26]/55 to-[#1e2b26]/10" aria-hidden />
@@ -94,7 +94,7 @@ export default function TravelerLandingPage() {
         </h2>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {steps.map((s) => (
-            <div key={s.n} className="rounded-2xl border-t-2 bg-white p-6 shadow-sm"
+            <div key={s.n} className="rounded-2xl border-t-2 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
                  style={{ borderTopColor: `${GOLD}88` }}>
               <span className="font-heading text-2xl font-semibold" style={{ color: `${GOLD}` }}>{s.n}</span>
               <p className="mt-2 font-heading text-lg font-semibold text-foreground">{s.title}</p>
@@ -107,7 +107,7 @@ export default function TravelerLandingPage() {
       {/* ── Form + pilastri di fiducia ───────────────────────────── */}
       <section id="racconta" className="mx-auto max-w-6xl scroll-mt-8 px-5 py-16 md:px-10">
         <div className="grid gap-10 lg:grid-cols-2">
-          <div className="rounded-3xl border bg-white p-6 shadow-lg md:p-8"
+          <div className="rise-in rise-d1 rounded-3xl border bg-white p-6 shadow-lg md:p-8"
                style={{ borderColor: `${ACCENT}22` }}>
             <h2 className="font-heading text-2xl font-semibold text-foreground">
               {t('tr.formTitle', { defaultValue: 'Raccontaci cosa cerchi' }) }
