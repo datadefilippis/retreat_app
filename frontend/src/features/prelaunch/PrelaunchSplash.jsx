@@ -50,10 +50,10 @@ export default function PrelaunchSplash() {
 
         {/* Headline */}
         <h1 className="rise-in rise-d2 mt-6 max-w-3xl font-heading text-3xl font-medium leading-tight text-white text-hero-shadow md:text-5xl">
-          {t('splash.title', { defaultValue: 'Il benessere autentico sta per avere una casa' })}
+          {t('splash.title', { defaultValue: 'La casa dei ritiri olistici' })}
         </h1>
         <p className="rise-in rise-d2 mt-4 max-w-xl text-base text-white/85 md:text-lg">
-          {t('splash.subtitle', { defaultValue: 'Aurya riunisce i ritiri olistici d\u2019Italia in un unico luogo: chi li crea si fa trovare, chi li cerca li trova. Scegli la tua strada.' })}
+          {t('splash.subtitle', { defaultValue: 'Scopri il ritiro olistico pi\u00f9 adatto al tuo percorso oppure porta i tuoi su Aurya. Crediamo che ogni percorso di trasformazione inizi dall\u2019incontro tra le persone giuste e il luogo giusto. Per questo abbiamo creato uno spazio dove persone, operatori e strutture si incontrano.' })}
         </p>
 
         {/* Due strade */}
