@@ -280,13 +280,13 @@ function ScrollToTop() {
   return null;
 }
 
-// PL4 — in pre-lancio la home pubblica è lo splash con le due strade;
-// l'admin loggato vede comunque il marketplace vero (per testare).
+// PL4 — in pre-lancio la home è la splash con le due CTA per TUTTI,
+// anche l'admin loggato: così vedi sempre ciò che vede il pubblico.
+// Il back-office resta su /dashboard, l'anteprima oscurata su /ritiri.
 function HomeGate() {
   const { prelaunch, loading } = useSiteConfig();
-  const { isAuthenticated } = useAuth();
   if (loading) return null;
-  if (prelaunch && !isAuthenticated) return <PrelaunchSplash />;
+  if (prelaunch) return <PrelaunchSplash />;
   return <RetreatsCalendarPage />;
 }
 
