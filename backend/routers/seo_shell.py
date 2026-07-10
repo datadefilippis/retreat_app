@@ -120,10 +120,12 @@ def _inject(template: str, meta: dict) -> str:
         f'<meta property="og:title" content="{title}"/>',
         f'<meta property="og:description" content="{desc}"/>',
         '<meta property="og:type" content="website"/>',
+        '<meta property="og:site_name" content="Aurya"/>',
         '<meta name="twitter:card" content="summary_large_image"/>',
     ]
     if meta.get("image"):
         extra.append(f'<meta property="og:image" content="{_html.escape(meta["image"])}"/>')
+        extra.append(f'<meta name="twitter:image" content="{_html.escape(meta["image"])}"/>')
     if meta.get("canonical"):
         canonical = _html.escape(meta["canonical"])
         extra.append(f'<link rel="canonical" href="{canonical}"/>')
@@ -149,10 +151,11 @@ def _inject(template: str, meta: dict) -> str:
 
 
 def _abs_image(url: Optional[str]) -> str:
-    """Cover assoluta con fallback SEMPRE presente (logo Aurya)."""
+    """Cover assoluta con fallback SEMPRE presente (og-cover 1200x630:
+    il logo quadrato rende male nelle card social large)."""
     base = _base_url()
     if not url:
-        return f"{base}/logo-aurya.png"
+        return f"{base}/og-cover.jpg"
     if url.startswith("http"):
         return url
     return f"{base}{url}"
@@ -174,7 +177,7 @@ async def _meta_home() -> dict:
     return {
         # AN1 — il title porta la promessa, non solo la categoria
         # (docs/BRAND_AURYA.md): caparra protetta + recensioni verificate.
-        "title": "Aurya | Ritiri olistici ed esperienze che fanno crescere",
+        "title": "Aurya | Ritiri olistici ed esperienze per evolvere",
         "description": ("Trova e prenota ritiri di yoga, meditazione, detox "
                         "ed esperienze olistiche: prenoti online con caparra "
                         "protetta e recensioni solo verificate."),
@@ -192,6 +195,24 @@ async def _meta_home() -> dict:
 
 # AN1 — pagine istituzionali del brand: meta statiche, hreflang hub
 _BRAND_PAGES = {
+    # PL21 — le landing lead del pre-lancio: sono I link condivisi ora,
+    # devono avere titolo/descrizione/immagine social impeccabili.
+    "cerca-ritiro": {
+        "title": "Trova il tuo ritiro olistico | Aurya",
+        "description": ("C'è un ritiro che ti sta aspettando. Raccontaci "
+                        "cosa cerchi e al lancio ricevi una selezione di "
+                        "ritiri olistici scelti per te, con caparra e "
+                        "pagamento diretto online."),
+        "image": "/media/hero-destination.webp",
+    },
+    "per-operatori": {
+        "title": "Porta i tuoi ritiri su Aurya | Per operatori olistici",
+        "description": ("Tu crei l'esperienza, noi la facciamo trovare. "
+                        "Visibilità vera, prenotazioni con caparra e "
+                        "pagamento diretto. I primi operatori partono "
+                        "da fondatori."),
+        "image": "/media/hero-organizer.webp",
+    },
     "chi-siamo": {
         "title": "Chi siamo | Aurya, il marketplace dei ritiri olistici",
         "description": ("Aurya connette chi cerca benessere autentico con chi "
@@ -217,7 +238,9 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
         **page,
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
-        "image": f"{base}/logo-aurya.png",
+        # immagine per-pagina se dichiarata (landing lead), altrimenti og-cover
+        "image": (f"{base}{page['image']}" if page.get("image")
+                  else f"{base}/og-cover.jpg"),
     }
 
 
@@ -246,7 +269,7 @@ async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
                         "con la caparra su Aurya."),
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
-        "image": f"{base}/logo-aurya.png",
+        "image": f"{base}/og-cover.jpg",
         "jsonld": blocks or None,
         # anti thin-content: categoria senza ritiri prenotabili → noindex
         "noindex": empty,
@@ -356,7 +379,7 @@ async def _meta_blog_list() -> dict:
                         "organizza e vive i ritiri."),
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
-        "image": f"{base}/logo-aurya.png",
+        "image": f"{base}/og-cover.jpg",
         "jsonld": sx.breadcrumb([("Aurya", f"{base}/"), ("Blog", canonical)]),
     }
 
@@ -479,7 +502,7 @@ async def _meta_destination(place_slug: Optional[str] = None) -> dict:
                             "su Aurya."),
             "canonical": canonical,
             "hreflang": _hub_hreflang(canonical),
-            "image": f"{base}/logo-aurya.png",
+            "image": f"{base}/og-cover.jpg",
             "jsonld": sx.breadcrumb([("Aurya", f"{base}/"),
                                      ("Destinazioni", canonical)]),
         }
@@ -502,7 +525,7 @@ async def _meta_destination(place_slug: Optional[str] = None) -> dict:
                         "Prenota online con la caparra."),
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
-        "image": f"{base}/logo-aurya.png",
+        "image": f"{base}/og-cover.jpg",
         "jsonld": blocks or None,
         # destinazione senza ritiri prenotabili → noindex (thin content)
         "noindex": empty,
@@ -521,7 +544,7 @@ async def _meta_experiences(category: Optional[str] = None) -> dict:
                         "in sicurezza."),
         "canonical": f"{base}{path}",
         "hreflang": _hub_hreflang(f"{base}{path}"),
-        "image": f"{base}/logo-aurya.png",
+        "image": f"{base}/og-cover.jpg",
     }
 
 
@@ -537,7 +560,7 @@ async def _meta_operators_index(category: Optional[str] = None) -> dict:
                         "prenotazione online con caparra."),
         "canonical": f"{base}{path}",
         "hreflang": _hub_hreflang(f"{base}{path}"),
-        "image": f"{base}/logo-aurya.png",
+        "image": f"{base}/og-cover.jpg",
     }
 
 
@@ -669,7 +692,7 @@ async def _meta_store(slug: str) -> Optional[dict]:
         "description": (store.get("description") or "")[:300]
                        or f"Il negozio di {name} su Aurya.",
         "canonical": canonical,
-        "image": f"{base}/logo-aurya.png",
+        "image": f"{base}/og-cover.jpg",
         "jsonld": [jsonld, crumbs] if crumbs else jsonld,
     }
 

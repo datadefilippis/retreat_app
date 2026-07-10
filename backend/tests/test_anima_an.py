@@ -93,7 +93,7 @@ class TestBrandFoundationsAn1:
         assert "_BRAND_PAGES" in src
         assert '"chi-siamo"' in src and '"come-funziona"' in src
         # e la home porta la promessa, non un title generico ne' geografie
-        assert "che fanno crescere" in src
+        assert "per evolvere" in src   # frase brand aggiornata (founder 10/7)
         assert "marketplace italiano" not in src
 
     def test_sitemap_includes_brand_pages(self):
