@@ -39,14 +39,30 @@ const fmtDate = (iso) => {
 };
 
 const toCsv = (rows) => {
-  const head = ['email', 'type', 'name', 'language', 'consent', 'created_at', 'message'];
+  // PL10 — export completo: include i campi di profilazione dei form v2
+  const head = ['email', 'type', 'name', 'phone', 'city', 'interests',
+                'budget', 'activity', 'language', 'consent', 'created_at', 'message'];
   const esc = (v) => {
-    const s = v == null ? '' : String(v);
+    const s = v == null ? '' : Array.isArray(v) ? v.join('; ') : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const lines = [head.join(',')];
   rows.forEach((r) => lines.push(head.map((k) => esc(r[k])).join(',')));
   return lines.join('\n');
+};
+
+/** Sintesi leggibile della profilazione: interessi+budget (viaggiatore)
+ *  o attività+telefono (operatore). */
+const leadDetails = (r) => {
+  const parts = [];
+  if (r.type === 'operator') {
+    if (r.activity) parts.push(r.activity);
+    if (r.phone) parts.push(r.phone);
+  } else {
+    if (Array.isArray(r.interests) && r.interests.length) parts.push(r.interests.join(', '));
+    if (r.budget) parts.push(r.budget);
+  }
+  return parts.join(' · ') || '—';
 };
 
 const LeadsTab = () => {
@@ -145,7 +161,8 @@ const LeadsTab = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Nome</TableHead>
-                    <TableHead>Lingua</TableHead>
+                    <TableHead>Località</TableHead>
+                    <TableHead>Profilo</TableHead>
                     <TableHead>Iscritto</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -155,7 +172,13 @@ const LeadsTab = () => {
                       <TableCell className="font-medium">{r.email}</TableCell>
                       <TableCell>{TYPE_BADGE[r.type] || r.type}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{r.name || '—'}</TableCell>
-                      <TableCell className="text-sm uppercase text-muted-foreground">{r.language || '—'}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{r.city || '—'}</TableCell>
+                      {/* PL10 — sintesi profilazione: interessi+budget o attività+telefono;
+                          la descrizione operatore appare come titolo al passaggio */}
+                      <TableCell className="max-w-[260px] truncate text-sm text-muted-foreground"
+                                 title={r.message || undefined}>
+                        {leadDetails(r)}
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">{fmtDate(r.created_at)}</TableCell>
                     </TableRow>
                   ))}

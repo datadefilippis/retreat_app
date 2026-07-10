@@ -81,15 +81,18 @@ async def _public_org_slugs() -> dict:
     """org_id → slug pubblico (store pubblicato; fallback public_slug)."""
     from database import stores_collection, organizations_collection
     slug_by_org: dict = {}
+    # PL9 — i campioni di pre-lancio non entrano MAI in sitemap:
+    # le loro pagine rispondono 404 e non vanno offerte ai crawler.
     stores = await stores_collection.find(
         {"is_published": True, "is_active": True, "visibility": "public",
-         "slug": {"$nin": [None, ""]}},
+         "slug": {"$nin": [None, ""]}, "is_sample": {"$ne": True}},
         {"_id": 0, "organization_id": 1, "slug": 1},
     ).to_list(1000)
     for s in stores:
         slug_by_org.setdefault(s["organization_id"], s["slug"])
     async for org in organizations_collection.find(
-            {"public_slug": {"$nin": [None, ""]}},
+            {"public_slug": {"$nin": [None, ""]},
+             "is_sample": {"$ne": True}},
             {"_id": 0, "id": 1, "public_slug": 1}):
         slug_by_org.setdefault(org["id"], org["public_slug"])
     return slug_by_org

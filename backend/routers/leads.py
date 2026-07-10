@@ -33,6 +33,13 @@ class LeadPayload(BaseModel):
     name: Optional[str] = Field(default=None, max_length=120)
     message: Optional[str] = Field(default=None, max_length=1000)
     language: Optional[str] = Field(default=None, max_length=5)
+    # PL10 — profilazione lead: il form arricchito raccoglie contesto
+    # per un follow-up mirato (mai obbligatori, il form resta gentile).
+    phone: Optional[str] = Field(default=None, max_length=40)          # operatore
+    city: Optional[str] = Field(default=None, max_length=120)          # entrambi
+    interests: Optional[list[str]] = Field(default=None, max_length=12)  # viaggiatore
+    budget: Optional[str] = Field(default=None, max_length=40)         # viaggiatore
+    activity: Optional[str] = Field(default=None, max_length=80)       # operatore
     # GDPR: consenso esplicito richiesto (il form lo impone)
     consent: bool = False
 
@@ -52,6 +59,13 @@ async def create_lead(request: Request, payload: LeadPayload):
         "name": (payload.name or "").strip()[:120] or None,
         "message": (payload.message or "").strip()[:1000] or None,
         "language": (payload.language or "")[:5] or None,
+        # PL10 — campi di profilazione (facoltativi, sanificati)
+        "phone": (payload.phone or "").strip()[:40] or None,
+        "city": (payload.city or "").strip()[:120] or None,
+        "interests": [str(i).strip()[:40] for i in (payload.interests or [])
+                      if str(i).strip()][:12] or None,
+        "budget": (payload.budget or "").strip()[:40] or None,
+        "activity": (payload.activity or "").strip()[:80] or None,
         "consent": bool(payload.consent),
         "updated_at": now,
     }
@@ -74,11 +88,17 @@ async def create_lead(request: Request, payload: LeadPayload):
         try:
             from services.email_service import send_email
             label = "operatore" if lead_type == "operator" else "viaggiatore"
+            _interessi = ", ".join(doc_set["interests"] or []) or "—"
             html = (
                 f"<h2>Nuovo lead pre-lancio Aurya</h2>"
                 f"<p><b>Tipo:</b> {label}</p>"
                 f"<p><b>Email:</b> {email}</p>"
                 f"<p><b>Nome:</b> {doc_set['name'] or '—'}</p>"
+                f"<p><b>Telefono:</b> {doc_set['phone'] or '—'}</p>"
+                f"<p><b>Località:</b> {doc_set['city'] or '—'}</p>"
+                f"<p><b>Attività:</b> {doc_set['activity'] or '—'}</p>"
+                f"<p><b>Interessi:</b> {_interessi}</p>"
+                f"<p><b>Budget:</b> {doc_set['budget'] or '—'}</p>"
                 f"<p><b>Messaggio:</b> {doc_set['message'] or '—'}</p>"
             )
             send_email("info@aurya.life",

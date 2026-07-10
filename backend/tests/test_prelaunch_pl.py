@@ -66,23 +66,49 @@ def _src(module_relpath: str) -> str:
 
 
 def test_public_listings_gate_samples_behind_flag():
-    """I listing pubblici devono nascondere i sample quando il flag è OFF
-    e sbloccarli SOLO in pre-lancio."""
+    """PL8 — specchio esatto: flag OFF = solo contenuti VERI (sample
+    nascosti); flag ON = SOLO campioni (i veri non compaiono)."""
     src = _src("routers/public.py")
-    # retreats: i sample bypassano il gate Stripe SOLO in prelaunch
+    # retreats: in prelaunch il gate diventa SOLO sample (niente |=)
     assert "if prelaunch_mode():" in src
-    assert "pay_ready |= sample_orgs" in src
-    # operatori: sample saltati se non prelaunch
-    assert "if _is_sample and not _prelaunch:" in src
-    assert "continue" in src
+    assert "pay_ready = set(sample_orgs)" in src
+    assert "pay_ready |= sample_orgs" not in src, \
+        "regressione: i ritiri veri comparirebbero in pre-lancio"
+    # operatori: specchio sample <=> prelaunch
+    assert "if _is_sample != _prelaunch:" in src
+    # destinazioni ed esperienze: stessi confini
+    assert "allowed_orgs = public_orgs & pay_ready" in src
     # entrambi marcano l'item come sample per il frontend (sfocatura)
     assert '"sample"' in src
 
 
-def test_resolve_org_404_for_sample_outside_prelaunch():
-    """La landing operatore campione non è raggiungibile fuori pre-lancio."""
+def test_resolve_org_404_for_sample_always():
+    """PL9 — un'org campione non ha MAI una pagina propria: 404 sempre
+    (profilo, landing, store), anche in pre-lancio. Le card in vetrina
+    non sono cliccabili, quindi nessun percorso legittimo ci arriva."""
     src = _src("routers/public.py")
-    assert 'org.get("is_sample") and not prelaunch_mode()' in src
+    assert 'if org.get("is_sample"):' in src
+    assert 'org.get("is_sample") and not prelaunch_mode()' not in src, \
+        "regressione: la landing campione tornerebbe raggiungibile"
+
+
+def test_sample_identity_redacted_server_side():
+    """PL9 — l'identità finta non lascia mai il server: titolo, nome
+    organizzatore, rating e bio dei sample sono redatti nel payload
+    (il frontend mostra segnaposto sfocati)."""
+    src = _src("routers/public.py")
+    assert '"title": "" if _smp else prod.get("name")' in src
+    assert '"org_name": "" if _smp else' in src
+    assert '"org_rating": None if _smp else' in src
+    assert '"venue_name": None if _smp else' in src
+    assert '"name": "" if _is_sample else' in src
+    assert '"bio": None if _is_sample else' in src
+
+
+def test_samples_never_in_sitemap():
+    """PL9 — le pagine campione rispondono 404: mai offrirle ai crawler."""
+    src = _src("routers/seo.py")
+    assert '"is_sample": {"$ne": True}' in src
 
 
 def test_checkout_blocks_sample_retreats():
@@ -104,6 +130,23 @@ def test_wipe_covers_all_sample_collections():
     # un solo predicato, marchio condiviso
     assert "SAMPLE_FLAG" in src
     assert "delete_many" in src
+
+
+def test_lead_payload_profiling_fields():
+    """PL10 — il form arricchito raccoglie profilazione: viaggiatore
+    (città, interessi, budget) e operatore (telefono, località,
+    attività, descrizione). Tutti facoltativi: solo email+consenso
+    sono obbligatori, il form resta gentile."""
+    from routers.leads import LeadPayload
+    fields = LeadPayload.model_fields
+    for f in ("phone", "city", "interests", "budget", "activity", "message"):
+        assert f in fields, f"campo lead mancante: {f}"
+        assert not fields[f].is_required(), f"{f} deve restare facoltativo"
+    assert fields["email"].is_required()
+    # i campi profilati vengono persistiti (non solo accettati)
+    src = _src("routers/leads.py")
+    for f in ('"phone"', '"city"', '"interests"', '"budget"', '"activity"'):
+        assert f in src
 
 
 def test_wipe_and_seed_share_the_same_flag():

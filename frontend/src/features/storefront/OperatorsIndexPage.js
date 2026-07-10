@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
+import Redacted from '../prelaunch/Redacted';
 import GeoSearchBar from './components/GeoSearchBar';
 import useSeoMeta from './lib/useSeoMeta';
 
@@ -56,7 +57,10 @@ function OperatorCard({ op, t }) {
         </div>
       </div>
       <div className="pt-8 px-4 pb-4">
-        <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{op.name}</p>
+        {/* PL9 — nome campione: segnaposto sfocato, mai il nome finto */}
+        <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+          {op.sample ? <Redacted kind="name" /> : op.name}
+        </p>
         {/* AN3 — posizione dal profilo + distanza quando c'è un punto */}
         {(op.city || op.region || op.distance_km != null) && (
           <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -68,9 +72,13 @@ function OperatorCard({ op, t }) {
             )}
           </p>
         )}
-        {op.bio && (
+        {op.sample ? (
+          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+            <Redacted kind="text" />
+          </p>
+        ) : op.bio ? (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{op.bio}</p>
-        )}
+        ) : null}
         <div className="mt-2 flex flex-wrap gap-1.5">
           {(op.categories || []).slice(0, 3).map(c => (
             <span key={c} className="rounded-full bg-secondary px-2 py-0.5 text-[11px] text-secondary-foreground">

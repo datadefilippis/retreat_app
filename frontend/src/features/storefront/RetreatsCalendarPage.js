@@ -19,6 +19,7 @@ import api from '../../api/client';
 import GeoSearchBar from './components/GeoSearchBar';
 import MarketplaceShell from './components/MarketplaceShell';
 import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
+import Redacted from '../prelaunch/Redacted';
 import MarketplaceValueSections from './components/MarketplaceValueSections';
 // G3 — vista mappa lazy (Leaflet caricato solo quando serve)
 const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'));
@@ -466,7 +467,11 @@ export default function RetreatsCalendarPage() {
                         defaultValue: (data.categories || {})[item.category] || item.category || '',
                       })}
                     </p>
-                    <h2 className="font-semibold text-foreground mt-0.5 line-clamp-2">{item.title}</h2>
+                    {/* PL9 — sui campioni il titolo è un segnaposto sfocato,
+                        mai il nome finto (né visibile né nel DOM) */}
+                    <h2 className="font-semibold text-foreground mt-0.5 line-clamp-2">
+                      {item.sample ? <Redacted kind="title" /> : item.title}
+                    </h2>
                     <p className="text-sm text-muted-foreground mt-1">
                       {fmtDates(item.start_at, item.end_at, i18n.language)}
                       {(item.city || item.region) && (
@@ -498,9 +503,11 @@ export default function RetreatsCalendarPage() {
                         }}
                         className="text-sm text-muted-foreground hover:text-primary hover:underline truncate"
                       >
-                        {item.org_name}
+                        {/* PL9 — organizzatore campione: segnaposto sfocato e
+                            NIENTE rating (una recensione finta è fuorviante) */}
+                        {item.sample ? <Redacted kind="name" /> : item.org_name}
                         {/* AN7 — recensioni verificate visibili dove si sceglie */}
-                        {item.org_rating?.count > 0 && (
+                        {!item.sample && item.org_rating?.count > 0 && (
                           <span className="ml-1.5 text-xs text-foreground whitespace-nowrap">
                             ★ {item.org_rating.avg}
                             <span className="text-muted-foreground"> ({item.org_rating.count})</span>

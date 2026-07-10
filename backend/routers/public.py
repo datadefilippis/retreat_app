@@ -497,10 +497,11 @@ async def _resolve_org(slug: str) -> dict:
         org = await _resolve_org_uncached(slug)  # raises 404 on miss (non cacheato)
         _resolve_org_cache[slug] = (now, org)
         org = copy.deepcopy(org)
-    # PL3 — un'org CAMPIONE è raggiungibile (profilo/landing/store) SOLO
-    # in pre-lancio; a flag spento risponde 404 come se non esistesse.
-    from core.prelaunch import prelaunch_mode
-    if org.get("is_sample") and not prelaunch_mode():
+    # PL9 — un'org CAMPIONE non ha MAI una pagina propria (profilo,
+    # landing, store): esiste solo come card oscurata in vetrina. 404
+    # sempre, cosi' nessuna identita' finta e' raggiungibile o
+    # indicizzabile via URL diretto.
+    if org.get("is_sample"):
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Not found")
     return org
@@ -3498,7 +3499,10 @@ async def list_public_retreats(
     # lato frontend). A flag spento: comportamento identico a oggi.
     from core.prelaunch import prelaunch_mode
     if prelaunch_mode():
-        pay_ready |= sample_orgs
+        # PL8 — vetrina di pre-lancio: SOLO i campioni. I ritiri VERI
+        # restano nascosti finche' il lancio non apre: niente mix
+        # reale/finto e nessuna prenotazione prematura in vetrina.
+        pay_ready = set(sample_orgs)
     org_slug = {oid: s for oid, s in org_slug.items() if oid in pay_ready}
 
     items = []
@@ -3519,27 +3523,33 @@ async def list_public_retreats(
                 and occ.get("longitude") is not None:
             distance_km = round(_haversine_km(
                 lat, lng, occ["latitude"], occ["longitude"]), 1)
+        # PL9 — sui campioni l'identita' non lascia mai il server:
+        # niente titolo, nome organizzatore o rating nel payload (il
+        # frontend mostra segnaposto sfocati). Categoria, luogo, date e
+        # prezzo restano: e' cio' che rende credibile l'anteprima.
+        _smp = prod["organization_id"] in sample_orgs
         items.append({
             "distance_km": distance_km,
             "country": occ.get("country"),
             "latitude": occ.get("latitude"),
             "longitude": occ.get("longitude"),
-            "title": prod.get("name"),
+            "title": "" if _smp else prod.get("name"),
             "category": prod.get("category"),
-            "org_name": org_name.get(prod["organization_id"], ""),
+            "org_name": "" if _smp else org_name.get(prod["organization_id"], ""),
             "org_slug": slug_org,
             # MD3 — promessa Pro resa vera: badge + boost nel calendario
             "featured": org_featured.get(prod["organization_id"], False),
-            "org_rating": org_rating.get(prod["organization_id"]),
+            "org_rating": None if _smp else org_rating.get(prod["organization_id"]),
             # PL3 — il frontend sfoca e disabilita la prenotazione sui sample
-            "sample": prod["organization_id"] in sample_orgs,
+            "sample": _smp,
             "slug": occ["slug"],
             "url": f"/e/{slug_org}/{occ['slug']}",
             "start_at": occ.get("start_at"),
             "end_at": occ.get("end_at"),
             "city": occ.get("city"),
             "region": occ.get("region"),
-            "venue_name": occ.get("venue_name"),
+            # PL9 — anche il nome della location resta riservato sui campioni
+            "venue_name": None if _smp else occ.get("venue_name"),
             "cover_image_url": occ.get("cover_image_url") or prod.get("image_url"),
             "price_from": price_from,
             "remaining": (cap - reserved) if cap else None,
@@ -3683,9 +3693,20 @@ async def public_destinations_index():
             {"_id": 0, "organization_id": 1}):
         pay_ready.add(pc["organization_id"])
 
+    # PL8 — in pre-lancio le destinazioni derivano SOLO dai campioni
+    # (stessa regola del calendario: la vetrina mostra solo sample).
+    from core.prelaunch import prelaunch_mode
+    if prelaunch_mode():
+        allowed_orgs: set = set()
+        async for o in organizations_collection.find(
+                {"id": {"$in": org_ids}, "is_sample": True},
+                {"_id": 0, "id": 1}):
+            allowed_orgs.add(o["id"])
+    else:
+        allowed_orgs = public_orgs & pay_ready
+
     listable_products = {p["id"] for p in prods
-                         if p["organization_id"] in public_orgs
-                         and p["organization_id"] in pay_ready}
+                         if p["organization_id"] in allowed_orgs}
     occs = [o for o in occs if o.get("product_id") in listable_products]
 
     counts: dict = {}
@@ -3725,6 +3746,18 @@ async def public_experiences_index(category: str = Query(default=None, max_lengt
     slug_by_org = {s["organization_id"]: s["slug"] for s in stores}
     name_by_org = {s["organization_id"]: s.get("name") or s["slug"]
                    for s in stores}
+
+    # PL8 — in pre-lancio niente esperienze di operatori veri: restano
+    # solo le org campione (che non ne hanno → hub vuoto, coerente).
+    from core.prelaunch import prelaunch_mode
+    if prelaunch_mode() and slug_by_org:
+        from database import organizations_collection
+        _sample_ids: set = set()
+        async for _o in organizations_collection.find(
+                {"id": {"$in": list(slug_by_org)}, "is_sample": True},
+                {"_id": 0, "id": 1}):
+            _sample_ids.add(_o["id"])
+        slug_by_org = {k: v for k, v in slug_by_org.items() if k in _sample_ids}
 
     q = {"organization_id": {"$in": list(slug_by_org)},
          "is_active": True, "is_published": True,
@@ -3841,8 +3874,10 @@ async def public_operators_index(
         if not org:
             continue
         _is_sample = bool(org.get("is_sample"))
-        if _is_sample and not _prelaunch:
-            continue   # sample nascosti quando il pre-lancio è spento
+        if _is_sample != _prelaunch:
+            # PL8 — specchio esatto: flag OFF = solo operatori veri;
+            # flag ON = SOLO campioni (i veri non compaiono in vetrina).
+            continue
         b = by_org.get(s["organization_id"],
                        {"categories": set(), "retreats": 0,
                         "products": 0, "regions": set()})
@@ -3864,10 +3899,12 @@ async def public_operators_index(
             "org_slug": s["slug"],
             # OP4 — il TITOLO pubblico e' il nome dell'organizzazione
             # (settings), unica fonte; i nomi store restano fallback
-            "name": (org.get("name") or ss.get("display_name")
-                     or s.get("name") or s["slug"]),
-            "bio": ((_tr.get("bio") or pp.get("bio")
-                     or s.get("description") or "")[:200]) or None,
+            # PL9 — identita' campione redatta lato server (il
+            # frontend rende segnaposto sfocati al suo posto)
+            "name": "" if _is_sample else (org.get("name")
+                     or ss.get("display_name") or s.get("name") or s["slug"]),
+            "bio": None if _is_sample else (((_tr.get("bio") or pp.get("bio")
+                     or s.get("description") or "")[:200]) or None),
             "logo_url": s.get("logo_url") or ss.get("logo_url")
                         or pp.get("logo_url"),
             "cover_url": pp.get("cover_url"),

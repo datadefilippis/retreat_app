@@ -105,7 +105,10 @@ class TestPublicName:
         """La risoluzione 'org.name prima dei nomi store' deve restare
         su tutte e 4 le superfici (regressione = incongruenza)."""
         pub = (BACKEND_DIR / "routers" / "public.py").read_text()
-        assert '"name": (org.get("name") or ss.get("display_name")' in pub
+        # PL9: davanti c'è la redazione dei campioni, ma la risoluzione
+        # resta org-first (org.name → display_name → store name → slug)
+        assert '"name": "" if _is_sample else (org.get("name")' in pub
+        assert 'or ss.get("display_name") or s.get("name") or s["slug"])' in pub
         assert '"name": org.get("name") or store.get("name")' in pub
         assert 'org_name[o["id"]] = o.get("name") or' in pub
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
