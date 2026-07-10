@@ -13,6 +13,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
+import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
 import GeoSearchBar from './components/GeoSearchBar';
 import useSeoMeta from './lib/useSeoMeta';
 
@@ -24,12 +25,23 @@ import { CategoryIcon } from './lib/categoryIcons';
 function OperatorCard({ op, t }) {
   return (
     <Link
-      to={`/o/${op.org_slug}`}
-      className="group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow"
+      to={op.sample ? '#' : `/o/${op.org_slug}`}
+      onClick={op.sample ? (e) => e.preventDefault() : undefined}
+      className={`group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow ${op.sample ? 'pointer-events-none select-none' : ''}`}
     >
       <div className="h-24 bg-gradient-to-br from-primary/15 to-secondary relative">
+        {/* PL6 — operatore campione: cover sfocata + chip anteprima */}
+        {op.sample && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#1e2b26]/25 backdrop-blur-[1px]">
+            <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-[#376254] shadow">
+              {t('landings:calendar.comingSoon', { defaultValue: 'Presto disponibile' })}
+            </span>
+          </div>
+        )}
         {op.cover_url && (
-          <img src={op.cover_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img src={op.cover_url} alt=""
+               className={`w-full h-full object-cover ${op.sample ? 'blur-[3px] scale-105' : ''}`}
+               loading="lazy" />
         )}
         {/* GT3 — badge dei piani "In evidenza" anche nell'aggregatore */}
         {op.featured && (
@@ -169,6 +181,7 @@ export default function OperatorsIndexPage() {
 
   return (
     <MarketplaceShell>
+      <PrelaunchBanner audience="operator" />
       <header className="relative text-white overflow-hidden">
         {/* le mani in mudra del founder: chi organizza è il volto della pagina */}
         <img aria-hidden src="/media/hero-organizer.webp" alt="" fetchpriority="high"

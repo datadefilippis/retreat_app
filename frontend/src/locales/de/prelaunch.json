@@ -1,0 +1,64 @@
+{
+  "splash": {
+    "seoTitle": "Aurya — der Marktplatz für spirituelle Retreats öffnet bald",
+    "seoDesc": "Aurya verbindet Menschen, die spirituelle Retreats gestalten, mit denen, die sie suchen. Wir bereiten den Start vor: Hinterlasse deine E-Mail und sei unter den Ersten.",
+    "badge": "Wir bereiten den Start vor",
+    "title": "Der Marktplatz für spirituelle Retreats öffnet bald",
+    "subtitle": "Aurya verbindet Menschen, die echte Wohlfühl-Erlebnisse schaffen, mit denen, die sie suchen. Wähle deinen Weg.",
+    "travelerTitle": "Suchst du ein spirituelles Retreat?",
+    "travelerText": "Entdecke das Projekt und sichere dir zum Start als Erste:r deinen Platz.",
+    "operatorTitle": "Bist du im spirituellen Bereich tätig?",
+    "operatorText": "Bring deine Retreats zu Aurya und lass dich von denen finden, die genau dich suchen.",
+    "discover": "Mehr erfahren",
+    "peek": "Wirf einen Blick auf die Retreat-Vorschau"
+  },
+  "banner": {
+    "title": "Wir bereiten den Start vor.",
+    "body": "Dies sind Beispiel-Retreats: Bald findest du hier die echten, online buchbar.",
+    "cta": "Zum Start benachrichtigen"
+  },
+  "form": {
+    "name": "Dein Name (optional)",
+    "email": "Deine E-Mail",
+    "consent": "Ich bin einverstanden, per E-Mail über den Start von Aurya informiert zu werden.",
+    "privacy": "Datenschutz",
+    "cta": "Zum Start benachrichtigen",
+    "thanksTitle": "Du bist dabei!",
+    "thanksBody": "Wir schreiben dir, sobald Aurya öffnet. Bis bald."
+  },
+  "op": {
+    "seoTitle": "Aurya für Anbieter:innen — bring deine Retreats dorthin, wo man dich sucht",
+    "seoDesc": "Auf Aurya werden deine spirituellen Retreats von denen gefunden, die sie suchen: Sichtbarkeit in Suchmaschinen, Buchungen mit geschützter Anzahlung, einfache Verwaltung. Melde dich zum Start an.",
+    "eyebrow": "Für spirituelle Anbieter:innen",
+    "title": "Bring deine Retreats dorthin, wo die Suchenden dich finden",
+    "subtitle": "Aurya öffnet bald: der italienische Marktplatz für spirituelle Retreats, gemacht, damit man dich findet und online bucht. Hinterlasse deine E-Mail und sei unter den ersten Anbieter:innen an Bord.",
+    "switch": "Suchst du ein Retreat?",
+    "b1t": "Man findet dich wirklich",
+    "b1b": "Profil und Retreats optimiert für Suchmaschinen und deine Region: Du erscheinst genau bei denen, die suchen, was du anbietest.",
+    "b2t": "Buchungen mit geschützter Anzahlung",
+    "b2b": "Nimm Zahlungen online entgegen, mit Anzahlung und Restbetrag, geschützt durch Stripe. Weniger leere Plätze, weniger No-Shows.",
+    "b3t": "Verwaltung ohne Sorgen",
+    "b3b": "Kalender, Teilnehmende, automatische Erinnerungen und verifizierte Bewertungen: Du kümmerst dich um das Erlebnis, um den Rest kümmert sich Aurya.",
+    "ctaTitle": "Willst du unter den Ersten sein?",
+    "ctaBody": "Wir schreiben dir, sobald die Anmeldung für Anbieter:innen öffnet.",
+    "back": "Zurück zur Startseite"
+  },
+  "tr": {
+    "seoTitle": "Aurya — spirituelle Retreats mit Sorgfalt ausgewählt, bald online",
+    "seoDesc": "Aurya öffnet bald: spirituelle Retreats von sorgfältig ausgewählten Anbieter:innen, mit geschützter Anzahlung und verifizierten Bewertungen. Hinterlasse deine E-Mail und buche als Erste:r.",
+    "eyebrow": "Für alle, die echtes Wohlbefinden suchen",
+    "title": "Spirituelle Retreats, mit Sorgfalt ausgewählt",
+    "subtitle": "Aurya öffnet bald. Yoga, Meditation, Wanderwege und vieles mehr, von sorgfältig ausgewählten Anbieter:innen in ganz Italien. Sei unter den Ersten, die buchen.",
+    "switch": "Bist du Anbieter:in?",
+    "formTitle": "Wir benachrichtigen dich, sobald wir öffnen",
+    "formBody": "Hinterlasse deine E-Mail: Du entdeckst die Retreats als Erste:r und buchst als Erste:r — mit einem besonderen Blick für alle, die von Anfang an dabei sind.",
+    "peek": "Wirf einen Blick auf die Retreat-Vorschau",
+    "b1t": "Sorgfältig ausgewählte Anbieter:innen",
+    "b1b": "Jede:r Anbieter:in hat ein verifiziertes Profil: Du weißt, wer organisiert, wo und was angeboten wird, bevor du aufbrichst.",
+    "b2t": "Geschützte Anzahlung",
+    "b2b": "Sichere dir deinen Platz mit einer durch Stripe geschützten Anzahlung. Keine Überraschungen, keine Überweisung ins Ungewisse.",
+    "b3t": "Echte Bewertungen",
+    "b3b": "Nur wer wirklich teilgenommen hat, kann bewerten. Wähle im Vertrauen auf authentische Stimmen.",
+    "back": "Zurück zur Startseite"
+  }
+}

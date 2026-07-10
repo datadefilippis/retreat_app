@@ -1,0 +1,64 @@
+{
+  "splash": {
+    "seoTitle": "Aurya — il marketplace dei ritiri olistici sta per aprire",
+    "seoDesc": "Aurya connette chi crea ritiri olistici con chi li cerca. Stiamo preparando il lancio: lascia la tua email e sarai tra i primi.",
+    "badge": "Stiamo preparando il lancio",
+    "title": "Il marketplace dei ritiri olistici sta per aprire",
+    "subtitle": "Aurya connette chi crea esperienze di benessere autentico con chi le cerca. Scegli la tua strada.",
+    "travelerTitle": "Cerchi un ritiro olistico?",
+    "travelerText": "Scopri il progetto e sii tra i primi a prenotare al lancio.",
+    "operatorTitle": "Sei un operatore olistico?",
+    "operatorText": "Porta i tuoi ritiri su Aurya e fatti trovare da chi cerca proprio te.",
+    "discover": "Scopri di più",
+    "peek": "Dai un’occhiata all’anteprima dei ritiri"
+  },
+  "banner": {
+    "title": "Stiamo preparando il lancio.",
+    "body": "Questi sono ritiri d’esempio: presto qui troverai quelli veri, prenotabili online.",
+    "cta": "Avvisami al lancio"
+  },
+  "form": {
+    "name": "Il tuo nome (facoltativo)",
+    "email": "La tua email",
+    "consent": "Acconsento a essere contattato via email sul lancio di Aurya.",
+    "privacy": "Privacy",
+    "cta": "Avvisami al lancio",
+    "thanksTitle": "Ci sei!",
+    "thanksBody": "Ti scriviamo appena Aurya apre. A presto."
+  },
+  "op": {
+    "seoTitle": "Aurya per operatori — porta i tuoi ritiri dove ti cercano",
+    "seoDesc": "Su Aurya i tuoi ritiri olistici si fanno trovare da chi li cerca: visibilità sui motori, prenotazioni con caparra protetta, gestione semplice. Iscriviti al lancio.",
+    "eyebrow": "Per operatori olistici",
+    "title": "Porta i tuoi ritiri dove chi li cerca ti trova",
+    "subtitle": "Aurya sta per aprire: il marketplace italiano dei ritiri olistici, pensato per farti trovare e prenotare online. Lascia la tua email e sarai tra i primi operatori a bordo.",
+    "switch": "Cerchi un ritiro?",
+    "b1t": "Ti trovano davvero",
+    "b1b": "Profilo e ritiri ottimizzati per i motori di ricerca e la tua zona: appari a chi cerca proprio quello che offri.",
+    "b2t": "Prenotazioni con caparra protetta",
+    "b2b": "Incassi online con caparra e saldo, protetti da Stripe. Meno posti vuoti, meno no-show.",
+    "b3t": "Gestione senza pensieri",
+    "b3b": "Calendario, partecipanti, promemoria automatici e recensioni verificate: tu pensi all’esperienza, al resto pensa Aurya.",
+    "ctaTitle": "Vuoi essere tra i primi?",
+    "ctaBody": "Ti scriviamo appena apriamo le iscrizioni operatori.",
+    "back": "Torna alla home"
+  },
+  "tr": {
+    "seoTitle": "Aurya — ritiri olistici scelti con cura, presto online",
+    "seoDesc": "Aurya sta per aprire: ritiri olistici da operatori curati, con caparra protetta e recensioni verificate. Lascia la tua email e sii tra i primi a prenotare.",
+    "eyebrow": "Per chi cerca benessere autentico",
+    "title": "Ritiri olistici, scelti con cura",
+    "subtitle": "Aurya sta per aprire. Yoga, meditazione, cammini e molto altro, da operatori curati in tutta Italia. Sii tra i primi a prenotare.",
+    "switch": "Sei un operatore?",
+    "formTitle": "Ti avvisiamo appena apriamo",
+    "formBody": "Lascia la tua email: sarai tra i primi a scoprire i ritiri e a prenotare, con un occhio di riguardo per chi c’è dall’inizio.",
+    "peek": "Sbircia l’anteprima dei ritiri",
+    "b1t": "Operatori curati",
+    "b1b": "Ogni operatore ha un profilo verificato: sai chi organizza, dove e cosa propone, prima di partire.",
+    "b2t": "Caparra protetta",
+    "b2b": "Blocchi il posto con una caparra protetta da Stripe. Nessuna sorpresa, nessun bonifico al buio.",
+    "b3t": "Recensioni vere",
+    "b3b": "Solo chi ha davvero partecipato può recensire. Scegli con la fiducia di voci autentiche.",
+    "back": "Torna alla home"
+  }
+}

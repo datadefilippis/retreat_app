@@ -476,7 +476,8 @@
     "mapSee": "See the retreat →",
     "fromPrice": "from €{{price}}",
     "featured": "Featured",
-    "byRegion": "By region:"
+    "byRegion": "By region:",
+    "comingSoon": "Coming soon"
   },
   "operator": {
     "website": "Website",

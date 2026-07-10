@@ -1,6 +1,8 @@
 import React, { useState, useCallback, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { SiteConfigProvider, useSiteConfig } from "./context/SiteConfigContext";
+import PrelaunchSplash from "./features/prelaunch/PrelaunchSplash";
 import { AiAccessProvider } from "./hooks/useAiAccess";
 import { BillingProvider } from "./hooks/useBilling";
 import { EntitlementsProvider } from "./hooks/useEntitlements";
@@ -81,6 +83,8 @@ const NewsletterPage = lazy(() => import("./features/newsletter/NewsletterPage")
 const ReviewsAdminPage = lazy(() => import("./features/reviews/ReviewsAdminPage"));
 const IncassiPage = lazy(() => import("./features/cashflow/IncassiPage"));
 const VisibilityPage = lazy(() => import("./features/visibility/VisibilityPage"));
+const OperatorLandingPage = lazy(() => import("./features/prelaunch/OperatorLandingPage"));
+const TravelerLandingPage = lazy(() => import("./features/prelaunch/TravelerLandingPage"));
 const CashflowDataPage = lazy(() => import("./features/cashflow/CashflowDataPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
@@ -276,6 +280,25 @@ function ScrollToTop() {
   return null;
 }
 
+// PL4 — in pre-lancio la home pubblica è lo splash con le due strade;
+// l'admin loggato vede comunque il marketplace vero (per testare).
+function HomeGate() {
+  const { prelaunch, loading } = useSiteConfig();
+  const { isAuthenticated } = useAuth();
+  if (loading) return null;
+  if (prelaunch && !isAuthenticated) return <PrelaunchSplash />;
+  return <RetreatsCalendarPage />;
+}
+
+// PL6 — in pre-lancio /ritiri mostra la directory in anteprima (sfocata);
+// altrimenti resta il redirect S0 alla home (la home È la directory).
+function RitiriGate() {
+  const { prelaunch, loading } = useSiteConfig();
+  if (loading) return null;   // evita il redirect prima di sapere il flag
+  if (prelaunch) return <RetreatsCalendarPage />;
+  return <RedirectPreservingQuery to="/" />;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<RouteFallback />}>
@@ -284,7 +307,10 @@ function AppRoutes() {
           del dominio è la directory pubblica, non la login operatori.
           Chi è loggato vede comunque la home pubblica (il back-office
           si raggiunge dal menu / da /dashboard). */}
-      <Route path="/" element={<RetreatsCalendarPage />} />
+      <Route path="/" element={<HomeGate />} />
+      {/* PL5 — landing di pre-lancio (raccolta lead) */}
+      <Route path="/per-operatori" element={<OperatorLandingPage />} />
+      <Route path="/cerca-ritiro" element={<TravelerLandingPage />} />
       {/* S0.1 — la login operatori vive su /login (via dalla root) */}
       <Route
         path="/login"
@@ -366,7 +392,7 @@ function AppRoutes() {
           floating dup. */}
       {/* /ritiri → home: la directory È la home (S0.1). Redirect che
           PRESERVA la query (?categoria=... dai link footer/condivisi). */}
-      <Route path="/ritiri" element={<RedirectPreservingQuery to="/" />} />
+      <Route path="/ritiri" element={<RitiriGate />} />
       <Route path="/ritiri/:categoria" element={<RetreatsCalendarPage />} />
       <Route path="/ritiri/:categoria/:regione" element={<RetreatsCalendarPage />} />
       {/* S2 — aggregatori pubblici: organizzatori, destinazioni, esperienze */}
@@ -786,6 +812,7 @@ function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
+        <SiteConfigProvider>
         <AuthProvider>
           <CustomerAuthProvider>
           <BillingProvider>
@@ -826,6 +853,7 @@ function App() {
           </BillingProvider>
           </CustomerAuthProvider>
         </AuthProvider>
+        </SiteConfigProvider>
       </BrowserRouter>
     </ErrorBoundary>
   );
