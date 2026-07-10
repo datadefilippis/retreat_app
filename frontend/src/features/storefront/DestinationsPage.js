@@ -12,6 +12,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
+import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
 import useSeoMeta from './lib/useSeoMeta';
 
 function fmtDates(start, end, lang = 'it-IT') {
@@ -135,6 +136,8 @@ export default function DestinationsPage() {
 
   return (
     <MarketplaceShell>
+      {/* PL12 — anche da qui si torna sempre alle landing lead */}
+      <PrelaunchBanner audience="traveler" />
       <header className="relative text-white overflow-hidden">
         {/* la verticale sul mare del founder: la promessa del viaggio */}
         <img aria-hidden src="/media/hero-destination.webp" alt="" fetchpriority="high"

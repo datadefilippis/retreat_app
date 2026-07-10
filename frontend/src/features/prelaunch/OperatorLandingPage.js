@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Eye, ShieldCheck, HeartHandshake, ArrowLeft, Sparkles } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
+import { LangSwitcher } from '../storefront/components/MarketplaceShell';
 import LeadForm from './LeadForm';
 
 const ACCENT = '#C97B5D';
@@ -37,9 +38,12 @@ export default function OperatorLandingPage() {
       {/* header minimale */}
       <header className="flex items-center justify-between px-5 py-4 md:px-10">
         <Link to="/" className="font-brand text-xl tracking-[0.3em] text-[#8a7440]">AURYA</Link>
-        <Link to="/cerca-ritiro" className="text-sm text-muted-foreground hover:text-foreground">
-          {t('op.switch', { defaultValue: 'Cerchi un ritiro?' })}
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link to="/cerca-ritiro" className="text-sm text-muted-foreground hover:text-foreground">
+            {t('op.switch', { defaultValue: 'Cerchi un ritiro?' })}
+          </Link>
+          <LangSwitcher />
+        </div>
       </header>
 
       {/* hero */}

@@ -33,7 +33,9 @@ const LANGS = [
   { code: 'fr', label: 'Français' },
 ];
 
-function LangSwitcher() {
+// PL12 — esportato: riusato da splash e landing di pre-lancio (stessa
+// UX lingua del resto del sito, stessa persistenza aurya_lang).
+export function LangSwitcher() {
   const { t, i18n } = useTranslation('landings');
   const [open, setOpen] = React.useState(false);
   const boxRef = React.useRef(null);

@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Compass, ArrowRight } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
+import { LangSwitcher } from '../storefront/components/MarketplaceShell';
 
 export default function PrelaunchSplash() {
   const { t } = useTranslation('prelaunch');
@@ -30,6 +31,11 @@ export default function PrelaunchSplash() {
       </video>
       {/* Scrim salvia per leggibilità */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1e2b26]/80 via-[#243530]/70 to-[#1e2b26]/90" aria-hidden />
+
+      {/* PL12 — lingua anche in vetrina di pre-lancio (stesso switcher del sito) */}
+      <div className="absolute right-4 top-4 z-20">
+        <LangSwitcher />
+      </div>
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-5 py-16 text-center">
         {/* Wordmark */}
@@ -83,10 +89,13 @@ export default function PrelaunchSplash() {
           </Link>
         </div>
 
-        {/* Sbirciata alla vetrina in anteprima */}
+        {/* PL12 — sbirciata in evidenza: l'esplorazione porta alla
+            directory oscurata, dove il banner riporta alle landing */}
         <Link to="/ritiri"
-              className="mt-8 text-sm text-white/70 underline underline-offset-4 hover:text-white">
+              className="group mt-10 inline-flex items-center gap-2 rounded-full border border-[#d6c49a]/70 bg-white/10 px-6 py-3 text-sm font-semibold text-[#d6c49a] backdrop-blur transition-colors hover:bg-[#d6c49a] hover:text-[#1e2b26]">
+          <Compass className="h-4 w-4" aria-hidden />
           {t('splash.peek', { defaultValue: 'Dai un’occhiata all’anteprima dei ritiri' })}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />
         </Link>
       </div>
     </div>
