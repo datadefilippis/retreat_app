@@ -167,7 +167,8 @@ function RelatedRetreats({ category, excludePath, t }) {
     ).then(res => {
       if (!mounted) return;
       setItems((res.data?.items || [])
-        .filter(it => it.url !== excludePath)
+        // PL13 — mai campioni nei correlati: titolo redatto e landing 404
+        .filter(it => !it.sample && it.url !== excludePath)
         .slice(0, 3));
     }).catch(() => { /* best-effort */ });
     return () => { mounted = false; };

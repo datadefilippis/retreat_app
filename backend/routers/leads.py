@@ -39,7 +39,14 @@ class LeadPayload(BaseModel):
     city: Optional[str] = Field(default=None, max_length=120)          # entrambi
     interests: Optional[list[str]] = Field(default=None, max_length=12)  # viaggiatore
     budget: Optional[str] = Field(default=None, max_length=40)         # viaggiatore
+    # PL13 — disponibilita' a spostarsi: vicino casa / Italia / estero
+    travel: Optional[str] = Field(default=None, max_length=40)         # viaggiatore
     activity: Optional[str] = Field(default=None, max_length=80)       # operatore
+    # PL13 — dettaglio condizionale sull'attivita': discipline per chi
+    # insegna/facilita, tipo struttura + capienza per chi ospita
+    disciplines: Optional[list[str]] = Field(default=None, max_length=12)  # operatore
+    venue_type: Optional[str] = Field(default=None, max_length=80)     # operatore
+    capacity: Optional[str] = Field(default=None, max_length=40)       # operatore
     # GDPR: consenso esplicito richiesto (il form lo impone)
     consent: bool = False
 
@@ -65,7 +72,12 @@ async def create_lead(request: Request, payload: LeadPayload):
         "interests": [str(i).strip()[:40] for i in (payload.interests or [])
                       if str(i).strip()][:12] or None,
         "budget": (payload.budget or "").strip()[:40] or None,
+        "travel": (payload.travel or "").strip()[:40] or None,
         "activity": (payload.activity or "").strip()[:80] or None,
+        "disciplines": [str(d).strip()[:40] for d in (payload.disciplines or [])
+                        if str(d).strip()][:12] or None,
+        "venue_type": (payload.venue_type or "").strip()[:80] or None,
+        "capacity": (payload.capacity or "").strip()[:40] or None,
         "consent": bool(payload.consent),
         "updated_at": now,
     }
@@ -89,6 +101,7 @@ async def create_lead(request: Request, payload: LeadPayload):
             from services.email_service import send_email
             label = "operatore" if lead_type == "operator" else "viaggiatore"
             _interessi = ", ".join(doc_set["interests"] or []) or "—"
+            _discipline = ", ".join(doc_set["disciplines"] or []) or "—"
             html = (
                 f"<h2>Nuovo lead pre-lancio Aurya</h2>"
                 f"<p><b>Tipo:</b> {label}</p>"
@@ -97,8 +110,12 @@ async def create_lead(request: Request, payload: LeadPayload):
                 f"<p><b>Telefono:</b> {doc_set['phone'] or '—'}</p>"
                 f"<p><b>Località:</b> {doc_set['city'] or '—'}</p>"
                 f"<p><b>Attività:</b> {doc_set['activity'] or '—'}</p>"
+                f"<p><b>Discipline:</b> {_discipline}</p>"
+                f"<p><b>Struttura:</b> {doc_set['venue_type'] or '—'}"
+                f" ({doc_set['capacity'] or 'capienza n.d.'})</p>"
                 f"<p><b>Interessi:</b> {_interessi}</p>"
                 f"<p><b>Budget:</b> {doc_set['budget'] or '—'}</p>"
+                f"<p><b>Disponibilità a spostarsi:</b> {doc_set['travel'] or '—'}</p>"
                 f"<p><b>Messaggio:</b> {doc_set['message'] or '—'}</p>"
             )
             send_email("info@aurya.life",

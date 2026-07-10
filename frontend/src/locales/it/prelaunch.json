@@ -58,7 +58,41 @@
     "ctaOp": "Voglio esserci al lancio",
     "thanksTitle": "Ci sei. Benvenuto.",
     "thanksTr": "Al lancio riceverai una selezione di ritiri pensata per te. A presto.",
-    "thanksOp": "Grazie per esserti presentato: ti scriviamo personalmente prima del lancio."
+    "thanksOp": "Grazie per esserti presentato: ti scriviamo personalmente prima del lancio.",
+    "travelLabel": "Dove ti immagini il tuo ritiro?",
+    "travel": {
+      "near": "Vicino a casa, nella mia zona",
+      "italy": "Ovunque in Italia",
+      "abroad": "Anche all’estero"
+    },
+    "disciplinesLabel": "Quali discipline proponi?",
+    "disciplines": {
+      "yoga": "Yoga",
+      "meditation": "Meditazione",
+      "breathwork": "Respiro & breathwork",
+      "sound": "Suono & sound healing",
+      "reiki": "Reiki & energetiche",
+      "detox": "Detox & digiuno",
+      "nature": "Cammini & natura",
+      "women": "Cerchi & femminile",
+      "other": "Altro"
+    },
+    "venueTypeLabel": "Che struttura sei?",
+    "venueType": {
+      "masseria": "Masseria / agriturismo",
+      "villa": "Casale / villa",
+      "retreat_center": "Centro ritiri",
+      "bnb": "B&B / boutique hotel",
+      "hermitage": "Eremo / rifugio",
+      "other": "Altro"
+    },
+    "capacityLabel": "Quanti posti letto?",
+    "capacity": {
+      "upTo10": "Fino a 10",
+      "10to20": "Da 10 a 20",
+      "20to40": "Da 20 a 40",
+      "over40": "Oltre 40"
+    }
   },
   "op": {
     "seoTitle": "Aurya per operatori — tu crei l’esperienza, noi la facciamo trovare",

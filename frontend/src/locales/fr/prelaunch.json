@@ -58,7 +58,41 @@
     "ctaOp": "Je veux être là au lancement",
     "thanksTitle": "Tu y es. Bienvenue.",
     "thanksTr": "Au lancement, tu recevras une sélection de retraites pensée pour toi. À très vite.",
-    "thanksOp": "Merci de t’être présenté : nous t’écrirons personnellement avant le lancement."
+    "thanksOp": "Merci de t’être présenté : nous t’écrirons personnellement avant le lancement.",
+    "travelLabel": "Où imagines-tu ta retraite ?",
+    "travel": {
+      "near": "Près de chez moi, dans ma région",
+      "italy": "Partout en Italie",
+      "abroad": "Aussi à l’étranger"
+    },
+    "disciplinesLabel": "Quelles disciplines proposes-tu ?",
+    "disciplines": {
+      "yoga": "Yoga",
+      "meditation": "Méditation",
+      "breathwork": "Souffle & breathwork",
+      "sound": "Son & sound healing",
+      "reiki": "Reiki & énergétique",
+      "detox": "Détox & jeûne",
+      "nature": "Marche & nature",
+      "women": "Cercles & féminin",
+      "other": "Autre"
+    },
+    "venueTypeLabel": "Quel type de lieu es-tu ?",
+    "venueType": {
+      "masseria": "Masseria / agritourisme",
+      "villa": "Mas / villa",
+      "retreat_center": "Centre de retraites",
+      "bnb": "B&B / hôtel boutique",
+      "hermitage": "Ermitage / refuge",
+      "other": "Autre"
+    },
+    "capacityLabel": "Combien de couchages ?",
+    "capacity": {
+      "upTo10": "Jusqu’à 10",
+      "10to20": "De 10 à 20",
+      "20to40": "De 20 à 40",
+      "over40": "Plus de 40"
+    }
   },
   "op": {
     "seoTitle": "Aurya pour les opérateurs — tu crées l’expérience, nous la faisons découvrir",

@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
+import Redacted from '../prelaunch/Redacted';
 import useSeoMeta from './lib/useSeoMeta';
 
 function fmtDates(start, end, lang = 'it-IT') {
@@ -27,11 +28,24 @@ function fmtDates(start, end, lang = 'it-IT') {
 
 function RetreatCard({ item, i18nLang, t }) {
   return (
-    <Link to={item.url} className="group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="h-40 bg-secondary overflow-hidden">
+    <Link
+      to={item.sample ? '#' : item.url}
+      onClick={item.sample ? (e) => e.preventDefault() : undefined}
+      className={`group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow ${item.sample ? 'pointer-events-none select-none' : ''}`}
+    >
+      <div className="relative h-40 bg-secondary overflow-hidden">
+        {/* PL13 — stesso oscuramento della directory: i campioni sono
+            sfocati, non cliccabili e senza identita' anche qui */}
+        {item.sample && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#1e2b26]/25 backdrop-blur-[1px]">
+            <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-[#376254] shadow">
+              {t('landings:calendar.comingSoon', { defaultValue: 'Presto disponibile' })}
+            </span>
+          </div>
+        )}
         {item.cover_image_url ? (
-          <img src={item.cover_image_url} alt={item.title} loading="lazy"
-               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={item.cover_image_url} alt={item.sample ? '' : item.title} loading="lazy"
+               className={`w-full h-full object-cover transition-transform duration-300 ${item.sample ? 'blur-[3px] scale-105' : 'group-hover:scale-105'}`} />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-10 w-10 opacity-60" />
@@ -44,7 +58,9 @@ function RetreatCard({ item, i18nLang, t }) {
             {t(`landings:categories.${item.category}`, { defaultValue: item.category })}
           </p>
         )}
-        <h3 className="font-semibold text-foreground mt-0.5 line-clamp-2">{item.title}</h3>
+        <h3 className="font-semibold text-foreground mt-0.5 line-clamp-2">
+          {item.sample ? <Redacted kind="title" /> : item.title}
+        </h3>
         <p className="text-sm text-muted-foreground mt-1">
           {fmtDates(item.start_at, item.end_at, i18nLang)}
           {item.city ? ` · ${item.city}` : ''}
@@ -220,14 +236,16 @@ export default function DestinationsPage() {
                 <RetreatCard key={item.url} item={item} i18nLang={i18n.language} t={t} />
               ))}
             </div>
-            {operators.length > 0 && (
+            {operators.some(op => !op.sample) && (
               <section className="mt-12">
                 <h2 className="font-heading text-xl font-bold text-foreground mb-4">
                   {t('landings:destinations.operatorsHere', {
                     place: label, defaultValue: 'Organizzatori a {{place}}' })}
                 </h2>
                 <div className="flex flex-wrap gap-3">
-                  {operators.map(op => (
+                  {/* PL13 — niente chip per i campioni: nome redatto e
+                      profilo 404, sarebbe una pillola vuota */}
+                  {operators.filter(op => !op.sample).map(op => (
                     <Link key={op.org_slug} to={`/o/${op.org_slug}`}
                           className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium hover:border-primary hover:text-primary transition-colors">
                       {op.name}

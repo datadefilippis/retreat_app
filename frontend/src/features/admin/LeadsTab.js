@@ -39,9 +39,10 @@ const fmtDate = (iso) => {
 };
 
 const toCsv = (rows) => {
-  // PL10 — export completo: include i campi di profilazione dei form v2
+  // PL10+PL13 — export completo: tutti i campi di profilazione dei form
   const head = ['email', 'type', 'name', 'phone', 'city', 'interests',
-                'budget', 'activity', 'language', 'consent', 'created_at', 'message'];
+                'travel', 'budget', 'activity', 'disciplines', 'venue_type',
+                'capacity', 'language', 'consent', 'created_at', 'message'];
   const esc = (v) => {
     const s = v == null ? '' : Array.isArray(v) ? v.join('; ') : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -51,15 +52,19 @@ const toCsv = (rows) => {
   return lines.join('\n');
 };
 
-/** Sintesi leggibile della profilazione: interessi+budget (viaggiatore)
- *  o attività+telefono (operatore). */
+/** Sintesi leggibile della profilazione: interessi+raggio+budget
+ *  (viaggiatore) o attività+dettaglio+telefono (operatore). */
 const leadDetails = (r) => {
   const parts = [];
   if (r.type === 'operator') {
     if (r.activity) parts.push(r.activity);
+    // PL13 — il dettaglio condizionale: discipline o struttura+capienza
+    if (Array.isArray(r.disciplines) && r.disciplines.length) parts.push(r.disciplines.join(', '));
+    if (r.venue_type) parts.push(r.venue_type + (r.capacity ? ` (${r.capacity})` : ''));
     if (r.phone) parts.push(r.phone);
   } else {
     if (Array.isArray(r.interests) && r.interests.length) parts.push(r.interests.join(', '));
+    if (r.travel) parts.push(r.travel);
     if (r.budget) parts.push(r.budget);
   }
   return parts.join(' · ') || '—';

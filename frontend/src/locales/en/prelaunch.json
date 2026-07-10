@@ -58,7 +58,41 @@
     "ctaOp": "I want to be there at launch",
     "thanksTitle": "You're in. Welcome.",
     "thanksTr": "At launch you'll receive a selection of retreats chosen just for you. See you soon.",
-    "thanksOp": "Thank you for introducing yourself: we'll write to you personally before launch."
+    "thanksOp": "Thank you for introducing yourself: we'll write to you personally before launch.",
+    "travelLabel": "Where do you picture your retreat?",
+    "travel": {
+      "near": "Close to home, in my area",
+      "italy": "Anywhere in Italy",
+      "abroad": "Also abroad"
+    },
+    "disciplinesLabel": "Which disciplines do you offer?",
+    "disciplines": {
+      "yoga": "Yoga",
+      "meditation": "Meditation",
+      "breathwork": "Breath & breathwork",
+      "sound": "Sound & sound healing",
+      "reiki": "Reiki & energy work",
+      "detox": "Detox & fasting",
+      "nature": "Walking & nature",
+      "women": "Circles & the feminine",
+      "other": "Other"
+    },
+    "venueTypeLabel": "What kind of venue are you?",
+    "venueType": {
+      "masseria": "Masseria / farm stay",
+      "villa": "Farmhouse / villa",
+      "retreat_center": "Retreat center",
+      "bnb": "B&B / boutique hotel",
+      "hermitage": "Hermitage / mountain lodge",
+      "other": "Other"
+    },
+    "capacityLabel": "How many beds?",
+    "capacity": {
+      "upTo10": "Up to 10",
+      "10to20": "10 to 20",
+      "20to40": "20 to 40",
+      "over40": "Over 40"
+    }
   },
   "op": {
     "seoTitle": "Aurya for practitioners — you create the experience, we help people find it",

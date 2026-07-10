@@ -139,13 +139,16 @@ def test_lead_payload_profiling_fields():
     sono obbligatori, il form resta gentile."""
     from routers.leads import LeadPayload
     fields = LeadPayload.model_fields
-    for f in ("phone", "city", "interests", "budget", "activity", "message"):
+    for f in ("phone", "city", "interests", "budget", "activity", "message",
+              # PL13 — raggio viaggio + dettaglio condizionale operatore
+              "travel", "disciplines", "venue_type", "capacity"):
         assert f in fields, f"campo lead mancante: {f}"
         assert not fields[f].is_required(), f"{f} deve restare facoltativo"
     assert fields["email"].is_required()
     # i campi profilati vengono persistiti (non solo accettati)
     src = _src("routers/leads.py")
-    for f in ('"phone"', '"city"', '"interests"', '"budget"', '"activity"'):
+    for f in ('"phone"', '"city"', '"interests"', '"budget"', '"activity"',
+              '"travel"', '"disciplines"', '"venue_type"', '"capacity"'):
         assert f in src
 
 
