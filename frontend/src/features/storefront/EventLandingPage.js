@@ -1100,7 +1100,7 @@ export default function EventLandingPage() {
                     <span className="text-gray-400 group-open:rotate-180 transition-transform" aria-hidden>⌄</span>
                   </summary>
                   <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">
-                    {t('landings:event.faqDepositA', { defaultValue: 'Dove prevista, la caparra blocca il tuo posto: paghi ora solo una parte e saldi il resto secondo gli accordi con chi organizza. Il pagamento passa da Stripe, mai di mano in mano.' })}
+                    {t('landings:event.faqDepositA', { defaultValue: 'Dove prevista, la caparra blocca il tuo posto: paghi ora solo una parte e saldi il resto secondo gli accordi con chi organizza. Il pagamento avviene direttamente online, mai di mano in mano.' })}
                   </p>
                 </details>
                 <details className="group border-b border-gray-100 pb-2 mb-2">

@@ -38,7 +38,7 @@
     "direct": {
       "headerCta": "Commander",
       "modalTitle": "Finaliser la commande",
-      "modalDesc": "Après confirmation, vous serez redirigé vers le paiement sécurisé par carte (Stripe).",
+      "modalDesc": "Après confirmation, vous serez redirigé vers le paiement sécurisé par carte.",
       "submitBtn": "Aller au paiement",
       "inquiryToggle": "Demander des infos"
     },

@@ -38,7 +38,7 @@
     "direct": {
       "headerCta": "Ordina",
       "modalTitle": "Completa l'ordine",
-      "modalDesc": "Dopo la conferma verrai reindirizzato al pagamento sicuro con carta (Stripe).",
+      "modalDesc": "Dopo la conferma verrai reindirizzato al pagamento sicuro con carta.",
       "submitBtn": "Vai al pagamento",
       "inquiryToggle": "Richiedi info"
     },

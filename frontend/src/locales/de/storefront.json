@@ -38,7 +38,7 @@
     "direct": {
       "headerCta": "Bestellen",
       "modalTitle": "Bestellung abschließen",
-      "modalDesc": "Nach der Bestätigung wirst du zur sicheren Kartenzahlung weitergeleitet (Stripe).",
+      "modalDesc": "Nach der Bestätigung wirst du zur sicheren Kartenzahlung weitergeleitet.",
       "submitBtn": "Zur Zahlung",
       "inquiryToggle": "Info anfragen"
     },

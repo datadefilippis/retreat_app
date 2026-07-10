@@ -177,6 +177,20 @@ def test_seed_samples_translated_in_all_languages():
     assert '"translations": translations' in seed
 
 
+def test_no_stripe_in_public_copy():
+    """Scelta founder (10/7): il provider di pagamento non si nomina MAI
+    nel copy pubblico — si dice "pagamento diretto online" / "caparra".
+    Unica eccezione ammessa: il legal (GDPR impone di nominare i
+    sub-responsabili). Guardia sui namespace pubblici ×4 lingue."""
+    frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
+    for lang in ("it", "en", "de", "fr"):
+        for ns in ("landings", "storefront", "prelaunch"):
+            txt = (frontend / "locales" / lang / f"{ns}.json").read_text(
+                encoding="utf-8")
+            assert "Stripe" not in txt, \
+                f"Stripe nel copy pubblico: {lang}/{ns}.json"
+
+
 def test_wipe_and_seed_share_the_same_flag():
     """Seed e wipe devono usare lo STESSO marchio, o il wipe lascerebbe
     residui. Guardia contro divergenze."""
