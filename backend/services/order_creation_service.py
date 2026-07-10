@@ -117,6 +117,18 @@ async def submit_order_from_storefront(
     """
     org_id = org["id"]
 
+    # ── PL3 — un'organizzazione CAMPIONE non è MAI prenotabile ─────────────
+    # I sample esistono solo per popolare la vetrina di pre-lancio (mostrati
+    # sfocati e non cliccabili nel frontend); qui la difesa server-side
+    # blocca anche una chiamata diretta all'API. Query minima e indicizzata.
+    from database import organizations_collection as _orgs_coll
+    _org_sample = await _orgs_coll.find_one(
+        {"id": org_id}, {"_id": 0, "is_sample": 1})
+    if (_org_sample or {}).get("is_sample"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Questo è un ritiro di esempio, non prenotabile.")
+
     # ── Validate all products are published and belong to org ──────────────
     from database import products_collection
     product_ids = [item.product_id for item in body.items]

@@ -584,6 +584,8 @@ app.include_router(admin_feature_flags_router.router, prefix="/api")  # /api/adm
 app.include_router(admin_platform_router.router, prefix="/api")  # /api/admin/platform/* (SA2/SA3)
 app.include_router(articles_router.router, prefix="/api")  # /api/public/articles + /api/admin/articles (AN5 blog)
 app.include_router(tracking_router.router, prefix="/api")  # /api/public/track (VT visibilita)
+from routers import leads as leads_router  # noqa: E402
+app.include_router(leads_router.router, prefix="/api")  # /api/public/leads + /api/admin/leads (PL2)
 from routers import visibility as visibility_router  # noqa: E402
 app.include_router(visibility_router.router, prefix="/api")  # /api/analytics/visibility (VT4)
 
