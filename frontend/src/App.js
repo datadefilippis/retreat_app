@@ -301,6 +301,25 @@ function RitiriGate() {
   return <RedirectPreservingQuery to="/" />;
 }
 
+// PL23 — in pre-lancio /operatori e /destinazioni non hanno niente da
+// dire: le card operatore sono tutte redatte (segnaposto sfocati) e le
+// destinazioni ripetono i 10 campioni di /ritiri. Un'unica anteprima
+// onesta basta: chi cerca organizzatori va alla landing (coi patti
+// chiari), chi esplora luoghi va all'anteprima. Flag OFF = tutto torna.
+function OperatorsGate() {
+  const { prelaunch, loading } = useSiteConfig();
+  if (loading) return null;
+  if (prelaunch) return <Navigate to="/per-operatori" replace />;
+  return <OperatorsIndexPage />;
+}
+
+function DestinationsGate() {
+  const { prelaunch, loading } = useSiteConfig();
+  if (loading) return null;
+  if (prelaunch) return <Navigate to="/ritiri" replace />;
+  return <DestinationsPage />;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<RouteFallback />}>
@@ -398,10 +417,10 @@ function AppRoutes() {
       <Route path="/ritiri/:categoria" element={<RetreatsCalendarPage />} />
       <Route path="/ritiri/:categoria/:regione" element={<RetreatsCalendarPage />} />
       {/* S2 — aggregatori pubblici: organizzatori, destinazioni, esperienze */}
-      <Route path="/operatori" element={<OperatorsIndexPage />} />
-      <Route path="/operatori/:categoria" element={<OperatorsIndexPage />} />
-      <Route path="/destinazioni" element={<DestinationsPage />} />
-      <Route path="/destinazioni/:luogo" element={<DestinationsPage />} />
+      <Route path="/operatori" element={<OperatorsGate />} />
+      <Route path="/operatori/:categoria" element={<OperatorsGate />} />
+      <Route path="/destinazioni" element={<DestinationsGate />} />
+      <Route path="/destinazioni/:luogo" element={<DestinationsGate />} />
       {/* DS3 (decisione founder 7/7): /esperienze fuori per ora — la
           pagina resta nel repo (storefront/), pronta a tornare */}
       <Route path="/esperienze/*" element={<Navigate to="/" replace />} />

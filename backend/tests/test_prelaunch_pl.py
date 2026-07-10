@@ -215,6 +215,27 @@ def test_prelaunch_directory_noindex_and_honest_preview():
     assert "prelaunchPreviewNote" in cal
 
 
+def test_prelaunch_gates_operators_and_destinations_pages():
+    """PL23 — in pre-lancio /operatori (card tutte redatte = griglia di
+    segnaposto senza valore) e /destinazioni (ripete i campioni di
+    /ritiri) non esistono: redirect verso landing operatori e anteprima,
+    voci di menu/footer nascoste. Flag OFF = pagine com'erano."""
+    frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
+    app = (frontend / "App.js").read_text(encoding="utf-8")
+    assert "function OperatorsGate()" in app
+    assert "function DestinationsGate()" in app
+    assert '<Navigate to="/per-operatori" replace />' in app
+    assert '<Navigate to="/ritiri" replace />' in app
+    # le route usano i gate, non più le pagine dirette
+    assert 'path="/operatori" element={<OperatorsGate />}' in app
+    assert 'path="/destinazioni" element={<DestinationsGate />}' in app
+    shell = (frontend / "features" / "storefront" / "components" /
+             "MarketplaceShell.jsx").read_text(encoding="utf-8")
+    assert "NAV_ITEMS.filter(i => i.to !== '/operatori'" in shell
+    assert "NAV_ITEMS.map" not in shell, \
+        "il menu deve renderizzare navItems (filtrato in pre-lancio)"
+
+
 def test_operator_landing_transparency_and_direct_contact():
     """PL22 — patti chiari sulla landing operatori: gratis entrare,
     guadagniamo solo su prenotazioni dal calendario pubblico, regole di

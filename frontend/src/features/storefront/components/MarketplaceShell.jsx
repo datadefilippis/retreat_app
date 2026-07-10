@@ -119,6 +119,11 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   // lead (/per-operatori), non alla registrazione app (/inizia): un solo
   // funnel, stessa terminologia delle landing. Flag OFF = come prima.
   const { prelaunch } = useSiteConfig();
+  // PL23 — in pre-lancio /operatori e /destinazioni sono gated (redirect
+  // in App.js): via anche le voci di menu, resta un solo percorso onesto.
+  const navItems = prelaunch
+    ? NAV_ITEMS.filter(i => i.to !== '/operatori' && i.to !== '/destinazioni')
+    : NAV_ITEMS;
   const operatorTo = prelaunch ? '/per-operatori' : '/inizia';
   const operatorLabel = prelaunch
     ? t('prelaunch:tr.switch', { defaultValue: 'Sei un operatore?' })
@@ -183,7 +188,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               {/* AN2 — menu principale (desktop): gli aggregatori smettono
                   di essere scopribili solo dal footer */}
               <nav aria-label="principale" className="hidden lg:flex items-center gap-1 ml-2">
-                {NAV_ITEMS.map((item) => {
+                {navItems.map((item) => {
                   const active = item.to === '/'
                     ? pathname === '/' || pathname.startsWith('/ritiri')
                     : pathname.startsWith(item.to);
@@ -254,7 +259,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
         {!minimal && mobileNavOpen && (
           <nav aria-label="principale mobile" className="lg:hidden border-t border-gray-200 bg-white px-4 py-3">
             <ul className="space-y-1">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <li key={item.to}>
                   <Link
                     to={item.to}
@@ -333,9 +338,9 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 <li><Link to="/ritiri/meditazione" className="hover:text-white">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>
                 <li><Link to="/ritiri/detox" className="hover:text-white">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>
                 <li><Link to="/" className="hover:text-white">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>
-                <li><Link to="/operatori" className="hover:text-white">{t('marketplace.footerOperators', { defaultValue: 'Tutti gli organizzatori' })}</Link></li>
-                <li><Link to="/destinazioni" className="hover:text-white">{t('marketplace.footerDestinations', { defaultValue: 'Destinazioni' })}</Link></li>
-                {destinations.map(d => (
+                {!prelaunch && <li><Link to="/operatori" className="hover:text-white">{t('marketplace.footerOperators', { defaultValue: 'Tutti gli organizzatori' })}</Link></li>}
+                {!prelaunch && <li><Link to="/destinazioni" className="hover:text-white">{t('marketplace.footerDestinations', { defaultValue: 'Destinazioni' })}</Link></li>}
+                {!prelaunch && destinations.map(d => (
                   <li key={d.slug}>
                     <Link to={`/destinazioni/${d.slug}`} className="hover:text-white pl-3 text-xs">
                       {d.label}
