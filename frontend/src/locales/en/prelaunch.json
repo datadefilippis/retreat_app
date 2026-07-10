@@ -1,0 +1,64 @@
+{
+  "splash": {
+    "seoTitle": "Aurya — the holistic retreats marketplace is about to open",
+    "seoDesc": "Aurya connects those who create holistic retreats with those seeking them. We're getting ready to launch: leave your email and be among the first.",
+    "badge": "We're getting ready to launch",
+    "title": "The holistic retreats marketplace is about to open",
+    "subtitle": "Aurya connects those who craft authentic wellbeing experiences with those looking for them. Choose your path.",
+    "travelerTitle": "Looking for a holistic retreat?",
+    "travelerText": "Discover the project and be among the first to book at launch.",
+    "operatorTitle": "Are you a holistic practitioner?",
+    "operatorText": "Bring your retreats to Aurya and let the right people find you.",
+    "discover": "Learn more",
+    "peek": "Take a peek at the retreats preview"
+  },
+  "banner": {
+    "title": "We're getting ready to launch.",
+    "body": "These are sample retreats: soon you'll find the real ones here, bookable online.",
+    "cta": "Notify me at launch"
+  },
+  "form": {
+    "name": "Your name (optional)",
+    "email": "Your email",
+    "consent": "I agree to be contacted by email about the launch of Aurya.",
+    "privacy": "Privacy",
+    "cta": "Notify me at launch",
+    "thanksTitle": "You're in!",
+    "thanksBody": "We'll write to you the moment Aurya opens. See you soon."
+  },
+  "op": {
+    "seoTitle": "Aurya for practitioners — bring your retreats where people are looking for you",
+    "seoDesc": "On Aurya your holistic retreats get found by the people seeking them: search visibility, bookings with a protected deposit, effortless management. Sign up for the launch.",
+    "eyebrow": "For holistic practitioners",
+    "title": "Bring your retreats where the people who seek them can find you",
+    "subtitle": "Aurya is about to open: the Italian marketplace for holistic retreats, built to help you get found and booked online. Leave your email and be among the first practitioners on board.",
+    "switch": "Looking for a retreat?",
+    "b1t": "They truly find you",
+    "b1b": "Your profile and retreats are optimized for search engines and your area: you appear to the people looking for exactly what you offer.",
+    "b2t": "Bookings with a protected deposit",
+    "b2b": "Collect payments online with a deposit and balance, protected by Stripe. Fewer empty spots, fewer no-shows.",
+    "b3t": "Management without the worry",
+    "b3b": "Calendar, participants, automatic reminders and verified reviews: you focus on the experience, Aurya takes care of the rest.",
+    "ctaTitle": "Want to be among the first?",
+    "ctaBody": "We'll write to you as soon as practitioner sign-ups open.",
+    "back": "Back to home"
+  },
+  "tr": {
+    "seoTitle": "Aurya — holistic retreats chosen with care, online soon",
+    "seoDesc": "Aurya is about to open: holistic retreats from carefully selected practitioners, with a protected deposit and verified reviews. Leave your email and be among the first to book.",
+    "eyebrow": "For those seeking authentic wellbeing",
+    "title": "Holistic retreats, chosen with care",
+    "subtitle": "Aurya is about to open. Yoga, meditation, walking journeys and so much more, from carefully selected practitioners across Italy. Be among the first to book.",
+    "switch": "Are you a practitioner?",
+    "formTitle": "We'll let you know the moment we open",
+    "formBody": "Leave your email: you'll be among the first to discover the retreats and to book, with something special for those who are here from the start.",
+    "peek": "Peek at the retreats preview",
+    "b1t": "Carefully selected practitioners",
+    "b1b": "Every practitioner has a verified profile: you know who's organizing, where and what they offer, before you set off.",
+    "b2t": "Protected deposit",
+    "b2b": "Secure your spot with a deposit protected by Stripe. No surprises, no wiring money into the unknown.",
+    "b3t": "Real reviews",
+    "b3b": "Only those who truly took part can leave a review. Choose with the trust of authentic voices.",
+    "back": "Back to home"
+  }
+}

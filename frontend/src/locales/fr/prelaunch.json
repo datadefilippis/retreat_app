@@ -1,0 +1,64 @@
+{
+  "splash": {
+    "seoTitle": "Aurya — la marketplace des retraites holistiques ouvre bientôt",
+    "seoDesc": "Aurya relie celles et ceux qui créent des retraites holistiques à celles et ceux qui les cherchent. Nous préparons le lancement : laisse ton e-mail et sois parmi les premiers.",
+    "badge": "Nous préparons le lancement",
+    "title": "La marketplace des retraites holistiques ouvre bientôt",
+    "subtitle": "Aurya relie celles et ceux qui créent des expériences de bien-être authentique à celles et ceux qui les cherchent. Choisis ton chemin.",
+    "travelerTitle": "Tu cherches une retraite holistique ?",
+    "travelerText": "Découvre le projet et sois parmi les premiers à réserver au lancement.",
+    "operatorTitle": "Tu es un praticien du bien-être ?",
+    "operatorText": "Amène tes retraites sur Aurya et laisse celles et ceux qui te cherchent te trouver.",
+    "discover": "En savoir plus",
+    "peek": "Jette un œil à l'aperçu des retraites"
+  },
+  "banner": {
+    "title": "Nous préparons le lancement.",
+    "body": "Ce sont des retraites d'exemple : bientôt tu trouveras ici les vraies, réservables en ligne.",
+    "cta": "Préviens-moi au lancement"
+  },
+  "form": {
+    "name": "Ton nom (facultatif)",
+    "email": "Ton e-mail",
+    "consent": "J'accepte d'être contacté par e-mail au sujet du lancement d'Aurya.",
+    "privacy": "Confidentialité",
+    "cta": "Préviens-moi au lancement",
+    "thanksTitle": "Tu en es !",
+    "thanksBody": "Nous t'écrivons dès qu'Aurya ouvre. À très vite."
+  },
+  "op": {
+    "seoTitle": "Aurya pour les praticiens — amène tes retraites là où on te cherche",
+    "seoDesc": "Sur Aurya, tes retraites holistiques se font trouver par celles et ceux qui les cherchent : visibilité sur les moteurs de recherche, réservations avec acompte protégé, gestion simple. Inscris-toi pour le lancement.",
+    "eyebrow": "Pour les praticiens du bien-être",
+    "title": "Amène tes retraites là où celles et ceux qui les cherchent te trouvent",
+    "subtitle": "Aurya ouvre bientôt : la marketplace italienne des retraites holistiques, pensée pour te faire trouver et réserver en ligne. Laisse ton e-mail et sois parmi les premiers praticiens à bord.",
+    "switch": "Tu cherches une retraite ?",
+    "b1t": "On te trouve vraiment",
+    "b1b": "Profil et retraites optimisés pour les moteurs de recherche et ta région : tu apparais auprès de celles et ceux qui cherchent exactement ce que tu proposes.",
+    "b2t": "Réservations avec acompte protégé",
+    "b2b": "Encaisse en ligne avec acompte et solde, protégés par Stripe. Moins de places vides, moins d'absences.",
+    "b3t": "Une gestion sans souci",
+    "b3b": "Calendrier, participants, rappels automatiques et avis vérifiés : tu penses à l'expérience, Aurya s'occupe du reste.",
+    "ctaTitle": "Tu veux être parmi les premiers ?",
+    "ctaBody": "Nous t'écrivons dès que les inscriptions praticiens ouvrent.",
+    "back": "Retour à l'accueil"
+  },
+  "tr": {
+    "seoTitle": "Aurya — des retraites holistiques choisies avec soin, bientôt en ligne",
+    "seoDesc": "Aurya ouvre bientôt : des retraites holistiques proposées par des praticiens sélectionnés, avec acompte protégé et avis vérifiés. Laisse ton e-mail et sois parmi les premiers à réserver.",
+    "eyebrow": "Pour celles et ceux qui cherchent un bien-être authentique",
+    "title": "Des retraites holistiques, choisies avec soin",
+    "subtitle": "Aurya ouvre bientôt. Yoga, méditation, chemins de marche et bien plus encore, proposés par des praticiens sélectionnés dans toute l'Italie. Sois parmi les premiers à réserver.",
+    "switch": "Tu es praticien ?",
+    "formTitle": "Nous te prévenons dès que nous ouvrons",
+    "formBody": "Laisse ton e-mail : tu seras parmi les premiers à découvrir les retraites et à réserver, avec une attention particulière pour celles et ceux qui sont là depuis le début.",
+    "peek": "Jette un œil à l'aperçu des retraites",
+    "b1t": "Des praticiens sélectionnés",
+    "b1b": "Chaque praticien a un profil vérifié : tu sais qui organise, où et ce qu'il propose, avant de partir.",
+    "b2t": "Acompte protégé",
+    "b2b": "Réserve ta place avec un acompte protégé par Stripe. Aucune surprise, aucun virement à l'aveugle.",
+    "b3t": "De vrais avis",
+    "b3b": "Seuls celles et ceux qui ont vraiment participé peuvent laisser un avis. Choisis en confiance, guidé par des voix authentiques.",
+    "back": "Retour à l'accueil"
+  }
+}

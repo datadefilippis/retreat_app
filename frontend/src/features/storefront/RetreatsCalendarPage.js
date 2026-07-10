@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import GeoSearchBar from './components/GeoSearchBar';
 import MarketplaceShell from './components/MarketplaceShell';
+import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
 import MarketplaceValueSections from './components/MarketplaceValueSections';
 // G3 — vista mappa lazy (Leaflet caricato solo quando serve)
 const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'));
@@ -194,6 +195,8 @@ export default function RetreatsCalendarPage() {
   return (
     <MarketplaceShell noSearch>
     <div className="bg-background">
+      {/* PL6 — avviso anteprima lancio (solo in pre-lancio) */}
+      <PrelaunchBanner audience="traveler" />
       {/* ── Hero (DS: il tramonto di Aurya in sottofondo) ────────────── */}
       <header className="relative bg-gradient-sidebar text-white overflow-hidden">
         {/* poster sempre sotto: primo dipinto + fallback reduced-motion */}
@@ -399,16 +402,25 @@ export default function RetreatsCalendarPage() {
               return (
                 <Link
                   key={`${item.org_slug}/${item.slug}`}
-                  to={item.url}
-                  className="group card-lift rounded-2xl border border-border bg-card overflow-hidden shadow-sm"
+                  to={item.sample ? '#' : item.url}
+                  onClick={item.sample ? (e) => e.preventDefault() : undefined}
+                  className={`group card-lift rounded-2xl border border-border bg-card overflow-hidden shadow-sm ${item.sample ? 'pointer-events-none select-none' : ''}`}
                 >
                   <div className="relative h-56 bg-muted overflow-hidden">
+                    {/* PL6 — anteprima lancio: card campione sfocata e non cliccabile */}
+                    {item.sample && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#1e2b26]/25 backdrop-blur-[1px]">
+                        <span className="rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-[#376254] shadow">
+                          {t('landings:calendar.comingSoon', { defaultValue: 'Presto disponibile' })}
+                        </span>
+                      </div>
+                    )}
                     {item.cover_image_url ? (
                       <img
                         src={item.cover_image_url}
                         alt=""
                         loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                        className={`w-full h-full object-cover transition-transform duration-500 ${item.sample ? 'blur-[3px] scale-105' : 'group-hover:scale-[1.04]'}`}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-muted" aria-hidden>

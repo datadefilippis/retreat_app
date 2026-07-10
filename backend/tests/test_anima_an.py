@@ -186,7 +186,7 @@ class TestOperatorGeoAn3:
         """lat/lng/radius + location: la posizione viene dal profilo,
         l'operatore senza ritiri futuri resta scopribile."""
         idx = self.PUB_SRC.index("public_operators_index")
-        block = self.PUB_SRC[idx:idx + 6000]
+        block = self.PUB_SRC[idx:idx + 7000]  # PL3 ha aggiunto il bypass sample
         for marker in ("radius_km", '"latitude": pp.get("latitude")',
                        "distance_km", "prof_regions"):
             assert marker in block, f"manca {marker}"

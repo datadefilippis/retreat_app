@@ -476,7 +476,8 @@
     "mapSee": "Voir la retraite →",
     "fromPrice": "dès {{price}} €",
     "featured": "En vedette",
-    "byRegion": "Par région :"
+    "byRegion": "Par région :",
+    "comingSoon": "Bientôt disponible"
   },
   "operator": {
     "website": "Site web",

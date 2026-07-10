@@ -28,6 +28,15 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/public", tags=["Public Storefront"])
 
 
+@router.get("/site-config")
+async def site_config():
+    """Config runtime letta dal frontend al boot. Per ora: la modalità
+    pre-lancio. Runtime (non build-time) → accendere/spegnere il lancio
+    è un flip di env + restart, senza rebuild del frontend."""
+    from core.prelaunch import prelaunch_mode
+    return {"prelaunch": prelaunch_mode()}
+
+
 # ── Response / Request Models ───────────────────────────────────────────────
 
 class PublicTier(BaseModel):
@@ -483,10 +492,18 @@ async def _resolve_org(slug: str) -> dict:
     now = time.monotonic()
     cached = _resolve_org_cache.get(slug)
     if cached is not None and (now - cached[0]) < _RESOLVE_ORG_TTL:
-        return copy.deepcopy(cached[1])
-    org = await _resolve_org_uncached(slug)  # raises 404 on miss (non cacheato)
-    _resolve_org_cache[slug] = (now, org)
-    return copy.deepcopy(org)
+        org = copy.deepcopy(cached[1])
+    else:
+        org = await _resolve_org_uncached(slug)  # raises 404 on miss (non cacheato)
+        _resolve_org_cache[slug] = (now, org)
+        org = copy.deepcopy(org)
+    # PL3 — un'org CAMPIONE è raggiungibile (profilo/landing/store) SOLO
+    # in pre-lancio; a flag spento risponde 404 come se non esistesse.
+    from core.prelaunch import prelaunch_mode
+    if org.get("is_sample") and not prelaunch_mode():
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Not found")
+    return org
 
 
 async def _resolve_org_uncached(slug: str) -> dict:
@@ -3445,11 +3462,15 @@ async def list_public_retreats(
         {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
          "directory_featured": 1, "reviews_stats": 1,
          "store_settings.is_storefront_published": 1,
-         "store_settings.display_name": 1},
+         "store_settings.display_name": 1,
+         "is_sample": 1},
     ).to_list(1000)
     org_featured: Dict[str, bool] = {}
     org_rating: Dict[str, Optional[dict]] = {}
+    sample_orgs: set = set()   # PL3 — org campione (bypass gate in prelaunch)
     for o in orgs:
+        if o.get("is_sample"):
+            sample_orgs.add(o["id"])
         # OP4 — stessa fonte del profilo: nome org prima dei nomi store
         org_name[o["id"]] = o.get("name") or (o.get("store_settings") or {}).get("display_name") or ""
         org_featured[o["id"]] = bool(o.get("directory_featured"))
@@ -3472,6 +3493,12 @@ async def list_public_retreats(
              "status": "active", "runtime_status": "ready"},
             {"_id": 0, "organization_id": 1}):
         pay_ready.add(pc["organization_id"])
+    # PL3 — SOLO in pre-lancio le org campione bypassano il gate GT1b,
+    # così la directory non è vuota (mostrate sfocate e non prenotabili
+    # lato frontend). A flag spento: comportamento identico a oggi.
+    from core.prelaunch import prelaunch_mode
+    if prelaunch_mode():
+        pay_ready |= sample_orgs
     org_slug = {oid: s for oid, s in org_slug.items() if oid in pay_ready}
 
     items = []
@@ -3504,6 +3531,8 @@ async def list_public_retreats(
             # MD3 — promessa Pro resa vera: badge + boost nel calendario
             "featured": org_featured.get(prod["organization_id"], False),
             "org_rating": org_rating.get(prod["organization_id"]),
+            # PL3 — il frontend sfoca e disabilita la prenotazione sui sample
+            "sample": prod["organization_id"] in sample_orgs,
             "slug": occ["slug"],
             "url": f"/e/{slug_org}/{occ['slug']}",
             "start_at": occ.get("start_at"),
@@ -3767,8 +3796,12 @@ async def public_operators_index(
         {"id": {"$in": org_ids}, "is_active": {"$ne": False},
          "deactivated_at": None},
         {"_id": 0, "id": 1, "name": 1, "public_profile": 1,
-         "store_settings": 1, "directory_featured": 1},
+         "store_settings": 1, "directory_featured": 1, "is_sample": 1},
     ).to_list(500)}
+    # PL3 — gli operatori campione appaiono SOLO in pre-lancio (sfocati);
+    # a flag spento sono invisibili, come se non esistessero.
+    from core.prelaunch import prelaunch_mode
+    _prelaunch = prelaunch_mode()
 
     prods = await products_collection.find(
         {"organization_id": {"$in": org_ids}, "is_active": True,
@@ -3807,6 +3840,9 @@ async def public_operators_index(
         org = orgs.get(s["organization_id"])
         if not org:
             continue
+        _is_sample = bool(org.get("is_sample"))
+        if _is_sample and not _prelaunch:
+            continue   # sample nascosti quando il pre-lancio è spento
         b = by_org.get(s["organization_id"],
                        {"categories": set(), "retreats": 0,
                         "products": 0, "regions": set()})
@@ -3845,6 +3881,8 @@ async def public_operators_index(
             "regions": sorted(b["regions"] | prof_regions),
             # GT3 — priorita' nell'aggregatore per i piani featured
             "featured": bool(org.get("directory_featured")),
+            # PL3 — il frontend sfoca la card e disabilita il click
+            "sample": _is_sample,
         })
 
     # AN3 — filtro per località testuale (city/region/regioni occorrenze)

@@ -476,7 +476,8 @@
     "mapSee": "Vedi il ritiro →",
     "fromPrice": "da {{price}} €",
     "featured": "In evidenza",
-    "byRegion": "Per regione:"
+    "byRegion": "Per regione:",
+    "comingSoon": "Presto disponibile"
   },
   "operator": {
     "notFound": "Organizzatore non trovato",

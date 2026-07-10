@@ -226,6 +226,11 @@ export const adminAPI = {
   revokeInvite: (inviteId) =>
     api.delete(`/admin/invites/${inviteId}`),
 
+  // ── Prelaunch leads (PL7) — lista + conteggi per tipo (system admin) ────────
+
+  listLeads: (limit = 500) =>
+    api.get('/admin/leads', { params: { limit } }).then((r) => r.data),
+
   // ── Hard Delete (v6.1) ───────────────────────────────────────────────────
 
   hardDeleteOrganization: (orgId) =>

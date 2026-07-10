@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppLayout, Header } from '../../components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Building2, Users, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2, Sparkles, Newspaper } from 'lucide-react';
+import { Building2, Users, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2, Sparkles, Newspaper, Inbox } from 'lucide-react';
 import PlatformOverviewTab from './PlatformOverviewTab';
 import DirectoryAdminTab from './DirectoryAdminTab';
 import SignalsTab from './SignalsTab';
@@ -13,6 +13,7 @@ import InvitesTab from './InvitesTab';
 import MRRDashboardTab from './MRRDashboardTab';
 import AIGovernanceTab from './AIGovernanceTab';
 import BlogAdminTab from './BlogAdminTab';
+import LeadsTab from './LeadsTab';
 
 /**
  * AdminPage — System Admin Control Panel.
@@ -91,6 +92,10 @@ const AdminPage = () => {
               <Newspaper className="h-4 w-4" />
               Blog
             </TabsTrigger>
+            <TabsTrigger value="leads" className="flex items-center gap-2 shrink-0">
+              <Inbox className="h-4 w-4" />
+              Lead
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -135,6 +140,10 @@ const AdminPage = () => {
 
           <TabsContent value="blog">
             <BlogAdminTab />
+          </TabsContent>
+
+          <TabsContent value="leads">
+            <LeadsTab />
           </TabsContent>
         </Tabs>
       </div>

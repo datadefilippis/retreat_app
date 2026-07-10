@@ -28,6 +28,7 @@ import customersLightIt from './locales/it/customers_light.json';
 import customerInsightsIt from './locales/it/customerInsights.json';
 import newsletterIt from './locales/it/newsletter.json';
 import cashflowMonitorIt from './locales/it/cashflow_monitor.json';
+import prelaunchIt from './locales/it/prelaunch.json';
 import teamIt from './locales/it/team.json';
 import modulesPageIt from './locales/it/modules_page.json';
 
@@ -63,6 +64,7 @@ import customersLightEn from './locales/en/customers_light.json';
 import customerInsightsEn from './locales/en/customerInsights.json';
 import newsletterEn from './locales/en/newsletter.json';
 import cashflowMonitorEn from './locales/en/cashflow_monitor.json';
+import prelaunchEn from './locales/en/prelaunch.json';
 import teamEn from './locales/en/team.json';
 import modulesPageEn from './locales/en/modules_page.json';
 
@@ -94,6 +96,7 @@ import customersLightDe from './locales/de/customers_light.json';
 import customerInsightsDe from './locales/de/customerInsights.json';
 import newsletterDe from './locales/de/newsletter.json';
 import cashflowMonitorDe from './locales/de/cashflow_monitor.json';
+import prelaunchDe from './locales/de/prelaunch.json';
 import teamDe from './locales/de/team.json';
 import modulesPageDe from './locales/de/modules_page.json';
 
@@ -125,6 +128,7 @@ import customersLightFr from './locales/fr/customers_light.json';
 import customerInsightsFr from './locales/fr/customerInsights.json';
 import newsletterFr from './locales/fr/newsletter.json';
 import cashflowMonitorFr from './locales/fr/cashflow_monitor.json';
+import prelaunchFr from './locales/fr/prelaunch.json';
 import teamFr from './locales/fr/team.json';
 import modulesPageFr from './locales/fr/modules_page.json';
 
@@ -312,10 +316,10 @@ const COLD_START_LNG = _detectColdStartLanguage();
 // ── Resources ───────────────────────────────────────────────────────────────
 const resources = {
 
-  it: { common: commonIt, auth: authIt, settings: settingsIt, dashboard: dashboardIt, customers_light: customersLightIt, customerInsights: customerInsightsIt, team: teamIt, modules_page: modulesPageIt, product_catalog: productCatalogIt, product_cost: productCostIt, products: productsIt, entities: entitiesIt, orders: ordersIt, catalog: catalogIt, calendar: calendarIt, data_integrity: dataIntegrityIt, store_settings: storeSettingsIt, setup_wizard: setupWizardIt, stores: storesIt, pos: posIt, reservations: reservationsIt, storefront: storefrontIt, landings: landingsIt, customer_auth: customerAuthIt, customer_portal: customerPortalIt, legal: legalIt, newsletter: newsletterIt, cashflow_monitor: cashflowMonitorIt },
-  en: { common: commonEn, auth: authEn, settings: settingsEn, dashboard: dashboardEn, customers_light: customersLightEn, customerInsights: customerInsightsEn, team: teamEn, modules_page: modulesPageEn, product_catalog: productCatalogEn, product_cost: productCostEn, products: productsEn, entities: entitiesEn, orders: ordersEn, catalog: catalogEn, calendar: calendarEn, data_integrity: dataIntegrityEn, store_settings: storeSettingsEn, setup_wizard: setupWizardEn, stores: storesEn, pos: posEn, reservations: reservationsEn, storefront: storefrontEn, landings: landingsEn, customer_auth: customerAuthEn, customer_portal: customerPortalEn, legal: legalEn, newsletter: newsletterEn, cashflow_monitor: cashflowMonitorEn },
-  de: { common: commonDe, auth: authDe, settings: settingsDe, dashboard: dashboardDe, customers_light: customersLightDe, customerInsights: customerInsightsDe, team: teamDe, modules_page: modulesPageDe, product_catalog: productCatalogDe, product_cost: productCostDe, products: productsDe, entities: entitiesDe, orders: ordersDe, data_integrity: dataIntegrityDe, catalog: catalogDe, calendar: calendarDe, store_settings: storeSettingsDe, setup_wizard: setupWizardDe, stores: storesDe, pos: posDe, reservations: reservationsDe, storefront: storefrontDe, landings: landingsDe, customer_auth: customerAuthDe, customer_portal: customerPortalDe, legal: legalDe, newsletter: newsletterDe, cashflow_monitor: cashflowMonitorDe },
-  fr: { common: commonFr, auth: authFr, settings: settingsFr, dashboard: dashboardFr, customers_light: customersLightFr, customerInsights: customerInsightsFr, team: teamFr, modules_page: modulesPageFr, product_catalog: productCatalogFr, product_cost: productCostFr, products: productsFr, entities: entitiesFr, orders: ordersFr, data_integrity: dataIntegrityFr, catalog: catalogFr, calendar: calendarFr, store_settings: storeSettingsFr, setup_wizard: setupWizardFr, stores: storesFr, pos: posFr, reservations: reservationsFr, storefront: storefrontFr, landings: landingsFr, customer_auth: customerAuthFr, customer_portal: customerPortalFr, legal: legalFr, newsletter: newsletterFr, cashflow_monitor: cashflowMonitorFr },
+  it: { common: commonIt, auth: authIt, settings: settingsIt, dashboard: dashboardIt, customers_light: customersLightIt, customerInsights: customerInsightsIt, team: teamIt, modules_page: modulesPageIt, product_catalog: productCatalogIt, product_cost: productCostIt, products: productsIt, entities: entitiesIt, orders: ordersIt, catalog: catalogIt, calendar: calendarIt, data_integrity: dataIntegrityIt, store_settings: storeSettingsIt, setup_wizard: setupWizardIt, stores: storesIt, pos: posIt, reservations: reservationsIt, storefront: storefrontIt, landings: landingsIt, customer_auth: customerAuthIt, customer_portal: customerPortalIt, legal: legalIt, newsletter: newsletterIt, cashflow_monitor: cashflowMonitorIt, prelaunch: prelaunchIt },
+  en: { common: commonEn, auth: authEn, settings: settingsEn, dashboard: dashboardEn, customers_light: customersLightEn, customerInsights: customerInsightsEn, team: teamEn, modules_page: modulesPageEn, product_catalog: productCatalogEn, product_cost: productCostEn, products: productsEn, entities: entitiesEn, orders: ordersEn, catalog: catalogEn, calendar: calendarEn, data_integrity: dataIntegrityEn, store_settings: storeSettingsEn, setup_wizard: setupWizardEn, stores: storesEn, pos: posEn, reservations: reservationsEn, storefront: storefrontEn, landings: landingsEn, customer_auth: customerAuthEn, customer_portal: customerPortalEn, legal: legalEn, newsletter: newsletterEn, cashflow_monitor: cashflowMonitorEn, prelaunch: prelaunchEn },
+  de: { common: commonDe, auth: authDe, settings: settingsDe, dashboard: dashboardDe, customers_light: customersLightDe, customerInsights: customerInsightsDe, team: teamDe, modules_page: modulesPageDe, product_catalog: productCatalogDe, product_cost: productCostDe, products: productsDe, entities: entitiesDe, orders: ordersDe, data_integrity: dataIntegrityDe, catalog: catalogDe, calendar: calendarDe, store_settings: storeSettingsDe, setup_wizard: setupWizardDe, stores: storesDe, pos: posDe, reservations: reservationsDe, storefront: storefrontDe, landings: landingsDe, customer_auth: customerAuthDe, customer_portal: customerPortalDe, legal: legalDe, newsletter: newsletterDe, cashflow_monitor: cashflowMonitorDe, prelaunch: prelaunchDe },
+  fr: { common: commonFr, auth: authFr, settings: settingsFr, dashboard: dashboardFr, customers_light: customersLightFr, customerInsights: customerInsightsFr, team: teamFr, modules_page: modulesPageFr, product_catalog: productCatalogFr, product_cost: productCostFr, products: productsFr, entities: entitiesFr, orders: ordersFr, data_integrity: dataIntegrityFr, catalog: catalogFr, calendar: calendarFr, store_settings: storeSettingsFr, setup_wizard: setupWizardFr, stores: storesFr, pos: posFr, reservations: reservationsFr, storefront: storefrontFr, landings: landingsFr, customer_auth: customerAuthFr, customer_portal: customerPortalFr, legal: legalFr, newsletter: newsletterFr, cashflow_monitor: cashflowMonitorFr, prelaunch: prelaunchFr },
 
 };
 
@@ -330,7 +334,7 @@ i18n.use(initReactI18next).init({
   fallbackLng: 'it',
   defaultNS: 'common',
 
-  ns: ['common', 'auth', 'settings', 'dashboard', 'customers_light', 'customerInsights', 'team', 'modules_page', 'product_catalog', 'product_cost', 'products', 'entities', 'orders', 'catalog', 'calendar', 'data_integrity', 'store_settings', 'setup_wizard', 'stores', 'pos', 'reservations', 'storefront', 'landings', 'customer_auth', 'customer_portal', 'legal', 'newsletter', 'cashflow_monitor'],
+  ns: ['common', 'auth', 'settings', 'dashboard', 'customers_light', 'customerInsights', 'team', 'modules_page', 'product_catalog', 'product_cost', 'products', 'entities', 'orders', 'catalog', 'calendar', 'data_integrity', 'store_settings', 'setup_wizard', 'stores', 'pos', 'reservations', 'storefront', 'landings', 'customer_auth', 'customer_portal', 'legal', 'newsletter', 'cashflow_monitor', 'prelaunch'],
 
   interpolation: {
     escapeValue: false, // React already escapes
