@@ -19,6 +19,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BRAND_NAME, BRAND_MOTTO } from '../../../config/brand';
 import { Search, Menu, X, Lock, Globe, Check, ChevronDown } from 'lucide-react';
+import { useSiteConfig } from '../../../context/SiteConfigContext';
 import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
 import api from '../../../api/client';
 
@@ -114,6 +115,14 @@ const NAV_ITEMS = [
 
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
   const { t, i18n } = useTranslation('landings');
+  // PL15 — in pre-lancio la voce operatori del guscio punta alla landing
+  // lead (/per-operatori), non alla registrazione app (/inizia): un solo
+  // funnel, stessa terminologia delle landing. Flag OFF = come prima.
+  const { prelaunch } = useSiteConfig();
+  const operatorTo = prelaunch ? '/per-operatori' : '/inizia';
+  const operatorLabel = prelaunch
+    ? t('prelaunch:tr.switch', { defaultValue: 'Sei un operatore?' })
+    : t('marketplace.forOrganizers', { defaultValue: 'Sei un organizzatore?' });
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [destinations, setDestinations] = React.useState(_destCache || []);
@@ -211,10 +220,10 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
 
               <div className="ml-auto flex items-center gap-2 sm:gap-3">
                 <Link
-                  to="/inizia"
+                  to={operatorTo}
                   className="hidden md:block text-xs font-medium text-gray-600 hover:text-gray-900 whitespace-nowrap"
                 >
-                  {t('marketplace.forOrganizers', { defaultValue: 'Sei un organizzatore?' })}
+                  {operatorLabel}
                 </Link>
                 <LangSwitcher />
                 <Link
@@ -275,9 +284,9 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 </Link>
               </li>
               <li className="pt-1">
-                <Link to="/inizia" onClick={() => setMobileNavOpen(false)}
+                <Link to={operatorTo} onClick={() => setMobileNavOpen(false)}
                       className="block rounded-lg bg-[#C97B5D]/10 border border-[#C97B5D]/40 px-3 py-2 text-sm font-semibold text-[#a8593f] hover:bg-[#C97B5D]/20">
-                  {t('marketplace.forOrganizers', { defaultValue: 'Sei un organizzatore?' })}
+                  {operatorLabel}
                 </Link>
               </li>
             </ul>
