@@ -76,7 +76,7 @@ export default function CookieConsentBanner() {
     >
       <div className="rounded-lg border bg-background p-4 shadow-xl ring-1 ring-black/5 dark:ring-white/5">
         <div className="flex items-start gap-3">
-          <div className="rounded-full bg-amber-100 p-1.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+          <div className="rounded-full bg-[#8a7440]/10 p-1.5 text-[#8a7440] dark:bg-[#d6c49a]/15 dark:text-[#d6c49a]">
             <Cookie className="h-4 w-4" />
           </div>
           <div className="flex-1 min-w-0">
@@ -90,7 +90,7 @@ export default function CookieConsentBanner() {
               href={`/privacy?lang=${locale}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-block text-xs text-blue-600 hover:underline dark:text-blue-400"
+              className="mt-1 inline-block text-xs font-medium text-[#8a7440] hover:underline dark:text-[#d6c49a]"
             >
               {t('cookie_banner.details_link')}
             </a>
@@ -108,7 +108,7 @@ export default function CookieConsentBanner() {
           <button
             type="button"
             onClick={dismiss}
-            className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+            className="rounded-full bg-[#8a7440] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#75622f]"
           >
             {t('cookie_banner.accept_button')}
           </button>

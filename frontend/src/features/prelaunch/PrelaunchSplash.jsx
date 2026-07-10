@@ -9,7 +9,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Compass, ArrowRight } from 'lucide-react';
+import { Sparkles, Compass, ArrowRight, Flower2, Sprout } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import { LangSwitcher } from '../storefront/components/MarketplaceShell';
 
@@ -60,7 +60,7 @@ export default function PrelaunchSplash() {
         <div className="rise-in rise-d3 mt-10 grid w-full max-w-2xl gap-4 sm:grid-cols-2">
           <Link to="/cerca-ritiro"
                 className="group rounded-2xl border border-white/20 bg-white/10 p-6 text-left backdrop-blur transition-colors hover:bg-white/20">
-            <Compass className="h-7 w-7 text-[#d6c49a]" />
+            <Flower2 className="h-7 w-7 text-[#d6c49a]" />
             <p className="mt-3 font-heading text-lg font-semibold text-white">
               {t('splash.travelerTitle', { defaultValue: 'Cerchi un ritiro olistico?' })}
             </p>
@@ -75,14 +75,14 @@ export default function PrelaunchSplash() {
 
           <Link to="/per-operatori"
                 className="group rounded-2xl border border-white/20 bg-white/10 p-6 text-left backdrop-blur transition-colors hover:bg-white/20">
-            <Sparkles className="h-7 w-7 text-[#e0a672]" />
+            <Sprout className="h-7 w-7 text-[#d6c49a]" />
             <p className="mt-3 font-heading text-lg font-semibold text-white">
               {t('splash.operatorTitle', { defaultValue: 'Sei un operatore olistico?' })}
             </p>
             <p className="mt-1 text-sm text-white/75">
               {t('splash.operatorText', { defaultValue: 'Porta i tuoi ritiri su Aurya e fatti trovare da chi cerca proprio te.' })}
             </p>
-            <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#e0a672]">
+            <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#d6c49a]">
               {t('splash.discover', { defaultValue: 'Scopri di più' })}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </span>
