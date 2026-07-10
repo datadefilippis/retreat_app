@@ -24,53 +24,69 @@ from core.prelaunch import SAMPLE_FLAG
 from scripts.wipe_prelaunch_samples import wipe_samples
 
 
-def _img(seed: str, w: int = 1200, h: int = 800) -> str:
-    return f"https://picsum.photos/seed/{seed}/{w}/{h}"
+# PL14 — foto VERE (Pexels, ottimizzate) servite dal frontend: niente
+# dipendenze esterne, la vetrina di pre-lancio è credibile anche offline.
+def _img(name: str) -> str:
+    return f"/media/prelaunch/{name}.jpg"
 
 
 # name, slug, città, regione, lat, lng, tagline, bio, featured, rating(avg,count),
-# ritiri: [(titolo, categoria, prezzo, giorni_da_oggi, durata_giorni)]
+# ritiri: [(titolo, categoria, prezzo, "YYYY-MM-DD", durata_giorni, foto)]
+#
+# PL14 — i titoli sono EVOCATIVI e descrittivi (comunicano il concept al
+# visitatore) ma non identitari: il nome dell'organizzatore resta redatto.
+# Tutte le date nel 2027, distribuite lungo l'anno.
 _OPERATORS = [
     ("Masseria degli Ulivi", "masseria-ulivi-sample", "Ostuni", "Puglia",
      40.7295, 17.5772, "Yoga e silenzio tra gli ulivi secolari",
      "Un casale di pietra nella campagna di Ostuni: pratica al mattino, "
      "cucina del territorio, e il silenzio vero della Valle d'Itria.",
      True, (4.9, 23),
-     [("Ritiro Yoga & Respiro tra gli ulivi", "yoga", 690, 34, 4),
-      ("Weekend di Meditazione al tramonto", "meditazione", 320, 61, 2)]),
+     [("Ritorna a respirare: yoga tra gli ulivi secolari della Valle d'Itria",
+       "yoga", 690, "2027-05-14", 4, "r01"),
+      ("Il tramonto in silenzio: due giorni per svuotare la mente",
+       "meditazione", 320, "2027-06-18", 2, "r02")]),
     ("Rifugio del Bosco", "rifugio-bosco-sample", "Bolzano", "Trentino-Alto Adige",
      46.4983, 11.3548, "Cammini e respiro tra le Dolomiti",
      "Sulle porte delle Dolomiti: camminate consapevoli, bagni di foresta "
      "e breathwork con vista sulle vette.",
      True, (5.0, 17),
-     [("Cammino consapevole nelle Dolomiti", "cammini", 850, 48, 5),
-      ("Breathwork & Foresta", "breathwork", 410, 75, 3)]),
+     [("A passo lento tra le Dolomiti: cinque giorni di cammino e respiro",
+       "cammini", 850, "2027-07-05", 5, "r03"),
+      ("Il respiro della foresta: breathwork e bagni di bosco in quota",
+       "breathwork", 410, "2027-08-27", 3, "r04")]),
     ("Casa Serena Cilento", "casa-serena-sample", "Pollica", "Campania",
      40.1889, 15.0912, "Detox e mare nel cuore del Cilento",
      "Tra il blu del Cilento e gli orti biologici: detox dolce, yoga sulla "
      "terrazza e cene a km zero.",
      False, (4.8, 31),
-     [("Ritiro Detox & Yoga sul mare", "detox", 740, 40, 5)]),
+     [("Ritrova leggerezza: detox dolce e yoga davanti al mare del Cilento",
+       "detox", 740, "2027-06-07", 5, "r05")]),
     ("Borgo del Suono", "borgo-suono-sample", "Todi", "Umbria",
      42.7817, 12.4126, "Bagni di gong e meditazione nel cuore verde",
      "Un borgo umbro dove il suono guida la pratica: campane tibetane, gong "
      "e meditazione nel verde più profondo d'Italia.",
      False, (4.7, 12),
-     [("Bagno di Suono & Meditazione", "suono", 280, 29, 2),
-      ("Ritiro del Silenzio", "meditazione", 560, 68, 4)]),
+     [("Immersi nel suono: gong e campane tibetane nel cuore verde d'Italia",
+       "suono", 280, "2027-04-16", 2, "r06"),
+      ("Quattro giorni di silenzio per sentire di nuovo te stesso",
+       "meditazione", 560, "2027-09-10", 4, "r07")]),
     ("Cascina Luna", "cascina-luna-sample", "Greve in Chianti", "Toscana",
      43.5836, 11.3157, "Cerchi femminili tra le vigne del Chianti",
      "Una cascina tra le vigne: cerchi femminili, yoga e vino naturale al "
      "tramonto, nel paesaggio più iconico della Toscana.",
      True, (4.9, 26),
-     [("Ritiro al Femminile nel Chianti", "femminile", 620, 45, 3),
-      ("Yoga & Vino tra le vigne", "yoga", 390, 80, 2)]),
+     [("Cerchio di donne tra le vigne: tre giorni per ritrovarsi nel Chianti",
+       "femminile", 620, "2027-05-28", 3, "r08"),
+      ("Saluto al sole tra i filari: yoga e vino naturale in Toscana",
+       "yoga", 390, "2027-09-24", 2, "r09")]),
     ("Eremo del Lago", "eremo-lago-sample", "Bracciano", "Lazio",
      42.1030, 12.1774, "Massaggio sonoro e riposo sulle rive del lago",
      "Sulle rive del lago di Bracciano, a un'ora da Roma: massaggio sonoro, "
      "meditazione e lunghe passeggiate sull'acqua.",
      False, (4.6, 9),
-     [("Weekend di Riequilibrio sul Lago", "massaggio", 340, 38, 2)]),
+     [("Lascia andare: massaggio sonoro e riposo in riva al lago",
+       "massaggio", 340, "2027-04-30", 2, "r10")]),
 ]
 
 
@@ -87,8 +103,11 @@ async def seed_samples() -> dict:
          featured, rating, retreats) in _OPERATORS:
         org_id = str(uuid.uuid4())
         store_id = str(uuid.uuid4())
-        cover = _img(f"{slug}-cover")
-        logo = _img(f"{slug}-logo", 256, 256)
+        # PL14 — cover = foto del primo ritiro; niente logo (il frontend
+        # mostra la foglia Aurya) e gallery = foto dei ritiri dell'org
+        _org_imgs = [_img(r[5]) for r in retreats]
+        cover = _org_imgs[0]
+        logo = None
 
         orgs.append({
             "id": org_id, "name": name, "is_active": True,
@@ -101,7 +120,7 @@ async def seed_samples() -> dict:
                 "region": region, "latitude": lat, "longitude": lng,
                 "cover_url": cover, "logo_url": logo,
                 "founded_year": "2019", "languages": ["it", "en"],
-                "photos": [_img(f"{slug}-{i}") for i in range(1, 4)],
+                "photos": _org_imgs,
                 "geo": {"type": "Point", "coordinates": [lng, lat]},
             },
             "store_settings": {"is_storefront_published": True,
@@ -115,13 +134,14 @@ async def seed_samples() -> dict:
             "created_at": now_iso, SAMPLE_FLAG: True,
         })
 
-        for (title, category, price, days, duration) in retreats:
+        for (title, category, price, date_str, duration, photo) in retreats:
             prod_id = str(uuid.uuid4())
             occ_id = str(uuid.uuid4())
             occ_slug = f"{slug}-{category}-{occ_id[:6]}"
-            start = now + timedelta(days=days)
-            end = start + timedelta(days=duration)
-            img = _img(f"{occ_slug}")
+            # PL14 — date esplicite nel 2027 (inizio ore 17, fine ore 12)
+            start = datetime.fromisoformat(f"{date_str}T17:00:00+00:00")
+            end = (start + timedelta(days=duration)).replace(hour=12)
+            img = _img(photo)
             products.append({
                 "id": prod_id, "organization_id": org_id, "name": title,
                 "category": category, "item_type": "event_ticket",

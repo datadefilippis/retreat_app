@@ -467,11 +467,10 @@ export default function RetreatsCalendarPage() {
                         defaultValue: (data.categories || {})[item.category] || item.category || '',
                       })}
                     </p>
-                    {/* PL9 — sui campioni il titolo è un segnaposto sfocato,
-                        mai il nome finto (né visibile né nel DOM) */}
-                    <h2 className="font-semibold text-foreground mt-0.5 line-clamp-2">
-                      {item.sample ? <Redacted kind="title" /> : item.title}
-                    </h2>
+                    {/* PL14 — il titolo evocativo resta VISIBILE anche sui
+                        campioni: comunica il concept; l'identità (organizzatore,
+                        rating) resta redatta qui sotto */}
+                    <h2 className="font-semibold text-foreground mt-0.5 line-clamp-2">{item.title}</h2>
                     <p className="text-sm text-muted-foreground mt-1">
                       {fmtDates(item.start_at, item.end_at, i18n.language)}
                       {(item.city || item.region) && (

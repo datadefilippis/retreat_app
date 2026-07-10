@@ -93,11 +93,15 @@ def test_resolve_org_404_for_sample_always():
 
 
 def test_sample_identity_redacted_server_side():
-    """PL9 — l'identità finta non lascia mai il server: titolo, nome
-    organizzatore, rating e bio dei sample sono redatti nel payload
-    (il frontend mostra segnaposto sfocati)."""
+    """PL9/PL14 — l'IDENTITÀ finta non lascia mai il server: nome
+    organizzatore, rating, venue e bio dei sample sono redatti nel
+    payload (segnaposto sfocati nel frontend). Il TITOLO invece resta
+    visibile per scelta founder (PL14): è evocativo e descrittivo,
+    comunica il concept senza rivelare chi c'è dietro."""
     src = _src("routers/public.py")
-    assert '"title": "" if _smp else prod.get("name")' in src
+    assert '"title": prod.get("name")' in src            # visibile (PL14)
+    assert '"title": "" if _smp' not in src, \
+        "regressione: il titolo evocativo tornerebbe oscurato"
     assert '"org_name": "" if _smp else' in src
     assert '"org_rating": None if _smp else' in src
     assert '"venue_name": None if _smp else' in src
@@ -150,6 +154,15 @@ def test_lead_payload_profiling_fields():
     for f in ('"phone"', '"city"', '"interests"', '"budget"', '"activity"',
               '"travel"', '"disciplines"', '"venue_type"', '"capacity"'):
         assert f in src
+
+
+def test_seed_uses_local_photos_and_2027_dates():
+    """PL14 — la vetrina di pre-lancio usa foto VERE servite in locale
+    (niente picsum/dipendenze esterne) e date tutte nel 2027."""
+    seed = _src("scripts/seed_prelaunch_samples.py")
+    assert "picsum" not in seed, "foto placeholder esterne tornate nel seed"
+    assert "/media/prelaunch/" in seed
+    assert seed.count('"2027-') >= 10, "ogni ritiro campione data nel 2027"
 
 
 def test_wipe_and_seed_share_the_same_flag():

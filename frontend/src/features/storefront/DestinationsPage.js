@@ -58,9 +58,8 @@ function RetreatCard({ item, i18nLang, t }) {
             {t(`landings:categories.${item.category}`, { defaultValue: item.category })}
           </p>
         )}
-        <h3 className="font-semibold text-foreground mt-0.5 line-clamp-2">
-          {item.sample ? <Redacted kind="title" /> : item.title}
-        </h3>
+        {/* PL14 — titolo evocativo visibile anche sui campioni */}
+        <h3 className="font-semibold text-foreground mt-0.5 line-clamp-2">{item.title}</h3>
         <p className="text-sm text-muted-foreground mt-1">
           {fmtDates(item.start_at, item.end_at, i18nLang)}
           {item.city ? ` · ${item.city}` : ''}

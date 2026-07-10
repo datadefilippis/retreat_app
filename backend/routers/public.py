@@ -3523,17 +3523,18 @@ async def list_public_retreats(
                 and occ.get("longitude") is not None:
             distance_km = round(_haversine_km(
                 lat, lng, occ["latitude"], occ["longitude"]), 1)
-        # PL9 — sui campioni l'identita' non lascia mai il server:
-        # niente titolo, nome organizzatore o rating nel payload (il
-        # frontend mostra segnaposto sfocati). Categoria, luogo, date e
-        # prezzo restano: e' cio' che rende credibile l'anteprima.
+        # PL9/PL14 — sui campioni l'IDENTITA' non lascia mai il server
+        # (organizzatore, venue, rating: redatti → segnaposto sfocati).
+        # Il TITOLO invece resta visibile: è evocativo e descrittivo,
+        # comunica il concept senza rivelare chi c'è dietro (PL14,
+        # scelta founder). Categoria, luogo, date e prezzo restano.
         _smp = prod["organization_id"] in sample_orgs
         items.append({
             "distance_km": distance_km,
             "country": occ.get("country"),
             "latitude": occ.get("latitude"),
             "longitude": occ.get("longitude"),
-            "title": "" if _smp else prod.get("name"),
+            "title": prod.get("name"),
             "category": prod.get("category"),
             "org_name": "" if _smp else org_name.get(prod["organization_id"], ""),
             "org_slug": slug_org,
