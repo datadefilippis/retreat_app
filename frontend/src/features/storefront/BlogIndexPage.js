@@ -32,7 +32,7 @@ export default function BlogIndexPage() {
   const [loading, setLoading] = useState(true);
 
   useSeoMeta({
-    title: t('blog.seoTitle', { defaultValue: 'Blog | Aurya' }),
+    title: t('blog.seoTitle', { defaultValue: 'Ritiri, discipline olistiche e benessere | Il Magazine di Aurya' }),
     description: t('blog.seoDesc', { defaultValue: 'Storie, pratiche e sapere olistico da chi organizza e vive i ritiri.' }),
     canonicalPath: '/blog',
   });
@@ -77,7 +77,7 @@ export default function BlogIndexPage() {
           <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-20 text-center">
             <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-xs md:text-sm text-[#ecd9a8] mb-3 select-none text-hero-shadow">Connect · Heal · Grow</p>
             <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
-              {t('blog.title', { defaultValue: 'Il blog di Aurya' })}
+              {t('blog.title', { defaultValue: 'Il Magazine di Aurya' })}
             </h1>
             <p className="text-white/90 mt-3 text-lg leading-relaxed max-w-2xl mx-auto text-hero-shadow">
               {t('blog.subtitle', { defaultValue: 'Storie, pratiche e sapere olistico da chi i ritiri li organizza e li vive.' })}

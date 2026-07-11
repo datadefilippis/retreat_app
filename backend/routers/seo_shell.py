@@ -383,10 +383,10 @@ async def _meta_blog_list() -> dict:
     return {
         # SEO1 — il title dell'hub porta le keyword di categoria, non
         # solo la parola "Blog" (che non cerca nessuno).
-        "title": "Ritiri, discipline olistiche e benessere | Il magazine di Aurya",
+        "title": "Ritiri, discipline olistiche e benessere | Il Magazine di Aurya",
         "description": ("Guide oneste su ritiri olistici, discipline e "
                         "benessere, scritte da chi le pratica e da chi "
-                        "le organizza. Il magazine di Aurya."),
+                        "le organizza. Il Magazine di Aurya."),
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/og-cover.jpg",

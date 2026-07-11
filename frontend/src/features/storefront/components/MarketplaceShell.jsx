@@ -110,7 +110,7 @@ const NAV_ITEMS = [
   { to: '/', key: 'marketplace.navRetreats', fallback: 'Ritiri' },
   { to: '/operatori', key: 'marketplace.navOperators', fallback: 'Organizzatori' },
   { to: '/destinazioni', key: 'marketplace.navDestinations', fallback: 'Destinazioni' },
-  { to: '/blog', key: 'marketplace.navBlog', fallback: 'Blog' },
+  { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
 ];
 
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
@@ -347,7 +347,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     </Link>
                   </li>
                 ))}
-                <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Blog' })}</Link></li>
+                <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>
               </ul>
             </div>
             <div>

@@ -562,7 +562,7 @@
     "navMenu": "Menu",
     "navClose": "Chiudi menu",
     "passportLink": "Il tuo Passaporto Aurya",
-    "navBlog": "Blog"
+    "navBlog": "Magazine"
   },
   "reviews": {
     "heading": "Recensioni",
@@ -669,9 +669,9 @@
     "backHome": "Vai ai ritiri"
   },
   "blog": {
-    "seoTitle": "Blog | Aurya",
+    "seoTitle": "Ritiri, discipline olistiche e benessere | Il Magazine di Aurya",
     "seoDesc": "Storie, pratiche e sapere olistico da chi organizza e vive i ritiri.",
-    "title": "Il blog di Aurya",
+    "title": "Il Magazine di Aurya",
     "subtitle": "Storie, pratiche e sapere olistico da chi i ritiri li organizza e li vive.",
     "allArticles": "Tutti",
     "readMore": "Leggi",

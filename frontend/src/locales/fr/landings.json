@@ -562,7 +562,7 @@
     "navMenu": "Menu",
     "navClose": "Fermer le menu",
     "passportLink": "Ton Passeport Aurya",
-    "navBlog": "Blog"
+    "navBlog": "Magazine"
   },
   "reviews": {
     "heading": "Avis",
@@ -669,9 +669,9 @@
     "backHome": "Voir les retraites"
   },
   "blog": {
-    "seoTitle": "Blog | Aurya",
+    "seoTitle": "Retraites, disciplines holistiques et bien-être | Le Magazine d'Aurya",
     "seoDesc": "Histoires, pratiques et savoir holistique de ceux qui organisent et vivent les retraites.",
-    "title": "Le blog Aurya",
+    "title": "Le Magazine d'Aurya",
     "subtitle": "Histoires, pratiques et savoir holistique de ceux qui organisent et vivent les retraites.",
     "allArticles": "Tous",
     "readMore": "Lire",
