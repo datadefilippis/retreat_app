@@ -47,6 +47,33 @@ export default function AboutAuryaPage() {
             <p className="text-muted-foreground mt-2 leading-relaxed">{t('aboutPage.visionBody')}</p>
           </section>
 
+          {/* Chi c'è dietro (11/7, scelta founder): i volti veri di chi
+              costruisce Aurya. La fiducia si dà a persone, non a loghi. */}
+          <section className="rounded-3xl border border-border bg-card overflow-hidden md:grid md:grid-cols-5">
+            <div className="md:col-span-2">
+              <img
+                src="/media/chisiamo-aurya.jpg"
+                alt={t('aboutPage.facesAlt', { defaultValue: 'Davide e Valentina, i fondatori di Aurya, in riva al mare' })}
+                loading="lazy"
+                className="h-64 w-full object-cover md:h-full"
+              />
+            </div>
+            <div className="p-6 md:col-span-3 md:p-8">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#8a7440]">
+                {t('aboutPage.facesEyebrow', { defaultValue: 'Ci presentiamo' })}
+              </p>
+              <h2 className="font-heading text-xl font-semibold text-foreground mt-2">
+                {t('aboutPage.facesTitle', { defaultValue: 'Siamo Davide e Valentina' })}
+              </h2>
+              <p className="text-muted-foreground mt-3 leading-relaxed">
+                {t('aboutPage.facesBody1', { defaultValue: 'Valentina è un’operatrice olistica: reiki, tarocchi e oracoli, consulti energetici e letture dei temi natali. Davide lavora nel digitale e costruisce piattaforme. Due mondi diversi, la stessa anima: la passione per la crescita personale e la consapevolezza.' })}
+              </p>
+              <p className="text-muted-foreground mt-3 leading-relaxed">
+                {t('aboutPage.facesBody2', { defaultValue: 'Aurya è il punto in cui i nostri cammini si incontrano: la profondità del benessere autentico e la cura di una piattaforma fatta bene, al servizio di chi questo lavoro lo vive ogni giorno e di chi lo sta cercando.' })}
+              </p>
+            </div>
+          </section>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <section className="rounded-2xl border border-border bg-card p-6">
               <Compass className="h-6 w-6 text-[#376254]" aria-hidden />
