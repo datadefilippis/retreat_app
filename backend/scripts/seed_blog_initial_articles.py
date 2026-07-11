@@ -650,6 +650,12 @@ In genere no, per rispetto del gruppo e delle pratiche, ma esistono ritiri dichi
     ),
 ]
 
+# SEO2 — i batch mensili successivi vivono in moduli propri (uno per
+# mese, come il piano editoriale): il seed li unisce e resta idempotente.
+from scripts.seed_blog_articles_m2 import ARTICLES_M2  # noqa: E402
+
+ARTICLES = ARTICLES + ARTICLES_M2
+
 
 async def backfill_covers(db):
     """La cover brand (titolo + geometria sacra di categoria) nasce nel
