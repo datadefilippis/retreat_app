@@ -14,7 +14,7 @@ ARTICLES_M3 = [
     (
         "partita-iva-operatore-olistico-fiscalita-guida",
         "Partita IVA e fiscalità per operatori olistici: la guida onesta (2026)",
-        "Quando serve la partita IVA, codice ATECO, regime forfettario con esempio numerico vero, Gestione Separata INPS e legge 4/2013. La guida fiscale per operatori olistici.",
+        "Quando serve la partita IVA, il codice ATECO, il forfettario con un esempio numerico vero, INPS e legge 4/2013. La guida per operatori olistici.",
         None,
         AUTHOR_DAVIDE,
         """Parliamo della parte del mestiere che nessuno ama: le tasse. Se accompagni le persone col Reiki, lo yoga, il suono o qualsiasi disciplina olistica, prima o poi arriva la domanda: "devo aprire la partita IVA?". E la risposta che trovi online è quasi sempre scritta da chi vuole venderti l'apertura della partita IVA.

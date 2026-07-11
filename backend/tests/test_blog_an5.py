@@ -206,3 +206,36 @@ class TestBlogSeoAn6:
         fonts = BACKEND_DIR / "assets" / "fonts"
         assert (fonts / "Cinzel-SemiBold.ttf").exists()
         assert (fonts / "Manrope-Regular.ttf").exists()
+
+
+# ── SEO4 (consolidamento 11/7) ───────────────────────────────────────────────
+
+def test_seo4_article_shell_serves_body_faq_person():
+    """I crawler senza JS (LLM inclusi) leggono SOLO l'HTML iniziale:
+    l'articolo INTERO deve stare nel JSON-LD (articleBody), le FAQ
+    diventano FAQPage, la firma vera diventa Person (E-E-A-T)."""
+    src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text(encoding="utf-8")
+    assert '"articleBody"' in src, "l'articolo intero deve stare nel JSON-LD"
+    assert '"FAQPage"' in src
+    assert "_extract_faq" in src
+    assert '"@type": "Person"' in src, "firma vera = Person, non Organization"
+    assert '"inLanguage": "it"' in src
+
+
+def test_seo4_llms_txt_exists_and_points_home():
+    """GEO — llms.txt presenta Aurya agli assistenti AI."""
+    p = BACKEND_DIR.parent / "frontend" / "public" / "llms.txt"
+    txt = p.read_text(encoding="utf-8")
+    assert "aurya.life" in txt
+    assert "ritiri olistici" in txt.lower()
+    assert "sitemap" in txt.lower()
+
+
+def test_seo4_faq_extraction_works_on_seed_articles():
+    """Ogni articolo del seed deve produrre almeno 3 FAQ estraibili
+    (il blocco Domande frequenti è parte del formato, non un optional)."""
+    from routers.seo_shell import _extract_faq
+    from scripts.seed_blog_initial_articles import ARTICLES
+    for slug, _t, _d, _c, _a, content in ARTICLES:
+        faqs = _extract_faq(content)
+        assert len(faqs) >= 3, f"{slug}: solo {len(faqs)} FAQ estratte"

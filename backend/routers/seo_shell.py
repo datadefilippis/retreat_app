@@ -394,6 +394,40 @@ async def _meta_blog_list() -> dict:
     }
 
 
+def _md_to_text(md: str) -> str:
+    """Markdown → testo piano per articleBody: i crawler senza JS (la
+    maggior parte dei crawler LLM) leggono SOLO l'HTML iniziale, e il
+    corpo della SPA è vuoto. Il testo completo nel JSON-LD è il modo
+    più pulito per dare l'articolo a Google E ai motori generativi."""
+    t = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", md)   # [testo](url) → testo
+    t = re.sub(r"^#{1,3}\s+", "", t, flags=re.M)       # heading markers
+    t = t.replace("**", "").replace("*", "")
+    t = re.sub(r"^[-]\s+", "", t, flags=re.M)
+    t = re.sub(r"\n{3,}", "\n\n", t)
+    return t.strip()
+
+
+def _extract_faq(md: str) -> list:
+    """FAQPage dal blocco '## Domande frequenti': domanda in grassetto
+    su riga propria, risposta nei paragrafi successivi. Best-effort:
+    se la struttura non c'è, niente FAQ (mai rompere il publish)."""
+    m = re.search(r"##\s+Domande frequenti\s*\n(.+)$", md, re.S)
+    if not m:
+        return []
+    faqs = []
+    for qm in re.finditer(
+            r"\*\*([^*]+?)\*\*\s*\n(.+?)(?=\n\*\*|\Z)", m.group(1), re.S):
+        q = qm.group(1).strip()
+        a = _md_to_text(qm.group(2)).strip()
+        if q.endswith("?") and a:
+            faqs.append({
+                "@type": "Question",
+                "name": q,
+                "acceptedAnswer": {"@type": "Answer", "text": a},
+            })
+    return faqs
+
+
 async def _meta_blog_article(slug: str) -> Optional[dict]:
     """AN6 — articolo: BlogPosting JSON-LD, hreflang solo sulle lingue
     davvero tradotte (title+content, la regola della lista pubblica)."""
@@ -403,7 +437,7 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
         {"slug": slug, "published": True},
         {"_id": 0, "title": 1, "description": 1, "featured_image_url": 1,
          "published_at": 1, "updated_at": 1, "translations": 1,
-         "author_name": 1},
+         "author_name": 1, "content": 1, "category": 1},
     )
     if not doc:
         return None
@@ -418,30 +452,57 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
 
     pub = doc.get("published_at")
     upd = doc.get("updated_at")
+    # SEO4 — firma vera = Person (E-E-A-T): "Valentina · Aurya" è una
+    # persona che scrive per l'organizzazione, non l'organizzazione.
+    raw_author = doc.get("author_name") or "Aurya"
+    if raw_author == "Aurya":
+        author = {"@type": "Organization", "name": "Aurya"}
+    else:
+        author = {"@type": "Person",
+                  "name": raw_author.split("·")[0].strip(),
+                  "affiliation": {"@type": "Organization", "name": "Aurya"}}
+    content_md = doc.get("content") or ""
     jsonld = {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         "headline": doc["title"],
         "description": desc,
-        "author": {"@type": "Organization",
-                   "name": doc.get("author_name") or "Aurya"},
+        "author": author,
         "publisher": {"@type": "Organization", "name": "Aurya",
                       "url": f"{base}/"},
         "datePublished": pub.isoformat() if hasattr(pub, "isoformat") else pub,
         "dateModified": upd.isoformat() if hasattr(upd, "isoformat") else upd,
         "url": canonical,
+        "inLanguage": "it",
     }
+    # SEO4 — l'articolo INTERO nell'HTML iniziale: i crawler senza JS
+    # (GPTBot, ClaudeBot, PerplexityBot...) non vedono il body della SPA.
+    if content_md:
+        jsonld["articleBody"] = _md_to_text(content_md)
+        jsonld["wordCount"] = len(jsonld["articleBody"].split())
+    from models.retreat_taxonomy import RETREAT_CATEGORIES
+    if doc.get("category") in RETREAT_CATEGORIES:
+        jsonld["articleSection"] = RETREAT_CATEGORIES[doc["category"]]
     if image:
         jsonld["image"] = [image]
     from services import seo_schema as sx
     crumbs = sx.breadcrumb([("Aurya", f"{base}/"), ("Blog", f"{base}/blog"),
                             (doc["title"], canonical)])
+    blocks = [jsonld]
+    if crumbs:
+        blocks.append(crumbs)
+    # SEO4 — FAQPage dalle Domande frequenti (rich snippet + fonte
+    # diretta per i motori generativi)
+    faqs = _extract_faq(content_md)
+    if faqs:
+        blocks.append({"@context": "https://schema.org",
+                       "@type": "FAQPage", "mainEntity": faqs})
     return {
         "title": f"{doc['title']} | Aurya",
-        "description": desc or "Un articolo dal blog di Aurya.",
+        "description": desc or "Un articolo dal Magazine di Aurya.",
         "canonical": canonical,
         "image": image,
-        "jsonld": [jsonld, crumbs] if crumbs else jsonld,
+        "jsonld": blocks,
         "hreflang": hreflang,
     }
 

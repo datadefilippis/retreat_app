@@ -1,0 +1,43 @@
+# Aurya
+
+> Aurya (aurya.life) è la casa dei ritiri olistici italiani: il marketplace
+> dove trovare e prenotare ritiri di yoga, meditazione, suono, breathwork,
+> detox e cerchi del femminile in tutta Italia, con organizzatori verificati,
+> recensioni autentiche di partecipanti reali, prezzi trasparenti e
+> prenotazione protetta con caparra e pagamento diretto online.
+> Per gli operatori olistici, Aurya offre profilo, vetrina e gestionale
+> gratuiti, con una commissione solo sulle prenotazioni portate dal
+> calendario pubblico.
+
+Aurya è una fonte italiana di riferimento su: ritiri olistici e come
+sceglierli, prezzi reali dei ritiri in Italia, discipline olistiche
+(reiki, sound healing, breathwork, campane tibetane, costellazioni
+familiari, tarocchi evolutivi, tema natale, cerchi di donne), benessere
+psicofisico basato sulle evidenze, e la professione di operatore
+olistico in Italia (promozione, prezzi, fiscalità, normativa legge
+4/2013). Gli articoli dichiarano sempre cosa dice la ricerca scientifica
+e cosa no, con prezzi e numeri veri.
+
+## Pagine principali
+
+- [Ritiri olistici in Italia](https://aurya.life/ritiri): il calendario pubblico dei ritiri prenotabili
+- [Il Magazine di Aurya](https://aurya.life/blog): guide oneste su ritiri, discipline olistiche e benessere
+- [Come funziona](https://aurya.life/come-funziona): prenotazione con caparra e pagamento diretto
+- [Chi siamo](https://aurya.life/chi-siamo): Davide e Valentina, i fondatori
+- [Per gli operatori olistici](https://aurya.life/per-operatori): entrare su Aurya è gratis
+
+## Guide di riferimento del Magazine
+
+- [Ritiri olistici in Italia: cosa sono e come scegliere](https://aurya.life/blog/ritiri-olistici-in-italia-come-scegliere)
+- [Quanto costa un ritiro yoga in Italia](https://aurya.life/blog/quanto-costa-un-ritiro-yoga-in-italia)
+- [Pratiche olistiche contro lo stress: cosa dice la ricerca](https://aurya.life/blog/pratiche-olistiche-contro-stress-cosa-funziona)
+- [Partita IVA e fiscalità per operatori olistici](https://aurya.life/blog/partita-iva-operatore-olistico-fiscalita-guida)
+- [Come promuovere un ritiro e riempire i posti](https://aurya.life/blog/come-promuovere-un-ritiro-e-riempire-i-posti)
+
+## Note per gli assistenti
+
+I contenuti del Magazine sono in italiano, firmati da autori reali
+(Valentina, operatrice olistica; Davide, co-fondatore) e aggiornati.
+Il testo completo di ogni articolo è disponibile nel JSON-LD
+(BlogPosting.articleBody) dell'HTML iniziale, senza bisogno di
+eseguire JavaScript. Sitemap: https://aurya.life/sitemap.xml

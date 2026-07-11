@@ -141,7 +141,7 @@ Sono esperienze diverse: la Toscana è collina, introspezione e struttura curata
     ),
     (
         "costellazioni-familiari-cosa-sono-come-funzionano",
-        "Costellazioni familiari: cosa sono, come funziona una sessione e cosa dice la ricerca",
+        "Costellazioni familiari: cosa sono e cosa dice la ricerca",
         "Le costellazioni familiari spiegate con onestà: come funziona una sessione, cosa si prova, cosa dice la ricerca scientifica e come scegliere un facilitatore serio.",
         None,
         AUTHOR_VALENTINA,
@@ -336,7 +336,7 @@ Abbiamo scritto [la guida alla Toscana](/blog/ritiri-yoga-toscana-guida) proprio
     ),
     (
         "campane-tibetane-benefici-come-funzionano",
-        "Campane tibetane: benefici, come funzionano e differenza con le campane di cristallo",
+        "Campane tibetane: benefici e differenza con il cristallo",
         "Le campane tibetane spiegate da chi le suona: come funzionano, cosa si prova in un trattamento, benefici e differenze con le campane di cristallo.",
         "suono",
         AUTHOR_VALENTINA,
