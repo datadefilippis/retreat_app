@@ -17,6 +17,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Check, Loader2 } from 'lucide-react';
 import api from '../../api/client';
+import { trackEvent } from '../../lib/analytics';
 
 // Chiavi stabili salvate nel DB (le etichette sono i18n)
 const INTERESTS = ['yoga', 'meditation', 'breathwork', 'sound', 'detox',
@@ -78,6 +79,9 @@ export default function LeadForm({ type = 'traveler', accent = '#376254' }) {
         consent: true, language: (i18n.language || 'it').slice(0, 2),
       });
     } catch { /* best-effort: mostriamo comunque il grazie */ }
+    // GA1/SEO6 — il lead e' LA conversione del pre-lancio: senza questo
+    // evento non sapremmo mai quale pagina/canale porta contatti.
+    trackEvent('generate_lead', { lead_type: type });
     setState('done');
   };
 

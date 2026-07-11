@@ -77,6 +77,11 @@ export function denyAnalyticsConsent(persist = true) {
   if (persist) storeConsent(false);
 }
 
+export function trackEvent(name, params = {}) {
+  if (!loaded || !measurementId) return;
+  gtag('event', name, params);
+}
+
 export function trackPageView(path) {
   if (!loaded || !measurementId) return;
   gtag('event', 'page_view', {

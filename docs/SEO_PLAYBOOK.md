@@ -5,7 +5,9 @@
 > e cosa va fatto a mano, e cosa cambiare al lancio ufficiale.
 > Strategia di mercato: docs/SEO_STRATEGY_2026-07.md.
 > Calendario editoriale: docs/MAGAZINE_EDITORIAL_PLAN_2026-07.md.
-> Ultimo consolidamento: 2026-07-11 (SEO4).
+> Ultimo consolidamento: 2026-07-11 (SEO6, post-audit).
+> Audit di riferimento: docs/SEO_AUDIT_2026-07.md (rifarlo a ogni
+> trimestre o prima di ogni milestone: lancio, espansione EN...).
 
 ---
 
@@ -23,6 +25,9 @@ Ogni articolo pubblicato (via ArticleEditor admin o seed) ottiene da solo:
 | Cover brand (titolo serif + geometria sacra di categoria) | `services/article_cover.py`, generata al publish | design v2 armonizzato card Masseria |
 | Sitemap articles + lastmod | `routers/seo.py` | inclusa nel sitemap index |
 | Ping IndexNow | hook di publish nel router; nel seed è esplicito | Bing/Yandex immediati |
+| Organization + WebSite schema sulla home | `_meta_home` (SEO6) | l'entità Aurya nel Knowledge Graph; aggiungere `sameAs` quando nascono i profili social |
+| 404 VERI sui contenuti mancanti | shell (SEO6) | articolo/evento/profilo inesistente → HTTP 404 con la shell (la SPA mostra il suo 404). MAI reintrodurre soft-404 |
+| Evento GA4 `generate_lead` | LeadForm al submit (SEO6) | LA conversione del pre-lancio; marcare come conversione nella UI di GA4 |
 | llms.txt | `frontend/public/llms.txt` | presentazione del sito per gli assistenti AI; aggiornare le "guide di riferimento" quando nascono pilastri nuovi |
 
 Guardie di regressione: `backend/tests/test_prelaunch_pl.py` e
@@ -102,7 +107,31 @@ In ordine di attivazione (dettagli nel piano editoriale, sez. onde):
 8. **Osservatorio dati** (6-12 mesi post-lancio): report annuale
 9. **Inglese** (fase 3): yoga retreat Italy, hreflang già pronto
 
-## 8. Routine di monitoraggio
+## 8. Regole permanenti post-audit (SEO6)
+
+1. **Mai soft-404**: ogni nuova superficie pubblica servita dalla shell
+   DEVE rispondere 404 quando il contenuto non esiste (guardia in
+   test_blog_an5). Nota limite accettato: i path fuori dai pattern
+   pubblici (es. /percorso-garbage) cadono sullo statico SPA con 200,
+   ma non sono raggiungibili dai crawler perché mai linkati.
+2. **Eventi GA4 con nomi standard Google**: `generate_lead` per i form
+   lead; al lancio aggiungere `purchase` (checkout completato),
+   `begin_checkout`, `sign_up` (registrazione operatore). Ogni evento
+   nuovo passa da `lib/analytics.trackEvent()` e va marcato conversione
+   in GA4 dove sensato. Mai gtag() sparsi nei componenti.
+3. **Entità Organization**: vive in `_meta_home`; quando nascono i
+   profili social del brand aggiungere `sameAs` (array di URL); quando
+   nasce la pagina autori, collegare `founder[].url`.
+4. **Backlog P1 dall'audit** (prossime 4 settimane): pagine autore
+   /autori/{slug} con Person.url negli articoli; articoli correlati
+   automatici in fondo ai post; pilastri allungati a 1.500+ parole;
+   profili social nel footer.
+5. **Cosa NON fare** (anti-rumore, dall'audit): migrare le sitemap
+   fuori da /api/ (Allow nel robots basta), AMP, rel=prev/next,
+   traduzioni articoli prima della fase 3, panico da GSC nei primi
+   14 giorni di una proprietà nuova.
+
+## 9. Routine di monitoraggio
 
 - **Quindicinale**: GSC (impression, click, posizione sulle 20 keyword sentinella), page_views first-party per canale search, conversione articolo→lead. Query inattese che spingono → accelerare quel cluster.
 - **Mensile**: nuovi backlink, articoli fermi (rinforzare title + link interni), un articolo vecchio aggiornato (freshness).

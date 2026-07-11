@@ -88,7 +88,9 @@ class TestResolveRouting:
     async def test_home(self):
         meta = await shell.resolve_meta("/")
         assert meta["canonical"].endswith("/")
-        assert meta["jsonld"]["@type"] == "WebSite"
+        # SEO6: la home serve WebSite + Organization (lista di blocchi)
+        types = [b["@type"] for b in meta["jsonld"]]
+        assert "WebSite" in types and "Organization" in types
 
     @pytest.mark.asyncio
     async def test_category(self):

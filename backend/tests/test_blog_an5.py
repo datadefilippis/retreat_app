@@ -250,3 +250,15 @@ def test_seo5_robots_allows_child_sitemaps():
     server = (BACKEND_DIR / "server.py").read_text(encoding="utf-8")
     assert 'Allow: /api/public/sitemap-' in server, \
         "regressione: le sotto-sitemap tornerebbero bloccate dal robots"
+
+
+def test_seo6_shell_hard_404_and_organization():
+    """SEO6 (audit P0) — niente soft-404: quando il resolver non trova
+    il contenuto la shell risponde 404 vero (la SPA mostra comunque il
+    suo 404). E la home serve l'entita' Organization (Knowledge Graph)."""
+    src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text(encoding="utf-8")
+    assert "status = 404" in src, \
+        "regressione: gli URL inesistenti tornerebbero soft-404 (200)"
+    assert "status_code=status" in src
+    assert '"@type": "Organization"' in src
+    assert '"founder"' in src

@@ -190,12 +190,35 @@ async def _meta_home() -> dict:
         "canonical": f"{base}/",
         "hreflang": _hub_hreflang(f"{base}/"),
         "image": f"{base}/media/aurya-hero-poster.jpg",
-        "jsonld": {
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "name": "Aurya",
-            "url": f"{base}/",
-        },
+        # SEO6 — WebSite + Organization: l'entita' Aurya nel Knowledge
+        # Graph (logo, fondatori, contatto). sameAs si aggiunge quando
+        # nascono i profili social del brand (playbook P1).
+        "jsonld": [
+            {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "Aurya",
+                "url": f"{base}/",
+                "publisher": {"@id": f"{base}/#organization"},
+            },
+            {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "@id": f"{base}/#organization",
+                "name": "Aurya",
+                "url": f"{base}/",
+                "logo": {"@type": "ImageObject",
+                         "url": f"{base}/logo-aurya-512.png"},
+                "description": ("La casa dei ritiri olistici italiani: "
+                                "trova e prenota ritiri ed esperienze di "
+                                "benessere con organizzatori verificati."),
+                "email": "info@aurya.life",
+                "founder": [
+                    {"@type": "Person", "name": "Davide De Filippis"},
+                    {"@type": "Person", "name": "Valentina"},
+                ],
+            },
+        ],
     }
 
 
@@ -812,7 +835,9 @@ async def seo_shell(full_path: str):
     now = time.monotonic()
     hit = _CACHE.get(path)
     if hit and now - hit[1] < _CACHE_TTL:
-        return Response(hit[0], media_type="text/html")
+        cached_status = hit[2] if len(hit) > 2 else 200
+        return Response(hit[0], media_type="text/html",
+                        status_code=cached_status)
 
     meta = None
     try:
@@ -831,9 +856,16 @@ async def seo_shell(full_path: str):
     template = _index_html()
     if meta:
         page = _inject(template, meta)
+        status = 200
     else:
-        page = template  # shell neutra: la SPA gestisce il 404
-    _CACHE[path] = (page, now)
+        # SEO6 — 404 VERO, non soft-404: il path ha la forma di un
+        # contenuto pubblico (nginx instrada qui solo quei pattern) ma
+        # il contenuto non esiste (articolo/evento/profilo mancante).
+        # Si serve comunque la shell cosi' la SPA mostra il suo 404,
+        # ma lo status dice ai crawler la verita'.
+        page = template
+        status = 404
+    _CACHE[path] = (page, now, status)
     # cache corta lato proxy/browser: i contenuti cambiano coi publish
-    return Response(page, media_type="text/html",
+    return Response(page, media_type="text/html", status_code=status,
                     headers={"Cache-Control": "public, max-age=300"})
