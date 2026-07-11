@@ -44,7 +44,7 @@ reportlab>=4.0.0
 # Step 10). core/observability/metrics.py importa prometheus_client.
 prometheus-client>=0.20.0
 xlrd==2.0.2
-slowapi>=0.1.9
+slowapi>=0.1.10
 stripe>=8.0.0
 qrcode[pil]>=7.4  # E4 — ticket QR generation (Pillow for PNG output)
 
