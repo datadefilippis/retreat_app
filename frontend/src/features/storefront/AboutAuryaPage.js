@@ -66,10 +66,10 @@ export default function AboutAuryaPage() {
                 {t('aboutPage.facesTitle', { defaultValue: 'Siamo Davide e Valentina' })}
               </h2>
               <p className="text-muted-foreground mt-3 leading-relaxed">
-                {t('aboutPage.facesBody1', { defaultValue: 'Valentina è un’operatrice olistica: reiki, tarocchi e oracoli, consulti energetici e letture dei temi natali. Davide lavora nel digitale e costruisce piattaforme. Due mondi diversi, la stessa anima: la passione per la crescita personale e la consapevolezza.' })}
+                {t('aboutPage.facesBody1', { defaultValue: 'Dietro ad Aurya ci siamo noi: una coppia unita dalla passione per la crescita personale e l’evoluzione interiore. Abbiamo fuso le nostre competenze per creare qualcosa di unico. Valentina è l’anima olistica del progetto: operatrice Reiki di terzo livello, guida le persone attraverso letture evolutive di tarocchi, oracoli e lo studio delle mappe natali. Davide porta la sua esperienza nel mondo digitale, costruendo piattaforme capaci di connettere le persone.' })}
               </p>
               <p className="text-muted-foreground mt-3 leading-relaxed">
-                {t('aboutPage.facesBody2', { defaultValue: 'Aurya è il punto in cui i nostri cammini si incontrano: la profondità del benessere autentico e la cura di una piattaforma fatta bene, al servizio di chi questo lavoro lo vive ogni giorno e di chi lo sta cercando.' })}
+                {t('aboutPage.facesBody2', { defaultValue: 'L’approccio olistico e la ricerca della consapevolezza ci hanno uniti come coppia e come professionisti. Crediamo fermamente nell’evoluzione personale e nel valore di ciò che facciamo ogni giorno. Aurya nasce proprio da questa sinergia: l’incontro tra la profondità del benessere autentico e la cura di uno spazio digitale solido, pensato per supportare operatori e anime in cammino.' })}
               </p>
             </div>
           </section>

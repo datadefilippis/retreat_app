@@ -52,7 +52,7 @@ export default function OperatorLandingPage() {
       a: t('op.p3a', { defaultValue: 'Tu. Prezzi, caparra e condizioni di cancellazione li decidi tu, e chi prenota li vede chiaramente prima di pagare. Noi ci occupiamo di prenotazioni, promemoria e recensioni verificate.' }) },
     { icon: Compass,
       q: t('op.p4q', { defaultValue: 'Chi siamo' }),
-      a: t('op.p4a', { defaultValue: 'Un piccolo team italiano che crede nel benessere autentico. Aurya nasce per dare una casa a chi crea esperienze di trasformazione e a chi le cerca.' }),
+      a: t('op.p4a', { defaultValue: 'Una coppia, due mondi: Valentina, anima olistica del progetto (operatrice Reiki, tarocchi evolutivi e mappe natali), e Davide, che costruisce piattaforme digitali. Aurya nasce dalla loro sinergia.' }),
       link: { to: '/chi-siamo', label: t('op.p4link', { defaultValue: 'Scopri chi siamo' }) } },
   ];
 
