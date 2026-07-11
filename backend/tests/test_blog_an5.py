@@ -224,11 +224,14 @@ def test_seo4_article_shell_serves_body_faq_person():
 
 def test_seo4_llms_txt_exists_and_points_home():
     """GEO — llms.txt presenta Aurya agli assistenti AI."""
-    p = BACKEND_DIR.parent / "frontend" / "public" / "llms.txt"
+    p = BACKEND_DIR / "assets" / "llms.txt"
     txt = p.read_text(encoding="utf-8")
     assert "aurya.life" in txt
     assert "ritiri olistici" in txt.lower()
     assert "sitemap" in txt.lower()
+    server = (BACKEND_DIR / "server.py").read_text(encoding="utf-8")
+    assert '@app.get("/llms.txt"' in server, \
+        "il proxy manda i *.txt di root al backend: serve la route"
 
 
 def test_seo4_faq_extraction_works_on_seed_articles():

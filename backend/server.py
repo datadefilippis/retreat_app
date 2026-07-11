@@ -721,6 +721,22 @@ async def robots_txt():
     return Response(txt, media_type="text/plain")
 
 
+@app.get("/llms.txt", include_in_schema=False)
+async def llms_txt():
+    """SEO4/GEO — presentazione del sito per gli assistenti AI.
+    Vive in assets/ e passa dal backend perché il proxy instrada
+    TUTTI i *.txt di root qui (regola robots/IndexNow)."""
+    from pathlib import Path as _Path
+    from fastapi.responses import Response
+    p = _Path(__file__).resolve().parent / "assets" / "llms.txt"
+    try:
+        return Response(p.read_text(encoding="utf-8"),
+                        media_type="text/plain; charset=utf-8")
+    except OSError:
+        return Response("# Aurya — https://aurya.life\n",
+                        media_type="text/plain; charset=utf-8")
+
+
 @app.get("/api/health")
 async def health_check(verbose: bool = False):
     """Health check with MongoDB + Stripe connectivity verification.
