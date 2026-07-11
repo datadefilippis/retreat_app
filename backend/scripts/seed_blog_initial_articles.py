@@ -424,6 +424,16 @@ async def seed_articles():
         print(f"  + {slug} ({author})")
     print(f"Fatto: {created} creati, {skipped} già presenti.")
 
+    # il seed inserisce direttamente in DB e salta il hook di publish
+    # del router: il ping IndexNow va fatto qui (best-effort, come lì)
+    if created:
+        try:
+            from services.indexnow import ping_urls
+            ok = ping_urls(["/blog"] + [f"/blog/{a[0]}" for a in ARTICLES])
+            print(f"IndexNow ping: {'ok' if ok else 'saltato (chiave assente?)'}")
+        except Exception as exc:  # noqa: BLE001 — il seed non fallisce per un ping
+            print(f"IndexNow ping fallito (non bloccante): {exc}")
+
 
 async def _main():
     await seed_articles()
