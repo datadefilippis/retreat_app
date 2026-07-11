@@ -229,17 +229,22 @@ def test_prelaunch_gates_operators_and_destinations_pages():
     # le route usano i gate, non più le pagine dirette
     assert 'path="/operatori" element={<OperatorsGate />}' in app
     assert 'path="/destinazioni" element={<DestinationsGate />}' in app
-    # PL24 — anche il blog (vuoto) sparisce in pre-lancio
-    assert "function BlogGate(" in app
-    assert "<BlogGate><BlogIndexPage /></BlogGate>" in app
+    # SEO1 (decisione founder 11/7): il blog è il motore SEO del
+    # pre-lancio e resta SEMPRE attivo e indicizzabile — niente gate,
+    # niente noindex, voce visibile nel menu anche col flag ON.
+    assert "BlogGate" not in app, \
+        "regressione: il blog tornerebbe nascosto in pre-lancio"
+    assert 'path="/blog" element={<BlogIndexPage />}' in app
     shell = (frontend / "features" / "storefront" / "components" /
              "MarketplaceShell.jsx").read_text(encoding="utf-8")
-    assert "['/operatori', '/destinazioni', '/blog'].includes(i.to)" in shell
+    assert "['/operatori', '/destinazioni'].includes(i.to)" in shell
+    assert "'/blog'" not in shell.split("NAV_ITEMS.filter")[1].split("\n")[0], \
+        "regressione: la voce Blog sparirebbe dal menu in pre-lancio"
     assert "NAV_ITEMS.map" not in shell, \
         "il menu deve renderizzare navItems (filtrato in pre-lancio)"
-    # noindex pre-lancio copre anche il blog
     seo = _src("routers/seo_shell.py")
-    assert '"blog")' in seo.split("PL22")[1]
+    assert '"blog"' not in seo.split("PL22")[1].split("noindex")[0], \
+        "regressione: il blog tornerebbe noindex in pre-lancio"
 
 
 def test_prelaunch_copy_has_no_dashes():

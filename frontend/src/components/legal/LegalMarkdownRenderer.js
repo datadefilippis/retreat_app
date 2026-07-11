@@ -141,7 +141,9 @@ function renderInline(text, keyPrefix = 'inline') {
   let idx = 0;
 
   // Regex for: **bold** | `code` | *italic* | email | plain
-  const tokenRe = /(\*\*[^*]+\*\*)|(`[^`]+`)|(\*[^*]+\*)|([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
+  // SEO1 — link markdown [testo](url): solo percorsi interni, https e
+  // mailto (whitelist: il contenuto merchant resta sanitizzato a monte).
+  const tokenRe = /(\[[^\]]+\]\((?:\/|https?:\/\/|mailto:)[^)\s]+\))|(\*\*[^*]+\*\*)|(`[^`]+`)|(\*[^*]+\*)|([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
   let match;
   let last = 0;
 
@@ -151,7 +153,21 @@ function renderInline(text, keyPrefix = 'inline') {
       parts.push(remaining.slice(last, match.index));
     }
     const tok = match[0];
-    if (tok.startsWith('**') && tok.endsWith('**')) {
+    const linkMatch = tok.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (linkMatch) {
+      const [, label, href] = linkMatch;
+      const external = href.startsWith('http');
+      parts.push(
+        <a
+          key={`${keyPrefix}-l-${idx++}`}
+          href={href}
+          className="text-primary underline underline-offset-2"
+          {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        >
+          {label}
+        </a>
+      );
+    } else if (tok.startsWith('**') && tok.endsWith('**')) {
       parts.push(
         <strong key={`${keyPrefix}-b-${idx++}`}>{tok.slice(2, -2)}</strong>
       );

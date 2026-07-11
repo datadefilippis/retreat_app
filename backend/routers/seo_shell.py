@@ -381,9 +381,12 @@ async def _meta_blog_list() -> dict:
     base = _base_url()
     canonical = f"{base}/blog"
     return {
-        "title": "Blog | Aurya",
-        "description": ("Storie, pratiche e sapere olistico da chi "
-                        "organizza e vive i ritiri."),
+        # SEO1 — il title dell'hub porta le keyword di categoria, non
+        # solo la parola "Blog" (che non cerca nessuno).
+        "title": "Ritiri, discipline olistiche e benessere | Il magazine di Aurya",
+        "description": ("Guide oneste su ritiri olistici, discipline e "
+                        "benessere, scritte da chi le pratica e da chi "
+                        "le organizza. Il magazine di Aurya."),
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/og-cover.jpg",
@@ -761,7 +764,7 @@ async def seo_shell(full_path: str):
     # con i contenuti veri. Home e landing lead restano indicizzabili.
     if meta and prelaunch_mode():
         head = path.strip("/").split("/")[0]
-        if head in ("ritiri", "operatori", "destinazioni", "esperienze", "blog"):
+        if head in ("ritiri", "operatori", "destinazioni", "esperienze"):
             meta = {**meta, "noindex": True}
 
     template = _index_html()

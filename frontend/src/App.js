@@ -320,15 +320,6 @@ function DestinationsGate() {
   return <DestinationsPage />;
 }
 
-// PL24 — il blog è vuoto in pre-lancio: meglio nessuna pagina che una
-// pagina deserta. Torna intatto al lancio (flag OFF), articoli inclusi.
-function BlogGate({ children }) {
-  const { prelaunch, loading } = useSiteConfig();
-  if (loading) return null;
-  if (prelaunch) return <Navigate to="/" replace />;
-  return children;
-}
-
 function AppRoutes() {
   return (
     <Suspense fallback={<RouteFallback />}>
@@ -354,8 +345,10 @@ function AppRoutes() {
       <Route path="/chi-siamo" element={<AboutAuryaPage />} />
       <Route path="/come-funziona" element={<HowItWorksPage />} />
       {/* AN5 — il blog di Aurya */}
-      <Route path="/blog" element={<BlogGate><BlogIndexPage /></BlogGate>} />
-      <Route path="/blog/:slug" element={<BlogGate><BlogArticlePage /></BlogGate>} />
+      {/* SEO1 (11/7, decisione founder): il blog è il motore SEO del
+          pre-lancio e resta SEMPRE attivo, flag o non flag. */}
+      <Route path="/blog" element={<BlogIndexPage />} />
+      <Route path="/blog/:slug" element={<BlogArticlePage />} />
       {/* Static legal pages — always accessible, no auth wrapper */}
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
