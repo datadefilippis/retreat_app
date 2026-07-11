@@ -213,50 +213,83 @@ def render_article_cover(title: str,
                          category: Optional[str] = None,
                          category_label: Optional[str] = None) -> Optional[bytes]:
     """Rende la cover come bytes WebP, o None se l'ambiente non può
-    (Pillow/font assenti): il chiamante NON deve mai fallire per noi."""
+    (Pillow/font assenti): il chiamante NON deve mai fallire per noi.
+
+    Design v2 (11/7, armonizzato sulle card Masseria che il founder ama):
+    cornice doppia incisa, texture a puntini, titolo SERIF (Playfair)
+    ancorato in basso, geometria sacra discreta in alto a destra, firma
+    con lineetta. Tutti gli elementi delicati passano da un layer RGBA
+    così l'opacità è controllata davvero (niente linee grezze)."""
     try:
         from PIL import Image, ImageDraw
 
         base, glow = CATEGORY_PALETTES.get(category or "", _DEFAULT_PALETTE)
-        img = _radial_background(base, glow)
-        draw = ImageDraw.Draw(img)
+        img = _radial_background(base, glow).convert("RGBA")
 
-        # geometria sacra di categoria in filigrana, lato destro
+        # ── layer delicato: texture, cornice, geometria (con alpha) ──
+        fine = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+        fdraw = ImageDraw.Draw(fine)
+
+        gold_soft = GOLD_LIGHT + (66,)     # oro al ~26%: inciso, non urlato
+        gold_faint = GOLD_LIGHT + (34,)
+
+        # texture: griglia di puntini appena percettibile
+        for gy in range(46, HEIGHT - 30, 34):
+            for gx in range(46, WIDTH - 30, 34):
+                fdraw.ellipse((gx - 1, gy - 1, gx + 1, gy + 1),
+                              fill=gold_faint)
+
+        # cornice doppia incisa, come una card stampata
+        fdraw.rectangle((26, 26, WIDTH - 26, HEIGHT - 26),
+                        outline=gold_soft, width=1)
+        fdraw.rectangle((36, 36, WIDTH - 36, HEIGHT - 36),
+                        outline=gold_faint, width=1)
+
+        # geometria sacra di categoria: piccola, in alto a destra,
+        # tratto sottile oro (non più filigrana tono su tono)
         geometry = CATEGORY_GEOMETRY.get(category or "", _geo_aura)
-        ink = tuple(min(255, c + 22) for c in base)
-        geometry(draw, WIDTH - 250, HEIGHT // 2 - 10, 210, ink)
+        geometry(fdraw, WIDTH - 235, 205, 130, gold_soft)
+
+        img = Image.alpha_composite(img, fine)
+        draw = ImageDraw.Draw(img)
 
         margin = 84
         # overline: categoria (o il motto) in Cinzel oro, tracking largo
         overline = (category_label or "CONNECT · HEAL · GROW").upper()
-        over_font = _load_font("Cinzel-SemiBold.ttf", 30, weight=600)
-        draw.text((margin, 88), " ".join(overline), font=over_font,
+        over_font = _load_font("Cinzel-SemiBold.ttf", 26, weight=600)
+        draw.text((margin, 84), " ".join(overline), font=over_font,
                   fill=GOLD_LIGHT)
 
-        # titolo in Manrope, crema, a capo automatico
-        title_font = _load_font("Manrope-Regular.ttf", 68, weight=600)
-        lines = _wrap_title(draw, title, title_font, WIDTH - margin * 2 - 120)
-        y = 180
-        for line in lines:
-            draw.text((margin, y), line, font=title_font, fill=CREAM)
-            y += 86
-
-        # firma: logo loto+sole + wordmark Cinzel oro (come l'header)
-        sign_y = HEIGHT - 116
-        logo_size = 54
+        # firma in basso: lineetta oro + logo + wordmark
+        sign_y = HEIGHT - 118
+        draw.line((margin, sign_y - 16, margin + 56, sign_y - 16),
+                  fill=GOLD_LIGHT, width=2)
+        logo_size = 44
         try:
             logo = Image.open(_LOGO_PATH).convert("RGBA")
             logo.thumbnail((logo_size, logo_size), Image.LANCZOS)
             img.paste(logo, (margin, sign_y), logo)
-            text_x = margin + logo_size + 18
+            text_x = margin + logo_size + 16
         except Exception:             # senza logo la firma resta il wordmark
             text_x = margin
-        brand_font = _load_font("Cinzel-SemiBold.ttf", 32, weight=600)
-        draw.text((text_x, sign_y + 12), "A U R Y A", font=brand_font,
+        brand_font = _load_font("Cinzel-SemiBold.ttf", 26, weight=600)
+        draw.text((text_x, sign_y + 10), "A U R Y A", font=brand_font,
                   fill=GOLD_LIGHT)
 
+        # titolo SERIF (Playfair SemiBold), crema, ancorato in basso
+        # sopra la firma: il respiro sta sopra, come nella card Masseria
+        title_font = _load_font("PlayfairDisplay-Variable.ttf", 64,
+                                weight=600)
+        lines = _wrap_title(draw, title, title_font, WIDTH - margin * 2 - 60)
+        line_h = 80
+        y = sign_y - 52 - line_h * len(lines)
+        y = max(y, 170)               # 4 righe lunghe: mai sopra l'overline
+        for line in lines:
+            draw.text((margin, y), line, font=title_font, fill=CREAM)
+            y += line_h
+
         buf = BytesIO()
-        img.save(buf, format="WEBP", quality=82)
+        img.convert("RGB").save(buf, format="WEBP", quality=82)
         return buf.getvalue()
     except Exception as exc:          # pragma: no cover - ambiente povero
         logger.warning("article_cover: generazione saltata (%s)", exc)
