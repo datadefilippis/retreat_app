@@ -16,10 +16,11 @@
     "error_generic": "Ihre Zustimmung konnte nicht gespeichert werden. Bitte versuchen Sie es in einem Moment erneut."
   },
   "cookie_banner": {
-    "title": "Nur essenzielle Cookies",
-    "body": "Wir verwenden ausschließlich technische Cookies, die für die Authentifizierung und das Speichern Ihrer Sprachwahl erforderlich sind. Kein Drittanbieter-Tracking, keine externen Analysen, keine Werbe-Cookies.",
+    "title": "Cookies und Messung",
+    "body": "Wir verwenden essenzielle technische Cookies (Anmeldung und Sprache) und, nur mit deiner Einwilligung, Google Analytics, um die Nutzung der Website zu verstehen und sie zu verbessern. Keine Werbe-Cookies, niemals.",
     "details_link": "Details in der Datenschutzerklärung",
-    "accept_button": "Verstanden"
+    "accept_button": "Akzeptieren",
+    "essential_button": "Nur essenzielle"
   },
   "customer_reconsent": {
     "title": "Shop-Bedingungen aktualisiert",

@@ -25,8 +25,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Cookie, X } from 'lucide-react';
+import { grantAnalyticsConsent, denyAnalyticsConsent } from '../../lib/analytics';
 
-const STORAGE_KEY = 'aurya_cookie_disclosure_v1';
+// GA1 — _v2: il testo è cambiato materialmente (da "nessuna analytics"
+// a "GA4 solo col tuo consenso") e il banner ora raccoglie una SCELTA:
+// tutti rivedono il banner una volta.
+const STORAGE_KEY = 'aurya_cookie_disclosure_v2';
 
 export default function CookieConsentBanner() {
   const { t, i18n } = useTranslation('legal');
@@ -46,12 +50,18 @@ export default function CookieConsentBanner() {
     }
   }, []);
 
-  const dismiss = useCallback(() => {
+  const choose = useCallback((analytics) => {
+    // GA1 — la scelta vera: analytics=true attiva GA (consent mode
+    // update), false lo lascia negato. In entrambi i casi il banner
+    // non ricompare: la decisione è presa e resta revocabile.
+    if (analytics) grantAnalyticsConsent();
+    else denyAnalyticsConsent();
     try {
       window.localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
-          accepted_at: new Date().toISOString(),
+          analytics,
+          chosen_at: new Date().toISOString(),
           locale: (i18n.language || 'it').slice(0, 2),
         }),
       );
@@ -97,17 +107,24 @@ export default function CookieConsentBanner() {
           </div>
           <button
             type="button"
-            onClick={dismiss}
-            aria-label={t('cookie_banner.accept_button')}
+            onClick={() => choose(false)}
+            aria-label={t('cookie_banner.essential_button')}
             className="rounded p-1 text-muted-foreground hover:bg-accent"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-3 flex justify-end">
+        <div className="mt-3 flex justify-end gap-2">
           <button
             type="button"
-            onClick={dismiss}
+            onClick={() => choose(false)}
+            className="rounded-full border border-[#8a7440]/40 px-4 py-1.5 text-xs font-semibold text-[#8a7440] hover:bg-[#8a7440]/10 dark:text-[#d6c49a]"
+          >
+            {t('cookie_banner.essential_button')}
+          </button>
+          <button
+            type="button"
+            onClick={() => choose(true)}
             className="rounded-full bg-[#8a7440] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#75622f]"
           >
             {t('cookie_banner.accept_button')}

@@ -366,7 +366,7 @@ La communication à la Personne concernée inclut au minimum : la nature de la v
 
 ## 15. Cookies et technologies similaires
 
-Aurya **n'utilise pas de cookies de profilage, d'analytics ou de marketing**. Ne sont utilisés ni Google Analytics, ni Mixpanel, ni Hotjar, ni Facebook Pixel, ni aucun autre service de traçage de tiers.
+Aurya utilise **Google Analytics 4** (Google Ireland Limited) exclusivement pour des statistiques agregees sur l'utilisation du site, et **uniquement apres consentement explicite** de l'Utilisateur exprime via le bandeau cookies. Le service est integre avec le Consent Mode : sans consentement, aucun cookie de mesure n'est depose et aucun identifiant de l'Utilisateur n'est transmis. Le consentement est revocable a tout moment en effacant les donnees de navigation du navigateur ou en contactant le Responsable du traitement. Base juridique : consentement (art. 6.1.a RGPD). **Aucun** cookie de profilage publicitaire, ni Mixpanel, Hotjar, Facebook Pixel ou autre service de tracage n'est utilise.
 
 ### 15.1 Technologies utilisées (essentielles, exemptées de consentement au sens de l'art. 122 du Code Privacy italien et de la Directive ePrivacy)
 
@@ -379,7 +379,7 @@ Toutes ces technologies opèrent exclusivement côté client (dans le navigateur
 
 ### 15.2 Cookies de tiers
 
-**Aucun cookie de tiers** n'est déposé directement par les pages d'Aurya. Les sous-traitants ultérieurs (Stripe, Brevo) peuvent déposer leurs propres cookies exclusivement dans leurs flux respectifs (par ex. module de checkout Stripe) et conformément à leurs propres politiques de confidentialité.
+**Aucun cookie de tiers** n'est déposé par les pages d'Aurya sans consentement ; la seule exception, subordonnée au consentement exprimé via le bandeau, sont les cookies de mesure de Google Analytics 4 (art. 15 ci-dessus). Les sous-traitants ultérieurs (Stripe, Brevo) peuvent déposer leurs propres cookies exclusivement dans leurs flux respectifs (par ex. module de checkout Stripe) et conformément à leurs propres politiques de confidentialité.
 
 ---
 

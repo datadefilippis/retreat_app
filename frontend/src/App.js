@@ -36,6 +36,7 @@ import CustomerReconsentModal from "./features/customer-portal/CustomerReconsent
 // Wave GDPR-Admin Phase E — re-consent modal + cookie disclosure
 import ReconsentModal from "./components/legal/ReconsentModal";
 import CookieConsentBanner from "./components/legal/CookieConsentBanner";
+import { trackPageView } from "./lib/analytics";
 const ModulesPage = lazy(() => import("./pages/ModulesPage"));
 
 // Features
@@ -320,9 +321,20 @@ function DestinationsGate() {
   return <DestinationsPage />;
 }
 
+// GA1 — una page_view per ogni navigazione SPA (config con
+// send_page_view: false, quindi niente doppi conteggi).
+function AnalyticsPageViews() {
+  const location = useLocation();
+  React.useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location.pathname, location.search]);
+  return null;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<RouteFallback />}>
+    <AnalyticsPageViews />
     <Routes>
       {/* S0.1 — la ROOT è il marketplace: la pagina con l'autorità
           del dominio è la directory pubblica, non la login operatori.

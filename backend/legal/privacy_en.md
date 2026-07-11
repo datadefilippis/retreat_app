@@ -366,7 +366,7 @@ The communication to the Data Subject includes at least: the nature of the breac
 
 ## 15. Cookies and similar technologies
 
-Aurya **does not use profiling, analytics or marketing cookies**. Google Analytics, Mixpanel, Hotjar, Facebook Pixel or other third-party tracking services are not used.
+Aurya uses **Google Analytics 4** (Google Ireland Limited) exclusively for aggregate statistics on site usage, and **only upon the User's explicit consent** expressed through the cookie banner. The service is integrated with Consent Mode: without consent no measurement cookie is set and no User identifiers are transmitted. Consent can be revoked at any time by clearing the browser's site data or contacting the Controller. Legal basis: consent (art. 6.1.a GDPR). **No** advertising profiling cookies, Mixpanel, Hotjar, Facebook Pixel or other tracking services are used.
 
 ### 15.1 Technologies used (essential, exempt from consent pursuant to Art. 122 of the Italian Privacy Code and the ePrivacy Directive)
 
@@ -379,7 +379,7 @@ All these technologies operate exclusively client-side (in the User's browser) a
 
 ### 15.2 Third-party cookies
 
-**No third-party cookies** are set directly by Aurya's pages. Sub-processors (Stripe, Brevo) may set their own cookies exclusively within their respective flows (e.g. the Stripe checkout module) and in accordance with their own privacy policies.
+**No third-party cookies** are set by Aurya's pages without consent; the only exception, subject to the consent expressed through the banner, are the Google Analytics 4 measurement cookies (sect. 15 above). Sub-processors (Stripe, Brevo) may set their own cookies exclusively within their respective flows (e.g. the Stripe checkout module) and in accordance with their own privacy policies.
 
 ---
 

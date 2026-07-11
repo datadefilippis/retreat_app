@@ -38,7 +38,7 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.1"
+CURRENT_VERSION_TAG: Final[str] = "v2.2"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
@@ -70,9 +70,15 @@ History:
     specchietto Visibilita' degli Operatori. Base giuridica: legittimo
     interesse — nessun nuovo consenso richiesto. Stessa riga in
     EN/DE/FR.
+  - v2.2 (GA1, 2026-07-11) — sezione 15 riscritta: Google Analytics 4
+    con Consent Mode, attivo SOLO previo consenso esplicito dal cookie
+    banner (base giuridica: consenso art. 6.1.a), revocabile; 15.2
+    qualificato di conseguenza. Il consenso e' raccolto dal banner,
+    non dai flussi di signup: nessun reconsent utenti richiesto.
+    Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "6d1edbcf0428639c"
+CURRENT_VERSION_HASH: Final[str] = "4f9525fa7ee2927b"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

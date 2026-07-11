@@ -16,10 +16,11 @@
     "error_generic": "Non è stato possibile salvare l'accettazione. Riprova fra qualche secondo."
   },
   "cookie_banner": {
-    "title": "Solo cookie essenziali",
-    "body": "Usiamo solo cookie tecnici indispensabili per l'autenticazione e per ricordare la lingua selezionata. Nessun tracking di terze parti, nessuna analytics esterna, nessun cookie pubblicitario.",
+    "title": "Cookie e misurazione",
+    "body": "Usiamo cookie tecnici essenziali (autenticazione e lingua) e, solo con il tuo consenso, Google Analytics per capire come viene usato il sito e migliorarlo. Nessun cookie pubblicitario, mai.",
     "details_link": "Dettagli nell'Informativa sulla Privacy",
-    "accept_button": "Ho capito"
+    "accept_button": "Accetta",
+    "essential_button": "Solo essenziali"
   },
   "customer_reconsent": {
     "title": "Aggiornamento condizioni del negozio",

@@ -16,10 +16,11 @@
     "error_generic": "We could not save your acceptance. Please try again in a moment."
   },
   "cookie_banner": {
-    "title": "Essential cookies only",
-    "body": "We only use technical cookies that are strictly necessary for authentication and to remember your selected language. No third-party tracking, no external analytics, no advertising cookies.",
+    "title": "Cookies and measurement",
+    "body": "We use essential technical cookies (authentication and language) and, only with your consent, Google Analytics to understand how the site is used and improve it. No advertising cookies, ever.",
     "details_link": "Details in the Privacy Policy",
-    "accept_button": "Got it"
+    "accept_button": "Accept",
+    "essential_button": "Essential only"
   },
   "customer_reconsent": {
     "title": "Store terms updated",

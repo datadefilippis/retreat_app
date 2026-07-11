@@ -16,10 +16,11 @@
     "error_generic": "Impossible d'enregistrer votre acceptation. Veuillez réessayer dans un instant."
   },
   "cookie_banner": {
-    "title": "Cookies essentiels uniquement",
-    "body": "Nous utilisons uniquement des cookies techniques strictement nécessaires à l'authentification et à la mémorisation de la langue sélectionnée. Aucun traçage tiers, aucune analytique externe, aucun cookie publicitaire.",
+    "title": "Cookies et mesure",
+    "body": "Nous utilisons des cookies techniques essentiels (authentification et langue) et, uniquement avec ton consentement, Google Analytics pour comprendre comment le site est utilisé et l'améliorer. Aucun cookie publicitaire, jamais.",
     "details_link": "Détails dans la Politique de confidentialité",
-    "accept_button": "J'ai compris"
+    "accept_button": "Accepter",
+    "essential_button": "Essentiels uniquement"
   },
   "customer_reconsent": {
     "title": "Conditions du magasin mises à jour",

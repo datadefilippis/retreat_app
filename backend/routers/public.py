@@ -33,8 +33,15 @@ async def site_config():
     """Config runtime letta dal frontend al boot. Per ora: la modalità
     pre-lancio. Runtime (non build-time) → accendere/spegnere il lancio
     è un flip di env + restart, senza rebuild del frontend."""
+    import os
     from core.prelaunch import prelaunch_mode
-    return {"prelaunch": prelaunch_mode()}
+    return {
+        "prelaunch": prelaunch_mode(),
+        # GA-1 — GA4 configurato via env: cambiare/spegnere l'analytics
+        # è un flip di env + restart, identico al flag di pre-lancio.
+        # Nessuna riconfigurazione al lancio: l'ID viaggia col deploy.
+        "ga_measurement_id": (os.environ.get("GA_MEASUREMENT_ID") or "").strip() or None,
+    }
 
 
 # ── Response / Request Models ───────────────────────────────────────────────

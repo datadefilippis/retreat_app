@@ -15,6 +15,7 @@
  */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/client';
+import { initAnalytics } from '../lib/analytics';
 
 const CACHE_KEY = 'aurya_site_config';
 
@@ -45,6 +46,9 @@ export function SiteConfigProvider({ children }) {
         const prelaunch = Boolean(res.data?.prelaunch);
         try { localStorage.setItem(CACHE_KEY, JSON.stringify({ prelaunch })); } catch { /* storage pieno/negato */ }
         if (mounted) setConfig({ prelaunch, loading: false });
+        // GA1 — l'analytics parte qui, con l'ID dal backend: consent
+        // mode nega tutto finché il banner non riceve un sì.
+        initAnalytics(res.data?.ga_measurement_id);
       })
       .catch(() => { if (mounted) setConfig((c) => ({ ...c, loading: false })); });
     return () => { mounted = false; };

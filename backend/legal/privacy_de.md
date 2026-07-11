@@ -366,7 +366,7 @@ Die Mitteilung an die betroffene Person umfasst mindestens: Art der Verletzung, 
 
 ## 15. Cookies und ähnliche Technologien
 
-Aurya **verwendet keine Profiling-, Analytics- oder Marketing-Cookies**. Es werden weder Google Analytics, Mixpanel, Hotjar, Facebook Pixel noch andere Tracking-Dienste von Drittanbietern eingesetzt.
+Aurya verwendet **Google Analytics 4** (Google Ireland Limited) ausschliesslich fuer aggregierte Statistiken zur Nutzung der Website, und **nur nach ausdruecklicher Einwilligung** des Nutzers ueber das Cookie-Banner. Der Dienst ist mit dem Consent Mode integriert: Ohne Einwilligung wird kein Mess-Cookie gesetzt und es werden keine Nutzer-Identifikatoren uebertragen. Die Einwilligung kann jederzeit widerrufen werden, indem die Website-Daten des Browsers geloescht werden oder der Verantwortliche kontaktiert wird. Rechtsgrundlage: Einwilligung (Art. 6.1.a DSGVO). Es werden **keine** Werbe-Profiling-Cookies, Mixpanel, Hotjar, Facebook Pixel oder andere Tracking-Dienste eingesetzt.
 
 ### 15.1 Eingesetzte Technologien (essenziell, einwilligungsfrei gemäß Art. 122 des italienischen Datenschutzkodex und der ePrivacy-Richtlinie)
 
@@ -379,7 +379,7 @@ Alle diese Technologien arbeiten ausschließlich clientseitig (im Browser des Nu
 
 ### 15.2 Cookies von Drittanbietern
 
-**Keine Drittanbieter-Cookies** werden direkt von den Aurya-Seiten gesetzt. Die Unterauftragsverarbeiter (Stripe, Brevo) können eigene Cookies ausschließlich in ihren jeweiligen Abläufen setzen (z. B. Stripe-Checkout-Formular) und gemäß ihren eigenen Datenschutzerklärungen.
+**Keine Drittanbieter-Cookies** werden von den Aurya-Seiten ohne Einwilligung gesetzt; die einzige Ausnahme, abhaengig von der ueber das Banner erteilten Einwilligung, sind die Mess-Cookies von Google Analytics 4 (Abschnitt 15 oben). Die Unterauftragsverarbeiter (Stripe, Brevo) können eigene Cookies ausschließlich in ihren jeweiligen Abläufen setzen (z. B. Stripe-Checkout-Formular) und gemäß ihren eigenen Datenschutzerklärungen.
 
 ---
 
