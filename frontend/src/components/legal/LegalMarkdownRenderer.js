@@ -91,6 +91,19 @@ function parseBlocks(text) {
       continue;
     }
 
+    // Ordered list (lines starting with "1. " / "2) " ...) — SEO1b:
+    // gli articoli del magazine usano elenchi numerati (criteri,
+    // protocolli passo-passo) che finivano fusi in un paragrafo unico
+    if (/^\d+[.)]\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\d+[.)]\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\d+[.)]\s+/, ''));
+        i += 1;
+      }
+      blocks.push({ type: 'olist', items });
+      continue;
+    }
+
     // Unordered list (lines starting with "- " or "* ")
     if (/^[-*]\s+/.test(line)) {
       const items = [];
@@ -110,7 +123,8 @@ function parseBlocks(text) {
       !lines[i].match(/^(#{1,3})\s+/) &&
       !lines[i].startsWith('> ') &&
       !lines[i].startsWith('|') &&
-      !/^[-*]\s+/.test(lines[i])
+      !/^[-*]\s+/.test(lines[i]) &&
+      !/^\d+[.)]\s+/.test(lines[i])
     ) {
       paraLines.push(lines[i]);
       i += 1;
@@ -225,6 +239,17 @@ function renderBlock(block, idx) {
         <p key={key} className="text-muted-foreground leading-relaxed">
           {renderInline(block.text, key)}
         </p>
+      );
+    case 'olist':
+      return (
+        <ol
+          key={key}
+          className="list-decimal list-inside text-muted-foreground space-y-2 ml-2"
+        >
+          {block.items.map((item, i) => (
+            <li key={`${key}-${i}`}>{renderInline(item, `${key}-${i}`)}</li>
+          ))}
+        </ol>
       );
     case 'list':
       return (
