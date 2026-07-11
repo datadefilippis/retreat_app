@@ -36,7 +36,7 @@ pandas==3.0.1
 # da tests/test_alert_notifications.py::TestCharts per generare PNG di
 # alert charts. Localmente presente come transitive di altre deps; in
 # CI fresh install fail con ModuleNotFoundError.
-matplotlib>=3.8.0
+matplotlib>=3.11.0
 # Round 4 — reportlab per PDF generation (services/order_pdf_service.py +
 # test_alert_notifications.py::TestPDF + test_order_pdf_currency.py).
 reportlab>=4.0.0
