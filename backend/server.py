@@ -709,11 +709,17 @@ async def sitemap_xml():
 async def robots_txt():
     from fastapi.responses import Response
     from services.url_builder import build_public_url
+    # SEO5 — le sotto-sitemap vivono sotto /api/public/: senza gli
+    # Allow espliciti, "Disallow: /api/" impediva a Googlebot di
+    # scaricarle (indice letto, 0 pagine rilevate in Search Console).
+    # Regola robots: il percorso piu' lungo vince, quindi questi
+    # Allow battono il Disallow generico.
     txt = (
         "User-agent: *\n"
         "Allow: /ritiri\n"
         "Allow: /e/\n"
         "Allow: /o/\n"
+        "Allow: /api/public/sitemap-\n"
         "Disallow: /dashboard\n"
         "Disallow: /api/\n"
         f"Sitemap: {build_public_url('/sitemap.xml')}\n"

@@ -242,3 +242,11 @@ def test_seo4_faq_extraction_works_on_seed_articles():
     for slug, _t, _d, _c, _a, content in ARTICLES:
         faqs = _extract_faq(content)
         assert len(faqs) >= 3, f"{slug}: solo {len(faqs)} FAQ estratte"
+
+
+def test_seo5_robots_allows_child_sitemaps():
+    """SEO5 — Disallow /api/ NON deve coprire le sotto-sitemap: senza
+    l'Allow esplicito Google legge l'indice ma rileva 0 pagine."""
+    server = (BACKEND_DIR / "server.py").read_text(encoding="utf-8")
+    assert 'Allow: /api/public/sitemap-' in server, \
+        "regressione: le sotto-sitemap tornerebbero bloccate dal robots"
