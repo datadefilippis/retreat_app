@@ -54,7 +54,7 @@ export default function BlogArticlePage() {
             {t('blog.notFound', { defaultValue: 'Articolo non trovato' })}
           </p>
           <Link to="/blog" className="text-primary underline text-sm">
-            {t('blog.backToBlog', { defaultValue: 'Torna al blog' })}
+            {t('blog.backToBlog', { defaultValue: 'Torna al Magazine' })}
           </Link>
         </div>
       </MarketplaceShell>
@@ -127,7 +127,7 @@ export default function BlogArticlePage() {
 
             <footer className="mt-12 pt-6 border-t border-gray-200">
               <Link to="/blog" className="text-sm font-medium text-primary hover:underline">
-                ← {t('blog.backToBlog', { defaultValue: 'Torna al blog' })}
+                ← {t('blog.backToBlog', { defaultValue: 'Torna al Magazine' })}
               </Link>
             </footer>
           </article>
