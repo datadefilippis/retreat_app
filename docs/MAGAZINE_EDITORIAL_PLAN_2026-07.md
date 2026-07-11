@@ -152,3 +152,73 @@ attraverso i satelliti.
 - Mese 6: 48 articoli, 10+ in top 10, il magazine genera ≥25% dei lead
 - Sempre: tempo di lettura reale (page_views first-party) come proxy
   del valore vero: se la gente scappa, il pezzo va riscritto
+
+---
+
+## Onde successive (backlog strategico, oltre i 6 mesi)
+
+### Onda A — "Vicino a te" (local, ponte verso disciplina×città)
+"Ritiri yoga vicino a Milano/Roma/Torino/Bologna/Napoli", "bagno di
+gong a [città]", "reiki a [città]: come scegliere". Intent locale
+fortissimo, oggi spartito tra risultati mediocri. Ogni pezzo prepara
+il terreno alle future pagine programmatiche disciplina×città e al
+lancio linka la directory filtrata. Quando: appena la directory è
+indicizzata (post-lancio), per non mandare traffico locale su un
+inventario vuoto.
+
+### Onda B — Strutture e venue (il TERZO lato del marketplace)
+"Come trasformare un agriturismo in una retreat venue", "quanto rende
+ospitare ritiri", "cosa cercano gli organizzatori in una location",
+"la sala pratica perfetta: cosa serve davvero". Intercetta le
+STRUTTURE (masserie, agriturismi, casali), che sono offerta tanto
+quanto gli operatori, e su questi temi la SERP italiana è deserta.
+Bonus di autenticità: Davide la sta vivendo in prima persona con la
+masseria di famiglia. Quando: mese 5-6, insieme al cluster professione.
+
+### Onda C — Fiscalità e burocrazia dell'operatore (B2B, volume enorme)
+"Partita IVA per operatori olistici: codice ATECO e regime
+forfettario", "assicurazione professionale: quale serve davvero",
+"GDPR per operatori olistici in parole semplici", "attestati e
+associazioni di categoria: SIAF, CSEN e le altre". Le query fiscali
+hanno volumi alti e risposte generaliste scritte da commercialisti
+che non conoscono il settore. Da scrivere con disclaimer e revisione
+di un professionista, ma il posizionamento "l'unico che parla la
+nostra lingua" vale oro per i lead fondatori. Quando: mese 6+.
+
+### Onda D — Storie vere (il contenuto che nessuno può copiare)
+Interviste agli operatori fondatori ("Il mestiere di accompagnare:
+tre domande a..."), diari di ritiro raccontati dai partecipanti,
+dietro le quinte di una masseria che ospita. Zero keyword research:
+è il contenuto E-E-A-T puro che costruisce il brand, dà material ai
+social e (al lancio) linka i profili operatore spingendo PageRank
+alle pagine transazionali. Quando: appena ci sono i primi fondatori
+firmati; poi 1 al mese per sempre.
+
+### Onda E — Benessere psicofisico profondo (il ponte con la salute)
+"Pratiche olistiche e ansia: cosa può aiutare e quando serve altro",
+"burnout: riconoscerlo e i percorsi per uscirne", "menopausa e
+benessere olistico", "il lutto e i rituali del lasciar andare".
+Query enormi dominate da testate generaliste che non collegano mai
+al mondo delle esperienze. Serve la massima onestà (disclaimer seri,
+"quando serve il professionista") ed è proprio quella l'arma.
+Quando: mese 4+, dopo che il dominio ha autorevolezza su cluster
+meno sensibili.
+
+### Onda F — Osservatorio Aurya (dati proprietari = backlink)
+Il report annuale "I ritiri olistici in Italia: prezzi, discipline,
+regioni" costruito sui NOSTRI dati di piattaforma. È il contenuto
+che le testate citano e linkano (digital PR a costo zero): un solo
+report ben fatto vale 50 guest post. Quando: 6-12 mesi post-lancio,
+appena i dati hanno massa statistica.
+
+### Onda G — Inglese (sfidare Tripaneer sul loro terreno)
+Traduzione EN dei 10 migliori pezzi transazionali ("yoga retreat
+Tuscany", "wellness retreat Italy") + directory EN via hreflang già
+pronto. L'inventario italiano autentico è il vantaggio che
+BookRetreats non può replicare. Quando: fase 3 del piano SEO, con
+GSC che conferma la forza del dominio.
+
+### Regola di attivazione
+Non aprire un'onda nuova finché quella corrente non ha completato i
+pilastri: meglio 5 cluster dominati che 12 accennati. La review GSC
+quindicinale decide le accelerazioni.
