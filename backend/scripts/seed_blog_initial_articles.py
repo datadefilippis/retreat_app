@@ -398,6 +398,27 @@ Non ci sono controindicazioni alla frequenza. C'è chi lo vive come rituale mens
 ]
 
 
+async def backfill_covers(db):
+    """La cover brand (titolo + geometria sacra di categoria) nasce nel
+    publish del router; il seed inserisce direttamente in DB e la salta.
+    Qui si recupera: per ogni articolo del seed senza featured_image_url
+    si genera e si salva la cover, con lo stesso helper del router."""
+    from routers.articles import _autogen_cover
+
+    for slug, title, _desc, category, _author, _content in ARTICLES:
+        doc = await db.articles.find_one(
+            {"slug": slug}, {"featured_image_url": 1, "_id": 0})
+        if not doc or doc.get("featured_image_url"):
+            continue
+        url = await _autogen_cover(slug, title, category)
+        if url:
+            await db.articles.update_one(
+                {"slug": slug}, {"$set": {"featured_image_url": url}})
+            print(f"  ◉ cover generata: {slug}")
+        else:
+            print(f"  ! cover saltata (ambiente povero): {slug}")
+
+
 async def seed_articles():
     from database import db
 
@@ -423,6 +444,8 @@ async def seed_articles():
         created += 1
         print(f"  + {slug} ({author})")
     print(f"Fatto: {created} creati, {skipped} già presenti.")
+
+    await backfill_covers(db)
 
     # il seed inserisce direttamente in DB e salta il hook di publish
     # del router: il ping IndexNow va fatto qui (best-effort, come lì)
