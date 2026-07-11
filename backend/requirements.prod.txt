@@ -46,7 +46,7 @@ anthropic>=0.40.0
 
 # Report generation (PDF + charts)
 matplotlib>=3.8
-reportlab>=4.0
+reportlab>=5.0.0
 
 # Crypto
 cryptography>=42.0.8
