@@ -42,7 +42,7 @@ requests>=2.31.0
 # requests-oauthlib>=2.0.0  — not imported anywhere in the codebase
 
 # AI / LLM
-anthropic>=0.40.0
+anthropic>=0.116.0
 
 # Report generation (PDF + charts)
 matplotlib>=3.8
