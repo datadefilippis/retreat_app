@@ -262,3 +262,14 @@ def test_seo6_shell_hard_404_and_organization():
     assert "status_code=status" in src
     assert '"@type": "Organization"' in src
     assert '"founder"' in src
+
+
+def test_ga2_csp_allows_google_analytics():
+    """GA2 — la CSP di nginx deve permettere gtag.js e gli endpoint
+    dati di GA4 (inclusi i regionali), o l'analytics muore in silenzio
+    nel browser: zero errori server, zero dati."""
+    conf = (BACKEND_DIR.parent / "deploy" / "nginx" / "nginx.conf"
+            ).read_text(encoding="utf-8")
+    assert "https://www.googletagmanager.com" in conf
+    assert "https://*.google-analytics.com" in conf
+    assert "https://*.analytics.google.com" in conf

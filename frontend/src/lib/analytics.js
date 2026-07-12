@@ -19,6 +19,10 @@ const CONSENT_KEY = 'aurya_analytics_consent_v1';
 
 let loaded = false;
 let measurementId = null;
+// GA2 — coda pre-init: la SPA renderizza PRIMA che site-config risolva,
+// quindi la page_view della pagina di atterraggio arrivava a analytics
+// spento e veniva scartata. Ora si accoda e parte al flush dell'init.
+let pending = [];
 
 function gtag() {
   if (typeof window === 'undefined') return;
@@ -65,11 +69,26 @@ export function initAnalytics(id) {
   // consenso già espresso in una visita precedente → riapplica in silenzio
   const stored = readStoredConsent();
   if (stored?.analytics === true) grantAnalyticsConsent(false);
+
+  // GA2 — flush della coda accumulata prima dell'init (page_view di
+  // atterraggio inclusa): l'ordine resta corretto perché il config è
+  // già nel dataLayer.
+  const queued = pending;
+  pending = [];
+  queued.forEach((fn) => fn());
 }
 
 export function grantAnalyticsConsent(persist = true) {
   gtag('consent', 'update', { analytics_storage: 'granted' });
-  if (persist) storeConsent(true);
+  if (persist) {
+    storeConsent(true);
+    // GA2 — il sì dal banner: rimanda la page_view corrente così la
+    // visita compare in tempo reale da subito (quella pre-consenso era
+    // solo un ping anonimo, invisibile nei report).
+    if (typeof window !== 'undefined') {
+      trackPageView(window.location.pathname + window.location.search);
+    }
+  }
 }
 
 export function denyAnalyticsConsent(persist = true) {
@@ -78,12 +97,12 @@ export function denyAnalyticsConsent(persist = true) {
 }
 
 export function trackEvent(name, params = {}) {
-  if (!loaded || !measurementId) return;
+  if (!loaded) { pending.push(() => trackEvent(name, params)); return; }
   gtag('event', name, params);
 }
 
 export function trackPageView(path) {
-  if (!loaded || !measurementId) return;
+  if (!loaded) { pending.push(() => trackPageView(path)); return; }
   gtag('event', 'page_view', {
     page_path: path,
     page_location: window.location.href,
