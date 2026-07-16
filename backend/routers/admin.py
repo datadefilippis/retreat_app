@@ -37,6 +37,7 @@ from core.rate_limiting import get_real_ip
 
 from auth import get_password_hash, require_system_admin
 from models import AuditLog
+from models.common import utc_now
 from models.invite import Invite, InviteCreate, InviteResponse, InviteListResponse
 from repositories import platform_settings_repository, invite_repository
 from services.email_service import send_platform_invite, APP_URL
@@ -106,6 +107,10 @@ def _dt(val: object) -> datetime:
 # ── Org parsers ───────────────────────────────────────────────────────────────
 
 def _org_summary(doc: dict) -> OrgSummary:
+    # I timestamp non sono garantiti su TUTTI i doc (le org campione del
+    # prelaunch nascono senza updated_at): un KeyError qui butta giu'
+    # l'INTERA lista organizzazioni in admin, non solo la riga rotta.
+    created = doc.get("created_at") or utc_now()
     return OrgSummary(
         id=doc["id"],
         name=doc["name"],
@@ -117,8 +122,8 @@ def _org_summary(doc: dict) -> OrgSummary:
         commercial_plan_slug=doc.get("commercial_plan_slug", "free"),
         billing_status=doc.get("billing_status", "none"),
         cancel_at_period_end=doc.get("cancel_at_period_end", False),
-        created_at=_dt(doc["created_at"]),
-        updated_at=_dt(doc["updated_at"]),
+        created_at=_dt(created),
+        updated_at=_dt(doc.get("updated_at") or created),
     )
 
 
@@ -253,8 +258,9 @@ async def get_organization(
         timezone=org_doc.get("timezone"),
         currency=org_doc.get("currency"),
         is_active=org_doc.get("is_active", True),  # v3.0
-        created_at=_dt(org_doc["created_at"]),
-        updated_at=_dt(org_doc["updated_at"]),
+        created_at=_dt(org_doc.get("created_at") or utc_now()),
+        updated_at=_dt(org_doc.get("updated_at") or org_doc.get("created_at")
+                       or utc_now()),
         users=[_user_summary(u) for u in user_docs],
         modules=[_module_entry(m) for m in module_docs],
         billing=billing_info,
@@ -3443,7 +3449,11 @@ async def admin_ai_usage_timeseries(
 from pydantic import BaseModel  # noqa: E402 — local import for the model below
 
 
-class AuditLogItem(BaseModel):
+# NB: nomi con suffisso Query per NON oscurare AuditLogListResponse
+# importata da models.admin — la ridefinizione qui a fondo modulo
+# vinceva a runtime su GET /admin/audit-log e mandava in 500 la tab
+# Audit log (validation error AuditLogAdminEntry vs AuditLogItem).
+class AuditLogQueryItem(BaseModel):
     """Single audit log row (admin response — no _id leak)."""
     id: Optional[str] = None
     organization_id: Optional[str] = None
@@ -3457,8 +3467,8 @@ class AuditLogItem(BaseModel):
     created_at: str                       # ISO string
 
 
-class AuditLogListResponse(BaseModel):
-    items: list[AuditLogItem]
+class AuditLogQueryListResponse(BaseModel):
+    items: list[AuditLogQueryItem]
     total: int
     skip: int
     limit: int
@@ -3466,7 +3476,7 @@ class AuditLogListResponse(BaseModel):
 
 @router.get(
     "/audit-logs",
-    response_model=AuditLogListResponse,
+    response_model=AuditLogQueryListResponse,
     summary="Admin: query audit logs (cross-org or per-org filtered)",
 )
 async def list_audit_logs_endpoint(
@@ -3489,7 +3499,7 @@ async def list_audit_logs_endpoint(
     skip: int = Query(0, ge=0, description="Pagination offset."),
     limit: int = Query(100, ge=1, le=200, description="Max records (hard cap 200)."),
     _: dict = Depends(require_system_admin),
-) -> AuditLogListResponse:
+) -> AuditLogQueryListResponse:
     """List audit_logs with filters + pagination (system_admin only).
 
     Tipici use case:
@@ -3520,8 +3530,8 @@ async def list_audit_logs_endpoint(
         skip=skip,
         limit=limit,
     )
-    return AuditLogListResponse(
-        items=[AuditLogItem(**d) for d in docs],
+    return AuditLogQueryListResponse(
+        items=[AuditLogQueryItem(**d) for d in docs],
         total=total,
         skip=skip,
         limit=limit,

@@ -248,3 +248,68 @@ class TestAdminCleanupSa6:
         dlg = (BACKEND_DIR.parent / "frontend" / "src" / "features"
                / "admin" / "OrgBusinessProfileDialog.js").read_text()
         assert "trial-history" in dlg
+
+
+class TestAdminPanelConsolidationAdm:
+    """Ciclo ADM (16/7/2026) — consolidamento pannello system admin dopo
+    l'audit in produzione: lista org che moriva sui campioni senza
+    updated_at, tab Audit Log in 500 per shadowing di modello, tab AI
+    che chiamava endpoint potati con l'AI legacy (R4)."""
+
+    ADMIN_SRC = (BACKEND_DIR / "routers" / "admin.py").read_text()
+    FRONTEND_DIR = BACKEND_DIR.parent / "frontend" / "src"
+
+    def test_org_summary_tolerates_missing_timestamps(self):
+        """Un doc org senza updated_at (org campione prelaunch) NON deve
+        far crashare l'intera lista organizzazioni del pannello."""
+        from routers.admin import _org_summary
+        doc = {"id": "o1", "name": "Org campione",
+               "created_at": "2026-07-10T00:00:00+00:00"}
+        s = _org_summary(doc)
+        assert s.updated_at == s.created_at
+
+    def test_no_audit_response_model_shadowing(self):
+        """routers/admin.py NON deve ridefinire AuditLogListResponse:
+        la classe Track O in fondo al modulo oscurava a runtime quella
+        importata da models.admin e GET /admin/audit-log rispondeva 500
+        (items AuditLogAdminEntry validati contro AuditLogItem)."""
+        assert "class AuditLogListResponse" not in self.ADMIN_SRC
+        assert "class AuditLogQueryListResponse" in self.ADMIN_SRC
+
+    def test_audit_log_endpoint_serializes(self):
+        """Il costruttore usato da GET /admin/audit-log accetta le entry
+        del parser (il bug era esattamente questo mismatch)."""
+        from models.admin import AuditLogListResponse
+        from routers.admin import _audit_entry
+        entry = _audit_entry({
+            "id": "a1", "user_id": "u1", "action": "login",
+            "resource_type": "session",
+            "created_at": "2026-07-16T00:00:00+00:00",
+        })
+        resp = AuditLogListResponse(items=[entry], total=1, skip=0, limit=100)
+        assert resp.items[0].action == "login"
+
+    def test_prelaunch_seed_stamps_updated_at(self):
+        src = (BACKEND_DIR / "scripts" / "seed_prelaunch_samples.py").read_text()
+        assert '"updated_at": now_iso' in src
+
+    def test_ai_tab_only_calls_existing_endpoints(self):
+        """La tab AI & Traduzioni usa SOLO le tre fonti ai-usage che
+        esistono nel backend; budgets/kill-switch/governance-audit/
+        conversazioni sono stati potati (R4) e non vanno reintrodotti
+        lato client senza backend."""
+        api_src = (self.FRONTEND_DIR / "api" / "admin.js").read_text()
+        for dead in ("ai-budgets", "ai-governance/kill-switch",
+                     "ai-governance/audit-log", "ai-usage/top-conversations",
+                     "ai-usage/failed-events"):
+            assert dead not in api_src, dead
+        tab_src = (self.FRONTEND_DIR / "features" / "admin"
+                   / "AIGovernanceTab.js").read_text()
+        for gone in ("AIGovernanceBudgetsSection", "AIGovernanceAuditTab",
+                     "getAITopConversations", "getAIFailedEvents",
+                     "getAIConversationDetail"):
+            assert gone not in tab_src, gone
+        assert not (self.FRONTEND_DIR / "features" / "admin"
+                    / "AIGovernanceBudgetsSection.js").exists()
+        assert not (self.FRONTEND_DIR / "features" / "admin"
+                    / "AIGovernanceAuditTab.js").exists()

@@ -136,7 +136,8 @@ async def seed_samples() -> dict:
         orgs.append({
             "id": org_id, "name": name, "is_active": True,
             "deactivated_at": None, "public_slug": slug,
-            "created_at": now_iso,
+            # updated_at incluso: il pannello admin (OrgSummary) lo legge
+            "created_at": now_iso, "updated_at": now_iso,
             "directory_featured": featured,
             "reviews_stats": {"avg": rating[0], "count": rating[1]},
             "public_profile": {

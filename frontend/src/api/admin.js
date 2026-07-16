@@ -347,39 +347,16 @@ export const adminAPI = {
    *                       soft_limit_reached, hard_limit_reached, ...}],
    *            count }
    */
-  listAIBudgets: ({ organizationId, scope, isActive, limit = 200 } = {}) =>
-    api.get('/admin/ai-budgets', {
-      params: {
-        organization_id: organizationId,
-        scope,
-        is_active: isActive,
-        limit,
-      },
-    }).then((r) => r.data),
 
   /** Upsert keyed on (scope, scope_id, period). */
-  createAIBudget: (payload) =>
-    api.post('/admin/ai-budgets', payload).then((r) => r.data),
 
   /** Partial update. */
-  updateAIBudget: (id, payload) =>
-    api.patch(`/admin/ai-budgets/${encodeURIComponent(id)}`, payload).then((r) => r.data),
 
   /** Hard delete. */
-  deleteAIBudget: (id) =>
-    api.delete(`/admin/ai-budgets/${encodeURIComponent(id)}`).then((r) => r.data),
 
   /** Read kill switch state. */
-  getAIKillSwitch: () =>
-    api.get('/admin/ai-governance/kill-switch').then((r) => r.data),
 
   /** Update kill switch. `reason` required when ai_enabled=false or throttle > 0. */
-  setAIKillSwitch: ({ ai_enabled, ai_throttle_pct = 0, reason = null }) =>
-    api.post('/admin/ai-governance/kill-switch', {
-      ai_enabled,
-      ai_throttle_pct,
-      reason,
-    }).then((r) => r.data),
 
   // ── Wave 10.C — Dashboard V2 observability endpoints ─────────────────────
 
@@ -388,10 +365,6 @@ export const adminAPI = {
    * Returns: { total, offset, limit, rows: [{user_id, action, resource_type,
    *            resource_id, details, created_at}] }
    */
-  getAIGovernanceAuditLog: ({ limit = 100, offset = 0 } = {}) =>
-    api.get('/admin/ai-governance/audit-log', {
-      params: { limit, offset },
-    }).then((r) => r.data),
 
   /**
    * Top-N most expensive chat conversations in the window.
@@ -399,28 +372,15 @@ export const adminAPI = {
    *            organization_name, user_id, user_name, rounds, cost_usd,
    *            tokens_total, first_at, last_at}] }
    */
-  getAITopConversations: (startDate, endDate, { orgId, limit = 10 } = {}) =>
-    api.get('/admin/ai-usage/top-conversations', {
-      params: { start_date: startDate, end_date: endDate,
-                org_id: orgId, limit },
-    }).then((r) => r.data),
 
   /**
    * Round-by-round breakdown of one conversation.
    * Returns: { conversation_id, rounds, total_cost_usd, total_tokens,
    *            events: [...] }
    */
-  getAIConversationDetail: (conversationId) =>
-    api.get(`/admin/ai-usage/conversations/${encodeURIComponent(conversationId)}`)
-      .then((r) => r.data),
 
   /**
    * Recent failed events (error_code != null) in the window.
    * Returns: { period, filters, totals {events, by_code[]}, rows: [...] }
    */
-  getAIFailedEvents: (startDate, endDate, { orgId, limit = 100 } = {}) =>
-    api.get('/admin/ai-usage/failed-events', {
-      params: { start_date: startDate, end_date: endDate,
-                org_id: orgId, limit },
-    }).then((r) => r.data),
 };
