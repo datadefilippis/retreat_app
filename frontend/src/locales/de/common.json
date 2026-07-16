@@ -192,7 +192,7 @@
     "typeManual": "Manuelle Einträge",
     "typeOther": "Sonstiges",
     "feeSaverTitle": "Diesen Monat hast du {{volume}} online eingenommen",
-    "feeSaverBody": "Mit dem Pro-Plan ({{proFee}} % Gebühr statt {{fee}} %) hättest du diesen Monat {{saving}} gespart, Abo inklusive.",
+    "feeSaverBody": "Mit dem Pro-Plan (keine Gebühren statt {{fee}} %) hättest du diesen Monat {{saving}} gespart, Abo inklusive.",
     "feeSaverCta": "Pro-Plan entdecken",
     "reviewNudge": "Manuell erfasste Zahlungen erzeugen keine verifizierten Bewertungen: Hol dir die nächste Buchung über den öffentlichen Kalender."
   },

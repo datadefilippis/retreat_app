@@ -192,7 +192,7 @@
     "typeManual": "Entrées manuelles",
     "typeOther": "Autre",
     "feeSaverTitle": "Ce mois-ci, vous avez encaissé {{volume}} en ligne",
-    "feeSaverBody": "Avec le plan Pro (commission de {{proFee}} % au lieu de {{fee}} %), vous auriez économisé {{saving}} ce mois-ci, abonnement inclus.",
+    "feeSaverBody": "Avec le plan Pro (zéro commission au lieu de {{fee}} %), vous auriez économisé {{saving}} ce mois-ci, abonnement inclus.",
     "feeSaverCta": "Découvrir le plan Pro",
     "reviewNudge": "Les encaissements manuels ne génèrent pas d'avis vérifiés : passez votre prochaine réservation par le calendrier public."
   },

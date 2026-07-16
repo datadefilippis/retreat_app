@@ -230,9 +230,10 @@ async def directory_snapshot() -> Dict[str, Any]:
     }
 
 
-# soglia break-even Gratis→Pro: 29 EUR / (5% - 2%) ≈ 967 EUR/mese di
-# transato online (stessa matematica del calcolatore GT2)
-PRO_BREAKEVEN_MONTHLY_EUR = 967.0
+# soglia break-even Gratis→Pro: 29 EUR / (5% - 0%) = 580 EUR/mese di
+# transato online (stessa matematica del calcolatore GT2; il Pro e'
+# a zero commissioni dal 16/7/2026)
+PRO_BREAKEVEN_MONTHLY_EUR = 580.0
 
 
 async def signals() -> Dict[str, Any]:
@@ -313,7 +314,7 @@ async def signals() -> Dict[str, Any]:
     for oid, r in rows_by_org.items():
         vol = online_month.get(oid, 0) / 100.0
         if r["plan_slug"] == "retreat_free" and vol > PRO_BREAKEVEN_MONTHLY_EUR:
-            saving = round(vol * 0.03 - 29.0, 2)
+            saving = round(vol * 0.05 - 29.0, 2)
             pro_ready.append({**base(oid), "online_month": round(vol, 2),
                               "monthly_saving": saving})
         if not r["listed"] and r["reasons"] == ["stripe_not_ready"]:

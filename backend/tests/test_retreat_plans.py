@@ -166,17 +166,20 @@ class TestRetreatBusinessModel:
         assert _plan("retreat_free")["transaction_fee_percent"] == 5.0
         assert _plan("retreat_free")["price_monthly"] == 0.0
 
-    def test_pro_fee_2_percent_price_29(self):
+    def test_pro_zero_fee_price_29(self):
+        # 16/7/2026 (decisione founder): il Pro azzera la fee — chi paga
+        # il canone tiene tutto il transato.
         pro = _plan("retreat_pro")
-        assert pro["transaction_fee_percent"] == 2.0
+        assert pro["transaction_fee_percent"] == 0.0
         assert pro["price_monthly"] == 29.0
         assert pro["price_yearly"] == 290.0
         assert pro["is_self_serve"] is True
+        assert "billing.features.retreat_zero_fee" in pro["features_display"]
 
     def test_founding_is_dedicated_hidden_plan(self):
         f = _plan("retreat_founding")
         assert f["price_monthly"] == 0.0
-        assert f["transaction_fee_percent"] == 2.0   # trattamento Pro
+        assert f["transaction_fee_percent"] == 0.0   # trattamento Pro (zero fee)
         assert f["is_public"] is False               # non in pagina pricing
         assert f["is_self_serve"] is False           # solo assegnazione admin
         # founding = tutto Pro: stessi module_plans
@@ -241,6 +244,13 @@ class TestFeeSyncOnProvisioning:
         fields = self._run({"slug": "retreat_pro", "module_plans": {},
                             "transaction_fee_percent": 2.0})
         assert fields["application_fee_percent"] == 2.0
+
+    def test_zero_fee_stamps_zero_not_missing(self):
+        # 0.0 è falsy: il sync non deve scambiarlo per "fee assente"
+        # (il Pro è a zero commissioni dal 16/7/2026)
+        fields = self._run({"slug": "retreat_pro", "module_plans": {},
+                            "transaction_fee_percent": 0.0})
+        assert fields["application_fee_percent"] == 0.0
 
     def test_free_plan_syncs_5(self):
         fields = self._run({"slug": "retreat_free", "module_plans": {},

@@ -382,10 +382,14 @@ export default function BillingSection() {
                     (che incassa Stripe, non noi). */}
                 {planDetails?.transaction_fee_percent != null && (
                   <div className="text-xs text-muted-foreground mt-1">
-                    {t('billing.retreat.hero_fee_line', {
-                      pct: planDetails.transaction_fee_percent,
-                      defaultValue: 'Fee piattaforma {{pct}}% sul transato · le commissioni Stripe sono separate (le incassa Stripe, non noi)',
-                    })}
+                    {planDetails.transaction_fee_percent === 0
+                      ? t('billing.retreat.hero_fee_line_zero', {
+                          defaultValue: 'Zero commissioni piattaforma sul transato · le commissioni Stripe sono separate (le incassa Stripe, non noi)',
+                        })
+                      : t('billing.retreat.hero_fee_line', {
+                          pct: planDetails.transaction_fee_percent,
+                          defaultValue: 'Fee piattaforma {{pct}}% sul transato · le commissioni Stripe sono separate (le incassa Stripe, non noi)',
+                        })}
                   </div>
                 )}
 

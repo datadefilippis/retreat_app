@@ -192,7 +192,7 @@
     "typeManual": "Manual entries",
     "typeOther": "Other",
     "feeSaverTitle": "You've collected {{volume}} online this month",
-    "feeSaverBody": "With the Pro plan ({{proFee}}% fee instead of {{fee}}%) you would have saved {{saving}} this month, subscription included.",
+    "feeSaverBody": "With the Pro plan (zero fees instead of {{fee}}%) you would have saved {{saving}} this month, subscription included.",
     "feeSaverCta": "Discover the Pro plan",
     "reviewNudge": "Manual payments don't generate verified reviews: bring your next booking through the public calendar."
   },

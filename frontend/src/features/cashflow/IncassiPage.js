@@ -208,8 +208,7 @@ export default function IncassiPage() {
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {t('cashflow.feeSaverBody', {
-                    defaultValue: 'Col piano Pro (commissione {{proFee}}% invece di {{fee}}%) avresti risparmiato {{saving}} questo mese, canone incluso.',
-                    proFee: feeSaver.pro_fee_percent,
+                    defaultValue: 'Col piano Pro (zero commissioni invece del {{fee}}%) avresti risparmiato {{saving}} questo mese, canone incluso.',
                     fee: feeSaver.current_fee_percent,
                     saving: fmt(feeSaver.monthly_saving),
                   })}

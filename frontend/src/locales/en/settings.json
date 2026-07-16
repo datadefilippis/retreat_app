@@ -501,7 +501,7 @@
     "legacy_lock_tooltip": "You're paying the original price. When you change plan, this rate is preserved.",
     "retreat": {
       "title": "Plans and fees",
-      "subtitle": "Simple: one plan, one fee on what you collect. No hidden costs.",
+      "subtitle": "Simple: free with a fee on transactions, or Pro with zero fees. No hidden costs.",
       "fee_label": "Platform fee",
       "fee_value": "{{pct}}% of transactions",
       "fee_free_note": "You only pay when you get paid",
@@ -519,7 +519,10 @@
       "cta_downgrade": "Back to Free",
       "downgrade_hint": "To go back to the Free plan, manage your subscription from the billing portal.",
       "yearly_hint": "€290/year (2 months free)",
-      "hero_fee_line": "Platform fee {{pct}}% of transactions · Stripe fees are separate (Stripe collects them, not us)"
+      "hero_fee_line": "Platform fee {{pct}}% of transactions · Stripe fees are separate (Stripe collects them, not us)",
+      "fee_value_zero": "Zero fees",
+      "fee_zero_note": "You keep 100% of what you collect",
+      "hero_fee_line_zero": "Zero platform fees on transactions · Stripe fees are separate (Stripe collects them, not us)"
     }
   },
   "prefs": {

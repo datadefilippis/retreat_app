@@ -1082,6 +1082,45 @@ async def migrate_plan_relaunch_v5() -> None:
     logger.info("migrate_plan_relaunch_v5: done.")
 
 
+async def migrate_retreat_pro_zero_fee() -> None:
+    """16/7/2026 (decisione founder) — il Pro passa da fee 2% a ZERO
+    commissioni: chi paga il canone tiene tutto il transato. Il seed
+    aggiorna transaction_fee_percent da solo ($set a ogni avvio), ma
+    description e features_display sono campi admin-protetti
+    nell'upsert, e le org già provisionate hanno la fee timbrata su
+    application_fee_percent (l'UNICO campo letto dal checkout):
+    tutti e tre vanno migrati qui. Idempotente."""
+    from database import db
+
+    # 1. descrizione dei piani (campo protetto dall'upsert)
+    await db.commercial_plans.update_one(
+        {"slug": "retreat_pro",
+         "description": "Fee ridotta al 2%, evidenza nel calendario pubblico e limiti estesi."},
+        {"$set": {"description": "Zero commissioni sul transato, evidenza nel calendario pubblico e limiti estesi."}},
+    )
+
+    # 2. bullet "0% di fee piattaforma" in cima ai vantaggi del Pro
+    #    (subito dopo "Tutto il piano Gratis"), solo se manca
+    zero_key = "billing.features.retreat_zero_fee"
+    pro = await db.commercial_plans.find_one(
+        {"slug": "retreat_pro"}, {"_id": 0, "features_display": 1})
+    if pro and zero_key not in (pro.get("features_display") or []):
+        await db.commercial_plans.update_one(
+            {"slug": "retreat_pro"},
+            {"$push": {"features_display": {"$each": [zero_key], "$position": 1}}},
+        )
+
+    # 3. org già su Pro/Founding: azzera la fee timbrata
+    result = await db.organizations.update_many(
+        {"commercial_plan_slug": {"$in": ["retreat_pro", "retreat_founding"]},
+         "application_fee_percent": {"$gt": 0}},
+        {"$set": {"application_fee_percent": 0.0}},
+    )
+    if result.modified_count:
+        logger.info("zero-fee: application_fee_percent azzerata su %d org Pro/Founding",
+                    result.modified_count)
+
+
 async def migrate_retreat_pro_features_md3() -> None:
     """MD3 one-shot — rimuove la promessa VUOTA 'Insight clienti
     avanzati' dal piano Pro nei DB esistenti (features_display è

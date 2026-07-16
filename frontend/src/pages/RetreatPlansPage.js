@@ -79,7 +79,7 @@ export default function RetreatPlansPage() {
     <AppLayout>
       <Header
         title={t('billing.retreat.title', 'Piani e commissioni')}
-        subtitle={t('billing.retreat.subtitle', 'Semplice: un piano, una fee sul transato. Nessun costo nascosto.')}
+        subtitle={t('billing.retreat.subtitle', 'Semplice: gratis con una fee sul transato, o Pro a zero commissioni. Nessun costo nascosto.')}
       >
         <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
           <ArrowLeft className="h-4 w-4 mr-1.5" />
@@ -156,9 +156,15 @@ export default function RetreatPlansPage() {
                       </span>
                     </div>
                     <p className={`text-xl font-bold mt-1 ${isPro ? 'text-emerald-700' : 'text-gray-900'}`}>
-                      {t('billing.retreat.fee_value', { pct })}
+                      {pct === 0
+                        ? t('billing.retreat.fee_value_zero', 'Zero commissioni')
+                        : t('billing.retreat.fee_value', { pct })}
                     </p>
-                    {plan.price_monthly === 0 && (
+                    {pct === 0 ? (
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {t('billing.retreat.fee_zero_note', 'Tieni il 100% di quello che incassi')}
+                      </p>
+                    ) : plan.price_monthly === 0 && (
                       <p className="text-[11px] text-muted-foreground mt-0.5">
                         {t('billing.retreat.fee_free_note', 'Paghi solo quando incassi')}
                       </p>

@@ -500,7 +500,7 @@
     "legacy_lock_tooltip": "Stai pagando il prezzo originale. Quando aggiorni piano, manteniamo questa tariffa.",
     "retreat": {
       "title": "Piani e commissioni",
-      "subtitle": "Semplice: un piano, una fee sul transato. Nessun costo nascosto.",
+      "subtitle": "Semplice: gratis con una fee sul transato, o Pro a zero commissioni. Nessun costo nascosto.",
       "fee_label": "Fee piattaforma",
       "fee_value": "{{pct}}% sul transato",
       "fee_free_note": "Paghi solo quando incassi",
@@ -518,7 +518,10 @@
       "cta_downgrade": "Torna a Gratis",
       "downgrade_hint": "Per tornare al piano Gratis gestisci l'abbonamento dal portale di fatturazione.",
       "yearly_hint": "290 €/anno (2 mesi gratis)",
-      "hero_fee_line": "Fee piattaforma {{pct}}% sul transato · le commissioni Stripe sono separate (le incassa Stripe, non noi)"
+      "hero_fee_line": "Fee piattaforma {{pct}}% sul transato · le commissioni Stripe sono separate (le incassa Stripe, non noi)",
+      "fee_value_zero": "Zero commissioni",
+      "fee_zero_note": "Tieni il 100% di quello che incassi",
+      "hero_fee_line_zero": "Zero commissioni piattaforma sul transato · le commissioni Stripe sono separate (le incassa Stripe, non noi)"
     }
   },
   "prefs": {

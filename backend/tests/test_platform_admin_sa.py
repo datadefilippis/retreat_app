@@ -201,9 +201,9 @@ class TestSignalsSa5:
 
     def test_breakeven_same_math_as_gt2(self):
         """La soglia e il risparmio usano la STESSA matematica del
-        calcolatore GT2 (fee 5→2%, canone 29): 967 e 3%."""
-        assert "PRO_BREAKEVEN_MONTHLY_EUR = 967" in self.INSIGHTS_SRC
-        assert "* 0.03 - 29.0" in self.INSIGHTS_SRC
+        calcolatore GT2 (fee 5→0%, canone 29): 580 e 5%."""
+        assert "PRO_BREAKEVEN_MONTHLY_EUR = 580" in self.INSIGHTS_SRC
+        assert "* 0.05 - 29.0" in self.INSIGHTS_SRC
 
     def test_unlockable_means_stripe_only(self):
         """'Sbloccabile' = l'UNICO motivo è Stripe — chi ha anche

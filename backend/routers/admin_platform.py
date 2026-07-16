@@ -128,6 +128,7 @@ async def org_business_profile(
                           event_occurrences_collection)
     from models.common import utc_now
     from fastapi import HTTPException
+    from services.platform_insights import PRO_BREAKEVEN_MONTHLY_EUR
 
     org = await organizations_collection.find_one(
         {"id": org_id},
@@ -273,9 +274,10 @@ async def org_business_profile(
             "fees_lifetime": fees["lifetime"] / 100.0,
             "online_month": fees["online_month"] / 100.0,
             "online_12m": fees["online_12m"] / 100.0,
-            # GT2 lato piattaforma: sopra ~967 EUR/mese il Pro conviene
-            # all'operatore — il segnale di proposta
-            "pro_breakeven_reached": fees["online_month"] / 100.0 > 967
+            # GT2 lato piattaforma: sopra la soglia break-even il Pro
+            # conviene all'operatore — il segnale di proposta
+            "pro_breakeven_reached": fees["online_month"] / 100.0
+                                     > PRO_BREAKEVEN_MONTHLY_EUR
                                      and plan_slug == "retreat_free",
         },
         "relationship": {

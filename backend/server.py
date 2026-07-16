@@ -150,6 +150,10 @@ async def lifespan(app: FastAPI):
         # MD3 — via la promessa vuota dal Pro nei DB esistenti
         from services.seed_pricing import migrate_retreat_pro_features_md3
         await migrate_retreat_pro_features_md3()
+        # 16/7/2026 — Pro a zero commissioni: descrizione, bullet e
+        # fee timbrata sulle org gia' su Pro/Founding
+        from services.seed_pricing import migrate_retreat_pro_zero_fee
+        await migrate_retreat_pro_zero_fee()
     except Exception as e:
         logging.error(f"Failed to migrate pricing plans: {e}")
     # Ensure all pricing plans exist (inserts missing slugs individually)

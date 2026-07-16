@@ -337,11 +337,12 @@ ADDON_PLANS: List[dict] = [
 # ── Retreat fork (Fase 1.3 — kill-list) ─────────────────────────────────────
 #
 # I due piani della piattaforma ritiri. Modello di business (vedi
-# docs/BUSINESS_CONCEPT_RITIRI_2026-07.md §6): il piano Gratis include TUTTO
-# il funzionale (pubblicazione, prenotazioni, caparre, partecipanti) ed è
-# monetizzato con la fee transazionale (application_fee_percent=5); il Pro
-# a 29€/mese abbassa la fee al 2% e aggiunge evidenza/limiti estesi.
-# Il collegamento piano→fee viene implementato in Fase 6.2.
+# docs/BUSINESS_CONCEPT_RITIRI_2026-07.md §6, rivisto 16/7/2026): il piano
+# Gratis include TUTTO il funzionale (pubblicazione, prenotazioni, caparre,
+# partecipanti) ed è monetizzato con la fee transazionale
+# (application_fee_percent=5); il Pro a 29€/mese AZZERA la fee (decisione
+# founder 16/7/2026: chi paga il canone tiene tutto il transato) e aggiunge
+# evidenza/limiti estesi.
 #
 # I moduli AFianco non pertinenti (AI, cashflow) puntano ai pricing plan
 # *_disabled (tutti i limiti a 0 → moduli invisibili nella UI). I piani
@@ -395,7 +396,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
     {
         "slug": "retreat_pro",
         "name": "Pro",
-        "description": "Fee ridotta al 2%, evidenza nel calendario pubblico e limiti estesi.",
+        "description": "Zero commissioni sul transato, evidenza nel calendario pubblico e limiti estesi.",
         "tagline": "Per chi organizza più ritiri l'anno",
         "price_monthly": 29.0,
         "price_yearly": 290.0,
@@ -404,7 +405,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_public": True,
         "is_self_serve": True,
         "sort_order": 11,
-        "transaction_fee_percent": 2.0,
+        "transaction_fee_percent": 0.0,
         "platform_limits": {"team_members": 5},
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
@@ -415,6 +416,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         },
         "features_display": [
             "billing.features.retreat_everything_free",
+            "billing.features.retreat_zero_fee",
             "billing.features.retreat_featured",
             "billing.features.retreat_catalog_unlimited",
             "billing.features.retreat_stores_3",
@@ -438,7 +440,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_public": False,
         "is_self_serve": False,
         "sort_order": 12,
-        "transaction_fee_percent": 2.0,
+        "transaction_fee_percent": 0.0,   # trattamento Pro (zero fee)
         "platform_limits": {"team_members": 5},
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",
