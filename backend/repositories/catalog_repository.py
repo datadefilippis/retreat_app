@@ -113,14 +113,23 @@ async def get_enriched_commercial_plan(slug: str) -> Optional[dict]:
 # ==============================================================================
 
 async def list_entitlement_tiers_grouped() -> Dict[str, List[dict]]:
-    """List all active PricingPlans grouped by module_key.
+    """List active PricingPlans grouped by module_key — SOLO i tier
+    referenziati dai piani commerciali a catalogo (16/7/2026,
+    consolidamento AU): i tier legacy AFianco non cablati a nessun
+    piano Aurya restano nel DB per i fallback, ma non fanno rumore
+    nella vista catalogo.
 
     Excludes vestigial ``price_monthly`` and ``price_yearly`` fields.
     """
+    referenced: set = set()
+    async for cp in commercial_plans_collection.find(
+            {}, {"_id": 0, "module_plans": 1}):
+        referenced.update((cp.get("module_plans") or {}).values())
+
     cursor = (
         pricing_plans_collection
         .find(
-            {"is_active": True},
+            {"is_active": True, "slug": {"$in": sorted(referenced)}},
             {
                 "_id": 0,
                 "price_monthly": 0,
@@ -1179,9 +1188,10 @@ async def list_org_commercial_summaries(
       4. Loading referenced pricing plans in batch
       5. Computing drift flags per org
     """
-    # 1. Load all orgs
+    # 1. Load all orgs (le org campione del prelaunch non sono
+    #    operatori: fuori dalla salute commerciale)
     org_cursor = organizations_collection.find(
-        {},
+        {"is_sample": {"$ne": True}},
         {
             "_id": 0, "id": 1, "name": 1, "commercial_plan_slug": 1,
             "billing_status": 1, "plan_assigned_by": 1, "plan": 1,

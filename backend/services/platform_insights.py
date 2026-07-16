@@ -118,8 +118,11 @@ async def directory_snapshot() -> Dict[str, Any]:
 
     now_iso = utc_now().isoformat()[:16]
 
+    # le org campione del prelaunch (is_sample) NON sono operatori:
+    # fuori da contatori, directory e segnali — l'admin conta il vero
     orgs = {o["id"]: o for o in await organizations_collection.find(
-        {"is_active": {"$ne": False}, "deactivated_at": None},
+        {"is_active": {"$ne": False}, "deactivated_at": None,
+         "is_sample": {"$ne": True}},
         {"_id": 0, "id": 1, "name": 1, "commercial_plan_slug": 1,
          "directory_featured": 1, "public_slug": 1,
          "store_settings.is_storefront_published": 1,

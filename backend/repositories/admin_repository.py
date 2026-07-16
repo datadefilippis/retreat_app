@@ -28,10 +28,13 @@ from models.common import generate_id, utc_now
 # ── Organizations ─────────────────────────────────────────────────────────────
 
 async def list_organizations(skip: int = 0, limit: int = 50) -> List[dict]:
-    """All organizations, newest first.  No org-id filter — intentionally cross-tenant."""
+    """All organizations, newest first.  No org-id filter — intentionally
+    cross-tenant.  Le org campione del prelaunch (is_sample) restano
+    fuori: vivono solo nella vetrina pubblica e nei loro script
+    seed/wipe, non sono operatori."""
     cursor = (
         organizations_collection
-        .find({}, {"_id": 0})
+        .find({"is_sample": {"$ne": True}}, {"_id": 0})
         .sort("created_at", -1)
         .skip(skip)
         .limit(limit)
@@ -40,7 +43,8 @@ async def list_organizations(skip: int = 0, limit: int = 50) -> List[dict]:
 
 
 async def count_organizations() -> int:
-    return await organizations_collection.count_documents({})
+    return await organizations_collection.count_documents(
+        {"is_sample": {"$ne": True}})
 
 
 async def get_organization_detail(org_id: str) -> Optional[dict]:

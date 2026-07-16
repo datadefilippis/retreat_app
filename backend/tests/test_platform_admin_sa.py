@@ -313,3 +313,48 @@ class TestAdminPanelConsolidationAdm:
                     / "AIGovernanceBudgetsSection.js").exists()
         assert not (self.FRONTEND_DIR / "features" / "admin"
                     / "AIGovernanceAuditTab.js").exists()
+
+
+class TestAuryaOnlyCatalogAu:
+    """Ciclo AU (16/7/2026) — il pannello e il catalogo parlano SOLO
+    Aurya: niente piani AFianco seminati, org campione fuori dai numeri."""
+
+    SEED_SRC = (BACKEND_DIR / "services" / "seed_commercial_plans.py").read_text()
+
+    def test_seed_upserts_only_retreat_plans(self):
+        """L'upsert semina SOLO il catalogo Aurya; le costanti legacy
+        restano nel modulo per i test ma non toccano il DB."""
+        assert "all_plans = RETREAT_COMMERCIAL_PLANS" in self.SEED_SRC
+        assert "all_plans = COMMERCIAL_PLANS" not in self.SEED_SRC
+
+    def test_legacy_purge_has_safety_guard(self):
+        """La purga dei legacy controlla org e addon attivi PRIMA di
+        cancellare: mai orfanare un abbonamento vivo."""
+        i = self.SEED_SRC.index("legacy_slugs")
+        block = self.SEED_SRC[i:i + 1200]
+        assert "still_used" in block
+        assert "delete_many" in block
+        assert "addon_subscriptions_collection" in block
+
+    def test_samples_excluded_from_admin_surfaces(self):
+        """Le org campione (is_sample) non sono operatori: fuori da
+        panoramica/directory/segnali, lista Organizations e salute
+        commerciale del catalogo."""
+        for rel in ("services/platform_insights.py",
+                    "repositories/admin_repository.py",
+                    "repositories/catalog_repository.py"):
+            src = (BACKEND_DIR / Path(rel)).read_text()
+            assert '"is_sample": {"$ne": True}' in src, rel
+
+    def test_tiers_view_only_referenced_pricing_plans(self):
+        """La vista entitlement tiers mostra solo i tier cablati ai
+        piani a catalogo, non tutto il magazzino legacy."""
+        src = (BACKEND_DIR / "repositories" / "catalog_repository.py").read_text()
+        i = src.index("async def list_entitlement_tiers_grouped")
+        block = src[i:i + 1500]
+        assert "module_plans" in block
+        assert '"slug": {"$in":' in block
+
+    def test_signup_baseline_is_retreat_free(self):
+        src = (BACKEND_DIR / "services" / "auth_service.py").read_text()
+        assert 'plan_slug="retreat_free"' in src

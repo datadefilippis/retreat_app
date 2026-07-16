@@ -200,6 +200,17 @@ class TestGetCatalogPlan:
 class TestEntitlementTiers:
     """Tests for GET /admin/catalog/entitlement-tiers."""
 
+    @staticmethod
+    def _mock_commercial_plans(docs):
+        """AU (16/7/2026): la vista tiers filtra sui module_plans dei
+        piani a catalogo — i test mockano anche quella collection."""
+        async def _aiter():
+            for d in docs:
+                yield d
+        mock_cp = MagicMock()
+        mock_cp.find.return_value = _aiter()
+        return mock_cp
+
     @pytest.mark.asyncio
     async def test_grouped_by_module_key(self):
         """Plans are grouped by module_key."""
@@ -208,8 +219,13 @@ class TestEntitlementTiers:
             _make_pricing_plan("ai_assistant_starter", "ai_assistant", name="Starter", limits={"chat": 50}),
             _make_pricing_plan("cashflow_monitor_free", "cashflow_monitor", name="Free", limits={"analytics": -1}),
         ]
+        catalog = [{"module_plans": {"ai_assistant": "ai_assistant_free",
+                                     "cashflow_monitor": "cashflow_monitor_free"}},
+                   {"module_plans": {"ai_assistant": "ai_assistant_starter"}}]
 
-        with patch("repositories.catalog_repository.pricing_plans_collection") as mock_pp:
+        with patch("repositories.catalog_repository.pricing_plans_collection") as mock_pp, \
+             patch("repositories.catalog_repository.commercial_plans_collection",
+                   self._mock_commercial_plans(catalog)):
             mock_cursor = MagicMock()
             mock_cursor.sort.return_value = mock_cursor
             mock_cursor.to_list = AsyncMock(return_value=plans)
@@ -222,11 +238,17 @@ class TestEntitlementTiers:
         assert "cashflow_monitor" in result
         assert len(result["ai_assistant"]) == 2
         assert len(result["cashflow_monitor"]) == 1
+        # AU: la query pricing filtra sui tier referenziati dal catalogo
+        pricing_filter = mock_pp.find.call_args[0][0]
+        assert set(pricing_filter["slug"]["$in"]) == {
+            "ai_assistant_free", "ai_assistant_starter", "cashflow_monitor_free"}
 
     @pytest.mark.asyncio
     async def test_excludes_vestigial_price_fields(self):
         """price_monthly and price_yearly are excluded from the projection."""
-        with patch("repositories.catalog_repository.pricing_plans_collection") as mock_pp:
+        with patch("repositories.catalog_repository.pricing_plans_collection") as mock_pp, \
+             patch("repositories.catalog_repository.commercial_plans_collection",
+                   self._mock_commercial_plans([])):
             mock_cursor = MagicMock()
             mock_cursor.sort.return_value = mock_cursor
             mock_cursor.to_list = AsyncMock(return_value=[])

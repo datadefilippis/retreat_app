@@ -499,7 +499,11 @@ async def seed_commercial_plans() -> None:
 
     Stripe IDs are deliberately NOT seeded — see ADDON_PLANS docstring.
     """
-    all_plans = COMMERCIAL_PLANS + ADDON_PLANS + RETREAT_COMMERCIAL_PLANS
+    # 16/7/2026 (consolidamento AU) — il catalogo di Aurya sono SOLO i
+    # piani retreat_*: i piani AFianco (main + addon) non vengono piu'
+    # seminati. Le costanti COMMERCIAL_PLANS/ADDON_PLANS restano nel
+    # modulo per i test del catalogo legacy, ma non toccano il DB.
+    all_plans = RETREAT_COMMERCIAL_PLANS
     for plan_data in all_plans:
         plan = CommercialPlan(**plan_data)
         doc = plan.model_dump()
@@ -508,20 +512,31 @@ async def seed_commercial_plans() -> None:
         doc["updated_at"] = doc["updated_at"].isoformat()
         await billing_repository.upsert_commercial_plan(doc)
 
-    # Retreat fork — i piani legacy AFianco (main + add-on) escono dalla
-    # pagina pricing pubblica: la piattaforma ritiri espone SOLO i piani
-    # retreat_*. Demozione sul DB (le costanti restano is_public=True per
-    # compatibilità con i test del catalogo legacy); idempotente a ogni boot.
-    from database import commercial_plans_collection
+    # Purga dei piani legacy AFianco dal DB (16/7/2026, consolidamento
+    # AU): il pannello admin deve mostrare SOLO il catalogo Aurya.
+    # Guardia di sicurezza: un piano ancora referenziato da una org o
+    # da un addon attivo NON viene toccato (e viene loggato) — mai
+    # orfanare un abbonamento vivo.
+    from database import (commercial_plans_collection,
+                          organizations_collection,
+                          addon_subscriptions_collection)
     legacy_slugs = ([p["slug"] for p in COMMERCIAL_PLANS]
                     + [p["slug"] for p in ADDON_PLANS])
-    await commercial_plans_collection.update_many(
-        {"slug": {"$in": legacy_slugs}, "is_public": True},
-        {"$set": {"is_public": False}},
-    )
+    still_used = set(await organizations_collection.distinct(
+        "commercial_plan_slug", {"commercial_plan_slug": {"$in": legacy_slugs}}))
+    still_used |= set(await addon_subscriptions_collection.distinct(
+        "addon_slug", {"addon_slug": {"$in": legacy_slugs},
+                       "status": "active"}))
+    removable = [s for s in legacy_slugs if s not in still_used]
+    if removable:
+        result = await commercial_plans_collection.delete_many(
+            {"slug": {"$in": removable}})
+        if result.deleted_count:
+            logger.info("Catalogo Aurya-only: rimossi %d piani legacy AFianco (%s)",
+                        result.deleted_count, ", ".join(removable))
+    if still_used:
+        logger.warning("Piani legacy ANCORA referenziati, non rimossi: %s",
+                       ", ".join(sorted(still_used)))
 
-    logger.info(
-        "Seeded %d commercial plans (upsert) — %d main + %d add-ons + %d retreat; legacy nascosti dal pricing.",
-        len(all_plans), len(COMMERCIAL_PLANS), len(ADDON_PLANS),
-        len(RETREAT_COMMERCIAL_PLANS),
-    )
+    logger.info("Seeded %d commercial plans (upsert) — catalogo Aurya (retreat_*).",
+                len(all_plans))
