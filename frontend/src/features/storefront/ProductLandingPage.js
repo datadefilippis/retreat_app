@@ -35,6 +35,7 @@ import MarkdownLite from '../../components/MarkdownLite';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
 import StoreContextNav from './components/StoreContextNav';
+import useProductSeo from './lib/useProductSeo';
 
 
 function formatPrice(n, currency = 'EUR', locale = 'it-IT') {
