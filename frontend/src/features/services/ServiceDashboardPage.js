@@ -32,7 +32,6 @@ import ServiceOptionsEditor from './components/ServiceOptionsEditor';
 import AvailabilityRulesEditor from './components/AvailabilityRulesEditor';
 import useLandingUrl from '../products/hooks/useLandingUrl';
 // W1.S5/Phase 2.6 — additive cost composition editor for edits.
-import CostSourceEditor from '../products/components/CostSourceEditor';
 import MultiLangSection from '../../components/MultiLangSection';
 
 
@@ -667,21 +666,9 @@ export default function ServiceDashboardPage() {
                 </div>
               </label>
 
-              {/* W1.S5/Phase 2.6 — Cost composition (edit). */}
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
-                <div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {t('product_cost:section.title', 'Costo del prodotto')}
-                  </span>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {t('product_cost:section.subtitle', 'Definisci come calcolare il margine per questo prodotto.')}
-                  </p>
-                </div>
-                <CostSourceEditor
-                  value={productForm.cost_source}
-                  onChange={(next) => setProductForm(f => ({ ...f, cost_source: next }))}
-                />
-              </div>
+              {/* Sezione "Costo del prodotto" (COGS) rimossa dalla UI su
+                  richiesta founder 16/7/2026: cost_source resta nel form
+                  e nel salvataggio, i dati esistenti non si toccano. */}
 
               <div className="flex justify-end">
                 <button type="button" disabled={savingProduct || !productForm.name.trim()}

@@ -46,10 +46,6 @@ import { pruneFieldConfigs } from '../events/components/fieldConfigUtils';
 import ServiceOptionsEditor from './components/ServiceOptionsEditor';
 import AvailabilityRulesEditor from './components/AvailabilityRulesEditor';
 import StripeRequiredAlert from '../../components/StripeRequiredAlert';
-// Wave 1 (W1.S5/Phase 2.1) — additive cost composition editor.
-// Mounted inside Tab 1 "base" alongside unit_price so the merchant
-// configures the sale price AND its cost basis on the same screen.
-import CostSourceEditor from '../products/components/CostSourceEditor';
 import MultiLangSection from '../../components/MultiLangSection';
 
 
@@ -541,24 +537,11 @@ export default function ServiceWizard() {
                   consistency with EventWizard — it's a publish-decision, not
                   part of the base product info. */}
 
-              {/* W1.S5/Phase 2.1 — Cost composition. Optional: when
-                  the merchant skips this, the product saves fine but
-                  margin shows N/D in Performance Prodotti. When set,
-                  drives the gross-margin calculation. */}
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
-                <div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {t('product_cost:section.title', 'Costo del prodotto')}
-                  </span>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {t('product_cost:section.subtitle', 'Definisci come calcolare il margine per questo prodotto.')}
-                  </p>
-                </div>
-                <CostSourceEditor
-                  value={costSource}
-                  onChange={setCostSource}
-                />
-              </div>
+              {/* Sezione "Costo del prodotto" (COGS) rimossa dalla UI su
+                  richiesta founder 16/7/2026: agli operatori Aurya non
+                  serve la contabilita' margini. Lo stato costSource resta
+                  e viaggia nel salvataggio, cosi' i dati gia' configurati
+                  non vengono cancellati. */}
             </div>
           )}
 

@@ -33,7 +33,6 @@ import { productExtrasAPI } from '../../api/productExtras';
 import ProductExtrasEditor from '../reservations/components/ProductExtrasEditor';
 import useLandingUrl from '../products/hooks/useLandingUrl';
 // W1.S5/Phase 2.5 — additive cost composition editor for edits.
-import CostSourceEditor from '../products/components/CostSourceEditor';
 import { useCurrency } from '../../context/AuthContext';
 import { formatAmount } from '../../utils/currency';
 import MultiLangSection from '../../components/MultiLangSection';
@@ -715,23 +714,9 @@ export default function PhysicalDashboardPage() {
                 </select>
               </div>
 
-              {/* W1.S5/Phase 2.5 — Cost composition. Save uses the same
-                  saveProduct() handler below so the merchant edits cost
-                  alongside price and persists with one click. */}
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
-                <div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {t('product_cost:section.title', 'Costo del prodotto')}
-                  </span>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {t('product_cost:section.subtitle', 'Definisci come calcolare il margine per questo prodotto.')}
-                  </p>
-                </div>
-                <CostSourceEditor
-                  value={productForm.cost_source}
-                  onChange={(next) => setProductForm({ ...productForm, cost_source: next })}
-                />
-              </div>
+              {/* Sezione "Costo del prodotto" (COGS) rimossa dalla UI su
+                  richiesta founder 16/7/2026: cost_source resta nel form
+                  e nel salvataggio, i dati esistenti non si toccano. */}
 
               <div className="pt-1">
                 <button

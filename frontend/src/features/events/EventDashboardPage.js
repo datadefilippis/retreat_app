@@ -37,7 +37,6 @@ import { productsAPI } from '../../api';
 import FieldEditorList from './components/FieldEditorList';
 import { pruneFieldConfigs } from './components/fieldConfigUtils';
 // W1.S5/Phase 2.9 — additive cost composition editor for edits.
-import CostSourceEditor from '../products/components/CostSourceEditor';
 import { MiniBars } from '../../components/charts';
 import ContactActions from '../../components/ContactActions';
 import DirectoryListingHint from '../../components/DirectoryListingHint';
@@ -1198,21 +1197,9 @@ export default function EventDashboardPage() {
                 />
               </div>
 
-              {/* W1.S5/Phase 2.9 — Cost composition (edit). */}
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
-                <div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {t('product_cost:section.title', 'Costo del prodotto')}
-                  </span>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {t('product_cost:section.subtitle', 'Definisci come calcolare il margine per questo prodotto.')}
-                  </p>
-                </div>
-                <CostSourceEditor
-                  value={productForm.cost_source}
-                  onChange={(next) => setProductForm(f => ({ ...f, cost_source: next }))}
-                />
-              </div>
+              {/* Sezione "Costo del prodotto" (COGS) rimossa dalla UI su
+                  richiesta founder 16/7/2026: cost_source resta nel form
+                  e nel salvataggio, i dati esistenti non si toccano. */}
 
               <div className="flex justify-end">
                 <button type="button" disabled={savingProduct || !productForm.name.trim()}

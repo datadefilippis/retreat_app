@@ -32,7 +32,6 @@ import StripeRequiredAlert from '../../components/StripeRequiredAlert';
 // Wave 1 (W1.S5/Phase 2.2) — additive cost composition editor.
 // Mounted in the "pricing" step so the rental price + its cost basis
 // are configured together. See PRODUCTS_ARCHITECTURE.md §4 R6.
-import CostSourceEditor from '../products/components/CostSourceEditor';
 
 // 2026-05-20 — Hardening helpers (audit fix wave). See PhysicalWizard
 // for the design rationale.
@@ -656,23 +655,11 @@ export default function ReservationWizard() {
               />
             </div>
 
-            {/* W1.S5/Phase 2.2 — Cost composition (optional). Drives
-                gross-margin display in Performance Prodotti. Empty
-                here is fine; margin shows N/D until configured. */}
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
-              <div>
-                <span className="text-sm font-medium text-gray-900">
-                  {t('product_cost:section.title', 'Costo del prodotto')}
-                </span>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {t('product_cost:section.subtitle', 'Definisci come calcolare il margine per questo prodotto.')}
-                </p>
-              </div>
-              <CostSourceEditor
-                value={costSource}
-                onChange={setCostSource}
-              />
-            </div>
+            {/* Sezione "Costo del prodotto" (COGS) rimossa dalla UI su
+                richiesta founder 16/7/2026: agli operatori Aurya non
+                serve la contabilita' margini. Lo stato costSource resta
+                e viaggia nel salvataggio, cosi' i dati gia' configurati
+                non vengono cancellati. */}
           </div>
         )}
 

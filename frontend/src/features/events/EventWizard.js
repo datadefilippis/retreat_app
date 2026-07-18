@@ -48,7 +48,6 @@ import { formatCurrency as fmtCurrency } from '../../lib/utils';
 // For event tickets the cost usually represents venue/speaker amortised
 // over expected attendance — declared manually is the most common
 // configuration.
-import CostSourceEditor from '../products/components/CostSourceEditor';
 
 // 2026-05-20 — Hardening helpers (audit fix wave). EventWizard is the
 // highest-risk surface (4 steps, multiple uploads, blob preview leak,
@@ -1439,10 +1438,11 @@ export default function EventWizard() {
             subtitle={t('wizards.event.tickets.orderFieldsSubtitle')}
             emptyHint={t('wizards.event.tickets.orderFieldsEmpty')}
           />
-            <CostSourceEditor
-              value={costSource}
-              onChange={setCostSource}
-            />
+            {/* Sezione "Costo del prodotto" (COGS) rimossa dalla UI su
+                richiesta founder 16/7/2026: agli operatori Aurya non
+                serve la contabilita' margini. Lo stato costSource resta
+                e viaggia nel salvataggio, cosi' i dati gia' configurati
+                non vengono cancellati. */}
           </div>
           </div>
         )}

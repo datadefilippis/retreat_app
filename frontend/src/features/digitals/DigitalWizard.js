@@ -35,7 +35,6 @@ import StripeRequiredAlert from '../../components/StripeRequiredAlert';
 // products typically have low/zero unit cost (hosting amortised) so
 // the empty state is the common case — the editor is still shown so
 // merchants who care can declare it.
-import CostSourceEditor from '../products/components/CostSourceEditor';
 
 // 2026-05-20 — Hardening helpers (audit fix wave). See PhysicalWizard
 // for the design rationale of each.
@@ -617,23 +616,11 @@ export default function DigitalWizard() {
               <StripeRequiredAlert whenTransactionMode={pricing.transaction_mode} />
             </div>
 
-            {/* W1.S5/Phase 2.3 — Cost composition (optional). For
-                digital products the empty state is the norm; configure
-                only if you want to declare hosting/production cost. */}
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
-              <div>
-                <span className="text-sm font-medium text-gray-900">
-                  {t('product_cost:section.title', 'Costo del prodotto')}
-                </span>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {t('product_cost:section.subtitle', 'Definisci come calcolare il margine per questo prodotto.')}
-                </p>
-              </div>
-              <CostSourceEditor
-                value={costSource}
-                onChange={setCostSource}
-              />
-            </div>
+            {/* Sezione "Costo del prodotto" (COGS) rimossa dalla UI su
+                richiesta founder 16/7/2026: agli operatori Aurya non
+                serve la contabilita' margini. Lo stato costSource resta
+                e viaggia nel salvataggio, cosi' i dati gia' configurati
+                non vengono cancellati. */}
           </div>
         )}
 
