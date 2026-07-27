@@ -48,7 +48,8 @@ const INTEREST_TO_TOPIC = {
 export default function LeadForm({ type = 'traveler', accent = '#376254', context = null,
                                    successExtra = null, compact = false,
                                    ctaLabel = null, thanksBody = null,
-                                   consentText = null, subscribe = false }) {
+                                   consentText = null, subscribe = false,
+                                   returnTo = null }) {
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
 
@@ -86,6 +87,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           email: email.trim(), name: name.trim() || null,
           language: (i18n.language || 'it').slice(0, 2),
           source: context || 'landing',
+          return_to: returnTo,
           topics: interests.length
             ? interests.map((i) => INTEREST_TO_TOPIC[i]).filter(Boolean)
             : null,

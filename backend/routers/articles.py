@@ -81,6 +81,7 @@ def _localized(doc: Dict[str, Any], lang: str) -> Dict[str, Any]:
         "category": doc.get("category"),
         "featured_image_url": doc.get("featured_image_url"),
         "author_name": doc.get("author_name") or "Aurya",
+        "gated": doc.get("access") == "subscriber",
         "published_at": doc.get("published_at"),
         "served_lang": "it",
         "available_langs": ["it"] + [l for l in ARTICLE_LANGS
@@ -93,6 +94,43 @@ def _localized(doc: Dict[str, Any], lang: str) -> Dict[str, Any]:
             out["description"] = tr["description"]
         out["served_lang"] = lang
     return out
+
+
+# ─── BN3: guide riservate (gated) ──────────────────────────────────────
+
+def gated_preview(content: str) -> Dict[str, Any]:
+    """Anteprima onesta di una guida riservata: i primi 2 blocchi di
+    testo + l'INDICE dei contenuti (gli H2). Il lettore (e il crawler:
+    stesso HTML, niente cloaking) vede esattamente cosa ottiene
+    iscrivendosi."""
+    blocks = [b for b in (content or "").split("\n\n") if b.strip()]
+    intro: list = []
+    for b in blocks:
+        if b.lstrip().startswith("#"):
+            if intro:
+                break
+            continue
+        intro.append(b)
+        if len(intro) >= 2:
+            break
+    toc = [ln.lstrip("# ").strip() for ln in (content or "").splitlines()
+           if ln.startswith("## ")]
+    return {"content": "\n\n".join(intro), "toc": toc}
+
+
+async def _subscriber_unlocked(token: Optional[str]) -> bool:
+    """True se il token e' di un subscriber CONFERMATO. Un token
+    invalido non e' un errore: si serve l'anteprima."""
+    if not token:
+        return False
+    try:
+        from core.subscriber_token import decode_subscriber_token
+        email = decode_subscriber_token(token)["email"]
+    except Exception:               # noqa: BLE001 — invalido → anteprima
+        return False
+    doc = await db.aurya_subscribers.find_one(
+        {"email": email}, {"_id": 0, "status": 1})
+    return bool(doc and doc.get("status") == "confirmed")
 
 
 # ─── Endpoint pubblici ─────────────────────────────────────────────────
@@ -128,7 +166,10 @@ async def list_public_articles(
 
 
 @router.get("/public/articles/{slug}")
-async def get_public_article(slug: str, lang: str = "it") -> Dict[str, Any]:
+async def get_public_article(slug: str, lang: str = "it",
+                             st: Optional[str] = None) -> Dict[str, Any]:
+    """`st` (subscriber token, BN3): sblocca le guide riservate per gli
+    iscritti confermati. Assente o invalido → anteprima + indice."""
     doc = await db.articles.find_one({"slug": slug, "published": True},
                                      {"_id": 0})
     if not doc:
@@ -138,6 +179,14 @@ async def get_public_article(slug: str, lang: str = "it") -> Dict[str, Any]:
     if out["served_lang"] != "it":
         tr = doc["translations"][lang]
         out["content"] = tr["content"]
+    if out["gated"]:
+        if await _subscriber_unlocked(st):
+            out["unlocked"] = True
+        else:
+            preview = gated_preview(out["content"])
+            out["content"] = preview["content"]
+            out["toc"] = preview["toc"]
+            out["unlocked"] = False
     return out
 
 

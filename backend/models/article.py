@@ -32,6 +32,11 @@ ARTICLE_EXTRA_CATEGORIES = {
 }
 ARTICLE_CATEGORIES = {**RETREAT_CATEGORIES, **ARTICLE_EXTRA_CATEGORIES}
 
+# BN3 — accesso: "public" (default) o "subscriber" (guida riservata:
+# il pubblico e i crawler vedono l'ANTEPRIMA, lo sblocco e' il token
+# del subscriber confermato. Il gate E' il double opt-in.)
+ARTICLE_ACCESS = ("public", "subscriber")
+
 # Campi traducibili di un articolo (stesso principio dei prodotti:
 # struttura solo in italiano, testi per lingua).
 ARTICLE_TRANSLATABLE_FIELDS = ("title", "description", "content")
@@ -61,7 +66,15 @@ class ArticleCreate(BaseModel):
     category: Optional[str] = None
     featured_image_url: Optional[str] = None
     slug: Optional[str] = None
+    access: str = "public"
     translations: Dict[str, ArticleTranslation] = Field(default_factory=dict)
+
+    @field_validator("access")
+    @classmethod
+    def _valid_access(cls, v):
+        if v not in ARTICLE_ACCESS:
+            raise ValueError(f"Accesso sconosciuto: {v}")
+        return v
 
     @field_validator("category")
     @classmethod
@@ -89,11 +102,19 @@ class ArticleUpdate(BaseModel):
     category: Optional[str] = None
     featured_image_url: Optional[str] = None
     slug: Optional[str] = None
+    access: Optional[str] = None
     translations: Optional[Dict[str, ArticleTranslation]] = None
     published: Optional[bool] = None
 
     _valid_category = field_validator("category")(
         ArticleCreate._valid_category.__func__)
+
+    @field_validator("access")
+    @classmethod
+    def _valid_access(cls, v):
+        if v is not None and v not in ARTICLE_ACCESS:
+            raise ValueError(f"Accesso sconosciuto: {v}")
+        return v
 
     @field_validator("translations")
     @classmethod
@@ -114,6 +135,7 @@ class Article(BaseModel):
     content: str
     category: Optional[str] = None
     featured_image_url: Optional[str] = None
+    access: str = "public"
     translations: Dict[str, ArticleTranslation] = Field(default_factory=dict)
     published: bool = False
     published_at: Optional[datetime] = None

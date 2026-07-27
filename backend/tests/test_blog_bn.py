@@ -88,3 +88,56 @@ class TestBlogFunnelBN1:
 
     def test_cta_tracks_blog_context(self):
         assert "blog_${category}" in self.CTA
+
+
+class TestGatedGuidesBN3:
+    """BN3 — guide riservate: anteprima onesta per tutti (utente e
+    crawler: stesso HTML), sblocco SOLO per subscriber confermati,
+    markup paywalled standard (niente cloaking)."""
+
+    def test_access_validator(self):
+        import pytest as _pytest
+
+        from models.article import ArticleCreate, ArticleUpdate
+        a = ArticleCreate(title="Guida", content="testo", access="subscriber")
+        assert a.access == "subscriber"
+        assert ArticleCreate(title="Guida", content="x").access == "public"
+        assert ArticleUpdate(access="subscriber").access == "subscriber"
+        with _pytest.raises(ValueError):
+            ArticleCreate(title="Guida", content="x", access="vip")
+
+    def test_gated_preview_intro_and_toc(self):
+        from routers.articles import gated_preview
+        md = ("Intro uno.\n\nIntro due.\n\n## Sezione A\n\ncorpo\n\n"
+              "## Sezione B\n\naltro corpo")
+        got = gated_preview(md)
+        assert got["content"] == "Intro uno.\n\nIntro due."
+        assert got["toc"] == ["Sezione A", "Sezione B"]
+        # il corpo delle sezioni NON trapela nell'anteprima
+        assert "corpo" not in got["content"]
+
+    def test_shell_serves_paywalled_markup_not_full_body(self):
+        src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert '"isAccessibleForFree"' in src
+        assert '"cssSelector": ".gated-content"' in src
+        # l'articleBody dei gated viene dall'anteprima, non dal pieno
+        assert "gated_preview(content_md)" in src
+
+    def test_return_to_is_blog_only(self):
+        from routers.subscribers import _safe_return_to
+        assert _safe_return_to("/blog/guida-x") == "/blog/guida-x"
+        assert _safe_return_to("https://evil.com") is None
+        assert _safe_return_to("/blog//evil.com") is None
+        assert _safe_return_to("/account") is None
+
+    def test_frontend_gate_wiring(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "BlogArticlePage.js").read_text()
+        assert "aurya_nl_token" in page               # sblocco da localStorage
+        assert "blog-gate" in page
+        # niente doppio form sulla stessa pagina
+        assert "{!article.gated && <BlogNewsletterCTA" in page
+        confirm = (FRONTEND_SRC / "features" / "prelaunch"
+                   / "NewsletterConfirmPage.js").read_text()
+        assert "aurya_nl_token" in confirm            # persistenza token
+        assert "startsWith('/blog/')" in confirm      # next filtrato

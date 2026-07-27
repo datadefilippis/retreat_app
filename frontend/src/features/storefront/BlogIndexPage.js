@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import BlogNewsletterCTA from './components/BlogNewsletterCTA';
+import { Lock } from 'lucide-react';
 import useSeoMeta from './lib/useSeoMeta';
 
 const CATEGORY_TONES = {
@@ -137,6 +138,14 @@ export default function BlogIndexPage() {
                         </span>
                       )}
                       <span>{fmtDate(a.published_at)}</span>
+                      {/* BN3 — la promessa e' visibile gia' in lista */}
+                      {a.gated && (
+                        <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#8a7440]/10 px-2 py-0.5 font-semibold text-[#8a7440]"
+                              data-testid="blog-card-gated">
+                          <Lock className="h-3 w-3" aria-hidden />
+                          {t('blog.gatedBadge', { defaultValue: 'Per gli iscritti' })}
+                        </span>
+                      )}
                     </div>
                     <h2 className="font-heading text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
                       {a.title}

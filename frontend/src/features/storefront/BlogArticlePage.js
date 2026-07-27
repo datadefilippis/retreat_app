@@ -12,6 +12,8 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import BlogNewsletterCTA from './components/BlogNewsletterCTA';
+import LeadForm from '../prelaunch/LeadForm';
+import { Lock } from 'lucide-react';
 import useSeoMeta from './lib/useSeoMeta';
 import { useSiteConfig } from '../../context/SiteConfigContext';
 import LegalMarkdownRenderer from '../../components/legal/LegalMarkdownRenderer';
@@ -36,7 +38,11 @@ export default function BlogArticlePage() {
     let mounted = true;
     setArticle(null);
     setError(false);
-    api.get(`/public/articles/${slug}`, { params: { lang } })
+    // BN3 — il token del subscriber confermato (salvato alla conferma)
+    // sblocca le guide riservate; assente o invalido → anteprima
+    let st = null;
+    try { st = localStorage.getItem('aurya_nl_token') || null; } catch { /* private mode */ }
+    api.get(`/public/articles/${slug}`, { params: { lang, st } })
       .then(res => { if (mounted) setArticle(res.data); })
       .catch(() => { if (mounted) setError(true); });
     return () => { mounted = false; };
@@ -124,9 +130,52 @@ export default function BlogArticlePage() {
                    className="w-full rounded-2xl mb-8 object-cover max-h-96" />
             )}
 
-            <div className="blog-content">
+            <div className={article.gated ? 'blog-content gated-content' : 'blog-content'}>
               <LegalMarkdownRenderer content={article.content} />
             </div>
+
+            {/* BN3 — guida riservata: anteprima onesta + indice + gate.
+                Il gate E' il double opt-in: iscriviti, conferma dalla
+                email, torni qui sbloccato. */}
+            {article.gated && !article.unlocked && (
+              <aside className="mt-8 rounded-2xl border-2 border-[#8a7440]/30 bg-gradient-to-b from-[#8a7440]/5 to-white p-6"
+                     data-testid="blog-gate">
+                {Array.isArray(article.toc) && article.toc.length > 0 && (
+                  <div className="mb-5">
+                    <p className="font-heading text-sm font-semibold text-gray-900">
+                      {t('blog.gateToc', { defaultValue: 'Cosa trovi nella guida completa' })}
+                    </p>
+                    <ul className="mt-2 space-y-1.5">
+                      {article.toc.map(h => (
+                        <li key={h} className="flex items-start gap-2 text-sm text-gray-600">
+                          <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#8a7440]" aria-hidden />
+                          {h}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <p className="font-heading font-semibold text-foreground">
+                  {t('blog.gateTitle', { defaultValue: 'Questa guida è riservata agli iscritti alla lettera' })}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t('blog.gateBody', { defaultValue: 'Gratis: ti iscrivi, confermi dalla tua email e il link ti riporta qui, alla guida completa. Insieme ricevi la lettera di Aurya ogni due settimane, con disiscrizione a un click.' })}
+                </p>
+                <div className="mt-4 max-w-md">
+                  <LeadForm
+                    type="traveler" compact subscribe accent="#8a7440"
+                    context={`gate_${article.category || slug}`}
+                    returnTo={`/blog/${slug}`}
+                    consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
+                    ctaLabel={t('blog.gateCta', { defaultValue: 'Sblocca la guida completa' })}
+                    thanksBody={t('blog.gateThanks', { defaultValue: 'Controlla la tua casella: il link di conferma sblocca la guida.' })}
+                  />
+                </div>
+                <p className="mt-3 text-xs text-gray-400">
+                  {t('blog.gateAlready', { defaultValue: 'Già iscritto? Apri questa pagina dal link di una nostra email e la guida si sblocca da sola.' })}
+                </p>
+              </aside>
+            )}
 
             {/* SEO3→BN1 — la CTA ritiri vive SOLO in fase marketplace
                 (in fase rete /ritiri redirige alla home: sarebbe una
@@ -153,8 +202,10 @@ export default function BlogArticlePage() {
               </aside>
             )}
 
-            {/* BN1 — il primo punto di conversione: CTA di cluster */}
-            <BlogNewsletterCTA category={article.category} />
+            {/* BN1 — il primo punto di conversione: CTA di cluster.
+                BN3: sulle guide riservate il gate qui sopra E' la CTA
+                (due form nella stessa pagina si cannibalizzano). */}
+            {!article.gated && <BlogNewsletterCTA category={article.category} />}
 
             {/* BN1 — Continua a leggere: correlati per categoria */}
             {related.length > 0 && (

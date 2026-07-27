@@ -20,6 +20,7 @@ const EMPTY = {
   description: '',
   content: '',
   category: '',
+  access: 'public',
   featured_image_url: '',
 };
 
@@ -71,6 +72,7 @@ export default function BlogAdminTab() {
       description: doc.description || '',
       content: doc.content || '',
       category: doc.category || '',
+      access: doc.access || 'public',
       featured_image_url: doc.featured_image_url || '',
     });
     const tr = doc.translations || {};
@@ -104,6 +106,7 @@ export default function BlogAdminTab() {
         description: form.description.trim() || null,
         content: form.content,
         category: form.category || null,
+        access: form.access || 'public',
         featured_image_url: form.featured_image_url.trim() || null,
         translations: buildTranslations(),
       };
@@ -179,6 +182,15 @@ export default function BlogAdminTab() {
               {Object.entries(categories).map(([slug, label]) => (
                 <option key={slug} value={slug}>{label}</option>
               ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Accesso (BN3)</label>
+            <select value={form.access}
+                    onChange={e => setForm({ ...form, access: e.target.value })}
+                    className={inputCls} data-testid="article-access">
+              <option value="public">Pubblico</option>
+              <option value="subscriber">Riservato agli iscritti (guida)</option>
             </select>
           </div>
           <div>

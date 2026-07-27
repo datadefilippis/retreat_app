@@ -65,6 +65,10 @@ transazionale). I lead migrati restano PENDING: nessuna email di massa
 al deploy; la richiesta di conferma partira' con la prima campagna
 (decisione founder, BN6).
 
+Nota BN3: la prima guida riservata (kit pratiche,
+scripts/bn3_publish_kit_pratiche.py) si pubblica in prod SOLO dopo
+l'approvazione del testo da parte del founder (gate contenuti BN0).
+
 ## 3. Wipe campioni prod
 
 Le org campione non appaiono in nessuna superficie della fase rete, ma

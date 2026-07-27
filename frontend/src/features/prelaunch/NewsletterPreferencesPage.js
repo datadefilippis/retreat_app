@@ -47,6 +47,7 @@ export default function NewsletterPreferencesPage() {
     api.get(`/public/newsletter/preferences/${token}`)
       .then(res => {
         if (!mounted) return;
+        try { localStorage.setItem('aurya_nl_token', token); } catch { /* private mode */ }
         setData(res.data);
         setTopics(res.data.topics || []);
         setFormat(res.data.format || 'all');

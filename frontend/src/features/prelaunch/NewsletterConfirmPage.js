@@ -8,7 +8,7 @@
  * shell.
  */
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Check, Download, Loader2, SlidersHorizontal } from 'lucide-react';
 import api from '../../api/client';
@@ -20,9 +20,14 @@ const GOLD = '#8a7440';
 
 export default function NewsletterConfirmPage() {
   const { token } = useParams();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation('prelaunch');
   const { leadMagnetUrl } = useSiteConfig();
   const [state, setState] = useState('working'); // working | done | expired | invalid
+  // BN3 — next: la guida da cui e' partita l'iscrizione (solo path
+  // interni del blog: il backend valida, qui doppio filtro)
+  const rawNext = searchParams.get('next') || '';
+  const next = rawNext.startsWith('/blog/') && !rawNext.includes('//') ? rawNext : null;
 
   useSeoMeta({
     title: t('nlConfirm.seoTitle', { defaultValue: 'Conferma iscrizione | Aurya' }),
@@ -35,6 +40,9 @@ export default function NewsletterConfirmPage() {
       .then(() => {
         if (!mounted) return;
         setState('done');
+        // BN3 — il token resta nel browser: sblocca le guide riservate
+        // a ogni visita futura, senza dover ripassare dall'email
+        try { localStorage.setItem('aurya_nl_token', token); } catch { /* private mode */ }
         trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: 'confirm' });
       })
       .catch((err) => {
@@ -74,6 +82,15 @@ export default function NewsletterConfirmPage() {
                 <Download className="h-4 w-4" aria-hidden />
                 {t('nl.magnetCta', { defaultValue: 'Scarica il materiale di benvenuto' })}
               </a>
+            )}
+            {next && (
+              <div className="mt-6">
+                <Link to={next}
+                      className="inline-flex items-center gap-2 rounded-full border-2 border-[#376254] px-6 py-3 text-sm font-semibold text-[#376254] hover:bg-[#376254] hover:text-white transition-colors"
+                      data-testid="nl-confirm-next">
+                  {t('nlConfirm.backToGuide', { defaultValue: 'Torna alla guida sbloccata' })} →
+                </Link>
+              </div>
             )}
             <div className="mt-8">
               <Link to={`/newsletter/preferenze/${token}`}

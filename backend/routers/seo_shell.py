@@ -481,7 +481,7 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
         {"slug": slug, "published": True},
         {"_id": 0, "title": 1, "description": 1, "featured_image_url": 1,
          "published_at": 1, "updated_at": 1, "translations": 1,
-         "author_name": 1, "content": 1, "category": 1},
+         "author_name": 1, "content": 1, "category": 1, "access": 1},
     )
     if not doc:
         return None
@@ -521,7 +521,19 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
     }
     # SEO4 — l'articolo INTERO nell'HTML iniziale: i crawler senza JS
     # (GPTBot, ClaudeBot, PerplexityBot...) non vedono il body della SPA.
-    if content_md:
+    # BN3 — guida riservata: il crawler vede la STESSA anteprima
+    # dell'utente non iscritto (niente cloaking) + il markup standard
+    # dei contenuti gated (isAccessibleForFree, Google paywalled docs).
+    gated = doc.get("access") == "subscriber"
+    if gated and content_md:
+        from routers.articles import gated_preview
+        preview = gated_preview(content_md)
+        jsonld["articleBody"] = _md_to_text(preview["content"])
+        jsonld["isAccessibleForFree"] = False
+        jsonld["hasPart"] = {"@type": "WebPageElement",
+                             "isAccessibleForFree": False,
+                             "cssSelector": ".gated-content"}
+    elif content_md:
         jsonld["articleBody"] = _md_to_text(content_md)
         jsonld["wordCount"] = len(jsonld["articleBody"].split())
     from models.article import ARTICLE_CATEGORIES
@@ -537,7 +549,7 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
         blocks.append(crumbs)
     # SEO4 — FAQPage dalle Domande frequenti (rich snippet + fonte
     # diretta per i motori generativi)
-    faqs = _extract_faq(content_md)
+    faqs = [] if gated else _extract_faq(content_md)
     if faqs:
         blocks.append({"@context": "https://schema.org",
                        "@type": "FAQPage", "mainEntity": faqs})

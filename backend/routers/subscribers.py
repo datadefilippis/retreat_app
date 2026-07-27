@@ -93,6 +93,8 @@ class SubscribePayload(BaseModel):
     city: Optional[str] = Field(default=None, max_length=120)
     travel: Optional[str] = Field(default=None, max_length=40)
     budget: Optional[str] = Field(default=None, max_length=40)
+    # BN3 — dal gate di una guida: dopo la conferma si torna li'
+    return_to: Optional[str] = Field(default=None, max_length=200)
     consent: bool = False
 
 
@@ -116,14 +118,26 @@ def _decode_or_http(token: str) -> str:
         raise HTTPException(status_code=401, detail="link non valido")
 
 
-def _send_confirm_email(email: str, name: Optional[str], token: str) -> None:
+def _safe_return_to(raw: Optional[str]) -> Optional[str]:
+    """Solo path interni del Magazine: il next del link di conferma non
+    deve mai diventare un open redirect."""
+    p = (raw or "").strip()
+    return p if p.startswith("/blog/") and "//" not in p else None
+
+
+def _send_confirm_email(email: str, name: Optional[str], token: str,
+                        return_to: Optional[str] = None) -> None:
     """Email di double opt-in, brandizzata col template comune. Best
     effort: un errore email non deve mai rompere il form."""
     try:
+        from urllib.parse import quote
+
         from services.email_service import (_link_block, _wrap_template,
                                             send_email)
         from services.url_builder import build_public_url
         url = build_public_url(f"/newsletter/conferma/{token}")
+        if return_to:
+            url += f"?next={quote(return_to, safe='')}"
         saluto = f"Ciao {name.strip()}," if (name or "").strip() else "Ciao,"
         html = _wrap_template(f"""
             <p>{saluto}</p>
@@ -196,7 +210,9 @@ async def subscribe(request: Request, payload: SubscribePayload):
         logger.warning("subscriber save failed: %s", exc)
         return {"ok": True}
 
-    _send_confirm_email(email, payload.name, generate_subscriber_token(email))
+    _send_confirm_email(email, payload.name,
+                        generate_subscriber_token(email),
+                        _safe_return_to(payload.return_to))
     return {"ok": True}
 
 
