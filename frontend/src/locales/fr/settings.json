@@ -670,6 +670,12 @@
     "save": "Enregistrer",
     "saved": "Profil enregistré",
     "saveError": "Erreur lors de l’enregistrement",
-    "preview": "Aperçu en direct"
+    "preview": "Aperçu en direct",
+    "interviewTitle": "L’entretien",
+    "interviewHint": "Les questions et réponses complètes : elles apparaissent sur votre profil public dans la section L’entretien. Réponses intégrales, jamais résumées.",
+    "interviewQ": "Question",
+    "interviewA": "Réponse intégrale",
+    "interviewRemove": "Supprimer la question",
+    "interviewAdd": "+ Ajouter une question"
   }
 }

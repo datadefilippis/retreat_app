@@ -706,6 +706,12 @@
     "portraitUploaded": "Portrait uploaded",
     "gallery": "Photo gallery (max 8)",
     "galleryHint": "Note: removing a photo here requires Save to take effect.",
-    "photoUploaded": "Photo added"
+    "photoUploaded": "Photo added",
+    "interviewTitle": "The interview",
+    "interviewHint": "The full questions and answers: they appear on your public profile in The interview section. Full answers, never summarized.",
+    "interviewQ": "Question",
+    "interviewA": "Full answer",
+    "interviewRemove": "Remove question",
+    "interviewAdd": "+ Add question"
   }
 }

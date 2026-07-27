@@ -103,6 +103,39 @@ class TestResolveRouting:
         assert await shell.resolve_meta("/qualcosa/di/strano") is None
 
 
+class TestNetworkPhaseRT5:
+    """RT5 (piano sito-rete) — la shell dice la verita' della fase:
+    le rotte nuove sono note (mai 404 dai crawler), /chi-siamo migra il
+    canonical su /manifesto, /operatori si indicizza in fase network."""
+
+    def test_brand_pages_include_network_routes(self):
+        for slug in ("manifesto", "newsletter", "entra-nella-rete"):
+            assert slug in shell._BRAND_PAGES, f"rotta rete assente: {slug}"
+
+    @pytest.mark.asyncio
+    async def test_chi_siamo_canonical_migrated_to_manifesto(self):
+        meta = await shell._meta_brand_page("chi-siamo")
+        assert meta["canonical"].endswith("/manifesto")
+        # /manifesto resta canonico di se stesso
+        meta2 = await shell._meta_brand_page("manifesto")
+        assert meta2["canonical"].endswith("/manifesto")
+
+    @pytest.mark.asyncio
+    async def test_operators_index_network_meta(self, monkeypatch):
+        monkeypatch.setenv("SITE_PHASE", "network")
+        meta = await shell._meta_operators_index()
+        assert "rete" in meta["title"].lower()
+        # le varianti /operatori/{cat} rendono la stessa landing:
+        # canonical sulla radice
+        meta_cat = await shell._meta_operators_index("yoga")
+        assert meta_cat["canonical"].endswith("/operatori")
+
+    def test_phase_noindex_spares_operatori(self):
+        assert "operatori" not in shell._PHASE_NOINDEX_HEADS
+        assert set(shell._PHASE_NOINDEX_HEADS) == {
+            "ritiri", "destinazioni", "esperienze"}
+
+
 class TestEndpointLive:
     """Contro il backend live (stesso pattern degli altri test API)."""
 
@@ -113,8 +146,11 @@ class TestEndpointLive:
         assert "og:title" in r.text and "canonical" in r.text
 
     def test_unknown_path_serves_neutral_shell(self):
+        # SEO6 — 404 VERO sui path ignoti (niente soft-404), ma la shell
+        # HTML viene servita comunque: la SPA mostra il suo 404.
         r = requests.get(f"{BASE_URL}/__seo/pagina/inesistente-xyz", timeout=10)
-        assert r.status_code == 200
+        assert r.status_code == 404
+        assert "text/html" in r.headers["content-type"]
         assert "<html" in r.text.lower()
 
     def test_event_shell_has_event_jsonld(self):
@@ -176,11 +212,17 @@ class TestEndpointLive:
 
     def test_category_itemlist_or_noindex(self):
         """SEO2 — categoria con ritiri prenotabili → ItemList + niente
-        noindex; categoria vuota → noindex (thin content)."""
+        noindex; categoria vuota → noindex (thin content). PL22→RT5: a
+        marketplace spento /ritiri/* e' SEMPRE noindex, il test si adatta
+        alla fase del server live."""
         import re, json
+        cfg = requests.get(f"{BASE_URL}/api/public/site-config", timeout=10).json()
+        marketplace_off = cfg.get("site_phase", "marketplace") != "marketplace"
         pop = requests.get(f"{BASE_URL}/__seo/ritiri/yoga", timeout=10)
         assert pop.status_code == 200
-        if '"ItemList"' in pop.text:
+        if marketplace_off:
+            assert 'content="noindex"' in pop.text
+        elif '"ItemList"' in pop.text:
             assert 'content="noindex"' not in pop.text
         # categoria del dominio quasi certamente vuota nel seed → noindex
         empty = requests.get(f"{BASE_URL}/__seo/ritiri/breathwork", timeout=10)

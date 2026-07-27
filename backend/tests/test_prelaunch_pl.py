@@ -231,8 +231,11 @@ def test_prelaunch_directory_noindex_and_honest_preview():
     src = _src("routers/seo_shell.py")
     assert "prelaunch_mode()" in src
     assert '"noindex": True' in src
-    for head in ('"ritiri"', '"operatori"', '"destinazioni"'):
-        assert head in src.split("PL22")[1], f"noindex pre-lancio non copre {head}"
+    # PL22→RT5: a marketplace spento il noindex copre il transazionale;
+    # /operatori NON c'e' piu' (in fase rete e' la landing dei membri,
+    # indicizzabile — guardia speculare in test_seo_shell.py).
+    from routers.seo_shell import _PHASE_NOINDEX_HEADS
+    assert set(_PHASE_NOINDEX_HEADS) == {"ritiri", "destinazioni", "esperienze"}
 
     frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
     cal = (frontend / "features" / "storefront" / "RetreatsCalendarPage.js").read_text(

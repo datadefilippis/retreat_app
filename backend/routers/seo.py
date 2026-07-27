@@ -113,15 +113,27 @@ async def _future_occurrences():
 
 async def build_core() -> str:
     from database import products_collection
+    from core.prelaunch import site_phase
     base = _base_url()
     urls = [
         _url(f"{base}/", priority="1.0"),
-        # AN1 — pagine istituzionali del brand
-        _url(f"{base}/chi-siamo", priority="0.6"),
-        _url(f"{base}/come-funziona", priority="0.6"),
+        # RT5 — /manifesto sostituisce /chi-siamo (301 + canonical migrati)
+        _url(f"{base}/manifesto", priority="0.8"),
+        _url(f"{base}/entra-nella-rete", priority="0.7"),
+        _url(f"{base}/newsletter", priority="0.7"),
         _url(f"{base}/privacy", priority="0.3"),
         _url(f"{base}/termini", priority="0.3"),
     ]
+
+    # RT5 — fase rete: il marketplace è spento, la sitemap dice la
+    # verità: home, manifesto, rete, newsletter. Gli hub commerciali
+    # (/ritiri, /destinazioni) rientrano al flip in fase marketplace;
+    # /operatori è la landing della rete e resta (indicizzabile).
+    if site_phase() == "network":
+        urls.append(_url(f"{base}/operatori", priority="0.8"))
+        return _wrap(urls, "core")
+
+    urls.append(_url(f"{base}/come-funziona", priority="0.6"))
 
     slug_by_org = await _public_org_slugs()
     occs = await _future_occurrences()

@@ -13,7 +13,9 @@ os.environ.setdefault("DB_NAME", "test_db")
 
 from datetime import datetime, timezone
 
-from routers.seo import _url
+import pytest
+
+from routers.seo import _url, build_core
 
 
 class TestSitemapUrl:
@@ -35,6 +37,20 @@ class TestSitemapUrl:
         for path in ("/account", "/admin", "/t/", "/b/", "/api/"):
             assert f"Disallow: {path}" in robots
         assert "Sitemap:" in robots
+
+    @pytest.mark.asyncio
+    async def test_core_network_phase_rt5(self, monkeypatch):
+        """RT5 — in fase network la sitemap core dice la verita': home,
+        manifesto, rete, newsletter. Niente hub commerciali (il ramo
+        network esce PRIMA di toccare il DB: il test non richiede Mongo)."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        xml = await build_core()
+        for path in ("/manifesto", "/entra-nella-rete", "/newsletter",
+                     "/operatori", "/privacy", "/termini"):
+            assert f"{path}</loc>" in xml, f"manca {path}"
+        for assente in ("/chi-siamo", "/come-funziona", "/ritiri",
+                        "/destinazioni"):
+            assert assente not in xml, f"non deve esserci {assente}"
 
     def test_sitemap_only_published_future(self):
         src = open(os.path.join(os.path.dirname(__file__), "..",

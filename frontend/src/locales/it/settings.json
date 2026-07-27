@@ -705,6 +705,12 @@
     "portraitUploaded": "Ritratto caricato",
     "gallery": "Galleria foto (max 8)",
     "galleryHint": "Ricorda: rimuovere una foto qui richiede Salva per rendere effettivo.",
-    "photoUploaded": "Foto aggiunta"
+    "photoUploaded": "Foto aggiunta",
+    "interviewTitle": "L’intervista",
+    "interviewHint": "Le domande e le risposte complete: appaiono sul profilo pubblico nella sezione L’intervista. Risposte integrali, mai riassunte.",
+    "interviewQ": "Domanda",
+    "interviewA": "Risposta integrale",
+    "interviewRemove": "Rimuovi domanda",
+    "interviewAdd": "+ Aggiungi domanda"
   }
 }

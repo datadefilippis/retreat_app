@@ -670,6 +670,12 @@
     "save": "Speichern",
     "saved": "Profil gespeichert",
     "saveError": "Fehler beim Speichern",
-    "preview": "Live-Vorschau"
+    "preview": "Live-Vorschau",
+    "interviewTitle": "Das Interview",
+    "interviewHint": "Die vollständigen Fragen und Antworten: sie erscheinen im öffentlichen Profil im Bereich Das Interview. Vollständige Antworten, nie gekürzt.",
+    "interviewQ": "Frage",
+    "interviewA": "Vollständige Antwort",
+    "interviewRemove": "Frage entfernen",
+    "interviewAdd": "+ Frage hinzufügen"
   }
 }

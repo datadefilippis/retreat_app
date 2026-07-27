@@ -242,11 +242,32 @@ _BRAND_PAGES = {
                         "da fondatori."),
         "image": "/media/hero-organizer.webp",
     },
+    # RT5 (piano sito-rete) — le pagine della fase rete. /chi-siamo e'
+    # migrato su /manifesto: la voce resta per servire ai crawler che
+    # arrivano dai vecchi link il canonical giusto.
+    "manifesto": {
+        "title": "Il manifesto di Aurya | La rete del benessere olistico in Italia",
+        "description": ("Da dove nasce Aurya, cosa vogliamo costruire e chi "
+                        "siamo. La rete degli operatori olistici in Italia, "
+                        "raccontata con onestà."),
+    },
+    "newsletter": {
+        "title": "La lettera di Aurya | Newsletter sul benessere olistico",
+        "description": ("Una lettera ogni due settimane su pratiche, storie e "
+                        "persone del benessere olistico in Italia. Curata, "
+                        "senza rumore."),
+    },
+    "entra-nella-rete": {
+        "title": "Entra nella rete Aurya | Intervista e profilo pubblico per operatori olistici",
+        "description": ("Ti intervistiamo, raccontiamo il tuo lavoro e ti "
+                        "diamo un profilo pubblico curato e visibile sui "
+                        "motori di ricerca. Gratuitamente."),
+    },
     "chi-siamo": {
-        "title": "Chi siamo | Aurya, la casa dei ritiri olistici",
-        "description": ("Aurya connette chi cerca benessere autentico con chi "
-                        "lo crea: ritiri prenotabili online con caparra "
-                        "protetta e recensioni solo verificate."),
+        "title": "Il manifesto di Aurya | La rete del benessere olistico in Italia",
+        "description": ("Da dove nasce Aurya, cosa vogliamo costruire e chi "
+                        "siamo. La rete degli operatori olistici in Italia."),
+        "canonical_slug": "manifesto",
     },
     "come-funziona": {
         "title": "Come funziona Aurya: prenota ritiri olistici con caparra e pagamento diretto",
@@ -263,7 +284,7 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
     if not page:
         return None
     base = _base_url()
-    canonical = f"{base}/{slug}"
+    canonical = f"{base}/{page.get('canonical_slug', slug)}"
     return {
         **page,
         "canonical": canonical,
@@ -643,9 +664,24 @@ async def _meta_experiences(category: Optional[str] = None) -> dict:
 
 
 async def _meta_operators_index(category: Optional[str] = None) -> dict:
+    from core.prelaunch import site_phase
     base = _base_url()
     label = category.replace("-", " ").title() if category else None
     path = "/operatori" + (f"/{category}" if category else "")
+    # RT5 — fase rete: /operatori e' la landing della rete, il title
+    # coincide con quello della pagina (NetworkOperatorsPage). Anche le
+    # varianti /operatori/{cat} rendono la stessa landing: canonical
+    # sulla radice.
+    if site_phase() == "network":
+        return {
+            "title": "La rete degli operatori | Aurya",
+            "description": ("Gli operatori olistici della rete Aurya: scelti "
+                            "uno a uno, intervistati e raccontati. Persone "
+                            "vere, pratiche serie."),
+            "canonical": f"{base}/operatori",
+            "hreflang": _hub_hreflang(f"{base}/operatori"),
+            "image": f"{base}/og-cover.jpg",
+        }
     return {
         "title": (f"Operatori di {label} | Aurya" if label
                   else "Tutti gli organizzatori di ritiri ed esperienze | Aurya"),
@@ -795,6 +831,11 @@ async def _meta_store(slug: str) -> Optional[dict]:
 
 _PRODUCT_KINDS = ("p", "ph", "dg", "co", "r")
 
+# RT5 — path noindex quando il marketplace e' spento (prelaunch_mode):
+# solo il transazionale. /operatori NON c'e': in fase rete e' la landing
+# dei membri, con contenuto vero, e si indicizza.
+_PHASE_NOINDEX_HEADS = ("ritiri", "destinazioni", "esperienze")
+
 
 async def resolve_meta(path: str) -> Optional[dict]:
     """path SENZA query, es. '/e/borgo-sereno/ritiro-x'. None = 404 →
@@ -845,12 +886,13 @@ async def seo_shell(full_path: str):
     except Exception as exc:  # noqa: BLE001 — la shell non deve MAI 500
         logger.warning("seo_shell: resolve failed for %s: %s", path, exc)
 
-    # PL22 — in pre-lancio la directory mostra solo campioni d'esempio:
-    # onestà anche coi motori (noindex), l'indicizzazione parte al lancio
-    # con i contenuti veri. Home e landing lead restano indicizzabili.
+    # PL22→RT5 — fase network: il transazionale resta fuori dagli indici
+    # (ritiri/destinazioni/esperienze), ma /operatori ORA e' la landing
+    # della rete con contenuto vero e si indicizza. In marketplace tutto
+    # torna indicizzabile.
     if meta and prelaunch_mode():
         head = path.strip("/").split("/")[0]
-        if head in ("ritiri", "operatori", "destinazioni", "esperienze"):
+        if head in _PHASE_NOINDEX_HEADS:
             meta = {**meta, "noindex": True}
 
     template = _index_html()

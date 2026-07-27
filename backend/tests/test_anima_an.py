@@ -112,9 +112,13 @@ class TestUnifiedNavAn2:
 
     def test_main_nav_single_definition(self):
         """NAV_ITEMS è LA definizione: desktop e mobile la condividono
-        (chi aggiunge una superficie la aggiunge in un posto solo)."""
+        (chi aggiunge una superficie la aggiunge in un posto solo).
+        RT2: la definizione è di fase (NAV_ITEMS marketplace,
+        NETWORK_NAV_ITEMS rete) ma resta unica per superficie."""
         assert "NAV_ITEMS" in self.SHELL
-        assert self.SHELL.count("NAV_ITEMS.map") == 2   # desktop + mobile
+        assert "NETWORK_NAV_ITEMS" in self.SHELL
+        assert "navItems = isNetwork ? NETWORK_NAV_ITEMS : NAV_ITEMS" in self.SHELL
+        assert self.SHELL.count("navItems.map") == 2   # desktop + mobile
         for path in ("/operatori", "/destinazioni"):
             assert f"to: '{path}'" in self.SHELL
 
@@ -573,7 +577,9 @@ class TestOperatorProfileMultilang:
 
     def test_shell_hreflang_only_translated(self):
         src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        idx = src.index("async def _meta_operator")
+        # firma con parentesi: "async def _meta_operator" matcherebbe
+        # anche _meta_operators_index, che nel file viene prima
+        idx = src.index("async def _meta_operator(")
         body = src[idx:idx + 4000]
         assert '(_f or {}).get("bio")' in body    # gate: bio tradotta
         assert '"x-default"' in body
