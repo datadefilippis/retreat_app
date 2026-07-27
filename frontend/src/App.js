@@ -88,6 +88,8 @@ const OperatorLandingPage = lazy(() => import("./features/prelaunch/OperatorLand
 // componente TravelerLandingPage resta nel repo (il suo form torna
 // utile in RT4).
 const NewsletterLandingPage = lazy(() => import("./features/prelaunch/NewsletterLandingPage"));
+const NewsletterConfirmPage = lazy(() => import("./features/prelaunch/NewsletterConfirmPage"));
+const NewsletterPreferencesPage = lazy(() => import("./features/prelaunch/NewsletterPreferencesPage"));
 // RT2 — le pagine della fase rete
 const NetworkHomePage = lazy(() => import("./features/network/NetworkHomePage"));
 const ManifestoPage = lazy(() => import("./features/network/ManifestoPage"));
@@ -356,6 +358,9 @@ function AppRoutes() {
       <Route path="/manifesto" element={<ManifestoPage />} />
       <Route path="/entra-nella-rete" element={<OperatorLandingPage />} />
       <Route path="/newsletter" element={<NewsletterLandingPage />} />
+      {/* BN2 — pagine token del double opt-in (noindex, servite 200 dalla shell) */}
+      <Route path="/newsletter/conferma/:token" element={<NewsletterConfirmPage />} />
+      <Route path="/newsletter/preferenze/:token" element={<NewsletterPreferencesPage />} />
       {/* redirect permanenti dei vecchi percorsi */}
       <Route path="/chi-siamo" element={<Navigate to="/manifesto" replace />} />
       <Route path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />} />
@@ -748,8 +753,11 @@ function AppRoutes() {
         path="/stores"
         element={<ProtectedRoute><StoresPage /></ProtectedRoute>}
       />
+      {/* BN2 — /newsletter e' del PUBBLICO (landing lettera): il modulo
+          newsletter degli operatori vive su /newsletter-forms (il path
+          pubblico veniva matchato per primo e oscurava questa pagina) */}
       <Route
-        path="/newsletter"
+        path="/newsletter-forms"
         element={<ProtectedRoute><NewsletterPage /></ProtectedRoute>}
       />
       <Route

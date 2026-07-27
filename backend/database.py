@@ -1492,5 +1492,13 @@ async def create_indexes():
     from services.platform_account_service import ensure_indexes as _pa_idx
     await _pa_idx()
 
+    # BN2 (blog/newsletter) — iscritti alla lettera di Aurya: email
+    # unica (l'upsert per email e' il contratto del subscribe) + lettura
+    # per stato (sync Brevo, conteggi admin).
+    await db.aurya_subscribers.create_index("email", unique=True,
+                                            name="bn2_subscriber_email")
+    await db.aurya_subscribers.create_index(
+        [("status", 1), ("updated_at", -1)], name="bn2_subscriber_status")
+
 def close_db():
     client.close()

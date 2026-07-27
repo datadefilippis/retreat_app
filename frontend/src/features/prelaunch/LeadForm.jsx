@@ -32,13 +32,23 @@ const DISCIPLINES = ['yoga', 'meditation', 'breathwork', 'sound', 'reiki',
 const VENUE_TYPES = ['masseria', 'villa', 'retreat_center', 'bnb', 'hermitage', 'other'];
 const CAPACITIES = ['upTo10', '10to20', '20to40', 'over40'];
 
+// BN2 — mappa chip interessi (chiavi lead storiche) → topics della
+// lettera (categorie editoriali del blog)
+const INTEREST_TO_TOPIC = {
+  yoga: 'yoga', meditation: 'meditazione', breathwork: 'breathwork',
+  sound: 'suono', detox: 'detox', nature: 'cammini', women: 'femminile',
+};
+
 // BN1 — compact: la variante da fine articolo (blog). Solo email +
 // consenso: nel flusso di lettura ogni campo in piu' e' attrito. La
 // profilazione arriva dopo, dalle preferenze (BN2), non dal form.
+// BN2 — subscribe: la strada della LETTERA (double opt-in): il submit
+// va su /public/newsletter/subscribe e il grazie dice la verita'
+// ("controlla la posta"), non "sei iscritto".
 export default function LeadForm({ type = 'traveler', accent = '#376254', context = null,
                                    successExtra = null, compact = false,
                                    ctaLabel = null, thanksBody = null,
-                                   consentText = null }) {
+                                   consentText = null, subscribe = false }) {
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
 
@@ -70,6 +80,23 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
     if (!email || !consent || state === 'sending') return;
     setState('sending');
     try {
+      if (subscribe) {
+        // BN2 — iscrizione alla lettera: double opt-in lato backend
+        await api.post('/public/newsletter/subscribe', {
+          email: email.trim(), name: name.trim() || null,
+          language: (i18n.language || 'it').slice(0, 2),
+          source: context || 'landing',
+          topics: interests.length
+            ? interests.map((i) => INTEREST_TO_TOPIC[i]).filter(Boolean)
+            : null,
+          city: city.trim() || null,
+          travel: travel || null, budget: budget || null,
+          consent: true,
+        });
+        trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: context || 'landing' });
+        setState('done');
+        return;
+      }
       await api.post('/public/leads', {
         email: email.trim(), name: name.trim() || null, type,
         phone: isOperator ? (phone.trim() || null) : null,

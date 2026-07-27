@@ -46,15 +46,24 @@ VPS_HOST=root@46.224.0.96 ./deploy/deploy-prod.sh
 
 (compose sul server SEMPRE con `--env-file .env.production`.)
 
-## 2b. Dati blog (BN1, una tantum al primo deploy del funnel)
+## 2b. Dati blog e newsletter (BN1+BN2, una tantum al primo deploy)
 
-Assegna la categoria ai 10 articoli orfani (idempotente):
+Assegna la categoria ai 10 articoli orfani e migra i lead viaggiatore
+in aurya_subscribers (entrambi idempotenti):
 
 ```
 ssh -i ~/.ssh/aurya_deploy root@46.224.0.96 \
   "cd /opt/aurya && docker compose --env-file .env.production \
-   exec backend python scripts/bn1_assign_article_categories.py"
+   exec backend python scripts/bn1_assign_article_categories.py && \
+   docker compose --env-file .env.production \
+   exec backend python scripts/bn2_migrate_leads_to_subscribers.py"
 ```
+
+Nota BN2: le email di conferma (double opt-in) partono via Brevo con
+la BREVO_API_KEY gia' in .env.production (stessa chiave del
+transazionale). I lead migrati restano PENDING: nessuna email di massa
+al deploy; la richiesta di conferma partira' con la prima campagna
+(decisione founder, BN6).
 
 ## 3. Wipe campioni prod
 

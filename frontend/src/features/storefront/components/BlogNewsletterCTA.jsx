@@ -86,13 +86,13 @@ export default function BlogNewsletterCTA({ category = null }) {
           </p>
           <div className="mt-4 max-w-md">
             <LeadForm
-              type="traveler" compact accent={GREEN}
+              type="traveler" compact subscribe accent={GREEN}
               context={category ? `blog_${category}` : 'blog'}
               consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
               ctaLabel={isRetreat
                 ? t('blogCta.rtCta', { defaultValue: 'Tienimi aggiornato' })
                 : t('blogCta.prCta', { defaultValue: 'Iscrivimi alla lettera' })}
-              thanksBody={t('blogCta.thanks', { defaultValue: 'Ci sei. La prossima lettera arriva anche a te.' })}
+              thanksBody={t('blogCta.thanksDoi', { defaultValue: 'Quasi fatto: controlla la tua casella e clicca il link di conferma che ti abbiamo appena inviato.' })}
             />
           </div>
         </div>

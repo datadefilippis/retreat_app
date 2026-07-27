@@ -590,6 +590,8 @@ app.include_router(articles_router.router, prefix="/api")  # /api/public/article
 app.include_router(tracking_router.router, prefix="/api")  # /api/public/track (VT visibilita)
 from routers import leads as leads_router  # noqa: E402
 app.include_router(leads_router.router, prefix="/api")  # /api/public/leads + /api/admin/leads (PL2)
+from routers import subscribers as subscribers_router  # noqa: E402
+app.include_router(subscribers_router.router, prefix="/api")  # /api/public/newsletter/* (BN2)
 from routers import visibility as visibility_router  # noqa: E402
 app.include_router(visibility_router.router, prefix="/api")  # /api/analytics/visibility (VT4)
 

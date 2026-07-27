@@ -863,6 +863,11 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_store(parts[1])
     if head in _BRAND_PAGES and len(parts) == 1:
         return await _meta_brand_page(head)   # AN1 — /chi-siamo, /come-funziona
+    if head == "newsletter" and len(parts) > 1:
+        # BN2 — pagine token (conferma/preferenze): vive, mai indicizzate.
+        # 200 con noindex: il link nell'email deve aprirsi pulito, non 404.
+        meta = await _meta_brand_page("newsletter")
+        return {**meta, "noindex": True, "canonical": None, "hreflang": None}
     if head == "blog":                        # AN6 — il blog sulle stesse rotaie
         if len(parts) == 1:
             return await _meta_blog_list()

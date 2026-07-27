@@ -14,11 +14,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Mail, ArrowLeft, Download, Feather, Users, Compass } from 'lucide-react';
+import { Mail, ArrowLeft, Feather, Users, Compass } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import { LangSwitcher } from '../storefront/components/MarketplaceShell';
 import { useSiteConfig } from '../../context/SiteConfigContext';
-import { trackEvent } from '../../lib/analytics';
 import LeadForm from './LeadForm';
 
 const GOLD = '#8a7440';
@@ -83,27 +82,23 @@ export default function NewsletterLandingPage() {
           ))}
         </div>
 
-        {/* lead magnet promesso PRIMA del form, se configurato */}
+        {/* lead magnet promesso PRIMA del form, se configurato. BN2:
+            la consegna avviene sulla pagina di CONFERMA (double opt-in),
+            e la promessa lo dice onestamente. */}
         {leadMagnetUrl && (
           <p className="mt-8 text-center text-sm text-gray-600">
-            {t('nl.magnetPromise', { defaultValue: 'Iscrivendoti ricevi subito il nostro materiale gratuito di benvenuto.' })}
+            {t('nl.magnetPromiseDoi', { defaultValue: 'Confermando l’iscrizione ricevi subito il nostro materiale gratuito di benvenuto.' })}
           </p>
         )}
 
         <div className="mt-8">
           <LeadForm
             type="traveler"
+            subscribe
             accent={GOLD}
             context="newsletter"
-            successExtra={leadMagnetUrl ? (
-              <a href={leadMagnetUrl} target="_blank" rel="noopener noreferrer"
-                 onClick={() => trackEvent('lead_magnet_download', { source: 'newsletter' })}
-                 className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white"
-                 style={{ backgroundColor: GOLD }}>
-                <Download className="h-4 w-4" aria-hidden />
-                {t('nl.magnetCta', { defaultValue: 'Scarica il materiale di benvenuto' })}
-              </a>
-            ) : null}
+            consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
+            thanksBody={t('blogCta.thanksDoi', { defaultValue: 'Quasi fatto: controlla la tua casella e clicca il link di conferma che ti abbiamo appena inviato.' })}
           />
         </div>
 

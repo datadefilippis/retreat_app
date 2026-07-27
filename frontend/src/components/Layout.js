@@ -74,7 +74,7 @@ const operationsNav = [
   { nameKey: 'nav.stores',          href: '/stores',           icon: Globe,        end: true },
   // PR1 — la vetrina dell'operatore raggiungibile dal menu
   { nameKey: 'nav.public_profile',  href: '/public-profile',    icon: UserCircle,   end: true },
-  { nameKey: 'nav.newsletter',      href: '/newsletter',       icon: Mail,         end: true },
+  { nameKey: 'nav.newsletter',      href: '/newsletter-forms',       icon: Mail,         end: true },
 ];
 
 // System — admin tools
@@ -232,7 +232,7 @@ export const Sidebar = () => {
       { nameKey: 'nav.reviews', href: '/reviews', icon: Star, end: true },
       // VT5 — lo specchietto della visibilita' su Aurya
       { nameKey: 'nav.visibility', href: '/visibilita', icon: Eye, end: true },
-      { nameKey: 'nav.newsletter', href: '/newsletter', icon: Mail, end: true },
+      { nameKey: 'nav.newsletter', href: '/newsletter-forms', icon: Mail, end: true },
     );
   }
 
