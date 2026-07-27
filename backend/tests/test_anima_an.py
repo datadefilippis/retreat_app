@@ -127,8 +127,10 @@ class TestUnifiedNavAn2:
         vive nel pannello hamburger."""
         assert "mobileNavOpen" in self.SHELL
         panel = self.SHELL.split("pannello mobile")[1]
-        assert '"/inizia"' in panel
-        assert '"/chi-siamo"' in panel
+        # RT2/BN: il CTA organizzatori nel pannello e' di FASE
+        # (operatorTo: /entra-nella-rete in rete, /inizia al lancio)
+        assert "to={operatorTo}" in panel
+        assert "{operatorLabel}" in panel
 
     def test_footer_links_seo_paths_not_query(self):
         """I link categoria del footer puntano ai PATH (/ritiri/yoga),

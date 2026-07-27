@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { Check, Loader2 } from 'lucide-react';
 import api from '../../api/client';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
+import useItalianOnly from '../../lib/useItalianOnly';
 
 const GREEN = '#376254';
 
@@ -27,6 +28,7 @@ const REGION_LABELS = {
 };
 
 export default function NewsletterPreferencesPage() {
+  useItalianOnly();
   const { token } = useParams();
   const { t } = useTranslation('prelaunch');
   const { t: tl } = useTranslation('landings');

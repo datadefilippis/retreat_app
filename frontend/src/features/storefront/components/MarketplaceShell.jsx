@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { BRAND_NAME, BRAND_MOTTO } from '../../../config/brand';
 import { Search, Menu, X, Lock, Globe, Check, ChevronDown } from 'lucide-react';
 import { useSiteConfig } from '../../../context/SiteConfigContext';
+import useItalianOnly from '../../../lib/useItalianOnly';
 import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
 import api from '../../../api/client';
 
@@ -120,11 +121,14 @@ const NETWORK_NAV_ITEMS = [
   { to: '/manifesto', key: 'marketplace.navManifesto', fallback: 'Manifesto' },
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
   { to: '/operatori', key: 'marketplace.navNetworkMembers', fallback: 'Operatori' },
+  // BN3 (founder 27/7) — il materiale gratuito in evidenza nel menu
+  { to: '/blog/kit-pratiche-quotidiane-15-minuti', key: 'marketplace.navFreeGuide', fallback: 'Guida gratuita' },
   { to: '/newsletter', key: 'marketplace.navNewsletter', fallback: 'Newsletter' },
 ];
 
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
   const { t, i18n } = useTranslation('landings');
+  useItalianOnly();   // founder 27/7 — sito pubblico solo italiano
   const { prelaunch, sitePhase } = useSiteConfig();
   const isNetwork = sitePhase === 'network';
   // RT2 — fase network: menu della rete e CTA candidatura. In fase
@@ -132,7 +136,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   const navItems = isNetwork ? NETWORK_NAV_ITEMS : NAV_ITEMS;
   const operatorTo = isNetwork ? '/entra-nella-rete' : '/inizia';
   const operatorLabel = isNetwork
-    ? t('marketplace.joinNetwork', { defaultValue: 'Entra nella rete' })
+    ? t('marketplace.operatorQuestion', { defaultValue: 'Sei un operatore?' })
     : t('marketplace.forOrganizers', { defaultValue: 'Sei un organizzatore?' });
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -236,13 +240,14 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 >
                   {operatorLabel}
                 </Link>
-                <LangSwitcher />
-                <Link
-                  to="/account"
-                  className="hidden sm:block rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
-                >
-                  {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
-                </Link>
+                {!isNetwork && (
+                  <Link
+                    to="/account"
+                    className="hidden sm:block rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
+                  >
+                    {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
+                  </Link>
+                )}
                 {/* AN2 — hamburger mobile: ricerca e CTA organizzatori non
                     spariscono più sotto i breakpoint */}
                 <button
@@ -288,12 +293,14 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                   {t('howPage.title', { defaultValue: 'Come funziona' })}
                 </Link>
               </li>
-              <li>
-                <Link to="/account" onClick={() => setMobileNavOpen(false)}
-                      className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
-                  {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
-                </Link>
-              </li>
+              {!isNetwork && (
+                <li>
+                  <Link to="/account" onClick={() => setMobileNavOpen(false)}
+                        className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
+                    {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
+                  </Link>
+                </li>
+              )}
               <li className="pt-1">
                 <Link to={operatorTo} onClick={() => setMobileNavOpen(false)}
                       className="block rounded-lg bg-[#C97B5D]/10 border border-[#C97B5D]/40 px-3 py-2 text-sm font-semibold text-[#a8593f] hover:bg-[#C97B5D]/20">
@@ -358,23 +365,29 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 {!isNetwork && <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
               </ul>
             </div>
-            <div>
-              <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
-                {t('marketplace.footerAccount', { defaultValue: 'Il tuo account' })}
-              </p>
-              <ul className="space-y-1.5 text-white/70">
-                <li><Link to="/account" className="hover:text-white">{t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}</Link></li>
-                {/* AN7 — il Passaporto ha un nome anche in vetrina */}
-                <li><Link to="/account" className="hover:text-white">{t('marketplace.passportLink', { defaultValue: 'Il tuo Passaporto Aurya' })}</Link></li>
-                <li><Link to="/account/accedi" className="hover:text-white">{t('marketplace.signIn', { defaultValue: 'Accedi' })}</Link></li>
-              </ul>
-            </div>
+            {/* founder 27/7 — in fase rete niente colonna account
+                (nessun acquisto = nessun Passaporto da promettere) */}
+            {!isNetwork && (
+              <div>
+                <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
+                  {t('marketplace.footerAccount', { defaultValue: 'Il tuo account' })}
+                </p>
+                <ul className="space-y-1.5 text-white/70">
+                  <li><Link to="/account" className="hover:text-white">{t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}</Link></li>
+                  {/* AN7 — il Passaporto ha un nome anche in vetrina */}
+                  <li><Link to="/account" className="hover:text-white">{t('marketplace.passportLink', { defaultValue: 'Il tuo Passaporto Aurya' })}</Link></li>
+                  <li><Link to="/account/accedi" className="hover:text-white">{t('marketplace.signIn', { defaultValue: 'Accedi' })}</Link></li>
+                </ul>
+              </div>
+            )}
             <div>
               <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
                 {t('marketplace.footerOrganizers', { defaultValue: 'Organizzatori' })}
               </p>
               <ul className="space-y-1.5 text-white/70">
-                <li><Link to="/inizia" className="hover:text-white">{t('marketplace.startSelling', { defaultValue: 'Porta i tuoi ritiri online' })}</Link></li>
+                {/* founder 27/7 — via 'Porta i tuoi ritiri online':
+                    duplicava Area operatori */}
+                <li><Link to={operatorTo} className="hover:text-white">{operatorLabel}</Link></li>
                 <li><Link to="/login" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area operatori' })}</Link></li>
               </ul>
             </div>

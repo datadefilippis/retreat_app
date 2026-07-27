@@ -13,12 +13,14 @@ import { useTranslation } from 'react-i18next';
 import { Check, Download, Loader2, SlidersHorizontal } from 'lucide-react';
 import api from '../../api/client';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
+import useItalianOnly from '../../lib/useItalianOnly';
 import { useSiteConfig } from '../../context/SiteConfigContext';
 import { trackEvent } from '../../lib/analytics';
 
 const GOLD = '#8a7440';
 
 export default function NewsletterConfirmPage() {
+  useItalianOnly();
   const { token } = useParams();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation('prelaunch');

@@ -12,13 +12,14 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Leaf, ShieldCheck, MapPin, ArrowLeft, ArrowRight, Quote } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
-import { LangSwitcher } from '../storefront/components/MarketplaceShell';
+import useItalianOnly from '../../lib/useItalianOnly';
 import LeadForm from './LeadForm';
 
 const ACCENT = '#376254';
 const GOLD = '#8a7440';
 
 export default function TravelerLandingPage() {
+  useItalianOnly();
   const { t } = useTranslation('prelaunch');
   useSeoMeta({
     title: t('tr.seoTitle', { defaultValue: 'Aurya | C’è un ritiro che ti sta aspettando' }),
@@ -51,7 +52,6 @@ export default function TravelerLandingPage() {
           <Link to="/per-operatori" className="text-sm text-muted-foreground hover:text-foreground">
             {t('tr.switch', { defaultValue: 'Sei un operatore?' })}
           </Link>
-          <LangSwitcher />
         </div>
       </header>
 

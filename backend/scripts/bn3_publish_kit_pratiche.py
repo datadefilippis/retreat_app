@@ -161,6 +161,17 @@ async def main() -> None:
     if existing:
         await db.articles.update_one({"slug": SLUG}, {"$set": doc_set})
         print(f"aggiornata: {SLUG}")
+    # cover nel formato standard del Magazine (AN6): la guida non passa
+    # dal flusso publish dell'admin, quindi la genera lo script
+    doc = await db.articles.find_one({"slug": SLUG}, {"_id": 0,
+                                                      "featured_image_url": 1})
+    if not (doc or {}).get("featured_image_url"):
+        from routers.articles import _autogen_cover
+        cover = await _autogen_cover(SLUG, TITLE, "meditazione")
+        if cover:
+            await db.articles.update_one(
+                {"slug": SLUG}, {"$set": {"featured_image_url": cover}})
+            print(f"cover generata: {cover}")
     else:
         import uuid
         await db.articles.insert_one({

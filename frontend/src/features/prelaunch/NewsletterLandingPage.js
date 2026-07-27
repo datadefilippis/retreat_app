@@ -16,13 +16,14 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, ArrowLeft, Feather, Users, Compass } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
-import { LangSwitcher } from '../storefront/components/MarketplaceShell';
+import useItalianOnly from '../../lib/useItalianOnly';
 import { useSiteConfig } from '../../context/SiteConfigContext';
 import LeadForm from './LeadForm';
 
 const GOLD = '#8a7440';
 
 export default function NewsletterLandingPage() {
+  useItalianOnly();
   const { t } = useTranslation('prelaunch');
   const { leadMagnetUrl } = useSiteConfig();
 
@@ -48,7 +49,6 @@ export default function NewsletterLandingPage() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-10">
         <Link to="/" className="font-brand text-xl tracking-[0.3em] text-[#8a7440]">AURYA</Link>
         <div className="flex items-center gap-3">
-          <LangSwitcher />
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900">
             <ArrowLeft className="h-4 w-4" />
             {t('nl.back', { defaultValue: 'Torna alla home' })}

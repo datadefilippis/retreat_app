@@ -13,13 +13,14 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Eye, ShieldCheck, HeartHandshake, ArrowLeft, ArrowRight, Sparkles, Check, HandCoins, Scale, CalendarCheck, Compass, Mail } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
-import { LangSwitcher } from '../storefront/components/MarketplaceShell';
+import useItalianOnly from '../../lib/useItalianOnly';
 import LeadForm from './LeadForm';
 
 const ACCENT = '#C97B5D';
 const GOLD = '#8a7440';
 
 export default function OperatorLandingPage() {
+  useItalianOnly();
   const { t } = useTranslation('prelaunch');
   useSeoMeta({
     title: t('opNw.seoTitle', { defaultValue: 'Entra nella rete Aurya | Intervista e profilo pubblico per operatori olistici' }),
@@ -75,7 +76,6 @@ export default function OperatorLandingPage() {
           <Link to="/cerca-ritiro" className="text-sm text-muted-foreground hover:text-foreground">
             {t('op.switch', { defaultValue: 'Cerchi un ritiro?' })}
           </Link>
-          <LangSwitcher />
         </div>
       </header>
 
