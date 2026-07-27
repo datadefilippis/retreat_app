@@ -232,6 +232,9 @@ export const adminAPI = {
 
   // ── Prelaunch leads (PL7) — lista + conteggi per tipo (system admin) ────────
 
+  // BN6 — statistiche iscritti alla lettera di Aurya
+  newsletterStats: () => api.get('/admin/newsletter-stats'),
+
   listLeads: (limit = 500) =>
     api.get('/admin/leads', { params: { limit } }).then((r) => r.data),
 

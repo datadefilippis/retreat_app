@@ -5,7 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../../components/ui/table';
-import { Sparkles, Compass, Download, Loader2, RefreshCw } from 'lucide-react';
+import { Sparkles, Compass, Download, Loader2, Mail, RefreshCw } from 'lucide-react';
 import { adminAPI } from '../../api';
 import { toast } from 'sonner';
 
@@ -101,10 +101,78 @@ const LeadsTab = () => {
     URL.revokeObjectURL(url);
   };
 
+  // BN6 — il polso della lettera di Aurya (aurya_subscribers)
+  const [nlStats, setNlStats] = useState(null);
+  useEffect(() => {
+    adminAPI.newsletterStats()
+      .then(res => setNlStats(res.data))
+      .catch(() => setNlStats(null));
+  }, []);
+
   const total = rows.length;
 
   return (
     <div className="space-y-6">
+      {/* BN6 — La lettera di Aurya: iscritti e conferme */}
+      {nlStats && (
+        <Card data-testid="nl-admin-stats">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Mail className="h-4 w-4 text-[#8a7440]" /> La lettera di Aurya
+            </CardTitle>
+            <CardDescription>
+              Iscritti alla newsletter (double opt-in). Le campagne si spediscono da Brevo segmentando sugli attributi AURYA_*.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Iscritti totali</p>
+                <p className="text-2xl font-semibold">{nlStats.total}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Confermati</p>
+                <p className="text-2xl font-semibold text-[#376254]">{nlStats.by_status?.confirmed || 0}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">In attesa di conferma</p>
+                <p className="text-2xl font-semibold text-amber-600">{nlStats.by_status?.pending || 0}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Tasso di conferma</p>
+                <p className="text-2xl font-semibold">{Math.round((nlStats.confirm_rate || 0) * 100)}%</p>
+              </div>
+            </div>
+            {(nlStats.by_source?.length > 0 || nlStats.by_topic?.length > 0) && (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 text-sm">
+                {nlStats.by_source?.length > 0 && (
+                  <div>
+                    <p className="mb-1 text-xs font-medium text-muted-foreground">Da dove si iscrivono</p>
+                    {nlStats.by_source.slice(0, 6).map(r => (
+                      <div key={r.source} className="flex justify-between border-b border-dashed border-gray-100 py-0.5">
+                        <span className="text-gray-600">{r.source}</span>
+                        <span className="font-medium">{r.n}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {nlStats.by_topic?.length > 0 && (
+                  <div>
+                    <p className="mb-1 text-xs font-medium text-muted-foreground">Temi scelti</p>
+                    {nlStats.by_topic.slice(0, 6).map(r => (
+                      <div key={r.topic} className="flex justify-between border-b border-dashed border-gray-100 py-0.5">
+                        <span className="text-gray-600">{r.topic}</span>
+                        <span className="font-medium">{r.n}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Conteggi */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>

@@ -113,6 +113,28 @@ ssh -i ~/.ssh/aurya_deploy root@46.224.0.96 \
       (founder, da UI GA4)
 - [ ] Instagram: link in bio → `aurya.life/newsletter`
 
+## 7. Newsletter: Brevo e prima campagna (BN6)
+
+Una tantum su Brevo (dashboard):
+- [ ] Creare gli attributi contatto (tipo testo): AURYA_STATUS,
+      AURYA_TOPICS, AURYA_FORMAT, AURYA_ALERT, AURYA_SOURCE, AURYA_LANG
+- [ ] (Opzionale) creare una lista "Lettera di Aurya" e mettere il suo
+      id in .env.production come BREVO_LIST_ID
+- Il sync parte da solo a ogni conferma/preferenza/disiscrizione
+  (services/subscriber_brevo_sync.py); i disiscritti finiscono in
+  blacklist Brevo (nessuna campagna li raggiunge comunque)
+
+Prima campagna (founder, da Brevo):
+- [ ] Segmento: AURYA_STATUS = confirmed (+ eventuale filtro
+      AURYA_TOPICS/AURYA_FORMAT)
+- [ ] Ai PENDING migrati dal pre-lancio: campagna dedicata "conferma
+      per continuare a ricevere la lettera" col link di conferma
+      (i link personali si generano con core/subscriber_token)
+- [ ] Footer: SEMPRE il link preferenze/disiscrizione
+      https://aurya.life/newsletter/preferenze/{token}
+- [ ] Dopo l'invio: controllare la sezione "La lettera di Aurya" nel
+      pannello admin (Lead) per tasso di conferma e crescita
+
 ## Rollback
 
 La fase è runtime: per tornare alla splash pre-pivot servirebbe il

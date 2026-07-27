@@ -178,3 +178,42 @@ class TestFrontendWiringBN2:
         layout = (FRONTEND_SRC / "components" / "Layout.js").read_text()
         assert "'/newsletter-forms'" in layout
         assert "href: '/newsletter'," not in layout
+
+
+class TestBrevoSyncBN6:
+    """BN6 — sync Brevo: attributi coerenti, blacklist sui disiscritti,
+    best-effort (mai un raise verso l'utente), stats admin protette."""
+
+    def test_attribute_mapping(self):
+        from services.subscriber_brevo_sync import _attributes
+        doc = {"status": "confirmed", "source": "blog_yoga",
+               "language": "it",
+               "preferences": {"topics": ["yoga", "suono"],
+                               "format": "practices",
+                               "retreat_alert": {"enabled": True,
+                                                 "scope": "regions",
+                                                 "regions": ["puglia"]}}}
+        got = _attributes(doc)
+        assert got["AURYA_STATUS"] == "confirmed"
+        assert got["AURYA_TOPICS"] == "yoga,suono"
+        assert got["AURYA_FORMAT"] == "practices"
+        assert got["AURYA_ALERT"] == "puglia"
+        assert got["AURYA_SOURCE"] == "blog_yoga"
+
+    def test_alert_off_and_italy(self):
+        from services.subscriber_brevo_sync import _attributes
+        assert _attributes({})["AURYA_ALERT"] == "off"
+        got = _attributes({"preferences": {"retreat_alert":
+                                           {"enabled": True,
+                                            "scope": "italy"}}})
+        assert got["AURYA_ALERT"] == "italy"
+
+    def test_sync_hooked_on_state_changes(self):
+        src = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
+        # conferma, preferenze e unsubscribe riflettono su Brevo
+        assert src.count("sync_subscriber_background(email)") >= 3
+
+    def test_stats_requires_system_admin(self):
+        import requests as rq
+        r = rq.get(f"{BASE_URL}/api/admin/newsletter-stats", timeout=10)
+        assert r.status_code in (401, 403)

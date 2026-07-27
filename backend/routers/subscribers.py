@@ -27,13 +27,14 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
 
 from core.marketing_unsubscribe_token import (TokenExpiredError,
                                               TokenInvalidError)
 from core.subscriber_token import (decode_subscriber_token,
                                    generate_subscriber_token)
+from auth import require_system_admin
 from routers.auth import limiter
 
 logger = logging.getLogger(__name__)
@@ -234,7 +235,57 @@ async def confirm(request: Request, payload: TokenPayload):
                           "preferences.topics": []}},
         upsert=True,
     )
+    from services.subscriber_brevo_sync import sync_subscriber_background
+    sync_subscriber_background(email)     # BN6 — riflesso su Brevo
     return {"ok": True, "status": "confirmed"}
+
+
+@router.get("/admin/newsletter-stats")
+async def newsletter_stats(
+        current_user: dict = Depends(require_system_admin)):
+    """BN6 — il polso della lettera per il system admin: iscritti per
+    stato/fonte/tema, tasso di conferma, crescita 8 settimane."""
+    from datetime import timedelta
+
+    from database import db
+
+    by_status: dict = {}
+    async for row in db.aurya_subscribers.aggregate(
+            [{"$group": {"_id": "$status", "n": {"$sum": 1}}}]):
+        by_status[row["_id"] or "pending"] = row["n"]
+
+    by_source = [
+        {"source": r["_id"] or "(sconosciuta)", "n": r["n"]}
+        async for r in db.aurya_subscribers.aggregate([
+            {"$group": {"_id": "$source", "n": {"$sum": 1}}},
+            {"$sort": {"n": -1}}, {"$limit": 15}])]
+
+    by_topic = [
+        {"topic": r["_id"], "n": r["n"]}
+        async for r in db.aurya_subscribers.aggregate([
+            {"$unwind": "$preferences.topics"},
+            {"$group": {"_id": "$preferences.topics", "n": {"$sum": 1}}},
+            {"$sort": {"n": -1}}])]
+
+    now = datetime.now(timezone.utc)
+    weekly = []
+    for i in range(7, -1, -1):
+        start = now - timedelta(weeks=i + 1)
+        end = now - timedelta(weeks=i)
+        n = await db.aurya_subscribers.count_documents(
+            {"created_at": {"$gte": start, "$lt": end}})
+        weekly.append({"week_start": start.date().isoformat(), "n": n})
+
+    total = sum(by_status.values())
+    confirmed = by_status.get("confirmed", 0)
+    return {
+        "total": total,
+        "by_status": by_status,
+        "confirm_rate": round(confirmed / total, 3) if total else 0.0,
+        "by_source": by_source,
+        "by_topic": by_topic,
+        "weekly_new": weekly,
+    }
 
 
 @router.get("/public/newsletter/preferences/{token}")
@@ -272,6 +323,8 @@ async def update_preferences(request: Request, payload: PreferencesPayload):
     if payload.retreat_alert is not None:
         doc_set["preferences.retreat_alert"] = _clean_alert(payload.retreat_alert)
     await db.aurya_subscribers.update_one({"email": email}, {"$set": doc_set})
+    from services.subscriber_brevo_sync import sync_subscriber_background
+    sync_subscriber_background(email)     # BN6 — attributi aggiornati
     return {"ok": True}
 
 
@@ -290,4 +343,6 @@ async def unsubscribe(request: Request, payload: TokenPayload):
          "$setOnInsert": {"email": email, "created_at": now}},
         upsert=True,
     )
+    from services.subscriber_brevo_sync import sync_subscriber_background
+    sync_subscriber_background(email)     # BN6 — blacklist su Brevo
     return {"ok": True, "status": "unsubscribed"}
