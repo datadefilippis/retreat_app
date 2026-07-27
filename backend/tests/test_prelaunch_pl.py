@@ -273,11 +273,16 @@ def test_prelaunch_gates_operators_and_destinations_pages():
     assert 'path="/blog" element={<BlogIndexPage />}' in app
     shell = (frontend / "features" / "storefront" / "components" /
              "MarketplaceShell.jsx").read_text(encoding="utf-8")
-    assert "['/operatori', '/destinazioni'].includes(i.to)" in shell
-    assert "'/blog'" not in shell.split("NAV_ITEMS.filter")[1].split("\n")[0], \
-        "regressione: la voce Blog sparirebbe dal menu in pre-lancio"
+    # RT2 — il menu segue la fase: in network le quattro voci della rete
+    # (Manifesto/Magazine/Operatori/Newsletter) + CTA candidatura; in
+    # marketplace tornano le voci piene. Il Magazine c'e' SEMPRE.
+    assert "NETWORK_NAV_ITEMS" in shell
+    assert "isNetwork ? NETWORK_NAV_ITEMS : NAV_ITEMS" in shell
+    assert shell.count("'/blog', key: 'marketplace.navBlog'") == 2, \
+        "la voce Magazine deve esserci in ENTRAMBI i menu di fase"
+    assert "'/entra-nella-rete'" in shell
     assert "NAV_ITEMS.map" not in shell, \
-        "il menu deve renderizzare navItems (filtrato in pre-lancio)"
+        "il menu deve renderizzare navItems (scelto per fase)"
     seo = _src("routers/seo_shell.py")
     assert '"blog"' not in seo.split("PL22")[1].split("noindex")[0], \
         "regressione: il blog tornerebbe noindex in pre-lancio"

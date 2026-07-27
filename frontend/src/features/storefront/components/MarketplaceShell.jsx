@@ -113,20 +113,26 @@ const NAV_ITEMS = [
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
 ];
 
+// RT2 (piano sito-rete) — il menu della fase network: quattro voci,
+// niente dropdown. Al lancio (fase marketplace) tornano le voci
+// transazionali, gli URL non cambiano.
+const NETWORK_NAV_ITEMS = [
+  { to: '/manifesto', key: 'marketplace.navManifesto', fallback: 'Manifesto' },
+  { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
+  { to: '/operatori', key: 'marketplace.navNetworkMembers', fallback: 'Operatori' },
+  { to: '/newsletter', key: 'marketplace.navNewsletter', fallback: 'Newsletter' },
+];
+
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
   const { t, i18n } = useTranslation('landings');
-  // PL15 — in pre-lancio la voce operatori del guscio punta alla landing
-  // lead (/per-operatori), non alla registrazione app (/inizia): un solo
-  // funnel, stessa terminologia delle landing. Flag OFF = come prima.
-  const { prelaunch } = useSiteConfig();
-  // PL23 — in pre-lancio /operatori e /destinazioni sono gated (redirect
-  // in App.js): via anche le voci di menu, resta un solo percorso onesto.
-  const navItems = prelaunch
-    ? NAV_ITEMS.filter(i => !['/operatori', '/destinazioni'].includes(i.to))
-    : NAV_ITEMS;
-  const operatorTo = prelaunch ? '/per-operatori' : '/inizia';
-  const operatorLabel = prelaunch
-    ? t('prelaunch:tr.switch', { defaultValue: 'Sei un operatore?' })
+  const { prelaunch, sitePhase } = useSiteConfig();
+  const isNetwork = sitePhase === 'network';
+  // RT2 — fase network: menu della rete e CTA candidatura. In fase
+  // marketplace tornano le voci piene e il funnel operatori /inizia.
+  const navItems = isNetwork ? NETWORK_NAV_ITEMS : NAV_ITEMS;
+  const operatorTo = isNetwork ? '/entra-nella-rete' : '/inizia';
+  const operatorLabel = isNetwork
+    ? t('marketplace.joinNetwork', { defaultValue: 'Entra nella rete' })
     : t('marketplace.forOrganizers', { defaultValue: 'Sei un organizzatore?' });
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -322,8 +328,8 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               </p>
               {/* AN1 — le pagine dell'anima */}
               <ul className="mt-3 space-y-1.5 text-white/70 text-xs">
-                <li><Link to="/chi-siamo" className="hover:text-white">{t('aboutPage.title', { defaultValue: 'Chi siamo' })}</Link></li>
-                <li><Link to="/come-funziona" className="hover:text-white">{t('howPage.title', { defaultValue: 'Come funziona' })}</Link></li>
+                <li><Link to="/manifesto" className="hover:text-white">{t('marketplace.navManifesto', { defaultValue: 'Manifesto' })}</Link></li>
+                {!isNetwork && <li><Link to="/come-funziona" className="hover:text-white">{t('howPage.title', { defaultValue: 'Come funziona' })}</Link></li>}
               </ul>
             </div>
             <div>
@@ -331,13 +337,15 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 {t('marketplace.footerExplore', { defaultValue: 'Esplora' })}
               </p>
               <ul className="space-y-1.5 text-white/70">
-                {/* AN2 — link ai PATH SEO (/ritiri/{cat}), non alla query:
-                    i crawler devono trovare le pagine categoria dai link
-                    interni, non solo dalla sitemap */}
-                <li><Link to="/ritiri/yoga" className="hover:text-white">Yoga</Link></li>
-                <li><Link to="/ritiri/meditazione" className="hover:text-white">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>
-                <li><Link to="/ritiri/detox" className="hover:text-white">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>
-                <li><Link to="/" className="hover:text-white">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>
+                {/* RT2 — fase network: si esplorano Magazine e rete, non
+                    i ritiri. AN2 (categorie SEO) torna col marketplace. */}
+                {isNetwork && <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
+                {isNetwork && <li><Link to="/operatori" className="hover:text-white">{t('marketplace.navOperators', { defaultValue: 'Operatori' })}</Link></li>}
+                {isNetwork && <li><Link to="/newsletter" className="hover:text-white">{t('marketplace.navNewsletter', { defaultValue: 'Newsletter' })}</Link></li>}
+                {!isNetwork && <li><Link to="/ritiri/yoga" className="hover:text-white">Yoga</Link></li>}
+                {!isNetwork && <li><Link to="/ritiri/meditazione" className="hover:text-white">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>}
+                {!isNetwork && <li><Link to="/ritiri/detox" className="hover:text-white">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>}
+                {!isNetwork && <li><Link to="/" className="hover:text-white">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>}
                 {!prelaunch && <li><Link to="/operatori" className="hover:text-white">{t('marketplace.footerOperators', { defaultValue: 'Tutti gli organizzatori' })}</Link></li>}
                 {!prelaunch && <li><Link to="/destinazioni" className="hover:text-white">{t('marketplace.footerDestinations', { defaultValue: 'Destinazioni' })}</Link></li>}
                 {!prelaunch && destinations.map(d => (
@@ -347,7 +355,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     </Link>
                   </li>
                 ))}
-                <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>
+                {!isNetwork && <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
               </ul>
             </div>
             <div>

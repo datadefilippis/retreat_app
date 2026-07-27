@@ -2,7 +2,6 @@ import React, { useState, useCallback, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { SiteConfigProvider, useSiteConfig } from "./context/SiteConfigContext";
-import PrelaunchSplash from "./features/prelaunch/PrelaunchSplash";
 import { AiAccessProvider } from "./hooks/useAiAccess";
 import { BillingProvider } from "./hooks/useBilling";
 import { EntitlementsProvider } from "./hooks/useEntitlements";
@@ -21,7 +20,6 @@ import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyEma
 // their email yet. Wrapped by RequireAuthOnly (defined in this file).
 const VerifyEmailRequiredPage = lazy(() => import("./features/auth/VerifyEmailRequiredPage"));
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
-const AboutAuryaPage = lazy(() => import("./features/storefront/AboutAuryaPage"));
 const BlogIndexPage = lazy(() => import("./features/storefront/BlogIndexPage"));
 const BlogArticlePage = lazy(() => import("./features/storefront/BlogArticlePage"));
 const HowItWorksPage = lazy(() => import("./features/storefront/HowItWorksPage"));
@@ -90,6 +88,9 @@ const OperatorLandingPage = lazy(() => import("./features/prelaunch/OperatorLand
 // componente TravelerLandingPage resta nel repo (il suo form torna
 // utile in RT4).
 const NewsletterLandingPage = lazy(() => import("./features/prelaunch/NewsletterLandingPage"));
+// RT2 — le pagine della fase rete
+const NetworkHomePage = lazy(() => import("./features/network/NetworkHomePage"));
+const ManifestoPage = lazy(() => import("./features/network/ManifestoPage"));
 const CashflowDataPage = lazy(() => import("./features/cashflow/CashflowDataPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
@@ -287,13 +288,14 @@ function ScrollToTop() {
   return null;
 }
 
-// PL4 — in pre-lancio la home è la splash con le due CTA per TUTTI,
-// anche l'admin loggato: così vedi sempre ciò che vede il pubblico.
-// Il back-office resta su /dashboard, l'anteprima oscurata su /ritiri.
+// PL4→RT2 — la home segue la fase: network = la home della rete
+// (manifesto, Magazine, candidatura, newsletter), marketplace = la
+// directory dei ritiri. Per TUTTI, anche l'admin loggato: vedi sempre
+// cio' che vede il pubblico. Il back-office resta su /dashboard.
 function HomeGate() {
-  const { prelaunch, loading } = useSiteConfig();
+  const { sitePhase, loading } = useSiteConfig();
   if (loading) return null;
-  if (prelaunch) return <PrelaunchSplash />;
+  if (sitePhase === 'network') return <NetworkHomePage />;
   return <RetreatsCalendarPage />;
 }
 
@@ -350,7 +352,7 @@ function AppRoutes() {
           nuovi nascono ORA e non cambieranno mai; i contenuti si
           riempiono nelle onde successive (RT2 manifesto+home, RT3
           rete, RT4 newsletter). I vecchi URL redirigono. */}
-      <Route path="/manifesto" element={<AboutAuryaPage />} />
+      <Route path="/manifesto" element={<ManifestoPage />} />
       <Route path="/entra-nella-rete" element={<OperatorLandingPage />} />
       <Route path="/newsletter" element={<NewsletterLandingPage />} />
       {/* redirect permanenti dei vecchi percorsi */}
