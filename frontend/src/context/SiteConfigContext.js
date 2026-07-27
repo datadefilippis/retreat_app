@@ -43,8 +43,9 @@ export function SiteConfigProvider({ children }) {
       ? { prelaunch: cached.prelaunch,
           sitePhase: cached.sitePhase
             || (cached.prelaunch ? 'network' : 'marketplace'),
+          leadMagnetUrl: cached.leadMagnetUrl || null,
           loading: false }   // primo frame utile
-      : { prelaunch: false, sitePhase: 'marketplace', loading: true };
+      : { prelaunch: false, sitePhase: 'marketplace', leadMagnetUrl: null, loading: true };
   });
 
   useEffect(() => {
@@ -54,8 +55,9 @@ export function SiteConfigProvider({ children }) {
         const prelaunch = Boolean(res.data?.prelaunch);
         const sitePhase = res.data?.site_phase
           || (prelaunch ? 'network' : 'marketplace');
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ prelaunch, sitePhase })); } catch { /* storage pieno/negato */ }
-        if (mounted) setConfig({ prelaunch, sitePhase, loading: false });
+        const leadMagnetUrl = res.data?.lead_magnet_url || null;
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ prelaunch, sitePhase, leadMagnetUrl })); } catch { /* storage pieno/negato */ }
+        if (mounted) setConfig({ prelaunch, sitePhase, leadMagnetUrl, loading: false });
         // GA1 — l'analytics parte qui, con l'ID dal backend: consent
         // mode nega tutto finché il banner non riceve un sì.
         initAnalytics(res.data?.ga_measurement_id);

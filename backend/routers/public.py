@@ -41,6 +41,10 @@ async def site_config():
         # Il frontend sceglie i blocchi da montare; prelaunch resta il
         # predicato legacy "transazionale spento".
         "site_phase": site_phase(),
+        # RT4 — lead magnet della newsletter: URL del materiale gratuito
+        # consegnato dopo l'iscrizione. Env runtime: si carica il PDF e
+        # si valorizza NEWSLETTER_LEAD_MAGNET_URL, zero rebuild.
+        "lead_magnet_url": (os.environ.get("NEWSLETTER_LEAD_MAGNET_URL") or "").strip() or None,
         # GA-1 — GA4 configurato via env: cambiare/spegnere l'analytics
         # è un flip di env + restart, identico al flag di pre-lancio.
         # Nessuna riconfigurazione al lancio: l'ID viaggia col deploy.

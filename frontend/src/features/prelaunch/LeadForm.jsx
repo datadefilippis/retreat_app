@@ -32,7 +32,7 @@ const DISCIPLINES = ['yoga', 'meditation', 'breathwork', 'sound', 'reiki',
 const VENUE_TYPES = ['masseria', 'villa', 'retreat_center', 'bnb', 'hermitage', 'other'];
 const CAPACITIES = ['upTo10', '10to20', '20to40', 'over40'];
 
-export default function LeadForm({ type = 'traveler', accent = '#376254' }) {
+export default function LeadForm({ type = 'traveler', accent = '#376254', context = null, successExtra = null }) {
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
 
@@ -81,7 +81,9 @@ export default function LeadForm({ type = 'traveler', accent = '#376254' }) {
     } catch { /* best-effort: mostriamo comunque il grazie */ }
     // GA1/SEO6 — il lead e' LA conversione del pre-lancio: senza questo
     // evento non sapremmo mai quale pagina/canale porta contatti.
-    trackEvent('generate_lead', { lead_type: type });
+    // RT4 — lead_context distingue le superfici (newsletter, landing,
+    // candidatura) nelle conversioni GA4, con lo stesso evento
+    trackEvent('generate_lead', { lead_type: type, lead_context: context || 'landing' });
     setState('done');
   };
 
@@ -101,6 +103,8 @@ export default function LeadForm({ type = 'traveler', accent = '#376254' }) {
             ? t('form.thanksOp', { defaultValue: 'Grazie per esserti presentato: ti scriviamo personalmente prima del lancio.' })
             : t('form.thanksTr', { defaultValue: 'Al lancio riceverai una selezione di ritiri pensata per te. A presto.' })}
         </p>
+        {/* RT4 — spazio per la consegna del lead magnet (o altro) */}
+        {successExtra ? <div className="mt-4">{successExtra}</div> : null}
       </div>
     );
   }

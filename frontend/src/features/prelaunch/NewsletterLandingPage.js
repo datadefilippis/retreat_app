@@ -1,29 +1,48 @@
 /**
- * NewsletterLandingPage — /newsletter (RT1, piano sito-rete).
+ * NewsletterLandingPage — /newsletter (RT4, piano sito-rete).
  *
- * STUB funzionale: l'URL nasce ora e non cambiera' mai; la landing
- * definitiva arriva in RT4 (nome della newsletter, promessa, frequenza,
- * lead magnet — decisioni founder). Nel frattempo la pagina e' onesta e
- * raccoglie iscrizioni col LeadForm viaggiatore esistente (dedup e
- * notifica gia' cablate), cosi' il link in bio Instagram puo' gia'
- * puntare qui senza perdere nessuno.
+ * La destinazione del link in bio Instagram e l'unico asset davvero di
+ * proprieta'. Regole del piano: un NOME, una FREQUENZA dichiarata, una
+ * PROMESSA specifica ("iscriviti agli aggiornamenti" converte al 2%,
+ * una promessa concreta molto di piu'). Nome/frequenza/promessa sono
+ * BOZZE nella voce del brand: la parola finale e' del founder (RT0).
+ *
+ * Lead magnet: se NEWSLETTER_LEAD_MAGNET_URL e' valorizzata sul
+ * backend (env runtime, zero rebuild), dopo l'iscrizione compare il
+ * bottone di download del materiale gratuito.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Mail, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft, Download, Feather, Users, Compass } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import { LangSwitcher } from '../storefront/components/MarketplaceShell';
+import { useSiteConfig } from '../../context/SiteConfigContext';
+import { trackEvent } from '../../lib/analytics';
 import LeadForm from './LeadForm';
 
 const GOLD = '#8a7440';
 
 export default function NewsletterLandingPage() {
   const { t } = useTranslation('prelaunch');
+  const { leadMagnetUrl } = useSiteConfig();
+
   useSeoMeta({
-    title: t('nl.seoTitle', { defaultValue: 'Newsletter | Aurya' }),
-    description: t('nl.seoDesc', { defaultValue: 'Ricevi da Aurya pratiche, storie e persone del benessere olistico in Italia. Una lettera curata, niente rumore.' }),
+    title: t('nl.seoTitle', { defaultValue: 'La lettera di Aurya | Newsletter sul benessere olistico' }),
+    description: t('nl.seoDesc', { defaultValue: 'Una lettera ogni due settimane su pratiche, storie e persone del benessere olistico in Italia. Curata, senza rumore.' }),
   });
+
+  const pillars = [
+    { icon: Feather,
+      title: t('nl.w1t', { defaultValue: 'Una pratica, raccontata bene' }),
+      body: t('nl.w1b', { defaultValue: 'Ogni lettera approfondisce un tema vero: respiro, meditazione, discipline olistiche. Con onestà, incluse le controindicazioni.' }) },
+    { icon: Users,
+      title: t('nl.w2t', { defaultValue: 'Una persona della rete' }),
+      body: t('nl.w2b', { defaultValue: 'Il volto e la storia di un operatore intervistato da noi: chi è, come lavora, perché fidarsi.' }) },
+    { icon: Compass,
+      title: t('nl.w3t', { defaultValue: 'Una direzione' }),
+      body: t('nl.w3b', { defaultValue: 'Cosa stiamo costruendo con Aurya, senza filtri: le scelte, i dubbi, i passi avanti.' }) },
+  ];
 
   return (
     <div className="min-h-screen bg-[#f7f9f6]">
@@ -47,14 +66,50 @@ export default function NewsletterLandingPage() {
           <h1 className="mt-5 font-brand text-3xl text-gray-900 md:text-4xl">
             {t('nl.title', { defaultValue: 'La lettera di Aurya' })}
           </h1>
+          {/* la promessa: cosa, per chi, ogni quanto */}
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-gray-600">
-            {t('nl.body', { defaultValue: 'Pratiche, storie e persone del benessere olistico in Italia, raccontate con cura. Lascia il tuo contatto: ti scriviamo noi, senza rumore e senza fretta.' })}
+            {t('nl.body', { defaultValue: 'Una lettera ogni due settimane su pratiche, storie e persone del benessere olistico in Italia. La scriviamo noi, Davide e Valentina: niente rumore, niente fretta, mai spam.' })}
           </p>
         </div>
 
-        <div className="mt-10">
-          <LeadForm type="traveler" accent={GOLD} />
+        {/* cosa trovi dentro */}
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {pillars.map(({ icon: Icon, title, body }) => (
+            <div key={title} className="rounded-2xl border border-gray-200 bg-white p-5 text-center">
+              <Icon className="mx-auto h-5 w-5" style={{ color: GOLD }} aria-hidden />
+              <h2 className="mt-2 font-heading text-sm font-semibold text-gray-900">{title}</h2>
+              <p className="mt-1.5 text-xs leading-relaxed text-gray-500">{body}</p>
+            </div>
+          ))}
         </div>
+
+        {/* lead magnet promesso PRIMA del form, se configurato */}
+        {leadMagnetUrl && (
+          <p className="mt-8 text-center text-sm text-gray-600">
+            {t('nl.magnetPromise', { defaultValue: 'Iscrivendoti ricevi subito il nostro materiale gratuito di benvenuto.' })}
+          </p>
+        )}
+
+        <div className="mt-8">
+          <LeadForm
+            type="traveler"
+            accent={GOLD}
+            context="newsletter"
+            successExtra={leadMagnetUrl ? (
+              <a href={leadMagnetUrl} target="_blank" rel="noopener noreferrer"
+                 onClick={() => trackEvent('lead_magnet_download', { source: 'newsletter' })}
+                 className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white"
+                 style={{ backgroundColor: GOLD }}>
+                <Download className="h-4 w-4" aria-hidden />
+                {t('nl.magnetCta', { defaultValue: 'Scarica il materiale di benvenuto' })}
+              </a>
+            ) : null}
+          />
+        </div>
+
+        <p className="mt-6 text-center text-xs text-gray-400">
+          {t('nl.footer', { defaultValue: 'Puoi disiscriverti quando vuoi, con un click. I tuoi dati restano tuoi.' })}
+        </p>
       </main>
     </div>
   );
