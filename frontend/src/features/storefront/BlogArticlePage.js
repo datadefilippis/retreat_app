@@ -172,7 +172,7 @@ export default function BlogArticlePage() {
                   />
                 </div>
                 <p className="mt-3 text-xs text-gray-400">
-                  {t('blog.gateAlready', { defaultValue: 'Già iscritto? Apri questa pagina dal link di una nostra email e la guida si sblocca da sola.' })}
+                  {t('blog.gateAlready', { defaultValue: 'Già iscritto? Inserisci la stessa email: ti arriva il link che riapre il tuo accesso, anche da un nuovo dispositivo.' })}
                 </p>
               </aside>
             )}

@@ -159,6 +159,44 @@ def _send_confirm_email(email: str, name: Optional[str], token: str,
                        _mask_email(email), exc)
 
 
+def _send_access_email(email: str, name: Optional[str], token: str,
+                       return_to: Optional[str] = None) -> None:
+    """Magic link per l'iscritto GIA' confermato che rimette la email
+    (es. da un nuovo dispositivo, davanti a una guida riservata): il
+    click ri-salva il token nel browser e sblocca tutte le guide.
+    Stesso disegno del double opt-in, copy diverso. Best-effort."""
+    try:
+        from urllib.parse import quote
+
+        from services.email_service import (_link_block, _wrap_template,
+                                            send_email)
+        from services.url_builder import build_public_url
+        url = build_public_url(f"/newsletter/conferma/{token}")
+        if return_to:
+            url += f"?next={quote(return_to, safe='')}"
+        saluto = f"Ciao {name.strip()}," if (name or "").strip() else "Ciao,"
+        dove = ("e tornare alla guida che stavi leggendo"
+                if return_to else "su questo dispositivo")
+        html = _wrap_template(f"""
+            <p>{saluto}</p>
+            <p>sei gia' dei nostri: questa email e' iscritta alla
+            <strong>lettera di Aurya</strong>. Usa il bottone qui sotto per
+            riaprire il tuo accesso {dove}: sblocca le guide riservate e la
+            pagina delle preferenze, senza doverti iscrivere di nuovo.</p>
+            <p style="text-align: center;">
+                <a href="{url}" class="btn">Riapri il mio accesso</a>
+            </p>
+            {_link_block(url)}
+            <p>Se non hai richiesto tu questo link, ignora l'email: nessuno
+            puo' usare il tuo accesso senza aprire questo messaggio.</p>
+        """)
+        send_email(email, "Il tuo accesso alla lettera di Aurya",
+                   html, bypass_gate=True)
+    except Exception as exc:                # noqa: BLE001
+        logger.warning("subscriber access email failed for %s: %s",
+                       _mask_email(email), exc)
+
+
 @router.post("/public/newsletter/subscribe", status_code=201)
 @limiter.limit("10/minute")
 async def subscribe(request: Request, payload: SubscribePayload):
@@ -196,6 +234,12 @@ async def subscribe(request: Request, payload: SubscribePayload):
         if existing and existing.get("status") == "confirmed":
             await db.aurya_subscribers.update_one(
                 {"email": email}, {"$set": doc_set})
+            # gia' confermato che rimette la email (nuovo dispositivo,
+            # gate di una guida): magic link di accesso, non silenzio.
+            # La risposta resta identica: nessun oracolo di enumerazione.
+            _send_access_email(email, payload.name,
+                               generate_subscriber_token(email),
+                               _safe_return_to(payload.return_to))
             return {"ok": True}
         # nuovo, pending o unsubscribed (re-optin) → (ri)parte la conferma
         doc_set["status"] = "pending"

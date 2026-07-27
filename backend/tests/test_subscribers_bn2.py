@@ -217,3 +217,24 @@ class TestBrevoSyncBN6:
         import requests as rq
         r = rq.get(f"{BASE_URL}/api/admin/newsletter-stats", timeout=10)
         assert r.status_code in (401, 403)
+
+
+class TestAccessMagicLink:
+    """Founder 27/7 — l'iscritto GIA' confermato che rimette la email
+    (nuovo dispositivo, gate di una guida) riceve il magic link di
+    accesso, non silenzio. La risposta HTTP resta identica (nessun
+    oracolo di enumerazione)."""
+
+    def test_confirmed_resubscribe_sends_access_email(self):
+        src = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
+        confirmed_branch = src.split('existing.get("status") == "confirmed"')[1]
+        confirmed_branch = confirmed_branch.split("# nuovo, pending")[0]
+        assert "_send_access_email(" in confirmed_branch
+        assert 'return {"ok": True}' in confirmed_branch
+        # il magic link porta il return_to (si torna alla guida)
+        assert "_safe_return_to(payload.return_to)" in confirmed_branch
+
+    def test_gate_copy_tells_new_device_flow(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "BlogArticlePage.js").read_text()
+        assert "riapre il tuo accesso" in page
