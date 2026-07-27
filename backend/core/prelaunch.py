@@ -22,8 +22,33 @@ import os
 # occurrence): un solo campo, un solo predicato per il wipe.
 SAMPLE_FLAG = "is_sample"
 
+# RT1 (piano sito-rete, docs/SITO_RETE_PIANO_2026-07.md) — le fasi del
+# sito pubblico. I blocchi si sostituiscono, gli URL mai:
+#   network     → sito della rete: manifesto, magazine, operatori
+#                 intervistati, newsletter. Marketplace SPENTO.
+#   marketplace → lancio: si riaccendono ritiri/prenotazioni/checkout
+#                 SOPRA il sito della rete.
+SITE_PHASES = ("network", "marketplace")
+
+
+def site_phase() -> str:
+    """Fase corrente del sito pubblico (runtime, env SITE_PHASE).
+
+    SITE_PHASE esplicita vince; senza, si deriva dal flag legacy
+    PRELAUNCH_MODE (true → network) così il deploy attuale non cambia
+    comportamento finché non si flippa la nuova env."""
+    explicit = os.environ.get("SITE_PHASE", "").strip().lower()
+    if explicit in SITE_PHASES:
+        return explicit
+    legacy_on = os.environ.get("PRELAUNCH_MODE", "").strip().lower() in (
+        "1", "true", "yes", "on")
+    return "network" if legacy_on else "marketplace"
+
 
 def prelaunch_mode() -> bool:
-    """True se la modalità pre-lancio è attiva (env PRELAUNCH_MODE)."""
-    return os.environ.get("PRELAUNCH_MODE", "").strip().lower() in (
-        "1", "true", "yes", "on")
+    """True quando il marketplace NON è pubblico (ogni fase != marketplace).
+
+    Resta il predicato unico letto da tutte le guardie backend (listing,
+    noindex, gate GT1b): la semantica "il transazionale è spento" vale
+    identica per il vecchio pre-lancio e per la fase rete."""
+    return site_phase() != "marketplace"

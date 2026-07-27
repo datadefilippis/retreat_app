@@ -29,14 +29,22 @@ function readCache() {
   } catch { return null; }
 }
 
-const SiteConfigContext = createContext({ prelaunch: false, loading: true });
+// RT1 (piano sito-rete) — oltre al flag legacy `prelaunch`, il contesto
+// espone `sitePhase` ('network' | 'marketplace'): i blocchi del sito si
+// montano in base alla fase, gli URL non cambiano mai.
+const SiteConfigContext = createContext({
+  prelaunch: false, sitePhase: 'marketplace', loading: true,
+});
 
 export function SiteConfigProvider({ children }) {
   const [config, setConfig] = useState(() => {
     const cached = readCache();
     return cached
-      ? { prelaunch: cached.prelaunch, loading: false }   // primo frame utile
-      : { prelaunch: false, loading: true };
+      ? { prelaunch: cached.prelaunch,
+          sitePhase: cached.sitePhase
+            || (cached.prelaunch ? 'network' : 'marketplace'),
+          loading: false }   // primo frame utile
+      : { prelaunch: false, sitePhase: 'marketplace', loading: true };
   });
 
   useEffect(() => {
@@ -44,8 +52,10 @@ export function SiteConfigProvider({ children }) {
     api.get('/public/site-config')
       .then((res) => {
         const prelaunch = Boolean(res.data?.prelaunch);
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ prelaunch })); } catch { /* storage pieno/negato */ }
-        if (mounted) setConfig({ prelaunch, loading: false });
+        const sitePhase = res.data?.site_phase
+          || (prelaunch ? 'network' : 'marketplace');
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ prelaunch, sitePhase })); } catch { /* storage pieno/negato */ }
+        if (mounted) setConfig({ prelaunch, sitePhase, loading: false });
         // GA1 — l'analytics parte qui, con l'ID dal backend: consent
         // mode nega tutto finché il banner non riceve un sì.
         initAnalytics(res.data?.ga_measurement_id);

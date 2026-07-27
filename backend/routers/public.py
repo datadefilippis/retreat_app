@@ -34,9 +34,13 @@ async def site_config():
     pre-lancio. Runtime (non build-time) → accendere/spegnere il lancio
     è un flip di env + restart, senza rebuild del frontend."""
     import os
-    from core.prelaunch import prelaunch_mode
+    from core.prelaunch import prelaunch_mode, site_phase
     return {
         "prelaunch": prelaunch_mode(),
+        # RT1 (piano sito-rete) — fase del sito: network | marketplace.
+        # Il frontend sceglie i blocchi da montare; prelaunch resta il
+        # predicato legacy "transazionale spento".
+        "site_phase": site_phase(),
         # GA-1 — GA4 configurato via env: cambiare/spegnere l'analytics
         # è un flip di env + restart, identico al flag di pre-lancio.
         # Nessuna riconfigurazione al lancio: l'ID viaggia col deploy.

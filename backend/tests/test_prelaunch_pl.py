@@ -31,15 +31,47 @@ def _set_flag(value):
         os.environ["PRELAUNCH_MODE"] = value
 
 
+def test_site_phase_rt1():
+    """RT1 — SITE_PHASE esplicita vince; senza, deriva dal legacy:
+    PRELAUNCH_MODE=true → network. prelaunch_mode() e' il predicato
+    'transazionale spento' e vale per ogni fase != marketplace."""
+    old_flag = os.environ.get("PRELAUNCH_MODE")
+    old_phase = os.environ.pop("SITE_PHASE", None)
+    try:
+        os.environ["SITE_PHASE"] = "network"
+        assert prelaunch.site_phase() == "network"
+        assert prelaunch.prelaunch_mode() is True
+
+        os.environ["SITE_PHASE"] = "marketplace"
+        _set_flag("true")   # la fase esplicita vince sul legacy
+        assert prelaunch.site_phase() == "marketplace"
+        assert prelaunch.prelaunch_mode() is False
+
+        del os.environ["SITE_PHASE"]
+        _set_flag("true")
+        assert prelaunch.site_phase() == "network"
+        _set_flag("false")
+        assert prelaunch.site_phase() == "marketplace"
+    finally:
+        _set_flag(old_flag)
+        if old_phase is not None:
+            os.environ["SITE_PHASE"] = old_phase
+
+
 def test_prelaunch_mode_off_by_default():
-    """Assente/vuoto/qualsiasi rumore → OFF (default sicuro = oggi)."""
+    """Assente/vuoto/qualsiasi rumore → OFF (default sicuro = oggi).
+    RT1: si ripulisce anche SITE_PHASE (l'env locale del dev puo'
+    averla a 'network' via dotenv e vincerebbe sul flag legacy)."""
     old = os.environ.get("PRELAUNCH_MODE")
+    old_phase = os.environ.pop("SITE_PHASE", None)
     try:
         for v in (None, "", "  ", "0", "false", "no", "off", "maybe", "2"):
             _set_flag(v)
             assert prelaunch.prelaunch_mode() is False, f"{v!r} dovrebbe essere OFF"
     finally:
         _set_flag(old)
+        if old_phase is not None:
+            os.environ["SITE_PHASE"] = old_phase
 
 
 def test_prelaunch_mode_on_values():
@@ -216,16 +248,20 @@ def test_prelaunch_directory_noindex_and_honest_preview():
 
 
 def test_prelaunch_gates_operators_and_destinations_pages():
-    """PL23 — in pre-lancio /operatori (card tutte redatte = griglia di
-    segnaposto senza valore) e /destinazioni (ripete i campioni di
-    /ritiri) non esistono: redirect verso landing operatori e anteprima,
-    voci di menu/footer nascoste. Flag OFF = pagine com'erano."""
+    """PL23→RT1 — in fase network /operatori manda alla candidatura
+    (finche' la landing della rete non esiste, RT3) e /destinazioni
+    alla home; in fase marketplace tornano aggregatore e destinazioni.
+    I gate leggono sitePhase, non piu' il flag legacy."""
     frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
     app = (frontend / "App.js").read_text(encoding="utf-8")
     assert "function OperatorsGate()" in app
     assert "function DestinationsGate()" in app
-    assert '<Navigate to="/per-operatori" replace />' in app
-    assert '<Navigate to="/ritiri" replace />' in app
+    assert '<Navigate to="/entra-nella-rete" replace />' in app
+    assert "sitePhase === 'network'" in app
+    # RT1 — i vecchi URL redirigono per sempre ai nuovi
+    assert 'path="/chi-siamo" element={<Navigate to="/manifesto" replace />}' in app
+    assert 'path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />}' in app
+    assert 'path="/cerca-ritiro" element={<Navigate to="/newsletter" replace />}' in app
     # le route usano i gate, non più le pagine dirette
     assert 'path="/operatori" element={<OperatorsGate />}' in app
     assert 'path="/destinazioni" element={<DestinationsGate />}' in app

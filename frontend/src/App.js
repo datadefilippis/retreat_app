@@ -85,7 +85,11 @@ const ReviewsAdminPage = lazy(() => import("./features/reviews/ReviewsAdminPage"
 const IncassiPage = lazy(() => import("./features/cashflow/IncassiPage"));
 const VisibilityPage = lazy(() => import("./features/visibility/VisibilityPage"));
 const OperatorLandingPage = lazy(() => import("./features/prelaunch/OperatorLandingPage"));
-const TravelerLandingPage = lazy(() => import("./features/prelaunch/TravelerLandingPage"));
+// RT1 — /cerca-ritiro redirige su /newsletter: il pubblico viaggiatori
+// si coltiva in newsletter finche' non c'e' nulla da prenotare. Il
+// componente TravelerLandingPage resta nel repo (il suo form torna
+// utile in RT4).
+const NewsletterLandingPage = lazy(() => import("./features/prelaunch/NewsletterLandingPage"));
 const CashflowDataPage = lazy(() => import("./features/cashflow/CashflowDataPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
@@ -293,31 +297,32 @@ function HomeGate() {
   return <RetreatsCalendarPage />;
 }
 
-// PL6 — in pre-lancio /ritiri mostra la directory in anteprima (sfocata);
-// altrimenti resta il redirect S0 alla home (la home È la directory).
+// RT1 (piano sito-rete) — in fase network la vetrina ritiri NON esiste
+// per il visitatore: niente anteprima di campioni, il valore lo danno
+// Magazine, Manifesto e (RT3) i profili della rete. In fase marketplace
+// resta il redirect S0 alla home (la home È la directory).
 function RitiriGate() {
-  const { prelaunch, loading } = useSiteConfig();
-  if (loading) return null;   // evita il redirect prima di sapere il flag
-  if (prelaunch) return <RetreatsCalendarPage />;
+  const { loading } = useSiteConfig();
+  if (loading) return null;   // evita il redirect prima di sapere la fase
+  // In entrambe le fasi /ritiri riporta alla home: in network la
+  // vetrina non esiste, in marketplace la home E' la directory (S0).
   return <RedirectPreservingQuery to="/" />;
 }
 
-// PL23 — in pre-lancio /operatori e /destinazioni non hanno niente da
-// dire: le card operatore sono tutte redatte (segnaposto sfocati) e le
-// destinazioni ripetono i 10 campioni di /ritiri. Un'unica anteprima
-// onesta basta: chi cerca organizzatori va alla landing (coi patti
-// chiari), chi esplora luoghi va all'anteprima. Flag OFF = tutto torna.
+// PL23→RT1 — in fase network /operatori diventerà la landing della
+// rete (RT3); finché non esiste, chi cerca organizzatori va alla
+// candidatura. In marketplace torna l'aggregatore pieno.
 function OperatorsGate() {
-  const { prelaunch, loading } = useSiteConfig();
+  const { sitePhase, loading } = useSiteConfig();
   if (loading) return null;
-  if (prelaunch) return <Navigate to="/per-operatori" replace />;
+  if (sitePhase === 'network') return <Navigate to="/entra-nella-rete" replace />;
   return <OperatorsIndexPage />;
 }
 
 function DestinationsGate() {
-  const { prelaunch, loading } = useSiteConfig();
+  const { sitePhase, loading } = useSiteConfig();
   if (loading) return null;
-  if (prelaunch) return <Navigate to="/ritiri" replace />;
+  if (sitePhase === 'network') return <Navigate to="/" replace />;
   return <DestinationsPage />;
 }
 
@@ -341,9 +346,17 @@ function AppRoutes() {
           Chi è loggato vede comunque la home pubblica (il back-office
           si raggiunge dal menu / da /dashboard). */}
       <Route path="/" element={<HomeGate />} />
-      {/* PL5 — landing di pre-lancio (raccolta lead) */}
-      <Route path="/per-operatori" element={<OperatorLandingPage />} />
-      <Route path="/cerca-ritiro" element={<TravelerLandingPage />} />
+      {/* RT1 (piano sito-rete) — la sitemap della fase rete. Gli URL
+          nuovi nascono ORA e non cambieranno mai; i contenuti si
+          riempiono nelle onde successive (RT2 manifesto+home, RT3
+          rete, RT4 newsletter). I vecchi URL redirigono. */}
+      <Route path="/manifesto" element={<AboutAuryaPage />} />
+      <Route path="/entra-nella-rete" element={<OperatorLandingPage />} />
+      <Route path="/newsletter" element={<NewsletterLandingPage />} />
+      {/* redirect permanenti dei vecchi percorsi */}
+      <Route path="/chi-siamo" element={<Navigate to="/manifesto" replace />} />
+      <Route path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />} />
+      <Route path="/cerca-ritiro" element={<Navigate to="/newsletter" replace />} />
       {/* S0.1 — la login operatori vive su /login (via dalla root) */}
       <Route
         path="/login"
@@ -353,8 +366,7 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
-      {/* AN1 — pagine istituzionali del brand (chi siamo / come funziona) */}
-      <Route path="/chi-siamo" element={<AboutAuryaPage />} />
+      {/* AN1→RT1 — /chi-siamo e' migrato su /manifesto (redirect sopra) */}
       <Route path="/come-funziona" element={<HowItWorksPage />} />
       {/* AN5 — il blog di Aurya */}
       {/* SEO1 (11/7, decisione founder): il blog è il motore SEO del
