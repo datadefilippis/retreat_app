@@ -23,7 +23,7 @@ from models.article import (ARTICLE_LANGS, ARTICLE_TRANSLATABLE_FIELDS,
                             Article, ArticleCreate, ArticleUpdate,
                             slugify_title)
 from models.common import utc_now
-from models.retreat_taxonomy import RETREAT_CATEGORIES
+from models.article import ARTICLE_CATEGORIES
 from services.markdown_safe import sanitize_merchant_text
 
 logger = logging.getLogger(__name__)
@@ -106,7 +106,7 @@ async def list_public_articles(
 ) -> Dict[str, Any]:
     query: Dict[str, Any] = {"published": True}
     if category:
-        if category not in RETREAT_CATEGORIES:
+        if category not in ARTICLE_CATEGORIES:
             return {"items": [], "total": 0, "page": page}
         query["category"] = category
     if lang in ARTICLE_LANGS:
@@ -150,7 +150,7 @@ async def _autogen_cover(slug: str, title: str,
     try:
         from services.article_cover import render_article_cover
         from services.object_storage import save_public_upload
-        label = RETREAT_CATEGORIES.get(category or "")
+        label = ARTICLE_CATEGORIES.get(category or "")
         data = await asyncio.to_thread(render_article_cover, title,
                                        category, label)
         if not data:
@@ -173,7 +173,7 @@ async def admin_list_articles(
     for d in docs:
         d["translated_langs"] = [l for l in ARTICLE_LANGS
                                  if _has_translation(d, l)]
-    return {"items": docs, "categories": RETREAT_CATEGORIES}
+    return {"items": docs, "categories": ARTICLE_CATEGORIES}
 
 
 @router.get("/admin/articles/{article_id}")

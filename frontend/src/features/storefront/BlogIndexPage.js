@@ -11,6 +11,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
+import BlogNewsletterCTA from './components/BlogNewsletterCTA';
 import useSeoMeta from './lib/useSeoMeta';
 
 const CATEGORY_TONES = {
@@ -19,6 +20,9 @@ const CATEGORY_TONES = {
   massaggio: 'from-[#a8765a]/80', breathwork: 'from-[#5a7a8a]/80',
   cammini: 'from-[#6a7a4a]/80', femminile: 'from-[#a85a6a]/80',
   aziendale: 'from-[#4a5a6a]/80',
+  // BN1 — categorie editoriali (solo blog)
+  ritiri: 'from-[#8a7440]/80', energia: 'from-[#9a7ab0]/80',
+  operatori: 'from-[#37625f]/80',
 };
 
 export default function BlogIndexPage() {
@@ -148,6 +152,11 @@ export default function BlogIndexPage() {
               ))}
             </div>
           )}
+
+          {/* BN1 — il Magazine converte: fascia lettera in coda alla lista */}
+          <div className="mt-12 max-w-2xl mx-auto">
+            <BlogNewsletterCTA category={category || null} />
+          </div>
         </main>
       </div>
     </MarketplaceShell>

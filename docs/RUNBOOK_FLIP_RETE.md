@@ -46,6 +46,16 @@ VPS_HOST=root@46.224.0.96 ./deploy/deploy-prod.sh
 
 (compose sul server SEMPRE con `--env-file .env.production`.)
 
+## 2b. Dati blog (BN1, una tantum al primo deploy del funnel)
+
+Assegna la categoria ai 10 articoli orfani (idempotente):
+
+```
+ssh -i ~/.ssh/aurya_deploy root@46.224.0.96 \
+  "cd /opt/aurya && docker compose --env-file .env.production \
+   exec backend python scripts/bn1_assign_article_categories.py"
+```
+
 ## 3. Wipe campioni prod
 
 Le org campione non appaiono in nessuna superficie della fase rete, ma

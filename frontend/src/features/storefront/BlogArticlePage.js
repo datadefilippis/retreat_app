@@ -11,15 +11,25 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
+import BlogNewsletterCTA from './components/BlogNewsletterCTA';
 import useSeoMeta from './lib/useSeoMeta';
+import { useSiteConfig } from '../../context/SiteConfigContext';
 import LegalMarkdownRenderer from '../../components/legal/LegalMarkdownRenderer';
+
+// Le categorie con una pagina /ritiri/{cat} prenotabile (tassonomia
+// ritiri): SOLO queste hanno la CTA "Vivi un ritiro", e solo in fase
+// marketplace. Le categorie editoriali (ritiri/energia/operatori) no.
+const BOOKABLE_CATS = new Set(['yoga', 'meditazione', 'detox', 'suono',
+  'massaggio', 'breathwork', 'cammini', 'femminile', 'aziendale']);
 
 export default function BlogArticlePage() {
   const { slug } = useParams();
   const { t, i18n } = useTranslation('landings');
+  const { sitePhase } = useSiteConfig();
   const lang = (i18n.language || 'it').slice(0, 2);
 
   const [article, setArticle] = useState(null);
+  const [related, setRelated] = useState([]);
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -31,6 +41,23 @@ export default function BlogArticlePage() {
       .catch(() => { if (mounted) setError(true); });
     return () => { mounted = false; };
   }, [slug, lang]);
+
+  // BN1 — "Continua a leggere": stesso cluster prima (categoria),
+  // poi i piu' recenti. Sessioni piu' lunghe = fiducia + SEO interna.
+  useEffect(() => {
+    if (!article) { setRelated([]); return; }
+    let mounted = true;
+    api.get('/public/articles', { params: { lang, page_size: 50 } })
+      .then(res => {
+        if (!mounted) return;
+        const all = (res.data?.items || []).filter(a => a.slug !== slug);
+        const same = all.filter(a => article.category && a.category === article.category);
+        const rest = all.filter(a => !same.includes(a));
+        setRelated([...same, ...rest].slice(0, 3));
+      })
+      .catch(() => { if (mounted) setRelated([]); });
+    return () => { mounted = false; };
+  }, [article, slug, lang]);
 
   useSeoMeta({
     title: article ? `${article.title} | Aurya` : 'Blog | Aurya',
@@ -93,7 +120,7 @@ export default function BlogArticlePage() {
             </header>
 
             {article.featured_image_url && (
-              <img src={article.featured_image_url} alt={article.title} fetchpriority="high"
+              <img src={article.featured_image_url} alt={article.title} fetchPriority="high"
                    className="w-full rounded-2xl mb-8 object-cover max-h-96" />
             )}
 
@@ -101,9 +128,10 @@ export default function BlogArticlePage() {
               <LegalMarkdownRenderer content={article.content} />
             </div>
 
-            {/* SEO3 — dal contenuto all'azione: l'articolo linka i ritiri
-                della sua categoria (link interno + intento di prenotazione). */}
-            {article.category && (
+            {/* SEO3→BN1 — la CTA ritiri vive SOLO in fase marketplace
+                (in fase rete /ritiri redirige alla home: sarebbe una
+                porta finta). In rete converte la newsletter qui sotto. */}
+            {sitePhase === 'marketplace' && BOOKABLE_CATS.has(article.category) && (
               <aside className="mt-10 rounded-2xl border border-[#8a7440]/25 bg-[#376254]/5 p-6 flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex-1">
                   <p className="font-heading font-semibold text-foreground">
@@ -123,6 +151,33 @@ export default function BlogArticlePage() {
                     defaultValue: 'Scopri i ritiri di {{cat}}' })} →
                 </Link>
               </aside>
+            )}
+
+            {/* BN1 — il primo punto di conversione: CTA di cluster */}
+            <BlogNewsletterCTA category={article.category} />
+
+            {/* BN1 — Continua a leggere: correlati per categoria */}
+            {related.length > 0 && (
+              <section className="mt-12" data-testid="blog-related">
+                <h2 className="font-heading text-lg font-semibold text-gray-900">
+                  {t('blog.related', { defaultValue: 'Continua a leggere' })}
+                </h2>
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  {related.map(a => (
+                    <Link key={a.slug} to={`/blog/${a.slug}`}
+                          className="group rounded-xl border border-gray-200 bg-white p-4 hover:border-[#376254]/40 hover:shadow-sm transition-all">
+                      {a.category && (
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-[#8a7440]">
+                          {t(`categories.${a.category}`, { defaultValue: a.category })}
+                        </p>
+                      )}
+                      <p className="mt-1 text-sm font-semibold text-gray-900 leading-snug group-hover:text-[#376254]">
+                        {a.title}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
             )}
 
             <footer className="mt-12 pt-6 border-t border-gray-200">

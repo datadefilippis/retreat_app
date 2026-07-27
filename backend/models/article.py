@@ -20,6 +20,18 @@ from models.retreat_taxonomy import RETREAT_CATEGORIES
 
 ARTICLE_LANGS = ("en", "de", "fr")
 
+# BN1 (docs/BLOG_NEWSLETTER_STRATEGIA_2026-07.md) — categorie SOLO
+# editoriali, in aggiunta alla tassonomia ritiri: danno una casa (hub,
+# correlati, CTA di cluster) agli articoli che non sono la foglia di
+# una categoria prenotabile. NON esistono come /ritiri/{cat}: la CTA
+# ritiri sul blog vale solo per le categorie della tassonomia.
+ARTICLE_EXTRA_CATEGORIES = {
+    "ritiri": "Mondo ritiri",           # scegliere, prepararsi, costi
+    "energia": "Pratiche energetiche",  # reiki, tarocchi, tema natale...
+    "operatori": "Per gli operatori",   # B2B: la CTA converte alla rete
+}
+ARTICLE_CATEGORIES = {**RETREAT_CATEGORIES, **ARTICLE_EXTRA_CATEGORIES}
+
 # Campi traducibili di un articolo (stesso principio dei prodotti:
 # struttura solo in italiano, testi per lingua).
 ARTICLE_TRANSLATABLE_FIELDS = ("title", "description", "content")
@@ -54,7 +66,7 @@ class ArticleCreate(BaseModel):
     @field_validator("category")
     @classmethod
     def _valid_category(cls, v):
-        if v and v not in RETREAT_CATEGORIES:
+        if v and v not in ARTICLE_CATEGORIES:
             raise ValueError(f"Categoria sconosciuta: {v}")
         return v
 

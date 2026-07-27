@@ -524,9 +524,9 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
     if content_md:
         jsonld["articleBody"] = _md_to_text(content_md)
         jsonld["wordCount"] = len(jsonld["articleBody"].split())
-    from models.retreat_taxonomy import RETREAT_CATEGORIES
-    if doc.get("category") in RETREAT_CATEGORIES:
-        jsonld["articleSection"] = RETREAT_CATEGORIES[doc["category"]]
+    from models.article import ARTICLE_CATEGORIES
+    if doc.get("category") in ARTICLE_CATEGORIES:
+        jsonld["articleSection"] = ARTICLE_CATEGORIES[doc["category"]]
     if image:
         jsonld["image"] = [image]
     from services import seo_schema as sx

@@ -32,7 +32,13 @@ const DISCIPLINES = ['yoga', 'meditation', 'breathwork', 'sound', 'reiki',
 const VENUE_TYPES = ['masseria', 'villa', 'retreat_center', 'bnb', 'hermitage', 'other'];
 const CAPACITIES = ['upTo10', '10to20', '20to40', 'over40'];
 
-export default function LeadForm({ type = 'traveler', accent = '#376254', context = null, successExtra = null }) {
+// BN1 — compact: la variante da fine articolo (blog). Solo email +
+// consenso: nel flusso di lettura ogni campo in piu' e' attrito. La
+// profilazione arriva dopo, dalle preferenze (BN2), non dal form.
+export default function LeadForm({ type = 'traveler', accent = '#376254', context = null,
+                                   successExtra = null, compact = false,
+                                   ctaLabel = null, thanksBody = null,
+                                   consentText = null }) {
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
 
@@ -99,9 +105,10 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           {t('form.thanksTitle', { defaultValue: 'Ci sei. Benvenuto.' })}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isOperator
-            ? t('form.thanksOp', { defaultValue: 'Grazie per esserti presentato: ti scriviamo personalmente prima del lancio.' })
-            : t('form.thanksTr', { defaultValue: 'Al lancio riceverai una selezione di ritiri pensata per te. A presto.' })}
+          {thanksBody
+            || (isOperator
+              ? t('form.thanksOp', { defaultValue: 'Grazie per esserti presentato: ti scriviamo personalmente prima del lancio.' })
+              : t('form.thanksTr', { defaultValue: 'Al lancio riceverai una selezione di ritiri pensata per te. A presto.' }))}
         </p>
         {/* RT4 — spazio per la consegna del lead magnet (o altro) */}
         {successExtra ? <div className="mt-4">{successExtra}</div> : null}
@@ -135,20 +142,22 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
 
   return (
     <form onSubmit={submit} className="space-y-3">
-      <input
-        type="text" value={name} onChange={(e) => setName(e.target.value)}
-        placeholder={isOperator
-          ? t('form.fullName', { defaultValue: 'Nome e cognome' })
-          : t('form.name', { defaultValue: 'Il tuo nome' })}
-        className={inputCls} style={ringStyle}
-      />
+      {!compact && (
+        <input
+          type="text" value={name} onChange={(e) => setName(e.target.value)}
+          placeholder={isOperator
+            ? t('form.fullName', { defaultValue: 'Nome e cognome' })
+            : t('form.name', { defaultValue: 'Il tuo nome' })}
+          className={inputCls} style={ringStyle}
+        />
+      )}
       <input
         type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
         placeholder={t('form.email', { defaultValue: 'La tua email' })}
         className={inputCls} style={ringStyle}
       />
 
-      {isOperator ? (
+      {compact ? null : isOperator ? (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input
@@ -263,7 +272,8 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                onChange={(e) => setConsent(e.target.checked)}
                className="mt-0.5 h-4 w-4 shrink-0" required />
         <span>
-          {t('form.consent', { defaultValue: 'Acconsento a essere contattato via email sul lancio di Aurya.' })}{' '}
+          {consentText
+            || t('form.consent', { defaultValue: 'Acconsento a essere contattato via email sul lancio di Aurya.' })}{' '}
           <a href="/privacy" target="_blank" rel="noreferrer" className="underline">
             {t('form.privacy', { defaultValue: 'Privacy' })}
           </a>
@@ -277,9 +287,10 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         {state === 'sending'
           ? <Loader2 className="h-4 w-4 animate-spin" />
           : <>
-              {isOperator
-                ? t('form.ctaOp', { defaultValue: 'Voglio esserci al lancio' })
-                : t('form.ctaTr', { defaultValue: 'Trovami il mio ritiro' })}
+              {ctaLabel
+                || (isOperator
+                  ? t('form.ctaOp', { defaultValue: 'Voglio esserci al lancio' })
+                  : t('form.ctaTr', { defaultValue: 'Trovami il mio ritiro' }))}
               <ArrowRight className="h-4 w-4" />
             </>}
       </button>
