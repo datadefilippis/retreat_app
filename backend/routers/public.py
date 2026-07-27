@@ -3806,6 +3806,50 @@ async def public_experiences_index(category: str = Query(default=None, max_lengt
     return {"items": items, "total": len(items), "categories": all_categories}
 
 
+@router.get("/network/members")
+async def public_network_members():
+    """RT3 (piano sito-rete) — i membri della rete: gli operatori
+    intervistati e accolti (network_member=True, assegnato dal system
+    admin). E' la fonte della landing /operatori in fase network:
+    schede curate, nessun requisito di prenotabilita' (GT1b resta il
+    gate del marketplace, non della rete)."""
+    from database import organizations_collection, stores_collection
+
+    orgs = await organizations_collection.find(
+        {"network_member": True, "is_active": {"$ne": False},
+         "is_sample": {"$ne": True}},
+        {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
+         "public_profile": 1, "reviews_stats": 1},
+    ).sort("name", 1).to_list(500)
+
+    # slug del profilo: public_slug oppure lo store pubblicato
+    org_ids = [o["id"] for o in orgs]
+    store_slug = {}
+    async for s in stores_collection.find(
+            {"organization_id": {"$in": org_ids}, "is_active": True},
+            {"_id": 0, "organization_id": 1, "slug": 1}):
+        store_slug.setdefault(s["organization_id"], s["slug"])
+
+    items = []
+    for o in orgs:
+        slug = o.get("public_slug") or store_slug.get(o["id"])
+        if not slug:
+            continue   # senza pagina pubblica la scheda non ha destinazione
+        pp = o.get("public_profile") or {}
+        items.append({
+            "slug": slug,
+            "name": o.get("name") or "",
+            "tagline": pp.get("tagline"),
+            "city": pp.get("city"),
+            "region": pp.get("region"),
+            "portrait_url": pp.get("portrait_url"),
+            "cover_url": pp.get("cover_url"),
+            "has_interview": bool(pp.get("interview")),
+            "reviews_stats": o.get("reviews_stats"),
+        })
+    return {"items": items, "total": len(items)}
+
+
 @router.get("/operators")
 async def public_operators_index(
     request: Request = None,
@@ -4055,6 +4099,10 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         "photos": pp.get("photos") or [],
         "founded_year": pp.get("founded_year"),
         "languages": pp.get("languages") or [],
+        # RT3 (piano sito-rete) — l'intervista integrale + il sigillo
+        # di membro della rete (assegnato dall'admin)
+        "interview": pp.get("interview") or [],
+        "network_member": bool(org.get("network_member")),
         # PR2 — rating denormalizzato (None finché non ci sono recensioni)
         "reviews_stats": org.get("reviews_stats"),
         "reviews_open": bool(org.get("reviews_open")),

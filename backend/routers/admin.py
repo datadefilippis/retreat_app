@@ -122,6 +122,7 @@ def _org_summary(doc: dict) -> OrgSummary:
         commercial_plan_slug=doc.get("commercial_plan_slug", "free"),
         billing_status=doc.get("billing_status", "none"),
         cancel_at_period_end=doc.get("cancel_at_period_end", False),
+        network_member=bool(doc.get("network_member")),
         created_at=_dt(created),
         updated_at=_dt(doc.get("updated_at") or created),
     )
@@ -392,6 +393,31 @@ async def list_audit_log(
 # ══════════════════════════════════════════════════════════════════════════════
 # Org — Write Actions (v3.0)
 # ══════════════════════════════════════════════════════════════════════════════
+
+@router.put(
+    "/organizations/{org_id}/network-member",
+    summary="RT3 — accogli o rimuovi un'org dalla rete Aurya",
+)
+async def set_network_member(
+    org_id: str,
+    body: dict = Body(...),
+    current_user: dict = Depends(require_system_admin),
+):
+    """Il sigillo della rete: solo il system admin decide chi e' membro
+    (operatore intervistato e accolto). Il flag governa la landing
+    /operatori della fase network e il badge sul profilo pubblico."""
+    member = bool(body.get("member"))
+    from database import organizations_collection
+    from models.common import utc_now
+    updates = {"network_member": member}
+    if member:
+        updates["network_member_since"] = utc_now().isoformat()
+    result = await organizations_collection.update_one(
+        {"id": org_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return {"org_id": org_id, "network_member": member}
+
 
 @router.put(
     "/organizations/{org_id}/status",

@@ -22,17 +22,17 @@ const GOLD = '#8a7440';
 export default function OperatorLandingPage() {
   const { t } = useTranslation('prelaunch');
   useSeoMeta({
-    title: t('op.seoTitle', { defaultValue: 'Aurya per operatori | Tu crei l’esperienza, noi la connettiamo con le persone giuste' }),
-    description: t('op.seoDesc', { defaultValue: 'Aurya sta per aprire: il punto d\u2019incontro italiano del benessere autentico. Ti trovano le persone giuste, prenotano con caparra e pagamento diretto, e tu torni a occuparti di loro. I primi operatori partono da fondatori.' }),
+    title: t('opNw.seoTitle', { defaultValue: 'Entra nella rete Aurya | Intervista e profilo pubblico per operatori olistici' }),
+    description: t('opNw.seoDesc', { defaultValue: 'Ti intervistiamo, raccontiamo il tuo lavoro e ti diamo un profilo pubblico curato e visibile sui motori di ricerca. Gratuitamente: la rete Aurya cresce una persona alla volta.' }),
   });
 
   const benefits = [
-    { icon: Eye, title: t('op.b1t', { defaultValue: 'Ti trovano le persone giuste' }),
-      body: t('op.b1b', { defaultValue: 'Il tuo profilo racconta chi sei, il tuo luogo e la tua pratica, e arriva dritto a chi sta cercando proprio questo nella tua zona. Le persone giuste, nel momento giusto.' }) },
-    { icon: ShieldCheck, title: t('op.b2t', { defaultValue: 'Prenotazioni senza attrito' }),
-      body: t('op.b2b', { defaultValue: 'Chi si iscrive versa una caparra e paga direttamente online; i promemoria arrivano da soli. Chi prenota, arriva: i posti vuoti smettono di essere il costo nascosto del tuo lavoro.' }) },
-    { icon: HeartHandshake, title: t('op.b3t', { defaultValue: 'Riconquista il tuo tempo. Torna alla presenza.' }),
-      body: t('op.b3b', { defaultValue: 'Gestisci messaggi, pagamenti e calendario da un’unica piattaforma. Le ore perse dietro alla gestione diventano tempo prezioso da dedicare alle persone.' }) },
+    { icon: Eye, title: t('opNw.b1t', { defaultValue: 'Un profilo pubblico curato e visibile' }),
+      body: t('opNw.b1b', { defaultValue: 'Una pagina con il tuo nome, il tuo volto e la tua pratica, scritta bene e indicizzata sui motori di ricerca. Chi ti cerca ti trova, e trova la versione vera di te.' }) },
+    { icon: ShieldCheck, title: t('opNw.b2t', { defaultValue: 'La tua storia, raccontata con un\u2019intervista' }),
+      body: t('opNw.b2b', { defaultValue: 'Non un annuncio: una conversazione vera, pubblicata integrale sul tuo profilo. Le persone si affidano a chi conoscono, e l\u2019intervista fa conoscere te.' }) },
+    { icon: HeartHandshake, title: t('opNw.b3t', { defaultValue: 'Visibilità sui nostri canali' }),
+      body: t('opNw.b3b', { defaultValue: 'La tua intervista viaggia anche su Instagram e nella newsletter di Aurya. Tu condividi la tua storia, noi la portiamo davanti a chi la stava cercando.' }) },
   ];
 
   /* PL22 — "Patti chiari" (feedback analista): l'operatore vuole sapere
@@ -42,24 +42,24 @@ export default function OperatorLandingPage() {
      in faccia, senza farli cercare. */
   const patti = [
     { icon: HandCoins,
-      q: t('op.p1q', { defaultValue: 'Quanto ti costa?' }),
-      a: t('op.p1a', { defaultValue: 'Entrare è gratis: profilo, vetrina e gestionale senza canone. Nessun costo fisso, nessuna sorpresa.' }) },
+      q: t('opNw.p1q', { defaultValue: 'Quanto ti costa?' }),
+      a: t('opNw.p1a', { defaultValue: 'Niente: intervista, profilo e visibilità sono gratuiti. La rete cresce sulla qualità delle persone, non sulle iscrizioni.' }) },
     { icon: Scale,
-      q: t('op.p2q', { defaultValue: 'Come sosteniamo la piattaforma?' }),
-      a: t('op.p2a', { defaultValue: 'Cresciamo solo se cresci tu. Prevediamo una piccola commissione esclusivamente sulle prenotazioni che arrivano tramite il calendario pubblico di Aurya. Se il cliente è già tuo, l’utilizzo è completamente gratuito.' }) },
+      q: t('opNw.p2q', { defaultValue: 'Cosa chiediamo in cambio?' }),
+      a: t('opNw.p2a', { defaultValue: 'Una cosa sola: che tu condivida la tua intervista sui tuoi canali. La rete vive di storie che circolano.' }) },
     { icon: CalendarCheck,
-      q: t('op.p3q', { defaultValue: 'Chi decide prezzi e regole?' }),
-      a: t('op.p3a', { defaultValue: 'Tu. Prezzi, caparra e condizioni di cancellazione li decidi tu, e chi prenota li vede chiaramente prima di pagare. Noi ci occupiamo di prenotazioni, promemoria e recensioni verificate.' }) },
+      q: t('opNw.p3q', { defaultValue: 'Come funziona?' }),
+      a: t('opNw.p3a', { defaultValue: 'Tre passi: ti candidi con due righe su di te; se c\u2019\u00e8 sintonia fissiamo l\u2019intervista (una chiacchierata, non un esame); pubblichiamo il profilo e lo condividiamo. Dopo trenta giorni ti mandiamo i numeri veri delle visite.' }) },
     { icon: Compass,
       q: t('op.p4q', { defaultValue: 'Chi siamo' }),
       a: t('op.p4a', { defaultValue: 'Una coppia, due mondi: Valentina, anima olistica del progetto (operatrice Reiki, tarocchi evolutivi e mappe natali), e Davide, che costruisce piattaforme digitali. Aurya nasce dalla loro sinergia.' }),
-      link: { to: '/chi-siamo', label: t('op.p4link', { defaultValue: 'Scopri chi siamo' }) } },
+      link: { to: '/manifesto', label: t('opNw.p4link', { defaultValue: 'Leggi il manifesto' }) } },
   ];
 
   const founders = [
-    t('op.f1', { defaultValue: 'Visibilità in prima fila al lancio, quando tutti guarderanno' }),
-    t('op.f2', { defaultValue: 'Accompagnamento personale nella costruzione del tuo profilo' }),
-    t('op.f3', { defaultValue: 'Condizioni riservate a chi c’è dall’inizio, per sempre' }),
+    t('opNw.f1', { defaultValue: 'Profilo pubblico gratuito, scritto insieme a te' }),
+    t('opNw.f2', { defaultValue: 'Intervista pubblicata integrale e condivisa sui canali Aurya' }),
+    t('opNw.f3', { defaultValue: 'Report delle visite al profilo dopo trenta giorni, con numeri veri' }),
   ];
 
   const scrollToForm = (e) => {
@@ -91,7 +91,7 @@ export default function OperatorLandingPage() {
             </h1>
             <div className="mt-5 h-px w-16" style={{ background: `${GOLD}88` }} aria-hidden />
             <p className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-              {t('op.subtitle', { defaultValue: 'Hai costruito qualcosa di prezioso: un luogo, una pratica, una comunità. Meriti di essere trovato da chi lo sta cercando, senza rincorrere gli algoritmi. Aurya sta per aprire: la casa dei ritiri olistici italiani, costruita accanto a chi li crea.' })}
+              {t('opNw.subtitle', { defaultValue: 'Hai costruito qualcosa di prezioso: un luogo, una pratica, una comunità. Meriti di essere raccontato bene. Ti intervistiamo, costruiamo il tuo profilo pubblico e lo facciamo trovare: la rete Aurya cresce una persona alla volta.' })}
             </p>
             <div className="relative mt-7 overflow-hidden rounded-3xl">
               <img src="/media/hero-organizer.webp" alt=""

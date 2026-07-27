@@ -148,6 +148,8 @@ export default function PublicProfilePage() {
       payload.languages = form.languages || [];
       // OP2 — traduzioni manuali bio/tagline (stesso processo dei prodotti)
       payload.translations = form.translations || {};
+      // RT3 — l'intervista della rete (coppie vuote scartate dal backend)
+      payload.interview = form.interview || [];
       const res = await api.patch('/organizations/current/public-profile', payload);
       setForm({ show_contacts: false, ...res.data });
       if (res.data?.name) setOrgName(res.data.name);
@@ -328,6 +330,58 @@ export default function PublicProfilePage() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* RT3 (piano sito-rete) — l'intervista della rete: domande e
+              risposte integrali che compaiono sul profilo pubblico.
+              La compila Aurya insieme all'operatore. */}
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <div>
+              <Label>{t('publicProfile.interviewTitle', { defaultValue: 'L’intervista' })}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t('publicProfile.interviewHint', { defaultValue: 'Le domande e le risposte complete: appaiono sul profilo pubblico nella sezione L’intervista. Risposte integrali, mai riassunte.' })}
+              </p>
+            </div>
+            {(form.interview || []).map((qa, i) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-2">
+                <input
+                  value={qa.question || ''}
+                  onChange={e => {
+                    const next = [...(form.interview || [])];
+                    next[i] = { ...next[i], question: e.target.value.slice(0, 200) };
+                    set('interview', next);
+                  }}
+                  placeholder={t('publicProfile.interviewQ', { defaultValue: 'Domanda' })}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <textarea
+                  value={qa.answer || ''}
+                  onChange={e => {
+                    const next = [...(form.interview || [])];
+                    next[i] = { ...next[i], answer: e.target.value.slice(0, 2500) };
+                    set('interview', next);
+                  }}
+                  rows={4}
+                  placeholder={t('publicProfile.interviewA', { defaultValue: 'Risposta integrale' })}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] text-muted-foreground">{(qa.answer || '').length}/2500</p>
+                  <button type="button"
+                    onClick={() => set('interview', (form.interview || []).filter((_, j) => j !== i))}
+                    className="text-xs text-destructive hover:underline">
+                    {t('publicProfile.interviewRemove', { defaultValue: 'Rimuovi domanda' })}
+                  </button>
+                </div>
+              </div>
+            ))}
+            {(form.interview || []).length < 12 && (
+              <button type="button"
+                onClick={() => set('interview', [...(form.interview || []), { question: '', answer: '' }])}
+                className="rounded-md border border-dashed border-border px-3 py-2 text-sm text-muted-foreground hover:border-primary hover:text-primary w-full">
+                {t('publicProfile.interviewAdd', { defaultValue: '+ Aggiungi domanda' })}
+              </button>
+            )}
           </div>
 
           {/* PR1 — Carta d'identità: ritratto, galleria, anno, lingue

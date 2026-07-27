@@ -14,6 +14,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Flower2 } from 'lucide-react';
 import api from '../../api/client';
+import { useSiteConfig } from '../../context/SiteConfigContext';
 import useSeoMeta from './lib/useSeoMeta';
 import useTrackView from './lib/useTrackView';
 import MarketplaceShell from './components/MarketplaceShell';
@@ -325,6 +326,8 @@ export default function OperatorProfilePage() {
   // VT2 — visita al profilo per lo specchietto Visibilità (ping 3s)
   useTrackView('profile', org_slug);
   const { t, i18n } = useTranslation('landings');
+  // RT3 — la fase decide se mostrare i ritiri prenotabili
+  const { sitePhase } = useSiteConfig();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -483,8 +486,37 @@ export default function OperatorProfilePage() {
             </section>
           )}
 
+          {/* RT3 (piano sito-rete) — l'intervista integrale: e' il cuore
+              del profilo di un membro della rete. Domande e risposte
+              complete, mai riassunte: il valore sta nella profondita'. */}
+          {Array.isArray(data.interview) && data.interview.length > 0 && (
+            <section id="intervista" className="mt-8">
+              <h2 className="font-heading text-xl font-bold text-foreground mb-1">
+                {t('landings:operator.interviewTitle', { defaultValue: 'L’intervista' })}
+              </h2>
+              <p className="text-sm text-gray-500 mb-4">
+                {t('landings:operator.interviewSub', { defaultValue: 'Le parole di chi c’è dietro, raccolte da Aurya.' })}
+              </p>
+              <div className="space-y-6">
+                {data.interview.map((qa, i) => (
+                  <div key={i}>
+                    <h3 className="font-heading font-semibold text-[#376254] leading-snug">
+                      {qa.question}
+                    </h3>
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-line mt-1.5">
+                      {qa.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           <Gallery photos={data.photos} name={data.name} t={t} />
 
+          {/* RT3 — in fase network il marketplace è spento: la sezione
+              ritiri prenotabili torna col lancio (fase marketplace) */}
+          {sitePhase !== 'network' && (
           <section id="ritiri" className="mt-8">
             <h2 className="font-heading text-xl font-bold text-foreground mb-3">
               {t('landings:operator.upcoming', { count: data.upcoming_count })}
@@ -518,6 +550,7 @@ export default function OperatorProfilePage() {
               </div>
             )}
           </section>
+          )}
 
           <ReviewsSection orgSlug={org_slug} stats={rs}
                           onWrite={() => setWriteOpen(true)}

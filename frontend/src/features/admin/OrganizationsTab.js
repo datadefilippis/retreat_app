@@ -297,6 +297,25 @@ const OrganizationsTab = () => {
     }
   };
 
+  // ── RT3 — Membro della rete ─────────────────────────────────────────────────
+
+  const handleToggleNetwork = async (org) => {
+    const next = !org.network_member;
+    const key = `${org.id}_network`;
+    setAction(key, true);
+    try {
+      await adminAPI.setNetworkMember(org.id, next);
+      toast.success(next
+        ? `"${org.name}" accolta nella rete`
+        : `"${org.name}" rimossa dalla rete`);
+      fetchOrgs();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Aggiornamento rete fallito');
+    } finally {
+      setAction(key, false);
+    }
+  };
+
   // ── Hard Delete Org ─────────────────────────────────────────────────────────
 
   const [deleteOrg, setDeleteOrg] = useState(null);
@@ -798,6 +817,17 @@ const OrganizationsTab = () => {
                           >
                             <Package className="h-3.5 w-3.5 mr-1" />
                             Commercial
+                          </Button>
+                          {/* RT3 — sigillo della rete: accogli/rimuovi
+                              il membro (governa /operatori in fase network) */}
+                          <Button
+                            variant={org.network_member ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => handleToggleNetwork(org)}
+                            disabled={actionLoading[`${org.id}_network`]}
+                            title="Membro della rete Aurya"
+                          >
+                            {org.network_member ? '✓ Rete' : 'Rete'}
                           </Button>
                           <Button
                             variant={org.is_active ? 'destructive' : 'default'}

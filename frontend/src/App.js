@@ -91,6 +91,7 @@ const NewsletterLandingPage = lazy(() => import("./features/prelaunch/Newsletter
 // RT2 — le pagine della fase rete
 const NetworkHomePage = lazy(() => import("./features/network/NetworkHomePage"));
 const ManifestoPage = lazy(() => import("./features/network/ManifestoPage"));
+const NetworkOperatorsPage = lazy(() => import("./features/network/NetworkOperatorsPage"));
 const CashflowDataPage = lazy(() => import("./features/cashflow/CashflowDataPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
@@ -311,13 +312,13 @@ function RitiriGate() {
   return <RedirectPreservingQuery to="/" />;
 }
 
-// PL23→RT1 — in fase network /operatori diventerà la landing della
-// rete (RT3); finché non esiste, chi cerca organizzatori va alla
-// candidatura. In marketplace torna l'aggregatore pieno.
+// PL23→RT3 — in fase network /operatori E' la landing della rete:
+// cos'e', con che criterio si entra, le schede dei membri. In
+// marketplace torna l'aggregatore pieno con mappa e filtri.
 function OperatorsGate() {
   const { sitePhase, loading } = useSiteConfig();
   if (loading) return null;
-  if (sitePhase === 'network') return <Navigate to="/entra-nella-rete" replace />;
+  if (sitePhase === 'network') return <NetworkOperatorsPage />;
   return <OperatorsIndexPage />;
 }
 

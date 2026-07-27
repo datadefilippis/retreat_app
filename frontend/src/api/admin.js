@@ -22,6 +22,10 @@ export const adminAPI = {
 
   // ── Organizations (write) ─────────────────────────────────────────────────
 
+  // RT3 — sigillo della rete Aurya (system admin)
+  setNetworkMember: (orgId, member) =>
+    api.put(`/admin/organizations/${orgId}/network-member`, { member }).then((r) => r.data),
+
   setOrgStatus: (orgId, isActive) =>
     api.put(`/admin/organizations/${orgId}/status`, { is_active: isActive }),
 
