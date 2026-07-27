@@ -141,3 +141,60 @@ class TestGatedGuidesBN3:
                    / "NewsletterConfirmPage.js").read_text()
         assert "aurya_nl_token" in confirm            # persistenza token
         assert "startsWith('/blog/')" in confirm      # next filtrato
+
+
+class TestCategoryHubsBN5:
+    """BN5 — hub categoria del Magazine: rotte vere indicizzabili
+    (ItemList + canonical), vuoti in noindex, in sitemap solo se
+    popolati; standard editoriale imposto al publish."""
+
+    def test_hub_live_populated_category(self):
+        # contro il backend live (il DB dei test unit puo' essere vuoto)
+        import os
+
+        import requests as rq
+        base = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
+        r = rq.get(f"{base}/__seo/blog/categoria/energia", timeout=10)
+        assert r.status_code == 200
+        assert '"@type": "ItemList"' in r.text
+        assert '/blog/categoria/energia"' in r.text      # canonical
+        assert 'content="noindex"' not in r.text
+
+    def test_hub_live_empty_category_noindex(self):
+        import os
+
+        import requests as rq
+        base = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
+        r = rq.get(f"{base}/__seo/blog/categoria/massaggio", timeout=10)
+        assert r.status_code == 200
+        assert 'content="noindex"' in r.text
+
+    @pytest.mark.asyncio
+    async def test_hub_unknown_category_is_404(self):
+        from routers.seo_shell import _meta_blog_category
+        assert await _meta_blog_category("inventata") is None
+
+    @pytest.mark.asyncio
+    async def test_editorial_gate_on_publish(self):
+        from fastapi import HTTPException
+
+        from routers.articles import _editorial_gate
+        ok = {"category": "yoga", "description": "x" * 130}
+        _editorial_gate(ok)                      # non solleva
+        with pytest.raises(HTTPException):
+            _editorial_gate({"category": None, "description": "x" * 130})
+        with pytest.raises(HTTPException):
+            _editorial_gate({"category": "yoga", "description": "corta"})
+
+    def test_spa_uses_route_not_query(self):
+        idx = (FRONTEND_SRC / "features" / "storefront"
+               / "BlogIndexPage.js").read_text()
+        assert "navigate(`/blog/categoria/${slug}`)" in idx
+        art = (FRONTEND_SRC / "features" / "storefront"
+               / "BlogArticlePage.js").read_text()
+        assert "/blog/categoria/${article.category}" in art
+
+    def test_sitemap_includes_populated_hubs_only(self):
+        src = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        assert 'distinct("category", {"published": True})' in src
+        assert "/blog/categoria/" in src

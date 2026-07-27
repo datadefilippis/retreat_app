@@ -380,6 +380,8 @@ function AppRoutes() {
       {/* SEO1 (11/7, decisione founder): il blog è il motore SEO del
           pre-lancio e resta SEMPRE attivo, flag o non flag. */}
       <Route path="/blog" element={<BlogIndexPage />} />
+      {/* BN5 — hub categoria indicizzabili (rotta vera, non query param) */}
+      <Route path="/blog/categoria/:categoria" element={<BlogIndexPage />} />
       <Route path="/blog/:slug" element={<BlogArticlePage />} />
       {/* Static legal pages — always accessible, no auth wrapper */}
       <Route path="/privacy" element={<PrivacyPolicyPage />} />

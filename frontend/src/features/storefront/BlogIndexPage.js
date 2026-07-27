@@ -7,7 +7,7 @@
  * I chip categoria mostrano solo le categorie che hanno articoli.
  */
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
@@ -28,18 +28,26 @@ const CATEGORY_TONES = {
 
 export default function BlogIndexPage() {
   const { t, i18n } = useTranslation('landings');
-  const [searchParams, setSearchParams] = useSearchParams();
-  const category = searchParams.get('categoria') || '';
+  const navigate = useNavigate();
+  const { categoria: routeCategory } = useParams();
+  const [searchParams] = useSearchParams();
+  // BN5 — la categoria vive nell'URL come rotta vera (/blog/categoria/x,
+  // indicizzabile); il query param resta solo come fallback dei vecchi
+  // link condivisi
+  const category = routeCategory || searchParams.get('categoria') || '';
   const lang = (i18n.language || 'it').slice(0, 2);
 
   const [items, setItems] = useState([]);
   const [allItems, setAllItems] = useState([]);   // per i chip categoria
   const [loading, setLoading] = useState(true);
 
+  const catLabel = category ? t(`categories.${category}`, { defaultValue: category }) : null;
   useSeoMeta({
-    title: t('blog.seoTitle', { defaultValue: 'Ritiri, discipline olistiche e benessere | Il Magazine di Aurya' }),
+    title: category
+      ? t('blog.seoCatTitle', { cat: catLabel, defaultValue: '{{cat}}: articoli e guide | Il Magazine di Aurya' })
+      : t('blog.seoTitle', { defaultValue: 'Ritiri, discipline olistiche e benessere | Il Magazine di Aurya' }),
     description: t('blog.seoDesc', { defaultValue: 'Storie, pratiche e sapere olistico da chi organizza e vive i ritiri.' }),
-    canonicalPath: '/blog',
+    canonicalPath: category ? `/blog/categoria/${category}` : '/blog',
   });
 
   useEffect(() => {
@@ -91,13 +99,13 @@ export default function BlogIndexPage() {
             {categoriesWithArticles.length > 1 && (
               <div className="mt-6 flex flex-wrap gap-2 justify-center" data-testid="blog-category-chips">
                 <button type="button"
-                        onClick={() => setSearchParams({})}
+                        onClick={() => navigate('/blog')}
                         className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${!category ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'}`}>
                   {t('blog.allArticles', { defaultValue: 'Tutti' })}
                 </button>
                 {categoriesWithArticles.map(slug => (
                   <button key={slug} type="button"
-                          onClick={() => setSearchParams({ categoria: slug })}
+                          onClick={() => navigate(`/blog/categoria/${slug}`)}
                           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${category === slug ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'}`}>
                     {t(`categories.${slug}`, { defaultValue: slug })}
                   </button>

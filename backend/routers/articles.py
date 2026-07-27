@@ -133,6 +133,23 @@ async def _subscriber_unlocked(token: Optional[str]) -> bool:
     return bool(doc and doc.get("status") == "confirmed")
 
 
+def _editorial_gate(doc: dict) -> None:
+    """BN5 — standard editoriale al PUBLISH (il draft resta libero):
+    categoria obbligatoria (hub, correlati, CTA di cluster) e meta
+    description vera (120+ caratteri: sotto, Google la riscrive lui).
+    Guard-rail sul flusso nuovo: gli articoli gia' pubblicati non
+    vengono toccati."""
+    if not doc.get("category"):
+        raise HTTPException(status_code=422, detail=(
+            "Per pubblicare serve una categoria: e' la casa dell'articolo "
+            "(hub, correlati, CTA)."))
+    desc = (doc.get("description") or "").strip()
+    if len(desc) < 120:
+        raise HTTPException(status_code=422, detail=(
+            "Per pubblicare serve una description di almeno 120 caratteri "
+            f"(ora: {len(desc)}): e' il testo dello snippet su Google."))
+
+
 # ─── Endpoint pubblici ─────────────────────────────────────────────────
 
 @router.get("/public/articles")
@@ -268,6 +285,8 @@ async def admin_update_article(
                                           exclude_id=article_id)
     # publish: timbra published_at alla PRIMA pubblicazione
     publishing = bool(data.get("published")) and not doc.get("published")
+    if publishing:
+        _editorial_gate({**doc, **data})
     if data.get("published") and not doc.get("published_at"):
         data["published_at"] = utc_now()
     data["updated_at"] = utc_now()

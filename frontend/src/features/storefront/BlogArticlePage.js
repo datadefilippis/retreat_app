@@ -105,7 +105,7 @@ export default function BlogArticlePage() {
               </Link>
               {article.category && (<>
                 <span className="mx-1.5" aria-hidden>›</span>
-                <Link to={`/blog?categoria=${article.category}`} className="hover:text-primary hover:underline">
+                <Link to={`/blog/categoria/${article.category}`} className="hover:text-primary hover:underline">
                   {t(`categories.${article.category}`, { defaultValue: article.category })}
                 </Link>
               </>)}

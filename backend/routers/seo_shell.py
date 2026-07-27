@@ -438,6 +438,46 @@ async def _meta_blog_list() -> dict:
     }
 
 
+async def _meta_blog_category(cat: str) -> Optional[dict]:
+    """BN5 — hub categoria del Magazine (/blog/categoria/{cat}): rotta
+    vera indicizzabile con ItemList degli articoli. Categoria vuota →
+    noindex (thin content, stessa regola delle destinazioni)."""
+    from database import db
+    from models.article import ARTICLE_CATEGORIES
+    from services import seo_schema as sx
+    if cat not in ARTICLE_CATEGORIES:
+        return None
+    base = _base_url()
+    canonical = f"{base}/blog/categoria/{cat}"
+    label = ARTICLE_CATEGORIES[cat]
+    docs = await (db.articles
+                  .find({"published": True, "category": cat},
+                        {"_id": 0, "slug": 1, "title": 1})
+                  .sort("published_at", -1).to_list(50))
+    crumbs = sx.breadcrumb([("Aurya", f"{base}/"), ("Blog", f"{base}/blog"),
+                            (label, canonical)])
+    blocks = [crumbs] if crumbs else []
+    if docs:
+        blocks.append({
+            "@context": "https://schema.org", "@type": "ItemList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": i + 1,
+                 "name": d["title"], "url": f"{base}/blog/{d['slug']}"}
+                for i, d in enumerate(docs)],
+        })
+    return {
+        "title": f"{label}: articoli e guide | Il Magazine di Aurya",
+        "description": (f"Articoli e guide su {label.lower()}: pratiche "
+                        "raccontate con onesta', costi reali e consigli "
+                        "di chi le vive. Dal Magazine di Aurya."),
+        "canonical": canonical,
+        "hreflang": _hub_hreflang(canonical),
+        "image": f"{base}/og-cover.jpg",
+        "jsonld": blocks,
+        "noindex": not docs,
+    }
+
+
 def _md_to_text(md: str) -> str:
     """Markdown → testo piano per articleBody: i crawler senza JS (la
     maggior parte dei crawler LLM) leggono SOLO l'HTML iniziale, e il
@@ -883,6 +923,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
     if head == "blog":                        # AN6 — il blog sulle stesse rotaie
         if len(parts) == 1:
             return await _meta_blog_list()
+        if parts[1] == "categoria" and len(parts) >= 3:
+            return await _meta_blog_category(parts[2])   # BN5 — hub categoria
         return await _meta_blog_article(parts[1])
     return None
 

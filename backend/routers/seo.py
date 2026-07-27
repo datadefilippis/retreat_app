@@ -265,6 +265,11 @@ async def build_articles() -> str:
     urls = [_url(f"{base}/blog", priority="0.6",
                  hreflang={"it": f"{base}/blog", "x-default": f"{base}/blog",
                            **{l: f"{base}/blog?lang={l}" for l in _LANGS}})]
+    # BN5 — hub categoria del Magazine: in sitemap solo quelli con
+    # almeno un articolo (pagina in sitemap ⟺ contenuto reale)
+    cats = await db.articles.distinct("category", {"published": True})
+    for cat in sorted(c for c in cats if c):
+        urls.append(_url(f"{base}/blog/categoria/{cat}", priority="0.5"))
     docs = await (db.articles
                   .find({"published": True},
                         {"_id": 0, "slug": 1, "published_at": 1,
