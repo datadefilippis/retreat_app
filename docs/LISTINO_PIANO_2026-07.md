@@ -1,251 +1,279 @@
-# Il Listino — semplificazione commerce (analisi deep + piano)
+# Il Listino — semplificazione commerce (piano v2, blindato)
 
-Data: 28 luglio 2026. Riferimento del founder: il modello Treatwell
-(gestionale + marketplace per estetiste): l'operatore compila un
-listino di servizi e quello E' contemporaneamente la sua pagina web e
-la sua presenza nel marketplace. Obiettivo: stessa semplicita' per gli
-operatori olistici. Meno step, meno pagine, meno configurazioni.
+Data: 28 luglio 2026 (v2: invarianti di compatibilita', analisi
+Treatwell con fonti, bisogni reali dell'operatore benessere,
+reversibilita' garantita dei tipi congelati).
 
----
-
-## PARTE 1 — Stato attuale, misurato (censimento 28/7)
-
-### 1a. Quanto e' complesso oggi pubblicare una consulenza
-
-Percorso minimo reale (signup → servizio acquistabile):
-1. Signup + verifica email
-2. Creazione STORE a mano (non si auto-crea; e' OBBLIGATORIO:
-   il gate store_guard risponde 409 su ogni porta di pubblicazione)
-3. ServiceWizard: 775 righe, 4 tab (base / disponibilita' / opzioni /
-   pubblica)
-4. Pubblicazione (assegnazione store, termini, campi custom...)
-
-E l'onboarding /inizia NON aiuta: la checklist ha 5 step tutti
-event-centrici (profilo, Stripe, store, ritiro creato, ritiro
-pubblicato). Chi pubblica una consulenza non fa avanzare la barra:
-il funnel ufficiale ignora il caso d'uso piu' comune.
-
-### 1b. L'inventario della complessita'
-
-- 7 TIPI PRODOTTO registrati: physical, service, rental, event_ticket,
-  booking, digital, course
-- 6 WIZARD per ~6.360 righe di frontend: Event 1858 (6 tab),
-  Course 1156, Digital 863 (6 tab), Reservation 861 (6 tab),
-  Physical 850 (5 tab), Service 775 (4 tab)
-- STORE: modello da 47 campi configurabili (brand color, SEO, legal
-  per lingua, nav custom, design tokens, email di consegna...),
-  7 rotte pubbliche /s/*, 2 pagine admin (Stores + Store Settings)
-- BACK-OFFICE: ~14-15 voci di menu, ~42 pagine protette
-- Product: 27 campi
-- Contorno commerce: POS, giacenze (stock_service), spedizioni
-  (shipping_options), extra/kit, moduli futuri (inventory_tracker...)
-
-### 1c. La frattura profilo/negozio
-
-Il profilo pubblico /o/{slug} (la pagina che il pivot rete sta
-rendendo preziosa: intervista, recensioni, gallery) mostra SOLO i
-ritiri. I servizi vivono altrove, dietro il link "Visita il negozio"
-→ /s/{slug}, una seconda vetrina con altra navigazione, altro layout,
-altra gestione. Due pagine pubbliche da capire e mantenere, quando il
-visitatore ne vuole UNA: chi sei, cosa fai, quanto costa, prenota.
-
-### 1d. Cosa dice la realta' dei dati (prod, 28/7)
-
-- Organizzazioni reali: 2. Store reali: 1. Ordini: 1.
-- Prodotti reali pubblicati: UNO. Ed e' "Consulenza reiki",
-  item_type=service, categoria consulenze.
-
-Tradotto: l'unico uso reale del commerce e' esattamente il listino
-servizi. Physical, digital, course, rental hanno ZERO adozione reale.
-La semplificazione radicale non ha quasi nulla da migrare.
-
-### 1e. Cosa c'e' di BUONO da riusare (non si butta il motore)
-
-- transaction_mode request | direct GIA' esiste sul Product, con
-  downgrade automatico direct→request per i piani Free: e' la coppia
-  perfetta "Richiedi appuntamento" / "Prenota e paga"
-- Slot/agenda: generate_available_slots con agenda condivisa
-  dell'operatore + AvailabilityRulesEditor + calendario ufficiale
-  default Lun-Ven 9-18: il motore di prenotazione c'e'
-- Checkout marketplace K1-K4 (caparra, Passaporto), fee ledger,
-  recensioni verificate, GT1b (prenotabile online ⟺ listato)
-- Profilo /o/ ricco (pivot rete): hero, bio, intervista, gallery,
-  recensioni, geo
-- Tassonomia service esistente (categorie consulenze ecc.)
-
-Il problema NON e' il motore: e' l'IMPALCATURA intorno (store
-obbligatorio, wizard a tab, tipi inutilizzati, doppia vetrina).
+Principio guida del founder: semplice come Treatwell, ma per gli
+operatori olistici. SENZA sfasciare cio' che funziona: eventi con
+landing page, calendario, checkout e Stripe restano intatti.
 
 ---
 
-## PARTE 2 — Architettura target ("modello Treatwell olistico")
+## PARTE 0 — Gli INVARIANTI (cosa NON si tocca, verificato a fine di ogni onda)
 
-### I due soli oggetti
+Questi sono contratti: ogni onda TW chiude con una verifica esplicita
+che restino veri. Se un'onda li rompe, si torna indietro.
 
-1. IL LISTINO (servizi): cio' che l'operatore offre su appuntamento.
-   Una riga di listino = nome, categoria, durata, prezzo (o "su
-   richiesta"), modalita' (in presenza / online / entrambe), note.
-2. IL RITIRO (evento): l'esperienza con una data. Resta il wizard
-   evento (semplificato in seguito, non in questo ciclo).
+I1. EVENTI = LANDING PAGE. /e/{org}/{slug} resta la pagina di vendita
+    completa del ritiro (galleria, programma, biglietti, colonna
+    prenotazione, FAQ, schema Event). I servizi NON avranno landing
+    propria di default: vivono nel listino sul profilo. La landing
+    /p/{org}/{slug} dei service RESTA VIVA come pagina raggiungibile
+    (retrocompatibilita' + slot picker), ma il percorso primario
+    diventa il profilo.
+I2. STRIPE INTATTO. Zero modifiche a: Stripe Connect onboarding,
+    webhook, checkout session, caparra/acconto, fee ledger, split.
+    Il Listino cambia DOVE si clicca "prenota", non cosa succede dopo.
+I3. CHECKOUT E ORDINI INTATTI. order_creation_service,
+    transaction_mode request|direct|approval, downgrade Free
+    direct→request, booking_service, token /b/, email ordine:
+    invariati. Il listino li CHIAMA, non li riscrive.
+I4. CALENDARIO E SLOT INTATTI. Agenda ufficiale, AvailabilityRules,
+    generate_available_slots (agenda condivisa cross-prodotto),
+    blocked_slots: invariati. Il listino ci si aggancia coi default.
+I5. DATI MAI CANCELLATI. Nessun drop, nessuna delete sui prodotti dei
+    tipi congelati; ordini storici leggibili sempre (la pagina Ordini
+    rende qualsiasi item_type storico).
+I6. URL MAI MORTI. /s/*, /services/*, /physicals/* ecc: redirect,
+    mai 404. SEO shell aggiornata coi canonical.
+I7. RECENSIONI, PASSAPORTO, GT1b, visibilita', GDPR: invariati.
+I8. Il modello dati Product NON cambia forma: una riga di listino E'
+    un Product item_type=service. Niente nuova collection, niente
+    doppia verita'.
 
-Tutto il resto (fisici, digitali, corsi, noleggi) esce dal percorso:
-congelato, non cancellato (vedi TW3).
-
-### La pagina unica: il profilo E' il negozio
-
-/o/{slug} diventa presentazione + ecommerce immediato:
-
-1. Hero (foto, nome, tagline, rating)
-2. Chi sono + intervista (rete)
-3. IL LISTINO ← nuovo: righe raggruppate per categoria, prezzo e
-   durata a destra, bottone per riga:
-   - "Prenota" (transaction_mode=direct + Stripe pronto): slot picker
-     + checkout, riuso del flusso esistente
-   - "Richiedi appuntamento" (default, zero configurazione): form
-     nome/email/messaggio → ordine in stato richiesta + notifica
-     all'operatore (flusso request esistente)
-4. Prossimi ritiri (in fase marketplace; oggi nascosto in fase rete)
-5. Gallery, Recensioni, Contatti
-
-/s/{slug} sparisce dal percorso: redirect 301 → /o/{slug} (gli URL
-non muoiono mai). La condivisione e' UN link: aurya.life/o/tuonome.
-
-### Lo split automatico (come chiesto)
-
-- Pubblichi un RITIRO → entra nella directory /ritiri (gia' cosi')
-- Compili il LISTINO → appare sul tuo profilo, e la directory
-  /operatori mostra sulla card "da 60€ · 5 servizi · Reiki, Yoga..."
-- Due directory, come deciso: /ritiri (eventi) e /operatori (persone
-  + servizi). Nessuna terza superficie.
-
-### Il back-office che ne consegue
-
-Menu target (da ~14 voci a 7):
-1. Home (dashboard)
-2. Listino          ← LA pagina nuova
-3. Ritiri           (eventi)
-4. Calendario       (agenda + prenotazioni)
-5. Richieste e ordini
-6. Profilo pubblico (con anteprima = quello che vede il cliente)
-7. Impostazioni     (Stripe, team, abbonamento)
-
-Restano raggiungibili ma fuori menu: Incassi, Recensioni (dentro
-Profilo), Visibilita', Newsletter form, Clienti (li si valuta in un
-secondo ciclo: prima si semplifica il percorso di vendita).
-
-### La pagina Listino (il cuore)
-
-UNA pagina, zero wizard. Lista dei servizi raggruppata per categoria,
-editing INLINE (clic sulla riga → si espande la scheda):
-
-Campi per riga (visibili): nome*, categoria, durata, prezzo o "su
-richiesta", modalita' (in presenza/online), note brevi.
-In "Avanzate" (collassato, mai richiesto): descrizione lunga,
-immagine, calendario dedicato (default: agenda ufficiale), opzioni a
-scelta, campi custom richiesta.
-
-Un interruttore in testa: "Listino online" (pubblica/nascondi tutto).
-Un link fisso: "Guarda il tuo profilo come lo vedono i clienti".
-
-Il modello dati NON cambia: una riga di listino E' un Product
-item_type=service. Cambia solo l'interfaccia (e i default). Zero
-migrazione: "Consulenza reiki" appare gia' nel listino.
-
-### Il gate: da store-first a profile-first
-
-store_guard (409 store_required) si sostituisce con profile-first:
-per andare online bastano nome pubblico + citta' + una foto. Lo store
-si auto-crea invisibile dietro le quinte SOLO come contenitore tecnico
-(ordini/legal lo referenziano), senza UI, senza scelta, senza slug da
-inventare: l'operatore non sapra' mai che esiste.
-
-### Onboarding: 3 passi, non 5
-
-1. Presentati (nome, citta', foto, due righe) → /public-profile
-2. Il tuo listino (aggiungi almeno un servizio) → /listino
-3. Sei online (link del profilo da condividere + opzionale: collega
-   Stripe per incassare online, altrimenti ricevi richieste)
-Il ritiro diventa un passo FACOLTATIVO suggerito dopo, non il centro.
+Guardia meccanica: tests/test_listino_tw.py conterra' una classe
+TestInvariants che verifica I1-I8 (rotte vive, servizi non toccati,
+firma delle funzioni checkout invariata) e la suite completa (3.44x
+test) deve restare verde a ogni onda: e' la rete di protezione contro
+gli sfasci.
 
 ---
 
-## PARTE 3 — Cosa si taglia e cosa se ne fa (onesta' sui trade-off)
+## PARTE 1 — Stato attuale, misurato (censimento 28/7, invariato da v1)
 
-| Cosa | Sorte | Perche' |
-|---|---|---|
-| Physical, Digital, Course, Rental | CONGELATI dietro flag org (`legacy_commerce`): spariscono da menu, wizard e nuovo onboarding; i dati restano; riattivabili per singola org dal system admin | Zero adozione reale; un domani un operatore che vende olii o video corsi si riaccende in un click |
-| Store come concetto UI (pagine Stores, Store Settings, 47 campi) | Via dalla UI; store tecnico auto-creato invisibile | Era il gradino piu' alto del funnel, per nessun valore percepito |
-| Vetrina /s/* (7 rotte) | Redirect 301 → /o/ | Una sola pagina pubblica; la SEO migra col canonical |
-| POS /pos/:storeId | Decisione founder (dipendeva dallo store) | Scelta storica "POS resta": va riconfermata nel nuovo mondo |
-| Wizard Service (775 righe, 4 tab) | Sostituito dall'editor inline del Listino | Il 90% dei campi ha gia' default giusti |
-| Spedizioni, giacenze, extra fisici | Congelati col legacy | Servono solo ai tipi congelati |
-| EventWizard (1858 righe) | RESTA cosi' per ora; semplificazione in un ciclo successivo | Un cantiere alla volta |
-| Ordini, checkout, slot, recensioni, fee, Passaporto | RESTANO identici | E' il motore buono |
+- Funnel minimo per una consulenza online: 4 macro-step, incluso lo
+  STORE OBBLIGATORIO (store_guard 409 su ogni porta di pubblicazione),
+  creato a mano, 47 campi configurabili, 7 rotte pubbliche /s/*
+- /inizia: 5 step tutti event-centrici; un servizio pubblicato non fa
+  avanzare la checklist
+- 7 tipi prodotto, 6 wizard (~6.360 righe: Event 1858, Course 1156,
+  Digital 863, Rental 861, Physical 850, Service 775 a 4 tab)
+- Back-office: ~14-15 voci menu, ~42 pagine
+- Il profilo /o/ mostra SOLO i ritiri; i servizi stanno dietro
+  "Visita il negozio" → /s/ (doppia vetrina)
+- PROD REALE: 2 org, 1 store, 1 ordine, 1 solo prodotto pubblicato:
+  "Consulenza reiki" (service). Physical/digital/course/rental:
+  adozione zero.
+
+Il motore buono da riusare (non si butta niente di questo):
+transaction_mode request|direct con downgrade Free, slot/agenda
+condivisa, checkout caparra K1-K4, fee ledger, recensioni verificate,
+profilo /o/ ricco del pivot rete, tassonomie.
 
 ---
 
-## PARTE 4 — Piano operativo (onde TW, step-by-step come RT/BN)
+## PARTE 2 — Analisi Treatwell (come funziona davvero, fonti in fondo)
 
-### TW0 — Decisioni founder (bloccano TW3, non TW1-TW2)
-- [ ] Conferma congelamento physical/digital/course/rental (dati
-      conservati, riattivazione per-org da admin)
-- [ ] Sorte del POS nel nuovo mondo (proposta: congelato col legacy)
-- [ ] /s/ → redirect a /o/ (proposta: si')
-- [ ] Le voci fuori menu (Incassi, Clienti, Newsletter form,
-      Visibilita'): dove atterrano (proposta: dentro Home/Profilo,
-      si rivaluta dopo)
+Cosa fa Treatwell per un salone, in concreto:
 
-### TW1 — La pagina Listino (back-office)
-- GET/PUT /organizations/current/listino: lettura e salvataggio
-  righe (sopra products item_type=service; default transaction_mode
-  request, calendario ufficiale)
-- Pagina /listino: lista per categoria, editing inline, riordino,
-  interruttore online/offline, "Avanzate" collassate
-- Auto-store invisibile: alla prima riga salvata, se l'org non ha
-  store se ne crea uno tecnico (name = nome org, mai mostrato)
-- Nav: voce "Listino"; /services/new e /services/:id redirigono a
-  /listino (URL vecchi vivi)
+1. UN SOLO OGGETTO MENTALE: il listino trattamenti. Nome, descrizione
+   breve, durata, prezzo. I "pacchetti" sono combinazioni di
+   trattamenti dentro lo stesso listino, non un altro tipo prodotto.
+2. UN SOLO PROFILO PUBBLICO per luogo ("profilo unico del luogo sulla
+   vetrina Treatwell"): presentazione + listino + recensioni +
+   prenota. Niente doppio sito.
+3. AGENDA AL CENTRO: "agenda digitale per gestire gli appuntamenti,
+   ovunque"; le prenotazioni da marketplace, widget sito, bottoni
+   Facebook/Instagram atterrano TUTTE sulla stessa agenda.
+4. PROMEMORIA AUTOMATICI (SMS/email illimitati) contro i no-show:
+   per un'attivita' su appuntamento e' la feature numero uno.
+5. MODELLO ECONOMICO ALLINEATO: 25% solo sulla PRIMA prenotazione di
+   un cliente nuovo portato dal marketplace; 0% sui clienti che
+   ritornano e su quelli portati dai canali propri del salone; ~2%
+   sui prepagamenti online. "Paghi solo i clienti nuovi che ti porto".
+6. IL RESTO E' OPZIONALE: POS e magazzino sono nel piano Advanced,
+   non nel percorso base.
+
+Cosa ne copiamo (e' il cuore del piano): 1, 2, 3 → listino unico,
+profilo unico, agenda unica. Il 4 (promemoria) esiste gia' in parte
+da noi (appointment_reminder per i service): va promosso a default.
+
+Cosa NON copiamo e perche':
+- Il 25% sui nuovi clienti: il nostro modello e' gia' deciso e piu'
+  gentile (fee 5% Gratis / 0% Pro sul transato online + abbonamento);
+  cambiarlo ora significherebbe rifare fee ledger e piani. Ma la
+  LEZIONE di Treatwell la incassiamo: la nostra narrativa commerciale
+  deve dire la stessa cosa ("il profilo e i clienti tuoi non ci
+  devono niente; paghi solo lo strumento e/o il transato online").
+- Il contratto 12 mesi: contrario al nostro posizionamento.
+- Il widget embeddabile sul sito del salone: CE L'ABBIAMO GIA'
+  (embed a-la-carte + form newsletter): al listino si aggiunge in
+  un ciclo futuro un embed "prenota" riusando la stessa infra.
+
+---
+
+## PARTE 3 — Cosa serve DAVVERO a un operatore del benessere
+
+Il nostro operatore tipo non e' un salone con 6 poltrone: e' una
+persona (o una coppia, o un piccolo centro) che fa sedute individuali
+e qualche esperienza di gruppo. I suoi lavori da fare, in ordine:
+
+1. "Fammi trovare e fammi capire in 10 secondi": pagina con volto,
+   storia, cosa faccio, quanto costa → profilo + listino
+2. "Fatti prenotare senza che io risponda a 20 messaggi": slot online
+   o richiesta strutturata → prenota/richiedi dal listino
+3. "Proteggimi dai buchi": caparra sui ritiri, promemoria sulle
+   sedute → checkout caparra (c'e') + reminder default (da promuovere)
+4. "Riempi il mio ritiro" (2-4 volte l'anno): landing evento ricca +
+   directory → /e/ e /ritiri (INVARIANTE I1, non si tocca)
+5. "Fammi sembrare professionale": recensioni verificate, link unico
+   da mettere in bio → gia' costruito, va solo unificato sul profilo
+6. "Non farmi fare l'imprenditore digitale": niente store, niente
+   SKU, niente spedizioni, niente configurazioni → la potatura
+
+Cosa NON gli serve (oggi, dati alla mano): vendere olii (physical),
+PDF (digital), video corsi (course), noleggi (rental). Possibile
+domani? Si', per questo si CONGELA, non si cancella (Parte 4).
+
+Servizi tipo del listino olistico (per i placeholder e le categorie):
+seduta individuale (reiki, massaggio, riflessologia...), lezione
+privata (yoga, meditazione), consulto (naturopatia, tema natale,
+tarocchi), sessione online (via link video), lezione di gruppo
+ricorrente, percorso in N incontri (= riga con nota "pacchetto da 5",
+niente nuovo tipo: come i pacchetti Treatwell).
+
+---
+
+## PARTE 4 — Reversibilita' dei tipi congelati (garanzie tecniche)
+
+Il congelamento di physical/digital/course/rental e' progettato per
+essere riaperto in un giorno, non ricostruito:
+
+R1. Il CODICE resta nel repo: wizard, router, servizi (stock,
+    shipping, extras) NON si eliminano; si spengono le porte UI
+    (voci menu e rotte di creazione dietro flag). Niente delete di
+    file: il diff della potatura e' fatto di `if` e route guard,
+    non di rimozioni.
+R2. Il flag e' PER-ORG: organizations.legacy_commerce (default
+    false). Il system admin lo accende dalla scheda org → per quella
+    org ricompaiono menu, wizard e tipi. Nessun deploy necessario.
+R3. I DATI restano al loro posto (I5): prodotti, ordini, giacenze,
+    spedizioni. Un'org riattivata ritrova tutto com'era.
+R4. Il registro product_types resta completo (i 7 tipi validano
+    ancora): un documento legacy non diventa mai invalido.
+R5. GUARDIA di reversibilita' nel test suite: attivando il flag su
+    un'org di test, le rotte wizard rispondono e un prodotto physical
+    di prova si crea e pubblica. Cosi' la riattivazione non puo'
+    marcire in silenzio.
+R6. Documentazione: docs/LEGACY_COMMERCE.md con la procedura di
+    riattivazione (2 righe) e l'inventario di cosa e' dietro il flag.
+
+---
+
+## PARTE 5 — Architettura target (v2)
+
+### I due oggetti
+1. LISTINO (service): righe = Product item_type=service (I8).
+2. RITIRO (event): INVARIATO, con la sua landing /e/ (I1) e la
+   directory /ritiri. Il wizard evento non si tocca in questo ciclo.
+
+### La pagina unica pubblica: /o/{slug}
+Hero → Chi sono + intervista → LISTINO (righe per categoria, prezzo/
+durata, bottone per riga) → Prossimi ritiri (card → landing /e/) →
+Gallery → Recensioni → Contatti.
+
+Bottone per riga di listino, riusando I2/I3/I4 cosi' come sono:
+- transaction_mode=direct + Stripe pronto → "Prenota": slot picker
+  (stesso componente di /p/) in overlay + checkout Stripe esistente
+- default (request) → "Richiedi appuntamento": flusso richiesta
+  esistente (ordine in stato richiesta + notifica operatore)
+- price_mode=inquiry → "Chiedi info"
+
+/s/{slug}* → redirect 301 a /o/{slug} (I6). /p/ resta viva (I1).
+
+### Back-office target (7 voci)
+Home · Listino · Ritiri · Calendario · Richieste e ordini ·
+Profilo pubblico · Impostazioni.
+(Incassi, Recensioni, Visibilita', Newsletter form, Clienti: si
+decidono in TW0 dove atterrano; nulla si cancella.)
+
+### La pagina Listino
+Editing inline, niente wizard: riga = nome*, categoria, durata,
+prezzo o "su richiesta", modalita' (in presenza/online), note.
+"Avanzate" collassate = descrizione lunga, immagine, calendario
+dedicato, opzioni, campi custom richiesta, promemoria (le TAB 2-3-4
+del vecchio wizard diventano un accordion: le impostazioni esistenti
+si SFRUTTANO, non si ricostruiscono: stesso payload API products).
+Interruttore "Listino online" + link "vedi il tuo profilo".
+Promemoria appuntamento: ON di default sulle nuove righe.
+
+### Gate: da store-first a profile-first
+Per pubblicare bastano nome pubblico + citta' + foto. Lo store
+tecnico si auto-crea invisibile alla prima pubblicazione (name = nome
+org, is_default, mai in UI): ordini e legal continuano a referenziare
+uno store vero → NIENTE cambi al checkout (I2/I3).
+
+### Onboarding 3 passi
+Presentati → Il tuo listino → Sei online (+ Stripe opzionale per
+incassare online; ritiro come suggerimento post-onboarding).
+
+---
+
+## PARTE 6 — Piano operativo v2 (onde TW con verifica di non-regressione)
+
+### TW0 — Decisioni founder
+- [ ] Congelamento physical/digital/course/rental con garanzie R1-R6
+- [ ] POS: proposta congelato col legacy (era legato allo store)
+- [ ] /s/ → 301 su /o/
+- [ ] Dove atterrano Incassi/Clienti/Newsletter form/Visibilita'
+- [ ] Promemoria appuntamento default ON: conferma
+
+### TW1 — Pagina Listino (back-office), zero rotture
+- GET/PUT listino sopra i products service esistenti (stessa API
+  products sotto, default: transaction_mode=request, agenda ufficiale)
+- Pagina /listino: righe inline + Avanzate (accordion che riusa i
+  componenti del wizard: AvailabilityRulesEditor, ServiceOptionsEditor)
+- Auto-store invisibile alla prima pubblicazione
+- /services/new e /services/:id → redirect a /listino
+- VERIFICA: la Consulenza reiki appare nel listino senza migrazione;
+  suite verde; /p/ e /e/ rispondono identici a prima
 
 ### TW2 — Il profilo diventa il negozio (pubblico)
-- GET /public/operator/{slug}: aggiunge `listino` (righe pubblicate,
-  raggruppate per categoria, con modalita' e prezzo)
-- OperatorProfilePage: sezione Listino con "Prenota" / "Richiedi
-  appuntamento" per riga (riuso slot picker + checkout /p/ esistenti,
-  anche in overlay senza cambiare pagina)
+- /public/operator/{slug} espone `listino`; sezione Listino su /o/
+  con Prenota/Richiedi (overlay slot picker + checkout ESISTENTI)
 - Card directory /operatori: "da X€ · N servizi · categorie"
-- SEO: Service schema per riga (provider = LocalBusiness del profilo),
-  shell aggiornata
-- Fase rete: il listino si VEDE (e' presentazione), i bottoni Prenota
-  seguono prelaunch_mode come oggi il checkout
+- SEO: Service schema per riga nel LocalBusiness del profilo
+- Fase rete: listino visibile (presentazione), bottoni transazionali
+  gated da prelaunch_mode come il resto
+- VERIFICA: un acquisto service end-to-end in locale via profilo
+  (request e direct) + un acquisto evento via landing /e/ INVARIATO
 
-### TW3 — La potatura (dopo TW0)
-- Flag org `legacy_commerce` (default off; on per org che hanno gia'
-  prodotti dei tipi congelati): governa menu, rotte wizard, moduli
-- Menu ridotto alle 7 voci; pagine Stores/Store Settings via dalla
-  nav; store_guard → profile_guard (nome+citta'+foto)
-- Redirect: /s/{slug}* → /o/{slug} (301 SPA + shell canonical)
-- Admin: pannello riattivazione legacy per org
+### TW3 — Potatura reversibile (dopo TW0)
+- organizations.legacy_commerce (default off; ON automatico per org
+  che possiedono gia' prodotti dei tipi congelati: nessuno oggi)
+- Menu a 7 voci; Stores/Store Settings via dalla nav; store_guard →
+  profile_guard; /s/* → 301 /o/
+- Admin: interruttore legacy nella scheda org + docs/LEGACY_COMMERCE.md
+- VERIFICA: guardia R5 (riattivazione funziona), ordini storici
+  leggibili, suite verde
 
 ### TW4 — Onboarding 3 passi + chiusura
-- /inizia riscritta: Presentati → Listino → Online (ritiro come
-  suggerimento successivo); onboarding-status riscritto sui 3 passi
-- Guardie: profilo pubblico DEVE avere listino se ha servizi
-  pubblicati; niente rotte store nella nav; redirect vivi; suite
-- Metriche: tempo-a-primo-servizio-online (evento GA4 sul publish
-  della prima riga), funnel onboarding
+- /inizia riscritta (Presentati → Listino → Online; ritiro suggerito
+  dopo); onboarding-status sui 3 passi
+- Guardie invarianti I1-I8 in test_listino_tw.py; metrica GA4
+  "primo servizio online"; runbook deploy
+- VERIFICA: percorso completo da signup nuovo a profilo online in
+  locale, cronometrato
 
-### Dipendenze
-TW1 → TW2 (il pubblico legge cio' che il back-office scrive).
-TW3 dopo TW0. TW4 ultima. EventWizard e semplificazione ritiri:
-ciclo successivo dedicato.
+Ordine: TW1 → TW2 → (TW0) → TW3 → TW4. EventWizard: ciclo successivo.
 
 ---
 
-## La misura del successo
+## Fonti (analisi Treatwell)
 
-Oggi: 4 macro-step, ~10 schermate, un concetto (store) da capire
-senza valore percepito, e il servizio invisibile sul profilo.
-
-Target: signup → nome+citta'+foto → una riga di listino → ONLINE.
-Tre passi, una pagina da gestire, un link da condividere
-(aurya.life/o/tuonome) che e' insieme biglietto da visita e cassa.
+- Prezzi e modello: https://www.treatwell.it/partners/prezzi/
+  (25% prima prenotazione nuovi clienti marketplace, 0% ritorni,
+  ~2% prepagamenti online, agenda/SMS/profilo unico, POS in Advanced)
+- Piattaforma partner: https://www.treatwell.it/partners/
+- Best practice listino: https://www.treatwell.it/partners/risorse/blog/come-aggiornare-la-lista-dei-servizi-del-tuo-salone-in-primavera-e-ottenere-piu-prenotazioni/
