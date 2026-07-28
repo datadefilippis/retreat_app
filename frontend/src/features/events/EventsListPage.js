@@ -1,26 +1,45 @@
 /**
- * EventsListPage — thin wrapper kept for backward-compat on the
- * /events route. After Onda 7 M1 the real implementation lives in
- * the shared <EventsGrid /> component so it can also be embedded
- * inside ProductsPage (the canonical "prodotti hub" entry).
+ * EventsListPage — /events (RS1, 28/7/2026).
+ * docs/RITIRI_INTEGRITA_PIANO_2026-07.md
  *
- * Once the redirect from /events to /products?type=event_ticket is
- * verified stable, this file can be removed entirely in favour of
- * the embedded view. Kept for now so direct bookmarks still open
- * a recognisable surface with "+ Nuovo evento" CTA.
+ * La casa dei ritiri nel back-office: SOLO ritiri, dentro la shell
+ * dell'app (AppLayout), col linguaggio dell'operatore. Niente hub
+ * multi-tipo: ProductsPage resta viva su /products per le org con
+ * commerce legacy (R1/R5 del piano Listino).
  */
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Plus } from 'lucide-react';
+import { AppLayout, Header } from '../../components/Layout';
+import { Button } from '../../components/ui/button';
 import EventsGrid from './components/EventsGrid';
 
 
 export default function EventsListPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation('products');
   return (
-    <EventsGrid
-      embedded={false}
-      onCreateClick={() => navigate('/events/new')}
-    />
+    <AppLayout>
+      <Header
+        title={t('grids.event.title', { defaultValue: 'Ritiri' })}
+        subtitle={t('grids.event.subtitle', {
+          defaultValue: "Gestisci tutti i tuoi ritiri, date e check-in in un'unica schermata.",
+        })}
+      />
+      <div className="p-4 md:p-8" data-testid="events-home">
+        <div className="flex justify-end mb-2">
+          <Button size="sm" onClick={() => navigate('/events/new')}
+                  data-testid="events-new-cta">
+            <Plus className="mr-1.5 h-4 w-4" />
+            {t('grids.event.createCta', { defaultValue: 'Crea un ritiro' })}
+          </Button>
+        </div>
+        {/* embedded: la griglia porta filtri, stati e card; il titolo
+            e la CTA li mette questa pagina */}
+        <EventsGrid embedded onCreateClick={() => navigate('/events/new')} />
+      </div>
+    </AppLayout>
   );
 }

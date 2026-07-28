@@ -242,3 +242,37 @@ class TestOnboardingTW4:
         doc = (BACKEND_DIR.parent / "docs"
                / "RUNBOOK_DEPLOY_LISTINO.md").read_text()
         assert "legacy_commerce" in doc and "Rollback" in doc
+
+
+class TestRitiriRS:
+    """Ciclo Ritiri (docs/RITIRI_INTEGRITA_PIANO_2026-07.md).
+    RS0: /listino dentro la shell dell'app. RS1: /events e' una
+    pagina di soli ritiri, non un redirect all'hub prodotti."""
+
+    def test_rs0_listino_in_app_shell(self):
+        page = (FRONTEND_SRC / "features" / "listino"
+                / "ListinoPage.js").read_text()
+        assert "<AppLayout>" in page and "<Header" in page
+
+    def test_rs1_events_is_dedicated_page(self):
+        app = (FRONTEND_SRC / "App.js").read_text()
+        # /events monta la pagina ritiri, non il redirect all'hub
+        block = app.split('path="/events"')[1][:160]
+        assert "EventsListPage" in block
+        assert 'Navigate to="/products?type=event_ticket"' not in app
+
+    def test_rs1_events_page_speaks_ritiri(self):
+        page = (FRONTEND_SRC / "features" / "events"
+                / "EventsListPage.js").read_text()
+        assert "<AppLayout>" in page
+        assert "EventsGrid" in page
+        # niente vocabolario e-commerce nella casa dei ritiri
+        assert "prodott" not in page.lower().replace(
+            "hub multi-tipo: productspage", "")
+
+    def test_rs1_products_hub_still_alive_for_legacy(self):
+        """R1/R5: l'hub multi-tipo resta raggiungibile su /products."""
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/products"' in app
+        assert (FRONTEND_SRC / "features" / "products"
+                / "ProductsPage.js").exists()

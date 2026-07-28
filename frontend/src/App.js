@@ -46,6 +46,7 @@ const ProductPerformancePage = lazy(() => import("./features/product-catalog/Pro
 const ProductsPage = lazy(() => import("./features/products/ProductsPage"));
 const CheckInPage = lazy(() => import("./features/events/CheckInPage"));
 const EventDashboardPage = lazy(() => import("./features/events/EventDashboardPage"));
+const EventsListPage = lazy(() => import("./features/events/EventsListPage"));
 const EventWizard = lazy(() => import("./features/events/EventWizard"));
 import RetreatsCalendarPage from "./features/storefront/RetreatsCalendarPage";
 import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
@@ -625,13 +626,11 @@ function AppRoutes() {
         path="/products"
         element={<ProtectedRoute><ProductsPage /></ProtectedRoute>}
       />
-      {/* Onda 7 M1 — /events is now embedded inside /products?type=event_ticket.
-          Keep this redirect so existing bookmarks and the old sidebar link
-          still land on the unified hub. EventsListPage retained for now as
-          a backward-compat wrapper (see its own comment). */}
+      {/* RS1 — Ritiri e' una pagina di ritiri: niente hub multi-tipo.
+          ProductsPage resta viva su /products per il commerce legacy. */}
       <Route
         path="/events"
-        element={<Navigate to="/products?type=event_ticket" replace />}
+        element={<ProtectedRoute><EventsListPage /></ProtectedRoute>}
       />
       {/* G2: guided event creation wizard (dedicated flow for event_ticket) */}
       <Route
