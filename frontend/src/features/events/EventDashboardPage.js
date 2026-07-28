@@ -714,7 +714,7 @@ export default function EventDashboardPage() {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div className="min-w-0">
-              <Link to="/products?type=event_ticket" className="inline-flex items-center gap-1 text-sm font-medium text-white/70 hover:text-white transition-colors">{t('dashboards.event.back')}</Link>
+              <Link to="/events" className="inline-flex items-center gap-1 text-sm font-medium text-white/70 hover:text-white transition-colors">{t('dashboards.event.back')}</Link>
               <p className="text-[10px] uppercase tracking-widest opacity-70 mt-2">{t('dashboards.event.typeLabel')}</p>
               <h1 className="text-2xl sm:text-3xl font-bold mt-1">
                 {occurrence.product_name || t('dashboards.event.fallbackName')}

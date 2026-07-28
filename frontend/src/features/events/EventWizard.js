@@ -17,11 +17,11 @@
  * focused tabs and creates product + occurrence + tiers atomically
  * via POST /api/event-occurrences/wizard.
  *
- * Tabs:
- *   1. Cosa offri   — name, description, cover image, base price
- *   2. Quando/dove  — start/end, capacity, venue + address + lat/lng
- *   3. Biglietti    — tiers with +/- rows, up/down reorder, validation
- *   4. Pubblica     — summary + publish toggle + Crea event
+ * Passi (RS2, docs/RITIRI_INTEGRITA_PIANO_2026-07.md):
+ *   1. Il tuo ritiro       — nome, categoria, date, luogo
+ *   2. Prezzo e posti      — prezzo, capienza, opzioni di partecipazione
+ *   3. Regole e caparra    — come si prenota, caparra/saldo, cancellazione
+ *   4. Racconta e pubblica — descrizione, foto, programma, campi, pubblica
  *
  * Keeps the landing (E3) / dashboard (E6) / check-in (E5) surfaces
  * untouched — on success we navigate straight to /events/:occurrence_id
@@ -29,6 +29,10 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+// RS2 — il wizard vive FUORI da AppLayout: al deep-link diretto su
+// /events/new i bundle i18n del back-office non sono ancora caricati
+// (li porta Layout). Import esplicito, altrimenti chiavi crude.
+import '../../i18n-admin';
 import MultiLangSection from '../../components/MultiLangSection';
 import RetreatContentEditor from './components/RetreatContentEditor';
 import LocationPickerMap from '../../components/LocationPickerMap';
@@ -68,14 +72,20 @@ import { showImageUploadFailedToast } from '../../lib/imageUploadFailedToast';
 // render time via t('wizards.event.tabs.<key>') so translations stay
 // in the JSON catalog.
 
+// RS2 (28/7) — 4 passi col linguaggio dell'operatore. Prima le cose
+// essenziali; tutto il resto e' facoltativo e dichiarato tale.
 const TABS = [
-  { key: 'base',     n: 1 },
-  { key: 'where',    n: 2 },
-  { key: 'tickets',  n: 3 },
-  { key: 'program',  n: 4 },   // 7/7 founder: il programma GIÀ in creazione
-  { key: 'payments', n: 5 },   // Fase 2 (retreat) — "Come incassi"
-  { key: 'publish',  n: 6 },
+  { key: 'ritiro',  n: 1 },   // nome, categoria, date, luogo
+  { key: 'prezzo',  n: 2 },   // prezzo, posti, opzioni di partecipazione
+  { key: 'regole',  n: 3 },   // come si prenota, caparra, cancellazione
+  { key: 'publish', n: 4 },   // racconta e pubblica
 ];
+const TAB_LABELS = {
+  ritiro: 'Il tuo ritiro',
+  prezzo: 'Prezzo e posti',
+  regole: 'Regole e caparra',
+  publish: 'Racconta e pubblica',
+};
 
 // Fase 3 (retreat) — preset campi partecipante: un click al posto della
 // configurazione a mano. id slug stabili (schema FieldConfig).
@@ -106,6 +116,26 @@ const DEFAULT_PAYMENT_PLAN = {
   cancellation_policy: [
     { days_before: 60, refund_percent: 100 },
     { days_before: 30, refund_percent: 50 },
+    { days_before: 0, refund_percent: 0 },
+  ],
+};
+
+// RS2 — tre politiche di cancellazione pronte: un click e poi, se
+// serve, si personalizzano riga per riga.
+const CANCELLATION_PRESETS = {
+  flessibile: [
+    { days_before: 15, refund_percent: 100 },
+    { days_before: 5, refund_percent: 50 },
+    { days_before: 0, refund_percent: 0 },
+  ],
+  equilibrata: [
+    { days_before: 60, refund_percent: 100 },
+    { days_before: 30, refund_percent: 50 },
+    { days_before: 0, refund_percent: 0 },
+  ],
+  rigida: [
+    { days_before: 60, refund_percent: 50 },
+    { days_before: 30, refund_percent: 25 },
     { days_before: 0, refund_percent: 0 },
   ],
 };
@@ -220,7 +250,7 @@ export default function EventWizard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, i18n } = useTranslation('products');
-  const [activeTab, setActiveTab] = useState('base');
+  const [activeTab, setActiveTab] = useState('ritiro');
   const [submitting, setSubmitting] = useState(false);
 
   // G6: Duplicate prefill hand-off. EventDashboardPage.handleDuplicate
@@ -329,6 +359,12 @@ export default function EventWizard() {
       sort_order: t.sort_order ?? i,
     }));
   });
+
+  // RS2 — le opzioni di partecipazione sono un accordion: aperto solo
+  // se il duplica ne porta gia' (altrimenti il prezzo unico basta)
+  const [showTiers, setShowTiers] = useState(
+    () => (prefillRef.current?.tiers || []).length > 0
+  );
 
   // Wave 1 (W1.S5/Phase 2.4) — cost composition. Hydrated from prefill
   // when duplicating an existing event, otherwise null.
@@ -510,11 +546,13 @@ export default function EventWizard() {
   const paymentsValid = Object.keys(errorsPayments).length === 0;
   const allValid = baseValid && whereValid && tiersValid && paymentsValid;
 
+  // RS2 — errori mappati sui 4 passi (il prezzo vive nel passo 2)
+  const ritiroValid = !errorsBase.name && !errorsBase.category && whereValid;
+  const prezzoValid = !errorsBase.unit_price && tiersValid;
   const tabHasErrors = {
-    base: !baseValid,
-    where: !whereValid,
-    tickets: !tiersValid,
-    payments: !paymentsValid,
+    ritiro: !ritiroValid,
+    prezzo: !prezzoValid,
+    regole: !paymentsValid,
     publish: !allValid,
   };
 
@@ -765,10 +803,10 @@ export default function EventWizard() {
         <div className="border-b border-gray-100 bg-gray-50">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-2">
             <Link
-              to="/products?type=event_ticket"
+              to="/events"
               className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
-              {t('wizards.event.back')}
+              {t('wizards.event.backToRetreats', { defaultValue: '← Torna ai ritiri' })}
             </Link>
           </div>
         </div>
@@ -816,7 +854,7 @@ export default function EventWizard() {
                 }`}
               >
                 <span className="tabular-nums">{tab.n}</span>
-                <span>{t(`wizards.event.tabs.${tab.key}`)}</span>
+                <span>{t(`wizards.event.tabsRs2.${tab.key}`, { defaultValue: TAB_LABELS[tab.key] })}</span>
                 {err && <span aria-hidden>!</span>}
                 {done && <span aria-hidden>✓</span>}
               </button>
@@ -845,12 +883,16 @@ export default function EventWizard() {
           />
         )}
 
-        {/* ── TAB 1: Cosa offri ─────────────────────────────────────── */}
-        {activeTab === 'base' && (
+        {/* ── PASSO 1: Il tuo ritiro ────────────────────────────────── */}
+        {activeTab === 'ritiro' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
             <div className="border-l-[3px] border-primary/60 pl-3">
-              <h2 className="text-base font-semibold text-gray-900">{t('wizards.event.base.title')}</h2>
-              <p className="text-xs text-gray-500 mt-0.5">{t('wizards.event.base.subtitle')}</p>
+              <h2 className="text-base font-semibold text-gray-900">
+                {t('wizards.event.ritiro.title', { defaultValue: 'Il tuo ritiro' })}
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {t('wizards.event.ritiro.subtitle', { defaultValue: 'Come si chiama e di cosa parla. Bastano nome e categoria, il resto puoi aggiungerlo dopo.' })}
+              </p>
             </div>
 
             <MultiLangSection fields={[
@@ -909,96 +951,11 @@ export default function EventWizard() {
               {fieldError(errorsBase.category)}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.base.imageLabel')}</label>
-                {/* File picker — uploaded right after wizard creates the product */}
-                <label className="flex items-center gap-2 cursor-pointer rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-gray-900 transition-colors">
-                  <span>📁 {imageFile ? imageFile.name : t('wizards.event.base.imageFileLabel')}</span>
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.webp"
-                    className="hidden"
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      // 2026-05-20 — useObjectURL handles the blob URL
-                      // lifecycle (create + revoke) automatically.
-                      setImageFile(file);
-                      setBase(prev => ({ ...prev, image_url: '' }));
-                      e.target.value = '';
-                    }}
-                  />
-                </label>
-                {/* URL fallback */}
-                <input
-                  type="url" value={base.image_url}
-                  onChange={e => {
-                    setBase({ ...base, image_url: e.target.value });
-                    // 2026-05-20 — useObjectURL revokes automatically when imageFile becomes null.
-                    if (e.target.value) { setImageFile(null); }
-                  }}
-                  maxLength={500}
-                  placeholder={t('wizards.common.imageUrlPlaceholder')}
-                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                />
-                {(imageFilePreview || base.image_url) && (
-                  <img
-                    src={imageFilePreview || base.image_url}
-                    alt=""
-                    className="mt-2 h-16 w-full object-cover rounded-md border"
-                  />
-                )}
-                <p className="text-[11px] text-gray-500 mt-1">
-                  {t('wizards.event.base.imageHint')}
-                </p>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.base.priceLabel')}</label>
-                {/* 2026-05-20 — locale-aware PriceInput (accepts "10,50"). */}
-                <PriceInput
-                  value={base.unit_price}
-                  onValueChange={(_n, raw) => setBase({ ...base, unit_price: raw })}
-                  min={0}
-                  decimals={2}
-                  placeholder={t('wizards.event.base.pricePlaceholder')}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-                />
-                <p className="text-[11px] text-gray-500 mt-1">
-                  {t('wizards.event.base.priceHint')}
-                </p>
-                {fieldError(errorsBase.unit_price)}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.base.modeLabel')}</label>
-              <div className="flex gap-2">
-                {[
-                  { v: 'direct',  labelKey: 'wizards.event.base.modeDirect' },
-                  { v: 'request', labelKey: 'wizards.event.base.modeRequest' },
-                ].map(opt => (
-                  <button
-                    key={opt.v} type="button"
-                    onClick={() => setBase({ ...base, transaction_mode: opt.v })}
-                    className={`flex-1 rounded-md border px-3 py-2 text-xs font-medium text-left ${
-                      base.transaction_mode === opt.v
-                        ? 'border-gray-900 bg-gray-50 text-gray-900'
-                        : 'border-gray-300 text-gray-600 hover:border-gray-500'
-                    }`}
-                  >{t(opt.labelKey)}</button>
-                ))}
-              </div>
-              <StripeRequiredAlert whenTransactionMode={base.transaction_mode} />
-              {/* GT7 — la conseguenza-directory si vede QUI, non a
-                  pubblicazione avvenuta */}
-              <DirectoryListingHint mode={base.transaction_mode} />
-            </div>
           </div>
         )}
 
-        {/* ── TAB 2: Quando e dove ──────────────────────────────────── */}
-        {activeTab === 'where' && (
+        {/* ── PASSO 1 (segue): Quando e dove ────────────────────────── */}
+        {activeTab === 'ritiro' && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
             <div className="border-l-[3px] border-primary/60 pl-3">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.event.where.title')}</h2>
@@ -1026,16 +983,6 @@ export default function EventWizard() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.where.capacityLabel')}</label>
-              <input
-                type="number" min="1" value={where.capacity}
-                onChange={e => setWhere({ ...where, capacity: e.target.value })}
-                placeholder={t('wizards.event.where.capacityPlaceholder')}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-              />
-              {fieldError(errorsWhere.capacity)}
-            </div>
 
             <div className="border-t pt-3 space-y-3">
               <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">{t('wizards.event.where.locationHeader')}</p>
@@ -1141,51 +1088,73 @@ export default function EventWizard() {
               </p>
             </div>
 
-            <div className="border-t pt-3">
-              <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.where.coverLabel')}</label>
-              <label className="flex items-center gap-2 cursor-pointer rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-gray-900 transition-colors">
-                <span>📁 {coverFile ? coverFile.name : t('wizards.event.where.coverFileLabel')}</span>
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp"
-                  className="hidden"
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    // 2026-05-20 — useObjectURL handles blob lifecycle.
-                    setCoverFile(file);
-                    setWhere(prev => ({ ...prev, cover_image_url: '' }));
-                    e.target.value = '';
-                  }}
-                />
-              </label>
-              <input
-                type="url" value={where.cover_image_url}
-                onChange={e => {
-                  setWhere({ ...where, cover_image_url: e.target.value });
-                  if (e.target.value) { setCoverFile(null); }
-                }}
-                maxLength={500}
-                placeholder={t('wizards.event.where.coverUrlPlaceholder')}
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-              />
-              {(coverFilePreview || where.cover_image_url) && (
-                <img src={coverFilePreview || where.cover_image_url} alt="" className="mt-2 h-16 w-full object-cover rounded-md border" />
-              )}
-            </div>
           </div>
         )}
 
-        {/* ── TAB 3: Biglietti ──────────────────────────────────────── */}
-        {activeTab === 'tickets' && (
+
+
+        {/* ── PASSO 2: Prezzo e posti ───────────────────────────────── */}
+        {activeTab === 'prezzo' && (
           <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+              <div className="border-l-[3px] border-primary/60 pl-3">
+                <h2 className="text-base font-semibold text-gray-900">
+                  {t('wizards.event.prezzo.title', { defaultValue: 'Prezzo e posti' })}
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {t('wizards.event.prezzo.subtitle', { defaultValue: 'Quanto costa partecipare e quante persone puoi accogliere.' })}
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.base.priceLabel')}</label>
+                {/* 2026-05-20 — locale-aware PriceInput (accepts "10,50"). */}
+                <PriceInput
+                  value={base.unit_price}
+                  onValueChange={(_n, raw) => setBase({ ...base, unit_price: raw })}
+                  min={0}
+                  decimals={2}
+                  placeholder={t('wizards.event.base.pricePlaceholder')}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                />
+                <p className="text-[11px] text-gray-500 mt-1">
+                  {t('wizards.event.prezzo.priceHint', { defaultValue: 'Prezzo per persona. Se crei opzioni di partecipazione qui sotto, vale il prezzo di ogni opzione.' })}
+                </p>
+                {fieldError(errorsBase.unit_price)}
+              </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.where.capacityLabel')}</label>
+              <input
+                type="number" min="1" value={where.capacity}
+                onChange={e => setWhere({ ...where, capacity: e.target.value })}
+                placeholder={t('wizards.event.where.capacityPlaceholder')}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+              />
+              {fieldError(errorsWhere.capacity)}
+            </div>
+              </div>
+            </div>
 
-          {/* D4/A.2 — sezione 1: la cosa principale del tab */}
-          <div className="flex items-center gap-2 pt-1">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">1</span>
-            <h3 className="text-sm font-semibold">{t('wizards.event.tickets.sectionSeats', { defaultValue: 'Posti e pacchetti' })}</h3>
-          </div>
-
+            {/* RS2 — le tipologie diventano "opzioni di partecipazione",
+                dietro un toggle: se non ne crei vale il prezzo unico */}
+            <div className="rounded-xl border border-gray-200 bg-white">
+              <button
+                type="button" onClick={() => setShowTiers(v => !v)}
+                data-testid="tiers-toggle"
+                className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
+              >
+                <span>
+                  <span className="block text-sm font-semibold text-gray-900">
+                    {t('wizards.event.prezzo.tiersToggle', { defaultValue: 'Opzioni di partecipazione (facoltative)' })}
+                  </span>
+                  <span className="block text-xs text-gray-500 mt-0.5">
+                    {t('wizards.event.prezzo.tiersToggleHint', { defaultValue: 'Prezzi diversi per camera singola, condivisa, senza alloggio. Se non ne crei, vale il prezzo unico qui sopra.' })}
+                  </span>
+                </span>
+                <span className="text-gray-400" aria-hidden>{showTiers ? '▴' : '▾'}</span>
+              </button>
+            </div>
+            {showTiers && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
             <div className="flex items-start justify-between">
               <div className="border-l-[3px] border-primary/60 pl-3">
@@ -1313,162 +1282,55 @@ export default function EventWizard() {
               </div>
             )}
           </div>
-
-          {/* W1.S5/Phase 2.4 — Cost composition. Optional for events
-              (typical configuration: a manual component for venue +
-              speaker cost amortised over expected attendance). */}
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
-            <div>
-              <span className="text-sm font-medium text-gray-900">
-                {t('product_cost:section.title', 'Costo del prodotto')}
-              </span>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {t('product_cost:section.subtitle', 'Definisci come calcolare il margine per questo prodotto.')}
-              </p>
-            </div>
-          {/* D4/A.2 — sezione 2: cosa chiediamo a chi partecipa */}
-          <div className="flex items-center gap-2 pt-3">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">2</span>
-            <h3 className="text-sm font-semibold">{t('wizards.event.tickets.sectionAttendees', { defaultValue: 'Dati dei partecipanti' })}</h3>
-          </div>
-          {/* F1: Attendee details policy — separate card above tiers */}
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={requiresAttendeeDetails}
-                onChange={e => setRequiresAttendeeDetails(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
-              />
-              <div className="flex-1">
-                <span className="block text-sm font-semibold text-gray-900">
-                  {t('wizards.event.tickets.requireDetailsTitle')}
-                </span>
-                <span className="block text-xs text-gray-500 mt-0.5">
-                  {requiresAttendeeDetails
-                    ? t('wizards.event.tickets.requireDetailsDescOn')
-                    : t('wizards.event.tickets.requireDetailsDescOff')}
-                </span>
-              </div>
-            </label>
-
-            {/* F2: contacts required-ness + custom fields (visible when policy is ON) */}
-            {requiresAttendeeDetails && (
-              <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-                <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                  {t('wizards.event.tickets.baseFieldsHeading')}
-                </p>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-900">{t('wizards.event.tickets.nameField')}</span>
-                  <span className="text-xs text-gray-500">{t('wizards.event.tickets.alwaysRequired')}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-900">{t('wizards.event.tickets.emailField')}</span>
-                  <label className="flex items-center gap-2 text-xs cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={requireAttendeeEmail}
-                      onChange={e => setRequireAttendeeEmail(e.target.checked)}
-                      className="rounded border-gray-300"
-                    />
-                    <span>{t('wizards.event.tickets.emailRequired')}</span>
-                  </label>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-900">{t('wizards.event.tickets.phoneField')}</span>
-                  <label className="flex items-center gap-2 text-xs cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={requireAttendeePhone}
-                      onChange={e => setRequireAttendeePhone(e.target.checked)}
-                      className="rounded border-gray-300"
-                    />
-                    <span>{t('wizards.event.tickets.phoneRequired')}</span>
-                  </label>
-                </div>
-                {!requireAttendeeEmail && (
-                  <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1">
-                    {t('wizards.event.tickets.noEmailWarning')}
-                  </p>
-                )}
-              </div>
             )}
           </div>
+        )}
 
-          {/* Fase 3 — preset a un click per i campi partecipante */}
-          {requiresAttendeeDetails && (
-            <div className="rounded-xl border border-gray-200 bg-white p-4">
-              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                {t('wizards.event.tickets.presetsHeading')}
+        {/* ── PASSO 3: Regole e caparra ─────────────────────────────── */}
+        {activeTab === 'regole' && (
+          <div className="space-y-4">
+            {/* RS2 — come si prenota: spiegato in italiano, non in gergo */}
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <p className="text-sm font-semibold text-gray-900">
+                {t('wizards.event.regole.bookingHeading', { defaultValue: 'Come si prenota' })}
               </p>
-              <div className="flex flex-wrap gap-2">
-                {['base', 'residenziale', 'attivita'].map(key => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setAttendeeFieldsCfg(
-                      ATTENDEE_PRESETS[key].map(f => ({ ...f })))}
-                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-900"
+              <p className="text-xs text-gray-500 mt-0.5 mb-3">
+                {t('wizards.event.regole.bookingDesc', { defaultValue: 'Decidi tu come i partecipanti confermano il posto.' })}
+              </p>
+              <div className="space-y-2">
+                {[
+                  { v: 'direct',
+                    title: t('wizards.event.regole.modeDirectTitle', { defaultValue: 'Prenotazione online' }),
+                    desc: t('wizards.event.regole.modeDirectDesc', { defaultValue: 'Il partecipante paga sul sito e il posto è confermato subito. Serve Stripe collegato.' }) },
+                  { v: 'request',
+                    title: t('wizards.event.regole.modeRequestTitle', { defaultValue: 'Su richiesta' }),
+                    desc: t('wizards.event.regole.modeRequestDesc', { defaultValue: 'Ricevi la richiesta via email e confermi tu. Il pagamento lo concordate a parte.' }) },
+                ].map(opt => (
+                  <label
+                    key={opt.v}
+                    className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                      base.transaction_mode === opt.v
+                        ? 'border-gray-900 bg-gray-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
                   >
-                    {t(`wizards.event.tickets.presets.${key}`)}
-                  </button>
+                    <input
+                      type="radio" name="booking-mode"
+                      checked={base.transaction_mode === opt.v}
+                      onChange={() => setBase(prev => ({ ...prev, transaction_mode: opt.v }))}
+                      className="mt-0.5 h-4 w-4 border-gray-300 text-gray-900 focus:ring-gray-900"
+                    />
+                    <div className="flex-1">
+                      <span className="block text-sm font-semibold text-gray-900">{opt.title}</span>
+                      <span className="block text-xs text-gray-500 mt-0.5">{opt.desc}</span>
+                    </div>
+                  </label>
                 ))}
               </div>
-              <p className="text-[11px] text-gray-500 mt-2">
-                {t('wizards.event.tickets.presetsHint')}
-              </p>
+              <StripeRequiredAlert whenTransactionMode={base.transaction_mode} />
+              <DirectoryListingHint mode={base.transaction_mode} />
             </div>
-          )}
 
-          {/* F2: Custom fields (only when F1 toggle is ON) */}
-          {requiresAttendeeDetails && (
-            <FieldEditorList
-              fields={attendeeFieldsCfg}
-              onChange={setAttendeeFieldsCfg}
-              title={t('wizards.event.tickets.attendeeFieldsTitle')}
-              subtitle={t('wizards.event.tickets.attendeeFieldsSubtitle')}
-              emptyHint={t('wizards.event.tickets.attendeeFieldsEmpty')}
-            />
-          )}
-
-          <FieldEditorList
-            fields={orderFieldsCfg}
-            onChange={setOrderFieldsCfg}
-            title={t('wizards.event.tickets.orderFieldsTitle')}
-            subtitle={t('wizards.event.tickets.orderFieldsSubtitle')}
-            emptyHint={t('wizards.event.tickets.orderFieldsEmpty')}
-          />
-            {/* Sezione "Costo del prodotto" (COGS) rimossa dalla UI su
-                richiesta founder 16/7/2026: agli operatori Aurya non
-                serve la contabilita' margini. Lo stato costSource resta
-                e viaggia nel salvataggio, cosi' i dati gia' configurati
-                non vengono cancellati. */}
-          </div>
-          </div>
-        )}
-
-        {/* ── TAB 4: Come incassi (Fase 2 retreat) ─────────────────── */}
-        {/* ── TAB 4: Programma (7/7 founder: già in creazione) ─────── */}
-        {activeTab === 'program' && (
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <div className="mb-3">
-              <h2 className="text-base font-semibold text-gray-900">
-                {t('wizards.event.program.title', { defaultValue: 'Programma e pagina di vendita' })}
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {t('wizards.event.program.subtitle', { defaultValue: 'Programma giorno per giorno, cosa è incluso e FAQ. Puoi completarli anche dopo, dalla pagina del ritiro.' })}
-              </p>
-            </div>
-            <RetreatContentEditor
-              embedded
-              occurrence={richContent}
-              onSnapshot={setSalesContent}
-            />
-          </div>
-        )}
-
-        {activeTab === 'payments' && (
-          <div className="space-y-4">
             {/* Modalità */}
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <p className="text-sm font-semibold text-gray-900 mb-3">
@@ -1586,6 +1448,23 @@ export default function EventWizard() {
               <p className="text-xs text-gray-500 mt-0.5 mb-3">
                 {t('wizards.event.payments.policyDesc')}
               </p>
+              {/* RS2 — tre preset, poi personalizzabile riga per riga */}
+              <div className="flex flex-wrap gap-2 mb-3" data-testid="policy-presets">
+                {[
+                  { k: 'flessibile', label: t('wizards.event.regole.presetFlessibile', { defaultValue: 'Flessibile' }) },
+                  { k: 'equilibrata', label: t('wizards.event.regole.presetEquilibrata', { defaultValue: 'Equilibrata' }) },
+                  { k: 'rigida', label: t('wizards.event.regole.presetRigida', { defaultValue: 'Rigida' }) },
+                ].map(p => (
+                  <button
+                    key={p.k} type="button"
+                    onClick={() => setPaymentPlan(prev => ({
+                      ...prev,
+                      cancellation_policy: CANCELLATION_PRESETS[p.k].map(x => ({ ...x })),
+                    }))}
+                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-900"
+                  >{p.label}</button>
+                ))}
+              </div>
               <div className="space-y-2">
                 {paymentPlan.cancellation_policy.map((tier, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-sm">
@@ -1667,7 +1546,7 @@ export default function EventWizard() {
           </div>
         )}
 
-        {/* ── TAB 5: Pubblica ──────────────────────────────────────── */}
+        {/* ── PASSO 4: Racconta e pubblica ──────────────────────────── */}
         {activeTab === 'publish' && (
           <div className="space-y-4">
             {/* D4/A.3 — cue contenuti ricchi: l'operatore deve sapere che
@@ -1697,6 +1576,233 @@ export default function EventWizard() {
               />
               </MultiLangSection>
             </div>
+
+            {/* RS2 — le foto vivono qui: facoltative, aggiungibili dopo */}
+            <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
+              <h2 className="text-base font-semibold text-gray-900">
+                {t('wizards.event.publish.photosTitle', { defaultValue: 'Le foto' })}
+              </h2>
+              <p className="text-xs text-gray-500">
+                {t('wizards.event.publish.photosHint', { defaultValue: 'La prima è la foto della card nelle liste, la seconda la copertina grande della pagina. Puoi aggiungerle o cambiarle anche dopo.' })}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.base.imageLabel')}</label>
+                {/* File picker — uploaded right after wizard creates the product */}
+                <label className="flex items-center gap-2 cursor-pointer rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-gray-900 transition-colors">
+                  <span>📁 {imageFile ? imageFile.name : t('wizards.event.base.imageFileLabel')}</span>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    className="hidden"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      // 2026-05-20 — useObjectURL handles the blob URL
+                      // lifecycle (create + revoke) automatically.
+                      setImageFile(file);
+                      setBase(prev => ({ ...prev, image_url: '' }));
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+                {/* URL fallback */}
+                <input
+                  type="url" value={base.image_url}
+                  onChange={e => {
+                    setBase({ ...base, image_url: e.target.value });
+                    // 2026-05-20 — useObjectURL revokes automatically when imageFile becomes null.
+                    if (e.target.value) { setImageFile(null); }
+                  }}
+                  maxLength={500}
+                  placeholder={t('wizards.common.imageUrlPlaceholder')}
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+                />
+                {(imageFilePreview || base.image_url) && (
+                  <img
+                    src={imageFilePreview || base.image_url}
+                    alt=""
+                    className="mt-2 h-16 w-full object-cover rounded-md border"
+                  />
+                )}
+                <p className="text-[11px] text-gray-500 mt-1">
+                  {t('wizards.event.base.imageHint')}
+                </p>
+              </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.where.coverLabel')}</label>
+              <label className="flex items-center gap-2 cursor-pointer rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-gray-900 transition-colors">
+                <span>📁 {coverFile ? coverFile.name : t('wizards.event.where.coverFileLabel')}</span>
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp"
+                  className="hidden"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    // 2026-05-20 — useObjectURL handles blob lifecycle.
+                    setCoverFile(file);
+                    setWhere(prev => ({ ...prev, cover_image_url: '' }));
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+              <input
+                type="url" value={where.cover_image_url}
+                onChange={e => {
+                  setWhere({ ...where, cover_image_url: e.target.value });
+                  if (e.target.value) { setCoverFile(null); }
+                }}
+                maxLength={500}
+                placeholder={t('wizards.event.where.coverUrlPlaceholder')}
+                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+              />
+              {(coverFilePreview || where.cover_image_url) && (
+                <img src={coverFilePreview || where.cover_image_url} alt="" className="mt-2 h-16 w-full object-cover rounded-md border" />
+              )}
+            </div>
+              </div>
+            </div>
+
+            {/* RS2 — programma: facoltativo, in accordion */}
+            <details className="rounded-xl border border-gray-200 bg-white" data-testid="program-accordion">
+              <summary className="cursor-pointer select-none px-5 py-4 list-none">
+                <span className="block text-sm font-semibold text-gray-900">
+                  {t('wizards.event.publish.programToggle', { defaultValue: 'Programma giorno per giorno (facoltativo)' })}
+                </span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  {t('wizards.event.publish.programToggleHint', { defaultValue: 'Agenda, cosa è incluso e FAQ. Puoi completarli anche dopo, dalla pagina del ritiro.' })}
+                </span>
+              </summary>
+              <div className="px-5 pb-5">
+                <RetreatContentEditor
+                  embedded
+                  occurrence={richContent}
+                  onSnapshot={setSalesContent}
+                />
+              </div>
+            </details>
+
+            {/* RS2 — dati dei partecipanti: facoltativi, in accordion */}
+            <details className="rounded-xl border border-gray-200 bg-white" data-testid="attendee-accordion">
+              <summary className="cursor-pointer select-none px-5 py-4 list-none">
+                <span className="block text-sm font-semibold text-gray-900">
+                  {t('wizards.event.publish.attendeeToggle', { defaultValue: 'Dati dei partecipanti (facoltativo)' })}
+                </span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  {t('wizards.event.publish.attendeeToggleHint', { defaultValue: 'Chiedi nome, contatti o informazioni utili (allergie, taglia...) a ogni partecipante al momento della prenotazione.' })}
+                </span>
+              </summary>
+              <div className="px-5 pb-5 space-y-4">
+          {/* F1: Attendee details policy — separate card above tiers */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={requiresAttendeeDetails}
+                onChange={e => setRequiresAttendeeDetails(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+              />
+              <div className="flex-1">
+                <span className="block text-sm font-semibold text-gray-900">
+                  {t('wizards.event.tickets.requireDetailsTitle')}
+                </span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  {requiresAttendeeDetails
+                    ? t('wizards.event.tickets.requireDetailsDescOn')
+                    : t('wizards.event.tickets.requireDetailsDescOff')}
+                </span>
+              </div>
+            </label>
+
+            {/* F2: contacts required-ness + custom fields (visible when policy is ON) */}
+            {requiresAttendeeDetails && (
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  {t('wizards.event.tickets.baseFieldsHeading')}
+                </p>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-900">{t('wizards.event.tickets.nameField')}</span>
+                  <span className="text-xs text-gray-500">{t('wizards.event.tickets.alwaysRequired')}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-900">{t('wizards.event.tickets.emailField')}</span>
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={requireAttendeeEmail}
+                      onChange={e => setRequireAttendeeEmail(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <span>{t('wizards.event.tickets.emailRequired')}</span>
+                  </label>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-900">{t('wizards.event.tickets.phoneField')}</span>
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={requireAttendeePhone}
+                      onChange={e => setRequireAttendeePhone(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <span>{t('wizards.event.tickets.phoneRequired')}</span>
+                  </label>
+                </div>
+                {!requireAttendeeEmail && (
+                  <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1">
+                    {t('wizards.event.tickets.noEmailWarning')}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Fase 3 — preset a un click per i campi partecipante */}
+          {requiresAttendeeDetails && (
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
+              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                {t('wizards.event.tickets.presetsHeading')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {['base', 'residenziale', 'attivita'].map(key => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setAttendeeFieldsCfg(
+                      ATTENDEE_PRESETS[key].map(f => ({ ...f })))}
+                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-900"
+                  >
+                    {t(`wizards.event.tickets.presets.${key}`)}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-gray-500 mt-2">
+                {t('wizards.event.tickets.presetsHint')}
+              </p>
+            </div>
+          )}
+
+          {/* F2: Custom fields (only when F1 toggle is ON) */}
+          {requiresAttendeeDetails && (
+            <FieldEditorList
+              fields={attendeeFieldsCfg}
+              onChange={setAttendeeFieldsCfg}
+              title={t('wizards.event.tickets.attendeeFieldsTitle')}
+              subtitle={t('wizards.event.tickets.attendeeFieldsSubtitle')}
+              emptyHint={t('wizards.event.tickets.attendeeFieldsEmpty')}
+            />
+          )}
+
+          <FieldEditorList
+            fields={orderFieldsCfg}
+            onChange={setOrderFieldsCfg}
+            title={t('wizards.event.tickets.orderFieldsTitle')}
+            subtitle={t('wizards.event.tickets.orderFieldsSubtitle')}
+            emptyHint={t('wizards.event.tickets.orderFieldsEmpty')}
+          />
+              </div>
+            </details>
 
             {/* F4 Onda 11 — per-event Terms & Conditions override */}
             <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">

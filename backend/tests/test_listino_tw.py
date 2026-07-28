@@ -276,3 +276,51 @@ class TestRitiriRS:
         assert 'path="/products"' in app
         assert (FRONTEND_SRC / "features" / "products"
                 / "ProductsPage.js").exists()
+
+
+class TestWizardRS2:
+    """RS2 — il wizard del ritiro: 4 passi, linguaggio esplicativo,
+    stesso motore (payload e endpoint INTATTI: I1-I3)."""
+
+    def _src(self):
+        return (FRONTEND_SRC / "features" / "events"
+                / "EventWizard.js").read_text()
+
+    def test_four_steps_only(self):
+        src = self._src()
+        i = src.index("const TABS = [")
+        block = src[i:i + 400]
+        for key in ("'ritiro'", "'prezzo'", "'regole'", "'publish'"):
+            assert key in block
+        for gone in ("'base'", "'where'", "'tickets'", "'program'",
+                     "'payments'"):
+            assert gone not in block
+
+    def test_payload_engine_untouched(self):
+        """Il submit parla ancora la stessa lingua del backend: nessun
+        campo del payload wizard e' stato perso nella riorganizzazione."""
+        src = self._src()
+        for field in ("payment_plan", "transaction_mode", "store_ids",
+                      "cost_source: costSource", "wizardCreate",
+                      "cancellation_policy", "attendee_fields"):
+            assert field in src, field
+
+    def test_explicative_language(self):
+        src = self._src()
+        # come si prenota, spiegato; preset di cancellazione; opzioni
+        assert "Come si prenota" in src
+        assert "policy-presets" in src and "CANCELLATION_PRESETS" in src
+        assert "tiers-toggle" in src
+        assert "Opzioni di partecipazione" in src
+        # il percorso ritiri non manda piu' all'hub prodotti
+        assert "/products?type=event_ticket" not in src
+
+    def test_deep_link_i18n_loaded(self):
+        """Fix bug preesistente: al deep-link su /events/new i bundle
+        i18n admin non erano caricati (li portava solo Layout)."""
+        assert "import '../../i18n-admin'" in self._src()
+
+    def test_dashboard_back_goes_to_events(self):
+        dash = (FRONTEND_SRC / "features" / "events"
+                / "EventDashboardPage.js").read_text()
+        assert '"/products?type=event_ticket"' not in dash
