@@ -98,3 +98,40 @@ class TestListinoTW1:
     def test_nav_has_listino(self):
         layout = (FRONTEND_SRC / "components" / "Layout.js").read_text()
         assert "'/listino'" in layout
+
+
+class TestProfileListinoTW2:
+    """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
+    card rete con da-X-euro, OfferCatalog nella shell. I bottoni
+    portano alla landing /p/ esistente (zero nuovo checkout: I3)."""
+
+    def test_operator_endpoint_exposes_listino(self):
+        r = requests.get(f"{BASE_URL}/api/public/operator/masseria-demo",
+                         timeout=10)
+        assert r.status_code == 200
+        listino = r.json().get("listino")
+        assert isinstance(listino, list) and len(listino) >= 1
+        row = listino[0]
+        for field in ("name", "slug", "price", "on_request",
+                      "transaction_mode", "service_mode"):
+            assert field in row
+
+    def test_network_members_have_price_from(self):
+        r = requests.get(f"{BASE_URL}/api/public/network/members", timeout=10)
+        assert r.status_code == 200
+        m = r.json()["items"][0]
+        assert "services_count" in m and "price_from" in m
+
+    def test_shell_has_offer_catalog(self):
+        r = requests.get(f"{BASE_URL}/__seo/o/masseria-demo", timeout=10)
+        assert r.status_code == 200
+        assert '"@type": "OfferCatalog"' in r.text
+        assert '"@type": "Service"' in r.text
+
+    def test_profile_buttons_link_to_existing_landing(self):
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorProfilePage.js").read_text()
+        assert "profile-listino" in page
+        # il bottone usa la landing /p/ esistente, non un checkout nuovo
+        assert "/p/${org_slug}/${row.slug}" in page
+        assert "Richiedi appuntamento" in page and "Prenota" in page

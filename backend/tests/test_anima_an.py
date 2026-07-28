@@ -582,7 +582,7 @@ class TestOperatorProfileMultilang:
         # firma con parentesi: "async def _meta_operator" matcherebbe
         # anche _meta_operators_index, che nel file viene prima
         idx = src.index("async def _meta_operator(")
-        body = src[idx:idx + 4000]
+        body = src[idx:idx + 8000]   # TW2: la funzione e' cresciuta (OfferCatalog)
         assert '(_f or {}).get("bio")' in body    # gate: bio tradotta
         assert '"x-default"' in body
 

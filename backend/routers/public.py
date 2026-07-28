@@ -3834,12 +3834,26 @@ async def public_network_members():
             {"_id": 0, "organization_id": 1, "slug": 1}):
         store_slug.setdefault(s["organization_id"], s["slug"])
 
+    # TW2 — aggregato listino per card: 'da X euro · N servizi'
+    from database import products_collection
+    svc_stats = {}
+    async for row in products_collection.aggregate([
+            {"$match": {"organization_id": {"$in": org_ids},
+                        "item_type": "service", "is_published": True,
+                        "is_active": True}},
+            {"$group": {"_id": "$organization_id", "n": {"$sum": 1},
+                        "min_price": {"$min": "$unit_price"}}}]):
+        svc_stats[row["_id"]] = row
+
     items = []
     for o in orgs:
         slug = o.get("public_slug") or store_slug.get(o["id"])
         if not slug:
             continue   # senza pagina pubblica la scheda non ha destinazione
         pp = o.get("public_profile") or {}
+        stat = svc_stats.get(o["id"]) or {}
+        svc_count = stat.get("n") or 0
+        price_from = stat.get("min_price")
         items.append({
             "slug": slug,
             "name": o.get("name") or "",
@@ -3849,6 +3863,8 @@ async def public_network_members():
             "portrait_url": pp.get("portrait_url"),
             "cover_url": pp.get("cover_url"),
             "has_interview": bool(pp.get("interview")),
+            "services_count": svc_count,
+            "price_from": price_from,
             "reviews_stats": o.get("reviews_stats"),
         })
     return {"items": items, "total": len(items)}
@@ -4021,6 +4037,34 @@ async def public_operators_index(
             "categories": all_categories}
 
 
+async def _operator_listino(org_id: str) -> list:
+    """TW2 — le righe di listino pubblicate di un'org (service).
+    Proiezione minima per il rendering: il dettaglio vive su /p/."""
+    from database import products_collection
+    rows = await products_collection.find(
+        {"organization_id": org_id, "item_type": "service",
+         "is_published": True, "is_active": True},
+        {"_id": 0, "name": 1, "slug": 1, "category": 1, "unit_price": 1,
+         "price_mode": 1, "transaction_mode": 1, "description": 1,
+         "metadata.duration_minutes": 1, "metadata.service_mode": 1},
+    ).sort("category", 1).to_list(100)
+    out = []
+    for r in rows:
+        meta = r.get("metadata") or {}
+        out.append({
+            "name": r["name"],
+            "slug": r.get("slug"),
+            "category": r.get("category"),
+            "price": r.get("unit_price"),
+            "on_request": r.get("price_mode") == "inquiry",
+            "transaction_mode": r.get("transaction_mode") or "request",
+            "duration_minutes": meta.get("duration_minutes"),
+            "service_mode": meta.get("service_mode") or "in_person",
+            "note": (r.get("description") or "")[:200] or None,
+        })
+    return out
+
+
 @router.get("/operator/{org_slug}")
 async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
     """Profilo pubblico organizzatore: bio, brand, prossimi ritiri.
@@ -4107,6 +4151,11 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         # di membro della rete (assegnato dall'admin)
         "interview": pp.get("interview") or [],
         "network_member": bool(org.get("network_member")),
+        # TW2 (piano Listino) — il profilo E' il negozio: i servizi
+        # pubblicati, raggruppabili per categoria lato client. Il
+        # bottone porta alla landing /p/ esistente (slot picker +
+        # checkout o richiesta: invariante I3, zero nuovo checkout).
+        "listino": await _operator_listino(org_id),
         # PR2 — rating denormalizzato (None finché non ci sono recensioni)
         "reviews_stats": org.get("reviews_stats"),
         "reviews_open": bool(org.get("reviews_open")),

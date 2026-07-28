@@ -111,6 +111,14 @@ export default function NetworkOperatorsPage() {
                           {[m.city, m.region].filter(Boolean).join(', ')}
                         </p>
                       )}
+                      {/* TW2 — il listino gia' in card: da X euro, N servizi */}
+                      {m.services_count > 0 && (
+                        <p className="text-xs text-gray-600 mt-1.5">
+                          {m.price_from != null
+                            ? t('nwOps.priceFrom', { price: Math.round(m.price_from), count: m.services_count, defaultValue: 'da {{price}}€ · {{count}} servizi' })
+                            : t('nwOps.servicesCount', { count: m.services_count, defaultValue: '{{count}} servizi a listino' })}
+                        </p>
+                      )}
                       {m.has_interview && (
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8a7440] mt-2">
                           {t('nwOps.readInterview', { defaultValue: 'Leggi l’intervista' })}

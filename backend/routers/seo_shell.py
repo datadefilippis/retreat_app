@@ -750,8 +750,8 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     from database import stores_collection, organizations_collection
     from services import seo_schema as sx
     base = _base_url()
-    _proj = {"_id": 0, "name": 1, "public_profile": 1, "store_settings": 1,
-             "reviews_stats": 1}
+    _proj = {"_id": 0, "id": 1, "name": 1, "public_profile": 1,
+             "store_settings": 1, "reviews_stats": 1}
     store = await stores_collection.find_one(
         {"slug": org_slug, "is_published": True},
         {"_id": 0, "organization_id": 1, "name": 1, "description": 1},
@@ -806,6 +806,32 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
             jsonld["telephone"] = profile["public_phone"]
         if profile.get("public_email"):
             jsonld["email"] = profile["public_email"]
+
+    # TW2 (piano Listino) — il profilo E' il negozio: i servizi
+    # pubblicati come OfferCatalog del LocalBusiness (schema.org).
+    from routers.public import _operator_listino
+    _org_id_for_listino = org.get("id") if isinstance(org, dict) else None
+    if _org_id_for_listino:
+        try:
+            _rows = await _operator_listino(_org_id_for_listino)
+        except Exception:               # noqa: BLE001 — mai 500 sulla shell
+            _rows = []
+        if _rows:
+            jsonld["hasOfferCatalog"] = {
+                "@type": "OfferCatalog",
+                "name": f"Listino di {name}",
+                "itemListElement": [
+                    {"@type": "Offer",
+                     "itemOffered": {"@type": "Service",
+                                     "name": r["name"],
+                                     "provider": {"@type": "LocalBusiness",
+                                                  "name": name}},
+                     **({"price": r["price"], "priceCurrency": "EUR"}
+                        if (r.get("price") and not r.get("on_request"))
+                        else {})}
+                    for r in _rows[:20]
+                ],
+            }
 
     # Title local-oriented: "{nome} · ritiri a {città} | Aurya" cattura la
     # query di brand+luogo dell'operatore.
