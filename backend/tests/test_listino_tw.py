@@ -428,3 +428,37 @@ class TestClientiRS4:
                          timeout=10)
         # senza auth: 401/403 auth, NON un 500 da dependency rotta
         assert r.status_code in (401, 403)
+
+
+class TestFunnelRS5:
+    """RS5 — integrita' del funnel: fonte unica del consenso, Passaporto
+    onesto, audit senza doppioni, promessa sull'email."""
+
+    def test_magic_link_on_request_confirm(self):
+        """Il magic link parte anche alla CONFERMA di una richiesta,
+        non solo al pagamento (prima l'account restava pending e
+        irraggiungibile)."""
+        src = (BACKEND_DIR / "routers" / "orders.py").read_text()
+        assert "send_claim_email_if_needed" in src
+
+    def test_doc_audit_only_on_real_click(self):
+        """Niente doppioni: l'audit dei documenti si scrive solo su
+        click reale (il loggato ha gia' il record CG-4 dal signup)."""
+        ocs = (BACKEND_DIR / "services"
+               / "order_creation_service.py").read_text()
+        assert "_clicked_docs" in ocs
+
+    def test_newsletter_stats_include_checkout_optins(self):
+        """Fonte unica: la vista newsletter conta anche i consensi
+        dal checkout (email distinte, revoche escluse, unione onesta)."""
+        nf = (BACKEND_DIR / "routers" / "newsletter_forms.py").read_text()
+        assert "checkout_optins" in nf and "reachable_total" in nf
+        page = (FRONTEND_SRC / "features" / "newsletter"
+                / "NewsletterPage.js").read_text()
+        assert "checkout-optins-line" in page
+        assert "customers-light" in page  # il link 'Vedile in Clienti'
+
+    def test_checkout_email_promise(self):
+        sf = (FRONTEND_SRC / "features" / "storefront"
+              / "StorefrontPage.js").read_text()
+        assert "email-promise" in sf

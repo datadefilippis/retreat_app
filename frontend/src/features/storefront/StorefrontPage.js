@@ -2972,6 +2972,12 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
                         })}
                       </p>
                     )}
+                    {/* RS5 — la promessa sull'email, in una riga */}
+                    <p className="text-[11px] text-gray-500" data-testid="email-promise">
+                      {t('storefront:checkout.gdpr.email_promise', {
+                        defaultValue: 'La tua email serve solo per questa prenotazione e per il link alle tue prenotazioni. Niente promozioni senza la spunta qui sopra.',
+                      })}
+                    </p>
                   </div>
                 )}
 

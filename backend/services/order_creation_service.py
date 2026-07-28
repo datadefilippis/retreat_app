@@ -602,13 +602,14 @@ async def submit_order_from_storefront(
                 ua_str = user_agent
 
                 # Both privacy + terms are mandatory at checkout.
-                # RS3 — senza enforcement l'audit dei documenti si
-                # scrive solo se il cliente li ha davvero spuntati.
-                _write_doc_audit = gdpr_enforce or (
-                    body.gdpr_terms_accepted and body.gdpr_privacy_accepted
-                )
+                # RS5 — l'audit dei documenti si scrive SOLO su click
+                # reale: il cliente loggato coperto dallo snapshot CG-4
+                # ha gia' il suo record dal signup (prima si duplicava
+                # a ogni ordine).
+                _clicked_docs = (body.gdpr_terms_accepted
+                                 and body.gdpr_privacy_accepted)
                 for doc_type in (("merchant_privacy", "merchant_terms")
-                                 if _write_doc_audit else ()):
+                                 if _clicked_docs else ()):
                     await _car.record_consent(
                         user_id=customer_account_id,
                         organization_id=org_id,

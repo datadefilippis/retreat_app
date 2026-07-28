@@ -126,6 +126,24 @@ async def newsletter_stats(
         src = s.get("source_label") or s.get("source_origin") or "—"
         by_source[src] += 1
 
+    # RS5 — fonte unica del consenso: chi ha spuntato marketing al
+    # CHECKOUT e' raggiungibile quanto un iscritto ai form. Qui il
+    # conteggio (email distinte, revoche escluse) e il totale unione:
+    # niente doppia lista, un solo numero onesto.
+    from database import customers_collection as _cust_rs5
+    checkout_emails = set()
+    async for c in _cust_rs5.find(
+            {"organization_id": org_id,
+             "accepted_marketing_at": {"$nin": [None, ""]},
+             "$or": [{"marketing_revoked_at": None},
+                     {"marketing_revoked_at": {"$exists": False}}]},
+            {"_id": 0, "email": 1}).limit(50000):
+        em = (c.get("email") or "").strip().lower()
+        if em:
+            checkout_emails.add(em)
+    checkout_optins = len(checkout_emails - emails)
+    reachable_total = len(emails | checkout_emails)
+
     # 12 bucket consecutivi che finiscono nel mese corrente
     y, m = now.year, now.month
     months = []
@@ -139,6 +157,8 @@ async def newsletter_stats(
     top_sources = sorted(by_source.items(), key=lambda kv: -kv[1])[:6]
     return {
         "total": len(emails),
+        "checkout_optins": checkout_optins,
+        "reachable_total": reachable_total,
         "new_30d": len(recent),
         "months": months,
         "by_source": [{"source": k, "count": v} for k, v in top_sources],

@@ -629,6 +629,19 @@ async def confirm_order(
     from services.order_service import confirm_order as svc_confirm
     try:
         order = await svc_confirm(current_user["organization_id"], order_id)
+        # RS5 — Passaporto onesto: il magic link "gestisci le tue
+        # prenotazioni" parte anche quando una RICHIESTA viene
+        # confermata, non solo al pagamento riuscito (prima chi
+        # chiedeva un appuntamento restava con un account pending
+        # irraggiungibile). Best-effort, mai bloccante; la funzione
+        # ha gia' cooldown 24h e idempotenza interna.
+        try:
+            from services.platform_account_service import (
+                send_claim_email_if_needed,
+            )
+            await send_claim_email_if_needed(order)
+        except Exception:
+            pass
         return order
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

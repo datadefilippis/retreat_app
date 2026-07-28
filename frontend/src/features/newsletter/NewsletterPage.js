@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppLayout, Header } from '../../components/Layout';
@@ -67,12 +68,26 @@ function NewsletterStats() {
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <StatCard icon={UsersIcon}
-                  label={t('stats.total', { defaultValue: 'Iscritti' })}
+                  label={t('stats.total', { defaultValue: 'Iscritti ai form' })}
                   value={stats.total?.toLocaleString()} />
         <StatCard icon={UserPlusIcon}
                   label={t('stats.new30', { defaultValue: 'Nuovi (30 giorni)' })}
                   value={stats.new_30d?.toLocaleString()} />
       </div>
+      {/* RS5 — fonte unica del consenso: anche chi ha detto si' al
+          checkout e' raggiungibile. Un numero solo, niente doppie liste. */}
+      {typeof stats.checkout_optins === 'number' && (
+        <p className="text-xs text-muted-foreground" data-testid="checkout-optins-line">
+          {t('stats.checkoutOptins', {
+            count: stats.checkout_optins,
+            total: stats.reachable_total,
+            defaultValue: 'Altri {{count}} consensi arrivati dal checkout: in tutto puoi scrivere a {{total}} persone.',
+          })}{' '}
+          <Link to="/modules/customers-light" className="underline text-primary">
+            {t('stats.seeInCustomers', { defaultValue: 'Vedile in Clienti' })}
+          </Link>
+        </p>
+      )}
       {trend.some((x) => x.value > 0) && (
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs font-semibold text-muted-foreground mb-2">
