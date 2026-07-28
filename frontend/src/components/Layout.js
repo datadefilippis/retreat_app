@@ -7,7 +7,7 @@ import '../i18n-admin';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useEntitlements } from '../hooks/useEntitlements';
-import {
+import { ListChecks,
   LayoutDashboard,
   Blocks,
   Bell,
@@ -69,6 +69,8 @@ const moduleNavMap = {
 
 // Operations — always visible
 const operationsNav = [
+  // TW1 — il Listino: la pagina unica dei servizi
+  { nameKey: 'nav.listino',         href: '/listino',         icon: ListChecks,   end: true },
   { nameKey: 'nav.orders',          href: '/orders',          icon: ShoppingCart, end: true },
   { nameKey: 'nav.calendar',        href: '/calendar',        icon: CalendarDays, end: true },
   { nameKey: 'nav.stores',          href: '/stores',           icon: Globe,        end: true },

@@ -52,6 +52,7 @@ import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
 import OperatorsIndexPage from "./features/storefront/OperatorsIndexPage";
 import DestinationsPage from "./features/storefront/DestinationsPage";
 const ServiceWizard = lazy(() => import("./features/services/ServiceWizard"));
+const ListinoPage = lazy(() => import("./features/listino/ListinoPage"));
 const ReservationWizard = lazy(() => import("./features/reservations/ReservationWizard"));
 const PhysicalWizard = lazy(() => import("./features/physicals/PhysicalWizard"));
 const PhysicalDashboardPage = lazy(() => import("./features/physicals/PhysicalDashboardPage"));
@@ -648,8 +649,14 @@ function AppRoutes() {
       />
       {/* F5 Onda 12: service wizard + dashboard (consulenze, servizi a slot) */}
       <Route
+        path="/listino"
+        element={<ProtectedRoute><ListinoPage /></ProtectedRoute>}
+      />
+      {/* TW1 — la creazione servizi passa dal Listino; il wizard resta
+          l'editor AVANZATO su /services/:id */}
+      <Route
         path="/services/new"
-        element={<ProtectedRoute><ServiceWizard /></ProtectedRoute>}
+        element={<Navigate to="/listino" replace />}
       />
       <Route
         path="/services/:product_id"

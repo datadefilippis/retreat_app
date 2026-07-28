@@ -229,6 +229,24 @@ async def list_stores(current_user: dict = Depends(get_verified_user)):
     return {"stores": stores, "total": len(stores)}
 
 
+@router.post("/ensure-default", status_code=status.HTTP_200_OK)
+async def ensure_default_store(current_user: dict = Depends(require_admin)):
+    """TW1 (piano Listino) — lo store TECNICO invisibile.
+
+    Il Listino pubblica servizi senza che l'operatore debba sapere che
+    esiste uno "store": questa porta idempotente garantisce che l'org
+    ne abbia uno (riusa _ensure_default_store: promuove un attivo,
+    migra il legacy, o crea il default dal nome org). Ordini, legal e
+    checkout continuano a referenziare uno store vero: il flusso di
+    pagamento non cambia di una virgola (invariante I2/I3)."""
+    org_id = current_user["organization_id"]
+    store = await _ensure_default_store(org_id, current_user)
+    if not store:
+        raise HTTPException(status_code=404, detail="Organizzazione non trovata")
+    return {"store": {k: store.get(k) for k in ("id", "slug", "name",
+                                                "is_default", "is_published")}}
+
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_store(
     body: StoreCreate,

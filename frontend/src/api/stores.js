@@ -9,6 +9,9 @@
 import api from './client';
 
 export const storesAPI = {
+  // TW1 — store tecnico invisibile del Listino (idempotente)
+  ensureDefault: () => api.post('/stores/ensure-default'),
+
   list: () => api.get('/stores'),
   get: (storeId) => api.get(`/stores/${storeId}`),
   create: (data) => api.post('/stores', data),

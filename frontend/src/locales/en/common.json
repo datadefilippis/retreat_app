@@ -30,7 +30,8 @@
     "public_profile": "Public profile",
     "reviews": "Reviews",
     "cashflow": "Payments",
-    "visibility": "Visibility"
+    "visibility": "Visibility",
+    "listino": "Price list"
   },
   "actions": {
     "save": "Save",

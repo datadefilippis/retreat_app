@@ -30,7 +30,8 @@
     "public_profile": "Profil public",
     "reviews": "Avis",
     "cashflow": "Encaissements",
-    "visibility": "Visibilité"
+    "visibility": "Visibilité",
+    "listino": "Tarifs"
   },
   "actions": {
     "save": "Enregistrer",
