@@ -42,6 +42,13 @@ def _require_cross_sell_module():
     return require_module("cross_sell")
 
 
+def _require_insights_module():
+    """RS4 — anche la vista Clienti dichiara il suo modulo: prima il
+    gate esisteva solo nel menu frontend (coerenza MD2)."""
+    from services.module_access import require_module
+    return require_module("customer_insights")
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # 1. Overview — KPI strip + delta + segments + concentration
 # ──────────────────────────────────────────────────────────────────────────────
@@ -53,6 +60,7 @@ async def overview(
     custom_start: Optional[str] = Query(None, description="ISO date — only when period=custom"),
     custom_end: Optional[str] = Query(None, description="ISO date — only when period=custom"),
     current_user: dict = Depends(get_current_user),
+    _gated: dict = Depends(_require_insights_module()),
 ):
     """KPIs for the period + delta vs immediately preceding window.
 
@@ -111,6 +119,7 @@ async def customers(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
     current_user: dict = Depends(get_current_user),
+    _gated: dict = Depends(_require_insights_module()),
 ):
     """Paginated customer table with the full filter set.
 
@@ -145,6 +154,7 @@ async def cohorts(
     horizon: int = Query(12, ge=1, le=24),
     since: Optional[str] = Query(None, description="ISO date floor for purchases"),
     current_user: dict = Depends(get_current_user),
+    _gated: dict = Depends(_require_insights_module()),
 ):
     """Cohort retention table.
 
@@ -168,6 +178,7 @@ async def customer_timeline(
     customer_id: str,
     limit: int = Query(50, ge=1, le=200),
     current_user: dict = Depends(get_current_user),
+    _gated: dict = Depends(_require_insights_module()),
 ):
     """Combined orders + sales records for a customer, descending date.
 
@@ -230,6 +241,7 @@ async def export_customers(
     marketing_opted_in: Optional[bool] = None,
     search: Optional[str] = None,
     current_user: dict = Depends(get_current_user),
+    _gated: dict = Depends(_require_insights_module()),
 ):
     """Export the filtered customer list as CSV.
 
@@ -366,6 +378,7 @@ class ActionLogRequest(BaseModel):
 async def log_action(
     payload: ActionLogRequest,
     current_user: dict = Depends(get_current_user),
+    _gated: dict = Depends(_require_insights_module()),
 ):
     """Record a customer outreach action.
 
@@ -408,6 +421,7 @@ class OutreachBuildRequest(BaseModel):
 async def build_outreach_endpoint(
     payload: OutreachBuildRequest,
     current_user: dict = Depends(get_current_user),
+    _gated: dict = Depends(_require_insights_module()),
 ):
     """Build a deep-link outreach URL + log the action in one call.
 
@@ -483,6 +497,7 @@ async def build_outreach_endpoint(
 async def list_outreach_templates(
     locale: str = Query("it", description="it | en | de | fr"),
     current_user: dict = Depends(get_current_user),
+    _gated: dict = Depends(_require_insights_module()),
 ):
     """Public picker — list the templates available for a locale.
 
@@ -503,6 +518,7 @@ async def cross_sell_candidates(
     missing: str = Query("service", max_length=20),
     customer_id: str = Query(None, max_length=64),
     current_user: dict = Depends(get_current_user),
+    _gated: dict = Depends(_require_insights_module()),
     _module: dict = Depends(_require_cross_sell_module()),
 ):
     """Chi ha comprato l'anima X ma mai la Y (default: ritiri ma mai

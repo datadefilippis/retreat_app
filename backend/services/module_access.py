@@ -759,6 +759,9 @@ MODULE_OWNERSHIP = {
     "sales_stats": "product_catalog",
     "cross_sell": "customers_light",
     "visibility": "commerce",
+    # RS4 — la vista Clienti (overview/lista/export/timeline) era
+    # protetta solo lato frontend: ora dichiara il suo modulo
+    "customer_insights": "customers_light",
 }
 
 

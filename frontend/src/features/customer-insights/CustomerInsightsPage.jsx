@@ -30,6 +30,7 @@ import { Button } from '../../components/ui/button';
 import { RefreshCw, AlertTriangle, Info, ChevronDown, Users, UserPlus, MessageCircle, Phone } from 'lucide-react';
 import { useCurrency } from '../../context/AuthContext';
 import { formatCurrency } from '../../lib/utils';
+import { Link } from 'react-router-dom';
 import { AppLayout, Header } from '../../components/Layout';
 import { customerInsightsAPI } from '../../api/customerInsights';
 import { useLocale } from './hooks/useLocale';
@@ -233,18 +234,27 @@ export default function CustomerInsightsPage() {
         {/* Period selector + refresh row */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <PeriodSelector value={period} onChange={setPeriod} />
+          <div className="flex items-center gap-3 self-start md:self-auto">
+          {/* RS4 — il ponte verso i form newsletter: gli iscritti
+              accendono il consenso marketing che si vede QUI */}
+          <Link to="/newsletter-forms"
+                data-testid="newsletter-forms-link"
+                className="text-xs font-medium text-primary hover:underline">
+            {t('page.newsletterFormsLink', { defaultValue: 'I tuoi form newsletter' })}
+          </Link>
           <Button
             size="sm"
             variant="outline"
             onClick={onRefresh}
             disabled={overviewLoading || customersLoading}
-            className="h-7 text-xs self-start md:self-auto"
+            className="h-7 text-xs"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${
               (overviewLoading || customersLoading) ? 'animate-spin' : ''
             }`} />
             {t('page.refreshButton')}
           </Button>
+          </div>
         </div>
 
       {/* Error banner */}

@@ -226,8 +226,11 @@ export const Sidebar = () => {
 
   // Operations — only with commerce module active
   // TW3 — mondo snello (default): Listino, Ritiri, Calendario, Ordini,
-  // Profilo. Il resto (store, incassi, recensioni, visibilita',
-  // newsletter form, prodotti legacy) torna col flag legacy_commerce.
+  // Clienti, Profilo. Il resto (store, incassi, recensioni,
+  // visibilita', prodotti legacy) torna col flag legacy_commerce.
+  // RS4 — Clienti TORNA nel mondo snello: e' l'unico posto dove
+  // l'operatore vede consenso marketing e contattabilita' (e da li'
+  // raggiunge i suoi form newsletter). Nasconderla era troppa potatura.
   const dynamicOpsNav = [];
   if (activeSet.has('commerce') && !legacyCommerce) {
     dynamicOpsNav.push(
@@ -235,6 +238,9 @@ export const Sidebar = () => {
       { nameKey: 'nav.retreats', href: '/events', icon: CalendarDays, end: false },
       { nameKey: 'nav.calendar', href: '/calendar', icon: CalendarDays, end: true },
       { nameKey: 'nav.orders', href: '/orders', icon: ShoppingCart, end: true },
+      ...(activeSet.has('customers_light')
+        ? [{ nameKey: 'nav.customers', href: '/modules/customers-light', icon: UserRound, end: false }]
+        : []),
       { nameKey: 'nav.public_profile', href: '/public-profile', icon: UserCircle, end: true },
     );
   }

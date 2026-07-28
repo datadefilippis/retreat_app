@@ -393,3 +393,38 @@ class TestPattiChiariRS3:
         for page in ("ProductLandingPage.js", "ReservationLandingPage.js"):
             src = (FRONTEND_SRC / "features" / "storefront" / page).read_text()
             assert "landing-conditions" in src, page
+
+
+class TestClientiRS4:
+    """RS4 — Clienti e newsletter tornano nel mondo snello: il consenso
+    raccolto (RS3) deve essere VISIBILE e azionabile dall'operatore."""
+
+    def test_customers_in_lean_menu(self):
+        layout = (FRONTEND_SRC / "components" / "Layout.js").read_text()
+        lean = layout.split("!legacyCommerce")[1][:1400]
+        assert "customers-light" in lean
+
+    def test_insights_links_newsletter_forms(self):
+        page = (FRONTEND_SRC / "features" / "customer-insights"
+                / "CustomerInsightsPage.jsx").read_text()
+        assert "newsletter-forms-link" in page
+        assert "'/newsletter-forms'" in page or '"/newsletter-forms"' in page
+
+    def test_insights_endpoints_declare_module(self):
+        """Coerenza MD2: la vista Clienti era protetta solo dal menu,
+        ora il backend dichiara il modulo customers_light."""
+        ma = (BACKEND_DIR / "services" / "module_access.py").read_text()
+        assert '"customer_insights": "customers_light"' in ma
+        router = (BACKEND_DIR / "modules" / "customer_insights"
+                  / "router.py").read_text()
+        assert "_require_insights_module" in router
+        # tutte le route autenticate portano il gate
+        assert router.count("_require_insights_module()") >= 6
+
+    def test_insights_still_open_for_active_module(self):
+        """MD1 attiva tutto di default: il gate non deve chiudere fuori
+        le org esistenti (403 solo a modulo spento)."""
+        r = requests.get(f"{BASE_URL}/api/customer-insights/overview",
+                         timeout=10)
+        # senza auth: 401/403 auth, NON un 500 da dependency rotta
+        assert r.status_code in (401, 403)

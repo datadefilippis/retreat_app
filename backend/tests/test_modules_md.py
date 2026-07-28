@@ -70,6 +70,8 @@ class TestModuleOwnershipMd2:
             "cross_sell": "customers_light",
             # VT4 — lo specchietto Visibilita' vive nel modulo commerce
             "visibility": "commerce",
+            # RS4 — la vista Clienti dichiara il suo modulo
+            "customer_insights": "customers_light",
         }
 
     def test_gates_wired_on_orphan_routers(self):
