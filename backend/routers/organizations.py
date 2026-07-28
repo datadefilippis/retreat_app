@@ -2067,20 +2067,69 @@ async def upload_profile_photo(
     return {"photos": photos + [url]}
 
 
-# ── O2 Onboarding operatore (5/7/2026) ───────────────────────────────────────
+# ── O2 Onboarding operatore (5/7/2026, TW4 28/7/2026) ────────────────────────
 # docs/ONBOARDING_PLAN.md — stato SEMPRE derivato dai dati (mai flag):
 # chi salta la checklist e fa a modo suo la vede comunque aggiornarsi.
+# TW4: mondo snello = 3 passi (Presentati → Listino → Online); il
+# percorso a 5 passi resta per le org con legacy_commerce acceso (R1).
 
 @router.get("/current/onboarding-status")
 async def onboarding_status(current_user: dict = Depends(require_admin)):
     from database import (
         event_occurrences_collection,
         payment_connections_collection,
+        products_collection,
         stores_collection,
     )
 
     org_id = current_user["organization_id"]
     org_doc = await organization_repository.find_by_id(org_id) or {}
+
+    if not org_doc.get("legacy_commerce"):
+        # ── TW4 mondo snello: 3 passi verso "la tua pagina e' viva" ──
+        pp = org_doc.get("public_profile") or {}
+        profile_ok = bool(pp.get("bio")) and bool(
+            pp.get("cover_url") or pp.get("instagram")
+            or pp.get("website") or pp.get("facebook"))
+
+        svc = await products_collection.find_one(
+            {"organization_id": org_id, "item_type": "service",
+             "is_published": True}, {"_id": 1})
+
+        store = await stores_collection.find_one(
+            {"organization_id": org_id, "is_active": True},
+            {"_id": 0, "slug": 1})
+        slug = org_doc.get("public_slug") or (store or {}).get("slug")
+
+        # Online = la pagina /o/ esiste E ha qualcosa da mostrare
+        online = bool(slug) and profile_ok and bool(svc)
+        steps = {
+            "profile_completed": profile_ok,
+            "listino_filled": bool(svc),
+            "online": online,
+        }
+        completed = sum(1 for v in steps.values() if v)
+
+        links = {"listino": "/listino", "directory": "/operatori"}
+        if slug:
+            links["profile"] = f"/o/{slug}"
+
+        # Segnali fuori checklist: servono alla dashboard (GT1b) e ai
+        # suggerimenti post-onboarding (primo ritiro, Stripe)
+        conn = await payment_connections_collection.find_one(
+            {"organization_id": org_id, "provider": "stripe",
+             "status": "active"}, {"_id": 1})
+        any_occ = await event_occurrences_collection.find_one(
+            {"organization_id": org_id}, {"_id": 1})
+        pub_occ = await event_occurrences_collection.find_one(
+            {"organization_id": org_id, "status": "published"}, {"_id": 1})
+
+        return {"steps": steps, "completed_count": completed,
+                "total": len(steps), "is_complete": completed == len(steps),
+                "links": links,
+                "signals": {"stripe_connected": bool(conn),
+                            "retreat_created": bool(any_occ),
+                            "retreat_published": bool(pub_occ)}}
 
     # 1. Stripe collegato: connection attiva
     conn = await payment_connections_collection.find_one(

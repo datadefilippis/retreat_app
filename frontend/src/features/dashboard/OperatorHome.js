@@ -62,7 +62,10 @@ export default function OperatorHome() {
       setPayments(payRes.status === 'fulfilled' ? payRes.value.data : {});
       setCashflow(cfRes.status === 'fulfilled' ? cfRes.value.data : {});
       setReviewsPending(revRes.status === 'fulfilled' ? (revRes.value.data?.pending_count || 0) : 0);
-      setObSteps(obRes.status === 'fulfilled' ? (obRes.value.data?.steps || null) : null);
+      // TW4 — nel mondo snello stripe/ritiri vivono in `signals`,
+      // nel legacy restano dentro `steps`
+      setObSteps(obRes.status === 'fulfilled'
+        ? (obRes.value.data?.signals || obRes.value.data?.steps || null) : null);
       setVisibility(visRes.status === 'fulfilled' ? visRes.value.data : null);
     });
     return () => { mounted = false; };

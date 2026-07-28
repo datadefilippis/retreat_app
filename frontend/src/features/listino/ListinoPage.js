@@ -25,6 +25,7 @@ import { Card, CardContent } from '../../components/ui/card';
 import { productsAPI } from '../../api/products';
 import { storesAPI } from '../../api/stores';
 import api from '../../api/client';
+import { trackEvent } from '../../lib/analytics';
 
 // Tassonomia service (models/retreat_taxonomy.py) + fallback "altro"
 const SERVICE_CATEGORIES = {
@@ -189,6 +190,8 @@ export default function ListinoPage() {
   const saveNew = async () => {
     if (!draft.name.trim()) { toast.error('Dai un nome al servizio'); return; }
     setBusy(true);
+    // TW4 — metrica di attivazione: il PRIMO servizio che va online
+    const isFirstOnline = !(rows || []).some(r => r.published);
     try {
       await storesAPI.ensureDefault();     // idempotente, race-safe
       await productsAPI.create({
@@ -197,6 +200,7 @@ export default function ListinoPage() {
         transaction_mode: 'request',       // default snello: richiesta
         is_published: true,                // online subito
       });
+      if (isFirstOnline) trackEvent('first_service_online');
       setDraft(EMPTY_ROW);
       setAdding(false);
       await load();

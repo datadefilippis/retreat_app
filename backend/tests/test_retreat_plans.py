@@ -416,7 +416,9 @@ class TestOnboarding:
         src = open(os.path.join(os.path.dirname(__file__), "..",
                                 "routers", "organizations.py")).read()
         i = src.index("async def onboarding_status")
-        block = src[i:i + 3000]
+        # TW4: l'endpoint ha due rami (snello 3 passi + legacy 5 passi),
+        # la finestra copre entrambi
+        block = src[i:i + 8000]
         assert "update_one" not in block and "insert_one" not in block
         for step in ("stripe_connected", "store_created", "retreat_created",
                      "retreat_published", "profile_completed"):

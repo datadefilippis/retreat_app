@@ -196,3 +196,49 @@ class TestPotaturaTW3:
         invece di fermare l'operatore (il 409 resta ultima difesa)."""
         sg = (BACKEND_DIR / "services" / "store_guard.py").read_text()
         assert "_ensure_default_store" in sg
+
+
+class TestOnboardingTW4:
+    """TW4 — onboarding a 3 passi: Presentati → Listino → Online.
+    Il ritiro e' un suggerimento DOPO, non un gradino. Le org legacy
+    tengono i 5 passi storici (coerenza con R5)."""
+
+    def test_endpoint_has_lean_and_legacy_paths(self):
+        src = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        # ramo snello sui 3 passi...
+        assert '"listino_filled"' in src
+        assert '"online"' in src
+        # ...gated dal flag TW3, col ramo legacy intatto
+        assert 'legacy_commerce' in src
+        assert '"retreat_published"' in src
+
+    def test_lean_status_exposes_signals(self):
+        """La dashboard (GT1b) legge stripe/ritiri anche nel mondo
+        snello: vivono in `signals`, fuori dalla checklist."""
+        src = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        assert '"signals"' in src
+        home = (FRONTEND_SRC / "features" / "dashboard"
+                / "OperatorHome.js").read_text()
+        assert "signals" in home
+
+    def test_inizia_page_is_lean_first(self):
+        page = (FRONTEND_SRC / "features" / "onboarding"
+                / "IniziaPage.js").read_text()
+        # i 3 passi snelli puntano a profilo e listino
+        assert "'/public-profile'" in page and "'/listino'" in page
+        assert "listino_filled" in page and "'online' in s" in page
+        # il ritiro e' il suggerimento post-onboarding
+        assert "inizia-next-retreat" in page
+        assert "'/events/new'" in page
+        # il percorso legacy a 5 passi resta nel sorgente (R5)
+        assert "store_created" in page and "retreat_published" in page
+
+    def test_ga4_first_service_online(self):
+        page = (FRONTEND_SRC / "features" / "listino"
+                / "ListinoPage.js").read_text()
+        assert "trackEvent('first_service_online')" in page
+
+    def test_deploy_runbook_exists(self):
+        doc = (BACKEND_DIR.parent / "docs"
+               / "RUNBOOK_DEPLOY_LISTINO.md").read_text()
+        assert "legacy_commerce" in doc and "Rollback" in doc
