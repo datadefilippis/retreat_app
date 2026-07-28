@@ -346,8 +346,16 @@ function AnalyticsPageViews() {
 // TW3 (piano Listino) — la vetrina /s/{slug} e' migrata sul profilo
 // /o/{slug}: redirect SPA (gli URL non muoiono mai, invariante I6).
 // Le pagine legal (/s/x/privacy, /terms) e checkout restano vive.
+// RS3 fix — /s/x?checkout=1 e' l'handoff del checkout dalle landing
+// /e/ e /p/: DEVE aprire il modale sullo storefront, non redirigere
+// al profilo (I2, I3: il motore di acquisto non si tocca).
 function StoreToProfileRedirect() {
   const { slug } = useParams();
+  const location = useLocation();
+  const wantsCheckout =
+    new URLSearchParams(location.search).has('checkout')
+    || Boolean(location.state?.preloadCart);
+  if (wantsCheckout) return <StorefrontPage />;
   return <Navigate to={`/o/${slug}`} replace />;
 }
 

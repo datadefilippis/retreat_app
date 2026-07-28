@@ -17,6 +17,7 @@ import { useEntitlements } from '../../hooks/useEntitlements';
 import BillingSection from '../../components/BillingSection';
 import PaymentConnectionsCard from './PaymentConnectionsCard';
 import PaymentMethodsSection from './sections/PaymentMethodsSection';
+import SalesConditionsCard from './sections/SalesConditionsCard';
 import {
   Building,
   Save,
@@ -440,6 +441,9 @@ export const SettingsPage = () => {
 
         {/* ── CH compliance v1: Payment methods preflight (Stripe capabilities) ── */}
         {isAdmin ? <PaymentMethodsSection /> : null}
+
+        {/* ── RS3 Patti chiari: condizioni di vendita dell'operatore ── */}
+        {isAdmin ? <SalesConditionsCard /> : null}
 
         {/* ── Profile ── */}
         <Card className="border border-border">

@@ -23,6 +23,31 @@ class OrganizationUpdate(BaseModel):
     currency: Optional[str] = Field(default=None, max_length=10)
     default_iva: Optional[float] = Field(default=None, ge=0, le=100)
     public_slug: Optional[str] = Field(default=None, min_length=3, max_length=50)
+    # RS3 Patti chiari — politica di cancellazione di default dell'org:
+    # il wizard ritiro la eredita come preset "Le mie condizioni".
+    # Scaglioni {days_before, refund_percent} come models/payment_plan.
+    default_cancellation_policy: Optional[List[dict]] = None
+
+    @field_validator('default_cancellation_policy')
+    @classmethod
+    def validate_policy(cls, v):
+        if v is None:
+            return v
+        if len(v) < 1 or len(v) > 6:
+            raise ValueError('policy: da 1 a 6 scaglioni')
+        clean = []
+        for tier in v:
+            days = int(tier.get('days_before', -1))
+            refund = int(tier.get('refund_percent', -1))
+            if days < 0 or not (0 <= refund <= 100):
+                raise ValueError('policy: giorni >= 0 e rimborso 0-100')
+            clean.append({'days_before': days, 'refund_percent': refund})
+        for i in range(1, len(clean)):
+            if (clean[i]['days_before'] >= clean[i - 1]['days_before']
+                    or clean[i]['refund_percent'] > clean[i - 1]['refund_percent']):
+                raise ValueError(
+                    'policy: giorni decrescenti e rimborsi non crescenti')
+        return clean
 
     @field_validator('currency', mode='before')
     @classmethod
@@ -97,6 +122,17 @@ async def update_organization(
         org_doc_current = await organization_repository.find_by_id(current_user['organization_id'])
         current_settings = (org_doc_current.get('settings') or {}) if org_doc_current else {}
         current_settings['default_iva'] = iva_val
+        update_fields['settings'] = current_settings
+
+    # RS3 Patti chiari — la policy di default vive in settings (stesso
+    # pattern di default_iva; merge col settings gia' in update_fields)
+    if 'default_cancellation_policy' in update_fields:
+        policy_val = update_fields.pop('default_cancellation_policy')
+        current_settings = update_fields.get('settings')
+        if current_settings is None:
+            org_doc_current = await organization_repository.find_by_id(current_user['organization_id'])
+            current_settings = (org_doc_current.get('settings') or {}) if org_doc_current else {}
+        current_settings['default_cancellation_policy'] = policy_val
         update_fields['settings'] = current_settings
 
     if update_fields:

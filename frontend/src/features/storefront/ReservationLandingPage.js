@@ -510,6 +510,12 @@ export default function ReservationLandingPage() {
 
           <p className="text-[11px] text-gray-500 text-center px-2">
             {t('landings:reservation.checkoutHint')}
+            {' '}
+            <a href={`/s/${orgSlug}/terms`} target="_blank" rel="noreferrer"
+               data-testid="landing-conditions"
+               className="underline hover:text-gray-800">
+              {t('landings:reservation.conditions', { defaultValue: 'Condizioni di vendita' })}
+            </a>
           </p>
         </aside>
       </div>

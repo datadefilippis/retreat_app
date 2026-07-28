@@ -1536,7 +1536,11 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     return null;
   }, [selectedItems, catalog]);
 
-  const termsValid = !effectiveTerms || termsAccepted;
+  // RS3 — un solo blocco consensi: le condizioni specifiche del
+  // prodotto (F4) sono dentro la checkbox Termini unificata. I clienti
+  // loggati sono coperti dallo snapshot CG-4.
+  const termsValid = !effectiveTerms || termsAccepted
+    || gdprTermsAccepted || isCustomerAuthenticated;
 
   // Wave GDPR-Commerce CG-5 — does this store require the new GDPR
   // consent block? True when the merchant has published their per-store
@@ -1556,9 +1560,11 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
   // construction — we don't have checkboxes to validate. The backend
   // mirrors this by accepting the customer_account snapshot in place
   // of the per-order payload flags for logged-in customers (Fix 3b).
+  // RS3 — il blocco consensi si mostra SEMPRE ai guest (i documenti
+  // /s/:slug/privacy|terms rispondono sempre: autogenerati finche'
+  // l'operatore non pubblica i suoi), quindi si richiede sempre.
   const gdprValid =
-    !gdprRequired
-    || isCustomerAuthenticated
+    isCustomerAuthenticated
     || (gdprTermsAccepted && gdprPrivacyAccepted);
 
   // Auto-fill first attendee from the main customer form: it's the most
@@ -1607,7 +1613,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     // Wave GDPR-Commerce CG-5 — block submit if the store has GDPR
     // docs published and the customer hasn't ticked the mandatory
     // privacy + terms checkboxes. Marketing is optional.
-    if (gdprRequired && !gdprValid) {
+    if (!gdprValid) {
       toast.error(t('storefront:errors.gdprRequired', {
         defaultValue: 'Devi accettare la Privacy e i Termini del negozio per procedere.',
       }));
@@ -1755,7 +1761,8 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
       }
       // F4 Onda 11 — send T&C acceptance flag (only meaningful when
       // the catalog exposed a non-empty `terms_content`)
-      payload.terms_accepted = !!termsAccepted;
+      payload.terms_accepted = !!(termsAccepted
+        || (effectiveTerms && (gdprTermsAccepted || isCustomerAuthenticated)));
       // Wave GDPR-Commerce CG-5 — per-order consent flags. Always sent
       // (legacy clients omit them, defaults to False). Backend enforces
       // them ONLY when the merchant has GDPR published — otherwise
@@ -2843,38 +2850,10 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
                   />
                 </div>
 
-                {/* F4 Onda 11 — Terms & Conditions acceptance block.
-                    Renders only when the merchant has configured T&C
-                    (store-level enabled, or product-level override). */}
-                {effectiveTerms && (
-                  <div className="rounded-lg border border-gray-300 bg-gray-50/50 p-3 space-y-2">
-                    <label className="flex items-start gap-2 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={termsAccepted}
-                        onChange={e => setTermsAccepted(e.target.checked)}
-                        className="mt-0.5 shrink-0 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
-                        required
-                      />
-                      <span className="text-sm text-gray-800">
-                        {t('storefront:checkout.terms.prefix')}{' '}
-                        <button
-                          type="button"
-                          onClick={() => setTermsExpanded(v => !v)}
-                          className="underline text-gray-900 hover:no-underline"
-                        >
-                          {t('storefront:checkout.terms.linkLabel')}
-                        </button>
-                        {' *'}
-                      </span>
-                    </label>
-                    {termsExpanded && (
-                      <div className="mt-2 pt-2 border-t border-gray-200 max-h-64 overflow-y-auto bg-white rounded-md p-3">
-                        <MarkdownLite source={effectiveTerms} />
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* RS3 — la checkbox T&C legacy (F4) e' FUSA nel blocco
+                    consensi unico qui sotto: le condizioni specifiche
+                    del prodotto si leggono da un link dentro la riga
+                    Termini. Un solo blocco, una sola spunta. */}
 
                 {/* Wave GDPR-Commerce CG-5 — per-order GDPR consent block.
                     Renders ONLY when the merchant has published their
@@ -2899,7 +2878,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
                     The two outer guards (block visibility) are now
                     OR-composed: render the container if AT LEAST one
                     of the inner sections will appear. */}
-                {gdprRequired && (!isCustomerAuthenticated || !marketingStatus.isOptedIn) && (
+                {(!isCustomerAuthenticated || !marketingStatus.isOptedIn) && (
                   <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-3 space-y-2">
                     <p className="text-xs font-medium text-blue-900 uppercase tracking-wide">
                       {t('storefront:checkout.gdpr.title', { defaultValue: 'Privacy e Termini' })}
@@ -2949,6 +2928,25 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
                             {' *'}
                           </span>
                         </label>
+                        {/* RS3 — condizioni specifiche del prodotto (caparra,
+                            cancellazione custom): stesse checkbox, testo in
+                            espansione */}
+                        {effectiveTerms && (
+                          <div className="pl-6">
+                            <button
+                              type="button"
+                              onClick={() => setTermsExpanded(v => !v)}
+                              className="text-xs underline text-blue-700 hover:no-underline"
+                            >
+                              {t('storefront:checkout.gdpr.specific_terms', { defaultValue: 'Leggi le condizioni specifiche di questo acquisto' })}
+                            </button>
+                            {termsExpanded && (
+                              <div className="mt-2 max-h-64 overflow-y-auto bg-white rounded-md border border-gray-200 p-3">
+                                <MarkdownLite source={effectiveTerms} />
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </>
                     )}
                     {/* Marketing — visible only when NOT already opted-in.

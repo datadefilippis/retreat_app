@@ -306,6 +306,12 @@ function ProceedToCheckoutBar({
         {canProceed
           ? t('landings:product.summary.checkoutHintActive')
           : t('landings:product.summary.checkoutHintLocked')}
+        {' '}
+        <a href={`/s/${orgSlug}/terms`} target="_blank" rel="noreferrer"
+           data-testid="landing-conditions"
+           className="underline hover:text-gray-800">
+          {t('landings:product.conditions', { defaultValue: 'Condizioni di vendita' })}
+        </a>
       </p>
     </div>
   );

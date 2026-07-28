@@ -300,11 +300,29 @@ export default function EventWizard() {
   // Store-first (fix 5/7) — stesso criterio del backend
   // (_org_has_public_home): store attivo O public_slug legacy.
   const [legacySlug, setLegacySlug] = useState(null);
+  // RS3 — la politica di cancellazione di default dell'org (impostata
+  // in Impostazioni → Condizioni di vendita): il wizard la eredita e
+  // la offre come preset "Le mie condizioni"
+  const [orgPolicy, setOrgPolicy] = useState(null);
   useEffect(() => {
     let mounted = true;
     import('../../api/client').then(({ default: api }) =>
       api.get('/organizations/current')
-        .then(res => { if (mounted) setLegacySlug(res.data?.public_slug || null); })
+        .then(res => {
+          if (!mounted) return;
+          setLegacySlug(res.data?.public_slug || null);
+          const pol = res.data?.settings?.default_cancellation_policy;
+          if (Array.isArray(pol) && pol.length) {
+            setOrgPolicy(pol);
+            // eredita SOLO su creazione pulita (mai sopra un duplica)
+            if (!prefillRef.current) {
+              setPaymentPlan(prev => ({
+                ...prev,
+                cancellation_policy: pol.map(x => ({ ...x })),
+              }));
+            }
+          }
+        })
         .catch(() => {}));
     return () => { mounted = false; };
   }, []);
@@ -1451,6 +1469,7 @@ export default function EventWizard() {
               {/* RS2 — tre preset, poi personalizzabile riga per riga */}
               <div className="flex flex-wrap gap-2 mb-3" data-testid="policy-presets">
                 {[
+                  ...(orgPolicy ? [{ k: 'mie', label: t('wizards.event.regole.presetMie', { defaultValue: 'Le mie condizioni' }) }] : []),
                   { k: 'flessibile', label: t('wizards.event.regole.presetFlessibile', { defaultValue: 'Flessibile' }) },
                   { k: 'equilibrata', label: t('wizards.event.regole.presetEquilibrata', { defaultValue: 'Equilibrata' }) },
                   { k: 'rigida', label: t('wizards.event.regole.presetRigida', { defaultValue: 'Rigida' }) },
@@ -1459,7 +1478,7 @@ export default function EventWizard() {
                     key={p.k} type="button"
                     onClick={() => setPaymentPlan(prev => ({
                       ...prev,
-                      cancellation_policy: CANCELLATION_PRESETS[p.k].map(x => ({ ...x })),
+                      cancellation_policy: (p.k === 'mie' ? orgPolicy : CANCELLATION_PRESETS[p.k]).map(x => ({ ...x })),
                     }))}
                     className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-900"
                   >{p.label}</button>

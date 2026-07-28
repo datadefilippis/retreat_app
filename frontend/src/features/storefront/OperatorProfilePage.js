@@ -556,6 +556,13 @@ export default function OperatorProfilePage() {
                   </div>
                 ))}
               </div>
+              {/* RS3 Patti chiari — le condizioni dell'operatore a un
+                  click dal listino (la pagina risponde sempre) */}
+              <a href={`/s/${org_slug}/terms`} target="_blank" rel="noreferrer"
+                 data-testid="profile-conditions"
+                 className="mt-2 inline-block text-xs text-gray-500 underline hover:text-gray-800">
+                {t('landings:operator.conditions', { defaultValue: 'Condizioni di vendita di {{name}}', name: data.name })}
+              </a>
             </section>
           )}
 

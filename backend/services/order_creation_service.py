@@ -520,11 +520,55 @@ async def submit_order_from_storefront(
                     order.get("id"), exc_pa,
                 )
 
+        # ── RS3 Patti chiari (28/7/2026) ──────────────────────────────
+        # La politica di cancellazione in vigore al momento dell'ordine
+        # resta timbrata sull'ordine: il patto e' verificabile anche se
+        # l'operatore la cambia domani. Best-effort, mai bloccante.
+        if order:
+            try:
+                from database import (
+                    orders_collection as _oc_rs3,
+                    products_collection as _pc_rs3,
+                )
+                _pids = [it.get("product_id")
+                         for it in (order.get("items") or [])
+                         if it.get("product_id")]
+                _plan_doc = await _pc_rs3.find_one(
+                    {"id": {"$in": _pids},
+                     "metadata.payment_plan.cancellation_policy": {"$exists": True}},
+                    {"_id": 0, "metadata.payment_plan.cancellation_policy": 1},
+                ) if _pids else None
+                _policy = ((((_plan_doc or {}).get("metadata") or {})
+                            .get("payment_plan") or {}).get("cancellation_policy"))
+                if _policy:
+                    await _oc_rs3.update_one(
+                        {"id": order["id"], "organization_id": org_id},
+                        {"$set": {"cancellation_policy_snapshot": _policy}},
+                    )
+                    order["cancellation_policy_snapshot"] = _policy
+            except Exception as exc_rs3:
+                logger.warning(
+                    "RS3: snapshot policy fallito per ordine %s: %s",
+                    order.get("id"), exc_rs3,
+                )
+
         # ── Wave GDPR-Commerce CG-5 (2026-05-19) ──────────────────────
         # Stamp per-order GDPR consent snapshot AND write the immutable
         # audit records. We do this AFTER create_order returns so the
         # create_order signature stays untouched.
-        if gdpr_enforce and order:
+        # RS3 Patti chiari (28/7) — i consensi si timbrano SEMPRE quando
+        # il cliente li ha espressi: anche senza legal pubblicati (i
+        # documenti autogenerati rispondono comunque su /s/:slug/*) la
+        # scelta non va persa. L'ENFORCEMENT (400) resta gated sopra.
+        gdpr_flags_given = bool(
+            body.gdpr_terms_accepted or body.gdpr_privacy_accepted
+            or body.gdpr_marketing_accepted
+        )
+        if order and (gdpr_enforce or gdpr_flags_given):
+            # fallback per store senza legal pubblicati: versione dei
+            # documenti autogenerati, lingua del negozio o italiano
+            gdpr_version_string = gdpr_version_string or "autogen:v0"
+            gdpr_locale = gdpr_locale or "it"
             from database import orders_collection as _oc_gdpr
             now_gdpr_iso = datetime.now(timezone.utc).isoformat()
             gdpr_update = {
@@ -557,8 +601,14 @@ async def submit_order_from_storefront(
                 ip_addr = client_ip
                 ua_str = user_agent
 
-                # Both privacy + terms are mandatory at checkout
-                for doc_type in ("merchant_privacy", "merchant_terms"):
+                # Both privacy + terms are mandatory at checkout.
+                # RS3 — senza enforcement l'audit dei documenti si
+                # scrive solo se il cliente li ha davvero spuntati.
+                _write_doc_audit = gdpr_enforce or (
+                    body.gdpr_terms_accepted and body.gdpr_privacy_accepted
+                )
+                for doc_type in (("merchant_privacy", "merchant_terms")
+                                 if _write_doc_audit else ()):
                     await _car.record_consent(
                         user_id=customer_account_id,
                         organization_id=org_id,

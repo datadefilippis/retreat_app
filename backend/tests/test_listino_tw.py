@@ -324,3 +324,72 @@ class TestWizardRS2:
         dash = (FRONTEND_SRC / "features" / "events"
                 / "EventDashboardPage.js").read_text()
         assert '"/products?type=event_ticket"' not in dash
+
+
+class TestPattiChiariRS3:
+    """RS3 — le condizioni dell'operatore: un posto per scriverle
+    (Impostazioni), un blocco solo per accettarle (checkout), sempre
+    presenti (fallback autogenerato), timbrate sull'ordine."""
+
+    def test_org_default_policy_endpoint(self):
+        """La policy org-level si salva via PUT /organizations/current
+        con validazione degli scaglioni."""
+        src = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        assert "default_cancellation_policy" in src
+        assert "giorni decrescenti e rimborsi non crescenti" in src
+
+    def test_conditions_card_in_settings(self):
+        """Raggiungibile nel mondo snello: vive in Impostazioni, non
+        dentro Stores."""
+        card = (FRONTEND_SRC / "features" / "settings" / "sections"
+                / "SalesConditionsCard.jsx").read_text()
+        assert "MerchantLegalDialog" in card
+        assert "default_cancellation_policy" in card
+        settings = (FRONTEND_SRC / "features" / "settings"
+                    / "SettingsPage.js").read_text()
+        assert "SalesConditionsCard" in settings
+
+    def test_wizard_inherits_org_policy(self):
+        wiz = (FRONTEND_SRC / "features" / "events"
+               / "EventWizard.js").read_text()
+        assert "default_cancellation_policy" in wiz
+        assert "Le mie condizioni" in wiz
+
+    def test_checkout_single_consent_block(self):
+        """Un solo blocco consensi: niente checkbox T&C legacy separata,
+        blocco GDPR visibile anche senza legal pubblicati."""
+        sf = (FRONTEND_SRC / "features" / "storefront"
+              / "StorefrontPage.js").read_text()
+        # la checkbox legacy F4 standalone non esiste piu'
+        assert "checked={termsAccepted}" not in sf
+        # le condizioni specifiche vivono DENTRO il blocco unico
+        assert "condizioni specifiche" in sf
+        # il blocco non e' piu' gated da gdprRequired
+        assert ("{gdprRequired && (!isCustomerAuthenticated"
+                not in sf)
+
+    def test_consents_stamped_even_without_published_legal(self):
+        """Il backend timbra i consensi espressi anche con legal
+        autogenerati (versione autogen:v0); l'enforcement resta gated."""
+        ocs = (BACKEND_DIR / "services"
+               / "order_creation_service.py").read_text()
+        assert "gdpr_flags_given" in ocs
+        assert '"autogen:v0"' in ocs
+        # RS3 — la policy di cancellazione resta timbrata sull'ordine
+        assert "cancellation_policy_snapshot" in ocs
+
+    def test_checkout_handoff_survives_redirect(self):
+        """Fix regressione TW3: /s/x?checkout=1 e il preloadCart delle
+        landing NON redirigono al profilo (il motore di acquisto
+        resta intatto: I2, I3)."""
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert "wantsCheckout" in app
+        assert "preloadCart" in app
+
+    def test_conditions_links_on_public_pages(self):
+        prof = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorProfilePage.js").read_text()
+        assert "profile-conditions" in prof
+        for page in ("ProductLandingPage.js", "ReservationLandingPage.js"):
+            src = (FRONTEND_SRC / "features" / "storefront" / page).read_text()
+            assert "landing-conditions" in src, page
