@@ -26,6 +26,7 @@ import { productsAPI } from '../../api/products';
 import { storesAPI } from '../../api/stores';
 import api from '../../api/client';
 import { trackEvent } from '../../lib/analytics';
+import { AppLayout, Header } from '../../components/Layout';
 
 // Tassonomia service (models/retreat_taxonomy.py) + fallback "altro"
 const SERVICE_CATEGORIES = {
@@ -260,20 +261,27 @@ export default function ListinoPage() {
 
 
 
+  // RS0 — la pagina vive DENTRO la shell dell'app come tutte le
+  // altre (AppLayout + Header): il menu non deve mai sparire
   if (rows === null) {
-    return <div className="flex justify-center py-24">
-      <Loader2 className="h-7 w-7 animate-spin text-primary" aria-label="…" /></div>;
+    return (
+      <AppLayout>
+        <Header title="Il tuo listino" />
+        <div className="flex justify-center py-24">
+          <Loader2 className="h-7 w-7 animate-spin text-primary" aria-label="…" /></div>
+      </AppLayout>
+    );
   }
 
   return (
+    <AppLayout>
+      <Header
+        title="Il tuo listino"
+        subtitle="I servizi che offri, come appaiono sul tuo profilo pubblico. Una riga, un servizio."
+      />
+      <div className="p-4 md:p-8">
     <div className="mx-auto max-w-3xl space-y-5" data-testid="listino-page">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-bold text-gray-900">Il tuo listino</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            I servizi che offri, come appaiono sul tuo profilo pubblico. Una riga, un servizio.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex items-center gap-2">
           {profileSlug && (
             <a href={`/o/${profileSlug}`} target="_blank" rel="noreferrer"
@@ -400,5 +408,7 @@ export default function ListinoPage() {
         </p>
       )}
     </div>
+      </div>
+    </AppLayout>
   );
 }
