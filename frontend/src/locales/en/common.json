@@ -31,7 +31,8 @@
     "reviews": "Reviews",
     "cashflow": "Payments",
     "visibility": "Visibility",
-    "listino": "Price list"
+    "listino": "Price list",
+    "retreats": "Retreats"
   },
   "actions": {
     "save": "Save",

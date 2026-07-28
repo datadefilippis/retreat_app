@@ -135,3 +135,64 @@ class TestProfileListinoTW2:
         # il bottone usa la landing /p/ esistente, non un checkout nuovo
         assert "/p/${org_slug}/${row.slug}" in page
         assert "Richiedi appuntamento" in page and "Prenota" in page
+
+
+class TestPotaturaTW3:
+    """TW3 — potatura REVERSIBILE: mondo snello di default, commerce
+    legacy dietro flag per-org. Codice mai eliminato (R1), ritorno in
+    un click senza deploy (R2, R5)."""
+
+    def test_flag_defaults_off(self):
+        """Il flag vive sul modello Organization, default False."""
+        src = (BACKEND_DIR / "models" / "organization.py").read_text()
+        assert "legacy_commerce: bool = False" in src
+
+    def test_admin_toggle_endpoint(self):
+        """R2: il system admin riaccende il legacy senza deploy."""
+        src = (BACKEND_DIR / "routers" / "admin.py").read_text()
+        assert "legacy-commerce" in src
+        r = requests.put(
+            f"{BASE_URL}/api/admin/organizations/x/legacy-commerce",
+            json={"enabled": True}, timeout=10)
+        assert r.status_code in (401, 403)
+
+    def test_lean_menu_gated_in_layout(self):
+        """Mondo snello: le voci legacy (store, prodotti, corsi) e il
+        menu entita' compaiono SOLO con legacyCommerce acceso."""
+        layout = (FRONTEND_SRC / "components" / "Layout.js").read_text()
+        assert "legacyCommerce" in layout
+        assert "!legacyCommerce" in layout
+        # il mondo snello contiene le 5 voci operative
+        lean = layout.split("!legacyCommerce")[1]
+        for href in ("'/listino'", "'/events'", "'/calendar'",
+                     "'/orders'", "'/public-profile'"):
+            assert href in lean[:900]
+
+    def test_r5_legacy_menu_still_in_source(self):
+        """R5: il menu legacy NON e' stato eliminato, e' solo dietro
+        flag — con legacyCommerce true torna tutto."""
+        layout = (FRONTEND_SRC / "components" / "Layout.js").read_text()
+        assert "&& legacyCommerce" in layout
+        for legacy_href in ("'/stores'", "'/products'", "'/courses'"):
+            assert legacy_href in layout
+
+    def test_storefront_redirects_to_profile(self):
+        """I6: /s/ vetrina non muore, redirige al profilo /o/."""
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert "StoreToProfileRedirect" in app
+        # legal e checkout RESTANO vivi (servono a Stripe e GDPR: I2, I7)
+        assert 'path="/s/:slug/privacy"' in app
+        assert 'path="/s/:slug/terms"' in app
+        assert "checkout-success" in app
+
+    def test_shell_storefront_serves_operator_meta(self):
+        """La shell SEO di /s/{slug} risponde col profilo operatore."""
+        r = requests.get(f"{BASE_URL}/__seo/s/masseria-demo", timeout=10)
+        assert r.status_code == 200
+        assert '/o/masseria-demo"' in r.text
+
+    def test_store_guard_now_self_heals(self):
+        """Profile-first: il gate store auto-crea lo store tecnico
+        invece di fermare l'operatore (il 409 resta ultima difesa)."""
+        sg = (BACKEND_DIR / "services" / "store_guard.py").read_text()
+        assert "_ensure_default_store" in sg

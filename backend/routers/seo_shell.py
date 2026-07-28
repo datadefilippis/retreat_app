@@ -937,7 +937,13 @@ async def resolve_meta(path: str) -> Optional[dict]:
     # DS3: /esperienze fuori per ora (redirect alla home lato SPA)
     if head == "o" and len(parts) >= 2:
         return await _meta_operator(parts[1])
-    if head == "s" and len(parts) >= 2:
+    if head == "s" and len(parts) == 2:
+        # TW3 — la vetrina /s/{slug} e' migrata sul profilo: i crawler
+        # ricevono le meta del profilo con canonical /o/{slug} (la SPA
+        # redirige). Le sottopagine legal (/s/x/privacy, /terms)
+        # restano store (servono al checkout).
+        return await _meta_operator(parts[1])
+    if head == "s" and len(parts) > 2:
         return await _meta_store(parts[1])
     if head in _BRAND_PAGES and len(parts) == 1:
         return await _meta_brand_page(head)   # AN1 — /chi-siamo, /come-funziona

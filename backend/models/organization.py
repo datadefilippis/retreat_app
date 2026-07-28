@@ -297,6 +297,12 @@ class Organization(OrganizationBase):
     currency: Optional[str] = None         # ISO 4217 e.g. "EUR"
     settings: Optional[Dict[str, Any]] = None  # flexible org-level settings bag
 
+    # TW3 (piano Listino) — commerce legacy congelato ma REVERSIBILE:
+    # con il flag ON tornano menu e wizard di physical/digital/course/
+    # rental/store/POS per QUESTA org (dati mai toccati, riattivazione
+    # dal pannello system admin senza deploy). Default: mondo snello.
+    legacy_commerce: bool = False
+
     # ── Sub-stream 2.6: AFianco platform application fee on Stripe Connect ──
     # When > 0, the connected-account checkout session passes
     # ``application_fee_amount`` to Stripe so AFianco keeps a slice of

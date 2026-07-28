@@ -33,6 +33,7 @@ class OrgSummary(BaseModel):
     cancel_at_period_end: bool = False
     # RT3 (piano sito-rete) — membro della rete Aurya (sigillo admin)
     network_member: bool = False
+    legacy_commerce: bool = False
     created_at: datetime
     updated_at: datetime
 

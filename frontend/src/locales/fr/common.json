@@ -31,7 +31,8 @@
     "reviews": "Avis",
     "cashflow": "Encaissements",
     "visibility": "Visibilité",
-    "listino": "Tarifs"
+    "listino": "Tarifs",
+    "retreats": "Retraites"
   },
   "actions": {
     "save": "Enregistrer",

@@ -123,6 +123,7 @@ def _org_summary(doc: dict) -> OrgSummary:
         billing_status=doc.get("billing_status", "none"),
         cancel_at_period_end=doc.get("cancel_at_period_end", False),
         network_member=bool(doc.get("network_member")),
+        legacy_commerce=bool(doc.get("legacy_commerce")),
         created_at=_dt(created),
         updated_at=_dt(doc.get("updated_at") or created),
     )
@@ -417,6 +418,27 @@ async def set_network_member(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Organization not found")
     return {"org_id": org_id, "network_member": member}
+
+
+@router.put(
+    "/organizations/{org_id}/legacy-commerce",
+    summary="TW3 — riattiva/congela il commerce legacy per una org",
+)
+async def set_legacy_commerce(
+    org_id: str,
+    body: dict = Body(...),
+    current_user: dict = Depends(require_system_admin),
+):
+    """La strada di ritorno del piano Listino (garanzia R2): il flag
+    per-org fa ricomparire menu e wizard di physical/digital/course/
+    rental/store per l'org indicata. I dati non vengono mai toccati."""
+    enabled = bool(body.get("enabled"))
+    from database import organizations_collection
+    result = await organizations_collection.update_one(
+        {"id": org_id}, {"$set": {"legacy_commerce": enabled}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return {"org_id": org_id, "legacy_commerce": enabled}
 
 
 @router.put(

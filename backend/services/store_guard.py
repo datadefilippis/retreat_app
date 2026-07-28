@@ -29,7 +29,20 @@ async def org_has_public_home(org_id: str) -> bool:
 
 
 async def require_public_home(org_id: str) -> None:
-    """Solleva 409 store_required se l'org non ha un indirizzo pubblico."""
-    if not await org_has_public_home(org_id):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail=STORE_REQUIRED_DETAIL)
+    """TW3 (piano Listino) — profile-first: se manca l'indirizzo
+    pubblico si AUTO-CREA lo store tecnico invisibile (nome org,
+    is_default) invece di fermare l'operatore col 409. Il contratto
+    resta identico per il resto del sistema: dopo questa chiamata
+    l'org HA un indirizzo pubblico. Il 409 store_required sopravvive
+    solo come ultima difesa se la creazione fallisce."""
+    if await org_has_public_home(org_id):
+        return
+    try:
+        from routers.stores import _ensure_default_store
+        store = await _ensure_default_store(org_id, None)
+        if store:
+            return
+    except Exception:                     # noqa: BLE001 — cade sul 409
+        pass
+    raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                        detail=STORE_REQUIRED_DETAIL)

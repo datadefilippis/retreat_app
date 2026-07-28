@@ -299,6 +299,15 @@ const OrganizationsTab = () => {
 
   // ── RT3 — Membro della rete ─────────────────────────────────────────────────
 
+  const handleToggleLegacy = async (org) => {
+    try {
+      await adminAPI.setLegacyCommerce(org.id, !org.legacy_commerce);
+      toast.success(org.legacy_commerce
+        ? 'Commerce legacy congelato' : 'Commerce legacy riattivato');
+      fetchOrgs();
+    } catch { toast.error('Operazione non riuscita'); }
+  };
+
   const handleToggleNetwork = async (org) => {
     const next = !org.network_member;
     const key = `${org.id}_network`;
@@ -828,6 +837,16 @@ const OrganizationsTab = () => {
                             title="Membro della rete Aurya"
                           >
                             {org.network_member ? '✓ Rete' : 'Rete'}
+                          </Button>
+                          {/* TW3 — la strada di ritorno del commerce
+                              legacy (physical/digital/corsi/store) */}
+                          <Button
+                            variant={org.legacy_commerce ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => handleToggleLegacy(org)}
+                            title="Commerce legacy (fisici, digitali, corsi, store)"
+                          >
+                            {org.legacy_commerce ? '✓ Legacy' : 'Legacy'}
                           </Button>
                           <Button
                             variant={org.is_active ? 'destructive' : 'default'}

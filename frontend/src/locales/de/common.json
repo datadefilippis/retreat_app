@@ -31,7 +31,8 @@
     "reviews": "Bewertungen",
     "cashflow": "Einnahmen",
     "visibility": "Sichtbarkeit",
-    "listino": "Preisliste"
+    "listino": "Preisliste",
+    "retreats": "Retreats"
   },
   "actions": {
     "save": "Speichern",

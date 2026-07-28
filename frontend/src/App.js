@@ -1,5 +1,5 @@
 import React, { useState, useCallback, lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { SiteConfigProvider, useSiteConfig } from "./context/SiteConfigContext";
 import { AiAccessProvider } from "./hooks/useAiAccess";
@@ -342,6 +342,14 @@ function AnalyticsPageViews() {
   return null;
 }
 
+// TW3 (piano Listino) — la vetrina /s/{slug} e' migrata sul profilo
+// /o/{slug}: redirect SPA (gli URL non muoiono mai, invariante I6).
+// Le pagine legal (/s/x/privacy, /terms) e checkout restano vive.
+function StoreToProfileRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/o/${slug}`} replace />;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={<RouteFallback />}>
@@ -418,11 +426,7 @@ function AppRoutes() {
           to all customers regardless of their UI language). */}
       <Route path="/s/:slug/privacy" element={<StorefrontPrivacyPage />} />
       <Route path="/s/:slug/terms" element={<StorefrontTermsPage />} />
-      <Route path="/s/:slug" element={
-        <PublicStorefrontShell slugParamName="slug" showFloatingSwitcher={false}>
-          <StorefrontPage />
-        </PublicStorefrontShell>
-      } />
+      <Route path="/s/:slug" element={<StoreToProfileRedirect />} />
       {/* Phase 7.5 — per-category storefront page.
           Renders the SAME StorefrontPage component as `/s/:slug`; the
           page reads `useParams().category` and filters the product
@@ -432,19 +436,11 @@ function AppRoutes() {
           root route `/s/:slug` redirects to the first non-empty
           category once the catalog loads, so visitors landing on
           the root URL get sent to a populated category page. */}
-      <Route path="/s/:slug/c/:category" element={
-        <PublicStorefrontShell slugParamName="slug" showFloatingSwitcher={false}>
-          <StorefrontPage />
-        </PublicStorefrontShell>
-      } />
+      <Route path="/s/:slug/c/:category" element={<StoreToProfileRedirect />} />
       {/* S3 — Chi siamo DENTRO il guscio store: stessa shell, stesso
           carrello; il contenuto e' il profilo pubblico. /o/:slug resta
           per il contesto directory. */}
-      <Route path="/s/:slug/chi-siamo" element={
-        <PublicStorefrontShell slugParamName="slug" showFloatingSwitcher={false}>
-          <StorefrontPage aboutMode />
-        </PublicStorefrontShell>
-      } />
+      <Route path="/s/:slug/chi-siamo" element={<StoreToProfileRedirect />} />
       {/* E3: public event landing page — deep-link per-occurrence.
           Has StorefrontHeader → its inline switcher covers /e, no
           floating dup. */}

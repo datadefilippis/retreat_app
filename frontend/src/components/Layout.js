@@ -46,6 +46,7 @@ import { Separator } from '../components/ui/separator';
 // since the sidebar lives over the navy gradient background.
 import { BrandLogo } from '../components/BrandLogo';
 import { modulesAPI } from '../api/modules';
+import api from '../api/client';
 import { useTranslation } from 'react-i18next';
 
 // ─── Sidebar context (condiviso tra Sidebar, Header, AppLayout) ──────────────
@@ -200,6 +201,16 @@ export const Sidebar = () => {
 
   useEffect(() => { fetchActiveModules(); }, [fetchActiveModules]);
 
+  // TW3 (piano Listino) — il flag org legacy_commerce decide il menu:
+  // OFF = mondo snello (7 voci), ON = commerce legacy completo
+  const [legacyCommerce, setLegacyCommerce] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    api.get('/organizations/current')
+      .then(res => setLegacyCommerce(!!res.data?.legacy_commerce))
+      .catch(() => setLegacyCommerce(false));
+  }, [user]);
+
   // Listen for module changes from any page (ModulesPage dispatches this)
   useEffect(() => {
     const handler = () => fetchActiveModules();
@@ -214,8 +225,20 @@ export const Sidebar = () => {
     .map((key) => moduleNavMap[key]);
 
   // Operations — only with commerce module active
+  // TW3 — mondo snello (default): Listino, Ritiri, Calendario, Ordini,
+  // Profilo. Il resto (store, incassi, recensioni, visibilita',
+  // newsletter form, prodotti legacy) torna col flag legacy_commerce.
   const dynamicOpsNav = [];
-  if (activeSet.has('commerce')) {
+  if (activeSet.has('commerce') && !legacyCommerce) {
+    dynamicOpsNav.push(
+      { nameKey: 'nav.listino', href: '/listino', icon: ListChecks, end: true },
+      { nameKey: 'nav.retreats', href: '/events', icon: CalendarDays, end: false },
+      { nameKey: 'nav.calendar', href: '/calendar', icon: CalendarDays, end: true },
+      { nameKey: 'nav.orders', href: '/orders', icon: ShoppingCart, end: true },
+      { nameKey: 'nav.public_profile', href: '/public-profile', icon: UserCircle, end: true },
+    );
+  }
+  if (activeSet.has('commerce') && legacyCommerce) {
     dynamicOpsNav.push(
       { nameKey: 'nav.orders', href: '/orders', icon: ShoppingCart, end: true },
       // CF3 — la tesoreria dell'operatore
@@ -246,7 +269,7 @@ export const Sidebar = () => {
   const entityNav = [];
 
   // Products: only with commerce
-  if (hasCommerce) {
+  if (hasCommerce && legacyCommerce) {
     entityNav.push(hasProductCatalog ? {
       nameKey: 'nav.products', icon: Package,
       children: [
@@ -273,7 +296,7 @@ export const Sidebar = () => {
   // (Phase 2+). The legacy read-only page lives at
   // /modules/_legacy/customers-light for the 30-day safety-net
   // window but is intentionally absent from the menu.
-  if (hasCustomerIntel) {
+  if (hasCustomerIntel && legacyCommerce) {
     entityNav.push({
       nameKey: 'nav.customers', icon: UserRound,
       children: [

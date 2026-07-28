@@ -23,6 +23,10 @@ export const adminAPI = {
   // ── Organizations (write) ─────────────────────────────────────────────────
 
   // RT3 — sigillo della rete Aurya (system admin)
+  // TW3 — riattiva/congela il commerce legacy per una org
+  setLegacyCommerce: (orgId, enabled) =>
+    api.put(`/admin/organizations/${orgId}/legacy-commerce`, { enabled }),
+
   setNetworkMember: (orgId, member) =>
     api.put(`/admin/organizations/${orgId}/network-member`, { member }).then((r) => r.data),
 
