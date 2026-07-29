@@ -74,10 +74,18 @@ function SkeletonCard() {
 
 export default function RetreatsCalendarPage() {
   const { t, i18n } = useTranslation('landings');
+  // PN (richiesta founder 29/7) — la stessa pagina risponde anche su
+  // /esplora-ritiri: anteprima marketplace NON linkata (pattern basePath
+  // di OperatorsIndexPage). Li' i dati sono VERI (?preview=1, bypass
+  // PL8 lato backend) e la pagina si comporta come in fase marketplace:
+  // ricerca, filtri e card piene, niente modalita' PL22.
+  const isPreview = window.location.pathname.startsWith('/esplora-ritiri');
+  const basePath = isPreview ? '/esplora-ritiri' : '/ritiri';
   // PL22 — anteprima ONESTA in pre-lancio (feedback analista): niente
   // ricerca/filtri non funzionanti su dati d'esempio — solo poche card
   // sfocate che raccontano il concept, e le CTA verso le landing lead.
-  const { prelaunch } = useSiteConfig();
+  const { prelaunch: sitePrelaunch } = useSiteConfig();
+  const prelaunch = sitePrelaunch && !isPreview;
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
@@ -127,12 +135,13 @@ export default function RetreatsCalendarPage() {
     // offerti in X (l'italiano mostra tutto)
     const uiLang = (i18n.language || 'it').slice(0, 2);
     if (uiLang !== 'it') q.lang = uiLang;
+    if (isPreview) q.preview = 1;   // PN — dati veri sulla rotta esplora
     api.get('/public/retreats', { params: q })
       .then(res => { if (mounted) setData(res.data); })
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [category, region, month, geoLat, geoLng, geoRadius, i18n.language]);
+  }, [category, region, month, geoLat, geoLng, geoRadius, i18n.language, isPreview]);
 
   const setFilter = (key, value) => {
     const next = new URLSearchParams(params);
@@ -181,6 +190,9 @@ export default function RetreatsCalendarPage() {
     description: `Trova e prenota ${catLabel ? catLabel.toLowerCase() + ' ' : ''}ritiri${region ? ' a ' + region : ''}: date, prezzi e disponibilità in tempo reale, con prenotazione e caparra online.`,
     canonicalPath: (routeParams.categoria || routeParams.regione)
       ? window.location.pathname : '/',
+    // PN — /esplora-ritiri e' un'anteprima non linkata: mai in SERP
+    // (stesso pattern noindex di OperatorsIndexPage su esplora)
+    noindex: isPreview,
     // F3 — ItemList dei ritiri visibili (max 20: ai crawler serve il
     // segnale di lista, non l'inventario completo)
     jsonLd: (data?.items || []).length > 0 ? {
@@ -201,8 +213,10 @@ export default function RetreatsCalendarPage() {
   return (
     <MarketplaceShell noSearch>
     <div className="bg-background">
-      {/* PL6 — avviso anteprima lancio (solo in pre-lancio) */}
-      <PrelaunchBanner audience="traveler" />
+      {/* PL6 — avviso anteprima lancio (solo in pre-lancio). Su
+          /esplora-ritiri i dati sono VERI: il banner "ritiri d'esempio"
+          direbbe il falso, quindi resta fuori dalla rotta anteprima. */}
+      {!isPreview && <PrelaunchBanner audience="traveler" />}
       {/* ── Hero (DS: il tramonto di Aurya in sottofondo) ────────────── */}
       <header className="relative bg-gradient-sidebar text-white overflow-hidden">
         {/* poster sempre sotto: primo dipinto + fallback reduced-motion */}
@@ -276,7 +290,7 @@ export default function RetreatsCalendarPage() {
               <Link to="/" className="hover:text-primary hover:underline">Aurya</Link>
               <span className="mx-1.5" aria-hidden>›</span>
               {category ? (
-                <Link to={`/ritiri/${category}`} className="hover:text-primary hover:underline">
+                <Link to={`${basePath}/${category}`} className="hover:text-primary hover:underline">
                   {catLabel || category}
                 </Link>
               ) : (
@@ -293,7 +307,7 @@ export default function RetreatsCalendarPage() {
                   {t('landings:calendar.byRegion', { defaultValue: 'Per regione:' })}
                 </span>
                 {regionsForCategory.map(rg => (
-                  <Link key={rg} to={`/ritiri/${category}/${rg}`}
+                  <Link key={rg} to={`${basePath}/${category}/${rg}`}
                         className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors">
                     {rg}
                   </Link>

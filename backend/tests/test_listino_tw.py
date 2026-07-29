@@ -894,3 +894,78 @@ class TestQuandoLM4:
         picker = pub.split("async def get_service_slots")[1].split("@router.get")[0]
         assert "generate_available_slots" in picker
         assert "availability_index" not in picker
+
+
+class TestAnteprimaMarketplace:
+    """PN (richiesta founder 29/7) — anteprima VERA del marketplace su
+    rotte non linkate (/esplora-operatori, /esplora-ritiri): preview=1
+    bypassa il filtro solo-campioni della fase (PL8) SOLO per quella
+    risposta; il default resta identico (le guardie PL8 non cambiano)."""
+
+    def test_preview_1_mostra_org_vere(self):
+        """preview=1 → comportamento marketplace: operatori/ritiri VERI,
+        mai marcati sample, identita' non redatta (PL9 non serve: i
+        campioni escono dal perimetro)."""
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        op = src.split("async def public_operators_index")[1] \
+                .split("async def _operator_listino")[0]
+        assert "_prelaunch = prelaunch_mode() and not preview" in op
+        rt = src.split("async def list_public_retreats")[1] \
+                .split("def _haversine_km")[0]
+        assert "if prelaunch_mode() and not preview:" in rt
+        r = requests.get(f"{BASE_URL}/api/public/operators",
+                         params={"preview": 1}, timeout=10)
+        assert r.status_code == 200
+        for it in r.json()["items"]:
+            assert it["sample"] is False
+            assert it["name"], "identita' redatta con preview=1"
+        r2 = requests.get(f"{BASE_URL}/api/public/retreats",
+                          params={"preview": 1}, timeout=10)
+        assert r2.status_code == 200
+        for it in r2.json()["items"]:
+            assert it["sample"] is False
+            assert it["org_name"], "org_name redatto con preview=1"
+
+    def test_default_resta_campioni(self):
+        """Senza preview NULLA cambia: in fase non-marketplace i listing
+        mostrano solo campioni (sample=True) e le guardie PL8 restano
+        scritte come prima."""
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        # le guardie PL8 esistenti (test_prelaunch_pl) restano intatte
+        assert "pay_ready = set(sample_orgs)" in src
+        assert "if _is_sample != _prelaunch:" in src
+        cfg = requests.get(f"{BASE_URL}/api/public/site-config",
+                           timeout=10).json()
+        prelaunch = bool(cfg.get("prelaunch"))
+        for ep in ("operators", "retreats"):
+            r = requests.get(f"{BASE_URL}/api/public/{ep}", timeout=10)
+            assert r.status_code == 200
+            for it in r.json()["items"]:
+                # fase spenta: solo campioni; marketplace: solo veri
+                assert it["sample"] is prelaunch, \
+                    f"default cambiato su /{ep} (fase prelaunch={prelaunch})"
+
+    def test_rotte_esplora_presenti_e_noindex(self):
+        """Le rotte /esplora-* montano le pagine marketplace in OGNI
+        fase, chiedono preview=1 e si marcano noindex; nessuna voce di
+        menu/footer le linka (restano raggiungibili solo via URL)."""
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/esplora-ritiri"' in app
+        assert 'path="/esplora-ritiri/:categoria"' in app
+        assert 'path="/esplora-ritiri/:categoria/:regione"' in app
+        assert 'path="/esplora-operatori"' in app
+        cal = (FRONTEND_SRC / "features" / "storefront"
+               / "RetreatsCalendarPage.js").read_text()
+        assert "'/esplora-ritiri'" in cal
+        assert "q.preview = 1" in cal
+        assert "noindex: isPreview" in cal
+        assert "${basePath}/${category}" in cal   # navigazione interna
+        ops = (FRONTEND_SRC / "features" / "storefront"
+               / "OperatorsIndexPage.js").read_text()
+        assert "q.preview = 1" in ops
+        assert "noindex: isPreview ||" in ops
+        # nessun link di menu/footer verso le rotte anteprima
+        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "MarketplaceShell.jsx").read_text()
+        assert "/esplora-ritiri" not in shell
+        assert "/esplora-operatori" not in shell

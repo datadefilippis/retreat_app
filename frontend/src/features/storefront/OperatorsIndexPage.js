@@ -239,6 +239,10 @@ export default function OperatorsIndexPage() {
   // anche su /esplora-operatori (il menu resta sulla pagina rete)
   const basePath = window.location.pathname.startsWith('/esplora-operatori')
     ? '/esplora-operatori' : '/operatori';
+  // PN — su /esplora-operatori l'anteprima e' VERA: preview=1 al
+  // backend (bypass PL8, operatori reali come al lancio) e noindex
+  // (rotta non linkata, mai in SERP prima del lancio).
+  const isPreview = basePath === '/esplora-operatori';
   const navigate = useNavigate();
   // OP4 — le bio degli operatori parlano la lingua attiva (refetch al cambio)
   const uiLang = (i18n.language || 'it').slice(0, 2);
@@ -326,12 +330,13 @@ export default function OperatorsIndexPage() {
       if (banda) { q.time_from = banda[0]; q.time_to = banda[1]; }
     }
     if (uiLang !== 'it') q.lang = uiLang;
+    if (isPreview) q.preview = 1;   // PN — dati veri sulla rotta esplora
     api.get('/public/operators', { params: q })
       .then(res => { if (mounted) setData(res.data); })
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [categoria, geoLat, geoLng, geoRadius, ordina, quando, fascia, uiLang]);
+  }, [categoria, geoLat, geoLng, geoRadius, ordina, quando, fascia, uiLang, isPreview]);
 
   const items = data?.items || [];
   const categories = useMemo(
@@ -352,8 +357,10 @@ export default function OperatorsIndexPage() {
       defaultValue: 'Scopri gli organizzatori di ritiri ed esperienze olistiche su Aurya: profili, prossime date e prenotazione online con caparra.',
     }),
     canonicalPath: categoria ? `/operatori/${categoria}` : '/operatori',
-    // 0 risultati = pagina indice vuota: mai in SERP (regola S5)
-    noindex: !loading && items.length === 0,
+    // 0 risultati = pagina indice vuota: mai in SERP (regola S5).
+    // PN — la rotta /esplora-operatori e' un'anteprima non linkata:
+    // noindex sempre, qualunque sia il contenuto.
+    noindex: isPreview || (!loading && items.length === 0),
     jsonLd: items.length > 0 ? {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
@@ -371,7 +378,9 @@ export default function OperatorsIndexPage() {
 
   return (
     <MarketplaceShell>
-      <PrelaunchBanner audience="operator" />
+      {/* PN — sulla rotta anteprima i dati sono VERI: niente banner
+          "d'esempio" (su /operatori marketplace si spegne da solo) */}
+      {!isPreview && <PrelaunchBanner audience="operator" />}
       <header className="relative text-white overflow-hidden">
         {/* le mani in mudra del founder: chi organizza è il volto della pagina */}
         <img aria-hidden src="/media/hero-organizer.webp" alt="" fetchpriority="high"

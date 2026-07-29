@@ -240,7 +240,11 @@ def test_prelaunch_directory_noindex_and_honest_preview():
     frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
     cal = (frontend / "features" / "storefront" / "RetreatsCalendarPage.js").read_text(
         encoding="utf-8")
-    assert "const { prelaunch } = useSiteConfig();" in cal
+    # PN 29/7 — il flag di fase resta la fonte; sull'anteprima non
+    # linkata /esplora-ritiri (dati VERI via preview=1) la modalita'
+    # PL22 si spegne: l'anteprima onesta vale per le pagine di fase.
+    assert "const { prelaunch: sitePrelaunch } = useSiteConfig();" in cal
+    assert "const prelaunch = sitePrelaunch && !isPreview;" in cal
     # ricerca hero, categorie e barra filtri spente in pre-lancio
     assert cal.count("!prelaunch &&") >= 3, \
         "regressione: filtri/ricerca tornerebbero visibili sull'anteprima"

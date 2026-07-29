@@ -465,6 +465,13 @@ function AppRoutes() {
           della fase marketplace, raggiungibile solo via URL diretto */}
       <Route path="/esplora-operatori" element={<OperatorsIndexPage />} />
       <Route path="/esplora-operatori/:categoria" element={<OperatorsIndexPage />} />
+      {/* PN (richiesta founder 29/7) — anteprima non linkata della
+          directory ritiri: stessa pagina di /ritiri (marketplace) in
+          OGNI fase, con dati veri via ?preview=1 e noindex. Nessuna
+          voce di menu: si raggiunge solo via URL diretto. */}
+      <Route path="/esplora-ritiri" element={<RetreatsCalendarPage />} />
+      <Route path="/esplora-ritiri/:categoria" element={<RetreatsCalendarPage />} />
+      <Route path="/esplora-ritiri/:categoria/:regione" element={<RetreatsCalendarPage />} />
       <Route path="/operatori/:categoria" element={<OperatorsGate />} />
       <Route path="/destinazioni" element={<DestinationsGate />} />
       <Route path="/destinazioni/:luogo" element={<DestinationsGate />} />

@@ -545,7 +545,10 @@ class TestSeo3OnPage:
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "RetreatsCalendarPage.js").read_text()
         assert "regionsForCategory" in page
-        assert "/ritiri/${category}/${rg}" in page        # link crawlabile
+        # PN 29/7 — stesso link crawlabile, sul basePath dinamico
+        # (default '/ritiri'; '/esplora-ritiri' solo sull'anteprima)
+        assert "${basePath}/${category}/${rg}" in page    # link crawlabile
+        assert ": '/ritiri';" in page                    # default invariato
         assert 'aria-label="breadcrumb"' in page
         # niente em-dash né 'in Italia' nel title/description SEO
         assert "— prenota online" not in page

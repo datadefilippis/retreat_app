@@ -3385,6 +3385,13 @@ async def list_public_retreats(
     limit: int = Query(default=60, ge=1, le=120),
     offset: int = Query(default=0, ge=0),
     lang: str = None,  # en|de|fr: solo i ritiri offerti in quella lingua (default semplice: vedi catalog)
+    # PN (richiesta founder 29/7) — anteprima marketplace su rotta non
+    # linkata (/esplora-ritiri): preview=1 disattiva SOLO il filtro
+    # solo-campioni della fase (PL8) per questa risposta, che si comporta
+    # come in fase marketplace. Nessun segreto esposto: sono gli stessi
+    # dati pubblici che il lancio mostrera'; i campioni restano redatti
+    # (PL9) ovunque appaiano. Default 0 = comportamento invariato.
+    preview: int = Query(default=0, ge=0, le=1),
 ):
     """IL calendario dei ritiri: occurrence pubblicate e future di TUTTE
     le organizzazioni, filtrabili per categoria (tassonomia), regione,
@@ -3513,10 +3520,12 @@ async def list_public_retreats(
     # così la directory non è vuota (mostrate sfocate e non prenotabili
     # lato frontend). A flag spento: comportamento identico a oggi.
     from core.prelaunch import prelaunch_mode
-    if prelaunch_mode():
+    if prelaunch_mode() and not preview:
         # PL8 — vetrina di pre-lancio: SOLO i campioni. I ritiri VERI
         # restano nascosti finche' il lancio non apre: niente mix
         # reale/finto e nessuna prenotazione prematura in vetrina.
+        # Con preview=1 (rotta /esplora-ritiri non linkata) il gate si
+        # bypassa e vale il perimetro marketplace (GT1b pieno).
         pay_ready = set(sample_orgs)
     org_slug = {oid: s for oid, s in org_slug.items() if oid in pay_ready}
 
@@ -3893,6 +3902,12 @@ async def public_operators_index(
     date: str = Query(default=None, max_length=10),
     time_from: str = Query(default=None, max_length=5),
     time_to: str = Query(default=None, max_length=5),
+    # PN (richiesta founder 29/7) — anteprima marketplace su rotta non
+    # linkata (/esplora-operatori): preview=1 disattiva SOLO lo specchio
+    # di fase PL8 (e con esso la redazione PL9, che riguarda i campioni:
+    # qui i campioni escono e restano gli operatori VERI, non redatti,
+    # come in fase marketplace). Default 0 = comportamento invariato.
+    preview: int = Query(default=0, ge=0, le=1),
 ):
     """S2 (SEO_MASTER_PLAN) — aggregatore pubblico degli operatori.
 
@@ -3935,8 +3950,10 @@ async def public_operators_index(
     ).to_list(500)}
     # PL3 — gli operatori campione appaiono SOLO in pre-lancio (sfocati);
     # a flag spento sono invisibili, come se non esistessero.
+    # preview=1 → _prelaunch=False: lo specchio PL8 qui sotto seleziona
+    # gli operatori veri (campioni fuori), esattamente come al lancio.
     from core.prelaunch import prelaunch_mode
-    _prelaunch = prelaunch_mode()
+    _prelaunch = prelaunch_mode() and not preview
 
     # LM4 — filtro Quando sull'indice denormalizzato. Feature flag
     # implicito: se availability_index e' vuoto (mai costruito),
