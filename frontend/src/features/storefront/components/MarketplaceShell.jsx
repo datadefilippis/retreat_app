@@ -347,13 +347,16 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 {/* RT2 — fase network: si esplorano Magazine e rete, non
                     i ritiri. AN2 (categorie SEO) torna col marketplace. */}
                 {isNetwork && <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
-                {isNetwork && <li><Link to="/operatori" className="hover:text-white">{t('marketplace.navOperators', { defaultValue: 'Operatori' })}</Link></li>}
+                {/* LM2 — 'Esplora operatori' vive in ENTRAMBE le fasi:
+                    in rete porta alla pagina della rete, al flip
+                    diventa la ricerca completa senza altri interventi */}
+                <li><Link to="/operatori" className="hover:text-white">{t('marketplace.footerExploreOperators', { defaultValue: 'Esplora operatori' })}</Link></li>
                 {isNetwork && <li><Link to="/newsletter" className="hover:text-white">{t('marketplace.navNewsletter', { defaultValue: 'Newsletter' })}</Link></li>}
                 {!isNetwork && <li><Link to="/ritiri/yoga" className="hover:text-white">Yoga</Link></li>}
                 {!isNetwork && <li><Link to="/ritiri/meditazione" className="hover:text-white">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>}
                 {!isNetwork && <li><Link to="/ritiri/detox" className="hover:text-white">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>}
                 {!isNetwork && <li><Link to="/" className="hover:text-white">{t('marketplace.footerAll', { defaultValue: 'Tutti i ritiri' })}</Link></li>}
-                {!prelaunch && <li><Link to="/operatori" className="hover:text-white">{t('marketplace.footerOperators', { defaultValue: 'Tutti gli organizzatori' })}</Link></li>}
+                {/* LM2 — la voce operatori ora e' sopra, in entrambe le fasi */}
                 {!prelaunch && <li><Link to="/destinazioni" className="hover:text-white">{t('marketplace.footerDestinations', { defaultValue: 'Destinazioni' })}</Link></li>}
                 {!prelaunch && destinations.map(d => (
                   <li key={d.slug}>

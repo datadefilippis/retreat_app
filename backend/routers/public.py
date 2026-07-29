@@ -3905,7 +3905,10 @@ async def public_operators_index(
         {"id": {"$in": org_ids}, "is_active": {"$ne": False},
          "deactivated_at": None},
         {"_id": 0, "id": 1, "name": 1, "public_profile": 1,
-         "store_settings": 1, "directory_featured": 1, "is_sample": 1},
+         "store_settings": 1, "directory_featured": 1, "is_sample": 1,
+         # LM2 — rating denormalizzato per la card (stesso pattern
+         # di /network/members)
+         "reviews_stats": 1},
     ).to_list(500)}
     # PL3 — gli operatori campione appaiono SOLO in pre-lancio (sfocati);
     # a flag spento sono invisibili, come se non esistessero.
@@ -3916,8 +3919,23 @@ async def public_operators_index(
         {"organization_id": {"$in": org_ids}, "is_active": True,
          "is_published": True},
         {"_id": 0, "id": 1, "organization_id": 1, "category": 1,
-         "item_type": 1},
+         "item_type": 1,
+         # LM2 — proiezione extra per la card ricca: aggregato listino
+         # e anteprima derivano da QUESTA stessa query (niente N+1)
+         "name": 1, "unit_price": 1, "price_mode": 1,
+         "metadata.duration_minutes": 1},
     ).to_list(2000)
+
+    # LM2 — servizi a listino per org (stesso perimetro di
+    # _operator_listino e dell'aggregato di /network/members: solo
+    # item_type=service pubblicati e attivi, ordinati per categoria)
+    svc_by_org: dict = {}
+    for p in prods:
+        if p.get("item_type") == "service":
+            svc_by_org.setdefault(p["organization_id"], []).append(p)
+    for rows_ in svc_by_org.values():
+        rows_.sort(key=lambda r: ((r.get("category") or ""),
+                                  (r.get("name") or "").lower()))
 
     now_iso = datetime.now(timezone.utc).isoformat()[:16]
     occs = await event_occurrences_collection.find(
@@ -3971,6 +3989,12 @@ async def public_operators_index(
         # delle occorrenze): l'operatore senza ritiri futuri resta
         # scopribile geograficamente
         prof_regions = {r for r in (pp.get("region"), pp.get("city")) if r}
+        # LM2 — card ricca: 'da X euro · N servizi' + anteprima delle
+        # prime 3 righe di listino per la vista rapida in card. Per i
+        # campioni niente rating ne' anteprima (identita' redatta PL9).
+        svcs = svc_by_org.get(s["organization_id"], [])
+        svc_prices = [r["unit_price"] for r in svcs
+                      if r.get("unit_price") is not None]
         items.append({
             "org_slug": s["slug"],
             # OP4 — il TITOLO pubblico e' il nome dell'organizzazione
@@ -3996,6 +4020,18 @@ async def public_operators_index(
             "featured": bool(org.get("directory_featured")),
             # PL3 — il frontend sfoca la card e disabilita il click
             "sample": _is_sample,
+            # LM2 — fiducia e prezzi sulla card: rating {avg, count},
+            # 'da X euro · N servizi' e anteprima listino (3 righe)
+            "rating": None if _is_sample else org.get("reviews_stats"),
+            "services_count": len(svcs),
+            "price_from": min(svc_prices) if svc_prices else None,
+            "listino_preview": [] if _is_sample else [{
+                "name": r["name"],
+                "duration_minutes": (r.get("metadata") or {})
+                                     .get("duration_minutes"),
+                "price": r.get("unit_price"),
+                "on_request": r.get("price_mode") == "inquiry",
+            } for r in svcs[:3]],
         })
 
     # AN3 — filtro per località testuale (city/region/regioni occorrenze)

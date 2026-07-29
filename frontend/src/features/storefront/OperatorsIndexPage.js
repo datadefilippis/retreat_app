@@ -23,12 +23,28 @@ const OperatorsMapView = React.lazy(() => import('./components/OperatorsMapView'
 import { Leaf, MapPin } from 'lucide-react';
 import { CategoryIcon } from './lib/categoryIcons';
 
-function OperatorCard({ op, t }) {
+// LM2 — stelle piene/vuote sul rating medio (stesso disegno del profilo)
+function Stars({ value }) {
+  const full = Math.round(value || 0);
   return (
+    <span className="text-xs tracking-tight" aria-label={`${value} su 5`}>
+      <span className="text-amber-500">{'★'.repeat(full)}</span>
+      <span className="text-gray-300">{'★'.repeat(5 - full)}</span>
+    </span>
+  );
+}
+
+function OperatorCard({ op, t }) {
+  // LM2 — vista rapida: anteprima listino IN CARD (pattern PN3,
+  // aria-expanded); il click sulla card resta il link al profilo.
+  const [quickOpen, setQuickOpen] = useState(false);
+  const preview = op.listino_preview || [];
+  return (
+    <div className={`group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow flex flex-col ${op.sample ? 'pointer-events-none select-none' : ''}`}>
     <Link
       to={op.sample ? '#' : `/o/${op.org_slug}`}
       onClick={op.sample ? (e) => e.preventDefault() : undefined}
-      className={`group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow ${op.sample ? 'pointer-events-none select-none' : ''}`}
+      className="block"
     >
       <div className="h-24 bg-gradient-to-br from-primary/15 to-secondary relative">
         {/* PL6 — operatore campione: cover sfocata + chip anteprima */}
@@ -61,6 +77,18 @@ function OperatorCard({ op, t }) {
         <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
           {op.sample ? <Redacted kind="name" /> : op.name}
         </p>
+        {/* LM2 — fiducia subito: rating medio + numero recensioni */}
+        {op.rating?.count > 0 && (
+          <p className="mt-0.5 flex items-center gap-1.5">
+            <Stars value={op.rating.avg} />
+            <span className="text-[11px] text-muted-foreground">
+              {Number(op.rating.avg).toFixed(1)} · {t('landings:operators.reviewCount', {
+                count: op.rating.count,
+                defaultValue: op.rating.count === 1 ? '1 recensione' : '{{count}} recensioni',
+              })}
+            </span>
+          </p>
+        )}
         {/* AN3 — posizione dal profilo + distanza quando c'è un punto */}
         {(op.city || op.region || op.distance_km != null) && (
           <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -101,8 +129,70 @@ function OperatorCard({ op, t }) {
             })
           )}
         </p>
+        {/* LM2 — 'da X euro · N servizi': il prezzo di partenza del listino */}
+        {op.services_count > 0 && (
+          <p className="mt-1 text-xs font-semibold text-[#376254]">
+            {op.price_from != null && (
+              <>{t('landings:operators.priceFrom', {
+                price: Number(op.price_from).toFixed(0),
+                defaultValue: 'da {{price}} euro',
+              })} · </>
+            )}
+            {t('landings:operators.serviceCount', {
+              count: op.services_count,
+              defaultValue: op.services_count === 1 ? '1 servizio' : '{{count}} servizi',
+            })}
+          </p>
+        )}
       </div>
     </Link>
+    {/* LM2 — vista rapida: i primi servizi a listino senza cambiare
+        pagina; l'acquisto vero resta sul profilo (PN3) */}
+    {!op.sample && preview.length > 0 && (
+      <div className="px-4 pb-4 mt-auto">
+        <button
+          type="button"
+          aria-expanded={quickOpen}
+          data-testid="operator-quick-view"
+          onClick={() => setQuickOpen(v => !v)}
+          className={`w-full rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+            quickOpen
+              ? 'border border-[#376254] text-[#376254] bg-white hover:bg-gray-50'
+              : 'bg-secondary text-secondary-foreground hover:bg-[#376254]/15'
+          }`}
+        >
+          {quickOpen
+            ? t('landings:operators.quickViewClose', { defaultValue: 'Chiudi anteprima' })
+            : t('landings:operators.quickView', { defaultValue: 'Vista rapida' })}
+        </button>
+        {quickOpen && (
+          <div className="mt-2 rounded-xl border border-border bg-white divide-y divide-gray-100">
+            {preview.map((row) => (
+              <div key={row.name} className="flex items-center gap-2 px-3 py-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-gray-900 truncate">{row.name}</p>
+                  {row.duration_minutes ? (
+                    <p className="text-[11px] text-gray-500">{row.duration_minutes} min</p>
+                  ) : null}
+                </div>
+                <span className="text-xs font-semibold text-gray-900 whitespace-nowrap">
+                  {row.on_request
+                    ? t('landings:operator.priceOnRequest', { defaultValue: 'Su richiesta' })
+                    : (row.price != null ? `${Number(row.price).toFixed(0)} €` : '')}
+                </span>
+              </div>
+            ))}
+            <Link
+              to={`/o/${op.org_slug}`}
+              className="block px-3 py-2 text-center text-xs font-semibold text-[#376254] hover:bg-gray-50"
+            >
+              {t('landings:operators.goToProfile', { defaultValue: 'Vai al profilo' })}
+            </Link>
+          </div>
+        )}
+      </div>
+    )}
+    </div>
   );
 }
 

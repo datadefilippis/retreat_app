@@ -683,3 +683,56 @@ class TestListinoUnPassoLM1:
         # payloadFromRow resta il payload base identico di TW1
         assert "payloadFromRow(draft)" in page
         assert "payloadFromRow(edit)" in page
+
+
+class TestCardOperatoreLM2:
+    """LM2 (docs/LISTINO_MARKETPLACE_PIANO_2026-07.md) — card operatore
+    ricca: rating + aggregato listino + anteprima su /public/operators,
+    vista rapida in card, footer con 'Esplora operatori' in entrambe
+    le fasi."""
+
+    def test_operators_endpoint_exposes_card_fields(self):
+        """rating / services_count / price_from / listino_preview
+        viaggiano sugli item, derivati dalla stessa query prodotti
+        (niente N+1 per pagina)."""
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        blocco = src.split("async def public_operators_index")[1]
+        blocco = blocco.split("async def _operator_listino")[0]
+        for campo in ('"rating"', '"services_count"', '"price_from"',
+                      '"listino_preview"'):
+            assert campo in blocco, f"campo mancante sull'item: {campo}"
+        # una sola query prodotti per tutte le org della pagina
+        assert "svc_by_org" in blocco
+        assert "_operator_listino(" not in blocco, "niente N+1 in loop"
+        r = requests.get(f"{BASE_URL}/api/public/operators", timeout=10)
+        assert r.status_code == 200
+        # quando la fase corrente mostra operatori, i campi ci sono
+        for item in r.json()["items"][:1]:
+            for campo in ("rating", "services_count", "price_from",
+                          "listino_preview"):
+                assert campo in item, f"campo mancante live: {campo}"
+
+    def test_card_vista_rapida_in_pagina(self):
+        """La card espande l'anteprima IN CARD (bottone aria-expanded,
+        pattern PN3): niente navigazione, il profilo resta la CTA."""
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorsIndexPage.js").read_text()
+        assert "Vista rapida" in page
+        assert "operator-quick-view" in page
+        assert "aria-expanded={quickOpen}" in page
+        assert "listino_preview" in page
+        assert "Vai al profilo" in page
+        # fiducia e prezzo di partenza sulla card
+        assert "op.rating" in page
+        assert "da {{price}} euro" in page
+
+    def test_footer_esplora_operatori_entrambe_le_fasi(self):
+        """La voce 'Esplora operatori' → /operatori non e' dietro
+        isNetwork ne' prelaunch: vive in rete E in marketplace."""
+        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "MarketplaceShell.jsx").read_text()
+        righe = [l for l in shell.splitlines()
+                 if "Esplora operatori" in l and "/operatori" in l]
+        assert righe, "voce footer 'Esplora operatori' assente"
+        assert all("isNetwork" not in l and "prelaunch" not in l
+                   for l in righe)
