@@ -143,6 +143,7 @@
     "submitGeneric": "Errore nell'invio della richiesta. Riprova.",
     "fillAttendees": "Compila nome ed email per ogni partecipante.",
     "termsRequired": "Devi accettare i termini e condizioni per procedere.",
+    "gdprRequired": "Devi accettare la Privacy e i Termini per procedere.",
     "selectShippingOption": "Seleziona un'opzione di spedizione."
   },
   "submitted": {

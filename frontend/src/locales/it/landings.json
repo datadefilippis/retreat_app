@@ -280,6 +280,8 @@
     "ctaAdd": "Aggiungi al carrello",
     "ctaSelectTier": "Scegli un biglietto",
     "checkoutHint": "Al checkout ti verranno richiesti nome, email e modalità di consegna; qui completi anche eventuali codici sconto.",
+    "ctaBook": "Prenota ora",
+    "inlineCheckoutHint": "Completi la prenotazione qui, senza lasciare questa pagina.",
     "soldOutTitle": "Esaurito",
     "soldOutBody": "Questo ritiro è al completo. Dai un'occhiata agli altri ritiri in programma.",
     "ataGlance": "A colpo d'occhio",

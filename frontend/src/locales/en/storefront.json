@@ -143,6 +143,7 @@
     "submitGeneric": "Error submitting the request. Please try again.",
     "fillAttendees": "Fill in name and email for each attendee.",
     "termsRequired": "You must accept the terms and conditions to proceed.",
+    "gdprRequired": "You must accept the Privacy Policy and the Terms to proceed.",
     "selectShippingOption": "Select a shipping option."
   },
   "submitted": {

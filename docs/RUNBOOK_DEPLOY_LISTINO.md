@@ -4,6 +4,10 @@ Porta in prod il ciclo Listino (docs/LISTINO_PIANO_2026-07.md):
 TW1 pagina /listino, TW2 profilo = negozio, TW3 potatura reversibile,
 TW4 onboarding 3 passi. SOLO su ok esplicito del founder ("deploya").
 
+Questo runbook copre anche i cicli successivi RS (Ritiri) e PN
+(Profilo = negozio v2, checkout inline incluso): stessi passi,
+zero migrazioni.
+
 ## Cosa cambia per chi e' gia' in prod
 
 1. Nessuna migrazione dati: zero script da lanciare. Il flag

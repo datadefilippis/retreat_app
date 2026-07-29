@@ -4,18 +4,22 @@
  * Route: /e/:org_slug/:slug
  * Backed by GET /api/public/events/{org_slug}/{slug} (E3).
  *
- * Role in the checkout flow — PURELY A PRESENTER:
+ * Role in the checkout flow — PRESENTER + INLINE CHECKOUT HOST (PN4):
  *   The landing shows the event richly (hero, description, venue + map,
  *   tier picker, qty stepper) and collects ONE piece of state from the
- *   user: which tier and how many seats. When the user clicks
- *   "Procedi al checkout", the page navigates to the storefront
- *   /s/:org_slug with that selection embedded in React Router state;
- *   StorefrontPage reads the state, hydrates its cart, and opens the
- *   EXISTING checkout dialog (customer data, coupon, fulfillment,
- *   Stripe redirect — the same form used for every other purchase).
+ *   user: which tier and how many seats.
+ *
+ *   - MARKETPLACE context (default): clicking the CTA opens the SHARED
+ *     checkout (InlineEventCheckout → CheckoutForm/useCheckoutForm) in
+ *     an overlay ON THIS PAGE — the URL stays /e/... and the customer
+ *     never sees a storefront URL. Stripe success still returns on
+ *     /s/checkout-success (the only /s/ exception).
+ *   - STORE context (?store=1, legacy_commerce orgs): the historical
+ *     handoff to /s/:org_slug with the selection in React Router state
+ *     survives UNchanged — StorefrontPage hydrates its cart as before.
  *
  *   The landing itself never submits an order. There is one form
- *   and one submit handler in the whole app.
+ *   and one submit handler in the whole app (I2/I3).
  *
  * Design:
  *   - Mobile-first, single-column layout on phones, two-column on md+.
@@ -44,6 +48,9 @@ import StoreContextNav from './components/StoreContextNav';
 import MarketplaceShell from './components/MarketplaceShell';
 // G4 — mappa lazy: Leaflet non pesa sul first paint della landing
 const StaticMiniMap = React.lazy(() => import('./components/StaticMiniMap'));
+// PN4 — checkout inline lazy: il form condiviso (CheckoutForm + hook)
+// si carica solo quando il cliente preme il CTA, non al first paint.
+const InlineEventCheckout = React.lazy(() => import('./components/checkout/InlineEventCheckout'));
 
 
 // ── Utilities ──────────────────────────────────────────────────────────────
@@ -146,13 +153,12 @@ function TierCard({ tier, currency, qty, onQtyChange }) {
 
 // ── Proceed to checkout bar ────────────────────────────────────────────────
 //
-// Consolidation (no-new-form): replaces the standalone form + success
-// screen that used to live on the landing. The landing selects a tier
-// + qty; clicking "Procedi al checkout" hands the selection over to
-// /s/:orgSlug via React Router navigation state, where the existing
-// storefront checkout dialog takes over (customer data, coupon,
-// fulfillment, Stripe redirect — all the flows the storefront already
-// supports). Exactly one form in the whole app handles payment.
+// Consolidation (no-new-form): the landing selects a tier + qty and the
+// EXISTING shared checkout takes over (customer data, coupon, consents,
+// Stripe redirect). PN4: in marketplace context the shared form mounts
+// in an overlay ON THIS PAGE (InlineEventCheckout); in store context
+// (?store=1) the selection is handed over to /s/:orgSlug via React
+// Router navigation state as before. Exactly one form handles payment.
 
 // S5 — linking interno: "Altri ritiri di {categoria}" SOLO in contesto
 // marketplace (nel guscio store non si mandano i clienti dai concorrenti).
@@ -299,19 +305,16 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
     return null;
   };
   const [otherCartSlug, setOtherCartSlug] = useState(null);
+  // PN4 — overlay del checkout inline (contesto marketplace)
+  const [inlineOpen, setInlineOpen] = useState(false);
   // contesto negozio? (param dei link delle card store — vedi M1)
   const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
 
-  const handleProceed = (skipOtherCartCheck = false) => {
-    if (needsTierSelection) return;
-    if (!skipOtherCartCheck) {
-      const other = findOtherCartSlug();
-      if (other) { setOtherCartSlug(other); return; }
-    }
-    // F3: pass the full tier_quantities map so StorefrontPage can
-    // hydrate a multi-tier cart. Legacy single-tier/plain path is
-    // backward-compatible via the `qty` field.
-    const preloadCart = {
+  // PN4 — preload nella STESSA forma che StorefrontPage idratava dal
+  // vecchio handoff: productId + occurrenceId + qty (+ tier_quantities
+  // per il carrello multi-tier F3).
+  const buildPreload = () => {
+    const preload = {
       productId: product.id,
       occurrenceId: occurrence.id,
       qty: Math.max(1, totalSeats),
@@ -322,18 +325,28 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
       for (const [tid, q] of Object.entries(tierQuantities)) {
         if (Number(q) > 0) tq[tid] = Number(q);
       }
-      preloadCart.tier_quantities = tq;
+      preload.tier_quantities = tq;
     }
+    return preload;
+  };
+
+  const handleProceed = (skipOtherCartCheck = false) => {
+    if (needsTierSelection) return;
+    // PN4 — contesto MARKETPLACE (default): il checkout condiviso si
+    // apre IN PAGINA (overlay InlineEventCheckout), l'URL resta /e/...
+    // e il cliente non incontra mai la vetrina. Nessun carrello store
+    // coinvolto: l'avviso K5 non serve piu' su questo ramo.
     if (!fromStore) {
-      // K1 — contesto MARKETPLACE: il checkout si apre subito, senza
-      // passare per la vetrina; alla chiusura si torna QUI.
-      preloadCart.openCheckout = true;
-      preloadCart.mktp = true;
-      preloadCart.returnTo = window.location.pathname;
-      navigate(`/s/${orgSlug}`, { state: { preloadCart } });
+      setInlineOpen(true);
       return;
     }
-    navigate(`/s/${orgSlug}`, { state: { preloadCart } });
+    // Contesto STORE (?store=1, org legacy_commerce): l'handoff storico
+    // a /s/:orgSlug con il preload nel Router state resta INVARIATO.
+    if (!skipOtherCartCheck) {
+      const other = findOtherCartSlug();
+      if (other) { setOtherCartSlug(other); return; }
+    }
+    navigate(`/s/${orgSlug}`, { state: { preloadCart: buildPreload() } });
     toast.success(t('landings:event.toastAdded'), {
       action: {
         label: t('landings:event.toastAction'),
@@ -418,13 +431,38 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
         {isDirectMode && <CreditCard className="h-4 w-4 inline-block" aria-hidden />}
         {needsTierSelection
           ? t('landings:event.ctaSelectTier')
-          : t('landings:event.ctaAdd')}
+          : (fromStore
+              ? t('landings:event.ctaAdd')
+              : t('landings:event.ctaBook', { defaultValue: 'Prenota ora' }))}
       </button>
 
       <p className="text-[11px] text-gray-500 text-center">
-        {t('landings:event.checkoutHint')}
+        {fromStore
+          ? t('landings:event.checkoutHint')
+          : t('landings:event.inlineCheckoutHint', {
+              defaultValue: 'Completi la prenotazione qui, senza lasciare questa pagina.',
+            })}
       </p>
     </div>
+    {/* PN4 — il checkout condiviso si apre in overlay SU QUESTA pagina:
+        l'URL resta /e/..., il transazionale e' lo stesso identico form
+        dello storefront (InlineEventCheckout e' solo l'harness). */}
+    {inlineOpen && (
+      <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+           role="dialog" aria-modal="true">
+        <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <React.Suspense fallback={
+            <p className="p-6 text-sm text-gray-500">{t('landings:product.loading', { defaultValue: 'Caricamento…' })}</p>
+          }>
+            <InlineEventCheckout
+              orgSlug={orgSlug}
+              preload={buildPreload()}
+              onClose={() => setInlineOpen(false)}
+            />
+          </React.Suspense>
+        </div>
+      </div>
+    )}
     {/* K5 — avviso: hai gia' un carrello con un altro operatore */}
       {otherCartSlug && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
@@ -603,7 +641,9 @@ export default function EventLandingPage() {
           <p className="text-gray-600 mb-4">
             {t('landings:event.notFoundBody')}
           </p>
-          <Link to={`/s/${orgSlug}`} className="inline-block rounded-md bg-gray-900 text-white px-4 py-2 text-sm font-medium">
+          {/* PN4/PN5 — in marketplace si resta nel mondo profilo/o/:
+              la vetrina /s/ appartiene solo al guscio store */}
+          <Link to={fromStore ? `/s/${orgSlug}` : `/o/${orgSlug}`} className="inline-block rounded-md bg-gray-900 text-white px-4 py-2 text-sm font-medium">
             {t('landings:event.seeOtherEvents')}
           </Link>
         </div>
@@ -661,12 +701,13 @@ export default function EventLandingPage() {
       </>)}
       {fromStore && <StoreContextNav slug={orgSlug} />}
 
-      {/* "Vai al checkout" banner — appears when the cart has items. Gives
-          customers a clear way to exit the multi-add flow and proceed. */}
-      {cartCount > 0 && (
+      {/* "Vai al checkout" banner — appears when the STORE cart has
+          items. PN4: solo nel guscio store — in marketplace il checkout
+          e' inline su questa pagina e non esiste un carrello da
+          riaprire su /s/. */}
+      {fromStore && cartCount > 0 && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
-          <OpenCheckoutButton slug={orgSlug} itemCount={cartCount} variant="landing"
-            mktpReturnTo={!fromStore ? window.location.pathname : null} />
+          <OpenCheckoutButton slug={orgSlug} itemCount={cartCount} variant="landing" />
         </div>
       )}
 
@@ -1212,7 +1253,9 @@ export default function EventLandingPage() {
           components={[<span className="font-medium text-gray-700" />]}
         />
         <span aria-hidden className="mx-2">·</span>
-        <Link to={`/s/${orgSlug}`} className="underline hover:text-gray-900">{t('landings:event.seeOtherEvents')}</Link>
+        {/* PN4/PN5 — "altri ritiri" dell'organizzatore: profilo /o/ nel
+            marketplace, vetrina /s/ solo nel guscio store */}
+        <Link to={fromStore ? `/s/${orgSlug}` : `/o/${orgSlug}`} className="underline hover:text-gray-900">{t('landings:event.seeOtherEvents')}</Link>
         <span aria-hidden className="mx-2">·</span>
         <Link to="/" className="underline hover:text-gray-900">
           {t('landings:event.findMoreRetreats', { defaultValue: 'Scopri altri ritiri' })}

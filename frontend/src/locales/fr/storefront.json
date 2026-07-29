@@ -143,6 +143,7 @@
     "submitGeneric": "Erreur lors de l'envoi de la demande. Veuillez réessayer.",
     "fillAttendees": "Remplissez le nom et l'email pour chaque participant.",
     "termsRequired": "Vous devez accepter les conditions générales pour continuer.",
+    "gdprRequired": "Vous devez accepter la politique de confidentialité et les conditions pour continuer.",
     "selectShippingOption": "Sélectionnez une option de livraison."
   },
   "submitted": {

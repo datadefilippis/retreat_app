@@ -280,6 +280,8 @@
     "ctaAdd": "In den Warenkorb",
     "ctaSelectTier": "Ticket wählen",
     "checkoutHint": "An der Kasse werden Name, E-Mail und Liefermethode abgefragt; dort kannst du auch Rabattcodes eingeben.",
+    "ctaBook": "Jetzt buchen",
+    "inlineCheckoutHint": "Du schließt die Buchung direkt hier ab, ohne diese Seite zu verlassen.",
     "soldOutTitle": "Ausverkauft",
     "soldOutBody": "Diese Veranstaltung ist ausgebucht. Schau dir die anderen geplanten Veranstaltungen an.",
     "ataGlance": "Auf einen Blick",

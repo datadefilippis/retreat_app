@@ -143,6 +143,7 @@
     "submitGeneric": "Fehler beim Senden der Anfrage. Bitte erneut versuchen.",
     "fillAttendees": "Geben Sie Name und E-Mail für jeden Teilnehmer ein.",
     "termsRequired": "Sie müssen die Allgemeinen Geschäftsbedingungen akzeptieren, um fortzufahren.",
+    "gdprRequired": "Du musst die Datenschutzerklärung und die Bedingungen akzeptieren, um fortzufahren.",
     "selectShippingOption": "Wählen Sie eine Versandoption."
   },
   "submitted": {

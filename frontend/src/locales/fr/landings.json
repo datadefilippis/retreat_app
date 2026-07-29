@@ -280,6 +280,8 @@
     "ctaAdd": "Ajouter au panier",
     "ctaSelectTier": "Choisissez un billet",
     "checkoutHint": "Au paiement, on vous demandera nom, e-mail et mode de livraison ; vous pourrez aussi entrer un code de réduction.",
+    "ctaBook": "Réserver",
+    "inlineCheckoutHint": "Vous finalisez la réservation ici, sans quitter cette page.",
     "soldOutTitle": "Complet",
     "soldOutBody": "Cet événement est complet. Jetez un œil aux autres événements à venir.",
     "ataGlance": "En un coup d'œil",

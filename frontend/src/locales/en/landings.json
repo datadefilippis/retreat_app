@@ -280,6 +280,8 @@
     "ctaAdd": "Add to cart",
     "ctaSelectTier": "Pick a ticket",
     "checkoutHint": "At checkout you'll be asked for name, email and delivery method; you can also enter discount codes there.",
+    "ctaBook": "Book now",
+    "inlineCheckoutHint": "You complete your booking right here, without leaving this page.",
     "soldOutTitle": "Sold out",
     "soldOutBody": "This event is fully booked. Take a look at the other upcoming events.",
     "ataGlance": "At a glance",

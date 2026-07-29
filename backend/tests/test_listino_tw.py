@@ -574,3 +574,69 @@ class TestInlineCheckoutPN3:
             timeout=10)
         assert r.status_code == 200
         assert r.json()["product"]["name"]
+
+
+class TestRitiroSenzaStorePN4:
+    """PN4/PN5 — il ritiro si compra senza mai vedere lo store: in
+    contesto marketplace il CTA della landing /e/ apre il checkout
+    CONDIVISO in pagina (InlineEventCheckout); l'handoff a /s/ resta
+    SOLO per il guscio store (?store=1, org legacy_commerce)."""
+
+    def _landing_src(self):
+        return (FRONTEND_SRC / "features" / "storefront"
+                / "EventLandingPage.js").read_text()
+
+    def test_marketplace_checkout_opens_inline_not_on_s(self):
+        """(a) niente piu' navigazione a /s/ per il checkout
+        marketplace: il vecchio handoff openCheckout/mktp e' sparito,
+        il ramo !fromStore apre l'overlay inline e basta."""
+        src = self._landing_src()
+        assert "InlineEventCheckout" in src
+        # il vecchio handoff marketplace non esiste piu'
+        assert "preloadCart.openCheckout" not in src
+        assert "preloadCart.mktp" not in src
+        # dentro handleProceed: prima il gate marketplace (inline),
+        # POI l'unica navigate a /s/ (ramo store)
+        i = src.index("const handleProceed")
+        block = src[i:i + 1600]
+        j = block.index("if (!fromStore)")
+        inline_branch = block[j:block.index("}", j)]
+        assert "setInlineOpen(true)" in inline_branch
+        assert "navigate(" not in inline_branch
+        assert j < block.index("navigate(`/s/${orgSlug}`")
+
+    def test_inline_event_checkout_reuses_shared_form(self):
+        """(b) un solo checkout nel codice (I2/I3): l'harness monta
+        CheckoutForm/OrderSummary/useCheckoutForm dello storefront e
+        NON reimplementa submit/consensi."""
+        inline = (FRONTEND_SRC / "features" / "storefront" / "components"
+                  / "checkout" / "InlineEventCheckout.jsx").read_text()
+        assert "import CheckoutForm from './CheckoutForm'" in inline
+        assert "import OrderSummary from './OrderSummary'" in inline
+        assert "useCheckoutForm" in inline
+        # zero secondo submit: l'ordine parte SOLO dal form condiviso
+        assert "submitOrder" not in inline
+        assert "order-request" not in inline
+        # il payload evento resta quello dello store (fan-out F3)
+        assert "ticket_tier_id" in inline
+        assert "occurrence_id" in inline
+
+    def test_no_store_copy_in_marketplace_path(self):
+        """PN5 — copy pass: niente 'negozio' nel percorso marketplace
+        (harness inline + chiave gdprRequired neutralizzata)."""
+        inline = (FRONTEND_SRC / "features" / "storefront" / "components"
+                  / "checkout" / "InlineEventCheckout.jsx").read_text()
+        # (il nome del piano PROFILO_NEGOZIO nei commenti non conta)
+        assert "negozio" not in inline.lower().replace(
+            "profilo_negozio_piano", "")
+        import json as _json
+        sf = _json.loads((FRONTEND_SRC / "locales" / "it"
+                          / "storefront.json").read_text())
+        assert "negozio" not in sf["errors"]["gdprRequired"].lower()
+
+    def test_i1_event_landing_still_alive(self):
+        """(c) invariante I1: la landing /e/ risponde 200 anche col
+        checkout inline a bordo."""
+        r = requests.get(f"{BASE_URL}/__seo/e/masseria-demo/"
+                         "ritiro-yoga-test-s1-2026-10-02", timeout=10)
+        assert r.status_code == 200
