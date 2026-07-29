@@ -640,3 +640,46 @@ class TestRitiroSenzaStorePN4:
         r = requests.get(f"{BASE_URL}/__seo/e/masseria-demo/"
                          "ritiro-yoga-test-s1-2026-10-02", timeout=10)
         assert r.status_code == 200
+
+
+class TestListinoUnPassoLM1:
+    """LM1 (docs/LISTINO_MARKETPLACE_PIANO_2026-07.md) — la voce di
+    listino si configura in un passo: base sempre visibile + due
+    accordion progressivi sulla riga espansa (solo righe salvate)."""
+
+    PAGE = FRONTEND_SRC / "features" / "listino" / "ListinoPage.js"
+
+    def test_accordion_progressivi_nella_riga(self):
+        """I due momenti LM1 esistono nella riga espansa e 'Tutte le
+        impostazioni' resta il percorso avanzato."""
+        page = self.PAGE.read_text()
+        assert "Opzioni e varianti" in page
+        assert "Prenotazione e incasso" in page
+        assert "Tutte le impostazioni" in page
+        # progressione: una sezione aperta alla volta, mai tutte
+        assert "openSection" in page
+
+    def test_riuso_editor_opzioni_senza_copia(self):
+        """ServiceOptionsEditor e StripeRequiredAlert sono riusati
+        as-is: import dai moduli originali, nessuna copia locale."""
+        page = self.PAGE.read_text()
+        assert "from '../services/components/ServiceOptionsEditor'" in page
+        assert "from '../../components/StripeRequiredAlert'" in page
+        assert "serviceOptionsAPI" in page
+        listino_dir = FRONTEND_SRC / "features" / "listino"
+        copie = [f.name for f in listino_dir.iterdir()
+                 if "Options" in f.name or "Stripe" in f.name]
+        assert copie == [], f"copie locali vietate: {copie}"
+
+    def test_salvataggio_conserva_metadata(self):
+        """use_default_schedule e transaction_mode si salvano dalla
+        riga SENZA perdere gli altri campi metadata (merge su rawMeta);
+        i default snelli di saveNew restano intatti (vedi anche
+        test_listino_defaults_are_lean)."""
+        page = self.PAGE.read_text()
+        assert "use_default_schedule: !!edit.useDefaultSchedule" in page
+        assert "...edit.rawMeta" in page
+        assert "transaction_mode: edit.transactionMode" in page
+        # payloadFromRow resta il payload base identico di TW1
+        assert "payloadFromRow(draft)" in page
+        assert "payloadFromRow(edit)" in page

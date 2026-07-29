@@ -4039,8 +4039,21 @@ async def public_operators_index(
 
 async def _operator_listino(org_id: str) -> list:
     """TW2 — le righe di listino pubblicate di un'org (service).
-    Proiezione minima per il rendering: il dettaglio vive su /p/."""
-    from database import products_collection
+    Proiezione minima per il rendering: il dettaglio vive su /p/.
+
+    LM1 fix — opzioni e disponibilita' NON vivono denormalizzate sul
+    doc prodotto: le opzioni stanno nella loro collection e il flag
+    slot va calcolato (regola esplicita OPPURE use_default_schedule,
+    stessa parita' Onda 15 del dettaglio pubblico). La vecchia lettura
+    r.get("service_options") / r.get("has_availability_slots") era
+    sempre vuota/False perche' nessun flusso scrive quei campi sul
+    prodotto.
+    """
+    from database import (
+        products_collection,
+        service_options_collection,
+        availability_rules_collection,
+    )
     rows = await products_collection.find(
         {"organization_id": org_id, "item_type": "service",
          "is_published": True, "is_active": True},
@@ -4048,20 +4061,34 @@ async def _operator_listino(org_id: str) -> list:
          "unit_price": 1,
          "price_mode": 1, "transaction_mode": 1, "description": 1,
          "metadata.duration_minutes": 1, "metadata.service_mode": 1,
-         "has_availability_slots": 1, "service_options": 1,
-         "service_allow_custom_request": 1},
+         "metadata.use_default_schedule": 1,
+         "metadata.service_allow_custom_request": 1},
     ).sort("category", 1).to_list(100)
+    ids = [r["id"] for r in rows if r.get("id")]
+    opts_by_product: dict = {}
+    ruled_ids: set = set()
+    if ids:
+        cursor = service_options_collection.find(
+            {"organization_id": org_id, "product_id": {"$in": ids},
+             "is_active": True},
+            {"_id": 0, "id": 1, "label": 1, "price": 1,
+             "product_id": 1, "sort_order": 1},
+        ).sort("sort_order", 1)
+        async for o in cursor:
+            if o.get("id") and o.get("label") is not None:
+                opts_by_product.setdefault(o["product_id"], []).append(
+                    {"id": o["id"], "label": o["label"],
+                     "price": o.get("price")})
+        # product_id None = regola oraria valida per tutta l'org
+        ruled_ids = set(await availability_rules_collection.distinct(
+            "product_id",
+            {"organization_id": org_id,
+             "$or": [{"product_id": {"$in": ids}},
+                     {"product_id": None}]}))
+    org_wide_rule = None in ruled_ids
     out = []
     for r in rows:
         meta = r.get("metadata") or {}
-        # PN1 — opzioni servizio in forma pubblica minima (id, label,
-        # prezzo): servono all'acquisto inline sul profilo (PN3)
-        options = [
-            {"id": o.get("id"), "label": o.get("label"),
-             "price": o.get("price")}
-            for o in (r.get("service_options") or [])
-            if o.get("id") and o.get("label") is not None
-        ]
         out.append({
             "product_id": r.get("id"),
             "name": r["name"],
@@ -4075,9 +4102,12 @@ async def _operator_listino(org_id: str) -> list:
             "note": (r.get("description") or "")[:200] or None,
             # PN1 — flag per il flusso inline: slot prenotabili,
             # opzioni e richiesta con orario libero
-            "has_availability_slots": bool(r.get("has_availability_slots")),
-            "service_options": options,
-            "allow_custom_request": bool(r.get("service_allow_custom_request")),
+            "has_availability_slots": (
+                r.get("id") in ruled_ids or org_wide_rule
+                or bool(meta.get("use_default_schedule"))),
+            "service_options": opts_by_product.get(r.get("id"), []),
+            "allow_custom_request": bool(
+                meta.get("service_allow_custom_request")),
         })
     return out
 

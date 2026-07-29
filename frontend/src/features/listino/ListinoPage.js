@@ -24,9 +24,14 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { productsAPI } from '../../api/products';
 import { storesAPI } from '../../api/stores';
+import { serviceOptionsAPI } from '../../api/serviceOptions';
 import api from '../../api/client';
 import { trackEvent } from '../../lib/analytics';
 import { AppLayout, Header } from '../../components/Layout';
+// LM1 — riuso puro: l'editor opzioni e l'avviso Stripe sono gli stessi
+// componenti di ServiceDashboardPage, nessuna copia locale.
+import ServiceOptionsEditor from '../services/components/ServiceOptionsEditor';
+import StripeRequiredAlert from '../../components/StripeRequiredAlert';
 
 // Tassonomia service (models/retreat_taxonomy.py) + fallback "altro"
 const SERVICE_CATEGORIES = {
@@ -60,6 +65,15 @@ function rowFromProduct(p) {
     note: p.description || '',
     published: !!p.is_published,
     transactionMode: p.transaction_mode || 'request',
+    // LM1 — configurazione completa nella riga: foto, agenda, incasso.
+    // Il calendario ufficiale e' ON di default (agenda unica): se il
+    // flag non e' mai stato scritto, la riga lo mostra e salva attivo.
+    imageUrl: p.image_url || '',
+    useDefaultSchedule: 'use_default_schedule' in meta
+      ? !!meta.use_default_schedule : true,
+    // metadata integrale del prodotto: serve al salvataggio per NON
+    // perdere i campi avanzati (terms, order_fields, cover, ...)
+    rawMeta: meta,
   };
 }
 
@@ -147,6 +161,31 @@ function RowFields({ value, onChange }) {
   );
 }
 
+// LM1 — sezione richiudibile della riga espansa: la configurazione
+// avanza per momenti progressivi, mai tutto aperto insieme.
+function RowSection({ id, title, hint, open, onToggle, children }) {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-gray-50/40">
+      <button type="button" onClick={onToggle}
+              data-testid={`listino-sezione-${id}`}
+              className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left">
+        <span className="text-sm font-medium text-gray-800">{title}</span>
+        <span className="flex items-center gap-2">
+          {hint && <span className="text-xs text-gray-400">{hint}</span>}
+          {open
+            ? <ChevronUp className="h-4 w-4 text-gray-400" aria-hidden />
+            : <ChevronDown className="h-4 w-4 text-gray-400" aria-hidden />}
+        </span>
+      </button>
+      {open && (
+        <div className="border-t border-gray-100 bg-white px-3 py-3 rounded-b-lg">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ListinoPage() {
   const { t } = useTranslation('catalog');
   const navigate = useNavigate();
@@ -157,6 +196,12 @@ export default function ListinoPage() {
   const [expandedId, setExpandedId] = useState(null);
   const [edit, setEdit] = useState(null);
   const [busy, setBusy] = useState(false);
+  // LM1 — accordion della riga espansa ('varianti' | 'incasso') e
+  // opzioni del servizio: options e' la bozza in modifica, savedOptions
+  // lo stato del server (serve al diff in salvataggio).
+  const [openSection, setOpenSection] = useState(null);
+  const [options, setOptions] = useState([]);
+  const [savedOptions, setSavedOptions] = useState([]);
 
   const load = async () => {
     const res = await productsAPI.list(true, 500);
@@ -177,6 +222,27 @@ export default function ListinoPage() {
       .catch(() => {});
   }, []);
 
+  // LM1 — le opzioni si caricano quando una riga salvata si espande
+  // (serve il product id: per questo gli accordion non esistono sulla
+  // riga nuova). Caricamento anticipato: cosi' l'intestazione
+  // dell'accordion puo' dire subito quante varianti ci sono.
+  useEffect(() => {
+    setOpenSection(null);
+    setOptions([]);
+    setSavedOptions([]);
+    if (!expandedId) return undefined;
+    let alive = true;
+    serviceOptionsAPI.list(expandedId)
+      .then(res => {
+        if (!alive) return;
+        const opts = res.data?.options || [];
+        setOptions(opts);
+        setSavedOptions(opts);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [expandedId]);
+
   const grouped = useMemo(() => {
     const g = {};
     (rows || []).forEach(r => {
@@ -195,7 +261,7 @@ export default function ListinoPage() {
     const isFirstOnline = !(rows || []).some(r => r.published);
     try {
       await storesAPI.ensureDefault();     // idempotente, race-safe
-      await productsAPI.create({
+      const res = await productsAPI.create({
         ...payloadFromRow(draft),
         item_type: 'service',
         transaction_mode: 'request',       // default snello: richiesta
@@ -205,6 +271,13 @@ export default function ListinoPage() {
       setDraft(EMPTY_ROW);
       setAdding(false);
       await load();
+      // LM1 — la riga appena creata si apre subito in modifica: ora ha
+      // un id, quindi opzioni, prenotazione e foto si rifiniscono qui.
+      const created = res.data;
+      if (created?.id) {
+        setExpandedId(created.id);
+        setEdit(rowFromProduct(created));
+      }
       toast.success('Servizio nel listino, gia’ online');
     } catch (e) {
       toast.error(e?.response?.data?.detail?.message
@@ -212,11 +285,54 @@ export default function ListinoPage() {
     } finally { setBusy(false); }
   };
 
+  // LM1 — persiste le opzioni con lo stesso diff di ServiceDashboardPage
+  // (delete assenti, update per id, create nuove). Le righe senza
+  // etichetta sono bozze incomplete: si ignorano.
+  const saveRowOptions = async (productId) => {
+    const wanted = options.filter(o => (o.label || '').trim());
+    const body = (o) => ({
+      label: o.label,
+      description: o.description || null,
+      price: Number(o.price) || 0,
+      duration_minutes_override: o.duration_minutes_override
+        ? Number(o.duration_minutes_override) : null,
+      sort_order: o.sort_order ?? 0,
+      is_active: o.is_active !== false,
+    });
+    const oldById = new Map(savedOptions.filter(o => o.id).map(o => [o.id, o]));
+    for (const existing of savedOptions) {
+      if (existing.id && !wanted.find(n => n.id === existing.id)) {
+        try { await serviceOptionsAPI.delete(productId, existing.id); } catch { /* ignore */ }
+      }
+    }
+    for (const o of wanted) {
+      if (o.id && oldById.has(o.id)) {
+        try { await serviceOptionsAPI.update(productId, o.id, body(o)); } catch { /* ignore */ }
+      } else {
+        try { await serviceOptionsAPI.create(productId, body(o)); } catch { /* ignore */ }
+      }
+    }
+  };
+
   const saveEdit = async () => {
     if (!edit?.name.trim()) { toast.error('Il nome non puo’ restare vuoto'); return; }
     setBusy(true);
     try {
-      await productsAPI.update(edit.id, payloadFromRow(edit));
+      const base = payloadFromRow(edit);
+      await productsAPI.update(edit.id, {
+        ...base,
+        transaction_mode: edit.transactionMode,
+        image_url: edit.imageUrl?.trim() || null,
+        // merge attento del metadata: rawMeta preserva i campi avanzati
+        // (terms, order_fields, cover, ...), base.metadata porta i campi
+        // della riga, il flag agenda si scrive esplicito.
+        metadata: {
+          ...edit.rawMeta,
+          ...base.metadata,
+          use_default_schedule: !!edit.useDefaultSchedule,
+        },
+      });
+      await saveRowOptions(edit.id);
       setExpandedId(null); setEdit(null);
       await load();
       toast.success('Servizio aggiornato');
@@ -369,6 +485,124 @@ export default function ListinoPage() {
                   {expandedId === row.id && edit && (
                     <div className="mt-4 border-t border-gray-100 pt-4">
                       <RowFields value={edit} onChange={setEdit} />
+
+                      {/* LM1 — configurazione completa in un passo: due
+                          momenti progressivi, solo su righe salvate
+                          (le opzioni vivono sul product id) */}
+                      <div className="mt-4 space-y-2">
+                        <RowSection
+                          id="varianti"
+                          title="Opzioni e varianti"
+                          hint={options.length > 0
+                            ? `${options.length} ${options.length === 1 ? 'variante' : 'varianti'}`
+                            : 'facoltative'}
+                          open={openSection === 'varianti'}
+                          onToggle={() => setOpenSection(s => s === 'varianti' ? null : 'varianti')}>
+                          <p className="mb-2 text-xs text-gray-500">
+                            Stesso servizio, più formule: 30, 60 o 90 minuti, ognuna col suo prezzo.
+                            Il cliente ne sceglie una quando prenota.
+                          </p>
+                          <ServiceOptionsEditor
+                            options={options}
+                            onChange={setOptions}
+                            title=""
+                            subtitle=""
+                            emptyHint="Nessuna variante ancora: vale il prezzo base per tutti."
+                          />
+                          <p className="mt-2 text-[11px] text-gray-400">
+                            Le opzioni si salvano col bottone Salva qui sotto.
+                          </p>
+                        </RowSection>
+
+                        <RowSection
+                          id="incasso"
+                          title="Prenotazione e incasso"
+                          hint={edit.transactionMode === 'direct' ? 'paga online' : 'su richiesta'}
+                          open={openSection === 'incasso'}
+                          onToggle={() => setOpenSection(s => s === 'incasso' ? null : 'incasso')}>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="flex items-start gap-2">
+                                <input type="checkbox"
+                                       checked={edit.useDefaultSchedule}
+                                       onChange={e => setEdit(v => ({ ...v, useDefaultSchedule: e.target.checked }))}
+                                       className="mt-0.5 rounded border-gray-300"
+                                       data-testid="listino-agenda-toggle" />
+                                <span>
+                                  <span className="block text-sm font-medium text-gray-800">
+                                    Prenotabile sul calendario ufficiale
+                                  </span>
+                                  <span className="block text-xs text-gray-500">
+                                    Gli orari si governano dal <Link to="/calendar" className="underline">Calendario</Link>:
+                                    un'agenda sola per tutti i servizi.
+                                  </span>
+                                </span>
+                              </label>
+                              {!edit.useDefaultSchedule && (
+                                <p className="mt-1.5 pl-6 text-xs text-gray-500">
+                                  Orari solo per questo servizio? {' '}
+                                  <button type="button"
+                                          onClick={() => navigate(`/services/${row.id}`)}
+                                          className="underline hover:text-primary">
+                                    Regole orari su Tutte le impostazioni
+                                  </button>
+                                </p>
+                              )}
+                            </div>
+
+                            <div>
+                              <p className="mb-1.5 text-xs font-medium text-gray-600">Come incassi</p>
+                              <div className="flex gap-1.5">
+                                {[{ k: 'request', l: 'Su richiesta' }, { k: 'direct', l: 'Paga online' }].map(m => (
+                                  <button key={m.k} type="button"
+                                          onClick={() => setEdit(v => ({ ...v, transactionMode: m.k }))}
+                                          className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                                            edit.transactionMode === m.k
+                                              ? 'border-primary bg-primary text-white'
+                                              : 'border-gray-300 bg-white text-gray-600'}`}>
+                                    {m.l}
+                                  </button>
+                                ))}
+                              </div>
+                              <p className="mt-1 text-xs text-gray-500">
+                                {edit.transactionMode === 'direct'
+                                  ? 'Il cliente sceglie lo slot e paga subito online.'
+                                  : 'Ricevi la richiesta via email e confermi tu: nessun pagamento richiesto.'}
+                              </p>
+                              <StripeRequiredAlert whenTransactionMode={edit.transactionMode} />
+                            </div>
+
+                            <div>
+                              <p className="mb-1.5 text-xs font-medium text-gray-600">Foto del servizio</p>
+                              <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-gray-900">
+                                <span>Carica una foto (jpg, png, webp)</span>
+                                <input type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden"
+                                       onChange={async e => {
+                                         const file = e.target.files?.[0];
+                                         if (!file) return;
+                                         try {
+                                           const res = await productsAPI.uploadImage(row.id, file);
+                                           const url = res.data?.image_url;
+                                           if (url) setEdit(v => ({ ...v, imageUrl: url }));
+                                           toast.success('Foto caricata');
+                                         } catch { toast.error('Caricamento non riuscito'); }
+                                         e.target.value = '';
+                                       }} />
+                              </label>
+                              <input type="url" value={edit.imageUrl}
+                                     onChange={e => setEdit(v => ({ ...v, imageUrl: e.target.value }))}
+                                     placeholder="oppure incolla l'indirizzo di un'immagine"
+                                     data-testid="listino-foto-url"
+                                     className="mt-1 w-full rounded-lg border border-input px-3 py-2 text-sm" />
+                              {edit.imageUrl && (
+                                <img src={edit.imageUrl} alt=""
+                                     className="mt-2 h-16 w-full rounded-md border object-cover" />
+                              )}
+                            </div>
+                          </div>
+                        </RowSection>
+                      </div>
+
                       <div className="mt-4 flex flex-wrap items-center gap-2">
                         <Button size="sm" onClick={saveEdit} disabled={busy}>Salva</Button>
                         <Button size="sm" variant="ghost"
