@@ -6,6 +6,8 @@
  *
  * value: {lat, lng, label, radius} | null
  * onChange(next | null)
+ * fluid: true quando vive dentro una barra (LM3): il campo si allarga
+ *        a riempire lo spazio invece della larghezza fissa da hero.
  */
 import { MapPin, LocateFixed } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -18,7 +20,7 @@ function shortLabel(displayName) {
   return (displayName || '').split(',').slice(0, 2).join(',').trim();
 }
 
-export default function GeoSearchBar({ value, onChange }) {
+export default function GeoSearchBar({ value, onChange, fluid = false }) {
   const { t } = useTranslation('landings');
   const [text, setText] = useState(value?.label || '');
   const [results, setResults] = useState([]);
@@ -76,15 +78,17 @@ export default function GeoSearchBar({ value, onChange }) {
   const active = !!(value?.lat != null && value?.lng != null);
 
   return (
-    <div className="flex flex-wrap items-center gap-2" ref={boxRef}>
-      <div className="relative">
+    <div className={`flex flex-wrap items-center gap-2 ${fluid ? 'w-full' : ''}`} ref={boxRef}>
+      <div className={`relative ${fluid ? 'flex-1 min-w-[9rem]' : ''}`}>
         <input
           type="search"
           value={text}
           onChange={e => setText(e.target.value)}
           onFocus={() => results.length && setOpen(true)}
           placeholder={t('calendar.wherePlaceholder', { defaultValue: 'Dove? Città o zona…' })}
-          className="rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 w-44 focus:w-60 transition-all focus:border-primary focus:outline-none"
+          className={`rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none ${
+            fluid ? 'w-full' : 'w-44 focus:w-60 transition-all'
+          }`}
         />
         {active && (
           <button

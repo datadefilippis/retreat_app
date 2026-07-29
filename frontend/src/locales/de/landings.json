@@ -671,7 +671,13 @@
     "productCount_other": "{{count}} Erlebnisse und Produkte",
     "emptyTitle": "Hier noch keine Veranstalter",
     "emptyBody": "Versuche eine andere Kategorie oder kehre zum Retreat-Verzeichnis zurück.",
-    "backHome": "Zu den Retreats"
+    "backHome": "Zu den Retreats",
+    "whatLabel": "Was suchst du?",
+    "whatAll": "Alle Angebote",
+    "sortLabel": "Sortieren nach",
+    "sortDistance": "Entfernung",
+    "sortRating": "Bewertung",
+    "sortPrice": "Preis (ab)"
   },
   "blog": {
     "seoTitle": "Retreats, ganzheitliche Disziplinen und Wohlbefinden | Das Aurya Magazin",

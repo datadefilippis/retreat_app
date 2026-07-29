@@ -3882,6 +3882,11 @@ async def public_operators_index(
     lng: float = Query(default=None, ge=-180, le=180),
     radius_km: int = Query(default=100, ge=1, le=500),
     location: str = Query(default=None, max_length=80),
+    # LM3 — ricerca Treatwell: "Cosa" sulle categorie delle righe di
+    # listino (service) e ordinamento esplicito. sort fuori dai valori
+    # noti viene ignorato (default: distance se geo attivo, sennò rating).
+    service_category: str = Query(default=None, max_length=50),
+    sort: str = Query(default=None, max_length=10),
 ):
     """S2 (SEO_MASTER_PLAN) — aggregatore pubblico degli operatori.
 
@@ -3914,6 +3919,31 @@ async def public_operators_index(
     # a flag spento sono invisibili, come se non esistessero.
     from core.prelaunch import prelaunch_mode
     _prelaunch = prelaunch_mode()
+
+    # LM3 — GEO SCALABILE: la distanza arriva dall'indice 2dsphere
+    # an3_org_geo ($geoNear su public_profile.geo, GeoJSON derivato da
+    # lat/lng al save — services/geocoding.to_geojson) invece del
+    # calcolo haversine in-memory su tutta la lista. maxDistance taglia
+    # gia' al raggio richiesto. Per i documenti legacy con lat/lng ma
+    # senza campo `geo` (fuori dall'indice sparse) resta il fallback
+    # haversine per-item piu' sotto: nessun operatore si perde.
+    _geo_active = lat is not None and lng is not None
+    geo_km: dict = {}
+    if _geo_active:
+        try:
+            async for row in organizations_collection.aggregate([
+                {"$geoNear": {
+                    "near": {"type": "Point", "coordinates": [lng, lat]},
+                    "key": "public_profile.geo",
+                    "distanceField": "_dist_m",
+                    "maxDistance": float(radius_km) * 1000.0,
+                    "query": {"id": {"$in": org_ids}},
+                    "spherical": True}},
+                {"$project": {"_id": 0, "id": 1, "_dist_m": 1}},
+            ]):
+                geo_km[row["id"]] = round(row["_dist_m"] / 1000.0, 1)
+        except Exception:            # noqa: BLE001 — indice assente:
+            pass                     # si degrada al fallback haversine
 
     prods = await products_collection.find(
         {"organization_id": {"$in": org_ids}, "is_active": True,
@@ -3980,6 +4010,14 @@ async def public_operators_index(
             all_categories[c] = all_categories.get(c, 0) + 1
         if category and category not in b["categories"]:
             continue
+        # LM3 — "Cosa": filtro sulle categorie delle RIGHE DI LISTINO
+        # (item_type=service), piu' stretto del filtro categoria sopra
+        # che guarda tutti i prodotti (ritiri inclusi)
+        svcs = svc_by_org.get(s["organization_id"], [])
+        if service_category and not any(
+                (r.get("category") or "") == service_category
+                for r in svcs):
+            continue
         pp = org.get("public_profile") or {}
         ss = org.get("store_settings") or {}
         # OP2/OP4 — bio nella lingua richiesta se l'operatore l'ha
@@ -3989,10 +4027,22 @@ async def public_operators_index(
         # delle occorrenze): l'operatore senza ritiri futuri resta
         # scopribile geograficamente
         prof_regions = {r for r in (pp.get("region"), pp.get("city")) if r}
+        # LM3 — raggio da un punto: distanza dall'indice ($geoNear
+        # sopra); fallback haversine per i doc con lat/lng senza `geo`.
+        # Chi non ha coordinate o e' fuori raggio esce dal filtro geo
+        # ma resta nella vista non-geografica (comportamento AN3).
+        _d_km = None
+        if _geo_active:
+            _d_km = geo_km.get(s["organization_id"])
+            if (_d_km is None and pp.get("latitude") is not None
+                    and pp.get("longitude") is not None):
+                _d_km = round(_haversine_km(
+                    lat, lng, pp["latitude"], pp["longitude"]), 1)
+            if _d_km is None or _d_km > radius_km:
+                continue
         # LM2 — card ricca: 'da X euro · N servizi' + anteprima delle
         # prime 3 righe di listino per la vista rapida in card. Per i
         # campioni niente rating ne' anteprima (identita' redatta PL9).
-        svcs = svc_by_org.get(s["organization_id"], [])
         svc_prices = [r["unit_price"] for r in svcs
                       if r.get("unit_price") is not None]
         items.append({
@@ -4015,6 +4065,8 @@ async def public_operators_index(
             "region": pp.get("region"),
             "latitude": pp.get("latitude"),
             "longitude": pp.get("longitude"),
+            # LM3 — distanza dall'indice 2dsphere (None senza filtro geo)
+            "distance_km": _d_km,
             "regions": sorted(b["regions"] | prof_regions),
             # GT3 — priorita' nell'aggregatore per i piani featured
             "featured": bool(org.get("directory_featured")),
@@ -4042,23 +4094,28 @@ async def public_operators_index(
                  or loc in (i.get("region") or "").lower()
                  or any(loc in r.lower() for r in i["regions"])]
 
-    # AN3 — raggio da un punto: distanza sul profilo, i più vicini
-    # prima (featured a parità). Chi non ha coordinate esce dal
-    # filtro raggio ma resta nella vista non-geografica.
-    if lat is not None and lng is not None:
-        for i in items:
-            i["distance_km"] = (round(_haversine_km(
-                lat, lng, i["latitude"], i["longitude"]), 1)
-                if i["latitude"] is not None and i["longitude"] is not None
-                else None)
-        items = [i for i in items
-                 if i["distance_km"] is not None
-                 and i["distance_km"] <= radius_km]
+    # LM3 — ordinamento esplicito: distance (solo con geo attivo, i più
+    # vicini prima con featured a parità — invariato AN3), rating
+    # (featured prima: boost GT3 come nell'ordine storico, poi media e
+    # volume recensioni, poi ritiri in programma), price (dal listino
+    # più accessibile; chi non ha prezzi in coda).
+    _sort = sort if sort in ("distance", "rating", "price") else None
+    if _sort is None or (_sort == "distance" and not _geo_active):
+        _sort = "distance" if _geo_active else "rating"
+    if _sort == "distance":
         items.sort(key=lambda x: (x["distance_km"],
                                   not x["featured"], x["name"].lower()))
+    elif _sort == "price":
+        items.sort(key=lambda x: (
+            x["price_from"] is None,
+            x["price_from"] if x["price_from"] is not None else 0,
+            not x["featured"], x["name"].lower()))
     else:
-        items.sort(key=lambda x: (not x["featured"],
-                                  -x["upcoming_retreats"], x["name"].lower()))
+        items.sort(key=lambda x: (
+            not x["featured"],
+            -(((x.get("rating") or {}).get("avg")) or 0),
+            -(((x.get("rating") or {}).get("count")) or 0),
+            -x["upcoming_retreats"], x["name"].lower()))
     # VT3 — impression: ogni operatore mostrato nell'aggregatore conta
     # come apparizione. Batch in memoria, mai bloccante.
     try:
@@ -4070,7 +4127,10 @@ async def public_operators_index(
     except Exception:                 # noqa: BLE001
         pass
     return {"items": items, "total": len(items),
-            "categories": all_categories}
+            "categories": all_categories,
+            # LM3 — l'ordinamento effettivamente applicato (default
+            # compreso): il frontend lo riflette nel controllo Ordina
+            "sort": _sort}
 
 
 async def _operator_listino(org_id: str) -> list:

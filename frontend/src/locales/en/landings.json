@@ -671,7 +671,13 @@
     "productCount_other": "{{count}} experiences and products",
     "emptyTitle": "No organizers here, yet",
     "emptyBody": "Try another category or go back to the retreats directory.",
-    "backHome": "Browse retreats"
+    "backHome": "Browse retreats",
+    "whatLabel": "What are you looking for?",
+    "whatAll": "All services",
+    "sortLabel": "Sort by",
+    "sortDistance": "Distance",
+    "sortRating": "Rating",
+    "sortPrice": "Price (from)"
   },
   "blog": {
     "seoTitle": "Retreats, holistic disciplines and wellbeing | The Aurya Magazine",

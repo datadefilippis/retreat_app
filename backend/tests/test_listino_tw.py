@@ -736,3 +736,67 @@ class TestCardOperatoreLM2:
         assert righe, "voce footer 'Esplora operatori' assente"
         assert all("isNetwork" not in l and "prelaunch" not in l
                    for l in righe)
+
+
+class TestRicercaLM3:
+    """LM3 (docs/LISTINO_MARKETPLACE_PIANO_2026-07.md) — ricerca stile
+    Treatwell su /operatori: barra sticky Dove/Cosa/Ordina, geo via
+    indice 2dsphere ($geoNear) e nuovi parametri API."""
+
+    def _blocco_endpoint(self):
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        blocco = src.split("async def public_operators_index")[1]
+        return blocco.split("async def _operator_listino")[0]
+
+    def test_endpoint_accetta_sort_e_service_category(self):
+        """sort=distance|rating|price e service_category (categorie
+        delle righe di listino) esistono e rispondono live; sort
+        sconosciuto degrada al default (rating senza geo)."""
+        blocco = self._blocco_endpoint()
+        assert "service_category" in blocco
+        assert '("distance", "rating", "price")' in blocco
+        # default sensato: distance se geo attivo, rating altrimenti
+        assert '"distance" if _geo_active else "rating"' in blocco
+        r = requests.get(f"{BASE_URL}/api/public/operators",
+                         params={"sort": "rating"}, timeout=10)
+        assert r.status_code == 200
+        assert r.json().get("sort") == "rating"
+        r2 = requests.get(f"{BASE_URL}/api/public/operators",
+                          params={"service_category": "consulenze",
+                                  "sort": "boh"}, timeout=10)
+        assert r2.status_code == 200
+        assert r2.json().get("sort") == "rating"
+
+    def test_geo_via_indice_2dsphere_con_fallback(self):
+        """La distanza arriva da $geoNear sull'indice an3_org_geo
+        (public_profile.geo); l'haversine resta SOLO come fallback
+        per-item per i doc con lat/lng senza campo geo."""
+        blocco = self._blocco_endpoint()
+        assert "$geoNear" in blocco
+        assert '"key": "public_profile.geo"' in blocco
+        assert "maxDistance" in blocco
+        # fallback dichiarato: doc legacy fuori dall'indice sparse
+        assert "_haversine_km" in blocco
+        assert "distance_km" in blocco
+        # niente piu' ciclo haversine post-lista su tutti gli item
+        assert 'i["distance_km"] = (round(_haversine_km' not in blocco
+
+    def test_barra_sticky_dove_cosa_ordina(self):
+        """La barra unica sticky vive in testa a /operatori: Dove
+        (GeoSearchBar fluida), Cosa (select categorie), Ordina per
+        (?ordina= in URL) e il toggle Mappa dentro la barra."""
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorsIndexPage.js").read_text()
+        assert 'data-testid="operators-search-bar"' in page
+        assert "sticky top-14" in page
+        # URL fonte di verita': ?ordina= + categoria come path segment
+        assert "SORT_PARAM" in page
+        assert "params.get('ordina')" in page
+        assert "/operatori/${next}" in page
+        # Dove dentro la barra, in versione fluida
+        assert "<GeoSearchBar value={geoValue} onChange={setGeo} fluid />" in page
+        # Distanza offerta solo con geo attivo (come il backend)
+        assert '{geoValue && (' in page
+        geobar = (FRONTEND_SRC / "features" / "storefront" / "components"
+                  / "GeoSearchBar.jsx").read_text()
+        assert "fluid = false" in geobar

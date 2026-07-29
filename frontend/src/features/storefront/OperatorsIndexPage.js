@@ -9,7 +9,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
@@ -21,7 +21,10 @@ import useSeoMeta from './lib/useSeoMeta';
 const OperatorsMapView = React.lazy(() => import('./components/OperatorsMapView'));
 
 import { Leaf, MapPin } from 'lucide-react';
-import { CategoryIcon } from './lib/categoryIcons';
+
+// LM3 — l'URL parla italiano (?ordina=), l'API il gergo suo (sort=):
+// la mappa e' l'unico punto di traduzione.
+const SORT_PARAM = { distanza: 'distance', valutazione: 'rating', prezzo: 'price' };
 
 // LM2 — stelle piene/vuote sul rating medio (stesso disegno del profilo)
 function Stars({ value }) {
@@ -199,6 +202,7 @@ function OperatorCard({ op, t }) {
 export default function OperatorsIndexPage() {
   const { t, i18n } = useTranslation('landings');
   const { categoria } = useParams();
+  const navigate = useNavigate();
   // OP4 — le bio degli operatori parlano la lingua attiva (refetch al cambio)
   const uiLang = (i18n.language || 'it').slice(0, 2);
   const [params, setParams] = useSearchParams();
@@ -215,6 +219,12 @@ export default function OperatorsIndexPage() {
   const geoValue = (geoLat && geoLng)
     ? { lat: Number(geoLat), lng: Number(geoLng), label: geoLabel, radius: geoRadius }
     : null;
+  // LM3 — ?ordina= in URL (condivisibile); default: distanza con geo
+  // attivo, valutazione altrimenti (lo stesso default del backend)
+  const ordina = params.get('ordina') || '';
+  const defaultOrdina = geoValue ? 'distanza' : 'valutazione';
+  const effectiveOrdina = SORT_PARAM[ordina] ? ordina : defaultOrdina;
+
   const setGeo = (next) => {
     const q = new URLSearchParams(params);
     if (next) {
@@ -222,8 +232,26 @@ export default function OperatorsIndexPage() {
       q.set('r', next.radius || 100); q.set('luogo', next.label || '');
     } else {
       q.delete('lat'); q.delete('lng'); q.delete('r'); q.delete('luogo');
+      // senza geo l'ordinamento per distanza non ha più senso
+      if (q.get('ordina') === 'distanza') q.delete('ordina');
     }
     setParams(q, { replace: true });
+  };
+
+  const setOrdina = (next) => {
+    const q = new URLSearchParams(params);
+    if (!next || next === defaultOrdina) q.delete('ordina');
+    else q.set('ordina', next);
+    setParams(q, { replace: true });
+  };
+
+  // LM3 — "Cosa": la categoria resta un segmento di path indicizzabile
+  // (/operatori/yoga); i filtri in query string sopravvivono al cambio
+  const setCosa = (next) => {
+    navigate({
+      pathname: next ? `/operatori/${next}` : '/operatori',
+      search: params.toString() ? `?${params.toString()}` : '',
+    }, { replace: true });
   };
 
   useEffect(() => {
@@ -233,13 +261,16 @@ export default function OperatorsIndexPage() {
     if (geoLat && geoLng) {
       q.lat = geoLat; q.lng = geoLng; q.radius_km = geoRadius;
     }
+    // LM3 — ordinamento esplicito solo se l'utente l'ha scelto: il
+    // default (distance con geo, rating senza) lo applica il backend
+    if (SORT_PARAM[ordina]) q.sort = SORT_PARAM[ordina];
     if (uiLang !== 'it') q.lang = uiLang;
     api.get('/public/operators', { params: q })
       .then(res => { if (mounted) setData(res.data); })
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [categoria, geoLat, geoLng, geoRadius, uiLang]);
+  }, [categoria, geoLat, geoLng, geoRadius, ordina, uiLang]);
 
   const items = data?.items || [];
   const categories = useMemo(
@@ -317,51 +348,83 @@ export default function OperatorsIndexPage() {
             })}
           </p>
 
-          {categories.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Link
-                to="/operatori"
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${
-                  !categoria ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'
-                }`}
-              >
-                {t('landings:calendar.allCategories', { defaultValue: 'Tutte' })}
-              </Link>
-              {categories.map(([key, count]) => (
-                <Link
-                  key={key}
-                  to={`/operatori/${key}`}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${
-                    categoria === key ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'
-                  }`}
-                >
-                  <CategoryIcon category={key} className="h-3.5 w-3.5 mr-1 inline-block align-[-2px]" />
-                  {t(`landings:categories.${key}`, { defaultValue: key })}
-                  <span className="ml-1 text-xs opacity-70">({count})</span>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* AN3 — Dove? + vicino a me + vista mappa */}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <div className="w-full sm:w-80"><GeoSearchBar value={geoValue} onChange={setGeo} /></div>
-            <button
-              type="button"
-              onClick={() => {
-                const q = new URLSearchParams(params);
-                if (view === 'mappa') q.delete('vista'); else q.set('vista', 'mappa');
-                setParams(q, { replace: true });
-              }}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors backdrop-blur-sm ${
-                view === 'mappa' ? 'bg-white text-gray-900 border-white shadow-lg' : 'bg-black/25 border-white/25 text-white hover:bg-black/40'
-              }`}
-            >
-              {t('landings:operators.mapToggle', { defaultValue: 'Mappa' })}
-            </button>
-          </div>
         </div>
       </header>
+
+      {/* LM3 — barra di ricerca Treatwell: Dove / Cosa / Ordina in una
+          barra unica sticky subito sotto l'header dello shell (h-14 →
+          top-14). L'URL resta la fonte di verità: lat/lng/r/luogo,
+          /operatori/{categoria} e ?ordina= sopravvivono a refresh e
+          condivisione. Su mobile la barra va a capo: Dove a tutta
+          larghezza, Cosa/Ordina/Mappa sulla riga sotto. */}
+      <div
+        data-testid="operators-search-bar"
+        className="sticky top-14 z-30 border-b border-gray-200 bg-white/95 backdrop-blur shadow-sm"
+      >
+        <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-2">
+          {/* Dove — GeoSearchBar (autocomplete + vicino a me + raggio) */}
+          <div className="w-full lg:w-auto lg:flex-1 lg:min-w-[280px]">
+            <GeoSearchBar value={geoValue} onChange={setGeo} fluid />
+          </div>
+          {/* Cosa — categorie reali (listino + ritiri) da data.categories */}
+          <select
+            value={categoria || ''}
+            onChange={(e) => setCosa(e.target.value)}
+            aria-label={t('landings:operators.whatLabel', { defaultValue: 'Cosa cerchi?' })}
+            className="flex-1 lg:flex-none min-w-0 lg:w-48 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+          >
+            <option value="">
+              {t('landings:operators.whatAll', { defaultValue: 'Tutti i servizi' })}
+            </option>
+            {categories.map(([key, count]) => (
+              <option key={key} value={key}>
+                {t(`landings:categories.${key}`, { defaultValue: key })} ({count})
+              </option>
+            ))}
+          </select>
+          {/* Ordina — Distanza solo con geo attivo (come il backend) */}
+          <label className="flex-1 lg:flex-none flex items-center gap-1.5 min-w-0">
+            <span className="hidden md:inline text-xs text-gray-500 whitespace-nowrap">
+              {t('landings:operators.sortLabel', { defaultValue: 'Ordina per' })}
+            </span>
+            <select
+              value={effectiveOrdina}
+              onChange={(e) => setOrdina(e.target.value)}
+              aria-label={t('landings:operators.sortLabel', { defaultValue: 'Ordina per' })}
+              className="flex-1 lg:flex-none min-w-0 lg:w-36 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+            >
+              {geoValue && (
+                <option value="distanza">
+                  {t('landings:operators.sortDistance', { defaultValue: 'Distanza' })}
+                </option>
+              )}
+              <option value="valutazione">
+                {t('landings:operators.sortRating', { defaultValue: 'Valutazione' })}
+              </option>
+              <option value="prezzo">
+                {t('landings:operators.sortPrice', { defaultValue: 'Prezzo (da)' })}
+              </option>
+            </select>
+          </label>
+          {/* AN3 — vista mappa, invariata (?vista=mappa) */}
+          <button
+            type="button"
+            onClick={() => {
+              const q = new URLSearchParams(params);
+              if (view === 'mappa') q.delete('vista'); else q.set('vista', 'mappa');
+              setParams(q, { replace: true });
+            }}
+            aria-pressed={view === 'mappa'}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
+              view === 'mappa'
+                ? 'bg-[#376254] border-[#376254] text-white shadow'
+                : 'bg-white border-gray-300 text-gray-700 hover:border-primary hover:text-primary'
+            }`}
+          >
+            {t('landings:operators.mapToggle', { defaultValue: 'Mappa' })}
+          </button>
+        </div>
+      </div>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {loading ? (

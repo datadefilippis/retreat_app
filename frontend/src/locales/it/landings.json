@@ -671,7 +671,13 @@
     "productCount_other": "{{count}} esperienze e prodotti",
     "emptyTitle": "Nessun organizzatore qui, per ora",
     "emptyBody": "Prova un'altra categoria o torna alla directory dei ritiri.",
-    "backHome": "Vai ai ritiri"
+    "backHome": "Vai ai ritiri",
+    "whatLabel": "Cosa cerchi?",
+    "whatAll": "Tutti i servizi",
+    "sortLabel": "Ordina per",
+    "sortDistance": "Distanza",
+    "sortRating": "Valutazione",
+    "sortPrice": "Prezzo (da)"
   },
   "blog": {
     "seoTitle": "Ritiri, discipline olistiche e benessere | Il Magazine di Aurya",

@@ -671,7 +671,13 @@
     "productCount_other": "{{count}} expériences et produits",
     "emptyTitle": "Pas encore d'organisateurs ici",
     "emptyBody": "Essaie une autre catégorie ou reviens au répertoire des retraites.",
-    "backHome": "Voir les retraites"
+    "backHome": "Voir les retraites",
+    "whatLabel": "Que cherchez-vous ?",
+    "whatAll": "Tous les services",
+    "sortLabel": "Trier par",
+    "sortDistance": "Distance",
+    "sortRating": "Note",
+    "sortPrice": "Prix (dès)"
   },
   "blog": {
     "seoTitle": "Retraites, disciplines holistiques et bien-être | Le Magazine d'Aurya",
