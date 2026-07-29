@@ -1990,3 +1990,82 @@ class TestAccountApL:
         from repositories.consent_audit_repository import _VALID_SOURCES
         assert "platform_signup" in _VALID_SOURCES
         assert "platform_checkout" in _VALID_SOURCES
+
+
+class TestAccountAp4:
+    """AP4 (docs/ACCOUNT_UNICO_PIANO_2026-07.md, revisione founder) —
+    il concetto 'Passaporto' e' eliminato dall'esperienza utente:
+    l'account e' uno, classico, 'il tuo account Aurya'. Queste guardie
+    scansionano i VALORI (le stringhe che l'utente legge) e diventano
+    rosse se il vecchio nome ricompare in una qualsiasi lingua.
+
+    Esclusioni motivate:
+    - NOMI INTERNI (chiavi i18n 'auryaPassportHint'/'passportLink'/
+      'activatePassport', chiavi email 'passport_*', testid
+      'aurya-passport-hint', commenti): rinominarli costerebbe
+      regressioni su guardie e template senza alcun effetto visibile.
+      Si scansionano solo i valori, mai le chiavi.
+    - backend/legal/*.md: i testi legali definiscono ancora l'account
+      'Passaporto Ritiri' e sono blindati dall'hash consensi v2.3
+      (test_consent_version_bumped_and_hash_matches_files): la loro
+      riscrittura passa dal legale con bump versione + re-consent
+      (AP-L / pre-lancio), non da un copy pass.
+    """
+
+    import re as _re
+    # copre Passaporto/Passaporti (it), Passport (en/de), Passeport (fr)
+    PATTERN = _re.compile(r"pass[ae]?port", _re.IGNORECASE)
+
+    def _iter_strings(self, node):
+        if isinstance(node, dict):
+            for value in node.values():
+                yield from self._iter_strings(value)
+        elif isinstance(node, list):
+            for value in node:
+                yield from self._iter_strings(value)
+        elif isinstance(node, str):
+            yield node
+
+    def test_ap4_locales_senza_passaporto(self):
+        """Tutti i namespace i18n, tutte e 4 le lingue: nessuna stringa
+        user-facing contiene piu' Passaporto/Passport/Passeport."""
+        import json
+        offenders = []
+        for lang in ("it", "en", "de", "fr"):
+            for path in sorted((FRONTEND_SRC / "locales" / lang).glob("*.json")):
+                data = json.loads(path.read_text())
+                for text in self._iter_strings(data):
+                    if self.PATTERN.search(text):
+                        offenders.append((lang, path.name, text[:80]))
+        assert not offenders, offenders
+
+    def test_ap4_email_transazionali_senza_passaporto(self):
+        """EMAIL_TRANSLATIONS (4 lingue): i testi delle email non
+        nominano mai il Passaporto (le chiavi passport_* restano come
+        nomi interni)."""
+        from services.email_service import EMAIL_TRANSLATIONS
+        offenders = []
+        for lang, table in EMAIL_TRANSLATIONS.items():
+            for key, msg in table.items():
+                if isinstance(msg, str) and self.PATTERN.search(msg):
+                    offenders.append((lang, key, msg[:80]))
+        assert not offenders, offenders
+
+    def test_ap4_claim_email_invita_alla_password(self):
+        """La claim post-acquisto ora parla dell'account Aurya e invita
+        a impostare la password (assetto password-first AP1b)."""
+        from services.email_service import EMAIL_TRANSLATIONS
+        expectations = {
+            "it": ("account Aurya", "password"),
+            "en": ("Aurya account", "password"),
+            "de": ("Aurya Konto", "Passwort"),
+            "fr": ("compte Aurya", "mot de passe"),
+        }
+        for lang, (brand, pwd) in expectations.items():
+            blob = " ".join(
+                EMAIL_TRANSLATIONS[lang][key] for key in
+                ("passport_claim_subject", "passport_claim_body",
+                 "passport_claim_cta", "passport_claim_footer"))
+            assert brand in blob, lang
+            assert pwd in blob, lang
+            assert "—" not in blob, lang        # mai trattini lunghi

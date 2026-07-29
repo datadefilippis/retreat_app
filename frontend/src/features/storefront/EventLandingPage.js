@@ -1150,7 +1150,7 @@ export default function EventLandingPage() {
                     <span className="text-gray-400 group-open:rotate-180 transition-transform" aria-hidden>⌄</span>
                   </summary>
                   <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">
-                    {t('landings:event.faqAfterA', { defaultValue: 'Ricevi subito il biglietto via email, con i dettagli del ritiro e i contatti di chi lo organizza. Tutte le tue esperienze restano raccolte nel tuo Passaporto Aurya.' })}
+                    {t('landings:event.faqAfterA', { defaultValue: 'Ricevi subito il biglietto via email, con i dettagli del ritiro e i contatti di chi lo organizza. Tutte le tue esperienze restano raccolte nel tuo account Aurya.' })}
                   </p>
                 </details>
                 <details className="group">

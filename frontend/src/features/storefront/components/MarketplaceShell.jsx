@@ -377,8 +377,8 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 </p>
                 <ul className="space-y-1.5 text-white/70">
                   <li><Link to="/account" className="hover:text-white">{t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}</Link></li>
-                  {/* AN7 — il Passaporto ha un nome anche in vetrina */}
-                  <li><Link to="/account" className="hover:text-white">{t('marketplace.passportLink', { defaultValue: 'Il tuo Passaporto Aurya' })}</Link></li>
+                  {/* AN7/AP4 — l'account Aurya ha un nome anche in vetrina */}
+                  <li><Link to="/account" className="hover:text-white">{t('marketplace.passportLink', { defaultValue: 'Il tuo account Aurya' })}</Link></li>
                   <li><Link to="/account/accedi" className="hover:text-white">{t('marketplace.signIn', { defaultValue: 'Accedi' })}</Link></li>
                 </ul>
               </div>

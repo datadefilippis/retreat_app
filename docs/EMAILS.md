@@ -12,7 +12,7 @@
 | Destinatario | Catena |
 |---|---|
 | Compratore (ordine) | `order.locale` (lingua UI al checkout) → account store → 1ª lingua storefront → it |
-| Viaggiatore (Passaporto) | `platform_account.language` (aggiornata a ogni richiesta OTP con la lingua UI) → it; la claim usa `order.locale` |
+| Viaggiatore (account Aurya) | `platform_account.language` (aggiornata a ogni richiesta OTP con la lingua UI) → it; la claim usa `order.locale` |
 | Cliente store (auth) | `customer.locale` → store → it |
 | Operatore | `user.locale` del destinatario → 1ª lingua storefront → it |
 
@@ -34,8 +34,8 @@ Tutte le stringhe vivono in `EMAIL_TRANSLATIONS` (4 lingue: it/en/de/fr,
 | 8 | Biglietti individuali evento | ordine evento confermato | `event_email_service.send_individual_tickets_for_order` |
 | 9 | Reinvio biglietto | richiesta pubblica per codice | `resend_ticket_email_by_code` |
 | 10 | Broadcast partecipanti (promemoria/aggiornamento/follow-up) | invio manuale operatore | `broadcast_to_attendees` |
-| 11 | Passaporto — accesso OTP + magic link | richiesta login / attivazione post-acquisto | `platform_account_service._send_magic_link_email` |
-| 12 | Passaporto — claim «le tue prenotazioni in un posto solo» | primo pagamento riuscito (cooldown 24h) | `_send_claim_email` |
+| 11 | Account Aurya — accesso OTP + magic link | richiesta login / attivazione post-acquisto | `platform_account_service._send_magic_link_email` |
+| 12 | Account Aurya — claim «le tue prenotazioni nel tuo account Aurya» | primo pagamento riuscito (cooldown 24h) | `_send_claim_email` |
 
 ## Cliente store (account org-scoped, solo vetrina)
 
@@ -84,7 +84,7 @@ Tutte le stringhe vivono in `EMAIL_TRANSLATIONS` (4 lingue: it/en/de/fr,
 - **Conferma rimborso al cliente** — oggi il rimborso vive nel flusso
   Stripe (ricevuta Stripe) e nello stato ordine; un'email esplicita
   «ti abbiamo rimborsato X» aumenterebbe la fiducia. → candidata post-lancio.
-- **Benvenuto Passaporto post-claim** — dopo il primo login il
+- **Benvenuto account Aurya post-claim** — dopo il primo login il
   viaggiatore non riceve nulla; la claim email di fatto copre il caso.
   → solo se le metriche mostrano attivazioni che si perdono.
 
@@ -92,5 +92,5 @@ Tutte le stringhe vivono in `EMAIL_TRANSLATIONS` (4 lingue: it/en/de/fr,
 
 L'invio è dry-run senza `BREVO_API_KEY`. Prima del lancio: 5 campioni
 reali via Brevo (Gmail, Apple Mail, Outlook) — ordine confermato con
-piano pagamenti, OTP Passaporto, biglietto evento, promemoria T-7,
+piano pagamenti, OTP account Aurya, biglietto evento, promemoria T-7,
 nuovo ordine operatore.

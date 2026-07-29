@@ -266,7 +266,7 @@
     "lateWebhookDesc": "Payment was received. The final order confirmation will be sent by email.",
     "cancelTitle": "Payment not completed",
     "cancelDesc": "The payment was not completed. Your request has been registered anyway and you'll be contacted to proceed.",
-    "activatePassport": "Activate your Passport — all your trips in one place",
+    "activatePassport": "Activate your Aurya account: all your purchases in one place",
     "backToRetreats": "Back to retreats"
   },
   "cards": {
@@ -445,7 +445,6 @@
       "confirmEmailHint": "You will receive an email to confirm your registration. The order will be submitted regardless.",
       "passwordRequirementsToast": "The password does not meet the minimum requirements."
     },
-    "passportHint": "All your trips in one place: after purchase you'll get an email link to your Passport — no password needed.",
     "auryaPassportHint": "All your purchases in one place: after your order you get an email link to your Aurya account.",
     "auryaLogin": {
       "open": "Already have an Aurya account? Sign in",

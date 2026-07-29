@@ -168,7 +168,8 @@ class TestPassportEmailsLocalized:
         _, subject, html = send.call_args.args[:3]
         assert subject == EMAIL_TRANSLATIONS["en"]["passport_login_subject"]
         assert "123456" in html
-        assert "Sign in to your account" in html
+        # AP4 — CTA aggiornata: l'account ha un nome, "account Aurya"
+        assert "Sign in to your Aurya account" in html
         assert "Accedi" not in html
 
     def test_claim_email_in_german(self):
@@ -177,7 +178,8 @@ class TestPassportEmailsLocalized:
             pas._send_claim_email("a@b.de", "tok", None, locale="de")
         _, subject, html = send.call_args.args[:3]
         assert subject == EMAIL_TRANSLATIONS["de"]["passport_claim_subject"]
-        assert "Buchungen verwalten" in html
+        # AP4 — la claim invita ad accedere al proprio Aurya Konto
+        assert "In deinem Aurya Konto anmelden" in html
 
 
 # ── 6: copertura 4 lingue dei cluster prima solo it/en ───────────────────
