@@ -431,7 +431,14 @@
       "sendError": "Etwas hat nicht funktioniert. Versuch es in einer Minute noch einmal.",
       "codeError": "Code ungültig oder abgelaufen. Prüfe ihn und versuch es noch einmal.",
       "greeting": "Hallo {{name}}, du bestellst als {{email}}",
-      "greetingNoName": "Du bestellst als {{email}}"
+      "greetingNoName": "Du bestellst als {{email}}",
+      "havePassword": "Hast du ein Passwort? Anmelden",
+      "passwordHint": "Melde dich mit deiner E-Mail und deinem Passwort an.",
+      "passwordPlaceholder": "Dein Passwort",
+      "noPassword": "Ohne Passwort anmelden",
+      "passwordError": "E-Mail oder Passwort falsch.",
+      "passwordNotVerified": "Bestätige zuerst deine E-Mail: Prüfe dein Postfach.",
+      "passwordLocked": "Zu viele Versuche: Versuche es später erneut oder melde dich ohne Passwort an."
     },
     "securePayment": "Sichere Zahlung"
   },

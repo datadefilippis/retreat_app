@@ -21,10 +21,13 @@ import platformApi, { PLATFORM_TOKEN_KEY } from '../../../../api/platformClient'
 export default function AuryaQuickLogin({ onProfile }) {
   const { t, i18n } = useTranslation('storefront');
   // idle → (click) email → (codice inviato) sent → (verificato) done
+  // AP1b: da 'email' si passa a 'password' (login email+password) col
+  // toggle "Hai una password? Accedi" — l'OTP resta il default visivo.
   const [phase, setPhase] = useState('idle');
   const [account, setAccount] = useState(null);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
@@ -99,6 +102,44 @@ export default function AuryaQuickLogin({ onProfile }) {
       setError(t('storefront:checkout.auryaLogin.codeError', {
         defaultValue: 'Codice non valido o scaduto. Controlla e riprova.',
       }));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // AP1b — login password: stessa gestione token/subscriber_token e
+  // stesso prefill via GET /platform/me delle altre strade.
+  const passwordLogin = async (e) => {
+    e.preventDefault();
+    if (!email.includes('@') || !password) return;
+    setBusy(true); setError(null);
+    try {
+      const res = await platformApi.post('/platform/auth/login',
+        { email: email.trim(), password });
+      localStorage.setItem(PLATFORM_TOKEN_KEY, res.data.access_token);
+      if (res.data.subscriber_token) {
+        try { localStorage.setItem('aurya_nl_token', res.data.subscriber_token); } catch { /* private mode */ }
+      }
+      const me = await platformApi.get('/platform/me');
+      setAccount(me.data);
+      setPhase('done');
+      onProfileRef.current?.(me.data);
+    } catch (err) {
+      const status = err?.response?.status;
+      const detail = err?.response?.data?.detail || '';
+      if (status === 423) {
+        setError(t('storefront:checkout.auryaLogin.passwordLocked', {
+          defaultValue: 'Troppi tentativi: riprova più tardi o accedi senza password.',
+        }));
+      } else if (status === 403 && detail === 'EMAIL_NOT_VERIFIED') {
+        setError(t('storefront:checkout.auryaLogin.passwordNotVerified', {
+          defaultValue: 'Prima conferma la tua email: controlla la posta.',
+        }));
+      } else {
+        setError(t('storefront:checkout.auryaLogin.passwordError', {
+          defaultValue: 'Email o password non corretti.',
+        }));
+      }
     } finally {
       setBusy(false);
     }
@@ -196,6 +237,71 @@ export default function AuryaQuickLogin({ onProfile }) {
                 : t('storefront:checkout.auryaLogin.send', { defaultValue: 'Inviami il codice' })}
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => { setPhase('password'); setError(null); }}
+            className="text-[11px] text-gray-500 underline hover:text-gray-700"
+            data-testid="aurya-login-have-password"
+          >
+            {t('storefront:checkout.auryaLogin.havePassword', {
+              defaultValue: 'Hai una password? Accedi',
+            })}
+          </button>
+        </div>
+      )}
+
+      {phase === 'password' && (
+        <div className="space-y-2">
+          <p className="text-[11px] text-gray-500">
+            {t('storefront:checkout.auryaLogin.passwordHint', {
+              defaultValue: 'Entra con la tua email e la tua password.',
+            })}
+          </p>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); passwordLogin(e); } }}
+            placeholder={t('storefront:checkout.auryaLogin.emailPlaceholder', {
+              defaultValue: 'La tua email',
+            })}
+            className={inputCls}
+          />
+          <div className="flex gap-2">
+            <input
+              type="password"
+              value={password}
+              autoComplete="current-password"
+              onChange={e => setPassword(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); passwordLogin(e); } }}
+              placeholder={t('storefront:checkout.auryaLogin.passwordPlaceholder', {
+                defaultValue: 'La tua password',
+              })}
+              className={inputCls}
+              data-testid="aurya-login-password"
+            />
+            <button
+              type="button"
+              onClick={passwordLogin}
+              disabled={busy || !email.includes('@') || !password}
+              className="shrink-0 rounded-lg bg-gray-900 text-white px-3 py-2 text-sm font-medium disabled:opacity-50"
+              data-testid="aurya-login-password-submit"
+            >
+              {busy
+                ? t('storefront:checkout.auryaLogin.verifying', { defaultValue: 'Verifico…' })
+                : t('storefront:checkout.auryaLogin.verify', { defaultValue: 'Entra' })}
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setPhase('email'); setError(null); }}
+            className="text-[11px] text-gray-500 underline hover:text-gray-700"
+            data-testid="aurya-login-no-password"
+          >
+            {t('storefront:checkout.auryaLogin.noPassword', {
+              defaultValue: 'Accedi senza password',
+            })}
+          </button>
         </div>
       )}
 

@@ -427,3 +427,47 @@ class TestLoginCode:
                 out = asyncio.run(svc.verify_login_code("a@b.it", bad))
             assert out is None
             accounts.find_one.assert_not_called()
+
+
+class TestAp1bEndpointHygiene:
+    """AP1b — gli endpoint password ereditano le stesse regole del
+    modulo: feature flag, rate limit, anti-enumeration."""
+
+    def _router_src(self):
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "routers", "platform_accounts.py")
+        return open(path).read()
+
+    def test_new_endpoints_behind_flag_and_rate_limited(self):
+        src = self._router_src()
+        for ep in ('"/auth/signup"', '"/auth/verify-email"', '"/auth/login"',
+                   '"/auth/password-reset"', '"/auth/password-reset/confirm"'):
+            block = src.split(ep)[1].split("@router.")[0]
+            assert "_flag_enabled()" in block, ep
+        # rate limit: ogni endpoint nuovo ha il decoratore
+        import re
+        for ep in ("/auth/signup", "/auth/verify-email", "/auth/login",
+                   "/auth/password-reset", "/auth/password-reset/confirm"):
+            m = re.search(r'@router\.post\("%s"[^\n]*\)\n(@limiter\.limit\("[0-9]+/minute"\))'
+                          % re.escape(ep), src)
+            assert m, ep
+
+    def test_password_login_anti_enumeration(self):
+        """Email inesistente o senza password → stesso giro bcrypt
+        (dummy hash) e stesso 401 generico della password sbagliata."""
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..",
+                            "services", "platform_account_service.py")
+        src = open(path).read()
+        block = src.split("async def password_login")[1].split("async def ")[0]
+        assert block.count("_BCRYPT_DUMMY_HASH") == 2   # rate-limit + not-found
+        assert 'raise ValueError("INVALID_CREDENTIALS")' in block
+
+    def test_reset_request_always_silent(self):
+        """La richiesta reset non solleva mai verso il client: 200 neutro
+        sempre (il router avvolge in try/except)."""
+        src = self._router_src()
+        block = src.split('"/auth/password-reset"')[1].split("@router.post")[0]
+        assert "except Exception" in block
+        assert '{"status": "accepted"}' in block

@@ -447,7 +447,14 @@
       "sendError": "Something went wrong. Try again in a minute.",
       "codeError": "Invalid or expired code. Check and try again.",
       "greeting": "Hi {{name}}, you are ordering as {{email}}",
-      "greetingNoName": "You are ordering as {{email}}"
+      "greetingNoName": "You are ordering as {{email}}",
+      "havePassword": "Have a password? Sign in",
+      "passwordHint": "Sign in with your email and your password.",
+      "passwordPlaceholder": "Your password",
+      "noPassword": "Sign in without a password",
+      "passwordError": "Incorrect email or password.",
+      "passwordNotVerified": "Please confirm your email first: check your inbox.",
+      "passwordLocked": "Too many attempts: try again later or sign in without a password."
     },
     "securePayment": "Secure payment"
   },

@@ -1215,8 +1215,9 @@ class TestHubAccountAp2:
         confirmed_branch = svc.split('doc.get("status") == "confirmed"')[1]
         assert "generate_subscriber_token" in confirmed_branch
         router = (BACKEND_DIR / "routers" / "platform_accounts.py").read_text()
-        # entrambe le strade di login arricchiscono la risposta
-        assert router.count("**await newsletter_status(account[\"email\"])") == 2
+        # TUTTE le strade di login arricchiscono la risposta (magic link,
+        # OTP e — da AP1b — anche il login password)
+        assert router.count("**await newsletter_status(account[\"email\"])") == 3
         # /platform/me espone il booleano per il render (senza token)
         assert "with_token=False" in router
 
@@ -1252,3 +1253,312 @@ class TestHubAccountAp2:
                 msg = acc[key]
                 assert "—" not in msg, (lang, key)
                 assert "negozio" not in msg.lower(), (lang, key)
+
+
+class TestAccountAp1b:
+    """AP1b (docs/ACCOUNT_UNICO_PIANO_2026-07.md, revisione founder) —
+    email+password sull'account Aurya: signup con verifica email,
+    login password con lockout, reset che vale anche come "imposta
+    password" per gli account nati passwordless. Il passwordless resta
+    identico come alternativa."""
+
+    PASSWORD = "StrongPass12"
+
+    class _MemAccounts:
+        """platform_accounts in memoria: il minimo che serve al service
+        (find_one per uguaglianza, insert_one, update_one con $set)."""
+
+        def __init__(self):
+            self.docs = {}
+
+        async def find_one(self, q, proj=None):
+            for d in self.docs.values():
+                if all(d.get(k) == v for k, v in q.items()):
+                    return dict(d)
+            return None
+
+        async def insert_one(self, doc):
+            self.docs[doc["id"]] = dict(doc)
+
+        async def update_one(self, q, u):
+            for d in self.docs.values():
+                if all(d.get(k) == v for k, v in q.items()):
+                    for k, v in u.get("$set", {}).items():
+                        d[k] = v
+                    return
+
+    def _ctx(self, fake, sent):
+        """Patch comuni: collection in memoria, email catturate (il token
+        in chiaro viaggia SOLO li'), claim e rate-limit neutralizzati."""
+        from unittest.mock import AsyncMock, patch
+        from services import platform_account_service as svc
+
+        return [
+            patch("database.platform_accounts_collection", fake),
+            patch.object(svc, "_send_verify_email",
+                         lambda e, t, n, locale="it": sent.update(
+                             {"verify_email": e, "verify_token": t})),
+            patch.object(svc, "_send_reset_email",
+                         lambda e, t, n, locale="it": sent.update(
+                             {"reset_email": e, "reset_token": t})),
+            patch.object(svc, "retroactive_claim", AsyncMock()),
+            patch("core.rate_limiting.check_email_rate",
+                  new=lambda *a, **kw: True),
+        ]
+
+    async def test_ap1b_signup_verifica_login_felice(self):
+        """Signup → email di verifica (token in chiaro solo li', a DB
+        l'hash) → verify → login password: sessione e contatori ok."""
+        from contextlib import ExitStack
+        from services import platform_account_service as svc
+
+        fake, sent = self._MemAccounts(), {}
+        with ExitStack() as stack:
+            for p in self._ctx(fake, sent):
+                stack.enter_context(p)
+
+            out = await svc.password_signup(
+                name="Anna", email="Anna@Ap1b.it", password=self.PASSWORD)
+            assert out == {"status": "verification_required"}
+            acc = list(fake.docs.values())[0]
+            assert acc["email"] == "anna@ap1b.it"          # normalizzata
+            assert acc["email_verified"] is False
+            assert acc["password_hash"].startswith("$2")   # bcrypt
+            token = sent["verify_token"]
+            assert token and token not in str(acc)         # MAI in chiaro a DB
+            assert acc["verification_token_hash"] == svc._hash_token(token)
+
+            out = await svc.verify_signup_email(token)
+            assert out == {"status": "verified"}
+            acc = list(fake.docs.values())[0]
+            assert acc["email_verified"] is True
+            assert acc["verification_token_hash"] is None  # one-shot
+
+            logged = await svc.password_login("anna@ap1b.it", self.PASSWORD)
+            assert logged["id"] == acc["id"]
+            assert logged["last_login_at"]
+            assert logged["failed_login_attempts"] == 0
+
+    async def test_ap1b_login_prima_della_verifica_rifiutato(self):
+        """Password giusta ma email non verificata: EMAIL_NOT_VERIFIED
+        (il router lo traduce in 403). Prima della password giusta,
+        invece, SOLO 401 generico: niente enumeration."""
+        import pytest
+        from contextlib import ExitStack
+        from services import platform_account_service as svc
+
+        fake, sent = self._MemAccounts(), {}
+        with ExitStack() as stack:
+            for p in self._ctx(fake, sent):
+                stack.enter_context(p)
+            await svc.password_signup(
+                name="B", email="b@ap1b.it", password=self.PASSWORD)
+            with pytest.raises(ValueError, match="EMAIL_NOT_VERIFIED"):
+                await svc.password_login("b@ap1b.it", self.PASSWORD)
+            # password sbagliata su account non verificato: 401 generico,
+            # mai lo stato dell'account
+            with pytest.raises(ValueError, match="INVALID_CREDENTIALS"):
+                await svc.password_login("b@ap1b.it", "WrongPass1234")
+
+    async def test_ap1b_email_gia_registrata_409(self):
+        """Account gia' verificato (o con password) → EMAIL_EXISTS, che
+        il router mappa su un 409 onesto. ECCEZIONE voluta: il guscio
+        passwordless pending nato da un acquisto guest viene ADOTTATO
+        dal signup (la proprieta' resta provata dal link di verifica)."""
+        import pytest
+        from contextlib import ExitStack
+        from services import platform_account_service as svc
+
+        fake, sent = self._MemAccounts(), {}
+        with ExitStack() as stack:
+            for p in self._ctx(fake, sent):
+                stack.enter_context(p)
+            await svc.password_signup(
+                name="C", email="c@ap1b.it", password=self.PASSWORD)
+            await svc.verify_signup_email(sent["verify_token"])
+            with pytest.raises(ValueError, match="EMAIL_EXISTS"):
+                await svc.password_signup(
+                    name="C2", email="C@AP1B.IT", password=self.PASSWORD)
+
+            # guscio pending (claim acquisto): il signup lo adotta
+            fake.docs["shell-1"] = {"id": "shell-1", "email": "guest@ap1b.it",
+                                    "email_verified": False,
+                                    "password_hash": None}
+            out = await svc.password_signup(
+                name="Guest", email="guest@ap1b.it", password=self.PASSWORD)
+            assert out == {"status": "verification_required"}
+            shell = fake.docs["shell-1"]
+            assert shell["password_hash"].startswith("$2")
+            assert shell["email_verified"] is False        # verifica ancora dovuta
+
+        # il router mappa EMAIL_EXISTS su 409
+        router = (BACKEND_DIR / "routers" / "platform_accounts.py").read_text()
+        block = router.split('"/auth/signup"')[1]
+        assert "HTTP_409_CONFLICT" in block.split("@router.post")[0]
+
+    async def test_ap1b_lockout_dopo_n_tentativi(self):
+        """Stesse soglie dei customer (core/security_config): dopo
+        LOCKOUT_THRESHOLD password sbagliate l'account si blocca e
+        ANCHE la password giusta risponde ACCOUNT_LOCKED (recupero via
+        reset)."""
+        import pytest
+        from contextlib import ExitStack
+        from core.security_config import LOCKOUT_ERROR_CODE, LOCKOUT_THRESHOLD
+        from services import platform_account_service as svc
+
+        fake, sent = self._MemAccounts(), {}
+        with ExitStack() as stack:
+            for p in self._ctx(fake, sent):
+                stack.enter_context(p)
+            await svc.password_signup(
+                name="D", email="d@ap1b.it", password=self.PASSWORD)
+            await svc.verify_signup_email(sent["verify_token"])
+
+            for _ in range(LOCKOUT_THRESHOLD):
+                with pytest.raises(ValueError, match="INVALID_CREDENTIALS"):
+                    await svc.password_login("d@ap1b.it", "WrongPass1234")
+
+            acc = list(fake.docs.values())[0]
+            assert acc["locked_until"]                     # lockout scattato
+            with pytest.raises(ValueError,
+                               match=f"^{LOCKOUT_ERROR_CODE}:"):
+                await svc.password_login("d@ap1b.it", self.PASSWORD)
+
+    async def test_ap1b_reset_imposta_password_su_passwordless(self):
+        """Il reset e' anche il flusso "imposta la password" per gli
+        account nati passwordless (claim acquisto): password_hash None →
+        scritto; il link usato prova la casella → email_verified True;
+        token one-shot."""
+        import pytest
+        from contextlib import ExitStack
+        from services import platform_account_service as svc
+
+        fake, sent = self._MemAccounts(), {}
+        fake.docs["pl-1"] = {"id": "pl-1", "email": "senza@ap1b.it",
+                             "email_verified": False, "password_hash": None,
+                             "language": "it"}
+        with ExitStack() as stack:
+            for p in self._ctx(fake, sent):
+                stack.enter_context(p)
+            await svc.request_password_reset("senza@ap1b.it")
+            token = sent["reset_token"]
+            assert token not in str(fake.docs["pl-1"])     # a DB solo l'hash
+
+            out = await svc.confirm_password_reset(token, self.PASSWORD)
+            assert out == {"status": "ok"}
+            acc = fake.docs["pl-1"]
+            assert acc["password_hash"].startswith("$2")
+            assert acc["email_verified"] is True           # casella provata
+            assert acc["reset_token_hash"] is None         # one-shot
+
+            logged = await svc.password_login("senza@ap1b.it", self.PASSWORD)
+            assert logged["id"] == "pl-1"
+
+            # secondo uso dello stesso token: rifiutato
+            with pytest.raises(ValueError, match="INVALID_TOKEN"):
+                await svc.confirm_password_reset(token, self.PASSWORD)
+
+    async def test_ap1b_reset_request_neutra_se_email_ignota(self):
+        """Nessun account per l'email → nessuna email inviata, nessun
+        errore: il router risponde comunque 200 (enumeration-safe)."""
+        from contextlib import ExitStack
+        from services import platform_account_service as svc
+
+        fake, sent = self._MemAccounts(), {}
+        with ExitStack() as stack:
+            for p in self._ctx(fake, sent):
+                stack.enter_context(p)
+            await svc.request_password_reset("ignota@ap1b.it")
+        assert "reset_token" not in sent
+
+    def test_ap1b_risposta_login_password_con_newsletter(self):
+        """La risposta del login password ha lo STESSO shape delle altre
+        strade: access_token + account + newsletter_status AP2 (le guide
+        si sbloccano anche col login password)."""
+        router = (BACKEND_DIR / "routers" / "platform_accounts.py").read_text()
+        block = router.split('"/auth/login"')[1].split("@router.post")[0]
+        assert "_login_response(account)" in block
+        assert '**await newsletter_status(account["email"])' in block
+        # errori: 423 lockout, 403 non verificata, 401 generico
+        assert "HTTP_423_LOCKED" in block
+        assert "HTTP_403_FORBIDDEN" in block
+        assert "HTTP_401_UNAUTHORIZED" in block
+
+    def test_ap1b_frontend_percorsi_e_copy(self):
+        """AccountLoginPage: password primaria + link secondari (OTP e
+        reset) + signup; pagine verify/nuova-password instradate; il
+        checkout inline ha il toggle password. Copy x4 lingue: mai
+        'Passaporto', mai trattini lunghi."""
+        login = (FRONTEND_SRC / "features" / "account"
+                 / "AccountLoginPage.js").read_text()
+        assert "'/platform/auth/login'" in login
+        assert "'/platform/auth/signup'" in login
+        assert "'/platform/auth/password-reset'" in login
+        assert 'data-testid="login-no-password"' in login
+        assert 'data-testid="login-forgot"' in login
+        assert 'data-testid="login-to-signup"' in login
+
+        verify = (FRONTEND_SRC / "features" / "account"
+                  / "AccountVerifyEmailPage.js").read_text()
+        assert "'/platform/auth/verify-email'" in verify
+        reset = (FRONTEND_SRC / "features" / "account"
+                 / "AccountResetPasswordPage.js").read_text()
+        assert "'/platform/auth/password-reset/confirm'" in reset
+
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/account/verifica"' in app
+        assert 'path="/account/nuova-password"' in app
+
+        quick = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "checkout" / "AuryaQuickLogin.jsx").read_text()
+        assert "'/platform/auth/login'" in quick
+        assert 'data-testid="aurya-login-have-password"' in quick
+        assert "PLATFORM_TOKEN_KEY" in quick
+
+        import json
+        new_account_keys = (
+            "passwordLoginBody", "passwordPlaceholder", "otpLink",
+            "forgotLink", "signupLink", "signupTitle", "signupSentBody",
+            "signupExists", "resetTitle", "resetBody", "resetSentBody",
+            "passwordHint", "verifyOkBody", "verifyFailBody",
+            "newPasswordTitle", "newPasswordOkBody", "newPasswordFailBody",
+            "goToLogin", "backToLogin",
+        )
+        for lang in ("it", "en", "de", "fr"):
+            acc = json.loads((FRONTEND_SRC / "locales" / lang
+                              / "landings.json").read_text())["account"]
+            for key in new_account_keys:
+                msg = acc[key]
+                assert "—" not in msg, (lang, key)         # niente em dash
+                assert "assaporto" not in msg, (lang, key)  # mai Passaporto
+            store = json.loads((FRONTEND_SRC / "locales" / lang
+                                / "storefront.json").read_text())
+            aq = store["checkout"]["auryaLogin"]
+            for key in ("havePassword", "passwordHint", "passwordPlaceholder",
+                        "noPassword", "passwordError", "passwordNotVerified",
+                        "passwordLocked"):
+                msg = aq[key]
+                assert "—" not in msg, (lang, key)
+                assert "assaporto" not in msg, (lang, key)
+
+    def test_ap1b_email_transazionali_x4(self):
+        """Le email di verifica e reset esistono nelle 4 lingue, dentro
+        lo stesso sistema template (EMAIL_TRANSLATIONS + _wrap_template),
+        senza la parola Passaporto nei testi nuovi."""
+        from services.email_service import EMAIL_TRANSLATIONS
+
+        keys = ("aurya_verify_subject", "aurya_verify_body",
+                "aurya_verify_cta", "aurya_verify_footer",
+                "aurya_reset_subject", "aurya_reset_body",
+                "aurya_reset_cta", "aurya_reset_footer")
+        for lang in ("it", "en", "de", "fr"):
+            for key in keys:
+                msg = EMAIL_TRANSLATIONS[lang][key]
+                assert msg, (lang, key)
+                assert "—" not in msg, (lang, key)
+                assert "assaporto" not in msg, (lang, key)
+        svc_src = (BACKEND_DIR / "services"
+                   / "platform_account_service.py").read_text()
+        assert "_wrap_template" in svc_src.split("def _send_verify_email")[1]
+        assert "/account/verifica?token=" in svc_src
+        assert "/account/nuova-password?token=" in svc_src

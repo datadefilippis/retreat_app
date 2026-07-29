@@ -1,17 +1,23 @@
 /**
- * AccountLoginPage — /account/accedi (P3, Passaporto Ritiri).
+ * AccountLoginPage — /account/accedi (P3 + AP1b).
  *
- * Due modalita':
+ * AP1b: il login con EMAIL e PASSWORD e' il percorso primario. Sotto,
+ * due strade secondarie: "Accedi senza password" (il flusso OTP/magic
+ * link esistente, identico) e "Password dimenticata?" (richiesta reset,
+ * che serve anche a IMPOSTARE la password per gli account nati
+ * passwordless da un acquisto). Da qui si raggiunge anche la creazione
+ * account ("Crea il tuo account Aurya").
+ *
+ * Modalita' con token in query:
  *  - ?token=... (dal magic link email): consuma il token, salva la
  *    sessione piattaforma e porta a /account
- *  - senza token: form email → richiede un nuovo magic link (202 sempre)
  *
  * Mobile-first (si apre quasi sempre dal telefono, dall'email). noindex.
  */
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Mail, CheckCircle2 } from 'lucide-react';
+import { Loader2, Mail, CheckCircle2, KeyRound, UserPlus } from 'lucide-react';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
@@ -32,10 +38,22 @@ const saveSubscriberToken = (data) => {
   try { localStorage.setItem(NL_TOKEN_KEY, data.subscriber_token); } catch { /* private mode */ }
 };
 
+// AP1b — salvataggio sessione unico per TUTTE le strade di login
+// (password, OTP, magic link): stesso token, stesso eventuale
+// subscriber_token.
+const saveSession = (data) => {
+  localStorage.setItem(PLATFORM_TOKEN_KEY, data.access_token);
+  saveSubscriberToken(data);
+};
+
+const inputCls = 'w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:outline-none';
+const btnCls = 'w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold disabled:opacity-60';
+const linkBtnCls = 'text-xs text-gray-500 underline hover:text-gray-700';
+
 export default function AccountLoginPage() {
   const { t, i18n } = useTranslation('landings');
-  // R2a — la lingua UI viaggia con la richiesta OTP: il backend la salva
-  // come preferenza del Passaporto e localizza l'email del codice.
+  // R2a — la lingua UI viaggia con le richieste (OTP, signup, reset): il
+  // backend la salva come preferenza dell'account e localizza le email.
   const emailLang = () => {
     const lang = (i18n.language || '').slice(0, 2).toLowerCase();
     return ['it', 'en', 'de', 'fr'].includes(lang) ? lang : undefined;
@@ -44,10 +62,16 @@ export default function AccountLoginPage() {
   const [params] = useSearchParams();
   const token = params.get('token');
 
+  // viste: verifying | expired | form (password, primaria) | otp |
+  // sent (codice OTP) | reset | resetSent | signup | signupSent
   const [state, setState] = useState(token ? 'verifying' : 'form');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+
+  const goTo = (view) => { setState(view); setError(null); };
 
   useSeoMeta({ title: 'Accedi — le tue esperienze', noindex: true });
   useEffect(() => {
@@ -64,15 +88,43 @@ export default function AccountLoginPage() {
       .then(res => {
         // salva SEMPRE (anche se lo StrictMode ha smontato questo mount:
         // la sessione e' valida e il remount la trovera')
-        localStorage.setItem(PLATFORM_TOKEN_KEY, res.data.access_token);
-        saveSubscriberToken(res.data);
+        saveSession(res.data);
         navigate('/account', { replace: true });
       })
       .catch(() => setState('expired'));
   }, [token, navigate]);
 
-  // OTP a 6 cifre: la strada IMMEDIATA (il link resta come fallback
-  // nella stessa email)
+  // AP1b — login password: il percorso primario
+  const passwordLogin = async (e) => {
+    e.preventDefault();
+    setSending(true); setError(null);
+    try {
+      const res = await platformApi.post('/platform/auth/login',
+        { email: email.trim(), password });
+      saveSession(res.data);
+      navigate('/account');
+    } catch (err) {
+      const status = err?.response?.status;
+      const detail = err?.response?.data?.detail || '';
+      if (status === 423) {
+        setError(t('landings:account.loginLocked', {
+          defaultValue: 'Troppi tentativi: accesso bloccato per qualche minuto. Puoi usare Password dimenticata o accedere senza password.',
+        }));
+      } else if (status === 403 && detail === 'EMAIL_NOT_VERIFIED') {
+        setError(t('landings:account.loginNotVerified', {
+          defaultValue: 'Prima conferma la tua email: controlla la posta (anche lo spam).',
+        }));
+      } else {
+        setError(t('landings:account.loginError', {
+          defaultValue: 'Email o password non corretti.',
+        }));
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
+  // OTP a 6 cifre: la strada senza password (invariata)
   const [code, setCode] = useState('');
   const [verifyingCode, setVerifyingCode] = useState(false);
   const verifyCode = async (e) => {
@@ -82,8 +134,7 @@ export default function AccountLoginPage() {
     try {
       const res = await platformApi.post('/platform/auth/code/verify',
         { email, code: code.trim() });
-      localStorage.setItem(PLATFORM_TOKEN_KEY, res.data.access_token);
-      saveSubscriberToken(res.data);
+      saveSession(res.data);
       navigate('/account');
     } catch {
       setError(t('landings:account.codeError', {
@@ -122,6 +173,55 @@ export default function AccountLoginPage() {
     }
   };
 
+  // AP1b — richiesta reset password (risposta sempre neutra)
+  const requestReset = async (e) => {
+    e.preventDefault();
+    setSending(true); setError(null);
+    try {
+      await platformApi.post('/platform/auth/password-reset',
+        { email: email.trim(), language: emailLang() });
+      setState('resetSent');
+    } catch {
+      setError(t('landings:account.requestError', {
+        defaultValue: 'Qualcosa non ha funzionato. Riprova tra un minuto.',
+      }));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  // AP1b — creazione account Aurya (nome, email, password)
+  const submitSignup = async (e) => {
+    e.preventDefault();
+    setSending(true); setError(null);
+    try {
+      await platformApi.post('/platform/auth/signup', {
+        name: name.trim() || undefined,
+        email: email.trim(),
+        password,
+        language: emailLang(),
+      });
+      setState('signupSent');
+    } catch (err) {
+      const status = err?.response?.status;
+      const detail = err?.response?.data?.detail;
+      if (status === 409) {
+        setError(t('landings:account.signupExists', {
+          defaultValue: 'Questa email ha già un account Aurya. Accedi oppure usa Password dimenticata.',
+        }));
+      } else if (status === 400 && detail) {
+        // policy password: il backend spiega cosa manca
+        setError(String(detail));
+      } else {
+        setError(t('landings:account.requestError', {
+          defaultValue: 'Qualcosa non ha funzionato. Riprova tra un minuto.',
+        }));
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <MarketplaceShell>
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -143,7 +243,7 @@ export default function AccountLoginPage() {
             <p className="mt-2 text-sm text-gray-600">
               {t('landings:account.expiredBody', { defaultValue: 'Nessun problema: inserisci la tua email e te ne mandiamo uno nuovo.' })}
             </p>
-            <button onClick={() => setState('form')}
+            <button onClick={() => goTo('otp')}
               className="mt-4 w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold">
               {t('landings:account.requestNew', { defaultValue: 'Richiedi un nuovo link' })}
             </button>
@@ -152,28 +252,79 @@ export default function AccountLoginPage() {
 
         {state === 'form' && (
           <>
+            <KeyRound className="h-8 w-8 text-primary mx-auto" />
+            <h1 className="mt-3 text-lg font-bold text-gray-900">
+              {t('landings:account.loginTitle', { defaultValue: 'Il tuo account Aurya' })}
+            </h1>
+            <p className="mt-1 text-sm text-gray-600">
+              {t('landings:account.passwordLoginBody', { defaultValue: 'Entra con la tua email e la tua password.' })}
+            </p>
+            <form onSubmit={passwordLogin} className="mt-4 space-y-3" data-testid="password-login-form">
+              <input
+                type="email" required value={email} autoComplete="email"
+                onChange={e => setEmail(e.target.value)}
+                placeholder={t('landings:account.emailPlaceholder', { defaultValue: 'La tua email' })}
+                className={inputCls}
+              />
+              <input
+                type="password" required value={password} autoComplete="current-password"
+                onChange={e => setPassword(e.target.value)}
+                placeholder={t('landings:account.passwordPlaceholder', { defaultValue: 'La tua password' })}
+                className={inputCls}
+              />
+              {error && <p className="text-xs text-red-600">{error}</p>}
+              <button type="submit" disabled={sending} className={btnCls} data-testid="password-login-submit">
+                {sending
+                  ? t('landings:account.entering', { defaultValue: 'Un attimo…' })
+                  : t('landings:account.enter', { defaultValue: 'Entra' })}
+              </button>
+            </form>
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <button type="button" onClick={() => goTo('otp')} className={linkBtnCls}
+                data-testid="login-no-password">
+                {t('landings:account.otpLink', { defaultValue: 'Accedi senza password' })}
+              </button>
+              <button type="button" onClick={() => goTo('reset')} className={linkBtnCls}
+                data-testid="login-forgot">
+                {t('landings:account.forgotLink', { defaultValue: 'Password dimenticata?' })}
+              </button>
+            </div>
+            <div className="mt-5 border-t border-gray-100 pt-4">
+              <button type="button" onClick={() => goTo('signup')}
+                className="text-sm font-semibold text-primary hover:underline"
+                data-testid="login-to-signup">
+                {t('landings:account.signupLink', { defaultValue: 'Crea il tuo account Aurya' })}
+              </button>
+            </div>
+          </>
+        )}
+
+        {state === 'otp' && (
+          <>
             <Mail className="h-8 w-8 text-primary mx-auto" />
             <h1 className="mt-3 text-lg font-bold text-gray-900">
-              {t('landings:account.loginTitle', { defaultValue: 'Le tue prenotazioni' })}
+              {t('landings:account.otpTitle', { defaultValue: 'Accedi senza password' })}
             </h1>
             <p className="mt-1 text-sm text-gray-600">
               {t('landings:account.loginBody', { defaultValue: 'Niente password: ti mandiamo un codice via email, lo digiti qui e sei dentro.' })}
             </p>
             <form onSubmit={requestLink} className="mt-4 space-y-3">
               <input
-                type="email" required value={email}
+                type="email" required value={email} autoComplete="email"
                 onChange={e => setEmail(e.target.value)}
                 placeholder={t('landings:account.emailPlaceholder', { defaultValue: 'La tua email' })}
-                className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                className={inputCls}
               />
               {error && <p className="text-xs text-red-600">{error}</p>}
-              <button type="submit" disabled={sending}
-                className="w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold disabled:opacity-60">
+              <button type="submit" disabled={sending} className={btnCls}>
                 {sending
                   ? t('landings:account.sending', { defaultValue: 'Invio…' })
                   : t('landings:account.sendCode', { defaultValue: 'Inviami il codice' })}
               </button>
             </form>
+            <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
+              {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}
+            </button>
           </>
         )}
 
@@ -196,13 +347,115 @@ export default function AccountLoginPage() {
                 autoFocus
               />
               {error && <p className="text-xs text-red-600">{error}</p>}
-              <button type="submit" disabled={verifyingCode || code.length !== 6}
-                className="w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold disabled:opacity-60">
+              <button type="submit" disabled={verifyingCode || code.length !== 6} className={btnCls}>
                 {verifyingCode
                   ? t('landings:account.verifyingCode', { defaultValue: 'Verifico…' })
                   : t('landings:account.enter', { defaultValue: 'Entra' })}
               </button>
             </form>
+          </>
+        )}
+
+        {state === 'reset' && (
+          <>
+            <KeyRound className="h-8 w-8 text-primary mx-auto" />
+            <h1 className="mt-3 text-lg font-bold text-gray-900">
+              {t('landings:account.resetTitle', { defaultValue: 'Password dimenticata' })}
+            </h1>
+            <p className="mt-1 text-sm text-gray-600">
+              {t('landings:account.resetBody', { defaultValue: 'Inserisci la tua email: ti mandiamo un link per impostare una nuova password. Funziona anche se non ne hai mai scelta una.' })}
+            </p>
+            <form onSubmit={requestReset} className="mt-4 space-y-3" data-testid="reset-request-form">
+              <input
+                type="email" required value={email} autoComplete="email"
+                onChange={e => setEmail(e.target.value)}
+                placeholder={t('landings:account.emailPlaceholder', { defaultValue: 'La tua email' })}
+                className={inputCls}
+              />
+              {error && <p className="text-xs text-red-600">{error}</p>}
+              <button type="submit" disabled={sending} className={btnCls} data-testid="reset-request-submit">
+                {sending
+                  ? t('landings:account.sending', { defaultValue: 'Invio…' })
+                  : t('landings:account.resetSubmit', { defaultValue: 'Inviami il link' })}
+              </button>
+            </form>
+            <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
+              {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}
+            </button>
+          </>
+        )}
+
+        {state === 'resetSent' && (
+          <>
+            <CheckCircle2 className="h-8 w-8 text-primary mx-auto" />
+            <h1 className="mt-3 text-lg font-bold text-gray-900">
+              {t('landings:account.resetSentTitle', { defaultValue: 'Controlla la tua email' })}
+            </h1>
+            <p className="mt-2 text-sm text-gray-600" data-testid="reset-sent-body">
+              {t('landings:account.resetSentBody', { defaultValue: 'Se l\'email corrisponde a un account Aurya, riceverai un link per impostare la nuova password. Vale 60 minuti.' })}
+            </p>
+            <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
+              {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}
+            </button>
+          </>
+        )}
+
+        {state === 'signup' && (
+          <>
+            <UserPlus className="h-8 w-8 text-primary mx-auto" />
+            <h1 className="mt-3 text-lg font-bold text-gray-900">
+              {t('landings:account.signupTitle', { defaultValue: 'Crea il tuo account Aurya' })}
+            </h1>
+            <p className="mt-1 text-sm text-gray-600">
+              {t('landings:account.signupBody', { defaultValue: 'Un solo account per tutte le tue prenotazioni e le guide.' })}
+            </p>
+            <form onSubmit={submitSignup} className="mt-4 space-y-3" data-testid="signup-form">
+              <input
+                type="text" value={name} autoComplete="name"
+                onChange={e => setName(e.target.value)}
+                placeholder={t('landings:account.namePlaceholder', { defaultValue: 'Il tuo nome' })}
+                className={inputCls}
+              />
+              <input
+                type="email" required value={email} autoComplete="email"
+                onChange={e => setEmail(e.target.value)}
+                placeholder={t('landings:account.emailPlaceholder', { defaultValue: 'La tua email' })}
+                className={inputCls}
+              />
+              <input
+                type="password" required value={password} autoComplete="new-password"
+                onChange={e => setPassword(e.target.value)}
+                placeholder={t('landings:account.passwordPlaceholder', { defaultValue: 'La tua password' })}
+                className={inputCls}
+              />
+              <p className="text-[11px] text-gray-400 text-left">
+                {t('landings:account.passwordHint', { defaultValue: 'Almeno 12 caratteri, con maiuscole, minuscole e numeri.' })}
+              </p>
+              {error && <p className="text-xs text-red-600">{error}</p>}
+              <button type="submit" disabled={sending} className={btnCls} data-testid="signup-submit">
+                {sending
+                  ? t('landings:account.sending', { defaultValue: 'Invio…' })
+                  : t('landings:account.signupSubmit', { defaultValue: 'Crea account' })}
+              </button>
+            </form>
+            <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
+              {t('landings:account.haveAccount', { defaultValue: 'Ho già un account: accedi' })}
+            </button>
+          </>
+        )}
+
+        {state === 'signupSent' && (
+          <>
+            <CheckCircle2 className="h-8 w-8 text-primary mx-auto" />
+            <h1 className="mt-3 text-lg font-bold text-gray-900">
+              {t('landings:account.signupSentTitle', { defaultValue: 'Controlla la tua email' })}
+            </h1>
+            <p className="mt-2 text-sm text-gray-600" data-testid="signup-sent-body">
+              {t('landings:account.signupSentBody', { defaultValue: 'Ti abbiamo inviato un link per confermare la tua email. Dopo la conferma potrai accedere con la tua password.' })}
+            </p>
+            <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
+              {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}
+            </button>
           </>
         )}
 

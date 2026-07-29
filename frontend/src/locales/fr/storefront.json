@@ -431,7 +431,14 @@
       "sendError": "Quelque chose n'a pas fonctionné. Réessaie dans une minute.",
       "codeError": "Code non valide ou expiré. Vérifie et réessaie.",
       "greeting": "Bonjour {{name}}, tu commandes comme {{email}}",
-      "greetingNoName": "Tu commandes comme {{email}}"
+      "greetingNoName": "Tu commandes comme {{email}}",
+      "havePassword": "Vous avez un mot de passe ? Connectez-vous",
+      "passwordHint": "Connectez-vous avec votre email et votre mot de passe.",
+      "passwordPlaceholder": "Votre mot de passe",
+      "noPassword": "Se connecter sans mot de passe",
+      "passwordError": "Email ou mot de passe incorrects.",
+      "passwordNotVerified": "Confirmez d'abord votre email : vérifiez votre boîte de réception.",
+      "passwordLocked": "Trop de tentatives : réessayez plus tard ou connectez-vous sans mot de passe."
     },
     "securePayment": "Paiement sécurisé"
   },

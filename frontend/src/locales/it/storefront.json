@@ -447,7 +447,14 @@
       "sendError": "Qualcosa non ha funzionato. Riprova tra un minuto.",
       "codeError": "Codice non valido o scaduto. Controlla e riprova.",
       "greeting": "Ciao {{name}}, ordini come {{email}}",
-      "greetingNoName": "Ordini come {{email}}"
+      "greetingNoName": "Ordini come {{email}}",
+      "havePassword": "Hai una password? Accedi",
+      "passwordHint": "Entra con la tua email e la tua password.",
+      "passwordPlaceholder": "La tua password",
+      "noPassword": "Accedi senza password",
+      "passwordError": "Email o password non corretti.",
+      "passwordNotVerified": "Prima conferma la tua email: controlla la posta.",
+      "passwordLocked": "Troppi tentativi: riprova più tardi o accedi senza password."
     },
     "securePayment": "Pagamento sicuro"
   },

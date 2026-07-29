@@ -102,6 +102,8 @@ import StorefrontPage from "./features/storefront/StorefrontPage";
 import EventLandingPage from "./features/storefront/EventLandingPage";
 import TicketLandingPage from "./features/storefront/TicketLandingPage";
 import AccountLoginPage from './features/account/AccountLoginPage';
+import AccountVerifyEmailPage from './features/account/AccountVerifyEmailPage';
+import AccountResetPasswordPage from './features/account/AccountResetPasswordPage';
 import AccountPage from './features/account/AccountPage';
 import BookingLandingPage from "./features/storefront/BookingLandingPage";
 import ReservationConfirmationPage from "./features/storefront/ReservationConfirmationPage";
@@ -492,6 +494,8 @@ function AppRoutes() {
       <Route path="/t/:token" element={<TicketLandingPage />} />
       {/* P3 Passaporto Ritiri — area personale utente finale (pubblica, noindex) */}
       <Route path="/account/accedi" element={<AccountLoginPage />} />
+      <Route path="/account/verifica" element={<AccountVerifyEmailPage />} />
+      <Route path="/account/nuova-password" element={<AccountResetPasswordPage />} />
       <Route path="/account" element={<AccountPage />} />
       {/* Onda 14: public booking landing — service appointment details + .ics */}
       <Route path="/b/:token" element={<BookingLandingPage />} />

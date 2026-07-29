@@ -40,6 +40,24 @@ class PlatformAccount(BaseModel):
     # decide di impostarla dall'area personale.
     password_hash: Optional[str] = None
 
+    # AP1b — signup con password: verifica email con token one-shot
+    # (sha256 a DB, in chiaro solo nell'email) e reset password. Stesso
+    # pattern collaudato dei customer_accounts, portato a livello
+    # piattaforma. Il reset serve ANCHE agli account nati passwordless
+    # (claim acquisto) per impostare la password la prima volta.
+    verification_token_hash: Optional[str] = None
+    verification_token_expires: Optional[str] = None
+    reset_token_hash: Optional[str] = None
+    reset_token_expires: Optional[str] = None
+    password_changed_at: Optional[str] = None
+
+    # AP1b — anti-bruteforce sul login password (stesse soglie e backoff
+    # dei customer: core/security_config + core/lockout_helpers).
+    failed_login_attempts: int = 0
+    locked_until: Optional[str] = None
+    lockout_count_today: int = 0
+    last_failed_login_at: Optional[str] = None
+
     # Invalidation di tutte le sessioni (logout-all): i JWT con iat
     # precedente vengono rifiutati dalla dependency.
     sessions_invalidated_at: Optional[datetime] = None

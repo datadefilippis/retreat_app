@@ -133,6 +133,168 @@ async def verify_login_code_ep(body: CodeVerify, request: Request):
     }
 
 
+# ── AP1b — email + password sull'account Aurya ──────────────────────────────
+# Stesso router, stesso flag. Il passwordless (magic link + OTP) resta
+# identico come alternativa e recovery. Risposta di login IDENTICA alle
+# altre strade (access_token + account + newsletter_status AP2).
+
+
+class PasswordSignup(BaseModel):
+    name: Optional[str] = Field(None, max_length=120)
+    email: str = Field(..., max_length=254)
+    password: str = Field(..., max_length=128)
+    language: Optional[str] = Field(None, max_length=5)
+
+
+class VerifyEmailBody(BaseModel):
+    token: str = Field(..., max_length=128)
+
+
+class PasswordLogin(BaseModel):
+    email: str = Field(..., max_length=254)
+    password: str = Field(..., max_length=128)
+
+
+class PasswordResetRequest(BaseModel):
+    email: str = Field(..., max_length=254)
+    language: Optional[str] = Field(None, max_length=5)
+
+
+class PasswordResetConfirm(BaseModel):
+    token: str = Field(..., max_length=128)
+    new_password: str = Field(..., max_length=128)
+
+
+def _login_response(account: dict) -> dict:
+    """Shape unico per TUTTE le strade di login (magic link, OTP,
+    password): il frontend salva il token e, se presente, il
+    subscriber_token con lo stesso codice."""
+    token = create_platform_token(
+        {"sub": account["id"], "email": account["email"]},
+        expires_delta=timedelta(days=PLATFORM_SESSION_DAYS),
+    )
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "account": {"id": account["id"], "email": account["email"],
+                    "name": account.get("name"),
+                    "language": account.get("language", "it")},
+    }
+
+
+@router.post("/auth/signup", status_code=202)
+@limiter.limit("5/minute")
+async def password_signup_ep(body: PasswordSignup, request: Request):
+    """Signup email+password. Email di verifica con token one-shot:
+    l'account non e' loggabile con password finche' non e' verificata.
+    Email gia' registrata → 409 onesto (chi ha un account deve accedere,
+    non ricrearlo)."""
+    _flag_enabled()
+    from services.platform_account_service import password_signup
+    try:
+        return await password_signup(name=body.name, email=body.email,
+                                     password=body.password,
+                                     language=body.language)
+    except ValueError as e:
+        msg = str(e)
+        if msg == "EMAIL_EXISTS":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Questa email ha già un account Aurya. "
+                       "Accedi oppure usa Password dimenticata.",
+            )
+        if msg == "INVALID_EMAIL":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="Inserisci un'email valida.")
+        # policy password: il messaggio del validator e' gia' onesto
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=msg)
+
+
+@router.post("/auth/verify-email")
+@limiter.limit("10/minute")
+async def verify_email_ep(body: VerifyEmailBody, request: Request):
+    """Consuma il token di verifica del signup (one-shot)."""
+    _flag_enabled()
+    from services.platform_account_service import verify_signup_email
+    try:
+        return await verify_signup_email(body.token)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Link non valido o scaduto. Richiedine uno nuovo.",
+        )
+
+
+@router.post("/auth/login")
+@limiter.limit("10/minute")
+async def password_login_ep(body: PasswordLogin, request: Request):
+    """Login email+password. Errori: 401 generico (anti-enumeration),
+    423 lockout (stesse soglie dei customer), 403 email non verificata.
+    Risposta identica alle altre strade di login (newsletter_status AP2
+    incluso: le guide si sbloccano anche da qui)."""
+    _flag_enabled()
+    from core.security_config import LOCKOUT_ERROR_CODE
+    from services.platform_account_service import (newsletter_status,
+                                                   password_login)
+    try:
+        account = await password_login(body.email, body.password)
+    except ValueError as e:
+        msg = str(e)
+        if msg.startswith(LOCKOUT_ERROR_CODE):
+            raise HTTPException(status_code=status.HTTP_423_LOCKED,
+                                detail=msg)
+        if msg in ("EMAIL_NOT_VERIFIED", "ACCOUNT_DISABLED"):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=msg)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Email o password non corretti.")
+    return {
+        **_login_response(account),
+        # AP2 — stessa regola delle altre strade: token guide SOLO se
+        # l'email e' un'iscrizione confermata alla lettera di Aurya.
+        **await newsletter_status(account["email"]),
+    }
+
+
+@router.post("/auth/password-reset", status_code=200)
+@limiter.limit("5/minute")
+async def password_reset_request_ep(body: PasswordResetRequest,
+                                    request: Request):
+    """Richiesta reset: 200 SEMPRE neutro (enumeration-safe), l'email col
+    token parte solo se l'account esiste. Serve anche agli account nati
+    passwordless per IMPOSTARE la password la prima volta."""
+    _flag_enabled()
+    from services.platform_account_service import request_password_reset
+    try:
+        await request_password_reset(body.email, language=body.language)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("password-reset request fallita")
+    return {"status": "accepted"}
+
+
+@router.post("/auth/password-reset/confirm")
+@limiter.limit("10/minute")
+async def password_reset_confirm_ep(body: PasswordResetConfirm,
+                                    request: Request):
+    """Consuma il token di reset (one-shot) e imposta la nuova password."""
+    _flag_enabled()
+    from services.platform_account_service import confirm_password_reset
+    try:
+        return await confirm_password_reset(body.token, body.new_password)
+    except ValueError as e:
+        msg = str(e)
+        if msg == "INVALID_TOKEN":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Link non valido o scaduto. Richiedine uno nuovo.",
+            )
+        # policy password
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=msg)
+
+
 @router.get("/me")
 async def get_me(account: dict = Depends(get_current_platform_account)):
     _flag_enabled()
