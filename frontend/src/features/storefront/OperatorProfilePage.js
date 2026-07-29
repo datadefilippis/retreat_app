@@ -18,6 +18,10 @@ import { useSiteConfig } from '../../context/SiteConfigContext';
 import useSeoMeta from './lib/useSeoMeta';
 import useTrackView from './lib/useTrackView';
 import MarketplaceShell from './components/MarketplaceShell';
+// PN3 — l'acquisto del servizio avviene TUTTO sul profilo: la riga di
+// listino si espande su un harness che riusa il checkout dello storefront
+// (CheckoutForm/OrderSummary/useCheckoutForm, zero fork di logica).
+import InlineServiceCheckout from './components/checkout/InlineServiceCheckout';
 
 function fmtPrice(n) {
   if (n == null) return null;
@@ -333,6 +337,9 @@ export default function OperatorProfilePage() {
   const [notFound, setNotFound] = useState(false);
   const [writeOpen, setWriteOpen] = useState(false);
   const [reviewsKey, setReviewsKey] = useState(0);
+  // PN3 — riga di listino espansa (una alla volta): l'acquisto avviene
+  // in pagina, niente navigazione verso /p/ come CTA primaria.
+  const [expandedService, setExpandedService] = useState(null);
 
   // OP2 — il profilo parla la lingua del viaggiatore: fetch con lang e
   // refetch al cambio lingua (bio/tagline tradotte dove l'operatore le
@@ -512,49 +519,88 @@ export default function OperatorProfilePage() {
             </section>
           )}
 
-          {/* TW2 (piano Listino) — il profilo E' il negozio: i servizi
-              a listino con la porta d'azione per riga. Il bottone porta
-              alla landing /p/ esistente: slot picker + checkout per il
-              pagamento online, form richiesta per il resto (I1/I3). */}
+          {/* TW2+PN3 (piano Profilo=Negozio) — il profilo E' il negozio:
+              i servizi a listino con la porta d'azione per riga. Il
+              bottone ESPANDE la riga e l'acquisto avviene in pagina
+              (InlineServiceCheckout riusa il checkout dello storefront).
+              La landing /p/ resta come link secondario "Vedi dettagli". */}
           {Array.isArray(data.listino) && data.listino.length > 0 && (
             <section id="listino" className="mt-8" data-testid="profile-listino">
               <h2 className="font-heading text-xl font-bold text-foreground mb-3">
                 {t('landings:operator.listino', { defaultValue: 'Servizi e prezzi' })}
               </h2>
               <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100">
-                {data.listino.map((row) => (
-                  <div key={row.slug || row.name}
-                       className="flex flex-wrap items-center gap-3 px-4 py-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900">{row.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {[row.duration_minutes ? `${row.duration_minutes} min` : null,
-                          row.service_mode === 'online'
-                            ? t('landings:operator.svcOnline', { defaultValue: 'Online' })
-                            : row.service_mode === 'both'
-                              ? t('landings:operator.svcBoth', { defaultValue: 'In presenza oppure online' })
-                              : t('landings:operator.svcInPerson', { defaultValue: 'In presenza' }),
-                        ].filter(Boolean).join(' · ')}
-                      </p>
-                      {row.note && (
-                        <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
-                      )}
+                {data.listino.map((row) => {
+                  const rowKey = row.product_id || row.slug || row.name;
+                  const expanded = expandedService === rowKey;
+                  return (
+                  <div key={rowKey}>
+                    <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900">{row.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {[row.duration_minutes ? `${row.duration_minutes} min` : null,
+                            row.service_mode === 'online'
+                              ? t('landings:operator.svcOnline', { defaultValue: 'Online' })
+                              : row.service_mode === 'both'
+                                ? t('landings:operator.svcBoth', { defaultValue: 'In presenza oppure online' })
+                                : t('landings:operator.svcInPerson', { defaultValue: 'In presenza' }),
+                          ].filter(Boolean).join(' · ')}
+                        </p>
+                        {row.note && (
+                          <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
+                        )}
+                        {/* PN3 — la landing /p/ resta viva come approfondimento */}
+                        {row.slug && (
+                          <Link to={`/p/${org_slug}/${row.slug}`}
+                                className="mt-0.5 inline-block text-xs text-gray-500 underline hover:text-gray-800">
+                            {t('landings:operator.viewDetails', { defaultValue: 'Vedi dettagli' })}
+                          </Link>
+                        )}
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+                        {row.on_request
+                          ? t('landings:operator.priceOnRequest', { defaultValue: 'Su richiesta' })
+                          : (row.price != null ? `${Number(row.price).toFixed(0)} €` : '')}
+                      </span>
+                      {row.product_id ? (
+                        <button type="button"
+                                data-testid="listino-cta"
+                                aria-expanded={expanded}
+                                onClick={() => setExpandedService(expanded ? null : rowKey)}
+                                className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+                                  expanded
+                                    ? 'border border-[#376254] text-[#376254] bg-white hover:bg-gray-50'
+                                    : 'bg-[#376254] text-white hover:bg-[#2c4f43]'
+                                }`}>
+                          {expanded
+                            ? t('landings:operator.inlineClose', { defaultValue: 'Chiudi' })
+                            : row.transaction_mode === 'direct'
+                              ? t('landings:operator.book', { defaultValue: 'Prenota' })
+                              : t('landings:operator.requestAppt', { defaultValue: 'Richiedi appuntamento' })}
+                        </button>
+                      ) : row.slug ? (
+                        <Link to={`/p/${org_slug}/${row.slug}`}
+                              className="shrink-0 rounded-full bg-[#376254] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#2c4f43]">
+                          {row.transaction_mode === 'direct'
+                            ? t('landings:operator.book', { defaultValue: 'Prenota' })
+                            : t('landings:operator.requestAppt', { defaultValue: 'Richiedi appuntamento' })}
+                        </Link>
+                      ) : null}
                     </div>
-                    <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">
-                      {row.on_request
-                        ? t('landings:operator.priceOnRequest', { defaultValue: 'Su richiesta' })
-                        : (row.price != null ? `${Number(row.price).toFixed(0)} €` : '')}
-                    </span>
-                    {row.slug && (
-                      <Link to={`/p/${org_slug}/${row.slug}`}
-                            className="shrink-0 rounded-full bg-[#376254] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#2c4f43]">
-                        {row.transaction_mode === 'direct'
-                          ? t('landings:operator.book', { defaultValue: 'Prenota' })
-                          : t('landings:operator.requestAppt', { defaultValue: 'Richiedi appuntamento' })}
-                      </Link>
+                    {expanded && row.product_id && (
+                      <div className="border-t border-gray-100 bg-gray-50/70 px-3 py-4 sm:px-4"
+                           data-testid="inline-checkout-panel">
+                        <InlineServiceCheckout
+                          orgSlug={org_slug}
+                          row={row}
+                          onClose={() => setExpandedService(null)}
+                        />
+                      </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
               {/* RS3 Patti chiari — le condizioni dell'operatore a un
                   click dal listino (la pagina risponde sempre) */}

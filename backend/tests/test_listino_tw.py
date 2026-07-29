@@ -525,3 +525,52 @@ class TestProfiloNegozioPN0:
         for field in ("product_id", "has_availability_slots",
                       "service_options", "allow_custom_request"):
             assert field in row, field
+
+
+class TestInlineCheckoutPN3:
+    """PN3 — compra dal profilo, tutto in pagina: la riga di listino si
+    espande su un harness (InlineServiceCheckout) che RIUSA il checkout
+    dello storefront. La landing /p/ resta viva come link secondario."""
+
+    def test_profile_primary_cta_expands_inline(self):
+        """Il CTA primario della riga e' un bottone che espande in
+        pagina (niente navigazione a /p/); il link /p/ resta come
+        'Vedi dettagli' secondario."""
+        prof = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorProfilePage.js").read_text()
+        assert "InlineServiceCheckout" in prof
+        assert 'data-testid="listino-cta"' in prof
+        # il bottone primario espande (aria-expanded), non naviga
+        i = prof.index('data-testid="listino-cta"')
+        assert "aria-expanded" in prof[i - 200:i + 200]
+        # la landing /p/ sopravvive come link secondario sulla riga
+        assert "/p/${org_slug}/${row.slug}" in prof
+        assert "Vedi dettagli" in prof
+
+    def test_inline_checkout_reuses_shared_form(self):
+        """Un solo checkout nel codice (I2/I3): l'harness monta
+        CheckoutForm/OrderSummary/useCheckoutForm dello storefront e
+        NON reimplementa submit/consensi."""
+        inline = (FRONTEND_SRC / "features" / "storefront" / "components"
+                  / "checkout" / "InlineServiceCheckout.jsx").read_text()
+        assert "import CheckoutForm from './CheckoutForm'" in inline
+        assert "import OrderSummary from './OrderSummary'" in inline
+        assert "useCheckoutForm" in inline
+        assert "useStorefrontCart" in inline
+        # zero secondo submit: l'ordine parte SOLO dal form condiviso
+        assert "submitOrder" not in inline
+        assert "order-request" not in inline
+        # slot reali dallo stesso endpoint pubblico della landing /p/
+        assert "getServiceSlots" in inline
+        assert "AvailabilityCalendarSlotPicker" in inline
+
+    def test_p_landing_still_alive(self):
+        """La landing /p/ resta viva (SEO + link esterni): route nel
+        router e payload pubblico che risponde."""
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert '/p/:orgSlug' in app or 'path="/p/' in app
+        r = requests.get(
+            f"{BASE_URL}/api/public/products/masseria-demo/seduta-di-reiki",
+            timeout=10)
+        assert r.status_code == 200
+        assert r.json()["product"]["name"]

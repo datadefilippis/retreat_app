@@ -22,7 +22,7 @@
  * booking slot, etc.).
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
@@ -31,6 +31,10 @@ import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
 import StorefrontHeader from './components/StorefrontHeader';
 import AvailabilityCalendarSlotPicker from './components/AvailabilityCalendarSlotPicker';
+// PN3 — il form richiesta libera e' estratto in components/ cosi' che
+// l'acquisto inline sul profilo /o/ riusi gli stessi campi (era la
+// locale CustomRequestForm qui sotto).
+import ServiceCustomRequestForm from './components/ServiceCustomRequestForm';
 import MarkdownLite from '../../components/MarkdownLite';
 import OpenCheckoutButton from './components/OpenCheckoutButton';
 import useCartCount from './hooks/useCartCount';
@@ -93,90 +97,10 @@ function OptionCard({ option, selected, onSelect, currency }) {
 
 // ── Custom request form (Onda 14 Parte B) ─────────────────────────────────
 //
-// Used when the service has NO availability rules (or the merchant explicitly
-// allows custom requests alongside rules). The customer proposes a preferred
-// date/time + optional notes. On submit the selection is treated like a slot
-// — payload fields booking_date/start/end + rental_notes — but validator
-// knows to accept it without a rule match when service_allow_custom_request
-// is enabled on the product.
-function CustomRequestForm({ durationMinutes, value, onChange }) {
-  const { t } = useTranslation('landings');
-  const today = new Date();
-  const minDate = today.toISOString().slice(0, 10);
-
-  // Build 15-min increments between 08:00 and 21:00
-  const timeSlots = useMemo(() => {
-    const arr = [];
-    for (let h = 8; h <= 21; h += 1) {
-      for (const m of [0, 15, 30, 45]) {
-        if (h === 21 && m > 0) break;
-        arr.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-      }
-    }
-    return arr;
-  }, []);
-
-  const duration = durationMinutes || 60;
-
-  const handleChange = (field, raw) => {
-    const next = { ...(value || {}), [field]: raw };
-    // Whenever date or start_time change, recompute end_time from duration
-    if (field === 'start_time' || field === 'date') {
-      const st = field === 'start_time' ? raw : (next.start_time || null);
-      if (st) {
-        const [h, m] = st.split(':').map(Number);
-        const endMin = h * 60 + m + duration;
-        const eh = Math.floor(endMin / 60) % 24;
-        const em = endMin % 60;
-        next.end_time = `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
-      } else {
-        next.end_time = null;
-      }
-    }
-    onChange(next);
-  };
-
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <label className="block">
-          <span className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">{t('landings:product.customRequest.preferredDate')}</span>
-          <input
-            type="date"
-            min={minDate}
-            value={value?.date || ''}
-            onChange={(e) => handleChange('date', e.target.value)}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-        </label>
-        <label className="block">
-          <span className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">{t('landings:product.customRequest.preferredTime')}</span>
-          <select
-            value={value?.start_time || ''}
-            onChange={(e) => handleChange('start_time', e.target.value)}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white"
-          >
-            <option value="">{t('landings:product.customRequest.selectPlaceholder')}</option>
-            {timeSlots.map(slot => <option key={slot} value={slot}>{slot}</option>)}
-          </select>
-        </label>
-      </div>
-      <label className="block">
-        <span className="text-[11px] uppercase tracking-wide text-gray-500 font-semibold">{t('landings:product.customRequest.notesLabel')}</span>
-        <textarea
-          rows={2}
-          placeholder={t('landings:product.customRequest.notesPlaceholder')}
-          value={value?.notes || ''}
-          onChange={(e) => handleChange('notes', e.target.value)}
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-        />
-      </label>
-      <p className="text-[11px] text-gray-500">
-        {t('landings:product.customRequest.footerHint', { minutes: duration })}
-      </p>
-    </div>
-  );
-}
+// PN3 — spostato TALE E QUALE in components/ServiceCustomRequestForm.js
+// (riusato dall'acquisto inline sul profilo /o/). L'alias mantiene il
+// nome storico nei JSX qui sotto.
+const CustomRequestForm = ServiceCustomRequestForm;
 
 
 // ── Proceed to checkout bar ────────────────────────────────────────────────
