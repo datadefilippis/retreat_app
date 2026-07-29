@@ -15,6 +15,8 @@ import CouponInput from '../CouponInput';
 import { fmtPrice } from '../StorefrontCards';
 import { formatAmount } from '../../../../utils/currency';
 import { computePasswordStrength } from '../../hooks/useCheckoutForm';
+// AP1 — accesso rapido con l'account Aurya (magic link/OTP piattaforma)
+import AuryaQuickLogin from './AuryaQuickLogin';
 
 export default function CheckoutForm({
   checkout,
@@ -49,7 +51,6 @@ export default function CheckoutForm({
     gdprPrivacyAccepted, setGdprPrivacyAccepted,
     gdprMarketingAccepted, setGdprMarketingAccepted,
     marketingStatus,
-    mktpCheckout,
     requiresCustomerAccount,
     wantRegister, setWantRegister,
     regPassword, setRegPassword,
@@ -225,6 +226,22 @@ export default function CheckoutForm({
                     </div>
                   );
                 })}
+
+                {/* AP1 — accesso rapido: chi ha gia' un account Aurya entra
+                    con email + codice a 6 cifre (endpoint platform riusati
+                    da AccountLoginPage) e si ritrova nome/email prefillati.
+                    Il login piattaforma NON cambia lo stato consensi: per
+                    CG-4 l'utente resta guest (checkbox privacy/termini
+                    invariate qui sotto). */}
+                {!isCustomerAuthenticated && (
+                  <AuryaQuickLogin
+                    onProfile={(acc) => setForm(f => ({
+                      ...f,
+                      name: acc?.name || f.name,
+                      email: acc?.email || f.email,
+                    }))}
+                  />
+                )}
 
                 {/* Customer personal info — comes AFTER item-specific selections
                     so the user first confirms the what, then fills in the who. */}
@@ -674,17 +691,25 @@ export default function CheckoutForm({
                     Visible only for guest shoppers: a logged-in customer has
                     nothing to do here. Isolated from admin auth by using the
                     customer-auth endpoints (handled in Fase C2). */}
-                {/* K2 — contesto marketplace: niente account del negozio;
-                    il viaggiatore ha il Passaporto (post-acquisto, zero campi) */}
-                {mktpCheckout && !requiresCustomerAccount && !isCustomerAuthenticated && (
-                  <div className="rounded-lg border border-primary/25 bg-primary/5 p-3 flex items-start gap-2">
+                {/* AP1 — niente piu' scelta 'crea account' con password per
+                    i guest: al suo posto il blocco informativo Passaporto
+                    (l'account Aurya arriva via email dopo l'ordine, claim
+                    RS5 gia' attivo a pagamento/conferma). Vale su OGNI
+                    superficie del checkout, non solo marketplace (K2). */}
+                {!requiresCustomerAccount && !isCustomerAuthenticated && (
+                  <div className="rounded-lg border border-primary/25 bg-primary/5 p-3 flex items-start gap-2"
+                       data-testid="aurya-passport-hint">
                     <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-5 w-5 mt-0.5 select-none" draggable={false} />
                     <p className="text-xs text-gray-700">
-                      {t('storefront:checkout.passportHint', { defaultValue: 'I tuoi viaggi in un posto solo: dopo l\'acquisto ricevi via email il link al tuo Passaporto — senza password.' })}
+                      {t('storefront:checkout.auryaPassportHint', { defaultValue: 'I tuoi acquisti in un posto solo: dopo l\'ordine ricevi via email il link al tuo account Aurya.' })}
                     </p>
                   </div>
                 )}
-                {(!mktpCheckout || requiresCustomerAccount) && !isCustomerAuthenticated && (() => {
+                {/* AP1/R1 — il blocco registrazione con password resta nel
+                    codice ma e' GATED ai soli carrelli con corso (dove
+                    l'account cliente e' strutturalmente obbligatorio):
+                    reversibile riallargando questa condizione. */}
+                {requiresCustomerAccount && !isCustomerAuthenticated && (() => {
                   const emailOk = !!form.email && form.email.includes('@');
                   const strength = computePasswordStrength(regPassword);
                   const mismatch = wantRegister && regPassword && regPasswordConfirm && regPassword !== regPasswordConfirm;

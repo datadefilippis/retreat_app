@@ -1114,3 +1114,70 @@ class TestAccountAp0:
                                / "storefront.json").read_text())
             msg = data["errors"]["signupNotCompletedReason"]
             assert "{{reason}}" in msg
+
+
+class TestCheckoutAuryaAp1:
+    """AP1 (docs/ACCOUNT_UNICO_PIANO_2026-07.md) — il checkout parla
+    solo Aurya: la registrazione con password e' gated ai soli corsi,
+    i guest vedono l'hint Passaporto, e chi ha gia' un account entra
+    inline con gli endpoint passwordless della piattaforma."""
+
+    CHECKOUT_DIR = ("features", "storefront", "components", "checkout")
+
+    def _checkout_file(self, name):
+        p = FRONTEND_SRC
+        for part in self.CHECKOUT_DIR:
+            p = p / part
+        return (p / name).read_text()
+
+    def test_ap1_password_gated_ai_soli_corsi(self):
+        """La sezione 'crea account' con password NON e' piu' una scelta:
+        appare SOLO quando il carrello contiene un corso (dove resta
+        obbligatoria e invariata). R1: il codice wantRegister resta nel
+        hook, la condizione e' riallargabile."""
+        form = self._checkout_file("CheckoutForm.jsx")
+        # gate: solo corsi (requiresCustomerAccount), mai scelta libera
+        assert ("{requiresCustomerAccount && !isCustomerAuthenticated"
+                " && (() => {") in form
+        assert "(!mktpCheckout || requiresCustomerAccount)" not in form
+        # dentro il blocco la registrazione resta forzata e invariata
+        assert "checked={wantRegister || requiresCustomerAccount}" in form
+        assert "disabled={!emailOk || requiresCustomerAccount}" in form
+        # R1 — la logica signup del hook NON e' stata eliminata
+        hook = (FRONTEND_SRC / "features" / "storefront" / "hooks"
+                / "useCheckoutForm.js").read_text()
+        assert "wantRegister" in hook
+        assert "customerSignup({" in hook
+
+    def test_ap1_hint_passport_per_guest(self):
+        """Al posto della scelta account, i guest (senza corso) vedono
+        il blocco informativo Passaporto — su OGNI superficie del
+        checkout, non solo marketplace. Copy in 4 lingue, senza
+        'negozio' e senza trattini lunghi."""
+        form = self._checkout_file("CheckoutForm.jsx")
+        assert 'data-testid="aurya-passport-hint"' in form
+        assert ("{!requiresCustomerAccount && !isCustomerAuthenticated"
+                " && (") in form
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads((FRONTEND_SRC / "locales" / lang
+                               / "storefront.json").read_text())
+            msg = data["checkout"]["auryaPassportHint"]
+            assert "Aurya" in msg, lang
+            assert "—" not in msg, lang       # niente em dash
+            assert "negozio" not in msg.lower(), lang
+
+    def test_ap1_pannello_accesso_endpoint_platform(self):
+        """L'accesso rapido inline riusa ESATTAMENTE il passwordless
+        della piattaforma (stessi endpoint di AccountLoginPage) e il
+        token in localStorage; il profilo per il prefill arriva da
+        GET /platform/me."""
+        panel = self._checkout_file("AuryaQuickLogin.jsx")
+        assert "'/platform/auth/magic-link'" in panel
+        assert "'/platform/auth/code/verify'" in panel
+        assert "'/platform/me'" in panel
+        assert "PLATFORM_TOKEN_KEY" in panel
+        # montato nel form del checkout, solo per i guest
+        form = self._checkout_file("CheckoutForm.jsx")
+        assert "AuryaQuickLogin" in form
+        assert "{!isCustomerAuthenticated && (\n                  <AuryaQuickLogin" in form

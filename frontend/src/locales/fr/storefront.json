@@ -415,6 +415,24 @@
       "passwordRequirementsToast": "Le mot de passe ne respecte pas les exigences minimales."
     },
     "passportHint": "Tous tes voyages au même endroit : après l'achat tu reçois par e-mail le lien vers ton Passeport — sans mot de passe.",
+    "auryaPassportHint": "Tous tes achats au même endroit : après ta commande tu reçois par e-mail le lien vers ton compte Aurya.",
+    "auryaLogin": {
+      "open": "Tu as déjà un compte Aurya ? Connecte-toi",
+      "title": "Connecte-toi avec ton compte Aurya",
+      "cancel": "Annuler",
+      "emailHint": "Pas de mot de passe : on t'envoie un code par e-mail.",
+      "emailPlaceholder": "Ton e-mail",
+      "send": "Envoie-moi le code",
+      "sending": "Envoi…",
+      "sentHint": "Code à 6 chiffres envoyé à {{email}}. Valable 15 minutes.",
+      "verify": "Entrer",
+      "verifying": "Vérification…",
+      "changeEmail": "Utiliser une autre adresse",
+      "sendError": "Quelque chose n'a pas fonctionné. Réessaie dans une minute.",
+      "codeError": "Code non valide ou expiré. Vérifie et réessaie.",
+      "greeting": "Bonjour {{name}}, tu commandes comme {{email}}",
+      "greetingNoName": "Tu commandes comme {{email}}"
+    },
     "securePayment": "Paiement sécurisé"
   },
   "home": {
