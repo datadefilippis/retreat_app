@@ -10914,16 +10914,21 @@ class TestSEC_E_8_6_ReactCouponDryRun:
         )
 
     def test_storefront_page_uses_coupon_input(self):
-        """StorefrontPage.js usa CouponInput invece del flat input legacy."""
+        """Il checkout React usa CouponInput invece del flat input legacy.
+
+        PN2 — il form del checkout e' estratto da StorefrontPage.js in
+        components/checkout/CheckoutForm.jsx: l'invariante segue il file.
+        """
         from pathlib import Path
         repo_root = Path(__file__).resolve().parents[2]
-        page = repo_root / "frontend/src/features/storefront/StorefrontPage.js"
+        page = repo_root / ("frontend/src/features/storefront/"
+                            "components/checkout/CheckoutForm.jsx")
         src = page.read_text(encoding="utf-8")
-        assert "import CouponInput" in src or "from './components/CouponInput'" in src, (
-            "StorefrontPage non importa CouponInput component."
+        assert "import CouponInput" in src or "from '../CouponInput'" in src, (
+            "CheckoutForm non importa CouponInput component."
         )
         assert "<CouponInput" in src, (
-            "StorefrontPage non rende <CouponInput> nel checkout form — "
+            "CheckoutForm non rende <CouponInput> nel checkout form — "
             "il customer continua a vedere flat input senza validation."
         )
 
@@ -10960,10 +10965,15 @@ class TestSEC_E_8_7_ReactLivePricePreview:
         )
 
     def test_order_summary_renders_discount_line(self):
-        """OrderSummary rende riga discount quando couponDiscount > 0."""
+        """OrderSummary rende riga discount quando couponDiscount > 0.
+
+        PN2 — OrderSummary e' estratto da StorefrontPage.js in
+        components/checkout/OrderSummary.jsx: l'invariante segue il file.
+        """
         from pathlib import Path
         repo_root = Path(__file__).resolve().parents[2]
-        page = repo_root / "frontend/src/features/storefront/StorefrontPage.js"
+        page = repo_root / ("frontend/src/features/storefront/"
+                            "components/checkout/OrderSummary.jsx")
         src = page.read_text(encoding="utf-8")
         assert "couponDiscount > 0" in src or "summary.couponDiscount" in src, (
             "OrderSummary non rende riga discount conditional su couponDiscount."
@@ -10975,14 +10985,22 @@ class TestSEC_E_8_7_ReactLivePricePreview:
         )
 
     def test_main_scope_uses_coupon_validation_hook(self):
-        """StorefrontPage lifted useCouponValidation hook per passare a OrderSummary."""
+        """StorefrontPage lifted useCouponValidation hook per passare a OrderSummary.
+
+        PN2 — lo stato coupon vive in hooks/useCheckoutForm.js (montato
+        dalla pagina) e la pagina passa couponValidationState a
+        OrderSummary: l'invariante vale sull'unione dei due file.
+        """
         from pathlib import Path
         repo_root = Path(__file__).resolve().parents[2]
-        page = repo_root / "frontend/src/features/storefront/StorefrontPage.js"
-        src = page.read_text(encoding="utf-8")
+        storefront = repo_root / "frontend/src/features/storefront"
+        src = "\n".join(
+            (storefront / rel).read_text(encoding="utf-8")
+            for rel in ("StorefrontPage.js", "hooks/useCheckoutForm.js")
+        )
         # Import del hook
         assert "useCouponValidation" in src, (
-            "StorefrontPage non importa useCouponValidation hook al "
+            "Il checkout non importa useCouponValidation hook al "
             "main scope — discount state non disponibile per OrderSummary."
         )
         # State lifted via couponValidationState
@@ -11008,16 +11026,19 @@ class TestSEC_E_8_8_ReactFulfillmentParityWidget:
     """
 
     def test_storefront_page_handles_pickup_at_store(self):
+        # PN2 — il picker fulfillment vive nel form estratto
+        # (components/checkout/CheckoutForm.jsx): l'invariante segue il file.
         from pathlib import Path
         repo_root = Path(__file__).resolve().parents[2]
-        page = repo_root / "frontend/src/features/storefront/StorefrontPage.js"
+        page = repo_root / ("frontend/src/features/storefront/"
+                            "components/checkout/CheckoutForm.jsx")
         src = page.read_text(encoding="utf-8")
         assert "pickup_at_store" in src, (
-            "StorefrontPage non gestisce pickup_at_store fulfillment mode. "
+            "CheckoutForm non gestisce pickup_at_store fulfillment mode. "
             "Widget supporta 3 modes ma React hardcoded a 2 (gap UX merchant)."
         )
         assert "pickupAtStore" in src, (
-            "StorefrontPage non usa i18n key fulfillment.pickupAtStore — "
+            "CheckoutForm non usa i18n key fulfillment.pickupAtStore — "
             "mode renderizzato come 'pickup_at_store' raw all'utente."
         )
 
@@ -11037,10 +11058,14 @@ class TestSEC_E_8_8_ReactFulfillmentParityWidget:
             )
 
     def test_fulfillment_picker_iterates_all_modes(self):
-        """Fulfillment picker loopa su catalog.fulfillment_modes (dinamico)."""
+        """Fulfillment picker loopa su catalog.fulfillment_modes (dinamico).
+
+        PN2 — il picker vive in components/checkout/CheckoutForm.jsx.
+        """
         from pathlib import Path
         repo_root = Path(__file__).resolve().parents[2]
-        page = repo_root / "frontend/src/features/storefront/StorefrontPage.js"
+        page = repo_root / ("frontend/src/features/storefront/"
+                            "components/checkout/CheckoutForm.jsx")
         src = page.read_text(encoding="utf-8")
         # Pattern: labelMap con 3 case (shipping, local_pickup, pickup_at_store)
         assert "labelMap" in src, (

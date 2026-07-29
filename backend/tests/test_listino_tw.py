@@ -358,8 +358,16 @@ class TestPattiChiariRS3:
     def test_checkout_single_consent_block(self):
         """Un solo blocco consensi: niente checkbox T&C legacy separata,
         blocco GDPR visibile anche senza legal pubblicati."""
-        sf = (FRONTEND_SRC / "features" / "storefront"
-              / "StorefrontPage.js").read_text()
+        # PN2 — il JSX del checkout e' estratto da StorefrontPage.js in
+        # components/checkout/ + hooks/useCheckoutForm.js: l'invariante
+        # vale sull'unione dei sorgenti del checkout, non su un file solo.
+        storefront = FRONTEND_SRC / "features" / "storefront"
+        sf = "\n".join(p.read_text() for p in [
+            storefront / "StorefrontPage.js",
+            storefront / "components" / "checkout" / "CheckoutForm.jsx",
+            storefront / "components" / "checkout" / "OrderSummary.jsx",
+            storefront / "hooks" / "useCheckoutForm.js",
+        ])
         # la checkbox legacy F4 standalone non esiste piu'
         assert "checked={termsAccepted}" not in sf
         # le condizioni specifiche vivono DENTRO il blocco unico
@@ -459,8 +467,9 @@ class TestFunnelRS5:
         assert "customers-light" in page  # il link 'Vedile in Clienti'
 
     def test_checkout_email_promise(self):
-        sf = (FRONTEND_SRC / "features" / "storefront"
-              / "StorefrontPage.js").read_text()
+        # PN2 — la promessa email vive nel form estratto (CheckoutForm).
+        sf = (FRONTEND_SRC / "features" / "storefront" / "components"
+              / "checkout" / "CheckoutForm.jsx").read_text()
         assert "email-promise" in sf
 
 

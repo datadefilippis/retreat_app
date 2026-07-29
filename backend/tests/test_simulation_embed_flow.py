@@ -286,10 +286,15 @@ class TestScenarioG_CouponDryRunFlow:
         )
 
     def test_react_storefront_uses_coupon_input(self):
-        """W2.1: React storefront ha CouponInput component."""
+        """W2.1: React storefront ha CouponInput component.
+
+        PN2 — il form checkout e' estratto in
+        components/checkout/CheckoutForm.jsx: l'invariante segue il file.
+        """
         from pathlib import Path
         repo_root = Path(__file__).resolve().parents[2]
-        page = repo_root / "frontend/src/features/storefront/StorefrontPage.js"
+        page = repo_root / ("frontend/src/features/storefront/"
+                            "components/checkout/CheckoutForm.jsx")
         src = page.read_text(encoding="utf-8")
         assert "<CouponInput" in src, "React storefront CouponInput regressed"
 
