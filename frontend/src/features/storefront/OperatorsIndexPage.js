@@ -202,6 +202,10 @@ function OperatorCard({ op, t }) {
 export default function OperatorsIndexPage() {
   const { t, i18n } = useTranslation('landings');
   const { categoria } = useParams();
+  // PN/LM — anteprima pubblica non linkata: la stessa pagina risponde
+  // anche su /esplora-operatori (il menu resta sulla pagina rete)
+  const basePath = window.location.pathname.startsWith('/esplora-operatori')
+    ? '/esplora-operatori' : '/operatori';
   const navigate = useNavigate();
   // OP4 — le bio degli operatori parlano la lingua attiva (refetch al cambio)
   const uiLang = (i18n.language || 'it').slice(0, 2);
@@ -249,7 +253,7 @@ export default function OperatorsIndexPage() {
   // (/operatori/yoga); i filtri in query string sopravvivono al cambio
   const setCosa = (next) => {
     navigate({
-      pathname: next ? `/operatori/${next}` : '/operatori',
+      pathname: next ? `${basePath}/${next}` : basePath,
       search: params.toString() ? `?${params.toString()}` : '',
     }, { replace: true });
   };

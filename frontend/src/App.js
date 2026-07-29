@@ -460,6 +460,11 @@ function AppRoutes() {
       <Route path="/ritiri/:categoria/:regione" element={<RetreatsCalendarPage />} />
       {/* S2 — aggregatori pubblici: organizzatori, destinazioni, esperienze */}
       <Route path="/operatori" element={<OperatorsGate />} />
+      {/* LM3+ — anteprima pubblica del marketplace operatori, NON
+          linkata nei menu (richiesta founder 29/7): stessa pagina
+          della fase marketplace, raggiungibile solo via URL diretto */}
+      <Route path="/esplora-operatori" element={<OperatorsIndexPage />} />
+      <Route path="/esplora-operatori/:categoria" element={<OperatorsIndexPage />} />
       <Route path="/operatori/:categoria" element={<OperatorsGate />} />
       <Route path="/destinazioni" element={<DestinationsGate />} />
       <Route path="/destinazioni/:luogo" element={<DestinationsGate />} />
