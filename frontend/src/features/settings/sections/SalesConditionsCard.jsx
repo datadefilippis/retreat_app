@@ -91,11 +91,13 @@ export default function SalesConditionsCard() {
       <CardHeader>
         <CardTitle className="font-heading text-lg flex items-center gap-2">
           <Scale className="h-5 w-5" />
-          Condizioni di vendita
+          Condizioni dell'operatore
         </CardTitle>
         <CardDescription>
-          Le regole che i tuoi clienti accettano quando prenotano: politica di
-          cancellazione, privacy e termini. Compaiono sulle tue pagine e al checkout.
+          Le TUE regole, quelle che il cliente accetta quando prenota: politica di
+          cancellazione e requisiti specifici del servizio. Ai termini e alla privacy
+          della piattaforma pensa Aurya: il cliente li accetta una volta sola, sul
+          suo account.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -144,28 +146,52 @@ export default function SalesConditionsCard() {
           </Button>
         </div>
 
-        {/* 2. Documenti legali (privacy + termini) */}
-        <div className="border-t pt-4">
-          <p className="text-sm font-semibold text-foreground">Privacy e termini</p>
+        {/* 2. Requisiti del servizio — si scrivono per-servizio */}
+        <div className="border-t pt-4" data-testid="service-requirements-hint">
+          <p className="text-sm font-semibold text-foreground">Requisiti e condizioni del servizio</p>
           <p className="text-xs text-muted-foreground mt-0.5 mb-2">
-            I documenti che il cliente accetta al checkout. Finche' non li
-            personalizzi, ne pubblichiamo una versione generata dai tuoi dati.
+            Cosa deve sapere o dichiarare il cliente prima di prenotare (es.
+            dichiarazione di assenza di controindicazioni mediche). Si scrivono
+            sul singolo servizio, nella riga del <a href="/listino" className="underline text-primary">listino</a>,
+            o nel passo Regole del wizard ritiro: al checkout compaiono in una
+            casella di accettazione dedicata, insieme alla politica di cancellazione.
           </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" size="sm" disabled={!store}
-                    onClick={() => setLegalOpen(true)} data-testid="edit-legal-docs">
-              <FileText className="mr-1.5 h-4 w-4" />
-              Modifica privacy e termini
-            </Button>
-            {store?.slug && (
-              <a href={`/s/${store.slug}/terms`} target="_blank" rel="noreferrer"
-                 className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
-                <ExternalLink className="h-4 w-4" />
-                Vedi come li vedono i clienti
-              </a>
-            )}
-          </div>
         </div>
+
+        {/* 3. AP-L — merchant legal ridimensionato: niente piu' obbligo di
+            pubblicare privacy/termini per-store. L'informativa autogenerata
+            resta come link informativo; i documenti custom restano come
+            opzione avanzata (chi li ha pubblicati li tiene). */}
+        <details className="border-t pt-4 group">
+          <summary className="cursor-pointer text-sm font-semibold text-foreground list-none flex items-center gap-1.5"
+                   data-testid="advanced-legal-toggle">
+            <span className="text-muted-foreground transition-transform group-open:rotate-90">›</span>
+            Avanzate: informativa e documenti personalizzati
+          </summary>
+          <div className="mt-2 space-y-2">
+            <p className="text-xs text-muted-foreground">
+              Non serve pubblicare nulla: per i dati dei tuoi clienti resti
+              titolare autonomo e un'informativa generata dai tuoi dati e'
+              gia' linkata dalle tue pagine e dal checkout. Se hai gia'
+              pubblicato privacy o termini tuoi, restano validi e li puoi
+              modificare da qui.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="outline" size="sm" disabled={!store}
+                      onClick={() => setLegalOpen(true)} data-testid="edit-legal-docs">
+                <FileText className="mr-1.5 h-4 w-4" />
+                Documenti personalizzati
+              </Button>
+              {store?.slug && (
+                <a href={`/s/${store.slug}/privacy`} target="_blank" rel="noreferrer"
+                   className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+                  <ExternalLink className="h-4 w-4" />
+                  Vedi la tua informativa
+                </a>
+              )}
+            </div>
+          </div>
+        </details>
       </CardContent>
 
       <MerchantLegalDialog

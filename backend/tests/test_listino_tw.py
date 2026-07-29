@@ -1562,3 +1562,431 @@ class TestAccountAp1b:
         assert "_wrap_template" in svc_src.split("def _send_verify_email")[1]
         assert "/account/verifica?token=" in svc_src
         assert "/account/nuova-password?token=" in svc_src
+
+
+class TestAccountApL:
+    """AP-L (docs/ACCOUNT_UNICO_PIANO_2026-07.md, revisione founder) —
+    legal a due livelli gestito da Aurya: consenso Aurya timbrato
+    sull'account alla creazione (aurya_legal + audit immutabile),
+    checkout con atto primario Aurya (guest checkbox / loggato coperto
+    dall'account) e checkbox DINAMICA delle condizioni dell'operatore
+    solo se compilate; l'ordine timbra lo snapshot di TUTTO."""
+
+    PASSWORD = "StrongPass12"
+
+    # ── infrastruttura live (stesso server dei test RS/PN/LM) ────────
+
+    _admin_token_cache = None
+
+    @classmethod
+    def _admin_headers(cls):
+        import pytest
+        if cls._admin_token_cache:
+            return {"Authorization": f"Bearer {cls._admin_token_cache}"}
+        r = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "admin@demo.com", "password": "demo1234"}, timeout=10)
+        if r.status_code != 200:
+            pytest.skip("demo login unavailable (rate limit?)")
+        cls._admin_token_cache = r.json()["access_token"]
+        return {"Authorization": f"Bearer {cls._admin_token_cache}"}
+
+    @staticmethod
+    def _db():
+        """DB del server live (backend/.env), NON il test_db di default."""
+        import re
+        import pymongo
+        env = (BACKEND_DIR / ".env").read_text()
+        mongo = re.search(r'MONGO_URL="?([^"\n]+?)"?\n', env).group(1)
+        name = re.search(r'DB_NAME="?([^"\n]+?)"?\n', env).group(1)
+        return pymongo.MongoClient(mongo)[name]
+
+    @classmethod
+    def _cleanup_email(cls, email):
+        """Ripulisce TUTTE le tracce dei dati di guardia per email."""
+        db = cls._db()
+        email = email.lower()
+        pa_ids = [a["id"] for a in
+                  db.platform_accounts.find({"email": email}, {"id": 1})]
+        cust_ids = [c["id"] for c in
+                    db.customers.find({"email": email}, {"id": 1})]
+        db.orders.delete_many({"$or": [
+            {"customer_id": {"$in": cust_ids}},
+            {"platform_account_id": {"$in": pa_ids}},
+        ]})
+        db.customers.delete_many({"email": email})
+        db.customer_accounts.delete_many({"email": email})
+        db.platform_magic_tokens.delete_many({"account_id": {"$in": pa_ids}})
+        db.platform_accounts.delete_many({"email": email})
+        db.consent_audit.delete_many({"customer_email": email})
+
+    def _make_service(self, headers, name, metadata=None):
+        r = requests.post(f"{BASE_URL}/api/products", headers=headers, json={
+            "name": name, "item_type": "service",
+            "transaction_mode": "request", "is_published": True,
+            "unit_price": 30, "price_mode": "fixed",
+            "metadata": metadata or {},
+        }, timeout=10)
+        assert r.status_code in (200, 201), r.text
+        return r.json()
+
+    def _delete_product(self, headers, product_id):
+        requests.delete(f"{BASE_URL}/api/products/{product_id}",
+                        headers=headers, timeout=10)
+        # l'API fa soft-delete (is_active=False): il doc di guardia si
+        # rimuove del tutto, cosi' i run ripetuti non accumulano residui
+        try:
+            self._db().products.delete_one({"id": product_id})
+        except Exception:
+            pass
+
+    # ── 1. signup con consenso timbrato + audit (unit, in memoria) ───
+
+    async def test_apl_signup_consenso_timbrato_e_audit(self):
+        """password_signup con accepted_terms=True timbra aurya_legal
+        (versioni correnti, source signup) sull'account e scrive
+        l'audit immutabile (privacy_terms, platform_signup). Senza
+        accepted_terms (chiamanti legacy): nessun timbro, nessun
+        audit — il router pero' rende la spunta obbligatoria (400)."""
+        from contextlib import ExitStack
+        from unittest.mock import patch
+
+        from core.legal_versions import (CURRENT_VERSION_TAG,
+                                         current_version_string)
+        from services import platform_account_service as svc
+
+        # riuso dell'infrastruttura in-memory di AP1b (stesso modulo)
+        Ap1b = TestAccountAp1b
+        fake, sent, audit = Ap1b._MemAccounts(), {}, []
+
+        async def _record(**kw):
+            audit.append(kw)
+
+        with ExitStack() as stack:
+            for p in Ap1b()._ctx(fake, sent):
+                stack.enter_context(p)
+            stack.enter_context(
+                patch("repositories.consent_audit_repository.record_consent",
+                      new=_record))
+
+            out = await svc.password_signup(
+                name="Apl", email="apl-signup@example.com",
+                password=self.PASSWORD, language="it",
+                accepted_terms=True, request_ip="10.0.0.1",
+                user_agent="guardia-apl")
+            assert out == {"status": "verification_required"}
+            acc = list(fake.docs.values())[0]
+            legal = acc["aurya_legal"]
+            assert legal["terms_version"] == current_version_string()
+            assert legal["privacy_version"] == current_version_string()
+            assert legal["source"] == "signup"
+            assert legal["locale"] == "it"
+            assert legal["accepted_at"]
+            assert len(audit) == 1
+            rec = audit[0]
+            assert rec["document_type"] == "privacy_terms"
+            assert rec["source"] == "platform_signup"
+            assert rec["version_tag"] == CURRENT_VERSION_TAG
+            assert rec["user_id"] == acc["id"]
+            assert rec["customer_email"] == "apl-signup@example.com"
+            assert rec["ip_address"] == "10.0.0.1"
+
+            # chiamante legacy senza consenso: nessun timbro, nessun audit
+            await svc.password_signup(
+                name="NoLegal", email="apl-nolegal@example.com",
+                password=self.PASSWORD)
+            acc2 = [d for d in fake.docs.values()
+                    if d["email"] == "apl-nolegal@example.com"][0]
+            assert "aurya_legal" not in acc2
+            assert len(audit) == 1
+
+        # il router impone la checkbox: 400 senza accepted_terms, e
+        # inoltra accepted_terms=True + ip/ua al service
+        router = (BACKEND_DIR / "routers" / "platform_accounts.py").read_text()
+        block = router.split('"/auth/signup"')[1].split("@router.post")[0]
+        assert "accepted_terms" in block
+        assert "HTTP_400_BAD_REQUEST" in block
+        assert "accepted_terms=True" in block
+
+    # ── 2. ordine GUEST: snapshot Aurya + operatore sull'ordine ──────
+
+    def test_apl_ordine_guest_snapshot_aurya_e_operatore(self):
+        """Ordine guest con checkbox Aurya spuntata e condizioni
+        dell'operatore accettate: l'ordine timbra aurya_* (versioni
+        correnti, source checkout), terms_content_snapshot (RS3
+        esteso) e i gdpr_* merchant; l'account piattaforma nato
+        dall'acquisto porta aurya_legal (source checkout) e l'audit
+        immutabile ha il record platform_checkout con order_id."""
+        from core.legal_versions import current_version_string
+
+        email = "apl-guest@example.com"
+        headers = self._admin_headers()
+        self._cleanup_email(email)
+        prod = self._make_service(
+            headers, "Guardia AP-L guest",
+            metadata={"terms_content": "Requisiti guardia AP-L: nessuna "
+                                       "controindicazione medica."})
+        try:
+            r = requests.post(f"{BASE_URL}/api/public/order-request", json={
+                "slug": "masseria-demo",
+                "customer_name": "Guardia Apl",
+                "customer_email": email,
+                "items": [{"product_id": prod["id"], "quantity": 1}],
+                "terms_accepted": True,
+                "gdpr_terms_accepted": True,
+                "gdpr_privacy_accepted": True,
+                "gdpr_marketing_accepted": False,
+                "aurya_terms_accepted": True,
+                "locale": "it",
+                "channel": "store",
+            }, timeout=15)
+            assert r.status_code == 200, r.text
+            order_id = r.json()["order_id"]
+
+            db = self._db()
+            order = db.orders.find_one({"id": order_id})
+            assert order["aurya_terms_version"] == current_version_string()
+            assert order["aurya_privacy_version"] == current_version_string()
+            assert order["aurya_source"] == "checkout"
+            assert order["aurya_locale"] == "it"
+            assert order["aurya_accepted_at"]
+            # RS3 esteso: i requisiti accettati restano timbrati
+            assert "controindicazione" in order["terms_content_snapshot"]
+            assert order["terms_accepted_at"]
+            # macchina merchant CG-5 intatta (autogen fallback)
+            assert order["gdpr_terms_version"]
+
+            account = db.platform_accounts.find_one({"email": email})
+            assert account and account.get("aurya_legal")
+            assert account["aurya_legal"]["source"] == "checkout"
+            assert (account["aurya_legal"]["terms_version"]
+                    == current_version_string())
+
+            recs = list(db.consent_audit.find(
+                {"customer_email": email, "source": "platform_checkout"}))
+            assert len(recs) == 1
+            assert recs[0]["order_id"] == order_id
+            assert recs[0]["document_type"] == "privacy_terms"
+        finally:
+            self._delete_product(headers, prod["id"])
+            self._cleanup_email(email)
+
+    # ── 3. ordine da LOGGATO: niente ri-accettazione Aurya ───────────
+
+    def test_apl_ordine_loggato_snapshot_da_account(self):
+        """Compratore con account Aurya e consenso gia' timbrato: ordina
+        SENZA flag aurya/gdpr (la checkbox non compare) accettando solo
+        le condizioni dell'operatore: l'ordine eredita lo snapshot
+        aurya_* dall'account (source account, stesso accepted_at) e
+        NESSUN nuovo audit platform_checkout viene scritto."""
+        import uuid
+        from datetime import datetime, timezone
+
+        from core.legal_versions import current_version_string
+
+        email = "apl-logged@example.com"
+        headers = self._admin_headers()
+        self._cleanup_email(email)
+        accepted_at = datetime.now(timezone.utc).isoformat()
+        db = self._db()
+        db.platform_accounts.insert_one({
+            "id": str(uuid.uuid4()), "email": email, "name": "Apl Loggata",
+            "language": "it", "email_verified": True, "is_active": True,
+            "failed_login_attempts": 0, "lockout_count_today": 0,
+            "created_at": accepted_at,
+            "aurya_legal": {
+                "terms_version": current_version_string(),
+                "privacy_version": current_version_string(),
+                "accepted_at": accepted_at,
+                "source": "signup", "locale": "it",
+            },
+        })
+        prod = self._make_service(
+            headers, "Guardia AP-L loggato",
+            metadata={"terms_content": "Condizioni operatore guardia."})
+        try:
+            r = requests.post(f"{BASE_URL}/api/public/order-request", json={
+                "slug": "masseria-demo",
+                "customer_name": "Apl Loggata",
+                "customer_email": email,
+                "items": [{"product_id": prod["id"], "quantity": 1}],
+                "terms_accepted": True,          # condizioni operatore: si'
+                "gdpr_terms_accepted": False,    # niente checkbox Aurya
+                "gdpr_privacy_accepted": False,
+                "aurya_terms_accepted": False,
+                "locale": "it",
+                "channel": "store",
+            }, timeout=15)
+            assert r.status_code == 200, r.text
+            order = db.orders.find_one({"id": r.json()["order_id"]})
+            assert order["aurya_source"] == "account"
+            assert order["aurya_accepted_at"] == accepted_at
+            assert order["aurya_terms_version"] == current_version_string()
+            assert "operatore" in order["terms_content_snapshot"]
+            # nessun nuovo audit piattaforma: il record vive dal signup
+            assert db.consent_audit.count_documents(
+                {"customer_email": email, "source": "platform_checkout"}) == 0
+        finally:
+            self._delete_product(headers, prod["id"])
+            self._cleanup_email(email)
+
+    # ── 4. senza condizioni operatore: nessuna checkbox, nessun gate ─
+
+    def test_apl_senza_condizioni_niente_checkbox_operatore(self):
+        """Servizio SENZA terms_content ne' policy: il catalogo pubblico
+        espone terms_content nullo (la checkbox dinamica non esiste) e
+        l'ordine passa senza terms_accepted, senza snapshot condizioni."""
+        email = "apl-nocond@example.com"
+        headers = self._admin_headers()
+        self._cleanup_email(email)
+        prod = self._make_service(headers, "Guardia AP-L senza condizioni")
+        try:
+            cat = requests.get(
+                f"{BASE_URL}/api/public/catalog/masseria-demo",
+                timeout=10).json()
+            entry = next(p for p in cat["products"] if p["id"] == prod["id"])
+            assert not entry.get("terms_content")
+            assert not (entry.get("payment_plan") or {}).get(
+                "cancellation_policy")
+
+            r = requests.post(f"{BASE_URL}/api/public/order-request", json={
+                "slug": "masseria-demo",
+                "customer_name": "Apl NoCond",
+                "customer_email": email,
+                "items": [{"product_id": prod["id"], "quantity": 1}],
+                "terms_accepted": False,
+                "gdpr_terms_accepted": True,
+                "gdpr_privacy_accepted": True,
+                "aurya_terms_accepted": True,
+                "locale": "it",
+                "channel": "store",
+            }, timeout=15)
+            assert r.status_code == 200, r.text
+            order = self._db().orders.find_one({"id": r.json()["order_id"]})
+            assert "terms_content_snapshot" not in order
+            assert order["aurya_source"] == "checkout"   # livello Aurya c'e'
+        finally:
+            self._delete_product(headers, prod["id"])
+            self._cleanup_email(email)
+
+        # frontend: la checkbox operatore e' gated dalle condizioni reali
+        sf_dir = FRONTEND_SRC / "features" / "storefront"
+        form = (sf_dir / "components" / "checkout"
+                / "CheckoutForm.jsx").read_text()
+        assert "{hasOperatorConditions && (" in form
+        assert 'data-testid="operator-terms-checkbox"' in form
+        hook = (sf_dir / "hooks" / "useCheckoutForm.js").read_text()
+        assert ("const hasOperatorConditions = "
+                "!!(effectiveTerms || cartCancellationPolicy)") in hook
+
+    # ── 5. i requisiti dal listino arrivano al checkout ──────────────
+
+    def test_apl_requisiti_dal_listino_al_checkout(self):
+        """Il campo promosso nel listino (metadata.terms_content) esce
+        risolto sul catalogo pubblico che alimenta il checkout
+        condiviso (F4/terms_resolver): stessa strada del wizard."""
+        headers = self._admin_headers()
+        prod = self._make_service(headers, "Guardia AP-L listino")
+        try:
+            # stesso salvataggio della riga listino: merge del metadata
+            r = requests.patch(
+                f"{BASE_URL}/api/products/{prod['id']}", headers=headers,
+                json={"metadata": {**(prod.get("metadata") or {}),
+                                   "terms_content": "Requisiti dal listino."}},
+                timeout=10)
+            assert r.status_code == 200, r.text
+            cat = requests.get(
+                f"{BASE_URL}/api/public/catalog/masseria-demo",
+                timeout=10).json()
+            entry = next(p for p in cat["products"] if p["id"] == prod["id"])
+            assert entry["terms_content"] == "Requisiti dal listino."
+        finally:
+            self._delete_product(headers, prod["id"])
+
+        # superfici admin: textarea nel listino e nel passo Regole del
+        # wizard ritiro (non piu' sepolta nel passo publish)
+        listino = (FRONTEND_SRC / "features" / "listino"
+                   / "ListinoPage.js").read_text()
+        assert 'data-testid="listino-requisiti"' in listino
+        assert "terms_content: edit.termsContent?.trim() || null" in listino
+        assert "Requisiti e condizioni del servizio" in listino
+        wiz = (FRONTEND_SRC / "features" / "events"
+               / "EventWizard.js").read_text()
+        assert 'data-testid="wizard-requisiti"' in wiz
+        assert "wizards.event.regole.requisitiTitle" in wiz
+        assert "wizards.event.publish.termsTitle')" not in wiz
+
+    # ── 6. cablaggio a due livelli del checkout condiviso ────────────
+
+    def test_apl_checkout_due_livelli_frontend(self):
+        """CheckoutForm: checkbox Aurya per i guest (link /termini e
+        /privacy), riga discreta per i loggati piattaforma, payload col
+        flag aurya_terms_accepted; il merchant legal in Impostazioni e'
+        ridimensionato a 'Condizioni dell'operatore' (custom = opzione
+        avanzata, dialog esistente NON rimosso)."""
+        sf_dir = FRONTEND_SRC / "features" / "storefront"
+        form = (sf_dir / "components" / "checkout"
+                / "CheckoutForm.jsx").read_text()
+        assert 'data-testid="aurya-terms-checkbox"' in form
+        assert 'data-testid="aurya-terms-already"' in form
+        assert 'href="/termini"' in form and 'href="/privacy"' in form
+        assert "{platformLoggedIn ? (" in form
+        # niente doppia coppia di checkbox merchant: l'atto primario e' Aurya
+        assert "checked={gdprPrivacyAccepted}" not in form
+        assert "checked={gdprTermsAccepted}" not in form
+
+        hook = (sf_dir / "hooks" / "useCheckoutForm.js").read_text()
+        assert "payload.aurya_terms_accepted = !!auryaAccepted" in hook
+        assert "PLATFORM_TOKEN_KEY" in hook
+        assert "setAuryaConsent" in hook
+        # loggato Aurya: gdprValid senza checkbox
+        assert "|| platformLoggedIn" in hook
+
+        # signup Aurya: riga consenso con link, obbligatoria
+        login = (FRONTEND_SRC / "features" / "account"
+                 / "AccountLoginPage.js").read_text()
+        assert 'data-testid="signup-consent"' in login
+        assert "accepted_terms: !!signupConsent" in login
+
+        card = (FRONTEND_SRC / "features" / "settings" / "sections"
+                / "SalesConditionsCard.jsx").read_text()
+        assert "Condizioni dell'operatore" in card
+        assert "MerchantLegalDialog" in card          # retrocompatibilita'
+        assert 'data-testid="advanced-legal-toggle"' in card
+        assert 'data-testid="service-requirements-hint"' in card
+
+    # ── 7. testi Aurya estesi (bozza) + versioning coerente ──────────
+
+    def test_apl_testi_aurya_v23_bozza_marcata(self):
+        """I testi x4 lingue hanno le sezioni nuove (due livelli, art.
+        28), il marcatore bozza vive SOLO come commento nei sorgenti e
+        NON arriva all'utente finale; la versione corrente e' v2.3 e
+        l'hash corrisponde al bundle IT su disco."""
+        import hashlib
+
+        from core.legal_versions import (CURRENT_VERSION_HASH,
+                                         CURRENT_VERSION_TAG,
+                                         get_legal_document)
+
+        legal_dir = BACKEND_DIR / "legal"
+        for lang in ("it", "en", "de", "fr"):
+            for doc in ("privacy", "terms"):
+                src = (legal_dir / f"{doc}_{lang}.md").read_text()
+                assert "BOZZA IN ATTESA DI REVISIONE LEGALE" in src, (doc, lang)
+                served = get_legal_document(doc, lang)["content"]
+                assert "BOZZA" not in served, (doc, lang)
+                assert "<!--" not in served, (doc, lang)
+            # sezioni nuove servite (marker per lingua)
+            assert "2.3" in get_legal_document("privacy", lang)["content"]
+
+        assert CURRENT_VERSION_TAG == "v2.3"
+        priv = (legal_dir / "privacy_it.md").read_text()
+        terms = (legal_dir / "terms_it.md").read_text()
+        digest = hashlib.sha256(
+            (priv + "\n\n--- TERMS BUNDLE ---\n\n" + terms).encode()
+        ).hexdigest()[:16]
+        assert digest == CURRENT_VERSION_HASH
+
+        # l'audit accetta le nuove source piattaforma
+        from repositories.consent_audit_repository import _VALID_SOURCES
+        assert "platform_signup" in _VALID_SOURCES
+        assert "platform_checkout" in _VALID_SOURCES

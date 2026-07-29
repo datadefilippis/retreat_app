@@ -306,8 +306,62 @@ from auth import get_password_hash, verify_password, validate_password_strength 
 _BCRYPT_DUMMY_HASH = get_password_hash("anti-enumeration-dummy-never-matches")
 
 
+# ── AP-L — consenso legale Aurya sull'account ────────────────────────────────
+# Il consenso a Termini + Privacy di Aurya (backend/legal, versionati in
+# core/legal_versions) si timbra UNA volta sull'account alla creazione:
+#   aurya_legal = {terms_version, privacy_version, accepted_at, source, locale}
+# con record parallelo nell'audit immutabile (pattern CG-4, scope
+# piattaforma: document_type=privacy_terms, source=platform_*).
+
+def build_aurya_legal_stamp(*, source: str,
+                            locale: Optional[str] = None) -> Dict[str, Any]:
+    """Snapshot del consenso Aurya alle versioni CORRENTI dei documenti.
+
+    source: "signup" (form Crea il tuo account Aurya) oppure "checkout"
+    (account nato da un acquisto guest con la checkbox Aurya spuntata).
+    """
+    from core.legal_versions import current_version_string
+    version = current_version_string()
+    return {
+        "terms_version": version,
+        "privacy_version": version,
+        "accepted_at": _iso(utc_now()),
+        "source": source,
+        "locale": locale if locale in ("it", "en", "de", "fr") else "it",
+    }
+
+
+async def record_aurya_consent_audit(*, account_id: Optional[str], email: str,
+                                     source: str, locale: Optional[str],
+                                     ip_address: Optional[str] = None,
+                                     user_agent: Optional[str] = None,
+                                     order_id: Optional[str] = None) -> None:
+    """Audit immutabile del consenso Aurya (best-effort, mai bloccante)."""
+    try:
+        from core.legal_versions import (CURRENT_VERSION_HASH,
+                                         CURRENT_VERSION_TAG)
+        from repositories import consent_audit_repository as _car
+        await _car.record_consent(
+            user_id=account_id,
+            customer_email=email,
+            order_id=order_id,
+            locale=locale if locale in ("it", "en", "de", "fr") else "it",
+            version_tag=CURRENT_VERSION_TAG,
+            version_hash=CURRENT_VERSION_HASH,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            source=source,
+            document_type="privacy_terms",
+        )
+    except Exception:
+        logger.exception("AP-L: audit consenso Aurya fallito per %s", email)
+
+
 async def password_signup(*, name: Optional[str], email: str, password: str,
-                          language: Optional[str] = None) -> Dict[str, Any]:
+                          language: Optional[str] = None,
+                          accepted_terms: bool = False,
+                          request_ip: Optional[str] = None,
+                          user_agent: Optional[str] = None) -> Dict[str, Any]:
     """Signup email+password: crea (o adotta) l'account e invia l'email
     di verifica. L'account NON e' loggabile con password finche' l'email
     non e' verificata.
@@ -344,6 +398,11 @@ async def password_signup(*, name: Optional[str], email: str, password: str,
         "verification_token_expires": _iso(
             now + timedelta(hours=VERIFY_TOKEN_TTL_HOURS)),
     }
+    # AP-L — consenso Aurya timbrato alla creazione (il router rende la
+    # checkbox obbligatoria; il default False preserva i chiamanti legacy).
+    if accepted_terms:
+        verify_fields["aurya_legal"] = build_aurya_legal_stamp(
+            source="signup", locale=lang_n)
 
     if account:
         # guscio passwordless pending: si adotta (vedi docstring)
@@ -366,6 +425,13 @@ async def password_signup(*, name: Optional[str], email: str, password: str,
         doc.update(verify_fields)
         await platform_accounts_collection.insert_one(doc)
         account = doc
+
+    # AP-L — audit immutabile del consenso appena timbrato (best-effort)
+    if accepted_terms:
+        await record_aurya_consent_audit(
+            account_id=account["id"], email=email_n,
+            source="platform_signup", locale=lang_n,
+            ip_address=request_ip, user_agent=user_agent)
 
     _send_verify_email(email_n, token, account.get("name"),
                        locale=account.get("language") or "it")

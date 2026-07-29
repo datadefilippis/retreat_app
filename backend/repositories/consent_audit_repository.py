@@ -76,6 +76,10 @@ _VALID_SOURCES = {
     "customer_deletion_request",
     # Wave GDPR-Commerce CG-7 — merchant DPA acknowledgement
     "merchant_dpa_acknowledged",
+    # AP-L (2026-07-29) — consenso Aurya sull'account utente piattaforma:
+    # alla creazione con password (signup) e alla nascita da acquisto
+    # guest (checkout). Documento: privacy_terms (bundle Aurya).
+    "platform_signup", "platform_checkout",
 }
 
 

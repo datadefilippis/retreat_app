@@ -1746,6 +1746,11 @@
       "program": {
         "title": "Programme et page de vente",
         "subtitle": "Programme jour par jour, inclus et FAQ. Tu peux aussi les compléter plus tard, depuis la page de la retraite."
+      },
+      "regole": {
+        "requisitiTitle": "Exigences et conditions du service",
+        "requisitiDesc": "Ce que les participants doivent savoir ou déclarer. Si tu remplis ce champ, une case d'acceptation dédiée avec ce texte apparaît au checkout.",
+        "requisitiPlaceholder": "Ex. déclaration d'absence de contre-indications médicales, conditions d'âge, quoi apporter…"
       }
     },
     "digital": {

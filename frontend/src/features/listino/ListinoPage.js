@@ -71,6 +71,10 @@ function rowFromProduct(p) {
     imageUrl: p.image_url || '',
     useDefaultSchedule: 'use_default_schedule' in meta
       ? !!meta.use_default_schedule : true,
+    // AP-L — requisiti e condizioni del servizio (terms_content, F4):
+    // promossi in superficie, finiscono nella checkbox dinamica
+    // "Accetto le condizioni di {operatore}" al checkout.
+    termsContent: meta.terms_content || '',
     // metadata integrale del prodotto: serve al salvataggio per NON
     // perdere i campi avanzati (terms, order_fields, cover, ...)
     rawMeta: meta,
@@ -330,6 +334,9 @@ export default function ListinoPage() {
           ...edit.rawMeta,
           ...base.metadata,
           use_default_schedule: !!edit.useDefaultSchedule,
+          // AP-L — requisiti del servizio: testo vuoto = nessuna
+          // checkbox condizioni al checkout (null, non stringa vuota)
+          terms_content: edit.termsContent?.trim() || null,
         },
       });
       await saveRowOptions(edit.id);
@@ -600,6 +607,31 @@ export default function ListinoPage() {
                               )}
                             </div>
                           </div>
+                        </RowSection>
+
+                        {/* AP-L — requisiti e condizioni del servizio in
+                            superficie: il testo compare al checkout nella
+                            checkbox "Accetto le condizioni di {operatore}"
+                            insieme alla politica di cancellazione. */}
+                        <RowSection
+                          id="condizioni"
+                          title="Requisiti e condizioni del servizio"
+                          hint={edit.termsContent?.trim() ? 'compilati' : 'facoltativi'}
+                          open={openSection === 'condizioni'}
+                          onToggle={() => setOpenSection(s => s === 'condizioni' ? null : 'condizioni')}>
+                          <p className="mb-2 text-xs text-gray-500">
+                            Cosa deve sapere o dichiarare il cliente prima di prenotare.
+                            Se compili questo campo, al checkout compare una casella
+                            "Accetto le condizioni" con questo testo.
+                          </p>
+                          <textarea
+                            value={edit.termsContent}
+                            onChange={e => setEdit(v => ({ ...v, termsContent: e.target.value }))}
+                            rows={4} maxLength={20000}
+                            placeholder="Es. dichiarazione di assenza di controindicazioni mediche, cosa portare, requisiti di eta'…"
+                            data-testid="listino-requisiti"
+                            className="w-full rounded-lg border border-input px-3 py-2 text-sm resize-y"
+                          />
                         </RowSection>
                       </div>
 

@@ -49,6 +49,18 @@ La conservazione della prova dell'accettazione (timestamp, versione del document
 
 **Il contratto di vendita del ritiro, dell'esperienza, del prodotto o del corso si conclude direttamente tra Operatore e Cliente finale.** Il Fornitore non e' parte di tale contratto (vedi art. 13).
 
+<!-- BOZZA IN ATTESA DI REVISIONE LEGALE (AP-L, 29 luglio 2026).
+Blocco nuovo sul modello legale a due livelli dell'account utente
+Aurya. Da far rivedere da un legale prima del lancio pubblico.
+Questo commento non e' visibile all'utente finale: il server rimuove
+i commenti HTML prima di servire il documento. -->
+**Accettazione a due livelli.** L'accettazione e' organizzata su due livelli distinti:
+
+1. I presenti Termini e la Privacy Policy di Aurya si accettano UNA sola volta, alla creazione dell'account Aurya oppure, per gli acquisti come ospite, al momento del checkout. La versione accettata resta registrata sull'account e nel registro consensi immutabile; ai successivi acquisti da account non viene richiesta una nuova accettazione, salvo aggiornamento dei documenti.
+2. Le condizioni specifiche dell'Operatore (politica di cancellazione e requisiti del servizio, ad esempio la dichiarazione di assenza di controindicazioni mediche) sono presentate al checkout, quando l'Operatore le ha definite, e si accettano con una casella dedicata per ciascun acquisto. Tali condizioni fanno parte del contratto tra Operatore e Cliente finale (art. 13), del quale il Fornitore non e' parte.
+
+<!-- FINE BOZZA AP-L -->
+
 ---
 
 ## 3. Conclusione del contratto

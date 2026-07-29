@@ -240,7 +240,31 @@ async def submit_order_from_storefront(
             body.gdpr_privacy_accepted or privacy_implicitly_accepted
         )
 
-        if not effective_terms_accepted or not effective_privacy_accepted:
+        # ── AP-L (29/7/2026) — legal a due livelli ────────────────────
+        # L'atto primario di accettazione e' quello Aurya: il guest che
+        # spunta la checkbox Aurya al checkout (aurya_terms_accepted) o
+        # il compratore con account Aurya e consenso gia' timbrato
+        # (aurya_legal) soddisfano il gate anche quando l'operatore ha
+        # legal per-store pubblicati. L'informativa dell'operatore resta
+        # linkata al checkout; il suo snapshot si timbra comunque sotto.
+        aurya_level_accepted = bool(
+            getattr(body, "aurya_terms_accepted", False))
+        if not aurya_level_accepted and not (
+                effective_terms_accepted and effective_privacy_accepted):
+            try:
+                from database import platform_accounts_collection as _pac
+                _apl_email = (body.customer_email or "").strip().lower()
+                if _apl_email:
+                    _pa_doc = await _pac.find_one(
+                        {"email": _apl_email, "aurya_legal": {"$ne": None}},
+                        {"_id": 0, "id": 1},
+                    )
+                    aurya_level_accepted = bool(_pa_doc)
+            except Exception:
+                aurya_level_accepted = False
+
+        if (not effective_terms_accepted or not effective_privacy_accepted) \
+                and not aurya_level_accepted:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=(
@@ -540,12 +564,21 @@ async def submit_order_from_storefront(
                 ) if _pids else None
                 _policy = ((((_plan_doc or {}).get("metadata") or {})
                             .get("payment_plan") or {}).get("cancellation_policy"))
+                _rs3_set = {}
                 if _policy:
+                    _rs3_set["cancellation_policy_snapshot"] = _policy
+                # AP-L (29/7) — estensione RS3: anche i requisiti e le
+                # condizioni del servizio accettati (terms_content
+                # effettivo) restano timbrati sull'ordine, cosi' il
+                # patto e' verificabile se l'operatore li cambia domani.
+                if effective_terms and body.terms_accepted:
+                    _rs3_set["terms_content_snapshot"] = effective_terms
+                if _rs3_set:
                     await _oc_rs3.update_one(
                         {"id": order["id"], "organization_id": org_id},
-                        {"$set": {"cancellation_policy_snapshot": _policy}},
+                        {"$set": _rs3_set},
                     )
-                    order["cancellation_policy_snapshot"] = _policy
+                    order.update(_rs3_set)
             except Exception as exc_rs3:
                 logger.warning(
                     "RS3: snapshot policy fallito per ordine %s: %s",
@@ -650,6 +683,94 @@ async def submit_order_from_storefront(
                 logger.error(
                     "CG-5: consent_audit insert failed for order=%s: %s",
                     order.get("id"), exc, exc_info=True,
+                )
+
+        # ── AP-L Legal a due livelli (29/7/2026) ──────────────────────
+        # L'ordine timbra ANCHE il livello Aurya: versioni dei documenti
+        # piattaforma accettate al checkout dal guest (checkbox Aurya,
+        # audit immutabile del click) oppure gia' accettate sull'account
+        # Aurya del compratore (snapshot dall'account, nessun nuovo
+        # audit: il record esiste dalla creazione account).
+        # Best-effort, mai bloccante: la pipeline ordini resta intatta.
+        if order:
+            try:
+                from database import (
+                    orders_collection as _oc_apl,
+                    platform_accounts_collection as _pac_apl,
+                )
+                _apl_email = (body.customer_email or "").strip().lower()
+                _apl_clicked = bool(getattr(body, "aurya_terms_accepted", False))
+                _apl_account = await _pac_apl.find_one(
+                    {"email": _apl_email},
+                    {"_id": 0, "id": 1, "aurya_legal": 1},
+                ) if _apl_email else None
+
+                _apl_stamp = None
+                if _apl_clicked:
+                    from core.legal_versions import (
+                        current_version_string as _apl_version,
+                    )
+                    _apl_locale = getattr(body, "locale", None)
+                    if _apl_locale not in ("it", "en", "de", "fr"):
+                        _apl_locale = "it"
+                    _v_apl = _apl_version()
+                    _apl_stamp = {
+                        "aurya_terms_version": _v_apl,
+                        "aurya_privacy_version": _v_apl,
+                        "aurya_locale": _apl_locale,
+                        "aurya_accepted_at":
+                            datetime.now(timezone.utc).isoformat(),
+                        "aurya_source": "checkout",
+                    }
+                elif _apl_account and _apl_account.get("aurya_legal"):
+                    _al = _apl_account["aurya_legal"]
+                    _apl_stamp = {
+                        "aurya_terms_version": _al.get("terms_version"),
+                        "aurya_privacy_version": _al.get("privacy_version"),
+                        "aurya_locale": _al.get("locale") or "it",
+                        "aurya_accepted_at": _al.get("accepted_at"),
+                        "aurya_source": "account",
+                    }
+
+                if _apl_stamp:
+                    await _oc_apl.update_one(
+                        {"id": order["id"], "organization_id": org_id},
+                        {"$set": _apl_stamp},
+                    )
+                    order.update(_apl_stamp)
+
+                if _apl_clicked:
+                    from services.platform_account_service import (
+                        build_aurya_legal_stamp as _apl_build,
+                        record_aurya_consent_audit as _apl_audit,
+                    )
+                    _apl_account_id = ((_apl_account or {}).get("id")
+                                       or order.get("platform_account_id"))
+                    await _apl_audit(
+                        account_id=_apl_account_id,
+                        email=_apl_email,
+                        source="platform_checkout",
+                        locale=_apl_stamp["aurya_locale"],
+                        ip_address=client_ip,
+                        user_agent=user_agent,
+                        order_id=order["id"],
+                    )
+                    # account nato (o gia' esistente) da acquisto guest:
+                    # il consenso si timbra sull'account SOLO se manca
+                    # (mai sovrascritto), con source "checkout".
+                    if _apl_account_id and not (
+                            (_apl_account or {}).get("aurya_legal")):
+                        await _pac_apl.update_one(
+                            {"id": _apl_account_id,
+                             "aurya_legal": None},
+                            {"$set": {"aurya_legal": _apl_build(
+                                source="checkout",
+                                locale=_apl_stamp["aurya_locale"])}},
+                        )
+            except Exception as exc_apl:
+                logger.warning(
+                    "AP-L: snapshot consenso Aurya fallito per ordine %s: %s",
+                    order.get("id"), exc_apl,
                 )
 
         # Apply coupon discount post-creation

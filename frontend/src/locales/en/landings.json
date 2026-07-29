@@ -577,7 +577,12 @@
     "newPasswordOkTitle": "Password set",
     "newPasswordOkBody": "You can now sign in to your Aurya account with your email and your new password.",
     "newPasswordFailTitle": "Invalid or expired link",
-    "newPasswordFailBody": "The link has expired or was already used. Request a new one from the sign-in page with Forgot password."
+    "newPasswordFailBody": "The link has expired or was already used. Request a new one from the sign-in page with Forgot password.",
+    "signupConsentPrefix": "I accept the",
+    "signupConsentTerms": "Terms",
+    "signupConsentAnd": "and the",
+    "signupConsentPrivacy": "Privacy Policy",
+    "signupConsentSuffix": "of Aurya"
   },
   "categories": {
     "yoga": "Yoga",

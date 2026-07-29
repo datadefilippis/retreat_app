@@ -70,6 +70,9 @@ export default function AccountLoginPage() {
   const [name, setName] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+  // AP-L — consenso a Termini + Privacy di Aurya: obbligatorio al signup,
+  // timbrato sull'account (aurya_legal) e nell'audit consensi.
+  const [signupConsent, setSignupConsent] = useState(false);
 
   const goTo = (view) => { setState(view); setError(null); };
 
@@ -200,6 +203,8 @@ export default function AccountLoginPage() {
         email: email.trim(),
         password,
         language: emailLang(),
+        // AP-L — la checkbox e' required nel form: qui arriva sempre true
+        accepted_terms: !!signupConsent,
       });
       setState('signupSent');
     } catch (err) {
@@ -431,6 +436,27 @@ export default function AccountLoginPage() {
               <p className="text-[11px] text-gray-400 text-left">
                 {t('landings:account.passwordHint', { defaultValue: 'Almeno 12 caratteri, con maiuscole, minuscole e numeri.' })}
               </p>
+              {/* AP-L — riga consenso: link ai documenti Aurya, spunta
+                  obbligatoria (required + gate backend 400) */}
+              <label className="flex items-start gap-2 text-left cursor-pointer select-none">
+                <input
+                  type="checkbox" required checked={signupConsent}
+                  onChange={e => setSignupConsent(e.target.checked)}
+                  className="mt-0.5 shrink-0 h-4 w-4 rounded border-gray-300"
+                  data-testid="signup-consent"
+                />
+                <span className="text-xs text-gray-600">
+                  {t('landings:account.signupConsentPrefix', { defaultValue: 'Accetto i' })}{' '}
+                  <a href="/termini" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:no-underline">
+                    {t('landings:account.signupConsentTerms', { defaultValue: 'Termini' })}
+                  </a>
+                  {' '}{t('landings:account.signupConsentAnd', { defaultValue: 'e la' })}{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:no-underline">
+                    {t('landings:account.signupConsentPrivacy', { defaultValue: 'Privacy' })}
+                  </a>
+                  {' '}{t('landings:account.signupConsentSuffix', { defaultValue: 'di Aurya' })}{' *'}
+                </span>
+              </label>
               {error && <p className="text-xs text-red-600">{error}</p>}
               <button type="submit" disabled={sending} className={btnCls} data-testid="signup-submit">
                 {sending

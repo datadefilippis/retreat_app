@@ -1746,6 +1746,11 @@
       "program": {
         "title": "Programm und Verkaufsseite",
         "subtitle": "Tagesprogramm, Leistungen und FAQ. Du kannst sie auch später von der Retreat-Seite aus vervollständigen."
+      },
+      "regole": {
+        "requisitiTitle": "Anforderungen und Bedingungen der Leistung",
+        "requisitiDesc": "Was Teilnehmende wissen oder erklären müssen. Wenn du dieses Feld ausfüllst, erscheint beim Checkout ein eigenes Kontrollkästchen mit diesem Text.",
+        "requisitiPlaceholder": "Z.B. Erklärung über das Fehlen medizinischer Gegenanzeigen, Altersanforderungen, was mitzubringen ist…"
       }
     },
     "digital": {

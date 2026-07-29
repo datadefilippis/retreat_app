@@ -25,6 +25,9 @@ import { useStoreMeta } from '../../../hooks/useStoreMeta';
 import useIsMarketingOptedIn from '../../../hooks/useIsMarketingOptedIn';
 import { resolveDominantMode } from '../../../constants/itemTypes';
 import { resolveTransactionModeCopy } from '../components/StorefrontCards';
+// AP-L — legal a due livelli: il checkout deve sapere se il compratore
+// e' loggato con l'account Aurya (consenso gia' timbrato sull'account).
+import platformApi, { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
 
 // Password strength check mirrors backend policy (customer_auth validate_password_strength):
 // 12+ chars, at least one uppercase, one lowercase, one digit.
@@ -88,6 +91,44 @@ export default function useCheckoutForm({
   const [gdprTermsAccepted, setGdprTermsAccepted] = useState(false);
   const [gdprPrivacyAccepted, setGdprPrivacyAccepted] = useState(false);
   const [gdprMarketingAccepted, setGdprMarketingAccepted] = useState(false);
+
+  // ── AP-L (2026-07-29) — legal a due livelli ────────────────────────
+  // 1. Livello Aurya: per i GUEST una checkbox unica "Accetto i Termini
+  //    e la Privacy di Aurya" (auryaAccepted); per chi e' loggato con
+  //    l'account Aurya (platformAccount) la checkbox non compare, il
+  //    consenso vive gia' sull'account (aurya_legal, timbrato alla
+  //    creazione).
+  // 2. Livello operatore: checkbox dinamica "Accetto le condizioni di
+  //    {operatore}" (operatorTermsAccepted), SOLO se l'operatore ha
+  //    compilato politica di cancellazione o requisiti del servizio.
+  const [platformAccount, setPlatformAccount] = useState(null);
+  const [auryaAccepted, setAuryaAccepted] = useState(false);
+  const [operatorTermsAccepted, setOperatorTermsAccepted] = useState(false);
+
+  // Sessione Aurya gia' aperta (token in localStorage): profilo da
+  // /platform/me. Token scaduto/invalido → silenzio, resta guest.
+  useEffect(() => {
+    let token = null;
+    try { token = localStorage.getItem(PLATFORM_TOKEN_KEY); } catch { /* private mode */ }
+    if (!token) return undefined;
+    let active = true;
+    platformApi.get('/platform/me')
+      .then(res => { if (active) setPlatformAccount(res.data); })
+      .catch(() => { /* guest: la checkbox Aurya resta */ });
+    return () => { active = false; };
+  }, []);
+
+  const platformLoggedIn = !!platformAccount;
+
+  // AP-L — l'atto Aurya del guest assorbe l'accettazione primaria: i
+  // flag CG-5 dell'operatore viaggiano insieme alla spunta unica (nel
+  // blocco resta linkata anche l'informativa dell'operatore), cosi' la
+  // macchina consensi merchant esistente continua a timbrare.
+  const setAuryaConsent = (checked) => {
+    setAuryaAccepted(checked);
+    setGdprTermsAccepted(checked);
+    setGdprPrivacyAccepted(checked);
+  };
 
   // Wave GDPR-Commerce CG-5 — fetch the per-store legal metadata so
   // we know whether to render the GDPR consent block on checkout.
@@ -619,11 +660,26 @@ export default function useCheckoutForm({
     return null;
   }, [selectedItems, catalog]);
 
-  // RS3 — un solo blocco consensi: le condizioni specifiche del
-  // prodotto (F4) sono dentro la checkbox Termini unificata. I clienti
-  // loggati sono coperti dallo snapshot CG-4.
-  const termsValid = !effectiveTerms || termsAccepted
-    || gdprTermsAccepted || isCustomerAuthenticated;
+  // AP-L — condizioni dell'operatore: politica di cancellazione del
+  // primo prodotto in carrello che ne ha una (payment_plan esposto dal
+  // catalogo pubblico) + requisiti del servizio (effectiveTerms sopra).
+  const cartCancellationPolicy = useMemo(() => {
+    const prods = catalog?.products || [];
+    for (const it of selectedItems) {
+      const p = prods.find(pp => pp.id === it.product_id);
+      const policy = p?.payment_plan?.cancellation_policy;
+      if (Array.isArray(policy) && policy.length > 0) return policy;
+    }
+    return null;
+  }, [selectedItems, catalog]);
+
+  // La checkbox dell'operatore esiste SOLO se ha compilato qualcosa.
+  const hasOperatorConditions = !!(effectiveTerms || cartCancellationPolicy);
+
+  // AP-L — le condizioni dell'operatore si accettano con la LORO
+  // checkbox, per ogni acquisto e per chiunque (anche loggato: il
+  // consenso Aurya sull'account non copre i patti del singolo servizio).
+  const termsValid = !hasOperatorConditions || operatorTermsAccepted;
 
   // Wave GDPR-Commerce CG-5 — does this store require the new GDPR
   // consent block? True when the merchant has published their per-store
@@ -646,8 +702,12 @@ export default function useCheckoutForm({
   // RS3 — il blocco consensi si mostra SEMPRE ai guest (i documenti
   // /s/:slug/privacy|terms rispondono sempre: autogenerati finche'
   // l'operatore non pubblica i suoi), quindi si richiede sempre.
+  // AP-L — l'atto primario e' la checkbox Aurya del guest (che porta
+  // con se' i flag CG-5); chi e' loggato Aurya ha gia' accettato
+  // sull'account e non ri-accetta nulla a livello piattaforma.
   const gdprValid =
     isCustomerAuthenticated
+    || platformLoggedIn
     || (gdprTermsAccepted && gdprPrivacyAccepted);
 
   // Auto-fill first attendee from the main customer form: it's the most
@@ -689,16 +749,17 @@ export default function useCheckoutForm({
       toast.error(t('storefront:errors.fillAttendees'));
       return;
     }
-    if (effectiveTerms && !termsAccepted) {
+    // AP-L — condizioni dell'operatore: checkbox dedicata obbligatoria
+    // quando l'operatore le ha compilate (per chiunque, anche loggato).
+    if (hasOperatorConditions && !operatorTermsAccepted) {
       toast.error(t('storefront:errors.termsRequired'));
       return;
     }
-    // Wave GDPR-Commerce CG-5 — block submit if the store has GDPR
-    // docs published and the customer hasn't ticked the mandatory
-    // privacy + terms checkboxes. Marketing is optional.
+    // AP-L — atto primario Aurya: il guest deve spuntare la checkbox
+    // Aurya; il loggato (piattaforma o portale cliente) e' gia' coperto.
     if (!gdprValid) {
       toast.error(t('storefront:errors.gdprRequired', {
-        defaultValue: 'Devi accettare la Privacy e i Termini del negozio per procedere.',
+        defaultValue: 'Devi accettare i Termini e la Privacy di Aurya per procedere.',
       }));
       return;
     }
@@ -851,10 +912,10 @@ export default function useCheckoutForm({
       if (orderFieldsData && Object.keys(orderFieldsData).length > 0) {
         payload.order_fields = orderFieldsData;
       }
-      // F4 Onda 11 — send T&C acceptance flag (only meaningful when
-      // the catalog exposed a non-empty `terms_content`)
-      payload.terms_accepted = !!(termsAccepted
-        || (effectiveTerms && (gdprTermsAccepted || isCustomerAuthenticated)));
+      // AP-L — accettazione delle condizioni dell'operatore (politica di
+      // cancellazione + requisiti del servizio): la checkbox dedicata.
+      // Il flag legacy termsAccepted resta in OR per compatibilita'.
+      payload.terms_accepted = !!(operatorTermsAccepted || termsAccepted);
       // Wave GDPR-Commerce CG-5 — per-order consent flags. Always sent
       // (legacy clients omit them, defaults to False). Backend enforces
       // them ONLY when the merchant has GDPR published — otherwise
@@ -862,6 +923,10 @@ export default function useCheckoutForm({
       payload.gdpr_terms_accepted = !!gdprTermsAccepted;
       payload.gdpr_privacy_accepted = !!gdprPrivacyAccepted;
       payload.gdpr_marketing_accepted = !!gdprMarketingAccepted;
+      // AP-L — consenso Aurya del guest (checkbox unica): l'ordine lo
+      // timbra con le versioni correnti dei documenti piattaforma. Per
+      // i loggati Aurya il backend risale all'account (aurya_legal).
+      payload.aurya_terms_accepted = !!auryaAccepted;
       // v10.0: fulfillment fields
       if (form.fulfillment_mode && form.fulfillment_mode !== 'manual_arrangement') {
         payload.fulfillment_mode = form.fulfillment_mode;
@@ -951,7 +1016,7 @@ export default function useCheckoutForm({
     submitting,
     submitted, setSubmitted,
     handleSubmit,
-    // consensi (F4 / CG-5 / RS3)
+    // consensi (F4 / CG-5 / RS3 / AP-L)
     termsAccepted, setTermsAccepted,
     termsExpanded, setTermsExpanded,
     legalMeta,
@@ -961,6 +1026,11 @@ export default function useCheckoutForm({
     gdprMarketingAccepted, setGdprMarketingAccepted,
     effectiveTerms, termsValid, gdprValid,
     marketingStatus,
+    // AP-L — legal a due livelli
+    platformAccount, setPlatformAccount, platformLoggedIn,
+    auryaAccepted, setAuryaConsent,
+    operatorTermsAccepted, setOperatorTermsAccepted,
+    hasOperatorConditions, cartCancellationPolicy,
     // registrazione opzionale (Fase C1)
     wantRegister, setWantRegister,
     regPassword, setRegPassword,

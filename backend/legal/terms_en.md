@@ -49,6 +49,18 @@ The retention of proof of acceptance (timestamp, document version, language, IP,
 
 **The contract for the sale of the retreat, experience, product or course is concluded directly between the Operator and the End Customer.** The Provider is not a party to that contract (see Art. 13).
 
+<!-- BOZZA IN ATTESA DI REVISIONE LEGALE (AP-L, 29 luglio 2026).
+Blocco nuovo sul modello legale a due livelli dell'account utente
+Aurya. Da far rivedere da un legale prima del lancio pubblico.
+Questo commento non e' visibile all'utente finale: il server rimuove
+i commenti HTML prima di servire il documento. -->
+**Two-level acceptance.** Acceptance is organised on two distinct levels:
+
+1. These Terms and the Aurya Privacy Policy are accepted ONCE, when creating the Aurya account or, for guest purchases, at checkout. The accepted version is recorded on the account and in the immutable consent register; subsequent purchases from the account do not require a new acceptance, unless the documents are updated.
+2. The Operator's specific conditions (cancellation policy and service requirements, for example a declaration of absence of medical contraindications) are presented at checkout, when the Operator has defined them, and are accepted with a dedicated checkbox for each purchase. Those conditions form part of the contract between the Operator and the End Customer (Art. 13), to which the Provider is not a party.
+
+<!-- FINE BOZZA AP-L -->
+
 ---
 
 ## 3. Conclusion of the contract

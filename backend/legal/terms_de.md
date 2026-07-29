@@ -49,6 +49,18 @@ Die Aufbewahrung des Nachweises der Annahme (Zeitstempel, Version des Dokuments,
 
 **Der Kaufvertrag über das Retreat, das Erlebnis, das Produkt oder den Kurs kommt direkt zwischen Veranstalter und Endkunde zustande.** Der Anbieter ist nicht Partei dieses Vertrags (siehe Art. 13).
 
+<!-- BOZZA IN ATTESA DI REVISIONE LEGALE (AP-L, 29 luglio 2026).
+Blocco nuovo sul modello legale a due livelli dell'account utente
+Aurya. Da far rivedere da un legale prima del lancio pubblico.
+Questo commento non e' visibile all'utente finale: il server rimuove
+i commenti HTML prima di servire il documento. -->
+**Annahme auf zwei Ebenen.** Die Annahme ist auf zwei getrennten Ebenen organisiert:
+
+1. Diese Bedingungen und die Datenschutzerklärung von Aurya werden EINMAL akzeptiert, bei der Erstellung des Aurya-Kontos oder, bei Gastkäufen, beim Checkout. Die akzeptierte Version wird auf dem Konto und im unveränderlichen Einwilligungsregister festgehalten; bei späteren Käufen über das Konto ist keine erneute Annahme erforderlich, außer bei Aktualisierung der Dokumente.
+2. Die spezifischen Bedingungen des Veranstalters (Stornierungsbedingungen und Anforderungen der Leistung, zum Beispiel eine Erklärung über das Fehlen medizinischer Gegenanzeigen) werden beim Checkout angezeigt, sofern der Veranstalter sie definiert hat, und für jeden Kauf über ein eigenes Kontrollkästchen akzeptiert. Diese Bedingungen sind Teil des Vertrags zwischen Veranstalter und Endkunde (Art. 13), an dem der Anbieter nicht beteiligt ist.
+
+<!-- FINE BOZZA AP-L -->
+
 ---
 
 ## 3. Vertragsschluss

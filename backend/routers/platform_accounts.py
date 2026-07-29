@@ -144,6 +144,10 @@ class PasswordSignup(BaseModel):
     email: str = Field(..., max_length=254)
     password: str = Field(..., max_length=128)
     language: Optional[str] = Field(None, max_length=5)
+    # AP-L — consenso a Termini + Privacy di Aurya: obbligatorio alla
+    # creazione account (checkbox nel form). Default False: i client
+    # legacy ricevono un 400 onesto, non un errore di schema.
+    accepted_terms: bool = False
 
 
 class VerifyEmailBody(BaseModel):
@@ -191,10 +195,29 @@ async def password_signup_ep(body: PasswordSignup, request: Request):
     non ricrearlo)."""
     _flag_enabled()
     from services.platform_account_service import password_signup
+
+    # AP-L — senza consenso ai documenti Aurya l'account non si crea
+    if not body.accepted_terms:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Per creare l'account devi accettare i Termini e la "
+                   "Privacy di Aurya.",
+        )
+    # IP + User-Agent per l'audit immutabile del consenso (best-effort)
+    _req_ip = None
+    try:
+        from core.rate_limiting import get_real_ip
+        _req_ip = get_real_ip(request)
+    except Exception:
+        pass
+    _ua = request.headers.get("user-agent") if request else None
+
     try:
         return await password_signup(name=body.name, email=body.email,
                                      password=body.password,
-                                     language=body.language)
+                                     language=body.language,
+                                     accepted_terms=True,
+                                     request_ip=_req_ip, user_agent=_ua)
     except ValueError as e:
         msg = str(e)
         if msg == "EMAIL_EXISTS":

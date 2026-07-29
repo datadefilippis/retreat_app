@@ -49,6 +49,18 @@ La conservation de la preuve de l'acceptation (horodatage, version du document, 
 
 **Le contrat de vente de la retraite, de l'expérience, du produit ou du cours se conclut directement entre l'Opérateur et le Client final.** Le Fournisseur n'est pas partie à ce contrat (voir art. 13).
 
+<!-- BOZZA IN ATTESA DI REVISIONE LEGALE (AP-L, 29 luglio 2026).
+Blocco nuovo sul modello legale a due livelli dell'account utente
+Aurya. Da far rivedere da un legale prima del lancio pubblico.
+Questo commento non e' visibile all'utente finale: il server rimuove
+i commenti HTML prima di servire il documento. -->
+**Acceptation à deux niveaux.** L'acceptation est organisée sur deux niveaux distincts :
+
+1. Les présentes Conditions et la Politique de confidentialité d'Aurya s'acceptent UNE seule fois, lors de la création du compte Aurya ou, pour les achats en invité, au moment du checkout. La version acceptée est enregistrée sur le compte et dans le registre des consentements immuable ; les achats suivants depuis le compte ne demandent pas de nouvelle acceptation, sauf mise à jour des documents.
+2. Les conditions spécifiques de l'Opérateur (politique d'annulation et exigences du service, par exemple une déclaration d'absence de contre-indications médicales) sont présentées au checkout, lorsque l'Opérateur les a définies, et s'acceptent via une case dédiée pour chaque achat. Ces conditions font partie du contrat entre l'Opérateur et le Client final (art. 13), auquel le Fournisseur n'est pas partie.
+
+<!-- FINE BOZZA AP-L -->
+
 ---
 
 ## 3. Conclusion du contrat

@@ -577,7 +577,12 @@
     "newPasswordOkTitle": "Passwort festgelegt",
     "newPasswordOkBody": "Du kannst dich jetzt mit deiner E-Mail und deinem neuen Passwort in deinem Aurya-Konto anmelden.",
     "newPasswordFailTitle": "Link ungültig oder abgelaufen",
-    "newPasswordFailBody": "Der Link ist abgelaufen oder wurde schon benutzt. Fordere auf der Anmeldeseite mit Passwort vergessen einen neuen an."
+    "newPasswordFailBody": "Der Link ist abgelaufen oder wurde schon benutzt. Fordere auf der Anmeldeseite mit Passwort vergessen einen neuen an.",
+    "signupConsentPrefix": "Ich akzeptiere die",
+    "signupConsentTerms": "Nutzungsbedingungen",
+    "signupConsentAnd": "und die",
+    "signupConsentPrivacy": "Datenschutzerklärung",
+    "signupConsentSuffix": "von Aurya"
   },
   "categories": {
     "yoga": "Yoga",

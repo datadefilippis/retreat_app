@@ -577,7 +577,12 @@
     "newPasswordOkTitle": "Password impostata",
     "newPasswordOkBody": "Ora puoi accedere al tuo account Aurya con la tua email e la nuova password.",
     "newPasswordFailTitle": "Link non valido o scaduto",
-    "newPasswordFailBody": "Il link è scaduto o è già stato usato. Richiedine uno nuovo dalla pagina di accesso con Password dimenticata."
+    "newPasswordFailBody": "Il link è scaduto o è già stato usato. Richiedine uno nuovo dalla pagina di accesso con Password dimenticata.",
+    "signupConsentPrefix": "Accetto i",
+    "signupConsentTerms": "Termini",
+    "signupConsentAnd": "e la",
+    "signupConsentPrivacy": "Privacy",
+    "signupConsentSuffix": "di Aurya"
   },
   "categories": {
     "yoga": "Yoga",

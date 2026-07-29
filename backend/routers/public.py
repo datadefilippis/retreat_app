@@ -436,6 +436,13 @@ class OrderRequestPayload(BaseModel):
     gdpr_privacy_accepted: bool = False
     gdpr_marketing_accepted: bool = False
 
+    # ── AP-L (2026-07-29) — consenso Aurya a livello piattaforma ──
+    # True quando il GUEST spunta "Accetto i Termini e la Privacy di
+    # Aurya" al checkout (per i loggati la checkbox non compare: il
+    # consenso vive gia' sull'account, aurya_legal). Additivo: i client
+    # legacy che non lo mandano non cambiano comportamento.
+    aurya_terms_accepted: bool = False
+
     # ── R2a (2026-07-06) — lingua UI dell'utente al momento del checkout.
     # Timbrata sull'ordine (order.locale) e usata come priorità 1 per la
     # lingua di TUTTE le email verso il compratore (conferma, promemoria

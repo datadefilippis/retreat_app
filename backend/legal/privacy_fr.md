@@ -56,6 +56,22 @@ Pour les traitements suivants, Aurya agit en tant que Sous-traitant au sens de l
 
 Pour les traitements dans lesquels Aurya est Sous-traitant, l'Opérateur est Responsable du traitement vis-à-vis de ses propres personnes concernées et en assume intégralement la responsabilité de conformité, y compris la fourniture de sa propre politique de confidentialité au sens des art. 13-14 RGPD. Aurya met à disposition son **Data Processing Agreement (DPA)** standard sur demande écrite à info@aurya.life.
 
+<!-- BOZZA IN ATTESA DI REVISIONE LEGALE (AP-L, 29 luglio 2026).
+Blocco nuovo sul modello legale a due livelli dell'account utente
+Aurya. Da far rivedere da un legale prima del lancio pubblico.
+Questo commento non e' visibile all'utente finale: il server rimuove
+i commenti HTML prima di servire il documento. -->
+### 2.3 Deux niveaux de responsabilité et de consentement
+
+La Plateforme adopte un modèle juridique à deux niveaux :
+
+1. **Niveau Aurya (la présente politique)** : Aurya est Responsable du traitement pour le compte utilisateur Aurya (inscription, identifiants, historique de commandes agrégé multi-opérateurs), pour la newsletter d'Aurya (inscription avec double opt-in, envoi de guides et de contenus) et pour les données de navigation de la marketplace (consultation et recherche sur les pages publiques, dans les limites de l'art. 15). L'Utilisateur accepte la présente politique et les Conditions de Service UNE seule fois, lors de la création du compte Aurya ou, pour les achats en invité, au moment du checkout ; la version des documents acceptés est enregistrée sur le compte et dans le registre des consentements immuable de la Plateforme.
+2. **Niveau Opérateur** : pour les données de ses propres clients (réservations, commandes, fichiers clients, abonnés à la newsletter par opérateur) chaque Opérateur est Responsable du traitement autonome, tenu à ses propres obligations d'information au sens des art. 13-14 RGPD ; Aurya agit comme Sous-traitant au sens de l'art. 28 RGPD selon ce qui est décrit à l'art. 2.2. Les conditions spécifiques de l'Opérateur (politique d'annulation, exigences du service, par exemple une déclaration d'absence de contre-indications médicales) sont présentées au moment de l'achat, lorsqu'elles sont définies, et acceptées via une case dédiée ; la politique de confidentialité de l'Opérateur reste consultable depuis ses pages publiques.
+
+Les relations entre Aurya et les Opérateurs en matière de protection des données sont régies par le Data Processing Agreement standard visé à l'art. 2.2.
+
+<!-- FINE BOZZA AP-L -->
+
 ---
 
 ## 3. Catégories de données personnelles collectées

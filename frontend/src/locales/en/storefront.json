@@ -144,7 +144,7 @@
     "submitGeneric": "Error submitting the request. Please try again.",
     "fillAttendees": "Fill in name and email for each attendee.",
     "termsRequired": "You must accept the terms and conditions to proceed.",
-    "gdprRequired": "You must accept the Privacy Policy and the Terms to proceed.",
+    "gdprRequired": "You must accept the Aurya Terms and Privacy Policy to proceed.",
     "selectShippingOption": "Select a shipping option."
   },
   "submitted": {
@@ -340,7 +340,22 @@
   },
   "checkout": {
     "gdpr": {
-      "already_opted_in": "You are already subscribed to the newsletter. To unsubscribe, use the link at the bottom of any email."
+      "already_opted_in": "You are already subscribed to the newsletter. To unsubscribe, use the link at the bottom of any email.",
+      "aurya_already": "You have already accepted the Aurya terms with your account.",
+      "aurya_prefix": "I accept the",
+      "aurya_terms_link": "Terms",
+      "aurya_and": "and the",
+      "aurya_privacy_link": "Privacy Policy",
+      "aurya_suffix": "of Aurya",
+      "operator_notice": "The data for this purchase is processed by {{name}} as an independent controller.",
+      "operator_notice_link": "Privacy notice",
+      "operator_generic": "this operator",
+      "operator_terms": "I accept the conditions of {{name}}",
+      "operator_terms_generic": "I accept the operator's conditions",
+      "cancellation_title": "Cancellation policy",
+      "requirements_title": "Service requirements and conditions",
+      "policy_up_to": "Up to {{days}} days before: {{percent}}% refund",
+      "policy_after": "After that, or in case of no show: {{percent}}% refund"
     },
     "submittingBtn": "Submitting...",
     "notesLabel": "Notes",

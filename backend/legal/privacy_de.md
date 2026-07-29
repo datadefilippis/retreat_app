@@ -56,6 +56,22 @@ Für die folgenden Verarbeitungen handelt Aurya als Auftragsverarbeiter gemäß 
 
 Für die Verarbeitungen, bei denen Aurya Auftragsverarbeiter ist, ist der Veranstalter Verantwortlicher gegenüber den eigenen betroffenen Personen und übernimmt die Compliance-Verantwortung in vollem Umfang, einschließlich der Bereitstellung einer eigenen Datenschutzerklärung gemäß Art. 13-14 DSGVO. Aurya stellt sein Standard-**Data Processing Agreement (DPA)** auf schriftliche Anfrage an info@aurya.life zur Verfügung.
 
+<!-- BOZZA IN ATTESA DI REVISIONE LEGALE (AP-L, 29 luglio 2026).
+Blocco nuovo sul modello legale a due livelli dell'account utente
+Aurya. Da far rivedere da un legale prima del lancio pubblico.
+Questo commento non e' visibile all'utente finale: il server rimuove
+i commenti HTML prima di servire il documento. -->
+### 2.3 Zwei Ebenen der Verantwortlichkeit und der Einwilligung
+
+Die Plattform folgt einem rechtlichen Modell auf zwei Ebenen:
+
+1. **Ebene Aurya (diese Erklärung)**: Aurya ist Verantwortlicher für das Aurya-Nutzerkonto (Registrierung, Zugangsdaten, aggregierte veranstalterübergreifende Bestellhistorie), für den Aurya-Newsletter (Anmeldung mit Double-Opt-in, Versand von Leitfäden und Inhalten) und für die Navigationsdaten des Marktplatzes (Ansicht und Suche auf den öffentlichen Seiten, im Rahmen von Art. 15). Der Nutzer akzeptiert diese Erklärung und die Nutzungsbedingungen EINMAL, bei der Erstellung des Aurya-Kontos oder, bei Gastkäufen, beim Checkout; die Version der akzeptierten Dokumente wird auf dem Konto und im unveränderlichen Einwilligungsregister der Plattform festgehalten.
+2. **Ebene Veranstalter**: für die Daten der eigenen Kunden (Buchungen, Bestellungen, Kundendaten, Abonnenten des veranstaltereigenen Newsletters) ist jeder Veranstalter eigenständiger Verantwortlicher mit eigenen Informationspflichten gemäß Art. 13-14 DSGVO; Aurya handelt als Auftragsverarbeiter gemäß Art. 28 DSGVO wie in Art. 2.2 beschrieben. Die spezifischen Bedingungen des Veranstalters (Stornierungsbedingungen, Anforderungen der Leistung, zum Beispiel eine Erklärung über das Fehlen medizinischer Gegenanzeigen) werden beim Kauf angezeigt, sofern definiert, und über ein eigenes Kontrollkästchen akzeptiert; die Datenschutzerklärung des Veranstalters bleibt über seine öffentlichen Seiten abrufbar.
+
+Die datenschutzrechtlichen Beziehungen zwischen Aurya und den Veranstaltern werden durch das Standard-Data-Processing-Agreement gemäß Art. 2.2 geregelt.
+
+<!-- FINE BOZZA AP-L -->
+
 ---
 
 ## 3. Kategorien der erhobenen personenbezogenen Daten

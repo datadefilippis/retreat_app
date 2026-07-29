@@ -1753,6 +1753,11 @@
       "program": {
         "title": "Program and sales page",
         "subtitle": "Day-by-day program, what's included and FAQ. You can also complete them later, from the retreat page."
+      },
+      "regole": {
+        "requisitiTitle": "Service requirements and conditions",
+        "requisitiDesc": "What participants need to know or declare. If you fill this in, a dedicated acceptance checkbox with this text appears at checkout.",
+        "requisitiPlaceholder": "E.g. declaration of absence of medical contraindications, age requirements, what to bring…"
       }
     },
     "digital": {

@@ -56,6 +56,22 @@ For the following processing activities Aurya acts as Processor pursuant to Art.
 
 For processing activities in which Aurya acts as Processor, the Operator is the Controller vis-à-vis their own data subjects and assumes full responsibility for compliance, including providing their own privacy policy pursuant to Arts. 13-14 GDPR. Aurya makes its standard **Data Processing Agreement (DPA)** available upon written request to info@aurya.life.
 
+<!-- BOZZA IN ATTESA DI REVISIONE LEGALE (AP-L, 29 luglio 2026).
+Blocco nuovo sul modello legale a due livelli dell'account utente
+Aurya. Da far rivedere da un legale prima del lancio pubblico.
+Questo commento non e' visibile all'utente finale: il server rimuove
+i commenti HTML prima di servire il documento. -->
+### 2.3 Two levels of controllership and consent
+
+The Platform adopts a two-level legal model:
+
+1. **Aurya level (this policy)**: Aurya is the Controller for the Aurya user account (registration, credentials, aggregated cross-operator order history), for the Aurya newsletter (double opt-in subscription, delivery of guides and content) and for marketplace browsing data (viewing and searching public pages, within the limits of Art. 15). The User accepts this policy and the Terms of Service ONCE, when creating the Aurya account or, for guest purchases, at checkout; the version of the accepted documents is recorded on the account and in the Platform's immutable consent register.
+2. **Operator level**: for the data of their own customers (bookings, orders, customer records, per-operator newsletter subscribers) each Operator is an autonomous Controller, bound by their own information duties under Arts. 13-14 GDPR; Aurya acts as Processor under Art. 28 GDPR as described in Art. 2.2. The Operator's specific conditions (cancellation policy, service requirements, for example a declaration of absence of medical contraindications) are presented at the time of purchase, when defined, and accepted with a dedicated checkbox; the Operator's privacy policy remains available from their public pages.
+
+Data protection relations between Aurya and the Operators are governed by the standard Data Processing Agreement referred to in Art. 2.2.
+
+<!-- FINE BOZZA AP-L -->
+
 ---
 
 ## 3. Categories of personal data collected

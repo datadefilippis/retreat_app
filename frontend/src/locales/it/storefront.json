@@ -144,7 +144,7 @@
     "submitGeneric": "Errore nell'invio della richiesta. Riprova.",
     "fillAttendees": "Compila nome ed email per ogni partecipante.",
     "termsRequired": "Devi accettare i termini e condizioni per procedere.",
-    "gdprRequired": "Devi accettare la Privacy e i Termini per procedere.",
+    "gdprRequired": "Devi accettare i Termini e la Privacy di Aurya per procedere.",
     "selectShippingOption": "Seleziona un'opzione di spedizione."
   },
   "submitted": {
@@ -340,7 +340,22 @@
   },
   "checkout": {
     "gdpr": {
-      "already_opted_in": "Sei già iscritto alla newsletter. Per disiscriverti usa il link in fondo a ogni email."
+      "already_opted_in": "Sei già iscritto alla newsletter. Per disiscriverti usa il link in fondo a ogni email.",
+      "aurya_already": "Hai già accettato i termini di Aurya con il tuo account.",
+      "aurya_prefix": "Accetto i",
+      "aurya_terms_link": "Termini",
+      "aurya_and": "e la",
+      "aurya_privacy_link": "Privacy",
+      "aurya_suffix": "di Aurya",
+      "operator_notice": "I dati di questo acquisto sono trattati da {{name}} come titolare autonomo.",
+      "operator_notice_link": "Informativa",
+      "operator_generic": "questo operatore",
+      "operator_terms": "Accetto le condizioni di {{name}}",
+      "operator_terms_generic": "Accetto le condizioni dell'operatore",
+      "cancellation_title": "Politica di cancellazione",
+      "requirements_title": "Requisiti e condizioni del servizio",
+      "policy_up_to": "Fino a {{days}} giorni prima: rimborso {{percent}}%",
+      "policy_after": "Dopo, o in caso di mancata presentazione: rimborso {{percent}}%"
     },
     "submittingBtn": "Invio in corso...",
     "notesLabel": "Note",

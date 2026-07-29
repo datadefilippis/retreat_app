@@ -47,10 +47,13 @@ export default function CheckoutForm({
     attendeesValid, orderFieldsValid, termsValid, gdprValid, servicesValid,
     effectiveTerms,
     termsExpanded, setTermsExpanded,
-    gdprTermsAccepted, setGdprTermsAccepted,
-    gdprPrivacyAccepted, setGdprPrivacyAccepted,
     gdprMarketingAccepted, setGdprMarketingAccepted,
     marketingStatus,
+    // AP-L — legal a due livelli (Aurya + condizioni dell'operatore)
+    setPlatformAccount, platformLoggedIn,
+    auryaAccepted, setAuryaConsent,
+    operatorTermsAccepted, setOperatorTermsAccepted,
+    hasOperatorConditions, cartCancellationPolicy,
     requiresCustomerAccount,
     wantRegister, setWantRegister,
     regPassword, setRegPassword,
@@ -235,11 +238,17 @@ export default function CheckoutForm({
                     invariate qui sotto). */}
                 {!isCustomerAuthenticated && (
                   <AuryaQuickLogin
-                    onProfile={(acc) => setForm(f => ({
-                      ...f,
-                      name: acc?.name || f.name,
-                      email: acc?.email || f.email,
-                    }))}
+                    onProfile={(acc) => {
+                      // AP-L — il login inline aggiorna anche lo stato
+                      // consensi: la checkbox Aurya sparisce (gia'
+                      // accettata sull'account alla creazione).
+                      setPlatformAccount(acc);
+                      setForm(f => ({
+                        ...f,
+                        name: acc?.name || f.name,
+                        email: acc?.email || f.email,
+                      }));
+                    }}
                   />
                 )}
 
@@ -584,76 +593,151 @@ export default function CheckoutForm({
                     The two outer guards (block visibility) are now
                     OR-composed: render the container if AT LEAST one
                     of the inner sections will appear. */}
-                {(!isCustomerAuthenticated || !marketingStatus.isOptedIn) && (
+                {(!isCustomerAuthenticated || !marketingStatus.isOptedIn || hasOperatorConditions) && (
                   <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-3 space-y-2">
                     <p className="text-xs font-medium text-blue-900 uppercase tracking-wide">
                       {t('storefront:checkout.gdpr.title', { defaultValue: 'Privacy e Termini' })}
                     </p>
-                    {/* Privacy + Terms — guest only (CG-4 covers registered). */}
-                    {!isCustomerAuthenticated && (
+                    {/* AP-L — livello AURYA. Loggato piattaforma: nessuna
+                        ri-accettazione, riga discreta con i link. Guest:
+                        checkbox unica sui documenti Aurya (l'atto primario,
+                        assorbe l'accettazione merchant: l'informativa
+                        dell'operatore resta linkata qui sotto). */}
+                    {platformLoggedIn ? (
+                      <p className="text-xs text-gray-600" data-testid="aurya-terms-already">
+                        {t('storefront:checkout.gdpr.aurya_already', { defaultValue: 'Hai già accettato i termini di Aurya con il tuo account.' })}{' '}
+                        <a href="/termini" target="_blank" rel="noopener noreferrer" className="underline text-blue-700 hover:no-underline">
+                          {t('storefront:checkout.gdpr.aurya_terms_link', { defaultValue: 'Termini' })}
+                        </a>
+                        {' · '}
+                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-blue-700 hover:no-underline">
+                          {t('storefront:checkout.gdpr.aurya_privacy_link', { defaultValue: 'Privacy' })}
+                        </a>
+                      </p>
+                    ) : !isCustomerAuthenticated && (
                       <>
                         <label className="flex items-start gap-2 cursor-pointer select-none">
                           <input
                             type="checkbox"
-                            checked={gdprPrivacyAccepted}
-                            onChange={e => setGdprPrivacyAccepted(e.target.checked)}
+                            checked={auryaAccepted}
+                            onChange={e => setAuryaConsent(e.target.checked)}
                             className="mt-0.5 shrink-0 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                             required
+                            data-testid="aurya-terms-checkbox"
                           />
                           <span className="text-sm text-gray-800">
-                            {t('storefront:checkout.gdpr.privacy_prefix', { defaultValue: 'Ho letto l\u2019' })}
+                            {t('storefront:checkout.gdpr.aurya_prefix', { defaultValue: 'Accetto i' })}{' '}
                             <a
-                              href={`/s/${encodeURIComponent(slug || '')}/privacy`}
+                              href="/termini"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="underline text-blue-700 hover:no-underline"
                             >
-                              {t('storefront:checkout.gdpr.privacy_link', { defaultValue: 'Informativa sulla Privacy' })}
+                              {t('storefront:checkout.gdpr.aurya_terms_link', { defaultValue: 'Termini' })}
                             </a>
+                            {' '}{t('storefront:checkout.gdpr.aurya_and', { defaultValue: 'e la' })}{' '}
+                            <a
+                              href="/privacy"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline text-blue-700 hover:no-underline"
+                            >
+                              {t('storefront:checkout.gdpr.aurya_privacy_link', { defaultValue: 'Privacy' })}
+                            </a>
+                            {' '}{t('storefront:checkout.gdpr.aurya_suffix', { defaultValue: 'di Aurya' })}
                             {' *'}
                           </span>
                         </label>
+                        {/* Titolarita' dell'operatore sui dati dell'acquisto:
+                            informativa (autogenerata o pubblicata) linkata. */}
+                        <p className="text-[11px] text-gray-500 pl-6">
+                          {t('storefront:checkout.gdpr.operator_notice', {
+                            defaultValue: 'I dati di questo acquisto sono trattati da {{name}} come titolare autonomo.',
+                            name: catalog?.store_info?.display_name || catalog?.org_name || t('storefront:checkout.gdpr.operator_generic', { defaultValue: 'questo operatore' }),
+                          })}{' '}
+                          <a
+                            href={`/s/${encodeURIComponent(slug || '')}/privacy`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline text-gray-600 hover:no-underline"
+                          >
+                            {t('storefront:checkout.gdpr.operator_notice_link', { defaultValue: 'Informativa' })}
+                          </a>
+                        </p>
+                      </>
+                    )}
+                    {/* AP-L — livello OPERATORE: checkbox dinamica, esiste
+                        SOLO se l'operatore ha compilato politica di
+                        cancellazione o requisiti del servizio. Vale per
+                        chiunque, anche loggato: sono i patti del singolo
+                        acquisto (RS3, condizioni specifiche in espansione). */}
+                    {hasOperatorConditions && (
+                      <div className="space-y-1">
                         <label className="flex items-start gap-2 cursor-pointer select-none">
                           <input
                             type="checkbox"
-                            checked={gdprTermsAccepted}
-                            onChange={e => setGdprTermsAccepted(e.target.checked)}
+                            checked={operatorTermsAccepted}
+                            onChange={e => setOperatorTermsAccepted(e.target.checked)}
                             className="mt-0.5 shrink-0 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                             required
+                            data-testid="operator-terms-checkbox"
                           />
                           <span className="text-sm text-gray-800">
-                            {t('storefront:checkout.gdpr.terms_prefix', { defaultValue: 'Accetto i' })}{' '}
-                            <a
-                              href={`/s/${encodeURIComponent(slug || '')}/terms`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline text-blue-700 hover:no-underline"
-                            >
-                              {t('storefront:checkout.gdpr.terms_link', { defaultValue: 'Termini e Condizioni' })}
-                            </a>
+                            {(catalog?.store_info?.display_name || catalog?.org_name)
+                              ? t('storefront:checkout.gdpr.operator_terms', {
+                                  defaultValue: 'Accetto le condizioni di {{name}}',
+                                  name: catalog?.store_info?.display_name || catalog?.org_name,
+                                })
+                              : t('storefront:checkout.gdpr.operator_terms_generic', { defaultValue: "Accetto le condizioni dell'operatore" })}
                             {' *'}
                           </span>
                         </label>
-                        {/* RS3 — condizioni specifiche del prodotto (caparra,
-                            cancellazione custom): stesse checkbox, testo in
-                            espansione */}
-                        {effectiveTerms && (
-                          <div className="pl-6">
-                            <button
-                              type="button"
-                              onClick={() => setTermsExpanded(v => !v)}
-                              className="text-xs underline text-blue-700 hover:no-underline"
-                            >
-                              {t('storefront:checkout.gdpr.specific_terms', { defaultValue: 'Leggi le condizioni specifiche di questo acquisto' })}
-                            </button>
-                            {termsExpanded && (
-                              <div className="mt-2 max-h-64 overflow-y-auto bg-white rounded-md border border-gray-200 p-3">
-                                <MarkdownLite source={effectiveTerms} />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
+                        <div className="pl-6">
+                          <button
+                            type="button"
+                            onClick={() => setTermsExpanded(v => !v)}
+                            className="text-xs underline text-blue-700 hover:no-underline"
+                          >
+                            {t('storefront:checkout.gdpr.specific_terms', { defaultValue: 'Leggi le condizioni specifiche di questo acquisto' })}
+                          </button>
+                          {termsExpanded && (
+                            <div className="mt-2 max-h-64 overflow-y-auto bg-white rounded-md border border-gray-200 p-3 space-y-2">
+                              {cartCancellationPolicy && (
+                                <div>
+                                  <p className="text-xs font-semibold text-gray-800">
+                                    {t('storefront:checkout.gdpr.cancellation_title', { defaultValue: 'Politica di cancellazione' })}
+                                  </p>
+                                  <ul className="mt-1 space-y-0.5 text-xs text-gray-700">
+                                    {cartCancellationPolicy.map((tier, idx) => (
+                                      <li key={idx}>
+                                        {idx < cartCancellationPolicy.length - 1
+                                          ? t('storefront:checkout.gdpr.policy_up_to', {
+                                              defaultValue: 'Fino a {{days}} giorni prima: rimborso {{percent}}%',
+                                              days: tier.days_before, percent: tier.refund_percent,
+                                            })
+                                          : t('storefront:checkout.gdpr.policy_after', {
+                                              defaultValue: 'Dopo, o in caso di mancata presentazione: rimborso {{percent}}%',
+                                              percent: tier.refund_percent,
+                                            })}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              {effectiveTerms && (
+                                <div>
+                                  {cartCancellationPolicy && (
+                                    <p className="text-xs font-semibold text-gray-800 mb-1">
+                                      {t('storefront:checkout.gdpr.requirements_title', { defaultValue: 'Requisiti e condizioni del servizio' })}
+                                    </p>
+                                  )}
+                                  <MarkdownLite source={effectiveTerms} />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
                     {/* Marketing — visible only when NOT already opted-in.
                         Replaced by a small info line otherwise. */}

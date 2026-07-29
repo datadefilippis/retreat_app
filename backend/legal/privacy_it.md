@@ -56,6 +56,22 @@ Per i seguenti trattamenti Aurya agisce come Responsabile ex art. 28 GDPR per co
 
 Per i trattamenti in cui Aurya e' Responsabile, l'Operatore e' Titolare verso i propri interessati e ne assume integralmente la responsabilita' di compliance, inclusa la fornitura di una propria informativa privacy ai sensi degli artt. 13-14 GDPR. Aurya mette a disposizione il proprio **Data Processing Agreement (DPA)** standard a richiesta scritta a info@aurya.life.
 
+<!-- BOZZA IN ATTESA DI REVISIONE LEGALE (AP-L, 29 luglio 2026).
+Blocco nuovo sul modello legale a due livelli dell'account utente
+Aurya. Da far rivedere da un legale prima del lancio pubblico.
+Questo commento non e' visibile all'utente finale: il server rimuove
+i commenti HTML prima di servire il documento. -->
+### 2.3 Due livelli di titolarita' e di consenso
+
+La Piattaforma adotta un modello legale a due livelli:
+
+1. **Livello Aurya (questa informativa)**: Aurya e' Titolare del trattamento per l'account utente Aurya (registrazione, credenziali, storico ordini aggregato cross-operatore), per la newsletter di Aurya (iscrizione con doppio consenso, invio di guide e contenuti) e per i dati di navigazione del marketplace (consultazione e ricerca sulle pagine pubbliche, nei limiti dell'art. 15). L'Utente accetta la presente informativa e i Termini di Servizio UNA sola volta, alla creazione dell'account Aurya oppure, per gli acquisti come ospite, al momento del checkout; la versione dei documenti accettati e' registrata sull'account e nel registro consensi immutabile della Piattaforma.
+2. **Livello Operatore**: per i dati dei propri clienti (prenotazioni, ordini, anagrafiche, iscritti alla newsletter per-operatore) ogni Operatore e' Titolare autonomo del trattamento, tenuto ai propri obblighi informativi ai sensi degli artt. 13-14 GDPR; Aurya agisce come Responsabile ex art. 28 GDPR secondo quanto descritto all'art. 2.2. Le condizioni specifiche dell'Operatore (politica di cancellazione, requisiti del servizio, ad esempio la dichiarazione di assenza di controindicazioni mediche) sono presentate al momento dell'acquisto, quando definite, e accettate con una casella dedicata; l'informativa privacy dell'Operatore resta consultabile dalle sue pagine pubbliche.
+
+I rapporti tra Aurya e gli Operatori in materia di protezione dei dati sono regolati dal Data Processing Agreement standard di cui all'art. 2.2.
+
+<!-- FINE BOZZA AP-L -->
+
 ---
 
 ## 3. Tipologie di dati personali raccolti

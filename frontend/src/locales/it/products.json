@@ -1871,6 +1871,11 @@
       "program": {
         "title": "Programma e pagina di vendita",
         "subtitle": "Programma giorno per giorno, cosa è incluso e FAQ. Puoi completarli anche dopo, dalla pagina del ritiro."
+      },
+      "regole": {
+        "requisitiTitle": "Requisiti e condizioni del servizio",
+        "requisitiDesc": "Cosa deve sapere o dichiarare chi partecipa. Se compili questo campo, al checkout compare una casella di accettazione dedicata con questo testo.",
+        "requisitiPlaceholder": "Es. dichiarazione di assenza di controindicazioni mediche, requisiti di eta', cosa portare…"
       }
     },
     "digital": {

@@ -144,7 +144,7 @@
     "submitGeneric": "Fehler beim Senden der Anfrage. Bitte erneut versuchen.",
     "fillAttendees": "Geben Sie Name und E-Mail für jeden Teilnehmer ein.",
     "termsRequired": "Sie müssen die Allgemeinen Geschäftsbedingungen akzeptieren, um fortzufahren.",
-    "gdprRequired": "Du musst die Datenschutzerklärung und die Bedingungen akzeptieren, um fortzufahren.",
+    "gdprRequired": "Du musst die Nutzungsbedingungen und die Datenschutzerklärung von Aurya akzeptieren, um fortzufahren.",
     "selectShippingOption": "Wählen Sie eine Versandoption."
   },
   "submitted": {
@@ -325,7 +325,22 @@
   },
   "checkout": {
     "gdpr": {
-      "already_opted_in": "Sie sind bereits für den Newsletter angemeldet. Zum Abmelden verwenden Sie den Link am Ende jeder E-Mail."
+      "already_opted_in": "Sie sind bereits für den Newsletter angemeldet. Zum Abmelden verwenden Sie den Link am Ende jeder E-Mail.",
+      "aurya_already": "Du hast die Bedingungen von Aurya mit deinem Konto bereits akzeptiert.",
+      "aurya_prefix": "Ich akzeptiere die",
+      "aurya_terms_link": "Nutzungsbedingungen",
+      "aurya_and": "und die",
+      "aurya_privacy_link": "Datenschutzerklärung",
+      "aurya_suffix": "von Aurya",
+      "operator_notice": "Die Daten dieses Kaufs verarbeitet {{name}} als eigenständiger Verantwortlicher.",
+      "operator_notice_link": "Datenschutzhinweis",
+      "operator_generic": "dieser Veranstalter",
+      "operator_terms": "Ich akzeptiere die Bedingungen von {{name}}",
+      "operator_terms_generic": "Ich akzeptiere die Bedingungen des Veranstalters",
+      "cancellation_title": "Stornierungsbedingungen",
+      "requirements_title": "Anforderungen und Bedingungen der Leistung",
+      "policy_up_to": "Bis {{days}} Tage vorher: {{percent}}% Erstattung",
+      "policy_after": "Danach oder bei Nichterscheinen: {{percent}}% Erstattung"
     },
     "submittingBtn": "Wird gesendet...",
     "notesLabel": "Notizen",

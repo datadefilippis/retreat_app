@@ -38,7 +38,7 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.2"
+CURRENT_VERSION_TAG: Final[str] = "v2.3"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
@@ -76,9 +76,22 @@ History:
     qualificato di conseguenza. Il consenso e' raccolto dal banner,
     non dai flussi di signup: nessun reconsent utenti richiesto.
     Stesse modifiche in EN/DE/FR.
+  - v2.3 (AP-L, 2026-07-29) — legal a due livelli gestito da Aurya:
+    Privacy 2.3 (due livelli di titolarita': Aurya titolare per account
+    utente, newsletter Aurya e navigazione marketplace; operatori
+    titolari autonomi per i dati dei loro clienti, Aurya responsabile
+    ex art. 28) e Termini 2 (accettazione a due livelli: documenti
+    Aurya una volta sull'account, condizioni specifiche dell'operatore
+    per-acquisto al checkout). Sezioni nuove in BOZZA per revisione
+    legale, marcate con commenti HTML rimossi dal server prima della
+    pubblicazione. Il bump innesca il re-consent ESISTENTE dei soli
+    utenti admin (ReconsentModal via /auth/me); i customer per-store
+    restano sul versioning merchant, non toccati. Il consenso dei
+    platform account (aurya_legal) nasce con questa versione.
+    Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "4f9525fa7ee2927b"
+CURRENT_VERSION_HASH: Final[str] = "988fdfc26d28c01a"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:
@@ -197,6 +210,14 @@ def get_legal_document(doc_type: str, locale: Optional[str] = None) -> dict:
         # If even the Italian fallback fails, return empty string —
         # the frontend handles the empty state gracefully.
         content = ""
+
+    # AP-L (2026-07-29) — i commenti HTML nei sorgenti .md sono note
+    # interne (es. il marcatore "bozza in attesa di revisione legale"):
+    # i renderer frontend fanno escape dell'HTML e li mostrerebbero,
+    # quindi si rimuovono QUI, prima di servire il documento. Il
+    # version_hash resta calcolato sui file sorgente integrali.
+    import re as _re
+    content = _re.sub(r"<!--.*?-->\n?", "", content, flags=_re.DOTALL)
 
     # v1.0: all locales are production-ready (full translations of the
     # IT binding bundle). The field is kept on the response for forward
