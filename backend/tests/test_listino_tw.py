@@ -506,3 +506,13 @@ class TestProfiloNegozioPN0:
         inizia = (FRONTEND_SRC / "features" / "onboarding"
                   / "IniziaPage.js").read_text()
         assert "lean_profile_conditions" in inizia
+
+    def test_pn1_listino_rows_ready_for_inline(self):
+        """PN1 — la riga di listino pubblica porta cio' che serve
+        all'acquisto inline: product_id, flag slot, opzioni."""
+        r = requests.get(f"{BASE_URL}/api/public/operator/masseria-demo",
+                         timeout=10)
+        row = r.json()["listino"][0]
+        for field in ("product_id", "has_availability_slots",
+                      "service_options", "allow_custom_request"):
+            assert field in row, field

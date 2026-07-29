@@ -4044,14 +4044,26 @@ async def _operator_listino(org_id: str) -> list:
     rows = await products_collection.find(
         {"organization_id": org_id, "item_type": "service",
          "is_published": True, "is_active": True},
-        {"_id": 0, "name": 1, "slug": 1, "category": 1, "unit_price": 1,
+        {"_id": 0, "id": 1, "name": 1, "slug": 1, "category": 1,
+         "unit_price": 1,
          "price_mode": 1, "transaction_mode": 1, "description": 1,
-         "metadata.duration_minutes": 1, "metadata.service_mode": 1},
+         "metadata.duration_minutes": 1, "metadata.service_mode": 1,
+         "has_availability_slots": 1, "service_options": 1,
+         "service_allow_custom_request": 1},
     ).sort("category", 1).to_list(100)
     out = []
     for r in rows:
         meta = r.get("metadata") or {}
+        # PN1 — opzioni servizio in forma pubblica minima (id, label,
+        # prezzo): servono all'acquisto inline sul profilo (PN3)
+        options = [
+            {"id": o.get("id"), "label": o.get("label"),
+             "price": o.get("price")}
+            for o in (r.get("service_options") or [])
+            if o.get("id") and o.get("label") is not None
+        ]
         out.append({
+            "product_id": r.get("id"),
             "name": r["name"],
             "slug": r.get("slug"),
             "category": r.get("category"),
@@ -4061,6 +4073,11 @@ async def _operator_listino(org_id: str) -> list:
             "duration_minutes": meta.get("duration_minutes"),
             "service_mode": meta.get("service_mode") or "in_person",
             "note": (r.get("description") or "")[:200] or None,
+            # PN1 — flag per il flusso inline: slot prenotabili,
+            # opzioni e richiesta con orario libero
+            "has_availability_slots": bool(r.get("has_availability_slots")),
+            "service_options": options,
+            "allow_custom_request": bool(r.get("service_allow_custom_request")),
         })
     return out
 
