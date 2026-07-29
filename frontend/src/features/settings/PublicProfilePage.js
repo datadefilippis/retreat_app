@@ -13,7 +13,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Skeleton } from '../../components/ui/skeleton';
-import { Link } from 'react-router-dom';
+import { Link, Link as RouterLink } from 'react-router-dom';
 import {
   ExternalLink, Copy, Check, Upload, Loader2, Instagram, Globe, Facebook,
   Eye,
@@ -254,6 +254,13 @@ export default function PublicProfilePage() {
                 {t('publicProfile.view', { defaultValue: 'Apri' })}
               </Button>
             </a>
+            {/* PN0 — le condizioni si trovano da qui, non solo in
+                fondo a Impostazioni */}
+            <RouterLink to="/settings" data-testid="conditions-shortcut">
+              <Button variant="outline" size="sm">
+                {t('publicProfile.conditionsLink', { defaultValue: 'Condizioni di vendita' })}
+              </Button>
+            </RouterLink>
           </div>
         )}
       </Header>

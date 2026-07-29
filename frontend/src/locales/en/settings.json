@@ -712,6 +712,7 @@
     "interviewQ": "Question",
     "interviewA": "Full answer",
     "interviewRemove": "Remove question",
-    "interviewAdd": "+ Add question"
+    "interviewAdd": "+ Add question",
+    "conditionsLink": "Sales conditions"
   }
 }

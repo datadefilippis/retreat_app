@@ -28,7 +28,7 @@ export default function DirectoryListingHint({ mode, className = '' }) {
   let message = null;
   if (mode === 'request') {
     message = t('directoryHint.request', {
-      defaultValue: 'Con la prenotazione su richiesta questo ritiro NON comparirà nel calendario pubblico: la directory elenca solo ritiri prenotabili online all’istante. Resta prenotabile dal tuo store.',
+      defaultValue: 'Con la prenotazione su richiesta questo ritiro NON comparirà nel calendario pubblico: la directory elenca solo ritiri prenotabili online all’istante. Resta comunque visibile e prenotabile dal tuo profilo pubblico.',
     });
   } else if (mode === 'direct' && !loading && !ready) {
     message = t('directoryHint.stripeNote', {

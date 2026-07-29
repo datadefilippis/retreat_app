@@ -711,6 +711,7 @@
     "interviewQ": "Domanda",
     "interviewA": "Risposta integrale",
     "interviewRemove": "Rimuovi domanda",
-    "interviewAdd": "+ Aggiungi domanda"
+    "interviewAdd": "+ Aggiungi domanda",
+    "conditionsLink": "Condizioni di vendita"
   }
 }

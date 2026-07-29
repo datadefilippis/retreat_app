@@ -568,9 +568,11 @@ export default function OperatorProfilePage() {
 
           <Gallery photos={data.photos} name={data.name} t={t} />
 
-          {/* RT3 — in fase network il marketplace è spento: la sezione
-              ritiri prenotabili torna col lancio (fase marketplace) */}
-          {sitePhase !== 'network' && (
+          {/* PN0 — il profilo e' la vetrina dell'operatore: i suoi
+              ritiri pubblicati si vedono SEMPRE, anche in fase network
+              e anche senza Stripe (il gate GT1b vale solo per la
+              directory, non per la pagina personale) */}
+          {true && (
           <section id="ritiri" className="mt-8">
             <h2 className="font-heading text-xl font-bold text-foreground mb-3">
               {t('landings:operator.upcoming', { count: data.upcoming_count })}
@@ -676,12 +678,8 @@ export default function OperatorProfilePage() {
             )}
           </div>
 
-          {data.store_slug && (
-            <Link to={`/s/${data.store_slug}`}
-                  className="block rounded-2xl bg-primary text-white text-center px-4 py-3 text-sm font-semibold hover:opacity-90 transition-opacity">
-              🛍 {t('landings:operator.visitStore', { defaultValue: 'Visita il negozio' })} →
-            </Link>
-          )}
+          {/* PN0 — via "Visita il negozio": il profilo E' il negozio
+              (il listino e i ritiri si comprano da qui) */}
           <button type="button" onClick={() => setWriteOpen(true)}
                   className="block w-full rounded-2xl border border-primary text-primary text-center px-4 py-3 text-sm font-semibold hover:bg-primary hover:text-white transition-colors">
             ★ {t('landings:reviews.writeCta', { defaultValue: 'Scrivi una recensione' })}

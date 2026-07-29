@@ -431,6 +431,11 @@ export const SettingsPage = () => {
           </CardContent>
         </Card>
 
+        {/* ── RS3/PN0 Patti chiari: subito dopo l'anagrafica, non in
+            fondo — e' la prima cosa che un operatore cerca quando
+            vende (founder 29/7: "non e' chiaro dove si configurano") */}
+        {isAdmin ? <SalesConditionsCard /> : null}
+
         <LanguageSelector />
 
         {/* ── Billing (v5.4 — enriched subscription overview) ── */}
@@ -442,8 +447,6 @@ export const SettingsPage = () => {
         {/* ── CH compliance v1: Payment methods preflight (Stripe capabilities) ── */}
         {isAdmin ? <PaymentMethodsSection /> : null}
 
-        {/* ── RS3 Patti chiari: condizioni di vendita dell'operatore ── */}
-        {isAdmin ? <SalesConditionsCard /> : null}
 
         {/* ── Profile ── */}
         <Card className="border border-border">

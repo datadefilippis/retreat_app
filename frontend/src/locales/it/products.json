@@ -356,7 +356,7 @@
           "stripe_not_ready": "Stripe non attivo: collega i pagamenti nelle Impostazioni",
           "product_not_published": "Prodotto non pubblicato",
           "occurrence_not_published": "Data non pubblicata",
-          "no_public_page": "Nessuna pagina pubblica: pubblica lo store o la vetrina"
+          "no_public_page": "Nessuna pagina pubblica: completa il tuo profilo pubblico"
         }
       }
     }
@@ -830,7 +830,7 @@
         "slugLabel": "Slug URL",
         "slugExample": "es. serata-jazz-aprile",
         "landingAvailable": "✓ Landing sarà disponibile su:",
-        "publishStoreFirst": "⚠ Pubblica uno store per abilitare la landing.",
+        "publishStoreFirst": "⚠ Completa il profilo pubblico per abilitare la landing.",
         "slugMissingHint": "Senza slug la landing pubblica non è raggiungibile.",
         "saveBtn": "Salva data e luogo"
       },

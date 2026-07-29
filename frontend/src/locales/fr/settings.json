@@ -676,6 +676,7 @@
     "interviewQ": "Question",
     "interviewA": "Réponse intégrale",
     "interviewRemove": "Supprimer la question",
-    "interviewAdd": "+ Ajouter une question"
+    "interviewAdd": "+ Ajouter une question",
+    "conditionsLink": "Conditions de vente"
   }
 }

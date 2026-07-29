@@ -462,3 +462,47 @@ class TestFunnelRS5:
         sf = (FRONTEND_SRC / "features" / "storefront"
               / "StorefrontPage.js").read_text()
         assert "email-promise" in sf
+
+
+class TestProfiloNegozioPN0:
+    """PN0 (docs/PROFILO_NEGOZIO_PIANO_2026-07.md) — condizioni
+    trovabili, ritiri sempre sul profilo, zero 'store' nei percorsi
+    snelli."""
+
+    def test_profile_shows_retreats_in_every_phase(self):
+        prof = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorProfilePage.js").read_text()
+        # la sezione ritiri non e' piu' gated dalla fase del sito
+        i = prof.index('id="ritiri"')
+        assert "sitePhase !== 'network' && (" not in prof[max(0, i - 400):i]
+        # e il bottone 'Visita il negozio' non esiste piu'
+        assert "visitStore" not in prof
+
+    def test_no_store_copy_in_retreat_path(self):
+        hint = (FRONTEND_SRC / "components"
+                / "DirectoryListingHint.jsx").read_text()
+        assert "dal tuo store" not in hint
+        assert "profilo pubblico" in hint
+        import json as _json
+        prod = _json.loads((FRONTEND_SRC / "locales" / "it"
+                            / "products.json").read_text())
+        flat = _json.dumps(prod, ensure_ascii=False)
+        assert "pubblica lo store" not in flat.lower()
+        assert "Pubblica uno store" not in flat
+        dash = (FRONTEND_SRC / "locales" / "it"
+                / "dashboard.json").read_text()
+        assert "appare sul tuo profilo" in dash
+
+    def test_conditions_discoverable(self):
+        """La card Condizioni sta in alto in Impostazioni e ha rimandi
+        da Profilo pubblico e da /inizia."""
+        settings = (FRONTEND_SRC / "features" / "settings"
+                    / "SettingsPage.js").read_text()
+        assert (settings.index("<SalesConditionsCard />")
+                < settings.index("<LanguageSelector />"))
+        pub = (FRONTEND_SRC / "features" / "settings"
+               / "PublicProfilePage.js").read_text()
+        assert "conditions-shortcut" in pub
+        inizia = (FRONTEND_SRC / "features" / "onboarding"
+                  / "IniziaPage.js").read_text()
+        assert "lean_profile_conditions" in inizia

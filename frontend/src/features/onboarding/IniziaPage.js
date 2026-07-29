@@ -62,6 +62,8 @@ export default function IniziaPage() {
       why: t('onboarding.lean_profile_why', { defaultValue: 'Bio, foto e contatti: la tua pagina professionale, indicizzata su Google. Salvi e sei visibile.' }),
       cta: t('onboarding.lean_profile_cta', { defaultValue: 'Crea la tua pagina' }),
       href: '/public-profile',
+      secondary: { href: '/settings',
+        label: t('onboarding.lean_profile_conditions', { defaultValue: 'E le tue condizioni di vendita? Le imposti qui' }) },
     },
     {
       key: 'listino_filled', icon: ListChecks, minutes: 5,
@@ -232,6 +234,12 @@ export default function IniziaPage() {
                               }`}>
                           {step.cta} <ArrowRight className="h-3.5 w-3.5" />
                         </Link>
+                        {step.secondary && (
+                          <Link to={step.secondary.href}
+                                className="text-xs text-primary hover:underline">
+                            {step.secondary.label}
+                          </Link>
+                        )}
                       </div>
                     )}
                   </>
