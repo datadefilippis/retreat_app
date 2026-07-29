@@ -969,3 +969,35 @@ class TestAnteprimaMarketplace:
                  / "MarketplaceShell.jsx").read_text()
         assert "/esplora-ritiri" not in shell
         assert "/esplora-operatori" not in shell
+
+
+class TestPolishLM5:
+    """LM5 (docs/LISTINO_MARKETPLACE_PIANO_2026-07.md) — polish visivo
+    stile Treatwell su /operatori: skeleton al posto dei flash vuoti,
+    empty state onesto con il suggerimento giusto per il filtro attivo."""
+
+    def test_skeleton_cards_durante_il_caricamento(self):
+        """Il loading usa il pattern Skeleton di components/ui con la
+        STESSA geometria della card (cover 16/9): niente flash vuoti
+        e niente salto di layout a fetch finito."""
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorsIndexPage.js").read_text()
+        assert "from '../../components/ui/skeleton'" in page
+        assert "OperatorCardSkeleton" in page
+        assert 'data-testid="operator-card-skeleton"' in page
+        # la cover skeleton condivide il ratio della cover vera
+        assert page.count("aspect-[16/9]") >= 2, \
+            "cover della card e dello skeleton con lo stesso ratio 16/9"
+
+    def test_empty_state_con_suggerimento(self):
+        """Zero risultati = messaggio onesto + gesto suggerito legato
+        al filtro attivo: togli la data, allarga il raggio, tutti i
+        servizi. Mai un vuoto muto."""
+        page = (FRONTEND_SRC / "features" / "storefront"
+                / "OperatorsIndexPage.js").read_text()
+        assert 'data-testid="operators-empty"' in page
+        assert "Togli la data" in page
+        assert "Allarga il raggio" in page
+        # i suggerimenti sono azioni vere sui filtri, non solo testo
+        assert "onClick={() => setQuando('')}" in page
+        assert "setGeo({ ...geoValue, radius: 250 })" in page

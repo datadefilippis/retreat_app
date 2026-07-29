@@ -20,7 +20,8 @@ import useSeoMeta from './lib/useSeoMeta';
 
 const OperatorsMapView = React.lazy(() => import('./components/OperatorsMapView'));
 
-import { Leaf, MapPin } from 'lucide-react';
+import { Leaf, MapPin, SearchX } from 'lucide-react';
+import { Skeleton } from '../../components/ui/skeleton';
 
 // LM3 — l'URL parla italiano (?ordina=), l'API il gergo suo (sort=):
 // la mappa e' l'unico punto di traduzione.
@@ -49,10 +50,37 @@ function formatNextAvailable(na, lang) {
 function Stars({ value }) {
   const full = Math.round(value || 0);
   return (
-    <span className="text-xs tracking-tight" aria-label={`${value} su 5`}>
+    <span className="text-sm tracking-tight" aria-label={`${value} su 5`}>
       <span className="text-amber-500">{'★'.repeat(full)}</span>
       <span className="text-gray-300">{'★'.repeat(5 - full)}</span>
     </span>
+  );
+}
+
+// LM5 — scheletro della card: stessa geometria (cover 16/9, avatar,
+// righe di testo) al posto del flash vuoto durante il fetch
+function OperatorCardSkeleton() {
+  return (
+    <div
+      data-testid="operator-card-skeleton"
+      className="rounded-2xl border border-border bg-card overflow-hidden"
+    >
+      <Skeleton className="aspect-[16/9] w-full rounded-none" />
+      <div className="relative px-4 pb-4 pt-9">
+        <div className="absolute -top-7 left-4 h-14 w-14 rounded-full border-2 border-white bg-white shadow overflow-hidden">
+          <Skeleton className="h-full w-full rounded-full" />
+        </div>
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="mt-2 h-3 w-2/5" />
+        <Skeleton className="mt-3 h-3 w-full" />
+        <Skeleton className="mt-1.5 h-3 w-5/6" />
+        <div className="mt-3 flex gap-1.5">
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-14 rounded-full" />
+        </div>
+        <Skeleton className="mt-4 h-3.5 w-1/2" />
+      </div>
+    </div>
   );
 }
 
@@ -62,13 +90,14 @@ function OperatorCard({ op, t, lang }) {
   const [quickOpen, setQuickOpen] = useState(false);
   const preview = op.listino_preview || [];
   return (
-    <div className={`group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow flex flex-col ${op.sample ? 'pointer-events-none select-none' : ''}`}>
+    <div className={`group rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col ${op.sample ? 'pointer-events-none select-none' : ''}`}>
     <Link
       to={op.sample ? '#' : `/o/${op.org_slug}`}
       onClick={op.sample ? (e) => e.preventDefault() : undefined}
       className="block"
     >
-      <div className="h-24 bg-gradient-to-br from-primary/15 to-secondary relative">
+      {/* LM5 — la foto è la protagonista: cover 16/9 con zoom morbido */}
+      <div className="aspect-[16/9] bg-gradient-to-br from-primary/15 to-secondary relative overflow-hidden">
         {/* PL6 — operatore campione: cover sfocata + chip anteprima */}
         {op.sample && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#1e2b26]/25 backdrop-blur-[1px]">
@@ -79,32 +108,36 @@ function OperatorCard({ op, t, lang }) {
         )}
         {op.cover_url && (
           <img src={op.cover_url} alt=""
-               className={`w-full h-full object-cover ${op.sample ? 'blur-[3px] scale-105' : ''}`}
+               className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${op.sample ? 'blur-[3px] scale-105' : ''}`}
                loading="lazy" />
         )}
         {/* GT3 — badge dei piani "In evidenza" anche nell'aggregatore */}
         {op.featured && (
-          <span className="absolute top-2 right-2 rounded-full bg-[#376254] text-white px-2.5 py-1 text-[11px] font-semibold shadow">
+          <span className="absolute top-2.5 right-2.5 rounded-full bg-[#376254] text-white px-2.5 py-1 text-[11px] font-semibold shadow">
             ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
           </span>
         )}
-        <div className="absolute -bottom-6 left-4 h-14 w-14 rounded-full border-2 border-white bg-white shadow overflow-hidden flex items-center justify-center">
+        <div className="absolute bottom-2.5 left-3 h-14 w-14 rounded-full border-2 border-white bg-white shadow-md overflow-hidden flex items-center justify-center">
           {op.logo_url
             ? <img src={op.logo_url} alt="" className="h-full w-full object-cover" loading="lazy" />
             : <Leaf className="h-6 w-6 text-[#376254]/50" aria-hidden />}
         </div>
       </div>
-      <div className="pt-8 px-4 pb-4">
+      <div className="pt-3.5 px-4 pb-4">
+        {/* LM5 — gerarchia: nome grande, fiducia subito sotto, poi il resto */}
         {/* PL9 — nome campione: segnaposto sfocato, mai il nome finto */}
-        <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+        <p className="text-base leading-snug font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
           {op.sample ? <Redacted kind="name" /> : op.name}
         </p>
         {/* LM2 — fiducia subito: rating medio + numero recensioni */}
         {op.rating?.count > 0 && (
-          <p className="mt-0.5 flex items-center gap-1.5">
+          <p className="mt-1 flex items-center gap-1.5">
+            <span className="text-sm font-bold text-foreground">
+              {Number(op.rating.avg).toFixed(1)}
+            </span>
             <Stars value={op.rating.avg} />
-            <span className="text-[11px] text-muted-foreground">
-              {Number(op.rating.avg).toFixed(1)} · {t('landings:operators.reviewCount', {
+            <span className="text-xs text-muted-foreground">
+              {t('landings:operators.reviewCount', {
                 count: op.rating.count,
                 defaultValue: op.rating.count === 1 ? '1 recensione' : '{{count}} recensioni',
               })}
@@ -113,47 +146,50 @@ function OperatorCard({ op, t, lang }) {
         )}
         {/* AN3 — posizione dal profilo + distanza quando c'è un punto */}
         {(op.city || op.region || op.distance_km != null) && (
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             <MapPin className="h-3 w-3 inline-block mr-0.5 align-[-1px]" aria-hidden />{[op.city, op.region].filter(Boolean).join(', ')}
             {op.distance_km != null && (
-              <span className="ml-1.5 rounded-full bg-primary/10 text-primary px-2 py-0.5 font-semibold">
+              <span className="ml-1.5 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[11px] font-semibold">
                 {op.distance_km} km
               </span>
             )}
           </p>
         )}
         {op.sample ? (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+          <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
             <Redacted kind="text" />
           </p>
         ) : op.bio ? (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{op.bio}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground mt-1.5 line-clamp-2">{op.bio}</p>
         ) : null}
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        {/* LM5 — chip categorie discrete: piccole, tono su tono */}
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
           {(op.categories || []).slice(0, 3).map(c => (
-            <span key={c} className="rounded-full bg-secondary px-2 py-0.5 text-[11px] text-secondary-foreground">
+            <span key={c} className="rounded-full bg-secondary/70 px-2 py-0.5 text-[11px] text-secondary-foreground/90">
               {t(`landings:categories.${c}`, { defaultValue: c })}
             </span>
           ))}
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {op.upcoming_retreats > 0 && (
-            t('landings:operators.retreatCount', {
-              count: op.upcoming_retreats,
-              defaultValue: '{{count}} ritiri in programma',
-            })
-          )}
-          {op.upcoming_retreats > 0 && op.other_products > 0 && ' · '}
-          {op.other_products > 0 && (
-            t('landings:operators.productCount', {
-              count: op.other_products,
-              defaultValue: '{{count}} esperienze e prodotti',
-            })
-          )}
-        </p>
-        {/* LM2 — 'da X euro · N servizi': il prezzo di partenza del listino */}
+        {(op.upcoming_retreats > 0 || op.other_products > 0) && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {op.upcoming_retreats > 0 && (
+              t('landings:operators.retreatCount', {
+                count: op.upcoming_retreats,
+                defaultValue: '{{count}} ritiri in programma',
+              })
+            )}
+            {op.upcoming_retreats > 0 && op.other_products > 0 && ' · '}
+            {op.other_products > 0 && (
+              t('landings:operators.productCount', {
+                count: op.other_products,
+                defaultValue: '{{count}} esperienze e prodotti',
+              })
+            )}
+          </p>
+        )}
+        {/* LM2+LM5 — riga prezzo/servizi ben separata e leggibile */}
         {op.services_count > 0 && (
-          <p className="mt-1 text-xs font-semibold text-[#376254]">
+          <p className="mt-2.5 pt-2.5 border-t border-border/70 text-sm font-semibold text-[#376254]">
             {op.price_from != null && (
               <>{t('landings:operators.priceFrom', {
                 price: Number(op.price_from).toFixed(0),
@@ -166,12 +202,12 @@ function OperatorCard({ op, t, lang }) {
             })}
           </p>
         )}
-        {/* LM4 — primo posto libero dall'indice disponibilita' (quando c'e') */}
+        {/* LM4 — primo posto libero dall'indice disponibilita': pill verde */}
         {!op.sample && op.next_available && (
-          <p className="mt-1.5">
+          <p className="mt-2">
             <span
               data-testid="operator-next-available"
-              className="inline-block rounded-full bg-[#376254]/10 text-[#376254] px-2 py-0.5 text-[11px] font-semibold"
+              className="inline-block rounded-full bg-[#376254]/10 text-[#376254] px-2.5 py-1 text-[11px] font-semibold"
             >
               {t('landings:operators.nextAvailable', {
                 when: formatNextAvailable(op.next_available, lang),
@@ -201,31 +237,40 @@ function OperatorCard({ op, t, lang }) {
             ? t('landings:operators.quickViewClose', { defaultValue: 'Chiudi anteprima' })
             : t('landings:operators.quickView', { defaultValue: 'Vista rapida' })}
         </button>
-        {quickOpen && (
-          <div className="mt-2 rounded-xl border border-border bg-white divide-y divide-gray-100">
-            {preview.map((row) => (
-              <div key={row.name} className="flex items-center gap-2 px-3 py-2">
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-gray-900 truncate">{row.name}</p>
-                  {row.duration_minutes ? (
-                    <p className="text-[11px] text-gray-500">{row.duration_minutes} min</p>
-                  ) : null}
+        {/* LM5 — apertura morbida: griglia 0fr→1fr, niente scatti */}
+        <div
+          className={`grid transition-all duration-300 ease-in-out ${
+            quickOpen ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0 mt-0'
+          }`}
+          aria-hidden={!quickOpen}
+        >
+          <div className="overflow-hidden">
+            <div className="rounded-xl border border-border bg-white divide-y divide-gray-100">
+              {preview.map((row) => (
+                <div key={row.name} className="flex items-center gap-2 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-900 truncate">{row.name}</p>
+                    {row.duration_minutes ? (
+                      <p className="text-[11px] text-gray-500">{row.duration_minutes} min</p>
+                    ) : null}
+                  </div>
+                  <span className="text-xs font-semibold text-gray-900 whitespace-nowrap">
+                    {row.on_request
+                      ? t('landings:operator.priceOnRequest', { defaultValue: 'Su richiesta' })
+                      : (row.price != null ? `${Number(row.price).toFixed(0)} €` : '')}
+                  </span>
                 </div>
-                <span className="text-xs font-semibold text-gray-900 whitespace-nowrap">
-                  {row.on_request
-                    ? t('landings:operator.priceOnRequest', { defaultValue: 'Su richiesta' })
-                    : (row.price != null ? `${Number(row.price).toFixed(0)} €` : '')}
-                </span>
-              </div>
-            ))}
-            <Link
-              to={`/o/${op.org_slug}`}
-              className="block px-3 py-2 text-center text-xs font-semibold text-[#376254] hover:bg-gray-50"
-            >
-              {t('landings:operators.goToProfile', { defaultValue: 'Vai al profilo' })}
-            </Link>
+              ))}
+              <Link
+                to={`/o/${op.org_slug}`}
+                tabIndex={quickOpen ? 0 : -1}
+                className="block px-3 py-2 text-center text-xs font-semibold text-[#376254] hover:bg-gray-50"
+              >
+                {t('landings:operators.goToProfile', { defaultValue: 'Vai al profilo' })}
+              </Link>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     )}
     </div>
@@ -431,125 +476,178 @@ export default function OperatorsIndexPage() {
         data-testid="operators-search-bar"
         className="sticky top-14 z-30 border-b border-gray-200 bg-white/95 backdrop-blur shadow-sm"
       >
-        <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-2">
+        {/* LM5 — su mobile (375px) la barra collassa ordinata: Dove a
+            tutta larghezza sopra, il resto in UNA riga scrollabile
+            (scrollbar-hide); da lg tutto su una riga sola. */}
+        <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-2.5">
           {/* Dove — GeoSearchBar (autocomplete + vicino a me + raggio) */}
           <div className="w-full lg:w-auto lg:flex-1 lg:min-w-[280px]">
             <GeoSearchBar value={geoValue} onChange={setGeo} fluid />
           </div>
-          {/* Cosa — categorie reali (listino + ritiri) da data.categories */}
-          <select
-            value={categoria || ''}
-            onChange={(e) => setCosa(e.target.value)}
-            aria-label={t('landings:operators.whatLabel', { defaultValue: 'Cosa cerchi?' })}
-            className="flex-1 lg:flex-none min-w-0 lg:w-48 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
-          >
-            <option value="">
-              {t('landings:operators.whatAll', { defaultValue: 'Tutti i servizi' })}
-            </option>
-            {categories.map(([key, count]) => (
-              <option key={key} value={key}>
-                {t(`landings:categories.${key}`, { defaultValue: key })} ({count})
-              </option>
-            ))}
-          </select>
-          {/* LM4 — Quando: visibile SOLO se l'indice di disponibilita'
-              esiste (date_filter_ready); data nativa + fascia opzionale */}
-          {data?.date_filter_ready && (
-            <div className="flex flex-none items-center gap-1.5" data-testid="operators-when-filter">
-              <input
-                type="date"
-                value={quando}
-                min={new Date().toISOString().slice(0, 10)}
-                onChange={(e) => setQuando(e.target.value)}
-                aria-label={t('landings:operators.whenLabel', { defaultValue: 'Quando?' })}
-                className="flex-none w-36 lg:w-40 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
-              />
-              {quando && (
-                <select
-                  value={fascia}
-                  onChange={(e) => setFascia(e.target.value)}
-                  aria-label={t('landings:operators.whenBandLabel', { defaultValue: 'Fascia oraria' })}
-                  className="flex-1 lg:flex-none w-28 lg:w-32 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
-                >
-                  <option value="">
-                    {t('landings:operators.whenAllDay', { defaultValue: 'Tutto il giorno' })}
-                  </option>
-                  <option value="mattina">
-                    {t('landings:operators.whenMorning', { defaultValue: 'Mattina' })}
-                  </option>
-                  <option value="pomeriggio">
-                    {t('landings:operators.whenAfternoon', { defaultValue: 'Pomeriggio' })}
-                  </option>
-                  <option value="sera">
-                    {t('landings:operators.whenEvening', { defaultValue: 'Sera' })}
-                  </option>
-                </select>
-              )}
-            </div>
-          )}
-          {/* Ordina — Distanza solo con geo attivo (come il backend) */}
-          <label className="flex-1 lg:flex-none flex items-center gap-1.5 min-w-0">
-            <span className="hidden md:inline text-xs text-gray-500 whitespace-nowrap">
-              {t('landings:operators.sortLabel', { defaultValue: 'Ordina per' })}
-            </span>
+          <div className="flex w-full lg:w-auto items-center gap-2 lg:gap-2.5 overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0 lg:overflow-visible">
+            {/* Cosa — categorie reali (listino + ritiri) da data.categories */}
             <select
-              value={effectiveOrdina}
-              onChange={(e) => setOrdina(e.target.value)}
-              aria-label={t('landings:operators.sortLabel', { defaultValue: 'Ordina per' })}
-              className="flex-1 lg:flex-none min-w-0 lg:w-36 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+              value={categoria || ''}
+              onChange={(e) => setCosa(e.target.value)}
+              aria-label={t('landings:operators.whatLabel', { defaultValue: 'Cosa cerchi?' })}
+              className="flex-none w-40 lg:w-48 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
             >
-              {geoValue && (
-                <option value="distanza">
-                  {t('landings:operators.sortDistance', { defaultValue: 'Distanza' })}
+              <option value="">
+                {t('landings:operators.whatAll', { defaultValue: 'Tutti i servizi' })}
+              </option>
+              {categories.map(([key, count]) => (
+                <option key={key} value={key}>
+                  {t(`landings:categories.${key}`, { defaultValue: key })} ({count})
                 </option>
-              )}
-              <option value="valutazione">
-                {t('landings:operators.sortRating', { defaultValue: 'Valutazione' })}
-              </option>
-              <option value="prezzo">
-                {t('landings:operators.sortPrice', { defaultValue: 'Prezzo (da)' })}
-              </option>
+              ))}
             </select>
-          </label>
-          {/* AN3 — vista mappa, invariata (?vista=mappa) */}
-          <button
-            type="button"
-            onClick={() => {
-              const q = new URLSearchParams(params);
-              if (view === 'mappa') q.delete('vista'); else q.set('vista', 'mappa');
-              setParams(q, { replace: true });
-            }}
-            aria-pressed={view === 'mappa'}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
-              view === 'mappa'
-                ? 'bg-[#376254] border-[#376254] text-white shadow'
-                : 'bg-white border-gray-300 text-gray-700 hover:border-primary hover:text-primary'
-            }`}
-          >
-            {t('landings:operators.mapToggle', { defaultValue: 'Mappa' })}
-          </button>
+            {/* LM4 — Quando: visibile SOLO se l'indice di disponibilita'
+                esiste (date_filter_ready); data nativa + fascia opzionale */}
+            {data?.date_filter_ready && (
+              <div className="flex flex-none items-center gap-1.5" data-testid="operators-when-filter">
+                <span className="hidden xl:inline text-xs text-gray-500 whitespace-nowrap">
+                  {t('landings:operators.whenLabel', { defaultValue: 'Quando?' })}
+                </span>
+                <input
+                  type="date"
+                  value={quando}
+                  min={new Date().toISOString().slice(0, 10)}
+                  onChange={(e) => setQuando(e.target.value)}
+                  aria-label={t('landings:operators.whenLabel', { defaultValue: 'Quando?' })}
+                  className="flex-none w-36 lg:w-40 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+                />
+                {quando && (
+                  <select
+                    value={fascia}
+                    onChange={(e) => setFascia(e.target.value)}
+                    aria-label={t('landings:operators.whenBandLabel', { defaultValue: 'Fascia oraria' })}
+                    className="flex-none w-32 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+                  >
+                    <option value="">
+                      {t('landings:operators.whenAllDay', { defaultValue: 'Tutto il giorno' })}
+                    </option>
+                    <option value="mattina">
+                      {t('landings:operators.whenMorning', { defaultValue: 'Mattina' })}
+                    </option>
+                    <option value="pomeriggio">
+                      {t('landings:operators.whenAfternoon', { defaultValue: 'Pomeriggio' })}
+                    </option>
+                    <option value="sera">
+                      {t('landings:operators.whenEvening', { defaultValue: 'Sera' })}
+                    </option>
+                  </select>
+                )}
+              </div>
+            )}
+            {/* Ordina — Distanza solo con geo attivo (come il backend) */}
+            <label className="flex-none flex items-center gap-1.5">
+              <span className="hidden md:inline text-xs text-gray-500 whitespace-nowrap">
+                {t('landings:operators.sortLabel', { defaultValue: 'Ordina per' })}
+              </span>
+              <select
+                value={effectiveOrdina}
+                onChange={(e) => setOrdina(e.target.value)}
+                aria-label={t('landings:operators.sortLabel', { defaultValue: 'Ordina per' })}
+                className="flex-none w-36 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+              >
+                {geoValue && (
+                  <option value="distanza">
+                    {t('landings:operators.sortDistance', { defaultValue: 'Distanza' })}
+                  </option>
+                )}
+                <option value="valutazione">
+                  {t('landings:operators.sortRating', { defaultValue: 'Valutazione' })}
+                </option>
+                <option value="prezzo">
+                  {t('landings:operators.sortPrice', { defaultValue: 'Prezzo (da)' })}
+                </option>
+              </select>
+            </label>
+            {/* AN3 — vista mappa, invariata (?vista=mappa) */}
+            <button
+              type="button"
+              onClick={() => {
+                const q = new URLSearchParams(params);
+                if (view === 'mappa') q.delete('vista'); else q.set('vista', 'mappa');
+                setParams(q, { replace: true });
+              }}
+              aria-pressed={view === 'mappa'}
+              className={`flex-none rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
+                view === 'mappa'
+                  ? 'bg-[#376254] border-[#376254] text-white shadow'
+                  : 'bg-white border-gray-300 text-gray-700 hover:border-primary hover:text-primary'
+              }`}
+            >
+              {t('landings:operators.mapToggle', { defaultValue: 'Mappa' })}
+            </button>
+          </div>
         </div>
       </div>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {loading ? (
+          /* LM5 — scheletri con la stessa geometria delle card: niente
+             flash vuoto, il layout non salta al termine del fetch */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="rounded-2xl border border-border bg-card h-52 animate-pulse" />
-            ))}
+            {[1, 2, 3, 4, 5, 6].map(i => <OperatorCardSkeleton key={i} />)}
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-20 max-w-md mx-auto">
-            <img src="/logo-aurya-128.png" alt="" aria-hidden className="mx-auto h-14 w-14 opacity-80" />
-            <p className="mt-3 text-lg font-semibold text-foreground">
+          /* LM5 — empty state onesto: dice PERCHE' e suggerisce il
+             gesto giusto per il filtro attivo (data, raggio, categoria) */
+          <div data-testid="operators-empty" className="text-center py-16 max-w-md mx-auto">
+            <div className="mx-auto h-16 w-16 rounded-full bg-secondary flex items-center justify-center">
+              <SearchX className="h-7 w-7 text-[#376254]" aria-hidden />
+            </div>
+            <p className="mt-4 text-lg font-semibold text-foreground">
               {t('landings:operators.emptyTitle', { defaultValue: 'Nessun organizzatore qui, per ora' })}
             </p>
-            <p className="text-muted-foreground mt-1">
-              {t('landings:operators.emptyBody', { defaultValue: 'Prova un\'altra categoria o torna alla directory dei ritiri.' })}
+            <p className="text-muted-foreground mt-1.5 text-sm">
+              {quando
+                ? t('landings:operators.emptySuggestDate', {
+                    defaultValue: 'Per quella data non risulta posto libero: prova un altro giorno o togli la data.',
+                  })
+                : geoValue
+                  ? t('landings:operators.emptySuggestRadius', {
+                      defaultValue: 'In questa zona non abbiamo ancora organizzatori: allarga il raggio o cambia località.',
+                    })
+                  : categoria
+                    ? t('landings:operators.emptySuggestCategory', {
+                        defaultValue: 'Per questa categoria non abbiamo ancora nessuno: prova con tutti i servizi.',
+                      })
+                    : t('landings:operators.emptyBody', { defaultValue: 'Prova un\'altra categoria o torna alla directory dei ritiri.' })}
             </p>
-            <Link to="/" className="mt-4 inline-block rounded-full bg-primary text-white px-5 py-2 text-sm font-semibold">
-              {t('landings:operators.backHome', { defaultValue: 'Vai ai ritiri' })}
-            </Link>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              {quando && (
+                <button
+                  type="button"
+                  onClick={() => setQuando('')}
+                  className="rounded-full border border-[#376254] text-[#376254] bg-white px-4 py-1.5 text-sm font-semibold hover:bg-[#376254]/5 transition-colors"
+                >
+                  {t('landings:operators.emptyClearDate', { defaultValue: 'Togli la data' })}
+                </button>
+              )}
+              {geoValue && geoRadius < 250 && (
+                <button
+                  type="button"
+                  onClick={() => setGeo({ ...geoValue, radius: 250 })}
+                  className="rounded-full border border-[#376254] text-[#376254] bg-white px-4 py-1.5 text-sm font-semibold hover:bg-[#376254]/5 transition-colors"
+                >
+                  {t('landings:operators.emptyWidenRadius', { defaultValue: 'Allarga il raggio' })}
+                </button>
+              )}
+              {categoria && (
+                <button
+                  type="button"
+                  onClick={() => setCosa('')}
+                  className="rounded-full border border-[#376254] text-[#376254] bg-white px-4 py-1.5 text-sm font-semibold hover:bg-[#376254]/5 transition-colors"
+                >
+                  {t('landings:operators.emptyAllServices', { defaultValue: 'Tutti i servizi' })}
+                </button>
+              )}
+              <Link to="/" className="rounded-full bg-primary text-white px-5 py-1.5 text-sm font-semibold hover:opacity-90 transition-opacity">
+                {t('landings:operators.backHome', { defaultValue: 'Vai ai ritiri' })}
+              </Link>
+            </div>
           </div>
         ) : view === 'mappa' ? (
           <React.Suspense fallback={<div className="h-[520px] rounded-2xl bg-gray-100 animate-pulse" />}>
