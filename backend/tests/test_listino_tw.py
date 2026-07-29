@@ -792,7 +792,10 @@ class TestRicercaLM3:
         # URL fonte di verita': ?ordina= + categoria come path segment
         assert "SORT_PARAM" in page
         assert "params.get('ordina')" in page
-        assert "/operatori/${next}" in page
+        # 28992cf — la stessa pagina risponde anche su /esplora-operatori:
+        # la categoria resta path segment ma sul basePath dinamico
+        assert "${basePath}/${next}" in page
+        assert "'/esplora-operatori'" in page
         # Dove dentro la barra, in versione fluida
         assert "<GeoSearchBar value={geoValue} onChange={setGeo} fluid />" in page
         # Distanza offerta solo con geo attivo (come il backend)
@@ -800,3 +803,94 @@ class TestRicercaLM3:
         geobar = (FRONTEND_SRC / "features" / "storefront" / "components"
                   / "GeoSearchBar.jsx").read_text()
         assert "fluid = false" in geobar
+
+
+class TestQuandoLM4:
+    """LM4 (docs/LISTINO_MARKETPLACE_PIANO_2026-07.md) — filtro Quando
+    cross-operatore su indice denormalizzato availability_index.
+    INVARIANTE ASSOLUTA: l'indice serve SOLO alla ricerca; checkout e
+    slot veri restano sul motore esistente (slot_generator)."""
+
+    SERVICE = BACKEND_DIR / "services" / "availability_index_service.py"
+
+    def _blocco_endpoint(self):
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        blocco = src.split("async def public_operators_index")[1]
+        return blocco.split("async def _operator_listino")[0]
+
+    def test_servizio_indice_riusa_il_motore_slot(self):
+        """Il servizio esiste e materializza l'indice CHIAMANDO
+        generate_available_slots (scope agenda, stessa chiamata di
+        GET /public/services/{id}/slots) — zero regole duplicate:
+        niente letture dirette di availability_rules/blocked_slots,
+        niente ciclo su day_of_week."""
+        src = self.SERVICE.read_text()
+        assert "from services.slot_generator import generate_available_slots" in src
+        assert 'scope="agenda"' in src
+        assert "rebuild_for_product" in src and "rebuild_for_org" in src
+        # il motore non si duplica: il servizio non rilegge le regole
+        assert "availability_rules_collection" not in src
+        assert "blocked_slots_collection" not in src
+        assert "day_of_week" not in src
+
+    def test_endpoint_quando_con_date_filter_ready(self):
+        """/public/operators accetta date (+ time_from/to), espone
+        date_filter_ready (feature flag implicito: indice vuoto → il
+        frontend nasconde il campo) e next_available sugli item."""
+        blocco = self._blocco_endpoint()
+        assert "date_filter_ready" in blocco
+        assert '"next_available"' in blocco
+        assert "availability_index_collection" in blocco
+        from datetime import date as _d, timedelta as _td
+        domani = (_d.today() + _td(days=1)).isoformat()
+        r = requests.get(f"{BASE_URL}/api/public/operators",
+                         params={"date": domani}, timeout=10)
+        assert r.status_code == 200
+        body = r.json()
+        assert "date_filter_ready" in body
+        # indice vuoto → lista vuota, MAI un errore
+        if not body["date_filter_ready"]:
+            assert body["items"] == []
+        # data malformata → 400 esplicito, non 500
+        r2 = requests.get(f"{BASE_URL}/api/public/operators",
+                          params={"date": "31-12-2026"}, timeout=10)
+        assert r2.status_code == 400
+
+    def test_hook_best_effort_nei_punti_di_scrittura(self):
+        """Chi cambia la disponibilita' riallinea l'indice in
+        background: regole/blocchi (routers/availability.py), slot
+        consumato da prenotazione e rilascio (booking_availability),
+        annullamento ordine (order_service). Sempre best-effort:
+        import dentro try, mai nel percorso critico."""
+        hook = "from services.availability_index_service import schedule_rebuild"
+        av = (BACKEND_DIR / "routers" / "availability.py").read_text()
+        # regole (create+delete) e blocchi (create/delete/batch/group)
+        assert av.count("schedule_rebuild(") >= 6
+        assert hook in av
+        ba = (BACKEND_DIR / "services" / "booking_availability.py").read_text()
+        assert hook in ba and "schedule_rebuild(org_id)" in ba
+        osrc = (BACKEND_DIR / "services" / "order_service.py").read_text()
+        assert hook in osrc
+        # best-effort dichiarato: ogni import dell'hook vive dentro un
+        # try (un rebuild rotto non deve MAI rompere il flusso primario)
+        for src in (av, ba, osrc):
+            for prima in src.split(hook)[:-1]:
+                coda = "\n".join(prima.rstrip().splitlines()[-3:])
+                assert "try:" in coda, "hook schedule_rebuild fuori da un try"
+
+    def test_invariante_indice_solo_ricerca(self):
+        """Il motore slot e il checkout NON sanno che l'indice esiste:
+        slot_generator intoccato (nessun riferimento all'indice) e
+        nessuna lettura di availability_index nei percorsi d'acquisto.
+        L'unico lettore e' la ricerca /public/operators."""
+        sg = (BACKEND_DIR / "services" / "slot_generator.py").read_text()
+        assert "availability_index" not in sg
+        for nome in ("order_creation_service.py", "product_type_validators.py",
+                     "payment_checkout_service.py", "cart_service.py"):
+            src = (BACKEND_DIR / "services" / nome).read_text()
+            assert "availability_index" not in src, f"checkout legge l'indice: {nome}"
+        # lo slot picker pubblico resta sul motore vero
+        pub = (BACKEND_DIR / "routers" / "public.py").read_text()
+        picker = pub.split("async def get_service_slots")[1].split("@router.get")[0]
+        assert "generate_available_slots" in picker
+        assert "availability_index" not in picker

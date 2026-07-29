@@ -194,6 +194,7 @@ def start_scheduler() -> bool:
     try:
         from services import payment_dunning_service  # noqa: F401
         from services import event_comms_service  # noqa: F401
+        from services import availability_index_service  # noqa: F401  (LM4)
     except Exception as exc:
         logger.error("scheduler: import job modules failed: %s", exc)
     from apscheduler.schedulers.asyncio import AsyncIOScheduler

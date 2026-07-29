@@ -58,3 +58,26 @@ il ciclo TW non scrive ne' migra nulla.
 GA4 riceve l'evento first_service_online al primo servizio pubblicato
 dal listino (rispetta il consenso cookie: parte solo con analytics
 accettati). Da monitorare in GA4 → Engagement → Events.
+
+## LM4 — indice di disponibilita' (filtro Quando)
+
+Il ciclo LM4 introduce la collection `availability_index` (denormalizzata,
+SOLO ricerca: checkout e slot veri restano su slot_generator). Gli indici
+Mongo si creano da soli all'avvio (`create_indexes`, lm4_avidx_*), ma la
+collection parte VUOTA: finche' e' vuota il filtro "Quando" su
+/operatori resta nascosto (`date_filter_ready: false`) — nessun errore,
+solo feature spenta.
+
+1. Rebuild iniziale post-deploy (una tantum, come system admin):
+   curl -X POST https://aurya.life/api/admin/availability-index/rebuild \
+        -H "Authorization: Bearer $TOKEN_SYSTEM_ADMIN"
+   (opzionale ?organization_id=... per una sola org). La risposta
+   riporta {orgs, days} indicizzati.
+2. Refresh di sicurezza: gia' coperto dallo scheduler in-process
+   (job `availability_index_refresh`, ogni 24h, journal in
+   scheduler_job_runs). Nessun cron esterno da configurare finche'
+   SCHEDULER_ENABLED resta attivo; se lo scheduler fosse spento,
+   agganciare un cron esterno che chiama l'endpoint del punto 1.
+3. Gli aggiornamenti live (regole orarie, blocchi calendario,
+   prenotazioni confermate/annullate) riallineano l'indice da soli,
+   best-effort, in background.

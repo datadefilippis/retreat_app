@@ -3887,6 +3887,12 @@ async def public_operators_index(
     # noti viene ignorato (default: distance se geo attivo, sennò rating).
     service_category: str = Query(default=None, max_length=50),
     sort: str = Query(default=None, max_length=10),
+    # LM4 — "Quando": giorno (YYYY-MM-DD) + fascia oraria opzionale
+    # (HH:MM). Servito dall'indice denormalizzato availability_index:
+    # SOLO ricerca, gli slot veri restano su slot_generator/checkout.
+    date: str = Query(default=None, max_length=10),
+    time_from: str = Query(default=None, max_length=5),
+    time_to: str = Query(default=None, max_length=5),
 ):
     """S2 (SEO_MASTER_PLAN) — aggregatore pubblico degli operatori.
 
@@ -3895,9 +3901,21 @@ async def public_operators_index(
     e /operatori/{categoria}; le categorie tornano anche in aggregato
     cosi' il frontend mostra solo filtri con contenuto (anti thin-content).
     """
+    import re as _re
     from datetime import datetime, timezone
     from database import (stores_collection, organizations_collection,
-                          products_collection, event_occurrences_collection)
+                          products_collection, event_occurrences_collection,
+                          availability_index_collection)
+
+    # LM4 — validazione dei parametri Quando (formati stretti, come le
+    # regole availability); parametri malformati = 400 esplicito.
+    if date and not _re.match(r"^\d{4}-\d{2}-\d{2}$", date):
+        raise HTTPException(status_code=400,
+                            detail="Formato data non valido (YYYY-MM-DD)")
+    for _t in (time_from, time_to):
+        if _t and not _re.match(r"^\d{2}:\d{2}$", _t):
+            raise HTTPException(status_code=400,
+                                detail="Formato ora non valido (HH:MM)")
 
     stores = await stores_collection.find(
         {"is_published": True, "is_active": True, "visibility": "public",
@@ -3919,6 +3937,44 @@ async def public_operators_index(
     # a flag spento sono invisibili, come se non esistessero.
     from core.prelaunch import prelaunch_mode
     _prelaunch = prelaunch_mode()
+
+    # LM4 — filtro Quando sull'indice denormalizzato. Feature flag
+    # implicito: se availability_index e' vuoto (mai costruito),
+    # date_filter_ready=False dice al frontend di nascondere il campo
+    # e un eventuale ?date= ritorna lista vuota SENZA rompere.
+    date_filter_ready = (await availability_index_collection.find_one(
+        {}, {"_id": 1})) is not None
+    _date_orgs = None          # None = filtro Quando non attivo
+    if date and date_filter_ready:
+        _dq: dict = {"date": date, "organization_id": {"$in": org_ids}}
+        # Fascia oraria: approssimazione onesta su primo/ultimo slot
+        # del giorno (l'indice non materializza ogni singolo slot).
+        if time_to:
+            _dq["first_slot"] = {"$lt": time_to}
+        if time_from:
+            _dq["last_slot"] = {"$gte": time_from}
+        _date_orgs = set(
+            await availability_index_collection.distinct(
+                "organization_id", _dq))
+    elif date:
+        _date_orgs = set()     # indice mai costruito → nessun match
+
+    # LM4 — next_available SEMPRE quando l'indice ha dati (anche senza
+    # ?date=): primo giorno futuro con posto per ogni org della pagina.
+    # today locale, come slot_generator (il motore ragiona in ora locale).
+    _next_by_org: dict = {}
+    if date_filter_ready and org_ids:
+        _today_iso = datetime.now().date().isoformat()
+        async for _row in availability_index_collection.aggregate([
+            {"$match": {"organization_id": {"$in": org_ids},
+                        "date": {"$gte": _today_iso}}},
+            {"$sort": {"date": 1, "first_slot": 1}},
+            {"$group": {"_id": "$organization_id",
+                        "date": {"$first": "$date"},
+                        "first_slot": {"$first": "$first_slot"}}},
+        ]):
+            _next_by_org[_row["_id"]] = {
+                "date": _row["date"], "first_slot": _row["first_slot"]}
 
     # LM3 — GEO SCALABILE: la distanza arriva dall'indice 2dsphere
     # an3_org_geo ($geoNear su public_profile.geo, GeoJSON derivato da
@@ -4018,6 +4074,10 @@ async def public_operators_index(
                 (r.get("category") or "") == service_category
                 for r in svcs):
             continue
+        # LM4 — "Quando": resta solo chi ha almeno un posto nel giorno
+        # (e fascia) richiesti secondo l'indice availability_index.
+        if _date_orgs is not None and s["organization_id"] not in _date_orgs:
+            continue
         pp = org.get("public_profile") or {}
         ss = org.get("store_settings") or {}
         # OP2/OP4 — bio nella lingua richiesta se l'operatore l'ha
@@ -4075,6 +4135,11 @@ async def public_operators_index(
             # LM2 — fiducia e prezzi sulla card: rating {avg, count},
             # 'da X euro · N servizi' e anteprima listino (3 righe)
             "rating": None if _is_sample else org.get("reviews_stats"),
+            # LM4 — "Primo posto: gio 14:00" sulla card: primo giorno
+            # futuro con posto dall'indice (None se indice vuoto o
+            # nessuna disponibilita' nei prossimi 30 giorni)
+            "next_available": None if _is_sample
+                              else _next_by_org.get(s["organization_id"]),
             "services_count": len(svcs),
             "price_from": min(svc_prices) if svc_prices else None,
             "listino_preview": [] if _is_sample else [{
@@ -4130,7 +4195,10 @@ async def public_operators_index(
             "categories": all_categories,
             # LM3 — l'ordinamento effettivamente applicato (default
             # compreso): il frontend lo riflette nel controllo Ordina
-            "sort": _sort}
+            "sort": _sort,
+            # LM4 — il campo Quando appare solo quando l'indice di
+            # disponibilita' esiste (feature flag implicito)
+            "date_filter_ready": date_filter_ready}
 
 
 async def _operator_listino(org_id: str) -> list:

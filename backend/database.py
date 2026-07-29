@@ -232,6 +232,13 @@ stores_collection = db.stores
 # ── Calendar & Availability (v12.0) ──────────────────────────────────────────
 availability_rules_collection = db.availability_rules
 blocked_slots_collection = db.blocked_slots
+# LM4 (docs/LISTINO_MARKETPLACE_PIANO_2026-07.md) — indice di
+# disponibilita' DENORMALIZZATO per la ricerca cross-operatore (filtro
+# "Quando" su /public/operators). Un documento per (organization_id,
+# product_id, date) con first_slot/last_slot/slot_count, riscritto dal
+# motore slot via services/availability_index_service. SOLO ricerca:
+# checkout e slot veri restano su services/slot_generator.
+availability_index_collection = db.availability_index
 coupons_collection = db.coupons
 # R5 — redemption per-cliente: una riga per (coupon, cliente) consumato.
 # Unique index su (org, coupon_id, customer_key) impedisce il riuso.
@@ -1369,6 +1376,14 @@ async def create_indexes():
     await blocked_slots_collection.create_index(
         [("organization_id", 1), ("product_id", 1), ("date", 1)],
     )
+    # LM4 — indice di disponibilita' denormalizzato (filtro Quando):
+    # lookup "chi ha posto il giorno X" e riscrittura per prodotto
+    # (delete+insert nel rebuild). Append-only come tutti gli altri.
+    await availability_index_collection.create_index(
+        [("date", 1), ("organization_id", 1)], name="lm4_avidx_date_org")
+    await availability_index_collection.create_index(
+        [("organization_id", 1), ("product_id", 1)],
+        name="lm4_avidx_org_product")
 
     # ── v13.0: Coupons ─────────────────────────────────────────────────
     await coupons_collection.create_index("organization_id")

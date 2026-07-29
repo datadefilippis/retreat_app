@@ -26,6 +26,25 @@ import { Leaf, MapPin } from 'lucide-react';
 // la mappa e' l'unico punto di traduzione.
 const SORT_PARAM = { distanza: 'distance', valutazione: 'rating', prezzo: 'price' };
 
+// LM4 — "Quando": ?quando=YYYY-MM-DD (+ ?fascia=) in URL; l'API riceve
+// date/time_from/time_to. Le fasce sono un vocabolario umano fisso.
+const FASCIA_PARAM = {
+  mattina: ['06:00', '12:00'],
+  pomeriggio: ['12:00', '18:00'],
+  sera: ['18:00', '23:59'],
+};
+
+// LM4 — "Primo posto: gio 30 lug, 14:00" dal next_available dell'indice
+function formatNextAvailable(na, lang) {
+  try {
+    const day = new Date(`${na.date}T00:00:00`).toLocaleDateString(
+      lang || 'it', { weekday: 'short', day: 'numeric', month: 'short' });
+    return `${day}, ${na.first_slot}`;
+  } catch {
+    return `${na.date} ${na.first_slot}`;
+  }
+}
+
 // LM2 — stelle piene/vuote sul rating medio (stesso disegno del profilo)
 function Stars({ value }) {
   const full = Math.round(value || 0);
@@ -37,7 +56,7 @@ function Stars({ value }) {
   );
 }
 
-function OperatorCard({ op, t }) {
+function OperatorCard({ op, t, lang }) {
   // LM2 — vista rapida: anteprima listino IN CARD (pattern PN3,
   // aria-expanded); il click sulla card resta il link al profilo.
   const [quickOpen, setQuickOpen] = useState(false);
@@ -147,6 +166,20 @@ function OperatorCard({ op, t }) {
             })}
           </p>
         )}
+        {/* LM4 — primo posto libero dall'indice disponibilita' (quando c'e') */}
+        {!op.sample && op.next_available && (
+          <p className="mt-1.5">
+            <span
+              data-testid="operator-next-available"
+              className="inline-block rounded-full bg-[#376254]/10 text-[#376254] px-2 py-0.5 text-[11px] font-semibold"
+            >
+              {t('landings:operators.nextAvailable', {
+                when: formatNextAvailable(op.next_available, lang),
+                defaultValue: 'Primo posto: {{when}}',
+              })}
+            </span>
+          </p>
+        )}
       </div>
     </Link>
     {/* LM2 — vista rapida: i primi servizi a listino senza cambiare
@@ -228,6 +261,9 @@ export default function OperatorsIndexPage() {
   const ordina = params.get('ordina') || '';
   const defaultOrdina = geoValue ? 'distanza' : 'valutazione';
   const effectiveOrdina = SORT_PARAM[ordina] ? ordina : defaultOrdina;
+  // LM4 — "Quando" in URL (?quando=YYYY-MM-DD, ?fascia=mattina|...)
+  const quando = params.get('quando') || '';
+  const fascia = params.get('fascia') || '';
 
   const setGeo = (next) => {
     const q = new URLSearchParams(params);
@@ -246,6 +282,21 @@ export default function OperatorsIndexPage() {
     const q = new URLSearchParams(params);
     if (!next || next === defaultOrdina) q.delete('ordina');
     else q.set('ordina', next);
+    setParams(q, { replace: true });
+  };
+
+  // LM4 — Quando: la data guida, la fascia e' un raffinamento che non
+  // vive da sola (senza data si spegne anche lei)
+  const setQuando = (next) => {
+    const q = new URLSearchParams(params);
+    if (next) q.set('quando', next);
+    else { q.delete('quando'); q.delete('fascia'); }
+    setParams(q, { replace: true });
+  };
+  const setFascia = (next) => {
+    const q = new URLSearchParams(params);
+    if (next && FASCIA_PARAM[next]) q.set('fascia', next);
+    else q.delete('fascia');
     setParams(q, { replace: true });
   };
 
@@ -268,13 +319,19 @@ export default function OperatorsIndexPage() {
     // LM3 — ordinamento esplicito solo se l'utente l'ha scelto: il
     // default (distance con geo, rating senza) lo applica il backend
     if (SORT_PARAM[ordina]) q.sort = SORT_PARAM[ordina];
+    // LM4 — Quando: data + fascia mappata su time_from/time_to
+    if (quando) {
+      q.date = quando;
+      const banda = FASCIA_PARAM[fascia];
+      if (banda) { q.time_from = banda[0]; q.time_to = banda[1]; }
+    }
     if (uiLang !== 'it') q.lang = uiLang;
     api.get('/public/operators', { params: q })
       .then(res => { if (mounted) setData(res.data); })
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [categoria, geoLat, geoLng, geoRadius, ordina, uiLang]);
+  }, [categoria, geoLat, geoLng, geoRadius, ordina, quando, fascia, uiLang]);
 
   const items = data?.items || [];
   const categories = useMemo(
@@ -386,6 +443,41 @@ export default function OperatorsIndexPage() {
               </option>
             ))}
           </select>
+          {/* LM4 — Quando: visibile SOLO se l'indice di disponibilita'
+              esiste (date_filter_ready); data nativa + fascia opzionale */}
+          {data?.date_filter_ready && (
+            <div className="flex flex-none items-center gap-1.5" data-testid="operators-when-filter">
+              <input
+                type="date"
+                value={quando}
+                min={new Date().toISOString().slice(0, 10)}
+                onChange={(e) => setQuando(e.target.value)}
+                aria-label={t('landings:operators.whenLabel', { defaultValue: 'Quando?' })}
+                className="flex-none w-36 lg:w-40 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+              />
+              {quando && (
+                <select
+                  value={fascia}
+                  onChange={(e) => setFascia(e.target.value)}
+                  aria-label={t('landings:operators.whenBandLabel', { defaultValue: 'Fascia oraria' })}
+                  className="flex-1 lg:flex-none w-28 lg:w-32 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+                >
+                  <option value="">
+                    {t('landings:operators.whenAllDay', { defaultValue: 'Tutto il giorno' })}
+                  </option>
+                  <option value="mattina">
+                    {t('landings:operators.whenMorning', { defaultValue: 'Mattina' })}
+                  </option>
+                  <option value="pomeriggio">
+                    {t('landings:operators.whenAfternoon', { defaultValue: 'Pomeriggio' })}
+                  </option>
+                  <option value="sera">
+                    {t('landings:operators.whenEvening', { defaultValue: 'Sera' })}
+                  </option>
+                </select>
+              )}
+            </div>
+          )}
           {/* Ordina — Distanza solo con geo attivo (come il backend) */}
           <label className="flex-1 lg:flex-none flex items-center gap-1.5 min-w-0">
             <span className="hidden md:inline text-xs text-gray-500 whitespace-nowrap">
@@ -456,7 +548,7 @@ export default function OperatorsIndexPage() {
           </React.Suspense>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {items.map(op => <OperatorCard key={op.org_slug} op={op} t={t} />)}
+            {items.map(op => <OperatorCard key={op.org_slug} op={op} t={t} lang={uiLang} />)}
           </div>
         )}
       </main>

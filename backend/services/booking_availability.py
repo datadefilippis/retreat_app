@@ -313,6 +313,14 @@ async def try_reserve_booking_slot(
         return False, "slot_conflict", other
 
     # Clean win — no conflict survived.
+    # LM4 — la prenotazione ha consumato uno slot: l'indice di ricerca
+    # (availability_index) si riallinea in background. Best-effort, mai
+    # bloccante: org intera perche' i blocchi agenda sono cross-servizio.
+    try:
+        from services.availability_index_service import schedule_rebuild
+        schedule_rebuild(org_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("availability_index: hook reserve fallito: %s", exc)
     return True, "reserved", mine
 
 
@@ -429,4 +437,13 @@ async def release_booking_slot(order_id: str, org_id: str) -> int:
         "reference_id": order_id,
         "reason": "booking",
     })
-    return getattr(res, "deleted_count", 0)
+    deleted = getattr(res, "deleted_count", 0)
+    if deleted:
+        # LM4 — slot tornati liberi: riallineo best-effort dell'indice
+        # di ricerca (mai bloccante, vedi try_reserve_booking_slot).
+        try:
+            from services.availability_index_service import schedule_rebuild
+            schedule_rebuild(org_id)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("availability_index: hook release fallito: %s", exc)
+    return deleted

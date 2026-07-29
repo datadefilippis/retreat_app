@@ -3775,3 +3775,25 @@ async def admin_verify_customer_account_email(
         "verified_at": now,
         "reason": body.reason,
     }
+
+
+# ── LM4 — indice di disponibilita' (filtro Quando del marketplace) ──────────
+
+@router.post("/availability-index/rebuild")
+async def rebuild_availability_index(
+    organization_id: Optional[str] = Query(default=None),
+    current_user: dict = Depends(require_system_admin),
+):
+    """Ricostruisce l'indice denormalizzato availability_index.
+
+    Uso: primo popolamento post-deploy (vedi RUNBOOK_DEPLOY_LISTINO) o
+    riallineamento manuale; il refresh quotidiano gira da solo con lo
+    scheduler (job availability_index_refresh). Con organization_id
+    ricostruisce solo quell'org. SOLO ricerca: non tocca slot/checkout.
+    """
+    from services.availability_index_service import (rebuild_all,
+                                                     rebuild_for_org)
+    if organization_id:
+        days = await rebuild_for_org(organization_id)
+        return {"organization_id": organization_id, "days": days}
+    return await rebuild_all()

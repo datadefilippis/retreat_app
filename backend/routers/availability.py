@@ -73,6 +73,15 @@ async def create_rule(
 
     logger.info("availability: rule created day=%d %s-%s org=%s",
                 body.day_of_week, body.start_time, body.end_time, org_id)
+
+    # LM4 — best-effort: la disponibilita' e' cambiata, l'indice di
+    # ricerca (availability_index) si riallinea in background. Mai
+    # bloccante: un fallimento qui non tocca la risposta.
+    try:
+        from services.availability_index_service import schedule_rebuild
+        schedule_rebuild(org_id, body.product_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("availability_index: hook create_rule fallito: %s", exc)
     return doc
 
 
@@ -82,12 +91,25 @@ async def delete_rule(
     current_user: dict = Depends(get_verified_user),
 ):
     """Delete (deactivate) an availability rule."""
+    org_id = current_user["organization_id"]
+    # LM4 — letto PRIMA della disattivazione: serve il product_id per
+    # riallineare l'indice di ricerca (None = regola org-wide).
+    rule = await availability_rules_collection.find_one(
+        {"id": rule_id, "organization_id": org_id},
+        {"_id": 0, "product_id": 1},
+    )
     result = await availability_rules_collection.update_one(
-        {"id": rule_id, "organization_id": current_user["organization_id"]},
+        {"id": rule_id, "organization_id": org_id},
         {"$set": {"is_active": False, "updated_at": utc_now()}},
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Rule not found")
+    # LM4 — best-effort, mai bloccante (vedi create_rule).
+    try:
+        from services.availability_index_service import schedule_rebuild
+        schedule_rebuild(org_id, (rule or {}).get("product_id"))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("availability_index: hook delete_rule fallito: %s", exc)
     return {"message": "Regola rimossa"}
 
 
@@ -139,6 +161,14 @@ async def create_blocked_slot(
 
     logger.info("availability: blocked slot created date=%s %s-%s org=%s",
                 body.date, body.start_time, body.end_time, org_id)
+
+    # LM4 — best-effort: i blocchi hanno effetto cross-servizio (scope
+    # agenda), quindi rebuild dell'org intera. Mai bloccante.
+    try:
+        from services.availability_index_service import schedule_rebuild
+        schedule_rebuild(org_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("availability_index: hook create_blocked fallito: %s", exc)
     return doc
 
 
@@ -153,6 +183,12 @@ async def delete_blocked_slot(
     )
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Blocked slot not found")
+    # LM4 — best-effort, mai bloccante (vedi create_blocked_slot).
+    try:
+        from services.availability_index_service import schedule_rebuild
+        schedule_rebuild(current_user["organization_id"])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("availability_index: hook delete_blocked fallito: %s", exc)
     return {"message": "Blocco rimosso"}
 
 
@@ -195,6 +231,12 @@ async def create_blocked_slots_batch(
 
     logger.info("availability: batch blocked %d slots group=%s org=%s",
                 len(docs), group_id, org_id)
+    # LM4 — best-effort, mai bloccante (vedi create_blocked_slot).
+    try:
+        from services.availability_index_service import schedule_rebuild
+        schedule_rebuild(org_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("availability_index: hook batch_blocked fallito: %s", exc)
     return {"blocked_slots": docs, "group_id": group_id, "count": len(docs)}
 
 
@@ -209,6 +251,12 @@ async def delete_blocked_group(
     )
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Nessun blocco trovato per questo gruppo")
+    # LM4 — best-effort, mai bloccante (vedi create_blocked_slot).
+    try:
+        from services.availability_index_service import schedule_rebuild
+        schedule_rebuild(current_user["organization_id"])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("availability_index: hook delete_group fallito: %s", exc)
     return {"message": f"{result.deleted_count} blocchi rimossi", "deleted_count": result.deleted_count}
 
 

@@ -1103,6 +1103,14 @@ async def cancel_order(org_id: str, order_id: str) -> dict:
         )
         if result.deleted_count > 0:
             logger.info("calendar_sync: released %d blocks for cancelled order %s", result.deleted_count, order_id)
+            # LM4 — annullamento: gli slot tornano liberi, l'indice di
+            # ricerca (availability_index) si riallinea in background.
+            # Best-effort come tutto questo blocco: mai bloccante.
+            try:
+                from services.availability_index_service import schedule_rebuild
+                schedule_rebuild(org_id)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("availability_index: hook cancel fallito: %s", exc)
     except Exception as e:
         logger.warning("order_service: calendar unblock failed: %s", e)
 
