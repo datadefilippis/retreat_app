@@ -140,6 +140,7 @@
     "emailAlreadyInfo": "Email already registered: you can sign in to your account and find the order.",
     "signupFailed": "Registration failed. Please try again.",
     "signupNotCompleted": "Registration not completed. The order will be sent as a guest.",
+    "signupNotCompletedReason": "Registration not completed: {{reason}}. The order will be sent as a guest.",
     "submitGeneric": "Error submitting the request. Please try again.",
     "fillAttendees": "Fill in name and email for each attendee.",
     "termsRequired": "You must accept the terms and conditions to proceed.",

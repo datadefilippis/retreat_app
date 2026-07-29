@@ -140,6 +140,7 @@
     "emailAlreadyInfo": "Email già registrata: puoi accedere al tuo account e ritrovare l'ordine.",
     "signupFailed": "Registrazione fallita. Riprova.",
     "signupNotCompleted": "Registrazione non completata. L'ordine verrà inviato comunque come ospite.",
+    "signupNotCompletedReason": "Registrazione non completata: {{reason}}. L'ordine verrà inviato comunque come ospite.",
     "submitGeneric": "Errore nell'invio della richiesta. Riprova.",
     "fillAttendees": "Compila nome ed email per ogni partecipante.",
     "termsRequired": "Devi accettare i termini e condizioni per procedere.",

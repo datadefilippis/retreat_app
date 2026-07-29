@@ -140,6 +140,7 @@
     "emailAlreadyInfo": "Email déjà enregistré : vous pouvez vous connecter à votre compte et retrouver la commande.",
     "signupFailed": "Inscription échouée. Veuillez réessayer.",
     "signupNotCompleted": "Inscription non complétée. La commande sera envoyée en tant qu'invité.",
+    "signupNotCompletedReason": "Inscription non complétée : {{reason}}. La commande sera envoyée en tant qu'invité.",
     "submitGeneric": "Erreur lors de l'envoi de la demande. Veuillez réessayer.",
     "fillAttendees": "Remplissez le nom et l'email pour chaque participant.",
     "termsRequired": "Vous devez accepter les conditions générales pour continuer.",

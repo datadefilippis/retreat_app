@@ -140,6 +140,7 @@
     "emailAlreadyInfo": "E-Mail bereits registriert: Sie können sich anmelden und die Bestellung wiederfinden.",
     "signupFailed": "Registrierung fehlgeschlagen. Bitte erneut versuchen.",
     "signupNotCompleted": "Registrierung nicht abgeschlossen. Die Bestellung wird trotzdem als Gast gesendet.",
+    "signupNotCompletedReason": "Registrierung nicht abgeschlossen: {{reason}}. Die Bestellung wird trotzdem als Gast gesendet.",
     "submitGeneric": "Fehler beim Senden der Anfrage. Bitte erneut versuchen.",
     "fillAttendees": "Geben Sie Name und E-Mail für jeden Teilnehmer ein.",
     "termsRequired": "Sie müssen die Allgemeinen Geschäftsbedingungen akzeptieren, um fortzufahren.",

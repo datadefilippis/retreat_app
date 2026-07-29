@@ -1001,3 +1001,116 @@ class TestPolishLM5:
         # i suggerimenti sono azioni vere sui filtri, non solo testo
         assert "onClick={() => setQuando('')}" in page
         assert "setGeo({ ...geoValue, radius: 250 })" in page
+
+
+class TestAccountAp0:
+    """AP0 (docs/ACCOUNT_UNICO_PIANO_2026-07.md) — il signup cliente
+    funziona anche con legal autogenerato (coerenza RS3): snapshot
+    consensi 'autogen:v0' come gia' fanno gli ordini; il 400 resta
+    SOLO se lo store non esiste; il catch del checkout dice il motivo
+    vero invece del generico 'registrazione non completata'."""
+
+    @staticmethod
+    def _signup_patches(store_doc, captured_account, captured_audit):
+        from unittest.mock import AsyncMock, patch
+
+        async def _create(doc):
+            captured_account.update(doc)
+            return doc
+
+        async def _record(**kw):
+            captured_audit.append(kw)
+
+        return [
+            patch("services.customer_auth_service."
+                  "customer_account_repository.find_by_email",
+                  new=AsyncMock(return_value=None)),
+            patch("services.customer_auth_service."
+                  "customer_account_repository.create", new=_create),
+            patch("services.customer_auth_service."
+                  "_link_account_to_existing_customers", new=AsyncMock()),
+            patch("database.stores_collection.find_one",
+                  new=AsyncMock(return_value=store_doc)),
+            patch("repositories.consent_audit_repository.record_consent",
+                  new=_record),
+            patch("services.customer_auth_service._load_email_context",
+                  new=AsyncMock(return_value={
+                      "sender_name": "", "reply_to": "", "store_name": "",
+                  })),
+            patch("services.customer_auth_service.resolve_slug_for_org",
+                  new=AsyncMock(return_value="acme")),
+            patch("services.customer_auth_service.send_customer_welcome",
+                  new=lambda *a, **kw: None),
+        ]
+
+    async def test_ap0_signup_ok_con_store_autogen(self):
+        """Store esistente ma legal not_configured: il signup PASSA e
+        lo snapshot CG-4 e' 'autogen:v0' (stessa sentinella degli
+        ordini RS3), audit con tag 'autogen' + hash 'v0'."""
+        from contextlib import ExitStack
+        from services import customer_auth_service
+
+        store = {
+            "id": "store-ap0", "organization_id": "org-ap0",
+            "slug": "acme", "name": "Acme",
+            "storefront_languages": ["it"],
+            # nessun merchant_*_content → merchant_legal_status
+            # = not_configured
+        }
+        account, audit = {}, []
+        with ExitStack() as stack:
+            for p in self._signup_patches(store, account, audit):
+                stack.enter_context(p)
+            result = await customer_auth_service.customer_signup(
+                org_id="org-ap0", email="ap0@example.com", name="Ap0",
+                password="StrongPass12", signup_slug="acme",
+                accepted_terms=True, accepted_privacy=True,
+            )
+
+        assert result["status"] == "verification_required"
+        assert account["accepted_store_terms_version"] == "autogen:v0"
+        assert account["accepted_store_privacy_version"] == "autogen:v0"
+        assert account["accepted_store_terms_locale"] == "it"
+        assert [r["version_tag"] for r in audit] == ["autogen", "autogen"]
+        assert [r["version_hash"] for r in audit] == ["v0", "v0"]
+
+    async def test_ap0_400_solo_se_store_inesistente(self):
+        """L'unico rifiuto legale rimasto: lo store NON esiste (niente
+        documenti serviti, nemmeno autogenerati → nulla a cui legare
+        il consenso)."""
+        import pytest
+        from contextlib import ExitStack
+        from services import customer_auth_service
+
+        account, audit = {}, []
+        with ExitStack() as stack:
+            for p in self._signup_patches(None, account, audit):
+                stack.enter_context(p)
+            with pytest.raises(ValueError, match="configurazione"):
+                await customer_auth_service.customer_signup(
+                    org_id="org-ap0", email="ap0b@example.com", name="B",
+                    password="StrongPass12", signup_slug="ghost",
+                    accepted_terms=True, accepted_privacy=True,
+                )
+        assert not account and not audit
+
+    def test_ap0_catch_onesto_nel_checkout(self):
+        """Il ramo else del catch signup mostra il motivo vero quando
+        il backend fornisce `detail` (chiave i18n con {{reason}}); il
+        generico resta solo come fallback. Per i corsi il flusso resta
+        bloccante com'era."""
+        hook = (FRONTEND_SRC / "features" / "storefront" / "hooks"
+                / "useCheckoutForm.js").read_text()
+        assert "signupNotCompletedReason" in hook
+        assert "reason: String(detail)" in hook
+        # fallback generico ancora presente per errori senza detail
+        assert "storefront:errors.signupNotCompleted'" in hook
+        # corsi: sempre bloccanti (return dopo il toast.error)
+        assert "toast.error(detail || t('storefront:errors.signupFailed'))" in hook
+        # la chiave esiste in tutte e 4 le lingue, con {{reason}}
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads((FRONTEND_SRC / "locales" / lang
+                               / "storefront.json").read_text())
+            msg = data["errors"]["signupNotCompletedReason"]
+            assert "{{reason}}" in msg

@@ -819,7 +819,16 @@ export default function useCheckoutForm({
             setSubmitting(false);
             return;
           }
-          toast.info(t('storefront:errors.signupNotCompleted'));
+          // AP0 — messaggio onesto: quando il backend spiega il motivo
+          // (detail), lo mostriamo invece del generico "non completata".
+          // L'ordine parte comunque come ospite in entrambi i casi.
+          if (detail) {
+            toast.info(t('storefront:errors.signupNotCompletedReason', {
+              reason: String(detail).replace(/\.\s*$/, ''),
+            }));
+          } else {
+            toast.info(t('storefront:errors.signupNotCompleted'));
+          }
         }
       }
     }
