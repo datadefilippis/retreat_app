@@ -1181,3 +1181,74 @@ class TestCheckoutAuryaAp1:
         form = self._checkout_file("CheckoutForm.jsx")
         assert "AuryaQuickLogin" in form
         assert "{!isCustomerAuthenticated && (\n                  <AuryaQuickLogin" in form
+
+
+class TestHubAccountAp2:
+    """AP2 (docs/ACCOUNT_UNICO_PIANO_2026-07.md, adattata) — l'hub
+    /account racconta lo stato vero di richieste e ritiri e apre le
+    guide della lettera di Aurya agli iscritti confermati."""
+
+    def test_ap2_orders_espongono_stato_e_slot(self):
+        """La proiezione /platform/me/orders porta status +
+        transaction_mode dominante + l'appuntamento scelto al checkout
+        servizi (service_slot dai booking_* della riga) e NON nasconde
+        piu' gli ordini annullati (badge 'Annullato')."""
+        src = (BACKEND_DIR / "routers" / "platform_accounts.py").read_text()
+        assert '"items.booking_date": 1' in src
+        assert '"items.transaction_mode": 1' in src
+        assert '"service_slot"' in src
+        assert '"transaction_mode": (modes.pop() if len(modes) == 1' in src
+        # gli annullati ora si vedono (prima erano filtrati via)
+        assert '{"$ne": "cancelled"}' not in src
+
+    def test_ap2_login_emette_token_newsletter_solo_confirmed(self):
+        """Il login Passaporto (magic link E codice) risponde con
+        newsletter_subscriber e, SOLO per iscrizioni aurya_subscribers
+        confermate, col subscriber_token (riuso core/subscriber_token,
+        la stessa chiave che sblocca le guide BN3)."""
+        svc = (BACKEND_DIR / "services"
+               / "platform_account_service.py").read_text()
+        assert "async def newsletter_status" in svc
+        assert 'doc.get("status") == "confirmed"' in svc
+        assert "generate_subscriber_token" in svc
+        # il token si firma DENTRO il ramo confirmed, mai fuori
+        confirmed_branch = svc.split('doc.get("status") == "confirmed"')[1]
+        assert "generate_subscriber_token" in confirmed_branch
+        router = (BACKEND_DIR / "routers" / "platform_accounts.py").read_text()
+        # entrambe le strade di login arricchiscono la risposta
+        assert router.count("**await newsletter_status(account[\"email\"])") == 2
+        # /platform/me espone il booleano per il render (senza token)
+        assert "with_token=False" in router
+
+    def test_ap2_sezione_guide_frontend(self):
+        """/account ha la sezione Guide e materiale: lista delle guide
+        riservate (endpoint pubblico del blog) per gli iscritti, invito
+        a /newsletter per gli altri; i login salvano aurya_nl_token
+        solo se il backend lo ha emesso. Copy in 4 lingue, senza
+        trattini lunghi e senza 'negozio'."""
+        page = (FRONTEND_SRC / "features" / "account"
+                / "AccountPage.js").read_text()
+        assert 'data-testid="account-guides"' in page
+        assert "newsletter_subscriber" in page
+        assert "'/public/articles'" in page
+        assert 'to="/newsletter"' in page
+        assert ".filter(a => a.gated)" in page
+        login = (FRONTEND_SRC / "features" / "account"
+                 / "AccountLoginPage.js").read_text()
+        assert "aurya_nl_token" in login
+        assert "subscriber_token" in login
+        quick = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "checkout" / "AuryaQuickLogin.jsx").read_text()
+        assert "aurya_nl_token" in quick
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads((FRONTEND_SRC / "locales" / lang
+                               / "landings.json").read_text())
+            acc = data["account"]
+            for key in ("statusRequestSent", "statusConfirmed",
+                        "statusCompleted", "statusCancelled",
+                        "appointment", "guidesTitle", "guidesInvite",
+                        "guidesCta"):
+                msg = acc[key]
+                assert "—" not in msg, (lang, key)
+                assert "negozio" not in msg.lower(), (lang, key)

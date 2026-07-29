@@ -11,6 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Loader2, Calendar, MapPin, Ticket, LogOut, CreditCard, ChevronRight,
+  Clock, BookOpen,
 } from 'lucide-react';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
@@ -31,6 +32,17 @@ const fmtDate = (iso, lang) => {
   } catch { return iso; }
 };
 
+// AP2 — 'gio 31 lug, 15:00': la data e ora dell'appuntamento scelto al
+// checkout servizi (service_slot dalla proiezione /platform/me/orders).
+const fmtSlot = (slot, lang) => {
+  if (!slot?.date) return null;
+  try {
+    const day = new Date(`${slot.date}T${slot.start_time || '00:00'}`)
+      .toLocaleDateString(lang, { weekday: 'short', day: 'numeric', month: 'short' });
+    return slot.start_time ? `${day}, ${slot.start_time}` : day;
+  } catch { return slot.date; }
+};
+
 const ROW_LABELS = {
   deposit: 'Caparra', balance: 'Saldo', installment: 'Rata', full: 'Pagamento',
 };
@@ -46,6 +58,8 @@ export default function AccountPage() {
   const [me, setMe] = useState(null);
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState(false);
+  // AP2 — guide riservate (solo per iscritti confermati alla lettera)
+  const [guides, setGuides] = useState(null);
 
   useSeoMeta({ title: 'Le mie esperienze', noindex: true });
   useEffect(() => {
@@ -83,6 +97,20 @@ export default function AccountPage() {
     return () => { mounted = false; };
   }, [authHeaders, navigate]);
 
+  // AP2 — lista delle guide riservate: stesso endpoint pubblico del blog
+  // (/public/articles, flag gated), stessa regola lingua del Magazine.
+  useEffect(() => {
+    if (!me?.newsletter_subscriber) return undefined;
+    let mounted = true;
+    const lang = (i18n.language || 'it').slice(0, 2);
+    platformApi.get('/public/articles', { params: { lang, page_size: 50 } })
+      .then(res => {
+        if (mounted) setGuides((res.data?.items || []).filter(a => a.gated));
+      })
+      .catch(() => { if (mounted) setGuides([]); });
+    return () => { mounted = false; };
+  }, [me, i18n.language]);
+
   const logout = () => {
     localStorage.removeItem(PLATFORM_TOKEN_KEY);
     navigate('/');
@@ -107,14 +135,43 @@ export default function AccountPage() {
   }
 
   const now = new Date().toISOString();
-  const upcoming = orders.filter(o => o.start_at && o.start_at >= now);
-  const past = orders.filter(o => !o.start_at || o.start_at < now);
+  // AP2 — anche l'appuntamento di un servizio (service_slot) conta come
+  // data di inizio per la divisione prossimi/passati; gli annullati non
+  // stanno mai tra i prossimi.
+  const startOf = (o) => o.start_at
+    || (o.service_slot?.date
+      ? `${o.service_slot.date}T${o.service_slot.start_time || '00:00'}` : null);
+  const upcoming = orders.filter(o => o.status !== 'cancelled'
+    && startOf(o) && startOf(o) >= now);
+  const past = orders.filter(o => !upcoming.includes(o));
   const dueRows = orders.flatMap(o =>
     (o.payment_rows || [])
       .filter(r => r.pay_token)
       .map(r => ({ ...r, order: o })));
 
-  const OrderCard = ({ o }) => (
+  // AP2 — badge di stato chiaro: la coppia status + transaction_mode
+  // della proiezione ordini. Un draft in modalita' richiesta E' una
+  // richiesta inviata; un draft direct e' in attesa di pagamento (le
+  // righe pagamento sotto dicono gia' tutto, niente badge).
+  const statusBadge = (o) => {
+    if (o.status === 'cancelled') {
+      return { label: t('landings:account.statusCancelled', { defaultValue: 'Annullato' }), cls: 'bg-red-50 text-red-600' };
+    }
+    if (o.status === 'completed') {
+      return { label: t('landings:account.statusCompleted', { defaultValue: 'Completato' }), cls: 'bg-gray-100 text-gray-600' };
+    }
+    if (o.status === 'confirmed') {
+      return { label: t('landings:account.statusConfirmed', { defaultValue: 'Confermato' }), cls: 'bg-emerald-50 text-emerald-700' };
+    }
+    if (o.status === 'draft' && o.transaction_mode === 'request') {
+      return { label: t('landings:account.statusRequestSent', { defaultValue: 'Richiesta inviata' }), cls: 'bg-amber-50 text-amber-800' };
+    }
+    return null;
+  };
+
+  const OrderCard = ({ o }) => {
+    const badge = statusBadge(o);
+    return (
     <div className="rounded-2xl border border-gray-200 bg-white p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -122,16 +179,28 @@ export default function AccountPage() {
           <p className="text-xs text-gray-500 mt-0.5">
             {o.operator_name}{o.order_number ? ` · ${o.order_number}` : ''}
           </p>
+          {badge && (
+            <span className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${badge.cls}`}
+              data-testid="order-status-badge">
+              {badge.label}
+            </span>
+          )}
         </div>
         <span className="shrink-0 text-sm font-bold text-gray-900">
           {new Intl.NumberFormat('it-IT', { style: 'currency', currency: o.currency || 'EUR', maximumFractionDigits: 0 }).format(o.total || 0)}
         </span>
       </div>
-      {(o.start_at || o.location) && (
+      {(o.start_at || o.location || o.service_slot) && (
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
           {o.start_at && (
             <span className="inline-flex items-center gap-1">
               <Calendar className="h-3 w-3" />{fmtDate(o.start_at, i18n.language)}
+            </span>
+          )}
+          {!o.start_at && o.service_slot && (
+            <span className="inline-flex items-center gap-1" data-testid="order-service-slot">
+              <Clock className="h-3 w-3" />
+              {t('landings:account.appointment', { defaultValue: 'Appuntamento' })}: {fmtSlot(o.service_slot, i18n.language)}
             </span>
           )}
           {o.location && (
@@ -176,7 +245,8 @@ export default function AccountPage() {
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   return (
     <MarketplaceShell>
@@ -249,6 +319,55 @@ export default function AccountPage() {
             </div>
           </section>
         )}
+
+        {/* AP2 — Guide e materiale: le guide riservate del Magazine per
+            gli iscritti confermati alla lettera; per gli altri, l'invito
+            a iscriversi (/newsletter). */}
+        <section data-testid="account-guides">
+          <h2 className="text-sm font-semibold text-gray-900 mb-2">
+            {t('landings:account.guidesTitle', { defaultValue: 'Guide e materiale' })}
+          </h2>
+          {me.newsletter_subscriber ? (
+            guides === null ? (
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 flex justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              </div>
+            ) : guides.length === 0 ? (
+              <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                <p className="text-sm text-gray-600">
+                  {t('landings:account.guidesEmpty', { defaultValue: 'Nessuna guida riservata disponibile in questa lingua, per ora.' })}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100">
+                <p className="px-4 pt-3 pb-1 text-xs text-gray-500">
+                  {t('landings:account.guidesIntro', { defaultValue: 'Sei iscritto alla lettera di Aurya: queste guide sono sbloccate per te.' })}
+                </p>
+                {guides.map(g => (
+                  <Link key={g.slug} to={`/blog/${g.slug}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <BookOpen className="h-4 w-4 shrink-0 text-primary" />
+                      <span className="text-sm text-gray-900 truncate">{g.title}</span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" />
+                  </Link>
+                ))}
+              </div>
+            )
+          ) : (
+            <div className="rounded-2xl border border-gray-200 bg-white p-5">
+              <p className="text-sm text-gray-600">
+                {t('landings:account.guidesInvite', { defaultValue: 'Le guide riservate del Magazine sono per chi riceve la lettera di Aurya. L\'iscrizione è gratuita e la annulli quando vuoi.' })}
+              </p>
+              <Link to="/newsletter"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                {t('landings:account.guidesCta', { defaultValue: 'Iscriviti alla lettera' })}
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+          )}
+        </section>
       </main>
     </div>
     </MarketplaceShell>

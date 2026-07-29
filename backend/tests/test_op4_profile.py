@@ -67,10 +67,13 @@ class TestPublicName:
         assert r.json()["name"] == marker
 
         try:
-            # /public/operators: name = nome org, bio en con ?lang=en
+            # /public/operators: name = nome org, bio en con ?lang=en.
+            # preview=1 (PN 29/7): in fase rete/pre-lancio lo specchio
+            # PL8 nasconde gli operatori veri — la rotta anteprima li
+            # mostra come al lancio, cosi' la guardia vale in OGNI fase.
             ops = requests.get(f"{BASE_URL}/api/public/operators",
-                               params={"lang": "en"}, headers=UA,
-                               timeout=10).json()
+                               params={"lang": "en", "preview": 1},
+                               headers=UA, timeout=10).json()
             row = next((i for i in ops["items"]
                         if i["name"] == marker), None)
             assert row, "il nome org aggiornato deve comparire nell'indice"
@@ -78,15 +81,26 @@ class TestPublicName:
 
             # fallback IT senza lang
             ops_it = requests.get(f"{BASE_URL}/api/public/operators",
+                                  params={"preview": 1},
                                   headers=UA, timeout=10).json()
             row_it = next((i for i in ops_it["items"]
                            if i["name"] == marker), None)
             assert row_it and "English bio" not in (row_it.get("bio") or "")
 
-            # /public/operator/{slug}: stesso nome
+            # /public/operator/{slug}: stesso nome. _resolve_org ha una
+            # cache TTL ~45s: se un test precedente ha appena risolto lo
+            # slug, la prima lettura puo' servire il nome vecchio — si
+            # attende lo scadere del TTL (retry breve), poi si asserisce.
+            import time as _time
+            deadline = _time.time() + 60
             prof = requests.get(
                 f"{BASE_URL}/api/public/operator/{row['org_slug']}",
                 timeout=10).json()
+            while prof.get("name") != marker and _time.time() < deadline:
+                _time.sleep(5)
+                prof = requests.get(
+                    f"{BASE_URL}/api/public/operator/{row['org_slug']}",
+                    timeout=10).json()
             assert prof["name"] == marker
 
             # vuoto NON cancella

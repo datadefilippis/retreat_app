@@ -257,6 +257,38 @@ async def ensure_indexes() -> None:
     await platform_magic_tokens_collection.create_index("expires_at")
 
 
+# ── AP2 — ponte newsletter (hub /account) ────────────────────────────────────
+
+async def newsletter_status(email: str, *,
+                            with_token: bool = True) -> Dict[str, Any]:
+    """Lookup aurya_subscribers per l'email del Passaporto (AP2).
+
+    Se l'email risulta iscritta CONFERMATA alla lettera di Aurya ritorna
+    ``{"newsletter_subscriber": True, "subscriber_token": <jwt>}`` — lo
+    stesso token (core/subscriber_token) che il blog BN3 usa per
+    sbloccare le guide riservate. In ogni altro caso (non iscritta,
+    pending, unsubscribed) SOLO ``{"newsletter_subscriber": False}``:
+    nessun token viene mai emesso per chi non ha confermato.
+
+    ``with_token=False`` (es. GET /platform/me) evita di firmare un JWT
+    quando serve solo il booleano per il render.
+    """
+    from database import db
+
+    email_n = _normalize_email(email)
+    out: Dict[str, Any] = {"newsletter_subscriber": False}
+    if not email_n:
+        return out
+    doc = await db.aurya_subscribers.find_one(
+        {"email": email_n}, {"_id": 0, "status": 1})
+    if doc and doc.get("status") == "confirmed":
+        out["newsletter_subscriber"] = True
+        if with_token:
+            from core.subscriber_token import generate_subscriber_token
+            out["subscriber_token"] = generate_subscriber_token(email_n)
+    return out
+
+
 # ── P2 — aggancio acquisto ───────────────────────────────────────────────────
 # Chiamate SEMPRE best-effort dai flussi ordine/pagamento (try/except nel
 # chiamante): il Passaporto non deve MAI bloccare un ordine o un incasso.

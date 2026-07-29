@@ -84,6 +84,12 @@ export default function AuryaQuickLogin({ onProfile }) {
       const res = await platformApi.post('/platform/auth/code/verify',
         { email: email.trim(), code: code.trim() });
       localStorage.setItem(PLATFORM_TOKEN_KEY, res.data.access_token);
+      // AP2 — iscritto confermato alla lettera di Aurya: il token che
+      // sblocca le guide (stessa chiave letta dal blog BN3). Solo se
+      // il backend lo ha emesso.
+      if (res.data.subscriber_token) {
+        try { localStorage.setItem('aurya_nl_token', res.data.subscriber_token); } catch { /* private mode */ }
+      }
       // profilo fresco (nome incluso) per prefill e saluto
       const me = await platformApi.get('/platform/me');
       setAccount(me.data);

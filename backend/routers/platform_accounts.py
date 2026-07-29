@@ -74,7 +74,8 @@ async def request_magic_link(body: MagicLinkRequest, request: Request):
 async def verify_magic_link(body: MagicLinkVerify, request: Request):
     """Consuma il token one-shot e ritorna il JWT piattaforma (30gg)."""
     _flag_enabled()
-    from services.platform_account_service import consume_magic_link
+    from services.platform_account_service import (consume_magic_link,
+                                                   newsletter_status)
     account = await consume_magic_link(body.token)
     if not account:
         raise HTTPException(
@@ -91,6 +92,10 @@ async def verify_magic_link(body: MagicLinkVerify, request: Request):
         "account": {"id": account["id"], "email": account["email"],
                     "name": account.get("name"),
                     "language": account.get("language", "it")},
+        # AP2 — se l'email e' iscritta CONFERMATA alla lettera di Aurya,
+        # il login porta anche il subscriber_token che sblocca le guide
+        # (newsletter_subscriber: False e nessun token altrimenti).
+        **await newsletter_status(account["email"]),
     }
 
 
@@ -104,7 +109,8 @@ class CodeVerify(BaseModel):
 async def verify_login_code_ep(body: CodeVerify, request: Request):
     """Login col codice a 6 cifre (stessa email del magic link)."""
     _flag_enabled()
-    from services.platform_account_service import verify_login_code
+    from services.platform_account_service import (newsletter_status,
+                                                   verify_login_code)
     account = await verify_login_code(body.email, body.code)
     if not account:
         raise HTTPException(
@@ -121,15 +127,24 @@ async def verify_login_code_ep(body: CodeVerify, request: Request):
         "account": {"id": account["id"], "email": account["email"],
                     "name": account.get("name"),
                     "language": account.get("language", "it")},
+        # AP2 — stessa regola del magic link: token guide SOLO se l'email
+        # e' un'iscrizione confermata alla lettera di Aurya.
+        **await newsletter_status(account["email"]),
     }
 
 
 @router.get("/me")
 async def get_me(account: dict = Depends(get_current_platform_account)):
     _flag_enabled()
-    return {k: account.get(k) for k in
-            ("id", "email", "name", "phone", "language",
-             "email_verified", "created_at", "last_login_at")}
+    out = {k: account.get(k) for k in
+           ("id", "email", "name", "phone", "language",
+            "email_verified", "created_at", "last_login_at")}
+    # AP2 — booleano per il render della sezione Guide in /account
+    # (niente token qui: quello viaggia solo nella risposta di login).
+    from services.platform_account_service import newsletter_status
+    nl = await newsletter_status(account.get("email") or "", with_token=False)
+    out["newsletter_subscriber"] = nl["newsletter_subscriber"]
+    return out
 
 
 @router.patch("/me")
@@ -181,15 +196,18 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
         organizations_collection,
     )
 
+    # AP2 — anche i cancellati: l'utente deve VEDERE che una richiesta
+    # e' stata annullata (badge 'Annullato'), non trovarla sparita.
     orders = await orders_collection.find(
-        {"platform_account_id": account["id"],
-         "status": {"$ne": "cancelled"}},
+        {"platform_account_id": account["id"]},
         {"_id": 0, "id": 1, "order_number": 1, "organization_id": 1,
          "status": 1, "total": 1, "currency": 1, "created_at": 1,
          "payment_state": 1,
          "items.product_name": 1, "items.quantity": 1,
          "items.occurrence_start_at": 1, "items.occurrence_location": 1,
-         "items.item_type": 1},
+         "items.item_type": 1, "items.transaction_mode": 1,
+         "items.booking_date": 1, "items.booking_start_time": 1,
+         "items.booking_end_time": 1},
     ).sort("created_at", -1).to_list(200)
 
     if not orders:
@@ -230,12 +248,22 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
         for r in (sched or {}).get("rows", []):
             row = {"kind": r.get("kind"), "amount_minor": r.get("amount_minor"),
                    "status": r.get("status"), "due_at": r.get("due_at")}
-            # pay link SOLO per righe realmente pagabili
-            if r.get("status") in PAYABLE_ROW_STATES and r.get("pay_token"):
+            # pay link SOLO per righe realmente pagabili — e MAI su un
+            # ordine annullato (AP2: gli annullati ora sono visibili qui)
+            if (r.get("status") in PAYABLE_ROW_STATES and r.get("pay_token")
+                    and o.get("status") != "cancelled"):
                 row["pay_token"] = r["pay_token"]
             rows.append(row)
         ev = next((it for it in o.get("items", [])
                    if it.get("occurrence_start_at")), None)
+        # AP2 — modo dominante dell'ordine, stessa regola del checkout
+        # (order_creation_service): un solo modo → quello, misto → request.
+        modes = {it.get("transaction_mode") or "request"
+                 for it in o.get("items", [])}
+        # AP2 — appuntamento scelto al checkout servizi (snapshot
+        # booking_* sulla riga): la prima riga con uno slot.
+        slot_line = next((it for it in o.get("items", [])
+                          if it.get("booking_date")), None)
         out.append({
             "id": o["id"],
             "order_number": o.get("order_number"),
@@ -243,6 +271,12 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
                               or (og.get("store_settings") or {}).get("display_name")
                               or og.get("name"))(orgs.get(o["organization_id"], {})),
             "status": o.get("status"),
+            "transaction_mode": (modes.pop() if len(modes) == 1
+                                 else "request"),
+            "service_slot": ({"date": slot_line["booking_date"],
+                              "start_time": slot_line.get("booking_start_time"),
+                              "end_time": slot_line.get("booking_end_time")}
+                             if slot_line else None),
             "total": o.get("total"),
             "currency": o.get("currency", "EUR"),
             "created_at": o.get("created_at"),

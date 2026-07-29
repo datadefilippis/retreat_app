@@ -528,7 +528,17 @@
     "sentCodeBody": "Ti abbiamo inviato un codice a 6 cifre (vale 15 minuti). Nella stessa email c'è anche un link, se preferisci.",
     "codeError": "Codice non valido o scaduto. Controlla e riprova.",
     "verifyingCode": "Verifico…",
-    "enter": "Entra"
+    "enter": "Entra",
+    "statusRequestSent": "Richiesta inviata",
+    "statusConfirmed": "Confermato",
+    "statusCompleted": "Completato",
+    "statusCancelled": "Annullato",
+    "appointment": "Appuntamento",
+    "guidesTitle": "Guide e materiale",
+    "guidesIntro": "Sei iscritto alla lettera di Aurya: queste guide sono sbloccate per te.",
+    "guidesEmpty": "Nessuna guida riservata disponibile in questa lingua, per ora.",
+    "guidesInvite": "Le guide riservate del Magazine sono per chi riceve la lettera di Aurya. L'iscrizione è gratuita e la annulli quando vuoi.",
+    "guidesCta": "Iscriviti alla lettera"
   },
   "categories": {
     "yoga": "Yoga",

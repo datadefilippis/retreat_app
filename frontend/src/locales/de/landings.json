@@ -528,7 +528,17 @@
     "sentCodeBody": "Wir haben dir einen 6-stelligen Code geschickt (15 Minuten gültig). Dieselbe E-Mail enthält auch einen Link.",
     "codeError": "Ungültiger oder abgelaufener Code. Prüfe und versuche es erneut.",
     "verifyingCode": "Prüfe…",
-    "enter": "Anmelden"
+    "enter": "Anmelden",
+    "statusRequestSent": "Anfrage gesendet",
+    "statusConfirmed": "Bestätigt",
+    "statusCompleted": "Abgeschlossen",
+    "statusCancelled": "Storniert",
+    "appointment": "Termin",
+    "guidesTitle": "Guides und Material",
+    "guidesIntro": "Du bist beim Aurya Brief angemeldet: diese Guides sind für dich freigeschaltet.",
+    "guidesEmpty": "In dieser Sprache sind derzeit keine exklusiven Guides verfügbar.",
+    "guidesInvite": "Die exklusiven Guides des Magazins sind für Leser des Aurya Briefs. Die Anmeldung ist kostenlos und jederzeit kündbar.",
+    "guidesCta": "Zum Brief anmelden"
   },
   "categories": {
     "yoga": "Yoga",

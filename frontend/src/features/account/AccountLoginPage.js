@@ -22,6 +22,16 @@ import MarketplaceShell from '../storefront/components/MarketplaceShell';
 // POST per token, sempre.
 const attemptedTokens = new Set();
 
+// AP2 — se il login dice che l'email e' iscritta confermata alla lettera
+// di Aurya, il subscriber_token va nella STESSA chiave che il blog (BN3)
+// legge per sbloccare le guide riservate. Solo se presente: per chi non
+// e' iscritto non si scrive (ne' si cancella) nulla.
+const NL_TOKEN_KEY = 'aurya_nl_token';
+const saveSubscriberToken = (data) => {
+  if (!data?.subscriber_token) return;
+  try { localStorage.setItem(NL_TOKEN_KEY, data.subscriber_token); } catch { /* private mode */ }
+};
+
 export default function AccountLoginPage() {
   const { t, i18n } = useTranslation('landings');
   // R2a — la lingua UI viaggia con la richiesta OTP: il backend la salva
@@ -55,6 +65,7 @@ export default function AccountLoginPage() {
         // salva SEMPRE (anche se lo StrictMode ha smontato questo mount:
         // la sessione e' valida e il remount la trovera')
         localStorage.setItem(PLATFORM_TOKEN_KEY, res.data.access_token);
+        saveSubscriberToken(res.data);
         navigate('/account', { replace: true });
       })
       .catch(() => setState('expired'));
@@ -72,6 +83,7 @@ export default function AccountLoginPage() {
       const res = await platformApi.post('/platform/auth/code/verify',
         { email, code: code.trim() });
       localStorage.setItem(PLATFORM_TOKEN_KEY, res.data.access_token);
+      saveSubscriberToken(res.data);
       navigate('/account');
     } catch {
       setError(t('landings:account.codeError', {

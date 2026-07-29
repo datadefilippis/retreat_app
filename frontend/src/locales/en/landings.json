@@ -528,7 +528,17 @@
     "sentCodeBody": "We've sent you a 6-digit code (valid 15 minutes). The same email also contains a link, if you prefer.",
     "codeError": "Invalid or expired code. Check and try again.",
     "verifyingCode": "Verifying…",
-    "enter": "Enter"
+    "enter": "Enter",
+    "statusRequestSent": "Request sent",
+    "statusConfirmed": "Confirmed",
+    "statusCompleted": "Completed",
+    "statusCancelled": "Cancelled",
+    "appointment": "Appointment",
+    "guidesTitle": "Guides and resources",
+    "guidesIntro": "You are subscribed to the Aurya letter: these guides are unlocked for you.",
+    "guidesEmpty": "No subscriber guides available in this language yet.",
+    "guidesInvite": "The Magazine's subscriber guides are for readers of the Aurya letter. Subscribing is free and you can leave anytime.",
+    "guidesCta": "Subscribe to the letter"
   },
   "categories": {
     "yoga": "Yoga",

@@ -284,9 +284,12 @@ class TestP3AccountArea:
         src = open(path).read()
         assert "from services.payment_schedule_service import PAYABLE_STATES" in src
 
-    def test_cancelled_orders_excluded(self):
+    def test_cancelled_orders_visible_without_pay_link(self):
+        """AP2 — gli ordini annullati SI VEDONO nell'hub (badge
+        'Annullato'), ma un annullato non porta MAI un pay link."""
         block = self._endpoint_src()
-        assert '"$ne": "cancelled"' in block
+        assert '"$ne": "cancelled"' not in block
+        assert '!= "cancelled"' in block
 
     def test_voided_tickets_excluded(self):
         block = self._endpoint_src()
