@@ -2069,3 +2069,468 @@ class TestAccountAp4:
             assert brand in blob, lang
             assert pwd in blob, lang
             assert "—" not in blob, lang        # mai trattini lunghi
+
+
+class TestAccountAp5:
+    """AP5 (docs/ACCOUNT_UNICO_PIANO_2026-07.md) — chiusura del ciclo
+    Account Unico: guardie SOLO per i buchi della matrice E2E. Il resto
+    della matrice e' gia' coperto (censimento 29/7):
+
+      1. guest da profilo  → TestAccountApL.test_apl_ordine_guest_* (consensi
+         due livelli + account pending + audit); QUI: marketing nel CRM e
+         claim email alla conferma della richiesta.
+      2. acquisto diretto  → QUI: viaggio live ordine→session→webhook
+         simulato→claim→hub (i pezzi unitari vivono in
+         test_payment_checkout_integration e TestP2ClaimEmail).
+      3. login tre vie     → TestLoginCode/TestMagicLinkService/AP1b; QUI:
+         le TRE strade live sullo STESSO account, stessa identita'.
+      4. guide/newsletter  → TestHubAccountAp2 + test_f1/f2 newsletter; QUI
+         (dentro il login tre vie): newsletter_subscriber coerente.
+      5. password lifecycle→ TestAccountAp1b; QUI: il reset su account
+         passwordless AGGANCIA lo storico (retroactive_claim).
+      6. errori onesti     → AP1b (409/403/401/423, reset one-shot) +
+         TestLoginCode (OTP); QUI: token verifica/reset SCADUTI.
+      7. GDPR              → TestP4Gdpr (unit); QUI: export+delete live via
+         HTTP col nuovo assetto, ordini operatore intatti.
+      8. isolamento        → TestP2OrderLinking (unit); QUI: due org VERE,
+         un account, /me/orders con entrambi, customer per-org separati.
+      9. regressione       → TestInvariants, CG2/CG4, TW/RS/PN/LM: gia'
+         tutte guardie vive nella suite (nessun doppione qui).
+    """
+
+    PASSWORD = "StrongPass12"
+
+    # ── riuso infrastruttura live AP-L ──────────────────────────────────
+    @classmethod
+    def _admin_headers(cls):
+        return TestAccountApL._admin_headers()
+
+    @staticmethod
+    def _db():
+        return TestAccountApL._db()
+
+    @classmethod
+    def _cleanup_email(cls, email):
+        """AP-L cleanup + artefatti della conferma (sales, schedule,
+        ledger, ticket) che gli ordini AP5 confermati generano."""
+        db = cls._db()
+        email = email.lower()
+        pa_ids = [a["id"] for a in
+                  db.platform_accounts.find({"email": email}, {"id": 1})]
+        cust_ids = [c["id"] for c in
+                    db.customers.find({"email": email}, {"id": 1})]
+        order_ids = [o["id"] for o in db.orders.find({"$or": [
+            {"customer_id": {"$in": cust_ids}},
+            {"platform_account_id": {"$in": pa_ids}},
+        ]}, {"id": 1})]
+        if order_ids:
+            db.sales_records.delete_many(
+                {"metadata.order_id": {"$in": order_ids}})
+            db.payment_schedules.delete_many({"order_id": {"$in": order_ids}})
+            db.platform_fee_ledger.delete_many({"order_id": {"$in": order_ids}})
+            db.issued_tickets.delete_many({"order_id": {"$in": order_ids}})
+            db.issued_bookings.delete_many({"order_id": {"$in": order_ids}})
+            db.orders.delete_many({"id": {"$in": order_ids}})
+        TestAccountApL._cleanup_email(email)
+        db.aurya_subscribers.delete_many({"email": email})
+
+    @classmethod
+    def _insert_magic_token(cls, account_id):
+        """Token magic con hash noto (la via del browser/dei test live:
+        il chiaro non e' mai recuperabile dal DB)."""
+        import hashlib
+        import secrets
+        import uuid
+        from datetime import datetime, timedelta, timezone
+
+        token = secrets.token_urlsafe(24)
+        code = f"{secrets.randbelow(1_000_000):06d}"
+        cls._db().platform_magic_tokens.insert_one({
+            "id": str(uuid.uuid4()),
+            "account_id": account_id,
+            "token_hash": hashlib.sha256(token.encode()).hexdigest(),
+            "code_hash": hashlib.sha256(code.encode()).hexdigest(),
+            "code_attempts": 0,
+            "used_at": None,
+            "expires_at": (datetime.now(timezone.utc)
+                           + timedelta(minutes=10)).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        return token, code
+
+    @classmethod
+    def _platform_login(cls, account_id):
+        token, _ = cls._insert_magic_token(account_id)
+        r = requests.post(f"{BASE_URL}/api/platform/auth/magic-link/verify",
+                          json={"token": token}, timeout=10)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        return {"Authorization": f"Bearer {body['access_token']}"}, body
+
+    @staticmethod
+    def _order_request(email, product_id, *, slug="masseria-demo",
+                       name="Guardia Ap5", marketing=False):
+        r = requests.post(f"{BASE_URL}/api/public/order-request", json={
+            "slug": slug, "customer_name": name, "customer_email": email,
+            "items": [{"product_id": product_id, "quantity": 1}],
+            "terms_accepted": False,
+            "gdpr_terms_accepted": True, "gdpr_privacy_accepted": True,
+            "gdpr_marketing_accepted": bool(marketing),
+            "aurya_terms_accepted": True,
+            "locale": "it", "channel": "store",
+        }, timeout=30)
+        assert r.status_code == 200, r.text
+        return r.json()
+
+    # ── 1. guest da profilo: marketing nel CRM + claim alla conferma ────
+
+    def test_ap5_richiesta_guest_marketing_e_claim_su_conferma(self):
+        """Richiesta servizio da guest con opt-in marketing: il CRM
+        timbra accepted_marketing_at + audit merchant_marketing; la
+        CONFERMA della richiesta (RS5) fa partire la claim email
+        dell'account Aurya pending (timestamp + token magic emesso)."""
+        email = "ap5-guest@example.com"
+        headers = self._admin_headers()
+        self._cleanup_email(email)
+        apl = TestAccountApL()
+        prod = apl._make_service(headers, "Guardia AP5 guest marketing")
+        try:
+            out = self._order_request(email, prod["id"], marketing=True)
+            order_id = out["order_id"]
+            db = self._db()
+
+            cust = db.customers.find_one({"email": email})
+            assert cust and cust.get("accepted_marketing_at")
+            assert not cust.get("marketing_revoked_at")
+            mk = list(db.consent_audit.find(
+                {"customer_email": email,
+                 "document_type": "merchant_marketing"}))
+            assert len(mk) == 1
+            assert mk[0]["source"] == "customer_marketing_optin"
+
+            account = db.platform_accounts.find_one({"email": email})
+            assert account and not account.get("email_verified")   # pending
+            assert not account.get("claim_last_sent_at")           # non ancora
+
+            r = requests.post(f"{BASE_URL}/api/orders/{order_id}/confirm",
+                              headers=headers, timeout=15)
+            assert r.status_code == 200, r.text
+
+            account = db.platform_accounts.find_one({"email": email})
+            assert account.get("claim_last_sent_at")               # claim inviata
+            assert db.platform_magic_tokens.count_documents(
+                {"account_id": account["id"]}) >= 1                # link emesso
+        finally:
+            apl._delete_product(headers, prod["id"])
+            self._cleanup_email(email)
+
+    # ── 2. acquisto diretto: session → webhook simulato → claim → hub ───
+
+    def test_ap5_acquisto_diretto_webhook_claim_e_hub(self):
+        """Ordine direct: session Stripe creata (fin dove il dev arriva),
+        webhook checkout.session.completed SIMULATO col reconciler vero
+        (stesso pattern verify_/synthetic della suite) → ordine
+        confermato, incasso registrato, claim email partita, ordine
+        visibile in /account via /platform/me/orders."""
+        import json as _json
+        import os as _os
+        import subprocess
+
+        email = "ap5-direct@example.com"
+        headers = self._admin_headers()
+        self._cleanup_email(email)
+        apl = TestAccountApL()
+        r = requests.post(f"{BASE_URL}/api/products", headers=headers, json={
+            "name": "Guardia AP5 direct", "item_type": "service",
+            "transaction_mode": "direct", "is_published": True,
+            "unit_price": 40, "price_mode": "fixed"}, timeout=10)
+        assert r.status_code in (200, 201), r.text
+        prod = r.json()
+        try:
+            out = self._order_request(email, prod["id"])
+            assert out["transaction_mode"] == "direct"
+            order_id = out["order_id"]
+            db = self._db()
+            order = db.orders.find_one({"id": order_id})
+            assert order["payment_intent"] == "required"
+            # fin dove il dev consente: la session test viene creata e
+            # l'URL di redirect e' quello di Stripe Checkout (se la rete
+            # verso Stripe manca, il reconcile sotto resta comunque valido)
+            if out.get("payment_checkout_url"):
+                assert out["payment_checkout_url"].startswith(
+                    "https://checkout.stripe.com/")
+
+            # webhook simulato: evento sintetico sul reconciler canonico,
+            # eseguito nel venv del backend contro il DB del server live
+            ref = (order.get("payment_checkout") or {}).get("reference")
+            script = f"""
+import asyncio, json
+async def main():
+    from services.payment_checkout_service import reconcile_checkout_event
+    event = {{
+        "id": "evt_ap5_guard_{order_id[:8]}",
+        "type": "checkout.session.completed",
+        "account": None,
+        "data": {{"object": {{
+            "id": {ref!r} or "cs_test_ap5_guard",
+            "payment_status": "paid",
+            "payment_intent": "pi_ap5_guard",
+            "currency": "eur",
+            "metadata": {{"source": "afianco",
+                          "org_id": {order["organization_id"]!r},
+                          "order_id": {order_id!r},
+                          "schedule_row_seq": "0"}},
+            "amount_total": 4000,
+        }}}},
+    }}
+    print(json.dumps(await reconcile_checkout_event(event)))
+asyncio.run(main())
+"""
+            env = {k: v for k, v in _os.environ.items()
+                   if k not in ("MONGO_URL", "DB_NAME")}
+            proc = subprocess.run(
+                [str(BACKEND_DIR / "venv" / "bin" / "python"), "-"],
+                input=script, capture_output=True, text=True,
+                cwd=BACKEND_DIR, env=env, timeout=120)
+            assert proc.returncode == 0, proc.stderr[-2000:]
+            result = _json.loads(proc.stdout.strip().splitlines()[-1])
+            assert result["action"] == "confirmed", result
+
+            order = db.orders.find_one({"id": order_id})
+            assert order["status"] == "confirmed"
+            assert order["payment_intent"] == "collected"
+
+            # claim email al pagamento riuscito (account ancora pending)
+            account = db.platform_accounts.find_one({"email": email})
+            assert account.get("claim_last_sent_at")
+
+            # l'ordine e' nel suo /account
+            ph, _ = self._platform_login(account["id"])
+            r = requests.get(f"{BASE_URL}/api/platform/me/orders",
+                             headers=ph, timeout=10)
+            assert r.status_code == 200, r.text
+            rows = [o for o in r.json()["orders"] if o["id"] == order_id]
+            assert rows and rows[0]["status"] == "confirmed"
+            assert rows[0]["transaction_mode"] == "direct"
+        finally:
+            apl._delete_product(headers, prod["id"])
+            self._cleanup_email(email)
+
+    # ── 3+4. login tre vie sullo stesso account + newsletter coerente ───
+
+    def test_ap5_login_tre_vie_stesso_account(self):
+        """Password, OTP e magic link entrano tutte nello STESSO account
+        (stessa identita', stesso shape di risposta) e il flag
+        newsletter_subscriber e' coerente: False da non iscritto, True +
+        subscriber_token appena l'iscrizione e' confermata."""
+        import uuid
+        from datetime import datetime, timezone
+
+        from auth import get_password_hash
+
+        email = "ap5-tre-vie@example.com"
+        self._cleanup_email(email)
+        db = self._db()
+        account_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc).isoformat()
+        db.platform_accounts.insert_one({
+            "id": account_id, "email": email, "name": "Tre Vie",
+            "language": "it", "email_verified": True, "is_active": True,
+            "password_hash": get_password_hash(self.PASSWORD),
+            "failed_login_attempts": 0, "lockout_count_today": 0,
+            "locked_until": None, "sessions_invalidated_at": None,
+            "created_at": now,
+        })
+        try:
+            # 1. password
+            r = requests.post(f"{BASE_URL}/api/platform/auth/login", json={
+                "email": email, "password": self.PASSWORD}, timeout=10)
+            assert r.status_code == 200, r.text
+            pw = r.json()
+            assert pw["account"]["id"] == account_id
+            assert pw["newsletter_subscriber"] is False
+            assert "subscriber_token" not in pw
+
+            # 2. OTP (codice a 6 cifre)
+            _, code = self._insert_magic_token(account_id)
+            r = requests.post(f"{BASE_URL}/api/platform/auth/code/verify",
+                              json={"email": email, "code": code}, timeout=10)
+            assert r.status_code == 200, r.text
+            otp = r.json()
+            assert otp["account"]["id"] == account_id
+
+            # 3. magic link
+            token, _ = self._insert_magic_token(account_id)
+            r = requests.post(
+                f"{BASE_URL}/api/platform/auth/magic-link/verify",
+                json={"token": token}, timeout=10)
+            assert r.status_code == 200, r.text
+            ml = r.json()
+            assert ml["account"]["id"] == account_id
+            # stesso shape su tutte le strade
+            for body in (pw, otp, ml):
+                assert set(body) >= {"access_token", "token_type",
+                                     "account", "newsletter_subscriber"}
+
+            # iscrizione confermata → il login porta il token guide
+            db.aurya_subscribers.insert_one({
+                "id": str(uuid.uuid4()), "email": email,
+                "status": "confirmed", "created_at": now})
+            r = requests.post(f"{BASE_URL}/api/platform/auth/login", json={
+                "email": email, "password": self.PASSWORD}, timeout=10)
+            assert r.status_code == 200, r.text
+            assert r.json()["newsletter_subscriber"] is True
+            assert r.json()["subscriber_token"]
+        finally:
+            self._cleanup_email(email)
+
+    # ── 5+6. reset aggancia lo storico + token scaduti rifiutati ────────
+
+    async def test_ap5_reset_aggancia_storico_e_token_scaduti(self):
+        """(a) confirm_password_reset su account nato passwordless chiama
+        retroactive_claim (lo storico ordini si aggancia); (b) token di
+        verifica e di reset SCADUTI → INVALID_TOKEN (con l'hash ancora a
+        DB: il rifiuto e' sulla scadenza, non sull'assenza)."""
+        from contextlib import ExitStack
+        from datetime import timedelta
+        from unittest.mock import AsyncMock, patch
+
+        import pytest
+        from models.common import utc_now
+        from services import platform_account_service as svc
+
+        Ap1b = TestAccountAp1b
+        fake, sent = Ap1b._MemAccounts(), {}
+        claim = AsyncMock()
+        with ExitStack() as stack:
+            for p in Ap1b()._ctx(fake, sent):
+                stack.enter_context(p)
+            stack.enter_context(patch.object(svc, "retroactive_claim", claim))
+
+            # (a) account passwordless da acquisto guest: reset = imposta
+            # password + claim retroattivo dello storico
+            fake.docs["g1"] = {"id": "g1", "email": "ap5-claim@x.it",
+                               "email_verified": False, "password_hash": None,
+                               "language": "it"}
+            await svc.request_password_reset("ap5-claim@x.it")
+            await svc.confirm_password_reset(sent["reset_token"],
+                                             self.PASSWORD)
+            assert claim.await_count == 1          # storico agganciato
+            assert claim.await_args[0][0]["id"] == "g1"
+
+            # (b) verifica scaduta: hash presente ma oltre il TTL
+            await svc.password_signup(name="S", email="ap5-scad@x.it",
+                                      password=self.PASSWORD)
+            acc = [d for d in fake.docs.values()
+                   if d["email"] == "ap5-scad@x.it"][0]
+            acc["verification_token_expires"] = (
+                utc_now() - timedelta(hours=1)).isoformat()
+            with pytest.raises(ValueError, match="INVALID_TOKEN"):
+                await svc.verify_signup_email(sent["verify_token"])
+
+            # (b) reset scaduto: stesso rifiuto
+            await svc.request_password_reset("ap5-scad@x.it")
+            acc["reset_token_expires"] = (
+                utc_now() - timedelta(minutes=5)).isoformat()
+            with pytest.raises(ValueError, match="INVALID_TOKEN"):
+                await svc.confirm_password_reset(sent["reset_token"],
+                                                 self.PASSWORD)
+
+    # ── 7. GDPR live: export + delete col nuovo assetto ─────────────────
+
+    def test_ap5_gdpr_export_delete_live(self):
+        """Export via HTTP porta identita' + ordini (vista cliente);
+        DELETE /platform/me cancella l'identita' e i token ma NON tocca
+        l'ordine ne' il CRM dell'operatore (solo unlink dello stamp)."""
+        email = "ap5-gdpr@example.com"
+        headers = self._admin_headers()
+        self._cleanup_email(email)
+        apl = TestAccountApL()
+        prod = apl._make_service(headers, "Guardia AP5 gdpr")
+        try:
+            out = self._order_request(email, prod["id"])
+            order_id = out["order_id"]
+            db = self._db()
+            account = db.platform_accounts.find_one({"email": email})
+            ph, _ = self._platform_login(account["id"])
+
+            r = requests.get(f"{BASE_URL}/api/platform/me/export",
+                             headers=ph, timeout=10)
+            assert r.status_code == 200, r.text
+            exp = r.json()
+            assert exp["account"]["email"] == email
+            assert [o["id"] for o in exp["orders"]] == [order_id]
+            blob = str(exp)
+            for banned in ("cost_price", "application_fee", "notes"):
+                assert banned not in blob
+
+            r = requests.delete(f"{BASE_URL}/api/platform/me",
+                                headers=ph, timeout=10)
+            assert r.status_code == 200, r.text
+            assert r.json()["status"] == "deleted"
+
+            # identita' e token VIA; dati operatore INTATTI, solo unlink
+            assert not db.platform_accounts.find_one({"email": email})
+            assert db.platform_magic_tokens.count_documents(
+                {"account_id": account["id"]}) == 0
+            order = db.orders.find_one({"id": order_id})
+            assert order and "platform_account_id" not in order
+            assert db.customers.find_one({"email": email})   # CRM operatore
+        finally:
+            apl._delete_product(headers, prod["id"])
+            self._cleanup_email(email)
+
+    # ── 8. isolamento: due org vere, UN account, dati mai mescolati ─────
+
+    def test_ap5_isolamento_due_org_live(self):
+        """Stessa email compra su masseria-demo E borgo-sereno: nasce UN
+        solo platform account, /me/orders mostra entrambi gli ordini coi
+        nomi dei DUE operatori, il CRM resta un record per org."""
+        import uuid
+
+        email = "ap5-iso@example.com"
+        headers = self._admin_headers()
+        self._cleanup_email(email)
+        apl = TestAccountApL()
+        prod_a = apl._make_service(headers, "Guardia AP5 iso masseria")
+        db = self._db()
+        # per l'org borgo non abbiamo credenziali admin nei test: il
+        # prodotto di guardia nasce come CLONE dello schema del prodotto
+        # vero (stessa forma dati), con org e id propri
+        borgo_org = "afca4458-6b11-44d1-811a-60e79df8a928"
+        prod_b = dict(db.products.find_one({"id": prod_a["id"]}, {"_id": 0}))
+        prod_b.update({"id": str(uuid.uuid4()),
+                       "organization_id": borgo_org,
+                       "name": "Guardia AP5 iso borgo", "slug": None})
+        db.products.insert_one(dict(prod_b))
+        try:
+            out_a = self._order_request(email, prod_a["id"],
+                                        slug="masseria-demo")
+            out_b = self._order_request(email, prod_b["id"],
+                                        slug="borgo-sereno")
+
+            accounts = list(db.platform_accounts.find({"email": email}))
+            assert len(accounts) == 1                     # UNA identita'
+            aid = accounts[0]["id"]
+            for oid in (out_a["order_id"], out_b["order_id"]):
+                assert db.orders.find_one({"id": oid})[
+                    "platform_account_id"] == aid
+
+            custs = list(db.customers.find({"email": email}))
+            assert len(custs) == 2                        # CRM per-org separati
+            assert ({c["organization_id"] for c in custs}
+                    == {"2393033b-80a8-47c9-8529-b7810c0b2123", borgo_org})
+
+            ph, _ = self._platform_login(aid)
+            r = requests.get(f"{BASE_URL}/api/platform/me/orders",
+                             headers=ph, timeout=10)
+            assert r.status_code == 200, r.text
+            rows = {o["id"]: o for o in r.json()["orders"]}
+            assert {out_a["order_id"], out_b["order_id"]} <= set(rows)
+            names = {rows[out_a["order_id"]]["operator_name"],
+                     rows[out_b["order_id"]]["operator_name"]}
+            assert len(names) == 2                        # due operatori veri
+        finally:
+            apl._delete_product(headers, prod_a["id"])
+            db.products.delete_many({"id": prod_b["id"]})
+            self._cleanup_email(email)
