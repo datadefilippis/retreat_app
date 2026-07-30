@@ -18,10 +18,83 @@ os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-not-for-production")
 os.environ.setdefault("MONGO_URL", "mongodb://localhost:27017")
 os.environ.setdefault("DB_NAME", "test_db")
 
+import pytest
 import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
 FRONTEND_SRC = BACKEND_DIR.parent / "frontend" / "src"
+
+
+# ── PV7 — patto di responsabilita' (DPA art. 28) e la suite ──────────────
+#
+# Dal 30/7 la CREAZIONE di prodotti vendibili (service, event_ticket) e'
+# gateata dal DPA acknowledgement (409 DPA_REQUIRED, services/dpa_guard).
+# I test che creano prodotti via HTTP con l'org demo devono quindi
+# firmare il patto PRIMA — con UN helper unico, mai copia-incolla.
+#
+# La firma della suite e' MARCATA (User-Agent dedicato) e viene rimossa
+# a fine modulo: l'org demo torna allo stato onesto "non firmato",
+# perche' la firma vera deve restare una scelta del founder (PV7.5:
+# niente ack d'ufficio).
+
+_PV7_SUITE_UA = "aurya-suite-dpa-guard-pv7"
+
+
+def _pv7_live_db():
+    """DB del server live (backend/.env), NON il test_db di default."""
+    import re
+    import pymongo
+    env = (BACKEND_DIR / ".env").read_text()
+    mongo = re.search(r'MONGO_URL="?([^"\n]+?)"?\n', env).group(1)
+    name = re.search(r'DB_NAME="?([^"\n]+?)"?\n', env).group(1)
+    return pymongo.MongoClient(mongo)[name]
+
+
+def _ensure_dpa_ack(headers):
+    """Firma il patto per l'org del token, se non gia' firmato.
+
+    Idempotente e best-effort: se lo status non risponde si tenta
+    comunque l'acknowledge (che e' a sua volta idempotente). La firma
+    porta lo User-Agent marcatore cosi' il cleanup di fine modulo
+    rimuove SOLO le firme della suite, mai una firma reale.
+    """
+    try:
+        st = requests.get(f"{BASE_URL}/api/legal/dpa/status",
+                          headers=headers, timeout=10).json()
+        if st.get("acknowledged"):
+            return
+    except Exception:
+        pass
+    requests.post(
+        f"{BASE_URL}/api/legal/dpa/acknowledge",
+        headers={**headers, "User-Agent": _PV7_SUITE_UA},
+        json={"locale": "it"}, timeout=10)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _pv7_suite_dpa_cleanup():
+    """A fine modulo rimuove le firme DPA aggiunte dalla suite.
+
+    Riconoscimento tramite lo User-Agent marcatore sull'audit row: una
+    firma vera (fatta dal founder nel browser) ha un UA diverso e NON
+    viene mai toccata. Per ogni firma della suite si rimuove sia
+    l'audit row sia lo stamp durevole merchant_dpa_ack sull'org.
+    """
+    yield
+    try:
+        db = _pv7_live_db()
+        rows = list(db.consent_audit.find({
+            "document_type": "merchant_dpa",
+            "user_agent": _PV7_SUITE_UA,
+        }))
+        for row in rows:
+            db.consent_audit.delete_one({"id": row["id"]})
+            if row.get("organization_id"):
+                db.organizations.update_one(
+                    {"id": row["organization_id"]},
+                    {"$unset": {"merchant_dpa_ack": ""}})
+    except Exception:
+        pass  # cleanup best-effort: mai far fallire la suite qui
 
 
 class TestInvariants:
@@ -1620,6 +1693,9 @@ class TestAccountApL:
         db.consent_audit.delete_many({"customer_email": email})
 
     def _make_service(self, headers, name, metadata=None):
+        # PV7 — la creazione richiede il patto firmato (helper unico,
+        # firma marcata e rimossa a fine modulo)
+        _ensure_dpa_ack(headers)
         r = requests.post(f"{BASE_URL}/api/products", headers=headers, json={
             "name": name, "item_type": "service",
             "transaction_mode": "request", "is_published": True,
@@ -2242,6 +2318,7 @@ class TestAccountAp5:
         headers = self._admin_headers()
         self._cleanup_email(email)
         apl = TestAccountApL()
+        _ensure_dpa_ack(headers)   # PV7 — gate creazione prodotti vendibili
         r = requests.post(f"{BASE_URL}/api/products", headers=headers, json={
             "name": "Guardia AP5 direct", "item_type": "service",
             "transaction_mode": "direct", "is_published": True,
@@ -4333,3 +4410,300 @@ class TestProfiloPv6:
             steps = ((data.get("product") or {}).get("steps") or {})
             for key in ("day", "time", "details", "edit", "confirm"):
                 assert steps.get(key), f"{lang}: product.steps.{key} mancante"
+
+
+class TestProfiloPv7:
+    """PV7 (PROFILO_VERIFICATO_PIANO_2026-07) — il patto di
+    responsabilita': prima di vendere l'operatore DEVE leggere e
+    accettare il suo DPA art. 28 (macchina CG-7 riusata, zero testi
+    duplicati).
+
+    Scelte documentate:
+      - GATE ALLA CREAZIONE (non alla pubblicazione): nel mondo snello
+        la creazione E' la pubblicazione (listino LM1 crea
+        is_published=true, wizard RS2 crea+pubblica); le porte di
+        pubblicazione sono molte e gate-arle bloccherebbe i contenuti
+        GIA' esistenti delle org attive. Porte gateate: POST /products
+        (service|event_ticket), POST /products/{id}/duplicate, POST
+        /event-occurrences/wizard.
+      - FONTE A DUE LIVELLI: stamp durevole merchant_dpa_ack sull'org
+        (il gate, senza TTL) + record consent_audit immutabile (la
+        prova, TTL 365g). Vedi services/dpa_guard.py.
+      - SUITE: helper unico _ensure_dpa_ack con firma marcata via UA,
+        rimossa a fine modulo (mai ack d'ufficio permanenti).
+
+    Guardie runtime su ORG DI TEST VERGINE (creata ad hoc nel DB live +
+    JWT mintato col secret del server): l'org demo non si tocca.
+    """
+
+    PREFIX = "pv7guard"
+
+    # ── infrastruttura: org vergine + token sul server live ──────────
+
+    @classmethod
+    def _live_env(cls):
+        import re
+        env = (BACKEND_DIR / ".env").read_text()
+        secret = re.search(
+            r'JWT_SECRET_KEY="?([^"\n]+?)"?\n', env).group(1)
+        return secret
+
+    @classmethod
+    def _make_virgin_org(cls, tag):
+        """Org + admin verificato nel DB live, token JWT valido.
+
+        Nessuna firma DPA: e' esattamente lo stato di un operatore
+        nuovo che prova a vendere.
+        """
+        import uuid
+        from datetime import datetime, timedelta, timezone
+        from jose import jwt as jose_jwt
+
+        db = _pv7_live_db()
+        org_id = f"{cls.PREFIX}-org-{tag}-{uuid.uuid4().hex[:8]}"
+        user_id = f"{cls.PREFIX}-user-{tag}-{uuid.uuid4().hex[:8]}"
+        now = datetime.now(timezone.utc)
+        db.organizations.insert_one({
+            "id": org_id, "name": f"PV7 Guard {tag}",
+            "is_active": True, "created_at": now.isoformat(),
+        })
+        db.users.insert_one({
+            "id": user_id, "email": f"{org_id}@example.com",
+            "organization_id": org_id, "role": "admin",
+            "is_active": True, "email_verified": True,
+            "created_at": now.isoformat(),
+        })
+        token = jose_jwt.encode(
+            {"sub": user_id, "org_id": org_id,
+             "iat": int(now.timestamp()),
+             "exp": now + timedelta(minutes=20)},
+            cls._live_env(), algorithm="HS256")
+        return org_id, user_id, {"Authorization": f"Bearer {token}"}
+
+    @classmethod
+    def _cleanup_org(cls, org_id, user_id):
+        db = _pv7_live_db()
+        db.products.delete_many({"organization_id": org_id})
+        db.event_occurrences.delete_many({"organization_id": org_id})
+        db.event_ticket_tiers.delete_many({"organization_id": org_id})
+        db.stores.delete_many({"organization_id": org_id})
+        db.consent_audit.delete_many({"organization_id": org_id})
+        db.users.delete_one({"id": user_id})
+        db.organizations.delete_one({"id": org_id})
+
+    @staticmethod
+    def _service_payload(name):
+        return {"name": name, "item_type": "service",
+                "transaction_mode": "request", "is_published": False,
+                "unit_price": 30, "price_mode": "fixed"}
+
+    # ── 1. HTTP reale: senza firma la creazione risponde DPA_REQUIRED ─
+
+    def test_pv7_creazione_gated_senza_ack(self):
+        org_id, user_id, headers = self._make_virgin_org("gate")
+        try:
+            # riga di listino (service)
+            r = requests.post(f"{BASE_URL}/api/products", headers=headers,
+                              json=self._service_payload("PV7 gate svc"),
+                              timeout=10)
+            assert r.status_code == 409, r.text
+            assert r.json()["detail"]["code"] == "DPA_REQUIRED"
+
+            # ritiro (wizard event_ticket) — stessa risposta
+            r = requests.post(
+                f"{BASE_URL}/api/event-occurrences/wizard",
+                headers=headers, timeout=10,
+                json={"product": {"name": "PV7 gate ritiro",
+                                  "category": "yoga",
+                                  "unit_price": 100,
+                                  "price_mode": "fixed",
+                                  "transaction_mode": "request",
+                                  "is_published": False},
+                      "occurrence": {"start_at": "2027-10-01T10:00:00",
+                                     "status": "draft"},
+                      "tiers": []})
+            assert r.status_code == 409, r.text
+            assert r.json()["detail"]["code"] == "DPA_REQUIRED"
+
+            # nessun prodotto creato
+            db = _pv7_live_db()
+            assert db.products.count_documents(
+                {"organization_id": org_id}) == 0
+        finally:
+            self._cleanup_org(org_id, user_id)
+
+    # ── 2. HTTP reale: firma → si vende; una volta sola, immutabile ──
+
+    def test_pv7_ack_sblocca_una_volta_per_sempre(self):
+        org_id, user_id, headers = self._make_virgin_org("ack")
+        try:
+            # firma il patto (macchina CG-7)
+            r = requests.post(f"{BASE_URL}/api/legal/dpa/acknowledge",
+                              headers=headers, json={"locale": "it"},
+                              timeout=10)
+            assert r.status_code == 200, r.text
+            first = r.json()
+            assert first["status"] == "acknowledged"
+
+            db = _pv7_live_db()
+            # stamp durevole sul doc org (il gate NON dipende dal TTL
+            # dell'audit: la firma non "scade")
+            org = db.organizations.find_one({"id": org_id})
+            stamp = org.get("merchant_dpa_ack")
+            assert stamp and stamp["acknowledged_at"] == \
+                first["acknowledged_at"]
+            assert stamp["user_id"] == user_id
+            # audit immutabile scritto (fonte probatoria CG-7)
+            assert db.consent_audit.count_documents({
+                "organization_id": org_id,
+                "document_type": "merchant_dpa",
+                "source": "merchant_dpa_acknowledged"}) == 1
+
+            # la creazione ora passa — e non viene MAI piu' richiesta
+            r = requests.post(f"{BASE_URL}/api/products", headers=headers,
+                              json=self._service_payload("PV7 ack svc"),
+                              timeout=10)
+            assert r.status_code in (200, 201), r.text
+
+            # ri-firma → idempotente: timestamp originale, zero righe
+            # audit duplicate (l'acknowledgement e' una-volta-sola)
+            r = requests.post(f"{BASE_URL}/api/legal/dpa/acknowledge",
+                              headers=headers, json={"locale": "en"},
+                              timeout=10)
+            assert r.status_code == 200
+            again = r.json()
+            assert again["status"] == "already_acknowledged"
+            assert again["acknowledged_at"] == first["acknowledged_at"]
+            assert db.consent_audit.count_documents({
+                "organization_id": org_id,
+                "document_type": "merchant_dpa"}) == 1
+
+            # /dpa/status riflette lo stesso stato del gate
+            st = requests.get(f"{BASE_URL}/api/legal/dpa/status",
+                              headers=headers, timeout=10).json()
+            assert st["acknowledged"] is True
+            assert st["acknowledged_at"] == first["acknowledged_at"]
+        finally:
+            self._cleanup_org(org_id, user_id)
+
+    # ── 3. HTTP reale: contenuti esistenti MAI bloccati ──────────────
+
+    def test_pv7_contenuti_esistenti_non_bloccati(self):
+        """Org esistente (pre-gate) con prodotti gia' in catalogo:
+        modifiche e toggle di pubblicazione restano liberi — il gate
+        vale SOLO per le nuove creazioni (che mostrano il patto:
+        corretto e voluto)."""
+        import uuid
+        from datetime import datetime, timezone
+        org_id, user_id, headers = self._make_virgin_org("legacy")
+        db = _pv7_live_db()
+        pid = f"{self.PREFIX}-prod-{uuid.uuid4().hex[:8]}"
+        try:
+            now = datetime.now(timezone.utc).isoformat()
+            db.products.insert_one({
+                "id": pid, "organization_id": org_id,
+                "name": "PV7 legacy svc", "item_type": "service",
+                "transaction_mode": "request", "price_mode": "fixed",
+                "unit_price": 25.0, "is_active": True,
+                "is_published": False, "slug": pid,
+                "created_at": now, "updated_at": now,
+            })
+            # update (nome) senza firma: 200 — la modifica del gia'
+            # esistente non e' mai gateata
+            r = requests.patch(f"{BASE_URL}/api/products/{pid}",
+                             headers=headers,
+                             json={"name": "PV7 legacy svc v2"},
+                             timeout=10)
+            assert r.status_code == 200, r.text
+        finally:
+            self._cleanup_org(org_id, user_id)
+
+    # ── 4. scan: gate sulle porte giuste, enforcement riusabile ──────
+
+    def test_pv7_gate_backend_sulle_porte_di_creazione(self):
+        guard = (BACKEND_DIR / "services" / "dpa_guard.py").read_text()
+        assert "DPA_REQUIRED" in guard
+        assert "async def require_dpa_acknowledged" in guard
+        # fonte a due livelli: stamp org durevole + audit (TTL 365g)
+        assert "merchant_dpa_ack" in guard
+        assert "find_latest_for_org_dpa" in guard
+
+        products = (BACKEND_DIR / "routers" / "products.py").read_text()
+        # creazione + duplicate gateate, per i soli tipi vendibili
+        assert products.count("require_dpa_acknowledged") >= 2
+        assert "SELLABLE_ITEM_TYPES" in products
+
+        wizard = (BACKEND_DIR / "routers"
+                  / "event_occurrences.py").read_text()
+        assert "require_dpa_acknowledged" in wizard
+
+        # l'acknowledge scrive lo stamp durevole (il gate non scade col
+        # TTL dell'audit) e resta idempotente via get_dpa_ack
+        legal = (BACKEND_DIR / "routers" / "legal.py").read_text()
+        assert '"$set": {"merchant_dpa_ack"' in legal
+        assert "get_dpa_ack" in legal
+
+    # ── 5. scan: frontend — dialog, intercettazione, ripresa azione ──
+
+    def test_pv7_frontend_dialog_e_intercettazione(self):
+        dialog = (FRONTEND_SRC / "components" / "legal"
+                  / "DpaPactDialog.jsx").read_text()
+        # sintesi + testo DPA riusato + informativa autogenerata + firma
+        assert 'data-testid="dpa-pact-summary"' in dialog
+        assert "dpaAPI.get(" in dialog          # GET /legal/dpa (CG-7)
+        assert "dpaAPI.acknowledge(" in dialog  # POST /acknowledge
+        assert "/privacy" in dialog             # link informativa autogen
+        assert 'data-testid="dpa-pact-checkbox"' in dialog
+        assert 'data-testid="dpa-pact-accept"' in dialog
+        assert "onAccepted" in dialog           # ripresa azione in sospeso
+
+        # stato condiviso: UNA GET /dpa/status, cache modulo + listener
+        hook = (FRONTEND_SRC / "hooks" / "useDpaStatus.js").read_text()
+        assert "let cache" in hook and "listeners" in hook
+        assert "markDpaAcknowledged" in hook
+
+        # listino: gate PRIMA della creazione + intercetta DPA_REQUIRED
+        listino = (FRONTEND_SRC / "features" / "listino"
+                   / "ListinoPage.js").read_text()
+        assert "useDpaStatus" in listino
+        assert "DPA_REQUIRED" in listino
+        assert "DpaPactDialog" in listino
+        assert "pactPendingRef" in listino      # l'azione riprende da sola
+
+        # wizard ritiri: stesso giro
+        wizard = (FRONTEND_SRC / "features" / "events"
+                  / "EventWizard.js").read_text()
+        assert "useDpaStatus" in wizard
+        assert "DPA_REQUIRED" in wizard
+        assert "DpaPactDialog" in wizard
+
+    # ── 6. scan: banner gated dallo status in /listino e Ritiri ──────
+
+    def test_pv7_banner_listino_e_ritiri(self):
+        banner = (FRONTEND_SRC / "components" / "legal"
+                  / "DpaPactBanner.jsx").read_text()
+        # gated dallo stato condiviso: firmato (o ignoto) → niente rumore
+        assert "useDpaStatus" in banner
+        assert "if (!known || acknowledged) return null;" in banner
+        assert 'data-testid="dpa-pact-banner"' in banner
+
+        listino = (FRONTEND_SRC / "features" / "listino"
+                   / "ListinoPage.js").read_text()
+        assert "DpaPactBanner" in listino
+        events = (FRONTEND_SRC / "features" / "events"
+                  / "EventsListPage.js").read_text()
+        assert "DpaPactBanner" in events
+
+    # ── 7. i18n x4 ───────────────────────────────────────────────────
+
+    def test_pv7_i18n_x4(self):
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            data = _json.loads(
+                (FRONTEND_SRC / "locales" / lang / "legal.json")
+                .read_text())
+            pact = ((data.get("dpa") or {}).get("pact") or {})
+            for key in ("title", "intro", "point1", "point2", "point3",
+                        "point4", "checkbox", "accept", "acceptedBadge",
+                        "bannerTitle", "bannerBody", "bannerCta"):
+                assert pact.get(key), f"{lang}: dpa.pact.{key} mancante"

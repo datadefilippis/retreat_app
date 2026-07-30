@@ -1071,7 +1071,10 @@ async def acknowledge_dpa(
         pass
 
     # Check existing acknowledgement (idempotency).
-    existing = await car.find_latest_for_org_dpa(org_id)
+    # PV7 — la lettura passa da dpa_guard.get_dpa_ack: stamp durevole
+    # sul doc org (livello 1) O record audit (livello 2, TTL 365g).
+    from services.dpa_guard import get_dpa_ack
+    existing = await get_dpa_ack(org_id)
     if existing:
         return JSONResponse(
             content={
@@ -1110,10 +1113,28 @@ async def acknowledge_dpa(
         document_type="merchant_dpa",
     )
 
+    acknowledged_at = datetime.now(timezone.utc).isoformat()
+
+    # PV7 — stamp DUREVOLE sul doc org: e' lo stato del gate di vendita
+    # (services/dpa_guard.py). Il record consent_audit sopra resta la
+    # prova immutabile, ma ha TTL 365 giorni: senza questo stamp la
+    # firma "scadrebbe" e l'org verrebbe ri-gateata dopo un anno.
+    from database import organizations_collection
+    await organizations_collection.update_one(
+        {"id": org_id},
+        {"$set": {"merchant_dpa_ack": {
+            "acknowledged_at": acknowledged_at,
+            "user_id": current_user["user_id"],
+            "locale": locale,
+            "version_tag": "v1.0",
+            "version_hash": version_hash,
+        }}},
+    )
+
     return JSONResponse(
         content={
             "status": "acknowledged",
-            "acknowledged_at": datetime.now(timezone.utc).isoformat(),
+            "acknowledged_at": acknowledged_at,
             "locale": locale,
             "version_tag": "v1.0",
         },
@@ -1131,7 +1152,9 @@ async def get_dpa_status(
     decide whether to show the "Conferma ricezione" CTA or the
     "DPA confermato il <date>" badge.
     """
-    from repositories import consent_audit_repository as car
+    # PV7 — stessa fonte a due livelli del gate di vendita (stamp org
+    # durevole → record audit): status e gate non divergono mai.
+    from services.dpa_guard import get_dpa_ack
 
     org_id = current_user.get("organization_id")
     if not org_id:
@@ -1140,7 +1163,7 @@ async def get_dpa_status(
             detail="DPA status is only available to org users.",
         )
 
-    existing = await car.find_latest_for_org_dpa(org_id)
+    existing = await get_dpa_ack(org_id)
     if not existing:
         return JSONResponse(content={"acknowledged": False})
 

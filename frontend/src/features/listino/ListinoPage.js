@@ -13,7 +13,7 @@
  * e' l'editor AVANZATO onesto (landing, traduzioni, orari, campi
  * ordine), non il percorso primario.
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -33,6 +33,11 @@ import { AppLayout, Header } from '../../components/Layout';
 // componenti di ServiceDashboardPage, nessuna copia locale.
 import ServiceOptionsEditor from '../services/components/ServiceOptionsEditor';
 import StripeRequiredAlert from '../../components/StripeRequiredAlert';
+// PV7 — patto di responsabilita' (DPA art. 28): banner + dialog + gate
+// alla creazione. Stato condiviso in cache (una GET /legal/dpa/status).
+import DpaPactBanner from '../../components/legal/DpaPactBanner';
+import DpaPactDialog from '../../components/legal/DpaPactDialog';
+import useDpaStatus from '../../hooks/useDpaStatus';
 
 // Tassonomia service (models/retreat_taxonomy.py) + fallback "altro"
 const SERVICE_CATEGORIES = {
@@ -209,6 +214,11 @@ export default function ListinoPage() {
   const [openSection, setOpenSection] = useState(null);
   const [options, setOptions] = useState([]);
   const [savedOptions, setSavedOptions] = useState([]);
+  // PV7 — gate del patto: se il DPA non e' accettato, la creazione si
+  // ferma, si apre il dialog e alla firma l'azione RIPRENDE da sola.
+  const { known: dpaKnown, acknowledged: dpaAcknowledged } = useDpaStatus();
+  const [pactOpen, setPactOpen] = useState(false);
+  const pactPendingRef = useRef(false);
 
   const load = async () => {
     const res = await productsAPI.list(true, 500);
@@ -263,6 +273,19 @@ export default function ListinoPage() {
 
   const saveNew = async () => {
     if (!draft.name.trim()) { toast.error('Dai un nome al servizio'); return; }
+    // PV7 — prima di vendere si firma il patto: il dialog appare PRIMA
+    // della creazione e alla firma l'azione riparte (performSaveNew,
+    // SENZA ripassare dal gate: lo stato dell'hook potrebbe non essere
+    // ancora ri-renderizzato nel closure corrente).
+    if (dpaKnown && !dpaAcknowledged) {
+      pactPendingRef.current = true;
+      setPactOpen(true);
+      return;
+    }
+    await performSaveNew();
+  };
+
+  const performSaveNew = async () => {
     setBusy(true);
     // TW4 — metrica di attivazione: il PRIMO servizio che va online
     const isFirstOnline = !(rows || []).some(r => r.published);
@@ -287,8 +310,17 @@ export default function ListinoPage() {
       }
       toast.success('Servizio nel listino, gia’ online');
     } catch (e) {
-      toast.error(e?.response?.data?.detail?.message
-        || e?.response?.data?.detail || 'Salvataggio non riuscito');
+      // PV7 — rete di sicurezza: se lo status in cache era stantio, il
+      // server risponde comunque 409 DPA_REQUIRED; niente toast di
+      // errore, si apre il dialog del patto e si riprende alla firma.
+      if (e?.response?.status === 409
+          && e?.response?.data?.detail?.code === 'DPA_REQUIRED') {
+        pactPendingRef.current = true;
+        setPactOpen(true);
+      } else {
+        toast.error(e?.response?.data?.detail?.message
+          || e?.response?.data?.detail || 'Salvataggio non riuscito');
+      }
     } finally { setBusy(false); }
   };
 
@@ -407,6 +439,10 @@ export default function ListinoPage() {
       />
       <div className="p-4 md:p-8">
     <div className="mx-auto max-w-3xl space-y-5" data-testid="listino-page">
+      {/* PV7 — patto di responsabilita' non ancora firmato: banner
+          sobrio ma visibile. Firmato → nessun rumore (il banner si
+          auto-nasconde, lo stato vive in SalesConditionsCard). */}
+      <DpaPactBanner onRead={() => { pactPendingRef.current = false; setPactOpen(true); }} />
       <div className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex items-center gap-2">
           {profileSlug && (
@@ -676,6 +712,19 @@ export default function ListinoPage() {
           servizio, sezione "Prenotazione e incasso" (serve <Link to="/settings" className="underline">Stripe</Link>).
         </p>
       )}
+
+      {/* PV7 — UN solo dialog per banner e gate: alla firma l'azione
+          in sospeso (saveNew) riparte da sola, mai piu' richiesto. */}
+      <DpaPactDialog
+        open={pactOpen}
+        onOpenChange={setPactOpen}
+        onAccepted={() => {
+          if (pactPendingRef.current) {
+            pactPendingRef.current = false;
+            performSaveNew();
+          }
+        }}
+      />
     </div>
       </div>
     </AppLayout>

@@ -208,12 +208,18 @@ class TestAcknowledgeDpa:
             async def json(self):
                 return {"locale": "it"}
 
+        # PV7 — la lettura passa da dpa_guard.get_dpa_ack (stamp org →
+        # audit) e la firma scrive lo stamp durevole sull'org: nei test
+        # unitari si mockano entrambi (niente Motor su loop chiuso).
         with patch(
             "repositories.consent_audit_repository.record_consent",
             new=_fake_record,
         ), patch(
-            "repositories.consent_audit_repository.find_latest_for_org_dpa",
-            new=_fake_find_dpa,
+            "services.dpa_guard.get_dpa_ack",
+            new=AsyncMock(return_value=None),
+        ), patch(
+            "database.organizations_collection.update_one",
+            new=AsyncMock(),
         ):
             response = await acknowledge_dpa(
                 request=FakeRequest(), current_user=_admin(),
@@ -264,12 +270,14 @@ class TestAcknowledgeDpa:
             async def json(self):
                 return {}
 
+        # PV7 — get_dpa_ack (stamp org → audit) e' la nuova fonte: col
+        # mock che trova la firma il flusso rientra subito, zero scritture.
         with patch(
             "repositories.consent_audit_repository.record_consent",
             new=_fake_record,
         ), patch(
-            "repositories.consent_audit_repository.find_latest_for_org_dpa",
-            new=_fake_find_dpa,
+            "services.dpa_guard.get_dpa_ack",
+            new=AsyncMock(return_value=existing),
         ):
             response = await acknowledge_dpa(
                 request=FakeRequest(), current_user=_admin(),
@@ -310,8 +318,9 @@ class TestGetDpaStatus:
         import json
         from routers.legal import get_dpa_status
 
+        # PV7 — status legge dpa_guard.get_dpa_ack (stamp org → audit)
         with patch(
-            "repositories.consent_audit_repository.find_latest_for_org_dpa",
+            "services.dpa_guard.get_dpa_ack",
             new=AsyncMock(return_value=None),
         ):
             response = await get_dpa_status(current_user=_admin())
@@ -332,8 +341,9 @@ class TestGetDpaStatus:
             "locale": "it",
             "version_tag": "v1.0",
         }
+        # PV7 — status legge dpa_guard.get_dpa_ack (stamp org → audit)
         with patch(
-            "repositories.consent_audit_repository.find_latest_for_org_dpa",
+            "services.dpa_guard.get_dpa_ack",
             new=AsyncMock(return_value=existing),
         ):
             response = await get_dpa_status(current_user=_admin())

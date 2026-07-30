@@ -157,6 +157,15 @@ async def create_product(
     # claim with no enforcement (Free user could create unlimited products).
     org_id = current_user["organization_id"]
 
+    # PV7 — patto di responsabilita': la CREAZIONE di un prodotto
+    # vendibile (riga di listino o ritiro) richiede l'acknowledgement
+    # del DPA art. 28. 409 DPA_REQUIRED → il frontend apre il dialog
+    # del patto. Vedi services/dpa_guard.py per la scelta del punto di
+    # gate (creazione, non pubblicazione) e la fonte a due livelli.
+    from services.dpa_guard import SELLABLE_ITEM_TYPES, require_dpa_acknowledged
+    if data.item_type in SELLABLE_ITEM_TYPES:
+        await require_dpa_acknowledged(org_id)
+
     # V4 (5/7/2026) — categoria dalla tassonomia per-tipo (mai testo
     # libero) e gate store-first su OGNI pubblicazione, non solo ritiri.
     from models.retreat_taxonomy import PRODUCT_TAXONOMIES, RETREAT_CATEGORIES
@@ -507,6 +516,12 @@ async def duplicate_product(
     )
     if not source:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    # PV7 — anche il duplicate crea un prodotto vendibile NUOVO: stesso
+    # gate del POST /products (niente porta laterale al patto).
+    from services.dpa_guard import SELLABLE_ITEM_TYPES, require_dpa_acknowledged
+    if source.get("item_type") in SELLABLE_ITEM_TYPES:
+        await require_dpa_acknowledged(org_id)
 
     # v5.8 / Onda 9.L — Catalog quota gate also on duplicate (it creates a
     # new product row, same impact as POST /products on the catalog count).

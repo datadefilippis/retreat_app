@@ -8,18 +8,24 @@
  * commerce legacy (R1/R5 del piano Listino).
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
 import { AppLayout, Header } from '../../components/Layout';
 import { Button } from '../../components/ui/button';
 import EventsGrid from './components/EventsGrid';
+// PV7 — patto di responsabilita' (DPA art. 28): banner ben visibile
+// finche' non firmato; la firma vera avviene nel dialog (o al gate di
+// creazione dentro EventWizard). Stato condiviso via useDpaStatus.
+import DpaPactBanner from '../../components/legal/DpaPactBanner';
+import DpaPactDialog from '../../components/legal/DpaPactDialog';
 
 
 export default function EventsListPage() {
   const navigate = useNavigate();
   const { t } = useTranslation('products');
+  const [pactOpen, setPactOpen] = useState(false);
   return (
     <AppLayout>
       <Header
@@ -29,6 +35,8 @@ export default function EventsListPage() {
         })}
       />
       <div className="p-4 md:p-8" data-testid="events-home">
+        <DpaPactBanner className="mb-3" onRead={() => setPactOpen(true)} />
+        <DpaPactDialog open={pactOpen} onOpenChange={setPactOpen} />
         <div className="flex justify-end mb-2">
           <Button size="sm" onClick={() => navigate('/events/new')}
                   data-testid="events-new-cta">

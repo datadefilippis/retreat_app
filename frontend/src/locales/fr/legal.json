@@ -57,7 +57,28 @@
     "locale_label": "Langue",
     "version_label": "Version",
     "vars_panel_title": "Variables insérées dans le document",
-    "back_to_settings": "← Retour aux paramètres"
+    "back_to_settings": "← Retour aux paramètres",
+    "pact": {
+      "title": "Avant de vendre sur Aurya",
+      "intro": "Un seul pacte, une seule signature : ta responsabilité envers tes clients. Ensuite, nous ne te le demanderons plus jamais.",
+      "point1": "Tu es le responsable de traitement autonome des données de tes clients : c'est toi qui décides pourquoi et comment les traiter.",
+      "point2": "Aurya traite ces données pour ton compte, en tant que sous-traitant au sens de l'art. 28 RGPD, selon l'accord ci-dessous.",
+      "point3": "Tu t'engages à vendre à des conditions honnêtes et à répondre aux demandes de tes clients en matière de confidentialité.",
+      "point4": "Ta politique de confidentialité est générée automatiquement avec tes données :",
+      "privacyLink": "la voir ici",
+      "privacyLinkFallback": "tu la trouves dans Paramètres → Conditions de l'opérateur",
+      "loading": "Chargement de l'accord…",
+      "loadError": "Le texte de l'accord ne se charge pas. Réessaie dans un instant.",
+      "checkbox": "J'ai lu et j'accepte l'accord sur le traitement des données (art. 28) ainsi que ma responsabilité de responsable de traitement.",
+      "accept": "Accepter et continuer",
+      "later": "Pas maintenant",
+      "acceptedToast": "Pacte accepté : tu peux vendre sur Aurya.",
+      "acceptError": "L'acceptation n'a pas abouti. Réessaie.",
+      "acceptedBadge": "Accepté le {{date}}",
+      "bannerTitle": "Avant de vendre : lis et accepte ta notice de responsabilité",
+      "bannerBody": "Une seule signature pour toute ton activité : l'accord sur le traitement des données de tes clients (art. 28 RGPD).",
+      "bannerCta": "Lire et accepter"
+    }
   },
   "admin_gdpr": {
     "section_title": "Confidentialité & Conditions du magasin",

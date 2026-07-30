@@ -57,7 +57,28 @@
     "locale_label": "Sprache",
     "version_label": "Version",
     "vars_panel_title": "Im Dokument eingesetzte Variablen",
-    "back_to_settings": "← Zurück zu den Einstellungen"
+    "back_to_settings": "← Zurück zu den Einstellungen",
+    "pact": {
+      "title": "Bevor du auf Aurya verkaufst",
+      "intro": "Ein Pakt, eine Unterschrift: deine Verantwortung gegenüber deinen Kundinnen und Kunden. Danach fragen wir nie wieder.",
+      "point1": "Du bist der eigenständige Verantwortliche für die Daten deiner Kundschaft: Du entscheidest, warum und wie sie verarbeitet werden.",
+      "point2": "Aurya verarbeitet diese Daten in deinem Auftrag als Auftragsverarbeiter gemäß Art. 28 DSGVO, nach der untenstehenden Vereinbarung.",
+      "point3": "Du verpflichtest dich, zu fairen Bedingungen zu verkaufen und Datenschutzanfragen deiner Kundschaft zu beantworten.",
+      "point4": "Deine Datenschutzerklärung wird automatisch mit deinen Daten erstellt:",
+      "privacyLink": "hier ansehen",
+      "privacyLinkFallback": "du findest sie unter Einstellungen → Bedingungen des Anbieters",
+      "loading": "Vereinbarung wird geladen…",
+      "loadError": "Der Text der Vereinbarung konnte nicht geladen werden. Bitte versuche es gleich erneut.",
+      "checkbox": "Ich habe die Vereinbarung zur Auftragsverarbeitung (Art. 28) gelesen und akzeptiere sie sowie meine Verantwortung als Verantwortlicher.",
+      "accept": "Akzeptieren und fortfahren",
+      "later": "Nicht jetzt",
+      "acceptedToast": "Pakt akzeptiert: Du kannst auf Aurya verkaufen.",
+      "acceptError": "Die Annahme ist fehlgeschlagen. Bitte versuche es erneut.",
+      "acceptedBadge": "Akzeptiert am {{date}}",
+      "bannerTitle": "Bevor du verkaufst: Lies und akzeptiere deine Verantwortungserklärung",
+      "bannerBody": "Eine Unterschrift für dein ganzes Geschäft: die Vereinbarung über die Verarbeitung der Daten deiner Kundschaft (Art. 28 DSGVO).",
+      "bannerCta": "Lesen und akzeptieren"
+    }
   },
   "admin_gdpr": {
     "section_title": "Datenschutz & AGB des Shops",

@@ -168,6 +168,13 @@ async def create_event_wizard(
 
     org_id = current_user["organization_id"]
 
+    # PV7 — patto di responsabilita': il wizard crea il product
+    # event_ticket (ritiro), quindi stesso gate DPA della creazione
+    # prodotti. 409 DPA_REQUIRED → il frontend apre il dialog del
+    # patto. Vedi services/dpa_guard.py.
+    from services.dpa_guard import require_dpa_acknowledged
+    await require_dpa_acknowledged(org_id)
+
     # Validate price/transaction mode combo early — same rule as
     # Product model. A direct event with inquiry price_mode makes no
     # sense (there's no price to charge).

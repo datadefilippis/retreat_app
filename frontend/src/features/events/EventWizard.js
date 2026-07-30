@@ -61,6 +61,11 @@ import { UnsavedChangesDialog } from '../../components/ui/UnsavedChangesDialog';
 import { DraftRestoreBanner } from '../../components/ui/DraftRestoreBanner';
 import { useSubmitLock } from '../../hooks/useSubmitLock';
 import { useUnsavedChangesPrompt } from '../../hooks/useUnsavedChangesPrompt';
+// PV7 — patto di responsabilita' (DPA art. 28): il wizard crea il
+// ritiro, quindi la creazione e' gateata finche' il patto non e'
+// firmato. Dialog condiviso + stato in cache (useDpaStatus).
+import DpaPactDialog from '../../components/legal/DpaPactDialog';
+import useDpaStatus from '../../hooks/useDpaStatus';
 import { useWizardDraft } from '../../hooks/useWizardDraft';
 import { useAbortableUpload } from '../../hooks/useAbortableUpload';
 import { useObjectURL } from '../../hooks/useObjectURL';
@@ -542,6 +547,12 @@ export default function EventWizard() {
   const submitLock = useSubmitLock();
   const { blocker } = useUnsavedChangesPrompt(isDirty);
 
+  // PV7 — gate del patto: senza firma il submit si ferma, si apre il
+  // dialog e alla firma il submit riparte da solo (pactPendingRef).
+  const { known: dpaKnown, acknowledged: dpaAcknowledged } = useDpaStatus();
+  const [pactOpen, setPactOpen] = useState(false);
+  const pactPendingRef = useRef(false);
+
   const { user } = useAuth();
   const scopeKey = user?.id || user?.email || 'anonymous';
   const draft = useWizardDraft({
@@ -643,6 +654,20 @@ export default function EventWizard() {
 
   // ── Submit ───────────────────────────────────────────────────────────
   const handleSubmit = async () => {
+    if (!allValid || submitting) return;
+    // PV7 — prima di vendere si firma il patto di responsabilita':
+    // il dialog appare PRIMA della creazione; alla firma il submit
+    // riparte da performSubmit SENZA ripassare dal gate (lo stato
+    // dell'hook non e' ancora ri-renderizzato nel closure corrente).
+    if (dpaKnown && !dpaAcknowledged) {
+      pactPendingRef.current = true;
+      setPactOpen(true);
+      return;
+    }
+    await performSubmit();
+  };
+
+  const performSubmit = async () => {
     if (!allValid || submitting) return;
     // 2026-05-20 — atomic ref-based lock against fast double-click.
     if (!submitLock.tryLock()) return;
@@ -805,7 +830,18 @@ export default function EventWizard() {
       // wizard da solo non bastava).
       navigate(`/events/${occurrenceId}?creato=1`);
     } catch (err) {
-      toast.error(err?.response?.data?.detail || t('wizards.event.validation.creationFailed'));
+      const detail = err?.response?.data?.detail;
+      // PV7 — rete di sicurezza sul 409 DPA_REQUIRED (cache stantia):
+      // niente toast d'errore, si apre il dialog del patto e alla
+      // firma il submit riparte.
+      if (err?.response?.status === 409 && detail?.code === 'DPA_REQUIRED') {
+        pactPendingRef.current = true;
+        setPactOpen(true);
+      } else {
+        toast.error(
+          (typeof detail === 'string' ? detail : detail?.message)
+          || t('wizards.event.validation.creationFailed'));
+      }
     } finally {
       setSubmitting(false);
       submitLock.unlock();
@@ -1969,6 +2005,19 @@ export default function EventWizard() {
         open={blocker?.state === 'blocked'}
         onConfirm={() => blocker?.proceed?.()}
         onCancel={() => blocker?.reset?.()}
+      />
+
+      {/* PV7 — patto di responsabilita': alla firma il submit fermato
+          dal gate riparte da solo, mai piu' richiesto. */}
+      <DpaPactDialog
+        open={pactOpen}
+        onOpenChange={setPactOpen}
+        onAccepted={() => {
+          if (pactPendingRef.current) {
+            pactPendingRef.current = false;
+            performSubmit();
+          }
+        }}
       />
     </div>
   );

@@ -57,7 +57,28 @@
     "locale_label": "Language",
     "version_label": "Version",
     "vars_panel_title": "Variables interpolated into the document",
-    "back_to_settings": "← Back to settings"
+    "back_to_settings": "← Back to settings",
+    "pact": {
+      "title": "Before you sell on Aurya",
+      "intro": "One pact, one signature: your responsibility towards your clients. After this, we will never ask again.",
+      "point1": "You are the independent data controller of your clients' data: you decide why and how it is processed.",
+      "point2": "Aurya processes that data on your behalf, as a processor under Art. 28 GDPR, according to the agreement below.",
+      "point3": "You commit to selling with honest conditions and answering your clients' privacy requests.",
+      "point4": "Your privacy policy is generated automatically with your details:",
+      "privacyLink": "see it here",
+      "privacyLinkFallback": "you can find it in Settings → Operator conditions",
+      "loading": "Loading the agreement…",
+      "loadError": "The agreement text failed to load. Please try again shortly.",
+      "checkbox": "I have read and accept the data processing agreement (Art. 28) and my responsibility as controller.",
+      "accept": "Accept and continue",
+      "later": "Not now",
+      "acceptedToast": "Pact accepted: you can sell on Aurya.",
+      "acceptError": "The acceptance did not go through. Please try again.",
+      "acceptedBadge": "Accepted on {{date}}",
+      "bannerTitle": "Before you sell: read and accept your responsibility notice",
+      "bannerBody": "One signature for your whole business: the agreement on the processing of your clients' data (Art. 28 GDPR).",
+      "bannerCta": "Read and accept"
+    }
   },
   "admin_gdpr": {
     "section_title": "Store Privacy & Terms",

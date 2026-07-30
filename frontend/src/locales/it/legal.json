@@ -57,7 +57,28 @@
     "locale_label": "Lingua",
     "version_label": "Versione",
     "vars_panel_title": "Dati interpolati nel documento",
-    "back_to_settings": "← Torna alle impostazioni"
+    "back_to_settings": "← Torna alle impostazioni",
+    "pact": {
+      "title": "Prima di vendere su Aurya",
+      "intro": "Un patto solo, una firma sola: la tua responsabilità verso i tuoi clienti. Dopo, non te lo chiederemo mai più.",
+      "point1": "Sei il titolare autonomo dei dati dei tuoi clienti: decidi tu perché e come trattarli.",
+      "point2": "Aurya tratta quei dati per conto tuo, come responsabile ai sensi dell’art. 28 GDPR, secondo l’accordo qui sotto.",
+      "point3": "Ti impegni a vendere con condizioni oneste e a rispondere alle richieste privacy dei tuoi clienti.",
+      "point4": "La tua informativa privacy è generata automaticamente con i tuoi dati:",
+      "privacyLink": "vedila qui",
+      "privacyLinkFallback": "la trovi in Impostazioni → Condizioni dell’operatore",
+      "loading": "Carico l’accordo…",
+      "loadError": "Il testo dell’accordo non si carica. Riprova tra poco.",
+      "checkbox": "Ho letto e accetto l’accordo sul trattamento dei dati (art. 28) e la mia responsabilità di titolare.",
+      "accept": "Accetta e continua",
+      "later": "Non ora",
+      "acceptedToast": "Patto accettato: puoi vendere su Aurya.",
+      "acceptError": "L’accettazione non è andata a buon fine. Riprova.",
+      "acceptedBadge": "Accettato il {{date}}",
+      "bannerTitle": "Prima di vendere: leggi e accetta la tua informativa di responsabilità",
+      "bannerBody": "Una firma sola per tutta la tua attività: l’accordo sul trattamento dei dati dei tuoi clienti (art. 28 GDPR).",
+      "bannerCta": "Leggi e accetta"
+    }
   },
   "admin_gdpr": {
     "section_title": "Privacy & Termini del negozio",
