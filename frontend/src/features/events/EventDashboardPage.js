@@ -2101,8 +2101,10 @@ export default function EventDashboardPage() {
           )}
         </div>
 
-        {/* F4 — Store / Commerce assignment */}
-        {availableStores.length > 0 && (
+        {/* F4 — Store / Commerce assignment. PS3: con <=1 store (store
+            tecnico invisibile, il caso del mondo snello) la sezione
+            sparisce — la distribuzione non e' una scelta. */}
+        {availableStores.length > 1 && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div>

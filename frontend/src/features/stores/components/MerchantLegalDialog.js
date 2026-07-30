@@ -816,18 +816,11 @@ function EditorView({ legal, store, onChange, onAfterPublish }) {
               language: `${LOCALE_FLAGS[activeDisplayLocale]} ${LOCALE_LABELS[activeDisplayLocale] || activeDisplayLocale}`,
             })}
           </p>
+          {/* PS3 — CTA neutra: il dialog si apre anche dal mondo snello
+              (Impostazioni → Condizioni → Avanzate, Newsletter), dove
+              /stores non e' una superficie raggiungibile. Niente link. */}
           <p className="text-xs text-blue-800 mt-0.5">
-            {t('admin_gdpr.active_locale_help', {
-              store_settings_link: '',
-            }).replace('{{store_settings_link}}', '')}{' '}
-            <a
-              href="/stores"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline font-medium hover:text-blue-700"
-            >
-              {t('admin_gdpr.active_locale_link_text')}
-            </a>.
+            {t('admin_gdpr.active_locale_help')}
           </p>
         </div>
       </div>

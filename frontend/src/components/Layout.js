@@ -60,25 +60,10 @@ const fixedNavTop = [
   { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard, end: true },
 ];
 
-// Mappa module_key → voce menu (solo moduli con pagina dedicata)
-// ── Module-aware nav entries (merged entity + intelligence) ──────────────
-
-const moduleNavMap = {
-  // R4: cashflow_monitor rimosso (BI legacy); commerce_signals dentro
-  // customers_light (nessuna voce standalone).
-};
-
-// Operations — always visible
-const operationsNav = [
-  // TW1 — il Listino: la pagina unica dei servizi
-  { nameKey: 'nav.listino',         href: '/listino',         icon: ListChecks,   end: true },
-  { nameKey: 'nav.orders',          href: '/orders',          icon: ShoppingCart, end: true },
-  { nameKey: 'nav.calendar',        href: '/calendar',        icon: CalendarDays, end: true },
-  { nameKey: 'nav.stores',          href: '/stores',           icon: Globe,        end: true },
-  // PR1 — la vetrina dell'operatore raggiungibile dal menu
-  { nameKey: 'nav.public_profile',  href: '/public-profile',    icon: UserCircle,   end: true },
-  { nameKey: 'nav.newsletter',      href: '/newsletter-forms',       icon: Mail,         end: true },
-];
+// PS3 — potatura codice morto: moduleNavMap (svuotata da R4) e
+// operationsNav (mai renderizzata: la nav vera e' dynamicOpsNav)
+// rimosse. La voce /stores nel menu vive SOLO nel ramo legacy_commerce
+// di dynamicOpsNav.
 
 // System — admin tools
 const systemNav = [
@@ -220,9 +205,6 @@ export const Sidebar = () => {
 
   // Build dynamic navigation based on active modules
   const activeSet = new Set(activeModuleKeys);
-  const moduleNavItems = activeModuleKeys
-    .filter((key) => moduleNavMap[key])
-    .map((key) => moduleNavMap[key]);
 
   // Operations — only with commerce module active
   // TW3 — mondo snello (default): Listino, Ritiri, Calendario, Ordini,
@@ -331,7 +313,7 @@ export const Sidebar = () => {
     return true;
   });
 
-  const navigation = [...fixedNavTop, ...moduleNavItems, ...dynamicOpsNav];
+  const navigation = [...fixedNavTop, ...dynamicOpsNav];
 
   // Chiudi sidebar su cambio route (mobile)
   useEffect(() => {

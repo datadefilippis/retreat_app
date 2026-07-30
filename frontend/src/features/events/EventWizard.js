@@ -474,6 +474,11 @@ export default function EventWizard() {
   const hasPublicHome = availableStores.length > 0 || Boolean(legacySlug);
   const loadStores = useCallback(async () => {
     try {
+      // PS3 — store tecnico garantito in silenzio PRIMA della lista
+      // (stesso pattern del Listino): la pubblicazione non parla mai
+      // di "store" all'operatore. Best-effort: se fallisce, il vecchio
+      // gate hasPublicHome tiene comunque il publish disabilitato.
+      await storesAPI.ensureDefault().catch(() => {});
       const res = await storesAPI.list();
       setAvailableStores(res.data?.stores || []);
     } catch { /* stores optional */ }
@@ -1863,43 +1868,19 @@ export default function EventWizard() {
               </dl>
             </div>
 
-            {/* Store-first (fix 5/7) — senza store non si pubblica:
-                banner con CTA, il salvataggio in bozza resta permesso. */}
-            {!hasPublicHome && (
-              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
-                <p className="text-sm font-semibold text-amber-900">
-                  {t('wizards.event.publish.storeRequiredTitle', { defaultValue: 'Prima di pubblicare, crea il tuo store' })}
-                </p>
-                <p className="text-xs text-amber-800 mt-1">
-                  {t('wizards.event.publish.storeRequiredBody', { defaultValue: 'È l\'indirizzo pubblico delle tue pagine: senza, il ritiro non ha un posto dove vivere online. Puoi salvare come bozza intanto — non perdi nulla.' })}
-                </p>
-                <a href="/stores" className="mt-2 inline-block rounded-lg bg-amber-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-amber-700">
-                  {t('wizards.event.publish.storeRequiredCta', { defaultValue: 'Crea il tuo store →' })}
-                </a>
-              </div>
-            )}
+            {/* PS3 — via il banner "crea il tuo store": lo store tecnico
+                e' garantito in silenzio da ensureDefault (loadStores).
+                Il gate hasPublicHome resta solo come rete di sicurezza
+                sul checkbox di pubblicazione. */}
 
-            {/* F4 — Store assignment. Canonical pattern shared with
-                ServiceWizard + ReservationWizard: checkbox "Tutti gli store"
-                + one checkbox per store. Always visible so the merchant
-                has a clear signal of where the event will appear. */}
+            {/* F4 — Store assignment (solo mondo multi-store legacy).
+                PS3: con <=1 store — il caso universale del mondo snello,
+                dove lo store e' tecnico e invisibile — la sezione
+                sparisce del tutto: la distribuzione non e' una scelta. */}
+            {availableStores.length > 1 && (
             <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-2">
               <h2 className="text-base font-semibold text-gray-900">{t('wizards.common.distribution.title')}</h2>
-              {availableStores.length <= 1 ? (
-                <>
-                  <p className="text-xs text-gray-500">
-                    {t('wizards.event.publish.distributionDesc')}
-                  </p>
-                  <div className="rounded-md bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-700 flex items-center gap-2">
-                    <span aria-hidden>✓</span>
-                    <span>
-                      {t('wizards.common.distribution.visibleAutoPrefix')} <strong>{availableStores[0]?.name || t('wizards.common.distribution.allStoresFallback')}</strong>
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-xs text-gray-500">{t('wizards.event.publish.distributionMultiDesc')}</p>
+              <p className="text-xs text-gray-500">{t('wizards.event.publish.distributionMultiDesc')}</p>
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
                     <input
                       type="checkbox"
@@ -1930,9 +1911,8 @@ export default function EventWizard() {
                       </label>
                     );
                   })}
-                </>
-              )}
             </div>
+            )}
 
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <label className="flex items-start gap-3">

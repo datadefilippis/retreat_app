@@ -950,7 +950,9 @@ export default function DigitalDashboardPage() {
           )}
         </div>
 
-        {/* Distribuzione */}
+        {/* Distribuzione — PS3: con <=1 store (store tecnico invisibile,
+            il caso del mondo snello) la sezione sparisce del tutto */}
+        {stores.length > 1 && (
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           <button
             type="button"
@@ -1013,6 +1015,7 @@ export default function DigitalDashboardPage() {
             </div>
           )}
         </div>
+        )}
 
       </div>
     </div>

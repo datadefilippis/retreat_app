@@ -159,7 +159,7 @@ export default function IniziaPage() {
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               {lean
-                ? t('onboarding.lean_done_body', { defaultValue: 'La tua pagina con i servizi e i prezzi è viva. Condividila dove vuoi: è il tuo biglietto da visita e il tuo negozio insieme.' })
+                ? t('onboarding.lean_done_body', { defaultValue: 'La tua pagina con i servizi e i prezzi è viva. Condividila dove vuoi: è il tuo biglietto da visita e la tua vetrina insieme.' })
                 : t('onboarding.done_body', { defaultValue: 'Le tue pagine sono vive. Ecco dove ti trovano i partecipanti:' })}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">

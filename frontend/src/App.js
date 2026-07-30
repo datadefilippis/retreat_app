@@ -72,7 +72,9 @@ const OrdersPage = lazy(() => import("./features/orders/OrdersPage"));
 const CalendarPage = lazy(() => import("./features/calendar/CalendarPage"));
 const CouponsPage = lazy(() => import("./features/coupons/CouponsPage"));
 const DataIntegrityPage = lazy(() => import("./features/data-integrity/DataIntegrityPage"));
-const StoreSettingsPage = lazy(() => import("./features/store-settings/StoreSettingsPage"));
+// PS3 — la vecchia pagina impostazioni store non e' piu' raggiungibile:
+// la rotta /store-settings (mai linkata, autodichiarata deprecata) ora
+// redirige a /settings. Il file resta nel repo per il mondo legacy.
 // Wave GDPR-Commerce CG-7 — admin DPA page
 const DpaPage = lazy(() => import("./pages/DpaPage"));
 // SetupPage removed in Fase 2 Track F Step 9 (replaced by the dynamic
@@ -759,10 +761,8 @@ function AppRoutes() {
         path="/data-integrity"
         element={<ProtectedRoute><DataIntegrityPage /></ProtectedRoute>}
       />
-      <Route
-        path="/store-settings"
-        element={<ProtectedRoute><StoreSettingsPage /></ProtectedRoute>}
-      />
+      {/* PS3 — rotta deprecata: le impostazioni vivono in /settings */}
+      <Route path="/store-settings" element={<Navigate to="/settings" replace />} />
       {/* Wave GDPR-Commerce CG-7 — admin DPA (Data Processing Agreement)
           page. Required by GDPR Art. 28 for the platform↔merchant
           relationship. Protected: only the merchant org's admins. */}

@@ -8,7 +8,7 @@ import { Badge } from '../../components/ui/badge';
 import { Separator } from '../../components/ui/separator';
 import { Skeleton } from '../../components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { organizationsAPI, authAPI } from '../../api';
+import { organizationsAPI, authAPI, storesAPI } from '../../api';
 import { Switch } from '../../components/ui/switch';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -242,6 +242,29 @@ export const SettingsPage = () => {
         payload.public_slug = payload.public_slug.trim();
       }
       await organizationsAPI.updateCurrent(payload);
+      // PS3 — lo slug del profilo e quello dello store tecnico nascono
+      // insieme (ensure-default copia org.public_slug): se erano
+      // allineati restano allineati, cosi' /o/{slug} e' UNO e coincide
+      // ovunque (listino, landing ritiri, sitemap). Niente sync se un
+      // operatore legacy ha dato allo store uno slug tutto suo.
+      const newSlug = payload.public_slug;
+      const oldSlug = organization?.public_slug || '';
+      if (newSlug && newSlug !== oldSlug) {
+        try {
+          const res = await storesAPI.list();
+          const target = (res.data?.stores || []).find(s =>
+            s.is_default && s.is_active !== false
+            && (!s.slug || !oldSlug || s.slug === oldSlug));
+          if (target && target.slug !== newSlug) {
+            await storesAPI.update(target.id, { slug: newSlug });
+          }
+        } catch (err) {
+          // Slug gia' in uso o store non aggiornabile: la pagina
+          // pubblica resta sul vecchio indirizzo — avvisa, non blocca.
+          toast.error(err.response?.data?.detail
+            || t('organization.slug_sync_error', 'Indirizzo salvato, ma la tua pagina pubblica risponde ancora a quello precedente.'));
+        }
+      }
       toast.success(t('organization.saved'));
       fetchOrganization();
       await refreshUser();
@@ -365,19 +388,22 @@ export const SettingsPage = () => {
                   </div>
                 </div>
                 <Separator />
-                {/* Public storefront */}
+                {/* PS3 — l'indirizzo pubblico e' quello del PROFILO (/o/),
+                    senza gergo commerce ne' vecchi prefissi. Lo slug org
+                    e quello dello store tecnico restano sincronizzati in
+                    handleSave. */}
                 <div className="space-y-3">
                   <div>
                     <Label htmlFor="org-slug" className="flex items-center gap-1.5">
-                      {t('organization.public_slug', 'Indirizzo catalogo pubblico')}
+                      {t('organization.public_slug', 'Indirizzo pubblico del tuo profilo')}
                     </Label>
                     <div className="flex gap-2 mt-1">
                       <div className="flex items-center rounded-md border bg-muted px-3 text-sm text-muted-foreground shrink-0">
-                        {window.location.origin}/s/
+                        {window.location.origin}/o/
                       </div>
                       <Input
                         id="org-slug"
-                        placeholder="il-tuo-negozio"
+                        placeholder="il-tuo-nome"
                         value={formData.public_slug}
                         onChange={(e) => setFormData({ ...formData, public_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
                         disabled={!isAdmin}
@@ -385,18 +411,18 @@ export const SettingsPage = () => {
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {t('organization.public_slug_hint', 'Imposta un indirizzo per rendere il tuo catalogo prodotti visibile pubblicamente. Lascia vuoto per disattivare.')}
+                      {t('organization.public_slug_hint', "E' l'indirizzo della tua pagina pubblica: quella che condividi e dove i clienti ti trovano.")}
                     </p>
                   </div>
                   {formData.public_slug && (
                     <div className="flex items-center gap-2 rounded-lg border bg-blue-50 p-3">
                       <p className="text-sm text-blue-800 flex-1">
-                        {window.location.origin}/s/{formData.public_slug}
+                        {window.location.origin}/o/{formData.public_slug}
                       </p>
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/s/${formData.public_slug}`);
+                          navigator.clipboard.writeText(`${window.location.origin}/o/${formData.public_slug}`);
                           toast.success(t('organization.link_copied', 'Link copiato'));
                         }}
                         className="text-xs text-blue-700 hover:text-blue-900 font-medium shrink-0"
@@ -404,12 +430,12 @@ export const SettingsPage = () => {
                         {t('organization.copy_link', 'Copia link')}
                       </button>
                       <a
-                        href={`/s/${formData.public_slug}`}
+                        href={`/o/${formData.public_slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-blue-700 hover:text-blue-900 font-medium shrink-0"
                       >
-                        {t('organization.open_catalog', 'Apri')}
+                        {t('organization.open_profile', 'Apri')}
                       </a>
                     </div>
                   )}

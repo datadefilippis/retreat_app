@@ -2642,3 +2642,139 @@ class TestPotaturaPs2:
                 assert key not in svc, f"{lang}: chiave morta {key}"
             assert "advancedSettings" in loc.get("listino", {}), \
                 f"{lang}: manca listino.advancedSettings"
+
+
+class TestPotaturaPs3:
+    """PS3 (30/7/2026) — bonifica olistica di "store" e vecchia pagina
+    prodotti dalle superfici raggiungibili da un operatore snello
+    (docs/POTATURA_STORE_PIANO_2026-07.md, onda PS3).
+
+    Il wizard ritiri garantisce lo store tecnico in silenzio
+    (ensureDefault, stesso pattern del Listino) e non mostra mai banner
+    o CTA verso /stores; la sezione Distribuzione (wizard + dashboard
+    prodotto superstiti) esiste SOLO nel mondo multi-store legacy
+    (>1 store); le Impostazioni parlano di profilo pubblico /o/, non di
+    catalogo /s/; il copy piani parla di profilo pubblico, non di
+    negozio online; /store-settings redirige a /settings. Le scansioni
+    sono ancorate a file e sezioni intere, mai a offset di riga.
+    """
+
+    WIZARD = FRONTEND_SRC / "features" / "events" / "EventWizard.js"
+    SETTINGS = FRONTEND_SRC / "features" / "settings" / "SettingsPage.js"
+    APP = FRONTEND_SRC / "App.js"
+
+    def test_ps3_wizard_senza_cta_stores_con_ensure_default(self):
+        src = self.WIZARD.read_text()
+        assert 'href="/stores"' not in src and "storeRequired" not in src, \
+            "il passo Pubblica non deve mai chiedere di creare uno store"
+        assert "storesAPI.ensureDefault()" in src, \
+            "lo store tecnico va garantito in silenzio (pattern Listino)"
+
+    def test_ps3_wizard_distribuzione_solo_multi_store(self):
+        src = self.WIZARD.read_text()
+        assert "availableStores.length > 1 && (" in src, \
+            "la Distribuzione appare solo col multi-store legacy"
+        # il ramo <=1 ("Visibile automaticamente in: <store>") e' potato
+        assert "visibleAutoPrefix" not in src
+        assert "distributionDesc" not in src
+
+    def test_ps3_dashboard_distribuzione_solo_multi_store(self):
+        for rel in (("features", "physicals", "PhysicalDashboardPage.js"),
+                    ("features", "digitals", "DigitalDashboardPage.js"),
+                    ("features", "reservations",
+                     "ReservationDashboardPage.js")):
+            src = FRONTEND_SRC.joinpath(*rel).read_text()
+            assert "stores.length > 1 && (" in src, \
+                f"{rel[-1]}: sezione Distribuzione senza gate multi-store"
+        event = (FRONTEND_SRC / "features" / "events"
+                 / "EventDashboardPage.js").read_text()
+        assert "availableStores.length > 1 && (" in event
+        assert "availableStores.length > 0 && (" not in event
+
+    def test_ps3_settings_indirizzo_in_chiave_profilo(self):
+        src = self.SETTINGS.read_text()
+        assert "/s/" not in src, "niente prefisso storefront legacy"
+        assert "negozio" not in src.lower() \
+            and "catalogo" not in src.lower(), \
+            "la sezione indirizzo parla di profilo, non di commerce"
+        assert "/o/" in src and "Indirizzo pubblico del tuo profilo" in src
+        # lo slug del profilo e dello store tecnico restano allineati
+        # (il sync vive in handleSave, solo se erano gia' allineati)
+        assert "storesAPI.list()" in src and "storesAPI.update(" in src
+
+    def test_ps3_rotta_store_settings_redirect(self):
+        app = self.APP.read_text()
+        assert "StoreSettingsPage" not in app, \
+            "la pagina StoreSettingsPage non deve piu' essere importata"
+        assert ('path="/store-settings" '
+                'element={<Navigate to="/settings" replace />}') in app
+
+    def test_ps3_nav_store_settings_rimossa_x4(self):
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            nav = _json.loads((FRONTEND_SRC / "locales" / lang
+                               / "common.json").read_text())["nav"]
+            assert "store_settings" not in nav, f"{lang}: label morta"
+
+    def test_ps3_copy_piani_profilo_pubblico_x4(self):
+        """Le feature dei piani parlano di profilo pubblico, mai di
+        negozio online (IT) o equivalenti nelle altre lingue."""
+        import json as _json
+
+        def _find_parent(node, key):
+            if isinstance(node, dict):
+                if key in node:
+                    return node
+                for v in node.values():
+                    r = _find_parent(v, key)
+                    if r is not None:
+                        return r
+            elif isinstance(node, list):
+                for v in node:
+                    r = _find_parent(v, key)
+                    if r is not None:
+                        return r
+            return None
+
+        forbidden = {"it": ("negozio",),
+                     "en": ("online store",),
+                     "de": ("online-shop",),
+                     "fr": ("boutique en ligne",)}
+        for lang, bads in forbidden.items():
+            loc = _json.loads((FRONTEND_SRC / "locales" / lang
+                               / "settings.json").read_text())
+            feats = _find_parent(loc, "retreat_ecommerce")
+            assert feats is not None, f"{lang}: piani retreat_* spariti?"
+            for key, val in feats.items():
+                if not key.startswith("retreat_"):
+                    continue
+                for bad in bads:
+                    assert bad not in val.lower(), f"{lang}:{key}: {val}"
+            # il profilo pubblico e' entrato nel copy della feature clou
+            assert "profil" in feats["retreat_ecommerce"].lower(), \
+                f"{lang}: retreat_ecommerce non parla di profilo"
+
+    def test_ps3_inizia_lean_vetrina_non_negozio(self):
+        src = (FRONTEND_SRC / "features" / "onboarding"
+               / "IniziaPage.js").read_text()
+        assert "la tua vetrina insieme" in src
+        assert "il tuo negozio insieme" not in src
+        # gli step legacy ("Crea il tuo store") restano SOLO nel ramo
+        # LEGACY_STEPS, selezionato dallo shape dello status backend
+        # (org.legacy_commerce): il mondo lean usa LEAN_STEPS
+        assert "lean ? LEAN_STEPS : LEGACY_STEPS" in src
+
+    def test_ps3_legal_dialog_senza_link_stores(self):
+        src = (FRONTEND_SRC / "features" / "stores" / "components"
+               / "MerchantLegalDialog.js").read_text()
+        assert 'href="/stores"' not in src, \
+            "il dialog si apre anche dal mondo snello: CTA neutra"
+        assert "active_locale_link_text" not in src
+
+    def test_ps3_layout_codice_morto_potato(self):
+        src = (FRONTEND_SRC / "components" / "Layout.js").read_text()
+        assert "const operationsNav" not in src \
+            and "const moduleNavMap" not in src, \
+            "nav morta con /stores: va rimossa, non lasciata dormiente"
+        # la voce Store resta SOLO dietro il flag legacy_commerce
+        assert "legacyCommerce" in src
