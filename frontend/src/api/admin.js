@@ -30,6 +30,15 @@ export const adminAPI = {
   setNetworkMember: (orgId, member) =>
     api.put(`/admin/organizations/${orgId}/network-member`, { member }).then((r) => r.data),
 
+  // PV2 — l'intervista la scrive e pubblica il system admin (tab Interviste)
+  getOrgInterview: (orgId) =>
+    api.get(`/admin/organizations/${orgId}/interview`).then((r) => r.data),
+
+  setOrgInterview: (orgId, { items, video_url, published }) =>
+    api.put(`/admin/organizations/${orgId}/interview`, {
+      items, video_url, published,
+    }).then((r) => r.data),
+
   setOrgStatus: (orgId, isActive) =>
     api.put(`/admin/organizations/${orgId}/status`, { is_active: isActive }),
 

@@ -16,7 +16,7 @@ import { Skeleton } from '../../components/ui/skeleton';
 import { Link, Link as RouterLink } from 'react-router-dom';
 import {
   ExternalLink, Copy, Check, Upload, Loader2, Instagram, Globe, Facebook,
-  Eye,
+  Eye, Mic,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../api/client';
@@ -151,8 +151,8 @@ export default function PublicProfilePage() {
       payload.languages = form.languages || [];
       // OP2 — traduzioni manuali bio/tagline (stesso processo dei prodotti)
       payload.translations = form.translations || {};
-      // RT3 — l'intervista della rete (coppie vuote scartate dal backend)
-      payload.interview = form.interview || [];
+      // PV2 — l'intervista non si invia più: la scrive e pubblica il
+      // team Aurya dal pannello admin (il backend la ignorerebbe comunque)
       const res = await api.patch('/organizations/current/public-profile', payload);
       setForm({ show_contacts: false, ...res.data });
       if (res.data?.name) setOrgName(res.data.name);
@@ -363,56 +363,25 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          {/* RT3 (piano sito-rete) — l'intervista della rete: domande e
-              risposte integrali che compaiono sul profilo pubblico.
-              La compila Aurya insieme all'operatore. */}
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <div>
-              <Label>{t('publicProfile.interviewTitle', { defaultValue: 'L’intervista' })}</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t('publicProfile.interviewHint', { defaultValue: 'Le domande e le risposte complete: appaiono sul profilo pubblico nella sezione L’intervista. Risposte integrali, mai riassunte.' })}
+          {/* PV2 — l'intervista non si scrive più da qui: la realizza
+              il team Aurya. Pannello informativo puro (nessun campo),
+              con l'incentivo del badge Verificato. */}
+          <div className="rounded-xl border border-[#8a7440]/30 bg-[#8a7440]/5 p-4 space-y-2"
+               data-testid="interview-invite-panel">
+            <div className="flex items-center gap-2">
+              <Mic className="h-4 w-4 text-[#8a7440] shrink-0" aria-hidden />
+              <p className="text-sm font-semibold text-foreground">
+                {t('publicProfile.interviewInviteTitle', { defaultValue: 'Fatti intervistare da Aurya' })}
               </p>
             </div>
-            {(form.interview || []).map((qa, i) => (
-              <div key={i} className="rounded-lg border border-border p-3 space-y-2">
-                <input
-                  value={qa.question || ''}
-                  onChange={e => {
-                    const next = [...(form.interview || [])];
-                    next[i] = { ...next[i], question: e.target.value.slice(0, 200) };
-                    set('interview', next);
-                  }}
-                  placeholder={t('publicProfile.interviewQ', { defaultValue: 'Domanda' })}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <textarea
-                  value={qa.answer || ''}
-                  onChange={e => {
-                    const next = [...(form.interview || [])];
-                    next[i] = { ...next[i], answer: e.target.value.slice(0, 2500) };
-                    set('interview', next);
-                  }}
-                  rows={4}
-                  placeholder={t('publicProfile.interviewA', { defaultValue: 'Risposta integrale' })}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] text-muted-foreground">{(qa.answer || '').length}/2500</p>
-                  <button type="button"
-                    onClick={() => set('interview', (form.interview || []).filter((_, j) => j !== i))}
-                    className="text-xs text-destructive hover:underline">
-                    {t('publicProfile.interviewRemove', { defaultValue: 'Rimuovi domanda' })}
-                  </button>
-                </div>
-              </div>
-            ))}
-            {(form.interview || []).length < 12 && (
-              <button type="button"
-                onClick={() => set('interview', [...(form.interview || []), { question: '', answer: '' }])}
-                className="rounded-md border border-dashed border-border px-3 py-2 text-sm text-muted-foreground hover:border-primary hover:text-primary w-full">
-                {t('publicProfile.interviewAdd', { defaultValue: '+ Aggiungi domanda' })}
-              </button>
-            )}
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t('publicProfile.interviewInviteBody', { defaultValue: 'L’intervista la realizza il team Aurya insieme a te: quando viene pubblicata diventi operatore verificato, con il badge sul tuo profilo e nel marketplace.' })}
+            </p>
+            <a href="mailto:info@aurya.life?subject=Intervista%20Aurya"
+               className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7440] hover:underline">
+              {t('publicProfile.interviewInviteCta', { defaultValue: 'Scrivici per candidarti' })}
+              <ExternalLink className="h-3 w-3" aria-hidden />
+            </a>
           </div>
 
           {/* PR1 — Carta d'identità: ritratto, galleria, anno, lingue

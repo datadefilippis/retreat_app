@@ -34,6 +34,10 @@ class OrgSummary(BaseModel):
     # RT3 (piano sito-rete) — membro della rete Aurya (sigillo admin)
     network_member: bool = False
     legacy_commerce: bool = False
+    # PV2 — stato dell'intervista (gestita dal system admin):
+    # none | draft | published; verified_at = timbro della pubblicazione
+    interview_status: str = "none"
+    interview_verified_at: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

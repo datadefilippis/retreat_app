@@ -1838,20 +1838,10 @@ async def update_public_profile(
         langs = body["languages"] if isinstance(body["languages"], list) else []
         updates["public_profile.languages"] = [
             l for l in langs if l in _PP_LANGS][:6]
-    # RT3 — l'intervista della rete: lista {question, answer}, risposte
-    # integrali (il valore sta nella profondita'). Max 12 domande,
-    # coppie vuote scartate.
-    if "interview" in body:
-        raw_qa = body["interview"] if isinstance(body["interview"], list) else []
-        clean_qa = []
-        for item in raw_qa[:12]:
-            if not isinstance(item, dict):
-                continue
-            q = str(item.get("question") or "").strip()[:200]
-            a = str(item.get("answer") or "").strip()[:2500]
-            if q and a:
-                clean_qa.append({"question": q, "answer": a})
-        updates["public_profile.interview"] = clean_qa or None
+    # PV2 — l'intervista NON è più self-service: la scrive e pubblica il
+    # system admin (PUT /admin/organizations/{id}/interview). Un client
+    # vecchio che manda ancora "interview" viene ignorato in silenzio
+    # (retrocompat: niente 4xx, il resto del salvataggio passa).
     # OP2 — profilo multilingua MANUALE, stessa logica dei prodotti:
     # translations = {en|de|fr: {bio, tagline}}, testi clip alle stesse
     # lunghezze dell'italiano, lingue sconosciute scartate in silenzio.
@@ -1886,6 +1876,10 @@ async def update_public_profile(
             pass
 
     if not updates:
+        # PV2 retrocompat — un client vecchio che manda SOLO interview
+        # non deve vedere errori: nessuna scrittura, stato attuale.
+        if "interview" in body:
+            return await get_public_profile(current_user)
         raise HTTPException(status_code=400, detail="Nessun campo valido")
 
     from database import organizations_collection

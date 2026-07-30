@@ -3902,7 +3902,11 @@ async def public_network_members():
             "region": pp.get("region"),
             "portrait_url": pp.get("portrait_url"),
             "cover_url": pp.get("cover_url"),
-            "has_interview": bool(pp.get("interview")),
+            # PV2 — il link "Leggi l'intervista" appare solo se il
+            # system admin l'ha PUBBLICATA (le self-compilate storiche
+            # restano in DB ma non sono più pubbliche)
+            "has_interview": bool(pp.get("interview_published")
+                                  and pp.get("interview")),
             "services_count": svc_count,
             "price_from": price_from,
             "reviews_stats": o.get("reviews_stats"),
@@ -4406,9 +4410,16 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         "photos": pp.get("photos") or [],
         "founded_year": pp.get("founded_year"),
         "languages": pp.get("languages") or [],
-        # RT3 (piano sito-rete) — l'intervista integrale + il sigillo
-        # di membro della rete (assegnato dall'admin)
-        "interview": pp.get("interview") or [],
+        # RT3→PV2 — l'intervista integrale SOLO se pubblicata dal
+        # system admin (la fonte del badge Verificato); video e timbro
+        # di verifica viaggiano insieme. Non pubblicata → lista vuota,
+        # la sezione #intervista semplicemente non si renderizza.
+        "interview": (pp.get("interview") or []
+                      if pp.get("interview_published") else []),
+        "interview_video_url": (pp.get("interview_video_url")
+                                if pp.get("interview_published") else None),
+        "interview_verified_at": (pp.get("interview_verified_at")
+                                  if pp.get("interview_published") else None),
         "network_member": bool(org.get("network_member")),
         # TW2 (piano Listino) — il profilo E' il negozio: i servizi
         # pubblicati, raggruppabili per categoria lato client. Il

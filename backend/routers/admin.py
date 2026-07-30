@@ -24,6 +24,7 @@ Future scope (next step — write actions, not yet implemented):
 """
 
 import hashlib
+import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -124,9 +125,24 @@ def _org_summary(doc: dict) -> OrgSummary:
         cancel_at_period_end=doc.get("cancel_at_period_end", False),
         network_member=bool(doc.get("network_member")),
         legacy_commerce=bool(doc.get("legacy_commerce")),
+        interview_status=_interview_status(doc),
+        interview_verified_at=(
+            (doc.get("public_profile") or {}).get("interview_verified_at")),
         created_at=_dt(created),
         updated_at=_dt(doc.get("updated_at") or created),
     )
+
+
+def _interview_status(doc: dict) -> str:
+    """PV2 — stato per la tab Interviste: published vince, poi draft
+    (Q&A o video presenti ma non pubblicati, incluse le vecchie
+    self-compilate), altrimenti none."""
+    pp = doc.get("public_profile") or {}
+    if pp.get("interview_published"):
+        return "published"
+    if pp.get("interview") or pp.get("interview_video_url"):
+        return "draft"
+    return "none"
 
 
 def _module_entry(doc: dict) -> OrgModuleEntry:
@@ -418,6 +434,130 @@ async def set_network_member(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Organization not found")
     return {"org_id": org_id, "network_member": member}
+
+
+# ── PV2 — L'intervista passa al system admin ─────────────────────────────────
+
+# youtube.com/watch?v=ID, youtu.be/ID, youtube.com/shorts/ID (con o senza
+# www/m, query extra ignorate). L'ID YouTube è 11 caratteri [A-Za-z0-9_-].
+_YT_PATTERNS = (
+    re.compile(r"^https?://(?:www\.|m\.)?youtube\.com/watch\?(?:[^#]*&)?v="
+               r"([A-Za-z0-9_-]{11})(?:[&#]|$)"),
+    re.compile(r"^https?://youtu\.be/([A-Za-z0-9_-]{11})(?:[?#]|$)"),
+    re.compile(r"^https?://(?:www\.|m\.)?youtube\.com/shorts/"
+               r"([A-Za-z0-9_-]{11})(?:[?#/]|$)"),
+)
+
+
+def _normalize_youtube_url(raw: str) -> str:
+    """Estrae l'ID video e ritorna l'URL canonico. 422 se non è YouTube:
+    l'embed PV3 usa youtube-nocookie e non deve mai ricevere host
+    arbitrari."""
+    url = (raw or "").strip()
+    for pat in _YT_PATTERNS:
+        m = pat.match(url)
+        if m:
+            return f"https://www.youtube.com/watch?v={m.group(1)}"
+    raise HTTPException(
+        status_code=422,
+        detail="Video non valido: serve un link YouTube "
+               "(youtube.com/watch, youtu.be o youtube.com/shorts)")
+
+
+def _clean_interview_items(raw) -> list:
+    """Stesse regole del vecchio PATCH self-service: max 12 coppie,
+    question ≤200, answer ≤2500, coppie incomplete scartate."""
+    items = raw if isinstance(raw, list) else []
+    clean = []
+    for item in items[:12]:
+        if not isinstance(item, dict):
+            continue
+        q = str(item.get("question") or "").strip()[:200]
+        a = str(item.get("answer") or "").strip()[:2500]
+        if q and a:
+            clean.append({"question": q, "answer": a})
+    return clean
+
+
+@router.get(
+    "/organizations/{org_id}/interview",
+    summary="PV2 — stato intervista per l'editor admin",
+)
+async def get_org_interview(
+    org_id: str,
+    _: dict = Depends(require_system_admin),
+):
+    from database import organizations_collection
+    org = await organizations_collection.find_one(
+        {"id": org_id},
+        {"_id": 0, "id": 1, "name": 1, "public_slug": 1, "public_profile": 1})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    pp = org.get("public_profile") or {}
+    return {
+        "org_id": org_id,
+        "name": org.get("name"),
+        "public_slug": org.get("public_slug"),
+        "items": pp.get("interview") or [],
+        "video_url": pp.get("interview_video_url"),
+        "published": bool(pp.get("interview_published")),
+        "verified_at": pp.get("interview_verified_at"),
+    }
+
+
+@router.put(
+    "/organizations/{org_id}/interview",
+    summary="PV2 — l'intervista la scrive e pubblica il system admin",
+)
+async def set_org_interview(
+    org_id: str,
+    body: dict = Body(...),
+    current_user: dict = Depends(require_system_admin),
+):
+    """Il rito dell'intervista: il team Aurya la redige e la pubblica.
+    La PRIMA pubblicazione timbra interview_verified_at (la verità del
+    badge Verificato); spubblicare azzera il timbro. I dati vivono in
+    public_profile.interview come sempre: zero migrazioni."""
+    from database import organizations_collection
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "id": 1, "public_profile": 1})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    items = _clean_interview_items(body.get("items"))
+    raw_video = body.get("video_url")
+    video_url = (_normalize_youtube_url(raw_video)
+                 if isinstance(raw_video, str) and raw_video.strip()
+                 else None)
+    published = bool(body.get("published"))
+
+    pp = org.get("public_profile") or {}
+    if published:
+        # timbrata UNA volta: ri-salvare da pubblicata non la rinnova
+        verified_at = pp.get("interview_verified_at") or utc_now().isoformat()
+    else:
+        verified_at = None
+
+    await organizations_collection.update_one(
+        {"id": org_id},
+        {"$set": {
+            "public_profile.interview": items or None,
+            "public_profile.interview_video_url": video_url,
+            "public_profile.interview_published": published,
+            "public_profile.interview_verified_at": verified_at,
+        }})
+    # R13 — /public/operator/{slug} passa dalla cache slug→org (~45s):
+    # pubblica/spubblica deve riflettersi SUBITO sul profilo pubblico
+    # (stesso pattern di store_embed). Clear totale: azione admin rara.
+    from routers.public import _invalidate_resolve_org_cache
+    _invalidate_resolve_org_cache()
+    return {
+        "org_id": org_id,
+        "items": items,
+        "video_url": video_url,
+        "published": published,
+        "verified_at": verified_at,
+    }
 
 
 @router.put(

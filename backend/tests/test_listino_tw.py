@@ -3487,3 +3487,327 @@ class TestProfiloPv1:
             src = (FRONTEND_SRC / Path(rel)).read_text()
             assert 'accept="image/*"' in src, rel
             assert 'accept=".jpg' not in src, rel
+
+
+class TestProfiloPv2:
+    """PV2 (PROFILO_VERIFICATO_PIANO_2026-07) — intervista al system admin.
+
+    Guardie: PUT admin (bozza → pubblica → verified_at timbrato UNA volta
+    → spubblica → azzerato), 403 per non-sysadmin, video YouTube
+    normalizzato all'URL canonico (422 per host estranei), PATCH
+    self-service che IGNORA interview, pubblico che espone l'intervista
+    SOLO se pubblicata (has_interview coerente), interview_status in
+    _org_summary, editor operatore sostituito dal pannello informativo.
+    """
+
+    _sys_token_cache = None
+    _op_token_cache = None
+
+    # ── infrastruttura live (stessi helper di TestProfiloPv1) ────────
+
+    @classmethod
+    def _sys_headers(cls):
+        import pytest
+        if cls._sys_token_cache:
+            return {"Authorization": f"Bearer {cls._sys_token_cache}"}
+        for pwd in ("DevLocal1234!", "demo1234"):
+            r = requests.post(f"{BASE_URL}/api/auth/login", json={
+                "email": "sysadmin@demo.com", "password": pwd}, timeout=10)
+            if r.status_code == 200:
+                cls._sys_token_cache = r.json()["access_token"]
+                return {"Authorization": f"Bearer {cls._sys_token_cache}"}
+        pytest.skip("sysadmin login unavailable (rate limit?)")
+
+    @classmethod
+    def _op_headers(cls):
+        import pytest
+        if cls._op_token_cache:
+            return {"Authorization": f"Bearer {cls._op_token_cache}"}
+        r = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "admin@demo.com", "password": "demo1234"}, timeout=10)
+        if r.status_code != 200:
+            pytest.skip("demo login unavailable (rate limit?)")
+        cls._op_token_cache = r.json()["access_token"]
+        return {"Authorization": f"Bearer {cls._op_token_cache}"}
+
+    @staticmethod
+    def _db():
+        import re as _re
+        import pymongo
+        env = (BACKEND_DIR / ".env").read_text()
+        mongo = _re.search(r'MONGO_URL="?([^"\n]+?)"?\n', env).group(1)
+        name = _re.search(r'DB_NAME="?([^"\n]+?)"?\n', env).group(1)
+        return pymongo.MongoClient(mongo)[name]
+
+    @classmethod
+    def _org_id(cls):
+        r = requests.get(f"{BASE_URL}/api/organizations/current",
+                         headers=cls._op_headers(), timeout=10)
+        assert r.status_code == 200
+        return r.json()["id"]
+
+    _IV_FIELDS = ("interview", "interview_video_url",
+                  "interview_published", "interview_verified_at")
+
+    @classmethod
+    def _snapshot_interview(cls, db, org_id):
+        """{campo: valore} SOLO dei campi presenti (assenti → da $unset)."""
+        org = db.organizations.find_one({"id": org_id},
+                                        {"public_profile": 1}) or {}
+        pp = org.get("public_profile") or {}
+        return {f: pp[f] for f in cls._IV_FIELDS if f in pp}
+
+    @classmethod
+    def _restore_interview(cls, db, org_id, snap):
+        ops = {}
+        sets = {f"public_profile.{f}": v for f, v in snap.items()}
+        unsets = {f"public_profile.{f}": ""
+                  for f in cls._IV_FIELDS if f not in snap}
+        if sets:
+            ops["$set"] = sets
+        if unsets:
+            ops["$unset"] = unsets
+        if ops:
+            db.organizations.update_one({"id": org_id}, ops)
+
+    UA = {"User-Agent": "Mozilla/5.0 (Macintosh) Chrome/126 Safari/537.36"}
+
+    def _public_profile(self):
+        r = requests.get(f"{BASE_URL}/api/public/operator/masseria-demo",
+                         headers=self.UA, timeout=10)
+        assert r.status_code == 200, r.text
+        return r.json()
+
+    def _member_row(self):
+        r = requests.get(f"{BASE_URL}/api/public/network/members",
+                         headers=self.UA, timeout=10)
+        assert r.status_code == 200
+        rows = [m for m in r.json()["items"] if m["slug"] == "masseria-demo"]
+        return rows[0] if rows else None
+
+    def _summary_row(self, org_id):
+        r = requests.get(f"{BASE_URL}/api/admin/organizations",
+                         headers=self._sys_headers(),
+                         params={"limit": 200}, timeout=10)
+        assert r.status_code == 200
+        rows = [o for o in r.json()["items"] if o["id"] == org_id]
+        assert rows, "org demo assente dalla lista admin"
+        return rows[0]
+
+    # ── 1. ciclo di vita completo: bozza → pubblica → spubblica ─────
+
+    def test_admin_put_full_lifecycle(self):
+        sys_h = self._sys_headers()
+        org_id = self._org_id()
+        db = self._db()
+        snap = self._snapshot_interview(db, org_id)
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/interview"
+        body = {"items": [{"question": "Guardia PV2?",
+                           "answer": "Risposta integrale PV2."}],
+                "video_url": "https://youtu.be/dQw4w9WgXcQ",
+                "published": False}
+        try:
+            # BOZZA: salvata ma invisibile al pubblico
+            r = requests.put(url, headers=sys_h, json=body, timeout=10)
+            assert r.status_code == 200, r.text
+            assert r.json()["verified_at"] is None
+            pub = self._public_profile()
+            assert pub["interview"] == []
+            assert pub["interview_video_url"] is None
+            assert pub["interview_verified_at"] is None
+            assert self._summary_row(org_id)["interview_status"] == "draft"
+            member = self._member_row()
+            if member:
+                assert member["has_interview"] is False
+
+            # GET admin: l'editor ricarica lo stato (bozza inclusa)
+            r = requests.get(url, headers=sys_h, timeout=10)
+            assert r.status_code == 200
+            state = r.json()
+            assert state["items"][0]["question"] == "Guardia PV2?"
+            assert state["published"] is False
+
+            # PUBBLICA: verified_at timbrato
+            body["published"] = True
+            r = requests.put(url, headers=sys_h, json=body, timeout=10)
+            assert r.status_code == 200, r.text
+            first_stamp = r.json()["verified_at"]
+            assert first_stamp
+
+            # ri-salvataggio da pubblicata: il timbro NON cambia
+            r = requests.put(url, headers=sys_h, json=body, timeout=10)
+            assert r.json()["verified_at"] == first_stamp
+
+            # pubblico: intervista + video canonico + timbro
+            pub = self._public_profile()
+            assert pub["interview"][0]["question"] == "Guardia PV2?"
+            assert (pub["interview_video_url"]
+                    == "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+            assert pub["interview_verified_at"] == first_stamp
+            assert self._summary_row(org_id)["interview_status"] == "published"
+            member = self._member_row()
+            if member:
+                assert member["has_interview"] is True
+
+            # SPUBBLICA: timbro azzerato, pubblico ripulito
+            body["published"] = False
+            r = requests.put(url, headers=sys_h, json=body, timeout=10)
+            assert r.status_code == 200
+            assert r.json()["verified_at"] is None
+            pub = self._public_profile()
+            assert pub["interview"] == []
+            assert pub["interview_verified_at"] is None
+            member = self._member_row()
+            if member:
+                assert member["has_interview"] is False
+
+            # RIMUOVI: items vuoti → stato none in lista
+            r = requests.put(url, headers=sys_h, timeout=10,
+                             json={"items": [], "video_url": None,
+                                   "published": False})
+            assert r.status_code == 200
+            assert self._summary_row(org_id)["interview_status"] == "none"
+        finally:
+            self._restore_interview(db, org_id, snap)
+
+    # ── 2. solo il system admin ──────────────────────────────────────
+
+    def test_put_requires_system_admin(self):
+        op_h = self._op_headers()
+        org_id = self._org_id()
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/interview"
+        r = requests.put(url, headers=op_h, timeout=10,
+                         json={"items": [], "published": False})
+        assert r.status_code == 403
+        r = requests.get(url, headers=op_h, timeout=10)
+        assert r.status_code == 403
+
+    # ── 3. video: normalizzazione YouTube + rifiuto host estranei ────
+
+    def test_video_url_normalized_and_rejected(self):
+        sys_h = self._sys_headers()
+        org_id = self._org_id()
+        db = self._db()
+        snap = self._snapshot_interview(db, org_id)
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/interview"
+        canonical = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        accepted = (
+            "https://youtu.be/dQw4w9WgXcQ",
+            "https://youtu.be/dQw4w9WgXcQ?t=42",
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=x",
+            "https://m.youtube.com/watch?v=dQw4w9WgXcQ",
+            "https://www.youtube.com/shorts/dQw4w9WgXcQ",
+        )
+        rejected = (
+            "https://vimeo.com/123456789",
+            "https://example.com/watch?v=dQw4w9WgXcQ",
+            "https://youtube.com.evil.io/watch?v=dQw4w9WgXcQ",
+            "non-un-url",
+        )
+        try:
+            for raw in accepted:
+                r = requests.put(url, headers=sys_h, timeout=10,
+                                 json={"items": [], "video_url": raw,
+                                       "published": False})
+                assert r.status_code == 200, (raw, r.text)
+                assert r.json()["video_url"] == canonical, raw
+            for raw in rejected:
+                r = requests.put(url, headers=sys_h, timeout=10,
+                                 json={"items": [], "video_url": raw,
+                                       "published": False})
+                assert r.status_code == 422, (raw, r.status_code)
+        finally:
+            self._restore_interview(db, org_id, snap)
+
+    # ── 4. regole di validazione ereditate dal vecchio PATCH ─────────
+
+    def test_items_rules_max12_lengths_empty_dropped(self):
+        sys_h = self._sys_headers()
+        org_id = self._org_id()
+        db = self._db()
+        snap = self._snapshot_interview(db, org_id)
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/interview"
+        items = [{"question": f"D{i}? " + "q" * 300,
+                  "answer": "a" * 3000} for i in range(15)]
+        items.append({"question": "Solo domanda", "answer": "  "})
+        try:
+            r = requests.put(url, headers=sys_h, timeout=10,
+                             json={"items": items, "published": False})
+            assert r.status_code == 200, r.text
+            saved = r.json()["items"]
+            assert len(saved) == 12                      # max 12, vuote fuori
+            assert all(len(qa["question"]) <= 200 for qa in saved)
+            assert all(len(qa["answer"]) <= 2500 for qa in saved)
+        finally:
+            self._restore_interview(db, org_id, snap)
+
+    # ── 5. il self-service è chiuso (retrocompat: ignorato, no errore) ─
+
+    def test_patch_self_service_ignores_interview(self):
+        op_h = self._op_headers()
+        org_id = self._org_id()
+        db = self._db()
+        snap = self._snapshot_interview(db, org_id)
+        before = snap.get("interview")
+        # payload con SOLO interview: il caso peggiore del client vecchio
+        r = requests.patch(
+            f"{BASE_URL}/api/organizations/current/public-profile",
+            headers=op_h, timeout=15,
+            json={"interview": [{"question": "INTRUSO",
+                                 "answer": "Self-service chiuso."}]})
+        assert r.status_code == 200, r.text          # niente 4xx: ignorato
+        org = db.organizations.find_one({"id": org_id}, {"public_profile": 1})
+        after = (org.get("public_profile") or {}).get("interview")
+        assert after == before, "il PATCH self-service ha scritto interview"
+
+    def test_patch_source_no_longer_writes_interview(self):
+        src = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        assert 'updates["public_profile.interview"]' not in src
+
+    # ── 6. superfici frontend: editor via, pannello invito al suo posto ─
+
+    def test_operator_editor_replaced_by_invite_panel(self):
+        page = (FRONTEND_SRC / "features" / "settings"
+                / "PublicProfilePage.js").read_text()
+        assert "payload.interview" not in page        # non si invia più
+        assert "interview-invite-panel" in page       # pannello informativo
+        assert "interviewInviteTitle" in page
+        assert "mailto:info@aurya.life" in page       # CTA contatto
+        assert "set('interview'" not in page          # niente campi compilabili
+
+    def test_admin_tab_registered(self):
+        tab = (FRONTEND_SRC / "features" / "admin"
+               / "InterviewsTab.js").read_text()
+        assert "getOrgInterview" in tab
+        assert "setOrgInterview" in tab
+        assert "ytVideoId" in tab                     # anteprima ID video
+        admin_page = (FRONTEND_SRC / "features" / "admin"
+                      / "AdminPage.js").read_text()
+        assert "InterviewsTab" in admin_page
+        assert 'value="interviews"' in admin_page
+
+    def test_invite_panel_i18n_x4(self):
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads(
+                (FRONTEND_SRC / "locales" / lang / "settings.json")
+                .read_text())
+            pp = data.get("publicProfile") or {}
+            for key in ("interviewInviteTitle", "interviewInviteBody",
+                        "interviewInviteCta"):
+                assert pp.get(key), f"{lang}: publicProfile.{key} mancante"
+            # le chiavi del vecchio editor self-service sono sparite
+            assert "interviewAdd" not in pp, lang
+
+    # ── 7. interview_status esposto dalla lista admin ────────────────
+
+    def test_org_summary_has_interview_status(self):
+        r = requests.get(f"{BASE_URL}/api/admin/organizations",
+                         headers=self._sys_headers(),
+                         params={"limit": 50}, timeout=10)
+        assert r.status_code == 200
+        items = r.json()["items"]
+        assert items
+        for row in items:
+            assert row["interview_status"] in ("none", "draft", "published")
+            assert "interview_verified_at" in row

@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppLayout, Header } from '../../components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Building2, Users, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2, Sparkles, Newspaper, Inbox } from 'lucide-react';
+import { Building2, Users, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2, Sparkles, Newspaper, Inbox, Mic } from 'lucide-react';
 import PlatformOverviewTab from './PlatformOverviewTab';
 import DirectoryAdminTab from './DirectoryAdminTab';
 import SignalsTab from './SignalsTab';
@@ -14,6 +14,7 @@ import MRRDashboardTab from './MRRDashboardTab';
 import AIGovernanceTab from './AIGovernanceTab';
 import BlogAdminTab from './BlogAdminTab';
 import LeadsTab from './LeadsTab';
+import InterviewsTab from './InterviewsTab';
 
 /**
  * AdminPage — System Admin Control Panel.
@@ -96,6 +97,10 @@ const AdminPage = () => {
               <Inbox className="h-4 w-4" />
               Lead
             </TabsTrigger>
+            <TabsTrigger value="interviews" className="flex items-center gap-2 shrink-0">
+              <Mic className="h-4 w-4" />
+              Interviste
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -144,6 +149,10 @@ const AdminPage = () => {
 
           <TabsContent value="leads">
             <LeadsTab />
+          </TabsContent>
+
+          <TabsContent value="interviews">
+            <InterviewsTab />
           </TabsContent>
         </Tabs>
       </div>
