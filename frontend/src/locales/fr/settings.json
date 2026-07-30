@@ -644,7 +644,7 @@
     "foundedYear": "Actif depuis (année)",
     "languages": "Langues parlées",
     "portrait": "Portrait (photo à côté de ton profil)",
-    "portraitHint": "Télécharger (max 2 Mo)",
+    "portraitHint": "Chargez une photo",
     "portraitUploaded": "Portrait téléchargé",
     "gallery": "Galerie photos (max 8)",
     "galleryHint": "Note : la suppression d’une photo prend effet après Enregistrer.",
@@ -657,7 +657,7 @@
     "completeness": "Profil complet à",
     "completenessHint": "Photos, bio et réseaux sociaux augmentent la confiance et les réservations.",
     "cover": "Photo de couverture",
-    "coverHint": "Clique pour télécharger (max 2 Mo)",
+    "coverHint": "Cliquez pour charger une photo",
     "coverUploaded": "Couverture téléchargée",
     "coverError": "Erreur de téléchargement",
     "bio": "Qui tu es (bio)",
@@ -677,6 +677,8 @@
     "interviewA": "Réponse intégrale",
     "interviewRemove": "Supprimer la question",
     "interviewAdd": "+ Ajouter une question",
-    "conditionsLink": "Conditions de vente"
+    "conditionsLink": "Conditions de vente",
+    "optimizing": "Optimisation de la photo…",
+    "uploadingPhoto": "Envoi de la photo…"
   }
 }

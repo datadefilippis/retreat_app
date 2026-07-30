@@ -7,6 +7,7 @@
  */
 
 import api from './client';
+import { compressImage } from '../lib/compressImage';
 
 export const storesAPI = {
   // TW1 — store tecnico invisibile del Listino (idempotente)
@@ -18,9 +19,10 @@ export const storesAPI = {
   update: (storeId, data) => api.patch(`/stores/${storeId}`, data),
   publish: (storeId) => api.post(`/stores/${storeId}/publish`),
   unpublish: (storeId) => api.post(`/stores/${storeId}/unpublish`),
-  uploadLogo: (storeId, file) => {
+  // PV1 — compressione client prima dell'upload (SVG passano intatti).
+  uploadLogo: async (storeId, file) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', await compressImage(file));
     return api.post(`/stores/${storeId}/logo`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

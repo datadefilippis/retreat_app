@@ -124,7 +124,7 @@
     "replace": "Remplacer l'image",
     "uploaded_toast": "Image telechargee",
     "error_toast": "Erreur lors du telechargement",
-    "max_hint": "Max 5 Mo, JPG/PNG/WebP"
+    "max_hint": "JPG/PNG/WebP"
   },
   "booking_section": {
     "title": "Reservation",

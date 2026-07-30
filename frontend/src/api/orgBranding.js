@@ -26,6 +26,7 @@
  */
 
 import api from './client';
+import { compressImage } from '../lib/compressImage';
 
 export const orgBrandingAPI = {
   /**
@@ -60,9 +61,11 @@ export const orgBrandingAPI = {
    * max 2MB). On success, `branding.logo_url` is updated server-side
    * and the resolved URL is returned for immediate UI preview.
    */
-  uploadLogo: (file) => {
+  // PV1 — compressione client prima dell'upload (gli SVG passano
+  // intatti: il helper li salta).
+  uploadLogo: async (file) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', await compressImage(file));
     return api.post('/organizations/current/branding/logo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

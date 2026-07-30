@@ -1639,7 +1639,7 @@ export default function EventWizard() {
                   <span>📁 {imageFile ? imageFile.name : t('wizards.event.base.imageFileLabel')}</span>
                   <input
                     type="file"
-                    accept=".jpg,.jpeg,.png,.webp"
+                    accept="image/*"
                     className="hidden"
                     onChange={e => {
                       const file = e.target.files?.[0];
@@ -1681,7 +1681,7 @@ export default function EventWizard() {
                 <span>📁 {coverFile ? coverFile.name : t('wizards.event.where.coverFileLabel')}</span>
                 <input
                   type="file"
-                  accept=".jpg,.jpeg,.png,.webp"
+                  accept="image/*"
                   className="hidden"
                   onChange={e => {
                     const file = e.target.files?.[0];

@@ -793,7 +793,7 @@
         "shortDescLabel": "Short description",
         "imageLabel": "Catalog image",
         "uploading": "⏳ Uploading…",
-        "uploadLabel": "📁 Upload image (jpg/png/webp, max 5MB)",
+        "uploadLabel": "📁 Upload image",
         "imageUrlPlaceholder": "or paste a URL…",
         "priceLabel": "Base price (€)",
         "pricePlaceholder": "0.00",
@@ -1465,7 +1465,7 @@
       "correctErrors": "Fix the errors before continuing",
       "imageUploadFailed": "Product created, but image upload failed.",
       "creationError": "Creation error",
-      "imageFileLabel": "📁 Upload image (jpg/png/webp, max 5MB)",
+      "imageFileLabel": "📁 Upload image",
       "imageUrlPlaceholder": "or paste a URL…",
       "publishNow": "Publish now",
       "validation": {
@@ -1623,7 +1623,7 @@
         "descriptionLabel": "Short description",
         "descriptionPlaceholder": "1–2 lines that appear on the catalog card.",
         "imageLabel": "Product image",
-        "imageFileLabel": "Upload image (jpg/png/webp, max 5MB)",
+        "imageFileLabel": "Upload image",
         "imageHint": "Used in the catalog and as a fallback for the landing page.",
         "priceLabel": "Base price (€)",
         "pricePlaceholder": "E.g. 50",
@@ -1659,7 +1659,7 @@
         "longitudePlaceholder": "18.1742",
         "coordsHint": "Paste coordinates from Google Maps (right-click → \"What's here?\"). Not required, but unlocks the map on the landing page.",
         "coverLabel": "Event cover image",
-        "coverFileLabel": "Upload cover (jpg/png/webp, max 5MB)",
+        "coverFileLabel": "Upload cover",
         "coverUrlPlaceholder": "or paste a URL… (empty = use product image)"
       },
       "tickets": {

@@ -233,7 +233,7 @@ export default function OrgBrandingDialog({ open, onClose }) {
                       {logoUrl ? t('org_branding.logo.replace') : t('org_branding.logo.upload')}
                       <input
                         type="file"
-                        accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                        accept="image/*"
                         className="hidden"
                         disabled={uploading}
                         onChange={(e) => {

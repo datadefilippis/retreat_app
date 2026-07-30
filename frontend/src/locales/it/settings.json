@@ -679,7 +679,7 @@
     "completeness": "Profilo completo al",
     "completenessHint": "Foto, bio e social aumentano la fiducia — e le prenotazioni.",
     "cover": "Foto di copertina",
-    "coverHint": "Clicca per caricare (max 2MB)",
+    "coverHint": "Clicca per caricare una foto",
     "bio": "Chi sei (bio)",
     "bioPlaceholder": "Racconta chi sei e che esperienze crei — 2-3 frasi bastano.",
     "bioEmpty": "La tua bio apparirà qui…",
@@ -701,7 +701,7 @@
     "foundedYear": "Attivo dal (anno)",
     "languages": "Lingue parlate",
     "portrait": "Ritratto (foto a lato del profilo)",
-    "portraitHint": "Carica (max 2MB)",
+    "portraitHint": "Carica una foto",
     "portraitUploaded": "Ritratto caricato",
     "gallery": "Galleria foto (max 8)",
     "galleryHint": "Ricorda: rimuovere una foto qui richiede Salva per rendere effettivo.",
@@ -712,6 +712,8 @@
     "interviewA": "Risposta integrale",
     "interviewRemove": "Rimuovi domanda",
     "interviewAdd": "+ Aggiungi domanda",
-    "conditionsLink": "Condizioni di vendita"
+    "conditionsLink": "Condizioni di vendita",
+    "optimizing": "Ottimizzo la foto…",
+    "uploadingPhoto": "Carico la foto…"
   }
 }

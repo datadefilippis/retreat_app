@@ -680,7 +680,7 @@
     "completeness": "Profile complete at",
     "completenessHint": "Photo, bio and socials build trust — and bookings.",
     "cover": "Cover photo",
-    "coverHint": "Click to upload (max 2MB)",
+    "coverHint": "Click to upload a photo",
     "bio": "Who you are (bio)",
     "bioPlaceholder": "Tell who you are and what experiences you create — 2-3 sentences.",
     "bioEmpty": "Your bio will appear here…",
@@ -702,7 +702,7 @@
     "foundedYear": "Active since (year)",
     "languages": "Spoken languages",
     "portrait": "Portrait (photo next to your profile)",
-    "portraitHint": "Upload (max 2MB)",
+    "portraitHint": "Upload a photo",
     "portraitUploaded": "Portrait uploaded",
     "gallery": "Photo gallery (max 8)",
     "galleryHint": "Note: removing a photo here requires Save to take effect.",
@@ -713,6 +713,8 @@
     "interviewA": "Full answer",
     "interviewRemove": "Remove question",
     "interviewAdd": "+ Add question",
-    "conditionsLink": "Sales conditions"
+    "conditionsLink": "Sales conditions",
+    "optimizing": "Optimizing photo…",
+    "uploadingPhoto": "Uploading photo…"
   }
 }

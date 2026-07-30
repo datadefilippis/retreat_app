@@ -25,8 +25,10 @@ from pydantic import BaseModel, ConfigDict, Field
 from auth import get_current_user, get_verified_user, get_verified_user
 
 COVER_UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "occurrences")
-COVER_ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
-COVER_ALLOWED_MIMES = {"image/jpeg", "image/png", "image/webp"}
+# PV1 — heic/heif (iPhone) accettati: convertiti in WebP dal server
+COVER_ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
+COVER_ALLOWED_MIMES = {"image/jpeg", "image/png", "image/webp",
+                       "image/heic", "image/heif"}
 COVER_MAX_SIZE = 5 * 1024 * 1024  # 5 MB
 from models.event_occurrence import (
     EventOccurrenceCreate, EventOccurrenceUpdate, EventOccurrence,
@@ -1549,9 +1551,11 @@ async def upload_occurrence_cover_image(
                 pass
 
     filename = f"{occurrence_id}{ext}"
-    from services.object_storage import save_public_upload
+    # PV1 — MIME canonico (".jpg" → image/jpeg): la vecchia f-string
+    # sull'estensione produceva "image/jpg" e saltava la WebP.
+    from services.object_storage import content_type_for_ext, save_public_upload
     cover_image_url = save_public_upload("occurrences", filename, contents,
-                                         content_type=f"image/{ext.lstrip('.')}")
+                                         content_type=content_type_for_ext(ext))
     await event_occurrences_collection.update_one(
         {"id": occurrence_id, "organization_id": org_id},
         {"$set": {"cover_image_url": cover_image_url, "updated_at": utc_now().isoformat()}},

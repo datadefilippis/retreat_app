@@ -654,9 +654,10 @@ async def upload_store_logo(
                 pass
 
     filename = f"{store_id}{ext}"
-    from services.object_storage import save_public_upload
+    # PV1 — MIME canonico (".jpg" → image/jpeg), mai dall'estensione grezza
+    from services.object_storage import content_type_for_ext, save_public_upload
     logo_url = save_public_upload("logos", filename, contents,
-                                  content_type=f"image/{ext.lstrip('.')}")
+                                  content_type=content_type_for_ext(ext))
     await stores_collection.update_one(
         {"id": store_id, "organization_id": org_id},
         {"$set": {"logo_url": logo_url, "updated_at": utc_now()}},

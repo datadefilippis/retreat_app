@@ -644,7 +644,7 @@
     "foundedYear": "Aktiv seit (Jahr)",
     "languages": "Gesprochene Sprachen",
     "portrait": "Porträt (Foto neben deinem Profil)",
-    "portraitHint": "Hochladen (max. 2MB)",
+    "portraitHint": "Foto hochladen",
     "portraitUploaded": "Porträt hochgeladen",
     "gallery": "Fotogalerie (max. 8)",
     "galleryHint": "Hinweis: das Entfernen eines Fotos wird erst mit Speichern wirksam.",
@@ -657,7 +657,7 @@
     "completeness": "Profil vollständig zu",
     "completenessHint": "Fotos, Bio und Social erhöhen das Vertrauen und die Buchungen.",
     "cover": "Titelbild",
-    "coverHint": "Klicken zum Hochladen (max. 2MB)",
+    "coverHint": "Klicken, um ein Foto hochzuladen",
     "coverUploaded": "Titelbild hochgeladen",
     "coverError": "Fehler beim Hochladen",
     "bio": "Wer du bist (Bio)",
@@ -677,6 +677,8 @@
     "interviewA": "Vollständige Antwort",
     "interviewRemove": "Frage entfernen",
     "interviewAdd": "+ Frage hinzufügen",
-    "conditionsLink": "Verkaufsbedingungen"
+    "conditionsLink": "Verkaufsbedingungen",
+    "optimizing": "Foto wird optimiert…",
+    "uploadingPhoto": "Foto wird hochgeladen…"
   }
 }

@@ -931,7 +931,7 @@ export default function StoresPage() {
                     <div className="flex-1 min-w-0 space-y-1">
                       <label className="text-xs text-primary hover:underline cursor-pointer inline-block">
                         {editStore?.logo_url ? t('branding.logo_replace') : t('branding.logo_upload')}
-                        <input type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" className="hidden"
+                        <input type="file" accept="image/*" className="hidden"
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file || !editStore) return;

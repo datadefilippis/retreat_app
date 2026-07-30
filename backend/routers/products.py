@@ -16,8 +16,10 @@ from services.url_builder import PUBLIC_APP_URL
 logger = logging.getLogger(__name__)
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "products")
-ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
-ALLOWED_MIMES = {"image/jpeg", "image/png", "image/webp"}
+# PV1 — heic/heif (iPhone) accettati: convertiti in WebP dal server
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
+ALLOWED_MIMES = {"image/jpeg", "image/png", "image/webp",
+                 "image/heic", "image/heif"}
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 
 # Onda 16 Fase 6: deprecation signal for item_type=booking.
@@ -701,9 +703,11 @@ async def upload_product_image(
     # Save file
     filename = f"{product_id}{ext}"
     # R3 — adapter storage: S3 se configurato, filesystem locale in dev
-    from services.object_storage import save_public_upload
+    # PV1 — MIME canonico (".jpg" → image/jpeg): la vecchia f-string
+    # sull'estensione produceva "image/jpg" e saltava la WebP.
+    from services.object_storage import content_type_for_ext, save_public_upload
     image_url = save_public_upload("products", filename, contents,
-                                   content_type=f"image/{ext.lstrip('.')}")
+                                   content_type=content_type_for_ext(ext))
     from database import products_collection
     from models.common import utc_now
     await products_collection.update_one(

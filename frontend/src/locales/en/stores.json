@@ -208,7 +208,7 @@
       "upload": "Upload logo",
       "replace": "Replace",
       "remove": "Remove logo",
-      "format_hint": "JPG, PNG, WebP or SVG · max 2MB"
+      "format_hint": "JPG, PNG, WebP or SVG"
     },
     "colors": {
       "label": "Brand colors",

@@ -67,3 +67,4 @@ prometheus-client>=0.20.0
 
 # Fase 2 (retreat) — scheduler in-process con lock Mongo
 APScheduler>=3.10,<4
+pillow-heif>=0.16  # PV1 — HEIC/HEIF (iPhone) → WebP nella pipeline upload

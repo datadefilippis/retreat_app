@@ -61,9 +61,45 @@ def _client():
 # jpeg/png vengono ridimensionati a max 1600px e convertiti in WebP
 # (qualità 82 ≈ -60/70% di peso a parità visiva). Fail-safe: qualsiasi
 # errore → si salva l'originale com'era.
-_OPTIMIZE_TYPES = {"image/jpeg", "image/png"}
+#
+# PV1 (PROFILO_VERIFICATO_PIANO) — heic/heif (iPhone) entrano nella
+# pipeline via pillow-heif e vengono SEMPRE convertiti (i browser non
+# renderizzano HEIC, quindi "teniamo l'originale" non è un'opzione).
+try:  # pillow-heif è un wheel puro: se manca si degrada senza HEIC
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+    HEIF_ENABLED = True
+except Exception:  # noqa: BLE001
+    HEIF_ENABLED = False
+
+_OPTIMIZE_TYPES = {"image/jpeg", "image/png", "image/heic", "image/heif"}
+# Formati che il browser non sa mostrare: conversione obbligata anche
+# se il WebP risultasse più pesante dell'originale.
+_FORCE_CONVERT_TYPES = {"image/heic", "image/heif"}
 _MAX_DIMENSION = 1600
 _WEBP_QUALITY = 82
+
+# PV1 — MIME canonici per estensione: i chiamanti NON devono più fare
+# f"image/{ext}" (produce "image/jpg", che non è un MIME e faceva
+# saltare l'ottimizzazione alla foto più comune del mondo).
+_EXT_CONTENT_TYPES = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".heic": "image/heic",
+    ".heif": "image/heif",
+}
+
+
+def content_type_for_ext(ext: str) -> str:
+    """MIME canonico da un'estensione ('.jpg' o 'jpg')."""
+    ext = (ext or "").lower()
+    if not ext.startswith("."):
+        ext = f".{ext}"
+    return _EXT_CONTENT_TYPES.get(ext, "application/octet-stream")
 
 
 def _optimize_image(filename: str, content: bytes,
@@ -81,7 +117,8 @@ def _optimize_image(filename: str, content: bytes,
         out = io.BytesIO()
         img.save(out, format="WEBP", quality=_WEBP_QUALITY, method=4)
         data = out.getvalue()
-        if len(data) >= len(content):
+        if (len(data) >= len(content)
+                and content_type not in _FORCE_CONVERT_TYPES):
             return filename, content, content_type  # non ci guadagniamo
         base = filename.rsplit(".", 1)[0]
         return f"{base}.webp", data, "image/webp"
@@ -119,3 +156,51 @@ def save_public_upload(category: str, filename: str, content: bytes,
     target.mkdir(parents=True, exist_ok=True)
     (target / filename).write_bytes(content)
     return f"/uploads/{category}/{filename}"
+
+
+def delete_public_uploads(category: str, prefix: str) -> int:
+    """PV1 — cleanup best-effort dei file di una category che iniziano
+    con `prefix` (es. i vecchi cover `{org_id}-*` quando se ne carica
+    una nuova col suffisso random). Simmetrico S3/filesystem, MAI
+    bloccante: un fallimento qui non deve far fallire l'upload.
+
+    Ritorna il numero di file rimossi (0 se niente da rimuovere o su
+    errore). I vecchi URL già persistiti nei documenti restano validi
+    finché non vengono sovrascritti dai chiamanti.
+    """
+    if not prefix:  # guardia: mai svuotare un'intera category
+        return 0
+    removed = 0
+    try:
+        if is_s3_enabled():
+            bucket = os.environ["S3_BUCKET"]
+            key_prefix = f"uploads/{category}/{prefix}"
+            client = _client()
+            token = None
+            while True:
+                kwargs = {"Bucket": bucket, "Prefix": key_prefix}
+                if token:
+                    kwargs["ContinuationToken"] = token
+                resp = client.list_objects_v2(**kwargs)
+                keys = [{"Key": o["Key"]} for o in resp.get("Contents", [])]
+                if keys:
+                    client.delete_objects(Bucket=bucket,
+                                          Delete={"Objects": keys})
+                    removed += len(keys)
+                if not resp.get("IsTruncated"):
+                    break
+                token = resp.get("NextContinuationToken")
+            return removed
+        target = _UPLOADS_ROOT / category
+        if target.is_dir():
+            for path in target.glob(f"{prefix}*"):
+                try:
+                    path.unlink()
+                    removed += 1
+                except OSError:
+                    pass
+        return removed
+    except Exception as exc:  # noqa: BLE001 — best-effort per contratto
+        logger.warning("object_storage: cleanup %s/%s* fallito: %s",
+                       category, prefix, exc)
+        return removed

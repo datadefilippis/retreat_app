@@ -124,7 +124,7 @@
     "replace": "Replace image",
     "uploaded_toast": "Image uploaded",
     "error_toast": "Upload error",
-    "max_hint": "Max 5MB, JPG/PNG/WebP"
+    "max_hint": "JPG/PNG/WebP"
   },
   "booking_section": {
     "title": "Booking",

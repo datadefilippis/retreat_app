@@ -3213,3 +3213,277 @@ class TestPotaturaPs6:
         mongo = _re.search(r'MONGO_URL="?([^"\n]+?)"?\n', env).group(1)
         name = _re.search(r'DB_NAME="?([^"\n]+?)"?\n', env).group(1)
         return pymongo.MongoClient(mongo)[name]
+
+
+class TestProfiloPv1:
+    """PV1 (PROFILO_VERIFICATO_PIANO_2026-07) — foto solide.
+
+    Guardie: MIME map canonica nei chiamanti, filename NON deterministico
+    per cover/ritratto/logo (sostituzione mai in cache) + cleanup dei
+    vecchi file, HEIC accettato e convertito WebP, limite 2MB ancora
+    attivo, helper compressImage presente nelle superfici frontend.
+    """
+
+    UPLOADS = BACKEND_DIR / "uploads"
+
+    # ── infrastruttura live (stessi helper dei cicli TW/RS/PN/LM) ────
+
+    _admin_token_cache = None
+
+    @classmethod
+    def _admin_headers(cls):
+        import pytest
+        if cls._admin_token_cache:
+            return {"Authorization": f"Bearer {cls._admin_token_cache}"}
+        r = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "admin@demo.com", "password": "demo1234"}, timeout=10)
+        if r.status_code != 200:
+            pytest.skip("demo login unavailable (rate limit?)")
+        cls._admin_token_cache = r.json()["access_token"]
+        return {"Authorization": f"Bearer {cls._admin_token_cache}"}
+
+    @staticmethod
+    def _db():
+        import re as _re
+        import pymongo
+        env = (BACKEND_DIR / ".env").read_text()
+        mongo = _re.search(r'MONGO_URL="?([^"\n]+?)"?\n', env).group(1)
+        name = _re.search(r'DB_NAME="?([^"\n]+?)"?\n', env).group(1)
+        return pymongo.MongoClient(mongo)[name]
+
+    @classmethod
+    def _org_id(cls):
+        r = requests.get(f"{BASE_URL}/api/organizations/current",
+                         headers=cls._admin_headers(), timeout=10)
+        assert r.status_code == 200
+        return r.json()["id"]
+
+    @staticmethod
+    def _png_bytes(size=(900, 500), color=(60, 120, 90)):
+        import io
+        from PIL import Image
+        buf = io.BytesIO()
+        Image.new("RGB", size, color).save(buf, format="PNG")
+        return buf.getvalue()
+
+    @classmethod
+    def _snapshot_local(cls, url):
+        """(path, bytes) del file locale dietro un URL /uploads/*, o None."""
+        if not url or not str(url).startswith("/uploads/"):
+            return None
+        path = cls.UPLOADS / str(url)[len("/uploads/"):]
+        if path.is_file():
+            return path, path.read_bytes()
+        return None
+
+    # ── 1. MIME map canonica (il bug "image/jpg") ────────────────────
+
+    def test_mime_map_no_fstring_ext(self):
+        """Nessun chiamante costruisce più il MIME con f"image/{ext}"
+        (produceva "image/jpg" → ottimizzazione WebP saltata)."""
+        routers = BACKEND_DIR / "routers"
+        offenders = []
+        for p in routers.glob("*.py"):
+            if 'f"image/{ext' in p.read_text():
+                offenders.append(p.name)
+        assert offenders == [], f"MIME da estensione grezza in: {offenders}"
+
+    def test_mime_map_helper_used(self):
+        storage = (BACKEND_DIR / "services" / "object_storage.py").read_text()
+        assert "def content_type_for_ext" in storage
+        assert '".jpg": "image/jpeg"' in storage
+        for router in ("organizations.py", "products.py",
+                       "event_occurrences.py"):
+            src = (BACKEND_DIR / "routers" / router).read_text()
+            assert "content_type_for_ext" in src, router
+
+    # ── 2. filename non deterministico + cleanup (bug sostituzione) ──
+
+    def test_random_suffix_in_source(self):
+        """Cover, ritratto e logo org usano il pattern gallery
+        {org_id}-{uuid4[:10]}{ext}: URL nuovo a ogni upload."""
+        src = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        occurrences = src.count('-{uuid.uuid4().hex[:10]}{ext}')
+        assert occurrences >= 4, occurrences  # logo, cover, ritratto, gallery
+        storage = (BACKEND_DIR / "services" / "object_storage.py").read_text()
+        assert "def delete_public_uploads" in storage
+        assert "delete_objects" in storage  # simmetria S3 del cleanup
+
+    def test_cover_replacement_new_url_old_file_gone(self):
+        """Due upload cover consecutivi → URL DIVERSI e il vecchio file
+        rimosso da uploads/ (riproduzione HTTP del bug sostituzione)."""
+        import pytest
+        headers = self._admin_headers()
+        org_id = self._org_id()
+        db = self._db()
+        org = db.organizations.find_one({"id": org_id},
+                                        {"public_profile.cover_url": 1})
+        original_url = ((org or {}).get("public_profile")
+                        or {}).get("cover_url")
+        original_file = self._snapshot_local(original_url)
+        try:
+            urls = []
+            for color in ((200, 30, 30), (30, 30, 200)):
+                r = requests.post(
+                    f"{BASE_URL}/api/organizations/current/public-profile/cover",
+                    headers=headers, timeout=20,
+                    files={"file": ("guardia-pv1.png",
+                                    self._png_bytes(color=color),
+                                    "image/png")})
+                if r.status_code == 429:
+                    pytest.skip("rate limit cover raggiunto (rerun <1min)")
+                assert r.status_code == 200, r.text
+                urls.append(r.json()["cover_url"])
+            first, second = urls
+            assert first != second, "URL cover identico: sostituzione in cache"
+            assert f"{org_id}-" in first.rsplit("/", 1)[-1]
+            first_local = self.UPLOADS / first[len("/uploads/"):]
+            second_local = self.UPLOADS / second[len("/uploads/"):]
+            assert not first_local.exists(), "vecchio file cover non rimosso"
+            assert second_local.exists(), "nuovo file cover mancante"
+        finally:
+            # ripristino com'era: file originale (se locale) + puntatore DB
+            for p in (self.UPLOADS / "profile-covers").glob(f"{org_id}*"):
+                try:
+                    p.unlink()
+                except OSError:
+                    pass
+            if original_file:
+                path, data = original_file
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+            db.organizations.update_one(
+                {"id": org_id},
+                {"$set": {"public_profile.cover_url": original_url}})
+
+    # ── 3. HEIC accettato e convertito WebP ──────────────────────────
+
+    def test_heic_upload_converted_to_webp(self):
+        import io
+        import pytest
+        from PIL import Image
+        heif = pytest.importorskip("pillow_heif")
+        heif.register_heif_opener()
+        headers = self._admin_headers()
+        org_id = self._org_id()
+        db = self._db()
+        org = db.organizations.find_one({"id": org_id},
+                                        {"public_profile.portrait_url": 1})
+        original_url = ((org or {}).get("public_profile")
+                        or {}).get("portrait_url")
+        original_file = self._snapshot_local(original_url)
+        buf = io.BytesIO()
+        Image.new("RGB", (2200, 1300), (90, 60, 120)).save(buf, format="HEIF")
+        try:
+            r = requests.post(
+                f"{BASE_URL}/api/organizations/current/public-profile/portrait",
+                headers=headers, timeout=20,
+                files={"file": ("iphone-pv1.heic", buf.getvalue(),
+                                "image/heic")})
+            if r.status_code == 429:
+                pytest.skip("rate limit portrait raggiunto (rerun <1min)")
+            assert r.status_code == 200, r.text
+            url = r.json()["portrait_url"]
+            assert url.endswith(".webp"), url  # convertito, mai .heic servito
+            saved = self.UPLOADS / url[len("/uploads/"):]
+            assert saved.is_file()
+            img = Image.open(io.BytesIO(saved.read_bytes()))
+            assert img.format == "WEBP"
+            assert max(img.size) <= 1600  # resize S6 applicato
+        finally:
+            for p in (self.UPLOADS / "profile-portraits").glob(f"{org_id}*"):
+                try:
+                    p.unlink()
+                except OSError:
+                    pass
+            if original_file:
+                path, data = original_file
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+            db.organizations.update_one(
+                {"id": org_id},
+                {"$set": {"public_profile.portrait_url": original_url}})
+
+    def test_heic_in_whitelists(self):
+        for router in ("organizations.py", "products.py",
+                       "event_occurrences.py"):
+            src = (BACKEND_DIR / "routers" / router).read_text()
+            assert '".heic"' in src, router
+            assert "image/heic" in src, router
+        req = (BACKEND_DIR / "requirements.txt").read_text()
+        assert "pillow-heif" in req
+        storage = (BACKEND_DIR / "services" / "object_storage.py").read_text()
+        assert "register_heif_opener" in storage
+        assert "image/heic" in storage  # in _OPTIMIZE_TYPES
+        assert "_FORCE_CONVERT_TYPES" in storage  # heic mai servito com'è
+
+    # ── 4. cintura 2MB ancora attiva ─────────────────────────────────
+
+    def test_oversize_still_rejected(self):
+        import pytest
+        headers = self._admin_headers()
+        blob = b"\x00" * (2 * 1024 * 1024 + 1)
+        r = requests.post(
+            f"{BASE_URL}/api/organizations/current/public-profile/cover",
+            headers=headers, timeout=20,
+            files={"file": ("troppo-grande.png", blob, "image/png")})
+        if r.status_code == 429:
+            pytest.skip("rate limit cover raggiunto (rerun <1min)")
+        assert r.status_code == 400
+        assert "2MB" in r.json()["detail"]
+
+    # ── 5. messaggio 429 leggibile ───────────────────────────────────
+
+    def test_429_has_detail_key(self):
+        """L'handler slowapi custom risponde con detail E error, così
+        il toast del frontend mostra il messaggio vero."""
+        server = (BACKEND_DIR / "server.py").read_text()
+        assert "_rate_limit_handler" in server
+        assert '"detail": msg' in server
+        assert '"error": msg' in server
+
+    # ── 6. helper compressImage nelle superfici frontend ─────────────
+
+    def test_compress_helper_exists(self):
+        helper = (FRONTEND_SRC / "lib" / "compressImage.js").read_text()
+        assert "createImageBitmap" in helper
+        assert "imageOrientation" in helper           # EXIF from-image
+        assert "'image/webp'" in helper
+        assert "'image/jpeg'" in helper               # fallback Safari
+        assert "return file" in helper                # fail-safe: mai bloccare
+
+    def test_compress_helper_wired_in_api_wrappers(self):
+        """La compressione avviene PRIMA della FormData in TUTTI i
+        wrapper API di upload immagine (quindi in ogni superficie)."""
+        for api_file in ("products.js", "orgBranding.js", "stores.js",
+                         "storeSettings.js", "eventOccurrences.js"):
+            src = (FRONTEND_SRC / "api" / api_file).read_text()
+            assert "compressImage" in src, api_file
+            assert "await compressImage(file)" in src, api_file
+
+    def test_profile_page_compresses_and_resets(self):
+        page = (FRONTEND_SRC / "features" / "settings"
+                / "PublicProfilePage.js").read_text()
+        assert "compressImage" in page
+        assert page.count("e.target.value = ''") >= 3  # cover+ritratto+gallery
+        assert 'accept="image/*"' in page
+        assert "max 2MB" not in page                   # copy percepito rimosso
+        assert "optimizing" in page                    # stato "Ottimizzo la foto"
+
+    def test_image_inputs_accept_any_image(self):
+        surfaces = (
+            "features/settings/PublicProfilePage.js",
+            "features/stores/components/OrgBrandingDialog.jsx",
+            "features/stores/StoresPage.js",
+            "features/services/ServiceWizard.js",
+            "features/listino/ListinoPage.js",
+            "features/physicals/PhysicalWizard.js",
+            "features/digitals/DigitalWizard.js",
+            "features/reservations/ReservationWizard.js",
+            "features/events/EventWizard.js",
+            "features/events/EventDashboardPage.js",
+        )
+        for rel in surfaces:
+            src = (FRONTEND_SRC / Path(rel)).read_text()
+            assert 'accept="image/*"' in src, rel
+            assert 'accept=".jpg' not in src, rel

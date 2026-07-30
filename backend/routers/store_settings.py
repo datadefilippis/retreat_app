@@ -679,9 +679,10 @@ async def upload_store_logo(
                 pass
 
     filename = f"{org_id}{ext}"
-    from services.object_storage import save_public_upload
+    # PV1 — MIME canonico (".jpg" → image/jpeg), mai dall'estensione grezza
+    from services.object_storage import content_type_for_ext, save_public_upload
     logo_url = save_public_upload("logos", filename, contents,
-                                  content_type=f"image/{ext.lstrip('.')}")
+                                  content_type=content_type_for_ext(ext))
 
     from database import organizations_collection
     from models.common import utc_now

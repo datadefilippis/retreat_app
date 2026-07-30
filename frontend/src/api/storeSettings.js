@@ -1,4 +1,5 @@
 import api from './client';
+import { compressImage } from '../lib/compressImage';
 
 /**
  * storeSettingsAPI — store identity + branding.
@@ -27,9 +28,10 @@ export const storeSettingsAPI = {
   update: (data) => api.patch('/store-settings', data),
 
   // Logo upload (multipart). Returns the persisted URL on success.
-  uploadLogo: (file) => {
+  // PV1 — compressione client prima dell'upload (SVG passano intatti).
+  uploadLogo: async (file) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', await compressImage(file));
     return api.post('/store-settings/logo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

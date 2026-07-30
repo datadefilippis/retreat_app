@@ -1,5 +1,6 @@
 import logging
 import os
+import uuid
 from fastapi import APIRouter, HTTPException, status, Depends, Request, UploadFile, File
 
 logger = logging.getLogger(__name__)
@@ -1215,8 +1216,11 @@ class OrgBrandingPayload(BaseModel):
 ORG_LOGO_DIR = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "uploads", "logos", "org"
 )
-ORG_LOGO_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".svg"}
-ORG_LOGO_MIMES = {"image/jpeg", "image/png", "image/webp", "image/svg+xml"}
+# PV1 — heic/heif (iPhone) accettati: il server li converte in WebP
+# via pillow-heif (services/object_storage).
+ORG_LOGO_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".svg", ".heic", ".heif"}
+ORG_LOGO_MIMES = {"image/jpeg", "image/png", "image/webp", "image/svg+xml",
+                  "image/heic", "image/heif"}
 ORG_LOGO_MAX_BYTES = 2 * 1024 * 1024  # 2MB — same as per-store
 
 
@@ -1325,17 +1329,13 @@ async def clear_org_branding(current_user: dict = Depends(require_admin)):
     if not org_doc:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    # Delete any logo file currently on disk for this org. Best-effort
-    # — if the file is gone or the cleanup fails we still wipe the DB
-    # pointer (the inverse — DB clean but file lingering — would leave
-    # an orphan, which is what we want to avoid).
-    for old_ext in ORG_LOGO_EXTS:
-        old_path = os.path.join(ORG_LOGO_DIR, f"{org_id}{old_ext}")
-        if os.path.exists(old_path):
-            try:
-                os.remove(old_path)
-            except OSError:
-                pass
+    # Delete any logo file currently stored for this org (any extension
+    # or PV1 random suffix, filesystem or S3). Best-effort — if the file
+    # is gone or the cleanup fails we still wipe the DB pointer (the
+    # inverse — DB clean but file lingering — would leave an orphan,
+    # which is what we want to avoid).
+    from services.object_storage import delete_public_uploads
+    delete_public_uploads("logos/org", f"{org_id}")
 
     await organization_repository.update(
         org_id,
@@ -1413,21 +1413,20 @@ async def upload_org_logo(
     if len(contents) > ORG_LOGO_MAX_BYTES:
         raise HTTPException(status_code=400, detail="Immagine troppo grande. Max 2MB.")
 
-    # Clean up any previous extension for the same org so we don't
-    # leave a .png next to a .jpg when the admin replaces the logo.
-    os.makedirs(ORG_LOGO_DIR, exist_ok=True)
-    for old_ext in ORG_LOGO_EXTS:
-        old_path = os.path.join(ORG_LOGO_DIR, f"{org_id}{old_ext}")
-        if os.path.exists(old_path):
-            try:
-                os.remove(old_path)
-            except OSError:
-                pass
+    # PV1 — cleanup dei vecchi file (qualsiasi estensione/suffisso) via
+    # adapter, così vale anche su S3. Best-effort, mai bloccante.
+    from services.object_storage import (
+        content_type_for_ext,
+        delete_public_uploads,
+        save_public_upload,
+    )
+    delete_public_uploads("logos/org", f"{org_id}")
 
-    filename = f"{org_id}{ext}"
-    from services.object_storage import save_public_upload
+    # PV1 — suffisso random nel filename: URL nuovo a ogni upload, la
+    # cache del browser/CDN non può mai mostrare il logo vecchio.
+    filename = f"{org_id}-{uuid.uuid4().hex[:10]}{ext}"
     logo_url = save_public_upload("logos/org", filename, contents,
-                                  content_type=f"image/{ext.lstrip('.')}")
+                                  content_type=content_type_for_ext(ext))
 
     # Auto-set on the org so the next /catalog request picks it up
     # immediately. Merge with any existing branding fields.
@@ -1462,16 +1461,12 @@ async def delete_org_logo(current_user: dict = Depends(require_admin)):
     if not org_doc:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    # Delete any file extension we might have written. Best-effort —
-    # missing files are not an error (they may have been cleaned up
-    # manually or never existed).
-    for old_ext in ORG_LOGO_EXTS:
-        old_path = os.path.join(ORG_LOGO_DIR, f"{org_id}{old_ext}")
-        if os.path.exists(old_path):
-            try:
-                os.remove(old_path)
-            except OSError:
-                pass
+    # Delete any file we might have written (any extension or PV1
+    # random suffix, filesystem or S3). Best-effort — missing files are
+    # not an error (they may have been cleaned up manually or never
+    # existed).
+    from services.object_storage import delete_public_uploads
+    delete_public_uploads("logos/org", f"{org_id}")
 
     existing = (org_doc.get("branding") or {})
     new_branding = {**existing, "logo_url": None}
@@ -2007,7 +2002,7 @@ async def upload_profile_cover(
     logo org: whitelist estensioni/MIME, max 2MB, un file per org."""
     org_id = current_user["organization_id"]
     ext = os.path.splitext(file.filename or "")[1].lower()
-    allowed = {".jpg", ".jpeg", ".png", ".webp"}   # niente svg per le cover
+    allowed = _PROFILE_IMG_EXT                     # niente svg per le cover
     if ext not in allowed:
         raise HTTPException(
             status_code=400,
@@ -2020,14 +2015,18 @@ async def upload_profile_cover(
     if len(contents) > ORG_LOGO_MAX_BYTES:
         raise HTTPException(status_code=400, detail="Immagine troppo grande. Max 2MB.")
 
-    os.makedirs(PROFILE_COVER_DIR, exist_ok=True)
-    for old_ext in allowed:
-        old = os.path.join(PROFILE_COVER_DIR, f"{org_id}{old_ext}")
-        if os.path.exists(old) and old_ext != ext:
-            os.remove(old)
-    from services.object_storage import save_public_upload
-    cover_url = save_public_upload("profile-covers", f"{org_id}{ext}", contents,
-                                   content_type=f"image/{ext.lstrip('.')}")
+    # PV1 — via i vecchi file (adapter: filesystem o S3), poi filename
+    # con suffisso random: URL sempre nuovo → la sostituzione appare
+    # SUBITO, niente cache stantia (browser o S3 immutable).
+    from services.object_storage import (
+        content_type_for_ext,
+        delete_public_uploads,
+        save_public_upload,
+    )
+    delete_public_uploads("profile-covers", f"{org_id}")
+    cover_url = save_public_upload(
+        "profile-covers", f"{org_id}-{uuid.uuid4().hex[:10]}{ext}", contents,
+        content_type=content_type_for_ext(ext))
     from database import organizations_collection
     await organizations_collection.update_one(
         {"id": org_id}, {"$set": {"public_profile.cover_url": cover_url}},
@@ -2038,7 +2037,7 @@ async def upload_profile_cover(
 # PR1 — ritratto (foto a lato) + galleria: stesse difese della cover.
 # Le foto passano dalla pipeline WebP di S6 (save_public_upload).
 
-_PROFILE_IMG_EXT = {".jpg", ".jpeg", ".png", ".webp"}
+_PROFILE_IMG_EXT = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
 
 
 async def _read_profile_image(file: UploadFile) -> tuple:
@@ -2066,9 +2065,17 @@ async def upload_profile_portrait(
 ):
     org_id = current_user["organization_id"]
     ext, contents = await _read_profile_image(file)
-    from services.object_storage import save_public_upload
-    url = save_public_upload("profile-portraits", f"{org_id}{ext}", contents,
-                             content_type=f"image/{ext.lstrip('.')}")
+    # PV1 — stesso schema della cover: cleanup vecchi file + suffisso
+    # random nel filename (sostituzione mai in cache).
+    from services.object_storage import (
+        content_type_for_ext,
+        delete_public_uploads,
+        save_public_upload,
+    )
+    delete_public_uploads("profile-portraits", f"{org_id}")
+    url = save_public_upload(
+        "profile-portraits", f"{org_id}-{uuid.uuid4().hex[:10]}{ext}", contents,
+        content_type=content_type_for_ext(ext))
     from database import organizations_collection
     await organizations_collection.update_one(
         {"id": org_id}, {"$set": {"public_profile.portrait_url": url}})
@@ -2084,7 +2091,6 @@ async def upload_profile_photo(
 ):
     """Aggiunge UNA foto alla galleria (max 8: il client manda un file
     per volta, ordine gestito dal PATCH photos)."""
-    import uuid as _uuid
     org_id = current_user["organization_id"]
     ext, contents = await _read_profile_image(file)
     from database import organizations_collection
@@ -2094,10 +2100,12 @@ async def upload_profile_photo(
     if len(photos) >= _PP_PHOTOS_MAX:
         raise HTTPException(status_code=400,
                             detail=f"Massimo {_PP_PHOTOS_MAX} foto in galleria")
-    from services.object_storage import save_public_upload
+    # NB: qui NIENTE cleanup a prefisso {org_id} — la galleria accumula
+    # più file per org, il prefisso spazzerebbe via le altre foto.
+    from services.object_storage import content_type_for_ext, save_public_upload
     url = save_public_upload(
-        "profile-photos", f"{org_id}-{_uuid.uuid4().hex[:10]}{ext}", contents,
-        content_type=f"image/{ext.lstrip('.')}")
+        "profile-photos", f"{org_id}-{uuid.uuid4().hex[:10]}{ext}", contents,
+        content_type=content_type_for_ext(ext))
     await organizations_collection.update_one(
         {"id": org_id}, {"$push": {"public_profile.photos": url}})
     return {"photos": photos + [url]}

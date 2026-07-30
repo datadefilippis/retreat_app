@@ -208,7 +208,7 @@
       "upload": "Logo hochladen",
       "replace": "Ersetzen",
       "remove": "Logo entfernen",
-      "format_hint": "JPG, PNG, WebP oder SVG · max 2MB"
+      "format_hint": "JPG, PNG, WebP oder SVG"
     },
     "colors": {
       "label": "Markenfarben",

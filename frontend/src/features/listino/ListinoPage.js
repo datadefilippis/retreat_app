@@ -585,8 +585,8 @@ export default function ListinoPage() {
                             <div>
                               <p className="mb-1.5 text-xs font-medium text-gray-600">Foto del servizio</p>
                               <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-gray-900">
-                                <span>Carica una foto (jpg, png, webp)</span>
-                                <input type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden"
+                                <span>Carica una foto</span>
+                                <input type="file" accept="image/*" className="hidden"
                                        onChange={async e => {
                                          const file = e.target.files?.[0];
                                          if (!file) return;

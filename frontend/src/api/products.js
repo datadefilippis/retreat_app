@@ -1,4 +1,5 @@
 import api from './client';
+import { compressImage } from '../lib/compressImage';
 
 export const productsAPI = {
   list: (activeOnly = true, limit = 500, storeId = null) =>
@@ -38,9 +39,11 @@ export const productsAPI = {
   // 2026-05-20 — Added the optional ``config`` param so callers (typically
   // useAbortableUpload) can pass ``{ signal: abortController.signal }`` and
   // cancel a slow upload on unmount / navigation.
-  uploadImage: (productId, file, config = {}) => {
+  // PV1 — compressione client (WebP max 1600px) PRIMA della FormData:
+  // qualsiasi foto parte leggera, il 2MB backend resta come cintura.
+  uploadImage: async (productId, file, config = {}) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', await compressImage(file));
     return api.post(`/products/${productId}/image`, formData, {
       ...config,
       headers: {

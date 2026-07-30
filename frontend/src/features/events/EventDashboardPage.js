@@ -1037,7 +1037,7 @@ export default function EventDashboardPage() {
                     <span>{uploadingImage ? t('dashboards.event.product.uploading') : t('dashboards.event.product.uploadLabel')}</span>
                     <input
                       type="file"
-                      accept=".jpg,.jpeg,.png,.webp"
+                      accept="image/*"
                       className="hidden"
                       disabled={uploadingImage}
                       onChange={async e => {
@@ -1346,7 +1346,7 @@ export default function EventDashboardPage() {
                       <span>{uploadingImage ? t('dashboards.event.product.uploading') : `📁 ${t('wizards.event.where.coverFileLabel')}`}</span>
                       <input
                         type="file"
-                        accept=".jpg,.jpeg,.png,.webp"
+                        accept="image/*"
                         className="hidden"
                         disabled={uploadingImage}
                         onChange={async e => {

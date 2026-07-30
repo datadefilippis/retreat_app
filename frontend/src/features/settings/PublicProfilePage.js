@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../api/client';
+import { compressImage } from '../../lib/compressImage';
 import MultiLangSection from '../../components/MultiLangSection';
 
 // OP2 — dal dict per-campo di MultiLangSection ({en:'testo'}) alla shape
@@ -93,6 +94,8 @@ export default function PublicProfilePage() {
   const [logoUrl, setLogoUrl] = useState(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  // PV1 — fase "Ottimizzo la foto": compressione client in corso
+  const [optimizing, setOptimizing] = useState(false);
   const [copied, setCopied] = useState(false);
   const fileRef = useRef(null);
 
@@ -161,20 +164,35 @@ export default function PublicProfilePage() {
     }
   };
 
+  // PV1 — messaggio d'errore upload: legge detail (FastAPI) E error
+  // (formato slowapi storico), così il 429 non diventa un toast muto.
+  const uploadErrorMessage = (err) => {
+    const data = err?.response?.data || {};
+    const msg = data.detail || data.error;
+    return typeof msg === 'string' && msg
+      ? msg
+      : t('publicProfile.coverError', { defaultValue: 'Errore nel caricamento' });
+  };
+
+  // PV1 — compressione client prima della FormData ("Ottimizzo la foto")
+  const prepareImage = async (file) => {
+    setOptimizing(true);
+    try { return await compressImage(file); }
+    finally { setOptimizing(false); }
+  };
+
   const uploadCover = async (file) => {
     if (!file) return;
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', await prepareImage(file));
       const res = await api.post('/organizations/current/public-profile/cover', fd,
         { headers: { 'Content-Type': 'multipart/form-data' } });
       set('cover_url', res.data.cover_url);
       toast.success(t('publicProfile.coverUploaded', { defaultValue: 'Cover caricata' }));
     } catch (err) {
-      const detail = err?.response?.data?.detail;
-      toast.error(typeof detail === 'string' ? detail
-        : t('publicProfile.coverError', { defaultValue: 'Errore nel caricamento' }));
+      toast.error(uploadErrorMessage(err));
     } finally {
       setUploading(false);
     }
@@ -186,13 +204,13 @@ export default function PublicProfilePage() {
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', await prepareImage(file));
       const res = await api.post('/organizations/current/public-profile/portrait', fd,
         { headers: { 'Content-Type': 'multipart/form-data' } });
       set('portrait_url', res.data.portrait_url);
       toast.success(t('publicProfile.portraitUploaded', { defaultValue: 'Ritratto caricato' }));
     } catch (err) {
-      toast.error(err?.response?.data?.detail || t('publicProfile.coverError', { defaultValue: 'Errore nel caricamento' }));
+      toast.error(uploadErrorMessage(err));
     } finally { setUploading(false); }
   };
 
@@ -202,13 +220,13 @@ export default function PublicProfilePage() {
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', await prepareImage(file));
       const res = await api.post('/organizations/current/public-profile/photos', fd,
         { headers: { 'Content-Type': 'multipart/form-data' } });
       set('photos', res.data.photos);
       toast.success(t('publicProfile.photoUploaded', { defaultValue: 'Foto aggiunta' }));
     } catch (err) {
-      toast.error(err?.response?.data?.detail || t('publicProfile.coverError', { defaultValue: 'Errore nel caricamento' }));
+      toast.error(uploadErrorMessage(err));
     } finally { setUploading(false); }
   };
 
@@ -317,8 +335,9 @@ export default function PublicProfilePage() {
           {/* Cover */}
           <div className="rounded-xl border bg-card p-4 space-y-2">
             <Label>{t('publicProfile.cover', { defaultValue: 'Foto di copertina' })}</Label>
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp"
-                   className="hidden" onChange={e => uploadCover(e.target.files?.[0])} />
+            <input ref={fileRef} type="file" accept="image/*"
+                   className="hidden"
+                   onChange={e => { uploadCover(e.target.files?.[0]); e.target.value = ''; }} />
             <div
               className="relative h-36 rounded-lg border-2 border-dashed border-border bg-muted/40 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors"
               onClick={() => fileRef.current?.click()}
@@ -328,12 +347,17 @@ export default function PublicProfilePage() {
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm gap-1">
                   <Upload className="h-5 w-5" />
-                  {t('publicProfile.coverHint', { defaultValue: 'Clicca per caricare (max 2MB)' })}
+                  {t('publicProfile.coverHint', { defaultValue: 'Clicca per caricare una foto' })}
                 </div>
               )}
               {uploading && (
-                <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                <div className="absolute inset-0 bg-white/70 flex items-center justify-center gap-2">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="text-sm font-medium text-primary">
+                    {optimizing
+                      ? t('publicProfile.optimizing', { defaultValue: 'Ottimizzo la foto…' })
+                      : t('publicProfile.uploadingPhoto', { defaultValue: 'Carico la foto…' })}
+                  </span>
                 </div>
               )}
             </div>
@@ -425,14 +449,14 @@ export default function PublicProfilePage() {
             </div>
             <div>
               <Label>{t('publicProfile.portrait', { defaultValue: 'Ritratto (foto a lato del profilo)' })}</Label>
-              <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" id="pp-portrait"
-                     onChange={e => uploadPortrait(e.target.files?.[0])} />
+              <input type="file" accept="image/*" className="hidden" id="pp-portrait"
+                     onChange={e => { uploadPortrait(e.target.files?.[0]); e.target.value = ''; }} />
               <label htmlFor="pp-portrait"
                      className="mt-1 block h-32 w-32 rounded-xl border-2 border-dashed border-border bg-muted/40 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors">
                 {form.portrait_url
                   ? <img src={form.portrait_url} alt="" className="w-full h-full object-cover" />
                   : <span className="h-full flex items-center justify-center text-xs text-muted-foreground px-2 text-center">
-                      {t('publicProfile.portraitHint', { defaultValue: 'Carica (max 2MB)' })}
+                      {t('publicProfile.portraitHint', { defaultValue: 'Carica una foto' })}
                     </span>}
               </label>
             </div>
@@ -449,7 +473,7 @@ export default function PublicProfilePage() {
                 ))}
                 {(form.photos || []).length < 8 && (
                   <>
-                    <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" id="pp-photo"
+                    <input type="file" accept="image/*" className="hidden" id="pp-photo"
                            onChange={e => { uploadPhoto(e.target.files?.[0]); e.target.value = ''; }} />
                     <label htmlFor="pp-photo"
                            className="h-20 rounded-lg border-2 border-dashed border-border bg-muted/40 flex items-center justify-center text-xl text-muted-foreground cursor-pointer hover:border-primary/50 transition-colors">+</label>

@@ -208,7 +208,7 @@
       "upload": "Téléverser un logo",
       "replace": "Remplacer",
       "remove": "Supprimer le logo",
-      "format_hint": "JPG, PNG, WebP ou SVG · max 2MB"
+      "format_hint": "JPG, PNG, WebP ou SVG"
     },
     "colors": {
       "label": "Couleurs de la marque",

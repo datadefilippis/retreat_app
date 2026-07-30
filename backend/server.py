@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 import os
 import logging
@@ -398,7 +397,21 @@ app = FastAPI(
 
 # ── Rate limiting (slowapi) ───────────────────────────────────────────────────
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+# PV1 — l'handler di default di slowapi risponde {"error": ...} mentre
+# TUTTO il frontend legge err.response.data.detail → il 429 diventava
+# un toast generico "Errore nel caricamento". Qui si risponde con
+# ENTRAMBE le chiavi (detail per il frontend, error per compatibilità
+# con chi già leggeva il formato slowapi).
+def _rate_limit_handler(request, exc: RateLimitExceeded):
+    from fastapi.responses import JSONResponse
+    msg = "Troppe richieste in poco tempo. Attendi un minuto e riprova."
+    return JSONResponse(status_code=429,
+                        content={"detail": msg, "error": msg})
+
+
+app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
 
 
 # ── Global exception handler (Track S Step 1.4) ──────────────────────────────

@@ -470,8 +470,8 @@ export default function ReservationWizard() {
               <label className="flex items-center gap-2 cursor-pointer rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-600 hover:border-gray-900">
                 <span>{imageFile ? `📎 ${imageFile.name}` : t('wizards.common.imageFileLabel')}</span>
                 <input
-                  type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden"
-                  onChange={e => { setImageFile(e.target.files?.[0] || null); setIdentity(i => ({ ...i, image_url: '' })); }}
+                  type="file" accept="image/*" className="hidden"
+                  onChange={e => { setImageFile(e.target.files?.[0] || null); setIdentity(i => ({ ...i, image_url: '' })); e.target.value = ''; }}
                 />
               </label>
               <input

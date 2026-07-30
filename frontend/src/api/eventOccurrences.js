@@ -1,4 +1,5 @@
 import api from './client';
+import { compressImage } from '../lib/compressImage';
 
 export const eventOccurrencesAPI = {
   list: (productId) =>
@@ -43,9 +44,10 @@ export const eventOccurrencesAPI = {
   // 2026-05-20 — Accepts an optional ``config`` so callers can pass
   // ``{ signal: abortController.signal }`` and cancel the upload on
   // unmount / navigation (paired with useAbortableUpload).
-  uploadCoverImage: (occurrenceId, file, config = {}) => {
+  // PV1 — compressione client (WebP max 1600px) prima della FormData.
+  uploadCoverImage: async (occurrenceId, file, config = {}) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', await compressImage(file));
     return api.post(`/event-occurrences/${occurrenceId}/cover-image`, formData, {
       ...config,
       headers: {
