@@ -767,5 +767,10 @@
     "exploreRetreatsTitle": "Vivi un ritiro di {{cat}}",
     "exploreRetreatsBody": "Le date in programma, con prenotazione online e caparra protetta.",
     "exploreRetreatsCta": "Scopri i ritiri di {{cat}}"
+  },
+  "verifiedBadge": {
+    "label": "Verificato Aurya",
+    "short": "Verificato",
+    "tooltip": "Operatore intervistato e verificato dal team Aurya"
   }
 }

@@ -767,5 +767,10 @@
     "exploreRetreatsTitle": "Live a {{cat}} retreat",
     "exploreRetreatsBody": "Upcoming dates, with online booking and a protected deposit.",
     "exploreRetreatsCta": "Discover {{cat}} retreats"
+  },
+  "verifiedBadge": {
+    "label": "Aurya Verified",
+    "short": "Verified",
+    "tooltip": "Operator interviewed and verified by the Aurya team"
   }
 }

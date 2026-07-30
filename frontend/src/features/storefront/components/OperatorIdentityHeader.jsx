@@ -11,6 +11,7 @@
  */
 import React from 'react';
 import { Flower2 } from 'lucide-react';
+import VerifiedAuryaBadge from '../../../components/VerifiedAuryaBadge';
 
 export default function OperatorIdentityHeader({ data, t }) {
   const accent = data.brand_color || '#16281F';
@@ -35,11 +36,16 @@ export default function OperatorIdentityHeader({ data, t }) {
             <p className="text-white/90 mt-1">{data.tagline}</p>
           )}
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            {/* PV4 — slot badge "Verificato Aurya": qui, PRIMA di In
-                evidenza, quando interview_verified_at è presente.
-                Predisposto in PV3 perché la fila badge è unica per
-                profilo e pagina intervista. */}
-            <span data-testid="verified-badge-slot" className="hidden" aria-hidden />
+            {/* PV4 — badge "Verificato Aurya": PRIMA di In evidenza,
+                solo quando l'intervista è pubblicata (il payload espone
+                interview_verified_at soltanto in quel caso). La fila
+                badge è unica per profilo e pagina intervista: appare
+                su entrambe. */}
+            {data.interview_verified_at && (
+              <span data-testid="verified-badge-slot">
+                <VerifiedAuryaBadge variant="on-photo" size="md" />
+              </span>
+            )}
             {/* GT3 — badge dei piani "In evidenza" */}
             {data.featured && (
               <span className="rounded-full bg-white/25 backdrop-blur px-2.5 py-1 text-[11px] font-semibold">

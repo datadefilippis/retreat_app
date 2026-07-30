@@ -16,6 +16,7 @@ import { ArrowRight, Quote, MapPin } from 'lucide-react';
 import api from '../../api/client';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
+import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
 
 export default function NetworkOperatorsPage() {
   const { t } = useTranslation('landings');
@@ -107,6 +108,13 @@ export default function NetworkOperatorsPage() {
                       <h3 className="font-heading text-base font-semibold text-foreground group-hover:text-[#376254]">
                         {m.name}
                       </h3>
+                      {/* PV4 — il sigillo sotto il nome (on-light):
+                          intervista pubblicata dal system admin */}
+                      {m.verified && (
+                        <p className="mt-1">
+                          <VerifiedAuryaBadge variant="on-light" size="sm" />
+                        </p>
+                      )}
                       {m.tagline && (
                         <p className="text-sm text-muted-foreground mt-0.5 leading-snug">{m.tagline}</p>
                       )}

@@ -767,5 +767,10 @@
     "exploreRetreatsTitle": "Erlebe ein {{cat}} Retreat",
     "exploreRetreatsBody": "Kommende Termine, mit Online-Buchung und geschützter Anzahlung.",
     "exploreRetreatsCta": "Entdecke {{cat}} Retreats"
+  },
+  "verifiedBadge": {
+    "label": "Aurya-verifiziert",
+    "short": "Verifiziert",
+    "tooltip": "Vom Aurya-Team interviewter und verifizierter Anbieter"
   }
 }

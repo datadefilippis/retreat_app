@@ -22,6 +22,7 @@ const OperatorsMapView = React.lazy(() => import('./components/OperatorsMapView'
 
 import { Leaf, MapPin, SearchX } from 'lucide-react';
 import { Skeleton } from '../../components/ui/skeleton';
+import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
 
 // LM3 — l'URL parla italiano (?ordina=), l'API il gergo suo (sort=):
 // la mappa e' l'unico punto di traduzione.
@@ -111,11 +112,20 @@ function OperatorCard({ op, t, lang }) {
                className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04] ${op.sample ? 'blur-[3px] scale-105' : ''}`}
                loading="lazy" />
         )}
-        {/* GT3 — badge dei piani "In evidenza" anche nell'aggregatore */}
-        {op.featured && (
-          <span className="absolute top-2.5 right-2.5 rounded-full bg-[#376254] text-white px-2.5 py-1 text-[11px] font-semibold shadow">
-            ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
-          </span>
+        {/* PV4+GT3 — pillole di fiducia sulla cover: Verificato Aurya
+            PRIMA di In evidenza (ordine fisso ovunque); sm = glifo +
+            "Verificato" corto, la card mobile non si affolla */}
+        {(op.verified || op.featured) && (
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+            {op.verified && (
+              <VerifiedAuryaBadge variant="on-light" size="sm" className="shadow" />
+            )}
+            {op.featured && (
+              <span className="rounded-full bg-[#376254] text-white px-2.5 py-1 text-[11px] font-semibold shadow">
+                ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
+              </span>
+            )}
+          </div>
         )}
         <div className="absolute bottom-2.5 left-3 h-14 w-14 rounded-full border-2 border-white bg-white shadow-md overflow-hidden flex items-center justify-center">
           {op.logo_url
@@ -246,6 +256,12 @@ function OperatorCard({ op, t, lang }) {
         >
           <div className="overflow-hidden">
             <div className="rounded-xl border border-border bg-white divide-y divide-gray-100">
+              {/* PV4 — il sigillo anche nella vista rapida (on-light) */}
+              {op.verified && (
+                <div className="px-3 py-2">
+                  <VerifiedAuryaBadge variant="on-light" size="sm" />
+                </div>
+              )}
               {preview.map((row) => (
                 <div key={row.name} className="flex items-center gap-2 px-3 py-2">
                   <div className="min-w-0 flex-1">

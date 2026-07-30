@@ -3917,3 +3917,147 @@ class TestProfiloPv3:
         r = requests.get(f"{BASE_URL}/__seo/o/masseria-demo/intervista",
                          timeout=10)
         assert r.status_code == 200
+
+
+class TestProfiloPv4:
+    """PV4 (PROFILO_VERIFICATO_PIANO_2026-07) — badge "Verificato Aurya".
+
+    Guardie: /public/operators espone verified (bool, additivo) coerente
+    con interview_verified_at (pubblica → True, spubblica → False, mai
+    per i campioni), /network/members idem; componente VerifiedAuryaBadge
+    con le due varianti (on-photo blur / on-light ori brand) e il glifo
+    del logo esistente; montato e CONDIZIONATO nei 3 posti (hero
+    condiviso profilo+intervista, card marketplace + quick view, card
+    rete); ordine Verificato PRIMA di In evidenza; tooltip i18n x4.
+    """
+
+    UA = {"User-Agent": "Mozilla/5.0 (Macintosh) Chrome/126 Safari/537.36"}
+
+    BADGE = FRONTEND_SRC / "components" / "VerifiedAuryaBadge.jsx"
+    HEADER = (FRONTEND_SRC / "features" / "storefront" / "components"
+              / "OperatorIdentityHeader.jsx")
+    INDEX = FRONTEND_SRC / "features" / "storefront" / "OperatorsIndexPage.js"
+    NETWORK = FRONTEND_SRC / "features" / "network" / "NetworkOperatorsPage.js"
+
+    # ── helper: le due liste pubbliche, con verified sempre bool ─────
+
+    def _operators_items(self):
+        # preview=1: in pre-lancio la vetrina mostra i campioni (PL8),
+        # l'anteprima /esplora-operatori mostra gli operatori VERI
+        r = requests.get(f"{BASE_URL}/api/public/operators",
+                         params={"preview": 1}, headers=self.UA, timeout=10)
+        assert r.status_code == 200, r.text
+        items = r.json()["items"]
+        for i in items:
+            assert isinstance(i.get("verified"), bool), i.get("org_slug")
+        return items
+
+    def _members_items(self):
+        r = requests.get(f"{BASE_URL}/api/public/network/members",
+                         headers=self.UA, timeout=10)
+        assert r.status_code == 200, r.text
+        items = r.json()["items"]
+        for i in items:
+            assert isinstance(i.get("verified"), bool), i.get("slug")
+        return items
+
+    def _demo_rows(self, org_name):
+        ops = [i for i in self._operators_items() if i["name"] == org_name]
+        mem = [i for i in self._members_items()
+               if i["slug"] == "masseria-demo"]
+        return (ops[0] if ops else None), (mem[0] if mem else None)
+
+    # ── 1. HTTP: verified segue pubblica/spubblica dell'intervista ───
+
+    def test_verified_follows_interview_publication(self):
+        P = TestProfiloPv2
+        sys_h = P._sys_headers()
+        org_id = P._org_id()
+        r = requests.get(f"{BASE_URL}/api/organizations/current",
+                         headers=P._op_headers(), timeout=10)
+        assert r.status_code == 200
+        org_name = r.json()["name"]
+        db = P._db()
+        snap = P._snapshot_interview(db, org_id)
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/interview"
+        body = {"items": [{"question": "Guardia PV4?",
+                           "answer": "Il badge segue il timbro."}],
+                "published": True}
+        try:
+            # PUBBLICA → verified True su entrambe le liste
+            r = requests.put(url, headers=sys_h, json=body, timeout=10)
+            assert r.status_code == 200, r.text
+            assert r.json()["verified_at"]
+            op_row, mem_row = self._demo_rows(org_name)
+            assert op_row is not None, "org demo assente da /public/operators"
+            assert op_row["verified"] is True
+            # nessun campione porta mai il sigillo (identita' redatta)
+            for i in self._operators_items():
+                if i.get("sample"):
+                    assert i["verified"] is False
+            if mem_row:
+                assert mem_row["verified"] is True
+
+            # SPUBBLICA → timbro azzerato, verified False ovunque
+            body["published"] = False
+            r = requests.put(url, headers=sys_h, json=body, timeout=10)
+            assert r.status_code == 200
+            assert r.json()["verified_at"] is None
+            op_row, mem_row = self._demo_rows(org_name)
+            assert op_row is not None
+            assert op_row["verified"] is False
+            if mem_row:
+                assert mem_row["verified"] is False
+        finally:
+            P._restore_interview(db, org_id, snap)
+
+    # ── 2. componente: varianti, glifo del logo, accessibilita' ─────
+
+    def test_badge_component_variants_and_glyph(self):
+        comp = self.BADGE.read_text()
+        assert "on-photo" in comp and "on-light" in comp
+        assert "backdrop-blur" in comp                # variante su foto
+        assert "#8a7440" in comp and "#cbb578" in comp  # ori brand
+        assert "logo-aurya" in comp                   # glifo dal logo, no asset nuovi
+        assert "aria-label" in comp and "title=" in comp
+        assert "verifiedBadge.tooltip" in comp
+
+    # ── 3. montato e CONDIZIONATO nei 3 posti ────────────────────────
+
+    def test_badge_mounted_and_gated_everywhere(self):
+        header = self.HEADER.read_text()
+        assert "VerifiedAuryaBadge" in header
+        assert "data.interview_verified_at &&" in header   # mai incondizionato
+        assert "verified-badge-slot" in header
+
+        index = self.INDEX.read_text()
+        assert "VerifiedAuryaBadge" in index
+        assert "op.verified &&" in index
+        # anche nella vista rapida (due montaggi nella card)
+        assert index.count("<VerifiedAuryaBadge") >= 2
+
+        network = self.NETWORK.read_text()
+        assert "VerifiedAuryaBadge" in network
+        assert "m.verified &&" in network
+
+    # ── 4. ordine: Verificato PRIMA di In evidenza (hero e card) ─────
+
+    def test_verified_before_featured(self):
+        header = self.HEADER.read_text()
+        assert (header.index("VerifiedAuryaBadge", header.index("return"))
+                < header.index("calendar.featured"))
+        index = self.INDEX.read_text()
+        card = index[index.index("function OperatorCard"):]
+        assert card.index("<VerifiedAuryaBadge") < card.index("calendar.featured")
+
+    # ── 5. tooltip e testi i18n x4 ───────────────────────────────────
+
+    def test_badge_i18n_x4(self):
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads(
+                (FRONTEND_SRC / "locales" / lang / "landings.json")
+                .read_text())
+            vb = data.get("verifiedBadge") or {}
+            for key in ("label", "short", "tooltip"):
+                assert vb.get(key), f"{lang}: verifiedBadge.{key} mancante"

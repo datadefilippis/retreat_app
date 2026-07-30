@@ -767,5 +767,10 @@
     "exploreRetreatsTitle": "Vis une retraite de {{cat}}",
     "exploreRetreatsBody": "Les dates à venir, avec réservation en ligne et acompte protégé.",
     "exploreRetreatsCta": "Découvre les retraites de {{cat}}"
+  },
+  "verifiedBadge": {
+    "label": "Vérifié Aurya",
+    "short": "Vérifié",
+    "tooltip": "Opérateur interviewé et vérifié par l'équipe Aurya"
   }
 }

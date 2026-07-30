@@ -3907,6 +3907,11 @@ async def public_network_members():
             # restano in DB ma non sono più pubbliche)
             "has_interview": bool(pp.get("interview_published")
                                   and pp.get("interview")),
+            # PV4 — badge "Verificato Aurya": timbro apposto dal system
+            # admin alla pubblicazione dell'intervista (PV2), azzerato
+            # allo spublica. Campo additivo: la card lo rende come pillola.
+            "verified": bool(pp.get("interview_published")
+                             and pp.get("interview_verified_at")),
             "services_count": svc_count,
             "price_from": price_from,
             "reviews_stats": o.get("reviews_stats"),
@@ -4182,6 +4187,13 @@ async def public_operators_index(
             "regions": sorted(b["regions"] | prof_regions),
             # GT3 — priorita' nell'aggregatore per i piani featured
             "featured": bool(org.get("directory_featured")),
+            # PV4 — badge "Verificato Aurya" sulla card: intervista
+            # pubblicata dal system admin (interview_verified_at, la
+            # stessa verita' del profilo /o/). Mai per i campioni:
+            # identita' redatta, nessun sigillo. Campo additivo.
+            "verified": (False if _is_sample else
+                         bool(pp.get("interview_published")
+                              and pp.get("interview_verified_at"))),
             # PL3 — il frontend sfoca la card e disabilita il click
             "sample": _is_sample,
             # LM2 — fiducia e prezzi sulla card: rating {avg, count},
