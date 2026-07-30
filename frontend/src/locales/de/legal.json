@@ -148,6 +148,7 @@
     "not_configured_body": "Der Shop schließt gerade die rechtliche Konfiguration ab.",
     "contact_merchant": "Kontakt:",
     "binding_locale_label": "Rechtlich verbindliche Sprache:",
+    "binding_note": "Höflichkeitsübersetzung: massgebend ist die Fassung auf {{language}}.",
     "see_terms": "AGB ansehen",
     "see_privacy": "Datenschutzerklärung ansehen",
     "contact_label": "Shop kontaktieren",

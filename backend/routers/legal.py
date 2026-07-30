@@ -454,12 +454,23 @@ def _build_autogen_template_vars(store: dict) -> "TemplateVars":
     il merchant puo' successivamente personalizzarla pubblicandone una
     propria.
 
-    Strategia campi:
-      - Se ``merchant_legal_template_vars`` gia' valorizzato (wizard
-        admin partially-completed), lo riusiamo come baseline → vince
-        sul fallback derivato dallo store doc.
-      - Altrimenti derivati dal store doc (name, contact_email,
-        country, ecc.).
+    Strategia campi — PS5 (30/7/2026), PRECEDENZA INVERTITA sui campi
+    IDENTITARI:
+      - nome / email / paese del titolare: vincono SEMPRE i dati
+        correnti del store doc (name, contact_email, country). I
+        ``merchant_legal_template_vars`` salvati dal vecchio wizard
+        restano solo come fallback quando il campo corrente e' vuoto.
+        Motivo: dati stantii tipo "test / dav@gmail.com / iitallia"
+        salvati una volta nel wizard vincevano per sempre sui dati veri
+        dello store. Il mini-form "Dati del titolare" scrive sul store
+        doc, quindi questa precedenza rende l'autogen sempre coerente.
+      - flag di raccolta dati (collects_*, uses_marketing, ships_to_eu):
+        restano dai template_vars salvati se presenti, altrimenti
+        derivati dallo store (comportamento pre-PS5).
+      - campi platform_*: SEMPRE i default di piattaforma correnti
+        (core/brand.py via TemplateVars) — sono identita' di Aurya, non
+        contenuto del merchant; cosi' un "afianco" salvato ieri non
+        esce piu' nei documenti di oggi.
 
     Note: questa funzione e' PURE (no DB), defensive ai field mancanti
     (TemplateVars accetta empty string default su tutti).
@@ -467,17 +478,14 @@ def _build_autogen_template_vars(store: dict) -> "TemplateVars":
     from services.merchant_legal_template_service import TemplateVars
 
     saved = store.get("merchant_legal_template_vars") or {}
-    if isinstance(saved, dict) and saved:
-        try:
-            return TemplateVars(**saved)
-        except Exception:
-            # Saved dict corrupt → fall through al fallback store-derived
-            pass
+    if not isinstance(saved, dict):
+        saved = {}
 
     # Derivazione defensive dai field del store:
     #   - store_name + merchant_name fall-back uno sull'altro
-    #   - country: contact_country / billing_country / "" (template ha
-    #     placeholder leggibile se vuoto)
+    #   - country: store.country (mini-form PS5) / billing_country /
+    #     store_settings.country / "" (template ha placeholder leggibile
+    #     se vuoto)
     store_settings = store.get("store_settings") or {}
     name = store.get("name") or store_settings.get("display_name") or ""
     email = store.get("contact_email") or store_settings.get("contact_email") or ""
@@ -489,17 +497,41 @@ def _build_autogen_template_vars(store: dict) -> "TemplateVars":
     )
     fulfillment_modes = store.get("fulfillment_modes") or []
     collects_shipping = "shipping" in fulfillment_modes
-    return TemplateVars(
-        merchant_name=name,
-        merchant_email=email,
-        merchant_country=country,
-        store_name=name,
-        store_country=country,
-        collects_phone=False,
-        collects_shipping_address=collects_shipping,
-        uses_marketing=False,
-        ships_to_eu=collects_shipping,  # conservative default
-    )
+
+    def _flag(key: str, default: bool) -> bool:
+        v = saved.get(key)
+        return bool(v) if isinstance(v, bool) else default
+
+    try:
+        return TemplateVars(
+            # Identita' del titolare: store doc corrente > template_vars
+            merchant_name=name or str(saved.get("merchant_name") or ""),
+            merchant_email=email or str(saved.get("merchant_email") or ""),
+            merchant_country=country or str(saved.get("merchant_country") or ""),
+            store_name=name or str(saved.get("store_name") or ""),
+            store_country=country or str(saved.get("store_country") or ""),
+            # Flag di raccolta: template_vars salvati > derivazione store
+            collects_phone=_flag("collects_phone", False),
+            collects_shipping_address=_flag(
+                "collects_shipping_address", collects_shipping
+            ),
+            uses_marketing=_flag("uses_marketing", False),
+            ships_to_eu=_flag("ships_to_eu", collects_shipping),
+            # platform_*: NON passati → default di piattaforma correnti
+            # (core/brand.py), mai i valori salvati.
+        )
+    except Exception:
+        # Valori salvati fuori misura (max_length) o corrotti → solo
+        # dati correnti dello store, zero template_vars.
+        return TemplateVars(
+            merchant_name=name,
+            merchant_email=email,
+            merchant_country=country,
+            store_name=name,
+            store_country=country,
+            collects_shipping_address=collects_shipping,
+            ships_to_eu=collects_shipping,
+        )
 
 
 def _render_autogen_fallback(store: dict, doc_type: str, locale: str) -> str:
@@ -524,22 +556,48 @@ def _render_autogen_fallback(store: dict, doc_type: str, locale: str) -> str:
 def _public_doc_envelope(
     store: dict,
     doc_type: str,
+    requested_lang: Optional[str] = None,
 ) -> dict:
     """Build the public JSON envelope for one merchant legal document.
 
     Pure function — no DB access. Always returns a 200-ready dict; the
     caller wraps it in JSONResponse with cache headers.
 
+    Locale model — PS5 (30/7/2026), multilingua:
+      - ``binding_locale`` = lingua di riferimento legale = display
+        locale attuale dello store (storefront_languages[0] via
+        get_effective_display_locale). E' SEMPRE nell'envelope.
+      - ``requested_lang`` (query ?lang=) e' un override di CORTESIA:
+        con lang valido serviamo il documento nella lingua dell'utente
+        quando possibile; fa comunque fede la versione binding_locale
+        (il frontend mostra "Fa fede la versione in X" quando la lingua
+        servita differisce).
+      - AUTOGEN (not_configured / draft / content drift): si renderizza
+        direttamente nella lingua richiesta — i template esistono x4.
+      - CUSTOM pubblicato (published / stale_draft): il custom esiste
+        solo nelle lingue effettivamente scritte dal merchant. Serviamo
+        il custom nella lingua richiesta SE il relativo slot ha
+        contenuto; altrimenti comportamento pre-PS5 (custom nella
+        binding_locale). Scelta deliberata: mai mescolare autogen e
+        custom per lo stesso store — chi ha pubblicato documenti propri
+        resta servito SOLO dal suo envelope (nessuna migrazione), e il
+        versioning hash (che copre solo il bundle binding) resta
+        intatto.
+      - lang assente o invalido → default = comportamento pre-PS5
+        (binding_locale).
+
     The envelope contract is stable for the frontend:
-      content            : raw markdown of the published display_locale
-                           document. Quando il merchant non ha pubblicato
-                           (status=not_configured | draft), Track E Step
-                           7.5 popola questo campo con un FALLBACK
+      content            : raw markdown of the served document. Quando
+                           il merchant non ha pubblicato (status=
+                           not_configured | draft), Track E Step 7.5
+                           popola questo campo con un FALLBACK
                            auto-generato dal template merchant standard
-                           pre-fillato con i dati anagrafici store. Cosi'
-                           il customer vede SEMPRE un'informativa
-                           consultabile al momento del consenso GDPR.
-      display_locale     : the locale customers actually see (or null)
+                           pre-fillato con i dati anagrafici store.
+      display_locale     : the locale ACTUALLY SERVED to this customer
+                           (or null) — puo' differire da binding_locale
+                           quando ?lang= e' onorato
+      binding_locale     : lingua di riferimento legale (or null)
+      locale_requested   : passthrough del ?lang= validato (or null)
       status             : "not_configured" | "draft" | "published" |
                            "stale_draft" — see merchant_legal_versioning
       is_autogenerated   : bool — true quando content e' il fallback
@@ -556,7 +614,7 @@ def _public_doc_envelope(
     """
     from services.merchant_legal_versioning import (
         merchant_legal_status, current_version_string,
-        get_effective_display_locale,
+        get_effective_display_locale, SUPPORTED_LOCALES,
     )
 
     # CG-3-Polish-3 (2026-05-18 late evening) — resolve the
@@ -566,11 +624,23 @@ def _public_doc_envelope(
     # public endpoint sees `display=None` and serves empty content.
     # Bug reported by user: "privacy/T&C non si vedono più nel
     # commerce frontend".
-    display = get_effective_display_locale(store)
+    binding = get_effective_display_locale(store)
+    # Difensivo: nei test unit l'endpoint si chiama come funzione e
+    # ``lang`` arriva come oggetto Query di default — tutto cio' che
+    # non e' una stringa in SUPPORTED_LOCALES equivale a "nessun
+    # override".
+    requested = None
+    if isinstance(requested_lang, str):
+        candidate = requested_lang.strip().lower()
+        if candidate in SUPPORTED_LOCALES:
+            requested = candidate
+    # Lingua bersaglio: richiesta valida > binding
+    target = requested or binding
+    served = binding
     status_value = merchant_legal_status(store)
     is_autogenerated = False
 
-    if status_value in ("published", "stale_draft") and display:
+    if status_value in ("published", "stale_draft") and binding:
         # For stale_draft we'd ideally serve the SNAPSHOT at last
         # publish_at — but CG-1 doesn't keep the snapshot. For CG-2 we
         # serve the current display-locale content. This is acceptable
@@ -580,13 +650,27 @@ def _public_doc_envelope(
         # (c) once they publish the version bumps and the customer
         # re-consents. A future CG-N can persist the snapshot at
         # publish-time if we want strict immutability.
-        field = f"merchant_{doc_type}_content_{display}"
-        content = store.get(field) or ""
+        #
+        # PS5 — cortesia multilingua sul custom: se il merchant ha
+        # scritto anche la lingua richiesta, serviamo quella; il
+        # versioning/hash resta ancorato al bundle binding_locale.
+        content = ""
+        if target and target != binding:
+            content = store.get(
+                f"merchant_{doc_type}_content_{target}"
+            ) or ""
+            if content:
+                served = target
+        if not content:
+            field = f"merchant_{doc_type}_content_{binding}"
+            content = store.get(field) or ""
+            served = binding
         # Edge case difensivo: status=published ma field vuoto (data
         # drift — un publish riuscito senza content non dovrebbe
         # capitare ma proteggiamo comunque il customer).
         if not content:
-            content = _render_autogen_fallback(store, doc_type, display or "it")
+            served = target or binding or "it"
+            content = _render_autogen_fallback(store, doc_type, served)
             is_autogenerated = bool(content)
     else:
         # Track E Step 7.5 — Auto-fallback per not_configured + draft.
@@ -596,13 +680,17 @@ def _public_doc_envelope(
         # momento del consenso). Post-fix: rendiamo il template default
         # pre-fillato con i dati anagrafici store cosi' il customer ha
         # SEMPRE un'informativa GDPR-compliant da leggere.
-        fallback_locale = display or "it"
-        content = _render_autogen_fallback(store, doc_type, fallback_locale)
+        # PS5 — nella LINGUA RICHIESTA quando c'e' (i template x4
+        # esistono sempre), altrimenti binding, ultima spiaggia "it".
+        served = target or "it"
+        content = _render_autogen_fallback(store, doc_type, served)
         is_autogenerated = bool(content)
 
     return {
         "content": content,
-        "display_locale": display,
+        "display_locale": served if content else binding,
+        "binding_locale": binding,
+        "locale_requested": requested,
         "status": status_value,
         # Track E Step 7.5 — bandiera per il frontend (mostra banner
         # informativo "documento auto-generato, contatta merchant per
@@ -645,10 +733,15 @@ def _cache_headers_for_envelope(envelope: dict) -> dict:
     vs = envelope.get("version_string")
     status_v = envelope.get("status") or "unknown"
     is_auto = envelope.get("is_autogenerated", False)
+    # PS5 — la lingua SERVITA entra nel seed: con ?lang= lo stesso
+    # version_string puo' corrispondere a contenuti in lingue diverse
+    # (custom multilingua di cortesia). L'URL varia gia' per query
+    # param, ma l'ETag deve restare univoco per rappresentazione.
+    served = envelope.get("display_locale") or "-"
     # ETag format: "<status>:<version_or_state>" + hash content se autogen
     # The wrapping quotes are required by RFC 7232.
     if vs:
-        etag_seed = f"{status_v}:{vs}"
+        etag_seed = f"{status_v}:{vs}:{served}"
     elif is_auto:
         # Auto-gen content non ha version → usiamo hash16 del content
         # cosi' cache invalida quando merchant cambia name/email/lingua
@@ -667,10 +760,22 @@ def _cache_headers_for_envelope(envelope: dict) -> dict:
 
 
 @router.get("/storefront/{slug}/privacy")
-async def get_storefront_privacy(slug: str):
-    """Return the merchant's published Privacy Policy for this storefront.
+async def get_storefront_privacy(
+    slug: str,
+    lang: Optional[str] = Query(
+        default=None,
+        description=(
+            "PS5 — lingua richiesta (it, en, de, fr). Con lang valido "
+            "l'informativa autogenerata si serve in quella lingua; fa "
+            "comunque fede la versione in binding_locale. Assente o "
+            "invalido → lingua di riferimento dello store."
+        ),
+    ),
+):
+    """Return the merchant's Privacy Policy for this storefront.
 
-    Public, no auth. See module docstring for the behaviour matrix.
+    Public, no auth. See ``_public_doc_envelope`` for the locale model
+    and the module docstring for the behaviour matrix.
 
     NOTE: even when the merchant has not yet configured their docs, we
     return 200 with status="not_configured" + an empty content. The
@@ -684,7 +789,7 @@ async def get_storefront_privacy(slug: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Store not found",
         )
-    envelope = _public_doc_envelope(store, "privacy")
+    envelope = _public_doc_envelope(store, "privacy", requested_lang=lang)
     return JSONResponse(
         content=envelope,
         headers=_cache_headers_for_envelope(envelope),
@@ -692,8 +797,16 @@ async def get_storefront_privacy(slug: str):
 
 
 @router.get("/storefront/{slug}/terms")
-async def get_storefront_terms(slug: str):
-    """Return the merchant's published Terms of Service for this storefront.
+async def get_storefront_terms(
+    slug: str,
+    lang: Optional[str] = Query(
+        default=None,
+        description=(
+            "PS5 — lingua richiesta (it, en, de, fr). Vedi /privacy."
+        ),
+    ),
+):
+    """Return the merchant's Terms of Service for this storefront.
 
     Same envelope shape and not-found behaviour as the privacy endpoint.
     """
@@ -703,7 +816,7 @@ async def get_storefront_terms(slug: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Store not found",
         )
-    envelope = _public_doc_envelope(store, "terms")
+    envelope = _public_doc_envelope(store, "terms", requested_lang=lang)
     return JSONResponse(
         content=envelope,
         headers=_cache_headers_for_envelope(envelope),
@@ -854,6 +967,9 @@ async def _load_dpa_vars(current_user: dict) -> dict:
     )
     today_iso = datetime.now(timezone.utc).date().isoformat()
 
+    # PS5 — brand da core/brand.py (fonte unica), niente piu' "afianco"
+    from core.brand import BRAND_NAME, BRAND_SUPPORT_EMAIL
+
     return {
         "merchant_name": merchant_name,
         "merchant_email": merchant_email,
@@ -861,9 +977,9 @@ async def _load_dpa_vars(current_user: dict) -> dict:
         "org_id": org_id,
         "date": today_iso,
         # Platform side — same defaults as merchant_legal_template_service.
-        "platform_name": "afianco",
+        "platform_name": BRAND_NAME,
         "platform_controller_name": "Davide De Filippis",
-        "platform_controller_email": "info@aurya.life",
+        "platform_controller_email": BRAND_SUPPORT_EMAIL,
         "platform_controller_country": "Switzerland",
     }
 

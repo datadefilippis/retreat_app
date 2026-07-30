@@ -7,13 +7,16 @@
  * status + version metadata — and the only divergence is the doc type
  * and the i18n keys for the title.
  *
- * Locale model (CG-1 cornerstone)
+ * Locale model (PS5, 30/7/2026 — supera il cornerstone CG-1)
  * -------------------------------
- * The MERCHANT chose ONE ``display_locale`` in their admin GDPR tab.
- * That locale is what we render here — regardless of the visitor's
- * browser language. We display a small "Legally binding language: XX"
- * note so the customer understands why they see (e.g.) German content
- * on a storefront they reached with an Italian browser.
+ * La pagina chiede al backend il documento nella LINGUA UTENTE
+ * (i18n.language → ?lang=): l'informativa autogenerata esiste x4
+ * lingue, quindi l'utente italiano legge italiano anche su uno store
+ * con lingua primaria inglese. Fa comunque fede la versione in
+ * ``binding_locale`` (la lingua di riferimento dello store): quando la
+ * lingua servita differisce, mostriamo la riga "Fa fede la versione
+ * in X". I documenti CUSTOM pubblicati esistono solo nelle lingue
+ * scritte dal merchant: lingua richiesta se c'e', altrimenti binding.
  *
  * Empty / not-configured fallback
  * -------------------------------
@@ -44,11 +47,16 @@ const LOCALE_LABELS = {
 
 function StorefrontLegalPage({ docType }) {
   const { slug } = useParams();
-  const { t } = useTranslation('legal');
+  const { t, i18n } = useTranslation('legal');
 
   const [doc, setDoc] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // PS5 — lingua utente corrente, normalizzata a 2 lettere ("it-IT" →
+  // "it"). Il backend valida: un valore fuori dalle 4 lingue supportate
+  // equivale a nessun override (si serve la lingua dello store).
+  const userLang = (i18n.language || '').slice(0, 2).toLowerCase();
 
   useEffect(() => {
     let active = true;
@@ -57,7 +65,7 @@ function StorefrontLegalPage({ docType }) {
     const fetcher = docType === 'terms'
       ? fetchStorefrontTerms
       : fetchStorefrontPrivacy;
-    fetcher(slug)
+    fetcher(slug, userLang || undefined)
       .then((data) => {
         if (active) {
           setDoc(data);
@@ -73,7 +81,7 @@ function StorefrontLegalPage({ docType }) {
     return () => {
       active = false;
     };
-  }, [slug, docType]);
+  }, [slug, docType, userLang]);
 
   // Header + breadcrumbs reused across both states (loading, error,
   // success). Storefront link is the user's escape route back to the shop.
@@ -249,22 +257,37 @@ function StorefrontLegalPage({ docType }) {
           </div>
         )}
 
-        {doc.display_locale && doc.content && (
-          <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
-            <Globe className="h-4 w-4" />
-            <span>
-              {t(
-                'storefront_legal.binding_locale_label',
-                'Lingua di riferimento legale:'
-              )}{' '}
-              <strong>
-                {LOCALE_LABELS[doc.display_locale] || doc.display_locale.toUpperCase()}
-              </strong>
-            </span>
-            {doc.version_tag && (
-              <span className="ml-auto text-muted-foreground/70">
-                v: {doc.version_tag}
+        {(doc.binding_locale || doc.display_locale) && doc.content && (
+          <div className="mt-6 space-y-1.5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              <span>
+                {t(
+                  'storefront_legal.binding_locale_label',
+                  'Lingua di riferimento legale:'
+                )}{' '}
+                <strong>
+                  {LOCALE_LABELS[doc.binding_locale || doc.display_locale]
+                    || (doc.binding_locale || doc.display_locale).toUpperCase()}
+                </strong>
               </span>
+              {doc.version_tag && (
+                <span className="ml-auto text-muted-foreground/70">
+                  v: {doc.version_tag}
+                </span>
+              )}
+            </div>
+            {/* PS5 — il documento e' servito nella lingua utente ma fa
+                fede la versione nella lingua di riferimento dello store */}
+            {doc.binding_locale && doc.display_locale
+              && doc.display_locale !== doc.binding_locale && (
+              <p data-testid="binding-locale-note">
+                {t('storefront_legal.binding_note', {
+                  defaultValue: 'Traduzione di cortesia: fa fede la versione in {{language}}.',
+                  language: LOCALE_LABELS[doc.binding_locale]
+                    || doc.binding_locale.toUpperCase(),
+                })}
+              </p>
             )}
           </div>
         )}

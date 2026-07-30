@@ -1,10 +1,5 @@
 # Informativa sulla Privacy — {{store_name}}
 
-**Versione:** v1.0 (bozza)
-**Lingua di riferimento legale:** italiano
-
-> Questa è la versione mostrata a tutti i clienti dello store, indipendentemente dalla loro lingua di navigazione. La versione italiana è quella legalmente vincolante per interpretazione.
-
 ---
 
 ## 1. Chi siamo (Titolare del trattamento)
@@ -83,7 +78,7 @@ I tuoi dati possono essere trattati dai seguenti soggetti, che agiscono come nos
 | **Stripe Payments Europe Ltd.** | Irlanda | Elaborazione pagamenti | UE/SEE (Stripe Payments Europe) |
 | *Se applicabile:* **Brevo SAS** | Francia | Invio email transazionali | UE/SEE |
 
-Per la lista completa e sempre aggiornata dei sub-responsabili della piattaforma {{platform_name}} consulta: https://afianco.app/legal/sub-processors
+Per la lista completa e sempre aggiornata dei sub-responsabili della piattaforma {{platform_name}} consulta: https://aurya.life/legal/sub-processors
 
 I tuoi dati **NON** vengono venduti né condivisi a fini di marketing con terze parti.
 

@@ -1,10 +1,5 @@
 # Allgemeine Geschäftsbedingungen — {{store_name}}
 
-**Version:** v1.0 (Entwurf)
-**Rechtlich verbindliche Sprache:** Italienisch
-
-> Diese Version wird ALLEN Kunden des Shops angezeigt, unabhängig von ihrer Browsersprache. Die italienische Fassung ist die rechtlich verbindliche Auslegungsversion.
-
 ---
 
 ## 1. Präambel und Annahme

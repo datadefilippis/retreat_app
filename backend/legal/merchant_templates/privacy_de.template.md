@@ -1,10 +1,5 @@
 # Datenschutzerklärung — {{store_name}}
 
-**Version:** v1.0 (Entwurf)
-**Rechtlich verbindliche Sprache:** Italienisch
-
-> Diese Version wird ALLEN Kunden des Shops angezeigt, unabhängig von ihrer Browsersprache. Die italienische Fassung ist die rechtlich verbindliche Auslegungsversion.
-
 ---
 
 ## 1. Wer wir sind (Verantwortlicher)
@@ -83,7 +78,7 @@ Ihre Daten können von folgenden Stellen verarbeitet werden, die als unsere Unte
 | **Stripe Payments Europe Ltd.** | Irland | Zahlungsabwicklung | EU/EWR |
 | *Falls anwendbar:* **Brevo SAS** | Frankreich | Versand transaktionaler E-Mails | EU/EWR |
 
-Die vollständige und stets aktuelle Liste der Unter-Auftragsverarbeiter der Plattform {{platform_name}} finden Sie unter: https://afianco.app/legal/sub-processors
+Die vollständige und stets aktuelle Liste der Unter-Auftragsverarbeiter der Plattform {{platform_name}} finden Sie unter: https://aurya.life/legal/sub-processors
 
 Ihre Daten werden **NICHT** verkauft oder zu Marketingzwecken an Dritte weitergegeben.
 

@@ -148,6 +148,7 @@
     "not_configured_body": "Il negozio sta completando la configurazione legale.",
     "contact_merchant": "Contatto:",
     "binding_locale_label": "Lingua di riferimento legale:",
+    "binding_note": "Traduzione di cortesia: fa fede la versione in {{language}}.",
     "see_terms": "Vedi i Termini e Condizioni",
     "see_privacy": "Vedi l'Informativa sulla Privacy",
     "contact_label": "Contatta il negozio",

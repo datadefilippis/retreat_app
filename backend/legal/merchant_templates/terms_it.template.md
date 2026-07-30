@@ -1,10 +1,5 @@
 # Termini e Condizioni — {{store_name}}
 
-**Versione:** v1.0 (bozza)
-**Lingua di riferimento legale:** italiano
-
-> Questa è la versione mostrata a tutti i clienti dello store, indipendentemente dalla loro lingua di navigazione. La versione italiana è quella legalmente vincolante per interpretazione.
-
 ---
 
 ## 1. Premessa e accettazione

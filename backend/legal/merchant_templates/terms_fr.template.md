@@ -1,10 +1,5 @@
 # Conditions générales d'utilisation — {{store_name}}
 
-**Version :** v1.0 (brouillon)
-**Langue juridiquement contraignante :** italien
-
-> Cette version est affichée à TOUS les clients du magasin, indépendamment de leur langue de navigation. La version italienne est celle qui prévaut juridiquement pour l'interprétation.
-
 ---
 
 ## 1. Préambule et acceptation

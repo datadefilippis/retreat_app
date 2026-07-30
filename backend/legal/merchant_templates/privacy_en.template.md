@@ -1,10 +1,5 @@
 # Privacy Policy — {{store_name}}
 
-**Version:** v1.0 (draft)
-**Legal reference language:** Italian
-
-> This version is shown to ALL customers of the store, regardless of their browsing language. The Italian version is the legally binding one for interpretation purposes.
-
 ---
 
 ## 1. Who we are (Data Controller)
@@ -83,7 +78,7 @@ Your data may be processed by the following parties acting as our sub-processors
 | **Stripe Payments Europe Ltd.** | Ireland | Payment processing | EU/EEA |
 | *If applicable:* **Brevo SAS** | France | Sending transactional emails | EU/EEA |
 
-For the complete and always up-to-date list of sub-processors of the {{platform_name}} platform, see: https://afianco.app/legal/sub-processors
+For the complete and always up-to-date list of sub-processors of the {{platform_name}} platform, see: https://aurya.life/legal/sub-processors
 
 Your data is **NOT** sold or shared with third parties for marketing purposes.
 

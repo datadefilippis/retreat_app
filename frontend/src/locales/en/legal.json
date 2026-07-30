@@ -148,6 +148,7 @@
     "not_configured_body": "The store is completing its legal setup.",
     "contact_merchant": "Contact:",
     "binding_locale_label": "Legal reference language:",
+    "binding_note": "Courtesy translation: the {{language}} version prevails.",
     "see_terms": "See the Terms and Conditions",
     "see_privacy": "See the Privacy Policy",
     "contact_label": "Contact the store",

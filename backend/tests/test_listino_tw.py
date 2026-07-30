@@ -340,10 +340,10 @@ class TestPattiChiariRS3:
 
     def test_conditions_card_in_settings(self):
         """Raggiungibile nel mondo snello: vive in Impostazioni, non
-        dentro Stores."""
+        dentro Stores. (PS5: l'editor legale custom non e' piu' qui —
+        vedi TestPotaturaPs5 — ma la politica di cancellazione resta.)"""
         card = (FRONTEND_SRC / "features" / "settings" / "sections"
                 / "SalesConditionsCard.jsx").read_text()
-        assert "MerchantLegalDialog" in card
         assert "default_cancellation_policy" in card
         settings = (FRONTEND_SRC / "features" / "settings"
                     / "SettingsPage.js").read_text()
@@ -1950,8 +1950,10 @@ class TestAccountApL:
         card = (FRONTEND_SRC / "features" / "settings" / "sections"
                 / "SalesConditionsCard.jsx").read_text()
         assert "Condizioni dell'operatore" in card
-        assert "MerchantLegalDialog" in card          # retrocompatibilita'
-        assert 'data-testid="advanced-legal-toggle"' in card
+        # PS5: l'editor legale custom e' congelato fuori dal mondo
+        # snello (vive solo in /stores e /newsletter-forms); al suo
+        # posto il mini-form titolare (vedi TestPotaturaPs5)
+        assert 'data-testid="owner-data-form"' in card
         assert 'data-testid="service-requirements-hint"' in card
 
     # ── 7. testi Aurya estesi (bozza) + versioning coerente ──────────
@@ -2875,3 +2877,144 @@ class TestPotaturaPs4:
         assert "Passaporto" not in shell
         # App.js: resta solo il commento storico P3 (nessuna new entry)
         assert self.APP.read_text().count("Passaporto") <= 1
+
+
+class TestPotaturaPs5:
+    """PS5 (30/7/2026) — consolidamento GDPR operatore
+    (docs/POTATURA_STORE_PIANO_2026-07.md, onda PS5).
+
+    L'operatore NON scrive privacy: documenti Aurya + informativa
+    autogenerata multilingua + le sue condizioni. L'editor custom
+    (MerchantLegalDialog) resta raggiungibile SOLO dal mondo legacy
+    (/stores, /newsletter-forms); gli endpoint storefront legal
+    accettano ?lang= e espongono binding_locale; i dati anagrafici
+    correnti dello store vincono sui template_vars stantii; il DPA
+    art. 28 e' in superficie in SalesConditionsCard.
+    """
+
+    CARD = (FRONTEND_SRC / "features" / "settings" / "sections"
+            / "SalesConditionsCard.jsx")
+
+    def test_ps5_storefront_privacy_multilingua(self):
+        """masseria-demo (org demo, nessun legal custom PUBBLICATO,
+        binding EN da storefront_languages) risponde nella lingua
+        richiesta: autogen x4."""
+        base = f"{BASE_URL}/api/legal/storefront/masseria-demo/privacy"
+        r_en = requests.get(base, params={"lang": "en"}, timeout=10)
+        assert r_en.status_code == 200
+        d_en = r_en.json()
+        assert d_en["display_locale"] == "en"
+        assert "Data Controller" in d_en["content"]
+        r_it = requests.get(base, params={"lang": "it"}, timeout=10)
+        d_it = r_it.json()
+        assert d_it["display_locale"] == "it"
+        assert "Titolare del trattamento" in d_it["content"]
+        # binding_locale sempre presente e uguale nelle due risposte
+        assert d_en["binding_locale"] == d_it["binding_locale"]
+        assert d_it["binding_locale"] in ("it", "en", "de", "fr")
+        # lang invalido → default (comportamento pre-PS5)
+        r_bad = requests.get(base, params={"lang": "xx"}, timeout=10)
+        d_bad = r_bad.json()
+        assert d_bad["locale_requested"] is None
+        assert d_bad["display_locale"] == d_bad["binding_locale"]
+
+    def test_ps5_dati_titolare_correnti_vincono(self):
+        """La precedenza e' invertita SOLO sui campi identitari: i dati
+        correnti dello store doc battono i template_vars stantii; i
+        flag di raccolta restano dai template_vars."""
+        from routers.legal import _build_autogen_template_vars
+        store = {
+            "name": "Store Vero",
+            "contact_email": "vero@example.com",
+            "country": "Italia",
+            "fulfillment_modes": [],
+            "merchant_legal_template_vars": {
+                "merchant_name": "test",
+                "merchant_email": "dav@gmail.com",
+                "merchant_country": "iitallia",
+                "store_name": "test",
+                "store_country": "iitallia",
+                "collects_phone": True,
+                "platform_name": "afianco",
+                "platform_controller_email": "davide@afianco.ch",
+            },
+        }
+        v = _build_autogen_template_vars(store)
+        assert v.merchant_name == "Store Vero"
+        assert v.merchant_email == "vero@example.com"
+        assert v.merchant_country == "Italia"
+        assert v.store_name == "Store Vero"
+        assert v.store_country == "Italia"
+        # i flag non identitari restano dai template_vars salvati
+        assert v.collects_phone is True
+        # platform_*: sempre il brand corrente, mai i valori salvati
+        assert "afianco" not in v.platform_name.lower()
+        assert "afianco" not in v.platform_controller_email.lower()
+        # fallback: campo corrente vuoto → template_vars come riserva
+        store_no_email = {**store, "contact_email": None}
+        assert _build_autogen_template_vars(
+            store_no_email).merchant_email == "dav@gmail.com"
+
+    def test_ps5_template_vars_default_senza_afianco(self):
+        """I default piattaforma leggono core/brand.py (Aurya)."""
+        from services.merchant_legal_template_service import TemplateVars
+        dump = TemplateVars().model_dump()
+        for key, val in dump.items():
+            assert "afianco" not in str(val).lower(), f"{key}: {val}"
+        assert dump["platform_name"] == "Aurya"
+
+    def test_ps5_templates_senza_boilerplate_lingua(self):
+        """Niente 'fa fede la versione italiana' hardcoded nei
+        template: la lingua di riferimento e' binding_locale dinamico
+        (riga renderizzata da StorefrontLegalPage)."""
+        from services.merchant_legal_template_service import (
+            list_template_files,
+        )
+        files = list_template_files()
+        assert len(files) == 8, "matrice template 2 doc x 4 lingue"
+        for path in files:
+            text = path.read_text(encoding="utf-8").lower()
+            for bad in ("legally binding", "verbindliche",
+                        "prévaut", "legalmente vincolante",
+                        "afianco"):
+                assert bad not in text, f"{path.name}: '{bad}'"
+
+    def test_ps5_card_senza_editor_custom(self):
+        """SalesConditionsCard: editor custom congelato (resta solo nel
+        mondo legacy /stores e /newsletter-forms), informativa autogen
+        come riga semplice, mini-form titolare, riga DPA."""
+        card = self.CARD.read_text()
+        assert "MerchantLegalDialog" not in card, \
+            "l'editor custom non deve essere raggiungibile da Impostazioni"
+        assert "owner-data-form" in card and "save-owner-data" in card
+        assert "generata automaticamente" in card       # riga informativa
+        assert "/privacy" in card                        # link autogen
+        assert "dpa-row" in card and "/settings/legal/dpa" in card
+        # il mini-form scrive sullo store doc (autogen coerente)
+        assert "storesAPI.update(" in card
+        assert "contact_email" in card and "country" in card
+        # il dialog resta vivo SOLO nel mondo legacy
+        for legacy in (("features", "stores", "StoresPage.js"),
+                       ("features", "newsletter", "NewsletterPage.js")):
+            src = FRONTEND_SRC.joinpath(*legacy).read_text()
+            assert "MerchantLegalDialog" in src, \
+                f"{legacy[-1]}: il mondo legacy tiene l'editor custom"
+
+    def test_ps5_dpa_raggiungibile(self):
+        """Rotta /settings/legal/dpa registrata + endpoint status vivo
+        (auth-gated: 401/403 senza token)."""
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/settings/legal/dpa"' in app
+        r = requests.get(f"{BASE_URL}/api/legal/dpa/status", timeout=10)
+        assert r.status_code in (401, 403)
+
+    def test_ps5_pagina_legale_lingua_utente(self):
+        """StorefrontLegalPage chiede la lingua utente e mostra la riga
+        'fa fede' quando la lingua servita differisce dal binding."""
+        page = (FRONTEND_SRC / "pages"
+                / "StorefrontLegalPage.js").read_text()
+        assert "fetcher(slug, userLang || undefined)" in page
+        assert "binding_note" in page and "binding-locale-note" in page
+        svc = (FRONTEND_SRC / "services" / "legalService.js").read_text()
+        assert "fetchStorefrontPrivacy(slug, locale)" in svc
+        assert "fetchStorefrontTerms(slug, locale)" in svc

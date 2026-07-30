@@ -1,10 +1,5 @@
 # Terms and Conditions — {{store_name}}
 
-**Version:** v1.0 (draft)
-**Legal reference language:** Italian
-
-> This version is shown to ALL customers of the store, regardless of their browsing language. The Italian version is the legally binding one for interpretation purposes.
-
 ---
 
 ## 1. Preamble and acceptance

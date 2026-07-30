@@ -1,10 +1,5 @@
 # Politique de confidentialité — {{store_name}}
 
-**Version :** v1.0 (brouillon)
-**Langue juridiquement contraignante :** italien
-
-> Cette version est affichée à TOUS les clients du magasin, indépendamment de leur langue de navigation. La version italienne est celle qui prévaut juridiquement pour l'interprétation.
-
 ---
 
 ## 1. Qui nous sommes (Responsable du traitement)
@@ -83,7 +78,7 @@ Vos données peuvent être traitées par les parties suivantes, agissant comme n
 | **Stripe Payments Europe Ltd.** | Irlande | Traitement des paiements | UE/EEE |
 | *Le cas échéant :* **Brevo SAS** | France | Envoi d'e-mails transactionnels | UE/EEE |
 
-Pour la liste complète et toujours à jour des sous-traitants de la plateforme {{platform_name}}, consultez : https://afianco.app/legal/sub-processors
+Pour la liste complète et toujours à jour des sous-traitants de la plateforme {{platform_name}}, consultez : https://aurya.life/legal/sub-processors
 
 Vos données **NE sont PAS** vendues ni partagées avec des tiers à des fins marketing.
 

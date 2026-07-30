@@ -1,25 +1,34 @@
 /**
- * SalesConditionsCard — RS3 "Patti chiari"
- * (docs/RITIRI_INTEGRITA_PIANO_2026-07.md).
+ * SalesConditionsCard — RS3 "Patti chiari" + PS5 consolidamento GDPR
+ * (docs/RITIRI_INTEGRITA_PIANO_2026-07.md,
+ *  docs/POTATURA_STORE_PIANO_2026-07.md onda PS5).
  *
  * Le condizioni dell'operatore in UN posto raggiungibile nel mondo
  * snello (Impostazioni, non dentro Stores):
  * 1. politica di cancellazione di default (scaglioni giorni → %
  *    rimborso), ereditata dal wizard ritiro come "Le mie condizioni"
- * 2. documenti legali (privacy + termini) via MerchantLegalDialog
- *    esistente, agganciato allo store tecnico
- * 3. link alla pagina pubblica /s/{slug}/terms (che risponde SEMPRE:
- *    autogenerata finche' l'operatore non pubblica la sua)
+ * 2. requisiti del servizio (hint: si scrivono per-servizio)
+ * 3. dati del titolare per l'informativa autogenerata (mini-form 3
+ *    campi che scrive sullo STORE doc: nome, email, paese — gli stessi
+ *    campi che l'autogen legge con precedenza, vedi
+ *    backend/routers/legal.py::_build_autogen_template_vars)
+ * 4. link alla pagina pubblica /s/{slug}/privacy (autogenerata, x4
+ *    lingue) + riga DPA art. 28 con stato firmato/da firmare.
+ *
+ * PS5: l'operatore NON scrive privacy — l'editor legale custom resta
+ * raggiungibile SOLO dal mondo legacy (/stores, /newsletter-forms);
+ * chi ha gia' pubblicato documenti propri resta servito dall'envelope
+ * esistente.
  */
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { toast } from 'sonner';
-import { ExternalLink, FileText, Save, Scale } from 'lucide-react';
+import { ExternalLink, FileSignature, Save, Scale } from 'lucide-react';
 import api from '../../../api/client';
 import { organizationsAPI } from '../../../api';
 import { storesAPI } from '../../../api/stores';
-import MerchantLegalDialog from '../../stores/components/MerchantLegalDialog';
 
 const PRESETS = {
   flessibile: [
@@ -43,7 +52,10 @@ export default function SalesConditionsCard() {
   const [policy, setPolicy] = useState(null);   // null = non impostata
   const [saving, setSaving] = useState(false);
   const [store, setStore] = useState(null);
-  const [legalOpen, setLegalOpen] = useState(false);
+  // PS5 — mini-form titolare (nome, email, paese) + stato DPA
+  const [owner, setOwner] = useState({ name: '', email: '', country: '' });
+  const [ownerSaving, setOwnerSaving] = useState(false);
+  const [dpa, setDpa] = useState(null);         // null = non caricato
 
   useEffect(() => {
     api.get('/organizations/current')
@@ -53,16 +65,49 @@ export default function SalesConditionsCard() {
       })
       .catch(() => {});
     // lo store tecnico esiste sempre (ensure-default e' idempotente):
-    // e' l'indirizzo dove vivono i documenti legali dell'operatore
+    // e' l'indirizzo dove vive l'informativa autogenerata
     storesAPI.ensureDefault()
       .catch(() => {})
       .then(() => storesAPI.list())
       .then(res => {
         const stores = res?.data?.stores || [];
-        setStore(stores.find(s => s.is_default) || stores[0] || null);
+        const s = stores.find(x => x.is_default) || stores[0] || null;
+        setStore(s);
+        if (s) {
+          // precompilazione dai dati correnti dello store: sono gli
+          // stessi campi che l'informativa autogenerata legge
+          setOwner({
+            name: s.name || '',
+            email: s.contact_email || '',
+            country: s.country || '',
+          });
+        }
       })
       .catch(() => {});
+    // PS5 — stato DPA art. 28 (non bloccante, solo visibile)
+    api.get('/legal/dpa/status')
+      .then(res => setDpa(res.data))
+      .catch(() => {});
   }, []);
+
+  const saveOwner = async () => {
+    if (!store) return;
+    setOwnerSaving(true);
+    try {
+      const payload = {
+        contact_email: owner.email.trim(),
+        country: owner.country.trim(),
+      };
+      // il nome non puo' essere svuotato (e' il nome dello store doc)
+      if (owner.name.trim()) payload.name = owner.name.trim();
+      const res = await storesAPI.update(store.id, payload);
+      setStore(prev => ({ ...(prev || {}), ...(res?.data || payload) }));
+      toast.success("Dati del titolare salvati: l'informativa li usa subito");
+    } catch (e) {
+      toast.error(e?.response?.data?.detail?.[0]?.msg
+        || e?.response?.data?.detail || 'Salvataggio non riuscito');
+    } finally { setOwnerSaving(false); }
+  };
 
   const rows = policy || PRESETS.equilibrata;
 
@@ -158,47 +203,95 @@ export default function SalesConditionsCard() {
           </p>
         </div>
 
-        {/* 3. AP-L — merchant legal ridimensionato: niente piu' obbligo di
-            pubblicare privacy/termini per-store. L'informativa autogenerata
-            resta come link informativo; i documenti custom restano come
-            opzione avanzata (chi li ha pubblicati li tiene). */}
-        <details className="border-t pt-4 group">
-          <summary className="cursor-pointer text-sm font-semibold text-foreground list-none flex items-center gap-1.5"
-                   data-testid="advanced-legal-toggle">
-            <span className="text-muted-foreground transition-transform group-open:rotate-90">›</span>
-            Avanzate: informativa e documenti personalizzati
-          </summary>
-          <div className="mt-2 space-y-2">
-            <p className="text-xs text-muted-foreground">
-              Non serve pubblicare nulla: per i dati dei tuoi clienti resti
-              titolare autonomo e un'informativa generata dai tuoi dati e'
-              gia' linkata dalle tue pagine e dal checkout. Se hai gia'
-              pubblicato privacy o termini tuoi, restano validi e li puoi
-              modificare da qui.
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <Button variant="outline" size="sm" disabled={!store}
-                      onClick={() => setLegalOpen(true)} data-testid="edit-legal-docs">
-                <FileText className="mr-1.5 h-4 w-4" />
-                Documenti personalizzati
-              </Button>
-              {store?.slug && (
-                <a href={`/s/${store.slug}/privacy`} target="_blank" rel="noreferrer"
-                   className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
-                  <ExternalLink className="h-4 w-4" />
-                  Vedi la tua informativa
-                </a>
-              )}
-            </div>
+        {/* 3. PS5 — dati del titolare per l'informativa autogenerata.
+            Scrivono sullo STORE doc (name, contact_email, country): la
+            precedenza lato backend fa vincere questi campi sui vecchi
+            template_vars, quindi l'informativa e' sempre coerente. */}
+        <div className="border-t pt-4" data-testid="owner-data-form">
+          <p className="text-sm font-semibold text-foreground">Dati del titolare per l'informativa</p>
+          <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+            Per i dati dei tuoi clienti sei tu il titolare del trattamento:
+            questi tre campi compaiono nella tua informativa privacy.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <label className="text-xs text-muted-foreground">
+              Nome (attivita' o persona)
+              <input type="text" value={owner.name} maxLength={255}
+                     onChange={e => setOwner(o => ({ ...o, name: e.target.value }))}
+                     data-testid="owner-name-input"
+                     className="mt-1 w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-foreground" />
+            </label>
+            <label className="text-xs text-muted-foreground">
+              Email di contatto
+              <input type="email" value={owner.email} maxLength={255}
+                     onChange={e => setOwner(o => ({ ...o, email: e.target.value }))}
+                     data-testid="owner-email-input"
+                     className="mt-1 w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-foreground" />
+            </label>
+            <label className="text-xs text-muted-foreground">
+              Paese
+              <input type="text" value={owner.country} maxLength={100}
+                     onChange={e => setOwner(o => ({ ...o, country: e.target.value }))}
+                     data-testid="owner-country-input"
+                     className="mt-1 w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-foreground" />
+            </label>
           </div>
-        </details>
-      </CardContent>
+          <Button size="sm" className="mt-3" disabled={ownerSaving || !store}
+                  onClick={saveOwner} data-testid="save-owner-data">
+            <Save className="mr-1.5 h-4 w-4" />
+            Salva i dati del titolare
+          </Button>
+          <p className="text-xs text-muted-foreground mt-3">
+            La tua informativa privacy viene generata automaticamente con
+            questi dati, nelle 4 lingue della piattaforma:{' '}
+            {store?.slug ? (
+              <a href={`/s/${store.slug}/privacy`} target="_blank" rel="noreferrer"
+                 data-testid="autogen-privacy-link"
+                 className="inline-flex items-center gap-1 text-primary hover:underline">
+                vedila qui
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            ) : (
+              <span>vedila dal tuo profilo pubblico</span>
+            )}
+            . Ai termini e alla privacy della piattaforma pensa Aurya.
+          </p>
+        </div>
 
-      <MerchantLegalDialog
-        open={legalOpen && !!store}
-        store={store}
-        onClose={() => setLegalOpen(false)}
-      />
+        {/* 4. PS5 — DPA art. 28 in superficie: Aurya tratta i dati dei
+            tuoi clienti per conto tuo, l'accordo va confermato. Non
+            bloccante, solo visibile. */}
+        <div className="border-t pt-4" data-testid="dpa-row">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <FileSignature className="h-4 w-4" />
+              Accordo sul trattamento dei dati (art. 28)
+            </p>
+            {dpa?.acknowledged ? (
+              <span className="text-xs rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5"
+                    data-testid="dpa-status-signed">
+                Firmato il {dpa.acknowledged_at
+                  ? new Date(dpa.acknowledged_at).toLocaleDateString('it-IT')
+                  : '—'}
+              </span>
+            ) : (
+              <span className="text-xs rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5"
+                    data-testid="dpa-status-pending">
+                Da firmare
+              </span>
+            )}
+            <Link to="/settings/legal/dpa"
+                  data-testid="dpa-page-link"
+                  className="text-sm text-primary hover:underline">
+              {dpa?.acknowledged ? 'Rileggi l\'accordo' : 'Leggi e conferma'}
+            </Link>
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            L'accordo con cui Aurya tratta i dati dei tuoi clienti per conto
+            tuo, come richiede il GDPR.
+          </p>
+        </div>
+      </CardContent>
     </Card>
   );
 }

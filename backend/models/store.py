@@ -561,6 +561,12 @@ class Store(BaseModel):
     # Identity & contacts
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
+    # PS5 (30/7/2026) — paese del titolare del trattamento. L'informativa
+    # autogenerata legge store.country come PRIMA fonte (routers/legal.py
+    # _build_autogen_template_vars): il mini-form "Dati del titolare" in
+    # SalesConditionsCard scrive qui, cosi' l'autogen e' sempre coerente
+    # coi dati correnti (niente template_vars stantii).
+    country: Optional[str] = None
 
     # Email config (platform_managed)
     sender_display_name: Optional[str] = None
@@ -806,6 +812,8 @@ class StoreUpdate(BaseModel):
     visibility: Optional[str] = None
     contact_email: Optional[str] = Field(default=None, max_length=255)
     contact_phone: Optional[str] = Field(default=None, max_length=50)
+    # PS5 — vedi Store.country: campo del titolare per l'informativa
+    country: Optional[str] = Field(default=None, max_length=100)
     sender_display_name: Optional[str] = Field(default=None, max_length=100)
     reply_to_email: Optional[str] = Field(default=None, max_length=255)
     notification_email: Optional[str] = Field(default=None, max_length=255)
@@ -843,6 +851,7 @@ class StoreResponse(BaseModel):
     visibility: str
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
+    country: Optional[str] = None
     sender_display_name: Optional[str] = None
     reply_to_email: Optional[str] = None
     notification_email: Optional[str] = None

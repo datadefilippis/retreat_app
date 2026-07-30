@@ -533,8 +533,12 @@ class TestTemplateRender:
         assert "Mario Rossi" in out
         assert "mario@example.com" in out
         assert "Mario Store" in out
-        # Platform identity always mentioned (afianco as processor)
-        assert "afianco" in out
+        # Platform identity always mentioned (the brand as processor).
+        # PS5 (30/7/2026): i default TemplateVars leggono core/brand.py
+        # (Aurya), niente piu' "afianco" hardcoded.
+        from core.brand import BRAND_NAME
+        assert BRAND_NAME in out
+        assert "afianco" not in out.lower()
         # No raw placeholder for variables we provided
         assert "{{merchant_name}}" not in out
         assert "{{store_name}}" not in out
@@ -544,12 +548,14 @@ class TestTemplateRender:
     @pytest.mark.parametrize("locale", ["it", "en", "de", "fr"])
     def test_privacy_discloses_platform_controller_email(self, locale):
         """The PRIVACY doc must surface the platform's contact email
-        because afianco is the data processor (sub-processor chain
+        because the platform is the data processor (sub-processor chain
         disclosure under GDPR Art. 28.3.i + Art. 13.1.f). Terms doc
-        does not strictly need it, so we only assert it for privacy."""
+        does not strictly need it, so we only assert it for privacy.
+        PS5: l'email e' BRAND_SUPPORT_EMAIL da core/brand.py."""
+        from core.brand import BRAND_SUPPORT_EMAIL
         from services.merchant_legal_template_service import render_template
         out = render_template("privacy", locale, self._vars())
-        assert "davide@afianco.ch" in out
+        assert BRAND_SUPPORT_EMAIL in out
 
     def test_render_invalid_doc_type_raises(self):
         from services.merchant_legal_template_service import render_template

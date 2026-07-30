@@ -41,6 +41,8 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
+from core.brand import BRAND_NAME, BRAND_SUPPORT_EMAIL
+
 
 SUPPORTED_LOCALES = ("it", "en", "de", "fr")
 SUPPORTED_DOC_TYPES = ("privacy", "terms")
@@ -71,14 +73,15 @@ class TemplateVars(BaseModel):
     uses_marketing: bool = False
     ships_to_eu: bool = False
 
-    # The platform processor identifier — kept as a var so the same
-    # template stays usable if afianco ever rebrands.
-    platform_name: str = Field(default="afianco", max_length=64)
+    # The platform processor identifier — PS5 (30/7/2026): i default
+    # leggono core/brand.py (fonte unica del rebrand Aurya), niente
+    # piu' "afianco"/"davide@afianco.ch" hardcoded.
+    platform_name: str = Field(default=BRAND_NAME, max_length=64)
     platform_controller_name: str = Field(
         default="Davide De Filippis", max_length=255
     )
     platform_controller_email: str = Field(
-        default="davide@afianco.ch", max_length=255
+        default=BRAND_SUPPORT_EMAIL, max_length=255
     )
     platform_controller_country: str = Field(
         default="Switzerland", max_length=100

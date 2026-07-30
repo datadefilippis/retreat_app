@@ -148,6 +148,7 @@
     "not_configured_body": "Le magasin est en train de finaliser sa configuration légale.",
     "contact_merchant": "Contact :",
     "binding_locale_label": "Langue juridiquement contraignante :",
+    "binding_note": "Traduction de courtoisie : la version en {{language}} fait foi.",
     "see_terms": "Voir les Conditions générales",
     "see_privacy": "Voir la Politique de confidentialité",
     "contact_label": "Contacter le magasin",
