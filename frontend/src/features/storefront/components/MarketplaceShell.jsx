@@ -18,11 +18,15 @@ import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BRAND_NAME, BRAND_MOTTO } from '../../../config/brand';
-import { Search, Menu, X, Lock, Globe, Check, ChevronDown } from 'lucide-react';
+import { Search, Menu, X, Lock, Globe, Check, ChevronDown, CircleUserRound } from 'lucide-react';
 import { useSiteConfig } from '../../../context/SiteConfigContext';
 import useItalianOnly from '../../../lib/useItalianOnly';
 import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
 import api from '../../../api/client';
+// PS4 — l'icona account legge il token piattaforma in modo sincrono:
+// niente provider nuovi, /account resta il gate (senza token rimanda
+// lui stesso a /account/accedi).
+import { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
 
 // S5 — destinazioni top nel footer (link programmatici): cache a livello
 // modulo, il footer è su ogni pagina e non deve rifetchare a ogni nav.
@@ -142,6 +146,20 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   const { pathname } = useLocation();
   const [destinations, setDestinations] = React.useState(_destCache || []);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+  // PS4 — entry point universale dell'account utente: lettura sincrona
+  // del token al mount (lazy initializer, nessun flash). Con token si
+  // va dritti a /account, senza si atterra sulla login utente. ACCESA
+  // anche in fase network (decisione founder: chi ha prenotato da /o/
+  // o /e/ deve ritrovare la sua history).
+  const [hasPlatformToken] = React.useState(() => {
+    try {
+      return Boolean(localStorage.getItem(PLATFORM_TOKEN_KEY));
+    } catch {
+      return false;
+    }
+  });
+  const accountTo = hasPlatformToken ? '/account' : '/account/accedi';
+  const accountLabel = t('marketplace.accountAria', { defaultValue: 'Il tuo account' });
 
   useEffect(() => {
     if (_destCache) return;
@@ -242,12 +260,31 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 </Link>
                 {!isNetwork && (
                   <Link
-                    to="/account"
+                    to={accountTo}
                     className="hidden sm:block rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
                   >
                     {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
                   </Link>
                 )}
+                {/* PS4 — l'omino e' l'entry point UNIVERSALE dell'account
+                    utente: tutti i breakpoint, tutte le fasi (network
+                    inclusa). Da loggato, pallino primario come segno di
+                    stato. Gli operatori hanno il loro link testuale a
+                    fianco: nessuna confusione. */}
+                <Link
+                  to={accountTo}
+                  aria-label={accountLabel}
+                  title={accountLabel}
+                  className="relative rounded-full border border-gray-300 h-8 w-8 flex items-center justify-center text-gray-700 hover:border-primary hover:text-primary transition-colors"
+                >
+                  <CircleUserRound className="h-5 w-5" aria-hidden />
+                  {hasPlatformToken && (
+                    <span
+                      aria-hidden
+                      className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-white"
+                    />
+                  )}
+                </Link>
                 {/* AN2 — hamburger mobile: ricerca e CTA organizzatori non
                     spariscono più sotto i breakpoint */}
                 <button
@@ -295,7 +332,8 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               </li>
               {!isNetwork && (
                 <li>
-                  <Link to="/account" onClick={() => setMobileNavOpen(false)}
+                  {/* PS4 — stessa destinazione dell'icona account */}
+                  <Link to={accountTo} onClick={() => setMobileNavOpen(false)}
                         className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
                     {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
                   </Link>
@@ -368,8 +406,9 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 {!isNetwork && <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
               </ul>
             </div>
-            {/* founder 27/7 — in fase rete niente colonna account
-                (nessun acquisto = nessun Passaporto da promettere) */}
+            {/* founder 27/7 — in fase rete niente colonna account nel
+                footer (nessun acquisto da promettere); PS4: l'entry
+                point account resta comunque l'icona nell'header */}
             {!isNetwork && (
               <div>
                 <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">

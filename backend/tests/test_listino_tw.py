@@ -2778,3 +2778,100 @@ class TestPotaturaPs3:
             "nav morta con /stores: va rimossa, non lasciata dormiente"
         # la voce Store resta SOLO dietro il flag legacy_commerce
         assert "legacyCommerce" in src
+
+
+class TestPotaturaPs4:
+    """PS4 (30/7/2026) — icona account utente nell'header pubblico +
+    UN SOLO login utente (docs/POTATURA_STORE_PIANO_2026-07.md, onda
+    PS4). L'omino CircleUserRound e' l'entry point universale (tutti i
+    breakpoint, tutte le fasi, network inclusa: decisione founder); il
+    token piattaforma si legge in modo sincrono da localStorage; senza
+    token si atterra su /account/accedi, con token su /account. Del
+    portale clienti legacy restano vive SOLO le rotte strutturali del
+    player corsi; signup/ordini/profilo legacy redirigono ad Aurya.
+    """
+
+    SHELL = (FRONTEND_SRC / "features" / "storefront" / "components"
+             / "MarketplaceShell.jsx")
+    APP = FRONTEND_SRC / "App.js"
+
+    def test_ps4_icona_account_nello_shell(self):
+        src = self.SHELL.read_text()
+        assert "CircleUserRound" in src, \
+            "l'omino account deve vivere nell'header marketplace"
+        assert "PLATFORM_TOKEN_KEY" in src, \
+            "lo stato loggato si legge dal token piattaforma (sincrono)"
+        assert "'/account'" in src and "'/account/accedi'" in src, \
+            "href: /account con token, /account/accedi senza"
+        assert "marketplace.accountAria" in src, \
+            "aria-label i18n dell'icona account"
+        # l'icona non e' nascosta dietro breakpoint: nessun hidden
+        # sulla riga del Link icona (il pill myTrips resta hidden sm)
+        icon_at = src.index("CircleUserRound className")
+        link_open = src.rindex("<Link", 0, icon_at)
+        assert "hidden" not in src[link_open:icon_at], \
+            "l'icona account deve essere visibile a TUTTI i breakpoint"
+
+    def test_ps4_icona_anche_in_fase_network(self):
+        """Il Link dell'icona NON sta dentro un ramo !isNetwork."""
+        src = self.SHELL.read_text()
+        icon_at = src.index("CircleUserRound className")
+        link_open = src.rindex("<Link", 0, icon_at)
+        # nessun gate di fase tra l'apertura del Link icona e l'icona
+        assert "isNetwork" not in src[link_open:icon_at], \
+            "l'icona account non deve essere gated dalla fase network"
+        # il ramo condizionale della pill myTrips si CHIUDE prima
+        # dell'apertura del Link icona (l'icona sta fuori dal ramo)
+        pill_close = src.index("</Link>", src.index("marketplace.myTrips"))
+        assert ")}" in src[pill_close:link_open], \
+            "il ramo !isNetwork della pill deve chiudersi prima dell'icona"
+        # accanto all'hamburger: il bottone menu mobile segue l'icona
+        assert src.index("setMobileNavOpen((o) => !o)") > icon_at
+
+    def test_ps4_i18n_x4_senza_passaporto(self):
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            loc = _json.loads((FRONTEND_SRC / "locales" / lang
+                               / "landings.json").read_text())
+            val = loc["marketplace"].get("accountAria", "")
+            assert val, f"{lang}: manca marketplace.accountAria"
+            assert "Passaporto" not in val and "—" not in val \
+                and "–" not in val, f"{lang}: copy vietato"
+
+    def test_ps4_una_sola_rotta_account_attiva(self):
+        app = self.APP.read_text()
+        assert app.count('path="/account"') == 1, \
+            "/account deve essere registrato UNA volta (AccountPage)"
+        assert 'path="/account" element={<AccountPage />}' in app
+        # le rotte Aurya continuano a vincere (registrate e distinte)
+        for p in ("/account/accedi", "/account/verifica",
+                  "/account/nuova-password"):
+            assert f'path="{p}"' in app, f"manca la rotta {p}"
+
+    def test_ps4_legacy_redirette_e_player_vivo(self):
+        app = self.APP.read_text()
+        # redirette alle rotte Aurya
+        assert ('path="/account/signup" '
+                'element={<Navigate to="/account/accedi" replace />}') in app
+        for p in ("/account/orders", "/account/orders/:orderId",
+                  "/account/profile"):
+            assert (f'path="{p}" '
+                    'element={<Navigate to="/account" replace />}') in app, \
+                f"{p}: attesa redirect all'account Aurya"
+        # strutturali del player corsi legacy: restano vive
+        assert 'path="/account/login" element={<CustomerLoginPage />}' in app
+        assert "CustomerCoursePlayerPage" in app \
+            and 'path="/account/courses/:enrollment_id"' in app
+        assert 'path="/account/forgot-password"' in app \
+            and 'path="/account/reset-password"' in app \
+            and 'path="/account/verify-email"' in app
+        # il vecchio portale ordini/profilo non e' piu' importato
+        for dead in ("CustomerOrdersPage", "CustomerOrderDetailPageNew",
+                     "CustomerProfilePage", "CustomerSignupPage"):
+            assert dead not in app, f"import morto: {dead}"
+
+    def test_ps4_nessun_nuovo_passaporto(self):
+        shell = self.SHELL.read_text()
+        assert "Passaporto" not in shell
+        # App.js: resta solo il commento storico P3 (nessuna new entry)
+        assert self.APP.read_text().count("Passaporto") <= 1

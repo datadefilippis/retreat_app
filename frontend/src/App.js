@@ -134,10 +134,12 @@ import { CustomerAuthProvider } from "./context/CustomerAuthContext";
 import CustomerProtectedRoute from "./features/customer-portal/CustomerProtectedRoute";
 // Auth pages — Phase 5 of the customer area refactor moved each one
 // into a dedicated file under customer-portal/auth/. The shared
-// AuthShell + useStoreInfo helpers live alongside. Phase 6 will turn
-// the legacy CustomerPortalPages.js into a thin re-export shim.
+// AuthShell + useStoreInfo helpers live alongside.
+// PS4 — restano SOLO le pagine strutturali per il player corsi legacy
+// (login = target del gate CustomerProtectedRoute, recupero password e
+// verifica email = link nelle email gia' spedite). La signup legacy e'
+// rediretta: i nuovi utenti passano da /account/accedi (login Aurya).
 import CustomerLoginPage from "./features/customer-portal/auth/LoginPage";
-import CustomerSignupPage from "./features/customer-portal/auth/SignupPage";
 import CustomerForgotPasswordPage from "./features/customer-portal/auth/ForgotPasswordPage";
 import CustomerResetPasswordPage from "./features/customer-portal/auth/ResetPasswordPage";
 import CustomerVerifyEmailPage from "./features/customer-portal/auth/VerifyEmailPage";
@@ -149,14 +151,12 @@ import CustomerVerifyEmailPage from "./features/customer-portal/auth/VerifyEmail
 // served by the new pages/* below. The old files stay in the codebase
 // for the auth re-exports above (until Phase 6 turns them into a shim).
 import CustomerLayout from "./features/customer-portal/layout/CustomerLayout";
-// Phase 4 dashboard HomePage was removed in a follow-up — it added an
-// extra hop after login without delivering value over the orders list.
-// /account now redirects straight to /account/orders (see route below).
-import CustomerOrdersPage from "./features/customer-portal/pages/OrdersPage";
-import CustomerOrderDetailPageNew from "./features/customer-portal/pages/OrderDetailPage";
+// PS4 — del portale clienti legacy restano SOLO i corsi (il player e
+// il suo indice): le email "Vai al corso" gia' spedite puntano a
+// /account/courses/<enrollment_id> e il player usa il JWT customer.
+// Ordini e profilo legacy sono rediretti all'account Aurya (/account).
 import CustomerCoursesIndexPage from "./features/customer-portal/pages/CoursesIndexPage";
 import CustomerCoursePlayerPage from "./features/customer-portal/pages/CoursePlayerPage";
-import CustomerProfilePage from "./features/customer-portal/pages/ProfilePage";
 
 // Protected Route Component
 //
@@ -520,49 +520,38 @@ function AppRoutes() {
       } />
       {/* Onda 16 Fase 5: post-confirmation reservation landing (token-based) */}
       <Route path="/rsv/:token" element={<ReservationConfirmationPage />} />
-      {/* Customer Portal (v9.0) — separate from admin auth */}
-      {/* ── Auth pages — kept OUTSIDE the CustomerLayout shell ──────────
-          Login / signup / forgot-password / reset / verify-email use
-          their own AuthShell (centered card, no sidebar). They never
-          render the portal chrome. */}
+      {/* Customer Portal legacy — PS4: UN SOLO login utente.
+          Restano vive SOLO le rotte strutturali per il player corsi:
+            /account/login           target del gate CustomerProtectedRoute
+                                     (+ link dai checkout legacy /s/, /p/)
+            /account/forgot-password linkata da /account/login e dalle
+                                     email di recupero password
+            /account/reset-password  link nelle email di reset (JWT customer)
+            /account/verify-email    link nelle email di verifica firma
+            /account/courses(+/:id)  player corsi: le email "Vai al corso"
+                                     puntano a /account/courses/<enrollment_id>
+          Tutto il resto del vecchio portale (signup, ordini, profilo)
+          redirige alle rotte Aurya: la history acquisti vive in
+          /account (platform account), il login unico e' /account/accedi. */}
       <Route path="/account/login" element={<CustomerLoginPage />} />
-      <Route path="/account/signup" element={<CustomerSignupPage />} />
+      <Route path="/account/signup" element={<Navigate to="/account/accedi" replace />} />
       <Route path="/account/forgot-password" element={<CustomerForgotPasswordPage />} />
       <Route path="/account/reset-password" element={<CustomerResetPasswordPage />} />
       <Route path="/account/verify-email" element={<CustomerVerifyEmailPage />} />
+      {/* Ordini e profilo legacy → account Aurya (vecchie email
+          /account/orders/<id> atterrano sul gate /account, che senza
+          token piattaforma rimanda a /account/accedi). */}
+      <Route path="/account/orders" element={<Navigate to="/account" replace />} />
+      <Route path="/account/orders/:orderId" element={<Navigate to="/account" replace />} />
+      <Route path="/account/profile" element={<Navigate to="/account" replace />} />
 
-      {/* ── Customer portal pages — nested under <CustomerLayout> ───────
-          Every authenticated page renders inside the shell (TopBar +
-          Sidebar + email verify banner). The pages themselves only
-          return their specific content; the layout provides the chrome.
-
-          /account               → redirect to /account/orders
-                                   (the dashboard HomePage was tried
-                                   in an earlier phase but removed —
-                                   the orders list is value enough).
-          /account/orders        → OrdersPage (the customer's home now)
-          /account/orders/:id    → OrderDetailPage
-          /account/courses       → CoursesIndexPage
-          /account/courses/:id   → CoursePlayerPage
-          /account/profile       → ProfilePage (account + password +
-                                   email verification)
-
-          ProtectedRoute is wrapped around the layout itself so
-          everything below is gated by the customer JWT. */}
+      {/* ── Player corsi legacy — nested under <CustomerLayout> ───────
+          Gated dal JWT customer (CustomerProtectedRoute). Il doppio
+          /account che viveva qui (redirect morto a /account/orders,
+          oscurato dalla rotta Aurya sopra) e' stato potato in PS4. */}
       <Route element={<CustomerProtectedRoute><CustomerLayout /></CustomerProtectedRoute>}>
-        {/* /account is a thin redirect to the orders list. The
-            previous Phase 4 dashboard HomePage was removed because
-            it added an extra hop after login without delivering
-            value over the orders list itself. The orders list IS
-            the customer portal home now. */}
-        <Route path="/account" element={<Navigate to="/account/orders" replace />} />
-        <Route path="/account/orders" element={<CustomerOrdersPage />} />
-        <Route path="/account/orders/:orderId" element={<CustomerOrderDetailPageNew />} />
         <Route path="/account/courses" element={<CustomerCoursesIndexPage />} />
         <Route path="/account/courses/:enrollment_id" element={<CustomerCoursePlayerPage />} />
-        {/* Phase 4 — new ProfilePage (account data + password + email
-            verification). The Profilo entry in the sidebar lands here. */}
-        <Route path="/account/profile" element={<CustomerProfilePage />} />
       </Route>
       <Route
         path="/signup"
