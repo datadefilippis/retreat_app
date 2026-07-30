@@ -350,7 +350,8 @@
     "faqWhoQ": "Mit wem kann ich vor der Buchung sprechen?",
     "faqWhoA": "Jedes Retreat hat ein Gesicht: unten findest du das Profil der Veranstaltenden, mit ihrer Geschichte und den Bewertungen von Menschen, die schon dabei waren.",
     "verifiedReviews_one": "1 verifizierte Bewertung",
-    "verifiedReviews_other": "{{count}} verifizierte Bewertungen"
+    "verifiedReviews_other": "{{count}} verifizierte Bewertungen",
+    "breadcrumbRetreats": "Retreats"
   },
   "product": {
     "loading": "Laden…",

@@ -3333,19 +3333,45 @@ async def pay_by_token(token: str):
     payment_schedules. Risposte:
       · riga pagabile  → 303 verso Stripe Checkout
       · riga già pagata → 303 verso la pagina di successo dello storefront
-      · token ignoto / ordine mancante → 404 secco (nessun oracle)
+      · token ignoto / riga non pagabile / Stripe indisponibile → 303 verso
+        la pagina frontend /s/pay-non-disponibile (PS6.3: il link viaggia
+        nelle EMAIL, un umano non deve mai atterrare su JSON nudo; nessun
+        oracle: il redirect e' identico per token ignoto e riga spenta).
+        Query: reason=unavailable|temporary, slug=<store> quando noto
+        (CTA "Torna all'operatore" sulla pagina).
     """
     from fastapi.responses import RedirectResponse
-    from database import orders_collection
+    from database import orders_collection, stores_collection
     from services.payment_schedule_service import (
         PAYABLE_STATES, find_schedule_by_pay_token,
     )
     from services.payment_checkout_service import create_row_checkout_session
     from services.url_builder import build_public_url
 
+    async def _store_slug_for(order_doc) -> Optional[str]:
+        """Slug pubblico dello store dell'ordine (None se non pubblicato)."""
+        store_id = (order_doc or {}).get("store_id")
+        if not store_id:
+            return None
+        store = await stores_collection.find_one(
+            {"id": store_id, "is_active": True},
+            {"_id": 0, "slug": 1, "is_published": 1},
+        )
+        if store and store.get("is_published"):
+            return store.get("slug")
+        return None
+
+    def _unavailable_redirect(reason: str = "unavailable",
+                              slug: Optional[str] = None) -> "RedirectResponse":
+        qs = f"?reason={reason}"
+        if slug:
+            qs += f"&slug={slug}"
+        return RedirectResponse(
+            build_public_url(f"/s/pay-non-disponibile{qs}"), status_code=303)
+
     resolved = await find_schedule_by_pay_token(token)
     if not resolved:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link non valido")
+        return _unavailable_redirect()
     schedule_doc, row = resolved
 
     order = await orders_collection.find_one(
@@ -3354,7 +3380,7 @@ async def pay_by_token(token: str):
         {"_id": 0},
     )
     if not order:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link non valido")
+        return _unavailable_redirect()
 
     if row.get("status") in ("paid", "paid_manual", "refunded", "waived", "cancelled"):
         return RedirectResponse(
@@ -3362,15 +3388,13 @@ async def pay_by_token(token: str):
             status_code=303,
         )
     if row.get("status") not in PAYABLE_STATES:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link non valido")
+        return _unavailable_redirect(slug=await _store_slug_for(order))
 
     session = await create_row_checkout_session(
         schedule_doc["organization_id"], order, schedule_doc, row)
     if not session:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Pagamento momentaneamente non disponibile. Riprova tra poco.",
-        )
+        return _unavailable_redirect(
+            reason="temporary", slug=await _store_slug_for(order))
     return RedirectResponse(session["url"], status_code=303)
 
 

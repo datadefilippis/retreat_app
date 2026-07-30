@@ -69,6 +69,11 @@ export default function useCheckoutForm({
   clearCartSnapshot,
   loadAvailability,
   t,
+  // PS6.4 — canale ESPLICITO dalla superficie reale: 'store' (profilo
+  // /o/, landing raggiunta dal profilo) o 'marketplace' (viaggio dalla
+  // directory). Se assente (storefront legacy /s/), si conserva il
+  // comportamento storico: il flag di sessione mktp_ctx decide.
+  channel,
 }) {
   // F4 Onda 11 — T&C acceptance state. PAGE-LOCAL (not part of the
   // sessionStorage snapshot) because the checkbox state should reset
@@ -902,8 +907,11 @@ export default function useCheckoutForm({
         items: selectedItems,
         notes: form.notes.trim() || null,
         // GT1 — il canale viaggia con l'ordine: gli ordini nati dal
-        // marketplace (K1: mktp_ctx) si incassano SOLO online.
-        channel: (() => {
+        // marketplace si incassano SOLO online. PS6.4 — la prop
+        // esplicita della superficie reale vince sul flag di sessione
+        // (mktp_ctx restava appeso e contaminava gli acquisti dal
+        // profilo); il fallback legacy resta per lo storefront /s/.
+        channel: channel || (() => {
           try { return sessionStorage.getItem('storefront:mktp_ctx') === '1' ? 'marketplace' : 'store'; }
           catch { return 'store'; }
         })(),

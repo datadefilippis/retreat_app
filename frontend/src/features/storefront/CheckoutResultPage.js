@@ -114,7 +114,12 @@ function StoreBackLink({ storeSlug, storeName }) {
   );
 }
 
-function OrderSummary({ status }) {
+// PS6.5 — `hideAmount`: la pagina CANCEL non deve mostrare importi.
+// `status.total` e' il TOTALE ordine, ma la session Stripe annullata
+// poteva essere la sola caparra (o una rata): l'importo della session
+// non e' ricostruibile dallo status pubblico, quindi meglio nessun
+// numero che un numero sbagliato.
+function OrderSummary({ status, hideAmount = false }) {
   const { t, i18n } = useTranslation('storefront');
   if (!status) return null;
   const { order_number: orderNumber, order_id: orderId, total, currency } = status;
@@ -130,7 +135,7 @@ function OrderSummary({ status }) {
           {t('storefront:submitted.reference', { ref: String(orderId).slice(0, 8) })}
         </p>
       ) : null}
-      {typeof total === 'number' && total > 0 && (
+      {!hideAmount && typeof total === 'number' && total > 0 && (
         <p className="text-gray-900 font-semibold">
           {formatAmount(total, currency, i18n.language)}
         </p>
@@ -254,10 +259,27 @@ export function CheckoutSuccessPage() {
                 <img src="/logo-aurya-128.png" alt="" aria-hidden className="inline h-5 w-5 mr-1 -mt-0.5 select-none" draggable={false} />
                 {t('storefront:checkoutResult.activatePassport', { defaultValue: 'Attiva il tuo account Aurya: tutti i tuoi acquisti in un posto solo' })}
               </button>
-              <Link to="/"
-                className="block w-full rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary">
-                {t('storefront:checkoutResult.backToRetreats', { defaultValue: 'Torna ai ritiri' })}
-              </Link>
+              {/* PS6.6 — il ritorno dice il vero: se il viaggio e'
+                  partito da un ritiro/directory (mktp_return) si torna
+                  LI'; altrimenti label neutra verso la home (in fase
+                  network la home non ha ritiri: "Torna ai ritiri"
+                  sarebbe una promessa falsa). */}
+              {(() => {
+                let ret = null;
+                try { ret = sessionStorage.getItem('storefront:mktp_return'); } catch { /* no-op */ }
+                const to = ret || '/';
+                const label = ret
+                  ? (ret.startsWith('/e/')
+                      ? t('storefront:checkoutResult.backToRetreat', { defaultValue: 'Torna al ritiro' })
+                      : t('storefront:checkoutResult.backToRetreats', { defaultValue: 'Torna ai ritiri' }))
+                  : t('storefront:checkoutResult.backToHome', { defaultValue: 'Torna alla home' });
+                return (
+                  <Link to={to}
+                    className="block w-full rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary">
+                    {label}
+                  </Link>
+                );
+              })()}
             </div>
           );
         })()}
@@ -266,6 +288,54 @@ export function CheckoutSuccessPage() {
           try { if (sessionStorage.getItem('storefront:mktp_ctx') === '1') return null; } catch { /* no-op */ }
           return <StoreBackLink storeSlug={status?.store_slug} storeName={status?.store_name} />;
         })()}
+      </div>
+    </div>
+  );
+}
+
+// PS6.3 — atterraggio umano dei link /pay/{token} non piu' servibili
+// (token ignoto, rata non pagabile, Stripe momentaneamente giu'). Il
+// backend REINDIRIZZA qui invece di rispondere JSON nudo: questi link
+// viaggiano nelle email di promemoria e li apre un cliente, non un
+// client API. Copy onesta + CTA verso l'account (dove vivono ordini e
+// pagamenti) e, quando l'org e' nota (?slug=), verso l'operatore.
+export function PayLinkUnavailablePage() {
+  const [searchParams] = useSearchParams();
+  const { t } = useTranslation('storefront');
+  const slug = searchParams.get('slug');
+  const temporary = searchParams.get('reason') === 'temporary';
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="text-center max-w-md" data-testid="pay-unavailable">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+          <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M12 9v2m0 4h.01M4.93 19.07A10 10 0 1 1 19.07 4.93 10 10 0 0 1 4.93 19.07z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold text-gray-900">
+          {temporary
+            ? t('storefront:checkoutResult.payUnavailable.tempTitle', { defaultValue: 'Pagamento momentaneamente non disponibile' })
+            : t('storefront:checkoutResult.payUnavailable.title', { defaultValue: 'Questo link di pagamento non è più attivo' })}
+        </h2>
+        <p className="text-gray-600 mt-2">
+          {temporary
+            ? t('storefront:checkoutResult.payUnavailable.tempBody', { defaultValue: 'Non siamo riusciti ad avviare il pagamento in questo momento. Nessun addebito è stato effettuato: riprova tra qualche minuto dallo stesso link.' })
+            : t('storefront:checkoutResult.payUnavailable.body', { defaultValue: 'La rata collegata a questo link non risulta più in attesa di pagamento. Nessun addebito è stato effettuato. Trovi lo stato aggiornato dei tuoi ordini e pagamenti nel tuo account.' })}
+        </p>
+        <div className="mt-6 space-y-2">
+          <Link to="/account"
+            className="block w-full rounded-full bg-primary text-white px-5 py-2.5 text-sm font-bold hover:opacity-90">
+            {t('storefront:checkoutResult.payUnavailable.ctaAccount', { defaultValue: 'Vai al tuo account' })}
+          </Link>
+          {slug && (
+            <Link to={`/o/${slug}`}
+              className="block w-full rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary">
+              {t('storefront:checkoutResult.payUnavailable.ctaOperator', { defaultValue: "Torna all'operatore" })}
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -285,6 +355,12 @@ export function CheckoutCancelPage() {
     supportedLanguages: undefined,
   });
 
+  // PS6.5 — la pagina cancel legge il funnel: se il viaggio e' partito
+  // da un ritiro (mktp_return in sessione) la CTA primaria e' RIPROVARE
+  // tornando alla landing; il link all'operatore resta come secondaria.
+  let mktpReturn = null;
+  try { mktpReturn = sessionStorage.getItem('storefront:mktp_return'); } catch { /* no-op */ }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="text-center max-w-md">
@@ -294,10 +370,20 @@ export function CheckoutCancelPage() {
           </svg>
         </div>
         <h2 className="text-xl font-bold text-gray-900">{t('storefront:checkoutResult.cancelTitle')}</h2>
+        {/* PS6.5 — copy onesta: nessun addebito, ordine NON confermato.
+            (Niente promesse di ricontatto su un draft che nessuno
+            lavorera'.) L'importo non si mostra: vedi OrderSummary. */}
         <p className="text-gray-600 mt-2">
           {t('storefront:checkoutResult.cancelDesc')}
         </p>
-        {!loading && <OrderSummary status={status} />}
+        {!loading && <OrderSummary status={status} hideAmount />}
+        {mktpReturn && (
+          <Link to={mktpReturn}
+            className="inline-flex items-center justify-center mt-6 w-full rounded-full bg-primary text-white px-5 py-2.5 text-sm font-bold hover:opacity-90"
+            data-testid="cancel-retry-retreat">
+            {t('storefront:checkoutResult.cancelRetryRetreat', { defaultValue: 'Riprova: torna al ritiro' })}
+          </Link>
+        )}
         <StoreBackLink storeSlug={status?.store_slug} storeName={status?.store_name} />
       </div>
     </div>

@@ -3018,3 +3018,198 @@ class TestPotaturaPs5:
         svc = (FRONTEND_SRC / "services" / "legalService.js").read_text()
         assert "fetchStorefrontPrivacy(slug, locale)" in svc
         assert "fetchStorefrontTerms(slug, locale)" in svc
+
+
+class TestPotaturaPs6:
+    """PS6 (30/7/2026) — funnel checkout pertinenti alla superficie di
+    partenza (docs/POTATURA_STORE_PIANO_2026-07.md, onda PS6).
+
+    ROTTI: latch del consenso checkout in StoreToProfileRedirect (il
+    param ?checkout=1 viene strippato DOPO il mount, la guardia non deve
+    rivalutare); recupero lingua nel handoff /p/ → /s/ (catalogo senza
+    filtro lingua + toast onesto se manca davvero); /pay/{token} in
+    stati non pagabili REINDIRIZZA a una pagina umana, mai piu' JSON
+    nudo nelle email. FUORVIANTI: canale ordine dalla superficie reale
+    (prop channel, decontaminazione mktp in InlineServiceCheckout,
+    timbro condizionato in InlineEventCheckout); cancel/success/
+    breadcrumb con copy e CTA oneste.
+    """
+
+    APP = FRONTEND_SRC / "App.js"
+    SF = FRONTEND_SRC / "features" / "storefront"
+
+    # ── 1. latch: /s/:slug?checkout=1 non rimbalza piu' al profilo ──
+
+    def test_ps6_latch_store_to_profile_redirect(self):
+        src = self.APP.read_text()
+        assert "function StoreToProfileRedirect" in src
+        seg = src.split("function StoreToProfileRedirect")[1][:700]
+        # il consenso e' LATCHATO al mount con lo useState-initializer:
+        # lo strip del param/state non fa piu' rimbalzare al profilo
+        assert "React.useState(() =>" in seg, \
+            "manca il latch useState(() => wantsCheckout) nel redirect"
+        assert "has('checkout')" in seg and "preloadCart" in seg
+
+    # ── 2. handoff /p/ → /s/: recupero lingua + toast onesto ─────────
+
+    def test_ps6_preload_recupero_lingua(self):
+        page = (self.SF / "StorefrontPage.js").read_text()
+        # niente piu' bail silenzioso: refetch senza filtro lingua...
+        assert "preloadRecoveryRef" in page
+        assert "storefrontAPI.getCatalog(slug)" in page
+        # ...e toast onesto quando il prodotto manca davvero
+        assert "preloadUnavailableInLanguage" in page
+
+    # ── 3. pay-token: mai JSON nudo, sempre redirect umano ───────────
+
+    def test_ps6_pay_token_ignoto_redirect(self):
+        r = requests.get(
+            f"{BASE_URL}/api/public/pay/token-inesistente-1234567890",
+            allow_redirects=False, timeout=10)
+        assert r.status_code in (303, 307), r.text
+        assert "/s/pay-non-disponibile" in r.headers.get("Location", "")
+
+    def test_ps6_pay_token_non_pagabile_redirect(self):
+        """HTTP reale: ordine+schedule fixture con riga in stato non
+        pagabile → redirect alla pagina onesta CON lo slug operatore."""
+        import uuid as _uuid
+        db = self._db()
+        store = db.stores.find_one({"slug": "masseria-demo"},
+                                   {"id": 1, "organization_id": 1})
+        assert store, "store demo masseria-demo assente"
+        token = "ps6-guard-" + _uuid.uuid4().hex
+        order_id = "ps6-guard-order-" + _uuid.uuid4().hex[:8]
+        sched_id = "ps6-guard-sched-" + _uuid.uuid4().hex[:8]
+        try:
+            db.orders.insert_one({
+                "id": order_id,
+                "organization_id": store["organization_id"],
+                "store_id": store["id"],
+                "status": "draft", "total": 10.0,
+            })
+            db.payment_schedules.insert_one({
+                "id": sched_id, "order_id": order_id,
+                "organization_id": store["organization_id"],
+                "rows": [{"seq": 1, "kind": "balance",
+                          "amount_minor": 1000,
+                          "status": "suspended",   # fuori da PAYABLE e da paid
+                          "pay_token": token}],
+            })
+            r = requests.get(f"{BASE_URL}/api/public/pay/{token}",
+                             allow_redirects=False, timeout=10)
+            assert r.status_code in (303, 307), r.text
+            loc = r.headers.get("Location", "")
+            assert "/s/pay-non-disponibile" in loc
+            assert "slug=masseria-demo" in loc, \
+                "l'org e' nota: la pagina deve poter offrire 'Torna all'operatore'"
+        finally:
+            db.payment_schedules.delete_one({"id": sched_id})
+            db.orders.delete_one({"id": order_id})
+
+    def test_ps6_pay_page_frontend_registrata(self):
+        app = self.APP.read_text()
+        assert '"/s/pay-non-disponibile"' in app.replace("'", '"')
+        crp = (self.SF / "CheckoutResultPage.js").read_text()
+        assert "PayLinkUnavailablePage" in crp
+        assert 'to="/account"' in crp        # CTA "Vai al tuo account"
+        assert "/o/${slug}" in crp           # CTA "Torna all'operatore"
+
+    # ── 4. canale = superficie reale + decontaminazione mktp ─────────
+
+    def test_ps6_inline_service_decontaminazione(self):
+        src = (self.SF / "components" / "checkout"
+               / "InlineServiceCheckout.jsx").read_text()
+        assert "removeItem('storefront:mktp_ctx')" in src
+        assert "removeItem('storefront:mktp_return')" in src
+        assert "channel: 'store'" in src
+
+    def test_ps6_channel_prop_in_use_checkout_form(self):
+        src = (self.SF / "hooks" / "useCheckoutForm.js").read_text()
+        assert "  channel,\n}) {" in src, "il hook accetta la prop channel"
+        # prop esplicita vince, fallback legacy al flag di sessione
+        assert "channel: channel ||" in src
+        assert "storefront:mktp_ctx" in src
+
+    def test_ps6_inline_event_timbro_condizionato(self):
+        src = (self.SF / "components" / "checkout"
+               / "InlineEventCheckout.jsx").read_text()
+        # niente piu' timbro incondizionato: solo in vero contesto mktp
+        assert "mktpContext" in src
+        assert "if (!mktpContext) return;" in src
+        assert "channel: mktpContext ? 'marketplace' : 'store'" in src
+        # la landing calcola la provenienza reale e passa la prop
+        elp = (self.SF / "EventLandingPage.js").read_text()
+        assert "computeMktpContext" in elp
+        assert "aurya:nav:prev" in elp
+        assert "mktpContext={mktpCtx}" in elp
+
+    # ── 5. cancel page: funnel + copy onesta + niente importo ────────
+
+    def test_ps6_cancel_page_funnel(self):
+        crp = (self.SF / "CheckoutResultPage.js").read_text()
+        cancel = crp.split("export function CheckoutCancelPage")[1]
+        assert "mktp_return" in cancel       # CTA "Riprova: torna al ritiro"
+        assert "cancelRetryRetreat" in cancel
+        assert "hideAmount" in cancel        # niente totale-ordine spacciato per caparra
+
+    def test_ps6_cancel_copy_onesta_x4(self):
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            loc = _json.loads((FRONTEND_SRC / "locales" / lang
+                               / "storefront.json").read_text())
+            cr = loc["checkoutResult"]
+            desc = cr["cancelDesc"]
+            # la vecchia promessa "sarai contattato per procedere" e' via
+            assert "contattato" not in desc and "contacted" not in desc \
+                and "kontaktiert" not in desc and "contacté" not in desc, \
+                f"{lang}: la cancel page non deve promettere ricontatti su un draft"
+            for key in ("cancelRetryRetreat", "backToRetreat", "backToHome"):
+                assert key in cr, f"{lang}: manca checkoutResult.{key}"
+            for key in ("title", "body", "tempTitle", "tempBody",
+                        "ctaAccount", "ctaOperator"):
+                assert key in cr["payUnavailable"], \
+                    f"{lang}: manca payUnavailable.{key}"
+
+    # ── 6. success + breadcrumb: mai label bugiarde ──────────────────
+
+    def test_ps6_success_ritorno_onesto(self):
+        crp = (self.SF / "CheckoutResultPage.js").read_text()
+        success = crp.split("export function CheckoutSuccessPage")[1] \
+                     .split("export function")[0]
+        # mktp_return quando esiste, label neutra "Torna alla home" altrimenti
+        assert "mktp_return" in success
+        assert "backToHome" in success and "backToRetreat" in success
+
+    def test_ps6_breadcrumb_landing_onesto(self):
+        elp = (self.SF / "EventLandingPage.js").read_text()
+        # fase network: crumb "Aurya" → home, o /esplora-ritiri se anteprima
+        assert "sitePhase === 'network'" in elp
+        assert "/esplora-ritiri" in elp
+        assert "breadcrumbRetreats" in elp
+
+    # ── 9/10. attriti: avviso doppio via, ?checkout=1 con carrello vuoto ──
+
+    def test_ps6_avviso_doppio_pannello_servizio(self):
+        form = (self.SF / "components" / "checkout"
+                / "CheckoutForm.jsx").read_text()
+        assert "inlineServiceSelection" in form
+        assert "needsSelection && !inlineServiceSelection" in form
+        inline = (self.SF / "components" / "checkout"
+                  / "InlineServiceCheckout.jsx").read_text()
+        assert "inlineServiceSelection" in inline
+
+    def test_ps6_checkout_param_carrello_vuoto(self):
+        page = (self.SF / "StorefrontPage.js").read_text()
+        assert "checkoutEmptyCart" in page
+        # il param viene strippato anche nel ramo vuoto (stripParam)
+        assert "stripParam" in page
+
+    @staticmethod
+    def _db():
+        """DB del server live (backend/.env), NON il test_db di default."""
+        import re as _re
+        import pymongo
+        env = (BACKEND_DIR / ".env").read_text()
+        mongo = _re.search(r'MONGO_URL="?([^"\n]+?)"?\n', env).group(1)
+        name = _re.search(r'DB_NAME="?([^"\n]+?)"?\n', env).group(1)
+        return pymongo.MongoClient(mongo)[name]

@@ -145,7 +145,9 @@
     "fillAttendees": "Compila nome ed email per ogni partecipante.",
     "termsRequired": "Devi accettare i termini e condizioni per procedere.",
     "gdprRequired": "Devi accettare i Termini e la Privacy di Aurya per procedere.",
-    "selectShippingOption": "Seleziona un'opzione di spedizione."
+    "selectShippingOption": "Seleziona un'opzione di spedizione.",
+    "preloadUnavailableInLanguage": "Questo servizio non è disponibile nella lingua della vetrina.",
+    "checkoutEmptyCart": "Il tuo carrello è vuoto: aggiungi un servizio o un ritiro per procedere."
   },
   "submitted": {
     "orderReceived": "Ordine ricevuto",
@@ -265,9 +267,20 @@
     "pendingDesc": "Stiamo confermando l'ordine. Può richiedere qualche secondo…",
     "lateWebhookDesc": "Il pagamento è stato ricevuto. La conferma finale dell'ordine sarà inviata via email.",
     "cancelTitle": "Pagamento non completato",
-    "cancelDesc": "Il pagamento non è stato completato. La tua richiesta è stata comunque registrata e sarai contattato per procedere.",
+    "cancelDesc": "Nessun addebito è stato effettuato. L'ordine non è confermato: puoi riprovare quando vuoi.",
     "activatePassport": "Attiva il tuo account Aurya: tutti i tuoi acquisti in un posto solo",
-    "backToRetreats": "Torna ai ritiri"
+    "backToRetreats": "Torna ai ritiri",
+    "cancelRetryRetreat": "Riprova: torna al ritiro",
+    "backToRetreat": "Torna al ritiro",
+    "backToHome": "Torna alla home",
+    "payUnavailable": {
+      "title": "Questo link di pagamento non è più attivo",
+      "body": "La rata collegata a questo link non risulta più in attesa di pagamento. Nessun addebito è stato effettuato. Trovi lo stato aggiornato dei tuoi ordini e pagamenti nel tuo account.",
+      "tempTitle": "Pagamento momentaneamente non disponibile",
+      "tempBody": "Non siamo riusciti ad avviare il pagamento in questo momento. Nessun addebito è stato effettuato: riprova tra qualche minuto dallo stesso link.",
+      "ctaAccount": "Vai al tuo account",
+      "ctaOperator": "Torna all'operatore"
+    }
   },
   "cards": {
     "common": {

@@ -46,6 +46,9 @@ import useTrackView from './lib/useTrackView';
 import api from '../../api/client';
 import StoreContextNav from './components/StoreContextNav';
 import MarketplaceShell from './components/MarketplaceShell';
+// PS6.6 — breadcrumb onesto: in fase network la directory ritiri non
+// esiste, il crumb non deve promettere "Ritiri" sulla home della rete.
+import { useSiteConfig } from '../../context/SiteConfigContext';
 // G4 — mappa lazy: Leaflet non pesa sul first paint della landing
 const StaticMiniMap = React.lazy(() => import('./components/StaticMiniMap'));
 // PN4 — checkout inline lazy: il form condiviso (CheckoutForm + hook)
@@ -310,6 +313,22 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
   // contesto negozio? (param dei link delle card store — vedi M1)
   const fromStore = new URLSearchParams(window.location.search).get('store') === '1';
 
+  // PS6.4 — il contesto marketplace e' VERO solo se il viaggio parte
+  // davvero dalla piattaforma: o un giro marketplace precedente ha gia'
+  // lasciato mktp_return in sessione, o la rotta di provenienza (tracciata
+  // da AnalyticsPageViews in aurya:nav:prev) e' una superficie directory.
+  // Una landing raggiunta dal profilo /o/ (o da fuori) e' vetrina
+  // dell'operatore: ordine canale store, nessun timbro mktp.
+  const computeMktpContext = () => {
+    try { if (sessionStorage.getItem('storefront:mktp_return')) return true; } catch { /* no-op */ }
+    let prev = null;
+    try { prev = sessionStorage.getItem('aurya:nav:prev'); } catch { /* no-op */ }
+    if (!prev) return false;
+    return prev === '/'
+      || /^\/(ritiri|esplora-ritiri|destinazioni|esperienze|e)(\/|$)/.test(prev);
+  };
+  const [mktpCtx, setMktpCtx] = useState(false);
+
   // PN4 — preload nella STESSA forma che StorefrontPage idratava dal
   // vecchio handoff: productId + occurrenceId + qty (+ tier_quantities
   // per il carrello multi-tier F3).
@@ -337,6 +356,9 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
     // e il cliente non incontra mai la vetrina. Nessun carrello store
     // coinvolto: l'avviso K5 non serve piu' su questo ramo.
     if (!fromStore) {
+      // PS6.4 — la provenienza si fotografa QUI (l'overlay non naviga:
+      // aurya:nav:prev resta stabile finche' il pannello e' aperto).
+      setMktpCtx(computeMktpContext());
       setInlineOpen(true);
       return;
     }
@@ -458,6 +480,7 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
               orgSlug={orgSlug}
               preload={buildPreload()}
               onClose={() => setInlineOpen(false)}
+              mktpContext={mktpCtx}
             />
           </React.Suspense>
         </div>
@@ -510,6 +533,8 @@ export default function EventLandingPage() {
 
   const { t, i18n } = useTranslation('landings');
   const cartCount = useCartCount(orgSlug);
+  // PS6.6 — la fase del sito decide dove puo' puntare il breadcrumb.
+  const { sitePhase } = useSiteConfig();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -711,16 +736,33 @@ export default function EventLandingPage() {
         </div>
       )}
 
-      {/* M2 — breadcrumb + condividi (solo guscio marketplace) */}
-      {!fromStore && (
+      {/* M2 — breadcrumb + condividi (solo guscio marketplace).
+          PS6.6 — il crumb dice il vero: in fase marketplace la home E'
+          la directory ("Ritiri" → /); in fase network la directory non
+          esiste, quindi il crumb radice e' "Aurya" → home — a meno che
+          la provenienza sia l'anteprima /esplora-ritiri (rotta non
+          linkata), nel qual caso si torna la'. */}
+      {!fromStore && (() => {
+        let navPrev = null;
+        try { navPrev = sessionStorage.getItem('aurya:nav:prev'); } catch { /* no-op */ }
+        const fromEsplora = !!navPrev && navPrev.startsWith('/esplora-ritiri');
+        const networkPhase = sitePhase === 'network';
+        const rootTo = networkPhase ? (fromEsplora ? '/esplora-ritiri' : '/') : '/';
+        const rootLabel = networkPhase && !fromEsplora
+          ? 'Aurya'
+          : t('landings:event.breadcrumbRetreats', { defaultValue: 'Ritiri' });
+        const categoryTo = networkPhase
+          ? (fromEsplora ? `/esplora-ritiri/${product.category}` : null)
+          : `/ritiri?categoria=${product.category}`;
+        return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3 pb-1 flex items-center justify-between gap-2">
           <nav className="text-xs text-gray-500 truncate">
-            <Link to="/" className="hover:text-primary hover:underline">
-              {t('landings:calendar.title', { defaultValue: 'Ritiri' })}
+            <Link to={rootTo} className="hover:text-primary hover:underline">
+              {rootLabel}
             </Link>
-            {product.category && (<>
+            {product.category && categoryTo && (<>
               <span className="mx-1.5" aria-hidden>›</span>
-              <Link to={`/ritiri?categoria=${product.category}`} className="hover:text-primary hover:underline">
+              <Link to={categoryTo} className="hover:text-primary hover:underline">
                 {t(`landings:categories.${product.category}`, { defaultValue: product.category })}
               </Link>
             </>)}
@@ -741,7 +783,8 @@ export default function EventLandingPage() {
             {t('landings:event.share', { defaultValue: 'Condividi' })} ↗
           </button>
         </div>
-      )}
+        );
+      })()}
 
       {/* Hero */}
       <div className="relative w-full bg-gray-900 overflow-hidden">

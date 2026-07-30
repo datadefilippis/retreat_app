@@ -53,6 +53,20 @@ export default function InlineServiceCheckout({ orgSlug, row, onClose }) {
   const hasSlots = !!row.has_availability_slots;
   const allowCustom = !!row.allow_custom_request;
 
+  // PS6.4 — decontaminazione: il profilo /o/ e' superficie DELL'OPERATORE.
+  // Un giro precedente sul marketplace (overlay ritiro, L2) lascia in
+  // sessione mktp_ctx/mktp_return: qui vanno puliti (specchio della
+  // pulizia legacy di StorefrontPage all'apertura di un checkout store),
+  // altrimenti l'ordine nasce marcato marketplace (niente incasso
+  // manuale per l'operatore, analytics falsate) e la success page
+  // mostra CTA marketplace stantie.
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem('storefront:mktp_ctx');
+      sessionStorage.removeItem('storefront:mktp_return');
+    } catch { /* no-op */ }
+  }, []);
+
   // ── Catalogo pubblico (stessa fonte dello storefront) ────────────────
   const [catalog, setCatalog] = useState(null);
   const [loadState, setLoadState] = useState('loading'); // loading | ready | error
@@ -204,6 +218,9 @@ export default function InlineServiceCheckout({ orgSlug, row, onClose }) {
     clearCartSnapshot: clearSelection,
     loadAvailability: loadAvailabilityNoop,
     t,
+    // PS6.4 — l'acquisto dal profilo pubblico e' SEMPRE canale store:
+    // la superficie reale decide, non il flag di sessione.
+    channel: 'store',
   });
   const { submitted, shippingSummary, couponValidationState } = checkout;
 
@@ -427,6 +444,7 @@ export default function InlineServiceCheckout({ orgSlug, row, onClose }) {
         setOrderFieldsData={setOrderFieldsData}
         selectedServiceOptions={selectedServiceOptions}
         selectedServiceSlots={selectedServiceSlots}
+        inlineServiceSelection
       />
 
       {/* La landing /p/ resta viva come approfondimento (SEO + link

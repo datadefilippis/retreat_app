@@ -350,7 +350,8 @@
     "faqWhoQ": "Con chi posso parlare prima di prenotare?",
     "faqWhoA": "Ogni ritiro ha un volto: trovi la presentazione e il profilo di chi organizza qui sotto, con la sua storia e le recensioni di chi ha già partecipato.",
     "verifiedReviews_one": "1 recensione verificata",
-    "verifiedReviews_other": "{{count}} recensioni verificate"
+    "verifiedReviews_other": "{{count}} recensioni verificate",
+    "breadcrumbRetreats": "Ritiri"
   },
   "product": {
     "loading": "Caricamento…",

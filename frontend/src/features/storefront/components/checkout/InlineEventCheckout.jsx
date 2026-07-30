@@ -41,7 +41,11 @@ import CheckoutForm from './CheckoutForm';
 
 const EMPTY_OBJ = {};
 
-export default function InlineEventCheckout({ orgSlug, preload, onClose }) {
+// PS6.4 — `mktpContext` arriva dalla landing e dice se l'utente e'
+// DAVVERO in un viaggio marketplace (provenienza directory/home o
+// mktp_return gia' in sessione). Default true = comportamento storico
+// per eventuali chiamanti che non passano la prop.
+export default function InlineEventCheckout({ orgSlug, preload, onClose, mktpContext = true }) {
   // Il hook checkout parla il namespace `storefront` (stesse chiavi
   // dello storefront); i testi di contorno usano `landings`.
   const { t, i18n } = useTranslation(['storefront', 'landings']);
@@ -65,12 +69,17 @@ export default function InlineEventCheckout({ orgSlug, preload, onClose }) {
   // ── Contesto marketplace (K1/GT1): stesso timbro del vecchio handoff.
   // L'ordine viaggia con channel=marketplace e la success page dopo
   // Stripe non rimanda alla vetrina ma al Passaporto.
+  // PS6.4 — il timbro NON e' piu' incondizionato: solo quando l'utente
+  // arriva davvero dal marketplace (prop mktpContext dalla landing).
+  // Una landing raggiunta dal profilo /o/ e' vetrina dell'operatore:
+  // nessun flag, ordine canale store, success page verso l'operatore.
   useEffect(() => {
+    if (!mktpContext) return;
     try {
       sessionStorage.setItem('storefront:mktp_ctx', '1');
       sessionStorage.setItem('storefront:mktp_return', window.location.pathname);
     } catch { /* no-op */ }
-  }, []);
+  }, [mktpContext]);
 
   // ── Prodotto + occorrenza risolti dal CATALOGO (non dalla landing) ───
   const product = useMemo(
@@ -189,6 +198,10 @@ export default function InlineEventCheckout({ orgSlug, preload, onClose }) {
     clearCartSnapshot: noop,   // nessun carrello persistito da pulire
     loadAvailability: noop,
     t,
+    // PS6.4 — il canale deriva dalla superficie reale, non dal flag di
+    // sessione: marketplace solo quando il viaggio e' davvero partito
+    // dalla directory.
+    channel: mktpContext ? 'marketplace' : 'store',
   });
   const {
     submitted, shippingSummary, couponValidationState, modeCopy, setMktpCheckout,
@@ -197,9 +210,12 @@ export default function InlineEventCheckout({ orgSlug, preload, onClose }) {
   // K2 — checkout marketplace: il form mostra il Passaporto (niente
   // account del venditore) e il submit salva l'email per l'attivazione
   // one-click sulla success page. Stesso flag del vecchio handoff.
+  // PS6.4 — solo in vero contesto marketplace: l'attivazione one-click
+  // sulla success page esiste solo quando mktp_ctx e' timbrato.
   useEffect(() => {
+    if (!mktpContext) return;
     setMktpCheckout({ returnTo: window.location.pathname });
-  }, [setMktpCheckout]);
+  }, [setMktpCheckout, mktpContext]);
 
   // ── Stati di caricamento / errore ────────────────────────────────────
   if (loadState === 'loading') {

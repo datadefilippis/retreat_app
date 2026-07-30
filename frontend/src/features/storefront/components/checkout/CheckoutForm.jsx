@@ -30,6 +30,12 @@ export default function CheckoutForm({
   setOrderFieldsData,
   selectedServiceOptions,
   selectedServiceSlots,
+  // PS6.9 — true quando il form vive nel pannello inline del profilo
+  // /o/ (InlineServiceCheckout): il picker di opzione/slot e' NELLO
+  // STESSO pannello, quindi l'avviso ambra "seleziona su un'altra
+  // pagina" e il link "Modifica" verso la landing /p/ sarebbero
+  // ridondanti e fuorvianti — si sopprimono, resta il picker.
+  inlineServiceSelection = false,
 }) {
   const { t, i18n } = useTranslation('storefront');
   // PN2 — stati + setter + derivati arrivano impacchettati da
@@ -85,7 +91,7 @@ export default function CheckoutForm({
                     <div key={`svc-${pid}`} className="rounded-lg border border-indigo-200 bg-indigo-50/30 p-3">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-semibold text-gray-900">{product.name}</p>
-                        {landingUrl && (
+                        {landingUrl && !inlineServiceSelection && (
                           <Link
                             to={landingUrl}
                             className="text-xs text-indigo-700 hover:underline font-medium shrink-0"
@@ -104,7 +110,10 @@ export default function CheckoutForm({
                           {selectedSlot.end_time ? ` – ${selectedSlot.end_time}` : ''}
                         </p>
                       )}
-                      {needsSelection && (
+                      {/* PS6.9 — nel pannello inline il picker e' qui
+                          sopra: l'avviso "vai alla pagina prodotto"
+                          sarebbe un secondo avviso ridondante. */}
+                      {needsSelection && !inlineServiceSelection && (
                         <div className="mt-2 flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-2 text-xs">
                           <span className="text-amber-900">
                             {t('storefront:checkout.service.selectionRequired')}

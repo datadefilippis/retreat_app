@@ -145,7 +145,9 @@
     "fillAttendees": "Remplissez le nom et l'email pour chaque participant.",
     "termsRequired": "Vous devez accepter les conditions générales pour continuer.",
     "gdprRequired": "Vous devez accepter les Conditions et la Politique de confidentialité d'Aurya pour continuer.",
-    "selectShippingOption": "Sélectionnez une option de livraison."
+    "selectShippingOption": "Sélectionnez une option de livraison.",
+    "preloadUnavailableInLanguage": "Ce service n'est pas disponible dans la langue de la boutique.",
+    "checkoutEmptyCart": "Votre panier est vide : ajoutez un service ou une retraite pour continuer."
   },
   "submitted": {
     "orderReceived": "Commande reçue",
@@ -250,9 +252,20 @@
     "pendingDesc": "Nous confirmons la commande. Cela peut prendre quelques secondes…",
     "lateWebhookDesc": "Le paiement a été reçu. La confirmation finale de la commande sera envoyée par email.",
     "cancelTitle": "Paiement non complété",
-    "cancelDesc": "Le paiement n'a pas été complété. Votre demande a été enregistrée quand même et vous serez contacté pour continuer.",
+    "cancelDesc": "Aucun débit n'a été effectué. La commande n'est pas confirmée : vous pouvez réessayer quand vous voulez.",
     "activatePassport": "Active ton compte Aurya : tous tes achats au même endroit",
-    "backToRetreats": "Retour aux retraites"
+    "backToRetreats": "Retour aux retraites",
+    "cancelRetryRetreat": "Réessayer : retour à la retraite",
+    "backToRetreat": "Retour à la retraite",
+    "backToHome": "Retour à l'accueil",
+    "payUnavailable": {
+      "title": "Ce lien de paiement n'est plus actif",
+      "body": "L'échéance liée à ce lien n'est plus en attente de paiement. Aucun débit n'a été effectué. Vous trouverez l'état à jour de vos commandes et paiements dans votre compte.",
+      "tempTitle": "Paiement momentanément indisponible",
+      "tempBody": "Nous n'avons pas pu démarrer le paiement pour le moment. Aucun débit n'a été effectué : réessayez dans quelques minutes avec le même lien.",
+      "ctaAccount": "Accéder à votre compte",
+      "ctaOperator": "Retour à l'opérateur"
+    }
   },
   "cards": {
     "common": {

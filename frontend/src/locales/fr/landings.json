@@ -350,7 +350,8 @@
     "faqWhoQ": "À qui puis-je parler avant de réserver ?",
     "faqWhoA": "Chaque retraite a un visage : tu trouves ci-dessous le profil de l'organisateur, avec son histoire et les avis de ceux qui ont déjà participé.",
     "verifiedReviews_one": "1 avis vérifié",
-    "verifiedReviews_other": "{{count}} avis vérifiés"
+    "verifiedReviews_other": "{{count}} avis vérifiés",
+    "breadcrumbRetreats": "Retraites"
   },
   "product": {
     "loading": "Chargement…",

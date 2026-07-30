@@ -28,6 +28,9 @@ import { customerAuthAPI } from '../../api/customerAuth';
 import { publicShippingOptions } from '../../api/shippingOptions';
 import { useStorefrontLocaleSync } from './hooks/useStorefrontLocaleSync';
 import useStorefrontCart from './hooks/useStorefrontCart';
+// PS6.10 — lettura diretta dello snapshot carrello per il feedback
+// "?checkout=1 con carrello vuoto" (la fonte di verita' della persistenza).
+import { hydrateCart } from './hooks/useCartStorage';
 import useAvailableCategories from './hooks/useAvailableCategories';
 import useDesignTokens from './hooks/useDesignTokens';
 import { CATEGORY_BY_SLUG, isKnownCategorySlug } from './categories';
@@ -363,6 +366,12 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     load();
   }, [slug, i18n.language]);
 
+  // PS6.2 — stato del recupero preload per prodotto ('pending' |
+  // 'done' | 'failed'): un solo refetch per prodotto, niente loop.
+  const preloadRecoveryRef = useRef({});
+  // PS6.10 — feedback "carrello vuoto" mostrato al massimo una volta.
+  const emptyCheckoutNoticeRef = useRef(false);
+
   // Consolidation: hydrate cart from landing-page hand-off.
   //
   // EventLandingPage navigates here with `state: { preloadCart }` after
@@ -379,7 +388,56 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
     const preload = location.state?.preloadCart;
     if (!preload || !catalog?.products) return;
     const product = (catalog.products || []).find(p => p.id === preload.productId);
-    if (!product) return;  // catalog does not include the product (hidden?) — bail silently
+    if (!product) {
+      // PS6.2 — il catalogo in lingua non contiene il prodotto del
+      // handoff /p/ → /s/ (traduzione mancante: il filtro lingua del
+      // catalogo lo esclude, la landing /p/ invece serve il fallback
+      // italiano). Recupero a basso rischio: UN refetch del catalogo
+      // SENZA filtro lingua (lingua sorgente IT, sempre completa); se
+      // il prodotto c'e', lo si innesta nel catalogo corrente (il
+      // resto della vetrina resta nella lingua scelta) e l'effetto
+      // ri-gira idratando il carrello. Se manca anche li' (spublicato)
+      // → toast onesto, niente vetrina muta col toast "Aggiunto".
+      const pid = preload.productId;
+      const mergeRecovered = (recovered) => setCatalog(prev => {
+        if (!prev) return prev;
+        if ((prev.products || []).some(p => p.id === pid)) return prev;
+        return { ...prev, products: [...(prev.products || []), recovered] };
+      });
+      const attempt = preloadRecoveryRef.current[pid];
+      if (attempt?.status === 'done') {
+        // Un refetch concorrente del catalogo (strict-mode/cambio lingua)
+        // ha sovrascritto il merge: si re-innesta dal prodotto gia'
+        // recuperato, senza nuove chiamate (idempotente, niente loop).
+        mergeRecovered(attempt.product);
+        return;
+      }
+      if (!attempt) {
+        preloadRecoveryRef.current[pid] = { status: 'pending' };
+        (async () => {
+          let found = null;
+          try {
+            const res = await storefrontAPI.getCatalog(slug);
+            found = (res.data?.products || []).find(p => p.id === pid) || null;
+          } catch { /* rete giu': si cade nel ramo onesto */ }
+          if (found) {
+            preloadRecoveryRef.current[pid] = { status: 'done', product: found };
+            mergeRecovered(found);
+            return;
+          }
+          preloadRecoveryRef.current[pid] = { status: 'failed' };
+          toast.error(t('storefront:errors.preloadUnavailableInLanguage', {
+            defaultValue: 'Questo servizio non è disponibile nella lingua della vetrina.',
+          }));
+          // Router state via: un refresh non deve ritentare l'idratazione.
+          window.history.replaceState(
+            { ...(window.history.state || {}), usr: undefined },
+            '', window.location.pathname + window.location.search,
+          );
+        })();
+      }
+      return;
+    }
     const occurrence = preload.occurrenceId
       ? (product.occurrences || []).find(o => o.id === preload.occurrenceId)
       : null;
@@ -731,17 +789,40 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('checkout') !== '1') return;
+    const stripParam = () => {
+      params.delete('checkout');
+      const newSearch = params.toString();
+      navigate(
+        location.pathname + (newSearch ? `?${newSearch}` : '') + location.hash,
+        { replace: true },
+      );
+    };
     // Only open if there is something to check out; otherwise wait for the
     // cart to hydrate (selectedItems.length will change, re-triggering).
-    if (selectedItems.length === 0) return;
+    if (selectedItems.length === 0) {
+      // PS6.10 — carrello DAVVERO vuoto (nessuno snapshot in sessione e
+      // nessun preload in arrivo): il param non deve restare appeso
+      // nell'URL senza alcun feedback. Un colpo solo per pagina.
+      if (catalog && !location.state?.preloadCart && !emptyCheckoutNoticeRef.current) {
+        let snapshotHasItems = false;
+        try {
+          const snap = hydrateCart(slug);
+          snapshotHasItems = !!snap && Object.values(snap.quantities || {}).some(q => q > 0);
+        } catch { /* storage inaccessibile */ }
+        if (!snapshotHasItems) {
+          emptyCheckoutNoticeRef.current = true;
+          toast.info(t('storefront:errors.checkoutEmptyCart', {
+            defaultValue: 'Il tuo carrello è vuoto: aggiungi un servizio o un ritiro per procedere.',
+          }));
+          stripParam();
+        }
+      }
+      return;
+    }
     setFormOpen(true);
-    params.delete('checkout');
-    const newSearch = params.toString();
-    navigate(
-      location.pathname + (newSearch ? `?${newSearch}` : '') + location.hash,
-      { replace: true },
-    );
-  }, [location.search, location.pathname, location.hash, selectedItems.length, navigate]);
+    stripParam();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search, location.pathname, location.hash, selectedItems.length, navigate, catalog]);
 
   // ── States ──
 

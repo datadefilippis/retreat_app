@@ -350,7 +350,8 @@
     "faqWhoQ": "Who can I talk to before booking?",
     "faqWhoA": "Every retreat has a face: below you find the organizer profile, with their story and reviews from people who already took part.",
     "verifiedReviews_one": "1 verified review",
-    "verifiedReviews_other": "{{count}} verified reviews"
+    "verifiedReviews_other": "{{count}} verified reviews",
+    "breadcrumbRetreats": "Retreats"
   },
   "product": {
     "loading": "Loading…",

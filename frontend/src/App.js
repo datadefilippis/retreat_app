@@ -119,7 +119,7 @@ import CourseLandingPage from "./features/storefront/CourseLandingPage";
 // the merchant's allowed-languages list available on first render.
 import PublicStorefrontShell from "./features/storefront/PublicStorefrontShell";
 import DownloadLandingPage from "./features/storefront/DownloadLandingPage";
-import { CheckoutSuccessPage, CheckoutCancelPage } from "./features/storefront/CheckoutResultPage";
+import { CheckoutSuccessPage, CheckoutCancelPage, PayLinkUnavailablePage } from "./features/storefront/CheckoutResultPage";
 const TeamPage = lazy(() => import("./features/team/TeamPage"));
 const SettingsPage = lazy(() => import("./features/settings/SettingsPage"));
 const PublicProfilePage = lazy(() => import("./features/settings/PublicProfilePage"));
@@ -339,10 +339,23 @@ function DestinationsGate() {
 
 // GA1 — una page_view per ogni navigazione SPA (config con
 // send_page_view: false, quindi niente doppi conteggi).
+// PS6.4 — oltre al ping analytics, si tiene traccia della ROTTA DI
+// PROVENIENZA in sessionStorage (aurya:nav:prev): serve alle superfici
+// di checkout per derivare il canale dell'ordine dalla superficie
+// reale (profilo vs marketplace). Solo pathname; il refresh non
+// sovrascrive prev (cur non cambia), quindi la provenienza sopravvive
+// a un F5 sulla landing.
 function AnalyticsPageViews() {
   const location = useLocation();
   React.useEffect(() => {
     trackPageView(location.pathname + location.search);
+    try {
+      const cur = sessionStorage.getItem('aurya:nav:cur');
+      if (cur !== location.pathname) {
+        if (cur) sessionStorage.setItem('aurya:nav:prev', cur);
+        sessionStorage.setItem('aurya:nav:cur', location.pathname);
+      }
+    } catch { /* storage inaccessibile: nessuna provenienza */ }
   }, [location.pathname, location.search]);
   return null;
 }
@@ -353,13 +366,17 @@ function AnalyticsPageViews() {
 // RS3 fix — /s/x?checkout=1 e' l'handoff del checkout dalle landing
 // /e/ e /p/: DEVE aprire il modale sullo storefront, non redirigere
 // al profilo (I2, I3: il motore di acquisto non si tocca).
+// PS6.1 — il consenso al checkout va LATCHATO al mount: StorefrontPage
+// consuma ?checkout=1 (strip del param con navigate replace) e azzera il
+// Router state dopo l'idratazione; senza latch questa guardia rivaluterebbe
+// wantsCheckout=false e rimbalzerebbe al profilo A MODALE APERTO.
 function StoreToProfileRedirect() {
   const { slug } = useParams();
   const location = useLocation();
-  const wantsCheckout =
+  const [grant] = React.useState(() =>
     new URLSearchParams(location.search).has('checkout')
-    || Boolean(location.state?.preloadCart);
-  if (wantsCheckout) return <StorefrontPage />;
+    || Boolean(location.state?.preloadCart));
+  if (grant) return <StorefrontPage />;
   return <Navigate to={`/o/${slug}`} replace />;
 }
 
@@ -433,6 +450,9 @@ function AppRoutes() {
           <PublicStorefrontShell slug={data.store_slug}> after fetch. */}
       <Route path="/s/checkout-success" element={<CheckoutSuccessPage />} />
       <Route path="/s/checkout-cancel" element={<CheckoutCancelPage />} />
+      {/* PS6.3 — atterraggio dei link /pay/{token} non piu' servibili:
+          il backend reindirizza qui, mai piu' JSON nudo da email. */}
+      <Route path="/s/pay-non-disponibile" element={<PayLinkUnavailablePage />} />
       {/* Wave GDPR-Commerce CG-2 — public per-store legal pages.
           The merchant edits docs in /settings/gdpr; here we serve the
           published version in their chosen display_locale (the same

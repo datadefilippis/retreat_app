@@ -145,7 +145,9 @@
     "fillAttendees": "Geben Sie Name und E-Mail für jeden Teilnehmer ein.",
     "termsRequired": "Sie müssen die Allgemeinen Geschäftsbedingungen akzeptieren, um fortzufahren.",
     "gdprRequired": "Du musst die Nutzungsbedingungen und die Datenschutzerklärung von Aurya akzeptieren, um fortzufahren.",
-    "selectShippingOption": "Wählen Sie eine Versandoption."
+    "selectShippingOption": "Wählen Sie eine Versandoption.",
+    "preloadUnavailableInLanguage": "Diese Leistung ist in der Sprache des Shops nicht verfügbar.",
+    "checkoutEmptyCart": "Dein Warenkorb ist leer: füge eine Leistung oder ein Retreat hinzu, um fortzufahren."
   },
   "submitted": {
     "orderReceived": "Bestellung erhalten",
@@ -250,9 +252,20 @@
     "pendingDesc": "Wir bestätigen die Bestellung. Das kann einige Sekunden dauern…",
     "lateWebhookDesc": "Die Zahlung ist eingegangen. Die endgültige Bestellbestätigung wird per E-Mail gesendet.",
     "cancelTitle": "Zahlung nicht abgeschlossen",
-    "cancelDesc": "Die Zahlung wurde nicht abgeschlossen. Ihre Anfrage wurde trotzdem registriert und Sie werden kontaktiert, um fortzufahren.",
+    "cancelDesc": "Es wurde nichts abgebucht. Die Bestellung ist nicht bestätigt: du kannst es jederzeit erneut versuchen.",
     "activatePassport": "Aktiviere dein Aurya Konto: alle deine Käufe an einem Ort",
-    "backToRetreats": "Zurück zu den Retreats"
+    "backToRetreats": "Zurück zu den Retreats",
+    "cancelRetryRetreat": "Erneut versuchen: zurück zum Retreat",
+    "backToRetreat": "Zurück zum Retreat",
+    "backToHome": "Zur Startseite",
+    "payUnavailable": {
+      "title": "Dieser Zahlungslink ist nicht mehr aktiv",
+      "body": "Die mit diesem Link verknüpfte Rate wartet nicht mehr auf eine Zahlung. Es wurde nichts abgebucht. Den aktuellen Stand deiner Bestellungen und Zahlungen findest du in deinem Konto.",
+      "tempTitle": "Zahlung vorübergehend nicht verfügbar",
+      "tempBody": "Die Zahlung konnte gerade nicht gestartet werden. Es wurde nichts abgebucht: versuche es in ein paar Minuten über denselben Link erneut.",
+      "ctaAccount": "Zu deinem Konto",
+      "ctaOperator": "Zurück zum Anbieter"
+    }
   },
   "cards": {
     "common": {
