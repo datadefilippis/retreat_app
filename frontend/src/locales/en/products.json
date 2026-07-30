@@ -742,7 +742,7 @@
       "fallbackName": "Event",
       "notFound": "Event not found",
       "notFoundDesc": "The requested occurrence does not exist or doesn't belong to your organization.",
-      "notFoundBackToProducts": "Back to products",
+      "notFoundBackToProducts": "Back to retreats",
       "errorPrefix": "Error: {{detail}}",
       "notVisibleWarning": "⚠ Event not visible to the public",
       "statusBadge": {
@@ -1051,7 +1051,7 @@
         "listEmpty": "No tickets.",
         "guestPlaceholder": "Guest",
         "rowEnterBtn": "Let in",
-        "backToProducts": "← Back to products",
+        "backToProducts": "← Back to retreats",
         "scanner": {
           "title": "Camera scanner",
           "closeBtn": "Close",
@@ -1407,7 +1407,7 @@
       }
     },
     "service": {
-      "back": "← Back to services",
+      "back": "← Back to your price list",
       "typeLabel": "Service",
       "fallbackName": "Service",
       "notFound": "Service not found",

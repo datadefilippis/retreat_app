@@ -2534,3 +2534,32 @@ asyncio.run(main())
             apl._delete_product(headers, prod_a["id"])
             db.products.delete_many({"id": prod_b["id"]})
             self._cleanup_email(email)
+
+
+class TestPotaturaPs1:
+    """PS1 (30/7/2026) — back onesti: le dashboard raggiungibili dal
+    mondo snello non riportano MAI alla ProductsPage legacy.
+
+    ServiceDashboardPage (da /listino "Tutte le impostazioni") torna a
+    /listino in tutti e tre i punti (hero back + due stati di errore);
+    EventDashboardPage not-found e CheckInPage tornano a /events. La
+    ProductsPage resta viva SOLO per le org legacy_commerce (voce di
+    menu dietro flag, Layout.js): qui si vieta solo la strada dal
+    mondo snello.
+    """
+
+    def test_ps1_service_dashboard_torna_al_listino(self):
+        page = (FRONTEND_SRC / "features" / "services"
+                / "ServiceDashboardPage.js").read_text()
+        assert 'to="/products' not in page \
+            and "navigate('/products" not in page, \
+            "ServiceDashboardPage non deve piu' linkare la ProductsPage legacy"
+        assert page.count("'/listino'") + page.count('"/listino"') >= 3, \
+            "attesi 3 ritorni a /listino (hero + not_found + wrong_type)"
+
+    def test_ps1_ecosistema_ritiri_torna_ai_ritiri(self):
+        for rel in (("features", "events", "EventDashboardPage.js"),
+                    ("features", "events", "CheckInPage.js")):
+            src = FRONTEND_SRC.joinpath(*rel).read_text()
+            assert 'to="/products"' not in src and "navigate('/products')" not in src, \
+                f"{rel[-1]} non deve riportare alla ProductsPage legacy"

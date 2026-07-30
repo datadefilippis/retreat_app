@@ -20,6 +20,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+// deep-link diretto (/services/:id): il bundle i18n admin non e' ancora
+// caricato dal Layout — stesso fix di EventWizard
+import '../../i18n-admin';
 import ProductSalesStats from '../products/components/ProductSalesStats';
 import { toast } from 'sonner';
 import { productsAPI } from '../../api';
@@ -356,8 +359,8 @@ export default function ServiceDashboardPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="max-w-md text-center bg-white rounded-xl border p-8">
           <h1 className="text-2xl font-bold mb-2">{t('dashboards.service.notFound')}</h1>
-          <button onClick={() => navigate('/products')} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">
-            {t('dashboards.common.backToProducts')}
+          <button onClick={() => navigate('/listino')} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">
+            {t('dashboards.service.back')}
           </button>
         </div>
       </div>
@@ -369,7 +372,7 @@ export default function ServiceDashboardPage() {
         <div className="max-w-md text-center bg-white rounded-xl border p-8">
           <h1 className="text-2xl font-bold mb-2">{t('dashboards.service.invalidType')}</h1>
           <p className="text-gray-600 mb-4">{t('dashboards.service.invalidTypeDesc')}</p>
-          <button onClick={() => navigate('/products')} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">{t('dashboards.common.backToProducts')}</button>
+          <button onClick={() => navigate('/listino')} className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm">{t('dashboards.service.back')}</button>
         </div>
       </div>
     );
@@ -387,7 +390,7 @@ export default function ServiceDashboardPage() {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div className="min-w-0">
-              <Link to="/products?type=service" className="inline-flex items-center gap-1 text-sm font-medium text-white/70 hover:text-white transition-colors">{t('dashboards.service.back')}</Link>
+              <Link to="/listino" className="inline-flex items-center gap-1 text-sm font-medium text-white/70 hover:text-white transition-colors">{t('dashboards.service.back')}</Link>
               <p className="text-[10px] uppercase tracking-widest opacity-70 mt-2">{t('dashboards.service.typeLabel')}</p>
               <h1 className="text-2xl sm:text-3xl font-bold mt-1">{productForm.name || t('dashboards.service.fallbackName')}</h1>
               {productForm.duration_minutes && (

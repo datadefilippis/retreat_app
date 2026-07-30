@@ -742,7 +742,7 @@
       "fallbackName": "Ritiro",
       "notFound": "Ritiro non trovato",
       "notFoundDesc": "L'occorrenza richiesta non esiste o non appartiene alla tua organizzazione.",
-      "notFoundBackToProducts": "Torna ai prodotti",
+      "notFoundBackToProducts": "Torna ai ritiri",
       "errorPrefix": "Errore: {{detail}}",
       "notVisibleWarning": "⚠ Ritiro non visibile al pubblico",
       "statusBadge": {
@@ -1051,7 +1051,7 @@
         "listEmpty": "Nessun biglietto.",
         "guestPlaceholder": "Ospite",
         "rowEnterBtn": "Fai entrare",
-        "backToProducts": "← Torna ai prodotti",
+        "backToProducts": "← Torna ai ritiri",
         "scanner": {
           "title": "Scanner fotocamera",
           "closeBtn": "Chiudi",
@@ -1475,7 +1475,7 @@
       }
     },
     "service": {
-      "back": "← Torna ai servizi",
+      "back": "← Torna al listino",
       "typeLabel": "Servizio",
       "fallbackName": "Servizio",
       "notFound": "Servizio non trovato",

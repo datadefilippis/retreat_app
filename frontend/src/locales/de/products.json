@@ -742,7 +742,7 @@
       "fallbackName": "Veranstaltung",
       "notFound": "Veranstaltung nicht gefunden",
       "notFoundDesc": "Das angeforderte Vorkommnis existiert nicht oder gehört nicht zu Ihrer Organisation.",
-      "notFoundBackToProducts": "Zurück zu den Produkten",
+      "notFoundBackToProducts": "Zurück zu den Retreats",
       "errorPrefix": "Fehler: {{detail}}",
       "notVisibleWarning": "⚠ Veranstaltung nicht öffentlich sichtbar",
       "statusBadge": {
@@ -1051,7 +1051,7 @@
         "listEmpty": "Keine Tickets.",
         "guestPlaceholder": "Gast",
         "rowEnterBtn": "Einlassen",
-        "backToProducts": "← Zurück zu den Produkten",
+        "backToProducts": "← Zurück zu den Retreats",
         "scanner": {
           "title": "Kamera-Scanner",
           "closeBtn": "Schließen",
@@ -1407,7 +1407,7 @@
       }
     },
     "service": {
-      "back": "← Zurück zu den Services",
+      "back": "← Zurück zur Preisliste",
       "typeLabel": "Service",
       "fallbackName": "Service",
       "notFound": "Service nicht gefunden",

@@ -426,7 +426,7 @@ export default function CheckInPage() {
         </div>
 
         <div className="text-center pt-2">
-          <Link to="/products" className="text-xs text-gray-600 underline hover:text-gray-900">
+          <Link to="/events" className="text-xs text-gray-600 underline hover:text-gray-900">
             {t('dashboards.event.checkIn.backToProducts')}
           </Link>
         </div>

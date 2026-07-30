@@ -686,7 +686,7 @@ export default function EventDashboardPage() {
         <div className="max-w-md text-center bg-white rounded-xl border p-8">
           <h1 className="text-2xl font-bold mb-2">{t('dashboards.event.notFound')}</h1>
           <p className="text-gray-600 mb-4">{t('dashboards.event.notFoundDesc')}</p>
-          <Link to="/products" className="inline-block rounded-md bg-gray-900 text-white px-4 py-2 text-sm">
+          <Link to="/events" className="inline-block rounded-md bg-gray-900 text-white px-4 py-2 text-sm">
             {t('dashboards.event.notFoundBackToProducts')}
           </Link>
         </div>

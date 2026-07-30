@@ -742,7 +742,7 @@
       "fallbackName": "Événement",
       "notFound": "Événement introuvable",
       "notFoundDesc": "L'occurrence demandée n'existe pas ou n'appartient pas à votre organisation.",
-      "notFoundBackToProducts": "Retour aux produits",
+      "notFoundBackToProducts": "Retour aux retraites",
       "errorPrefix": "Erreur : {{detail}}",
       "notVisibleWarning": "⚠ Événement non visible par le public",
       "statusBadge": {
@@ -1051,7 +1051,7 @@
         "listEmpty": "Aucun billet.",
         "guestPlaceholder": "Invité",
         "rowEnterBtn": "Faire entrer",
-        "backToProducts": "← Retour aux produits",
+        "backToProducts": "← Retour aux retraites",
         "scanner": {
           "title": "Scanner caméra",
           "closeBtn": "Fermer",
@@ -1407,7 +1407,7 @@
       }
     },
     "service": {
-      "back": "← Retour aux services",
+      "back": "← Retour au tarif",
       "typeLabel": "Service",
       "fallbackName": "Service",
       "notFound": "Service introuvable",
