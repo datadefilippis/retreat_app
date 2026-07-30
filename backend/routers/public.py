@@ -2312,6 +2312,11 @@ class PublicProductLanding(BaseModel):
     # Contains the full curriculum (modules + lessons) with duration but
     # without bunny_video_guid. For other item_types it is None.
     course_preview: Optional[PublicCoursePreview] = None
+    # PV5 — il mondo dell'org decide il guscio della landing: False
+    # (default, mondo snello) → la pagina vive nel guscio del profilo
+    # /o/ e la CTA porta al checkout inline del profilo; True → l'org
+    # ha lo storefront legacy e l'handoff storico /p/→/s/ resta.
+    legacy_commerce: bool = False
 
 
 @router.get("/products/{org_slug}/{product_slug}", response_model=PublicProductLanding)
@@ -2541,6 +2546,7 @@ async def get_product_landing(org_slug: str, product_slug: str,
         currency=get_currency_for_product(prod, org),
         is_buyable=True,
         course_preview=course_preview,
+        legacy_commerce=bool(org.get("legacy_commerce")),
     )
 
 
@@ -4290,7 +4296,10 @@ async def _operator_listino(org_id: str) -> list:
          "price_mode": 1, "transaction_mode": 1, "description": 1,
          "metadata.duration_minutes": 1, "metadata.service_mode": 1,
          "metadata.use_default_schedule": 1,
-         "metadata.service_allow_custom_request": 1},
+         "metadata.service_allow_custom_request": 1,
+         # PV5 — contenuto "ricco" della landing /p/: servono al flag
+         # has_landing (il frontend non deve indovinare)
+         "metadata.long_description": 1, "metadata.cover_image_url": 1},
     ).sort("category", 1).to_list(100)
     ids = [r["id"] for r in rows if r.get("id")]
     opts_by_product: dict = {}
@@ -4336,6 +4345,13 @@ async def _operator_listino(org_id: str) -> list:
             "service_options": opts_by_product.get(r.get("id"), []),
             "allow_custom_request": bool(
                 meta.get("service_allow_custom_request")),
+            # PV5 — la landing /p/ "esiste" (link Vedi dettagli) SOLO se
+            # ha contenuto in piu' rispetto alla riga: racconto lungo
+            # (PS2) oppure cover dedicata. Flag additivo calcolato qui
+            # cosi' ogni superficie usa lo stesso criterio.
+            "has_landing": bool(
+                (meta.get("long_description") or "").strip()
+                or meta.get("cover_image_url")),
         })
     return out
 

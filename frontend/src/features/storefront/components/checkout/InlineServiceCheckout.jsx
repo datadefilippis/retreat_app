@@ -448,8 +448,9 @@ export default function InlineServiceCheckout({ orgSlug, row, onClose }) {
       />
 
       {/* La landing /p/ resta viva come approfondimento (SEO + link
-          esterni), mai piu' come passaggio obbligato. */}
-      {row.slug && (
+          esterni), mai piu' come passaggio obbligato. PV5 — il link
+          appare SOLO se la landing ha contenuto reale (has_landing). */}
+      {row.slug && row.has_landing && (
         <p className="text-[11px] text-gray-500 text-center">
           <Link to={`/p/${orgSlug}/${row.slug}`} className="underline hover:text-gray-800">
             {t('landings:operator.inlineDetailsLink', { defaultValue: 'Vedi la pagina completa del servizio' })}

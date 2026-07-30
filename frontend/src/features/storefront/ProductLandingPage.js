@@ -30,6 +30,12 @@ import i18nInstance from '../../i18n';
 import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
 import StorefrontHeader from './components/StorefrontHeader';
+// PV5 — nel mondo snello la landing vive nel GUSCIO DEL PROFILO
+// (MarketplaceShell + breadcrumb verso /o/): mai piu' vetrina /s/.
+// La selezione fatta qui si persiste nel carrello di sessione cosi'
+// il checkout inline del profilo la ritrova gia' pronta.
+import MarketplaceShell from './components/MarketplaceShell';
+import { hydrateCart, persistCart } from './hooks/useCartStorage';
 import AvailabilityCalendarSlotPicker from './components/AvailabilityCalendarSlotPicker';
 // PN3 — il form richiesta libera e' estratto in components/ cosi' che
 // l'acquisto inline sul profilo /o/ riusi gli stessi campi (era la
@@ -108,6 +114,9 @@ const CustomRequestForm = ServiceCustomRequestForm;
 function ProceedToCheckoutBar({
   orgSlug, product, selectedOptionId, selectedSlot,
   customRequest, customRequestActive, effectiveCurrency,
+  // PV5 — true quando l'org e' nel mondo snello (niente legacy_commerce):
+  // la CTA porta al checkout INLINE del profilo /o/, non alla vetrina /s/.
+  profileWorld = false,
 }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('landings');
@@ -145,16 +154,13 @@ function ProceedToCheckoutBar({
 
   const handleProceed = () => {
     if (!canProceed) return;
-    const preloadCart = {
-      productId: product.id,
-      qty: 1,
-    };
-    if (selectedOptionId) preloadCart.service_option_id = selectedOptionId;
-    // Prefer the real slot if chosen; otherwise use the custom request.
+    // Lo slot effettivo: quello reale se scelto, altrimenti la
+    // richiesta libera (stessa forma in entrambi i mondi).
+    let slotPayload = null;
     if (selectedSlot?.date) {
-      preloadCart.service_slot = { ...selectedSlot };
+      slotPayload = { ...selectedSlot };
     } else if (customRequestComplete) {
-      preloadCart.service_slot = {
+      slotPayload = {
         date: customRequest.date,
         start_time: customRequest.start_time,
         end_time: customRequest.end_time,
@@ -162,6 +168,44 @@ function ProceedToCheckoutBar({
         notes: customRequest.notes || null,
       };
     }
+    // PV5 — MONDO SNELLO: niente handoff /p/→/s/. La selezione si
+    // scrive nello snapshot di sessione (stesse chiavi che idrata
+    // useStorefrontCart) e si naviga al profilo con la riga espansa:
+    // InlineServiceCheckout riparte con opzione e orario gia' scelti.
+    if (profileWorld) {
+      try {
+        const snap = hydrateCart(orgSlug) || {};
+        const next = {
+          ...snap,
+          quantities: { ...(snap.quantities || {}), [product.id]: 1 },
+        };
+        if (selectedOptionId) {
+          next.selectedServiceOptions = {
+            ...(snap.selectedServiceOptions || {}),
+            [product.id]: selectedOptionId,
+          };
+        }
+        if (slotPayload) {
+          next.selectedServiceSlots = {
+            ...(snap.selectedServiceSlots || {}),
+            [product.id]: slotPayload,
+          };
+        }
+        persistCart(orgSlug, next);
+        window.dispatchEvent(new CustomEvent('storefront:cart:change',
+          { detail: { slug: orgSlug } }));
+      } catch { /* selezione persa: il pannello inline resta usabile */ }
+      navigate(`/o/${orgSlug}`, { state: { expandService: product.id } });
+      return;
+    }
+    // MONDO LEGACY (org legacy_commerce / tipi prodotto legacy):
+    // l'handoff storico verso lo storefront resta INVARIATO.
+    const preloadCart = {
+      productId: product.id,
+      qty: 1,
+    };
+    if (selectedOptionId) preloadCart.service_option_id = selectedOptionId;
+    if (slotPayload) preloadCart.service_slot = slotPayload;
     navigate(`/s/${orgSlug}`, { state: { preloadCart } });
     toast.success(t('landings:product.toastAdded'), {
       action: {
@@ -307,8 +351,10 @@ export default function ProductLandingPage() {
         <div className="max-w-md text-center bg-white rounded-xl border p-8">
           <h1 className="text-2xl font-bold mb-2">{t('landings:product.notFoundTitle')}</h1>
           <p className="text-sm text-gray-600 mb-4">{t('landings:product.notFoundBody')}</p>
-          <Link to={`/s/${orgSlug}`} className="inline-block rounded-md bg-gray-900 text-white px-4 py-2 text-sm">
-            {t('landings:product.backToCatalogShort')}
+          {/* PV5 — si torna al PROFILO: /s/:slug redirige comunque a /o/,
+              qui il link e' onesto fin da subito (vale per ogni mondo). */}
+          <Link to={`/o/${orgSlug}`} className="inline-block rounded-md bg-gray-900 text-white px-4 py-2 text-sm">
+            {t('landings:product.backToProfile', { defaultValue: '← Torna al profilo' })}
           </Link>
         </div>
       </div>
@@ -338,10 +384,40 @@ export default function ProductLandingPage() {
   const allowCustomRequest = !!product.service_allow_custom_request;
   const durationMinutes = product.service_duration_minutes;
 
+  // PV5 — il MONDO decide il guscio (specchio di EventLandingPage/PN4):
+  //   mondo snello (org senza legacy_commerce, servizio, non ?store=1)
+  //     → guscio del profilo: MarketplaceShell + breadcrumb verso /o/,
+  //       zero header/menu store, CTA verso il checkout inline di /o/.
+  //   mondo legacy (flag org, tipi legacy, o arrivo dallo store ?store=1)
+  //     → tutto come prima: StorefrontHeader, handoff /p/→/s/ intatto.
+  const profileWorld = !fromStore && !data.legacy_commerce
+    && product.item_type === 'service';
+  const Wrap = profileWorld ? MarketplaceShell : React.Fragment;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <StorefrontHeader orgName={orgName} orgSlug={orgSlug} storeInfo={storeInfo} />
+    <Wrap>
+    <div className={profileWorld ? 'bg-gray-50' : 'min-h-screen bg-gray-50'}>
+      {!profileWorld && (
+        <StorefrontHeader orgName={orgName} orgSlug={orgSlug} storeInfo={storeInfo} />
+      )}
       {fromStore && <StoreContextNav slug={orgSlug} />}
+
+      {/* PV5 — breadcrumb del mondo profilo (stessa grammatica di /o/) */}
+      {profileWorld && (
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-3">
+          <nav className="text-xs text-gray-500" data-testid="landing-profile-breadcrumb">
+            <Link to="/operatori" className="hover:text-primary hover:underline">
+              {t('landings:operators.heading', { defaultValue: 'Organizzatori' })}
+            </Link>
+            <span className="mx-1.5" aria-hidden>›</span>
+            <Link to={`/o/${orgSlug}`} className="hover:text-primary hover:underline">
+              {orgName}
+            </Link>
+            <span className="mx-1.5" aria-hidden>›</span>
+            <span className="text-gray-700">{product.name}</span>
+          </nav>
+        </div>
+      )}
 
       {/* Hero */}
       <div className="relative bg-gray-900 text-white overflow-hidden">
@@ -349,6 +425,14 @@ export default function ProductLandingPage() {
           <img src={hero} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />
         )}
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          {/* PV5 — mondo snello: il back e' verso il PROFILO (#listino),
+              mai verso la vetrina /s/; niente badge carrello store. */}
+          {profileWorld ? (
+            <Link to={`/o/${orgSlug}#listino`}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-white/70 hover:text-white">
+              <span>{t('landings:product.backToProfile', { defaultValue: '← Torna al profilo' })}</span>
+            </Link>
+          ) : (
           <Link to={`/s/${orgSlug}`} className="inline-flex items-center gap-2 text-sm font-medium text-white/70 hover:text-white">
             <span>{t('landings:product.catalogLink')}</span>
             {cartCount > 0 && (
@@ -357,6 +441,7 @@ export default function ProductLandingPage() {
               </span>
             )}
           </Link>
+          )}
           <p className="text-[10px] uppercase tracking-widest opacity-70 mt-3">
             {product.item_type === 'service'
               ? t('landings:product.eyebrowService')
@@ -375,8 +460,9 @@ export default function ProductLandingPage() {
       </div>
 
       {/* "Vai al checkout" banner — appears when the cart has items. Gives
-          customers a clear way to exit the multi-add flow and proceed. */}
-      {cartCount > 0 && (
+          customers a clear way to exit the multi-add flow and proceed.
+          PV5 — solo mondo legacy: il bottone apre /s/?checkout=1 (vetrina). */}
+      {!profileWorld && cartCount > 0 && (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4">
           <OpenCheckoutButton slug={orgSlug} itemCount={cartCount} variant="landing" />
         </div>
@@ -516,6 +602,7 @@ export default function ProductLandingPage() {
             customRequest={customRequest}
             customRequestActive={customRequestOpen}
             effectiveCurrency={effectiveCurrency}
+            profileWorld={profileWorld}
           />
         </aside>
       </div>
@@ -528,5 +615,6 @@ export default function ProductLandingPage() {
         />
       </div>
     </div>
+    </Wrap>
   );
 }

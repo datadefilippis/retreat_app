@@ -4061,3 +4061,167 @@ class TestProfiloPv4:
             vb = data.get("verifiedBadge") or {}
             for key in ("label", "short", "tooltip"):
                 assert vb.get(key), f"{lang}: verifiedBadge.{key} mancante"
+
+
+class TestProfiloPv5:
+    """PV5 (PROFILO_VERIFICATO_PIANO_2026-07) — la landing /p/ "esiste"
+    solo se ha contenuto; nessun servizio rimanda mai al vecchio store.
+
+    Guardie: has_landing nel listino pubblico coerente col contenuto
+    (racconto lungo o cover dedicata → True, senza → False, additivo);
+    legacy_commerce (bool, additivo) sul payload landing /p/; gate del
+    link "Vedi dettagli" su has_landing (OperatorProfilePage + link
+    gemello in InlineServiceCheckout); landing servizi nel mondo snello
+    dentro il guscio del profilo (MarketplaceShell, breadcrumb, back a
+    /o/, niente StorefrontHeader/banner carrello store); CTA acquisto →
+    checkout inline del profilo (persistCart + navigate /o/ con state
+    expandService, consumato da OperatorProfilePage); handoff legacy
+    /p/→/s/ INTATTO dietro il ramo profileWorld; i18n x4.
+    """
+
+    UA = {"User-Agent": "Mozilla/5.0 (Macintosh) Chrome/126 Safari/537.36"}
+
+    PROFILE = FRONTEND_SRC / "features" / "storefront" / "OperatorProfilePage.js"
+    LANDING = FRONTEND_SRC / "features" / "storefront" / "ProductLandingPage.js"
+    INLINE = (FRONTEND_SRC / "features" / "storefront" / "components"
+              / "checkout" / "InlineServiceCheckout.jsx")
+
+    # ── helper: riga di listino pubblica del servizio demo ───────────
+
+    def _listino_row(self, slug="seduta-di-reiki"):
+        r = requests.get(f"{BASE_URL}/api/public/operator/masseria-demo",
+                         headers=self.UA, timeout=10)
+        assert r.status_code == 200, r.text
+        rows = [x for x in r.json().get("listino", []) if x.get("slug") == slug]
+        assert rows, f"servizio {slug} assente dal listino demo"
+        return rows[0]
+
+    def _demo_service(self, headers, slug="seduta-di-reiki"):
+        r = requests.get(f"{BASE_URL}/api/products", headers=headers,
+                         params={"limit": 200}, timeout=10)
+        assert r.status_code == 200, r.text
+        prods = r.json()
+        rows = [p for p in prods if p.get("slug") == slug]
+        assert rows, f"prodotto {slug} non trovato"
+        return rows[0]
+
+    def _patch_meta(self, headers, product, **fields):
+        meta = {**(product.get("metadata") or {}), **fields}
+        r = requests.patch(f"{BASE_URL}/api/products/{product['id']}",
+                           headers=headers, json={"metadata": meta}, timeout=10)
+        assert r.status_code == 200, r.text
+
+    # ── 1. HTTP: has_landing segue il contenuto della landing ────────
+
+    def test_has_landing_follows_content(self):
+        op_h = TestProfiloPv2._op_headers()
+        prod = self._demo_service(op_h)
+        orig_meta = prod.get("metadata") or {}
+        snap = {"long_description": orig_meta.get("long_description"),
+                "cover_image_url": orig_meta.get("cover_image_url")}
+        try:
+            # senza contenuto → False (baseline demo)
+            self._patch_meta(op_h, prod, long_description=None,
+                             cover_image_url=None)
+            assert self._listino_row()["has_landing"] is False
+            # racconto lungo → True
+            self._patch_meta(op_h, prod,
+                             long_description="Racconto PV5", cover_image_url=None)
+            assert self._listino_row()["has_landing"] is True
+            # solo cover dedicata → True
+            self._patch_meta(op_h, prod, long_description=None,
+                             cover_image_url="/uploads/x.webp")
+            assert self._listino_row()["has_landing"] is True
+            # spazi bianchi non contano come contenuto
+            self._patch_meta(op_h, prod, long_description="   ",
+                             cover_image_url=None)
+            assert self._listino_row()["has_landing"] is False
+        finally:
+            self._patch_meta(op_h, prod, **snap)
+
+    def test_has_landing_bool_on_every_row(self):
+        r = requests.get(f"{BASE_URL}/api/public/operator/masseria-demo",
+                         headers=self.UA, timeout=10)
+        assert r.status_code == 200
+        for row in r.json().get("listino", []):
+            assert isinstance(row.get("has_landing"), bool), row.get("slug")
+
+    # ── 2. HTTP: la landing /p/ dichiara il mondo dell'org ───────────
+
+    def test_landing_payload_exposes_legacy_commerce(self):
+        r = requests.get(
+            f"{BASE_URL}/api/public/products/masseria-demo/seduta-di-reiki",
+            headers=self.UA, timeout=10)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert isinstance(body.get("legacy_commerce"), bool)
+        # l'org demo e' nel mondo snello: il guscio profilo deve valere
+        assert body["legacy_commerce"] is False
+
+    # ── 3. scan: gate del bottone "Vedi dettagli" ────────────────────
+
+    def test_view_details_gated_by_has_landing(self):
+        page = self.PROFILE.read_text()
+        assert "row.slug && row.has_landing && (" in page, \
+            "il link Vedi dettagli deve essere condizionato a has_landing"
+        inline = self.INLINE.read_text()
+        assert "row.slug && row.has_landing && (" in inline, \
+            "il link gemello nel pannello inline deve avere lo stesso gate"
+
+    # ── 4. scan: landing servizi nel mondo snello senza varchi /s/ ───
+
+    def test_service_landing_lives_in_profile_world(self):
+        page = self.LANDING.read_text()
+        # il mondo decide il guscio: flag org + tipo servizio
+        assert "!data.legacy_commerce" in page
+        assert "item_type === 'service'" in page
+        # guscio profilo: shell marketplace + breadcrumb + back a /o/
+        assert "MarketplaceShell" in page
+        assert 'data-testid="landing-profile-breadcrumb"' in page
+        assert "/o/${orgSlug}#listino" in page
+        # niente header store né banner carrello store nel mondo snello
+        assert "{!profileWorld && (\n        <StorefrontHeader" in page
+        assert "{!profileWorld && cartCount > 0 && (" in page
+        # il not-found riporta al profilo, non alla vetrina
+        assert 'to={`/o/${orgSlug}`}' in page
+
+    # ── 5. scan: CTA acquisto → checkout inline del profilo ──────────
+
+    def test_cta_deep_links_profile_inline_checkout(self):
+        page = self.LANDING.read_text()
+        # la selezione persiste nello snapshot che idrata il profilo
+        assert "persistCart(orgSlug, next)" in page
+        assert ("navigate(`/o/${orgSlug}`, { state: { expandService: "
+                "product.id } })") in page
+        # il profilo consuma lo state: riga espansa + scroll all'ancora
+        profile = self.PROFILE.read_text()
+        assert "navState?.expandService" in profile
+        assert "setExpandedService(row.product_id || row.slug || row.name)" \
+            in profile
+        assert 'id={`servizio-${row.slug || row.product_id}`}' in profile
+
+    # ── 6. scan: handoff legacy /p/→/s/ intatto dietro il ramo ───────
+
+    def test_legacy_handoff_intact_behind_flag(self):
+        page = self.LANDING.read_text()
+        # il ramo profileWorld esce PRIMA dell'handoff storico
+        idx_guard = page.find("if (profileWorld) {")
+        idx_handoff = page.find("navigate(`/s/${orgSlug}`, { state: { preloadCart } })")
+        assert idx_guard != -1 and idx_handoff != -1
+        assert idx_guard < idx_handoff, \
+            "l'handoff legacy deve restare, gato dal ramo profileWorld"
+        # il toast legacy col deep-link ?checkout=1 resta per lo store
+        assert "navigate(`/s/${orgSlug}?checkout=1`)" in page
+
+    # ── 7. i18n x4 ───────────────────────────────────────────────────
+
+    def test_pv5_i18n_x4(self):
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            data = _json.loads(
+                (FRONTEND_SRC / "locales" / lang / "landings.json")
+                .read_text())
+            assert (data.get("operator") or {}).get("viewDetails"), \
+                f"{lang}: operator.viewDetails mancante"
+            assert (data.get("product") or {}).get("backToProfile"), \
+                f"{lang}: product.backToProfile mancante"

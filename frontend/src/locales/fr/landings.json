@@ -403,7 +403,8 @@
     },
     "footerOrganizedBy": "Organisé par <1>{{name}}</1>",
     "toastAdded": "Ajouté au panier",
-    "toastAction": "Aller au paiement"
+    "toastAction": "Aller au paiement",
+    "backToProfile": "← Retour au profil"
   },
   "priceSummary": {
     "heading": "Récapitulatif du prix",
@@ -515,7 +516,8 @@
     "interviewCtaListino": "Services et tarifs",
     "interviewCtaListinoSub": "La liste complète des tarifs",
     "interviewCtaReviews": "Les avis",
-    "interviewCtaReviewsSub": "Ce que racontent les gens"
+    "interviewCtaReviewsSub": "Ce que racontent les gens",
+    "viewDetails": "Voir les détails"
   },
   "account": {
     "title": "Mes réservations",

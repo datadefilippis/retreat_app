@@ -362,7 +362,7 @@ export default function OperatorProfilePage() {
   // #recensioni): a dati pronti si scorre all'ancora, così le due
   // pagine si comportano come un'unica scheda. (ScrollToTop in App.js
   // riparte dall'alto al cambio pathname: qui si corregge dopo.)
-  const { hash } = useLocation();
+  const { hash, state: navState } = useLocation();
   useEffect(() => {
     if (!data || !hash) return;
     const el = document.getElementById(hash.slice(1));
@@ -374,6 +374,27 @@ export default function OperatorProfilePage() {
     }
     return undefined;
   }, [data, hash]);
+
+  // PV5 — deep-link dalla landing /p/ (mondo snello): si arriva con
+  // state { expandService: <product_id|slug> } e la riga del listino
+  // si apre da sola col checkout inline pronto (la selezione fatta
+  // sulla landing e' gia' in sessionStorage: useStorefrontCart la
+  // idrata). Lo state si consuma subito cosi' back/refresh non
+  // riaprono il pannello.
+  useEffect(() => {
+    const target = navState?.expandService;
+    if (!data || !target) return undefined;
+    const row = (data.listino || []).find(
+      r => r.product_id === target || r.slug === target);
+    if (!row) return undefined;
+    setExpandedService(row.product_id || row.slug || row.name);
+    try { window.history.replaceState({}, ''); } catch { /* no-op */ }
+    const id = setTimeout(() => {
+      document.getElementById(`servizio-${row.slug || row.product_id}`)
+        ?.scrollIntoView({ block: 'start' });
+    }, 150);
+    return () => clearTimeout(id);
+  }, [data, navState]);
 
   const rs = data?.reviews_stats;
   useSeoMeta({
@@ -519,8 +540,10 @@ export default function OperatorProfilePage() {
                 {data.listino.map((row) => {
                   const rowKey = row.product_id || row.slug || row.name;
                   const expanded = expandedService === rowKey;
+                  // PV5 — l'id e' l'ancora per il deep-link dalla landing /p/
                   return (
-                  <div key={rowKey}>
+                  <div key={rowKey} id={`servizio-${row.slug || row.product_id}`}
+                       className="scroll-mt-24">
                     <div className="flex flex-wrap items-center gap-3 px-4 py-3">
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-gray-900">{row.name}</p>
@@ -536,8 +559,11 @@ export default function OperatorProfilePage() {
                         {row.note && (
                           <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
                         )}
-                        {/* PN3 — la landing /p/ resta viva come approfondimento */}
-                        {row.slug && (
+                        {/* PN3→PV5 — la landing /p/ come approfondimento SOLO
+                            se ha contenuto in piu' della riga (has_landing
+                            calcolato dal backend: racconto lungo o cover
+                            dedicata); senza contenuto, la riga basta. */}
+                        {row.slug && row.has_landing && (
                           <Link to={`/p/${org_slug}/${row.slug}`}
                                 className="mt-0.5 inline-block text-xs text-gray-500 underline hover:text-gray-800">
                             {t('landings:operator.viewDetails', { defaultValue: 'Vedi dettagli' })}
