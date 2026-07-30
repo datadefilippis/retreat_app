@@ -404,7 +404,14 @@
     "footerOrganizedBy": "Organizzato da <1>{{name}}</1>",
     "toastAdded": "Aggiunto al carrello",
     "toastAction": "Vai al checkout",
-    "backToProfile": "← Torna al profilo"
+    "backToProfile": "← Torna al profilo",
+    "steps": {
+      "day": "Scegli il giorno",
+      "time": "Scegli l’orario",
+      "details": "I tuoi dati",
+      "edit": "Modifica",
+      "confirm": "Conferma"
+    }
   },
   "priceSummary": {
     "heading": "Riepilogo prezzo",

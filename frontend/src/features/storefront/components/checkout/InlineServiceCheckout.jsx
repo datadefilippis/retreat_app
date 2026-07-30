@@ -162,6 +162,87 @@ export default function InlineServiceCheckout({ orgSlug, row, onClose }) {
     if (storedSlot?.custom_request) dropSlot();
   };
 
+  // ── PV6 — percorso a passi (SOLO presentazione; payload/logica intatti) ──
+  //
+  // Tre passi progressivi nella stessa card: 1 giorno (+ opzione), 2 orario,
+  // 3 dati. Il giorno scelto ha UNA sola fonte di verita': `pickedDay` qui
+  // nel parent — il calendario e la griglia orari lo ricevono controllati
+  // (AvailabilityCalendarSlotPicker activeDate/onActiveDateChange), quindi
+  // non esistono copie locali che possano divergere.
+  //
+  // "Recursivo": i passi completati restano visibili collassati con la
+  // scelta fatta e un bottone Modifica (`editStep`); tornare indietro non
+  // butta via nulla — cambia il giorno? Lo slot decade da solo (dropSlot),
+  // tutto il resto (opzione, dati form) resta.
+  const [pickedDay, setPickedDay] = useState(null);
+  const [editStep, setEditStep] = useState(null);
+  const stepInteractedRef = useRef(false);
+  const stepRefs = { 1: useRef(null), 2: useRef(null), 3: useRef(null) };
+
+  // Deep-link PV5 / idratazione di sessione: se uno slot reale e' gia'
+  // in carrello (selezione fatta sulla landing /p/), il passo 1 e 2 sono
+  // gia' compiuti e si atterra direttamente al passo 3 col riepilogo.
+  useEffect(() => {
+    if (realSlot?.date) setPickedDay(realSlot.date);
+  }, [realSlot?.date]);
+
+  const selectedOption = hasOptions
+    ? (row.service_options || []).find(o => o.id === selectedOptionId) || null
+    : null;
+  const optionChosen = !hasOptions || !!selectedOptionId;
+  const customChosen = !!storedSlot?.custom_request;
+  const inCustomFlow = hasSlots && customRequestOpen;
+
+  // Il passo "naturale" derivato dalla selezione; `editStep` puo' solo
+  // riportare indietro (mai saltare avanti oltre quanto gia' scelto).
+  const autoStep = inCustomFlow
+    ? (customChosen && optionChosen ? 3 : 1)
+    : (!optionChosen || !pickedDay) ? 1
+      : (!realSlot?.date ? 2 : 3);
+  const currentStep = Math.min(editStep ?? autoStep, autoStep);
+
+  const handlePickDay = (iso) => {
+    if (!iso) return;
+    stepInteractedRef.current = true;
+    setPickedDay(iso);
+    // Giorno diverso → l'orario scelto non vale piu'; stesso giorno →
+    // lo slot resta e si torna dolcemente al riepilogo.
+    if (realSlot && realSlot.date !== iso) dropSlot();
+    setEditStep(null);
+  };
+
+  const handlePickSlot = (s) => {
+    stepInteractedRef.current = true;
+    pickSlot(s);
+    setEditStep(null);
+  };
+
+  const goEditStep = (n) => {
+    stepInteractedRef.current = true;
+    setEditStep(n);
+  };
+
+  // Auto-avanzamento dolce: al cambio passo si scorre sul passo attivo.
+  // Solo dopo un'interazione dell'utente — all'atterraggio (deep-link
+  // PV5) lo scroll lo governa gia' OperatorProfilePage sull'ancora riga.
+  useEffect(() => {
+    if (!stepInteractedRef.current) return;
+    const el = stepRefs[currentStep]?.current;
+    if (!el) return undefined;
+    const id = setTimeout(
+      () => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
+
+  const fmtDay = (iso) => {
+    if (!iso) return '';
+    try {
+      return new Date(iso + 'T12:00').toLocaleDateString(
+        i18n.language, { weekday: 'long', day: 'numeric', month: 'long' });
+    } catch { return iso; }
+  };
+
   // ── selectedItems: SOLO questo servizio (stessa forma dello store) ───
   const selectedItems = useMemo(() => {
     const qty = quantities[productId];
@@ -320,10 +401,12 @@ export default function InlineServiceCheckout({ orgSlug, row, onClose }) {
     );
   }
 
-  return (
-    <div className="space-y-4" data-testid="inline-service-checkout">
-      {/* 1 — Opzione servizio (radio), come la landing /p/ */}
-      {hasOptions && (
+  // ── Pezzi condivisi tra percorso a passi (hasSlots) e passo unico ────
+
+  // Opzione servizio (radio), come la landing /p/. Nel percorso a passi
+  // vive DENTRO il passo 1, sopra il calendario; senza calendario resta
+  // il primo blocco del passo unico.
+  const optionsBlock = hasOptions && (
         <div className="space-y-2">
           <p className="text-sm font-semibold text-gray-900">
             {t('landings:product.optionsHeading', { defaultValue: 'Scegli l’opzione' })}
@@ -350,71 +433,35 @@ export default function InlineServiceCheckout({ orgSlug, row, onClose }) {
             </label>
           ))}
         </div>
-      )}
+  );
 
-      {/* 2 — Data e orario: slot reali e/o richiesta libera (4 scenari
-          come ProductLandingPage.needsScheduling) */}
-      {hasSlots && (
-        <div className="space-y-3">
-          <p className="text-sm font-semibold text-gray-900">
-            {t('landings:product.scheduleHeading', { defaultValue: 'Scegli data e orario' })}
-          </p>
-          {slots == null ? (
-            <p className="text-sm text-gray-500">{t('landings:product.loadingSlots', { defaultValue: 'Carico le disponibilità…' })}</p>
-          ) : (
-            <AvailabilityCalendarSlotPicker
-              slots={slots}
-              selected={realSlot}
-              onSelect={pickSlot}
-            />
-          )}
-          {allowCustom && (
-            <div className="border-t border-gray-100 pt-3">
-              {!customRequestOpen ? (
-                <button type="button" onClick={openCustomPanel}
-                        className="text-sm font-medium text-gray-700 hover:text-gray-900 underline">
-                  {t('landings:product.customRequestToggle', { defaultValue: 'Nessun orario ti va bene? Proponi tu data e ora' })}
-                </button>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-gray-900">
-                      {t('landings:product.customRequestPanelHeading', { defaultValue: 'Proponi data e ora' })}
-                    </h3>
-                    <button type="button" onClick={closeCustomPanel}
-                            className="text-xs text-gray-500 hover:text-gray-700">
-                      {t('landings:product.customRequestCancel', { defaultValue: 'Annulla' })}
-                    </button>
-                  </div>
-                  <ServiceCustomRequestForm
-                    durationMinutes={row.duration_minutes || product.service_duration_minutes}
-                    value={customRequest}
-                    onChange={handleCustomChange}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* Scenario 3 — niente regole, richiesta libera attiva */}
-      {!hasSlots && allowCustom && (
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-gray-900">
-            {t('landings:product.customRequest.headingNoSlots', { defaultValue: 'Proponi data e ora' })}
-          </p>
-          <ServiceCustomRequestForm
-            durationMinutes={row.duration_minutes || product.service_duration_minutes}
-            value={customRequest}
-            onChange={handleCustomChange}
-          />
-        </div>
-      )}
+  // Pannello richiesta libera (slot reali attivi ma nessun orario adatto):
+  // stesso contenuto di prima, riusato dentro il passo 1 del percorso.
+  const customPanel = (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-gray-900">
+          {t('landings:product.customRequestPanelHeading', { defaultValue: 'Proponi data e ora' })}
+        </h3>
+        <button type="button" onClick={closeCustomPanel}
+                className="text-xs text-gray-500 hover:text-gray-700">
+          {t('landings:product.customRequestCancel', { defaultValue: 'Annulla' })}
+        </button>
+      </div>
+      <ServiceCustomRequestForm
+        durationMinutes={row.duration_minutes || product.service_duration_minutes}
+        value={customRequest}
+        onChange={handleCustomChange}
+      />
+    </div>
+  );
 
-      {/* 3 — Riepilogo + form: gli STESSI componenti dello storefront.
-          Niente onRemove/onQtyChange: qui si compra un solo servizio,
-          la riga non deve potersi svuotare da dentro il riepilogo. */}
+  // Riepilogo + form: gli STESSI componenti dello storefront.
+  // Niente onRemove/onQtyChange: qui si compra un solo servizio,
+  // la riga non deve potersi svuotare da dentro il riepilogo.
+  const summaryAndForm = (
+    <>
       <OrderSummary
         items={selectedItems}
         products={catalog.products || []}
@@ -446,6 +493,189 @@ export default function InlineServiceCheckout({ orgSlug, row, onClose }) {
         selectedServiceSlots={selectedServiceSlots}
         inlineServiceSelection
       />
+    </>
+  );
+
+  // ── PV6 — testata di un passo: pallino numerato + etichetta + riga
+  // riassuntiva della scelta fatta + "Modifica" (il percorso e' sempre
+  // reversibile senza perdere il resto). Sobrio, brand Salvia.
+  const stepHeader = (n, label, { done, summary, editable }) => {
+    const active = currentStep === n;
+    return (
+      <div className="flex items-center gap-2.5 px-3 py-2.5">
+        <span aria-hidden
+              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                active || done ? 'bg-[#376254] text-white' : 'bg-gray-200 text-gray-500'
+              }`}>
+          {done && !active ? (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth={3} aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          ) : n}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className={`text-sm font-semibold ${active || done ? 'text-gray-900' : 'text-gray-400'}`}>
+            {label}
+          </p>
+          {done && !active && summary && (
+            <p className="text-xs text-gray-600 truncate first-letter:capitalize"
+               data-testid={`booking-step-${n}-summary`}>
+              {summary}
+            </p>
+          )}
+        </div>
+        {done && !active && editable && (
+          <button type="button"
+                  data-testid={`booking-step-edit-${n}`}
+                  onClick={() => goEditStep(n)}
+                  className="shrink-0 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">
+            {t('landings:product.steps.edit', { defaultValue: 'Modifica' })}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  const stepShell = (n, children) => (
+    <section key={`step-${n}`} ref={stepRefs[n]}
+             data-testid={`booking-step-${n}`}
+             className={`scroll-mt-24 rounded-xl border bg-white ${
+               currentStep === n ? 'border-[#376254]/50 shadow-sm' : 'border-gray-200'
+             }`}>
+      {children}
+    </section>
+  );
+
+  // Bottone mostrato quando si sta MODIFICANDO un passo gia' compiuto
+  // senza cambiare nulla: riporta avanti senza toccare i dati.
+  const confirmEdit = (
+    <div className="pt-1">
+      <button type="button"
+              data-testid="booking-step-confirm"
+              onClick={() => { stepInteractedRef.current = true; setEditStep(null); }}
+              className="w-full rounded-full bg-[#376254] px-4 py-2 text-sm font-semibold text-white hover:bg-[#2c4f43]">
+        {t('landings:product.steps.confirm', { defaultValue: 'Conferma' })}
+      </button>
+    </div>
+  );
+
+  const step1Done = optionChosen && (inCustomFlow ? customChosen : !!pickedDay);
+  const step2Done = !!realSlot?.date || customChosen;
+
+  return (
+    <div className="space-y-4" data-testid="inline-service-checkout">
+      {hasSlots ? (
+        /* ── PV6 — percorso guidato a 3 passi nella stessa card
+           (progressive disclosure): 1 giorno (+ opzione), 2 orario,
+           3 dati. I passi compiuti restano collassati con la scelta
+           fatta e il bottone Modifica. */
+        <div className="space-y-3" data-testid="booking-steps">
+          {stepShell(1, (
+            <>
+              {stepHeader(1,
+                t('landings:product.steps.day', { defaultValue: 'Scegli il giorno' }),
+                {
+                  done: step1Done,
+                  editable: true,
+                  summary: inCustomFlow
+                    ? [fmtDay(storedSlot?.date), storedSlot?.start_time].filter(Boolean).join(' · ')
+                    : [fmtDay(pickedDay), selectedOption?.label].filter(Boolean).join(' · '),
+                })}
+              {currentStep === 1 && (
+                <div className="px-3 pb-3 space-y-3">
+                  {optionsBlock}
+                  {customRequestOpen ? customPanel : (
+                    slots == null ? (
+                      <p className="text-sm text-gray-500">{t('landings:product.loadingSlots', { defaultValue: 'Carico le disponibilità…' })}</p>
+                    ) : (
+                      <AvailabilityCalendarSlotPicker
+                        slots={slots}
+                        selected={realSlot}
+                        onSelect={handlePickSlot}
+                        activeDate={pickedDay}
+                        onActiveDateChange={handlePickDay}
+                        showSlots={false}
+                      />
+                    )
+                  )}
+                  {allowCustom && !customRequestOpen && (
+                    <div className="border-t border-gray-100 pt-3">
+                      <button type="button" onClick={openCustomPanel}
+                              className="text-sm font-medium text-gray-700 hover:text-gray-900 underline">
+                        {t('landings:product.customRequestToggle', { defaultValue: 'Nessun orario ti va bene? Proponi tu data e ora' })}
+                      </button>
+                    </div>
+                  )}
+                  {editStep === 1 && step1Done && confirmEdit}
+                </div>
+              )}
+            </>
+          ))}
+
+          {!inCustomFlow && stepShell(2, (
+            <>
+              {stepHeader(2,
+                t('landings:product.steps.time', { defaultValue: 'Scegli l’orario' }),
+                {
+                  done: step2Done,
+                  editable: true,
+                  summary: realSlot?.date
+                    ? `${realSlot.start_time} - ${realSlot.end_time}`
+                    : '',
+                })}
+              {currentStep === 2 && (
+                <div className="px-3 pb-3 space-y-2">
+                  <AvailabilityCalendarSlotPicker
+                    slots={slots || []}
+                    selected={realSlot}
+                    onSelect={handlePickSlot}
+                    activeDate={pickedDay}
+                    onActiveDateChange={handlePickDay}
+                    showCalendar={false}
+                  />
+                  {editStep === 2 && step2Done && confirmEdit}
+                </div>
+              )}
+            </>
+          ))}
+
+          {stepShell(3, (
+            <>
+              {stepHeader(3,
+                t('landings:product.steps.details', { defaultValue: 'I tuoi dati' }),
+                { done: false, editable: false, summary: '' })}
+              {currentStep === 3 && (
+                <div className="px-3 pb-4 space-y-4">
+                  {summaryAndForm}
+                </div>
+              )}
+            </>
+          ))}
+        </div>
+      ) : (
+        /* ── Servizi SENZA calendario: passo unico com'era (nessuna
+           regressione) — opzione, eventuale preferenza libera, dati. */
+        <>
+          {optionsBlock}
+
+          {/* Scenario 3 — niente regole, richiesta libera attiva */}
+          {allowCustom && (
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-gray-900">
+            {t('landings:product.customRequest.headingNoSlots', { defaultValue: 'Proponi data e ora' })}
+          </p>
+          <ServiceCustomRequestForm
+            durationMinutes={row.duration_minutes || product.service_duration_minutes}
+            value={customRequest}
+            onChange={handleCustomChange}
+          />
+        </div>
+          )}
+
+          {summaryAndForm}
+        </>
+      )}
 
       {/* La landing /p/ resta viva come approfondimento (SEO + link
           esterni), mai piu' come passaggio obbligato. PV5 — il link

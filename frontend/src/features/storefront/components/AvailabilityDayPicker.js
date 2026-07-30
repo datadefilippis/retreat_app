@@ -114,6 +114,21 @@ export default function AvailabilityDayPicker({
         blocked:
           'line-through text-red-600 bg-red-50 hover:bg-red-50 cursor-not-allowed opacity-70',
       }}
+      // PV6 — "oggi" NON e' una selezione. Il default shadcn (day_today:
+      // bg-accent) riempiva il giorno odierno di terracotta pieno: dopo
+      // aver scelto un ALTRO giorno restavano due chip colorati (oggi
+      // arancio + selezione salvia) e la selezione risultava ambigua.
+      // Qui oggi diventa un segno discreto (numero accent + puntino
+      // sotto) e l'UNICO chip pieno resta il giorno selezionato
+      // (day_selected: bg-primary). Quando oggi e' anche il giorno
+      // selezionato vince la livrea selezione via aria-selected.
+      classNames={{
+        day_today:
+          'relative font-semibold text-accent ' +
+          'after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 ' +
+          'after:h-1 after:w-1 after:rounded-full after:bg-accent ' +
+          'aria-selected:text-primary-foreground aria-selected:after:bg-primary-foreground',
+      }}
       className={className}
     />
   );

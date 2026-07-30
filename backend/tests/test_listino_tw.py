@@ -4225,3 +4225,111 @@ class TestProfiloPv5:
                 f"{lang}: operator.viewDetails mancante"
             assert (data.get("product") or {}).get("backToProfile"), \
                 f"{lang}: product.backToProfile mancante"
+
+
+class TestProfiloPv6:
+    """PV6 (PROFILO_VERIFICATO_PIANO_2026-07) — consolidamento della
+    prenotazione inline sul profilo /o/: calendario solido + percorso
+    a passi.
+
+    Guardie: fix del calendario ("oggi" non e' piu' un chip pieno color
+    accent — prima restava arancio anche selezionando un altro giorno —
+    e il giorno attivo ha UNA sola fonte di verita', controllata dal
+    parent); stepper a 3 passi con riassunti collassati, Modifica e
+    Conferma; deep-link PV5 che atterra al passo giusto (slot gia'
+    scelto → passo 3); caso senza calendario INTATTO (passo unico);
+    i18n x4 per le etichette nuove.
+    """
+
+    INLINE = (FRONTEND_SRC / "features" / "storefront" / "components"
+              / "checkout" / "InlineServiceCheckout.jsx")
+    PICKER = (FRONTEND_SRC / "features" / "storefront" / "components"
+              / "AvailabilityCalendarSlotPicker.js")
+    DAYPICKER = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "AvailabilityDayPicker.js")
+
+    # ── 1. scan: "oggi" e' un segno discreto, mai un chip pieno ──────
+
+    def test_today_marker_is_not_a_filled_chip(self):
+        picker = self.DAYPICKER.read_text()
+        # l'override day_today esiste e NON riusa il riempimento accent
+        # del default shadcn (bg-accent pieno = il bug dei due giorni
+        # "selezionati"); il segno discreto e' testo accent + puntino.
+        assert "day_today:" in picker
+        assert "'relative font-semibold text-accent '" in picker
+        assert "bg-accent text-accent-foreground" not in picker
+        # quando oggi E' selezionato vince la livrea selezione
+        assert "aria-selected:text-primary-foreground" in picker
+
+    # ── 2. scan: giorno attivo con UNA sola fonte di verita' ─────────
+
+    def test_active_day_single_source_of_truth(self):
+        picker = self.PICKER.read_text()
+        # modalita' controllata additiva: il parent detiene il giorno
+        assert "const isControlled = controlledActiveDate !== undefined;" \
+            in picker
+        assert ("const activeDate = isControlled ? controlledActiveDate "
+                ": internalActiveDate;") in picker
+        # niente auto-selezione del primo giorno quando controllato
+        assert "if (isControlled) return;" in picker
+        # il picker sa rendere solo calendario o solo orari (passi)
+        assert "showCalendar = true" in picker
+        assert "showSlots = true" in picker
+        # il checkout inline usa DAVVERO la modalita' controllata
+        inline = self.INLINE.read_text()
+        assert "const [pickedDay, setPickedDay] = useState(null);" in inline
+        assert inline.count("activeDate={pickedDay}") == 2
+        assert inline.count("onActiveDateChange={handlePickDay}") == 2
+
+    # ── 3. scan: stepper a 3 passi con Modifica e Conferma ───────────
+
+    def test_stepper_three_steps_with_edit(self):
+        inline = self.INLINE.read_text()
+        assert 'data-testid="booking-steps"' in inline
+        for n in (1, 2, 3):
+            assert f"stepShell({n}, (" in inline, f"passo {n} assente"
+        # riassunto collassato + Modifica per tornare indietro
+        assert "booking-step-edit-" in inline
+        assert "booking-step-" in inline and "-summary" in inline
+        assert "steps.edit" in inline
+        # Conferma per riavanzare quando non si cambia nulla
+        assert 'data-testid="booking-step-confirm"' in inline
+        assert "steps.confirm" in inline
+        # cambio giorno → lo slot scelto decade (mai selezioni ambigue)
+        assert "if (realSlot && realSlot.date !== iso) dropSlot();" in inline
+
+    # ── 4. scan: deep-link PV5 atterra al passo giusto ───────────────
+
+    def test_deeplink_lands_on_right_step(self):
+        inline = self.INLINE.read_text()
+        # slot idratato dalla sessione → il giorno del passo 1 e' suo
+        assert "if (realSlot?.date) setPickedDay(realSlot.date);" in inline
+        # passo derivato: senza giorno 1, senza orario 2, altrimenti 3
+        assert ": (!realSlot?.date ? 2 : 3);" in inline
+        assert "const currentStep = Math.min(editStep ?? autoStep, autoStep);" \
+            in inline
+
+    # ── 5. scan: caso senza calendario INTATTO (passo unico) ─────────
+
+    def test_no_calendar_flow_untouched(self):
+        inline = self.INLINE.read_text()
+        # il percorso a passi vale SOLO con slot reali
+        assert "{hasSlots ? (" in inline
+        # il ramo passo-unico conserva opzioni, richiesta libera e form
+        assert "customRequest.headingNoSlots" in inline
+        assert inline.count("{summaryAndForm}") == 2
+        assert inline.count("{optionsBlock}") == 2
+        # la richiesta libera parte aperta come sempre in scenario 3
+        assert "useState(!hasSlots && allowCustom)" in inline
+
+    # ── 6. i18n x4 ───────────────────────────────────────────────────
+
+    def test_pv6_i18n_x4(self):
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            data = _json.loads(
+                (FRONTEND_SRC / "locales" / lang / "landings.json")
+                .read_text())
+            steps = ((data.get("product") or {}).get("steps") or {})
+            for key in ("day", "time", "details", "edit", "confirm"):
+                assert steps.get(key), f"{lang}: product.steps.{key} mancante"

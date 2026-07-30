@@ -404,7 +404,14 @@
     "footerOrganizedBy": "Organized by <1>{{name}}</1>",
     "toastAdded": "Added to cart",
     "toastAction": "Go to checkout",
-    "backToProfile": "← Back to profile"
+    "backToProfile": "← Back to profile",
+    "steps": {
+      "day": "Choose a day",
+      "time": "Choose a time",
+      "details": "Your details",
+      "edit": "Edit",
+      "confirm": "Confirm"
+    }
   },
   "priceSummary": {
     "heading": "Price summary",

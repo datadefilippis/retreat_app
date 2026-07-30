@@ -404,7 +404,14 @@
     "footerOrganizedBy": "Organisé par <1>{{name}}</1>",
     "toastAdded": "Ajouté au panier",
     "toastAction": "Aller au paiement",
-    "backToProfile": "← Retour au profil"
+    "backToProfile": "← Retour au profil",
+    "steps": {
+      "day": "Choisissez le jour",
+      "time": "Choisissez l’horaire",
+      "details": "Vos coordonnées",
+      "edit": "Modifier",
+      "confirm": "Confirmer"
+    }
   },
   "priceSummary": {
     "heading": "Récapitulatif du prix",

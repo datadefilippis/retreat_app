@@ -21,9 +21,19 @@
  *   slots:    Array<{date: "YYYY-MM-DD", start_time: "HH:MM", end_time: "HH:MM"}>
  *   selected: {date, start_time, end_time} | null
  *   onSelect: (slot) => void
+ *
+ * PV6 (stepper del checkout inline /o/) — props opzionali ADDITIVE:
+ *   activeDate / onActiveDateChange: modalita' CONTROLLATA del giorno
+ *     attivo. Quando `activeDate !== undefined` il giorno vive nel parent
+ *     (una sola fonte di verita'), niente auto-selezione del primo giorno
+ *     disponibile e ogni click sul calendario risale via callback.
+ *   showCalendar / showSlots: rendono solo una meta' del picker, cosi' il
+ *     parent puo' distribuire calendario e orari su passi separati.
+ *   I caller esistenti (landing /p/, storefront) non passano nulla e
+ *   mantengono il comportamento storico (stato interno + auto-default).
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AvailabilityDayPicker from './AvailabilityDayPicker';
 
@@ -43,6 +53,10 @@ export default function AvailabilityCalendarSlotPicker({
   onSelect,
   emptyLabel,
   emptyHint,
+  activeDate: controlledActiveDate,
+  onActiveDateChange,
+  showCalendar = true,
+  showSlots = true,
 }) {
   const { t, i18n } = useTranslation('landings');
   // Resolve copy from i18n; the props remain as override hooks for
@@ -83,20 +97,32 @@ export default function AvailabilityCalendarSlotPicker({
     return blocked;
   }, [availableDates]);
 
-  // Track the day the user is focusing. Default to the selected day (if any)
-  // or the first available day so the slot grid is not empty on first render.
-  const [activeDate, setActiveDate] = useState(null);
+  // Track the day the user is focusing. PV6: quando il parent passa
+  // `activeDate` il picker e' CONTROLLATO — il giorno attivo ha una sola
+  // fonte di verita' (lo stato del parent) e qui non ne esiste una copia.
+  const isControlled = controlledActiveDate !== undefined;
+  const [internalActiveDate, setInternalActiveDate] = useState(null);
+  const activeDate = isControlled ? controlledActiveDate : internalActiveDate;
+  const setActiveDate = useCallback((iso) => {
+    if (isControlled) onActiveDateChange?.(iso);
+    else setInternalActiveDate(iso);
+  }, [isControlled, onActiveDateChange]);
+
+  // Uncontrolled default: the selected day (if any) or the first available
+  // day so the slot grid is not empty on first render. In controlled mode
+  // the parent decides — a guided stepper MUST start with no day picked.
   useEffect(() => {
-    if (activeDate && byDate[activeDate]) return;
+    if (isControlled) return;
+    if (internalActiveDate && byDate[internalActiveDate]) return;
     if (selected?.date && byDate[selected.date]) {
-      setActiveDate(selected.date);
+      setInternalActiveDate(selected.date);
     } else if (availableDates.length > 0) {
-      setActiveDate(availableDates[0]);
+      setInternalActiveDate(availableDates[0]);
     } else {
-      setActiveDate(null);
+      setInternalActiveDate(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableDates.length, selected?.date]);
+  }, [availableDates.length, selected?.date, isControlled]);
 
   const activeSlots = activeDate ? (byDate[activeDate] || []) : [];
   const morning = activeSlots.filter(s => s.start_time < '12:00');
@@ -163,37 +189,41 @@ export default function AvailabilityCalendarSlotPicker({
   return (
     <div className="space-y-3">
       {/* Step 1 — Month calendar (same visual language as rental range) */}
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden p-1 flex justify-center">
-        <AvailabilityDayPicker
-          mode="single"
-          selected={calendarSelected}
-          onSelect={handleDaySelect}
-          blockedDates={blockedDates}
-          numberOfMonths={1}
-        />
-      </div>
+      {showCalendar && (
+        <div className="rounded-xl border border-gray-200 bg-white overflow-hidden p-1 flex justify-center">
+          <AvailabilityDayPicker
+            mode="single"
+            selected={calendarSelected}
+            onSelect={handleDaySelect}
+            blockedDates={blockedDates}
+            numberOfMonths={1}
+          />
+        </div>
+      )}
 
       {/* Step 2 — Time slots for the selected day */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
-        {activeDate ? (
-          <>
-            <p className="text-sm font-semibold text-gray-900 capitalize">
-              {fmtFullDay(activeDate)}
-            </p>
-            {activeSlots.length === 0 ? (
-              <p className="text-sm text-gray-500">{t('availability.no_slots_today')}</p>
-            ) : (
-              <>
-                {renderSlotGroup(t('availability.morning'), morning)}
-                {renderSlotGroup(t('availability.afternoon'), afternoon)}
-                {renderSlotGroup(t('availability.evening'), evening)}
-              </>
-            )}
-          </>
-        ) : (
-          <p className="text-sm text-gray-500">{t('availability.pick_day_for_slots')}</p>
-        )}
-      </div>
+      {showSlots && (
+        <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
+          {activeDate ? (
+            <>
+              <p className="text-sm font-semibold text-gray-900 capitalize">
+                {fmtFullDay(activeDate)}
+              </p>
+              {activeSlots.length === 0 ? (
+                <p className="text-sm text-gray-500">{t('availability.no_slots_today')}</p>
+              ) : (
+                <>
+                  {renderSlotGroup(t('availability.morning'), morning)}
+                  {renderSlotGroup(t('availability.afternoon'), afternoon)}
+                  {renderSlotGroup(t('availability.evening'), evening)}
+                </>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-gray-500">{t('availability.pick_day_for_slots')}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
