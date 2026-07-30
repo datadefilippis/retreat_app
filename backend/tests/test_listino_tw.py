@@ -3811,3 +3811,109 @@ class TestProfiloPv2:
         for row in items:
             assert row["interview_status"] in ("none", "draft", "published")
             assert "interview_verified_at" in row
+
+
+class TestProfiloPv3:
+    """PV3 (PROFILO_VERIFICATO_PIANO_2026-07) — pagina intervista pubblica.
+
+    Guardie: rotta /o/:slug/intervista registrata, embed SOLO
+    youtube-nocookie (mai youtube.com/embed in tutto il frontend),
+    redirect al profilo quando l'intervista non è pubblicata, testata
+    identitaria CONDIVISA col profilo (stesso componente, slot badge
+    PV4 previsto), blocco compatto con bottone sul profilo, link nuovo
+    dalla pagina rete, fascia "Continua a scoprire", i18n x4.
+    """
+
+    PAGE = FRONTEND_SRC / "features" / "storefront" / "OperatorInterviewPage.js"
+    PROFILE = FRONTEND_SRC / "features" / "storefront" / "OperatorProfilePage.js"
+    HEADER = (FRONTEND_SRC / "features" / "storefront" / "components"
+              / "OperatorIdentityHeader.jsx")
+
+    # ── 1. rotta registrata dentro le rotte /o/ ──────────────────────
+
+    def test_route_registered(self):
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/o/:org_slug/intervista"' in app
+        assert "OperatorInterviewPage" in app
+
+    # ── 2. embed: youtube-nocookie e MAI youtube.com/embed diretto ───
+
+    def test_embed_nocookie_only(self):
+        page = self.PAGE.read_text()
+        assert "youtube-nocookie.com/embed" in page
+        for f in FRONTEND_SRC.rglob("*.js"):
+            src = f.read_text()
+            assert "www.youtube.com/embed" not in src, f
+            assert "//youtube.com/embed" not in src, f
+
+    def test_video_lazy_titled_with_poster(self):
+        page = self.PAGE.read_text()
+        assert 'loading="lazy"' in page
+        assert "interviewVideoTitle" in page        # title accessibile
+        assert "i.ytimg.com/vi/" in page            # poster/facade pre-play
+
+    # ── 3. non pubblicata → redirect al profilo, nessun 404 crudo ────
+
+    def test_redirect_when_not_published(self):
+        page = self.PAGE.read_text()
+        assert "if (notFound || !data || !published)" in page
+        assert "Navigate" in page and "replace" in page
+        assert "data.interview.length > 0" in page   # pubblicata = lista piena
+
+    # ── 4. continuità: testata identitaria condivisa + slot badge PV4 ─
+
+    def test_identity_header_shared(self):
+        assert "OperatorIdentityHeader" in self.PAGE.read_text()
+        assert "OperatorIdentityHeader" in self.PROFILE.read_text()
+        header = self.HEADER.read_text()
+        assert "verified-badge-slot" in header       # slot badge PV4 previsto
+        assert "bg-black/45" in header               # stesso overlay cover
+
+    def test_back_to_profile_always_visible(self):
+        page = self.PAGE.read_text()
+        assert "back-to-profile" in page
+        assert "sticky" in page
+
+    def test_continue_band_links_profile_anchors(self):
+        page = self.PAGE.read_text()
+        assert "continue-band" in page
+        for anchor in ("#ritiri", "#listino", "#recensioni"):
+            assert anchor in page, anchor
+
+    # ── 5. profilo: blocco compatto con anteprima e bottone ──────────
+
+    def test_profile_compact_block(self):
+        profile = self.PROFILE.read_text()
+        assert "interview-teaser" in profile
+        assert "read-interview-cta" in profile
+        assert "line-clamp-3" in profile             # anteprima con ellissi
+        assert "data.interview[0].question" in profile
+        assert "data.interview.map" not in profile   # niente Q&A integrali inline
+
+    # ── 6. la pagina rete linka la pagina nuova ──────────────────────
+
+    def test_network_page_links_interview_page(self):
+        page = (FRONTEND_SRC / "features" / "network"
+                / "NetworkOperatorsPage.js").read_text()
+        assert "/intervista" in page
+
+    # ── 7. i18n x4 ───────────────────────────────────────────────────
+
+    def test_i18n_x4(self):
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            data = json.loads(
+                (FRONTEND_SRC / "locales" / lang / "landings.json")
+                .read_text())
+            op = data.get("operator") or {}
+            for key in ("interviewReadCta", "interviewBackToProfile",
+                        "interviewByAurya", "interviewContinueTitle",
+                        "interviewSeoTitle", "interviewVideoTitle"):
+                assert op.get(key), f"{lang}: operator.{key} mancante"
+
+    # ── 8. il prerender crawler risponde 200 anche sul path nuovo ────
+
+    def test_seo_shell_serves_interview_path(self):
+        r = requests.get(f"{BASE_URL}/__seo/o/masseria-demo/intervista",
+                         timeout=10)
+        assert r.status_code == 200

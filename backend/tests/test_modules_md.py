@@ -339,8 +339,13 @@ class TestFeaturedBoostGt3:
         # il flag e' nel payload di public_operator_profile (dopo reviews_open)
         idx = self.PUB_SRC.index('"reviews_open"')
         assert '"featured"' in self.PUB_SRC[idx:idx + 400]
+        # PV3 — la fila badge vive nella testata condivisa col profilo
+        # (OperatorIdentityHeader), montata da OperatorProfilePage.
+        hero = (self.FRONT / "components"
+                / "OperatorIdentityHeader.jsx").read_text()
+        assert "data.featured" in hero
         page = (self.FRONT / "OperatorProfilePage.js").read_text()
-        assert "data.featured" in page
+        assert "OperatorIdentityHeader" in page
 
 
 class TestReviewNudgeGt4:

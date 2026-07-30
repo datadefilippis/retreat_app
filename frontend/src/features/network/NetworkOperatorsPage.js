@@ -92,8 +92,13 @@ export default function NetworkOperatorsPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {members.map(m => (
-                  <Link key={m.slug} to={`/o/${m.slug}`}
-                        className="group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-md transition-shadow flex">
+                  /* PV3 — la card intera porta al profilo (link steso
+                     sull'area), ma "Leggi l'intervista" è un link VERO
+                     alla pagina dedicata /o/:slug/intervista */
+                  <div key={m.slug}
+                       className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-md transition-shadow flex">
+                    <Link to={`/o/${m.slug}`} aria-label={m.name}
+                          className="absolute inset-0 z-0" />
                     {(m.portrait_url || m.cover_url) && (
                       <img src={m.portrait_url || m.cover_url} alt="" loading="lazy"
                            className="h-full w-28 object-cover shrink-0" />
@@ -120,12 +125,13 @@ export default function NetworkOperatorsPage() {
                         </p>
                       )}
                       {m.has_interview && (
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8a7440] mt-2">
+                        <Link to={`/o/${m.slug}/intervista`}
+                              className="relative z-10 inline-block text-[11px] font-semibold uppercase tracking-wide text-[#8a7440] mt-2 hover:underline">
                           {t('nwOps.readInterview', { defaultValue: 'Leggi l’intervista' })}
-                        </p>
+                        </Link>
                       )}
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}

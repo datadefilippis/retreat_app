@@ -50,6 +50,8 @@ const EventsListPage = lazy(() => import("./features/events/EventsListPage"));
 const EventWizard = lazy(() => import("./features/events/EventWizard"));
 import RetreatsCalendarPage from "./features/storefront/RetreatsCalendarPage";
 import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
+// PV3 — l'intervista Aurya su pagina propria, in continuità col profilo
+import OperatorInterviewPage from "./features/storefront/OperatorInterviewPage";
 import OperatorsIndexPage from "./features/storefront/OperatorsIndexPage";
 import DestinationsPage from "./features/storefront/DestinationsPage";
 const ServiceWizard = lazy(() => import("./features/services/ServiceWizard"));
@@ -503,6 +505,9 @@ function AppRoutes() {
           pagina resta nel repo (storefront/), pronta a tornare */}
       <Route path="/esperienze/*" element={<Navigate to="/" replace />} />
       <Route path="/o/:org_slug" element={<OperatorProfilePage />} />
+      {/* PV3 — pagina intervista pubblica: stessa testata del profilo,
+          redirect a /o/:slug se l'intervista non è pubblicata */}
+      <Route path="/o/:org_slug/intervista" element={<OperatorInterviewPage />} />
 
       <Route path="/e/:org_slug/:slug" element={
         <PublicStorefrontShell showFloatingSwitcher={false}><EventLandingPage /></PublicStorefrontShell>

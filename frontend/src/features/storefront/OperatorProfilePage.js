@@ -10,14 +10,17 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Flower2 } from 'lucide-react';
+import { ArrowRight, Flower2, Play } from 'lucide-react';
 import api from '../../api/client';
 import { useSiteConfig } from '../../context/SiteConfigContext';
 import useSeoMeta from './lib/useSeoMeta';
 import useTrackView from './lib/useTrackView';
 import MarketplaceShell from './components/MarketplaceShell';
+// PV3 — la testata identitaria è condivisa con la pagina intervista
+// (/o/:slug/intervista): stesso componente, continuità garantita.
+import OperatorIdentityHeader from './components/OperatorIdentityHeader';
 // PN3 — l'acquisto del servizio avviene TUTTO sul profilo: la riga di
 // listino si espande su un harness che riusa il checkout dello storefront
 // (CheckoutForm/OrderSummary/useCheckoutForm, zero fork di logica).
@@ -242,7 +245,7 @@ function ReviewsSection({ orgSlug, stats, onWrite, refreshKey, t, i18n }) {
   const maxDist = Math.max(1, ...Object.values(dist));
 
   return (
-    <section id="recensioni" className="mt-10">
+    <section id="recensioni" className="mt-10 scroll-mt-20">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-heading text-xl font-bold text-foreground">
           {t('landings:reviews.heading', { defaultValue: 'Recensioni' })}
@@ -355,6 +358,23 @@ export default function OperatorProfilePage() {
     return () => { mounted = false; };
   }, [org_slug, uiLang]);
 
+  // PV3 — arrivo dalle CTA della pagina intervista (#ritiri, #listino,
+  // #recensioni): a dati pronti si scorre all'ancora, così le due
+  // pagine si comportano come un'unica scheda. (ScrollToTop in App.js
+  // riparte dall'alto al cambio pathname: qui si corregge dopo.)
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!data || !hash) return;
+    const el = document.getElementById(hash.slice(1));
+    if (el) {
+      // behavior auto (salto secco): lo smooth viene cancellato dai
+      // reflow delle immagini che arrivano subito dopo il fetch.
+      const id = setTimeout(() => el.scrollIntoView({ block: 'start' }), 120);
+      return () => clearTimeout(id);
+    }
+    return undefined;
+  }, [data, hash]);
+
   const rs = data?.reviews_stats;
   useSeoMeta({
     title: data?.name
@@ -411,7 +431,6 @@ export default function OperatorProfilePage() {
     );
   }
 
-  const accent = data.brand_color || '#16281F';
   const socials = data.socials || {};
   const extUrl = (u) => (u && !u.startsWith('http') ? `https://${u}` : u);
   const placeSlug = (data.region || data.city)
@@ -432,51 +451,8 @@ export default function OperatorProfilePage() {
         </nav>
       </div>
 
-      {/* ── Hero ── */}
-      <header className="text-white relative mt-2" style={{ backgroundColor: accent }}>
-        {data.cover_url && (
-          <>
-            <img src={data.cover_url} alt="" aria-hidden fetchpriority="high"
-                 className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/45" />
-          </>
-        )}
-        <div className="relative max-w-6xl mx-auto px-4 py-14 flex items-center gap-5">
-          {data.logo_url && (
-            <img src={data.logo_url} alt={`Logo di ${data.name}`}
-                 className="h-20 w-20 rounded-full object-cover bg-white/10 border-2 border-white/50 shadow-lg" />
-          )}
-          <div>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold">{data.name}</h1>
-            {data.tagline && (
-              <p className="text-white/90 mt-1">{data.tagline}</p>
-            )}
-            <div className="flex flex-wrap items-center gap-2 mt-3">
-              {/* GT3 — badge dei piani "In evidenza" sul profilo */}
-              {data.featured && (
-                <span className="rounded-full bg-white/25 backdrop-blur px-2.5 py-1 text-[11px] font-semibold">
-                  ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
-                </span>
-              )}
-              {rs?.count > 0 && (
-                <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
-                  ★ {rs.avg} · {t('landings:reviews.countShort', { count: rs.count, defaultValue: '{{count}} recensioni' })}
-                </span>
-              )}
-              {(data.founded_year || data.member_since) && (
-                <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
-                  ✓ {t('landings:operator.memberSince', { defaultValue: 'Organizzatore dal {{year}}', year: data.founded_year || data.member_since })}
-                </span>
-              )}
-              {data.retreats_organized > 0 && (
-                <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
-                  <Flower2 className="inline h-3 w-3 mr-0.5 align-[-1px]" aria-hidden /> {t('landings:operator.retreatsOrganized', { defaultValue: '{{count}} ritiri organizzati', count: data.retreats_organized })}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* ── Hero — testata identitaria condivisa con /o/:slug/intervista (PV3) ── */}
+      <OperatorIdentityHeader data={data} t={t} />
 
       {/* ── Due colonne ── */}
       <main className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
@@ -493,28 +469,38 @@ export default function OperatorProfilePage() {
             </section>
           )}
 
-          {/* RT3 (piano sito-rete) — l'intervista integrale: e' il cuore
-              del profilo di un membro della rete. Domande e risposte
-              complete, mai riassunte: il valore sta nella profondita'. */}
+          {/* PV3 — l'intervista integrale vive su pagina propria
+              (/o/:slug/intervista): qui resta un blocco compatto con
+              la prima domanda come anteprima e il bottone di lettura.
+              L'ancora #intervista continua a rispondere. */}
           {Array.isArray(data.interview) && data.interview.length > 0 && (
-            <section id="intervista" className="mt-8">
+            <section id="intervista" className="mt-8 scroll-mt-20" data-testid="interview-teaser">
               <h2 className="font-heading text-xl font-bold text-foreground mb-1">
                 {t('landings:operator.interviewTitle', { defaultValue: 'L’intervista' })}
               </h2>
               <p className="text-sm text-gray-500 mb-4">
                 {t('landings:operator.interviewSub', { defaultValue: 'Le parole di chi c’è dietro, raccolte da Aurya.' })}
               </p>
-              <div className="space-y-6">
-                {data.interview.map((qa, i) => (
-                  <div key={i}>
-                    <h3 className="font-heading font-semibold text-[#376254] leading-snug">
-                      {qa.question}
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line mt-1.5">
-                      {qa.answer}
-                    </p>
-                  </div>
-                ))}
+              <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                <h3 className="font-heading font-semibold text-[#376254] leading-snug">
+                  {data.interview[0].question}
+                </h3>
+                <p className="text-gray-700 leading-relaxed mt-1.5 line-clamp-3">
+                  {data.interview[0].answer}
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <Link to={`/o/${org_slug}/intervista`} data-testid="read-interview-cta"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#376254] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2c4f43] transition-colors">
+                    {t('landings:operator.interviewReadCta', { defaultValue: 'Leggi l’intervista' })}
+                    <ArrowRight className="h-4 w-4" aria-hidden />
+                  </Link>
+                  {data.interview_video_url && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-500">
+                      <Play className="h-3.5 w-3.5 text-[#8a7440]" aria-hidden />
+                      {t('landings:operator.interviewHasVideo', { defaultValue: 'Con video' })}
+                    </span>
+                  )}
+                </div>
               </div>
             </section>
           )}
@@ -525,7 +511,7 @@ export default function OperatorProfilePage() {
               (InlineServiceCheckout riusa il checkout dello storefront).
               La landing /p/ resta come link secondario "Vedi dettagli". */}
           {Array.isArray(data.listino) && data.listino.length > 0 && (
-            <section id="listino" className="mt-8" data-testid="profile-listino">
+            <section id="listino" className="mt-8 scroll-mt-20" data-testid="profile-listino">
               <h2 className="font-heading text-xl font-bold text-foreground mb-3">
                 {t('landings:operator.listino', { defaultValue: 'Servizi e prezzi' })}
               </h2>
@@ -619,7 +605,7 @@ export default function OperatorProfilePage() {
               e anche senza Stripe (il gate GT1b vale solo per la
               directory, non per la pagina personale) */}
           {true && (
-          <section id="ritiri" className="mt-8">
+          <section id="ritiri" className="mt-8 scroll-mt-20">
             <h2 className="font-heading text-xl font-bold text-foreground mb-3">
               {t('landings:operator.upcoming', { count: data.upcoming_count })}
             </h2>

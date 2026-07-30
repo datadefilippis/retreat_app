@@ -533,10 +533,15 @@ class TestSeo3OnPage:
         assert "languageChanged" in i18n
 
     def test_descriptive_alt_text(self):
+        # PV3 — l'hero del profilo vive nel componente condiviso con la
+        # pagina intervista: la guardia copre entrambi i file.
         op = (FRONTEND_SRC / "features" / "storefront"
               / "OperatorProfilePage.js").read_text()
-        assert 'alt=""' not in op or "aria-hidden" in op  # solo decorative
-        assert "Logo di" in op                            # logo descrittivo
+        hero = (FRONTEND_SRC / "features" / "storefront" / "components"
+                / "OperatorIdentityHeader.jsx").read_text()
+        for src in (op, hero):
+            assert 'alt=""' not in src or "aria-hidden" in src  # solo decorative
+        assert "Logo di" in hero                          # logo descrittivo
         ev = (FRONTEND_SRC / "features" / "storefront"
               / "EventLandingPage.js").read_text()
         assert "foto ${" in ev                            # gallery numerata
