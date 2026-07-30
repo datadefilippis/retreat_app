@@ -650,12 +650,12 @@ class TestListinoUnPassoLM1:
     PAGE = FRONTEND_SRC / "features" / "listino" / "ListinoPage.js"
 
     def test_accordion_progressivi_nella_riga(self):
-        """I due momenti LM1 esistono nella riga espansa e 'Tutte le
-        impostazioni' resta il percorso avanzato."""
+        """I due momenti LM1 esistono nella riga espansa e 'Impostazioni
+        avanzate' (label PS2) resta il percorso avanzato."""
         page = self.PAGE.read_text()
         assert "Opzioni e varianti" in page
         assert "Prenotazione e incasso" in page
-        assert "Tutte le impostazioni" in page
+        assert "Impostazioni avanzate" in page
         # progressione: una sezione aperta alla volta, mai tutte
         assert "openSection" in page
 
@@ -2540,7 +2540,7 @@ class TestPotaturaPs1:
     """PS1 (30/7/2026) — back onesti: le dashboard raggiungibili dal
     mondo snello non riportano MAI alla ProductsPage legacy.
 
-    ServiceDashboardPage (da /listino "Tutte le impostazioni") torna a
+    ServiceDashboardPage (da /listino "Impostazioni avanzate") torna a
     /listino in tutti e tre i punti (hero back + due stati di errore);
     EventDashboardPage not-found e CheckInPage tornano a /events. La
     ProductsPage resta viva SOLO per le org legacy_commerce (voce di
@@ -2563,3 +2563,82 @@ class TestPotaturaPs1:
             src = FRONTEND_SRC.joinpath(*rel).read_text()
             assert 'to="/products"' not in src and "navigate('/products')" not in src, \
                 f"{rel[-1]} non deve riportare alla ProductsPage legacy"
+
+
+class TestPotaturaPs2:
+    """PS2 (30/7/2026) — /services/:id ridotta a editor AVANZATO onesto
+    (docs/POTATURA_STORE_PIANO_2026-07.md). Restano SOLO le sezioni che
+    non hanno altra casa: descrizione estesa + copertina landing (con
+    multilingua), traduzioni di nome/nota, regole orari per-giorno,
+    campi ordine custom, anteprima/copia link/duplica. Tutto cio' che
+    duplicava la riga espansa del listino (LM1) e la sezione morta
+    Distribuzione sono stati potati. Il salvataggio manda un payload
+    PARZIALE (exclude_unset lato API) con merge del metadata esistente:
+    i campi del listino non possono essere azzerati da qui."""
+
+    PAGE = (FRONTEND_SRC / "features" / "services"
+            / "ServiceDashboardPage.js")
+    LISTINO = FRONTEND_SRC / "features" / "listino" / "ListinoPage.js"
+
+    def test_ps2_sezioni_duplicate_potate(self):
+        page = self.PAGE.read_text()
+        assert "ProductSalesStats" not in page      # Incassi/Ordini coprono
+        assert "ServiceOptionsEditor" not in page   # opzioni: nel listino
+        assert "distribu" not in page.lower()       # sezione morta
+        assert "quickTogglePublish" not in page \
+            and "statusTitle" not in page           # stato: toggle Eye listino
+        assert "terms_content" not in page          # requisiti: nel listino
+        assert "transaction_mode" not in page       # incasso: nel listino
+        assert "unit_price" not in page             # prezzo: nel listino
+        assert "is_published" not in page           # stato: nel listino
+        assert "upcomingTitle" not in page          # agenda: nel Calendario
+
+    def test_ps2_sezioni_superstiti(self):
+        page = self.PAGE.read_text()
+        assert "AvailabilityRulesEditor" in page    # regole orari per-giorno
+        assert "use_default_schedule" in page       # toggle calendario ufficiale
+        assert "long_description" in page           # descrizione estesa landing
+        assert "cover_image_url" in page            # copertina landing
+        assert "FieldEditorList" in page            # campi ordine custom
+        assert "MultiLangSection" in page           # traduzioni
+        assert "service_allow_custom_request" in page
+        assert "handleDuplicate" in page and "copyLandingUrl" in page
+        assert "Impostazioni avanzate del servizio" in page  # titolo onesto
+
+    def test_ps2_payload_parziale_con_merge_metadata(self):
+        """Nessun campo del listino nel payload di update: il metadata
+        fa merge sull'esistente, il resto viaggia via exclude_unset."""
+        page = self.PAGE.read_text()
+        assert "...existingMeta" in page
+        assert "translations: buildTranslationsPayload()" in page
+        # le due strade di salvataggio: saveProduct + flag immediati
+        assert page.count("productsAPI.update(") == 2
+
+    def test_ps2_label_listino_impostazioni_avanzate(self):
+        listino = self.LISTINO.read_text()
+        assert "Tutte le impostazioni" not in listino
+        assert "Impostazioni avanzate" in listino
+        assert "impostazioni avanzate" in listino   # link regole orari
+
+    def test_ps2_niente_store_nel_copy_pagina(self):
+        page = self.PAGE.read_text()
+        assert "store" not in page.lower()
+        assert "negozio" not in page.lower()
+
+    def test_ps2_i18n_x4(self):
+        """Chiavi nuove presenti e chiavi morte assenti nei 4 locales."""
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            loc = _json.loads((FRONTEND_SRC / "locales" / lang
+                               / "products.json").read_text())
+            svc = loc["dashboards"]["service"]
+            for key in ("pageTitle", "baseHint", "translationsTitle",
+                        "translationsSave", "coverLabel",
+                        "allowCustomTitle", "orderFieldsSave"):
+                assert key in svc, f"{lang}: manca {key}"
+            for key in ("statusTitle", "product", "orderFieldsHint",
+                        "distributionDesc", "optionsTitle", "termsTitle",
+                        "upcomingTitle"):
+                assert key not in svc, f"{lang}: chiave morta {key}"
+            assert "advancedSettings" in loc.get("listino", {}), \
+                f"{lang}: manca listino.advancedSettings"

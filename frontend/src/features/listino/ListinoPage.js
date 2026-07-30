@@ -9,8 +9,9 @@
  *
  * Lo store tecnico invisibile si garantisce da solo al primo accesso
  * (storesAPI.ensureDefault, idempotente): l'operatore non deve sapere
- * che esiste. "Tutte le impostazioni" apre il vecchio editor service
- * (/services/:id) che da TW1 e' l'editor AVANZATO, non il percorso.
+ * che esiste. "Impostazioni avanzate" apre /services/:id che da PS2
+ * e' l'editor AVANZATO onesto (landing, traduzioni, orari, campi
+ * ordine), non il percorso primario.
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -191,7 +192,9 @@ function RowSection({ id, title, hint, open, onToggle, children }) {
 }
 
 export default function ListinoPage() {
-  const { t } = useTranslation('catalog');
+  // PS2 — i label verso l'editor avanzato vivono nel namespace
+  // 'products' (bundle admin, caricato dal Layout).
+  const { t } = useTranslation('products');
   const navigate = useNavigate();
   const [rows, setRows] = useState(null);       // null = loading
   const [profileSlug, setProfileSlug] = useState(null);
@@ -551,7 +554,7 @@ export default function ListinoPage() {
                                   <button type="button"
                                           onClick={() => navigate(`/services/${row.id}`)}
                                           className="underline hover:text-primary">
-                                    Regole orari su Tutte le impostazioni
+                                    {t('listino.advancedHours', { defaultValue: 'Regole orari nelle impostazioni avanzate' })}
                                   </button>
                                 </p>
                               )}
@@ -642,13 +645,13 @@ export default function ListinoPage() {
                           Annulla
                         </Button>
                         <div className="ml-auto flex items-center gap-3 text-xs">
-                          {/* il vecchio wizard = editor AVANZATO (calendario
-                              dedicato, opzioni, pagamento online, campi custom) */}
+                          {/* PS2: /services/:id = editor AVANZATO onesto
+                              (landing, traduzioni, orari, campi ordine) */}
                           <button type="button"
                                   onClick={() => navigate(`/services/${row.id}`)}
                                   className="inline-flex items-center gap-1 text-gray-500 hover:text-primary">
                             <Settings2 className="h-3.5 w-3.5" />
-                            Tutte le impostazioni
+                            {t('listino.advancedSettings', { defaultValue: 'Impostazioni avanzate' })}
                           </button>
                           <button type="button" onClick={() => removeRow(row)}
                                   className="inline-flex items-center gap-1 text-red-400 hover:text-red-600">
@@ -669,8 +672,8 @@ export default function ListinoPage() {
       {rows.length > 0 && (
         <p className="text-xs text-gray-400">
           I servizi ricevono richieste di appuntamento via email. Vuoi incassare
-          online con slot prenotabili? Apri "Tutte le impostazioni" del servizio
-          e attiva il pagamento online (serve <Link to="/settings" className="underline">Stripe</Link>).
+          online con slot prenotabili? Attiva il pagamento online dalla riga del
+          servizio, sezione "Prenotazione e incasso" (serve <Link to="/settings" className="underline">Stripe</Link>).
         </p>
       )}
     </div>
