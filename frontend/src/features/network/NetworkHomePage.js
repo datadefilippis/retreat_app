@@ -12,6 +12,23 @@
  *   6. OPERATORI    l'invito              due CTA
  *   7. LA LETTERA   restare               newsletter
  *
+ * HP3 (31/7/2026) — REFINEMENT SOLO VISIVO. Copy, ordine delle
+ * sezioni e CTA restano congelati: cambiano fotografie, fondi, ritmo
+ * e micro-interazioni. Le tre decisioni portanti:
+ *
+ *   a) FOTOGRAFIA DOVE ARGOMENTA, NON DOVE RIEMPIE. Ogni immagine e'
+ *      scelta per quello che dice la sezione in cui sta, e due delle
+ *      cinque sono la copertina della pagina verso cui porta il link
+ *      (Magazine → la cover di /blog; La rete → la cover di
+ *      /entra-nella-rete): chi clicca ritrova la stessa immagine e
+ *      capisce di essere arrivato.
+ *   b) ALTERNANZA DEI FONDI. crema → sabbia → VERDE → bianco →
+ *      VERDE+foto → crema → sabbia. Due ancore verdi non adiacenti,
+ *      separate dalla vetrina bianca del Magazine, che e' anche il
+ *      punto piu' luminoso della pagina.
+ *   c) RESPIRO FRA, NON DENTRO. Il ritmo `screen` non stira piu' le
+ *      sezioni a 82vh: era quello a produrre i vuoti bianchi.
+ *
  * Cosa e' USCITO rispetto a HP1: la sezione "Le persone" coi volti dei
  * membri. La sostituiscono la colonna "Professionisti" (sezione 2) e
  * la sezione 5, che raccontano la rete come promessa in costruzione
@@ -53,14 +70,52 @@ const MAGAZINE_PATH = '/blog';
    "Parliamone" ci porta dritto li' invece che in cima alla pagina. */
 const OPERATOR_FORM_PATH = '/entra-nella-rete#presentati';
 
-/* Il segno in testa alle tre colonne: 'emoji' e' la specifica del
-   founder, 'numeral' l'alternativa editoriale (vedi la NOTA DIREZIONE
-   CREATIVA in components/editorial/PillarCard.jsx). Si prova
-   cambiando questa sola parola. */
-const PILLAR_VARIANT = 'emoji';
+/* Il segno in testa alle tre colonne: da HP3 il default e' 'plain'
+   (la fotografia in testa fa gia' da segno). 'emoji' resta la
+   specifica originale del founder, 'numeral' l'alternativa
+   editoriale. Si prova cambiando questa sola parola; le motivazioni
+   stanno nella NOTA DIREZIONE CREATIVA di editorial/PillarCard.jsx. */
+const PILLAR_VARIANT = 'plain';
 
 /** quanti articoli in vetrina: uno grande, due piccoli */
 const MAX_ARTICLES = 3;
+
+/* ── LE FOTOGRAFIE ────────────────────────────────────────────────
+   Tutte gia' presenti in /public/media: nessun asset nuovo, nessuna
+   stock. Accanto a ciascuna, il perche' sta li' e non altrove.
+
+   HERO   r03 — una donna medita di profilo su rocce coperte di muschio,
+          dentro un bosco verdissimo. E' una persona (l'H1 dice "Inizia
+          dalle persone"), ma assorta nella propria pratica invece che
+          in posa verso l'obiettivo: e' esattamente "conoscere le
+          persone dietro le pratiche". In piu' porta il verde di Aurya
+          nell'apertura come fotografia e non come vernice.
+   MAG    hero-blog — la copertina di /blog, cioe' della pagina che la
+          scheda apre. Chi clicca ritrova la stessa immagine.
+   PRO    r06 — qualcuno seduto sul proprio cuscino, mala, candela,
+          pavimento di casa: un professionista nel suo spazio, non uno
+          scatto di categoria. "Raccontati con cura, uno alla volta."
+   EXP    r02 — due persone che meditano insieme in un bosco al
+          tramonto: e' un ritiro, ed e' al plurale. Desaturata, perche'
+          la colonna e' una promessa e non un'offerta.
+   RETE   hero-organizer — la copertina di /entra-nella-rete, la pagina
+          della CTA di quella sezione. Stesso patto della colonna
+          Magazine: l'immagine e' la porta.
+
+   Scartate e perche': chisiamo-aurya (selfie dei fondatori: giusto sul
+   Manifesto, fuori tono in home), aurya-hero.mp4 (il tramonto e' gia'
+   la firma dello splash di prelancio e della home marketplace; qui
+   avrebbe imposto testo bianco su oro e 1,6 MB sul primo rendering),
+   hero-destination (girasoli: bellissimi, ma non parlano di persone),
+   r08/r10 (trattamenti in primissimo piano: fortissimi, ma spostano il
+   discorso dalla persona alla prestazione). */
+const PHOTO = {
+  hero: '/media/prelaunch/r03.jpg',
+  magazine: '/media/hero-blog.webp',
+  pros: '/media/prelaunch/r06.jpg',
+  experiences: '/media/prelaunch/r02.jpg',
+  network: '/media/hero-organizer.webp',
+};
 
 export default function NetworkHomePage() {
   const { t, i18n } = useTranslation('landings');
@@ -94,12 +149,16 @@ export default function NetworkHomePage() {
 
   /* Le tre colonne in un dato solo: l'ordine e' quello della specifica
      e la terza NON ha `to`, quindi PillarCard le da' l'etichetta di
-     stato al posto del link. */
+     stato al posto del link.
+     Le immagini sono DECORATIVE (alt=""): titolo e testo della scheda
+     dicono gia' tutto, e un alt che ripete "una persona che medita"
+     aggiungerebbe rumore a chi ascolta la pagina invece di leggerla. */
   const pillars = [
     {
       id: 'magazine',
       icon: '📖',
       numeral: '01',
+      image: PHOTO.magazine,
       title: t('nwHome.pillarMagTitle', { defaultValue: "Magazine" }),
       text: t('nwHome.pillarMagText', { defaultValue: "Guide, approfondimenti e storie per orientarti nel mondo del benessere senza promesse facili." }),
       to: MAGAZINE_PATH,
@@ -109,6 +168,7 @@ export default function NetworkHomePage() {
       id: 'professionisti',
       icon: '🌿',
       numeral: '02',
+      image: PHOTO.pros,
       title: t('nwHome.pillarProTitle', { defaultValue: "Professionisti" }),
       text: t('nwHome.pillarProText', { defaultValue: "Stiamo costruendo una rete di professionisti raccontati con cura, uno alla volta. Ogni profilo nascerà da una conversazione, non da un semplice modulo." }),
       to: '/operatori',
@@ -118,6 +178,7 @@ export default function NetworkHomePage() {
       id: 'esperienze',
       icon: '✨',
       numeral: '03',
+      image: PHOTO.experiences,
       title: t('nwHome.pillarExpTitle', { defaultValue: "Esperienze" }),
       text: t('nwHome.pillarExpText', { defaultValue: "Ritiri, workshop ed eventi selezionati per chi desidera vivere ciò che ha scoperto." }),
       // niente `to`: la terza colonna e' una promessa, non una porta
@@ -130,56 +191,80 @@ export default function NetworkHomePage() {
       <div className="bg-background">
 
         {/* ── 1. HERO — la convinzione ─────────────────────────────
-            Sola tipografia su crema: senza la cover di una persona
-            vera della rete, nessuna immagine e' meglio di una stock.
-            Larghezza max-w-6xl (e non 5xl come le altre): serve a far
-            stare ciascuna delle due frasi del titolo su una riga sua
-            anche su desktop, che e' il senso del "due righe". */}
+            HP3: impaginazione editoriale a due colonne. Il testo tiene
+            i 7/12 e resta la prima cosa che si legge; la fotografia
+            verticale accompagna, non annuncia. La soluzione alternativa
+            (immagine a tutto campo con velo scuro e testo bianco) e'
+            stata scartata: su questa pagina il verde e il crema sono il
+            brand, e un hero scuro avrebbe dato alla home un tono che il
+            resto del sito non ha. Su mobile la foto scende SOTTO il
+            blocco di testo e si accorcia a 4:3, cosi' l'apertura non si
+            mangia due schermate di scorrimento. */}
         {/* <section> e non <header>: il landmark banner e' gia' quello
             della shell, due banner confondono lo screen reader */}
-        <Section tone="cream" rhythm="screen" labelledBy="hp-hero-title"
-                 width="max-w-6xl" className="border-b border-border/50">
-          <div data-testid="hp-hero">
-            <BrandPayoff tone="cream" size="xs" className="mb-6 sm:mb-8" />
-            <DisplayTitle as="h1" id="hp-hero-title" size="heroLines" measure="lines">
-              <TitleLine>
-                {t('nwHome.heroTitleA', { defaultValue: "Il benessere non inizia da una pratica." })}
-              </TitleLine>
-              <TitleLine>
-                {t('nwHome.heroTitleB', { defaultValue: "Inizia dalle persone." })}
-              </TitleLine>
-            </DisplayTitle>
-            <Lede size="lead" className="mt-7 sm:mt-9">
-              {t('nwHome.heroBody', { defaultValue: "Scegliere un professionista del benessere significa affidargli qualcosa di personale. Per questo Aurya nasce per aiutarti a conoscere le persone dietro le pratiche, comprendere i diversi approcci e orientarti con maggiore consapevolezza." })}
-            </Lede>
-            {/* due azioni, ma di peso diverso: la prima e' la porta di
-                casa (il Magazine e' l'unica cosa gia' viva), la
-                seconda smista l'altro pubblico senza contendersela.
-                In colonna su mobile: affiancate, "Sei un operatore?"
-                finirebbe schiacciata sotto i 375px. */}
-            <div className="mt-10 sm:mt-12 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-              <EditorialCta to={MAGAZINE_PATH} variant="solid" data-testid="hp-hero-cta">
-                {t('nwHome.heroCta', { defaultValue: "Esplora il Magazine" })}
-              </EditorialCta>
-              <EditorialCta to="/entra-nella-rete" variant="quiet" data-testid="hp-hero-cta-alt">
-                {t('nwHome.heroCtaAlt', { defaultValue: "Sei un operatore?" })}
-              </EditorialCta>
+        <Section tone="cream" rhythm="hero" labelledBy="hp-hero-title"
+                 width="max-w-6xl" className="border-b border-[#1e2f28]/[0.07]">
+          <div data-testid="hp-hero" className="grid items-center gap-8 sm:gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-7">
+              <BrandPayoff tone="cream" size="xs" className="mb-5 sm:mb-7" />
+              <DisplayTitle as="h1" id="hp-hero-title" size="heroLines" measure="lines">
+                <TitleLine>
+                  {t('nwHome.heroTitleA', { defaultValue: "Il benessere non inizia da una pratica." })}
+                </TitleLine>
+                <TitleLine>
+                  {t('nwHome.heroTitleB', { defaultValue: "Inizia dalle persone." })}
+                </TitleLine>
+              </DisplayTitle>
+              <Lede size="lead" className="mt-6 sm:mt-8">
+                {t('nwHome.heroBody', { defaultValue: "Scegliere un professionista del benessere significa affidargli qualcosa di personale. Per questo Aurya nasce per aiutarti a conoscere le persone dietro le pratiche, comprendere i diversi approcci e orientarti con maggiore consapevolezza." })}
+              </Lede>
+              {/* due azioni, ma di peso diverso: la prima e' la porta di
+                  casa (il Magazine e' l'unica cosa gia' viva), la
+                  seconda smista l'altro pubblico senza contendersela.
+                  In colonna su mobile: affiancate, "Sei un operatore?"
+                  finirebbe schiacciata sotto i 375px. */}
+              <div className="mt-9 sm:mt-11 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
+                <EditorialCta to={MAGAZINE_PATH} variant="solid" data-testid="hp-hero-cta">
+                  {t('nwHome.heroCta', { defaultValue: "Esplora il Magazine" })}
+                </EditorialCta>
+                <EditorialCta to="/entra-nella-rete" variant="quiet" data-testid="hp-hero-cta-alt">
+                  {t('nwHome.heroCtaAlt', { defaultValue: "Sei un operatore?" })}
+                </EditorialCta>
+              </div>
+            </div>
+            {/* l'unica immagine che porta significato in pagina: ha un
+                alt vero. fetchPriority alto perche' e' l'LCP visivo;
+                aspect-ratio dichiarato, quindi lo spazio e' prenotato e
+                il testo non balla mentre il file arriva. */}
+            <div className="lg:col-span-5">
+              <img
+                src={PHOTO.hero}
+                alt={t('nwHome.heroImgAlt', { defaultValue: "Una donna medita seduta su rocce coperte di muschio, in un bosco verde." })}
+                width="900"
+                height="600"
+                fetchPriority="high"
+                decoding="async"
+                className="aspect-[3/2] w-full rounded-[1.75rem] object-cover object-[58%_center] shadow-[0_24px_60px_-32px_rgba(30,47,40,0.45)] sm:aspect-[5/4] lg:aspect-[4/5]"
+              />
             </div>
           </div>
         </Section>
 
         {/* ── 2. COSA TROVERAI — le tre colonne ────────────────────
-            Fondo carta: stacca la mappa del sito dal racconto. Le tre
-            schede hanno la stessa altezza e il piede alla stessa
+            HP3: fondo sabbia e non bianco. Le tre schede sono bianche,
+            e schede bianche su fondo bianco non esistono: e' il fondo
+            piu' caldo a farle galleggiare e a dare alla mappa del sito
+            un peso diverso dal racconto che la circonda.
+            Le schede hanno la stessa altezza e il piede alla stessa
             quota, cosi' "In arrivo" si legge come una differenza
             voluta e non come una card rotta. */}
-        <Section tone="paper" rhythm="flow" labelledBy="hp-pillars-title"
+        <Section tone="sand" rhythm="screen" labelledBy="hp-pillars-title"
                  width="max-w-6xl">
           <div data-testid="hp-pillars">
             <DisplayTitle as="h2" id="hp-pillars-title" size="section" measure="title">
               {t('nwHome.findTitle', { defaultValue: "Cosa troverai su Aurya." })}
             </DisplayTitle>
-            <Lede size="body" className="mt-6">
+            <Lede size="body" className="mt-5">
               <TitleLine>
                 {t('nwHome.findSubA', { defaultValue: "Non un catalogo." })}
               </TitleLine>
@@ -187,14 +272,14 @@ export default function NetworkHomePage() {
                 {t('nwHome.findSubB', { defaultValue: "Uno spazio per capire, prima ancora di scegliere." })}
               </TitleLine>
             </Lede>
-            {/* gap-y generoso: in colonna su mobile le tre promesse
-                devono leggersi come tre blocchi, non come un elenco */}
-            <ul className="mt-14 grid gap-14 sm:gap-12 lg:grid-cols-3 lg:gap-10 list-none p-0">
+            {/* con la scheda-oggetto il gap puo' stringersi: a separarle
+                ci pensano il bordo e l'ombra, non piu' il vuoto */}
+            <ul className="mt-10 sm:mt-12 grid gap-7 sm:gap-8 lg:grid-cols-3 list-none p-0">
               {/* `id` esce dallo spread: e' la chiave della lista e il
                   nostro appiglio nei test, non un attributo da versare
                   sul DOM della scheda */}
               {pillars.map(({ id, ...card }) => (
-                <li key={id} data-testid={`hp-pillar-${id}`}>
+                <li key={id} data-testid={`hp-pillar-${id}`} className="h-full">
                   <PillarCard variant={PILLAR_VARIANT} {...card} />
                 </li>
               ))}
@@ -203,26 +288,35 @@ export default function NetworkHomePage() {
         </Section>
 
         {/* ── 3. PERCHE' ESISTE AURYA — la ragione ─────────────────
+            HP3: PRIMA ANCORA TONALE. E' il cuore concettuale della
+            pagina, ed e' l'unica sezione fatta di solo ragionamento:
+            il verde pieno le da' il peso che il testo da solo non
+            riusciva a prendersi, e spezza la sequenza di fondi chiari
+            proprio a meta' della lettura.
+            Verde pieno e non fotografia: qui i paragrafi sono tre, e
+            un'immagine sotto un testo lungo si paga sempre in
+            leggibilita'. La foto va dove il testo e' corto (sezione 5).
             Tre paragrafi in scala discendente di peso: il primo e'
-            la tesi e sta al corpo del lede, gli altri due argomentano.
-            L'occhio capisce dove comincia il ragionamento senza che
-            nessuno gli metta un grassetto davanti. */}
-        <Section tone="cream" rhythm="screen" labelledBy="hp-why-title">
+            la tesi e sta al corpo del lede, gli altri due argomentano. */}
+        <Section tone="sage" rhythm="screen" labelledBy="hp-why-title"
+                 width="max-w-6xl">
           <div data-testid="hp-why">
             <DisplayTitle as="h2" id="hp-why-title" size="section" measure="tight">
               {t('nwHome.whyTitle', { defaultValue: "Perché esiste Aurya?" })}
             </DisplayTitle>
-            <Lede size="lead" className="mt-8">
+            {/* tone inherit: sul verde l'opacita' di default mangia
+                contrasto, e il crema all'80% scenderebbe sotto AA */}
+            <Lede size="lead" tone="inherit" className="mt-7">
               {t('nwHome.whyP1', { defaultValue: "Internet rende facile trovare informazioni. Molto più difficile è capire di chi fidarsi." })}
             </Lede>
-            <Lede size="body" className="mt-6">
+            <Lede size="body" tone="inherit" className="mt-5 opacity-90">
               {t('nwHome.whyP2', { defaultValue: "Ogni giorno migliaia di persone cercano un professionista, leggono recensioni sparse, visitano decine di siti e finiscono per scegliere quasi alla cieca." })}
             </Lede>
-            <Lede size="body" className="mt-6">
+            <Lede size="body" tone="inherit" className="mt-5 opacity-90">
               {t('nwHome.whyP3', { defaultValue: "Aurya nasce per cambiare questo. Vogliamo costruire uno spazio dove contenuti, persone ed esperienze possano essere conosciuti con il tempo e l'attenzione che meritano." })}
             </Lede>
-            <div className="mt-10">
-              <EditorialCta to="/manifesto" variant="quiet" data-testid="hp-why-cta">
+            <div className="mt-9">
+              <EditorialCta to="/manifesto" variant="light" data-testid="hp-why-cta">
                 {t('nwHome.whyCta', { defaultValue: "Leggi il Manifesto" })}
               </EditorialCta>
             </div>
@@ -230,27 +324,32 @@ export default function NetworkHomePage() {
         </Section>
 
         {/* ── 4. DAL MAGAZINE — la prova ───────────────────────────
-            Uno grande, due piccoli. Zero articoli, zero sezione: una
-            griglia vuota direbbe "non abbiamo ancora niente" molto
-            piu' forte del silenzio. */}
+            HP3: fondo bianco pieno, il punto piu' luminoso della
+            pagina, incastrato fra le due ancore verdi. Serve anche alle
+            copertine: quelle autogenerate del Magazine sono verdi
+            scure, e sul bianco si staccano come oggetti.
+            Uno grande, due piccoli; con un articolo solo il grande
+            prende tutta la larghezza invece di lasciare mezza griglia
+            vuota. Zero articoli, zero sezione: una griglia vuota direbbe
+            "non abbiamo ancora niente" molto piu' forte del silenzio. */}
         {articles.length > 0 && (
-          <Section tone="paper" rhythm="flow" labelledBy="hp-mag-title"
+          <Section tone="paper" rhythm="screen" labelledBy="hp-mag-title"
                    width="max-w-6xl">
             <div data-testid="hp-magazine">
               <DisplayTitle as="h2" id="hp-mag-title" size="section" measure="title">
                 {t('nwHome.magTitle', { defaultValue: "Dal Magazine" })}
               </DisplayTitle>
-              <Lede size="body" className="mt-6">
+              <Lede size="body" className="mt-5">
                 {t('nwHome.magSub', { defaultValue: "Capire è il primo passo per scegliere bene." })}
               </Lede>
-              <div className="mt-14 grid gap-12 lg:grid-cols-12 lg:gap-14">
-                <div className="lg:col-span-7">
+              <div className="mt-10 sm:mt-12 grid gap-10 lg:grid-cols-12 lg:gap-14">
+                <div className={secondary.length > 0 ? 'lg:col-span-7' : 'lg:col-span-8'}>
                   <ArticleCard article={lead} variant="lead"
                                category={catLabel(lead.category)}
                                date={fmtDate(lead.published_at)} />
                 </div>
                 {secondary.length > 0 && (
-                  <div className="lg:col-span-5 grid gap-8 sm:grid-cols-2 lg:grid-cols-1 lg:content-start lg:gap-10 lg:pt-2">
+                  <div className="lg:col-span-5 grid gap-7 sm:grid-cols-2 lg:grid-cols-1 lg:content-start lg:gap-9 lg:pt-2">
                     {secondary.map(a => (
                       <ArticleCard key={a.slug} article={a} variant="compact"
                                    category={catLabel(a.category)}
@@ -259,7 +358,7 @@ export default function NetworkHomePage() {
                   </div>
                 )}
               </div>
-              <div className="mt-14">
+              <div className="mt-12">
                 <EditorialCta to={MAGAZINE_PATH} variant="quiet" data-testid="hp-mag-cta">
                   {t('nwHome.magCta', { defaultValue: "Tutti gli articoli" })}
                 </EditorialCta>
@@ -269,54 +368,86 @@ export default function NetworkHomePage() {
         )}
 
         {/* ── 5. LA RETE — il picco ────────────────────────────────
-            Unico cambio di fondo della pagina (salvia), messo dove la
-            promessa e' piu' alta. Qui NON si nomina niente di
-            commerciale: solo presenza. */}
-        <Section tone="sage" rhythm="screen" labelledBy="hp-network-title">
-          <div data-testid="hp-network">
-            <DisplayTitle as="h2" id="hp-network-title" size="section" measure="lines">
-              <TitleLine>
-                {t('nwHome.netTitleA', { defaultValue: "Stiamo costruendo una rete." })}
-              </TitleLine>
-              <TitleLine>
-                {t('nwHome.netTitleB', { defaultValue: "Non una directory." })}
-              </TitleLine>
-            </DisplayTitle>
-            {/* tone inherit: sul salvia l'opacita' di default mangia
-                contrasto, e il crema all'80% scenderebbe sotto AA */}
-            <Lede size="body" tone="inherit" className="mt-8 opacity-90">
-              {t('nwHome.netBody', { defaultValue: "Ogni professionista entrerà in Aurya attraverso un percorso di conoscenza reciproca. Prima ascoltiamo la sua storia. Poi la raccontiamo. Infine costruiamo insieme un profilo che nel tempo diventerà il punto di riferimento della sua presenza su Aurya." })}
-            </Lede>
-            <div className="mt-10">
-              <EditorialCta to="/entra-nella-rete" variant="light" data-testid="hp-network-cta">
-                {t('nwHome.netCta', { defaultValue: "Scopri come entrare nella rete" })}
-              </EditorialCta>
+            HP3: SECONDA ANCORA TONALE, ma di natura diversa dalla
+            terza sezione, cosi' le due non si ripetono: qui il verde
+            e' una fascia a tutta larghezza affiancata da una
+            fotografia. Il testo sta sul verde PIENO e non sopra
+            l'immagine: e' l'unico modo di avere insieme una foto vera e
+            un contrasto misurabile che non dipenda da quanto e'
+            luminoso quel pixel.
+            La foto e' la copertina di /entra-nella-rete, cioe' della
+            pagina dove porta la CTA di questa sezione.
+            Qui NON si nomina niente di commerciale: solo presenza. */}
+        <Section tone="sage" rhythm="none" labelledBy="hp-network-title"
+                 width="max-w-none" gutter={false}>
+          <div data-testid="hp-network" className="grid lg:grid-cols-2 lg:items-stretch">
+            {/* la fascia esce dai margini, il TESTO no: mezza griglia
+                larga quanto mezzo contenitore di pagina (36rem = metà
+                di max-w-6xl) spinta a destra da ml-auto, piu' lo stesso
+                gutter delle altre sezioni. Cosi' il filo verticale
+                sinistro della pagina resta uno solo a ogni larghezza,
+                senza calcoli su 100vw che la barra di scorrimento
+                falserebbe. */}
+            <div className="order-2 lg:order-1 flex items-center px-6 py-16 sm:px-8 sm:py-24 lg:py-28 lg:px-0">
+              <div className="w-full lg:ml-auto lg:max-w-[36rem] lg:pl-8 lg:pr-14">
+                <DisplayTitle as="h2" id="hp-network-title" size="section" measure="lines">
+                  <TitleLine>
+                    {t('nwHome.netTitleA', { defaultValue: "Stiamo costruendo una rete." })}
+                  </TitleLine>
+                  <TitleLine>
+                    {t('nwHome.netTitleB', { defaultValue: "Non una directory." })}
+                  </TitleLine>
+                </DisplayTitle>
+                <Lede size="body" tone="inherit" className="mt-7 opacity-90">
+                  {t('nwHome.netBody', { defaultValue: "Ogni professionista entrerà in Aurya attraverso un percorso di conoscenza reciproca. Prima ascoltiamo la sua storia. Poi la raccontiamo. Infine costruiamo insieme un profilo che nel tempo diventerà il punto di riferimento della sua presenza su Aurya." })}
+                </Lede>
+                <div className="mt-9">
+                  <EditorialCta to="/entra-nella-rete" variant="light" data-testid="hp-network-cta">
+                    {t('nwHome.netCta', { defaultValue: "Scopri come entrare nella rete" })}
+                  </EditorialCta>
+                </div>
+              </div>
             </div>
+            {/* decorativa: la sezione si capisce tutta a parole */}
+            <img
+              src={PHOTO.network}
+              alt=""
+              width="1920"
+              height="1280"
+              loading="lazy"
+              decoding="async"
+              className="order-1 lg:order-2 h-56 w-full object-cover sm:h-80 lg:h-full lg:min-h-[30rem]"
+            />
           </div>
         </Section>
 
         {/* ── 6. PER GLI OPERATORI — l'invito ──────────────────────
-            L'unica sezione con due CTA oltre all'hero: qui la doppia
-            porta ha senso, perche' i due gesti sono davvero diversi
+            Torna il crema e torna il silenzio: dopo la fascia verde e
+            le copertine, questa sezione e quella della Lettera sono la
+            discesa. Metterci una sesta fotografia avrebbe reso la
+            pagina un catalogo di immagini; qui serve che si legga.
+            L'unica sezione con due CTA oltre all'hero: la doppia porta
+            ha senso, perche' i due gesti sono davvero diversi
             (candidarsi / farsi due domande prima). */}
-        <Section tone="cream" rhythm="screen" labelledBy="hp-pros-title">
+        <Section tone="cream" rhythm="screen" labelledBy="hp-pros-title"
+                 width="max-w-6xl" className="border-b border-[#1e2f28]/[0.07]">
           <div data-testid="hp-pros">
-            <p className="eyebrow mb-6">
+            <p className="eyebrow mb-5">
               {t('nwHome.prosEyebrow', { defaultValue: "Per gli operatori" })}
             </p>
             <DisplayTitle as="h2" id="hp-pros-title" size="section" measure="tight">
               {t('nwHome.prosTitle', { defaultValue: "Il tuo lavoro merita più di un profilo." })}
             </DisplayTitle>
-            <Lede size="lead" className="mt-8">
+            <Lede size="lead" className="mt-7">
               {t('nwHome.prosP1', { defaultValue: "Aurya nasce per dare ai professionisti del benessere uno spazio che cresca insieme alla loro attività." })}
             </Lede>
-            <Lede size="body" className="mt-6">
+            <Lede size="body" className="mt-5">
               {t('nwHome.prosP2', { defaultValue: "Oggi significa raccontare il tuo percorso. Domani significherà anche ricevere richieste, pubblicare servizi, organizzare esperienze, raccogliere recensioni e gestire tutto da un unico luogo." })}
             </Lede>
-            <Lede size="body" className="mt-6">
+            <Lede size="body" className="mt-5">
               {t('nwHome.prosP3', { defaultValue: "Stiamo costruendo tutto questo insieme ai primi professionisti che scelgono di far parte della rete." })}
             </Lede>
-            <div className="mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
+            <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
               <EditorialCta to="/entra-nella-rete" variant="solid" data-testid="hp-pros-cta">
                 {t('nwHome.prosCta', { defaultValue: "Entra tra i primi operatori" })}
               </EditorialCta>
@@ -332,19 +463,21 @@ export default function NetworkHomePage() {
             e' stretta apposta (max-w-[30ch]), cosi' le frasi cadono
             una per riga e il ritmo si vede invece di doverlo
             immaginare. La chiusa scende di tono: e' il commento, non
-            l'elenco. */}
-        <Section tone="paper" rhythm="screen" labelledBy="hp-letter-title">
+            l'elenco. Fondo sabbia: la pagina si chiude un gradino piu'
+            caldo di dove e' cominciata. */}
+        <Section tone="sand" rhythm="screen" labelledBy="hp-letter-title"
+                 width="max-w-6xl">
           <div data-testid="hp-letter">
             <DisplayTitle as="h2" id="hp-letter-title" size="section" measure="tight">
               {t('nwHome.letterTitle', { defaultValue: "Ricevi la Lettera di Aurya." })}
             </DisplayTitle>
-            <Lede size="lead" className="mt-8 max-w-[30ch]">
+            <Lede size="lead" className="mt-7 max-w-[30ch]">
               {t('nwHome.letterBody', { defaultValue: "Una volta ogni tanto. Una persona da conoscere. Una pratica da capire. Un luogo da scoprire." })}
             </Lede>
-            <Lede size="body" tone="quiet" className="mt-5 max-w-[30ch]">
+            <Lede size="body" tone="quiet" className="mt-4 max-w-[30ch]">
               {t('nwHome.letterClose', { defaultValue: "Niente rumore. Solo ciò che vale il tuo tempo." })}
             </Lede>
-            <div className="mt-10">
+            <div className="mt-9">
               <EditorialCta to="/newsletter" variant="quiet" data-testid="hp-letter-cta">
                 {t('nwHome.letterCta', { defaultValue: "Iscriviti" })}
               </EditorialCta>

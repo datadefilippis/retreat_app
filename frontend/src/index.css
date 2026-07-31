@@ -131,7 +131,15 @@ body {
     letter-spacing: 0.35em;
     text-transform: uppercase;
     font-size: 11px;
-    color: #8a7440;
+    /* HP3 — misurato sull'occhiello della home ("PER GLI OPERATORI"):
+       l'oro di brand #8a7440 sul crema dava 4.26:1, sotto il minimo AA
+       di 4.5:1, e a 11px maiuscoletto con 0.35em di spaziatura fra le
+       lettere e' proprio la condizione in cui il contrasto serve di
+       piu'. #7d6a3a e' lo stesso oro un gradino piu' basso: 4.97:1 sul
+       crema, 5.24:1 sul bianco, e a occhio nudo resta il medesimo
+       colore. L'oro decorativo (filo, bordi, icone) non si tocca: qui
+       cambia solo la variante che deve essere LETTA. */
+    color: #7d6a3a;
     user-select: none;
 }
 .eyebrow-light { color: #d6c49a; }

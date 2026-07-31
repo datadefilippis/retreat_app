@@ -1,24 +1,43 @@
 /**
  * ArticleCard — impaginazione da rivista, non card promozionale:
- * niente bordo, niente ombra, niente bottone. Categoria e data in
- * alto piccolissime, poi il titolo forte. Il titolo E' il link.
+ * niente bordo, niente ombra, niente bottone. Il titolo E' il link.
  *
- * variant lead    → l'articolo grande (immagine larga sopra)
- *         compact → i due piccoli (immagine quadrata a sinistra)
+ * variant lead    → l'articolo grande (copertina 16:9 sopra)
+ *         compact → i secondari (miniatura 4:3 a sinistra)
  * Lo spazio immagine e' sempre riservato: nessun salto di layout.
+ *
+ * HP3 — tre ritocchi, nessuno strutturale:
+ *   1. la copertina ha angoli propri (rounded-2xl / xl) e uno zoom
+ *      lentissimo al passaggio del mouse, solo in motion-safe;
+ *   2. la categoria diventa un chip verde e la data torna a essere
+ *      una data leggibile invece di un'altra maiuscoletta spaziata:
+ *      erano due informazioni diverse stampate con la stessa voce, e
+ *      la data ci perdeva sempre;
+ *   3. la miniatura del compatto passa da francobollo quadrato di
+ *      96px a 4:3 da 128px: le copertine autogenerate del Magazine
+ *      sono orizzontali e nel quadrato perdevano meta' titolo.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f5749] focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-sm';
+const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f5749] focus-visible:ring-offset-4 focus-visible:ring-offset-white rounded-sm';
 
+const ZOOM = 'motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out motion-safe:group-hover:scale-[1.05]';
+
+/** categoria = chip (una classificazione), data = testo (un fatto) */
 function Kicker({ category, date, className = '' }) {
-  const parts = [category, date].filter(Boolean);
-  if (!parts.length) return null;
+  if (!category && !date) return null;
   return (
-    <p className={`text-[11px] uppercase tracking-[0.18em] text-foreground/55 ${className}`}>
-      {parts.join(' · ')}
-    </p>
+    <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 ${className}`}>
+      {category && (
+        <span className="inline-flex items-center rounded-full bg-[#2f5749]/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-[#2f5749]">
+          {category}
+        </span>
+      )}
+      {date && (
+        <span className="text-[13px] text-foreground/65">{date}</span>
+      )}
+    </div>
   );
 }
 
@@ -33,24 +52,26 @@ export default function ArticleCard({ article, variant = 'compact', date, catego
     return (
       <article className="group">
         <Link to={to} className={`block ${FOCUS}`}>
-          <div className="aspect-[16/9] w-full overflow-hidden bg-[#e8e2d4]">
+          <div className="aspect-[16/9] w-full overflow-hidden rounded-2xl bg-[#e8e2d4]">
             {image && (
               <img
                 src={image}
                 alt=""
+                width="1200"
+                height="675"
                 loading={eager ? 'eager' : 'lazy'}
                 decoding="async"
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                className={`h-full w-full object-cover ${ZOOM}`}
               />
             )}
           </div>
           <Kicker category={kicker} date={date} className="mt-6" />
-          <h3 className="font-display text-[1.75rem] sm:text-4xl leading-[1.12] mt-3 max-w-[24ch] text-foreground group-hover:text-[#2f5749] transition-colors">
+          <h3 className="font-display text-[1.7rem] sm:text-[2.1rem] leading-[1.14] mt-3 max-w-[26ch] text-balance text-foreground group-hover:text-[#2f5749] transition-colors">
             {title}
           </h3>
         </Link>
         {description && (
-          <p className="text-base text-foreground/70 mt-3 max-w-[58ch] leading-relaxed">
+          <p className="text-[0.975rem] sm:text-base text-foreground/70 mt-3 max-w-[58ch] leading-relaxed">
             {description}
           </p>
         )}
@@ -60,24 +81,26 @@ export default function ArticleCard({ article, variant = 'compact', date, catego
 
   return (
     <article className="group">
-      {/* sempre orizzontale: il francobollo tiene il secondo piano
-          davvero secondario. Un'immagine a piena colonna qui farebbe
+      {/* sempre orizzontale: la miniatura tiene il secondo piano
+          davvero secondario. Una copertina a piena colonna qui farebbe
           concorrenza all'articolo grande e la gerarchia sparirebbe. */}
-      <Link to={to} className={`flex gap-5 items-start ${FOCUS}`}>
-        <div className="h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden bg-[#e8e2d4]">
+      <Link to={to} className={`flex gap-4 sm:gap-5 items-start ${FOCUS}`}>
+        <div className="aspect-[4/3] w-28 sm:w-32 shrink-0 overflow-hidden rounded-xl bg-[#e8e2d4]">
           {image && (
             <img
               src={image}
               alt=""
+              width="1200"
+              height="675"
               loading="lazy"
               decoding="async"
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+              className={`h-full w-full object-cover ${ZOOM}`}
             />
           )}
         </div>
         <div className="min-w-0">
           <Kicker category={kicker} date={date} />
-          <h3 className="font-display text-lg sm:text-xl leading-snug mt-1.5 max-w-[28ch] text-foreground group-hover:text-[#2f5749] transition-colors">
+          <h3 className="font-display text-[1.0625rem] sm:text-lg leading-snug mt-2 max-w-[28ch] text-pretty text-foreground group-hover:text-[#2f5749] transition-colors">
             {title}
           </h3>
         </div>

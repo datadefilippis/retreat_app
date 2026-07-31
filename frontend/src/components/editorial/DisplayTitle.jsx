@@ -42,7 +42,12 @@ const MEASURES = {
  * accanto alla prima.
  */
 export function TitleLine({ className = '', children }) {
-  return <span className={`block ${className}`}>{children}</span>;
+  // HP3 — text-balance: quando la frase non ci sta su una riga sola
+  // (hero a due colonne, mobile) il browser distribuisce le parole
+  // invece di riempire la prima riga e lasciare una parola orfana
+  // sull'ultima. Non cambia una virgola del testo: cambia dove va a
+  // capo. Dove non e' supportato si torna al comportamento di prima.
+  return <span className={`block text-balance ${className}`}>{children}</span>;
 }
 
 export default function DisplayTitle({
