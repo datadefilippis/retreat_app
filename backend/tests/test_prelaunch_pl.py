@@ -307,11 +307,22 @@ def test_prelaunch_copy_has_no_dashes():
 
 
 def test_operator_landing_transparency_and_direct_contact():
-    """PL22 — patti chiari sulla landing operatori: gratis entrare,
-    guadagniamo solo su prenotazioni dal calendario pubblico, regole di
-    prezzo/cancellazione definite dall'operatore. E un canale diretto
-    (mailto info@) accanto ai form, su ENTRAMBE le landing: c'è chi i
-    form non li compila, e quel lead vale quanto gli altri."""
+    """PL22 + OL1 (31/7/2026) — la trasparenza resta, ha cambiato forma.
+
+    PL22 chiedeva un blocco "Patti chiari" con dentro il modello di
+    business. La riscrittura OL1 (specifica del founder) toglie il
+    "profilo gratuito" come argomento di vendita, perche' abbassava il
+    valore percepito, e sposta la stessa onesta' nella FAQ: quanto
+    costa oggi, perche', e la promessa esplicita di parlarne "con
+    chiarezza, senza sorprese" quando arriveranno gli strumenti a
+    pagamento. Il canale diretto (mailto info@) resta su ENTRAMBE le
+    landing: c'e' chi i form non li compila, e quel lead vale quanto
+    gli altri.
+
+    Cosa difende ora questa guardia: il canale diretto, la presenza
+    della FAQ sul costo in tutte e quattro le lingue, e il fatto che
+    l'impegno alla trasparenza futura non venga cancellato in silenzio.
+    """
     frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
     op = (frontend / "features" / "prelaunch" / "OperatorLandingPage.js").read_text(
         encoding="utf-8")
@@ -319,17 +330,14 @@ def test_operator_landing_transparency_and_direct_contact():
         encoding="utf-8")
     assert "mailto:info@aurya.life" in op
     assert "mailto:info@aurya.life" in tr
-    assert "pattiTitle" in op
-    # i fatti chiave dei patti chiari, tradotti in TUTTE le lingue
+    # la FAQ sul costo esiste, tradotta ovunque
     for lang in ("it", "en", "de", "fr"):
         d = (frontend / "locales" / lang / "prelaunch.json").read_text(encoding="utf-8")
-        for key in ('"p1q"', '"p2a"', '"p3a"', '"pattiTitle"', '"directT"'):
-            assert key in d, f"patti chiari non tradotti: {lang} manca {key}"
-    # il fatto centrale (cliente tuo = zero) non deve annacquarsi
-    # (riformulato dal founder il 10/7: "completamente gratuito")
+        for key in ('"faq1q"', '"faq1a"', '"faq3q"', '"faq3a"'):
+            assert key in d, f"FAQ sul costo non tradotta: {lang} manca {key}"
     it = (frontend / "locales" / "it" / "prelaunch.json").read_text(encoding="utf-8")
-    assert "completamente gratuito" in it
-    assert "Cresciamo solo se cresci tu" in it
+    assert "senza sorprese" in it, \
+        "l'impegno a dire in chiaro quando si paghera' non deve sparire"
 
 
 def test_wipe_and_seed_share_the_same_flag():

@@ -17,6 +17,16 @@
  * trattamento chiaro. Cosi' la pagina continua a dichiarare
  * `variant="solid"` e `variant="quiet"`: la gerarchia delle azioni
  * resta leggibile nel codice, il vestito lo decide il tono.
+ *
+ * OL1 — `href`. Alcune azioni non cambiano pagina: portano a un blocco
+ * della pagina che si sta gia' leggendo (la landing operatori ha tre
+ * CTA che scorrono al form). Un <Link to="#ancora"> del router
+ * funzionerebbe solo la PRIMA volta: al secondo clic la location non
+ * cambia, l'effetto di ScrollToTop non riparte e il bottone diventa
+ * muto. Con `href` il componente rende un <a> vero e lascia lo
+ * scorrimento al chiamante, che sa se il visitatore ha chiesto meno
+ * movimento. Il vestito e' identico: chi guarda non deve accorgersi
+ * della differenza fra un'azione che cambia pagina e una che no.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -52,6 +62,7 @@ const VARIANTS_DARK = {
 
 export default function EditorialCta({
   to,
+  href,
   variant = 'quiet',
   tone = 'paper',
   className = '',
@@ -59,14 +70,15 @@ export default function EditorialCta({
   ...rest
 }) {
   const set = tone === 'dark' ? VARIANTS_DARK : VARIANTS;
-  return (
-    <Link
-      to={to}
-      className={`${set[variant] || set.quiet} ${FOCUS} ${className}`}
-      {...rest}
-    >
+  const cls = `${set[variant] || set.quiet} ${FOCUS} ${className}`;
+  const inner = (
+    <>
       <span>{children}</span>
       <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-    </Link>
+    </>
   );
+  if (href) {
+    return <a href={href} className={cls} {...rest}>{inner}</a>;
+  }
+  return <Link to={to} className={cls} {...rest}>{inner}</Link>;
 }

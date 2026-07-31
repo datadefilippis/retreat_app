@@ -5584,3 +5584,116 @@ class TestHomeHp2:
         for val in defaults:
             assert "—" not in val and "–" not in val, \
                 f"trattino lungo nel copy della home: {val[:40]}"
+
+
+class TestLandingOperatoriOl1:
+    """OL1 (31/7/2026) — la landing operatori (/entra-nella-rete) segue
+    la specifica del founder.
+
+    La regola che vale piu' di tutte: il "profilo gratuito" NON e' piu'
+    un argomento di vendita (abbassava il valore percepito). La parola
+    resta ammessa SOLO nella domanda e nella risposta della FAQ, dove e'
+    una risposta onesta a una domanda legittima. Fuori da li', neanche
+    nella description SEO, che prima diceva "Gratuitamente".
+    """
+
+    PAGE = FRONTEND_SRC / "features" / "prelaunch" / "OperatorLandingPage.js"
+    LOCALES = ("it", "en", "de", "fr")
+
+    def _page(self):
+        return self.PAGE.read_text()
+
+    def _locale(self, lang):
+        import json
+        path = FRONTEND_SRC / "locales" / lang / "prelaunch.json"
+        return json.loads(path.read_text())
+
+    @staticmethod
+    def _strings(node, prefix=""):
+        """Tutte le stringhe del blocco i18n, con la loro chiave."""
+        if isinstance(node, dict):
+            for k, v in node.items():
+                yield from TestLandingOperatoriOl1._strings(v, f"{prefix}.{k}")
+        elif isinstance(node, str):
+            yield prefix, node
+
+    def test_ol1_le_otto_sezioni(self):
+        page = self._page()
+        attesi = [
+            "Il tuo lavoro merita di essere conosciuto.",   # 1 hero
+            "Molto più di una vetrina.",               # 2 perche'
+            "Uno spazio che cresce insieme al tuo lavoro.",  # 3 cosa trovi
+            "I primi professionisti avranno un ruolo speciale.",  # 4 insieme
+            "Domande frequenti",                             # 5 faq
+            "Non siamo un’agenzia di marketing.",       # 6 chi siamo
+            "Raccontaci qualcosa di te.",                    # 7 form
+            "Le reti non si costruiscono in un giorno.",     # 8 chiusura
+        ]
+        for testo in attesi:
+            assert testo in page, f"manca dalla landing: {testo}"
+
+    def test_ol1_quattro_blocchi_cosa_trovi(self):
+        page = self._page()
+        for titolo in ("Un profilo che racconta chi sei",
+                       "Una storia che crea fiducia",
+                       "Più occasioni per essere scoperto",
+                       "Uno spazio che crescerà con te"):
+            assert titolo in page, f"manca il blocco: {titolo}"
+
+    def test_ol1_gratuito_solo_nella_faq(self):
+        """Ne' la pagina ne' i quattro locales usano gratuito/gratis
+        fuori dalla FAQ. Le occorrenze nei commenti del sorgente sono
+        ammesse: spiegano proprio questa regola."""
+        import re
+        page = self._page()
+        # via i commenti, poi si guardano solo le stringhe di copy
+        senza_commenti = re.sub(r"/\*.*?\*/", "", page, flags=re.DOTALL)
+        senza_commenti = re.sub(r"^\s*//.*$", "", senza_commenti,
+                                flags=re.MULTILINE)
+        for m in re.finditer(r"gratuit|gratis", senza_commenti, re.I):
+            finestra = senza_commenti[max(0, m.start() - 200):m.start() + 60]
+            assert "faq3" in finestra, \
+                f"'gratuito' fuori dalla FAQ nella landing: ...{finestra[-90:]}"
+        for lang in self.LOCALES:
+            blocco = self._locale(lang).get("opNw", {})
+            for chiave, valore in self._strings(blocco):
+                if re.search(r"gratuit|gratis|kostenlos|free of charge",
+                             valore, re.I):
+                    assert "faq3" in chiave, \
+                        f"[{lang}] '{chiave}' usa gratuito fuori dalla FAQ"
+
+    def test_ol1_mai_connect_ne_gestionale(self):
+        """L'evoluzione si racconta com'e' scritta: niente nomi di
+        prodotto, niente gergo da software."""
+        import re
+        page = re.sub(r"/\*.*?\*/", "", self._page(), flags=re.DOTALL)
+        page = re.sub(r"^\s*//.*$", "", page, flags=re.MULTILINE)
+        assert "Aurya Connect" not in page
+        assert "gestionale" not in page.lower()
+        for lang in self.LOCALES:
+            for _, valore in self._strings(self._locale(lang).get("opNw", {})):
+                assert "Aurya Connect" not in valore
+                assert "gestionale" not in valore.lower()
+
+    def test_ol1_tre_cta_al_form(self):
+        """Entra nella rete (hero), Parliamone, Entra nella rete
+        (chiusura) portano tutte all'ancora del form."""
+        page = self._page()
+        assert page.count("#presentati") >= 3, \
+            "servono tre CTA verso l'ancora del form"
+        assert 'id="presentati"' in page, "manca l'ancora del form"
+        assert "Entriamo in contatto" in page, \
+            "il bottone del form deve essere 'Entriamo in contatto'"
+
+    def test_ol1_i18n_x4_e_niente_trattini_lunghi(self):
+        chiavi_it = {k for k, _ in self._strings(self._locale("it")["opNw"])}
+        assert len(chiavi_it) >= 40, \
+            f"chiavi opNw in italiano: {len(chiavi_it)}, troppo poche"
+        for lang in self.LOCALES:
+            blocco = self._locale(lang).get("opNw", {})
+            chiavi = {k for k, _ in self._strings(blocco)}
+            mancanti = chiavi_it - chiavi
+            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)[:5]}"
+            for chiave, valore in self._strings(blocco):
+                assert "—" not in valore and "–" not in valore, \
+                    f"[{lang}] trattino lungo in {chiave}"
