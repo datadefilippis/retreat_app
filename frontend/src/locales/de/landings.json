@@ -626,7 +626,19 @@
     "aziendale": "Betriebliches Wohlbefinden",
     "ritiri": "Retreat-Welt",
     "energia": "Energiepraktiken",
-    "operatori": "Für Anbieter"
+    "operatori": "Für Anbieter",
+    "trattamenti": "Behandlungen & Massagen",
+    "consulenze": "Beratungen",
+    "lezioni": "Privatstunden",
+    "cerimonie": "Zeremonien",
+    "cura_di_se": "Selbstfürsorge",
+    "casa_benessere": "Zuhause & Wellness",
+    "cibo_tisane": "Lebensmittel & Kräutertees",
+    "abbigliamento": "Bekleidung",
+    "artigianato": "Handwerk",
+    "guide_ebook": "Guides & E-Books",
+    "audio_meditazioni": "Audio & Meditationen",
+    "video": "Videos"
   },
   "marketplace": {
     "tagline": "Finde und buche holistische Retreats und Erlebnisse, die dich wachsen lassen. Mit geschützter Anzahlung, sorgenfrei.",
@@ -888,5 +900,27 @@
     "letterBody": "Ab und zu. Ein Mensch zum Kennenlernen. Eine Praktik zum Verstehen. Ein Ort zum Entdecken.",
     "letterClose": "Kein Lärm. Nur was deine Zeit wert ist.",
     "letterCta": "Anmelden"
+  },
+  "nwOps": {
+    "seoTitle": "Die Menschen des Netzwerks | Aurya",
+    "seoDesc": "Die Anbieter des Aurya-Netzwerks, einzeln getroffen: wer sie sind, was sie praktizieren, wo sie arbeiten. Neben jedem Namen ein Satz mit ihren Worten.",
+    "eyebrow": "Das Netzwerk",
+    "line1": "Hinter jeder Praxis steht ein Mensch.",
+    "line2": "Hier kannst du ihn kennenlernen.",
+    "lead": "Die Menschen auf dieser Seite haben wir einzeln getroffen. Was neben ihrem Namen steht, haben sie selbst gesagt.",
+    "howTitle": "Wie man hereinkommt.",
+    "howP1": "Ein Profil ist in fünf Minuten ausgefüllt. Ein Mensch nicht: wir lernen ihn kennen, und das braucht Zeit.",
+    "howP2": "Freundliche Fragen sagen wenig. Wir stellen auch die unbequemen und lassen die Antworten ganz, ohne sie zu kürzen.",
+    "howP3": "Wer liest, verdient zu wissen, woher eine Erzählung kommt. Wir unterschreiben unsere: So entstandene Profile tragen das Zeichen Aurya-verifiziert.",
+    "howClose": "Es gibt kein Formular, das diese Tür öffnet. Es gibt ein Gespräch und die Zeit, die es braucht, um es gut zu führen.",
+    "peopleTitle": "Die Menschen.",
+    "peopleSub": "Es sind wenige, und wir kennen sie alle. Sie werden weiter kommen, einer nach dem anderen.",
+    "loading": "Einen Moment.",
+    "peopleEmpty": "Die ersten Interviews laufen. Profile erscheinen hier, wenn sie bereit sind, gut erzählt zu werden, nicht vorher.",
+    "readInterview": "Das Interview lesen",
+    "joinTitle": "Möchtest du dazugehören?",
+    "joinBody": "Wenn du im Bereich Wohlbefinden arbeitest und Lust hast, dich zu erzählen, ist der erste Schritt ein Gespräch. Sag uns, wer du bist und was du tust, und wir sehen, ob es passt.",
+    "joinCta": "Ins Netzwerk kommen",
+    "joinCtaAlt": "Das Manifest lesen"
   }
 }

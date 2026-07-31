@@ -3635,7 +3635,10 @@ class TestProfiloPv2:
         assert r.status_code == 200
         return r.json()["id"]
 
-    _IV_FIELDS = ("interview", "interview_video_url",
+    # SW5 — interview_quote entra nello snapshot: e' parte del blocco
+    # intervista, e senza di lui il ripristino lascerebbe in giro le
+    # citazioni di prova
+    _IV_FIELDS = ("interview", "interview_video_url", "interview_quote",
                   "interview_published", "interview_verified_at")
 
     @classmethod
@@ -4125,9 +4128,17 @@ class TestProfiloPv4:
         # anche nella vista rapida (due montaggi nella card)
         assert index.count("<VerifiedAuryaBadge") >= 2
 
+        # SW5 — la card della rete non e' piu' scritta a mano dentro la
+        # pagina: /operatori monta PersonCard del kit editoriale, ed e'
+        # LI' che vive il sigillo. L'invariante non cambia (il badge c'e'
+        # e non e' mai incondizionato), cambia il file che lo dice.
         network = self.NETWORK.read_text()
-        assert "VerifiedAuryaBadge" in network
-        assert "m.verified &&" in network
+        assert "PersonCard" in network, \
+            "/operatori non monta piu' la scheda persona del kit"
+        card = (FRONTEND_SRC / "components" / "editorial"
+                / "PersonCard.jsx").read_text()
+        assert "VerifiedAuryaBadge" in card
+        assert "verified && (" in card
 
     # ── 4. ordine: Verificato PRIMA di In evidenza (hero e card) ─────
 
@@ -6429,3 +6440,372 @@ class TestMagazineSw4:
             if f"blog.{k}" in src:
                 assert v in src, \
                     f"defaultValue di blog.{k} diverso dall'italiano"
+
+
+class TestReteSw5:
+    """SW5 (31/7/2026) — /operatori diventa "Le persone"
+    (docs/SITO_REDESIGN_PIANO_2026-07.md, AURYA_BLUEPRINT cap. 2 e 9).
+
+    La pagina passa dallo schema "elenco con criteri" allo schema del
+    Blueprint: schede grandi con foto, nome, pratica, luogo e UNA
+    citazione presa dall'intervista. Per farlo servivano i due campi
+    che mancavano nel payload pubblico, e sono il cuore di queste
+    guardie:
+
+      quote     scelta A MANO dal system admin nell'editor
+                dell'intervista (public_profile.interview_quote), MAI
+                estratta in automatico. Esce in pubblico solo con
+                l'intervista pubblicata: una frase presa da
+                un'intervista non pubblica sarebbe una perdita.
+      category  la pratica, derivata dai prodotti pubblicati dell'org
+                come fa /operators. Una stringa sola (la piu'
+                frequente) o niente, e SEMPRE con una sola aggregate
+                su tutti gli org_ids: mai una query per organizzazione.
+
+    Piu' le guardie della pagina: i criteri di ingresso riscritti come
+    GESTI (non come requisiti del lettore), il kit editoriale al posto
+    degli stili a mano, lo stato vuoto onesto, il lessico e l'i18n x4.
+    """
+
+    PAGE = FRONTEND_SRC / "features" / "network" / "NetworkOperatorsPage.js"
+    CARD = FRONTEND_SRC / "components" / "editorial" / "PersonCard.jsx"
+    TAB = FRONTEND_SRC / "features" / "admin" / "InterviewsTab.js"
+    LOCALES = ("it", "en", "de", "fr")
+    SLUG = "masseria-demo"
+    QUOTE_MAX = 280
+
+    UA = {"User-Agent": "Mozilla/5.0 (Macintosh) Chrome/126 Safari/537.36"}
+
+    # ── infrastruttura: si riusa quella di PV2, stessa area ──────────
+
+    def _member_row(self):
+        r = requests.get(f"{BASE_URL}/api/public/network/members",
+                         headers=self.UA, timeout=10)
+        assert r.status_code == 200, r.text
+        rows = [m for m in r.json()["items"] if m["slug"] == self.SLUG]
+        assert rows, "l'org demo non e' fra i membri della rete"
+        return rows[0]
+
+    def _page(self):
+        return self.PAGE.read_text()
+
+    def _copy(self):
+        """Il sorgente senza commenti: le guardie lessicali giudicano
+        quello che il lettore puo' vedere, non le note di lavoro."""
+        import re
+        src = re.sub(r"/\*.*?\*/", "", self._page(), flags=re.DOTALL)
+        return re.sub(r"^\s*//.*$", "", src, flags=re.MULTILINE)
+
+    def _blocco(self, lang):
+        import json
+        path = FRONTEND_SRC / "locales" / lang / "landings.json"
+        return json.loads(path.read_text()).get("nwOps") or {}
+
+    # ── 1. la citazione esce SOLO a intervista pubblicata ────────────
+
+    def test_sw5_quote_solo_a_intervista_pubblicata(self):
+        P = TestProfiloPv2
+        sys_h = P._sys_headers()
+        org_id = P._org_id()
+        db = P._db()
+        snap = P._snapshot_interview(db, org_id)
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/interview"
+        frase = "Guardia SW5: una frase sola, scelta a mano."
+        body = {"items": [{"question": "Guardia SW5?",
+                           "answer": "Risposta integrale SW5."}],
+                "quote": frase, "published": False}
+        try:
+            # BOZZA: la citazione e' salvata ma il pubblico non la vede
+            r = requests.put(url, headers=sys_h, json=body, timeout=10)
+            assert r.status_code == 200, r.text
+            assert r.json()["quote"] == frase
+            row = self._member_row()
+            assert row["has_interview"] is False
+            assert row["quote"] is None, \
+                "citazione trapelata da un'intervista NON pubblicata"
+
+            # PUBBLICATA: esce, identica a come e' stata scritta
+            body["published"] = True
+            r = requests.put(url, headers=sys_h, json=body, timeout=10)
+            assert r.status_code == 200, r.text
+            row = self._member_row()
+            assert row["has_interview"] is True
+            assert row["quote"] == frase
+
+            # SPUBBLICATA: rientra, insieme all'intervista
+            body["published"] = False
+            r = requests.put(url, headers=sys_h, json=body, timeout=10)
+            assert r.status_code == 200
+            assert self._member_row()["quote"] is None
+        finally:
+            P._restore_interview(db, org_id, snap)
+
+    # ── 2. senza citazione la scheda non si rompe ────────────────────
+
+    def test_sw5_quote_assente_se_non_impostata(self):
+        """Il campo c'e' SEMPRE nel payload (additivo, mai mancante) e
+        vale None quando nessuno ha scelto una frase: la scheda ripiega
+        sulla tagline, non su un buco."""
+        P = TestProfiloPv2
+        sys_h = P._sys_headers()
+        org_id = P._org_id()
+        db = P._db()
+        snap = P._snapshot_interview(db, org_id)
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/interview"
+        try:
+            r = requests.put(url, headers=sys_h, json={
+                "items": [{"question": "Guardia SW5 senza frase?",
+                           "answer": "Nessuna citazione scelta."}],
+                "published": True}, timeout=10)
+            assert r.status_code == 200, r.text
+            assert r.json()["quote"] is None
+            row = self._member_row()
+            assert "quote" in row, "campo quote sparito dal payload"
+            assert row["quote"] is None
+            assert row["has_interview"] is True
+
+            # stringa vuota e soli spazi valgono "nessuna citazione"
+            for vuota in ("", "   \n  "):
+                r = requests.put(url, headers=sys_h, json={
+                    "items": [{"question": "Q", "answer": "A"}],
+                    "quote": vuota, "published": True}, timeout=10)
+                assert r.status_code == 200
+                assert r.json()["quote"] is None, repr(vuota)
+        finally:
+            P._restore_interview(db, org_id, snap)
+
+    # ── 3. il tetto dei 280 caratteri ────────────────────────────────
+
+    def test_sw5_quote_limite_280_caratteri(self):
+        """Una citazione e' una frase. Oltre il tetto viene tagliata dal
+        backend, non lasciata passare: la scheda deve reggere anche se
+        qualcuno incolla una risposta intera."""
+        P = TestProfiloPv2
+        sys_h = P._sys_headers()
+        org_id = P._org_id()
+        db = P._db()
+        snap = P._snapshot_interview(db, org_id)
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/interview"
+        lunga = "x" * 400
+        try:
+            r = requests.put(url, headers=sys_h, json={
+                "items": [{"question": "Q", "answer": "A"}],
+                "quote": f"  {lunga}  ", "published": True}, timeout=10)
+            assert r.status_code == 200, r.text
+            salvata = r.json()["quote"]
+            assert len(salvata) == self.QUOTE_MAX
+            assert salvata == "x" * self.QUOTE_MAX     # .strip() prima del taglio
+            assert len(self._member_row()["quote"]) == self.QUOTE_MAX
+        finally:
+            P._restore_interview(db, org_id, snap)
+        # e il tetto e' lo stesso nei due posti che lo devono sapere
+        admin_src = (BACKEND_DIR / "routers" / "admin.py").read_text()
+        assert f"_INTERVIEW_QUOTE_MAX = {self.QUOTE_MAX}" in admin_src
+        assert f"MAX_QUOTE = {self.QUOTE_MAX}" in self.TAB.read_text(), \
+            "l'editor admin non conosce lo stesso tetto del backend"
+
+    # ── 4. il PUT salva e il GET rilegge ─────────────────────────────
+
+    def test_sw5_quote_salvata_e_riletta_dal_get_admin(self):
+        P = TestProfiloPv2
+        sys_h = P._sys_headers()
+        org_id = P._org_id()
+        db = P._db()
+        snap = P._snapshot_interview(db, org_id)
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/interview"
+        frase = "La fiducia non si dichiara: si lascia verificare."
+        try:
+            r = requests.put(url, headers=sys_h, json={
+                "items": [{"question": "Q", "answer": "A"}],
+                "quote": frase, "published": False}, timeout=10)
+            assert r.status_code == 200, r.text
+            r = requests.get(url, headers=sys_h, timeout=10)
+            assert r.status_code == 200
+            assert r.json()["quote"] == frase
+            # e vive dentro public_profile: nessuna migrazione
+            org = db.organizations.find_one({"id": org_id},
+                                            {"public_profile": 1})
+            assert (org["public_profile"]["interview_quote"]) == frase
+        finally:
+            P._restore_interview(db, org_id, snap)
+        # l'editor admin la manda SEMPRE: ometterla equivarrebbe a
+        # cancellarla al primo salvataggio di bozza
+        api_src = (FRONTEND_SRC / "api" / "admin.js").read_text()
+        assert "items, video_url, quote, published" in api_src
+        tab = self.TAB.read_text()
+        assert "interview-quote-input" in tab
+        assert "quote: (quote || '').trim() || null" in tab
+        assert "setQuote(data.quote || '')" in tab
+
+    # ── 5. la pratica derivata ───────────────────────────────────────
+
+    def test_sw5_category_derivata_dai_prodotti_pubblicati(self):
+        """Stessa fonte di /operators (prodotti pubblicati e attivi),
+        ma UNA sola stringa: la piu' frequente, con l'ordine alfabetico
+        come spareggio stabile."""
+        P = TestProfiloPv2
+        db = P._db()
+        org_id = P._org_id()
+        conteggi = {}
+        for p in db.products.find({"organization_id": org_id,
+                                   "is_published": True, "is_active": True},
+                                  {"category": 1}):
+            cat = p.get("category")
+            if cat:
+                conteggi[cat] = conteggi.get(cat, 0) + 1
+        attesa = (min(conteggi.items(), key=lambda kv: (-kv[1], kv[0]))[0]
+                  if conteggi else None)
+        row = self._member_row()
+        assert "category" in row, "campo category sparito dal payload"
+        assert row["category"] == attesa, \
+            f"pratica derivata {row['category']!r}, attesa {attesa!r}"
+        assert row["category"] is None or isinstance(row["category"], str)
+
+    def test_sw5_category_una_sola_aggregate_mai_per_org(self):
+        """La derivazione NON puo' costare una query per organizzazione:
+        il corpo dell'endpoint fa aggregate solo prima del ciclo, e
+        sempre con $in su tutti gli org_ids."""
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        start = src.index("async def public_network_members(")
+        corpo = src[start:src.index("@router.get(\"/operators\")", start)]
+        assert corpo.count("products_collection.aggregate(") == 2, \
+            "il numero di aggregate dell'endpoint e' cambiato"
+        ciclo = corpo[corpo.index("    items = []"):]
+        for vietata in ("aggregate(", "find_one(", "await organizations_collection",
+                        ".find("):
+            assert vietata not in ciclo, \
+                f"query dentro il ciclo per organizzazione: {vietata}"
+        assert corpo.count('{"$in": org_ids}') >= 3, \
+            "un'aggregate non filtra su tutti gli org_ids insieme"
+
+    # ── 6. la pagina: kit editoriale, schede grandi, niente elenco ───
+
+    def test_sw5_pagina_usa_il_kit_e_le_schede_grandi(self):
+        src = self._page()
+        assert "components/editorial" in src, "il kit editoriale non e' importato"
+        for pezzo in ("Section", "DisplayTitle", "TitleLine", "Lede",
+                      "PersonCard", "EditorialCta"):
+            assert pezzo in src, f"manca dal kit: {pezzo}"
+        assert src.count('as="h1"') == 1, "l'h1 e' uno solo"
+        # la citazione e la pratica arrivano davvero dal payload nuovo
+        assert "m.category" in src, "la pratica non viene passata alla scheda"
+        card = self.CARD.read_text()
+        assert "quote" in card and "category" in card
+        # niente vestito fatto a mano: era il difetto della pagina vecchia
+        for vecchio in ("bg-gradient-sidebar", "rounded-2xl border",
+                        "lucide-react", "text-xs text-gray-600"):
+            assert vecchio not in src, f"stile della pagina vecchia: {vecchio}"
+        # e nemmeno una vetrina: qui non si vendono servizi
+        for commercio in ("price_from", "services_count", "priceFrom"):
+            assert commercio not in src, \
+                f"la pagina della rete mostra di nuovo il listino: {commercio}"
+        # una sola ancora verde, e in chiusura
+        assert src.count('tone="sage"') == 1
+
+    def test_sw5_criteri_riscritti_come_gesti(self):
+        """I requisiti del lettore diventano gesti nostri. La lista
+        numerata (01/02/03) e le frasi che dicevano cosa DEVE avere chi
+        entra non devono tornare."""
+        src = self._page()
+        for requisito in ("nwOps.c1", "nwOps.c2", "nwOps.c3",
+                          "criteriaTitle", "Con che criterio",
+                          "Una pratica reale", "La disponibilità a raccontarsi",
+                          "padStart"):
+            assert requisito not in src, f"requisito superstite: {requisito}"
+        it = self._blocco("it")
+        for chiave in ("howP1", "howP2", "howP3", "howClose"):
+            assert it.get(chiave), f"manca il gesto nwOps.{chiave}"
+        # prima persona plurale: sono cose che facciamo noi
+        gesti = " ".join(it[k] for k in ("howP1", "howP2", "howP3"))
+        assert "andiamo a conoscere" in gesti and "Firmiamo" in gesti
+        # e nessun giudizio proclamato (Blueprint cap. 2.3)
+        for giudizio in ("i migliori", "selezioniamo", "selezionati",
+                         "solo i più", "eccellenza"):
+            assert giudizio.lower() not in self._copy().lower(), \
+                f"il criterio si proclama: '{giudizio}'"
+
+    def test_sw5_stato_vuoto_onesto_e_griglia_che_regge(self):
+        """Con tre persone la pagina non deve sembrare rotta, e senza
+        nessuna non deve sembrare in errore."""
+        src = self._page()
+        assert 'data-testid="nw-people-empty"' in src
+        assert "nwOps.peopleEmpty" in src
+        assert "members === null" in src, "lo stato di caricamento e' sparito"
+        # la griglia si stringe quando si e' in pochi
+        assert "gridCols" in src and "members.length <= 2" in src
+        it = self._blocco("it")
+        assert "interviste" in it["peopleEmpty"].lower(), \
+            "lo stato vuoto non dice perche' la pagina e' vuota"
+
+    def test_sw5_intervista_resta_raggiungibile(self):
+        """La citazione invita, la pagina dell'intervista mantiene: il
+        link alla pagina dedicata (PV3) resta, e solo dove c'e'."""
+        src = self._page()
+        assert "/intervista" in src
+        assert "m.has_interview &&" in src, \
+            "il link all'intervista non e' piu' condizionato"
+
+    # ── 7. lessico del Blueprint e i18n x4 ───────────────────────────
+
+    _VIETATE = ("marketplace", "directory", "gestionale", "piattaform",
+                "trasforma la tua vita", "ritrova te stesso", "community",
+                "gratuit", "gratis", "kostenlos", "free of charge")
+
+    def test_sw5_parole_vietate_e_trattini_lunghi(self):
+        copy = self._copy().replace("MarketplaceShell", "")
+        for vietata in self._VIETATE:
+            assert vietata.lower() not in copy.lower(), \
+                f"parola vietata nel sorgente della pagina: '{vietata}'"
+        for lang in self.LOCALES:
+            for chiave, valore in self._blocco(lang).items():
+                for vietata in self._VIETATE:
+                    assert vietata.lower() not in valore.lower(), \
+                        f"[{lang}] nwOps.{chiave} usa '{vietata}'"
+                assert "—" not in valore and "–" not in valore, \
+                    f"[{lang}] trattino lungo in nwOps.{chiave}"
+
+    def test_sw5_i18n_x4(self):
+        import re
+        src = self._page()
+        it = self._blocco("it")
+        for chiave in ("seoTitle", "seoDesc", "eyebrow", "line1", "line2",
+                       "lead", "howTitle", "howP1", "howP2", "howP3",
+                       "howClose", "peopleTitle", "peopleSub", "loading",
+                       "peopleEmpty", "readInterview", "joinTitle",
+                       "joinBody", "joinCta", "joinCtaAlt"):
+            assert it.get(chiave), f"[it] nwOps.{chiave} mancante"
+        for lang in self.LOCALES:
+            blocco = self._blocco(lang)
+            mancanti = set(it) - set(blocco)
+            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)}"
+            for k, v in blocco.items():
+                assert v and v.strip(), f"[{lang}] nwOps.{k} vuota"
+        # i defaultValue inline sono l'italiano vero, non una variante
+        for k, v in it.items():
+            if f"nwOps.{k}" in src:
+                assert v in src, \
+                    f"defaultValue di nwOps.{k} diverso dall'italiano"
+        defaults = re.findall(r"defaultValue:\s*(?:'([^']*)'|\"([^\"]*)\")", src)
+        valori = [a or b for a, b in defaults]
+        assert len(valori) >= 18, \
+            f"i defaultValue della pagina sono {len(valori)}, attesi almeno 18"
+        for val in valori:
+            assert "—" not in val and "–" not in val, \
+                f"trattino lungo nel copy della rete: {val[:40]}"
+
+    def test_sw5_label_della_pratica_tradotte_x4(self):
+        """La pratica arriva come slug: senza label la scheda
+        stamperebbe 'cibo_tisane'. Le categorie della tassonomia
+        prodotti devono esistere in tutte e quattro le lingue."""
+        import json
+        for lang in self.LOCALES:
+            landings = json.loads((FRONTEND_SRC / "locales" / lang
+                                   / "landings.json").read_text())
+            taxonomy = json.loads((FRONTEND_SRC / "locales" / lang
+                                   / "products.json").read_text())["taxonomy"]
+            cats = landings.get("categories") or {}
+            mancanti = set(taxonomy) - set(cats)
+            assert not mancanti, \
+                f"[{lang}] categorie senza label in landings: {sorted(mancanti)}"
+        assert "categories.${m.category}" in self._page(), \
+            "la pagina stampa lo slug grezzo invece della label"

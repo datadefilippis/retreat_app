@@ -12,7 +12,7 @@ import {
 } from '../../components/ui/table';
 import {
   Mic, Loader2, RefreshCw, ArrowUp, ArrowDown, Trash2, Youtube,
-  BadgeCheck, ExternalLink,
+  BadgeCheck, ExternalLink, Quote,
 } from 'lucide-react';
 import { adminAPI } from '../../api';
 import { toast } from 'sonner';
@@ -25,9 +25,19 @@ import { toast } from 'sonner';
  * backend), Salva bozza / Pubblica / Spubblica / Rimuovi. La PRIMA
  * pubblicazione timbra interview_verified_at: la verità del badge
  * Verificato Aurya (PV4).
+ *
+ * SW5 — qui si sceglie anche la CITAZIONE che comparirà sulla scheda
+ * di /operatori. È una scelta editoriale di chi ha fatto l'intervista,
+ * non un estratto automatico: una risposta da 2500 caratteri non è una
+ * citazione, e nessun algoritmo sa quale frase vale la pena leggere
+ * sotto un nome. Esce in pubblico solo con l'intervista pubblicata.
  */
 
 const MAX_QA = 12;
+
+// SW5 — la citazione per la pagina della rete: una frase, non un
+// paragrafo. Stesso tetto del backend (_INTERVIEW_QUOTE_MAX).
+const MAX_QUOTE = 280;
 
 // Specchio client della normalizzazione backend: serve solo per
 // l'anteprima dell'ID riconosciuto, la verità resta nel PUT (422).
@@ -71,6 +81,7 @@ const InterviewsTab = () => {
   const [editorLoading, setEditorLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
+  const [quote, setQuote] = useState('');
   const [published, setPublished] = useState(false);
   const [verifiedAt, setVerifiedAt] = useState(null);
   const [slug, setSlug] = useState(null);
@@ -97,6 +108,7 @@ const InterviewsTab = () => {
       const data = await adminAPI.getOrgInterview(org.id);
       setItems((data.items || []).map(qa => ({ ...qa })));
       setVideoUrl(data.video_url || '');
+      setQuote(data.quote || '');
       setPublished(Boolean(data.published));
       setVerifiedAt(data.verified_at || null);
       setSlug(data.public_slug || null);
@@ -139,10 +151,12 @@ const InterviewsTab = () => {
       const data = await adminAPI.setOrgInterview(editorOrg.id, {
         items: validItems,
         video_url: (videoUrl || '').trim() || null,
+        quote: (quote || '').trim() || null,
         published: publish,
       });
       setItems((data.items || []).map(qa => ({ ...qa })));
       setVideoUrl(data.video_url || '');
+      setQuote(data.quote || '');
       setPublished(Boolean(data.published));
       setVerifiedAt(data.verified_at || null);
       toast.success(removed
@@ -171,9 +185,11 @@ const InterviewsTab = () => {
     if (!window.confirm('Rimuovere DEL TUTTO l’intervista (domande, video e stato)? L’operazione svuota anche la bozza.')) return;
     setItems([]);
     setVideoUrl('');
+    setQuote('');
     // lo svuotamento passa dal PUT: items vuoti + published false
     setSaving(true);
-    adminAPI.setOrgInterview(editorOrg.id, { items: [], video_url: null, published: false })
+    adminAPI.setOrgInterview(editorOrg.id, {
+      items: [], video_url: null, quote: null, published: false })
       .then(() => {
         toast.success('Intervista rimossa');
         setEditorOrg(null);
@@ -320,6 +336,32 @@ const InterviewsTab = () => {
                     Solo YouTube: youtube.com/watch, youtu.be o youtube.com/shorts.
                   </p>
                 )}
+              </div>
+
+              {/* SW5 — la citazione per la pagina della rete */}
+              <div className="rounded-lg border p-3 space-y-1.5">
+                <Label className="flex items-center gap-1.5" htmlFor="interview-quote">
+                  <Quote className="h-4 w-4 text-[#8a7440]" /> Citazione per la pagina della rete
+                </Label>
+                <textarea
+                  id="interview-quote"
+                  value={quote}
+                  onChange={e => setQuote(e.target.value.slice(0, MAX_QUOTE))}
+                  rows={3}
+                  placeholder="Una frase sua, presa dall’intervista"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-y"
+                  data-testid="interview-quote-input"
+                />
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    È la frase che comparirà sulla sua scheda in /operatori, sotto il nome.
+                    Sceglila tu dall’intervista: una sola, breve, che si regga da sola.
+                    Esce in pubblico solo a intervista pubblicata.
+                  </p>
+                  <p className="shrink-0 text-[11px] text-muted-foreground">
+                    {quote.length}/{MAX_QUOTE}
+                  </p>
+                </div>
               </div>
 
               {/* Q&A */}

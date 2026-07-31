@@ -3891,6 +3891,28 @@ async def public_network_members():
                         "min_price": {"$min": "$unit_price"}}}]):
         svc_stats[row["_id"]] = row
 
+    # SW5 — la PRATICA della scheda. Stesso perimetro di /operators
+    # (prodotti pubblicati e attivi, ritiri inclusi): la categoria non
+    # la dichiara l'operatore in un campo libero, la dicono le cose che
+    # ha davvero pubblicato. Qui pero' ne esce UNA sola stringa, la piu'
+    # frequente, perche' sotto un nome ci sta una pratica e non un
+    # elenco. A pari conteggio vince lo slug alfabeticamente minore:
+    # serve un ordine stabile, altrimenti la stessa scheda cambierebbe
+    # pratica a ogni ricarica. Una sola aggregate su TUTTI gli org_ids,
+    # come le due sopra: mai una query per organizzazione.
+    top_category: dict = {}
+    async for row in products_collection.aggregate([
+            {"$match": {"organization_id": {"$in": org_ids},
+                        "is_published": True, "is_active": True,
+                        "category": {"$nin": [None, ""]}}},
+            {"$group": {"_id": {"org": "$organization_id",
+                                "cat": "$category"},
+                        "n": {"$sum": 1}}}]):
+        _org, _cat, _n = row["_id"]["org"], row["_id"]["cat"], row["n"]
+        best = top_category.get(_org)
+        if best is None or (-_n, _cat) < (-best[1], best[0]):
+            top_category[_org] = (_cat, _n)
+
     items = []
     for o in orgs:
         slug = o.get("public_slug") or store_slug.get(o["id"])
@@ -3900,6 +3922,14 @@ async def public_network_members():
         stat = svc_stats.get(o["id"]) or {}
         svc_count = stat.get("n") or 0
         price_from = stat.get("min_price")
+        # PV2 — il link "Leggi l'intervista" appare solo se il system
+        # admin l'ha PUBBLICATA (le self-compilate storiche restano in
+        # DB ma non sono più pubbliche). SW5 lega alla stessa condizione
+        # anche la citazione: una frase presa da un'intervista non
+        # pubblica sarebbe una perdita, non un'anteprima.
+        has_interview = bool(pp.get("interview_published")
+                             and pp.get("interview"))
+        quote = (pp.get("interview_quote") or None) if has_interview else None
         items.append({
             "slug": slug,
             "name": o.get("name") or "",
@@ -3908,11 +3938,14 @@ async def public_network_members():
             "region": pp.get("region"),
             "portrait_url": pp.get("portrait_url"),
             "cover_url": pp.get("cover_url"),
-            # PV2 — il link "Leggi l'intervista" appare solo se il
-            # system admin l'ha PUBBLICATA (le self-compilate storiche
-            # restano in DB ma non sono più pubbliche)
-            "has_interview": bool(pp.get("interview_published")
-                                  and pp.get("interview")),
+            "has_interview": has_interview,
+            # SW5 — la citazione la sceglie A MANO il system admin
+            # nell'editor dell'intervista (public_profile.interview_quote):
+            # e' una scelta editoriale, non un estratto automatico. Una
+            # risposta da 2500 caratteri non e' una citazione.
+            "quote": quote,
+            # SW5 — la pratica derivata (sopra): una stringa o niente
+            "category": (top_category.get(o["id"]) or (None,))[0],
             # PV4 — badge "Verificato Aurya": timbro apposto dal system
             # admin alla pubblicazione dell'intervista (PV2), azzerato
             # allo spublica. Campo additivo: la card lo rende come pillola.

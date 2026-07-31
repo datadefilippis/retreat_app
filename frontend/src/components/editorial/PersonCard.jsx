@@ -5,12 +5,14 @@
  * La citazione dice piu' di qualsiasi elenco di dati, per questo sta
  * sotto al nome e non in fondo.
  *
- * NOTA DIREZIONE CREATIVA: /public/network/members oggi NON espone
- * ne' una citazione dell'intervista ne' la pratica/categoria. Qui si
- * ripiega sulla `tagline` del profilo come voce e la pratica resta
- * vuota finche' il campo non arriva. Proposta: aggiungere `quote`
- * (una frase scelta dall'intervista) e `category` al payload, cosi'
- * la sezione mantiene la promessa "chi sono, come lavorano".
+ * SW5 (31/7/2026) — il gap segnalato qui e' chiuso:
+ * /public/network/members espone ora `quote` (la frase scelta a mano
+ * dal system admin nell'editor dell'intervista, in pubblico solo a
+ * intervista pubblicata) e `category` (la pratica, derivata dai
+ * prodotti pubblicati dell'org). Il ripiego resta, e resta voluto:
+ * senza citazione parla la `tagline`, senza nessuna delle due restano
+ * il volto e il nome. Una scheda non deve mai sembrare rotta perche'
+ * manca un campo facoltativo.
  *
  * Lo spazio dell'immagine e' RISERVATO (aspect-[3/4]) anche senza
  * foto: nessun salto di layout al caricamento.

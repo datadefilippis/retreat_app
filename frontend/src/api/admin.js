@@ -41,9 +41,11 @@ export const adminAPI = {
   getOrgInterview: (orgId) =>
     api.get(`/admin/organizations/${orgId}/interview`).then((r) => r.data),
 
-  setOrgInterview: (orgId, { items, video_url, published }) =>
+  // SW5 — `quote` viaggia SEMPRE nel corpo: il PUT riscrive il blocco
+  // intervista per intero, quindi ometterla equivale a cancellarla
+  setOrgInterview: (orgId, { items, video_url, quote, published }) =>
     api.put(`/admin/organizations/${orgId}/interview`, {
-      items, video_url, published,
+      items, video_url, quote, published,
     }).then((r) => r.data),
 
   setOrgStatus: (orgId, isActive) =>

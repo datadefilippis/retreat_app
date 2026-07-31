@@ -626,7 +626,19 @@
     "aziendale": "Bien-être en entreprise",
     "ritiri": "Monde des retraites",
     "energia": "Pratiques énergétiques",
-    "operatori": "Pour les praticiens"
+    "operatori": "Pour les praticiens",
+    "trattamenti": "Soins & massages",
+    "consulenze": "Consultations",
+    "lezioni": "Cours privés",
+    "cerimonie": "Cérémonies",
+    "cura_di_se": "Soin de soi",
+    "casa_benessere": "Maison & bien-être",
+    "cibo_tisane": "Alimentation & tisanes",
+    "abbigliamento": "Vêtements",
+    "artigianato": "Artisanat",
+    "guide_ebook": "Guides & e-books",
+    "audio_meditazioni": "Audio & méditations",
+    "video": "Vidéos"
   },
   "marketplace": {
     "tagline": "Trouvez et réservez des retraites holistiques et des expériences qui vous font grandir. Avec un acompte protégé, l'esprit tranquille.",
@@ -888,5 +900,27 @@
     "letterBody": "De temps en temps. Une personne à connaître. Une pratique à comprendre. Un lieu à découvrir.",
     "letterClose": "Pas de bruit. Seulement ce qui vaut votre temps.",
     "letterCta": "S'inscrire"
+  },
+  "nwOps": {
+    "seoTitle": "Les personnes du réseau | Aurya",
+    "seoDesc": "Les praticiens du réseau Aurya, rencontrés un par un : qui ils sont, ce qu’ils pratiquent, où ils travaillent. À côté de chaque nom, une phrase d’eux.",
+    "eyebrow": "Le réseau",
+    "line1": "Derrière chaque pratique il y a une personne.",
+    "line2": "Ici tu peux la connaître.",
+    "lead": "Les personnes de cette page, nous les avons rencontrées une par une. Ce que tu lis à côté de leur nom, ce sont elles qui l’ont dit.",
+    "howTitle": "Comment on entre.",
+    "howP1": "Un profil se remplit en cinq minutes. Une personne non : on va la rencontrer, et cela demande du temps.",
+    "howP2": "Les questions aimables disent peu. Nous posons aussi les questions gênantes, et nous gardons les réponses entières, sans les résumer.",
+    "howP3": "Celui qui lit mérite de savoir d’où vient un récit. Nous signons le nôtre : les profils nés ainsi portent la marque Vérifié Aurya.",
+    "howClose": "Aucun formulaire n’ouvre cette porte. Il y a une conversation, et le temps qu’il faut pour la mener bien.",
+    "peopleTitle": "Les personnes.",
+    "peopleSub": "Elles sont peu nombreuses, et nous les connaissons toutes. Elles continueront d’arriver une par une.",
+    "loading": "Un instant.",
+    "peopleEmpty": "Les premiers entretiens sont en cours. Les profils arrivent ici quand ils sont prêts à être bien racontés, pas avant.",
+    "readInterview": "Lire l’entretien",
+    "joinTitle": "Tu veux en faire partie ?",
+    "joinBody": "Si tu travailles dans le bien-être et que tu as envie de te raconter, le premier pas est d’en parler. Dis-nous qui tu es et ce que tu fais, et nous verrons s’il y a une affinité.",
+    "joinCta": "Entrer dans le réseau",
+    "joinCtaAlt": "Lire le manifeste"
   }
 }

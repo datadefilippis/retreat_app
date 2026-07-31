@@ -626,7 +626,19 @@
     "aziendale": "Corporate wellbeing",
     "ritiri": "Retreat world",
     "energia": "Energy practices",
-    "operatori": "For practitioners"
+    "operatori": "For practitioners",
+    "trattamenti": "Treatments & Massages",
+    "consulenze": "Consultations",
+    "lezioni": "Private lessons",
+    "cerimonie": "Ceremonies",
+    "cura_di_se": "Self-care",
+    "casa_benessere": "Home & Wellness",
+    "cibo_tisane": "Food & Herbal teas",
+    "abbigliamento": "Apparel",
+    "artigianato": "Crafts",
+    "guide_ebook": "Guides & E-books",
+    "audio_meditazioni": "Audio & Meditations",
+    "video": "Videos"
   },
   "marketplace": {
     "tagline": "Find and book holistic retreats and experiences that help you grow. With a protected deposit, worry free.",
@@ -888,5 +900,27 @@
     "letterBody": "Once in a while. One person to meet. One practice to understand. One place to discover.",
     "letterClose": "No noise. Only what is worth your time.",
     "letterCta": "Subscribe"
+  },
+  "nwOps": {
+    "seoTitle": "The people of the network | Aurya",
+    "seoDesc": "The practitioners of the Aurya network, met one at a time: who they are, what they practise, where they work. Next to each name, a line of their own.",
+    "eyebrow": "The network",
+    "line1": "Behind every practice there is a person.",
+    "line2": "Here you can meet them.",
+    "lead": "We met the people on this page one at a time. What you read next to their name, they said themselves.",
+    "howTitle": "How you get in.",
+    "howP1": "A profile takes five minutes to fill in. A person does not: we go and meet them, and that takes time.",
+    "howP2": "Gentle questions say little. We ask the uncomfortable ones too, and we keep the answers whole, without summarising them.",
+    "howP3": "Whoever reads deserves to know where a story comes from. We sign ours: profiles born this way carry the Aurya Verified mark.",
+    "howClose": "There is no form that opens this door. There is a conversation, and the time it takes to have it properly.",
+    "peopleTitle": "The people.",
+    "peopleSub": "There are few of them, and we know them all. They will keep arriving one at a time.",
+    "loading": "One moment.",
+    "peopleEmpty": "The first interviews are under way. Profiles arrive here when they are ready to be told properly, not before.",
+    "readInterview": "Read the interview",
+    "joinTitle": "Would you like to be part of it?",
+    "joinBody": "If you work in wellbeing and you feel like telling your story, the first step is talking about it. Tell us who you are and what you do, and we will see if there is a fit.",
+    "joinCta": "Join the network",
+    "joinCtaAlt": "Read the manifesto"
   }
 }

@@ -479,6 +479,20 @@ def _clean_interview_items(raw) -> list:
     return clean
 
 
+# SW5 — la citazione della rete: UNA frase, scelta a mano da chi ha
+# fatto l'intervista. Il tetto e' la misura di cio' che si legge sotto
+# un nome in una scheda: oltre, la scheda diventa un articolo e la
+# griglia di /operatori si sfalda.
+_INTERVIEW_QUOTE_MAX = 280
+
+
+def _clean_interview_quote(raw) -> str | None:
+    """Stringa ripulita e tagliata a 280; vuota (o non stringa) → None."""
+    if not isinstance(raw, str):
+        return None
+    return raw.strip()[:_INTERVIEW_QUOTE_MAX] or None
+
+
 @router.get(
     "/organizations/{org_id}/interview",
     summary="PV2 — stato intervista per l'editor admin",
@@ -500,6 +514,8 @@ async def get_org_interview(
         "public_slug": org.get("public_slug"),
         "items": pp.get("interview") or [],
         "video_url": pp.get("interview_video_url"),
+        # SW5 — la frase che comparirà sulla scheda in /operatori
+        "quote": pp.get("interview_quote"),
         "published": bool(pp.get("interview_published")),
         "verified_at": pp.get("interview_verified_at"),
     }
@@ -529,6 +545,9 @@ async def set_org_interview(
     video_url = (_normalize_youtube_url(raw_video)
                  if isinstance(raw_video, str) and raw_video.strip()
                  else None)
+    # SW5 — la citazione per /operatori: scelta editoriale del system
+    # admin, non un estratto automatico delle risposte
+    quote = _clean_interview_quote(body.get("quote"))
     published = bool(body.get("published"))
 
     pp = org.get("public_profile") or {}
@@ -543,6 +562,7 @@ async def set_org_interview(
         {"$set": {
             "public_profile.interview": items or None,
             "public_profile.interview_video_url": video_url,
+            "public_profile.interview_quote": quote,
             "public_profile.interview_published": published,
             "public_profile.interview_verified_at": verified_at,
         }})
@@ -555,6 +575,7 @@ async def set_org_interview(
         "org_id": org_id,
         "items": items,
         "video_url": video_url,
+        "quote": quote,
         "published": published,
         "verified_at": verified_at,
     }

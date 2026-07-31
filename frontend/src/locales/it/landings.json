@@ -626,7 +626,19 @@
     "aziendale": "Benessere aziendale",
     "ritiri": "Mondo ritiri",
     "energia": "Pratiche energetiche",
-    "operatori": "Per gli operatori"
+    "operatori": "Per gli operatori",
+    "trattamenti": "Trattamenti & Massaggi",
+    "consulenze": "Consulenze",
+    "lezioni": "Lezioni private",
+    "cerimonie": "Cerimonie",
+    "cura_di_se": "Cura di sé",
+    "casa_benessere": "Casa & Benessere",
+    "cibo_tisane": "Cibo & Tisane",
+    "abbigliamento": "Abbigliamento",
+    "artigianato": "Artigianato",
+    "guide_ebook": "Guide & E-book",
+    "audio_meditazioni": "Audio & Meditazioni",
+    "video": "Video"
   },
   "marketplace": {
     "tagline": "Trova e prenota ritiri olistici ed esperienze che ti fanno crescere. Con caparra protetta, senza pensieri.",
@@ -888,5 +900,27 @@
     "letterBody": "Una volta ogni tanto. Una persona da conoscere. Una pratica da capire. Un luogo da scoprire.",
     "letterClose": "Niente rumore. Solo ciò che vale il tuo tempo.",
     "letterCta": "Iscriviti"
+  },
+  "nwOps": {
+    "seoTitle": "Le persone della rete | Aurya",
+    "seoDesc": "Gli operatori della rete Aurya, incontrati uno a uno: chi sono, cosa praticano, dove lavorano. Accanto a ogni nome una frase presa dalla loro voce.",
+    "eyebrow": "La rete",
+    "line1": "Dietro ogni pratica c’è una persona.",
+    "line2": "Qui la puoi conoscere.",
+    "lead": "Le persone di questa pagina le abbiamo incontrate una a una. Quello che leggi accanto al loro nome l’hanno detto loro.",
+    "howTitle": "Come si entra.",
+    "howP1": "Un profilo si compila in cinque minuti. Una persona no: la andiamo a conoscere, e per quello ci vuole tempo.",
+    "howP2": "Le domande gentili dicono poco. Ne facciamo anche di scomode, e teniamo le risposte per intero, senza riassumerle.",
+    "howP3": "Chi legge merita di sapere da dove viene un racconto. Firmiamo il nostro: i profili nati così portano il segno Verificato Aurya.",
+    "howClose": "Non c’è un modulo che apre questa porta. C’è una conversazione, e il tempo che serve a farla bene.",
+    "peopleTitle": "Le persone.",
+    "peopleSub": "Sono poche, e le conosciamo tutte. Continueranno ad arrivare una alla volta.",
+    "loading": "Un momento.",
+    "peopleEmpty": "Le prime interviste sono in corso. I profili arrivano qui quando sono pronti a essere raccontati bene, non prima.",
+    "readInterview": "Leggi l’intervista",
+    "joinTitle": "Vuoi farne parte?",
+    "joinBody": "Se lavori nel benessere e ti va di raccontarti, il primo passo è parlarne. Ci dici chi sei e cosa fai, e vediamo se c’è sintonia.",
+    "joinCta": "Entra nella rete",
+    "joinCtaAlt": "Leggi il manifesto"
   }
 }
