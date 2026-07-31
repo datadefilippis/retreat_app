@@ -5697,3 +5697,273 @@ class TestLandingOperatoriOl1:
             for chiave, valore in self._strings(blocco):
                 assert "—" not in valore and "–" not in valore, \
                     f"[{lang}] trattino lungo in {chiave}"
+
+
+class TestManifestoSw1:
+    """SW1 (31/7/2026) — il Manifesto riscritto sulla teoria del
+    Blueprint (docs/AURYA_BLUEPRINT_2026-07.md, cap. 0/2/9).
+
+    Quattro movimenti nell'ordine: la teoria (frase sola, grande), il
+    mondo come lo vediamo, come lavoriamo, cosa non faremo mai (l'unica
+    ancora verde). Poi la firma coi fondatori REALI (materiale
+    aboutPage.faces* gia' esistente, niente inventato) e la doppia CTA
+    discreta. Ogni frase segue il dispositivo a coppia: prima una
+    verita' sul mondo, poi un nostro gesto.
+
+    Queste guardie difendono: l'ordine dei movimenti, la teoria come
+    h1 unico, la lista dei mai (almeno 4 voci) col suo epilogo, il
+    badge detto come provenienza e mai come medaglia, la firma vera,
+    le due destinazioni finali, e il lessico: niente parole vietate
+    dal Blueprint, niente trattini lunghi, x4 lingue complete.
+
+    Il copy VECCHIO ("la rete degli operatori olistici", "Da dove
+    nasce Aurya", il "Gratuitamente" nella CTA) non deve riapparire.
+    """
+
+    PAGE = FRONTEND_SRC / "features" / "network" / "ManifestoPage.js"
+    LOCALES = ("it", "en", "de", "fr")
+
+    def _page(self):
+        return self.PAGE.read_text()
+
+    def _copy(self):
+        """Il sorgente senza commenti: le guardie lessicali giudicano
+        quello che il lettore puo' vedere, non le note di lavoro."""
+        import re
+        src = re.sub(r"/\*.*?\*/", "", self._page(), flags=re.DOTALL)
+        return re.sub(r"^\s*//.*$", "", src, flags=re.MULTILINE)
+
+    def _manifesto(self, lang):
+        import json
+        path = FRONTEND_SRC / "locales" / lang / "landings.json"
+        return json.loads(path.read_text()).get("manifesto") or {}
+
+    # ── 1. i quattro movimenti, nell'ordine, coi testi chiave ────────
+
+    _MOVIMENTI = (
+        ("mf-theory",
+         "Ogni percorso di benessere inizia da un incontro di fiducia.",
+         "Non si sceglie una disciplina."),
+        ("mf-world",
+         "Il mondo come lo vediamo.",
+         "Trovare qualcuno di cui fidarsi è difficile."),
+        ("mf-work",
+         "Come lavoriamo.",
+         "Per conoscere qualcuno ci vuole tempo. Ce lo prendiamo"),
+        ("mf-never",
+         "Cosa non faremo mai.",
+         "Una promessa vale per quello che esclude."),
+        ("mf-sign",
+         "aboutPage.facesTitle",
+         "Davide e Valentina"),
+    )
+
+    def test_sw1_quattro_movimenti_nell_ordine(self):
+        src = self._page()
+        pos = -1
+        for testid, titolo, testo in self._MOVIMENTI:
+            marker = f'data-testid="{testid}"'
+            assert marker in src, f"movimento {testid} mancante"
+            assert titolo in src, f"{testid}: titolo mancante"
+            assert testo in src, f"{testid}: testo chiave mancante"
+            here = src.index(marker)
+            assert here > pos, f"{testid}: movimento fuori ordine"
+            pos = here
+
+    def test_sw1_teoria_frase_sola_e_h1_unico(self):
+        """La teoria apre la pagina come frase sola, grande (la misura
+        'manifesto' del kit esiste apposta), ed e' l'unico h1."""
+        src = self._page()
+        assert src.count('as="h1"') == 1, "l'h1 e' uno solo: la teoria"
+        i_h1 = src.index('as="h1"')
+        intorno = src[max(0, i_h1 - 200):i_h1 + 300]
+        assert 'size="manifesto"' in intorno, \
+            "la teoria usa la misura 'manifesto' del kit (frase sola, grande)"
+        assert "Ogni percorso di benessere inizia da un incontro di fiducia." \
+            in intorno, "l'h1 e' la teoria, non un altro titolo"
+        # il payoff torna come eco, dopo la teoria
+        assert "<BrandPayoff" in src, "manca l'eco del payoff"
+        assert src.index("<BrandPayoff") > i_h1, \
+            "il payoff e' l'eco della teoria: sta sotto, non sopra"
+
+    def test_sw1_mondo_constatazione_mai_lamento(self):
+        """Il problema detto piano: la pagina lo chiude con 'non e'
+        colpa di nessuno' e non attacca nessun concorrente."""
+        copy = self._copy()
+        assert "Non è colpa di nessuno." in copy
+        for vietata in ("Treatwell", "Fresha", "Mindbody", "social",
+                        "algoritm", "ciarlatan"):
+            assert vietata not in copy, \
+                f"il movimento 2 constata, non attacca: via '{vietata}'"
+
+    def test_sw1_badge_provenienza_mai_medaglia(self):
+        """Il badge si racconta come provenienza del racconto; il
+        criterio non si proclama (Blueprint, principio 3)."""
+        copy = self._copy()
+        assert "Verificato Aurya" in copy, "il badge va nominato col suo nome"
+        assert "Non è una medaglia." in copy, \
+            "il badge e' una provenienza, e va detto"
+        for proclama in ("i migliori", "selezione rigorosa", "eccellenza",
+                         "solo i più", "d'élite"):
+            assert proclama.lower() not in copy.lower(), \
+                f"la selezione non si proclama: via '{proclama}'"
+
+    # ── 2. la lista dei mai: almeno 4 voci, con l'epilogo ────────────
+
+    def test_sw1_lista_dei_mai(self):
+        src = self._page()
+        attese = (
+            "Non venderemo posizioni in classifica.",
+            "Non pubblicheremo promesse di guarigione.",
+            "Non chiameremo le persone utenti.",
+            "Non racconteremo qualcuno che non abbiamo incontrato.",
+            "Non riempiremo questa pagina di parole che non pensiamo.",
+        )
+        for voce in attese:
+            assert voce in src, f"manca il divieto: {voce}"
+        assert "chi ammette un limite viene creduto sul resto" in src, \
+            "la chiusa che lega la lista e' sparita"
+        # x4: almeno 4 voci never* piene in ogni lingua
+        for lang in self.LOCALES:
+            blocco = self._manifesto(lang)
+            voci = [v for k, v in blocco.items()
+                    if k.startswith("never") and k[5:].isdigit() and v]
+            assert len(voci) >= 4, \
+                f"[{lang}] la lista dei mai ha {len(voci)} voci, minimo 4"
+
+    def test_sw1_ancora_verde_una_sola_ed_e_il_movimento_4(self):
+        """Una sola ancora tonale, e sta sui divieti: e' li' che il
+        verde diventa solenne al punto giusto."""
+        src = self._page()
+        assert src.count('tone="sage"') == 1, \
+            "il Manifesto ha UNA ancora verde, non di piu'"
+        i_sage = src.index('tone="sage"')
+        assert 'data-testid="mf-never"' in src[i_sage:i_sage + 400], \
+            "l'ancora verde e' il movimento 4, non un'altra sezione"
+
+    # ── 3. la firma: fondatori reali, doppia CTA discreta ────────────
+
+    def test_sw1_firma_materiale_reale(self):
+        """La firma riusa il materiale vero gia' tradotto x4: niente
+        biografie inventate nel sorgente."""
+        src = self._page()
+        assert "/media/chisiamo-aurya.jpg" in src, "manca la foto vera"
+        for chiave in ("aboutPage.facesEyebrow", "aboutPage.facesTitle",
+                       "aboutPage.facesBody1", "aboutPage.facesBody2",
+                       "aboutPage.facesAlt"):
+            assert chiave in src, f"la firma riusa {chiave}"
+        assert "manifesto.signature" in src, "manca la firma dei fondatori"
+        # le chiavi riusate esistono davvero, in tutte le lingue
+        import json
+        for lang in self.LOCALES:
+            loc = json.loads((FRONTEND_SRC / "locales" / lang
+                              / "landings.json").read_text())
+            about = loc.get("aboutPage") or {}
+            for k in ("facesEyebrow", "facesTitle", "facesBody1",
+                      "facesBody2", "facesAlt"):
+                assert about.get(k), f"[{lang}] manca aboutPage.{k}"
+
+    def test_sw1_doppia_cta_discreta(self):
+        src = self._page()
+        blocco = src[src.index('data-testid="mf-sign"'):]
+        assert blocco.count("<EditorialCta") == 2, \
+            "la chiusura ha due CTA, non una e non tre"
+        assert 'variant="solid"' not in blocco, \
+            "le CTA finali sono discrete: quiet, mai bottoni pieni"
+        i_people = blocco.index('data-testid="mf-cta-people"')
+        i_ops = blocco.index('data-testid="mf-cta-operators"')
+        assert 'to="/operatori"' in blocco[max(0, i_people - 200):i_people + 200], \
+            "'Conosci le persone' porta a /operatori"
+        assert 'to="/entra-nella-rete"' in blocco[max(0, i_ops - 220):i_ops + 220], \
+            "'Sei un operatore? Parliamone' porta a /entra-nella-rete"
+        assert "Conosci le persone" in blocco
+        assert "Sei un operatore? Parliamone" in blocco
+
+    # ── 4. SEO nella voce, x4 ────────────────────────────────────────
+
+    def test_sw1_seo(self):
+        src = self._page()
+        assert ("Il manifesto di Aurya | Ogni percorso inizia da un "
+                "incontro di fiducia") in src
+        assert "canonicalPath: '/manifesto'" in src
+        for lang in self.LOCALES:
+            blocco = self._manifesto(lang)
+            desc = blocco.get("seoDesc") or ""
+            assert 0 < len(desc) <= 158, \
+                f"[{lang}] description da {len(desc)} caratteri, taglio 158"
+            assert "Aurya" in (blocco.get("seoTitle") or ""), \
+                f"[{lang}] title senza il brand"
+
+    # ── 5. il lessico: parole vietate e trattini lunghi ──────────────
+
+    # Blueprint cap. 9, "Cosa non diremo mai" + il divieto sul
+    # gratuito-come-promessa. Si scandiscono il copy del sorgente
+    # (senza commenti, senza il nome tecnico MarketplaceShell) e le
+    # chiavi manifesto.* dei quattro locales.
+    _VIETATE = ("marketplace", "directory", "gestionale", "piattaform",
+                "trasforma la tua vita", "ritrova te stesso",
+                "gratuit", "gratis", "kostenlos", "free of charge")
+
+    def test_sw1_parole_vietate_assenti(self):
+        copy = self._copy().replace("MarketplaceShell", "")
+        for vietata in self._VIETATE:
+            assert vietata.lower() not in copy.lower(), \
+                f"parola vietata nel sorgente del Manifesto: '{vietata}'"
+        for lang in self.LOCALES:
+            for chiave, valore in self._manifesto(lang).items():
+                for vietata in self._VIETATE:
+                    assert vietata.lower() not in valore.lower(), \
+                        f"[{lang}] manifesto.{chiave} usa '{vietata}'"
+
+    def test_sw1_copy_vecchio_sparito(self):
+        """Della voce vecchia non resta niente: ne' nel sorgente ne'
+        nei locales."""
+        src = self._page()
+        for morto in ("la rete degli operatori olistici",
+                      "Da dove nasce Aurya",
+                      "Cosa non ci convince del settore",
+                      "Gratuitamente", "manifesto.p1t", "manifesto.ctaTitle",
+                      "manifesto.toolsLine", "aboutPage.missionTitle"):
+            assert morto not in src, f"copy vecchio superstite: {morto}"
+        for lang in self.LOCALES:
+            blocco = self._manifesto(lang)
+            for morto in ("p1t", "p1b", "p2t", "p2b", "p3t", "p3b",
+                          "ctaTitle", "ctaBody", "ctaButton", "toolsLine",
+                          "title", "intro"):
+                assert morto not in blocco, \
+                    f"[{lang}] chiave vecchia superstite: manifesto.{morto}"
+
+    def test_sw1_niente_trattini_lunghi(self):
+        import re
+        # nel copy inline (i defaultValue, apici singoli o doppi)...
+        defaults = re.findall(r"defaultValue:\s*(?:'([^']*)'|\"([^\"]*)\")",
+                              self._page())
+        valori = [a or b for a, b in defaults]
+        assert len(valori) >= 20, \
+            f"i defaultValue del Manifesto sono {len(valori)}, attesi almeno 20"
+        for val in valori:
+            assert "—" not in val and "–" not in val, \
+                f"trattino lungo nel copy del Manifesto: {val[:40]}"
+        # ...e nelle chiavi manifesto.* dei quattro locales
+        for lang in self.LOCALES:
+            for chiave, valore in self._manifesto(lang).items():
+                assert "—" not in valore and "–" not in valore, \
+                    f"[{lang}] trattino lungo in manifesto.{chiave}"
+
+    def test_sw1_i18n_x4_complete(self):
+        """Stesse chiavi in tutte le lingue, nessuna vuota, e i
+        defaultValue del sorgente coincidono con l'italiano."""
+        it = self._manifesto("it")
+        assert len(it) >= 25, f"chiavi manifesto in italiano: {len(it)}"
+        for lang in self.LOCALES:
+            blocco = self._manifesto(lang)
+            mancanti = set(it) - set(blocco)
+            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)[:5]}"
+            for k, v in blocco.items():
+                assert v and v.strip(), f"[{lang}] manifesto.{k} vuota"
+        # il fallback inline e' l'italiano vero, non una variante
+        src = self._page()
+        for k, v in it.items():
+            if f"manifesto.{k}" in src:
+                assert v in src, \
+                    f"defaultValue di manifesto.{k} diverso dall'italiano"
