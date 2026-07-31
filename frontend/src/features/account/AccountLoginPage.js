@@ -490,6 +490,15 @@ export default function AccountLoginPage() {
             {t('landings:account.backToRetreats', { defaultValue: '← Torna ai ritiri' })}
           </Link>
         </p>
+
+        {/* LR1 — link di soccorso incrociato: chi cercava l'area
+            operatori non deve restare intrappolato nel login utente */}
+        <p className="mt-2 text-xs text-gray-400" data-testid="operator-rescue-link">
+          {t('landings:account.operatorHint', { defaultValue: 'Sei un operatore?' })}{' '}
+          <Link to="/login" className="underline hover:text-gray-600">
+            {t('landings:account.operatorHintLink', { defaultValue: "Vai all'area operatori" })}
+          </Link>
+        </p>
       </div>
     </div>
     </MarketplaceShell>

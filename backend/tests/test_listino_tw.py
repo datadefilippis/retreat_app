@@ -2881,31 +2881,36 @@ class TestPotaturaPs4:
         assert "PLATFORM_TOKEN_KEY" in src, \
             "lo stato loggato si legge dal token piattaforma (sincrono)"
         assert "'/account'" in src and "'/account/accedi'" in src, \
-            "href: /account con token, /account/accedi senza"
+            "destinazioni: /account da loggato, /account/accedi da sloggato"
         assert "marketplace.accountAria" in src, \
             "aria-label i18n dell'icona account"
-        # l'icona non e' nascosta dietro breakpoint: nessun hidden
-        # sulla riga del Link icona (il pill myTrips resta hidden sm)
+        # LR1: l'omino e' il trigger del menu dei due mondi (un <button,
+        # non piu' un Link). Non e' nascosto dietro breakpoint: nessun
+        # hidden sul bottone trigger (il pill myTrips resta hidden sm)
         icon_at = src.index("CircleUserRound className")
-        link_open = src.rindex("<Link", 0, icon_at)
-        assert "hidden" not in src[link_open:icon_at], \
+        btn_open = src.rindex("<button", 0, icon_at)
+        assert 'data-testid="account-menu-trigger"' in src[btn_open:icon_at], \
+            "l'omino deve essere il trigger del menu account (LR1)"
+        assert "hidden" not in src[btn_open:icon_at], \
             "l'icona account deve essere visibile a TUTTI i breakpoint"
 
     def test_ps4_icona_anche_in_fase_network(self):
-        """Il Link dell'icona NON sta dentro un ramo !isNetwork."""
+        """L'entry point account (<AccountMenu>) NON sta in un ramo
+        !isNetwork dell'header."""
         src = self.SHELL.read_text()
-        icon_at = src.index("CircleUserRound className")
-        link_open = src.rindex("<Link", 0, icon_at)
-        # nessun gate di fase tra l'apertura del Link icona e l'icona
-        assert "isNetwork" not in src[link_open:icon_at], \
-            "l'icona account non deve essere gated dalla fase network"
+        use_at = src.index("<AccountMenu")
         # il ramo condizionale della pill myTrips si CHIUDE prima
-        # dell'apertura del Link icona (l'icona sta fuori dal ramo)
+        # dell'entry point (l'omino sta fuori dal ramo di fase)
         pill_close = src.index("</Link>", src.index("marketplace.myTrips"))
-        assert ")}" in src[pill_close:link_open], \
-            "il ramo !isNetwork della pill deve chiudersi prima dell'icona"
-        # accanto all'hamburger: il bottone menu mobile segue l'icona
-        assert src.index("setMobileNavOpen((o) => !o)") > icon_at
+        assert pill_close < use_at, \
+            "l'entry point account deve seguire la pill myTrips"
+        between = src[pill_close:use_at]
+        assert ")}" in between, \
+            "il ramo !isNetwork della pill deve chiudersi prima dell'omino"
+        assert "{!isNetwork" not in between and "{isNetwork" not in between, \
+            "l'entry point account non deve essere gated dalla fase network"
+        # accanto all'hamburger: il bottone menu mobile segue l'entry point
+        assert src.index("setMobileNavOpen((o) => !o)") > use_at
 
     def test_ps4_i18n_x4_senza_passaporto(self):
         import json as _json
@@ -4972,3 +4977,155 @@ class TestUtentiUt1:
         # spent desc: prima l'account (100), poi il guest (80)
         assert p1["items"][0]["email"] == self.ACC_EMAIL
         assert p2["items"][0]["email"] == self.GUEST_EMAIL
+
+
+class TestLoginRegia:
+    """LR1 (31/7/2026) — la regia dei due login: il menu dell'omino.
+
+    L'icona account dell'header pubblico non naviga piu' alla cieca:
+    apre un menu con DUE sezioni etichettate ("Il tuo account Aurya"
+    per l'utente finale, "Per gli operatori" per il mondo gestionale).
+    Esci rimuove il token piattaforma E aurya_nl_token. Link di
+    soccorso incrociati nelle due pagine di login. I flussi di
+    autenticazione (password, OTP, magic link, login operatori) NON
+    cambiano: solo navigazione e presentazione.
+    """
+
+    SHELL = (FRONTEND_SRC / "features" / "storefront" / "components"
+             / "MarketplaceShell.jsx")
+    ACCOUNT_LOGIN = (FRONTEND_SRC / "features" / "account"
+                     / "AccountLoginPage.js")
+    OPERATOR_LOGIN = FRONTEND_SRC / "pages" / "AuthPages.js"
+
+    # ── 1. il menu dell'omino: due sezioni, le voci giuste ───────────
+
+    def test_lr1_menu_due_sezioni_etichettate(self):
+        src = self.SHELL.read_text()
+        # sezione utente
+        assert "marketplace.accountMenuUser" in src \
+            and "'Il tuo account Aurya'" in src, \
+            "manca l'etichetta della sezione utente"
+        # sezione operatori (dopo un separatore)
+        assert "marketplace.accountMenuOperators" in src \
+            and "'Per gli operatori'" in src, \
+            "manca l'etichetta della sezione operatori"
+        assert "DropdownMenuSeparator" in src, \
+            "le due sezioni vanno separate (desktop)"
+
+    def test_lr1_voci_utente(self):
+        src = self.SHELL.read_text()
+        # da sloggato: Accedi + Crea il tuo account → /account/accedi
+        assert "marketplace.signIn" in src, "manca la voce Accedi"
+        assert "marketplace.accountMenuCreate" in src \
+            and "'Crea il tuo account'" in src, \
+            "manca la voce Crea il tuo account"
+        assert "'/account/accedi'" in src
+        # da loggato: Il mio account → /account + Esci
+        assert "marketplace.accountMenuMy" in src \
+            and "'Il mio account'" in src, "manca la voce Il mio account"
+        assert "marketplace.accountMenuLogout" in src \
+            and "'Esci'" in src, "manca la voce Esci"
+
+    def test_lr1_voci_operatori(self):
+        src = self.SHELL.read_text()
+        # Area operatori → /login (dentro AccountMenu)
+        assert "marketplace.operatorLogin" in src, \
+            "manca la voce Area operatori nel menu"
+        assert "'/login'" in src, "Area operatori deve puntare a /login"
+        # Lavora con Aurya → operatorTo (stessa logica del link testuale:
+        # /entra-nella-rete in fase network, /inizia in marketplace)
+        assert "marketplace.accountMenuWork" in src \
+            and "'Lavora con Aurya'" in src, \
+            "manca la voce Lavora con Aurya"
+        assert "operatorTo={operatorTo}" in src, \
+            "Lavora con Aurya deve seguire la fase (operatorTo)"
+        assert "'/entra-nella-rete'" in src and "'/inizia'" in src
+
+    def test_lr1_dropdown_desktop_sheet_mobile(self):
+        src = self.SHELL.read_text()
+        assert "DropdownMenuContent" in src, "desktop: dropdown ancorato"
+        assert "SheetContent" in src and 'side="bottom"' in src, \
+            "mobile: sheet dal basso"
+
+    # ── 2. Esci: rimuove ENTRAMBI i token, pallino spento ────────────
+
+    def test_lr1_logout_rimuove_entrambi_i_token(self):
+        src = self.SHELL.read_text()
+        assert "localStorage.removeItem(PLATFORM_TOKEN_KEY)" in src, \
+            "Esci deve rimuovere il token piattaforma"
+        assert "localStorage.removeItem('aurya_nl_token')" in src, \
+            "Esci deve rimuovere anche il subscriber token newsletter"
+        # il pallino si spegne senza reload (stato con setter)
+        assert "setHasPlatformToken(false)" in src
+
+    # ── 3. il link testuale "Sei un operatore?" resta com'e' ─────────
+
+    def test_lr1_link_testuale_operatori_resta(self):
+        src = self.SHELL.read_text()
+        assert "marketplace.operatorQuestion" in src \
+            and "'Sei un operatore?'" in src, \
+            "il link testuale operatori dell'header deve restare"
+
+    # ── 4. link di soccorso incrociati nelle due login ───────────────
+
+    def test_lr1_soccorso_su_login_utente(self):
+        src = self.ACCOUNT_LOGIN.read_text()
+        assert 'data-testid="operator-rescue-link"' in src
+        assert 'to="/login"' in src, \
+            "il soccorso deve portare all'area operatori"
+        assert "account.operatorHint" in src \
+            and "account.operatorHintLink" in src
+
+    def test_lr1_soccorso_su_login_operatori(self):
+        src = self.OPERATOR_LOGIN.read_text()
+        assert 'data-testid="aurya-rescue-link"' in src
+        assert 'to="/account/accedi"' in src, \
+            "il soccorso deve portare al login utente Aurya"
+        assert "login.aurya_hint" in src and "login.aurya_link" in src
+
+    # ── 5. i form di autenticazione NON si toccano ───────────────────
+
+    def test_lr1_form_utente_intoccati(self):
+        src = self.ACCOUNT_LOGIN.read_text()
+        for marker in ('data-testid="password-login-form"',
+                       "'/platform/auth/login'",
+                       "'/platform/auth/magic-link'",
+                       "'/platform/auth/code/verify'",
+                       "'/platform/auth/password-reset'",
+                       "'/platform/auth/signup'"):
+            assert marker in src, f"flusso auth utente sparito: {marker}"
+
+    def test_lr1_form_operatori_intoccato(self):
+        src = self.OPERATOR_LOGIN.read_text()
+        for marker in ('data-testid="login-email-input"',
+                       'data-testid="login-password-input"',
+                       'data-testid="login-submit-btn"',
+                       "await login(email, password)"):
+            assert marker in src, f"flusso auth operatori sparito: {marker}"
+
+    # ── 6. i18n x4, copy pulito ──────────────────────────────────────
+
+    def test_lr1_i18n_x4_copy_pulito(self):
+        import json as _json
+        mkt_keys = ("accountMenuUser", "accountMenuCreate", "accountMenuMy",
+                    "accountMenuLogout", "accountMenuOperators",
+                    "accountMenuWork")
+        for lang in ("it", "en", "de", "fr"):
+            loc = _json.loads((FRONTEND_SRC / "locales" / lang
+                               / "landings.json").read_text())
+            for k in mkt_keys:
+                val = loc["marketplace"].get(k, "")
+                assert val, f"{lang}: manca marketplace.{k}"
+                assert "Passaporto" not in val and "—" not in val \
+                    and "–" not in val and "negozio" not in val.lower(), \
+                    f"{lang}: copy vietato in marketplace.{k}"
+            for k in ("operatorHint", "operatorHintLink"):
+                val = loc["account"].get(k, "")
+                assert val, f"{lang}: manca account.{k}"
+                assert "—" not in val and "–" not in val
+            auth = _json.loads((FRONTEND_SRC / "locales" / lang
+                                / "auth.json").read_text())
+            for k in ("aurya_hint", "aurya_link"):
+                val = auth["login"].get(k, "")
+                assert val, f"{lang}: manca login.{k}"
+                assert "—" not in val and "–" not in val

@@ -353,6 +353,16 @@ export const LoginPage = () => {
                 </Link>
               </div>
 
+              {/* LR1 — link di soccorso incrociato: chi cercava le sue
+                  prenotazioni (account Aurya lato viaggiatore) non deve
+                  restare intrappolato nella login operatori */}
+              <div className="mt-3 text-center text-xs text-muted-foreground" data-testid="aurya-rescue-link">
+                {t('login.aurya_hint', 'Cerchi le tue prenotazioni?')}{' '}
+                <Link to="/account/accedi" className="underline hover:text-primary">
+                  {t('login.aurya_link', 'Il tuo account Aurya')}
+                </Link>
+              </div>
+
             </CardContent>
           </Card>
         </div>

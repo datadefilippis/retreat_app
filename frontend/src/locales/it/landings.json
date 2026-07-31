@@ -610,7 +610,9 @@
     "signupConsentTerms": "Termini",
     "signupConsentAnd": "e la",
     "signupConsentPrivacy": "Privacy",
-    "signupConsentSuffix": "di Aurya"
+    "signupConsentSuffix": "di Aurya",
+    "operatorHint": "Sei un operatore?",
+    "operatorHintLink": "Vai all'area operatori"
   },
   "categories": {
     "yoga": "Yoga",
@@ -650,7 +652,13 @@
     "navMenu": "Menu",
     "navClose": "Chiudi menu",
     "passportLink": "Il tuo account Aurya",
-    "navBlog": "Magazine"
+    "navBlog": "Magazine",
+    "accountMenuUser": "Il tuo account Aurya",
+    "accountMenuCreate": "Crea il tuo account",
+    "accountMenuMy": "Il mio account",
+    "accountMenuLogout": "Esci",
+    "accountMenuOperators": "Per gli operatori",
+    "accountMenuWork": "Lavora con Aurya"
   },
   "reviews": {
     "heading": "Recensioni",

@@ -27,6 +27,17 @@ import api from '../../../api/client';
 // niente provider nuovi, /account resta il gate (senza token rimanda
 // lui stesso a /account/accedi).
 import { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
+// LR1 — il menu dell'omino riusa i primitivi ui gia' in casa:
+// dropdown ancorato su desktop, sheet dal basso su mobile.
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../../../components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '../../../components/ui/sheet';
 
 // S5 — destinazioni top nel footer (link programmatici): cache a livello
 // modulo, il footer è su ogni pagina e non deve rifetchare a ogni nav.
@@ -108,6 +119,170 @@ export function LangSwitcher() {
   );
 }
 
+// LR1 — mobile "vero" (<= sm, 640px Tailwind): sotto questa soglia il
+// menu dell'omino diventa uno sheet dal basso, comodo col pollice.
+function useSmallScreen() {
+  const [small, setSmall] = React.useState(() => {
+    try {
+      return window.matchMedia('(max-width: 639px)').matches;
+    } catch {
+      return false;
+    }
+  });
+  React.useEffect(() => {
+    const mql = window.matchMedia('(max-width: 639px)');
+    const onChange = (e) => setSmall(e.matches);
+    // anche su resize: alcuni ambienti emulati (devtools/CDP) non
+    // emettono i change del matchMedia al cambio viewport
+    const onResize = () => setSmall(window.matchMedia('(max-width: 639px)').matches);
+    mql.addEventListener('change', onChange);
+    window.addEventListener('resize', onResize);
+    setSmall(mql.matches);
+    return () => {
+      mql.removeEventListener('change', onChange);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+  return small;
+}
+
+// LR1 — il menu dell'omino: l'icona account non naviga piu' alla cieca,
+// apre un menu compatto che smista con chiarezza i DUE mondi:
+//   1. "Il tuo account Aurya" (utente finale: accesso, account, uscita)
+//   2. "Per gli operatori" (area operatori + funnel candidatura/attivazione)
+// SOLO navigazione e presentazione: i flussi di autenticazione (password,
+// OTP, magic link, login operatori) restano intoccati. Il pallino di
+// stato da loggato resta sull'icona; Esc e click fuori chiudono (Radix).
+function AccountMenu({ hasPlatformToken, operatorTo, onLogout }) {
+  const { t } = useTranslation('landings');
+  const smallScreen = useSmallScreen();
+  const [open, setOpen] = React.useState(false);
+  const accountLabel = t('marketplace.accountAria', { defaultValue: 'Il tuo account' });
+
+  const userHeading = t('marketplace.accountMenuUser', { defaultValue: 'Il tuo account Aurya' });
+  const operatorsHeading = t('marketplace.accountMenuOperators', { defaultValue: 'Per gli operatori' });
+  const logoutLabel = t('marketplace.accountMenuLogout', { defaultValue: 'Esci' });
+  // da sloggato entrambe le voci portano a /account/accedi: la pagina ha
+  // gia' il toggle "Crea il tuo account Aurya" (nessun query param di
+  // modalita' esiste, e i form non si toccano: link semplice e onesto)
+  const userLinks = hasPlatformToken
+    ? [{ to: '/account', label: t('marketplace.accountMenuMy', { defaultValue: 'Il mio account' }), testid: 'account-menu-my' }]
+    : [
+        { to: '/account/accedi', label: t('marketplace.signIn', { defaultValue: 'Accedi' }), testid: 'account-menu-signin' },
+        { to: '/account/accedi', label: t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }), testid: 'account-menu-signup' },
+      ];
+  const operatorLinks = [
+    { to: '/login', label: t('marketplace.operatorLogin', { defaultValue: 'Area operatori' }), testid: 'account-menu-operator-login' },
+    { to: operatorTo, label: t('marketplace.accountMenuWork', { defaultValue: 'Lavora con Aurya' }), testid: 'account-menu-operator-join' },
+  ];
+
+  // PS4 — l'omino resta l'entry point universale (tutti i breakpoint,
+  // tutte le fasi, network inclusa) e conserva il pallino di stato.
+  const trigger = (
+    <button
+      type="button"
+      aria-label={accountLabel}
+      title={accountLabel}
+      data-testid="account-menu-trigger"
+      className="relative rounded-full border border-gray-300 h-8 w-8 flex items-center justify-center text-gray-700 hover:border-primary hover:text-primary transition-colors"
+    >
+      <CircleUserRound className="h-5 w-5" aria-hidden />
+      {hasPlatformToken && (
+        <span
+          aria-hidden
+          className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-white"
+        />
+      )}
+    </button>
+  );
+
+  const headingCls = 'px-4 pb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400 select-none';
+  const itemCls = 'block w-full rounded-xl px-4 py-3 text-base font-medium text-gray-800 hover:bg-gray-100 text-left';
+
+  if (smallScreen) {
+    const close = () => setOpen(false);
+    return (
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>{trigger}</SheetTrigger>
+        <SheetContent
+          side="bottom"
+          aria-describedby={undefined}
+          className="rounded-t-2xl px-2 pb-8"
+          data-testid="account-menu-sheet"
+        >
+          <SheetTitle className="sr-only">{accountLabel}</SheetTitle>
+          <nav aria-label={accountLabel} className="mt-2">
+            <p className={headingCls}>{userHeading}</p>
+            <ul>
+              {userLinks.map((l, i) => (
+                <li key={`${l.testid}-${i}`}>
+                  <Link to={l.to} onClick={close} className={itemCls} data-testid={l.testid}>
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+              {hasPlatformToken && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => { close(); onLogout(); }}
+                    className={itemCls}
+                    data-testid="account-menu-logout"
+                  >
+                    {logoutLabel}
+                  </button>
+                </li>
+              )}
+            </ul>
+            <div className="my-3 border-t border-gray-200" role="separator" aria-orientation="horizontal" />
+            <p className={headingCls}>{operatorsHeading}</p>
+            <ul>
+              {operatorLinks.map((l) => (
+                <li key={l.testid}>
+                  <Link to={l.to} onClick={close} className={itemCls} data-testid={l.testid}>
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  const menuHeadingCls = 'text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400 select-none';
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+      <DropdownMenuContent align="end" sideOffset={8} className="w-60" data-testid="account-menu-dropdown">
+        <DropdownMenuLabel className={menuHeadingCls}>{userHeading}</DropdownMenuLabel>
+        {userLinks.map((l, i) => (
+          <DropdownMenuItem key={`${l.testid}-${i}`} asChild>
+            <Link to={l.to} className="cursor-pointer" data-testid={l.testid}>
+              {l.label}
+            </Link>
+          </DropdownMenuItem>
+        ))}
+        {hasPlatformToken && (
+          <DropdownMenuItem onSelect={onLogout} className="cursor-pointer" data-testid="account-menu-logout">
+            {logoutLabel}
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className={menuHeadingCls}>{operatorsHeading}</DropdownMenuLabel>
+        {operatorLinks.map((l) => (
+          <DropdownMenuItem key={l.testid} asChild>
+            <Link to={l.to} className="cursor-pointer" data-testid={l.testid}>
+              {l.label}
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 // AN2 — il menu principale che mancava: le stesse voci su desktop
 // (inline dopo il logo) e su mobile (pannello hamburger). Una sola
 // definizione: chi aggiunge una superficie la aggiunge QUI.
@@ -151,7 +326,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   // va dritti a /account, senza si atterra sulla login utente. ACCESA
   // anche in fase network (decisione founder: chi ha prenotato da /o/
   // o /e/ deve ritrovare la sua history).
-  const [hasPlatformToken] = React.useState(() => {
+  const [hasPlatformToken, setHasPlatformToken] = React.useState(() => {
     try {
       return Boolean(localStorage.getItem(PLATFORM_TOKEN_KEY));
     } catch {
@@ -159,7 +334,19 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
     }
   });
   const accountTo = hasPlatformToken ? '/account' : '/account/accedi';
-  const accountLabel = t('marketplace.accountAria', { defaultValue: 'Il tuo account' });
+
+  // LR1 — "Esci" dal menu dell'omino: rimuove il token piattaforma E il
+  // subscriber token della newsletter (aurya_nl_token, salvato al login
+  // AP2), spegne il pallino e riporta alla home: le pagine gated non
+  // restano appese a una sessione morta.
+  const logoutPlatform = React.useCallback(() => {
+    try {
+      localStorage.removeItem(PLATFORM_TOKEN_KEY);
+      localStorage.removeItem('aurya_nl_token');
+    } catch { /* private mode */ }
+    setHasPlatformToken(false);
+    navigate('/');
+  }, [navigate]);
 
   useEffect(() => {
     if (_destCache) return;
@@ -266,25 +453,16 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     {t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}
                   </Link>
                 )}
-                {/* PS4 — l'omino e' l'entry point UNIVERSALE dell'account
-                    utente: tutti i breakpoint, tutte le fasi (network
-                    inclusa). Da loggato, pallino primario come segno di
-                    stato. Gli operatori hanno il loro link testuale a
-                    fianco: nessuna confusione. */}
-                <Link
-                  to={accountTo}
-                  aria-label={accountLabel}
-                  title={accountLabel}
-                  className="relative rounded-full border border-gray-300 h-8 w-8 flex items-center justify-center text-gray-700 hover:border-primary hover:text-primary transition-colors"
-                >
-                  <CircleUserRound className="h-5 w-5" aria-hidden />
-                  {hasPlatformToken && (
-                    <span
-                      aria-hidden
-                      className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-white"
-                    />
-                  )}
-                </Link>
+                {/* PS4→LR1 — l'omino resta l'entry point UNIVERSALE
+                    (tutti i breakpoint, tutte le fasi, network inclusa)
+                    ma ora apre il menu dei due mondi invece di navigare
+                    alla cieca. Pallino di stato da loggato invariato.
+                    Il link testuale "Sei un operatore?" resta a fianco. */}
+                <AccountMenu
+                  hasPlatformToken={hasPlatformToken}
+                  operatorTo={operatorTo}
+                  onLogout={logoutPlatform}
+                />
                 {/* AN2 — hamburger mobile: ricerca e CTA organizzatori non
                     spariscono più sotto i breakpoint */}
                 <button
