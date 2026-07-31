@@ -414,12 +414,17 @@ class TestDs2Polish:
             assert f"{slug}:" in mod, f"categoria {slug} senza icona"
 
     def test_motto_is_prominent_in_hero(self):
+        """HP1 — l'occhiello dell'hero resta prominente e coi fili
+        d'oro, ma ora e' il payoff (una frase): il corpo lo decide
+        BrandPayoff con size="hero", non piu' classi sparse."""
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "RetreatsCalendarPage.js").read_text()
-        idx = page.index("Connect · Heal · Grow")
-        block = page[max(0, idx - 600):idx]
-        # non più micro-etichetta: almeno text-base, con i fili d'oro
-        assert "text-base" in block and "md:text-2xl" in block
+        assert 'size="hero"' in page and "rules" in page, \
+            "l'hero del calendario ha perso l'occhiello grande coi fili"
+        payoff = (FRONTEND_SRC / "components" / "BrandPayoff.jsx").read_text()
+        idx = payoff.index("const SIZES")
+        # non una micro-etichetta: cresce fino a text-xl sui grandi
+        assert "md:text-xl" in payoff[idx:idx + 400]
 
     def test_destinations_promise_only_listable(self):
         """I conteggi di /public/destinations applicano lo STESSO gate

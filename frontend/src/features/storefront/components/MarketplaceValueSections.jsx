@@ -17,6 +17,7 @@ import {
   Compass, ShieldCheck, Ticket, MessageSquareHeart, BadgeCheck,
   Wallet, BookUser, MapPin, ArrowRight,
 } from 'lucide-react';
+import BrandPayoff from '../../../components/BrandPayoff';
 
 const HOW_STEPS = [
   { icon: Compass, t: 'brandHome.how1t', b: 'brandHome.how1b' },
@@ -41,7 +42,7 @@ export default function MarketplaceValueSections() {
 
         {/* Come funziona */}
         <section aria-labelledby="how-title">
-<p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#8a7440] mb-2 select-none text-center">Connect · Heal · Grow</p>
+          <BrandPayoff tone="cream" size="xs" className="mb-2 text-center" />
           <h2 id="how-title" className="font-display text-2xl md:text-3xl font-bold text-foreground text-center">
             {t('brandHome.howTitle')}
           </h2>
@@ -81,7 +82,7 @@ export default function MarketplaceValueSections() {
             background: 'radial-gradient(ellipse 60% 80% at 15% 10%, rgba(255,255,255,0.08), transparent 60%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(193,102,61,0.22), transparent 55%)',
           }} />
           <div className="relative">
-            <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#d6c49a] mb-2 select-none text-center">Connect · Heal · Grow</p>
+            <BrandPayoff tone="deep" size="xs" className="mb-2 text-center" />
             <h2 id="why-title" className="font-display text-2xl md:text-3xl font-bold text-center">
               {t('brandHome.whyTitle')}
             </h2>

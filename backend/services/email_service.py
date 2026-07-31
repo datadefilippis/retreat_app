@@ -1602,7 +1602,7 @@ _BASE_STYLE = """
   .header { background: #376254; background: linear-gradient(135deg, #376254, #2e564e); padding: 26px 32px; }
   .header h1 { color: #f8f5ef; font-size: 21px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
   .header .wordmark { font-family: 'Cinzel', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; text-transform: uppercase; letter-spacing: 0.3em; font-weight: 500; font-size: 22px; color: #cbb578; vertical-align: middle; }
-  .header .motto { margin: 7px 0 0; font-family: 'Cinzel', 'Palatino Linotype', Georgia, serif; text-transform: uppercase; letter-spacing: 0.3em; font-size: 10px; color: rgba(203,181,120,0.85); }
+  .header .motto { margin: 7px 0 0; font-family: 'Cinzel', 'Palatino Linotype', Georgia, serif; letter-spacing: 0.05em; font-size: 11px; color: rgba(203,181,120,0.9); }
   .header .via { margin: 4px 0 0; font-size: 12px; color: rgba(248,245,239,0.75); }
   .body { padding: 32px; color: #37463f; font-size: 15px; line-height: 1.65; }
   .body p { margin: 0 0 16px; }
@@ -1626,7 +1626,7 @@ def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, st
     # Logo ufficiale (loto+sole, 13/7/2026) hostato sul dominio: risolve
     # appena il sito è deployato; il testo accanto copre il frattempo e
     # i client che bloccano le immagini.
-    from core.brand import BRAND_DOMAIN
+    from core.brand import BRAND_DOMAIN, BRAND_PAYOFF
     logo_img = (f'<img src="https://{BRAND_DOMAIN}/logo-aurya-128.png" alt="" '
                 f'width="34" height="34" style="vertical-align:middle;'
                 f'border-radius:50%;margin-right:9px;" />')
@@ -1635,8 +1635,10 @@ def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, st
                        f'<p class="via">{logo_img}via '
                        f'<span class="wordmark" style="font-size:13px;">Aurya</span></p>')
     else:
+        # HP1 — il payoff, nella lingua del destinatario
+        payoff = BRAND_PAYOFF.get(lang, BRAND_PAYOFF["it"])
         header_html = (f'<h1>{logo_img}<span class="wordmark">Aurya</span></h1>'
-                       f'<p class="motto">Connect. Heal. Grow.</p>')
+                       f'<p class="motto">{payoff}</p>')
     return f"""<!DOCTYPE html>
 <html lang="{lang}">
 <head><meta charset="utf-8">{_BASE_STYLE}</head>

@@ -89,15 +89,18 @@ class TestCopyRulesRb4:
                 assert token not in tagline, f"{lang}: geografia nella tagline"
 
     def test_motto_overline_in_brand_font(self):
-        """Connect · Heal · Grow in font-brand (Cinzel, oro) su hero,
-        sezioni valore e pagine istituzionali."""
+        """HP1 — l'occhiello di brand resta su hero, sezioni valore e
+        pagine istituzionali, ma ora e' il PAYOFF e passa da un solo
+        componente (BrandPayoff, font-brand/Cinzel oro)."""
         for rel in ("features/storefront/RetreatsCalendarPage.js",
                     "features/storefront/components/MarketplaceValueSections.jsx",
                     "features/storefront/AboutAuryaPage.js",
                     "features/storefront/HowItWorksPage.js"):
             src = (FRONTEND_SRC / rel).read_text()
-            assert "Connect · Heal · Grow" in src, f"{rel}: overline mancante"
-            assert "font-brand" in src
+            assert "<BrandPayoff" in src, f"{rel}: occhiello di brand mancante"
+            assert "components/BrandPayoff" in src, f"{rel}: import mancante"
+        payoff = (FRONTEND_SRC / "components" / "BrandPayoff.jsx").read_text()
+        assert "font-brand" in payoff
 
     def test_scroll_to_top_on_route_change(self):
         """RB3 — la SPA riparte dall'alto al cambio pagina; i cambi di

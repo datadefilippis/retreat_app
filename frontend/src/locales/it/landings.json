@@ -658,7 +658,8 @@
     "accountMenuMy": "Il mio account",
     "accountMenuLogout": "Esci",
     "accountMenuOperators": "Per gli operatori",
-    "accountMenuWork": "Lavora con Aurya"
+    "accountMenuWork": "Lavora con Aurya",
+    "payoff": "Ci si fida di qualcuno, non di qualcosa."
   },
   "reviews": {
     "heading": "Recensioni",
@@ -713,7 +714,7 @@
     "seoTitle": "Chi siamo | Aurya, la casa dei ritiri olistici",
     "seoDesc": "Aurya connette chi cerca benessere autentico con chi lo crea: ritiri prenotabili online con caparra protetta e recensioni solo verificate.",
     "title": "Chi siamo",
-    "intro": "Viviamo in un tempo che corre, che ci vuole sempre connessi a tutto tranne che a noi stessi. Aurya nasce da un gesto semplice: fermarsi. E da una convinzione: le esperienze che fanno evolvere meritano di essere trovate, vissute e raccontate. Connect. Heal. Grow.",
+    "intro": "Viviamo in un tempo che corre, che ci vuole sempre connessi a tutto tranne che a noi stessi. Aurya nasce da un gesto semplice: fermarsi. E da una convinzione: le esperienze che fanno evolvere meritano di essere trovate, vissute e raccontate. Ci si fida di qualcuno, non di qualcosa.",
     "missionTitle": "La nostra missione",
     "missionBody": "Investire sull’umano, in una società che tende ad allontanarcene. Crediamo che ogni trasformazione inizi dall’incontro tra le persone giuste e il luogo giusto: per questo rendiamo semplice e sicuro incontrarsi. A chi guida ritiri diamo strumenti professionali senza chiedere di diventare tecnici; a chi cerca, la serenità di prenotare con fiducia.",
     "visionTitle": "Dove vogliamo arrivare",
@@ -789,5 +790,31 @@
     "label": "Verificato Aurya",
     "short": "Verificato",
     "tooltip": "Operatore intervistato e verificato dal team Aurya"
+  },
+  "nwHome": {
+    "seoTitle": "Aurya | Le persone del benessere in Italia",
+    "seoDesc": "Non si sceglie una disciplina. Si sceglie una persona. Aurya ti fa conoscere chi pratica il benessere, prima che tu decida.",
+    "heroTitle": "Non si sceglie una disciplina. Si sceglie una persona.",
+    "heroSub": "Qui le conosci prima di decidere.",
+    "heroCta": "Conosci le persone",
+    "peopleTitle": "Si sceglie meglio quando si sa chi si ha davanti.",
+    "peopleSub": "Chi sono, come lavorano, per chi lo fanno.",
+    "peopleCta": "Tutte le persone",
+    "timeTitle": "Per conoscere qualcuno ci vuole tempo.",
+    "timeBody": "Ce lo prendiamo, una persona alla volta. Facciamo domande, ascoltiamo e scriviamo quello che abbiamo capito. Anche i limiti.",
+    "timeNote": "Quando un profilo nasce così, lo trovi segnato.",
+    "magTitle": "Le cose serie vanno spiegate.",
+    "magSub": "Pratiche, luoghi e persone. Senza scorciatoie.",
+    "magCta": "Il Magazine",
+    "manifestoLine": "Il benessere è una questione di persone, non di promesse.",
+    "manifestoWhisper": "Col tempo qui potrai anche prenotare. Prima vogliamo che tu sappia con chi.",
+    "manifestoCta": "Il manifesto",
+    "letterTitle": "Ogni tanto scriviamo.",
+    "letterSub": "Una persona da conoscere, una pratica da capire, un posto dove andare.",
+    "letterCta": "Ricevi la lettera",
+    "prosEyebrow": "Per gli operatori",
+    "prosTitle": "Raccontaci come lavori.",
+    "prosBody": "Ti facciamo qualche domanda. Ascoltiamo. Poi lo scriviamo con le tue parole.",
+    "prosCta": "Parliamone"
   }
 }

@@ -14,6 +14,7 @@ import { Leaf, ShieldCheck, MapPin, ArrowLeft, ArrowRight, Quote } from 'lucide-
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import useItalianOnly from '../../lib/useItalianOnly';
 import LeadForm from './LeadForm';
+import BrandPayoff from '../../components/BrandPayoff';
 
 const ACCENT = '#376254';
 const GOLD = '#8a7440';
@@ -160,7 +161,7 @@ export default function TravelerLandingPage() {
           <p className="mx-auto mt-4 font-heading text-xl leading-relaxed text-white md:text-2xl">
             {t('tr.why', { defaultValue: 'Crediamo che ogni trasformazione cominci da un incontro: quello tra te, le persone giuste e il luogo giusto. Aurya esiste per far accadere questi incontri. Un posto solo, curato con amore, dove trovare chi fa questo lavoro con il cuore.' })}
           </p>
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-[#d6c49a]">Aurya · Connect · Heal · Grow</p>
+          <BrandPayoff tone="deep" size="xs" className="mt-6" />
         </div>
       </section>
 

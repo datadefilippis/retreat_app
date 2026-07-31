@@ -14,6 +14,7 @@ import MarketplaceShell from './components/MarketplaceShell';
 import BlogNewsletterCTA from './components/BlogNewsletterCTA';
 import { Lock } from 'lucide-react';
 import useSeoMeta from './lib/useSeoMeta';
+import BrandPayoff from '../../components/BrandPayoff';
 
 const CATEGORY_TONES = {
   yoga: 'from-[#376254]/80', meditazione: 'from-[#4a7a68]/80',
@@ -88,7 +89,7 @@ export default function BlogIndexPage() {
           {/* testo centrato: velatura simmetrica come l'hero della home */}
           <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/85 via-[#14231d]/55 to-[#0e1a15]/85" />
           <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-20 text-center">
-            <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-xs md:text-sm text-[#ecd9a8] mb-3 select-none text-hero-shadow">Connect · Heal · Grow</p>
+            <BrandPayoff tone="hero" size="sm" className="mb-3" />
             <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
               {t('blog.title', { defaultValue: 'Il Magazine di Aurya' })}
             </h1>

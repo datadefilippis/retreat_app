@@ -21,6 +21,7 @@ import api from '../../api/client';
 import useSeoMeta from './lib/useSeoMeta';
 import MarketplaceShell from './components/MarketplaceShell';
 import OperatorIdentityHeader from './components/OperatorIdentityHeader';
+import BrandPayoff from '../../components/BrandPayoff';
 
 function fmtDay(iso, lang = 'it-IT') {
   try {
@@ -194,9 +195,7 @@ export default function OperatorInterviewPage() {
         )}
 
         <div className="mb-8">
-          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#8a7440] select-none mb-2">
-            Connect · Heal · Grow
-          </p>
+          <BrandPayoff tone="cream" size="xs" className="mb-2" />
           <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
             {t('landings:operator.interviewTitle', { defaultValue: 'L\'intervista' })}
           </h2>

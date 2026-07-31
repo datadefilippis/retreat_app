@@ -12,7 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, Compass, HeartHandshake } from 'lucide-react';
 import MarketplaceShell from './components/MarketplaceShell';
 import useSeoMeta from './lib/useSeoMeta';
-import { BRAND_NAME } from '../../config/brand';
+import { BRAND_NAME, BRAND_PAYOFF } from '../../config/brand';
+import BrandPayoff from '../../components/BrandPayoff';
 
 export default function AboutAuryaPage() {
   const { t } = useTranslation('landings');
@@ -31,7 +32,7 @@ export default function AboutAuryaPage() {
           background: 'radial-gradient(ellipse 60% 80% at 15% 10%, rgba(255,255,255,0.08), transparent 60%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(193,102,61,0.22), transparent 55%)',
         }} />
           <div className="relative max-w-3xl mx-auto px-4 py-14 text-center">
-            <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#d6c49a] mb-3 select-none">Connect · Heal · Grow</p>
+            <BrandPayoff tone="deep" size="xs" className="mb-3" />
             <h1 className="font-display text-3xl md:text-4xl font-bold">{t('aboutPage.title')}</h1>
             <p className="text-white/85 mt-4 text-lg leading-relaxed">{t('aboutPage.intro')}</p>
           </div>
@@ -92,7 +93,9 @@ export default function AboutAuryaPage() {
               {t('aboutPage.cta')} <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </p>
-          <p className="text-center text-xs text-muted-foreground">{BRAND_NAME} — Connect. Heal. Grow.</p>
+          <p className="text-center text-xs text-muted-foreground">
+            {BRAND_NAME} · {t('marketplace.payoff', { defaultValue: BRAND_PAYOFF })}
+          </p>
         </main>
       </div>
     </MarketplaceShell>

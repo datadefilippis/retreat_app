@@ -5129,3 +5129,225 @@ class TestLoginRegia:
                 val = auth["login"].get(k, "")
                 assert val, f"{lang}: manca login.{k}"
                 assert "—" not in val and "–" not in val
+
+
+class TestHomeHp1:
+    """HP1 (31/7/2026) — la nuova homepage della fase rete.
+
+    Direzione: docs/BRAND_HOME_AURYA_2026-07.md (v3). Sette battute,
+    copy CHIUSO, alternanza prova/pensiero. Queste guardie difendono
+    le decisioni che si perdono per prime in un refactor: la CTA sola
+    nell'hero, il SILENZIO della sezione 3, il fatto che le sezioni
+    con i dati spariscono invece di mostrare griglie vuote, e il
+    payoff nuovo ovunque (il vecchio motto non deve sopravvivere in
+    nessun angolo, ne' frontend ne' backend).
+
+    Fuori scopo: la home della fase MARKETPLACE (HomeGate →
+    RetreatsCalendarPage) e' un'altra pagina e non e' toccata qui.
+    """
+
+    HOME = FRONTEND_SRC / "features" / "network" / "NetworkHomePage.js"
+    EDITORIAL = FRONTEND_SRC / "components" / "editorial"
+
+    # ── 1. le sette battute, nell'ordine, coi testi chiave ───────────
+
+    _SEZIONI = (
+        ("hp-hero", "Non si sceglie una disciplina. Si sceglie una persona.",
+         "Qui le conosci prima di decidere."),
+        ("hp-people", "Si sceglie meglio quando si sa chi si ha davanti.",
+         "Chi sono, come lavorano, per chi lo fanno."),
+        ("hp-time", "Per conoscere qualcuno ci vuole tempo.",
+         "Quando un profilo nasce così, lo trovi segnato."),
+        ("hp-magazine", "Le cose serie vanno spiegate.",
+         "Pratiche, luoghi e persone. Senza scorciatoie."),
+        ("hp-manifesto",
+         "Il benessere è una questione di persone, non di promesse.",
+         "Col tempo qui potrai anche prenotare."),
+        ("hp-letter", "Ogni tanto scriviamo.",
+         "Una persona da conoscere, una pratica da capire, un posto dove andare."),
+        ("hp-pros", "Raccontaci come lavori.",
+         "Ti facciamo qualche domanda. Ascoltiamo."),
+    )
+
+    def test_hp1_sette_sezioni_nell_ordine(self):
+        src = self.HOME.read_text()
+        pos = -1
+        for testid, titolo, testo in self._SEZIONI:
+            marker = f'data-testid="{testid}"'
+            assert marker in src, f"sezione {testid} mancante"
+            assert titolo in src, f"{testid}: titolo approvato mancante"
+            assert testo in src, f"{testid}: testo approvato mancante"
+            here = src.index(marker)
+            assert here > pos, f"{testid}: sezione fuori ordine"
+            pos = here
+
+    def test_hp1_gerarchia_titoli(self):
+        """Un solo h1 (l'hero), tutto il resto h2."""
+        src = self.HOME.read_text()
+        assert src.count('as="h1"') == 1, "l'h1 deve essere uno solo"
+        assert src.count('as="h2"') == 6, "le altre sei battute sono h2"
+
+    # ── 2. hero: UNA sola azione ─────────────────────────────────────
+
+    def test_hp1_hero_una_sola_cta(self):
+        src = self.HOME.read_text()
+        blocco = src[src.index('data-testid="hp-hero"'):
+                     src.index('data-testid="hp-people"')]
+        assert blocco.count("<EditorialCta") == 1, \
+            "due bottoni nell'hero sono un'esitazione: ne resta uno"
+        assert blocco.count("<Link") == 0, "niente link nascosti nell'hero"
+        assert 'to="/operatori"' in blocco
+        assert "Conosci le persone" in blocco
+
+    # ── 3. la sezione del tempo NON chiede niente ────────────────────
+
+    def test_hp1_sezione_tempo_senza_cta(self):
+        src = self.HOME.read_text()
+        blocco = src[src.index('data-testid="hp-time"'):
+                     src.index("4. IL MAGAZINE")]
+        assert "EditorialCta" not in blocco, \
+            "il silenzio della sezione 3 e' voluto: niente CTA"
+        assert "<Link" not in blocco and "<a " not in blocco
+        assert "<img" not in blocco, "sezione 3: sola tipografia"
+
+    # ── 4. le sezioni con i dati spariscono se i dati non ci sono ────
+
+    def test_hp1_sezioni_dati_gated(self):
+        src = self.HOME.read_text()
+        assert "{members.length > 0 && (" in src, \
+            "senza membri la sezione persone non deve esistere"
+        assert "{articles.length > 0 && (" in src, \
+            "senza articoli la sezione magazine non deve esistere"
+        # e le sorgenti sono quelle giuste
+        assert "'/public/network/members'" in src
+        assert "'/public/articles'" in src
+
+    def test_hp1_persone_al_massimo_tre(self):
+        src = self.HOME.read_text()
+        assert "MAX_PEOPLE = 3" in src and "slice(0, MAX_PEOPLE)" in src
+
+    # ── 5. le destinazioni delle CTA ─────────────────────────────────
+
+    def test_hp1_destinazioni_cta(self):
+        src = self.HOME.read_text()
+        for dest in ('to="/operatori"', 'to="/blog"', 'to="/manifesto"',
+                     'to="/newsletter"', 'to="/entra-nella-rete"'):
+            assert dest in src, f"CTA mancante: {dest}"
+
+    # ── 6. il kit editoriale riusabile ───────────────────────────────
+
+    def test_hp1_kit_editoriale_estratto(self):
+        for name in ("Section.jsx", "DisplayTitle.jsx", "Lede.jsx",
+                     "Quote.jsx", "PersonCard.jsx", "ArticleCard.jsx",
+                     "EditorialCta.jsx", "index.js"):
+            assert (self.EDITORIAL / name).exists(), \
+                f"componente editoriale mancante: {name}"
+
+    def test_hp1_movimento_solo_dissolvenza_e_reduced_motion(self):
+        reveal = (self.EDITORIAL / "useReveal.js").read_text()
+        assert "prefers-reduced-motion: reduce" in reveal
+        css = (FRONTEND_SRC / "index.css").read_text()
+        idx = css.index(".editorial-reveal {")
+        blocco = css[idx:css.index("/* Filo d'oro", idx)]
+        # solo opacita': nessuna traslazione → nessun layout shift
+        assert "translate" not in blocco and "transform:" not in blocco
+        assert "opacity" in blocco
+        assert "prefers-reduced-motion: reduce" in blocco
+
+    # ── 7. SEO della home ────────────────────────────────────────────
+
+    def test_hp1_seo_home(self):
+        src = self.HOME.read_text()
+        assert "Aurya | Le persone del benessere in Italia" in src
+        assert ("Non si sceglie una disciplina. Si sceglie una persona. "
+                "Aurya ti fa conoscere chi pratica il benessere, prima "
+                "che tu decida.") in src
+        assert "canonicalPath: '/'" in src
+
+    # ── 8. il payoff nuovo c'e', il vecchio motto non esiste piu' ────
+
+    _PAYOFF = {
+        "it": "Ci si fida di qualcuno, non di qualcosa.",
+        "en": "Trust is placed in someone, not something.",
+        "de": "Man vertraut jemandem, nicht etwas.",
+        "fr": "On fait confiance à quelqu'un, pas à quelque chose.",
+    }
+
+    def test_hp1_payoff_costanti(self):
+        js = (FRONTEND_SRC / "config" / "brand.js").read_text()
+        assert f"BRAND_PAYOFF = '{self._PAYOFF['it']}'" in js
+        assert "BRAND_MOTTO" not in js, "la vecchia costante deve sparire"
+        from core.brand import BRAND_PAYOFF
+        assert BRAND_PAYOFF == self._PAYOFF
+
+    def test_hp1_vecchio_motto_assente_ovunque(self):
+        """Scan frontend + backend: del vecchio motto non resta traccia
+        (i test sono esclusi: e' qui che il testo va nominato)."""
+        vietati = ("Connect · Heal · Grow", "CONNECT · HEAL · GROW",
+                   "Connect. Heal. Grow.", "BRAND_MOTTO")
+        radici = ((FRONTEND_SRC, (".js", ".jsx", ".json", ".css")),
+                  (BACKEND_DIR, (".py",)))
+        colpevoli = []
+        for radice, exts in radici:
+            for path in radice.rglob("*"):
+                if not path.is_file() or path.suffix not in exts:
+                    continue
+                if "tests" in path.parts or "node_modules" in path.parts:
+                    continue
+                testo = path.read_text(errors="ignore")
+                for v in vietati:
+                    if v in testo:
+                        colpevoli.append(f"{path}: {v}")
+        assert not colpevoli, f"vecchio motto superstite: {colpevoli[:5]}"
+
+    def test_hp1_payoff_nelle_superfici_di_brand(self):
+        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "MarketplaceShell.jsx").read_text()
+        assert "marketplace.payoff" in shell, "footer senza payoff"
+        logo = (FRONTEND_SRC / "components" / "BrandLogo.jsx").read_text()
+        assert "marketplace.payoff" in logo, "wordmark senza payoff"
+        email = (BACKEND_DIR / "services" / "email_service.py").read_text()
+        assert "BRAND_PAYOFF" in email, "template email senza payoff"
+
+    # ── 9. i18n x4 delle chiavi nuove, copy pulito ───────────────────
+
+    _NWHOME_KEYS = (
+        "seoTitle", "seoDesc", "heroTitle", "heroSub", "heroCta",
+        "peopleTitle", "peopleSub", "peopleCta",
+        "timeTitle", "timeBody", "timeNote",
+        "magTitle", "magSub", "magCta",
+        "manifestoLine", "manifestoWhisper", "manifestoCta",
+        "letterTitle", "letterSub", "letterCta",
+        "prosEyebrow", "prosTitle", "prosBody", "prosCta",
+    )
+
+    def test_hp1_i18n_x4_chiavi_nuove(self):
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            loc = _json.loads((FRONTEND_SRC / "locales" / lang
+                               / "landings.json").read_text())
+            assert loc["marketplace"].get("payoff") == self._PAYOFF[lang], \
+                f"{lang}: payoff mancante o diverso"
+            nw = loc.get("nwHome") or {}
+            for k in self._NWHOME_KEYS:
+                assert nw.get(k), f"{lang}: manca nwHome.{k}"
+
+    def test_hp1_copy_nuovo_senza_trattini_lunghi(self):
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            loc = _json.loads((FRONTEND_SRC / "locales" / lang
+                               / "landings.json").read_text())
+            valori = list((loc.get("nwHome") or {}).values())
+            valori.append(loc["marketplace"]["payoff"])
+            for val in valori:
+                assert "—" not in val and "–" not in val, \
+                    f"{lang}: trattino lungo nel copy nuovo: {val[:40]}"
+        # anche nel copy inline della home (i defaultValue), non nei
+        # commenti: i trattini lunghi sono vietati a chi legge il sito
+        import re as _re
+        home = self.HOME.read_text()
+        defaults = _re.findall(r"defaultValue: '([^']*)'", home)
+        assert len(defaults) >= 24, "i defaultValue della home sono spariti"
+        for val in defaults:
+            assert "—" not in val and "–" not in val, \
+                f"trattino lungo nel copy della home: {val[:40]}"

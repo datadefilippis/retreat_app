@@ -658,7 +658,8 @@
     "accountMenuMy": "Mein Konto",
     "accountMenuLogout": "Abmelden",
     "accountMenuOperators": "Für Anbieter",
-    "accountMenuWork": "Mit Aurya arbeiten"
+    "accountMenuWork": "Mit Aurya arbeiten",
+    "payoff": "Man vertraut jemandem, nicht etwas."
   },
   "reviews": {
     "heading": "Bewertungen",
@@ -713,7 +714,7 @@
     "seoTitle": "Über uns | Aurya, das Zuhause der holistischen Retreats",
     "seoDesc": "Aurya verbindet Suchende echten Wohlbefindens mit denen, die es schaffen: online buchbare Retreats mit geschützter Anzahlung und nur verifizierten Bewertungen.",
     "title": "Über uns",
-    "intro": "Wir leben in einer Zeit, die rennt und uns mit allem verbindet, nur nicht mit uns selbst. Aurya entstand aus einer einfachen Geste: innehalten. Und aus einer Überzeugung: Erfahrungen, die uns weiterbringen, verdienen es, gefunden, gelebt und erzählt zu werden. Connect. Heal. Grow.",
+    "intro": "Wir leben in einer Zeit, die rennt und uns mit allem verbindet, nur nicht mit uns selbst. Aurya entstand aus einer einfachen Geste: innehalten. Und aus einer Überzeugung: Erfahrungen, die uns weiterbringen, verdienen es, gefunden, gelebt und erzählt zu werden. Man vertraut jemandem, nicht etwas.",
     "missionTitle": "Unsere Mission",
     "missionBody": "In das Menschliche investieren, in einer Gesellschaft, die uns davon entfernt. Wir glauben, dass jede Transformation mit der Begegnung zwischen den richtigen Menschen und dem richtigen Ort beginnt: Darum machen wir es einfach und sicher, sich zu begegnen. Wer Retreats leitet, bekommt professionelle Werkzeuge, ohne Techniker werden zu müssen; wer sucht, die Ruhe, mit Vertrauen zu buchen.",
     "visionTitle": "Wohin wir wollen",
@@ -789,5 +790,31 @@
     "label": "Aurya-verifiziert",
     "short": "Verifiziert",
     "tooltip": "Vom Aurya-Team interviewter und verifizierter Anbieter"
+  },
+  "nwHome": {
+    "seoTitle": "Aurya | Die Menschen des Wohlbefindens in Italien",
+    "seoDesc": "Man wählt keine Disziplin. Man wählt einen Menschen. Bei Aurya lernst du kennen, wer Wohlbefinden praktiziert, bevor du dich entscheidest.",
+    "heroTitle": "Man wählt keine Disziplin. Man wählt einen Menschen.",
+    "heroSub": "Hier lernst du sie kennen, bevor du dich entscheidest.",
+    "heroCta": "Lerne die Menschen kennen",
+    "peopleTitle": "Man wählt besser, wenn man weiß, wer vor einem steht.",
+    "peopleSub": "Wer sie sind, wie sie arbeiten, für wen sie es tun.",
+    "peopleCta": "Alle Menschen",
+    "timeTitle": "Jemanden kennenzulernen braucht Zeit.",
+    "timeBody": "Wir nehmen sie uns, ein Mensch nach dem anderen. Wir stellen Fragen, wir hören zu und wir schreiben auf, was wir verstanden haben. Auch die Grenzen.",
+    "timeNote": "Wenn ein Profil so entsteht, findest du es gekennzeichnet.",
+    "magTitle": "Ernste Dinge muss man erklären.",
+    "magSub": "Praktiken, Orte und Menschen. Ohne Abkürzungen.",
+    "magCta": "Das Magazin",
+    "manifestoLine": "Wohlbefinden ist eine Frage der Menschen, nicht der Versprechen.",
+    "manifestoWhisper": "Mit der Zeit kannst du hier auch buchen. Zuerst sollst du wissen, bei wem.",
+    "manifestoCta": "Das Manifest",
+    "letterTitle": "Ab und zu schreiben wir.",
+    "letterSub": "Ein Mensch zum Kennenlernen, eine Praxis zum Verstehen, ein Ort zum Hingehen.",
+    "letterCta": "Den Brief erhalten",
+    "prosEyebrow": "Für Praktizierende",
+    "prosTitle": "Erzähl uns, wie du arbeitest.",
+    "prosBody": "Wir stellen dir ein paar Fragen. Wir hören zu. Dann schreiben wir es mit deinen Worten.",
+    "prosCta": "Sprechen wir darüber"
   }
 }

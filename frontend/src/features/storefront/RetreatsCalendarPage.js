@@ -31,6 +31,7 @@ const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'))
 // DS2 — icone categoria professionali (lucide), mappa unica condivisa.
 import { Globe2 } from 'lucide-react';
 import { CategoryIcon } from './lib/categoryIcons';
+import BrandPayoff from '../../components/BrandPayoff';
 
 function fmtPrice(n) {
   if (n === null || n === undefined) return null;
@@ -229,11 +230,7 @@ export default function RetreatsCalendarPage() {
         <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/85 via-[#14231d]/55 to-[#0e1a15]/90" />
         <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
           {/* RB4 — il motto in font-brand, il filo d'oro del wordmark */}
-          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-base md:text-2xl text-[#f2dfab] mb-4 select-none text-hero-shadow flex items-center justify-center gap-4">
-            <span aria-hidden className="hidden sm:block h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-[#d6c49a]/80" />
-            Connect · Heal · Grow
-            <span aria-hidden className="hidden sm:block h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-[#d6c49a]/80" />
-          </p>
+          <BrandPayoff tone="hero" size="hero" rules className="mb-4" />
           <h1 className="font-display text-4xl md:text-6xl font-medium tracking-tight leading-tight text-hero-shadow">
             {catLabel || region ? seoHeading : t('landings:calendar.title')}
           </h1>

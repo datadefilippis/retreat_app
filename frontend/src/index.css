@@ -136,6 +136,27 @@ body {
 }
 .eyebrow-light { color: #d6c49a; }
 
+/* HP1 — dissolvenza d'ingresso delle sezioni editoriali.
+   SOLO opacita': nessuna traslazione, quindi nessun layout shift.
+   Il default e' VISIBILE: se IntersectionObserver manca (o il JS non
+   gira) il testo resta leggibile. La classe .is-hidden la mette il
+   componente Section solo dopo aver verificato di poter osservare
+   l'elemento e solo se il visitatore non chiede meno movimento. */
+.editorial-reveal {
+    opacity: 1;
+    transition: opacity 0.6s ease-out;
+}
+.editorial-reveal.is-hidden {
+    opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+    .editorial-reveal,
+    .editorial-reveal.is-hidden {
+        opacity: 1;
+        transition: none;
+    }
+}
+
 /* Filo d'oro orizzontale: separatore di sezione discreto */
 .gold-rule {
     height: 1px;

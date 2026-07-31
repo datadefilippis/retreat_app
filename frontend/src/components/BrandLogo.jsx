@@ -1,5 +1,6 @@
 import React from 'react';
-import { BRAND_NAME, BRAND_MOTTO } from '../config/brand';
+import { useTranslation } from 'react-i18next';
+import { BRAND_NAME, BRAND_PAYOFF } from '../config/brand';
 
 /**
  * BrandLogo — il marchio Aurya (loto + sole nel cerchio dorato) con
@@ -22,9 +23,10 @@ import { BRAND_NAME, BRAND_MOTTO } from '../config/brand';
  *   className  classi extra per il wrapper
  */
 export function BrandLogo({ size = 'md', variant = 'dark', className = '' }) {
+  const { t } = useTranslation('landings');
   // Wordmark in capitali romane (Cinzel, stile Trajan) molto spaziate +
-  // motto sotto, come da direzione visiva del founder (13/7/2026).
-  // Il motto compare da 'sm' in su: nella sidebar (xs) non ci sta.
+  // payoff sotto, come da direzione visiva del founder (13/7/2026).
+  // Il payoff compare da 'sm' in su: nella sidebar (xs) non ci sta.
   const SIZE_MAP = {
     xs: { icon: 'h-[42px]', word: 'text-lg',  motto: null },          // sidebar
     sm: { icon: 'h-[52px]', word: 'text-2xl', motto: 'text-[9px]' },
@@ -59,8 +61,10 @@ export function BrandLogo({ size = 'md', variant = 'dark', className = '' }) {
           {BRAND_NAME}
         </span>
         {mottoSize && (
-          <span className={`font-brand uppercase tracking-[0.32em] mt-1.5 ${mottoSize} ${goldSoft}`}>
-            {BRAND_MOTTO}
+          /* HP1 — il payoff e' una frase: tracking calmo e niente
+             maiuscolo, cosi' resta leggibile sotto il wordmark */
+          <span className={`font-brand tracking-[0.06em] leading-snug mt-1.5 max-w-[22ch] ${mottoSize} ${goldSoft}`}>
+            {t('marketplace.payoff', { defaultValue: BRAND_PAYOFF })}
           </span>
         )}
       </span>

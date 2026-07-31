@@ -17,7 +17,7 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BRAND_NAME, BRAND_MOTTO } from '../../../config/brand';
+import { BRAND_NAME, BRAND_PAYOFF } from '../../../config/brand';
 import { Search, Menu, X, Lock, Globe, Check, ChevronDown, CircleUserRound } from 'lucide-react';
 import { useSiteConfig } from '../../../context/SiteConfigContext';
 import useItalianOnly from '../../../lib/useItalianOnly';
@@ -541,11 +541,14 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
             <div>
               <div className="mb-2 flex items-center gap-2.5">
                 <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-8 w-8 select-none" draggable={false} />
-                <span className="flex flex-col select-none">
-                  <span className="font-brand font-medium uppercase tracking-[0.28em] text-base leading-none text-[#d6c49a]">{BRAND_NAME}</span>
-                  <span className="font-brand uppercase tracking-[0.3em] text-[9px] mt-1 text-[#d6c49a]/80">{BRAND_MOTTO}</span>
-                </span>
+                <span className="font-brand font-medium uppercase tracking-[0.28em] text-base leading-none text-[#d6c49a] select-none">{BRAND_NAME}</span>
               </div>
+              {/* HP1 — il payoff e' una frase, non tre parole: prende
+                  tutta la colonna (accanto al wordmark andava a capo
+                  tre volte) e rinuncia a maiuscolo e tracking largo */}
+              <p className="font-brand tracking-[0.04em] text-[11px] leading-snug mb-3 text-[#d6c49a]/85">
+                {t('marketplace.payoff', { defaultValue: BRAND_PAYOFF })}
+              </p>
               <p className="text-white/60 text-xs leading-relaxed">
                 {t('marketplace.tagline', { defaultValue: 'Trova e prenota ritiri olistici in Italia — con caparra protetta, senza pensieri.' })}
               </p>

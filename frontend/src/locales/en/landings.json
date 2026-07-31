@@ -658,7 +658,8 @@
     "accountMenuMy": "My account",
     "accountMenuLogout": "Log out",
     "accountMenuOperators": "For operators",
-    "accountMenuWork": "Work with Aurya"
+    "accountMenuWork": "Work with Aurya",
+    "payoff": "Trust is placed in someone, not something."
   },
   "reviews": {
     "heading": "Reviews",
@@ -713,7 +714,7 @@
     "seoTitle": "About us | Aurya, the home of holistic retreats",
     "seoDesc": "Aurya connects seekers of authentic wellbeing with those who create it: retreats bookable online with a protected deposit and verified only reviews.",
     "title": "About us",
-    "intro": "We live in a time that runs, that wants us connected to everything but ourselves. Aurya was born from a simple gesture: stopping. And from one belief: experiences that make us evolve deserve to be found, lived and told. Connect. Heal. Grow.",
+    "intro": "We live in a time that runs, that wants us connected to everything but ourselves. Aurya was born from a simple gesture: stopping. And from one belief: experiences that make us evolve deserve to be found, lived and told. Trust is placed in someone, not something.",
     "missionTitle": "Our mission",
     "missionBody": "To invest in the human, in a society that pulls us away from it. We believe every transformation begins when the right people meet the right place: that is why we make meeting simple and safe. Retreat leaders get professional tools without being asked to become technicians; seekers, the peace of booking with trust.",
     "visionTitle": "Where we are going",
@@ -789,5 +790,31 @@
     "label": "Aurya Verified",
     "short": "Verified",
     "tooltip": "Operator interviewed and verified by the Aurya team"
+  },
+  "nwHome": {
+    "seoTitle": "Aurya | The people behind wellbeing in Italy",
+    "seoDesc": "You don't choose a discipline. You choose a person. Aurya lets you get to know the people who practise wellbeing, before you decide.",
+    "heroTitle": "You don't choose a discipline. You choose a person.",
+    "heroSub": "Here you get to know them before you decide.",
+    "heroCta": "Meet the people",
+    "peopleTitle": "You choose better when you know who is in front of you.",
+    "peopleSub": "Who they are, how they work, who they do it for.",
+    "peopleCta": "All the people",
+    "timeTitle": "Knowing someone takes time.",
+    "timeBody": "We take it, one person at a time. We ask questions, we listen and we write down what we understood. The limits too.",
+    "timeNote": "When a profile is born this way, you find it marked.",
+    "magTitle": "Serious things need explaining.",
+    "magSub": "Practices, places and people. No shortcuts.",
+    "magCta": "The Magazine",
+    "manifestoLine": "Wellbeing is a matter of people, not of promises.",
+    "manifestoWhisper": "In time you will be able to book here too. First we want you to know with whom.",
+    "manifestoCta": "The manifesto",
+    "letterTitle": "Every now and then we write.",
+    "letterSub": "A person to meet, a practice to understand, a place to go.",
+    "letterCta": "Get the letter",
+    "prosEyebrow": "For practitioners",
+    "prosTitle": "Tell us how you work.",
+    "prosBody": "We ask you a few questions. We listen. Then we write it in your words.",
+    "prosCta": "Let's talk"
   }
 }

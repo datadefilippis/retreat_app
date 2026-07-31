@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, Compass, Wallet, Ticket, MessageSquareHeart } from 'lucide-react';
 import MarketplaceShell from './components/MarketplaceShell';
 import useSeoMeta from './lib/useSeoMeta';
+import BrandPayoff from '../../components/BrandPayoff';
 
 const STEPS = [
   { icon: Compass, t: 'brandHome.how1t', b: 'brandHome.how1b' },
@@ -46,7 +47,7 @@ export default function HowItWorksPage() {
           background: 'radial-gradient(ellipse 60% 80% at 15% 10%, rgba(255,255,255,0.08), transparent 60%), radial-gradient(ellipse 50% 70% at 85% 90%, rgba(193,102,61,0.22), transparent 55%)',
         }} />
           <div className="relative max-w-3xl mx-auto px-4 py-14 text-center">
-            <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-[11px] text-[#d6c49a] mb-3 select-none">Connect · Heal · Grow</p>
+            <BrandPayoff tone="deep" size="xs" className="mb-3" />
             <h1 className="font-display text-3xl md:text-4xl font-bold">{t('howPage.title')}</h1>
             <p className="text-white/85 mt-4 text-lg leading-relaxed">{t('howPage.intro')}</p>
           </div>

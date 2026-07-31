@@ -23,6 +23,7 @@ const OperatorsMapView = React.lazy(() => import('./components/OperatorsMapView'
 import { Leaf, MapPin, SearchX } from 'lucide-react';
 import { Skeleton } from '../../components/ui/skeleton';
 import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
+import BrandPayoff from '../../components/BrandPayoff';
 
 // LM3 — l'URL parla italiano (?ordina=), l'API il gergo suo (sort=):
 // la mappa e' l'unico punto di traduzione.
@@ -466,7 +467,7 @@ export default function OperatorsIndexPage() {
               </span>
             )}
           </nav>
-          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-xs md:text-sm text-[#ecd9a8] mb-2 select-none text-hero-shadow">Connect · Heal · Grow</p>
+          <BrandPayoff tone="hero" size="sm" className="mb-2" />
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
             {categoria
               ? t('landings:operators.headingCat', {

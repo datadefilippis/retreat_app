@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles, Compass, ArrowRight, Flower2, Sprout } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import { LangSwitcher } from '../storefront/components/MarketplaceShell';
+import BrandPayoff from '../../components/BrandPayoff';
 
 export default function PrelaunchSplash() {
   const { t } = useTranslation('prelaunch');
@@ -40,7 +41,7 @@ export default function PrelaunchSplash() {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-5 py-16 text-center">
         {/* Wordmark */}
         <p className="rise-in font-brand text-4xl tracking-[0.35em] text-[#d6c49a] md:text-5xl">AURYA</p>
-        <p className="rise-in rise-d1 mt-2 text-xs uppercase tracking-[0.3em] text-white/70">Connect · Heal · Grow</p>
+        <BrandPayoff tone="deep" size="xs" className="rise-in rise-d1 mt-2" />
 
         {/* Badge "in preparazione" */}
         <div className="rise-in rise-d1 mt-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/25 px-4 py-1.5 text-xs font-medium text-white backdrop-blur">

@@ -658,7 +658,8 @@
     "accountMenuMy": "Mon compte",
     "accountMenuLogout": "Se déconnecter",
     "accountMenuOperators": "Pour les opérateurs",
-    "accountMenuWork": "Travailler avec Aurya"
+    "accountMenuWork": "Travailler avec Aurya",
+    "payoff": "On fait confiance à quelqu'un, pas à quelque chose."
   },
   "reviews": {
     "heading": "Avis",
@@ -713,7 +714,7 @@
     "seoTitle": "Qui sommes-nous | Aurya, la maison des retraites holistiques",
     "seoDesc": "Aurya relie ceux qui cherchent un bien-être authentique à ceux qui le créent : retraites réservables en ligne avec acompte protégé et avis uniquement vérifiés.",
     "title": "Qui sommes-nous",
-    "intro": "Nous vivons un temps qui court, qui nous veut connectés à tout sauf à nous-mêmes. Aurya naît d'un geste simple : s'arrêter. Et d'une conviction : les expériences qui font évoluer méritent d'être trouvées, vécues et racontées. Connect. Heal. Grow.",
+    "intro": "Nous vivons un temps qui court, qui nous veut connectés à tout sauf à nous-mêmes. Aurya naît d'un geste simple : s'arrêter. Et d'une conviction : les expériences qui font évoluer méritent d'être trouvées, vécues et racontées. On fait confiance à quelqu'un, pas à quelque chose.",
     "missionTitle": "Notre mission",
     "missionBody": "Investir dans l'humain, dans une société qui tend à nous en éloigner. Nous croyons que chaque transformation commence par la rencontre entre les bonnes personnes et le bon lieu : c'est pourquoi nous rendons la rencontre simple et sûre. À qui guide des retraites, nous donnons des outils professionnels sans demander de devenir technicien ; à qui cherche, la sérénité de réserver en confiance.",
     "visionTitle": "Où nous allons",
@@ -789,5 +790,31 @@
     "label": "Vérifié Aurya",
     "short": "Vérifié",
     "tooltip": "Opérateur interviewé et vérifié par l'équipe Aurya"
+  },
+  "nwHome": {
+    "seoTitle": "Aurya | Les personnes du bien-être en Italie",
+    "seoDesc": "On ne choisit pas une discipline. On choisit une personne. Aurya te fait connaître celles et ceux qui pratiquent le bien-être, avant que tu décides.",
+    "heroTitle": "On ne choisit pas une discipline. On choisit une personne.",
+    "heroSub": "Ici tu les connais avant de décider.",
+    "heroCta": "Rencontre les personnes",
+    "peopleTitle": "On choisit mieux quand on sait qui on a en face.",
+    "peopleSub": "Qui elles sont, comment elles travaillent, pour qui elles le font.",
+    "peopleCta": "Toutes les personnes",
+    "timeTitle": "Connaître quelqu'un demande du temps.",
+    "timeBody": "Nous le prenons, une personne à la fois. Nous posons des questions, nous écoutons et nous écrivons ce que nous avons compris. Les limites aussi.",
+    "timeNote": "Quand un profil naît ainsi, tu le trouves signalé.",
+    "magTitle": "Les choses sérieuses doivent être expliquées.",
+    "magSub": "Pratiques, lieux et personnes. Sans raccourcis.",
+    "magCta": "Le Magazine",
+    "manifestoLine": "Le bien-être est une affaire de personnes, pas de promesses.",
+    "manifestoWhisper": "Avec le temps tu pourras aussi réserver ici. D'abord nous voulons que tu saches avec qui.",
+    "manifestoCta": "Le manifeste",
+    "letterTitle": "De temps en temps nous écrivons.",
+    "letterSub": "Une personne à connaître, une pratique à comprendre, un endroit où aller.",
+    "letterCta": "Recevoir la lettre",
+    "prosEyebrow": "Pour les praticiens",
+    "prosTitle": "Raconte-nous comment tu travailles.",
+    "prosBody": "Nous te posons quelques questions. Nous écoutons. Puis nous l'écrivons avec tes mots.",
+    "prosCta": "Parlons-en"
   }
 }

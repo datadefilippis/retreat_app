@@ -254,8 +254,12 @@ def render_article_cover(title: str,
         draw = ImageDraw.Draw(img)
 
         margin = 84
-        # overline: categoria (o il motto) in Cinzel oro, tracking largo
-        overline = (category_label or "CONNECT · HEAL · GROW").upper()
+        # overline: categoria (o il marchio) in Cinzel oro, tracking largo.
+        # HP1 — il vecchio motto in tre parole e' ritirato; il payoff
+        # nuovo e' una frase e in un overline spaziato non ci starebbe,
+        # quindi il ripiego diventa il marchio.
+        from core.brand import BRAND_NAME
+        overline = (category_label or BRAND_NAME).upper()
         over_font = _load_font("Cinzel-SemiBold.ttf", 26, weight=600)
         draw.text((margin, 84), " ".join(overline), font=over_font,
                   fill=GOLD_LIGHT)

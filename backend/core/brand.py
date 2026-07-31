@@ -16,6 +16,18 @@ BRAND_FROM_EMAIL = os.environ.get("BRAND_FROM_EMAIL", f"noreply@{BRAND_DOMAIN}")
 BRAND_FROM_NAME = os.environ.get("BRAND_FROM_NAME", BRAND_NAME)
 BRAND_SUPPORT_EMAIL = os.environ.get("BRAND_SUPPORT_EMAIL", f"info@{BRAND_DOMAIN}")
 
+# HP1 (31/7/2026) — il PAYOFF sostituisce il vecchio motto in tre
+# parole su ogni superficie (email, meta, social). E' una legge del mondo, non
+# una descrizione di Aurya: dice che l'oggetto della fiducia e' la
+# persona, non la piattaforma (docs/BRAND_HOME_AURYA_2026-07.md §2).
+# A differenza del vecchio motto SI TRADUCE.
+BRAND_PAYOFF = {
+    "it": "Ci si fida di qualcuno, non di qualcosa.",
+    "en": "Trust is placed in someone, not something.",
+    "de": "Man vertraut jemandem, nicht etwas.",
+    "fr": "On fait confiance à quelqu'un, pas à quelque chose.",
+}
+
 # Tagline nelle 4 lingue (footer email + copy istituzionale).
 # AN1 — allineate a docs/BRAND_AURYA.md: oneste ("in Italia") e con la
 # promessa (caparra protetta), non generiche.

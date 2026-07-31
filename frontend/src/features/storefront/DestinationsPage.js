@@ -14,6 +14,7 @@ import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
 import useSeoMeta from './lib/useSeoMeta';
+import BrandPayoff from '../../components/BrandPayoff';
 
 function fmtDates(start, end, lang = 'it-IT') {
   try {
@@ -180,7 +181,7 @@ export default function DestinationsPage() {
               </span>
             )}
           </nav>
-          <p aria-hidden className="font-brand uppercase tracking-[0.35em] text-xs md:text-sm text-[#ecd9a8] mb-2 select-none text-hero-shadow">Connect · Heal · Grow</p>
+          <BrandPayoff tone="hero" size="sm" className="mb-2" />
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
             {luogo
               ? t('landings:destinations.headingPlace', {

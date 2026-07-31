@@ -15,6 +15,7 @@ import MarketplaceShell from './components/MarketplaceShell';
 import useSeoMeta from './lib/useSeoMeta';
 
 import { TypeIcon } from './lib/categoryIcons';
+import BrandPayoff from '../../components/BrandPayoff';
 
 export default function ExperiencesPage() {
   const { t } = useTranslation('landings');
@@ -82,7 +83,7 @@ export default function ExperiencesPage() {
               </span>
             )}
           </nav>
-          <p aria-hidden className="eyebrow mb-2">Connect · Heal · Grow</p>
+          <BrandPayoff tone="cream" size="xs" className="mb-2" />
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
             {categoria
               ? t('landings:experiences.headingCat', {
