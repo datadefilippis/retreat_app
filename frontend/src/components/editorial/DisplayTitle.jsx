@@ -17,7 +17,14 @@ const SIZES = {
   // HP2 — hero a DUE FRASI, una per riga (<TitleLine>). Corpo piu'
   // contenuto del `hero`: con 38 caratteri sulla prima riga il 7xl la
   // spezzerebbe in tre, e la struttura "non X. Ma Y." si perderebbe.
-  heroLines: 'text-[2.3rem] leading-[1.09] sm:text-5xl sm:leading-[1.07] lg:text-[3.4rem] lg:leading-[1.06]',
+  // HP4 — il solo gradino MOBILE scende da 2.3rem a 2.1rem (questa
+  // misura la usa unicamente l'hero della home di rete). Misurato a
+  // 375px: "Inizia dalle persone." occupava 320,6 px in una colonna
+  // da 327, cioe' sei pixel dal bordo. Bastava un font di ripiego un
+  // filo piu' largo per spezzarla e perdere la seconda frase su due
+  // righe. A 2.1rem il margine sale a ~34 px. Tablet e desktop non
+  // si toccano.
+  heroLines: 'text-[2.1rem] leading-[1.1] sm:text-5xl sm:leading-[1.07] lg:text-[3.4rem] lg:leading-[1.06]',
   // titolo di sezione
   section: 'text-[2rem] leading-[1.1] sm:text-5xl lg:text-[3.25rem] lg:leading-[1.08]',
   // il manifesto: una frase sola, molto vuoto attorno

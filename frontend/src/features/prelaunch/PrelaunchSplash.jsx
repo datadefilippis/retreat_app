@@ -13,6 +13,7 @@ import { Sparkles, Compass, ArrowRight, Flower2, Sprout } from 'lucide-react';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import { LangSwitcher } from '../storefront/components/MarketplaceShell';
 import BrandPayoff from '../../components/BrandPayoff';
+import HeroVideo from '../../components/HeroVideo';
 
 export default function PrelaunchSplash() {
   const { t } = useTranslation('prelaunch');
@@ -23,13 +24,10 @@ export default function PrelaunchSplash() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#2b3a34]">
-      {/* Hero video di sfondo (poster fallback + reduced-motion via .hero-video) */}
-      <img src="/media/aurya-hero-poster.jpg" alt=""
-           className="absolute inset-0 h-full w-full object-cover" aria-hidden />
-      <video className="hero-video absolute inset-0 h-full w-full object-cover"
-             autoPlay muted loop playsInline poster="/media/aurya-hero-poster.jpg">
-        <source src="/media/aurya-hero.mp4" type="video/mp4" />
-      </video>
+      {/* Hero video di sfondo. HP4 — poster subito, video dopo il primo
+          rendering, reduced-motion e Save-Data rispettati: la sequenza
+          sta tutta in components/HeroVideo.jsx. */}
+      <HeroVideo src="/media/aurya-hero.mp4" poster="/media/aurya-hero-poster.jpg" />
       {/* Scrim salvia per leggibilità */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1e2b26]/80 via-[#243530]/70 to-[#1e2b26]/90" aria-hidden />
 

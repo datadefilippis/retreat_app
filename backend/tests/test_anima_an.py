@@ -352,12 +352,42 @@ class TestDsBrandGlow:
         assert poster.stat().st_size < 200_000
 
     def test_home_hero_uses_video_with_scrim(self):
+        """HP4 — il pattern poster+video e' uscito dalle pagine ed e'
+        diventato components/HeroVideo.jsx. L'intento della guardia non
+        cambia: la home marketplace apre sul tramonto, il poster resta
+        sempre sotto, il movimento e' gated su reduced-motion e il
+        testo sul video ha la sua ombra. Cambia solo DOVE guardare il
+        gate: nel componente condiviso invece che nella pagina."""
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "RetreatsCalendarPage.js").read_text()
+        assert "<HeroVideo" in page
         assert "aurya-hero.mp4" in page
         assert "aurya-hero-poster.jpg" in page       # fallback sempre sotto
-        assert "hero-video" in page                  # gate reduced-motion
         assert "text-hero-shadow" in page            # leggibilita' sul tramonto
+        comp = (FRONTEND_SRC / "components" / "HeroVideo.jsx").read_text()
+        assert "hero-video" in comp                  # gate reduced-motion (CSS)
+        assert "prefers-reduced-motion" in comp      # e anche lato JS: non si monta
+
+    def test_hero_video_never_blocks_first_paint(self):
+        """HP4 — il founder insiste sul caricamento: il poster dipinge
+        subito, il video entra solo dopo il primo rendering e non parte
+        affatto a chi ha Save-Data o una connessione lenta."""
+        comp = (FRONTEND_SRC / "components" / "HeroVideo.jsx").read_text()
+        assert 'fetchPriority="high"' in comp, "il poster e' l'LCP: priorita' alta"
+        assert "loading=" not in comp, "niente lazy sul poster dell'hero"
+        assert "saveData" in comp and "effectiveType" in comp, \
+            "su Save-Data o rete lenta il video non deve partire"
+        # il <video> e' montato da uno stato, non steso nel primo render
+        assert "{mounted && (" in comp, \
+            "il video deve entrare DOPO il primo rendering, non insieme"
+        assert "readyState === 'complete'" in comp and "'load'" in comp, \
+            "l'attesa e' l'evento load della pagina"
+        for page in ("features/storefront/RetreatsCalendarPage.js",
+                     "features/prelaunch/PrelaunchSplash.jsx",
+                     "features/network/NetworkHomePage.js"):
+            src = (FRONTEND_SRC / page).read_text()
+            assert "<video" not in src, \
+                f"{page}: il video hero passa da HeroVideo, non a mano"
 
     def test_design_utilities_exist(self):
         css = (FRONTEND_SRC / "index.css").read_text()

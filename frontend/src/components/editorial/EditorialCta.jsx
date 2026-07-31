@@ -5,6 +5,18 @@
  *   quiet  → invito di sezione, testo con filo sotto
  *   light  → quiet sul fondo salvia
  * Il focus e' sempre visibile (anello a contrasto sul fondo giusto).
+ *
+ * HP4 — `tone`. Gli stessi tre pesi esistono in due mondi: sui fondi
+ * chiari del sito (tone="paper", il default) e sopra una fotografia o
+ * un video scuro (tone="dark", l'hero della home di rete). Non e' una
+ * quarta variante, perche' il PESO non cambia: cambia il fondo sotto.
+ * Sul video il verde pieno del `solid` sparirebbe (verde di brand
+ * contro verde scurito: ~1,1:1 di stacco dal contorno, sotto il 3:1
+ * che serve a un componente di interfaccia), quindi li' il bottone
+ * pieno diventa crema con testo verde scuro e il `quiet` prende il
+ * trattamento chiaro. Cosi' la pagina continua a dichiarare
+ * `variant="solid"` e `variant="quiet"`: la gerarchia delle azioni
+ * resta leggibile nel codice, il vestito lo decide il tono.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -23,17 +35,34 @@ const VARIANTS = {
           focus-visible:ring-[#f6f2e8] focus-visible:ring-offset-[#2f5749]`,
 };
 
+/* Sopra media scuri: l'anello di focus e' CHIARO e l'offset e' scuro
+   come il velo dell'hero, cosi' il fuoco si vede anche dove sotto
+   passa il fotogramma piu' luminoso del tramonto. */
+const VARIANTS_DARK = {
+  solid: `inline-flex items-center gap-2.5 bg-[#f6f2e8] text-[#1c2e27] px-8 py-4 text-base font-semibold
+          shadow-[0_12px_34px_-14px_rgba(0,0,0,0.7)] hover:bg-white transition-colors
+          focus-visible:ring-[#f6f2e8] focus-visible:ring-offset-[#12211b]`,
+  quiet: `inline-flex items-center gap-2 text-[#f6f2e8] text-base font-medium underline underline-offset-[6px]
+          decoration-[#f6f2e8]/55 hover:decoration-[#f6f2e8] transition-colors px-1 py-1 text-hero-shadow
+          focus-visible:ring-[#f6f2e8] focus-visible:ring-offset-[#12211b]`,
+  light: `inline-flex items-center gap-2 text-[#f6f2e8] text-base font-medium underline underline-offset-[6px]
+          decoration-[#f6f2e8]/55 hover:decoration-[#f6f2e8] transition-colors px-1 py-1 text-hero-shadow
+          focus-visible:ring-[#f6f2e8] focus-visible:ring-offset-[#12211b]`,
+};
+
 export default function EditorialCta({
   to,
   variant = 'quiet',
+  tone = 'paper',
   className = '',
   children,
   ...rest
 }) {
+  const set = tone === 'dark' ? VARIANTS_DARK : VARIANTS;
   return (
     <Link
       to={to}
-      className={`${VARIANTS[variant] || VARIANTS.quiet} ${FOCUS} ${className}`}
+      className={`${set[variant] || set.quiet} ${FOCUS} ${className}`}
       {...rest}
     >
       <span>{children}</span>

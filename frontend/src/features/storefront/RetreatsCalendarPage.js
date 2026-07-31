@@ -32,6 +32,7 @@ const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'))
 import { Globe2 } from 'lucide-react';
 import { CategoryIcon } from './lib/categoryIcons';
 import BrandPayoff from '../../components/BrandPayoff';
+import HeroVideo from '../../components/HeroVideo';
 
 function fmtPrice(n) {
   if (n === null || n === undefined) return null;
@@ -220,12 +221,12 @@ export default function RetreatsCalendarPage() {
       {!isPreview && <PrelaunchBanner audience="traveler" />}
       {/* ── Hero (DS: il tramonto di Aurya in sottofondo) ────────────── */}
       <header className="relative bg-gradient-sidebar text-white overflow-hidden">
-        {/* poster sempre sotto: primo dipinto + fallback reduced-motion */}
-        <img aria-hidden src="/media/aurya-hero-poster.jpg" alt=""
-             className="absolute inset-0 w-full h-full object-cover" />
-        <video aria-hidden className="hero-video absolute inset-0 w-full h-full object-cover"
-               autoPlay muted loop playsInline preload="metadata"
-               poster="/media/aurya-hero-poster.jpg" src="/media/aurya-hero.mp4" />
+        {/* HP4 — poster sotto + video dopo il primo rendering: la
+            sequenza vive in components/HeroVideo.jsx, condivisa con lo
+            splash di prelancio e con la home della fase rete. Qui
+            prima il video era sempre nel DOM con preload="metadata":
+            adesso non tocca affatto il primo rendering. */}
+        <HeroVideo src="/media/aurya-hero.mp4" poster="/media/aurya-hero-poster.jpg" />
         {/* scrim salvia: il tramonto è oro acceso, i testi restano leggibili */}
         <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/85 via-[#14231d]/55 to-[#0e1a15]/90" />
         <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
