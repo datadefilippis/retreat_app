@@ -10,7 +10,7 @@ Stato: HOME fatta (HP2-HP4). PROFILO OPERATORE fatto (PV3-PV4).
 ESPERIENZE costruite, si accendono col flip. Restano cinque onde di
 pagina piu' una trasversale.
 
-## SW1 — Il Manifesto sulla teoria
+## SW1 — Il Manifesto sulla teoria [FATTA bda98ea]
 La pagina piu' linkata del sito (CTA di home e landing) e' ancora
 nella voce vecchia ("la rete degli operatori olistici").
 1. Riscrittura nella voce v3, struttura in quattro movimenti:
@@ -27,13 +27,13 @@ nella voce vecchia ("la rete degli operatori olistici").
 2. Visual: kit editoriale, una ancora verde, la foto vera.
 3. SEO e i18n x4 riallineati.
 
-## SW2 — Landing operatori: il visual (OL2, gia' impostata)
+## SW2 — Landing operatori: il visual [FATTA d10ee74]
 Il copy OL1 e' committato; manca il passaggio visivo interrotto.
 Brief gia' pronto: hero fotografico, quattro blocchi a schede, due
 ancore verdi non adiacenti, Chi siamo con la foto reale, form caldo.
 Riparte cosi' com'era.
 
-## SW3 — Chi siamo: pagina propria
+## SW3 — Chi siamo: pagina propria [FATTA 78e2a8a]
 Decisione proposta: pagina dedicata (non dentro il Manifesto). Il
 Manifesto e' la posizione; Chi siamo sono le persone. Due domande
 diverse meritano due pagine, e il footer gia' punta a /chi-siamo.
@@ -43,7 +43,7 @@ diverse meritano due pagine, e il footer gia' punta a /chi-siamo.
    materiale reale esistente, il perche' personale, la foto.
 2. Il redirect /chi-siamo → /manifesto si toglie.
 
-## SW4 — Magazine: vetrina e copertine
+## SW4 — Magazine: vetrina e copertine [FATTA e548a5f; canonical /magazine ancora da decidere]
 1. Indice /blog allineato al kit editoriale (lead grande + griglia,
    come la sezione della home): oggi ha un hero fotografico generico
    e card vecchie.
@@ -89,6 +89,12 @@ SW2 (gia' pronta a partire) → SW1 → SW3 → SW4 → SW5 → SW7 → SW6.
 Motivo: la landing operatori e' il canale di acquisizione attivo
 OGGI (ogni giorno senza visual e' un lead piu' debole); il Manifesto
 subito dopo perche' e' la destinazione di meta' delle CTA del sito.
+
+## Regola di verifica (aggiornata dal founder, 31 lug)
+Si testa SOLO cio' che si tocca: le guardie della parte modificata
+piu' i test dell'area interessata. Mai l'intera applicazione per una
+modifica circoscritta. La suite completa resta un cancello unico:
+subito prima di un deploy in produzione.
 
 ## Regole del ciclo (valgono per ogni onda)
 1. Copy nel dispositivo a coppia; ogni frase passa il test del
