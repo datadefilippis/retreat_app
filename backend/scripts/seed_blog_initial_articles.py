@@ -665,12 +665,12 @@ async def backfill_covers(db):
     si genera e si salva la cover, con lo stesso helper del router."""
     from routers.articles import _autogen_cover
 
-    for slug, title, _desc, category, _author, _content in ARTICLES:
+    for slug, _title, _desc, category, _author, _content in ARTICLES:
         doc = await db.articles.find_one(
             {"slug": slug}, {"featured_image_url": 1, "_id": 0})
         if not doc or doc.get("featured_image_url"):
             continue
-        url = await _autogen_cover(slug, title, category)
+        url = await _autogen_cover(slug, category)
         if url:
             await db.articles.update_one(
                 {"slug": slug}, {"$set": {"featured_image_url": url}})

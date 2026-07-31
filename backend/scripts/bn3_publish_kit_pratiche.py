@@ -167,7 +167,7 @@ async def main() -> None:
                                                       "featured_image_url": 1})
     if not (doc or {}).get("featured_image_url"):
         from routers.articles import _autogen_cover
-        cover = await _autogen_cover(SLUG, TITLE, "meditazione")
+        cover = await _autogen_cover(SLUG, "meditazione")
         if cover:
             await db.articles.update_one(
                 {"slug": SLUG}, {"$set": {"featured_image_url": cover}})
