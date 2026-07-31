@@ -30,14 +30,36 @@
  * scritta nella scheda 4: mai "Aurya Connect", mai "gestionale".
  *
  * FONDI. crema/sabbia/carta con DUE sole ancore verdi, non adiacenti
- * (sezioni 4 e 8): dark(foto) → sabbia → crema → sabbia → VERDE →
+ * (sezioni 4 e 8): dark(foto) → sabbia → crema → sabbia → VERDE+foto →
  * bianco → crema → sabbia → VERDE. Stessa grammatica della home di
  * rete, kit editoriale condiviso.
  *
- * FOTOGRAFIA. hero-organizer.webp, la copertina storica di questa
- * pagina: chi arriva dalla home (sezione "La rete") ritrova la stessa
- * immagine e capisce di essere arrivato. Il video del tramonto resta la
- * firma della home e non si duplica qui.
+ * SW2 — IL PASSAGGIO VISIVO (richiesta founder: "manca di visual e
+ * design"). Copy, ordine e CTA restano congelati; cambia solo il
+ * vestito. Le fotografie passano da due a sette, ciascuna con un
+ * perche':
+ *   HERO   hero-organizer (mani in gyan mudra) — resta la copertina
+ *          storica, ma su desktop il velo uniforme sparisce: colonna
+ *          scura piena a sinistra per il testo (contrasto FISSO,
+ *          15,9:1, non sperato) e fotografia NUDA a destra, alla sua
+ *          piena luce. Su mobile resta il fondo fotografico velato,
+ *          misurato sui pixel reali (7,95:1 nel caso peggiore).
+ *   CARDS  le quattro promesse prendono una fotografia in testa, come
+ *          le PillarCard della home: r03 (una persona sola, raccontata
+ *          nel suo elemento) per il profilo; r08 (le mani di chi cura,
+ *          la fiducia che passa dal gesto) per la storia; r09 (la
+ *          pratica visibile nello spazio di tutti) per la visibilita';
+ *          r05 (il cairn, una pietra alla volta) per la crescita.
+ *          r06 e r02 in card restano alla home: le due pagine sono
+ *          sorelle, non fotocopie.
+ *   VERDE  la prima ancora (sezione 4) diventa la fascia a tutta
+ *          larghezza col testo sul verde pieno e r02 accanto (due
+ *          persone che meditano INSIEME: e' la sezione del
+ *          "costruiamo insieme"), speculare alla fascia "La rete"
+ *          della home: foto a sinistra, testo a destra.
+ *   CHI SIAMO  chisiamo-aurya in taglio ritratto (4:5): il quadrato
+ *          originale si vede quasi intero e i volti restano grandi.
+ * Il video del tramonto resta la firma della home e non si duplica qui.
  */
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -57,38 +79,69 @@ const FORM_ANCHOR = '#presentati';
     accento proprio (la terracotta di PL16), parla la lingua della home */
 const SAGE = '#2f5749';
 
-/* La copertina storica della pagina. Sotto il testo passa un velo in
-   due strati, tarato sui pixel piu' chiari della foto: le misure di
-   contrasto stanno nel commento della sezione 1. */
+/* La copertina storica della pagina. Su mobile sotto il testo passa
+   un velo in due strati tarato sui pixel piu' chiari della foto; su
+   desktop la foto sta nuda nella meta' destra: le misure di contrasto
+   stanno nel commento della sezione 1. */
 const HERO_PHOTO = '/media/hero-organizer.webp';
 const FOUNDERS_PHOTO = '/media/chisiamo-aurya.jpg';
+
+/* SW2 — le fotografie delle quattro promesse e della fascia verde.
+   Tutte gia' in /public/media/prelaunch, aperte e scelte una a una;
+   il perche' di ciascuna sta nel commento di testa del file. Sono
+   DECORATIVE (alt=""): ogni scheda dice gia' tutto con titolo e
+   testo, e descriverle a voce sarebbe rumore per chi ascolta. */
+const CARD_PHOTOS = {
+  '01': '/media/prelaunch/r03.jpg',  // una persona nel suo elemento
+  '02': '/media/prelaunch/r08.jpg',  // le mani di chi cura, da vicino
+  '03': '/media/prelaunch/r09.jpg',  // la pratica nello spazio di tutti
+  '04': '/media/prelaunch/r05.jpg',  // il cairn: una pietra alla volta
+};
+const TOGETHER_PHOTO = '/media/prelaunch/r02.jpg'; // meditare insieme
 
 /**
  * OfferCard — una delle quattro promesse della sezione 3.
  *
- * NON e' PillarCard: quella scheda nasce con una fotografia in testa e
- * un piede sempre presente (link o etichetta di stato). Qui le schede
- * sono quattro, il testo e' lungo e nessuna porta da qualche parte:
- * quattro fotografie in fila avrebbero trasformato la sezione in un
- * catalogo, e un piede vuoto avrebbe lasciato quattro pillole di bordo
- * senza contenuto. Resta il numerale serif del kit (variante `numeral`
- * di PillarCard), che da' alla fila un ordine di lettura esplicito
- * senza dipendere dalle emoji disegnate dal sistema operativo.
+ * NON e' PillarCard: quella scheda ha un piede sempre presente (link o
+ * etichetta di stato), qui nessuna delle quattro porta da qualche
+ * parte, quindi il piede non esiste e la scheda resta un argomento.
+ *
+ * SW2 — la fotografia in testa (3:2, come PillarCard: e' il kit che
+ * comanda). OL1 aveva scelto quattro schede di solo testo col numerale
+ * serif per non fare "catalogo"; la richiesta del founder ("aggiungi
+ * delle foto, rendi il design piu' ad impatto visivo") ribalta quella
+ * scelta e la regola del kit torna a valere: con la fotografia in
+ * testa il segno c'e' gia', e il numerale sarebbe il secondo segno
+ * sopra lo stesso titolo (NOTA DIREZIONE CREATIVA di PillarCard).
+ * Il rapporto dichiarato (aspect-[3/2]) prenota lo spazio prima che il
+ * file arrivi: zero salti di layout. Niente zoom al passaggio: la
+ * scheda non si apre, e muoversi sotto il mouse prometterebbe un clic
+ * che non esiste.
  */
-function OfferCard({ numeral, title, body }) {
+function OfferCard({ image, title, body }) {
   return (
-    <article className="flex h-full flex-col rounded-[1.75rem] bg-white p-7 sm:p-8
+    <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-white
                         ring-1 ring-[#1e2f28]/[0.07]
                         shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)]">
-      <p className="font-display text-2xl leading-none tracking-[0.02em] text-[#2f5749]/70" aria-hidden>
-        {numeral}
-      </p>
-      <h3 className="mt-5 font-display text-[1.4rem] leading-tight text-foreground sm:text-2xl">
-        {title}
-      </h3>
-      <p className="mt-3 max-w-[52ch] text-pretty text-[0.975rem] leading-relaxed text-foreground/75 sm:text-base">
-        {body}
-      </p>
+      <div className="aspect-[3/2] w-full overflow-hidden bg-[#e8e2d4]">
+        <img
+          src={image}
+          alt=""
+          width="900"
+          height="600"
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover"
+        />
+      </div>
+      <div className="flex flex-1 flex-col p-7 sm:p-8">
+        <h3 className="font-display text-[1.4rem] leading-tight text-foreground sm:text-2xl">
+          {title}
+        </h3>
+        <p className="mt-3 max-w-[52ch] text-pretty text-[0.975rem] leading-relaxed text-foreground/75 sm:text-base">
+          {body}
+        </p>
+      </div>
     </article>
   );
 }
@@ -187,12 +240,13 @@ export default function OperatorLandingPage() {
         {/* ── 1. HERO — il riconoscimento ──────────────────────────
             Due tempi dentro una sola sezione.
 
-            a) LA FOTO E LA FRASE. hero-organizer (mani in gyan mudra) a
-               tutta larghezza, con sopra il titolo e i quattro
-               capoversi brevi. Il testo e' allineato a SINISTRA e non
-               centrato come nella home: quattro frasi corte una sotto
-               l'altra sono una constatazione rivolta a una persona
-               sola, e centrarle le avrebbe fatte sembrare uno slogan.
+            a) LA FOTO E LA FRASE. hero-organizer (mani in gyan mudra):
+               fondo fotografico velato fino a tablet, colonna scura +
+               foto nuda da lg (vedi sotto). Il testo e' allineato a
+               SINISTRA e non centrato come nella home: quattro frasi
+               corte una sotto l'altra sono una constatazione rivolta a
+               una persona sola, e centrarle le avrebbe fatte sembrare
+               uno slogan.
             b) LA SOGLIA. Il quinto capoverso (quello lungo, la
                promessa) e le due azioni stanno sotto la foto, sul
                sabbia. Sopra la fotografia sarebbero stati altri sette
@@ -200,14 +254,26 @@ export default function OperatorLandingPage() {
                le CTA hanno il contrasto pieno del kit e chi scorre
                arriva ai bottoni DOPO aver letto l'argomento.
 
-            IL VELO, MISURATO. Due strati sopra la foto: uno verticale
-            (piu' scuro in alto e in fondo, dove raccorda con il
-            sabbia) e uno radiale che aggiunge buio solo dietro la
-            colonna di testo. Le opacita' sono tarate sul pixel PIU'
-            CHIARO della fotografia sotto ogni blocco. I rapporti
-            misurati stanno nel rapporto di OL1: minimo AA 4,5:1 per il
-            corpo e 3:1 per il display grande. L'ombra (.text-hero-shadow)
-            e' la cintura di sicurezza, non il motore. */}
+            IL VELO, MISURATO (SW2: solo sotto il breakpoint lg).
+            Su mobile e tablet la foto sta DIETRO il testo e sopra
+            passano due strati: uno verticale (piu' scuro in alto e in
+            fondo, dove raccorda con il sabbia) e uno radiale che
+            aggiunge buio solo dietro la colonna di testo. Misurato
+            componendo i veli sui pixel reali della fotografia
+            (script SW2): il pixel piu' chiaro sotto il testo da'
+            7,95:1 col crema #f6f2e8 (minimo AA: 4,5:1 corpo, 3:1
+            display). L'ombra (.text-hero-shadow) e' la cintura di
+            sicurezza, non il motore.
+
+            SW2 — DA lg IN SU la foto smette di fare da tappezzeria
+            velata (il founder la vedeva "senza visual": sotto il velo
+            uniforme la fotografia moriva) e diventa una COLONNA nuda
+            nella meta' destra, alla sua piena luce. Il testo sta su
+            #0e1a15 pieno: contrasto FISSO 15,96:1 (crema su verde
+            quasi nero), misurato sui valori e non sperato sui pixel.
+            Fra colonna e foto una cerniera in gradiente (da #0e1a15 a
+            trasparente) sopra il bordo sinistro della foto: il buio
+            dietro il testo non dipende mai dall'immagine. */}
         <section data-testid="ol-hero" aria-labelledby="ol-hero-title">
           <div className="relative isolate overflow-hidden bg-[#0e1a15] text-[#f6f2e8]">
             {/* decorativa: il titolo dice gia' tutto quello che la foto
@@ -220,32 +286,46 @@ export default function OperatorLandingPage() {
               height="1280"
               fetchPriority="high"
               decoding="async"
-              className="absolute inset-0 h-full w-full object-cover object-[50%_38%]"
+              className="absolute inset-0 h-full w-full object-cover object-[50%_38%]
+                         lg:left-auto lg:right-0 lg:w-[46%] lg:object-[38%_45%]"
             />
+            {/* i due veli mobile: da lg spariscono con la tappezzeria */}
             <div aria-hidden
-                 className="absolute inset-0 bg-gradient-to-b from-[#0e1a15]/[0.78] via-[#0e1a15]/[0.62] to-[#0e1a15]/[0.90]" />
+                 className="absolute inset-0 bg-gradient-to-b from-[#0e1a15]/[0.78] via-[#0e1a15]/[0.62] to-[#0e1a15]/[0.90] lg:hidden" />
             <div aria-hidden
-                 className="absolute inset-0 bg-[radial-gradient(ellipse_92%_74%_at_36%_50%,rgba(14,26,21,0.52)_0%,rgba(14,26,21,0.34)_58%,rgba(14,26,21,0)_100%)]" />
-            <div className="relative mx-auto w-full max-w-5xl px-6 py-16 sm:px-8 sm:py-24 lg:py-28">
-              <DisplayTitle as="h1" id="ol-hero-title" size="heroLines" measure="lines"
-                            className="text-hero-shadow">
-                {t('opNw.heroTitle', { defaultValue: 'Il tuo lavoro merita di essere conosciuto.' })}
-              </DisplayTitle>
-              {/* i quattro capoversi brevi: uno per blocco, cosi' il
-                  ritmo si vede invece di doverlo immaginare */}
-              <div className="mt-7 space-y-3 sm:mt-9 sm:space-y-4">
-                <Lede size="body" tone="inherit" className="text-hero-shadow">
-                  {t('opNw.heroP1', { defaultValue: 'Ogni giorno accompagni persone nel loro percorso di benessere.' })}
-                </Lede>
-                <Lede size="body" tone="inherit" className="text-hero-shadow">
-                  {t('opNw.heroP2', { defaultValue: 'Ci metti studio, esperienza, ascolto e presenza.' })}
-                </Lede>
-                <Lede size="body" tone="inherit" className="text-hero-shadow">
-                  {t('opNw.heroP3', { defaultValue: 'Eppure, online, tutto questo spesso si riduce a poche righe e a un elenco di servizi.' })}
-                </Lede>
-                <Lede size="body" tone="inherit" className="text-hero-shadow">
-                  {t('opNw.heroP4', { defaultValue: 'Aurya nasce per cambiare questo.' })}
-                </Lede>
+                 className="absolute inset-0 bg-[radial-gradient(ellipse_92%_74%_at_36%_50%,rgba(14,26,21,0.52)_0%,rgba(14,26,21,0.34)_58%,rgba(14,26,21,0)_100%)] lg:hidden" />
+            {/* la cerniera desktop: parte esattamente sul bordo sinistro
+                della foto (54% = 100% - 46%) e sfuma in 11rem, a ogni
+                larghezza di schermo. Il testo (max-w-[30rem] dentro il
+                contenitore 5xl) finisce sempre PRIMA del 54%: non
+                incontra mai un pixel di fotografia. */}
+            <div aria-hidden
+                 className="hidden lg:block absolute inset-y-0 left-[54%] w-44 bg-gradient-to-r from-[#0e1a15] to-transparent" />
+            <div className="relative mx-auto w-full max-w-5xl px-6 py-16 sm:px-8 sm:py-24
+                            lg:flex lg:min-h-[38rem] lg:flex-col lg:justify-center lg:py-24">
+              {/* su desktop il testo resta nella colonna scura: il tetto
+                  in rem tiene titolo e capoversi a sinistra della foto */}
+              <div className="lg:max-w-[30rem]">
+                <DisplayTitle as="h1" id="ol-hero-title" size="heroLines" measure="lines"
+                              className="text-hero-shadow">
+                  {t('opNw.heroTitle', { defaultValue: 'Il tuo lavoro merita di essere conosciuto.' })}
+                </DisplayTitle>
+                {/* i quattro capoversi brevi: uno per blocco, cosi' il
+                    ritmo si vede invece di doverlo immaginare */}
+                <div className="mt-7 space-y-3 sm:mt-9 sm:space-y-4">
+                  <Lede size="body" tone="inherit" className="text-hero-shadow">
+                    {t('opNw.heroP1', { defaultValue: 'Ogni giorno accompagni persone nel loro percorso di benessere.' })}
+                  </Lede>
+                  <Lede size="body" tone="inherit" className="text-hero-shadow">
+                    {t('opNw.heroP2', { defaultValue: 'Ci metti studio, esperienza, ascolto e presenza.' })}
+                  </Lede>
+                  <Lede size="body" tone="inherit" className="text-hero-shadow">
+                    {t('opNw.heroP3', { defaultValue: 'Eppure, online, tutto questo spesso si riduce a poche righe e a un elenco di servizi.' })}
+                  </Lede>
+                  <Lede size="body" tone="inherit" className="text-hero-shadow">
+                    {t('opNw.heroP4', { defaultValue: 'Aurya nasce per cambiare questo.' })}
+                  </Lede>
+                </div>
               </div>
             </div>
           </div>
@@ -314,7 +394,7 @@ export default function OperatorLandingPage() {
             <ul className="mt-10 grid list-none gap-7 p-0 sm:mt-12 sm:gap-8 lg:grid-cols-2">
               {cards.map((c) => (
                 <li key={c.numeral} data-testid={`ol-card-${c.numeral}`} className="h-full">
-                  <OfferCard {...c} />
+                  <OfferCard image={CARD_PHOTOS[c.numeral]} {...c} />
                 </li>
               ))}
             </ul>
@@ -336,28 +416,55 @@ export default function OperatorLandingPage() {
             Il cuore della proposta: non "iscriviti", ma "decidi con
             noi". Il verde pieno le da' il peso che il testo da solo
             non riusciva a prendersi e spezza la sequenza di fondi
-            chiari esattamente a meta' della lettura. */}
-        <Section tone="sage" rhythm="screen" labelledBy="ol-build-title" width="max-w-5xl">
-          <div data-testid="ol-build">
-            <DisplayTitle as="h2" id="ol-build-title" size="section" measure="title">
-              {t('opNw.buildTitle', { defaultValue: 'I primi professionisti avranno un ruolo speciale.' })}
-            </DisplayTitle>
-            {/* tone inherit: sul verde l'opacita' di default mangia
-                contrasto, e il crema all'80% scenderebbe sotto AA */}
-            <Lede size="lead" tone="inherit" className="mt-7">
-              {t('opNw.buildP1', { defaultValue: 'Aurya è ancora all’inizio. Per questo vogliamo costruirla insieme alle persone che ogni giorno lavorano nel mondo del benessere.' })}
-            </Lede>
-            <Lede size="body" tone="inherit" className="mt-5 opacity-90">
-              {t('opNw.buildP2', { defaultValue: 'Le vostre idee, i vostri bisogni e la vostra esperienza guideranno l’evoluzione del progetto.' })}
-            </Lede>
-            <Lede size="body" tone="inherit" className="mt-5 opacity-90">
-              {t('opNw.buildP3', { defaultValue: 'Entrare oggi significa contribuire alla nascita di una rete che continuerà a crescere negli anni.' })}
-            </Lede>
-            <div className="mt-9">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
-                            variant="light" data-testid="ol-build-cta">
-                {t('opNw.buildCta', { defaultValue: 'Parliamone' })}
-              </EditorialCta>
+            chiari esattamente a meta' della lettura.
+
+            SW2 — la fascia a tutta larghezza, come "La rete" della
+            home ma SPECULARE (foto a sinistra, testo a destra): le due
+            pagine sono sorelle, non fotocopie. La fotografia e' r02,
+            due persone che meditano insieme nel bosco al tramonto:
+            l'unica foto al plurale della cartella, nella sola sezione
+            che parla di fare le cose INSIEME. Il testo sta sul verde
+            PIENO e mai sopra l'immagine: crema su salvia 7,28:1, al
+            90% 6,26:1 (minimo AA 4,5:1). La geometria della mezza
+            griglia e' quella della home: mezzo contenitore (36rem =
+            meta' di max-w-6xl) agganciato al centro con mr-auto, cosi'
+            il filo verticale della pagina resta uno solo. */}
+        <Section tone="sage" rhythm="none" labelledBy="ol-build-title"
+                 width="max-w-none" gutter={false}>
+          <div data-testid="ol-build" className="grid lg:grid-cols-2 lg:items-stretch">
+            {/* decorativa: la sezione si capisce tutta a parole */}
+            <img
+              src={TOGETHER_PHOTO}
+              alt=""
+              width="900"
+              height="599"
+              loading="lazy"
+              decoding="async"
+              className="h-56 w-full object-cover sm:h-80 lg:h-full lg:min-h-[30rem]"
+            />
+            <div className="flex items-center px-6 py-16 sm:px-8 sm:py-24 lg:py-28 lg:px-0">
+              <div className="w-full lg:mr-auto lg:max-w-[36rem] lg:pl-14 lg:pr-8">
+                <DisplayTitle as="h2" id="ol-build-title" size="section" measure="title">
+                  {t('opNw.buildTitle', { defaultValue: 'I primi professionisti avranno un ruolo speciale.' })}
+                </DisplayTitle>
+                {/* tone inherit: sul verde l'opacita' di default mangia
+                    contrasto, e il crema all'80% scenderebbe sotto AA */}
+                <Lede size="lead" tone="inherit" className="mt-7">
+                  {t('opNw.buildP1', { defaultValue: 'Aurya è ancora all’inizio. Per questo vogliamo costruirla insieme alle persone che ogni giorno lavorano nel mondo del benessere.' })}
+                </Lede>
+                <Lede size="body" tone="inherit" className="mt-5 opacity-90">
+                  {t('opNw.buildP2', { defaultValue: 'Le vostre idee, i vostri bisogni e la vostra esperienza guideranno l’evoluzione del progetto.' })}
+                </Lede>
+                <Lede size="body" tone="inherit" className="mt-5 opacity-90">
+                  {t('opNw.buildP3', { defaultValue: 'Entrare oggi significa contribuire alla nascita di una rete che continuerà a crescere negli anni.' })}
+                </Lede>
+                <div className="mt-9">
+                  <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
+                                variant="light" data-testid="ol-build-cta">
+                    {t('opNw.buildCta', { defaultValue: 'Parliamone' })}
+                  </EditorialCta>
+                </div>
+              </div>
             </div>
           </div>
         </Section>
@@ -419,14 +526,18 @@ export default function OperatorLandingPage() {
 
             <div className="mt-12 grid gap-9 sm:mt-14 lg:grid-cols-12 lg:items-center lg:gap-14">
               <div className="lg:col-span-5">
+                {/* SW2 — taglio ritratto (4:5): l'originale e' quasi
+                    quadrato (900x886) e il vecchio 4:3 gli tagliava la
+                    fronte e il mare; cosi' si vede quasi intero e i
+                    volti restano grandi anche nella colonna stretta */}
                 <img
                   src={FOUNDERS_PHOTO}
                   alt={tl('aboutPage.facesAlt', { defaultValue: 'Davide e Valentina, i fondatori di Aurya, in riva al mare' })}
-                  width="1200"
-                  height="900"
+                  width="900"
+                  height="1125"
                   loading="lazy"
                   decoding="async"
-                  className="aspect-[4/3] w-full rounded-[1.75rem] object-cover shadow-[0_18px_48px_-28px_rgba(30,47,40,0.45)]"
+                  className="aspect-[4/5] w-full rounded-[1.75rem] object-cover shadow-[0_18px_48px_-28px_rgba(30,47,40,0.45)]"
                 />
               </div>
               <div className="lg:col-span-7">
