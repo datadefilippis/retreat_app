@@ -552,25 +552,61 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               <p className="text-white/60 text-xs leading-relaxed">
                 {t('marketplace.tagline', { defaultValue: 'Trova e prenota ritiri olistici in Italia — con caparra protetta, senza pensieri.' })}
               </p>
-              {/* AN1 — le pagine dell'anima */}
-              <ul className="mt-3 space-y-1.5 text-white/70 text-xs">
-                <li><Link to="/manifesto" className="hover:text-white">{t('marketplace.navManifesto', { defaultValue: 'Manifesto' })}</Link></li>
-                {!isNetwork && <li><Link to="/come-funziona" className="hover:text-white">{t('howPage.title', { defaultValue: 'Come funziona' })}</Link></li>}
-              </ul>
+              {/* AN1 — le pagine dell'anima.
+                  HP2: in fase rete il Manifesto NON sta qui, sta nella
+                  colonna di navigazione insieme alle altre quattro
+                  voci: una voce sola sotto il payoff sembrava una nota
+                  a pie' di logo, e duplicava la colonna accanto. */}
+              {!isNetwork && (
+                <ul className="mt-3 space-y-1.5 text-white/70 text-xs">
+                  <li><Link to="/manifesto" className="hover:text-white">{t('marketplace.navManifesto', { defaultValue: 'Manifesto' })}</Link></li>
+                  <li><Link to="/come-funziona" className="hover:text-white">{t('howPage.title', { defaultValue: 'Come funziona' })}</Link></li>
+                </ul>
+              )}
             </div>
             <div>
               <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
-                {t('marketplace.footerExplore', { defaultValue: 'Esplora' })}
+                {isNetwork
+                  ? t('marketplace.footerNetwork', { defaultValue: 'Aurya' })
+                  : t('marketplace.footerExplore', { defaultValue: 'Esplora' })}
               </p>
               <ul className="space-y-1.5 text-white/70">
+                {/* HP2 — fase rete: le CINQUE voci della specifica, in
+                    quest'ordine, tutte nella stessa colonna. Sono la
+                    mappa completa del sito di oggi: sotto c'e' solo la
+                    porta degli operatori e le legali. */}
+                {isNetwork && <li><Link to="/manifesto" className="hover:text-white" data-testid="footer-nw-manifesto">{t('marketplace.navManifesto', { defaultValue: 'Manifesto' })}</Link></li>}
                 {/* RT2 — fase network: si esplorano Magazine e rete, non
                     i ritiri. AN2 (categorie SEO) torna col marketplace. */}
-                {isNetwork && <li><Link to="/blog" className="hover:text-white">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
-                {/* LM2 — 'Esplora operatori' vive in ENTRAMBE le fasi:
-                    in rete porta alla pagina della rete, al flip
-                    diventa la ricerca completa senza altri interventi */}
-                <li><Link to="/operatori" className="hover:text-white">{t('marketplace.footerExploreOperators', { defaultValue: 'Esplora operatori' })}</Link></li>
-                {isNetwork && <li><Link to="/newsletter" className="hover:text-white">{t('marketplace.navNewsletter', { defaultValue: 'Newsletter' })}</Link></li>}
+                {isNetwork && <li><Link to="/blog" className="hover:text-white" data-testid="footer-nw-magazine">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
+                {/* LM2 — la voce operatori vive in ENTRAMBE le fasi: in
+                    rete porta alla pagina della rete, al flip diventa
+                    la ricerca completa senza altri interventi.
+                    HP2: in rete si chiama "Operatori" come da specifica
+                    ("Esplora operatori" prometteva una ricerca che in
+                    fase rete non esiste ancora). */}
+                <li><Link to="/operatori" className="hover:text-white" data-testid="footer-nw-operatori">
+                  {isNetwork
+                    ? t('marketplace.navNetworkMembers', { defaultValue: 'Operatori' })
+                    : t('marketplace.footerExploreOperators', { defaultValue: 'Esplora operatori' })}
+                </Link></li>
+                {/* HP2 / NOTA DIREZIONE CREATIVA — "Chi siamo".
+                    Sta in specifica e quindi c'e'. Oggi pero' /chi-siamo
+                    e' un Navigate su /manifesto: nella stessa colonna
+                    due voci portano allo stesso posto, e chi ci clicca
+                    sopra pensa di aver sbagliato link. AboutAuryaPage.js
+                    esiste ancora nel repo ma NON e' piu' montata in
+                    nessuna rotta. Due uscite pulite, decide il founder:
+                    (a) rimontare AboutAuryaPage su /chi-siamo con le
+                        persone dietro Aurya (Valentina e Davide, il
+                        contenuto e' gia' scritto nella FAQ di
+                        /entra-nella-rete) e lasciare al Manifesto la
+                        visione;
+                    (b) togliere la voce e tenere solo il Manifesto.
+                    Finche' non si decide, la voce resta e il redirect
+                    la porta comunque su una pagina viva. */}
+                {isNetwork && <li><Link to="/chi-siamo" className="hover:text-white" data-testid="footer-nw-chisiamo">{t('marketplace.footerAbout', { defaultValue: 'Chi siamo' })}</Link></li>}
+                {isNetwork && <li><Link to="/newsletter" className="hover:text-white" data-testid="footer-nw-newsletter">{t('marketplace.navNewsletter', { defaultValue: 'Newsletter' })}</Link></li>}
                 {!isNetwork && <li><Link to="/ritiri/yoga" className="hover:text-white">Yoga</Link></li>}
                 {!isNetwork && <li><Link to="/ritiri/meditazione" className="hover:text-white">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>}
                 {!isNetwork && <li><Link to="/ritiri/detox" className="hover:text-white">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>}

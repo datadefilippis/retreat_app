@@ -63,10 +63,22 @@ export default function OperatorLandingPage() {
     t('opNw.f3', { defaultValue: 'Report delle visite al profilo dopo trenta giorni, con numeri veri' }),
   ];
 
+  /** chi ha chiesto meno movimento non si fa 700px di viaggio animato */
+  const prefersReducedMotion = () => typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   const scrollToForm = (e) => {
     e.preventDefault();
-    document.getElementById('presentati')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('presentati')?.scrollIntoView({
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+    });
   };
+
+  /* HP2 — l'ancora #presentati e' una destinazione anche da FUORI: la
+     home linka /entra-nella-rete#presentati ("Parliamone"). L'atterraggio
+     NON si gestisce qui: lo fa ScrollToTop in App.js, che e' hash-aware
+     per tutte le ancore del sito e sa aspettare le pagine lazy. Qui
+     resta solo l'id sulla colonna del form (piu' sotto). */
 
   return (
     <div className="min-h-screen bg-[#faf8f4]">

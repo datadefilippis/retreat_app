@@ -291,11 +291,48 @@ const PublicRoute = ({ children }) => {
 // navigava dal footer atterrava in FONDO alla pagina nuova. Al cambio
 // di pathname si riparte dall'alto; i cambi di sola query (filtri,
 // vista mappa) non scrollano, chi sta filtrando non va disturbato.
+// HP2 — ...tranne quando l'URL porta un'ancora. Un link tipo
+// /entra-nella-rete#presentati e' una destinazione precisa: mandarlo in
+// cima alla pagina e' esattamente il bug che RB3 voleva risolvere, al
+// contrario. Il router tiene la history in memoria, quindi il salto
+// nativo del browser non avviene: lo facciamo qui, per TUTTE le ancore
+// del sito e non caso per caso.
+// Il bersaglio puo' arrivare in ritardo: le pagine sono lazy, quindi al
+// commit della rotta l'ancora spesso non esiste ancora. Si riprova a
+// intervalli per un paio di secondi, poi si smette in silenzio.
+// Timer e non requestAnimationFrame: rAF viene sospeso quando la scheda
+// non e' in primo piano, e chi apre un link con ancora in una scheda di
+// sfondo la troverebbe in cima invece che sull'ancora.
+// Salto sempre istantaneo: un'ancora si comporta come un'ancora, e
+// nessuno vuole vedersi scorrere sotto gli occhi mezza pagina che non ha
+// chiesto di vedere.
+const ANCHOR_RETRY_MS = 60;
+const ANCHOR_GIVE_UP_MS = 2000;
+
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   React.useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (!hash) {
+      window.scrollTo(0, 0);
+      return undefined;
+    }
+    let timer = 0;
+    let waited = 0;
+    const seek = () => {
+      let el = null;
+      // un hash qualsiasi (#, #!, caratteri strani) non deve far
+      // esplodere querySelector e portarsi via la navigazione
+      try { el = document.querySelector(hash); } catch { el = null; }
+      if (el) {
+        el.scrollIntoView({ behavior: 'auto', block: 'start' });
+        return;
+      }
+      waited += ANCHOR_RETRY_MS;
+      if (waited < ANCHOR_GIVE_UP_MS) timer = window.setTimeout(seek, ANCHOR_RETRY_MS);
+    };
+    seek();
+    return () => window.clearTimeout(timer);
+  }, [pathname, hash]);
   return null;
 }
 
@@ -402,6 +439,14 @@ function AppRoutes() {
       {/* BN2 — pagine token del double opt-in (noindex, servite 200 dalla shell) */}
       <Route path="/newsletter/conferma/:token" element={<NewsletterConfirmPage />} />
       <Route path="/newsletter/preferenze/:token" element={<NewsletterPreferencesPage />} />
+      {/* HP2 — /magazine e' il nome che il brand usa a voce (header,
+          footer, home). La rotta CANONICA resta /blog: e' quella in
+          sitemap, gia' indicizzata e spinta con IndexNow, e non si
+          rinomina per una questione di lessico. /magazine esiste come
+          alias cosi' chi lo digita o lo trova scritto arriva a casa.
+          Promuovere /magazine a canonica e' una decisione SEO a se':
+          servirebbero sitemap, 301 lato server e un nuovo IndexNow. */}
+      <Route path="/magazine" element={<Navigate to="/blog" replace />} />
       {/* redirect permanenti dei vecchi percorsi */}
       <Route path="/chi-siamo" element={<Navigate to="/manifesto" replace />} />
       <Route path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />} />

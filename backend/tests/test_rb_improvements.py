@@ -104,9 +104,16 @@ class TestCopyRulesRb4:
 
     def test_scroll_to_top_on_route_change(self):
         """RB3 — la SPA riparte dall'alto al cambio pagina; i cambi di
-        sola query (filtri) non scrollano."""
+        sola query (filtri) non scrollano.
+        HP2 — con un hash nell'URL si atterra sull'ancora invece che in
+        cima: il rimando all'alto resta il comportamento di default."""
         app = (FRONTEND_SRC / "App.js").read_text()
         assert "function ScrollToTop" in app
         assert "<ScrollToTop />" in app
         idx = app.index("function ScrollToTop")
-        assert "[pathname]" in app[idx:idx + 600]
+        blocco = app[idx:idx + 1400]
+        assert "[pathname, hash]" in blocco, \
+            "l'effetto dipende da pathname e hash, non dalla query"
+        assert "search" not in blocco, \
+            "i cambi di sola query non devono scrollare"
+        assert "if (!hash) {" in blocco and "window.scrollTo(0, 0);" in blocco

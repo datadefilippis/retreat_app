@@ -799,16 +799,23 @@ class TestCardOperatoreLM2:
         assert "op.rating" in page
         assert "da {{price}} euro" in page
 
-    def test_footer_esplora_operatori_entrambe_le_fasi(self):
-        """La voce 'Esplora operatori' → /operatori non e' dietro
-        isNetwork ne' prelaunch: vive in rete E in marketplace."""
+    def test_footer_voce_operatori_entrambe_le_fasi(self):
+        """La voce di footer verso /operatori non e' dietro isNetwork ne'
+        prelaunch: vive in rete E in marketplace.
+        HP2 — cambia solo l'ETICHETTA: in rete si chiama "Operatori"
+        (specifica founder), in marketplace resta "Esplora operatori",
+        che promette una ricerca che in fase rete non esiste ancora."""
         shell = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "MarketplaceShell.jsx").read_text()
         righe = [l for l in shell.splitlines()
-                 if "Esplora operatori" in l and "/operatori" in l]
-        assert righe, "voce footer 'Esplora operatori' assente"
-        assert all("isNetwork" not in l and "prelaunch" not in l
-                   for l in righe)
+                 if 'to="/operatori"' in l and "hover:text-white" in l]
+        assert righe, "voce footer verso /operatori assente"
+        assert all("isNetwork &&" not in l and "prelaunch &&" not in l
+                   for l in righe), "la voce non deve sparire in una fase"
+        assert "marketplace.footerExploreOperators" in shell, \
+            "etichetta marketplace mancante"
+        assert "marketplace.navNetworkMembers" in shell, \
+            "etichetta fase rete mancante"
 
 
 class TestRicercaLM3:
@@ -5131,16 +5138,22 @@ class TestLoginRegia:
                 assert "—" not in val and "–" not in val
 
 
-class TestHomeHp1:
-    """HP1 (31/7/2026) — la nuova homepage della fase rete.
+class TestHomeHp2:
+    """HP2 (31/7/2026) — la homepage della fase rete, specifica
+    DEFINITIVA del founder. Supera e SOSTITUISCE TestHomeHp1: il copy
+    della v3 non esiste piu' da nessuna parte, quindi la classe e'
+    riscritta, non affiancata.
 
-    Direzione: docs/BRAND_HOME_AURYA_2026-07.md (v3). Sette battute,
-    copy CHIUSO, alternanza prova/pensiero. Queste guardie difendono
-    le decisioni che si perdono per prime in un refactor: la CTA sola
-    nell'hero, il SILENZIO della sezione 3, il fatto che le sezioni
-    con i dati spariscono invece di mostrare griglie vuote, e il
-    payoff nuovo ovunque (il vecchio motto non deve sopravvivere in
-    nessun angolo, ne' frontend ne' backend).
+    Sette sezioni nell'ordine: hero, cosa troverai (tre colonne),
+    perche' esiste Aurya, dal Magazine, la rete, per gli operatori,
+    la lettera. Il copy e' CHIUSO parola per parola.
+
+    Queste guardie difendono le decisioni che si perdono per prime in
+    un refactor: le due CTA dell'hero e la loro destinazione, la terza
+    colonna che NON e' un link, la sezione dati che sparisce invece di
+    mostrare una griglia vuota, le cinque voci del footer di rete, la
+    rotta /magazine che non deve diventare canonica di nascosto e il
+    payoff di brand ovunque.
 
     Fuori scopo: la home della fase MARKETPLACE (HomeGate →
     RetreatsCalendarPage) e' un'altra pagina e non e' toccata qui.
@@ -5148,28 +5161,37 @@ class TestHomeHp1:
 
     HOME = FRONTEND_SRC / "features" / "network" / "NetworkHomePage.js"
     EDITORIAL = FRONTEND_SRC / "components" / "editorial"
+    SHELL = (FRONTEND_SRC / "features" / "storefront" / "components"
+             / "MarketplaceShell.jsx")
+    APP = FRONTEND_SRC / "App.js"
 
-    # ── 1. le sette battute, nell'ordine, coi testi chiave ───────────
+    # ── 1. le sette sezioni, nell'ordine, coi testi chiave ───────────
 
     _SEZIONI = (
-        ("hp-hero", "Non si sceglie una disciplina. Si sceglie una persona.",
-         "Qui le conosci prima di decidere."),
-        ("hp-people", "Si sceglie meglio quando si sa chi si ha davanti.",
-         "Chi sono, come lavorano, per chi lo fanno."),
-        ("hp-time", "Per conoscere qualcuno ci vuole tempo.",
-         "Quando un profilo nasce così, lo trovi segnato."),
-        ("hp-magazine", "Le cose serie vanno spiegate.",
-         "Pratiche, luoghi e persone. Senza scorciatoie."),
-        ("hp-manifesto",
-         "Il benessere è una questione di persone, non di promesse.",
-         "Col tempo qui potrai anche prenotare."),
-        ("hp-letter", "Ogni tanto scriviamo.",
-         "Una persona da conoscere, una pratica da capire, un posto dove andare."),
-        ("hp-pros", "Raccontaci come lavori.",
-         "Ti facciamo qualche domanda. Ascoltiamo."),
+        ("hp-hero",
+         "Il benessere non inizia da una pratica.",
+         "Inizia dalle persone."),
+        ("hp-pillars",
+         "Cosa troverai su Aurya.",
+         "Uno spazio per capire, prima ancora di scegliere."),
+        ("hp-why",
+         "Perché esiste Aurya?",
+         "Molto più difficile è capire di chi fidarsi."),
+        ("hp-magazine",
+         "Dal Magazine",
+         "Capire è il primo passo per scegliere bene."),
+        ("hp-network",
+         "Stiamo costruendo una rete.",
+         "Non una directory."),
+        ("hp-pros",
+         "Il tuo lavoro merita più di un profilo.",
+         "Stiamo costruendo tutto questo insieme ai primi professionisti"),
+        ("hp-letter",
+         "Ricevi la Lettera di Aurya.",
+         "Niente rumore. Solo ciò che vale il tuo tempo."),
     )
 
-    def test_hp1_sette_sezioni_nell_ordine(self):
+    def test_hp2_sette_sezioni_nell_ordine(self):
         src = self.HOME.read_text()
         pos = -1
         for testid, titolo, testo in self._SEZIONI:
@@ -5181,88 +5203,259 @@ class TestHomeHp1:
             assert here > pos, f"{testid}: sezione fuori ordine"
             pos = here
 
-    def test_hp1_gerarchia_titoli(self):
-        """Un solo h1 (l'hero), tutto il resto h2."""
+    def test_hp2_copy_lungo_parola_per_parola(self):
+        """I paragrafi lunghi sono i primi a essere 'migliorati' da chi
+        passa: qui restano identici alla specifica."""
+        src = self.HOME.read_text()
+        attesi = (
+            # hero
+            "Scegliere un professionista del benessere significa affidargli "
+            "qualcosa di personale. Per questo Aurya nasce per aiutarti a "
+            "conoscere le persone dietro le pratiche, comprendere i diversi "
+            "approcci e orientarti con maggiore consapevolezza.",
+            # perche'
+            "Ogni giorno migliaia di persone cercano un professionista, "
+            "leggono recensioni sparse, visitano decine di siti e finiscono "
+            "per scegliere quasi alla cieca.",
+            "Aurya nasce per cambiare questo. Vogliamo costruire uno spazio "
+            "dove contenuti, persone ed esperienze possano essere conosciuti "
+            "con il tempo e l'attenzione che meritano.",
+            # la rete
+            "Ogni professionista entrerà in Aurya attraverso un percorso di "
+            "conoscenza reciproca. Prima ascoltiamo la sua storia. Poi la "
+            "raccontiamo. Infine costruiamo insieme un profilo che nel tempo "
+            "diventerà il punto di riferimento della sua presenza su Aurya.",
+            # operatori
+            "Oggi significa raccontare il tuo percorso. Domani significherà "
+            "anche ricevere richieste, pubblicare servizi, organizzare "
+            "esperienze, raccogliere recensioni e gestire tutto da un unico "
+            "luogo.",
+            # lettera
+            "Una volta ogni tanto. Una persona da conoscere. Una pratica da "
+            "capire. Un luogo da scoprire.",
+        )
+        for frase in attesi:
+            assert frase in src, f"copy alterato o mancante: {frase[:50]}…"
+
+    def test_hp2_gerarchia_titoli(self):
+        """Un solo h1 (l'hero), tutto il resto h2; le tre colonne h3."""
         src = self.HOME.read_text()
         assert src.count('as="h1"') == 1, "l'h1 deve essere uno solo"
-        assert src.count('as="h2"') == 6, "le altre sei battute sono h2"
+        assert src.count('as="h2"') == 6, "le altre sei sezioni sono h2"
+        pillar = (self.EDITORIAL / "PillarCard.jsx").read_text()
+        assert "<h3" in pillar, "il titolo di una colonna e' un h3"
 
-    # ── 2. hero: UNA sola azione ─────────────────────────────────────
+    def test_hp2_sezione_rete_non_nomina_il_commercio(self):
+        """Vincolo del founder: nella sezione 5 si parla di presenza,
+        non di pagamenti, marketplace o Stripe."""
+        src = self.HOME.read_text()
+        blocco = src[src.index('data-testid="hp-network"'):
+                     src.index('data-testid="hp-pros"')]
+        for vietata in ("Stripe", "stripe", "pagament", "marketplace",
+                        "prenot", "acquist", "abbonament", "prezzo"):
+            assert vietata not in blocco, \
+                f"sezione 5: parola vietata '{vietata}'"
 
-    def test_hp1_hero_una_sola_cta(self):
+    # ── 2. hero: due azioni, di peso diverso, verso il magazine ──────
+
+    def test_hp2_hero_due_cta_e_destinazioni(self):
         src = self.HOME.read_text()
         blocco = src[src.index('data-testid="hp-hero"'):
-                     src.index('data-testid="hp-people"')]
-        assert blocco.count("<EditorialCta") == 1, \
-            "due bottoni nell'hero sono un'esitazione: ne resta uno"
-        assert blocco.count("<Link") == 0, "niente link nascosti nell'hero"
-        assert 'to="/operatori"' in blocco
-        assert "Conosci le persone" in blocco
+                     src.index('data-testid="hp-pillars"')]
+        assert blocco.count("<EditorialCta") == 2, \
+            "l'hero ha esattamente due azioni: magazine e operatori"
+        assert 'variant="solid"' in blocco, "la primaria e' quella piena"
+        assert blocco.count('variant="quiet"') == 1, \
+            "la secondaria e' sottovoce, non un secondo bottone pieno"
+        assert "Esplora il Magazine" in blocco
+        assert "Sei un operatore?" in blocco
+        assert 'to="/entra-nella-rete"' in blocco
+        # la primaria punta al Magazine passando dalla costante
+        i_solid = blocco.index('variant="solid"')
+        intorno = blocco[max(0, i_solid - 200):i_solid + 200]
+        assert "MAGAZINE_PATH" in intorno, \
+            "la CTA primaria dell'hero deve portare al Magazine"
 
-    # ── 3. la sezione del tempo NON chiede niente ────────────────────
-
-    def test_hp1_sezione_tempo_senza_cta(self):
+    def test_hp2_payoff_occhiello_sopra_l_h1(self):
+        """Il payoff di brand resta l'occhiello dell'hero, sopra l'h1."""
         src = self.HOME.read_text()
-        blocco = src[src.index('data-testid="hp-time"'):
-                     src.index("4. IL MAGAZINE")]
-        assert "EditorialCta" not in blocco, \
-            "il silenzio della sezione 3 e' voluto: niente CTA"
-        assert "<Link" not in blocco and "<a " not in blocco
-        assert "<img" not in blocco, "sezione 3: sola tipografia"
+        assert "<BrandPayoff" in src, "payoff sparito dall'hero"
+        assert src.index("<BrandPayoff") < src.index('as="h1"'), \
+            "il payoff sta SOPRA l'h1, non sotto"
 
-    # ── 4. le sezioni con i dati spariscono se i dati non ci sono ────
+    # ── 3. le tre colonne: la terza non e' un link ───────────────────
 
-    def test_hp1_sezioni_dati_gated(self):
+    def test_hp2_tre_colonne_nell_ordine(self):
         src = self.HOME.read_text()
-        assert "{members.length > 0 && (" in src, \
-            "senza membri la sezione persone non deve esistere"
+        pos = -1
+        for key, titolo in (("magazine", "Magazine"),
+                            ("professionisti", "Professionisti"),
+                            ("esperienze", "Esperienze")):
+            marker = f"id: '{key}'"
+            assert marker in src, f"colonna {key} mancante"
+            here = src.index(marker)
+            assert here > pos, f"colonna {key} fuori ordine"
+            pos = here
+            assert titolo in src
+        for emoji in ("📖", "🌿", "✨"):
+            assert emoji in src, f"segno mancante nella colonna: {emoji}"
+
+    def test_hp2_terza_colonna_non_cliccabile(self):
+        """'In arrivo' e' un'etichetta di stato, non un link e nemmeno
+        un bottone disabilitato."""
+        src = self.HOME.read_text()
+        blocco = src[src.index("id: 'esperienze'"):src.index("];", src.index("id: 'esperienze'"))]
+        assert "to:" not in blocco, \
+            "la terza colonna non ha destinazione: e' una promessa"
+        assert "In arrivo" in blocco
+        pillar = (self.EDITORIAL / "PillarCard.jsx").read_text()
+        # il ramo senza `to` rende uno <span>, non un Link/button
+        ramo = pillar[pillar.index("{to ? ("):]
+        chiusura = ramo[ramo.index(") : ("):]
+        assert "<span" in chiusura, "lo stato 'in arrivo' e' un <span>"
+        assert "<Link" not in chiusura and "<button" not in chiusura, \
+            "'In arrivo' non deve essere cliccabile ne' focalizzabile"
+        assert "disabled" not in chiusura, \
+            "niente bottone disabilitato: promette un clic che non arriva"
+
+    def test_hp2_colonne_spazio_riservato_e_focus(self):
+        pillar = (self.EDITORIAL / "PillarCard.jsx").read_text()
+        assert "h-full" in pillar and "mt-auto" in pillar, \
+            "le tre schede devono allinearsi in altezza e nel piede"
+        assert "focus-visible:ring" in pillar, "focus non visibile"
+        assert "aria-hidden" in pillar, \
+            "il segno in testa e' decorativo: va nascosto agli screen reader"
+
+    # ── 4. la sezione con i dati sparisce se i dati non ci sono ──────
+
+    def test_hp2_magazine_gated_sui_dati(self):
+        src = self.HOME.read_text()
         assert "{articles.length > 0 && (" in src, \
-            "senza articoli la sezione magazine non deve esistere"
-        # e le sorgenti sono quelle giuste
-        assert "'/public/network/members'" in src
-        assert "'/public/articles'" in src
+            "senza articoli la sezione Dal Magazine non deve esistere"
+        assert "'/public/articles'" in src, "sorgente articoli sbagliata"
+        # il gate deve avvolgere DAVVERO la sezione 4
+        i_gate = src.index("{articles.length > 0 && (")
+        assert i_gate < src.index('data-testid="hp-magazine"')
+        assert src.index('data-testid="hp-magazine"') < src.index('data-testid="hp-network"')
 
-    def test_hp1_persone_al_massimo_tre(self):
+    def test_hp2_niente_sezione_persone(self):
+        """HP2 toglie la griglia dei volti: la rete si racconta a
+        parole finche' i profili non ci sono davvero."""
         src = self.HOME.read_text()
-        assert "MAX_PEOPLE = 3" in src and "slice(0, MAX_PEOPLE)" in src
+        assert "<PersonCard" not in src, "la sezione 'Le persone' e' uscita"
+        assert "api.get('/public/network/members'" not in src, \
+            "la home non deve piu' chiamare la rotta dei membri"
+        # ma il componente resta nel kit, per /operatori
+        assert (self.EDITORIAL / "PersonCard.jsx").exists()
 
     # ── 5. le destinazioni delle CTA ─────────────────────────────────
 
-    def test_hp1_destinazioni_cta(self):
+    def test_hp2_destinazioni_cta(self):
         src = self.HOME.read_text()
-        for dest in ('to="/operatori"', 'to="/blog"', 'to="/manifesto"',
-                     'to="/newsletter"', 'to="/entra-nella-rete"'):
-            assert dest in src, f"CTA mancante: {dest}"
+        for dest in ("MAGAZINE_PATH = '/blog'",
+                     'to="/manifesto"',
+                     "to: '/operatori'",
+                     'to="/newsletter"',
+                     'to="/entra-nella-rete"',
+                     "OPERATOR_FORM_PATH = '/entra-nella-rete#presentati'"):
+            assert dest in src, f"destinazione mancante: {dest}"
 
-    # ── 6. il kit editoriale riusabile ───────────────────────────────
+    def test_hp2_ancora_form_operatori_esiste_e_scrolla(self):
+        """'Parliamone' punta all'ancora del form: l'ancora c'e' e chi
+        arriva da fuori ci atterra davvero."""
+        landing = (FRONTEND_SRC / "features" / "prelaunch"
+                   / "OperatorLandingPage.js").read_text()
+        assert 'id="presentati"' in landing, "ancora del form mancante"
+        assert "prefers-reduced-motion" in landing, \
+            "lo scorrimento interno alla pagina deve rispettare reduced-motion"
 
-    def test_hp1_kit_editoriale_estratto(self):
-        for name in ("Section.jsx", "DisplayTitle.jsx", "Lede.jsx",
-                     "Quote.jsx", "PersonCard.jsx", "ArticleCard.jsx",
-                     "EditorialCta.jsx", "index.js"):
-            assert (self.EDITORIAL / name).exists(), \
-                f"componente editoriale mancante: {name}"
+    def test_hp2_scroll_to_top_rispetta_le_ancore(self):
+        """ScrollToTop rimandava in cima ANCHE i link con ancora: con un
+        hash si atterra sull'elemento, non sull'intestazione."""
+        app = self.APP.read_text()
+        blocco = app[app.index("function ScrollToTop()"):]
+        blocco = blocco[:blocco.index("return null;")]
+        assert "const { pathname, hash } = useLocation();" in blocco, \
+            "ScrollToTop deve leggere anche l'hash"
+        assert "if (!hash) {" in blocco and "window.scrollTo(0, 0);" in blocco, \
+            "senza hash si riparte dall'alto, come prima"
+        assert "scrollIntoView" in blocco, "con hash si salta all'ancora"
+        # il bersaglio arriva in ritardo (rotte lazy): serve un riprova
+        assert "setTimeout" in blocco, \
+            "senza riprova le pagine lazy perdono l'ancora"
+        assert "requestAnimationFrame" not in blocco, \
+            "rAF si ferma in scheda di sfondo: l'ancora andrebbe persa"
 
-    def test_hp1_movimento_solo_dissolvenza_e_reduced_motion(self):
-        reveal = (self.EDITORIAL / "useReveal.js").read_text()
-        assert "prefers-reduced-motion: reduce" in reveal
-        css = (FRONTEND_SRC / "index.css").read_text()
-        idx = css.index(".editorial-reveal {")
-        blocco = css[idx:css.index("/* Filo d'oro", idx)]
-        # solo opacita': nessuna traslazione → nessun layout shift
-        assert "translate" not in blocco and "transform:" not in blocco
-        assert "opacity" in blocco
-        assert "prefers-reduced-motion: reduce" in blocco
+    def test_hp2_rotta_magazine_redirige_su_blog(self):
+        """La specifica dice /magazine, la canonica indicizzata resta
+        /blog: alias sì, rinomina no."""
+        app = self.APP.read_text()
+        assert '<Route path="/magazine" element={<Navigate to="/blog" replace />} />' in app, \
+            "/magazine deve esistere come redirect a /blog"
+        assert '<Route path="/blog" element={<BlogIndexPage />} />' in app, \
+            "la rotta canonica /blog non si tocca"
+        # e dalla home si linka la canonica, non l'alias
+        src = self.HOME.read_text()
+        assert 'to="/magazine"' not in src and "'/magazine'" not in src, \
+            "dalla home si linka /blog: il redirect e' per chi arriva da fuori"
+
+    # ── 6. il footer della fase rete: cinque voci ────────────────────
+
+    _FOOTER_NETWORK = (
+        ("footer-nw-manifesto", "/manifesto", "navManifesto"),
+        ("footer-nw-magazine", "/blog", "navBlog"),
+        ("footer-nw-operatori", "/operatori", "navNetworkMembers"),
+        ("footer-nw-chisiamo", "/chi-siamo", "footerAbout"),
+        ("footer-nw-newsletter", "/newsletter", "navNewsletter"),
+    )
+
+    def test_hp2_footer_rete_cinque_voci_nell_ordine(self):
+        shell = self.SHELL.read_text()
+        pos = -1
+        for testid, to, key in self._FOOTER_NETWORK:
+            marker = f'data-testid="{testid}"'
+            assert marker in shell, f"voce di footer mancante: {testid}"
+            here = shell.index(marker)
+            assert here > pos, f"voce {testid} fuori ordine"
+            pos = here
+            blocco = shell[max(0, here - 260):here + 260]
+            assert f'to="{to}"' in blocco, f"{testid}: destinazione sbagliata"
+            assert f"marketplace.{key}" in blocco, f"{testid}: etichetta non tradotta"
+
+    def test_hp2_footer_rete_senza_manifesto_duplicato(self):
+        """In fase rete il Manifesto sta UNA volta sola nel footer: la
+        vecchia lista sotto il payoff e' ora riservata al marketplace."""
+        shell = self.SHELL.read_text()
+        assert shell.count('data-testid="footer-nw-manifesto"') == 1
+        # la colonna del brand tiene il suo elenco solo fuori dalla rete
+        i_payoff = shell.index("marketplace.payoff")
+        blocco = shell[i_payoff:shell.index("marketplace.footerNetwork")]
+        assert "{!isNetwork && (" in blocco, \
+            "in fase rete l'elenco sotto il payoff deve sparire"
+        assert blocco.count('to="/manifesto"') == 1 and "howPage.title" in blocco, \
+            "quell'elenco e' il ramo marketplace (Manifesto + Come funziona)"
 
     # ── 7. SEO della home ────────────────────────────────────────────
 
-    def test_hp1_seo_home(self):
+    def test_hp2_seo_home(self):
         src = self.HOME.read_text()
-        assert "Aurya | Le persone del benessere in Italia" in src
-        assert ("Non si sceglie una disciplina. Si sceglie una persona. "
-                "Aurya ti fa conoscere chi pratica il benessere, prima "
-                "che tu decida.") in src
+        assert "Aurya | Il benessere inizia dalle persone" in src
+        assert ("Scegliere un professionista del benessere significa "
+                "affidargli qualcosa di personale. Aurya ti fa conoscere "
+                "le persone dietro le pratiche.") in src
         assert "canonicalPath: '/'" in src
+
+    def test_hp2_seo_description_entro_i_158_caratteri(self):
+        import json as _json
+        for lang in ("it", "en", "de", "fr"):
+            loc = _json.loads((FRONTEND_SRC / "locales" / lang
+                               / "landings.json").read_text())
+            desc = loc["nwHome"]["seoDesc"]
+            assert 0 < len(desc) <= 158, \
+                f"{lang}: description da {len(desc)} caratteri, il taglio e' 158"
+            titolo = loc["nwHome"]["seoTitle"]
+            assert "Aurya" in titolo and len(titolo) <= 65, \
+                f"{lang}: title fuori misura"
 
     # ── 8. il payoff nuovo c'e', il vecchio motto non esiste piu' ────
 
@@ -5273,14 +5466,14 @@ class TestHomeHp1:
         "fr": "On fait confiance à quelqu'un, pas à quelque chose.",
     }
 
-    def test_hp1_payoff_costanti(self):
+    def test_hp2_payoff_costanti(self):
         js = (FRONTEND_SRC / "config" / "brand.js").read_text()
         assert f"BRAND_PAYOFF = '{self._PAYOFF['it']}'" in js
         assert "BRAND_MOTTO" not in js, "la vecchia costante deve sparire"
         from core.brand import BRAND_PAYOFF
         assert BRAND_PAYOFF == self._PAYOFF
 
-    def test_hp1_vecchio_motto_assente_ovunque(self):
+    def test_hp2_vecchio_motto_assente_ovunque(self):
         """Scan frontend + backend: del vecchio motto non resta traccia
         (i test sono esclusi: e' qui che il testo va nominato)."""
         vietati = ("Connect · Heal · Grow", "CONNECT · HEAL · GROW",
@@ -5300,28 +5493,57 @@ class TestHomeHp1:
                         colpevoli.append(f"{path}: {v}")
         assert not colpevoli, f"vecchio motto superstite: {colpevoli[:5]}"
 
-    def test_hp1_payoff_nelle_superfici_di_brand(self):
-        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
-                 / "MarketplaceShell.jsx").read_text()
-        assert "marketplace.payoff" in shell, "footer senza payoff"
+    def test_hp2_payoff_nelle_superfici_di_brand(self):
+        assert "marketplace.payoff" in self.SHELL.read_text(), "footer senza payoff"
         logo = (FRONTEND_SRC / "components" / "BrandLogo.jsx").read_text()
         assert "marketplace.payoff" in logo, "wordmark senza payoff"
         email = (BACKEND_DIR / "services" / "email_service.py").read_text()
         assert "BRAND_PAYOFF" in email, "template email senza payoff"
 
-    # ── 9. i18n x4 delle chiavi nuove, copy pulito ───────────────────
+    # ── 9. il kit editoriale riusabile ───────────────────────────────
+
+    def test_hp2_kit_editoriale_completo(self):
+        for name in ("Section.jsx", "DisplayTitle.jsx", "Lede.jsx",
+                     "Quote.jsx", "PersonCard.jsx", "ArticleCard.jsx",
+                     "PillarCard.jsx", "EditorialCta.jsx", "index.js"):
+            assert (self.EDITORIAL / name).exists(), \
+                f"componente editoriale mancante: {name}"
+        idx = (self.EDITORIAL / "index.js").read_text()
+        assert "PillarCard" in idx and "TitleLine" in idx, \
+            "i mattoni nuovi devono passare dal barile del kit"
+
+    def test_hp2_movimento_solo_dissolvenza_e_reduced_motion(self):
+        reveal = (self.EDITORIAL / "useReveal.js").read_text()
+        assert "prefers-reduced-motion: reduce" in reveal
+        css = (FRONTEND_SRC / "index.css").read_text()
+        idx = css.index(".editorial-reveal {")
+        blocco = css[idx:css.index("/* Filo d'oro", idx)]
+        # solo opacita': nessuna traslazione → nessun layout shift
+        assert "translate" not in blocco and "transform:" not in blocco
+        assert "opacity" in blocco
+        assert "prefers-reduced-motion: reduce" in blocco
+
+    # ── 10. i18n x4 delle chiavi nuove, copy pulito ──────────────────
 
     _NWHOME_KEYS = (
-        "seoTitle", "seoDesc", "heroTitle", "heroSub", "heroCta",
-        "peopleTitle", "peopleSub", "peopleCta",
-        "timeTitle", "timeBody", "timeNote",
+        "seoTitle", "seoDesc",
+        "heroTitleA", "heroTitleB", "heroBody", "heroCta", "heroCtaAlt",
+        "findTitle", "findSubA", "findSubB",
+        "pillarMagTitle", "pillarMagText", "pillarMagCta",
+        "pillarProTitle", "pillarProText", "pillarProCta",
+        "pillarExpTitle", "pillarExpText", "pillarExpBadge",
+        "whyTitle", "whyP1", "whyP2", "whyP3", "whyCta",
         "magTitle", "magSub", "magCta",
-        "manifestoLine", "manifestoWhisper", "manifestoCta",
-        "letterTitle", "letterSub", "letterCta",
-        "prosEyebrow", "prosTitle", "prosBody", "prosCta",
+        "netTitleA", "netTitleB", "netBody", "netCta",
+        "prosEyebrow", "prosTitle", "prosP1", "prosP2", "prosP3",
+        "prosCta", "prosCtaAlt",
+        "letterTitle", "letterBody", "letterClose", "letterCta",
     )
 
-    def test_hp1_i18n_x4_chiavi_nuove(self):
+    _FOOTER_KEYS = ("navManifesto", "navBlog", "navNetworkMembers",
+                    "footerAbout", "navNewsletter")
+
+    def test_hp2_i18n_x4_chiavi_nuove(self):
         import json as _json
         for lang in ("it", "en", "de", "fr"):
             loc = _json.loads((FRONTEND_SRC / "locales" / lang
@@ -5331,14 +5553,24 @@ class TestHomeHp1:
             nw = loc.get("nwHome") or {}
             for k in self._NWHOME_KEYS:
                 assert nw.get(k), f"{lang}: manca nwHome.{k}"
+            # nessun residuo del copy v3
+            for morto in ("peopleTitle", "peopleSub", "peopleCta",
+                          "timeTitle", "timeBody", "timeNote",
+                          "manifestoLine", "manifestoWhisper", "manifestoCta",
+                          "letterSub", "prosBody", "heroSub"):
+                assert morto not in nw, f"{lang}: chiave v3 superstite {morto}"
+            for k in self._FOOTER_KEYS:
+                assert loc["marketplace"].get(k), \
+                    f"{lang}: manca marketplace.{k} (voce del footer di rete)"
 
-    def test_hp1_copy_nuovo_senza_trattini_lunghi(self):
+    def test_hp2_copy_nuovo_senza_trattini_lunghi(self):
         import json as _json
         for lang in ("it", "en", "de", "fr"):
             loc = _json.loads((FRONTEND_SRC / "locales" / lang
                                / "landings.json").read_text())
             valori = list((loc.get("nwHome") or {}).values())
             valori.append(loc["marketplace"]["payoff"])
+            valori += [loc["marketplace"][k] for k in self._FOOTER_KEYS]
             for val in valori:
                 assert "—" not in val and "–" not in val, \
                     f"{lang}: trattino lungo nel copy nuovo: {val[:40]}"
@@ -5346,8 +5578,9 @@ class TestHomeHp1:
         # commenti: i trattini lunghi sono vietati a chi legge il sito
         import re as _re
         home = self.HOME.read_text()
-        defaults = _re.findall(r"defaultValue: '([^']*)'", home)
-        assert len(defaults) >= 24, "i defaultValue della home sono spariti"
+        defaults = _re.findall(r'defaultValue: "([^"]*)"', home)
+        assert len(defaults) >= 42, \
+            f"i defaultValue della home sono {len(defaults)}, ne servono 42"
         for val in defaults:
             assert "—" not in val and "–" not in val, \
                 f"trattino lungo nel copy della home: {val[:40]}"

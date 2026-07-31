@@ -19,9 +19,13 @@ const SIZES = {
 // Il tono passa da QUI, non da classi opacity aggiunte a mano dal
 // chiamante: due utility `opacity-*` sullo stesso nodo si contendono
 // la cascata e vince quella che capita, non quella che intendevi.
+// HP2 — `quiet` era opacity-60: misurato sul crema e sul bianco dava
+// 4.03:1, sotto il minimo AA (4.5:1) per il testo normale. Al 70% sale
+// a ~5.6:1 e resta comunque un gradino sotto `soft`: la gerarchia si
+// legge, e il testo pure.
 const TONES = {
   soft: 'opacity-80',
-  quiet: 'opacity-60',
+  quiet: 'opacity-70',
   inherit: '',
 };
 
