@@ -189,7 +189,12 @@ class TestCategoryHubsBN5:
     def test_spa_uses_route_not_query(self):
         idx = (FRONTEND_SRC / "features" / "storefront"
                / "BlogIndexPage.js").read_text()
-        assert "navigate(`/blog/categoria/${slug}`)" in idx
+        # SW4 — il chip e' un <Link to>, non piu' un bottone che chiama
+        # navigate(): la rotta e' la stessa, ma adesso e' anche un link
+        # che un crawler puo' seguire. La guardia difende l'URL, che e'
+        # il punto; il query param resta bandito.
+        assert "to={`/blog/categoria/${slug}`}" in idx
+        assert "?categoria=" not in idx
         art = (FRONTEND_SRC / "features" / "storefront"
                / "BlogArticlePage.js").read_text()
         assert "/blog/categoria/${article.category}" in art

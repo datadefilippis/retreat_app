@@ -130,7 +130,11 @@ class TestBlogFrontend:
         assert "/admin/articles" in tab
 
     def test_blog_i18n_keys_all_langs(self):
-        needed = ("seoTitle", "title", "subtitle", "readMore", "empty",
+        # SW4 — "readMore" e' uscito col bottone "Leggi": nel kit
+        # editoriale il titolo E' il link. Al suo posto entrano le
+        # chiavi dell'apertura nuova, che valgono la stessa guardia.
+        needed = ("seoTitle", "title", "eyebrow", "lead1", "lead2",
+                  "subtitle", "empty", "emptyCat", "moreTitle",
                   "notFound", "backToBlog", "italianOnly")
         for lang in LANGS:
             data = json.loads((FRONTEND_SRC / "locales" / lang
@@ -179,7 +183,7 @@ class TestBlogSeoAn6:
 
     def test_cover_renders_all_categories(self):
         """Ogni categoria della tassonomia ha la sua palette e rende
-        un WebP 1200x630 valido col titolo dentro."""
+        un WebP 1200x630 valido (da SW4 senza titolo stampato)."""
         from io import BytesIO
         from PIL import Image
         from models.retreat_taxonomy import RETREAT_CATEGORIES

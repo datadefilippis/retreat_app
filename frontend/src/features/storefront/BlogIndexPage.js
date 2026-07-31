@@ -1,35 +1,58 @@
 /**
- * BlogIndexPage — /blog (AN5).
+ * BlogIndexPage — /blog e /blog/categoria/:slug (SW4).
  *
- * La voce di Aurya: articoli olistici nella stessa tassonomia dei
- * ritiri. Regola lingua ereditata dal marketplace: in lingua X si
- * vedono solo gli articoli tradotti in X (mai fallback in lista).
- * I chip categoria mostrano solo le categorie che hanno articoli.
+ * Il Magazine e' il primo anello del flywheel (Blueprint cap. 10): e'
+ * la superficie che oggi porta le persone qui. Fino a SW4 l'indice era
+ * l'unica pagina di racconto rimasta alla grammatica vecchia (hero
+ * fotografico generico, card con bordo, ombra e bottone "Leggi"),
+ * mentre home, Manifesto e Chi siamo parlavano gia' il kit editoriale.
+ * Adesso sono sorelle.
+ *
+ * Tre battute, nessuno stile nuovo:
+ *   1. APERTURA   il dispositivo a coppia del Blueprint, cap. 9:
+ *                 "Le cose serie vanno spiegate." (una verita' sul
+ *                 mondo) e "Scriviamo." (il nostro gesto). Sotto,
+ *                 cosa ci trovi; poi i filtri come chip sobri.
+ *   2. LA VETRINA fondo bianco, come la sezione "Dal Magazine" della
+ *                 home ma piu' ricca: articolo di apertura grande,
+ *                 due di spalla, poi tutti gli altri in griglia.
+ *   3. LA LETTERA la fascia newsletter, invariata (BN1).
+ *
+ * La pagina di CATEGORIA e' la stessa, con l'apertura che cambia
+ * titolo: il nome della categoria al posto della coppia, e una riga
+ * che non promette niente che non ci sia.
+ *
+ * Regola lingua ereditata dal marketplace: in lingua X si vedono solo
+ * gli articoli tradotti in X (mai fallback in lista). I chip mostrano
+ * solo le categorie che hanno articoli, e sono <Link>: la categoria e'
+ * una rotta vera e indicizzabile, non un bottone che naviga.
+ *
+ * Fondi: crema, bianco, sabbia. Nessuna ancora verde piena: il verde
+ * qui e' gia' nelle copertine, che da SW4 sono un medaglione salvia su
+ * ogni scheda. Una fascia verde in piu' le avrebbe spente.
  */
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Lock } from 'lucide-react';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import BlogNewsletterCTA from './components/BlogNewsletterCTA';
-import { Lock } from 'lucide-react';
 import useSeoMeta from './lib/useSeoMeta';
 import BrandPayoff from '../../components/BrandPayoff';
+import {
+  Section, DisplayTitle, TitleLine, Lede, ArticleCard,
+} from '../../components/editorial';
 
-const CATEGORY_TONES = {
-  yoga: 'from-[#376254]/80', meditazione: 'from-[#4a7a68]/80',
-  detox: 'from-[#5a8a5a]/80', suono: 'from-[#7a6a8a]/80',
-  massaggio: 'from-[#a8765a]/80', breathwork: 'from-[#5a7a8a]/80',
-  cammini: 'from-[#6a7a4a]/80', femminile: 'from-[#a85a6a]/80',
-  aziendale: 'from-[#4a5a6a]/80',
-  // BN1 — categorie editoriali (solo blog)
-  ritiri: 'from-[#8a7440]/80', energia: 'from-[#9a7ab0]/80',
-  operatori: 'from-[#37625f]/80',
-};
+/* Il chip: sobrio per definizione. Stesso verde e stesso tracking
+   dell'occhiello di ArticleCard, cosi' il filtro e la scheda si
+   leggono come la stessa classificazione detta due volte. */
+const CHIP = 'inline-flex items-center rounded-full px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f5749] focus-visible:ring-offset-2';
+const CHIP_ON = 'bg-[#2f5749] text-[#f6f2e8]';
+const CHIP_OFF = 'bg-[#2f5749]/10 text-[#2f5749] hover:bg-[#2f5749]/20';
 
 export default function BlogIndexPage() {
   const { t, i18n } = useTranslation('landings');
-  const navigate = useNavigate();
   const { categoria: routeCategory } = useParams();
   const [searchParams] = useSearchParams();
   // BN5 — la categoria vive nell'URL come rotta vera (/blog/categoria/x,
@@ -42,10 +65,10 @@ export default function BlogIndexPage() {
   const [allItems, setAllItems] = useState([]);   // per i chip categoria
   const [loading, setLoading] = useState(true);
 
-  const catLabel = category ? t(`categories.${category}`, { defaultValue: category }) : null;
+  const catLabel = (slug) => (slug ? t(`categories.${slug}`, { defaultValue: slug }) : '');
   useSeoMeta({
     title: category
-      ? t('blog.seoCatTitle', { cat: catLabel, defaultValue: '{{cat}}: articoli e guide | Il Magazine di Aurya' })
+      ? t('blog.seoCatTitle', { cat: catLabel(category), defaultValue: '{{cat}}: articoli e guide | Il Magazine di Aurya' })
       : t('blog.seoTitle', { defaultValue: 'Ritiri, discipline olistiche e benessere | Il Magazine di Aurya' }),
     description: t('blog.seoDesc', { defaultValue: 'Storie, pratiche e sapere olistico da chi organizza e vive i ritiri.' }),
     canonicalPath: category ? `/blog/categoria/${category}` : '/blog',
@@ -79,103 +102,132 @@ export default function BlogIndexPage() {
     } catch { return ''; }
   };
 
+  /* BN3 — la promessa si vede gia' in lista: la guida riservata lo
+     dice qui, non dopo il clic. */
+  const gatedBadge = (a) => (a.gated ? (
+    <span className="inline-flex items-center gap-1 rounded-full bg-[#8a7440]/12 px-2 py-0.5 text-[11px] font-medium text-[#7a6636]"
+          data-testid="blog-card-gated">
+      <Lock className="h-3 w-3" aria-hidden />
+      {t('blog.gatedBadge', { defaultValue: 'Per gli iscritti' })}
+    </span>
+  ) : null);
+
+  const card = (a, variant, eager = false) => (
+    <ArticleCard key={a.slug} article={a} variant={variant} eager={eager}
+                 category={catLabel(a.category)}
+                 date={fmtDate(a.published_at)}
+                 badge={gatedBadge(a)} />
+  );
+
+  const [lead, ...rest] = items;
+  const spalla = rest.slice(0, 2);     // i due accanto all'apertura
+  const altri = rest.slice(2);         // la griglia sotto la riga
+
   return (
     <MarketplaceShell noSearch>
-      <div className="bg-background min-h-[60vh]">
-        <header className="relative text-white overflow-hidden">
-          {/* la foto del founder per il blog */}
-          <img aria-hidden src="/media/hero-blog.webp" alt="" fetchpriority="high"
-               className="absolute inset-0 w-full h-full object-cover" />
-          {/* testo centrato: velatura simmetrica come l'hero della home */}
-          <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/85 via-[#14231d]/55 to-[#0e1a15]/85" />
-          <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-20 text-center">
-            <BrandPayoff tone="hero" size="sm" className="mb-3" />
-            <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
-              {t('blog.title', { defaultValue: 'Il Magazine di Aurya' })}
-            </h1>
-            <p className="text-white/90 mt-3 text-lg leading-relaxed max-w-2xl mx-auto text-hero-shadow">
-              {t('blog.subtitle', { defaultValue: 'Storie, pratiche e sapere olistico da chi i ritiri li organizza e li vive.' })}
+      <div className="bg-background">
+
+        {/* ── 1. APERTURA ──────────────────────────────────────────
+            Il dispositivo a coppia sta in due <TitleLine>: sono due
+            frasi, non un a-capo estetico, e in ogni lingua restano
+            due righe. Sulla pagina di categoria la coppia lascia il
+            posto al nome della categoria: li' il titolo deve dire
+            dove sei, non ripetere la tesi del Magazine. */}
+        <Section tone="cream" rhythm="hero" labelledBy="mag-title">
+          <div data-testid="mag-open">
+            <p className="eyebrow mb-5">
+              {t('blog.eyebrow', { defaultValue: 'Il Magazine' })}
             </p>
-            {/* le categorie vivono nell'hero (founder 7/7): il filtro è la porta */}
+            <DisplayTitle as="h1" id="mag-title" size="heroLines" measure="lines">
+              {category ? catLabel(category) : (
+                <>
+                  <TitleLine>
+                    {t('blog.lead1', { defaultValue: 'Le cose serie vanno spiegate.' })}
+                  </TitleLine>
+                  <TitleLine>
+                    {t('blog.lead2', { defaultValue: 'Scriviamo.' })}
+                  </TitleLine>
+                </>
+              )}
+            </DisplayTitle>
+            <Lede size="lead" className="mt-8">
+              {category
+                ? t('blog.catSubtitle', { defaultValue: "Quello che abbiamo scritto su questo tema." })
+                : t('blog.subtitle', { defaultValue: "Pratiche, luoghi e persone, raccontati per quello che sono. Senza scorciatoie." })}
+            </Lede>
+            <BrandPayoff tone="cream" size="sm" className="mt-9" />
+
+            {/* i filtri: chip, non bottoni pesanti, e link veri */}
             {categoriesWithArticles.length > 1 && (
-              <div className="mt-6 flex flex-wrap gap-2 justify-center" data-testid="blog-category-chips">
-                <button type="button"
-                        onClick={() => navigate('/blog')}
-                        className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${!category ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'}`}>
+              <nav className="mt-10 flex flex-wrap gap-2" data-testid="blog-category-chips"
+                   aria-label={t('blog.eyebrow', { defaultValue: 'Il Magazine' })}>
+                <Link to="/blog"
+                      className={`${CHIP} ${!category ? CHIP_ON : CHIP_OFF}`}
+                      aria-current={!category ? 'page' : undefined}>
                   {t('blog.allArticles', { defaultValue: 'Tutti' })}
-                </button>
+                </Link>
                 {categoriesWithArticles.map(slug => (
-                  <button key={slug} type="button"
-                          onClick={() => navigate(`/blog/categoria/${slug}`)}
-                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors backdrop-blur-sm ${category === slug ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'}`}>
-                    {t(`categories.${slug}`, { defaultValue: slug })}
-                  </button>
+                  <Link key={slug} to={`/blog/categoria/${slug}`}
+                        className={`${CHIP} ${category === slug ? CHIP_ON : CHIP_OFF}`}
+                        aria-current={category === slug ? 'page' : undefined}>
+                    {catLabel(slug)}
+                  </Link>
                 ))}
-              </div>
+              </nav>
             )}
           </div>
-        </header>
+        </Section>
 
-        <main className="max-w-4xl mx-auto px-4 py-10">
+        {/* ── 2. LA VETRINA ────────────────────────────────────────
+            Bianco pieno, come la sezione "Dal Magazine" della home:
+            le copertine sono medaglioni scuri e sul bianco si staccano
+            come oggetti. L'apertura grande prende sette colonne e i
+            due di spalla cinque; il resto scende in griglia sotto una
+            riga sottile, l'unico separatore della pagina. Con un
+            articolo solo l'apertura prende tutta la larghezza, invece
+            di lasciare mezza griglia vuota. */}
+        <Section tone="paper" rhythm="flow" width="max-w-6xl">
           {loading ? (
-            <p className="text-sm text-muted-foreground py-16 text-center">…</p>
+            <p className="text-foreground/50 py-10" aria-live="polite">…</p>
           ) : items.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-16 text-center">
-              {t('blog.empty', { defaultValue: 'Nessun articolo in questa lingua, per ora. Le storie stanno arrivando.' })}
-            </p>
+            <div data-testid="blog-empty">
+              <Lede size="body" tone="quiet">
+                {category
+                  ? t('blog.emptyCat', { defaultValue: "Su questo tema non abbiamo ancora scritto." })
+                  : t('blog.empty', { defaultValue: "Non c'è ancora niente da leggere in questa lingua." })}
+              </Lede>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" data-testid="blog-list">
-              {items.map(a => (
-                <Link key={a.slug} to={`/blog/${a.slug}`}
-                      className="group rounded-2xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                  {a.featured_image_url ? (
-                    <img src={a.featured_image_url} alt="" loading="lazy"
-                         className="h-44 w-full object-cover group-hover:brightness-95 transition" />
-                  ) : (
-                    <div aria-hidden
-                         className={`h-44 w-full bg-gradient-to-br ${CATEGORY_TONES[a.category] || 'from-[#376254]/80'} to-[#F6F3EC] flex items-center justify-center`}>
-                      <span className="font-brand uppercase tracking-[0.3em] text-white/90 text-xs px-4 text-center">
-                        {a.category ? t(`categories.${a.category}`, { defaultValue: a.category }) : 'Aurya'}
-                      </span>
-                    </div>
-                  )}
-                  <div className="p-5 flex flex-col flex-1">
-                    <div className="flex items-center gap-2 text-[11px] text-gray-400 mb-2">
-                      {a.category && (
-                        <span className="uppercase tracking-wide font-semibold text-primary">
-                          {t(`categories.${a.category}`, { defaultValue: a.category })}
-                        </span>
-                      )}
-                      <span>{fmtDate(a.published_at)}</span>
-                      {/* BN3 — la promessa e' visibile gia' in lista */}
-                      {a.gated && (
-                        <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#8a7440]/10 px-2 py-0.5 font-semibold text-[#8a7440]"
-                              data-testid="blog-card-gated">
-                          <Lock className="h-3 w-3" aria-hidden />
-                          {t('blog.gatedBadge', { defaultValue: 'Per gli iscritti' })}
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="font-heading text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
-                      {a.title}
-                    </h2>
-                    {a.description && (
-                      <p className="text-sm text-gray-600 mt-2 line-clamp-3 flex-1">{a.description}</p>
-                    )}
-                    <span className="mt-3 text-sm font-medium text-primary">
-                      {t('blog.readMore', { defaultValue: 'Leggi' })} →
-                    </span>
+            <div data-testid="blog-list">
+              <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+                <div className={spalla.length > 0 ? 'lg:col-span-7' : 'lg:col-span-8'}>
+                  {card(lead, 'lead', true)}
+                </div>
+                {spalla.length > 0 && (
+                  <div className="lg:col-span-5 grid gap-7 sm:grid-cols-2 lg:grid-cols-1 lg:content-start lg:gap-9 lg:pt-2">
+                    {spalla.map(a => card(a, 'compact'))}
                   </div>
-                </Link>
-              ))}
+                )}
+              </div>
+
+              {altri.length > 0 && (
+                <div className="mt-14 border-t border-foreground/10 pt-12">
+                  <p className="eyebrow mb-8">
+                    {t('blog.moreTitle', { defaultValue: 'Altri articoli' })}
+                  </p>
+                  <div className="grid gap-9 sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-3">
+                    {altri.map(a => card(a, 'compact'))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
+        </Section>
 
-          {/* BN1 — il Magazine converte: fascia lettera in coda alla lista */}
-          <div className="mt-12 max-w-2xl mx-auto">
-            <BlogNewsletterCTA category={category || null} />
-          </div>
-        </main>
+        {/* ── 3. LA LETTERA — il Magazine converte (BN1) ───────── */}
+        <Section tone="sand" rhythm="flow" width="max-w-2xl">
+          <BlogNewsletterCTA category={category || null} />
+        </Section>
       </div>
     </MarketplaceShell>
   );

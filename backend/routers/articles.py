@@ -209,15 +209,19 @@ async def get_public_article(slug: str, lang: str = "it",
 
 # ─── Cover autogenerata (AN6) ──────────────────────────────────────────
 
-async def _autogen_cover(slug: str, title: str,
+async def _autogen_cover(slug: str,
                          category: Optional[str]) -> Optional[str]:
     """Rende la cover brand (WebP 1200×630) e la salva su object
-    storage. Best-effort SEMPRE: None se qualcosa manca, mai raise."""
+    storage. Best-effort SEMPRE: None se qualcosa manca, mai raise.
+
+    SW4 — il titolo non entra piu' nella cover (era un doppione nella
+    scheda e rumore nelle miniature): il generatore vuole solo la
+    categoria, e questa firma la segue."""
     try:
         from services.article_cover import render_article_cover
         from services.object_storage import save_public_upload
         label = ARTICLE_CATEGORIES.get(category or "")
-        data = await asyncio.to_thread(render_article_cover, title,
+        data = await asyncio.to_thread(render_article_cover, None,
                                        category, label)
         if not data:
             return None
@@ -292,12 +296,11 @@ async def admin_update_article(
     data["updated_at"] = utc_now()
 
     # AN6 — al publish senza immagine propria, la cover Aurya si genera
-    # da sola (titolo dentro, palette di categoria)
+    # da sola (segno + categoria + palette, SW4: mai il titolo)
     if publishing and not (data.get("featured_image_url")
                            or doc.get("featured_image_url")):
         cover_url = await _autogen_cover(
             data.get("slug") or doc["slug"],
-            data.get("title") or doc["title"],
             data.get("category", doc.get("category")))
         if cover_url:
             data["featured_image_url"] = cover_url
@@ -326,8 +329,7 @@ async def admin_regenerate_cover(
     doc = await db.articles.find_one({"id": article_id}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Articolo non trovato")
-    cover_url = await _autogen_cover(doc["slug"], doc["title"],
-                                     doc.get("category"))
+    cover_url = await _autogen_cover(doc["slug"], doc.get("category"))
     if not cover_url:
         raise HTTPException(status_code=503,
                             detail="Generazione cover non disponibile")

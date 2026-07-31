@@ -6206,3 +6206,226 @@ class TestChiSiamoSw3:
         for val in valori:
             assert "—" not in val and "–" not in val, \
                 f"trattino lungo nel copy di Chi siamo: {val[:40]}"
+
+
+class TestMagazineSw4:
+    """SW4 (31/7/2026) — il Magazine: l'indice nel kit editoriale e le
+    copertine senza titolo stampato
+    (docs/SITO_REDESIGN_PIANO_2026-07.md).
+
+    Due difetti chiusi insieme, perche' erano lo stesso difetto visto
+    da due lati. L'indice /blog era rimasto alla grammatica vecchia
+    (hero fotografico generico, card con bordo e bottone "Leggi")
+    mentre home, Manifesto e Chi siamo parlavano gia' il kit. E la
+    cover autogenerata stampava il TITOLO dentro l'immagine: nella
+    scheda grande il titolo compariva due volte (immagine + h3) e
+    nelle miniature da 128 px diventava un intrico illeggibile.
+
+    Queste guardie difendono: l'apertura nella voce (il dispositivo a
+    coppia del Blueprint cap. 9), il kit al posto degli stili di
+    pagina, i filtri come chip-link sobri, gli stati vuoti onesti, il
+    lessico, l'i18n x4, e dal lato backend il fatto che il generatore
+    NON disegni piu' il titolo ma disegni ancora la categoria.
+    """
+
+    PAGE = FRONTEND_SRC / "features" / "storefront" / "BlogIndexPage.js"
+    COVER = BACKEND_DIR / "services" / "article_cover.py"
+    LOCALES = ("it", "en", "de", "fr")
+
+    def _page(self):
+        return self.PAGE.read_text()
+
+    def _copy(self):
+        """Il sorgente senza commenti: le guardie lessicali giudicano
+        quello che il lettore puo' vedere, non le note di lavoro."""
+        import re
+        src = re.sub(r"/\*.*?\*/", "", self._page(), flags=re.DOTALL)
+        return re.sub(r"^\s*//.*$", "", src, flags=re.MULTILINE)
+
+    def _blocco(self, lang):
+        import json
+        path = FRONTEND_SRC / "locales" / lang / "landings.json"
+        return json.loads(path.read_text()).get("blog") or {}
+
+    # ── 1. l'indice parla il kit editoriale ──────────────────────────
+
+    def test_sw4_indice_sul_kit_editoriale(self):
+        """Stessi mattoni di home, Manifesto e Chi siamo: nessuno
+        stile di pagina, nessuna card promozionale superstite."""
+        src = self._page()
+        assert "from '../../components/editorial'" in src, \
+            "l'indice non importa il kit editoriale"
+        for mattone in ("Section", "DisplayTitle", "TitleLine", "Lede",
+                        "ArticleCard"):
+            assert mattone in src, f"il kit non usa {mattone}"
+        # l'apertura grande + la griglia: la gerarchia della rivista
+        assert "variant=\"lead\"" not in src, \
+            "il variant della scheda passa dal helper, non a mano"
+        assert "'lead'" in src and "'compact'" in src, \
+            "servono l'articolo di apertura e i secondari"
+        # la roba vecchia e' uscita davvero
+        for morto in ("hero-blog.webp", "rounded-2xl border border-gray-200",
+                      "hover:shadow-md", "CATEGORY_TONES", "blog.readMore",
+                      "text-hero-shadow"):
+            assert morto not in src, f"residuo della pagina vecchia: {morto}"
+        # i fondi: crema, bianco, sabbia. Nessuna ancora verde piena.
+        assert 'tone="cream"' in src and 'tone="paper"' in src
+        assert 'tone="sage"' not in src, \
+            "niente fascia verde: il verde e' nelle copertine"
+
+    def test_sw4_apertura_dispositivo_a_coppia(self):
+        """Titolo nuovo: una verita' sul mondo, poi il nostro gesto.
+        Due <TitleLine>, un solo h1, e la riga su cosa ci trovi."""
+        src = self._page()
+        assert "Le cose serie vanno spiegate." in src, \
+            "manca la prima meta' del dispositivo a coppia"
+        assert "Scriviamo." in src, "manca il gesto"
+        assert src.index("Le cose serie") < src.index("Scriviamo."), \
+            "mai l'ordine inverso: se si parte da noi diventa pubblicita'"
+        assert self._copy().count("<TitleLine>") == 2, \
+            "il titolo e' due frasi, non un a-capo estetico"
+        assert src.count('as="h1"') == 1, "l'h1 e' uno solo"
+        # il vecchio titolo generico e' uscito dall'apertura
+        assert "blog.title" not in src, \
+            "l'apertura non usa piu' il titolo generico 'Il Magazine di Aurya'"
+        # cosa ci trovi, senza scorciatoie
+        assert "Pratiche, luoghi e persone" in src
+        assert "Senza scorciatoie." in src
+
+    def test_sw4_chip_sobri_e_rotta_vera(self):
+        """I filtri restano, ma come chip-link: la categoria e' una
+        rotta indicizzabile, non un bottone che naviga."""
+        src = self._page()
+        assert "to={`/blog/categoria/${slug}`}" in src, \
+            "il chip deve essere un link alla rotta di categoria"
+        assert "useNavigate" not in src, \
+            "niente navigate() nei filtri: sono link"
+        assert "rounded-full" in src, "i chip sono pillole, non bottoni"
+        assert "aria-current" in src, "il chip attivo va detto anche a chi ascolta"
+        assert 'data-testid="blog-category-chips"' in src
+
+    def test_sw4_stati_vuoti_onesti(self):
+        """Nessuna promessa nel vuoto: si dice che non c'e' niente,
+        non che 'le storie stanno arrivando'."""
+        src = self._page()
+        assert "blog.emptyCat" in src, \
+            "la pagina di categoria vuota ha il suo messaggio"
+        it = self._blocco("it")
+        for chiave in ("empty", "emptyCat"):
+            testo = it[chiave]
+            for promessa in ("stanno arrivando", "presto", "a breve",
+                            "in arrivo"):
+                assert promessa not in testo.lower(), \
+                    f"blog.{chiave} promette invece di constatare: '{promessa}'"
+        # la promessa BN3 resta visibile in lista
+        assert 'data-testid="blog-card-gated"' in src, \
+            "regressione BN3: il badge 'Per gli iscritti' e' sparito dalla lista"
+        kit = (FRONTEND_SRC / "components" / "editorial"
+               / "ArticleCard.jsx").read_text()
+        assert "badge" in kit, "lo slot del badge vive nel kit, non nella pagina"
+
+    # ── 2. le copertine: un segno, non un manifesto ──────────────────
+
+    def test_sw4_cover_non_stampa_il_titolo(self):
+        """La guardia centrale dell'onda: il generatore non disegna
+        piu' testo del titolo, ne' direttamente ne' via wrapping."""
+        src = self.COVER.read_text()
+        assert "_wrap_title" not in src, \
+            "il wrapping del titolo e' ancora li': la cover lo stampa"
+        assert "PlayfairDisplay" not in src, \
+            "il font del titolo non serve piu' alla cover"
+        # nessun draw.text riceve il titolo
+        import re
+        for chiamata in re.findall(r"draw\.text\(([^\n]*)", src):
+            assert "title" not in chiamata, \
+                f"draw.text stampa ancora il titolo: {chiamata[:60]}"
+        # e il chiamante non glielo passa nemmeno
+        router = (BACKEND_DIR / "routers" / "articles.py").read_text()
+        assert "render_article_cover, None," in router, \
+            "il router passa ancora il titolo al generatore"
+
+    def test_sw4_cover_dice_la_categoria(self):
+        """Quello che resta dentro l'immagine: il segno della
+        categoria, il suo nome e la firma. Ogni categoria del Magazine
+        (anche quelle editoriali) ha palette e geometria proprie."""
+        from models.article import ARTICLE_CATEGORIES
+        from services.article_cover import (EDITORIAL_GEOMETRY,
+                                            EDITORIAL_PALETTES,
+                                            _geo_aura, geometry_for,
+                                            palette_for)
+        src = self.COVER.read_text()
+        assert "category_label or BRAND_NAME" in src, \
+            "il nome della categoria deve stare nella cover"
+        assert "A U R Y A" in src, "la firma resta"
+        assert set(EDITORIAL_PALETTES) == set(EDITORIAL_GEOMETRY)
+        segni = set()
+        for slug in ARTICLE_CATEGORIES:
+            assert palette_for(slug) is not None
+            geo = geometry_for(slug)
+            assert geo is not _geo_aura, \
+                f"la categoria '{slug}' cade sul segno di ripiego"
+            segni.add(geo.__name__)
+        assert len(segni) == len(ARTICLE_CATEGORIES), \
+            "due categorie condividono lo stesso segno"
+
+    def test_sw4_cover_resta_og_perfetta(self):
+        """1200x630 WebP: la misura che og:image vuole. Li' il titolo
+        non serve, lo stampa la card social."""
+        from io import BytesIO
+
+        from PIL import Image
+        from services.article_cover import render_article_cover
+        data = render_article_cover(None, "operatori", "Per gli operatori")
+        assert data and data[:4] == b"RIFF"
+        assert Image.open(BytesIO(data)).size == (1200, 630)
+        # og:image dell'articolo = la sua cover, senza ritocchi
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert '_abs_image(doc.get("featured_image_url"))' in shell, \
+            "og:image dell'articolo non e' piu' la copertina"
+
+    # ── 3. lessico e i18n x4 ─────────────────────────────────────────
+
+    _VIETATE = ("marketplace", "directory", "gestionale", "piattaform",
+                "trasforma la tua vita", "ritrova te stesso",
+                "gratuit", "gratis", "kostenlos", "free of charge")
+
+    def test_sw4_parole_vietate_e_trattini_lunghi(self):
+        import re
+        copy = self._copy().replace("MarketplaceShell", "")
+        for vietata in self._VIETATE:
+            assert vietata.lower() not in copy.lower(), \
+                f"parola vietata nel sorgente dell'indice: '{vietata}'"
+        for lang in self.LOCALES:
+            for chiave, valore in self._blocco(lang).items():
+                for vietata in self._VIETATE:
+                    assert vietata.lower() not in valore.lower(), \
+                        f"[{lang}] blog.{chiave} usa '{vietata}'"
+                assert "—" not in valore and "–" not in valore, \
+                    f"[{lang}] trattino lungo in blog.{chiave}"
+        defaults = re.findall(r"defaultValue:\s*(?:'([^']*)'|\"([^\"]*)\")",
+                              self._page())
+        valori = [a or b for a, b in defaults]
+        assert len(valori) >= 10, \
+            f"i defaultValue dell'indice sono {len(valori)}, attesi almeno 10"
+        for val in valori:
+            assert "—" not in val and "–" not in val, \
+                f"trattino lungo nel copy del Magazine: {val[:40]}"
+
+    def test_sw4_i18n_x4(self):
+        src = self._page()
+        it = self._blocco("it")
+        for chiave in ("eyebrow", "lead1", "lead2", "subtitle",
+                       "catSubtitle", "moreTitle", "empty", "emptyCat",
+                       "gatedBadge", "allArticles"):
+            assert it.get(chiave), f"[it] blog.{chiave} mancante"
+        for lang in self.LOCALES:
+            blocco = self._blocco(lang)
+            mancanti = set(it) - set(blocco)
+            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)}"
+            for k, v in blocco.items():
+                assert v and v.strip(), f"[{lang}] blog.{k} vuota"
+        # i defaultValue inline sono l'italiano vero, non una variante
+        for k, v in it.items():
+            if f"blog.{k}" in src:
+                assert v in src, \
+                    f"defaultValue di blog.{k} diverso dall'italiano"

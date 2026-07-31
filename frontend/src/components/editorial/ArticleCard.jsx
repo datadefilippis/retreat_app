@@ -24,9 +24,13 @@ const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:rin
 
 const ZOOM = 'motion-safe:transition-transform motion-safe:duration-[900ms] motion-safe:ease-out motion-safe:group-hover:scale-[1.05]';
 
-/** categoria = chip (una classificazione), data = testo (un fatto) */
-function Kicker({ category, date, className = '' }) {
-  if (!category && !date) return null;
+/** categoria = chip (una classificazione), data = testo (un fatto)
+ *  SW4 — `badge` e' lo slot per una nota di STATO della scheda (oggi
+ *  solo "Per gli iscritti", la promessa BN3 che va vista gia' in
+ *  lista). Sta nel kit e non nella pagina perche' la riga di occhiello
+ *  e' una misura condivisa: montarlo fuori l'avrebbe disallineata. */
+function Kicker({ category, date, badge, className = '' }) {
+  if (!category && !date && !badge) return null;
   return (
     <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 ${className}`}>
       {category && (
@@ -37,11 +41,12 @@ function Kicker({ category, date, className = '' }) {
       {date && (
         <span className="text-[13px] text-foreground/65">{date}</span>
       )}
+      {badge}
     </div>
   );
 }
 
-export default function ArticleCard({ article, variant = 'compact', date, category, eager = false }) {
+export default function ArticleCard({ article, variant = 'compact', date, category, badge, eager = false }) {
   const { slug, title, featured_image_url: image, description } = article || {};
   // `category` arriva gia' tradotta dal chiamante; se manca si ripiega
   // sullo slug del payload (meglio uno slug che un buco).
@@ -65,7 +70,7 @@ export default function ArticleCard({ article, variant = 'compact', date, catego
               />
             )}
           </div>
-          <Kicker category={kicker} date={date} className="mt-6" />
+          <Kicker category={kicker} date={date} badge={badge} className="mt-6" />
           <h3 className="font-display text-[1.7rem] sm:text-[2.1rem] leading-[1.14] mt-3 max-w-[26ch] text-balance text-foreground group-hover:text-[#2f5749] transition-colors">
             {title}
           </h3>
@@ -99,7 +104,7 @@ export default function ArticleCard({ article, variant = 'compact', date, catego
           )}
         </div>
         <div className="min-w-0">
-          <Kicker category={kicker} date={date} />
+          <Kicker category={kicker} date={date} badge={badge} />
           <h3 className="font-display text-[1.0625rem] sm:text-lg leading-snug mt-2 max-w-[28ch] text-pretty text-foreground group-hover:text-[#2f5749] transition-colors">
             {title}
           </h3>
