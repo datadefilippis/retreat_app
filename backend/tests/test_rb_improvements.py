@@ -91,10 +91,12 @@ class TestCopyRulesRb4:
     def test_motto_overline_in_brand_font(self):
         """HP1 — l'occhiello di brand resta su hero, sezioni valore e
         pagine istituzionali, ma ora e' il PAYOFF e passa da un solo
-        componente (BrandPayoff, font-brand/Cinzel oro)."""
+        componente (BrandPayoff, font-brand/Cinzel oro).
+        SW3 — AboutAuryaPage e' stata sostituita da
+        features/network/ChiSiamoPage.js: l'occhiello la segue."""
         for rel in ("features/storefront/RetreatsCalendarPage.js",
                     "features/storefront/components/MarketplaceValueSections.jsx",
-                    "features/storefront/AboutAuryaPage.js",
+                    "features/network/ChiSiamoPage.js",
                     "features/storefront/HowItWorksPage.js"):
             src = (FRONTEND_SRC / rel).read_text()
             assert "<BrandPayoff" in src, f"{rel}: occhiello di brand mancante"

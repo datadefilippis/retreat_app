@@ -242,9 +242,7 @@ _BRAND_PAGES = {
                         "da fondatori."),
         "image": "/media/hero-organizer.webp",
     },
-    # RT5 (piano sito-rete) — le pagine della fase rete. /chi-siamo e'
-    # migrato su /manifesto: la voce resta per servire ai crawler che
-    # arrivano dai vecchi link il canonical giusto.
+    # RT5 (piano sito-rete) — le pagine della fase rete.
     "manifesto": {
         "title": "Il manifesto di Aurya | La rete del benessere olistico in Italia",
         "description": ("Da dove nasce Aurya, cosa vogliamo costruire e chi "
@@ -263,11 +261,15 @@ _BRAND_PAGES = {
                         "diamo un profilo pubblico curato e visibile sui "
                         "motori di ricerca. Gratuitamente."),
     },
+    # SW3 — /chi-siamo e' di nuovo una pagina propria (le persone dietro
+    # Aurya), quindi torna canonica di se stessa: il canonical_slug che
+    # la mandava su /manifesto e' caduto insieme al redirect.
     "chi-siamo": {
-        "title": "Il manifesto di Aurya | La rete del benessere olistico in Italia",
-        "description": ("Da dove nasce Aurya, cosa vogliamo costruire e chi "
-                        "siamo. La rete degli operatori olistici in Italia."),
-        "canonical_slug": "manifesto",
+        "title": "Chi siamo | Aurya",
+        "description": ("Siamo Valentina e Davide, la coppia dietro Aurya. "
+                        "Andiamo a conoscere chi lavora nel benessere, una "
+                        "persona alla volta, e raccontiamo quello che "
+                        "vediamo."),
     },
     "come-funziona": {
         "title": "Come funziona Aurya: prenota ritiri olistici con caparra e pagamento diretto",

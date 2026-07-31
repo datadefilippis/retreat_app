@@ -41,14 +41,17 @@ class TestSitemapUrl:
     @pytest.mark.asyncio
     async def test_core_network_phase_rt5(self, monkeypatch):
         """RT5 — in fase network la sitemap core dice la verita': home,
-        manifesto, rete, newsletter. Niente hub commerciali (il ramo
-        network esce PRIMA di toccare il DB: il test non richiede Mongo)."""
+        manifesto, chi siamo, rete, newsletter. Niente hub commerciali
+        (il ramo network esce PRIMA di toccare il DB: il test non
+        richiede Mongo).
+        SW3 — /chi-siamo rientra in sitemap: e' una pagina vera (le
+        persone dietro Aurya), non piu' un redirect sul Manifesto."""
         monkeypatch.setenv("SITE_PHASE", "network")
         xml = await build_core()
-        for path in ("/manifesto", "/entra-nella-rete", "/newsletter",
-                     "/operatori", "/privacy", "/termini"):
+        for path in ("/manifesto", "/chi-siamo", "/entra-nella-rete",
+                     "/newsletter", "/operatori", "/privacy", "/termini"):
             assert f"{path}</loc>" in xml, f"manca {path}"
-        for assente in ("/chi-siamo", "/come-funziona", "/ritiri",
+        for assente in ("/come-funziona", "/ritiri",
                         "/destinazioni"):
             assert assente not in xml, f"non deve esserci {assente}"
 

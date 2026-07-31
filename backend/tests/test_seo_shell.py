@@ -105,18 +105,22 @@ class TestResolveRouting:
 
 class TestNetworkPhaseRT5:
     """RT5 (piano sito-rete) — la shell dice la verita' della fase:
-    le rotte nuove sono note (mai 404 dai crawler), /chi-siamo migra il
-    canonical su /manifesto, /operatori si indicizza in fase network."""
+    le rotte nuove sono note (mai 404 dai crawler), /operatori si
+    indicizza in fase network.
+    SW3 — /chi-siamo non migra piu' il canonical sul Manifesto: e'
+    tornata una pagina propria e canonica di se stessa."""
 
     def test_brand_pages_include_network_routes(self):
         for slug in ("manifesto", "newsletter", "entra-nella-rete"):
             assert slug in shell._BRAND_PAGES, f"rotta rete assente: {slug}"
 
     @pytest.mark.asyncio
-    async def test_chi_siamo_canonical_migrated_to_manifesto(self):
+    async def test_chi_siamo_e_manifesto_canonici_di_se_stessi(self):
+        """SW3 — due pagine, due canonical: il Manifesto e' la
+        posizione, Chi siamo sono le persone."""
         meta = await shell._meta_brand_page("chi-siamo")
-        assert meta["canonical"].endswith("/manifesto")
-        # /manifesto resta canonico di se stesso
+        assert meta["canonical"].endswith("/chi-siamo")
+        assert "Chi siamo" in meta["title"]
         meta2 = await shell._meta_brand_page("manifesto")
         assert meta2["canonical"].endswith("/manifesto")
 

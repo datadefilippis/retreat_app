@@ -590,21 +590,14 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     ? t('marketplace.navNetworkMembers', { defaultValue: 'Operatori' })
                     : t('marketplace.footerExploreOperators', { defaultValue: 'Esplora operatori' })}
                 </Link></li>
-                {/* HP2 / NOTA DIREZIONE CREATIVA — "Chi siamo".
-                    Sta in specifica e quindi c'e'. Oggi pero' /chi-siamo
-                    e' un Navigate su /manifesto: nella stessa colonna
-                    due voci portano allo stesso posto, e chi ci clicca
-                    sopra pensa di aver sbagliato link. AboutAuryaPage.js
-                    esiste ancora nel repo ma NON e' piu' montata in
-                    nessuna rotta. Due uscite pulite, decide il founder:
-                    (a) rimontare AboutAuryaPage su /chi-siamo con le
-                        persone dietro Aurya (Valentina e Davide, il
-                        contenuto e' gia' scritto nella FAQ di
-                        /entra-nella-rete) e lasciare al Manifesto la
-                        visione;
-                    (b) togliere la voce e tenere solo il Manifesto.
-                    Finche' non si decide, la voce resta e il redirect
-                    la porta comunque su una pagina viva. */}
+                {/* HP2 → SW3 — "Chi siamo". La nota di direzione
+                    creativa che stava qui e' rientrata: il founder ha
+                    scelto la strada (a). /chi-siamo non e' piu' un
+                    Navigate sul Manifesto ma una pagina propria
+                    (features/network/ChiSiamoPage.js) con le persone
+                    dietro Aurya; al Manifesto resta la posizione. Le
+                    due voci del footer portano a due posti diversi,
+                    come devono. */}
                 {isNetwork && <li><Link to="/chi-siamo" className="hover:text-white" data-testid="footer-nw-chisiamo">{t('marketplace.footerAbout', { defaultValue: 'Chi siamo' })}</Link></li>}
                 {isNetwork && <li><Link to="/newsletter" className="hover:text-white" data-testid="footer-nw-newsletter">{t('marketplace.navNewsletter', { defaultValue: 'Newsletter' })}</Link></li>}
                 {!isNetwork && <li><Link to="/ritiri/yoga" className="hover:text-white">Yoga</Link></li>}

@@ -117,8 +117,11 @@ async def build_core() -> str:
     base = _base_url()
     urls = [
         _url(f"{base}/", priority="1.0"),
-        # RT5 — /manifesto sostituisce /chi-siamo (301 + canonical migrati)
         _url(f"{base}/manifesto", priority="0.8"),
+        # SW3 — /chi-siamo e' una pagina propria (le persone dietro
+        # Aurya): torna in sitemap, un gradino sotto il Manifesto, che
+        # resta la pagina di posizione.
+        _url(f"{base}/chi-siamo", priority="0.6"),
         _url(f"{base}/entra-nella-rete", priority="0.7"),
         _url(f"{base}/newsletter", priority="0.7"),
         _url(f"{base}/privacy", priority="0.3"),

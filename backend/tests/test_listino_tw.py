@@ -5967,3 +5967,242 @@ class TestManifestoSw1:
             if f"manifesto.{k}" in src:
                 assert v in src, \
                     f"defaultValue di manifesto.{k} diverso dall'italiano"
+
+
+class TestChiSiamoSw3:
+    """SW3 (31/7/2026) — Chi siamo diventa una pagina propria
+    (docs/SITO_REDESIGN_PIANO_2026-07.md).
+
+    La decisione: il Manifesto e' la posizione, Chi siamo sono le
+    persone. Due domande diverse, due pagine. Il footer di fase rete
+    puntava gia' a /chi-siamo, che pero' era un Navigate sul Manifesto:
+    due voci nella stessa colonna che portavano allo stesso posto.
+
+    Queste guardie difendono: la rotta con la pagina vera (mai piu' un
+    redirect), le tre negazioni in apertura (l'eco della landing
+    operatori), i ritratti fatti coi SOLI fatti verificati dei
+    fondatori, la teoria indicata e non riscritta (il Manifesto non si
+    duplica), la doppia CTA finale verso il manifesto e la mail, il
+    lessico del Blueprint e l'i18n x4.
+
+    La pagina vecchia (features/storefront/AboutAuryaPage.js, voce
+    2025) non deve tornare: e' stata rimossa, non lasciata a marcire.
+    """
+
+    PAGE = FRONTEND_SRC / "features" / "network" / "ChiSiamoPage.js"
+    VECCHIA = FRONTEND_SRC / "features" / "storefront" / "AboutAuryaPage.js"
+    LOCALES = ("it", "en", "de", "fr")
+    MAIL = "info@aurya.life"
+
+    def _page(self):
+        return self.PAGE.read_text()
+
+    def _copy(self):
+        """Il sorgente senza commenti: le guardie lessicali giudicano
+        quello che il lettore puo' vedere, non le note di lavoro."""
+        import re
+        src = re.sub(r"/\*.*?\*/", "", self._page(), flags=re.DOTALL)
+        return re.sub(r"^\s*//.*$", "", src, flags=re.MULTILINE)
+
+    def _blocco(self, lang):
+        import json
+        path = FRONTEND_SRC / "locales" / lang / "landings.json"
+        return json.loads(path.read_text()).get("chiSiamo") or {}
+
+    # ── 1. la rotta: una pagina vera, non un redirect ────────────────
+
+    def test_sw3_rotta_monta_la_pagina_vera(self):
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/chi-siamo" element={<ChiSiamoPage />}' in app, \
+            "/chi-siamo deve montare la pagina, non un Navigate"
+        assert "features/network/ChiSiamoPage" in app, "manca l'import lazy"
+        assert 'to="/manifesto" replace' not in app, \
+            "regressione: il redirect /chi-siamo → /manifesto e' tornato"
+        # la rotta OMONIMA degli store non si tocca: e' un'altra cosa
+        assert 'path="/s/:slug/chi-siamo"' in app, \
+            "regressione: sparita la rotta store /s/:slug/chi-siamo"
+        assert self.PAGE.exists(), "la pagina non esiste"
+        # e il footer di fase rete continua a linkarla
+        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "MarketplaceShell.jsx").read_text()
+        assert 'data-testid="footer-nw-chisiamo"' in shell
+        assert 'to="/chi-siamo"' in shell
+
+    def test_sw3_vecchia_pagina_rimossa_niente_codice_morto(self):
+        """Non restano due Chi siamo: la pagina 2025 e' sparita, e con
+        lei le chiavi di copy che serviva solo a lei."""
+        assert not self.VECCHIA.exists(), \
+            "AboutAuryaPage.js e' ancora nel repo: due pagine simili"
+        import json
+        for lang in self.LOCALES:
+            about = json.loads((FRONTEND_SRC / "locales" / lang
+                                / "landings.json").read_text())["aboutPage"]
+            for morta in ("intro", "missionTitle", "missionBody",
+                          "visionTitle", "visionBody", "forSeekersTitle",
+                          "forOrganizersTitle", "cta", "seoTitle", "seoDesc"):
+                assert morta not in about, \
+                    f"[{lang}] chiave morta superstite: aboutPage.{morta}"
+            # la firma dei fondatori resta: la riusano Manifesto e landing
+            for viva in ("title", "facesTitle", "facesBody1", "facesAlt"):
+                assert about.get(viva), f"[{lang}] persa aboutPage.{viva}"
+
+    # ── 2. l'apertura: le tre negazioni ──────────────────────────────
+
+    def test_sw3_apertura_tre_negazioni(self):
+        """L'eco della landing operatori, in tre righe volute
+        (<TitleLine>, non un a-capo estetico), e un solo h1."""
+        src = self._page()
+        negazioni = ("Non siamo un'agenzia.", "Non siamo un software.",
+                     "Non siamo una directory.")
+        pos = -1
+        for riga in negazioni:
+            assert riga in src, f"manca la negazione: {riga}"
+            here = src.index(riga)
+            assert here > pos, f"negazione fuori ordine: {riga}"
+            pos = here
+        assert self._copy().count("<TitleLine>") == 3, \
+            "le tre negazioni sono tre frasi, non un titolo che va a capo"
+        assert src.count('as="h1"') == 1, "l'h1 e' uno solo"
+        i_h1 = src.index('as="h1"')
+        assert src.index(negazioni[0]) > i_h1, \
+            "le negazioni SONO l'h1 della pagina"
+        # e subito dopo si dice chi siamo davvero
+        assert "Siamo Valentina e Davide." in src, \
+            "dopo le negazioni manca la riga su chi siamo davvero"
+
+    # ── 3. i ritratti: soltanto fatti reali ──────────────────────────
+
+    def test_sw3_ritratti_solo_fatti_reali(self):
+        """Valentina e Davide raccontati col materiale verificato dei
+        fondatori: nessun titolo, premio o data inventata."""
+        import re
+        src = self._page()
+        for fatto in ("Operatrice Reiki di terzo livello",
+                      "letture evolutive di tarocchi e oracoli",
+                      "mappe natali", "Lavora nel digitale"):
+            assert fatto in src, f"fatto reale mancante nei ritratti: {fatto}"
+        # la foto vera, con l'alt gia' tradotto x4 (nessun alt nuovo)
+        assert "/media/chisiamo-aurya.jpg" in src, "manca la foto vera"
+        assert "aboutPage.facesAlt" in src, "l'alt della foto va riusato"
+        blocco = src[src.index('data-testid="cs-faces"'):]
+        assert 'filter' not in blocco and 'grayscale' not in blocco, \
+            "la fotografia va lasciata com'e': niente filtri"
+        # niente biografia gonfiata: date, anni, numeri di clienti
+        copy = self._copy()
+        assert not re.search(r"\b(19|20)\d{2}\b", copy), \
+            "nessuna data va inventata nei ritratti"
+        for inventato in ("fondata nel", "da oltre", "premio", "certificat",
+                          "master", "clienti soddisfatti", "esperti"):
+            assert inventato.lower() not in copy.lower(), \
+                f"fatto non verificato nel copy: '{inventato}'"
+
+    # ── 4. la teoria si indica, non si riscrive ──────────────────────
+
+    def test_sw3_teoria_indicata_e_manifesto_non_duplicato(self):
+        """Cosa ci guida cita la teoria del Blueprint (la stessa frase
+        del Manifesto, parola per parola) e rimanda: i movimenti del
+        Manifesto non si ricopiano qui."""
+        import json
+        src = self._page()
+        teoria = "Ogni percorso di benessere inizia da un incontro di fiducia."
+        assert teoria in src, "manca il richiamo alla teoria"
+        assert "<Quote" in src, "la teoria e' una citazione, non una tesi nuova"
+        for lang in self.LOCALES:
+            loc = json.loads((FRONTEND_SRC / "locales" / lang
+                              / "landings.json").read_text())
+            assert self._blocco(lang)["guideTheory"] == \
+                loc["manifesto"]["theoryTitle"], \
+                f"[{lang}] la teoria citata non e' quella del Manifesto"
+        copy = self._copy()
+        for pezzo_di_manifesto in ("Cosa non faremo mai", "Il mondo come lo vediamo",
+                                   "Non venderemo posizioni in classifica",
+                                   "Verificato Aurya"):
+            assert pezzo_di_manifesto not in copy, \
+                f"il Manifesto non si duplica qui: '{pezzo_di_manifesto}'"
+        # una sola ancora tonale in tutta la pagina
+        assert src.count('tone="sage"') == 1, \
+            "Chi siamo ha UNA ancora verde, non di piu'"
+
+    # ── 5. la chiusura: manifesto e mail ─────────────────────────────
+
+    def test_sw3_chiusura_doppia_cta_discreta(self):
+        src = self._page()
+        blocco = src[src.index('data-testid="cs-close"'):]
+        assert blocco.count("<EditorialCta") == 2, \
+            "la chiusura ha due CTA, non una e non tre"
+        assert 'variant="solid"' not in src, \
+            "le CTA di questa pagina sono discrete: quiet, mai bottoni pieni"
+        assert 'to="/manifesto"' in blocco, "manca il rimando al manifesto"
+        assert "Leggi il manifesto" in blocco
+        # la mail vive in una costante e la CTA la monta in un href
+        assert f"'{self.MAIL}'" in src, f"manca la mail vera ({self.MAIL})"
+        assert "href={`mailto:${CONTACT_MAIL}`}" in blocco, \
+            "la CTA 'Scrivici' deve aprire un mailto vero"
+        assert "Scrivici" in blocco
+        i_manifesto = blocco.index('to="/manifesto"')
+        assert blocco.index("cs-cta-write") > i_manifesto, \
+            "prima il manifesto, poi la mail"
+
+    # ── 6. SEO e i18n x4 ─────────────────────────────────────────────
+
+    def test_sw3_seo_e_i18n_x4(self):
+        src = self._page()
+        assert "'Chi siamo | Aurya'" in src, "title della pagina sbagliato"
+        assert "canonicalPath: '/chi-siamo'" in src
+        it = self._blocco("it")
+        assert len(it) >= 20, f"chiavi chiSiamo in italiano: {len(it)}"
+        for lang in self.LOCALES:
+            blocco = self._blocco(lang)
+            mancanti = set(it) - set(blocco)
+            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)}"
+            for k, v in blocco.items():
+                assert v and v.strip(), f"[{lang}] chiSiamo.{k} vuota"
+            desc = blocco.get("seoDesc") or ""
+            assert 0 < len(desc) <= 158, \
+                f"[{lang}] description da {len(desc)} caratteri, taglio 158"
+            assert "Aurya" in (blocco.get("seoTitle") or ""), \
+                f"[{lang}] title senza il brand"
+        # i defaultValue inline sono l'italiano vero, non una variante
+        for k, v in it.items():
+            if f"chiSiamo.{k}" in src:
+                assert v in src, \
+                    f"defaultValue di chiSiamo.{k} diverso dall'italiano"
+
+    # ── 7. il lessico del Blueprint ──────────────────────────────────
+
+    # Le tre negazioni dell'apertura NOMINANO quello che non siamo:
+    # e' l'unico posto in cui "directory" e i suoi fratelli sono
+    # ammessi, esattamente come sulla landing operatori.
+    _NEGAZIONI = ("line1", "line2", "line3")
+    _VIETATE = ("marketplace", "gestionale", "piattaform",
+                "trasforma la tua vita", "ritrova te stesso",
+                "gratuit", "gratis", "kostenlos", "free of charge")
+
+    def test_sw3_parole_vietate_e_trattini_lunghi(self):
+        import re
+        copy = self._copy().replace("MarketplaceShell", "")
+        # via le tre negazioni prima di scandire il sorgente
+        for lang_key in self._NEGAZIONI:
+            valore = self._blocco("it")[lang_key]
+            copy = copy.replace(valore, "")
+        for vietata in self._VIETATE + ("directory",):
+            assert vietata.lower() not in copy.lower(), \
+                f"parola vietata nel sorgente di Chi siamo: '{vietata}'"
+        for lang in self.LOCALES:
+            for chiave, valore in self._blocco(lang).items():
+                if chiave in self._NEGAZIONI:
+                    continue
+                for vietata in self._VIETATE:
+                    assert vietata.lower() not in valore.lower(), \
+                        f"[{lang}] chiSiamo.{chiave} usa '{vietata}'"
+                assert "—" not in valore and "–" not in valore, \
+                    f"[{lang}] trattino lungo in chiSiamo.{chiave}"
+        # zero trattini lunghi anche nel copy inline
+        defaults = re.findall(r"defaultValue:\s*(?:'([^']*)'|\"([^\"]*)\")",
+                              self._page())
+        valori = [a or b for a, b in defaults]
+        assert len(valori) >= 15, \
+            f"i defaultValue di Chi siamo sono {len(valori)}, attesi almeno 15"
+        for val in valori:
+            assert "—" not in val and "–" not in val, \
+                f"trattino lungo nel copy di Chi siamo: {val[:40]}"

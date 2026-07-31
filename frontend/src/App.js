@@ -99,6 +99,10 @@ const NewsletterPreferencesPage = lazy(() => import("./features/prelaunch/Newsle
 // RT2 — le pagine della fase rete
 const NetworkHomePage = lazy(() => import("./features/network/NetworkHomePage"));
 const ManifestoPage = lazy(() => import("./features/network/ManifestoPage"));
+// SW3 — Chi siamo torna una pagina propria: il Manifesto e' la
+// posizione, Chi siamo sono le persone (sostituisce AboutAuryaPage,
+// rimossa dal repo con la sua voce vecchia).
+const ChiSiamoPage = lazy(() => import("./features/network/ChiSiamoPage"));
 const NetworkOperatorsPage = lazy(() => import("./features/network/NetworkOperatorsPage"));
 const CashflowDataPage = lazy(() => import("./features/cashflow/CashflowDataPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
@@ -447,8 +451,11 @@ function AppRoutes() {
           Promuovere /magazine a canonica e' una decisione SEO a se':
           servirebbero sitemap, 301 lato server e un nuovo IndexNow. */}
       <Route path="/magazine" element={<Navigate to="/blog" replace />} />
+      {/* SW3 — /chi-siamo e' una pagina vera, non piu' un redirect sul
+          Manifesto: il footer di fase rete la linka e chi ci clicca
+          deve trovare le persone, non la posizione. */}
+      <Route path="/chi-siamo" element={<ChiSiamoPage />} />
       {/* redirect permanenti dei vecchi percorsi */}
-      <Route path="/chi-siamo" element={<Navigate to="/manifesto" replace />} />
       <Route path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />} />
       <Route path="/cerca-ritiro" element={<Navigate to="/newsletter" replace />} />
       {/* S0.1 — la login operatori vive su /login (via dalla root) */}
@@ -460,7 +467,6 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
-      {/* AN1→RT1 — /chi-siamo e' migrato su /manifesto (redirect sopra) */}
       <Route path="/come-funziona" element={<HowItWorksPage />} />
       {/* AN5 — il blog di Aurya */}
       {/* SEO1 (11/7, decisione founder): il blog è il motore SEO del

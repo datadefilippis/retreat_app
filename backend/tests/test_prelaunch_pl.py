@@ -265,8 +265,13 @@ def test_prelaunch_gates_operators_and_destinations_pages():
     assert "function DestinationsGate()" in app
     assert '<Navigate to="/entra-nella-rete" replace />' in app
     assert "sitePhase === 'network'" in app
-    # RT1 — i vecchi URL redirigono per sempre ai nuovi
-    assert 'path="/chi-siamo" element={<Navigate to="/manifesto" replace />}' in app
+    # RT1 — i vecchi URL redirigono per sempre ai nuovi.
+    # SW3 — /chi-siamo esce da questa lista: non e' piu' un vecchio URL
+    # da redirigere, e' una pagina viva (le persone dietro Aurya).
+    assert 'path="/chi-siamo" element={<ChiSiamoPage />}' in app, \
+        "/chi-siamo monta la pagina vera, non un Navigate"
+    assert 'to="/manifesto" replace' not in app, \
+        "regressione: il redirect /chi-siamo → /manifesto e' tornato"
     assert 'path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />}' in app
     assert 'path="/cerca-ritiro" element={<Navigate to="/newsletter" replace />}' in app
     # le route usano i gate, non più le pagine dirette
