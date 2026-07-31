@@ -4707,3 +4707,268 @@ class TestProfiloPv7:
                         "point4", "checkbox", "accept", "acceptedBadge",
                         "bannerTitle", "bannerBody", "bannerCta"):
                 assert pact.get(key), f"{lang}: dpa.pact.{key} mancante"
+
+
+class TestUtentiUt1:
+    """UT1 — tab Utenti (clientela FINALE) nel pannello system admin.
+
+    Guardie: 403 per non-sysadmin su lista e dettaglio; la lista unisce
+    account Aurya e guest (ordini senza account) per email con conteggi
+    giusti (total_spent SOLO confirmed/completed — coerenza tesoreria
+    RF1), join newsletter corretto; filtri e search; dettaglio coerente
+    (ordini con operatore, schede CRM, consensi); paginazione con cap
+    100. Endpoint di sola lettura: la fixture vive nel DB live e viene
+    rimossa a fine classe.
+    """
+
+    _sys_token_cache = None
+    _op_token_cache = None
+
+    ACC_EMAIL = "ut1-account@test.aurya"
+    GUEST_EMAIL = "ut1-guest@test.aurya"
+    _ids: dict = {}
+
+    # ── infrastruttura live (stessi helper di TestProfiloPv2) ────────
+
+    @classmethod
+    def _sys_headers(cls):
+        import pytest
+        if cls._sys_token_cache:
+            return {"Authorization": f"Bearer {cls._sys_token_cache}"}
+        for pwd in ("DevLocal1234!", "demo1234"):
+            r = requests.post(f"{BASE_URL}/api/auth/login", json={
+                "email": "sysadmin@demo.com", "password": pwd}, timeout=10)
+            if r.status_code == 200:
+                cls._sys_token_cache = r.json()["access_token"]
+                return {"Authorization": f"Bearer {cls._sys_token_cache}"}
+        pytest.skip("sysadmin login unavailable (rate limit?)")
+
+    @classmethod
+    def _op_headers(cls):
+        import pytest
+        if cls._op_token_cache:
+            return {"Authorization": f"Bearer {cls._op_token_cache}"}
+        r = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "admin@demo.com", "password": "demo1234"}, timeout=10)
+        if r.status_code != 200:
+            pytest.skip("demo login unavailable (rate limit?)")
+        cls._op_token_cache = r.json()["access_token"]
+        return {"Authorization": f"Bearer {cls._op_token_cache}"}
+
+    @staticmethod
+    def _db():
+        import re as _re
+        import pymongo
+        env = (BACKEND_DIR / ".env").read_text()
+        mongo = _re.search(r'MONGO_URL="?([^"\n]+?)"?\n', env).group(1)
+        name = _re.search(r'DB_NAME="?([^"\n]+?)"?\n', env).group(1)
+        return pymongo.MongoClient(mongo)[name]
+
+    # ── fixture: 1 account (2 ordini, 1 confermato) + 1 guest ────────
+
+    @classmethod
+    def setup_class(cls):
+        import uuid
+        from datetime import datetime, timezone
+        db = cls._db()
+        cls._teardown_docs(db)  # residui di run precedenti
+        org = db.users.find_one({"email": "admin@demo.com"},
+                                {"organization_id": 1})
+        assert org and org.get("organization_id"), "org demo assente"
+        org_id = org["organization_id"]
+        cls._ids["org_id"] = org_id
+        cls._ids["org_name"] = (db.organizations.find_one(
+            {"id": org_id}, {"name": 1}) or {}).get("name")
+        now = datetime.now(timezone.utc).isoformat()
+
+        acc_id = str(uuid.uuid4())
+        db.platform_accounts.insert_one({
+            "id": acc_id, "email": cls.ACC_EMAIL, "name": "UT1 Account",
+            "email_verified": True, "is_active": True,
+            "created_at": now, "last_login_at": now,
+            "aurya_legal": {"terms_version": "vtest",
+                            "privacy_version": "vtest",
+                            "accepted_at": now, "source": "checkout",
+                            "locale": "it"},
+        })
+        cls._ids["account_id"] = acc_id
+
+        cust_acc = str(uuid.uuid4())
+        cust_guest = str(uuid.uuid4())
+        db.customers.insert_many([
+            {"id": cust_acc, "organization_id": org_id,
+             "email": cls.ACC_EMAIL, "name": "UT1 Account",
+             "marketing_opted_in": True, "created_at": now},
+            {"id": cust_guest, "organization_id": org_id,
+             "email": cls.GUEST_EMAIL, "name": "UT1 Guest",
+             "marketing_opted_in": False, "created_at": now},
+        ])
+
+        order_ids = [str(uuid.uuid4()) for _ in range(3)]
+        db.orders.insert_many([
+            # account: confermato 100 + draft 50 → spent 100, count 2
+            {"id": order_ids[0], "organization_id": org_id,
+             "customer_id": cust_acc, "platform_account_id": acc_id,
+             "status": "confirmed", "total": 100.0, "currency": "EUR",
+             "sales_channel": "marketplace", "order_number": None,
+             "created_at": now, "items": []},
+            {"id": order_ids[1], "organization_id": org_id,
+             "customer_id": cust_acc, "platform_account_id": acc_id,
+             "status": "draft", "total": 50.0, "currency": "EUR",
+             "sales_channel": "store", "order_number": None,
+             "created_at": now, "items": []},
+            # guest: confermato 80 → riga Ospite
+            {"id": order_ids[2], "organization_id": org_id,
+             "customer_id": cust_guest,
+             "status": "confirmed", "total": 80.0, "currency": "EUR",
+             "sales_channel": "store", "order_number": None,
+             "created_at": now, "items": []},
+        ])
+        cls._ids["order_ids"] = order_ids
+
+        db.aurya_subscribers.insert_one({
+            "email": cls.ACC_EMAIL, "status": "confirmed",
+            "source": "ut1-guard", "created_at": now, "confirmed_at": now,
+        })
+
+    @classmethod
+    def _teardown_docs(cls, db):
+        emails = [cls.ACC_EMAIL, cls.GUEST_EMAIL]
+        db.platform_accounts.delete_many({"email": {"$in": emails}})
+        db.aurya_subscribers.delete_many({"email": {"$in": emails}})
+        cust_ids = [c["id"] for c in
+                    db.customers.find({"email": {"$in": emails}}, {"id": 1})]
+        db.customers.delete_many({"email": {"$in": emails}})
+        if cust_ids:
+            db.orders.delete_many({"customer_id": {"$in": cust_ids}})
+
+    @classmethod
+    def teardown_class(cls):
+        try:
+            cls._teardown_docs(cls._db())
+        except Exception:
+            pass  # cleanup best-effort
+
+    def _list(self, **params):
+        r = requests.get(f"{BASE_URL}/api/admin/platform/users",
+                         headers=self._sys_headers(),
+                         params={"search": "ut1-", "page_size": 50,
+                                 **params},
+                         timeout=15)
+        assert r.status_code == 200, r.text
+        return r.json()
+
+    # ── 1. perimetro: solo il system admin entra ─────────────────────
+
+    def test_403_non_sysadmin(self):
+        op = self._op_headers()
+        r = requests.get(f"{BASE_URL}/api/admin/platform/users",
+                         headers=op, timeout=10)
+        assert r.status_code == 403
+        r = requests.get(f"{BASE_URL}/api/admin/platform/users/detail",
+                         headers=op, params={"email": self.ACC_EMAIL},
+                         timeout=10)
+        assert r.status_code == 403
+
+    # ── 2. lista: account + guest, conteggi e join newsletter ────────
+
+    def test_lista_account_e_guest(self):
+        data = self._list()
+        rows = {i["email"]: i for i in data["items"]}
+        assert self.ACC_EMAIL in rows and self.GUEST_EMAIL in rows
+
+        acc = rows[self.ACC_EMAIL]
+        assert acc["type"] == "account"
+        assert acc["email_verified"] is True
+        assert acc["newsletter_status"] == "confirmed"   # join corretto
+        assert acc["orders_count"] == 2
+        assert acc["confirmed_orders"] == 1
+        # RF1: il draft da 50 NON conta nello speso
+        assert acc["total_spent"] == 100.0
+        assert self._ids["org_name"] in acc["operators"]
+        assert acc["operators_count"] == 1
+        assert acc["marketing_opted_in"] is True
+        assert acc["aurya_accepted_at"]                  # consenso Aurya
+        assert acc["last_order_at"]
+
+        guest = rows[self.GUEST_EMAIL]
+        assert guest["type"] == "guest"
+        assert guest["email_verified"] is False
+        assert guest["newsletter_status"] is None
+        assert guest["orders_count"] == 1
+        assert guest["total_spent"] == 80.0
+        assert self._ids["org_name"] in guest["operators"]
+
+        # le StatCard sono globali e contano anche la fixture
+        assert data["stats"]["users_total"] >= 2
+        assert data["stats"]["with_orders"] >= 2
+
+    # ── 3. filtri e search ───────────────────────────────────────────
+
+    def test_filtri_e_search(self):
+        emails = lambda d: {i["email"] for i in d["items"]}  # noqa: E731
+        assert emails(self._list(guests_only=True)) == {self.GUEST_EMAIL}
+        assert emails(self._list(accounts_only=True)) == {self.ACC_EMAIL}
+        assert emails(self._list(newsletter=True)) == {self.ACC_EMAIL}
+        assert emails(self._list(verified=True)) == {self.ACC_EMAIL}
+        both = emails(self._list(has_orders=True))
+        assert {self.ACC_EMAIL, self.GUEST_EMAIL} <= both
+        # search per nome (non solo email)
+        by_name = self._list(search="UT1 Guest")
+        assert emails(by_name) == {self.GUEST_EMAIL}
+
+    # ── 4. dettaglio coerente ────────────────────────────────────────
+
+    def test_detail_account(self):
+        r = requests.get(f"{BASE_URL}/api/admin/platform/users/detail",
+                         headers=self._sys_headers(),
+                         params={"email": self.ACC_EMAIL}, timeout=15)
+        assert r.status_code == 200, r.text
+        d = r.json()
+        assert d["type"] == "account"
+        assert d["account"]["id"] == self._ids["account_id"]
+        # MAI segreti nell'anagrafica admin
+        assert "password_hash" not in (d["account"] or {})
+        assert d["orders_count"] == 2
+        assert d["total_spent"] == 100.0
+        assert all(o["operator_name"] == self._ids["org_name"]
+                   for o in d["orders"])
+        assert {o["status"] for o in d["orders"]} == {"confirmed", "draft"}
+        assert len(d["customers"]) == 1
+        assert d["customers"][0]["marketing_opted_in"] is True
+        assert d["newsletter"]["status"] == "confirmed"
+        assert d["consents"]["aurya_legal"]["accepted_at"]
+
+    def test_detail_guest(self):
+        r = requests.get(f"{BASE_URL}/api/admin/platform/users/detail",
+                         headers=self._sys_headers(),
+                         params={"email": self.GUEST_EMAIL}, timeout=15)
+        assert r.status_code == 200, r.text
+        d = r.json()
+        assert d["type"] == "guest"
+        assert d["account"] is None
+        assert d["orders_count"] == 1
+        assert d["total_spent"] == 80.0
+
+    def test_detail_sconosciuto_404(self):
+        r = requests.get(f"{BASE_URL}/api/admin/platform/users/detail",
+                         headers=self._sys_headers(),
+                         params={"email": "ut1-nessuno@test.aurya"},
+                         timeout=15)
+        assert r.status_code == 404
+
+    # ── 5. paginazione: cap 100 e pagine coerenti ────────────────────
+
+    def test_paginazione(self):
+        r = requests.get(f"{BASE_URL}/api/admin/platform/users",
+                         headers=self._sys_headers(),
+                         params={"page_size": 500}, timeout=15)
+        assert r.status_code == 422  # cap 100 imposto dallo schema
+
+        p1 = self._list(page_size=1, page=1, sort="spent")
+        p2 = self._list(page_size=1, page=2, sort="spent")
+        assert p1["total"] == 2 and p2["total"] == 2
+        assert len(p1["items"]) == 1 and len(p2["items"]) == 1
+        # spent desc: prima l'account (100), poi il guest (80)
+        assert p1["items"][0]["email"] == self.ACC_EMAIL
+        assert p2["items"][0]["email"] == self.GUEST_EMAIL

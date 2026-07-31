@@ -30,6 +30,13 @@ export const adminAPI = {
   setNetworkMember: (orgId, member) =>
     api.put(`/admin/organizations/${orgId}/network-member`, { member }).then((r) => r.data),
 
+  // UT1 — tab Utenti: la clientela finale (account Aurya + guest per email)
+  listPlatformUsers: (params = {}) =>
+    api.get('/admin/platform/users', { params }).then((r) => r.data),
+
+  getPlatformUserDetail: (email) =>
+    api.get('/admin/platform/users/detail', { params: { email } }).then((r) => r.data),
+
   // PV2 — l'intervista la scrive e pubblica il system admin (tab Interviste)
   getOrgInterview: (orgId) =>
     api.get(`/admin/organizations/${orgId}/interview`).then((r) => r.data),

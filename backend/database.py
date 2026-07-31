@@ -1515,5 +1515,22 @@ async def create_indexes():
     await db.aurya_subscribers.create_index(
         [("status", 1), ("updated_at", -1)], name="bn2_subscriber_status")
 
+    # UT1 (tab Utenti admin) — indici ADDITIVI per l'aggregazione della
+    # clientela finale e il drill-down per email:
+    #   - customers.id: target del $lookup orders→customers (l'email
+    #     dell'ordine vive sul CRM, non sull'ordine)
+    #   - customers.email: lookup per email nel dettaglio utente (il
+    #     compound (org, email) non serve senza org in testa)
+    #   - orders.customer_id: ordini di un utente via i suoi record CRM
+    #   - orders.platform_account_id: ordini agganciati all'account
+    #     Aurya (serve anche a /platform/me/orders)
+    await customers_collection.create_index("id", name="ut1_customer_id")
+    await customers_collection.create_index("email", sparse=True,
+                                            name="ut1_customer_email")
+    await orders_collection.create_index("customer_id",
+                                         name="ut1_order_customer")
+    await orders_collection.create_index("platform_account_id", sparse=True,
+                                         name="ut1_order_platform_account")
+
 def close_db():
     client.close()

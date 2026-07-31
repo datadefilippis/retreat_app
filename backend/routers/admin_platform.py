@@ -6,10 +6,11 @@ sole letture, cache in-process breve (i numeri non cambiano al
 secondo e la pagina si apre spesso).
 """
 
+import re
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from auth import require_system_admin
 
@@ -289,4 +290,364 @@ async def org_business_profile(
         # piattaforma): il numero del pitch commerciale
         "traffic": traffic,
         "generated_at": now.isoformat(),
+    }
+
+
+# ── UT1 — Utenti finali (clientela marketplace) ─────────────────────────────
+#
+# Chi compra e si iscrive, NON gli operatori. Un "utente" e' una EMAIL:
+# platform_accounts (account Aurya) ∪ email degli ordini guest (ordini il
+# cui customer CRM ha un'email senza account piattaforma). Sola lettura.
+
+# Coerenza tesoreria (RF1): lo "speso" conta solo ordini confermati/completati.
+_UT1_SPENT_STATUSES = ["confirmed", "completed"]
+
+
+def _ut1_base_pipeline() -> list:
+    """Pipeline che unisce account e guest in UNA lista per email.
+
+    1. platform_accounts → una riga per account (kind=account)
+    2. $unionWith orders: lookup del customer CRM (orders non portano
+       l'email: vive su customers via customer_id), group per email →
+       una riga di statistiche ordini (kind=orders)
+    3. $group finale per email: fonde anagrafica account + numeri ordini
+    4. $lookup aurya_subscribers per lo stato newsletter
+    """
+    return [
+        {"$project": {
+            "_id": 0,
+            "email": {"$toLower": "$email"},
+            "kind": {"$literal": "account"},
+            "account_name": "$name",
+            "guest_name": {"$literal": None},
+            "email_verified": {"$eq": ["$email_verified", True]},
+            "created_at": "$created_at",
+            "last_login_at": "$last_login_at",
+            "aurya_accepted_at": "$aurya_legal.accepted_at",
+            "orders_count": {"$literal": 0},
+            "confirmed_orders": {"$literal": 0},
+            "total_spent": {"$literal": 0.0},
+            "last_order_at": {"$literal": None},
+            "org_ids": {"$literal": []},
+            "marketing": {"$literal": False},
+        }},
+        {"$unionWith": {"coll": "orders", "pipeline": [
+            {"$lookup": {
+                "from": "customers",
+                "localField": "customer_id",
+                "foreignField": "id",
+                "as": "_cust",
+                "pipeline": [{"$project": {
+                    "_id": 0, "email": 1, "name": 1,
+                    "marketing_opted_in": 1}}],
+            }},
+            {"$set": {"_cust": {"$first": "$_cust"}}},
+            {"$set": {"email": {"$toLower":
+                                {"$ifNull": ["$_cust.email", ""]}}}},
+            # solo ordini con un'email vera dietro (POS anonimi esclusi)
+            {"$match": {"email": {"$regex": "@"}}},
+            {"$group": {
+                "_id": "$email",
+                "orders_count": {"$sum": 1},
+                "confirmed_orders": {"$sum": {"$cond": [
+                    {"$in": ["$status", _UT1_SPENT_STATUSES]}, 1, 0]}},
+                "total_spent": {"$sum": {"$cond": [
+                    {"$in": ["$status", _UT1_SPENT_STATUSES]},
+                    {"$ifNull": ["$total", 0]}, 0]}},
+                "last_order_at": {"$max": "$created_at"},
+                "org_ids": {"$addToSet": "$organization_id"},
+                "guest_name": {"$max": "$_cust.name"},
+                "marketing": {"$max":
+                              {"$eq": ["$_cust.marketing_opted_in", True]}},
+            }},
+            {"$project": {
+                "_id": 0,
+                "email": "$_id",
+                "kind": {"$literal": "orders"},
+                "account_name": {"$literal": None},
+                "guest_name": 1,
+                "email_verified": {"$literal": False},
+                "created_at": {"$literal": None},
+                "last_login_at": {"$literal": None},
+                "aurya_accepted_at": {"$literal": None},
+                "orders_count": 1,
+                "confirmed_orders": 1,
+                "total_spent": 1,
+                "last_order_at": 1,
+                "org_ids": 1,
+                "marketing": 1,
+            }},
+        ]}},
+        # fusione per email: l'anagrafica arriva dalla riga account, i
+        # numeri dalla riga ordini ($max scavalca i neutri dell'altra riga)
+        {"$group": {
+            "_id": "$email",
+            "has_account": {"$max": {"$eq": ["$kind", "account"]}},
+            "account_name": {"$max": "$account_name"},
+            "guest_name": {"$max": "$guest_name"},
+            "email_verified": {"$max": "$email_verified"},
+            "created_at": {"$max": "$created_at"},
+            "last_login_at": {"$max": "$last_login_at"},
+            "aurya_accepted_at": {"$max": "$aurya_accepted_at"},
+            "orders_count": {"$max": "$orders_count"},
+            "confirmed_orders": {"$max": "$confirmed_orders"},
+            "total_spent": {"$max": "$total_spent"},
+            "last_order_at": {"$max": "$last_order_at"},
+            "org_ids": {"$max": "$org_ids"},
+            "marketing_opted_in": {"$max": "$marketing"},
+        }},
+        {"$lookup": {
+            "from": "aurya_subscribers",
+            "localField": "_id",
+            "foreignField": "email",
+            "as": "_nl",
+            "pipeline": [{"$project": {"_id": 0, "status": 1}}],
+        }},
+        {"$set": {
+            "email": "$_id",
+            "name": {"$ifNull": ["$account_name", "$guest_name"]},
+            "type": {"$cond": ["$has_account", "account", "guest"]},
+            "newsletter_status": {"$first": "$_nl.status"},
+        }},
+        {"$unset": ["_nl", "account_name", "guest_name", "has_account"]},
+    ]
+
+
+_UT1_SORTS = {
+    "last_order": "last_order_at",
+    "orders": "orders_count",
+    "spent": "total_spent",
+    "created": "created_at",
+}
+
+
+@router.get("/users")
+async def platform_users(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(25, ge=1, le=100),
+    search: Optional[str] = Query(None, max_length=120),
+    has_orders: Optional[bool] = None,
+    newsletter: Optional[bool] = None,
+    verified: Optional[bool] = None,
+    guests_only: bool = False,
+    accounts_only: bool = False,
+    sort: str = Query("last_order"),
+    order: str = Query("desc"),
+    current_user: dict = Depends(require_system_admin),
+) -> Dict[str, Any]:
+    """UT1 — la clientela finale in una tabella: account Aurya + guest
+    (raggruppati per email), con newsletter, ordini, speso e operatori.
+    Le StatCard (stats) sono GLOBALI, items/total rispettano i filtri."""
+    from database import db, organizations_collection
+    from models.common import utc_now
+
+    match: Dict[str, Any] = {}
+    if search and search.strip():
+        rx = {"$regex": re.escape(search.strip()), "$options": "i"}
+        match["$or"] = [{"email": rx}, {"name": rx}]
+    if has_orders is True:
+        match["orders_count"] = {"$gt": 0}
+    elif has_orders is False:
+        match["orders_count"] = 0
+    if newsletter is True:
+        match["newsletter_status"] = "confirmed"
+    elif newsletter is False:
+        match["newsletter_status"] = {"$ne": "confirmed"}
+    if verified is True:
+        match["email_verified"] = True
+    elif verified is False:
+        match["email_verified"] = False
+    if guests_only:
+        match["type"] = "guest"
+    elif accounts_only:
+        match["type"] = "account"
+
+    sort_field = _UT1_SORTS.get(sort, "last_order_at")
+    sort_dir = 1 if order == "asc" else -1
+    filtered = [{"$match": match}] if match else []
+
+    pipeline = _ut1_base_pipeline() + [{"$facet": {
+        "stats": [{"$group": {
+            "_id": None,
+            "users_total": {"$sum": 1},
+            "verified": {"$sum": {"$cond": ["$email_verified", 1, 0]}},
+            "newsletter_confirmed": {"$sum": {"$cond": [
+                {"$eq": ["$newsletter_status", "confirmed"]}, 1, 0]}},
+            "with_orders": {"$sum": {"$cond": [
+                {"$gt": ["$orders_count", 0]}, 1, 0]}},
+        }}],
+        "total": filtered + [{"$count": "n"}],
+        "items": filtered + [
+            {"$sort": {sort_field: sort_dir, "email": 1}},
+            {"$skip": (page - 1) * page_size},
+            {"$limit": page_size},
+        ],
+    }}]
+
+    res = await db.platform_accounts.aggregate(pipeline).to_list(1)
+    facet = res[0] if res else {}
+    stats_row = (facet.get("stats") or [{}])[0]
+    items = facet.get("items") or []
+
+    # nomi operatori (solo per la pagina corrente, una query)
+    org_ids = sorted({oid for it in items for oid in (it.get("org_ids") or [])})
+    org_names: Dict[str, str] = {}
+    if org_ids:
+        async for o in organizations_collection.find(
+                {"id": {"$in": org_ids}}, {"_id": 0, "id": 1, "name": 1}):
+            org_names[o["id"]] = o.get("name") or o["id"][:8]
+
+    out_items = []
+    for it in items:
+        ops = sorted(org_names.get(oid, oid[:8])
+                     for oid in (it.get("org_ids") or []))
+        out_items.append({
+            "email": it.get("email"),
+            "name": it.get("name"),
+            "type": it.get("type"),
+            "email_verified": bool(it.get("email_verified")),
+            "created_at": it.get("created_at"),
+            "last_login_at": it.get("last_login_at"),
+            "newsletter_status": it.get("newsletter_status"),
+            "orders_count": it.get("orders_count") or 0,
+            "confirmed_orders": it.get("confirmed_orders") or 0,
+            "total_spent": round(float(it.get("total_spent") or 0), 2),
+            "operators": ops[:5],
+            "operators_count": len(ops),
+            "last_order_at": it.get("last_order_at"),
+            "marketing_opted_in": bool(it.get("marketing_opted_in")),
+            "aurya_accepted_at": it.get("aurya_accepted_at"),
+        })
+
+    total = (facet.get("total") or [{}])
+    total_n = total[0].get("n", 0) if total else 0
+    return {
+        "items": out_items,
+        "total": total_n,
+        "page": page,
+        "page_size": page_size,
+        "stats": {
+            "users_total": stats_row.get("users_total", 0),
+            "verified": stats_row.get("verified", 0),
+            "newsletter_confirmed": stats_row.get("newsletter_confirmed", 0),
+            "with_orders": stats_row.get("with_orders", 0),
+        },
+        "generated_at": utc_now().isoformat(),
+    }
+
+
+@router.get("/users/detail")
+async def platform_user_detail(
+    email: Optional[str] = Query(None, max_length=254),
+    account_id: Optional[str] = Query(None, max_length=64),
+    current_user: dict = Depends(require_system_admin),
+) -> Dict[str, Any]:
+    """UT1 — il drill-down di UN utente finale: anagrafica, ordini (con
+    operatore), record customer per-org, newsletter, consensi. Read-only:
+    nessun dato viene toccato. Niente segreti (hash/token MAI esposti)."""
+    from fastapi import HTTPException
+    from database import (customers_collection, db, orders_collection,
+                          organizations_collection,
+                          platform_accounts_collection)
+    from models.common import utc_now
+
+    _ACCOUNT_SAFE = {"_id": 0, "id": 1, "email": 1, "name": 1, "phone": 1,
+                     "language": 1, "email_verified": 1, "is_active": 1,
+                     "created_at": 1, "last_login_at": 1, "aurya_legal": 1}
+
+    account = None
+    if account_id:
+        account = await platform_accounts_collection.find_one(
+            {"id": account_id}, _ACCOUNT_SAFE)
+        if not account:
+            raise HTTPException(status_code=404, detail="Account not found")
+        email = account["email"]
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400,
+                            detail="Provide email or account_id")
+    email_n = email.strip().lower()
+    if account is None:
+        account = await platform_accounts_collection.find_one(
+            {"email": email_n}, _ACCOUNT_SAFE)
+
+    # record CRM per-org con quella email (case-insensitive: i customer
+    # storici possono avere l'email non normalizzata)
+    email_rx = {"$regex": f"^{re.escape(email_n)}$", "$options": "i"}
+    customers = await customers_collection.find(
+        {"email": email_rx},
+        {"_id": 0, "id": 1, "organization_id": 1, "name": 1,
+         "marketing_opted_in": 1, "created_at": 1},
+    ).to_list(50)
+
+    # ordini: via customer CRM (l'email vive li') + stamp platform_account_id
+    or_clauses = []
+    cust_ids = [c["id"] for c in customers if c.get("id")]
+    if cust_ids:
+        or_clauses.append({"customer_id": {"$in": cust_ids}})
+    if account:
+        or_clauses.append({"platform_account_id": account["id"]})
+    orders = []
+    if or_clauses:
+        orders = await orders_collection.find(
+            {"$or": or_clauses},
+            {"_id": 0, "id": 1, "order_number": 1, "organization_id": 1,
+             "status": 1, "payment_status": 1, "sales_channel": 1,
+             "total": 1, "currency": 1, "created_at": 1, "order_date": 1},
+        ).sort("created_at", -1).to_list(100)
+
+    if not account and not customers and not orders:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # nomi operatori per ordini + record customer (una query)
+    org_ids = sorted({o["organization_id"] for o in orders}
+                     | {c["organization_id"] for c in customers})
+    org_names: Dict[str, str] = {}
+    if org_ids:
+        async for o in organizations_collection.find(
+                {"id": {"$in": org_ids}}, {"_id": 0, "id": 1, "name": 1}):
+            org_names[o["id"]] = o.get("name") or o["id"][:8]
+    for o in orders:
+        o["operator_name"] = org_names.get(o["organization_id"],
+                                           o["organization_id"][:8])
+    for c in customers:
+        c["organization_name"] = org_names.get(c["organization_id"],
+                                               c["organization_id"][:8])
+        c["marketing_opted_in"] = bool(c.get("marketing_opted_in"))
+
+    newsletter = await db.aurya_subscribers.find_one(
+        {"email": email_n},
+        {"_id": 0, "status": 1, "source": 1, "created_at": 1,
+         "confirmed_at": 1, "unsubscribed_at": 1})
+
+    # consensi: stamp aurya_legal + audit immutabile contato per source
+    audit_match: Dict[str, Any] = {"customer_email": email_n}
+    if account:
+        audit_match = {"$or": [{"customer_email": email_n},
+                               {"user_id": account["id"]}]}
+    audit_by_source = []
+    async for row in db.consent_audit.aggregate([
+            {"$match": audit_match},
+            {"$group": {"_id": "$source", "n": {"$sum": 1},
+                        "last_at": {"$max": "$accepted_at"}}},
+            {"$sort": {"n": -1}},
+            {"$limit": 20}]):
+        audit_by_source.append({"source": row["_id"] or "(sconosciuta)",
+                                "n": row["n"], "last_at": row.get("last_at")})
+
+    spent = sum(float(o.get("total") or 0) for o in orders
+                if o.get("status") in _UT1_SPENT_STATUSES)
+    return {
+        "email": email_n,
+        "type": "account" if account else "guest",
+        "account": account,
+        "orders": orders,
+        "orders_count": len(orders),
+        "total_spent": round(spent, 2),
+        "customers": customers,
+        "newsletter": newsletter,
+        "consents": {
+            "aurya_legal": (account or {}).get("aurya_legal"),
+            "audit_by_source": audit_by_source,
+        },
+        "generated_at": utc_now().isoformat(),
     }

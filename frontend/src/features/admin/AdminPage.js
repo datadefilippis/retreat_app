@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppLayout, Header } from '../../components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Building2, Users, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2, Sparkles, Newspaper, Inbox, Mic } from 'lucide-react';
+import { Building2, Users, UserRound, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2, Sparkles, Newspaper, Inbox, Mic } from 'lucide-react';
 import PlatformOverviewTab from './PlatformOverviewTab';
 import DirectoryAdminTab from './DirectoryAdminTab';
 import SignalsTab from './SignalsTab';
@@ -15,6 +15,7 @@ import AIGovernanceTab from './AIGovernanceTab';
 import BlogAdminTab from './BlogAdminTab';
 import LeadsTab from './LeadsTab';
 import InterviewsTab from './InterviewsTab';
+import PlatformUsersTab from './PlatformUsersTab';
 
 /**
  * AdminPage — System Admin Control Panel.
@@ -69,6 +70,11 @@ const AdminPage = () => {
               <Users className="h-4 w-4" />
               Users
             </TabsTrigger>
+            {/* UT1 — clientela finale (chi compra/si iscrive), NON operatori */}
+            <TabsTrigger value="platform-users" className="flex items-center gap-2 shrink-0">
+              <UserRound className="h-4 w-4" />
+              Utenti
+            </TabsTrigger>
             <TabsTrigger value="catalog" className="flex items-center gap-2 shrink-0">
               <Package className="h-4 w-4" />
               Catalog
@@ -121,6 +127,10 @@ const AdminPage = () => {
 
           <TabsContent value="users">
             <UsersTab />
+          </TabsContent>
+
+          <TabsContent value="platform-users">
+            <PlatformUsersTab />
           </TabsContent>
 
           <TabsContent value="catalog">
