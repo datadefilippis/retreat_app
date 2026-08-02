@@ -397,10 +397,16 @@ export default function NetworkHomePage() {
                                category={catLabel(lead.category)}
                                date={fmtDate(lead.published_at)} />
                 </div>
+                {/* SW4b — la spalla resta di fianco (variant "aside"):
+                    qui i due secondari stanno accanto a un articolo
+                    grande, e impilarli con la copertina piena
+                    metterebbe tre copertine a competere nella stessa
+                    sezione. Nel Magazine, dove la vetrina e' la pagina,
+                    la scheda e' impilata. */}
                 {secondary.length > 0 && (
                   <div className="lg:col-span-5 grid gap-7 sm:grid-cols-2 lg:grid-cols-1 lg:content-start lg:gap-9 lg:pt-2">
                     {secondary.map(a => (
-                      <ArticleCard key={a.slug} article={a} variant="compact"
+                      <ArticleCard key={a.slug} article={a} variant="aside"
                                    category={catLabel(a.category)}
                                    date={fmtDate(a.published_at)} />
                     ))}

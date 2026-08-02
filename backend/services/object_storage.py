@@ -158,11 +158,20 @@ def save_public_upload(category: str, filename: str, content: bytes,
     return f"/uploads/{category}/{filename}"
 
 
-def delete_public_uploads(category: str, prefix: str) -> int:
+def delete_public_uploads(category: str, prefix: str,
+                          pattern: Optional[str] = None,
+                          keep: Optional[str] = None) -> int:
     """PV1 — cleanup best-effort dei file di una category che iniziano
     con `prefix` (es. i vecchi cover `{org_id}-*` quando se ne carica
     una nuova col suffisso random). Simmetrico S3/filesystem, MAI
     bloccante: un fallimento qui non deve far fallire l'upload.
+
+    SW4b — due filtri opzionali sul NOME del file, perché il prefisso da
+    solo è una scure: con nomi versionati `{slug}-{hash}.webp` il
+    prefisso "yoga-" prenderebbe dentro anche "yoga-e-respiro-ab12cd34".
+      pattern  regex che il nome del file deve soddisfare PER INTERO
+               (fullmatch): fuori da lì non si tocca niente;
+      keep     il nome appena scritto, che non va mai rimosso.
 
     Ritorna il numero di file rimossi (0 se niente da rimuovere o su
     errore). I vecchi URL già persistiti nei documenti restano validi
@@ -170,6 +179,14 @@ def delete_public_uploads(category: str, prefix: str) -> int:
     """
     if not prefix:  # guardia: mai svuotare un'intera category
         return 0
+    import re
+    rx = re.compile(pattern) if pattern else None
+
+    def _da_rimuovere(name: str) -> bool:
+        if keep and name == keep:
+            return False
+        return rx.fullmatch(name) is not None if rx else True
+
     removed = 0
     try:
         if is_s3_enabled():
@@ -182,7 +199,8 @@ def delete_public_uploads(category: str, prefix: str) -> int:
                 if token:
                     kwargs["ContinuationToken"] = token
                 resp = client.list_objects_v2(**kwargs)
-                keys = [{"Key": o["Key"]} for o in resp.get("Contents", [])]
+                keys = [{"Key": o["Key"]} for o in resp.get("Contents", [])
+                        if _da_rimuovere(o["Key"].rsplit("/", 1)[-1])]
                 if keys:
                     client.delete_objects(Bucket=bucket,
                                           Delete={"Objects": keys})
@@ -194,6 +212,8 @@ def delete_public_uploads(category: str, prefix: str) -> int:
         target = _UPLOADS_ROOT / category
         if target.is_dir():
             for path in target.glob(f"{prefix}*"):
+                if not _da_rimuovere(path.name):
+                    continue
                 try:
                     path.unlink()
                     removed += 1

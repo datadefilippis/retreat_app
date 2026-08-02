@@ -25,8 +25,10 @@ sta dentro quella fascia; cornice e texture, che ne escono, sono
 decorazione che a 128 px non serve.
 """
 
+import hashlib
 import logging
 import math
+import re
 from io import BytesIO
 from pathlib import Path
 from typing import Optional, Tuple
@@ -34,6 +36,9 @@ from typing import Optional, Tuple
 logger = logging.getLogger(__name__)
 
 WIDTH, HEIGHT = 1200, 630
+
+# Il namespace su object storage (→ /uploads/article-covers/...).
+COVER_CATEGORY = "article-covers"
 
 _ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 _FONTS_DIR = _ASSETS_DIR / "fonts"
@@ -400,3 +405,57 @@ def render_article_cover(title: Optional[str] = None,
     except Exception as exc:          # pragma: no cover - ambiente povero
         logger.warning("article_cover: generazione saltata (%s)", exc)
         return None
+
+
+# ─── SW4b — l'URL porta l'impronta dell'immagine ───────────────────────
+# Il difetto di SW4: il file cambiava, l'URL no. `/uploads/article-covers/
+# {slug}.webp` viene servito con `cache-control: immutable, max-age=1y`,
+# quindi chi aveva gia' visto il blog restava con la copertina vecchia
+# PER SEMPRE — e nessuna purge di CDN raggiunge la cache di un browser.
+#
+# Rimedio: il nome del file porta gli 8 caratteri iniziali dello SHA-256
+# dei byte generati. Due scelte dentro questa riga:
+#   • l'impronta sta nel PERCORSO, non in query string: `?v=` si perde
+#     dietro certi CDN e certi object storage (chiave = solo il path);
+#   • si firmano i BYTE, non i parametri. Un digest di slug+categoria+
+#     "versione del template" richiederebbe a qualcuno di ricordarsi di
+#     alzare la versione ogni volta che tocca una geometria o un colore:
+#     prima o poi non lo si fa e il bug torna. I byte cambiano da soli.
+# Idempotenza: stesso ambiente e stesso template → stessi byte → stesso
+# nome, quindi rilanciare lo script non muove nulla.
+_HASH_LEN = 8
+_COVER_RE = r"(?:-[0-9a-f]{%d})?\.webp" % _HASH_LEN
+
+
+def cover_asset_name(slug: str, data: bytes) -> str:
+    """Il nome del file della copertina: `{slug}-{hash8}.webp`."""
+    digest = hashlib.sha256(data).hexdigest()[:_HASH_LEN]
+    return f"{slug}-{digest}.webp"
+
+
+def is_autogen_cover_url(url: Optional[str]) -> bool:
+    """True se l'URL e' una copertina generata da noi. Una foto
+    caricata a mano NON si tocca mai: e' la scelta di qualcun altro."""
+    return f"/{COVER_CATEGORY}/" in (url or "")
+
+
+def store_article_cover(slug: str, data: bytes) -> str:
+    """Salva la copertina col nome versionato e ritorna l'URL.
+
+    Prima di salvare rimuove le versioni precedenti dello STESSO slug
+    (compreso il vecchio `{slug}.webp` senza impronta): senza questo, a
+    ogni rigenerazione resterebbe un orfano in piu' sul disco. Il filtro
+    e' una regex ancorata al nome — il prefisso da solo prenderebbe
+    dentro le copertine di slug che iniziano allo stesso modo.
+    Il cleanup e' best-effort: un file di troppo non vale un publish
+    fallito."""
+    from services.object_storage import delete_public_uploads, save_public_upload
+    name = cover_asset_name(slug, data)
+    url = save_public_upload(COVER_CATEGORY, name, data, "image/webp")
+    try:
+        delete_public_uploads(COVER_CATEGORY, slug,
+                              pattern=re.escape(slug) + _COVER_RE,
+                              keep=name)
+    except Exception as exc:          # noqa: BLE001 — mai bloccante
+        logger.warning("article_cover: cleanup di %s saltato (%s)", slug, exc)
+    return url

@@ -277,3 +277,163 @@ def test_ga2_csp_allows_google_analytics():
     assert "https://www.googletagmanager.com" in conf
     assert "https://*.google-analytics.com" in conf
     assert "https://*.analytics.google.com" in conf
+
+
+# ── SW4b (31/7) — l'URL della copertina e il ritmo della vetrina ─────────────
+
+class TestMagazineSw4b:
+    """SW4b — due correzioni all'onda SW4.
+
+    1. LE COPERTINE VECCHIE RESTAVANO NEI BROWSER. Il file cambiava, il
+       nome no: `/uploads/article-covers/{slug}.webp` viene servito con
+       `cache-control: public, max-age=31536000, immutable`, quindi chi
+       aveva gia' visto il blog teneva la copertina vecchia (quella col
+       titolo stampato) per un anno. Nessuna purge di CDN entra nella
+       cache di un browser. Ora il nome porta l'impronta dei byte
+       generati, `{slug}-{hash8}.webp`, e sta nel PERCORSO: una query
+       string `?v=` si perde dietro certi CDN e certi object storage.
+    2. IL MAGAZINE DOVEVA RESPIRARE: copertine grandi e testo sotto,
+       meno articoli per riga (richiesta del founder, 31/7).
+    """
+
+    CARD = FRONTEND_SRC / "components" / "editorial" / "ArticleCard.jsx"
+    INDEX = FRONTEND_SRC / "features" / "storefront" / "BlogIndexPage.js"
+
+    # ── 1. l'URL cambia quando cambia l'immagine ─────────────────────
+
+    def test_nome_versionato_e_deterministico(self):
+        """Stessi byte → stesso nome (rilanciare lo script non muove
+        nulla); byte diversi (= template diverso) → nome diverso."""
+        import re
+        from services.article_cover import cover_asset_name
+        uno = cover_asset_name("guida-yoga", b"template-v1")
+        due = cover_asset_name("guida-yoga", b"template-v1")
+        tre = cover_asset_name("guida-yoga", b"template-v2")
+        assert uno == due, "stesso input, nome diverso: non e' idempotente"
+        assert uno != tre, \
+            "template diverso, stesso URL: le cache terrebbero il vecchio"
+        assert re.fullmatch(r"guida-yoga-[0-9a-f]{8}\.webp", uno), uno
+        # l'impronta sta nel percorso, non in query string
+        assert "?" not in uno
+
+    def test_il_template_vero_cambia_il_nome(self):
+        """Non un test sintetico: due copertine di categoria diversa
+        sono immagini diverse e devono avere nomi diversi."""
+        from services.article_cover import (cover_asset_name,
+                                            render_article_cover)
+        a = render_article_cover(None, "yoga", "Yoga")
+        b = render_article_cover(None, "suono", "Suono & Sound Healing")
+        assert a and b and a != b
+        assert cover_asset_name("x", a) != cover_asset_name("x", b)
+
+    def test_store_sostituisce_senza_lasciare_orfani(self, tmp_path,
+                                                     monkeypatch):
+        """Rigenerare non accumula file: la versione precedente dello
+        stesso slug (e il vecchio `{slug}.webp` senza impronta) se ne
+        va. Le copertine di ALTRI slug non si toccano, nemmeno quando
+        il nome comincia allo stesso modo."""
+        from services import object_storage
+        from services.article_cover import (COVER_CATEGORY,
+                                            cover_asset_name,
+                                            store_article_cover)
+        monkeypatch.setattr(object_storage, "_UPLOADS_ROOT", tmp_path)
+        monkeypatch.setattr(object_storage, "is_s3_enabled", lambda: False)
+        cartella = tmp_path / COVER_CATEGORY
+        cartella.mkdir(parents=True)
+        (cartella / "yoga.webp").write_bytes(b"vecchia senza impronta")
+        vicino = cartella / "yoga-e-respiro-a1b2c3d4.webp"
+        vicino.write_bytes(b"di un altro articolo")
+
+        primo = store_article_cover("yoga", b"immagine-1")
+        assert primo.endswith(cover_asset_name("yoga", b"immagine-1"))
+        assert not (cartella / "yoga.webp").exists(), \
+            "il file col nome vecchio resta li' come orfano"
+
+        # idempotenza: stessi byte, stesso URL, un solo file
+        assert store_article_cover("yoga", b"immagine-1") == primo
+        secondo = store_article_cover("yoga", b"immagine-2")
+        assert secondo != primo
+        nostri = sorted(p.name for p in cartella.glob("yoga-*"))
+        assert nostri == [cover_asset_name("yoga", b"immagine-2"),
+                          "yoga-e-respiro-a1b2c3d4.webp"], nostri
+        assert vicino.read_bytes() == b"di un altro articolo", \
+            "il cleanup ha mangiato la copertina di un altro articolo"
+
+    def test_il_router_non_scrive_piu_il_nome_fisso(self):
+        src = (BACKEND_DIR / "routers" / "articles.py").read_text()
+        assert 'f"{slug}.webp"' not in src, \
+            "il router salva ancora con l'URL fisso: la cache non si accorge"
+        assert "store_article_cover" in src
+
+    def test_lo_script_tocca_solo_le_copertine_autogenerate(self):
+        """La regola che non si tocca: una foto caricata a mano non si
+        sostituisce mai."""
+        src = (BACKEND_DIR / "scripts"
+               / "sw4_regen_article_covers.py").read_text()
+        assert "is_autogen_cover_url" in src
+        assert "store_article_cover" in src
+        # il campo giusto del documento, non un `cover_url` inventato
+        assert '"featured_image_url": nuovo' in src
+        from services.article_cover import is_autogen_cover_url
+        assert is_autogen_cover_url("/uploads/article-covers/x-1234abcd.webp")
+        assert not is_autogen_cover_url("/uploads/products/foto.jpg")
+        assert not is_autogen_cover_url(None)
+
+    # ── 2. la vetrina: copertina grande, testo sotto ─────────────────
+
+    def _compact(self):
+        """Il ramo della scheda della griglia: dal commento che lo apre
+        alla fine del file."""
+        src = self.CARD.read_text()
+        return src[src.index("// compact —"):]
+
+    def test_scheda_griglia_immagine_sopra_testo_sotto(self):
+        blocco = self._compact()
+        assert blocco.index("<Cover") < blocco.index("<Kicker") \
+            < blocco.index("<h3"), \
+            "nella scheda della griglia il testo non sta sotto l'immagine"
+        assert "flex" not in blocco, \
+            "la scheda della griglia e' tornata di fianco (flex)"
+        assert "w-28" not in blocco and "w-32" not in blocco, \
+            "la copertina della griglia e' di nuovo un francobollo"
+
+    def test_rapporto_unico_e_niente_ritagli_inventati(self):
+        """Un solo rapporto per tutte le copertine impilate, e vale
+        40:21 = 1200x630: la misura esatta di quelle autogenerate,
+        quindi il medaglione centrale non viene tagliato."""
+        src = self.CARD.read_text()
+        assert "const COVER = 'aspect-[40/21]'" in src
+        assert src.count("aspect-[40/21]") == 1, \
+            "il rapporto va detto una volta sola, nella costante"
+        assert "aspect-[16/9]" not in src, \
+            "un 16:9 ritaglia 40 px per lato e taglia la cornice incisa"
+        # e il rapporto della cover generata e' davvero quello
+        from services.article_cover import HEIGHT, WIDTH
+        assert (WIDTH, HEIGHT) == (1200, 630)
+        assert abs(WIDTH / HEIGHT - 40 / 21) < 1e-9
+
+    def test_indice_meno_articoli_per_riga(self):
+        src = self.INDEX.read_text()
+        assert "sm:grid-cols-2" in src
+        assert "lg:grid-cols-3" not in src, \
+            "la griglia fitta di miniature e' tornata"
+        assert "spalla" not in src, \
+            "la colonna di miniature accanto all'apertura e' tornata"
+        # l'impianto editoriale di SW4 resta
+        for pezzo in ("Le cose serie vanno spiegate.", "Scriviamo.",
+                      'data-testid="blog-category-chips"', "aria-current",
+                      'data-testid="blog-empty"', 'data-testid="blog-card-gated"',
+                      "'lead'", "'compact'"):
+            assert pezzo in src, f"SW4 perso per strada: {pezzo}"
+
+    def test_la_spalla_della_home_resta_di_fianco(self):
+        """La variante orizzontale non sparisce: vive nella sezione
+        della home, dove i secondari stanno accanto a un articolo
+        grande. Se sparisse, la home mostrerebbe tre copertine in
+        concorrenza."""
+        card = self.CARD.read_text()
+        assert "variant === 'aside'" in card
+        home = (FRONTEND_SRC / "features" / "network"
+                / "NetworkHomePage.js").read_text()
+        assert 'variant="aside"' in home
+        assert 'variant="compact"' not in home

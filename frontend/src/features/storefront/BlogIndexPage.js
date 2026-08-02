@@ -14,8 +14,9 @@
  *                 mondo) e "Scriviamo." (il nostro gesto). Sotto,
  *                 cosa ci trovi; poi i filtri come chip sobri.
  *   2. LA VETRINA fondo bianco, come la sezione "Dal Magazine" della
- *                 home ma piu' ricca: articolo di apertura grande,
- *                 due di spalla, poi tutti gli altri in griglia.
+ *                 home ma piu' ampia: l'articolo di apertura con la
+ *                 copertina larga, poi tutti gli altri due per riga,
+ *                 copertina grande e testo sotto (SW4b).
  *   3. LA LETTERA la fascia newsletter, invariata (BN1).
  *
  * La pagina di CATEGORIA e' la stessa, con l'apertura che cambia
@@ -119,9 +120,7 @@ export default function BlogIndexPage() {
                  badge={gatedBadge(a)} />
   );
 
-  const [lead, ...rest] = items;
-  const spalla = rest.slice(0, 2);     // i due accanto all'apertura
-  const altri = rest.slice(2);         // la griglia sotto la riga
+  const [lead, ...altri] = items;      // l'apertura, poi la griglia
 
   return (
     <MarketplaceShell noSearch>
@@ -181,11 +180,13 @@ export default function BlogIndexPage() {
         {/* ── 2. LA VETRINA ────────────────────────────────────────
             Bianco pieno, come la sezione "Dal Magazine" della home:
             le copertine sono medaglioni scuri e sul bianco si staccano
-            come oggetti. L'apertura grande prende sette colonne e i
-            due di spalla cinque; il resto scende in griglia sotto una
-            riga sottile, l'unico separatore della pagina. Con un
-            articolo solo l'apertura prende tutta la larghezza, invece
-            di lasciare mezza griglia vuota. */}
+            come oggetti.
+            SW4b — il ritmo cambia: le miniature di fianco erano
+            francobolli ("copertine piu' grandi e testo sotto",
+            founder 31/7). Adesso l'apertura ha la sua copertina larga
+            e gli altri scendono DUE per riga, immagine sopra e testo
+            sotto, sotto una riga sottile: l'unico separatore della
+            pagina. Con un articolo solo resta solo l'apertura. */}
         <Section tone="paper" rhythm="flow" width="max-w-6xl">
           {loading ? (
             <p className="text-foreground/50 py-10" aria-live="polite">…</p>
@@ -199,23 +200,23 @@ export default function BlogIndexPage() {
             </div>
           ) : (
             <div data-testid="blog-list">
-              <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
-                <div className={spalla.length > 0 ? 'lg:col-span-7' : 'lg:col-span-8'}>
-                  {card(lead, 'lead', true)}
-                </div>
-                {spalla.length > 0 && (
-                  <div className="lg:col-span-5 grid gap-7 sm:grid-cols-2 lg:grid-cols-1 lg:content-start lg:gap-9 lg:pt-2">
-                    {spalla.map(a => card(a, 'compact'))}
-                  </div>
-                )}
+              {/* l'apertura: una copertina sola, larga, e il testo
+                  sotto. Sta in max-w-3xl e non a tutta la fascia
+                  perche' a 1152 px un 40:21 diventa alto 600 px e
+                  mangia lo schermo intero. */}
+              <div className="max-w-3xl">
+                {card(lead, 'lead', true)}
               </div>
 
               {altri.length > 0 && (
-                <div className="mt-14 border-t border-foreground/10 pt-12">
-                  <p className="eyebrow mb-8">
+                <div className="mt-16 border-t border-foreground/10 pt-14">
+                  <p className="eyebrow mb-10">
                     {t('blog.moreTitle', { defaultValue: 'Altri articoli' })}
                   </p>
-                  <div className="grid gap-9 sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-3">
+                  {/* due per riga, non tre: le copertine restano grandi
+                      e il testo sotto ha la sua misura. Sul telefono
+                      una sola, con l'aria in mezzo. */}
+                  <div className="grid gap-y-14 sm:grid-cols-2 sm:gap-x-10 lg:gap-x-14 lg:gap-y-16">
                     {altri.map(a => card(a, 'compact'))}
                   </div>
                 </div>

@@ -216,17 +216,22 @@ async def _autogen_cover(slug: str,
 
     SW4 — il titolo non entra piu' nella cover (era un doppione nella
     scheda e rumore nelle miniature): il generatore vuole solo la
-    categoria, e questa firma la segue."""
+    categoria, e questa firma la segue.
+
+    SW4b — il nome del file porta l'impronta dell'immagine
+    (`{slug}-{hash8}.webp`). Con l'URL fisso, il browser di chi era gia'
+    passato dal blog teneva la copertina vecchia per un anno: le cover
+    si servono `immutable`, e vuol dire esattamente quello. Salvataggio
+    e rimozione delle versioni precedenti stanno in article_cover."""
     try:
-        from services.article_cover import render_article_cover
-        from services.object_storage import save_public_upload
+        from services.article_cover import (render_article_cover,
+                                            store_article_cover)
         label = ARTICLE_CATEGORIES.get(category or "")
         data = await asyncio.to_thread(render_article_cover, None,
                                        category, label)
         if not data:
             return None
-        return save_public_upload("article-covers", f"{slug}.webp",
-                                  data, "image/webp")
+        return await asyncio.to_thread(store_article_cover, slug, data)
     except Exception as exc:          # noqa: BLE001 — mai bloccare un publish
         logger.warning("article cover skipped for %s: %s", slug, exc)
         return None
