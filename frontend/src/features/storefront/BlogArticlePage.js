@@ -284,7 +284,7 @@ export default function BlogArticlePage() {
                     {t('blog.gateTitle', { defaultValue: 'Questa guida è riservata agli iscritti alla lettera' })}
                   </DisplayTitle>
                   <Lede size="body" className="mt-6">
-                    {t('blog.gateBody', { defaultValue: 'Gratis: ti iscrivi, confermi dalla tua email e il link ti riporta qui, alla guida completa. Insieme ricevi la lettera di Aurya ogni due settimane, con disiscrizione a un click.' })}
+                    {t('blog.gateBody', { defaultValue: 'Gratis: ti iscrivi, confermi dalla tua email e il link ti riporta qui, alla guida completa. Insieme ricevi la lettera di Aurya, con disiscrizione a un click.' })}
                   </Lede>
 
                   {Array.isArray(article.toc) && article.toc.length > 0 && (

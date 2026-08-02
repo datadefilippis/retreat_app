@@ -180,13 +180,31 @@ def _hub_hreflang(canonical: str) -> dict:
 
 async def _meta_home() -> dict:
     base = _base_url()
-    return {
+    # OF3 — il meta della home dipende dalla FASE, come gia' fa
+    # _meta_operators_index. Fino a ieri il server serviva a Google e
+    # alle anteprime dei link "Trova e prenota... con caparra protetta
+    # e recensioni verificate" mentre la home di rete non vende niente,
+    # non ha caparre e non ha recensioni: era la prima cosa che il
+    # mondo leggeva di noi ed era di un altro sito. In piu' il client
+    # sovrascriveva con un titolo diverso, quindi la stessa rotta
+    # dichiarava due titoli. Il ramo marketplace resta intatto: al
+    # lancio quelle parole tornano vere da sole.
+    from core.prelaunch import site_phase
+    if site_phase() == "network":
+        title = "Aurya | Il benessere inizia dalle persone"
+        description = ("Guide oneste sul benessere e i professionisti "
+                       "che lo praticano, raccontati uno a uno. "
+                       "Per orientarsi prima di scegliere.")
+    else:
         # AN1 — il title porta la promessa, non solo la categoria
         # (docs/BRAND_AURYA.md): caparra protetta + recensioni verificate.
-        "title": "Aurya | Ritiri olistici ed esperienze per evolvere",
-        "description": ("Trova e prenota ritiri di yoga, meditazione, detox "
-                        "ed esperienze olistiche: prenoti online con caparra "
-                        "protetta e recensioni solo verificate."),
+        title = "Aurya | Ritiri olistici ed esperienze per evolvere"
+        description = ("Trova e prenota ritiri di yoga, meditazione, detox "
+                       "ed esperienze olistiche: prenoti online con caparra "
+                       "protetta e recensioni solo verificate.")
+    return {
+        "title": title,
+        "description": description,
         "canonical": f"{base}/",
         "hreflang": _hub_hreflang(f"{base}/"),
         "image": f"{base}/media/aurya-hero-poster.jpg",
@@ -249,27 +267,37 @@ _BRAND_PAGES = {
                         "siamo. La rete degli operatori olistici in Italia, "
                         "raccontata con onestà."),
     },
+    # OF3 — la cadenza dichiarata era in tre versioni diverse (qui
+    # "ogni due settimane", sulla landing "ogni tanto", nel modulo del
+    # blog di nuovo quindicinale). Vale quella del founder, che e'
+    # anche l'unica che non diventa un debito il giorno in cui saltiamo
+    # un'uscita: si scrive quando c'e' qualcosa da dire.
     "newsletter": {
-        "title": "La lettera di Aurya | Newsletter sul benessere olistico",
-        "description": ("Una lettera ogni due settimane su pratiche, storie e "
-                        "persone del benessere olistico in Italia. Curata, "
-                        "senza rumore."),
+        "title": "La Lettera di Aurya | Una lettera, ogni tanto",
+        "description": ("Pratiche, persone e idee del benessere, una "
+                        "lettera alla volta. La scriviamo solo quando "
+                        "abbiamo qualcosa che vale il tuo tempo."),
     },
+    # OF3 — tre bugie in due righe: la pagina non si chiama piu' cosi'
+    # ("Per i professionisti del benessere"), non usa mai la parola
+    # intervista (il profilo lo scrive la redazione), e chiudeva con
+    # "Gratuitamente", che come promessa e' vietata fuori dalla FAQ.
     "entra-nella-rete": {
-        "title": "Entra nella rete Aurya | Intervista e profilo pubblico per operatori olistici",
-        "description": ("Ti intervistiamo, raccontiamo il tuo lavoro e ti "
-                        "diamo un profilo pubblico curato e visibile sui "
-                        "motori di ricerca. Gratuitamente."),
+        "title": "Per i professionisti del benessere | Aurya",
+        "description": ("Raccontiamo il tuo lavoro con cura e ti diamo un "
+                        "profilo pubblico curato. Non è una selezione: "
+                        "è una conversazione."),
     },
     # SW3 — /chi-siamo e' di nuovo una pagina propria (le persone dietro
     # Aurya), quindi torna canonica di se stessa: il canonical_slug che
     # la mandava su /manifesto e' caduto insieme al redirect.
     "chi-siamo": {
         "title": "Chi siamo | Aurya",
-        "description": ("Siamo Valentina e Davide, la coppia dietro Aurya. "
-                        "Andiamo a conoscere chi lavora nel benessere, una "
-                        "persona alla volta, e raccontiamo quello che "
-                        "vediamo."),
+        # OF3 — la pagina non racconta piu' l'attivita' di terreno:
+        # risponde a "perche' fidarsi di chi sta costruendo Aurya".
+        "description": ("Siamo Valentina e Davide. Perché abbiamo "
+                        "costruito Aurya, come lavoriamo e cosa vogliamo "
+                        "che diventi nei prossimi dieci anni."),
     },
     "come-funziona": {
         "title": "Come funziona Aurya: prenota ritiri olistici con caparra e pagamento diretto",
@@ -728,10 +756,16 @@ async def _meta_operators_index(category: Optional[str] = None) -> dict:
     # sulla radice.
     if site_phase() == "network":
         return {
-            "title": "La rete degli operatori | Aurya",
-            "description": ("Gli operatori olistici della rete Aurya: scelti "
-                            "uno a uno, intervistati e raccontati. Persone "
-                            "vere, pratiche serie."),
+            # OF3 — "operatori" e' il nome interno, "professionisti"
+            # quello che il sito usa da agosto. E la vecchia descrizione
+            # prometteva interviste e racconti al plurale su una rete
+            # che oggi ha una persona sola: promettere a Google piu' di
+            # quello che si trova arrivando e' il modo piu' rapido di
+            # far rimbalzare chi arriva.
+            "title": "La rete Aurya | I professionisti che stiamo conoscendo",
+            "description": ("Costruiamo una rete di professionisti del "
+                            "benessere, una persona alla volta. Ogni "
+                            "profilo nasce da una conversazione vera."),
             "canonical": f"{base}/operatori",
             "hreflang": _hub_hreflang(f"{base}/operatori"),
             "image": f"{base}/og-cover.jpg",

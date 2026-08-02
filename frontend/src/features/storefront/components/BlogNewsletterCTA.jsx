@@ -4,7 +4,9 @@
  * Il blog e' il primo punto di conversione: ogni articolo chiude con
  * una proposta coerente col suo cluster, mai un popup.
  *  - pratiche (meditazione, breathwork, suono, energia...): la lettera
- *    di Aurya, promessa "una pratica raccontata bene ogni due settimane"
+ *    di Aurya, promessa "una pratica raccontata bene, ogni tanto" (OF3:
+ *    una cadenza fissa che non manteniamo e' un debito, non una
+ *    rassicurazione)
  *  - mondo ritiri (ritiri, yoga): avviso onesto "ti avvisiamo quando
  *    apriremo le prenotazioni, anche nella tua zona"
  *  - operatori: niente newsletter, la CTA converte alla rete
@@ -79,8 +81,8 @@ export default function BlogNewsletterCTA({ category = null }) {
       </DisplayTitle>
       <Lede size="body" className="mt-5">
         {isRetreat
-          ? t('blogCta.rtBody', { defaultValue: 'Quando apriremo le prenotazioni ti avviseremo sui ritiri che meritano, anche nella tua zona. Nel frattempo ricevi la lettera di Aurya: pratiche, storie e persone vere, ogni due settimane.' })
-          : t('blogCta.prBody', { defaultValue: 'La lettera di Aurya: ogni due settimane una pratica approfondita e una persona della rete. Niente rumore, mai spam, ti disiscrivi quando vuoi.' })}
+          ? t('blogCta.rtBody', { defaultValue: 'Quando apriremo le prenotazioni ti avviseremo sui ritiri che meritano, anche nella tua zona. Nel frattempo ricevi la lettera di Aurya: pratiche, storie e persone vere, quando abbiamo qualcosa che vale.' })
+          : t('blogCta.prBody', { defaultValue: 'La lettera di Aurya: una pratica approfondita e una persona della rete, ogni tanto. Niente rumore, mai spam, ti disiscrivi quando vuoi.' })}
       </Lede>
       <div className="mt-7 max-w-md">
         <LeadForm
