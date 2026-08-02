@@ -106,6 +106,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
+import { BRAND_EMAIL } from '../../config/brand';
 import {
   Section, DisplayTitle, Lede, EditorialCta,
   PhotoOpener, PhotoBand, PhotoSplit,
@@ -363,6 +364,20 @@ export default function ChiSiamoPage() {
             <Lede size="body" tone="inherit" className="mt-12 opacity-90 sm:mt-14">
               {t('aboutPage.stepsClose', { defaultValue: 'Ogni passo serve a costruire il successivo.' })}
             </Lede>
+
+            {/* OF1 — l'azione a meta' strada. Prima di questa, la prima
+                cosa che un lettore poteva FARE cadeva al 91% della
+                pagina: chi si convinceva qui doveva scorrere altri tre
+                schermi per trovare una porta, e in mezzo non c'era
+                niente da fare. Sta esattamente dopo la scala dei
+                quattro tempi perche' il primo gradino e' "prima i
+                contenuti": il modo piu' onesto di provare che la scala
+                e' vera e' far vedere il gradino su cui siamo adesso. */}
+            <p className="mt-10 sm:mt-12">
+              <EditorialCta to="/blog" variant="light" data-testid="cs-cta-mid">
+                {t('aboutPage.midCta', { defaultValue: 'Guarda il primo passo' })}
+              </EditorialCta>
+            </p>
           </div>
         </Section>
 
@@ -470,6 +485,25 @@ export default function ChiSiamoPage() {
                 {t('aboutPage.ctaPro', { defaultValue: 'Sei un professionista?' })}
               </EditorialCta>
             </div>
+
+            {/* OF1 — la porta che mancava. Questa pagina risponde a
+                "perche' fidarsi di chi costruisce Aurya": chi arriva
+                in fondo convinto e NON e' un professionista non aveva
+                nessun modo di scriverci (il vecchio mailto era sparito
+                nella riscrittura). L'indirizzo e' scritto per esteso,
+                non nascosto dietro una parola: un mailto senza client
+                di posta configurato non fa niente, e un indirizzo che
+                non si vede non si puo' nemmeno copiare. `select-all`
+                lo prende tutto con un clic. */}
+            <p className="mt-12 max-w-[46ch] text-[0.95rem] leading-relaxed text-foreground/70 sm:mt-14">
+              {t('aboutPage.writeUs', { defaultValue: 'Se vuoi dirci qualcosa, scriverci è la strada più corta:' })}{' '}
+              <a
+                href={`mailto:${BRAND_EMAIL}`}
+                className="select-all break-all font-medium text-foreground underline decoration-[#8a7440]/40 underline-offset-4 transition-colors hover:decoration-[#8a7440]"
+              >
+                {BRAND_EMAIL}
+              </a>
+            </p>
           </div>
         </Section>
 

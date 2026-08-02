@@ -511,8 +511,14 @@ export default function NetworkOperatorsPage() {
             <Lede size="body" tone="inherit" className="mt-5 opacity-90">
               {t('nwOps.proP2', { defaultValue: 'Se condividi il nostro modo di vedere il benessere e senti che il tuo lavoro merita di essere raccontato con cura, ci piacerebbe conoscerti.' })}
             </Lede>
+            {/* OF1 — passa da discreta a PIENA. Era l'unica pagina del
+                sito senza una sola azione piena: tutto invitava allo
+                stesso modo, quindi niente invitava davvero. Questa e'
+                l'obiettivo di conversione della pagina e ora si vede
+                che lo e'. `solid` sul salvia usa il pieno crema, che e'
+                il contrasto piu' alto disponibile su questo fondo. */}
             <div className="mt-10">
-              <EditorialCta to="/entra-nella-rete" variant="light"
+              <EditorialCta to="/entra-nella-rete" variant="solid" tone="dark"
                             data-testid="nw-join-cta">
                 {t('nwOps.joinCta', { defaultValue: 'Entra nella rete' })}
               </EditorialCta>

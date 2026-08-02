@@ -322,6 +322,32 @@ export default function BlogIndexPage() {
         <Section tone="sand" rhythm="flow" width="max-w-2xl">
           <BlogNewsletterCTA category={category || null} />
         </Section>
+
+        {/* ── 4. IL PONTE VERSO LE PERSONE (OF1) ───────────────────
+            Il Magazine e' la porta d'ingresso principale del sito (i
+            venti articoli sono oggi l'unico canale che porta traffico)
+            ed era un vicolo cieco: dal corpo di questa pagina non
+            partiva un solo link verso la rete, il manifesto o la
+            candidatura. Chi non si iscriveva alla lettera usciva.
+            Sta DOPO il modulo e non prima per una ragione precisa: la
+            lettera resta la conversione principale dell'indice, e un
+            secondo invito messo sopra le avrebbe rubato l'attenzione.
+            Qui invece raccoglie chi ha gia' detto di no. */}
+        <Section tone="paper" rhythm="flow" width="max-w-3xl"
+                 labelledBy="blog-people-title">
+          <DisplayTitle as="h2" id="blog-people-title" size="section" measure="title"
+                        className="text-[1.7rem] sm:text-[2.1rem] lg:text-[2.4rem]">
+            {t('blog.peopleBridgeTitle', { defaultValue: 'Dietro ogni articolo ci sono delle persone.' })}
+          </DisplayTitle>
+          <Lede size="body" className="mt-6">
+            {t('blog.peopleBridgeBody', { defaultValue: 'Quello che scriviamo nasce parlando con chi fa questo lavoro tutti i giorni. Sono loro la parte che conta.' })}
+          </Lede>
+          <p className="mt-8">
+            <EditorialCta to="/operatori" variant="quiet">
+              {t('blog.peopleBridgeCta', { defaultValue: 'Conosci la rete' })}
+            </EditorialCta>
+          </p>
+        </Section>
       </div>
     </MarketplaceShell>
   );
