@@ -316,6 +316,117 @@ body {
     }
 }
 
+/* ── DS3 — la colonna di lettura del Magazine ─────────────────────────────
+   La classe .blog-content esisteva gia' nel markup della scheda articolo
+   ma non aveva UNA regola: il corpo degli articoli usciva con la
+   tipografia del renderer dei documenti legali (prose-sm, paragrafi in
+   muted-foreground). Va bene per una privacy policy, non per un pezzo da
+   leggere per otto minuti.
+
+   PERCHE' QUI E NON NEL RENDERER. LegalMarkdownRenderer e' condiviso con
+   /privacy e /termini: cambiarlo per il blog cambierebbe anche quelli.
+   Il vestito lo mette il contenitore, che e' del blog soltanto.
+
+   PERCHE' QUESTI SELETTORI. Il renderer avvolge i blocchi in un div
+   .prose.space-y-6: quel `space-y` vince (0,3,0) su qualunque classe
+   `mt-*` che il renderer stampi sui titoli, quindi tutti gli stacchi
+   uscivano identici e il testo non aveva respiro. I selettori qui sotto
+   ricalcano la stessa forma aggiungendo l'elemento (0,3,2): il ritmo
+   verticale torna a distinguere un paragrafo da un capitolo, senza un
+   solo !important.
+
+   CONTRASTI MISURATI sul crema di fondo #FAF8F5 (minimo AA 4,5:1):
+     corpo  #212C28 all'88% ...........  9,48:1
+     attacco #212C28 al 95% ........... 11,79:1
+     titoli #212C28 pieno ............. 13,61:1
+     link   #2f5749 ...................  7,68:1 */
+.blog-content > div {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: rgb(33 44 40 / 0.88);
+}
+@media (min-width: 640px) {
+    .blog-content > div { font-size: 1.125rem; }
+}
+.blog-content > div > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+.blog-content > div > :not([hidden]) ~ h2:not([hidden]) { margin-top: 3.25rem; }
+.blog-content > div > :not([hidden]) ~ h3:not([hidden]) { margin-top: 2.5rem; }
+
+.blog-content p,
+.blog-content li {
+    color: rgb(33 44 40 / 0.88);
+}
+/* Il primo capoverso e' l'attacco: un gradino piu' grande, come in una
+   rivista, dove l'occhio entra dal punto piu' largo e poi si assesta. */
+.blog-content > div > p:first-child {
+    font-size: 1.1875rem;
+    line-height: 1.7;
+    color: rgb(33 44 40 / 0.95);
+}
+@media (min-width: 640px) {
+    .blog-content > div > p:first-child { font-size: 1.3125rem; }
+}
+/* I capitoli: serif display + un filo d'oro corto sopra. E' l'unico
+   ornamento della colonna, e serve a far vedere DA LONTANO quanti
+   capitoli ha il pezzo mentre si scorre. */
+.blog-content h1,
+.blog-content h2 {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino,
+                 Georgia, Cambria, 'Times New Roman', serif;
+    font-weight: 500;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: #212c28;
+}
+@media (min-width: 640px) {
+    .blog-content h1,
+    .blog-content h2 { font-size: 1.95rem; }
+}
+.blog-content h1::before,
+.blog-content h2::before {
+    content: '';
+    display: block;
+    width: 2.5rem;
+    height: 1px;
+    margin-bottom: 1.1rem;
+    background: linear-gradient(90deg, #8a7440, #c9b37e);
+    opacity: 0.75;
+}
+.blog-content h3 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #212c28;
+}
+.blog-content ul,
+.blog-content ol {
+    padding-left: 1.15rem;
+    list-style-position: outside;
+}
+.blog-content li + li { margin-top: 0.55rem; }
+.blog-content strong { color: #212c28; font-weight: 600; }
+.blog-content a {
+    color: #2f5749;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: rgb(47 87 73 / 0.4);
+}
+.blog-content a:hover { text-decoration-color: #2f5749; }
+/* La citazione: nel blog non e' l'avviso giallo dei documenti legali. */
+.blog-content blockquote {
+    border-left: 2px solid rgb(138 116 64 / 0.55);
+    border-radius: 0;
+    background: transparent;
+    padding: 0.15rem 0 0.15rem 1.35rem;
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: rgb(33 44 40 / 0.9);
+}
+.blog-content table { font-size: 0.95rem; }
+
 /* ── M5 (marketplace design) — tipografia display per i titoli PUBBLICI.
    Serif umanista di sistema: calore olistico, zero font da scaricare.
    Si applica con la classe .font-display sui soli titoli lato

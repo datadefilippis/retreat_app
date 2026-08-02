@@ -5,11 +5,16 @@
  *  - viaggiatore: nome, email, dove vive, cosa lo chiama (interessi
  *    multi-scelta), DOVE farebbe il ritiro (vicino casa / Italia /
  *    estero), budget → al lancio proposte mirate, non spam.
- *  - operatore: nome e cognome, email, telefono, località, tipo di
- *    attività + DETTAGLIO CONDIZIONALE (chi insegna/facilita sceglie le
- *    discipline; chi ospita indica tipo di struttura e capienza),
- *    due righe di presentazione → follow-up personale.
- * Solo email + consenso sono obbligatori: il form resta gentile.
+ *  - operatore (OL3b, specifica del founder): nome e cognome, email,
+ *    telefono, sito o Instagram, dove lavori, di cosa ti occupi e infine
+ *    LA DOMANDA — "qual e' la cosa che vorresti far capire alle persone
+ *    del tuo lavoro?" — che vale l'intera candidatura e quindi non e'
+ *    una riga come le altre: etichetta visibile e campo alto.
+ *    Il dettaglio condizionale di PL13 (discipline / tipo di struttura /
+ *    capienza) e' stato tolto: erano domande da catalogo ritiri, non da
+ *    conversazione, e allungavano il modulo proprio dove serve slancio.
+ * Nella candidatura sono obbligatori nome, email e consenso; altrove
+ * restano email + consenso: il form resta gentile.
  * POST /public/leads (dedup lato server, notifica a info@). Best-effort:
  * un errore non blocca mai l'utente.
  */
@@ -25,12 +30,6 @@ const INTERESTS = ['yoga', 'meditation', 'breathwork', 'sound', 'detox',
 const BUDGETS = ['under500', '500to1000', 'over1000', 'flexible'];
 const TRAVELS = ['near', 'italy', 'abroad'];
 const ACTIVITIES = ['teacher', 'center', 'venue', 'organizer', 'therapist', 'other'];
-// Chi insegna/facilita/organizza specifica le discipline
-const DISCIPLINE_ACTIVITIES = ['teacher', 'center', 'organizer', 'therapist'];
-const DISCIPLINES = ['yoga', 'meditation', 'breathwork', 'sound', 'reiki',
-                     'detox', 'nature', 'women', 'other'];
-const VENUE_TYPES = ['masseria', 'villa', 'retreat_center', 'bnb', 'hermitage', 'other'];
-const CAPACITIES = ['upTo10', '10to20', '20to40', 'over40'];
 
 // BN2 — mappa chip interessi (chiavi lead storiche) → topics della
 // lettera (categorie editoriali del blog)
@@ -45,11 +44,18 @@ const INTEREST_TO_TOPIC = {
 // BN2 — subscribe: la strada della LETTERA (double opt-in): il submit
 // va su /public/newsletter/subscribe e il grazie dice la verita'
 // ("controlla la posta"), non "sei iscritto".
+// LT1 — showName: il NOME acceso o spento a parte. La Lettera di Aurya
+// chiede esattamente Nome, Email, consenso e bottone (founder): con il
+// solo `compact` spariva anche il nome, che li' serve (e' il saluto
+// delle email). Prop additiva e retrocompatibile: se non la passi, il
+// nome c'e' quando il form non e' compatto — cioe' il comportamento di
+// prima per tutti gli altri chiamanti. Non tocca ne' i campi
+// obbligatori, ne' il consenso, ne' la chiamata.
 export default function LeadForm({ type = 'traveler', accent = '#376254', context = null,
                                    successExtra = null, compact = false,
                                    ctaLabel = null, thanksBody = null,
                                    consentText = null, subscribe = false,
-                                   returnTo = null }) {
+                                   returnTo = null, showName = null }) {
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
 
@@ -61,9 +67,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   const [travel, setTravel] = useState('');
   const [budget, setBudget] = useState('');
   const [activity, setActivity] = useState('');
-  const [disciplines, setDisciplines] = useState([]);
-  const [venueType, setVenueType] = useState('');
-  const [capacity, setCapacity] = useState('');
+  const [link, setLink] = useState('');
   const [message, setMessage] = useState('');
   const [consent, setConsent] = useState(false);
   const [state, setState] = useState('idle');   // idle | sending | done
@@ -71,14 +75,18 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   const toggle = (setter) => (key) => setter((prev) =>
     prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]);
   const toggleInterest = toggle(setInterests);
-  const toggleDiscipline = toggle(setDisciplines);
 
-  const askDisciplines = isOperator && DISCIPLINE_ACTIVITIES.includes(activity);
-  const askVenue = isOperator && activity === 'venue';
+  const withName = showName === null ? !compact : Boolean(showName);
+
+  /* OL3b — nella candidatura il nome e' OBBLIGATORIO: si risponde a una
+     persona, non a un indirizzo. Resta facoltativo dove il nome e' un
+     saluto e non un'identita' (la Lettera, il blog). */
+  const nameRequired = isOperator && withName;
+  const missingName = nameRequired && !name.trim();
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!email || !consent || state === 'sending') return;
+    if (!email || !consent || missingName || state === 'sending') return;
     setState('sending');
     try {
       if (subscribe) {
@@ -107,9 +115,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         travel: !isOperator ? (travel || null) : null,
         budget: !isOperator ? (budget || null) : null,
         activity: isOperator ? (activity || null) : null,
-        disciplines: askDisciplines && disciplines.length ? disciplines : null,
-        venue_type: askVenue ? (venueType || null) : null,
-        capacity: askVenue ? (capacity || null) : null,
+        link: isOperator ? (link.trim() || null) : null,
         message: isOperator ? (message.trim() || null) : null,
         consent: true, language: (i18n.language || 'it').slice(0, 2),
       });
@@ -171,9 +177,13 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
 
   return (
     <form onSubmit={submit} className="space-y-3">
-      {!compact && (
+      {withName && (
         <input
           type="text" value={name} onChange={(e) => setName(e.target.value)}
+          required={nameRequired}
+          aria-label={isOperator
+            ? t('form.fullName', { defaultValue: 'Nome e cognome' })
+            : t('form.name', { defaultValue: 'Il tuo nome' })}
           placeholder={isOperator
             ? t('form.fullName', { defaultValue: 'Nome e cognome' })
             : t('form.name', { defaultValue: 'Il tuo nome' })}
@@ -182,6 +192,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
       )}
       <input
         type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+        aria-label={t('form.email', { defaultValue: 'La tua email' })}
         placeholder={t('form.email', { defaultValue: 'La tua email' })}
         className={inputCls} style={ringStyle}
       />
@@ -191,70 +202,63 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input
               type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+              aria-label={t('form.phone', { defaultValue: 'Telefono' })}
               placeholder={t('form.phone', { defaultValue: 'Telefono' })}
               className={inputCls} style={ringStyle}
             />
+            {/* OL3b — il posto dove sei gia' raccontato: quasi tutti ne
+                hanno uno, ed e' la prima cosa che guardiamo prima di
+                rispondere. Type text e non url: chi scrive
+                "@ilmionome" o "ilmiosito.it" non deve essere respinto
+                da una validazione che pretende lo schema. */}
             <input
-              type="text" value={city} onChange={(e) => setCity(e.target.value)}
-              placeholder={t('form.opCity', { defaultValue: 'Dove si trova la tua attività' })}
+              type="text" value={link} onChange={(e) => setLink(e.target.value)}
+              maxLength={200}
+              aria-label={t('form.opLink', { defaultValue: 'Sito o Instagram' })}
+              placeholder={t('form.opLink', { defaultValue: 'Sito o Instagram' })}
               className={inputCls} style={ringStyle}
             />
           </div>
-          <select
-            value={activity} onChange={(e) => setActivity(e.target.value)}
-            className={selectCls(activity)} style={ringStyle}
-          >
-            <option value="">{t('form.activityLabel', { defaultValue: 'Di cosa ti occupi?' })}</option>
-            {ACTIVITIES.map((k) => (
-              <option key={k} value={k}>
-                {t(`form.activity.${k}`, { defaultValue: k })}
-              </option>
-            ))}
-          </select>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <input
+              type="text" value={city} onChange={(e) => setCity(e.target.value)}
+              aria-label={t('form.opCity', { defaultValue: 'Dove lavori?' })}
+              placeholder={t('form.opCity', { defaultValue: 'Dove lavori?' })}
+              className={inputCls} style={ringStyle}
+            />
+            <select
+              value={activity} onChange={(e) => setActivity(e.target.value)}
+              aria-label={t('form.activityLabel', { defaultValue: 'Di cosa ti occupi?' })}
+              className={selectCls(activity)} style={ringStyle}
+            >
+              <option value="">{t('form.activityLabel', { defaultValue: 'Di cosa ti occupi?' })}</option>
+              {ACTIVITIES.map((k) => (
+                <option key={k} value={k}>
+                  {t(`form.activity.${k}`, { defaultValue: k })}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          {/* PL13 — dettaglio condizionale: la domanda giusta al momento giusto */}
-          {askDisciplines && (
-            <div>
-              <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                {t('form.disciplinesLabel', { defaultValue: 'Quali discipline proponi?' })}
-              </p>
-              <Chips options={DISCIPLINES} active={disciplines}
-                     onToggle={toggleDiscipline} i18nPrefix="form.disciplines" />
-            </div>
-          )}
-          {askVenue && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <select
-                value={venueType} onChange={(e) => setVenueType(e.target.value)}
-                className={selectCls(venueType)} style={ringStyle}
-              >
-                <option value="">{t('form.venueTypeLabel', { defaultValue: 'Che struttura sei?' })}</option>
-                {VENUE_TYPES.map((k) => (
-                  <option key={k} value={k}>
-                    {t(`form.venueType.${k}`, { defaultValue: k })}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={capacity} onChange={(e) => setCapacity(e.target.value)}
-                className={selectCls(capacity)} style={ringStyle}
-              >
-                <option value="">{t('form.capacityLabel', { defaultValue: 'Quanti posti letto?' })}</option>
-                {CAPACITIES.map((k) => (
-                  <option key={k} value={k}>
-                    {t(`form.capacity.${k}`, { defaultValue: k })}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <textarea
-            value={message} onChange={(e) => setMessage(e.target.value)}
-            rows={3} maxLength={1000}
-            placeholder={t('form.description', { defaultValue: 'Raccontaci la tua attività in due righe: cosa proponi, da quanto, a chi.' })}
-            className={`${inputCls} resize-none`} style={ringStyle}
-          />
+          {/* OL3b — LA DOMANDA CHE VALE ORO (founder). Non e' una riga
+              come le altre e non deve sembrarlo: esce dalla griglia,
+              ha un'etichetta VISIBILE (non un placeholder che sparisce
+              appena si scrive), sta staccata da un filo sottile e il
+              campo e' alto abbastanza da invitare un pensiero e non tre
+              parole. E' l'ultima: si risponde dopo essersi presentati. */}
+          <div className="border-t pt-4" style={{ borderColor: `${accent}22` }}>
+            <label htmlFor="lead-gold"
+                   className="block font-display text-[1.05rem] leading-snug text-foreground">
+              {t('form.opGold', { defaultValue: 'Qual è la cosa che vorresti far capire alle persone del tuo lavoro?' })}
+            </label>
+            <textarea
+              id="lead-gold"
+              value={message} onChange={(e) => setMessage(e.target.value)}
+              rows={6} maxLength={1000}
+              placeholder={t('form.opGoldPh', { defaultValue: 'Scrivilo con parole tue. Non serve che sia perfetto.' })}
+              className={`${inputCls} mt-2.5 resize-y`} style={ringStyle}
+            />
+          </div>
         </>
       ) : (
         <>
@@ -309,7 +313,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         </span>
       </label>
       <button
-        type="submit" disabled={!email || !consent || state === 'sending'}
+        type="submit" disabled={!email || !consent || missingName || state === 'sending'}
         className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
         style={{ background: accent }}
       >

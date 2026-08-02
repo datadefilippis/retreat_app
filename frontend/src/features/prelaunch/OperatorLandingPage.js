@@ -1,65 +1,68 @@
 /**
- * OperatorLandingPage — /entra-nella-rete (OL1, riscrittura sulla
- * specifica del founder del 31/7/2026).
+ * OperatorLandingPage — /entra-nella-rete (OL3, riscrittura integrale del
+ * copy da parte del founder, 2/8/2026).
  *
- * POSIZIONAMENTO. "Non stiamo chiedendo agli operatori di iscriversi a
- * una piattaforma. Li stiamo invitando a entrare nel progetto che punta
- * a diventare il punto di riferimento per il benessere consapevole."
- * Ogni scelta di questa pagina risponde a quella frase: si parla di
- * lavoro riconosciuto, non di funzionalita'; di rete, non di iscrizioni.
+ * IL NOME DELLA PAGINA CAMBIA. Non e' piu' la pagina "per gli operatori":
+ * e' la pagina PER I PROFESSIONISTI DEL BENESSERE. La parola d'ordine
+ * entra nell'occhiello dell'apertura, nel titolo SEO e nel microcopy.
+ * Le etichette fuori da questa pagina (header, login, banner) le cambia
+ * il founder: qui dentro non si esce dal file.
  *
- * LA REGOLA CHE CAMBIA TUTTO. Il "profilo gratuito" NON e' piu' un
- * argomento di vendita: la parola gratuito/gratis abbassava il valore
- * percepito e ora vive in UN SOLO posto, la risposta della FAQ "Perche'
- * e' gratuito?", dove e' una risposta onesta a una domanda legittima e
- * non una promessa da vetrina. Titolo e description SEO sono stati
- * ripuliti (dicevano "Gratuitamente"). La guardia sta in
- * backend/tests/test_listino_tw.py::TestLandingOperatoriOl1.
+ * L'IMPIANTO VISIVO NON SI SMONTA. Questa e' la pagina che il founder ha
+ * approvato e che e' diventata il modello di tutto il sito
+ * (docs/DESIGN_PASS_DS_2026-08.md): ancora scura in apertura, foto vere e
+ * grandi, alternanza dei fondi, blocchi a schede, ancore multiple verso
+ * l'azione. Il copy e' nuovo da capo a fondo, la grammatica e' la stessa
+ * e in due punti si rafforza (la fascia fotografica a tutta larghezza e
+ * il registro delle cinque voci sul verde).
  *
- * Otto sezioni, copy CHIUSO parola per parola:
- *   1. HERO        il riconoscimento     foto + due CTA
- *   2. PERCHE'     la tesi               molto piu' di una vetrina
- *   3. COSA TROVI  le quattro promesse   profilo, storia, visibilita', crescita
- *   4. INSIEME     il ruolo speciale     ancora verde
- *   5. FAQ         le quattro domande    elenco leggibile, sempre aperto
- *   6. CHI SIAMO   i volti veri          Davide e Valentina, testo esistente
- *   7. FORM        la conversazione      #presentati, LeadForm invariato
- *   8. CHIUSURA    l'invito              ancora verde
+ * NOVE SEZIONI, copy CHIUSO parola per parola (le chiavi vivono in
+ * `opPro`, namespace prelaunch, SOLO in italiano: il founder ha chiesto
+ * niente en/de/fr, e con fallbackLng='it' le altre lingue leggono queste):
+ *   1. HERO       la rete da costruire       foto + due CTA
+ *   2. OGGI       perche' entrare adesso     due colonne, foto r02
+ *   3. RETE       cosa significa entrare     tre schede con foto
+ *   4. DOMANI     dove stiamo andando        fascia foto + registro verde
+ *   5. PER CHI    la selezione gentile       il no e il si', affiancati
+ *   6. FAQ        cinque domande             elenco leggibile, sempre aperto
+ *   7. CHI SIAMO  i volti veri               Valentina e Davide
+ *   8. FORM       la conversazione           #presentati, LeadForm
+ *   9. CHIUSURA   l'invito                   ancora verde
  *
- * VINCOLO DI LESSICO. L'evoluzione del prodotto si racconta com'e'
- * scritta nella scheda 4: mai "Aurya Connect", mai "gestionale".
+ * FONDI, nell'ordine: dark(foto) → sabbia → crema → sabbia → FOTO A TUTTA
+ * LARGHEZZA → VERDE → crema → bianco → sabbia → crema → VERDE. Due sezioni
+ * adiacenti non hanno mai lo stesso fondo, e le due ancore verdi (4 e 9)
+ * non si toccano.
  *
- * FONDI. crema/sabbia/carta con DUE sole ancore verdi, non adiacenti
- * (sezioni 4 e 8): dark(foto) → sabbia → crema → sabbia → VERDE+foto →
- * bianco → crema → sabbia → VERDE. Stessa grammatica della home di
- * rete, kit editoriale condiviso.
- *
- * SW2 — IL PASSAGGIO VISIVO (richiesta founder: "manca di visual e
- * design"). Copy, ordine e CTA restano congelati; cambia solo il
- * vestito. Le fotografie passano da due a sette, ciascuna con un
- * perche':
- *   HERO   hero-organizer (mani in gyan mudra) — resta la copertina
- *          storica, ma su desktop il velo uniforme sparisce: colonna
- *          scura piena a sinistra per il testo (contrasto FISSO,
- *          15,9:1, non sperato) e fotografia NUDA a destra, alla sua
- *          piena luce. Su mobile resta il fondo fotografico velato,
+ * LE FOTOGRAFIE, una per ragione:
+ *   HERO   hero-organizer (mani in gyan mudra) — la copertina storica.
+ *          Su desktop il velo uniforme non c'e': colonna scura piena a
+ *          sinistra per il testo (contrasto FISSO 15,96:1) e fotografia
+ *          NUDA a destra. Su mobile resta il fondo fotografico velato,
  *          misurato sui pixel reali (7,95:1 nel caso peggiore).
- *   CARDS  le quattro promesse prendono una fotografia in testa, come
- *          le PillarCard della home: r03 (una persona sola, raccontata
- *          nel suo elemento) per il profilo; r08 (le mani di chi cura,
- *          la fiducia che passa dal gesto) per la storia; r09 (la
- *          pratica visibile nello spazio di tutti) per la visibilita';
- *          r05 (il cairn, una pietra alla volta) per la crescita.
- *          r06 e r02 in card restano alla home: le due pagine sono
- *          sorelle, non fotocopie.
- *   VERDE  la prima ancora (sezione 4) diventa la fascia a tutta
- *          larghezza col testo sul verde pieno e r02 accanto (due
- *          persone che meditano INSIEME: e' la sezione del
- *          "costruiamo insieme"), speculare alla fascia "La rete"
- *          della home: foto a sinistra, testo a destra.
- *   CHI SIAMO  chisiamo-aurya in taglio ritratto (4:5): il quadrato
- *          originale si vede quasi intero e i volti restano grandi.
+ *   r02    "perche' entrare oggi": l'unica foto al plurale del magazzino,
+ *          nella sezione che parla di costruire INSIEME.
+ *   r03    una persona sola nel suo elemento → "una presenza che parla di te".
+ *   r08    le mani di chi cura → la fiducia che nasce prima della chiamata.
+ *   r09    la pratica nello spazio di tutti → la presenza che continua a crescere.
+ *   r05    il cairn, una pietra alla volta → "dove stiamo andando". E' la
+ *          sezione che promette di piu' e si prende il trattamento piu'
+ *          forte della pagina: la fascia a tutta larghezza col titolo
+ *          DENTRO l'immagine, poi il verde pieno col registro delle voci.
+ *          Il velo di PhotoBand e' stato RIMISURATO su r05 (e' un'altra
+ *          fotografia, quindi non ci si fida della misura di r01):
+ *          composti i due strati sui pixel veri, il pixel piu' chiaro
+ *          sotto il testo da' 5,58:1 col crema a 1440 e 5,72:1 a 390
+ *          (minimo AA: 4,5:1 corpo, 3:1 display).
+ *   chisiamo-aurya  i fondatori, taglio ritratto 4:5.
  * Il video del tramonto resta la firma della home e non si duplica qui.
+ *
+ * IL FORM (OL3b, richiesta del founder arrivata a lavoro in corso): sette
+ * campi e non piu' quello che c'era. L'ultimo, "qual e' la cosa che
+ * vorresti far capire alle persone del tuo lavoro", non e' una riga fra
+ * le altre: e' la domanda che vale l'intera candidatura, quindi ha una
+ * sua etichetta visibile e un campo alto. La meccanica del POST e il
+ * blocco del consenso privacy NON si toccano (vedi LeadForm.jsx).
  */
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -68,55 +71,40 @@ import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import LeadForm from './LeadForm';
 import {
-  Section, DisplayTitle, TitleLine, Lede, EditorialCta,
+  Section, DisplayTitle, TitleLine, Lede, EditorialCta, PhotoBand, PhotoSplit,
 } from '../../components/editorial';
 
-/** l'ancora del form: destinazione delle tre CTA interne e dei link
-    che arrivano da fuori (/entra-nella-rete#presentati dalla home) */
+/** l'ancora del form: destinazione delle CTA interne e dei link che
+    arrivano da fuori (/entra-nella-rete#presentati dalla home) */
 const FORM_ANCHOR = '#presentati';
 
-/** il verde di brand del kit editoriale: la pagina non ha piu' un
-    accento proprio (la terracotta di PL16), parla la lingua della home */
+/** il verde di brand del kit editoriale: la pagina non ha un accento
+    proprio, parla la lingua della home */
 const SAGE = '#2f5749';
 
-/* La copertina storica della pagina. Su mobile sotto il testo passa
-   un velo in due strati tarato sui pixel piu' chiari della foto; su
-   desktop la foto sta nuda nella meta' destra: le misure di contrasto
-   stanno nel commento della sezione 1. */
 const HERO_PHOTO = '/media/hero-organizer.webp';
 const FOUNDERS_PHOTO = '/media/chisiamo-aurya.jpg';
+const TOGETHER_PHOTO = '/media/prelaunch/r02.jpg';   // costruire insieme
+const HORIZON_PHOTO = '/media/prelaunch/r05.jpg';    // il cairn: una pietra alla volta
 
-/* SW2 — le fotografie delle quattro promesse e della fascia verde.
-   Tutte gia' in /public/media/prelaunch, aperte e scelte una a una;
-   il perche' di ciascuna sta nel commento di testa del file. Sono
-   DECORATIVE (alt=""): ogni scheda dice gia' tutto con titolo e
-   testo, e descriverle a voce sarebbe rumore per chi ascolta. */
+/* Le tre schede della sezione 3. DECORATIVE (alt=""): ogni scheda dice
+   gia' tutto con titolo e testo, descriverle a voce sarebbe rumore. */
 const CARD_PHOTOS = {
   '01': '/media/prelaunch/r03.jpg',  // una persona nel suo elemento
   '02': '/media/prelaunch/r08.jpg',  // le mani di chi cura, da vicino
   '03': '/media/prelaunch/r09.jpg',  // la pratica nello spazio di tutti
-  '04': '/media/prelaunch/r05.jpg',  // il cairn: una pietra alla volta
 };
-const TOGETHER_PHOTO = '/media/prelaunch/r02.jpg'; // meditare insieme
 
 /**
- * OfferCard — una delle quattro promesse della sezione 3.
+ * OfferCard — una delle tre promesse della sezione 3.
  *
  * NON e' PillarCard: quella scheda ha un piede sempre presente (link o
- * etichetta di stato), qui nessuna delle quattro porta da qualche
- * parte, quindi il piede non esiste e la scheda resta un argomento.
- *
- * SW2 — la fotografia in testa (3:2, come PillarCard: e' il kit che
- * comanda). OL1 aveva scelto quattro schede di solo testo col numerale
- * serif per non fare "catalogo"; la richiesta del founder ("aggiungi
- * delle foto, rendi il design piu' ad impatto visivo") ribalta quella
- * scelta e la regola del kit torna a valere: con la fotografia in
- * testa il segno c'e' gia', e il numerale sarebbe il secondo segno
- * sopra lo stesso titolo (NOTA DIREZIONE CREATIVA di PillarCard).
- * Il rapporto dichiarato (aspect-[3/2]) prenota lo spazio prima che il
- * file arrivi: zero salti di layout. Niente zoom al passaggio: la
- * scheda non si apre, e muoversi sotto il mouse prometterebbe un clic
- * che non esiste.
+ * etichetta di stato), qui nessuna delle tre porta da qualche parte,
+ * quindi il piede non esiste e la scheda resta un argomento.
+ * Fotografia in testa 3:2 come nel kit, rapporto dichiarato per prenotare
+ * lo spazio prima che il file arrivi (zero salti di layout). Niente zoom
+ * al passaggio del mouse: la scheda non si apre, e muoversi sotto il
+ * cursore prometterebbe un clic che non esiste.
  */
 function OfferCard({ image, title, body }) {
   return (
@@ -148,14 +136,14 @@ function OfferCard({ image, title, body }) {
 
 export default function OperatorLandingPage() {
   const { t } = useTranslation('prelaunch');
-  // la sezione "Chi siamo" riusa il racconto GIA' VERIFICATO dei
-  // fondatori (aboutPage.*, namespace landings): stesso testo del
-  // Manifesto e di /chi-siamo, tradotto x4. Qui non si inventa nulla.
+  // l'unica cosa che resta al namespace landings e' l'alt VERIFICATO
+  // della fotografia dei fondatori, lo stesso di /chi-siamo e del
+  // Manifesto: la descrizione di una foto vera non si riscrive due volte.
   const { t: tl } = useTranslation('landings');
 
   useSeoMeta({
-    title: t('opNw.seoTitle', { defaultValue: 'Il tuo lavoro merita di essere conosciuto | Aurya' }),
-    description: t('opNw.seoDesc', { defaultValue: 'Aurya racconta i professionisti del benessere con interviste e profili curati. Entra nella rete che sta nascendo: il tuo lavoro merita di essere conosciuto.' }),
+    title: t('opPro.seoTitle', { defaultValue: 'Per i professionisti del benessere | Aurya' }),
+    description: t('opPro.seoDesc', { defaultValue: 'Stiamo costruendo la rete dei professionisti del benessere: profili raccontati con cura, interviste e uno spazio che nel tempo diventerà il punto di riferimento della tua presenza digitale.' }),
     canonicalPath: '/entra-nella-rete',
   });
 
@@ -163,10 +151,10 @@ export default function OperatorLandingPage() {
   const prefersReducedMotion = () => typeof window.matchMedia === 'function'
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Le tre CTA interne (hero, "Parliamone", chiusura) portano tutte
-     QUI. preventDefault: l'hash non finisce nell'URL, quindi il gesto
-     si puo' ripetere all'infinito. Un <Link to="#presentati"> del
-     router avrebbe funzionato solo al primo clic. */
+  /* Le CTA interne (hero e chiusura) portano tutte QUI. preventDefault:
+     l'hash non finisce nell'URL, quindi il gesto si puo' ripetere
+     all'infinito. Un <Link to="#presentati"> del router avrebbe
+     funzionato solo al primo clic. */
   const scrollToForm = (e) => {
     e.preventDefault();
     document.getElementById('presentati')?.scrollIntoView({
@@ -176,107 +164,127 @@ export default function OperatorLandingPage() {
   };
 
   /* HP2 — l'ancora #presentati e' una destinazione anche da FUORI: la
-     home linka /entra-nella-rete#presentati ("Parliamone"). Chi arriva
-     da li' viene portato all'ancora da ScrollToTop in App.js, che e'
-     hash-aware per tutte le ancore del sito e sa aspettare le pagine
-     lazy. Qui resta solo l'id sulla sezione del form. */
+     home linka /entra-nella-rete#presentati. Chi arriva da li' viene
+     portato all'ancora da ScrollToTop in App.js, che e' hash-aware per
+     tutte le ancore del sito e sa aspettare le pagine lazy. Qui resta
+     solo l'id sulla sezione del form. */
 
   const cards = [
     {
       numeral: '01',
-      title: t('opNw.c1t', { defaultValue: 'Un profilo che racconta chi sei' }),
-      body: t('opNw.c1b', { defaultValue: 'Non una scheda. Una pagina costruita insieme a noi che racconta il tuo approccio, il tuo percorso e il valore del tuo lavoro.' }),
+      title: t('opPro.j1t', { defaultValue: 'Una presenza che parla di te.' }),
+      body: t('opPro.j1b', { defaultValue: 'Realizziamo insieme un profilo pubblico che racconta il tuo approccio, la tua storia e il valore del tuo lavoro. Un luogo che potrai condividere ovunque e che crescerà insieme alla tua attività.' }),
     },
     {
       numeral: '02',
-      title: t('opNw.c2t', { defaultValue: 'Una storia che crea fiducia' }),
-      body: t('opNw.c2b', { defaultValue: 'Ti intervistiamo e trasformiamo la tua esperienza in un contenuto pubblicato sul Magazine di Aurya. Perché le persone scelgono più facilmente chi hanno avuto modo di conoscere.' }),
+      title: t('opPro.j2t', { defaultValue: 'Più fiducia, prima ancora della prima chiamata.' }),
+      body: t('opPro.j2b', { defaultValue: 'Attraverso un’intervista e i contenuti del Magazine aiutiamo le persone a conoscerti prima ancora di contattarti. Perché chi comprende il tuo approccio ti sceglie con maggiore consapevolezza.' }),
     },
     {
       numeral: '03',
-      title: t('opNw.c3t', { defaultValue: 'Più occasioni per essere scoperto' }),
-      body: t('opNw.c3b', { defaultValue: 'Il tuo profilo sarà valorizzato attraverso il Magazine, la newsletter, i nostri canali e i motori di ricerca. Ogni contenuto contribuisce a rendere più visibile anche il tuo lavoro.' }),
-    },
-    {
-      numeral: '04',
-      title: t('opNw.c4t', { defaultValue: 'Uno spazio che crescerà con te' }),
-      body: t('opNw.c4b', { defaultValue: 'Nei prossimi mesi il tuo profilo diventerà sempre più completo. Potrai pubblicare i tuoi servizi, ricevere richieste di prenotazione, organizzare workshop, eventi e ritiri, condividere un unico link con tutto ciò che fai e gestire la tua presenza in un unico luogo.' }),
+      title: t('opPro.j3t', { defaultValue: 'Una presenza che continua a crescere.' }),
+      body: t('opPro.j3b', { defaultValue: 'Il tuo profilo sarà valorizzato attraverso il Magazine, la newsletter, i nostri contenuti e, nel tempo, da tutto l’ecosistema Aurya. Ogni nuovo contenuto contribuirà a dare maggiore visibilità anche al tuo lavoro.' }),
     },
   ];
 
-  /* Quattro domande, quattro risposte SEMPRE VISIBILI. Niente
-     accordion: le risposte sono di due o tre righe, un accordion le
-     nasconderebbe dietro un gesto per risparmiare trecento pixel su
-     mobile, toglierebbe il testo ai motori di ricerca e costringerebbe
-     a quattro clic chi vuole solo capire come funziona. Il <dl> e' la
-     semantica giusta: domanda e risposta, in coppia. */
+  /* Le cinque voci della sezione 4. Il founder le aveva accompagnate con
+     delle emoji: qui parlano la grammatica grafica del sito (registro a
+     righe con filo sottile sul verde), che e' identica su ogni sistema
+     operativo, mentre un'emoji la disegna il telefono di chi legge. */
+  const voices = [
+    {
+      title: t('opPro.v1t', { defaultValue: 'Potrai pubblicare i tuoi servizi.' }),
+      body: t('opPro.v1b', { defaultValue: 'Con il tuo listino prezzi sempre aggiornato.' }),
+    },
+    {
+      title: t('opPro.v2t', { defaultValue: 'Ricevere richieste di appuntamento.' }),
+      body: t('opPro.v2b', { defaultValue: 'Direttamente dal tuo profilo.' }),
+    },
+    {
+      title: t('opPro.v3t', { defaultValue: 'Organizzare workshop ed eventi.' }),
+      body: t('opPro.v3b', { defaultValue: 'In pochi minuti. Con iscrizioni online.' }),
+    },
+    {
+      title: t('opPro.v4t', { defaultValue: 'Pubblicare ritiri.' }),
+      body: t('opPro.v4b', { defaultValue: 'Con tutte le informazioni e la gestione delle prenotazioni.' }),
+    },
+    {
+      title: t('opPro.v5t', { defaultValue: 'Condividere un unico link.' }),
+      body: t('opPro.v5b', { defaultValue: 'Il tuo sito. I tuoi servizi. I tuoi eventi. Le recensioni. La tua storia. Tutto nello stesso posto.' }),
+    },
+  ];
+
+  /* Cinque domande, cinque risposte SEMPRE VISIBILI. Niente accordion:
+     le risposte sono di due o tre righe, un accordion le nasconderebbe
+     dietro un gesto per risparmiare trecento pixel su mobile,
+     toglierebbe il testo ai motori di ricerca e costringerebbe a cinque
+     clic chi vuole solo capire come funziona. Il <dl> e' la semantica
+     giusta: domanda e risposta, in coppia.
+     Le prime tre risposte sono quelle GIA' APPROVATE e non si riscrivono
+     (la prima e' anche l'unico punto della pagina in cui si parla di
+     quanto costa: e' una risposta onesta a una domanda legittima, non un
+     argomento da vetrina). Le ultime due sono nuove e aspettano l'ok del
+     founder: dicono solo cose che il prodotto fa davvero oggi. */
   const faq = [
     {
-      q: t('opNw.faq1q', { defaultValue: 'Quanto costa?' }),
-      a: t('opNw.faq1a', { defaultValue: 'Oggi entrare nella rete non ha un costo. Quello che ti chiediamo è il tempo di una conversazione e la voglia di raccontare il tuo lavoro sul serio.' }),
+      q: t('opPro.faq1q', { defaultValue: 'Quanto costa?' }),
+      a: t('opPro.faq1a', { defaultValue: 'Oggi entrare nella rete non ha un costo. Quello che ti chiediamo è il tempo di una conversazione e la voglia di raccontare il tuo lavoro sul serio.' }),
     },
     {
-      q: t('opNw.faq2q', { defaultValue: 'Come funziona?' }),
-      a: t('opNw.faq2a', { defaultValue: 'Ci scrivi due righe su di te. Se c’è sintonia ci sentiamo e ti facciamo qualche domanda. Poi scriviamo il tuo profilo con le tue parole e lo pubblichiamo insieme alla tua storia.' }),
+      q: t('opPro.faq2q', { defaultValue: 'Come funziona?' }),
+      a: t('opPro.faq2a', { defaultValue: 'Ci scrivi due righe su di te. Se c’è sintonia ci sentiamo e ti facciamo qualche domanda. Poi scriviamo il tuo profilo con le tue parole e lo pubblichiamo insieme alla tua storia.' }),
     },
     {
-      // L'UNICO punto della pagina in cui la parola compare: qui e'
-      // una risposta onesta, non un argomento di vendita.
-      q: t('opNw.faq3q', { defaultValue: 'Perché è gratuito?' }),
-      a: t('opNw.faq3a', { defaultValue: 'Perché in questa fase il valore lo costruiamo insieme: tu porti il tuo lavoro e la tua esperienza, noi il tempo per raccontarlo e i canali per farlo leggere. Quando arriveranno gli strumenti per gestire servizi e prenotazioni ne parleremo con chiarezza, senza sorprese.' }),
+      q: t('opPro.faq3q', { defaultValue: 'Quando arriveranno le nuove funzionalità?' }),
+      a: t('opPro.faq3a', { defaultValue: 'Le stiamo costruendo insieme ai primi professionisti che entrano. Le priorità le decidiamo ascoltando loro, e chi c’è dall’inizio le prova per primo.' }),
     },
     {
-      q: t('opNw.faq4q', { defaultValue: 'Quando arriveranno le nuove funzionalità?' }),
-      a: t('opNw.faq4a', { defaultValue: 'Le stiamo costruendo insieme ai primi professionisti che entrano. Le priorità le decidiamo ascoltando loro, e chi c’è dall’inizio le prova per primo.' }),
+      q: t('opPro.faq4q', { defaultValue: 'Posso usare Aurya anche se ho già un sito?' }),
+      a: t('opPro.faq4a', { defaultValue: 'Sì, e non devi scegliere. Il profilo Aurya non sostituisce il tuo sito: dal profilo puoi linkare il sito e i tuoi canali, così chi ti trova qui arriva anche lì. Molti lo usano come pagina da condividere nei messaggi e sui social, dove serve un link solo.' }),
+    },
+    {
+      q: t('opPro.faq5q', { defaultValue: 'Posso gestire prenotazioni esterne?' }),
+      a: t('opPro.faq5a', { defaultValue: 'Non ancora del tutto. Oggi puoi bloccare gli orari in cui sei già occupato, così da Aurya nessuno te li chiede, e vedi in un unico calendario gli appuntamenti nati qui. Quello che ancora non c’è è il collegamento con un’agenda esterna: se prendi prenotazioni fuori da Aurya, per ora restano fuori. È tra le cose che stiamo costruendo, e te lo diremo quando sarà pronto, non prima.' }),
     },
   ];
 
-  const ctaJoin = t('opNw.ctaJoin', { defaultValue: 'Entra nella rete Aurya' });
+  const ctaJoin = t('opPro.ctaJoin', { defaultValue: 'Entra nella rete Aurya' });
+  const ctaContact = t('opPro.ctaContact', { defaultValue: 'Entriamo in contatto' });
 
   return (
     <MarketplaceShell noSearch>
       <div className="bg-background">
 
-        {/* ── 1. HERO — il riconoscimento ──────────────────────────
+        {/* ── 1. HERO — la rete da costruire ───────────────────────
             Due tempi dentro una sola sezione.
 
             a) LA FOTO E LA FRASE. hero-organizer (mani in gyan mudra):
                fondo fotografico velato fino a tablet, colonna scura +
-               foto nuda da lg (vedi sotto). Il testo e' allineato a
-               SINISTRA e non centrato come nella home: quattro frasi
-               corte una sotto l'altra sono una constatazione rivolta a
-               una persona sola, e centrarle le avrebbe fatte sembrare
-               uno slogan.
-            b) LA SOGLIA. Il quinto capoverso (quello lungo, la
-               promessa) e le due azioni stanno sotto la foto, sul
-               sabbia. Sopra la fotografia sarebbero stati altri sette
-               righe di testo velato: qui invece si leggono sul chiaro,
-               le CTA hanno il contrasto pieno del kit e chi scorre
-               arriva ai bottoni DOPO aver letto l'argomento.
+               foto nuda da lg. Il testo e' allineato a SINISTRA e non
+               centrato come nella home: e' una constatazione rivolta a
+               una persona sola, e centrarla la farebbe sembrare uno
+               slogan. Dentro l'apertura sta anche la cadenza staccata
+               del founder (tempo / studio / esperienza / presenza):
+               quattro righe di una riga sola, il ritmo si VEDE.
+            b) LA SOGLIA. La promessa lunga e le due azioni stanno sotto
+               la foto, sul sabbia: si leggono sul chiaro, le CTA hanno
+               il contrasto pieno del kit e chi scorre arriva ai bottoni
+               DOPO aver letto l'argomento.
 
-            IL VELO, MISURATO (SW2: solo sotto il breakpoint lg).
-            Su mobile e tablet la foto sta DIETRO il testo e sopra
-            passano due strati: uno verticale (piu' scuro in alto e in
-            fondo, dove raccorda con il sabbia) e uno radiale che
-            aggiunge buio solo dietro la colonna di testo. Misurato
-            componendo i veli sui pixel reali della fotografia
-            (script SW2): il pixel piu' chiaro sotto il testo da'
-            7,95:1 col crema #f6f2e8 (minimo AA: 4,5:1 corpo, 3:1
-            display). L'ombra (.text-hero-shadow) e' la cintura di
-            sicurezza, non il motore.
-
-            SW2 — DA lg IN SU la foto smette di fare da tappezzeria
-            velata (il founder la vedeva "senza visual": sotto il velo
-            uniforme la fotografia moriva) e diventa una COLONNA nuda
-            nella meta' destra, alla sua piena luce. Il testo sta su
-            #0e1a15 pieno: contrasto FISSO 15,96:1 (crema su verde
-            quasi nero), misurato sui valori e non sperato sui pixel.
-            Fra colonna e foto una cerniera in gradiente (da #0e1a15 a
-            trasparente) sopra il bordo sinistro della foto: il buio
-            dietro il testo non dipende mai dall'immagine. */}
+            IL VELO, MISURATO (solo sotto il breakpoint lg). Su mobile e
+            tablet la foto sta DIETRO il testo e sopra passano due
+            strati: uno verticale e uno radiale che aggiunge buio solo
+            dietro la colonna di testo. Misurato componendo i veli sui
+            pixel reali: il pixel piu' chiaro sotto il testo da' 7,95:1
+            col crema #f6f2e8. L'ombra (.text-hero-shadow) e' la cintura
+            di sicurezza, non il motore. DA lg IN SU la fotografia
+            smette di fare da tappezzeria e diventa una colonna nuda
+            nella meta' destra: il testo sta su #0e1a15 pieno, contrasto
+            FISSO 15,96:1. Fra colonna e foto una cerniera in gradiente:
+            il buio dietro il testo non dipende mai dall'immagine. */}
         <section data-testid="ol-hero" aria-labelledby="ol-hero-title">
           <div className="relative isolate overflow-hidden bg-[#0e1a15] text-[#f6f2e8]">
-            {/* decorativa: il titolo dice gia' tutto quello che la foto
+            {/* decorativa: il titolo dice gia' quello che la foto
                 suggerisce, e un alt che descrive due mani in mudra
                 aggiungerebbe rumore a chi ascolta la pagina */}
             <img
@@ -303,182 +311,225 @@ export default function OperatorLandingPage() {
                  className="hidden lg:block absolute inset-y-0 left-[54%] w-44 bg-gradient-to-r from-[#0e1a15] to-transparent" />
             <div className="relative mx-auto w-full max-w-5xl px-6 py-16 sm:px-8 sm:py-24
                             lg:flex lg:min-h-[38rem] lg:flex-col lg:justify-center lg:py-24">
-              {/* su desktop il testo resta nella colonna scura: il tetto
-                  in rem tiene titolo e capoversi a sinistra della foto */}
               <div className="lg:max-w-[30rem]">
+                {/* OL3 — il nome della pagina, detto in chiaro prima del
+                    titolo: questa e' la pagina PER I PROFESSIONISTI DEL
+                    BENESSERE, non "per gli operatori" */}
+                <p className="eyebrow eyebrow-light mb-6 text-hero-shadow">
+                  {t('opPro.heroEyebrow', { defaultValue: 'Per i professionisti del benessere' })}
+                </p>
                 <DisplayTitle as="h1" id="ol-hero-title" size="heroLines" measure="lines"
                               className="text-hero-shadow">
-                  {t('opNw.heroTitle', { defaultValue: 'Il tuo lavoro merita di essere conosciuto.' })}
+                  {t('opPro.heroTitle', { defaultValue: 'Costruiamo la rete dei professionisti del benessere.' })}
                 </DisplayTitle>
-                {/* i quattro capoversi brevi: uno per blocco, cosi' il
-                    ritmo si vede invece di doverlo immaginare */}
-                <div className="mt-7 space-y-3 sm:mt-9 sm:space-y-4">
+                <div className="mt-7 space-y-4 sm:mt-9 sm:space-y-5">
                   <Lede size="body" tone="inherit" className="text-hero-shadow">
-                    {t('opNw.heroP1', { defaultValue: 'Ogni giorno accompagni persone nel loro percorso di benessere.' })}
+                    {t('opPro.heroP1', { defaultValue: 'Ogni giorno accompagni persone nel loro percorso di crescita, equilibrio e benessere.' })}
+                  </Lede>
+                  {/* la cadenza: quattro frasi di una parola, una per
+                      riga. Sono un solo respiro, quindi un solo
+                      paragrafo con quattro righe volute */}
+                  <Lede size="body" tone="inherit" className="text-hero-shadow">
+                    <span className="block">{t('opPro.heroBeat1', { defaultValue: 'Ci metti tempo.' })}</span>
+                    <span className="block">{t('opPro.heroBeat2', { defaultValue: 'Studio.' })}</span>
+                    <span className="block">{t('opPro.heroBeat3', { defaultValue: 'Esperienza.' })}</span>
+                    <span className="block">{t('opPro.heroBeat4', { defaultValue: 'Presenza.' })}</span>
                   </Lede>
                   <Lede size="body" tone="inherit" className="text-hero-shadow">
-                    {t('opNw.heroP2', { defaultValue: 'Ci metti studio, esperienza, ascolto e presenza.' })}
+                    {t('opPro.heroP2', { defaultValue: 'Eppure, online, tutto questo spesso si riduce a una scheda, qualche recensione e un elenco di servizi.' })}
                   </Lede>
                   <Lede size="body" tone="inherit" className="text-hero-shadow">
-                    {t('opNw.heroP3', { defaultValue: 'Eppure, online, tutto questo spesso si riduce a poche righe e a un elenco di servizi.' })}
-                  </Lede>
-                  <Lede size="body" tone="inherit" className="text-hero-shadow">
-                    {t('opNw.heroP4', { defaultValue: 'Aurya nasce per cambiare questo.' })}
+                    {t('opPro.heroP3', { defaultValue: 'Noi crediamo che il tuo lavoro meriti molto di più.' })}
                   </Lede>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* la soglia: la promessa lunga e le due porte, sul chiaro */}
+          {/* la soglia: la promessa e le due porte, sul chiaro */}
           <Section tone="sand" rhythm="flow" width="max-w-5xl">
-            <Lede size="lead">
-              {t('opNw.heroP5', { defaultValue: 'Stiamo costruendo una rete di professionisti raccontati con cura, uno spazio dove le persone possano conoscerti prima ancora di sceglierti e dove la tua presenza digitale possa crescere insieme alla tua attività.' })}
+            <DisplayTitle as="p" size="section" measure="lines"
+                          className="text-[1.6rem] leading-[1.18] sm:text-[2rem] lg:text-[2.3rem]">
+              {t('opPro.heroP4', { defaultValue: 'Per questo stiamo costruendo Aurya.' })}
+            </DisplayTitle>
+            <Lede size="lead" className="mt-6">
+              {t('opPro.heroP5', { defaultValue: 'Una rete di professionisti raccontati con cura e uno spazio che, nel tempo, diventerà il punto di riferimento della tua presenza digitale.' })}
             </Lede>
             <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
               <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
                             variant="solid" data-testid="ol-hero-cta">
-                {ctaJoin}
+                {ctaContact}
               </EditorialCta>
               <EditorialCta to="/manifesto" variant="quiet" data-testid="ol-hero-cta-alt">
-                {t('opNw.ctaManifesto', { defaultValue: 'Leggi il Manifesto' })}
+                {t('opPro.ctaWhy', { defaultValue: 'Perché stiamo costruendo Aurya' })}
               </EditorialCta>
             </div>
           </Section>
         </section>
 
-        {/* ── 2. PERCHE' AURYA — la tesi ───────────────────────────
-            Solo ragionamento, tre paragrafi in scala discendente: il
-            primo e' la tesi e sta al corpo del lede, gli altri due
-            argomentano. Nessuna immagine: sotto un testo lungo si paga
-            sempre in leggibilita', e la fotografia in questa pagina ha
-            gia' i suoi due posti (hero e Chi siamo). */}
-        <Section tone="cream" rhythm="screen" labelledBy="ol-why-title" width="max-w-5xl">
-          <div data-testid="ol-why">
-            <DisplayTitle as="h2" id="ol-why-title" size="section" measure="tight">
-              {t('opNw.whyTitle', { defaultValue: 'Molto più di una vetrina.' })}
-            </DisplayTitle>
-            <Lede size="lead" className="mt-7">
-              {t('opNw.whyP1', { defaultValue: 'Internet offre tantissimi modi per essere visibili. Ma essere visibili non significa essere compresi.' })}
-            </Lede>
-            <Lede size="body" className="mt-5">
-              {t('opNw.whyP2', { defaultValue: 'Noi crediamo che le persone scelgano un professionista soprattutto per come lavora, per ciò che trasmette e per la fiducia che riesce a creare.' })}
-            </Lede>
-            <Lede size="body" className="mt-5">
-              {t('opNw.whyP3', { defaultValue: 'Per questo Aurya non nasce come una directory. Nasce per raccontare le persone, valorizzarne il percorso e costruire una rete in cui contenuti, professionisti ed esperienze si rafforzano a vicenda.' })}
-            </Lede>
-            <div className="mt-9">
-              <EditorialCta to="/manifesto" variant="quiet" data-testid="ol-why-cta">
-                {t('opNw.whyCta', { defaultValue: 'Scopri la nostra visione' })}
-              </EditorialCta>
-            </div>
-          </div>
-        </Section>
+        {/* ── 2. PERCHE' ENTRARE OGGI — la finestra aperta ─────────
+            Il ragionamento sta accanto a una figura, non dentro una
+            colonna: r02 e' l'unica fotografia al plurale del magazzino
+            (due persone che meditano insieme) ed e' esattamente la
+            sezione che dice "ci aiuteranno a costruirla".
+            Il testo NON sta mai sopra l'immagine: sta sul crema pieno
+            accanto, quindi il contrasto e' quello dichiarato dal tono e
+            non dipende da come e' esposto quello scatto.
+            La chiusura non e' un altro paragrafo: e' la voce della
+            pagina che alza il tono, quindi torna al display serif. */}
+        <PhotoSplit
+          image={TOGETHER_PHOTO}
+          side="left"
+          tone="cream"
+          focus="50% 45%"
+          imageWidth="900"
+          imageHeight="599"
+          labelledBy="ol-now-title"
+          data-testid="ol-now"
+        >
+          <DisplayTitle as="h2" id="ol-now-title" size="section" measure="title">
+            {t('opPro.nowTitle', { defaultValue: 'Perché entrare oggi.' })}
+          </DisplayTitle>
+          <Lede size="lead" className="mt-7">
+            {t('opPro.nowP1', { defaultValue: 'Aurya è ancora all’inizio. Ed è proprio questo il momento in cui puoi contribuire a darle forma.' })}
+          </Lede>
+          <Lede size="body" className="mt-5">
+            {t('opPro.nowP2', { defaultValue: 'I primi professionisti non saranno semplicemente presenti sulla piattaforma. Ci aiuteranno a costruirla.' })}
+          </Lede>
+          <Lede size="body" className="mt-5">
+            {t('opPro.nowP3', { defaultValue: 'Ascolteremo i vostri bisogni, raccoglieremo i vostri suggerimenti e svilupperemo strumenti che nascono dal lavoro reale di chi accompagna ogni giorno le persone.' })}
+          </Lede>
+          <DisplayTitle as="p" size="section" measure="lines"
+                        className="mt-10 text-[1.5rem] leading-[1.2] sm:text-[1.8rem] lg:text-[2.05rem]">
+            <TitleLine>
+              {t('opPro.nowCloseA', { defaultValue: 'Non stiamo cercando iscritti.' })}
+            </TitleLine>
+            <TitleLine>
+              {t('opPro.nowCloseB', { defaultValue: 'Stiamo cercando le persone con cui costruire Aurya.' })}
+            </TitleLine>
+          </DisplayTitle>
+        </PhotoSplit>
 
-        {/* ── 3. COSA TROVI IN AURYA — le quattro promesse ─────────
+        {/* ── 3. COSA SIGNIFICA ENTRARE NELLA RETE — le tre promesse
             Fondo sabbia: le schede sono bianche, e schede bianche su
-            fondo bianco non esistono. Griglia 2x2 e non quattro
-            colonne: i testi sono lunghi, e a un quarto di larghezza
-            diventerebbero quattro colonne di parole spezzate.
-            La chiusura della sezione non e' una quinta scheda: e' la
-            voce della pagina che alza il tono, quindi torna al display
-            serif e sta al centro, sotto la griglia. */}
-        <Section tone="sand" rhythm="screen" labelledBy="ol-find-title" width="max-w-6xl">
-          <div data-testid="ol-find">
-            <DisplayTitle as="h2" id="ol-find-title" size="section" measure="title">
-              {t('opNw.findTitle', { defaultValue: 'Uno spazio che cresce insieme al tuo lavoro.' })}
+            fondo bianco non esistono. Tre colonne su desktop, una sola
+            su telefono: i testi sono di tre righe, a un terzo di
+            larghezza restano righe vere e non parole spezzate. */}
+        <Section tone="sand" rhythm="screen" labelledBy="ol-join-title" width="max-w-6xl">
+          <div data-testid="ol-join">
+            <DisplayTitle as="h2" id="ol-join-title" size="section" measure="title">
+              {t('opPro.joinTitle', { defaultValue: 'Cosa significa entrare nella rete.' })}
             </DisplayTitle>
-            <Lede size="body" className="mt-6">
-              {t('opNw.findIntro', { defaultValue: 'Entrando nella rete inizierai a costruire una presenza digitale pensata per accompagnare la tua attività nel tempo.' })}
-            </Lede>
-            <ul className="mt-10 grid list-none gap-7 p-0 sm:mt-12 sm:gap-8 lg:grid-cols-2">
+            <ul className="mt-10 grid list-none gap-7 p-0 sm:mt-12 sm:gap-8 lg:grid-cols-3">
               {cards.map((c) => (
                 <li key={c.numeral} data-testid={`ol-card-${c.numeral}`} className="h-full">
-                  <OfferCard image={CARD_PHOTOS[c.numeral]} {...c} />
+                  <OfferCard image={CARD_PHOTOS[c.numeral]} title={c.title} body={c.body} />
                 </li>
               ))}
             </ul>
-            <div className="mt-12 sm:mt-14">
-              <DisplayTitle as="p" size="section" measure="lines"
-                            className="text-[1.6rem] leading-[1.18] sm:text-[2rem] lg:text-[2.4rem]">
-                <TitleLine>
-                  {t('opNw.findCloseA', { defaultValue: 'Non stiamo costruendo semplicemente una piattaforma.' })}
-                </TitleLine>
-                <TitleLine>
-                  {t('opNw.findCloseB', { defaultValue: 'Stiamo costruendo lo spazio digitale che molti professionisti del benessere hanno sempre desiderato.' })}
-                </TitleLine>
-              </DisplayTitle>
+          </div>
+        </Section>
+
+        {/* ── 4. DOVE STIAMO ANDANDO — il trattamento piu' forte ───
+            E' la sezione che promette di piu', e si prende due battute
+            invece di una:
+              a) la FASCIA a tutta larghezza, con il titolo e l'orizzonte
+                 DENTRO la fotografia (r05, il cairn: una pietra alla
+                 volta). E' l'unico momento in cui la pagina esce dalla
+                 sua colonna, ed e' li' che si sente il cambio di passo.
+              b) l'ANCORA VERDE con il registro delle cinque voci: righe
+                 separate da un filo sottile, titolo a sinistra e riga di
+                 dettaglio a destra. E' la grammatica grafica del sito al
+                 posto delle emoji della specifica: identica su ogni
+                 telefono, e allineata come un indice di cose promesse.
+            Sul verde il crema sta a 7,28:1, al 90% a 6,26:1 (AA: 4,5:1).
+            Le due battute sono una sezione sola per chi ascolta la
+            pagina: l'h2 e' uno, e sta nella fascia. */}
+        <section data-testid="ol-go" aria-labelledby="ol-go-title">
+          <PhotoBand as="div" image={HORIZON_PHOTO} focus="50% 40%" width="max-w-3xl">
+            <DisplayTitle as="h2" id="ol-go-title" size="section" measure="title"
+                          className="text-hero-shadow">
+              {t('opPro.goTitle', { defaultValue: 'Dove stiamo andando.' })}
+            </DisplayTitle>
+            <Lede size="lead" tone="inherit" className="mt-7 text-hero-shadow">
+              {t('opPro.goP1', { defaultValue: 'Oggi Aurya è il luogo dove raccontiamo professionisti e contenuti.' })}
+            </Lede>
+            <Lede size="lead" tone="inherit" className="mt-4 text-hero-shadow">
+              {t('opPro.goP2', { defaultValue: 'Domani diventerà anche il luogo da cui potrai gestire la tua presenza professionale.' })}
+            </Lede>
+          </PhotoBand>
+
+          <Section tone="sage" rhythm="screen" as="div" width="max-w-5xl">
+            <DisplayTitle as="p" size="section" measure="lines"
+                          className="text-[1.6rem] leading-[1.18] sm:text-[2rem] lg:text-[2.3rem]">
+              <TitleLine>
+                {t('opPro.goP3', { defaultValue: 'Senza cambiare piattaforma.' })}
+              </TitleLine>
+              <TitleLine>
+                {t('opPro.goP4', { defaultValue: 'Senza ricominciare da zero.' })}
+              </TitleLine>
+            </DisplayTitle>
+            <ul className="mt-11 list-none p-0 sm:mt-14">
+              {voices.map((v, i) => (
+                <li
+                  key={v.title}
+                  className={`grid gap-2 py-6 lg:grid-cols-12 lg:gap-10 ${
+                    i > 0 ? 'border-t border-[#f6f2e8]/20' : 'pt-0'}`}
+                >
+                  <h3 className="font-display text-[1.3rem] leading-snug sm:text-[1.55rem] lg:col-span-5">
+                    {v.title}
+                  </h3>
+                  {/* opacita' 90 e non il tono `soft` del kit: sul verde
+                      l'80% scenderebbe verso il minimo, il 90% resta a
+                      6,26:1 e la gerarchia col titolo si legge lo stesso */}
+                  <p className="max-w-[52ch] text-base leading-relaxed opacity-90 sm:text-lg lg:col-span-7 lg:pt-1">
+                    {v.body}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        </section>
+
+        {/* ── 5. PER CHI E' AURYA — il no e il si', affiancati ─────
+            La selezione detta gentilmente. Le due frasi "se..." non sono
+            due paragrafi in fila: sono un bivio, quindi stanno una
+            accanto all'altra separate da un filo verticale. La prima e'
+            piu' bassa di tono (foreground/70 ≈ 5,6:1 sul crema, sopra il
+            minimo AA), la seconda ha il colore pieno: la pagina dice
+            senza urlare quale delle due strade ci interessa. */}
+        <Section tone="cream" rhythm="screen" labelledBy="ol-for-title" width="max-w-5xl">
+          <div data-testid="ol-for">
+            <DisplayTitle as="h2" id="ol-for-title" size="section" measure="title">
+              {t('opPro.forTitle', { defaultValue: 'Per chi è Aurya.' })}
+            </DisplayTitle>
+            <Lede size="lead" className="mt-7">
+              {t('opPro.forP1', { defaultValue: 'Aurya è pensata per professionisti che desiderano costruire relazioni prima ancora che clienti.' })}
+            </Lede>
+            <Lede size="body" className="mt-5">
+              {t('opPro.forP2', { defaultValue: 'Persone che credono nel valore dell’ascolto, della trasparenza e della crescita continua.' })}
+            </Lede>
+            <div className="mt-11 grid gap-8 sm:mt-14 lg:grid-cols-2 lg:gap-14">
+              <p className="font-display text-[1.3rem] leading-snug text-foreground/70 sm:text-[1.5rem]">
+                {t('opPro.forNo', { defaultValue: 'Se il tuo obiettivo è semplicemente comparire in un elenco, probabilmente Aurya non fa per te.' })}
+              </p>
+              <p className="font-display text-[1.3rem] leading-snug text-foreground sm:text-[1.5rem]
+                            lg:border-l lg:border-[#1e2f28]/15 lg:pl-14">
+                {t('opPro.forYes', { defaultValue: 'Se invece vuoi costruire una presenza professionale autorevole nel tempo, ci piacerebbe conoscerti.' })}
+              </p>
             </div>
           </div>
         </Section>
 
-        {/* ── 4. COSTRUIAMO AURYA INSIEME — prima ancora verde ─────
-            Il cuore della proposta: non "iscriviti", ma "decidi con
-            noi". Il verde pieno le da' il peso che il testo da solo
-            non riusciva a prendersi e spezza la sequenza di fondi
-            chiari esattamente a meta' della lettura.
-
-            SW2 — la fascia a tutta larghezza, come "La rete" della
-            home ma SPECULARE (foto a sinistra, testo a destra): le due
-            pagine sono sorelle, non fotocopie. La fotografia e' r02,
-            due persone che meditano insieme nel bosco al tramonto:
-            l'unica foto al plurale della cartella, nella sola sezione
-            che parla di fare le cose INSIEME. Il testo sta sul verde
-            PIENO e mai sopra l'immagine: crema su salvia 7,28:1, al
-            90% 6,26:1 (minimo AA 4,5:1). La geometria della mezza
-            griglia e' quella della home: mezzo contenitore (36rem =
-            meta' di max-w-6xl) agganciato al centro con mr-auto, cosi'
-            il filo verticale della pagina resta uno solo. */}
-        <Section tone="sage" rhythm="none" labelledBy="ol-build-title"
-                 width="max-w-none" gutter={false}>
-          <div data-testid="ol-build" className="grid lg:grid-cols-2 lg:items-stretch">
-            {/* decorativa: la sezione si capisce tutta a parole */}
-            <img
-              src={TOGETHER_PHOTO}
-              alt=""
-              width="900"
-              height="599"
-              loading="lazy"
-              decoding="async"
-              className="h-56 w-full object-cover sm:h-80 lg:h-full lg:min-h-[30rem]"
-            />
-            <div className="flex items-center px-6 py-16 sm:px-8 sm:py-24 lg:py-28 lg:px-0">
-              <div className="w-full lg:mr-auto lg:max-w-[36rem] lg:pl-14 lg:pr-8">
-                <DisplayTitle as="h2" id="ol-build-title" size="section" measure="title">
-                  {t('opNw.buildTitle', { defaultValue: 'I primi professionisti avranno un ruolo speciale.' })}
-                </DisplayTitle>
-                {/* tone inherit: sul verde l'opacita' di default mangia
-                    contrasto, e il crema all'80% scenderebbe sotto AA */}
-                <Lede size="lead" tone="inherit" className="mt-7">
-                  {t('opNw.buildP1', { defaultValue: 'Aurya è ancora all’inizio. Per questo vogliamo costruirla insieme alle persone che ogni giorno lavorano nel mondo del benessere.' })}
-                </Lede>
-                <Lede size="body" tone="inherit" className="mt-5 opacity-90">
-                  {t('opNw.buildP2', { defaultValue: 'Le vostre idee, i vostri bisogni e la vostra esperienza guideranno l’evoluzione del progetto.' })}
-                </Lede>
-                <Lede size="body" tone="inherit" className="mt-5 opacity-90">
-                  {t('opNw.buildP3', { defaultValue: 'Entrare oggi significa contribuire alla nascita di una rete che continuerà a crescere negli anni.' })}
-                </Lede>
-                <div className="mt-9">
-                  <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
-                                variant="light" data-testid="ol-build-cta">
-                    {t('opNw.buildCta', { defaultValue: 'Parliamone' })}
-                  </EditorialCta>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        {/* ── 5. DOMANDE FREQUENTI — l'elenco leggibile ────────────
-            Fondo bianco pieno: e' la sezione di servizio della pagina,
-            e la luce piena e' quella che si legge meglio. Le coppie
-            stanno in colonna singola con un filo sottile a separarle:
-            due colonne avrebbero costretto l'occhio a saltare, e con
-            quattro domande non c'e' nulla da comprimere. */}
+        {/* ── 6. DOMANDE FREQUENTI — l'elenco leggibile ────────────
+            Fondo bianco pieno: e' la sezione di servizio della pagina, e
+            la luce piena e' quella che si legge meglio. Le coppie stanno
+            in colonna singola con un filo sottile a separarle: due
+            colonne avrebbero costretto l'occhio a saltare. */}
         <Section tone="paper" rhythm="screen" labelledBy="ol-faq-title" width="max-w-3xl">
           <div data-testid="ol-faq">
             <DisplayTitle as="h2" id="ol-faq-title" size="section" measure="title">
-              {t('opNw.faqTitle', { defaultValue: 'Domande frequenti.' })}
+              {t('opPro.faqTitle', { defaultValue: 'Domande frequenti.' })}
             </DisplayTitle>
             <dl className="mt-10 sm:mt-12">
               {faq.map((f, i) => (
@@ -496,40 +547,35 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 6. CHI SIAMO — i volti veri ──────────────────────────
-            Tre negazioni secche e poi la frase: il titolo e' fatto di
+        {/* ── 7. CHI C'E' DIETRO AURYA — i volti veri ──────────────
+            Tre negazioni secche e poi le persone: il titolo e' fatto di
             frasi, quindi ogni riga e' una <TitleLine> e non un a-capo
-            estetico (in ogni lingua restano tre righe distinte).
-            Il racconto dei fondatori NON e' riscritto: e' lo stesso
-            testo verificato di /manifesto e /chi-siamo (aboutPage.*),
-            con la stessa fotografia e lo stesso alt. */}
-        <Section tone="cream" rhythm="screen" labelledBy="ol-who-title" width="max-w-6xl">
+            estetico. La fotografia dei fondatori e' l'unica foto vera
+            nostra e sta in taglio ritratto (4:5): l'originale e' quasi
+            quadrato e un 4:3 taglierebbe la fronte e il mare. */}
+        <Section tone="sand" rhythm="screen" labelledBy="ol-who-title" width="max-w-6xl">
           <div data-testid="ol-who">
             <p className="eyebrow mb-5">
-              {t('opNw.whoEyebrow', { defaultValue: 'Chi siamo' })}
+              {t('opPro.whoEyebrow', { defaultValue: 'Chi c’è dietro Aurya' })}
             </p>
             <DisplayTitle as="h2" id="ol-who-title" size="section" measure="lines"
                           className="text-[1.9rem] leading-[1.14] sm:text-[2.4rem] lg:text-[2.9rem]">
               <TitleLine>
-                {t('opNw.whoLine1', { defaultValue: 'Non siamo un’agenzia di marketing.' })}
+                {t('opPro.whoLine1', { defaultValue: 'Non siamo un’agenzia.' })}
               </TitleLine>
               <TitleLine>
-                {t('opNw.whoLine2', { defaultValue: 'Non siamo un software.' })}
+                {t('opPro.whoLine2', { defaultValue: 'Non siamo un software.' })}
               </TitleLine>
               <TitleLine>
-                {t('opNw.whoLine3', { defaultValue: 'Non siamo una directory.' })}
+                {t('opPro.whoLine3', { defaultValue: 'Non siamo una directory.' })}
               </TitleLine>
             </DisplayTitle>
             <Lede size="lead" className="mt-7">
-              {t('opNw.whoLead', { defaultValue: 'Siamo persone che credono che il benessere meriti uno spazio diverso sul web.' })}
+              {t('opPro.whoLead', { defaultValue: 'Siamo due persone che hanno deciso di costruire lo spazio che avrebbero voluto trovare.' })}
             </Lede>
 
             <div className="mt-12 grid gap-9 sm:mt-14 lg:grid-cols-12 lg:items-center lg:gap-14">
               <div className="lg:col-span-5">
-                {/* SW2 — taglio ritratto (4:5): l'originale e' quasi
-                    quadrato (900x886) e il vecchio 4:3 gli tagliava la
-                    fronte e il mare; cosi' si vede quasi intero e i
-                    volti restano grandi anche nella colonna stretta */}
                 <img
                   src={FOUNDERS_PHOTO}
                   alt={tl('aboutPage.facesAlt', { defaultValue: 'Davide e Valentina, i fondatori di Aurya, in riva al mare' })}
@@ -541,15 +587,20 @@ export default function OperatorLandingPage() {
                 />
               </div>
               <div className="lg:col-span-7">
-                <h3 className="font-display text-[1.6rem] leading-tight text-foreground sm:text-[2rem]">
-                  {tl('aboutPage.facesTitle', { defaultValue: 'Siamo Davide e Valentina' })}
-                </h3>
-                <Lede size="body" className="mt-5">
-                  {tl('aboutPage.facesBody1', { defaultValue: 'Dietro ad Aurya ci siamo noi: una coppia unita dalla passione per la crescita personale e l’evoluzione interiore. Abbiamo fuso le nostre competenze per creare qualcosa di unico. Valentina è l’anima olistica del progetto: operatrice Reiki di terzo livello, guida le persone attraverso letture evolutive di tarocchi, oracoli e lo studio delle mappe natali. Davide porta la sua esperienza nel mondo digitale, costruendo piattaforme capaci di connettere le persone.' })}
+                <p className="font-display text-[1.5rem] leading-snug text-foreground sm:text-[1.85rem]">
+                  <span className="block">
+                    {t('opPro.whoV', { defaultValue: 'Valentina vive il mondo del benessere ogni giorno.' })}
+                  </span>
+                  <span className="mt-3 block">
+                    {t('opPro.whoD', { defaultValue: 'Davide costruisce prodotti digitali da anni.' })}
+                  </span>
+                </p>
+                <Lede size="body" className="mt-6">
+                  {t('opPro.whoP', { defaultValue: 'Aurya nasce dall’incontro tra queste due esperienze.' })}
                 </Lede>
                 <div className="mt-8">
-                  <EditorialCta to="/manifesto" variant="quiet" data-testid="ol-who-cta">
-                    {t('opNw.whoCta', { defaultValue: 'Conosci la nostra storia' })}
+                  <EditorialCta to="/chi-siamo" variant="quiet" data-testid="ol-who-cta">
+                    {t('opPro.whoCta', { defaultValue: 'Conosci la nostra storia' })}
                   </EditorialCta>
                 </div>
               </div>
@@ -557,66 +608,97 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 7. IL FORM — la conversazione ────────────────────────
+        {/* ── 8. IL FORM — la conversazione ────────────────────────
             UN solo form in tutta la pagina, con l'ancora #presentati.
-            LeadForm non si tocca: stessi campi, stesso POST
-            /public/leads. Cambia solo l'etichetta del bottone, che era
-            gia' un prop (`ctaLabel`): la landing viaggiatori non lo
-            passa e continua a leggere il suo default.
-            Colonna singola e centrata: qui non c'e' piu' niente da
-            leggere, c'e' solo da rispondere. */}
-        <Section tone="sand" rhythm="screen" labelledBy="ol-form-title" width="max-w-2xl"
+            Due colonne da lg: a sinistra l'invito (che spiega cos'e' e
+            cosa succede dopo), a destra il modulo. Il form OL3b ha sette
+            campi: in colonna singola sarebbe diventato un muro alto
+            quanto una schermata, e l'invito sarebbe finito fuori vista
+            proprio mentre si compila.
+            LeadForm: la meccanica del POST e il blocco del consenso
+            privacy non si toccano. */}
+        <Section tone="cream" rhythm="screen" labelledBy="ol-form-title" width="max-w-6xl"
                  id="presentati" className="scroll-mt-20">
-          <div data-testid="ol-form">
-            <DisplayTitle as="h2" id="ol-form-title" size="section" measure="title"
-                          className="text-[1.9rem] leading-[1.12] sm:text-[2.4rem] lg:text-[2.75rem]">
-              {t('opNw.formTitle', { defaultValue: 'Raccontaci qualcosa di te.' })}
-            </DisplayTitle>
-            <Lede size="body" className="mt-6">
-              <TitleLine>
-                {t('opNw.formSubA', { defaultValue: 'Non è una candidatura.' })}
-              </TitleLine>
-              <TitleLine>
-                {t('opNw.formSubB', { defaultValue: 'È l’inizio di una conversazione.' })}
-              </TitleLine>
-            </Lede>
-            <div className="mt-9 rounded-[1.75rem] bg-white p-6 ring-1 ring-[#1e2f28]/[0.07] shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)] sm:p-8">
-              <LeadForm
-                type="operator"
-                accent={SAGE}
-                ctaLabel={t('opNw.formCta', { defaultValue: 'Entriamo in contatto' })}
-              />
+          <div data-testid="ol-form"
+               className="grid gap-10 lg:grid-cols-12 lg:items-start lg:gap-16">
+            <div className="lg:col-span-5">
+              <DisplayTitle as="h2" id="ol-form-title" size="section" measure="title"
+                            className="text-[1.9rem] leading-[1.12] sm:text-[2.4rem] lg:text-[2.6rem]">
+                {t('opPro.formTitle', { defaultValue: 'Iniziamo a conoscerci.' })}
+              </DisplayTitle>
+              <Lede size="lead" className="mt-7">
+                <span className="block">
+                  {t('opPro.formA', { defaultValue: 'Non è una selezione.' })}
+                </span>
+                <span className="block">
+                  {t('opPro.formB', { defaultValue: 'Non è un’iscrizione automatica.' })}
+                </span>
+                <span className="block">
+                  {t('opPro.formC', { defaultValue: 'È una conversazione.' })}
+                </span>
+              </Lede>
+              <Lede size="body" className="mt-6">
+                <span className="block">
+                  {t('opPro.formD', { defaultValue: 'Compila il modulo.' })}
+                </span>
+                <span className="block">
+                  {t('opPro.formE', { defaultValue: 'Leggeremo personalmente ogni candidatura.' })}
+                </span>
+                <span className="block">
+                  {t('opPro.formF', { defaultValue: 'Se penseremo che ci sia sintonia fisseremo una chiamata.' })}
+                </span>
+                <span className="block">
+                  {t('opPro.formG', { defaultValue: 'Il resto inizierà da lì.' })}
+                </span>
+              </Lede>
+              {/* PL22 — il canale diretto resta: c'e' chi i form non li
+                  ama, e un'email vera vale piu' di un contatto perso. */}
+              <p className="mt-8 flex flex-wrap items-center gap-1.5 text-sm text-foreground/70">
+                <Mail className="h-4 w-4 shrink-0 text-[#2f5749]" aria-hidden />
+                {t('op.directT', { defaultValue: 'Preferisci parlarne senza form?' })}{' '}
+                <a href="mailto:info@aurya.life"
+                   className="font-medium text-[#2f5749] underline underline-offset-[4px] decoration-[#2f5749]/40 hover:decoration-[#2f5749]">
+                  info@aurya.life
+                </a>
+              </p>
             </div>
-            {/* PL22 — il canale diretto resta: c'e' chi i form non li
-                ama, e un'email vera vale piu' di un contatto perso. */}
-            <p className="mt-5 flex flex-wrap items-center gap-1.5 text-sm text-foreground/70">
-              <Mail className="h-4 w-4 shrink-0 text-[#2f5749]" aria-hidden />
-              {t('op.directT', { defaultValue: 'Preferisci parlarne senza form?' })}{' '}
-              <a href="mailto:info@aurya.life"
-                 className="font-medium text-[#2f5749] underline underline-offset-[4px] decoration-[#2f5749]/40 hover:decoration-[#2f5749]">
-                info@aurya.life
-              </a>
-            </p>
+            <div className="lg:col-span-7">
+              <div className="rounded-[1.75rem] bg-white p-6 ring-1 ring-[#1e2f28]/[0.07] shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)] sm:p-8">
+                <LeadForm
+                  type="operator"
+                  accent={SAGE}
+                  ctaLabel={ctaContact}
+                />
+              </div>
+            </div>
           </div>
         </Section>
 
-        {/* ── 8. CHIUSURA — seconda ancora verde ───────────────────
+        {/* ── 9. CHIUSURA — seconda ancora verde ───────────────────
             Due frasi, una per riga, e un invito solo. Sul verde il
-            bottone pieno di brand sparirebbe (verde su verde), quindi
-            la primaria prende il trattamento `tone="dark"`: crema con
-            testo verde scuro, lo stesso della home sopra il tramonto. */}
+            bottone pieno di brand sparirebbe (verde su verde), quindi la
+            primaria prende il trattamento `tone="dark"`: crema con testo
+            verde scuro, lo stesso della home sopra il tramonto. */}
         <Section tone="sage" rhythm="screen" labelledBy="ol-end-title" width="max-w-5xl">
           <div data-testid="ol-end">
             <DisplayTitle as="h2" id="ol-end-title" size="section" measure="lines">
               <TitleLine>
-                {t('opNw.endTitleA', { defaultValue: 'Le reti non si costruiscono in un giorno.' })}
+                {t('opPro.endA', { defaultValue: 'Le reti non nascono da una piattaforma.' })}
               </TitleLine>
               <TitleLine>
-                {t('opNw.endTitleB', { defaultValue: 'Si costruiscono una persona alla volta.' })}
+                {t('opPro.endB', { defaultValue: 'Nascono dalle persone.' })}
               </TitleLine>
             </DisplayTitle>
             <Lede size="lead" tone="inherit" className="mt-7">
-              {t('opNw.endBody', { defaultValue: 'Se senti che Aurya rappresenta anche il tuo modo di vedere il benessere, ci piacerebbe conoscerti.' })}
+              <span className="block">
+                {t('opPro.endC', { defaultValue: 'Stiamo iniziando con calma.' })}
+              </span>
+              <span className="block">
+                {t('opPro.endD', { defaultValue: 'Una conversazione alla volta.' })}
+              </span>
+            </Lede>
+            <Lede size="body" tone="inherit" className="mt-5 opacity-90">
+              {t('opPro.endBody', { defaultValue: 'Se senti che Aurya rappresenta anche il tuo modo di vedere il benessere, ci piacerebbe costruirla insieme a te.' })}
             </Lede>
             <div className="mt-9">
               <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}

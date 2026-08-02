@@ -42,6 +42,10 @@ class LeadPayload(BaseModel):
     # PL13 — disponibilita' a spostarsi: vicino casa / Italia / estero
     travel: Optional[str] = Field(default=None, max_length=40)         # viaggiatore
     activity: Optional[str] = Field(default=None, max_length=80)       # operatore
+    # OL3 — "Sito / Instagram": un solo campo libero, perche' chi lavora
+    # nel benessere a volte ha solo il profilo social e chiedere due
+    # caselle separate significa lasciarne una vuota quasi sempre.
+    link: Optional[str] = Field(default=None, max_length=200)          # operatore
     # PL13 — dettaglio condizionale sull'attivita': discipline per chi
     # insegna/facilita, tipo struttura + capienza per chi ospita
     disciplines: Optional[list[str]] = Field(default=None, max_length=12)  # operatore
@@ -74,6 +78,7 @@ async def create_lead(request: Request, payload: LeadPayload):
         "budget": (payload.budget or "").strip()[:40] or None,
         "travel": (payload.travel or "").strip()[:40] or None,
         "activity": (payload.activity or "").strip()[:80] or None,
+        "link": (payload.link or "").strip()[:200] or None,
         "disciplines": [str(d).strip()[:40] for d in (payload.disciplines or [])
                         if str(d).strip()][:12] or None,
         "venue_type": (payload.venue_type or "").strip()[:80] or None,
@@ -110,6 +115,7 @@ async def create_lead(request: Request, payload: LeadPayload):
                 f"<p><b>Telefono:</b> {doc_set['phone'] or '—'}</p>"
                 f"<p><b>Località:</b> {doc_set['city'] or '—'}</p>"
                 f"<p><b>Attività:</b> {doc_set['activity'] or '—'}</p>"
+                f"<p><b>Sito / Instagram:</b> {doc_set['link'] or '—'}</p>"
                 f"<p><b>Discipline:</b> {_discipline}</p>"
                 f"<p><b>Struttura:</b> {doc_set['venue_type'] or '—'}"
                 f" ({doc_set['capacity'] or 'capienza n.d.'})</p>"

@@ -40,7 +40,7 @@ const fmtDate = (iso) => {
 
 const toCsv = (rows) => {
   // PL10+PL13 — export completo: tutti i campi di profilazione dei form
-  const head = ['email', 'type', 'name', 'phone', 'city', 'interests',
+  const head = ['email', 'type', 'name', 'phone', 'link', 'city', 'interests',
                 'travel', 'budget', 'activity', 'disciplines', 'venue_type',
                 'capacity', 'language', 'consent', 'created_at', 'message'];
   const esc = (v) => {
@@ -62,6 +62,9 @@ const leadDetails = (r) => {
     if (Array.isArray(r.disciplines) && r.disciplines.length) parts.push(r.disciplines.join(', '));
     if (r.venue_type) parts.push(r.venue_type + (r.capacity ? ` (${r.capacity})` : ''));
     if (r.phone) parts.push(r.phone);
+    /* OL3 — sito o profilo social: e' la prima cosa che si guarda prima
+       di rispondere a una candidatura, quindi sta nella sintesi. */
+    if (r.link) parts.push(r.link);
   } else {
     if (Array.isArray(r.interests) && r.interests.length) parts.push(r.interests.join(', '));
     if (r.travel) parts.push(r.travel);

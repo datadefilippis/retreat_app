@@ -19,3 +19,10 @@ export const BRAND_PAYOFF = 'Ci si fida di qualcuno, non di qualcosa.';
 export const BRAND_PAYOFF_KEY = 'marketplace.payoff';   // i18n landings
 export const BRAND_LOGO = '/logo-aurya.png';        // full-res (og:image, condivisioni)
 export const BRAND_LOGO_128 = '/logo-aurya-128.png'; // header, favicon
+// Canale email pubblico: e' quello che riceve i lead e le risposte.
+export const BRAND_EMAIL = 'info@aurya.life';
+// Instagram: il founder lo ha chiesto nel footer (2/8/2026) ma il
+// profilo non e' ancora nel codice, e un indirizzo social inventato
+// porta a casa di qualcun altro. Finche' questa costante e' vuota la
+// voce NON compare: appena arriva l'indirizzo vero, si accende da sola.
+export const BRAND_INSTAGRAM = '';

@@ -1,54 +1,146 @@
 /**
- * NetworkOperatorsPage — /operatori (SW5, redesign sul Blueprint).
+ * NetworkOperatorsPage — /operatori, che da RT4 si chiama LA RETE.
  *
- * Dallo schema "elenco con criteri" allo schema LE PERSONE
- * (AURYA_BLUEPRINT_2026-07 cap. 2: "le persone vengono prima delle
- * discipline"). Quattro battute:
- *   1. APERTURA     dietro ogni pratica c'e' qualcuno, e qui lo vedi
- *   2. COME SI ENTRA i criteri riscritti come GESTI nostri, non come
- *                    requisiti tuoi (cap. 2.3: il criterio e' invisibile,
- *                    si dice il gesto e mai il giudizio)
- *   3. LE PERSONE    le schede grandi: foto, nome, pratica, luogo e UNA
- *                    citazione presa dall'intervista
- *   4. L'INVITO      l'unica ancora verde, poi la porta della candidatura
+ * IL CAMBIO. Fino a ieri questa pagina si presentava come l'albo di chi
+ * era gia' dentro ("Dietro ogni pratica c'e' una persona. Qui la puoi
+ * conoscere.") e spiegava i criteri d'ingresso. Il founder l'ha
+ * riscritta: la rete non e' ancora popolata, e fingere il contrario e'
+ * il modo piu' veloce per bruciare la fiducia che la pagina chiede. Ora
+ * dice tre cose in quest'ordine — cos'e' la rete, come crescera', cosa
+ * ci troverai quando ci sara' — e chiude con due porte (candidarsi,
+ * seguire il progetto). La parola d'ordine e' "la rete", non
+ * "operatori": l'URL resta per non rompere i link, il titolo SEO no.
  *
- * LA CITAZIONE. Arriva da /public/network/members (campo `quote`), che
- * la espone SOLO a intervista pubblicata: la sceglie a mano il system
- * admin nell'editor dell'intervista. Non e' un estratto automatico, ed
- * e' giusto cosi': quale frase valga la pena leggere sotto un nome lo
- * sa solo chi quella conversazione l'ha fatta. Senza citazione la
- * scheda non si rompe (PersonCard ripiega sulla tagline) e senza
- * nessuna delle due resta il volto col nome: e' comunque una persona.
+ * COSA E' SPARITO, E PERCHE'. Il blocco "Come si entra" (i tre gesti:
+ * andiamo a conoscere / facciamo domande scomode / firmiamo il
+ * racconto) non c'e' piu' nel testo nuovo. Non e' un taglio nostro:
+ * quel contenuto oggi vive sul manifesto e su /entra-nella-rete, e
+ * ripeterlo qui trasformava una pagina di presentazione in un
+ * regolamento. Le chiavi (nwOps.how*) sono state rimosse dal locale.
  *
- * NON E' UNA DIRECTORY, e con pochi profili nemmeno lo sembra: niente
- * filtri, niente conteggi, niente prezzi. Il listino resta sul profilo,
- * dove ha un senso; qui vale solo chi e' quella persona. I filtri
- * tornano a 25+ profili, URL invariato; in fase marketplace questo URL
- * torna all'aggregatore pieno (OperatorsGate).
+ * IL MECCANISMO DELLE PERSONE RESTA. Le schede continuano ad arrivare
+ * da /public/network/members: foto, nome, pratica, luogo, sigillo
+ * Verificato Aurya e UNA citazione presa dall'intervista (campo
+ * `quote`, esposto solo a intervista pubblicata, scelto a mano dal
+ * system admin: quale frase valga la pena leggere sotto un nome lo sa
+ * solo chi quella conversazione l'ha fatta). Senza citazione la scheda
+ * ripiega sulla tagline; senza nessuna delle due restano il volto e il
+ * nome, che sono comunque una persona.
  *
- * Fondi: crema, sabbia, bianco, VERDE. Una sola ancora tonale, in
- * chiusura. Contrasti misurati sul salvia #2f5749: crema piena 7,28:1,
- * crema al 90% 6,24:1 (minimo AA 4,5:1). Movimento: solo il reveal del
- * kit (dissolvenza, reduced-motion rispettato).
+ * ── IL PUNTO DELICATO: LA PAGINA VUOTA ────────────────────────────
+ * Il founder ha lasciato una nota di regia — «qui puoi inserire una
+ * preview con "In arrivo", oppure un box "I primi profili saranno
+ * pubblicati prossimamente"» — e quella nota non e' testo da stampare:
+ * e' un'istruzione. Risolta con due stati veri, non con un ripiego.
+ *   CON PERSONE  le schede si mostrano come prima, sotto il testo che
+ *                le annuncia. Fino a due profili ognuno prende una
+ *                riga intera (ritratto a mezza colonna, voce accanto,
+ *                lato alternato); da tre in su torna la griglia.
+ *   SENZA        al loro posto compare un OGGETTO: un pannello salvia
+ *                dentro la sezione bianca, con il filo d'oro,
+ *                l'occhiello "In arrivo", la riga del founder e la
+ *                porta della Lettera. Occupa lo stesso spazio che
+ *                occuperebbero le schede, ha lo stesso peso visivo, e
+ *                per questo si legge come una scelta e non come un
+ *                buco. Una riga di testo grigio avrebbe detto
+ *                l'esatto contrario: che qui manca qualcosa.
+ * Non e' un tratteggio "placeholder" e non simula schede finte:
+ * disegnare il fantasma di quello che non c'e' e' la versione
+ * educata della bugia.
+ *
+ * ── IL DISEGNO ────────────────────────────────────────────────────
+ * ALTERNANZA DEI FONDI, sempre diversa fra sezioni adiacenti:
+ *   foto scura (r10) → crema → sabbia → bianco → crema → SALVIA →
+ *   sabbia → fascia fotografica (r05).
+ * L'apertura e' fotografica (il titolo sta DENTRO l'immagine, mai
+ * sopra un fondo piatto) e il respiro a tutta larghezza e' la fascia
+ * finale: e' l'unico punto in cui la pagina esce dalla sua colonna, ed
+ * e' il posto giusto per la frase che il founder ha scelto come
+ * chiusura.
+ *
+ * LE FOTO. r10 in apertura e' l'assegnazione del ciclo (DS §magazzino).
+ * Per la fascia serviva una seconda immagine e il magazzino e' tutto
+ * gia' impegnato altrove: r05 — il cairn, una pietra alla volta — e'
+ * la scelta con la collisione piu' bassa (sulla landing vive dentro una
+ * scheda piccola, qui e' una fascia da bordo a bordo: scala diversa,
+ * lettura diversa) ed e' anche l'unica del magazzino che dice
+ * letteralmente la tesi della pagina, cioe' costruire lentamente.
+ *
+ * LE EMOJI DELLA SPECIFICA (libro, foglia, busta) non sono state usate
+ * come emoji: nelle quattro voci di "Cosa troverai nella rete" il segno
+ * e' il filo d'oro del sito, che e' identico su ogni sistema operativo.
+ *
+ * CONTRASTI (minimo AA: 4,5:1 corpo, 3:1 display). NESSUNO E' STIMATO.
+ * Le quattro misure sopra fotografia sono prese NEL BROWSER,
+ * ricomponendo i due veli sul ritaglio vero (quello che fa
+ * object-fit:cover, con la stessa object-position della pagina) e
+ * leggendo il pixel piu' chiaro dentro il rettangolo che il testo
+ * occupa davvero — a 1440 e a 390:
+ *   apertura, crema #f6f2e8 sul velo di r10 ....... 9,21:1 / 9,35:1
+ *   apertura, payoff oro #ecd9a8 sul velo di r10 .. 7,36:1 / 5,61:1
+ *   fascia, display crema sul velo di r05 ......... 6,11:1 / 5,71:1
+ *   fascia, corpo crema sul velo di r05 ........... 7,74:1 / 6,99:1
+ * Le altre sono lette dai colori calcolati nel DOM (colore effettivo
+ * dopo la catena di opacita', contro il fondo pieno che sta sotto):
+ *   corpo all'80% su crema #faf8f5 ................ 7,27:1
+ *   corpo all'80% su sabbia #f2ece0 ............... 6,83:1
+ *   inciso al 70% su sabbia ....................... 5,01:1
+ *   corpo all'80% su bianco ....................... 7,58:1
+ *   invito, crema al 90% su salvia #2f5749 ........ 6,28:1
+ *   pannello d'attesa, display crema su salvia .... 7,28:1
+ *   pannello d'attesa, occhiello oro #d6c49a ...... 4,74:1
+ * E le due delle schede, invariate dal ciclo precedente:
+ *   nome pieno su bianco .......................... 14,43:1
+ *   pratica e luogo al 70% su bianco .............. 5,46:1
+ * L'occhiello del pannello e' il punto piu' stretto della pagina: 11px
+ * in maiuscoletto spaziato, 4,74:1 contro un minimo di 4,5. E' il
+ * motivo per cui il pannello e' salvia e non sabbia — sulla sabbia lo
+ * stesso oro da lettura (#7d6a3a) scende a 4,47:1, cioe' sotto.
+ *
+ * MOVIMENTO: solo la dissolvenza d'ingresso del kit e lo zoom
+ * lentissimo dei ritratti al passaggio del mouse. Entrambi spenti da
+ * prefers-reduced-motion.
  */
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import api from '../../api/client';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import BrandPayoff from '../../components/BrandPayoff';
+import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
 import {
-  Section, DisplayTitle, TitleLine, Lede, PersonCard, EditorialCta,
+  Section, DisplayTitle, Lede, Quote, PersonCard, truncateWords,
+  EditorialCta, PhotoOpener, PhotoBand,
 } from '../../components/editorial';
+
+/* Le due fotografie della pagina. r10 e' l'assegnazione del ciclo;
+   r05 e' la fascia finale (vedi testata). */
+const OPENER_PHOTO = '/media/prelaunch/r10.jpg';  // mani sulla schiena, macro
+const BAND_PHOTO = '/media/prelaunch/r05.jpg';    // il cairn, una pietra alla volta
+
+/* 280 = il tetto che il system admin ha gia' davanti quando sceglie la
+   frase. Tagliarla una seconda volta qui vorrebbe dire mettere dei
+   puntini su una scelta editoriale gia' fatta: chi l'ha scritta sa
+   dove finisce. */
+const QUOTE_MAX = 280;
+
+/* La riga display che fa da perno dentro una sezione: non e' un altro
+   capoverso, e' la frase su cui la sezione gira. Stesso trattamento su
+   manifesto e chi siamo, per questo sta in una costante e non in tre
+   copie di classi. */
+const PIVOT = `font-display text-balance font-medium leading-[1.22] tracking-[-0.015em]
+               text-[1.5rem] sm:text-[1.9rem] lg:text-[2.1rem]`;
 
 export default function NetworkOperatorsPage() {
   const { t } = useTranslation('landings');
   const [members, setMembers] = useState(null);   // null = caricamento
 
   useSeoMeta({
-    title: t('nwOps.seoTitle', { defaultValue: 'Le persone della rete | Aurya' }),
-    // 146 caratteri: chi sono e da dove viene quello che leggerai. Taglio a 158.
-    description: t('nwOps.seoDesc', { defaultValue: 'Gli operatori della rete Aurya, incontrati uno a uno: chi sono, cosa praticano, dove lavorano. Accanto a ogni nome una frase presa dalla loro voce.' }),
+    title: t('nwOps.seoTitle', { defaultValue: 'La rete Aurya | I professionisti che stiamo conoscendo' }),
+    // 155 caratteri: cos'e' la rete, con che passo cresce, cosa ci
+    // trovera' chi arriva. Taglio a 158.
+    description: t('nwOps.seoDesc', { defaultValue: 'Stiamo costruendo una rete di professionisti del benessere, una persona alla volta. Ogni profilo racconta chi è, come lavora e perché ha scelto il benessere.' }),
     canonicalPath: '/operatori',
   });
 
@@ -60,122 +152,296 @@ export default function NetworkOperatorsPage() {
     return () => { mounted = false; };
   }, []);
 
-  /* La griglia si stringe quando le persone sono poche: tre colonne
-     con due schede lasciano un buco che sembra un errore di
-     caricamento, e in fase rete essere pochi non e' un difetto da
-     nascondere (Blueprint cap. 5: la lentezza si racconta, non si
-     maschera). Da tre in su la pagina respira su tre colonne. */
-  const few = !members || members.length <= 2;
-  const gridCols = few
-    ? 'sm:grid-cols-2 max-w-3xl'
-    : 'sm:grid-cols-2 lg:grid-cols-3';
+  /* La pratica arriva come slug stabile: la label la risolve l'i18n,
+     come nell'aggregatore. */
+  const catLabel = (slug) => (slug ? t(`categories.${slug}`, { defaultValue: slug }) : null);
+
+  /* Le quattro voci di "Cosa troverai nella rete". Stanno in un array
+     perche' sono una lista vera (<ul>) e perche' cosi' il markup della
+     voce esiste UNA volta sola: quattro copie dello stesso blocco sono
+     quattro posti dove sbagliare. */
+  const perks = [
+    {
+      title: t('nwOps.what1Title', { defaultValue: 'Conoscere la sua storia' }),
+      body: t('nwOps.what1Body', { defaultValue: 'Per capire il percorso che lo ha portato fin qui.' }),
+    },
+    {
+      title: t('nwOps.what2Title', { defaultValue: 'Scoprire il suo approccio' }),
+      body: t('nwOps.what2Body', { defaultValue: 'Per comprendere come lavora e a chi si rivolge.' }),
+    },
+    {
+      title: t('nwOps.what3Title', { defaultValue: 'Leggere approfondimenti' }),
+      body: t('nwOps.what3Body', { defaultValue: 'Articoli, interviste e contenuti che aiutano a conoscere meglio il suo modo di vedere il benessere.' }),
+    },
+    {
+      title: t('nwOps.what4Title', { defaultValue: 'Trovare servizi, eventi e ritiri' }),
+      body: t('nwOps.what4Body', { defaultValue: 'In un unico luogo. Senza dover cercare tra siti diversi.' }),
+    },
+  ];
+
+  /* DUE MODI DI MOSTRARE LE PERSONE, e la soglia sta a due.
+     Fino a due profili ognuno prende una RIGA INTERA: il ritratto vale
+     mezza colonna e la voce sta accanto. Da tre in su la griglia ha
+     abbastanza materia per reggersi da sola, e una riga per uno
+     diventerebbe una pagina lunghissima. */
+  const list = members || [];
+  const few = list.length > 0 && list.length <= 2;
+
+  /* La riga di una persona quando le persone sono poche. Non e' una
+     PersonCard piu' grande: e' un'altra impaginazione (ritratto a
+     mezza colonna, voce accanto) fatta con gli stessi mattoni del kit,
+     cosi' l'ordine di lettura resta volto → nome → pratica → sigillo →
+     voce. Il lato si alterna, come chiede la grammatica DS. */
+  const personRow = (m, i) => {
+    const photo = m.portrait_url || m.cover_url;
+    const place = [m.city, m.region].filter(Boolean).join(', ');
+    const practice = catLabel(m.category);
+    const voice = truncateWords(m.quote || m.tagline, QUOTE_MAX);
+    const photoRight = i % 2 === 1;
+    return (
+      <li key={m.slug} data-testid="nw-person"
+          className="grid items-center gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-14">
+        {/* Il ritratto non e' un link: il nome qui accanto e' grande
+            abbastanza da essere il bersaglio, e due link identici di
+            fila costringono chi ascolta la pagina a sentire due volte
+            la stessa destinazione. Lo spazio e' riservato (aspect-4/5)
+            anche mentre la foto arriva: nessun salto. */}
+        <div className={`group lg:col-span-5 ${photoRight ? 'lg:order-last' : ''}`}>
+          <div className="aspect-[4/5] w-full overflow-hidden bg-[#e8e2d4]">
+            {photo ? (
+              <img
+                src={photo}
+                alt=""
+                aria-hidden
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover motion-safe:transition-transform
+                           motion-safe:duration-[900ms] motion-safe:ease-out
+                           motion-safe:group-hover:scale-[1.03]"
+              />
+            ) : (
+              /* niente stock: un campo di colore col nome, e basta */
+              <span aria-hidden
+                    className="flex h-full w-full items-end p-6 font-display text-3xl text-[#2f5749]/45">
+                {m.name}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="lg:col-span-7">
+          <DisplayTitle as="h3" size="section" measure="title"
+                        className="text-[1.9rem] sm:text-[2.3rem] lg:text-[2.6rem]">
+            <Link
+              to={`/o/${m.slug}`}
+              className="rounded-sm transition-colors hover:text-[#2f5749]
+                         focus-visible:outline-none focus-visible:ring-2
+                         focus-visible:ring-[#2f5749] focus-visible:ring-offset-4
+                         focus-visible:ring-offset-white"
+            >
+              {m.name}
+            </Link>
+          </DisplayTitle>
+          {(practice || place) && (
+            <p className="mt-3 text-base text-foreground/70">
+              {[practice, place].filter(Boolean).join(' · ')}
+            </p>
+          )}
+          {m.verified && (
+            <p className="mt-4">
+              <VerifiedAuryaBadge variant="on-light" size="md" />
+            </p>
+          )}
+          {voice && (
+            <Quote size="page" className="mt-7 text-foreground/85">{voice}</Quote>
+          )}
+          {m.has_interview && (
+            <p className="mt-7">
+              <EditorialCta to={`/o/${m.slug}/intervista`} variant="quiet">
+                {t('nwOps.readInterview', { defaultValue: 'Leggi l’intervista' })}
+              </EditorialCta>
+            </p>
+          )}
+        </div>
+      </li>
+    );
+  };
 
   return (
     <MarketplaceShell noSearch>
       <div className="bg-background">
 
-        {/* ── 1. APERTURA ──────────────────────────────────────────
-            Due frasi, due righe volute (<TitleLine>): la prima e' la
-            verita' sul mondo, la seconda il gesto. Mai l'ordine
-            inverso, sennò diventa pubblicita' (Blueprint cap. 9). */}
-        <Section tone="cream" rhythm="hero" labelledBy="nw-open-title">
-          <div data-testid="nw-open">
-            <p className="eyebrow mb-5">
-              {t('nwOps.eyebrow', { defaultValue: 'La rete' })}
+        {/* ── APERTURA — dentro la fotografia ──────────────────────
+            Il titolo e' UNA riga sola, ed e' il nome della cosa: "La
+            rete Aurya." Sopra sta il payoff di brand al posto di un
+            occhiello, perche' un occhiello che dicesse "La rete" sopra
+            un titolo che dice "La rete Aurya" sarebbe la stessa parola
+            due volte a due centimetri di distanza.
+            L'argomento (le quattro frasi del founder) non sta sulla
+            foto: si legge sul chiaro, subito sotto. E' la scelta della
+            landing operatori, che e' la pagina approvata, e ha una
+            ragione tecnica oltre che estetica — il contrasto di un
+            paragrafo lungo sopra una fotografia dipende da dove cade
+            il ritaglio, quello di un titolo corto no. */}
+        <PhotoOpener
+          data-testid="nw-open"
+          image={OPENER_PHOTO}
+          focus="35% 80%"
+          height="tall"
+          align="left"
+          width="max-w-3xl"
+          labelledBy="nw-open-title"
+        >
+          <BrandPayoff tone="hero" size="xs" className="mb-5 sm:mb-7" />
+          <DisplayTitle as="h1" id="nw-open-title" size="hero" measure="tight"
+                        className="text-hero-shadow">
+            {t('nwOps.title', { defaultValue: 'La rete Aurya.' })}
+          </DisplayTitle>
+        </PhotoOpener>
+
+        {/* ── LA SOGLIA — che cos'e' questa rete ───────────────────
+            Le quattro frasi del founder in tre gradini: la premessa,
+            l'idea che si condivide, quello che ogni persona porta. La
+            quarta ("Ed e' proprio da li' che vogliamo partire.") non e'
+            un quarto capoverso, e' il perno: passa al corpo display,
+            perche' e' la frase che gira la pagina dal dire al fare.
+            La porta e' il manifesto: chi vuole sapere come la pensiamo
+            prima di guardare chi c'e' dentro, esce di qui. */}
+        <Section tone="cream" rhythm="flow" width="max-w-3xl">
+          <div data-testid="nw-soglia">
+            <Lede size="lead">
+              {t('nwOps.leadP1', { defaultValue: 'Stiamo costruendo una rete di professionisti del benessere che condividono una stessa idea.' })}
+            </Lede>
+            <Lede size="body" className="mt-5">
+              {t('nwOps.leadP2', { defaultValue: 'Che prendersi cura delle persone significhi prima di tutto ascoltarle, accompagnarle e continuare a crescere.' })}
+            </Lede>
+            <Lede size="body" className="mt-5">
+              {t('nwOps.leadP3', { defaultValue: 'Ogni persona che entrerà nella rete porterà una storia, un percorso e un modo unico di lavorare.' })}
+            </Lede>
+            <div aria-hidden className="gold-rule mt-10 max-w-[10rem]" />
+            <p className={`mt-9 max-w-[24ch] ${PIVOT}`}>
+              {t('nwOps.leadPivot', { defaultValue: 'Ed è proprio da lì che vogliamo partire.' })}
             </p>
-            <DisplayTitle as="h1" id="nw-open-title" size="heroLines" measure="lines">
-              <TitleLine>
-                {t('nwOps.line1', { defaultValue: 'Dietro ogni pratica c’è una persona.' })}
-              </TitleLine>
-              <TitleLine>
-                {t('nwOps.line2', { defaultValue: 'Qui la puoi conoscere.' })}
-              </TitleLine>
-            </DisplayTitle>
-            <Lede size="lead" className="mt-8">
-              {t('nwOps.lead', { defaultValue: 'Le persone di questa pagina le abbiamo incontrate una a una. Quello che leggi accanto al loro nome l’hanno detto loro.' })}
-            </Lede>
-            <BrandPayoff tone="cream" size="sm" className="mt-9" />
+            <div className="mt-9">
+              <EditorialCta to="/manifesto" variant="quiet" data-testid="nw-cta-vision">
+                {t('nwOps.visionCta', { defaultValue: 'Conosci la nostra visione' })}
+              </EditorialCta>
+            </div>
           </div>
         </Section>
 
-        {/* ── 2. COME SI ENTRA — i gesti, non i requisiti ──────────
-            Prima erano tre righe numerate che dicevano al lettore cosa
-            doveva avere ("una pratica reale", "la disponibilita' a
-            raccontarsi"): una lista di requisiti e' un giudizio
-            travestito. Qui sono tre coppie parallele in prima persona
-            plurale, e la chiusa toglie di mezzo l'idea della soglia da
-            superare. */}
-        <Section tone="sand" rhythm="screen" labelledBy="nw-how-title">
-          <div data-testid="nw-how">
-            <DisplayTitle as="h2" id="nw-how-title" size="section" measure="title">
-              {t('nwOps.howTitle', { defaultValue: 'Come si entra.' })}
-            </DisplayTitle>
-            <Lede size="lead" className="mt-7">
-              {t('nwOps.howP1', { defaultValue: 'Un profilo si compila in cinque minuti. Una persona no: la andiamo a conoscere, e per quello ci vuole tempo.' })}
-            </Lede>
-            <Lede size="body" className="mt-5">
-              {t('nwOps.howP2', { defaultValue: 'Le domande gentili dicono poco. Ne facciamo anche di scomode, e teniamo le risposte per intero, senza riassumerle.' })}
-            </Lede>
-            <Lede size="body" className="mt-5">
-              {t('nwOps.howP3', { defaultValue: 'Chi legge merita di sapere da dove viene un racconto. Firmiamo il nostro: i profili nati così portano il segno Verificato Aurya.' })}
-            </Lede>
-            <Lede size="body" tone="quiet" className="mt-8">
-              {t('nwOps.howClose', { defaultValue: 'Non c’è un modulo che apre questa porta. C’è una conversazione, e il tempo che serve a farla bene.' })}
-            </Lede>
+        {/* ── 2. UNA RETE CHE CRESCE UNA PERSONA ALLA VOLTA ────────
+            Impaginato da rivista: il titolo tiene la sua colonna a
+            sinistra e il ragionamento scorre a destra, cosi' la
+            sezione si legge in due colpi d'occhio invece che come una
+            colonna lunga il doppio. L'ultima frase si stacca
+            nell'inciso col filo d'oro: non e' un altro passaggio del
+            ragionamento, e' la ragione per cui il ragionamento vale. */}
+        <Section tone="sand" rhythm="screen" width="max-w-5xl"
+                 id="nw-cresce" labelledBy="nw-grow-title"
+                 className="scroll-mt-20">
+          <div data-testid="nw-grow" className="grid gap-8 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-5">
+              <DisplayTitle as="h2" id="nw-grow-title" size="section" measure="tight"
+                            className="text-[1.9rem] sm:text-[2.4rem] lg:text-[2.4rem]">
+                {t('nwOps.growTitle', { defaultValue: 'Una rete che cresce una persona alla volta.' })}
+              </DisplayTitle>
+              <div aria-hidden className="gold-rule mt-7 max-w-[7rem]" />
+            </div>
+            <div className="lg:col-span-7">
+              <Lede size="lead">
+                {t('nwOps.growP1', { defaultValue: 'Non stiamo cercando di riempire un elenco. Preferiamo conoscere davvero ogni professionista che entra in Aurya.' })}
+              </Lede>
+              <Lede size="body" className="mt-5">
+                {t('nwOps.growP2', { defaultValue: 'Per questo la rete crescerà lentamente. Ogni nuovo ingresso sarà il risultato di una conversazione, non di un semplice modulo.' })}
+              </Lede>
+              <div className="mt-9 border-l-2 border-[#7d6a3a]/50 pl-5 sm:pl-6">
+                <Lede size="body" tone="quiet">
+                  {t('nwOps.growClose', { defaultValue: 'Crediamo che sia il modo migliore per costruire qualcosa destinato a durare.' })}
+                </Lede>
+              </div>
+            </div>
           </div>
         </Section>
 
-        {/* ── 3. LE PERSONE — le schede grandi ─────────────────────
-            Fondo bianco: e' il punto piu' luminoso della pagina, e i
-            ritratti si staccano come oggetti. L'ordine di lettura lo
-            decide PersonCard (volto → nome → pratica e luogo → sigillo
-            → voce): qui la pagina mette solo il ritmo della griglia.
+        {/* ── 3. LE PRIME PERSONE ──────────────────────────────────
+            Fondo bianco: e' il punto piu' luminoso della pagina, ed e'
+            li' che i ritratti si staccano come oggetti. Il testo
+            annuncia (la pagina cambiera', qui pubblicheremo, ogni
+            profilo raccontera'), il perno lo chiude — "prima di
+            scegliere una pratica, spesso scegliamo una persona" — e
+            SOTTO succede quello che il testo ha appena promesso: le
+            persone se ci sono, il pannello d'attesa se non ci sono.
             "Leggi l'intervista" e' un link VERO alla pagina dedicata
             (PV3), e compare solo dove l'intervista e' pubblicata. */}
-        <Section tone="paper" rhythm="screen" labelledBy="nw-people-title"
-                 width="max-w-6xl">
+        <Section tone="paper" rhythm="screen" width="max-w-6xl"
+                 id="nw-persone" labelledBy="nw-people-title"
+                 className="scroll-mt-20">
           <div data-testid="nw-people">
-            <DisplayTitle as="h2" id="nw-people-title" size="section" measure="title">
-              {t('nwOps.peopleTitle', { defaultValue: 'Le persone.' })}
-            </DisplayTitle>
-            <Lede size="body" className="mt-5">
-              {t('nwOps.peopleSub', { defaultValue: 'Sono poche, e le conosciamo tutte. Continueranno ad arrivare una alla volta.' })}
-            </Lede>
+            <div className="max-w-3xl">
+              <DisplayTitle as="h2" id="nw-people-title" size="section" measure="title">
+                {t('nwOps.peopleTitle', { defaultValue: 'Presto potrai conoscere le prime persone della rete.' })}
+              </DisplayTitle>
+              <Lede size="lead" className="mt-7">
+                {t('nwOps.peopleP1', { defaultValue: 'Questa pagina cambierà nel tempo. Qui pubblicheremo i primi professionisti che stanno contribuendo alla nascita di Aurya.' })}
+              </Lede>
+              <Lede size="body" className="mt-5">
+                {t('nwOps.peopleP2', { defaultValue: 'Ogni profilo racconterà non solo cosa fa una persona, ma anche come lavora, quale percorso l’ha portata fin qui e perché ha scelto di dedicarsi al benessere.' })}
+              </Lede>
+              <p className={`mt-10 max-w-[26ch] ${PIVOT}`}>
+                {t('nwOps.peoplePivot', { defaultValue: 'Perché prima di scegliere una pratica, spesso scegliamo una persona.' })}
+              </p>
+            </div>
 
             {members === null ? (
               /* /70 e non /60: al 60% il testo scende a 4,03:1, sotto
-                 il minimo AA. Stessa soglia del tono `quiet` del kit. */
-              <p className="mt-10 text-sm text-foreground/70" aria-live="polite">
+                 il minimo AA. Stessa soglia del tono `quiet` del kit.
+                 Nessun riquadro fantasma: quanti profili arriveranno
+                 non si sa, e prenotare il posto per uno che potrebbe
+                 non esserci e' un salto di layout travestito. */
+              <p className="mt-12 text-sm text-foreground/70" aria-live="polite">
                 {t('nwOps.loading', { defaultValue: 'Un momento.' })}
               </p>
-            ) : members.length === 0 ? (
-              /* Stato vuoto onesto: nessun riquadro tratteggiato che
-                 gridi "manca qualcosa". Una riga che dice come stanno
-                 davvero le cose, nel tono del resto della pagina. */
-              <div data-testid="nw-people-empty">
-                <Lede size="body" tone="quiet" className="mt-10">
-                  {t('nwOps.peopleEmpty', { defaultValue: 'Le prime interviste sono in corso. I profili arrivano qui quando sono pronti a essere raccontati bene, non prima.' })}
-                </Lede>
+            ) : list.length === 0 ? (
+              /* IL PANNELLO D'ATTESA. Occupa lo spazio delle schede e
+                 ne ha il peso: superficie salvia sulla sezione bianca,
+                 angoli generosi, l'aura del logo come texture. Dice
+                 quello che sta succedendo e offre l'unica cosa utile
+                 a chi e' arrivato fin qui per guardare le persone:
+                 essere avvisato quando ci saranno. Il verde qui e'
+                 legittimo anche se l'ancora tonale della pagina e' piu'
+                 sotto — e' un OGGETTO dentro una sezione chiara, non
+                 una seconda fascia piena. */
+              <div data-testid="nw-people-soon" className="mt-14 sm:mt-16">
+                <div className="aura-corner rounded-[1.75rem] bg-[#2f5749] px-7 py-14
+                                text-[#f6f2e8] sm:px-12 sm:py-16 lg:px-16 lg:py-20">
+                  <div aria-hidden className="gold-rule max-w-[7rem]" />
+                  <p className="eyebrow eyebrow-light mt-7">
+                    {t('nwOps.soonEyebrow', { defaultValue: 'In arrivo' })}
+                  </p>
+                  <p className={`mt-5 max-w-[22ch] ${PIVOT}`}>
+                    {t('nwOps.soonTitle', { defaultValue: 'I primi profili saranno pubblicati prossimamente.' })}
+                  </p>
+                  <div className="mt-10">
+                    <EditorialCta to="/newsletter" variant="light"
+                                  data-testid="nw-soon-cta">
+                      {t('nwOps.letterCta', { defaultValue: 'Ricevi la Lettera' })}
+                    </EditorialCta>
+                  </div>
+                </div>
               </div>
+            ) : few ? (
+              <ul className="mt-14 list-none space-y-20 p-0 sm:mt-16 lg:space-y-24">
+                {list.map(personRow)}
+              </ul>
             ) : (
-              <ul className={`mt-12 grid list-none gap-x-8 gap-y-14 p-0 sm:mt-14 ${gridCols}`}>
-                {members.map(m => (
+              <ul className="mt-14 grid list-none gap-x-8 gap-y-14 p-0 sm:mt-16
+                             sm:grid-cols-2 lg:grid-cols-3">
+                {list.map(m => (
                   <li key={m.slug} data-testid="nw-person">
                     <PersonCard
-                      person={{
-                        ...m,
-                        // la pratica arriva come slug stabile: la label
-                        // la risolve l'i18n, come nell'aggregatore
-                        category: m.category
-                          ? t(`categories.${m.category}`, { defaultValue: m.category })
-                          : null,
-                      }}
-                      /* 280 = il tetto che il system admin ha gia'
-                         davanti quando sceglie la frase. Tagliarla
-                         una seconda volta qui vorrebbe dire mettere
-                         dei puntini su una scelta editoriale gia'
-                         fatta: chi l'ha scritta sa dove finisce. */
-                      quoteMaxChars={280}
+                      person={{ ...m, category: catLabel(m.category) }}
+                      quoteMaxChars={QUOTE_MAX}
                     />
                     {m.has_interview && (
                       <p className="mt-4">
@@ -191,31 +457,126 @@ export default function NetworkOperatorsPage() {
           </div>
         </Section>
 
-        {/* ── 4. L'INVITO — l'unica ancora verde ───────────────────
-            Chi e' arrivato in fondo ha appena letto delle persone: la
-            domanda giusta non e' "iscriviti", e' "vuoi farne parte".
-            Due porte: la candidatura e il manifesto, per chi prima
-            vuole sapere come la pensiamo. */}
-        <Section tone="sage" rhythm="screen" labelledBy="nw-join-title">
+        {/* ── 4. COSA TROVERAI NELLA RETE ──────────────────────────
+            L'introduzione finisce con i due punti e le quattro voci la
+            completano ("...dove potrai: conoscere, scoprire, leggere,
+            trovare"): sono una lista vera, quindi <ul>, e restano
+            infiniti come li ha scritti il founder.
+            La specifica aveva tre emoji (libro, foglia, busta). Qui il
+            segno e' il filo d'oro del sito: non cambia forma fra iOS,
+            Android e Windows, e non compete col titolo che ha accanto. */}
+        <Section tone="cream" rhythm="screen" width="max-w-5xl"
+                 id="nw-cosa" labelledBy="nw-what-title"
+                 className="scroll-mt-20">
+          <div data-testid="nw-what">
+            <div className="max-w-3xl">
+              <DisplayTitle as="h2" id="nw-what-title" size="section" measure="title">
+                {t('nwOps.whatTitle', { defaultValue: 'Cosa troverai nella rete.' })}
+              </DisplayTitle>
+              <Lede size="lead" className="mt-7">
+                {t('nwOps.whatIntro', { defaultValue: 'Quando inizierà a crescere, ogni professionista avrà uno spazio dedicato dove potrai:' })}
+              </Lede>
+            </div>
+            <ul className="mt-12 grid list-none gap-9 p-0 sm:mt-14 sm:gap-x-12 sm:gap-y-12 lg:grid-cols-2">
+              {perks.map(p => (
+                <li key={p.title}>
+                  <div aria-hidden className="gold-rule" />
+                  <p className="mt-5 font-display text-balance text-[1.35rem] font-medium
+                                leading-[1.24] tracking-[-0.015em] sm:text-[1.6rem]">
+                    {p.title}
+                  </p>
+                  <Lede size="body" className="mt-3">{p.body}</Lede>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Section>
+
+        {/* ── 5. SEI UN PROFESSIONISTA? — l'ancora verde ───────────
+            L'unica sezione tonale piena della pagina, e l'unica in cui
+            si chiede qualcosa a qualcuno. L'indirizzo e'
+            /entra-nella-rete e non questa pagina: qui si guarda chi e'
+            gia' stato raccontato, li' si comincia a raccontarsi. */}
+        <Section tone="sage" rhythm="screen" width="max-w-3xl"
+                 id="nw-invito" labelledBy="nw-pro-title"
+                 className="scroll-mt-20">
           <div data-testid="nw-join">
-            <DisplayTitle as="h2" id="nw-join-title" size="section" measure="tight">
-              {t('nwOps.joinTitle', { defaultValue: 'Vuoi farne parte?' })}
+            <DisplayTitle as="h2" id="nw-pro-title" size="section" measure="tight"
+                          className="text-[2.2rem] sm:text-[3rem] lg:text-[3.5rem]">
+              {t('nwOps.proTitle', { defaultValue: 'Sei un professionista?' })}
             </DisplayTitle>
-            <Lede size="lead" tone="inherit" className="mt-7">
-              {t('nwOps.joinBody', { defaultValue: 'Se lavori nel benessere e ti va di raccontarti, il primo passo è parlarne. Ci dici chi sei e cosa fai, e vediamo se c’è sintonia.' })}
+            <Lede size="lead" tone="inherit" className="mt-7 opacity-90">
+              {t('nwOps.proP1', { defaultValue: 'Stiamo iniziando a conoscere le prime persone che entreranno nella rete.' })}
             </Lede>
-            <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
+            <Lede size="body" tone="inherit" className="mt-5 opacity-90">
+              {t('nwOps.proP2', { defaultValue: 'Se condividi il nostro modo di vedere il benessere e senti che il tuo lavoro merita di essere raccontato con cura, ci piacerebbe conoscerti.' })}
+            </Lede>
+            <div className="mt-10">
               <EditorialCta to="/entra-nella-rete" variant="light"
                             data-testid="nw-join-cta">
                 {t('nwOps.joinCta', { defaultValue: 'Entra nella rete' })}
               </EditorialCta>
-              <EditorialCta to="/manifesto" variant="light"
-                            data-testid="nw-join-cta-alt">
-                {t('nwOps.joinCtaAlt', { defaultValue: 'Leggi il manifesto' })}
-              </EditorialCta>
             </div>
           </div>
         </Section>
+
+        {/* ── 6. VUOI SEGUIRE IL PROGETTO? ─────────────────────────
+            Due colonne come la sezione 2, cosi' la coda della pagina
+            non diventa una fila di blocchi centrati tutti uguali. E'
+            la porta di chi non e' un professionista e non ha ancora
+            nessuno da guardare: l'unica cosa che possiamo offrirgli
+            oggi e' di essere avvisato. */}
+        <Section tone="sand" rhythm="screen" width="max-w-5xl"
+                 id="nw-segui" labelledBy="nw-follow-title"
+                 className="scroll-mt-20">
+          <div data-testid="nw-follow" className="grid gap-8 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-5">
+              <DisplayTitle as="h2" id="nw-follow-title" size="section" measure="tight"
+                            className="text-[1.9rem] sm:text-[2.4rem] lg:text-[2.4rem]">
+                {t('nwOps.followTitle', { defaultValue: 'Vuoi seguire il progetto?' })}
+              </DisplayTitle>
+              <div aria-hidden className="gold-rule mt-7 max-w-[7rem]" />
+            </div>
+            <div className="lg:col-span-7">
+              <Lede size="lead">
+                {t('nwOps.followP1', { defaultValue: 'La rete crescerà lentamente. Racconteremo ogni nuova persona attraverso il Magazine e la Lettera di Aurya.' })}
+              </Lede>
+              <Lede size="body" className="mt-5">
+                {t('nwOps.followP2', { defaultValue: 'Se vuoi seguirne l’evoluzione puoi iscriverti gratuitamente.' })}
+              </Lede>
+              <div className="mt-9">
+                <EditorialCta to="/newsletter" variant="quiet"
+                              data-testid="nw-letter-cta">
+                  {t('nwOps.letterCta', { defaultValue: 'Ricevi la Lettera' })}
+                </EditorialCta>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ── LA CHIUSURA — il respiro a tutta larghezza ───────────
+            L'unico momento in cui la pagina esce dalla sua colonna, ed
+            e' l'ultimo: r05 da bordo a bordo, il cairn che si costruisce
+            una pietra alla volta, e sopra le due righe che il founder ha
+            scelto come congedo. Le altre due frasi stanno sotto, in
+            corpo di lettura: sono la promessa, non il titolo. */}
+        <PhotoBand image={BAND_PHOTO} focus="50% 45%" width="max-w-3xl"
+                   data-testid="nw-close">
+          <p className="max-w-[24ch] font-display text-balance text-[1.75rem] font-medium
+                        leading-[1.16] tracking-[-0.015em] text-hero-shadow
+                        sm:text-[2.4rem] lg:text-[3rem]">
+            <span className="block">
+              {t('nwOps.closeLine1', { defaultValue: 'Le reti non nascono dai numeri.' })}
+            </span>
+            <span className="block">
+              {t('nwOps.closeLine2', { defaultValue: 'Nascono dalle persone.' })}
+            </span>
+          </p>
+          <p className="mt-8 max-w-[46ch] text-base leading-relaxed text-hero-shadow
+                        sm:text-lg">
+            {t('nwOps.closeBody', { defaultValue: 'Ogni nuovo ingresso sarà un passo in più verso il progetto che immaginiamo. E noi abbiamo intenzione di prenderci il tempo necessario per costruirlo bene.' })}
+          </p>
+        </PhotoBand>
 
       </div>
     </MarketplaceShell>

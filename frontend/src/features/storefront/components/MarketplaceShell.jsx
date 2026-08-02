@@ -17,7 +17,7 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BRAND_NAME, BRAND_PAYOFF } from '../../../config/brand';
+import { BRAND_NAME, BRAND_PAYOFF, BRAND_EMAIL, BRAND_INSTAGRAM } from '../../../config/brand';
 import { Search, Menu, X, Lock, Globe, Check, ChevronDown, CircleUserRound } from 'lucide-react';
 import { useSiteConfig } from '../../../context/SiteConfigContext';
 import useItalianOnly from '../../../lib/useItalianOnly';
@@ -149,7 +149,10 @@ function useSmallScreen() {
 // LR1 — il menu dell'omino: l'icona account non naviga piu' alla cieca,
 // apre un menu compatto che smista con chiarezza i DUE mondi:
 //   1. "Il tuo account Aurya" (utente finale: accesso, account, uscita)
-//   2. "Per gli operatori" (area operatori + funnel candidatura/attivazione)
+//   2. "Per i professionisti del benessere" (area riservata + funnel
+//      candidatura). Il founder ha cambiato le parole il 2/8/2026:
+//      "operatori" e' il nome interno, "professionisti del benessere"
+//      e' come li chiama il sito quando parla a loro.
 // SOLO navigazione e presentazione: i flussi di autenticazione (password,
 // OTP, magic link, login operatori) restano intoccati. Il pallino di
 // stato da loggato resta sull'icona; Esc e click fuori chiudono (Radix).
@@ -160,7 +163,7 @@ function AccountMenu({ hasPlatformToken, operatorTo, onLogout }) {
   const accountLabel = t('marketplace.accountAria', { defaultValue: 'Il tuo account' });
 
   const userHeading = t('marketplace.accountMenuUser', { defaultValue: 'Il tuo account Aurya' });
-  const operatorsHeading = t('marketplace.accountMenuOperators', { defaultValue: 'Per gli operatori' });
+  const operatorsHeading = t('marketplace.accountMenuOperators', { defaultValue: 'Per i professionisti del benessere' });
   const logoutLabel = t('marketplace.accountMenuLogout', { defaultValue: 'Esci' });
   // da sloggato entrambe le voci portano a /account/accedi: la pagina ha
   // gia' il toggle "Crea il tuo account Aurya" (nessun query param di
@@ -172,7 +175,7 @@ function AccountMenu({ hasPlatformToken, operatorTo, onLogout }) {
         { to: '/account/accedi', label: t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }), testid: 'account-menu-signup' },
       ];
   const operatorLinks = [
-    { to: '/login', label: t('marketplace.operatorLogin', { defaultValue: 'Area operatori' }), testid: 'account-menu-operator-login' },
+    { to: '/login', label: t('marketplace.operatorLogin', { defaultValue: 'Area professionisti' }), testid: 'account-menu-operator-login' },
     { to: operatorTo, label: t('marketplace.accountMenuWork', { defaultValue: 'Lavora con Aurya' }), testid: 'account-menu-operator-join' },
   ];
 
@@ -293,16 +296,23 @@ const NAV_ITEMS = [
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
 ];
 
-// RT2 (piano sito-rete) — il menu della fase network: quattro voci,
-// niente dropdown. Al lancio (fase marketplace) tornano le voci
-// transazionali, gli URL non cambiano.
+// Menu della fase network, riscritto dal founder il 2/8/2026: quattro
+// voci in quest'ordine esatto, piu' la CTA "Per i professionisti" che
+// vive gia' a destra come elemento evidenziato.
+//
+// Cosa e' uscito dall'header e dove e' finito: "Guida gratuita" e la
+// Lettera scendono nel footer (colonna Risorse). Un menu di sei voci
+// non ha una gerarchia: chi arriva non capisce da dove cominciare.
+//
+// "La Rete" porta un'etichetta di stato (in arrivo) perche' oggi la
+// pagina racconta una rete che sta nascendo: dirlo nel menu evita la
+// delusione di chi ci clicca aspettandosi un elenco pieno.
 const NETWORK_NAV_ITEMS = [
-  { to: '/manifesto', key: 'marketplace.navManifesto', fallback: 'Manifesto' },
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
-  { to: '/operatori', key: 'marketplace.navNetworkMembers', fallback: 'Operatori' },
-  // BN3 (founder 27/7) — il materiale gratuito in evidenza nel menu
-  { to: '/blog/kit-pratiche-quotidiane-15-minuti', key: 'marketplace.navFreeGuide', fallback: 'Guida gratuita' },
-  { to: '/newsletter', key: 'marketplace.navNewsletter', fallback: 'Newsletter' },
+  { to: '/manifesto', key: 'marketplace.navManifesto', fallback: 'Manifesto' },
+  { to: '/operatori', key: 'marketplace.navNetwork', fallback: 'La Rete',
+    hint: { key: 'marketplace.navNetworkSoon', fallback: 'in arrivo' } },
+  { to: '/chi-siamo', key: 'marketplace.navAbout', fallback: 'Chi siamo' },
 ];
 
 export default function MarketplaceShell({ children, minimal = false, noSearch = false }) {
@@ -314,8 +324,11 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   // marketplace tornano le voci piene e il funnel operatori /inizia.
   const navItems = isNetwork ? NETWORK_NAV_ITEMS : NAV_ITEMS;
   const operatorTo = isNetwork ? '/entra-nella-rete' : '/inizia';
+  /* founder 2/8/2026 — non piu' una domanda ("sei un operatore?") ma
+     una destinazione. E "professionisti", non "operatori": e' la parola
+     con cui il founder ha deciso di chiamarli su tutto il sito. */
   const operatorLabel = isNetwork
-    ? t('marketplace.operatorQuestion', { defaultValue: 'Sei un operatore?' })
+    ? t('marketplace.forProfessionals', { defaultValue: 'Per i professionisti' })
     : t('marketplace.forOrganizers', { defaultValue: 'Sei un organizzatore?' });
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -419,6 +432,14 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                       }`}
                     >
                       {t(item.key, { defaultValue: item.fallback })}
+                      {/* l'etichetta di stato non e' parte del nome: sta
+                          in tono minore, cosi' la voce resta leggibile
+                          e l'avviso non urla */}
+                      {item.hint && (
+                        <span className="ml-1.5 text-[11px] font-normal text-gray-400">
+                          {t(item.hint.key, { defaultValue: item.hint.fallback })}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
@@ -493,6 +514,11 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                   >
                     {t(item.key, { defaultValue: item.fallback })}
+                    {item.hint && (
+                      <span className="ml-1.5 text-[11px] font-normal text-gray-400">
+                        {t(item.hint.key, { defaultValue: item.hint.fallback })}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}
@@ -537,7 +563,11 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
           <div aria-hidden className="absolute inset-0 pointer-events-none" style={{
             background: 'radial-gradient(ellipse 55% 75% at 88% 100%, rgba(193,102,61,0.16), transparent 55%)',
           }} />
-          <div className="relative max-w-6xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+          {/* in fase rete le colonne sono cinque (marchio + le quattro
+              del founder): a cinque su desktop, a due sul telefono */}
+          <div className={`relative max-w-6xl mx-auto px-4 py-12 grid grid-cols-2 gap-8 text-sm ${
+            isNetwork ? 'md:grid-cols-3 lg:grid-cols-5' : 'md:grid-cols-4'
+          }`}>
             <div>
               <div className="mb-2 flex items-center gap-2.5">
                 <img src="/logo-aurya-128.png" alt="" aria-hidden className="h-8 w-8 select-none" draggable={false} />
@@ -575,10 +605,11 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     quest'ordine, tutte nella stessa colonna. Sono la
                     mappa completa del sito di oggi: sotto c'e' solo la
                     porta degli operatori e le legali. */}
-                {isNetwork && <li><Link to="/manifesto" className="hover:text-white" data-testid="footer-nw-manifesto">{t('marketplace.navManifesto', { defaultValue: 'Manifesto' })}</Link></li>}
-                {/* RT2 — fase network: si esplorano Magazine e rete, non
-                    i ritiri. AN2 (categorie SEO) torna col marketplace. */}
+                {/* founder 2/8/2026 — l'ordine e' quello dell'header:
+                    chi cerca nel footer una voce vista in alto la
+                    ritrova nella stessa posizione. */}
                 {isNetwork && <li><Link to="/blog" className="hover:text-white" data-testid="footer-nw-magazine">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
+                {isNetwork && <li><Link to="/manifesto" className="hover:text-white" data-testid="footer-nw-manifesto">{t('marketplace.navManifesto', { defaultValue: 'Manifesto' })}</Link></li>}
                 {/* LM2 — la voce operatori vive in ENTRAMBE le fasi: in
                     rete porta alla pagina della rete, al flip diventa
                     la ricerca completa senza altri interventi.
@@ -587,7 +618,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     fase rete non esiste ancora). */}
                 <li><Link to="/operatori" className="hover:text-white" data-testid="footer-nw-operatori">
                   {isNetwork
-                    ? t('marketplace.navNetworkMembers', { defaultValue: 'Operatori' })
+                    ? t('marketplace.navNetwork', { defaultValue: 'La Rete' })
                     : t('marketplace.footerExploreOperators', { defaultValue: 'Esplora operatori' })}
                 </Link></li>
                 {/* HP2 → SW3 — "Chi siamo". La nota di direzione
@@ -599,7 +630,9 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     due voci del footer portano a due posti diversi,
                     come devono. */}
                 {isNetwork && <li><Link to="/chi-siamo" className="hover:text-white" data-testid="footer-nw-chisiamo">{t('marketplace.footerAbout', { defaultValue: 'Chi siamo' })}</Link></li>}
-                {isNetwork && <li><Link to="/newsletter" className="hover:text-white" data-testid="footer-nw-newsletter">{t('marketplace.navNewsletter', { defaultValue: 'Newsletter' })}</Link></li>}
+                {/* la Lettera e' salita nella colonna Risorse: qui
+                    restano le quattro voci di Esplora, le stesse
+                    dell'header */}
                 {!isNetwork && <li><Link to="/ritiri/yoga" className="hover:text-white">Yoga</Link></li>}
                 {!isNetwork && <li><Link to="/ritiri/meditazione" className="hover:text-white">{t('categories.meditazione', { defaultValue: 'Meditazione & Mindfulness' })}</Link></li>}
                 {!isNetwork && <li><Link to="/ritiri/detox" className="hover:text-white">{t('categories.detox', { defaultValue: 'Detox & Digiuno' })}</Link></li>}
@@ -632,17 +665,76 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                 </ul>
               </div>
             )}
-            <div>
-              <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
-                {t('marketplace.footerOrganizers', { defaultValue: 'Organizzatori' })}
-              </p>
-              <ul className="space-y-1.5 text-white/70">
-                {/* founder 27/7 — via 'Porta i tuoi ritiri online':
-                    duplicava Area operatori */}
-                <li><Link to={operatorTo} className="hover:text-white">{operatorLabel}</Link></li>
-                <li><Link to="/login" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area operatori' })}</Link></li>
-              </ul>
-            </div>
+            {/* footer riscritto dal founder il 2/8/2026: in fase rete
+                quattro colonne (Esplora, Professionisti, Risorse,
+                Legale) al posto dell'unica colonna di navigazione. Il
+                footer e' l'unico posto dove sta TUTTO, header compreso
+                quello che dall'header e' uscito. */}
+            {isNetwork ? (
+              <>
+                <div>
+                  <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
+                    {t('marketplace.footerProfessionals', { defaultValue: 'Professionisti' })}
+                  </p>
+                  <ul className="space-y-1.5 text-white/70">
+                    <li><Link to="/entra-nella-rete" className="hover:text-white" data-testid="footer-nw-professionisti">{operatorLabel}</Link></li>
+                    {/* due voci, due intenzioni: la prima e' "guarda
+                        cos'e'", la seconda porta dritta al modulo di
+                        chi ha gia' deciso */}
+                    <li><Link to="/entra-nella-rete#presentati" className="hover:text-white">{t('marketplace.footerApply', { defaultValue: 'Candidati alla rete' })}</Link></li>
+                    <li><Link to="/login" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area professionisti' })}</Link></li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
+                    {t('marketplace.footerResources', { defaultValue: 'Risorse' })}
+                  </p>
+                  <ul className="space-y-1.5 text-white/70">
+                    <li><Link to="/newsletter" className="hover:text-white" data-testid="footer-nw-lettera">{t('marketplace.navLetter', { defaultValue: 'La Lettera di Aurya' })}</Link></li>
+                    {/* la guida gratuita e' scesa qui dall'header */}
+                    <li><Link to="/blog/kit-pratiche-quotidiane-15-minuti" className="hover:text-white">{t('marketplace.navFreeGuide', { defaultValue: 'Guida gratuita' })}</Link></li>
+                    {BRAND_INSTAGRAM && (
+                      <li>
+                        <a href={BRAND_INSTAGRAM} target="_blank" rel="noreferrer noopener" className="hover:text-white">
+                          Instagram
+                        </a>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
+                    {t('marketplace.footerLegal', { defaultValue: 'Legale' })}
+                  </p>
+                  <ul className="space-y-1.5 text-white/70">
+                    <li><Link to="/privacy" className="hover:text-white">Privacy</Link></li>
+                    <li><Link to="/termini" className="hover:text-white">{t('marketplace.terms', { defaultValue: 'Termini' })}</Link></li>
+                    {/* "Cookie" porta alla privacy perche' la cookie
+                        policy E' il capitolo 15 di quel documento: non
+                        esiste una pagina separata, e inventarne il link
+                        avrebbe prodotto un 404 su una voce legale. */}
+                    <li><Link to="/privacy" className="hover:text-white">Cookie</Link></li>
+                    <li>
+                      <a href={`mailto:${BRAND_EMAIL}`} className="hover:text-white">
+                        {t('marketplace.footerContact', { defaultValue: 'Contatti' })}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </>
+            ) : (
+              <div>
+                <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
+                  {t('marketplace.footerOrganizers', { defaultValue: 'Organizzatori' })}
+                </p>
+                <ul className="space-y-1.5 text-white/70">
+                  {/* founder 27/7 — via 'Porta i tuoi ritiri online':
+                      duplicava Area operatori */}
+                  <li><Link to={operatorTo} className="hover:text-white">{operatorLabel}</Link></li>
+                  <li><Link to="/login" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area professionisti' })}</Link></li>
+                </ul>
+              </div>
+            )}
           </div>
           <div className="relative border-t border-white/10">
             <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/40">

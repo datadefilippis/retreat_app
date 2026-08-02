@@ -451,6 +451,11 @@ function AppRoutes() {
           Promuovere /magazine a canonica e' una decisione SEO a se':
           servirebbero sitemap, 301 lato server e un nuovo IndexNow. */}
       <Route path="/magazine" element={<Navigate to="/blog" replace />} />
+      {/* HP5 — stessa storia di /magazine: "la rete" e' il nome che il
+          brand usa a voce, /operatori e' l'indirizzo canonico gia' in
+          sitemap. L'alias esiste perche' chi digita /rete deve arrivare
+          a casa, non su un 404. */}
+      <Route path="/rete" element={<Navigate to="/operatori" replace />} />
       {/* SW3 — /chi-siamo e' una pagina vera, non piu' un redirect sul
           Manifesto: il footer di fase rete la linka e chi ci clicca
           deve trovare le persone, non la posizione. */}
