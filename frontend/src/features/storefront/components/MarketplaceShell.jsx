@@ -579,8 +579,16 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               <p className="font-brand tracking-[0.04em] text-[11px] leading-snug mb-3 text-[#d6c49a]/85">
                 {t('marketplace.payoff', { defaultValue: BRAND_PAYOFF })}
               </p>
+              {/* OF3 — la riga sotto il marchio sta su TUTTE le pagine, e
+                  in fase rete prometteva "prenota... con caparra protetta"
+                  mentre nessuna delle pagine pubbliche porta a un
+                  acquisto: la promessa piu' ripetuta del sito era anche
+                  l'unica che non potevamo mantenere. Al lancio del
+                  marketplace torna quella di prima, che li' e' vera. */}
               <p className="text-white/60 text-xs leading-relaxed">
-                {t('marketplace.tagline', { defaultValue: 'Trova e prenota ritiri olistici in Italia — con caparra protetta, senza pensieri.' })}
+                {isNetwork
+                  ? t('marketplace.taglineNetwork', { defaultValue: 'Una rete di professionisti del benessere, raccontati uno a uno. Con calma, e con le loro parole.' })
+                  : t('marketplace.tagline', { defaultValue: 'Trova e prenota ritiri olistici in Italia — con caparra protetta, senza pensieri.' })}
               </p>
               {/* AN1 — le pagine dell'anima.
                   HP2: in fase rete il Manifesto NON sta qui, sta nella
@@ -714,9 +722,21 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                         esiste una pagina separata, e inventarne il link
                         avrebbe prodotto un 404 su una voce legale. */}
                     <li><Link to="/privacy" className="hover:text-white">Cookie</Link></li>
+                    {/* OF1 (founder 2/8) — l'indirizzo si VEDE. Un link
+                        che dice "Contatti" funziona solo per chi ha un
+                        programma di posta configurato: tutti gli altri
+                        cliccano e non succede niente, e l'indirizzo non
+                        possono nemmeno copiarlo. Qui il testo visibile
+                        E' l'indirizzo: chi ha il client lo clicca, chi
+                        non ce l'ha lo seleziona e lo incolla dove vuole.
+                        `select-all` fa si' che un clic solo lo prenda
+                        tutto. */}
                     <li>
-                      <a href={`mailto:${BRAND_EMAIL}`} className="hover:text-white">
-                        {t('marketplace.footerContact', { defaultValue: 'Contatti' })}
+                      <a
+                        href={`mailto:${BRAND_EMAIL}`}
+                        className="hover:text-white select-all break-all"
+                      >
+                        {BRAND_EMAIL}
                       </a>
                     </li>
                   </ul>

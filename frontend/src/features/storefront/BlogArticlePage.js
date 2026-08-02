@@ -83,6 +83,13 @@ import {
 const BOOKABLE_CATS = new Set(['yoga', 'meditazione', 'detox', 'suono',
   'massaggio', 'breathwork', 'cammini', 'femminile', 'aziendale']);
 
+/* OF1 — l'unica categoria del Magazine scritta PER chi lavora nel
+   benessere, non per chi lo cerca (fiscalita', prezzo di un ritiro,
+   come riempirlo). Vive qui come costante perche' decide due cose
+   diverse: quale porta compare in fondo all'articolo e, altrove,
+   se l'articolo entra nell'indice del Magazine. */
+export const PRO_CATEGORY = 'operatori';
+
 /* Le briciole sull'ancora scura: oro chiaro, come l'occhiello delle
    aperture fotografiche (10,38:1 sul fondo #0e1a15). */
 const CRUMB = `eyebrow eyebrow-light transition-colors hover:text-[#efe2bd]
@@ -315,11 +322,40 @@ export default function BlogArticlePage() {
 
             {/* BN1 — il primo punto di conversione: CTA di cluster.
                 BN3: sulle guide riservate il gate qui sopra E' la CTA
-                (due form nella stessa pagina si cannibalizzano). */}
+                (due form nella stessa pagina si cannibalizzano).
+
+                OF1 (2/8/2026) — la porta ora dipende da CHI sta
+                leggendo. Gli articoli della categoria "operatori"
+                (fiscalita', prezzo di un ritiro, come riempirlo) li
+                legge un professionista: offrirgli la lettera per
+                viaggiatori era l'invito sbagliato alla persona giusta,
+                ed era l'unico posto del sito dove il contenuto e il
+                pubblico coincidevano senza che ci fosse una porta.
+                Per tutti gli altri resta la lettera. */}
             {!article.gated && (
-              <Section tone="sand" rhythm="flow" width="max-w-2xl">
-                <BlogNewsletterCTA category={article.category} />
-              </Section>
+              article.category === PRO_CATEGORY ? (
+                <Section tone="sage" rhythm="flow" width="max-w-3xl"
+                         labelledBy="art-pro-title">
+                  <DisplayTitle as="h2" id="art-pro-title" size="section" measure="title"
+                                className="text-[1.8rem] sm:text-[2.2rem] lg:text-[2.5rem]">
+                    {t('blog.proBridgeTitle', {
+                      defaultValue: 'Scriviamo anche di te.' })}
+                  </DisplayTitle>
+                  <Lede size="lead" tone="inherit" className="mt-6 opacity-90">
+                    {t('blog.proBridgeBody', {
+                      defaultValue: 'Guide come questa nascono parlando con chi fa questo lavoro. Se lo fai anche tu e ti va di raccontarti, il primo passo e\' una conversazione.' })}
+                  </Lede>
+                  <p className="mt-8">
+                    <EditorialCta to="/entra-nella-rete" variant="light">
+                      {t('blog.proBridgeCta', { defaultValue: 'Entra nella rete' })}
+                    </EditorialCta>
+                  </p>
+                </Section>
+              ) : (
+                <Section tone="sand" rhythm="flow" width="max-w-2xl">
+                  <BlogNewsletterCTA category={article.category} />
+                </Section>
+              )
             )}
 
             {/* ── 4. I RITIRI — l'unica ancora tonale ──────────────────

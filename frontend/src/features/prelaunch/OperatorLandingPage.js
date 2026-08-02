@@ -22,7 +22,7 @@
  *   1. HERO       la rete da costruire       foto + due CTA
  *   2. OGGI       perche' entrare adesso     due colonne, foto r02
  *   3. RETE       cosa significa entrare     tre schede con foto
- *   4. DOMANI     dove stiamo andando        fascia foto + registro verde
+ *   4. GIA' QUI   quello che puoi gia' fare  fascia foto + registro verde
  *   5. PER CHI    la selezione gentile       il no e il si', affiancati
  *   6. FAQ        cinque domande             elenco leggibile, sempre aperto
  *   7. CHI SIAMO  i volti veri               Valentina e Davide
@@ -45,8 +45,8 @@
  *   r03    una persona sola nel suo elemento → "una presenza che parla di te".
  *   r08    le mani di chi cura → la fiducia che nasce prima della chiamata.
  *   r09    la pratica nello spazio di tutti → la presenza che continua a crescere.
- *   r05    il cairn, una pietra alla volta → "dove stiamo andando". E' la
- *          sezione che promette di piu' e si prende il trattamento piu'
+ *   r05    il cairn, una pietra alla volta → "quello che puoi gia' fare".
+ *          E' la sezione che dice di piu' e si prende il trattamento piu'
  *          forte della pagina: la fascia a tutta larghezza col titolo
  *          DENTRO l'immagine, poi il verde pieno col registro delle voci.
  *          Il velo di PhotoBand e' stato RIMISURATO su r05 (e' un'altra
@@ -193,23 +193,23 @@ export default function OperatorLandingPage() {
      operativo, mentre un'emoji la disegna il telefono di chi legge. */
   const voices = [
     {
-      title: t('opPro.v1t', { defaultValue: 'Potrai pubblicare i tuoi servizi.' }),
+      title: t('opPro.v1t', { defaultValue: 'Pubblichi i tuoi servizi.' }),
       body: t('opPro.v1b', { defaultValue: 'Con il tuo listino prezzi sempre aggiornato.' }),
     },
     {
-      title: t('opPro.v2t', { defaultValue: 'Ricevere richieste di appuntamento.' }),
+      title: t('opPro.v2t', { defaultValue: 'Ricevi richieste di appuntamento.' }),
       body: t('opPro.v2b', { defaultValue: 'Direttamente dal tuo profilo.' }),
     },
     {
-      title: t('opPro.v3t', { defaultValue: 'Organizzare workshop ed eventi.' }),
+      title: t('opPro.v3t', { defaultValue: 'Organizzi workshop ed eventi.' }),
       body: t('opPro.v3b', { defaultValue: 'In pochi minuti. Con iscrizioni online.' }),
     },
     {
-      title: t('opPro.v4t', { defaultValue: 'Pubblicare ritiri.' }),
+      title: t('opPro.v4t', { defaultValue: 'Pubblichi ritiri.' }),
       body: t('opPro.v4b', { defaultValue: 'Con tutte le informazioni e la gestione delle prenotazioni.' }),
     },
     {
-      title: t('opPro.v5t', { defaultValue: 'Condividere un unico link.' }),
+      title: t('opPro.v5t', { defaultValue: 'Condividi un unico link.' }),
       body: t('opPro.v5b', { defaultValue: 'Il tuo sito. I tuoi servizi. I tuoi eventi. Le recensioni. La tua storia. Tutto nello stesso posto.' }),
     },
   ];
@@ -430,8 +430,16 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 4. DOVE STIAMO ANDANDO — il trattamento piu' forte ───
-            E' la sezione che promette di piu', e si prende due battute
+        {/* ── 4. QUELLO CHE PUOI GIA' FARE — il trattamento piu' forte
+            OF2 (decisione del founder, 2/8/2026): questa sezione era
+            scritta al futuro e prometteva cinque cose che il prodotto fa
+            GIA' oggi — listino sul profilo pubblico, richiesta di
+            appuntamento per riga di listino, eventi e ritiri con
+            iscrizioni, il profilo /o/:slug che raccoglie tutto. La fase
+            "rete" spegne la vetrina di scoperta, non gli strumenti del
+            professionista: quindi si scrive al presente. L'unica cosa
+            davvero futura (la parte pubblica) si dice da sola, in coda.
+            E' la sezione che dice di piu', e si prende due battute
             invece di una:
               a) la FASCIA a tutta larghezza, con il titolo e l'orizzonte
                  DENTRO la fotografia (r05, il cairn: una pietra alla
@@ -441,7 +449,7 @@ export default function OperatorLandingPage() {
                  separate da un filo sottile, titolo a sinistra e riga di
                  dettaglio a destra. E' la grammatica grafica del sito al
                  posto delle emoji della specifica: identica su ogni
-                 telefono, e allineata come un indice di cose promesse.
+                 telefono, e allineata come un indice di cose che ci sono.
             Sul verde il crema sta a 7,28:1, al 90% a 6,26:1 (AA: 4,5:1).
             Le due battute sono una sezione sola per chi ascolta la
             pagina: l'h2 e' uno, e sta nella fascia. */}
@@ -449,13 +457,13 @@ export default function OperatorLandingPage() {
           <PhotoBand as="div" image={HORIZON_PHOTO} focus="50% 40%" width="max-w-3xl">
             <DisplayTitle as="h2" id="ol-go-title" size="section" measure="title"
                           className="text-hero-shadow">
-              {t('opPro.goTitle', { defaultValue: 'Dove stiamo andando.' })}
+              {t('opPro.goTitle', { defaultValue: 'Quello che puoi già fare.' })}
             </DisplayTitle>
             <Lede size="lead" tone="inherit" className="mt-7 text-hero-shadow">
-              {t('opPro.goP1', { defaultValue: 'Oggi Aurya è il luogo dove raccontiamo professionisti e contenuti.' })}
+              {t('opPro.goP1', { defaultValue: 'Aurya è il luogo dove raccontiamo professionisti e contenuti.' })}
             </Lede>
             <Lede size="lead" tone="inherit" className="mt-4 text-hero-shadow">
-              {t('opPro.goP2', { defaultValue: 'Domani diventerà anche il luogo da cui potrai gestire la tua presenza professionale.' })}
+              {t('opPro.goP2', { defaultValue: 'Ed è anche il luogo da cui gestisci la tua presenza professionale. Già adesso.' })}
             </Lede>
           </PhotoBand>
 
@@ -488,6 +496,14 @@ export default function OperatorLandingPage() {
                 </li>
               ))}
             </ul>
+            {/* OF2 — la sola cosa futura di questa sezione, e sta DOPO le
+                cinque voci, non in mezzo: cosi' nessuno la puo' scambiare
+                per una di loro. Il tono e' quello della FAQ sulle agende
+                esterne ("quello che ancora non c'e' e'..."): i limiti si
+                dicono con le stesse parole ovunque. */}
+            <Lede size="body" tone="inherit" className="mt-12 opacity-90 sm:mt-14">
+              {t('opPro.goSoon', { defaultValue: 'Quello che ancora non c’è è la parte pubblica: quella in cui sono le persone a cercare un ritiro e ad arrivare a te. L’apriamo quando la rete sarà abbastanza viva da reggerla.' })}
+            </Lede>
           </Section>
         </section>
 
