@@ -11,8 +11,17 @@
  * tone  cream → oro scuro su fondo chiaro
  *       deep  → oro chiaro su fondo salvia scuro
  *       hero  → oro chiaro su foto (con ombra di leggibilita')
- * size  xs | sm | hero
+ * size  xs | sm | hero | band
  * rules → i due fili d'oro ai lati (solo hero del calendario)
+ *
+ * DS1 — `band`. Il payoff e' una FRASE, e una frase puo' fare da
+ * respiro di meta' pagina dentro una fascia fotografica a tutta
+ * larghezza (PhotoBand). Li' serve un corpo che regga la larghezza
+ * dello schermo: `hero` si ferma a 20px, e sotto una fotografia alta
+ * 32rem sembrerebbe una didascalia. Il gradino minimo e' 24px non per
+ * gusto ma per WCAG: a 24px il testo e' "grande" e la soglia di
+ * contrasto scende da 4,5:1 a 3:1, il che tiene l'oro leggibile anche
+ * sul pixel piu' chiaro della fotografia (misurato 4,89:1 a 390px).
  */
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +37,7 @@ const SIZES = {
   xs: 'text-[11px] tracking-[0.16em] uppercase',
   sm: 'text-xs sm:text-sm tracking-[0.14em] uppercase',
   hero: 'text-sm sm:text-lg md:text-xl tracking-[0.08em]',
+  band: 'text-2xl sm:text-4xl lg:text-[3rem] tracking-[0.05em] leading-[1.18]',
 };
 
 export default function BrandPayoff({
