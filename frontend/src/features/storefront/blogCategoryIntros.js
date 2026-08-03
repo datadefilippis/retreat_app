@@ -68,8 +68,8 @@ const INTRO = {
     porte: [
       { to: '/blog/massaggio-olistico-tipi-cosa-aspettarsi',
         label: 'Massaggio olistico: i tipi principali e cosa aspettarsi' },
-      { to: '/blog/campane-tibetane-benefici-come-funzionano',
-        label: 'Il massaggio sonoro con le campane appoggiate sul corpo' },
+      { to: '/blog/shiatsu-cose-come-funziona-una-seduta',
+        label: 'Shiatsu: il lavoro sul corpo che si riceve vestiti' },
     ],
   },
 
@@ -82,8 +82,8 @@ const INTRO = {
     porte: [
       { to: '/blog/camminare-bagni-di-foresta-cammini',
         label: 'Camminare come pratica: bagni di foresta, cammini, natura' },
-      { to: '/blog/kit-pratiche-quotidiane-15-minuti',
-        label: 'Il kit delle pratiche quotidiane, quindici minuti al giorno' },
+      { to: '/blog/cammini-italiani-quale-scegliere-la-prima-volta',
+        label: 'I cammini italiani: quale scegliere la prima volta' },
     ],
   },
 
@@ -124,6 +124,8 @@ const INTRO = {
     porte: [
       { to: '/blog/meditazione-per-chi-inizia-guida-semplice',
         label: 'Meditazione per chi inizia' },
+      { to: '/blog/mindfulness-cose-mbsr-come-funziona',
+        label: 'Mindfulness e il protocollo delle otto settimane' },
       { to: '/blog/pratiche-olistiche-contro-stress-cosa-funziona',
         label: 'Cosa funziona contro lo stress, secondo la ricerca' },
       { to: '/blog/kit-pratiche-quotidiane-15-minuti',
@@ -168,6 +170,8 @@ const INTRO = {
       'Raccontiamo cosa succede davanti a una candela accesa, come si svolge un incontro, e come si trova un cerchio serio vicino a casa.',
     ],
     porte: [
+      { to: '/blog/ciclo-mestruale-quattro-fasi-come-ascoltarlo',
+        label: 'Il ciclo come mappa: le quattro fasi, cosa regge e cosa no' },
       { to: '/blog/cerchi-di-donne-cosa-sono-come-funzionano',
         label: 'Cerchi di donne: come funzionano e come trovarne uno' },
     ],
@@ -180,6 +184,8 @@ const INTRO = {
       'Qui trovi cosa succede davvero durante un digiuno consapevole, a chi è adatto, chi dovrebbe starne lontano, e come si riconosce una struttura che lo propone in sicurezza.',
     ],
     porte: [
+      { to: '/blog/smettere-alcol-zucchero-caffeina-cosa-succede',
+        label: 'Alcol, zucchero e caffeina: cosa succede quando smetti' },
       { to: '/blog/digiuno-consapevole-detox-benefici-falsi-miti',
         label: 'Digiuno consapevole e detox: benefici e controindicazioni' },
     ],
