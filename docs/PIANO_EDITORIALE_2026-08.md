@@ -132,8 +132,12 @@ Cinque famiglie, piu' un formato ricorrente.
 
 ### A. Corpo e respiro
 - Rebirthing: cos'e', come funziona una sessione, a chi si rivolge
-  *(prima in lista: e' la pratica di Valentina, quindi nasce con la
-  voce vera dentro)*
+  *(in italiano manca del tutto raccontato bene. ATTENZIONE: si
+  scrive come informazione, senza attribuirlo a nessuno di noi. Il
+  founder e' in formazione e NON puo' proporsi come rebirther:
+  l'articolo non deve suggerire che Aurya offra la pratica ne'
+  portare una firma personale finche' quella formazione non e'
+  conclusa.)*
 - Pranayama: la respirazione dello yoga, tecnica per tecnica
 - Respiro e sistema nervoso: cosa succede nel corpo quando rallenti
 - Breathwork *(esiste: da consolidare, 810 parole)*
@@ -239,10 +243,9 @@ Pubblicazione distribuita, mai a blocchi: dopo l'11 luglio il sito
 deve sembrare vivo, non archiviato.
 
 Primi tre mesi, proposta:
-- **mese 1** — Rebirthing (con la voce di Valentina) + "Le differenze
-  fra hatha, vinyasa, ashtanga, yin e kundalini" + 2 interviste.
-  Motivo: il primo nasce gia' con la voce vera dentro, il secondo e'
-  la domanda che si fa chiunque si avvicini allo yoga.
+- **mese 1** — "Le differenze fra hatha, vinyasa, ashtanga, yin e
+  kundalini" (FATTO, 3 ago) + Rebirthing come informazione pura +
+  2 interviste.
 - **mese 2** — 1 guida "Scegliere e fidarsi" + 1 disciplina (pranayama
   o yoga nidra) + 2 interviste + 1 Pensiero.
 - **mese 3** — 2 discipline + 2 interviste + 1 Pensiero, e il
