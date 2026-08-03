@@ -193,6 +193,12 @@ async def get_public_article(slug: str, lang: str = "it",
         raise HTTPException(status_code=404, detail="Articolo non trovato")
     out = _localized(doc, lang)
     out["content"] = doc["content"]
+    # PE7 — i correlati DICHIARATI: il grafo e' curato a mano
+    # (scripts/pe7_link_interni.py) perche' "stessa categoria + piu'
+    # recenti" accosta pezzi che non c'entrano appena una categoria ha
+    # tre articoli. La pagina ripiega sull'automatismo se la lista
+    # manca, quindi nessun articolo resta senza correlati.
+    out["related_slugs"] = doc.get("related_slugs") or []
     if out["served_lang"] != "it":
         tr = doc["translations"][lang]
         out["content"] = tr["content"]

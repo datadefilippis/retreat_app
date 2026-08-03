@@ -120,8 +120,15 @@ export default function BlogArticlePage() {
     return () => { mounted = false; };
   }, [slug, lang]);
 
-  // BN1 — "Continua a leggere": stesso cluster prima (categoria),
-  // poi i piu' recenti. Sessioni piu' lunghe = fiducia + SEO interna.
+  /* "Continua a leggere" (BN1, riscritto in PE7).
+     Prima l'ordine era: stessa categoria, poi i piu' recenti. Con tre
+     articoli in una categoria accosta pezzi che non c'entrano, e con
+     le categorie piccole pesca a caso fra i recenti.
+     Ora comanda il GRAFO CURATO (`related_slugs`, deciso a mano in
+     scripts/pe7_link_interni.py): sono i correlati veri, nell'ordine
+     in cui ha senso leggerli. L'automatismo resta sotto e riempie i
+     posti che avanzano, cosi' nessun articolo resta senza coda anche
+     se il grafo non lo copre. */
   useEffect(() => {
     if (!article) { setRelated([]); return; }
     let mounted = true;
@@ -129,9 +136,15 @@ export default function BlogArticlePage() {
       .then(res => {
         if (!mounted) return;
         const all = (res.data?.items || []).filter(a => a.slug !== slug);
-        const same = all.filter(a => article.category && a.category === article.category);
-        const rest = all.filter(a => !same.includes(a));
-        setRelated([...same, ...rest].slice(0, 3));
+        const perSlug = new Map(all.map(a => [a.slug, a]));
+        const scelti = (article.related_slugs || [])
+          .map(s => perSlug.get(s))
+          .filter(Boolean);
+        const presi = new Set(scelti.map(a => a.slug));
+        const resto = all.filter(a => !presi.has(a.slug));
+        const stessaCat = resto.filter(a => article.category && a.category === article.category);
+        const altri = resto.filter(a => !stessaCat.includes(a));
+        setRelated([...scelti, ...stessaCat, ...altri].slice(0, 3));
       })
       .catch(() => { if (mounted) setRelated([]); });
     return () => { mounted = false; };
