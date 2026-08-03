@@ -73,6 +73,7 @@ import { Lock } from 'lucide-react';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import BlogNewsletterCTA from './components/BlogNewsletterCTA';
+import { PRO_CATEGORY } from './BlogArticlePage';
 import useSeoMeta from './lib/useSeoMeta';
 import BrandPayoff from '../../components/BrandPayoff';
 import {
@@ -129,7 +130,19 @@ export default function BlogIndexPage() {
         if (!mounted) return;
         const all = res.data?.items || [];
         setAllItems(all);
-        setItems(category ? all.filter(a => a.category === category) : all);
+        /* OF4 (decisione founder 2/8) — il Magazine e' per chi CERCA il
+           benessere. Gli articoli scritti per chi lo pratica di mestiere
+           (fiscalita', prezzo di un ritiro, come riempirlo) uscivano
+           nello stesso elenco, e chi arrivava cercando "cos'e' il reiki"
+           capiva che questo posto non era per lui.
+           NON si cancellano e NON cambiano indirizzo: restano su
+           /blog/:slug (le pagine indicizzate valgono), e il loro elenco
+           resta su /blog/categoria/operatori, che diventa la sezione
+           dedicata raggiungibile dal mondo dei professionisti. Sparisce
+           solo dall'indice generale e dalle pillole delle categorie. */
+        setItems(category
+          ? all.filter(a => a.category === category)
+          : all.filter(a => a.category !== PRO_CATEGORY));
       })
       .catch(() => { if (mounted) { setAllItems([]); setItems([]); } })
       .finally(() => { if (mounted) setLoading(false); });
@@ -137,7 +150,11 @@ export default function BlogIndexPage() {
   }, [lang, category]);
 
   const categoriesWithArticles = useMemo(() => {
-    const seen = new Set(allItems.map(a => a.category).filter(Boolean));
+    /* OF4 — la pillola "Per gli operatori" esce dal filtro: e' la sezione
+       dei professionisti, non una lettura del Magazine. La sua pagina
+       (/blog/categoria/operatori) resta viva e raggiungibile da li'. */
+    const seen = new Set(allItems.map(a => a.category)
+      .filter(Boolean).filter(c => c !== PRO_CATEGORY));
     return [...seen];
   }, [allItems]);
 

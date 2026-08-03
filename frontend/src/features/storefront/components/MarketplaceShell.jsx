@@ -690,6 +690,12 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                         cos'e'", la seconda porta dritta al modulo di
                         chi ha gia' deciso */}
                     <li><Link to="/entra-nella-rete#presentati" className="hover:text-white">{t('marketplace.footerApply', { defaultValue: 'Candidati alla rete' })}</Link></li>
+                    {/* OF4 — la sezione dei contenuti per chi fa questo
+                        lavoro: e' uscita dall'indice del Magazine (che
+                        parla a chi il benessere lo cerca) e la sua porta
+                        e' qui, nel mondo a cui appartiene. Gli articoli
+                        non hanno cambiato indirizzo. */}
+                    <li><Link to="/blog/categoria/operatori" className="hover:text-white" data-testid="footer-nw-risorse-pro">{t('marketplace.footerProResources', { defaultValue: 'Guide per il tuo lavoro' })}</Link></li>
                     <li><Link to="/login" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area professionisti' })}</Link></li>
                   </ul>
                 </div>
