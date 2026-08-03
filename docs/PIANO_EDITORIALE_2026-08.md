@@ -252,9 +252,17 @@ Primi tre mesi, proposta:
 
 ## PARTE 5 — I debiti tecnici che valgono quanto gli articoli
 
-1. **Firma umana.** Gli articoli sono firmati "Aurya". Valentina e'
-   una praticante vera: la sua firma sulle guide di pratica vale piu'
-   di mille parole in piu'.
+1. **Firma unica: sempre "Aurya".** ~~Firma umana~~ — decisione del
+   founder (2/8): la voce e' collettiva anche quando a scrivere e' una
+   persona sola. Fatto: undici articoli erano firmati "Valentina ·
+   Aurya" o "Davide · Aurya", ora sono tutti "Aurya"
+   (`scripts/pe1_firma_unica_aurya.py`, idempotente, da rilanciare in
+   produzione).
+   Conseguenza da tenere a mente: con la firma collettiva, la
+   competenza di prima mano deve vedersi TUTTA dentro l'articolo. La
+   regola della Parte 2 (la voce di un professionista reale, con nome)
+   smette di essere un di piu' e diventa l'unico posto dove
+   l'esperienza si mostra.
 2. **Nessun link agli operatori.** Ogni citazione deve linkare la
    persona citata. E' il collegamento che manca fra i due mondi.
 3. **Un solo articolo riservato su venti.** Il magnete che raccoglie
