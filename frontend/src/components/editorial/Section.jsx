@@ -35,6 +35,12 @@ const RHYTHM = {
   hero: 'pt-8 pb-14 sm:pt-14 sm:pb-24 lg:pt-16 lg:pb-28',
   screen: 'py-20 sm:py-28 lg:py-32',
   flow: 'py-16 sm:py-24 lg:py-28',
+  /* MG1 — la fascia di servizio: un raccordo fra due blocchi che
+     appartengono allo stesso discorso, e che con `flow` finivano
+     separati da 224 px come se fossero due argomenti diversi. Meta'
+     del respiro di `flow`: si legge come una pausa, non come uno
+     stacco. */
+  tight: 'py-10 sm:py-12 lg:py-14',
   none: '',
 };
 

@@ -69,10 +69,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Lock } from 'lucide-react';
+import { ArrowLeft, Lock } from 'lucide-react';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import BlogNewsletterCTA from './components/BlogNewsletterCTA';
+import MagazineCategoryNav, { coloreCategoria } from './components/MagazineCategoryNav';
 import { PRO_CATEGORY } from './BlogArticlePage';
 import introPerCategoria from './blogCategoryIntros';
 import useSeoMeta from './lib/useSeoMeta';
@@ -81,19 +82,20 @@ import {
   Section, DisplayTitle, TitleLine, Lede, ArticleCard, EditorialCta, PhotoOpener,
 } from '../../components/editorial';
 
-/* La pastiglia: sobria per definizione. Stesso verde e stesso tracking
-   dell'occhiello di ArticleCard, cosi' il filtro e la scheda si
-   leggono come la stessa classificazione detta due volte.
-   DS3 — piu' grande (min-h 2,5rem: un bersaglio da pollice, prima erano
-   28px), e a riposo un contorno invece di un fondo tinto: cosi' la
-   pastiglia ATTIVA e' l'unica piena della riga e si vede da lontano
-   dove si e'. */
-const CHIP = `inline-flex min-h-[2.5rem] items-center rounded-full border px-4 py-2
-              text-[11px] font-medium uppercase tracking-[0.12em] transition-colors
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f5749]
-              focus-visible:ring-offset-2 focus-visible:ring-offset-background`;
-const CHIP_ON = 'border-[#2f5749] bg-[#2f5749] text-[#f6f2e8]';
-const CHIP_OFF = 'border-[#2f5749]/25 text-[#2f5749] hover:border-[#2f5749]/60 hover:bg-[#2f5749]/[0.06]';
+/* MG1 — quanti articoli per pagina prima di "Mostra altri".
+   Dodici: sei righe da due sul desktop, che e' quanto una persona
+   scorre prima di decidere se questo posto le interessa. Sotto i 12
+   la lista sembrerebbe povera, sopra i 12 torna il muro. */
+const PER_PAGINA = 12;
+/* Dopo quante schede si infila la proposta della lettera. Sei: dopo
+   l'apertura e due righe, cioe' quando chi legge ha visto abbastanza
+   da sapere se gli interessa. */
+const LETTERA_DOPO = 6;
+
+/* MG1 — le pastiglie testuali sono state sostituite da
+   MagazineCategoryNav: con dodici categorie una fila di parole
+   costringeva a leggerle tutte per trovarne una, e non diceva niente
+   su cosa ci fosse dentro. Le costanti CHIP sono uscite con loro. */
 
 /* L'apertura del Magazine (DS §Il magazzino foto): `hero-blog` e' la
    sua foto assegnata, e non compare su nessuna pagina vicina. */
@@ -152,14 +154,34 @@ export default function BlogIndexPage() {
     return () => { mounted = false; };
   }, [lang, category]);
 
-  const categoriesWithArticles = useMemo(() => {
+  /* MG1 — le categorie ordinate per ricchezza, non per ordine di
+     comparsa nel database: chi guarda la navigazione deve trovare per
+     prime le stanze piene. Con il conteggio a fianco, che dice se
+     dietro una porta c'e' una stanza o un ripostiglio. */
+  const { categoriesWithArticles, conteggi, totalePubblico } = useMemo(() => {
     /* OF4 — la pillola "Per gli operatori" esce dal filtro: e' la sezione
        dei professionisti, non una lettura del Magazine. La sua pagina
        (/blog/categoria/operatori) resta viva e raggiungibile da li'. */
-    const seen = new Set(allItems.map(a => a.category)
-      .filter(Boolean).filter(c => c !== PRO_CATEGORY));
-    return [...seen];
+    const conte = {};
+    allItems.forEach(a => {
+      if (a.category && a.category !== PRO_CATEGORY) {
+        conte[a.category] = (conte[a.category] || 0) + 1;
+      }
+    });
+    const slugs = Object.keys(conte).sort(
+      (a, b) => conte[b] - conte[a] || a.localeCompare(b));
+    return {
+      categoriesWithArticles: slugs,
+      conteggi: conte,
+      totalePubblico: slugs.reduce((n, s) => n + conte[s], 0),
+    };
   }, [allItems]);
+
+  /* MG1 — la paginazione. Si azzera quando cambia categoria o lingua,
+     altrimenti si entra in una categoria da cinque articoli con la
+     lista gia' "espansa" da quella precedente. */
+  const [quanti, setQuanti] = useState(PER_PAGINA);
+  useEffect(() => { setQuanti(PER_PAGINA); }, [category, lang]);
 
   const fmtDate = (iso) => {
     if (!iso) return '';
@@ -186,6 +208,11 @@ export default function BlogIndexPage() {
   );
 
   const [lead, ...altri] = items;      // l'apertura, poi la griglia
+  /* MG1 — quanti ne mostriamo adesso: l'apertura non si conta, e'
+     sempre visibile. `restanti` alimenta sia il bottone sia la riga
+     "x di y", che e' l'unica cosa che dice a chi legge quanto manca. */
+  const visibili = altri.slice(0, quanti);
+  const restanti = altri.length - visibili.length;
 
   return (
     <MarketplaceShell noSearch>
@@ -202,76 +229,117 @@ export default function BlogIndexPage() {
             sottotitolo scende alla soglia chiara qui sotto, come sulla
             landing operatori (che e' la pagina approvata): il titolo
             sta sulla foto, l'argomento si legge sul chiaro. */}
-        <PhotoOpener
-          data-testid="mag-open"
-          image={OPENER_PHOTO}
-          focus="65% 20%"
-          height="tall"
-          align="left"
-          width="max-w-3xl"
-          labelledBy="mag-title"
-          eyebrow={t('blog.eyebrow', { defaultValue: 'Il Magazine' })}
-        >
-          <DisplayTitle as="h1" id="mag-title" size="heroLines" measure="lines"
-                        className="text-hero-shadow">
-            {category ? catLabel(category) : (
-              <>
-                <TitleLine>
-                  {t('blog.lead1', { defaultValue: 'Le cose serie vanno spiegate.' })}
-                </TitleLine>
-                <TitleLine>
-                  {t('blog.lead2', { defaultValue: 'Scriviamo.' })}
-                </TitleLine>
-              </>
-            )}
-          </DisplayTitle>
-        </PhotoOpener>
+        {category ? (
+          /* MG1 — LA TESTATA DI CATEGORIA, compatta.
+             Prima anche qui c'era la fotografia alta, ed era il primo
+             dei tre motivi per cui gli articoli cominciavano a 6,5
+             schermate dall'alto (misurato su /blog/categoria/yoga).
+             Il ragionamento e' semplice: la fotografia grande e' la
+             DICHIARAZIONE del Magazine, e si fa una volta sola,
+             all'ingresso. Chi e' dentro una categoria ci e' arrivato
+             apposta e vuole gli articoli, non un secondo benvenuto.
+             Il colore della categoria resta, ed e' lo stesso delle
+             sue copertine: dice dove sei prima che tu legga il titolo.
+             Non come filo sottile in alto pero' — sotto la riga verde
+             dell'header del sito sarebbe invisibile, e per la categoria
+             yoga, che e' verde, si confonderebbe proprio con quella.
+             Tinge invece tutto il fondo della testata, appena
+             percettibile: abbastanza da riconoscere la stanza a colpo
+             d'occhio, abbastanza poco da non litigare col crema del
+             resto della pagina. */
+          <header data-testid="mag-open-cat"
+                  className="pb-10 pt-12 lg:pb-12 lg:pt-14"
+                  style={{ backgroundColor: `${coloreCategoria(category)}1c` }}>
+            {/* Il padding orizzontale sta sul contenitore INTERNO, non
+                sull'header: e' cosi' che lo mette Section, e con la
+                struttura opposta il titolo partiva 32 px piu' a
+                sinistra della griglia e dell'introduzione. Due colonne
+                che dovrebbero allinearsi e non lo fanno si notano anche
+                senza righello. */}
+            <div className="mx-auto max-w-6xl px-6 sm:px-8">
+              <Link to="/blog"
+                    className="inline-flex items-center gap-1.5 text-[13px] text-[#2f5749]
+                               underline-offset-4 hover:underline focus-visible:outline-none
+                               focus-visible:ring-2 focus-visible:ring-[#2f5749]
+                               focus-visible:ring-offset-2 focus-visible:ring-offset-[#f6f2e8]"
+                    data-testid="mag-back">
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+                {t('blog.backToBlogShort', { defaultValue: 'Magazine' })}
+              </Link>
+              <DisplayTitle as="h1" id="mag-title" size="section" measure="title"
+                            className="mt-4 text-[2rem] sm:text-[2.6rem] lg:text-[3rem]">
+                {catLabel(category)}
+              </DisplayTitle>
+              <Lede size="lead" className="mt-4 max-w-2xl">
+                {intro?.lede
+                 || t('blog.catSubtitle', { defaultValue: 'Quello che abbiamo scritto su questo tema.' })}
+              </Lede>
+            </div>
+          </header>
+        ) : (
+          <PhotoOpener
+            data-testid="mag-open"
+            image={OPENER_PHOTO}
+            focus="65% 20%"
+            height="tall"
+            align="left"
+            width="max-w-3xl"
+            labelledBy="mag-title"
+            eyebrow={t('blog.eyebrow', { defaultValue: 'Il Magazine' })}
+          >
+            <DisplayTitle as="h1" id="mag-title" size="heroLines" measure="lines"
+                          className="text-hero-shadow">
+              <TitleLine>
+                {t('blog.lead1', { defaultValue: 'Le cose serie vanno spiegate.' })}
+              </TitleLine>
+              <TitleLine>
+                {t('blog.lead2', { defaultValue: 'Scriviamo.' })}
+              </TitleLine>
+            </DisplayTitle>
+          </PhotoOpener>
+        )}
 
         {/* ── LA SOGLIA — cosa ci trovi, e come ci si muove ────────
             Il crema subito sotto la foto: una riga che dice di che si
             tratta, il payoff, e la barra delle categorie. E' anche il
             posto in cui si capisce dove si e': la pastiglia piena e'
             una sola. */}
-        <Section tone="cream" rhythm="flow" width="max-w-3xl">
-          <div data-testid="mag-soglia">
-            <Lede size="lead">
-              {category
-                ? (intro?.lede
-                   || t('blog.catSubtitle', { defaultValue: "Quello che abbiamo scritto su questo tema." }))
-                : t('blog.subtitle', { defaultValue: "Pratiche, luoghi e persone, raccontati per quello che sono. Senza scorciatoie." })}
-            </Lede>
-            <BrandPayoff tone="cream" size="sm" className="mt-8" />
+        {/* MG1 — LA SOGLIA esiste solo sull'indice. Sulla pagina di
+            categoria il suo contenuto (dove sei, di che si tratta) e'
+            gia' nella testata compatta qui sopra, e ripeterlo era il
+            secondo motivo per cui gli articoli finivano lontani. */}
+        {!category && (
+          <Section tone="cream" rhythm="flow" width="max-w-6xl">
+            <div data-testid="mag-soglia">
+              <div className="max-w-3xl">
+                <Lede size="lead">
+                  {t('blog.subtitle', { defaultValue: 'Pratiche, luoghi e persone, raccontati per quello che sono. Senza scorciatoie.' })}
+                </Lede>
+                <BrandPayoff tone="cream" size="sm" className="mt-8" />
+              </div>
 
-            {/* i filtri: pastiglie, non bottoni pesanti, e link veri.
-                Compaiono anche con una categoria sola quando si e'
-                DENTRO una categoria: senza, da li' non si tornerebbe
-                indietro se non col tasto del browser. */}
-            {(categoriesWithArticles.length > 1 || category) && (
-              <nav className="mt-10 border-t border-[#8a7440]/25 pt-8"
-                   data-testid="blog-category-chips"
-                   aria-label={t('blog.eyebrow', { defaultValue: 'Il Magazine' })}>
-                <ul className="flex list-none flex-wrap gap-2.5 p-0">
-                  <li>
-                    <Link to="/blog"
-                          className={`${CHIP} ${!category ? CHIP_ON : CHIP_OFF}`}
-                          aria-current={!category ? 'page' : undefined}>
-                      {t('blog.allArticles', { defaultValue: 'Tutti' })}
-                    </Link>
-                  </li>
-                  {categoriesWithArticles.map(slug => (
-                    <li key={slug}>
-                      <Link to={`/blog/categoria/${slug}`}
-                            className={`${CHIP} ${category === slug ? CHIP_ON : CHIP_OFF}`}
-                            aria-current={category === slug ? 'page' : undefined}>
-                        {catLabel(slug)}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            )}
-          </div>
-        </Section>
+              {/* MG1 — le categorie diventano una navigazione che si
+                  guarda. Ogni scheda porta il colore che quella
+                  categoria ha gia' sulle sue copertine, e il numero di
+                  articoli: dice se dietro la porta c'e' una stanza o un
+                  ripostiglio, che e' l'informazione che manca di piu'
+                  quando si sceglie dove entrare. */}
+              {categoriesWithArticles.length > 1 && (
+                <div className="mt-12 border-t border-[#8a7440]/25 pt-10">
+                  <p className="eyebrow mb-5">
+                    {t('blog.catNavTitle', { defaultValue: 'Scegli un tema' })}
+                  </p>
+                  <MagazineCategoryNav
+                    categorie={categoriesWithArticles}
+                    conteggi={conteggi}
+                    attiva=""
+                    totale={totalePubblico}
+                  />
+                </div>
+              )}
+            </div>
+          </Section>
+        )}
 
         {/* ── L'INTRODUZIONE DELLA CATEGORIA (PC1) ─────────────────
             Una pagina di categoria che elenca e basta non e' un hub,
@@ -283,33 +351,28 @@ export default function BlogIndexPage() {
             tornare subito indietro) e PRIMA della griglia, perche'
             e' l'inquadramento di quello che si sta per vedere.
             Le categorie senza introduzione restano come prima. */}
+        {/* MG1 — L'INTRODUZIONE SI SPEZZA IN DUE, ed era il terzo motivo
+            per cui gli articoli cominciavano lontani: da sola misurava
+            2875 px, cioe' quasi quattro schermate di premessa prima di
+            vedere un titolo.
+            Sopra la griglia resta il PRIMO paragrafo, che inquadra
+            l'argomento. Il resto e le porte scendono sotto gli
+            articoli, dove servono di piu': chi ha appena scorso le
+            copertine e non ha trovato la sua strada e' esattamente chi
+            ha bisogno di "da dove partire". */}
+        {/* La fascia e' larga come la griglia e il testo dentro sta a
+              sinistra nella sua misura di lettura. Con width max-w-3xl
+              la Section centrava il paragrafo, che partiva rientrato
+              rispetto al titolo sopra e alle copertine sotto: una
+              colonna sola disallineata si legge come un errore di
+              impaginazione, non come una scelta. */}
         {intro && (
-          <Section tone="sand" rhythm="flow" width="max-w-3xl"
+          <Section tone="sand" rhythm="tight" width="max-w-6xl"
                    labelledBy="mag-cat-intro">
             <h2 id="mag-cat-intro" className="sr-only">
               {catLabel(category)}
             </h2>
-            {intro.paragrafi.map((p, i) => (
-              <Lede key={i} size="body" className={i ? 'mt-5' : undefined}>
-                {p}
-              </Lede>
-            ))}
-            {intro.porte?.length > 0 && (
-              <div className="mt-10 border-t border-[#8a7440]/25 pt-8">
-                <p className="eyebrow mb-5">
-                  {t('blog.catStartHere', { defaultValue: 'Da dove partire' })}
-                </p>
-                <ul className="list-none space-y-3 p-0">
-                  {intro.porte.map(porta => (
-                    <li key={porta.to}>
-                      <EditorialCta to={porta.to} variant="quiet">
-                        {porta.label}
-                      </EditorialCta>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <Lede size="body" className="max-w-3xl">{intro.paragrafi[0]}</Lede>
           </Section>
         )}
 
@@ -371,15 +434,123 @@ export default function BlogIndexPage() {
                       e il testo sotto ha la sua misura. Sul telefono
                       una sola, con l'aria in mezzo. */}
                   <div className="grid gap-y-14 sm:grid-cols-2 sm:gap-x-10 lg:gap-x-14 lg:gap-y-16">
-                    {altri.map(a => card(a, 'compact'))}
+                    {visibili.map((a, i) => (
+                      /* MG1 — LA LETTERA DENTRO LA GRIGLIA. In fondo alla
+                         pagina nessuno la vedeva: su una categoria da
+                         cinque articoli arrivava a 12,5 schermate
+                         dall'alto. Qui occupa una cella come una scheda
+                         qualsiasi, alla settima posizione, e non
+                         interrompe niente — chi sta scorrendo la trova
+                         mentre guarda, non dopo aver finito.
+                         Sta nella griglia e non in una fascia a tutta
+                         larghezza proprio per questo: una fascia
+                         spezza, una cella si affianca. */
+                      i === LETTERA_DOPO ? (
+                        <React.Fragment key="lettera-inline">
+                          <aside data-testid="mag-lettera-inline"
+                                 className="rounded-2xl bg-[#f2ece0] p-6 sm:p-7">
+                            <BlogNewsletterCTA category={category || null} />
+                          </aside>
+                          {card(a, 'compact')}
+                        </React.Fragment>
+                      ) : card(a, 'compact')
+                    ))}
                   </div>
+
+                  {/* MG1 — la paginazione. Con trentatre' articoli la
+                      pagina era un muro di sedici schermate: si mostra
+                      una manciata e si chiede se si vuole il resto.
+                      E' un bottone e non una rotta ?pagina=2 perche'
+                      gli articoli restano tutti nella stessa pagina
+                      indicizzata: la porzione nascosta e' un fatto di
+                      lettura, non di indicizzazione. */}
+                  {restanti > 0 && (
+                    <div className="mt-16 flex flex-col items-center gap-3">
+                      <button
+                        type="button"
+                        data-testid="mag-mostra-altri"
+                        onClick={() => setQuanti(q => q + PER_PAGINA)}
+                        className="inline-flex min-h-[2.75rem] items-center rounded-full
+                                   border border-[#2f5749] px-7 py-2.5 text-[13px]
+                                   font-medium uppercase tracking-[0.12em] text-[#2f5749]
+                                   transition-colors hover:bg-[#2f5749] hover:text-[#f6f2e8]
+                                   focus-visible:outline-none focus-visible:ring-2
+                                   focus-visible:ring-[#2f5749] focus-visible:ring-offset-2">
+                        {t('blog.showMore', { defaultValue: 'Mostra altri articoli' })}
+                      </button>
+                      <p className="text-[13px] text-foreground/55" aria-live="polite">
+                        {t('blog.showMoreCount', {
+                          shown: items.length - restanti, total: items.length,
+                          defaultValue: '{{shown}} di {{total}}',
+                        })}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
         </Section>
 
-        {/* ── 3. LA LETTERA — il Magazine converte (BN1) ───────── */}
+        {/* MG1 — LA SECONDA META' DELL'INTRODUZIONE, e le porte.
+            Sotto gli articoli e non sopra: chi ha appena scorso le
+            copertine senza trovare la sua strada e' esattamente chi ha
+            bisogno di sentirsi dire da dove partire. Sopra la griglia
+            era una premessa da superare, qui e' una risposta. */}
+        {intro && (intro.paragrafi.length > 1 || intro.porte?.length > 0) && (
+          <Section tone="sand" rhythm="flow" width="max-w-3xl"
+                   labelledBy="mag-cat-piu">
+            <h2 id="mag-cat-piu" className="eyebrow mb-6">
+              {t('blog.catMore', { defaultValue: 'Su questo tema' })}
+            </h2>
+            {intro.paragrafi.slice(1).map((p, i) => (
+              <Lede key={i} size="body" className={i ? 'mt-5' : undefined}>{p}</Lede>
+            ))}
+            {intro.porte?.length > 0 && (
+              <div className="mt-10 border-t border-[#8a7440]/25 pt-8">
+                <p className="eyebrow mb-5">
+                  {t('blog.catStartHere', { defaultValue: 'Da dove partire' })}
+                </p>
+                <ul className="list-none space-y-3 p-0">
+                  {intro.porte.map(porta => (
+                    <li key={porta.to}>
+                      <EditorialCta to={porta.to} variant="quiet">
+                        {porta.label}
+                      </EditorialCta>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </Section>
+        )}
+
+        {/* MG1 — IL CAMBIO DI TEMA, in fondo alla categoria.
+            Prima, arrivati in fondo a una categoria, l'unica strada era
+            il tasto indietro del browser: le pastiglie erano rimaste
+            dodici schermate piu' su. Qui la navigazione visiva torna
+            dov'e' utile, cioe' nel punto in cui uno ha finito di
+            leggere e si chiede cos'altro c'e'. */}
+        {category && categoriesWithArticles.length > 1 && (
+          <Section tone="cream" rhythm="flow" width="max-w-6xl"
+                   labelledBy="mag-altri-temi">
+            <h2 id="mag-altri-temi" className="eyebrow mb-6">
+              {t('blog.catNavOther', { defaultValue: 'Cambia tema' })}
+            </h2>
+            <MagazineCategoryNav
+              categorie={categoriesWithArticles}
+              conteggi={conteggi}
+              attiva={category}
+              totale={totalePubblico}
+            />
+          </Section>
+        )}
+
+        {/* ── 3. LA LETTERA — il Magazine converte (BN1) ─────────
+            Resta anche in fondo: chi arriva qui ha letto tutto e non ha
+            cliccato la versione dentro la griglia, ed e' il momento in
+            cui la proposta costa meno. La versione inline non la
+            sostituisce, la anticipa. */}
         <Section tone="sand" rhythm="flow" width="max-w-2xl">
           <BlogNewsletterCTA category={category || null} />
         </Section>
