@@ -59,6 +59,34 @@ const INTRO = {
     ],
   },
 
+  massaggio: {
+    lede: 'La pratica in cui ci si spoglia davanti a uno sconosciuto, e su cui quasi nessuno spiega cosa sia normale aspettarsi.',
+    paragrafi: [
+      'Sotto la stessa parola stanno cose molto diverse: un\'ora di sfioramenti lenti con gli oli e una seduta di shiatsu in cui vieni premuto con i gomiti hanno in comune il lettino e poco altro. Qui le mettiamo in fila per quello che fanno, non per come suonano.',
+      'E prima delle tecniche viene un confine che riguarda direttamente chi riceve: il massaggio di benessere lo può praticare un operatore non sanitario, quello che tratta una patologia è un atto sanitario e richiede un titolo. Chi ti dice che ti cura la cervicale ha oltrepassato quella linea. Insieme al confine raccontiamo la parte che manca ovunque: il consenso al tocco, la gestione del telo, e cosa puoi interrompere in qualsiasi momento.',
+    ],
+    porte: [
+      { to: '/blog/massaggio-olistico-tipi-cosa-aspettarsi',
+        label: 'Massaggio olistico: i tipi principali e cosa aspettarsi' },
+      { to: '/blog/campane-tibetane-benefici-come-funzionano',
+        label: 'Il massaggio sonoro con le campane appoggiate sul corpo' },
+    ],
+  },
+
+  cammini: {
+    lede: 'L\'unica pratica di questo mondo che puoi cominciare adesso, da solo, senza pagare niente.',
+    paragrafi: [
+      'È probabilmente il motivo per cui se ne parla poco: non c\'è un corso da vendere, non c\'è un attestato da esporre, e in fondo alla pagina non c\'è niente da prenotare. Eppure camminare è fra le pratiche con le prove migliori che raccontiamo: sugli indicatori dello stress la ricerca è solida, e una soglia ricorrente negli studi è intorno alle due ore a settimana passate all\'aperto.',
+      'Qui trovi il bagno di foresta spiegato per come si fa (molto più lentamente di quanto sembri naturale), la camminata meditativa per chi non riesce a stare seduto, e il cammino di più giorni, dove tutti raccontano che qualcosa cambia al terzo.',
+    ],
+    porte: [
+      { to: '/blog/camminare-bagni-di-foresta-cammini',
+        label: 'Camminare come pratica: bagni di foresta, cammini, natura' },
+      { to: '/blog/kit-pratiche-quotidiane-15-minuti',
+        label: 'Il kit delle pratiche quotidiane, quindici minuti al giorno' },
+    ],
+  },
+
   scegliere: {
     lede: 'La parte che nessuno spiega: come si riconosce chi lavora bene, prima di affidargli qualcosa di personale.',
     paragrafi: [
