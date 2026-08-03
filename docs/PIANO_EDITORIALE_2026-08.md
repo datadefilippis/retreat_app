@@ -114,54 +114,107 @@ Lavora su quattro fronti insieme:
 Nove categorie con due pezzi l'una non costruiscono autorevolezza su
 niente.
 
-### Pilastro 1 — RITIRI (il patrimonio che gia' funziona)
-Intento commerciale: e' il pilastro che monetizza al lancio. Si
-allarga per geografia e formato, che e' come si cerca davvero.
+### Pilastro 1 — LE DISCIPLINE (il cuore, deciso dal founder 2/8)
 
-Da scrivere, in ordine di priorita' ipotizzata:
-- Ritiri yoga in Sicilia
-- Ritiri yoga e benessere in Umbria
-- Ritiri in Trentino e sulle Dolomiti
-- Ritiri di silenzio in Italia: cosa aspettarsi
-- Weekend o settimana: quanto deve durare un ritiro
-- Il primo ritiro da sola: come scegliere e cosa sapere
-- Ritiri di capodanno e solstizio
+Il mondo del benessere e' ampio e ne abbiamo raccontato una fetta
+sottile. Questo diventa il pilastro principale, al posto dei ritiri
+geolocalizzati: portare gente che cerca "ritiri yoga in Sicilia" su un
+sito dove non puo' prenotare e' traffico che rimbalza, e il rimbalzo
+insegna a Google che la pagina non serve.
 
-Regola: **minimo 1800 parole, sempre la voce di chi li organizza.**
-Conversione: la Lettera finche' il marketplace e' spento, i ritiri
-prenotabili appena si accende.
+Il vantaggio non e' solo difensivo. **Ogni disciplina ha un
+professionista naturale da citare**, quindi questo pilastro e' quello
+che alimenta meglio la regola della Parte 2 — e ogni articolo diventa
+una scusa vera per bussare a qualcuno: "stiamo scrivendo di kriya
+yoga, tu lo insegni: ci racconti come lo fai?".
 
-### Pilastro 2 — SCEGLIERE E FIDARSI (il territorio nostro)
+Cinque famiglie, piu' un formato ricorrente.
+
+### A. Corpo e respiro
+- Rebirthing: cos'e', come funziona una sessione, a chi si rivolge
+  *(prima in lista: e' la pratica di Valentina, quindi nasce con la
+  voce vera dentro)*
+- Pranayama: la respirazione dello yoga, tecnica per tecnica
+- Respiro e sistema nervoso: cosa succede nel corpo quando rallenti
+- Breathwork *(esiste: da consolidare, 810 parole)*
+
+### B. Yoga, le sue forme
+- Le differenze fra hatha, vinyasa, ashtanga, yin e kundalini
+  *(e' la domanda che si fa chiunque si avvicini: alta ricerca,
+  risposta oggi frammentata su decine di siti)*
+- Kriya yoga: cos'e' e in cosa si distingue
+- Yoga nidra: il sonno consapevole, come funziona una sessione
+- Quale yoga scegliere se parti da zero
+
+### C. Energia e mani
+- Reiki *(esiste: da consolidare, 741 parole)*
+- Pranoterapia: cos'e' e come si svolge un trattamento
+- I chakra: la mappa, da dove viene e come viene usata oggi
+- Campane tibetane e bagno di gong *(esistono)*
+
+### D. Mente e consapevolezza
+- Mindfulness e meditazione: la differenza che quasi nessuno spiega
+- Meditazione camminata
+- Meditazione *(esiste: da consolidare, 780 parole)*
+
+### E. Pratiche da fare da soli
+Il cluster piu' generoso: chi cerca "cosa posso fare a casa" e' a un
+passo dal cercare qualcuno che glielo insegni.
+- Dieci minuti di respiro al mattino: la sequenza
+- Come costruire una pratica quotidiana che duri
+- Il kit delle pratiche quotidiane *(esiste, ed e' l'unico riservato)*
+
+### F. Filosofia e radici
+Il cluster che nessuno in Italia scrive bene, e quello piu' vicino
+alla voce del brand.
+- Gli otto rami dello yoga, spiegati a chi frequenta una lezione
+- Cosa vuol dire "olistico": da dove viene la parola
+- I cinque elementi nelle pratiche orientali
+- Karma e dharma: cosa significano fuori dai modi di dire
+
+### Il formato ricorrente — PENSIERI
+Pezzi brevi (600-900 parole), firmati, su un tema: una riflessione,
+non una guida. E' lo spazio dove il brand ha una voce invece di un
+servizio, ed e' l'unico formato che puo' uscire senza ricerca.
+Non sostituisce le guide: le alterna, e tiene il sito vivo fra
+un pezzo lungo e l'altro.
+
+**Regola per le guide di questo pilastro: minimo 1800 parole.** E'
+il numero che separa una scheda che non entra in pagina da una guida
+che compete. Il difetto misurato oggi (819 parole medie) non e'
+l'argomento: e' la profondita'.
+
+## Pilastro 2 — SCEGLIERE E FIDARSI (il territorio nostro)
 E' la tesi di Aurya e **in Italia non lo presidia nessuno**. Bassa
 concorrenza, massima affinita' col brand, e l'unico pilastro il cui
 sbocco naturale e' la rete e non la newsletter.
 
-Da scrivere:
 - Come capire se un operatore olistico e' serio: cosa guardare
-- Le domande da fare prima di prenotare un ritiro
-- Attestati, diplomi e sigle: cosa valgono davvero in Italia
+- Le domande da fare prima di prenotare un percorso
+- Attestati, diplomi e sigle: cosa valgono in Italia
 - La legge 4/2013 spiegata a chi cerca un operatore
 - Quanto costa una seduta e perche' i prezzi sono cosi' diversi
-- Quando un percorso olistico NON basta: quando serve un medico
+- Quando un percorso olistico non basta: quando serve un medico
 
 L'ultimo e' il piu' importante dei sei. Dire dove finisce il nostro
 campo e' la cosa che nessun concorrente scrivera' mai, ed e'
 esattamente il capitolo "Cosa non faremo mai" trasformato in servizio.
 
-### Pilastro 3 — PRATICHE (da schede a guide)
-Non si aggiungono schede: si **consolidano**. Tre pratiche, portate da
-800 a 2000+ parole, con struttura a domande, la voce di chi le fa e i
-dati verificabili. Meglio tre guide che entrano in pagina che dodici
-che non entrano.
+## I RITIRI: si smette di scriverne, non si cancellano
+Decisione del founder: niente piu' articoli geografici finche' non ci
+sono ritiri da prenotare. Condivisa.
 
-Quali tre: si scelgono in base a **due criteri incrociati** — cosa
-gia' porta traffico (Search Console) e quali pratiche sono
-rappresentate nella rete reale. Senza il primo dato, l'ipotesi e'
-Reiki, Meditazione e Cerchi di donne.
-Le altre nove restano dove sono: non fanno danno, ma non ci si
-investe piu'.
+Sui cinque gia' pubblicati la raccomandazione e' diversa: **non
+cancellarli**. Sono le pagine piu' forti che abbiamo (2114 parole
+medie, gia' indicizzate) e l'autorita' accumulata non si recupera:
+cancellarle significa riscriverle da zero al lancio e riaspettare
+mesi. Se il fastidio e' che portano gente che non trova niente, la
+leva e' la porta in fondo all'articolo, non la pagina.
+Se proprio devono sparire dalla vista, la strada e' **spubblicarle**
+(`published: false`): escono dal sito, il testo resta, si riaccendono
+con un clic il giorno del lancio.
 
-### Fuori dal Magazine — GUIDE PER I PROFESSIONISTI
+## Fuori dal Magazine — GUIDE PER I PROFESSIONISTI
 Sezione separata (fatta il 2/8, /blog/categoria/operatori). Non e' un
 pilastro editoriale, e' uno strumento di reclutamento: i tre pezzi
 buoni ci sono, se ne aggiungono solo quando servono a una
@@ -186,13 +239,14 @@ Pubblicazione distribuita, mai a blocchi: dopo l'11 luglio il sito
 deve sembrare vivo, non archiviato.
 
 Primi tre mesi, proposta:
-- **mese 1** — 2 guide del pilastro "Scegliere e fidarsi" + 2
-  interviste. Motivo: e' il pilastro che porta alla rete, ed e' la
-  rete che serve adesso.
-- **mese 2** — 1 guida "Scegliere", 1 geografica (Sicilia o Umbria),
-  2 interviste. Si comincia a nutrire il pilastro commerciale.
-- **mese 3** — 2 geografiche + 2 interviste, e il consolidamento
-  della prima scheda in guida.
+- **mese 1** — Rebirthing (con la voce di Valentina) + "Le differenze
+  fra hatha, vinyasa, ashtanga, yin e kundalini" + 2 interviste.
+  Motivo: il primo nasce gia' con la voce vera dentro, il secondo e'
+  la domanda che si fa chiunque si avvicini allo yoga.
+- **mese 2** — 1 guida "Scegliere e fidarsi" + 1 disciplina (pranayama
+  o yoga nidra) + 2 interviste + 1 Pensiero.
+- **mese 3** — 2 discipline + 2 interviste + 1 Pensiero, e il
+  consolidamento di Reiki da scheda a guida.
 
 ---
 
