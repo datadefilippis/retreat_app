@@ -6275,9 +6275,13 @@ class TestMagazineSw4:
         assert "'lead'" in src and "'compact'" in src, \
             "servono l'articolo di apertura e i secondari"
         # la roba vecchia e' uscita davvero
-        for morto in ("hero-blog.webp", "rounded-2xl border border-gray-200",
-                      "hover:shadow-md", "CATEGORY_TONES", "blog.readMore",
-                      "text-hero-shadow"):
+        # `hero-blog.webp` e `text-hero-shadow` sono usciti da questo
+        # elenco: non sono residui della pagina vecchia, li ha aggiunti
+        # DS3 di proposito (l'apertura fotografica del Magazine e
+        # l'ombra che tiene leggibile il titolo sulla foto). Una guardia
+        # che vieta una decisione presa dopo di lei non protegge niente.
+        for morto in ("rounded-2xl border border-gray-200",
+                      "hover:shadow-md", "CATEGORY_TONES", "blog.readMore"):
             assert morto not in src, f"residuo della pagina vecchia: {morto}"
         # i fondi: crema, bianco, sabbia. Nessuna ancora verde piena.
         assert 'tone="cream"' in src and 'tone="paper"' in src
@@ -6288,32 +6292,51 @@ class TestMagazineSw4:
         """Titolo nuovo: una verita' sul mondo, poi il nostro gesto.
         Due <TitleLine>, un solo h1, e la riga su cosa ci trovi."""
         src = self._page()
-        assert "Le cose serie vanno spiegate." in src, \
-            "manca la prima meta' del dispositivo a coppia"
-        assert "Scriviamo." in src, "manca il gesto"
-        assert src.index("Le cose serie") < src.index("Scriviamo."), \
+        # MG3 — il testo del titolo vive in i18n e cambia: la guardia
+        # controlla il DISPOSITIVO (due meta', in quest'ordine), non le
+        # parole. Una guardia sulle parole si rompe a ogni revisione di
+        # copy e insegna a disattivarla.
+        assert "blog.lead1" in src, "manca la prima meta' del dispositivo"
+        assert "blog.lead2" in src, "manca il gesto"
+        assert src.index("blog.lead1") < src.index("blog.lead2"), \
             "mai l'ordine inverso: se si parte da noi diventa pubblicita'"
         assert self._copy().count("<TitleLine>") == 2, \
             "il titolo e' due frasi, non un a-capo estetico"
-        assert src.count('as="h1"') == 1, "l'h1 e' uno solo"
+        # MG1 — nel sorgente gli h1 sono DUE perche' sono i due rami di
+        # un ternario: l'indice porta la coppia sulla fotografia, la
+        # pagina di categoria il nome della categoria in una testata
+        # compatta. A schermo ne renderizza sempre uno solo — verificato
+        # nel browser su /blog e su /blog/categoria/yoga.
+        assert src.count('as="h1"') == 2, \
+            "i rami dell'apertura sono due: indice e categoria"
+        assert src.count('id="mag-title"') == 2, \
+            "entrambi i rami portano l'id che labella l'apertura"
         # il vecchio titolo generico e' uscito dall'apertura
         assert "blog.title" not in src, \
             "l'apertura non usa piu' il titolo generico 'Il Magazine di Aurya'"
-        # cosa ci trovi, senza scorciatoie
-        assert "Pratiche, luoghi e persone" in src
-        assert "Senza scorciatoie." in src
+        # cosa ci trovi
+        assert "blog.subtitle" in src
 
     def test_sw4_chip_sobri_e_rotta_vera(self):
-        """I filtri restano, ma come chip-link: la categoria e' una
-        rotta indicizzabile, non un bottone che naviga."""
-        src = self._page()
-        assert "to={`/blog/categoria/${slug}`}" in src, \
-            "il chip deve essere un link alla rotta di categoria"
-        assert "useNavigate" not in src, \
+        """MG1 — i filtri hanno cambiato vestito, non natura: da fila di
+        pastiglie testuali a schede colorate col segno della categoria
+        (MagazineCategoryNav). Con dodici categorie una fila di parole
+        costringeva a leggerle tutte per trovarne una.
+
+        Quello che deve restare vero e' quello che la guardia proteggeva
+        davvero: la categoria e' una ROTTA indicizzabile e non un
+        bottone che naviga, e quella corrente si dice anche a chi
+        ascolta."""
+        nav = (FRONTEND_SRC / "features" / "storefront" / "components"
+               / "MagazineCategoryNav.jsx").read_text()
+        assert "`/blog/categoria/${slug}`" in nav, \
+            "la scheda deve essere un link alla rotta di categoria"
+        assert "useNavigate" not in nav, \
             "niente navigate() nei filtri: sono link"
-        assert "rounded-full" in src, "i chip sono pillole, non bottoni"
-        assert "aria-current" in src, "il chip attivo va detto anche a chi ascolta"
-        assert 'data-testid="blog-category-chips"' in src
+        assert "aria-current" in nav, \
+            "la categoria corrente va detta anche a chi ascolta"
+        assert 'data-testid="mag-cat-nav"' in nav
+        assert 'data-testid="mag-cat-card"' in nav
 
     def test_sw4_stati_vuoti_onesti(self):
         """Nessuna promessa nel vuoto: si dice che non c'e' niente,
@@ -6423,18 +6446,24 @@ class TestMagazineSw4:
                 f"trattino lungo nel copy del Magazine: {val[:40]}"
 
     def test_sw4_i18n_x4(self):
+        """MG3 — la guardia chiedeva le chiavi del Magazine in tutte e
+        quattro le lingue. Dal 2/8/2026 il sito pubblico e' SOLO
+        ITALIANO (decisione del founder): i contenuti nuovi non si
+        traducono piu' x4, e pretendere la parita' significava tenere la
+        suite rossa per abitudine — che e' il modo migliore per smettere
+        di leggerla.
+
+        Resta il controllo che conta: l'italiano e' completo e nessuna
+        sua voce e' vuota. Se un giorno torna il multilingua, il ciclo
+        di lavoro parte da qui."""
         src = self._page()
         it = self._blocco("it")
         for chiave in ("eyebrow", "lead1", "lead2", "subtitle",
                        "catSubtitle", "moreTitle", "empty", "emptyCat",
                        "gatedBadge", "allArticles"):
             assert it.get(chiave), f"[it] blog.{chiave} mancante"
-        for lang in self.LOCALES:
-            blocco = self._blocco(lang)
-            mancanti = set(it) - set(blocco)
-            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)}"
-            for k, v in blocco.items():
-                assert v and v.strip(), f"[{lang}] blog.{k} vuota"
+        for k, v in it.items():
+            assert v and v.strip(), f"[it] blog.{k} vuota"
         # i defaultValue inline sono l'italiano vero, non una variante
         for k, v in it.items():
             if f"blog.{k}" in src:

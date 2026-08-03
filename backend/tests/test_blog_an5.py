@@ -420,8 +420,12 @@ class TestMagazineSw4b:
         assert "spalla" not in src, \
             "la colonna di miniature accanto all'apertura e' tornata"
         # l'impianto editoriale di SW4 resta
-        for pezzo in ("Le cose serie vanno spiegate.", "Scriviamo.",
-                      'data-testid="blog-category-chips"', "aria-current",
+        for pezzo in ("blog.lead1", "blog.lead2",
+                      # MG1 — i filtri sono usciti dalla pagina e vivono
+                      # in MagazineCategoryNav: qui si controlla che la
+                      # pagina li monti ancora, il resto lo verifica la
+                      # guardia sul componente in test_listino_tw.
+                      "<MagazineCategoryNav",
                       'data-testid="blog-empty"', 'data-testid="blog-card-gated"',
                       "'lead'", "'compact'"):
             assert pezzo in src, f"SW4 perso per strada: {pezzo}"

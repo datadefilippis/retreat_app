@@ -10,8 +10,9 @@
  *
  * Tre battute, nessuno stile nuovo:
  *   1. APERTURA   il dispositivo a coppia del Blueprint, cap. 9:
- *                 "Le cose serie vanno spiegate." (una verita' sul
- *                 mondo) e "Scriviamo." (il nostro gesto). Sotto,
+ *                 "Il mondo del benessere e' largo." (una verita'
+ *                 sul mondo) e "Questa e' la mappa." (il nostro
+ *                 gesto). Sotto,
  *                 cosa ci trovi; poi i filtri come chip sobri.
  *   2. LA VETRINA fondo bianco, come la sezione "Dal Magazine" della
  *                 home ma piu' ampia: l'articolo di apertura con la
@@ -32,8 +33,8 @@
  * vetrina resta quella approvata dal founder (copertina larga in
  * apertura, poi due per riga con la copertina grande e il testo sotto):
  * quello che mancava era il CARATTERE attorno. Tre interventi:
- *   1. APERTURA FOTOGRAFICA. La coppia "Le cose serie vanno spiegate. /
- *      Scriviamo." stava sopra il crema vuoto. Ora sta DENTRO
+ *   1. APERTURA FOTOGRAFICA. La coppia in apertura stava sopra il
+ *      crema vuoto. Ora sta DENTRO
  *      `hero-blog` (l'assegnazione del ciclo DS per il Magazine), che e'
  *      la foto piu' scura del magazzino dopo r04: velo calcolato, non
  *      sperato (misure sotto). Sulla pagina di categoria cambia il
@@ -315,10 +316,10 @@ export default function BlogIndexPage() {
             <DisplayTitle as="h1" id="mag-title" size="heroLines" measure="lines"
                           className="text-hero-shadow">
               <TitleLine>
-                {t('blog.lead1', { defaultValue: 'Le cose serie vanno spiegate.' })}
+                {t('blog.lead1', { defaultValue: 'Il mondo del benessere è largo.' })}
               </TitleLine>
               <TitleLine>
-                {t('blog.lead2', { defaultValue: 'Scriviamo.' })}
+                {t('blog.lead2', { defaultValue: 'Questa è la mappa.' })}
               </TitleLine>
             </DisplayTitle>
           </PhotoOpener>
@@ -338,7 +339,7 @@ export default function BlogIndexPage() {
             <div data-testid="mag-soglia">
               <div className="max-w-3xl">
                 <Lede size="lead">
-                  {t('blog.subtitle', { defaultValue: 'Pratiche, luoghi e persone, raccontati per quello che sono. Senza scorciatoie.' })}
+                  {t('blog.subtitle', { defaultValue: 'Discipline, pratiche e come si sceglie chi ti accompagna. Cosa sono, come funzionano, cosa aspettarsi.' })}
                 </Lede>
                 <BrandPayoff tone="cream" size="sm" className="mt-8" />
               </div>
