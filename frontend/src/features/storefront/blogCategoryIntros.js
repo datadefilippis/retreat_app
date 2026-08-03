@@ -36,10 +36,26 @@ const INTRO = {
       'Qui raccontiamo lo yoga per quello che è nella pratica: cosa succede in una lezione, che ritmo ha, cosa lascia addosso. E anche la parte che in Occidente si perde di solito, perché le posizioni sono solo uno degli otto rami di cui è fatto.',
     ],
     porte: [
+      { to: '/blog/yoga-cose-da-dove-viene-come-cominciare',
+        label: "Yoga: cos'è, da dove viene e come cominciare" },
       { to: '/blog/differenze-tipi-di-yoga-hatha-vinyasa-ashtanga-yin-kundalini',
         label: 'Le differenze fra hatha, vinyasa, ashtanga, yin e kundalini' },
-      { to: '/blog/meditazione-per-chi-inizia-guida-semplice',
-        label: 'Meditazione per chi inizia' },
+      { to: '/blog/yoga-nidra-cose-come-funziona-una-sessione',
+        label: 'Yoga nidra, la pratica che si fa da sdraiati' },
+    ],
+  },
+
+  ayurveda: {
+    lede: 'In India è una laurea di cinque anni e mezzo. Da noi arriva quasi sempre da una porta laterale: un massaggio con l\'olio caldo, un test online, un barattolo di ashwagandha.',
+    paragrafi: [
+      'Sono tre frammenti di un sistema intero, che si occupa insieme di alimentazione, sonno, routine, preparati vegetali e trattamenti manuali. La sua logica di fondo è rovesciata rispetto alla nostra: invece di partire dal sintomo per cercare il rimedio, parte dalla persona e guarda cosa nella sua vita alimenta lo squilibrio. È il motivo per cui due persone con lo stesso disturbo possono ricevere indicazioni opposte.',
+      'Qui lo raccontiamo per intero, comprese le due cose che in italiano si leggono di rado: che chi pratica ayurveda in Italia non è un medico, e che una parte della farmacopea tradizionale contiene metalli pesanti per scelta, non per contaminazione. La parte alimentare e comportamentale, invece, non ha controindicazioni e si prova stasera.',
+    ],
+    porte: [
+      { to: '/blog/ayurveda-cose-i-tre-dosha-cosa-aspettarsi',
+        label: "Ayurveda: cos'è, i tre dosha e cosa aspettarsi da una visita" },
+      { to: '/blog/alimentazione-ayurvedica-principi-sei-sapori',
+        label: 'Alimentazione ayurvedica: i principi e i sei sapori' },
     ],
   },
 
@@ -52,6 +68,8 @@ const INTRO = {
     porte: [
       { to: '/blog/come-capire-se-un-operatore-olistico-e-serio',
         label: 'Come capire se un operatore olistico è serio' },
+      { to: '/blog/domande-da-fare-prima-di-prenotare-un-ritiro',
+        label: 'Le domande da fare prima di prenotare un ritiro' },
     ],
   },
 

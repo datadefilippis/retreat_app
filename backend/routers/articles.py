@@ -233,8 +233,10 @@ async def _autogen_cover(slug: str,
         from services.article_cover import (render_article_cover,
                                             store_article_cover)
         label = ARTICLE_CATEGORIES.get(category or "")
+        # lo slug e' il seme della variazione: due articoli della stessa
+        # categoria condividono colore e segno, non il file
         data = await asyncio.to_thread(render_article_cover, None,
-                                       category, label)
+                                       category, label, slug)
         if not data:
             return None
         return await asyncio.to_thread(store_article_cover, slug, data)

@@ -28,12 +28,18 @@ ARTICLE_LANGS = ("en", "de", "fr")
 ARTICLE_EXTRA_CATEGORIES = {
     "ritiri": "Mondo ritiri",           # scegliere, prepararsi, costi
     "energia": "Pratiche energetiche",  # reiki, tarocchi, tema natale...
-    "operatori": "Per gli operatori",   # B2B: la CTA converte alla rete
+    "operatori": "Per i professionisti",  # B2B: la CTA converte alla rete
     # PE6 — il pilastro "Scegliere e fidarsi" (piano editoriale, Parte
     # 3): come riconoscere chi lavora bene, cosa valgono attestati e
     # sigle, quando serve un medico. E' il territorio del brand e
     # l'unico cluster il cui sbocco naturale e' la rete, non la lettera.
     "scegliere": "Scegliere e fidarsi",
+    # NA2 — l'ayurveda non entra sotto "massaggio" (che nella tassonomia
+    # dei ritiri e' bodywork) ne' sotto "energia": e' un sistema intero,
+    # con una diagnostica, una dietetica e una farmacopea sue. Stanza
+    # propria, aperta con due pezzi perche' una categoria con un
+    # articolo solo e' una stanza vuota.
+    "ayurveda": "Ayurveda",
 }
 ARTICLE_CATEGORIES = {**RETREAT_CATEGORIES, **ARTICLE_EXTRA_CATEGORIES}
 

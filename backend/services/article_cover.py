@@ -71,6 +71,7 @@ EDITORIAL_PALETTES = {
     "scegliere": ((58, 70, 96),   (126, 142, 184)),   # blu notte: la
     # tonalita' piu' fredda del Magazine, perche' e' il cluster in cui
     # si ragiona invece di praticare.
+    "ayurveda":  ((104, 66, 44),   (188, 132, 86)),   # rame e curcuma
 }
 
 CREAM = (246, 243, 236)
@@ -246,12 +247,37 @@ def _geo_crossroads(draw, cx, cy, R, color, w=3):
     _circle(draw, ox, oy, R * 0.09, color, w)
 
 
+def _geo_three_doshas(draw, cx, cy, R, color, w=3):
+    """Ayurveda — i tre dosha: tre cerchi uguali disposti a triangolo e
+    intersecati, dentro il cerchio della costituzione che li contiene.
+    Uguali perche' nessuno dei tre e' il migliore, intersecati perche'
+    in ogni persona ci sono tutti e tre in proporzioni diverse."""
+    _circle(draw, cx, cy, R * 0.95, color, max(2, w - 2))
+    r = R * 0.42
+    for gradi in (90, 210, 330):
+        rad = math.radians(gradi)
+        _circle(draw, cx + math.cos(rad) * r * 0.86,
+                cy - math.sin(rad) * r * 0.86, r, color, w)
+
+
 EDITORIAL_GEOMETRY = {
     "ritiri": _geo_circle_of_people,
     "energia": _geo_rays,
     "operatori": _geo_square_in_circle,
     "scegliere": _geo_crossroads,
+    "ayurveda": _geo_three_doshas,
 }
+
+
+# Non tutti i segni si possono girare. La triplice luna si legge da
+# sinistra a destra (crescente, piena, calante) e capovolta racconta il
+# contrario; il bivio ha le strade che si aprono VERSO L'ALTO, ed e' il
+# suo significato. A questi due la variazione concede un'oscillazione
+# di pochi gradi, quel tanto che basta perche' due copertine vicine non
+# sembrino la stessa immagine. Tutti gli altri sono simmetrici rispetto
+# al centro e possono girare liberi.
+_SEGNI_CON_UN_VERSO = {"_geo_triple_moon", "_geo_crossroads"}
+_OSCILLAZIONE = 9.0        # gradi, in piu' o in meno
 
 
 def palette_for(category: Optional[str]):
@@ -270,6 +296,46 @@ def geometry_for(category: Optional[str]):
             or _geo_aura)
 
 
+# ─── La variazione per articolo ────────────────────────────────────────
+# SW4 aveva reso la cover un SIGILLO DI CATEGORIA, e la conseguenza non
+# voluta era che ogni articolo della stessa categoria usciva con un file
+# identico al byte: cinque tessere yoga affiancate nel Magazine
+# sembravano un errore di caricamento, non una collana.
+#
+# La correzione non tocca l'identita': colore e segno restano quelli
+# della categoria, perche' sono il modo in cui si riconosce a colpo
+# d'occhio dove si sta. Cambiano tre cose minori, derivate dallo slug e
+# quindi stabili nel tempo: da dove arriva la luce, di quanto e'
+# ruotato il segno, quanto e' grande. Una famiglia in cui nessun membro
+# e' il gemello di un altro.
+_VARIAZIONE_FERMA = {"luce_x": 0.50, "luce_y": 0.16, "rotazione": 0.0,
+                     "scala": 1.0, "tono": 0.0}
+
+
+def variation_for(seed: Optional[str]) -> dict:
+    """I parametri di variazione di un articolo, dal suo slug."""
+    if not seed:
+        return dict(_VARIAZIONE_FERMA)
+    h = hashlib.sha256(seed.encode("utf-8")).digest()
+    return {
+        "luce_x": 0.30 + h[0] / 255 * 0.40,     # il bagliore si sposta
+        "luce_y": 0.09 + h[1] / 255 * 0.17,     # e sale o scende
+        "rotazione": h[2] / 255 * 360.0,        # il segno gira
+        "scala": 0.86 + h[3] / 255 * 0.26,      # e respira
+        "tono": -0.09 + h[4] / 255 * 0.18,      # il fondo si accende
+    }
+
+
+def _tinta(colore, tono: float):
+    """Schiarisce o scurisce restando dentro la famiglia."""
+    if not tono:
+        return tuple(colore)
+    verso = 255 if tono > 0 else 0
+    k = abs(tono)
+    return tuple(max(0, min(255, round(c + (verso - c) * k)))
+                 for c in colore)
+
+
 # ─── Composizione ──────────────────────────────────────────────────────
 
 def _load_font(name: str, size: int, weight: Optional[int] = None):
@@ -284,13 +350,14 @@ def _load_font(name: str, size: int, weight: Optional[int] = None):
 
 
 def _radial_background(base: Tuple[int, int, int],
-                       glow: Tuple[int, int, int]):
+                       glow: Tuple[int, int, int],
+                       luce_x: float = 0.50, luce_y: float = 0.16):
     """Gradiente radiale dall'alto al centro: SW4 lo sposta dal
     quadrante alto-destro all'asse centrale, perché adesso la
     composizione è simmetrica e nella miniatura 4:3 si vede solo la
     fascia di mezzo (un bagliore laterale li' finiva tagliato via)."""
     from PIL import Image
-    cx, cy = WIDTH * 0.5, HEIGHT * 0.16
+    cx, cy = WIDTH * luce_x, HEIGHT * luce_y
     max_d = math.hypot(WIDTH, HEIGHT) * 0.75
     # campiona a passi di 4 e lascia che il resize lisci: 75× più
     # veloce del per-pixel pieno, invisibile a occhio dopo LANCZOS
@@ -332,7 +399,8 @@ _GLYPH_W = 5
 
 def render_article_cover(title: Optional[str] = None,
                          category: Optional[str] = None,
-                         category_label: Optional[str] = None) -> Optional[bytes]:
+                         category_label: Optional[str] = None,
+                         seed: Optional[str] = None) -> Optional[bytes]:
     """Rende la cover come bytes WebP, o None se l'ambiente non può
     (Pillow/font assenti): il chiamante NON deve mai fallire per noi.
 
@@ -352,8 +420,12 @@ def render_article_cover(title: Optional[str] = None,
     try:
         from PIL import Image, ImageDraw
 
+        var = variation_for(seed)
         base, glow = palette_for(category)
-        img = _radial_background(base, glow).convert("RGBA")
+        base = _tinta(base, var["tono"])
+        glow = _tinta(glow, var["tono"])
+        img = _radial_background(base, glow,
+                                 var["luce_x"], var["luce_y"]).convert("RGBA")
         cx = WIDTH // 2
 
         # ── layer delicato: texture, cornice, medaglione (con alpha) ──
@@ -386,9 +458,29 @@ def render_article_cover(title: Optional[str] = None,
                        cx + _MEDAL_R, _MEDAL_CY + _MEDAL_R),
                       outline=CREAM + (120,), width=3)
 
-        # la geometria sacra della categoria: al centro, tratto pieno
+        # La geometria sacra della categoria, al centro e a tratto pieno.
+        # Vive su un suo strato quadrato perche' la variazione per
+        # articolo la ruota: disegnarla direttamente su `fine` non
+        # permetterebbe di girarla senza girare anche cornice e
+        # medaglione. Lo strato e' sovradimensionato (×2) cosi' la
+        # rotazione non taglia gli angoli della figura, e viene ridotto
+        # con LANCZOS, che al passaggio ammorbidisce anche la scaletta
+        # dei tratti obliqui.
         geometry = geometry_for(category)
-        geometry(fdraw, cx, _MEDAL_CY, _GLYPH_R, CREAM + (232,), _GLYPH_W)
+        gradi = var["rotazione"]
+        if geometry.__name__ in _SEGNI_CON_UN_VERSO:
+            gradi = (gradi / 180.0 - 1.0) * _OSCILLAZIONE
+        # disegnato a 3× e poi ridotto: la rotazione di una figura a
+        # tratto sottile, fatta alla misura finale, lascia i bordi
+        # scalettati. Il sovracampionamento li scioglie.
+        k, lato = 3, _GLYPH_R * 4
+        segno = Image.new("RGBA", (lato * k, lato * k), (0, 0, 0, 0))
+        geometry(ImageDraw.Draw(segno), lato * k // 2, lato * k // 2,
+                 _GLYPH_R * var["scala"] * k, CREAM + (232,), _GLYPH_W * k)
+        if gradi:
+            segno = segno.rotate(gradi, Image.BICUBIC)
+        segno = segno.resize((lato, lato), Image.LANCZOS)
+        fine.alpha_composite(segno, (cx - lato // 2, _MEDAL_CY - lato // 2))
 
         img = Image.alpha_composite(img, fine)
         draw = ImageDraw.Draw(img)
