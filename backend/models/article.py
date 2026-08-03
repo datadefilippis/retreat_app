@@ -29,6 +29,11 @@ ARTICLE_EXTRA_CATEGORIES = {
     "ritiri": "Mondo ritiri",           # scegliere, prepararsi, costi
     "energia": "Pratiche energetiche",  # reiki, tarocchi, tema natale...
     "operatori": "Per gli operatori",   # B2B: la CTA converte alla rete
+    # PE6 — il pilastro "Scegliere e fidarsi" (piano editoriale, Parte
+    # 3): come riconoscere chi lavora bene, cosa valgono attestati e
+    # sigle, quando serve un medico. E' il territorio del brand e
+    # l'unico cluster il cui sbocco naturale e' la rete, non la lettera.
+    "scegliere": "Scegliere e fidarsi",
 }
 ARTICLE_CATEGORIES = {**RETREAT_CATEGORIES, **ARTICLE_EXTRA_CATEGORIES}
 

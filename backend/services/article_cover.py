@@ -68,6 +68,9 @@ EDITORIAL_PALETTES = {
     "ritiri":    ((96, 78, 50),   (172, 142, 88)),    # oro/ocra caldo
     "energia":   ((78, 62, 108),  (152, 132, 190)),
     "operatori": ((44, 74, 66),   (110, 142, 126)),   # salvia profondo
+    "scegliere": ((58, 70, 96),   (126, 142, 184)),   # blu notte: la
+    # tonalita' piu' fredda del Magazine, perche' e' il cluster in cui
+    # si ragiona invece di praticare.
 }
 
 CREAM = (246, 243, 236)
@@ -225,10 +228,29 @@ CATEGORY_GEOMETRY = {
     "aziendale": _geo_metatron,
 }
 
+def _geo_crossroads(draw, cx, cy, R, color, w=3):
+    """Scegliere — il bivio: un punto solo in basso e quattro strade
+    che si aprono verso l'alto fino al bordo. Il cerchio esterno resta
+    perche' la scelta avviene sempre dentro un campo che non si
+    controlla; il punto di partenza e' uno perche' chi sceglie e' uno.
+    Le rette partono dal punto e ARRIVANO sul cerchio: e' quello che
+    rende la figura leggibile anche a 128 pixel."""
+    _circle(draw, cx, cy, R * 0.92, color, max(2, w - 2))
+    ox, oy = cx, cy + R * 0.6                       # il punto di partenza
+    for gradi in (128, 104, 76, 52):                # ventaglio verso l'alto
+        rad = math.radians(gradi)
+        draw.line([(ox, oy),
+                   (cx + math.cos(rad) * R * 0.88,
+                    cy - math.sin(rad) * R * 0.88)],
+                  fill=color, width=w)
+    _circle(draw, ox, oy, R * 0.09, color, w)
+
+
 EDITORIAL_GEOMETRY = {
     "ritiri": _geo_circle_of_people,
     "energia": _geo_rays,
     "operatori": _geo_square_in_circle,
+    "scegliere": _geo_crossroads,
 }
 
 
