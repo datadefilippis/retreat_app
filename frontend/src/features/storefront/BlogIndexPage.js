@@ -74,6 +74,7 @@ import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import BlogNewsletterCTA from './components/BlogNewsletterCTA';
 import { PRO_CATEGORY } from './BlogArticlePage';
+import introPerCategoria from './blogCategoryIntros';
 import useSeoMeta from './lib/useSeoMeta';
 import BrandPayoff from '../../components/BrandPayoff';
 import {
@@ -113,6 +114,8 @@ export default function BlogIndexPage() {
   const [loading, setLoading] = useState(true);
 
   const catLabel = (slug) => (slug ? t(`categories.${slug}`, { defaultValue: slug }) : '');
+  /* PC1 — l'introduzione della categoria, se ne ha una. */
+  const intro = introPerCategoria(category);
   useSeoMeta({
     title: category
       ? t('blog.seoCatTitle', { cat: catLabel(category), defaultValue: '{{cat}}: articoli e guide | Il Magazine di Aurya' })
@@ -233,7 +236,8 @@ export default function BlogIndexPage() {
           <div data-testid="mag-soglia">
             <Lede size="lead">
               {category
-                ? t('blog.catSubtitle', { defaultValue: "Quello che abbiamo scritto su questo tema." })
+                ? (intro?.lede
+                   || t('blog.catSubtitle', { defaultValue: "Quello che abbiamo scritto su questo tema." }))
                 : t('blog.subtitle', { defaultValue: "Pratiche, luoghi e persone, raccontati per quello che sono. Senza scorciatoie." })}
             </Lede>
             <BrandPayoff tone="cream" size="sm" className="mt-8" />
@@ -268,6 +272,46 @@ export default function BlogIndexPage() {
             )}
           </div>
         </Section>
+
+        {/* ── L'INTRODUZIONE DELLA CATEGORIA (PC1) ─────────────────
+            Una pagina di categoria che elenca e basta non e' un hub,
+            e' un indice: non dice di che si tratta e non passa
+            autorita' a nessuno. Qui l'argomento viene presentato e
+            le porte portano ai figli con un'ancora vera, che e' il
+            tipo di link che conta.
+            Sta DOPO le pastiglie (da una categoria si deve poter
+            tornare subito indietro) e PRIMA della griglia, perche'
+            e' l'inquadramento di quello che si sta per vedere.
+            Le categorie senza introduzione restano come prima. */}
+        {intro && (
+          <Section tone="sand" rhythm="flow" width="max-w-3xl"
+                   labelledBy="mag-cat-intro">
+            <h2 id="mag-cat-intro" className="sr-only">
+              {catLabel(category)}
+            </h2>
+            {intro.paragrafi.map((p, i) => (
+              <Lede key={i} size="body" className={i ? 'mt-5' : undefined}>
+                {p}
+              </Lede>
+            ))}
+            {intro.porte?.length > 0 && (
+              <div className="mt-10 border-t border-[#8a7440]/25 pt-8">
+                <p className="eyebrow mb-5">
+                  {t('blog.catStartHere', { defaultValue: 'Da dove partire' })}
+                </p>
+                <ul className="list-none space-y-3 p-0">
+                  {intro.porte.map(porta => (
+                    <li key={porta.to}>
+                      <EditorialCta to={porta.to} variant="quiet">
+                        {porta.label}
+                      </EditorialCta>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </Section>
+        )}
 
         {/* ── 2. LA VETRINA ────────────────────────────────────────
             Bianco pieno, come la sezione "Dal Magazine" della home:
