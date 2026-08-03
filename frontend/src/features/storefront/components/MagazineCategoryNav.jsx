@@ -33,6 +33,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import CategorySigil from './CategorySigil';
 
 /* Il calco delle palette del generatore di copertine. */
 const COLORE = {
@@ -75,8 +76,9 @@ export default function MagazineCategoryNav({
         to={slug ? `/blog/categoria/${slug}` : '/blog'}
         aria-current={corrente ? 'page' : undefined}
         data-testid="mag-cat-card"
-        className={`group flex h-full min-h-[5.5rem] flex-col justify-between gap-2
-                    rounded-xl px-4 py-3.5 transition-[transform,box-shadow] duration-200
+        className={`group relative flex h-full min-h-[5.5rem] flex-col justify-between
+                    gap-2 overflow-hidden rounded-xl px-4 py-3.5
+                    transition-[transform,box-shadow] duration-200
                     focus-visible:outline-none focus-visible:ring-2
                     focus-visible:ring-offset-2 focus-visible:ring-offset-background
                     motion-safe:hover:-translate-y-0.5
@@ -90,8 +92,21 @@ export default function MagazineCategoryNav({
           '--tw-ring-color': colore,
         }}
       >
-        <span className="text-[0.95rem] font-medium leading-snug">{nome}</span>
-        <span className="text-[11px] uppercase tracking-[0.12em] opacity-75">
+        {/* MG2 — il segno della categoria, lo stesso che sta sulle sue
+            copertine. Sborda dall'angolo (il contenitore taglia) e sta
+            al 22%: e' un riconoscimento, non un'illustrazione, e deve
+            restare sotto il nome senza contendergli la lettura.
+            Cresce appena al passaggio del mouse, che e' l'unico
+            momento in cui vale la pena guardarlo. */}
+        {slug && (
+          <CategorySigil
+            categoria={slug}
+            className="pointer-events-none absolute -right-5 -top-5 h-24 w-24 opacity-[0.22]
+                       transition-transform duration-300 motion-safe:group-hover:scale-110"
+          />
+        )}
+        <span className="relative text-[0.95rem] font-medium leading-snug">{nome}</span>
+        <span className="relative text-[11px] uppercase tracking-[0.12em] opacity-75">
           {n === 1
             ? t('blog.catCountOne', { defaultValue: '1 articolo' })
             : t('blog.catCount', { count: n, defaultValue: '{{count}} articoli' })}

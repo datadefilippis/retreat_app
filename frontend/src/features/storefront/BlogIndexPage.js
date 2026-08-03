@@ -74,6 +74,7 @@ import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import BlogNewsletterCTA from './components/BlogNewsletterCTA';
 import MagazineCategoryNav, { coloreCategoria } from './components/MagazineCategoryNav';
+import CategorySigil from './components/CategorySigil';
 import { PRO_CATEGORY } from './BlogArticlePage';
 import introPerCategoria from './blogCategoryIntros';
 import useSeoMeta from './lib/useSeoMeta';
@@ -248,15 +249,31 @@ export default function BlogIndexPage() {
              d'occhio, abbastanza poco da non litigare col crema del
              resto della pagina. */
           <header data-testid="mag-open-cat"
-                  className="pb-10 pt-12 lg:pb-12 lg:pt-14"
+                  className="relative overflow-hidden pb-10 pt-12 lg:pb-12 lg:pt-14"
                   style={{ backgroundColor: `${coloreCategoria(category)}1c` }}>
+            {/* MG2 — il segno della categoria in grande, come filigrana
+                sulla destra. E' lo stesso disegno che sta sulle
+                copertine di tutti gli articoli qui sotto: chi scende lo
+                ritrova dodici volte in piccolo, e la testata smette di
+                essere un titolo su un fondo colorato.
+                Sta al 9% e sborda a destra, dove non c'e' testo — la
+                colonna delle parole arriva al massimo a meta' pagina.
+                Su telefono sparisce: li' lo spazio a destra non c'e', e
+                una filigrana sotto il titolo sarebbe solo rumore. */}
+            <CategorySigil
+              categoria={category}
+              spessore={1.6}
+              style={{ color: coloreCategoria(category) }}
+              className="pointer-events-none absolute -right-16 -top-12 hidden h-[26rem]
+                         w-[26rem] opacity-[0.10] sm:block"
+            />
             {/* Il padding orizzontale sta sul contenitore INTERNO, non
                 sull'header: e' cosi' che lo mette Section, e con la
                 struttura opposta il titolo partiva 32 px piu' a
                 sinistra della griglia e dell'introduzione. Due colonne
                 che dovrebbero allinearsi e non lo fanno si notano anche
                 senza righello. */}
-            <div className="mx-auto max-w-6xl px-6 sm:px-8">
+            <div className="relative mx-auto max-w-6xl px-6 sm:px-8">
               <Link to="/blog"
                     className="inline-flex items-center gap-1.5 text-[13px] text-[#2f5749]
                                underline-offset-4 hover:underline focus-visible:outline-none
@@ -270,10 +287,18 @@ export default function BlogIndexPage() {
                             className="mt-4 text-[2rem] sm:text-[2.6rem] lg:text-[3rem]">
                 {catLabel(category)}
               </DisplayTitle>
-              <Lede size="lead" className="mt-4 max-w-2xl">
-                {intro?.lede
-                 || t('blog.catSubtitle', { defaultValue: 'Quello che abbiamo scritto su questo tema.' })}
-              </Lede>
+              {/* La misura la impone il CONTENITORE, non una classe
+                  sul componente: Lede porta gia' un suo max-w-[62ch] e
+                  fra due utility della stessa famiglia non vince quella
+                  scritta dopo nella stringa, vince quella che sta dopo
+                  nel foglio di stile. Risultato misurato: il testo
+                  arrivava 81 px dentro la filigrana. */}
+              <div className="mt-4 max-w-2xl">
+                <Lede size="lead">
+                  {intro?.lede
+                   || t('blog.catSubtitle', { defaultValue: 'Quello che abbiamo scritto su questo tema.' })}
+                </Lede>
+              </div>
             </div>
           </header>
         ) : (
