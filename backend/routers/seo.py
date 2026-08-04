@@ -183,6 +183,12 @@ async def build_core() -> str:
 
 async def build_retreats() -> str:
     from database import products_collection
+    from core.prelaunch import site_phase
+    # LC1 — fase rete: le landing /e/ rispondono 404 ai crawler (lo
+    # shell è phase-aware), quindi offrirle in sitemap sarebbe una
+    # mappa di pagine morte. Vuota finché il marketplace non riapre.
+    if site_phase() == "network":
+        return _wrap([], "retreats")
     base = _base_url()
     slug_by_org = await _public_org_slugs()
     occs = await _future_occurrences()
@@ -214,6 +220,9 @@ async def build_products() -> str:
     """S3 — TUTTE le landing prodotto non-evento pubblicate (prima
     erano invisibili anche alla sitemap)."""
     from database import products_collection
+    from core.prelaunch import site_phase
+    if site_phase() == "network":          # LC1 — come build_retreats
+        return _wrap([], "products")
     base = _base_url()
     slug_by_org = await _public_org_slugs()
 
@@ -239,6 +248,12 @@ async def build_products() -> str:
 
 async def build_operators() -> str:
     from database import organizations_collection
+    from core.prelaunch import site_phase
+    # LC1 — fase rete: anche i profili /o/ e gli store /s/ rispondono
+    # 404 ai crawler (la rete si racconta su /operatori, che sta nella
+    # core). Rientrano qui al flip in fase marketplace.
+    if site_phase() == "network":
+        return _wrap([], "operators")
     base = _base_url()
     slug_by_org = await _public_org_slugs()
     # SEO2 — lastmod onesto per operatore: quando il profilo/store cambia
@@ -293,12 +308,18 @@ async def build_articles() -> str:
 
 
 def build_index() -> str:
+    from core.prelaunch import site_phase
     base = _base_url()
     now = datetime.now(timezone.utc).isoformat()[:10]
+    # LC1 — l'indice elenca solo sotto-sitemap con contenuto possibile:
+    # in fase rete quelle commerciali sono vuote per costruzione (sopra),
+    # e un indice che le dichiara promette pagine che non esistono.
+    names = (("core", "articles") if site_phase() == "network"
+             else ("core", "retreats", "products", "operators", "articles"))
     entries = "".join(
         f"<sitemap><loc>{escape(base)}/api/public/sitemap-{name}.xml</loc>"
         f"<lastmod>{now}</lastmod></sitemap>"
-        for name in ("core", "retreats", "products", "operators", "articles")
+        for name in names
     )
     return ('<?xml version="1.0" encoding="UTF-8"?>'
             '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'

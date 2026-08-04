@@ -15,7 +15,8 @@ from datetime import datetime, timezone
 
 import pytest
 
-from routers.seo import _url, build_core
+from routers.seo import (_url, build_core, build_index, build_operators,
+                         build_products, build_retreats)
 
 
 class TestSitemapUrl:
@@ -54,6 +55,24 @@ class TestSitemapUrl:
         for assente in ("/come-funziona", "/ritiri",
                         "/destinazioni"):
             assert assente not in xml, f"non deve esserci {assente}"
+
+    @pytest.mark.asyncio
+    async def test_commercial_builders_empty_in_network_lc1(self, monkeypatch):
+        """LC1 — in fase rete /e/, /s/, /o/ e le landing prodotto
+        rispondono 404 ai crawler: i builder commerciali devono uscire
+        vuoti PRIMA di toccare il DB (il test non richiede Mongo)."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        for build in (build_retreats, build_products, build_operators):
+            xml = await build()
+            assert "<loc>" not in xml, f"{build.__name__} non vuoto in rete"
+
+    def test_index_omits_commercial_in_network_lc1(self, monkeypatch):
+        monkeypatch.setenv("SITE_PHASE", "network")
+        xml = build_index()
+        assert "sitemap-core.xml" in xml and "sitemap-articles.xml" in xml
+        for name in ("retreats", "products", "operators"):
+            assert f"sitemap-{name}.xml" not in xml, (
+                f"l'indice dichiara sitemap-{name} in fase rete")
 
     def test_sitemap_only_published_future(self):
         src = open(os.path.join(os.path.dirname(__file__), "..",

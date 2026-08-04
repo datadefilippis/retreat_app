@@ -34,12 +34,30 @@ def _get(path: str) -> str:
     return r.text
 
 
+def _site_phase() -> str:
+    r = requests.get(f"{BASE_URL}/api/public/site-config", timeout=10)
+    return (r.json() or {}).get("site_phase") or "marketplace"
+
+
+# LC1 — in fase rete le pagine commerciali (/e/, /s/, /o/, prodotti)
+# rispondono 404 ai crawler: le loro sotto-sitemap devono essere vuote
+# e l'indice non deve dichiararle.
+_COMMERCIAL = ("retreats", "products", "operators")
+
+
 class TestSitemapIndex:
     def test_index_lists_all_four(self):
         xml = _get("/api/public/sitemap.xml")
         assert "<sitemapindex" in xml
-        for name in SITEMAPS:
+        phase = _site_phase()
+        expected = (("core", "articles") if phase == "network" else SITEMAPS)
+        for name in expected:
             assert f"sitemap-{name}.xml" in xml, f"manca sitemap-{name}"
+        if phase == "network":
+            for name in _COMMERCIAL:
+                assert f"sitemap-{name}.xml" not in xml, (
+                    f"fase rete: l'indice dichiara sitemap-{name} "
+                    "ma le sue pagine rispondono 404")
 
     def test_sub_sitemaps_are_valid_urlsets(self):
         for name in SITEMAPS:
@@ -71,13 +89,39 @@ class TestHreflangShape:
                     assert 'hreflang="it"' in url_block
 
 
+class TestNetworkPhaseTruth:
+    """LC1 — in fase rete la sitemap non promette pagine morte."""
+
+    def test_commercial_sitemaps_empty_in_network(self):
+        if _site_phase() != "network":
+            return
+        for name in _COMMERCIAL:
+            xml = _get(f"/api/public/sitemap-{name}.xml")
+            assert "<loc>" not in xml, (
+                f"fase rete: sitemap-{name} offre URL ai crawler "
+                "ma quelle pagine rispondono 404")
+
+    def test_legacy_sitemap_is_the_phase_aware_index(self):
+        """La rotta /sitemap.xml (usata senza proxy: dev e test) deve
+        servire l'INDICE di routers/seo.py, non la vecchia sitemap
+        monolitica di Fase 5 fatta di sole URL /ritiri."""
+        xml = _get("/sitemap.xml")
+        assert "<sitemapindex" in xml, "/sitemap.xml non è più l'indice"
+        if _site_phase() == "network":
+            assert "/ritiri" not in xml
+
+
 class TestProductParity:
     def test_published_products_reach_sitemap(self):
         """Ogni prodotto non-evento visibile nel catalogo pubblico di uno
         store demo sta in sitemap-products — la promessa 'chiunque
         pubblica è indicizzato'. Tutto via HTTP (niente asyncio.run nel
         test: il motor client è legato al loop del server, un secondo
-        loop nella suite completa lo fa arrabbiare)."""
+        loop nella suite completa lo fa arrabbiare).
+        LC1 — vale solo in fase marketplace: in fase rete la sitemap
+        products è vuota per costruzione."""
+        if _site_phase() == "network":
+            return
         sitemap = _get("/api/public/sitemap-products.xml")
         checked = 0
         for store_slug in ("masseria-demo", "borgo-sereno"):
