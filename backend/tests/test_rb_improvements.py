@@ -92,11 +92,10 @@ class TestCopyRulesRb4:
         """HP1 — l'occhiello di brand resta su hero, sezioni valore e
         pagine istituzionali, ma ora e' il PAYOFF e passa da un solo
         componente (BrandPayoff, font-brand/Cinzel oro).
-        SW3 — AboutAuryaPage e' stata sostituita da
-        features/network/ChiSiamoPage.js: l'occhiello la segue."""
+        CS2 (052026d) — ChiSiamoPage e' diventata il testo del founder,
+        senza occhiello per scelta: fuori dalla lista."""
         for rel in ("features/storefront/RetreatsCalendarPage.js",
                     "features/storefront/components/MarketplaceValueSections.jsx",
-                    "features/network/ChiSiamoPage.js",
                     "features/storefront/HowItWorksPage.js"):
             src = (FRONTEND_SRC / rel).read_text()
             assert "<BrandPayoff" in src, f"{rel}: occhiello di brand mancante"

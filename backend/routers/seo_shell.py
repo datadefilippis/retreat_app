@@ -354,6 +354,7 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
 
 async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
     from services import seo_schema as sx, seo_listing as sl
+    from core.prelaunch import site_phase
     base = _base_url()
     label = cat.replace("-", " ").title()
     where = f" in {region.title()}" if region else ""
@@ -370,11 +371,20 @@ async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
         *([(region.title(), canonical)] if region else []),
     ])
     blocks = [b for b in (crumbs, sx.item_list(retreats, base)) if b]
+    # PP2 — in fase rete la pagina è noindex ma og:title/description
+    # viaggiano comunque nelle anteprime social: niente promesse di
+    # prenotazione finché il marketplace è spento.
+    if site_phase() == "network":
+        descr = (f"Ritiri di {label.lower()}{where}: cosa sono e come "
+                 "sceglierli. Su Aurya trovi guide oneste e i "
+                 "professionisti della rete, raccontati uno a uno.")
+    else:
+        descr = (f"I migliori ritiri di {label.lower()}{where}: "
+                 "date, prezzi e posti disponibili. Prenota online "
+                 "con la caparra su Aurya.")
     return {
         "title": f"Ritiri di {label}{where} | Aurya",
-        "description": (f"I migliori ritiri di {label.lower()}{where}: "
-                        "date, prezzi e posti disponibili. Prenota online "
-                        "con la caparra su Aurya."),
+        "description": descr,
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/og-cover.jpg",

@@ -14,7 +14,6 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Flower2, Play } from 'lucide-react';
 import api from '../../api/client';
-import { useSiteConfig } from '../../context/SiteConfigContext';
 import useSeoMeta from './lib/useSeoMeta';
 import useTrackView from './lib/useTrackView';
 import MarketplaceShell from './components/MarketplaceShell';
@@ -333,8 +332,6 @@ export default function OperatorProfilePage() {
   // VT2 — visita al profilo per lo specchietto Visibilità (ping 3s)
   useTrackView('profile', org_slug);
   const { t, i18n } = useTranslation('landings');
-  // RT3 — la fase decide se mostrare i ritiri prenotabili
-  const { sitePhase } = useSiteConfig();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

@@ -363,6 +363,17 @@ function RitiriGate() {
   return <RedirectPreservingQuery to="/" />;
 }
 
+// PP2 — le pagine categoria seguono la stessa regola di /ritiri: in
+// fase network la vetrina non esiste (i campioni sfocati che restavano
+// qui erano un residuo dell'era prelaunch), in marketplace la
+// categoria e' una pagina vera.
+function RitiriCategoryGate() {
+  const { sitePhase, loading } = useSiteConfig();
+  if (loading) return null;
+  if (sitePhase === 'network') return <RedirectPreservingQuery to="/" />;
+  return <RetreatsCalendarPage />;
+}
+
 // PL23→RT3 — in fase network /operatori E' la landing della rete:
 // cos'e', con che criterio si entra, le schede dei membri. In
 // marketplace torna l'aggregatore pieno con mappa e filtri.
@@ -549,8 +560,8 @@ function AppRoutes() {
       {/* /ritiri → home: la directory È la home (S0.1). Redirect che
           PRESERVA la query (?categoria=... dai link footer/condivisi). */}
       <Route path="/ritiri" element={<RitiriGate />} />
-      <Route path="/ritiri/:categoria" element={<RetreatsCalendarPage />} />
-      <Route path="/ritiri/:categoria/:regione" element={<RetreatsCalendarPage />} />
+      <Route path="/ritiri/:categoria" element={<RitiriCategoryGate />} />
+      <Route path="/ritiri/:categoria/:regione" element={<RitiriCategoryGate />} />
       {/* S2 — aggregatori pubblici: organizzatori, destinazioni, esperienze */}
       <Route path="/operatori" element={<OperatorsGate />} />
       {/* LM3+ — anteprima pubblica del marketplace operatori, NON

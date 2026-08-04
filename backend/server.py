@@ -701,10 +701,14 @@ async def robots_txt():
     # scaricarle (indice letto, 0 pagine rilevate in Search Console).
     # Regola robots: il percorso piu' lungo vince, quindi questi
     # Allow battono il Disallow generico.
-    # LC1 — gli Allow commerciali (/ritiri, /e/, /o/) solo quando quelle
-    # pagine esistono: in fase rete rispondono 404 e dichiararle ai
-    # crawler è una promessa vuota. L'Allow delle sotto-sitemap resta
-    # sempre: è quello che batte "Disallow: /api/".
+    # LC1→PP2 — gli Allow commerciali (/ritiri, /e/, /o/) solo in fase
+    # marketplace: in rete quelle superfici restano VIVE (PN0: il
+    # profilo-negozio le linka), ma non le promuoviamo ai crawler —
+    # niente Allow, sotto-sitemap vuote. L'Allow delle sotto-sitemap
+    # resta sempre: è quello che batte "Disallow: /api/".
+    # PP2 — /esplora-*: anteprime deliberatamente non linkate (richiesta
+    # founder 29/7) con noindex solo client-side → il Disallow è la
+    # cintura in più, valida in entrambe le fasi.
     from core.prelaunch import site_phase
     marketplace_allows = ("" if site_phase() == "network"
                           else "Allow: /ritiri\nAllow: /e/\nAllow: /o/\n")
@@ -714,6 +718,7 @@ async def robots_txt():
         "Allow: /api/public/sitemap-\n"
         "Disallow: /dashboard\n"
         "Disallow: /api/\n"
+        "Disallow: /esplora-\n"
         f"Sitemap: {build_public_url('/sitemap.xml')}\n"
     )
     return Response(txt, media_type="text/plain")

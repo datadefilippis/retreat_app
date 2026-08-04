@@ -184,9 +184,10 @@ async def build_core() -> str:
 async def build_retreats() -> str:
     from database import products_collection
     from core.prelaunch import site_phase
-    # LC1 — fase rete: le landing /e/ rispondono 404 ai crawler (lo
-    # shell è phase-aware), quindi offrirle in sitemap sarebbe una
-    # mappa di pagine morte. Vuota finché il marketplace non riapre.
+    # LC1→PN0 — fase rete: le landing /e/ restano VIVE (rispondono 200:
+    # il profilo-negozio le linka e chi riceve il link puo' comprare),
+    # ma non le pubblicizziamo ai crawler: la sitemap resta vuota fino
+    # al flip in marketplace. La scoperta passa solo dai profili membri.
     if site_phase() == "network":
         return _wrap([], "retreats")
     base = _base_url()
@@ -249,9 +250,11 @@ async def build_products() -> str:
 async def build_operators() -> str:
     from database import organizations_collection
     from core.prelaunch import site_phase
-    # LC1 — fase rete: anche i profili /o/ e gli store /s/ rispondono
-    # 404 ai crawler (la rete si racconta su /operatori, che sta nella
-    # core). Rientrano qui al flip in fase marketplace.
+    # LC1→PN0 — fase rete: i profili /o/ restano VIVI e indicizzabili
+    # (sono la promessa fatta agli operatori intervistati); la scoperta
+    # passa da /operatori (in core) che li linka. Questa sotto-sitemap
+    # resta vuota fino al flip — valutare se elencare qui i soli
+    # network_member gia' in fase rete.
     if site_phase() == "network":
         return _wrap([], "operators")
     base = _base_url()

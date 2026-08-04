@@ -72,8 +72,13 @@ class TestBrandFoundationsAn1:
         assert "'faq1', 'faq2', 'faq3', 'faq4'" in page
 
     def test_brand_copy_in_four_languages(self):
-        """brandHome / aboutPage / howPage: parita' chiave per chiave
-        nelle 4 lingue — mai piu' sezioni solo-italiane."""
+        """brandHome / howPage: parita' chiave per chiave nelle 4 lingue.
+
+        aboutPage e' l'eccezione DELIBERATA: dal 2/8/2026 i contenuti
+        nuovi non si traducono piu' (solo-italiano) e il copy CS2 del
+        founder (052026d) esiste solo in IT — le altre lingue cadono su
+        fallbackLng='it'. La guardia protegge due cose: le sezioni
+        legacy restano complete x4, e aboutPage resta completa in IT."""
         blocks = {}
         for lang in LANGS:
             data = json.loads((FRONTEND_SRC / "locales" / lang
@@ -82,11 +87,13 @@ class TestBrandFoundationsAn1:
             for section in ("brandHome", "aboutPage", "howPage"):
                 assert section in data, f"{lang}: sezione {section} mancante"
         base_keys = {s: set(blocks["it"][s]) for s in
-                     ("brandHome", "aboutPage", "howPage")}
+                     ("brandHome", "howPage")}
         for lang in ("en", "de", "fr"):
             for section, keys in base_keys.items():
                 missing = keys - set(blocks[lang][section])
                 assert not missing, f"{lang}.{section}: mancano {sorted(missing)}"
+        assert {"heroTitle", "pathsTitle", "togetherTitle"} <= \
+            set(blocks["it"]["aboutPage"]), "aboutPage IT incompleta"
 
     def test_seo_shell_serves_brand_pages(self):
         src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()

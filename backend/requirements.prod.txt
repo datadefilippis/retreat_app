@@ -90,3 +90,8 @@ python-json-logger>=2.0.7
 # Soft dependency: if missing at import time, observability module falls
 # back to a no-op shim (server boots, counters are silently dropped).
 prometheus-client>=0.20.0
+
+# PV1 — HEIC/HEIF (iPhone) → WebP nella pipeline upload. Wheel puro
+# (libheif inclusa): senza, l'import in object_storage degrada in
+# silenzio e le foto iPhone restano non convertite in prod.
+pillow-heif>=0.16
