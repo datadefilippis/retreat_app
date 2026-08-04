@@ -470,3 +470,62 @@ class TestStoreLegacyMigration:
         assert "public_slug" in block                     # solo org legacy
         # e mai per org nuove: il ramo scatta solo con slug/settings
         assert 'org.get("public_slug") or org.get("store_settings")' in block
+
+
+class TestQuotaSweepQf1:
+    """QF1 (4/8/2026) — lo sweep quote non scambia l'arredamento per
+    consumo. In produzione ogni org riceveva «Limite negozi raggiunto»
+    per il solo fatto di possedere l'unico negozio che il piano retreat
+    prevede (stores_max=1, auto-creato), e l'avviso all'80% — con
+    int(1*0.8)=0 — partiva perfino a zero negozi. Riprodotto in locale:
+    org_quota_notices conteneva stores_max warn_80 used=0 ed exceeded
+    used=1 per piu' org, rinnovati a ogni periodo mensile."""
+
+    def test_stores_max_non_monitorato(self):
+        """I tetti STRUTTURALI non generano email: stores_max e' il
+        design del piano (1 negozio per org), non una quota."""
+        from services.background_service import _MONITORED_METRICS
+        metriche = [m for m, _, _ in _MONITORED_METRICS]
+        assert "stores_max" not in metriche, \
+            "stores_max e' tornato nello sweep: ogni org Aurya " \
+            "ricevera' di nuovo 'Limite negozi raggiunto'"
+        # le quote consumabili restano monitorate
+        for viva in ("chat", "data_rows", "orders_monthly", "products"):
+            assert viva in metriche, f"metrica consumabile sparita: {viva}"
+
+    def test_soglia_warn_mai_zero(self):
+        """La soglia dell'80% arrotonda per eccesso e non scende mai
+        sotto 1: con qualunque limite, a uso zero non parte niente."""
+        import math
+        for limit in (1, 2, 3, 5, 100):
+            threshold = max(1, math.ceil(limit * 0.8))
+            assert threshold >= 1, limit
+            assert 0 < threshold <= limit, limit
+        # il sorgente usa esattamente questa formula (niente int() che
+        # tronca verso lo zero)
+        from pathlib import Path
+        src = (Path(__file__).resolve().parent.parent
+               / "services" / "background_service.py").read_text()
+        assert "max(1, math.ceil(limit * 0.8))" in src
+        assert "int(limit * 0.8)" not in src, \
+            "la soglia troncata verso zero e' tornata"
+
+    def test_piani_retreat_senza_quote_consumabili(self):
+        """I piani Aurya dichiarano -1 (illimitato) su ogni metrica
+        consumabile monitorata: con QF1 lo sweep non ha piu' nulla da
+        dire a un'org retreat — che e' l'intenzione del founder
+        («con Aurya non abbiamo impostato limiti di utilizzo»)."""
+        import pymongo, re
+        from pathlib import Path as _P
+        envtxt = (_P(__file__).resolve().parent.parent / ".env").read_text()
+        mongo = re.search(r'MONGO_URL="?([^"\n]+?)"?\n', envtxt).group(1)
+        name = re.search(r'DB_NAME="?([^"\n]+?)"?\n', envtxt).group(1)
+        db = pymongo.MongoClient(mongo)[name]
+        consumabili = ("chat", "data_rows", "orders_monthly")
+        for p in db.pricing_plans.find({"slug": {"$regex": "_retreat"}}):
+            for k in consumabili:
+                v = (p.get("limits") or {}).get(k)
+                if v is not None:
+                    assert v == -1, \
+                        f"{p['slug']}.{k}={v}: quota consumabile finita " \
+                        "su un piano retreat (lo sweep tornerebbe a scrivere)"

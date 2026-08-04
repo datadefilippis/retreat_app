@@ -32,6 +32,7 @@ Configuration (via environment variables):
 """
 import asyncio
 import logging
+import math
 import os
 from typing import List, Optional, Union
 
@@ -441,7 +442,14 @@ _MONITORED_METRICS = [
     ("data_rows",       "cashflow_monitor", True),
     ("orders_monthly",  "commerce",         True),
     ("products",        "product_catalog",  False),  # snapshot
-    ("stores_max",      "commerce",         False),  # snapshot
+    # QF1 — stores_max NON si monitora piu': e' un tetto STRUTTURALE
+    # (i piani Aurya prevedono 1 negozio per org, auto-creato), non una
+    # quota che si consuma. Con lo sweep attivo ogni org riceveva
+    # "Limite negozi raggiunto" per il solo fatto di possedere il
+    # negozio che il piano le da' — e l'avviso all'80%, con limite 1 e
+    # int(0.8)=0, partiva perfino a zero negozi. Il gate sincrono alla
+    # creazione del secondo negozio resta: e' quello il posto giusto
+    # per dire "il tuo piano ne prevede uno".
 ]
 
 
@@ -579,14 +587,18 @@ async def _check_one_org_quotas(org_id: str) -> dict:
         else:
             usage = await _count_snapshot_usage(org_id, module_key, metric_key)
 
-        # Warning levels
+        # Warning levels. QF1 — la soglia dell'80% arrotonda per
+        # ECCESSO e non scende mai sotto 1: con int(limit*0.8) un
+        # limite piccolo (1) dava soglia 0 e l'avviso partiva a uso
+        # zero. E a uso zero non si avvisa mai, qualunque sia il conto.
+        warn_threshold = max(1, math.ceil(limit * 0.8))
         if usage >= limit:
             sent = await notify_quota_warning_email(
                 org_id, metric_key, "exceeded", usage, limit,
             )
             if sent:
                 counters["exceeded_sent"] += 1
-        elif usage >= int(limit * 0.8):
+        elif usage >= warn_threshold:
             sent = await notify_quota_warning_email(
                 org_id, metric_key, "warn_80", usage, limit,
             )
