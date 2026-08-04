@@ -6077,26 +6077,18 @@ class TestChiSiamoSw3:
     # ── 2. l'apertura: le tre negazioni ──────────────────────────────
 
     def test_sw3_apertura_tre_negazioni(self):
-        """L'eco della landing operatori, in tre righe volute
-        (<TitleLine>, non un a-capo estetico), e un solo h1."""
+        """Brand v3 (2/8, riscrittura founder) + LC4/LC6 — la guardia
+        era rimasta al copy SW3: le tre negazioni in apertura non
+        esistono piu' (definirsi per sottrazione e' uscito dalla voce
+        del brand, vedi anche la landing professionisti). Oggi
+        l'apertura e' una domanda: un solo h1, la domanda in corsivo
+        subito sotto, e mai piu' negazioni identitarie nel copy."""
         src = self._page()
-        negazioni = ("Non siamo un'agenzia.", "Non siamo un software.",
-                     "Non siamo una directory.")
-        pos = -1
-        for riga in negazioni:
-            assert riga in src, f"manca la negazione: {riga}"
-            here = src.index(riga)
-            assert here > pos, f"negazione fuori ordine: {riga}"
-            pos = here
-        assert self._copy().count("<TitleLine>") == 3, \
-            "le tre negazioni sono tre frasi, non un titolo che va a capo"
         assert src.count('as="h1"') == 1, "l'h1 e' uno solo"
-        i_h1 = src.index('as="h1"')
-        assert src.index(negazioni[0]) > i_h1, \
-            "le negazioni SONO l'h1 della pagina"
-        # e subito dopo si dice chi siamo davvero
-        assert "Siamo Valentina e Davide." in src, \
-            "dopo le negazioni manca la riga su chi siamo davvero"
+        assert 'id="cs-open-title"' in src, "sparita l'apertura"
+        assert "domanda" in src, "l'apertura e' la domanda, non un elenco"
+        assert "Non siamo un" not in self._copy(), \
+            "le negazioni identitarie sono tornate in Chi siamo"
 
     # ── 3. i ritratti: soltanto fatti reali ──────────────────────────
 

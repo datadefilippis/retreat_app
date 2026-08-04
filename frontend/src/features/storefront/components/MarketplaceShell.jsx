@@ -554,7 +554,11 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
         )}
       </header>
 
-      <div className="flex-1">{children}</div>
+      {/* LC6 — il landmark <main>: nessuna pagina pubblica lo aveva,
+          quindi chi naviga con uno screen reader non poteva saltare
+          header e menu. Il guscio e' il posto giusto: vale per tutte
+          le pagine che lo indossano, in una riga. */}
+      <main className="flex-1">{children}</main>
 
       {/* ── Footer ─────────────────────────────────────────────────── */}
       {!minimal && (
@@ -724,10 +728,13 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     <li><Link to="/privacy" className="hover:text-white">Privacy</Link></li>
                     <li><Link to="/termini" className="hover:text-white">{t('marketplace.terms', { defaultValue: 'Termini' })}</Link></li>
                     {/* "Cookie" porta alla privacy perche' la cookie
-                        policy E' il capitolo 15 di quel documento: non
-                        esiste una pagina separata, e inventarne il link
-                        avrebbe prodotto un 404 su una voce legale. */}
-                    <li><Link to="/privacy" className="hover:text-white">Cookie</Link></li>
+                        policy E' un capitolo di quel documento: non
+                        esiste una pagina separata. LC6 — ora punta
+                        all'ancora del capitolo (id che il renderer
+                        legale deriva dal titolo senza numerazione),
+                        cosi' la voce non e' piu' un doppione muto del
+                        link Privacy qui sopra. */}
+                    <li><Link to="/privacy#cookie-e-tecnologie-simili" className="hover:text-white">Cookie</Link></li>
                     {/* OF1 (founder 2/8) — l'indirizzo si VEDE. Un link
                         che dice "Contatti" funziona solo per chi ha un
                         programma di posta configurato: tutti gli altri

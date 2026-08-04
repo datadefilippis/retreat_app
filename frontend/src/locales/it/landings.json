@@ -924,7 +924,7 @@
     "heroP2": "Aurya è uno spazio dedicato a chi vuole orientarsi nel mondo del benessere con maggiore consapevolezza.",
     "heroP3": "Attraverso contenuti autorevoli, professionisti raccontati con cura ed esperienze selezionate, aiutiamo le persone a trovare ciò che fa davvero per loro.",
     "heroCta": "Esplora il Magazine",
-    "heroCtaAlt": "Per gli operatori",
+    "heroCtaAlt": "Per i professionisti",
     "findTitle": "Un luogo dove capire, prima ancora di scegliere.",
     "findP1": "Il benessere non è fatto solo di discipline.",
     "findP2": "È fatto di persone, approcci, esperienze e percorsi diversi.",
@@ -965,7 +965,8 @@
     "letterP4": "Un luogo da scoprire.",
     "letterP5": "Niente rumore.",
     "letterP6": "Solo contenuti che meritano il tuo tempo.",
-    "letterCta": "Iscriviti alla newsletter"
+    "letterCta": "Iscrivimi alla Lettera",
+    "letterMore": "Scopri cos'è la Lettera"
   },
   "nwOps": {
     "seoTitle": "La rete Aurya | I professionisti che stiamo conoscendo",

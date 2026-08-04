@@ -317,8 +317,12 @@ export default function NetworkHomePage() {
               <EditorialCta to={MAGAZINE_PATH} variant="solid" tone="dark" data-testid="hp-hero-cta">
                 {t('nwHome.heroCta', { defaultValue: "Esplora il Magazine" })}
               </EditorialCta>
+              {/* LC6 — stessa parola dell'header: "professionisti".
+                  La stessa destinazione aveva due nomi (header "Per i
+                  professionisti", hero "Per gli operatori") e due nomi
+                  per una porta sola fanno sembrare due porte. */}
               <EditorialCta to={JOIN_PATH} variant="quiet" tone="dark" data-testid="hp-hero-cta-alt">
-                {t('nwHome.heroCtaAlt', { defaultValue: "Per gli operatori" })}
+                {t('nwHome.heroCtaAlt', { defaultValue: "Per i professionisti" })}
               </EditorialCta>
             </div>
           </div>

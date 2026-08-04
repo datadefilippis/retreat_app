@@ -484,6 +484,13 @@ export default function ChiSiamoPage() {
               <EditorialCta to="/entra-nella-rete" variant="quiet" data-testid="cs-cta-pro">
                 {t('aboutPage.ctaPro', { defaultValue: 'Sei un professionista?' })}
               </EditorialCta>
+              {/* LC6 — la terza porta: la Lettera. E' la pagina dove la
+                  fiducia e' al massimo (si e' appena letta la storia
+                  delle due persone) e chiudeva con Magazine e rete ma
+                  senza il funnel dei lettori. */}
+              <EditorialCta to="/newsletter" variant="quiet" data-testid="cs-cta-letter">
+                {t('aboutPage.ctaLetter', { defaultValue: 'Ricevi la Lettera' })}
+              </EditorialCta>
             </div>
 
             {/* OF1 — la porta che mancava. Questa pagina risponde a

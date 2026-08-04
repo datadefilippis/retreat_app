@@ -228,9 +228,19 @@ function renderBlock(block, idx) {
           : block.level === 2
           ? 'text-xl font-semibold mt-8 mb-3'
           : 'text-lg font-medium mt-6 mb-2';
+      // LC6 — ogni capitolo e' linkabile: id derivato dal testo, senza
+      // la numerazione ("15. Cookie e tecnologie simili" →
+      // "cookie-e-tecnologie-simili"), cosi' un rinumero del documento
+      // non rompe i link che arrivano da fuori (footer → #cookie...).
+      const anchorId = block.text
+        .replace(/^[\d.\s]+/, '')
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
       return React.createElement(
         Tag,
-        { key, className },
+        { key, className, id: anchorId || undefined },
         renderInline(block.text, key)
       );
     }
