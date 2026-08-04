@@ -310,8 +310,16 @@ _BRAND_PAGES = {
 
 
 async def _meta_brand_page(slug: str) -> Optional[dict]:
+    from core.prelaunch import site_phase
     page = _BRAND_PAGES.get(slug)
     if not page:
+        return None
+    # LC2 — /come-funziona racconta il percorso d'acquisto (caparra,
+    # prenotazione, recensione): in fase rete quel percorso non esiste
+    # e la pagina prometteva ai crawler un marketplace spento. None →
+    # 404 vero; la SPA intanto redirige le persone sul Manifesto.
+    # Al flip in marketplace torna indicizzabile da sola.
+    if slug == "come-funziona" and site_phase() == "network":
         return None
     base = _base_url()
     canonical = f"{base}/{page.get('canonical_slug', slug)}"

@@ -380,6 +380,17 @@ function DestinationsGate() {
   return <DestinationsPage />;
 }
 
+// LC2 — /come-funziona racconta il percorso d'acquisto (caparra,
+// prenotazione, recensione): in fase network quel percorso non esiste
+// e la pagina prometteva un marketplace spento. Il posto dove si
+// spiega "come funziona Aurya" oggi e' il Manifesto.
+function HowItWorksGate() {
+  const { sitePhase, loading } = useSiteConfig();
+  if (loading) return null;
+  if (sitePhase === 'network') return <Navigate to="/manifesto" replace />;
+  return <HowItWorksPage />;
+}
+
 // GA1 — una page_view per ogni navigazione SPA (config con
 // send_page_view: false, quindi niente doppi conteggi).
 // PS6.4 — oltre al ping analytics, si tiene traccia della ROTTA DI
@@ -472,7 +483,7 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
-      <Route path="/come-funziona" element={<HowItWorksPage />} />
+      <Route path="/come-funziona" element={<HowItWorksGate />} />
       {/* AN5 — il blog di Aurya */}
       {/* SEO1 (11/7, decisione founder): il blog è il motore SEO del
           pre-lancio e resta SEMPRE attivo, flag o non flag. */}

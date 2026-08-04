@@ -139,6 +139,18 @@ class TestNetworkPhaseRT5:
         assert set(shell._PHASE_NOINDEX_HEADS) == {
             "ritiri", "destinazioni", "esperienze"}
 
+    @pytest.mark.asyncio
+    async def test_come_funziona_404_in_network_lc2(self, monkeypatch):
+        """LC2 — /come-funziona racconta il percorso d'acquisto
+        (caparra, prenotazione): in fase rete la pagina non esiste, la
+        shell deve rispondere 404 vero (None), non offrire ai crawler
+        le meta di un marketplace spento. In marketplace torna 200."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        assert await shell._meta_brand_page("come-funziona") is None
+        monkeypatch.setenv("SITE_PHASE", "marketplace")
+        meta = await shell._meta_brand_page("come-funziona")
+        assert meta and meta["canonical"].endswith("/come-funziona")
+
 
 class TestEndpointLive:
     """Contro il backend live (stesso pattern degli altri test API)."""
