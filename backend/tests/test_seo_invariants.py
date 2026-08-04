@@ -151,3 +151,30 @@ class TestRobots:
         txt = self.ROBOTS.read_text()
         for frag in ("/account", "/dashboard", "/admin", "/api/"):
             assert f"Disallow: {frag}" in txt, f"robots: manca Disallow {frag}"
+
+
+class TestLlmsTxtSe2:
+    """SE2 — llms.txt dice la verità della fase. Il file statico
+    racconta il marketplace (caparre, gestionale): in fase rete il
+    testo si genera dal DB con l'indice vivo del Magazine, e le
+    promesse commerciali non devono comparire."""
+
+    def test_llms_txt_phase_honest(self):
+        txt = _get("/llms.txt")
+        assert txt.startswith("# Aurya")
+        if _site_phase() != "network":
+            return
+        # niente promesse del marketplace spento (le parole possono
+        # comparire solo dentro titoli/description editoriali del
+        # Magazine, mai come claim di piattaforma)
+        for claim in ("caparra protetta", "gestionale gratuit",
+                      "commissione solo", "prenotazione protetta"):
+            assert claim not in txt.lower(), \
+                f"llms.txt promette il marketplace in fase rete: '{claim}'"
+        # l'indice del Magazine c'è davvero
+        import re
+        links = re.findall(r"^- \[[^\]]+\]\([^)]*/blog/[a-z0-9-]+\):", txt,
+                           re.M)
+        assert len(links) >= 30, \
+            f"llms.txt: {len(links)} articoli indicizzati, attesi >=30"
+        assert "Ci si fida di" in txt, "manca il payoff del brand"

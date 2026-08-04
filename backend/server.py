@@ -719,20 +719,91 @@ async def robots_txt():
     return Response(txt, media_type="text/plain")
 
 
+_LLMS_CACHE: dict = {}
+
+
 @app.get("/llms.txt", include_in_schema=False)
 async def llms_txt():
     """SEO4/GEO — presentazione del sito per gli assistenti AI.
-    Vive in assets/ e passa dal backend perché il proxy instrada
-    TUTTI i *.txt di root qui (regola robots/IndexNow)."""
+
+    SE2 — phase-aware: il file statico in assets/ racconta il
+    MARKETPLACE (caparre, gestionale) e in fase rete diceva agli
+    assistenti AI cose false. In rete il testo si genera dal DB:
+    identità editoriale + rete di professionisti + l'indice VIVO del
+    Magazine (titolo, url, description di ogni articolo) — llms.txt
+    è fatto esattamente per queste liste. Al flip in marketplace
+    torna il file statico. Cache 1h come le sitemap."""
+    import time as _time
     from pathlib import Path as _Path
     from fastapi.responses import Response
-    p = _Path(__file__).resolve().parent / "assets" / "llms.txt"
-    try:
-        return Response(p.read_text(encoding="utf-8"),
-                        media_type="text/plain; charset=utf-8")
-    except OSError:
-        return Response("# Aurya — https://aurya.life\n",
-                        media_type="text/plain; charset=utf-8")
+    from core.prelaunch import site_phase
+
+    if site_phase() != "network":
+        p = _Path(__file__).resolve().parent / "assets" / "llms.txt"
+        try:
+            return Response(p.read_text(encoding="utf-8"),
+                            media_type="text/plain; charset=utf-8")
+        except OSError:
+            return Response("# Aurya — https://aurya.life\n",
+                            media_type="text/plain; charset=utf-8")
+
+    now = _time.monotonic()
+    hit = _LLMS_CACHE.get("network")
+    if hit and now - hit[1] < 3600:
+        return Response(hit[0], media_type="text/plain; charset=utf-8")
+
+    from database import db as _db
+    from models.article import ARTICLE_CATEGORIES
+    from services.url_builder import build_public_url
+    arts = await (_db.articles
+                  .find({"published": True},
+                        {"_id": 0, "slug": 1, "title": 1,
+                         "description": 1, "category": 1})
+                  .sort("published_at", -1).limit(200).to_list(200))
+    per_cat: dict = {}
+    for a in arts:
+        per_cat.setdefault(a.get("category") or "altro", []).append(a)
+
+    righe = [
+        "# Aurya",
+        "",
+        "> Aurya (aurya.life) è uno spazio italiano dedicato al benessere",
+        "> olistico: guide oneste per capire le pratiche prima di sceglierle",
+        "> e una rete di professionisti del benessere raccontati uno a uno,",
+        "> con interviste verificate. Il payoff del brand: \"Ci si fida di",
+        "> qualcuno, non di qualcosa\". Contenuti in italiano, scritti senza",
+        "> promesse di guarigione e con le fonti citate.",
+        "",
+        "## Pagine principali",
+        "",
+        f"- [Il Manifesto]({build_public_url('/manifesto')}): perché esistiamo,"
+        " in cosa crediamo, i cinque principi.",
+        f"- [Chi siamo]({build_public_url('/chi-siamo')}): le due persone"
+        " dietro Aurya e come lavorano.",
+        f"- [La rete]({build_public_url('/operatori')}): i professionisti"
+        " che stiamo conoscendo, una persona alla volta.",
+        f"- [Per i professionisti]({build_public_url('/entra-nella-rete')}):"
+        " come entrare nella rete.",
+        f"- [La Lettera]({build_public_url('/newsletter')}): la newsletter"
+        " di Aurya.",
+        "",
+        "## Magazine",
+        "",
+        "Guide e articoli, per argomento:",
+    ]
+    for cat, docs in sorted(per_cat.items()):
+        label = ARTICLE_CATEGORIES.get(cat, cat.title())
+        righe.append("")
+        righe.append(f"### {label}")
+        righe.append("")
+        for d in docs:
+            url = build_public_url(f"/blog/{d['slug']}")
+            desc = (d.get("description") or "").strip()
+            righe.append(f"- [{d['title']}]({url}): {desc}")
+
+    testo = "\n".join(righe) + "\n"
+    _LLMS_CACHE["network"] = (testo, now)
+    return Response(testo, media_type="text/plain; charset=utf-8")
 
 
 @app.get("/api/health")
