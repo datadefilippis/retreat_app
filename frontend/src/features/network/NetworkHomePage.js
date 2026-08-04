@@ -92,6 +92,7 @@ import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import BrandPayoff from '../../components/BrandPayoff';
 import HeroVideo from '../../components/HeroVideo';
+import LeadForm from '../prelaunch/LeadForm';
 import {
   Section, DisplayTitle, TitleLine, Lede, ArticleCard, PillarCard, EditorialCta,
   PhotoBand, PhotoSplit,
@@ -113,6 +114,9 @@ const MAGAZINE_PATH = '/blog';
    landing per candidarsi. Qui si segue l'intenzione, non la lettera. */
 const NETWORK_PATH = '/operatori';        // scopri la rete (i membri)
 const JOIN_PATH = '/entra-nella-rete';    // entra nella rete (candidarsi)
+
+/* il verde di brand del kit editoriale: accento del form della Lettera */
+const SAGE = '#2f5749';
 
 /* Il segno in testa alle tre colonne. 'plain' = nessun segno: la
    fotografia in testa alla scheda fa gia' quel mestiere. Le emoji che
@@ -627,11 +631,30 @@ export default function NetworkHomePage() {
                 {t('nwHome.letterP6', { defaultValue: "Solo contenuti che meritano il tuo tempo." })}
               </TitleLine>
             </Lede>
-            <div className="mt-9">
-              <EditorialCta to="/newsletter" variant="solid" tone="dark" data-testid="hp-letter-cta">
-                {t('nwHome.letterCta', { defaultValue: "Iscriviti alla newsletter" })}
-              </EditorialCta>
+            {/* LC5 — il form al posto del link. La sezione prometteva
+                la Lettera e poi mandava su un'altra pagina a chiederla:
+                un passo in piu' per l'azione a minor attrito del sito
+                (le pagine articolo il form inline ce l'hanno gia').
+                Pannello crema pieno: gli input bianchi e il consenso
+                grigio sono disegnati per fondo chiaro, non per la
+                fotografia. Il link quieto sotto resta per chi vuole
+                leggere cos'e' la Lettera prima di dare l'email. */}
+            <div className="mt-9 w-full max-w-md rounded-2xl bg-[#f6f2e8]/95 p-5 text-left
+                            shadow-[0_18px_48px_-28px_rgba(14,26,21,0.6)] sm:p-6"
+                 data-testid="hp-letter-form">
+              <LeadForm
+                type="traveler" compact subscribe showName accent={SAGE}
+                context="home_letter"
+                consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
+                ctaLabel={t('nwHome.letterCta', { defaultValue: 'Iscrivimi alla Lettera' })}
+                thanksBody={t('blogCta.thanksDoi', { defaultValue: 'Quasi fatto: controlla la tua casella e clicca il link di conferma che ti abbiamo appena inviato.' })}
+              />
             </div>
+            <p className="mt-5">
+              <EditorialCta to="/newsletter" variant="light" data-testid="hp-letter-cta">
+                {t('nwHome.letterMore', { defaultValue: "Scopri cos'è la Lettera" })}
+              </EditorialCta>
+            </p>
           </div>
         </PhotoBand>
 
