@@ -158,9 +158,20 @@ async def main() -> None:
         "published": True,
         "updated_at": utc_now(),
     }
+    # FIX (deploy 4/8): l'insert stava nel ramo else del check COVER,
+    # quindi per un articolo nuovo era irraggiungibile — in prod lo
+    # script stampava le statistiche senza mai creare il documento.
     if existing:
         await db.articles.update_one({"slug": SLUG}, {"$set": doc_set})
         print(f"aggiornata: {SLUG}")
+    else:
+        import uuid
+        await db.articles.insert_one({
+            "id": str(uuid.uuid4()), "slug": SLUG, **doc_set,
+            "translations": {}, "author_name": "Aurya",
+            "published_at": now, "created_at": now,
+        })
+        print(f"creata: {SLUG}")
     # cover nel formato standard del Magazine (AN6): la guida non passa
     # dal flusso publish dell'admin, quindi la genera lo script
     doc = await db.articles.find_one({"slug": SLUG}, {"_id": 0,
@@ -172,14 +183,6 @@ async def main() -> None:
             await db.articles.update_one(
                 {"slug": SLUG}, {"$set": {"featured_image_url": cover}})
             print(f"cover generata: {cover}")
-    else:
-        import uuid
-        await db.articles.insert_one({
-            "id": str(uuid.uuid4()), "slug": SLUG, **doc_set,
-            "translations": {}, "author_name": "Aurya",
-            "published_at": now, "created_at": now,
-        })
-        print(f"creata: {SLUG}")
     words = len(CONTENT.split())
     print(f"parole: {words}, access: subscriber, category: meditazione")
 
