@@ -238,8 +238,27 @@ export default function BlogArticlePage() {
                     </Lede>
                   )}
 
+                  {/* SE5 — la firma porta a /chi-siamo (chi scrive ha
+                      una faccia raggiungibile: E-E-A-T), e la data di
+                      aggiornamento si vede quando c'e' davvero un
+                      aggiornamento (giorno diverso dalla pubblicazione):
+                      e' il segnale di freschezza che i lettori e i
+                      motori leggono allo stesso modo. */}
                   <p className="mt-7 text-sm text-[#f6f2e8]/75">
-                    {article.author_name} · {fmtDate(article.published_at)}
+                    <Link to="/chi-siamo"
+                          className="underline decoration-[#d6c49a]/50 underline-offset-4
+                                     hover:decoration-[#d6c49a]"
+                          data-testid="article-author-link">
+                      {article.author_name}
+                    </Link>
+                    {' · '}{fmtDate(article.published_at)}
+                    {article.updated_at
+                      && fmtDate(article.updated_at) !== fmtDate(article.published_at) && (
+                      <span data-testid="article-updated">
+                        {' · '}{t('blog.updatedOn', { defaultValue: 'aggiornato il' })}{' '}
+                        {fmtDate(article.updated_at)}
+                      </span>
+                    )}
                   </p>
 
                   {lang !== 'it' && article.served_lang === 'it' && (

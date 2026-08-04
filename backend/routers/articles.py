@@ -83,6 +83,9 @@ def _localized(doc: Dict[str, Any], lang: str) -> Dict[str, Any]:
         "author_name": doc.get("author_name") or "Aurya",
         "gated": doc.get("access") == "subscriber",
         "published_at": doc.get("published_at"),
+        # SE5 — la data di aggiornamento arriva al lettore: la pagina
+        # la mostra solo quando differisce dalla pubblicazione
+        "updated_at": doc.get("updated_at"),
         "served_lang": "it",
         "available_langs": ["it"] + [l for l in ARTICLE_LANGS
                                      if _has_translation(doc, l)],

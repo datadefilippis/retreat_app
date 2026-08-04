@@ -909,7 +909,8 @@
     "catSubtitle": "Quello che abbiamo scritto su questo tema.",
     "moreTitle": "Altri articoli",
     "emptyCat": "Su questo tema non abbiamo ancora scritto.",
-    "gatedBadge": "Per gli iscritti"
+    "gatedBadge": "Per gli iscritti",
+    "updatedOn": "aggiornato il"
   },
   "verifiedBadge": {
     "label": "Verificato Aurya",
