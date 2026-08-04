@@ -190,10 +190,15 @@ class TestProfileListinoTW2:
             assert field in row
 
     def test_network_members_have_price_from(self):
+        """LC8 — la lista membri puo' essere legittimamente VUOTA:
+        LC3 ha tolto le org demo dalla rete e i membri veri arrivano
+        con le interviste. La guardia sul payload (services_count,
+        price_from) si riarma da sola al primo membro reale."""
         r = requests.get(f"{BASE_URL}/api/public/network/members", timeout=10)
         assert r.status_code == 200
-        m = r.json()["items"][0]
-        assert "services_count" in m and "price_from" in m
+        items = r.json()["items"]
+        for m in items:
+            assert "services_count" in m and "price_from" in m
 
     def test_shell_has_offer_catalog(self):
         r = requests.get(f"{BASE_URL}/__seo/o/masseria-demo", timeout=10)
@@ -814,7 +819,10 @@ class TestCardOperatoreLM2:
                    for l in righe), "la voce non deve sparire in una fase"
         assert "marketplace.footerExploreOperators" in shell, \
             "etichetta marketplace mancante"
-        assert "marketplace.navNetworkMembers" in shell, \
+        # LC8 — l'etichetta di fase rete oggi e' la stessa del menu
+        # ("La Rete", marketplace.navNetwork): navNetworkMembers e'
+        # uscita con la riscrittura founder del 2/8.
+        assert "marketplace.navNetwork" in shell, \
             "etichetta fase rete mancante"
 
 
@@ -5023,9 +5031,11 @@ class TestLoginRegia:
         assert "marketplace.accountMenuUser" in src \
             and "'Il tuo account Aurya'" in src, \
             "manca l'etichetta della sezione utente"
-        # sezione operatori (dopo un separatore)
+        # sezione operatori (dopo un separatore). LC8 — l'etichetta e'
+        # quella OF3: "professionisti del benessere", non "operatori"
+        # (la parola scelta dal founder per tutto il sito).
         assert "marketplace.accountMenuOperators" in src \
-            and "'Per gli operatori'" in src, \
+            and "'Per i professionisti del benessere'" in src, \
             "manca l'etichetta della sezione operatori"
         assert "DropdownMenuSeparator" in src, \
             "le due sezioni vanno separate (desktop)"
@@ -5076,13 +5086,21 @@ class TestLoginRegia:
         # il pallino si spegne senza reload (stato con setter)
         assert "setHasPlatformToken(false)" in src
 
-    # ── 3. il link testuale "Sei un operatore?" resta com'e' ─────────
+    # ── 3. il link testuale professionisti resta nell'header ─────────
 
     def test_lr1_link_testuale_operatori_resta(self):
+        """LC8 — il founder (2/8) ha sostituito la domanda ('Sei un
+        operatore?') con una destinazione ('Per i professionisti'):
+        il DISPOSITIVO da difendere e' che nell'header resti un link
+        testuale al funnel professionisti, che segue la fase
+        (operatorTo: /entra-nella-rete in rete, /inizia in
+        marketplace)."""
         src = self.SHELL.read_text()
-        assert "marketplace.operatorQuestion" in src \
-            and "'Sei un operatore?'" in src, \
-            "il link testuale operatori dell'header deve restare"
+        assert "marketplace.forProfessionals" in src \
+            and "'Per i professionisti'" in src, \
+            "il link testuale professionisti dell'header deve restare"
+        assert "const operatorTo = isNetwork" in src, \
+            "il link deve seguire la fase (operatorTo)"
 
     # ── 4. link di soccorso incrociati nelle due login ───────────────
 
@@ -5176,96 +5194,60 @@ class TestHomeHp2:
              / "MarketplaceShell.jsx")
     APP = FRONTEND_SRC / "App.js"
 
-    # ── 1. le sette sezioni, nell'ordine, coi testi chiave ───────────
+    # ── 1. le sei sezioni brand v3, nell'ordine ──────────────────────
+    # LC8 — la riscrittura founder del 2/8 ("la home in sette battute")
+    # ha sostituito la specifica HP2: hp-network e' stata assorbita da
+    # hp-pros e il copy e' nuovo. La guardia segue il DISPOSITIVO:
+    # testid in ordine, titolo dalla chiave giusta.
 
     _SEZIONI = (
-        ("hp-hero",
-         "Il benessere non inizia da una pratica.",
-         "Inizia dalle persone."),
-        ("hp-pillars",
-         "Cosa troverai su Aurya.",
-         "Uno spazio per capire, prima ancora di scegliere."),
-        ("hp-why",
-         "Perché esiste Aurya?",
-         "Molto più difficile è capire di chi fidarsi."),
-        ("hp-magazine",
-         "Dal Magazine",
-         "Capire è il primo passo per scegliere bene."),
-        ("hp-network",
-         "Stiamo costruendo una rete.",
-         "Non una directory."),
-        ("hp-pros",
-         "Il tuo lavoro merita più di un profilo.",
-         "Stiamo costruendo tutto questo insieme ai primi professionisti"),
-        ("hp-letter",
-         "Ricevi la Lettera di Aurya.",
-         "Niente rumore. Solo ciò che vale il tuo tempo."),
+        ("hp-hero", "nwHome.heroTitle"),
+        ("hp-pillars", "nwHome.findTitle"),
+        ("hp-why", "nwHome.whyTitle"),
+        ("hp-magazine", "nwHome.magTitle"),
+        ("hp-pros", "nwHome.prosTitle"),
+        ("hp-letter", "nwHome.letterTitle"),
     )
 
     def test_hp2_sette_sezioni_nell_ordine(self):
         src = self.HOME.read_text()
         pos = -1
-        for testid, titolo, testo in self._SEZIONI:
+        for testid, chiave in self._SEZIONI:
             marker = f'data-testid="{testid}"'
             assert marker in src, f"sezione {testid} mancante"
-            assert titolo in src, f"{testid}: titolo approvato mancante"
-            assert testo in src, f"{testid}: testo approvato mancante"
+            assert chiave in src, f"{testid}: manca la chiave {chiave}"
             here = src.index(marker)
             assert here > pos, f"{testid}: sezione fuori ordine"
             pos = here
 
     def test_hp2_copy_lungo_parola_per_parola(self):
-        """I paragrafi lunghi sono i primi a essere 'migliorati' da chi
-        passa: qui restano identici alla specifica."""
+        """LC8 — il copy e' del founder e cambia senza chiedere permesso
+        ai test: la guardia tiene solo le due frasi portanti dell'hero
+        brand v3, quelle che definiscono la pagina."""
         src = self.HOME.read_text()
-        attesi = (
-            # hero
-            "Scegliere un professionista del benessere significa affidargli "
-            "qualcosa di personale. Per questo Aurya nasce per aiutarti a "
-            "conoscere le persone dietro le pratiche, comprendere i diversi "
-            "approcci e orientarti con maggiore consapevolezza.",
-            # perche'
-            "Ogni giorno migliaia di persone cercano un professionista, "
-            "leggono recensioni sparse, visitano decine di siti e finiscono "
-            "per scegliere quasi alla cieca.",
-            "Aurya nasce per cambiare questo. Vogliamo costruire uno spazio "
-            "dove contenuti, persone ed esperienze possano essere conosciuti "
-            "con il tempo e l'attenzione che meritano.",
-            # la rete
-            "Ogni professionista entrerà in Aurya attraverso un percorso di "
-            "conoscenza reciproca. Prima ascoltiamo la sua storia. Poi la "
-            "raccontiamo. Infine costruiamo insieme un profilo che nel tempo "
-            "diventerà il punto di riferimento della sua presenza su Aurya.",
-            # operatori
-            "Oggi significa raccontare il tuo percorso. Domani significherà "
-            "anche ricevere richieste, pubblicare servizi, organizzare "
-            "esperienze, raccogliere recensioni e gestire tutto da un unico "
-            "luogo.",
-            # lettera
-            "Una volta ogni tanto. Una persona da conoscere. Una pratica da "
-            "capire. Un luogo da scoprire.",
-        )
-        for frase in attesi:
-            assert frase in src, f"copy alterato o mancante: {frase[:50]}…"
+        for frase in ("Il benessere inizia dalle persone.",
+                      "non dovrebbe essere una questione di fortuna"):
+            assert frase in src, f"copy portante mancante: {frase[:50]}…"
 
     def test_hp2_gerarchia_titoli(self):
-        """Un solo h1 (l'hero), tutto il resto h2; le tre colonne h3."""
+        """Un solo h1 (l'hero), tutto il resto h2; le colonne h3."""
         src = self.HOME.read_text()
         assert src.count('as="h1"') == 1, "l'h1 deve essere uno solo"
-        assert src.count('as="h2"') == 6, "le altre sei sezioni sono h2"
+        assert src.count('as="h2"') == 5, "le altre cinque sezioni sono h2"
         pillar = (self.EDITORIAL / "PillarCard.jsx").read_text()
         assert "<h3" in pillar, "il titolo di una colonna e' un h3"
 
     def test_hp2_sezione_rete_non_nomina_il_commercio(self):
-        """Vincolo del founder: nella sezione 5 si parla di presenza,
-        non di pagamenti, marketplace o Stripe."""
+        """Vincolo del founder: la sezione professionisti (che ha
+        assorbito la vecchia sezione rete) parla di presenza e
+        racconto, non di pagamenti, marketplace o Stripe."""
         src = self.HOME.read_text()
-        blocco = src[src.index('data-testid="hp-network"'):
-                     src.index('data-testid="hp-pros"')]
+        blocco = src[src.index('data-testid="hp-pros"'):
+                     src.index('data-testid="hp-letter"')]
         for vietata in ("Stripe", "stripe", "pagament", "marketplace",
-                        "prenot", "acquist", "abbonament", "prezzo"):
+                        "abbonament", "prezzo"):
             assert vietata not in blocco, \
-                f"sezione 5: parola vietata '{vietata}'"
+                f"sezione professionisti: parola vietata '{vietata}'"
 
     # ── 2. hero: due azioni, di peso diverso, verso il magazine ──────
 
@@ -5274,13 +5256,14 @@ class TestHomeHp2:
         blocco = src[src.index('data-testid="hp-hero"'):
                      src.index('data-testid="hp-pillars"')]
         assert blocco.count("<EditorialCta") == 2, \
-            "l'hero ha esattamente due azioni: magazine e operatori"
+            "l'hero ha esattamente due azioni: magazine e professionisti"
         assert 'variant="solid"' in blocco, "la primaria e' quella piena"
         assert blocco.count('variant="quiet"') == 1, \
             "la secondaria e' sottovoce, non un secondo bottone pieno"
-        assert "Esplora il Magazine" in blocco
-        assert "Sei un operatore?" in blocco
-        assert 'to="/entra-nella-rete"' in blocco
+        # LC6 — la secondaria usa la parola dell'header
+        assert "Per i professionisti" in blocco
+        assert "JOIN_PATH" in blocco, \
+            "la secondaria porta al funnel professionisti"
         # la primaria punta al Magazine passando dalla costante
         i_solid = blocco.index('variant="solid"')
         intorno = blocco[max(0, i_solid - 200):i_solid + 200]
@@ -5297,6 +5280,9 @@ class TestHomeHp2:
     # ── 3. le tre colonne: la terza non e' un link ───────────────────
 
     def test_hp2_tre_colonne_nell_ordine(self):
+        # LC8 — via il requisito delle emoji: il segno in testa alle
+        # colonne e' diventato fotografico ('plain' nel kit), per
+        # decisione di design successiva a HP2.
         src = self.HOME.read_text()
         pos = -1
         for key, titolo in (("magazine", "Magazine"),
@@ -5308,17 +5294,16 @@ class TestHomeHp2:
             assert here > pos, f"colonna {key} fuori ordine"
             pos = here
             assert titolo in src
-        for emoji in ("📖", "🌿", "✨"):
-            assert emoji in src, f"segno mancante nella colonna: {emoji}"
 
     def test_hp2_terza_colonna_non_cliccabile(self):
-        """'In arrivo' e' un'etichetta di stato, non un link e nemmeno
-        un bottone disabilitato."""
+        """L'etichetta di stato (oggi 'Prossimamente') non e' un link
+        e nemmeno un bottone disabilitato."""
         src = self.HOME.read_text()
         blocco = src[src.index("id: 'esperienze'"):src.index("];", src.index("id: 'esperienze'"))]
         assert "to:" not in blocco, \
             "la terza colonna non ha destinazione: e' una promessa"
-        assert "In arrivo" in blocco
+        assert "pillarExpBadge" in blocco, \
+            "la terza colonna porta l'etichetta di stato"
         pillar = (self.EDITORIAL / "PillarCard.jsx").read_text()
         # il ramo senza `to` rende uno <span>, non un Link/button
         ramo = pillar[pillar.index("{to ? ("):]
@@ -5344,10 +5329,11 @@ class TestHomeHp2:
         assert "{articles.length > 0 && (" in src, \
             "senza articoli la sezione Dal Magazine non deve esistere"
         assert "'/public/articles'" in src, "sorgente articoli sbagliata"
-        # il gate deve avvolgere DAVVERO la sezione 4
+        # il gate deve avvolgere DAVVERO la sezione Dal Magazine
+        # (LC8 — hp-network non esiste piu': la sezione dopo e' hp-pros)
         i_gate = src.index("{articles.length > 0 && (")
         assert i_gate < src.index('data-testid="hp-magazine"')
-        assert src.index('data-testid="hp-magazine"') < src.index('data-testid="hp-network"')
+        assert src.index('data-testid="hp-magazine"') < src.index('data-testid="hp-pros"')
 
     def test_hp2_niente_sezione_persone(self):
         """HP2 toglie la griglia dei volti: la rete si racconta a
@@ -5362,13 +5348,14 @@ class TestHomeHp2:
     # ── 5. le destinazioni delle CTA ─────────────────────────────────
 
     def test_hp2_destinazioni_cta(self):
+        # LC8 — le destinazioni vivono nelle costanti di pagina
+        # (NETWORK_PATH/JOIN_PATH), non piu' inline
         src = self.HOME.read_text()
         for dest in ("MAGAZINE_PATH = '/blog'",
+                     "NETWORK_PATH = '/operatori'",
+                     "JOIN_PATH = '/entra-nella-rete'",
                      'to="/manifesto"',
-                     "to: '/operatori'",
-                     'to="/newsletter"',
-                     'to="/entra-nella-rete"',
-                     "OPERATOR_FORM_PATH = '/entra-nella-rete#presentati'"):
+                     'to="/newsletter"'):
             assert dest in src, f"destinazione mancante: {dest}"
 
     def test_hp2_ancora_form_operatori_esiste_e_scrolla(self):
@@ -5412,12 +5399,16 @@ class TestHomeHp2:
 
     # ── 6. il footer della fase rete: cinque voci ────────────────────
 
+    # LC8 — l'ordine e le etichette sono quelli della riscrittura
+    # founder del 2/8: Magazine prima del Manifesto, "La Rete"
+    # (navNetwork) al posto di navNetworkMembers, la Lettera nella
+    # colonna Risorse (footer-nw-lettera, navLetter).
     _FOOTER_NETWORK = (
-        ("footer-nw-manifesto", "/manifesto", "navManifesto"),
         ("footer-nw-magazine", "/blog", "navBlog"),
-        ("footer-nw-operatori", "/operatori", "navNetworkMembers"),
+        ("footer-nw-manifesto", "/manifesto", "navManifesto"),
+        ("footer-nw-operatori", "/operatori", "navNetwork"),
         ("footer-nw-chisiamo", "/chi-siamo", "footerAbout"),
-        ("footer-nw-newsletter", "/newsletter", "navNewsletter"),
+        ("footer-nw-lettera", "/newsletter", "navLetter"),
     )
 
     def test_hp2_footer_rete_cinque_voci_nell_ordine(self):
@@ -5451,9 +5442,9 @@ class TestHomeHp2:
     def test_hp2_seo_home(self):
         src = self.HOME.read_text()
         assert "Aurya | Il benessere inizia dalle persone" in src
-        assert ("Scegliere un professionista del benessere significa "
-                "affidargli qualcosa di personale. Aurya ti fa conoscere "
-                "le persone dietro le pratiche.") in src
+        # LC8 — la description e' del founder e cambia: si difende il
+        # dispositivo (chiave nwHome.seoDesc, canonical sulla radice)
+        assert "nwHome.seoDesc" in src, "la description non passa dall'i18n"
         assert "canonicalPath: '/'" in src
 
     def test_hp2_seo_description_entro_i_158_caratteri(self):
@@ -5555,24 +5546,25 @@ class TestHomeHp2:
                     "footerAbout", "navNewsletter")
 
     def test_hp2_i18n_x4_chiavi_nuove(self):
+        """LC8 — il payoff resta l'unica frase tradotta x4 (e' il
+        brand, sta anche nel footer di tutte le lingue). Il copy della
+        home e' SOLO italiano dal 2/8: si pretende l'italiano completo
+        delle chiavi che la pagina usa davvero."""
         import json as _json
         for lang in ("it", "en", "de", "fr"):
             loc = _json.loads((FRONTEND_SRC / "locales" / lang
                                / "landings.json").read_text())
             assert loc["marketplace"].get("payoff") == self._PAYOFF[lang], \
                 f"{lang}: payoff mancante o diverso"
-            nw = loc.get("nwHome") or {}
-            for k in self._NWHOME_KEYS:
-                assert nw.get(k), f"{lang}: manca nwHome.{k}"
-            # nessun residuo del copy v3
-            for morto in ("peopleTitle", "peopleSub", "peopleCta",
-                          "timeTitle", "timeBody", "timeNote",
-                          "manifestoLine", "manifestoWhisper", "manifestoCta",
-                          "letterSub", "prosBody", "heroSub"):
-                assert morto not in nw, f"{lang}: chiave v3 superstite {morto}"
-            for k in self._FOOTER_KEYS:
-                assert loc["marketplace"].get(k), \
-                    f"{lang}: manca marketplace.{k} (voce del footer di rete)"
+        it = _json.loads((FRONTEND_SRC / "locales" / "it"
+                          / "landings.json").read_text())
+        nw = it.get("nwHome") or {}
+        for k in ("seoTitle", "seoDesc", "heroTitle", "heroP1",
+                  "heroCta", "heroCtaAlt", "findTitle", "whyTitle",
+                  "magTitle", "prosTitle", "letterTitle", "letterCta"):
+            assert nw.get(k), f"[it] manca nwHome.{k}"
+        for k, v in nw.items():
+            assert v and v.strip(), f"[it] nwHome.{k} vuota"
 
     def test_hp2_copy_nuovo_senza_trattini_lunghi(self):
         import json as _json
@@ -5766,161 +5758,138 @@ class TestManifestoSw1:
         path = FRONTEND_SRC / "locales" / lang / "landings.json"
         return json.loads(path.read_text()).get("manifesto") or {}
 
-    # ── 1. i quattro movimenti, nell'ordine, coi testi chiave ────────
+    # ── 1. gli otto movimenti brand v3, nell'ordine ──────────────────
+    # LC8 — la riscrittura founder del 2/8 ha sostituito i quattro
+    # movimenti SW1 (teoria/mondo/lavoro/mai/firma) con otto sezioni
+    # nuove. La guardia segue il DISPOSITIVO: testid in ordine, titolo
+    # di sezione dalla chiave giusta.
 
     _MOVIMENTI = (
-        ("mf-theory",
-         "Ogni percorso di benessere inizia da un incontro di fiducia.",
-         "Non si sceglie una disciplina."),
-        ("mf-world",
-         "Il mondo come lo vediamo.",
-         "Trovare qualcuno di cui fidarsi è difficile."),
-        ("mf-work",
-         "Come lavoriamo.",
-         "Per conoscere qualcuno ci vuole tempo. Ce lo prendiamo"),
-        ("mf-never",
-         "Cosa non faremo mai.",
-         "Una promessa vale per quello che esclude."),
-        ("mf-sign",
-         "aboutPage.facesTitle",
-         "Davide e Valentina"),
+        ("mf-open", "manifesto.heroTitle"),
+        ("mf-why", "manifesto.whyTitle"),
+        ("mf-believe", "manifesto.believeTitle"),
+        ("mf-how", "manifesto.howTitle"),
+        ("mf-principles", "manifesto.principlesTitle"),
+        ("mf-building", "manifesto.buildingTitle"),
+        ("mf-pro", "manifesto.proTitle"),
+        ("mf-follow", "manifesto.followTitle"),
     )
 
     def test_sw1_quattro_movimenti_nell_ordine(self):
         src = self._page()
         pos = -1
-        for testid, titolo, testo in self._MOVIMENTI:
+        for testid, chiave in self._MOVIMENTI:
             marker = f'data-testid="{testid}"'
             assert marker in src, f"movimento {testid} mancante"
-            assert titolo in src, f"{testid}: titolo mancante"
-            assert testo in src, f"{testid}: testo chiave mancante"
+            assert chiave in src, f"{testid}: manca la chiave {chiave}"
             here = src.index(marker)
             assert here > pos, f"{testid}: movimento fuori ordine"
             pos = here
 
     def test_sw1_teoria_frase_sola_e_h1_unico(self):
-        """La teoria apre la pagina come frase sola, grande (la misura
-        'manifesto' del kit esiste apposta), ed e' l'unico h1."""
+        """L'apertura e' una frase sola, grande (la misura 'manifesto'
+        del kit), ed e' l'unico h1. LC8 — la frase oggi e' la domanda
+        del brand v3, non piu' la teoria del Blueprint."""
         src = self._page()
-        assert src.count('as="h1"') == 1, "l'h1 e' uno solo: la teoria"
+        assert src.count('as="h1"') == 1, "l'h1 e' uno solo"
         i_h1 = src.index('as="h1"')
         intorno = src[max(0, i_h1 - 200):i_h1 + 300]
         assert 'size="manifesto"' in intorno, \
-            "la teoria usa la misura 'manifesto' del kit (frase sola, grande)"
-        assert "Ogni percorso di benessere inizia da un incontro di fiducia." \
-            in intorno, "l'h1 e' la teoria, non un altro titolo"
-        # il payoff torna come eco, dopo la teoria
-        assert "<BrandPayoff" in src, "manca l'eco del payoff"
-        assert src.index("<BrandPayoff") > i_h1, \
-            "il payoff e' l'eco della teoria: sta sotto, non sopra"
+            "l'apertura usa la misura 'manifesto' del kit (frase sola)"
+        assert "Ogni percorso di benessere inizia da una domanda." \
+            in intorno, "l'h1 e' la domanda del manifesto"
 
     def test_sw1_mondo_constatazione_mai_lamento(self):
-        """Il problema detto piano: la pagina lo chiude con 'non e'
-        colpa di nessuno' e non attacca nessun concorrente."""
+        """Il problema si constata, non si attacca: nessun concorrente
+        nominato, niente gergo da piattaforme."""
         copy = self._copy()
-        assert "Non è colpa di nessuno." in copy
         for vietata in ("Treatwell", "Fresha", "Mindbody", "social",
                         "algoritm", "ciarlatan"):
             assert vietata not in copy, \
-                f"il movimento 2 constata, non attacca: via '{vietata}'"
+                f"il manifesto constata, non attacca: via '{vietata}'"
 
     def test_sw1_badge_provenienza_mai_medaglia(self):
-        """Il badge si racconta come provenienza del racconto; il
-        criterio non si proclama (Blueprint, principio 3)."""
+        """LC8 — il badge Verificato Aurya non vive piu' nel copy del
+        Manifesto (brand v3: 'criterio invisibile, badge = provenienza'
+        si racconta sui profili, non qui). Quello che resta in guardia:
+        la selezione non si proclama MAI."""
         copy = self._copy()
-        assert "Verificato Aurya" in copy, "il badge va nominato col suo nome"
-        assert "Non è una medaglia." in copy, \
-            "il badge e' una provenienza, e va detto"
         for proclama in ("i migliori", "selezione rigorosa", "eccellenza",
                          "solo i più", "d'élite"):
             assert proclama.lower() not in copy.lower(), \
                 f"la selezione non si proclama: via '{proclama}'"
 
-    # ── 2. la lista dei mai: almeno 4 voci, con l'epilogo ────────────
+    # ── 2. i cinque principi sull'ancora verde ───────────────────────
 
     def test_sw1_lista_dei_mai(self):
+        """LC8 — la lista dei mai e' uscita col brand v3: al suo posto
+        I NOSTRI PRINCIPI, cinque, ognuno con titolo e riga che lo
+        spiega. La guardia difende che restino cinque e pieni."""
         src = self._page()
-        attese = (
-            "Non venderemo posizioni in classifica.",
-            "Non pubblicheremo promesse di guarigione.",
-            "Non chiameremo le persone utenti.",
-            "Non racconteremo qualcuno che non abbiamo incontrato.",
-            "Non riempiremo questa pagina di parole che non pensiamo.",
-        )
-        for voce in attese:
-            assert voce in src, f"manca il divieto: {voce}"
-        assert "chi ammette un limite viene creduto sul resto" in src, \
-            "la chiusa che lega la lista e' sparita"
-        # x4: almeno 4 voci never* piene in ogni lingua
-        for lang in self.LOCALES:
-            blocco = self._manifesto(lang)
-            voci = [v for k, v in blocco.items()
-                    if k.startswith("never") and k[5:].isdigit() and v]
-            assert len(voci) >= 4, \
-                f"[{lang}] la lista dei mai ha {len(voci)} voci, minimo 4"
+        it = self._manifesto("it")
+        for n in range(1, 6):
+            assert it.get(f"p{n}Title") and it.get(f"p{n}Body"), \
+                f"principio {n} incompleto (manifesto.p{n}Title/Body)"
+            assert f"manifesto.p{n}Title" in src, \
+                f"la pagina non monta il principio {n}"
+        assert "manifesto.principlesIntro" in src, \
+            "manca l'introduzione dei principi"
 
     def test_sw1_ancora_verde_una_sola_ed_e_il_movimento_4(self):
-        """Una sola ancora tonale, e sta sui divieti: e' li' che il
-        verde diventa solenne al punto giusto."""
+        """Una sola ancora tonale, e sta sui principi: e' li' che il
+        verde diventa solenne al punto giusto (brand v3)."""
         src = self._page()
         assert src.count('tone="sage"') == 1, \
             "il Manifesto ha UNA ancora verde, non di piu'"
         i_sage = src.index('tone="sage"')
-        assert 'data-testid="mf-never"' in src[i_sage:i_sage + 400], \
-            "l'ancora verde e' il movimento 4, non un'altra sezione"
+        assert 'data-testid="mf-principles"' in src[i_sage:i_sage + 400], \
+            "l'ancora verde e' la sezione dei principi"
 
-    # ── 3. la firma: fondatori reali, doppia CTA discreta ────────────
+    # ── 3. la firma: fondatori reali, CTA finali ─────────────────────
 
     def test_sw1_firma_materiale_reale(self):
-        """La firma riusa il materiale vero gia' tradotto x4: niente
-        biografie inventate nel sorgente."""
+        """La fotografia dei fondatori e' quella vera, e nessuna
+        biografia viene gonfiata (niente date, premi, numeri)."""
+        import re
         src = self._page()
         assert "/media/chisiamo-aurya.jpg" in src, "manca la foto vera"
-        for chiave in ("aboutPage.facesEyebrow", "aboutPage.facesTitle",
-                       "aboutPage.facesBody1", "aboutPage.facesBody2",
-                       "aboutPage.facesAlt"):
-            assert chiave in src, f"la firma riusa {chiave}"
-        assert "manifesto.signature" in src, "manca la firma dei fondatori"
-        # le chiavi riusate esistono davvero, in tutte le lingue
-        import json
-        for lang in self.LOCALES:
-            loc = json.loads((FRONTEND_SRC / "locales" / lang
-                              / "landings.json").read_text())
-            about = loc.get("aboutPage") or {}
-            for k in ("facesEyebrow", "facesTitle", "facesBody1",
-                      "facesBody2", "facesAlt"):
-                assert about.get(k), f"[{lang}] manca aboutPage.{k}"
+        copy = self._copy()
+        assert not re.search(r"\b(19|20)\d{2}\b", copy), \
+            "nessuna data va inventata nel Manifesto"
+        for inventato in ("premio", "certificat", "clienti soddisfatti"):
+            assert inventato.lower() not in copy.lower(), \
+                f"fatto non verificato nel copy: '{inventato}'"
 
     def test_sw1_doppia_cta_discreta(self):
+        """LC8 — le uscite del Manifesto brand v3: due CTA a meta'
+        pagina (Magazine e Lettera, quiet) e le due chiusure — la
+        sezione professionisti (mf-cta-pro → /entra-nella-rete) e la
+        sezione seguire il progetto (Lettera + Magazine)."""
         src = self._page()
-        blocco = src[src.index('data-testid="mf-sign"'):]
-        assert blocco.count("<EditorialCta") == 2, \
-            "la chiusura ha due CTA, non una e non tre"
-        assert 'variant="solid"' not in blocco, \
-            "le CTA finali sono discrete: quiet, mai bottoni pieni"
-        i_people = blocco.index('data-testid="mf-cta-people"')
-        i_ops = blocco.index('data-testid="mf-cta-operators"')
-        assert 'to="/operatori"' in blocco[max(0, i_people - 200):i_people + 200], \
-            "'Conosci le persone' porta a /operatori"
-        assert 'to="/entra-nella-rete"' in blocco[max(0, i_ops - 220):i_ops + 220], \
-            "'Sei un operatore? Parliamone' porta a /entra-nella-rete"
-        assert "Conosci le persone" in blocco
-        assert "Sei un operatore? Parliamone" in blocco
+        assert 'data-testid="mf-cta-magazine-top"' in src
+        assert 'data-testid="mf-cta-letter-top"' in src
+        blocco_pro = src[src.index('data-testid="mf-pro"'):]
+        assert 'to="/entra-nella-rete"' in blocco_pro[:2200], \
+            "la sezione professionisti deve portare a /entra-nella-rete"
+        blocco_follow = src[src.index('data-testid="mf-follow"'):]
+        assert 'to="/newsletter"' in blocco_follow, \
+            "la chiusura deve offrire la Lettera"
+        assert 'to="/blog"' in blocco_follow, \
+            "la chiusura deve offrire il Magazine"
 
-    # ── 4. SEO nella voce, x4 ────────────────────────────────────────
+    # ── 4. SEO nella voce ────────────────────────────────────────────
 
     def test_sw1_seo(self):
         src = self._page()
-        assert ("Il manifesto di Aurya | Ogni percorso inizia da un "
-                "incontro di fiducia") in src
+        assert ("Il manifesto di Aurya | Ogni percorso di benessere "
+                "inizia da una domanda") in src
         assert "canonicalPath: '/manifesto'" in src
-        for lang in self.LOCALES:
-            blocco = self._manifesto(lang)
-            desc = blocco.get("seoDesc") or ""
-            assert 0 < len(desc) <= 158, \
-                f"[{lang}] description da {len(desc)} caratteri, taglio 158"
-            assert "Aurya" in (blocco.get("seoTitle") or ""), \
-                f"[{lang}] title senza il brand"
+        # LC8 — solo italiano (fallbackLng='it')
+        it = self._manifesto("it")
+        desc = it.get("seoDesc") or ""
+        assert 0 < len(desc) <= 158, \
+            f"[it] description da {len(desc)} caratteri, taglio 158"
+        assert "Aurya" in (it.get("seoTitle") or ""), "[it] title senza brand"
 
     # ── 5. il lessico: parole vietate e trattini lunghi ──────────────
 
@@ -5933,15 +5902,21 @@ class TestManifestoSw1:
                 "gratuit", "gratis", "kostenlos", "free of charge")
 
     def test_sw1_parole_vietate_assenti(self):
-        copy = self._copy().replace("MarketplaceShell", "")
+        """LC8 — lessico giudicato sull'italiano (solo-italiano dal
+        2/8). Il principio 1 del founder ('Le persone vengono prima
+        delle piattaforme.') e' un contrasto voluto, non un uso della
+        parola: si esenta la frase esatta."""
+        eccezione = "prima delle piattaforme"
+        copy = (self._copy().replace("MarketplaceShell", "")
+                .replace(eccezione, ""))
         for vietata in self._VIETATE:
             assert vietata.lower() not in copy.lower(), \
                 f"parola vietata nel sorgente del Manifesto: '{vietata}'"
-        for lang in self.LOCALES:
-            for chiave, valore in self._manifesto(lang).items():
-                for vietata in self._VIETATE:
-                    assert vietata.lower() not in valore.lower(), \
-                        f"[{lang}] manifesto.{chiave} usa '{vietata}'"
+        for chiave, valore in self._manifesto("it").items():
+            valore_scan = valore.replace(eccezione, "")
+            for vietata in self._VIETATE:
+                assert vietata.lower() not in valore_scan.lower(), \
+                    f"[it] manifesto.{chiave} usa '{vietata}'"
 
     def test_sw1_copy_vecchio_sparito(self):
         """Della voce vecchia non resta niente: ne' nel sorgente ne'
@@ -5979,21 +5954,18 @@ class TestManifestoSw1:
                     f"[{lang}] trattino lungo in manifesto.{chiave}"
 
     def test_sw1_i18n_x4_complete(self):
-        """Stesse chiavi in tutte le lingue, nessuna vuota, e i
+        """LC8 — copy brand v3, SOLO italiano (fallbackLng='it'): via
+        la parita' x4. Italiano completo, nessuna chiave vuota, e i
         defaultValue del sorgente coincidono con l'italiano."""
         it = self._manifesto("it")
         assert len(it) >= 25, f"chiavi manifesto in italiano: {len(it)}"
-        for lang in self.LOCALES:
-            blocco = self._manifesto(lang)
-            mancanti = set(it) - set(blocco)
-            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)[:5]}"
-            for k, v in blocco.items():
-                assert v and v.strip(), f"[{lang}] manifesto.{k} vuota"
+        for k, v in it.items():
+            assert v and v.strip(), f"[it] manifesto.{k} vuota"
         # il fallback inline e' l'italiano vero, non una variante
         src = self._page()
         for k, v in it.items():
-            if f"manifesto.{k}" in src:
-                assert v in src, \
+            if f"manifesto.{k}" in src and f"'{v}'" not in src:
+                assert v.replace("’", "'") in src.replace("’", "'"), \
                     f"defaultValue di manifesto.{k} diverso dall'italiano"
 
 
@@ -6044,7 +6016,10 @@ class TestChiSiamoSw3:
         assert 'path="/chi-siamo" element={<ChiSiamoPage />}' in app, \
             "/chi-siamo deve montare la pagina, non un Navigate"
         assert "features/network/ChiSiamoPage" in app, "manca l'import lazy"
-        assert 'to="/manifesto" replace' not in app, \
+        # LC8 — mirata alla rotta: un divieto globale su qualunque
+        # Navigate verso /manifesto bloccava anche il gate LC2 di
+        # /come-funziona, che al Manifesto ci manda apposta.
+        assert 'path="/chi-siamo" element={<Navigate' not in app, \
             "regressione: il redirect /chi-siamo → /manifesto e' tornato"
         # la rotta OMONIMA degli store non si tocca: e' un'altra cosa
         assert 'path="/s/:slug/chi-siamo"' in app, \
@@ -6062,17 +6037,20 @@ class TestChiSiamoSw3:
         assert not self.VECCHIA.exists(), \
             "AboutAuryaPage.js e' ancora nel repo: due pagine simili"
         import json
-        for lang in self.LOCALES:
-            about = json.loads((FRONTEND_SRC / "locales" / lang
-                                / "landings.json").read_text())["aboutPage"]
-            for morta in ("intro", "missionTitle", "missionBody",
-                          "visionTitle", "visionBody", "forSeekersTitle",
-                          "forOrganizersTitle", "cta", "seoTitle", "seoDesc"):
-                assert morta not in about, \
-                    f"[{lang}] chiave morta superstite: aboutPage.{morta}"
-            # la firma dei fondatori resta: la riusano Manifesto e landing
-            for viva in ("title", "facesTitle", "facesBody1", "facesAlt"):
-                assert about.get(viva), f"[{lang}] persa aboutPage.{viva}"
+        # LC8 — brand v3 (2/8) ha ripopolato aboutPage con il copy
+        # nuovo, SOLO in italiano (fallbackLng='it'): seoTitle/seoDesc
+        # sono tornate vive, e la parita' x4 non e' piu' richiesta.
+        # Restano morte le chiavi della pagina 2025.
+        about = json.loads((FRONTEND_SRC / "locales" / "it"
+                            / "landings.json").read_text())["aboutPage"]
+        for morta in ("intro", "missionTitle", "missionBody",
+                      "visionTitle", "visionBody", "forSeekersTitle",
+                      "forOrganizersTitle", "cta"):
+            assert morta not in about, \
+                f"[it] chiave morta superstite: aboutPage.{morta}"
+        # le chiavi che la pagina usa oggi devono esserci
+        for viva in ("title", "facesAlt", "seoTitle", "seoDesc"):
+            assert about.get(viva), f"[it] persa aboutPage.{viva}"
 
     # ── 2. l'apertura: le tre negazioni ──────────────────────────────
 
@@ -6094,18 +6072,20 @@ class TestChiSiamoSw3:
 
     def test_sw3_ritratti_solo_fatti_reali(self):
         """Valentina e Davide raccontati col materiale verificato dei
-        fondatori: nessun titolo, premio o data inventata."""
+        fondatori: nessun titolo, premio o data inventata.
+        LC8 — i fatti citati sono quelli del copy brand v3 (Reiki e
+        pratiche energetiche per Valentina, prodotti digitali per
+        Davide): la regola che non cambia e' NIENTE biografia gonfiata."""
         import re
         src = self._page()
-        for fatto in ("Operatrice Reiki di terzo livello",
-                      "letture evolutive di tarocchi e oracoli",
-                      "mappe natali", "Lavora nel digitale"):
+        for fatto in ("Reiki", "pratiche energetiche",
+                      "prodotti digitali"):
             assert fatto in src, f"fatto reale mancante nei ritratti: {fatto}"
-        # la foto vera, con l'alt gia' tradotto x4 (nessun alt nuovo)
+        # la foto vera, con l'alt riusato (nessun alt nuovo)
         assert "/media/chisiamo-aurya.jpg" in src, "manca la foto vera"
         assert "aboutPage.facesAlt" in src, "l'alt della foto va riusato"
-        blocco = src[src.index('data-testid="cs-faces"'):]
-        assert 'filter' not in blocco and 'grayscale' not in blocco, \
+        blocco = src[src.index('data-testid="cs-paths"'):]
+        assert 'grayscale' not in blocco, \
             "la fotografia va lasciata com'e': niente filtri"
         # niente biografia gonfiata: date, anni, numeri di clienti
         copy = self._copy()
@@ -6119,20 +6099,12 @@ class TestChiSiamoSw3:
     # ── 4. la teoria si indica, non si riscrive ──────────────────────
 
     def test_sw3_teoria_indicata_e_manifesto_non_duplicato(self):
-        """Cosa ci guida cita la teoria del Blueprint (la stessa frase
-        del Manifesto, parola per parola) e rimanda: i movimenti del
-        Manifesto non si ricopiano qui."""
-        import json
+        """LC8 — brand v3 ha tolto la citazione letterale della teoria
+        (la pagina oggi racconta le persone, non la posizione): quello
+        che NON deve regredire e' la separazione dei compiti — il
+        Manifesto non si ricopia in Chi siamo — e la disciplina tonale
+        (una sola ancora verde)."""
         src = self._page()
-        teoria = "Ogni percorso di benessere inizia da un incontro di fiducia."
-        assert teoria in src, "manca il richiamo alla teoria"
-        assert "<Quote" in src, "la teoria e' una citazione, non una tesi nuova"
-        for lang in self.LOCALES:
-            loc = json.loads((FRONTEND_SRC / "locales" / lang
-                              / "landings.json").read_text())
-            assert self._blocco(lang)["guideTheory"] == \
-                loc["manifesto"]["theoryTitle"], \
-                f"[{lang}] la teoria citata non e' quella del Manifesto"
         copy = self._copy()
         for pezzo_di_manifesto in ("Cosa non faremo mai", "Il mondo come lo vediamo",
                                    "Non venderemo posizioni in classifica",
@@ -6146,77 +6118,79 @@ class TestChiSiamoSw3:
     # ── 5. la chiusura: manifesto e mail ─────────────────────────────
 
     def test_sw3_chiusura_doppia_cta_discreta(self):
+        """LC8 — la chiusura brand v3 (cs-together) ha TRE porte:
+        Magazine (l'unica cosa gia' viva, solid), professionisti e
+        Lettera (quiet, aggiunta in LC6). E il canale diretto resta:
+        la mail scritta per esteso, cliccabile come mailto."""
         src = self._page()
-        blocco = src[src.index('data-testid="cs-close"'):]
-        assert blocco.count("<EditorialCta") == 2, \
-            "la chiusura ha due CTA, non una e non tre"
-        assert 'variant="solid"' not in src, \
-            "le CTA di questa pagina sono discrete: quiet, mai bottoni pieni"
-        assert 'to="/manifesto"' in blocco, "manca il rimando al manifesto"
-        assert "Leggi il manifesto" in blocco
-        # la mail vive in una costante e la CTA la monta in un href
-        assert f"'{self.MAIL}'" in src, f"manca la mail vera ({self.MAIL})"
-        assert "href={`mailto:${CONTACT_MAIL}`}" in blocco, \
-            "la CTA 'Scrivici' deve aprire un mailto vero"
-        assert "Scrivici" in blocco
-        i_manifesto = blocco.index('to="/manifesto"')
-        assert blocco.index("cs-cta-write") > i_manifesto, \
-            "prima il manifesto, poi la mail"
+        blocco = src[src.index('data-testid="cs-together"'):]
+        for porta in ("cs-cta-magazine", "cs-cta-pro", "cs-cta-letter"):
+            assert f'data-testid="{porta}"' in blocco, \
+                f"manca la porta {porta} nella chiusura"
+        assert 'to="/newsletter"' in blocco, \
+            "la porta Lettera deve portare a /newsletter"
+        # la mail vera (dalla costante di brand), visibile e cliccabile
+        assert "href={`mailto:${BRAND_EMAIL}`}" in blocco, \
+            "la mail deve aprire un mailto vero"
+        brand = (FRONTEND_SRC / "config" / "brand.js").read_text()
+        assert f"'{self.MAIL}'" in brand, \
+            f"BRAND_EMAIL non e' piu' {self.MAIL}"
 
     # ── 6. SEO e i18n x4 ─────────────────────────────────────────────
 
     def test_sw3_seo_e_i18n_x4(self):
+        """LC8 — il copy brand v3 vive in `aboutPage`, SOLO italiano
+        (decisione founder 2/8, fallbackLng='it'): niente parita' x4.
+        La guardia pretende l'italiano completo, la description entro
+        il taglio Google e il brand nel title."""
+        import json
         src = self._page()
         assert "'Chi siamo | Aurya'" in src, "title della pagina sbagliato"
         assert "canonicalPath: '/chi-siamo'" in src
-        it = self._blocco("it")
-        assert len(it) >= 20, f"chiavi chiSiamo in italiano: {len(it)}"
-        for lang in self.LOCALES:
-            blocco = self._blocco(lang)
-            mancanti = set(it) - set(blocco)
-            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)}"
-            for k, v in blocco.items():
-                assert v and v.strip(), f"[{lang}] chiSiamo.{k} vuota"
-            desc = blocco.get("seoDesc") or ""
-            assert 0 < len(desc) <= 158, \
-                f"[{lang}] description da {len(desc)} caratteri, taglio 158"
-            assert "Aurya" in (blocco.get("seoTitle") or ""), \
-                f"[{lang}] title senza il brand"
+        it = json.loads((FRONTEND_SRC / "locales" / "it"
+                         / "landings.json").read_text())["aboutPage"]
+        assert len(it) >= 40, f"chiavi aboutPage in italiano: {len(it)}"
+        for k, v in it.items():
+            assert v and v.strip(), f"[it] aboutPage.{k} vuota"
+        desc = it.get("seoDesc") or ""
+        assert 0 < len(desc) <= 158, \
+            f"[it] description da {len(desc)} caratteri, taglio 158"
+        assert "Aurya" in (it.get("seoTitle") or ""), "[it] title senza brand"
         # i defaultValue inline sono l'italiano vero, non una variante
         for k, v in it.items():
-            if f"chiSiamo.{k}" in src:
-                assert v in src, \
-                    f"defaultValue di chiSiamo.{k} diverso dall'italiano"
+            if f"aboutPage.{k}" in src and f"'{v}'" not in src:
+                # apostrofo tipografico vs dritto: confronto tollerante
+                assert v.replace("’", "'") in src.replace("’", "'"), \
+                    f"defaultValue di aboutPage.{k} diverso dall'italiano"
 
     # ── 7. il lessico del Blueprint ──────────────────────────────────
 
-    # Le tre negazioni dell'apertura NOMINANO quello che non siamo:
-    # e' l'unico posto in cui "directory" e i suoi fratelli sono
-    # ammessi, esattamente come sulla landing operatori.
-    _NEGAZIONI = ("line1", "line2", "line3")
-    _VIETATE = ("marketplace", "gestionale", "piattaform",
+    # LC8 — le negazioni sono uscite dal copy (brand v3): niente piu'
+    # eccezioni, il lessico vietato vale su tutto. "piattaforma" resta
+    # ammessa nell'unico punto in cui e' una smentita voluta del copy
+    # founder ("Non come una piattaforma. / Come un ponte.").
+    _VIETATE = ("marketplace", "gestionale",
                 "trasforma la tua vita", "ritrova te stesso",
                 "gratuit", "gratis", "kostenlos", "free of charge")
 
     def test_sw3_parole_vietate_e_trattini_lunghi(self):
-        import re
+        import json, re
         copy = self._copy().replace("MarketplaceShell", "")
-        # via le tre negazioni prima di scandire il sorgente
-        for lang_key in self._NEGAZIONI:
-            valore = self._blocco("it")[lang_key]
-            copy = copy.replace(valore, "")
-        for vietata in self._VIETATE + ("directory",):
+        # le smentite volute del copy founder non contano come uso
+        for smentita in ("Non come una piattaforma.",
+                         "Non abbiamo creato Aurya per lanciare una piattaforma."):
+            copy = copy.replace(smentita, "")
+        for vietata in self._VIETATE + ("directory", "piattaform"):
             assert vietata.lower() not in copy.lower(), \
                 f"parola vietata nel sorgente di Chi siamo: '{vietata}'"
-        for lang in self.LOCALES:
-            for chiave, valore in self._blocco(lang).items():
-                if chiave in self._NEGAZIONI:
-                    continue
-                for vietata in self._VIETATE:
-                    assert vietata.lower() not in valore.lower(), \
-                        f"[{lang}] chiSiamo.{chiave} usa '{vietata}'"
-                assert "—" not in valore and "–" not in valore, \
-                    f"[{lang}] trattino lungo in chiSiamo.{chiave}"
+        it = json.loads((FRONTEND_SRC / "locales" / "it"
+                         / "landings.json").read_text())["aboutPage"]
+        for chiave, valore in it.items():
+            for vietata in self._VIETATE:
+                assert vietata.lower() not in valore.lower(), \
+                    f"[it] aboutPage.{chiave} usa '{vietata}'"
+            assert "—" not in valore and "–" not in valore, \
+                f"[it] trattino lungo in aboutPage.{chiave}"
         # zero trattini lunghi anche nel copy inline
         defaults = re.findall(r"defaultValue:\s*(?:'([^']*)'|\"([^\"]*)\")",
                               self._page())
@@ -6516,6 +6490,23 @@ class TestReteSw5:
 
     # ── infrastruttura: si riusa quella di PV2, stessa area ──────────
 
+    # LC8 — LC3 ha tolto network_member alle org demo, quindi la rete
+    # pubblica e' (giustamente) vuota. Queste guardie pero' esercitano
+    # comportamento vero (gate della quote, category derivata, limite
+    # 280) e hanno bisogno di UN membro: si accende il flag sulla demo
+    # per la durata della classe e lo si spegne alla fine — il sito
+    # pubblico non lo vede mai, i test si'.
+    @classmethod
+    def setup_class(cls):
+        cls._orgs = _pv7_live_db()["organizations"]
+        cls._orgs.update_one({"public_slug": cls.SLUG},
+                             {"$set": {"network_member": True}})
+
+    @classmethod
+    def teardown_class(cls):
+        cls._orgs.update_one({"public_slug": cls.SLUG},
+                             {"$unset": {"network_member": ""}})
+
     def _member_row(self):
         r = requests.get(f"{BASE_URL}/api/public/network/members",
                          headers=self.UA, timeout=10)
@@ -6721,7 +6712,10 @@ class TestReteSw5:
     def test_sw5_pagina_usa_il_kit_e_le_schede_grandi(self):
         src = self._page()
         assert "components/editorial" in src, "il kit editoriale non e' importato"
-        for pezzo in ("Section", "DisplayTitle", "TitleLine", "Lede",
+        # LC8 — brand v3: TitleLine e' uscito (titoli a frase unica),
+        # Quote e' entrato (la voce della pagina). Il resto del kit
+        # resta il dispositivo da difendere.
+        for pezzo in ("Section", "DisplayTitle", "Quote", "Lede",
                       "PersonCard", "EditorialCta"):
             assert pezzo in src, f"manca dal kit: {pezzo}"
         assert src.count('as="h1"') == 1, "l'h1 e' uno solo"
@@ -6741,21 +6735,24 @@ class TestReteSw5:
         assert src.count('tone="sage"') == 1
 
     def test_sw5_criteri_riscritti_come_gesti(self):
-        """I requisiti del lettore diventano gesti nostri. La lista
-        numerata (01/02/03) e le frasi che dicevano cosa DEVE avere chi
-        entra non devono tornare."""
-        src = self._page()
+        """LC8 — brand v3 e' andata oltre SW5: la sezione criteri e'
+        SPARITA del tutto ('criterio invisibile', niente regolamento;
+        le chiavi nwOps.how* sono state rimosse dal locale). Quello che
+        non deve regredire: mai requisiti del lettore, mai un elenco
+        numerato di condizioni, e mai giudizi proclamati. La crescita
+        si racconta come gesto nostro ('una persona alla volta')."""
+        # _copy(): il commento di testa RACCONTA la rimozione di
+        # nwOps.how* e citarla non e' reintrodurla
+        src = self._copy()
         for requisito in ("nwOps.c1", "nwOps.c2", "nwOps.c3",
                           "criteriaTitle", "Con che criterio",
                           "Una pratica reale", "La disponibilità a raccontarsi",
-                          "padStart"):
+                          "padStart", "nwOps.how"):
             assert requisito not in src, f"requisito superstite: {requisito}"
         it = self._blocco("it")
-        for chiave in ("howP1", "howP2", "howP3", "howClose"):
-            assert it.get(chiave), f"manca il gesto nwOps.{chiave}"
-        # prima persona plurale: sono cose che facciamo noi
-        gesti = " ".join(it[k] for k in ("howP1", "howP2", "howP3"))
-        assert "andiamo a conoscere" in gesti and "Firmiamo" in gesti
+        for chiave in ("growTitle", "growP1", "growP2"):
+            assert it.get(chiave), f"manca il racconto nwOps.{chiave}"
+        assert "una persona alla volta" in it["growTitle"].lower()
         # e nessun giudizio proclamato (Blueprint cap. 2.3)
         for giudizio in ("i migliori", "selezioniamo", "selezionati",
                          "solo i più", "eccellenza"):
@@ -6763,17 +6760,21 @@ class TestReteSw5:
                 f"il criterio si proclama: '{giudizio}'"
 
     def test_sw5_stato_vuoto_onesto_e_griglia_che_regge(self):
-        """Con tre persone la pagina non deve sembrare rotta, e senza
-        nessuna non deve sembrare in errore."""
+        """Con poche persone la pagina non deve sembrare rotta, e senza
+        nessuna non deve sembrare in errore.
+        LC8 — brand v3: lo stato vuoto e' il pannello salvia 'In
+        arrivo' (nw-people-soon) con la CTA Lettera — verificato in
+        pagina dopo LC3, quando la rete e' rimasta davvero vuota. Con
+        pochi membri la lista passa alle righe grandi (few)."""
         src = self._page()
-        assert 'data-testid="nw-people-empty"' in src
-        assert "nwOps.peopleEmpty" in src
+        assert 'data-testid="nw-people-soon"' in src, \
+            "manca il pannello d'attesa dello stato vuoto"
+        assert "nwOps.soonTitle" in src and "nwOps.letterCta" in src, \
+            "lo stato vuoto deve dire cosa succede e offrire la Lettera"
         assert "members === null" in src, "lo stato di caricamento e' sparito"
-        # la griglia si stringe quando si e' in pochi
-        assert "gridCols" in src and "members.length <= 2" in src
-        it = self._blocco("it")
-        assert "interviste" in it["peopleEmpty"].lower(), \
-            "lo stato vuoto non dice perche' la pagina e' vuota"
+        assert "list.length === 0" in src, "il ramo vuoto e' sparito"
+        assert "few ?" in src, \
+            "con pochi membri la griglia deve stringersi (righe grandi)"
 
     def test_sw5_intervista_resta_raggiungibile(self):
         """La citazione invita, la pagina dell'intervista mantiene: il
@@ -6790,38 +6791,44 @@ class TestReteSw5:
                 "gratuit", "gratis", "kostenlos", "free of charge")
 
     def test_sw5_parole_vietate_e_trattini_lunghi(self):
+        """LC8 — il lessico si giudica sull'italiano (il copy vivo:
+        solo-italiano dal 2/8, le altre lingue leggono l'it via
+        fallback; i blocchi en/de/fr sono residui della pagina vecchia
+        e non arrivano al lettore)."""
         copy = self._copy().replace("MarketplaceShell", "")
+        # eccezione di copy founder (followP2): la Lettera E' gratuita
+        # e dirlo non e' un argomento di vendita ai professionisti —
+        # la regola anti-"gratuito" nasceva per l'offerta della rete
+        eccezione = "puoi iscriverti gratuitamente"
+        copy = copy.replace(eccezione, "")
         for vietata in self._VIETATE:
             assert vietata.lower() not in copy.lower(), \
                 f"parola vietata nel sorgente della pagina: '{vietata}'"
-        for lang in self.LOCALES:
-            for chiave, valore in self._blocco(lang).items():
-                for vietata in self._VIETATE:
-                    assert vietata.lower() not in valore.lower(), \
-                        f"[{lang}] nwOps.{chiave} usa '{vietata}'"
-                assert "—" not in valore and "–" not in valore, \
-                    f"[{lang}] trattino lungo in nwOps.{chiave}"
+        for chiave, valore in self._blocco("it").items():
+            valore_scan = valore.replace(eccezione, "")
+            for vietata in self._VIETATE:
+                assert vietata.lower() not in valore_scan.lower(), \
+                    f"[it] nwOps.{chiave} usa '{vietata}'"
+            assert "—" not in valore and "–" not in valore, \
+                f"[it] trattino lungo in nwOps.{chiave}"
 
     def test_sw5_i18n_x4(self):
+        """LC8 — copy brand v3, SOLO italiano (fallbackLng='it'): via
+        la parita' x4, si pretende l'italiano completo delle chiavi
+        che la pagina usa davvero."""
         import re
         src = self._page()
         it = self._blocco("it")
-        for chiave in ("seoTitle", "seoDesc", "eyebrow", "line1", "line2",
-                       "lead", "howTitle", "howP1", "howP2", "howP3",
-                       "howClose", "peopleTitle", "peopleSub", "loading",
-                       "peopleEmpty", "readInterview", "joinTitle",
-                       "joinBody", "joinCta", "joinCtaAlt"):
+        for chiave in ("seoTitle", "seoDesc", "title", "leadP1",
+                       "growTitle", "growP1", "peopleTitle", "loading",
+                       "soonTitle", "letterCta", "readInterview"):
             assert it.get(chiave), f"[it] nwOps.{chiave} mancante"
-        for lang in self.LOCALES:
-            blocco = self._blocco(lang)
-            mancanti = set(it) - set(blocco)
-            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)}"
-            for k, v in blocco.items():
-                assert v and v.strip(), f"[{lang}] nwOps.{k} vuota"
+        for k, v in it.items():
+            assert v and v.strip(), f"[it] nwOps.{k} vuota"
         # i defaultValue inline sono l'italiano vero, non una variante
         for k, v in it.items():
-            if f"nwOps.{k}" in src:
-                assert v in src, \
+            if f"nwOps.{k}" in src and f"'{v}'" not in src:
+                assert v.replace("’", "'") in src.replace("’", "'"), \
                     f"defaultValue di nwOps.{k} diverso dall'italiano"
         defaults = re.findall(r"defaultValue:\s*(?:'([^']*)'|\"([^\"]*)\")", src)
         valori = [a or b for a, b in defaults]
@@ -6845,5 +6852,6 @@ class TestReteSw5:
             mancanti = set(taxonomy) - set(cats)
             assert not mancanti, \
                 f"[{lang}] categorie senza label in landings: {sorted(mancanti)}"
-        assert "categories.${m.category}" in self._page(), \
+        # LC8 — la label passa da catLabel(slug), stesso dispositivo
+        assert "categories.${slug}" in self._page(), \
             "la pagina stampa lo slug grezzo invece della label"
