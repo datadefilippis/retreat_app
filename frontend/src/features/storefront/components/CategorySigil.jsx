@@ -200,6 +200,28 @@ function treDosha() {                                // ayurveda
   return out;
 }
 
+
+function germoglio() {                               // naturopatia
+  /* Stesso calcolo del Python (_geo_sprout): stelo, tre coppie di
+     rami, gemme in punta, dentro il cerchio. */
+  const out = [cerchio(C, C, R * 0.95, 'c')];
+  const top = C - R * 0.62;
+  const bottom = C + R * 0.72;
+  out.push(<line key="stelo" x1={C} y1={bottom} x2={C} y2={top} />);
+  out.push(cerchio(C, top, R * 0.07, 'cima'));
+  [0.18, 0.42, 0.66].forEach((frac, i) => {
+    const y = bottom - (bottom - top) * frac;
+    const lung = R * (0.42 - i * 0.09);
+    [-1, 1].forEach((lato) => {
+      const ex = C + lato * lung * 0.82;
+      const ey = y - lung * 0.62;
+      out.push(<line key={`r${i}${lato}`} x1={C} y1={y} x2={ex} y2={ey} />);
+      out.push(cerchio(ex, ey, R * 0.055, `g${i}${lato}`));
+    });
+  });
+  return out;
+}
+
 function aura() {                                    // ripiego
   return [1, 0.75, 0.5, 0.25].map((k) => cerchio(C, C, R * k, k));
 }
@@ -219,6 +241,7 @@ const SEGNI = {
   operatori: quadratoNelCerchio,
   scegliere: bivio,
   ayurveda: treDosha,
+  naturopatia: germoglio,
 };
 
 /**

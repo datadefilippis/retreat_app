@@ -72,6 +72,9 @@ EDITORIAL_PALETTES = {
     # tonalita' piu' fredda del Magazine, perche' e' il cluster in cui
     # si ragiona invece di praticare.
     "ayurveda":  ((104, 66, 44),   (188, 132, 86)),   # rame e curcuma
+    "naturopatia": ((52, 74, 46),  (134, 162, 108)),  # muschio e felce:
+    # verde piu' scuro e piu' freddo di cammini/detox, per non
+    # confondersi coi vicini di scaffale.
 }
 
 CREAM = (246, 243, 236)
@@ -260,12 +263,31 @@ def _geo_three_doshas(draw, cx, cy, R, color, w=3):
                 cy - math.sin(rad) * r * 0.86, r, color, w)
 
 
+def _geo_sprout(draw, cx, cy, R, color, w=3):
+    """Naturopatia — il germoglio: uno stelo con tre coppie di rami e
+    le gemme in punta, dentro il cerchio. La pianta che cresce e' il
+    gesto della disciplina: accompagnare, non forzare."""
+    _circle(draw, cx, cy, R * 0.95, color, max(2, w - 2))
+    top, bottom = cy - R * 0.62, cy + R * 0.72
+    draw.line([(cx, bottom), (cx, top)], fill=color, width=w)
+    _circle(draw, cx, top, R * 0.07, color, w)
+    for i, frac in enumerate((0.18, 0.42, 0.66)):
+        y = bottom - (bottom - top) * frac
+        lung = R * (0.42 - i * 0.09)
+        for lato in (-1, 1):
+            ex = cx + lato * lung * 0.82
+            ey = y - lung * 0.62
+            draw.line([(cx, y), (ex, ey)], fill=color, width=w)
+            _circle(draw, ex, ey, R * 0.055, color, w)
+
+
 EDITORIAL_GEOMETRY = {
     "ritiri": _geo_circle_of_people,
     "energia": _geo_rays,
     "operatori": _geo_square_in_circle,
     "scegliere": _geo_crossroads,
     "ayurveda": _geo_three_doshas,
+    "naturopatia": _geo_sprout,
 }
 
 

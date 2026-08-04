@@ -51,6 +51,7 @@ const COLORE = {
   operatori: '#2c4a42',
   scegliere: '#3a4660',
   ayurveda: '#68422c',
+  naturopatia: '#344a2e',
 };
 const RIPIEGO = '#376254';
 

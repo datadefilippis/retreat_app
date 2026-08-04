@@ -32,7 +32,8 @@ class TestArticleCategoriesBN1:
         # tre storiche restino e che ogni extra sia dichiarata qui.
         assert {"ritiri", "energia", "operatori"} <= set(ARTICLE_EXTRA_CATEGORIES)
         assert set(ARTICLE_EXTRA_CATEGORIES) <= {
-            "ritiri", "energia", "operatori", "ayurveda", "scegliere"}
+            "ritiri", "energia", "operatori", "ayurveda", "scegliere",
+            "naturopatia"}
         # le editoriali NON entrano nella tassonomia ritiri (nessuna
         # pagina /ritiri/{cat} fantasma)
         assert not set(ARTICLE_EXTRA_CATEGORIES) & set(RETREAT_CATEGORIES)

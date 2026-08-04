@@ -40,6 +40,11 @@ ARTICLE_EXTRA_CATEGORIES = {
     # propria, aperta con due pezzi perche' una categoria con un
     # articolo solo e' una stanza vuota.
     "ayurveda": "Ayurveda",
+    # ED1 (piano espansione ago 2026) — la naturopatia e' un approccio
+    # a se': non e' bodywork, non e' "energia", e ha in arrivo i suoi
+    # vicini (aromaterapia, fitoterapia). Stanza propria come per
+    # l'ayurveda; apre con un pezzo solo ma il calendario la riempie.
+    "naturopatia": "Naturopatia",
 }
 ARTICLE_CATEGORIES = {**RETREAT_CATEGORIES, **ARTICLE_EXTRA_CATEGORIES}
 
