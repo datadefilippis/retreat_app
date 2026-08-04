@@ -250,13 +250,25 @@ async def build_products() -> str:
 async def build_operators() -> str:
     from database import organizations_collection
     from core.prelaunch import site_phase
-    # LC1→PN0 — fase rete: i profili /o/ restano VIVI e indicizzabili
-    # (sono la promessa fatta agli operatori intervistati); la scoperta
-    # passa da /operatori (in core) che li linka. Questa sotto-sitemap
-    # resta vuota fino al flip — valutare se elencare qui i soli
-    # network_member gia' in fase rete.
+    # LC1→PN0→PP2b (ok founder 4/8) — fase rete: la promessa fatta agli
+    # intervistati e' un profilo pubblico INDICIZZATO, quindi la
+    # sitemap elenca gia' ora i SOLI membri della rete, e il solo
+    # profilo /o/ (niente /s/: lo store non esiste nel mondo snello).
+    # Al flip in marketplace torna l'elenco pieno qui sotto.
     if site_phase() == "network":
-        return _wrap([], "operators")
+        base = _base_url()
+        slug_by_org = await _public_org_slugs()
+        members: dict = {}
+        async for o in organizations_collection.find(
+                {"network_member": True, "is_active": {"$ne": False}},
+                {"_id": 0, "id": 1, "updated_at": 1}):
+            slug = slug_by_org.get(o["id"])
+            if slug:
+                members[slug] = o.get("updated_at")
+        urls = [_url(f"{base}/o/{slug}", priority="0.6",
+                     lastmod=members[slug])
+                for slug in sorted(members)]
+        return _wrap(urls, "operators")
     base = _base_url()
     slug_by_org = await _public_org_slugs()
     # SEO2 — lastmod onesto per operatore: quando il profilo/store cambia
@@ -314,10 +326,12 @@ def build_index() -> str:
     from core.prelaunch import site_phase
     base = _base_url()
     now = datetime.now(timezone.utc).isoformat()[:10]
-    # LC1 — l'indice elenca solo sotto-sitemap con contenuto possibile:
-    # in fase rete quelle commerciali sono vuote per costruzione (sopra),
-    # e un indice che le dichiara promette pagine che non esistono.
-    names = (("core", "articles") if site_phase() == "network"
+    # LC1→PP2b — l'indice elenca solo sotto-sitemap con contenuto
+    # possibile: in fase rete retreats/products sono vuote per
+    # costruzione, ma operators elenca i membri della rete (ok founder
+    # 4/8) e quindi si dichiara.
+    names = (("core", "operators", "articles")
+             if site_phase() == "network"
              else ("core", "retreats", "products", "operators", "articles"))
     entries = "".join(
         f"<sitemap><loc>{escape(base)}/api/public/sitemap-{name}.xml</loc>"

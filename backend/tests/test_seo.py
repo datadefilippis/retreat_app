@@ -58,19 +58,38 @@ class TestSitemapUrl:
 
     @pytest.mark.asyncio
     async def test_commercial_builders_empty_in_network_lc1(self, monkeypatch):
-        """LC1 — in fase rete /e/, /s/, /o/ e le landing prodotto
-        rispondono 404 ai crawler: i builder commerciali devono uscire
-        vuoti PRIMA di toccare il DB (il test non richiede Mongo)."""
+        """LC1 — in fase rete le sitemap transazionali (/e/, landing
+        prodotto) restano vuote: non si pubblicizzano ai crawler."""
         monkeypatch.setenv("SITE_PHASE", "network")
-        for build in (build_retreats, build_products, build_operators):
+        for build in (build_retreats, build_products):
             xml = await build()
             assert "<loc>" not in xml, f"{build.__name__} non vuoto in rete"
 
-    def test_index_omits_commercial_in_network_lc1(self, monkeypatch):
+    @pytest.mark.asyncio
+    async def test_operators_sitemap_members_only_in_network_pp2b(
+            self, monkeypatch):
+        """PP2b (ok founder 4/8) — in fase rete la sitemap operators
+        elenca i SOLI membri della rete, e il solo profilo /o/: mai
+        /s/ (lo store non esiste nel mondo snello)."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        xml = await build_operators()
+        assert "/s/" not in xml, "store in sitemap in fase rete"
+        import re
+        locs = re.findall(r"<loc>([^<]+)</loc>", xml)
+        assert all("/o/" in u for u in locs), f"URL non-profilo: {locs}"
+        # ogni voce corrisponde a un membro vero della rete
+        from database import organizations_collection
+        n_members = await organizations_collection.count_documents(
+            {"network_member": True, "is_active": {"$ne": False}})
+        assert len(locs) <= n_members
+
+    def test_index_declares_operators_in_network_pp2b(self, monkeypatch):
         monkeypatch.setenv("SITE_PHASE", "network")
         xml = build_index()
         assert "sitemap-core.xml" in xml and "sitemap-articles.xml" in xml
-        for name in ("retreats", "products", "operators"):
+        # PP2b — operators si dichiara (elenca i membri della rete)
+        assert "sitemap-operators.xml" in xml
+        for name in ("retreats", "products"):
             assert f"sitemap-{name}.xml" not in xml, (
                 f"l'indice dichiara sitemap-{name} in fase rete")
 

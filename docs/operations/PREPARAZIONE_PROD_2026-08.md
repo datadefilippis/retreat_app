@@ -110,12 +110,11 @@ runtime in locale.
    legale; il bump innesca il re-consent degli utenti admin al primo
    login. Serve il tuo via (o quello del legale) sui testi PRIMA del
    deploy — è l'unico pezzo del delta pensato per una revisione umana.
-2. **Indicizzazione dei profili membri.** In fase rete i profili /o/
-   sono vivi e indicizzabili (la promessa agli intervistati) ma la
-   sotto-sitemap operators è vuota: Google li scopre solo via link da
-   /operatori. Opzione consigliata: elencare i soli network_member
-   nella sitemap già in fase rete. Dimmi sì/no e lo faccio in 20
-   minuti con guardia.
+2. ~~Indicizzazione dei profili membri~~ **FATTO (ok founder 4/8,
+   PP2b)**: in fase rete la sitemap operators elenca i soli
+   network_member, solo profilo /o/ (mai /s/), e l'indice la dichiara.
+   Guardie: test_operators_sitemap_members_only_in_network_pp2b +
+   test_index_declares_operators_in_network_pp2b.
 
 ## Runbook del deploy (quando dai il go)
 
