@@ -342,6 +342,20 @@ export default function OperatorLandingPage() {
                     {t('opPro.heroP3', { defaultValue: 'Noi crediamo che il tuo lavoro meriti molto di più.' })}
                   </Lede>
                 </div>
+                {/* LC4 — l'azione nel primo campo visivo. La revisione
+                    pre-lancio ha misurato la prima CTA a 3,4 schermate
+                    (desktop) e il form a 26: chi arriva gia' convinto —
+                    un passaparola, un'intervista — doveva comunque farsi
+                    tutta la pagina. Stessa ancora della soglia, che
+                    resta: quella parla a chi legge la promessa, questa
+                    a chi l'ha gia' sentita altrove. */}
+                <div className="mt-9 sm:mt-10">
+                  <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
+                                tone="dark" variant="solid"
+                                data-testid="ol-hero-cta-top">
+                    {ctaContact}
+                  </EditorialCta>
+                </div>
               </div>
             </div>
           </div>
@@ -564,11 +578,17 @@ export default function OperatorLandingPage() {
         </Section>
 
         {/* ── 7. CHI C'E' DIETRO AURYA — i volti veri ──────────────
-            Tre negazioni secche e poi le persone: il titolo e' fatto di
-            frasi, quindi ogni riga e' una <TitleLine> e non un a-capo
-            estetico. La fotografia dei fondatori e' l'unica foto vera
-            nostra e sta in taglio ritratto (4:5): l'originale e' quasi
-            quadrato e un 4:3 taglierebbe la fronte e il mare. */}
+            LC4 — qui c'erano tre negazioni secche ("Non siamo
+            un'agenzia. Non siamo un software. Non siamo una
+            directory."): definirsi per sottrazione a una schermata dal
+            form era il punto peggiore dove farlo. Al loro posto il
+            payoff del brand, che e' un contrasto voluto e non una
+            negazione: e' la sezione dove la frase si dimostra, perche'
+            subito sotto arrivano i due qualcuno con nome e faccia.
+            Il titolo resta fatto di frasi, ogni riga una <TitleLine>.
+            La fotografia dei fondatori e' l'unica foto vera nostra e
+            sta in taglio ritratto (4:5): l'originale e' quasi quadrato
+            e un 4:3 taglierebbe la fronte e il mare. */}
         <Section tone="sand" rhythm="screen" labelledBy="ol-who-title" width="max-w-6xl">
           <div data-testid="ol-who">
             <p className="eyebrow mb-5">
@@ -577,13 +597,10 @@ export default function OperatorLandingPage() {
             <DisplayTitle as="h2" id="ol-who-title" size="section" measure="lines"
                           className="text-[1.9rem] leading-[1.14] sm:text-[2.4rem] lg:text-[2.9rem]">
               <TitleLine>
-                {t('opPro.whoLine1', { defaultValue: 'Non siamo un’agenzia.' })}
+                {t('opPro.whoLine1', { defaultValue: 'Ci si fida di qualcuno,' })}
               </TitleLine>
               <TitleLine>
-                {t('opPro.whoLine2', { defaultValue: 'Non siamo un software.' })}
-              </TitleLine>
-              <TitleLine>
-                {t('opPro.whoLine3', { defaultValue: 'Non siamo una directory.' })}
+                {t('opPro.whoLine2', { defaultValue: 'non di qualcosa.' })}
               </TitleLine>
             </DisplayTitle>
             <Lede size="lead" className="mt-7">

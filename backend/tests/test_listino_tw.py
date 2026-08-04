@@ -5629,27 +5629,44 @@ class TestLandingOperatoriOl1:
             yield prefix, node
 
     def test_ol1_le_otto_sezioni(self):
+        """OL3 (riscrittura del founder) + LC4 — la guardia lessicale
+        sul copy pre-OL3 era rimasta indietro di una riscrittura intera:
+        ora si guarda il DISPOSITIVO, le nove sezioni col loro testid.
+        Il copy dentro le sezioni e' del founder e cambia senza chiedere
+        permesso ai test."""
         page = self._page()
-        attesi = [
-            "Il tuo lavoro merita di essere conosciuto.",   # 1 hero
-            "Molto più di una vetrina.",               # 2 perche'
-            "Uno spazio che cresce insieme al tuo lavoro.",  # 3 cosa trovi
-            "I primi professionisti avranno un ruolo speciale.",  # 4 insieme
-            "Domande frequenti",                             # 5 faq
-            "Non siamo un’agenzia di marketing.",       # 6 chi siamo
-            "Raccontaci qualcosa di te.",                    # 7 form
-            "Le reti non si costruiscono in un giorno.",     # 8 chiusura
-        ]
-        for testo in attesi:
-            assert testo in page, f"manca dalla landing: {testo}"
+        for tid in ("ol-hero", "ol-now", "ol-join", "ol-go", "ol-for",
+                    "ol-faq", "ol-who", "ol-form", "ol-end"):
+            assert f'data-testid="{tid}"' in page, f"manca la sezione {tid}"
 
     def test_ol1_quattro_blocchi_cosa_trovi(self):
+        """OL3 — la sezione 'cosa significa entrare' sono TRE schede
+        fotografiche (r03, r08, r09), non piu' i quattro blocchi del
+        copy vecchio."""
         page = self._page()
-        for titolo in ("Un profilo che racconta chi sei",
-                       "Una storia che crea fiducia",
-                       "Più occasioni per essere scoperto",
-                       "Uno spazio che crescerà con te"):
-            assert titolo in page, f"manca il blocco: {titolo}"
+        assert "ol-card-" in page, "sparite le schede della sezione rete"
+        for foto in ("r03.jpg", "r08.jpg", "r09.jpg"):
+            assert foto in page, f"manca la fotografia {foto}"
+
+    def test_lc4_cta_nel_hero_e_payoff_al_posto_delle_negazioni(self):
+        """LC4 (revisione pre-lancio) — due decisioni che non devono
+        regredire: 1) il hero scuro ha una CTA verso #presentati
+        (misurata: prima azione a 3,4 schermate, form a 26 — chi
+        arrivava gia' convinto doveva farsi tutta la pagina); 2) la
+        sezione dei fondatori apre col payoff del brand, non con le tre
+        negazioni ("Non siamo un'agenzia/software/directory")."""
+        import re
+        page = self._page()
+        assert 'data-testid="ol-hero-cta-top"' in page, \
+            "sparita la CTA del hero verso il form"
+        assert "Ci si fida di qualcuno," in page
+        assert "non di qualcosa." in page
+        # il commento che racconta la decisione cita le negazioni:
+        # si giudica solo il copy che il lettore puo' vedere
+        visibile = re.sub(r"/\*.*?\*/", "", page, flags=re.DOTALL)
+        visibile = re.sub(r"^\s*//.*$", "", visibile, flags=re.MULTILINE)
+        assert "Non siamo un" not in visibile, \
+            "le negazioni sono tornate nella sezione fondatori"
 
     def test_ol1_gratuito_solo_nella_faq(self):
         """Ne' la pagina ne' i quattro locales usano gratuito/gratis
@@ -5697,17 +5714,17 @@ class TestLandingOperatoriOl1:
             "il bottone del form deve essere 'Entriamo in contatto'"
 
     def test_ol1_i18n_x4_e_niente_trattini_lunghi(self):
-        chiavi_it = {k for k, _ in self._strings(self._locale("it")["opNw"])}
+        """OL3 — il copy della landing vive in `opPro`, SOLO in
+        italiano (decisione founder 2/8: i contenuti nuovi non si
+        traducono piu' x4; con fallbackLng='it' le altre lingue leggono
+        queste chiavi). La guardia pretende l'italiano completo e
+        niente trattini lunghi, non piu' la parita' su 4 lingue."""
+        chiavi_it = {k for k, _ in self._strings(self._locale("it")["opPro"])}
         assert len(chiavi_it) >= 40, \
-            f"chiavi opNw in italiano: {len(chiavi_it)}, troppo poche"
-        for lang in self.LOCALES:
-            blocco = self._locale(lang).get("opNw", {})
-            chiavi = {k for k, _ in self._strings(blocco)}
-            mancanti = chiavi_it - chiavi
-            assert not mancanti, f"[{lang}] chiavi mancanti: {sorted(mancanti)[:5]}"
-            for chiave, valore in self._strings(blocco):
-                assert "—" not in valore and "–" not in valore, \
-                    f"[{lang}] trattino lungo in {chiave}"
+            f"chiavi opPro in italiano: {len(chiavi_it)}, troppo poche"
+        for chiave, valore in self._strings(self._locale("it")["opPro"]):
+            assert "—" not in valore and "–" not in valore, \
+                f"[it] trattino lungo in {chiave}"
 
 
 class TestManifestoSw1:

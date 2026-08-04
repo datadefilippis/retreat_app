@@ -270,8 +270,15 @@ def test_prelaunch_gates_operators_and_destinations_pages():
     # da redirigere, e' una pagina viva (le persone dietro Aurya).
     assert 'path="/chi-siamo" element={<ChiSiamoPage />}' in app, \
         "/chi-siamo monta la pagina vera, non un Navigate"
-    assert 'to="/manifesto" replace' not in app, \
+    # LC2 — la guardia sul redirect era troppo larga: vietava QUALSIASI
+    # Navigate verso /manifesto, ma il suo intento e' solo che
+    # /chi-siamo resti una pagina viva (il gate di /come-funziona, ad
+    # esempio, ha tutto il diritto di mandare al Manifesto in fase rete).
+    assert 'path="/chi-siamo" element={<Navigate' not in app, \
         "regressione: il redirect /chi-siamo → /manifesto e' tornato"
+    assert "function HowItWorksGate()" in app, \
+        "LC2: /come-funziona deve passare dal gate di fase"
+    assert 'path="/come-funziona" element={<HowItWorksGate />}' in app
     assert 'path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />}' in app
     assert 'path="/cerca-ritiro" element={<Navigate to="/newsletter" replace />}' in app
     # le route usano i gate, non più le pagine dirette
@@ -335,14 +342,20 @@ def test_operator_landing_transparency_and_direct_contact():
         encoding="utf-8")
     assert "mailto:info@aurya.life" in op
     assert "mailto:info@aurya.life" in tr
-    # la FAQ sul costo esiste, tradotta ovunque
-    for lang in ("it", "en", "de", "fr"):
-        d = (frontend / "locales" / lang / "prelaunch.json").read_text(encoding="utf-8")
-        for key in ('"faq1q"', '"faq1a"', '"faq3q"', '"faq3a"'):
-            assert key in d, f"FAQ sul costo non tradotta: {lang} manca {key}"
-    it = (frontend / "locales" / "it" / "prelaunch.json").read_text(encoding="utf-8")
-    assert "senza sorprese" in it, \
-        "l'impegno a dire in chiaro quando si paghera' non deve sparire"
+    # OL3+LC4 — il copy della landing vive in opPro, SOLO italiano
+    # (fallbackLng='it', decisione founder 2/8). La trasparenza sul
+    # costo ha gia' cambiato parole due volte ("Patti chiari" →
+    # "senza sorprese" → la FAQ di oggi): la guardia difende il
+    # DISPOSITIVO, non la frase — una FAQ sul costo che dica in chiaro
+    # che oggi entrare non costa.
+    import json
+    it = json.loads((frontend / "locales" / "it" / "prelaunch.json")
+                    .read_text(encoding="utf-8"))
+    op_faq = it.get("opPro", {})
+    assert "costa" in (op_faq.get("faq1q") or "").lower(), \
+        "sparita la FAQ sul costo dalla landing professionisti"
+    assert "non ha un costo" in (op_faq.get("faq1a") or ""), \
+        "la risposta sul costo deve dire in chiaro che oggi non si paga"
 
 
 def test_wipe_and_seed_share_the_same_flag():
