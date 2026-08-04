@@ -259,3 +259,96 @@ class TestEndpointLive:
         assert '"/o/{slug}"' in orgs and '"/s/{slug}"' in orgs
         stores = (BACKEND_DIR / "routers" / "stores.py").read_text()
         assert "_ping_operator_indexnow" in stores
+
+
+class TestSe1ContentInBody:
+    """SE1 — il contenuto sta nell'HTML iniziale, non solo nel JS.
+
+    Prima il body della shell era vuoto (108 byte, `<div id="root">`)
+    e per i crawler senza rendering — Bing, GPTBot, ClaudeBot,
+    PerplexityBot — gli articoli erano pagine vuote con buoni metadati.
+    Queste guardie pretendono: l'articolo intero nel body (i riservati
+    con la SOLA anteprima: niente cloaking), gli hub con i link veri,
+    og:type article con i tempi, le date col fuso.
+    """
+
+    FREE_SLUG = "reiki-cose-come-funziona-una-sessione"
+    GATED_SLUG = "kit-pratiche-quotidiane-15-minuti"
+
+    @staticmethod
+    def _visible_body(html_text: str) -> str:
+        import re
+        body = html_text.split("</head>", 1)[1]
+        return re.sub(r"<script.*?</script>", "", body, flags=re.S)
+
+    def test_free_article_body_has_full_content(self):
+        import re
+        r = requests.get(f"{BASE_URL}/__seo/blog/{self.FREE_SLUG}", timeout=10)
+        assert r.status_code == 200
+        visible = self._visible_body(r.text)
+        words = len(re.sub(r"<[^>]+>", " ", visible).split())
+        assert words > 800, f"articolo nel body: {words} parole, attese >800"
+        assert "<h1>" in visible and "<h2>" in visible, \
+            "la struttura dei titoli deve stare nell'HTML"
+        assert 'href="/blog/' in visible, \
+            "i link interni dell'articolo devono stare nell'HTML"
+
+    def test_gated_article_body_is_preview_only(self):
+        """BN3 — il crawler vede la STESSA anteprima dell'utente non
+        iscritto: il corpo completo del riservato non deve uscire."""
+        import re
+        r = requests.get(f"{BASE_URL}/__seo/blog/{self.GATED_SLUG}", timeout=10)
+        assert r.status_code == 200
+        visible = self._visible_body(r.text)
+        words = len(re.sub(r"<[^>]+>", " ", visible).split())
+        assert 0 < words < 400, \
+            f"riservato nel body: {words} parole visibili, attesa solo l'anteprima"
+
+    def test_blog_hub_and_category_link_articles_in_body(self):
+        import re
+        hub = requests.get(f"{BASE_URL}/__seo/blog", timeout=10)
+        assert hub.status_code == 200
+        links = re.findall(r'href="[^"]*/blog/[a-z0-9-]+"',
+                           self._visible_body(hub.text))
+        assert len(links) >= 30, \
+            f"hub /blog: {len(links)} articoli linkati nel body, attesi >=30"
+        cat = requests.get(f"{BASE_URL}/__seo/blog/categoria/yoga", timeout=10)
+        assert cat.status_code == 200
+        cat_links = re.findall(r'href="[^"]*/blog/[a-z0-9-]+"',
+                               self._visible_body(cat.text))
+        assert len(cat_links) >= 1, "categoria: nessun articolo nel body"
+
+    def test_article_og_type_and_times(self):
+        r = requests.get(f"{BASE_URL}/__seo/blog/{self.FREE_SLUG}", timeout=10)
+        assert 'og:type" content="article"' in r.text
+        assert 'property="article:published_time"' in r.text
+        # le date del JSON-LD dichiarano il fuso
+        import re
+        pub = re.search(r'"datePublished": "([^"]+)"', r.text)
+        assert pub and ("+" in pub.group(1)[10:] or pub.group(1).endswith("Z")), \
+            "datePublished senza timezone"
+        # le pagine non-articolo restano website
+        hub = requests.get(f"{BASE_URL}/__seo/blog", timeout=10)
+        assert 'og:type" content="website"' in hub.text
+
+    def test_markdown_renderer_subset_and_escape(self):
+        """Unit del renderer: il sottoinsieme reale degli articoli
+        (h2/h3, bold, corsivo, link whitelisted, liste, blockquote)
+        e l'escape che non fa eccezioni."""
+        from services.markdown_html import render_markdown
+        out = render_markdown(
+            "## Titolo\n\nUn **grasso** e un *corsivo* e un "
+            "[link](/blog/x) e [fuori](https://esempio.it/a).\n\n"
+            "- uno\n- due\n\n1. primo\n2) secondo\n\n> una citazione\n\n"
+            "<script>alert(1)</script> resta testo")
+        assert "<h2>Titolo</h2>" in out
+        assert "<strong>grasso</strong>" in out and "<em>corsivo</em>" in out
+        assert '<a href="/blog/x">link</a>' in out
+        assert '<a href="https://esempio.it/a">fuori</a>' in out
+        assert "<ul><li>uno</li><li>due</li></ul>" in out
+        assert "<ol><li>primo</li><li>secondo</li></ol>" in out
+        assert "<blockquote>" in out
+        assert "<script>" not in out and "&lt;script&gt;" in out
+        # javascript: non passa la whitelist dei link
+        cattivo = render_markdown("[x](javascript:alert(1))")
+        assert "<a " not in cattivo

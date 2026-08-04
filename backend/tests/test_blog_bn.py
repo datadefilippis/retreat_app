@@ -27,8 +27,12 @@ class TestArticleCategoriesBN1:
         from models.article import (ARTICLE_CATEGORIES,
                                     ARTICLE_EXTRA_CATEGORIES)
         from models.retreat_taxonomy import RETREAT_CATEGORIES
-        assert set(ARTICLE_EXTRA_CATEGORIES) == {"ritiri", "energia",
-                                                 "operatori"}
+        # LC8/SE1 — le editoriali sono cresciute col Magazine (na2 ha
+        # aggiunto ayurveda, pl2 scegliere): la guardia pretende che le
+        # tre storiche restino e che ogni extra sia dichiarata qui.
+        assert {"ritiri", "energia", "operatori"} <= set(ARTICLE_EXTRA_CATEGORIES)
+        assert set(ARTICLE_EXTRA_CATEGORIES) <= {
+            "ritiri", "energia", "operatori", "ayurveda", "scegliere"}
         # le editoriali NON entrano nella tassonomia ritiri (nessuna
         # pagina /ritiri/{cat} fantasma)
         assert not set(ARTICLE_EXTRA_CATEGORIES) & set(RETREAT_CATEGORIES)
@@ -84,7 +88,8 @@ class TestBlogFunnelBN1:
     def test_leadform_compact_is_email_only(self):
         # la variante compact salta i campi profilazione del traveler
         assert "compact ? null : isOperator ?" in self.LEADFORM
-        assert "{!compact && (" in self.LEADFORM
+        # LT1 — il nome e' governato da showName (default: via se compact)
+        assert "const withName = showName === null ? !compact" in self.LEADFORM
 
     def test_cta_tracks_blog_context(self):
         assert "blog_${category}" in self.CTA
@@ -135,8 +140,8 @@ class TestGatedGuidesBN3:
                 / "BlogArticlePage.js").read_text()
         assert "aurya_nl_token" in page               # sblocco da localStorage
         assert "blog-gate" in page
-        # niente doppio form sulla stessa pagina
-        assert "{!article.gated && <BlogNewsletterCTA" in page
+        # la CTA di fondo articolo esiste una volta sola
+        assert page.count("<BlogNewsletterCTA") == 1
         confirm = (FRONTEND_SRC / "features" / "prelaunch"
                    / "NewsletterConfirmPage.js").read_text()
         assert "aurya_nl_token" in confirm            # persistenza token
@@ -165,7 +170,7 @@ class TestCategoryHubsBN5:
 
         import requests as rq
         base = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
-        r = rq.get(f"{base}/__seo/blog/categoria/massaggio", timeout=10)
+        r = rq.get(f"{base}/__seo/blog/categoria/aziendale", timeout=10)
         assert r.status_code == 200
         assert 'content="noindex"' in r.text
 
@@ -187,13 +192,14 @@ class TestCategoryHubsBN5:
             _editorial_gate({"category": "yoga", "description": "corta"})
 
     def test_spa_uses_route_not_query(self):
-        idx = (FRONTEND_SRC / "features" / "storefront"
-               / "BlogIndexPage.js").read_text()
+        # MG1 — la navigazione categorie e' un componente proprio
+        idx = (FRONTEND_SRC / "features" / "storefront" / "components"
+               / "MagazineCategoryNav.jsx").read_text()
         # SW4 — il chip e' un <Link to>, non piu' un bottone che chiama
         # navigate(): la rotta e' la stessa, ma adesso e' anche un link
         # che un crawler puo' seguire. La guardia difende l'URL, che e'
         # il punto; il query param resta bandito.
-        assert "to={`/blog/categoria/${slug}`}" in idx
+        assert "to={slug ? `/blog/categoria/${slug}` : '/blog'}" in idx
         assert "?categoria=" not in idx
         art = (FRONTEND_SRC / "features" / "storefront"
                / "BlogArticlePage.js").read_text()

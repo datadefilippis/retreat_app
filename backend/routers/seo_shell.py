@@ -122,13 +122,22 @@ def _inject(template: str, meta: dict) -> str:
                  f'<meta name="description" content="{desc}"/>',
                  out, count=1)
 
+    # SE1 — og:type "article" sugli articoli (con i tempi), "website"
+    # su tutto il resto: prima ogni pagina si dichiarava sito.
+    og_type = meta.get("og_type") or "website"
     extra = [
         f'<meta property="og:title" content="{title}"/>',
         f'<meta property="og:description" content="{desc}"/>',
-        '<meta property="og:type" content="website"/>',
+        f'<meta property="og:type" content="{og_type}"/>',
         '<meta property="og:site_name" content="Aurya"/>',
         '<meta name="twitter:card" content="summary_large_image"/>',
     ]
+    if og_type == "article" and meta.get("article_times"):
+        pub, upd = meta["article_times"]
+        if pub:
+            extra.append(f'<meta property="article:published_time" content="{_html.escape(str(pub))}"/>')
+        if upd:
+            extra.append(f'<meta property="article:modified_time" content="{_html.escape(str(upd))}"/>')
     if meta.get("image"):
         extra.append(f'<meta property="og:image" content="{_html.escape(meta["image"])}"/>')
         extra.append(f'<meta name="twitter:image" content="{_html.escape(meta["image"])}"/>')
@@ -153,7 +162,17 @@ def _inject(template: str, meta: dict) -> str:
                              + json.dumps(block, ensure_ascii=False)
                              + "</script>")
 
-    return out.replace("</head>", "".join(extra) + "</head>", 1)
+    out = out.replace("</head>", "".join(extra) + "</head>", 1)
+
+    # SE1 — il CONTENUTO nell'HTML iniziale: dentro #root, dove React
+    # monta e sostituisce. Prima il body era vuoto (108 byte) e per i
+    # crawler senza JS — Bing, GPTBot, ClaudeBot, PerplexityBot — le
+    # pagine non avevano testo. Google stesso indicizza il primo HTML
+    # senza aspettare la coda di rendering.
+    if meta.get("content_html"):
+        out = out.replace('<div id="root"></div>',
+                          f'<div id="root">{meta["content_html"]}</div>', 1)
+    return out
 
 
 def _abs_image(url: Optional[str]) -> str:
@@ -457,11 +476,29 @@ async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
     }
 
 
+def _articles_index_html(titolo: str, docs: list, base: str) -> str:
+    """SE1 — l'indice come HTML vero: ogni articolo un link con la sua
+    description. E' la pagina di scoperta per i crawler senza JS."""
+    items = "".join(
+        '<li><a href="{href}">{t}</a><p>{d}</p></li>'.format(
+            href=f"{base}/blog/{_html.escape(d['slug'])}",
+            t=_html.escape(d.get("title") or d["slug"]),
+            d=_html.escape(d.get("description") or ""))
+        for d in docs)
+    return (f'<section><h1>{_html.escape(titolo)}</h1>'
+            f'<ul>{items}</ul></section>')
+
+
 async def _meta_blog_list() -> dict:
     """AN6 — hub del blog: hreflang pieno come gli altri hub."""
+    from database import db
     from services import seo_schema as sx
     base = _base_url()
     canonical = f"{base}/blog"
+    docs = await (db.articles
+                  .find({"published": True},
+                        {"_id": 0, "slug": 1, "title": 1, "description": 1})
+                  .sort("published_at", -1).limit(100).to_list(100))
     return {
         # SEO1 — il title dell'hub porta le keyword di categoria, non
         # solo la parola "Blog" (che non cerca nessuno).
@@ -473,6 +510,8 @@ async def _meta_blog_list() -> dict:
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/og-cover.jpg",
         "jsonld": sx.breadcrumb([("Aurya", f"{base}/"), ("Blog", canonical)]),
+        "content_html": _articles_index_html(
+            "Il Magazine di Aurya", docs, base),
     }
 
 
@@ -490,7 +529,7 @@ async def _meta_blog_category(cat: str) -> Optional[dict]:
     label = ARTICLE_CATEGORIES[cat]
     docs = await (db.articles
                   .find({"published": True, "category": cat},
-                        {"_id": 0, "slug": 1, "title": 1})
+                        {"_id": 0, "slug": 1, "title": 1, "description": 1})
                   .sort("published_at", -1).to_list(50))
     crumbs = sx.breadcrumb([("Aurya", f"{base}/"), ("Blog", f"{base}/blog"),
                             (label, canonical)])
@@ -513,6 +552,8 @@ async def _meta_blog_category(cat: str) -> Optional[dict]:
         "image": f"{base}/og-cover.jpg",
         "jsonld": blocks,
         "noindex": not docs,
+        "content_html": _articles_index_html(
+            f"{label}: articoli e guide", docs, base) if docs else None,
     }
 
 
@@ -572,8 +613,16 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
         if lang in ("en", "de", "fr") and (tr or {}).get("title")                 and (tr or {}).get("content"):
             hreflang[lang] = f"{canonical}?lang={lang}"
 
-    pub = doc.get("published_at")
-    upd = doc.get("updated_at")
+    def _iso_utc(dt):
+        """SE1 — datePublished senza timezone non valida: i nostri
+        timestamp sono UTC naive, si dichiara."""
+        if hasattr(dt, "isoformat"):
+            s = dt.isoformat()
+            return s if ("+" in s[10:] or s.endswith("Z")) else s + "+00:00"
+        return dt
+
+    pub = _iso_utc(doc.get("published_at"))
+    upd = _iso_utc(doc.get("updated_at"))
     # SEO4 — firma vera = Person (E-E-A-T): "Valentina · Aurya" è una
     # persona che scrive per l'organizzazione, non l'organizzazione.
     raw_author = doc.get("author_name") or "Aurya"
@@ -592,8 +641,8 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
         "author": author,
         "publisher": {"@type": "Organization", "name": "Aurya",
                       "url": f"{base}/"},
-        "datePublished": pub.isoformat() if hasattr(pub, "isoformat") else pub,
-        "dateModified": upd.isoformat() if hasattr(upd, "isoformat") else upd,
+        "datePublished": pub,
+        "dateModified": upd,
         "url": canonical,
         "inLanguage": "it",
     }
@@ -631,6 +680,25 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
     if faqs:
         blocks.append({"@context": "https://schema.org",
                        "@type": "FAQPage", "mainEntity": faqs})
+    # SE1 — l'articolo VISIBILE nell'HTML iniziale, non solo nel
+    # JSON-LD: e' il contenuto che Bing e i crawler AI leggono e che
+    # Google indicizza senza aspettare il rendering. Per i riservati
+    # si rende la STESSA anteprima dell'utente non iscritto (niente
+    # cloaking, come per l'articleBody qui sopra). React monta sopra
+    # e sostituisce.
+    from services.markdown_html import render_markdown
+    visible_md = content_md
+    if gated and content_md:
+        from routers.articles import gated_preview as _gp
+        visible_md = _gp(content_md)["content"]
+    body_html = render_markdown(visible_md)
+    content_html = (
+        '<article>'
+        f'<h1>{_html.escape(doc["title"])}</h1>'
+        + (f'<img src="{_html.escape(image)}" alt=""/>' if image else '')
+        + body_html
+        + '</article>'
+    )
     return {
         "title": f"{doc['title']} | Aurya",
         "description": desc or "Un articolo dal Magazine di Aurya.",
@@ -638,6 +706,9 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
         "image": image,
         "jsonld": blocks,
         "hreflang": hreflang,
+        "og_type": "article",
+        "article_times": (pub, upd),
+        "content_html": content_html,
     }
 
 
