@@ -100,24 +100,16 @@ async def get_calendar_items(
         occ_query,
         {"_id": 0, "id": 1, "product_id": 1, "product_name": 1,
          "start_at": 1, "end_at": 1, "location": 1, "status": 1, "notes": 1,
-         "capacity": 1},
+         "capacity": 1, "reserved_seats": 1},
     ).sort("start_at", 1).limit(200)
 
     occ_list = await occ_cursor.to_list(200)
 
-    # Batch count bookings per occurrence
-    occ_ids = [o["id"] for o in occ_list]
-    booked_counts = {}
-    if occ_ids:
-        pipeline = [
-            {"$match": {"organization_id": org_id, "status": {"$ne": "cancelled"},
-                         "items.occurrence_id": {"$in": occ_ids}}},
-            {"$unwind": "$items"},
-            {"$match": {"items.occurrence_id": {"$in": occ_ids}}},
-            {"$group": {"_id": "$items.occurrence_id", "count": {"$sum": 1}}},
-        ]
-        async for doc in orders_collection.aggregate(pipeline):
-            booked_counts[doc["_id"]] = doc["count"]
+    # MO4 — i posti prenotati sono reserved_seats: LO STESSO contatore
+    # atomico che protegge la capienza e che l'Event Dashboard mostra.
+    # La vecchia ri-aggregazione sugli ordini contava le RIGHE (non le
+    # quantita': ordine da 4 posti = «1 prenotato») e includeva le
+    # bozze mai confermate — Calendario e Dashboard si contraddicevano.
 
     for occ in occ_list:
         start_at = occ.get("start_at", "")
@@ -125,7 +117,7 @@ async def get_calendar_items(
         time_part = start_at[11:16] if len(start_at) >= 16 else None
         occ_status = occ.get("status", "draft")
         cap = occ.get("capacity")
-        booked = booked_counts.get(occ["id"], 0)
+        booked = int(occ.get("reserved_seats") or 0)
 
         items.append(CalendarEvent(
             id=occ["id"],

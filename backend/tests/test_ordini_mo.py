@@ -55,6 +55,20 @@ class TestMo1BackendDevice:
             assert f in chunk, f"PATCH perde ancora il campo {f}"
 
 
+class TestMo4CalendarTruth:
+    def test_calendar_reads_the_atomic_counter(self):
+        """MO4 — Calendario ed Event Dashboard devono dire lo stesso
+        numero: entrambi leggono reserved_seats (il contatore atomico
+        della capienza), niente ri-aggregazione sugli ordini che
+        contava le righe e includeva le bozze."""
+        src = (BACKEND_DIR / "routers" / "calendar.py").read_text()
+        assert '"reserved_seats": 1' in src, \
+            "il calendario non proietta reserved_seats"
+        assert 'occ.get("reserved_seats")' in src
+        assert '"items.occurrence_id": {"$in": occ_ids}' not in src, \
+            "la vecchia aggregazione sulle righe ordine e' tornata"
+
+
 class TestMo2FormDevice:
     def test_form_offers_only_published_occurrences(self):
         src = ORDERS_PAGE.read_text()
