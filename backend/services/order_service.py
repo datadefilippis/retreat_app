@@ -126,6 +126,28 @@ async def create_order(
         if not product:
             raise ValueError(f"Product '{item.product_id}' not found")
 
+        # MO1 — anche il path manuale passa dal validatore tipizzato
+        # (prima girava SOLO per lo storefront, in order_creation_service:
+        # un ordine manuale poteva prenotare slot in conflitto o edizioni
+        # sold-out/bozza senza che nessuno lo dicesse). Politica banco:
+        # conflitto slot, edizione non pubblicata e capienza sono errori
+        # VERI e bloccano; «slot obbligatorio» e «attendees obbligatori»
+        # sono requisiti del checkout self-service, non dell'operatore —
+        # che puo' vendere senza fissare l'appuntamento (lo fissera' poi)
+        # e il partecipante ricade sul cliente dell'ordine.
+        if source != "storefront":
+            from services.product_type_validators import (
+                validate_order_item, message_for_reason)
+            _res = await validate_order_item(
+                item, product.model_dump(), {"org_id": org_id,
+                                             "source": source})
+            _soft_manual = {"service_slot_required", "attendees_required",
+                            "attendees_count_mismatch",
+                            "order_fields_required"}
+            if not _res.valid and _res.reason not in _soft_manual:
+                raise ValueError(message_for_reason(_res.reason,
+                                                   _res.detail))
+
         # unit_price resolution:
         #   - storefront: always server-authoritative (ignore client unit_price)
         #   - manual/api:  client can override; if omitted, use product.unit_price
@@ -419,7 +441,10 @@ async def create_order(
     # laid-down blocks are released before the raise if any line fails.
     slot_lines_reserved = False
     for line in doc.get("items", []):
-        if line.get("item_type") != "rental":
+        # MO1 — anche i SERVIZI con slot bloccano il calendario gia' in
+        # bozza (prima solo i rental): un appuntamento preso al banco
+        # non deve restare prenotabile online fino alla conferma.
+        if line.get("item_type") not in ("rental", "service"):
             continue
         bd = line.get("booking_date")
         bs = line.get("booking_start_time")
@@ -427,6 +452,7 @@ async def create_order(
         if not (bd and bs and be):
             continue
         bd_end = line.get("booking_end_date") or bd
+        _is_rental = line.get("item_type") == "rental"
         from services.booking_availability import (
             try_reserve_booking_slot_range, release_booking_slot,
         )
@@ -438,8 +464,10 @@ async def create_order(
             time_from=bs,
             date_to=bd_end,
             time_to=be,
-            note=f"Affitto (draft): {line.get('product_name', '')}",
-            scope="rentals",
+            note=(f"Affitto (draft): {line.get('product_name', '')}"
+                  if _is_rental else
+                  f"Appuntamento (bozza): {line.get('product_name', '')}"),
+            scope="rentals" if _is_rental else "agenda",
         )
         if not ok:
             # Rollback any blocks already laid down for this order in a
@@ -512,15 +540,44 @@ async def update_order(org_id: str, order_id: str, data: OrderUpdate) -> dict:
             quantity = item_data["quantity"]
             line_total = round(unit_price * quantity * (1 - discount_pct / 100), 2)
 
+            # MO1 — il PATCH ricostruiva la riga SENZA occurrence/slot/
+            # tier: modificare un ordine ritiro o appuntamento dalla UI
+            # cancellava l'edizione e l'orario. Ora i campi si
+            # conservano, e lo snapshot occorrenza si rigenera dal DB
+            # se manca (la UI manda solo occurrence_id).
+            occ_id = item_data.get("occurrence_id")
+            occ_start = item_data.get("occurrence_start_at")
+            occ_loc = item_data.get("occurrence_location")
+            if occ_id and not occ_start:
+                from database import event_occurrences_collection
+                _occ = await event_occurrences_collection.find_one(
+                    {"id": occ_id, "organization_id": org_id},
+                    {"_id": 0, "start_at": 1, "city": 1, "venue_name": 1})
+                if _occ:
+                    occ_start = _occ.get("start_at")
+                    occ_loc = (_occ.get("venue_name")
+                               or _occ.get("city") or occ_loc)
+
             lines.append(OrderLineBase(
                 product_id=item_data["product_id"],
                 product_name=product.name,
                 sku=product.sku,
                 category=product.category,
+                item_type=getattr(product, "item_type", None) or "physical",
                 quantity=quantity,
                 unit_price=unit_price,
                 discount_pct=discount_pct,
                 line_total=line_total,
+                occurrence_id=occ_id,
+                occurrence_start_at=occ_start,
+                occurrence_location=occ_loc,
+                ticket_tier_id=item_data.get("ticket_tier_id"),
+                ticket_tier_label=item_data.get("ticket_tier_label"),
+                booking_date=item_data.get("booking_date"),
+                booking_start_time=item_data.get("booking_start_time"),
+                booking_end_time=item_data.get("booking_end_time"),
+                booking_end_date=item_data.get("booking_end_date"),
+                attendees=item_data.get("attendees"),
             ).model_dump())
 
         updates["items"] = lines

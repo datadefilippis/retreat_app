@@ -17,7 +17,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { ordersAPI, customersAPI, productsAPI } from '../../api';
-import { eventOccurrencesAPI } from '../../api/eventOccurrences';
+import { eventOccurrencesAPI, eventTicketTiersAPI } from '../../api/eventOccurrences';
+import { availabilityAPI } from '../../api/availability';
 import { toast } from 'sonner';
 import QuotaProgressBanner from '../../components/QuotaProgressBanner';
 import { useEntitlements } from '../../hooks/useEntitlements';
@@ -108,18 +109,26 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
           customer_id: editing.customer_id || '',
           notes: editing.notes || '',
           due_date: editing.due_date || '',
+          // MO2 — slot e tier viaggiano anche in modifica: senza,
+          // il PATCH li perdeva (fix gemello lato order_service)
           items: (editing.items || []).map(it => ({
             product_id: it.product_id,
             quantity: it.quantity,
             unit_price: it.unit_price,
             occurrence_id: it.occurrence_id || '',
+            ticket_tier_id: it.ticket_tier_id || '',
+            booking_date: it.booking_date || '',
+            booking_start_time: it.booking_start_time || '',
+            booking_end_time: it.booking_end_time || '',
           })),
         });
       } else {
         setForm({
           customer_id: prefillCustomerId || '',
           notes: '', due_date: '',
-          items: [{ product_id: '', quantity: 1, unit_price: '', occurrence_id: '' }],
+          items: [{ product_id: '', quantity: 1, unit_price: '', occurrence_id: '',
+                    ticket_tier_id: '', booking_date: '',
+                    booking_start_time: '', booking_end_time: '' }],
         });
       }
     }
@@ -133,12 +142,35 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
     if (!productId || occByProduct[productId]) return;
     try {
       const res = await eventOccurrencesAPI.list(productId);
-      const occs = (res.data || []).filter(o => ['draft', 'published'].includes(o.status));
+      // MO2 — solo le edizioni PUBBLICATE: la riserva posti atomica
+      // rifiuta le bozze (event_capacity), offrirle qui creava ordini
+      // con capienza mai decrementata.
+      const occs = (res.data || []).filter(o => o.status === 'published');
       setOccByProduct(m => ({ ...m, [productId]: occs }));
     } catch { /* prodotto non-evento: nessuna data */ }
   }, [occByProduct]);
 
-  const addItem = () => setForm(f => ({ ...f, items: [...f.items, { product_id: '', quantity: 1, unit_price: '', occurrence_id: '' }] }));
+  // MO2 — tier dell'edizione scelta (se esistono) e slot liberi del
+  // giorno scelto per i servizi: stessi dati dell'online, dal banco.
+  const [tiersByOcc, setTiersByOcc] = React.useState({});
+  const loadTiers = React.useCallback(async (occurrenceId) => {
+    if (!occurrenceId || tiersByOcc[occurrenceId]) return;
+    try {
+      const res = await eventTicketTiersAPI.list(occurrenceId);
+      setTiersByOcc(m => ({ ...m, [occurrenceId]: res.data || [] }));
+    } catch { setTiersByOcc(m => ({ ...m, [occurrenceId]: [] })); }
+  }, [tiersByOcc]);
+  const [slotsByKey, setSlotsByKey] = React.useState({});
+  const loadSlots = React.useCallback(async (productId, date) => {
+    const key = `${productId}:${date}`;
+    if (!productId || !date || slotsByKey[key]) return;
+    try {
+      const res = await availabilityAPI.getSlots(date, date, undefined, productId);
+      setSlotsByKey(m => ({ ...m, [key]: res.data?.slots || res.data || [] }));
+    } catch { setSlotsByKey(m => ({ ...m, [key]: [] })); }
+  }, [slotsByKey]);
+
+  const addItem = () => setForm(f => ({ ...f, items: [...f.items, { product_id: '', quantity: 1, unit_price: '', occurrence_id: '', ticket_tier_id: '', booking_date: '', booking_start_time: '', booking_end_time: '' }] }));
   const removeItem = (i) => setForm(f => ({ ...f, items: f.items.filter((_, idx) => idx !== i) }));
   const updateItem = (i, field, value) => setForm(f => ({
     ...f, items: f.items.map((it, idx) => idx === i ? { ...it, [field]: value } : it),
@@ -169,6 +201,12 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
           unit_price: it.unit_price !== '' ? parseFloat(it.unit_price) : null,
           // WS-1.3: la data del ritiro attiva lo schedule pagamenti
           occurrence_id: it.occurrence_id || null,
+          // MO2 — tier del biglietto e slot appuntamento: stessi
+          // effetti a valle dell'ordine online (capienza, calendario)
+          ticket_tier_id: it.ticket_tier_id || null,
+          booking_date: it.booking_date || null,
+          booking_start_time: (it.booking_date && it.booking_start_time) || null,
+          booking_end_time: (it.booking_date && it.booking_end_time) || null,
         })),
       };
       if (editing) {
@@ -310,6 +348,10 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
                             const p = products.find(pp => pp.id === e.target.value);
                             updateItem(i, 'product_id', e.target.value);
                             updateItem(i, 'occurrence_id', '');
+                            updateItem(i, 'ticket_tier_id', '');
+                            updateItem(i, 'booking_date', '');
+                            updateItem(i, 'booking_start_time', '');
+                            updateItem(i, 'booking_end_time', '');
                             if (p?.unit_price) updateItem(i, 'unit_price', p.unit_price);
                             if (p?.item_type === 'event_ticket') loadOccurrences(p.id);
                           }}
@@ -319,18 +361,95 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
                           {products.map(p => <option key={p.id} value={p.id}>{p.name}{p.sku ? ` (${p.sku})` : ''}</option>)}
                         </select>
                         {prod?.item_type === 'event_ticket' && (
-                          <select
-                            value={item.occurrence_id || ''}
-                            onChange={e => updateItem(i, 'occurrence_id', e.target.value)}
-                            className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs"
-                          >
-                            <option value="">{t('form.occurrence_placeholder')}</option>
-                            {(occByProduct[prod.id] || []).map(o => (
-                              <option key={o.id} value={o.id}>
-                                {new Date(o.start_at).toLocaleDateString('it-IT')} {o.venue_name || o.city || ''}
-                              </option>
-                            ))}
-                          </select>
+                          <>
+                            <select
+                              value={item.occurrence_id || ''}
+                              onChange={e => {
+                                updateItem(i, 'occurrence_id', e.target.value);
+                                updateItem(i, 'ticket_tier_id', '');
+                                if (e.target.value) loadTiers(e.target.value);
+                              }}
+                              className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+                            >
+                              <option value="">{t('form.occurrence_placeholder')}</option>
+                              {(occByProduct[prod.id] || []).map(o => (
+                                <option key={o.id} value={o.id}>
+                                  {new Date(o.start_at).toLocaleDateString('it-IT')} {o.venue_name || o.city || ''}
+                                  {Number.isFinite(o.capacity) ? ` — ${Math.max(0, (o.capacity || 0) - (o.reserved_seats || 0))} posti` : ''}
+                                </option>
+                              ))}
+                            </select>
+                            {/* MO2 — tier dell'edizione, se esistono: stesso
+                                prezzo/capienza del checkout online */}
+                            {item.occurrence_id && (tiersByOcc[item.occurrence_id] || []).length > 0 && (
+                              <select
+                                value={item.ticket_tier_id || ''}
+                                onChange={e => {
+                                  updateItem(i, 'ticket_tier_id', e.target.value);
+                                  const tr = (tiersByOcc[item.occurrence_id] || []).find(x => x.id === e.target.value);
+                                  if (tr?.price != null) updateItem(i, 'unit_price', tr.price);
+                                }}
+                                className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+                              >
+                                <option value="">{t('form.tier_placeholder', { defaultValue: 'Biglietto standard' })}</option>
+                                {(tiersByOcc[item.occurrence_id] || []).map(tr => (
+                                  <option key={tr.id} value={tr.id}>
+                                    {tr.label || tr.name} {tr.price != null ? `— ${fmtMoney(tr.price, formCurrency)}` : ''}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </>
+                        )}
+                        {/* MO2 — appuntamento per i SERVIZI: giorno + orario
+                            bloccano lo slot in calendario come dall'online.
+                            Facoltativo: senza orario l'ordine resta valido
+                            (si fissa dopo). */}
+                        {prod?.item_type === 'service' && (
+                          <div className="mt-1 rounded-md border border-dashed border-input p-2">
+                            <div className="flex flex-wrap items-end gap-2">
+                              <div>
+                                <Label className="text-[10px]">{t('form.booking_date', { defaultValue: 'Giorno appuntamento' })}</Label>
+                                <Input type="date" value={item.booking_date || ''}
+                                  onChange={e => {
+                                    updateItem(i, 'booking_date', e.target.value);
+                                    if (e.target.value) loadSlots(prod.id, e.target.value);
+                                  }}
+                                  className="h-8 px-2 py-1 text-xs" />
+                              </div>
+                              <div>
+                                <Label className="text-[10px]">{t('form.booking_start', { defaultValue: 'Dalle' })}</Label>
+                                <Input type="time" value={item.booking_start_time || ''}
+                                  onChange={e => updateItem(i, 'booking_start_time', e.target.value)}
+                                  className="h-8 px-2 py-1 text-xs" />
+                              </div>
+                              <div>
+                                <Label className="text-[10px]">{t('form.booking_end', { defaultValue: 'Alle' })}</Label>
+                                <Input type="time" value={item.booking_end_time || ''}
+                                  onChange={e => updateItem(i, 'booking_end_time', e.target.value)}
+                                  className="h-8 px-2 py-1 text-xs" />
+                              </div>
+                            </div>
+                            {item.booking_date && (slotsByKey[`${prod.id}:${item.booking_date}`] || []).length > 0 && (
+                              <div className="mt-1.5 flex flex-wrap gap-1">
+                                {(slotsByKey[`${prod.id}:${item.booking_date}`] || []).slice(0, 8).map((s, si) => (
+                                  <button key={si} type="button"
+                                    onClick={() => {
+                                      updateItem(i, 'booking_start_time', s.start_time || s.start);
+                                      updateItem(i, 'booking_end_time', s.end_time || s.end);
+                                    }}
+                                    className={`rounded border px-1.5 py-0.5 text-[10px] ${item.booking_start_time === (s.start_time || s.start) ? 'border-primary bg-primary text-white' : 'border-input hover:bg-muted'}`}>
+                                    {(s.start_time || s.start)}–{(s.end_time || s.end)}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                            {item.booking_date && (slotsByKey[`${prod.id}:${item.booking_date}`] || []).length === 0 && slotsByKey[`${prod.id}:${item.booking_date}`] !== undefined && (
+                              <p className="mt-1 text-[10px] text-muted-foreground">
+                                {t('form.no_free_slots', { defaultValue: 'Nessuno slot libero da regole per questo giorno: puoi comunque fissare un orario a mano (verrà bloccato in calendario).' })}
+                              </p>
+                            )}
+                          </div>
                         )}
                       </div>
                       <div className="w-16">

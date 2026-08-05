@@ -4826,13 +4826,17 @@ class TestUtentiUt1:
 
         cust_acc = str(uuid.uuid4())
         cust_guest = str(uuid.uuid4())
+        # NW4 — il consenso marketing vive nei TIMESTAMP (accepted/
+        # revoked), non nel vecchio flag booleano che nessuno scrive:
+        # la fixture parla la lingua vera del checkout.
         db.customers.insert_many([
             {"id": cust_acc, "organization_id": org_id,
              "email": cls.ACC_EMAIL, "name": "UT1 Account",
-             "marketing_opted_in": True, "created_at": now},
+             "accepted_marketing_at": now, "marketing_revoked_at": None,
+             "created_at": now},
             {"id": cust_guest, "organization_id": org_id,
              "email": cls.GUEST_EMAIL, "name": "UT1 Guest",
-             "marketing_opted_in": False, "created_at": now},
+             "accepted_marketing_at": None, "created_at": now},
         ])
 
         order_ids = [str(uuid.uuid4()) for _ in range(3)]

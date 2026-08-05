@@ -23,7 +23,8 @@ export const availabilityAPI = {
   deleteBlocked: (slotId) => api.delete(`/availability/blocked/${slotId}`),
   deleteBlockedGroup: (groupId) => api.delete(`/availability/blocked/group/${groupId}`),
 
-  // Computed free slots
-  getSlots: (dateFrom, dateTo, storeId) =>
-    api.get('/availability/slots', { params: { date_from: dateFrom, date_to: dateTo, store_id: storeId } }),
+  // Computed free slots (MO2 — product_id: slot del singolo servizio,
+  // usato dal form ordine manuale per suggerire gli orari liberi)
+  getSlots: (dateFrom, dateTo, storeId, productId) =>
+    api.get('/availability/slots', { params: { date_from: dateFrom, date_to: dateTo, store_id: storeId, product_id: productId } }),
 };
