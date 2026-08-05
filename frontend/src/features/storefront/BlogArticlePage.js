@@ -338,6 +338,7 @@ export default function BlogArticlePage() {
                   <div className="mt-8 max-w-md">
                     <LeadForm
                       type="traveler" compact subscribe accent="#8a7440"
+                      experiencesOptIn
                       context={`gate_${article.category || slug}`}
                       returnTo={`/blog/${slug}`}
                       consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}

@@ -88,12 +88,20 @@ class TestNw2Form:
         assert "setState('error')" in src
 
     def test_letter_surfaces_have_the_flag(self):
-        home = (FRONTEND_SRC / "features" / "network"
-                / "NetworkHomePage.js").read_text()
-        landing = (FRONTEND_SRC / "features" / "prelaunch"
-                   / "NewsletterLandingPage.js").read_text()
-        assert "experiencesOptIn" in home, "home senza opt-in esperienze"
-        assert "experiencesOptIn" in landing, "/newsletter senza opt-in"
+        """TUTTE le superfici della Lettera hanno l'opt-in esperienze
+        (richiesta founder 5/8): home, /newsletter, CTA del blog
+        (fine articolo + indice) e gate delle guide riservate."""
+        surfaces = [
+            FRONTEND_SRC / "features" / "network" / "NetworkHomePage.js",
+            FRONTEND_SRC / "features" / "prelaunch"
+            / "NewsletterLandingPage.js",
+            FRONTEND_SRC / "features" / "storefront" / "components"
+            / "BlogNewsletterCTA.jsx",
+            FRONTEND_SRC / "features" / "storefront" / "BlogArticlePage.js",
+        ]
+        for path in surfaces:
+            assert "experiencesOptIn" in path.read_text(), \
+                f"{path.name}: superficie Lettera senza opt-in esperienze"
 
     def test_preferences_payload_covers_profile(self):
         from routers.subscribers import PreferencesPayload

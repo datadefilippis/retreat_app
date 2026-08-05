@@ -87,6 +87,7 @@ export default function BlogNewsletterCTA({ category = null }) {
       <div className="mt-7 max-w-md">
         <LeadForm
           type="traveler" compact subscribe accent={GREEN}
+          experiencesOptIn
           context={category ? `blog_${category}` : 'blog'}
           consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
           ctaLabel={isRetreat
