@@ -648,6 +648,7 @@ export default function NetworkHomePage() {
                  data-testid="hp-letter-form">
               <LeadForm
                 type="traveler" compact subscribe showName accent={SAGE}
+                experiencesOptIn
                 context="home_letter"
                 consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
                 ctaLabel={t('nwHome.letterCta', { defaultValue: 'Iscrivimi alla Lettera' })}

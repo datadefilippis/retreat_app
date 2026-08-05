@@ -339,6 +339,7 @@ export default function NewsletterLandingPage() {
                 subscribe
                 compact
                 showName
+                experiencesOptIn
                 accent={SAGE}
                 context="newsletter"
                 ctaLabel={ctaLetter}

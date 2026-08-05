@@ -344,6 +344,27 @@ async def confirm_unsubscribe(token: str, request: Request):
             email, org_id, exc,
         )
 
+    # 1c. NW4 — anche le submission dei form newsletter dell'org
+    # passano a 'unsubscribed': prima l'enum esisteva ma nessun
+    # percorso lo raggiungeva, e la lista iscritti dell'operatore
+    # mostrava 'Iscritto' per sempre anche dopo la revoca.
+    try:
+        from database import db as _db
+        normalised_email = (email or "").strip().lower()
+        if normalised_email:
+            await _db.newsletter_subscriptions.update_many(
+                {"organization_id": org_id,
+                 "email": {"$regex": f"^{re.escape(normalised_email)}$",
+                           "$options": "i"}},
+                {"$set": {"status": "unsubscribed",
+                          "unsubscribed_at": now_iso}},
+            )
+    except Exception as exc:
+        logger.warning(
+            "marketing_consent: newsletter_subscriptions update failed "
+            "for email=%s org_id=%s: %s", email, org_id, exc,
+        )
+
     # 2. Write the immutable consent_audit record. THIS IS THE LEGAL
     # PROOF — if it fails, the operation fails (500). The merchant
     # cannot pretend the revocation never happened from the customer's

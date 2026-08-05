@@ -112,6 +112,18 @@ const LeadsTab = () => {
       .catch(() => setNlStats(null));
   }, []);
 
+  // NW3 — la lista iscritti: ogni riga con FONTE, stato e preferenze
+  const [subs, setSubs] = useState(null);
+  const [subFilter, setSubFilter] = useState('all'); // all|confirmed|pending|unsubscribed|experiences
+  useEffect(() => {
+    const params = { limit: 100 };
+    if (subFilter === 'experiences') params.experiences = 'yes';
+    else if (subFilter !== 'all') params.status = subFilter;
+    adminAPI.listSubscribers(params)
+      .then(setSubs)
+      .catch(() => setSubs(null));
+  }, [subFilter]);
+
   const total = rows.length;
 
   return (
@@ -172,6 +184,79 @@ const LeadsTab = () => {
                 )}
               </div>
             )}
+
+            {/* NW3 — la lista che mancava: ogni iscritto con la sua
+                FONTE, lo stato e le preferenze esperienziali */}
+            <div className="mt-5 border-t pt-4" data-testid="nl-admin-subscribers">
+              <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                {[['all', 'Tutti'], ['confirmed', 'Confermati'],
+                  ['pending', 'In attesa'], ['unsubscribed', 'Disiscritti'],
+                  ['experiences', 'Vogliono esperienze']].map(([k, label]) => (
+                  <Button key={k} size="sm"
+                          variant={subFilter === k ? 'default' : 'outline'}
+                          onClick={() => setSubFilter(k)}>
+                    {label}
+                  </Button>
+                ))}
+                {subs && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {subs.total} risultati
+                  </span>
+                )}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-xs text-muted-foreground">
+                      <th className="py-1.5 pr-3 font-medium">Iscritto</th>
+                      <th className="py-1.5 pr-3 font-medium">Stato</th>
+                      <th className="py-1.5 pr-3 font-medium">Fonte</th>
+                      <th className="py-1.5 pr-3 font-medium">Esperienze</th>
+                      <th className="py-1.5 font-medium">Iscritto il</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(subs?.rows || []).map((s) => (
+                      <tr key={s.email} className="border-b border-dashed border-gray-100 align-top">
+                        <td className="py-1.5 pr-3">
+                          <span className="font-medium">{s.email}</span>
+                          {s.name && <span className="block text-xs text-muted-foreground">{s.name}</span>}
+                        </td>
+                        <td className="py-1.5 pr-3">
+                          <Badge variant="outline" className={
+                            s.status === 'confirmed' ? 'border-[#376254]/40 text-[#376254]'
+                              : s.status === 'unsubscribed' ? 'border-gray-300 text-gray-400'
+                                : 'border-amber-400/50 text-amber-600'}>
+                            {s.status === 'confirmed' ? 'Confermato'
+                              : s.status === 'unsubscribed' ? 'Disiscritto' : 'In attesa'}
+                          </Badge>
+                        </td>
+                        <td className="py-1.5 pr-3 text-gray-600">{s.source}</td>
+                        <td className="py-1.5 pr-3 text-xs text-gray-600">
+                          {s.wants_experiences ? (
+                            <>
+                              {[s.city, s.travel === 'near' ? 'vicino' : s.travel === 'anywhere' ? 'ovunque' : null]
+                                .filter(Boolean).join(' · ') || 'sì'}
+                              {s.interests?.length > 0 && (
+                                <span className="block">{s.interests.join(', ')}</span>
+                              )}
+                            </>
+                          ) : <span className="text-gray-300">—</span>}
+                        </td>
+                        <td className="py-1.5 text-xs text-muted-foreground">
+                          {s.created_at ? new Date(s.created_at).toLocaleDateString('it-IT') : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                    {subs && subs.rows.length === 0 && (
+                      <tr><td colSpan={5} className="py-3 text-center text-xs text-muted-foreground">
+                        Nessun iscritto con questo filtro.
+                      </td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}

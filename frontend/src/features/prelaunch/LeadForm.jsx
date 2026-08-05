@@ -38,6 +38,16 @@ const INTEREST_TO_TOPIC = {
   sound: 'suono', detox: 'detox', nature: 'cammini', women: 'femminile',
 };
 
+// NW2 — interessi ESPERIENZIALI (vocabolario del backend, non i topics
+// editoriali): servono alle proposte di ritiri/esperienze
+const EXP_INTERESTS = ['yoga', 'meditazione', 'breathwork', 'reiki',
+  'costellazioni', 'cerchi', 'suono', 'misto'];
+const EXP_INTEREST_LABELS = {
+  yoga: 'Yoga', meditazione: 'Meditazione', breathwork: 'Breathwork',
+  reiki: 'Reiki', costellazioni: 'Costellazioni familiari',
+  cerchi: 'Cerchi', suono: 'Bagni di suono', misto: "Un po' di tutto",
+};
+
 // BN1 — compact: la variante da fine articolo (blog). Solo email +
 // consenso: nel flusso di lettura ogni campo in piu' e' attrito. La
 // profilazione arriva dopo, dalle preferenze (BN2), non dal form.
@@ -51,11 +61,15 @@ const INTEREST_TO_TOPIC = {
 // nome c'e' quando il form non e' compatto — cioe' il comportamento di
 // prima per tutti gli altri chiamanti. Non tocca ne' i campi
 // obbligatori, ne' il consenso, ne' la chiamata.
+// NW2 — experiencesOptIn: sulle superfici della Lettera accende il
+// flag «avvisami su esperienze e ritiri» che ESPANDE il form (città,
+// raggio, interessi). Il percorso base resta nome+email: zero attrito.
 export default function LeadForm({ type = 'traveler', accent = '#376254', context = null,
                                    successExtra = null, compact = false,
                                    ctaLabel = null, thanksBody = null,
                                    consentText = null, subscribe = false,
-                                   returnTo = null, showName = null }) {
+                                   returnTo = null, showName = null,
+                                   experiencesOptIn = false }) {
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
 
@@ -70,11 +84,17 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   const [link, setLink] = useState('');
   const [message, setMessage] = useState('');
   const [consent, setConsent] = useState(false);
-  const [state, setState] = useState('idle');   // idle | sending | done
+  const [state, setState] = useState('idle');   // idle | sending | done | error
+  // NW2 — il blocco esperienze del form progressivo
+  const [wantsExperiences, setWantsExperiences] = useState(false);
+  const [expInterests, setExpInterests] = useState([]);
+  const [expCity, setExpCity] = useState('');
+  const [expTravel, setExpTravel] = useState('');
 
   const toggle = (setter) => (key) => setter((prev) =>
     prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]);
   const toggleInterest = toggle(setInterests);
+  const toggleExpInterest = toggle(setExpInterests);
 
   const withName = showName === null ? !compact : Boolean(showName);
 
@@ -91,6 +111,8 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
     try {
       if (subscribe) {
         // BN2 — iscrizione alla lettera: double opt-in lato backend
+        // NW2 — il blocco esperienze viaggia solo se l'utente ha
+        // acceso il flag: niente dati raccolti «di passaggio»
         await api.post('/public/newsletter/subscribe', {
           email: email.trim(), name: name.trim() || null,
           language: (i18n.language || 'it').slice(0, 2),
@@ -99,14 +121,25 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           topics: interests.length
             ? interests.map((i) => INTEREST_TO_TOPIC[i]).filter(Boolean)
             : null,
-          city: city.trim() || null,
-          travel: travel || null, budget: budget || null,
+          wants_experiences: experiencesOptIn ? wantsExperiences : null,
+          interests: wantsExperiences && expInterests.length ? expInterests : null,
+          city: (wantsExperiences ? expCity.trim() : city.trim()) || null,
+          travel: (wantsExperiences ? expTravel : travel) || null,
+          budget: budget || null,
           consent: true,
         });
         trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: context || 'landing' });
         setState('done');
         return;
       }
+    } catch {
+      // NW2 — sull'iscrizione alla Lettera l'errore si DICE (il backend
+      // ora risponde 503 se non salva): un grazie finto perderebbe
+      // l'iscritto in silenzio.
+      setState('error');
+      return;
+    }
+    try {
       await api.post('/public/leads', {
         email: email.trim(), name: name.trim() || null, type,
         phone: isOperator ? (phone.trim() || null) : null,
@@ -300,6 +333,76 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         </>
       )}
 
+      {/* NW2 — il form progressivo della Lettera: il percorso base resta
+          nome+email; questo flag apre il blocco esperienze SOLO se
+          l'utente lo chiede. Dati raccolti = dati scelti. */}
+      {subscribe && experiencesOptIn && (
+        <div className="rounded-xl border p-3"
+             style={{ borderColor: `${accent}33`,
+                      background: wantsExperiences ? `${accent}0a` : 'transparent' }}>
+          <label className="flex items-start gap-2 text-sm text-foreground">
+            <input type="checkbox" checked={wantsExperiences}
+                   onChange={(e) => setWantsExperiences(e.target.checked)}
+                   className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              {t('form.expFlag', { defaultValue: 'Avvisami anche quando Aurya propone esperienze e ritiri' })}
+              <span className="block text-xs text-muted-foreground">
+                {t('form.expFlagHint', { defaultValue: 'Facoltativo: ci aiuti a proporti solo cose adatte a te.' })}
+              </span>
+            </span>
+          </label>
+          {wantsExperiences && (
+            <div className="mt-3 space-y-3 duration-300 animate-in fade-in slide-in-from-top-2">
+              <input
+                type="text" value={expCity}
+                onChange={(e) => setExpCity(e.target.value)} maxLength={120}
+                aria-label={t('form.expCity', { defaultValue: 'Dove vivi? Città o zona' })}
+                placeholder={t('form.expCity', { defaultValue: 'Dove vivi? Città o zona' })}
+                className={inputCls} style={ringStyle}
+              />
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                  {t('form.expTravelLabel', { defaultValue: 'Quanto lontano ti sposteresti?' })}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[['near', t('form.expTravel.near', { defaultValue: 'Vicino a dove vivo' })],
+                    ['anywhere', t('form.expTravel.anywhere', { defaultValue: 'Anche lontano' })]].map(([k, label]) => (
+                    <button key={k} type="button" aria-pressed={expTravel === k}
+                      onClick={() => setExpTravel(expTravel === k ? '' : k)}
+                      className="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
+                      style={expTravel === k
+                        ? { background: accent, borderColor: accent, color: '#fff' }
+                        : { borderColor: `${accent}44`, color: '#4b5563', background: '#fff' }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                  {t('form.expInterestsLabel', { defaultValue: 'Cosa ti chiama? Scegli pure più di una via' })}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {EXP_INTERESTS.map((k) => {
+                    const on = expInterests.includes(k);
+                    return (
+                      <button key={k} type="button" aria-pressed={on}
+                        onClick={() => toggleExpInterest(k)}
+                        className="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
+                        style={on
+                          ? { background: accent, borderColor: accent, color: '#fff' }
+                          : { borderColor: `${accent}44`, color: '#4b5563', background: '#fff' }}>
+                        {EXP_INTEREST_LABELS[k]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <label className="flex items-start gap-2 text-xs text-muted-foreground">
         <input type="checkbox" checked={consent}
                onChange={(e) => setConsent(e.target.checked)}
@@ -312,6 +415,11 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           </a>
         </span>
       </label>
+      {state === 'error' && (
+        <p className="text-xs font-medium text-red-600" role="alert">
+          {t('form.subscribeError', { defaultValue: 'Non siamo riusciti a salvarti, riprova tra un momento.' })}
+        </p>
+      )}
       <button
         type="submit" disabled={!email || !consent || missingName || state === 'sending'}
         className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"

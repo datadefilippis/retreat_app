@@ -94,7 +94,15 @@ async def cascade_hard_delete(org_id: str) -> Dict[str, int]:
         logger.warning("hard_delete: failed to collect file keys for org %s: %s", org_id, e)
 
     # 2. Delete all org-scoped collections
-    for name, collection in _ORG_SCOPED_COLLECTIONS:
+    # NW5 — form e submission newsletter dell'org muoiono con l'org:
+    # prima sopravvivevano come dati orfani con organization_id morto.
+    from database import db as _db
+    _newsletter_collections = [
+        ("newsletter_forms", _db.newsletter_forms),
+        ("newsletter_subscriptions", _db.newsletter_subscriptions),
+    ]
+    for name, collection in (_ORG_SCOPED_COLLECTIONS
+                             + _newsletter_collections):
         try:
             result = await collection.delete_many(f)
             counts[name] = result.deleted_count

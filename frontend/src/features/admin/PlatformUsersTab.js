@@ -361,6 +361,13 @@ const PlatformUsersTab = () => {
                 <div>
                   <p className="text-xs text-muted-foreground">Newsletter</p>
                   <NewsletterDot status={detail.newsletter?.status} />
+                  {/* NW3 — la FONTE dell'iscrizione, che il backend
+                      mandava gia' e nessuno mostrava */}
+                  {detail.newsletter?.source && (
+                    <p className="text-xs text-muted-foreground">
+                      da: {detail.newsletter.source}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Consenso Aurya</p>

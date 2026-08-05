@@ -44,6 +44,14 @@ router = APIRouter(tags=["Newsletter Aurya"])
 SUBSCRIBER_FORMATS = ("all", "practices")
 ALERT_SCOPES = ("italy", "regions")
 
+# NW1 — interessi ESPERIENZIALI dell'iscritto (per le proposte di
+# ritiri/esperienze): vocabolario suo, distinto dai topics editoriali
+# del Magazine. "misto" = mi va bene un po' di tutto.
+EXPERIENCE_INTERESTS = ("yoga", "meditazione", "breathwork", "reiki",
+                        "costellazioni", "cerchi", "suono", "misto")
+# NW1 — raggio di viaggio: vicino a casa o ovunque.
+TRAVEL_OPTIONS = ("near", "anywhere")
+
 # Le 20 regioni italiane: le zone dell'alert ritiri (stessa geografia
 # della directory). Slug stabili minuscoli, label lato frontend.
 ITALIAN_REGIONS = (
@@ -63,6 +71,11 @@ def subscriber_topics() -> tuple:
 def _clean_topics(raw) -> list:
     valid = set(subscriber_topics())
     return [t for t in dict.fromkeys(raw or []) if t in valid][:20]
+
+
+def _clean_interests(raw) -> list:
+    valid = set(EXPERIENCE_INTERESTS)
+    return [i for i in dict.fromkeys(raw or []) if i in valid][:10]
 
 
 def _clean_alert(raw: Optional[dict]) -> dict:
@@ -94,6 +107,10 @@ class SubscribePayload(BaseModel):
     city: Optional[str] = Field(default=None, max_length=120)
     travel: Optional[str] = Field(default=None, max_length=40)
     budget: Optional[str] = Field(default=None, max_length=40)
+    # NW1 — il flag «avvisami anche su esperienze e ritiri» e gli
+    # interessi esperienziali del form espanso
+    wants_experiences: Optional[bool] = None
+    interests: Optional[list[str]] = Field(default=None, max_length=10)
     # BN3 — dal gate di una guida: dopo la conferma si torna li'
     return_to: Optional[str] = Field(default=None, max_length=200)
     consent: bool = False
@@ -108,6 +125,11 @@ class PreferencesPayload(BaseModel):
     topics: Optional[list[str]] = Field(default=None, max_length=20)
     format: Optional[str] = Field(default=None, max_length=20)
     retreat_alert: Optional[dict] = None
+    # NW1 — l'iscritto puo' vedere e cambiare anche il suo profilo
+    # esperienziale (prima si scriveva al subscribe e spariva)
+    interests: Optional[list[str]] = Field(default=None, max_length=10)
+    city: Optional[str] = Field(default=None, max_length=120)
+    travel: Optional[str] = Field(default=None, max_length=40)
 
 
 def _decode_or_http(token: str) -> str:
@@ -223,9 +245,18 @@ async def subscribe(request: Request, payload: SubscribePayload):
         doc_set["preferences.format"] = payload.format
     if payload.retreat_alert is not None:
         doc_set["preferences.retreat_alert"] = _clean_alert(payload.retreat_alert)
+    # NW1 — il flag esperienze accende/spegne l'alert ritiri anche da
+    # solo (il form progressivo non costruisce il dict retreat_alert)
+    elif payload.wants_experiences is not None:
+        doc_set["preferences.retreat_alert"] = _clean_alert(
+            {"enabled": payload.wants_experiences})
+    if payload.interests is not None:
+        doc_set["profile.interests"] = _clean_interests(payload.interests)
     for field in ("city", "travel", "budget"):
         val = (getattr(payload, field) or "").strip()
         if val:
+            if field == "travel" and val not in TRAVEL_OPTIONS:
+                continue                     # NW1 — solo near/anywhere
             doc_set[f"profile.{field}"] = val[:120]
 
     try:
@@ -251,9 +282,13 @@ async def subscribe(request: Request, payload: SubscribePayload):
             {"$set": doc_set, "$setOnInsert": set_on_insert},
             upsert=True,
         )
-    except Exception as exc:                # noqa: BLE001 — mai rompere il form
-        logger.warning("subscriber save failed: %s", exc)
-        return {"ok": True}
+    except Exception as exc:                # noqa: BLE001
+        # NW1 — un errore di scrittura NON deve svanire in un finto ok:
+        # l'iscrizione andrebbe persa in silenzio. Meglio un errore
+        # onesto che il form puo' mostrare («riprova tra poco»).
+        logger.error("subscriber save failed: %s", exc)
+        raise HTTPException(status_code=503,
+                            detail="Non riusciamo a salvarti ora, riprova")
 
     _send_confirm_email(email, payload.name,
                         generate_subscriber_token(email),
@@ -332,14 +367,72 @@ async def newsletter_stats(
     }
 
 
+@router.get("/admin/subscribers")
+async def list_subscribers(
+        status: Optional[str] = None,
+        source: Optional[str] = None,
+        q: Optional[str] = None,
+        experiences: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 50,
+        current_user: dict = Depends(require_system_admin)):
+    """NW3 — la lista iscritti che mancava: ogni riga con FONTE, stato,
+    preferenze esperienziali e date. La fonte c'e' sempre: e' il modo
+    in cui l'admin sa da dove arriva ogni persona."""
+    from database import db
+
+    query: dict = {}
+    if status in ("pending", "confirmed", "unsubscribed"):
+        query["status"] = status
+    if source:
+        query["source"] = source[:60]
+    if q:
+        import re as _re
+        query["email"] = {"$regex": _re.escape(q.strip()[:80]), "$options": "i"}
+    if experiences == "yes":
+        query["preferences.retreat_alert.enabled"] = True
+
+    limit = max(1, min(int(limit or 50), 200))
+    skip = max(0, int(skip or 0))
+    total = await db.aurya_subscribers.count_documents(query)
+    rows = []
+    async for d in (db.aurya_subscribers
+                    .find(query, {"_id": 0, "email": 1, "name": 1,
+                                  "status": 1, "source": 1, "language": 1,
+                                  "created_at": 1, "confirmed_at": 1,
+                                  "unsubscribed_at": 1, "preferences": 1,
+                                  "profile": 1})
+                    .sort("created_at", -1).skip(skip).limit(limit)):
+        prefs = d.get("preferences") or {}
+        profile = d.get("profile") or {}
+        rows.append({
+            "email": d["email"],
+            "name": d.get("name"),
+            "status": d.get("status") or "pending",
+            "source": d.get("source") or "(sconosciuta)",
+            "language": d.get("language"),
+            "created_at": d.get("created_at"),
+            "confirmed_at": d.get("confirmed_at"),
+            "unsubscribed_at": d.get("unsubscribed_at"),
+            "wants_experiences": bool(
+                (prefs.get("retreat_alert") or {}).get("enabled")),
+            "interests": _clean_interests(profile.get("interests")),
+            "city": profile.get("city"),
+            "travel": profile.get("travel"),
+        })
+    return {"total": total, "skip": skip, "limit": limit, "rows": rows}
+
+
 @router.get("/public/newsletter/preferences/{token}")
 async def get_preferences(token: str):
     from database import db
 
     email = _decode_or_http(token)
     doc = await db.aurya_subscribers.find_one(
-        {"email": email}, {"_id": 0, "status": 1, "preferences": 1}) or {}
+        {"email": email},
+        {"_id": 0, "status": 1, "preferences": 1, "profile": 1}) or {}
     prefs = doc.get("preferences") or {}
+    profile = doc.get("profile") or {}
     return {
         "email_masked": _mask_email(email),
         "status": doc.get("status") or "pending",
@@ -347,8 +440,14 @@ async def get_preferences(token: str):
         "format": (prefs.get("format")
                    if prefs.get("format") in SUBSCRIBER_FORMATS else "all"),
         "retreat_alert": _clean_alert(prefs.get("retreat_alert")),
+        # NW1 — profilo esperienziale, visibile e modificabile
+        "interests": _clean_interests(profile.get("interests")),
+        "city": profile.get("city") or "",
+        "travel": (profile.get("travel")
+                   if profile.get("travel") in TRAVEL_OPTIONS else ""),
         "available_topics": list(subscriber_topics()),
         "available_regions": list(ITALIAN_REGIONS),
+        "available_interests": list(EXPERIENCE_INTERESTS),
     }
 
 
@@ -366,6 +465,12 @@ async def update_preferences(request: Request, payload: PreferencesPayload):
         doc_set["preferences.format"] = payload.format
     if payload.retreat_alert is not None:
         doc_set["preferences.retreat_alert"] = _clean_alert(payload.retreat_alert)
+    if payload.interests is not None:
+        doc_set["profile.interests"] = _clean_interests(payload.interests)
+    if payload.city is not None:
+        doc_set["profile.city"] = payload.city.strip()[:120]
+    if payload.travel is not None and payload.travel in TRAVEL_OPTIONS:
+        doc_set["profile.travel"] = payload.travel
     await db.aurya_subscribers.update_one({"email": email}, {"$set": doc_set})
     from services.subscriber_brevo_sync import sync_subscriber_background
     sync_subscriber_background(email)     # BN6 — attributi aggiornati

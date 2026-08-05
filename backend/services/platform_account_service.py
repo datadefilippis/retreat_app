@@ -884,11 +884,22 @@ async def export_account_data(account: Dict[str, Any]) -> Dict[str, Any]:
          "items.occurrence_start_at": 1},
     ).sort("created_at", -1).to_list(500)
 
+    # NW5 — anche l'iscrizione alla Lettera fa parte dei dati
+    # dell'utente presso Aurya (titolare: Aurya): stato, fonte,
+    # preferenze e profilo esperienziale entrano nell'export.
+    from database import db as _db
+    newsletter = await _db.aurya_subscribers.find_one(
+        {"email": (account.get("email") or "").lower()},
+        {"_id": 0, "email": 1, "status": 1, "source": 1, "consent_at": 1,
+         "created_at": 1, "confirmed_at": 1, "unsubscribed_at": 1,
+         "preferences": 1, "profile": 1})
+
     return {
         "account": {k: account.get(k) for k in
                     ("id", "email", "name", "phone", "language",
                      "email_verified", "created_at", "last_login_at")},
         "orders": orders,
+        "newsletter": newsletter,
         "exported_at": utc_now().isoformat(),
     }
 
@@ -920,7 +931,14 @@ async def delete_account(account: Dict[str, Any]) -> Dict[str, int]:
     await platform_magic_tokens_collection.delete_many({"account_id": aid})
     await platform_accounts_collection.delete_one({"id": aid})
 
+    # NW5 — la Lettera e' titolarita' Aurya: con l'account se ne va
+    # anche l'iscrizione (documento intero, non solo lo stato).
+    from database import db as _db
+    r_nl = await _db.aurya_subscribers.delete_one(
+        {"email": (account.get("email") or "").lower()})
+
     result = {"orders_unlinked": getattr(r_ord, "modified_count", 0),
-              "customer_accounts_unlinked": getattr(r_cust, "modified_count", 0)}
+              "customer_accounts_unlinked": getattr(r_cust, "modified_count", 0),
+              "newsletter_deleted": getattr(r_nl, "deleted_count", 0)}
     logger.info("platform_account %s CANCELLATO (GDPR): %s", aid, result)
     return result

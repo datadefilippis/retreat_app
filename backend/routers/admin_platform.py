@@ -224,8 +224,20 @@ async def org_business_profile(
         ll = ll.isoformat() if hasattr(ll, "isoformat") else ll
         if ll and (last_login is None or ll > last_login):
             last_login = ll
-    newsletter_subs = await db.newsletter_subscriptions.count_documents(
+    # NW4 — il numero che l'operatore vede nella SUA pagina newsletter e'
+    # form + consensi dal checkout: qui l'admin deve vedere lo stesso
+    # mondo, non solo i form (i checkout opt-in erano invisibili).
+    form_subs = await db.newsletter_subscriptions.count_documents(
         {"organization_id": org_id})
+    form_emails = await db.newsletter_subscriptions.distinct(
+        "email", {"organization_id": org_id})
+    checkout_optins = await db.customers.count_documents({
+        "organization_id": org_id,
+        "accepted_marketing_at": {"$ne": None},
+        "marketing_revoked_at": None,
+        "email": {"$nin": [e for e in form_emails if e]},
+    })
+    newsletter_subs = form_subs + checkout_optins
 
     # ── VT7: traffico dallo specchietto Visibilita' (stesse fonti) ───
     from routers.visibility import (_month_views, _month_impressions,
@@ -339,7 +351,8 @@ def _ut1_base_pipeline() -> list:
                 "as": "_cust",
                 "pipeline": [{"$project": {
                     "_id": 0, "email": 1, "name": 1,
-                    "marketing_opted_in": 1}}],
+                    "accepted_marketing_at": 1,
+                    "marketing_revoked_at": 1}}],
             }},
             {"$set": {"_cust": {"$first": "$_cust"}}},
             {"$set": {"email": {"$toLower":
@@ -357,8 +370,15 @@ def _ut1_base_pipeline() -> list:
                 "last_order_at": {"$max": "$created_at"},
                 "org_ids": {"$addToSet": "$organization_id"},
                 "guest_name": {"$max": "$_cust.name"},
-                "marketing": {"$max":
-                              {"$eq": ["$_cust.marketing_opted_in", True]}},
+                # NW4 — il consenso marketing VERO: il checkout scrive
+                # accepted_marketing_at / marketing_revoked_at, non un
+                # flag booleano (che non esiste: era sempre False)
+                "marketing": {"$max": {"$and": [
+                    {"$ne": [{"$ifNull": ["$_cust.accepted_marketing_at",
+                                          None]}, None]},
+                    {"$eq": [{"$ifNull": ["$_cust.marketing_revoked_at",
+                                          None]}, None]},
+                ]}},
             }},
             {"$project": {
                 "_id": 0,
@@ -576,7 +596,8 @@ async def platform_user_detail(
     customers = await customers_collection.find(
         {"email": email_rx},
         {"_id": 0, "id": 1, "organization_id": 1, "name": 1,
-         "marketing_opted_in": 1, "created_at": 1},
+         "accepted_marketing_at": 1, "marketing_revoked_at": 1,
+         "created_at": 1},
     ).to_list(50)
 
     # ordini: via customer CRM (l'email vive li') + stamp platform_account_id
@@ -612,7 +633,12 @@ async def platform_user_detail(
     for c in customers:
         c["organization_name"] = org_names.get(c["organization_id"],
                                                c["organization_id"][:8])
-        c["marketing_opted_in"] = bool(c.get("marketing_opted_in"))
+        # NW4 — dai timestamp veri (il flag booleano non esiste a DB)
+        c["marketing_opted_in"] = bool(
+            c.get("accepted_marketing_at")
+            and not c.get("marketing_revoked_at"))
+        c.pop("accepted_marketing_at", None)
+        c.pop("marketing_revoked_at", None)
 
     newsletter = await db.aurya_subscribers.find_one(
         {"email": email_n},

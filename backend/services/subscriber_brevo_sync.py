@@ -42,6 +42,7 @@ def _attributes(doc: dict) -> dict:
         alert_val = ",".join(alert["regions"])
     else:
         alert_val = "italy"
+    profile = doc.get("profile") or {}
     return {
         "AURYA_STATUS": doc.get("status") or "pending",
         "AURYA_TOPICS": ",".join(prefs.get("topics") or []),
@@ -49,6 +50,11 @@ def _attributes(doc: dict) -> dict:
         "AURYA_ALERT": alert_val,
         "AURYA_SOURCE": doc.get("source") or "",
         "AURYA_LANG": doc.get("language") or "it",
+        # NW1 — profilo esperienziale per la segmentazione delle
+        # proposte ritiri (vuoti se l'iscritto non ha acceso il flag)
+        "AURYA_INTERESTS": ",".join(profile.get("interests") or []),
+        "AURYA_CITY": profile.get("city") or "",
+        "AURYA_TRAVEL": profile.get("travel") or "",
     }
 
 
