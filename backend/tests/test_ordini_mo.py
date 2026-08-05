@@ -82,6 +82,15 @@ class TestMo2FormDevice:
             assert f in src, f"il form non gestisce {f}"
         assert "loadSlots" in src and "loadTiers" in src
 
+    def test_form_allocates_attendees(self):
+        """MO5 — con piu' posti il form intesta i partecipanti; i posti
+        senza nome ricadono sul cliente (mai obbligatorio)."""
+        src = ORDERS_PAGE.read_text()
+        assert "attendees" in src
+        assert "attendee_name" in src
+        assert "named.length ? named : null" in src, \
+            "gli attendees vuoti devono viaggiare come null"
+
     def test_edit_mode_keeps_slot_fields(self):
         src = ORDERS_PAGE.read_text()
         i = src.index("(editing.items || []).map")
@@ -171,19 +180,29 @@ class TestMoLiveEffects:
                     {"id": occ, "organization_id": org_id, "product_id": ev,
                      "slug": f"mo-g-{tag}", "status": "published",
                      "start_at": "2026-10-05T10:00:00+00:00",
-                     "capacity": 1, "reserved_seats": 0})
+                     "capacity": 2, "reserved_seats": 0})
                 occs.append(occ)
+                # MO5 — 2 posti, 1 intestato: il primo biglietto porta il
+                # nome del partecipante, il secondo ricade sul cliente
                 o2 = await order_service.create_order(org_id, OrderCreate(
                     customer_id=cust_id,
-                    items=[OrderLineCreate(product_id=ev, quantity=1,
-                                           occurrence_id=occ)]))
+                    items=[OrderLineCreate(
+                        product_id=ev, quantity=2, occurrence_id=occ,
+                        attendees=[{"name": "Alma Intestata"}])]))
                 oids.append(o2["id"])
                 await order_service.confirm_order(
                     org_id, o2["id"], skip_payment_check=True)
                 d = await db.event_occurrences.find_one({"id": occ})
-                assert d["reserved_seats"] == 1, "capienza non decrementata"
-                assert await db.issued_tickets.find_one(
-                    {"order_id": o2["id"]}), "nessun partecipante emesso"
+                assert d["reserved_seats"] == 2, "capienza non decrementata"
+                holders = sorted([t["holder_name"] async for t in
+                                  db.issued_tickets.find(
+                                      {"order_id": o2["id"]},
+                                      {"_id": 0, "holder_name": 1})])
+                assert len(holders) == 2, "attesi 2 biglietti"
+                assert "Alma Intestata" in holders, \
+                    "l'intestazione del partecipante non arriva sul biglietto"
+                assert any(f"MO Guard {tag}" in h for h in holders), \
+                    "il posto scoperto non ricade sul cliente"
                 # ora e' pieno: il prossimo manuale deve essere rifiutato
                 with pytest.raises(ValueError):
                     await order_service.create_order(org_id, OrderCreate(

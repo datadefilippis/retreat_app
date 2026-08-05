@@ -120,6 +120,7 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
             booking_date: it.booking_date || '',
             booking_start_time: it.booking_start_time || '',
             booking_end_time: it.booking_end_time || '',
+            attendees: it.attendees || [],
           })),
         });
       } else {
@@ -195,7 +196,14 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
         customer_id: form.customer_id,
         notes: form.notes || null,
         due_date: form.due_date || null,
-        items: form.items.map(it => ({
+        items: form.items.map(it => {
+          // MO5 — partecipanti intestati: solo quelli con un nome; i
+          // posti scoperti ricadono sul cliente, per indice
+          const named = (it.attendees || [])
+            .map(a => ({ name: (a?.name || '').trim(),
+                         email: (a?.email || '').trim() || null }))
+            .filter(a => a.name);
+          return ({
           product_id: it.product_id,
           quantity: parseFloat(it.quantity),
           unit_price: it.unit_price !== '' ? parseFloat(it.unit_price) : null,
@@ -207,7 +215,9 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
           booking_date: it.booking_date || null,
           booking_start_time: (it.booking_date && it.booking_start_time) || null,
           booking_end_time: (it.booking_date && it.booking_end_time) || null,
-        })),
+          attendees: named.length ? named : null,
+        });
+        }),
       };
       if (editing) {
         await ordersAPI.update(editing.id, payload);
@@ -398,6 +408,41 @@ function OrderFormDialog({ open, onClose, onSaved, editing, prefillCustomerId, c
                                   </option>
                                 ))}
                               </select>
+                            )}
+                            {/* MO5 — allocazione clienti per posto: con piu'
+                                di un posto puoi intestare i partecipanti.
+                                Facoltativo: i posti senza nome ricadono sul
+                                cliente dell'ordine. */}
+                            {item.occurrence_id && (parseFloat(item.quantity) || 1) > 1 && (
+                              <div className="mt-1 rounded-md border border-dashed border-input p-2">
+                                <p className="mb-1 text-[10px] font-medium text-muted-foreground">
+                                  {t('form.attendees_label', { defaultValue: 'Partecipanti (facoltativo — i posti senza nome vanno al cliente)' })}
+                                </p>
+                                <div className="space-y-1">
+                                  {Array.from({ length: Math.min(parseFloat(item.quantity) || 1, 10) }).map((_, si) => (
+                                    <div key={si} className="flex gap-1.5">
+                                      <Input type="text" maxLength={120}
+                                        value={item.attendees?.[si]?.name || ''}
+                                        placeholder={t('form.attendee_name', { defaultValue: `Nome partecipante ${si + 1}` })}
+                                        onChange={e => {
+                                          const arr = [...(item.attendees || [])];
+                                          arr[si] = { ...(arr[si] || {}), name: e.target.value };
+                                          updateItem(i, 'attendees', arr);
+                                        }}
+                                        className="h-7 flex-1 px-2 py-1 text-xs" />
+                                      <Input type="email" maxLength={200}
+                                        value={item.attendees?.[si]?.email || ''}
+                                        placeholder={t('form.attendee_email', { defaultValue: 'Email (facoltativa)' })}
+                                        onChange={e => {
+                                          const arr = [...(item.attendees || [])];
+                                          arr[si] = { ...(arr[si] || {}), email: e.target.value };
+                                          updateItem(i, 'attendees', arr);
+                                        }}
+                                        className="h-7 flex-1 px-2 py-1 text-xs" />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
                             )}
                           </>
                         )}
