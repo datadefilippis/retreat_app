@@ -110,8 +110,12 @@ async def newsletter_stats(
     emails, recent = set(), set()
     by_month = defaultdict(int)
     by_source = defaultdict(int)
+    # DC3 — chi si e' disiscritto NON e' un iscritto: prima il totale
+    # lo contava per sempre e «puoi scrivere a N persone» era falso.
+    # (la revoca org scrive status='unsubscribed' — ciclo NW4)
     async for s in newsletter_subscriptions_collection.find(
-            {"organization_id": org_id},
+            {"organization_id": org_id,
+             "status": {"$ne": "unsubscribed"}},
             {"_id": 0, "email": 1, "created_at": 1,
              "source_label": 1, "source_origin": 1}).limit(50000):
         email = (s.get("email") or "").strip().lower()

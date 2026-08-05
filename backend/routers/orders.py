@@ -457,11 +457,19 @@ async def payments_overview(current_user: dict = Depends(get_verified_user)):
     from services.commerce_rules import derive_review_info
     open_orders = await orders_collection.find(
         {"organization_id": org_id, "status": {"$in": ["draft", "confirmed"]}},
+        # DC2 — derive_review_info legge order["fulfillment"], non
+        # "fulfillment_status": senza il campo giusto il ramo
+        # fulfilled_unpaid non scattava mai e la home sotto-contava.
         {"_id": 0, "status": 1, "payment_intent": 1, "payment_status": 1,
-         "source": 1, "total": 1, "items": 1, "fulfillment_status": 1},
+         "source": 1, "total": 1, "items": 1, "fulfillment": 1},
     ).to_list(2000)
+    # DC2 — «Ordini da gestire» = solo CONFERMATI con qualcosa da fare:
+    # le bozze hanno gia' la loro riga («Bozze aperte») e contarle in
+    # entrambe faceva apparire lo stesso carrello due volte nel Da fare.
     agg["needs_action_count"] = sum(
-        1 for o in open_orders if (derive_review_info(o) or {}).get("state")
+        1 for o in open_orders
+        if o.get("status") == "confirmed"
+        and (derive_review_info(o) or {}).get("state")
     )
     agg["draft_count"] = sum(1 for o in open_orders if o.get("status") == "draft")
     return agg

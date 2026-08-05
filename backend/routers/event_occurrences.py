@@ -694,10 +694,13 @@ async def get_occurrence_analytics(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Occurrence not found")
 
     # Revenue totals and per-tier breakdown via ONE aggregation
+    # DC1 — solo ordini CONFERMATI: prima il filtro era != cancelled e
+    # l'«Incasso» dell'evento includeva bozze/carrelli abbandonati,
+    # contraddicendo /incassi e i posti confermati (reserved_seats).
     pipeline_revenue = [
         {"$match": {
             "organization_id": org_id,
-            "status": {"$ne": "cancelled"},
+            "status": {"$in": ["confirmed", "completed"]},
             "items.occurrence_id": occurrence_id,
         }},
         {"$unwind": "$items"},
@@ -754,7 +757,9 @@ async def get_occurrence_analytics(
     pipeline_timeline = [
         {"$match": {
             "organization_id": org_id,
-            "status": {"$ne": "cancelled"},
+            # DC1 — la timeline vendite conta i posti CONFERMATI,
+            # coerente con reserved_seats e con la card Venduto
+            "status": {"$in": ["confirmed", "completed"]},
             "items.occurrence_id": occurrence_id,
         }},
         {"$unwind": "$items"},
@@ -842,7 +847,8 @@ async def get_occurrence_analytics(
             rev_pipe = [
                 {"$match": {
                     "organization_id": org_id,
-                    "status": {"$ne": "cancelled"},
+                    # DC1 — confronto edizioni: stessi filtri della card
+                    "status": {"$in": ["confirmed", "completed"]},
                     "items.occurrence_id": po["id"],
                 }},
                 {"$unwind": "$items"},

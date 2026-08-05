@@ -1469,8 +1469,26 @@ export default function EventDashboardPage() {
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   {t('dashboards.event.revenue.fromTickets', { count: analytics.tickets_sold_total })}
+                  {' · '}{t('dashboards.event.revenue.sub')}
                 </p>
               </div>
+              {/* DC1 — la card Posti confermati era sparita: era l'unica
+                  superficie ritiro SENZA capienza. Stesso contatore di
+                  Calendario e lista Ritiri (reserved_seats). */}
+              {Number.isFinite(capacity) && capacity > 0 && (
+                <div className="text-right">
+                  <p className="text-xs uppercase tracking-wide text-gray-500">
+                    {t('dashboards.event.seatsConfirmed', { defaultValue: 'Posti confermati' })}
+                  </p>
+                  <p className="text-3xl font-bold text-gray-900 tabular-nums mt-1">
+                    {reservedSeats}<span className="text-base font-medium text-gray-400">/{capacity}</span>
+                  </p>
+                  <div className="mt-2 h-1.5 w-28 rounded-full bg-gray-100 ml-auto">
+                    <div className="h-1.5 rounded-full bg-[#376254]"
+                         style={{ width: `${capacityProgress}%` }} />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Per-tier breakdown */}
@@ -1921,7 +1939,9 @@ export default function EventDashboardPage() {
                 <option value="">{t('dashboards.event.participants.filterAll')}</option>
                 <option value="valid">{t('dashboards.event.participants.filterPending')}</option>
                 <option value="checked_in">{t('dashboards.event.participants.filterEntered')}</option>
-                <option value="voided">{t('dashboards.event.participants.filterCancelled')}</option>
+                {/* DC1 — via il filtro «Annullati»: i biglietti voided
+                    non vengono scaricati, l'opzione mostrava sempre
+                    zero righe (filtro morto) */}
               </select>
             </div>
 

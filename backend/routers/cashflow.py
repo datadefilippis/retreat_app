@@ -39,7 +39,10 @@ router = APIRouter(prefix="/analytics", tags=["Analytics"],
 _CACHE_TTL = 60.0
 _cache: Dict[str, "tuple[float, dict]"] = {}
 
-_UNPAID = ("pending", "overdue", "processing")
+# DC2 — «at_risk» incluso: sono soldi ancora dovuti che il dunning ha
+# smesso di sollecitare. Prima sparivano da OGNI vista (né in arrivo,
+# né in ritardo): denaro invisibile all'operatore.
+_UNPAID = ("pending", "overdue", "processing", "at_risk")
 _PAID = ("paid", "paid_manual")
 
 # cap difensivi (org singola: numeri reali molto sotto)
@@ -166,12 +169,18 @@ async def _build(org_id: str) -> Dict[str, Any]:
             continue
         order_day = (o.get("order_date") or "")[:10]
         if o.get("payment_status") == "paid":
-            if order_day >= cutoff_day:
+            # DC2 — la data dell'incasso e' QUANDO e' stato pagato, non
+            # quando e' nato l'ordine (il ledger usa paid_at: stessa
+            # semantica). Fallback su order_date per i doc storici.
+            paid_day = (o.get("paid_at") or o.get("payment_date")
+                        or o.get("order_date") or "")[:10]
+            if paid_day >= cutoff_day:
                 summary["incassato_minor"] += amount_minor
-            incassato_by_month[order_day[:7]] += amount_minor
+            incassato_by_month[paid_day[:7]] += amount_minor
             # GT2 — 'collected' lo stampa solo il checkout Stripe
+            # DC2 — anche qui conta il mese dell'INCASSO, non dell'ordine
             if o.get("payment_intent") == "collected" \
-                    and order_day[:7] == current_month:
+                    and paid_day[:7] == current_month:
                 stripe_month_minor += amount_minor
         else:
             # non pagato: scadenza dichiarata, altrimenti la data ordine
@@ -234,6 +243,10 @@ async def _build(org_id: str) -> Dict[str, Any]:
 
     overdue_rows.sort(key=lambda r: r["due_at"])
     upcoming_rows.sort(key=lambda r: r["due_at"])
+    # DC2 — il conteggio VERO prima del taglio a 50: la home mostrava
+    # «N pagamenti in ritardo» dalla lista troncata mentre l'importo
+    # era completo — due verita' diverse nella stessa card.
+    overdue_count_total = len(overdue_rows)
     overdue_rows = overdue_rows[:_MAX_LIST_ROWS]
     upcoming_rows = upcoming_rows[:_MAX_LIST_ROWS]
 
@@ -398,6 +411,7 @@ async def _build(org_id: str) -> Dict[str, Any]:
             "incassato": summary["incassato_minor"] / 100.0,
             "in_arrivo": summary["in_arrivo_minor"] / 100.0,
             "in_ritardo": summary["in_ritardo_minor"] / 100.0,
+            "in_ritardo_count": overdue_count_total,   # DC2 — mai troncato
             "ticket_medio": ticket,
         },
         "months": months,

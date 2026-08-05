@@ -75,7 +75,9 @@ export default function OperatorHome() {
   const todo = (payments?.needs_action_count || 0);
   const drafts = (payments?.draft_count || 0);
   const s = cashflow?.summary;
-  const overdueCount = (cashflow?.overdue || []).length;
+  // DC2 — il conteggio vero dal backend (la lista e' troncata a 50):
+  // prima importo e numero potevano raccontare due storie diverse
+  const overdueCount = s?.in_ritardo_count ?? (cashflow?.overdue || []).length;
   const bars = (cashflow?.months || []).map((m) => ({
     label: monthShort(m.month, i18n.language), value: m.incassato,
   }));

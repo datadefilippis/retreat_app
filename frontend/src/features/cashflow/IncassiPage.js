@@ -180,17 +180,22 @@ export default function IncassiPage() {
 
         {/* 1 — come sta andando */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* DC5 — ogni numero dice cosa conta, in italiano semplice */}
           <StatCard loading={loading} icon={Wallet}
                     label={t('cashflow.collected', { defaultValue: 'Incassato (12 mesi)' })}
+                    sublabel={t('cashflow.collectedSub', { defaultValue: 'soldi già entrati' })}
                     value={fmt(s.incassato)} />
           <StatCard loading={loading} icon={TrendingUp}
                     label={t('cashflow.incoming', { defaultValue: 'In arrivo' })}
+                    sublabel={t('cashflow.incomingSub', { defaultValue: 'caparre e saldi da riscuotere' })}
                     value={fmt(s.in_arrivo)} />
           <StatCard loading={loading} icon={AlertTriangle} accent={Boolean(s.in_ritardo)}
                     label={t('cashflow.overdue', { defaultValue: 'In ritardo' })}
+                    sublabel={t('cashflow.overdueSub', { defaultValue: 'scaduto e non ancora pagato' })}
                     value={fmt(s.in_ritardo)} />
           <StatCard loading={loading} icon={Receipt}
                     label={t('cashflow.avgTicket', { defaultValue: 'Ticket medio' })}
+                    sublabel={t('cashflow.avgTicketSub', { defaultValue: 'quanto vale in media un ordine' })}
                     value={s.ticket_medio != null ? fmt(s.ticket_medio) : '—'} />
         </div>
 

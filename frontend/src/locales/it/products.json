@@ -835,14 +835,15 @@
         "saveBtn": "Salva data e luogo"
       },
       "revenue": {
-        "title": "Incasso",
+        "title": "Venduto",
         "ticketSold_one": "biglietto venduto",
         "ticketSold_other": "biglietti venduti",
-        "fromTickets_one": "da {{count}} biglietto venduto",
-        "fromTickets_other": "da {{count}} biglietti venduti",
+        "fromTickets_one": "da {{count}} posto confermato",
+        "fromTickets_other": "da {{count}} posti confermati",
         "perTier": "Per tipologia",
         "basePrice": "Prezzo base",
-        "salesLast30": "Vendite ultimi 30 giorni"
+        "salesLast30": "Vendite ultimi 30 giorni",
+        "sub": "incassato o ancora da incassare"
       },
       "tiers": {
         "title": "Tipologie di posto",

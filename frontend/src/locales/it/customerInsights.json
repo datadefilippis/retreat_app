@@ -82,7 +82,7 @@
       "title": "Ricavi periodo",
       "def": "Somma delle vendite registrate nel periodo selezionato.",
       "calc": "Σ amount su sales_records con date ∈ [start, end].",
-      "read": "Più alti = più cassa generata. Confronta con il periodo precedente."
+      "read": "venduto nel periodo, incassato o no"
     },
     "avgCustomerValue": {
       "title": "Valore medio cliente",
@@ -264,7 +264,8 @@
     "recontactHint": "Inattivi con consenso marketing: clicca per vedere la lista",
     "withPhone": "Con telefono",
     "withPhoneSub": "raggiungibili su WhatsApp",
-    "advanced": "Analisi avanzata (KPI dettagliati, concentrazione, ricavo per segmento)"
+    "advanced": "Analisi avanzata (KPI dettagliati, concentrazione, ricavo per segmento)",
+    "totalHint": "persone con almeno un acquisto"
   },
   "crossSell": {
     "title": "{{count}} clienti hanno fatto un ritiro ma mai una consulenza",
