@@ -39,10 +39,15 @@ def _site_phase() -> str:
     return (r.json() or {}).get("site_phase") or "marketplace"
 
 
-# LC1 — in fase rete le pagine commerciali (/e/, /s/, /o/, prodotti)
+# LC1 — in fase rete le pagine commerciali (/e/, /s/, prodotti)
 # rispondono 404 ai crawler: le loro sotto-sitemap devono essere vuote
 # e l'indice non deve dichiararle.
-_COMMERCIAL = ("retreats", "products", "operators")
+# PP2b (ok founder 4/8): "operators" NON e' piu' commerciale — i
+# profili /o/ dei membri della rete sono vivi anche in fase rete e la
+# loro sitemap sta nell'indice (vedi test_seo.py::
+# test_index_declares_operators_in_network_pp2b, che asserisce
+# l'esatto contrario di quello che questa lista imponeva).
+_COMMERCIAL = ("retreats", "products")
 
 
 class TestSitemapIndex:

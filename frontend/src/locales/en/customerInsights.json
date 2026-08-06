@@ -264,7 +264,8 @@
     "recontactHint": "Inactive with marketing consent: click to see the list",
     "withPhone": "With phone",
     "withPhoneSub": "reachable on WhatsApp",
-    "advanced": "Advanced analysis (detailed KPIs, concentration, revenue by segment)"
+    "advanced": "Advanced analysis (detailed KPIs, concentration, revenue by segment)",
+    "totalHint": "people with at least one purchase"
   },
   "crossSell": {
     "title": "{{count}} customers joined a retreat but never booked a consultation",

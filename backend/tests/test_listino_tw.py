@@ -1286,8 +1286,13 @@ class TestHubAccountAp2:
         assert '"items.transaction_mode": 1' in src
         assert '"service_slot"' in src
         assert '"transaction_mode": (modes.pop() if len(modes) == 1' in src
-        # gli annullati ora si vedono (prima erano filtrati via)
-        assert '{"$ne": "cancelled"}' not in src
+        # gli annullati ora si vedono (prima erano filtrati via).
+        # TA2: il filtro-status e' vietato sulla query degli ORDINI —
+        # le prenotazioni cancellate (issued_bookings) e' giusto
+        # filtrarle. Stessa precisazione della guardia AP2 in
+        # test_platform_accounts.
+        orders_query = src.split("orders_collection.find(")[1].split(".sort(")[0]
+        assert "cancelled" not in orders_query
 
     def test_ap2_login_emette_token_newsletter_solo_confirmed(self):
         """Il login Passaporto (magic link E codice) risponde con

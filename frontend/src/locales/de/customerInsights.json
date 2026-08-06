@@ -264,7 +264,8 @@
     "recontactHint": "Inaktive mit Marketing-Einwilligung: klicken für die Liste",
     "withPhone": "Mit Telefon",
     "withPhoneSub": "per WhatsApp erreichbar",
-    "advanced": "Erweiterte Analyse (detaillierte KPIs, Konzentration, Umsatz je Segment)"
+    "advanced": "Erweiterte Analyse (detaillierte KPIs, Konzentration, Umsatz je Segment)",
+    "totalHint": "Personen mit mindestens einem Kauf"
   },
   "crossSell": {
     "title": "{{count}} Kunden waren bei einem Retreat, aber nie in einer Beratung",

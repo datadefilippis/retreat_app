@@ -264,7 +264,8 @@
     "recontactHint": "Inactifs avec consentement marketing : cliquez pour voir la liste",
     "withPhone": "Avec téléphone",
     "withPhoneSub": "joignables sur WhatsApp",
-    "advanced": "Analyse avancée (KPI détaillés, concentration, revenu par segment)"
+    "advanced": "Analyse avancée (KPI détaillés, concentration, revenu par segment)",
+    "totalHint": "personnes avec au moins un achat"
   },
   "crossSell": {
     "title": "{{count}} clients ont participé à une retraite mais jamais à une consultation",
