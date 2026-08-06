@@ -5175,6 +5175,26 @@ class TestLoginRegia:
                 assert val, f"{lang}: manca login.{k}"
                 assert "—" not in val and "–" not in val
 
+    def test_ritorni_al_login_puntano_a_login_non_alla_home(self):
+        """S0 ha spostato la login operatori dalla root a /login, ma i
+        ritorni dentro AuthPages erano rimasti a "/": chi cliccava
+        «Accedi» dalla registrazione finiva sulla homepage pubblica.
+        Ogni uscita verso la login deve puntare a /login.
+        """
+        src = self.OPERATOR_LOGIN.read_text()
+        for label in ("signup.login_link", "forgot_password.back_to_login",
+                      "verify_email.go_to_login"):
+            i = src.index(label)
+            # il target sta nel tag/handler subito sopra l'etichetta
+            before = src[max(0, i - 400):i]
+            anchor = before.rfind('to="/')
+            nav = before.rfind('navigate(`/')
+            target_at = max(anchor, nav)
+            assert target_at != -1, f"{label}: nessun target trovato"
+            target = before[target_at:target_at + 20]
+            assert target.startswith(('to="/login', 'navigate(`/login')), \
+                f"{label} porta a {target!r}: deve portare a /login"
+
 
 class TestHomeHp2:
     """HP2 (31/7/2026) — la homepage della fase rete, specifica

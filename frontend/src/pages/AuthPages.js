@@ -542,7 +542,7 @@ export const SignupPage = () => {
                   {t('signup.verify_email_message', 'Ti abbiamo inviato un link di verifica. Clicca il link per attivare il tuo account.')}
                 </div>
                 <div className="text-center text-sm">
-                  <Link to="/" className="font-medium text-primary hover:underline">
+                  <Link to="/login" className="font-medium text-primary hover:underline">
                     {t('signup.login_link', 'Accedi')}
                   </Link>
                 </div>
@@ -671,7 +671,7 @@ export const SignupPage = () => {
                   </>
                 )}
                 <div className="text-center text-sm">
-                  <Link to="/" className="font-medium text-primary hover:underline">
+                  <Link to="/login" className="font-medium text-primary hover:underline">
                     {t('signup.login_link')}
                   </Link>
                 </div>
@@ -845,7 +845,7 @@ export const SignupPage = () => {
                 <div className="mt-6 text-center text-sm">
                   <span className="text-muted-foreground">{t('signup.has_account')} </span>
                   <Link
-                    to="/"
+                    to="/login"
                     className="font-medium text-primary hover:underline"
                     data-testid="login-link"
                   >
@@ -939,7 +939,7 @@ export const ForgotPasswordPage = () => {
                     </div>
                   )}
                   <div className="text-center text-sm">
-                    <Link to="/" className="font-medium text-primary hover:underline">
+                    <Link to="/login" className="font-medium text-primary hover:underline">
                       {t('forgot_password.back_to_login')}
                     </Link>
                   </div>
@@ -968,7 +968,7 @@ export const ForgotPasswordPage = () => {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <div className="text-center text-sm">
-                    <Link to="/" className="text-muted-foreground hover:text-primary hover:underline">
+                    <Link to="/login" className="text-muted-foreground hover:text-primary hover:underline">
                       {t('forgot_password.back_to_login')}
                     </Link>
                   </div>
@@ -1131,7 +1131,7 @@ export const ResetPasswordPage = () => {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                   <div className="text-center text-sm">
-                    <Link to="/" className="text-muted-foreground hover:text-primary hover:underline">
+                    <Link to="/login" className="text-muted-foreground hover:text-primary hover:underline">
                       {t('forgot_password.back_to_login')}
                     </Link>
                   </div>
@@ -1204,7 +1204,7 @@ export const VerifyEmailPage = () => {
         </CardHeader>
         <CardContent className="text-center">
           {status !== 'loading' && (
-            <Button onClick={() => navigate(`/?lang=${i18n.language}`)} className="w-full">
+            <Button onClick={() => navigate(`/login?lang=${i18n.language}`)} className="w-full">
               {t('verify_email.go_to_login', 'Vai al Login')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
