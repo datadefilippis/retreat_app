@@ -32,7 +32,7 @@ Tutte le stringhe vivono in `EMAIL_TRANSLATIONS` (4 lingue: it/en/de/fr,
 | 6 | Sollecito pagamento in ritardo | scheduler dunning (overdue) | `send_payment_reminder` (fase sollecito) |
 | 7 | Conferma prenotazione (rental/slot) | emissione/resend | `email_service.send_reservation_confirmation_email` |
 | 8 | Biglietti individuali evento | ordine evento confermato | `event_email_service.send_individual_tickets_for_order` |
-| 9 | Reinvio biglietto | richiesta pubblica per codice | `resend_ticket_email_by_code` |
+| 9 | Reinvio biglietto | azione admin per codice (nessuna superficie pubblica di reinvio) | `resend_ticket_email_by_code` |
 | 10 | Broadcast partecipanti (promemoria/aggiornamento/follow-up) | invio manuale operatore | `broadcast_to_attendees` |
 | 11 | Account Aurya — accesso OTP + magic link | richiesta login / attivazione post-acquisto | `platform_account_service._send_magic_link_email` |
 | 12 | Account Aurya — claim «le tue prenotazioni nel tuo account Aurya» | primo pagamento riuscito (cooldown 24h) | `_send_claim_email` |

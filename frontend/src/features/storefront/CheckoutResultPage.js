@@ -229,12 +229,33 @@ export function CheckoutSuccessPage() {
         <p className="text-gray-600 mt-2">{description}</p>
         <OrderSummary status={status} />
 
-        {/* K3 — contesto marketplace (flag messo dal checkout mktp):
-            il viaggio continua sulla piattaforma, non nella vetrina */}
+        {/* TA4 — i pass in mano subito: appena l'ordine è confermato la
+            success page linka /t/ e /b/ senza aspettare l'email. */}
+        {(status?.passes || []).length > 0 && (
+          <div className="mt-5 space-y-2">
+            {status.passes.map((p, i) => (
+              <a key={p.access_token}
+                href={p.kind === 'booking' ? `/b/${p.access_token}` : `/t/${p.access_token}`}
+                className="block w-full rounded-full border-2 border-primary text-primary px-5 py-2.5 text-sm font-bold hover:bg-primary hover:text-white transition-colors">
+                {p.kind === 'booking'
+                  ? t('storefront:checkoutResult.openBooking', { defaultValue: 'Apri la tua prenotazione' })
+                  : t('storefront:checkoutResult.openTicket', {
+                      n: i + 1,
+                      defaultValue: status.passes.filter(x => x.kind === 'ticket').length > 1
+                        ? `Apri il tuo pass ${i + 1}` : 'Apri il tuo pass',
+                    })}
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* K3 → TA5 — la proposta account vale su OGNI superficie di
+            acquisto (prima solo marketplace: chi comprava dal profilo
+            operatore o embed non la vedeva mai). Il contesto mktp decide
+            solo il link di ritorno, non l'esistenza della CTA. */}
         {(() => {
           let mktp = false;
           try { mktp = sessionStorage.getItem('storefront:mktp_ctx') === '1'; } catch { /* no-op */ }
-          if (!mktp) return null;
           let mktpEmail = null;
           try { mktpEmail = sessionStorage.getItem('storefront:mktp_email'); } catch { /* no-op */ }
           const activate = async () => {
@@ -263,8 +284,9 @@ export function CheckoutSuccessPage() {
                   partito da un ritiro/directory (mktp_return) si torna
                   LI'; altrimenti label neutra verso la home (in fase
                   network la home non ha ritiri: "Torna ai ritiri"
-                  sarebbe una promessa falsa). */}
-              {(() => {
+                  sarebbe una promessa falsa). Solo in contesto mktp:
+                  fuori dal marketplace il ritorno e' StoreBackLink. */}
+              {mktp && (() => {
                 let ret = null;
                 try { ret = sessionStorage.getItem('storefront:mktp_return'); } catch { /* no-op */ }
                 const to = ret || '/';

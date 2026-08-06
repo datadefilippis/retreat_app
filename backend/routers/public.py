@@ -478,6 +478,11 @@ class PublicOrderStatus(BaseModel):
     currency: str = "EUR"
     store_slug: Optional[str] = None      # for "back to store" link (null if no store)
     store_name: Optional[str] = None
+    # TA4 — i pass emessi (link /t/ e /b/), SOLO a ordine confermato: la
+    # pagina success li mostra subito invece di rimandare tutto all'email.
+    # access_token e' gia' il segreto di consegna; order_id (UUID nel
+    # redirect Stripe) lo conosce solo chi ha pagato.
+    passes: Optional[list] = None         # [{kind: ticket|booking, access_token}]
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
@@ -2976,6 +2981,26 @@ async def get_public_order_status(request: Request, order_id: str):
 
     from services.currency_service import get_currency_for_order
 
+    # TA4 — a ordine confermato la success page consegna subito i pass:
+    # tra il pagamento e l'arrivo dell'email c'era una finestra in cui
+    # l'utente non aveva in mano niente.
+    passes = None
+    if order.get("status") in ("confirmed", "completed"):
+        from database import issued_tickets_collection, issued_bookings_collection
+        passes = []
+        async for tk in issued_tickets_collection.find(
+                {"order_id": order_id, "status": {"$ne": "voided"}},
+                {"_id": 0, "access_token": 1}).limit(50):
+            if tk.get("access_token"):
+                passes.append({"kind": "ticket",
+                               "access_token": tk["access_token"]})
+        async for bk in issued_bookings_collection.find(
+                {"order_id": order_id, "status": {"$ne": "cancelled"}},
+                {"_id": 0, "access_token": 1}).limit(50):
+            if bk.get("access_token"):
+                passes.append({"kind": "booking",
+                               "access_token": bk["access_token"]})
+
     return PublicOrderStatus(
         order_id=order["id"],
         order_number=order.get("order_number"),
@@ -2985,6 +3010,7 @@ async def get_public_order_status(request: Request, order_id: str):
         currency=get_currency_for_order(order),
         store_slug=store_slug,
         store_name=store_name,
+        passes=passes,
     )
 
 

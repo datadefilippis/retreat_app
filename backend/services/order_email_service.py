@@ -1681,12 +1681,12 @@ async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
 
         store_name = ctx["store_name"]
         order_ref = order.get("order_number") or order.get("id", "")[:12]
-        order_id = order.get("id", "")
         # Customer area deep-link with the right ?store=<slug> query
         # string — see _build_customer_account_url for the rationale.
-        detail_url = await _build_customer_account_url(
-            order, org_id, f"/account/orders/{order_id}",
-        )
+        # TA — /account/orders/{id} oggi REDIRIGE all'hub /account: la
+        # CTA punta direttamente li' per non promettere un dettaglio che
+        # non si apre (il dettaglio vive nei link /t/ e /b/ qui sotto).
+        detail_url = await _build_customer_account_url(order, org_id, "/account")
 
         # Bulk-cart summary table: renders all lines + totals in one block
         # above the type-specialized sections below. Ensures physical items

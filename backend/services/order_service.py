@@ -689,6 +689,35 @@ async def confirm_order(org_id: str, order_id: str, skip_payment_check: bool = F
     order.update(updates)
     logger.info("order_service: confirmed order %s (%s) for org=%s", order_id, order_number, org_id)
 
+    # TA1 — l'ordine non porta email/telefono (vivono sul CRM customers):
+    # senza questa idratazione i ticket/booking emessi qui sotto nascono
+    # con holder_email vuoto e le email individuali vengono saltate in
+    # silenzio. In-memory only: il documento ordine resta senza PII.
+    try:
+        await _hydrate_customer_contact(org_id, order)
+    except Exception as e:
+        logger.warning("order_service: customer contact hydration failed: %s", e)
+
+    # TA1b — anche gli ordini manuali/banco agganciano il platform
+    # account (find-or-create pending): senza questo stamp l'email di
+    # claim inviata a valle non trova mai l'account e il cliente
+    # inserito a mano resta fuori dal suo /account. Best-effort.
+    try:
+        from services.platform_account_service import link_order_to_platform_account
+        await link_order_to_platform_account(order, org_id)
+    except Exception as e:
+        logger.warning("order_service: platform account link failed: %s", e)
+
+    # TA3 — servizio con data+inizio ma senza orario di fine: prima
+    # il fine mancante faceva saltare IN SILENZIO sia il blocco
+    # calendario sia l'emissione della prenotazione (ordine confermato,
+    # appuntamento inesistente). Qui deriviamo la fine dalla durata
+    # del prodotto prima di sincronizzare.
+    try:
+        await _derive_service_end_times(org_id, order)
+    except Exception as e:
+        logger.warning("order_service: service end-time derivation failed: %s", e)
+
     # v12.0: auto-block calendar slots for event/booking items.
     # Moved BEFORE the confirmation email (E4) so tier_id capacity
     # reservation is stable by the time we issue individual tickets.
@@ -784,6 +813,78 @@ async def confirm_order(org_id: str, order_id: str, skip_payment_check: bool = F
         )
 
     return order
+
+
+async def _hydrate_customer_contact(org_id: str, order: dict) -> None:
+    """TA1 — porta email/telefono/nome del cliente sull'ordine IN MEMORIA.
+
+    Il documento ordine non salva l'email (vive sul CRM ``customers``),
+    ma l'emissione di ticket/booking e le email individuali leggono
+    ``order["customer_email"]``: senza idratazione l'holder nasce muto.
+    Non scrive nulla a DB: il documento resta senza PII duplicata.
+    """
+    if order.get("customer_email") and order.get("customer_phone"):
+        return
+    cust_id = order.get("customer_id")
+    if not cust_id:
+        return
+    from database import customers_collection
+    cust = await customers_collection.find_one(
+        {"id": cust_id, "organization_id": org_id},
+        {"_id": 0, "email": 1, "phone": 1, "name": 1},
+    ) or {}
+    if not order.get("customer_email"):
+        order["customer_email"] = (cust.get("email") or "").strip()
+    if not order.get("customer_phone"):
+        order["customer_phone"] = (cust.get("phone") or "").strip()
+    if not order.get("customer_name"):
+        order["customer_name"] = cust.get("name") or ""
+
+
+async def _derive_service_end_times(org_id: str, order: dict) -> None:
+    """TA3 — completa ``booking_end_time`` mancante sulle righe servizio.
+
+    Durata dal prodotto (``duration_minutes``/``slot_duration_minutes``,
+    fallback 60') — stessa gerarchia dello slot_generator. Persiste sul
+    documento ordine, così calendario e prenotazione emessa combaciano.
+    """
+    from database import products_collection, orders_collection
+
+    for idx, item in enumerate(order.get("items", [])):
+        if item.get("item_type") != "service":
+            continue
+        if item.get("booking_end_time"):
+            continue
+        if not (item.get("booking_date") and item.get("booking_start_time")):
+            continue
+        meta = {}
+        pid = item.get("product_id")
+        if pid:
+            pdoc = await products_collection.find_one(
+                {"id": pid, "organization_id": org_id},
+                {"_id": 0, "metadata": 1},
+            ) or {}
+            meta = pdoc.get("metadata") or {}
+        try:
+            duration = int(meta.get("duration_minutes")
+                           or meta.get("slot_duration_minutes") or 60)
+        except Exception:
+            duration = 60
+        try:
+            hh, mm = str(item["booking_start_time"]).split(":")[:2]
+            total = min(int(hh) * 60 + int(mm) + duration, 23 * 60 + 59)
+        except Exception:
+            continue
+        end_time = f"{total // 60:02d}:{total % 60:02d}"
+        item["booking_end_time"] = end_time
+        await orders_collection.update_one(
+            {"id": order["id"], "organization_id": org_id},
+            {"$set": {f"items.{idx}.booking_end_time": end_time}},
+        )
+        logger.info(
+            "order_service: derived booking_end_time=%s (dur=%d') for order=%s item=%d",
+            end_time, duration, order.get("id"), idx,
+        )
 
 
 async def _sync_calendar_blocks(org_id: str, order: dict):

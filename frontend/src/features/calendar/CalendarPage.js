@@ -408,7 +408,7 @@ function DayCell({ day, year, month, items, blockedSlots, isToday, onSelect, isS
 
 /* ── Day Detail Panel ─────────────────────────────────────────────────────── */
 
-function DayDetail({ dateStr, items, blockedSlots, allBlockedSlots, onClose, onNavigate, onDeleteBlock, onDeleteBlockGroup, blockSaving }) {
+function DayDetail({ dateStr, items, blockedSlots, allBlockedSlots, onClose, onNavigate, onDeleteBlock, onDeleteBlockGroup, blockSaving, onBookingAction }) {
   const { t } = useTranslation('calendar');
   const [confirmDelete, setConfirmDelete] = useState(null); // { id, group_id, groupCount }
 
@@ -573,6 +573,26 @@ function DayDetail({ dateStr, items, blockedSlots, allBlockedSlots, onClose, onN
                         >
                           📞 Chiama
                         </a>
+                      )}
+                      {/* TA2 — chiusura appuntamento: gli stati Completata /
+                          Mancato appuntamento esistevano nelle etichette ma
+                          nessun pulsante poteva mai raggiungerli. */}
+                      {it.type === 'service_booking' && it.status === 'confirmed'
+                        && it.booking_code && onBookingAction && (
+                        <>
+                          <button
+                            onClick={() => onBookingAction(it.booking_code, 'complete')}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-emerald-300 text-emerald-700 text-xs font-medium hover:bg-emerald-50 transition-colors"
+                          >
+                            ✓ Segna svolta
+                          </button>
+                          <button
+                            onClick={() => onBookingAction(it.booking_code, 'no_show')}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-amber-300 text-amber-700 text-xs font-medium hover:bg-amber-50 transition-colors"
+                          >
+                            Non si è presentato
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -894,6 +914,25 @@ export default function CalendarPage() {
     } finally { setBlockSaving(false); }
   };
 
+  // TA2 — chiusura appuntamento (svolta / non presentato) dal calendario.
+  const handleBookingAction = async (code, action) => {
+    try {
+      const res = action === 'complete'
+        ? await calendarAPI.completeBooking(code)
+        : await calendarAPI.noShowBooking(code);
+      if (res.data?.ok) {
+        toast.success(action === 'complete'
+          ? 'Appuntamento segnato come svolto'
+          : 'Segnato come mancato appuntamento');
+      } else {
+        toast.info('Appuntamento già chiuso');
+      }
+      load();
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || 'Operazione non riuscita');
+    }
+  };
+
   const eventCount = items.filter(it => it.type === 'event_occurrence').length;
   const rentalCount = items.filter(it => it.type === 'rental_order').length;
   const blockCount = blockedSlots.length;
@@ -1187,6 +1226,7 @@ export default function CalendarPage() {
                 onDeleteBlock={handleDeleteBlock}
                 onDeleteBlockGroup={handleDeleteBlockGroup}
                 blockSaving={blockSaving}
+                onBookingAction={handleBookingAction}
               />
             </div>
           </>

@@ -244,6 +244,23 @@ export default function AccountPage() {
           ))}
         </div>
       )}
+      {/* TA2 — le prenotazioni servizio hanno la loro landing /b/ come i
+          pass /t/: prima il link viveva solo nell'email di conferma. */}
+      {(o.bookings || []).filter(bk => bk.access_token).length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {o.bookings.filter(bk => bk.access_token).map((bk, i) => (
+            <Link key={bk.access_token} to={`/b/${bk.access_token}`}
+              className="inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline">
+              <Ticket className="h-3 w-3" />
+              {t('landings:account.bookingN', {
+                n: i + 1,
+                defaultValue: (o.bookings.filter(b2 => b2.access_token).length > 1
+                  ? `Appuntamento ${i + 1}` : 'Dettagli appuntamento'),
+              })}
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
     );
   };
@@ -368,8 +385,149 @@ export default function AccountPage() {
             </div>
           )}
         </section>
+
+        {/* TA5 — Il tuo account: password, dati (GDPR), sessioni.
+            Export e cancellazione esistevano solo come API: la promessa
+            dell'email di claim ("puoi impostare una password") e i
+            diritti GDPR ora hanno una superficie. */}
+        <AccountSettingsSection me={me} authHeaders={authHeaders} onLogout={logout} t={t} />
       </main>
     </div>
     </MarketplaceShell>
+  );
+}
+
+function AccountSettingsSection({ me, authHeaders, onLogout, t }) {
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwMsg, setPwMsg] = useState(null);
+  const [pwSaving, setPwSaving] = useState(false);
+  const [hasPassword, setHasPassword] = useState(!!me?.has_password);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const savePassword = async (e) => {
+    e.preventDefault();
+    setPwSaving(true); setPwMsg(null);
+    try {
+      await platformApi.post('/platform/me/password', {
+        new_password: pwNew,
+        current_password: hasPassword ? pwCurrent : undefined,
+      }, { headers: authHeaders() });
+      setPwMsg({ ok: true, text: t('landings:account.pwSaved', { defaultValue: 'Password salvata. Da ora puoi accedere con email e password.' }) });
+      setHasPassword(true); setPwCurrent(''); setPwNew('');
+    } catch (err) {
+      setPwMsg({ ok: false, text: err?.response?.data?.detail || t('landings:account.pwError', { defaultValue: 'Non siamo riusciti a salvare la password.' }) });
+    } finally { setPwSaving(false); }
+  };
+
+  const downloadData = async () => {
+    try {
+      const res = await platformApi.get('/platform/me/export', { headers: authHeaders() });
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'aurya-i-miei-dati.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch { /* best-effort */ }
+  };
+
+  const logoutAll = async () => {
+    try {
+      await platformApi.post('/platform/auth/logout-all', {}, { headers: authHeaders() });
+    } catch { /* il logout locale avviene comunque */ }
+    onLogout();
+  };
+
+  const deleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await platformApi.delete('/platform/me', { headers: authHeaders() });
+      onLogout();
+    } catch {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <section data-testid="account-settings">
+      <h2 className="text-sm font-semibold text-gray-900 mb-2">
+        {t('landings:account.settingsTitle', { defaultValue: 'Il tuo account' })}
+      </h2>
+      <div className="rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100">
+        <div className="px-4 py-3">
+          <button type="button" onClick={() => setPwOpen(v => !v)}
+            className="flex w-full items-center justify-between text-sm text-gray-900">
+            <span>{hasPassword
+              ? t('landings:account.pwChange', { defaultValue: 'Cambia password' })
+              : t('landings:account.pwSet', { defaultValue: 'Imposta una password' })}</span>
+            <ChevronRight className={`h-4 w-4 text-gray-400 transition-transform ${pwOpen ? 'rotate-90' : ''}`} />
+          </button>
+          {pwOpen && (
+            <form onSubmit={savePassword} className="mt-3 space-y-2">
+              {hasPassword && (
+                <input type="password" required value={pwCurrent}
+                  onChange={e => setPwCurrent(e.target.value)}
+                  placeholder={t('landings:account.pwCurrent', { defaultValue: 'Password attuale' })}
+                  autoComplete="current-password"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              )}
+              <input type="password" required value={pwNew}
+                onChange={e => setPwNew(e.target.value)}
+                placeholder={t('landings:account.pwNew', { defaultValue: 'Nuova password (min 12 caratteri, maiuscola, minuscola, numero)' })}
+                autoComplete="new-password" minLength={12}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              {pwMsg && (
+                <p className={`text-xs ${pwMsg.ok ? 'text-emerald-700' : 'text-red-600'}`}>{pwMsg.text}</p>
+              )}
+              <button type="submit" disabled={pwSaving}
+                className="rounded-lg bg-primary text-white px-4 py-2 text-sm font-semibold disabled:opacity-50">
+                {pwSaving
+                  ? t('landings:account.pwSaving', { defaultValue: 'Salvataggio…' })
+                  : t('landings:account.pwSave', { defaultValue: 'Salva password' })}
+              </button>
+            </form>
+          )}
+        </div>
+        <button type="button" onClick={downloadData}
+          className="flex w-full items-center justify-between px-4 py-3 text-sm text-gray-900 hover:bg-gray-50">
+          <span>{t('landings:account.dataExport', { defaultValue: 'Scarica i tuoi dati' })}</span>
+          <ChevronRight className="h-4 w-4 text-gray-400" />
+        </button>
+        <button type="button" onClick={logoutAll}
+          className="flex w-full items-center justify-between px-4 py-3 text-sm text-gray-900 hover:bg-gray-50">
+          <span>{t('landings:account.logoutAll', { defaultValue: 'Esci da tutti i dispositivi' })}</span>
+          <ChevronRight className="h-4 w-4 text-gray-400" />
+        </button>
+        <div className="px-4 py-3">
+          {!deleteOpen ? (
+            <button type="button" onClick={() => setDeleteOpen(true)}
+              className="text-sm text-red-600 hover:underline">
+              {t('landings:account.deleteAccount', { defaultValue: 'Elimina il mio account' })}
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs text-gray-600">
+                {t('landings:account.deleteConfirmText', { defaultValue: 'L\'account e i tuoi dati Aurya vengono eliminati. Gli ordini già fatti restano agli operatori come previsto dalla legge, ma non saranno più collegati a te. L\'operazione non si può annullare.' })}
+              </p>
+              <div className="flex gap-2">
+                <button type="button" onClick={deleteAccount} disabled={deleting}
+                  className="rounded-lg bg-red-600 text-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
+                  {deleting
+                    ? t('landings:account.deleting', { defaultValue: 'Eliminazione…' })
+                    : t('landings:account.deleteConfirm', { defaultValue: 'Sì, elimina definitivamente' })}
+                </button>
+                <button type="button" onClick={() => setDeleteOpen(false)}
+                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700">
+                  {t('landings:account.deleteCancel', { defaultValue: 'Annulla' })}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }

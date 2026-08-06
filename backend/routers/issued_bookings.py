@@ -51,6 +51,48 @@ async def list_issued_bookings(
     return {"bookings": rows}
 
 
+@router.post("/{booking_id}/complete")
+async def complete_issued_booking(
+    booking_id: str,
+    current_user: dict = Depends(get_verified_user),
+):
+    """TA2 — chiusura appuntamento: confirmed → completed.
+
+    Le primitive esistevano in booking_service ma nessun router le
+    esponeva: il calendario mostrava l'etichetta «Completata» senza
+    che nessuno potesse mai arrivarci. Idempotente (already_completed
+    è un ok, non un errore — stessa filosofia del check-in ticket).
+    """
+    from services.booking_service import complete_booking
+    org_id = current_user["organization_id"]
+    row = await issued_bookings_collection.find_one(
+        {"$or": [{"id": booking_id}, {"code": booking_id}],
+         "organization_id": org_id}, {"_id": 0, "code": 1})
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Booking non trovato")
+    ok, reason, doc = await complete_booking(row["code"], org_id)
+    return {"ok": ok, "reason": reason, "booking": doc}
+
+
+@router.post("/{booking_id}/no-show")
+async def no_show_issued_booking(
+    booking_id: str,
+    current_user: dict = Depends(get_verified_user),
+):
+    """TA2 — mancato appuntamento: confirmed → no_show."""
+    from services.booking_service import mark_no_show
+    org_id = current_user["organization_id"]
+    row = await issued_bookings_collection.find_one(
+        {"$or": [{"id": booking_id}, {"code": booking_id}],
+         "organization_id": org_id}, {"_id": 0, "code": 1})
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Booking non trovato")
+    ok, reason, doc = await mark_no_show(row["code"], org_id)
+    return {"ok": ok, "reason": reason, "booking": doc}
+
+
 @router.post("/{booking_id}/resend")
 async def resend_booking_email(
     booking_id: str,

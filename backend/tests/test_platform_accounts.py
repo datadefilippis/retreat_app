@@ -266,7 +266,9 @@ class TestP3AccountArea:
                             "routers", "platform_accounts.py")
         src = open(path).read()
         i = src.index('@router.get("/me/orders")')
-        return src[i:i + 4000]
+        # TA2: l'endpoint e' cresciuto (blocco bookings) — la finestra
+        # deve coprire anche la logica pay-link in coda.
+        return src[i:i + 7000]
 
     def test_no_internal_fields_exposed(self):
         block = self._endpoint_src()
@@ -286,9 +288,17 @@ class TestP3AccountArea:
 
     def test_cancelled_orders_visible_without_pay_link(self):
         """AP2 — gli ordini annullati SI VEDONO nell'hub (badge
-        'Annullato'), ma un annullato non porta MAI un pay link."""
+        'Annullato'), ma un annullato non porta MAI un pay link.
+
+        TA2 ha aggiunto un filtro legittimo sulle PRENOTAZIONI
+        cancellate (issued_bookings): la guardia ora controlla che il
+        filtro-status non sia sulla query degli ORDINI, che e' quella
+        che decide cosa l'utente vede."""
         block = self._endpoint_src()
-        assert '"$ne": "cancelled"' not in block
+        orders_query = block.split("orders_collection.find(")[1].split(
+            ".sort(")[0]
+        assert "cancelled" not in orders_query, \
+            "la query ordini non deve nascondere gli annullati"
         assert '!= "cancelled"' in block
 
     def test_voided_tickets_excluded(self):

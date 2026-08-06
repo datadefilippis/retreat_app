@@ -324,6 +324,8 @@ async def get_me(account: dict = Depends(get_current_platform_account)):
     out = {k: account.get(k) for k in
            ("id", "email", "name", "phone", "language",
             "email_verified", "created_at", "last_login_at")}
+    # TA5 — la UI "imposta password" deve sapere se chiedere l'attuale
+    out["has_password"] = bool(account.get("password_hash"))
     # AP2 — booleano per il render della sezione Guide in /account
     # (niente token qui: quello viaggia solo nella risposta di login).
     from services.platform_account_service import newsletter_status
@@ -345,6 +347,46 @@ async def update_me(body: ProfileUpdate,
     fresh = {**account, **updates}
     return {k: fresh.get(k) for k in
             ("id", "email", "name", "phone", "language")}
+
+
+class _PasswordChange(BaseModel):
+    new_password: str
+    current_password: Optional[str] = None
+
+
+@router.post("/me/password", status_code=200)
+async def set_my_password(body: _PasswordChange,
+                          account: dict = Depends(get_current_platform_account)):
+    """TA5 — imposta (o cambia) la password dall'hub /account.
+
+    L'email di claim promette "una volta dentro puoi impostare una
+    password", ma non esisteva nessuna superficie: l'unica strada era
+    ripassare da "password dimenticata". Se l'account ha gia' una
+    password serve quella attuale; se e' nato passwordless (acquisto
+    guest) basta la sessione — l'email e' gia' provata dal login.
+    """
+    _flag_enabled()
+    from database import platform_accounts_collection
+    from auth import (get_password_hash, verify_password,
+                      validate_password_strength)
+
+    if account.get("password_hash"):
+        if not body.current_password or not verify_password(
+                body.current_password, account["password_hash"]):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="Password attuale non corretta")
+    try:
+        validate_password_strength(body.new_password)
+        from core.password_breach import validate_password_not_breached
+        validate_password_not_breached(body.new_password)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=str(e))
+    await platform_accounts_collection.update_one(
+        {"id": account["id"]},
+        {"$set": {"password_hash": get_password_hash(body.new_password)}},
+    )
+    return {"status": "ok"}
 
 
 @router.post("/auth/logout-all", status_code=200)
@@ -426,6 +468,17 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
         tickets_by_order.setdefault(tk["order_id"], []).append(
             {"access_token": tk.get("access_token"), "code": tk.get("code")})
 
+    # TA2 — anche le prenotazioni servizio sono cittadine del Passaporto:
+    # prima il link /b/{token} viveva solo nell'email di conferma (persa
+    # l'email, perso l'appuntamento). Stessa proiezione minima dei ticket.
+    from database import issued_bookings_collection
+    bookings_by_order: dict = {}
+    async for bk in issued_bookings_collection.find(
+            {"order_id": {"$in": order_ids}, "status": {"$ne": "cancelled"}},
+            {"_id": 0, "order_id": 1, "access_token": 1, "code": 1}):
+        bookings_by_order.setdefault(bk["order_id"], []).append(
+            {"access_token": bk.get("access_token"), "code": bk.get("code")})
+
     out = []
     for o in orders:
         sched = schedules.get(o["id"])
@@ -472,6 +525,7 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
             "seats": (ev or {}).get("quantity"),
             "payment_rows": rows,
             "tickets": tickets_by_order.get(o["id"], []),
+            "bookings": bookings_by_order.get(o["id"], []),
         })
     return {"orders": out, "total": len(out)}
 

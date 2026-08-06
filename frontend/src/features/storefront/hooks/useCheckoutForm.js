@@ -743,9 +743,10 @@ export default function useCheckoutForm({
   }, [form.name, form.email, form.phone, itemsRequiringAttendees.length]);
 
   const handleSubmit = async (e) => {
-    // K3+ — in contesto marketplace il success attiva il Passaporto con
-    // l'email dell'ordine (one-click, senza ridigitarla)
-    if (mktpCheckout && form?.email) {
+    // K3+ → TA5 — l'email dell'ordine alimenta la CTA "Attiva il tuo
+    // account" sulla success page da OGNI superficie (prima solo
+    // marketplace: chi comprava dal profilo o embed la perdeva).
+    if (form?.email) {
       try { sessionStorage.setItem('storefront:mktp_email', form.email); } catch { /* no-op */ }
     }
     e.preventDefault();
