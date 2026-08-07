@@ -305,7 +305,7 @@ export default function NetworkHomePage() {
                 {t('nwHome.heroP2', { defaultValue: "Aurya è uno spazio dedicato a chi vuole orientarsi nel mondo del benessere con maggiore consapevolezza." })}
               </Lede>
               <Lede size="body" tone="inherit" className="mx-auto max-w-[44ch] text-hero-shadow opacity-90">
-                {t('nwHome.heroP3', { defaultValue: "Attraverso contenuti autorevoli, professionisti raccontati con cura ed esperienze selezionate, aiutiamo le persone a trovare ciò che fa davvero per loro." })}
+                {t('nwHome.heroP3', { defaultValue: "Attraverso contenuti, professionisti raccontati con cura ed esperienze selezionate, aiutiamo le persone a trovare ciò che fa davvero per loro." })}
               </Lede>
             </div>
             {/* due azioni, ma di peso diverso: la prima e' la porta di
