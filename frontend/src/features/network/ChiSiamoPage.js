@@ -252,9 +252,16 @@ export default function ChiSiamoPage() {
         </Section>
 
         {/* ── 2. DUE PERCORSI — bianco, con la foto vera ───────────
-            Qui, e solo qui, la pagina mostra le due persone: il titolo
-            e' la tesi ("una stessa visione") e le due biografie stanno
-            sotto come prova, ciascuna aperta dal suo filo d'oro. La
+            Qui, e solo qui, la pagina mostra le due persone. CS2b
+            (founder, 7/8): il titolo ora ci NOMINA ("Siamo Davide e
+            Valentina") perche' accanto alla foto negarsi il nome era
+            piu' freddo che sobrio, e "ci si fida di qualcuno" comincia
+            da un nome. La tesi non sparisce: passa all'occhiello
+            ("la stessa idea di cura") e alle tre righe che chiudono.
+            Le due biografie stanno sotto come prova, ciascuna aperta
+            dal suo filo d'oro, e ora sono simmetriche (display +
+            corpo). Le competenze sono DETTE, non evocate: il criterio
+            resta invisibile, ma chi legge deve poter verificare. La
             fotografia occupa mezza pagina fino al bordo dello schermo e
             non e' velata: il testo le sta accanto, non sopra.
             Le due righe che chiudono sono allineate a bordi opposti —
@@ -273,10 +280,10 @@ export default function ChiSiamoPage() {
           labelledBy="cs-paths-title"
         >
           <DisplayTitle as="h2" id="cs-paths-title" size="section" measure="title">
-            {t('aboutPage.pathsTitle', { defaultValue: 'Due percorsi, una stessa visione.' })}
+            {t('aboutPage.pathsTitle', { defaultValue: 'Siamo Davide e Valentina.' })}
           </DisplayTitle>
           <Lede size="lead" className="mt-6">
-            {t('aboutPage.pathsLead', { defaultValue: 'Aurya nasce dall’incontro tra due esperienze molto diverse.' })}
+            {t('aboutPage.pathsLead', { defaultValue: 'Una coppia, due mestieri diversi, la stessa idea di cura.' })}
           </Lede>
 
           <div className="mt-10 space-y-9 sm:mt-12 sm:space-y-10">
@@ -284,18 +291,23 @@ export default function ChiSiamoPage() {
               <div aria-hidden className="gold-rule max-w-[5rem]" />
               <p className="mt-5 font-display text-balance text-[1.2rem] leading-[1.3]
                             tracking-[-0.01em] text-foreground sm:text-[1.35rem]">
-                {t('aboutPage.pathsValentina1', { defaultValue: 'Valentina vive il mondo del benessere dall’interno.' })}
+                {t('aboutPage.pathsValentina1', { defaultValue: 'Valentina è l’anima olistica del progetto.' })}
               </p>
               <Lede size="body" className="mt-3">
-                {t('aboutPage.pathsValentina2', { defaultValue: 'Ogni giorno accompagna persone nel loro percorso di crescita attraverso Reiki, pratiche energetiche e strumenti di consapevolezza.' })}
+                {t('aboutPage.pathsValentina2', { defaultValue: 'Operatrice Reiki di terzo livello, accompagna le persone con letture evolutive di tarocchi e oracoli e con lo studio delle mappe natali.' })}
               </Lede>
             </div>
             <div>
               <div aria-hidden className="gold-rule max-w-[5rem]" />
               <p className="mt-5 font-display text-balance text-[1.2rem] leading-[1.3]
                             tracking-[-0.01em] text-foreground sm:text-[1.35rem]">
-                {t('aboutPage.pathsDavide1', { defaultValue: 'Davide progetta prodotti digitali e da anni osserva come la tecnologia possa semplificare il lavoro delle persone senza sostituire le relazioni.' })}
+                {t('aboutPage.pathsDavide1', { defaultValue: 'Davide porta l’esperienza del mondo digitale.' })}
               </p>
+              {/* CS2b — la seconda riga di Davide rende simmetriche le
+                  due biografie: display + corpo, come per Valentina. */}
+              <Lede size="body" className="mt-3">
+                {t('aboutPage.pathsDavide2', { defaultValue: 'Costruisce piattaforme che mettono in contatto le persone, senza sostituire le relazioni.' })}
+              </Lede>
             </div>
           </div>
 
