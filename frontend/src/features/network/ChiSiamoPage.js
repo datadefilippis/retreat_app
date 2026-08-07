@@ -253,15 +253,18 @@ export default function ChiSiamoPage() {
 
         {/* ── 2. DUE PERCORSI — bianco, con la foto vera ───────────
             Qui, e solo qui, la pagina mostra le due persone. CS2b
-            (founder, 7/8): il titolo ora ci NOMINA ("Siamo Davide e
-            Valentina") perche' accanto alla foto negarsi il nome era
-            piu' freddo che sobrio, e "ci si fida di qualcuno" comincia
-            da un nome. La tesi non sparisce: passa all'occhiello
-            ("la stessa idea di cura") e alle tre righe che chiudono.
-            Le due biografie stanno sotto come prova, ciascuna aperta
-            dal suo filo d'oro, e ora sono simmetriche (display +
-            corpo). Le competenze sono DETTE, non evocate: il criterio
-            resta invisibile, ma chi legge deve poter verificare. La
+            (founder, 7/8): il testo di questa sezione e' quello che il
+            founder aveva scritto per il sito precedente, ripreso alla
+            LETTERA per sua richiesta esplicita. Non e' stato riscritto
+            ne' accorciato: e' stato SPEZZATO negli spazi che il
+            disegno gia' aveva. Titolo = la presentazione, occhiello =
+            il primo capoverso, i due blocchi col filo d'oro = le due
+            biografie (che ora sono simmetriche, display + corpo), e le
+            tre chiusure = le tre frasi dell'ultimo capoverso, con la
+            sintesi ("Aurya nasce proprio da questa sinergia") nella
+            riga grande sotto il filo. Le uniche cose toccate sono le
+            MISURE, spiegate sotto: il testo del founder e' fatto di
+            frasi intere, il disegno era tarato su righe secche. La
             fotografia occupa mezza pagina fino al bordo dello schermo e
             non e' velata: il testo le sta accanto, non sopra.
             Le due righe che chiudono sono allineate a bordi opposti —
@@ -280,10 +283,10 @@ export default function ChiSiamoPage() {
           labelledBy="cs-paths-title"
         >
           <DisplayTitle as="h2" id="cs-paths-title" size="section" measure="title">
-            {t('aboutPage.pathsTitle', { defaultValue: 'Siamo Davide e Valentina.' })}
+            {t('aboutPage.pathsTitle', { defaultValue: 'Siamo Davide e Valentina' })}
           </DisplayTitle>
           <Lede size="lead" className="mt-6">
-            {t('aboutPage.pathsLead', { defaultValue: 'Una coppia, due mestieri diversi, la stessa idea di cura.' })}
+            {t('aboutPage.pathsLead', { defaultValue: 'Dietro ad Aurya ci siamo noi: una coppia unita dalla passione per la crescita personale e l’evoluzione interiore. Abbiamo fuso le nostre competenze per creare qualcosa di unico.' })}
           </Lede>
 
           <div className="mt-10 space-y-9 sm:mt-12 sm:space-y-10">
@@ -291,37 +294,48 @@ export default function ChiSiamoPage() {
               <div aria-hidden className="gold-rule max-w-[5rem]" />
               <p className="mt-5 font-display text-balance text-[1.2rem] leading-[1.3]
                             tracking-[-0.01em] text-foreground sm:text-[1.35rem]">
-                {t('aboutPage.pathsValentina1', { defaultValue: 'Valentina è l’anima olistica del progetto.' })}
+                {t('aboutPage.pathsValentina1', { defaultValue: 'Valentina è l’anima olistica del progetto:' })}
               </p>
               <Lede size="body" className="mt-3">
-                {t('aboutPage.pathsValentina2', { defaultValue: 'Operatrice Reiki di terzo livello, accompagna le persone con letture evolutive di tarocchi e oracoli e con lo studio delle mappe natali.' })}
+                {t('aboutPage.pathsValentina2', { defaultValue: 'operatrice Reiki di terzo livello, guida le persone attraverso letture evolutive di tarocchi, oracoli e lo studio delle mappe natali.' })}
               </Lede>
             </div>
             <div>
               <div aria-hidden className="gold-rule max-w-[5rem]" />
               <p className="mt-5 font-display text-balance text-[1.2rem] leading-[1.3]
                             tracking-[-0.01em] text-foreground sm:text-[1.35rem]">
-                {t('aboutPage.pathsDavide1', { defaultValue: 'Davide porta l’esperienza del mondo digitale.' })}
+                {t('aboutPage.pathsDavide1', { defaultValue: 'Davide porta la sua esperienza nel mondo digitale,' })}
               </p>
               {/* CS2b — la seconda riga di Davide rende simmetriche le
-                  due biografie: display + corpo, come per Valentina. */}
+                  due biografie: display + corpo, come per Valentina.
+                  Le due righe display chiudono con la punteggiatura del
+                  testo del founder (due punti / virgola) e la frase
+                  prosegue sotto: e' un enjambement, non un refuso. */}
               <Lede size="body" className="mt-3">
-                {t('aboutPage.pathsDavide2', { defaultValue: 'Costruisce piattaforme che mettono in contatto le persone, senza sostituire le relazioni.' })}
+                {t('aboutPage.pathsDavide2', { defaultValue: 'costruendo piattaforme capaci di connettere le persone.' })}
               </Lede>
             </div>
           </div>
 
+          {/* Le misure di questo blocco sono tarate sul testo del
+              founder, che qui e' fatto di frasi intere e non di righe
+              secche: le due che stanno ai bordi opposti prendono una
+              colonna di ~34ch (senza il cap si distenderebbero fino a
+              toccarsi e il gioco destra/sinistra sparirebbe), e la
+              riga grande sotto il filo passa da 26ch a 42ch, o
+              diventerebbe una colonna di sette righe in corpo
+              display. */}
           <div className="mt-12 sm:mt-14">
-            <p className="font-display text-[1.15rem] leading-snug text-foreground/85 sm:text-[1.3rem]">
-              {t('aboutPage.pathsClose1', { defaultValue: 'Da una parte il contatto umano.' })}
+            <p className="max-w-[34ch] font-display text-[1.15rem] leading-snug text-foreground/85 sm:text-[1.3rem]">
+              {t('aboutPage.pathsClose1', { defaultValue: 'L’approccio olistico e la ricerca della consapevolezza ci hanno uniti come coppia e come professionisti.' })}
             </p>
-            <p className="mt-2 text-right font-display text-[1.15rem] leading-snug text-foreground/85 sm:text-[1.3rem]">
-              {t('aboutPage.pathsClose2', { defaultValue: 'Dall’altra la progettazione digitale.' })}
+            <p className="ml-auto mt-3 max-w-[34ch] text-right font-display text-[1.15rem] leading-snug text-foreground/85 sm:text-[1.3rem]">
+              {t('aboutPage.pathsClose2', { defaultValue: 'Crediamo fermamente nell’evoluzione personale e nel valore di ciò che facciamo ogni giorno.' })}
             </p>
             <div aria-hidden className="gold-rule mt-6" />
-            <p className="mt-6 max-w-[26ch] font-display text-balance text-[1.4rem] font-medium
+            <p className="mt-6 max-w-[42ch] font-display text-balance text-[1.4rem] font-medium
                           leading-[1.22] tracking-[-0.015em] sm:text-[1.75rem]">
-              {t('aboutPage.pathsClose3', { defaultValue: 'Aurya nasce nel punto in cui questi due mondi si incontrano.' })}
+              {t('aboutPage.pathsClose3', { defaultValue: 'Aurya nasce proprio da questa sinergia: l’incontro tra la profondità del benessere autentico e la cura di uno spazio digitale solido, pensato per supportare operatori e anime in cammino.' })}
             </p>
           </div>
         </PhotoSplit>

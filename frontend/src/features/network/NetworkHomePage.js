@@ -28,8 +28,8 @@
  *             benessere (corpo lead), le altre due cos'e' Aurya (corpo).
  *             Stanno accanto al titolo, non sotto: e' una masthead.
  *   PERCHE'   sei righe in tre movimenti. Le due centrali ("Trovare un
- *             nome e' semplice" / "Capire a chi affidarsi e' molto piu'
- *             difficile") sono un'ANTITESI: prendono il corpo display,
+ *             professionista e' semplice" / "Scegliere quello giusto e'
+ *             cio' che conta") sono un'ANTITESI: prendono il corpo display,
  *             una per riga, separate da un filo. E' il perno della
  *             pagina. Le ultime tre si affiancano: la convinzione da una
  *             parte, la decisione dall'altra.
@@ -364,7 +364,7 @@ export default function NetworkHomePage() {
             <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-14">
               <div className="lg:col-span-5">
                 <DisplayTitle as="h2" id="hp-find-title" size="section" measure="title">
-                  {t('nwHome.findTitle', { defaultValue: "Un luogo dove capire, prima ancora di scegliere." })}
+                  {t('nwHome.findTitle', { defaultValue: "Un luogo dove conoscere, confrontare e scegliere con consapevolezza" })}
                 </DisplayTitle>
                 <div aria-hidden className="gold-rule mt-8 max-w-[10rem]" />
               </div>
@@ -443,11 +443,11 @@ export default function NetworkHomePage() {
               <div className="mt-9 border-t border-[#f6f2e8]/20 sm:mt-10">
                 <p className="border-b border-[#f6f2e8]/20 py-6 font-display text-[1.4rem]
                               leading-[1.24] tracking-[-0.015em] sm:py-7 sm:text-[1.75rem] lg:text-[1.95rem]">
-                  {t('nwHome.whyP2', { defaultValue: "Trovare un nome è semplice." })}
+                  {t('nwHome.whyP2', { defaultValue: "Trovare un professionista è semplice." })}
                 </p>
                 <p className="border-b border-[#f6f2e8]/20 py-6 font-display text-[1.4rem]
                               leading-[1.24] tracking-[-0.015em] sm:py-7 sm:text-[1.75rem] lg:text-[1.95rem]">
-                  {t('nwHome.whyP3', { defaultValue: "Capire a chi affidarsi è molto più difficile." })}
+                  {t('nwHome.whyP3', { defaultValue: "Scegliere quello giusto è ciò che conta." })}
                 </p>
               </div>
               <div className="mt-9 grid gap-7 sm:gap-10 lg:grid-cols-2">

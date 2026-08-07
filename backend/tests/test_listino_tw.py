@@ -6102,13 +6102,16 @@ class TestChiSiamoSw3:
     def test_sw3_ritratti_solo_fatti_reali(self):
         """Valentina e Davide raccontati col materiale verificato dei
         fondatori: nessun titolo, premio o data inventata.
-        LC8 — i fatti citati sono quelli del copy brand v3 (Reiki e
-        pratiche energetiche per Valentina, prodotti digitali per
-        Davide): la regola che non cambia e' NIENTE biografia gonfiata."""
+        CS2b (7/8) — i ritratti sono tornati al testo che il founder
+        aveva scritto per il sito precedente, ripreso alla lettera: i
+        fatti oggi sono Reiki di terzo livello, tarocchi e oracoli e
+        mappe natali per Valentina, il mondo digitale per Davide. La
+        regola che non cambia e' NIENTE biografia gonfiata: nessun
+        titolo, premio o data inventata (le assert sotto)."""
         import re
         src = self._page()
-        for fatto in ("Reiki", "pratiche energetiche",
-                      "prodotti digitali"):
+        for fatto in ("Reiki", "tarocchi", "mappe natali",
+                      "mondo digitale"):
             assert fatto in src, f"fatto reale mancante nei ritratti: {fatto}"
         # la foto vera, con l'alt riusato (nessun alt nuovo)
         assert "/media/chisiamo-aurya.jpg" in src, "manca la foto vera"
@@ -6209,6 +6212,15 @@ class TestChiSiamoSw3:
         for smentita in ("Non come una piattaforma.",
                          "Non abbiamo creato Aurya per lanciare una piattaforma."):
             copy = copy.replace(smentita, "")
+        # CS2b (7/8) — ECCEZIONE DICHIARATA, decisione del founder: il
+        # ritratto di Davide e' ripreso alla lettera dal sito
+        # precedente e dice "costruendo piattaforme". Qui la parola non
+        # descrive Aurya (che due sezioni sopra si nega come
+        # piattaforma) ma il mestiere di una persona, ed e' l'unico
+        # punto in cui e' ammessa in positivo. Se il copy di Davide
+        # cambia, questa riga va tolta, non allargata.
+        copy = copy.replace(
+            "costruendo piattaforme capaci di connettere le persone.", "")
         for vietata in self._VIETATE + ("directory", "piattaform"):
             assert vietata.lower() not in copy.lower(), \
                 f"parola vietata nel sorgente di Chi siamo: '{vietata}'"
