@@ -5491,7 +5491,10 @@ class TestHomeHp2:
     # ── 8. il payoff nuovo c'e', il vecchio motto non esiste piu' ────
 
     _PAYOFF = {
-        "it": "Ci si fida di qualcuno, non di qualcosa.",
+        # CS2c (founder, 7/8): il payoff italiano e' diventato un
+        # descrittore di cosa si trova su Aurya. Le altre tre lingue
+        # restano al payoff v3 (contenuti IT-only dal 2/8).
+        "it": "Pratiche, eventi e ritiri di benessere",
         "en": "Trust is placed in someone, not something.",
         "de": "Man vertraut jemandem, nicht etwas.",
         "fr": "On fait confiance à quelqu'un, pas à quelque chose.",
@@ -5680,8 +5683,8 @@ class TestLandingOperatoriOl1:
         page = self._page()
         assert 'data-testid="ol-hero-cta-top"' in page, \
             "sparita la CTA del hero verso il form"
-        assert "Ci si fida di qualcuno," in page
-        assert "non di qualcosa." in page
+        assert "Pratiche, eventi e ritiri" in page
+        assert "di benessere" in page
         # il commento che racconta la decisione cita le negazioni:
         # si giudica solo il copy che il lettore puo' vedere
         visibile = re.sub(r"/\*.*?\*/", "", page, flags=re.DOTALL)

@@ -207,45 +207,49 @@ export default function ChiSiamoPage() {
         >
           <DisplayTitle as="h1" id="cs-open-title" size="manifesto" measure="wide"
                         className="text-hero-shadow">
-            {t('aboutPage.heroTitle', { defaultValue: 'Tutto è iniziato da una domanda.' })}
+            {t('aboutPage.heroTitle', { defaultValue: 'Tutto inizia da una domanda.' })}
           </DisplayTitle>
           <div aria-hidden className="gold-rule mt-8 max-w-[9rem]" />
           <p className="mt-8 max-w-[26ch] font-display text-balance text-[1.3rem] italic
                         leading-snug text-[#d6c49a] text-hero-shadow sm:text-[1.6rem] lg:text-[1.9rem]">
-            {t('aboutPage.heroQuestion', { defaultValue: 'Perché è così difficile orientarsi nel mondo del benessere?' })}
+            {t('aboutPage.heroQuestion', { defaultValue: 'Di cosa ho davvero bisogno per stare meglio?' })}
           </p>
         </PhotoOpener>
 
-        {/* ── 1. LA DISTANZA — sabbia ──────────────────────────────
-            I due capoversi sono la stessa scena vista da due lati (chi
-            cerca / chi offre) e per questo stanno affiancati, non uno
-            sotto l'altro: la distanza di cui parlano si vede nel vuoto
-            che li separa. Il filo d'oro attraversa tutta la larghezza
-            proprio sopra le tre righe finali, che sono la risposta:
-            quello che unisce le due colonne e' letteralmente disegnato
-            fra le due colonne. La sezione non ha un titolo perche' non
-            e' un capitolo nuovo: e' il seguito dell'apertura. */}
+        {/* ── 1. LA DOMANDA, DISTESA — sabbia ──────────────────────
+            CS2c (founder, 7/8): il copy qui non e' piu' la stessa scena
+            vista da due lati (chi cerca / chi offre) ma un RAGIONAMENTO
+            che avanza, quindi le due colonne affiancate sono diventate
+            una sequenza verticale: prima il campo largo ("tante
+            possibilita'"), poi il dettaglio ("professionisti, discipline
+            ed esperienze"). Il filo d'oro resta dov'era e continua a
+            fare da soglia: sopra la domanda, sotto la risposta. La
+            risposta e' in due tempi — cosa fa Aurya (corpo lead) e
+            perche' conta (le due righe display, con l'accento pieno
+            sull'ultima: "capire da dove partire"). La sezione non ha un
+            titolo perche' non e' un capitolo nuovo: e' il seguito
+            dell'apertura. */}
         <Section tone="sand" rhythm="screen" width="max-w-3xl">
           <div data-testid="cs-distance">
-            <div className="grid gap-7 sm:gap-10 lg:grid-cols-2">
-              <Lede size="body">
-                {t('aboutPage.heroP1', { defaultValue: 'Ogni giorno incontriamo persone che cercano un professionista, una pratica o un’esperienza che possa aiutarle a stare meglio.' })}
+            <div className="space-y-6 sm:space-y-7">
+              <Lede size="body" className="max-w-[52ch]">
+                {t('aboutPage.heroP1', { defaultValue: 'Nel mondo del benessere esistono tante possibilità, ma non sempre è facile capire quale sia quella giusta per noi.' })}
               </Lede>
-              <Lede size="body">
-                {t('aboutPage.heroP2', { defaultValue: 'E ogni giorno incontriamo professionisti che dedicano tempo, studio ed energia al proprio lavoro, ma fanno fatica a raccontarlo online in modo autentico.' })}
+              <Lede size="body" className="max-w-[52ch]">
+                {t('aboutPage.heroP2', { defaultValue: 'Ci sono professionisti, discipline ed esperienze diverse.' })}
               </Lede>
             </div>
             <div aria-hidden className="gold-rule mt-12 sm:mt-14" />
-            <Lede size="lead" className="mt-10">
-              {t('aboutPage.bridge1', { defaultValue: 'Da questa distanza è nata Aurya.' })}
+            <Lede size="lead" className="mt-10 max-w-[46ch]">
+              {t('aboutPage.bridge1', { defaultValue: 'Aurya ti aiuta a orientarti, a conoscere ciò che esiste e a trovare il percorso più vicino alle tue esigenze.' })}
             </Lede>
-            <p className="mt-7 max-w-[26ch] font-display text-balance text-[1.5rem] font-medium
+            <p className="mt-7 max-w-[30ch] font-display text-balance text-[1.5rem] font-medium
                           leading-[1.22] tracking-[-0.015em] sm:text-[1.9rem] lg:text-[2.1rem]">
               <span className="block text-foreground/70">
-                {t('aboutPage.bridge2', { defaultValue: 'Non come una piattaforma.' })}
+                {t('aboutPage.bridge2', { defaultValue: 'Perché stare bene significa prima di tutto' })}
               </span>
               <span className="block text-foreground">
-                {t('aboutPage.bridge3', { defaultValue: 'Come un ponte.' })}
+                {t('aboutPage.bridge3', { defaultValue: 'capire da dove partire.' })}
               </span>
             </p>
           </div>

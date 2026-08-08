@@ -1,8 +1,9 @@
 /**
  * BrandPayoff — l'occhiello di brand delle superfici pubbliche.
  *
- * HP1: il payoff e' diventato una FRASE ("Ci si fida di qualcuno, non
- * di qualcosa."), non tre parole. Il vecchio trattamento (maiuscolo
+ * HP1: il payoff e' diventato una FRASE, non tre parole; CS2c
+ * (founder, 7/8) l'ha poi portato su "Pratiche, eventi e ritiri di
+ * benessere", che e' lungo uguale. Il vecchio trattamento (maiuscolo
  * con tracking 0.35em) su una frase lunga andava a capo male e
  * sfondava i 375px. Qui il tracking e' calmo, il maiuscolo resta solo
  * sui corpi minuscoli, e la frase puo' andare a capo senza rompere

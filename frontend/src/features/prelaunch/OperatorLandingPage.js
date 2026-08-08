@@ -597,10 +597,10 @@ export default function OperatorLandingPage() {
             <DisplayTitle as="h2" id="ol-who-title" size="section" measure="lines"
                           className="text-[1.9rem] leading-[1.14] sm:text-[2.4rem] lg:text-[2.9rem]">
               <TitleLine>
-                {t('opPro.whoLine1', { defaultValue: 'Ci si fida di qualcuno,' })}
+                {t('opPro.whoLine1', { defaultValue: 'Pratiche, eventi e ritiri' })}
               </TitleLine>
               <TitleLine>
-                {t('opPro.whoLine2', { defaultValue: 'non di qualcosa.' })}
+                {t('opPro.whoLine2', { defaultValue: 'di benessere' })}
               </TitleLine>
             </DisplayTitle>
             <Lede size="lead" className="mt-7">

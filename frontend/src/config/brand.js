@@ -15,7 +15,7 @@ export const BRAND_GLYPH = '🌿';   // emoji di riserva (contesti solo-testo)
 // non una descrizione di Aurya (docs/BRAND_HOME_AURYA_2026-07.md §2). A
 // differenza del vecchio motto SI TRADUCE: la chiave i18n e' quella
 // qui sotto, questa costante e' il default italiano.
-export const BRAND_PAYOFF = 'Ci si fida di qualcuno, non di qualcosa.';
+export const BRAND_PAYOFF = 'Pratiche, eventi e ritiri di benessere';
 export const BRAND_PAYOFF_KEY = 'marketplace.payoff';   // i18n landings
 export const BRAND_LOGO = '/logo-aurya.png';        // full-res (og:image, condivisioni)
 export const BRAND_LOGO_128 = '/logo-aurya-128.png'; // header, favicon

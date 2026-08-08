@@ -617,8 +617,8 @@ export default function NetworkHomePage() {
                           className="text-hero-shadow">
               {t('nwHome.letterTitle', { defaultValue: "Ricevi la Lettera di Aurya." })}
             </DisplayTitle>
-            <Lede size="lead" tone="inherit" className="mt-6 max-w-[32ch] text-hero-shadow">
-              {t('nwHome.letterP1', { defaultValue: "Una volta ogni tanto." })}
+            <Lede size="lead" tone="inherit" className="mt-6 max-w-[38ch] text-hero-shadow">
+              {t('nwHome.letterP1', { defaultValue: "Di tanto in tanto, qualcosa che vale la pena leggere." })}
             </Lede>
             <ul className="mt-7 list-none space-y-2 p-0 font-display text-[1.3rem] leading-[1.35]
                            tracking-[-0.015em] text-hero-shadow sm:text-[1.55rem]">
@@ -627,12 +627,12 @@ export default function NetworkHomePage() {
               <li>{t('nwHome.letterP4', { defaultValue: "Un luogo da scoprire." })}</li>
             </ul>
             <div aria-hidden className="gold-rule mt-8 w-24" />
-            <Lede size="body" tone="inherit" className="mt-7 max-w-[34ch] text-hero-shadow opacity-90">
+            <Lede size="body" tone="inherit" className="mt-7 max-w-[46ch] text-hero-shadow opacity-90">
               <TitleLine>
                 {t('nwHome.letterP5', { defaultValue: "Niente rumore." })}
               </TitleLine>
               <TitleLine>
-                {t('nwHome.letterP6', { defaultValue: "Solo contenuti che meritano il tuo tempo." })}
+                {t('nwHome.letterP6', { defaultValue: "Solo contenuti scelti con cura, da ricevere con calma e leggere con attenzione." })}
               </TitleLine>
             </Lede>
             {/* LC5 — il form al posto del link. La sezione prometteva

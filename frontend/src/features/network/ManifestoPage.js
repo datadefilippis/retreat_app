@@ -234,8 +234,8 @@ export default function ManifestoPage() {
               {t('manifesto.believeTitle', { defaultValue: 'In cosa crediamo' })}
             </DisplayTitle>
             <p className="mt-8 max-w-[30ch] font-display text-balance text-[1.5rem] font-medium leading-[1.22] tracking-[-0.015em] text-foreground/85 sm:text-[1.9rem] lg:text-[2.1rem]">
-              <span className="block">{t('manifesto.believeLead1', { defaultValue: 'Crediamo che il benessere non sia una destinazione.' })}</span>
-              <span className="block">{t('manifesto.believeLead2', { defaultValue: 'È un percorso.' })}</span>
+              <span className="block">{t('manifesto.believeLead1', { defaultValue: 'Crediamo che il benessere non sia un percorso.' })}</span>
+              <span className="block">{t('manifesto.believeLead2', { defaultValue: 'E che ognuno abbia il proprio.' })}</span>
             </p>
             <div aria-hidden className="gold-rule mt-9 max-w-[10rem]" />
             <div className="mt-9 grid gap-7 sm:gap-10 lg:grid-cols-2">
@@ -259,7 +259,7 @@ export default function ManifestoPage() {
         <PhotoBand image={BAND_PHOTO} focus="50% 34%" width="max-w-3xl">
           <p className="max-w-[24ch] font-display text-balance text-[1.75rem] font-medium leading-[1.16] tracking-[-0.015em] text-hero-shadow sm:text-[2.4rem] lg:text-[3rem]">
             <span className="block">{t('manifesto.bandLine1', { defaultValue: 'Il nostro lavoro non è scegliere al posto tuo.' })}</span>
-            <span className="block">{t('manifesto.bandLine2', { defaultValue: 'È aiutarti a scegliere con maggiore consapevolezza.' })}</span>
+            <span className="block">{t('manifesto.bandLine2', { defaultValue: 'È aiutarti a farlo con maggiore consapevolezza.' })}</span>
           </p>
         </PhotoBand>
 

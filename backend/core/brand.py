@@ -22,7 +22,7 @@ BRAND_SUPPORT_EMAIL = os.environ.get("BRAND_SUPPORT_EMAIL", f"info@{BRAND_DOMAIN
 # persona, non la piattaforma (docs/BRAND_HOME_AURYA_2026-07.md §2).
 # A differenza del vecchio motto SI TRADUCE.
 BRAND_PAYOFF = {
-    "it": "Ci si fida di qualcuno, non di qualcosa.",
+    "it": "Pratiche, eventi e ritiri di benessere",
     "en": "Trust is placed in someone, not something.",
     "de": "Man vertraut jemandem, nicht etwas.",
     "fr": "On fait confiance à quelqu'un, pas à quelque chose.",
