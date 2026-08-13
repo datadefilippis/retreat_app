@@ -680,6 +680,9 @@
     "advancedTitle": "Mehr Details",
     "advancedHint": "Porträt, Galerie, öffentliche Kontakte und weitere Angaben. Alles optional.",
     "unsaved": "Du hast ungespeicherte Änderungen",
-    "photoRemoved": "Foto entfernt"
+    "photoRemoved": "Foto entfernt",
+    "bioHelperTitle": "Du weißt nicht, wo du anfangen sollst? Beantworte drei Fragen:",
+    "bioHelperQuestions": "Wer bist du? · Welche Praxis bringst du mit? · Seit wann lebst du sie?",
+    "bioHelperExample": "Z. B. „Ich bin Lucia und unterrichte seit zwölf Jahren Yoga. Ich begleite Menschen, die entschleunigen möchten, einzeln und in kleinen Gruppen zwischen den Olivenbäumen meiner Heimat.“"
   }
 }

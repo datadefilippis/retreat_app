@@ -715,6 +715,9 @@
     "advancedTitle": "Per approfondire",
     "advancedHint": "Ritratto, galleria, contatti pubblici e altri dettagli. Tutto facoltativo.",
     "unsaved": "Hai modifiche non salvate",
-    "photoRemoved": "Foto rimossa"
+    "photoRemoved": "Foto rimossa",
+    "bioHelperTitle": "Non sai da dove iniziare? Rispondi a tre domande:",
+    "bioHelperQuestions": "Chi sei? · Che pratica porti? · Da quanto tempo la vivi?",
+    "bioHelperExample": "Es. «Sono Lucia, insegno yoga da dodici anni. Accompagno chi ha bisogno di rallentare, con lezioni individuali e piccoli gruppi tra gli ulivi della mia terra.»"
   }
 }

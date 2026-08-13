@@ -456,6 +456,24 @@ export default function PublicProfilePage() {
                     className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-y"
                   />
                   <p className="text-right text-[11px] text-muted-foreground">{(form.bio || '').length}/600</p>
+                  {/* AC6 — per l'operatore poco digitale lo scoglio
+                      non e' tecnico: e' scrivere di se'. Tre domande e
+                      un esempio vero sbloccano piu' di qualsiasi campo.
+                      Compare solo a bio vuota: poi non serve piu'. */}
+                  {!(form.bio || '').trim() && (
+                    <div className="mt-1 rounded-lg bg-muted/50 px-3 py-2.5 text-xs text-muted-foreground"
+                         data-testid="bio-helper">
+                      <p className="font-medium text-foreground">
+                        {t('publicProfile.bioHelperTitle', { defaultValue: 'Non sai da dove iniziare? Rispondi a tre domande:' })}
+                      </p>
+                      <p className="mt-0.5">
+                        {t('publicProfile.bioHelperQuestions', { defaultValue: 'Chi sei? · Che pratica porti? · Da quanto tempo la vivi?' })}
+                      </p>
+                      <p className="mt-1.5 italic">
+                        {t('publicProfile.bioHelperExample', { defaultValue: 'Es. «Sono Lucia, insegno yoga da dodici anni. Accompagno chi ha bisogno di rallentare, con lezioni individuali e piccoli gruppi tra gli ulivi della mia terra.»' })}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </MultiLangSection>

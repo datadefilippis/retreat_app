@@ -716,6 +716,9 @@
     "advancedTitle": "More details",
     "advancedHint": "Portrait, gallery, public contacts and other details. All optional.",
     "unsaved": "You have unsaved changes",
-    "photoRemoved": "Photo removed"
+    "photoRemoved": "Photo removed",
+    "bioHelperTitle": "Not sure where to start? Answer three questions:",
+    "bioHelperQuestions": "Who are you? · What practice do you offer? · How long have you lived it?",
+    "bioHelperExample": "E.g. “I'm Lucia, I've taught yoga for twelve years. I work with people who need to slow down, in one-to-one sessions and small groups among the olive trees of my land.”"
   }
 }

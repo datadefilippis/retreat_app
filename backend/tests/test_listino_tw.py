@@ -443,6 +443,30 @@ class TestAc5ParoleUmane:
             assert legal.get("close_button"), f"{lang}: manca close_button"
 
 
+class TestAc6AiutoBio:
+    """AC6 — lo scoglio del primo giro non e' tecnico: e' scrivere di
+    se'. Sotto il campo bio, tre domande-guida e un esempio vero. Solo
+    a bio vuota: chi ha gia' scritto non vede rumore."""
+
+    PAGE = FRONTEND_SRC / "features" / "settings" / "PublicProfilePage.js"
+
+    def test_aiuto_solo_a_bio_vuota(self):
+        src = self.PAGE.read_text()
+        assert 'data-testid="bio-helper"' in src
+        blocco = src.split('data-testid="bio-helper"')[0][-400:]
+        assert "!(form.bio || '').trim() && (" in blocco, \
+            "l'aiuto deve sparire appena la bio esiste"
+
+    def test_tre_domande_e_un_esempio(self):
+        import json
+        pp = json.loads((FRONTEND_SRC / "locales" / "it"
+                         / "settings.json").read_text())["publicProfile"]
+        assert pp["bioHelperQuestions"].count("?") == 3
+        assert "Es." in pp["bioHelperExample"]
+        # l'esempio e' una bio VERA e completa, non un frammento
+        assert len(pp["bioHelperExample"]) > 80
+
+
 class TestProfileListinoTW2:
     """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
     card rete con da-X-euro, OfferCatalog nella shell. I bottoni
