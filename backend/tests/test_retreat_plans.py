@@ -628,6 +628,28 @@ class TestAbPrezziCoerenti:
             assert parola not in src, (
                 f"/costi promette ancora {parola!r} (AB5)")
 
+    # ── UP1 — upgrade e Stripe Connect senza vincoli legacy (13/8) ──
+    # Bug prod: "Passa a Pro" falliva con "Organization has no active
+    # Stripe subscription" (isPaid ragionava sullo slug 'free', non
+    # sullo stato billing) e il collegamento Stripe appariva bloccato
+    # da "Commerce Starter" (scala PLAN_TIERS senza i piani retreat).
+
+    def test_up1_scala_piani_conosce_i_retreat(self):
+        src = (self.FRONTEND / "src" / "hooks" / "useBilling.js").read_text()
+        for slug in ("retreat_free", "retreat_pro", "retreat_founding"):
+            assert f"{slug}:" in src, (
+                f"PLAN_TIERS senza {slug}: il gate Stripe Connect "
+                "torna a chiedere Commerce Starter (UP1)")
+
+    def test_up1_ispaid_dallo_stato_non_dallo_slug(self):
+        src = (self.FRONTEND / "src" / "hooks" / "useBilling.js").read_text()
+        assert "isPaid: state.commercialPlanSlug !== 'free'" not in src, (
+            "isPaid e' tornato slug-based: retreat_free risulterebbe "
+            "a pagamento e l'upgrade proverebbe a modificare un "
+            "abbonamento Stripe inesistente (UP1)")
+        assert "'active', 'trialing', 'past_due'" in src
+        assert "FREE_PLAN_SLUGS" in src and "'retreat_free'" in src
+
     def test_ab5b_team_fuori_dai_limiti_abbonamento(self):
         """La pagina Team e' nascosta (CS3b): il riquadro limiti in
         Impostazioni non deve mostrare "membri team" ai piani retreat.

@@ -20,7 +20,20 @@ import { useAuth } from '../context/AuthContext';
 
 const BillingContext = createContext(null);
 
-const PLAN_TIERS = { free: 0, starter: 1, core: 2, pro: 3, enterprise: 4 };
+// UP1 (founder, 13/8) — la scala include anche i piani retreat: il gate
+// hasPlan('core') di Stripe Connect deve rispecchiare il backend, dove
+// commerce_retreat (piano Gratis compreso) ha checkout_stripe abilitato.
+// Senza queste voci ogni org retreat risultava sotto "Commerce Starter"
+// e il collegamento Stripe appariva bloccato — solo nel frontend.
+const PLAN_TIERS = {
+  free: 0, starter: 1, core: 2, pro: 3, enterprise: 4,
+  retreat_free: 2, retreat_pro: 3, retreat_founding: 3, retreat_partner: 3,
+};
+
+// UP1 — gli slug dei piani che non costano nulla (il legacy 'free' e il
+// Gratis del verticale ritiri): isFreePlan/isPaid non possono piu'
+// ragionare sulla sola stringa 'free'.
+const FREE_PLAN_SLUGS = ['free', 'retreat_free'];
 
 // Onda 10 Step A.2 — Focus refresh debounce.
 // Plans/status change less frequently than entitlements usage, so we don't
@@ -132,13 +145,20 @@ export function BillingProvider({ children }) {
     ...state,
     // Derived state
     plan: state.commercialPlanSlug,
-    isFreePlan: state.commercialPlanSlug === 'free',
+    isFreePlan: FREE_PLAN_SLUGS.includes(state.commercialPlanSlug),
     isTrialing: state.billingStatus === 'trialing',
     isPastDue: state.billingStatus === 'past_due',
     isCanceled: state.billingStatus === 'canceled',
     isActive: ['active', 'trialing', 'manual'].includes(state.billingStatus),
     canUpgrade: state.commercialPlanSlug !== 'enterprise',
-    isPaid: state.commercialPlanSlug !== 'free',
+    // UP1 — isPaid dice "sta pagando via Stripe ADESSO": e' la condizione
+    // con cui le pagine piani scelgono tra modificare l'abbonamento
+    // esistente e aprire un checkout nuovo. Il vecchio slug!=='free'
+    // marcava a-pagamento anche retreat_free ("Organization has no
+    // active Stripe subscription" al click su Passa a Pro) e i piani
+    // assegnati a mano, che un abbonamento Stripe non ce l'hanno.
+    isPaid: ['active', 'trialing', 'past_due'].includes(state.billingStatus)
+      && !FREE_PLAN_SLUGS.includes(state.commercialPlanSlug),
     hasHadTrial: state.hasHadTrial,
     hasPlan,
     currentPlanDetails,
