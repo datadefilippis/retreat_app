@@ -517,7 +517,7 @@ class TestLiAuryaInTesta:
         import hashlib
         from core.legal_versions import (CURRENT_VERSION_TAG,
                                          CURRENT_VERSION_HASH)
-        assert CURRENT_VERSION_TAG == "v2.4"
+        assert CURRENT_VERSION_TAG == "v2.5"
         priv = (self.LEGAL_DIR / "privacy_it.md").read_text("utf-8")
         terms = (self.LEGAL_DIR / "terms_it.md").read_text("utf-8")
         atteso = hashlib.sha256(
@@ -2455,7 +2455,7 @@ class TestAccountApL:
             # sezioni nuove servite (marker per lingua)
             assert "2.3" in get_legal_document("privacy", lang)["content"]
 
-        assert CURRENT_VERSION_TAG == "v2.4"   # LI: Aurya in testa ai legal
+        assert CURRENT_VERSION_TAG == "v2.5"   # fee-truth: art. 7 = prodotto reale
         priv = (legal_dir / "privacy_it.md").read_text()
         terms = (legal_dir / "terms_it.md").read_text()
         digest = hashlib.sha256(
@@ -7283,3 +7283,55 @@ class TestReteSw5:
         # LC8 — la label passa da catLabel(slug), stesso dispositivo
         assert "categories.${slug}" in self._page(), \
             "la pagina stampa lo slug grezzo invece della label"
+
+
+class TestFeeTruthNeiTermini:
+    """v2.5 (founder, 13/8) — i Termini devono dire la stessa cosa che
+    fa il checkout: fee su TUTTI i pagamenti online elaborati tramite
+    la piattaforma (5% Gratis, 0% Pro), zero fee sull'offline. Le due
+    bugie del testo vecchio (2% Pro inesistente, perimetro "solo
+    Calendario pubblico") non devono tornare."""
+
+    LEGAL = Path(__file__).resolve().parent.parent / "legal"
+
+    def _terms(self, lang):
+        return (self.LEGAL / f"terms_{lang}.md").read_text(encoding="utf-8")
+
+    def test_pro_zero_commissioni_mai_2_percento(self):
+        # il "2%" come fee del Pro non esiste piu' in nessuna lingua
+        for lang, morto in [("it", "2% con il piano Pro"),
+                            ("en", "2% on the Pro plan"),
+                            ("de", "2 % im Pro-Plan"),
+                            ("fr", "2 % avec le plan Pro")]:
+            assert morto not in self._terms(lang), \
+                f"terms_{lang}: promette ancora il 2% sul Pro (v2.5)"
+
+    def test_perimetro_fee_tutti_i_pagamenti_online(self):
+        vivi = {"it": "tutti i pagamenti online elaborati tramite la Piattaforma",
+                "en": "all online payments processed through the Platform",
+                "de": "alle über die Plattform abgewickelten Online-Zahlungen",
+                "fr": "tous les paiements en ligne traités via la Plateforme"}
+        for lang, frase in vivi.items():
+            assert frase in self._terms(lang), \
+                f"terms_{lang}: manca il perimetro vero della fee (v2.5)"
+
+    def test_link_listino_vivo(self):
+        # /pricing e' un 404: il rimando contrattuale punta a /costi
+        for lang in ("it", "en", "de", "fr"):
+            src = self._terms(lang)
+            assert "aurya.life/pricing" not in src, f"terms_{lang}: link 404"
+            assert "aurya.life/costi" in src, f"terms_{lang}: manca /costi"
+
+    def test_hash_agganciato_ai_file(self):
+        """Se qualcuno tocca i legal senza rifare il giro versione,
+        questa guardia lo dice subito (il re-consent vive sull'hash)."""
+        import hashlib
+        from core.legal_versions import CURRENT_VERSION_HASH
+        priv = (self.LEGAL / "privacy_it.md").read_text(encoding="utf-8")
+        terms = (self.LEGAL / "terms_it.md").read_text(encoding="utf-8")
+        atteso = hashlib.sha256(
+            (priv + "\n\n--- TERMS BUNDLE ---\n\n" + terms).encode()
+        ).hexdigest()[:16]
+        assert CURRENT_VERSION_HASH == atteso, (
+            "legal modificati senza aggiornare CURRENT_VERSION_HASH: "
+            f"atteso {atteso}, trovato {CURRENT_VERSION_HASH}")

@@ -24,7 +24,7 @@ For the purposes of these Terms, the following expressions have the meaning set 
 - **User**: any party who uses the Platform (Operator, End Customer or Visitor); where a provision concerns only one role, this is expressly indicated.
 - **Offering**: the retreats, experiences, products and courses published by the Operator on the Platform.
 - **Public calendar** (or "Directory"): the public pages of Aurya that aggregate and make searchable the online-bookable Offerings of all Operators.
-- **Platform fee** (or "application fee"): the percentage withheld by the Provider, via Stripe Connect, exclusively on bookings originating from the Public calendar (Art. 7.2).
+- **Platform fee** (or "application fee"): the percentage withheld by the Provider, via Stripe Connect, on online payments processed through the Platform (Art. 7.2).
 - **Operator Content**: all data, texts, images, prices, terms, customer records and other materials uploaded or entered by the Operator into the Platform.
 - **Plans**: the service tiers for Operators (Free, Pro, and plans by assignment such as Founding/Partner), described in Art. 7.
 - **Terms**: these Terms and Conditions of Service, including all annexes and any further product specifications.
@@ -110,8 +110,8 @@ The booking confirmation, the ticket with QR code and the receipts are sent by e
 
 Online payments are handled via **Stripe Connect** (PCI-DSS Level 1):
 - The End Customer pays by card; funds are credited **directly to the Operator's Stripe account**. The Provider does not collect nor hold booking funds.
-- The Provider withholds a **Platform fee** (application fee) exclusively on bookings originating from the Public calendar: **5% on the Free plan, 2% on the Pro plan** (Art. 7).
-- Orders and bookings that the Operator handles outside the Public calendar (e.g. direct customers, sales recorded manually in the management software) **are not subject to any fee**.
+- The Provider withholds a **Platform fee** (application fee) on online payments processed through the Platform: **5% on the Free plan, 0% (no fee) on the Pro plan** (Art. 7).
+- Orders and bookings collected outside the Platform (e.g. bank transfers, cash, sales recorded manually in the management software) **are not subject to any fee**.
 - Payment card data never passes through the Provider's or the Operator's servers (see Privacy Policy Art. 9).
 
 The use of payments requires the Operator to open and maintain a Stripe Connect account, subject to Stripe's terms (https://stripe.com/connect-account/legal), including the identity verifications (KYC) required by Stripe.
@@ -149,15 +149,15 @@ The features actually available vary according to the subscribed Plan (Art. 7). 
 
 The Service for Operators is offered under the following Plans:
 
-- **Free**: with no subscription fee. Platform fee of **5%** on bookings originating from the Public calendar.
-- **Pro**: monthly subscription fee, with the Platform fee reduced to **2%** on bookings originating from the Public calendar and additional features.
+- **Free**: with no subscription fee. Platform fee of **5%** on online payments processed through the Platform.
+- **Pro**: monthly or yearly subscription fee, with the Platform fee **reduced to zero (0%)** and additional features.
 - **Plans by assignment** (e.g. Founding, Partner): special conditions granted by the Provider to specific Operators; their terms prevail, to the extent regulated therein, over these Terms.
 
-The included features, usage limits and up-to-date prices of each Plan are described on the public page https://aurya.life/pricing.
+The included features, usage limits and up-to-date prices of each Plan are described on the public page https://aurya.life/costi.
 
 ### 7.2 Platform fee
 
-The Platform fee applies **exclusively to bookings originating from the Public calendar** and is withheld automatically via Stripe Connect (application fee) at the time of payment, including deposits and subsequent instalments relating to such bookings. Orders handled outside the Public calendar do not generate any fee. The percentage applied is that of the Plan active at the time of payment.
+The Platform fee applies to **all online payments processed through the Platform** — from the Public calendar as well as from the Operator's public pages — and is withheld automatically via Stripe Connect (application fee) at the time of payment, including deposits and subsequent instalments. Payments collected outside the Platform (bank transfers, cash) do not generate any fee. The percentage applied is that of the Plan active at the time of payment.
 
 ### 7.3 Subscription and Plan changes
 

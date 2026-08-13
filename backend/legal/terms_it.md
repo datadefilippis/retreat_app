@@ -24,7 +24,7 @@ Ai fini dei presenti Termini, le seguenti espressioni hanno il significato di se
 - **Utente**: qualsiasi soggetto che utilizza la Piattaforma (Operatore, Cliente finale o Visitatore); ove una disposizione riguardi un solo ruolo, questo e' indicato espressamente.
 - **Offerta**: i ritiri, le esperienze, i prodotti e i corsi pubblicati dall'Operatore sulla Piattaforma.
 - **Calendario pubblico** (o "Directory"): le pagine pubbliche di Aurya che aggregano e rendono ricercabili le Offerte prenotabili online di tutti gli Operatori.
-- **Commissione di piattaforma** (o "application fee"): la percentuale trattenuta dal Fornitore, tramite Stripe Connect, sulle sole prenotazioni provenienti dal Calendario pubblico (art. 7.2).
+- **Commissione di piattaforma** (o "application fee"): la percentuale trattenuta dal Fornitore, tramite Stripe Connect, sui pagamenti online elaborati tramite la Piattaforma (art. 7.2).
 - **Contenuto dell'Operatore**: tutti i dati, testi, immagini, prezzi, condizioni, anagrafiche e altri materiali caricati o inseriti dall'Operatore nella Piattaforma.
 - **Piani**: i livelli di servizio per gli Operatori (Gratis, Pro e piani su assegnazione quali Founding/Partner), descritti all'art. 7.
 - **Termini**: i presenti Termini e Condizioni di Servizio, comprensivi di tutti gli allegati e di eventuali ulteriori specifiche di prodotto.
@@ -110,8 +110,8 @@ La conferma della prenotazione, il biglietto con codice QR e le ricevute vengono
 
 I pagamenti online sono gestiti tramite **Stripe Connect** (PCI-DSS Level 1):
 - Il Cliente finale paga con carta; i fondi vengono accreditati **direttamente sull'account Stripe dell'Operatore**. Il Fornitore non incassa ne' custodisce i fondi delle prenotazioni.
-- Il Fornitore trattiene una **Commissione di piattaforma** (application fee) esclusivamente sulle prenotazioni provenienti dal Calendario pubblico: **5% con il piano Gratis, 2% con il piano Pro** (art. 7).
-- Gli ordini e le prenotazioni che l'Operatore gestisce fuori dal Calendario pubblico (es. clienti diretti, vendite registrate manualmente nel gestionale) **non sono soggetti ad alcuna commissione**.
+- Il Fornitore trattiene una **Commissione di piattaforma** (application fee) sui pagamenti online elaborati tramite la Piattaforma: **5% con il piano Gratis, 0% (nessuna commissione) con il piano Pro** (art. 7).
+- Gli ordini e le prenotazioni incassati fuori dalla Piattaforma (es. bonifici, contanti, vendite registrate manualmente nel gestionale) **non sono soggetti ad alcuna commissione**.
 - I dati delle carte di pagamento non transitano mai sui server del Fornitore ne' dell'Operatore (vedi Privacy Policy art. 9).
 
 L'utilizzo dei pagamenti richiede all'Operatore l'apertura e il mantenimento di un account Stripe Connect, soggetto ai termini di Stripe (https://stripe.com/connect-account/legal), incluse le verifiche di identita' (KYC) richieste da Stripe.
@@ -149,15 +149,15 @@ Le funzionalita' effettivamente disponibili variano in funzione del Piano sottos
 
 Il Servizio per gli Operatori e' offerto con i seguenti Piani:
 
-- **Gratis**: senza alcun canone. Commissione di piattaforma del **5%** sulle prenotazioni provenienti dal Calendario pubblico.
-- **Pro**: canone mensile, con Commissione di piattaforma ridotta al **2%** sulle prenotazioni provenienti dal Calendario pubblico e funzionalita' aggiuntive.
+- **Gratis**: senza alcun canone. Commissione di piattaforma del **5%** sui pagamenti online elaborati tramite la Piattaforma.
+- **Pro**: canone mensile o annuale, con Commissione di piattaforma **azzerata (0%)** e funzionalita' aggiuntive.
 - **Piani su assegnazione** (es. Founding, Partner): condizioni particolari concesse dal Fornitore a specifici Operatori; i relativi termini prevalgono, per quanto ivi disciplinato, sui presenti.
 
-Le funzionalita' incluse, i limiti di utilizzo e i prezzi aggiornati di ciascun Piano sono descritti sulla pagina pubblica https://aurya.life/pricing.
+Le funzionalita' incluse, i limiti di utilizzo e i prezzi aggiornati di ciascun Piano sono descritti sulla pagina pubblica https://aurya.life/costi.
 
 ### 7.2 Commissione di piattaforma
 
-La Commissione di piattaforma si applica **esclusivamente alle prenotazioni provenienti dal Calendario pubblico** ed e' trattenuta automaticamente tramite Stripe Connect (application fee) al momento del pagamento, incluse le caparre e le rate successive relative a tali prenotazioni. Gli ordini gestiti fuori dal Calendario pubblico non generano alcuna commissione. La percentuale applicata e' quella del Piano attivo al momento del pagamento.
+La Commissione di piattaforma si applica a **tutti i pagamenti online elaborati tramite la Piattaforma** — dal Calendario pubblico come dalle pagine pubbliche dell'Operatore — ed e' trattenuta automaticamente tramite Stripe Connect (application fee) al momento del pagamento, incluse le caparre e le rate successive. I pagamenti incassati fuori dalla Piattaforma (bonifici, contanti) non generano alcuna commissione. La percentuale applicata e' quella del Piano attivo al momento del pagamento.
 
 ### 7.3 Sottoscrizione e cambio Piano
 

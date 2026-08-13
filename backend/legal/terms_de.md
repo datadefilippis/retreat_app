@@ -24,7 +24,7 @@ Für die Zwecke dieser Bedingungen haben die folgenden Ausdrücke die nachstehen
 - **Nutzer**: jede Person, die die Plattform nutzt (Veranstalter, Endkunde oder Besucher); betrifft eine Bestimmung nur eine Rolle, wird dies ausdrücklich angegeben.
 - **Angebot**: die vom Veranstalter auf der Plattform veröffentlichten Retreats, Erlebnisse, Produkte und Kurse.
 - **Öffentlicher Kalender** (oder „Verzeichnis"): die öffentlichen Seiten von Aurya, die die online buchbaren Angebote aller Veranstalter aggregieren und durchsuchbar machen.
-- **Plattformgebühr** (oder „Application Fee"): der Prozentsatz, den der Anbieter über Stripe Connect ausschließlich auf Buchungen einbehält, die über den öffentlichen Kalender zustande kommen (Art. 7.2).
+- **Plattformgebühr** (oder „Application Fee"): der Prozentsatz, den der Anbieter über Stripe Connect auf die über die Plattform abgewickelten Online-Zahlungen einbehält (Art. 7.2).
 - **Inhalte des Veranstalters**: alle Daten, Texte, Bilder, Preise, Bedingungen, Kundenstammdaten und sonstigen Materialien, die der Veranstalter in die Plattform hochlädt oder eingibt.
 - **Pläne**: die Leistungsstufen für die Veranstalter (Gratis, Pro sowie Pläne auf Zuweisung wie Founding/Partner), beschrieben in Art. 7.
 - **Bedingungen**: die vorliegenden Allgemeinen Geschäftsbedingungen, einschließlich aller Anhänge und etwaiger weiterer Produktspezifikationen.
@@ -110,8 +110,8 @@ Die Buchungsbestätigung, das Ticket mit QR-Code und die Quittungen werden dem E
 
 Die Online-Zahlungen werden über **Stripe Connect** abgewickelt (PCI-DSS Level 1):
 - Der Endkunde zahlt per Karte; die Gelder werden **direkt dem Stripe-Konto des Veranstalters** gutgeschrieben. Der Anbieter vereinnahmt und verwahrt die Gelder der Buchungen nicht.
-- Der Anbieter behält eine **Plattformgebühr** (Application Fee) ausschließlich auf Buchungen ein, die über den öffentlichen Kalender zustande kommen: **5 % im Gratis-Plan, 2 % im Pro-Plan** (Art. 7).
-- Bestellungen und Buchungen, die der Veranstalter außerhalb des öffentlichen Kalenders abwickelt (z. B. Direktkunden, manuell in der Verwaltungssoftware erfasste Verkäufe), **unterliegen keinerlei Gebühr**.
+- Der Anbieter behält eine **Plattformgebühr** (Application Fee) auf die über die Plattform abgewickelten Online-Zahlungen ein: **5 % im Gratis-Plan, 0 % (keine Gebühr) im Pro-Plan** (Art. 7).
+- Bestellungen und Buchungen, die außerhalb der Plattform vereinnahmt werden (z. B. Überweisungen, Barzahlungen, manuell in der Verwaltungssoftware erfasste Verkäufe), **unterliegen keinerlei Gebühr**.
 - Die Zahlungskartendaten durchlaufen niemals die Server des Anbieters oder des Veranstalters (siehe Datenschutzerklärung Art. 9).
 
 Die Nutzung der Zahlungsfunktionen erfordert vom Veranstalter die Eröffnung und Aufrechterhaltung eines Stripe-Connect-Kontos, das den Stripe-Bedingungen unterliegt (https://stripe.com/connect-account/legal), einschließlich der von Stripe verlangten Identitätsprüfungen (KYC).
@@ -149,15 +149,15 @@ Die tatsächlich verfügbaren Funktionen variieren je nach abonniertem Plan (Art
 
 Der Dienst für die Veranstalter wird mit den folgenden Plänen angeboten:
 
-- **Gratis**: ohne jegliche Grundgebühr. Plattformgebühr von **5 %** auf Buchungen, die über den öffentlichen Kalender zustande kommen.
-- **Pro**: monatliche Gebühr, mit auf **2 %** reduzierter Plattformgebühr auf Buchungen, die über den öffentlichen Kalender zustande kommen, und zusätzlichen Funktionen.
+- **Gratis**: ohne jegliche Grundgebühr. Plattformgebühr von **5 %** auf die über die Plattform abgewickelten Online-Zahlungen.
+- **Pro**: monatliche oder jährliche Gebühr, mit **auf null (0 %) reduzierter** Plattformgebühr und zusätzlichen Funktionen.
 - **Pläne auf Zuweisung** (z. B. Founding, Partner): besondere Konditionen, die der Anbieter bestimmten Veranstaltern gewährt; deren Bedingungen gehen, soweit dort geregelt, den vorliegenden vor.
 
-Die enthaltenen Funktionen, Nutzungslimits und aktuellen Preise jedes Plans sind auf der öffentlichen Seite https://aurya.life/pricing beschrieben.
+Die enthaltenen Funktionen, Nutzungslimits und aktuellen Preise jedes Plans sind auf der öffentlichen Seite https://aurya.life/costi beschrieben.
 
 ### 7.2 Plattformgebühr
 
-Die Plattformgebühr gilt **ausschließlich für Buchungen, die über den öffentlichen Kalender zustande kommen**, und wird automatisch über Stripe Connect (Application Fee) zum Zeitpunkt der Zahlung einbehalten, einschließlich der Anzahlungen und der nachfolgenden Raten zu solchen Buchungen. Außerhalb des öffentlichen Kalenders abgewickelte Bestellungen erzeugen keinerlei Gebühr. Angewandt wird der Prozentsatz des zum Zeitpunkt der Zahlung aktiven Plans.
+Die Plattformgebühr gilt für **alle über die Plattform abgewickelten Online-Zahlungen** — aus dem öffentlichen Kalender ebenso wie über die öffentlichen Seiten des Veranstalters — und wird automatisch über Stripe Connect (Application Fee) zum Zeitpunkt der Zahlung einbehalten, einschließlich Anzahlungen und nachfolgender Raten. Außerhalb der Plattform vereinnahmte Zahlungen (Überweisungen, Barzahlungen) erzeugen keinerlei Gebühr. Angewandt wird der Prozentsatz des zum Zeitpunkt der Zahlung aktiven Plans.
 
 ### 7.3 Abonnement und Planwechsel
 

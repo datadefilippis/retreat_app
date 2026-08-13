@@ -38,7 +38,7 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.4"
+CURRENT_VERSION_TAG: Final[str] = "v2.5"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
@@ -105,9 +105,29 @@ History:
     esistente (l'hash del bundle cambia): al 13/8 riguarda 2 utenti
     operatore, ed e' il motivo per cui si e' scelto di farlo ADESSO e
     non a rete cresciuta. Stesse modifiche in EN/DE/FR.
+  - v2.5 (fee-truth, 2026-08-13) — Termini art. 7 e definizioni
+    riallineati al prodotto reale (audit fee del 13/8):
+    (a) perimetro della Commissione di piattaforma: da "solo sulle
+    prenotazioni dal Calendario pubblico" a "tutti i pagamenti online
+    elaborati tramite la Piattaforma" — e' cosi' che l'application
+    fee funziona da sempre nel checkout (payment_checkout_service
+    legge application_fee_percent dell'org senza guardare il canale);
+    il testo precedente dichiarava esenti prenotazioni online che di
+    fatto pagavano il 5%.
+    (b) piano Pro: da "commissione ridotta al 2%" a "0% (nessuna
+    commissione)" — il 2% non esiste piu' dal redesign piani di
+    luglio, e /costi promette zero commissioni.
+    (c) offline invariato e ora piu' esplicito: bonifici e contanti
+    non generano commissione.
+    (d) link listino: aurya.life/pricing (404) → aurya.life/costi.
+    Modifica FAVOREVOLE all'Operatore sui punti (a)-(b) rispetto al
+    testo (nessun peggioramento che richieda il preavviso di 30 gg
+    ex art. 7.7: la pratica reale non cambia, cambia la carta).
+    Il bump innesca il re-consent esistente. Stesse modifiche in
+    EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "d700b4d839137fb5"
+CURRENT_VERSION_HASH: Final[str] = "f3b41f47d612bc4b"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

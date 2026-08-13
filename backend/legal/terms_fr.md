@@ -24,7 +24,7 @@ Aux fins des présentes Conditions, les expressions suivantes ont la significati
 - **Utilisateur** : tout sujet qui utilise la Plateforme (Opérateur, Client final ou Visiteur) ; lorsqu'une disposition ne concerne qu'un seul rôle, celui-ci est indiqué expressément.
 - **Offre** : les retraites, expériences, produits et cours publiés par l'Opérateur sur la Plateforme.
 - **Calendrier public** (ou « Annuaire ») : les pages publiques d'Aurya qui agrègent et rendent consultables les Offres réservables en ligne de tous les Opérateurs.
-- **Commission de plateforme** (ou « application fee ») : le pourcentage retenu par le Fournisseur, via Stripe Connect, sur les seules réservations provenant du Calendrier public (art. 7.2).
+- **Commission de plateforme** (ou « application fee ») : le pourcentage retenu par le Fournisseur, via Stripe Connect, sur les paiements en ligne traités via la Plateforme (art. 7.2).
 - **Contenu de l'Opérateur** : l'ensemble des données, textes, images, prix, conditions, fichiers clients et autres matériels téléversés ou saisis par l'Opérateur dans la Plateforme.
 - **Plans** : les niveaux de service pour les Opérateurs (Gratuit, Pro et plans sur attribution tels que Founding/Partner), décrits à l'art. 7.
 - **Conditions** : les présentes Conditions Générales de Service, y compris l'ensemble des annexes et d'éventuelles spécifications de produit supplémentaires.
@@ -110,8 +110,8 @@ La confirmation de la réservation, le billet avec code QR et les reçus sont en
 
 Les paiements en ligne sont gérés via **Stripe Connect** (PCI-DSS Level 1) :
 - Le Client final paie par carte ; les fonds sont crédités **directement sur le compte Stripe de l'Opérateur**. Le Fournisseur n'encaisse ni ne conserve les fonds des réservations.
-- Le Fournisseur retient une **Commission de plateforme** (application fee) exclusivement sur les réservations provenant du Calendrier public : **5 % avec le plan Gratuit, 2 % avec le plan Pro** (art. 7).
-- Les commandes et réservations que l'Opérateur gère en dehors du Calendrier public (par ex. clients directs, ventes enregistrées manuellement dans l'outil de gestion) **ne sont soumises à aucune commission**.
+- Le Fournisseur retient une **Commission de plateforme** (application fee) sur les paiements en ligne traités via la Plateforme : **5 % avec le plan Gratuit, 0 % (aucune commission) avec le plan Pro** (art. 7).
+- Les commandes et réservations encaissées en dehors de la Plateforme (par ex. virements, espèces, ventes enregistrées manuellement dans l'outil de gestion) **ne sont soumises à aucune commission**.
 - Les données des cartes de paiement ne transitent jamais sur les serveurs du Fournisseur ni de l'Opérateur (voir Politique de confidentialité art. 9).
 
 L'utilisation des paiements requiert de l'Opérateur l'ouverture et le maintien d'un compte Stripe Connect, soumis aux conditions de Stripe (https://stripe.com/connect-account/legal), y compris les vérifications d'identité (KYC) exigées par Stripe.
@@ -149,15 +149,15 @@ Les fonctionnalités effectivement disponibles varient en fonction du Plan sousc
 
 Le Service pour les Opérateurs est proposé avec les Plans suivants :
 
-- **Gratuit** : sans aucune redevance. Commission de plateforme de **5 %** sur les réservations provenant du Calendrier public.
-- **Pro** : redevance mensuelle, avec Commission de plateforme réduite à **2 %** sur les réservations provenant du Calendrier public et fonctionnalités supplémentaires.
+- **Gratuit** : sans aucune redevance. Commission de plateforme de **5 %** sur les paiements en ligne traités via la Plateforme.
+- **Pro** : redevance mensuelle ou annuelle, avec Commission de plateforme **ramenée à zéro (0 %)** et fonctionnalités supplémentaires.
 - **Plans sur attribution** (par ex. Founding, Partner) : conditions particulières accordées par le Fournisseur à des Opérateurs spécifiques ; leurs termes prévalent, pour ce qu'ils régissent, sur les présentes.
 
-Les fonctionnalités incluses, les limites d'utilisation et les prix actualisés de chaque Plan sont décrits sur la page publique https://aurya.life/pricing.
+Les fonctionnalités incluses, les limites d'utilisation et les prix actualisés de chaque Plan sont décrits sur la page publique https://aurya.life/costi.
 
 ### 7.2 Commission de plateforme
 
-La Commission de plateforme s'applique **exclusivement aux réservations provenant du Calendrier public** et est retenue automatiquement via Stripe Connect (application fee) au moment du paiement, y compris les acomptes et les échéances ultérieures relatifs à ces réservations. Les commandes gérées en dehors du Calendrier public ne génèrent aucune commission. Le pourcentage appliqué est celui du Plan actif au moment du paiement.
+La Commission de plateforme s'applique à **tous les paiements en ligne traités via la Plateforme** — depuis le Calendrier public comme depuis les pages publiques de l'Opérateur — et est retenue automatiquement via Stripe Connect (application fee) au moment du paiement, y compris les acomptes et les échéances ultérieures. Les paiements encaissés en dehors de la Plateforme (virements, espèces) ne génèrent aucune commission. Le pourcentage appliqué est celui du Plan actif au moment du paiement.
 
 ### 7.3 Souscription et changement de Plan
 
