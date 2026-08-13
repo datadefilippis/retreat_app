@@ -354,8 +354,15 @@ def test_operator_landing_transparency_and_direct_contact():
     op_faq = it.get("opPro", {})
     assert "costa" in (op_faq.get("faq1q") or "").lower(), \
         "sparita la FAQ sul costo dalla landing professionisti"
-    assert "non ha un costo" in (op_faq.get("faq1a") or ""), \
+    # AB (13/8) — la risposta e' diventata tre bullet (faq1b1..b3 +
+    # link a /costi): il dispositivo resta lo stesso, dire in chiaro
+    # che oggi non si paga.
+    risposta = " ".join(
+        op_faq.get(k) or "" for k in ("faq1b1", "faq1b2", "faq1b3"))
+    assert "sempre gratuito" in risposta, \
         "la risposta sul costo deve dire in chiaro che oggi non si paga"
+    assert "non ha alcun costo" in risposta, \
+        "sparita la promessa zero costi fino alla data detta dal founder"
 
 
 def test_wipe_and_seed_share_the_same_flag():
