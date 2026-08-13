@@ -676,6 +676,8 @@
     "interviewInviteCta": "Écrivez-nous pour candidater",
     "conditionsLink": "Conditions de vente",
     "optimizing": "Optimisation de la photo…",
-    "uploadingPhoto": "Envoi de la photo…"
+    "uploadingPhoto": "Envoi de la photo…",
+    "advancedTitle": "Pour aller plus loin",
+    "advancedHint": "Portrait, galerie, contacts publics et autres détails. Tout est facultatif."
   }
 }

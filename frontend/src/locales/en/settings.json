@@ -712,6 +712,8 @@
     "interviewInviteCta": "Write to us to apply",
     "conditionsLink": "Sales conditions",
     "optimizing": "Optimizing photo…",
-    "uploadingPhoto": "Uploading photo…"
+    "uploadingPhoto": "Uploading photo…",
+    "advancedTitle": "More details",
+    "advancedHint": "Portrait, gallery, public contacts and other details. All optional."
   }
 }

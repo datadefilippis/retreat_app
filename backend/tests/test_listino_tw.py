@@ -298,6 +298,61 @@ class TestAc1StrisciaGuida:
         assert "rows.filter(r => r.published).length" in src
 
 
+class TestAc2ProfiloEssenziale:
+    """AC2 — il form del profilo era un muro di ~15 blocchi per un
+    operatore poco digitale. L'essenziale (foto, chi sei, dove sei, un
+    social) resta in vista; nome pubblico, carta d'identita', regione,
+    contatti e specchietto Visibilita' vivono in "Per approfondire",
+    chiuso finche' non lo si cerca. L'intervista resta visibile ma
+    DOPO il Salva: invito, non interruzione."""
+
+    PAGE = FRONTEND_SRC / "features" / "settings" / "PublicProfilePage.js"
+
+    def test_avanzato_chiuso_di_default_con_toggle(self):
+        src = self.PAGE.read_text()
+        assert "const [advancedOpen, setAdvancedOpen] = useState(false)" in src
+        assert 'data-testid="profile-advanced-toggle"' in src
+        assert 'data-testid="profile-advanced-body"' in src
+        assert "{advancedOpen && (" in src
+
+    def test_campi_secondari_dentro_l_avanzato(self):
+        """Nome pubblico, anno, ritratto, galleria, regione, contatti e
+        Visibilita' stanno DOPO il toggle: se uno di loro risale
+        nell'essenziale, il muro sta tornando."""
+        src = self.PAGE.read_text()
+        # si giudica solo il RENDER (dal marcatore Form in giu'):
+        # le funzioni di upload sopra usano le stesse chiavi nei toast
+        render = src.split("── Form ──")[1]
+        avanzato = render.split('data-testid="profile-advanced-toggle"')[1]
+        prima = render.split('data-testid="profile-advanced-toggle"')[0]
+        for chiave in ("publicName", "foundedYear", "portrait",
+                       "gallery", "region", "showContacts",
+                       "visibilityTitle"):
+            assert f"publicProfile.{chiave}" in avanzato, \
+                f"{chiave} deve vivere in Per approfondire"
+            assert f"publicProfile.{chiave}" not in prima, \
+                f"{chiave} e' risalito nell'essenziale"
+
+    def test_essenziale_prima_del_toggle(self):
+        """Cover, bio, localita' e social restano nell'essenziale."""
+        src = self.PAGE.read_text()
+        prima = src.split('data-testid="profile-advanced-toggle"')[0]
+        for chiave in ("publicProfile.cover", "publicProfile.bio",
+                       "publicProfile.locationSearch",
+                       "publicProfile.socials"):
+            assert chiave in prima, f"{chiave} deve restare in vista"
+
+    def test_intervista_dopo_il_salva_ma_visibile(self):
+        """Il pannello intervista non interrompe la compilazione: sta
+        dopo il bottone Salva, MAI dentro l'accordion (il badge
+        Verificato deve restare un invito visibile)."""
+        src = self.PAGE.read_text()
+        salva = src.index("{t('publicProfile.save'")
+        intervista = src.index('data-testid="interview-invite-panel"')
+        toggle = src.index('data-testid="profile-advanced-toggle"')
+        assert salva < intervista < toggle
+
+
 class TestProfileListinoTW2:
     """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
     card rete con da-X-euro, OfferCatalog nella shell. I bottoni

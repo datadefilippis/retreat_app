@@ -16,7 +16,7 @@ import { Skeleton } from '../../components/ui/skeleton';
 import { Link, Link as RouterLink } from 'react-router-dom';
 import {
   ExternalLink, Copy, Check, Upload, Loader2, Instagram, Globe, Facebook,
-  Eye, Mic,
+  Eye, Mic, ChevronDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../api/client';
@@ -108,6 +108,10 @@ export default function PublicProfilePage() {
   // AC1 — ogni salvataggio che può cambiare lo stato onboarding
   // incrementa la chiave: la striscia-guida si riaggiorna da sola
   const [obKey, setObKey] = useState(0);
+  // AC2 — il form era un muro di ~15 blocchi: l'essenziale (foto, bio,
+  // località, un social) resta in vista, il resto vive qui sotto,
+  // chiuso finché l'operatore non lo cerca
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -325,35 +329,9 @@ export default function PublicProfilePage() {
             </p>
           </div>
 
-          {/* OP4 — Nome pubblico: LA stessa riga delle Impostazioni.
-              E' il titolo che il pubblico vede su directory, profilo
-              e nei risultati di ricerca. */}
-          <div className="rounded-xl border bg-card p-4 space-y-2">
-            <Label>{t('publicProfile.publicName', { defaultValue: 'Nome pubblico' })}</Label>
-            <input
-              value={orgName}
-              onChange={e => setOrgName(e.target.value.slice(0, 120))}
-              maxLength={120}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <p className="text-[11px] text-muted-foreground">
-              {t('publicProfile.publicNameHint', { defaultValue: 'Compare su directory, profilo e motori di ricerca. Coincide con il nome azienda delle Impostazioni: cambiarlo qui lo cambia ovunque.' })}
-            </p>
-          </div>
-
-          {/* VT5 — il ponte verso lo specchietto: quante persone vedono
-              questo profilo */}
-          <Link to="/visibilita" className="flex items-center gap-3 rounded-xl border border-[#376254]/40 bg-[#376254]/5 p-4 hover:bg-[#376254]/10 transition-colors">
-            <Eye className="h-5 w-5 text-[#376254] shrink-0" aria-hidden />
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground">
-                {t('publicProfile.visibilityTitle', { defaultValue: 'Quante persone ti vedono?' })}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t('publicProfile.visibilityHint', { defaultValue: 'Impression, visite e prenotazioni di questo profilo sono nella pagina Visibilità.' })}
-              </p>
-            </div>
-          </Link>
+          {/* AC2 — qui sotto SOLO l'essenziale: foto, chi sei, dove
+              sei, un social. Nome pubblico, carta d'identità, contatti
+              e specchietto Visibilità vivono in "Per approfondire". */}
 
           {/* Cover */}
           <div className="rounded-xl border bg-card p-4 space-y-2">
@@ -383,108 +361,6 @@ export default function PublicProfilePage() {
                   </span>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* PV2 — l'intervista non si scrive più da qui: la realizza
-              il team Aurya. Pannello informativo puro (nessun campo),
-              con l'incentivo del badge Verificato. */}
-          <div className="rounded-xl border border-[#8a7440]/30 bg-[#8a7440]/5 p-4 space-y-2"
-               data-testid="interview-invite-panel">
-            <div className="flex items-center gap-2">
-              <Mic className="h-4 w-4 text-[#8a7440] shrink-0" aria-hidden />
-              <p className="text-sm font-semibold text-foreground">
-                {t('publicProfile.interviewInviteTitle', { defaultValue: 'Fatti intervistare da Aurya' })}
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t('publicProfile.interviewInviteBody', { defaultValue: 'L’intervista la realizza il team Aurya insieme a te: quando viene pubblicata diventi operatore verificato, con il badge sul tuo profilo e nel marketplace.' })}
-            </p>
-            {/* CS3 (founder, 13/8) — l'indirizzo si LEGGE, non solo si
-                clicca: il mailto dipende dal client di posta configurato
-                e su molti computer non apre niente. L'email in chiaro e'
-                selezionabile e copiabile comunque. */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <a href={`mailto:${BRAND_EMAIL}?subject=Intervista%20Aurya`}
-                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7440] hover:underline">
-                {t('publicProfile.interviewInviteCta', { defaultValue: 'Scrivici per candidarti' })}
-                <ExternalLink className="h-3 w-3" aria-hidden />
-              </a>
-              <span className="text-xs text-muted-foreground select-all"
-                    data-testid="interview-email-plain">
-                {BRAND_EMAIL}
-              </span>
-            </div>
-          </div>
-
-          {/* PR1 — Carta d'identità: ritratto, galleria, anno, lingue
-              (tagline e bio vivono nella sezione multilingua sotto) */}
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>{t('publicProfile.foundedYear', { defaultValue: 'Attivo dal (anno)' })}</Label>
-                <input
-                  value={form.founded_year || ''}
-                  onChange={e => set('founded_year', e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  inputMode="numeric" maxLength={4} placeholder="2018"
-                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-              <div>
-                <Label>{t('publicProfile.languages', { defaultValue: 'Lingue parlate' })}</Label>
-                <div className="mt-1 flex flex-wrap gap-1.5">
-                  {PROFILE_LANGS.map(l => {
-                    const active = (form.languages || []).includes(l);
-                    return (
-                      <button key={l} type="button"
-                        onClick={() => set('languages', active
-                          ? (form.languages || []).filter(x => x !== l)
-                          : [...(form.languages || []), l])}
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase transition-colors ${
-                          active ? 'bg-primary text-white' : 'border border-border text-muted-foreground hover:border-primary'}`}>
-                        {l}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-            <div>
-              <Label>{t('publicProfile.portrait', { defaultValue: 'Ritratto (foto a lato del profilo)' })}</Label>
-              <input type="file" accept="image/*" className="hidden" id="pp-portrait"
-                     onChange={e => { uploadPortrait(e.target.files?.[0]); e.target.value = ''; }} />
-              <label htmlFor="pp-portrait"
-                     className="mt-1 block h-32 w-32 rounded-xl border-2 border-dashed border-border bg-muted/40 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors">
-                {form.portrait_url
-                  ? <img src={form.portrait_url} alt="" className="w-full h-full object-cover" />
-                  : <span className="h-full flex items-center justify-center text-xs text-muted-foreground px-2 text-center">
-                      {t('publicProfile.portraitHint', { defaultValue: 'Carica una foto' })}
-                    </span>}
-              </label>
-            </div>
-            <div>
-              <Label>{t('publicProfile.gallery', { defaultValue: 'Galleria foto (max 8)' })}</Label>
-              <div className="mt-1 grid grid-cols-4 gap-2">
-                {(form.photos || []).map(url => (
-                  <div key={url} className="relative h-20 rounded-lg overflow-hidden group">
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                    <button type="button" onClick={() => removePhoto(url)}
-                            aria-label="Rimuovi"
-                            className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/60 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">×</button>
-                  </div>
-                ))}
-                {(form.photos || []).length < 8 && (
-                  <>
-                    <input type="file" accept="image/*" className="hidden" id="pp-photo"
-                           onChange={e => { uploadPhoto(e.target.files?.[0]); e.target.value = ''; }} />
-                    <label htmlFor="pp-photo"
-                           className="h-20 rounded-lg border-2 border-dashed border-border bg-muted/40 flex items-center justify-center text-xl text-muted-foreground cursor-pointer hover:border-primary/50 transition-colors">+</label>
-                  </>
-                )}
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                {t('publicProfile.galleryHint', { defaultValue: 'Ricorda: rimuovere una foto qui richiede Salva per rendere effettivo.' })}
-              </p>
             </div>
           </div>
 
@@ -554,12 +430,6 @@ export default function PublicProfilePage() {
                 </p>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>{t('publicProfile.region', { defaultValue: 'Regione' })}</Label>
-                <Input className={inputCls} value={form.region || ''} onChange={e => set('region', e.target.value)} />
-              </div>
-            </div>
           </div>
 
           {/* Social */}
@@ -584,35 +454,202 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          {/* Contatti opzionali */}
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" checked={Boolean(form.show_contacts)}
-                     onChange={e => set('show_contacts', e.target.checked)}
-                     className="mt-0.5 h-4 w-4 rounded border-input" />
-              <div>
-                <span className="block text-sm font-medium">
-                  {t('publicProfile.showContacts', { defaultValue: 'Mostra contatti sul profilo' })}
-                </span>
-                <span className="block text-xs text-muted-foreground">
-                  {t('publicProfile.showContactsHint', { defaultValue: 'Decidi tu cosa esporre pubblicamente.' })}
-                </span>
-              </div>
-            </label>
-            {form.show_contacts && (
-              <div className="grid grid-cols-2 gap-3">
-                <Input placeholder="Email pubblica" type="email" value={form.public_email || ''}
-                       onChange={e => set('public_email', e.target.value)} />
-                <Input placeholder="Telefono" value={form.public_phone || ''}
-                       onChange={e => set('public_phone', e.target.value)} />
-              </div>
-            )}
-          </div>
-
           <Button onClick={save} disabled={saving} className="w-full h-11 font-semibold">
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('publicProfile.save', { defaultValue: 'Salva profilo' })}
           </Button>
+
+          {/* PV2 — l'intervista non si scrive più da qui: la realizza
+              il team Aurya. Pannello informativo puro (nessun campo),
+              con l'incentivo del badge Verificato. AC2: vive DOPO il
+              Salva, cosi' non interrompe la compilazione. */}
+          <div className="rounded-xl border border-[#8a7440]/30 bg-[#8a7440]/5 p-4 space-y-2"
+               data-testid="interview-invite-panel">
+            <div className="flex items-center gap-2">
+              <Mic className="h-4 w-4 text-[#8a7440] shrink-0" aria-hidden />
+              <p className="text-sm font-semibold text-foreground">
+                {t('publicProfile.interviewInviteTitle', { defaultValue: 'Fatti intervistare da Aurya' })}
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t('publicProfile.interviewInviteBody', { defaultValue: 'L’intervista la realizza il team Aurya insieme a te: quando viene pubblicata diventi operatore verificato, con il badge sul tuo profilo e nel marketplace.' })}
+            </p>
+            {/* CS3 (founder, 13/8) — l'indirizzo si LEGGE, non solo si
+                clicca: il mailto dipende dal client di posta configurato
+                e su molti computer non apre niente. L'email in chiaro e'
+                selezionabile e copiabile comunque. */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <a href={`mailto:${BRAND_EMAIL}?subject=Intervista%20Aurya`}
+                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7440] hover:underline">
+                {t('publicProfile.interviewInviteCta', { defaultValue: 'Scrivici per candidarti' })}
+                <ExternalLink className="h-3 w-3" aria-hidden />
+              </a>
+              <span className="text-xs text-muted-foreground select-all"
+                    data-testid="interview-email-plain">
+                {BRAND_EMAIL}
+              </span>
+            </div>
+          </div>
+
+          {/* AC2 — "Per approfondire": tutto cio' che arricchisce il
+              profilo ma non serve per andare online. Chiuso finche'
+              l'operatore non lo cerca: il primo giro resta corto. */}
+          <div className="rounded-xl border bg-card">
+            <button type="button"
+                    onClick={() => setAdvancedOpen(o => !o)}
+                    data-testid="profile-advanced-toggle"
+                    className="flex w-full items-center justify-between px-4 py-3 text-left">
+              <span>
+                <span className="block text-sm font-semibold">
+                  {t('publicProfile.advancedTitle', { defaultValue: 'Per approfondire' })}
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  {t('publicProfile.advancedHint', { defaultValue: 'Ritratto, galleria, contatti pubblici e altri dettagli. Tutto facoltativo.' })}
+                </span>
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${advancedOpen ? 'rotate-180' : ''}`} aria-hidden />
+            </button>
+            {advancedOpen && (
+              <div className="space-y-5 border-t px-4 py-4" data-testid="profile-advanced-body">
+
+                {/* OP4 — Nome pubblico: LA stessa riga delle Impostazioni.
+                    E' il titolo che il pubblico vede su directory, profilo
+                    e nei risultati di ricerca. */}
+                <div className="space-y-2">
+                  <Label>{t('publicProfile.publicName', { defaultValue: 'Nome pubblico' })}</Label>
+                  <input
+                    value={orgName}
+                    onChange={e => setOrgName(e.target.value.slice(0, 120))}
+                    maxLength={120}
+                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('publicProfile.publicNameHint', { defaultValue: 'Compare su directory, profilo e motori di ricerca. Coincide con il nome azienda delle Impostazioni: cambiarlo qui lo cambia ovunque.' })}
+                  </p>
+                </div>
+
+                {/* PR1 — Carta d'identità: ritratto, galleria, anno, lingue */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t('publicProfile.foundedYear', { defaultValue: 'Attivo dal (anno)' })}</Label>
+                    <input
+                      value={form.founded_year || ''}
+                      onChange={e => set('founded_year', e.target.value.replace(/\D/g, '').slice(0, 4))}
+                      inputMode="numeric" maxLength={4} placeholder="2018"
+                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <div>
+                    <Label>{t('publicProfile.languages', { defaultValue: 'Lingue parlate' })}</Label>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {PROFILE_LANGS.map(l => {
+                        const active = (form.languages || []).includes(l);
+                        return (
+                          <button key={l} type="button"
+                            onClick={() => set('languages', active
+                              ? (form.languages || []).filter(x => x !== l)
+                              : [...(form.languages || []), l])}
+                            className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase transition-colors ${
+                              active ? 'bg-primary text-white' : 'border border-border text-muted-foreground hover:border-primary'}`}>
+                            {l}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Label>{t('publicProfile.portrait', { defaultValue: 'Ritratto (foto a lato del profilo)' })}</Label>
+                  <input type="file" accept="image/*" className="hidden" id="pp-portrait"
+                         onChange={e => { uploadPortrait(e.target.files?.[0]); e.target.value = ''; }} />
+                  <label htmlFor="pp-portrait"
+                         className="mt-1 block h-32 w-32 rounded-xl border-2 border-dashed border-border bg-muted/40 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors">
+                    {form.portrait_url
+                      ? <img src={form.portrait_url} alt="" className="w-full h-full object-cover" />
+                      : <span className="h-full flex items-center justify-center text-xs text-muted-foreground px-2 text-center">
+                          {t('publicProfile.portraitHint', { defaultValue: 'Carica una foto' })}
+                        </span>}
+                  </label>
+                </div>
+                <div>
+                  <Label>{t('publicProfile.gallery', { defaultValue: 'Galleria foto (max 8)' })}</Label>
+                  <div className="mt-1 grid grid-cols-4 gap-2">
+                    {(form.photos || []).map(url => (
+                      <div key={url} className="relative h-20 rounded-lg overflow-hidden group">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button type="button" onClick={() => removePhoto(url)}
+                                aria-label="Rimuovi"
+                                className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/60 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                      </div>
+                    ))}
+                    {(form.photos || []).length < 8 && (
+                      <>
+                        <input type="file" accept="image/*" className="hidden" id="pp-photo"
+                               onChange={e => { uploadPhoto(e.target.files?.[0]); e.target.value = ''; }} />
+                        <label htmlFor="pp-photo"
+                               className="h-20 rounded-lg border-2 border-dashed border-border bg-muted/40 flex items-center justify-center text-xl text-muted-foreground cursor-pointer hover:border-primary/50 transition-colors">+</label>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {t('publicProfile.galleryHint', { defaultValue: 'Ricorda: rimuovere una foto qui richiede Salva per rendere effettivo.' })}
+                  </p>
+                </div>
+
+                {/* Regione (la località essenziale sta sopra) */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t('publicProfile.region', { defaultValue: 'Regione' })}</Label>
+                    <Input className={inputCls} value={form.region || ''} onChange={e => set('region', e.target.value)} />
+                  </div>
+                </div>
+
+                {/* Contatti opzionali */}
+                <div className="space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={Boolean(form.show_contacts)}
+                           onChange={e => set('show_contacts', e.target.checked)}
+                           className="mt-0.5 h-4 w-4 rounded border-input" />
+                    <div>
+                      <span className="block text-sm font-medium">
+                        {t('publicProfile.showContacts', { defaultValue: 'Mostra contatti sul profilo' })}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {t('publicProfile.showContactsHint', { defaultValue: 'Decidi tu cosa esporre pubblicamente.' })}
+                      </span>
+                    </div>
+                  </label>
+                  {form.show_contacts && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input placeholder="Email pubblica" type="email" value={form.public_email || ''}
+                             onChange={e => set('public_email', e.target.value)} />
+                      <Input placeholder="Telefono" value={form.public_phone || ''}
+                             onChange={e => set('public_phone', e.target.value)} />
+                    </div>
+                  )}
+                </div>
+
+                {/* VT5 — il ponte verso lo specchietto: quante persone
+                    vedono questo profilo */}
+                <Link to="/visibilita" className="flex items-center gap-3 rounded-xl border border-[#376254]/40 bg-[#376254]/5 p-4 hover:bg-[#376254]/10 transition-colors">
+                  <Eye className="h-5 w-5 text-[#376254] shrink-0" aria-hidden />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">
+                      {t('publicProfile.visibilityTitle', { defaultValue: 'Quante persone ti vedono?' })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('publicProfile.visibilityHint', { defaultValue: 'Impression, visite e prenotazioni di questo profilo sono nella pagina Visibilità.' })}
+                    </p>
+                  </div>
+                </Link>
+
+                <Button onClick={save} disabled={saving} variant="outline" className="w-full">
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {t('publicProfile.save', { defaultValue: 'Salva profilo' })}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── Anteprima live ── */}
