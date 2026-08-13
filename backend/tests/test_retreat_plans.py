@@ -143,7 +143,7 @@ class TestKillList:
 class TestPricingPositioning:
     def test_free_costs_zero_pro_costs_29(self):
         assert _plan("retreat_free")["price_monthly"] == 0.0
-        assert _plan("retreat_pro")["price_monthly"] == 29.0
+        assert _plan("retreat_pro")["price_monthly"] == 19.0
 
     def test_free_is_baseline_not_checkout_target(self):
         free = _plan("retreat_free")
@@ -171,8 +171,8 @@ class TestRetreatBusinessModel:
         # il canone tiene tutto il transato.
         pro = _plan("retreat_pro")
         assert pro["transaction_fee_percent"] == 0.0
-        assert pro["price_monthly"] == 29.0
-        assert pro["price_yearly"] == 290.0
+        assert pro["price_monthly"] == 19.0
+        assert pro["price_yearly"] == 190.0
         assert pro["is_self_serve"] is True
         assert "billing.features.retreat_zero_fee" in pro["features_display"]
 
@@ -529,3 +529,65 @@ class TestQuotaSweepQf1:
                     assert v == -1, \
                         f"{p['slug']}.{k}={v}: quota consumabile finita " \
                         "su un piano retreat (lo sweep tornerebbe a scrivere)"
+
+
+class TestAbPrezziCoerenti:
+    """AB (founder, 13/8) — Pro passa a 19 EUR/mese (190/anno = 10
+    mensilita'). La pagina pubblica /costi TIMBRA i numeri: queste
+    guardie li tengono agganciati al seed, cosi' un futuro ritocco al
+    listino non lascia la pagina a mentire in silenzio."""
+
+    FRONTEND = Path(__file__).resolve().parent.parent.parent / "frontend"
+
+    def _pro(self):
+        from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS
+        return next(p for p in RETREAT_COMMERCIAL_PLANS
+                    if p["slug"] == "retreat_pro")
+
+    def test_pro_costa_19_e_190(self):
+        pro = self._pro()
+        assert pro["price_monthly"] == 19.0
+        assert pro["price_yearly"] == 190.0
+        # annuale = 10 mensilita' (2 mesi in regalo): se uno dei due
+        # numeri cambia da solo, la promessa "2 mesi gratis" salta
+        assert pro["price_yearly"] == pro["price_monthly"] * 10
+
+    def test_pagina_costi_allineata_al_seed(self):
+        """PRICING nella pagina /costi == seed backend. Il free_fee
+        combacia con la fee del piano gratis (application fee 5%)."""
+        import re
+        src = (self.FRONTEND / "src" / "features" / "prelaunch"
+               / "PricingPage.js").read_text()
+        m = re.search(r"PRICING = \{ pro_monthly: (\d+), "
+                      r"pro_yearly: (\d+), free_fee: (\d+) \}", src)
+        assert m, "PRICING non trovato nella pagina /costi"
+        pro = self._pro()
+        assert float(m.group(1)) == pro["price_monthly"]
+        assert float(m.group(2)) == pro["price_yearly"]
+        free = next(p for p in __import__(
+            "services.seed_commercial_plans",
+            fromlist=["RETREAT_COMMERCIAL_PLANS"]
+        ).RETREAT_COMMERCIAL_PLANS if p["slug"] == "retreat_free")
+        assert float(m.group(3)) == float(
+            free.get("transaction_fee_percent") or 5.0)
+
+    def test_faq_quanto_costa_con_link_ai_piani(self):
+        """La FAQ della landing professionisti: tre punti e il rimando
+        a /costi. La data promessa (31 dicembre 2026) e' scritta li'."""
+        src = (self.FRONTEND / "src" / "features" / "prelaunch"
+               / "OperatorLandingPage.js").read_text()
+        assert "31 dicembre 2026" in src
+        assert 'Link to="/costi"' in src
+        assert "sempre gratuito" in src
+
+    def test_rotta_costi_registrata(self):
+        app = (self.FRONTEND / "src" / "App.js").read_text()
+        assert 'path="/costi"' in app
+
+    def test_gt2_fallback_allineato(self):
+        """Il calcolatore fee->Pro usa il prezzo dal seed; il fallback
+        cablato deve dire la stessa cifra."""
+        src = (Path(__file__).resolve().parent.parent / "routers"
+               / "cashflow.py").read_text()
+        assert "else 19.0" in src
+        assert "else 29.0" not in src

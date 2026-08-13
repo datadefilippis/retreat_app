@@ -6085,7 +6085,10 @@ class TestLandingOperatoriOl1:
                                 flags=re.MULTILINE)
         for m in re.finditer(r"gratuit|gratis", senza_commenti, re.I):
             finestra = senza_commenti[max(0, m.start() - 200):m.start() + 60]
-            assert "faq3" in finestra, \
+            # AB2 (13/8): la FAQ del costo e' faq1 (tre punti + link
+            # /costi); l'intento resta lo stesso — la parola vive SOLO
+            # nella risposta alla domanda sul prezzo
+            assert re.search(r"faq1b|faq3", finestra), \
                 f"'gratuito' fuori dalla FAQ nella landing: ...{finestra[-90:]}"
         for lang in self.LOCALES:
             blocco = self._locale(lang).get("opNw", {})

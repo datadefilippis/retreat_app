@@ -1137,3 +1137,39 @@ async def migrate_retreat_pro_features_md3() -> None:
     )
     if result.modified_count:
         logger.info("MD3: retreat_customers_pro rimossa da %d piani", result.modified_count)
+
+
+async def migrate_pro_price_19_v1() -> None:
+    """AB1 (founder, 13/8/2026) — il piano Pro passa da 29 a 19 EUR/mese
+    (annuale 190 = 10 mensilita', 2 mesi in regalo).
+
+    I prezzi sono campi admin-editable protetti dall'upsert del seed
+    (sopravvivono ai riavvii), quindi il ritocco viaggia come one-shot
+    flag-gated: al primo avvio dopo il deploy aggiorna il documento e
+    pianta la bandierina. Idempotente; tocca SOLO retreat_pro e SOLO se
+    il prezzo e' ancora quello vecchio (un prezzo gia' modificato a
+    mano dall'admin non viene sovrascritto).
+    """
+    from database import db
+
+    migrations = db["migrations"]
+    flag = await migrations.find_one({"_id": "pro_price_19_v1"})
+    if flag:
+        return
+
+    logger.info("migrate_pro_price_19_v1: applying...")
+    result = await db["commercial_plans"].update_one(
+        {"slug": "retreat_pro", "price_monthly": 29.0},
+        {"$set": {"price_monthly": 19.0, "price_yearly": 190.0}},
+    )
+    if result.modified_count:
+        logger.info("  - retreat_pro: 29/290 -> 19/190 EUR")
+    else:
+        logger.info("  - retreat_pro gia' diverso da 29: non toccato")
+
+    await migrations.insert_one({
+        "_id": "pro_price_19_v1",
+        "applied_at": __import__("datetime").datetime.now(
+            __import__("datetime").timezone.utc).isoformat(),
+    })
+    logger.info("migrate_pro_price_19_v1: done.")

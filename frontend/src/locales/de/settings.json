@@ -496,7 +496,10 @@
       "cta_upgrade": "Plaene ansehen"
     },
     "legacy_lock_badge": "🔒 Altpreis",
-    "legacy_lock_tooltip": "Du zahlst den urspruenglichen Preis. Bei Plan-Aenderung bleibt dieser Tarif erhalten."
+    "legacy_lock_tooltip": "Du zahlst den urspruenglichen Preis. Bei Plan-Aenderung bleibt dieser Tarif erhalten.",
+    "retreat": {
+      "yearly_hint_dynamic": "{{price}} €/Jahr (2 Monate geschenkt)"
+    }
   },
   "prefs": {
     "title": "Alert- & Bericht-Einstellungen",

@@ -340,7 +340,7 @@ ADDON_PLANS: List[dict] = [
 # docs/BUSINESS_CONCEPT_RITIRI_2026-07.md §6, rivisto 16/7/2026): il piano
 # Gratis include TUTTO il funzionale (pubblicazione, prenotazioni, caparre,
 # partecipanti) ed è monetizzato con la fee transazionale
-# (application_fee_percent=5); il Pro a 29€/mese AZZERA la fee (decisione
+# (application_fee_percent=5); il Pro a 19€/mese AZZERA la fee (decisione
 # founder 16/7/2026: chi paga il canone tiene tutto il transato) e aggiunge
 # evidenza/limiti estesi.
 #
@@ -398,8 +398,9 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "name": "Pro",
         "description": "Zero commissioni sul transato, evidenza nel calendario pubblico e limiti estesi.",
         "tagline": "Per chi organizza più ritiri l'anno",
-        "price_monthly": 29.0,
-        "price_yearly": 290.0,
+        # AB1 (founder, 13/8): 29 -> 19 €/mese; annuale = 10 mensilita'
+        "price_monthly": 19.0,
+        "price_yearly": 190.0,
         "currency": "EUR",
         "trial_days": 0,
         "is_public": True,

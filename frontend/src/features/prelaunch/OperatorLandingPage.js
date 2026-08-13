@@ -66,6 +66,7 @@
  */
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
@@ -228,7 +229,20 @@ export default function OperatorLandingPage() {
   const faq = [
     {
       q: t('opPro.faq1q', { defaultValue: 'Quanto costa?' }),
-      a: t('opPro.faq1a', { defaultValue: 'Oggi entrare nella rete non ha un costo. Quello che ti chiediamo è il tempo di una conversazione e la voglia di raccontare il tuo lavoro sul serio.' }),
+      // AB2 (founder, 13/8) — la risposta diventa concreta: tre punti
+      // e il rimando alla pagina /costi con i due piani spiegati.
+      a: (
+        <ul className="list-disc space-y-2 pl-5">
+          <li>{t('opPro.faq1b1', { defaultValue: 'L’utilizzo della piattaforma è sempre gratuito.' })}</li>
+          <li>{t('opPro.faq1b2', { defaultValue: 'Fino al 31 dicembre 2026 Aurya non ha alcun costo, nemmeno quando le prenotazioni arrivano tramite Aurya.' })}</li>
+          <li>
+            {t('opPro.faq1b3', { defaultValue: 'Dopo quella data potrai scegliere tra due soluzioni, in base alle tue esigenze. ' })}
+            <Link to="/costi" className="font-semibold text-primary underline underline-offset-2">
+              {t('opPro.faq1b3cta', { defaultValue: 'Guarda i piani e i costi' })}
+            </Link>
+          </li>
+        </ul>
+      ),
     },
     {
       q: t('opPro.faq2q', { defaultValue: 'Come funziona?' }),

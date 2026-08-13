@@ -393,7 +393,7 @@ async def _build(org_id: str) -> Dict[str, Any]:
             _pf = pro.get("transaction_fee_percent")
             pro_fee = float(_pf) if _pf is not None else 0.0
             _pp = pro.get("price_monthly")
-            pro_price = float(_pp) if _pp is not None else 29.0
+            pro_price = float(_pp) if _pp is not None else 19.0
             volume = stripe_month_minor / 100.0
             saving = volume * (current_fee - pro_fee) / 100.0 - pro_price
             fee_saver = {

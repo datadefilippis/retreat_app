@@ -142,7 +142,11 @@ export default function RetreatPlansPage() {
                 </div>
                 {isPro && plan.price_yearly > 0 && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t('billing.retreat.yearly_hint', '290 €/anno (2 mesi gratis)')}
+                    {/* AB1 — il numero viene dal piano, mai cablato */}
+                    {t('billing.retreat.yearly_hint_dynamic', {
+                      price: plan.price_yearly,
+                      defaultValue: '{{price}} €/anno (2 mesi gratis)',
+                    })}
                   </p>
                 )}
 

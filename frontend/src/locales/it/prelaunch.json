@@ -125,7 +125,6 @@
     "forYes": "Se invece vuoi costruire una presenza professionale autorevole nel tempo, ci piacerebbe conoscerti.",
     "faqTitle": "Domande frequenti.",
     "faq1q": "Quanto costa?",
-    "faq1a": "Oggi entrare nella rete non ha un costo. Quello che ti chiediamo è il tempo di una conversazione e la voglia di raccontare il tuo lavoro sul serio.",
     "faq2q": "Come funziona?",
     "faq2a": "Ci scrivi due righe su di te. Se c’è sintonia ci sentiamo e ti facciamo qualche domanda. Poi scriviamo il tuo profilo con le tue parole e lo pubblichiamo insieme alla tua storia.",
     "faq3q": "Quando arriveranno le nuove funzionalità?",
@@ -154,7 +153,11 @@
     "endB": "Nascono dalle persone.",
     "endC": "Stiamo iniziando con calma.",
     "endD": "Una conversazione alla volta.",
-    "endBody": "Se senti che Aurya rappresenta anche il tuo modo di vedere il benessere, ci piacerebbe costruirla insieme a te."
+    "endBody": "Se senti che Aurya rappresenta anche il tuo modo di vedere il benessere, ci piacerebbe costruirla insieme a te.",
+    "faq1b1": "L’utilizzo della piattaforma è sempre gratuito.",
+    "faq1b2": "Fino al 31 dicembre 2026 Aurya non ha alcun costo, nemmeno quando le prenotazioni arrivano tramite Aurya.",
+    "faq1b3": "Dopo quella data potrai scegliere tra due soluzioni, in base alle tue esigenze. ",
+    "faq1b3cta": "Guarda i piani e i costi"
   },
   "nl": {
     "seoTitle": "La Lettera di Aurya | Una lettera, ogni tanto",

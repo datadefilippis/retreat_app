@@ -170,6 +170,12 @@ async def lifespan(app: FastAPI):
         await migrate_plan_redesign_v1()
     except Exception as e:
         logging.error(f"Failed to run plan redesign migration: {e}")
+    # One-time migration: Pro 29 -> 19 EUR (AB1 13/8, idempotent, flag-gated)
+    try:
+        from services.seed_pricing import migrate_pro_price_19_v1
+        await migrate_pro_price_19_v1()
+    except Exception as e:
+        logging.error(f"Failed to run pro price migration: {e}")
     # One-time migration: trial only on Core plan
     try:
         await migrate_trial_only_core()

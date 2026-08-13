@@ -496,7 +496,10 @@
       "cta_upgrade": "Voir les plans"
     },
     "legacy_lock_badge": "🔒 Tarif historique",
-    "legacy_lock_tooltip": "Vous payez le prix d'origine. Quand vous changez de plan, ce tarif est conserve."
+    "legacy_lock_tooltip": "Vous payez le prix d'origine. Quand vous changez de plan, ce tarif est conserve.",
+    "retreat": {
+      "yearly_hint_dynamic": "{{price}} €/an (2 mois offerts)"
+    }
   },
   "prefs": {
     "title": "Preferences Alertes & Rapports",
