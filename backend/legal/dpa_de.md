@@ -1,5 +1,5 @@
 # Auftragsverarbeitungsvereinbarung (AVV / DPA)
-## zwischen **{{merchant_name}}** ("Verantwortlicher") und **{{platform_controller_name}}** ("Auftragsverarbeiter")
+## zwischen **{{merchant_name}}** ("Verantwortlicher") und **{{platform_controller_name}}** ({{platform_controller_legal}}, {{platform_controller_country}}) ("Auftragsverarbeiter")
 
 **Version:** v1.0
 **Datum des Inkrafttretens:** {{date}}
@@ -9,7 +9,7 @@
 
 ## 1. Gegenstand und Zweck
 
-Diese Auftragsverarbeitungsvereinbarung ("**AVV**") regelt die Verarbeitung personenbezogener Daten durch **Aurya**, eine von {{platform_controller_name}} ({{platform_controller_country}}) bereitgestellte Marktplatz- und Verwaltungsplattform, im Auftrag des Verantwortlichen **{{merchant_name}}**, gemäss Art. 28 der Verordnung (EU) 2016/679 ("**DSGVO**").
+Diese Auftragsverarbeitungsvereinbarung ("**AVV**") regelt die Verarbeitung personenbezogener Daten durch **Aurya**, eine Marktplatz- und Verwaltungsplattform, ein Dienst von {{platform_controller_legal}} ({{platform_controller_country}}), im Auftrag des Verantwortlichen **{{merchant_name}}**, gemäss Art. 28 der Verordnung (EU) 2016/679 ("**DSGVO**").
 
 Die AVV ist integraler Bestandteil der Aurya-Nutzungsbedingungen, die der Verantwortliche bei der Registrierung akzeptiert hat.
 
@@ -190,8 +190,8 @@ Für alle Streitigkeiten ist das Gericht von **Lugano (CH)** zuständig, unbesch
 E-Mail: {{merchant_email}}
 
 **Auftragsverarbeiter (Aurya)**
-{{platform_controller_name}}
-{{platform_controller_country}}
+**{{platform_controller_name}}**
+ein Dienst von {{platform_controller_legal}}, {{platform_controller_country}}
 E-Mail: {{platform_controller_email}}
 
 ---

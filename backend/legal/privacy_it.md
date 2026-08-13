@@ -5,7 +5,8 @@
 **Lingua di riferimento legale:** italiano
 
 **Titolare del trattamento (Data Controller):**
-Davide De Filippis, Lugano, Svizzera
+**Aurya**
+servizio di Davide De Filippis, Lugano (Svizzera)
 Email: info@aurya.life
 
 ---
@@ -15,7 +16,7 @@ Email: info@aurya.life
 Ai fini della presente informativa, e in conformita' al GDPR (art. 4) e alla LPD svizzera (art. 5):
 
 - **Aurya** (o "la Piattaforma"): il marketplace di ritiri olistici e il gestionale per operatori del benessere accessibile all'indirizzo https://aurya.life.
-- **Titolare** (o "Noi"): Davide De Filippis, Lugano, Svizzera, titolare della Piattaforma.
+- **Titolare** (o "Noi"): Aurya, servizio di Davide De Filippis, Lugano (Svizzera), titolare della Piattaforma.
 - **Operatore** (o "Organizzatore"): il professionista, l'insegnante o la struttura che si registra ad Aurya per pubblicare e vendere ritiri, esperienze, prodotti e corsi tramite la Piattaforma. L'Operatore e' cliente di Aurya e, per i dati dei propri clienti finali, Titolare autonomo del trattamento (vedi art. 2.2).
 - **Cliente finale** (o "Partecipante"): la persona fisica che prenota, acquista o partecipa a un ritiro, un'esperienza, un corso o acquista un prodotto offerto da un Operatore tramite la Piattaforma. Il Cliente finale puo' creare un account personale ("**Passaporto Ritiri**") valido presso tutti gli Operatori della Piattaforma, con ordini, biglietti QR e storico delle esperienze.
 - **Visitatore**: chiunque navighi le pagine pubbliche della Piattaforma (directory, calendario pubblico, vetrine degli Operatori) senza registrarsi.
@@ -481,8 +482,8 @@ Aurya adotta i seguenti principi di protezione dei dati fin dalla progettazione:
 
 ### 20.1 Titolare del trattamento
 
-**Davide De Filippis**
-Lugano, Svizzera
+**Aurya**
+servizio di Davide De Filippis, Lugano (Svizzera)
 Email: `info@aurya.life`
 
 Il presente recapito email e' anche il canale ufficiale per:

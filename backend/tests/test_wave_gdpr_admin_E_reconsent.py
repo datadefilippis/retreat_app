@@ -432,7 +432,10 @@ class TestSubProcessorsEndpoint:
 
         response = await get_sub_processors(lang="it")
         body = json.loads(response.body)
-        assert body["controller"]["name"] == "Davide De Filippis"
+        # LI3 (13/8): il titolare che si legge e' Aurya; l'identita'
+        # legale che la identifica sta in legal_entity (art. 13 GDPR).
+        assert body["controller"]["name"] == "Aurya"
+        assert body["controller"]["legal_entity"] == "Davide De Filippis"
         assert body["controller"]["country"] == "Switzerland"
         assert body["controller"]["email"] == "info@aurya.life"   # R1 rebrand
 

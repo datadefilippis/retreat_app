@@ -1,5 +1,5 @@
 # Data Processing Agreement (DPA)
-## between **{{merchant_name}}** ("Data Controller") and **{{platform_controller_name}}** ("Data Processor")
+## between **{{merchant_name}}** ("Data Controller") and **{{platform_controller_name}}** ({{platform_controller_legal}}, {{platform_controller_country}}) ("Data Processor")
 
 **Version:** v1.0
 **Effective date:** {{date}}
@@ -9,7 +9,7 @@
 
 ## 1. Subject matter and purpose
 
-This Data Processing Agreement ("**DPA**") governs the processing of personal data carried out by **Aurya**, a marketplace and management platform provided by {{platform_controller_name}} ({{platform_controller_country}}), on behalf of the Data Controller **{{merchant_name}}**, pursuant to Art. 28 of Regulation (EU) 2016/679 ("**GDPR**").
+This Data Processing Agreement ("**DPA**") governs the processing of personal data carried out by **Aurya**, a marketplace and management platform, a service of {{platform_controller_legal}} ({{platform_controller_country}}), on behalf of the Data Controller **{{merchant_name}}**, pursuant to Art. 28 of Regulation (EU) 2016/679 ("**GDPR**").
 
 The DPA is an integral part of the Aurya Terms of Service accepted by the Controller at the time of registration.
 
@@ -190,8 +190,8 @@ For any dispute the court of **Lugano (CH)** has jurisdiction, without prejudice
 Email: {{merchant_email}}
 
 **Data Processor (Aurya)**
-{{platform_controller_name}}
-{{platform_controller_country}}
+**{{platform_controller_name}}**
+a service of {{platform_controller_legal}}, {{platform_controller_country}}
 Email: {{platform_controller_email}}
 
 ---

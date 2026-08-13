@@ -467,6 +467,65 @@ class TestAc6AiutoBio:
         assert len(pp["bioHelperExample"]) > 80
 
 
+class TestLiAuryaInTesta:
+    """LI (founder, 13/8) — contratto e GDPR si leggono con AURYA, non
+    con la persona fisica. Il titolare NON cambia (art. 13 GDPR: deve
+    restare identificabile): cambia l'ordine di presentazione. Queste
+    guardie impediscono al nome di tornare in primo piano da solo."""
+
+    LEGAL_DIR = BACKEND_DIR / "legal"
+
+    def test_nome_mai_da_solo_a_inizio_riga(self):
+        """In privacy/termini/DPA il nome della persona compare SOLO
+        preceduto da una formula "servizio di" (o equivalente per
+        lingua) o accanto ad Aurya: mai come intestazione a se'."""
+        ok_prefissi = ("servizio di", "a service of", "ein Dienst von",
+                       "un service de")
+        for doc in self.LEGAL_DIR.glob("*.md"):
+            for n, riga in enumerate(doc.read_text("utf-8").splitlines(), 1):
+                if "Davide De Filippis" not in riga:
+                    continue
+                pulita = riga.strip().lstrip("*-\u2022 ").strip()
+                assert not pulita.startswith("Davide De Filippis"), \
+                    f"{doc.name}:{n} - il nome e' tornato in primo piano"
+                assert ("Aurya" in riga
+                        or any(p in riga for p in ok_prefissi)), \
+                    f"{doc.name}:{n} - il nome senza Aurya accanto"
+
+    def test_dpa_ha_aurya_come_parte(self):
+        """Le parti del DPA: il Responsabile e' platform_controller_name
+        = Aurya, identificato da platform_controller_legal."""
+        from services.merchant_legal_template_service import TemplateVars
+        v = TemplateVars(merchant_name="Test", merchant_email="t@t.it")
+        assert v.platform_controller_name == "Aurya"
+        assert v.platform_controller_legal == "Davide De Filippis"
+        for lang in ("it", "en", "de", "fr"):
+            tpl = (self.LEGAL_DIR / f"dpa_{lang}.md").read_text("utf-8")
+            assert "{{platform_controller_legal}}" in tpl, \
+                f"dpa_{lang}: manca l'identita' legale accanto ad Aurya"
+
+    def test_sub_processors_espone_aurya(self):
+        src = (BACKEND_DIR / "routers" / "legal.py").read_text()
+        blocco = src.split('"controller": {')[1][:400]
+        assert '"name": BRAND_NAME' in blocco
+        assert '"legal_entity": "Davide De Filippis"' in blocco
+        # e la pagina mostra la riga secondaria solo se presente
+        page = (FRONTEND_SRC / "pages" / "SubProcessorsPage.js").read_text()
+        assert "legal_entity" in page
+
+    def test_hash_v24_allineato_ai_testi(self):
+        import hashlib
+        from core.legal_versions import (CURRENT_VERSION_TAG,
+                                         CURRENT_VERSION_HASH)
+        assert CURRENT_VERSION_TAG == "v2.4"
+        priv = (self.LEGAL_DIR / "privacy_it.md").read_text("utf-8")
+        terms = (self.LEGAL_DIR / "terms_it.md").read_text("utf-8")
+        atteso = hashlib.sha256(
+            (priv + "\n\n--- TERMS BUNDLE ---\n\n" + terms).encode()
+        ).hexdigest()[:16]
+        assert CURRENT_VERSION_HASH == atteso
+
+
 class TestAc7CondividiWhatsapp:
     """AC7 — la pagina e' viva ma nessuno la vedra' finche' l'operatore
     non la condivide, e il suo canale e' WhatsApp: nel riquadro "Sei
@@ -2396,7 +2455,7 @@ class TestAccountApL:
             # sezioni nuove servite (marker per lingua)
             assert "2.3" in get_legal_document("privacy", lang)["content"]
 
-        assert CURRENT_VERSION_TAG == "v2.3"
+        assert CURRENT_VERSION_TAG == "v2.4"   # LI: Aurya in testa ai legal
         priv = (legal_dir / "privacy_it.md").read_text()
         terms = (legal_dir / "terms_it.md").read_text()
         digest = hashlib.sha256(

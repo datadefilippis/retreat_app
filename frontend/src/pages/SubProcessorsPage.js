@@ -118,9 +118,17 @@ export default function SubProcessorsPage() {
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">
                     {t('sub_processors.controller_label')}
                   </p>
+                  {/* LI3 (founder, 13/8) — il titolare che si legge e'
+                      Aurya; la persona che la identifica sta sotto, in
+                      piccolo: c'e' per legge, non in primo piano. */}
                   <p className="mt-1 font-medium">
                     {data.controller.name}
                   </p>
+                  {data.controller.legal_entity && (
+                    <p className="text-xs text-muted-foreground">
+                      {data.controller.legal_entity}
+                    </p>
+                  )}
                   <p className="text-muted-foreground">
                     {data.controller.city}, {data.controller.country}
                   </p>

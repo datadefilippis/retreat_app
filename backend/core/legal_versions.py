@@ -38,7 +38,7 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.3"
+CURRENT_VERSION_TAG: Final[str] = "v2.4"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
@@ -89,9 +89,25 @@ History:
     restano sul versioning merchant, non toccati. Il consenso dei
     platform account (aurya_legal) nasce con questa versione.
     Stesse modifiche in EN/DE/FR.
+  - v2.4 (LI, 2026-08-13) — modifica REDAZIONALE, non sostanziale:
+    la controparte che l'utente legge diventa AURYA, con l'identita'
+    legale in seconda battuta. Prima: "Titolare del trattamento:
+    Davide De Filippis, Lugano, Svizzera". Ora: "Aurya, servizio di
+    Davide De Filippis, Lugano (Svizzera)". Stessa forma nelle firme
+    in calce e nelle parti del DPA (il Responsabile diventa "Aurya
+    (Davide De Filippis, Svizzera)").
+    Il titolare NON cambia: e' e resta la stessa persona fisica, che
+    l'art. 13 GDPR pretende sempre identificabile. Cambia l'ordine con
+    cui viene presentata, per coerenza col brand: chi accetta sa di
+    accettare con Aurya, chi deve identificare il titolare lo trova.
+    Nessuna nuova finalita', nessun nuovo sub-responsabile, nessuna
+    nuova base giuridica. Il bump innesca comunque il re-consent
+    esistente (l'hash del bundle cambia): al 13/8 riguarda 2 utenti
+    operatore, ed e' il motivo per cui si e' scelto di farlo ADESSO e
+    non a rete cresciuta. Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "988fdfc26d28c01a"
+CURRENT_VERSION_HASH: Final[str] = "d700b4d839137fb5"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

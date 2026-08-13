@@ -5,7 +5,8 @@
 **Lingua di riferimento legale:** italiano
 
 **Titolare del servizio (Fornitore):**
-Davide De Filippis, Lugano, Svizzera
+**Aurya**
+servizio di Davide De Filippis, Lugano (Svizzera)
 Email: info@aurya.life
 
 ---
@@ -15,7 +16,7 @@ Email: info@aurya.life
 Ai fini dei presenti Termini, le seguenti espressioni hanno il significato di seguito indicato:
 
 - **Aurya** (o "la Piattaforma" o "il Servizio"): il marketplace di ritiri olistici e il gestionale per operatori accessibile all'indirizzo https://aurya.life, di titolarita' del Fornitore.
-- **Fornitore** (o "Noi"): Davide De Filippis, con sede a Lugano, Svizzera.
+- **Fornitore** (o "Noi"): Aurya, servizio di Davide De Filippis, con sede a Lugano (Svizzera).
 - **Operatore** (o "Organizzatore"): il professionista, l'insegnante o la struttura — persona fisica maggiorenne, ditta individuale o persona giuridica — che si registra alla Piattaforma per pubblicare e vendere ritiri, esperienze, prodotti e corsi. L'Operatore e' cliente del Fornitore.
 - **Cliente finale** (o "Partecipante"): la persona fisica o giuridica che prenota, acquista o partecipa a un'offerta di un Operatore tramite la Piattaforma.
 - **Passaporto Ritiri**: l'account personale facoltativo del Cliente finale, valido presso tutti gli Operatori della Piattaforma, con ordini, biglietti QR e storico delle esperienze.
@@ -584,8 +585,8 @@ La Piattaforma e' disponibile in IT/EN/DE/FR. In caso di discrepanze tra la vers
 ## 24. Contatti
 
 **Fornitore:**
-Davide De Filippis
-Lugano, Svizzera
+**Aurya**
+servizio di Davide De Filippis, Lugano (Svizzera)
 Email: `info@aurya.life`
 
 Per qualsiasi domanda relativa ai presenti Termini, supporto tecnico, contestazioni, esercizio dei diritti contrattuali: scrivere all'indirizzo email sopra indicato. Il Fornitore si impegna a rispondere entro 5 giorni lavorativi dal ricevimento.

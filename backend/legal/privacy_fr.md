@@ -5,7 +5,8 @@
 **Langue de référence juridique :** italien — la présente traduction française est fournie à titre de courtoisie ; en cas de divergence, la version italienne est la seule juridiquement contraignante.
 
 **Responsable du traitement (Data Controller) :**
-Davide De Filippis, Lugano, Suisse
+**Aurya**
+un service de Davide De Filippis, Lugano (Suisse)
 Email : info@aurya.life
 
 ---
@@ -15,7 +16,7 @@ Email : info@aurya.life
 Aux fins de la présente politique, et conformément au RGPD (art. 4) et à la LPD suisse (art. 5) :
 
 - **Aurya** (ou « la Plateforme ») : la marketplace de retraites holistiques et l'outil de gestion pour opérateurs du bien-être accessible à l'adresse https://aurya.life.
-- **Responsable du traitement** (ou « Nous ») : Davide De Filippis, Lugano, Suisse, titulaire de la Plateforme.
+- **Responsable du traitement** (ou « Nous ») : Aurya, un service de Davide De Filippis, Lugano (Suisse), titulaire de la Plateforme.
 - **Opérateur** (ou « Organisateur ») : le professionnel, l'enseignant ou la structure qui s'inscrit sur Aurya pour publier et vendre des retraites, expériences, produits et cours via la Plateforme. L'Opérateur est client d'Aurya et, pour les données de ses propres clients finaux, Responsable du traitement autonome (voir art. 2.2).
 - **Client final** (ou « Participant ») : la personne physique qui réserve, achète ou participe à une retraite, une expérience, un cours, ou qui achète un produit proposé par un Opérateur via la Plateforme. Le Client final peut créer un compte personnel (« **Passeport Retraites (Passaporto Ritiri)** ») valable auprès de tous les Opérateurs de la Plateforme, avec commandes, billets QR et historique des expériences.
 - **Visiteur** : toute personne qui navigue sur les pages publiques de la Plateforme (annuaire, calendrier public, vitrines des Opérateurs) sans s'inscrire.
@@ -481,8 +482,8 @@ Aurya adopte les principes suivants de protection des données dès la conceptio
 
 ### 20.1 Responsable du traitement
 
-**Davide De Filippis**
-Lugano, Suisse
+**Aurya**
+un service de Davide De Filippis, Lugano (Suisse)
 Email : `info@aurya.life`
 
 Cette adresse email constitue également le canal officiel pour :

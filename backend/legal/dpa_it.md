@@ -1,5 +1,5 @@
 # Accordo di Trattamento Dati (DPA)
-## tra **{{merchant_name}}** ("Titolare del trattamento") e **{{platform_controller_name}}** ("Responsabile del trattamento")
+## tra **{{merchant_name}}** ("Titolare del trattamento") e **{{platform_controller_name}}** ({{platform_controller_legal}}, {{platform_controller_country}}) ("Responsabile del trattamento")
 
 **Versione:** v1.0
 **Data di efficacia:** {{date}}
@@ -9,7 +9,7 @@
 
 ## 1. Oggetto e finalità
 
-Il presente Accordo di Trattamento Dati ("**DPA**") disciplina il trattamento di dati personali effettuato da **Aurya**, piattaforma marketplace e gestionale fornita da {{platform_controller_name}} ({{platform_controller_country}}), per conto del Titolare del trattamento **{{merchant_name}}**, ai sensi dell'art. 28 del Regolamento (UE) 2016/679 ("**GDPR**").
+Il presente Accordo di Trattamento Dati ("**DPA**") disciplina il trattamento di dati personali effettuato da **Aurya**, piattaforma marketplace e gestionale, servizio di {{platform_controller_legal}} ({{platform_controller_country}}), per conto del Titolare del trattamento **{{merchant_name}}**, ai sensi dell'art. 28 del Regolamento (UE) 2016/679 ("**GDPR**").
 
 Il DPA è parte integrante dei Termini di Servizio di Aurya accettati dal Titolare al momento della registrazione.
 
@@ -189,9 +189,9 @@ Per qualsiasi controversia è competente il foro di **Lugano (CH)**, fatti salvi
 {{merchant_country}}
 Email: {{merchant_email}}
 
-**Responsabile del trattamento (Aurya)**
-{{platform_controller_name}}
-{{platform_controller_country}}
+**Responsabile del trattamento**
+**{{platform_controller_name}}**
+servizio di {{platform_controller_legal}}, {{platform_controller_country}}
 Email: {{platform_controller_email}}
 
 ---

@@ -5,7 +5,8 @@
 **Rechtlich maßgebende Sprache:** Italienisch — die italienische Fassung dieses Dokuments ist die rechtlich verbindliche Version; die vorliegende deutsche Übersetzung dient ausschließlich der Information.
 
 **Inhaber des Dienstes (Anbieter):**
-Davide De Filippis, Lugano, Schweiz
+**Aurya**
+ein Dienst von Davide De Filippis, Lugano (Schweiz)
 E-Mail: info@aurya.life
 
 ---
@@ -15,7 +16,7 @@ E-Mail: info@aurya.life
 Für die Zwecke dieser Bedingungen haben die folgenden Ausdrücke die nachstehend angegebene Bedeutung:
 
 - **Aurya** (oder „die Plattform" oder „der Dienst"): der Marktplatz für holistische Retreats und die Verwaltungssoftware für Anbieter, erreichbar unter https://aurya.life, im Eigentum des Anbieters.
-- **Anbieter** (oder „Wir"): Davide De Filippis, mit Sitz in Lugano, Schweiz.
+- **Anbieter** (oder „Wir"): Aurya, ein Dienst von Davide De Filippis, mit Sitz in Lugano (Schweiz).
 - **Veranstalter**: der Fachmann bzw. die Fachfrau, die Lehrperson oder die Einrichtung — volljährige natürliche Person, Einzelunternehmen oder juristische Person —, die sich auf der Plattform registriert, um Retreats, Erlebnisse, Produkte und Kurse zu veröffentlichen und zu verkaufen. Der Veranstalter ist Kunde des Anbieters.
 - **Endkunde** (oder „Teilnehmer"): die natürliche oder juristische Person, die ein Angebot eines Veranstalters über die Plattform bucht, kauft oder daran teilnimmt.
 - **Retreat-Pass (Passaporto Ritiri)**: das optionale persönliche Konto des Endkunden, gültig bei allen Veranstaltern der Plattform, mit Bestellungen, QR-Tickets und Historie der Erlebnisse.
@@ -584,8 +585,8 @@ Die Plattform ist in IT/EN/DE/FR verfügbar. Bei Abweichungen zwischen der itali
 ## 24. Kontakt
 
 **Anbieter:**
-Davide De Filippis
-Lugano, Schweiz
+**Aurya**
+ein Dienst von Davide De Filippis, Lugano (Schweiz)
 E-Mail: `info@aurya.life`
 
 Für alle Fragen zu den vorliegenden Bedingungen, technischen Support, Beanstandungen und die Ausübung vertraglicher Rechte: an die oben angegebene E-Mail-Adresse schreiben. Der Anbieter verpflichtet sich, innerhalb von 5 Werktagen nach Erhalt zu antworten.

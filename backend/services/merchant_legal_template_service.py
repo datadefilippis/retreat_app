@@ -77,7 +77,14 @@ class TemplateVars(BaseModel):
     # leggono core/brand.py (fonte unica del rebrand Aurya), niente
     # piu' "afianco"/"davide@afianco.ch" hardcoded.
     platform_name: str = Field(default=BRAND_NAME, max_length=64)
+    # LI2 (founder, 13/8) — la controparte del DPA e' AURYA, non la
+    # persona fisica: l'operatore firma con il servizio che conosce.
+    # L'identita' legale resta accanto (il titolare dev'essere sempre
+    # identificabile, art. 13 GDPR) ma in seconda battuta.
     platform_controller_name: str = Field(
+        default=BRAND_NAME, max_length=255
+    )
+    platform_controller_legal: str = Field(
         default="Davide De Filippis", max_length=255
     )
     platform_controller_email: str = Field(

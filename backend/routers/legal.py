@@ -319,6 +319,7 @@ async def get_sub_processors(
     Cache-Control: public, max-age=300 — registry changes are rare and
     version-tagged via the standard /api/legal/versions bump.
     """
+    from core.brand import BRAND_NAME  # LI3
     from core.legal_versions import (
         CURRENT_VERSION_TAG,
         current_version_string,
@@ -349,8 +350,12 @@ async def get_sub_processors(
             "version_tag": CURRENT_VERSION_TAG,
             "version_string": current_version_string(),
             "binding_locale": "it",
+            # LI3: il titolare che l'utente legge e' Aurya; "legal_entity"
+            # e' la persona che la identifica (art. 13 GDPR), mostrata
+            # come riga secondaria.
             "controller": {
-                "name": "Davide De Filippis",
+                "name": BRAND_NAME,
+                "legal_entity": "Davide De Filippis",
                 "city": "Lugano",
                 "country": "Switzerland",
                 "email": "info@aurya.life",
@@ -977,8 +982,11 @@ async def _load_dpa_vars(current_user: dict) -> dict:
         "org_id": org_id,
         "date": today_iso,
         # Platform side — same defaults as merchant_legal_template_service.
+        # LI2: la controparte del DPA e' Aurya; l'identita' legale che
+        # la identifica resta accanto, in seconda battuta.
         "platform_name": BRAND_NAME,
-        "platform_controller_name": "Davide De Filippis",
+        "platform_controller_name": BRAND_NAME,
+        "platform_controller_legal": "Davide De Filippis",
         "platform_controller_email": BRAND_SUPPORT_EMAIL,
         "platform_controller_country": "Switzerland",
     }

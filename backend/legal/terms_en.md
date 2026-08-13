@@ -5,7 +5,8 @@
 **Legally binding language:** Italian — this English version is provided for convenience only. In the event of any discrepancy, the Italian version prevails.
 
 **Service owner (Provider):**
-Davide De Filippis, Lugano, Switzerland
+**Aurya**
+a service of Davide De Filippis, Lugano (Switzerland)
 Email: info@aurya.life
 
 ---
@@ -15,7 +16,7 @@ Email: info@aurya.life
 For the purposes of these Terms, the following expressions have the meaning set out below:
 
 - **Aurya** (or "the Platform" or "the Service"): the marketplace of holistic retreats and the management software for operators accessible at https://aurya.life, owned by the Provider.
-- **Provider** (or "We"): Davide De Filippis, based in Lugano, Switzerland.
+- **Provider** (or "We"): Aurya, a service of Davide De Filippis, based in Lugano (Switzerland).
 - **Operator** (or "Organizer"): the professional, teacher or venue — an adult natural person, sole proprietorship or legal entity — that registers with the Platform to publish and sell retreats, experiences, products and courses. The Operator is a customer of the Provider.
 - **End Customer** (or "Participant"): the natural or legal person who books, purchases or takes part in an Operator's offering through the Platform.
 - **Retreat Passport (Passaporto Ritiri)**: the End Customer's optional personal account, valid with all Operators on the Platform, with orders, QR tickets and experience history.
@@ -584,8 +585,8 @@ The Platform is available in IT/EN/DE/FR. In the event of discrepancies between 
 ## 24. Contacts
 
 **Provider:**
-Davide De Filippis
-Lugano, Switzerland
+**Aurya**
+a service of Davide De Filippis, Lugano (Switzerland)
 Email: `info@aurya.life`
 
 For any question relating to these Terms, technical support, complaints, or the exercise of contractual rights: write to the email address indicated above. The Provider undertakes to respond within 5 business days of receipt.

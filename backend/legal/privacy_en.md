@@ -5,7 +5,8 @@
 **Legally binding language:** Italian — this English version is provided for convenience only. In the event of any discrepancy, the Italian version prevails.
 
 **Data Controller:**
-Davide De Filippis, Lugano, Switzerland
+**Aurya**
+a service of Davide De Filippis, Lugano (Switzerland)
 Email: info@aurya.life
 
 ---
@@ -15,7 +16,7 @@ Email: info@aurya.life
 For the purposes of this policy, and in accordance with the GDPR (Art. 4) and the Swiss FADP (Art. 5):
 
 - **Aurya** (or "the Platform"): the marketplace of holistic retreats and the management software for wellness operators accessible at https://aurya.life.
-- **Controller** (or "We"): Davide De Filippis, Lugano, Switzerland, owner of the Platform.
+- **Controller** (or "We"): Aurya, a service of Davide De Filippis, Lugano (Switzerland), owner of the Platform.
 - **Operator** (or "Organizer"): the professional, teacher or venue that registers with Aurya to publish and sell retreats, experiences, products and courses through the Platform. The Operator is a customer of Aurya and, with respect to the data of their own end customers, an independent Data Controller (see Art. 2.2).
 - **End Customer** (or "Participant"): the natural person who books, purchases or takes part in a retreat, an experience, a course, or purchases a product offered by an Operator through the Platform. The End Customer may create a personal account ("**Retreat Passport (Passaporto Ritiri)**") valid with all Operators on the Platform, with orders, QR tickets and experience history.
 - **Visitor**: anyone who browses the public pages of the Platform (directory, public calendar, Operator storefronts) without registering.
@@ -481,8 +482,8 @@ Aurya adopts the following data protection principles from the design stage:
 
 ### 20.1 Data Controller
 
-**Davide De Filippis**
-Lugano, Switzerland
+**Aurya**
+a service of Davide De Filippis, Lugano (Switzerland)
 Email: `info@aurya.life`
 
 This email address is also the official channel for:

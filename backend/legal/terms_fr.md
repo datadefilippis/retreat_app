@@ -5,7 +5,8 @@
 **Langue de référence juridique :** italien — la présente traduction française est fournie à titre de courtoisie ; en cas de divergence, la version italienne est la seule juridiquement contraignante.
 
 **Titulaire du service (Fournisseur) :**
-Davide De Filippis, Lugano, Suisse
+**Aurya**
+un service de Davide De Filippis, Lugano (Suisse)
 Email : info@aurya.life
 
 ---
@@ -15,7 +16,7 @@ Email : info@aurya.life
 Aux fins des présentes Conditions, les expressions suivantes ont la signification indiquée ci-après :
 
 - **Aurya** (ou « la Plateforme » ou « le Service ») : la marketplace de retraites holistiques et l'outil de gestion pour opérateurs accessible à l'adresse https://aurya.life, dont le Fournisseur est titulaire.
-- **Fournisseur** (ou « Nous ») : Davide De Filippis, établi à Lugano, Suisse.
+- **Fournisseur** (ou « Nous ») : Aurya, un service de Davide De Filippis, établi à Lugano (Suisse).
 - **Opérateur** (ou « Organisateur ») : le professionnel, l'enseignant ou la structure — personne physique majeure, entreprise individuelle ou personne morale — qui s'inscrit sur la Plateforme pour publier et vendre des retraites, expériences, produits et cours. L'Opérateur est client du Fournisseur.
 - **Client final** (ou « Participant ») : la personne physique ou morale qui réserve, achète ou participe à une offre d'un Opérateur via la Plateforme.
 - **Passeport Retraites (Passaporto Ritiri)** : le compte personnel facultatif du Client final, valable auprès de tous les Opérateurs de la Plateforme, avec commandes, billets QR et historique des expériences.
@@ -584,8 +585,8 @@ La Plateforme est disponible en IT/EN/DE/FR. En cas de divergences entre la vers
 ## 24. Contacts
 
 **Fournisseur :**
-Davide De Filippis
-Lugano, Suisse
+**Aurya**
+un service de Davide De Filippis, Lugano (Suisse)
 Email : `info@aurya.life`
 
 Pour toute question relative aux présentes Conditions, support technique, contestations, exercice des droits contractuels : écrire à l'adresse email indiquée ci-dessus. Le Fournisseur s'engage à répondre sous 5 jours ouvrés à compter de la réception.
