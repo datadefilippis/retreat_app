@@ -1789,6 +1789,13 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
     if not org_doc:
         raise HTTPException(status_code=404, detail="Organization not found")
     pp = org_doc.get("public_profile") or {}
+    # CS4 (founder, 13/8) — lo slug con cui /o/ risolve DAVVERO questa
+    # org: store pubblicato prima, public_slug legacy poi (stesso
+    # resolver del ping IndexNow). org_doc.public_slug da solo mentiva
+    # alle org con store attivo.
+    from routers.public import _resolve_public_slug_for_org
+    resolved_slug = await _resolve_public_slug_for_org(
+        current_user["organization_id"])
     return {**{k: pp.get(k) for k in _PUBLIC_PROFILE_FIELDS},
             # OP4 — il titolo pubblico E' il nome org (settings):
             # esposto qui cosi' l'editor profilo lo mostra e lo salva
@@ -1802,6 +1809,11 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
             # AN3 — la posizione configurata (autocomplete o geocoding)
             "latitude": pp.get("latitude"),
             "longitude": pp.get("longitude"),
+            # CS4 (founder, 13/8) — il primo salvataggio genera lo slug
+            # (GT6 _ensure_public_surface) ma la risposta non lo diceva:
+            # il pulsante "Vedi il tuo profilo online" appariva solo
+            # dopo un refresh manuale della pagina.
+            "public_slug": resolved_slug,
             "show_contacts": bool(pp.get("show_contacts"))}
 
 
@@ -2129,6 +2141,23 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
         profile_ok = bool(pp.get("bio")) and bool(
             pp.get("cover_url") or pp.get("instagram")
             or pp.get("website") or pp.get("facebook"))
+        # CS4 (founder, 13/8) — "Presentati" era binario e muto: profilo
+        # a meta' compilato = stesso zero di chi non ha mai aperto la
+        # pagina. Stessi 4 check della barra di completezza dell'editor
+        # (una verita' per numero, DC), piu' la lista di cio' che manca
+        # per spuntare il passo — cosi' la checklist puo' dirlo.
+        profile_checks = {
+            "bio": bool(pp.get("bio")),
+            "cover": bool(pp.get("cover_url")),
+            "city": bool(pp.get("city")),
+            "social": bool(pp.get("instagram") or pp.get("website")
+                           or pp.get("facebook")),
+        }
+        profile_detail = {
+            "percent": round(
+                sum(profile_checks.values()) / len(profile_checks) * 100),
+            "missing": [k for k, v in profile_checks.items() if not v],
+        }
 
         svc = await products_collection.find_one(
             {"organization_id": org_id, "item_type": "service",
@@ -2164,6 +2193,7 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
 
         return {"steps": steps, "completed_count": completed,
                 "total": len(steps), "is_complete": completed == len(steps),
+                "steps_detail": {"profile": profile_detail},
                 "links": links,
                 "signals": {"stripe_connected": bool(conn),
                             "retreat_created": bool(any_occ),

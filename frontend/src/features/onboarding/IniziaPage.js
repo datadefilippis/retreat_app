@@ -50,6 +50,20 @@ export default function IniziaPage() {
   const s = status.steps || {};
   const links = status.links || {};
   const signals = status.signals || {};
+  // CS4 (founder, 13/8) — il gradino Presentati era binario e muto:
+  // profilo a meta' = stesso zero di chi non ha mai iniziato. Il
+  // backend ora manda percent+missing (stessi 4 check della barra di
+  // completezza dell'editor): qui diventano "sei al 50%, ti manca X".
+  const profileDetail = status.steps_detail?.profile || null;
+  const profileHints = [];
+  if (profileDetail && !s.profile_completed && profileDetail.percent > 0) {
+    if (profileDetail.missing?.includes('bio')) {
+      profileHints.push(t('onboarding.hint_bio', { defaultValue: 'racconta chi sei nella bio' }));
+    }
+    if (profileDetail.missing?.includes('cover') && profileDetail.missing?.includes('social')) {
+      profileHints.push(t('onboarding.hint_cover_social', { defaultValue: 'aggiungi una foto di copertina o un link social (basta uno dei due)' }));
+    }
+  }
   const pct = Math.round((status.completed_count / status.total) * 100);
   const lean = 'online' in s;
 
@@ -226,6 +240,22 @@ export default function IniziaPage() {
                 {!done && (
                   <>
                     <p className="text-sm text-muted-foreground mt-0.5">{step.why}</p>
+                    {/* CS4 — progresso onesto: hai fatto meta' lavoro,
+                        la checklist lo dice e ti indica cosa manca */}
+                    {step.key === 'profile_completed' && profileHints.length > 0 && (
+                      <div className="mt-2 rounded-lg bg-primary/5 border border-primary/20 px-3 py-2"
+                           data-testid="inizia-profile-hint">
+                        <p className="text-sm font-medium text-foreground">
+                          {t('onboarding.profile_progress', {
+                            percent: profileDetail.percent,
+                            defaultValue: 'Sei già al {{percent}}%. Per completare questo passo:',
+                          })}
+                        </p>
+                        <ul className="mt-1 text-sm text-muted-foreground list-disc pl-4 space-y-0.5">
+                          {profileHints.map((h, i) => <li key={i}>{h}</li>)}
+                        </ul>
+                      </div>
+                    )}
                     {!step.derived && (
                       <div className="mt-2.5 flex flex-wrap items-center gap-3">
                         <Link to={step.href}

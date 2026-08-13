@@ -209,6 +209,60 @@ class TestCs3ProfiloVisibile:
             "l'indirizzo va preso da BRAND_EMAIL, non hardcodato"
 
 
+class TestCs4PrimoSalvataggio:
+    """CS4 (founder, test d'uso 13/8) — tre attriti del primo giro di
+    configurazione: il link al profilo che appare solo dopo un refresh,
+    il dropdown localita' che resta aperto dopo la scelta, e il gradino
+    «Presentati» che resta muto anche a profilo mezzo compilato."""
+
+    def test_public_profile_espone_lo_slug_risolto(self):
+        """Il salvataggio genera lo slug (GT6) ma la risposta non lo
+        diceva: la pagina lo scopriva solo con un refresh. La risposta
+        usa il resolver vero (store pubblicato → public_slug legacy),
+        non org.public_slug da solo, che mente alle org con store."""
+        src = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        blocco = src.split('@router.get("/current/public-profile")')[1]
+        blocco = blocco.split('@router.patch')[0]
+        assert "_resolve_public_slug_for_org" in blocco
+        assert '"public_slug": resolved_slug' in blocco
+
+    def test_save_aggiorna_lo_slug_senza_refresh(self):
+        src = (FRONTEND_SRC / "features" / "settings"
+               / "PublicProfilePage.js").read_text()
+        assert "setSlug(res.data.public_slug)" in src, \
+            "dopo il salvataggio lo slug deve arrivare dalla risposta"
+
+    def test_dropdown_localita_si_chiude_dopo_la_scelta(self):
+        """Selezionare scriveva form.city → value → setText, e il cambio
+        di testo rilanciava la ricerca riaprendo la lista: si cerca solo
+        se il testo l'ha battuto l'utente."""
+        src = (FRONTEND_SRC / "features" / "settings"
+               / "PublicProfilePage.js").read_text()
+        assert "typedRef" in src
+        assert "if (!typedRef.current) return undefined;" in src
+        blocco = src.split("onMouseDown")[1][:120]
+        assert "typedRef.current = false" in blocco
+
+    def test_onboarding_presentati_dice_cosa_manca(self):
+        """Backend: steps_detail.profile con percent (stessi 4 check
+        della barra dell'editor: bio, cover, city, social) e missing."""
+        src = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        blocco = src.split("TW4 mondo snello")[1][:2400]
+        for chiave in ('"bio"', '"cover"', '"city"', '"social"'):
+            assert chiave in blocco, f"manca il check {chiave}"
+        assert '"steps_detail": {"profile": profile_detail}' in src
+
+    def test_inizia_mostra_progresso_e_suggerimenti(self):
+        src = (FRONTEND_SRC / "features" / "onboarding"
+               / "IniziaPage.js").read_text()
+        assert "steps_detail" in src
+        assert 'data-testid="inizia-profile-hint"' in src
+        # il suggerimento cover/social scatta solo se mancano ENTRAMBI:
+        # per spuntare il passo ne basta uno
+        assert "missing?.includes('cover') && " \
+               "profileDetail.missing?.includes('social')" in src
+
+
 class TestProfileListinoTW2:
     """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
     card rete con da-X-euro, OfferCatalog nella shell. I bottoni

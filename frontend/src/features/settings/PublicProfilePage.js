@@ -48,9 +48,15 @@ function LocationAutocomplete({ value, onSelect, onTextChange }) {
   const [text, setText] = useState(value || '');
   const [results, setResults] = useState([]);
   const [open, setOpen] = useState(false);
+  // CS4 (founder, 13/8) — il dropdown restava aperto dopo la scelta:
+  // selezionare scriveva form.city → value → setText, e il cambio di
+  // text rilanciava la ricerca riaprendo la lista. Si cerca (e si apre)
+  // solo se il testo l'ha battuto l'utente.
+  const typedRef = useRef(false);
   useEffect(() => { setText(value || ''); }, [value]);
   useEffect(() => {
-    if (!text || text.length < 2) { setResults([]); return undefined; }
+    if (!typedRef.current) return undefined;
+    if (!text || text.length < 2) { setResults([]); setOpen(false); return undefined; }
     const timer = setTimeout(() => {
       api.get('/public/geo/search', { params: { q: text } })
         .then(res => { setResults(res.data?.results || []); setOpen(true); })
@@ -62,7 +68,7 @@ function LocationAutocomplete({ value, onSelect, onTextChange }) {
     <div className="relative">
       <Input
         value={text}
-        onChange={e => { setText(e.target.value); onTextChange?.(e.target.value); }}
+        onChange={e => { typedRef.current = true; setText(e.target.value); onTextChange?.(e.target.value); }}
         onFocus={() => results.length && setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder="Ostuni, Puglia…"
@@ -74,7 +80,7 @@ function LocationAutocomplete({ value, onSelect, onTextChange }) {
             <li key={`${r.lat}-${r.lng}`}>
               <button
                 type="button"
-                onMouseDown={() => { onSelect(r); setOpen(false); }}
+                onMouseDown={() => { typedRef.current = false; onSelect(r); setOpen(false); setResults([]); }}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-muted/60"
               >
                 📍 {r.label}
@@ -157,6 +163,10 @@ export default function PublicProfilePage() {
       const res = await api.patch('/organizations/current/public-profile', payload);
       setForm({ show_contacts: false, ...res.data });
       if (res.data?.name) setOrgName(res.data.name);
+      // CS4 (founder, 13/8) — il primo salvataggio genera lo slug (GT6):
+      // senza questa riga il pulsante "Vedi il tuo profilo online"
+      // compariva solo dopo un refresh manuale della pagina.
+      if (res.data?.public_slug) setSlug(res.data.public_slug);
       toast.success(t('publicProfile.saved', { defaultValue: 'Profilo salvato' }));
     } catch {
       toast.error(t('publicProfile.saveError', { defaultValue: 'Errore nel salvataggio' }));
