@@ -310,6 +310,13 @@ export const Sidebar = () => {
       // piani retreat fissi: l'operatore non deve (ri)attivare moduli a mano
       return user?.role === 'system_admin';
     }
+    if (item.href === '/team') {
+      // CS3b (founder, 13/8) — nel mondo snello l'operatore olistico
+      // lavora da solo: inviti e ruoli sono rumore nel menu. Stesso
+      // trattamento di /modules: la pagina resta viva e raggiungibile
+      // per URL, sparisce dalla navigazione di chi non e' sysadmin.
+      return user?.role === 'system_admin';
+    }
     return true;
   });
 
