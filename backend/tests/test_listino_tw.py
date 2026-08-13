@@ -173,6 +173,42 @@ class TestListinoTW1:
         assert "'/listino'" in layout
 
 
+class TestCs3ProfiloVisibile:
+    """CS3 (founder, test d'uso 13/8) — l'operatore deve VEDERE il
+    frutto delle sue configurazioni: bottone pieno «Vedi il tuo profilo
+    online» su Listino e Profilo pubblico, e l'email dell'intervista
+    leggibile in chiaro (il mailto da solo non sempre apre qualcosa)."""
+
+    def test_listino_slug_dalla_fonte_giusta(self):
+        """Il bug: /organizations/current/public-profile non espone
+        public_slug, quindi il link non compariva MAI. La fonte e'
+        /organizations/current, con fallback allo slug store."""
+        src = (FRONTEND_SRC / "features" / "listino"
+               / "ListinoPage.js").read_text()
+        assert "api.get('/organizations/current')" in src
+        assert "store_slug" in src, "manca il fallback allo slug store"
+        assert "current/public-profile')" not in src, \
+            "la fonte sbagliata (senza public_slug) e' tornata"
+        assert 'data-testid="listino-view-profile"' in src
+        assert "Vedi il tuo profilo online" in src
+
+    def test_profilo_pubblico_bottone_primario(self):
+        src = (FRONTEND_SRC / "features" / "settings"
+               / "PublicProfilePage.js").read_text()
+        assert 'data-testid="profile-view-online"' in src
+        # niente variant="outline" sul bottone che mostra il risultato
+        blocco = src.split('data-testid="profile-view-online"')[1][:300]
+        assert 'variant="outline"' not in blocco
+
+    def test_email_intervista_in_chiaro(self):
+        src = (FRONTEND_SRC / "features" / "settings"
+               / "PublicProfilePage.js").read_text()
+        assert "from '../../config/brand'" in src and "BRAND_EMAIL" in src
+        assert 'data-testid="interview-email-plain"' in src
+        assert "mailto:info@aurya.life" not in src, \
+            "l'indirizzo va preso da BRAND_EMAIL, non hardcodato"
+
+
 class TestProfileListinoTW2:
     """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
     card rete con da-X-euro, OfferCatalog nella shell. I bottoni
@@ -3877,7 +3913,9 @@ class TestProfiloPv2:
         assert "payload.interview" not in page        # non si invia più
         assert "interview-invite-panel" in page       # pannello informativo
         assert "interviewInviteTitle" in page
-        assert "mailto:info@aurya.life" in page       # CTA contatto
+        # CS3 (13/8): il mailto usa BRAND_EMAIL (non hardcodato) e
+        # accanto c'e' l'indirizzo in chiaro, leggibile e copiabile.
+        assert "mailto:${BRAND_EMAIL}" in page        # CTA contatto
         assert "set('interview'" not in page          # niente campi compilabili
 
     def test_admin_tab_registered(self):

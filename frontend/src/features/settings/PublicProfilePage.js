@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../api/client';
+import { BRAND_EMAIL } from '../../config/brand';
 import { compressImage } from '../../lib/compressImage';
 import MultiLangSection from '../../components/MultiLangSection';
 
@@ -266,10 +267,13 @@ export default function PublicProfilePage() {
                 ? t('publicProfile.copied', { defaultValue: 'Copiato!' })
                 : t('publicProfile.copyLink', { defaultValue: 'Copia link' })}
             </Button>
-            <a href={profileUrl} target="_blank" rel="noreferrer">
-              <Button variant="outline" size="sm">
+            {/* CS3 (founder, 13/8) — "Apri" outline non si vedeva: il
+                pulsante che mostra il risultato e' quello primario. */}
+            <a href={profileUrl} target="_blank" rel="noreferrer"
+               data-testid="profile-view-online">
+              <Button size="sm" className="font-semibold">
                 <ExternalLink className="h-4 w-4 mr-1.5" />
-                {t('publicProfile.view', { defaultValue: 'Apri' })}
+                {t('publicProfile.view', { defaultValue: 'Vedi il tuo profilo online' })}
               </Button>
             </a>
             {/* PN0 — le condizioni si trovano da qui, non solo in
@@ -377,11 +381,21 @@ export default function PublicProfilePage() {
             <p className="text-xs text-muted-foreground leading-relaxed">
               {t('publicProfile.interviewInviteBody', { defaultValue: 'L’intervista la realizza il team Aurya insieme a te: quando viene pubblicata diventi operatore verificato, con il badge sul tuo profilo e nel marketplace.' })}
             </p>
-            <a href="mailto:info@aurya.life?subject=Intervista%20Aurya"
-               className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7440] hover:underline">
-              {t('publicProfile.interviewInviteCta', { defaultValue: 'Scrivici per candidarti' })}
-              <ExternalLink className="h-3 w-3" aria-hidden />
-            </a>
+            {/* CS3 (founder, 13/8) — l'indirizzo si LEGGE, non solo si
+                clicca: il mailto dipende dal client di posta configurato
+                e su molti computer non apre niente. L'email in chiaro e'
+                selezionabile e copiabile comunque. */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <a href={`mailto:${BRAND_EMAIL}?subject=Intervista%20Aurya`}
+                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7440] hover:underline">
+                {t('publicProfile.interviewInviteCta', { defaultValue: 'Scrivici per candidarti' })}
+                <ExternalLink className="h-3 w-3" aria-hidden />
+              </a>
+              <span className="text-xs text-muted-foreground select-all"
+                    data-testid="interview-email-plain">
+                {BRAND_EMAIL}
+              </span>
+            </div>
           </div>
 
           {/* PR1 — Carta d'identità: ritratto, galleria, anno, lingue

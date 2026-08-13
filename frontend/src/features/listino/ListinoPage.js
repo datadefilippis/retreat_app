@@ -233,9 +233,15 @@ export default function ListinoPage() {
     // il gate store-first non si presenta mai all'operatore
     storesAPI.ensureDefault().catch(() => { /* best-effort, il publish riprova */ });
     load().catch(() => setRows([]));
-    // il link "vedi il tuo profilo" (public_slug o slug store)
-    api.get('/organizations/current/public-profile')
-      .then(res => setProfileSlug(res.data?.public_slug || null))
+    // Il link "vedi il tuo profilo online". BUG (founder, test 13/8):
+    // /organizations/current/public-profile NON espone public_slug,
+    // quindi il link non compariva MAI e l'operatore non vedeva il
+    // frutto delle sue configurazioni. Fonte giusta: /organizations/
+    // current, con fallback allo slug store (stessa coppia che usa
+    // l'editor del profilo pubblico).
+    api.get('/organizations/current')
+      .then(res => setProfileSlug(
+        res.data?.public_slug || res.data?.store_slug || null))
       .catch(() => {});
   }, []);
 
@@ -445,11 +451,16 @@ export default function ListinoPage() {
       <DpaPactBanner onRead={() => { pactPendingRef.current = false; setPactOpen(true); }} />
       <div className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex items-center gap-2">
+          {/* CS3 (founder, 13/8) — da link testuale a BOTTONE pieno:
+              e' l'unico modo per vedere il frutto delle configurazioni
+              e come link piccolo nessuno lo trovava. */}
           {profileSlug && (
             <a href={`/o/${profileSlug}`} target="_blank" rel="noreferrer"
-               className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-              <ExternalLink className="h-4 w-4" aria-hidden />
-              Vedi il tuo profilo
+               data-testid="listino-view-profile">
+              <Button size="sm" className="font-semibold">
+                <ExternalLink className="mr-1.5 h-4 w-4" aria-hidden />
+                Vedi il tuo profilo online
+              </Button>
             </a>
           )}
           {rows.length > 0 && (
