@@ -329,7 +329,7 @@ The Operator is required to:
 ### 13.3 Cancellation and refund policy towards the End Customer
 
 - The cancellation and refund terms (including the fate of the deposit) are **defined by the Operator and published on the retreat or product page**; they directly govern the relationship between the Operator and the End Customer and must comply with applicable consumer law.
-- Refunds due are **processed by the Operator via Stripe**, from their own account. In the event of a refund, the Platform fee follows Stripe's rules on application fee refunds.
+- Refunds due are **processed by the Operator via Stripe**, from their own account. In the event of a refund processed through the Platform, the Platform fee is returned to the Operator in proportion to the refunded amount: the Provider does not retain fees on cancelled sales.
 - The Provider does not decide on refunds and is not obliged to refund the End Customer in place of the Operator; it may facilitate communication between the parties in the event of a dispute, with no obligation as to the outcome.
 - Any chargebacks and disputes with the payment network are handled on the Operator's Stripe account, and the Operator bears their outcomes and costs.
 

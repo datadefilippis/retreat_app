@@ -329,7 +329,7 @@ L'Operatore e' tenuto a:
 ### 13.3 Politica di cancellazione e rimborsi verso il Cliente finale
 
 - Le condizioni di cancellazione e rimborso (inclusa la sorte della caparra) sono **definite dall'Operatore e pubblicate sulla pagina del ritiro o del prodotto**; regolano direttamente il rapporto tra Operatore e Cliente finale e devono essere conformi alla normativa consumeristica applicabile.
-- I rimborsi dovuti sono **processati dall'Operatore tramite Stripe**, dal proprio account. In caso di rimborso, la Commissione di piattaforma segue le regole di Stripe sulle application fee refund.
+- I rimborsi dovuti sono **processati dall'Operatore tramite Stripe**, dal proprio account. In caso di rimborso effettuato tramite la Piattaforma, la Commissione di piattaforma viene restituita all'Operatore in proporzione all'importo rimborsato: il Fornitore non trattiene commissioni su vendite annullate.
 - Il Fornitore non decide sui rimborsi e non e' tenuto a rimborsare il Cliente finale in luogo dell'Operatore; puo' facilitare la comunicazione tra le parti in caso di controversia, senza obbligo di risultato.
 - Eventuali chargeback e contestazioni presso il circuito di pagamento sono gestiti sull'account Stripe dell'Operatore, che ne sopporta esiti e costi.
 

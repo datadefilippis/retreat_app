@@ -329,7 +329,7 @@ L'Opérateur est tenu de :
 ### 13.3 Politique d'annulation et remboursements envers le Client final
 
 - Les conditions d'annulation et de remboursement (y compris le sort de l'acompte) sont **définies par l'Opérateur et publiées sur la page de la retraite ou du produit** ; elles régissent directement la relation entre l'Opérateur et le Client final et doivent être conformes à la réglementation de protection des consommateurs applicable.
-- Les remboursements dus sont **traités par l'Opérateur via Stripe**, depuis son propre compte. En cas de remboursement, la Commission de plateforme suit les règles de Stripe relatives aux remboursements d'application fee.
+- Les remboursements dus sont **traités par l'Opérateur via Stripe**, depuis son propre compte. En cas de remboursement traité via la Plateforme, la Commission de plateforme est restituée à l'Opérateur au prorata du montant remboursé : le Fournisseur ne retient aucune commission sur les ventes annulées.
 - Le Fournisseur ne décide pas des remboursements et n'est pas tenu de rembourser le Client final à la place de l'Opérateur ; il peut faciliter la communication entre les parties en cas de litige, sans obligation de résultat.
 - Les éventuels chargebacks et contestations auprès du circuit de paiement sont gérés sur le compte Stripe de l'Opérateur, qui en supporte les conséquences et les coûts.
 

@@ -120,6 +120,11 @@ History:
     (c) offline invariato e ora piu' esplicito: bonifici e contanti
     non generano commissione.
     (d) link listino: aurya.life/pricing (404) → aurya.life/costi.
+    (e) rimborsi (opzione A, decisione founder 13/8): la Commissione
+    viene restituita all'Operatore pro-rata quando il rimborso passa
+    dalla Piattaforma — il codice lo fa davvero (refund_application_fee
+    nel provider Stripe) e il testo lo promette in chiaro, al posto
+    del rinvio vago "segue le regole di Stripe".
     Modifica FAVOREVOLE all'Operatore sui punti (a)-(b) rispetto al
     testo (nessun peggioramento che richieda il preavviso di 30 gg
     ex art. 7.7: la pratica reale non cambia, cambia la carta).
@@ -127,7 +132,7 @@ History:
     EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "f3b41f47d612bc4b"
+CURRENT_VERSION_HASH: Final[str] = "df5d56e4e937e85e"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

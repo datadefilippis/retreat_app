@@ -329,7 +329,7 @@ Der Veranstalter ist verpflichtet:
 ### 13.3 Storno- und Rückerstattungsrichtlinie gegenüber dem Endkunden
 
 - Die Storno- und Rückerstattungsbedingungen (einschließlich des Schicksals der Anzahlung) werden **vom Veranstalter festgelegt und auf der Seite des Retreats oder des Produkts veröffentlicht**; sie regeln unmittelbar das Verhältnis zwischen Veranstalter und Endkunde und müssen dem anwendbaren Verbraucherrecht entsprechen.
-- Geschuldete Rückerstattungen werden **vom Veranstalter über Stripe** aus dem eigenen Konto abgewickelt. Im Falle einer Rückerstattung folgt die Plattformgebühr den Stripe-Regeln zu Application-Fee-Refunds.
+- Geschuldete Rückerstattungen werden **vom Veranstalter über Stripe** aus dem eigenen Konto abgewickelt. Im Falle einer über die Plattform abgewickelten Rückerstattung wird die Plattformgebühr dem Veranstalter anteilig zum erstatteten Betrag zurückerstattet: Der Anbieter behält keine Gebühren auf stornierte Verkäufe ein.
 - Der Anbieter entscheidet nicht über Rückerstattungen und ist nicht verpflichtet, den Endkunden anstelle des Veranstalters zu entschädigen; er kann im Streitfall die Kommunikation zwischen den Parteien erleichtern, ohne Erfolgspflicht.
 - Etwaige Chargebacks und Beanstandungen beim Zahlungsnetzwerk werden über das Stripe-Konto des Veranstalters abgewickelt, der deren Ergebnisse und Kosten trägt.
 

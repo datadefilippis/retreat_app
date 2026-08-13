@@ -244,11 +244,20 @@ class StripeProvider(PaymentProvider):
         amount_minor: int,
         connected_account: str | None = None,
         idempotency_key: str | None = None,
+        refund_application_fee: bool = False,
     ) -> str:
         """Rimborso (parziale o totale) su un PaymentIntent — Fase 2 S3.
 
         Unico punto del codebase autorizzato a chiamare stripe.Refund
         (linter di isolamento). Ritorna l'id del Refund Stripe.
+
+        refund_application_fee (decisione founder 13/8, opzione A):
+        quando True, la Commissione di piattaforma torna all'Operatore
+        pro-rata insieme al rimborso ("non guadagniamo su una vendita
+        annullata"). Il flag si inoltra a Stripe SOLO se sul pagamento
+        c'e' davvero una application fee: i pagamenti dei piani a fee
+        0% non la portano (il checkout la attacca solo se > 0) e
+        Stripe rifiuterebbe la richiesta.
         """
         import asyncio
 
@@ -261,6 +270,27 @@ class StripeProvider(PaymentProvider):
             kwargs["stripe_account"] = connected_account
         if idempotency_key:
             kwargs["idempotency_key"] = idempotency_key
+
+        if refund_application_fee:
+            try:
+                pi_kwargs: dict = {"expand": ["latest_charge"]}
+                if connected_account:
+                    pi_kwargs["stripe_account"] = connected_account
+                pi = await asyncio.to_thread(
+                    stripe.PaymentIntent.retrieve, payment_intent, **pi_kwargs)
+                charge = pi.get("latest_charge") or {}
+                if isinstance(charge, str):
+                    charge = {}
+                if charge.get("application_fee_amount") or charge.get("application_fee"):
+                    kwargs["refund_application_fee"] = True
+            except Exception as exc:
+                # Best-effort: un errore qui non deve mai bloccare il
+                # rimborso al cliente — al peggio la fee resta trattenuta
+                # come prima di questa modifica.
+                logger.warning(
+                    "create_refund: verifica application fee fallita per %s: %s",
+                    payment_intent, exc,
+                )
         try:
             refund = await asyncio.to_thread(stripe.Refund.create, **kwargs)
         except Exception as exc:

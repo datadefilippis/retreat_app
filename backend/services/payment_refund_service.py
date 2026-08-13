@@ -114,6 +114,12 @@ async def _stripe_refund(payment_intent: str, amount_minor: int,
         amount_minor=amount_minor,
         connected_account=connected_account,
         idempotency_key=idempotency_key,
+        # Opzione A (founder, 13/8): la Commissione di piattaforma torna
+        # all'Operatore pro-rata quando si rimborsa il cliente — cosi' la
+        # riga negativa che il ledger SA1 scrive e' VERA, non un auspicio.
+        # Il provider inoltra il flag a Stripe solo se sul pagamento c'e'
+        # davvero una application fee (i piani a fee 0% non la portano).
+        refund_application_fee=True,
     )
 
 
@@ -194,8 +200,11 @@ async def refund_order(
             refunded_stripe += item["amount_minor"]
             # SA1 — lo storno online scrive la riga NEGATIVA nel ledger
             # fee: gli aggregati piattaforma restano onesti dopo un
-            # rimborso. Percentuale = quella corrente dell'org (la fee
-            # Stripe rimborsata segue lo stesso application_fee).
+            # rimborso. Dal 13/8 (opzione A) la fee viene DAVVERO
+            # restituita pro-rata su Stripe (_stripe_refund passa
+            # refund_application_fee): questa riga rispecchia soldi
+            # veri. Percentuale = quella corrente dell'org: coincide
+            # con la fee del pagamento salvo cambio piano nel mezzo.
             # BEST-EFFORT come tutto il ledger: il rimborso al cliente
             # non si blocca mai per la contabilita' interna.
             try:

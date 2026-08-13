@@ -206,3 +206,27 @@ class TestRefundOrderOrchestration:
             with pytest.raises(ValueError, match="motivo"):
                 await svc_r.refund_order("org", "o", actor="op", reason="",
                                          override_amount_minor=1000)
+
+
+class TestOpzioneAFeeProRataSuiRimborsi:
+    """Opzione A (founder, 13/8) — quando si rimborsa il cliente, la
+    Commissione di piattaforma torna all'Operatore pro-rata. Guardie
+    source-based: il servizio CHIEDE la restituzione, il provider la
+    inoltra a Stripe solo se sul pagamento la fee esiste davvero."""
+
+    BACKEND = Path(__file__).resolve().parent.parent
+
+    def test_servizio_chiede_la_restituzione_della_fee(self):
+        src = (self.BACKEND / "services"
+               / "payment_refund_service.py").read_text()
+        assert "refund_application_fee=True" in src, (
+            "il refund service non chiede piu' la restituzione della "
+            "fee: la riga negativa del ledger SA1 tornerebbe una bugia")
+
+    def test_provider_inoltra_il_flag_solo_se_la_fee_esiste(self):
+        src = (self.BACKEND / "payment_providers" / "stripe"
+               / "provider.py").read_text()
+        assert "refund_application_fee: bool = False" in src
+        # il flag verso Stripe e' condizionato alla presenza della fee
+        # sul charge (i piani a fee 0% non la portano)
+        assert "application_fee_amount" in src.split("def create_refund")[1]
