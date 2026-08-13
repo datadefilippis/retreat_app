@@ -679,6 +679,7 @@
     "uploadingPhoto": "Foto wird hochgeladen…",
     "advancedTitle": "Mehr Details",
     "advancedHint": "Porträt, Galerie, öffentliche Kontakte und weitere Angaben. Alles optional.",
-    "unsaved": "Du hast ungespeicherte Änderungen"
+    "unsaved": "Du hast ungespeicherte Änderungen",
+    "photoRemoved": "Foto entfernt"
   }
 }

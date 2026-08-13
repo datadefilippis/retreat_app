@@ -714,6 +714,7 @@
     "uploadingPhoto": "Carico la foto…",
     "advancedTitle": "Per approfondire",
     "advancedHint": "Ritratto, galleria, contatti pubblici e altri dettagli. Tutto facoltativo.",
-    "unsaved": "Hai modifiche non salvate"
+    "unsaved": "Hai modifiche non salvate",
+    "photoRemoved": "Foto rimossa"
   }
 }

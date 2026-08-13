@@ -383,6 +383,28 @@ class TestAc3SalvaAPortata:
         assert "markFieldSaved('photos'" in src
 
 
+class TestAc4RimozioneFotoIstantanea:
+    """AC4 — modello di salvataggio coerente: gli upload erano
+    istantanei ma la rimozione richiedeva ANCHE il Salva, con una nota
+    che lo spiegava. Se serve una nota, il modello e' sbagliato: ora
+    un click rimuove e persiste."""
+
+    PAGE = FRONTEND_SRC / "features" / "settings" / "PublicProfilePage.js"
+
+    def test_rimozione_persiste_subito(self):
+        src = self.PAGE.read_text()
+        blocco = src.split("const removePhoto")[1][:700]
+        assert "api.patch('/organizations/current/public-profile'" in blocco
+        assert "markFieldSaved('photos', filtered)" in blocco, \
+            "la rimozione persistita non deve accendere la barra AC3"
+        assert "photoRemoved" in blocco, "serve la conferma a schermo"
+
+    def test_via_la_nota_richiede_salva(self):
+        src = self.PAGE.read_text()
+        assert "galleryHint" not in src
+        assert "richiede Salva" not in src
+
+
 class TestProfileListinoTW2:
     """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
     card rete con da-X-euro, OfferCatalog nella shell. I bottoni

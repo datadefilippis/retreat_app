@@ -290,7 +290,20 @@ export default function PublicProfilePage() {
     } finally { setUploading(false); }
   };
 
-  const removePhoto = (url) => set('photos', (form.photos || []).filter(u => u !== url));
+  // AC4 — rimozione istantanea come il caricamento: prima togliere una
+  // foto richiedeva ANCHE il Salva (con una nota che lo spiegava — se
+  // serve una nota, il modello e' sbagliato). Ora un click persiste.
+  const removePhoto = async (url) => {
+    const filtered = (form.photos || []).filter(u => u !== url);
+    set('photos', filtered);
+    try {
+      await api.patch('/organizations/current/public-profile', { photos: filtered });
+      markFieldSaved('photos', filtered);
+      toast.success(t('publicProfile.photoRemoved', { defaultValue: 'Foto rimossa' }));
+    } catch {
+      toast.error(t('publicProfile.saveError', { defaultValue: 'Errore nel salvataggio' }));
+    }
+  };
 
   const copyLink = async () => {
     if (!profileUrl) return;
@@ -630,9 +643,6 @@ export default function PublicProfilePage() {
                       </>
                     )}
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    {t('publicProfile.galleryHint', { defaultValue: 'Ricorda: rimuovere una foto qui richiede Salva per rendere effettivo.' })}
-                  </p>
                 </div>
 
                 {/* Regione (la località essenziale sta sopra) */}
