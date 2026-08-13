@@ -299,39 +299,47 @@ async def billing_usage_summary(
     # v5.8 / Onda 10 Step B.1 — Now read from
     # commercial_plans.platform_limits.team_members. Hardcoded fallback
     # kept for plan slugs not yet migrated to the catalog.
+    #
+    # AB5b (founder, 13/8) — la pagina Team e' nascosta nel mondo snello
+    # (CS3b: nel menu la vede solo il sysadmin). Mostrare "membri team
+    # X/Y" tra i limiti dell'abbonamento significherebbe promettere una
+    # cosa invisibile: per i piani retreat_* la metrica NON si inietta.
+    # Il gate sincrono sugli inviti resta; la regia system admin
+    # (routers/admin.py) continua a vederla.
     summary = await billing_repository.get_org_billing_summary(org_id) or {}
     plan_slug = summary.get("commercial_plan_slug", "free")
-    _TEAM_LIMITS_FALLBACK = {"free": 1, "starter": 2, "core": 5, "pro": 15, "enterprise": -1}
-    plan_doc = await billing_repository.get_commercial_plan(plan_slug) or {}
-    platform_limits = plan_doc.get("platform_limits") or {}
-    team_limit = platform_limits.get("team_members")
-    if team_limit is None:
-        team_limit = _TEAM_LIMITS_FALLBACK.get(plan_slug, 1)
-    try:
-        from database import users_collection
-        team_used = await users_collection.count_documents({
-            "organization_id": org_id, "is_active": True,
+    if not str(plan_slug).startswith("retreat_"):
+        _TEAM_LIMITS_FALLBACK = {"free": 1, "starter": 2, "core": 5, "pro": 15, "enterprise": -1}
+        plan_doc = await billing_repository.get_commercial_plan(plan_slug) or {}
+        platform_limits = plan_doc.get("platform_limits") or {}
+        team_limit = platform_limits.get("team_members")
+        if team_limit is None:
+            team_limit = _TEAM_LIMITS_FALLBACK.get(plan_slug, 1)
+        try:
+            from database import users_collection
+            team_used = await users_collection.count_documents({
+                "organization_id": org_id, "is_active": True,
+            })
+        except Exception:
+            team_used = 0
+        if team_limit == -1:
+            team_status, team_pct = "unlimited", 0
+        elif team_limit == 0:
+            team_status, team_pct = "off", 0
+        else:
+            ratio = team_used / team_limit if team_limit else 0
+            team_pct = int(round(ratio * 100))
+            team_status = "exceeded" if ratio >= 1 else "warn" if ratio >= 0.8 else "info" if ratio >= 0.6 else "ok"
+        out_metrics.append({
+            "key": "team_members",
+            "module": "team",
+            "used": team_used,
+            "limit": team_limit,
+            "percentage": team_pct,
+            "status": team_status,
+            "is_monthly": False,
+            "addon_slug": None,  # no team add-on at this point
         })
-    except Exception:
-        team_used = 0
-    if team_limit == -1:
-        team_status, team_pct = "unlimited", 0
-    elif team_limit == 0:
-        team_status, team_pct = "off", 0
-    else:
-        ratio = team_used / team_limit if team_limit else 0
-        team_pct = int(round(ratio * 100))
-        team_status = "exceeded" if ratio >= 1 else "warn" if ratio >= 0.8 else "info" if ratio >= 0.6 else "ok"
-    out_metrics.append({
-        "key": "team_members",
-        "module": "team",
-        "used": team_used,
-        "limit": team_limit,
-        "percentage": team_pct,
-        "status": team_status,
-        "is_monthly": False,
-        "addon_slug": None,  # no team add-on at this point
-    })
 
     # v5.8 / Onda 9.W — Boolean feature flags (NOT counters).
     # These are sì/no features (alert_analysis, health_explanation, email_*, export, alert_config,

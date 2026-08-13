@@ -127,7 +127,9 @@ PROMISE_ENFORCEMENT = {
     "billing.features.retreat_cashflow":           ("code", "/incassi + pagina Dati (cashflow_monitor)"),
     "billing.features.retreat_customers":          ("code", "customers_light CRM"),
     "billing.features.retreat_coupons":            ("code", "coupon_code sul checkout"),
-    "billing.features.retreat_catalog_100":        ("limit", "product_catalog_retreat_free", "products", 100),
+    # AB5 (13/8): retreat_catalog_100 RIMOSSA dalle voci e il limite
+    # products del free portato a -1 (listino senza limiti su entrambi
+    # i piani, decisione founder). La riga resta come storia.
     "billing.features.retreat_stores_1":           ("limit", "commerce_retreat", "stores_max", 1),
     "billing.features.retreat_team_2":             ("platform", "team_members", 2),
     # ── retreat_pro ──

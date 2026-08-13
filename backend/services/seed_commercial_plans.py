@@ -378,7 +378,6 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "features_display": [
             "billing.features.retreat_unlimited_listings",
             "billing.features.retreat_ecommerce",
-            "billing.features.retreat_product_types",
             "billing.features.retreat_public_page",
             "billing.features.retreat_deposits_payments",
             "billing.features.retreat_payment_reminders",
@@ -387,10 +386,10 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
             "billing.features.retreat_newsletter",
             "billing.features.retreat_cashflow",
             "billing.features.retreat_customers",
-            "billing.features.retreat_coupons",
-            "billing.features.retreat_catalog_100",
-            "billing.features.retreat_stores_1",
-            "billing.features.retreat_team_2",
+            # AB5 (founder, 13/8): via coupon (pagina nascosta nel
+            # mondo snello), via il tetto 100 (listino senza limiti
+            # anche nel Gratis), via team (pagina nascosta, CS3b) e la
+            # voce-doppione del profilo. Solo cio' che si puo' USARE.
         ],
     },
     {
@@ -419,9 +418,9 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
             "billing.features.retreat_everything_free",
             "billing.features.retreat_zero_fee",
             "billing.features.retreat_featured",
-            "billing.features.retreat_catalog_unlimited",
-            "billing.features.retreat_stores_3",
-            "billing.features.retreat_team_5",
+            # AB5: via catalogo/vetrine/team — o non sono differenze
+            # vere (listino senza limiti su entrambi) o le pagine sono
+            # nascoste nel mondo snello. Il Pro si vende su tre cose.
             "billing.features.retreat_priority_support",
         ],
     },

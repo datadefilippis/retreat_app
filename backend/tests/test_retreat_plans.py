@@ -295,7 +295,10 @@ class TestRetreatDedicatedTiers:
     def test_catalog_tiers(self):
         free = PRICING_BY_SLUG["product_catalog_retreat_free"]
         pro = PRICING_BY_SLUG["product_catalog_retreat_pro"]
-        assert free["limits"]["products"] == 100
+        # AB5 (founder, 13/8): il listino e' senza limiti ANCHE nel
+        # Gratis — un tetto artificiale per spingere il Pro sarebbe
+        # una promessa disonesta nella pagina /costi.
+        assert free["limits"]["products"] == -1
         assert pro["limits"]["products"] == -1
 
     def test_commerce_pro_tier(self):
@@ -315,9 +318,12 @@ class TestRetreatDedicatedTiers:
     def test_free_features_mention_ecommerce(self):
         # Richiesta founder: le voci non devono essere fuorvianti per
         # omissione — l'e-commerce incluso VA detto.
+        # AB5: l'inventario e' stato potato alle sole promesse VERE
+        # (via team/coupon/vetrine): 10 voci nel Gratis, non di piu'
+        # ma nemmeno tre voci di facciata.
         feats = _plan("retreat_free")["features_display"]
         assert "billing.features.retreat_ecommerce" in feats
-        assert len(feats) >= 12   # inventario completo, non tre voci
+        assert len(feats) >= 10   # inventario completo, non tre voci
 
 
 class TestPartnerZeroFeePlan:
@@ -591,3 +597,47 @@ class TestAbPrezziCoerenti:
                / "cashflow.py").read_text()
         assert "else 19.0" in src
         assert "else 29.0" not in src
+
+    # ── AB5 — voci vere nei piani (founder, 13/8) ──────────────────
+    # Team e' nascosto (CS3b), coupon fuori dal menu snello, il listino
+    # e' senza limiti anche nel Gratis: quelle promesse NON devono
+    # riapparire nelle features dei piani retreat, ne' in admin ne'
+    # sulla pagina pubblica /costi.
+
+    _VOCI_BANDITE = (
+        "team_2", "team_5",          # pagina Team nascosta
+        "coupons",                    # coupon fuori dal mondo snello
+        "catalog_100", "catalog_unlimited",  # listino senza limiti per tutti
+        "stores_1", "stores_3",       # vetrine: concetto sparito (profilo=negozio)
+        "product_types",              # gergo commerce
+    )
+
+    def test_ab5_voci_bandite_fuori_dai_piani(self):
+        from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS
+        for piano in RETREAT_COMMERCIAL_PLANS:
+            for chiave in piano.get("features_display", []):
+                suffisso = chiave.split(".")[-1].removeprefix("retreat_")
+                assert suffisso not in self._VOCI_BANDITE, (
+                    f"{piano['slug']}: la voce {chiave!r} promette una "
+                    "cosa nascosta o non piu' vera (AB5)")
+
+    def test_ab5_pagina_costi_senza_promesse_morte(self):
+        src = (self.FRONTEND / "src" / "features" / "prelaunch"
+               / "PricingPage.js").read_text()
+        for parola in ("Coupon", "persone nel team", "Listino senza limiti"):
+            assert parola not in src, (
+                f"/costi promette ancora {parola!r} (AB5)")
+
+    def test_ab5b_team_fuori_dai_limiti_abbonamento(self):
+        """La pagina Team e' nascosta (CS3b): il riquadro limiti in
+        Impostazioni non deve mostrare "membri team" ai piani retreat.
+        L'iniezione della metrica in /billing/usage-summary deve stare
+        dietro il gate sul prefisso retreat_."""
+        src = (Path(__file__).resolve().parent.parent / "routers"
+               / "billing.py").read_text()
+        gate = src.find('startswith("retreat_")')
+        team_metric = src.find('"key": "team_members"')
+        assert gate != -1, "gate retreat_ sparito da usage-summary (AB5b)"
+        assert team_metric != -1
+        assert gate < team_metric, (
+            "la metrica team_members non e' dietro il gate retreat_ (AB5b)")

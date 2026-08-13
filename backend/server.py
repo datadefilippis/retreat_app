@@ -176,6 +176,12 @@ async def lifespan(app: FastAPI):
         await migrate_pro_price_19_v1()
     except Exception as e:
         logging.error(f"Failed to run pro price migration: {e}")
+    # One-time migration: voci vere nei piani (AB5 13/8, flag-gated)
+    try:
+        from services.seed_pricing import migrate_plan_voices_lean_v1
+        await migrate_plan_voices_lean_v1()
+    except Exception as e:
+        logging.error(f"Failed to run plan voices migration: {e}")
     # One-time migration: trial only on Core plan
     try:
         await migrate_trial_only_core()

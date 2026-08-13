@@ -47,8 +47,6 @@ const FREE_FEATURES = [
    'Un modulo per raccogliere iscritti e scrivere loro quando hai qualcosa da dire.'],
   ['I tuoi conti sotto controllo',
    'Incassato, in arrivo, in ritardo: una pagina sola, anche per contanti e bonifici segnati a mano.'],
-  ['Coupon e codici sconto',
-   'Sconti percentuali o fissi, con scadenza e limiti che decidi tu.'],
 ];
 
 const PRO_FEATURES = [
@@ -58,10 +56,6 @@ const PRO_FEATURES = [
    `Nessuna percentuale sugli incassi online: quello che incassi resta tuo. Col piano Gratis, Aurya trattiene il ${PRICING.free_fee}% solo sui pagamenti online.`],
   ['In evidenza nel calendario pubblico',
    'A parità di data, i tuoi ritiri compaiono per primi, con il segno ✦ In evidenza.'],
-  ['Listino senza limiti',
-   'Nessun tetto alle voci del tuo listino (il piano Gratis arriva a 100: tante, ma non infinite).'],
-  ['Fino a 5 persone nel team',
-   'Tu più chi lavora con te, ognuno col suo accesso (il piano Gratis ne include 2).'],
   ['Supporto prioritario',
    'Le tue richieste passano davanti: ti rispondiamo per primi.'],
 ];

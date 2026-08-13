@@ -466,7 +466,7 @@ PRODUCT_CATALOG_PLANS.append({
     "currency": "EUR",
     "limits": {
         "analytics": -1,
-        "products": 100,     # ampio per un operatore ritiri, spinge il Pro
+        "products": -1,      # AB5 (founder 13/8): listino senza limiti anche nel Gratis
     },
     "sort_order": 11,
 })
@@ -1173,3 +1173,62 @@ async def migrate_pro_price_19_v1() -> None:
             __import__("datetime").timezone.utc).isoformat(),
     })
     logger.info("migrate_pro_price_19_v1: done.")
+
+
+async def migrate_plan_voices_lean_v1() -> None:
+    """AB5 (founder, 13/8/2026) — solo voci VERE nei piani del mondo
+    snello, e listino senza limiti anche nel Gratis.
+
+    - features_display: via coupon (pagina nascosta), via team (pagina
+      nascosta, CS3b), via catalogo/vetrine (o non-differenza o pagina
+      nascosta), via la voce-doppione del profilo e i tipi prodotto
+      del commerce congelato. Il Pro si vende su tre cose vere: zero
+      commissioni, evidenza nel calendario, supporto prioritario.
+    - product_catalog_retreat_free.limits.products: 100 -> -1 (il
+      founder dichiara il listino senza limiti su ENTRAMBI i piani).
+
+    features_display e limits sono protetti dai seed additivi: il
+    ritocco viaggia flag-gated come il cambio prezzo. Idempotente.
+    """
+    from database import db
+
+    migrations = db["migrations"]
+    if await migrations.find_one({"_id": "plan_voices_lean_v1"}):
+        return
+
+    logger.info("migrate_plan_voices_lean_v1: applying...")
+
+    free_features = [
+        "billing.features.retreat_ecommerce",
+        "billing.features.retreat_unlimited_listings",
+        "billing.features.retreat_public_page",
+        "billing.features.retreat_deposits_payments",
+        "billing.features.retreat_payment_reminders",
+        "billing.features.retreat_participants",
+        "billing.features.retreat_comms",
+        "billing.features.retreat_newsletter",
+        "billing.features.retreat_cashflow",
+        "billing.features.retreat_customers",
+    ]
+    pro_features = [
+        "billing.features.retreat_everything_free",
+        "billing.features.retreat_zero_fee",
+        "billing.features.retreat_featured",
+        "billing.features.retreat_priority_support",
+    ]
+    r1 = await db["commercial_plans"].update_one(
+        {"slug": "retreat_free"}, {"$set": {"features_display": free_features}})
+    r2 = await db["commercial_plans"].update_one(
+        {"slug": "retreat_pro"}, {"$set": {"features_display": pro_features}})
+    r3 = await db["pricing_plans"].update_one(
+        {"slug": "product_catalog_retreat_free", "limits.products": 100},
+        {"$set": {"limits.products": -1}})
+    logger.info("  - features free=%s pro=%s, catalogo free illimitato=%s",
+                r1.modified_count, r2.modified_count, r3.modified_count)
+
+    await migrations.insert_one({
+        "_id": "plan_voices_lean_v1",
+        "applied_at": __import__("datetime").datetime.now(
+            __import__("datetime").timezone.utc).isoformat(),
+    })
+    logger.info("migrate_plan_voices_lean_v1: done.")
