@@ -22,21 +22,7 @@ import { toast } from 'sonner';
 import api from '../../api/client';
 import { BRAND_EMAIL } from '../../config/brand';
 import { compressImage } from '../../lib/compressImage';
-import MultiLangSection from '../../components/MultiLangSection';
 import OnboardingStrip from '../onboarding/OnboardingStrip';
-
-// OP2 — dal dict per-campo di MultiLangSection ({en:'testo'}) alla shape
-// backend {en:{bio,tagline}}: un solo posto che fa la conversione.
-const mergeTr = (translations, field, perLang) => {
-  const out = { ...(translations || {}) };
-  for (const lang of ['en', 'de', 'fr']) {
-    const val = (perLang || {})[lang];
-    const entry = { ...(out[lang] || {}) };
-    if (val && val.trim()) entry[field] = val; else delete entry[field];
-    if (Object.keys(entry).length) out[lang] = entry; else delete out[lang];
-  }
-  return out;
-};
 
 const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'facebook', 'public_email', 'public_phone',
   // PR1 — carta d'identità
@@ -418,23 +404,11 @@ export default function PublicProfilePage() {
 
           {/* Tagline + bio + luogo */}
           <div className="rounded-xl border bg-card p-4 space-y-3">
-            {/* OP4c — UNA sezione sola con TUTTE le bandierine
-                (🇮🇹 inclusa, col badge "principale"): l'italiano non è
-                più una casella separata che un admin non italiano non
-                sa collocare. Nella tab Italiano si scrive l'originale,
-                nelle altre la traduzione col testo IT come placeholder. */}
-            <MultiLangSection
-              fields={[
-                { key: 'tagline', label: t('publicProfile.tagline', { defaultValue: 'Una frase che ti presenta' }),
-                  it: form.tagline, input: true, maxLength: 80,
-                  value: Object.fromEntries(['en', 'de', 'fr'].map(l => [l, form.translations?.[l]?.tagline || ''])),
-                  onChange: perLang => set('translations', mergeTr(form.translations, 'tagline', perLang)) },
-                { key: 'bio', label: t('publicProfile.bio', { defaultValue: 'Chi sei (bio)' }),
-                  it: form.bio, rows: 4, maxLength: 600,
-                  value: Object.fromEntries(['en', 'de', 'fr'].map(l => [l, form.translations?.[l]?.bio || ''])),
-                  onChange: perLang => set('translations', mergeTr(form.translations, 'bio', perLang)) },
-              ]}
-            >
+            {/* AC8 (founder, 13/8) — linea "solo italiano" (2/8): le
+                tab di traduzione EN/DE/FR spariscono dall'editor per
+                coerenza. Le traduzioni GIA' salvate restano in DB e
+                continuano a uscire in pubblico: qui si scrive solo
+                l'italiano. (Sostituisce il consolidato OP4c-bis.) */}
               <div className="space-y-3">
                 <div>
                   <Label>{t('publicProfile.tagline', { defaultValue: 'Una frase che ti presenta' })}</Label>
@@ -476,7 +450,6 @@ export default function PublicProfilePage() {
                   )}
                 </div>
               </div>
-            </MultiLangSection>
             {/* AN3 — località con autocomplete (Nominatim via /geo/search):
                 compila città E coordinate → l'operatore compare sulla
                 mappa e nel raggio "vicino a me" della directory */}

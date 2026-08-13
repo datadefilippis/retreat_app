@@ -169,13 +169,19 @@ class TestProfileEditorConsolidato:
             / "PublicProfilePage.js")
 
     def test_single_multilang_section_with_children(self):
+        """AC8 (founder, 13/8) — linea "solo italiano" (2/8): le tab di
+        traduzione EN/DE/FR sono SPARITE dall'editor profilo. Questo
+        test proteggeva il consolidato OP4c-bis; oggi protegge il suo
+        superamento. Le traduzioni gia' salvate restano in DB e in
+        pubblico: la pagina le rimanda cosi' com'erano, mai le cancella."""
         src = self.PAGE.read_text()
-        # children mode = tab Italiano presente (niente sezione
-        # traduzioni separata dalla casella italiana)
-        assert "</MultiLangSection>" in src,             "la sezione multilingua deve avvolgere i campi italiani"
-        # la tagline non deve avere una seconda casella fuori dalle tab
+        assert "MultiLangSection" not in src, \
+            "le tab di traduzione sono tornate nell'editor profilo"
+        # una sola casella italiana per campo, come prima
         assert src.count("set('tagline'") == 1
         assert src.count("set('bio'") == 1
+        # nascondere l'editor NON deve cancellare le traduzioni esistenti
+        assert "payload.translations = form.translations || {};" in src
 
     @pytest.mark.parametrize("lang", ["it", "en", "de", "fr"])
     def test_every_page_key_translated(self, lang):

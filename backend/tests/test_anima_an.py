@@ -638,11 +638,14 @@ class TestOperatorProfileMultilang:
         assert '"x-default"' in body
 
     def test_editor_has_multilang_section(self):
+        """AC8 (founder, 13/8) — linea "solo italiano": l'editor NON ha
+        piu' le tab di traduzione (OP2 superato su questa pagina). Il
+        salvataggio pero' continua a rimandare le traduzioni esistenti:
+        nascondere l'editor non deve mai cancellarle dal DB."""
         page = (FRONTEND_SRC / "features" / "settings"
                 / "PublicProfilePage.js").read_text()
-        assert "MultiLangSection" in page
-        assert "payload.translations" in page
-        assert "mergeTr" in page
+        assert "MultiLangSection" not in page
+        assert "payload.translations = form.translations || {};" in page
 
     def test_profile_page_refetches_on_language(self):
         page = (FRONTEND_SRC / "features" / "storefront"
