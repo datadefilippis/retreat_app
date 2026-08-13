@@ -678,6 +678,7 @@
     "optimizing": "Optimisation de la photo…",
     "uploadingPhoto": "Envoi de la photo…",
     "advancedTitle": "Pour aller plus loin",
-    "advancedHint": "Portrait, galerie, contacts publics et autres détails. Tout est facultatif."
+    "advancedHint": "Portrait, galerie, contacts publics et autres détails. Tout est facultatif.",
+    "unsaved": "Vous avez des modifications non enregistrées"
   }
 }

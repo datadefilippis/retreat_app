@@ -678,6 +678,7 @@
     "optimizing": "Foto wird optimiert…",
     "uploadingPhoto": "Foto wird hochgeladen…",
     "advancedTitle": "Mehr Details",
-    "advancedHint": "Porträt, Galerie, öffentliche Kontakte und weitere Angaben. Alles optional."
+    "advancedHint": "Porträt, Galerie, öffentliche Kontakte und weitere Angaben. Alles optional.",
+    "unsaved": "Du hast ungespeicherte Änderungen"
   }
 }

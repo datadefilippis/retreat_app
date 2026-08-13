@@ -43,6 +43,17 @@ const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'f
   'tagline', 'portrait_url', 'founded_year'];
 const PROFILE_LANGS = ['it', 'en', 'de', 'fr', 'es', 'pt'];
 
+// AC3 — la fotografia dei soli campi che il Salva persiste: serve al
+// confronto "ci sono modifiche non salvate?" (la barra fissa in basso).
+const snapshot = (f, name) => JSON.stringify({
+  fields: FIELDS.map(k => (f?.[k] ?? null) || null),
+  photos: f?.photos || [],
+  languages: f?.languages || [],
+  translations: f?.translations || {},
+  show_contacts: Boolean(f?.show_contacts),
+  name: (name || '').trim(),
+});
+
 // AN3 — autocomplete località per il profilo: stesso backend della
 // barra "Dove?" della directory (/public/geo/search, Nominatim+cache).
 function LocationAutocomplete({ value, onSelect, onTextChange }) {
@@ -112,6 +123,22 @@ export default function PublicProfilePage() {
   // località, un social) resta in vista, il resto vive qui sotto,
   // chiuso finché l'operatore non lo cerca
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  // AC3 — l'ultima fotografia SALVATA di form+nome: se quella attuale
+  // è diversa, compare la barra fissa "Modifiche non salvate". Gli
+  // upload (che il server persiste da soli) aggiornano solo il proprio
+  // campo nella fotografia, senza coprire altre modifiche in corso.
+  const [savedSnap, setSavedSnap] = useState(null);
+  const savedFormRef = useRef(null);
+  const markSaved = (f, name) => {
+    savedFormRef.current = { form: f, name };
+    setSavedSnap(snapshot(f, name));
+  };
+  const markFieldSaved = (key, value) => {
+    const base = savedFormRef.current || { form: {}, name: '' };
+    markSaved({ ...base.form, [key]: value }, base.name);
+  };
+  const dirty = Boolean(form) && savedSnap != null
+    && snapshot(form, orgName) !== savedSnap;
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -121,18 +148,24 @@ export default function PublicProfilePage() {
       api.get('/organizations/current'),
     ]).then(([ppRes, orgRes]) => {
       if (!mounted) return;
-      setForm(ppRes.status === 'fulfilled'
+      const loadedForm = ppRes.status === 'fulfilled'
         ? { show_contacts: false, ...ppRes.value.data }
-        : { show_contacts: false });
+        : { show_contacts: false };
+      setForm(loadedForm);
+      let loadedName = '';
       if (ppRes.status === 'fulfilled' && ppRes.value.data?.name) {
-        setOrgName(ppRes.value.data.name);
+        loadedName = ppRes.value.data.name;
+        setOrgName(loadedName);
       }
       if (orgRes.status === 'fulfilled') {
         const o = orgRes.value.data || {};
         setSlug(o.public_slug || o.store_slug || null);
-        setOrgName(o.name || '');
+        loadedName = o.name || '';
+        setOrgName(loadedName);
         setLogoUrl(o.branding?.logo_url || null);
       }
+      // AC3 — la base del confronto "modifiche non salvate"
+      markSaved(loadedForm, loadedName);
     });
     return () => { mounted = false; };
   }, []);
@@ -169,12 +202,15 @@ export default function PublicProfilePage() {
       // PV2 — l'intervista non si invia più: la scrive e pubblica il
       // team Aurya dal pannello admin (il backend la ignorerebbe comunque)
       const res = await api.patch('/organizations/current/public-profile', payload);
-      setForm({ show_contacts: false, ...res.data });
+      const savedForm = { show_contacts: false, ...res.data };
+      setForm(savedForm);
       if (res.data?.name) setOrgName(res.data.name);
       // CS4 (founder, 13/8) — il primo salvataggio genera lo slug (GT6):
       // senza questa riga il pulsante "Vedi il tuo profilo online"
       // compariva solo dopo un refresh manuale della pagina.
       if (res.data?.public_slug) setSlug(res.data.public_slug);
+      // AC3 — quello che il server ha risposto E' lo stato salvato
+      markSaved(savedForm, res.data?.name || orgName);
       setObKey(k => k + 1); // AC1 — la striscia-guida rilegge lo stato
       toast.success(t('publicProfile.saved', { defaultValue: 'Profilo salvato' }));
     } catch {
@@ -210,6 +246,7 @@ export default function PublicProfilePage() {
       const res = await api.post('/organizations/current/public-profile/cover', fd,
         { headers: { 'Content-Type': 'multipart/form-data' } });
       set('cover_url', res.data.cover_url);
+      markFieldSaved('cover_url', res.data.cover_url); // AC3 — già persistita
       setObKey(k => k + 1); // AC1 — la cover può completare "Presentati"
       toast.success(t('publicProfile.coverUploaded', { defaultValue: 'Cover caricata' }));
     } catch (err) {
@@ -229,6 +266,7 @@ export default function PublicProfilePage() {
       const res = await api.post('/organizations/current/public-profile/portrait', fd,
         { headers: { 'Content-Type': 'multipart/form-data' } });
       set('portrait_url', res.data.portrait_url);
+      markFieldSaved('portrait_url', res.data.portrait_url); // AC3
       toast.success(t('publicProfile.portraitUploaded', { defaultValue: 'Ritratto caricato' }));
     } catch (err) {
       toast.error(uploadErrorMessage(err));
@@ -245,6 +283,7 @@ export default function PublicProfilePage() {
       const res = await api.post('/organizations/current/public-profile/photos', fd,
         { headers: { 'Content-Type': 'multipart/form-data' } });
       set('photos', res.data.photos);
+      markFieldSaved('photos', res.data.photos); // AC3
       toast.success(t('publicProfile.photoUploaded', { defaultValue: 'Foto aggiunta' }));
     } catch (err) {
       toast.error(uploadErrorMessage(err));
@@ -691,6 +730,27 @@ export default function PublicProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* AC3 — Salva sempre a portata di mano: su un form lungo chi
+          modifica la bio in alto non trova il bottone in fondo. La
+          barra compare SOLO con modifiche non salvate e sparisce al
+          salvataggio: mai rumore a riposo. md:left-64 = la sidebar. */}
+      {dirty && (
+        <div className="fixed inset-x-0 bottom-0 z-40 md:left-64"
+             data-testid="unsaved-bar">
+          <div className="mx-auto max-w-6xl px-4 pb-4">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/40 bg-card px-4 py-3 shadow-lg">
+              <p className="text-sm font-medium text-foreground">
+                {t('publicProfile.unsaved', { defaultValue: 'Hai modifiche non salvate' })}
+              </p>
+              <Button size="sm" onClick={save} disabled={saving} className="font-semibold shrink-0">
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t('publicProfile.save', { defaultValue: 'Salva profilo' })}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }

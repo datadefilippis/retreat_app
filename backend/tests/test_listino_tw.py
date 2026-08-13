@@ -353,6 +353,36 @@ class TestAc2ProfiloEssenziale:
         assert salva < intervista < toggle
 
 
+class TestAc3SalvaAPortata:
+    """AC3 — su un form lungo chi modifica in alto non trova il Salva
+    in fondo: barra fissa "Hai modifiche non salvate" che compare SOLO
+    a modifiche pendenti e sparisce al salvataggio."""
+
+    PAGE = FRONTEND_SRC / "features" / "settings" / "PublicProfilePage.js"
+
+    def test_barra_solo_a_modifiche_pendenti(self):
+        src = self.PAGE.read_text()
+        assert 'data-testid="unsaved-bar"' in src
+        assert "{dirty && (" in src, "la barra deve comparire solo se dirty"
+        # dirty = confronto con l'ultima fotografia SALVATA, mai un flag
+        assert "snapshot(form, orgName) !== savedSnap" in src
+
+    def test_base_del_confronto_a_load_e_save(self):
+        """La fotografia si aggiorna al load e a ogni salvataggio:
+        senza, la barra resterebbe accesa dopo il Salva."""
+        src = self.PAGE.read_text()
+        assert src.count("markSaved(") >= 3  # definizione + load + save
+
+    def test_upload_non_lasciano_la_barra_accesa(self):
+        """Cover/ritratto/foto sono persistiti dal server al volo: ogni
+        upload aggiorna il proprio campo nella fotografia salvata senza
+        coprire altre modifiche in corso (markFieldSaved puntuale)."""
+        src = self.PAGE.read_text()
+        assert "markFieldSaved('cover_url'" in src
+        assert "markFieldSaved('portrait_url'" in src
+        assert "markFieldSaved('photos'" in src
+
+
 class TestProfileListinoTW2:
     """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
     card rete con da-X-euro, OfferCatalog nella shell. I bottoni
