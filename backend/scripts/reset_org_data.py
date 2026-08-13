@@ -33,7 +33,10 @@ DELETED (scoped to the user's organization_id):
     temp_uploads, customer_metrics, product_metrics,
     payment_connections, digests, ai_usage_events, chat_sessions,
     organization_modules, module_subscriptions, billing_events,
-    catalog_audit_log, invites
+    catalog_audit_log, invites, availability_index, reviews,
+    content_translations, page_views, visibility_stats,
+    payment_schedules, payment_events, platform_fee_ledger,
+    org_quota_notices, consent_audit
 
 The script is idempotent: re-running after an execute is a no-op (counts=0).
 """
@@ -69,6 +72,9 @@ ORG_SCOPED_COLLECTIONS = [
     "customers",
     "suppliers",
     "orders",
+    "availability_index",
+    "reviews",
+    "content_translations",
     # finance
     "sales_records",
     "expense_records",
@@ -86,6 +92,8 @@ ORG_SCOPED_COLLECTIONS = [
     "kpi_snapshots",
     "customer_metrics",
     "product_metrics",
+    "page_views",
+    "visibility_stats",
     # audit + chat + ai
     "audit_logs",
     "ai_usage_events",
@@ -94,6 +102,11 @@ ORG_SCOPED_COLLECTIONS = [
     "catalog_audit_log",
     # payments + modules + billing
     "payment_connections",
+    "payment_schedules",
+    "payment_events",
+    "platform_fee_ledger",
+    "org_quota_notices",
+    "consent_audit",
     "organization_modules",
     "module_configs",
     "module_subscriptions",
@@ -212,6 +225,14 @@ async def main():
             print(f"  {name}: {count}")
     else:
         print("\n✅ All org-scoped collections are empty. User account and organization preserved.")
+
+    print(
+        "\n⚠️  organization_modules and module_subscriptions were wiped too: the org is\n"
+        "    left with NO active plan and the app will look empty even to its admin.\n"
+        "    Re-provision before testing:\n"
+        "      from services.plan_provisioning import provision_commercial_plan\n"
+        "      await provision_commercial_plan(org_id, 'retreat_pro', assigned_by='reset')"
+    )
 
 
 if __name__ == "__main__":
