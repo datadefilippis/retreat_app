@@ -105,10 +105,13 @@ export default function CookieConsentBanner() {
               {t('cookie_banner.details_link')}
             </a>
           </div>
+          {/* AC5 — la X aveva la STESSA etichetta aria del bottone
+              "Solo essenziali": per uno screen reader erano due bottoni
+              identici. Etichetta dedicata che dice cosa fa. */}
           <button
             type="button"
             onClick={() => choose(false)}
-            aria-label={t('cookie_banner.essential_button')}
+            aria-label={t('cookie_banner.close_button', { defaultValue: 'Chiudi e continua con i soli cookie essenziali' })}
             className="rounded p-1 text-muted-foreground hover:bg-accent"
           >
             <X className="h-4 w-4" />

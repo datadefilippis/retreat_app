@@ -395,30 +395,35 @@ export const Sidebar = () => {
               )}
             </nav>
 
-            <Separator className="my-4 bg-white/10" />
-
-            {/* Entity + Intelligence (merged) */}
-            <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
-              {t('nav.master_data')}
-            </p>
-            <nav className="space-y-1 mb-4">
-              {entityNav.map((item) =>
-                item.children ? (
-                  <NavGroup key={item.nameKey} item={item} navLinkClass={navLinkClass} location={location} />
-                ) : (
-                  <NavLink
-                    key={item.nameKey}
-                    to={item.href}
-                    end={item.end}
-                    data-testid={`nav-${item.nameKey.replace(/[\s.]+/g, '-')}`}
-                    className={navLinkClass}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {resolveName(item)}
-                  </NavLink>
-                )
-              )}
-            </nav>
+            {/* Entity + Intelligence (merged). AC5 — nel mondo snello
+                entityNav e' vuoto: niente intestazione "Dati base"
+                orfana sopra il nulla. */}
+            {entityNav.length > 0 && (
+              <>
+                <Separator className="my-4 bg-white/10" />
+                <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
+                  {t('nav.master_data')}
+                </p>
+                <nav className="space-y-1 mb-4">
+                  {entityNav.map((item) =>
+                    item.children ? (
+                      <NavGroup key={item.nameKey} item={item} navLinkClass={navLinkClass} location={location} />
+                    ) : (
+                      <NavLink
+                        key={item.nameKey}
+                        to={item.href}
+                        end={item.end}
+                        data-testid={`nav-${item.nameKey.replace(/[\s.]+/g, '-')}`}
+                        className={navLinkClass}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {resolveName(item)}
+                      </NavLink>
+                    )
+                  )}
+                </nav>
+              </>
+            )}
 
             <Separator className="my-4 bg-white/10" />
 

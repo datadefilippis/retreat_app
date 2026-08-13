@@ -20,7 +20,8 @@
     "body": "Usiamo cookie tecnici essenziali (autenticazione e lingua) e, solo con il tuo consenso, Google Analytics per capire come viene usato il sito e migliorarlo. Nessun cookie pubblicitario, mai.",
     "details_link": "Dettagli nell'Informativa sulla Privacy",
     "accept_button": "Accetta",
-    "essential_button": "Solo essenziali"
+    "essential_button": "Solo essenziali",
+    "close_button": "Chiudi e continua con i soli cookie essenziali"
   },
   "customer_reconsent": {
     "title": "Aggiornamento condizioni del negozio",

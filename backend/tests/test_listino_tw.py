@@ -405,6 +405,44 @@ class TestAc4RimozioneFotoIstantanea:
         assert "richiede Salva" not in src
 
 
+class TestAc5ParoleUmane:
+    """AC5 — passata microcopy per il non-tecnico: via il gergo
+    ("Tagline", "Impression"), via l'intestazione "Dati base" orfana
+    nel menu snello, etichetta aria dedicata alla X del banner cookie."""
+
+    def _locale(self, lang, ns):
+        import json
+        return json.loads(
+            (FRONTEND_SRC / "locales" / lang / f"{ns}.json").read_text())
+
+    def test_tagline_diventa_una_frase_che_ti_presenta(self):
+        it = self._locale("it", "settings")["publicProfile"]
+        assert it["tagline"] == "Una frase che ti presenta"
+        assert "Tagline" not in it["tagline"]
+        # anche l'hint Visibilita' parla italiano, non ad-tech
+        assert "Impression" not in it["visibilityHint"]
+
+    def test_impression_diventa_apparizioni(self):
+        vis = self._locale("it", "common")["visibility"]
+        assert vis["impressions"] == "Apparizioni"
+        dash = self._locale("it", "dashboard")["home"]
+        assert dash["visibility_impressions"] == "apparizioni"
+
+    def test_menu_snello_senza_intestazione_orfana(self):
+        """entityNav e' vuoto nel mondo snello: l'intestazione "Dati
+        base" non deve galleggiare sopra il nulla."""
+        src = (FRONTEND_SRC / "components" / "Layout.js").read_text()
+        assert "entityNav.length > 0 && (" in src
+
+    def test_x_del_banner_cookie_con_etichetta_propria(self):
+        src = (FRONTEND_SRC / "components" / "legal"
+               / "CookieConsentBanner.js").read_text()
+        assert "cookie_banner.close_button" in src
+        for lang in ("it", "en", "de", "fr"):
+            legal = self._locale(lang, "legal")["cookie_banner"]
+            assert legal.get("close_button"), f"{lang}: manca close_button"
+
+
 class TestProfileListinoTW2:
     """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
     card rete con da-X-euro, OfferCatalog nella shell. I bottoni

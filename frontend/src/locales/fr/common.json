@@ -204,8 +204,8 @@
   "visibility": {
     "title": "Visibilité",
     "subtitle": "Combien de personnes te voient et te visitent sur Aurya, et d’où elles viennent.",
-    "impressions": "Impressions",
-    "impressionsSub": "apparitions dans les recherches",
+    "impressions": "Apparitions",
+    "impressionsSub": "combien de fois tu es apparu dans les recherches et les listes",
     "visits": "Visites",
     "uniques": "Visiteurs uniques",
     "bookings": "Réservations",

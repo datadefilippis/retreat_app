@@ -249,7 +249,7 @@ export default function OperatorHome() {
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <span>
             <span className="font-bold tabular-nums">{visibility.summary.impressions?.current || 0}</span>{' '}
-            <span className="text-muted-foreground">{t('home.visibility_impressions', { defaultValue: 'impression' })}</span>
+            <span className="text-muted-foreground">{t('home.visibility_impressions', { defaultValue: 'apparizioni' })}</span>
           </span>
           <span>
             <span className="font-bold tabular-nums">{visibility.summary.visits.current}</span>{' '}

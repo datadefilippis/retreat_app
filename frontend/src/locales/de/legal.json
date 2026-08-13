@@ -20,7 +20,8 @@
     "body": "Wir verwenden essenzielle technische Cookies (Anmeldung und Sprache) und, nur mit deiner Einwilligung, Google Analytics, um die Nutzung der Website zu verstehen und sie zu verbessern. Keine Werbe-Cookies, niemals.",
     "details_link": "Details in der Datenschutzerklärung",
     "accept_button": "Akzeptieren",
-    "essential_button": "Nur essenzielle"
+    "essential_button": "Nur essenzielle",
+    "close_button": "Schließen und nur mit essenziellen Cookies fortfahren"
   },
   "customer_reconsent": {
     "title": "Shop-Bedingungen aktualisiert",

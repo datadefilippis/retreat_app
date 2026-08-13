@@ -20,7 +20,8 @@
     "body": "We use essential technical cookies (authentication and language) and, only with your consent, Google Analytics to understand how the site is used and improve it. No advertising cookies, ever.",
     "details_link": "Details in the Privacy Policy",
     "accept_button": "Accept",
-    "essential_button": "Essential only"
+    "essential_button": "Essential only",
+    "close_button": "Close and continue with essential cookies only"
   },
   "customer_reconsent": {
     "title": "Store terms updated",

@@ -127,11 +127,11 @@ export default function VisibilityPage() {
             {/* A — il colpo d'occhio: mese corrente vs precedente */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <StatCard loading={loading} icon={Eye}
-                        label={t('visibility.impressions', { defaultValue: 'Impression' })}
+                        label={t('visibility.impressions', { defaultValue: 'Apparizioni' })}
                         value={s.impressions?.current?.toLocaleString(lang)}
                         delta={deltaPct(s.impressions?.current, s.impressions?.previous)}
                         deltaLabel={t('visibility.vsPrevMonth', { defaultValue: 'vs mese prec.' })}
-                        sublabel={t('visibility.impressionsSub', { defaultValue: 'apparizioni nelle ricerche' })} />
+                        sublabel={t('visibility.impressionsSub', { defaultValue: 'quante volte sei comparso in ricerche e liste' })} />
               <StatCard loading={loading} icon={MousePointerClick}
                         label={t('visibility.visits', { defaultValue: 'Visite' })}
                         value={visitsNow.toLocaleString(lang)}

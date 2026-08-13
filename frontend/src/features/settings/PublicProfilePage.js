@@ -425,7 +425,7 @@ export default function PublicProfilePage() {
                 nelle altre la traduzione col testo IT come placeholder. */}
             <MultiLangSection
               fields={[
-                { key: 'tagline', label: t('publicProfile.tagline', { defaultValue: 'Tagline (una frase che ti descrive)' }),
+                { key: 'tagline', label: t('publicProfile.tagline', { defaultValue: 'Una frase che ti presenta' }),
                   it: form.tagline, input: true, maxLength: 80,
                   value: Object.fromEntries(['en', 'de', 'fr'].map(l => [l, form.translations?.[l]?.tagline || ''])),
                   onChange: perLang => set('translations', mergeTr(form.translations, 'tagline', perLang)) },
@@ -437,7 +437,7 @@ export default function PublicProfilePage() {
             >
               <div className="space-y-3">
                 <div>
-                  <Label>{t('publicProfile.tagline', { defaultValue: 'Tagline (una frase che ti descrive)' })}</Label>
+                  <Label>{t('publicProfile.tagline', { defaultValue: 'Una frase che ti presenta' })}</Label>
                   <input
                     value={form.tagline || ''}
                     onChange={e => set('tagline', e.target.value.slice(0, 80))}
@@ -687,7 +687,7 @@ export default function PublicProfilePage() {
                       {t('publicProfile.visibilityTitle', { defaultValue: 'Quante persone ti vedono?' })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {t('publicProfile.visibilityHint', { defaultValue: 'Impression, visite e prenotazioni di questo profilo sono nella pagina Visibilità.' })}
+                      {t('publicProfile.visibilityHint', { defaultValue: 'Quante volte sei comparso nelle ricerche, visite e prenotazioni: tutto nella pagina Visibilità.' })}
                     </p>
                   </div>
                 </Link>
