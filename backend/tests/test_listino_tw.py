@@ -263,6 +263,41 @@ class TestCs4PrimoSalvataggio:
                "profileDetail.missing?.includes('social')" in src
 
 
+class TestAc1StrisciaGuida:
+    """AC1 (ciclo Accompagnamento, 13/8) — la guida non ti molla:
+    l'operatore poco digitale esce da /inizia per compilare profilo o
+    listino e la striscia in testa gli dice a che punto e' e qual e'
+    il prossimo passo. A configurazione completa sparisce."""
+
+    STRIP = FRONTEND_SRC / "features" / "onboarding" / "OnboardingStrip.js"
+
+    def test_striscia_derivata_e_silenziosa_a_fine_corsa(self):
+        src = self.STRIP.read_text()
+        # stato SEMPRE derivato dall'endpoint, mai flag locali
+        assert "organizations/current/onboarding-status" in src
+        # zero rumore per chi ha finito, e niente striscia nel legacy
+        assert "if (!status || status.is_complete) return null;" in src
+        assert "if (!('online' in s)) return null;" in src
+        assert 'data-testid="onboarding-strip"' in src
+        assert 'data-testid="strip-next-cta"' in src
+
+    def test_profilo_monta_la_striscia_e_la_aggiorna_al_salva(self):
+        src = (FRONTEND_SRC / "features" / "settings"
+               / "PublicProfilePage.js").read_text()
+        assert 'OnboardingStrip step="profile"' in src
+        # il salvataggio E la cover (che puo' completare il passo)
+        # incrementano la chiave: la striscia rilegge lo stato
+        assert src.count("setObKey(k => k + 1)") >= 2
+
+    def test_listino_monta_la_striscia_su_stato_derivato(self):
+        src = (FRONTEND_SRC / "features" / "listino"
+               / "ListinoPage.js").read_text()
+        assert 'OnboardingStrip step="listino"' in src
+        # refreshKey dai servizi PUBBLICATI: primo servizio online →
+        # la striscia passa da "passo 2" a "ti manca Presentati"
+        assert "rows.filter(r => r.published).length" in src
+
+
 class TestProfileListinoTW2:
     """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
     card rete con da-X-euro, OfferCatalog nella shell. I bottoni

@@ -29,6 +29,9 @@ import { serviceOptionsAPI } from '../../api/serviceOptions';
 import api from '../../api/client';
 import { trackEvent } from '../../lib/analytics';
 import { AppLayout, Header } from '../../components/Layout';
+// AC1 — striscia-guida: finché la configurazione non è completa dice
+// a che punto sei e qual è il prossimo passo (stessa di /public-profile)
+import OnboardingStrip from '../onboarding/OnboardingStrip';
 // LM1 — riuso puro: l'editor opzioni e l'avviso Stripe sono gli stessi
 // componenti di ServiceDashboardPage, nessuna copia locale.
 import ServiceOptionsEditor from '../services/components/ServiceOptionsEditor';
@@ -445,6 +448,11 @@ export default function ListinoPage() {
       />
       <div className="p-4 md:p-8">
     <div className="mx-auto max-w-3xl space-y-5" data-testid="listino-page">
+      {/* AC1 — la guida non ti molla: il refreshKey deriva dai servizi
+          pubblicati, così la striscia si aggiorna appena il primo
+          servizio va online (stato derivato, mai flag) */}
+      <OnboardingStrip step="listino"
+                       refreshKey={rows.filter(r => r.published).length} />
       {/* PV7 — patto di responsabilita' non ancora firmato: banner
           sobrio ma visibile. Firmato → nessun rumore (il banner si
           auto-nasconde, lo stato vive in SalesConditionsCard). */}

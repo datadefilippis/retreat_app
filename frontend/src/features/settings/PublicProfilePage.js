@@ -23,6 +23,7 @@ import api from '../../api/client';
 import { BRAND_EMAIL } from '../../config/brand';
 import { compressImage } from '../../lib/compressImage';
 import MultiLangSection from '../../components/MultiLangSection';
+import OnboardingStrip from '../onboarding/OnboardingStrip';
 
 // OP2 — dal dict per-campo di MultiLangSection ({en:'testo'}) alla shape
 // backend {en:{bio,tagline}}: un solo posto che fa la conversione.
@@ -104,6 +105,9 @@ export default function PublicProfilePage() {
   // PV1 — fase "Ottimizzo la foto": compressione client in corso
   const [optimizing, setOptimizing] = useState(false);
   const [copied, setCopied] = useState(false);
+  // AC1 — ogni salvataggio che può cambiare lo stato onboarding
+  // incrementa la chiave: la striscia-guida si riaggiorna da sola
+  const [obKey, setObKey] = useState(0);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -167,6 +171,7 @@ export default function PublicProfilePage() {
       // senza questa riga il pulsante "Vedi il tuo profilo online"
       // compariva solo dopo un refresh manuale della pagina.
       if (res.data?.public_slug) setSlug(res.data.public_slug);
+      setObKey(k => k + 1); // AC1 — la striscia-guida rilegge lo stato
       toast.success(t('publicProfile.saved', { defaultValue: 'Profilo salvato' }));
     } catch {
       toast.error(t('publicProfile.saveError', { defaultValue: 'Errore nel salvataggio' }));
@@ -201,6 +206,7 @@ export default function PublicProfilePage() {
       const res = await api.post('/organizations/current/public-profile/cover', fd,
         { headers: { 'Content-Type': 'multipart/form-data' } });
       set('cover_url', res.data.cover_url);
+      setObKey(k => k + 1); // AC1 — la cover può completare "Presentati"
       toast.success(t('publicProfile.coverUploaded', { defaultValue: 'Cover caricata' }));
     } catch (err) {
       toast.error(uploadErrorMessage(err));
@@ -298,6 +304,9 @@ export default function PublicProfilePage() {
       </Header>
 
       <div className="p-4 md:p-8 grid gap-6 lg:grid-cols-2 max-w-6xl">
+        {/* AC1 — la guida non ti molla: a configurazione incompleta la
+            striscia dice a che punto sei e dove andare dopo il salva */}
+        <OnboardingStrip step="profile" refreshKey={obKey} className="lg:col-span-2" />
         {/* ── Form ── */}
         <div className="space-y-5">
           {/* Completezza */}
