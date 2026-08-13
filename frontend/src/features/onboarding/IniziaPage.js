@@ -15,7 +15,7 @@ import { AppLayout, Header } from '../../components/Layout';
 import { Skeleton } from '../../components/ui/skeleton';
 import {
   CreditCard, Store, Tent, Rocket, Sparkles, Check, ArrowRight,
-  ExternalLink, PartyPopper, ListChecks, Globe,
+  ExternalLink, PartyPopper, ListChecks, Globe, MessageCircle,
 } from 'lucide-react';
 import api from '../../api/client';
 
@@ -137,6 +137,19 @@ export default function IniziaPage() {
 
   const STEPS = lean ? LEAN_STEPS : LEGACY_STEPS;
 
+  // AC7 — la pagina e' viva ma nessuno la vedra' finche' l'operatore
+  // non la condivide, e il suo canale e' WhatsApp: un bottone con il
+  // messaggio gia' scritto e' l'unico marketing che fara' davvero.
+  const profileAbsUrl = links.profile
+    ? `${window.location.origin}${links.profile}` : null;
+  const waHref = profileAbsUrl
+    ? `https://wa.me/?text=${encodeURIComponent(
+        t('onboarding.wa_share_message', {
+          url: profileAbsUrl,
+          defaultValue: 'Questa è la mia pagina su Aurya: qui trovi le mie pratiche e puoi chiedere un appuntamento. {{url}}',
+        }))}`
+    : null;
+
   return (
     <AppLayout>
       <Header
@@ -202,6 +215,15 @@ export default function IniziaPage() {
                 {t('onboarding.link_network', { defaultValue: 'Gli operatori della rete' })} <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </div>
+            {/* AC7 — il primo passo fuori: condividi dove vivi gia' */}
+            {waHref && (
+              <a href={waHref} target="_blank" rel="noreferrer"
+                 data-testid="share-whatsapp"
+                 className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1ebe5b]">
+                <MessageCircle className="h-4 w-4" aria-hidden />
+                {t('onboarding.wa_share_cta', { defaultValue: 'Condividi la tua pagina su WhatsApp' })}
+              </a>
+            )}
             <p className="text-xs text-muted-foreground mt-3">
               {lean
                 ? t('onboarding.lean_done_next', { defaultValue: 'Le richieste di appuntamento ti arrivano via email e le trovi in Ordini.' })

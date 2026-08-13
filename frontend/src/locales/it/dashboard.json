@@ -145,6 +145,8 @@
     "link_profile": "Il tuo profilo",
     "link_directory": "La directory dei ritiri",
     "banner_title": "Completa la configurazione",
-    "banner_body": "Ti mancano {{count}} passi per essere online."
+    "banner_body": "Ti mancano {{count}} passi per essere online.",
+    "wa_share_cta": "Condividi la tua pagina su WhatsApp",
+    "wa_share_message": "Questa è la mia pagina su Aurya: qui trovi le mie pratiche e puoi chiedere un appuntamento. {{url}}"
   }
 }

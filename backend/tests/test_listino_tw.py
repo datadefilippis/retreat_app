@@ -467,6 +467,32 @@ class TestAc6AiutoBio:
         assert len(pp["bioHelperExample"]) > 80
 
 
+class TestAc7CondividiWhatsapp:
+    """AC7 — la pagina e' viva ma nessuno la vedra' finche' l'operatore
+    non la condivide, e il suo canale e' WhatsApp: nel riquadro "Sei
+    online!" un bottone wa.me con il messaggio gia' scritto e il link
+    assoluto alla pagina."""
+
+    PAGE = FRONTEND_SRC / "features" / "onboarding" / "IniziaPage.js"
+
+    def test_bottone_wa_me_con_messaggio_pronto(self):
+        src = self.PAGE.read_text()
+        assert 'data-testid="share-whatsapp"' in src
+        assert "https://wa.me/?text=" in src
+        assert "encodeURIComponent" in src, "il messaggio va URL-encodato"
+        # link ASSOLUTO: wa.me su un path relativo non porta da nessuna parte
+        assert "window.location.origin}${links.profile}" in src
+
+    def test_messaggio_x4_lingue(self):
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            ob = json.loads((FRONTEND_SRC / "locales" / lang
+                             / "dashboard.json").read_text())["onboarding"]
+            assert ob.get("wa_share_cta"), f"{lang}: manca wa_share_cta"
+            assert "{{url}}" in ob.get("wa_share_message", ""), \
+                f"{lang}: il messaggio deve contenere il link"
+
+
 class TestProfileListinoTW2:
     """TW2 — il profilo E' il negozio: listino sull'endpoint pubblico,
     card rete con da-X-euro, OfferCatalog nella shell. I bottoni

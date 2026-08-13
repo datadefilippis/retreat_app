@@ -63,6 +63,8 @@
     "link_profile": "Votre profil",
     "link_directory": "L'annuaire des retraites",
     "banner_title": "Terminez la configuration",
-    "banner_body": "Il vous manque {{count}} étapes pour être en ligne."
+    "banner_body": "Il vous manque {{count}} étapes pour être en ligne.",
+    "wa_share_cta": "Partage ta page sur WhatsApp",
+    "wa_share_message": "Voici ma page sur Aurya : tu y trouveras mes pratiques et tu peux demander un rendez-vous. {{url}}"
   }
 }

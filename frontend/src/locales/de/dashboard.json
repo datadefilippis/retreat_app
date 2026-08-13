@@ -63,6 +63,8 @@
     "link_profile": "Dein Profil",
     "link_directory": "Das Retreat-Verzeichnis",
     "banner_title": "Schließe die Einrichtung ab",
-    "banner_body": "Dir fehlen noch {{count}} Schritte, um online zu sein."
+    "banner_body": "Dir fehlen noch {{count}} Schritte, um online zu sein.",
+    "wa_share_cta": "Teile deine Seite auf WhatsApp",
+    "wa_share_message": "Das ist meine Seite auf Aurya: hier findest du meine Angebote und kannst einen Termin anfragen. {{url}}"
   }
 }

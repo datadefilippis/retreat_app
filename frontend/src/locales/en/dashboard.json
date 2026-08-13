@@ -145,6 +145,8 @@
     "link_profile": "Your profile",
     "link_directory": "The retreats directory",
     "banner_title": "Finish setting up",
-    "banner_body": "{{count}} steps left to go live."
+    "banner_body": "{{count}} steps left to go live.",
+    "wa_share_cta": "Share your page on WhatsApp",
+    "wa_share_message": "This is my page on Aurya: here you can see my practices and request an appointment. {{url}}"
   }
 }
