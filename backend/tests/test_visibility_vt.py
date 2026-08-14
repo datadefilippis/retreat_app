@@ -130,7 +130,8 @@ class TestTrackEndpoint:
 
 class TestConstants:
     def test_surfaces_and_channels(self):
-        assert set(SURFACES) == {"profile", "event", "store"}
+        # LK4 (14/8) — "links" = la pagina link /@slug del ciclo LK
+        assert set(SURFACES) == {"profile", "event", "store", "links"}
         assert set(CHANNELS) == {"directory", "store", "search",
                                  "social", "direct"}
 

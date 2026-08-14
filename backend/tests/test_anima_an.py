@@ -185,7 +185,10 @@ class TestOperatorGeoAn3:
     def test_geocoding_is_best_effort(self):
         """City senza coordinate → geocoding con la stessa cache
         Nominatim; MAI bloccante per il salvataggio del profilo."""
-        idx = self.ORG_SRC.index("_geocode_profile_if_needed")
+        # LK6 (14/8): si ancora alla DEF, non alla prima occorrenza —
+        # il call-site nel PATCH ora precede la funzione e il blocco
+        # link_page in mezzo spingeva l'import fuori dalla finestra.
+        idx = self.ORG_SRC.index("def _geocode_profile_if_needed")
         block = self.ORG_SRC[idx:idx + 2000]
         assert "from services.geocoding import geocode" in block
         assert "except Exception" in block

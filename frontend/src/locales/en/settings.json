@@ -719,6 +719,10 @@
     "photoRemoved": "Photo removed",
     "bioHelperTitle": "Not sure where to start? Answer three questions:",
     "bioHelperQuestions": "Who are you? · What practice do you offer? · How long have you lived it?",
-    "bioHelperExample": "E.g. “I'm Lucia, I've taught yoga for twelve years. I work with people who need to slow down, in one-to-one sessions and small groups among the olive trees of my land.”"
+    "bioHelperExample": "E.g. “I'm Lucia, I've taught yoga for twelve years. I work with people who need to slow down, in one-to-one sessions and small groups among the olive trees of my land.”",
+    "portraitShort": "Your portrait",
+    "photosWhy": "The cover is the backdrop of your page; the portrait is the face shown next to your name and on your link page.",
+    "phonePh": "Phone / WhatsApp",
+    "phoneWhy": "The number also powers the WhatsApp button on your link page, even if contacts stay hidden here."
   }
 }
