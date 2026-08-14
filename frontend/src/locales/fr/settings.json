@@ -690,6 +690,8 @@
     "portraitShort": "Votre portrait",
     "photosWhy": "La couverture est le fond de votre page ; le portrait est le visage affiché à côté de votre nom et sur votre page de liens.",
     "phonePh": "Téléphone / WhatsApp",
-    "phoneWhy": "Le numéro alimente aussi le bouton WhatsApp de votre page de liens, même si les contacts restent masqués ici."
+    "phoneWhy": "Le numéro alimente aussi le bouton WhatsApp de votre page de liens, même si les contacts restent masqués ici.",
+    "disciplines": "Vos disciplines",
+    "disciplinesHint": "Choisissez ce que vous pratiquez vraiment : on filtre les praticiens par discipline."
   }
 }

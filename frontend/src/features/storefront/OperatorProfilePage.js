@@ -24,6 +24,8 @@ import OperatorIdentityHeader from './components/OperatorIdentityHeader';
 // listino si espande su un harness che riusa il checkout dello storefront
 // (CheckoutForm/OrderSummary/useCheckoutForm, zero fork di logica).
 import InlineServiceCheckout from './components/checkout/InlineServiceCheckout';
+// DI — label discipline (specchio di models/disciplines.py)
+import { disciplineLabel } from '../../lib/disciplines';
 
 function fmtPrice(n) {
   if (n == null) return null;
@@ -681,6 +683,17 @@ export default function OperatorProfilePage() {
             )}
             {data.tagline && (
               <p className="text-sm text-gray-700 italic mb-3">"{data.tagline}"</p>
+            )}
+            {/* DI (founder 14/8) — le discipline dichiarate, chip nel
+                verde del brand (label da lib/disciplines.js) */}
+            {(data.disciplines || []).length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-1.5" data-testid="profile-disciplines">
+                {data.disciplines.map(d => (
+                  <span key={d} className="rounded-full bg-[#376254]/10 px-2 py-0.5 text-[11px] text-[#376254]">
+                    {disciplineLabel(d)}
+                  </span>
+                ))}
+              </div>
             )}
             <dl className="space-y-2 text-sm">
               {(data.city || data.region) && (

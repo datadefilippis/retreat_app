@@ -26,6 +26,8 @@ import OnboardingStrip from '../onboarding/OnboardingStrip';
 // LK3 — la pagina link per la bio di Instagram: card autonoma,
 // salvataggio immediato, fuori dal circuito snapshot/dirty del form
 import LinkPageCard from './LinkPageCard';
+// DI — tassonomia discipline (specchio di models/disciplines.py)
+import { DISCIPLINE_FAMILIES, DISCIPLINES_MAX } from '../../lib/disciplines';
 
 const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'facebook', 'public_email', 'public_phone',
   // PR1 — carta d'identità
@@ -38,6 +40,7 @@ const snapshot = (f, name) => JSON.stringify({
   fields: FIELDS.map(k => (f?.[k] ?? null) || null),
   photos: f?.photos || [],
   languages: f?.languages || [],
+  disciplines: f?.disciplines || [],   // DI — discipline dichiarate
   translations: f?.translations || {},
   show_contacts: Boolean(f?.show_contacts),
   name: (name || '').trim(),
@@ -186,6 +189,7 @@ export default function PublicProfilePage() {
       payload.show_contacts = Boolean(form.show_contacts);
       payload.photos = form.photos || [];
       payload.languages = form.languages || [];
+      payload.disciplines = form.disciplines || [];   // DI
       // OP2 — traduzioni manuali bio/tagline (stesso processo dei prodotti)
       payload.translations = form.translations || {};
       // PV2 — l'intervista non si invia più: la scrive e pubblica il
@@ -497,6 +501,59 @@ export default function PublicProfilePage() {
                   📍 {t('publicProfile.locationPinned', { defaultValue: 'Posizione agganciata alla mappa' })} ({Number(form.latitude).toFixed(3)}, {Number(form.longitude).toFixed(3)})
                 </p>
               )}
+            </div>
+          </div>
+
+          {/* DI (founder 14/8) — le discipline che l'operatore PRATICA:
+              multi-selezione a chip raggruppate per famiglia, dalla
+              tassonomia unica (lib/disciplines.js, specchio del
+              backend). Alimentano il filtro Disciplina della
+              directory e i badge sul profilo. */}
+          <div className="rounded-xl border bg-card p-4 space-y-3" id="pp-discipline">
+            <div className="flex items-baseline justify-between gap-3">
+              <Label>{t('publicProfile.disciplines', { defaultValue: 'Le tue discipline' })}</Label>
+              <span className="text-[11px] text-muted-foreground">
+                {(form.disciplines || []).length}/{DISCIPLINES_MAX}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground -mt-1">
+              {t('publicProfile.disciplinesHint', { defaultValue: 'Scegli quello che pratichi davvero: chi cerca un operatore filtra per disciplina.' })}
+            </p>
+            <div className="space-y-3">
+              {DISCIPLINE_FAMILIES.map(fam => (
+                <div key={fam.slug}>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+                    {fam.label}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {fam.items.map(d => {
+                      const sel = (form.disciplines || []).includes(d.slug);
+                      const full = !sel && (form.disciplines || []).length >= DISCIPLINES_MAX;
+                      return (
+                        <button key={d.slug} type="button" disabled={full}
+                                data-testid={`pp-disc-${d.slug}`}
+                                onClick={() => setForm(f => {
+                                  // update funzionale: due tap ravvicinati
+                                  // non si sovrascrivono (stale closure)
+                                  const cur = f.disciplines || [];
+                                  return { ...f, disciplines: cur.includes(d.slug)
+                                    ? cur.filter(s => s !== d.slug)
+                                    : [...cur, d.slug] };
+                                })}
+                                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                                  sel
+                                    ? 'border-[#376254] bg-[#376254] text-white'
+                                    : full
+                                      ? 'border-input text-muted-foreground/40 cursor-not-allowed'
+                                      : 'border-input text-foreground hover:border-[#8a9979] hover:bg-[#376254]/5'
+                                }`}>
+                          {d.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

@@ -723,6 +723,8 @@
     "portraitShort": "Your portrait",
     "photosWhy": "The cover is the backdrop of your page; the portrait is the face shown next to your name and on your link page.",
     "phonePh": "Phone / WhatsApp",
-    "phoneWhy": "The number also powers the WhatsApp button on your link page, even if contacts stay hidden here."
+    "phoneWhy": "The number also powers the WhatsApp button on your link page, even if contacts stay hidden here.",
+    "disciplines": "Your disciplines",
+    "disciplinesHint": "Pick what you truly practice: seekers filter operators by discipline."
   }
 }

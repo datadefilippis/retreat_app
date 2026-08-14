@@ -23,6 +23,8 @@ const OperatorsMapView = React.lazy(() => import('./components/OperatorsMapView'
 import { Leaf, MapPin, SearchX } from 'lucide-react';
 import { Skeleton } from '../../components/ui/skeleton';
 import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
+// DI — tassonomia discipline (specchio backend)
+import { disciplineLabel } from '../../lib/disciplines';
 import BrandPayoff from '../../components/BrandPayoff';
 
 // LM3 — l'URL parla italiano (?ordina=), l'API il gergo suo (sort=):
@@ -180,6 +182,12 @@ function OperatorCard({ op, t, lang }) {
               {t(`landings:categories.${c}`, { defaultValue: c })}
             </span>
           ))}
+          {/* DI — discipline dichiarate: chip nel verde del brand */}
+          {(op.disciplines || []).slice(0, 3).map(d => (
+            <span key={d} className="rounded-full bg-[#376254]/10 px-2 py-0.5 text-[11px] text-[#376254]">
+              {disciplineLabel(d)}
+            </span>
+          ))}
         </div>
         {(op.upcoming_retreats > 0 || op.other_products > 0) && (
           <p className="mt-2 text-xs text-muted-foreground">
@@ -329,6 +337,8 @@ export default function OperatorsIndexPage() {
   const effectiveOrdina = SORT_PARAM[ordina] ? ordina : defaultOrdina;
   // LM4 — "Quando" in URL (?quando=YYYY-MM-DD, ?fascia=mattina|...)
   const quando = params.get('quando') || '';
+  // DI — filtro per disciplina dichiarata (query string, no path)
+  const disciplina = params.get('disciplina') || '';
   const fascia = params.get('fascia') || '';
 
   const setGeo = (next) => {
@@ -391,6 +401,7 @@ export default function OperatorsIndexPage() {
       const banda = FASCIA_PARAM[fascia];
       if (banda) { q.time_from = banda[0]; q.time_to = banda[1]; }
     }
+    if (disciplina) q.discipline = disciplina;   // DI
     if (uiLang !== 'it') q.lang = uiLang;
     if (isPreview) q.preview = 1;   // PN — dati veri sulla rotta esplora
     api.get('/public/operators', { params: q })
@@ -398,11 +409,17 @@ export default function OperatorsIndexPage() {
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [categoria, geoLat, geoLng, geoRadius, ordina, quando, fascia, uiLang, isPreview]);
+  }, [categoria, geoLat, geoLng, geoRadius, ordina, quando, fascia, disciplina, uiLang, isPreview]);
 
   const items = data?.items || [];
   const categories = useMemo(
     () => Object.entries(data?.categories || {}).sort((a, b) => b[1] - a[1]),
+    [data],
+  );
+  // DI — discipline presenti tra gli operatori (slug -> conteggio):
+  // il select mostra solo voci con contenuto, come le categorie
+  const disciplines = useMemo(
+    () => Object.entries(data?.disciplines || {}).sort((a, b) => b[1] - a[1]),
     [data],
   );
 
@@ -518,6 +535,31 @@ export default function OperatorsIndexPage() {
                 </option>
               ))}
             </select>
+            {/* DI — Disciplina: cosa l'operatore DICHIARA di praticare.
+                Compare solo se almeno un operatore ne ha dichiarate. */}
+            {(disciplines.length > 0 || disciplina) && (
+              <select
+                value={disciplina}
+                onChange={(e) => {
+                  const q = new URLSearchParams(params);
+                  if (e.target.value) q.set('disciplina', e.target.value);
+                  else q.delete('disciplina');
+                  setParams(q, { replace: true });
+                }}
+                aria-label={t('landings:operators.disciplineLabel', { defaultValue: 'Disciplina' })}
+                data-testid="operators-discipline-filter"
+                className="flex-none w-40 lg:w-48 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+              >
+                <option value="">
+                  {t('landings:operators.disciplineAll', { defaultValue: 'Tutte le discipline' })}
+                </option>
+                {disciplines.map(([key, count]) => (
+                  <option key={key} value={key}>
+                    {disciplineLabel(key)} ({count})
+                  </option>
+                ))}
+              </select>
+            )}
             {/* LM4 — Quando: visibile SOLO se l'indice di disponibilita'
                 esiste (date_filter_ready); data nativa + fascia opzionale */}
             {data?.date_filter_ready && (

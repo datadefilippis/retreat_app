@@ -7385,6 +7385,85 @@ class TestSuperficieSubitoLk9:
         assert "deactivate:" in api_src
 
 
+class TestDisciplineDi:
+    """DI (founder, 14/8) — le discipline olistiche DICHIARATE:
+    tassonomia unica a famiglie, selettore nel profilo, filtro in
+    /esplora-operatori, badge su card e profilo."""
+
+    UA = {"User-Agent": "Mozilla/5.0 (Macintosh) Chrome/126 Safari/537.36"}
+
+    def test_parita_tassonomia_backend_frontend(self):
+        """Lo specchio JS deve avere ESATTAMENTE gli slug del backend."""
+        import re
+        from models.disciplines import DISCIPLINES, DISCIPLINE_FAMILIES
+        js = (FRONTEND_SRC / "lib" / "disciplines.js").read_text()
+        js_slugs = set(re.findall(r"\{ slug: '([a-z0-9-]+)', label:", js))
+        assert js_slugs == set(DISCIPLINES), (
+            "tassonomie divergenti: solo backend "
+            f"{set(DISCIPLINES) - js_slugs}, solo frontend "
+            f"{js_slugs - set(DISCIPLINES)}")
+        # le famiglie coprono tutto senza doppioni
+        flat = [s for _f, _l, items in DISCIPLINE_FAMILIES for s, _ in items]
+        assert len(flat) == len(set(flat)), "slug duplicato tra famiglie"
+        # le voci chieste esplicitamente dal founder esistono
+        for slug in ("reiki", "shiatsu", "naturopatia", "meditazione",
+                     "yoga", "breathwork", "aromaterapia",
+                     "cristalloterapia", "costellazioni-familiari"):
+            assert slug in DISCIPLINES, f"manca {slug}"
+
+    def test_patch_valida_e_get_riflette(self):
+        """Slug fuori tassonomia scartati in silenzio; dedup; roundtrip."""
+        try:
+            r = requests.post(f"{BASE_URL}/api/auth/login", json={
+                "email": "admin@demo.com", "password": "demo1234"},
+                timeout=10)
+        except requests.RequestException:
+            pytest.skip("backend non raggiungibile")
+        if r.status_code != 200:
+            pytest.skip("demo login unavailable (rate limit?)")
+        hdr = {"Authorization": f"Bearer {r.json()['access_token']}"}
+        prima = requests.get(
+            f"{BASE_URL}/api/organizations/current/public-profile",
+            headers=hdr, timeout=10).json().get("disciplines", [])
+        try:
+            r2 = requests.patch(
+                f"{BASE_URL}/api/organizations/current/public-profile",
+                json={"disciplines": ["reiki", "shiatsu", "reiki",
+                                      "non-esiste", 42]},
+                headers=hdr, timeout=30)
+            assert r2.status_code == 200, r2.text
+            assert r2.json().get("disciplines") == ["reiki", "shiatsu"]
+        finally:
+            requests.patch(
+                f"{BASE_URL}/api/organizations/current/public-profile",
+                json={"disciplines": prima}, headers=hdr, timeout=30)
+
+    def test_filtro_e_payloads_cablati(self):
+        pub = (Path(__file__).resolve().parent.parent / "routers"
+               / "public.py").read_text()
+        assert "discipline: str = Query" in pub, \
+            "manca il param discipline su /operators"
+        assert "if discipline and discipline not in _decl" in pub
+        assert '"disciplines": all_disciplines' in pub, \
+            "manca l'aggregato discipline nella risposta"
+        assert pub.count('"disciplines":') >= 3, \
+            "disciplines mancante su item o payload profilo"
+
+    def test_superfici_frontend(self):
+        editor = (FRONTEND_SRC / "features" / "settings"
+                  / "PublicProfilePage.js").read_text()
+        assert 'data-testid={`pp-disc-${d.slug}`}' in editor, \
+            "spariti i chip discipline dall'editor profilo"
+        assert "payload.disciplines" in editor
+        esplora = (FRONTEND_SRC / "features" / "storefront"
+                   / "OperatorsIndexPage.js").read_text()
+        assert 'data-testid="operators-discipline-filter"' in esplora
+        assert "q.discipline = disciplina" in esplora
+        profilo = (FRONTEND_SRC / "features" / "storefront"
+                   / "OperatorProfilePage.js").read_text()
+        assert 'data-testid="profile-disciplines"' in profilo
+
+
 class TestMenuMobileMb1:
     """MB1 (founder, 13/8) — nel pannello mobile del guscio marketplace
     "Chi siamo" appariva due volte in fase rete: una da NETWORK_NAV_ITEMS

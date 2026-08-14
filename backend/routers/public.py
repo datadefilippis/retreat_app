@@ -4000,6 +4000,10 @@ async def public_operators_index(
     # listino (service) e ordinamento esplicito. sort fuori dai valori
     # noti viene ignorato (default: distance se geo attivo, sennò rating).
     service_category: str = Query(default=None, max_length=50),
+    # DI (founder 14/8) — filtro sulle discipline DICHIARATE nel
+    # profilo (models/disciplines.py), complementare alle categorie
+    # derivate dai prodotti: "cosa so fare" vs "cosa vendo ora"
+    discipline: str = Query(default=None, max_length=50),
     sort: str = Query(default=None, max_length=10),
     # LM4 — "Quando": giorno (YYYY-MM-DD) + fascia oraria opzionale
     # (HH:MM). Servito dall'indice denormalizzato availability_index:
@@ -4171,6 +4175,7 @@ async def public_operators_index(
 
     items = []
     all_categories: dict = {}
+    all_disciplines: dict = {}     # DI — conteggi per il filtro
     for s in stores:
         org = orgs.get(s["organization_id"])
         if not org:
@@ -4201,6 +4206,14 @@ async def public_operators_index(
         if _date_orgs is not None and s["organization_id"] not in _date_orgs:
             continue
         pp = org.get("public_profile") or {}
+        # DI — discipline dichiarate: conteggio per i filtri con
+        # contenuto (stesso pattern anti-thin di all_categories),
+        # poi il taglio se il filtro e' attivo
+        _decl = [] if _is_sample else (pp.get("disciplines") or [])
+        for _dsl in _decl:
+            all_disciplines[_dsl] = all_disciplines.get(_dsl, 0) + 1
+        if discipline and discipline not in _decl:
+            continue
         ss = org.get("store_settings") or {}
         # OP2/OP4 — bio nella lingua richiesta se l'operatore l'ha
         # compilata, italiano altrimenti (mai buchi)
@@ -4241,6 +4254,7 @@ async def public_operators_index(
                         or pp.get("logo_url"),
             "cover_url": pp.get("cover_url"),
             "categories": cats,
+            "disciplines": _decl,   # DI — badge in card e filtro attivo
             "upcoming_retreats": b["retreats"],
             "other_products": b["products"],
             "city": pp.get("city"),
@@ -4322,6 +4336,9 @@ async def public_operators_index(
         pass
     return {"items": items, "total": len(items),
             "categories": all_categories,
+            # DI — discipline presenti (slug -> n. operatori): il
+            # frontend mostra solo chip con contenuto
+            "disciplines": all_disciplines,
             # LM3 — l'ordinamento effettivamente applicato (default
             # compreso): il frontend lo riflette nel controllo Ordina
             "sort": _sort,
@@ -4497,6 +4514,9 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         "photos": pp.get("photos") or [],
         "founded_year": pp.get("founded_year"),
         "languages": pp.get("languages") or [],
+        # DI (founder 14/8) — le discipline DICHIARATE (slug; le label
+        # le risolve il frontend da lib/disciplines.js)
+        "disciplines": pp.get("disciplines") or [],
         # RT3→PV2 — l'intervista integrale SOLO se pubblicata dal
         # system admin (la fonte del badge Verificato); video e timbro
         # di verifica viaggiano insieme. Non pubblicata → lista vuota,

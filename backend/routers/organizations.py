@@ -1882,6 +1882,9 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
             "name": org_doc.get("name"),
             "photos": pp.get("photos") or [],
             "languages": pp.get("languages") or [],
+            # DI — le discipline dichiarate (slug; le label le risolve
+            # il frontend dallo specchio lib/disciplines.js)
+            "disciplines": pp.get("disciplines") or [],
             "translations": pp.get("translations") or {},
             # RT3 (piano sito-rete) — l'intervista: domande e risposte
             # integrali che raccontano l'operatore sul profilo pubblico
@@ -1938,6 +1941,12 @@ async def update_public_profile(
         langs = body["languages"] if isinstance(body["languages"], list) else []
         updates["public_profile.languages"] = [
             l for l in langs if l in _PP_LANGS][:6]
+    # DI (founder 14/8) — le discipline DICHIARATE dall'operatore:
+    # slug dalla tassonomia unica, dedup, max 10 (clean_disciplines)
+    if "disciplines" in body:
+        from models.disciplines import clean_disciplines
+        updates["public_profile.disciplines"] = clean_disciplines(
+            body["disciplines"])
     # PV2 — l'intervista NON è più self-service: la scrive e pubblica il
     # system admin (PUT /admin/organizations/{id}/interview). Un client
     # vecchio che manda ancora "interview" viene ignorato in silenzio

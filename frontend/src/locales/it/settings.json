@@ -722,6 +722,8 @@
     "portraitShort": "Il tuo ritratto",
     "photosWhy": "La copertina è lo sfondo della tua pagina; il ritratto è il volto che appare accanto al nome e sulla pagina link.",
     "phonePh": "Telefono / WhatsApp",
-    "phoneWhy": "Il numero serve anche al bottone WhatsApp della tua pagina link, anche se qui i contatti restano nascosti."
+    "phoneWhy": "Il numero serve anche al bottone WhatsApp della tua pagina link, anche se qui i contatti restano nascosti.",
+    "disciplines": "Le tue discipline",
+    "disciplinesHint": "Scegli quello che pratichi davvero: chi cerca un operatore filtra per disciplina."
   }
 }

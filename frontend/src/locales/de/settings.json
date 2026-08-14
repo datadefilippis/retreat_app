@@ -690,6 +690,8 @@
     "portraitShort": "Dein Porträt",
     "photosWhy": "Das Cover ist der Hintergrund deiner Seite; das Porträt ist das Gesicht neben deinem Namen und auf deiner Linkseite.",
     "phonePh": "Telefon / WhatsApp",
-    "phoneWhy": "Die Nummer speist auch den WhatsApp-Button deiner Linkseite, selbst wenn die Kontakte hier verborgen bleiben."
+    "phoneWhy": "Die Nummer speist auch den WhatsApp-Button deiner Linkseite, selbst wenn die Kontakte hier verborgen bleiben.",
+    "disciplines": "Deine Disziplinen",
+    "disciplinesHint": "Waehle, was du wirklich praktizierst: Suchende filtern nach Disziplin."
   }
 }
