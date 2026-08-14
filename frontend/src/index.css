@@ -451,3 +451,17 @@ body {
     isolation: isolate;
     z-index: 0;
 }
+
+/* ── LK7 (founder, 14/8) — ingresso morbido della pagina link: ogni
+   elemento sale di pochi pixel in sequenza (stagger via
+   animationDelay inline). Solo se l'utente non ha chiesto meno
+   animazioni: dietro prefers-reduced-motion la pagina appare ferma. */
+@media (prefers-reduced-motion: no-preference) {
+    .lk-rise {
+        animation: lk-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+}
+@keyframes lk-rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+}
