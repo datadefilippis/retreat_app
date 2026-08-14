@@ -1778,6 +1778,49 @@ _PUBLIC_PROFILE_FIELDS = {
 _PP_PHOTOS_MAX = 8
 _PP_LANGS = ("it", "en", "de", "fr", "es", "pt")
 
+# LK1 (piano pagina link, 14/8/2026) — la pagina per la bio di
+# Instagram, stile Linktree ma coi blocchi VIVI di Aurya. I soli dati
+# propri sono i link personalizzati, il tema e gli interruttori dei
+# blocchi: nome, ritratto, social, ritiri e listino arrivano dal
+# profilo gia' configurato (zero passi extra per l'operatore).
+_LINK_PAGE_THEMES = ("salvia", "terra", "notte", "carta")
+_LINK_PAGE_MAX_LINKS = 15
+_LINK_PAGE_BLOCKS = ("upcoming", "listino", "profile", "whatsapp", "socials")
+
+
+def _clean_link_page(raw) -> dict:
+    """Valida e normalizza link_page: link SOLO https (mai javascript:
+    o data:), max 15, etichette clip a 60, tema dalla rosa, blocchi
+    booleani. Ritorna sempre la struttura completa, coi default: e'
+    quello che l'editor rilegge e che il client salva per intero."""
+    import uuid
+    raw = raw if isinstance(raw, dict) else {}
+    theme = raw.get("theme")
+    links = []
+    for item in (raw.get("links") or [])[:_LINK_PAGE_MAX_LINKS]:
+        if not isinstance(item, dict):
+            continue
+        label = str(item.get("label") or "").strip()[:60]
+        url = str(item.get("url") or "").strip()[:500]
+        if not label or not url.startswith("https://"):
+            continue
+        links.append({
+            "id": (str(item.get("id") or "").strip()[:32]
+                   or uuid.uuid4().hex[:12]),
+            "label": label,
+            "url": url,
+            "active": bool(item.get("active", True)),
+        })
+    blocks_raw = raw.get("blocks") if isinstance(raw.get("blocks"), dict) else {}
+    return {
+        "enabled": bool(raw.get("enabled")),
+        "theme": theme if theme in _LINK_PAGE_THEMES else _LINK_PAGE_THEMES[0],
+        "links": links,
+        # blocchi vivi accesi di default: la pagina e' piena al primo
+        # render senza configurare nulla
+        "blocks": {b: bool(blocks_raw.get(b, True)) for b in _LINK_PAGE_BLOCKS},
+    }
+
 PROFILE_COVER_DIR = os.path.join(
     os.path.dirname(ORG_LOGO_DIR), "profile-covers",
 )
@@ -1814,6 +1857,9 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
             # il pulsante "Vedi il tuo profilo online" appariva solo
             # dopo un refresh manuale della pagina.
             "public_slug": resolved_slug,
+            # LK1 — sempre normalizzata coi default: l'editor non deve
+            # gestire il caso "mai configurata"
+            "link_page": _clean_link_page(pp.get("link_page")),
             "show_contacts": bool(pp.get("show_contacts"))}
 
 
@@ -1834,6 +1880,11 @@ async def update_public_profile(
                 updates[f"public_profile.{field}"] = val.strip()[:max_len]
     if "show_contacts" in body:
         updates["public_profile.show_contacts"] = bool(body["show_contacts"])
+    # LK1 — pagina link: il client manda sempre lo stato COMPLETO
+    # dell'editor, mai merge parziali; la validazione e' tutta in
+    # _clean_link_page (https-only, tetti, tema dalla rosa)
+    if "link_page" in body:
+        updates["public_profile.link_page"] = _clean_link_page(body["link_page"])
     # OP4 — nome pubblico = organizations.name (la stessa riga che si
     # modifica dalle Impostazioni). Il vuoto NON cancella: un titolo
     # sparito romperebbe email, fatture e SEO.
@@ -1905,6 +1956,20 @@ async def update_public_profile(
     # GT6 — gradino 0 profilo-first: il primo profilo con bio accende
     # la vetrina pubblica anche senza store ne' prodotti
     await _ensure_public_surface(current_user["organization_id"])
+    # LK1 — chi salva il profilo e apre subito la propria pagina
+    # pubblica deve vederla AGGIORNATA, non la copia di 45s fa: si
+    # svuota la cache slug→org del mondo pubblico per questo slug.
+    # Best-effort, mai bloccante (vale per tutto il profilo, non solo
+    # per la pagina link).
+    try:
+        from routers.public import (_invalidate_resolve_org_cache,
+                                    _resolve_public_slug_for_org)
+        _slug = await _resolve_public_slug_for_org(
+            current_user["organization_id"])
+        if _slug:
+            _invalidate_resolve_org_cache(_slug)
+    except Exception:
+        pass
     # SEO2 — IndexNow: profilo aggiornato → reindicizza /o/ e /s/ (prima
     # solo publish di ritiri/prodotti pingava; l'operatore che cura la
     # scheda LocalBusiness merita reindex rapido). Best-effort, mai blocca.

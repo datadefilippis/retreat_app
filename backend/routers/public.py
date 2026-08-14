@@ -4522,4 +4522,28 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
     if pp.get("show_contacts"):
         out["contacts"] = {k: pp.get(k) for k in ("public_email", "public_phone")
                            if pp.get(k)}
+
+    # LK1 — pagina link (la bio di Instagram che vende): esposta SOLO
+    # se l'operatore l'ha attivata, e dei link personalizzati solo
+    # quelli attivi. I blocchi vivi (ritiro, listino, social) si
+    # renderizzano client-side da questo stesso payload. Il numero
+    # WhatsApp viaggia qui solo se l'operatore ha acceso quel blocco:
+    # e' il suo opt-in esplicito, indipendente da show_contacts.
+    lp = pp.get("link_page") or {}
+    if lp.get("enabled"):
+        blocks = lp.get("blocks") or {}
+        out["link_page"] = {
+            "theme": lp.get("theme") or "salvia",
+            "links": [
+                {"id": l.get("id"), "label": l.get("label"), "url": l.get("url")}
+                for l in (lp.get("links") or [])
+                if isinstance(l, dict) and l.get("active", True)
+            ],
+            "blocks": blocks,
+        }
+        if blocks.get("whatsapp") and pp.get("public_phone"):
+            import re as _re
+            digits = _re.sub(r"\D", "", str(pp["public_phone"]))
+            if digits:
+                out["link_page"]["whatsapp"] = digits
     return out

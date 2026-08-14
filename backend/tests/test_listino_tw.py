@@ -7358,3 +7358,105 @@ class TestMenuMobileMb1:
             assert apertura != -1 and "navItems.map" not in prima[apertura:], (
                 f"{rotta} non e' dietro !isNetwork nel pannello mobile: "
                 "in fase rete torna il doppione di Chi siamo (MB1)")
+
+
+class TestLinkPageLk1:
+    """LK1 (piano pagina link, 14/8) — la pagina per la bio di
+    Instagram. Il backend: validazione https-only e tetti, GET
+    normalizzato coi default, esposizione pubblica SOLO se attivata
+    e coi soli link attivi."""
+
+    _token = None
+
+    @classmethod
+    def _hdr(cls):
+        import pytest
+        if cls._token:
+            return {"Authorization": f"Bearer {cls._token}"}
+        r = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "admin@demo.com", "password": "demo1234"}, timeout=10)
+        if r.status_code != 200:
+            pytest.skip("demo login unavailable (rate limit?)")
+        cls._token = r.json()["access_token"]
+        return {"Authorization": f"Bearer {cls._token}"}
+
+    def _patch(self, link_page):
+        return requests.patch(
+            f"{BASE_URL}/api/organizations/current/public-profile",
+            json={"link_page": link_page}, headers=self._hdr(), timeout=10)
+
+    def _restore_off(self):
+        # lascia l'org demo com'era: pagina disattivata, zero link
+        self._patch({"enabled": False, "links": []})
+
+    def test_get_normalizzato_coi_default(self):
+        r = requests.get(
+            f"{BASE_URL}/api/organizations/current/public-profile",
+            headers=self._hdr(), timeout=10)
+        assert r.status_code == 200
+        lp = r.json().get("link_page")
+        assert lp is not None, "GET senza link_page: l'editor non puo' partire"
+        assert set(lp) == {"enabled", "theme", "links", "blocks"}
+        assert lp["theme"] in ("salvia", "terra", "notte", "carta")
+        assert set(lp["blocks"]) == {
+            "upcoming", "listino", "profile", "whatsapp", "socials"}
+
+    def test_validazione_https_tetti_e_tema(self):
+        try:
+            r = self._patch({
+                "enabled": True, "theme": "vaporwave",   # fuori rosa
+                "links": [
+                    {"label": "Il mio canale", "url": "https://youtube.com/@x"},
+                    {"label": "cattivo", "url": "javascript:alert(1)"},
+                    {"label": "insicuro", "url": "http://example.com"},
+                    {"label": "", "url": "https://senza-etichetta.it"},
+                    {"label": "L" * 200, "url": "https://etichetta-lunga.it"},
+                ],
+            })
+            assert r.status_code == 200, r.text
+            lp = r.json()["link_page"]
+            assert lp["theme"] == "salvia"          # fallback dalla rosa
+            urls = [l["url"] for l in lp["links"]]
+            assert all(u.startswith("https://") for u in urls)
+            assert "javascript:alert(1)" not in urls
+            assert not any(u.startswith("http://") for u in urls)
+            labels = [l["label"] for l in lp["links"]]
+            assert all(0 < len(x) <= 60 for x in labels)
+            # ogni link sopravvissuto ha un id server-side
+            assert all(l.get("id") for l in lp["links"])
+        finally:
+            self._restore_off()
+
+    def test_pubblico_solo_se_attivata_e_solo_link_attivi(self):
+        try:
+            # spenta -> il payload pubblico NON la porta
+            self._patch({"enabled": False, "links": []})
+            r = requests.get(f"{BASE_URL}/api/public/operator/masseria-demo",
+                             timeout=10)
+            assert r.status_code == 200
+            assert "link_page" not in r.json(), \
+                "pagina disattivata ma esposta al pubblico"
+
+            # accesa con un link attivo e uno spento
+            self._patch({
+                "enabled": True, "theme": "notte",
+                "links": [
+                    {"label": "Video", "url": "https://youtube.com/@x",
+                     "active": True},
+                    {"label": "Nascosto", "url": "https://segreto.it",
+                     "active": False},
+                ],
+                "blocks": {"upcoming": True, "listino": False,
+                           "profile": True, "whatsapp": True,
+                           "socials": True},
+            })
+            r = requests.get(f"{BASE_URL}/api/public/operator/masseria-demo",
+                             timeout=10)
+            lp = r.json().get("link_page")
+            assert lp, "pagina attivata ma non esposta"
+            assert lp["theme"] == "notte"
+            labels = [l["label"] for l in lp["links"]]
+            assert "Video" in labels and "Nascosto" not in labels
+            assert lp["blocks"]["listino"] is False
+        finally:
+            self._restore_off()
