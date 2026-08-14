@@ -981,6 +981,34 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     }
 
 
+async def _meta_link_page(org_slug: str) -> Optional[dict]:
+    """LK2 — pagina link (/@slug, /l/slug): la bio di Instagram.
+
+    MAI indicizzata (l'asset SEO resta /o/, niente contenuti doppi),
+    ma con title/description/OG image pieni: questa pagina vive nelle
+    chat, e l'anteprima su WhatsApp/IG deve mostrare foto e nome.
+    Il ritratto vince sul logo: e' una pagina-persona, non una vetrina."""
+    meta = await _meta_operator(org_slug)
+    if not meta:
+        return None
+    from database import organizations_collection, stores_collection
+    portrait = None
+    store = await stores_collection.find_one(
+        {"slug": org_slug, "is_published": True},
+        {"_id": 0, "organization_id": 1})
+    org = await organizations_collection.find_one(
+        {"id": store["organization_id"]} if store
+        else {"public_slug": org_slug},
+        {"_id": 0, "public_profile.portrait_url": 1})
+    if org:
+        portrait = _abs_image(
+            (org.get("public_profile") or {}).get("portrait_url"))
+    return {**meta,
+            "image": portrait or meta.get("image"),
+            "noindex": True, "canonical": None,
+            "hreflang": None, "jsonld": None}
+
+
 async def _meta_store(slug: str) -> Optional[dict]:
     from database import stores_collection, organizations_collection
     from services import seo_schema as sx
@@ -1062,6 +1090,11 @@ async def resolve_meta(path: str) -> Optional[dict]:
     # DS3: /esperienze fuori per ora (redirect alla home lato SPA)
     if head == "o" and len(parts) >= 2:
         return await _meta_operator(parts[1])
+    # LK2 — pagina link: /@slug (l'URL da bio Instagram) e /l/slug
+    if head.startswith("@") and len(parts) == 1 and len(head) > 1:
+        return await _meta_link_page(head[1:])
+    if head == "l" and len(parts) == 2:
+        return await _meta_link_page(parts[1])
     if head == "s" and len(parts) == 2:
         # TW3 — la vetrina /s/{slug} e' migrata sul profilo: i crawler
         # ricevono le meta del profilo con canonical /o/{slug} (la SPA

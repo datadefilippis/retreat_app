@@ -50,6 +50,8 @@ const EventsListPage = lazy(() => import("./features/events/EventsListPage"));
 const EventWizard = lazy(() => import("./features/events/EventWizard"));
 import RetreatsCalendarPage from "./features/storefront/RetreatsCalendarPage";
 import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
+// LK2 — la pagina link per la bio di Instagram (/@slug e /l/slug)
+import LinkPage from "./features/storefront/LinkPage";
 // PV3 — l'intervista Aurya su pagina propria, in continuità col profilo
 import OperatorInterviewPage from "./features/storefront/OperatorInterviewPage";
 import OperatorsIndexPage from "./features/storefront/OperatorsIndexPage";
@@ -392,6 +394,16 @@ function DestinationsGate() {
   return <DestinationsPage />;
 }
 
+// LK2 — il catch-all riconosce gli handle /@slug della pagina link
+// (React Router non accetta il prefisso @ dentro un segmento di
+// rotta). Tutto il resto continua a tornare alla home, come prima.
+function CatchAllOrHandle() {
+  const { pathname } = useLocation();
+  const m = pathname.match(/^\/@([^/]+)\/?$/);
+  if (m) return <LinkPage handle={m[1]} />;
+  return <Navigate to="/" replace />;
+}
+
 // LC2 — /come-funziona racconta il percorso d'acquisto (caparra,
 // prenotazione, recensione): in fase network quel percorso non esiste
 // e la pagina prometteva un marketplace spento. Il posto dove si
@@ -586,6 +598,10 @@ function AppRoutes() {
           pagina resta nel repo (storefront/), pronta a tornare */}
       <Route path="/esperienze/*" element={<Navigate to="/" replace />} />
       <Route path="/o/:org_slug" element={<OperatorProfilePage />} />
+      {/* LK2 — pagina link per la bio di Instagram: /l/{slug} e' la
+          rotta esplicita; /@{slug} vive nel catch-all in fondo (React
+          Router non supporta il prefisso @ dentro un segmento) */}
+      <Route path="/l/:org_slug" element={<LinkPage />} />
       {/* PV3 — pagina intervista pubblica: stessa testata del profilo,
           redirect a /o/:slug se l'intervista non è pubblicata */}
       <Route path="/o/:org_slug/intervista" element={<OperatorInterviewPage />} />
@@ -977,8 +993,9 @@ function AppRoutes() {
         }
       />
 
-      {/* Catch all - redirect to login */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Catch all — ma prima riconosce gli handle /@slug (LK2):
+          e' l'URL che l'operatore mette nella bio di Instagram */}
+      <Route path="*" element={<CatchAllOrHandle />} />
     </Routes>
     </Suspense>
   );
