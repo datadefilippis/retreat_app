@@ -215,7 +215,9 @@ export default function NetworkOperatorsPage() {
                 aria-hidden
                 loading="lazy"
                 decoding="async"
-                className="h-full w-full object-cover motion-safe:transition-transform
+                /* founder 14/8 — ritratto INTERO (vedi PersonCard):
+                   cover centrato decapitava le foto verticali */
+                className="h-full w-full object-contain motion-safe:transition-transform
                            motion-safe:duration-[900ms] motion-safe:ease-out
                            motion-safe:group-hover:scale-[1.03]"
               />

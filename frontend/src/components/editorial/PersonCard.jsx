@@ -52,7 +52,11 @@ export default function PersonCard({ person, quoteMaxChars = 120 }) {
               alt={name ? `Ritratto di ${name}` : ''}
               loading="lazy"
               decoding="async"
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+              /* founder 14/8 — il ritratto si mostra INTERO: object-cover
+                 centrato tagliava le teste sulle foto verticali. Con
+                 contain la foto appoggia sul fondo sabbia del riquadro
+                 (effetto passe-partout), mai un volto tagliato. */
+              className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
             />
           ) : (
             /* niente stock: un campo di colore col nome, e basta */

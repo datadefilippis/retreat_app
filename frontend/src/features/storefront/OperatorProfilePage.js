@@ -672,8 +672,12 @@ export default function OperatorProfilePage() {
         <aside className="order-1 lg:order-2 lg:sticky lg:top-20 self-start space-y-4">
           <div className="rounded-2xl border border-border bg-card p-5">
             {data.portrait_url && (
+              /* founder 14/8 — il ritratto si mostra INTERO: l'altezza
+                 fissa (h-52) + object-cover tagliava la testa sulle
+                 foto verticali. Altezza naturale e la card si adatta;
+                 il max-h evita sidebar chilometriche. */
               <img src={data.portrait_url} alt={data.name}
-                   className="w-full h-52 rounded-xl object-cover mb-4" />
+                   className="w-full h-auto max-h-96 object-contain rounded-xl mb-4" />
             )}
             {data.tagline && (
               <p className="text-sm text-gray-700 italic mb-3">"{data.tagline}"</p>
