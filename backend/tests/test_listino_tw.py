@@ -7597,8 +7597,10 @@ class TestLinkPageLk5:
         src = self._page_src()
         assert "Sei un professionista del benessere?" in src, \
             "sparito il footer Aurya: e' il loop di crescita (LK2)"
-        assert "/entra-nella-rete" in src and "sitePhase" in src, \
-            "la CTA Iscriviti non e' piu' phase-aware"
+        # Founder 14/8: la CTA porta al login (chi si riconosce entra
+        # o si iscrive da li') col gesto "Crea il tuo profilo".
+        assert 'to="/login"' in src, "la CTA footer non porta piu' a /login"
+        assert "Crea il tuo profilo" in src
 
     def test_quattro_temi_registrati(self):
         # LK8: rosa a 7 — i 4 storici + le tre atmosfere sceniche

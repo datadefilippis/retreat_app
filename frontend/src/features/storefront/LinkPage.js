@@ -24,7 +24,6 @@ import api from '../../api/client';
 import useSeoMeta from './lib/useSeoMeta';
 import useTrackView from './lib/useTrackView';
 import useItalianOnly from '../../lib/useItalianOnly';
-import { useSiteConfig } from '../../context/SiteConfigContext';
 import { BrandLogo } from '../../components/BrandLogo';
 import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
 
@@ -177,7 +176,6 @@ export default function LinkPage({ handle }) {
   const { t } = useTranslation('landings');
   useItalianOnly();   // founder 27/7 — sito pubblico solo italiano
   const params = useParams();
-  const { sitePhase } = useSiteConfig();
   const org_slug = (handle || params.org_slug || '').replace(/^@/, '');
 
   const [data, setData] = useState(null);
@@ -214,8 +212,8 @@ export default function LinkPage({ handle }) {
   const next = (data.upcoming || [])[0];
   const socials = data.socials || {};
   const hasListino = (data.listino || []).length > 0;
-  // RT2 — stessa destinazione phase-aware della CTA operatori nel guscio
-  const joinTo = sitePhase === 'network' ? '/entra-nella-rete' : '/inizia';
+  // Footer CTA -> /login (founder, 14/8): il professionista che si
+  // riconosce nella domanda entra (o si iscrive) e crea il profilo.
 
   const dateLabel = (iso) => {
     try {
@@ -385,7 +383,7 @@ export default function LinkPage({ handle }) {
             tua pagina»). Chi non e' operatore la ignora; chi lo e'
             ha un bottone vero sotto il pollice. */}
         <footer className="lk-rise mt-auto pt-12" style={rise(9)}>
-          <Link to={joinTo} data-testid="link-page-join"
+          <Link to="/login" data-testid="link-page-join"
                 className={`group block rounded-3xl px-6 py-6 text-center transition-all duration-200 active:scale-[0.98] ${theme.cta}`}>
             {/* size xs = solo glifo + wordmark: il payoff vive gia'
                 sotto la card, due taglines nella stessa vista stonano */}
@@ -396,7 +394,7 @@ export default function LinkPage({ handle }) {
               {t('linkPage.footerAsk', { defaultValue: 'Sei un professionista del benessere?' })}
             </p>
             <span className={`mt-4 inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-200 ${theme.ctaBtn}`}>
-              {t('linkPage.footerCta', { defaultValue: 'Crea la tua pagina' })}
+              {t('linkPage.footerCta', { defaultValue: 'Crea il tuo profilo' })}
               <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </span>
           </Link>
