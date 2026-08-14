@@ -7335,3 +7335,26 @@ class TestFeeTruthNeiTermini:
         assert CURRENT_VERSION_HASH == atteso, (
             "legal modificati senza aggiornare CURRENT_VERSION_HASH: "
             f"atteso {atteso}, trovato {CURRENT_VERSION_HASH}")
+
+
+class TestMenuMobileMb1:
+    """MB1 (founder, 13/8) — nel pannello mobile del guscio marketplace
+    "Chi siamo" appariva due volte in fase rete: una da NETWORK_NAV_ITEMS
+    e una cablata dall'era AN2. Le voci extra (chi-siamo, come-funziona)
+    vivono SOLO in fase marketplace, dietro !isNetwork."""
+
+    def test_voci_extra_dietro_il_gate_di_fase(self):
+        src = (FRONTEND_SRC / "features" / "storefront" / "components"
+               / "MarketplaceShell.jsx").read_text()
+        # zona: dal pannello mobile in giu'
+        pannello = src.split("AN2 — pannello mobile")[1]
+        # ogni link cablato a /chi-siamo e /come-funziona nel pannello
+        # deve stare dentro un blocco {!isNetwork && ...}
+        for rotta in ('to="/chi-siamo"', 'to="/come-funziona"'):
+            i = pannello.find(rotta)
+            assert i != -1, f"{rotta} sparita dal pannello mobile"
+            prima = pannello[:i]
+            apertura = prima.rfind("{!isNetwork && (")
+            assert apertura != -1 and "navItems.map" not in prima[apertura:], (
+                f"{rotta} non e' dietro !isNetwork nel pannello mobile: "
+                "in fase rete torna il doppione di Chi siamo (MB1)")

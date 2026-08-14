@@ -522,18 +522,26 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link to="/chi-siamo" onClick={() => setMobileNavOpen(false)}
-                      className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
-                  {t('aboutPage.title', { defaultValue: 'Chi siamo' })}
-                </Link>
-              </li>
-              <li>
-                <Link to="/come-funziona" onClick={() => setMobileNavOpen(false)}
-                      className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
-                  {t('howPage.title', { defaultValue: 'Come funziona' })}
-                </Link>
-              </li>
+              {/* MB1 (founder, 13/8) — voci extra SOLO in fase marketplace:
+                  in fase rete "Chi siamo" sta gia' in NETWORK_NAV_ITEMS
+                  (appariva doppio nel menu hamburger) e /come-funziona
+                  e' spenta (LC2: reindirizza al Manifesto). */}
+              {!isNetwork && (
+                <li>
+                  <Link to="/chi-siamo" onClick={() => setMobileNavOpen(false)}
+                        className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
+                    {t('aboutPage.title', { defaultValue: 'Chi siamo' })}
+                  </Link>
+                </li>
+              )}
+              {!isNetwork && (
+                <li>
+                  <Link to="/come-funziona" onClick={() => setMobileNavOpen(false)}
+                        className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">
+                    {t('howPage.title', { defaultValue: 'Come funziona' })}
+                  </Link>
+                </li>
+              )}
               {!isNetwork && (
                 <li>
                   {/* PS4 — stessa destinazione dell'icona account */}
