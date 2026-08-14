@@ -368,16 +368,11 @@ export const LoginPage = () => {
         </div>
       </div>
 
-      {/* Right side - Visual */}
-      <div className="hidden lg:flex flex-1 items-center justify-center bg-muted/50 p-8">
-        <div className="max-w-lg text-center">
-          <h2 className="font-heading text-3xl font-bold tracking-tight mb-4">
-            {t('marketing.tagline')}
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            {t('marketing.description')}
-          </p>
-        </div>
+      {/* Lato desktop (founder, 14/8): via la frase, dentro la foto —
+          le mani in gyan mudra della landing professionisti. */}
+      <div className="hidden lg:block flex-1 relative overflow-hidden">
+        <img src="/media/hero-organizer.webp" alt="Mani in gyan mudra durante una meditazione"
+             className="absolute inset-0 h-full w-full object-cover" />
       </div>
     </div>
   );
@@ -550,11 +545,11 @@ export const SignupPage = () => {
             </Card>
           </div>
         </div>
-        <div className="hidden lg:flex flex-1 items-center justify-center bg-muted/50 p-8">
-          <div className="max-w-lg text-center">
-            <h2 className="font-heading text-3xl font-bold tracking-tight mb-4">{t('marketing.tagline')}</h2>
-            <p className="text-lg text-muted-foreground">{t('marketing.description')}</p>
-          </div>
+        {/* Lato desktop (founder, 14/8): via la frase, dentro la foto —
+            le mani in gyan mudra della landing professionisti. */}
+        <div className="hidden lg:block flex-1 relative overflow-hidden">
+          <img src="/media/hero-organizer.webp" alt="Mani in gyan mudra durante una meditazione"
+               className="absolute inset-0 h-full w-full object-cover" />
         </div>
       </div>
     );
@@ -858,16 +853,11 @@ export const SignupPage = () => {
         </div>
       </div>
 
-      {/* Right side - Visual */}
-      <div className="hidden lg:flex flex-1 items-center justify-center bg-muted/50 p-8">
-        <div className="max-w-lg text-center">
-          <h2 className="font-heading text-3xl font-bold tracking-tight mb-4">
-            {t('marketing.tagline')}
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            {t('marketing.description')}
-          </p>
-        </div>
+      {/* Lato desktop (founder, 14/8): via la frase, dentro la foto —
+          le mani in gyan mudra della landing professionisti. */}
+      <div className="hidden lg:block flex-1 relative overflow-hidden">
+        <img src="/media/hero-organizer.webp" alt="Mani in gyan mudra durante una meditazione"
+             className="absolute inset-0 h-full w-full object-cover" />
       </div>
     </div>
   );
