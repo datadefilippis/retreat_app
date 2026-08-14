@@ -7621,6 +7621,18 @@ class TestLinkPageLk5:
                    / "deploy" / "nginx" / conf).read_text()
             assert "^/@" in ngx, f"{conf}: manca la location /@ (OG rotti)"
             assert "|l|" in ngx, f"{conf}: /l/ fuori dal guscio SEO"
+        # LK10 — l'anteprima dell'editor e' un iframe su /l/{slug}:
+        # senza la location dedicata con SAMEORIGIN gli header globali
+        # (DENY + frame-ancestors 'none') la bloccano in prod.
+        prod_ngx = (Path(__file__).resolve().parent.parent.parent
+                    / "deploy" / "nginx" / "nginx.conf").read_text()
+        assert "^/l/[^/]+/?$" in prod_ngx, \
+            "nginx.conf: sparita la location /l/ incorniciabile (LK10)"
+        # split su "\n    location": "geolocation" (Permissions-Policy)
+        # contiene "location" e troncherebbe lo slice a meta' blocco
+        lloc = prod_ngx.split("^/l/[^/]+/?$")[1].split("\n    location")[0]
+        assert 'X-Frame-Options "SAMEORIGIN"' in lloc
+        assert "frame-ancestors 'self'" in lloc
 
     def test_editor_tre_gesti(self):
         card = (FRONTEND_SRC / "features" / "settings"
