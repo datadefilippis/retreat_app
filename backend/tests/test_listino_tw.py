@@ -7403,7 +7403,8 @@ class TestLinkPageLk1:
         lp = r.json().get("link_page")
         assert lp is not None, "GET senza link_page: l'editor non puo' partire"
         assert set(lp) == {"enabled", "theme", "links", "blocks", "order"}
-        assert lp["theme"] in ("salvia", "terra", "notte", "carta")
+        assert lp["theme"] in ("salvia", "terra", "notte", "carta",
+                               "aurora", "cosmo", "quarzo")   # LK8
         assert set(lp["blocks"]) == {
             "upcoming", "listino", "profile", "whatsapp", "socials"}
 
@@ -7558,9 +7559,15 @@ class TestLinkPageLk5:
             "la CTA Iscriviti non e' piu' phase-aware"
 
     def test_quattro_temi_registrati(self):
+        # LK8: rosa a 7 — i 4 storici + le tre atmosfere sceniche
         src = self._page_src()
-        for tema in ("salvia:", "terra:", "notte:", "carta:"):
+        for tema in ("salvia:", "terra:", "notte:", "carta:",
+                     "aurora:", "cosmo:", "quarzo:"):
             assert tema in src, f"tema {tema} sparito dalla rosa"
+        # cosmo monta il cielo CSS: se la classe sparisce da index.css
+        # il tema diventa un fondo piatto senza stelle
+        css = (FRONTEND_SRC / "index.css").read_text()
+        assert ".lk-stars" in css, "cielo stellato di cosmo sparito"
 
     def test_noindex_nel_guscio_e_nginx_instradati(self):
         shell_src = (Path(__file__).resolve().parent.parent / "routers"

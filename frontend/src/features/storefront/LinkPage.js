@@ -28,44 +28,49 @@ import { useSiteConfig } from '../../context/SiteConfigContext';
 import { BrandLogo } from '../../components/BrandLogo';
 import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
 
-/* I 4 temi — parole del mondo Aurya, non nomi tecnici. Ogni tema e'
-   un set chiuso di classi: la scelta cambia atmosfera, mai struttura.
-   `carta` e' l'unico col linguaggio editoriale (bordo netto + ombra
-   dura che si schiaccia al click): le sue card non portano l'ombra
-   morbida delle altre. */
+/* I temi — parole del mondo Aurya, non nomi tecnici. Ogni tema e' un
+   set chiuso di classi: la scelta cambia atmosfera, mai struttura.
+   `row` decide la FORMA delle righe semplici: pillola piena (pulizia
+   alla Linktree) per quasi tutti, angolo editoriale per `carta`, che
+   resta l'unico col bordo netto e l'ombra dura che si schiaccia al
+   click. `cosmo` monta la classe lk-stars (index.css): un cielo di
+   stelle disegnato in CSS, zero immagini. */
 export const LINK_THEMES = {
   salvia: {
-    page: 'bg-gradient-to-b from-[#f2f5ee] via-[#edf1e8] to-[#e5ebdd]',
+    page: 'bg-gradient-to-b from-[#f2f5ee] via-[#edf1e8] to-[#e2e9d8]',
     text: 'text-stone-800', sub: 'text-stone-500',
-    card: 'bg-white/95 border border-stone-200/90 text-stone-800 shadow-[0_1px_2px_rgba(28,25,23,0.04),0_10px_28px_-16px_rgba(55,98,84,0.35)] hover:border-[#8a9979] hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(28,25,23,0.05),0_16px_36px_-16px_rgba(55,98,84,0.45)]',
+    row: 'rounded-full px-6 py-4',
+    card: 'bg-white text-stone-800 shadow-[0_2px_10px_rgba(55,98,84,0.08),0_14px_34px_-18px_rgba(55,98,84,0.30)] hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(55,98,84,0.10),0_20px_44px_-18px_rgba(55,98,84,0.40)]',
     hero: 'text-stone-900',
     ring: 'ring-white',
     halo: 'shadow-[0_10px_36px_-10px_rgba(55,98,84,0.5)]',
-    social: 'bg-white/80 border border-stone-200/90 text-stone-500 hover:text-[#376254] hover:border-[#8a9979]',
+    social: 'bg-white/85 text-stone-500 shadow-sm hover:text-[#376254] hover:shadow-md',
     footer: 'text-stone-500',
-    cta: 'bg-white/70 border border-stone-200/90 backdrop-blur',
+    cta: 'bg-white/75 backdrop-blur shadow-[0_2px_12px_rgba(55,98,84,0.08)]',
     ctaBtn: 'bg-[#376254] text-white hover:bg-[#2c5044]',
   },
   terra: {
-    page: 'bg-gradient-to-b from-[#f8ecdf] via-[#f2ddc9] to-[#eaceb2]',
+    page: 'bg-gradient-to-b from-[#f8ecdf] via-[#f2ddc9] to-[#e9cbad]',
     text: 'text-stone-800', sub: 'text-stone-500',
-    card: 'bg-white/90 backdrop-blur border border-orange-900/10 text-stone-800 shadow-[0_1px_2px_rgba(67,20,7,0.05),0_10px_28px_-16px_rgba(124,45,18,0.35)] hover:border-orange-900/30 hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(67,20,7,0.06),0_16px_36px_-16px_rgba(124,45,18,0.45)]',
+    row: 'rounded-full px-6 py-4',
+    card: 'bg-white/95 text-stone-800 shadow-[0_2px_10px_rgba(124,45,18,0.08),0_14px_34px_-18px_rgba(124,45,18,0.30)] hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(124,45,18,0.10),0_20px_44px_-18px_rgba(124,45,18,0.42)]',
     hero: 'text-stone-900',
     ring: 'ring-white/90',
     halo: 'shadow-[0_10px_36px_-10px_rgba(124,45,18,0.4)]',
-    social: 'bg-white/70 border border-orange-900/10 text-stone-500 hover:text-orange-950 hover:border-orange-900/30',
+    social: 'bg-white/80 text-stone-500 shadow-sm hover:text-orange-950 hover:shadow-md',
     footer: 'text-stone-500',
-    cta: 'bg-white/60 border border-orange-900/10 backdrop-blur',
+    cta: 'bg-white/70 backdrop-blur shadow-[0_2px_12px_rgba(124,45,18,0.08)]',
     ctaBtn: 'bg-[#9a5b2e] text-white hover:bg-[#84491f]',
   },
   notte: {
-    page: 'bg-gradient-to-b from-[#1b201c] via-[#181c19] to-[#121613]',
+    page: 'bg-gradient-to-b from-[#1b201c] via-[#181c19] to-[#111511]',
     text: 'text-stone-100', sub: 'text-stone-400',
-    card: 'bg-white/[0.06] backdrop-blur border border-white/10 text-stone-100 hover:bg-white/[0.12] hover:border-white/25 hover:-translate-y-0.5',
+    row: 'rounded-full px-6 py-4',
+    card: 'bg-white/[0.07] backdrop-blur border border-white/10 text-stone-100 hover:bg-white/[0.13] hover:border-white/25 hover:-translate-y-0.5',
     hero: 'text-white',
     ring: 'ring-white/25',
     halo: 'shadow-[0_10px_40px_-10px_rgba(216,226,207,0.25)]',
-    social: 'bg-white/[0.06] border border-white/10 text-stone-300 hover:text-white hover:border-white/30',
+    social: 'bg-white/[0.07] border border-white/10 text-stone-300 hover:text-white hover:border-white/30',
     footer: 'text-stone-400',
     cta: 'bg-white/[0.05] border border-white/10',
     ctaBtn: 'bg-[#d8e2cf] text-stone-900 hover:bg-white',
@@ -73,6 +78,7 @@ export const LINK_THEMES = {
   carta: {
     page: 'bg-[#faf8f2]',
     text: 'text-stone-900', sub: 'text-stone-500',
+    row: 'rounded-2xl px-5 py-4',
     card: 'bg-white border-2 border-stone-900 text-stone-900 shadow-[3px_3px_0_#1c1917] hover:bg-stone-900 hover:text-white active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_#1c1917]',
     hero: 'text-stone-900',
     ring: 'ring-stone-900',
@@ -81,6 +87,49 @@ export const LINK_THEMES = {
     footer: 'text-stone-500',
     cta: 'bg-white border-2 border-stone-900 shadow-[4px_4px_0_#1c1917]',
     ctaBtn: 'bg-stone-900 text-white hover:bg-stone-700',
+  },
+  /* ── Le tre atmosfere sceniche (14/8) ─────────────────────────── */
+  aurora: {
+    // il cielo che scende nel tramonto: yoga all'alba, respiro, cerimonia
+    page: 'bg-gradient-to-b from-[#cfe2ea] via-[#ebd8dc] to-[#e0925f]',
+    text: 'text-stone-800', sub: 'text-stone-600',
+    row: 'rounded-full px-6 py-4',
+    card: 'bg-white/95 text-stone-800 shadow-[0_2px_12px_rgba(120,60,30,0.10),0_16px_38px_-18px_rgba(120,60,30,0.38)] hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(120,60,30,0.12),0_22px_48px_-18px_rgba(120,60,30,0.48)]',
+    hero: 'text-stone-900',
+    ring: 'ring-white/90',
+    halo: 'shadow-[0_12px_40px_-10px_rgba(224,146,95,0.55)]',
+    social: 'bg-white/80 text-stone-500 shadow-sm hover:text-stone-900 hover:shadow-md',
+    footer: 'text-white/90',
+    cta: 'bg-white/90 backdrop-blur shadow-[0_4px_20px_rgba(120,60,30,0.18)]',
+    ctaBtn: 'bg-stone-900 text-white hover:bg-stone-700',
+  },
+  cosmo: {
+    // costellazioni su indaco: meditazione, cielo notturno, oro
+    page: 'lk-stars',
+    text: 'text-indigo-50', sub: 'text-indigo-200/70',
+    row: 'rounded-full px-6 py-4',
+    card: 'bg-white/[0.07] backdrop-blur border border-white/10 text-indigo-50 hover:bg-white/[0.13] hover:border-[#cbb578]/50 hover:-translate-y-0.5',
+    hero: 'text-white',
+    ring: 'ring-[#cbb578]/60',
+    halo: 'shadow-[0_10px_44px_-8px_rgba(203,181,120,0.45)]',
+    social: 'bg-white/[0.07] border border-white/10 text-indigo-200 hover:text-[#cbb578] hover:border-[#cbb578]/50',
+    footer: 'text-indigo-200/60',
+    cta: 'bg-white/[0.06] border border-[#cbb578]/25',
+    ctaBtn: 'bg-[#cbb578] text-stone-900 hover:bg-[#dcc98f]',
+  },
+  quarzo: {
+    // quarzo rosa: cura, femminile, massaggio, dolcezza
+    page: 'bg-gradient-to-b from-[#fdf1f4] via-[#f9e2e9] to-[#eec9d6]',
+    text: 'text-stone-800', sub: 'text-[#8d5563]',
+    row: 'rounded-full px-6 py-4',
+    card: 'bg-white text-stone-800 shadow-[0_2px_10px_rgba(164,73,94,0.08),0_14px_34px_-18px_rgba(164,73,94,0.32)] hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(164,73,94,0.10),0_20px_44px_-18px_rgba(164,73,94,0.45)]',
+    hero: 'text-stone-900',
+    ring: 'ring-white',
+    halo: 'shadow-[0_10px_36px_-10px_rgba(164,73,94,0.45)]',
+    social: 'bg-white/85 text-[#8d5563] shadow-sm hover:text-[#a4495e] hover:shadow-md',
+    footer: 'text-[#8d5563]',
+    cta: 'bg-white/80 backdrop-blur shadow-[0_2px_12px_rgba(164,73,94,0.10)]',
+    ctaBtn: 'bg-[#a4495e] text-white hover:bg-[#8d3a4e]',
   },
 };
 
@@ -110,8 +159,8 @@ const IN_FRAME = typeof window !== 'undefined' && window.self !== window.top;
 /* Una riga cliccabile della colonna: stessa forma per blocchi vivi e
    link personalizzati — la pagina resta UNA cosa, non due liste. */
 function Row({ theme, children, onNavigate, to, ...linkProps }) {
-  const cls = 'block w-full rounded-2xl px-5 py-4 text-center text-[15px] '
-    + `font-semibold transition-all duration-200 active:scale-[0.98] ${theme.card}`;
+  const cls = 'block w-full text-center text-[15px] font-semibold '
+    + `transition-all duration-200 active:scale-[0.98] ${theme.row} ${theme.card}`;
   if (to && !IN_FRAME) {
     return <Link to={to} {...linkProps} onClick={onNavigate} className={cls}>{children}</Link>;
   }
@@ -248,7 +297,7 @@ export default function LinkPage({ handle }) {
                 <Cmp key={key} {...nav} data-testid="link-block-upcoming"
                      onClick={() => trackClick(org_slug, 'block:upcoming')}
                      style={rise(seq)}
-                     className={`lk-rise block overflow-hidden rounded-2xl text-left transition-all duration-200 active:scale-[0.98] ${theme.card}`}>
+                     className={`lk-rise block overflow-hidden rounded-3xl text-left transition-all duration-200 active:scale-[0.98] ${theme.card}`}>
                   <div className="flex items-stretch">
                     {next.cover_image_url && (
                       <img src={next.cover_image_url} alt=""

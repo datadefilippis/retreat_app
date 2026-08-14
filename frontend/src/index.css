@@ -465,3 +465,30 @@ body {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: none; }
 }
+
+/* ── LK8 (founder, 14/8) — tema "Cosmo" della pagina link: un cielo
+   di costellazioni disegnato SOLO in CSS (niente immagini da caricare).
+   Le stelle sono micro radial-gradient su due "strati" ripetuti a
+   passo diverso (parallasse visiva), sopra il gradiente indaco. */
+.lk-stars {
+    background-color: #12102a;
+    background-image:
+        radial-gradient(1.2px 1.2px at 12% 18%, rgba(255,255,255,0.9) 50%, transparent 51%),
+        radial-gradient(1px 1px at 68% 8%, rgba(255,255,255,0.7) 50%, transparent 51%),
+        radial-gradient(1.4px 1.4px at 84% 26%, rgba(203,181,120,0.9) 50%, transparent 51%),
+        radial-gradient(1px 1px at 32% 34%, rgba(255,255,255,0.6) 50%, transparent 51%),
+        radial-gradient(1.1px 1.1px at 52% 22%, rgba(255,255,255,0.8) 50%, transparent 51%),
+        radial-gradient(1px 1px at 22% 58%, rgba(255,255,255,0.5) 50%, transparent 51%),
+        radial-gradient(1.3px 1.3px at 76% 64%, rgba(203,181,120,0.7) 50%, transparent 51%),
+        radial-gradient(1px 1px at 44% 76%, rgba(255,255,255,0.55) 50%, transparent 51%),
+        radial-gradient(1px 1px at 90% 84%, rgba(255,255,255,0.6) 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 8% 88%, rgba(255,255,255,0.65) 50%, transparent 51%),
+        linear-gradient(180deg, #1c1940 0%, #151233 55%, #0c0b1e 100%);
+    background-size:
+        520px 640px, 520px 640px, 520px 640px, 520px 640px, 520px 640px,
+        700px 860px, 700px 860px, 700px 860px, 700px 860px, 700px 860px,
+        100% 100%;
+    background-attachment: fixed, fixed, fixed, fixed, fixed,
+                           fixed, fixed, fixed, fixed, fixed,
+                           scroll;
+}

@@ -26,12 +26,15 @@ import { Input } from '../../components/ui/input';
 import { Switch } from '../../components/ui/switch';
 import api from '../../api/client';
 
-/* Le stesse 4 atmosfere della pagina pubblica, in miniatura. */
+/* Le stesse atmosfere della pagina pubblica, in miniatura (LK8: 7). */
 const THEME_SWATCHES = [
   { key: 'salvia', dot: 'bg-[#8a9979]', label: 'Salvia' },
   { key: 'terra', dot: 'bg-gradient-to-br from-[#f2ddc9] to-[#c98d5f]', label: 'Terra' },
   { key: 'notte', dot: 'bg-[#181c19]', label: 'Notte' },
   { key: 'carta', dot: 'bg-white border-2 border-stone-900', label: 'Carta' },
+  { key: 'aurora', dot: 'bg-gradient-to-b from-[#cfe2ea] via-[#ebd8dc] to-[#e0925f]', label: 'Aurora' },
+  { key: 'cosmo', dot: 'bg-gradient-to-b from-[#1c1940] to-[#0c0b1e]', label: 'Cosmo' },
+  { key: 'quarzo', dot: 'bg-gradient-to-b from-[#fdf1f4] to-[#eec9d6] border border-[#e3aebd]', label: 'Quarzo' },
 ];
 
 const BLOCK_META = {

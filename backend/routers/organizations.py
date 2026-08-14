@@ -1783,7 +1783,11 @@ _PP_LANGS = ("it", "en", "de", "fr", "es", "pt")
 # propri sono i link personalizzati, il tema e gli interruttori dei
 # blocchi: nome, ritratto, social, ritiri e listino arrivano dal
 # profilo gia' configurato (zero passi extra per l'operatore).
-_LINK_PAGE_THEMES = ("salvia", "terra", "notte", "carta")
+# LK8 (14/8) — + le tre atmosfere sceniche: aurora (sfumato tramonto),
+# cosmo (costellazioni), quarzo (rosa). La rosa vive qui, in
+# LINK_THEMES (LinkPage.js) e in THEME_SWATCHES (LinkPageCard.js).
+_LINK_PAGE_THEMES = ("salvia", "terra", "notte", "carta",
+                     "aurora", "cosmo", "quarzo")
 _LINK_PAGE_MAX_LINKS = 15
 _LINK_PAGE_BLOCKS = ("upcoming", "listino", "profile", "whatsapp", "socials")
 
