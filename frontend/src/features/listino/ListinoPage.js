@@ -416,7 +416,11 @@ export default function ListinoPage() {
     // eslint-disable-next-line no-alert
     if (!window.confirm(`Togliere "${row.name}" dal listino?`)) return;
     try {
-      await productsAPI.delete(row.id);
+      // LK9 (bug prod, 14/8): productsAPI non ha .delete — il metodo
+      // e' deactivate (DELETE /products/{id} = soft delete lato API).
+      // Il vecchio nome esplodeva in un TypeError client-side e la
+      // rimozione falliva SEMPRE, senza mai chiamare il server.
+      await productsAPI.deactivate(row.id);
       await load();
       toast.success('Servizio rimosso');
     } catch { toast.error('Rimozione non riuscita'); }

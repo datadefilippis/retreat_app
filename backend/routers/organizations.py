@@ -1864,6 +1864,11 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
     if not org_doc:
         raise HTTPException(status_code=404, detail="Organization not found")
     pp = org_doc.get("public_profile") or {}
+    # LK9 (founder, 14/8) — la superficie si assicura GIA' alla GET:
+    # chi ha una bio salvata deve trovare indirizzo, bottoni profilo e
+    # toggle pagina link accesi APPENA apre l'editor, senza dover
+    # ripassare dal Salva. Idempotente e silenziosa senza bio.
+    await _ensure_public_surface(current_user["organization_id"])
     # CS4 (founder, 13/8) — lo slug con cui /o/ risolve DAVVERO questa
     # org: store pubblicato prima, public_slug legacy poi (stesso
     # resolver del ping IndexNow). org_doc.public_slug da solo mentiva
@@ -2068,8 +2073,16 @@ async def _ensure_public_surface(org_id: str) -> None:
          "store_settings": 1})
     if not org or not (org.get("public_profile") or {}).get("bio"):
         return
+    # Il cancello dello store vale solo se lo store offre DAVVERO una
+    # superficie pubblica (pubblicato e con slug). Le org storiche
+    # portano store attivi mai pubblicati e senza slug (visto in prod
+    # sull'org del founder, 14/8): con quelle si proseguiva al return
+    # e l'operatore restava senza indirizzo — ne' store ne' slug —
+    # col toggle della pagina link morto.
     if await stores_collection.find_one(
-            {"organization_id": org_id, "is_active": True}, {"_id": 1}):
+            {"organization_id": org_id, "is_active": True,
+             "is_published": True, "slug": {"$nin": [None, ""]}},
+            {"_id": 1}):
         return
     updates = {}
     if not org.get("public_slug"):

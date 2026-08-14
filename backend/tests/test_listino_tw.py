@@ -7343,6 +7343,48 @@ class TestFeeTruthNeiTermini:
             f"atteso {atteso}, trovato {CURRENT_VERSION_HASH}")
 
 
+class TestSuperficieSubitoLk9:
+    """LK9 (founder in prod, 14/8) — con bio salvata l'indirizzo
+    pubblico deve esistere APPENA si apre l'editor: in prod l'org del
+    founder aveva bio + store attivo mai pubblicato (senza slug) e
+    restava senza superficie — toggle pagina link morto e bottoni
+    profilo nascosti, con l'invito beffardo a "salvare prima"."""
+
+    ORG_SRC = (Path(__file__).resolve().parent.parent
+               / "routers" / "organizations.py").read_text()
+
+    def test_get_assicura_la_superficie_prima_di_risolvere(self):
+        blocco = self.ORG_SRC.split("async def get_public_profile")[1] \
+                             .split("\n@router.")[0]
+        ensure = blocco.find("_ensure_public_surface")
+        resolve = blocco.find("_resolve_public_slug_for_org")
+        assert ensure != -1, "la GET non assicura piu' la superficie"
+        assert resolve != -1
+        assert ensure < resolve, \
+            "la GET risolve lo slug PRIMA di assicurare la superficie"
+
+    def test_cancello_store_solo_se_pubblicato_con_slug(self):
+        blocco = self.ORG_SRC.split("async def _ensure_public_surface")[1]
+        gate = blocco.split("updates = {}")[0]
+        assert '"is_published": True' in gate, \
+            "il cancello store ignora is_published: le org con store " \
+            "attivo mai pubblicato restano senza indirizzo"
+        assert '"slug"' in gate, \
+            "il cancello store non pretende uno slug vero"
+
+    def test_rimozione_listino_usa_un_metodo_che_esiste(self):
+        """Bug prod 14/8: removeRow chiamava productsAPI.delete, che
+        non esiste (il metodo e' deactivate) — TypeError client-side
+        e rimozione sempre fallita, zero richieste al server."""
+        pagina = (FRONTEND_SRC / "features" / "listino"
+                  / "ListinoPage.js").read_text()
+        api_src = (FRONTEND_SRC / "api" / "products.js").read_text()
+        assert "productsAPI.delete(" not in pagina, \
+            "removeRow torna a chiamare productsAPI.delete (inesistente)"
+        assert "productsAPI.deactivate(" in pagina
+        assert "deactivate:" in api_src
+
+
 class TestMenuMobileMb1:
     """MB1 (founder, 13/8) — nel pannello mobile del guscio marketplace
     "Chi siamo" appariva due volte in fase rete: una da NETWORK_NAV_ITEMS
