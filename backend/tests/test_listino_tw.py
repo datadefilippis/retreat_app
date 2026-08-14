@@ -7635,6 +7635,12 @@ class TestLinkPageLk5:
         lloc = prod_ngx.split("^/l/[^/]+/?$")[1].split("\n    location")[0]
         assert 'X-Frame-Options "SAMEORIGIN"' in lloc
         assert "frame-ancestors 'self'" in lloc
+        # LK10b — il blocco era DOPPIO: anche la pagina che incornicia
+        # (l'editor) deve poterlo fare — la CSP globale limitava
+        # frame-src ai soli video Bunny. Senza 'self' l'anteprima
+        # resta bloccata dal lato genitore.
+        assert "frame-src 'self' https://iframe.mediadelivery.net" \
+            in prod_ngx, "frame-src globale senza 'self': iframe interni vietati"
 
     def test_editor_tre_gesti(self):
         card = (FRONTEND_SRC / "features" / "settings"
