@@ -30,6 +30,9 @@ class TrackPayload(BaseModel):
     channel: str = Field(max_length=20)
     referrer_host: Optional[str] = Field(default=None, max_length=100)
     lang: Optional[str] = Field(default=None, max_length=5)
+    # LK4 — solo per surface="link_click": l'id del link personalizzato
+    # oppure "block:<nome>" per i blocchi vivi della pagina link
+    link_id: Optional[str] = Field(default=None, max_length=40)
 
 
 async def _resolve_org_for(surface: str, slug: str) -> Optional[str]:
@@ -37,7 +40,8 @@ async def _resolve_org_for(surface: str, slug: str) -> Optional[str]:
     profile/store → store slug o public_slug; event → occurrence slug."""
     from database import (stores_collection, organizations_collection,
                           event_occurrences_collection)
-    if surface in ("profile", "store"):
+    # LK4 — la pagina link vive sullo stesso slug del profilo
+    if surface in ("profile", "store", "links", "link_click"):
         store = await stores_collection.find_one(
             {"slug": slug, "is_published": True},
             {"_id": 0, "organization_id": 1})
@@ -58,6 +62,20 @@ async def _resolve_org_for(surface: str, slug: str) -> Optional[str]:
 @limiter.limit("30/minute")
 async def track_view(request: Request, payload: TrackPayload) -> Response:
     try:
+        # LK4 — click su un link della pagina link: contatore dedicato,
+        # niente pipeline visite (nessun canale, nessun dedup visitatore)
+        if payload.surface == "link_click" and payload.link_id:
+            from services.visit_tracking import record_link_click
+            org_id = await _resolve_org_for("links", payload.slug)
+            if org_id:
+                await record_link_click(
+                    organization_id=org_id,
+                    slug=payload.slug,
+                    link_id=payload.link_id,
+                    ip=(request.client.host if request.client else None),
+                    user_agent=request.headers.get("user-agent"),
+                )
+            return Response(status_code=204)
         if payload.surface in SURFACES and payload.channel in CHANNELS:
             org_id = await _resolve_org_for(payload.surface, payload.slug)
             if org_id:

@@ -193,6 +193,43 @@ export default function VisibilityPage() {
                         empty={t('visibility.noData', { defaultValue: 'Ancora nessuna visita questo mese.' })} />
             </div>
 
+            {/* LK4 — la pagina link (/@slug): visite e click per voce.
+                Appare solo se attivata: niente sezioni vuote. */}
+            {data?.link_page?.enabled && (
+              <div className={cardCls} data-testid="visibility-linkpage">
+                <h2 className="text-sm font-semibold mb-1">
+                  {t('visibility.linkPageTitle', { defaultValue: 'La tua pagina link' })}
+                </h2>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {t('visibility.linkPageSub', { defaultValue: 'Il link che hai in bio: quante persone lo aprono e dove cliccano.' })}
+                </p>
+                <div className="flex flex-wrap gap-6 text-sm">
+                  <div>
+                    <p className="text-2xl font-bold tabular-nums">{data.link_page.visits}</p>
+                    <p className="text-xs text-muted-foreground">{t('visibility.linkPageVisits', { defaultValue: 'visite questo mese' })}</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold tabular-nums">{data.link_page.uniques}</p>
+                    <p className="text-xs text-muted-foreground">{t('visibility.linkPageUniques', { defaultValue: 'persone diverse' })}</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold tabular-nums">{data.link_page.clicks_total}</p>
+                    <p className="text-xs text-muted-foreground">{t('visibility.linkPageClicks', { defaultValue: 'click sui link' })}</p>
+                  </div>
+                </div>
+                {(data.link_page.top || []).length > 0 && (
+                  <ul className="mt-4 space-y-1.5">
+                    {data.link_page.top.map((r, i) => (
+                      <li key={i} className="flex items-center justify-between text-sm">
+                        <span className="truncate">{r.label}</span>
+                        <span className="ml-3 shrink-0 tabular-nums font-semibold">{r.clicks}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
             {/* D — per ritiro */}
             {(data?.per_retreat || []).length > 0 && (
               <div className={cardCls}>

@@ -205,8 +205,53 @@ async def _build(org_id: str) -> Dict[str, Any]:
     # ── la prova Aurya: visite che lo store da solo non avrebbe ──────
     aurya_visits = channels.get("directory", 0) + channels.get("search", 0)
 
+    # ── LK4: la pagina link (/@slug) — visite del mese + click per
+    # singolo link/blocco. Le etichette dei link personalizzati si
+    # risolvono dallo stato ATTUALE del profilo (un link poi rimosso
+    # appare come "Link rimosso": onesto, il click c'e' stato).
+    lk_rows = await db.page_views.aggregate([
+        {"$match": {"organization_id": org_id, "surface": "links",
+                    "day": {"$regex": f"^{cur}"}}},
+        {"$group": {"_id": None, "visits": {"$sum": "$hits"},
+                    "uniques": {"$sum": 1}}},
+    ]).to_list(1)
+    lk_v = lk_rows[0] if lk_rows else {}
+    click_rows = await db.link_clicks.aggregate([
+        {"$match": {"organization_id": org_id,
+                    "day": {"$regex": f"^{cur}"}}},
+        {"$group": {"_id": "$link_id", "clicks": {"$sum": "$hits"}}},
+        {"$sort": {"clicks": -1}},
+    ]).to_list(30)
+    _BLOCK_LABELS = {
+        "block:upcoming": "Il prossimo ritiro",
+        "block:listino": "Prenota una seduta",
+        "block:whatsapp": "WhatsApp",
+        "block:profile": "Scopri chi sono",
+    }
+    _org_doc = await db.organizations.find_one(
+        {"id": org_id}, {"_id": 0, "public_profile.link_page": 1})
+    _lp_doc = ((_org_doc or {}).get("public_profile") or {}).get("link_page") or {}
+    _custom_labels = {
+        l.get("id"): l.get("label")
+        for l in _lp_doc.get("links", []) if isinstance(l, dict)
+    }
+    link_page = {
+        "enabled": bool(_lp_doc.get("enabled")),
+        "visits": lk_v.get("visits", 0),
+        "uniques": lk_v.get("uniques", 0),
+        "clicks_total": sum(r["clicks"] for r in click_rows),
+        "top": [
+            {"label": _BLOCK_LABELS.get(r["_id"])
+                      or _custom_labels.get(r["_id"])
+                      or "Link rimosso",
+             "clicks": r["clicks"]}
+            for r in click_rows[:8]
+        ],
+    }
+
     return {
         "month": cur,
+        "link_page": link_page,
         "summary": {
             "impressions": {"current": cur_imp, "previous": prev_imp},
             "visits": {"current": cur_v["visits"],

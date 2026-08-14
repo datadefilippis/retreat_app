@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { Instagram, Facebook, Globe, ArrowRight, MessageCircle, CalendarDays } from 'lucide-react';
 import api from '../../api/client';
 import useSeoMeta from './lib/useSeoMeta';
+import useTrackView from './lib/useTrackView';
 import useItalianOnly from '../../lib/useItalianOnly';
 import { useSiteConfig } from '../../context/SiteConfigContext';
 import { BrandLogo } from '../../components/BrandLogo';
@@ -66,13 +67,29 @@ export const LINK_THEMES = {
 
 const httpsify = (u) => (/^https?:\/\//i.test(u || '') ? u : `https://${u}`);
 
+/* LK4 — beacon del click: fire-and-forget con keepalive, cosi' parte
+   anche se la pagina sta gia' navigando via. Stesse garanzie del
+   motore VT: mai bloccare, mai rompere. */
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+function trackClick(slug, linkId) {
+  try {
+    fetch(`${BACKEND_URL}/api/public/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ surface: 'link_click', slug,
+                             channel: 'direct', link_id: linkId }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch { /* mai rompere la navigazione */ }
+}
+
 /* Una riga cliccabile della colonna: stessa forma per blocchi vivi e
    link personalizzati — la pagina resta UNA cosa, non due liste. */
-function Row({ theme, children, ...linkProps }) {
+function Row({ theme, children, onNavigate, ...linkProps }) {
   const cls = `block w-full rounded-2xl px-5 py-4 text-center text-[15px] font-semibold transition-all ${theme.card}`;
   return linkProps.to
-    ? <Link {...linkProps} className={cls}>{children}</Link>
-    : <a {...linkProps} className={cls} target="_blank" rel="noopener noreferrer">{children}</a>;
+    ? <Link {...linkProps} onClick={onNavigate} className={cls}>{children}</Link>
+    : <a {...linkProps} onClick={onNavigate} className={cls} target="_blank" rel="noopener noreferrer">{children}</a>;
 }
 
 export default function LinkPage({ handle }) {
@@ -97,6 +114,9 @@ export default function LinkPage({ handle }) {
     title: data?.name ? `${data.name} | Aurya` : 'Aurya',
     description: data?.tagline || data?.bio || '',
   });
+  // LK4 — la visita conta nello specchietto Visibilita' (superficie
+  // "links", stessa pipeline privacy-first delle altre pagine)
+  useTrackView('links', org_slug);
 
   if (status === 'missing') return <Navigate to="/" replace />;
   // pagina non attivata → la casa vera dell'operatore e' il profilo
@@ -178,6 +198,7 @@ export default function LinkPage({ handle }) {
               piu' preziosa che l'operatore ha da mostrare */}
           {blocks.upcoming !== false && next && (
             <Link to={next.url} data-testid="link-block-upcoming"
+                  onClick={() => trackClick(org_slug, 'block:upcoming')}
                   className={`block overflow-hidden rounded-2xl text-left transition-all ${theme.card}`}>
               <div className="flex items-stretch">
                 {next.cover_image_url && (
@@ -204,13 +225,15 @@ export default function LinkPage({ handle }) {
           )}
 
           {blocks.listino !== false && hasListino && (
-            <Row theme={theme} to={`/o/${org_slug}#listino`} data-testid="link-block-listino">
+            <Row theme={theme} to={`/o/${org_slug}#listino`} data-testid="link-block-listino"
+                 onNavigate={() => trackClick(org_slug, 'block:listino')}>
               {t('linkPage.book', { defaultValue: 'Prenota una seduta' })}
             </Row>
           )}
 
           {blocks.whatsapp !== false && lp.whatsapp && (
-            <Row theme={theme} href={`https://wa.me/${lp.whatsapp}`} data-testid="link-block-whatsapp">
+            <Row theme={theme} href={`https://wa.me/${lp.whatsapp}`} data-testid="link-block-whatsapp"
+                 onNavigate={() => trackClick(org_slug, 'block:whatsapp')}>
               <MessageCircle className="mr-1.5 inline h-4 w-4 align-[-2px]" />
               {t('linkPage.whatsapp', { defaultValue: 'Scrivimi su WhatsApp' })}
             </Row>
@@ -218,13 +241,15 @@ export default function LinkPage({ handle }) {
 
           {/* i link personalizzati dell'operatore, nel suo ordine */}
           {(lp.links || []).map((l) => (
-            <Row key={l.id} theme={theme} href={l.url} data-linkid={l.id}>
+            <Row key={l.id} theme={theme} href={l.url} data-linkid={l.id}
+                 onNavigate={() => trackClick(org_slug, l.id)}>
               {l.label}
             </Row>
           ))}
 
           {blocks.profile !== false && (
-            <Row theme={theme} to={`/o/${org_slug}`} data-testid="link-block-profile">
+            <Row theme={theme} to={`/o/${org_slug}`} data-testid="link-block-profile"
+                 onNavigate={() => trackClick(org_slug, 'block:profile')}>
               {t('linkPage.profile', { defaultValue: 'Scopri chi sono' })}
             </Row>
           )}

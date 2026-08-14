@@ -28,7 +28,9 @@ from typing import Dict, Iterable, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-SURFACES = ("profile", "event", "store")
+# LK4 — "links" e' la pagina link (/@slug): stessa pipeline delle
+# altre superfici (dedup giornaliero, canali, anti-bot)
+SURFACES = ("profile", "event", "store", "links")
 CHANNELS = ("directory", "store", "search", "social", "direct")
 
 # UA di bot/crawler/tool: mai contati (né visite né impression).
@@ -163,3 +165,27 @@ async def flush_now() -> None:
     global _last_flush
     _last_flush = time.monotonic()
     await _flush()
+
+
+async def record_link_click(*, organization_id: str, slug: str,
+                            link_id: str, ip: Optional[str],
+                            user_agent: Optional[str]) -> None:
+    """LK4 — un click su un link della pagina link (/@slug).
+
+    link_id e' l'id del link personalizzato oppure "block:<nome>" per
+    i blocchi vivi (block:upcoming, block:listino, ...). Un doc per
+    (link, giorno) con contatore hits: volumi piccoli, lettura banale.
+    Stesse regole di privacy delle visite: niente IP salvati, niente
+    cookie, bot fuori. Mai raise."""
+    try:
+        if not link_id or is_bot(user_agent):
+            return
+        from database import db
+        await db.link_clicks.update_one(
+            {"organization_id": organization_id, "slug": slug[:120],
+             "link_id": str(link_id)[:40], "day": _today()},
+            {"$inc": {"hits": 1}},
+            upsert=True,
+        )
+    except Exception as exc:  # noqa: BLE001 — best-effort assoluto
+        logger.debug("link_click skipped: %s", exc)
