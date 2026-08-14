@@ -7460,3 +7460,127 @@ class TestLinkPageLk1:
             assert lp["blocks"]["listino"] is False
         finally:
             self._restore_off()
+
+
+class TestLinkPageLk5:
+    """LK5 — chiusura ciclo pagina link: E2E vivo (attiva -> guscio SEO
+    -> click tracciato -> Visibilita') + guardie sorgente sulle promesse
+    (footer Aurya, noindex, 4 temi, nginx, editor)."""
+
+    _token = None
+
+    @classmethod
+    def _hdr(cls):
+        import pytest
+        if cls._token:
+            return {"Authorization": f"Bearer {cls._token}"}
+        r = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "admin@demo.com", "password": "demo1234"}, timeout=10)
+        if r.status_code != 200:
+            pytest.skip("demo login unavailable (rate limit?)")
+        cls._token = r.json()["access_token"]
+        return {"Authorization": f"Bearer {cls._token}"}
+
+    _UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
+           "AppleWebKit/605.1.15")
+
+    def test_e2e_attiva_guscio_click_visibilita(self):
+        hdr = self._hdr()
+        db = None
+        try:
+            # 1) attiva con un link custom
+            r = requests.patch(
+                f"{BASE_URL}/api/organizations/current/public-profile",
+                json={"link_page": {"enabled": True, "theme": "salvia",
+                      "links": [{"label": "Guardia LK5",
+                                 "url": "https://esempio-lk5.it"}]}},
+                headers=hdr, timeout=10)
+            assert r.status_code == 200
+            lk5_id = r.json()["link_page"]["links"][-1]["id"]
+
+            # 2) guscio SEO: noindex + OG (vive nelle chat)
+            shell = requests.get(f"{BASE_URL}/__seo/@masseria-demo",
+                                 timeout=10).text
+            assert "noindex" in shell
+            assert "og:title" in shell
+
+            # 3) click tracciato sul link custom
+            r = requests.post(f"{BASE_URL}/api/public/track", json={
+                "surface": "link_click", "slug": "masseria-demo",
+                "channel": "direct", "link_id": lk5_id},
+                headers={"User-Agent": self._UA}, timeout=10)
+            assert r.status_code == 204
+
+            # 4) la Visibilita' lo racconta con l'etichetta giusta
+            r = requests.get(f"{BASE_URL}/api/analytics/visibility",
+                             headers=hdr, timeout=20)
+            assert r.status_code == 200
+            lp = r.json().get("link_page") or {}
+            assert lp.get("enabled") is True
+            labels = {row["label"] for row in lp.get("top", [])}
+            assert "Guardia LK5" in labels
+        finally:
+            # pulizia: pagina spenta + click della guardia rimossi
+            requests.patch(
+                f"{BASE_URL}/api/organizations/current/public-profile",
+                json={"link_page": {"enabled": False, "links": []}},
+                headers=hdr, timeout=10)
+            try:
+                import re as _re
+                import pymongo
+                env = (BACKEND_DIR / ".env").read_text()
+                mongo = _re.search(r'MONGO_URL="?([^"\n]+?)"?\n', env).group(1)
+                name = _re.search(r'DB_NAME="?([^"\n]+?)"?\n', env).group(1)
+                live = pymongo.MongoClient(mongo)[name]
+                live.link_clicks.delete_many({"slug": "masseria-demo"})
+                live.page_views.delete_many({"surface": "links",
+                                             "slug": "masseria-demo"})
+            except Exception:
+                pass
+
+    # ── guardie sorgente ─────────────────────────────────────────────
+
+    def _page_src(self):
+        return (FRONTEND_SRC / "features" / "storefront"
+                / "LinkPage.js").read_text()
+
+    def test_footer_aurya_e_loop_di_fase(self):
+        src = self._page_src()
+        assert "Sei un professionista del benessere?" in src, \
+            "sparito il footer Aurya: e' il loop di crescita (LK2)"
+        assert "/entra-nella-rete" in src and "sitePhase" in src, \
+            "la CTA Iscriviti non e' piu' phase-aware"
+
+    def test_quattro_temi_registrati(self):
+        src = self._page_src()
+        for tema in ("salvia:", "terra:", "notte:", "carta:"):
+            assert tema in src, f"tema {tema} sparito dalla rosa"
+
+    def test_noindex_nel_guscio_e_nginx_instradati(self):
+        shell_src = (Path(__file__).resolve().parent.parent / "routers"
+                     / "seo_shell.py").read_text()
+        assert "_meta_link_page" in shell_src
+        assert '"noindex": True' in shell_src.split("_meta_link_page")[1][:1200]
+        for conf in ("nginx.conf", "nginx-bootstrap.conf"):
+            ngx = (Path(__file__).resolve().parent.parent.parent
+                   / "deploy" / "nginx" / conf).read_text()
+            assert "^/@" in ngx, f"{conf}: manca la location /@ (OG rotti)"
+            assert "|l|" in ngx, f"{conf}: /l/ fuori dal guscio SEO"
+
+    def test_editor_tre_gesti(self):
+        card = (FRONTEND_SRC / "features" / "settings"
+                / "LinkPageCard.js").read_text()
+        # attiva -> copia -> incolla: i tre pezzi devono esserci
+        assert 'data-testid="linkpage-toggle"' in card
+        assert 'data-testid="linkpage-copy"' in card
+        assert "navigator.clipboard" in card
+        # salvataggio immediato, mai un bottone Salva da ricordare
+        assert "api.patch" in card
+
+    def test_click_tracciati_su_tutte_le_righe(self):
+        src = self._page_src()
+        for lid in ("block:upcoming", "block:listino", "block:whatsapp",
+                    "block:profile"):
+            assert lid in src, f"click non tracciato su {lid} (LK4)"
+        assert "trackClick(org_slug, l.id)" in src, \
+            "click non tracciato sui link personalizzati (LK4)"
