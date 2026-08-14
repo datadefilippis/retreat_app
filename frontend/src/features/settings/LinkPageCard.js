@@ -1,20 +1,25 @@
 /**
- * LinkPageCard — l'editor della pagina link (LK3, 14/8/2026).
+ * LinkPageCard — l'editor della pagina link (LK3, rifatto in LK6).
  *
- * Vive dentro Profilo pubblico. Il percorso dell'operatore e' TRE
- * gesti: attiva → copia → incolla nella bio di Instagram. Tutto il
- * resto e' opzionale e si salva DA SOLO a ogni tocco (niente bottone
- * Salva da ricordare: il PATCH parte subito e il server risponde con
- * lo stato normalizzato, id dei link compresi).
+ * Il percorso resta TRE gesti: attiva → copia → incolla in bio. Tutto
+ * si salva DA SOLO a ogni tocco (il server risponde normalizzato, id
+ * e ordine compresi).
  *
- * I blocchi vivi sono accesi di default: la pagina e' piena senza
- * configurare nulla. I link personalizzati chiedono solo etichetta e
- * indirizzo (https). L'anteprima e' la pagina VERA in una cornice
- * telefono: quello che vedi e' quello che vede chi clicca.
+ * LK6 (feedback founder 14/8):
+ * - UNA lista sola, riordinabile con le frecce: blocchi vivi e link
+ *   personalizzati insieme, nell'ordine che appare sulla pagina
+ * - i link personalizzati si MODIFICANO (matita), non solo si tolgono
+ * - i blocchi si spiegano da soli: WhatsApp spento e guidato se manca
+ *   il numero, social idem, ritiro/listino dicono quando appariranno
+ * - l'anteprima e' la pagina vera; i click dentro aprono in una
+ *   scheda nuova (mai piu' intrappolati nella cornice)
  */
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link2, Copy, ExternalLink, ArrowUp, ArrowDown, X, Loader2, Check } from 'lucide-react';
+import {
+  Link2, Copy, ExternalLink, ArrowUp, ArrowDown, X, Loader2, Check,
+  Pencil, CalendarDays, ListChecks, MessageCircle, User, AlertCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -29,35 +34,54 @@ const THEME_SWATCHES = [
   { key: 'carta', dot: 'bg-white border-2 border-stone-900', label: 'Carta' },
 ];
 
-const BLOCK_LABELS = [
-  ['upcoming', 'Il prossimo ritiro'],
-  ['listino', 'Prenota una seduta'],
-  ['whatsapp', 'WhatsApp'],
-  ['socials', 'I tuoi social'],
-  ['profile', 'Scopri chi sono'],
-];
+const BLOCK_META = {
+  'block:upcoming': { key: 'upcoming', icon: CalendarDays, label: 'Il prossimo ritiro' },
+  'block:listino': { key: 'listino', icon: ListChecks, label: 'Prenota una seduta' },
+  'block:whatsapp': { key: 'whatsapp', icon: MessageCircle, label: 'WhatsApp' },
+  'block:profile': { key: 'profile', icon: User, label: 'Scopri chi sono' },
+};
 
-export default function LinkPageCard({ slug, initial }) {
+export default function LinkPageCard({
+  slug, initial, hasSocials, hasPhone, onGoToSocials, onGoToContacts,
+}) {
   const { t } = useTranslation('settings');
   const [lp, setLp] = useState(initial || {
-    enabled: false, theme: 'salvia', links: [],
+    enabled: false, theme: 'salvia', links: [], order: [],
     blocks: { upcoming: true, listino: true, profile: true, whatsapp: true, socials: true },
   });
   const [saving, setSaving] = useState(false);
-  const [rev, setRev] = useState(0);           // ricarica l'anteprima
+  const [rev, setRev] = useState(0);            // ricarica l'anteprima
   const [newLabel, setNewLabel] = useState('');
   const [newUrl, setNewUrl] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editLabel, setEditLabel] = useState('');
+  const [editUrl, setEditUrl] = useState('');
+  // LK6 — per dire la verita' sui blocchi ("apparira' quando…") serve
+  // sapere cosa esiste davvero: una lettura del payload pubblico basta
+  const [pub, setPub] = useState(null);
+
+  useEffect(() => {
+    if (!slug) return undefined;
+    let alive = true;
+    api.get(`/public/operator/${slug}`)
+      .then((r) => { if (alive) setPub(r.data); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [slug]);
+
+  const hasUpcoming = (pub?.upcoming || []).length > 0;
+  const hasListino = (pub?.listino || []).length > 0;
 
   const pageUrl = useMemo(
     () => (slug ? `${window.location.origin}/@${slug}` : null), [slug]);
 
   const persist = async (next) => {
-    setLp(next);                                // ottimista: UI subito
+    setLp(next);                                 // ottimista: UI subito
     setSaving(true);
     try {
       const res = await api.patch('/organizations/current/public-profile',
         { link_page: next });
-      // lo stato NORMALIZZATO dal server (id assegnati, tetti applicati)
+      // lo stato NORMALIZZATO dal server (id e ordine completati)
       if (res.data?.link_page) setLp(res.data.link_page);
       setRev(r => r + 1);
     } catch {
@@ -70,10 +94,15 @@ export default function LinkPageCard({ slug, initial }) {
   const setBlock = (key, val) =>
     persist({ ...lp, blocks: { ...lp.blocks, [key]: val } });
 
+  const normalizeUrl = (raw) => {
+    let url = (raw || '').trim();
+    if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
+    return url;
+  };
+
   const addLink = () => {
     const label = newLabel.trim();
-    let url = newUrl.trim();
-    if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
+    const url = normalizeUrl(newUrl);
     if (!label || !url.startsWith('https://')) {
       toast.error(t('linkPage.addInvalid', {
         defaultValue: 'Serve un nome e un indirizzo che inizia con https://' }));
@@ -83,16 +112,36 @@ export default function LinkPageCard({ slug, initial }) {
     setNewLabel(''); setNewUrl('');
   };
 
+  const startEdit = (l) => {
+    setEditingId(l.id); setEditLabel(l.label); setEditUrl(l.url);
+  };
+
+  const saveEdit = () => {
+    const label = editLabel.trim();
+    const url = normalizeUrl(editUrl);
+    if (!label || !url.startsWith('https://')) {
+      toast.error(t('linkPage.addInvalid', {
+        defaultValue: 'Serve un nome e un indirizzo che inizia con https://' }));
+      return;
+    }
+    persist({
+      ...lp,
+      links: (lp.links || []).map(l =>
+        l.id === editingId ? { ...l, label, url } : l),
+    });
+    setEditingId(null);
+  };
+
   const removeLink = (id) =>
     persist({ ...lp, links: (lp.links || []).filter(l => l.id !== id) });
 
-  const moveLink = (id, dir) => {
-    const links = [...(lp.links || [])];
-    const i = links.findIndex(l => l.id === id);
+  const move = (key, dir) => {
+    const order = [...(lp.order || [])];
+    const i = order.indexOf(key);
     const j = i + dir;
-    if (i < 0 || j < 0 || j >= links.length) return;
-    [links[i], links[j]] = [links[j], links[i]];
-    persist({ ...lp, links });
+    if (i < 0 || j < 0 || j >= order.length) return;
+    [order[i], order[j]] = [order[j], order[i]];
+    persist({ ...lp, order });
   };
 
   const copyUrl = async () => {
@@ -104,6 +153,102 @@ export default function LinkPageCard({ slug, initial }) {
     }
   };
 
+  /* ── una riga della lista unica ──────────────────────────────── */
+
+  const arrows = (key, i, total) => (
+    <span className="flex shrink-0">
+      <button type="button" onClick={() => move(key, -1)} disabled={i === 0}
+              className="rounded p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+              aria-label="Sposta su"><ArrowUp className="h-4 w-4" /></button>
+      <button type="button" onClick={() => move(key, +1)} disabled={i === total - 1}
+              className="rounded p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+              aria-label="Sposta giù"><ArrowDown className="h-4 w-4" /></button>
+    </span>
+  );
+
+  const blockRow = (key, i, total) => {
+    const meta = BLOCK_META[key];
+    if (!meta) return null;
+    const Icon = meta.icon;
+    const isWhatsapp = meta.key === 'whatsapp';
+    const missingPhone = isWhatsapp && !hasPhone;
+    // "apparira' quando…": la riga dice da dove nasce il contenuto
+    let hint = null;
+    if (meta.key === 'upcoming' && !hasUpcoming) {
+      hint = t('linkPage.hintUpcoming', { defaultValue: 'Apparirà quando pubblichi il prossimo ritiro.' });
+    } else if (meta.key === 'listino' && !hasListino) {
+      hint = t('linkPage.hintListino', { defaultValue: 'Apparirà quando aggiungi un servizio al listino.' });
+    }
+    return (
+      <li key={key} data-testid={`linkpage-row-${meta.key}`}
+          className="rounded-lg border border-gray-100 px-3 py-2">
+        <div className="flex items-center gap-2">
+          {arrows(key, i, total)}
+          <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">
+              {t(`linkPage.block_${meta.key}`, { defaultValue: meta.label })}
+            </p>
+            {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+            {missingPhone && (
+              <button type="button" onClick={onGoToContacts}
+                      data-testid="linkpage-goto-contacts"
+                      className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                <AlertCircle className="h-3 w-3" />
+                {t('linkPage.needPhone', { defaultValue: 'Aggiungi il tuo numero nei contatti del profilo' })}
+              </button>
+            )}
+          </div>
+          <Switch checked={!missingPhone && lp.blocks?.[meta.key] !== false}
+                  disabled={missingPhone}
+                  onCheckedChange={(v) => setBlock(meta.key, v)} />
+        </div>
+      </li>
+    );
+  };
+
+  const linkRow = (key, i, total) => {
+    const l = (lp.links || []).find(x => `link:${x.id}` === key);
+    if (!l) return null;
+    if (editingId === l.id) {
+      return (
+        <li key={key} className="rounded-lg border border-primary/40 px-3 py-2 space-y-2">
+          <Input value={editLabel} onChange={(e) => setEditLabel(e.target.value)}
+                 placeholder={t('linkPage.labelPh', { defaultValue: 'Nome (es. Il mio canale YouTube)' })} />
+          <Input value={editUrl} onChange={(e) => setEditUrl(e.target.value)}
+                 onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                 placeholder="https://…" />
+          <div className="flex gap-2">
+            <Button size="sm" onClick={saveEdit} data-testid="linkpage-edit-save">
+              {t('linkPage.editSave', { defaultValue: 'Salva' })}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
+              {t('linkPage.editCancel', { defaultValue: 'Annulla' })}
+            </Button>
+          </div>
+        </li>
+      );
+    }
+    return (
+      <li key={key} className="flex items-center gap-2 rounded-lg border border-gray-100 px-3 py-2">
+        {arrows(key, i, total)}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{l.label}</p>
+          <p className="truncate text-xs text-muted-foreground">{l.url}</p>
+        </div>
+        <button type="button" onClick={() => startEdit(l)}
+                data-testid={`linkpage-edit-${l.id}`}
+                className="rounded p-1 text-gray-400 hover:text-gray-700"
+                aria-label="Modifica"><Pencil className="h-4 w-4" /></button>
+        <button type="button" onClick={() => removeLink(l.id)}
+                className="rounded p-1 text-gray-400 hover:text-red-600"
+                aria-label="Rimuovi"><X className="h-4 w-4" /></button>
+      </li>
+    );
+  };
+
+  const order = lp.order || [];
+
   return (
     <div className="rounded-2xl border bg-white shadow-sm lg:col-span-2" data-testid="linkpage-card">
       <div className="flex items-start justify-between gap-4 px-5 pt-5">
@@ -114,7 +259,7 @@ export default function LinkPageCard({ slug, initial }) {
             {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t('linkPage.subtitle', { defaultValue: 'Un solo link per la bio di Instagram: dentro ci sono il tuo prossimo ritiro, il listino e i link che vuoi tu.' })}
+            {t('linkPage.subtitle', { defaultValue: 'Un solo link per la bio di Instagram: dentro ci sono il tuo prossimo ritiro, il listino e i link che vuoi tu. Ogni modifica si salva da sola.' })}
           </p>
         </div>
         <Switch checked={!!lp.enabled} disabled={!slug}
@@ -189,54 +334,20 @@ export default function LinkPageCard({ slug, initial }) {
               </div>
             </div>
 
-            {/* ── Blocchi vivi ────────────────────────────────────── */}
+            {/* ── LA lista: blocchi e link insieme, nel TUO ordine ── */}
             <div>
               <p className="text-sm font-semibold text-foreground">
-                {t('linkPage.blocks', { defaultValue: 'Cosa mostrare' })}
+                {t('linkPage.list', { defaultValue: 'La tua pagina, riga per riga' })}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {t('linkPage.blocksHint', { defaultValue: 'Si aggiornano da soli: il ritiro col prossimo in calendario, il listino coi tuoi servizi.' })}
+                {t('linkPage.listHint', { defaultValue: 'Le frecce cambiano l’ordine: è lo stesso che vedono i tuoi clienti. I blocchi si aggiornano da soli.' })}
               </p>
-              <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
-                {BLOCK_LABELS.map(([key, label]) => (
-                  <label key={key}
-                         className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 text-sm">
-                    <span>{t(`linkPage.block_${key}`, { defaultValue: label })}</span>
-                    <Switch checked={lp.blocks?.[key] !== false}
-                            onCheckedChange={(v) => setBlock(key, v)} />
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* ── I link personalizzati ───────────────────────────── */}
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t('linkPage.customLinks', { defaultValue: 'I tuoi link' })}
-              </p>
-              {(lp.links || []).length > 0 && (
-                <ul className="mt-2 space-y-1.5">
-                  {lp.links.map((l, i) => (
-                    <li key={l.id}
-                        className="flex items-center gap-2 rounded-lg border border-gray-100 px-3 py-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{l.label}</p>
-                        <p className="truncate text-xs text-muted-foreground">{l.url}</p>
-                      </div>
-                      <button type="button" onClick={() => moveLink(l.id, -1)} disabled={i === 0}
-                              className="rounded p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30"
-                              aria-label="Sposta su"><ArrowUp className="h-4 w-4" /></button>
-                      <button type="button" onClick={() => moveLink(l.id, +1)}
-                              disabled={i === lp.links.length - 1}
-                              className="rounded p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30"
-                              aria-label="Sposta giù"><ArrowDown className="h-4 w-4" /></button>
-                      <button type="button" onClick={() => removeLink(l.id)}
-                              className="rounded p-1 text-gray-400 hover:text-red-600"
-                              aria-label="Rimuovi"><X className="h-4 w-4" /></button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <ul className="mt-2 space-y-1.5" data-testid="linkpage-order-list">
+                {order.map((key, i) =>
+                  key.startsWith('block:')
+                    ? blockRow(key, i, order.length)
+                    : linkRow(key, i, order.length))}
+              </ul>
               <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                 <Input placeholder={t('linkPage.labelPh', { defaultValue: 'Nome (es. Il mio canale YouTube)' })}
                        value={newLabel} onChange={(e) => setNewLabel(e.target.value)}
@@ -246,8 +357,30 @@ export default function LinkPageCard({ slug, initial }) {
                        onKeyDown={(e) => e.key === 'Enter' && addLink()}
                        className="sm:flex-1" data-testid="linkpage-new-url" />
                 <Button variant="outline" onClick={addLink} data-testid="linkpage-add">
-                  {t('linkPage.add', { defaultValue: 'Aggiungi' })}
+                  {t('linkPage.add', { defaultValue: 'Aggiungi link' })}
                 </Button>
+              </div>
+            </div>
+
+            {/* ── Icone social sotto al nome ──────────────────────── */}
+            <div className="rounded-lg border border-gray-100 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">
+                    {t('linkPage.block_socials', { defaultValue: 'Icone social sotto al nome' })}
+                  </p>
+                  {!hasSocials && (
+                    <button type="button" onClick={onGoToSocials}
+                            data-testid="linkpage-goto-socials"
+                            className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                      <AlertCircle className="h-3 w-3" />
+                      {t('linkPage.needSocials', { defaultValue: 'Aggiungi i tuoi social qui sopra, nel profilo' })}
+                    </button>
+                  )}
+                </div>
+                <Switch checked={hasSocials && lp.blocks?.socials !== false}
+                        disabled={!hasSocials}
+                        onCheckedChange={(v) => setBlock('socials', v)} />
               </div>
             </div>
           </div>
@@ -262,6 +395,9 @@ export default function LinkPageCard({ slug, initial }) {
                       className="h-[440px] w-full rounded-[22px] bg-white"
                       data-testid="linkpage-preview" />
             </div>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              {t('linkPage.previewHint', { defaultValue: 'I click nell’anteprima aprono in una scheda nuova.' })}
+            </p>
           </div>
         </div>
       )}

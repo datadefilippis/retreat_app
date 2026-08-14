@@ -325,13 +325,19 @@ class TestAc2ProfiloEssenziale:
         render = src.split("── Form ──")[1]
         avanzato = render.split('data-testid="profile-advanced-toggle"')[1]
         prima = render.split('data-testid="profile-advanced-toggle"')[0]
-        for chiave in ("publicName", "foundedYear", "portrait",
+        # LK6 (founder, 14/8) — il ritratto e' SALITO in primo piano
+        # accanto alla copertina: si controlla sotto, fuori da questa
+        # lista.
+        for chiave in ("publicName", "foundedYear",
                        "gallery", "region", "showContacts",
                        "visibilityTitle"):
             assert f"publicProfile.{chiave}" in avanzato, \
                 f"{chiave} deve vivere in Per approfondire"
             assert f"publicProfile.{chiave}" not in prima, \
                 f"{chiave} e' risalito nell'essenziale"
+        # LK6 — ritratto accanto alla copertina, PRIMA dell'avanzato
+        assert "publicProfile.portraitShort" in prima, \
+            "il ritratto deve stare in primo piano, vicino alla copertina"
 
     def test_essenziale_prima_del_toggle(self):
         """Cover, bio, localita' e social restano nell'essenziale."""
@@ -7396,7 +7402,7 @@ class TestLinkPageLk1:
         assert r.status_code == 200
         lp = r.json().get("link_page")
         assert lp is not None, "GET senza link_page: l'editor non puo' partire"
-        assert set(lp) == {"enabled", "theme", "links", "blocks"}
+        assert set(lp) == {"enabled", "theme", "links", "blocks", "order"}
         assert lp["theme"] in ("salvia", "terra", "notte", "carta")
         assert set(lp["blocks"]) == {
             "upcoming", "listino", "profile", "whatsapp", "socials"}

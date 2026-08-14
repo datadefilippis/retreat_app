@@ -1812,6 +1812,33 @@ def _clean_link_page(raw) -> dict:
             "active": bool(item.get("active", True)),
         })
     blocks_raw = raw.get("blocks") if isinstance(raw.get("blocks"), dict) else {}
+
+    # LK6 — ordine UNICO di blocchi vivi e link personalizzati: lista di
+    # chiavi "block:<nome>" | "link:<id>". Si valida contro cio' che
+    # esiste davvero e si COMPLETA con le voci mancanti (un link appena
+    # aggiunto entra in coda da solo): l'editor e la pagina la leggono
+    # cosi' com'e', senza casi speciali. "socials" resta fuori: e' la
+    # fila di icone sotto al nome, non una riga della colonna.
+    orderable_blocks = [f"block:{b}" for b in _LINK_PAGE_BLOCKS
+                        if b != "socials"]
+    link_keys = [f"link:{l['id']}" for l in links]
+    valid = set(orderable_blocks) | set(link_keys)
+    order, seen = [], set()
+    for key in (raw.get("order") or []):
+        k = str(key)[:60]
+        if k in valid and k not in seen:
+            order.append(k)
+            seen.add(k)
+    # completamento nell'ordine di default della pagina: prima i
+    # blocchi d'azione, poi i link personalizzati, "Scopri chi sono"
+    # in fondo come uscita
+    default_seq = (["block:upcoming", "block:listino", "block:whatsapp"]
+                   + link_keys + ["block:profile"])
+    for k in default_seq:
+        if k in valid and k not in seen:
+            order.append(k)
+            seen.add(k)
+
     return {
         "enabled": bool(raw.get("enabled")),
         "theme": theme if theme in _LINK_PAGE_THEMES else _LINK_PAGE_THEMES[0],
@@ -1819,6 +1846,7 @@ def _clean_link_page(raw) -> dict:
         # blocchi vivi accesi di default: la pagina e' piena al primo
         # render senza configurare nulla
         "blocks": {b: bool(blocks_raw.get(b, True)) for b in _LINK_PAGE_BLOCKS},
+        "order": order,
     }
 
 PROFILE_COVER_DIR = os.path.join(

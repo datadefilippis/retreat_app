@@ -374,35 +374,57 @@ export default function PublicProfilePage() {
               sei, un social. Nome pubblico, carta d'identità, contatti
               e specchietto Visibilità vivono in "Per approfondire". */}
 
-          {/* Cover */}
-          <div className="rounded-xl border bg-card p-4 space-y-2">
-            <Label>{t('publicProfile.cover', { defaultValue: 'Foto di copertina' })}</Label>
+          {/* Cover + ritratto — LK6 (founder, 14/8): le DUE foto che
+              contano stanno insieme, in primo piano. Il ritratto era
+              sepolto in "Per approfondire" e nessuno lo trovava. */}
+          <div className="rounded-xl border bg-card p-4">
             <input ref={fileRef} type="file" accept="image/*"
                    className="hidden"
                    onChange={e => { uploadCover(e.target.files?.[0]); e.target.value = ''; }} />
-            <div
-              className="relative h-36 rounded-lg border-2 border-dashed border-border bg-muted/40 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors"
-              onClick={() => fileRef.current?.click()}
-            >
-              {form.cover_url ? (
-                <img src={form.cover_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm gap-1">
-                  <Upload className="h-5 w-5" />
-                  {t('publicProfile.coverHint', { defaultValue: 'Clicca per caricare una foto' })}
+            <div className="flex items-start gap-4">
+              <div className="flex-1 space-y-2 min-w-0">
+                <Label>{t('publicProfile.cover', { defaultValue: 'Foto di copertina' })}</Label>
+                <div
+                  className="relative h-36 rounded-lg border-2 border-dashed border-border bg-muted/40 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  {form.cover_url ? (
+                    <img src={form.cover_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm gap-1">
+                      <Upload className="h-5 w-5" />
+                      {t('publicProfile.coverHint', { defaultValue: 'Clicca per caricare una foto' })}
+                    </div>
+                  )}
+                  {uploading && (
+                    <div className="absolute inset-0 bg-white/70 flex items-center justify-center gap-2">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      <span className="text-sm font-medium text-primary">
+                        {optimizing
+                          ? t('publicProfile.optimizing', { defaultValue: 'Ottimizzo la foto…' })
+                          : t('publicProfile.uploadingPhoto', { defaultValue: 'Carico la foto…' })}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-              {uploading && (
-                <div className="absolute inset-0 bg-white/70 flex items-center justify-center gap-2">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  <span className="text-sm font-medium text-primary">
-                    {optimizing
-                      ? t('publicProfile.optimizing', { defaultValue: 'Ottimizzo la foto…' })
-                      : t('publicProfile.uploadingPhoto', { defaultValue: 'Carico la foto…' })}
-                  </span>
-                </div>
-              )}
+              </div>
+              <div className="shrink-0 space-y-2">
+                <Label>{t('publicProfile.portraitShort', { defaultValue: 'Il tuo ritratto' })}</Label>
+                <input type="file" accept="image/*" className="hidden" id="pp-portrait"
+                       onChange={e => { uploadPortrait(e.target.files?.[0]); e.target.value = ''; }} />
+                <label htmlFor="pp-portrait"
+                       className="block h-36 w-36 rounded-full border-2 border-dashed border-border bg-muted/40 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors">
+                  {form.portrait_url
+                    ? <img src={form.portrait_url} alt="" className="w-full h-full object-cover" />
+                    : <span className="h-full flex items-center justify-center text-xs text-muted-foreground px-3 text-center">
+                        {t('publicProfile.portraitHint', { defaultValue: 'Carica una foto' })}
+                      </span>}
+                </label>
+              </div>
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t('publicProfile.photosWhy', { defaultValue: 'La copertina è lo sfondo della tua pagina; il ritratto è il volto che appare accanto al nome e sulla pagina link.' })}
+            </p>
           </div>
 
           {/* Tagline + bio + luogo */}
@@ -480,7 +502,7 @@ export default function PublicProfilePage() {
 
           {/* Social */}
           <div className="rounded-xl border bg-card p-4 space-y-3">
-            <Label>{t('publicProfile.socials', { defaultValue: 'Social e sito' })}</Label>
+            <Label id="pp-socials">{t('publicProfile.socials', { defaultValue: 'Social e sito' })}</Label>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Instagram className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -550,7 +572,7 @@ export default function PublicProfilePage() {
                   {t('publicProfile.advancedTitle', { defaultValue: 'Per approfondire' })}
                 </span>
                 <span className="block text-xs text-muted-foreground">
-                  {t('publicProfile.advancedHint', { defaultValue: 'Ritratto, galleria, contatti pubblici e altri dettagli. Tutto facoltativo.' })}
+                  {t('publicProfile.advancedHint', { defaultValue: 'Galleria, contatti pubblici e altri dettagli. Tutto facoltativo.' })}
                 </span>
               </span>
               <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${advancedOpen ? 'rotate-180' : ''}`} aria-hidden />
@@ -604,19 +626,9 @@ export default function PublicProfilePage() {
                     </div>
                   </div>
                 </div>
-                <div>
-                  <Label>{t('publicProfile.portrait', { defaultValue: 'Ritratto (foto a lato del profilo)' })}</Label>
-                  <input type="file" accept="image/*" className="hidden" id="pp-portrait"
-                         onChange={e => { uploadPortrait(e.target.files?.[0]); e.target.value = ''; }} />
-                  <label htmlFor="pp-portrait"
-                         className="mt-1 block h-32 w-32 rounded-xl border-2 border-dashed border-border bg-muted/40 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors">
-                    {form.portrait_url
-                      ? <img src={form.portrait_url} alt="" className="w-full h-full object-cover" />
-                      : <span className="h-full flex items-center justify-center text-xs text-muted-foreground px-2 text-center">
-                          {t('publicProfile.portraitHint', { defaultValue: 'Carica una foto' })}
-                        </span>}
-                  </label>
-                </div>
+                {/* LK6 — il ritratto e' salito in primo piano, accanto
+                    alla copertina: qui restava sepolto e nessuno lo
+                    caricava */}
                 <div>
                   <Label>{t('publicProfile.gallery', { defaultValue: 'Galleria foto (max 8)' })}</Label>
                   <div className="mt-1 grid grid-cols-4 gap-2">
@@ -662,14 +674,22 @@ export default function PublicProfilePage() {
                       </span>
                     </div>
                   </label>
-                  {form.show_contacts && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input placeholder="Email pubblica" type="email" value={form.public_email || ''}
-                             onChange={e => set('public_email', e.target.value)} />
-                      <Input placeholder="Telefono" value={form.public_phone || ''}
-                             onChange={e => set('public_phone', e.target.value)} />
-                    </div>
-                  )}
+                  {/* LK6 — i campi si compilano SEMPRE (il numero serve
+                      anche al blocco WhatsApp della pagina link, che e'
+                      un opt-in a parte): l'interruttore sopra decide
+                      solo se appaiono sul profilo pubblico. Prima erano
+                      nascosti dietro il toggle e "aggiungi il numero"
+                      portava nel vuoto. */}
+                  <div id="pp-contatti" className="grid grid-cols-2 gap-3">
+                    <Input placeholder="Email pubblica" type="email" value={form.public_email || ''}
+                           onChange={e => set('public_email', e.target.value)} />
+                    <Input placeholder={t('publicProfile.phonePh', { defaultValue: 'Telefono / WhatsApp' })}
+                           value={form.public_phone || ''}
+                           onChange={e => set('public_phone', e.target.value)} />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t('publicProfile.phoneWhy', { defaultValue: 'Il numero serve anche al bottone WhatsApp della tua pagina link, anche se qui i contatti restano nascosti.' })}
+                  </p>
                 </div>
 
                 {/* VT5 — il ponte verso lo specchietto: quante persone
@@ -705,9 +725,12 @@ export default function PublicProfilePage() {
               {form.cover_url && (
                 <img src={form.cover_url} alt="" className="w-full h-full object-cover" />
               )}
+              {/* LK6 — l'anteprima mostra SUBITO il ritratto appena
+                  caricato (prima usava solo il logo: sembrava che
+                  l'upload non avesse funzionato) */}
               <div className="absolute -bottom-7 left-5 h-14 w-14 rounded-full border-4 border-white bg-muted overflow-hidden">
-                {logoUrl
-                  ? <img src={logoUrl} alt="" className="w-full h-full object-cover" />
+                {(form.portrait_url || logoUrl)
+                  ? <img src={form.portrait_url || logoUrl} alt="" className="w-full h-full object-cover" />
                   : <div className="w-full h-full flex items-center justify-center text-xl" aria-hidden>🧘</div>}
               </div>
             </div>
@@ -737,7 +760,21 @@ export default function PublicProfilePage() {
         {/* LK3 — la pagina link: attiva → copia → incolla in bio.
             Vive fuori dallo snapshot del form: si salva da sola. */}
         {form.link_page !== undefined && (
-          <LinkPageCard slug={slug} initial={form.link_page} />
+          <LinkPageCard
+            slug={slug}
+            initial={form.link_page}
+            hasSocials={!!(form.instagram || form.facebook || form.website)}
+            hasPhone={!!form.public_phone}
+            onGoToSocials={() => {
+              document.getElementById('pp-socials')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            onGoToContacts={() => {
+              setAdvancedOpen(true);
+              setTimeout(() => document.getElementById('pp-contatti')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
+            }}
+          />
         )}
       </div>
 

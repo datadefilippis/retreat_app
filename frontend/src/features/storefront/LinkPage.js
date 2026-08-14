@@ -83,13 +83,21 @@ function trackClick(slug, linkId) {
   } catch { /* mai rompere la navigazione */ }
 }
 
+/* LK6 — dentro l'anteprima dell'editor (iframe) i link interni
+   aprirebbero il profilo DENTRO la cornice, senza modo di tornare:
+   in iframe TUTTO apre in una scheda nuova. */
+const IN_FRAME = typeof window !== 'undefined' && window.self !== window.top;
+
 /* Una riga cliccabile della colonna: stessa forma per blocchi vivi e
    link personalizzati — la pagina resta UNA cosa, non due liste. */
-function Row({ theme, children, onNavigate, ...linkProps }) {
+function Row({ theme, children, onNavigate, to, ...linkProps }) {
   const cls = `block w-full rounded-2xl px-5 py-4 text-center text-[15px] font-semibold transition-all ${theme.card}`;
-  return linkProps.to
-    ? <Link {...linkProps} onClick={onNavigate} className={cls}>{children}</Link>
-    : <a {...linkProps} onClick={onNavigate} className={cls} target="_blank" rel="noopener noreferrer">{children}</a>;
+  if (to && !IN_FRAME) {
+    return <Link to={to} {...linkProps} onClick={onNavigate} className={cls}>{children}</Link>;
+  }
+  return <a href={to || linkProps.href} {...(({ href, ...rest }) => rest)(linkProps)}
+            onClick={onNavigate} className={cls}
+            target="_blank" rel="noopener noreferrer">{children}</a>;
 }
 
 export default function LinkPage({ handle }) {
@@ -191,68 +199,89 @@ export default function LinkPage({ handle }) {
           </div>
         )}
 
-        {/* ── Blocchi vivi + link personalizzati ───────────────── */}
+        {/* ── La colonna, nell'ordine scelto dall'operatore (LK6):
+            lp.order = ["block:<nome>" | "link:<id>"], gia' completo e
+            validato dal backend. Le voci senza contenuto (nessun
+            ritiro, blocco spento, link disattivato) spariscono. */}
         <div className="mt-7 space-y-3">
-
-          {/* Il prossimo ritiro: l'unico blocco "ricco" — e' la cosa
-              piu' preziosa che l'operatore ha da mostrare */}
-          {blocks.upcoming !== false && next && (
-            <Link to={next.url} data-testid="link-block-upcoming"
-                  onClick={() => trackClick(org_slug, 'block:upcoming')}
-                  className={`block overflow-hidden rounded-2xl text-left transition-all ${theme.card}`}>
-              <div className="flex items-stretch">
-                {next.cover_image_url && (
-                  <img src={next.cover_image_url} alt=""
-                       className="h-auto w-24 shrink-0 object-cover" />
-                )}
-                <div className="min-w-0 flex-1 px-4 py-3">
-                  <p className={`text-[11px] font-semibold uppercase tracking-wide ${theme.sub}`}>
-                    <CalendarDays className="mr-1 inline h-3 w-3 align-[-1px]" />
-                    {t('linkPage.next', { defaultValue: 'Prossimo ritiro' })}
-                  </p>
-                  <p className="mt-0.5 truncate text-[15px] font-bold">{next.title}</p>
-                  <p className={`mt-0.5 text-xs ${theme.sub}`}>
-                    {dateLabel(next.start_at)}
-                    {next.city ? ` · ${next.city}` : ''}
-                    {next.price_from ? ` · da ${next.price_from} €` : ''}
-                  </p>
-                </div>
-                <div className="flex items-center pr-4">
-                  <ArrowRight className="h-4 w-4 opacity-60" />
-                </div>
-              </div>
-            </Link>
-          )}
-
-          {blocks.listino !== false && hasListino && (
-            <Row theme={theme} to={`/o/${org_slug}#listino`} data-testid="link-block-listino"
-                 onNavigate={() => trackClick(org_slug, 'block:listino')}>
-              {t('linkPage.book', { defaultValue: 'Prenota una seduta' })}
-            </Row>
-          )}
-
-          {blocks.whatsapp !== false && lp.whatsapp && (
-            <Row theme={theme} href={`https://wa.me/${lp.whatsapp}`} data-testid="link-block-whatsapp"
-                 onNavigate={() => trackClick(org_slug, 'block:whatsapp')}>
-              <MessageCircle className="mr-1.5 inline h-4 w-4 align-[-2px]" />
-              {t('linkPage.whatsapp', { defaultValue: 'Scrivimi su WhatsApp' })}
-            </Row>
-          )}
-
-          {/* i link personalizzati dell'operatore, nel suo ordine */}
-          {(lp.links || []).map((l) => (
-            <Row key={l.id} theme={theme} href={l.url} data-linkid={l.id}
-                 onNavigate={() => trackClick(org_slug, l.id)}>
-              {l.label}
-            </Row>
-          ))}
-
-          {blocks.profile !== false && (
-            <Row theme={theme} to={`/o/${org_slug}`} data-testid="link-block-profile"
-                 onNavigate={() => trackClick(org_slug, 'block:profile')}>
-              {t('linkPage.profile', { defaultValue: 'Scopri chi sono' })}
-            </Row>
-          )}
+          {(lp.order || []).map((key) => {
+            if (key === 'block:upcoming') {
+              if (blocks.upcoming === false || !next) return null;
+              const Cmp = IN_FRAME ? 'a' : Link;
+              const nav = IN_FRAME
+                ? { href: next.url, target: '_blank', rel: 'noopener noreferrer' }
+                : { to: next.url };
+              return (
+                <Cmp key={key} {...nav} data-testid="link-block-upcoming"
+                     onClick={() => trackClick(org_slug, 'block:upcoming')}
+                     className={`block overflow-hidden rounded-2xl text-left transition-all ${theme.card}`}>
+                  <div className="flex items-stretch">
+                    {next.cover_image_url && (
+                      <img src={next.cover_image_url} alt=""
+                           className="h-auto w-24 shrink-0 object-cover" />
+                    )}
+                    <div className="min-w-0 flex-1 px-4 py-3">
+                      <p className={`text-[11px] font-semibold uppercase tracking-wide ${theme.sub}`}>
+                        <CalendarDays className="mr-1 inline h-3 w-3 align-[-1px]" />
+                        {t('linkPage.next', { defaultValue: 'Prossimo ritiro' })}
+                      </p>
+                      <p className="mt-0.5 truncate text-[15px] font-bold">{next.title}</p>
+                      <p className={`mt-0.5 text-xs ${theme.sub}`}>
+                        {dateLabel(next.start_at)}
+                        {next.city ? ` · ${next.city}` : ''}
+                        {next.price_from ? ` · da ${next.price_from} €` : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center pr-4">
+                      <ArrowRight className="h-4 w-4 opacity-60" />
+                    </div>
+                  </div>
+                </Cmp>
+              );
+            }
+            if (key === 'block:listino') {
+              if (blocks.listino === false || !hasListino) return null;
+              return (
+                <Row key={key} theme={theme} to={`/o/${org_slug}#listino`}
+                     data-testid="link-block-listino"
+                     onNavigate={() => trackClick(org_slug, 'block:listino')}>
+                  {t('linkPage.book', { defaultValue: 'Prenota una seduta' })}
+                </Row>
+              );
+            }
+            if (key === 'block:whatsapp') {
+              if (blocks.whatsapp === false || !lp.whatsapp) return null;
+              return (
+                <Row key={key} theme={theme} href={`https://wa.me/${lp.whatsapp}`}
+                     data-testid="link-block-whatsapp"
+                     onNavigate={() => trackClick(org_slug, 'block:whatsapp')}>
+                  <MessageCircle className="mr-1.5 inline h-4 w-4 align-[-2px]" />
+                  {t('linkPage.whatsapp', { defaultValue: 'Scrivimi su WhatsApp' })}
+                </Row>
+              );
+            }
+            if (key === 'block:profile') {
+              if (blocks.profile === false) return null;
+              return (
+                <Row key={key} theme={theme} to={`/o/${org_slug}`}
+                     data-testid="link-block-profile"
+                     onNavigate={() => trackClick(org_slug, 'block:profile')}>
+                  {t('linkPage.profile', { defaultValue: 'Scopri chi sono' })}
+                </Row>
+              );
+            }
+            if (key.startsWith('link:')) {
+              const l = (lp.links || []).find((x) => `link:${x.id}` === key);
+              if (!l) return null;
+              return (
+                <Row key={key} theme={theme} href={l.url} data-linkid={l.id}
+                     onNavigate={() => trackClick(org_slug, l.id)}>
+                  {l.label}
+                </Row>
+              );
+            }
+            return null;
+          })}
         </div>
 
         {/* ── Footer Aurya: il loop ─────────────────────────────── */}

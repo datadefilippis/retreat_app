@@ -4534,6 +4534,7 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         blocks = lp.get("blocks") or {}
         out["link_page"] = {
             "theme": lp.get("theme") or "salvia",
+            "order": lp.get("order") or [],
             "links": [
                 {"id": l.get("id"), "label": l.get("label"), "url": l.get("url")}
                 for l in (lp.get("links") or [])

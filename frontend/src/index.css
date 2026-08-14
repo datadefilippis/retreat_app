@@ -438,3 +438,16 @@ body {
         letter-spacing: -0.01em;
     }
 }
+
+/* ── MAP1 (founder, 14/8) — le mappe Leaflet non devono MAI coprire il
+   resto della pagina. I pane interni di Leaflet usano z-index 200-700:
+   senza un contenimento, vincono su header sticky, modali e dropdown
+   (visto sulla landing ritiro con la mappa della location).
+   `isolation: isolate` crea uno stacking context sul contenitore: gli
+   z-index interni restano validi TRA i layer della mappa ma non escono
+   piu' a competere con la pagina. z-index: 0 ancora il contenitore in
+   fondo. Vale per TUTTE le mappe (landing, profilo, directory, picker). */
+.leaflet-container {
+    isolation: isolate;
+    z-index: 0;
+}
