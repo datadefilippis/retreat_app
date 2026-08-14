@@ -23,6 +23,9 @@ import api from '../../api/client';
 import { BRAND_EMAIL } from '../../config/brand';
 import { compressImage } from '../../lib/compressImage';
 import OnboardingStrip from '../onboarding/OnboardingStrip';
+// LK3 — la pagina link per la bio di Instagram: card autonoma,
+// salvataggio immediato, fuori dal circuito snapshot/dirty del form
+import LinkPageCard from './LinkPageCard';
 
 const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'facebook', 'public_email', 'public_phone',
   // PR1 — carta d'identità
@@ -730,6 +733,12 @@ export default function PublicProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* LK3 — la pagina link: attiva → copia → incolla in bio.
+            Vive fuori dallo snapshot del form: si salva da sola. */}
+        {form.link_page !== undefined && (
+          <LinkPageCard slug={slug} initial={form.link_page} />
+        )}
       </div>
 
       {/* AC3 — Salva sempre a portata di mano: su un form lungo chi
