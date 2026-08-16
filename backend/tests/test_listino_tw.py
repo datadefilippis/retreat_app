@@ -7455,6 +7455,11 @@ class TestDisciplineDi:
         assert 'data-testid={`pp-disc-${d.slug}`}' in editor, \
             "spariti i chip discipline dall'editor profilo"
         assert "payload.disciplines" in editor
+        # DI2 — la sezione e' COMPATTA: chiusa di default (riga sola),
+        # si apre col toggle e dentro c'e' la ricerca
+        assert 'data-testid="pp-disc-toggle"' in editor, \
+            "sparito il toggle Modifica/Fatto: la sezione torna a muro"
+        assert "discQuery" in editor, "sparita la ricerca discipline"
         esplora = (FRONTEND_SRC / "features" / "storefront"
                    / "OperatorsIndexPage.js").read_text()
         assert 'data-testid="operators-discipline-filter"' in esplora

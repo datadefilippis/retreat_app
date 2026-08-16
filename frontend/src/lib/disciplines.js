@@ -20,6 +20,7 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'danzaterapia', label: 'Danzaterapia' },
       { slug: 'bioenergetica', label: 'Bioenergetica' },
       { slug: 'feldenkrais', label: 'Feldenkrais' },
+      { slug: 'biodanza', label: 'Biodanza' },
     ],
   },
   {
@@ -54,6 +55,7 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'sound-healing', label: 'Sound healing & Campane tibetane' },
       { slug: 'theta-healing', label: 'Theta healing' },
       { slug: 'access-bars', label: 'Access Bars' },
+      { slug: 'kinesiologia', label: 'Kinesiologia' },
     ],
   },
   {
@@ -65,6 +67,7 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'erboristeria', label: 'Erboristeria' },
       { slug: 'alimentazione-olistica', label: 'Alimentazione olistica' },
       { slug: 'bagni-di-bosco', label: 'Bagni di bosco' },
+      { slug: 'consulenza-ayurvedica', label: 'Consulenza ayurvedica' },
     ],
   },
   {

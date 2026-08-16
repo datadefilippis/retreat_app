@@ -24,6 +24,7 @@ DISCIPLINE_FAMILIES = (
         ("danzaterapia", "Danzaterapia"),
         ("bioenergetica", "Bioenergetica"),
         ("feldenkrais", "Feldenkrais"),
+        ("biodanza", "Biodanza"),
     )),
     ("mente", "Meditazione & Mente", (
         ("meditazione", "Meditazione"),
@@ -49,6 +50,7 @@ DISCIPLINE_FAMILIES = (
         ("sound-healing", "Sound healing & Campane tibetane"),
         ("theta-healing", "Theta healing"),
         ("access-bars", "Access Bars"),
+        ("kinesiologia", "Kinesiologia"),
     )),
     ("natura", "Natura & Rimedi", (
         ("naturopatia", "Naturopatia"),
@@ -57,6 +59,7 @@ DISCIPLINE_FAMILIES = (
         ("erboristeria", "Erboristeria"),
         ("alimentazione-olistica", "Alimentazione olistica"),
         ("bagni-di-bosco", "Bagni di bosco"),
+        ("consulenza-ayurvedica", "Consulenza ayurvedica"),
     )),
     ("anima", "Anima & Percorsi interiori", (
         ("costellazioni-familiari", "Costellazioni familiari"),

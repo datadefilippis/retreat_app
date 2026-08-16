@@ -27,7 +27,7 @@ import OnboardingStrip from '../onboarding/OnboardingStrip';
 // salvataggio immediato, fuori dal circuito snapshot/dirty del form
 import LinkPageCard from './LinkPageCard';
 // DI — tassonomia discipline (specchio di models/disciplines.py)
-import { DISCIPLINE_FAMILIES, DISCIPLINES_MAX } from '../../lib/disciplines';
+import { DISCIPLINE_FAMILIES, DISCIPLINES_MAX, disciplineLabel } from '../../lib/disciplines';
 
 const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'facebook', 'public_email', 'public_phone',
   // PR1 — carta d'identità
@@ -115,6 +115,9 @@ export default function PublicProfilePage() {
   // località, un social) resta in vista, il resto vive qui sotto,
   // chiuso finché l'operatore non lo cerca
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  // DI2 — pannello discipline: chiuso di default, riga compatta
+  const [discOpen, setDiscOpen] = useState(false);
+  const [discQuery, setDiscQuery] = useState('');
   // AC3 — l'ultima fotografia SALVATA di form+nome: se quella attuale
   // è diversa, compare la barra fissa "Modifiche non salvate". Gli
   // upload (che il server persiste da soli) aggiornano solo il proprio
@@ -504,57 +507,93 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          {/* DI (founder 14/8) — le discipline che l'operatore PRATICA:
-              multi-selezione a chip raggruppate per famiglia, dalla
-              tassonomia unica (lib/disciplines.js, specchio del
-              backend). Alimentano il filtro Disciplina della
-              directory e i badge sul profilo. */}
+          {/* DI2 (founder 14/8) — discipline COMPATTE: chiusa e' una
+              riga sola (chip scelte + Modifica), aperta e' il pannello
+              con ricerca e famiglie. Stessa grammatica dell'accordion
+              "Per approfondire": inline, niente popup, identica su
+              mobile e desktop. */}
           <div className="rounded-xl border bg-card p-4 space-y-3" id="pp-discipline">
-            <div className="flex items-baseline justify-between gap-3">
+            <div className="flex items-center justify-between gap-3">
               <Label>{t('publicProfile.disciplines', { defaultValue: 'Le tue discipline' })}</Label>
-              <span className="text-[11px] text-muted-foreground">
-                {(form.disciplines || []).length}/{DISCIPLINES_MAX}
-              </span>
+              <button type="button" data-testid="pp-disc-toggle"
+                      onClick={() => setDiscOpen(o => !o)}
+                      className="text-xs font-semibold text-[#376254] hover:underline underline-offset-2">
+                {discOpen
+                  ? t('publicProfile.disciplinesDone', { defaultValue: 'Fatto' })
+                  : t('publicProfile.disciplinesEdit', { defaultValue: 'Modifica' })}
+              </button>
             </div>
-            <p className="text-xs text-muted-foreground -mt-1">
-              {t('publicProfile.disciplinesHint', { defaultValue: 'Scegli quello che pratichi davvero: chi cerca un operatore filtra per disciplina.' })}
-            </p>
-            <div className="space-y-3">
-              {DISCIPLINE_FAMILIES.map(fam => (
-                <div key={fam.slug}>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-                    {fam.label}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {fam.items.map(d => {
-                      const sel = (form.disciplines || []).includes(d.slug);
-                      const full = !sel && (form.disciplines || []).length >= DISCIPLINES_MAX;
-                      return (
-                        <button key={d.slug} type="button" disabled={full}
-                                data-testid={`pp-disc-${d.slug}`}
-                                onClick={() => setForm(f => {
-                                  // update funzionale: due tap ravvicinati
-                                  // non si sovrascrivono (stale closure)
-                                  const cur = f.disciplines || [];
-                                  return { ...f, disciplines: cur.includes(d.slug)
-                                    ? cur.filter(s => s !== d.slug)
-                                    : [...cur, d.slug] };
-                                })}
-                                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                                  sel
-                                    ? 'border-[#376254] bg-[#376254] text-white'
-                                    : full
-                                      ? 'border-input text-muted-foreground/40 cursor-not-allowed'
-                                      : 'border-input text-foreground hover:border-[#8a9979] hover:bg-[#376254]/5'
-                                }`}>
-                          {d.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+            {/* riga compatta: cosa hai scelto, sempre visibile */}
+            {!discOpen && (
+              (form.disciplines || []).length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {(form.disciplines || []).map(s => (
+                    <span key={s} className="rounded-full bg-[#376254]/10 px-2.5 py-0.5 text-xs text-[#376254]">
+                      {disciplineLabel(s)}
+                    </span>
+                  ))}
                 </div>
-              ))}
-            </div>
+              ) : (
+                <button type="button" onClick={() => setDiscOpen(true)}
+                        className="text-sm text-muted-foreground hover:text-foreground text-left">
+                  {t('publicProfile.disciplinesEmpty', { defaultValue: 'Aggiungi le discipline che pratichi: chi ti cerca filtra per disciplina.' })}
+                </button>
+              )
+            )}
+            {/* pannello aperto: ricerca + famiglie */}
+            {discOpen && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <Input value={discQuery} onChange={e => setDiscQuery(e.target.value)}
+                         placeholder={t('publicProfile.disciplinesSearch', { defaultValue: 'Cerca una disciplina…' })}
+                         className="h-8 text-sm" />
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    {(form.disciplines || []).length}/{DISCIPLINES_MAX}
+                  </span>
+                </div>
+                {DISCIPLINE_FAMILIES.map(fam => {
+                  const visibili = discQuery
+                    ? fam.items.filter(d => d.label.toLowerCase()
+                        .includes(discQuery.toLowerCase()))
+                    : fam.items;
+                  if (visibili.length === 0) return null;
+                  return (
+                    <div key={fam.slug}>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+                        {fam.label}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {visibili.map(d => {
+                          const sel = (form.disciplines || []).includes(d.slug);
+                          const full = !sel && (form.disciplines || []).length >= DISCIPLINES_MAX;
+                          return (
+                            <button key={d.slug} type="button" disabled={full}
+                                    data-testid={`pp-disc-${d.slug}`}
+                                    onClick={() => setForm(f => {
+                                      // update funzionale: due tap ravvicinati
+                                      // non si sovrascrivono (stale closure)
+                                      const cur = f.disciplines || [];
+                                      return { ...f, disciplines: cur.includes(d.slug)
+                                        ? cur.filter(s => s !== d.slug)
+                                        : [...cur, d.slug] };
+                                    })}
+                                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                                      sel
+                                        ? 'border-[#376254] bg-[#376254] text-white'
+                                        : full
+                                          ? 'border-input text-muted-foreground/40 cursor-not-allowed'
+                                          : 'border-input text-foreground hover:border-[#8a9979] hover:bg-[#376254]/5'
+                                    }`}>
+                              {d.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Social */}
