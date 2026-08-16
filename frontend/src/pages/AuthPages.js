@@ -14,33 +14,10 @@ import { ArrowRight, Eye, EyeOff, Mail, KeyRound, CheckCircle2, XCircle, Loader2
 import { BrandLogo } from '../components/BrandLogo';
 import { toast } from 'sonner';
 
+// Selettore lingua rimosso dalle testate (founder 16/8): il sito
+// pubblico parla solo italiano, il ?lang= resta per i deep link dalle
+// email gia' inviate nelle altre lingue.
 const SUPPORTED_LANGS = ['it', 'en', 'fr', 'de'];
-const LANG_LABELS = { it: 'IT', en: 'EN', fr: 'FR', de: 'DE' };
-
-const LanguageSwitcher = () => {
-  const { i18n: i18nInstance } = useTranslation();
-  const handleChange = (lang) => {
-    i18nInstance.changeLanguage(lang);
-    localStorage.setItem('i18n_lang', lang);
-  };
-  return (
-    <div className="flex gap-1">
-      {SUPPORTED_LANGS.map((lang) => (
-        <button
-          key={lang}
-          onClick={() => handleChange(lang)}
-          className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
-            i18nInstance.language === lang
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-          }`}
-        >
-          {LANG_LABELS[lang]}
-        </button>
-      ))}
-    </div>
-  );
-};
 
 const useLangParam = () => {
   const [searchParams] = useSearchParams();
@@ -49,6 +26,11 @@ const useLangParam = () => {
     if (lang && SUPPORTED_LANGS.includes(lang)) {
       i18n.changeLanguage(lang);
       localStorage.setItem('i18n_lang', lang);
+    } else if (i18n.language !== 'it') {
+      // niente selettore = niente via di ritorno da una preferenza
+      // straniera residua: l'anonimo vede l'italiano; dopo il login
+      // AuthContext applica comunque la locale dell'utente
+      i18n.changeLanguage('it');
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 };
@@ -194,7 +176,6 @@ export const LoginPage = () => {
         <div className="w-full max-w-md">
           <div className="flex items-center justify-between mb-8">
             <BrandLogo />
-            <LanguageSwitcher />
           </div>
 
           <Card className="border border-border">
@@ -523,7 +504,6 @@ export const SignupPage = () => {
           <div className="w-full max-w-md">
             <div className="flex items-center justify-between mb-8">
               <BrandLogo />
-              <LanguageSwitcher />
             </div>
             <Card className="border border-border">
               <CardHeader className="space-y-1">
@@ -577,7 +557,6 @@ export const SignupPage = () => {
         <div className="w-full max-w-md">
           <div className="flex items-center justify-between mb-8">
             <BrandLogo />
-            <LanguageSwitcher />
           </div>
 
           {showBlockedMessage ? (
@@ -897,7 +876,6 @@ export const ForgotPasswordPage = () => {
         <div className="w-full max-w-md">
           <div className="flex items-center justify-between mb-8">
             <BrandLogo />
-            <LanguageSwitcher />
           </div>
 
           <Card className="border border-border">
@@ -1033,7 +1011,6 @@ export const ResetPasswordPage = () => {
         <div className="w-full max-w-md">
           <div className="flex items-center justify-between mb-8">
             <BrandLogo />
-            <LanguageSwitcher />
           </div>
 
           <Card className="border border-border">

@@ -7837,3 +7837,18 @@ class TestFormatiServizio:
                          "landings.json").read_text())
         assert it["operators"]["whatLabel"] == "Formato"
         assert it["operators"]["whatAll"] == "Ogni formato"
+
+
+class TestAuthSoloItaliano:
+    """Founder 16/8: via il selettore IT/EN/FR/DE da login e
+    registrazione — il sito pubblico parla solo italiano. Il ?lang=
+    resta per i deep link dalle email gia' inviate."""
+
+    def test_niente_selettore_lingua_in_auth(self):
+        src = (FRONTEND_SRC / "pages" / "AuthPages.js").read_text()
+        assert "LanguageSwitcher" not in src, \
+            "selettore lingua tornato nelle pagine auth"
+        # l'anonimo con una preferenza straniera residua vede l'italiano
+        assert "i18n.changeLanguage('it')" in src
+        # ...ma il ?lang= dei deep link email resta rispettato
+        assert "searchParams.get('lang')" in src
