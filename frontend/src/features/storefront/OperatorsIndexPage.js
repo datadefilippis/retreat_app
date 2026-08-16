@@ -559,15 +559,18 @@ export default function OperatorsIndexPage() {
                 })}
               </select>
             )}
-            {/* Cosa — categorie reali (listino + ritiri) da data.categories */}
+            {/* Formato — asse complementare alla Disciplina: la
+                disciplina dice COSA pratichi, il formato in che modo
+                lo compri (tassonomia service). Opzioni reali da
+                data.categories. */}
             <select
               value={categoria || ''}
               onChange={(e) => setCosa(e.target.value)}
-              aria-label={t('landings:operators.whatLabel', { defaultValue: 'Cosa cerchi?' })}
+              aria-label={t('landings:operators.whatLabel', { defaultValue: 'Formato' })}
               className="flex-none w-40 lg:w-48 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
             >
               <option value="">
-                {t('landings:operators.whatAll', { defaultValue: 'Tutti i servizi' })}
+                {t('landings:operators.whatAll', { defaultValue: 'Ogni formato' })}
               </option>
               {categories.map(([key, count]) => (
                 <option key={key} value={key}>
@@ -715,7 +718,7 @@ export default function OperatorsIndexPage() {
                   onClick={() => setCosa('')}
                   className="rounded-full border border-[#376254] text-[#376254] bg-white px-4 py-1.5 text-sm font-semibold hover:bg-[#376254]/5 transition-colors"
                 >
-                  {t('landings:operators.emptyAllServices', { defaultValue: 'Tutti i servizi' })}
+                  {t('landings:operators.emptyAllServices', { defaultValue: 'Ogni formato' })}
                 </button>
               )}
               <Link to="/" className="rounded-full bg-primary text-white px-5 py-1.5 text-sm font-semibold hover:opacity-90 transition-opacity">

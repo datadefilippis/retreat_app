@@ -7768,3 +7768,72 @@ class TestLinkPageLk5:
             assert lid in src, f"click non tracciato su {lid} (LK4)"
         assert "trackClick(org_slug, l.id)" in src, \
             "click non tracciato sui link personalizzati (LK4)"
+
+
+class TestFormatiServizio:
+    """Formati servizio (founder, 16/8) — due assi complementari:
+    Disciplina = cosa pratichi (dichiarata sul profilo), Servizio =
+    in che FORMATO lo compri (tassonomia minimale di erogazione).
+    Slug storici invariati, label riallineate, due formati nuovi,
+    filtro esplora rinominato «Formato»."""
+
+    ATTESI = {"trattamenti", "consulenze", "lezioni",
+              "corsi-gruppo", "cerimonie", "percorsi"}
+
+    def test_tassonomia_sei_formati(self):
+        """6 formati esatti; gli slug storici restano (no migrazione)."""
+        from models.retreat_taxonomy import PRODUCT_TAXONOMIES
+        service = PRODUCT_TAXONOMIES["service"]
+        assert set(service) == self.ATTESI
+        # label riallineate: i formati sono erogazione, non discipline
+        assert service["trattamenti"] == "Trattamenti individuali"
+        assert service["consulenze"] == "Consulenze & Colloqui"
+        assert service["cerimonie"] == "Cerimonie & Cerchi"
+
+    def test_specchio_listino_frontend(self):
+        """SERVICE_CATEGORIES in ListinoPage = stessa tassonomia."""
+        import re
+        src = (FRONTEND_SRC / "features" / "listino" /
+               "ListinoPage.js").read_text()
+        m = re.search(r"const SERVICE_CATEGORIES = \{(.*?)\};",
+                      src, re.S)
+        assert m, "SERVICE_CATEGORIES sparito da ListinoPage"
+        slugs = set(re.findall(r"['\"]?([a-z-]+)['\"]?:\s*'", m.group(1)))
+        assert slugs == self.ATTESI, (
+            f"specchio listino divergente: {slugs ^ self.ATTESI}")
+
+    def test_label_nelle_locales(self):
+        """I due formati nuovi risolvono in TUTTE le lingue, nei due
+        namespace che li mostrano (esplora=landings, wizard=products)."""
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            landings = json.loads(
+                (FRONTEND_SRC / "locales" / lang / "landings.json")
+                .read_text())
+            products = json.loads(
+                (FRONTEND_SRC / "locales" / lang / "products.json")
+                .read_text())
+            for slug in ("corsi-gruppo", "percorsi"):
+                assert slug in landings["categories"], \
+                    f"{lang}/landings categories.{slug} mancante"
+                assert slug in products["taxonomy"], \
+                    f"{lang}/products taxonomy.{slug} mancante"
+        # label italiana definitiva
+        it = json.loads((FRONTEND_SRC / "locales" / "it" /
+                         "landings.json").read_text())
+        assert it["categories"]["trattamenti"] == "Trattamenti individuali"
+        assert it["categories"]["percorsi"] == "Percorsi & Pacchetti"
+
+    def test_filtro_esplora_rinominato_formato(self):
+        """In esplora il filtro si chiama «Formato» (voce vuota «Ogni
+        formato»), non piu' «Tutti i servizi»."""
+        import json
+        src = (FRONTEND_SRC / "features" / "storefront" /
+               "OperatorsIndexPage.js").read_text()
+        assert "defaultValue: 'Formato'" in src
+        assert "defaultValue: 'Ogni formato'" in src
+        assert "Tutti i servizi" not in src
+        it = json.loads((FRONTEND_SRC / "locales" / "it" /
+                         "landings.json").read_text())
+        assert it["operators"]["whatLabel"] == "Formato"
+        assert it["operators"]["whatAll"] == "Ogni formato"

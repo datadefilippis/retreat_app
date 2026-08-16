@@ -42,12 +42,16 @@ import DpaPactBanner from '../../components/legal/DpaPactBanner';
 import DpaPactDialog from '../../components/legal/DpaPactDialog';
 import useDpaStatus from '../../hooks/useDpaStatus';
 
-// Tassonomia service (models/retreat_taxonomy.py) + fallback "altro"
+// Tassonomia service (models/retreat_taxonomy.py) + fallback "altro".
+// Sono FORMATI di erogazione, non discipline: le discipline vivono nel
+// profilo pubblico (lib/disciplines.js).
 const SERVICE_CATEGORIES = {
-  trattamenti: 'Trattamenti & Massaggi',
-  consulenze: 'Consulenze',
+  trattamenti: 'Trattamenti individuali',
+  consulenze: 'Consulenze & Colloqui',
   lezioni: 'Lezioni private',
-  cerimonie: 'Cerimonie',
+  'corsi-gruppo': 'Classi & Corsi di gruppo',
+  cerimonie: 'Cerimonie & Cerchi',
+  percorsi: 'Percorsi & Pacchetti',
 };
 const DURATIONS = [30, 45, 60, 75, 90, 120];
 const MODES = [

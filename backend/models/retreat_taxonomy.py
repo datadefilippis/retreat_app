@@ -21,11 +21,17 @@ RETREAT_CATEGORIES = {
 # founder): dropdown nei wizard, MAI testo libero. Le chiavi sono slug
 # stabili; le label le risolve il frontend (i18n) con questi default.
 PRODUCT_TAXONOMIES = {
+    # Formati di EROGAZIONE, non discipline (quelle vivono in
+    # models/disciplines.py): due assi complementari — la disciplina dice
+    # cosa pratichi, il formato come lo si compra. Volutamente minimale.
+    # Slug storici invariati (righe già create), label riallineate 16/8.
     "service": {
-        "trattamenti": "Trattamenti & Massaggi",
-        "consulenze": "Consulenze",
+        "trattamenti": "Trattamenti individuali",
+        "consulenze": "Consulenze & Colloqui",
         "lezioni": "Lezioni private",
-        "cerimonie": "Cerimonie",
+        "corsi-gruppo": "Classi & Corsi di gruppo",
+        "cerimonie": "Cerimonie & Cerchi",
+        "percorsi": "Percorsi & Pacchetti",
     },
     "physical": {
         "cura_di_se": "Cura di sé",
