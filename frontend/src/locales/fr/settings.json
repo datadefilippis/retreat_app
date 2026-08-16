@@ -692,6 +692,12 @@
     "phonePh": "Téléphone / WhatsApp",
     "phoneWhy": "Le numéro alimente aussi le bouton WhatsApp de votre page de liens, même si les contacts restent masqués ici.",
     "disciplines": "Vos disciplines",
-    "disciplinesHint": "Choisissez ce que vous pratiquez vraiment : on filtre les praticiens par discipline."
+    "disciplinesHint": "Choisissez ce que vous pratiquez vraiment : on filtre les praticiens par discipline.",
+    "disciplinesDone": "Terminé",
+    "disciplinesEdit": "Modifier",
+    "disciplinesEmpty": "Ajoutez les disciplines que vous pratiquez : on vous trouve en filtrant dessus.",
+    "disciplinesSearch": "Rechercher une discipline…",
+    "disciplinesMissing": "Une discipline vous manque ?",
+    "disciplinesSuggest": "Écrivez-nous, nous l'ajouterons"
   }
 }

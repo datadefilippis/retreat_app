@@ -724,6 +724,12 @@
     "phonePh": "Telefono / WhatsApp",
     "phoneWhy": "Il numero serve anche al bottone WhatsApp della tua pagina link, anche se qui i contatti restano nascosti.",
     "disciplines": "Le tue discipline",
-    "disciplinesHint": "Scegli quello che pratichi davvero: chi cerca un operatore filtra per disciplina."
+    "disciplinesHint": "Scegli quello che pratichi davvero: chi cerca un operatore filtra per disciplina.",
+    "disciplinesDone": "Fatto",
+    "disciplinesEdit": "Modifica",
+    "disciplinesEmpty": "Aggiungi le discipline che pratichi: chi ti cerca filtra per disciplina.",
+    "disciplinesSearch": "Cerca una disciplina…",
+    "disciplinesMissing": "Manca una disciplina che pratichi?",
+    "disciplinesSuggest": "Scrivici e la aggiungiamo"
   }
 }

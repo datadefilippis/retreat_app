@@ -725,6 +725,12 @@
     "phonePh": "Phone / WhatsApp",
     "phoneWhy": "The number also powers the WhatsApp button on your link page, even if contacts stay hidden here.",
     "disciplines": "Your disciplines",
-    "disciplinesHint": "Pick what you truly practice: seekers filter operators by discipline."
+    "disciplinesHint": "Pick what you truly practice: seekers filter operators by discipline.",
+    "disciplinesDone": "Done",
+    "disciplinesEdit": "Edit",
+    "disciplinesEmpty": "Add the disciplines you practice: people find you by filtering on them.",
+    "disciplinesSearch": "Search a discipline…",
+    "disciplinesMissing": "Practice something that's not listed?",
+    "disciplinesSuggest": "Write us and we'll add it"
   }
 }
