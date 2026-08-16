@@ -7464,10 +7464,12 @@ class TestDisciplineDi:
                    / "OperatorsIndexPage.js").read_text()
         assert 'data-testid="operators-discipline-filter"' in esplora
         assert "q.discipline = disciplina" in esplora
-        # DI4 — il filtro e' SEMPRE visibile col catalogo pieno a
-        # famiglie (optgroup), mai condizionato ai conteggi
-        assert "optgroup" in esplora and "DISCIPLINE_FAMILIES" in esplora, \
-            "il filtro disciplina e' tornato nascosto/condizionale"
+        # DI5 — solo le discipline PRESENTI (conteggio accanto),
+        # raggruppate per famiglia: mai il catalogo intero che
+        # "non filtra nulla" (decisione founder 14/8, sera)
+        assert "optgroup" in esplora and "DISCIPLINE_FAMILIES" in esplora
+        assert "presenti" in esplora and "data?.disciplines?.[d.slug]" in esplora, \
+            "il filtro mostra di nuovo il catalogo intero"
         profilo = (FRONTEND_SRC / "features" / "storefront"
                    / "OperatorProfilePage.js").read_text()
         assert 'data-testid="profile-disciplines"' in profilo

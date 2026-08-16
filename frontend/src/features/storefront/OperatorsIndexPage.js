@@ -519,38 +519,46 @@ export default function OperatorsIndexPage() {
             <GeoSearchBar value={geoValue} onChange={setGeo} fluid />
           </div>
           <div className="flex w-full lg:w-auto items-center gap-2 lg:gap-2.5 overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0 lg:overflow-visible">
-            {/* DI4 (founder 14/8) — Disciplina SEMPRE visibile col
-                catalogo COMPLETO a famiglie: e' l'asse principale della
-                ricerca operatori, non un filtro che appare a sorpresa.
-                I conteggi si aggiungono quando l'aggregato li ha. */}
-            <select
-              value={disciplina}
-              onChange={(e) => {
-                const q = new URLSearchParams(params);
-                if (e.target.value) q.set('disciplina', e.target.value);
-                else q.delete('disciplina');
-                setParams(q, { replace: true });
-              }}
-              aria-label={t('landings:operators.disciplineLabel', { defaultValue: 'Disciplina' })}
-              data-testid="operators-discipline-filter"
-              className="flex-none w-44 lg:w-52 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
-            >
-              <option value="">
-                {t('landings:operators.disciplineAll', { defaultValue: 'Tutte le discipline' })}
-              </option>
-              {DISCIPLINE_FAMILIES.map(fam => (
-                <optgroup key={fam.slug} label={fam.label}>
-                  {fam.items.map(d => {
-                    const n = data?.disciplines?.[d.slug];
-                    return (
-                      <option key={d.slug} value={d.slug}>
-                        {d.label}{n ? ` (${n})` : ''}
-                      </option>
-                    );
-                  })}
-                </optgroup>
-              ))}
-            </select>
+            {/* DI5 (founder 14/8) — Disciplina user-friendly: SOLO le
+                voci con almeno un operatore (conteggio accanto),
+                raggruppate per famiglia. Niente catalogo intero che
+                "non filtra nulla"; senza discipline dichiarate il
+                select non compare. */}
+            {(disciplines.length > 0 || disciplina) && (
+              <select
+                value={disciplina}
+                onChange={(e) => {
+                  const q = new URLSearchParams(params);
+                  if (e.target.value) q.set('disciplina', e.target.value);
+                  else q.delete('disciplina');
+                  setParams(q, { replace: true });
+                }}
+                aria-label={t('landings:operators.disciplineLabel', { defaultValue: 'Disciplina' })}
+                data-testid="operators-discipline-filter"
+                className="flex-none w-44 lg:w-52 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+              >
+                <option value="">
+                  {t('landings:operators.disciplineAll', { defaultValue: 'Tutte le discipline' })}
+                </option>
+                {DISCIPLINE_FAMILIES.map(fam => {
+                  const presenti = fam.items.filter(
+                    d => data?.disciplines?.[d.slug] || d.slug === disciplina);
+                  if (presenti.length === 0) return null;
+                  return (
+                    <optgroup key={fam.slug} label={fam.label}>
+                      {presenti.map(d => {
+                        const n = data?.disciplines?.[d.slug];
+                        return (
+                          <option key={d.slug} value={d.slug}>
+                            {d.label}{n ? ` (${n})` : ''}
+                          </option>
+                        );
+                      })}
+                    </optgroup>
+                  );
+                })}
+              </select>
+            )}
             {/* Cosa — categorie reali (listino + ritiri) da data.categories */}
             <select
               value={categoria || ''}
