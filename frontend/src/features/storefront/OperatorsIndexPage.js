@@ -24,7 +24,7 @@ import { Leaf, MapPin, SearchX } from 'lucide-react';
 import { Skeleton } from '../../components/ui/skeleton';
 import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
 // DI — tassonomia discipline (specchio backend)
-import { disciplineLabel } from '../../lib/disciplines';
+import { disciplineLabel, DISCIPLINE_FAMILIES } from '../../lib/disciplines';
 import BrandPayoff from '../../components/BrandPayoff';
 
 // LM3 — l'URL parla italiano (?ordina=), l'API il gergo suo (sort=):
@@ -519,6 +519,38 @@ export default function OperatorsIndexPage() {
             <GeoSearchBar value={geoValue} onChange={setGeo} fluid />
           </div>
           <div className="flex w-full lg:w-auto items-center gap-2 lg:gap-2.5 overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0 lg:overflow-visible">
+            {/* DI4 (founder 14/8) — Disciplina SEMPRE visibile col
+                catalogo COMPLETO a famiglie: e' l'asse principale della
+                ricerca operatori, non un filtro che appare a sorpresa.
+                I conteggi si aggiungono quando l'aggregato li ha. */}
+            <select
+              value={disciplina}
+              onChange={(e) => {
+                const q = new URLSearchParams(params);
+                if (e.target.value) q.set('disciplina', e.target.value);
+                else q.delete('disciplina');
+                setParams(q, { replace: true });
+              }}
+              aria-label={t('landings:operators.disciplineLabel', { defaultValue: 'Disciplina' })}
+              data-testid="operators-discipline-filter"
+              className="flex-none w-44 lg:w-52 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+            >
+              <option value="">
+                {t('landings:operators.disciplineAll', { defaultValue: 'Tutte le discipline' })}
+              </option>
+              {DISCIPLINE_FAMILIES.map(fam => (
+                <optgroup key={fam.slug} label={fam.label}>
+                  {fam.items.map(d => {
+                    const n = data?.disciplines?.[d.slug];
+                    return (
+                      <option key={d.slug} value={d.slug}>
+                        {d.label}{n ? ` (${n})` : ''}
+                      </option>
+                    );
+                  })}
+                </optgroup>
+              ))}
+            </select>
             {/* Cosa — categorie reali (listino + ritiri) da data.categories */}
             <select
               value={categoria || ''}
@@ -535,31 +567,6 @@ export default function OperatorsIndexPage() {
                 </option>
               ))}
             </select>
-            {/* DI — Disciplina: cosa l'operatore DICHIARA di praticare.
-                Compare solo se almeno un operatore ne ha dichiarate. */}
-            {(disciplines.length > 0 || disciplina) && (
-              <select
-                value={disciplina}
-                onChange={(e) => {
-                  const q = new URLSearchParams(params);
-                  if (e.target.value) q.set('disciplina', e.target.value);
-                  else q.delete('disciplina');
-                  setParams(q, { replace: true });
-                }}
-                aria-label={t('landings:operators.disciplineLabel', { defaultValue: 'Disciplina' })}
-                data-testid="operators-discipline-filter"
-                className="flex-none w-40 lg:w-48 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
-              >
-                <option value="">
-                  {t('landings:operators.disciplineAll', { defaultValue: 'Tutte le discipline' })}
-                </option>
-                {disciplines.map(([key, count]) => (
-                  <option key={key} value={key}>
-                    {disciplineLabel(key)} ({count})
-                  </option>
-                ))}
-              </select>
-            )}
             {/* LM4 — Quando: visibile SOLO se l'indice di disponibilita'
                 esiste (date_filter_ready); data nativa + fascia opzionale */}
             {data?.date_filter_ready && (

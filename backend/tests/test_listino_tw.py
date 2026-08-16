@@ -7464,6 +7464,10 @@ class TestDisciplineDi:
                    / "OperatorsIndexPage.js").read_text()
         assert 'data-testid="operators-discipline-filter"' in esplora
         assert "q.discipline = disciplina" in esplora
+        # DI4 — il filtro e' SEMPRE visibile col catalogo pieno a
+        # famiglie (optgroup), mai condizionato ai conteggi
+        assert "optgroup" in esplora and "DISCIPLINE_FAMILIES" in esplora, \
+            "il filtro disciplina e' tornato nascosto/condizionale"
         profilo = (FRONTEND_SRC / "features" / "storefront"
                    / "OperatorProfilePage.js").read_text()
         assert 'data-testid="profile-disciplines"' in profilo
