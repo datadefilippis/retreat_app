@@ -592,6 +592,17 @@ export default function PublicProfilePage() {
                     </div>
                   );
                 })}
+                {/* DI3 — la tassonomia e' curata (il filtro vive di voci
+                    stabili), ma nessuno resta muto: la mancanza si
+                    segnala e la voce nuova varra' per TUTTI. */}
+                <p className="text-xs text-muted-foreground pt-1">
+                  {t('publicProfile.disciplinesMissing', { defaultValue: 'Manca una disciplina che pratichi?' })}{' '}
+                  <a href={`mailto:info@aurya.life?subject=${encodeURIComponent('Nuova disciplina da aggiungere')}&body=${encodeURIComponent('Ciao, pratico una disciplina che non trovo nella lista di Aurya: ')}`}
+                     data-testid="pp-disc-suggest"
+                     className="font-semibold text-[#376254] underline underline-offset-2">
+                    {t('publicProfile.disciplinesSuggest', { defaultValue: 'Scrivici e la aggiungiamo' })}
+                  </a>
+                </p>
               </div>
             )}
           </div>
