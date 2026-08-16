@@ -3893,7 +3893,8 @@ async def public_network_members():
 
     orgs = await organizations_collection.find(
         {"network_member": True, "is_active": {"$ne": False},
-         "is_sample": {"$ne": True}},
+         "is_sample": {"$ne": True},
+         "exclude_from_listings": {"$ne": True}},   # XL1
         {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
          "public_profile": 1, "reviews_stats": 1},
     ).sort("name", 1).to_list(500)
@@ -4053,6 +4054,7 @@ async def public_operators_index(
          "deactivated_at": None},
         {"_id": 0, "id": 1, "name": 1, "public_profile": 1,
          "store_settings": 1, "directory_featured": 1, "is_sample": 1,
+         "exclude_from_listings": 1,   # XL1 — senza proiezione il lucchetto sarebbe inerte
          # LM2 — rating denormalizzato per la card (stesso pattern
          # di /network/members)
          "reviews_stats": 1},
@@ -4179,6 +4181,11 @@ async def public_operators_index(
     for s in stores:
         org = orgs.get(s["organization_id"])
         if not org:
+            continue
+        # XL1 (founder 14/8) — lucchetto esplicito: l'org del founder
+        # (e qualsiasi altra marchiata) NON compare MAI nei listing,
+        # nemmeno se un giorno pubblica lo store per sbaglio.
+        if org.get("exclude_from_listings"):
             continue
         _is_sample = bool(org.get("is_sample"))
         if _is_sample != _prelaunch:

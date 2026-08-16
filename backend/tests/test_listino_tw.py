@@ -7469,6 +7469,25 @@ class TestDisciplineDi:
         assert 'data-testid="profile-disciplines"' in profilo
 
 
+class TestLucchettoListingXl1:
+    """XL1 (founder, 14/8) — exclude_from_listings: l'org marchiata non
+    compare MAI in /operators ne' tra i membri della rete, qualunque
+    cosa succeda al suo store. Requisito: l'org personale del founder
+    non deve mai apparire in vetrina."""
+
+    def test_lucchetto_cablato_e_proiettato(self):
+        pub = (Path(__file__).resolve().parent.parent / "routers"
+               / "public.py").read_text()
+        assert pub.count("exclude_from_listings") >= 3, \
+            "lucchetto sparito da un listing o dalla proiezione"
+        # nel loop aggregatore il salto avviene PRIMA dello specchio
+        # sample/prelaunch (mai contato da nessuna parte)
+        blocco = pub.split('if org.get("exclude_from_listings")')[1][:120]
+        assert "continue" in blocco
+        # senza proiezione il filtro leggerebbe sempre None
+        assert '"exclude_from_listings": 1' in pub
+
+
 class TestMenuMobileMb1:
     """MB1 (founder, 13/8) — nel pannello mobile del guscio marketplace
     "Chi siamo" appariva due volte in fase rete: una da NETWORK_NAV_ITEMS
