@@ -697,7 +697,10 @@
     "disciplinesEdit": "Modifier",
     "disciplinesEmpty": "Ajoutez les disciplines que vous pratiquez : on vous trouve en filtrant dessus.",
     "disciplinesSearch": "Rechercher une discipline…",
-    "disciplinesMissing": "Une discipline vous manque ?",
-    "disciplinesSuggest": "Écrivez-nous, nous l'ajouterons"
+    "disciplinesMissing": "Une discipline vous manque ? Écrivez à",
+    "disciplinesSuggest": "et nous l'ajouterons pour tous.",
+    "disciplinesCopyEmail": "Copier",
+    "disciplinesEmailCopied": "Copié",
+    "disciplinesEmailSelected": "Sélectionnée : Cmd+C"
   }
 }

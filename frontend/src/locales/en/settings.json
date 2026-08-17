@@ -730,7 +730,10 @@
     "disciplinesEdit": "Edit",
     "disciplinesEmpty": "Add the disciplines you practice: people find you by filtering on them.",
     "disciplinesSearch": "Search a discipline…",
-    "disciplinesMissing": "Practice something that's not listed?",
-    "disciplinesSuggest": "Write us and we'll add it"
+    "disciplinesMissing": "Practice something that's not listed? Write to",
+    "disciplinesSuggest": "and we'll add it for everyone.",
+    "disciplinesCopyEmail": "Copy",
+    "disciplinesEmailCopied": "Copied",
+    "disciplinesEmailSelected": "Selected: press Cmd+C"
   }
 }

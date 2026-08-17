@@ -697,7 +697,10 @@
     "disciplinesEdit": "Bearbeiten",
     "disciplinesEmpty": "Füge die Disziplinen hinzu, die du praktizierst: so wirst du gefunden.",
     "disciplinesSearch": "Disziplin suchen…",
-    "disciplinesMissing": "Fehlt eine Disziplin, die du praktizierst?",
-    "disciplinesSuggest": "Schreib uns, wir ergänzen sie"
+    "disciplinesMissing": "Fehlt eine Disziplin, die du praktizierst? Schreib an",
+    "disciplinesSuggest": "und wir ergänzen sie für alle.",
+    "disciplinesCopyEmail": "Kopieren",
+    "disciplinesEmailCopied": "Kopiert",
+    "disciplinesEmailSelected": "Markiert: Cmd+C drücken"
   }
 }

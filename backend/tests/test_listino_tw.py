@@ -7852,3 +7852,44 @@ class TestAuthSoloItaliano:
         assert "i18n.changeLanguage('it')" in src
         # ...ma il ?lang= dei deep link email resta rispettato
         assert "searchParams.get('lang')" in src
+
+
+class TestDisciplineDi6:
+    """DI6 (operatrice via founder, 16/8) — due voci ombrello per il
+    mondo delle danze rituali e del femminile, e un canale di
+    segnalazione che funziona anche senza client di posta."""
+
+    def test_voci_nuove_in_entrambe_le_fonti(self):
+        from models.disciplines import DISCIPLINES, DISCIPLINE_FAMILIES
+        js = (FRONTEND_SRC / "lib" / "disciplines.js").read_text()
+        for slug in ("danze-sacre", "sacro-femminile"):
+            assert slug in DISCIPLINES, f"{slug} assente dal backend"
+            assert f"slug: '{slug}'" in js, f"{slug} assente dallo specchio JS"
+        # la label italiana nomina la pratica che l'operatrice cerca
+        assert "Danza della Dea" in DISCIPLINES["danze-sacre"]
+        # famiglie coerenti: danza nel corpo, femminile nell'anima
+        fam = {s: f for f, _l, items in DISCIPLINE_FAMILIES
+               for s, _ in items}
+        assert fam["danze-sacre"] == "corpo"
+        assert fam["sacro-femminile"] == "anima"
+
+    def test_email_in_chiaro_non_solo_mailto(self):
+        """Il mailto da solo non basta (posta letta nel browser): si
+        vede l'indirizzo, si copia, e se pure la clipboard e' negata
+        il testo viene selezionato — mai un gesto senza esito."""
+        src = (FRONTEND_SRC / "features" / "settings" /
+               "PublicProfilePage.js").read_text()
+        assert "{BRAND_EMAIL}\n" in src or ">\n                    {BRAND_EMAIL}" in src, \
+            "indirizzo non mostrato in chiaro nella riga suggerimento"
+        assert 'data-testid="pp-disc-copy-email"' in src
+        assert "copyEmail" in src and "selectNodeContents" in src, \
+            "manca il ripiego selezione quando la clipboard e' negata"
+
+    def test_chiavi_copia_in_quattro_lingue(self):
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            d = json.loads((FRONTEND_SRC / "locales" / lang /
+                            "settings.json").read_text())["publicProfile"]
+            for k in ("disciplinesCopyEmail", "disciplinesEmailCopied",
+                      "disciplinesEmailSelected"):
+                assert d.get(k), f"{lang}: manca publicProfile.{k}"

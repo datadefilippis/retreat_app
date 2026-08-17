@@ -108,6 +108,8 @@ export default function PublicProfilePage() {
   // PV1 — fase "Ottimizzo la foto": compressione client in corso
   const [optimizing, setOptimizing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
+  const [emailSelected, setEmailSelected] = useState(false);
   // AC1 — ogni salvataggio che può cambiare lo stato onboarding
   // incrementa la chiave: la striscia-guida si riaggiorna da sola
   const [obKey, setObKey] = useState(0);
@@ -308,6 +310,30 @@ export default function PublicProfilePage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch { /* clipboard non disponibile */ }
+  };
+
+  // DI6 — l'indirizzo per segnalare una disciplina mancante si copia
+  // anche quando il mailto non apre nulla (posta letta nel browser).
+  // Se pure la clipboard e' negata non restiamo muti: selezioniamo
+  // l'indirizzo, cosi' basta un Cmd+C. Un gesto senza esito visibile
+  // e' il difetto che stiamo riparando, non un dettaglio.
+  const emailRef = useRef(null);
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(BRAND_EMAIL);
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 2000);
+    } catch {
+      const el = emailRef.current;
+      if (!el) return;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      setEmailSelected(true);
+      setTimeout(() => setEmailSelected(false), 4000);
+    }
   };
 
   if (!form) {
@@ -594,15 +620,30 @@ export default function PublicProfilePage() {
                 })}
                 {/* DI3 — la tassonomia e' curata (il filtro vive di voci
                     stabili), ma nessuno resta muto: la mancanza si
-                    segnala e la voce nuova varra' per TUTTI. */}
-                <p className="text-xs text-muted-foreground pt-1">
-                  {t('publicProfile.disciplinesMissing', { defaultValue: 'Manca una disciplina che pratichi?' })}{' '}
+                    segnala e la voce nuova varra' per TUTTI.
+                    DI6 (operatrice, 16/8): il solo mailto non basta —
+                    su chi legge la posta nel browser il click non apre
+                    niente e il canale sembra rotto. L'indirizzo si
+                    vede in chiaro e si copia in un gesto. */}
+                <div className="text-xs text-muted-foreground pt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                  <span>{t('publicProfile.disciplinesMissing', { defaultValue: 'Manca una disciplina che pratichi? Scrivici a' })}</span>
                   <a href={`mailto:${BRAND_EMAIL}?subject=${encodeURIComponent('Nuova disciplina da aggiungere')}&body=${encodeURIComponent('Ciao, pratico una disciplina che non trovo nella lista di Aurya: ')}`}
                      data-testid="pp-disc-suggest"
-                     className="font-semibold text-[#376254] underline underline-offset-2">
-                    {t('publicProfile.disciplinesSuggest', { defaultValue: 'Scrivici e la aggiungiamo' })}
+                     ref={emailRef}
+                     className="font-semibold text-[#376254] underline underline-offset-2 select-all">
+                    {BRAND_EMAIL}
                   </a>
-                </p>
+                  <button type="button" onClick={copyEmail}
+                          data-testid="pp-disc-copy-email"
+                          className="rounded-full border px-2 py-0.5 hover:bg-muted transition-colors">
+                    {emailCopied
+                      ? t('publicProfile.disciplinesEmailCopied', { defaultValue: 'Copiata' })
+                      : emailSelected
+                        ? t('publicProfile.disciplinesEmailSelected', { defaultValue: 'Selezionata: premi Cmd+C' })
+                        : t('publicProfile.disciplinesCopyEmail', { defaultValue: 'Copia' })}
+                  </button>
+                  <span>{t('publicProfile.disciplinesSuggest', { defaultValue: 'e la aggiungiamo per tutti.' })}</span>
+                </div>
               </div>
             )}
           </div>

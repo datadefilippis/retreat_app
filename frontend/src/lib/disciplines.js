@@ -21,6 +21,7 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'bioenergetica', label: 'Bioenergetica' },
       { slug: 'feldenkrais', label: 'Feldenkrais' },
       { slug: 'biodanza', label: 'Biodanza' },
+      { slug: 'danze-sacre', label: 'Danze sacre & Danza della Dea' },
     ],
   },
   {
@@ -77,6 +78,7 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'counseling-olistico', label: 'Counseling olistico' },
       { slug: 'coaching-olistico', label: 'Coaching olistico' },
       { slug: 'cerchi-di-donne', label: 'Cerchi di donne' },
+      { slug: 'sacro-femminile', label: 'Sacro femminile & Ciclicità' },
       { slug: 'sciamanesimo', label: 'Pratiche sciamaniche' },
       { slug: 'astrologia', label: 'Astrologia' },
       { slug: 'numerologia', label: 'Numerologia' },

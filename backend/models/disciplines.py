@@ -25,6 +25,7 @@ DISCIPLINE_FAMILIES = (
         ("bioenergetica", "Bioenergetica"),
         ("feldenkrais", "Feldenkrais"),
         ("biodanza", "Biodanza"),
+        ("danze-sacre", "Danze sacre & Danza della Dea"),
     )),
     ("mente", "Meditazione & Mente", (
         ("meditazione", "Meditazione"),
@@ -66,6 +67,7 @@ DISCIPLINE_FAMILIES = (
         ("counseling-olistico", "Counseling olistico"),
         ("coaching-olistico", "Coaching olistico"),
         ("cerchi-di-donne", "Cerchi di donne"),
+        ("sacro-femminile", "Sacro femminile & Ciclicità"),
         ("sciamanesimo", "Pratiche sciamaniche"),
         ("astrologia", "Astrologia"),
         ("numerologia", "Numerologia"),
