@@ -8,13 +8,15 @@
  */
 
 let _uid = 0;
+// Portante di default: 400 Hz per il binaurale (percezione del battito più
+// nitida con portanti 200-500 Hz), 180 Hz per gli altri metodi.
 const layer = (cfg) => ({
   id: ++_uid,
   kind: 'neuro',
   name: cfg.name || 'Livello',
   method: cfg.method || 'bin',
   timbre: cfg.timbre || 'warm',
-  carrier: cfg.carrier ?? 180,
+  carrier: cfg.carrier ?? ((cfg.method || 'bin') === 'bin' ? 400 : 180),
   f0: cfg.f0 ?? 10,
   f1: cfg.f1 ?? cfg.f0 ?? 10,
   curve: cfg.curve || 'lin',

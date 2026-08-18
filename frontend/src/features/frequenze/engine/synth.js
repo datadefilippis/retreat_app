@@ -139,7 +139,7 @@ export function pinkBuf(actx) {
 export function startCardLive(ctx, cfg, gain, fval) {
   const method = cfg.method || 'bin';
   const timbre = cfg.timbre || 'warm';
-  const carrier = method === 'tone' ? fval : (cfg.carrier ?? 180);
+  const carrier = method === 'tone' ? fval : (cfg.carrier ?? (method === 'bin' ? 400 : 180));
   let beat = method === 'tone' ? 0 : fval;
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, ctx.currentTime);

@@ -36,7 +36,7 @@ const fmt = (s) => {
 let _uid = 5000;
 
 const LISTEN = {
-  bin: '🎧 Solo in cuffia', bil: '🎧 In cuffia (consigliato)',
+  bin: '🎧 Effetto solo in cuffia', bil: '🎧 In cuffia (consigliato)',
   iso: '🔊 Anche in altoparlante', mono: '🔊 Anche in altoparlante',
   noise: '🔊 Anche in altoparlante', tone: '🔊 Anche in altoparlante',
 };
@@ -267,7 +267,7 @@ export default function FrequenzePage() {
     setLayers((ls) => [...ls, {
       id: ++_uid, kind: 'neuro', name: cfg.name || entry.t,
       method: cfg.method || 'bin', timbre: cfg.timbre || 'warm',
-      carrier: cfg.carrier ?? 180,
+      carrier: cfg.carrier ?? ((cfg.method || 'bin') === 'bin' ? 400 : 180),
       f0: cfg.method === 'tone' ? 10 : (cfg.f0 ?? 10),
       f1: cfg.method === 'tone' ? 10 : (cfg.f1 ?? cfg.f0 ?? 10),
       curve: cfg.curve || 'lin', start: cfg.start ?? 0, end: duration,
@@ -1025,7 +1025,7 @@ export default function FrequenzePage() {
               </div>
             )}
             <p className="note">
-              <b>Binaurale</b> funziona solo in cuffia. <b>Isocronico</b> e <b>monoaurale</b> anche in altoparlante — per grotta e aula usa questi.
+              Il <b>binaurale</b> dà l'effetto solo in cuffia: dalle casse si sente comunque, ma resta un battimento fisico, non stimolazione binaurale. <b>Isocronico</b> e <b>monoaurale</b> portano il battito nel segnale — per grotta e aula usa questi.
               Timbro <b>caldo</b> più tollerabile del puro sulle sessioni lunghe; il <b>soffio</b> nasconde l'entrainment in un rumore rosa.
             </p>
           </section>

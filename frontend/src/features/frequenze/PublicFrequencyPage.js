@@ -194,7 +194,8 @@ export default function PublicFrequencyPage() {
             </Link>
           </p>
           <p className="note" style={{ marginTop: 16 }}>
-            🎧 Le componenti binaurali funzionano solo in cuffia. Volume
+            🎧 Per le componenti binaurali servono le cuffie: dalle casse il
+            suono si sente comunque, ma l'effetto cambia natura. Volume
             moderato. Non è un dispositivo medico e non sostituisce percorsi
             clinici; non usare in caso di epilessia, con pacemaker, alla
             guida. In caso di disagio, interrompere l'ascolto.

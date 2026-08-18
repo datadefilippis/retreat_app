@@ -250,7 +250,8 @@ export default function MeditazioniPage() {
             </>
           )}
           <p className="note" style={{ marginTop: 18 }}>
-            🎧 Le componenti binaurali funzionano solo in cuffia. Volume moderato.
+            🎧 Per le componenti binaurali servono le cuffie: dalle casse il suono
+            si sente comunque, ma l'effetto cambia natura. Volume moderato.
             Non sono dispositivi medici e non sostituiscono percorsi clinici.
           </p>
         </section>
