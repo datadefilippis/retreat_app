@@ -650,31 +650,31 @@ export default function FrequenzePage() {
   /* ─────────────────────────── RENDER ─────────────────────────── */
   return (
     <div className="fqz" data-testid="fqz-root">
+      <div className="topbar">
+        <button type="button" className="backcard" data-testid="fqz-back"
+          title="Torna al gestionale Aurya"
+          onClick={() => navigate('/dashboard')}>
+          <span className="bc-ic">⌂</span>
+          <span>
+            <span className="bc-t">Gestionale</span><br />
+            <span className="bc-s">torna ad Aurya</span>
+          </span>
+        </button>
+      </div>
       <header>
         <div>
           <h1>Aurya <em>Frequenze</em></h1>
           <div className="sub">stimolazione neuroacustica su linea del tempo</div>
         </div>
-        <div className="headnav">
-          <div className="viewswitch">
-            <button type="button" className={`vbtn${view === 'explore' ? ' on' : ''}`}
-              onClick={() => setView('explore')}>Esplora</button>
-            <button type="button" className={`vbtn${view === 'create' ? ' on' : ''}`}
-              onClick={() => setView('create')}>
-              Crea {layers.length > 0 && <span className="vcount">{layers.length}</span>}
-            </button>
-            <button type="button" className={`vbtn${view === 'impara' ? ' on' : ''}`}
-              onClick={() => setView('impara')}>Impara</button>
-          </div>
-          <button type="button" className="backcard" data-testid="fqz-back"
-            title="Torna al gestionale Aurya"
-            onClick={() => navigate('/dashboard')}>
-            <span className="bc-ic">⌂</span>
-            <span>
-              <span className="bc-t">Gestionale</span><br />
-              <span className="bc-s">torna ad Aurya</span>
-            </span>
+        <div className="viewswitch">
+          <button type="button" className={`vbtn${view === 'explore' ? ' on' : ''}`}
+            onClick={() => setView('explore')}>Esplora</button>
+          <button type="button" className={`vbtn${view === 'create' ? ' on' : ''}`}
+            onClick={() => setView('create')}>
+            Crea {layers.length > 0 && <span className="vcount">{layers.length}</span>}
           </button>
+          <button type="button" className={`vbtn${view === 'impara' ? ' on' : ''}`}
+            onClick={() => setView('impara')}>Impara</button>
         </div>
       </header>
 

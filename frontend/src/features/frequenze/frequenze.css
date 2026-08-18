@@ -318,3 +318,9 @@
 .fqz .backcard .bc-s{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)}
 .fqz .headnav{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 @media (max-width:640px){.fqz .backcard .bc-s{display:none}}
+/* FQ founder 18/8 (2ndo giro): la card Gestionale sale in una barra
+   TUTTA SUA sopra la testata — primo elemento della pagina, a destra. */
+.fqz .topbar{max-width:1240px;margin:-10px auto 14px;display:flex;justify-content:flex-end;
+  padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
+.fqz .topbar .backcard{padding:7px 14px 7px 11px}
+.fqz .topbar .backcard .bc-ic{width:30px;height:30px;font-size:14px}
