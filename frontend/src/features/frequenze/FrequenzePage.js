@@ -9,7 +9,12 @@
  *
  * INTEGRAZIONE: login operatore, bozze salvate per-org via API
  * (/api/frequencies), motore in engine/ (lo stesso del player pubblico
- * di FQ1). La base musicale caricata resta locale alla sessione (FQ2).
+ * di FQ1).
+ *
+ * NIENTE UPLOAD (founder, 18/8): le tracce si compongono SOLO con le
+ * frequenze e i suoni disponibili in piattaforma — l'operatore non
+ * carica audio suo. Il mondo «Suoni» (basi curate) e' predisposto e
+ * arriva con FQ2 (audio_assets).
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -33,12 +38,14 @@ const LISTEN = {
   iso: '🔊 Anche in altoparlante', mono: '🔊 Anche in altoparlante',
   noise: '🔊 Anche in altoparlante', tone: '🔊 Anche in altoparlante',
 };
-const GRADES = ['A', 'B', 'C'];
+const SOUND_CATS = ['Ambient', 'Droni', 'Campane', 'Natura', 'Ritmi', 'Voce'];
 
 export default function FrequenzePage() {
   const navigate = useNavigate();
   const [view, setView] = useState('explore');           // explore | impara | create
+  const [world, setWorld] = useState('freq');            // freq | sound (Esplora)
   const [curTab, setCurTab] = useState(SOUND_KEYS[0]);
+  const [soundCat, setSoundCat] = useState(SOUND_CATS[0]);
   const [gateOk, setGateOk] = useState(() => localStorage.getItem('fqz_gate_ok') === '1');
   const [ask, setAsk] = useState(null);                  // {title,msg,opts:[[label,fn]]}
   const [learn, setLearn] = useState(null);              // {title,body}
@@ -59,15 +66,16 @@ export default function FrequenzePage() {
   const [status, setStatus] = useState('');
   const [exporting, setExporting] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [liveCards, setLiveCards] = useState({});        // key "tab:idx" → handle
+  // ascolto live delle schede: gli HANDLE vivono in un ref (side effect
+  // fuori dagli updater React: in dev gli updater girano due volte e un
+  // grafo orfano resterebbe a suonare per sempre — il bug dello stop);
+  // lo stato tiene solo le chiavi accese, per la UI.
+  const liveCardsRef = useRef({});
+  const [liveKeys, setLiveKeys] = useState([]);
 
   const ctxRef = useRef(null);
   const liveRef = useRef(null);
   const timerRef = useRef(null);
-  const fileRef = useRef(null);
-  const dropRef = useRef(null);
-  const audioLayersRef = useRef([]);                     // basi locali con AudioBuffer
-  const [, forceAudio] = useState(0);                    // re-render dopo add/remove basi
   const duration = Math.max(60, durationMin * 60);
 
   const score = useMemo(() => ({
@@ -94,22 +102,22 @@ export default function FrequenzePage() {
     setPlaying(false);
   };
   const stopAllCards = () => {
-    setLiveCards((lc) => { Object.values(lc).forEach((h) => h.stop()); return {}; });
+    Object.values(liveCardsRef.current).forEach((h) => h.stop());
+    liveCardsRef.current = {};
+    setLiveKeys([]);
   };
-  useEffect(() => () => { stopSession(); }, []);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => () => { Object.values(liveCards).forEach((h) => h.stop()); }, []);
+  useEffect(() => () => { stopSession(); stopAllCards(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const playSession = async (fromT = 0) => {
     stopSession();
-    if (Object.keys(liveCards).length) {
+    if (Object.keys(liveCardsRef.current).length) {
       stopAllCards();
       setStatus('Schede in ascolto fermate — ora suona la linea del tempo');
     }
-    if (!layers.length && !audioLayersRef.current.length) return;
+    if (!layers.length) return;
     const ctx = audioCtx();
     await ctx.resume();
-    liveRef.current = startPreview(ctx, score, { fromT, audioLayers: audioLayersRef.current });
+    liveRef.current = startPreview(ctx, score, { fromT });
     setPlaying(true);
     timerRef.current = setInterval(() => {
       const el = liveRef.current ? liveRef.current.elapsed() : 0;
@@ -118,7 +126,7 @@ export default function FrequenzePage() {
       setStatus(`Ascolto · ${fmt(Math.max(0, el))} / ${fmt(duration)}`);
     }, 150);
   };
-  const seekTo = (t) => { if (layers.length || audioLayersRef.current.length) playSession(t); };
+  const seekTo = (t) => { if (layers.length) playSession(t); };
 
   const patchLayer = (id, patch) => {
     setLayers((ls) => ls.map((l) => (l.id === id ? { ...l, ...patch } : l)));
@@ -147,18 +155,22 @@ export default function FrequenzePage() {
     } else applyProtocol(name);
   };
 
-  /* ── schede live (Esplora) ── */
+  /* ── schede live (Esplora) — side effect PRIMA del setState ── */
   const toggleCard = (key, entry) => {
-    setLiveCards((lc) => {
-      const next = { ...lc };
-      if (next[key]) { next[key].stop(); delete next[key]; return next; }
-      stopSession();
-      const cfg = entry.cfg || {};
-      const fval = cfg.method === 'tone' ? (cfg.carrier ?? 432) : (cfg.f0 ?? 10);
-      next[key] = startCardLive(audioCtx(), cfg, cfg.gain ?? 0.25, fval);
-      next[key]._entry = entry;
-      return next;
-    });
+    const handles = liveCardsRef.current;
+    if (handles[key]) {
+      handles[key].stop();
+      delete handles[key];
+      setLiveKeys(Object.keys(handles));
+      return;
+    }
+    stopSession();
+    const cfg = entry.cfg || {};
+    const fval = cfg.method === 'tone' ? (cfg.carrier ?? 432) : (cfg.f0 ?? 10);
+    const h = startCardLive(audioCtx(), cfg, cfg.gain ?? 0.25, fval);
+    h._entry = entry;
+    handles[key] = h;
+    setLiveKeys(Object.keys(handles));
   };
   const addCardToSession = (entry) => {
     const cfg = entry.cfg || {};
@@ -174,7 +186,7 @@ export default function FrequenzePage() {
     setStatus(`«${entry.t}» aggiunta alla sessione — vai a «Crea» per strutturarla`);
   };
   const composeAllLive = () => {
-    const entries = Object.values(liveCards);
+    const entries = Object.values(liveCardsRef.current);
     if (!entries.length) return;
     entries.forEach((h) => addCardToSession({
       t: h._entry.cfg?.name || h._entry.t,
@@ -184,26 +196,6 @@ export default function FrequenzePage() {
     }));
     stopAllCards();
     setStatus(`${entries.length} frequenze aggiunte alla sessione`);
-  };
-
-  /* ── base musicale ── */
-  const addBaseFiles = async (files) => {
-    const audio = [...files].filter((f) => f.type.startsWith('audio') || /\.(wav|mp3|flac|ogg|m4a|aac)$/i.test(f.name));
-    if (!audio.length) { setStatus('Nessun file audio riconosciuto'); return; }
-    const ctx = audioCtx();
-    setStatus(`Decodifica di ${audio.length} file…`);
-    for (const f of audio) {
-      try {
-        const buf = await ctx.decodeAudioData(await f.arrayBuffer());
-        audioLayersRef.current.push({
-          id: ++_uid, name: f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').slice(0, 38),
-          buffer: buf, start: 0, end: duration, gain: 0.7,
-          loop: buf.duration < duration, mute: false,
-        });
-      } catch { setStatus(`Impossibile leggere ${f.name}`); }
-    }
-    forceAudio((x) => x + 1);
-    setStatus(`${layers.length + audioLayersRef.current.length} livelli · ${fmt(duration)}`);
   };
 
   /* ── bozze: salva/carica ── */
@@ -234,7 +226,6 @@ export default function FrequenzePage() {
       setFadeIn(s.fade_in_sec ?? 10); setFadeOut(s.fade_out_sec ?? 20);
       setLayers((s.layers || []).map((l) => ({ ...l, id: ++_uid })));
       setPhases(s.phases || []);
-      audioLayersRef.current = []; forceAudio((x) => x + 1);
       setView('create');
       setStatus(`Bozza «${t.title}» caricata`);
     } catch { setStatus('Bozza non trovata'); }
@@ -252,14 +243,13 @@ export default function FrequenzePage() {
   });
 
   const resetSession = () => {
-    if (!layers.length && !audioLayersRef.current.length) return;
+    if (!layers.length) return;
     stopSession();
     setAsk({
       title: 'Svuotare la sessione?',
       msg: `Rimuove tutte le tracce dalla linea del tempo. Non si può annullare.`,
       opts: [['Sì, svuota', () => {
         setLayers([]); setPhases([]); setTrackId(null); setTitle(''); setIntent(null);
-        audioLayersRef.current = []; forceAudio((x) => x + 1);
         setStatus('Sessione svuotata');
       }]],
     });
@@ -298,12 +288,12 @@ export default function FrequenzePage() {
 
   /* ── export ── */
   const doExport = async () => {
-    if (!layers.length && !audioLayersRef.current.length) return;
+    if (!layers.length) return;
     stopSession();
     setExporting({ pct: 0, phase: 'Render' });
     try {
       const pcm = await renderPcm(score, {
-        sampleRate: sr, audioLayers: audioLayersRef.current,
+        sampleRate: sr,
         onProgress: (p) => setExporting({ pct: p, phase: 'Render' }),
       });
       let blob, ext;
@@ -339,12 +329,18 @@ export default function FrequenzePage() {
 
   /* ── pezzi di UI ── */
   const gstep = duration <= 300 ? 60 : duration <= 900 ? 120 : 300;
-  const nLayers = layers.length + audioLayersRef.current.length;
-  const liveCount = Object.keys(liveCards).length;
+  const liveCount = liveKeys.length;
+
+  const parseT = (s) => {
+    s = (s || '').trim();
+    if (/^\d+:\d{1,2}$/.test(s)) { const [m, x] = s.split(':'); return +m * 60 + +x; }
+    const v = parseFloat(s);
+    return isNaN(v) ? null : v;
+  };
 
   const renderCard = (entry, idx) => {
     const key = `${curTab}:${idx}`;
-    const live = liveCards[key];
+    const live = liveCardsRef.current[key];
     const g = entry.g;
     const body = (entry.body || '').replace(/\n+/g, ' ').trim();
     const clamped = body.length > 150 && !entry.info;
@@ -403,155 +399,117 @@ export default function FrequenzePage() {
   const activeTab = bibKeys.includes(curTab) ? curTab : bibKeys[0];
   const hasGrades = (BIB[activeTab] || []).some((e) => e.g);
 
-  const rowMeta = (l) => (
-    <div className="meta">
-      <div className="top">
-        <input className="name" type="text" value={l.name}
-          onChange={(e) => patchLayer(l.id, { name: e.target.value })} />
-        <button type="button" className="ghost" onClick={() => removeLayer(l.id)}>×</button>
-      </div>
-      <div className="ctrls">
-        <span className="lbl" title="Volume di questo livello nel mix">volume</span>
-        <input className="sl vol" type="range" min="0" max="1" step="0.01" value={l.gain}
-          onChange={(e) => patchLayer(l.id, { gain: +e.target.value })} />
-        <span className="val v1">{Math.round(l.gain * 100)}%</span>
-      </div>
-      <div className="ctrls timerow">
-        <span className="lbl" title="Secondo in cui il suono entra">entra a</span>
-        <input className="mini t-in" type="text" defaultValue={fmt(l.start)} key={`in${l.id}-${Math.round(l.start)}`}
-          onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { start: Math.max(0, Math.min(v, l.end - 0.5)) }); }} />
-        <span className="lbl" title="Secondo in cui il suono esce">esce a</span>
-        <input className="mini t-out" type="text" defaultValue={fmt(l.end)} key={`out${l.id}-${Math.round(l.end)}`}
-          onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { end: Math.max(l.start + 0.5, Math.min(v, duration)) }); }} />
-        <span className="lbl dur-tot">({fmt(l.end - l.start)})</span>
-      </div>
-      <div className="ctrls r3">
-        <select className="minisel" value={l.method}
-          onChange={(e) => patchLayer(l.id, { method: e.target.value })}>
-          {Object.entries(METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-        <select className="minisel" value={l.timbre}
-          onChange={(e) => patchLayer(l.id, { timbre: e.target.value })}>
-          <option value="pure">puro</option><option value="warm">caldo</option>
-        </select>
-        <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
-          onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
-      </div>
-      <div className="ctrls r4">
-        {l.method === 'tone' ? (
-          <>
-            <span className="lbl">frequenza</span>
-            <input className="mini" type="number" min="20" max="2000" step="1" value={l.carrier}
-              onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { carrier: v }); }} />
-            <span className="lbl">Hz</span>
-          </>
-        ) : (
-          <>
-            {l.method !== 'noise' && (
-              <>
-                <span className="lbl" title="Il tono udibile che trasporta il battito">
-                  {l.method === 'bil' ? 'tono' : 'portante'}
-                </span>
-                <input className="mini" type="number" min="40" max="800" step="5" value={l.carrier}
-                  onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { carrier: v }); }} />
-                <span className="lbl">Hz</span>
-              </>
-            )}
-            <span className="lbl" title="Frequenza del battito a inizio barra">
-              {l.method === 'bil' ? 'alternanza' : 'battito da'}
-            </span>
-            <input className="mini" type="number" min="0.2" max="60" step="0.5" value={l.f0}
-              onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, l.method === 'bil' ? { f0: v, f1: v } : { f0: v }); }} />
-            {l.method !== 'bil' && (
-              <>
-                <span className="lbl" title="Frequenza a fine barra: uguale = ferma, diversa = discesa/salita">a</span>
-                <input className="mini" type="number" min="0.2" max="60" step="0.5" value={l.f1}
-                  onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { f1: v }); }} />
-                <span className="lbl">Hz</span>
-                <select className="minisel" value={l.curve}
-                  onChange={(e) => patchLayer(l.id, { curve: e.target.value })}>
-                  {Object.entries(CURVE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                </select>
-              </>
-            )}
-          </>
-        )}
-        <button type="button" className={`chip${l.breath ? ' on' : ''}`}
-          title="Micro-oscillazione lenta del volume: toglie la fissità da «segnale di prova»"
-          onClick={() => patchLayer(l.id, { breath: !l.breath })}>respiro</button>
-      </div>
-    </div>
-  );
-
-  const parseT = (s) => {
-    s = (s || '').trim();
-    if (/^\d+:\d{1,2}$/.test(s)) { const [m, x] = s.split(':'); return +m * 60 + +x; }
-    const v = parseFloat(s);
-    return isNaN(v) ? null : v;
-  };
-
   const layerLabel = (l) => {
     if (l.method === 'tone') return `${l.name} · ${l.carrier} Hz`;
     const f = l.f0 === l.f1 ? `${l.f0} Hz` : `${l.f0}→${l.f1} Hz`;
     return `${l.name} · ${METHOD_LABELS[l.method]} · ${f}`;
   };
 
-  const renderRow = (l, isAudio = false) => (
+  const renderRow = (l) => (
     <div key={l.id} className={`row${l.mute ? ' muted' : ''}`}>
-      {isAudio ? (
-        <div className="meta">
-          <div className="top">
-            <input className="name" type="text" value={l.name}
-              onChange={(e) => { l.name = e.target.value; forceAudio((x) => x + 1); }} />
-            <button type="button" className="ghost"
-              onClick={() => { stopSession(); audioLayersRef.current = audioLayersRef.current.filter((x) => x.id !== l.id); forceAudio((x) => x + 1); }}>×</button>
-          </div>
-          <div className="ctrls">
-            <span className="lbl">volume</span>
-            <input className="sl vol" type="range" min="0" max="1" step="0.01" value={l.gain}
-              onChange={(e) => { l.gain = +e.target.value; forceAudio((x) => x + 1); if (liveRef.current) liveRef.current.setLayerGain(l.id, l.gain); }} />
-            <span className="val v1">{Math.round(l.gain * 100)}%</span>
-          </div>
-          <div className="ctrls r3">
-            <button type="button" className={`chip${l.loop ? ' on' : ''}`}
-              onClick={() => { l.loop = !l.loop; forceAudio((x) => x + 1); }}>loop</button>
-            <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
-              onClick={() => { l.mute = !l.mute; forceAudio((x) => x + 1); }}>muto</button>
-            <span className="val">{l.buffer.duration.toFixed(1)}s</span>
-          </div>
+      <div className="meta">
+        <div className="top">
+          <input className="name" type="text" value={l.name}
+            onChange={(e) => patchLayer(l.id, { name: e.target.value })} />
+          <button type="button" className="ghost" onClick={() => removeLayer(l.id)}>×</button>
         </div>
-      ) : rowMeta(l)}
-      <div className="lane"
-        ref={(el) => { if (el) l._laneEl = el; }}>
+        <div className="ctrls">
+          <span className="lbl" title="Volume di questo livello nel mix">volume</span>
+          <input className="sl vol" type="range" min="0" max="1" step="0.01" value={l.gain}
+            onChange={(e) => patchLayer(l.id, { gain: +e.target.value })} />
+          <span className="val v1">{Math.round(l.gain * 100)}%</span>
+        </div>
+        <div className="ctrls timerow">
+          <span className="lbl" title="Secondo in cui il suono entra">entra a</span>
+          <input className="mini t-in" type="text" defaultValue={fmt(l.start)} key={`in${l.id}-${Math.round(l.start)}`}
+            onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { start: Math.max(0, Math.min(v, l.end - 0.5)) }); }} />
+          <span className="lbl" title="Secondo in cui il suono esce">esce a</span>
+          <input className="mini t-out" type="text" defaultValue={fmt(l.end)} key={`out${l.id}-${Math.round(l.end)}`}
+            onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { end: Math.max(l.start + 0.5, Math.min(v, duration)) }); }} />
+          <span className="lbl dur-tot">({fmt(l.end - l.start)})</span>
+        </div>
+        <div className="ctrls r3">
+          <select className="minisel" value={l.method}
+            onChange={(e) => patchLayer(l.id, { method: e.target.value })}>
+            {Object.entries(METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+          <select className="minisel" value={l.timbre}
+            onChange={(e) => patchLayer(l.id, { timbre: e.target.value })}>
+            <option value="pure">puro</option><option value="warm">caldo</option>
+          </select>
+          <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
+            onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
+        </div>
+        <div className="ctrls r4">
+          {l.method === 'tone' ? (
+            <>
+              <span className="lbl">frequenza</span>
+              <input className="mini" type="number" min="20" max="2000" step="1" value={l.carrier}
+                onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { carrier: v }); }} />
+              <span className="lbl">Hz</span>
+            </>
+          ) : (
+            <>
+              {l.method !== 'noise' && (
+                <>
+                  <span className="lbl" title="Il tono udibile che trasporta il battito">
+                    {l.method === 'bil' ? 'tono' : 'portante'}
+                  </span>
+                  <input className="mini" type="number" min="40" max="800" step="5" value={l.carrier}
+                    onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { carrier: v }); }} />
+                  <span className="lbl">Hz</span>
+                </>
+              )}
+              <span className="lbl" title="Frequenza del battito a inizio barra">
+                {l.method === 'bil' ? 'alternanza' : 'battito da'}
+              </span>
+              <input className="mini" type="number" min="0.2" max="60" step="0.5" value={l.f0}
+                onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, l.method === 'bil' ? { f0: v, f1: v } : { f0: v }); }} />
+              {l.method !== 'bil' && (
+                <>
+                  <span className="lbl" title="Frequenza a fine barra: uguale = ferma, diversa = discesa/salita">a</span>
+                  <input className="mini" type="number" min="0.2" max="60" step="0.5" value={l.f1}
+                    onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { f1: v }); }} />
+                  <span className="lbl">Hz</span>
+                  <select className="minisel" value={l.curve}
+                    onChange={(e) => patchLayer(l.id, { curve: e.target.value })}>
+                    {Object.entries(CURVE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </select>
+                </>
+              )}
+            </>
+          )}
+          <button type="button" className={`chip${l.breath ? ' on' : ''}`}
+            title="Micro-oscillazione lenta del volume: toglie la fissità da «segnale di prova»"
+            onClick={() => patchLayer(l.id, { breath: !l.breath })}>respiro</button>
+        </div>
+      </div>
+      <div className="lane" ref={(el) => { if (el) l._laneEl = el; }}>
         <div className="grid">
           {Array.from({ length: Math.max(0, Math.ceil(duration / gstep) - 1) }, (_, i) => (
             <i key={i} style={{ left: `${((i + 1) * gstep / duration) * 100}%` }} />
           ))}
         </div>
-        <div className={`bar${isAudio ? ' audio' : ''}`}
+        <div className="bar"
           style={{ left: `${(l.start / duration) * 100}%`, width: `${((l.end - l.start) / duration) * 100}%` }}
           title={`${fmt(l.start)} → ${fmt(l.end)}`}
           onPointerDown={(e) => {
             if (e.target.classList.contains('handle')) return;
             const len = l.end - l.start;
             dragX(e, l._laneEl, (dx) => {
-              const move = dx * duration;
-              const apply = (obj) => {
-                obj.start = Math.max(0, Math.min(duration - len, obj.start + move));
-                obj.end = obj.start + len;
-              };
-              if (isAudio) { apply(l); forceAudio((x) => x + 1); }
-              else patchLayer(l.id, (() => { const c = { start: l.start, end: l.end }; apply(c); l.start = c.start; l.end = c.end; return c; })());
+              const start = Math.max(0, Math.min(duration - len, l.start + dx * duration));
+              l.start = start; l.end = start + len;
+              patchLayer(l.id, { start: l.start, end: l.end });
             });
           }}>
           <div className="handle l" onPointerDown={(e) => dragX(e, l._laneEl, (dx) => {
             const v = Math.max(0, Math.min(l.end - 0.5, l.start + dx * duration));
-            if (isAudio) { l.start = v; forceAudio((x) => x + 1); } else { l.start = v; patchLayer(l.id, { start: v }); }
+            l.start = v; patchLayer(l.id, { start: v });
           })} />
-          <b>{isAudio ? l.name : layerLabel(l)}</b>
+          <b>{layerLabel(l)}</b>
           <div className="handle r" onPointerDown={(e) => dragX(e, l._laneEl, (dx) => {
             const v = Math.max(l.start + 0.5, Math.min(duration, l.end + dx * duration));
-            if (isAudio) { l.end = v; forceAudio((x) => x + 1); } else { l.end = v; patchLayer(l.id, { end: v }); }
+            l.end = v; patchLayer(l.id, { end: v });
           })} />
         </div>
         {playing && (
@@ -574,7 +532,7 @@ export default function FrequenzePage() {
             onClick={() => setView('explore')}>Esplora</button>
           <button type="button" className={`vbtn${view === 'create' ? ' on' : ''}`}
             onClick={() => setView('create')}>
-            Crea {nLayers > 0 && <span className="vcount">{nLayers}</span>}
+            Crea {layers.length > 0 && <span className="vcount">{layers.length}</span>}
           </button>
           <button type="button" className={`vbtn${view === 'impara' ? ' on' : ''}`}
             onClick={() => setView('impara')}>Impara</button>
@@ -587,43 +545,82 @@ export default function FrequenzePage() {
       <main>
         {(view === 'explore' || view === 'impara') && (
           <section className="bib">
-            <h2>{view === 'impara' ? 'Le fondamenta' : 'La biblioteca delle frequenze'}</h2>
-            {view === 'explore' ? (
-              <p>Premi <b>Ascolta</b> su una scheda e la frequenza parte subito; puoi combinarne più insieme. Quando una ti convince, <b>+ sessione</b> la manda nella tua sessione (scheda «Crea»).</p>
-            ) : (
+            {view === 'explore' && (
+              <div className="worldswitch" data-testid="fq-worldswitch">
+                <button type="button" className={`wbtn${world === 'freq' ? ' on' : ''}`}
+                  onClick={() => setWorld('freq')}>Frequenze</button>
+                <button type="button" data-world="sound" className={`wbtn${world === 'sound' ? ' on' : ''}`}
+                  onClick={() => setWorld('sound')}>Suoni</button>
+              </div>
+            )}
+            <h2>
+              {view === 'impara' ? 'Le fondamenta'
+                : world === 'sound' ? 'Le basi sonore' : 'La biblioteca delle frequenze'}
+            </h2>
+            {view === 'impara' ? (
               <p>Onde cerebrali, entrainment, la differenza tra i metodi e quando servono le cuffie, più il glossario. Quando vuoi mettere in pratica, passa a <b>Esplora</b>.</p>
+            ) : world === 'sound' ? (
+              <p className="soundlead">Le basi sonore sono la tela su cui posare le frequenze — e potrai sovrapporne più di una. Le sceglierai qui e le combinerai nella sessione, esattamente come le frequenze.</p>
+            ) : (
+              <p>Premi <b>Ascolta</b> su una scheda e la frequenza parte subito; puoi combinarne più insieme. Quando una ti convince, <b>+ sessione</b> la manda nella tua sessione (scheda «Crea»).</p>
             )}
-            {liveCount > 0 && view === 'explore' && (
-              <div className="livebar on">
-                <span>{liveCount} in riproduzione — le frequenze si combinano</span>
-                <span className="spacer" style={{ flex: 1 }} />
-                <button type="button" onClick={composeAllLive}>+ tutte alla sessione</button>
-                <button type="button" onClick={stopAllCards}>Ferma tutto</button>
-              </div>
-            )}
-            <div className="tabs">
-              <div className="tabgroup">
-                <div className="tabgroup-row">
-                  {bibKeys.map((k) => (
-                    <button key={k} type="button"
-                      className={`tab ${view === 'impara' ? 'tab-learn' : 'tab-sound'}${activeTab === k ? ' on' : ''}`}
-                      onClick={() => setCurTab(k)}>
-                      {k}
-                    </button>
-                  ))}
+
+            {view === 'explore' && world === 'sound' ? (
+              <>
+                <div className="tabs">
+                  <div className="tabgroup">
+                    <div className="tabgroup-row">
+                      {SOUND_CATS.map((c) => (
+                        <button key={c} type="button"
+                          className={`tab tab-sound${soundCat === c ? ' on' : ''}`}
+                          onClick={() => setSoundCat(c)}>{c}</button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            {hasGrades && (
-              <div className="legend">
-                <span className="la"><b>A</b> neuroscienza consolidata</span>
-                <span className="lb"><b>B</b> evidenza promettente ma mista</span>
-                <span className="lc"><b>C</b> tradizione — valore simbolico, non fisiologico dimostrato</span>
-              </div>
+                <div className="soundsoon" data-testid="fq-soundsoon">
+                  <div className="soundsoon-ic">♫</div>
+                  <div>
+                    <strong>Libreria in arrivo</strong>
+                    <span>Questa categoria ospiterà le basi sonore curate di Aurya, pronte da combinare con le frequenze. Le tracce si compongono solo con i suoni della piattaforma: la libreria è in preparazione.</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {liveCount > 0 && view === 'explore' && (
+                  <div className="livebar on">
+                    <span>{liveCount} in riproduzione — le frequenze si combinano</span>
+                    <span className="spacer" style={{ flex: 1 }} />
+                    <button type="button" onClick={composeAllLive}>+ tutte alla sessione</button>
+                    <button type="button" onClick={stopAllCards}>Ferma tutto</button>
+                  </div>
+                )}
+                <div className="tabs">
+                  <div className="tabgroup">
+                    <div className="tabgroup-row">
+                      {bibKeys.map((k) => (
+                        <button key={k} type="button"
+                          className={`tab ${view === 'impara' ? 'tab-learn' : 'tab-sound'}${activeTab === k ? ' on' : ''}`}
+                          onClick={() => setCurTab(k)}>
+                          {k}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                {hasGrades && (
+                  <div className="legend">
+                    <span className="la"><b>A</b> neuroscienza consolidata</span>
+                    <span className="lb"><b>B</b> evidenza promettente ma mista</span>
+                    <span className="lc"><b>C</b> tradizione — valore simbolico, non fisiologico dimostrato</span>
+                  </div>
+                )}
+                <div className="cards">
+                  {(BIB[activeTab] || []).map(renderCard)}
+                </div>
+              </>
             )}
-            <div className="cards">
-              {(BIB[activeTab] || []).map(renderCard)}
-            </div>
           </section>
         )}
 
@@ -631,11 +628,11 @@ export default function FrequenzePage() {
           <section>
             <div className="createbar">
               <button type="button" className="cb-play" data-testid="fq-play"
-                disabled={!nLayers}
+                disabled={!layers.length}
                 onClick={() => (playing ? stopSession() : playSession(0))}>
                 {playing ? '⏸ Pausa' : '▶ Ascolta sessione'}
               </button>
-              <button type="button" className="cb-reset" disabled={!nLayers}
+              <button type="button" className="cb-reset" disabled={!layers.length}
                 onClick={resetSession}>Reset</button>
               <div className="cb-collapse open" style={{ display: 'contents' }}>
                 <div className="cb-fields">
@@ -666,14 +663,14 @@ export default function FrequenzePage() {
                     <option value="44100">44.1 kHz</option><option value="48000">48 kHz</option>
                   </select>
                   <select value={fmtOut} onChange={(e) => setFmtOut(e.target.value)}
-                    title="MP3 320 kbps: qualità massima, ~45 MB per 20 min. WAV: non compresso, per lavorarci in studio">
+                    title="MP3 320 kbps: qualità massima. WAV: non compresso, per lavorarci in studio">
                     <option value="mp3">MP3 · 320</option><option value="wav">WAV</option>
                   </select>
-                  <button type="button" className="primary" disabled={!nLayers || !!exporting}
+                  <button type="button" className="primary" disabled={!layers.length || !!exporting}
                     onClick={doExport}>Scarica</button>
                 </div>
               </div>
-              {nLayers > 0 && (
+              {layers.length > 0 && (
                 <div className="seekwrap" style={{ display: 'flex' }}>
                   <span className="seek-cur">{fmt(elapsed)}</span>
                   <div className="seekbar" title="Clicca per spostarti nella sessione"
@@ -728,26 +725,10 @@ export default function FrequenzePage() {
               <span className="lc"><b>C</b> tradizione — valore simbolico, non fisiologico dimostrato</span>
             </div>
 
-            <div className="uploadzone" ref={dropRef} tabIndex={0} role="button"
-              onClick={() => fileRef.current?.click()}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileRef.current?.click(); } }}
-              onDragEnter={(e) => { e.preventDefault(); dropRef.current?.classList.add('over'); }}
-              onDragOver={(e) => { e.preventDefault(); dropRef.current?.classList.add('over'); }}
-              onDragLeave={(e) => { e.preventDefault(); dropRef.current?.classList.remove('over'); }}
-              onDrop={(e) => { e.preventDefault(); dropRef.current?.classList.remove('over'); addBaseFiles(e.dataTransfer.files); }}>
-              <div className="uz-icon">♫ +</div>
-              <div className="uz-txt">
-                <strong>Carica una musica di base</strong>
-                <span>La traccia diventa il sottofondo su cui posare le frequenze. Trascina qui il file, o clicca. — WAV · MP3 · FLAC · OGG. In questa versione resta locale: si esporta nel file finale ma non si salva nella bozza.</span>
-              </div>
-              <input ref={fileRef} type="file" multiple accept="audio/*" hidden
-                onChange={(e) => { addBaseFiles(e.target.files); e.target.value = ''; }} />
-            </div>
-
-            {nLayers > 0 ? (
+            {layers.length > 0 ? (
               <div className="score" style={{ display: 'block' }}>
                 <div className="helpstrip">
-                  <b>Linea del tempo.</b> Ogni riga è un livello — una frequenza o la tua musica. Trascina la sua barra o scrivi «entra a / esce a» per decidere quando parte e finisce. Sulle sole frequenze: <b>battito da → a</b> è la discesa (valori uguali = frequenza ferma), la <b>curva</b> ne è la forma, la <b>portante</b> è il tono che la trasporta.
+                  <b>Linea del tempo.</b> Ogni riga è un livello. Trascina la sua barra o scrivi «entra a / esce a» per decidere quando parte e finisce. <b>Battito da → a</b> è la discesa (valori uguali = frequenza ferma), la <b>curva</b> ne è la forma, la <b>portante</b> è il tono che la trasporta.
                 </div>
                 <div className="ruler" title="Clicca per ascoltare da questo punto"
                   style={{ cursor: 'pointer' }}
@@ -787,30 +768,26 @@ export default function FrequenzePage() {
                     </div>
                   ))}
                 </div>
-                <div>
-                  {layers.map((l) => renderRow(l, false))}
-                  {audioLayersRef.current.map((l) => renderRow(l, true))}
-                </div>
+                <div>{layers.map(renderRow)}</div>
               </div>
             ) : (
               <div className="emptycreate" style={{ marginTop: 18 }}>
-                <p>La tua sessione è vuota. Torna a <b>Esplora</b> per scegliere le frequenze, oppure parti da un <b>protocollo pronto</b> qui sopra, o carica una <b>musica di base</b>.</p>
+                <p>La tua sessione è vuota. Torna a <b>Esplora</b> per scegliere le frequenze, oppure parti da un <b>protocollo pronto</b> qui sopra.</p>
               </div>
             )}
 
             <p className="note">
               <b>Binaurale</b> funziona solo in cuffia. <b>Isocronico</b> e <b>monoaurale</b> anche in altoparlante — per grotta e aula usa questi.
               Timbro <b>caldo</b> più tollerabile del puro sulle sessioni lunghe; il <b>soffio</b> nasconde l'entrainment in un rumore rosa.
-              Il livello frequenze nasce a basso volume: è progettato per stare sotto la musica, non davanti.
             </p>
           </section>
         )}
       </main>
 
-      {view !== 'create' && nLayers > 0 && (
+      {view !== 'create' && layers.length > 0 && (
         <div className="sessionfoot">
           <span className="sf-dot">◆</span>
-          <span className="sf-txt">La tua sessione · {nLayers} {nLayers === 1 ? 'livello' : 'livelli'} · {durationMin} min</span>
+          <span className="sf-txt">La tua sessione · {layers.length} {layers.length === 1 ? 'livello' : 'livelli'} · {durationMin} min</span>
           <div className="spacer" style={{ flex: 1 }} />
           <button type="button" className="primary" onClick={() => setView('create')}>Vai a Crea →</button>
         </div>

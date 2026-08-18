@@ -214,3 +214,36 @@ class TestDesignPrototipoFq05:
         assert "frequenze.css" in src
         # il gate sicurezza del prototipo c'e' ancora
         assert "fqz_gate_ok" in src and "epilessia" in src
+
+
+class TestSoloSuoniPiattaformaFq05b:
+    """Founder 18/8: niente upload dell'operatore — le tracce si
+    compongono SOLO con frequenze e suoni della piattaforma. E il mondo
+    «Suoni» (sparito nel primo porting) deve esserci, come segnaposto
+    finche' FQ2 non porta la libreria."""
+
+    def test_niente_upload_nel_compositore(self):
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "uploadzone" not in src, "upload operatore tornato nel compositore"
+        assert "decodeAudioData" not in src, \
+            "la pagina decodifica file locali: l'upload deve restare fuori"
+        assert 'type="file"' not in src
+
+    def test_worldswitch_frequenze_suoni(self):
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "fq-worldswitch" in src and "Suoni" in src
+        assert "fq-soundsoon" in src, "manca il segnaposto della libreria"
+        for cat in ("Ambient", "Droni", "Campane", "Natura", "Ritmi", "Voce"):
+            assert cat in src, f"categoria suoni {cat} mancante"
+
+    def test_handle_live_fuori_dagli_updater(self):
+        """Il bug dello stop: creare il grafo audio dentro un updater
+        React lo fa partire due volte in dev (updater rieseguiti) e una
+        voce resta orfana a suonare. Gli handle vivono in un ref."""
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "liveCardsRef" in src
+        import re
+        for m in re.finditer(r"set\w+\(\s*\((?:lc|ls|ps|x)\)?\s*=>", src):
+            chunk = src[m.start():m.start() + 400]
+            assert "startCardLive" not in chunk and "startPreview" not in chunk, \
+                "side effect audio dentro un updater React"
