@@ -333,25 +333,36 @@ export default function FrequenzePage() {
     }]],
   });
 
-  const publishTrack = async () => {
-    if (!trackId) return;
-    await save();
+  const publishById = async (id) => {
     try {
-      const r = await frequenciesAPI.publish(trackId);
-      setTrackStatus('published'); setTrackSlug(r.data.slug);
+      const r = await frequenciesAPI.publish(id);
+      loadDrafts();
+      if (id === trackId) { setTrackStatus('published'); setTrackSlug(r.data.slug); }
       const url = `${window.location.origin}/frequenze/${r.data.slug}`;
       try { await navigator.clipboard.writeText(url); } catch { /* niente clipboard */ }
       setStatus(`In ascolto pubblico su ${url} — link copiato`);
     } catch (e) { setStatus(e?.response?.data?.detail || 'Pubblicazione fallita'); }
   };
-  const unpublishTrack = async () => {
-    if (!trackId) return;
+  const unpublishById = async (id) => {
     try {
-      await frequenciesAPI.unpublish(trackId);
-      setTrackStatus('draft');
+      await frequenciesAPI.unpublish(id);
+      loadDrafts();
+      if (id === trackId) setTrackStatus('draft');
       setStatus('Traccia riportata in bozza: il link pubblico non risponde più');
     } catch { setStatus('Errore'); }
   };
+  const copyPublicLink = async (slug) => {
+    const url = `${window.location.origin}/frequenze/${slug}`;
+    try { await navigator.clipboard.writeText(url); setStatus('Link copiato: ' + url); }
+    catch { setStatus(url); }
+  };
+
+  const publishTrack = async () => {
+    if (!trackId) return;
+    await save();
+    await publishById(trackId);
+  };
+  const unpublishTrack = () => unpublishById(trackId);
 
   const resetSession = () => {
     if (!layers.length) return;
@@ -399,7 +410,7 @@ export default function FrequenzePage() {
   };
 
   /* ── export ── */
-  const doExport = async () => {
+  const doExport = async (format = fmtOut) => {
     if (!layers.length) return;
     stopSession();
     setExporting({ pct: 0, phase: 'Render' });
@@ -411,7 +422,7 @@ export default function FrequenzePage() {
         onProgress: (p) => setExporting({ pct: p, phase: 'Render' }),
       });
       let blob, ext;
-      if (fmtOut === 'mp3') {
+      if (format === 'mp3') {
         setExporting({ pct: 0, phase: 'Codifica MP3' });
         blob = await mp3Blob(pcm, sr, (p) => setExporting({ pct: p, phase: 'Codifica MP3' }));
         ext = 'mp3';
@@ -651,6 +662,15 @@ export default function FrequenzePage() {
   return (
     <div className="fqz" data-testid="fqz-root">
       <div className="topbar">
+        <button type="button" className={`backcard${view === 'mine' ? ' on' : ''}`}
+          data-testid="fqz-mine" title="Tutte le tracce che hai creato"
+          onClick={() => setView('mine')}>
+          <span className="bc-ic">♫</span>
+          <span>
+            <span className="bc-t">Le mie tracce</span><br />
+            <span className="bc-s">bozze e pubblicate</span>
+          </span>
+        </button>
         <button type="button" className="backcard" data-testid="fqz-back"
           title="Torna al gestionale Aurya"
           onClick={() => navigate('/dashboard')}>
@@ -806,6 +826,58 @@ export default function FrequenzePage() {
           </section>
         )}
 
+        {view === 'mine' && (
+          <section className="bib" data-testid="fq-mine">
+            <h2>Le mie tracce</h2>
+            <p>Tutto quello che hai composto: le bozze restano tue, le pubblicate hanno un link d'ascolto da condividere ovunque.</p>
+            {drafts.length === 0 ? (
+              <div className="emptycreate" style={{ marginTop: 14 }}>
+                <p>Ancora nessuna traccia. Vai su <b>Crea</b>, parti da un protocollo e salva la tua prima sessione.</p>
+              </div>
+            ) : (
+              <div className="cards">
+                {drafts.map((d) => (
+                  <div key={d.id} className={`card${d.status === 'published' ? ' playing' : ''}`}>
+                    <div className="head">
+                      <h3>{d.title}</h3>
+                      <span className="badge" style={d.status === 'published'
+                        ? { color: 'var(--water)', borderColor: 'var(--water)' }
+                        : { color: 'var(--dimmer)', borderColor: 'var(--line)' }}>
+                        {d.status === 'published' ? 'PUBBLICA' : 'BOZZA'}
+                      </span>
+                    </div>
+                    <div className="hz">
+                      {fmt(d.duration_sec || 0)} · {d.layers_count} {d.layers_count === 1 ? 'livello' : 'livelli'}
+                      {d.status === 'published' && ` · ${d.plays_total || 0} ascolti`}
+                    </div>
+                    {d.status === 'published' && d.slug && (
+                      <div className="listen">/frequenze/{d.slug}</div>
+                    )}
+                    <div className="foot" style={{ flexWrap: 'wrap', gap: 6 }}>
+                      <button type="button" className="ghost" title="Elimina"
+                        onClick={() => removeDraft(d.id, d.title)}>×</button>
+                      {d.status === 'published' && d.slug && (
+                        <button type="button" className="add"
+                          onClick={() => copyPublicLink(d.slug)}>Copia link</button>
+                      )}
+                      {d.status === 'published' ? (
+                        <button type="button" className="add"
+                          onClick={() => unpublishById(d.id)}>Ritira</button>
+                      ) : (
+                        <button type="button" className="add"
+                          onClick={() => publishById(d.id)}>Pubblica</button>
+                      )}
+                      <button type="button" className="live"
+                        onClick={() => openDraft(d.id)}>Apri</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {status && <p className="soundlead" style={{ marginTop: 12 }}>{status}</p>}
+          </section>
+        )}
+
         {view === 'create' && (
           <section>
             <div className="createbar">
@@ -838,7 +910,8 @@ export default function FrequenzePage() {
                 </div>
                 <div className="cb-export">
                   <span className="status">{exporting ? `${exporting.phase} · ${Math.round(exporting.pct * 100)}%` : status}</span>
-                  <button type="button" data-testid="fq-save" disabled={saving || !layers.length}
+                  <button type="button" data-testid="fq-save" className="cb-save"
+                    disabled={saving || !layers.length}
                     onClick={save}>{saving ? 'Salvo…' : trackId ? 'Aggiorna bozza' : 'Salva bozza'}</button>
                   {trackId && (trackStatus === 'published' ? (
                     <button type="button" data-testid="fq-unpublish"
@@ -846,19 +919,10 @@ export default function FrequenzePage() {
                       style={{ borderColor: 'var(--water)', color: 'var(--water)' }}
                       onClick={unpublishTrack}>● Pubblica­ta — ritira</button>
                   ) : (
-                    <button type="button" data-testid="fq-publish"
+                    <button type="button" data-testid="fq-publish" className="primary"
+                      disabled={!layers.length}
                       onClick={publishTrack}>Pubblica</button>
                   ))}
-                  <select value={sr} onChange={(e) => setSr(+e.target.value)}
-                    title="44.1 kHz standard; 48 kHz per video">
-                    <option value="44100">44.1 kHz</option><option value="48000">48 kHz</option>
-                  </select>
-                  <select value={fmtOut} onChange={(e) => setFmtOut(e.target.value)}
-                    title="MP3 320 kbps: qualità massima. WAV: non compresso, per lavorarci in studio">
-                    <option value="mp3">MP3 · 320</option><option value="wav">WAV</option>
-                  </select>
-                  <button type="button" className="primary" disabled={!layers.length || !!exporting}
-                    onClick={doExport}>Scarica</button>
                 </div>
               </div>
               {layers.length > 0 && (
@@ -889,26 +953,6 @@ export default function FrequenzePage() {
                 ))}
               </div>
             </div>
-
-            {drafts.length > 0 && (
-              <div className="protrow" data-testid="fq-drafts">
-                <span className="tag">Le tue bozze</span>
-                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center' }}>
-                  {drafts.map((d) => (
-                    <span key={d.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                      <button type="button" className="prot"
-                        style={d.id === trackId ? { borderColor: 'var(--water)', color: 'var(--water)' } : undefined}
-                        title={`${d.layers_count} livelli · ${fmt(d.duration_sec || 0)}`}
-                        onClick={() => openDraft(d.id)}>
-                        {d.title}
-                      </button>
-                      <button type="button" className="ghost" title="Elimina bozza"
-                        onClick={() => removeDraft(d.id, d.title)}>×</button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="legend" style={{ marginTop: 14 }}>
               <span className="la"><b>A</b> neuroscienza consolidata</span>
@@ -967,6 +1011,19 @@ export default function FrequenzePage() {
               </div>
             )}
 
+            {layers.length > 0 && (
+              <div className="exportrow" data-testid="fq-exportrow">
+                <span className="lbl">Ti serve il file per l'aula?</span>
+                {exporting ? (
+                  <span className="lbl">{exporting.phase} · {Math.round(exporting.pct * 100)}%</span>
+                ) : (
+                  <>
+                    <button type="button" className="chip" onClick={() => doExport('mp3')}>Esporta MP3</button>
+                    <button type="button" className="chip" onClick={() => doExport('wav')}>Esporta WAV</button>
+                  </>
+                )}
+              </div>
+            )}
             <p className="note">
               <b>Binaurale</b> funziona solo in cuffia. <b>Isocronico</b> e <b>monoaurale</b> anche in altoparlante — per grotta e aula usa questi.
               Timbro <b>caldo</b> più tollerabile del puro sulle sessioni lunghe; il <b>soffio</b> nasconde l'entrainment in un rumore rosa.

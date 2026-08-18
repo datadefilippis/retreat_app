@@ -324,3 +324,11 @@
   padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
 .fqz .topbar .backcard{padding:7px 14px 7px 11px}
 .fqz .topbar .backcard .bc-ic{width:30px;height:30px;font-size:14px}
+/* FQ founder 18/8 (3o giro): evidenza a Salva/Pubblica in Crea,
+   export in una riga discreta, card topbar attivabile (Le mie tracce). */
+.fqz .cb-save{border-color:var(--bone);color:var(--bone);font-weight:700}
+.fqz .cb-save:hover:not(:disabled){border-color:#fff;color:#fff}
+.fqz .exportrow{display:flex;gap:10px;align-items:center;margin-top:16px;
+  padding:10px 14px;border:1px dashed var(--line-soft);border-radius:9px;color:var(--dim)}
+.fqz .backcard.on{border-color:var(--water);box-shadow:0 0 0 1px var(--water) inset}
+.fqz .backcard.on .bc-ic{border-color:var(--water);color:var(--water);background:#6FB3AC14}

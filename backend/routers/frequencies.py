@@ -42,6 +42,7 @@ TRACKS_MAX_PER_ORG = 200  # tetto anti-runaway: sono documenti da pochi KB
 
 _LIST_PROJECTION = {
     "_id": 0, "id": 1, "title": 1, "intent": 1, "status": 1,
+    "slug": 1, "plays_total": 1,
     "created_at": 1, "updated_at": 1,
     # della ricetta, in lista, serve solo la durata
     "score.duration_sec": 1, "score.layers": 1,
