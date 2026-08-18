@@ -10,17 +10,29 @@ products/orders/stores. Vedi docs/FREQUENZE_PLAN_2026-08.md.
 """
 
 import logging
+import os
 import uuid
+from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import (
+    APIRouter, Depends, File, Form, HTTPException, UploadFile, status,
+)
 from pydantic import BaseModel
 
-from auth import get_current_user
+from auth import get_current_user, require_system_admin
+from models.audio_asset import (
+    LICENSE_MAX, MAX_FILE_BYTES, SOUND_CATEGORIES,
+    clean_category, safe_extension,
+)
+from models.audio_asset import TITLE_MAX as SOUND_TITLE_MAX
 from models.common import utc_now
 from models.frequency_track import (
     DESCRIPTION_MAX, TITLE_MAX, clean_intent, clean_score,
 )
+
+# i byte delle basi vivono qui, serviti dallo static mount /uploads
+AUDIO_DIR = Path(__file__).resolve().parent.parent / "uploads" / "audio"
 
 logger = logging.getLogger(__name__)
 
@@ -163,3 +175,84 @@ async def delete_track(track_id: str,
     if result.deleted_count == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Traccia non trovata.")
+
+
+# ── FQ2 — libreria suoni curata ─────────────────────────────────────────────
+# GET pubblica (contenuto di piattaforma: la vede anche il player FQ1);
+# scrittura SOLO system admin, con licenza annotata.
+
+_SOUND_PROJECTION = {"_id": 0, "id": 1, "title": 1, "category": 1,
+                     "duration_sec": 1, "size_bytes": 1, "stream_url": 1}
+
+
+@router.get("/sounds")
+async def list_sounds():
+    from database import audio_assets_collection
+    items = await audio_assets_collection.find(
+        {}, _SOUND_PROJECTION).sort("created_at", -1).to_list(500)
+    return {"items": items, "categories": SOUND_CATEGORIES}
+
+
+@router.post("/sounds", status_code=status.HTTP_201_CREATED)
+async def upload_sound(file: UploadFile = File(...),
+                       title: str = Form(...),
+                       category: str = Form(...),
+                       duration_sec: float = Form(0),
+                       license_note: str = Form(""),
+                       admin: dict = Depends(require_system_admin)):
+    cat = clean_category(category)
+    if not cat:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Categoria non valida.")
+    ext = safe_extension(file.filename)
+    if not ext or not (file.content_type or "").startswith("audio/"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Formato non supportato (mp3, m4a, ogg, wav).")
+    clean_title = title.strip()[:SOUND_TITLE_MAX]
+    if not clean_title:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Serve un titolo.")
+    data = await file.read()
+    if len(data) > MAX_FILE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File oltre {MAX_FILE_BYTES // (1024 * 1024)}MB.")
+    asset_id = str(uuid.uuid4())
+    AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+    path = AUDIO_DIR / f"{asset_id}.{ext}"
+    path.write_bytes(data)
+    from database import audio_assets_collection
+    asset = {
+        "id": asset_id,
+        "owner": "platform",
+        "title": clean_title,
+        "category": cat,
+        "duration_sec": round(max(0.0, float(duration_sec or 0)), 1),
+        "size_bytes": len(data),
+        "mime": file.content_type,
+        "stream_url": f"/uploads/audio/{asset_id}.{ext}",
+        "license_note": (license_note or "").strip()[:LICENSE_MAX],
+        "uploaded_by": admin.get("email"),
+        "created_at": utc_now(),
+    }
+    await audio_assets_collection.insert_one(dict(asset))
+    asset.pop("_id", None)
+    return asset
+
+
+@router.delete("/sounds/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_sound(asset_id: str,
+                       admin: dict = Depends(require_system_admin)):
+    from database import audio_assets_collection
+    asset = await audio_assets_collection.find_one({"id": asset_id})
+    if not asset:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Suono non trovato.")
+    await audio_assets_collection.delete_one({"id": asset_id})
+    stream = asset.get("stream_url") or ""
+    fname = os.path.basename(stream)
+    if fname:
+        try:
+            (AUDIO_DIR / fname).unlink(missing_ok=True)
+        except OSError:
+            logger.warning("file base %s non rimosso", fname)

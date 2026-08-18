@@ -18,10 +18,12 @@
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { frequenciesAPI } from '../../api/frequencies';
 import {
   METHOD_LABELS, CURVE_LABELS, startPreview, startCardLive,
 } from './engine/synth';
+import { resolveAudioLayers, fileDuration } from './engine/assets';
 import { renderPcm, wavBlob, mp3Blob } from './engine/render';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS } from './content/biblioteca';
@@ -42,6 +44,8 @@ const SOUND_CATS = ['Ambient', 'Droni', 'Campane', 'Natura', 'Ritmi', 'Voce'];
 
 export default function FrequenzePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isSystemAdmin = user?.role === 'system_admin';
   const [view, setView] = useState('explore');           // explore | impara | create
   const [world, setWorld] = useState('freq');            // freq | sound (Esplora)
   const [curTab, setCurTab] = useState(SOUND_KEYS[0]);
@@ -83,6 +87,17 @@ export default function FrequenzePage() {
     fade_in_sec: fadeIn, fade_out_sec: fadeOut, layers, phases,
   }), [duration, fadeIn, fadeOut, layers, phases]);
 
+  // per l'API: via i campi privati di lavoro (_laneEl e' un nodo DOM —
+  // serializzarlo manderebbe in circolo JSON.stringify)
+  const scorePayload = () => ({
+    ...score,
+    layers: layers.map((l) => {
+      const clean = {};
+      Object.keys(l).forEach((k) => { if (!k.startsWith('_')) clean[k] = l[k]; });
+      return clean;
+    }),
+  });
+
   const audioCtx = () => {
     ctxRef.current = ctxRef.current || new (window.AudioContext || window.webkitAudioContext)();
     ctxRef.current.resume();
@@ -94,6 +109,73 @@ export default function FrequenzePage() {
     try { setDrafts((await frequenciesAPI.list()).data.items || []); } catch { /* non bloccante */ }
   };
   useEffect(() => { loadDrafts(); }, []);
+
+  /* ── libreria suoni (FQ2) ── */
+  const [sounds, setSounds] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const soundFileRef = useRef(null);
+  const previewAudioRef = useRef(null);          // <audio> condiviso anteprime
+  const [previewingId, setPreviewingId] = useState(null);
+  const soundsById = useMemo(
+    () => Object.fromEntries(sounds.map((s) => [s.id, s])), [sounds]);
+  const loadSounds = async () => {
+    try { setSounds((await frequenciesAPI.listSounds()).data.items || []); } catch { /* non bloccante */ }
+  };
+  useEffect(() => { loadSounds(); }, []);
+
+  const stopSoundPreview = () => {
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.src = '';
+    }
+    setPreviewingId(null);
+  };
+  const toggleSoundPreview = (asset) => {
+    if (previewingId === asset.id) { stopSoundPreview(); return; }
+    stopSoundPreview();
+    if (!previewAudioRef.current) previewAudioRef.current = new Audio();
+    const el = previewAudioRef.current;
+    el.src = asset.stream_url;
+    el.loop = true;
+    el.volume = 0.8;
+    el.play().catch(() => setStatus('Anteprima non disponibile'));
+    setPreviewingId(asset.id);
+  };
+  useEffect(() => () => stopSoundPreview(), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const addSoundToSession = (asset) => {
+    setLayers((ls) => [...ls, {
+      id: ++_uid, kind: 'audio', asset_id: asset.id,
+      name: asset.title, start: 0, end: duration,
+      gain: 0.7, loop: true, mute: false,
+    }]);
+    setStatus(`«${asset.title}» aggiunta alla sessione — vai a «Crea»`);
+  };
+
+  const uploadSound = async (file) => {
+    if (!file) return;
+    setUploading(true);
+    setStatus(`Carico «${file.name}»…`);
+    try {
+      const durationSec = await fileDuration(audioCtx(), file);
+      const title = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').slice(0, 80);
+      await frequenciesAPI.uploadSound({
+        file, title, category: soundCat.toLowerCase(),
+        durationSec, licenseNote: 'caricata dal system admin',
+      });
+      await loadSounds();
+      setStatus(`«${title}» in libreria (${SOUND_CATS.find((c) => c.toLowerCase() === soundCat.toLowerCase())})`);
+    } catch (e) {
+      setStatus(e?.response?.data?.detail || 'Upload fallito');
+    } finally { setUploading(false); }
+  };
+  const removeSound = (asset) => setAsk({
+    title: 'Eliminare dalla libreria?',
+    msg: `«${asset.title}» sparirà per tutti gli operatori. Le tracce che la usano suoneranno senza questa base.`,
+    opts: [['Sì, elimina', async () => {
+      try { await frequenciesAPI.removeSound(asset.id); loadSounds(); } catch { setStatus('Errore'); }
+    }]],
+  });
 
   /* ── ascolto sessione ── */
   const stopSession = () => {
@@ -110,6 +192,7 @@ export default function FrequenzePage() {
 
   const playSession = async (fromT = 0) => {
     stopSession();
+    stopSoundPreview();
     if (Object.keys(liveCardsRef.current).length) {
       stopAllCards();
       setStatus('Schede in ascolto fermate — ora suona la linea del tempo');
@@ -117,7 +200,12 @@ export default function FrequenzePage() {
     if (!layers.length) return;
     const ctx = audioCtx();
     await ctx.resume();
-    liveRef.current = startPreview(ctx, score, { fromT });
+    let audioLayers = [];
+    if (layers.some((l) => l.kind === 'audio')) {
+      setStatus('Carico le basi…');
+      audioLayers = await resolveAudioLayers(ctx, score, soundsById);
+    }
+    liveRef.current = startPreview(ctx, score, { fromT, audioLayers });
     setPlaying(true);
     timerRef.current = setInterval(() => {
       const el = liveRef.current ? liveRef.current.elapsed() : 0;
@@ -205,10 +293,10 @@ export default function FrequenzePage() {
     setSaving(true);
     try {
       if (trackId) {
-        await frequenciesAPI.update(trackId, { title: name, score, intent });
+        await frequenciesAPI.update(trackId, { title: name, score: scorePayload(), intent });
         setStatus(`Bozza «${name}» aggiornata`);
       } else {
-        const r = await frequenciesAPI.create({ title: name, score, intent });
+        const r = await frequenciesAPI.create({ title: name, score: scorePayload(), intent });
         setTrackId(r.data.id);
         setStatus(`Bozza «${name}» salvata`);
       }
@@ -292,8 +380,10 @@ export default function FrequenzePage() {
     stopSession();
     setExporting({ pct: 0, phase: 'Render' });
     try {
+      const audioLayers = layers.some((l) => l.kind === 'audio')
+        ? await resolveAudioLayers(audioCtx(), score, soundsById) : [];
       const pcm = await renderPcm(score, {
-        sampleRate: sr,
+        sampleRate: sr, audioLayers,
         onProgress: (p) => setExporting({ pct: p, phase: 'Render' }),
       });
       let blob, ext;
@@ -400,6 +490,7 @@ export default function FrequenzePage() {
   const hasGrades = (BIB[activeTab] || []).some((e) => e.g);
 
   const layerLabel = (l) => {
+    if (l.kind === 'audio') return `♫ ${l.name}`;
     if (l.method === 'tone') return `${l.name} · ${l.carrier} Hz`;
     const f = l.f0 === l.f1 ? `${l.f0} Hz` : `${l.f0}→${l.f1} Hz`;
     return `${l.name} · ${METHOD_LABELS[l.method]} · ${f}`;
@@ -428,6 +519,17 @@ export default function FrequenzePage() {
             onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { end: Math.max(l.start + 0.5, Math.min(v, duration)) }); }} />
           <span className="lbl dur-tot">({fmt(l.end - l.start)})</span>
         </div>
+        {l.kind === 'audio' ? (
+          <div className="ctrls r3">
+            <button type="button" className={`chip${l.loop !== false ? ' on' : ''}`}
+              title="La base ricomincia da capo finche' la barra dura"
+              onClick={() => patchLayer(l.id, { loop: l.loop === false })}>loop</button>
+            <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
+              onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
+            <span className="val">base della libreria</span>
+          </div>
+        ) : (
+          <>
         <div className="ctrls r3">
           <select className="minisel" value={l.method}
             onChange={(e) => patchLayer(l.id, { method: e.target.value })}>
@@ -483,6 +585,8 @@ export default function FrequenzePage() {
             title="Micro-oscillazione lenta del volume: toglie la fissità da «segnale di prova»"
             onClick={() => patchLayer(l.id, { breath: !l.breath })}>respiro</button>
         </div>
+          </>
+        )}
       </div>
       <div className="lane" ref={(el) => { if (el) l._laneEl = el; }}>
         <div className="grid">
@@ -578,13 +682,59 @@ export default function FrequenzePage() {
                     </div>
                   </div>
                 </div>
-                <div className="soundsoon" data-testid="fq-soundsoon">
-                  <div className="soundsoon-ic">♫</div>
-                  <div>
-                    <strong>Libreria in arrivo</strong>
-                    <span>Questa categoria ospiterà le basi sonore curate di Aurya, pronte da combinare con le frequenze. Le tracce si compongono solo con i suoni della piattaforma: la libreria è in preparazione.</span>
-                  </div>
-                </div>
+                {(() => {
+                  const inCat = sounds.filter((s) => s.category === soundCat.toLowerCase());
+                  return (
+                    <>
+                      {inCat.length > 0 ? (
+                        <div className="cards" data-testid="fq-sound-cards">
+                          {inCat.map((s) => (
+                            <div key={s.id} className={`card${previewingId === s.id ? ' playing' : ''}`}>
+                              <div className="head"><h3>{s.title}</h3></div>
+                              <div className="hz">{fmt(s.duration_sec || 0)} · {(s.size_bytes / 1048576).toFixed(1)} MB</div>
+                              <div className="listen">🔊 Base sonora · va in loop sotto le frequenze</div>
+                              <div className="foot">
+                                {isSystemAdmin && (
+                                  <button type="button" className="ghost" title="Elimina dalla libreria"
+                                    onClick={() => removeSound(s)}>×</button>
+                                )}
+                                <button type="button" className="live"
+                                  onClick={() => toggleSoundPreview(s)}>
+                                  {previewingId === s.id ? 'Ferma' : 'Ascolta'}
+                                </button>
+                                <button type="button" className="add"
+                                  onClick={() => addSoundToSession(s)}>+ sessione</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="soundsoon" data-testid="fq-soundsoon">
+                          <div className="soundsoon-ic">♫</div>
+                          <div>
+                            <strong>{sounds.length ? `Ancora nessuna base in ${soundCat}` : 'Libreria in arrivo'}</strong>
+                            <span>Le basi sonore curate di Aurya, pronte da combinare con le frequenze. Le tracce si compongono solo con i suoni della piattaforma.</span>
+                          </div>
+                        </div>
+                      )}
+                      {isSystemAdmin && (
+                        <div className="protrow" data-testid="fq-sound-upload">
+                          <span className="tag">Regia piattaforma</span>
+                          <button type="button" className="prot" disabled={uploading}
+                            onClick={() => soundFileRef.current?.click()}>
+                            {uploading ? 'Carico…' : `+ Carica una base in ${soundCat}`}
+                          </button>
+                          <span className="lbl" style={{ fontSize: 10 }}>
+                            mp3 · m4a · ogg · wav, max 60MB — solo materiale licenziato o CC0
+                          </span>
+                          <input ref={soundFileRef} type="file" accept="audio/*" hidden
+                            onChange={(e) => { uploadSound(e.target.files[0]); e.target.value = ''; }} />
+                        </div>
+                      )}
+                      {status && <p className="soundlead" style={{ marginTop: 10 }}>{status}</p>}
+                    </>
+                  );
+                })()}
               </>
             ) : (
               <>

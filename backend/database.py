@@ -264,6 +264,9 @@ platform_magic_tokens_collection = db.platform_magic_tokens
 # Una traccia e' la RICETTA (score JSON, pochi KB), mai l'audio:
 # vedi docs/FREQUENZE_PLAN_2026-08.md. Org-scoped, isolata dal commerce.
 frequency_tracks_collection = db.frequency_tracks
+# FQ2 — basi sonore curate della piattaforma (metadati; i byte stanno
+# in uploads/audio/). Carica solo il system admin.
+audio_assets_collection = db.audio_assets
 
 
 # ── Phase 3 (Store consolidation) — slug-index lifecycle helpers ────────────
@@ -1543,6 +1546,11 @@ async def create_indexes():
         [("organization_id", 1), ("updated_at", -1)], name="fq0_org_updated")
     await frequency_tracks_collection.create_index("id", unique=True,
                                                    name="fq0_track_id")
+    # FQ2 — la libreria suoni si sfoglia per categoria
+    await audio_assets_collection.create_index(
+        [("category", 1), ("created_at", -1)], name="fq2_sound_category")
+    await audio_assets_collection.create_index("id", unique=True,
+                                               name="fq2_sound_id")
 
 def close_db():
     client.close()

@@ -41,9 +41,32 @@ def _num(value, lo, hi, default):
 
 
 def clean_layer(raw, duration):
-    """Un livello neuro valido, o None se irrecuperabile."""
+    """Un livello valido (neuro o base audio), o None se irrecuperabile.
+
+    FQ2: un layer audio referenzia una base della libreria per
+    `asset_id` — MAI byte audio nel documento (il campo `buffer` del
+    client non passa di qui).
+    """
     if not isinstance(raw, dict):
         return None
+    if raw.get("kind") == "audio":
+        asset_id = raw.get("asset_id")
+        if not isinstance(asset_id, str) or not (1 <= len(asset_id) <= 64):
+            return None
+        start = _num(raw.get("start"), 0, duration, 0)
+        end = _num(raw.get("end"), 0, duration, duration)
+        if end - start < 0.5:
+            end = min(duration, start + 0.5)
+        return {
+            "kind": "audio",
+            "asset_id": asset_id,
+            "name": str(raw.get("name") or "Base")[:60],
+            "start": round(start, 3),
+            "end": round(end, 3),
+            "gain": _num(raw.get("gain"), 0.0, 1.0, 0.7),
+            "loop": bool(raw.get("loop", True)),
+            "mute": bool(raw.get("mute", False)),
+        }
     method = raw.get("method")
     if method not in METHODS:
         return None

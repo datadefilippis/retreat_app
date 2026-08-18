@@ -24,7 +24,7 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [], o
   const sr = sampleRate, d = score.duration_sec, dt = 1 / sr;
   const total = Math.floor(d * sr);
   const audio = audioLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer);
-  const neuro = (score.layers || []).filter((l) => !l.mute && l.gain > 0);
+  const neuro = (score.layers || []).filter((l) => l.kind !== 'audio' && !l.mute && l.gain > 0);
   if (!audio.length && !neuro.length) throw new Error('Nessun livello udibile');
   const fi = score.fade_in_sec || 0, fo = score.fade_out_sec || 0;
   const pcm = new Int16Array(total * 2);

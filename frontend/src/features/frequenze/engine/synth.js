@@ -282,7 +282,7 @@ export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
     nodes.push(src);
   });
 
-  (score.layers || []).filter((l) => !l.mute && l.gain > 0).forEach((l) => {
+  (score.layers || []).filter((l) => l.kind !== 'audio' && !l.mute && l.gain > 0).forEach((l) => {
     const span = Math.max(1, Math.min(l.end, d) - l.start), s0 = t0 + l.start;
     if (s0 + span <= ctx.currentTime) return;
     const uG = ctx.createGain(); uG.gain.value = 1; uG.connect(sess);

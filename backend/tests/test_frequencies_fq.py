@@ -122,14 +122,18 @@ class TestApiCrudFq0:
         assert r.status_code in (401, 403)
 
     def test_router_sempre_org_scoped(self):
-        """Ogni query del router filtra per organization_id: l'isolamento
-        multi-tenant non deve dipendere dalla memoria di chi edita."""
+        """Ogni query sulle TRACCE filtra per organization_id (i suoni
+        FQ2 sono platform-level per design: senza org, ma solo su
+        audio_assets)."""
         src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        tracks_part, sounds_part = src.split("libreria suoni curata")
         for op in ("find(", "find_one(", "find_one_and_update(",
                    "delete_one("):
-            for chunk in src.split(op)[1:]:
+            for chunk in tracks_part.split(op)[1:]:
                 assert "organization_id" in chunk[:220], \
-                    f"query {op} senza filtro organization_id"
+                    f"query tracce {op} senza filtro organization_id"
+        # e la scrittura suoni resta blindata al system admin
+        assert sounds_part.count("require_system_admin") >= 2
 
 
 class TestIsolamentoFrontendFq0:
@@ -176,13 +180,18 @@ class TestNienteAudioInMongoFq0:
 
     def test_score_non_accetta_buffer(self):
         from models.frequency_track import clean_score
+        # FQ2: layer audio SENZA asset_id = irrecuperabile, si scarta
+        assert clean_score({"duration_sec": 600,
+                            "layers": [{"kind": "audio",
+                                        "buffer": "x" * 1000}]}) is None
+        # con asset_id il layer passa, ma i byte no: solo il riferimento
         s = clean_score({"duration_sec": 600,
-                         "layers": [{"method": "bin", "kind": "audio",
-                                     "buffer": "x" * 1000}]})
-        # il layer viene normalizzato a neuro puro: niente campi estranei
+                         "layers": [{"kind": "audio", "asset_id": "abc123",
+                                     "buffer": "x" * 1000, "gain": 0.7}]})
         assert s is not None
-        assert "buffer" not in s["layers"][0]
-        assert s["layers"][0]["kind"] == "neuro"
+        lay = s["layers"][0]
+        assert lay["kind"] == "audio" and lay["asset_id"] == "abc123"
+        assert "buffer" not in lay
 
 
 class TestDesignPrototipoFq05:
@@ -223,11 +232,17 @@ class TestSoloSuoniPiattaformaFq05b:
     finche' FQ2 non porta la libreria."""
 
     def test_niente_upload_nel_compositore(self):
+        """L'OPERATORE non carica audio. L'unico file input della pagina
+        e' quello della regia piattaforma (FQ2), dietro isSystemAdmin."""
         src = (FQ_DIR / "FrequenzePage.js").read_text()
         assert "uploadzone" not in src, "upload operatore tornato nel compositore"
         assert "decodeAudioData" not in src, \
             "la pagina decodifica file locali: l'upload deve restare fuori"
-        assert 'type="file"' not in src
+        assert src.count('type="file"') == 1
+        admin_block = src.split("fq-sound-upload")[0]
+        assert admin_block.rstrip().endswith('data-testid=') or \
+            "isSystemAdmin && (" in admin_block[-600:], \
+            "il file input dei suoni non e' dietro il gate system admin"
 
     def test_worldswitch_frequenze_suoni(self):
         src = (FQ_DIR / "FrequenzePage.js").read_text()
@@ -247,3 +262,65 @@ class TestSoloSuoniPiattaformaFq05b:
             chunk = src[m.start():m.start() + 400]
             assert "startCardLive" not in chunk and "startPreview" not in chunk, \
                 "side effect audio dentro un updater React"
+
+
+class TestLibreriaSuoniFq2:
+    """FQ2 — basi sonore curate: lettura per tutti, scrittura SOLO
+    system admin, byte su disco mai in Mongo."""
+
+    def test_lista_pubblica_con_categorie(self):
+        try:
+            r = requests.get(f"{BASE_URL}/api/frequencies/sounds", timeout=10)
+        except requests.RequestException:
+            pytest.skip("backend non raggiungibile")
+        assert r.status_code == 200
+        data = r.json()
+        assert set(data["categories"]) == {"ambient", "droni", "campane",
+                                           "natura", "ritmi", "voce"}
+        for item in data["items"]:
+            assert item["stream_url"].startswith("/uploads/audio/")
+            assert "buffer" not in item and "data" not in item
+
+    def test_upload_negato_a_org_admin(self):
+        hdr = _login()  # admin@demo.com = admin di ORG, non di piattaforma
+        r = requests.post(f"{BASE_URL}/api/frequencies/sounds", headers=hdr,
+                          files={"file": ("x.wav", b"RIFF0000WAVE", "audio/wav")},
+                          data={"title": "abusiva", "category": "droni"},
+                          timeout=10)
+        assert r.status_code == 403
+
+    def test_roundtrip_bozza_con_base(self):
+        """Una traccia con layer audio salva il riferimento asset_id e
+        lo restituisce identico: la ricetta resta pochi KB."""
+        hdr = _login()
+        score = {"score_version": 1, "duration_sec": 600,
+                 "layers": [
+                     {"kind": "audio", "asset_id": "guardia-fq2",
+                      "name": "Base", "start": 0, "end": 600,
+                      "gain": 0.7, "loop": True},
+                     {"kind": "neuro", "method": "bin", "f0": 10, "f1": 6,
+                      "curve": "exp", "start": 0, "end": 600, "gain": 0.25},
+                 ]}
+        r = requests.post(f"{BASE_URL}/api/frequencies/tracks", headers=hdr,
+                          json={"title": "Guardia FQ2", "score": score},
+                          timeout=10)
+        assert r.status_code == 201, r.text
+        tid = r.json()["id"]
+        try:
+            got = requests.get(f"{BASE_URL}/api/frequencies/tracks/{tid}",
+                               headers=hdr, timeout=10).json()
+            kinds = [l["kind"] for l in got["score"]["layers"]]
+            assert kinds == ["audio", "neuro"]
+            assert got["score"]["layers"][0]["asset_id"] == "guardia-fq2"
+        finally:
+            requests.delete(f"{BASE_URL}/api/frequencies/tracks/{tid}",
+                            headers=hdr, timeout=10)
+
+    def test_pagina_risolve_via_engine_non_da_file(self):
+        """La pagina non decodifica mai audio direttamente: fetch+decode
+        vivono in engine/assets.js (e l'upload resta solo admin)."""
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "decodeAudioData" not in src
+        assert "resolveAudioLayers" in src and "isSystemAdmin" in src
+        assets = (FQ_DIR / "engine" / "assets.js").read_text()
+        assert "decodeAudioData" in assets and "bufferCache" in assets
