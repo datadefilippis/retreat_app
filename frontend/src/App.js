@@ -136,6 +136,7 @@ const PublicProfilePage = lazy(() => import("./features/settings/PublicProfilePa
 // motore di sintesi e l'encoder MP3 vivono solo nel suo chunk)
 const FrequenzePage = lazy(() => import("./features/frequenze/FrequenzePage"));
 const PublicFrequencyPage = lazy(() => import("./features/frequenze/PublicFrequencyPage"));
+const MeditazioniPage = lazy(() => import("./features/frequenze/MeditazioniPage"));
 // PL17 — lazy come tutte le pagine admin: da eager trascinava Layout
 // (e con lui TUTTE le traduzioni back-office) nel bundle pubblico.
 const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
@@ -940,6 +941,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      {/* FQ3 — vetrina meditazioni (schermo d'invito senza sblocco) */}
+      <Route path="/meditazioni" element={<MeditazioniPage />} />
       {/* FQ1 — ascolto pubblico di una traccia pubblicata */}
       <Route path="/frequenze/:slug" element={<PublicFrequencyPage />} />
       {/* FQ0 — compositore Frequenze (bozze org-scoped) */}

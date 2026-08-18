@@ -14,6 +14,9 @@ import {
   Clock, BookOpen,
 } from 'lucide-react';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
+// FQ3 — sezione preferiti meditazioni: componente isolato del modulo
+// Frequenze, si carica da solo e sparisce se vuoto
+import AccountFavorites from '../frequenze/AccountFavorites';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 
@@ -305,6 +308,8 @@ export default function AccountPage() {
             </div>
           </section>
         )}
+
+        <AccountFavorites />
 
         <section>
           <h2 className="text-sm font-semibold text-gray-900 mb-2">

@@ -406,3 +406,87 @@ class TestPubblicazioneFq1:
         assert "epilessia" in src, "manca il disclaimer salute"
         app = (FRONTEND_SRC / "App.js").read_text()
         assert 'path="/frequenze/:slug"' in app
+
+
+class TestVetrinaMeditazioniFq3:
+    """FQ3 — la vetrina e' l'incentivo: il catalogo NON si vede senza
+    sblocco, e lo sblocco e' verificato server-side (iscritto Lettera
+    reale via HMAC, o account Aurya). I preferiti vivono sull'account."""
+
+    def test_catalogo_chiuso_senza_sblocco(self):
+        try:
+            r = requests.get(f"{BASE_URL}/api/frequencies/catalog", timeout=10)
+        except requests.RequestException:
+            pytest.skip("backend non raggiungibile")
+        assert r.status_code == 403
+        detail = r.json()["detail"]
+        assert detail["error"] == "locked" and "tracks_count" in detail
+
+    def test_unlock_solo_per_iscritti_veri(self):
+        # email mai vista: niente sblocco
+        r = requests.post(f"{BASE_URL}/api/frequencies/catalog/unlock",
+                          json={"email": "fantasma@example.com"}, timeout=10)
+        assert r.status_code == 403
+        # un token contraffatto non apre
+        r2 = requests.get(f"{BASE_URL}/api/frequencies/catalog",
+                          headers={"X-Fqz-Unlock": "x@example.com:abc123"},
+                          timeout=10)
+        assert r2.status_code == 403
+        # il Bearer di un OPERATORE non e' un account Aurya: non sblocca
+        hdr = _login()
+        r3 = requests.get(f"{BASE_URL}/api/frequencies/catalog",
+                          headers=hdr, timeout=10)
+        assert r3.status_code == 403
+
+    def test_unlock_iscritto_apre_il_catalogo(self):
+        """Iscrizione reale via endpoint Lettera consolidato (non si
+        tocca: si USA) → unlock → catalogo."""
+        email = "guardia.fq3@example.com"
+        try:
+            sub = requests.post(
+                f"{BASE_URL}/api/public/newsletter/subscribe",
+                json={"email": email, "consent": True, "language": "it",
+                      "source": "guardia-fq3"}, timeout=10)
+        except requests.RequestException:
+            pytest.skip("backend non raggiungibile")
+        if sub.status_code == 429:
+            pytest.skip("rate limit subscribe")
+        assert sub.status_code == 201
+        unlock = requests.post(
+            f"{BASE_URL}/api/frequencies/catalog/unlock",
+            json={"email": email}, timeout=10)
+        assert unlock.status_code == 200
+        u = unlock.json()
+        cat = requests.get(
+            f"{BASE_URL}/api/frequencies/catalog",
+            headers={"X-Fqz-Unlock": f"{u['email']}:{u['token']}"},
+            timeout=10)
+        assert cat.status_code == 200
+        for item in cat.json()["items"]:
+            assert item.get("slug") and item["operator"]["name"]
+            assert "score" not in item     # la vetrina lista, non serve ricette
+            assert "organization_id" not in item
+
+    def test_preferiti_solo_account_aurya(self):
+        r = requests.get(f"{BASE_URL}/api/frequencies/favorites", timeout=10)
+        assert r.status_code in (401, 403)
+        # il token OPERATORE non basta (type sbagliato)
+        hdr = _login()
+        r2 = requests.get(f"{BASE_URL}/api/frequencies/favorites",
+                          headers=hdr, timeout=10)
+        assert r2.status_code == 401
+
+    def test_superfici_frontend(self):
+        src = (FQ_DIR / "MeditazioniPage.js").read_text()
+        assert "fqz-meditazioni-locked" in src, "manca lo schermo d'invito"
+        assert "/public/newsletter/subscribe" in src
+        assert "'meditazioni'" in src        # source dell'iscrizione
+        assert "catalogUnlock" in src and "heartAsk" in src
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/meditazioni"' in app
+        # innesto minimo nell'hub account consolidato: import + una riga
+        account = (FRONTEND_SRC / "features" / "account" /
+                   "AccountPage.js").read_text()
+        assert "import AccountFavorites from '../frequenze/AccountFavorites'" in account
+        assert account.count("<AccountFavorites />") == 1, \
+            "l'hub account innesta Frequenze con un import e UNA riga"

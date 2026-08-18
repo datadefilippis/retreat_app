@@ -1555,6 +1555,10 @@ async def create_indexes():
     # mai pubblicate non ce l'hanno)
     await frequency_tracks_collection.create_index(
         "slug", unique=True, sparse=True, name="fq1_track_slug")
+    # FQ3 — preferiti dell'account Aurya: un cuore per traccia
+    await db.frequency_favorites.create_index(
+        [("platform_account_id", 1), ("slug", 1)], unique=True,
+        name="fq3_favorite_unique")
 
 def close_db():
     client.close()

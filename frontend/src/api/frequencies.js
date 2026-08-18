@@ -15,6 +15,11 @@ export const frequenciesAPI = {
   getPublic: (slug) => api.get(`/frequencies/public/${slug}`),
   registerPlay: (slug) => api.post(`/frequencies/public/${slug}/play`),
 
+  // FQ3 — vetrina /meditazioni: catalogo dietro sblocco server-side
+  catalogUnlock: (email) => api.post('/frequencies/catalog/unlock', { email }),
+  getCatalog: (unlock) => api.get('/frequencies/catalog',
+    unlock ? { headers: { 'X-Fqz-Unlock': `${unlock.email}:${unlock.token}` } } : {}),
+
   // FQ2 — libreria suoni curata: lettura per tutti, scrittura solo
   // system admin (multipart)
   listSounds: () => api.get('/frequencies/sounds'),

@@ -985,7 +985,8 @@ app.add_middleware(
     allow_credentials=True,
     allow_origins=_cors_origins,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    # X-Fqz-Unlock: prova di sblocco della vetrina meditazioni (FQ3)
+    allow_headers=["Content-Type", "Authorization", "X-Fqz-Unlock"],
 )
 
 # ── Middleware order rationale (LIFO ⇒ last-added runs first) ────────────

@@ -16,11 +16,13 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import (
-    APIRouter, Depends, File, Form, HTTPException, UploadFile, status,
+    APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status,
 )
 from pydantic import BaseModel
 
-from auth import get_current_user, require_system_admin
+from auth import (
+    get_current_platform_account, get_current_user, require_system_admin,
+)
 from models.audio_asset import (
     LICENSE_MAX, MAX_FILE_BYTES, SOUND_CATEGORIES,
     clean_category, safe_extension,
@@ -267,6 +269,162 @@ async def register_play(slug: str):
     await frequency_tracks_collection.update_one(
         {"slug": slug, "status": "published"},
         {"$inc": {"plays_total": 1}})
+
+
+# ── FQ3 — vetrina /meditazioni: catalogo DIETRO il cancello ────────────────
+# La vetrina e' l'incentivo (decisione founder 18/8): senza sblocco il
+# catalogo NON si vede. Lo sblocco e' verificato SERVER-SIDE, senza
+# toccare i sistemi consolidati:
+#   - iscritto Lettera → POST /catalog/unlock verifica l'email in
+#     aurya_subscribers e firma un token HMAC (nessuna nuova sessione,
+#     nessuna scrittura: solo lettura della collection della Lettera);
+#   - account Aurya → Bearer platform gia' esistente (P1).
+# I preferiti vivono in una collection dedicata (frequency_favorites),
+# agganciata all'account per id: zero campi nuovi su platform_accounts.
+
+import hashlib
+import hmac as hmac_mod
+
+
+def _catalog_token(email: str) -> str:
+    from auth import SECRET_KEY
+    return hmac_mod.new(SECRET_KEY.encode(),
+                        f"fqz-catalog:{email.lower().strip()}".encode(),
+                        hashlib.sha256).hexdigest()
+
+
+async def _subscriber_ok(email: str) -> bool:
+    from database import db
+    doc = await db.aurya_subscribers.find_one(
+        {"email": email.lower().strip()}, {"_id": 0, "status": 1, "consent": 1})
+    return bool(doc and doc.get("consent")
+                and doc.get("status") != "unsubscribed")
+
+
+class UnlockPayload(BaseModel):
+    email: str
+
+
+@router.post("/catalog/unlock")
+async def catalog_unlock(payload: UnlockPayload):
+    """Sblocco per iscritti Lettera: l'email deve esistere davvero tra
+    gli iscritti con consenso. Il token e' deterministico (HMAC): si
+    revoca solo disiscrivendosi — e' un lucchetto da vetrina, non una
+    sessione."""
+    email = payload.email.lower().strip()
+    if not await _subscriber_ok(email):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Questa email non risulta iscritta alla Lettera.")
+    return {"email": email, "token": _catalog_token(email)}
+
+
+async def _has_catalog_access(request) -> bool:
+    """Vero se la richiesta porta uno sblocco valido: header
+    X-Fqz-Unlock (email:token HMAC, ri-verificato contro gli iscritti)
+    oppure un Bearer platform valido."""
+    unlock = request.headers.get("X-Fqz-Unlock", "")
+    if ":" in unlock:
+        email, token = unlock.split(":", 1)
+        if (hmac_mod.compare_digest(token, _catalog_token(email))
+                and await _subscriber_ok(email)):
+            return True
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        try:
+            from auth import decode_token
+            payload = decode_token(auth_header[7:])
+            if payload.get("type") == "platform" and payload.get("sub"):
+                return True
+        except Exception:  # token non-platform o scaduto: non sblocca
+            pass
+    return False
+
+
+_CATALOG_PROJECTION = {"_id": 0, "slug": 1, "title": 1, "description": 1,
+                       "intent": 1, "plays_total": 1, "organization_id": 1,
+                       "score.duration_sec": 1, "score.layers": 1,
+                       "published_at": 1}
+
+
+@router.get("/catalog")
+async def catalog(request: Request):
+    """Tutte le meditazioni pubblicate, di tutti gli operatori — SOLO
+    con sblocco. Senza: 403 col conteggio (il teaser dello schermo
+    d'invito)."""
+    from database import frequency_tracks_collection, organizations_collection
+    if not await _has_catalog_access(request):
+        count = await frequency_tracks_collection.count_documents(
+            {"status": "published"})
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"error": "locked", "tracks_count": count})
+    items = await frequency_tracks_collection.find(
+        {"status": "published"}, _CATALOG_PROJECTION,
+    ).sort("published_at", -1).to_list(500)
+    org_ids = {i["organization_id"] for i in items}
+    orgs = {o["id"]: o async for o in organizations_collection.find(
+        {"id": {"$in": list(org_ids)}},
+        {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
+         "public_profile.display_name": 1})}
+    out = []
+    for it in items:
+        org = orgs.get(it.pop("organization_id")) or {}
+        profile = org.get("public_profile") or {}
+        score = it.pop("score", None) or {}
+        it["duration_sec"] = score.get("duration_sec")
+        it["layers_count"] = len(score.get("layers") or [])
+        it["operator"] = {
+            "name": profile.get("display_name") or org.get("name"),
+            "slug": org.get("public_slug"),
+        }
+        it["plays_total"] = it.get("plays_total") or 0
+        out.append(it)
+    return {"items": out}
+
+
+@router.get("/favorites")
+async def list_favorites(account: dict = Depends(get_current_platform_account)):
+    from database import db, frequency_tracks_collection
+    favs = await db.frequency_favorites.find(
+        {"platform_account_id": account["id"]},
+        {"_id": 0, "slug": 1}).to_list(500)
+    slugs = [f["slug"] for f in favs]
+    tracks = await frequency_tracks_collection.find(
+        {"slug": {"$in": slugs}, "status": "published"},
+        {"_id": 0, "slug": 1, "title": 1, "intent": 1,
+         "score.duration_sec": 1}).to_list(500)
+    by_slug = {t["slug"]: t for t in tracks}
+    items = []
+    for slug in slugs:
+        t = by_slug.get(slug)
+        if t:
+            score = t.pop("score", None) or {}
+            t["duration_sec"] = score.get("duration_sec")
+            items.append(t)
+    return {"items": items, "slugs": slugs}
+
+
+@router.put("/favorites/{slug}", status_code=status.HTTP_204_NO_CONTENT)
+async def add_favorite(slug: str,
+                       account: dict = Depends(get_current_platform_account)):
+    from database import db, frequency_tracks_collection
+    track = await frequency_tracks_collection.find_one(
+        {"slug": slug, "status": "published"}, {"_id": 1})
+    if not track:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Meditazione non trovata.")
+    await db.frequency_favorites.update_one(
+        {"platform_account_id": account["id"], "slug": slug},
+        {"$setOnInsert": {"created_at": utc_now()}}, upsert=True)
+
+
+@router.delete("/favorites/{slug}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_favorite(slug: str,
+                          account: dict = Depends(get_current_platform_account)):
+    from database import db
+    await db.frequency_favorites.delete_one(
+        {"platform_account_id": account["id"], "slug": slug})
 
 
 # ── FQ2 — libreria suoni curata ─────────────────────────────────────────────

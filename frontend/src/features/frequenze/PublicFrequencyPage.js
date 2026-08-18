@@ -38,7 +38,9 @@ export default function PublicFrequencyPage() {
   const [loadingAudio, setLoadingAudio] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
   const [unlocked, setUnlocked] = useState(() =>
-    localStorage.getItem(UNLOCK_KEY) === '1' || !!localStorage.getItem('platform_token'));
+    localStorage.getItem(UNLOCK_KEY) === '1'
+    || !!localStorage.getItem('platform_token')
+    || !!localStorage.getItem('fqz_catalog_unlock'));
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
@@ -108,6 +110,10 @@ export default function PublicFrequencyPage() {
         source: `frequenze:${slug}`, wants_experiences: true,
       });
       localStorage.setItem(UNLOCK_KEY, '1');
+      try {
+        const u = await frequenciesAPI.catalogUnlock(email);
+        localStorage.setItem('fqz_catalog_unlock', JSON.stringify(u.data));
+      } catch { /* la vetrina richiedera' l'email */ }
       setUnlocked(true);
       setGateOpen(false);
       setGateMsg('');
@@ -181,6 +187,12 @@ export default function PublicFrequencyPage() {
             </div>
           )}
 
+          <p style={{ marginTop: 14 }}>
+            <Link to="/meditazioni" className="readmore"
+              style={{ textDecoration: 'none', display: 'inline-block' }}>
+              Tutte le meditazioni di Aurya →
+            </Link>
+          </p>
           <p className="note" style={{ marginTop: 16 }}>
             🎧 Le componenti binaurali funzionano solo in cuffia. Volume
             moderato. Non è un dispositivo medico e non sostituisce percorsi
