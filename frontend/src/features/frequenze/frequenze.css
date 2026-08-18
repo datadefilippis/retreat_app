@@ -304,3 +304,17 @@
 @media (max-width:380px){.fqz h1{font-size:23px}.fqz .createbar .cb-fields label{font-size:11px}.fqz .card h3{font-size:15px}}
 @media (min-width:641px) and (max-width:900px){.fqz .cards{grid-template-columns:repeat(2,1fr)}}
 @media (prefers-reduced-motion:reduce){.fqz *, .fqz *::before, .fqz *::after{transition:none!important}}
+
+/* ── aggiunte Aurya (non dal prototipo) ────────────────────────────── */
+/* FQ founder 18/8: la via del ritorno al gestionale e' una CARD dedicata
+   in testata, a destra — non un bottone in mezzo alle viste. */
+.fqz .backcard{display:flex;align-items:center;gap:11px;padding:9px 16px 9px 13px;
+  border:1px solid var(--line);border-radius:11px;cursor:pointer;background:linear-gradient(158deg,#1B2F34 0%,#121F23 100%);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .18s,box-shadow .18s;text-align:left}
+.fqz .backcard:hover{transform:translateY(-2px);border-color:var(--lamp);box-shadow:0 10px 26px #00000066}
+.fqz .backcard .bc-ic{width:34px;height:34px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--lamp-dim);border-radius:9px;color:var(--lamp);font-size:16px;background:#DFA45C14}
+.fqz .backcard .bc-t{font-family:var(--sans);font-size:13px;letter-spacing:.01em;text-transform:none;color:var(--bone);font-weight:600;line-height:1.2}
+.fqz .backcard .bc-s{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)}
+.fqz .headnav{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+@media (max-width:640px){.fqz .backcard .bc-s{display:none}}
