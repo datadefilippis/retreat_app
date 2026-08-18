@@ -183,3 +183,34 @@ class TestNienteAudioInMongoFq0:
         assert s is not None
         assert "buffer" not in s["layers"][0]
         assert s["layers"][0]["kind"] == "neuro"
+
+
+class TestDesignPrototipoFq05:
+    """FQ0.5 (founder, 18/8): il design dell'app Frequenze e' quello del
+    prototipo — prodotto a se' stante, scuro — e NON deve mai inquinare
+    il gestionale: ogni selettore del suo CSS vive sotto .fqz."""
+
+    def test_css_tutto_scopato(self):
+        import re
+        css = (FQ_DIR / "frequenze.css").read_text()
+        # rimuovi commenti e blocchi @ (i selettori interni sono gia'
+        # scopati dal generatore, controllati sotto)
+        css_clean = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+        for rule in re.finditer(r"([^{}]+)\{", css_clean):
+            sel = rule.group(1).strip()
+            if not sel or sel.startswith("@"):
+                continue
+            for part in sel.split(","):
+                part = part.strip()
+                if part and not part.startswith(".fqz"):
+                    raise AssertionError(f"selettore non scopato: {part!r}")
+
+    def test_pagina_standalone_col_ritorno(self):
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "AppLayout" not in src, \
+            "l'app Frequenze e' un prodotto a se': niente guscio gestionale"
+        assert "navigate('/dashboard')" in src, \
+            "manca il ritorno al gestionale dalla testata"
+        assert "frequenze.css" in src
+        # il gate sicurezza del prototipo c'e' ancora
+        assert "fqz_gate_ok" in src and "epilessia" in src

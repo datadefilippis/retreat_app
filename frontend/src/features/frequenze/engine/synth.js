@@ -125,6 +125,109 @@ export function pinkBuf(actx) {
   return b;
 }
 
+/**
+ * Ascolto live di una SINGOLA frequenza (le schede di Esplora): parte
+ * subito, resta accesa finche' non la fermi, si combina con le altre.
+ * Porting fedele di startLive del prototipo.
+ *
+ * @param ctx   AudioContext attivo
+ * @param cfg   { method, carrier, timbre } della scheda
+ * @param gain  volume iniziale 0..1
+ * @param fval  battito in Hz (o frequenza del tono se method=tone)
+ * @returns {{setGain, setBeat, setCarrier, stop}}
+ */
+export function startCardLive(ctx, cfg, gain, fval) {
+  const method = cfg.method || 'bin';
+  const timbre = cfg.timbre || 'warm';
+  const carrier = method === 'tone' ? fval : (cfg.carrier ?? 180);
+  let beat = method === 'tone' ? 0 : fval;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, ctx.currentTime);
+  g.gain.linearRampToValueAtTime(Math.max(0.0001, gain), ctx.currentTime + 1.5);
+  g.connect(ctx.destination);
+  const nodes = [];
+  const mkV = (f, dest) => {
+    const parts = timbre === 'warm'
+      ? [[1, 1 / 1.4], [2, 0.28 / 1.4], [3, 0.12 / 1.4]] : [[1, 1]];
+    const vs = [];
+    parts.forEach(([mu, w]) => {
+      const o = ctx.createOscillator(), og = ctx.createGain();
+      og.gain.value = w;
+      o.frequency.value = Math.max(1, f * mu);
+      o.connect(og); og.connect(dest); o.start();
+      nodes.push(o); vs.push([o, mu]);
+    });
+    return {
+      set(f2) {
+        vs.forEach(([o, mu]) =>
+          o.frequency.setTargetAtTime(Math.max(1, f2 * mu), ctx.currentTime, 0.05));
+      },
+    };
+  };
+  let vL = null, vR = null, lfo = null, curCarrier = carrier;
+  if (method === 'tone') vL = mkV(carrier, g);
+  else if (method === 'bin') {
+    const mg = ctx.createChannelMerger(2), gl = ctx.createGain(), gr = ctx.createGain();
+    gl.connect(mg, 0, 0); gr.connect(mg, 0, 1); mg.connect(g);
+    vL = mkV(carrier, gl); vR = mkV(carrier + beat, gr);
+  } else if (method === 'mono') {
+    const h = ctx.createGain(); h.gain.value = 0.5; h.connect(g);
+    vL = mkV(carrier, h); vR = mkV(carrier + beat, h);
+  } else if (method === 'iso') {
+    const gate = ctx.createGain(); gate.gain.value = 0.5; gate.connect(g);
+    lfo = ctx.createOscillator();
+    const la = ctx.createGain(); la.gain.value = 0.5;
+    lfo.frequency.value = Math.max(0.05, beat);
+    lfo.connect(la); la.connect(gate.gain); lfo.start();
+    nodes.push(lfo);
+    vL = mkV(carrier, gate);
+  } else if (method === 'bil') {
+    let dst = g;
+    if (ctx.createStereoPanner) {
+      const pan = ctx.createStereoPanner(); pan.connect(g);
+      lfo = ctx.createOscillator();
+      lfo.frequency.value = Math.max(0.05, beat);
+      lfo.connect(pan.pan); lfo.start();
+      nodes.push(lfo); dst = pan;
+    }
+    vL = mkV(carrier, dst);
+  } else if (method === 'noise') {
+    const src = ctx.createBufferSource();
+    src.buffer = pinkBuf(ctx); src.loop = true;
+    const gate = ctx.createGain(); gate.gain.value = 0.5;
+    lfo = ctx.createOscillator();
+    const la = ctx.createGain(); la.gain.value = 0.5;
+    lfo.frequency.value = Math.max(0.05, beat);
+    lfo.connect(la); la.connect(gate.gain);
+    src.connect(gate); gate.connect(g);
+    src.start(); lfo.start();
+    nodes.push(src, lfo);
+  }
+  return {
+    method, carrier, beat, gain,
+    setGain(v) {
+      g.gain.setTargetAtTime(Math.max(0.0001, v), ctx.currentTime, 0.08);
+      this.gain = v;
+    },
+    setCarrier(v) {
+      curCarrier = v; this.carrier = v;
+      vL && vL.set(v); vR && vR.set(v + beat);
+    },
+    setBeat(v) {
+      beat = v; this.beat = v;
+      if (lfo) lfo.frequency.setTargetAtTime(Math.max(0.05, v), ctx.currentTime, 0.05);
+      vR && vR.set(curCarrier + v);
+    },
+    stop() {
+      g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.25);
+      setTimeout(() => {
+        nodes.forEach((n) => { try { n.stop(); } catch (e) { /* gia' fermo */ } });
+        try { g.disconnect(); } catch (e) { /* idem */ }
+      }, 900);
+    },
+  };
+}
+
 const rampCurve = (param, t0, span, fn, steps = 160) => {
   param.setValueAtTime(fn(0), t0);
   for (let i = 1; i <= steps; i++) {
