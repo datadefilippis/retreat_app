@@ -260,6 +260,11 @@ customer_accounts_collection = db.customer_accounts
 platform_accounts_collection = db.platform_accounts
 platform_magic_tokens_collection = db.platform_magic_tokens
 
+# ── Frequenze (ciclo FQ, 18/8/2026) — tracce vibrazionali ───────────────────
+# Una traccia e' la RICETTA (score JSON, pochi KB), mai l'audio:
+# vedi docs/FREQUENZE_PLAN_2026-08.md. Org-scoped, isolata dal commerce.
+frequency_tracks_collection = db.frequency_tracks
+
 
 # ── Phase 3 (Store consolidation) — slug-index lifecycle helpers ────────────
 #
@@ -1531,6 +1536,13 @@ async def create_indexes():
                                          name="ut1_order_customer")
     await orders_collection.create_index("platform_account_id", sparse=True,
                                          name="ut1_order_platform_account")
+
+    # FQ0 (Frequenze) — la lista bozze filtra per org e ordina per
+    # updated_at; l'id e' la chiave del CRUD.
+    await frequency_tracks_collection.create_index(
+        [("organization_id", 1), ("updated_at", -1)], name="fq0_org_updated")
+    await frequency_tracks_collection.create_index("id", unique=True,
+                                                   name="fq0_track_id")
 
 def close_db():
     client.close()

@@ -688,6 +688,9 @@ app.include_router(brevo_webhook_router.router, prefix="/api")       # /api/webh
 # Wave 8E.2: ai_store_router removed (see import block above).
 app.include_router(store_progress_router.router, prefix="/api")      # /api/store/setup-progress
 app.include_router(setup_wizard_router.router, prefix="/api")        # /api/setup/wizard (Fase 2 Track F)
+# FQ0 (18/8) — Frequenze by Aurya: bozze tracce vibrazionali org-scoped
+from routers import frequencies as frequencies_router
+app.include_router(frequencies_router.router, prefix="/api")         # /api/frequencies/*
 
 
 @app.get("/sitemap.xml", include_in_schema=False)
