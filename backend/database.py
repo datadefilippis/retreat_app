@@ -1551,6 +1551,10 @@ async def create_indexes():
         [("category", 1), ("created_at", -1)], name="fq2_sound_category")
     await audio_assets_collection.create_index("id", unique=True,
                                                name="fq2_sound_id")
+    # FQ1 — lo slug pubblico delle tracce e' globale (sparse: le bozze
+    # mai pubblicate non ce l'hanno)
+    await frequency_tracks_collection.create_index(
+        "slug", unique=True, sparse=True, name="fq1_track_slug")
 
 def close_db():
     client.close()

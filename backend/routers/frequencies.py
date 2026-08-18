@@ -177,6 +177,97 @@ async def delete_track(track_id: str,
                             detail="Traccia non trovata.")
 
 
+# ── FQ1 — pubblicazione e ascolto pubblico ──────────────────────────────────
+# La traccia pubblicata resta la RICETTA: il player pubblico la
+# risintetizza col motore client. Il cancello d'ascolto (anteprima
+# libera, poi Lettera o account Aurya) e' un soft-wall lato client:
+# il contenuto e' gratuito, il gate e' cattura contatto, non DRM.
+
+_PUBLIC_PROJECTION = {"_id": 0, "id": 1, "slug": 1, "title": 1,
+                      "description": 1, "intent": 1, "score": 1,
+                      "plays_total": 1, "organization_id": 1}
+_SLUG_ATTEMPTS = 50
+
+
+async def _unique_track_slug(base: str) -> str:
+    from models.event_occurrence import slugify
+    from database import frequency_tracks_collection
+    root = slugify(base)[:46] or "sessione"
+    candidate = root
+    for n in range(2, _SLUG_ATTEMPTS + 2):
+        clash = await frequency_tracks_collection.find_one(
+            {"slug": candidate}, {"_id": 1})
+        if not clash:
+            return candidate
+        candidate = f"{root}-{n}"
+    return f"{root}-{uuid.uuid4().hex[:6]}"
+
+
+@router.post("/tracks/{track_id}/publish")
+async def publish_track(track_id: str,
+                        current_user: dict = Depends(get_current_user)):
+    from database import frequency_tracks_collection
+    track = await frequency_tracks_collection.find_one(
+        {"id": track_id,
+         "organization_id": current_user["organization_id"]})
+    if not track:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Traccia non trovata.")
+    slug = track.get("slug") or await _unique_track_slug(track["title"])
+    await frequency_tracks_collection.update_one(
+        {"id": track_id,
+         "organization_id": current_user["organization_id"]},
+        {"$set": {"status": "published", "slug": slug,
+                  "published_at": utc_now(), "updated_at": utc_now()}})
+    return {"id": track_id, "status": "published", "slug": slug}
+
+
+@router.post("/tracks/{track_id}/unpublish")
+async def unpublish_track(track_id: str,
+                          current_user: dict = Depends(get_current_user)):
+    from database import frequency_tracks_collection
+    result = await frequency_tracks_collection.find_one_and_update(
+        {"id": track_id,
+         "organization_id": current_user["organization_id"]},
+        # lo slug resta: ripubblicando, il link gia' condiviso rivive
+        {"$set": {"status": "draft", "updated_at": utc_now()}})
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Traccia non trovata.")
+    return {"id": track_id, "status": "draft"}
+
+
+@router.get("/public/{slug}")
+async def public_track(slug: str):
+    """Payload del player pubblico: ricetta + chi l'ha composta."""
+    from database import frequency_tracks_collection, organizations_collection
+    track = await frequency_tracks_collection.find_one(
+        {"slug": slug, "status": "published"}, _PUBLIC_PROJECTION)
+    if not track:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Traccia non trovata.")
+    org = await organizations_collection.find_one(
+        {"id": track.pop("organization_id")},
+        {"_id": 0, "name": 1, "public_slug": 1,
+         "public_profile.display_name": 1})
+    profile = (org or {}).get("public_profile") or {}
+    track["operator"] = {
+        "name": profile.get("display_name") or (org or {}).get("name"),
+        # lo slug pubblico vive in cima al doc org (non nel profilo)
+        "slug": (org or {}).get("public_slug"),
+    }
+    track["plays_total"] = track.get("plays_total") or 0
+    return track
+
+
+@router.post("/public/{slug}/play", status_code=status.HTTP_204_NO_CONTENT)
+async def register_play(slug: str):
+    from database import frequency_tracks_collection
+    await frequency_tracks_collection.update_one(
+        {"slug": slug, "status": "published"},
+        {"$inc": {"plays_total": 1}})
+
+
 # ── FQ2 — libreria suoni curata ─────────────────────────────────────────────
 # GET pubblica (contenuto di piattaforma: la vede anche il player FQ1);
 # scrittura SOLO system admin, con licenza annotata.

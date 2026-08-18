@@ -9,6 +9,12 @@ export const frequenciesAPI = {
   update: (trackId, updates) => api.patch(`/frequencies/tracks/${trackId}`, updates),
   remove: (trackId) => api.delete(`/frequencies/tracks/${trackId}`),
 
+  // FQ1 — pubblicazione e ascolto pubblico
+  publish: (trackId) => api.post(`/frequencies/tracks/${trackId}/publish`),
+  unpublish: (trackId) => api.post(`/frequencies/tracks/${trackId}/unpublish`),
+  getPublic: (slug) => api.get(`/frequencies/public/${slug}`),
+  registerPlay: (slug) => api.post(`/frequencies/public/${slug}/play`),
+
   // FQ2 — libreria suoni curata: lettura per tutti, scrittura solo
   // system admin (multipart)
   listSounds: () => api.get('/frequencies/sounds'),

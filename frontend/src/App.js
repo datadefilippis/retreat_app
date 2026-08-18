@@ -135,6 +135,7 @@ const PublicProfilePage = lazy(() => import("./features/settings/PublicProfilePa
 // FQ0 — Frequenze by Aurya: compositore tracce vibrazionali (lazy: il
 // motore di sintesi e l'encoder MP3 vivono solo nel suo chunk)
 const FrequenzePage = lazy(() => import("./features/frequenze/FrequenzePage"));
+const PublicFrequencyPage = lazy(() => import("./features/frequenze/PublicFrequencyPage"));
 // PL17 — lazy come tutte le pagine admin: da eager trascinava Layout
 // (e con lui TUTTE le traduzioni back-office) nel bundle pubblico.
 const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
@@ -939,6 +940,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      {/* FQ1 — ascolto pubblico di una traccia pubblicata */}
+      <Route path="/frequenze/:slug" element={<PublicFrequencyPage />} />
       {/* FQ0 — compositore Frequenze (bozze org-scoped) */}
       <Route
         path="/frequenze"

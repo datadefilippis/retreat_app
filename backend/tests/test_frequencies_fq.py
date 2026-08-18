@@ -126,7 +126,17 @@ class TestApiCrudFq0:
         FQ2 sono platform-level per design: senza org, ma solo su
         audio_assets)."""
         src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
-        tracks_part, sounds_part = src.split("libreria suoni curata")
+        # il CRUD bozze e' org-scoped; le sezioni FQ1 (public by slug,
+        # solo published) e FQ2 (platform-level) hanno regole proprie
+        tracks_part, rest = src.split("FQ1 — pubblicazione")
+        sounds_part = rest.split("libreria suoni curata")[1]
+        # publish/unpublish restano org-scoped
+        fq1_part = rest.split("libreria suoni curata")[0]
+        for op in ("publish_track", "unpublish_track"):
+            fn = fq1_part.split(f"async def {op}")[1][:600]
+            assert "organization_id" in fn, f"{op} senza filtro org"
+        assert 'status": "published"' in fq1_part.replace("'", '"'), \
+            "gli endpoint pubblici devono servire SOLO tracce pubblicate"
         for op in ("find(", "find_one(", "find_one_and_update(",
                    "delete_one("):
             for chunk in tracks_part.split(op)[1:]:
@@ -324,3 +334,75 @@ class TestLibreriaSuoniFq2:
         assert "resolveAudioLayers" in src and "isSystemAdmin" in src
         assets = (FQ_DIR / "engine" / "assets.js").read_text()
         assert "decodeAudioData" in assets and "bufferCache" in assets
+
+
+class TestPubblicazioneFq1:
+    """FQ1 — publish org-scoped, ascolto pubblico della RICETTA,
+    contatore ascolti; le bozze non pubblicate restano invisibili."""
+
+    def test_ciclo_publish_public_unpublish(self):
+        hdr = _login()
+        r = requests.post(f"{BASE_URL}/api/frequencies/tracks", headers=hdr,
+                          json={"title": "Guardia FQ1 publish",
+                                "score": VALID_SCORE}, timeout=10)
+        assert r.status_code == 201
+        tid = r.json()["id"]
+        try:
+            # bozza: nessuna superficie pubblica
+            slugless = requests.get(
+                f"{BASE_URL}/api/frequencies/public/guardia-fq1-publish",
+                timeout=10)
+            assert slugless.status_code == 404
+            pub = requests.post(
+                f"{BASE_URL}/api/frequencies/tracks/{tid}/publish",
+                headers=hdr, timeout=10)
+            assert pub.status_code == 200
+            slug = pub.json()["slug"]
+            got = requests.get(
+                f"{BASE_URL}/api/frequencies/public/{slug}", timeout=10)
+            assert got.status_code == 200
+            data = got.json()
+            assert data["score"]["score_version"] == 1
+            assert "organization_id" not in data      # niente id interni
+            assert data["operator"]["name"]
+            plays0 = data["plays_total"]
+            hit = requests.post(
+                f"{BASE_URL}/api/frequencies/public/{slug}/play", timeout=10)
+            assert hit.status_code == 204
+            after = requests.get(
+                f"{BASE_URL}/api/frequencies/public/{slug}", timeout=10).json()
+            assert after["plays_total"] == plays0 + 1
+            # unpublish: il link muore, lo slug resta per la ripubblica
+            requests.post(
+                f"{BASE_URL}/api/frequencies/tracks/{tid}/unpublish",
+                headers=hdr, timeout=10)
+            gone = requests.get(
+                f"{BASE_URL}/api/frequencies/public/{slug}", timeout=10)
+            assert gone.status_code == 404
+            again = requests.post(
+                f"{BASE_URL}/api/frequencies/tracks/{tid}/publish",
+                headers=hdr, timeout=10)
+            assert again.json()["slug"] == slug
+        finally:
+            requests.delete(f"{BASE_URL}/api/frequencies/tracks/{tid}",
+                            headers=hdr, timeout=10)
+
+    def test_publish_senza_auth_negato(self):
+        try:
+            r = requests.post(
+                f"{BASE_URL}/api/frequencies/tracks/x/publish", timeout=10)
+        except requests.RequestException:
+            pytest.skip("backend non raggiungibile")
+        assert r.status_code in (401, 403)
+
+    def test_player_pubblico_col_cancello(self):
+        """La pagina pubblica esiste, usa lo stesso motore, e il
+        cancello chiede Lettera (source frequenze:slug) o account."""
+        src = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "startPreview" in src and "resolveAudioLayers" in src
+        assert "PREVIEW_SEC" in src and "frequenze:${slug}" in src
+        assert "/public/newsletter/subscribe" in src
+        assert "platform_token" in src, "l'account Aurya deve sbloccare da solo"
+        assert "epilessia" in src, "manca il disclaimer salute"
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/frequenze/:slug"' in app

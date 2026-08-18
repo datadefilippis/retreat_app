@@ -64,6 +64,8 @@ export default function FrequenzePage() {
   const [title, setTitle] = useState('');
   const [intent, setIntent] = useState(null);
   const [trackId, setTrackId] = useState(null);
+  const [trackStatus, setTrackStatus] = useState('draft');
+  const [trackSlug, setTrackSlug] = useState(null);
   const [drafts, setDrafts] = useState([]);
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -310,6 +312,7 @@ export default function FrequenzePage() {
     try {
       const t = (await frequenciesAPI.get(id)).data, s = t.score || {};
       setTrackId(t.id); setTitle(t.title || ''); setIntent(t.intent || null);
+      setTrackStatus(t.status || 'draft'); setTrackSlug(t.slug || null);
       setDurationMin(Math.round((s.duration_sec || 1200) / 60));
       setFadeIn(s.fade_in_sec ?? 10); setFadeOut(s.fade_out_sec ?? 20);
       setLayers((s.layers || []).map((l) => ({ ...l, id: ++_uid })));
@@ -330,6 +333,26 @@ export default function FrequenzePage() {
     }]],
   });
 
+  const publishTrack = async () => {
+    if (!trackId) return;
+    await save();
+    try {
+      const r = await frequenciesAPI.publish(trackId);
+      setTrackStatus('published'); setTrackSlug(r.data.slug);
+      const url = `${window.location.origin}/frequenze/${r.data.slug}`;
+      try { await navigator.clipboard.writeText(url); } catch { /* niente clipboard */ }
+      setStatus(`In ascolto pubblico su ${url} — link copiato`);
+    } catch (e) { setStatus(e?.response?.data?.detail || 'Pubblicazione fallita'); }
+  };
+  const unpublishTrack = async () => {
+    if (!trackId) return;
+    try {
+      await frequenciesAPI.unpublish(trackId);
+      setTrackStatus('draft');
+      setStatus('Traccia riportata in bozza: il link pubblico non risponde più');
+    } catch { setStatus('Errore'); }
+  };
+
   const resetSession = () => {
     if (!layers.length) return;
     stopSession();
@@ -338,6 +361,7 @@ export default function FrequenzePage() {
       msg: `Rimuove tutte le tracce dalla linea del tempo. Non si può annullare.`,
       opts: [['Sì, svuota', () => {
         setLayers([]); setPhases([]); setTrackId(null); setTitle(''); setIntent(null);
+        setTrackStatus('draft'); setTrackSlug(null);
         setStatus('Sessione svuotata');
       }]],
     });
@@ -808,6 +832,15 @@ export default function FrequenzePage() {
                   <span className="status">{exporting ? `${exporting.phase} · ${Math.round(exporting.pct * 100)}%` : status}</span>
                   <button type="button" data-testid="fq-save" disabled={saving || !layers.length}
                     onClick={save}>{saving ? 'Salvo…' : trackId ? 'Aggiorna bozza' : 'Salva bozza'}</button>
+                  {trackId && (trackStatus === 'published' ? (
+                    <button type="button" data-testid="fq-unpublish"
+                      title={trackSlug ? `Pubblica su /frequenze/${trackSlug}` : ''}
+                      style={{ borderColor: 'var(--water)', color: 'var(--water)' }}
+                      onClick={unpublishTrack}>● Pubblica­ta — ritira</button>
+                  ) : (
+                    <button type="button" data-testid="fq-publish"
+                      onClick={publishTrack}>Pubblica</button>
+                  ))}
                   <select value={sr} onChange={(e) => setSr(+e.target.value)}
                     title="44.1 kHz standard; 48 kHz per video">
                     <option value="44100">44.1 kHz</option><option value="48000">48 kHz</option>
