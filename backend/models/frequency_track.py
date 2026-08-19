@@ -8,9 +8,19 @@ a ogni ascolto. Niente file audio in Mongo, mai.
 `score_version` e' il contratto: il formato puo' evolvere solo aggiungendo
 versioni, mai cambiando la semantica della v1 — le tracce salvate oggi
 devono suonare identiche tra un anno.
+
+v2 (FV1, 19/8): aggiunge il layer `kind:'voice'` (spezzone registrato
+dall'operatore, con effetto selezionabile) e il flag `voice_duck` (le
+basi si abbassano sotto la voce). Una ricetta si salva v2 SOLO se usa
+la voce: tutto il pregresso resta v1, byte per byte.
 """
 
 SCORE_VERSION = 1
+SCORE_VERSION_VOICE = 2
+ACCEPTED_VERSIONS = (None, SCORE_VERSION, SCORE_VERSION_VOICE)
+
+# preset effetto voce (engine/voicefx.js e' il gemello: tenerli allineati)
+VOICE_FX = ("natural", "dream", "temple", "whisper")
 
 METHODS = ("bin", "iso", "mono", "bil", "noise", "tone")
 TIMBRES = ("pure", "warm")
@@ -67,6 +77,25 @@ def clean_layer(raw, duration):
             "loop": bool(raw.get("loop", True)),
             "mute": bool(raw.get("mute", False)),
         }
+    if raw.get("kind") == "voice":
+        asset_id = raw.get("asset_id")
+        if not isinstance(asset_id, str) or not (1 <= len(asset_id) <= 64):
+            return None
+        start = _num(raw.get("start"), 0, duration, 0)
+        end = _num(raw.get("end"), 0, duration, duration)
+        if end - start < 0.5:
+            end = min(duration, start + 0.5)
+        return {
+            "kind": "voice",
+            "asset_id": asset_id,
+            "name": str(raw.get("name") or "Voce")[:60],
+            "start": round(start, 3),
+            "end": round(end, 3),
+            "gain": _num(raw.get("gain"), 0.0, 1.0, 0.9),
+            "fx": raw.get("fx") if raw.get("fx") in VOICE_FX else "dream",
+            "fx_amount": _num(raw.get("fx_amount"), 0.0, 1.0, 0.6),
+            "mute": bool(raw.get("mute", False)),
+        }
     method = raw.get("method")
     if method not in METHODS:
         return None
@@ -102,7 +131,7 @@ def clean_score(raw):
     """
     if not isinstance(raw, dict):
         return None
-    if raw.get("score_version") not in (None, SCORE_VERSION):
+    if raw.get("score_version") not in ACCEPTED_VERSIONS:
         return None  # versioni future: mai degradarle in silenzio
     duration = _num(raw.get("duration_sec"), DURATION_MIN, DURATION_MAX, 1200)
     layers_raw = raw.get("layers")
@@ -123,14 +152,21 @@ def clean_score(raw):
                 "name": str(p.get("name") or "fase")[:40],
             })
     phases.sort(key=lambda p: p["t"])
-    return {
-        "score_version": SCORE_VERSION,
+    voice_duck = bool(raw.get("voice_duck", False))
+    has_voice = any(l.get("kind") == "voice" for l in layers)
+    score = {
+        # v2 solo dove serve: il pregresso senza voce resta v1 identico
+        "score_version": SCORE_VERSION_VOICE if (has_voice or voice_duck)
+                         else SCORE_VERSION,
         "duration_sec": round(duration, 1),
         "fade_in_sec": round(_num(raw.get("fade_in_sec"), 0, 120, 10), 1),
         "fade_out_sec": round(_num(raw.get("fade_out_sec"), 0, 120, 20), 1),
         "layers": layers,
         "phases": phases,
     }
+    if has_voice or voice_duck:
+        score["voice_duck"] = voice_duck
+    return score
 
 
 def clean_intent(raw):

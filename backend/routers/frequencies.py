@@ -506,3 +506,132 @@ async def delete_sound(asset_id: str,
             (AUDIO_DIR / fname).unlink(missing_ok=True)
         except OSError:
             logger.warning("file base %s non rimosso", fname)
+
+
+# ── FV1 — spezzoni voce dell'operatore ──────────────────────────────────────
+# La voce e' PER-ORG e nasce SOLO dalla registrazione in-app (niente
+# upload di file arbitrari — decisione founder 18/8). Byte su disco in
+# uploads/voice/{org_id}/, metadati in voice_assets. Quota per org.
+
+from models.voice_asset import (          # noqa: E402  (sezione FV1)
+    CLIP_MAX_BYTES, CLIP_MAX_SECONDS, CLIPS_MAX_PER_ORG,
+    ORG_QUOTA_BYTES, ext_for_mime,
+)
+from models.voice_asset import TITLE_MAX as VOICE_TITLE_MAX  # noqa: E402
+
+VOICE_DIR = Path(__file__).resolve().parent.parent / "uploads" / "voice"
+
+_VOICE_PROJECTION = {"_id": 0, "id": 1, "title": 1, "duration_sec": 1,
+                     "size_bytes": 1, "stream_url": 1, "created_at": 1}
+
+
+@router.get("/voice")
+async def list_voice_clips(current_user: dict = Depends(get_current_user)):
+    from database import voice_assets_collection
+    org_id = current_user["organization_id"]
+    items = await voice_assets_collection.find(
+        {"organization_id": org_id}, _VOICE_PROJECTION,
+    ).sort("created_at", -1).to_list(CLIPS_MAX_PER_ORG)
+    used = sum(i.get("size_bytes") or 0 for i in items)
+    return {"items": items, "quota_bytes": ORG_QUOTA_BYTES,
+            "used_bytes": used}
+
+
+@router.post("/voice", status_code=status.HTTP_201_CREATED)
+async def record_voice_clip(file: UploadFile = File(...),
+                            title: str = Form(...),
+                            duration_sec: float = Form(0),
+                            current_user: dict = Depends(get_current_user)):
+    from database import voice_assets_collection
+    org_id = current_user["organization_id"]
+    ext = ext_for_mime(file.content_type)
+    if not ext:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Formato non riconosciuto: la voce si registra dall'app.")
+    duration = max(0.0, float(duration_sec or 0))
+    if duration > CLIP_MAX_SECONDS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Spezzone oltre {CLIP_MAX_SECONDS // 60} minuti: "
+                   "spezzalo in piu' registrazioni.")
+    clean_title = (title or "").strip()[:VOICE_TITLE_MAX] or "Spezzone voce"
+    data = await file.read()
+    if len(data) > CLIP_MAX_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Registrazione oltre {CLIP_MAX_BYTES // (1024 * 1024)}MB.")
+    existing = await voice_assets_collection.find(
+        {"organization_id": org_id}, {"_id": 0, "size_bytes": 1},
+    ).to_list(CLIPS_MAX_PER_ORG + 1)
+    if len(existing) >= CLIPS_MAX_PER_ORG:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Limite di {CLIPS_MAX_PER_ORG} spezzoni raggiunto: "
+                   "elimina quelli che non usi.")
+    used = sum(e.get("size_bytes") or 0 for e in existing)
+    if used + len(data) > ORG_QUOTA_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Spazio voce esaurito: elimina spezzoni che non usi.")
+    asset_id = str(uuid.uuid4())
+    org_dir = VOICE_DIR / org_id
+    org_dir.mkdir(parents=True, exist_ok=True)
+    (org_dir / f"{asset_id}.{ext}").write_bytes(data)
+    asset = {
+        "id": asset_id,
+        "organization_id": org_id,
+        "title": clean_title,
+        "duration_sec": round(duration, 1),
+        "size_bytes": len(data),
+        "mime": (file.content_type or "").split(";")[0],
+        "stream_url": f"/uploads/voice/{org_id}/{asset_id}.{ext}",
+        "recorded_by": current_user.get("email"),
+        "created_at": utc_now(),
+    }
+    await voice_assets_collection.insert_one(dict(asset))
+    asset.pop("_id", None)
+    asset.pop("organization_id", None)
+    asset.pop("recorded_by", None)
+    return asset
+
+
+class VoiceClipUpdate(BaseModel):
+    title: str
+
+
+@router.patch("/voice/{asset_id}")
+async def rename_voice_clip(asset_id: str, payload: VoiceClipUpdate,
+                            current_user: dict = Depends(get_current_user)):
+    from database import voice_assets_collection
+    clean_title = (payload.title or "").strip()[:VOICE_TITLE_MAX]
+    if not clean_title:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Serve un titolo.")
+    res = await voice_assets_collection.update_one(
+        {"id": asset_id, "organization_id": current_user["organization_id"]},
+        {"$set": {"title": clean_title}})
+    if not res.matched_count:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Spezzone non trovato.")
+    return {"id": asset_id, "title": clean_title}
+
+
+@router.delete("/voice/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_voice_clip(asset_id: str,
+                            current_user: dict = Depends(get_current_user)):
+    from database import voice_assets_collection
+    org_id = current_user["organization_id"]
+    asset = await voice_assets_collection.find_one(
+        {"id": asset_id, "organization_id": org_id})
+    if not asset:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Spezzone non trovato.")
+    await voice_assets_collection.delete_one(
+        {"id": asset_id, "organization_id": org_id})
+    fname = os.path.basename(asset.get("stream_url") or "")
+    if fname:
+        try:
+            (VOICE_DIR / org_id / fname).unlink(missing_ok=True)
+        except OSError:
+            logger.warning("file voce %s non rimosso", fname)

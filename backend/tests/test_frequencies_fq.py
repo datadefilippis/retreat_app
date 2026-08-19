@@ -54,8 +54,8 @@ class TestScoreModelFq0:
         assert clean_score({}) is None
         assert clean_score({"layers": []}) is None
         assert clean_score({"layers": [{"method": "telepatia"}]}) is None
-        # versioni future mai degradate in silenzio
-        assert clean_score({"score_version": 2,
+        # versioni future mai degradate in silenzio (v2 = voce, e' nostra)
+        assert clean_score({"score_version": 3,
                             "layers": VALID_SCORE["layers"]}) is None
 
     def test_valori_fuori_range_riportati(self):
@@ -547,3 +547,99 @@ class TestVetrinaMeditazioniFq3:
         assert "import AccountFavorites from '../frequenze/AccountFavorites'" in account
         assert account.count("<AccountFavorites />") == 1, \
             "l'hub account innesta Frequenze con un import e UNA riga"
+
+
+class TestVoceOperatoreFv1:
+    """FV1 — spezzoni voce: score v2 additivo, asset PER-ORG, solo
+    registrazione in-app (docs/FREQUENZE_VOCE_PLAN_2026-08.md)."""
+
+    def test_score_v2_con_voce_roundtrip(self):
+        from models.frequency_track import clean_score
+        s = clean_score({
+            "score_version": 2, "duration_sec": 1200, "voice_duck": True,
+            "layers": [
+                VALID_SCORE["layers"][0],
+                {"kind": "voice", "asset_id": "abc", "name": "Respira",
+                 "start": 60, "end": 90, "gain": 2.0,
+                 "fx": "dream", "fx_amount": 5},
+            ],
+        })
+        assert s and s["score_version"] == 2 and s["voice_duck"] is True
+        voce = [l for l in s["layers"] if l["kind"] == "voice"][0]
+        assert voce["gain"] == 1.0 and voce["fx_amount"] == 1.0  # clamp
+        assert voce["fx"] == "dream"
+        # il campo buffer/di lavoro non passa mai
+        assert "buffer" not in voce and "_laneEl" not in voce
+
+    def test_senza_voce_resta_v1_identico(self):
+        """Il pregresso non cambia: uno score senza voce salva v1."""
+        from models.frequency_track import clean_score
+        s = clean_score(VALID_SCORE)
+        assert s["score_version"] == 1
+        assert "voice_duck" not in s, "voice_duck non deve inquinare il v1"
+
+    def test_voce_invalida_scartata_fx_whitelist(self):
+        from models.frequency_track import clean_score
+        # senza asset_id il layer voce muore, lo score resta se c'e' altro
+        s = clean_score({"duration_sec": 600, "layers": [
+            VALID_SCORE["layers"][0], {"kind": "voice", "start": 0}]})
+        assert s and all(l["kind"] != "voice" for l in s["layers"])
+        # fx sconosciuto → preset di default, mai passthrough
+        s2 = clean_score({"duration_sec": 600, "layers": [
+            {"kind": "voice", "asset_id": "x", "fx": "vocoder-alieno"}]})
+        assert s2["layers"][0]["fx"] == "dream"
+
+    def test_sezione_voce_sempre_org_scoped(self):
+        """Ogni query sugli spezzoni filtra per organization_id, e la
+        sezione non introduce upload da file manager (registrazione)."""
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        voice_part = src.split("FV1 — spezzoni voce")[1]
+        for op in ("find(", "find_one(", "update_one(", "delete_one("):
+            for chunk in voice_part.split(op)[1:]:
+                assert "organization_id" in chunk[:220], \
+                    f"query voce {op} senza filtro organization_id"
+        assert "require_system_admin" not in voice_part, \
+            "la voce e' dell'operatore, non della regia"
+        assert "ext_for_mime" in voice_part, \
+            "manca il vaglio del MIME di registrazione"
+
+    def test_api_ciclo_vita_spezzone(self):
+        """POST → lista con quota → PATCH rename → DELETE, org-scoped."""
+        headers = _login()
+        fake = b"\x1aE\xdf\xa3" + b"\x00" * 2000   # magic EBML/webm + padding
+        r = requests.post(
+            f"{BASE_URL}/api/frequencies/voice", headers=headers,
+            files={"file": ("clip.webm", fake, "audio/webm")},
+            data={"title": "Guardia FV1", "duration_sec": 4.2}, timeout=15)
+        assert r.status_code == 201, r.text
+        clip = r.json()
+        assert clip["stream_url"].startswith("/uploads/voice/")
+        assert "organization_id" not in clip     # mai id interni al client
+        try:
+            lst = requests.get(f"{BASE_URL}/api/frequencies/voice",
+                               headers=headers, timeout=10).json()
+            assert any(i["id"] == clip["id"] for i in lst["items"])
+            assert lst["quota_bytes"] > 0 and lst["used_bytes"] > 0
+            r2 = requests.patch(
+                f"{BASE_URL}/api/frequencies/voice/{clip['id']}",
+                headers=headers, json={"title": "Rinominata"}, timeout=10)
+            assert r2.status_code == 200 and r2.json()["title"] == "Rinominata"
+            # i byte sono serviti dallo static mount
+            r3 = requests.get(f"{BASE_URL}{clip['stream_url']}", timeout=10)
+            assert r3.status_code == 200 and len(r3.content) == len(fake)
+        finally:
+            rd = requests.delete(
+                f"{BASE_URL}/api/frequencies/voice/{clip['id']}",
+                headers=headers, timeout=10)
+            assert rd.status_code == 204
+        # dopo il delete anche il file sparisce
+        r4 = requests.get(f"{BASE_URL}{clip['stream_url']}", timeout=10)
+        assert r4.status_code == 404
+
+    def test_upload_senza_mime_audio_rifiutato(self):
+        headers = _login()
+        r = requests.post(
+            f"{BASE_URL}/api/frequencies/voice", headers=headers,
+            files={"file": ("nota.pdf", b"%PDF-", "application/pdf")},
+            data={"title": "x", "duration_sec": 1}, timeout=10)
+        assert r.status_code == 400

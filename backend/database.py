@@ -267,6 +267,9 @@ frequency_tracks_collection = db.frequency_tracks
 # FQ2 — basi sonore curate della piattaforma (metadati; i byte stanno
 # in uploads/audio/). Carica solo il system admin.
 audio_assets_collection = db.audio_assets
+# FV1 — spezzoni voce dell'operatore (metadati; i byte stanno in
+# uploads/voice/{org_id}/). Org-scoped, solo registrazione in-app.
+voice_assets_collection = db.voice_assets
 
 
 # ── Phase 3 (Store consolidation) — slug-index lifecycle helpers ────────────
@@ -1559,6 +1562,11 @@ async def create_indexes():
     await db.frequency_favorites.create_index(
         [("platform_account_id", 1), ("slug", 1)], unique=True,
         name="fq3_favorite_unique")
+    # FV1 — gli spezzoni voce si listano per org, dal piu' recente
+    await voice_assets_collection.create_index(
+        [("organization_id", 1), ("created_at", -1)], name="fv1_voice_org")
+    await voice_assets_collection.create_index("id", unique=True,
+                                               name="fv1_voice_id")
 
 def close_db():
     client.close()
