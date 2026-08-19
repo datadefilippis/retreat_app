@@ -46,6 +46,34 @@ const LISTEN = {
 };
 const SOUND_CATS = ['Ambient', 'Droni', 'Campane', 'Natura', 'Ritmi', 'Voce'];
 
+/* Orientamento della biblioteca: una riga sotto le tab (che cosa sto
+   guardando) e tre righe sopra le card (perché è diverso dagli altri).
+   Acculturare senza appesantire: nessun tutorial, nessun onboarding. */
+const CAT_HINT = {
+  'Bande cerebrali': "Ritmi dell'attività elettrica del cervello.",
+  'Altre frequenze': 'Frequenze sonore, fenomeni fisici, accordature e tradizioni.',
+  'Metodi': 'Tecniche per costruire e modulare uno stimolo sonoro.',
+};
+const CAT_INTRO = {
+  'Bande cerebrali': {
+    t: 'Cosa sono le bande cerebrali?',
+    p: "Il cervello presenta attività elettrica ritmica che possiamo osservare, per esempio, attraverso l'EEG. Delta, Theta, Alpha, Beta e Gamma descrivono diverse gamme di queste oscillazioni. Non sono semplicemente frequenze sonore: qui esploriamo il fenomeno cerebrale e, separatamente, come alcuni stimoli sonori cercano di interagire con esso.",
+  },
+  'Altre frequenze': {
+    t: 'Frequenze diverse, origini diverse.',
+    p: "Qui incontrerai frequenze con origini molto diverse: ricerca neuroscientifica, fenomeni fisici, accordature musicali e tradizioni sonore. Il livello di evidenza ti aiuta a distinguere ciò che è documentato da ciò che appartiene soprattutto alla tradizione.",
+  },
+  'Metodi': {
+    t: 'Una frequenza dice «cosa». Un metodo dice «come».',
+    p: "I metodi descrivono modi diversi di costruire o modulare uno stimolo sonoro: dal battito binaurale al tono isocronico, fino alla modulazione di un paesaggio sonoro.",
+  },
+};
+const HOWTO_BODY = '<h4>Frequenza</h4><p>La proprietà fisica di un suono, espressa in Hertz.</p>'
+  + '<h4>Banda cerebrale</h4><p>Una gamma di oscillazioni dell\'attività elettrica cerebrale osservabile, per esempio, attraverso l\'EEG.</p>'
+  + '<h4>Metodo</h4><p>Il modo in cui uno stimolo sonoro viene costruito o modulato.</p>'
+  + '<h4>Badge A/B/C</h4><p>Indica il livello di evidenza relativo alle affermazioni presentate, non quanto una frequenza sia «potente».</p>'
+  + '<h4>Ascolta</h4><p>Permette di fare esperienza diretta dello stimolo.</p>';
+
 export default function FrequenzePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -1003,7 +1031,7 @@ export default function FrequenzePage() {
                   <div className="tabgroup">
                     <div className="tabgroup-row">
                       {bibKeys.map((k) => (
-                        <button key={k} type="button"
+                        <button key={k} type="button" title={CAT_HINT[k] || undefined}
                           className={`tab ${view === 'impara' ? 'tab-learn' : 'tab-sound'}${activeTab === k ? ' on' : ''}`}
                           onClick={() => setCurTab(k)}>
                           {k}
@@ -1012,11 +1040,24 @@ export default function FrequenzePage() {
                     </div>
                   </div>
                 </div>
+                {CAT_HINT[activeTab] && (
+                  <div className="tabhint">{CAT_HINT[activeTab]}</div>
+                )}
                 {hasGrades && (
                   <div className="legend">
                     <span className="la" title="Il fenomeno è ben documentato dalla ricerca scientifica."><b>A</b> Evidenza solida</span>
                     <span className="lb" title="Esistono risultati interessanti, ma le evidenze non sono ancora conclusive."><b>B</b> Ricerca in corso</span>
                     <span className="lc" title="L'associazione appartiene soprattutto alla tradizione o alla cultura, senza una dimostrazione fisiologica consolidata."><b>C</b> Tradizione e simbolismo</span>
+                    <button type="button" className="howto" data-testid="fqz-howto"
+                      onClick={() => setLearn({ title: 'Come leggere questa biblioteca', body: HOWTO_BODY })}>
+                      Come leggere questa biblioteca
+                    </button>
+                  </div>
+                )}
+                {CAT_INTRO[activeTab] && (
+                  <div className="catintro" data-testid="fqz-catintro">
+                    <b>{CAT_INTRO[activeTab].t}</b>
+                    <p>{CAT_INTRO[activeTab].p}</p>
                   </div>
                 )}
                 {activeTab === 'Metodi' && (
@@ -1028,14 +1069,6 @@ export default function FrequenzePage() {
                     <div className="mk-line"><b>Soffio</b> un rumore continuo modulato → ritmo immerso nel paesaggio</div>
                     <div className="mk-line"><b>Tono puro</b> una frequenza stabile → nessuna pulsazione</div>
                   </div>
-                )}
-                {activeTab === 'Bande cerebrali' && (
-                  <p className="bandnote">
-                    Le bande cerebrali non sono suoni: sono <b>ritmi dell'attività
-                    elettrica del cervello</b>, osservabili con l'EEG. Qui trovi
-                    stimoli sonori costruiti su quei ritmi — cosa la ricerca ha
-                    davvero mostrato sull'ascolto è dichiarato nel badge di ogni scheda.
-                  </p>
                 )}
                 {(() => {
                   // gruppi tematici (Altre frequenze): titoli discreti, e

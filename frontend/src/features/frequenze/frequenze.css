@@ -370,9 +370,18 @@
    I badge restano identici: cambia solo la disposizione della riga. */
 .fqz .legend > span{display:inline-flex;align-items:center;white-space:nowrap;
   cursor:help}
-.fqz .bandnote{margin:-6px 0 14px;padding:9px 13px;font-size:11.5px;
-  line-height:1.55;color:var(--dim);border-left:2px solid var(--line);
-  background:rgba(255,255,255,.015);border-radius:0 8px 8px 0}
+.fqz .tabhint{margin:-4px 0 14px;font-size:11.5px;color:var(--dim);
+  letter-spacing:.01em;opacity:.85}
+.fqz .catintro{margin:0 0 14px;padding:12px 15px;border-left:2px solid var(--lamp);
+  background:linear-gradient(90deg,rgba(216,169,78,.05),transparent 70%);
+  border-radius:0 9px 9px 0}
+.fqz .catintro b{display:block;color:var(--lamp);font-size:12.5px;
+  letter-spacing:.01em;margin-bottom:4px}
+.fqz .catintro p{margin:0;font-size:11.5px;line-height:1.6;color:var(--dim)}
+.fqz .howto{margin-left:auto;background:none;border:none;padding:0;cursor:pointer;
+  font-family:inherit;font-size:11px;color:var(--water);letter-spacing:.02em;
+  text-decoration:underline;text-underline-offset:3px;opacity:.85}
+.fqz .howto:hover{opacity:1}
 @media (max-width:760px){.fqz .legend > span{max-width:100%;flex-basis:100%}}
 
 /* Approfondimento a sezioni (COS'È / A COSA È ASSOCIATA / ...) */
