@@ -184,6 +184,7 @@ import CustomerCoursePlayerPage from "./features/customer-portal/pages/CoursePla
 // (= the only protected page accessible to unverified users).
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -194,7 +195,10 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    // LN0 — il login riporta DOVE si stava andando, non in /dashboard:
+    // e' il rimbalzo che al refresh faceva perdere la pagina.
+    const next = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?next=${next}`} replace />;
   }
 
   // Onda 28 — email verification gate. Strictly compare to false so
@@ -943,17 +947,24 @@ function AppRoutes() {
       />
       {/* FQ3 — vetrina meditazioni (schermo d'invito senza sblocco) */}
       <Route path="/meditazioni" element={<MeditazioniPage />} />
-      {/* FQ1 — ascolto pubblico di una traccia pubblicata */}
+      {/* FQ1 — ascolto pubblico di una traccia pubblicata. Il namespace
+          /frequenze/* appartiene PER SEMPRE ai link condivisi in giro:
+          il workspace vive altrove (/sound) proprio per non collidere. */}
       <Route path="/frequenze/:slug" element={<PublicFrequencyPage />} />
-      {/* FQ0 — compositore Frequenze (bozze org-scoped) */}
+      {/* LN — workspace Aurya Sound: ogni vista ha il suo URL
+          (/sound/esplora|crea|impara|tracce). Wildcard su UN solo
+          elemento: navigando tra le viste il componente resta montato
+          e la sessione in costruzione sopravvive. */}
       <Route
-        path="/frequenze"
+        path="/sound/*"
         element={
           <ProtectedRoute>
             <FrequenzePage />
           </ProtectedRoute>
         }
       />
+      {/* legacy: il vecchio indirizzo del workspace continua a funzionare */}
+      <Route path="/frequenze" element={<Navigate to="/sound/esplora" replace />} />
       {/* F2.0 — editor del profilo pubblico operatore (/o/:slug) */}
       <Route
         path="/public-profile"

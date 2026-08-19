@@ -152,7 +152,9 @@ class TestIsolamentoFrontendFq0:
     def test_pagina_lazy_in_app(self):
         src = (FRONTEND_SRC / "App.js").read_text()
         assert 'lazy(() => import("./features/frequenze/FrequenzePage"))' in src
-        assert 'path="/frequenze"' in src
+        # LN — il workspace vive su /sound/*, il vecchio indirizzo redirige
+        assert 'path="/sound/*"' in src
+        assert '<Route path="/frequenze" element={<Navigate to="/sound/esplora"' in src
 
     def test_engine_senza_react_e_dom(self):
         for name in ("synth.js", "render.js", "voicefx.js", "assets.js"):
@@ -891,3 +893,59 @@ class TestGuidaEditorialeGd:
         for vietato in ("AudioContext", "startPreview", "oscillator", "BIB"):
             assert vietato not in view, \
                 f"GuidaView tocca {vietato}: deve restare editoriale"
+
+
+class TestLinkPagineLn:
+    """LN — ogni pagina di valore ha il suo link, e i link vecchi
+    continuano a rispondere. La regola piu' importante: /frequenze/:slug
+    appartiene ai link pubblici gia' condivisi e non si tocca MAI."""
+
+    def test_slug_pubblici_intatti(self):
+        """La rotta player e i link generati restano su /frequenze/<slug>."""
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/frequenze/:slug"' in app
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert page.count("/frequenze/${") >= 2, \
+            "publish e copia-link devono generare ancora origin/frequenze/<slug>"
+
+    def test_viste_derivate_dall_url(self):
+        """La vista non e' piu' useState: la verita' sta nell'URL,
+        cosi' il refresh resta dove sei."""
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "useState('explore')" not in page
+        for path in ("esplora", "crea", "impara", "tracce"):
+            assert f"{path}:" in page.replace("'", "").replace(" ", "") \
+                or f"'{path}'" in page, f"vista {path} non mappata"
+        # glossario = percorso, non stato
+        assert "/sound/impara/glossario" in page
+
+    def test_bozza_nell_url(self):
+        """/sound/crea?bozza=<id>: apertura, salvataggio e refresh
+        parlano lo stesso link; la bozza eliminata esce dall'URL."""
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "bozza=${t.id}" in page.replace("`", "")
+        assert "qs.get('bozza')" in page
+        blocco_open = page.split("const openDraft")[1][:900]
+        assert "nav" in blocco_open, \
+            "openDraft deve distinguere click (naviga) da refresh (no)"
+
+    def test_login_rispetta_next(self):
+        """LN0 — il rimbalzo refresh→login non deve piu' perdere la
+        pagina: ProtectedRoute passa next=, il login lo rispetta e
+        accetta SOLO path interni (niente open redirect)."""
+        app = (FRONTEND_SRC / "App.js").read_text()
+        blocco = app.split("const ProtectedRoute")[1][:900]
+        assert "next=" in blocco and "encodeURIComponent" in blocco
+        auth = (FRONTEND_SRC / "pages" / "AuthPages.js").read_text()
+        assert "searchParams.get('next')" in auth
+        assert "startsWith('//')" in auth, "manca la guardia open-redirect"
+
+    def test_history_onesta(self):
+        """Cambio vista = push; cambio tab/mondo/categoria = replace.
+        Il back non deve ripercorrere ogni tab cliccato."""
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        for setter in ("setWorld", "setSoundCat", "setCurTab"):
+            blocco = page.split(f"const {setter} = ")[1][:300]
+            assert "replace: true" in blocco, f"{setter} deve fare replace"
+        set_view = page.split("const setView = ")[1].split("\n")[0]
+        assert "replace" not in set_view, "setView deve fare push (vista nuova)"

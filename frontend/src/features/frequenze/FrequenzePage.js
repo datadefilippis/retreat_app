@@ -17,7 +17,7 @@
  * arriva con FQ2 (audio_assets).
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { frequenciesAPI } from '../../api/frequencies';
 import {
@@ -79,10 +79,50 @@ export default function FrequenzePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isSystemAdmin = user?.role === 'system_admin';
-  const [view, setView] = useState('explore');           // explore | impara | create
-  const [world, setWorld] = useState('freq');            // freq | sound (Esplora)
-  const [curTab, setCurTab] = useState(SOUND_KEYS[0]);
-  const [soundCat, setSoundCat] = useState(SOUND_CATS[0]);
+  /* ── LN — ogni pagina ha il suo link ──────────────────────────────
+     L'URL e' l'unica verita' per vista e tab: /sound/esplora|crea|
+     impara|tracce (+ /impara/glossario), con lo stato fine nelle
+     query (?categoria, ?mondo=suoni, ?bozza). Cosi' il refresh resta
+     dove sei e ogni pagina si puo' linkare. Semantica history: cambio
+     VISTA = push (il back torna alla vista prima), cambio tab/mondo =
+     replace (il back non ripercorre ogni tab).
+     Tutte le rotte /sound/* montano QUESTO stesso componente: la
+     sessione in costruzione e l'audio sopravvivono alla navigazione. */
+  const location = useLocation();
+  const qs = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const VIEW_PATH = { explore: 'esplora', create: 'crea', impara: 'impara', mine: 'tracce' };
+  const PATH_VIEW = { esplora: 'explore', crea: 'create', impara: 'impara', tracce: 'mine' };
+  const CAT_SLUG = { 'Bande cerebrali': 'bande-cerebrali', 'Altre frequenze': 'altre-frequenze', 'Metodi': 'metodi' };
+  const SLUG_CAT = { 'bande-cerebrali': 'Bande cerebrali', 'altre-frequenze': 'Altre frequenze', 'metodi': 'Metodi' };
+
+  const seg = location.pathname.split('/').filter(Boolean);   // ['sound','crea',...]
+  const view = PATH_VIEW[seg[1]] || 'explore';
+  const world = view === 'explore' && qs.get('mondo') === 'suoni' ? 'sound' : 'freq';
+  const soundCat = SOUND_CATS.find((c) => c.toLowerCase() === (qs.get('categoria') || '')) || SOUND_CATS[0];
+  const curTab = view === 'impara'
+    ? (seg[2] === 'glossario' ? 'Glossario' : 'Guida')
+    : (SLUG_CAT[qs.get('categoria')] || SOUND_KEYS[0]);
+
+  const setView = (v) => navigate(`/sound/${VIEW_PATH[v]}`);
+  const setWorld = (w) => navigate(w === 'sound' ? '/sound/esplora?mondo=suoni' : '/sound/esplora', { replace: true });
+  const setSoundCat = (c) => navigate(`/sound/esplora?mondo=suoni&categoria=${c.toLowerCase()}`, { replace: true });
+  const setCurTab = (k) => {
+    if (view === 'impara') navigate(k === 'Glossario' ? '/sound/impara/glossario' : '/sound/impara', { replace: true });
+    else navigate(`/sound/esplora?categoria=${CAT_SLUG[k] || ''}`, { replace: true });
+  };
+
+  // /sound nudo → forma canonica (replace: il back non deve vederlo)
+  useEffect(() => {
+    if (!seg[1]) navigate('/sound/esplora', { replace: true });
+  }, [seg, navigate]);
+
+  // ogni pagina col suo nome anche nella scheda del browser
+  useEffect(() => {
+    const name = view === 'impara'
+      ? (curTab === 'Glossario' ? 'Glossario' : 'Le fondamenta')
+      : { explore: 'Esplora', create: 'Crea', mine: 'Le mie tracce' }[view];
+    document.title = `Aurya Sound — ${name}`;
+  }, [view, curTab]);
   const [gateOk, setGateOk] = useState(() => localStorage.getItem('fqz_gate_ok') === '1');
   const [ask, setAsk] = useState(null);                  // {title,msg,opts:[[label,fn]]}
   const [learn, setLearn] = useState(null);              // {title,body}
@@ -484,6 +524,8 @@ export default function FrequenzePage() {
       } else {
         const r = await frequenciesAPI.create({ title: name, score: scorePayload(), intent });
         setTrackId(r.data.id);
+        // timbra la bozza appena nata nell'URL (replace: niente history)
+        if (view === 'create') navigate(`/sound/crea?bozza=${r.data.id}`, { replace: true });
         setStatus(`Bozza «${name}» salvata`);
       }
       loadDrafts();
@@ -491,7 +533,7 @@ export default function FrequenzePage() {
       setStatus(e?.response?.data?.detail || 'Errore nel salvataggio');
     } finally { setSaving(false); }
   };
-  const openDraft = async (id) => {
+  const openDraft = async (id, nav = true) => {
     stopSession();
     try {
       const t = (await frequenciesAPI.get(id)).data, s = t.score || {};
@@ -502,17 +544,30 @@ export default function FrequenzePage() {
       setLayers((s.layers || []).map((l) => ({ ...l, id: ++_uid })));
       setPhases(s.phases || []);
       setVoiceDuck(!!s.voice_duck);
-      setView('create');
+      // la bozza aperta sta nell'URL: il refresh la ricarica invece di
+      // buttarti fuori (nav=false quando e' l'URL stesso a chiederla)
+      if (nav) navigate(`/sound/crea?bozza=${t.id}`);
       setStatus(`Bozza «${t.title}» caricata`);
     } catch { setStatus('Bozza non trovata'); }
   };
+
+  // refresh (o link diretto) su /sound/crea?bozza=x → ricarica la bozza
+  const bozzaParam = view === 'create' ? qs.get('bozza') : null;
+  useEffect(() => {
+    if (bozzaParam && bozzaParam !== trackId) openDraft(bozzaParam, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bozzaParam]);
   const removeDraft = (id, name) => setAsk({
     title: 'Eliminare la bozza?',
     msg: `«${name}» verrà eliminata. Non si può annullare.`,
     opts: [['Sì, elimina', async () => {
       try {
         await frequenciesAPI.remove(id);
-        if (id === trackId) setTrackId(null);
+        if (id === trackId) {
+          setTrackId(null);
+          // la bozza eliminata non deve restare nell'URL di Crea
+          if (qs.get('bozza') === id) navigate('/sound/tracce', { replace: true });
+        }
         loadDrafts();
       } catch { setStatus('Errore'); }
     }]],
@@ -558,6 +613,7 @@ export default function FrequenzePage() {
       opts: [['Sì, svuota', () => {
         setLayers([]); setPhases([]); setTrackId(null); setTitle(''); setIntent(null);
         setTrackStatus('draft'); setTrackSlug(null); setVoiceDuck(false);
+        if (qs.get('bozza')) navigate('/sound/crea', { replace: true });
         setStatus('Sessione svuotata');
       }]],
     });
@@ -705,11 +761,10 @@ export default function FrequenzePage() {
     </div>
   );
 
-  // dalla Guida si torna sempre alla biblioteca — mai a Crea
+  // dalla Guida si torna sempre alla biblioteca — mai a Crea.
+  // Un solo navigate (push): cambio di vista vero, il back torna alla Guida.
   const goExplore = (cat) => {
-    setView('explore');
-    setWorld('freq');
-    setCurTab(cat);
+    navigate(`/sound/esplora?categoria=${CAT_SLUG[cat] || ''}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

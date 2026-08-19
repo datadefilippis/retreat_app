@@ -54,6 +54,7 @@ export const LoginPage = () => {
   const [lockoutSecondsLeft, setLockoutSecondsLeft] = useState(0);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();   // LN0 — per ?next=
   const { t } = useTranslation('auth');
   useLangParam();
 
@@ -99,7 +100,11 @@ export const LoginPage = () => {
         navigate('/settings');
       } else {
         toast.success(t('login.welcome_back'));
-        navigate('/dashboard');
+        // LN0 — rispetta ?next= (solo path interni: un valore esterno
+        // o protocol-relative sarebbe un open redirect)
+        const next = searchParams.get('next') || '';
+        const safe = next.startsWith('/') && !next.startsWith('//');
+        navigate(safe ? next : '/dashboard');
       }
     } catch (error) {
       const data = error.response?.data || {};
