@@ -179,8 +179,15 @@ export default function FrequenzePage() {
     }]],
   });
 
-  /* ── ascolto sessione ── */
+  /* ── ascolto sessione ──
+   * playSession ha degli await in mezzo (resume del contesto, decodifica
+   * delle basi): senza un token di sequenza un Ferma o un seek dato
+   * durante l'attesa non trova ancora niente da fermare, e il grafo
+   * nasce subito dopo orfano — suona fino in fondo senza che nessuno
+   * lo possa spegnere. Ogni stop invalida gli avvii in volo. */
+  const playTokenRef = useRef(0);
   const stopSession = () => {
+    playTokenRef.current += 1;
     if (liveRef.current) { liveRef.current.stop(); liveRef.current = null; }
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     setPlaying(false);
@@ -200,12 +207,15 @@ export default function FrequenzePage() {
       setStatus('Schede in ascolto fermate — ora suona la linea del tempo');
     }
     if (!layers.length) return;
+    const token = playTokenRef.current;   // stopSession() l'ha appena incrementato
     const ctx = audioCtx();
     await ctx.resume();
+    if (playTokenRef.current !== token) return;
     let audioLayers = [];
     if (layers.some((l) => l.kind === 'audio')) {
       setStatus('Carico le basi…');
       audioLayers = await resolveAudioLayers(ctx, score, soundsById);
+      if (playTokenRef.current !== token) return;
     }
     liveRef.current = startPreview(ctx, score, { fromT, audioLayers });
     setPlaying(true);

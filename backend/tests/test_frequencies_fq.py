@@ -273,6 +273,27 @@ class TestSoloSuoniPiattaformaFq05b:
             assert "startCardLive" not in chunk and "startPreview" not in chunk, \
                 "side effect audio dentro un updater React"
 
+    def test_avvio_sessione_invalidato_dallo_stop(self):
+        """Secondo bug dello stop (Crea, 19/8): playSession ha degli await
+        in mezzo (resume del contesto, decodifica delle basi). Senza token
+        di sequenza, un Ferma — o un secondo click su Ascolta mentre il
+        primo carica — non trova ancora niente da fermare e il grafo nasce
+        subito dopo ORFANO: suona fino in fondo, ingovernabile.
+        Misurato in browser: due click davano 48 oscillatori, il Ferma ne
+        spegneva 24. Col token: 24 creati, 24 spenti."""
+        import re
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "playTokenRef" in src, "manca il token di sequenza dell'ascolto"
+        stop_fn = src.split("const stopSession = () =>")[1][:400]
+        assert "playTokenRef.current += 1" in stop_fn, \
+            "stopSession non invalida gli avvii in volo"
+        play_fn = src.split("const playSession = async")[1].split("const seekTo")[0]
+        awaits = [m.start() for m in re.finditer(r"\bawait\b", play_fn)]
+        start = play_fn.index("startPreview")
+        guard = play_fn.rindex("playTokenRef.current !== token", 0, start)
+        assert all(a < guard for a in awaits), \
+            "c'e' un await dopo l'ultimo controllo del token: il grafo puo' nascere orfano"
+
 
 class TestLibreriaSuoniFq2:
     """FQ2 — basi sonore curate: lettura per tutti, scrittura SOLO
