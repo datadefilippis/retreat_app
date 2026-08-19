@@ -295,6 +295,42 @@ class TestSoloSuoniPiattaformaFq05b:
             "c'e' un await dopo l'ultimo controllo del token: il grafo puo' nascere orfano"
 
 
+class TestSeekMotoreFq05c:
+    """Terzo bug dell'ascolto (19/8): spostando il cursore in avanti in
+    «Crea», l'ascolto moriva con «Time must be a finite non-negative
+    number». Col seek l'origine dei tempi va all'indietro (t0 = adesso -
+    punto) e i livelli gia' cominciati finiscono a istanti NEGATIVI, che
+    Web Audio rifiuta. Ogni istante schedulato dev'essere ancorato al
+    presente. Misurato: pre-fix rejection e cursore congelato, col fix
+    tre seek di fila senza un errore."""
+
+    def test_ogni_istante_ancorato_al_presente(self):
+        import re
+        src = (FQ_DIR / "engine" / "synth.js").read_text()
+        body = src.split("export function startPreview")[1]
+        assert "const at = (t) => Math.max(now, t);" in body, \
+            "manca l'ancora `at` degli istanti in startPreview"
+        # nessun istante derivato da s0/t0 puo' finire nudo dentro una
+        # chiamata di scheduling: deve passare da at(...)
+        for m in re.finditer(
+                r"\.(?:setValueAtTime|linearRampToValueAtTime|start|stop)\(([^;]*?)\)\s*;", body):
+            arg = m.group(1)
+            if "s0" in arg or "t0" in arg:
+                assert "at(" in arg, f"istante non ancorato: {m.group(0).strip()}"
+
+    def test_curva_riprende_dal_punto_giusto(self):
+        """rampCurve deve saltare il passato invece di schedularlo:
+        prende `now` e parte da max(t0, now) col valore di quel punto."""
+        src = (FQ_DIR / "engine" / "synth.js").read_text()
+        fn = src.split("const rampCurve =")[1].split("\n};")[0]
+        assert "now = 0" in fn, "rampCurve non riceve il presente"
+        assert "Math.max(t0, now)" in fn, "rampCurve non ancora l'inizio della curva"
+        assert "if (t0 + u > from)" in fn, "rampCurve schedula ancora punti nel passato"
+        chiamate = src.split("export function startPreview")[1]
+        assert chiamate.count("rampCurve(") == chiamate.count(", now)"), \
+            "qualche rampCurve dentro startPreview non riceve `now`"
+
+
 class TestLibreriaSuoniFq2:
     """FQ2 — basi sonore curate: lettura per tutti, scrittura SOLO
     system admin, byte su disco mai in Mongo."""

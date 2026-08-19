@@ -228,11 +228,20 @@ export function startCardLive(ctx, cfg, gain, fval) {
   };
 }
 
-const rampCurve = (param, t0, span, fn, steps = 160) => {
-  param.setValueAtTime(fn(0), t0);
+/* Disegna una curva su un AudioParam campionandola a passi.
+ *
+ * `now` e' il presente del contesto: al seek in avanti un livello puo'
+ * essere gia' cominciato, e la sua curva parte a un istante passato —
+ * che al limite e' NEGATIVO (t0 = adesso - punto di seek), e Web Audio
+ * rifiuta i tempi negativi. Qui la curva riprende dal punto in cui si
+ * trova adesso e schedula solo il futuro: nessun tempo illegale, e il
+ * livello riparte al valore giusto invece che dall'inizio. */
+const rampCurve = (param, t0, span, fn, steps = 160, now = 0) => {
+  const from = Math.max(t0, now);
+  param.setValueAtTime(fn(Math.max(0, from - t0)), from);
   for (let i = 1; i <= steps; i++) {
     const u = (i / steps) * span;
-    param.linearRampToValueAtTime(fn(u), t0 + u);
+    if (t0 + u > from) param.linearRampToValueAtTime(fn(u), t0 + u);
   }
 };
 
@@ -253,12 +262,17 @@ export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
   const sess = ctx.createGain();
   sess.connect(ctx.destination);
   const fi = score.fade_in_sec || 0, fo = score.fade_out_sec || 0;
-  const startAt = ctx.currentTime + 0.15;
+  const now = ctx.currentTime;
+  const startAt = now + 0.15;
+  // Col seek in avanti t0 finisce nel passato (anche sotto zero): ogni
+  // istante assoluto va ancorato ad `at`, o Web Audio solleva
+  // «Time must be a finite non-negative number» e l'ascolto muore.
+  const at = (t) => Math.max(now, t);
   sess.gain.setValueAtTime(off < fi && fi > 0 ? Math.max(0.0001, off / fi) : 1, startAt);
-  if (fi > 0 && off < fi) sess.gain.linearRampToValueAtTime(1, t0 + fi);
+  if (fi > 0 && off < fi) sess.gain.linearRampToValueAtTime(1, at(t0 + fi));
   if (fo > 0) {
-    sess.gain.setValueAtTime(1, t0 + d - fo);
-    sess.gain.linearRampToValueAtTime(0.0001, t0 + d);
+    sess.gain.setValueAtTime(1, at(t0 + d - fo));
+    sess.gain.linearRampToValueAtTime(0.0001, at(t0 + d));
   }
 
   audioLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer).forEach((l) => {
@@ -270,15 +284,15 @@ export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
     src.buffer = l.buffer; src.loop = l.loop;
     const g = ctx.createGain(); src.connect(g); g.connect(uG);
     const a = Math.min(6, span * 0.2), r = Math.min(8, span * 0.25);
-    g.gain.setValueAtTime(0.0001, s0);
-    g.gain.linearRampToValueAtTime(l.gain, s0 + a);
-    g.gain.setValueAtTime(l.gain, s0 + span - r);
-    g.gain.linearRampToValueAtTime(0.0001, s0 + span);
+    g.gain.setValueAtTime(0.0001, at(s0));
+    g.gain.linearRampToValueAtTime(l.gain, at(s0 + a));
+    g.gain.setValueAtTime(l.gain, at(s0 + span - r));
+    g.gain.linearRampToValueAtTime(0.0001, at(s0 + span));
     const startOffset = off > l.start ? off - l.start : 0;
-    const when = Math.max(ctx.currentTime, s0);
+    const when = at(s0);
     src.start(when, l.loop ? startOffset % l.buffer.duration
                            : Math.min(startOffset, l.buffer.duration - 0.001));
-    src.stop(s0 + span);
+    src.stop(at(s0 + span));
     nodes.push(src);
   });
 
@@ -289,16 +303,16 @@ export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
     liveG[l.id] = { node: uG, base: l.gain };
     const g = ctx.createGain(); g.connect(uG);
     rampCurve(g.gain, s0, span,
-      (u) => Math.max(0.0001, envAt(l, u, span, l.start + u)), 200);
+      (u) => Math.max(0.0001, envAt(l, u, span, l.start + u)), 200, now);
     const mkVoice = (fFn, dest) => {
       const parts = l.timbre === 'warm'
         ? [[1, 1 / 1.4], [2, 0.28 / 1.4], [3, 0.12 / 1.4]] : [[1, 1]];
       parts.forEach(([m, w]) => {
         const o = ctx.createOscillator(), og = ctx.createGain();
         og.gain.value = w;
-        rampCurve(o.frequency, s0, span, (u) => Math.max(1, fFn(u) * m), 120);
+        rampCurve(o.frequency, s0, span, (u) => Math.max(1, fFn(u) * m), 120, now);
         o.connect(og); og.connect(dest);
-        o.start(Math.max(ctx.currentTime, s0)); o.stop(s0 + span);
+        o.start(at(s0)); o.stop(at(s0 + span));
         nodes.push(o);
       });
     };
@@ -314,9 +328,9 @@ export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
     } else if (l.method === 'iso') {
       const gate = ctx.createGain(); gate.gain.value = 0.5; gate.connect(g);
       const lfo = ctx.createOscillator(), la = ctx.createGain(); la.gain.value = 0.5;
-      rampCurve(lfo.frequency, s0, span, (u) => beat(u), 120);
+      rampCurve(lfo.frequency, s0, span, (u) => beat(u), 120, now);
       lfo.connect(la); la.connect(gate.gain);
-      lfo.start(Math.max(ctx.currentTime, s0)); lfo.stop(s0 + span);
+      lfo.start(at(s0)); lfo.stop(at(s0 + span));
       nodes.push(lfo);
       mkVoice(() => l.carrier, gate);
     } else if (l.method === 'bil') {
@@ -325,9 +339,9 @@ export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
       if (pan) {
         pan.connect(g);
         const lfo = ctx.createOscillator(), la = ctx.createGain(); la.gain.value = 1;
-        rampCurve(lfo.frequency, s0, span, (u) => beat(u), 120);
+        rampCurve(lfo.frequency, s0, span, (u) => beat(u), 120, now);
         lfo.connect(la); la.connect(pan.pan);
-        lfo.start(Math.max(ctx.currentTime, s0)); lfo.stop(s0 + span);
+        lfo.start(at(s0)); lfo.stop(at(s0 + span));
         nodes.push(lfo);
       }
       mkVoice(() => l.carrier, dst);
@@ -336,11 +350,11 @@ export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
       src.buffer = pinkBuf(ctx); src.loop = true;
       const gate = ctx.createGain(); gate.gain.value = 0.8;
       const lfo = ctx.createOscillator(), la = ctx.createGain(); la.gain.value = 0.8;
-      rampCurve(lfo.frequency, s0, span, (u) => beat(u), 120);
+      rampCurve(lfo.frequency, s0, span, (u) => beat(u), 120, now);
       lfo.connect(la); la.connect(gate.gain);
       src.connect(gate); gate.connect(g);
-      src.start(Math.max(ctx.currentTime, s0)); src.stop(s0 + span);
-      lfo.start(Math.max(ctx.currentTime, s0)); lfo.stop(s0 + span);
+      src.start(at(s0)); src.stop(at(s0 + span));
+      lfo.start(at(s0)); lfo.stop(at(s0 + span));
       nodes.push(src, lfo);
     }
   });
