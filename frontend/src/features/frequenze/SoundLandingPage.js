@@ -90,7 +90,7 @@ export default function SoundLandingPage() {
               con un link da condividere.
             </p>
             <Link to={PRO_ENTRY}>
-              <button type="button">Scopri Aurya Sound per operatori →</button>
+              <button type="button" className="pro-cta">Scopri Aurya Sound per operatori →</button>
             </Link>
           </div>
 

@@ -40,7 +40,7 @@
 .fqz button{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:transparent;
     color:var(--bone);border:1px solid var(--line);padding:9px 15px;border-radius:8px;cursor:pointer;
     transition:border-color .16s,color .16s,background .16s,transform .1s,box-shadow .16s}
-.fqz button:hover:not(:disabled):not(.primary):not(.on):not(.cb-play):not(.cb-reset){border-color:var(--lamp);color:var(--lamp)}
+.fqz button:hover:not(:disabled):not(.primary):not(.on):not(.cb-play):not(.cb-reset):not(.gd-final):not(.pro-cta){border-color:var(--lamp);color:var(--lamp)}
 .fqz button:active:not(:disabled){transform:translateY(1px)}
 .fqz button:disabled{opacity:.35;cursor:not-allowed}
 .fqz button.primary{background:linear-gradient(180deg,#E6AE68,#D49B4E);color:#141F13;border-color:#E6AE68;font-weight:700;box-shadow:0 4px 14px #DFA45C33}
@@ -594,7 +594,7 @@
 .fqz .gd-final{padding:13px 34px;border:1px solid var(--lamp);color:var(--lamp);border-radius:3px;
   font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;
   background:transparent;transition:.2s}
-.fqz .gd-final:hover{background:var(--lamp);color:var(--ink)}
+.fqz .gd-final:hover{background:var(--lamp);color:var(--ink);border-color:var(--lamp)}
 
 /* glossario: tre famiglie, definizioni rapide */
 .fqz .gd-gloss{max-width:820px}
@@ -658,7 +658,7 @@
 .fqz .probox button{padding:11px 26px;border:1px solid var(--lamp);color:var(--lamp);
   border-radius:3px;background:transparent;cursor:pointer;font-family:var(--mono);
   font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;transition:.2s}
-.fqz .probox button:hover{background:var(--lamp);color:var(--ink)}
+.fqz .probox button:hover{background:var(--lamp);color:var(--ink);border-color:var(--lamp)}
 .fqz .gd-pro{margin:22px auto 0;max-width:560px;font-size:12px;line-height:1.7;
   color:var(--dimmer)}
 .fqz .gd-pro a{color:var(--lamp);text-decoration:underline;text-underline-offset:3px}
@@ -714,3 +714,9 @@
 .fqz .fqzfoot a:hover{color:var(--lamp)}
 .fqz .fqzfoot a:first-child{color:var(--dim)}
 @media (max-width:640px){.fqz .fqzbrand i{display:none}}
+
+/* la voce che esce da Sound (meditazioni degli operatori): stessa
+   forma delle altre, ma con l'accento acqua per dire «altro luogo» */
+.fqz .vbtn-out{display:inline-flex;align-items:center;text-decoration:none;
+  color:var(--water);border-color:var(--line-soft)}
+.fqz .vbtn-out:hover{border-color:var(--water);color:var(--water)}

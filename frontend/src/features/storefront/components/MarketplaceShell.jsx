@@ -313,6 +313,8 @@ const NETWORK_NAV_ITEMS = [
   // il Magazine: voce propria («Sound» e' un nome, resta cosi' in ogni
   // lingua)
   { to: '/sound', key: 'marketplace.navSound', fallback: 'Sound' },
+  // le esperienze gia' composte dagli operatori: la sorella di Sound
+  { to: '/meditazioni', key: 'marketplace.navMeditations', fallback: 'Meditazioni' },
   { to: '/manifesto', key: 'marketplace.navManifesto', fallback: 'Manifesto' },
   { to: '/operatori', key: 'marketplace.navNetwork', fallback: 'La Rete',
     hint: { key: 'marketplace.navNetworkSoon', fallback: 'in arrivo' } },

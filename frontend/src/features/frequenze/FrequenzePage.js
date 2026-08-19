@@ -1075,6 +1075,10 @@ export default function FrequenzePage() {
           )}
           <button type="button" className={`vbtn${view === 'impara' ? ' on' : ''}`}
             onClick={() => setView('impara')}>Impara</button>
+          {/* esce da Sound: le esperienze gia' composte dagli operatori */}
+          <a className="vbtn vbtn-out" href="/meditazioni" data-testid="fqz-nav-meditazioni">
+            Esplora meditazioni
+          </a>
         </div>
       </header>
 
@@ -1257,7 +1261,7 @@ export default function FrequenzePage() {
                     <b>Vuoi andare oltre l'esplorazione?</b>
                     <p>Ascoltare è solo l'inizio: gli operatori combinano frequenze, metodi
                       e la propria voce in una sessione, e la pubblicano con un link.</p>
-                    <button type="button" onClick={() => navigate(PRO_ENTRY)}>
+                    <button type="button" className="pro-cta" onClick={() => navigate(PRO_ENTRY)}>
                       Scopri Aurya Sound per operatori →
                     </button>
                   </div>
