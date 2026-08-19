@@ -1,6 +1,6 @@
 # Frequenze by Aurya — Voce guidata nel compositore (ciclo FV)
 
-*19 agosto 2026 — analisi e piano. Stato: PROPOSTO (in attesa del go).*
+*19 agosto 2026 — analisi e piano. Stato: COSTRUITO (FV1-FV4 completate il 19/8, solo locale).*
 
 ## 1. Il concetto: che cos'è la «voce da sogno» di SomaBreath
 

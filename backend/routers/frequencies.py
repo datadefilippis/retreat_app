@@ -260,6 +260,19 @@ async def public_track(slug: str):
         "slug": (org or {}).get("public_slug"),
     }
     track["plays_total"] = track.get("plays_total") or 0
+    # FV4 — la ricetta v2 referenzia spezzoni voce per asset_id: il
+    # player anonimo non puo' interrogare l'endpoint org-scoped, quindi
+    # gli URL viaggiano nel payload (solo id+stream: mai id interni)
+    voice_ids = [l.get("asset_id") for l in
+                 (track.get("score") or {}).get("layers", [])
+                 if l.get("kind") == "voice" and l.get("asset_id")]
+    if voice_ids:
+        from database import voice_assets_collection
+        clips = await voice_assets_collection.find(
+            {"id": {"$in": voice_ids}},
+            {"_id": 0, "id": 1, "stream_url": 1, "duration_sec": 1},
+        ).to_list(len(voice_ids))
+        track["voice_assets"] = clips
     return track
 
 

@@ -15,7 +15,7 @@ import { Link, useParams } from 'react-router-dom';
 import api from '../../api/client';
 import { frequenciesAPI } from '../../api/frequencies';
 import { startPreview } from './engine/synth';
-import { resolveAudioLayers } from './engine/assets';
+import { resolveAudioLayers, resolveVoiceLayers } from './engine/assets';
 import './frequenze.css';
 
 const PREVIEW_SEC = 90;
@@ -83,12 +83,23 @@ export default function PublicFrequencyPage() {
       audioLayers = await resolveAudioLayers(ctx, track.score, soundsRef.current);
       setLoadingAudio(false);
     }
+    // FV4 — la voce dell'operatore: gli URL arrivano col payload pubblico
+    let voiceLayers = [];
+    if ((track.score.layers || []).some((l) => l.kind === 'voice')) {
+      setLoadingAudio(true);
+      const voiceById = Object.fromEntries(
+        (track.voice_assets || []).map((v) => [v.id, v]));
+      voiceLayers = await resolveVoiceLayers(ctx, track.score, voiceById);
+      setLoadingAudio(false);
+    }
     if (!playedRef.current) {
       playedRef.current = true;
       frequenciesAPI.registerPlay(slug).catch(() => { /* solo un contatore */ });
     }
     const startedAt = fromT;
-    liveRef.current = startPreview(ctx, track.score, { fromT, audioLayers });
+    liveRef.current = startPreview(ctx, track.score,
+      { fromT, audioLayers, voiceLayers,
+        voiceDuck: !!track.score.voice_duck });
     setPlaying(true);
     timerRef.current = setInterval(() => {
       const el = startedAt + (liveRef.current ? liveRef.current.elapsed() - startedAt : 0);
