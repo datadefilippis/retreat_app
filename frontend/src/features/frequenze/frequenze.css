@@ -380,3 +380,11 @@
   line-height:1.55;color:var(--dim);border-left:2px solid var(--line);
   background:rgba(255,255,255,.015);border-radius:0 8px 8px 0}
 @media (max-width:760px){.fqz .legend > span{max-width:100%;flex-basis:100%}}
+
+/* Approfondimento a sezioni (COS'È / A COSA È ASSOCIATA / ...) */
+.fqz .learn-body h4{margin:16px 0 5px;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--lamp);font-weight:600}
+.fqz .learn-body h4:first-child{margin-top:2px}
+.fqz .learn-body p.warn{margin:10px 0;padding:8px 12px;font-size:12px;
+  border-left:2px solid var(--b);background:rgba(223,164,92,.07);
+  border-radius:0 7px 7px 0;color:var(--b)}
