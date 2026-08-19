@@ -17,7 +17,7 @@
  * arriva con FQ2 (audio_assets).
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { frequenciesAPI } from '../../api/frequencies';
 import {
@@ -77,8 +77,15 @@ const HOWTO_BODY = '<h4>Frequenza</h4><p>La proprietà fisica di un suono, espre
 
 export default function FrequenzePage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const isSystemAdmin = user?.role === 'system_admin';
+  /* ── SP — pubblico e operatore, stessa pagina ─────────────────────
+     Per il pubblico «Esplora» significa LEGGI → APPROFONDISCI →
+     IMPARA. L'ascolto, la sessione e Crea restano valore degli
+     operatori: canCompose governa SOLO cosa si disegna — la vera
+     frontiera restano le API org-scoped, che per gli anonimi
+     rispondono 401 comunque. */
+  const canCompose = !!user;
   /* ── LN — ogni pagina ha il suo link ──────────────────────────────
      L'URL e' l'unica verita' per vista e tab: /sound/esplora|crea|
      impara|tracce (+ /impara/glossario), con lo stato fine nelle
@@ -186,7 +193,8 @@ export default function FrequenzePage() {
   const loadDrafts = async () => {
     try { setDrafts((await frequenciesAPI.list()).data.items || []); } catch { /* non bloccante */ }
   };
-  useEffect(() => { loadDrafts(); }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (canCompose) loadDrafts(); }, [canCompose]);
 
   /* ── libreria suoni (FQ2) ── */
   const [sounds, setSounds] = useState([]);
@@ -199,7 +207,8 @@ export default function FrequenzePage() {
   const loadSounds = async () => {
     try { setSounds((await frequenciesAPI.listSounds()).data.items || []); } catch { /* non bloccante */ }
   };
-  useEffect(() => { loadSounds(); }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (canCompose) loadSounds(); }, [canCompose]);
 
   const stopSoundPreview = () => {
     if (previewAudioRef.current) {
@@ -277,7 +286,8 @@ export default function FrequenzePage() {
     try { setVoiceClips((await frequenciesAPI.listVoice()).data.items || []); }
     catch { /* non bloccante */ }
   };
-  useEffect(() => { loadVoice(); }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (canCompose) loadVoice(); }, [canCompose]);
 
   const stopVoicePreview = () => {
     if (voicePrevRef.current) { voicePrevRef.current.stop(); voicePrevRef.current = null; }
@@ -554,7 +564,7 @@ export default function FrequenzePage() {
   // refresh (o link diretto) su /sound/crea?bozza=x → ricarica la bozza
   const bozzaParam = view === 'create' ? qs.get('bozza') : null;
   useEffect(() => {
-    if (bozzaParam && bozzaParam !== trackId) openDraft(bozzaParam, false);
+    if (canCompose && bozzaParam && bozzaParam !== trackId) openDraft(bozzaParam, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bozzaParam]);
   const removeDraft = (id, name) => setAsk({
@@ -703,7 +713,7 @@ export default function FrequenzePage() {
         <div className="body">{shown}</div>
         {(clamped || entry.full) && (
           <button type="button" className="readmore"
-            onClick={() => setLearn({ title: entry.t, body: entry.full || entry.body })}>
+            onClick={() => setLearn({ title: entry.t, body: entry.full || entry.body, cta: !canCompose })}>
             Approfondisci
           </button>
         )}
@@ -726,7 +736,7 @@ export default function FrequenzePage() {
             </label>
           </div>
         )}
-        {entry.cfg && (
+        {entry.cfg && canCompose && (
           <div className="foot">
             <button type="button" className="live" data-testid={`fq-card-live-${idx}`}
               onClick={() => toggleCard(key, entry)}>
@@ -967,28 +977,63 @@ export default function FrequenzePage() {
     </div>
   );
 
+  /* ── SP1 — cancello sulle viste professionali. Esplora e Impara
+     sono pubbliche; Crea e Le mie tracce chiedono il login e POI
+     riportano qui (?next=, meccanismo LN0). Replica anche il gate
+     email-verificata di ProtectedRoute. */
+  const needsAuth = view === 'create' || view === 'mine';
+  if (needsAuth && authLoading) {
+    return (
+      <div className="fqz" data-testid="fqz-root">
+        <main><section className="bib"><p>…</p></section></main>
+      </div>
+    );
+  }
+  if (needsAuth && !isAuthenticated) {
+    const next = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?next=${next}`} replace />;
+  }
+  if (needsAuth && user && user.role !== 'system_admin' && user.email_verified === false) {
+    return <Navigate to="/verify-email-required" replace />;
+  }
+
   /* ─────────────────────────── RENDER ─────────────────────────── */
   return (
     <div className="fqz" data-testid="fqz-root">
       <div className="topbar">
-        <button type="button" className={`backcard${view === 'mine' ? ' on' : ''}`}
-          data-testid="fqz-mine" title="Tutte le tracce che hai creato"
-          onClick={() => setView('mine')}>
-          <span className="bc-ic">♫</span>
-          <span>
-            <span className="bc-t">Le mie tracce</span><br />
-            <span className="bc-s">bozze e pubblicate</span>
-          </span>
-        </button>
-        <button type="button" className="backcard" data-testid="fqz-back"
-          title="Torna al gestionale Aurya"
-          onClick={() => navigate('/dashboard')}>
-          <span className="bc-ic">⌂</span>
-          <span>
-            <span className="bc-t">Gestionale</span><br />
-            <span className="bc-s">torna ad Aurya</span>
-          </span>
-        </button>
+        {canCompose ? (
+          <>
+            <button type="button" className={`backcard${view === 'mine' ? ' on' : ''}`}
+              data-testid="fqz-mine" title="Tutte le tracce che hai creato"
+              onClick={() => setView('mine')}>
+              <span className="bc-ic">♫</span>
+              <span>
+                <span className="bc-t">Le mie tracce</span><br />
+                <span className="bc-s">bozze e pubblicate</span>
+              </span>
+            </button>
+            <button type="button" className="backcard" data-testid="fqz-back"
+              title="Torna al gestionale Aurya"
+              onClick={() => navigate('/dashboard')}>
+              <span className="bc-ic">⌂</span>
+              <span>
+                <span className="bc-t">Gestionale</span><br />
+                <span className="bc-s">torna ad Aurya</span>
+              </span>
+            </button>
+          </>
+        ) : (
+          /* visitatore: nessun finto strumento — un solo invito, discreto */
+          <button type="button" className="backcard" data-testid="fqz-pro"
+            title="Aurya Sound per operatori"
+            onClick={() => navigate('/professionisti#sound')}>
+            <span className="bc-ic">◆</span>
+            <span>
+              <span className="bc-t">Per gli operatori</span><br />
+              <span className="bc-s">ascolta, componi, pubblica</span>
+            </span>
+          </button>
+        )}
       </div>
       <header>
         <div>
@@ -998,10 +1043,12 @@ export default function FrequenzePage() {
         <div className="viewswitch">
           <button type="button" className={`vbtn${view === 'explore' ? ' on' : ''}`}
             onClick={() => setView('explore')}>Esplora</button>
-          <button type="button" className={`vbtn${view === 'create' ? ' on' : ''}`}
-            onClick={() => setView('create')}>
-            Crea {layers.length > 0 && <span className="vcount">{layers.length}</span>}
-          </button>
+          {canCompose && (
+            <button type="button" className={`vbtn${view === 'create' ? ' on' : ''}`}
+              onClick={() => setView('create')}>
+              Crea {layers.length > 0 && <span className="vcount">{layers.length}</span>}
+            </button>
+          )}
           <button type="button" className={`vbtn${view === 'impara' ? ' on' : ''}`}
             onClick={() => setView('impara')}>Impara</button>
         </div>
@@ -1010,7 +1057,7 @@ export default function FrequenzePage() {
       <main>
         {(view === 'explore' || view === 'impara') && (
           <section className="bib">
-            {view === 'explore' && (
+            {view === 'explore' && canCompose && (
               <div className="worldswitch" data-testid="fq-worldswitch">
                 <button type="button" className={`wbtn${world === 'freq' ? ' on' : ''}`}
                   onClick={() => setWorld('freq')}>Frequenze</button>
@@ -1041,7 +1088,8 @@ export default function FrequenzePage() {
                 {activeTab !== 'Glossario' && (
                   <div className="gd-time">Tempo di lettura · circa 5 min</div>
                 )}
-                <GuidaView tab={activeTab} onExplore={goExplore} onLearn={setLearn} />
+                <GuidaView tab={activeTab} onExplore={goExplore} onLearn={setLearn}
+                  proCta={!canCompose} />
               </>
             ) : view === 'explore' && world === 'sound' ? (
               <>
@@ -1113,7 +1161,7 @@ export default function FrequenzePage() {
               </>
             ) : (
               <>
-                {liveCount > 0 && view === 'explore' && (
+                {canCompose && liveCount > 0 && view === 'explore' && (
                   <div className="livebar on">
                     <span>{liveCount} in riproduzione — le frequenze si combinano</span>
                     <span className="spacer" style={{ flex: 1 }} />
@@ -1176,6 +1224,18 @@ export default function FrequenzePage() {
                     </div>
                   ));
                 })()}
+                {!canCompose && view === 'explore' && (
+                  /* SP3 — chi ha scorso tutta la biblioteca e' interessato:
+                     un solo blocco, in fondo, mai sulle card */
+                  <div className="probox" data-testid="fqz-cta-explore">
+                    <b>Vuoi andare oltre l'esplorazione?</b>
+                    <p>Con Aurya Sound gli operatori possono ascoltare frequenze e metodi,
+                      combinarli e utilizzarli per costruire le proprie esperienze sonore.</p>
+                    <button type="button" onClick={() => navigate('/professionisti#sound')}>
+                      Scopri Aurya Sound per operatori →
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </section>
@@ -1435,7 +1495,7 @@ export default function FrequenzePage() {
         )}
       </main>
 
-      {view !== 'create' && layers.length > 0 && (
+      {canCompose && view !== 'create' && layers.length > 0 && (
         <div className="sessionfoot">
           <span className="sf-dot">◆</span>
           <span className="sf-txt">La tua sessione · {layers.length} {layers.length === 1 ? 'livello' : 'livelli'} · {durationMin} min</span>
@@ -1445,7 +1505,7 @@ export default function FrequenzePage() {
       )}
 
       {/* gate sicurezza (prima visita) */}
-      {!gateOk && (
+      {canCompose && !gateOk && (
         <div className="gate">
           <div className="gatebox">
             <h2>Aurya <em>Sound</em> — prima di iniziare</h2>
@@ -1498,6 +1558,16 @@ export default function FrequenzePage() {
                 <div dangerouslySetInnerHTML={{ __html: learn.body }} />
               ) : (learn.body || '').split(/\n\n+/).map((p, i) => <p key={i}>{p.replace(/\n/g, ' ')}</p>)}
             </div>
+            {learn.cta && (
+              /* SP3 — il momento di massima intenzione, la riga meno
+                 invadente: solo visitatori, solo schede della biblioteca */
+              <div className="proline" data-testid="fqz-cta-learn">
+                Vuoi ascoltarla e usarla nelle tue sessioni?{' '}
+                <button type="button" onClick={() => navigate('/professionisti#sound')}>
+                  Scopri Aurya Sound per operatori →
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

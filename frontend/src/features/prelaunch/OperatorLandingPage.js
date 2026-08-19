@@ -210,6 +210,12 @@ export default function OperatorLandingPage() {
       body: t('opPro.v4b', { defaultValue: 'Con tutte le informazioni e la gestione delle prenotazioni.' }),
     },
     {
+      // SP3 — Aurya Sound e' uno strumento gia' vero: la CTA della
+      // biblioteca pubblica (#sound) atterra su questo registro
+      title: t('opPro.v6t', { defaultValue: 'Componi esperienze sonore.' }),
+      body: t('opPro.v6b', { defaultValue: 'Con Aurya Sound ascolti frequenze e metodi, li combini con la tua voce e pubblichi la sessione con un link.' }),
+    },
+    {
       title: t('opPro.v5t', { defaultValue: 'Condividi un unico link.' }),
       body: t('opPro.v5b', { defaultValue: 'Il tuo sito. I tuoi servizi. I tuoi eventi. Le recensioni. La tua storia. Tutto nello stesso posto.' }),
     },
@@ -481,7 +487,7 @@ export default function OperatorLandingPage() {
             Sul verde il crema sta a 7,28:1, al 90% a 6,26:1 (AA: 4,5:1).
             Le due battute sono una sezione sola per chi ascolta la
             pagina: l'h2 e' uno, e sta nella fascia. */}
-        <section data-testid="ol-go" aria-labelledby="ol-go-title">
+        <section id="sound" data-testid="ol-go" aria-labelledby="ol-go-title">
           <PhotoBand as="div" image={HORIZON_PHOTO} focus="50% 40%" width="max-w-3xl">
             <DisplayTitle as="h2" id="ol-go-title" size="section" measure="title"
                           className="text-hero-shadow">

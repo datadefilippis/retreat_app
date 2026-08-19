@@ -352,6 +352,91 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
     }
 
 
+# ── SP5 — Aurya Sound pubblico: la biblioteca educativa sul suono ────────────
+# I titoli delle schede sono COPIATI da frontend/src/features/frequenze/
+# content/biblioteca.js: in produzione (Docker) il backend non vede i
+# sorgenti frontend, quindi niente lettura a runtime — la guardia di
+# parita' nella suite (che gira dove il repo e' completo) impedisce a
+# questo elenco di divergere dalla biblioteca vera.
+_SOUND_CARDS = {
+    "Bande cerebrali": ["Delta", "Theta", "Alpha", "SMR", "Beta", "Gamma"],
+    "Altre frequenze": ["40 Hz", "7,83 Hz — Schumann", "Armoniche di Schumann",
+                        "111 Hz", "136,1 Hz — Om", "432 Hz",
+                        "440 Hz — lo standard", "174 Hz", "285 Hz", "396 Hz",
+                        "417 Hz", "528 Hz", "639 Hz", "741 Hz", "852 Hz",
+                        "963 Hz"],
+    "Metodi": ["Battito binaurale", "Tono isocronico", "Battito monaurale",
+               "Stimolazione bilaterale", "Soffio modulato", "Tono puro"],
+}
+
+_SOUND_PAGES = {
+    None: {
+        "title": "Aurya Sound: onde cerebrali, frequenze e metodi | Aurya",
+        "description": ("Una biblioteca educativa sul suono: cosa sono le "
+                        "bande cerebrali, le frequenze e i metodi di "
+                        "stimolazione sonora — con il livello di evidenza "
+                        "dichiarato per ogni scheda."),
+    },
+    "esplora": {
+        "title": "Esplora le frequenze: bande, frequenze e metodi | Aurya Sound",
+        "description": ("Bande cerebrali, 40 Hz, risonanza di Schumann, 432 Hz, "
+                        "solfeggio, battiti binaurali e isocronici: ogni scheda "
+                        "spiega cosa sappiamo davvero e cosa resta tradizione."),
+    },
+    "impara": {
+        "title": "Le fondamenta: capire il suono prima di usarlo | Aurya Sound",
+        "description": ("Onde cerebrali, entrainment, la differenza tra "
+                        "binaurale, monoaurale e isocronico, cuffie o "
+                        "altoparlanti: la guida essenziale in sei tappe."),
+    },
+    "glossario": {
+        "title": "Glossario del suono: Hz, EEG, battiti e metodi | Aurya Sound",
+        "description": ("Le parole del suono spiegate in una riga: Hertz, "
+                        "banda cerebrale, entrainment, battito binaurale, "
+                        "frequenza portante e le altre."),
+    },
+}
+
+
+def _sound_index_html() -> str:
+    """Corpo minimo per i crawler: l'indice testuale della biblioteca
+    (stesso spirito di _articles_index_html per il Magazine)."""
+    parts = ["<h1>Aurya Sound — la biblioteca educativa sul suono</h1>"]
+    for cat, titles in _SOUND_CARDS.items():
+        parts.append(f"<h2>{cat}</h2><ul>")
+        parts.extend(f"<li>{t}</li>" for t in titles)
+        parts.append("</ul>")
+    return "".join(parts)
+
+
+async def _meta_sound(parts: list) -> Optional[dict]:
+    """/sound[...]. Esplora e Impara sono editoriali e indicizzabili;
+    crea e tracce sono il workspace operatore: vivi ma noindex (la SPA
+    redirige al login)."""
+    base = _base_url()
+    sub = parts[0] if parts else None
+    if sub in ("crea", "tracce"):
+        meta = {**_SOUND_PAGES[None], "noindex": True}
+        return {**meta, "canonical": None, "hreflang": None}
+    if sub == "impara":
+        key = "glossario" if len(parts) > 1 and parts[1] == "glossario" else "impara"
+        slug = "/sound/impara/glossario" if key == "glossario" else "/sound/impara"
+        canonical = f"{base}{slug}"
+        return {**_SOUND_PAGES[key], "canonical": canonical,
+                "hreflang": _hub_hreflang(canonical),
+                "image": f"{base}/og-cover.jpg"}
+    if sub == "esplora" or sub is None:
+        key = "esplora" if sub == "esplora" else None
+        canonical = f"{base}/sound/esplora" if sub else f"{base}/sound"
+        meta = {**_SOUND_PAGES[key], "canonical": canonical,
+                "hreflang": _hub_hreflang(canonical),
+                "image": f"{base}/og-cover.jpg"}
+        if sub == "esplora":
+            meta["content_html"] = _sound_index_html()
+        return meta
+    return None
+
+
 async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
     from services import seo_schema as sx, seo_listing as sl
     from core.prelaunch import site_phase
@@ -1116,6 +1201,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
         if parts[1] == "categoria" and len(parts) >= 3:
             return await _meta_blog_category(parts[2])   # BN5 — hub categoria
         return await _meta_blog_article(parts[1])
+    if head == "sound":                       # SP5 — biblioteca educativa
+        return await _meta_sound(parts[1:])
     return None
 
 

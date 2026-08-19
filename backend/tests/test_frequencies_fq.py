@@ -949,3 +949,103 @@ class TestLinkPagineLn:
             assert "replace: true" in blocco, f"{setter} deve fare replace"
         set_view = page.split("const setView = ")[1].split("\n")[0]
         assert "replace" not in set_view, "setView deve fare push (vista nuova)"
+
+
+class TestSoundPubblicoSp:
+    """SP — la biblioteca e' pubblica (LEGGI → APPROFONDISCI → IMPARA),
+    l'ascolto resta valore professionale. La vera frontiera sono le API
+    org-scoped (gia' sotto guardia): qui si difende la separazione."""
+
+    def test_rotte_pubbliche_e_cancello_interno(self):
+        app = (FRONTEND_SRC / "App.js").read_text()
+        # la wildcard NON e' piu' avvolta da ProtectedRoute…
+        assert '<Route path="/sound/*" element={<FrequenzePage />} />' in app
+        # …e /sound esatto e' la porta pubblica
+        assert 'path="/sound" element={<SoundLandingPage />}' in app
+        # il cancello vive dentro la pagina: crea/tracce → login?next=
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        blocco = page.split("const needsAuth =")[1][:900]
+        assert "'create'" in page.split("const needsAuth =")[1][:80]
+        assert "/login?next=" in blocco
+        assert "verify-email-required" in blocco, \
+            "il gate email-verificata di ProtectedRoute va replicato"
+
+    def test_visitatore_non_vede_strumenti(self):
+        """Ascolta/+ sessione, mondo Suoni, sipario, barra live e piede
+        sessione esistono solo per chi compone."""
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "{entry.cfg && canCompose && (" in page, \
+            "i bottoni Ascolta/+ sessione devono dipendere da canCompose"
+        assert "view === 'explore' && canCompose && (" in page, \
+            "il mondo Suoni e' materiale di lavoro, non editoriale"
+        assert "canCompose && !gateOk && (" in page, \
+            "il sipario e' un patto per chi ascolta, non per chi legge"
+        assert "canCompose && liveCount > 0" in page
+        assert "canCompose && view !== 'create' && layers.length > 0" in page
+
+    def test_niente_chiamate_authed_per_anonimi(self):
+        """Il visitatore non deve generare 401 (bozze/voce) ne' portare
+        nel DOM gli URL delle basi audio (lista suoni)."""
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        for fn in ("loadDrafts", "loadSounds", "loadVoice"):
+            assert f"if (canCompose) {fn}()" in page, \
+                f"{fn} deve caricare solo per chi compone"
+
+    def test_cta_gerarchia(self):
+        """1 primaria (landing) + 3 contestuali (popup, fine biblioteca,
+        chiusura Guida). MAI sulle card in griglia."""
+        landing = (FQ_DIR / "SoundLandingPage.js").read_text()
+        assert "Vuoi andare oltre l'esplorazione?" in landing
+        assert "fqz-cta-landing" in landing
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "fqz-cta-learn" in page and "fqz-cta-explore" in page
+        guida = (FQ_DIR / "GuidaView.js").read_text()
+        assert "fqz-cta-guida" in guida
+        # la card in griglia non contiene la CTA: solo il popup (flag cta)
+        card_zone = page.split("const renderCard")[1].split("const bibKeys")[0]
+        assert "professionisti" not in card_zone, \
+            "la CTA non sta sulle card: 40 card = 40 pubblicita'"
+        # e il flag cta si accende solo per i visitatori
+        assert "cta: !canCompose" in card_zone
+
+    def test_operatore_intatto(self):
+        """Per chi compone il comportamento resta quello di oggi: i
+        controlli esistono ancora tutti (solo condizionati)."""
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        for segno in ("'Ferma' : 'Ascolta'", "+ sessione", "Salva bozza",
+                      "fqz-mine", "Gestionale"):
+            assert segno in page, f"perso pezzo operatore: {segno}"
+
+    def test_shell_e_sitemap(self):
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert '"sound"' in shell and "_meta_sound" in shell
+        blocco = shell.split("async def _meta_sound")[1][:900]
+        assert '"crea", "tracce"' in blocco and "noindex" in blocco, \
+            "il workspace non si indicizza"
+        seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        assert "/sound/esplora" in seo and "/sound/impara" in seo
+        assert "/sound/crea" not in seo and "/sound/tracce" not in seo, \
+            "le protette non vanno in sitemap"
+        # nginx instrada /sound* alla shell (entrambe le conf di deploy)
+        for conf in ("nginx.conf", "nginx-bootstrap.conf"):
+            src = (BACKEND_DIR.parent / "deploy" / "nginx" / conf).read_text()
+            assert "|sound)(/|$)" in src, f"{conf}: /sound non arriva alla shell"
+
+    def test_parita_titoli_shell_biblioteca(self):
+        """_SOUND_CARDS e' una copia dichiarata (Docker non vede i
+        sorgenti frontend): questa guardia la tiene identica alla
+        biblioteca vera, titolo per titolo."""
+        import re as _re
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        bib = (FQ_DIR / "content" / "biblioteca.js").read_text()
+        chunks = _re.split(r"'(Bande cerebrali|Altre frequenze|Metodi)':\[", bib)
+        veri = {}
+        for i in range(1, len(chunks), 2):
+            titoli = _re.findall(r"\{t:'((?:[^'\\]|\\.)*)'", chunks[i + 1])
+            veri[chunks[i]] = [t.replace("\\'", "'") for t in titoli]
+        import ast
+        dict_src = shell.split("_SOUND_CARDS = ")[1].split("\n}")[0] + "\n}"
+        copiati = ast.literal_eval(dict_src)
+        assert copiati == veri, (
+            "la copia in seo_shell e' divergente dalla biblioteca: "
+            f"{ {k: (len(v), len(veri.get(k, []))) for k, v in copiati.items()} }")

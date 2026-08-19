@@ -309,6 +309,10 @@ const NAV_ITEMS = [
 // delusione di chi ci clicca aspettandosi un elenco pieno.
 const NETWORK_NAV_ITEMS = [
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
+  // SP4 — la biblioteca educativa sul suono e' contenuto pubblico come
+  // il Magazine: voce propria («Sound» e' un nome, resta cosi' in ogni
+  // lingua)
+  { to: '/sound', key: 'marketplace.navSound', fallback: 'Sound' },
   { to: '/manifesto', key: 'marketplace.navManifesto', fallback: 'Manifesto' },
   { to: '/operatori', key: 'marketplace.navNetwork', fallback: 'La Rete',
     hint: { key: 'marketplace.navNetworkSoon', fallback: 'in arrivo' } },
@@ -629,6 +633,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     chi cerca nel footer una voce vista in alto la
                     ritrova nella stessa posizione. */}
                 {isNetwork && <li><Link to="/blog" className="hover:text-white" data-testid="footer-nw-magazine">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
+                {isNetwork && <li><Link to="/sound" className="hover:text-white" data-testid="footer-nw-sound">Aurya Sound</Link></li>}
                 {isNetwork && <li><Link to="/manifesto" className="hover:text-white" data-testid="footer-nw-manifesto">{t('marketplace.navManifesto', { defaultValue: 'Manifesto' })}</Link></li>}
                 {/* LM2 — la voce operatori vive in ENTRAMBE le fasi: in
                     rete porta alla pagina della rete, al flip diventa

@@ -137,6 +137,7 @@ const PublicProfilePage = lazy(() => import("./features/settings/PublicProfilePa
 const FrequenzePage = lazy(() => import("./features/frequenze/FrequenzePage"));
 const PublicFrequencyPage = lazy(() => import("./features/frequenze/PublicFrequencyPage"));
 const MeditazioniPage = lazy(() => import("./features/frequenze/MeditazioniPage"));
+const SoundLandingPage = lazy(() => import("./features/frequenze/SoundLandingPage"));
 // PL17 — lazy come tutte le pagine admin: da eager trascinava Layout
 // (e con lui TUTTE le traduzioni back-office) nel bundle pubblico.
 const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
@@ -951,18 +952,16 @@ function AppRoutes() {
           /frequenze/* appartiene PER SEMPRE ai link condivisi in giro:
           il workspace vive altrove (/sound) proprio per non collidere. */}
       <Route path="/frequenze/:slug" element={<PublicFrequencyPage />} />
-      {/* LN — workspace Aurya Sound: ogni vista ha il suo URL
-          (/sound/esplora|crea|impara|tracce). Wildcard su UN solo
-          elemento: navigando tra le viste il componente resta montato
-          e la sessione in costruzione sopravvive. */}
-      <Route
-        path="/sound/*"
-        element={
-          <ProtectedRoute>
-            <FrequenzePage />
-          </ProtectedRoute>
-        }
-      />
+      {/* LN+SP — Aurya Sound: ogni vista ha il suo URL. Esplora e
+          Impara sono PUBBLICHE (biblioteca editoriale: leggi,
+          approfondisci, impara); Crea e Le mie tracce restano
+          professionali — il cancello vive DENTRO la pagina (redirect
+          /login?next=), cosi' la wildcard monta un solo elemento e la
+          sessione dell'operatore sopravvive alla navigazione. Le API
+          restano org-scoped: la vera frontiera e' il backend. */}
+      {/* SP4 — /sound esatto = la porta pubblica (indice curato) */}
+      <Route path="/sound" element={<SoundLandingPage />} />
+      <Route path="/sound/*" element={<FrequenzePage />} />
       {/* legacy: il vecchio indirizzo del workspace continua a funzionare */}
       <Route path="/frequenze" element={<Navigate to="/sound/esplora" replace />} />
       {/* F2.0 — editor del profilo pubblico operatore (/o/:slug) */}

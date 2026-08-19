@@ -28,7 +28,7 @@ function Deep({ k, onLearn }) {
   );
 }
 
-function Guida({ onExplore, onLearn }) {
+function Guida({ onExplore, onLearn, proCta }) {
   return (
     <div className="gd" data-testid="fqz-guida">
 
@@ -440,6 +440,15 @@ function Guida({ onExplore, onLearn }) {
           onClick={() => onExplore('Bande cerebrali')}>
           Esplora Aurya Sound
         </button>
+        {proCta && (
+          /* SP3 — per il pubblico la chiusura ha una seconda uscita:
+             gli operatori ascoltano e costruiscono */
+          <p className="gd-pro" data-testid="fqz-cta-guida">
+            Gli operatori possono ascoltare frequenze e metodi, combinarli e costruire
+            le proprie esperienze sonore.{' '}
+            <a href="/professionisti#sound">Scopri Aurya Sound per operatori →</a>
+          </p>
+        )}
       </section>
     </div>
   );
@@ -472,8 +481,8 @@ function Glossario({ onExplore }) {
   );
 }
 
-export default function GuidaView({ tab, onExplore, onLearn }) {
+export default function GuidaView({ tab, onExplore, onLearn, proCta = false }) {
   return tab === 'Glossario'
     ? <Glossario onExplore={onExplore} />
-    : <Guida onExplore={onExplore} onLearn={onLearn} />;
+    : <Guida onExplore={onExplore} onLearn={onLearn} proCta={proCta} />;
 }
