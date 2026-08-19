@@ -1019,6 +1019,16 @@ export default function FrequenzePage() {
                     <span className="lc" title="L'associazione appartiene soprattutto alla tradizione o alla cultura, senza una dimostrazione fisiologica consolidata."><b>C</b> Tradizione e simbolismo</span>
                   </div>
                 )}
+                {activeTab === 'Metodi' && (
+                  <div className="methodkey">
+                    <div className="mk-line"><b>Binaurale</b> due toni diversi, uno per orecchio → il battito lo percepisce il sistema uditivo</div>
+                    <div className="mk-line"><b>Monaurale</b> due toni miscelati → il battito è già nel segnale</div>
+                    <div className="mk-line"><b>Isocronico</b> un tono modulato → pulsazione molto evidente</div>
+                    <div className="mk-line"><b>Bilaterale</b> il suono alterna destra e sinistra → movimento nello spazio</div>
+                    <div className="mk-line"><b>Soffio</b> un rumore continuo modulato → ritmo immerso nel paesaggio</div>
+                    <div className="mk-line"><b>Tono puro</b> una frequenza stabile → nessuna pulsazione</div>
+                  </div>
+                )}
                 {activeTab === 'Bande cerebrali' && (
                   <p className="bandnote">
                     Le bande cerebrali non sono suoni: sono <b>ritmi dell'attività

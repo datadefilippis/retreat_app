@@ -391,3 +391,10 @@
   text-transform:uppercase;color:var(--lamp);white-space:nowrap;opacity:.9}
 .fqz .grouptitle::after{content:'';flex:1;height:1px;
   background:linear-gradient(90deg,var(--line),transparent)}
+
+/* Chiave di lettura dei metodi: come nasce ogni suono, a colpo d'occhio */
+.fqz .methodkey{margin:-6px 0 14px;padding:11px 14px;border-left:2px solid var(--line);
+  background:rgba(255,255,255,.015);border-radius:0 8px 8px 0;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 22px}
+.fqz .methodkey .mk-line{font-size:11.5px;line-height:1.5;color:var(--dim)}
+.fqz .methodkey .mk-line b{color:var(--lamp);font-weight:600;margin-right:5px}
