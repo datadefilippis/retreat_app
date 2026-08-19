@@ -727,20 +727,17 @@ class TestLeggioVoceFv3:
             assert ref in src, f"manca {ref}"
 
     def test_layer_voce_con_preset_e_taglio_leggibile(self):
-        """FV6: il layer voce parla la lingua dell'operatore — preset,
-        quantita' di effetto, e taglio in «✂ inizio / ✂ fine» (secondi
-        tolti alla registrazione), MAI offset tecnici."""
+        """Il layer voce parla la lingua dell'operatore: preset e dose
+        di effetto sulla riga. Il taglio NON sta piu' qui — vive sulla
+        registrazione (FV6, feedback founder 19/8), e comunque mai in
+        offset tecnici."""
         src = (FQ_DIR / "FrequenzePage.js").read_text()
-        r3 = src.split("✂ inizio")[0].rsplit("l.kind === 'voice' ?", 1)[1] \
-            if "✂ inizio" in src else ""
-        assert "✂ inizio" in src and "✂ fine" in src, "manca il taglio leggibile"
-        assert "setVoiceCutStart" in src and "setVoiceCutEnd" in src
-        assert '">salta<' not in src, "il vecchio campo «salta» confondeva"
-        blocco = src.split("setVoiceCutStart(l, v)")[0]
         assert "VOICE_PRESETS" in src and "fx_amount" in src
-        assert "parte a" in src and "suona per" in src, \
-            "la riga voce mostra dove parte e quanto suona, non entra/esce"
-        assert r3 is not None and blocco is not None  # ancore vive
+        assert '">salta<' not in src, "il vecchio campo «salta» confondeva"
+        assert "setVoiceCutStart" not in src and "setVoiceCutEnd" not in src, \
+            "il taglio e' tornato sul livello invece che sulla registrazione"
+        assert "togli dall'inizio" in src, \
+            "il taglio non e' nelle impostazioni della registrazione"
 
     def test_voce_e_duck_arrivano_a_motore_ed_export(self):
         src = (FQ_DIR / "FrequenzePage.js").read_text()
@@ -1121,3 +1118,68 @@ class TestSoundPubblicoSp:
         piede = page.split('data-testid="fqz-foot"')[1][:500]
         for dove in ("/blog", "/newsletter", "/meditazioni"):
             assert dove in piede, f"uscita {dove} mancante nel piede"
+
+
+class TestTaglioRegistrazioneFv6:
+    """FV6 (19/8, feedback founder) — il taglio e' una proprieta' della
+    REGISTRAZIONE, decisa una volta nel leggio: nella linea del tempo la
+    voce deve avere lo stesso specchietto degli altri suoni (entra a /
+    esce a + effetto), niente forbici sparse per la riga."""
+
+    def test_clamp_lascia_sempre_un_secondo(self):
+        from models.voice_asset import clamp_trim
+        assert clamp_trim(0, 0, 120) == (0.0, 0.0)
+        assert clamp_trim(5, 10, 120) == (5.0, 10.0)
+        # somma oltre la durata: la fine cede, resta 1 secondo utile
+        assert clamp_trim(100, 100, 120) == (100.0, 19.0)
+        # inizio oltre la durata e valori negativi
+        assert clamp_trim(999, 0, 30) == (29.0, 0.0)
+        assert clamp_trim(-4, -9, 60) == (0.0, 0.0)
+        # durata sconosciuta: si applica solo il tetto del clip
+        assert clamp_trim(9999, 0, 0) == (600.0, 0.0)
+
+    def test_patch_separa_titolo_e_taglio(self):
+        """Rinominare non azzera il taglio, tagliare non tocca il nome."""
+        import inspect
+        from routers import frequencies as fr
+        src = inspect.getsource(fr.update_voice_clip)
+        assert "if payload.title is not None" in src, \
+            "il titolo non e' piu' facoltativo: rinomina e taglio sono legati"
+        assert "clamp_trim(" in src, "il taglio entra senza passare dal clamp"
+        assert '"trim_start"' in src and '"trim_end"' in src
+
+    def test_riga_del_livello_come_gli_altri_suoni(self):
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        riga = src.split("const renderRow = ")[1].split("const renderLane")[0] \
+            if "const renderLane" in src else src.split("const renderRow = ")[1][:6000]
+        assert "✂" not in riga, "le forbici sono ancora nella riga del livello"
+        assert ">parte a<" not in riga, \
+            "la voce ha ancora un suo formato: deve dire entra a / esce a"
+        assert riga.count(">entra a<") == 1 and riga.count(">esce a<") == 1, \
+            "il blocco tempo non e' piu' uno solo per tutti i tipi di suono"
+
+    def test_taglio_nel_leggio_e_propagato(self):
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "togli dall'inizio" in src and "togli dalla fine" in src, \
+            "il taglio non vive nelle impostazioni della registrazione"
+        salva = src.split("const saveVoiceTrim")[1][:1200]
+        assert "trimVoice" in salva, "il taglio non viene salvato sullo spezzone"
+        assert "l.asset_id === clip.id" in salva, \
+            "i livelli gia' in sessione non seguono il nuovo taglio"
+        add = src.split("const addVoiceToSession")[1][:600]
+        assert "clip.trim_start" in add and "clipUseful(clip)" in add, \
+            "«+ sessione» non nasce gia' tagliato"
+
+    def test_barra_ascolto_compatta_su_telefono(self):
+        """I quattro campi (titolo/durata/apertura/chiusura) su telefono
+        stanno dietro un tocco; salva e pubblica restano sempre a vista."""
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert 'data-testid="fq-setup"' in src, "manca il tasto che apre i campi"
+        assert 'className="cb-collapse open"' not in src, \
+            "il pannello e' di nuovo inchiodato aperto"
+        bar = src.split('<div className="createbar">')[1].split("</div>\n\n")[0]
+        assert bar.index('className="cb-export"') > bar.index("cb-collapse"), \
+            "salva/pubblica sono finiti dentro il pannello a scomparsa"
+        css = (FQ_DIR / "frequenze.css").read_text()
+        assert ".fqz .cb-opt{display:none}" in css, \
+            "il tasto comparirebbe anche su schermo largo"

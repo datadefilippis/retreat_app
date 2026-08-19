@@ -6118,14 +6118,17 @@ class TestLandingOperatoriOl1:
                 assert "gestionale" not in valore.lower()
 
     def test_ol1_tre_cta_al_form(self):
-        """Entra nella rete (hero), Parliamone, Entra nella rete
-        (chiusura) portano tutte all'ancora del form."""
+        """Le CTA della landing portano tutte all'ancora #presentati,
+        dove da RD-bis (19/8) non vive piu' un modulo di candidatura ma
+        la registrazione vera: il bottone crea l'account."""
         page = self._page()
         assert page.count("#presentati") >= 3, \
             "servono tre CTA verso l'ancora del form"
         assert 'id="presentati"' in page, "manca l'ancora del form"
-        assert "Entriamo in contatto" in page, \
-            "il bottone del form deve essere 'Entriamo in contatto'"
+        assert "InlineSignupForm" in page, \
+            "all'ancora deve vivere la registrazione incorporata"
+        assert "ctaContact2" in page, \
+            "manca la chiave del bottone «Crea il tuo account»"
 
     def test_ol1_i18n_x4_e_niente_trattini_lunghi(self):
         """OL3 — il copy della landing vive in `opPro`, SOLO in

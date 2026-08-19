@@ -296,6 +296,14 @@ export default function FrequenzePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (canCompose) loadVoice(); }, [canCompose]);
 
+  /* FV6 — il taglio sta sullo SPEZZONE, non sul livello.
+   * `trim_start`/`trim_end` sono i secondi che la sessione salta ai due
+   * capi: la registrazione resta intera sul disco. Da qui in giu' tutto
+   * (anteprima, «+ sessione», barra sulla linea del tempo) ragiona in
+   * termini di durata UTILE. */
+  const clipUseful = (c) => Math.max(1,
+    (c.duration_sec || 0) - (c.trim_start || 0) - (c.trim_end || 0));
+
   const stopVoicePreview = () => {
     if (voicePrevRef.current) { voicePrevRef.current.stop(); voicePrevRef.current = null; }
     setVoicePrevId(null);
@@ -311,8 +319,11 @@ export default function FrequenzePage() {
       const buffer = cleanVoiceBuffer(ctx, await loadAssetBuffer(ctx, clip.stream_url));
       const chain = buildVoiceChain(ctx, prevFx, 0.6);
       chain.output.connect(ctx.destination);
+      // si ascolta il taglio, non il file: cio' che provi e' cio' che va in onda
+      const off = Math.min(clip.trim_start || 0, Math.max(0, buffer.duration - 0.2));
+      const len = Math.min(clipUseful(clip), Math.max(0.2, buffer.duration - off));
       const sources = connectVoiceSources(ctx, buffer, chain);
-      sources.forEach((s) => s.start());
+      sources.forEach((s) => { s.start(ctx.currentTime, off); s.stop(ctx.currentTime + len); });
       sources[0].onended = () => {
         if (voicePrevRef.current?.id === clip.id) stopVoicePreview();
       };
@@ -379,10 +390,11 @@ export default function FrequenzePage() {
 
   const addVoiceToSession = (clip) => {
     const start = Math.max(0, Math.min(elapsed, duration - 1));
-    const end = Math.min(duration, start + Math.max(1, clip.duration_sec || 30));
+    const end = Math.min(duration, start + clipUseful(clip));
     setLayers((ls) => [...ls, {
       id: ++_uid, kind: 'voice', asset_id: clip.id, name: clip.title,
       start, end, gain: 0.9, fx: 'dream', fx_amount: 0.6, mute: false,
+      clip_in: clip.trim_start || 0,
     }]);
     setStatus(`«${clip.title}» sulla linea del tempo a ${fmt(start)} — effetto Sogno`);
   };
@@ -391,6 +403,30 @@ export default function FrequenzePage() {
     if (!t || t === clip.title) return;
     try { await frequenciesAPI.renameVoice(clip.id, t); loadVoice(); }
     catch { setStatus('Rinomina fallita'); }
+  };
+
+  /* FV6 — si taglia qui, una volta. Il salvataggio e' sullo spezzone e
+   * i livelli gia' in sessione che lo usano si riallineano subito: la
+   * barra sulla linea del tempo si accorcia da sola e l'operatore non
+   * deve toccare due posti per la stessa cosa. */
+  const [trimOpen, setTrimOpen] = useState(null);   // id spezzone aperto
+  // barra di ascolto su telefono: titolo/durata/dissolvenze dietro un tocco
+  const [setupOpen, setSetupOpen] = useState(false);
+  const saveVoiceTrim = async (clip, nextStart, nextEnd) => {
+    const dur = clip.duration_sec || 0;
+    let s = Math.max(0, Math.min(nextStart, Math.max(0, dur - 1)));
+    let e = Math.max(0, Math.min(nextEnd, Math.max(0, dur - s - 1)));
+    s = Math.round(s * 2) / 2; e = Math.round(e * 2) / 2;
+    if (s === (clip.trim_start || 0) && e === (clip.trim_end || 0)) return;
+    setVoiceClips((cs) => cs.map((c) => (
+      c.id === clip.id ? { ...c, trim_start: s, trim_end: e } : c)));
+    const len = Math.max(1, dur - s - e);
+    setLayers((ls) => ls.map((l) => (
+      l.kind === 'voice' && l.asset_id === clip.id
+        ? { ...l, clip_in: s, end: Math.min(duration, l.start + len) }
+        : l)));
+    try { await frequenciesAPI.trimVoice(clip.id, { trimStart: s, trimEnd: e }); }
+    catch { setStatus('Taglio non salvato'); loadVoice(); }
   };
   const removeVoiceClip = (clip) => setAsk({
     title: 'Eliminare lo spezzone?',
@@ -800,26 +836,6 @@ export default function FrequenzePage() {
     return `${l.name} · ${METHOD_LABELS[l.method]} · ${f}`;
   };
 
-  // FV6 — taglio voce leggibile: si ragiona in «taglia inizio / taglia
-  // fine» (secondi tolti alla registrazione), mai in offset tecnici.
-  // La barra si ridimensiona da sola: fine = inizio + durata utile.
-  const vDur = (l) => (voiceById[l.asset_id]?.duration_sec)
-    || ((l.end - l.start) + (l.clip_in || 0));
-  const vCutEnd = (l) => Math.max(0,
-    Math.round((vDur(l) - (l.clip_in || 0) - (l.end - l.start)) * 2) / 2);
-  const setVoiceCutStart = (l, v) => {
-    const raw = vDur(l);
-    const cut = Math.max(0, Math.min(v, raw - 1));
-    const len = Math.max(1, raw - cut - vCutEnd(l));
-    patchLayer(l.id, { clip_in: cut, end: Math.min(duration, l.start + len) });
-  };
-  const setVoiceCutEnd = (l, v) => {
-    const raw = vDur(l);
-    const cut = Math.max(0, Math.min(v, raw - (l.clip_in || 0) - 1));
-    const len = Math.max(1, raw - (l.clip_in || 0) - cut);
-    patchLayer(l.id, { end: Math.min(duration, l.start + len) });
-  };
-
   const renderRow = (l) => (
     <div key={l.id} className={`row${l.mute ? ' muted' : ''}`}>
       <div className="meta">
@@ -834,20 +850,9 @@ export default function FrequenzePage() {
             onChange={(e) => patchLayer(l.id, { gain: +e.target.value })} />
           <span className="val v1">{Math.round(l.gain * 100)}%</span>
         </div>
-        {l.kind === 'voice' ? (
-          <div className="ctrls timerow">
-            <span className="lbl" title="Punto della sessione in cui la voce comincia">parte a</span>
-            <input className="mini t-in" type="text" defaultValue={fmt(l.start)} key={`in${l.id}-${Math.round(l.start)}`}
-              onBlur={(e) => {
-                const v = parseT(e.target.value);
-                if (v === null) return;
-                const len = l.end - l.start;
-                const st = Math.max(0, Math.min(v, duration - 1));
-                patchLayer(l.id, { start: st, end: Math.min(duration, st + len) });
-              }} />
-            <span className="lbl dur-tot">(suona per {fmt(l.end - l.start)})</span>
-          </div>
-        ) : (
+        {/* FV6 — la voce ha lo STESSO specchietto degli altri suoni:
+            entra a / esce a. Il taglio della registrazione si decide
+            una volta sola nel leggio, qui sopra. */}
         <div className="ctrls timerow">
           <span className="lbl" title="Secondo in cui il suono entra">entra a</span>
           <input className="mini t-in" type="text" defaultValue={fmt(l.start)} key={`in${l.id}-${Math.round(l.start)}`}
@@ -857,7 +862,6 @@ export default function FrequenzePage() {
             onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { end: Math.max(l.start + 0.5, Math.min(v, duration)) }); }} />
           <span className="lbl dur-tot">({fmt(l.end - l.start)})</span>
         </div>
-        )}
         {l.kind === 'voice' ? (
           <div className="ctrls r3">
             <select className="minisel" value={l.fx}
@@ -872,18 +876,13 @@ export default function FrequenzePage() {
               value={l.fx_amount ?? 0.6}
               onChange={(e) => patchLayer(l.id, { fx_amount: +e.target.value })} />
             <span className="val v1">{Math.round((l.fx_amount ?? 0.6) * 100)}%</span>
-            <span className="lbl" title="Toglie i primi secondi della registrazione. Non distruttivo: il file resta intero">✂ inizio</span>
-            <input className="mini" type="number" min="0" step="0.5"
-              value={l.clip_in || 0}
-              onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) setVoiceCutStart(l, v); }} />
-            <span className="lbl" title="Toglie gli ultimi secondi della registrazione">✂ fine</span>
-            <input className="mini" type="number" min="0" step="0.5"
-              value={vCutEnd(l)}
-              onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) setVoiceCutEnd(l, v); }} />
-            <span className="lbl">s</span>
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
-            <span className="val" title="Silenzi ai bordi, fruscio nelle pause e volume sono sistemati da soli all'ascolto">🎙 tua voce · pulita</span>
+            <span className="val" title="Silenzi ai bordi, fruscio nelle pause e volume sono sistemati da soli all'ascolto. Il taglio della registrazione si imposta nel riquadro «La tua voce», qui sopra.">
+              🎙 tua voce · pulita
+              {((voiceById[l.asset_id]?.trim_start || 0)
+                + (voiceById[l.asset_id]?.trim_end || 0)) > 0 ? ' · tagliata' : ''}
+            </span>
           </div>
         ) : l.kind === 'audio' ? (
           <div className="ctrls r3">
@@ -1344,7 +1343,16 @@ export default function FrequenzePage() {
               </button>
               <button type="button" className="cb-reset" disabled={!layers.length}
                 onClick={resetSession}>Reset</button>
-              <div className="cb-collapse open" style={{ display: 'contents' }}>
+              {/* Su telefono i quattro campi occupavano quattro righe piene:
+                  ora stanno dietro un tocco e la barra resta una striscia.
+                  Su schermo largo il CSS li rimette in linea (display:contents). */}
+              <button type="button" className="cb-opt" data-testid="fq-setup"
+                aria-expanded={setupOpen}
+                title="Titolo, durata, apertura e chiusura della sessione"
+                onClick={() => setSetupOpen((o) => !o)}>
+                {setupOpen ? '▴' : '▾'} {durationMin} min
+              </button>
+              <div className={`cb-collapse${setupOpen ? ' open' : ''}`}>
                 <div className="cb-fields">
                   <label title="Nome della bozza salvata nel tuo account">titolo
                     <input type="text" value={title} style={{ width: 130 }}
@@ -1364,7 +1372,9 @@ export default function FrequenzePage() {
                       onChange={(e) => setFadeOut(+e.target.value || 0)} /> s
                   </label>
                 </div>
-                <div className="cb-export">
+              </div>
+              {/* salva/pubblica restano sempre a vista, anche a campi chiusi */}
+              <div className="cb-export">
                   <span className="status">{status}</span>
                   <button type="button" data-testid="fq-save" className="cb-save"
                     disabled={saving || !layers.length}
@@ -1379,7 +1389,6 @@ export default function FrequenzePage() {
                       disabled={!layers.length}
                       onClick={publishTrack}>Pubblica</button>
                   ))}
-                </div>
               </div>
               {layers.length > 0 && (
                 <div className="seekwrap" style={{ display: 'flex' }}>
@@ -1415,7 +1424,7 @@ export default function FrequenzePage() {
               <div className="vd-head">
                 <span className="tag">🎙 La tua voce</span>
                 <span className="vd-hint">
-                  Registra brevi spezzoni e piazzali dove servono. Cuffie se la sessione è in ascolto.
+                  Registra brevi spezzoni, tagliali qui una volta sola e piazzali dove servono. Cuffie se la sessione è in ascolto.
                 </span>
                 {recState === 'rec' ? (
                   <button type="button" className="vd-rec on" onClick={stopRec}>
@@ -1442,15 +1451,28 @@ export default function FrequenzePage() {
                   </div>
                   <div className="vd-clips">
                     {voiceClips.map((c) => (
-                      <div key={c.id} className={`vd-clip${voicePrevId === c.id ? ' playing' : ''}`}>
+                      <React.Fragment key={c.id}>
+                      <div className={`vd-clip${voicePrevId === c.id ? ' playing' : ''}`}>
                         <input className="vd-name" type="text" defaultValue={c.title}
                           key={`${c.id}-${c.title}`}
                           onBlur={(e) => renameVoiceClip(c, e.target.value)} />
-                        <span className="vd-dur">{fmt(c.duration_sec || 0)}</span>
+                        <span className="vd-dur"
+                          title={(c.trim_start || c.trim_end)
+                            ? `Registrazione intera ${fmt(c.duration_sec || 0)}, tagliata`
+                            : 'Durata della registrazione'}>
+                          {fmt(clipUseful(c))}
+                        </span>
                         <button type="button" className="chip"
                           onClick={() => toggleVoicePreview(c)}>
                           {voicePrevLoading === c.id ? <span className="prep">◌</span>
                             : voicePrevId === c.id ? '■' : '▶'}
+                        </button>
+                        <button type="button"
+                          className={`chip${trimOpen === c.id ? ' on' : ''}`}
+                          title="Taglia i secondi di troppo all'inizio e alla fine di questa registrazione"
+                          data-testid={`fq-trim-${c.id}`}
+                          onClick={() => setTrimOpen(trimOpen === c.id ? null : c.id)}>
+                          ✂ taglio{(c.trim_start || c.trim_end) ? ' ·' : ''}
                         </button>
                         <button type="button" className="add"
                           title="La piazza al punto del cursore"
@@ -1458,6 +1480,30 @@ export default function FrequenzePage() {
                         <button type="button" className="ghost"
                           onClick={() => removeVoiceClip(c)}>×</button>
                       </div>
+                      {trimOpen === c.id && (
+                        <div className="vd-trim" data-testid="fq-trimrow">
+                          <span className="lbl">togli dall'inizio</span>
+                          <input className="mini" type="number" min="0" step="0.5"
+                            value={c.trim_start || 0}
+                            onChange={(e) => {
+                              const v = +e.target.value;
+                              if (!isNaN(v)) saveVoiceTrim(c, v, c.trim_end || 0);
+                            }} />
+                          <span className="lbl">togli dalla fine</span>
+                          <input className="mini" type="number" min="0" step="0.5"
+                            value={c.trim_end || 0}
+                            onChange={(e) => {
+                              const v = +e.target.value;
+                              if (!isNaN(v)) saveVoiceTrim(c, c.trim_start || 0, v);
+                            }} />
+                          <span className="lbl">s</span>
+                          <span className="vd-hint">
+                            Restano {fmt(clipUseful(c))} di {fmt(c.duration_sec || 0)}.
+                            Il file resta intero: puoi rimettere 0 quando vuoi.
+                          </span>
+                        </div>
+                      )}
+                      </React.Fragment>
                     ))}
                   </div>
                   {hasVoiceLayers && (

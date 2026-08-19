@@ -103,6 +103,10 @@
 .fqz .cb-export{display:flex;align-items:center;gap:10px}
 @media (max-width:760px){.fqz .createbar{gap:8px}.fqz .cb-play{flex:1 1 auto}.fqz .cb-opt{display:inline-flex;order:3;border-color:var(--line);color:var(--dim)}.fqz .cb-collapse{display:none;order:10;flex:1 0 100%;flex-direction:column;gap:12px;
       padding-top:12px;margin-top:4px;border-top:1px solid var(--line-soft)}.fqz .cb-collapse.open{display:flex}.fqz .cb-fields{flex-direction:column;gap:10px;align-items:stretch}.fqz .cb-fields label{justify-content:space-between}.fqz .cb-export{flex-wrap:wrap;justify-content:flex-end}.fqz .seekwrap{order:5}}
+/* salva/pubblica vivono FUORI dal pannello a scomparsa: su telefono
+   restano sempre a vista, su una riga propria sotto ai comandi */
+@media (max-width:760px){.fqz .createbar .cb-export{flex:1 0 100%;order:12}
+  .fqz .createbar .cb-export .status{flex:1 1 100%;font-size:11px}}
 .fqz .seekwrap{flex:1 0 100%;display:flex;align-items:center;gap:10px;margin-top:4px}
 .fqz .seek-cur,.fqz .seek-tot{font-family:var(--mono);font-size:11px;color:var(--dim);min-width:44px}
 .fqz .seek-tot{text-align:right}
@@ -353,6 +357,17 @@
   border-bottom:1px dashed transparent;color:inherit;font-family:inherit;font-size:12px}
 .fqz .vd-name:focus{outline:none;border-bottom-color:var(--lamp,#d8a94e)}
 .fqz .vd-dur{font-size:11px;opacity:.6}
+/* su telefono il nome dello spezzone prende una riga sua: i pulsanti
+   (prova, taglio, sessione, elimina) non lo schiacciano piu' */
+@media (max-width:760px){.fqz .vd-clip{flex-wrap:wrap}
+  .fqz .vd-name{flex:1 0 100%;font-size:13px;border-bottom-color:var(--line-soft)}}
+/* FV6 — impostazioni della singola registrazione: il taglio vive qui,
+   attaccato al suo spezzone, non piu' nella riga del livello */
+.fqz .vd-trim{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin:-4px 0 2px;padding:8px 10px;border:1px dashed var(--line,#2a3f3a);
+  border-top:none;border-radius:0 0 9px 9px;background:rgba(255,255,255,.02)}
+.fqz .vd-trim .mini{width:66px}
+.fqz .vd-trim .lbl{font-size:11px;opacity:.75}
 .fqz .vd-duck{display:flex;align-items:center;gap:7px;margin-top:10px;
   font-size:12px;opacity:.85;cursor:pointer}
 .fqz .row .bar.voice{background:rgba(216,169,78,.28);border-color:rgba(216,169,78,.55)}

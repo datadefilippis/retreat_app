@@ -528,14 +528,15 @@ async def delete_sound(asset_id: str,
 
 from models.voice_asset import (          # noqa: E402  (sezione FV1)
     CLIP_MAX_BYTES, CLIP_MAX_SECONDS, CLIPS_MAX_PER_ORG,
-    ORG_QUOTA_BYTES, ext_for_mime,
+    ORG_QUOTA_BYTES, clamp_trim, ext_for_mime,
 )
 from models.voice_asset import TITLE_MAX as VOICE_TITLE_MAX  # noqa: E402
 
 VOICE_DIR = Path(__file__).resolve().parent.parent / "uploads" / "voice"
 
 _VOICE_PROJECTION = {"_id": 0, "id": 1, "title": 1, "duration_sec": 1,
-                     "size_bytes": 1, "stream_url": 1, "created_at": 1}
+                     "size_bytes": 1, "stream_url": 1, "created_at": 1,
+                     "trim_start": 1, "trim_end": 1}
 
 
 @router.get("/voice")
@@ -601,6 +602,9 @@ async def record_voice_clip(file: UploadFile = File(...),
         "stream_url": f"/uploads/voice/{org_id}/{asset_id}.{ext}",
         "recorded_by": current_user.get("email"),
         "created_at": utc_now(),
+        # FV6 — nasce intera: il taglio si decide dopo, sullo spezzone
+        "trim_start": 0.0,
+        "trim_end": 0.0,
     }
     await voice_assets_collection.insert_one(dict(asset))
     asset.pop("_id", None)
@@ -610,24 +614,48 @@ async def record_voice_clip(file: UploadFile = File(...),
 
 
 class VoiceClipUpdate(BaseModel):
-    title: str
+    """Titolo e/o taglio dello spezzone. Ogni campo e' facoltativo:
+    si rinomina senza toccare il taglio e si taglia senza rinominare."""
+    title: Optional[str] = None
+    trim_start: Optional[float] = None
+    trim_end: Optional[float] = None
 
 
 @router.patch("/voice/{asset_id}")
-async def rename_voice_clip(asset_id: str, payload: VoiceClipUpdate,
+async def update_voice_clip(asset_id: str, payload: VoiceClipUpdate,
                             current_user: dict = Depends(get_current_user)):
     from database import voice_assets_collection
-    clean_title = (payload.title or "").strip()[:VOICE_TITLE_MAX]
-    if not clean_title:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="Serve un titolo.")
-    res = await voice_assets_collection.update_one(
+    asset = await voice_assets_collection.find_one(
         {"id": asset_id, "organization_id": current_user["organization_id"]},
-        {"$set": {"title": clean_title}})
-    if not res.matched_count:
+        _VOICE_PROJECTION)
+    if not asset:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Spezzone non trovato.")
-    return {"id": asset_id, "title": clean_title}
+    changes = {}
+    if payload.title is not None:
+        clean_title = (payload.title or "").strip()[:VOICE_TITLE_MAX]
+        if not clean_title:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="Serve un titolo.")
+        changes["title"] = clean_title
+    if payload.trim_start is not None or payload.trim_end is not None:
+        start, end = clamp_trim(
+            payload.trim_start if payload.trim_start is not None
+            else asset.get("trim_start"),
+            payload.trim_end if payload.trim_end is not None
+            else asset.get("trim_end"),
+            asset.get("duration_sec"))
+        changes["trim_start"] = start
+        changes["trim_end"] = end
+    if changes:
+        await voice_assets_collection.update_one(
+            {"id": asset_id,
+             "organization_id": current_user["organization_id"]},
+            {"$set": changes})
+    return {**{k: asset.get(k) for k in ("id", "title", "duration_sec")},
+            "trim_start": changes.get("trim_start", asset.get("trim_start") or 0),
+            "trim_end": changes.get("trim_end", asset.get("trim_end") or 0),
+            **({"title": changes["title"]} if "title" in changes else {})}
 
 
 @router.delete("/voice/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)

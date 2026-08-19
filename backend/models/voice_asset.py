@@ -27,6 +27,12 @@ ORG_QUOTA_BYTES = 100 * 1024 * 1024  # tetto complessivo per organizzazione
 CLIPS_MAX_PER_ORG = 100
 TITLE_MAX = 80
 
+# FV6 — il taglio vive sulla REGISTRAZIONE, non sul livello in sessione
+# (feedback founder 19/8: nella timeline la voce deve avere lo stesso
+# specchietto degli altri suoni). Non e' distruttivo: il file resta
+# intero, questi sono i secondi che la sessione salta ai due capi.
+CLIP_MIN_USEFUL = 1.0             # dopo il taglio deve restare un secondo
+
 
 def ext_for_mime(content_type):
     """Estensione per il MIME registrato, o None se fuori famiglia."""
@@ -34,3 +40,19 @@ def ext_for_mime(content_type):
     if not base.startswith(ALLOWED_MIME_PREFIXES):
         return None
     return MIME_TO_EXT.get(base, "webm")
+
+
+def clamp_trim(trim_start, trim_end, duration_sec):
+    """Taglio (inizio, fine) in secondi, sempre dentro la registrazione.
+
+    Il vincolo e' uno solo: cio' che resta non scende mai sotto
+    CLIP_MIN_USEFUL. Se la durata non e' nota si applica solo il tetto
+    del clip, cosi' un metadato mancante non blocca la modifica.
+    """
+    dur = max(0.0, float(duration_sec or 0))
+    start = max(0.0, min(float(trim_start or 0), CLIP_MAX_SECONDS))
+    end = max(0.0, min(float(trim_end or 0), CLIP_MAX_SECONDS))
+    if dur:
+        start = min(start, max(0.0, dur - CLIP_MIN_USEFUL))
+        end = min(end, max(0.0, dur - start - CLIP_MIN_USEFUL))
+    return round(start, 2), round(end, 2)

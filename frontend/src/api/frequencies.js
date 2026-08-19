@@ -50,5 +50,10 @@ export const frequenciesAPI = {
   },
   renameVoice: (assetId, title) =>
     api.patch(`/frequencies/voice/${assetId}`, { title }),
+  // FV6 — il taglio e' una proprieta' della REGISTRAZIONE: si decide
+  // una volta nel leggio e vale ovunque quello spezzone venga usato
+  trimVoice: (assetId, { trimStart, trimEnd }) =>
+    api.patch(`/frequencies/voice/${assetId}`,
+      { trim_start: trimStart, trim_end: trimEnd }),
   removeVoice: (assetId) => api.delete(`/frequencies/voice/${assetId}`),
 };
