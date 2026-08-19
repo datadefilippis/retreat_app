@@ -365,7 +365,7 @@ export const LoginPage = () => {
   );
 };
 
-const validatePassword = (pw, t) => {
+export const validatePassword = (pw, t) => {
   const errors = [];
   if (pw.length < 12) errors.push(t('validation.password_min_length'));
   if (!/[a-z]/.test(pw)) errors.push(t('validation.password_lowercase'));
@@ -374,7 +374,7 @@ const validatePassword = (pw, t) => {
   return errors.length ? errors.join(', ') + '.' : '';
 };
 
-const extractApiError = (error, fallback) => {
+export const extractApiError = (error, fallback) => {
   const detail = error.response?.data?.detail;
   if (Array.isArray(detail)) return detail.map((d) => d.msg).join('; ');
   if (typeof detail === 'string') return detail;

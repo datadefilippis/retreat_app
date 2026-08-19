@@ -41,13 +41,32 @@ class TestRegistrazioneDirettaRd:
         # saltabile: e' un benvenuto, non un cancello
         assert "welcome-skip" in src and "/inizia" in src
 
-    def test_landing_porta_al_signup_e_il_form_resta(self):
+    def test_landing_ha_la_registrazione_incorporata(self):
+        """RD-bis (founder): via il form di candidatura, all'ancora
+        #presentati vive la registrazione vera. Le CTA interne scrollano
+        li' — il viaggio finisce in pagina."""
         src = (PRELAUNCH / "OperatorLandingPage.js").read_text()
-        assert "/signup?next=${encodeURIComponent('/benvenuto')}" in src, \
-            "le CTA devono portare al signup con ritorno su /benvenuto"
-        assert "SIGNUP_HREF" in src
-        # la via secondaria sopravvive (chi vuole raccontarsi prima)
-        assert "<LeadForm" in src and 'id="presentati"' in src
+        assert "<InlineSignupForm" in src and 'id="presentati"' in src
+        assert "<LeadForm" not in src, \
+            "il form di candidatura non deve tornare su questa landing"
+        # 3 CTA (hero, meta' pagina, chiusura): la quarta era il
+        # bottone accanto al form, rimosso perche' ridondante
+        assert src.count("href={FORM_ANCHOR} onClick={scrollToForm}") >= 3, \
+            "le CTA interne devono scrollare alla registrazione"
+
+    def test_inline_signup_e_lo_stesso_flusso(self):
+        """Il form incorporato NON e' un secondo flusso: stessa
+        signup() del context, stessa firma, honeypot e doppio consenso
+        obbligatorio, utility riusate (non copiate)."""
+        src = (PRELAUNCH / "InlineSignupForm.js").read_text()
+        assert "from '../../context/AuthContext'" in src
+        assert "signup(email, password, name, organizationName," in src
+        assert "validatePassword, extractApiError } from '../../pages/AuthPages'" in src, \
+            "le utility si importano da AuthPages, mai si copiano"
+        assert "website" in src and "-9999px" in src, "honeypot mancante"
+        assert "!acceptedTerms || !acceptedPrivacy" in src, \
+            "i due consensi restano obbligatori anche nel form inline"
+        assert "verification_required" in src and "/benvenuto" in src
 
     def test_niente_promesse_di_selezione(self):
         """I testi della candidatura-selezione sono morti con il
