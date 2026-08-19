@@ -356,3 +356,12 @@
 .fqz .vd-duck{display:flex;align-items:center;gap:7px;margin-top:10px;
   font-size:12px;opacity:.85;cursor:pointer}
 .fqz .row .bar.voice{background:rgba(216,169,78,.28);border-color:rgba(216,169,78,.55)}
+
+/* FV6 — spinner di preparazione audio (aggiunte Aurya) */
+.fqz .prep{display:inline-block;animation:fqzspin 0.9s linear infinite}
+@keyframes fqzspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.fqz .learn-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+.fqz .learn-body th,.fqz .learn-body td{border:1px solid var(--line,#2a3f3a);
+  padding:6px 9px;text-align:left}
+.fqz .learn-body th{color:var(--lamp,#d8a94e);font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;font-size:10px}

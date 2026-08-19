@@ -138,7 +138,7 @@ export default function PublicFrequencyPage() {
     return (
       <div className="fqz">
         <main style={{ paddingTop: 60, textAlign: 'center' }}>
-          <h1>Aurya <em>Frequenze</em></h1>
+          <h1>Aurya <em>Sound</em></h1>
           <p className="soundlead" style={{ marginTop: 18 }}>
             Questa traccia non è in ascolto pubblico.
           </p>
@@ -156,7 +156,7 @@ export default function PublicFrequencyPage() {
     <div className="fqz" data-testid="fqz-public">
       <header>
         <div>
-          <h1>Aurya <em>Frequenze</em></h1>
+          <h1>Aurya <em>Sound</em></h1>
           <div className="sub">sessione vibrazionale</div>
         </div>
       </header>
@@ -178,7 +178,8 @@ export default function PublicFrequencyPage() {
           <div className="createbar" style={{ position: 'static', marginTop: 16 }}>
             <button type="button" className="cb-play" data-testid="fqp-play"
               onClick={() => (playing ? stop() : play(elapsed >= d - 1 ? 0 : elapsed))}>
-              {loadingAudio ? 'Preparo…' : playing ? `⏸ ${fmt(elapsed)}` : elapsed > 0 ? '▶ Riprendi' : '▶ Ascolta'}
+              {loadingAudio ? <><span className="prep">◌</span> Preparo…</>
+                : playing ? `⏸ ${fmt(elapsed)}` : elapsed > 0 ? '▶ Riprendi' : '▶ Ascolta'}
             </button>
             <div className="seekwrap" style={{ display: 'flex' }}>
               <span className="seek-cur">{fmt(elapsed)}</span>

@@ -719,20 +719,31 @@ class TestLeggioVoceFv3:
         for ref in ("recRef", "voicePrevRef"):
             assert ref in src, f"manca {ref}"
 
-    def test_layer_voce_con_preset_e_quantita(self):
+    def test_layer_voce_con_preset_e_taglio_leggibile(self):
+        """FV6: il layer voce parla la lingua dell'operatore — preset,
+        quantita' di effetto, e taglio in «✂ inizio / ✂ fine» (secondi
+        tolti alla registrazione), MAI offset tecnici."""
         src = (FQ_DIR / "FrequenzePage.js").read_text()
-        blocco = src.split("l.kind === 'voice' ?")[1].split("l.kind === 'audio'")[0]
-        assert "VOICE_PRESETS" in blocco, "manca il selettore preset sul layer"
-        assert "fx_amount" in blocco, "manca la quantita' di effetto"
+        r3 = src.split("✂ inizio")[0].rsplit("l.kind === 'voice' ?", 1)[1] \
+            if "✂ inizio" in src else ""
+        assert "✂ inizio" in src and "✂ fine" in src, "manca il taglio leggibile"
+        assert "setVoiceCutStart" in src and "setVoiceCutEnd" in src
+        assert '">salta<' not in src, "il vecchio campo «salta» confondeva"
+        blocco = src.split("setVoiceCutStart(l, v)")[0]
+        assert "VOICE_PRESETS" in src and "fx_amount" in src
+        assert "parte a" in src and "suona per" in src, \
+            "la riga voce mostra dove parte e quanto suona, non entra/esce"
+        assert r3 is not None and blocco is not None  # ancore vive
 
     def test_voce_e_duck_arrivano_a_motore_ed_export(self):
         src = (FQ_DIR / "FrequenzePage.js").read_text()
         assert "resolveVoiceLayers" in src
         play = src.split("const playSession")[1].split("const seekTo")[0]
         assert "voiceLayers" in play and "voiceDuck" in play
-        exp = src.split("const doExport")[1].split("let blob")[0]
-        assert "voiceLayers" in exp and "voiceDuck" in exp, \
-            "l'export deve suonare come l'anteprima (voce e ducking inclusi)"
+        # decisione founder 19/8: NESSUN export nella UI del compositore
+        # (la capacita' resta nel motore: render.js, guardia FV2)
+        assert "doExport" not in src and "Esporta MP3" not in src, \
+            "l'export non deve riapparire in Crea"
 
 
 class TestPuliziaVoceFv5:

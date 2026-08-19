@@ -29,7 +29,6 @@ import {
 import {
   VOICE_PRESETS, buildVoiceChain, cleanVoiceBuffer, connectVoiceSources,
 } from './engine/voicefx';
-import { renderPcm, wavBlob, mp3Blob } from './engine/render';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS } from './content/biblioteca';
 import './frequenze.css';
@@ -62,8 +61,6 @@ export default function FrequenzePage() {
   const [durationMin, setDurationMin] = useState(20);
   const [fadeIn, setFadeIn] = useState(10);
   const [fadeOut, setFadeOut] = useState(20);
-  const [sr, setSr] = useState(44100);
-  const [fmtOut, setFmtOut] = useState('mp3');
   const [layers, setLayers] = useState([]);
   const [phases, setPhases] = useState([]);
   const [title, setTitle] = useState('');
@@ -73,9 +70,9 @@ export default function FrequenzePage() {
   const [trackSlug, setTrackSlug] = useState(null);
   const [drafts, setDrafts] = useState([]);
   const [playing, setPlaying] = useState(false);
+  const [preparing, setPreparing] = useState(false);  // decode in corso
   const [elapsed, setElapsed] = useState(0);
   const [status, setStatus] = useState('');
-  const [exporting, setExporting] = useState(null);
   const [saving, setSaving] = useState(false);
   // ascolto live delle schede: gli HANDLE vivono in un ref (side effect
   // fuori dagli updater React: in dev gli updater girano due volte e un
@@ -142,6 +139,7 @@ export default function FrequenzePage() {
     }
     setPreviewingId(null);
   };
+  const [soundLoadingId, setSoundLoadingId] = useState(null);
   const toggleSoundPreview = (asset) => {
     if (previewingId === asset.id) { stopSoundPreview(); return; }
     stopSoundPreview();
@@ -150,7 +148,9 @@ export default function FrequenzePage() {
     el.src = asset.stream_url;
     el.loop = true;
     el.volume = 0.8;
-    el.play().catch(() => setStatus('Anteprima non disponibile'));
+    setSoundLoadingId(asset.id);
+    el.onplaying = () => setSoundLoadingId(null);
+    el.play().catch(() => { setSoundLoadingId(null); setStatus('Anteprima non disponibile'); });
     setPreviewingId(asset.id);
   };
   useEffect(() => () => stopSoundPreview(), []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -214,10 +214,12 @@ export default function FrequenzePage() {
     if (voicePrevRef.current) { voicePrevRef.current.stop(); voicePrevRef.current = null; }
     setVoicePrevId(null);
   };
+  const [voicePrevLoading, setVoicePrevLoading] = useState(null);
   const toggleVoicePreview = async (clip) => {
     if (voicePrevRef.current?.id === clip.id) { stopVoicePreview(); return; }
     stopVoicePreview();
     const ctx = audioCtx();
+    setVoicePrevLoading(clip.id);
     try {
       // stessa pulizia dell'ascolto in sessione: cio' che provi e' cio' che va in onda
       const buffer = cleanVoiceBuffer(ctx, await loadAssetBuffer(ctx, clip.stream_url));
@@ -237,6 +239,7 @@ export default function FrequenzePage() {
       };
       setVoicePrevId(clip.id);
     } catch { setStatus('Anteprima non disponibile'); }
+    finally { setVoicePrevLoading(null); }
   };
 
   const startRec = async () => {
@@ -341,23 +344,25 @@ export default function FrequenzePage() {
     }
     if (!layers.length) return;
     const token = playTokenRef.current;   // stopSession() l'ha appena incrementato
+    setPreparing(true);                   // l'utente vede subito che arriva
     const ctx = audioCtx();
     await ctx.resume();
-    if (playTokenRef.current !== token) return;
+    if (playTokenRef.current !== token) { setPreparing(false); return; }
     let audioLayers = [];
     if (layers.some((l) => l.kind === 'audio')) {
       setStatus('Carico le basi…');
       audioLayers = await resolveAudioLayers(ctx, score, soundsById);
-      if (playTokenRef.current !== token) return;
+      if (playTokenRef.current !== token) { setPreparing(false); return; }
     }
     let vLayers = [];
     if (hasVoiceLayers) {
       setStatus('Carico la voce…');
       vLayers = await resolveVoiceLayers(ctx, score, voiceById);
-      if (playTokenRef.current !== token) return;
+      if (playTokenRef.current !== token) { setPreparing(false); return; }
     }
     liveRef.current = startPreview(ctx, score,
       { fromT, audioLayers, voiceLayers: vLayers, voiceDuck });
+    setPreparing(false);
     setPlaying(true);
     timerRef.current = setInterval(() => {
       const el = liveRef.current ? liveRef.current.elapsed() : 0;
@@ -560,38 +565,6 @@ export default function FrequenzePage() {
     prevDurRef.current = newD;
   };
 
-  /* ── export ── */
-  const doExport = async (format = fmtOut) => {
-    if (!layers.length) return;
-    stopSession();
-    setExporting({ pct: 0, phase: 'Render' });
-    try {
-      const audioLayers = layers.some((l) => l.kind === 'audio')
-        ? await resolveAudioLayers(audioCtx(), score, soundsById) : [];
-      const exportVoice = hasVoiceLayers
-        ? await resolveVoiceLayers(audioCtx(), score, voiceById) : [];
-      const pcm = await renderPcm(score, {
-        sampleRate: sr, audioLayers,
-        voiceLayers: exportVoice, voiceDuck,
-        onProgress: (p) => setExporting({ pct: p, phase: 'Render' }),
-      });
-      let blob, ext;
-      if (format === 'mp3') {
-        setExporting({ pct: 0, phase: 'Codifica MP3' });
-        blob = await mp3Blob(pcm, sr, (p) => setExporting({ pct: p, phase: 'Codifica MP3' }));
-        ext = 'mp3';
-      } else { blob = wavBlob(pcm, sr); ext = 'wav'; }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `aurya-frequenze-${new Date().toISOString().slice(0, 10)}-${durationMin}min.${ext}`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      setStatus(`Traccia salvata (${ext.toUpperCase()}) · ${fmt(duration)}`);
-    } catch { setStatus('Render interrotto: memoria insufficiente. Riduci la durata.'); }
-    finally { setExporting(null); }
-  };
-
   /* ── drag generico (barre, maniglie, fasi) ── */
   const dragX = (e, laneEl, cb) => {
     e.preventDefault(); e.stopPropagation();
@@ -622,7 +595,17 @@ export default function FrequenzePage() {
     const live = liveCardsRef.current[key];
     const g = entry.g;
     const body = (entry.body || '').replace(/\n+/g, ' ').trim();
-    const clamped = body.length > 150 && !entry.info;
+    // poche righe in primo piano OVUNQUE (anche in Guida): il resto
+    // vive nel popup Approfondisci — e il taglio chiude la frase
+    const limit = entry.info ? 220 : 150;
+    let clamped = body.length > limit;
+    let shown = body;
+    if (clamped) {
+      const cut = body.slice(0, limit);
+      const dot = cut.lastIndexOf('. ');
+      shown = dot > limit * 0.4 ? cut.slice(0, dot + 1)
+        : `${cut.slice(0, cut.lastIndexOf(' ')).trim()}…`;
+    }
     return (
       <div key={key} className={`card${live ? ' playing' : ''}${g ? ` g${g}` : ''}`}>
         <div className="head">
@@ -632,9 +615,7 @@ export default function FrequenzePage() {
         {entry.hz && <div className="hz">{entry.hz}</div>}
         {entry.uso && <div className="uso">{entry.uso}</div>}
         {entry.cfg && <div className="listen">{LISTEN[entry.cfg.method] || ''}</div>}
-        <div className="body">
-          {clamped ? `${body.slice(0, 150).trim()}…` : body}
-        </div>
+        <div className="body">{shown}</div>
         {(clamped || entry.full) && (
           <button type="button" className="readmore"
             onClick={() => setLearn({ title: entry.t, body: entry.full || entry.body })}>
@@ -688,6 +669,26 @@ export default function FrequenzePage() {
     return `${l.name} · ${METHOD_LABELS[l.method]} · ${f}`;
   };
 
+  // FV6 — taglio voce leggibile: si ragiona in «taglia inizio / taglia
+  // fine» (secondi tolti alla registrazione), mai in offset tecnici.
+  // La barra si ridimensiona da sola: fine = inizio + durata utile.
+  const vDur = (l) => (voiceById[l.asset_id]?.duration_sec)
+    || ((l.end - l.start) + (l.clip_in || 0));
+  const vCutEnd = (l) => Math.max(0,
+    Math.round((vDur(l) - (l.clip_in || 0) - (l.end - l.start)) * 2) / 2);
+  const setVoiceCutStart = (l, v) => {
+    const raw = vDur(l);
+    const cut = Math.max(0, Math.min(v, raw - 1));
+    const len = Math.max(1, raw - cut - vCutEnd(l));
+    patchLayer(l.id, { clip_in: cut, end: Math.min(duration, l.start + len) });
+  };
+  const setVoiceCutEnd = (l, v) => {
+    const raw = vDur(l);
+    const cut = Math.max(0, Math.min(v, raw - (l.clip_in || 0) - 1));
+    const len = Math.max(1, raw - (l.clip_in || 0) - cut);
+    patchLayer(l.id, { end: Math.min(duration, l.start + len) });
+  };
+
   const renderRow = (l) => (
     <div key={l.id} className={`row${l.mute ? ' muted' : ''}`}>
       <div className="meta">
@@ -702,6 +703,20 @@ export default function FrequenzePage() {
             onChange={(e) => patchLayer(l.id, { gain: +e.target.value })} />
           <span className="val v1">{Math.round(l.gain * 100)}%</span>
         </div>
+        {l.kind === 'voice' ? (
+          <div className="ctrls timerow">
+            <span className="lbl" title="Punto della sessione in cui la voce comincia">parte a</span>
+            <input className="mini t-in" type="text" defaultValue={fmt(l.start)} key={`in${l.id}-${Math.round(l.start)}`}
+              onBlur={(e) => {
+                const v = parseT(e.target.value);
+                if (v === null) return;
+                const len = l.end - l.start;
+                const st = Math.max(0, Math.min(v, duration - 1));
+                patchLayer(l.id, { start: st, end: Math.min(duration, st + len) });
+              }} />
+            <span className="lbl dur-tot">(suona per {fmt(l.end - l.start)})</span>
+          </div>
+        ) : (
         <div className="ctrls timerow">
           <span className="lbl" title="Secondo in cui il suono entra">entra a</span>
           <input className="mini t-in" type="text" defaultValue={fmt(l.start)} key={`in${l.id}-${Math.round(l.start)}`}
@@ -711,6 +726,7 @@ export default function FrequenzePage() {
             onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { end: Math.max(l.start + 0.5, Math.min(v, duration)) }); }} />
           <span className="lbl dur-tot">({fmt(l.end - l.start)})</span>
         </div>
+        )}
         {l.kind === 'voice' ? (
           <div className="ctrls r3">
             <select className="minisel" value={l.fx}
@@ -725,10 +741,14 @@ export default function FrequenzePage() {
               value={l.fx_amount ?? 0.6}
               onChange={(e) => patchLayer(l.id, { fx_amount: +e.target.value })} />
             <span className="val v1">{Math.round((l.fx_amount ?? 0.6) * 100)}%</span>
-            <span className="lbl" title="Taglio non distruttivo: salta i primi secondi dello spezzone (la coda si taglia accorciando la barra)">salta</span>
-            <input className="mini" type="number" min="0" max="600" step="0.5"
+            <span className="lbl" title="Toglie i primi secondi della registrazione. Non distruttivo: il file resta intero">✂ inizio</span>
+            <input className="mini" type="number" min="0" step="0.5"
               value={l.clip_in || 0}
-              onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { clip_in: Math.max(0, v) }); }} />
+              onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) setVoiceCutStart(l, v); }} />
+            <span className="lbl" title="Toglie gli ultimi secondi della registrazione">✂ fine</span>
+            <input className="mini" type="number" min="0" step="0.5"
+              value={vCutEnd(l)}
+              onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) setVoiceCutEnd(l, v); }} />
             <span className="lbl">s</span>
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
@@ -863,8 +883,8 @@ export default function FrequenzePage() {
       </div>
       <header>
         <div>
-          <h1>Aurya <em>Frequenze</em></h1>
-          <div className="sub">stimolazione neuroacustica su linea del tempo</div>
+          <h1>Aurya <em>Sound</em></h1>
+          <div className="sub">Esperienze sonore progettate per accompagnare diversi stati di presenza.</div>
         </div>
         <div className="viewswitch">
           <button type="button" className={`vbtn${view === 'explore' ? ' on' : ''}`}
@@ -932,7 +952,8 @@ export default function FrequenzePage() {
                                 )}
                                 <button type="button" className="live"
                                   onClick={() => toggleSoundPreview(s)}>
-                                  {previewingId === s.id ? 'Ferma' : 'Ascolta'}
+                                  {soundLoadingId === s.id ? <span className="prep">◌</span>
+                                    : previewingId === s.id ? 'Ferma' : 'Ascolta'}
                                 </button>
                                 <button type="button" className="add"
                                   onClick={() => addSoundToSession(s)}>+ sessione</button>
@@ -1064,7 +1085,8 @@ export default function FrequenzePage() {
               <button type="button" className="cb-play" data-testid="fq-play"
                 disabled={!layers.length}
                 onClick={() => (playing ? stopSession() : playSession(0))}>
-                {playing ? '⏸ Pausa' : '▶ Ascolta sessione'}
+                {preparing ? <><span className="prep">◌</span> Preparo…</>
+                  : playing ? '⏸ Pausa' : '▶ Ascolta sessione'}
               </button>
               <button type="button" className="cb-reset" disabled={!layers.length}
                 onClick={resetSession}>Reset</button>
@@ -1089,7 +1111,7 @@ export default function FrequenzePage() {
                   </label>
                 </div>
                 <div className="cb-export">
-                  <span className="status">{exporting ? `${exporting.phase} · ${Math.round(exporting.pct * 100)}%` : status}</span>
+                  <span className="status">{status}</span>
                   <button type="button" data-testid="fq-save" className="cb-save"
                     disabled={saving || !layers.length}
                     onClick={save}>{saving ? 'Salvo…' : trackId ? 'Aggiorna bozza' : 'Salva bozza'}</button>
@@ -1173,7 +1195,8 @@ export default function FrequenzePage() {
                         <span className="vd-dur">{fmt(c.duration_sec || 0)}</span>
                         <button type="button" className="chip"
                           onClick={() => toggleVoicePreview(c)}>
-                          {voicePrevId === c.id ? '■' : '▶'}
+                          {voicePrevLoading === c.id ? <span className="prep">◌</span>
+                            : voicePrevId === c.id ? '■' : '▶'}
                         </button>
                         <button type="button" className="add"
                           title="La piazza al punto del cursore"
@@ -1250,20 +1273,6 @@ export default function FrequenzePage() {
                 <p>La tua sessione è vuota. Torna a <b>Esplora</b> per scegliere le frequenze, oppure parti da un <b>protocollo pronto</b> qui sopra.</p>
               </div>
             )}
-
-            {layers.length > 0 && (
-              <div className="exportrow" data-testid="fq-exportrow">
-                <span className="lbl">Ti serve il file per l'aula?</span>
-                {exporting ? (
-                  <span className="lbl">{exporting.phase} · {Math.round(exporting.pct * 100)}%</span>
-                ) : (
-                  <>
-                    <button type="button" className="chip" onClick={() => doExport('mp3')}>Esporta MP3</button>
-                    <button type="button" className="chip" onClick={() => doExport('wav')}>Esporta WAV</button>
-                  </>
-                )}
-              </div>
-            )}
             <p className="note">
               Il <b>binaurale</b> dà l'effetto solo in cuffia: dalle casse si sente comunque, ma resta un battimento fisico, non stimolazione binaurale. <b>Isocronico</b> e <b>monoaurale</b> portano il battito nel segnale — per grotta e aula usa questi.
               Timbro <b>caldo</b> più tollerabile del puro sulle sessioni lunghe; il <b>soffio</b> nasconde l'entrainment in un rumore rosa.
@@ -1285,7 +1294,7 @@ export default function FrequenzePage() {
       {!gateOk && (
         <div className="gate">
           <div className="gatebox">
-            <h2>Aurya <em>Frequenze</em> — prima di iniziare</h2>
+            <h2>Aurya <em>Sound</em> — prima di iniziare</h2>
             <p>Questo strumento genera stimolazione uditiva (battiti binaurali, toni isocronici e monoaurali, stimolazione bilaterale, toni puri). Non è un dispositivo medico e non diagnostica, cura o previene alcuna condizione.</p>
             <div className="warnbox"><strong>Non usare</strong> in caso di epilessia o storia di convulsioni, con pacemaker o dispositivi impiantati. In gravidanza, consultare prima il medico. <strong>Mai</strong> durante la guida o l'uso di macchinari.</div>
             <ul>
@@ -1329,7 +1338,11 @@ export default function FrequenzePage() {
             <div className="learn-kicker">Approfondimento</div>
             <h2>{learn.title}</h2>
             <div className="learn-body">
-              {(learn.body || '').split(/\n\n+/).map((p, i) => <p key={i}>{p.replace(/\n/g, ' ')}</p>)}
+              {/* i `full` della biblioteca sono HTML curato (tabelle):
+                  contenuto statico del bundle, mai input utente */}
+              {/^\s*</.test(learn.body || '') ? (
+                <div dangerouslySetInnerHTML={{ __html: learn.body }} />
+              ) : (learn.body || '').split(/\n\n+/).map((p, i) => <p key={i}>{p.replace(/\n/g, ' ')}</p>)}
             </div>
           </div>
         </div>
