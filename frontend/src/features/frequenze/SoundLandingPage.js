@@ -30,6 +30,16 @@ export default function SoundLandingPage() {
 
   return (
     <div className="fqz sld" data-testid="fqz-landing">
+      {/* SP-ter — la porta pubblica porta anche il ritorno */}
+      <div className="topbar">
+        <a className="fqzbrand" href="/" data-testid="fqz-brand" title="Torna su Aurya">
+          <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
+          <span>
+            <b>Aurya</b>
+            <i>torna al sito</i>
+          </span>
+        </a>
+      </div>
       <header>
         <div>
           <h1>Aurya <em>Sound</em></h1>
@@ -85,11 +95,17 @@ export default function SoundLandingPage() {
           </div>
 
           <div className="sld-bridge" data-testid="fqz-landing-meditazioni">
-            <span>Preferisci ascoltare?</span>{' '}
-            <Link to="/meditazioni">Scopri le esperienze create dagli operatori →</Link>
+            <span>Preferisci un'esperienza già composta?</span>{' '}
+            <Link to="/meditazioni">Scopri le meditazioni degli operatori →</Link>
           </div>
         </section>
       </main>
+      <footer className="fqzfoot" data-testid="fqz-foot">
+        <a href="/">← Torna su Aurya</a>
+        <a href="/blog">Magazine</a>
+        <a href="/newsletter">La Lettera</a>
+        <a href="/meditazioni">Meditazioni</a>
+      </footer>
     </div>
   );
 }

@@ -1013,6 +1013,18 @@ export default function FrequenzePage() {
   return (
     <div className="fqz" data-testid="fqz-root">
       <div className="topbar">
+        {/* SP-ter — la via di casa. Aurya Sound e' un mondo visivo a se':
+            senza un marchio cliccabile in alto a sinistra chi arriva dal
+            sito perde il filo (il menu pubblico qui non c'e'). */}
+        <a className="fqzbrand" href="/" data-testid="fqz-brand"
+          title="Torna su Aurya">
+          <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
+          <span>
+            <b>Aurya</b>
+            <i>torna al sito</i>
+          </span>
+        </a>
+        <span className="tb-spacer" />
         {canCompose ? (
           <>
             <button type="button" className={`backcard${view === 'mine' ? ' on' : ''}`}
@@ -1508,6 +1520,15 @@ export default function FrequenzePage() {
           </section>
         )}
       </main>
+
+      {!canCompose && (
+        <footer className="fqzfoot" data-testid="fqz-foot">
+          <a href="/">← Torna su Aurya</a>
+          <a href="/blog">Magazine</a>
+          <a href="/newsletter">La Lettera</a>
+          <a href="/meditazioni">Meditazioni</a>
+        </footer>
+      )}
 
       {canCompose && view !== 'create' && layers.length > 0 && (
         <div className="sessionfoot">

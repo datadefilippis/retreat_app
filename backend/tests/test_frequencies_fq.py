@@ -1106,3 +1106,18 @@ class TestSoundPubblicoSp:
         assert copiati == veri, (
             "la copia in seo_shell e' divergente dalla biblioteca: "
             f"{ {k: (len(v), len(veri.get(k, []))) for k, v in copiati.items()} }")
+
+    def test_via_di_casa_dal_mondo_scuro(self):
+        """SP-ter — Aurya Sound e' un mondo visivo a se' e il menu del
+        sito non c'e': senza marchio in alto e uscite in fondo, chi
+        arriva dal sito resta chiuso dentro."""
+        for f in ("FrequenzePage.js", "SoundLandingPage.js"):
+            src = (FQ_DIR / f).read_text()
+            assert 'data-testid="fqz-brand"' in src and 'href="/"' in src, \
+                f"{f}: manca il marchio che riporta al sito"
+            assert 'data-testid="fqz-foot"' in src, \
+                f"{f}: manca il piede con le uscite"
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        piede = page.split('data-testid="fqz-foot"')[1][:500]
+        for dove in ("/blog", "/newsletter", "/meditazioni"):
+            assert dove in piede, f"uscita {dove} mancante nel piede"
