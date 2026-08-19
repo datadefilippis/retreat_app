@@ -43,7 +43,7 @@ export default function SoundLandingPage() {
             Una biblioteca educativa su onde cerebrali, frequenze e metodi di
             stimolazione sonora. Ogni scheda dichiara il suo livello di evidenza:
             ciò che è documentato, ciò che è ricerca in corso, ciò che appartiene
-            alla tradizione. Si legge, si approfondisce, ci si orienta.
+            alla tradizione. Si legge, si approfondisce — e si ascolta.
           </p>
 
           <div className="sld-cats" data-testid="fqz-landing-cats">
@@ -75,8 +75,9 @@ export default function SoundLandingPage() {
           <div className="probox" data-testid="fqz-cta-landing">
             <b>Vuoi andare oltre l'esplorazione?</b>
             <p>
-              Con Aurya Sound gli operatori possono ascoltare frequenze e metodi,
-              combinarli e utilizzarli per costruire le proprie esperienze sonore.
+              Le frequenze le ascolti liberamente. Gli operatori possono anche
+              combinarle con metodi e con la propria voce, e pubblicare la sessione
+              con un link da condividere.
             </p>
             <Link to={PRO_ENTRY}>
               <button type="button">Scopri Aurya Sound per operatori →</button>

@@ -743,14 +743,19 @@ export default function FrequenzePage() {
             </label>
           </div>
         )}
-        {entry.cfg && canCompose && (
+        {entry.cfg && (
+          /* SP-bis (decisione founder 19/8): le frequenze si ascoltano
+             tutti. Resta professionale COMPORRE: «+ sessione» porta la
+             frequenza nella linea del tempo, e quella e' un'altra cosa. */
           <div className="foot">
             <button type="button" className="live" data-testid={`fq-card-live-${idx}`}
               onClick={() => toggleCard(key, entry)}>
               {live ? 'Ferma' : 'Ascolta'}
             </button>
-            <button type="button" className="add"
-              onClick={() => addCardToSession(entry)}>+ sessione</button>
+            {canCompose && (
+              <button type="button" className="add"
+                onClick={() => addCardToSession(entry)}>+ sessione</button>
+            )}
           </div>
         )}
       </div>
@@ -1037,7 +1042,7 @@ export default function FrequenzePage() {
             <span className="bc-ic">◆</span>
             <span>
               <span className="bc-t">Per gli operatori</span><br />
-              <span className="bc-s">ascolta, componi, pubblica</span>
+              <span className="bc-s">componi, registra, pubblica</span>
             </span>
           </button>
         )}
@@ -1168,11 +1173,13 @@ export default function FrequenzePage() {
               </>
             ) : (
               <>
-                {canCompose && liveCount > 0 && view === 'explore' && (
+                {liveCount > 0 && view === 'explore' && (
                   <div className="livebar on">
                     <span>{liveCount} in riproduzione — le frequenze si combinano</span>
                     <span className="spacer" style={{ flex: 1 }} />
-                    <button type="button" onClick={composeAllLive}>+ tutte alla sessione</button>
+                    {canCompose && (
+                      <button type="button" onClick={composeAllLive}>+ tutte alla sessione</button>
+                    )}
                     <button type="button" onClick={stopAllCards}>Ferma tutto</button>
                   </div>
                 )}
@@ -1236,8 +1243,8 @@ export default function FrequenzePage() {
                      un solo blocco, in fondo, mai sulle card */
                   <div className="probox" data-testid="fqz-cta-explore">
                     <b>Vuoi andare oltre l'esplorazione?</b>
-                    <p>Con Aurya Sound gli operatori possono ascoltare frequenze e metodi,
-                      combinarli e utilizzarli per costruire le proprie esperienze sonore.</p>
+                    <p>Ascoltare è solo l'inizio: gli operatori combinano frequenze, metodi
+                      e la propria voce in una sessione, e la pubblicano con un link.</p>
                     <button type="button" onClick={() => navigate(PRO_ENTRY)}>
                       Scopri Aurya Sound per operatori →
                     </button>
@@ -1512,7 +1519,7 @@ export default function FrequenzePage() {
       )}
 
       {/* gate sicurezza (prima visita) */}
-      {canCompose && !gateOk && (
+      {!gateOk && (
         <div className="gate">
           <div className="gatebox">
             <h2>Aurya <em>Sound</em> — prima di iniziare</h2>
@@ -1569,7 +1576,7 @@ export default function FrequenzePage() {
               /* SP3 — il momento di massima intenzione, la riga meno
                  invadente: solo visitatori, solo schede della biblioteca */
               <div className="proline" data-testid="fqz-cta-learn">
-                Vuoi ascoltarla e usarla nelle tue sessioni?{' '}
+                Vuoi portarla dentro una tua sessione?{' '}
                 <button type="button" onClick={() => navigate(PRO_ENTRY)}>
                   Scopri Aurya Sound per operatori →
                 </button>

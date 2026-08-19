@@ -445,8 +445,8 @@ function Guida({ onExplore, onLearn, proCta }) {
           /* SP3 — per il pubblico la chiusura ha una seconda uscita:
              gli operatori ascoltano e costruiscono */
           <p className="gd-pro" data-testid="fqz-cta-guida">
-            Gli operatori possono ascoltare frequenze e metodi, combinarli e costruire
-            le proprie esperienze sonore.{' '}
+            Gli operatori combinano frequenze, metodi e la propria voce in una sessione
+            da condividere con le persone che accompagnano.{' '}
             <a href={PRO_ENTRY}>Scopri Aurya Sound per operatori →</a>
           </p>
         )}

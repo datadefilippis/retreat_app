@@ -970,18 +970,38 @@ class TestSoundPubblicoSp:
         assert "verify-email-required" in blocco, \
             "il gate email-verificata di ProtectedRoute va replicato"
 
-    def test_visitatore_non_vede_strumenti(self):
-        """Ascolta/+ sessione, mondo Suoni, sipario, barra live e piede
-        sessione esistono solo per chi compone."""
+    def test_ascolto_libero_composizione_professionale(self):
+        """SP-bis (decisione founder 19/8): le frequenze si ascoltano
+        tutti. Resta professionale COMPORRE — e chi ascolta, chiunque
+        sia, deve prima leggere gli avvisi di sicurezza."""
         page = (FQ_DIR / "FrequenzePage.js").read_text()
-        assert "{entry.cfg && canCompose && (" in page, \
-            "i bottoni Ascolta/+ sessione devono dipendere da canCompose"
+        foot = page.split("{entry.cfg && (")[1][:700]
+        # Ascolta viene PRIMA di qualsiasi gate di ruolo; il gate copre
+        # solo «+ sessione», che sta dopo
+        i_ascolta = foot.index("'Ferma' : 'Ascolta'")
+        i_gate = foot.index("{canCompose && (")
+        assert i_ascolta < i_gate, \
+            "Ascolta e' finito dietro un gate di ruolo: si ascolta tutti"
+        assert "+ sessione" in foot[i_gate:], \
+            "«+ sessione» e' composizione: resta agli operatori"
+        assert "      {!gateOk && (" in page, \
+            "il sipario vale per CHIUNQUE ascolti, non solo per gli operatori"
+        # composizione e mondo di lavoro restano professionali
         assert "view === 'explore' && canCompose && (" in page, \
             "il mondo Suoni e' materiale di lavoro, non editoriale"
-        assert "canCompose && !gateOk && (" in page, \
-            "il sipario e' un patto per chi ascolta, non per chi legge"
-        assert "canCompose && liveCount > 0" in page
         assert "canCompose && view !== 'create' && layers.length > 0" in page
+        # e la barra live: fermare tutto si', comporre no
+        live = page.split("liveCount > 0 && view === 'explore' && (")[1][:600]
+        assert "Ferma tutto" in live and "{canCompose && (" in live
+
+    def test_cta_non_promette_ascolto_come_esclusiva(self):
+        """Da quando si ascolta tutti, una CTA che vende «puoi
+        ascoltare» sarebbe falsa: la promessa e' comporre e pubblicare."""
+        for f in ("FrequenzePage.js", "GuidaView.js", "SoundLandingPage.js"):
+            src = (FQ_DIR / f).read_text()
+            for bugia in ("gli operatori possono ascoltare",
+                          "Vuoi ascoltarla e usarla"):
+                assert bugia not in src, f"{f}: «{bugia}» non e' piu' vero"
 
     def test_niente_chiamate_authed_per_anonimi(self):
         """Il visitatore non deve generare 401 (bozze/voce) ne' portare

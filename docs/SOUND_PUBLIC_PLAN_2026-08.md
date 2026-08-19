@@ -1,6 +1,16 @@
 # Aurya Sound pubblico — Audit, architettura, SEO, funnel (ciclo SP, 19/8/2026)
 
-**Stato: PIANO — nessuna riga di codice modificata.**
+**Stato: COSTRUITO (SP1-SP5, 19/8). SP6 rimandata ai dati GSC.**
+
+> ⚠️ **Decisione founder del 19/8, POSTERIORE a questo piano: le
+> frequenze si ascoltano tutti.** Il confine si è spostato: non è più
+> «leggere vs ascoltare» ma **ascoltare vs COMPORRE**. Il pubblico
+> legge, approfondisce e ascolta le singole frequenze; restano
+> professionali «+ sessione», Crea, il mondo Suoni, Le mie tracce e la
+> pubblicazione. Il sipario di sicurezza (epilessia, volume, guida)
+> vale ora per chiunque ascolti. Le sezioni qui sotto che dicono «il
+> pubblico non ascolta» descrivono l'analisi di partenza: valgono per
+> la parte di audit (endpoint, byte, rischi), non per il confine.
 
 Distinzione di prodotto: per il pubblico «Esplora» significa
 LEGGI → APPROFONDISCI → IMPARA → ORIENTATI. L'ascolto, la sessione e

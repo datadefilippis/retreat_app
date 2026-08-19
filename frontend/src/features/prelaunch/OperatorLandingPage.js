@@ -213,7 +213,7 @@ export default function OperatorLandingPage() {
       // SP3 — Aurya Sound e' uno strumento gia' vero: la CTA della
       // biblioteca pubblica (#sound) atterra su questo registro
       title: t('opPro.v6t', { defaultValue: 'Componi esperienze sonore.' }),
-      body: t('opPro.v6b', { defaultValue: 'Con Aurya Sound ascolti frequenze e metodi, li combini con la tua voce e pubblichi la sessione con un link.' }),
+      body: t('opPro.v6b', { defaultValue: 'Con Aurya Sound combini frequenze, metodi e la tua voce in una sessione, e la pubblichi con un link.' }),
     },
     {
       title: t('opPro.v5t', { defaultValue: 'Condividi un unico link.' }),
