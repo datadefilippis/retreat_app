@@ -1014,13 +1014,9 @@ export default function FrequenzePage() {
                 </div>
                 {hasGrades && (
                   <div className="legend">
-                    <span className="la"><b>A</b> <i>Evidenza solida</i>
-                      Il fenomeno è ben documentato dalla ricerca scientifica.</span>
-                    <span className="lb"><b>B</b> <i>Ricerca in corso</i>
-                      Esistono risultati interessanti, ma le evidenze non sono ancora conclusive.</span>
-                    <span className="lc"><b>C</b> <i>Tradizione e simbolismo</i>
-                      L'associazione appartiene soprattutto alla tradizione o alla cultura,
-                      senza una dimostrazione fisiologica consolidata.</span>
+                    <span className="la" title="Il fenomeno è ben documentato dalla ricerca scientifica."><b>A</b> Evidenza solida</span>
+                    <span className="lb" title="Esistono risultati interessanti, ma le evidenze non sono ancora conclusive."><b>B</b> Ricerca in corso</span>
+                    <span className="lc" title="L'associazione appartiene soprattutto alla tradizione o alla cultura, senza una dimostrazione fisiologica consolidata."><b>C</b> Tradizione e simbolismo</span>
                   </div>
                 )}
                 {activeTab === 'Bande cerebrali' && (
@@ -1031,9 +1027,30 @@ export default function FrequenzePage() {
                     davvero mostrato sull'ascolto è dichiarato nel badge di ogni scheda.
                   </p>
                 )}
-                <div className="cards">
-                  {(BIB[activeTab] || []).map(renderCard)}
-                </div>
+                {(() => {
+                  // gruppi tematici (Altre frequenze): titoli discreti, e
+                  // l'INDICE ORIGINALE resta la chiave delle schede in
+                  // ascolto — mai rinumerare, o gli handle live si perdono
+                  const list = (BIB[activeTab] || []).map((e, i) => [e, i]);
+                  if (!list.some(([e]) => e.group)) {
+                    return <div className="cards">{list.map(([e, i]) => renderCard(e, i))}</div>;
+                  }
+                  const groups = [];
+                  list.forEach(([e, i]) => {
+                    const g = e.group || '';
+                    const last = groups[groups.length - 1];
+                    if (last && last.name === g) last.items.push([e, i]);
+                    else groups.push({ name: g, items: [[e, i]] });
+                  });
+                  return groups.map((grp) => (
+                    <div key={grp.name} className="cardgroup">
+                      <div className="grouptitle"><span>{grp.name}</span></div>
+                      <div className="cards">
+                        {grp.items.map(([e, i]) => renderCard(e, i))}
+                      </div>
+                    </div>
+                  ));
+                })()}
               </>
             )}
           </section>
@@ -1230,13 +1247,9 @@ export default function FrequenzePage() {
             </div>
 
             <div className="legend" style={{ marginTop: 14 }}>
-              <span className="la"><b>A</b> <i>Evidenza solida</i>
-                Il fenomeno è ben documentato dalla ricerca scientifica.</span>
-              <span className="lb"><b>B</b> <i>Ricerca in corso</i>
-                Esistono risultati interessanti, ma le evidenze non sono ancora conclusive.</span>
-              <span className="lc"><b>C</b> <i>Tradizione e simbolismo</i>
-                L'associazione appartiene soprattutto alla tradizione o alla cultura,
-                senza una dimostrazione fisiologica consolidata.</span>
+              <span className="la" title="Il fenomeno è ben documentato dalla ricerca scientifica."><b>A</b> Evidenza solida</span>
+              <span className="lb" title="Esistono risultati interessanti, ma le evidenze non sono ancora conclusive."><b>B</b> Ricerca in corso</span>
+              <span className="lc" title="L'associazione appartiene soprattutto alla tradizione o alla cultura, senza una dimostrazione fisiologica consolidata."><b>C</b> Tradizione e simbolismo</span>
             </div>
 
             {layers.length > 0 ? (
