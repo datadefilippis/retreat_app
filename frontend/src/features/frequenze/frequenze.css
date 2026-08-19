@@ -332,3 +332,27 @@
   padding:10px 14px;border:1px dashed var(--line-soft);border-radius:9px;color:var(--dim)}
 .fqz .backcard.on{border-color:var(--water);box-shadow:0 0 0 1px var(--water) inset}
 .fqz .backcard.on .bc-ic{border-color:var(--water);color:var(--water);background:#6FB3AC14}
+
+/* FV3 — il leggio: registrazione e spezzoni voce (aggiunte Aurya) */
+.fqz .voicedesk{margin-top:14px;padding:12px 14px;border:1px solid var(--line,#2a3f3a);
+  border-radius:12px;background:rgba(255,255,255,.02)}
+.fqz .vd-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fqz .vd-hint{font-size:11px;opacity:.65;letter-spacing:.02em}
+.fqz .vd-rec{border:1px solid #c0392b;background:transparent;color:#e07b6a;
+  border-radius:999px;padding:6px 16px;font-family:inherit;font-size:12px;
+  letter-spacing:.08em;cursor:pointer;margin-left:auto}
+.fqz .vd-rec:hover{background:rgba(192,57,43,.12)}
+.fqz .vd-rec.on{background:#c0392b;color:#fff;animation:fqzrec 1.2s ease-in-out infinite}
+@keyframes fqzrec{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.5)}50%{box-shadow:0 0 0 7px rgba(192,57,43,0)}}
+.fqz .vd-tryrow{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.fqz .vd-clips{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.fqz .vd-clip{display:flex;align-items:center;gap:8px;padding:5px 8px;
+  border:1px solid var(--line,#2a3f3a);border-radius:9px}
+.fqz .vd-clip.playing{border-color:var(--lamp,#d8a94e)}
+.fqz .vd-name{flex:1;min-width:120px;background:transparent;border:none;
+  border-bottom:1px dashed transparent;color:inherit;font-family:inherit;font-size:12px}
+.fqz .vd-name:focus{outline:none;border-bottom-color:var(--lamp,#d8a94e)}
+.fqz .vd-dur{font-size:11px;opacity:.6}
+.fqz .vd-duck{display:flex;align-items:center;gap:7px;margin-top:10px;
+  font-size:12px;opacity:.85;cursor:pointer}
+.fqz .row .bar.voice{background:rgba(216,169,78,.28);border-color:rgba(216,169,78,.55)}

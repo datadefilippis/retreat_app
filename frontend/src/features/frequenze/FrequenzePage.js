@@ -23,7 +23,12 @@ import { frequenciesAPI } from '../../api/frequencies';
 import {
   METHOD_LABELS, CURVE_LABELS, startPreview, startCardLive,
 } from './engine/synth';
-import { resolveAudioLayers, fileDuration } from './engine/assets';
+import {
+  loadAssetBuffer, resolveAudioLayers, resolveVoiceLayers, fileDuration,
+} from './engine/assets';
+import {
+  VOICE_PRESETS, buildVoiceChain, connectVoiceSources,
+} from './engine/voicefx';
 import { renderPcm, wavBlob, mp3Blob } from './engine/render';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS } from './content/biblioteca';
@@ -84,10 +89,15 @@ export default function FrequenzePage() {
   const timerRef = useRef(null);
   const duration = Math.max(60, durationMin * 60);
 
+  // FV3 — le basi respirano piano sotto la voce (parte della ricetta)
+  const [voiceDuck, setVoiceDuck] = useState(false);
+  const hasVoiceLayers = layers.some((l) => l.kind === 'voice');
+
   const score = useMemo(() => ({
-    score_version: 1, duration_sec: duration,
+    score_version: hasVoiceLayers ? 2 : 1, duration_sec: duration,
     fade_in_sec: fadeIn, fade_out_sec: fadeOut, layers, phases,
-  }), [duration, fadeIn, fadeOut, layers, phases]);
+    ...(hasVoiceLayers ? { voice_duck: voiceDuck } : {}),
+  }), [duration, fadeIn, fadeOut, layers, phases, hasVoiceLayers, voiceDuck]);
 
   // per l'API: via i campi privati di lavoro (_laneEl e' un nodo DOM —
   // serializzarlo manderebbe in circolo JSON.stringify)
@@ -179,6 +189,128 @@ export default function FrequenzePage() {
     }]],
   });
 
+  /* ── FV3: il leggio — spezzoni voce dell'operatore ──
+   * SOLO registrazione in-app (decisione founder 18/8: niente upload).
+   * Gli handle di MediaRecorder/stream vivono in ref, MAI negli updater. */
+  const [voiceClips, setVoiceClips] = useState([]);
+  const [recState, setRecState] = useState('idle');   // idle | rec
+  const [recSecs, setRecSecs] = useState(0);
+  const [prevFx, setPrevFx] = useState('dream');      // preset di prova
+  const [voicePrevId, setVoicePrevId] = useState(null);
+  const recRef = useRef(null);          // MediaRecorder
+  const recChunksRef = useRef([]);
+  const recSecsRef = useRef(0);
+  const recTimerRef = useRef(null);
+  const voicePrevRef = useRef(null);    // anteprima spezzone in corso
+  const voiceById = useMemo(
+    () => Object.fromEntries(voiceClips.map((c) => [c.id, c])), [voiceClips]);
+  const loadVoice = async () => {
+    try { setVoiceClips((await frequenciesAPI.listVoice()).data.items || []); }
+    catch { /* non bloccante */ }
+  };
+  useEffect(() => { loadVoice(); }, []);
+
+  const stopVoicePreview = () => {
+    if (voicePrevRef.current) { voicePrevRef.current.stop(); voicePrevRef.current = null; }
+    setVoicePrevId(null);
+  };
+  const toggleVoicePreview = async (clip) => {
+    if (voicePrevRef.current?.id === clip.id) { stopVoicePreview(); return; }
+    stopVoicePreview();
+    const ctx = audioCtx();
+    try {
+      const buffer = await loadAssetBuffer(ctx, clip.stream_url);
+      const chain = buildVoiceChain(ctx, prevFx, 0.6);
+      chain.output.connect(ctx.destination);
+      const sources = connectVoiceSources(ctx, buffer, chain);
+      sources.forEach((s) => s.start());
+      sources[0].onended = () => {
+        if (voicePrevRef.current?.id === clip.id) stopVoicePreview();
+      };
+      voicePrevRef.current = {
+        id: clip.id,
+        stop: () => {
+          sources.forEach((s) => { try { s.stop(); } catch (e) { /* gia' fermo */ } });
+          setTimeout(() => { try { chain.output.disconnect(); } catch (e) { /* idem */ } }, 900);
+        },
+      };
+      setVoicePrevId(clip.id);
+    } catch { setStatus('Anteprima non disponibile'); }
+  };
+
+  const startRec = async () => {
+    if (recState === 'rec') return;
+    stopVoicePreview();
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true },
+      });
+    } catch { setStatus('Microfono non disponibile o permesso negato'); return; }
+    const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4']
+      .find((m) => window.MediaRecorder && window.MediaRecorder.isTypeSupported(m));
+    const mr = new window.MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    recChunksRef.current = [];
+    mr.ondataavailable = (e) => { if (e.data && e.data.size) recChunksRef.current.push(e.data); };
+    mr.onstop = async () => {
+      stream.getTracks().forEach((t) => t.stop());
+      const blob = new Blob(recChunksRef.current, { type: mr.mimeType || 'audio/webm' });
+      const dur = recSecsRef.current;
+      if (dur < 1 || !blob.size) { setStatus('Registrazione troppo corta'); return; }
+      setStatus('Salvo lo spezzone…');
+      try {
+        const n = voiceClips.length + 1;
+        const r = await frequenciesAPI.recordVoice({
+          blob, mime: blob.type, title: `Spezzone ${n}`, durationSec: dur });
+        await loadVoice();
+        setStatus(`«${r.data.title}» tra i tuoi spezzoni — rinominalo per ritrovarlo`);
+      } catch (e) {
+        setStatus(e?.response?.data?.detail || 'Registrazione non salvata');
+      }
+    };
+    mr.start(250);
+    recRef.current = mr;
+    recSecsRef.current = 0;
+    setRecSecs(0); setRecState('rec');
+    setStatus('Sto registrando — parla pure. Cuffie se la sessione è in ascolto.');
+    recTimerRef.current = setInterval(() => {
+      recSecsRef.current += 1;
+      setRecSecs(recSecsRef.current);
+      if (recSecsRef.current >= 600) stopRec();   // tetto spezzone: 10 min
+    }, 1000);
+  };
+  const stopRec = () => {
+    if (recTimerRef.current) { clearInterval(recTimerRef.current); recTimerRef.current = null; }
+    if (recRef.current && recRef.current.state !== 'inactive') recRef.current.stop();
+    recRef.current = null;
+    setRecState('idle');
+  };
+  useEffect(() => () => { stopRec(); stopVoicePreview(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const addVoiceToSession = (clip) => {
+    const start = Math.max(0, Math.min(elapsed, duration - 1));
+    const end = Math.min(duration, start + Math.max(1, clip.duration_sec || 30));
+    setLayers((ls) => [...ls, {
+      id: ++_uid, kind: 'voice', asset_id: clip.id, name: clip.title,
+      start, end, gain: 0.9, fx: 'dream', fx_amount: 0.6, mute: false,
+    }]);
+    setStatus(`«${clip.title}» sulla linea del tempo a ${fmt(start)} — effetto Sogno`);
+  };
+  const renameVoiceClip = async (clip, name) => {
+    const t = (name || '').trim();
+    if (!t || t === clip.title) return;
+    try { await frequenciesAPI.renameVoice(clip.id, t); loadVoice(); }
+    catch { setStatus('Rinomina fallita'); }
+  };
+  const removeVoiceClip = (clip) => setAsk({
+    title: 'Eliminare lo spezzone?',
+    msg: `«${clip.title}» sparirà anche dalle sessioni che lo usano.`,
+    opts: [['Sì, elimina', async () => {
+      try { await frequenciesAPI.removeVoice(clip.id); loadVoice(); }
+      catch { setStatus('Errore'); }
+    }]],
+  });
+
   /* ── ascolto sessione ──
    * playSession ha degli await in mezzo (resume del contesto, decodifica
    * delle basi): senza un token di sequenza un Ferma o un seek dato
@@ -217,7 +349,14 @@ export default function FrequenzePage() {
       audioLayers = await resolveAudioLayers(ctx, score, soundsById);
       if (playTokenRef.current !== token) return;
     }
-    liveRef.current = startPreview(ctx, score, { fromT, audioLayers });
+    let vLayers = [];
+    if (hasVoiceLayers) {
+      setStatus('Carico la voce…');
+      vLayers = await resolveVoiceLayers(ctx, score, voiceById);
+      if (playTokenRef.current !== token) return;
+    }
+    liveRef.current = startPreview(ctx, score,
+      { fromT, audioLayers, voiceLayers: vLayers, voiceDuck });
     setPlaying(true);
     timerRef.current = setInterval(() => {
       const el = liveRef.current ? liveRef.current.elapsed() : 0;
@@ -327,6 +466,7 @@ export default function FrequenzePage() {
       setFadeIn(s.fade_in_sec ?? 10); setFadeOut(s.fade_out_sec ?? 20);
       setLayers((s.layers || []).map((l) => ({ ...l, id: ++_uid })));
       setPhases(s.phases || []);
+      setVoiceDuck(!!s.voice_duck);
       setView('create');
       setStatus(`Bozza «${t.title}» caricata`);
     } catch { setStatus('Bozza non trovata'); }
@@ -382,7 +522,7 @@ export default function FrequenzePage() {
       msg: `Rimuove tutte le tracce dalla linea del tempo. Non si può annullare.`,
       opts: [['Sì, svuota', () => {
         setLayers([]); setPhases([]); setTrackId(null); setTitle(''); setIntent(null);
-        setTrackStatus('draft'); setTrackSlug(null);
+        setTrackStatus('draft'); setTrackSlug(null); setVoiceDuck(false);
         setStatus('Sessione svuotata');
       }]],
     });
@@ -427,8 +567,11 @@ export default function FrequenzePage() {
     try {
       const audioLayers = layers.some((l) => l.kind === 'audio')
         ? await resolveAudioLayers(audioCtx(), score, soundsById) : [];
+      const exportVoice = hasVoiceLayers
+        ? await resolveVoiceLayers(audioCtx(), score, voiceById) : [];
       const pcm = await renderPcm(score, {
         sampleRate: sr, audioLayers,
+        voiceLayers: exportVoice, voiceDuck,
         onProgress: (p) => setExporting({ pct: p, phase: 'Render' }),
       });
       let blob, ext;
@@ -535,6 +678,9 @@ export default function FrequenzePage() {
   const hasGrades = (BIB[activeTab] || []).some((e) => e.g);
 
   const layerLabel = (l) => {
+    if (l.kind === 'voice') {
+      return `🎙 ${l.name} · ${(VOICE_PRESETS[l.fx] || VOICE_PRESETS.natural).label}`;
+    }
     if (l.kind === 'audio') return `♫ ${l.name}`;
     if (l.method === 'tone') return `${l.name} · ${l.carrier} Hz`;
     const f = l.f0 === l.f1 ? `${l.f0} Hz` : `${l.f0}→${l.f1} Hz`;
@@ -564,7 +710,25 @@ export default function FrequenzePage() {
             onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { end: Math.max(l.start + 0.5, Math.min(v, duration)) }); }} />
           <span className="lbl dur-tot">({fmt(l.end - l.start)})</span>
         </div>
-        {l.kind === 'audio' ? (
+        {l.kind === 'voice' ? (
+          <div className="ctrls r3">
+            <select className="minisel" value={l.fx}
+              title={(VOICE_PRESETS[l.fx] || VOICE_PRESETS.natural).hint}
+              onChange={(e) => patchLayer(l.id, { fx: e.target.value })}>
+              {Object.entries(VOICE_PRESETS).map(([k, p]) => (
+                <option key={k} value={k}>{p.label}</option>
+              ))}
+            </select>
+            <span className="lbl" title="Quanto effetto sopra la voce pulita">effetto</span>
+            <input className="sl vol" type="range" min="0" max="1" step="0.05"
+              value={l.fx_amount ?? 0.6}
+              onChange={(e) => patchLayer(l.id, { fx_amount: +e.target.value })} />
+            <span className="val v1">{Math.round((l.fx_amount ?? 0.6) * 100)}%</span>
+            <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
+              onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
+            <span className="val">🎙 tua voce</span>
+          </div>
+        ) : l.kind === 'audio' ? (
           <div className="ctrls r3">
             <button type="button" className={`chip${l.loop !== false ? ' on' : ''}`}
               title="La base ricomincia da capo finche' la barra dura"
@@ -639,7 +803,7 @@ export default function FrequenzePage() {
             <i key={i} style={{ left: `${((i + 1) * gstep / duration) * 100}%` }} />
           ))}
         </div>
-        <div className="bar"
+        <div className={l.kind === 'voice' ? 'bar voice' : 'bar'}
           style={{ left: `${(l.start / duration) * 100}%`, width: `${((l.end - l.start) / duration) * 100}%` }}
           title={`${fmt(l.start)} → ${fmt(l.end)}`}
           onPointerDown={(e) => {
@@ -962,6 +1126,66 @@ export default function FrequenzePage() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* FV3 — il leggio: la tua voce dentro la sessione */}
+            <div className="voicedesk" data-testid="fqz-voicedesk">
+              <div className="vd-head">
+                <span className="tag">🎙 La tua voce</span>
+                <span className="vd-hint">
+                  Registra brevi spezzoni e piazzali dove servono. Cuffie se la sessione è in ascolto.
+                </span>
+                {recState === 'rec' ? (
+                  <button type="button" className="vd-rec on" onClick={stopRec}>
+                    ■ Ferma · {fmt(recSecs)}
+                  </button>
+                ) : (
+                  <button type="button" className="vd-rec" onClick={startRec}>
+                    ● REC
+                  </button>
+                )}
+              </div>
+              {voiceClips.length > 0 && (
+                <>
+                  <div className="vd-tryrow">
+                    <span className="lbl">prova gli spezzoni con</span>
+                    <select className="minisel" value={prevFx}
+                      title={(VOICE_PRESETS[prevFx] || {}).hint}
+                      onChange={(e) => setPrevFx(e.target.value)}>
+                      {Object.entries(VOICE_PRESETS).map(([k, p]) => (
+                        <option key={k} value={k}>{p.label}</option>
+                      ))}
+                    </select>
+                    <span className="vd-hint">{(VOICE_PRESETS[prevFx] || {}).hint}</span>
+                  </div>
+                  <div className="vd-clips">
+                    {voiceClips.map((c) => (
+                      <div key={c.id} className={`vd-clip${voicePrevId === c.id ? ' playing' : ''}`}>
+                        <input className="vd-name" type="text" defaultValue={c.title}
+                          key={`${c.id}-${c.title}`}
+                          onBlur={(e) => renameVoiceClip(c, e.target.value)} />
+                        <span className="vd-dur">{fmt(c.duration_sec || 0)}</span>
+                        <button type="button" className="chip"
+                          onClick={() => toggleVoicePreview(c)}>
+                          {voicePrevId === c.id ? '■' : '▶'}
+                        </button>
+                        <button type="button" className="add"
+                          title="La piazza al punto del cursore"
+                          onClick={() => addVoiceToSession(c)}>+ sessione</button>
+                        <button type="button" className="ghost"
+                          onClick={() => removeVoiceClip(c)}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                  {hasVoiceLayers && (
+                    <label className="vd-duck">
+                      <input type="checkbox" checked={voiceDuck}
+                        onChange={(e) => setVoiceDuck(e.target.checked)} />
+                      Abbassa le basi sotto la voce (consigliato)
+                    </label>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="legend" style={{ marginTop: 14 }}>

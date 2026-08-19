@@ -34,4 +34,21 @@ export const frequenciesAPI = {
       { headers: { 'Content-Type': 'multipart/form-data' } });
   },
   removeSound: (assetId) => api.delete(`/frequencies/sounds/${assetId}`),
+
+  // FV1 — spezzoni voce dell'operatore: org-scoped, SOLO registrazione
+  // in-app (il blob arriva dal MediaRecorder, mai da un file manager)
+  listVoice: () => api.get('/frequencies/voice'),
+  recordVoice: ({ blob, mime, title, durationSec }) => {
+    const fd = new FormData();
+    const ext = (mime || '').includes('mp4') ? 'm4a'
+      : (mime || '').includes('ogg') ? 'ogg' : 'webm';
+    fd.append('file', new File([blob], `voce.${ext}`, { type: mime }));
+    fd.append('title', title);
+    fd.append('duration_sec', durationSec || 0);
+    return api.post('/frequencies/voice', fd,
+      { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  renameVoice: (assetId, title) =>
+    api.patch(`/frequencies/voice/${assetId}`, { title }),
+  removeVoice: (assetId) => api.delete(`/frequencies/voice/${assetId}`),
 };

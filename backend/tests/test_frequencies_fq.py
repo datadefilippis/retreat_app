@@ -215,6 +215,13 @@ class TestDesignPrototipoFq05:
         # rimuovi commenti e blocchi @ (i selettori interni sono gia'
         # scopati dal generatore, controllati sotto)
         css_clean = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+        # i @keyframes non contengono selettori DOM (percentuali/from/to),
+        # ma il loro NOME vive nel namespace globale: deve essere fqz*
+        for m in re.finditer(r"@keyframes\s+([\w-]+)", css_clean):
+            assert m.group(1).startswith("fqz"), \
+                f"@keyframes {m.group(1)!r} senza prefisso fqz (namespace globale)"
+        css_clean = re.sub(
+            r"@keyframes[^{]+\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}", "", css_clean)
         for rule in re.finditer(r"([^{}]+)\{", css_clean):
             sel = rule.group(1).strip()
             if not sel or sel.startswith("@"):
@@ -688,3 +695,41 @@ class TestMotoreVoceFv2:
         # il declick agisce sull'ingresso della catena, mai sulla coda
         blocco = src.split("spezzoni voce")[1].split("score.layers")[0]
         assert "chain.input.gain" in blocco
+
+
+class TestLeggioVoceFv3:
+    """FV3 — il leggio in Crea: registrazione in-app, spezzoni riusabili,
+    preset per layer, ducking. Verificato live in browser (webm/opus
+    sintetico → upload → + sessione → catena Sogno in ascolto)."""
+
+    def test_leggio_solo_registrazione(self):
+        """La voce nasce dal microfono: getUserMedia + MediaRecorder,
+        nessun nuovo input file (resta solo quello regia suoni FQ2)."""
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "fqz-voicedesk" in src, "manca il pannello leggio"
+        assert "getUserMedia" in src and "MediaRecorder" in src
+        assert src.count('type="file"') == 1, \
+            "la voce non deve aprire la porta all'upload di file"
+        assert "recordVoice" in src, "la registrazione deve passare dall'API"
+
+    def test_handle_registrazione_nei_ref(self):
+        """MediaRecorder/stream/anteprime vivono in ref: mai side effect
+        audio dentro gli updater React (lezione del bug stop)."""
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        for ref in ("recRef", "voicePrevRef"):
+            assert ref in src, f"manca {ref}"
+
+    def test_layer_voce_con_preset_e_quantita(self):
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        blocco = src.split("l.kind === 'voice' ?")[1].split("l.kind === 'audio'")[0]
+        assert "VOICE_PRESETS" in blocco, "manca il selettore preset sul layer"
+        assert "fx_amount" in blocco, "manca la quantita' di effetto"
+
+    def test_voce_e_duck_arrivano_a_motore_ed_export(self):
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "resolveVoiceLayers" in src
+        play = src.split("const playSession")[1].split("const seekTo")[0]
+        assert "voiceLayers" in play and "voiceDuck" in play
+        exp = src.split("const doExport")[1].split("let blob")[0]
+        assert "voiceLayers" in exp and "voiceDuck" in exp, \
+            "l'export deve suonare come l'anteprima (voce e ducking inclusi)"
