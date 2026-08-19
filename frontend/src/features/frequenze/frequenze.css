@@ -365,3 +365,18 @@
   padding:6px 9px;text-align:left}
 .fqz .learn-body th{color:var(--lamp,#d8a94e);font-weight:600;
   text-transform:uppercase;letter-spacing:.06em;font-size:10px}
+
+/* Legenda A/B/C con nome + spiegazione (aggiunte Aurya, FV7).
+   I badge restano identici: cambia solo la disposizione della riga. */
+.fqz .legend{align-items:flex-start}
+.fqz .legend > span{flex:1 1 210px;max-width:32%;line-height:1.45}
+.fqz .legend > span i{display:block;font-style:normal;font-weight:600;
+  letter-spacing:.02em;margin:1px 0 2px}
+.fqz .legend > span{color:var(--dim)}
+.fqz .legend .la i{color:var(--a)}
+.fqz .legend .lb i{color:var(--b)}
+.fqz .legend .lc i{color:var(--c)}
+.fqz .bandnote{margin:-6px 0 14px;padding:9px 13px;font-size:11.5px;
+  line-height:1.55;color:var(--dim);border-left:2px solid var(--line);
+  background:rgba(255,255,255,.015);border-radius:0 8px 8px 0}
+@media (max-width:760px){.fqz .legend > span{max-width:100%;flex-basis:100%}}

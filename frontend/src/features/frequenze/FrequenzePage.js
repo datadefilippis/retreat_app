@@ -911,14 +911,14 @@ export default function FrequenzePage() {
             )}
             <h2>
               {view === 'impara' ? 'Le fondamenta'
-                : world === 'sound' ? 'Le basi sonore' : 'La biblioteca delle frequenze'}
+                : world === 'sound' ? 'Le basi sonore' : 'Esplora le frequenze'}
             </h2>
             {view === 'impara' ? (
               <p>Onde cerebrali, entrainment, la differenza tra i metodi e quando servono le cuffie, più il glossario. Quando vuoi mettere in pratica, passa a <b>Esplora</b>.</p>
             ) : world === 'sound' ? (
               <p className="soundlead">Le basi sonore sono la tela su cui posare le frequenze — e potrai sovrapporne più di una. Le sceglierai qui e le combinerai nella sessione, esattamente come le frequenze.</p>
             ) : (
-              <p>Premi <b>Ascolta</b> su una scheda e la frequenza parte subito; puoi combinarne più insieme. Quando una ti convince, <b>+ sessione</b> la manda nella tua sessione (scheda «Crea»).</p>
+              <p>Esplora frequenze, vibrazioni e metodi di ascolto. Scopri cosa sono, cosa sappiamo davvero su di esse e come vengono utilizzate nelle pratiche sonore. Puoi ascoltarle singolarmente, combinarle e portarle nelle tue sessioni.</p>
             )}
 
             {view === 'explore' && world === 'sound' ? (
@@ -1014,10 +1014,22 @@ export default function FrequenzePage() {
                 </div>
                 {hasGrades && (
                   <div className="legend">
-                    <span className="la"><b>A</b> neuroscienza consolidata</span>
-                    <span className="lb"><b>B</b> evidenza promettente ma mista</span>
-                    <span className="lc"><b>C</b> tradizione — valore simbolico, non fisiologico dimostrato</span>
+                    <span className="la"><b>A</b> <i>Evidenza solida</i>
+                      Il fenomeno è ben documentato dalla ricerca scientifica.</span>
+                    <span className="lb"><b>B</b> <i>Ricerca in corso</i>
+                      Esistono risultati interessanti, ma le evidenze non sono ancora conclusive.</span>
+                    <span className="lc"><b>C</b> <i>Tradizione e simbolismo</i>
+                      L'associazione appartiene soprattutto alla tradizione o alla cultura,
+                      senza una dimostrazione fisiologica consolidata.</span>
                   </div>
+                )}
+                {activeTab === 'Bande cerebrali' && (
+                  <p className="bandnote">
+                    Le bande cerebrali non sono suoni: sono <b>ritmi dell'attività
+                    elettrica del cervello</b>, osservabili con l'EEG. Qui trovi
+                    stimoli sonori costruiti su quei ritmi — cosa la ricerca ha
+                    davvero mostrato sull'ascolto è dichiarato nel badge di ogni scheda.
+                  </p>
                 )}
                 <div className="cards">
                   {(BIB[activeTab] || []).map(renderCard)}
@@ -1218,9 +1230,13 @@ export default function FrequenzePage() {
             </div>
 
             <div className="legend" style={{ marginTop: 14 }}>
-              <span className="la"><b>A</b> neuroscienza consolidata</span>
-              <span className="lb"><b>B</b> evidenza promettente ma mista</span>
-              <span className="lc"><b>C</b> tradizione — valore simbolico, non fisiologico dimostrato</span>
+              <span className="la"><b>A</b> <i>Evidenza solida</i>
+                Il fenomeno è ben documentato dalla ricerca scientifica.</span>
+              <span className="lb"><b>B</b> <i>Ricerca in corso</i>
+                Esistono risultati interessanti, ma le evidenze non sono ancora conclusive.</span>
+              <span className="lc"><b>C</b> <i>Tradizione e simbolismo</i>
+                L'associazione appartiene soprattutto alla tradizione o alla cultura,
+                senza una dimostrazione fisiologica consolidata.</span>
             </div>
 
             {layers.length > 0 ? (
