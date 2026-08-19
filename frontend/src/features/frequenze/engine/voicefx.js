@@ -1,0 +1,194 @@
+/**
+ * Frequenze by Aurya — effetti voce (FV2, 19/8/2026).
+ *
+ * La «voce da sogno» delle sessioni guidate non e' un effetto solo:
+ * e' un CONTRASTO costruito (docs/FREQUENZE_VOCE_PLAN_2026-08.md) —
+ * voce intimissima davanti (compressione + EQ), coda enorme e scura
+ * dietro (riverbero lungo con pre-delay e taglio delle alte), eco
+ * filtrata che "allontana" la parola, doubling leggero.
+ *
+ * Tutto WebAudio nativo: il riverbero usa una risposta all'impulso
+ * SINTETICA (rumore stereo a decadimento esponenziale, scurito), zero
+ * file esterni. JS puro: niente React, niente DOM.
+ *
+ * I preset sono il gemello di VOICE_FX nel backend
+ * (models/frequency_track.py): tenerli allineati.
+ */
+
+export const VOICE_PRESETS = Object.freeze({
+  natural: {
+    label: 'Naturale',
+    hint: 'Solo pulizia: per istruzioni e passaggi pratici.',
+    reverbSec: 0.9, reverbTone: 4500, preDelay: 0.02, wet: 0.12,
+    echoTime: 0, echoFeedback: 0, echoTone: 0, echoWet: 0,
+    double: false,
+  },
+  dream: {
+    label: 'Sogno',
+    hint: 'La voce delle sessioni guidate: vicina e immensa insieme.',
+    reverbSec: 4.5, reverbTone: 2600, preDelay: 0.09, wet: 0.45,
+    echoTime: 0.42, echoFeedback: 0.32, echoTone: 2800, echoWet: 0.22,
+    double: true,
+  },
+  temple: {
+    label: 'Tempio',
+    hint: 'Riverbero grande senza eco: mantra, spazi sacri.',
+    reverbSec: 6.0, reverbTone: 2200, preDelay: 0.06, wet: 0.5,
+    echoTime: 0, echoFeedback: 0, echoTone: 0, echoWet: 0,
+    double: false,
+  },
+  whisper: {
+    label: 'Sussurro',
+    hint: 'Intimità pura, appena un alone.',
+    reverbSec: 1.6, reverbTone: 3200, preDelay: 0.03, wet: 0.2,
+    echoTime: 0, echoFeedback: 0, echoTone: 0, echoWet: 0,
+    double: false,
+  },
+});
+
+export const VOICE_FX_KEYS = Object.keys(VOICE_PRESETS);
+
+/* Cache delle IR per (sampleRate, secondi, tono): generarle costa. */
+const irCache = new Map();
+
+/**
+ * Risposta all'impulso sintetica: rumore stereo decorrelato con
+ * decadimento esponenziale, scurito da un one-pole lowpass — la "stanza"
+ * del riverbero, generata in pochi ms.
+ */
+export function makeImpulse(ctx, seconds, tone) {
+  const key = `${ctx.sampleRate}:${seconds}:${tone}`;
+  if (irCache.has(key)) return irCache.get(key);
+  const sr = ctx.sampleRate;
+  const len = Math.max(1, Math.floor(sr * seconds));
+  const buf = ctx.createBuffer(2, len, sr);
+  // coefficiente del one-pole per il tono richiesto
+  const k = Math.exp(-2 * Math.PI * (tone / sr));
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    let lp = 0;
+    for (let i = 0; i < len; i++) {
+      const env = Math.pow(1 - i / len, 2.4);          // decadimento
+      const w = (Math.random() * 2 - 1) * env;
+      lp = lp * k + w * (1 - k);                        // scurisce
+      d[i] = lp;
+    }
+  }
+  irCache.set(key, buf);
+  return buf;
+}
+
+/**
+ * Costruisce la catena effetti per un preset.
+ *
+ * @param ctx     AudioContext o OfflineAudioContext
+ * @param fx      chiave preset ('natural'|'dream'|'temple'|'whisper')
+ * @param amount  0..1 — quanto effetto (scala wet ed eco, mai il dry)
+ * @returns {{input: AudioNode, output: AudioNode}}
+ */
+export function buildVoiceChain(ctx, fx, amount = 0.6) {
+  const p = VOICE_PRESETS[fx] || VOICE_PRESETS.natural;
+  const amt = Math.max(0, Math.min(1, amount));
+
+  const input = ctx.createGain();
+  const output = ctx.createGain();
+
+  // — pulizia comune: la voce «intimissima davanti» —
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -24; comp.ratio.value = 5;
+  comp.attack.value = 0.003; comp.release.value = 0.25;
+  const hp = ctx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 90;
+  input.connect(comp); comp.connect(hp);
+
+  // dry sempre pieno: l'effetto si AGGIUNGE, non sostituisce
+  const dry = ctx.createGain(); dry.gain.value = 1;
+  hp.connect(dry); dry.connect(output);
+
+  // — riverbero: pre-delay → convolver → scurito —
+  if (p.wet > 0) {
+    const pre = ctx.createDelay(1); pre.delayTime.value = p.preDelay;
+    const conv = ctx.createConvolver();
+    conv.buffer = makeImpulse(ctx, p.reverbSec, p.reverbTone);
+    const dark = ctx.createBiquadFilter();
+    dark.type = 'lowpass'; dark.frequency.value = Math.max(1200, p.reverbTone * 1.6);
+    const wet = ctx.createGain(); wet.gain.value = p.wet * amt;
+    hp.connect(pre); pre.connect(conv); conv.connect(dark); dark.connect(wet);
+    wet.connect(output);
+  }
+
+  // — eco filtrata: ogni ripetizione piu' scura e lontana —
+  if (p.echoTime > 0) {
+    const del = ctx.createDelay(2); del.delayTime.value = p.echoTime;
+    const fb = ctx.createGain(); fb.gain.value = p.echoFeedback;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = p.echoTone;
+    const ewet = ctx.createGain(); ewet.gain.value = p.echoWet * amt;
+    hp.connect(del); del.connect(lp); lp.connect(fb); fb.connect(del);
+    lp.connect(ewet); ewet.connect(output);
+  }
+
+  return { input, output, preset: p };
+}
+
+/** Coda del preset in secondi: quanto lasciar suonare dopo la parola. */
+export function tailSeconds(fx) {
+  const p = VOICE_PRESETS[fx] || VOICE_PRESETS.natural;
+  let echoTail = 0;
+  if (p.echoTime > 0 && p.echoFeedback > 0) {
+    // tempo perche' il feedback scenda sotto -60 dB
+    echoTail = p.echoTime * Math.ceil(-3 / Math.log10(p.echoFeedback));
+  }
+  return Math.min(10, Math.max(p.reverbSec, echoTail) + 0.5);
+}
+
+/**
+ * Collega un clip voce (buffer) alla catena: sorgente principale + il
+ * doubling «angelico» se il preset lo chiede. Ritorna le sorgenti da
+ * avviare/fermare (start/stop restano al chiamante, che conosce i tempi).
+ */
+export function connectVoiceSources(ctx, buffer, chain) {
+  const sources = [];
+  const main = ctx.createBufferSource();
+  main.buffer = buffer;
+  main.connect(chain.input);
+  sources.push(main);
+  if (chain.preset.double) {
+    const dup = ctx.createBufferSource();
+    dup.buffer = buffer;
+    if (dup.detune) dup.detune.value = 8;             // +8 cents
+    const lag = ctx.createDelay(0.1); lag.delayTime.value = 0.015;
+    const g = ctx.createGain(); g.gain.value = 0.35;
+    dup.connect(lag); lag.connect(g);
+    if (ctx.createStereoPanner) {
+      const pan = ctx.createStereoPanner(); pan.pan.value = 0.35;
+      g.connect(pan); pan.connect(chain.input);
+    } else {
+      g.connect(chain.input);
+    }
+    sources.push(dup);
+  }
+  return sources;
+}
+
+/**
+ * Finestre di ducking: dove c'e' voce, le basi respirano piano.
+ * Ritorna un moltiplicatore di volume in funzione del tempo assoluto.
+ */
+export function duckEnvelope(voiceLayers, depth = 0.4, ramp = 1.0) {
+  const wins = (voiceLayers || [])
+    .filter((l) => !l.mute)
+    .map((l) => [l.start, l.end])
+    .sort((a, b) => a[0] - b[0]);
+  return (t) => {
+    let m = 1;
+    for (const [s, e] of wins) {
+      if (t < s - ramp || t > e + ramp) continue;
+      let f = 1;
+      if (t < s) f = (t - (s - ramp)) / ramp;           // scende
+      else if (t > e) f = 1 - (t - e) / ramp;           // risale
+      m = Math.min(m, 1 - depth * Math.max(0, Math.min(1, f)));
+    }
+    return m;
+  };
+}

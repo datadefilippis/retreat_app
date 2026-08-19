@@ -155,7 +155,7 @@ class TestIsolamentoFrontendFq0:
         assert 'path="/frequenze"' in src
 
     def test_engine_senza_react_e_dom(self):
-        for name in ("synth.js", "render.js"):
+        for name in ("synth.js", "render.js", "voicefx.js", "assets.js"):
             src = (FQ_DIR / "engine" / name).read_text()
             assert "from 'react'" not in src and 'from "react"' not in src, \
                 f"engine/{name} dipende da React"
@@ -643,3 +643,48 @@ class TestVoceOperatoreFv1:
             files={"file": ("nota.pdf", b"%PDF-", "application/pdf")},
             data={"title": "x", "duration_sec": 1}, timeout=10)
         assert r.status_code == 400
+
+
+class TestMotoreVoceFv2:
+    """FV2 — catena effetti voce: preset allineati col backend, motore
+    puro, nessun kind ignoto nel ramo oscillatori, export con coda."""
+
+    def test_preset_allineati_backend_frontend(self):
+        """VOICE_FX (modello) e VOICE_PRESETS (voicefx.js) sono gemelli:
+        un preset aggiunto da una parte sola e' un bug di contratto."""
+        import re
+        from models.frequency_track import VOICE_FX
+        src = (FQ_DIR / "engine" / "voicefx.js").read_text()
+        js_keys = re.findall(r"^  (\w+): \{", src, re.M)
+        assert sorted(js_keys) == sorted(VOICE_FX), \
+            f"preset disallineati: js={js_keys} py={list(VOICE_FX)}"
+
+    def test_ir_sintetica_niente_file_esterni(self):
+        src = (FQ_DIR / "engine" / "voicefx.js").read_text()
+        assert "makeImpulse" in src and "createConvolver" in src
+        assert "fetch(" not in src, \
+            "il riverbero deve generare l'IR, non scaricarla"
+
+    def test_nessun_kind_ignoto_nel_ramo_neuro(self):
+        """Un layer voice/futuro non deve MAI cadere nel ramo oscillatori
+        (suonerebbe come un tono): il filtro e' kind === 'neuro'."""
+        for name in ("synth.js", "render.js"):
+            src = (FQ_DIR / "engine" / name).read_text()
+            assert "!== 'audio'" not in src, \
+                f"engine/{name}: filtro per esclusione — i kind nuovi cadono nel ramo neuro"
+            assert "=== 'neuro'" in src
+
+    def test_export_prerender_con_coda(self):
+        """L'export pre-renderizza ogni clip CON l'effetto e la sua coda
+        (tailSeconds): il mixer a chunk non deve troncare i riverberi."""
+        src = (FQ_DIR / "engine" / "render.js").read_text()
+        assert "renderWetVoice" in src and "tailSeconds" in src
+        assert "duckEnvelope" in src, "manca il ducking nell'export"
+
+    def test_preview_voce_e_ducking(self):
+        src = (FQ_DIR / "engine" / "synth.js").read_text()
+        assert "voiceLayers" in src and "buildVoiceChain" in src
+        assert "duckEnvelope" in src and "voiceDuck" in src
+        # il declick agisce sull'ingresso della catena, mai sulla coda
+        blocco = src.split("spezzoni voce")[1].split("score.layers")[0]
+        assert "chain.input.gain" in blocco

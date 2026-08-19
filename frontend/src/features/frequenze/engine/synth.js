@@ -15,6 +15,8 @@
  * locale: in FQ0 non si persistono (arrivano con FQ2 via audio_assets).
  */
 
+import { buildVoiceChain, connectVoiceSources, duckEnvelope } from './voicefx';
+
 const TAU = Math.PI * 2;
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 
@@ -250,11 +252,15 @@ const rampCurve = (param, t0, span, fn, steps = 160, now = 0) => {
  *
  * @param ctx      AudioContext gia' creato (e resumed) dal chiamante
  * @param score    score v1 (duration_sec, fade_*, layers neuro)
- * @param opts     { fromT, audioLayers } — audioLayers: [{buffer, start,
- *                 end, gain, loop, mute}] basi musicali locali (FQ0)
+ * @param opts     { fromT, audioLayers, voiceLayers, voiceDuck } —
+ *                 audioLayers: basi con buffer; voiceLayers: spezzoni
+ *                 voce con buffer DRY + fx (resolveVoiceLayers, la
+ *                 catena effetti si costruisce qui); voiceDuck: le basi
+ *                 respirano piano sotto la voce
  * @returns {{stop: fn, elapsed: fn, setLayerGain: fn(id, gain)}}
  */
-export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
+export function startPreview(ctx, score,
+  { fromT = 0, audioLayers = [], voiceLayers = [], voiceDuck = false } = {}) {
   const d = score.duration_sec;
   const off = Math.max(0, Math.min(fromT || 0, d - 1));
   const t0 = ctx.currentTime + 0.15 - off;
@@ -275,10 +281,20 @@ export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
     sess.gain.linearRampToValueAtTime(0.0001, at(t0 + d));
   }
 
+  // FV2 — ducking: dove parla la voce, le basi respirano piano.
+  // Deterministico (le finestre sono nello score): identico ovunque.
+  let duckBus = sess;
+  if (voiceDuck && voiceLayers.length) {
+    const duck = ctx.createGain(); duck.connect(sess);
+    const env = duckEnvelope(voiceLayers);
+    rampCurve(duck.gain, t0, d, (u) => env(u), Math.min(600, Math.ceil(d * 2)), now);
+    duckBus = duck;
+  }
+
   audioLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer).forEach((l) => {
     const span = Math.max(1, Math.min(l.end, d) - l.start), s0 = t0 + l.start;
     if (s0 + span <= ctx.currentTime) return;
-    const uG = ctx.createGain(); uG.gain.value = 1; uG.connect(sess);
+    const uG = ctx.createGain(); uG.gain.value = 1; uG.connect(duckBus);
     liveG[l.id] = { node: uG, base: l.gain };
     const src = ctx.createBufferSource();
     src.buffer = l.buffer; src.loop = l.loop;
@@ -296,7 +312,35 @@ export function startPreview(ctx, score, { fromT = 0, audioLayers = [] } = {}) {
     nodes.push(src);
   });
 
-  (score.layers || []).filter((l) => l.kind !== 'audio' && !l.mute && l.gain > 0).forEach((l) => {
+  // FV2 — spezzoni voce: clip DRY → catena effetti del preset → sessione.
+  // La sorgente si ferma a fine clip ma la coda (riverbero/eco) continua
+  // a decadere attraverso la catena: e' il comportamento giusto.
+  voiceLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer).forEach((l) => {
+    const span = Math.max(0.5, Math.min(l.end, d) - l.start);
+    const s0 = t0 + l.start;
+    const playLen = Math.min(span, l.buffer.duration);
+    if (s0 + playLen <= ctx.currentTime) return;
+    const chain = buildVoiceChain(ctx, l.fx, l.fx_amount);
+    const uG = ctx.createGain(); uG.gain.value = 1; uG.connect(sess);
+    liveG[l.id] = { node: uG, base: l.gain };
+    const vg = ctx.createGain(); vg.connect(uG); vg.gain.value = l.gain;
+    chain.output.connect(vg);
+    // declick corto sul segnale DRY in ingresso: la coda non si tronca
+    const dk = 0.12;
+    chain.input.gain.setValueAtTime(0.0001, at(s0));
+    chain.input.gain.linearRampToValueAtTime(1, at(s0 + dk));
+    chain.input.gain.setValueAtTime(1, at(s0 + playLen - dk));
+    chain.input.gain.linearRampToValueAtTime(0.0001, at(s0 + playLen));
+    const startOffset = off > l.start ? off - l.start : 0;
+    if (startOffset >= l.buffer.duration) return;
+    connectVoiceSources(ctx, l.buffer, chain).forEach((src) => {
+      src.start(at(s0), Math.min(startOffset, l.buffer.duration - 0.001));
+      src.stop(at(s0 + playLen));
+      nodes.push(src);
+    });
+  });
+
+  (score.layers || []).filter((l) => (l.kind || 'neuro') === 'neuro' && !l.mute && l.gain > 0).forEach((l) => {
     const span = Math.max(1, Math.min(l.end, d) - l.start), s0 = t0 + l.start;
     if (s0 + span <= ctx.currentTime) return;
     const uG = ctx.createGain(); uG.gain.value = 1; uG.connect(sess);

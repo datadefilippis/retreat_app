@@ -9,8 +9,34 @@
  */
 
 import { neuroSample, neuroSampleInit } from './synth';
+import {
+  buildVoiceChain, connectVoiceSources, duckEnvelope, tailSeconds,
+} from './voicefx';
 
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+
+/* FV2 — pre-render di uno spezzone voce CON effetto: clip + coda di
+   riverbero in un buffer "wet" unico, cosi' il mixer a chunk non tronca
+   mai le code ai bordi. Il volume del layer e' gia' cotto dentro. */
+async function renderWetVoice(l, d, sr) {
+  const playLen = Math.min(Math.max(0.5, Math.min(l.end, d) - l.start),
+                           l.buffer.duration);
+  const total = playLen + tailSeconds(l.fx);
+  const off = new OfflineAudioContext(2, Math.ceil(total * sr), sr);
+  const chain = buildVoiceChain(off, l.fx, l.fx_amount);
+  const gv = off.createGain(); gv.gain.value = l.gain;
+  chain.output.connect(gv); gv.connect(off.destination);
+  const dk = Math.min(0.12, playLen / 4);
+  chain.input.gain.setValueAtTime(0.0001, 0);
+  chain.input.gain.linearRampToValueAtTime(1, dk);
+  chain.input.gain.setValueAtTime(1, Math.max(dk, playLen - dk));
+  chain.input.gain.linearRampToValueAtTime(0.0001, playLen);
+  connectVoiceSources(off, l.buffer, chain).forEach((src) => {
+    src.start(0); src.stop(playLen);
+  });
+  const wet = await off.startRendering();
+  return { start: l.start, buffer: wet };
+}
 
 /**
  * Renderizza lo score in PCM interleaved L/R.
@@ -20,12 +46,24 @@ const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
  *               in startPreview (basi con AudioBuffer locale)
  * @returns Promise<Int16Array>
  */
-export async function renderPcm(score, { sampleRate = 44100, audioLayers = [], onProgress } = {}) {
+export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
+                                         voiceLayers = [], voiceDuck = false,
+                                         onProgress } = {}) {
   const sr = sampleRate, d = score.duration_sec, dt = 1 / sr;
   const total = Math.floor(d * sr);
   const audio = audioLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer);
-  const neuro = (score.layers || []).filter((l) => l.kind !== 'audio' && !l.mute && l.gain > 0);
-  if (!audio.length && !neuro.length) throw new Error('Nessun livello udibile');
+  const voice = voiceLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer);
+  const neuro = (score.layers || []).filter(
+    (l) => (l.kind || 'neuro') === 'neuro' && !l.mute && l.gain > 0);
+  if (!audio.length && !neuro.length && !voice.length) {
+    throw new Error('Nessun livello udibile');
+  }
+  // spezzoni voce: pre-render con effetto (coda inclusa, volume cotto)
+  const wetClips = [];
+  for (const l of voice) wetClips.push(await renderWetVoice(l, d, sr));
+  const denv = (voiceDuck && voice.length) ? duckEnvelope(voice) : null;
+  const duckPts = denv ? voice.flatMap(
+    (l) => [l.start - 1, l.start, l.end, l.end + 1]) : [];
   const fi = score.fade_in_sec || 0, fo = score.fade_out_sec || 0;
   const pcm = new Int16Array(total * 2);
   const CHUNK = 20;
@@ -35,7 +73,7 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [], o
   for (let cs = 0; cs < d; cs += CHUNK) {
     const len = Math.min(CHUNK, d - cs), frames = Math.floor(len * sr);
     let L = null, R = null;
-    if (audio.length) {
+    if (audio.length || wetClips.length) {
       const off = new OfflineAudioContext(2, frames, sr);
       audio.forEach((l) => {
         const span = Math.max(1, Math.min(l.end, d) - l.start);
@@ -53,16 +91,30 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [], o
           let e = l.gain;
           if (u < a) e *= sm(u / a);
           if (span - u < r) e *= sm((span - u) / r);
-          return e;
+          return e * (denv ? denv(t) : 1);   // FV2: le basi sotto la voce
         };
         g.gain.setValueAtTime(ev(t0), t0 - cs);
-        [l.start + a, l.start + span - r].forEach((pt) => {
-          if (pt > t0 && pt < tE) g.gain.linearRampToValueAtTime(ev(pt), pt - cs);
-        });
+        [l.start + a, l.start + span - r, ...duckPts].sort((x, y) => x - y)
+          .forEach((pt) => {
+            if (pt > t0 && pt < tE) g.gain.linearRampToValueAtTime(ev(pt), pt - cs);
+          });
         g.gain.linearRampToValueAtTime(ev(tE), tE - cs);
         const offst = l.loop ? (t0 - l.start) % l.buffer.duration : t0 - l.start;
         src.start(t0 - cs, Math.min(offst, Math.max(0, l.buffer.duration - 0.001)));
         src.stop(tE - cs);
+      });
+      // FV2 — voce: il buffer wet e' gia' pronto (effetto, coda, volume):
+      // qui si piazza e basta, il chunking non tronca niente
+      wetClips.forEach((w) => {
+        const wEnd = w.start + w.buffer.duration;
+        if (wEnd <= cs || w.start >= cs + len) return;
+        const src = off.createBufferSource();
+        src.buffer = w.buffer;
+        src.connect(off.destination);
+        const when = Math.max(0, w.start - cs);
+        const offst = Math.max(0, cs - w.start);
+        src.start(when, Math.min(offst, Math.max(0, w.buffer.duration - 0.001)));
+        src.stop(Math.min(len, wEnd - cs));
       });
       const rb = await off.startRendering();
       L = rb.getChannelData(0);
