@@ -27,7 +27,7 @@ import {
   loadAssetBuffer, resolveAudioLayers, resolveVoiceLayers, fileDuration,
 } from './engine/assets';
 import {
-  VOICE_PRESETS, buildVoiceChain, connectVoiceSources,
+  VOICE_PRESETS, buildVoiceChain, cleanVoiceBuffer, connectVoiceSources,
 } from './engine/voicefx';
 import { renderPcm, wavBlob, mp3Blob } from './engine/render';
 import { PROTOCOLLI } from './content/protocolli';
@@ -219,7 +219,8 @@ export default function FrequenzePage() {
     stopVoicePreview();
     const ctx = audioCtx();
     try {
-      const buffer = await loadAssetBuffer(ctx, clip.stream_url);
+      // stessa pulizia dell'ascolto in sessione: cio' che provi e' cio' che va in onda
+      const buffer = cleanVoiceBuffer(ctx, await loadAssetBuffer(ctx, clip.stream_url));
       const chain = buildVoiceChain(ctx, prevFx, 0.6);
       chain.output.connect(ctx.destination);
       const sources = connectVoiceSources(ctx, buffer, chain);
@@ -724,9 +725,14 @@ export default function FrequenzePage() {
               value={l.fx_amount ?? 0.6}
               onChange={(e) => patchLayer(l.id, { fx_amount: +e.target.value })} />
             <span className="val v1">{Math.round((l.fx_amount ?? 0.6) * 100)}%</span>
+            <span className="lbl" title="Taglio non distruttivo: salta i primi secondi dello spezzone (la coda si taglia accorciando la barra)">salta</span>
+            <input className="mini" type="number" min="0" max="600" step="0.5"
+              value={l.clip_in || 0}
+              onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { clip_in: Math.max(0, v) }); }} />
+            <span className="lbl">s</span>
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
-            <span className="val">🎙 tua voce</span>
+            <span className="val" title="Silenzi ai bordi, fruscio nelle pause e volume sono sistemati da soli all'ascolto">🎙 tua voce · pulita</span>
           </div>
         ) : l.kind === 'audio' ? (
           <div className="ctrls r3">

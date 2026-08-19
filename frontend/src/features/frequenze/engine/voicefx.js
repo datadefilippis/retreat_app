@@ -171,6 +171,71 @@ export function connectVoiceSources(ctx, buffer, chain) {
   return sources;
 }
 
+/* FV5 — pulizia della registrazione. Il FILE resta l'originale: questa
+ * e' matematica deterministica applicata al buffer decodificato, quindi
+ * suona identica in anteprima, export e player — e si puo' migliorare
+ * domani senza riprocessare nulla.
+ *
+ * Catena: trim dei silenzi in testa/coda (+150ms di respiro) → gate
+ * leggero anti-fruscio nelle pause (soglia RELATIVA al fondo della
+ * registrazione: il respiro voluto, piu' forte del fondo, sopravvive)
+ * → declick 20ms ai bordi → normalizzazione di picco a -1 dB. */
+const cleanCache = new WeakMap();
+export function cleanVoiceBuffer(ctx, buffer) {
+  if (cleanCache.has(buffer)) return cleanCache.get(buffer);
+  const sr = buffer.sampleRate, ch = buffer.numberOfChannels, n = buffer.length;
+  const data = [];
+  for (let c = 0; c < ch; c++) data.push(buffer.getChannelData(c));
+  const win = Math.max(1, Math.round(sr * 0.01));          // finestre da 10ms
+  const nw = Math.ceil(n / win);
+  const rms = new Float32Array(nw);
+  for (let w = 0; w < nw; w++) {
+    let s = 0; const a = w * win, b = Math.min(n, a + win);
+    for (let i = a; i < b; i++) { const v = data[0][i]; s += v * v; }
+    rms[w] = Math.sqrt(s / Math.max(1, b - a));
+  }
+  const sorted = Array.from(rms).sort((x, y) => x - y);
+  const floor = sorted[Math.floor(nw * 0.1)] || 0;         // fondo: 10° percentile
+  const speechThr = Math.max(floor * 3.16, 0.004);         // +10dB, mai sotto -48dBFS
+  let first = -1, last = -1;
+  for (let w = 0; w < nw; w++) {
+    if (rms[w] >= speechThr) { if (first < 0) first = w; last = w; }
+  }
+  if (first < 0) { cleanCache.set(buffer, buffer); return buffer; } // solo silenzio
+  const pad = Math.round(0.15 * sr);
+  const start = Math.max(0, first * win - pad);
+  const end = Math.min(n, (last + 1) * win + pad);
+  // gate: le pause sotto ~fondo×2 scendono a -18dB, con rilascio morbido
+  const gateThr = floor * 2;
+  const gains = new Float32Array(nw).fill(1);
+  for (let w = 0; w < nw; w++) if (rms[w] < gateThr) gains[w] = 0.12;
+  for (let w = 1; w < nw; w++) gains[w] = Math.max(gains[w], gains[w - 1] * 0.85);
+  for (let w = nw - 2; w >= 0; w--) gains[w] = Math.max(gains[w], gains[w + 1] * 0.85);
+  const len = end - start;
+  const out = ctx.createBuffer(ch, len, sr);
+  let peak = 0;
+  for (let c = 0; c < ch; c++) {
+    const src = data[c], dst = out.getChannelData(c);
+    for (let i = 0; i < len; i++) {
+      dst[i] = src[start + i] * gains[Math.floor((start + i) / win)];
+      const av = Math.abs(dst[i]); if (av > peak) peak = av;
+    }
+    const f = Math.min(Math.round(0.02 * sr), Math.floor(len / 4)); // declick
+    for (let i = 0; i < f; i++) { const k = i / f; dst[i] *= k; dst[len - 1 - i] *= k; }
+  }
+  if (peak > 0.001) {
+    const k = Math.min(0.9 / peak, 8);                     // alza al massimo x8
+    if (k < 0.999 || k > 1.05) {
+      for (let c = 0; c < ch; c++) {
+        const dst = out.getChannelData(c);
+        for (let i = 0; i < len; i++) dst[i] *= k;
+      }
+    }
+  }
+  cleanCache.set(buffer, out);
+  return out;
+}
+
 /**
  * Finestre di ducking: dove c'e' voce, le basi respirano piano.
  * Ritorna un moltiplicatore di volume in funzione del tempo assoluto.

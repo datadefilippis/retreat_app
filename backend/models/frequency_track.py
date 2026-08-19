@@ -94,6 +94,9 @@ def clean_layer(raw, duration):
             "gain": _num(raw.get("gain"), 0.0, 1.0, 0.9),
             "fx": raw.get("fx") if raw.get("fx") in VOICE_FX else "dream",
             "fx_amount": _num(raw.get("fx_amount"), 0.0, 1.0, 0.6),
+            # FV5 — taglio non distruttivo: salta i primi N secondi del
+            # clip (il file resta intatto, il taglio vive nella ricetta)
+            "clip_in": round(_num(raw.get("clip_in"), 0.0, 3600.0, 0.0), 2),
             "mute": bool(raw.get("mute", False)),
         }
     method = raw.get("method")

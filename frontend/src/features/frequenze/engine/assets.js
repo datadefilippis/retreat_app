@@ -7,6 +7,8 @@
  * resto dell'engine: la pagina non tocca mai decodeAudioData.
  */
 
+import { cleanVoiceBuffer } from './voicefx';
+
 const bufferCache = new Map(); // url → Promise<AudioBuffer>
 
 export function loadAssetBuffer(ctx, url) {
@@ -57,10 +59,14 @@ export async function resolveVoiceLayers(ctx, score, voiceById) {
     const asset = voiceById[l.asset_id];
     if (!asset || !asset.stream_url) continue;
     try {
-      const buffer = await loadAssetBuffer(ctx, asset.stream_url);
+      const raw = await loadAssetBuffer(ctx, asset.stream_url);
+      // FV5 — pulizia deterministica (trim, gate, declick, normalize):
+      // il file resta intatto, il buffer suona pulito ovunque uguale
+      const buffer = cleanVoiceBuffer(ctx, raw);
       out.push({ id: l.id, buffer, start: l.start, end: l.end,
                  gain: l.gain, fx: l.fx || 'dream',
-                 fx_amount: l.fx_amount ?? 0.6, mute: false });
+                 fx_amount: l.fx_amount ?? 0.6,
+                 clip_in: l.clip_in || 0, mute: false });
     } catch (e) { /* spezzone saltato: sessione parziale, mai muta */ }
   }
   return out;

@@ -19,8 +19,9 @@ const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
    riverbero in un buffer "wet" unico, cosi' il mixer a chunk non tronca
    mai le code ai bordi. Il volume del layer e' gia' cotto dentro. */
 async function renderWetVoice(l, d, sr) {
+  const clipIn = Math.min(l.clip_in || 0, Math.max(0, l.buffer.duration - 0.2));
   const playLen = Math.min(Math.max(0.5, Math.min(l.end, d) - l.start),
-                           l.buffer.duration);
+                           l.buffer.duration - clipIn);
   const total = playLen + tailSeconds(l.fx);
   const off = new OfflineAudioContext(2, Math.ceil(total * sr), sr);
   const chain = buildVoiceChain(off, l.fx, l.fx_amount);
@@ -32,7 +33,7 @@ async function renderWetVoice(l, d, sr) {
   chain.input.gain.setValueAtTime(1, Math.max(dk, playLen - dk));
   chain.input.gain.linearRampToValueAtTime(0.0001, playLen);
   connectVoiceSources(off, l.buffer, chain).forEach((src) => {
-    src.start(0); src.stop(playLen);
+    src.start(0, clipIn); src.stop(playLen);
   });
   const wet = await off.startRendering();
   return { start: l.start, buffer: wet };

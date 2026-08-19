@@ -733,3 +733,39 @@ class TestLeggioVoceFv3:
         exp = src.split("const doExport")[1].split("let blob")[0]
         assert "voiceLayers" in exp and "voiceDuck" in exp, \
             "l'export deve suonare come l'anteprima (voce e ducking inclusi)"
+
+
+class TestPuliziaVoceFv5:
+    """FV5 — pulizia non distruttiva e taglio: il FILE registrato non si
+    tocca mai; trim/gate/declick/normalize sono matematica deterministica
+    sul buffer, il taglio dell'inizio vive nella ricetta (clip_in)."""
+
+    def test_clip_in_nella_ricetta(self):
+        from models.frequency_track import clean_score
+        s = clean_score({"duration_sec": 600, "layers": [
+            {"kind": "voice", "asset_id": "x", "clip_in": 3.5},
+            {"kind": "voice", "asset_id": "y", "clip_in": -7},
+        ]})
+        assert s["layers"][0]["clip_in"] == 3.5
+        assert s["layers"][1]["clip_in"] == 0.0, "clip_in negativo va a zero"
+
+    def test_pulizia_deterministica_ovunque(self):
+        """cleanVoiceBuffer si applica alla RISOLUZIONE (assets) e
+        all'anteprima del leggio: mai al file, identica ovunque."""
+        assets = (FQ_DIR / "engine" / "assets.js").read_text()
+        assert "cleanVoiceBuffer" in assets
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "cleanVoiceBuffer" in page, \
+            "l'anteprima del leggio deve suonare come la sessione"
+        fx = (FQ_DIR / "engine" / "voicefx.js").read_text()
+        assert "cleanCache" in fx, "senza cache si ripulisce a ogni play"
+        assert "solo silenzio" in fx, \
+            "un clip tutto silenzio non va toccato (bordo documentato)"
+
+    def test_clip_in_arriva_a_preview_ed_export(self):
+        synth = (FQ_DIR / "engine" / "synth.js").read_text()
+        blocco = synth.split("spezzoni voce")[1].split("score.layers")[0]
+        assert "clip_in" in blocco, "il taglio non arriva all'anteprima"
+        render = (FQ_DIR / "engine" / "render.js").read_text()
+        assert "clip_in" in render.split("renderWetVoice")[1][:800], \
+            "il taglio non arriva all'export"

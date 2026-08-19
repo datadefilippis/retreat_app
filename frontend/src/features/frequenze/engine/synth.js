@@ -318,8 +318,9 @@ export function startPreview(ctx, score,
   voiceLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer).forEach((l) => {
     const span = Math.max(0.5, Math.min(l.end, d) - l.start);
     const s0 = t0 + l.start;
-    const playLen = Math.min(span, l.buffer.duration);
-    if (s0 + playLen <= ctx.currentTime) return;
+    const clipIn = Math.min(l.clip_in || 0, Math.max(0, l.buffer.duration - 0.2));
+    const playLen = Math.min(span, l.buffer.duration - clipIn);
+    if (playLen <= 0 || s0 + playLen <= ctx.currentTime) return;
     const chain = buildVoiceChain(ctx, l.fx, l.fx_amount);
     const uG = ctx.createGain(); uG.gain.value = 1; uG.connect(sess);
     liveG[l.id] = { node: uG, base: l.gain };
@@ -331,7 +332,7 @@ export function startPreview(ctx, score,
     chain.input.gain.linearRampToValueAtTime(1, at(s0 + dk));
     chain.input.gain.setValueAtTime(1, at(s0 + playLen - dk));
     chain.input.gain.linearRampToValueAtTime(0.0001, at(s0 + playLen));
-    const startOffset = off > l.start ? off - l.start : 0;
+    const startOffset = clipIn + (off > l.start ? off - l.start : 0);
     if (startOffset >= l.buffer.duration) return;
     connectVoiceSources(ctx, l.buffer, chain).forEach((src) => {
       src.start(at(s0), Math.min(startOffset, l.buffer.duration - 0.001));
