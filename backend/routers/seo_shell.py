@@ -303,9 +303,11 @@ _BRAND_PAGES = {
     # "Gratuitamente", che come promessa e' vietata fuori dalla FAQ.
     "entra-nella-rete": {
         "title": "Per i professionisti del benessere | Aurya",
-        "description": ("Raccontiamo il tuo lavoro con cura e ti diamo un "
-                        "profilo pubblico curato. Non è una selezione: "
-                        "è una conversazione."),
+        # RD — con la registrazione diretta la promessa cambia: si
+        # entra subito, la conversazione arriva dopo (ed e' il racconto)
+        "description": ("Crei il tuo account in un minuto e inizi a "
+                        "costruire il tuo profilo. Poi ci conosciamo: "
+                        "il racconto del tuo lavoro lo scriviamo insieme."),
     },
     # SW3 — /chi-siamo e' di nuovo una pagina propria (le persone dietro
     # Aurya), quindi torna canonica di se stessa: il canonical_slug che

@@ -355,7 +355,7 @@ export default function NetworkOperatorsPage() {
                 {t('nwOps.growP1', { defaultValue: 'Non stiamo cercando di riempire un elenco. Preferiamo conoscere davvero ogni professionista che entra in Aurya.' })}
               </Lede>
               <Lede size="body" className="mt-5">
-                {t('nwOps.growP2', { defaultValue: 'Per questo la rete crescerà lentamente. Ogni nuovo ingresso sarà il risultato di una conversazione, non di un semplice modulo.' })}
+                {t('nwOps.growP2', { defaultValue: 'Per questo ogni persona della rete viene raccontata attraverso una conversazione vera, non un semplice modulo. Il racconto richiede tempo, e ce lo prendiamo.' })}
               </Lede>
               <div className="mt-9 border-l-2 border-[#7d6a3a]/50 pl-5 sm:pl-6">
                 <Lede size="body" tone="quiet">

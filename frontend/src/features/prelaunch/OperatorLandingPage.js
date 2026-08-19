@@ -77,7 +77,12 @@ import {
 
 /** l'ancora del form: destinazione delle CTA interne e dei link che
     arrivano da fuori (/entra-nella-rete#presentati dalla home) */
-const FORM_ANCHOR = '#presentati';
+// RD — la porta principale ora e' la registrazione: 4 campi, 30
+// secondi, e si atterra su /benvenuto (citta', telefono, Instagram,
+// discipline → dritti nel profilo). Il form resta la via di chi
+// preferisce raccontarsi prima: l'ancora #presentati vive sull'id
+// della sezione (la home la linka ancora).
+const SIGNUP_HREF = `/signup?next=${encodeURIComponent('/benvenuto')}`;
 
 /** il verde di brand del kit editoriale: la pagina non ha un accento
     proprio, parla la lingua della home */
@@ -148,21 +153,9 @@ export default function OperatorLandingPage() {
     canonicalPath: '/entra-nella-rete',
   });
 
-  /** chi ha chiesto meno movimento non si fa mezza pagina di viaggio */
-  const prefersReducedMotion = () => typeof window.matchMedia === 'function'
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  /* Le CTA interne (hero e chiusura) portano tutte QUI. preventDefault:
-     l'hash non finisce nell'URL, quindi il gesto si puo' ripetere
-     all'infinito. Un <Link to="#presentati"> del router avrebbe
-     funzionato solo al primo clic. */
-  const scrollToForm = (e) => {
-    e.preventDefault();
-    document.getElementById('presentati')?.scrollIntoView({
-      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-      block: 'start',
-    });
-  };
+  /* RD — le CTA interne non scorrono piu' al form: portano al signup
+     (SIGNUP_HREF). Lo scroll-to-form e' morto con loro; l'ancora
+     #presentati resta come id per chi arriva dalla home. */
 
   /* HP2 — l'ancora #presentati e' una destinazione anche da FUORI: la
      home linka /entra-nella-rete#presentati. Chi arriva da li' viene
@@ -252,7 +245,7 @@ export default function OperatorLandingPage() {
     },
     {
       q: t('opPro.faq2q', { defaultValue: 'Come funziona?' }),
-      a: t('opPro.faq2a', { defaultValue: 'Ci scrivi due righe su di te. Se c’è sintonia ci sentiamo e ti facciamo qualche domanda. Poi scriviamo il tuo profilo con le tue parole e lo pubblichiamo insieme alla tua storia.' }),
+      a: t('opPro.faq2a2', { defaultValue: 'Crei il tuo account, confermi l’email e completi il tuo biglietto da visita: città, di cosa ti occupi, i tuoi contatti. Da subito puoi usare gli strumenti. Poi ti scriviamo per conoscerci: il racconto del tuo lavoro lo costruiamo insieme, con le tue parole, e lo pubblichiamo con la tua storia.' }),
     },
     {
       q: t('opPro.faq3q', { defaultValue: 'Quando arriveranno le nuove funzionalità?' }),
@@ -269,7 +262,7 @@ export default function OperatorLandingPage() {
   ];
 
   const ctaJoin = t('opPro.ctaJoin', { defaultValue: 'Entra nella rete Aurya' });
-  const ctaContact = t('opPro.ctaContact', { defaultValue: 'Entriamo in contatto' });
+  const ctaContact = t('opPro.ctaContact2', { defaultValue: 'Crea il tuo account' });
 
   return (
     <MarketplaceShell noSearch>
@@ -370,7 +363,7 @@ export default function OperatorLandingPage() {
                     resta: quella parla a chi legge la promessa, questa
                     a chi l'ha gia' sentita altrove. */}
                 <div className="mt-9 sm:mt-10">
-                  <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
+                  <EditorialCta href={SIGNUP_HREF}
                                 tone="dark" variant="solid"
                                 data-testid="ol-hero-cta-top">
                     {ctaContact}
@@ -390,7 +383,7 @@ export default function OperatorLandingPage() {
               {t('opPro.heroP5', { defaultValue: 'Una rete di professionisti raccontati con cura e uno spazio che, nel tempo, diventerà il punto di riferimento della tua presenza digitale.' })}
             </Lede>
             <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
+              <EditorialCta href={SIGNUP_HREF}
                             variant="solid" data-testid="ol-hero-cta">
                 {ctaContact}
               </EditorialCta>
@@ -436,7 +429,7 @@ export default function OperatorLandingPage() {
           <DisplayTitle as="p" size="section" measure="lines"
                         className="mt-10 text-[1.5rem] leading-[1.2] sm:text-[1.8rem] lg:text-[2.05rem]">
             <TitleLine>
-              {t('opPro.nowCloseA', { defaultValue: 'Non stiamo cercando iscritti.' })}
+              {t('opPro.nowCloseA2', { defaultValue: 'Non cerchiamo numeri.' })}
             </TitleLine>
             <TitleLine>
               {t('opPro.nowCloseB', { defaultValue: 'Stiamo cercando le persone con cui costruire Aurya.' })}
@@ -677,33 +670,31 @@ export default function OperatorLandingPage() {
             <div className="lg:col-span-5">
               <DisplayTitle as="h2" id="ol-form-title" size="section" measure="title"
                             className="text-[1.9rem] leading-[1.12] sm:text-[2.4rem] lg:text-[2.6rem]">
-                {t('opPro.formTitle', { defaultValue: 'Iniziamo a conoscerci.' })}
+                {t('opPro.formTitle2', { defaultValue: 'Si comincia da te.' })}
               </DisplayTitle>
+              {/* RD — l'ingresso e' diretto, la conversazione resta:
+                  l'account si crea in un minuto, il racconto del lavoro
+                  si costruisce insieme, dopo. Niente promesse di
+                  selezione che non facciamo piu'. */}
               <Lede size="lead" className="mt-7">
                 <span className="block">
-                  {t('opPro.formA', { defaultValue: 'Non è una selezione.' })}
+                  {t('opPro.formA2', { defaultValue: 'Crei il tuo account in un minuto.' })}
                 </span>
                 <span className="block">
-                  {t('opPro.formB', { defaultValue: 'Non è un’iscrizione automatica.' })}
+                  {t('opPro.formB2', { defaultValue: 'Inizi a costruire il tuo profilo.' })}
                 </span>
                 <span className="block">
-                  {t('opPro.formC', { defaultValue: 'È una conversazione.' })}
+                  {t('opPro.formC2', { defaultValue: 'Poi, con calma, ci conosciamo.' })}
                 </span>
               </Lede>
               <Lede size="body" className="mt-6">
-                <span className="block">
-                  {t('opPro.formD', { defaultValue: 'Compila il modulo.' })}
-                </span>
-                <span className="block">
-                  {t('opPro.formE', { defaultValue: 'Leggeremo personalmente ogni candidatura.' })}
-                </span>
-                <span className="block">
-                  {t('opPro.formF', { defaultValue: 'Se penseremo che ci sia sintonia fisseremo una chiamata.' })}
-                </span>
-                <span className="block">
-                  {t('opPro.formG', { defaultValue: 'Il resto inizierà da lì.' })}
-                </span>
+                {t('opPro.formD2', { defaultValue: 'Nei giorni successivi ti scriviamo per una conversazione vera: è da lì che nasce il racconto del tuo lavoro — e il profilo raccontato con la tua voce.' })}
               </Lede>
+              <div className="mt-8">
+                <EditorialCta href={SIGNUP_HREF} data-testid="ol-signup-cta">
+                  {ctaContact}
+                </EditorialCta>
+              </div>
               {/* PL22 — il canale diretto resta: c'e' chi i form non li
                   ama, e un'email vera vale piu' di un contatto perso. */}
               <p className="mt-8 flex flex-wrap items-center gap-1.5 text-sm text-foreground/70">
@@ -716,11 +707,14 @@ export default function OperatorLandingPage() {
               </p>
             </div>
             <div className="lg:col-span-7">
+              <p className="mb-4 text-sm text-foreground/70">
+                {t('opPro.formAlt', { defaultValue: 'Preferisci raccontarci prima di te, senza creare un account? Scrivici due righe: leggiamo tutto, personalmente.' })}
+              </p>
               <div className="rounded-[1.75rem] bg-white p-6 ring-1 ring-[#1e2f28]/[0.07] shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)] sm:p-8">
                 <LeadForm
                   type="operator"
                   accent={SAGE}
-                  ctaLabel={ctaContact}
+                  ctaLabel={t('opPro.ctaLead', { defaultValue: 'Raccontaci di te' })}
                 />
               </div>
             </div>
@@ -754,7 +748,7 @@ export default function OperatorLandingPage() {
               {t('opPro.endBody', { defaultValue: 'Se senti che Aurya rappresenta anche il tuo modo di vedere il benessere, ci piacerebbe costruirla insieme a te.' })}
             </Lede>
             <div className="mt-9">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
+              <EditorialCta href={SIGNUP_HREF}
                             variant="solid" tone="dark" data-testid="ol-end-cta">
                 {ctaJoin}
               </EditorialCta>

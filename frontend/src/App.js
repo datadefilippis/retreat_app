@@ -91,6 +91,8 @@ const ReviewsAdminPage = lazy(() => import("./features/reviews/ReviewsAdminPage"
 const IncassiPage = lazy(() => import("./features/cashflow/IncassiPage"));
 const VisibilityPage = lazy(() => import("./features/visibility/VisibilityPage"));
 const OperatorLandingPage = lazy(() => import("./features/prelaunch/OperatorLandingPage"));
+// RD — il secondo tempo della registrazione diretta (campi nel profilo)
+const WelcomeRetePage = lazy(() => import("./features/prelaunch/WelcomeRetePage"));
 const PricingPage = lazy(() => import("./features/prelaunch/PricingPage"));
 // RT1 — /cerca-ritiro redirige su /newsletter: il pubblico viaggiatori
 // si coltiva in newsletter finche' non c'e' nulla da prenotare. Il
@@ -493,6 +495,16 @@ function AppRoutes() {
           rete, RT4 newsletter). I vecchi URL redirigono. */}
       <Route path="/manifesto" element={<ManifestoPage />} />
       <Route path="/entra-nella-rete" element={<OperatorLandingPage />} />
+      {/* RD — benvenuto post-registrazione: facoltativo, saltabile,
+          scrive sul profilo esistente e prosegue su /inizia */}
+      <Route
+        path="/benvenuto"
+        element={
+          <ProtectedRoute>
+            <WelcomeRetePage />
+          </ProtectedRoute>
+        }
+      />
       {/* AB3 — i piani spiegati per esteso, linkata dalla FAQ "Quanto costa?" */}
       <Route path="/costi" element={<PricingPage />} />
       <Route path="/newsletter" element={<NewsletterLandingPage />} />
