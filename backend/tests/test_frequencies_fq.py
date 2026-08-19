@@ -176,7 +176,12 @@ class TestIsolamentoFrontendFq0:
 
     def test_contenuti_estratti(self):
         bib = (FQ_DIR / "content" / "biblioteca.js").read_text()
-        assert "Bande cerebrali" in bib and "Glossario" in bib
+        for cat in ("Bande cerebrali", "Altre frequenze", "Metodi"):
+            assert cat in bib, f"categoria {cat} mancante nella biblioteca"
+        # la Guida e il Glossario hanno lasciato la griglia di schede:
+        # ora sono una pagina editoriale a se'
+        guida = (FQ_DIR / "content" / "guida.js").read_text()
+        assert "GLOSSARIO" in guida and "PERCORSO" in guida
         prots = (FQ_DIR / "content" / "protocolli.js").read_text()
         for name in ("Dormire", "Meditare", "Rilassare", "Concentrare",
                      "Elaborare", "Energizzare"):
@@ -780,3 +785,109 @@ class TestPuliziaVoceFv5:
         render = (FQ_DIR / "engine" / "render.js").read_text()
         assert "clip_in" in render.split("renderWetVoice")[1][:800], \
             "il taglio non arriva all'export"
+
+
+class TestGuidaEditorialeGd:
+    """GD — «Le fondamenta»: la Guida e' una pagina editoriale, non piu'
+    una griglia di schede. Queste guardie tengono il patto scientifico:
+    la pagina descrive cosa viene generato, non promette cosa accade
+    nel cervello di chi ascolta."""
+
+    # frasi che il founder ha chiesto di eliminare, con il motivo
+    VIETATE = {
+        "6.000 Hz": "confondeva la frequenza di battito con quella udibile",
+        "il binaurale e' il piu' elegante": "gerarchia di efficacia non dimostrata",
+        "il binaurale è il più elegante": "gerarchia di efficacia non dimostrata",
+        "effetto è identico ovunque": "effetto ≠ segnale",
+        "l'effetto degrada": "senza cuffie il segnale cambia natura, non «degrada»",
+        "tende ad assecondarne il ritmo": "entrainment presentato come automatico",
+        "invita\" verso il theta": "battito descritto come interruttore di stato",
+        "è la gradualità che fa il lavoro": "scelta di design spacciata per legge",
+        "svegliarlo di soprassalto": "prescrizione neurofisiologica non dimostrata",
+    }
+    # verbi che non si usano su un fenomeno non dimostrato
+    PROMESSE = ("sincronizza il cervello", "porta il cervello in",
+                "riequilibra", "guarisce", "ripara", "rigenera")
+
+    def _testi(self):
+        """Solo il testo che l'utente legge: i commenti del codice
+        NOMINANO le frasi vietate per spiegarle, e non vanno contati."""
+        import re
+        out = {}
+        for p in (FQ_DIR / "content" / "guida.js", FQ_DIR / "GuidaView.js",
+                  FQ_DIR / "content" / "biblioteca.js"):
+            src = re.sub(r"/\*.*?\*/", " ", p.read_text(), flags=re.S)
+            src = re.sub(r"^\s*//.*$", " ", src, flags=re.M)
+            out[p.name] = src
+        return out
+
+    def test_nessun_claim_ritirato(self):
+        for nome, src in self._testi().items():
+            basso = src.lower()
+            for frase, motivo in self.VIETATE.items():
+                assert frase.lower() not in basso, \
+                    f"{nome}: «{frase}» e' tornata — {motivo}"
+
+    # una promessa CITATA per smentirla e' il contrario di una promessa:
+    # «Non e' corretto dire che un battito 6 Hz porta il cervello in Theta»
+    # la smentita puo' stare prima («non e' corretto dire che…») o dopo
+    # («l'affermazione secondo cui… non e' supportata»): si guardano
+    # entrambi i lati, ed e' il contesto a decidere, non la parola
+    SMENTITE = (r"non è .{0,14}corretto", r"non e' .{0,14}corretto",
+                "non significa", "non va descritt", "invece che",
+                "non determina", "affermazione secondo cui",
+                "non è supportat", "non e' supportat", "non sono supportat",
+                "nessuna evidenza", "non dimostra", "non va ridotto",
+                "attribuzione tradizionale")
+
+    def test_nessuna_promessa_terapeutica(self):
+        import re
+        for nome, src in self._testi().items():
+            basso = src.lower()
+            for verbo in self.PROMESSE:
+                for m in re.finditer(re.escape(verbo), basso):
+                    intorno = basso[max(0, m.start() - 160):m.end() + 220]
+                    assert any(re.search(s, intorno) for s in self.SMENTITE), \
+                        f"{nome}: promessa «{verbo}» non smentita — …{intorno[:120]}"
+
+    def test_le_sei_tappe_in_ordine(self):
+        guida = (FQ_DIR / "content" / "guida.js").read_text()
+        attese = ["gd-cervello", "gd-entrainment", "gd-metodi",
+                  "gd-ascolto", "gd-sessione", "gd-precisione"]
+        pos = [guida.index(a) for a in attese]
+        assert pos == sorted(pos), "il percorso non e' piu' progressivo"
+        view = (FQ_DIR / "GuidaView.js").read_text()
+        for a in attese:
+            assert f'id="{a}"' in view, f"sezione {a} senza ancora"
+
+    def test_distinzione_e_contesto_sono_in_pagina(self):
+        """I due passaggi che il founder considera identita' editoriale."""
+        view = (FQ_DIR / "GuidaView.js").read_text()
+        assert "Il suono non lavora da solo" in view
+        assert "dimostrare un cambiamento cerebrale" in view
+        assert "Un badge C non significa" in view
+
+    def test_precisione_promette_solo_cio_che_il_motore_fa(self):
+        """La sezione 06 puo' dichiarare continuita' di fase e dissolvenze
+        solo perche' il motore le implementa davvero."""
+        synth = (FQ_DIR / "engine" / "synth.js").read_text()
+        render = (FQ_DIR / "engine" / "render.js").read_text()
+        assert "_ph +=" in render or "_ph +=" in synth, \
+            "nessuna fase accumulata: la Guida non puo' promettere continuita'"
+        assert "fade_in_sec" in render, "nessuna dissolvenza dichiarabile"
+        guida = (FQ_DIR / "content" / "guida.js").read_text()
+        assert "file esportato" not in guida.lower(), \
+            "l'export non e' piu' esposto all'operatore: non si promette"
+
+    def test_guida_non_porta_a_crea(self):
+        """«Esplora Aurya Sound» riporta alla biblioteca, mai al compositore."""
+        view = (FQ_DIR / "GuidaView.js").read_text()
+        assert "setView('create')" not in view and "onCreate" not in view
+        for cat in ("Bande cerebrali", "Altre frequenze", "Metodi"):
+            assert f"onExplore('{cat}')" in view, f"manca l'uscita verso {cat}"
+
+    def test_la_guida_non_tocca_audio_ne_biblioteca(self):
+        view = (FQ_DIR / "GuidaView.js").read_text()
+        for vietato in ("AudioContext", "startPreview", "oscillator", "BIB"):
+            assert vietato not in view, \
+                f"GuidaView tocca {vietato}: deve restare editoriale"

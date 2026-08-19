@@ -31,6 +31,7 @@ import {
 } from './engine/voicefx';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS } from './content/biblioteca';
+import GuidaView from './GuidaView';
 import './frequenze.css';
 
 const fmt = (s) => {
@@ -687,6 +688,31 @@ export default function FrequenzePage() {
   const activeTab = bibKeys.includes(curTab) ? curTab : bibKeys[0];
   const hasGrades = (BIB[activeTab] || []).some((e) => e.g);
 
+  // la barra delle tab e' la stessa per la biblioteca e per la Guida
+  const tabsBar = (
+    <div className="tabs">
+      <div className="tabgroup">
+        <div className="tabgroup-row">
+          {bibKeys.map((k) => (
+            <button key={k} type="button" title={CAT_HINT[k] || undefined}
+              className={`tab ${view === 'impara' ? 'tab-learn' : 'tab-sound'}${activeTab === k ? ' on' : ''}`}
+              onClick={() => setCurTab(k)}>
+              {k}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // dalla Guida si torna sempre alla biblioteca — mai a Crea
+  const goExplore = (cat) => {
+    setView('explore');
+    setWorld('freq');
+    setCurTab(cat);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const layerLabel = (l) => {
     if (l.kind === 'voice') {
       return `🎙 ${l.name} · ${(VOICE_PRESETS[l.fx] || VOICE_PRESETS.natural).label}`;
@@ -942,14 +968,27 @@ export default function FrequenzePage() {
                 : world === 'sound' ? 'Le basi sonore' : 'Esplora le frequenze'}
             </h2>
             {view === 'impara' ? (
-              <p>Onde cerebrali, entrainment, la differenza tra i metodi e quando servono le cuffie, più il glossario. Quando vuoi mettere in pratica, passa a <b>Esplora</b>.</p>
+              <>
+                <p className="gd-hero-sub">Capire il suono prima di usarlo.</p>
+                <p>Una guida essenziale per orientarti tra onde cerebrali, stimolazione ritmica, frequenze e metodi di ascolto. Parti dalle basi, approfondisci ciò che ti interessa e poi torna alla biblioteca per ascoltare.</p>
+              </>
             ) : world === 'sound' ? (
               <p className="soundlead">Le basi sonore sono la tela su cui posare le frequenze — e potrai sovrapporne più di una. Le sceglierai qui e le combinerai nella sessione, esattamente come le frequenze.</p>
             ) : (
               <p>Esplora frequenze, vibrazioni e metodi di ascolto. Scopri cosa sono, cosa sappiamo davvero su di esse e come vengono utilizzate nelle pratiche sonore. Puoi ascoltarle singolarmente, combinarle e portarle nelle tue sessioni.</p>
             )}
 
-            {view === 'explore' && world === 'sound' ? (
+            {view === 'impara' ? (
+              /* Le fondamenta: non una griglia di schede, una guida che
+                 accompagna dal fenomeno fino all'invito a esplorare. */
+              <>
+                {tabsBar}
+                {activeTab !== 'Glossario' && (
+                  <div className="gd-time">Tempo di lettura · circa 5 min</div>
+                )}
+                <GuidaView tab={activeTab} onExplore={goExplore} onLearn={setLearn} />
+              </>
+            ) : view === 'explore' && world === 'sound' ? (
               <>
                 <div className="tabs">
                   <div className="tabgroup">
@@ -1027,19 +1066,7 @@ export default function FrequenzePage() {
                     <button type="button" onClick={stopAllCards}>Ferma tutto</button>
                   </div>
                 )}
-                <div className="tabs">
-                  <div className="tabgroup">
-                    <div className="tabgroup-row">
-                      {bibKeys.map((k) => (
-                        <button key={k} type="button" title={CAT_HINT[k] || undefined}
-                          className={`tab ${view === 'impara' ? 'tab-learn' : 'tab-sound'}${activeTab === k ? ' on' : ''}`}
-                          onClick={() => setCurTab(k)}>
-                          {k}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                {tabsBar}
                 {CAT_HINT[activeTab] && (
                   <div className="tabhint">{CAT_HINT[activeTab]}</div>
                 )}
