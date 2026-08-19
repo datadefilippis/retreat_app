@@ -288,6 +288,7 @@ const RouteFallback = () => (
 // Public Route (redirect if authenticated)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -298,7 +299,15 @@ const PublicRoute = ({ children }) => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    // SP3 — chi e' gia' dentro e arriva qui con una destinazione
+    // (es. «sei operatore?» da Aurya Sound) ci va DIRITTO, senza
+    // passare dal form ne' atterrare in gestionale. Vale anche subito
+    // dopo il login: questo redirect vinceva la corsa col navigate
+    // della LoginPage, ed e' il motivo per cui il percorso finiva
+    // sempre in /dashboard. Solo path interni (no open redirect).
+    const next = new URLSearchParams(location.search).get('next') || '';
+    const safe = next.startsWith('/') && !next.startsWith('//');
+    return <Navigate to={safe ? next : '/dashboard'} replace />;
   }
 
   return children;

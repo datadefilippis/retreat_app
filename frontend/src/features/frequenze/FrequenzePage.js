@@ -32,6 +32,7 @@ import {
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS } from './content/biblioteca';
 import GuidaView from './GuidaView';
+import { PRO_ENTRY } from './links';
 import './frequenze.css';
 
 const fmt = (s) => {
@@ -84,8 +85,14 @@ export default function FrequenzePage() {
      IMPARA. L'ascolto, la sessione e Crea restano valore degli
      operatori: canCompose governa SOLO cosa si disegna — la vera
      frontiera restano le API org-scoped, che per gli anonimi
-     rispondono 401 comunque. */
-  const canCompose = !!user;
+     rispondono 401 comunque.
+
+     Il token si legge SUBITO, `user` arriva solo dopo /auth/me: senza
+     il secondo ramo l'operatore che ricarica vedrebbe la biblioteca
+     pubblica (Ascolta e + Sessione spariti) per tutta la durata della
+     chiamata — e per sempre, se il backend tarda. Se /auth/me fallisce,
+     AuthContext cancella il token e il render si corregge da solo. */
+  const canCompose = !!user || (authLoading && !!localStorage.getItem('token'));
   /* ── LN — ogni pagina ha il suo link ──────────────────────────────
      L'URL e' l'unica verita' per vista e tab: /sound/esplora|crea|
      impara|tracce (+ /impara/glossario), con lo stato fine nelle
@@ -1026,7 +1033,7 @@ export default function FrequenzePage() {
           /* visitatore: nessun finto strumento — un solo invito, discreto */
           <button type="button" className="backcard" data-testid="fqz-pro"
             title="Aurya Sound per operatori"
-            onClick={() => navigate('/professionisti#sound')}>
+            onClick={() => navigate(PRO_ENTRY)}>
             <span className="bc-ic">◆</span>
             <span>
               <span className="bc-t">Per gli operatori</span><br />
@@ -1231,7 +1238,7 @@ export default function FrequenzePage() {
                     <b>Vuoi andare oltre l'esplorazione?</b>
                     <p>Con Aurya Sound gli operatori possono ascoltare frequenze e metodi,
                       combinarli e utilizzarli per costruire le proprie esperienze sonore.</p>
-                    <button type="button" onClick={() => navigate('/professionisti#sound')}>
+                    <button type="button" onClick={() => navigate(PRO_ENTRY)}>
                       Scopri Aurya Sound per operatori →
                     </button>
                   </div>
@@ -1563,7 +1570,7 @@ export default function FrequenzePage() {
                  invadente: solo visitatori, solo schede della biblioteca */
               <div className="proline" data-testid="fqz-cta-learn">
                 Vuoi ascoltarla e usarla nelle tue sessioni?{' '}
-                <button type="button" onClick={() => navigate('/professionisti#sound')}>
+                <button type="button" onClick={() => navigate(PRO_ENTRY)}>
                   Scopri Aurya Sound per operatori →
                 </button>
               </div>

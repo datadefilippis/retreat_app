@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BIB, SOUND_KEYS } from './content/biblioteca';
 import { PERCORSO } from './content/guida';
+import { PRO_ENTRY } from './links';
 import './frequenze.css';
 
 /*
@@ -77,7 +78,7 @@ export default function SoundLandingPage() {
               Con Aurya Sound gli operatori possono ascoltare frequenze e metodi,
               combinarli e utilizzarli per costruire le proprie esperienze sonore.
             </p>
-            <Link to="/professionisti#sound">
+            <Link to={PRO_ENTRY}>
               <button type="button">Scopri Aurya Sound per operatori →</button>
             </Link>
           </div>

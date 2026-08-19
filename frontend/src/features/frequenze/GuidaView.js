@@ -1,5 +1,6 @@
 import React from 'react';
 import { PERCORSO, BANDE, APPROFONDIMENTI, GLOSSARIO } from './content/guida';
+import { PRO_ENTRY } from './links';
 
 /*
  * Aurya Sound — Le fondamenta.
@@ -446,7 +447,7 @@ function Guida({ onExplore, onLearn, proCta }) {
           <p className="gd-pro" data-testid="fqz-cta-guida">
             Gli operatori possono ascoltare frequenze e metodi, combinarli e costruire
             le proprie esperienze sonore.{' '}
-            <a href="/professionisti#sound">Scopri Aurya Sound per operatori →</a>
+            <a href={PRO_ENTRY}>Scopri Aurya Sound per operatori →</a>
           </p>
         )}
       </section>

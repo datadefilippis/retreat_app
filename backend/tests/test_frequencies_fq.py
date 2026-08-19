@@ -1003,10 +1003,47 @@ class TestSoundPubblicoSp:
         assert "fqz-cta-guida" in guida
         # la card in griglia non contiene la CTA: solo il popup (flag cta)
         card_zone = page.split("const renderCard")[1].split("const bibKeys")[0]
-        assert "professionisti" not in card_zone, \
+        assert "PRO_ENTRY" not in card_zone, \
             "la CTA non sta sulle card: 40 card = 40 pubblicita'"
         # e il flag cta si accende solo per i visitatori
         assert "cta: !canCompose" in card_zone
+
+    def test_cta_porta_dentro_sound_non_altrove(self):
+        """L'invito «per operatori» porta alla biblioteca da operatore
+        (dove Ascolta e' acceso), passando dal login che offre anche la
+        registrazione. Una sola verita' condivisa: links.js."""
+        links = (FQ_DIR / "links.js").read_text()
+        assert "/sound/esplora" in links and "/login?next=" in links, \
+            "l'invito deve rientrare in Sound passando dal login"
+        for f in ("FrequenzePage.js", "GuidaView.js", "SoundLandingPage.js"):
+            src = (FQ_DIR / f).read_text()
+            assert "PRO_ENTRY" in src, f"{f} non usa la destinazione condivisa"
+            assert "/professionisti" not in src, \
+                f"{f}: rotta inesistente (finiva sul catch-all → homepage)"
+        # il login propaga il next anche alla registrazione, e non
+        # accetta destinazioni esterne
+        auth = (FRONTEND_SRC / "pages" / "AuthPages.js").read_text()
+        assert "to={`/signup${searchParams.get('next')" in auth
+        assert "nextAfterSignup.startsWith('//')" in auth
+        # e chi e' GIA' dentro non deve finire in gestionale: PublicRoute
+        # rimbalzava su /dashboard hardcoded, vincendo pure la corsa col
+        # navigate della LoginPage (era il «poi mi porta a gestionale»)
+        app = (FRONTEND_SRC / "App.js").read_text()
+        pub = app.split("const PublicRoute")[1][:900]
+        assert "get('next')" in pub and "startsWith('//')" in pub, \
+            "PublicRoute deve rispettare next (solo path interni)"
+        assert pub.count('to="/dashboard"') == 0, \
+            "il redirect di PublicRoute non puo' essere hardcoded"
+
+    def test_operatore_non_perde_ascolto_durante_il_login(self):
+        """Il bug trovato dal founder: `user` arriva solo dopo /auth/me,
+        quindi al reload l'operatore vedeva la biblioteca PUBBLICA (senza
+        Ascolta) finche' la chiamata non tornava. Il token si legge
+        subito e copre la finestra."""
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        riga = [l for l in page.splitlines() if "const canCompose" in l][0]
+        assert "authLoading" in riga and "localStorage.getItem('token')" in riga, \
+            "canCompose deve reggere anche mentre /auth/me e' in volo"
 
     def test_operatore_intatto(self):
         """Per chi compone il comportamento resta quello di oggi: i

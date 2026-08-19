@@ -331,7 +331,8 @@ export const LoginPage = () => {
                   {registrationMode === 'invite_only' ? t('login.want_access') : t('login.no_account')}{' '}
                 </span>
                 <Link
-                  to="/signup"
+                  to={`/signup${searchParams.get('next')
+                    ? `?next=${encodeURIComponent(searchParams.get('next'))}` : ''}`}
                   className="font-medium text-primary hover:underline"
                   data-testid="signup-link"
                 >
@@ -476,7 +477,10 @@ export const SignupPage = () => {
         return;
       }
       toast.success(t('signup.success'));
-      navigate('/dashboard');
+      // SP3 — chi si registra partendo da Aurya Sound ci torna dentro
+      const nextAfterSignup = searchParams.get('next') || '';
+      const safeNext = nextAfterSignup.startsWith('/') && !nextAfterSignup.startsWith('//');
+      navigate(safeNext ? nextAfterSignup : '/dashboard');
     } catch (error) {
       // Check if backend returned 202 (verification required)
       if (error.response?.status === 202 || error.response?.data?.status === 'verification_required') {
