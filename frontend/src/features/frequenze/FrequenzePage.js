@@ -1025,6 +1025,16 @@ export default function FrequenzePage() {
           </span>
         </a>
         <span className="tb-spacer" />
+        {/* le esperienze gia' composte dagli operatori: raggiungibili
+            dalla testata in ogni ruolo, non solo dal menu delle viste */}
+        <a className="backcard" href="/meditazioni" data-testid="fqz-top-meditazioni"
+          title="Le meditazioni pubblicate dagli operatori">
+          <span className="bc-ic">✧</span>
+          <span>
+            <span className="bc-t">Meditazioni</span><br />
+            <span className="bc-s">esperienze degli operatori</span>
+          </span>
+        </a>
         {canCompose ? (
           <>
             <button type="button" className={`backcard${view === 'mine' ? ' on' : ''}`}
