@@ -165,9 +165,15 @@ async def entra(request: Request, body: EntraRequest):
     # ── primo tentativo: mondo operatore ────────────────────────────
     try:
         token_response = await auth_service.login(email, body.password)
-        worlds.append(_operator_world(
-            token_response,
-            await _welcome_pending(token_response.user.organization_id)))
+        # NL-quater — anche l'operatore iscritto alla Lettera ha diritto
+        # al token delle guide: prima lo riceveva solo il cappello
+        # cliente, e un operatore confermato restava fuori.
+        worlds.append({
+            **_operator_world(
+                token_response,
+                await _welcome_pending(token_response.user.organization_id)),
+            **await newsletter_status(email),
+        })
         sso = await _sso_client_for_operator(token_response.user.id)
         if sso:
             worlds.append({**sso, **await newsletter_status(email)})

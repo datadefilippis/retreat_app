@@ -15,7 +15,7 @@ import asyncio
 import logging
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from auth import require_system_admin
 from database import db
@@ -185,11 +185,60 @@ async def list_public_articles(
     }
 
 
+async def _email_from_session(request) -> Optional[str]:
+    """NL-quater (20/8) — l'email di chi sta leggendo, se ha una
+    sessione (operatore o cliente Aurya). Best-effort e silenzioso: un
+    token scaduto o assente non e' un errore, e' semplicemente un
+    lettore anonimo."""
+    auth = (request.headers.get("authorization") or "").strip()
+    if not auth.lower().startswith("bearer "):
+        return None
+    token = auth.split(" ", 1)[1].strip()
+    for decode in ("operatore", "cliente"):
+        try:
+            import jwt as _jwt
+            from auth import ALGORITHM, SECRET_KEY
+            payload = _jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            email = payload.get("email")
+            if email:
+                return str(email).strip().lower()
+            # il token piattaforma porta l'id: si risale all'account
+            sub = payload.get("sub")
+            if sub:
+                from database import platform_accounts_collection
+                acc = await platform_accounts_collection.find_one(
+                    {"id": sub}, {"_id": 0, "email": 1})
+                if acc:
+                    return (acc.get("email") or "").strip().lower()
+        except Exception:            # noqa: BLE001 — lettore anonimo
+            return None
+        break
+    return None
+
+
+async def _session_unlocked(request) -> bool:
+    """La guida si sblocca anche SENZA il token nel browser, se chi
+    legge e' in sessione e la sua email e' un'iscrizione confermata.
+
+    Perche' serve: il subscriber token e' una fotografia scattata al
+    login e salvata nel browser. Chi si iscrive DOPO essere entrato,
+    chi conferma dal telefono e legge dal computer, e ogni operatore
+    (il cui login non ha mai portato quel token) si vedeva riproporre
+    l'iscrizione pur essendo iscritto."""
+    email = await _email_from_session(request)
+    if not email:
+        return False
+    doc = await db.aurya_subscribers.find_one(
+        {"email": email}, {"_id": 0, "status": 1})
+    return bool(doc and doc.get("status") == "confirmed")
+
+
 @router.get("/public/articles/{slug}")
-async def get_public_article(slug: str, lang: str = "it",
+async def get_public_article(request: Request, slug: str, lang: str = "it",
                              st: Optional[str] = None) -> Dict[str, Any]:
     """`st` (subscriber token, BN3): sblocca le guide riservate per gli
-    iscritti confermati. Assente o invalido → anteprima + indice."""
+    iscritti confermati. Assente o invalido → anteprima + indice.
+    NL-quater: sblocca anche la SESSIONE di un iscritto confermato."""
     doc = await db.articles.find_one({"slug": slug, "published": True},
                                      {"_id": 0})
     if not doc:
@@ -206,7 +255,7 @@ async def get_public_article(slug: str, lang: str = "it",
         tr = doc["translations"][lang]
         out["content"] = tr["content"]
     if out["gated"]:
-        if await _subscriber_unlocked(st):
+        if await _subscriber_unlocked(st) or await _session_unlocked(request):
             out["unlocked"] = True
         else:
             preview = gated_preview(out["content"])

@@ -220,3 +220,44 @@ class TestPonteConsapevoleNlTer:
             " iscritto con un ALTRO indirizzo, dove l'iscrizione non risultera'"
         dopo = src.split('data-testid="lead-account-here"')[1][:400]
         assert 'href="/account"' in dopo, "manca la via verso l'account"
+
+
+class TestGuideSbloccateDallaSessioneNlQuater:
+    """NL-quater (20/8, founder) — «sono iscritto e loggato, ma la guida
+    mi chiede ancora l'email». Causa: lo sblocco guardava SOLO il
+    subscriber token nel browser — una fotografia scattata al login.
+    Chi si iscrive dopo, chi conferma da un altro dispositivo, e ogni
+    OPERATORE (il cui login non portava quel token) restava fuori."""
+
+    ART = BACKEND_DIR / "routers" / "articles.py"
+
+    def test_la_sessione_sblocca(self):
+        src = self.ART.read_text()
+        assert "_session_unlocked" in src
+        assert ("if await _subscriber_unlocked(st) "
+                "or await _session_unlocked(request):") in src, \
+            "la guida guarda ancora solo il token nel browser"
+
+    def test_sblocca_solo_se_confermato(self):
+        """Essere loggati non basta: serve l'iscrizione CONFERMATA."""
+        src = self.ART.read_text()
+        fn = src.split("async def _session_unlocked")[1].split("\n@router")[0]
+        assert 'doc.get("status") == "confirmed"' in fn, \
+            "basterebbe una sessione qualsiasi per leggere le guide"
+
+    def test_lettore_anonimo_mai_un_errore(self):
+        src = self.ART.read_text()
+        fn = src.split("async def _email_from_session")[1].split("\nasync def")[0]
+        assert "return None" in fn and "except Exception" in fn, \
+            "un token scaduto farebbe fallire la pagina invece di servire"\
+            " l'anteprima"
+
+    def test_il_token_arriva_da_entrambi_i_cappelli(self):
+        be = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
+        blocco = be.split("worlds.append({")[1][:400]
+        assert "newsletter_status(email)" in blocco, \
+            "il login operatore non porta il token delle guide"
+        fe = (FRONTEND_SRC / "features" / "account" / "AccountLoginPage.js").read_text()
+        op = fe.split("if (w.type === 'operator')")[1][:400]
+        assert "saveSubscriberToken(w)" in op, \
+            "il frontend scarta il token quando arriva dal cappello operatore"

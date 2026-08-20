@@ -142,6 +142,10 @@ export default function AccountLoginPage() {
           operator = true;
           welcomePending = !!w.welcome_pending;
           localStorage.setItem('token', w.access_token);
+          // NL-quater — il token delle guide arriva da QUALUNQUE
+          // cappello: prima solo il cliente lo salvava, e un operatore
+          // iscritto si vedeva riproporre l'iscrizione
+          saveSubscriberToken(w);
         } else if (w.type === 'client') {
           saveSession(w);
         }
