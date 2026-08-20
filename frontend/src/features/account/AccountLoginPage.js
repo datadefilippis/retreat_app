@@ -513,30 +513,31 @@ export default function AccountLoginPage() {
           </>
         )}
 
-        {state === 'signup' && (
-          <p className="mt-4 text-xs text-gray-500" data-testid="signup-pro-hint">
-            {t('landings:account.signupProHint', { defaultValue: 'Vuoi proporre le tue esperienze come professionista?' })}{' '}
-            <Link to="/entra-nella-rete" className="underline hover:text-gray-700">
-              {t('landings:account.signupProLink', { defaultValue: 'Apri il tuo spazio' })}
-            </Link>
-          </p>
-        )}
         <p className="mt-6 text-xs text-gray-400">
           <Link to="/" className="hover:underline">
             {t('landings:account.backToAurya2', { defaultValue: '← Torna su Aurya' })}
           </Link>
         </p>
 
-        {/* ID (20/8) — la porta e' UNICA: il vecchio soccorso «sei un
-            operatore?» non serve piu' (stessa email+password, il server
-            decide il mondo). Resta l'invito per chi uno spazio ancora
-            non ce l'ha. */}
-        <p className="mt-2 text-xs text-gray-400" data-testid="operator-rescue-link">
-          {t('landings:account.proJoinHint2', { defaultValue: 'Sei un professionista del benessere senza account?' })}{' '}
-          <Link to="/entra-nella-rete" className="underline hover:text-gray-600">
-            {t('landings:account.proJoinLink2', { defaultValue: 'Apri il tuo spazio' })}
+        {/* ID-ter (20/8) — UN solo blocco professionisti, in tutte le
+            viste, visibile: prima erano due postille grigie (doppione
+            in registrazione). Dice le DUE cose che evitano di
+            perdersi: chi ha gia' lo spazio entra da QUI (porta unica),
+            chi non ce l'ha lo apre di la'. */}
+        <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-5 text-center"
+          data-testid="operator-rescue-link">
+          <p className="text-sm font-semibold text-gray-900">
+            {t('landings:account.proBoxTitle', { defaultValue: 'Sei un professionista del benessere?' })}
+          </p>
+          <p className="mt-1.5 text-xs leading-relaxed text-gray-600">
+            {t('landings:account.proBoxBody', { defaultValue: 'Se hai già uno spazio su Aurya, entri da qui: stessa email, stessa password. Se non ce l’hai ancora, puoi aprirlo adesso.' })}
+          </p>
+          <Link to="/entra-nella-rete"
+            data-testid="pro-box-cta"
+            className="mt-3 inline-block rounded-xl border border-primary px-5 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
+            {t('landings:account.proBoxCta', { defaultValue: 'Apri il tuo spazio' })}
           </Link>
-        </p>
+        </div>
       </div>
     </div>
     </MarketplaceShell>

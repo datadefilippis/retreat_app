@@ -217,9 +217,27 @@ class TestSuperficieIdBis:
 
     def test_registrazione_omino_dichiara_il_suo_mondo(self):
         """«Crea il tuo account» dall'omino crea l'account PERSONALE:
-        la vista lo dice, e offre la via professionale accanto."""
+        la vista lo dice, e la via professionale e' li' accanto — UNA
+        volta sola (ID-ter: in registrazione l'invito era doppio)."""
         src = (FRONTEND_SRC / "features" / "account"
                / "AccountLoginPage.js").read_text()
         assert "signupBody2" in src and "per chi partecipa" in src
-        assert 'data-testid="signup-pro-hint"' in src \
-            and 'to="/entra-nella-rete"' in src
+        assert src.count('data-testid="operator-rescue-link"') == 1, \
+            "l'invito professionisti e' duplicato (o sparito)"
+        assert 'data-testid="signup-pro-hint"' not in src, \
+            "e' tornato il secondo invito nella vista registrazione"
+
+    def test_invito_professionisti_ben_visibile(self):
+        """Non piu' una postilla grigia da 12px: un blocco con titolo,
+        spiegazione e bottone, presente in TUTTE le viste della porta."""
+        src = (FRONTEND_SRC / "features" / "account"
+               / "AccountLoginPage.js").read_text()
+        box = src.split('data-testid="operator-rescue-link"')[1][:900]
+        assert "proBoxTitle" in box and "proBoxBody" in box \
+            and 'data-testid="pro-box-cta"' in box, \
+            "il blocco professionisti non ha titolo/corpo/bottone"
+        assert "text-xs text-gray-400" not in box.split("proBoxTitle")[0], \
+            "il blocco e' ancora una postilla sbiadita"
+        # il messaggio che evita il bivio: chi ha gia' lo spazio entra da QUI
+        assert "stessa email" in box, \
+            "il blocco non dice che l'accesso professionale e' questo stesso"
