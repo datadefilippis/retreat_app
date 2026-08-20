@@ -34,8 +34,9 @@
 .fqz .master{display:flex;gap:13px;align-items:flex-end;flex-wrap:wrap}
 .fqz .field{display:flex;flex-direction:column;gap:5px}
 .fqz .field label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-.fqz input[type=number],.fqz input[type=text],.fqz select{background:var(--stone);border:1px solid var(--line);color:var(--bone);
+.fqz input[type=number],.fqz input[type=text],.fqz input[type=email],.fqz input[type=password],.fqz input[type=tel],.fqz select{background:var(--stone);border:1px solid var(--line);color:var(--bone);
     font-family:var(--mono);font-size:13px;padding:7px 9px;border-radius:2px;width:80px}
+.fqz input::placeholder{color:var(--dim);opacity:1}
 .fqz input:focus-visible,.fqz button:focus-visible,.fqz select:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
 .fqz button{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:transparent;
     color:var(--bone);border:1px solid var(--line);padding:9px 15px;border-radius:8px;cursor:pointer;
@@ -313,7 +314,7 @@
 .fqz .taptip.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (max-width:900px){.fqz .ruler,.fqz .phases{margin-left:0}.fqz .row{flex-direction:column}.fqz .meta{width:100%;flex:none;border-right:none;border-bottom:1px solid var(--line)}.fqz .lane{height:64px}.fqz .protrow .tag{width:auto;flex:none}.fqz /* barre timeline più afferrabili col dito */
     .bar{top:10px;bottom:10px}.fqz .bar .handle{width:20px}.fqz .phase{padding-left:4px}.fqz /* touch target minimi 44px su controlli chiave */
-    .card .add,.fqz .card .live,.fqz .prot,.fqz .tab,.fqz .vbtn{min-height:40px}.fqz .chip{min-height:30px;padding:5px 9px}.fqz input[type=number],.fqz input[type=text],.fqz select{min-height:38px;font-size:16px}.fqz /* 16px evita lo zoom iOS */
+    .card .add,.fqz .card .live,.fqz .prot,.fqz .tab,.fqz .vbtn{min-height:40px}.fqz .chip{min-height:30px;padding:5px 9px}.fqz input[type=number],.fqz input[type=text],.fqz input[type=email],.fqz input[type=password],.fqz input[type=tel],.fqz select{min-height:38px;font-size:16px}.fqz /* 16px evita lo zoom iOS */
     .mini{min-height:34px}}
 @media (max-width:640px){.fqz{padding:16px 12px 90px}.fqz h1{font-size:26px}.fqz header{gap:12px}.fqz .bib{padding:15px 13px}.fqz .cards{grid-template-columns:1fr}.fqz .card{padding:14px 14px 13px}.fqz .card .body{font-size:13px}.fqz /* legenda e note più compatte */
     .legend{gap:8px 14px;font-size:11px}.fqz /* la barra di controllo diventa verticale e comoda */

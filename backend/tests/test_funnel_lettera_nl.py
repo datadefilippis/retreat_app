@@ -301,3 +301,70 @@ class TestNienteInvitiAChiEIscrittoNlQuinquies:
         blocco = src.split("article.subscriber ?")[1][:400]
         assert "null" in blocco.split("BlogNewsletterCTA")[0], \
             "per gli iscritti si mostra ancora qualcosa al posto dell'invito"
+
+
+class TestUnaSolaRegolaPerIContenutiRiservatiNlSepties:
+    """NL-septies (20/8, founder) — due difetti speculari sui cancelli.
+
+    1. Le MEDITAZIONI si aprivano con un'iscrizione mai confermata:
+       bastava digitare un indirizzo qualsiasi. Le guide invece
+       pretendevano il clic nell'email. Il cancello piu' debole rendeva
+       decorativo il doppio opt-in di tutti.
+    2. Chi era GIA' iscritto, da un altro browser, doveva rifare
+       l'iscrizione: un gesto gia' fatto, e una seconda email.
+
+    Regola unica: la prima volta si conferma dall'email; chi e' gia'
+    confermato dichiara l'indirizzo e rientra.
+    """
+
+    def test_meditazioni_pretendono_la_conferma(self):
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        fn = src.split("async def _subscriber_ok")[1].split("\nclass")[0]
+        assert 'doc.get("status") == "confirmed"' in fn, \
+            "le meditazioni si aprono di nuovo senza conferma"
+        assert '!=' not in fn.split("return bool")[1], \
+            "resta un confronto per esclusione: pending passerebbe"
+
+    def test_sblocco_per_chi_e_gia_iscritto(self):
+        src = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
+        fn = src.split("async def unlock_for_subscriber")[1].split("\n@router")[0]
+        assert 'doc.get("status") != "confirmed"' in fn and "404" in fn.replace(
+            "HTTP_404_NOT_FOUND", "404"), \
+            "l'endpoint sblocca anche indirizzi non confermati"
+        assert "generate_subscriber_token" in fn
+
+    def test_il_cancello_della_guida_offre_le_due_strade(self):
+        src = (FRONTEND_SRC / "features" / "storefront"
+               / "BlogArticlePage.js").read_text()
+        assert 'data-testid="blog-gate-already"' in src, \
+            "nel cancello manca la strada per chi e' gia' iscritto"
+        assert "'/public/newsletter/unlock'" in src
+        assert "gateAlready2" in src, \
+            "il testo promette ancora una nuova email invece dello sblocco"
+
+    def test_meditazioni_dicono_di_aspettare_la_conferma(self):
+        src = (FRONTEND_SRC / "features" / "frequenze" / "MeditazioniPage.js").read_text()
+        assert 'data-testid="med-attesa-conferma"' in src, \
+            "alla prima iscrizione il cancello resta muto"
+        assert "return_to: '/meditazioni'" in src, \
+            "il link di conferma non riporta alle meditazioni"
+
+
+class TestUsciteDaiVicoliNlSexies:
+    """NL-sexies — la pagina delle preferenze era senza ritorno."""
+
+    PREFS = FRONTEND_SRC / "features" / "prelaunch" / "NewsletterPreferencesPage.js"
+
+    def test_ritorno_in_alto(self):
+        src = self.PREFS.read_text()
+        assert 'data-testid="nl-prefs-back"' in src, \
+            "dalle preferenze non si torna indietro"
+
+    def test_dopo_il_salva_si_torna(self):
+        src = self.PREFS.read_text()
+        fn = src.split("const save = async")[1].split("\n  };")[0]
+        assert "setTimeout(indietro" in fn, \
+            "dopo il salvataggio si resta sulla stessa pagina"
+        ind = src.split("const indietro")[1][:220]
+        assert "navigate(-1)" in ind and "/newsletter" in ind, \
+            "manca la destinazione di ripiego quando non c'e' cronologia"

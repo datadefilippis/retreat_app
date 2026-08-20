@@ -105,6 +105,9 @@ export default function BlogArticlePage() {
   const [article, setArticle] = useState(null);
   const [related, setRelated] = useState([]);
   const [error, setError] = useState(false);
+  // NL-septies — mini-form «sono gia' iscritto» dentro il cancello
+  const [giaIscritto, setGiaIscritto] = useState('');
+  const [sbloccoMsg, setSbloccoMsg] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -346,9 +349,44 @@ export default function BlogArticlePage() {
                       thanksBody={t('blog.gateThanks', { defaultValue: 'Controlla la tua casella: il link di conferma sblocca la guida.' })}
                     />
                   </div>
-                  <Lede size="aside" tone="quiet" className="mt-5">
-                    {t('blog.gateAlready', { defaultValue: 'Già iscritto? Inserisci la stessa email: ti arriva il link che riapre il tuo accesso, anche da un nuovo dispositivo.' })}
-                  </Lede>
+                  {/* NL-septies (20/8, founder) — «sono gia' iscritto,
+                      perche' devo iscrivermi di nuovo?». Non deve: qui
+                      dichiara l'indirizzo e riprende il suo accesso,
+                      subito. Stessa strada delle meditazioni: una regola
+                      sola per tutti i contenuti riservati. */}
+                  <div className="mt-6 max-w-md" data-testid="blog-gate-already">
+                    <p className="text-sm text-foreground/70">
+                      {t('blog.gateAlready2', { defaultValue: 'Sei già iscritto alla Lettera? Non serve rifarlo: scrivi la tua email e riapri l’accesso, anche da un nuovo dispositivo.' })}
+                    </p>
+                    <form className="mt-3 flex flex-wrap gap-2"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setSbloccoMsg('');
+                        try {
+                          const r = await api.post('/public/newsletter/unlock',
+                            { email: giaIscritto.trim() });
+                          localStorage.setItem('aurya_nl_token', r.data.subscriber_token);
+                          window.location.reload();
+                        } catch (err) {
+                          setSbloccoMsg(err?.response?.status === 404
+                            ? t('blog.gateAlreadyKo', { defaultValue: 'Questo indirizzo non risulta iscritto e confermato: iscriviti qui sopra, ci vuole un minuto.' })
+                            : t('blog.gateAlreadyErr', { defaultValue: 'Non ha funzionato, riprova tra poco.' }));
+                        }
+                      }}>
+                      <input type="email" required value={giaIscritto}
+                        onChange={(e) => setGiaIscritto(e.target.value)}
+                        placeholder={t('blog.gateAlreadyPlaceholder', { defaultValue: 'la tua email' })}
+                        data-testid="blog-gate-already-email"
+                        className="flex-1 min-w-[200px] rounded-xl border border-[#8a7440]/40 px-3 py-2 text-sm" />
+                      <button type="submit" data-testid="blog-gate-already-submit"
+                        className="rounded-xl border border-[#8a7440] px-4 py-2 text-sm font-medium text-[#7d6a3a] hover:bg-[#8a7440] hover:text-white transition-colors">
+                        {t('blog.gateAlreadyCta', { defaultValue: 'Riapri l’accesso' })}
+                      </button>
+                    </form>
+                    {sbloccoMsg && (
+                      <p className="mt-2 text-sm text-red-700">{sbloccoMsg}</p>
+                    )}
+                  </div>
                 </div>
               </Section>
             )}

@@ -7,7 +7,7 @@
  * lo dice onestamente), e l'unsubscribe a un click (GDPR Art. 7(3)).
  */
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Check, Loader2 } from 'lucide-react';
 import api from '../../api/client';
@@ -30,6 +30,7 @@ const REGION_LABELS = {
 export default function NewsletterPreferencesPage() {
   useItalianOnly();
   const { token } = useParams();
+  const navigate = useNavigate();
   const { t } = useTranslation('prelaunch');
   const { t: tl } = useTranslation('landings');
 
@@ -68,13 +69,23 @@ export default function NewsletterPreferencesPage() {
       ? prev.regions.filter(x => x !== slug) : [...prev.regions, slug],
   }));
 
+  /* NL-sexies (20/8, founder) — «salvo e resto qui»: le preferenze
+     erano un vicolo cieco. Ora si torna dove si era: alla pagina da cui
+     si e' arrivati (di norma la conferma) o, in mancanza, alla Lettera.
+     Il messaggio «salvato» resta un attimo prima di uscire, cosi' il
+     salvataggio si vede. */
+  const indietro = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate('/newsletter');
+  };
+
   const save = async () => {
     setState('saving');
     try {
       await api.put('/public/newsletter/preferences',
         { token, topics, format, retreat_alert: alert });
       setState('saved');
-      setTimeout(() => setState('ready'), 2500);
+      setTimeout(indietro, 900);
     } catch { setState('error'); }
   };
 
@@ -113,6 +124,11 @@ export default function NewsletterPreferencesPage() {
     <div className="min-h-screen bg-[#f7f9f6]">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-10">
         <Link to="/" className="font-brand text-xl tracking-[0.3em] text-[#8a7440]">AURYA</Link>
+        {/* NL-sexies — la via d'uscita, prima non c'era */}
+        <button type="button" onClick={indietro} data-testid="nl-prefs-back"
+          className="text-sm font-medium text-[#376254] underline underline-offset-2">
+          ← {t('nlPrefs.back', { defaultValue: 'Indietro' })}
+        </button>
       </header>
       <main className="mx-auto max-w-xl px-5 pb-20 pt-8" data-testid="nl-prefs">
         <h1 className="font-brand text-2xl text-gray-900">

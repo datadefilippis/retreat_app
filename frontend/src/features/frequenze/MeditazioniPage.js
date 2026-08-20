@@ -73,6 +73,12 @@ export default function MeditazioniPage() {
   };
   useEffect(() => { loadCatalog(); loadFavorites(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* NL-septies (20/8) — una regola sola per tutti i contenuti
+     riservati: la prima iscrizione si conferma dall'email (il clic
+     prova che la casella e' tua), chi e' gia' confermato sblocca
+     dichiarando l'indirizzo. Prima qui bastava scrivere un'email
+     qualsiasi: il cancello si apriva senza conferma. */
+  const [attesaConferma, setAttesaConferma] = useState(false);
   const subscribe = async (e) => {
     e.preventDefault();
     if (!consent) { setMsg('Serve il consenso alla Lettera'); return; }
@@ -81,11 +87,18 @@ export default function MeditazioniPage() {
       await api.post('/public/newsletter/subscribe', {
         email, consent: true, language: 'it',
         source: 'meditazioni', wants_experiences: true,
+        return_to: '/meditazioni',
       });
-      const r = await frequenciesAPI.catalogUnlock(email);
-      localStorage.setItem(UNLOCK_STORE, JSON.stringify(r.data));
-      localStorage.setItem('fqz_listener_ok', '1'); // il player non richiede due volte
-      await loadCatalog();
+      try {
+        // gia' confermato in passato? allora si entra subito
+        const r = await frequenciesAPI.catalogUnlock(email);
+        localStorage.setItem(UNLOCK_STORE, JSON.stringify(r.data));
+        localStorage.setItem('fqz_listener_ok', '1'); // il player non richiede due volte
+        await loadCatalog();
+      } catch {
+        // prima iscrizione: si aspetta il clic nell'email
+        setAttesaConferma(true);
+      }
     } catch (err) {
       setMsg(err?.response?.data?.detail || 'Iscrizione non riuscita, riprova');
     } finally { setBusy(false); }
@@ -134,6 +147,15 @@ export default function MeditazioniPage() {
               {' '}<b>L'ascolto è riservato a chi fa parte del cerchio</b>: chi riceve
               la Lettera o ha un account Aurya.
             </p>
+            {attesaConferma && (
+              /* NL-septies — prima iscrizione: il cancello si apre col
+                 clic nell'email, come per le guide del Magazine */
+              <div className="warnbox" style={{ maxWidth: 440, margin: '18px auto 0', textAlign: 'left' }}
+                data-testid="med-attesa-conferma">
+                Ti abbiamo scritto: apri l’email e clicca il link di conferma.
+                Il link ti riporta qui, con le meditazioni sbloccate.
+              </div>
+            )}
             <form onSubmit={subscribe} style={{ maxWidth: 440, margin: '18px auto 0' }}>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <input type="email" required value={email} placeholder="la tua email"

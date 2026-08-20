@@ -235,6 +235,15 @@ class TestAccessMagicLink:
         assert "_safe_return_to(payload.return_to)" in confirmed_branch
 
     def test_gate_copy_tells_new_device_flow(self):
+        """Chi e' gia' iscritto deve avere una strada che NON sia
+        riiscriversi. Guardia sul significato, non sulla frase: dal
+        ciclo NL-septies la strada e' il modulo di sblocco (che chiama
+        /public/newsletter/unlock); prima era solo il magic link. Se un
+        domani cambia di nuovo, deve restare vero che il gate nomina il
+        caso «gia' iscritto» e offre un'azione sua."""
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "BlogArticlePage.js").read_text()
-        assert "riapre il tuo accesso" in page
+        assert "già iscritto" in page.lower()
+        assert 'data-testid="blog-gate-already"' in page
+        assert "/public/newsletter/unlock" in page
+        assert "dispositivo" in page      # il caso raccontato e' quello

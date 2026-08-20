@@ -516,8 +516,20 @@ class TestVetrinaMeditazioniFq3:
 
     def test_unlock_iscritto_apre_il_catalogo(self):
         """Iscrizione reale via endpoint Lettera consolidato (non si
-        tocca: si USA) → unlock → catalogo."""
-        email = "guardia.fq3@example.com"
+        tocca: si USA) → conferma → unlock → catalogo.
+
+        NL-septies (20/8): la sola iscrizione non basta piu'. Prima le
+        meditazioni si aprivano gia' da `pending` — cioe' a chiunque
+        digitasse un indirizzo qualsiasi — mentre le guide riservate
+        chiedevano la conferma: due misure per lo stesso lucchetto. Ora
+        la regola e' una sola, `confirmed`, e la guardia tiene i due
+        lati insieme: chiuso prima, aperto dopo.
+
+        Email nuova a ogni giro (e cancellata in fondo): il caso «non
+        ancora confermata» esiste solo la prima volta.
+        """
+        import uuid
+        email = f"guardia-fq3-{uuid.uuid4().hex[:8]}@example.com"
         try:
             sub = requests.post(
                 f"{BASE_URL}/api/public/newsletter/subscribe",
@@ -528,6 +540,35 @@ class TestVetrinaMeditazioniFq3:
         if sub.status_code == 429:
             pytest.skip("rate limit subscribe")
         assert sub.status_code == 201
+
+        try:
+            # iscritta ma non confermata: il catalogo resta chiuso
+            assert requests.post(
+                f"{BASE_URL}/api/frequencies/catalog/unlock",
+                json={"email": email}, timeout=10).status_code == 403
+
+            # il click nel link della mail di conferma. Lo timbriamo
+            # nell'archivio invece di chiamare /confirm: il token vero
+            # e' firmato col segreto del server, che i test non hanno
+            # (conftest ne usa uno finto). Il giro completo del link di
+            # conferma e' guardato in test_subscribers_bn2.
+            import pymongo
+            res = pymongo.MongoClient("mongodb://localhost:27017")[
+                "retreat_dev"].aurya_subscribers.update_one(
+                    {"email": email}, {"$set": {"status": "confirmed"}})
+            assert res.modified_count == 1
+
+            self._catalogo_aperto(email)
+        finally:
+            try:
+                import pymongo
+                pymongo.MongoClient("mongodb://localhost:27017")[
+                    "retreat_dev"].aurya_subscribers.delete_one(
+                        {"email": email})
+            except Exception:
+                pass
+
+    def _catalogo_aperto(self, email):
         unlock = requests.post(
             f"{BASE_URL}/api/frequencies/catalog/unlock",
             json={"email": email}, timeout=10)

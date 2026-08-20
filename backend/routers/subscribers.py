@@ -27,7 +27,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 
 from core.marketing_unsubscribe_token import (TokenExpiredError,
@@ -317,6 +317,40 @@ async def confirm(request: Request, payload: TokenPayload):
     from services.subscriber_brevo_sync import sync_subscriber_background
     sync_subscriber_background(email)     # BN6 — riflesso su Brevo
     return {"ok": True, "status": "confirmed"}
+
+
+class UnlockPayload(BaseModel):
+    email: EmailStr
+
+
+@router.post("/public/newsletter/unlock")
+@limiter.limit("10/minute")
+async def unlock_for_subscriber(request: Request, payload: UnlockPayload):
+    """NL-septies (20/8, founder) — «sono gia' iscritto, perche' devo
+    iscrivermi di nuovo?».
+
+    Chi e' gia' iscritto CONFERMATO e apre un contenuto riservato da un
+    altro browser (o mesi dopo, con la memoria del browser pulita) non
+    deve rifare l'iscrizione: dichiara l'indirizzo e riprende il suo
+    lasciapassare. Stesso patto gia' in uso per le meditazioni
+    (/frequencies/catalog/unlock): il contenuto e' gratuito e
+    l'iscrizione pure, quindi il fattore che conta e' non far ripetere
+    un gesto gia' fatto.
+
+    Email non iscritta o non confermata → 404 onesto: la pagina invita
+    a iscriversi, che e' esattamente cio' che serve in quel caso.
+    """
+    from database import db
+
+    email = (payload.email or "").strip().lower()
+    doc = await db.aurya_subscribers.find_one(
+        {"email": email}, {"_id": 0, "status": 1})
+    if not doc or doc.get("status") != "confirmed":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Questo indirizzo non risulta iscritto e confermato.")
+    from core.subscriber_token import generate_subscriber_token
+    return {"subscriber_token": generate_subscriber_token(email)}
 
 
 @router.get("/admin/newsletter-stats")

@@ -307,11 +307,21 @@ def _catalog_token(email: str) -> str:
 
 
 async def _subscriber_ok(email: str) -> bool:
+    """NL-septies (20/8, founder) — serve l'iscrizione CONFERMATA.
+
+    Prima bastava `status != unsubscribed`, cioe' anche un'iscrizione
+    mai confermata: chiunque digitasse un indirizzo qualsiasi apriva le
+    meditazioni al primo colpo, mentre le guide del Magazine
+    pretendevano il clic nell'email. Due cancelli con due regole, e il
+    piu' debole rendeva decorativo il doppio opt-in. Ora la regola e'
+    una sola su tutti i contenuti riservati: il clic prova che quella
+    casella e' tua.
+    """
     from database import db
     doc = await db.aurya_subscribers.find_one(
         {"email": email.lower().strip()}, {"_id": 0, "status": 1, "consent": 1})
     return bool(doc and doc.get("consent")
-                and doc.get("status") != "unsubscribed")
+                and doc.get("status") == "confirmed")
 
 
 class UnlockPayload(BaseModel):
