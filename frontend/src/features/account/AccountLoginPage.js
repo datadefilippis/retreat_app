@@ -24,6 +24,7 @@ import { Loader2, Mail, CheckCircle2, KeyRound, UserPlus, Briefcase } from 'luci
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
+import { salvaProva, emailDellaProva } from '../../lib/cerchio';
 
 // Guard module-level: il magic token e' ONE-SHOT lato server, ma in dev
 // React StrictMode monta l'effect due volte → due verify concorrenti, la
@@ -35,10 +36,9 @@ const attemptedTokens = new Set();
 // di Aurya, il subscriber_token va nella STESSA chiave che il blog (BN3)
 // legge per sbloccare le guide riservate. Solo se presente: per chi non
 // e' iscritto non si scrive (ne' si cancella) nulla.
-const NL_TOKEN_KEY = 'aurya_nl_token';
 const saveSubscriberToken = (data) => {
   if (!data?.subscriber_token) return;
-  try { localStorage.setItem(NL_TOKEN_KEY, data.subscriber_token); } catch { /* private mode */ }
+  salvaProva(data.subscriber_token);   // SB1: il posto unico della prova
 };
 
 // AP1b — salvataggio sessione unico per TUTTE le strade di login
@@ -76,8 +76,12 @@ export default function AccountLoginPage() {
       : params.get('vista') === 'crea' ? 'signup'
         : params.get('vista') === 'recupero' ? 'reset' : 'form');
   // NL2 — dal ponte «iscritto alla Lettera → crea l'account» l'email
-  // arriva gia' scritta: un campo in meno da ridigitare
-  const [email, setEmail] = useState(params.get('email') || '');
+  // arriva gia' scritta: un campo in meno da ridigitare.
+  // SB5 (20/8) — e se l'URL non la porta (es. si arriva dal menu
+  // dell'omino), la memoria e' la PROVA del cerchio: chi ha sbloccato
+  // guide o meditazioni con la sua email la ritrova qui, mai ridigitata.
+  const [email, setEmail] = useState(
+    params.get('email') || emailDellaProva() || '');
 
   // ID-sexies (20/8) — /accedi e /accedi?vista=crea sono la STESSA
   // rotta: cambiando solo la query React non rimonta e la vista

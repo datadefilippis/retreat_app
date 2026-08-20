@@ -12,16 +12,15 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import api from '../../api/client';
 import { frequenciesAPI } from '../../api/frequencies';
 import { startPreview } from './engine/synth';
 import { resolveAudioLayers, resolveVoiceLayers } from './engine/assets';
 import { SafetyLine, useSafetyGate } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
+import { prova, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
 import './frequenze.css';
 
 const PREVIEW_SEC = 90;
-const UNLOCK_KEY = 'fqz_listener_ok';
 const INTENTS = {
   dormire: 'Dormire', meditare: 'Meditare', rilassare: 'Rilassare',
   concentrare: 'Concentrare', elaborare: 'Elaborare', energizzare: 'Energizzare',
@@ -43,10 +42,13 @@ export default function PublicFrequencyPage() {
      ha mai visto Aurya, quindi il sipario deve stare davanti al primo
      suono anche qui (il gate qui sotto è un'altra cosa: l'anteprima). */
   const { guard, curtain, openReview } = useSafetyGate();
+  /* SB1/SB4 (20/8) — apre la PROVA UNICA del cerchio (o l'account),
+     non piu' un flag locale scritto al solo subscribe: quel flag
+     faceva ascoltare la traccia intera a chiunque digitasse un
+     indirizzo qualsiasi, senza conferma. */
   const [unlocked, setUnlocked] = useState(() =>
-    localStorage.getItem(UNLOCK_KEY) === '1'
-    || !!localStorage.getItem('platform_token')
-    || !!localStorage.getItem('fqz_catalog_unlock'));
+    !!prova() || !!localStorage.getItem('platform_token'));
+  const [attesaConferma, setAttesaConferma] = useState(false);
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
@@ -59,6 +61,8 @@ export default function PublicFrequencyPage() {
   const playedRef = useRef(false);
 
   useEffect(() => {
+    // SB1 — vecchie chiavi HMAC → prova unica (poi si ricontrolla)
+    migraVecchieChiavi().then(() => { if (prova()) setUnlocked(true); });
     frequenciesAPI.getPublic(slug)
       .then((r) => setTrack(r.data))
       .catch(() => setNotFound(true));
@@ -123,19 +127,19 @@ export default function PublicFrequencyPage() {
     setSubscribing(true);
     setGateMsg('');
     try {
-      await api.post('/public/newsletter/subscribe', {
-        email, consent: true, language: 'it',
-        source: `frequenze:${slug}`, wants_experiences: true,
+      const esito = await iscriviESblocca({
+        email, source: `frequenze:${slug}`, returnTo: `/frequenze/${slug}`,
       });
-      localStorage.setItem(UNLOCK_KEY, '1');
-      try {
-        const u = await frequenciesAPI.catalogUnlock(email);
-        localStorage.setItem('fqz_catalog_unlock', JSON.stringify(u.data));
-      } catch { /* la vetrina richiedera' l'email */ }
-      setUnlocked(true);
-      setGateOpen(false);
-      setGateMsg('');
-      play(0);
+      if (esito === 'sbloccato') {
+        setUnlocked(true);
+        setGateOpen(false);
+        setGateMsg('');
+        play(0);
+      } else {
+        // prima iscrizione: la traccia intera si apre col click
+        // nell'email — che riporta QUI (SB3)
+        setAttesaConferma(true);
+      }
     } catch (err) {
       setGateMsg(err?.response?.data?.detail || 'Iscrizione non riuscita, riprova');
     } finally { setSubscribing(false); }
@@ -264,6 +268,13 @@ export default function PublicFrequencyPage() {
               ritiri e nuove tracce, senza rumore — oppure entra col tuo
               account.
             </p>
+            {attesaConferma && (
+              <div className="warnbox" style={{ margin: '12px 0', textAlign: 'left' }}
+                data-testid="fqz-attesa-conferma">
+                Ti abbiamo scritto: apri l’email e clicca il link di conferma.
+                Il link ti riporta qui, con la sessione intera sbloccata.
+              </div>
+            )}
             <form onSubmit={subscribe}>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <input type="email" required value={email}
@@ -285,7 +296,24 @@ export default function PublicFrequencyPage() {
               </label>
             </form>
             {gateMsg && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 8 }}>{gateMsg}</p>}
+            {/* SB2 — chi e' GIA' iscritto non rifa' la fila: dichiara
+                l'email e riprende l'ascolto, come sulle meditazioni */}
             <p style={{ fontSize: 12.5, color: 'var(--dim)', marginTop: 14 }}>
+              Sei già iscritto alla Lettera?{' '}
+              <button type="button" className="readmore" style={{ display: 'inline' }}
+                data-testid="fqz-gate-already"
+                onClick={async () => {
+                  if (!email) { setGateMsg('Scrivi la tua email qui sopra e ripremi'); return; }
+                  setSubscribing(true); setGateMsg('');
+                  try {
+                    await sblocca(email);
+                    setUnlocked(true); setGateOpen(false); play(0);
+                  } catch (err) {
+                    setGateMsg(err?.response?.data?.detail || 'Email non riconosciuta');
+                  } finally { setSubscribing(false); }
+                }}>Sblocca con la tua email</button>
+            </p>
+            <p style={{ fontSize: 12.5, color: 'var(--dim)', marginTop: 8 }}>
               Hai un account Aurya?{' '}
               <a href={entraInAurya(email, `/frequenze/${slug}`)}
                 data-testid="fqz-gate-accedi"

@@ -476,7 +476,8 @@ class TestPubblicazioneFq1:
         src = (FQ_DIR / "PublicFrequencyPage.js").read_text()
         assert "startPreview" in src and "resolveAudioLayers" in src
         assert "PREVIEW_SEC" in src and "frequenze:${slug}" in src
-        assert "/public/newsletter/subscribe" in src
+        # SB2: l'iscrizione passa dal posto unico (lib/cerchio)
+        assert "iscriviESblocca" in src
         assert "platform_token" in src, "l'account Aurya deve sbloccare da solo"
         assert "SafetyLine" in src and "useSafetyGate" in src, \
             "manca il disclaimer salute (SF: arriva da content/safety.js)"
@@ -503,11 +504,16 @@ class TestVetrinaMeditazioniFq3:
         r = requests.post(f"{BASE_URL}/api/frequencies/catalog/unlock",
                           json={"email": "fantasma@example.com"}, timeout=10)
         assert r.status_code == 403
-        # un token contraffatto non apre
-        r2 = requests.get(f"{BASE_URL}/api/frequencies/catalog",
-                          headers={"X-Fqz-Unlock": "x@example.com:abc123"},
-                          timeout=10)
-        assert r2.status_code == 403
+        # un token contraffatto non apre — ne' un finto JWT ne' il
+        # VECCHIO formato email:hmac (SB1: dopo l'unificazione i
+        # browser col vecchio artefatto devono trovare chiuso, non
+        # un cancello confuso)
+        for finto in ("eyJhbGciOiJIUzI1NiJ9.finto.finto",
+                      "x@example.com:abc123"):
+            r2 = requests.get(f"{BASE_URL}/api/frequencies/catalog",
+                              headers={"X-Fqz-Unlock": finto},
+                              timeout=10)
+            assert r2.status_code == 403, finto
         # il Bearer di un OPERATORE non e' un account Aurya: non sblocca
         hdr = _login()
         r3 = requests.get(f"{BASE_URL}/api/frequencies/catalog",
@@ -569,6 +575,10 @@ class TestVetrinaMeditazioniFq3:
                 pass
 
     def _catalogo_aperto(self, email):
+        # SB1 — lo sblocco ritorna la PROVA UNICA del cerchio: lo
+        # STESSO JWT di /public/newsletter/unlock. Le due strade devono
+        # aprire lo stesso lucchetto, altrimenti torna il mondo a due
+        # prove che il ciclo SB ha chiuso.
         unlock = requests.post(
             f"{BASE_URL}/api/frequencies/catalog/unlock",
             json={"email": email}, timeout=10)
@@ -576,9 +586,19 @@ class TestVetrinaMeditazioniFq3:
         u = unlock.json()
         cat = requests.get(
             f"{BASE_URL}/api/frequencies/catalog",
-            headers={"X-Fqz-Unlock": f"{u['email']}:{u['token']}"},
+            headers={"X-Fqz-Unlock": u["token"]},
             timeout=10)
         assert cat.status_code == 200
+        # ...e la prova emessa dal cancello delle GUIDE apre anche qui
+        via_lettera = requests.post(
+            f"{BASE_URL}/api/public/newsletter/unlock",
+            json={"email": email}, timeout=10)
+        assert via_lettera.status_code == 200
+        cat2 = requests.get(
+            f"{BASE_URL}/api/frequencies/catalog",
+            headers={"X-Fqz-Unlock": via_lettera.json()["subscriber_token"]},
+            timeout=10)
+        assert cat2.status_code == 200
         for item in cat.json()["items"]:
             assert item.get("slug") and item["operator"]["name"]
             assert "score" not in item     # la vetrina lista, non serve ricette
@@ -596,9 +616,13 @@ class TestVetrinaMeditazioniFq3:
     def test_superfici_frontend(self):
         src = (FQ_DIR / "MeditazioniPage.js").read_text()
         assert "fqz-meditazioni-locked" in src, "manca lo schermo d'invito"
-        assert "/public/newsletter/subscribe" in src
+        # SB1/SB2 — la pagina non parla piu' direttamente con gli
+        # endpoint: passa dal posto unico (lib/cerchio), che iscrive,
+        # tenta lo sblocco immediato e salva la prova per TUTTI i
+        # cancelli insieme.
+        assert "iscriviESblocca" in src and "sblocca" in src
         assert "'meditazioni'" in src        # source dell'iscrizione
-        assert "catalogUnlock" in src and "heartAsk" in src
+        assert "heartAsk" in src
         app = (FRONTEND_SRC / "App.js").read_text()
         assert 'path="/meditazioni"' in app
         # innesto minimo nell'hub account consolidato: import + una riga

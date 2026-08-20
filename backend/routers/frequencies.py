@@ -288,22 +288,16 @@ async def register_play(slug: str):
 # La vetrina e' l'incentivo (decisione founder 18/8): senza sblocco il
 # catalogo NON si vede. Lo sblocco e' verificato SERVER-SIDE, senza
 # toccare i sistemi consolidati:
-#   - iscritto Lettera → POST /catalog/unlock verifica l'email in
-#     aurya_subscribers e firma un token HMAC (nessuna nuova sessione,
-#     nessuna scrittura: solo lettura della collection della Lettera);
+#   - iscritto Lettera → la PROVA UNICA del cerchio (SB1, 20/8): il JWT
+#     `newsletter_subscriber` di core.subscriber_token — lo stesso che
+#     sblocca le guide del Magazine. Prima qui viveva un token HMAC
+#     separato, e sbloccare le guide lasciava chiuse le meditazioni (e
+#     viceversa): due prove per lo stesso diritto. L'email nel JWT viene
+#     comunque RIVERIFICATA contro gli iscritti confermati a ogni
+#     richiesta, come faceva l'HMAC.
 #   - account Aurya → Bearer platform gia' esistente (P1).
 # I preferiti vivono in una collection dedicata (frequency_favorites),
 # agganciata all'account per id: zero campi nuovi su platform_accounts.
-
-import hashlib
-import hmac as hmac_mod
-
-
-def _catalog_token(email: str) -> str:
-    from auth import SECRET_KEY
-    return hmac_mod.new(SECRET_KEY.encode(),
-                        f"fqz-catalog:{email.lower().strip()}".encode(),
-                        hashlib.sha256).hexdigest()
 
 
 async def _subscriber_ok(email: str) -> bool:
@@ -330,28 +324,34 @@ class UnlockPayload(BaseModel):
 
 @router.post("/catalog/unlock")
 async def catalog_unlock(payload: UnlockPayload):
-    """Sblocco per iscritti Lettera: l'email deve esistere davvero tra
-    gli iscritti con consenso. Il token e' deterministico (HMAC): si
-    revoca solo disiscrivendosi — e' un lucchetto da vetrina, non una
-    sessione."""
+    """SB1 — sblocco per iscritti Lettera: l'email deve risultare
+    CONFERMATA. Ritorna la prova unica del cerchio (lo stesso JWT di
+    /public/newsletter/unlock): un lucchetto da vetrina, non una
+    sessione — si revoca solo disiscrivendosi, perche' l'email viene
+    riverificata a ogni richiesta."""
     email = payload.email.lower().strip()
     if not await _subscriber_ok(email):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Questa email non risulta iscritta alla Lettera.")
-    return {"email": email, "token": _catalog_token(email)}
+    from core.subscriber_token import generate_subscriber_token
+    return {"email": email, "token": generate_subscriber_token(email)}
 
 
 async def _has_catalog_access(request) -> bool:
     """Vero se la richiesta porta uno sblocco valido: header
-    X-Fqz-Unlock (email:token HMAC, ri-verificato contro gli iscritti)
-    oppure un Bearer platform valido."""
+    X-Fqz-Unlock con la prova unica (JWT newsletter_subscriber,
+    ri-verificato contro gli iscritti confermati) oppure un Bearer
+    platform valido."""
     unlock = request.headers.get("X-Fqz-Unlock", "")
-    if ":" in unlock:
-        email, token = unlock.split(":", 1)
-        if (hmac_mod.compare_digest(token, _catalog_token(email))
-                and await _subscriber_ok(email)):
-            return True
+    if unlock:
+        try:
+            from core.subscriber_token import decode_subscriber_token
+            email = decode_subscriber_token(unlock)["email"]
+            if email and await _subscriber_ok(email):
+                return True
+        except Exception:  # scaduto, contraffatto o vecchio HMAC: chiuso
+            pass
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         try:

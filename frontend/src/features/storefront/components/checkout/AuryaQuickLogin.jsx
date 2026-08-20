@@ -17,6 +17,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../../../api/platformClient';
+import { salvaProva } from '../../../../lib/cerchio';
 
 export default function AuryaQuickLogin({ onProfile }) {
   const { t, i18n } = useTranslation('storefront');
@@ -91,7 +92,7 @@ export default function AuryaQuickLogin({ onProfile }) {
       // sblocca le guide (stessa chiave letta dal blog BN3). Solo se
       // il backend lo ha emesso.
       if (res.data.subscriber_token) {
-        try { localStorage.setItem('aurya_nl_token', res.data.subscriber_token); } catch { /* private mode */ }
+        salvaProva(res.data.subscriber_token);
       }
       // profilo fresco (nome incluso) per prefill e saluto
       const me = await platformApi.get('/platform/me');
@@ -118,7 +119,7 @@ export default function AuryaQuickLogin({ onProfile }) {
         { email: email.trim(), password });
       localStorage.setItem(PLATFORM_TOKEN_KEY, res.data.access_token);
       if (res.data.subscriber_token) {
-        try { localStorage.setItem('aurya_nl_token', res.data.subscriber_token); } catch { /* private mode */ }
+        salvaProva(res.data.subscriber_token);
       }
       const me = await platformApi.get('/platform/me');
       setAccount(me.data);

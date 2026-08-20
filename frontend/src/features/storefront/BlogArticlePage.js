@@ -68,6 +68,8 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import BlogNewsletterCTA from './components/BlogNewsletterCTA';
+import { prova, sblocca, emailDellaProva } from '../../lib/cerchio';
+import { creaAccount } from '../../utils/authLinks';
 import LeadForm from '../prelaunch/LeadForm';
 import { Lock } from 'lucide-react';
 import useSeoMeta from './lib/useSeoMeta';
@@ -115,8 +117,7 @@ export default function BlogArticlePage() {
     setError(false);
     // BN3 — il token del subscriber confermato (salvato alla conferma)
     // sblocca le guide riservate; assente o invalido → anteprima
-    let st = null;
-    try { st = localStorage.getItem('aurya_nl_token') || null; } catch { /* private mode */ }
+    const st = prova();
     api.get(`/public/articles/${slug}`, { params: { lang, st } })
       .then(res => { if (mounted) setArticle(res.data); })
       .catch(() => { if (mounted) setError(true); });
@@ -192,6 +193,22 @@ export default function BlogArticlePage() {
 
   const cover = article?.featured_image_url;
   const gateOpen = article?.gated && !article?.unlocked;
+
+  /* SB6 (20/8, founder) — l'iscritto senza account e' a un passo dal
+     finalizzare: una riga con l'email della prova, mai un muro. */
+  const ponteIscritto = (!localStorage.getItem('platform_token')
+    && !localStorage.getItem('token') && prova()) ? (
+      <Section tone="sand" rhythm="flow" width="max-w-2xl">
+        <p className="text-sm text-foreground/70" data-testid="ponte-account">
+          {t('blog.ponteAccount', { defaultValue: 'Sei dei nostri. Vuoi ritrovare guide e meditazioni su ogni dispositivo?' })}{' '}
+          <a href={creaAccount(emailDellaProva(), `/blog/${slug}`)}
+            data-testid="ponte-account-crea"
+            className="underline hover:no-underline text-[#7d6a3a]">
+            {t('blog.ponteAccountCta', { defaultValue: 'Crea il tuo account Aurya' })}
+          </a>
+        </p>
+      </Section>
+    ) : null;
 
   return (
     <MarketplaceShell noSearch>
@@ -344,6 +361,7 @@ export default function BlogArticlePage() {
                       experiencesOptIn
                       context={`gate_${article.category || slug}`}
                       returnTo={`/blog/${slug}`}
+                      onSbloccato={() => window.location.reload()}
                       consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
                       ctaLabel={t('blog.gateCta', { defaultValue: 'Sblocca la guida completa' })}
                       thanksBody={t('blog.gateThanks', { defaultValue: 'Controlla la tua casella: il link di conferma sblocca la guida.' })}
@@ -363,9 +381,7 @@ export default function BlogArticlePage() {
                         e.preventDefault();
                         setSbloccoMsg('');
                         try {
-                          const r = await api.post('/public/newsletter/unlock',
-                            { email: giaIscritto.trim() });
-                          localStorage.setItem('aurya_nl_token', r.data.subscriber_token);
+                          await sblocca(giaIscritto);
                           window.location.reload();
                         } catch (err) {
                           setSbloccoMsg(err?.response?.status === 404
@@ -403,6 +419,11 @@ export default function BlogArticlePage() {
                 ed era l'unico posto del sito dove il contenuto e il
                 pubblico coincidevano senza che ci fosse una porta.
                 Per tutti gli altri resta la lettera. */}
+            {/* SB6 — sulla guida riservata gia' aperta: il blocco delle
+                CTA qui sotto vive dietro !gated, quindi l'iscritto che
+                l'ha sbloccata non lo attraversa mai. Il gancio va qui. */}
+            {article.gated && article.subscriber && ponteIscritto}
+
             {!article.gated && (
               article.category === PRO_CATEGORY ? (
                 <Section tone="sage" rhythm="flow" width="max-w-3xl"
@@ -425,9 +446,9 @@ export default function BlogArticlePage() {
               ) : article.subscriber ? (
                 /* NL-quinquies (20/8) — a chi e' GIA' iscritto non si
                    chiede di iscriversi: sarebbe l'invito a fare una
-                   cosa fatta, e chi lo segue si ritrova una seconda
-                   email di conferma senza capire perche'. */
-                null
+                   cosa fatta. SB6: ma se non ha un account, il passo
+                   naturale e' finalizzarlo — una riga, non un muro. */
+                ponteIscritto
               ) : (
                 <Section tone="sand" rhythm="flow" width="max-w-2xl">
                   <BlogNewsletterCTA category={article.category} />

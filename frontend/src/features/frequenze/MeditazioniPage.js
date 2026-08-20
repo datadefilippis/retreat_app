@@ -12,14 +12,13 @@
  */
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../../api/client';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { frequenciesAPI } from '../../api/frequencies';
 import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
+import { prova, emailDellaProva, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
 import './frequenze.css';
 
-const UNLOCK_STORE = 'fqz_catalog_unlock';   // {email, token} iscritto Lettera
 const INTENTS = {
   dormire: 'Dormire', meditare: 'Meditare', rilassare: 'Rilassare',
   concentrare: 'Concentrare', elaborare: 'Elaborare', energizzare: 'Energizzare',
@@ -28,11 +27,6 @@ const fmt = (s) => {
   s = Math.max(0, Math.round(s || 0));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
-const storedUnlock = () => {
-  try { return JSON.parse(localStorage.getItem(UNLOCK_STORE) || 'null'); }
-  catch { return null; }
-};
-
 export default function MeditazioniPage() {
   const navigate = useNavigate();
   const hasAccount = !!localStorage.getItem(PLATFORM_TOKEN_KEY);
@@ -47,6 +41,10 @@ export default function MeditazioniPage() {
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [ponteVia, setPonteVia] = useState(() => {
+    try { return sessionStorage.getItem('aurya_ponte_via') === '1'; }
+    catch { return false; }
+  });
 
   const loadCatalog = async () => {
     try {
@@ -55,7 +53,7 @@ export default function MeditazioniPage() {
         // il Bearer platform sblocca da solo (verificato dal server)
         r = await platformApi.get('/frequencies/catalog');
       } else {
-        r = await frequenciesAPI.getCatalog(storedUnlock());
+        r = await frequenciesAPI.getCatalog(prova());
       }
       setItems(r.data.items || []);
       setLocked(false);
@@ -72,7 +70,10 @@ export default function MeditazioniPage() {
     try { setFavorites((await platformApi.get('/frequencies/favorites')).data.slugs || []); }
     catch { /* preferiti non bloccanti */ }
   };
-  useEffect(() => { loadCatalog(); loadFavorites(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    // SB1 — i browser con la vecchia coppia HMAC migrano alla prova unica
+    migraVecchieChiavi().finally(() => { loadCatalog(); loadFavorites(); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* NL-septies (20/8) — una regola sola per tutti i contenuti
      riservati: la prima iscrizione si conferma dall'email (il clic
@@ -85,21 +86,11 @@ export default function MeditazioniPage() {
     if (!consent) { setMsg('Serve il consenso alla Lettera'); return; }
     setBusy(true); setMsg('');
     try {
-      await api.post('/public/newsletter/subscribe', {
-        email, consent: true, language: 'it',
-        source: 'meditazioni', wants_experiences: true,
-        return_to: '/meditazioni',
+      const esito = await iscriviESblocca({
+        email, source: 'meditazioni', returnTo: '/meditazioni',
       });
-      try {
-        // gia' confermato in passato? allora si entra subito
-        const r = await frequenciesAPI.catalogUnlock(email);
-        localStorage.setItem(UNLOCK_STORE, JSON.stringify(r.data));
-        localStorage.setItem('fqz_listener_ok', '1'); // il player non richiede due volte
-        await loadCatalog();
-      } catch {
-        // prima iscrizione: si aspetta il clic nell'email
-        setAttesaConferma(true);
-      }
+      if (esito === 'sbloccato') await loadCatalog();
+      else setAttesaConferma(true);   // prima iscrizione: click nell'email
     } catch (err) {
       setMsg(err?.response?.data?.detail || 'Iscrizione non riuscita, riprova');
     } finally { setBusy(false); }
@@ -185,8 +176,7 @@ export default function MeditazioniPage() {
                   if (!email) { setMsg('Scrivi la tua email qui sopra e ripremi'); return; }
                   setBusy(true); setMsg('');
                   try {
-                    const r = await frequenciesAPI.catalogUnlock(email);
-                    localStorage.setItem(UNLOCK_STORE, JSON.stringify(r.data));
+                    await sblocca(email);
                     await loadCatalog();
                   } catch (err) {
                     setMsg(err?.response?.data?.detail || 'Email non riconosciuta');
@@ -234,6 +224,28 @@ export default function MeditazioniPage() {
         </a>
       </div>
 
+      {/* SB6 (20/8, founder) — l'iscritto fedele senza account e' a un
+          passo dal finalizzare: l'invito vive dove lui e' gia' dentro,
+          con l'email della prova, e si puo' congedare. */}
+      {!hasAccount && prova() && !ponteVia && (
+        <div className="warnbox" data-testid="ponte-account"
+          style={{ maxWidth: 720, margin: '14px auto 0', display: 'flex',
+                   gap: 10, alignItems: 'center', justifyContent: 'space-between',
+                   flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 13 }}>
+            Vuoi ritrovare meditazioni, guide e preferite su ogni dispositivo?{' '}
+            <a href={creaAccount(emailDellaProva(), '/meditazioni')}
+              data-testid="ponte-account-crea"
+              style={{ color: 'var(--water)' }}>Crea il tuo account</a> — un minuto.
+          </span>
+          <button type="button" className="ghost" data-testid="ponte-account-via"
+            style={{ padding: '2px 8px', fontSize: 12 }}
+            onClick={() => { setPonteVia(true);
+              try { sessionStorage.setItem('aurya_ponte_via', '1'); } catch { /* ok */ } }}>
+            Non ora
+          </button>
+        </div>
+      )}
       <header>
         <div>
           <h1>Le <em>meditazioni</em> di Aurya</h1>

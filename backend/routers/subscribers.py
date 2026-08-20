@@ -141,11 +141,22 @@ def _decode_or_http(token: str) -> str:
         raise HTTPException(status_code=401, detail="link non valido")
 
 
+# SB3 (20/8) — i cancelli da cui si parte per iscriversi: il link di
+# conferma deve saper riportare a CIASCUNO di loro, sbloccato. Prima la
+# whitelist conosceva solo il Magazine: chi si iscriveva dalle
+# meditazioni riceveva un link che NON tornava li' (il return_to veniva
+# scartato in silenzio) e atterrava su una pagina qualunque.
+_RETURN_TO_OK = ("/blog/", "/meditazioni", "/frequenze/")
+
+
 def _safe_return_to(raw: Optional[str]) -> Optional[str]:
-    """Solo path interni del Magazine: il next del link di conferma non
-    deve mai diventare un open redirect."""
+    """Solo path interni dei cancelli noti: il next del link di
+    conferma non deve mai diventare un open redirect."""
     p = (raw or "").strip()
-    return p if p.startswith("/blog/") and "//" not in p else None
+    if "//" in p or not p.startswith("/"):
+        return None
+    return p if any(p == r.rstrip("/") or p.startswith(r)
+                    for r in _RETURN_TO_OK) else None
 
 
 def _send_confirm_email(email: str, name: Optional[str], token: str,

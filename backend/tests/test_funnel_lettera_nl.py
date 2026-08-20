@@ -128,10 +128,14 @@ class TestPonteLetteraAccountNl2:
         """La cattura leggera NON si tocca: e' la cima del funnel."""
         sub = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
         assert '@router.post("/public/newsletter/subscribe"' in sub
+        # SB2: le pagine passano dal posto unico (lib/cerchio), che a
+        # sua volta chiama la route pubblica — la cattura resta viva.
+        cerchio = (FRONTEND_SRC / "lib" / "cerchio.js").read_text()
+        assert "/public/newsletter/subscribe" in cerchio
         for f in ("features/frequenze/MeditazioniPage.js",
                   "features/frequenze/PublicFrequencyPage.js"):
             src = (FRONTEND_SRC / f).read_text()
-            assert "/public/newsletter/subscribe" in src, \
+            assert "iscriviESblocca" in src, \
                 f"{f}: sparita l'iscrizione email-only"
 
 
@@ -300,9 +304,13 @@ class TestNienteInvitiAChiEIscrittoNlQuinquies:
         src = self.PAGE.read_text()
         assert "article.subscriber ?" in src, \
             "l'invito in fondo all'articolo ignora chi e' gia' iscritto"
-        blocco = src.split("article.subscriber ?")[1][:400]
-        assert "null" in blocco.split("BlogNewsletterCTA")[0], \
-            "per gli iscritti si mostra ancora qualcosa al posto dell'invito"
+        blocco = src.split("article.subscriber ?")[1]
+        blocco = blocco.split("BlogNewsletterCTA")[0]
+        # SB6: al posto del silenzio puo' esserci SOLO il ponte verso
+        # l'account — mai un invito a iscriversi di nuovo
+        assert "LeadForm" not in blocco and "iscriviESblocca" not in blocco, \
+            "per gli iscritti compare ancora un invito a iscriversi"
+        assert "ponteIscritto" in blocco or "null" in blocco
 
 
 class TestUnaSolaRegolaPerIContenutiRiservatiNlSepties:
@@ -340,7 +348,9 @@ class TestUnaSolaRegolaPerIContenutiRiservatiNlSepties:
                / "BlogArticlePage.js").read_text()
         assert 'data-testid="blog-gate-already"' in src, \
             "nel cancello manca la strada per chi e' gia' iscritto"
-        assert "'/public/newsletter/unlock'" in src
+        # SB1: lo sblocco passa dal posto unico (che chiama
+        # /public/newsletter/unlock e salva la prova per tutti)
+        assert "sblocca(giaIscritto)" in src
         assert "gateAlready2" in src, \
             "il testo promette ancora una nuova email invece dello sblocco"
 
@@ -348,7 +358,7 @@ class TestUnaSolaRegolaPerIContenutiRiservatiNlSepties:
         src = (FRONTEND_SRC / "features" / "frequenze" / "MeditazioniPage.js").read_text()
         assert 'data-testid="med-attesa-conferma"' in src, \
             "alla prima iscrizione il cancello resta muto"
-        assert "return_to: '/meditazioni'" in src, \
+        assert "returnTo: '/meditazioni'" in src, \
             "il link di conferma non riporta alle meditazioni"
 
 
@@ -433,3 +443,90 @@ class TestUnaSolaPortaNlOcties:
         di prima."""
         src = self.LEAD.read_text()
         assert "non serve una password" not in src
+
+
+class TestCerchioProvaUnicaSb:
+    """Ciclo SB (20/8, founder) — «sblocco una volta e sblocco tutto».
+
+    Il diritto («fa parte del cerchio») era uno ma la prova era spezzata
+    in quattro artefatti: JWT per le guide, coppia email+HMAC per le
+    meditazioni, un flag locale per la traccia condivisa, il Bearer per
+    gli account. Ora la prova e' UNA (il JWT della Lettera) e vive in UN
+    posto (lib/cerchio.js). Queste guardie difendono l'unificazione.
+    """
+
+    CERCHIO = FRONTEND_SRC / "lib" / "cerchio.js"
+    MED = FRONTEND_SRC / "features" / "frequenze" / "MeditazioniPage.js"
+    TRACK = FRONTEND_SRC / "features" / "frequenze" / "PublicFrequencyPage.js"
+    CONFIRM = FRONTEND_SRC / "features" / "prelaunch" / "NewsletterConfirmPage.js"
+    FREQ_ROUTER = BACKEND_DIR / "routers" / "frequencies.py"
+    SUBS_ROUTER = BACKEND_DIR / "routers" / "subscribers.py"
+
+    def test_il_posto_unico_esiste(self):
+        src = self.CERCHIO.read_text()
+        for fn in ("salvaProva", "prova", "scordaProva", "emailDellaProva",
+                   "sblocca", "iscriviESblocca", "migraVecchieChiavi"):
+            assert f"function {fn}" in src or f"const {fn}" in src, fn
+        assert "aurya_nl_token" in src
+
+    def test_nessuno_maneggia_la_chiave_a_mano(self):
+        """La chiave della prova si scrive SOLO in lib/cerchio: se una
+        pagina la riscrive a mano, prima o poi diverge (e' esattamente
+        cosi' che erano nate le quattro prove)."""
+        import subprocess
+        out = subprocess.run(
+            ["grep", "-rl", "aurya_nl_token", str(FRONTEND_SRC)],
+            capture_output=True, text=True).stdout.strip().splitlines()
+        fuori = [f for f in out if not f.endswith("lib/cerchio.js")]
+        assert not fuori, f"aurya_nl_token maneggiata fuori dal cerchio: {fuori}"
+
+    def test_backend_un_solo_conio_della_prova(self):
+        """Il router frequenze non conia piu' un token suo (HMAC): emette
+        e verifica la STESSA prova della Lettera."""
+        src = self.FREQ_ROUTER.read_text()
+        assert "import hmac" not in src and "import hashlib" not in src, \
+            "il router frequenze conia di nuovo un token suo"
+        assert "_catalog_token" not in src
+        assert "generate_subscriber_token" in src
+        assert "decode_subscriber_token" in src
+
+    def test_sb4_la_traccia_non_si_apre_da_pending(self):
+        """Il flag fqz_listener_ok scritto al solo subscribe faceva
+        ascoltare la traccia intera a chiunque digitasse un indirizzo
+        qualsiasi: il buco gemello di NL-septies."""
+        src = self.TRACK.read_text()
+        assert "fqz_listener_ok" not in src
+        assert "iscriviESblocca" in src
+        assert "attesaConferma" in src, \
+            "la prima iscrizione deve aspettare il click nell'email"
+
+    def test_sb3_il_ritorno_serve_tutti_i_cancelli(self):
+        src = self.SUBS_ROUTER.read_text()
+        blocco = src.split("_RETURN_TO_OK = (")[1].split(")")[0]
+        for cancello in ("/blog/", "/meditazioni", "/frequenze/"):
+            assert cancello in blocco, cancello
+
+    def test_sb5_la_porta_ricorda_l_email_della_prova(self):
+        porta = (FRONTEND_SRC / "features" / "account"
+                 / "AccountLoginPage.js").read_text()
+        assert "emailDellaProva()" in porta, \
+            "senza ?email= la porta deve pescare dalla prova del cerchio"
+
+    def test_sb6_il_ponte_dopo_lo_sblocco(self):
+        """L'iscritto fedele senza account deve trovare il gancio per
+        finalizzare — sul catalogo, sulla guida aperta, alla conferma."""
+        for f in (self.MED, self.CONFIRM,
+                  FRONTEND_SRC / "features" / "storefront" / "BlogArticlePage.js"):
+            src = f.read_text()
+            assert 'data-testid="ponte-account"' in src, f.name
+            assert "creaAccount(emailDellaProva()" in src, \
+                f"{f.name}: il ponte deve portare l'email della prova"
+
+    def test_sb2_il_grazie_dice_la_verita(self):
+        """Chi si riiscrive con un'email gia' confermata NON deve
+        leggere «controlla l'email per confermare»: la prova arriva
+        subito e il grazie lo dice."""
+        lead = (FRONTEND_SRC / "features" / "prelaunch"
+                / "LeadForm.jsx").read_text()
+        assert "giaDentro" in lead and "sblocca(email)" in lead
+        assert "thanksGia" in lead

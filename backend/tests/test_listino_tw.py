@@ -1714,11 +1714,13 @@ class TestHubAccountAp2:
         assert ".filter(a => a.gated)" in page
         login = (FRONTEND_SRC / "features" / "account"
                  / "AccountLoginPage.js").read_text()
-        assert "aurya_nl_token" in login
+        # SB1 — la prova si salva dal posto unico (lib/cerchio, che
+        # scrive aurya_nl_token), mai a mano
+        assert "salvaProva" in login
         assert "subscriber_token" in login
         quick = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "checkout" / "AuryaQuickLogin.jsx").read_text()
-        assert "aurya_nl_token" in quick
+        assert "salvaProva" in quick
         import json
         for lang in ("it", "en", "de", "fr"):
             data = json.loads((FRONTEND_SRC / "locales" / lang
@@ -5485,8 +5487,8 @@ class TestLoginRegia:
         src = self.SHELL.read_text()
         assert "localStorage.removeItem(PLATFORM_TOKEN_KEY)" in src, \
             "Esci deve rimuovere il token piattaforma"
-        assert "localStorage.removeItem('aurya_nl_token')" in src, \
-            "Esci deve rimuovere anche il subscriber token newsletter"
+        assert "scordaProva()" in src, \
+            "Esci deve scordare la prova del cerchio (subscriber token)"
         # il pallino si spegne senza reload (stato con setter)
         assert "setHasPlatformToken(false)" in src
 

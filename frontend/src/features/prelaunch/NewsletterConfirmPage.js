@@ -16,6 +16,8 @@ import useSeoMeta from '../storefront/lib/useSeoMeta';
 import useItalianOnly from '../../lib/useItalianOnly';
 import { useSiteConfig } from '../../context/SiteConfigContext';
 import { trackEvent } from '../../lib/analytics';
+import { salvaProva, emailDellaProva } from '../../lib/cerchio';
+import { creaAccount } from '../../utils/authLinks';
 
 const GOLD = '#8a7440';
 
@@ -26,10 +28,19 @@ export default function NewsletterConfirmPage() {
   const { t } = useTranslation('prelaunch');
   const { leadMagnetUrl } = useSiteConfig();
   const [state, setState] = useState('working'); // working | done | expired | invalid
-  // BN3 — next: la guida da cui e' partita l'iscrizione (solo path
-  // interni del blog: il backend valida, qui doppio filtro)
+  // BN3→SB3 — next: il cancello da cui e' partita l'iscrizione (path
+  // interni noti: il backend valida, qui doppio filtro). Prima solo il
+  // blog: chi partiva dalle meditazioni riceveva un link che non
+  // tornava li'.
   const rawNext = searchParams.get('next') || '';
-  const next = rawNext.startsWith('/blog/') && !rawNext.includes('//') ? rawNext : null;
+  const nextOk = ['/blog/', '/meditazioni', '/frequenze/']
+    .some((r) => rawNext === r.replace(/\/$/, '') || rawNext.startsWith(r));
+  const next = nextOk && !rawNext.includes('//') ? rawNext : null;
+  const nextLabel = rawNext.startsWith('/blog/')
+    ? t('nlConfirm.backToGuide', { defaultValue: 'Torna alla guida sbloccata' })
+    : rawNext.startsWith('/frequenze/')
+      ? t('nlConfirm.backToTrack', { defaultValue: 'Torna alla sessione sbloccata' })
+      : t('nlConfirm.backToMeditations', { defaultValue: 'Torna alle meditazioni sbloccate' });
 
   useSeoMeta({
     title: t('nlConfirm.seoTitle', { defaultValue: 'Conferma iscrizione | Aurya' }),
@@ -44,7 +55,7 @@ export default function NewsletterConfirmPage() {
         setState('done');
         // BN3 — il token resta nel browser: sblocca le guide riservate
         // a ogni visita futura, senza dover ripassare dall'email
-        try { localStorage.setItem('aurya_nl_token', token); } catch { /* private mode */ }
+        salvaProva(token);   // SB1: la prova unica apre guide E meditazioni
         trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: 'confirm' });
       })
       .catch((err) => {
@@ -90,9 +101,18 @@ export default function NewsletterConfirmPage() {
                 <Link to={next}
                       className="inline-flex items-center gap-2 rounded-full border-2 border-[#376254] px-6 py-3 text-sm font-semibold text-[#376254] hover:bg-[#376254] hover:text-white transition-colors"
                       data-testid="nl-confirm-next">
-                  {t('nlConfirm.backToGuide', { defaultValue: 'Torna alla guida sbloccata' })} →
+                  {nextLabel} →
                 </Link>
               </div>
+            )}
+            {!localStorage.getItem('platform_token') && !localStorage.getItem('token') && (
+              <p className="mt-6 text-sm text-gray-600" data-testid="ponte-account">
+                {t('nlConfirm.ponte', { defaultValue: 'Vuoi ritrovare guide e meditazioni su ogni dispositivo?' })}{' '}
+                <a href={creaAccount(emailDellaProva(), next)} data-testid="ponte-account-crea"
+                  className="underline text-[#376254]">
+                  {t('nlConfirm.ponteCta', { defaultValue: 'Crea il tuo account Aurya' })}
+                </a>
+              </p>
             )}
             <div className="mt-8">
               <Link to={`/newsletter/preferenze/${token}`}

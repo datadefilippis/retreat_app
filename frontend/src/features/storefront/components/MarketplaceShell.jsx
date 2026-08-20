@@ -38,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from '../../../components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '../../../components/ui/sheet';
+import { scordaProva } from '../../../lib/cerchio';
 
 // S5 — destinazioni top nel footer (link programmatici): cache a livello
 // modulo, il footer è su ogni pagina e non deve rifetchare a ogni nav.
@@ -389,10 +390,10 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   });
   const accountTo = hasPlatformToken ? '/account' : '/accedi';
 
-  // LR1 — "Esci" dal menu dell'omino: rimuove il token piattaforma E il
-  // subscriber token della newsletter (aurya_nl_token, salvato al login
-  // AP2), spegne il pallino e riporta alla home: le pagine gated non
-  // restano appese a una sessione morta.
+  // LR1 — "Esci" dal menu dell'omino: rimuove il token piattaforma E la
+  // prova del cerchio (il subscriber token salvato al login AP2, via
+  // lib/cerchio), spegne il pallino e riporta alla home: le pagine
+  // gated non restano appese a una sessione morta.
   // ID-quinquies (20/8) — «Usa Aurya come cliente»: UN gesto. Prima era
   // un link a /account che, senza cappello cliente, rimbalzava al login
   // — dove le credenziali da operatore riportavano al gestionale: un
@@ -428,7 +429,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   const logoutPlatform = React.useCallback(() => {
     try {
       localStorage.removeItem(PLATFORM_TOKEN_KEY);
-      localStorage.removeItem('aurya_nl_token');
+      scordaProva();   // SB1: prova unica + vecchie chiavi
       localStorage.removeItem('token');
     } catch { /* private mode */ }
     setHasPlatformToken(false);

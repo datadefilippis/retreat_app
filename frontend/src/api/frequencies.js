@@ -15,10 +15,12 @@ export const frequenciesAPI = {
   getPublic: (slug) => api.get(`/frequencies/public/${slug}`),
   registerPlay: (slug) => api.post(`/frequencies/public/${slug}/play`),
 
-  // FQ3 — vetrina /meditazioni: catalogo dietro sblocco server-side
-  catalogUnlock: (email) => api.post('/frequencies/catalog/unlock', { email }),
-  getCatalog: (unlock) => api.get('/frequencies/catalog',
-    unlock ? { headers: { 'X-Fqz-Unlock': `${unlock.email}:${unlock.token}` } } : {}),
+  // FQ3 — vetrina /meditazioni: catalogo dietro sblocco server-side.
+  // SB1 (20/8): lo sblocco viaggia con la PROVA UNICA del cerchio (il
+  // JWT della Lettera, lib/cerchio.js), non piu' con la coppia
+  // email:HMAC — una prova sola per guide e meditazioni.
+  getCatalog: (provaToken) => api.get('/frequencies/catalog',
+    provaToken ? { headers: { 'X-Fqz-Unlock': provaToken } } : {}),
 
   // FQ2 — libreria suoni curata: lettura per tutti, scrittura solo
   // system admin (multipart)

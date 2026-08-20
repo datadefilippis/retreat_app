@@ -245,5 +245,7 @@ class TestAccessMagicLink:
                 / "BlogArticlePage.js").read_text()
         assert "già iscritto" in page.lower()
         assert 'data-testid="blog-gate-already"' in page
-        assert "/public/newsletter/unlock" in page
+        # SB1: lo sblocco passa dal posto unico lib/cerchio, che
+        # chiama /public/newsletter/unlock e salva la prova per tutti
+        assert "sblocca(" in page and "lib/cerchio" in page
         assert "dispositivo" in page      # il caso raccontato e' quello

@@ -26,6 +26,7 @@ import platformApi from '../../api/platformClient';
 import { useAuth } from '../../context/AuthContext';
 import { trackEvent } from '../../lib/analytics';
 import { creaAccount } from '../../utils/authLinks';
+import { sblocca } from '../../lib/cerchio';
 
 // Chiavi stabili salvate nel DB (le etichette sono i18n)
 const INTERESTS = ['yoga', 'meditation', 'breathwork', 'sound', 'detox',
@@ -72,6 +73,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                                    ctaLabel = null, thanksBody = null,
                                    consentText = null, subscribe = false,
                                    returnTo = null, showName = null,
+                                   onSbloccato = null,
                                    experiencesOptIn = false }) {
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
@@ -127,6 +129,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   /* OL3b — nella candidatura il nome e' OBBLIGATORIO: si risponde a una
      persona, non a un indirizzo. Resta facoltativo dove il nome e' un
      saluto e non un'identita' (la Lettera, il blog). */
+  const [giaDentro, setGiaDentro] = useState(false);  // SB2: gia' confermato
   const nameRequired = isOperator && withName;
   const missingName = nameRequired && !name.trim();
 
@@ -155,6 +158,15 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           consent: true,
         });
         trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: context || 'landing' });
+        // SB2 (20/8) — gia' confermato? La prova arriva subito e il
+        // grazie dice la verita' («sei gia' dei nostri»), invece di
+        // rimandare a una conferma gia' fatta.
+        try {
+          await sblocca(email);
+          setGiaDentro(true);
+          // il cancello ospite puo' aprirsi subito (es. la guida si ricarica)
+          if (onSbloccato) { onSbloccato(); return; }
+        } catch { /* nuovo/pending: si aspetta il click nell'email */ }
         setState('done');
         return;
       }
@@ -199,10 +211,12 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           {t('form.thanksTitle', { defaultValue: 'Ci sei. Benvenuto.' })}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {thanksBody
-            || (isOperator
-              ? t('form.thanksOp', { defaultValue: 'Grazie per esserti presentato: ti scriviamo personalmente prima del lancio.' })
-              : t('form.thanksTr', { defaultValue: 'Al lancio riceverai una selezione di ritiri pensata per te. A presto.' }))}
+          {giaDentro
+            ? t('form.thanksGia', { defaultValue: 'Questa email è già dei nostri: tutto sbloccato su questo dispositivo — guide, meditazioni, sessioni. Nessuna nuova conferma da fare.' })
+            : (thanksBody
+              || (isOperator
+                ? t('form.thanksOp', { defaultValue: 'Grazie per esserti presentato: ti scriviamo personalmente prima del lancio.' })
+                : t('form.thanksTr', { defaultValue: 'Al lancio riceverai una selezione di ritiri pensata per te. A presto.' })))}
         </p>
         {/* NL2 (20/8) — il ponte verso l'account, nel momento in cui
             l'utente ha appena dato fiducia. Non un muro: un invito, con

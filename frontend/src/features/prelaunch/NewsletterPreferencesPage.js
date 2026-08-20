@@ -13,6 +13,7 @@ import { Check, Loader2 } from 'lucide-react';
 import api from '../../api/client';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import useItalianOnly from '../../lib/useItalianOnly';
+import { salvaProva } from '../../lib/cerchio';
 
 const GREEN = '#376254';
 
@@ -50,7 +51,7 @@ export default function NewsletterPreferencesPage() {
     api.get(`/public/newsletter/preferences/${token}`)
       .then(res => {
         if (!mounted) return;
-        try { localStorage.setItem('aurya_nl_token', token); } catch { /* private mode */ }
+        salvaProva(token);   // SB1: il posto unico della prova
         setData(res.data);
         setTopics(res.data.topics || []);
         setFormat(res.data.format || 'all');

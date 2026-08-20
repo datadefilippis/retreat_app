@@ -139,14 +139,19 @@ class TestGatedGuidesBN3:
     def test_frontend_gate_wiring(self):
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "BlogArticlePage.js").read_text()
-        assert "aurya_nl_token" in page               # sblocco da localStorage
+        # SB1 (20/8) — la prova non si maneggia piu' a mano: la pagina
+        # passa dal posto unico lib/cerchio (che scrive aurya_nl_token)
+        assert "lib/cerchio" in page and "prova(" in page
         assert "blog-gate" in page
         # la CTA di fondo articolo esiste una volta sola
         assert page.count("<BlogNewsletterCTA") == 1
         confirm = (FRONTEND_SRC / "features" / "prelaunch"
                    / "NewsletterConfirmPage.js").read_text()
-        assert "aurya_nl_token" in confirm            # persistenza token
-        assert "startsWith('/blog/')" in confirm      # next filtrato
+        assert "salvaProva" in confirm                # persistenza prova
+        # SB3 — il next serve TUTTI i cancelli, sempre filtrato
+        for cancello in ("/blog/", "/meditazioni", "/frequenze/"):
+            assert cancello in confirm, cancello
+        assert "'//'" in confirm or '"//"' in confirm or "includes('//')" in confirm
 
 
 class TestCategoryHubsBN5:
