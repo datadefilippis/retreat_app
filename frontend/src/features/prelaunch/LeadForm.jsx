@@ -206,8 +206,14 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         {/* NL2 (20/8) — il ponte verso l'account, nel momento in cui
             l'utente ha appena dato fiducia. Non un muro: un invito, con
             l'email gia' compilata e senza password da inventare.
-            Solo lato utente: l'operatore ha il suo funnel. */}
-        {!isOperator && email && (
+            Solo lato utente: l'operatore ha il suo funnel.
+
+            NL-ter (20/8, founder) — a chi e' GIA' dentro non si offre
+            di crearsi un account: sarebbe un invito a fare una cosa
+            gia' fatta. Se ha appena iscritto la SUA email, lo si porta
+            dove la vedra' comparire; se ne ha usata un'altra, non gli
+            si promette nulla (li' l'iscrizione non risultera'). */}
+        {!isOperator && email && !accountEmail && (
           <p className="mt-4 text-xs text-muted-foreground" data-testid="lead-account-bridge">
             {t('form.bridgeBody', { defaultValue: 'Vuoi ritrovare guide ed esperienze su ogni dispositivo?' })}{' '}
             <a href={`/accedi?vista=crea&email=${encodeURIComponent(email)}`}
@@ -215,6 +221,15 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
               {t('form.bridgeCta', { defaultValue: 'Crea il tuo account Aurya' })}
             </a>{' '}
             {t('form.bridgeHint', { defaultValue: '(non serve una password)' })}
+          </p>
+        )}
+        {!isOperator && accountEmail
+          && email.trim().toLowerCase() === accountEmail.toLowerCase() && (
+          <p className="mt-4 text-xs text-muted-foreground" data-testid="lead-account-here">
+            {t('form.bridgeLogged', { defaultValue: 'È l’indirizzo del tuo account: appena confermi, guide e materiali compaiono qui.' })}{' '}
+            <a href="/account" className="underline hover:no-underline" style={{ color: accent }}>
+              {t('form.bridgeLoggedCta', { defaultValue: 'Vai al tuo account' })}
+            </a>
           </p>
         )}
         {/* RT4 — spazio per la consegna del lead magnet (o altro) */}

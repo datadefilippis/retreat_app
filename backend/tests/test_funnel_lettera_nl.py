@@ -196,3 +196,27 @@ class TestIndirizzoDichiaratoNlBis:
         be = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
         assert '"email": current_user.get("email")' in be, \
             "l'endpoint non restituisce l'indirizzo osservato"
+
+
+class TestPonteConsapevoleNlTer:
+    """NL-ter (20/8, founder) — «se sono già loggato, l'invito a creare
+    l'account non dovrebbe apparire»: giusto. A chi è dentro non si
+    propone una cosa già fatta; lo si porta dove vedrà l'iscrizione."""
+
+    LEAD = FRONTEND_SRC / "features" / "prelaunch" / "LeadForm.jsx"
+
+    def test_niente_invito_a_chi_e_gia_dentro(self):
+        src = self.LEAD.read_text()
+        ponte = src.split('data-testid="lead-account-bridge"')[0][-260:]
+        assert "!accountEmail" in ponte, \
+            "l'invito a creare l'account compare anche a chi ce l'ha gia'"
+
+    def test_a_chi_e_dentro_si_indica_dove_guardare(self):
+        src = self.LEAD.read_text()
+        assert 'data-testid="lead-account-here"' in src
+        blocco = src.split('data-testid="lead-account-here"')[0][-300:]
+        assert "email.trim().toLowerCase() === accountEmail.toLowerCase()" in blocco, \
+            "il messaggio «lo trovi nel tuo account» compare anche a chi si e'"\
+            " iscritto con un ALTRO indirizzo, dove l'iscrizione non risultera'"
+        dopo = src.split('data-testid="lead-account-here"')[1][:400]
+        assert 'href="/account"' in dopo, "manca la via verso l'account"
