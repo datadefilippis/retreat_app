@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BIB, SOUND_KEYS } from './content/biblioteca';
 import { PERCORSO } from './content/guida';
 import { PRO_ENTRY } from './links';
+import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import './frequenze.css';
 
 /*
@@ -27,6 +28,7 @@ const CAT_LINK = {
 
 export default function SoundLandingPage() {
   useEffect(() => { document.title = 'Aurya Sound — Il suono, spiegato'; }, []);
+  const [safety, setSafety] = useState(false);   // SF — lettura su richiesta
 
   return (
     <div className="fqz sld" data-testid="fqz-landing">
@@ -94,12 +96,16 @@ export default function SoundLandingPage() {
             </Link>
           </div>
 
+          {/* SF — la porta pubblica dice subito com'è fatto l'ascolto */}
+          <SafetyLine onOpen={() => setSafety(true)} />
+
           <div className="sld-bridge" data-testid="fqz-landing-meditazioni">
             <span>Preferisci un'esperienza già composta?</span>{' '}
             <Link to="/meditazioni">Scopri le meditazioni degli operatori →</Link>
           </div>
         </section>
       </main>
+      {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
       <footer className="fqzfoot" data-testid="fqz-foot">
         <a href="/">← Torna su Aurya</a>
         <a href="/blog">Magazine</a>

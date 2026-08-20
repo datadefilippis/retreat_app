@@ -15,6 +15,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { frequenciesAPI } from '../../api/frequencies';
+import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import './frequenze.css';
 
 const UNLOCK_STORE = 'fqz_catalog_unlock';   // {email, token} iscritto Lettera
@@ -40,6 +41,7 @@ export default function MeditazioniPage() {
   const [intent, setIntent] = useState('');
   const [favorites, setFavorites] = useState([]); // slugs
   const [heartAsk, setHeartAsk] = useState(false);
+  const [safety, setSafety] = useState(false);      // SF — lettura su richiesta
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -249,14 +251,12 @@ export default function MeditazioniPage() {
               </div>
             </>
           )}
-          <p className="note" style={{ marginTop: 18 }}>
-            🎧 Per le componenti binaurali servono le cuffie: dalle casse il suono
-            si sente comunque, ma l'effetto cambia natura. Volume moderato.
-            Non sono dispositivi medici e non sostituiscono percorsi clinici.
-          </p>
+          {/* SF — stesso testo di tutto Aurya Sound, da content/safety.js */}
+          <SafetyLine onOpen={() => setSafety(true)} />
         </section>
       </main>
 
+      {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
       {heartAsk && (
         <div className="gate" onClick={() => setHeartAsk(false)}>
           <div className="gatebox" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>

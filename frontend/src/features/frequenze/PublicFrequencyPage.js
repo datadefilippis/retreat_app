@@ -16,6 +16,7 @@ import api from '../../api/client';
 import { frequenciesAPI } from '../../api/frequencies';
 import { startPreview } from './engine/synth';
 import { resolveAudioLayers, resolveVoiceLayers } from './engine/assets';
+import { SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
 
 const PREVIEW_SEC = 90;
@@ -37,6 +38,10 @@ export default function PublicFrequencyPage() {
   const [elapsed, setElapsed] = useState(0);
   const [loadingAudio, setLoadingAudio] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
+  /* SF — questa è la pagina che l'operatore condivide: chi la apre non
+     ha mai visto Aurya, quindi il sipario deve stare davanti al primo
+     suono anche qui (il gate qui sotto è un'altra cosa: l'anteprima). */
+  const { guard, curtain, openReview } = useSafetyGate();
   const [unlocked, setUnlocked] = useState(() =>
     localStorage.getItem(UNLOCK_KEY) === '1'
     || !!localStorage.getItem('platform_token')
@@ -109,6 +114,7 @@ export default function PublicFrequencyPage() {
       if (!unlocked && cur >= PREVIEW_SEC) { stop(); setGateOpen(true); }
     }, 200);
   };
+  const playGuarded = guard(play);
 
   const subscribe = async (e) => {
     e.preventDefault();
@@ -175,9 +181,10 @@ export default function PublicFrequencyPage() {
           )}
           {track.description && <p>{track.description}</p>}
 
+          <SafetyLine onOpen={openReview} />
           <div className="createbar" style={{ position: 'static', marginTop: 16 }}>
             <button type="button" className="cb-play" data-testid="fqp-play"
-              onClick={() => (playing ? stop() : play(elapsed >= d - 1 ? 0 : elapsed))}>
+              onClick={() => (playing ? stop() : playGuarded(elapsed >= d - 1 ? 0 : elapsed))}>
               {loadingAudio ? <><span className="prep">◌</span> Preparo…</>
                 : playing ? `⏸ ${fmt(elapsed)}` : elapsed > 0 ? '▶ Riprendi' : '▶ Ascolta'}
             </button>
@@ -205,16 +212,12 @@ export default function PublicFrequencyPage() {
               Tutte le meditazioni di Aurya →
             </Link>
           </p>
-          <p className="note" style={{ marginTop: 16 }}>
-            🎧 Per le componenti binaurali servono le cuffie: dalle casse il
-            suono si sente comunque, ma l'effetto cambia natura. Volume
-            moderato. Non è un dispositivo medico e non sostituisce percorsi
-            clinici; non usare in caso di epilessia, con pacemaker, alla
-            guida. In caso di disagio, interrompere l'ascolto.
-          </p>
+          {/* SF — l'avviso sta PRIMA del pulsante, non in fondo alla
+              pagina: chi arriva da un link condiviso preme ▶ e basta. */}
         </section>
       </main>
 
+      {curtain}
       {gateOpen && !unlocked && (
         <div className="gate">
           <div className="gatebox" style={{ maxWidth: 520 }}>

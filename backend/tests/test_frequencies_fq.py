@@ -245,8 +245,9 @@ class TestDesignPrototipoFq05:
         assert "navigate('/dashboard')" in src, \
             "manca il ritorno al gestionale dalla testata"
         assert "frequenze.css" in src
-        # il gate sicurezza del prototipo c'e' ancora
-        assert "fqz_gate_ok" in src and "epilessia" in src
+        # il sipario di sicurezza c'e' ancora, ma da SF (20/8) si apre
+        # davanti al SUONO e il testo vive in content/safety.js
+        assert "useSafetyGate" in src and "SafetyButton" in src
 
 
 class TestSoloSuoniPiattaformaFq05b:
@@ -477,7 +478,8 @@ class TestPubblicazioneFq1:
         assert "PREVIEW_SEC" in src and "frequenze:${slug}" in src
         assert "/public/newsletter/subscribe" in src
         assert "platform_token" in src, "l'account Aurya deve sbloccare da solo"
-        assert "epilessia" in src, "manca il disclaimer salute"
+        assert "SafetyLine" in src and "useSafetyGate" in src, \
+            "manca il disclaimer salute (SF: arriva da content/safety.js)"
         app = (FRONTEND_SRC / "App.js").read_text()
         assert 'path="/frequenze/:slug"' in app
 
@@ -984,7 +986,7 @@ class TestSoundPubblicoSp:
             "Ascolta e' finito dietro un gate di ruolo: si ascolta tutti"
         assert "+ sessione" in foot[i_gate:], \
             "«+ sessione» e' composizione: resta agli operatori"
-        assert "      {!gateOk && (" in page, \
+        assert "onClick={guard(() => toggleCard(" in page, \
             "il sipario vale per CHIUNQUE ascolti, non solo per gli operatori"
         # composizione e mondo di lavoro restano professionali
         assert "view === 'explore' && canCompose && (" in page, \
@@ -1256,3 +1258,73 @@ class TestLibreriaSuoniSl:
         dichiarate = [n for _, _, _, n in mod.MANIFEST if n]
         assert all("CC0" in n for n in dichiarate), \
             "una licenza dichiarata senza dire quale"
+
+
+class TestControindicazioniSf:
+    """SF (20/8, decisione founder) — le controindicazioni si aprono
+    PRIMA DEL SUONO (non prima della pagina), tornano ogni 90 giorni e
+    restano rileggibili da un pulsante sempre a vista. Un testo solo,
+    in content/safety.js, citato da tutte le superfici."""
+
+    SUPERFICI = ("FrequenzePage.js", "PublicFrequencyPage.js",
+                 "MeditazioniPage.js", "SoundLandingPage.js")
+
+    def test_regola_dei_novanta_giorni(self):
+        src = (FQ_DIR / "content" / "safety.js").read_text()
+        assert "SAFETY_DAYS = 90" in src, "la cadenza decisa e' 90 giorni"
+        assert "SAFETY_VERSION" in src, \
+            "senza versione non si puo' riaprire l'avviso quando cambia il testo"
+        acc = src.split("export function safetyAccepted")[1].split("}")[0]
+        assert "raw.v !== SAFETY_VERSION" in acc, \
+            "un'accettazione di una versione vecchia deve valere zero"
+        assert "SAFETY_DAYS * 24 * 3600 * 1000" in src, \
+            "la scadenza non e' calcolata sui giorni dichiarati"
+
+    def test_un_testo_solo(self):
+        """Prima viveva riscritto in tre punti con parole diverse."""
+        for f in self.SUPERFICI:
+            src = (FQ_DIR / f).read_text()
+            for parola in ("epiles", "pacemaker", "dispositivo medico",
+                           "dispositivi medici"):
+                assert parola not in src.lower(), (
+                    f"{f} riscrive l'avviso a mano ({parola}): "
+                    "il testo sta in content/safety.js")
+
+    def test_niente_suono_prima_dell_avviso(self):
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "const playGuarded = guard(playSession)" in page, \
+            "la linea del tempo puo' partire senza passare dall'avviso"
+        assert "playSession(t)" not in page, \
+            "il righello scavalca il cancello: deve usare playGuarded"
+        assert "onClick={guard(() => toggleCard(" in page, \
+            "l'anteprima di una frequenza parte senza avviso"
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "const playGuarded = guard(play)" in pub and "playGuarded(elapsed" in pub, \
+            "la pagina condivisa (la piu' esposta) suona senza avviso"
+
+    def test_il_sipario_non_e_piu_sulla_soglia(self):
+        """Chi arriva per LEGGERE la Guida non trova un muro medico."""
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "fqz_gate_ok" not in page, \
+            "e' tornato il cancello alla prima visita, slegato dall'ascolto"
+        assert "view !== 'impara' && <SafetyLine" in page, \
+            "la riga va dove si ascolta, non sopra la Guida"
+
+    def test_pulsante_e_riga_su_tutte_le_superfici(self):
+        head = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "<SafetyButton onClick={openReview} />" in head, \
+            "manca il pulsante «Controindicazioni» nella testata"
+        for f in self.SUPERFICI:
+            src = (FQ_DIR / f).read_text()
+            assert "SafetyLine" in src, f"{f}: manca la riga a vista"
+            assert "SafetyCurtain" in src or "useSafetyGate" in src, \
+                f"{f}: la riga non apre niente"
+        comp = (FQ_DIR / "SafetyCurtain.js").read_text()
+        assert 'data-testid="fqz-safety-btn"' in comp
+        assert "mode === 'review'" in comp, \
+            "senza modo lettura, rileggere varrebbe come riaccettare"
+        assert comp.count("acceptSafety()") == 1, \
+            "acceptSafety va chiamata in un punto solo (l'accettazione)"
+        accept_fn = comp.split("const accept = useCallback(")[1].split("}, [")[0]
+        assert "acceptSafety()" in accept_fn, \
+            "la lettura sposterebbe in avanti la scadenza: rileggere non e' accettare"

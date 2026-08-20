@@ -33,6 +33,7 @@ import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS } from './content/biblioteca';
 import GuidaView from './GuidaView';
 import { PRO_ENTRY } from './links';
+import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
 
 const fmt = (s) => {
@@ -153,7 +154,10 @@ export default function FrequenzePage() {
       : { explore: 'Esplora', create: 'Crea', mine: 'Le mie tracce' }[view];
     document.title = `Aurya Sound — ${name}`;
   }, [view, curTab]);
-  const [gateOk, setGateOk] = useState(() => localStorage.getItem('fqz_gate_ok') === '1');
+  /* SF (20/8) — le controindicazioni si aprono prima del SUONO, non
+     prima della pagina: chi arriva a leggere la Guida non trova un muro
+     medico, chi sta per ascoltare le vede sempre (ogni 90 giorni). */
+  const { guard, curtain, openReview } = useSafetyGate();
   const [ask, setAsk] = useState(null);                  // {title,msg,opts:[[label,fn]]}
   const [learn, setLearn] = useState(null);              // {title,body}
 
@@ -509,7 +513,11 @@ export default function FrequenzePage() {
       setStatus(`Ascolto · ${fmt(Math.max(0, el))} / ${fmt(duration)}`);
     }, 150);
   };
-  const seekTo = (t) => { if (layers.length) playSession(t); };
+  /* Un solo cancello per tutto ciò che suona la linea del tempo: il
+     tasto Ascolta, il righello, la barra di scorrimento passano tutti
+     di qui, quindi non esiste una scorciatoia che salti l'avviso. */
+  const playGuarded = guard(playSession);
+  const seekTo = (t) => { if (layers.length) playGuarded(t); };
 
   const patchLayer = (id, patch) => {
     setLayers((ls) => ls.map((l) => (l.id === id ? { ...l, ...patch } : l)));
@@ -801,7 +809,7 @@ export default function FrequenzePage() {
              frequenza nella linea del tempo, e quella e' un'altra cosa. */
           <div className="foot">
             <button type="button" className="live" data-testid={`fq-card-live-${idx}`}
-              onClick={() => toggleCard(key, entry)}>
+              onClick={guard(() => toggleCard(key, entry))}>
               {live ? 'Ferma' : 'Ascolta'}
             </button>
             {canCompose && (
@@ -1040,13 +1048,16 @@ export default function FrequenzePage() {
           </span>
         </a>
         <span className="tb-spacer" />
+        {/* SF — sempre a portata, in ogni vista e per chiunque: le
+            controindicazioni non si leggono una volta sola */}
+        <SafetyButton onClick={openReview} />
         {/* le esperienze gia' composte dagli operatori: raggiungibili
             dalla testata in ogni ruolo, non solo dal menu delle viste */}
         <a className="backcard" href="/meditazioni" data-testid="fqz-top-meditazioni"
           title="Le meditazioni pubblicate dagli operatori">
           <span className="bc-ic">✧</span>
           <span>
-            <span className="bc-t">Meditazioni</span><br />
+            <span className="bc-t">Esplora meditazioni</span><br />
             <span className="bc-s">esperienze degli operatori</span>
           </span>
         </a>
@@ -1100,14 +1111,14 @@ export default function FrequenzePage() {
           )}
           <button type="button" className={`vbtn${view === 'impara' ? ' on' : ''}`}
             onClick={() => setView('impara')}>Impara</button>
-          {/* esce da Sound: le esperienze gia' composte dagli operatori */}
-          <a className="vbtn vbtn-out" href="/meditazioni" data-testid="fqz-nav-meditazioni">
-            Esplora meditazioni
-          </a>
         </div>
       </header>
 
       <main>
+        {/* SF — dove si ascolta, la riga sta a vista; nella Guida no:
+            lì il tema è trattato per esteso, e un cartello sopra un
+            testo che spiega la stessa cosa è solo rumore. */}
+        {view !== 'impara' && <SafetyLine onOpen={openReview} />}
         {(view === 'explore' || view === 'impara') && (
           <section className="bib">
             {view === 'explore' && canCompose && (
@@ -1360,7 +1371,7 @@ export default function FrequenzePage() {
             <div className="createbar">
               <button type="button" className="cb-play" data-testid="fq-play"
                 disabled={!layers.length}
-                onClick={() => (playing ? stopSession() : playSession(0))}>
+                onClick={() => (playing ? stopSession() : playGuarded(0))}>
                 {preparing ? <><span className="prep">◌</span> Preparo…</>
                   : playing ? '⏸ Pausa' : '▶ Ascolta sessione'}
               </button>
@@ -1622,28 +1633,9 @@ export default function FrequenzePage() {
         </div>
       )}
 
-      {/* gate sicurezza (prima visita) */}
-      {!gateOk && (
-        <div className="gate">
-          <div className="gatebox">
-            <h2>Aurya <em>Sound</em> — prima di iniziare</h2>
-            <p>Questo strumento genera stimolazione uditiva (battiti binaurali, toni isocronici e monoaurali, stimolazione bilaterale, toni puri). Non è un dispositivo medico e non diagnostica, cura o previene alcuna condizione.</p>
-            <div className="warnbox"><strong>Non usare</strong> in caso di epilessia o storia di convulsioni, con pacemaker o dispositivi impiantati. In gravidanza, consultare prima il medico. <strong>Mai</strong> durante la guida o l'uso di macchinari.</div>
-            <ul>
-              <li><strong>Volume moderato.</strong> Se il battito si sente nettamente sopra il resto, è troppo forte.</li>
-              <li><strong>Rientro.</strong> Ogni sessione profonda termina con una risalita graduale — i protocolli la contengono già.</li>
-              <li><strong>Stimolazione bilaterale.</strong> Componente sonoro usato anche nell'EMDR, ma l'EMDR è un protocollo clinico condotto da terapeuti formati: questo strumento non lo sostituisce.</li>
-              <li><strong>Disagio.</strong> In caso di vertigini, nausea o malessere, interrompere l'ascolto.</li>
-            </ul>
-            <div className="gatefoot">
-              <button type="button" className="primary"
-                onClick={() => { localStorage.setItem('fqz_gate_ok', '1'); setGateOk(true); }}>
-                Ho letto e compreso
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* SF — il sipario vive nel hook: si apre davanti al primo
+          suono e su richiesta dal pulsante «Controindicazioni». */}
+      {curtain}
 
       {/* dialogo conferme */}
       {ask && (
