@@ -18,10 +18,12 @@
  * POST /public/leads (dedup lato server, notifica a info@). Best-effort:
  * un errore non blocca mai l'utente.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Check, Loader2 } from 'lucide-react';
 import api from '../../api/client';
+import platformApi from '../../api/platformClient';
+import { useAuth } from '../../context/AuthContext';
 import { trackEvent } from '../../lib/analytics';
 
 // Chiavi stabili salvate nel DB (le etichette sono i18n)
@@ -73,9 +75,32 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
 
+  /* NL-bis (20/8) — chi e' loggato non deve ridigitare la sua email, e
+     soprattutto non deve iscriversi con un indirizzo diverso SENZA
+     saperlo: la Lettera vive sull'indirizzo, non sull'account, quindi
+     una svista si traduce in «il gestionale dice che non sei iscritto»
+     mentre la ricevi altrove. Precompiliamo, e se la cambia glielo
+     diciamo. Mai un blocco: l'indirizzo resta una sua scelta. */
+  const { user } = useAuth();
+  const [accountEmail, setAccountEmail] = useState(user?.email || null);
+  useEffect(() => {
+    if (isOperator || accountEmail) return;
+    let token = null;
+    try { token = localStorage.getItem('platform_token'); } catch { /* private mode */ }
+    if (!token) return;
+    let alive = true;
+    platformApi.get('/platform/me')
+      .then((r) => { if (alive && r.data?.email) setAccountEmail(r.data.email); })
+      .catch(() => { /* pagina pubblica: si prosegue senza */ });
+    return () => { alive = false; };
+  }, [isOperator, accountEmail]);
+
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  useEffect(() => {
+    if (!isOperator && accountEmail) setEmail((cur) => cur || accountEmail);
+  }, [isOperator, accountEmail]);
   const [city, setCity] = useState('');
   const [interests, setInterests] = useState([]);
   const [travel, setTravel] = useState('');
@@ -243,6 +268,15 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         placeholder={t('form.email', { defaultValue: 'La tua email' })}
         className={inputCls} style={ringStyle}
       />
+      {!isOperator && accountEmail && email.trim()
+        && email.trim().toLowerCase() !== accountEmail.toLowerCase() && (
+        <p className="text-xs text-amber-700 text-left" data-testid="lead-other-email">
+          {t('form.otherEmail', {
+            email: accountEmail,
+            defaultValue: 'Stai iscrivendo un indirizzo diverso da quello del tuo account ({{email}}): la lettera arriverà lì, e nel tuo account non risulterà.',
+          })}
+        </p>
+      )}
 
       {compact ? null : isOperator ? (
         <>

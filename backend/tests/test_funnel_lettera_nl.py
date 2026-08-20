@@ -150,3 +150,49 @@ class TestErroriCheAiutanoNl3:
             src = (FRONTEND_SRC / f).read_text()
             assert key in src and "fughe di dati" in src, \
                 f"{f}: l'hint non avverte del controllo sui data-breach"
+
+
+class TestIndirizzoDichiaratoNlBis:
+    """NL-bis (20/8, founder) — la Lettera vive sull'INDIRIZZO, non
+    sull'account: chi si iscrive con un'email diversa dalla sua legge
+    poi «non ricevi la lettera» nel gestionale, e si iscrive due volte.
+    Il rimedio non e' cambiare la regola (il consenso appartiene alla
+    casella) ma renderla VISIBILE."""
+
+    LEAD = FRONTEND_SRC / "features" / "prelaunch" / "LeadForm.jsx"
+
+    def test_email_precompilata_per_chi_e_loggato(self):
+        src = self.LEAD.read_text()
+        assert "useAuth" in src and "accountEmail" in src
+        assert "setEmail((cur) => cur || accountEmail)" in src, \
+            "la precompilazione sovrascriverebbe quello che l'utente ha scritto"
+        assert "'/platform/me'" in src, \
+            "il cliente loggato non viene riconosciuto (solo l'operatore)"
+
+    def test_avviso_se_l_indirizzo_e_diverso(self):
+        src = self.LEAD.read_text()
+        assert 'data-testid="lead-other-email"' in src
+        blocco = src.split('data-testid="lead-other-email"')[0][-400:]
+        assert "toLowerCase() !== accountEmail.toLowerCase()" in blocco, \
+            "il confronto e' sensibile a maiuscole: falsi avvisi"
+        assert "!isOperator" in blocco, \
+            "l'avviso compare anche sul form di candidatura operatori"
+
+    def test_l_avviso_non_blocca(self):
+        """Resta una scelta: informiamo, non impediamo."""
+        src = self.LEAD.read_text()
+        avviso = src.split('data-testid="lead-other-email"')[1][:400]
+        assert "disabled" not in avviso, \
+            "l'avviso e' diventato un blocco: l'indirizzo resta una scelta"
+
+    def test_le_superfici_dichiarano_su_cosa_guardano(self):
+        card = (FRONTEND_SRC / "features" / "settings" / "sections"
+                / "LetterCard.jsx").read_text()
+        assert 'data-testid="letter-address"' in card and "letter.address" in card, \
+            "la card non dice su quale indirizzo sta guardando"
+        acc = (FRONTEND_SRC / "features" / "account" / "AccountPage.js").read_text()
+        assert 'data-testid="guides-address"' in acc, \
+            "/account non dice su quale indirizzo sta guardando"
+        be = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
+        assert '"email": current_user.get("email")' in be, \
+            "l'endpoint non restituisce l'indirizzo osservato"

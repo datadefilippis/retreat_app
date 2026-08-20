@@ -22,12 +22,17 @@ import {
 export default function LetterCard() {
   const { t } = useTranslation('settings');
   const [state, setState] = React.useState(null);   // none|pending|confirmed|unsubscribed
+  const [indirizzo, setIndirizzo] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
 
   React.useEffect(() => {
     let alive = true;
     api.get('/auth/letter')
-      .then((r) => { if (alive) setState(r.data?.state || 'none'); })
+      .then((r) => {
+        if (!alive) return;
+        setState(r.data?.state || 'none');
+        setIndirizzo(r.data?.email || null);
+      })
       .catch(() => { if (alive) setState('none'); });
     return () => { alive = false; };
   }, []);
@@ -55,7 +60,18 @@ export default function LetterCard() {
           <Mail className="h-5 w-5" aria-hidden />
           {t('letter.title', { defaultValue: 'La lettera di Aurya' })}
         </CardTitle>
-        <CardDescription>{body}</CardDescription>
+        <CardDescription>
+          {body}
+          {/* NL-bis (20/8) — su QUALE indirizzo stiamo guardando: senza
+              dirlo, chi si e' iscritto con un'altra email legge «non
+              ricevi la lettera» e si iscrive una seconda volta. */}
+          {indirizzo && (
+            <span className="block mt-1 text-xs text-muted-foreground"
+              data-testid="letter-address">
+              {t('letter.address', { email: indirizzo, defaultValue: 'Stiamo guardando l’indirizzo {{email}}.' })}
+            </span>
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {state === null ? null : state === 'confirmed' ? (

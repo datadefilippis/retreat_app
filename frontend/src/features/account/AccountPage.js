@@ -423,6 +423,10 @@ export default function AccountPage() {
               <p className="text-sm text-gray-600">
                 {t('landings:account.guidesInvite', { defaultValue: 'Le guide riservate del Magazine sono per chi riceve la lettera di Aurya. L\'iscrizione è gratuita e la annulli quando vuoi.' })}
               </p>
+              {/* NL-bis — l'indirizzo su cui stiamo guardando */}
+              <p className="mt-1 text-xs text-gray-400" data-testid="guides-address">
+                {t('landings:account.guidesAddress', { email: me.email, defaultValue: 'Stiamo guardando l’indirizzo {{email}}.' })}
+              </p>
               <Link to="/newsletter"
                 className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
                 {t('landings:account.guidesCta', { defaultValue: 'Iscriviti alla lettera' })}
