@@ -57,6 +57,10 @@ export default function InlineSignupForm() {
       }
       navigate('/benvenuto');
     } catch (err) {
+      if (err.response?.status === 429) {
+        setError(t('signup.too_fast', { defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.' }));
+        return;
+      }
       if (err.response?.status === 202
           || err.response?.data?.status === 'verification_required') {
         setVerificationRequired(true);
@@ -111,7 +115,7 @@ export default function InlineSignupForm() {
         <input type="password" required value={password} autoComplete="new-password"
           onChange={(e) => setPassword(e.target.value)} className={FIELD_CLS} />
         <p className="mt-1 text-[11px] text-gray-400">
-          {t('validation.password_hint', { defaultValue: 'Almeno 12 caratteri, con maiuscole, minuscole e un numero.' })}
+          {t('validation.password_hint2', { defaultValue: 'Almeno 12 caratteri, con maiuscole, minuscole e un numero. Le password comparse in fughe di dati pubbliche vengono rifiutate.' })}
         </p>
       </div>
 

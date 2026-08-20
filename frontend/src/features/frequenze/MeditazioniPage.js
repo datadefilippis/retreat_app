@@ -266,7 +266,7 @@ export default function MeditazioniPage() {
               e Passaporto.</p>
             <div className="gatefoot" style={{ gap: 8 }}>
               <button type="button" className="primary"
-                onClick={() => { window.location.href = '/accedi?next=/meditazioni'; }}>
+                onClick={() => { window.location.href = `/accedi?vista=crea&next=/meditazioni${email ? `&email=${encodeURIComponent(email)}` : ''}`; }}>
                 Crea il tuo account
               </button>
               <button type="button" onClick={() => setHeartAsk(false)}>Non ora</button>

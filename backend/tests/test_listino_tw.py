@@ -1970,9 +1970,11 @@ class TestAccountAp1b:
         login = (FRONTEND_SRC / "features" / "account"
                  / "AccountLoginPage.js").read_text()
         # ID (20/8) — il login password parla con la porta unica; il
-        # recupero e' unificato (/auth/recupero copre entrambi i mondi)
+        # recupero e' unificato (/auth/recupero copre entrambi i mondi).
+        # NL1 (20/8) — la REGISTRAZIONE non usa piu' /platform/auth/signup:
+        # l'account nasce senza password dal magic link (find-or-create).
         assert "'/auth/entra'" in login
-        assert "'/platform/auth/signup'" in login
+        assert "'/platform/auth/magic-link'" in login
         assert "'/auth/recupero'" in login
         assert 'data-testid="login-no-password"' in login
         assert 'data-testid="login-forgot"' in login
@@ -5527,14 +5529,15 @@ class TestLoginRegia:
 
     def test_lr1_form_utente_intoccati(self):
         # ID — il form password parla con la porta unica; le strade
-        # senza password e il signup restano sui flussi di piattaforma
+        # senza password restano sui flussi di piattaforma.
+        # NL1 — la registrazione e' anch'essa senza password (magic link).
         src = self.ACCOUNT_LOGIN.read_text()
         for marker in ('data-testid="password-login-form"',
                        "'/auth/entra'",
                        "'/platform/auth/magic-link'",
                        "'/platform/auth/code/verify'",
                        "'/auth/recupero'",
-                       "'/platform/auth/signup'"):
+                       'data-testid="signup-form"'):
             assert marker in src, f"flusso auth utente sparito: {marker}"
 
     def test_lr1_form_operatori_intoccato(self):

@@ -73,7 +73,9 @@ export default function AccountLoginPage() {
   // sent (codice OTP) | reset | resetSent | signup | signupSent
   const [state, setState] = useState(
     token ? 'verifying' : params.get('vista') === 'crea' ? 'signup' : 'form');
-  const [email, setEmail] = useState('');
+  // NL2 — dal ponte «iscritto alla Lettera → crea l'account» l'email
+  // arriva gia' scritta: un campo in meno da ridigitare
+  const [email, setEmail] = useState(params.get('email') || '');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [sending, setSending] = useState(false);
@@ -222,28 +224,33 @@ export default function AccountLoginPage() {
   };
 
   // AP1b — creazione account Aurya (nome, email, password)
+  // NL1 (20/8) — l'account nasce SENZA password: nome, email, consensi.
+  // Passa dal magic link (find-or-create + verifica in un gesto solo):
+  // la password non e' piu' un muro all'ingresso, si imposta dopo da
+  // /account per chi la vuole. Il muro era il vero bug del funnel.
+  const [wantsLetter, setWantsLetter] = useState(false);   // NL2, mai preselezionata
   const submitSignup = async (e) => {
     e.preventDefault();
     setSending(true); setError(null);
     try {
-      await platformApi.post('/platform/auth/signup', {
+      await platformApi.post('/platform/auth/magic-link', {
         name: name.trim() || undefined,
         email: email.trim(),
-        password,
         language: emailLang(),
         // AP-L — la checkbox e' required nel form: qui arriva sempre true
         accepted_terms: !!signupConsent,
+        wants_newsletter: !!wantsLetter,
       });
       setState('signupSent');
     } catch (err) {
       const status = err?.response?.status;
       const detail = err?.response?.data?.detail;
-      if (status === 409) {
-        setError(t('landings:account.signupExists', {
-          defaultValue: 'Questa email ha già un account Aurya. Accedi oppure usa Password dimenticata.',
+      if (status === 429) {
+        // NL3 — il rate limit dice cosa fare, non «errore»
+        setError(t('landings:account.tooFast', {
+          defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.',
         }));
       } else if (status === 400 && detail) {
-        // policy password: il backend spiega cosa manca
         setError(String(detail));
       } else {
         setError(t('landings:account.requestError', {
@@ -455,15 +462,19 @@ export default function AccountLoginPage() {
                 placeholder={t('landings:account.emailPlaceholder', { defaultValue: 'La tua email' })}
                 className={inputCls}
               />
-              <input
-                type="password" required value={password} autoComplete="new-password"
-                onChange={e => setPassword(e.target.value)}
-                placeholder={t('landings:account.passwordPlaceholder', { defaultValue: 'La tua password' })}
-                className={inputCls}
-              />
-              <p className="text-[11px] text-gray-400 text-left">
-                {t('landings:account.passwordHint', { defaultValue: 'Almeno 12 caratteri, con maiuscole, minuscole e numeri.' })}
-              </p>
+              {/* NL2 — la Lettera e' un consenso A PARTE: si puo'
+                  chiedere qui, ma non e' mai preselezionata (GDPR) */}
+              <label className="flex items-start gap-2 text-left cursor-pointer select-none">
+                <input
+                  type="checkbox" checked={wantsLetter}
+                  onChange={e => setWantsLetter(e.target.checked)}
+                  className="mt-0.5 shrink-0 h-4 w-4 rounded border-gray-300"
+                  data-testid="signup-letter"
+                />
+                <span className="text-xs text-gray-600">
+                  {t('landings:account.signupLetter', { defaultValue: 'Iscrivimi anche alla Lettera di Aurya (guide e racconti, quando escono)' })}
+                </span>
+              </label>
               {/* AP-L — riga consenso: link ai documenti Aurya, spunta
                   obbligatoria (required + gate backend 400) */}
               <label className="flex items-start gap-2 text-left cursor-pointer select-none">
@@ -505,7 +516,7 @@ export default function AccountLoginPage() {
               {t('landings:account.signupSentTitle', { defaultValue: 'Controlla la tua email' })}
             </h1>
             <p className="mt-2 text-sm text-gray-600" data-testid="signup-sent-body">
-              {t('landings:account.signupSentBody', { defaultValue: 'Ti abbiamo inviato un link per confermare la tua email. Dopo la conferma potrai accedere con la tua password.' })}
+              {t('landings:account.signupSentBody2', { defaultValue: 'Ti abbiamo inviato un link (e un codice) per entrare: il tuo account è pronto. Nessuna password da inventare — se la vorrai, la imposterai dal tuo account.' })}
             </p>
             <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
               {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}

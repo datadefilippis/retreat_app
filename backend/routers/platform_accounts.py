@@ -41,6 +41,12 @@ class MagicLinkRequest(BaseModel):
     # il service usa la lingua gia' salvata sull'account (fallback it).
     # Quando presente e valida aggiorna la preferenza dell'account.
     language: Optional[str] = Field(None, max_length=5)
+    # NL1 (20/8) — la registrazione leggera passa da qui: col consenso
+    # l'account nasce senza password; senza consenso l'endpoint e'
+    # find-only (nessun account senza timbro legale, AP-L).
+    accepted_terms: bool = False
+    # NL2 — consenso marketing SEPARATO, mai preselezionato lato UI
+    wants_newsletter: bool = False
 
 
 class MagicLinkVerify(BaseModel):
@@ -60,13 +66,43 @@ async def request_magic_link(body: MagicLinkRequest, request: Request):
     non esista o sia malformata: nessuna enumerazione possibile."""
     _flag_enabled()
     from services.platform_account_service import request_magic_link as _req
+    _req_ip = None
     try:
-        await _req(body.email, name=body.name, language=body.language)
+        from core.rate_limiting import get_real_ip
+        _req_ip = get_real_ip(request)
+    except Exception:
+        pass
+    try:
+        await _req(body.email, name=body.name, language=body.language,
+                   accepted_terms=body.accepted_terms, request_ip=_req_ip,
+                   user_agent=request.headers.get("user-agent") if request else None)
+        # NL2 — la Lettera e' un consenso a parte: si chiede insieme ma
+        # viaggia sul suo flusso (double opt-in immutato)
+        if body.accepted_terms and body.wants_newsletter:
+            await _subscribe_to_letter(request, body.email, body.name,
+                                       body.language)
     except Exception:
         # mai esporre errori interni su questo endpoint
         import logging
         logging.getLogger(__name__).exception("magic-link request fallita")
     return {"status": "accepted"}
+
+
+async def _subscribe_to_letter(request: Request, email: str, name,
+                               language) -> None:
+    """NL2 — iscrizione alla Lettera chiesta durante la creazione
+    dell'account. Riusa la ROUTE pubblica (double opt-in, consenso
+    marketing, sorgente tracciata): nessuna scorciatoia e nessuna
+    logica duplicata; un errore qui non fa mai fallire l'account."""
+    import logging
+    try:
+        from routers.subscribers import SubscribePayload, subscribe
+        await subscribe(request, SubscribePayload(
+            email=email, name=name, consent=True,
+            language=language or "it", source="account_signup"))
+    except Exception:
+        logging.getLogger(__name__).warning(
+            "NL2: iscrizione Lettera dal signup fallita", exc_info=True)
 
 
 @router.post("/auth/magic-link/verify")

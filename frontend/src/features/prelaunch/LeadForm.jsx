@@ -178,6 +178,20 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
               ? t('form.thanksOp', { defaultValue: 'Grazie per esserti presentato: ti scriviamo personalmente prima del lancio.' })
               : t('form.thanksTr', { defaultValue: 'Al lancio riceverai una selezione di ritiri pensata per te. A presto.' }))}
         </p>
+        {/* NL2 (20/8) — il ponte verso l'account, nel momento in cui
+            l'utente ha appena dato fiducia. Non un muro: un invito, con
+            l'email gia' compilata e senza password da inventare.
+            Solo lato utente: l'operatore ha il suo funnel. */}
+        {!isOperator && email && (
+          <p className="mt-4 text-xs text-muted-foreground" data-testid="lead-account-bridge">
+            {t('form.bridgeBody', { defaultValue: 'Vuoi ritrovare guide ed esperienze su ogni dispositivo?' })}{' '}
+            <a href={`/accedi?vista=crea&email=${encodeURIComponent(email)}`}
+              className="underline hover:no-underline" style={{ color: accent }}>
+              {t('form.bridgeCta', { defaultValue: 'Crea il tuo account Aurya' })}
+            </a>{' '}
+            {t('form.bridgeHint', { defaultValue: '(non serve una password)' })}
+          </p>
+        )}
         {/* RT4 — spazio per la consegna del lead magnet (o altro) */}
         {successExtra ? <div className="mt-4">{successExtra}</div> : null}
       </div>

@@ -251,7 +251,7 @@ export default function PublicFrequencyPage() {
             {gateMsg && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 8 }}>{gateMsg}</p>}
             <p style={{ fontSize: 12.5, color: 'var(--dim)', marginTop: 14 }}>
               Hai un account Aurya?{' '}
-              <a href={`/accedi?next=/frequenze/${slug}`}
+              <a href={`/accedi?vista=crea&next=/frequenze/${slug}${email ? `&email=${encodeURIComponent(email)}` : ''}`}
                 style={{ color: 'var(--water)' }}>Accedi</a>
               {' '}· oppure{' '}
               <button type="button" className="ghost" style={{ padding: 0, color: 'var(--dim)', textDecoration: 'underline' }}

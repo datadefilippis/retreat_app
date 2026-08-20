@@ -53,8 +53,21 @@ async def get_account(account_id: str) -> Optional[Dict[str, Any]]:
 
 
 async def request_magic_link(email: str, *, name: Optional[str] = None,
-                             language: Optional[str] = None) -> None:
-    """Find-or-create account + emette il magic link via email.
+                             language: Optional[str] = None,
+                             accepted_terms: bool = False,
+                             request_ip: Optional[str] = None,
+                             user_agent: Optional[str] = None) -> None:
+    """Emette il magic link via email. Crea l'account SOLO col consenso.
+
+    NL1 (20/8) — questa e' anche la registrazione leggera: l'account
+    Aurya nasce senza password (il modello e' magic-link-first fin dal
+    piano P1) quando arriva ``accepted_terms=True``, e in quel caso il
+    consenso viene timbrato come nel signup con password (AP-L).
+
+    Senza consenso il comportamento e' find-ONLY: se l'account non
+    esiste non lo si crea (prima nasceva senza timbro legale, e AP-L
+    dice che senza consenso l'account non si crea). L'endpoint risponde
+    202 comunque: chi chiede non scopre se l'email esiste.
 
     NON ritorna nulla e non solleva per email malformate/duplicate:
     l'endpoint risponde sempre 202 (enumeration-safe). Gli errori interni
@@ -80,13 +93,26 @@ async def request_magic_link(email: str, *, name: Optional[str] = None,
 
     account = await platform_accounts_collection.find_one({"email": email_n})
     if not account:
+        if not accepted_terms:
+            # find-only: nessun account nasce senza consenso (AP-L).
+            # Silenzio volontario, il router risponde 202 lo stesso.
+            logger.info("magic-link: nessun account per l'email richiesta "
+                        "e nessun consenso: non si crea nulla")
+            return
         doc = PlatformAccount(email=email_n, name=name,
                               language=lang_n or "it").model_dump()
         for f in ("created_at", "last_login_at", "sessions_invalidated_at"):
             if isinstance(doc.get(f), datetime):
                 doc[f] = _iso(doc[f])
+        # AP-L — stesso timbro del signup con password, fonte diversa
+        doc["aurya_legal"] = build_aurya_legal_stamp(
+            source="signup_passwordless", locale=lang_n)
         await platform_accounts_collection.insert_one(doc)
         account = doc
+        await record_aurya_consent_audit(
+            account_id=doc["id"], email=email_n,
+            source="platform_signup", locale=lang_n,
+            ip_address=request_ip, user_agent=user_agent)
     elif lang_n and account.get("language") != lang_n:
         await platform_accounts_collection.update_one(
             {"id": account["id"]}, {"$set": {"language": lang_n}},
@@ -125,7 +151,7 @@ def _send_magic_link_email(email: str, token: str, name: Optional[str],
     from services.email_service import send_email, _t, _wrap_template
 
     base = os.environ.get("PUBLIC_APP_URL", "http://localhost:3000")
-    link = f"{base}/account/accedi?token={token}"
+    link = f"{base}/accedi?token={token}"   # ID: porta unica
     greeting = (_t("greeting_name", locale, name=name) if name
                 else _t("greeting", locale) + ",")
     code_block = ""
@@ -828,7 +854,7 @@ def _send_claim_email(email: str, token: str, name: Optional[str],
     from services.email_service import send_email, _t, _wrap_template
 
     base = os.environ.get("PUBLIC_APP_URL", "http://localhost:3000")
-    link = f"{base}/account/accedi?token={token}"
+    link = f"{base}/accedi?token={token}"   # ID: porta unica
     greeting = (_t("greeting_name", locale, name=name) if name
                 else _t("greeting", locale) + ",")
     content = f"""

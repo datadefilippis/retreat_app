@@ -37,6 +37,10 @@ export default function AccountResetPasswordPage() {
       const detail = err?.response?.data?.detail || '';
       if (status === 400 && detail.startsWith('Link non valido')) {
         setState('invalid');
+      } else if (status === 429) {
+        setError(t('landings:account.tooFast', {
+          defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.',
+        }));
       } else if (status === 400 && detail) {
         // policy password: il backend spiega cosa manca
         setError(String(detail));
@@ -72,7 +76,7 @@ export default function AccountResetPasswordPage() {
                 autoFocus
               />
               <p className="text-[11px] text-gray-400 text-left">
-                {t('landings:account.passwordHint', { defaultValue: 'Almeno 12 caratteri, con maiuscole, minuscole e numeri.' })}
+                {t('landings:account.passwordHint2', { defaultValue: 'Almeno 12 caratteri, con maiuscole, minuscole e numeri. Evita password già usate altrove: quelle comparse in fughe di dati pubbliche vengono rifiutate.' })}
               </p>
               {error && <p className="text-xs text-red-600">{error}</p>}
               <button type="submit" disabled={sending || !password}
