@@ -236,20 +236,25 @@ class TestSuperficieIdBis:
         assert 'data-testid="signup-pro-hint"' not in src, \
             "e' tornato il secondo invito nella vista registrazione"
 
-    def test_invito_professionisti_ben_visibile(self):
-        """Non piu' una postilla grigia da 12px: un blocco con titolo,
-        spiegazione e bottone, presente in TUTTE le viste della porta."""
+    def test_split_in_alto_solo_in_registrazione(self):
+        """ID-septies (20/8, founder): sul LOGIN il rimando ai
+        professionisti non ha senso — la porta e' la stessa per tutti —
+        e in registrazione in fondo non lo vedeva nessuno: chi sbaglia
+        mondo se ne accorgeva dopo aver compilato. Ora sta prima del
+        form, compatto."""
         src = (FRONTEND_SRC / "features" / "account"
                / "AccountLoginPage.js").read_text()
-        box = src.split('data-testid="operator-rescue-link"')[1][:900]
-        assert "proBoxTitle" in box and "proBoxBody" in box \
-            and 'data-testid="pro-box-cta"' in box, \
-            "il blocco professionisti non ha titolo/corpo/bottone"
-        assert "text-xs text-gray-400" not in box.split("proBoxTitle")[0], \
-            "il blocco e' ancora una postilla sbiadita"
-        # il messaggio che evita il bivio: chi ha gia' lo spazio entra da QUI
-        assert "stessa email" in box, \
-            "il blocco non dice che l'accesso professionale e' questo stesso"
+        vista_login = src.split("{state === 'form' && (")[1].split("{state === 'otp'")[0]
+        assert "operator-rescue-link" not in vista_login, \
+            "il rimando professionisti e' tornato sul login"
+        vista_signup = src.split("{state === 'signup' && (")[1].split("{state === 'signupSent'")[0]
+        assert 'data-testid="operator-rescue-link"' in vista_signup, \
+            "lo split e' sparito dalla registrazione"
+        assert (vista_signup.index('data-testid="operator-rescue-link"')
+                < vista_signup.index('data-testid="signup-form"')), \
+            "lo split sta ancora sotto il form: l'operatore non lo vede"
+        assert src.count('data-testid="operator-rescue-link"') == 1, \
+            "l'invito professionisti e' di nuovo duplicato"
 
 
 class TestMenuCoerenteIdQuater:

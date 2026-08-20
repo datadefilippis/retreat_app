@@ -20,7 +20,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Mail, CheckCircle2, KeyRound, UserPlus } from 'lucide-react';
+import { Loader2, Mail, CheckCircle2, KeyRound, UserPlus, Briefcase } from 'lucide-react';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
@@ -516,6 +516,21 @@ export default function AccountLoginPage() {
             <p className="mt-1 text-sm text-gray-600">
               {t('landings:account.signupBody2', { defaultValue: 'L\u2019account personale, per chi partecipa: prenotazioni, esperienze salvate e guide. Gratuito.' })}
             </p>
+            {/* ID-septies (20/8) — lo split sta QUI, prima del form:
+                in fondo l'operatore non lo vedeva e compilava la
+                registrazione sbagliata. Sul login non c'e' affatto:
+                la' la porta e' la stessa per tutti. */}
+            <div className="mt-3 flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left"
+              data-testid="operator-rescue-link">
+              <Briefcase className="h-4 w-4 shrink-0 text-gray-500" aria-hidden />
+              <p className="text-xs leading-snug text-gray-600">
+                {t('landings:account.proSplit', { defaultValue: 'Sei un professionista del benessere?' })}{' '}
+                <Link to="/entra-nella-rete" data-testid="pro-box-cta"
+                  className="font-medium text-primary underline underline-offset-2 hover:no-underline">
+                  {t('landings:account.proSplitCta', { defaultValue: 'Apri il tuo spazio' })}
+                </Link>
+              </p>
+            </div>
             <form onSubmit={submitSignup} className="mt-4 space-y-3" data-testid="signup-form">
               <input
                 type="text" value={name} autoComplete="name"
@@ -622,25 +637,6 @@ export default function AccountLoginPage() {
           </Link>
         </p>
 
-        {/* ID-ter (20/8) — UN solo blocco professionisti, in tutte le
-            viste, visibile: prima erano due postille grigie (doppione
-            in registrazione). Dice le DUE cose che evitano di
-            perdersi: chi ha gia' lo spazio entra da QUI (porta unica),
-            chi non ce l'ha lo apre di la'. */}
-        <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-5 text-center"
-          data-testid="operator-rescue-link">
-          <p className="text-sm font-semibold text-gray-900">
-            {t('landings:account.proBoxTitle', { defaultValue: 'Sei un professionista del benessere?' })}
-          </p>
-          <p className="mt-1.5 text-xs leading-relaxed text-gray-600">
-            {t('landings:account.proBoxBody', { defaultValue: 'Se hai già uno spazio su Aurya, entri da qui: stessa email, stessa password. Se non ce l’hai ancora, puoi aprirlo adesso.' })}
-          </p>
-          <Link to="/entra-nella-rete"
-            data-testid="pro-box-cta"
-            className="mt-3 inline-block rounded-xl border border-primary px-5 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
-            {t('landings:account.proBoxCta', { defaultValue: 'Apri il tuo spazio' })}
-          </Link>
-        </div>
       </div>
     </div>
     </MarketplaceShell>
