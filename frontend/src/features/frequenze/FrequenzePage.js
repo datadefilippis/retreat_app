@@ -46,7 +46,11 @@ const LISTEN = {
   iso: '🔊 Anche in altoparlante', mono: '🔊 Anche in altoparlante',
   noise: '🔊 Anche in altoparlante', tone: '🔊 Anche in altoparlante',
 };
-const SOUND_CATS = ['Ambient', 'Droni', 'Campane', 'Natura', 'Ritmi', 'Voce'];
+/* Le stesse chiavi di SOUND_CATEGORIES lato server, nello stesso
+   ordine (guardia di parità nei test): il tab si traduce in categoria
+   con un semplice toLowerCase. */
+const SOUND_CATS = ['Ambient', 'Natura', 'Droni', 'Corpo', 'Campane',
+  'Ritmi', 'Voce', 'Transizioni'];
 
 /* Orientamento della biblioteca: una riga sotto le tab (che cosa sto
    guardando) e tre righe sopra le card (perché è diverso dagli altri).
@@ -55,6 +59,18 @@ const CAT_HINT = {
   'Bande cerebrali': "Ritmi dell'attività elettrica del cervello.",
   'Altre frequenze': 'Frequenze sonore, fenomeni fisici, accordature e tradizioni.',
   'Metodi': 'Tecniche per costruire e modulare uno stimolo sonoro.',
+};
+/* Una riga per tab anche nel mondo dei suoni: chi arriva capisce a
+   cosa serve quella famiglia senza aprire tutte le card. */
+const SOUND_HINT = {
+  Ambient: 'Atmosfere lunghe: il tappeto su cui appoggiare tutto il resto.',
+  Natura: 'Ambienti registrati: acqua, uccelli, vento, temporale.',
+  Droni: 'Toni tenuti, senza sviluppo. Il letto più semplice sotto una sessione.',
+  Corpo: 'Una serie sola, in ordine: dalla radice alla testa.',
+  Campane: 'Campane, ciotole e metalli: attacco netto e coda lunga.',
+  Ritmi: 'Il passo del corpo: respiro e battito, e le fasi del breathwork.',
+  Voce: 'Voce come materiale sonoro: vocali tenute e cori.',
+  Transizioni: 'Passaggi brevi per cambiare momento dentro la sessione.',
 };
 const CAT_INTRO = {
   'Bande cerebrali': {
@@ -1141,8 +1157,15 @@ export default function FrequenzePage() {
                     </div>
                   </div>
                 </div>
+                <div className="tabhint" data-testid="fq-sound-hint">
+                  {SOUND_HINT[soundCat]}
+                </div>
                 {(() => {
-                  const inCat = sounds.filter((s) => s.category === soundCat.toLowerCase());
+                  // ordine stabile e prevedibile: alfabetico con i numeri
+                  // letti come numeri, cosi' «1 · Radice» apre la serie
+                  const inCat = sounds
+                    .filter((s) => s.category === soundCat.toLowerCase())
+                    .sort((a, b) => a.title.localeCompare(b.title, 'it', { numeric: true }));
                   return (
                     <>
                       {inCat.length > 0 ? (

@@ -6,13 +6,19 @@ diritti). L'operatore le sceglie, non ne carica di sue (decisione
 founder 18/8). I byte vivono su disco in uploads/audio/, mai in Mongo.
 """
 
+# SL (20/8): l'ordine e' quello dei tab in Esplora → Suoni, dal letto
+# piu' comune al dettaglio piu' raro. `corpo` e' la serie dalla radice
+# alla testa; `transizioni` sono i passaggi brevi tra due momenti.
+# Il frontend tiene la stessa lista (guardia di parita' nei test).
 SOUND_CATEGORIES = {
     "ambient": "Ambient",
-    "droni": "Droni",
-    "campane": "Campane",
     "natura": "Natura",
+    "droni": "Droni",
+    "corpo": "Corpo",
+    "campane": "Campane",
     "ritmi": "Ritmi",
     "voce": "Voce",
+    "transizioni": "Transizioni",
 }
 
 ALLOWED_EXTENSIONS = {"mp3", "m4a", "ogg", "wav"}

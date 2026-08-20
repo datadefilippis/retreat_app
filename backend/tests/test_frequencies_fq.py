@@ -356,8 +356,11 @@ class TestLibreriaSuoniFq2:
             pytest.skip("backend non raggiungibile")
         assert r.status_code == 200
         data = r.json()
-        assert set(data["categories"]) == {"ambient", "droni", "campane",
-                                           "natura", "ritmi", "voce"}
+        from models.audio_asset import SOUND_CATEGORIES
+        # la lista puo' crescere (SL, 20/8: «corpo» e «transizioni»):
+        # cio' che deve restare vero e' che l'endpoint dica ESATTAMENTE
+        # le categorie del modello, etichette comprese
+        assert data["categories"] == SOUND_CATEGORIES
         for item in data["items"]:
             assert item["stream_url"].startswith("/uploads/audio/")
             assert "buffer" not in item and "data" not in item
@@ -1183,3 +1186,73 @@ class TestTaglioRegistrazioneFv6:
         css = (FQ_DIR / "frequenze.css").read_text()
         assert ".fqz .cb-opt{display:none}" in css, \
             "il tasto comparirebbe anche su schermo largo"
+
+
+class TestLibreriaSuoniSl:
+    """SL (20/8) — la libreria di basi della piattaforma: categorie in
+    parita' fra server e pagina, una riga di orientamento per ognuna,
+    ordine prevedibile nelle card e un manifest che non dichiara cio'
+    che l'audio non contiene."""
+
+    def _manifest(self):
+        import importlib
+        return importlib.import_module("scripts.seed_sound_library_sl")
+
+    def test_categorie_in_parita(self):
+        from models.audio_asset import SOUND_CATEGORIES
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        riga = src.split("const SOUND_CATS = ")[1].split(";")[0]
+        import re
+        cats = re.findall(r"'([^']+)'", riga)
+        assert [c.lower() for c in cats] == list(SOUND_CATEGORIES), (
+            "tab della pagina e categorie del server divergono: "
+            f"{cats} vs {list(SOUND_CATEGORIES)}")
+        assert cats == list(SOUND_CATEGORIES.values()), \
+            "le etichette dei tab non sono quelle dichiarate dal server"
+
+    def test_ogni_categoria_ha_la_sua_riga(self):
+        from models.audio_asset import SOUND_CATEGORIES
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        blocco = src.split("const SOUND_HINT = {")[1].split("};")[0]
+        for label in SOUND_CATEGORIES.values():
+            assert f"{label}:" in blocco, f"manca l'orientamento per {label}"
+        assert 'data-testid="fq-sound-hint"' in src, \
+            "la riga di orientamento non e' in pagina"
+
+    def test_card_in_ordine(self):
+        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        blocco = src.split("const inCat = sounds")[1][:400]
+        assert ".sort(" in blocco and "localeCompare" in blocco, \
+            "le basi non hanno un ordine dichiarato"
+        assert "numeric: true" in blocco, \
+            "senza ordinamento numerico la serie del corpo si sfalda (1, 2, 3...)"
+
+    def test_manifest_coerente(self):
+        from models.audio_asset import SOUND_CATEGORIES
+        mod = self._manifest()
+        titoli = [t for _, t, _, _ in mod.MANIFEST]
+        assert len(titoli) == len(set(titoli)), "due basi con lo stesso titolo"
+        for rel, titolo, cat, _ in mod.MANIFEST:
+            assert cat in SOUND_CATEGORIES, f"{titolo}: categoria {cat} inesistente"
+            assert titolo.strip() == titolo and titolo, f"titolo sporco: {titolo!r}"
+
+    def test_nessun_hertz_dichiarato_a_vuoto(self):
+        """L'analisi spettrale del 20/8 dice che i file chiamati
+        «741 Hz», «285 Hz», «174 Hz» hanno i picchi altrove (220, 52,
+        295 Hz). I titoli non riportano piu' quei numeri: un hertz nel
+        titolo e' una dichiarazione tecnica, e va difesa come tale."""
+        mod = self._manifest()
+        import re
+        for _, titolo, _, _ in mod.MANIFEST:
+            assert not re.search(r"\d+\s*Hz", titolo, re.I), (
+                f"«{titolo}» dichiara una frequenza: o e' verificata sul file, "
+                "o non sta nel titolo")
+
+    def test_licenze_mai_inventate(self):
+        """Il materiale senza licenza allegata si annota come tale:
+        meglio «da confermare» di un CC0 che nessuno ha verificato."""
+        mod = self._manifest()
+        assert "da confermare" in mod._aurya("x.wav")
+        dichiarate = [n for _, _, _, n in mod.MANIFEST if n]
+        assert all("CC0" in n for n in dichiarate), \
+            "una licenza dichiarata senza dire quale"
