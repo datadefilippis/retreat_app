@@ -398,6 +398,28 @@ export default function AccountPage() {
           )}
         </section>
 
+        {/* ID-quater (20/8) — chi NON e' (ancora) un professionista:
+            la via per diventarlo, dichiarata. Non e' un clic: aprire
+            uno spazio significa creare un'attivita', quindi si passa
+            dalla registrazione professionale — che, avendo la stessa
+            email verificata, al termine collega i due cappelli da sola. */}
+        {!me.operator_linked && (
+          <section className="mb-8" data-testid="account-become-pro">
+            <h2 className="text-sm font-semibold text-gray-900 mb-2">
+              {t('landings:account.becomeProTitle', { defaultValue: 'Sei un professionista del benessere?' })}
+            </h2>
+            <a href={`/entra-nella-rete?email=${encodeURIComponent(me.email || '')}`}
+              className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-5 hover:border-primary transition-colors">
+              <span className="text-sm text-gray-700">
+                {t('landings:account.becomeProBody', { defaultValue: 'Puoi aprire il tuo spazio con questa stessa email: i due profili resteranno collegati e ti basterà un accesso.' })}
+              </span>
+              <span className="text-sm font-medium text-primary whitespace-nowrap ml-4">
+                {t('landings:account.becomeProCta', { defaultValue: 'Apri il tuo spazio →' })}
+              </span>
+            </a>
+          </section>
+        )}
+
         {/* ID-bis (20/8) — il cappello professionista: chi e' anche
             operatore ritrova il gestionale da qui, senza cercarlo */}
         {me.operator_linked && (

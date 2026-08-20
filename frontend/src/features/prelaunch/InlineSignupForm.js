@@ -17,7 +17,7 @@
  * dalla pagina.
  */
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { validatePassword, extractApiError } from '../../pages/AuthPages';
@@ -33,7 +33,10 @@ export default function InlineSignupForm() {
 
   const [name, setName] = useState('');
   const [organizationName, setOrganizationName] = useState('');
-  const [email, setEmail] = useState('');
+  // ID-quater — dal ponte «diventa professionista» in /account l'email
+  // arriva gia' scritta: e' la STESSA che collegherà i due cappelli
+  const [params] = useSearchParams();
+  const [email, setEmail] = useState(params.get('email') || '');
   const [password, setPassword] = useState('');
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);

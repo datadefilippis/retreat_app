@@ -169,12 +169,23 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout 
   // Da sloggato c'e' UN solo «Accedi» (l'etichetta «Il tuo account
   // Aurya» sopra una porta di meta' account era la causa del bug);
   // «Area professionisti» sparisce perche' e' la stessa porta.
+  //
+  // ID-quater (20/8) — il menu guarda ENTRAMBI i cappelli: prima
+  // leggeva solo il token cliente, cosi' un OPERATORE loggato si
+  // vedeva offrire «Accedi / Crea il tuo account» (ed era gia'
+  // dentro) e non trovava «Esci». Chi e' dentro non deve mai
+  // leggere un invito a entrare.
+  const loggedIn = hasPlatformToken || hasOperatorToken;
   const userLinks = hasPlatformToken
     ? [{ to: '/account', label: t('marketplace.accountMenuMy', { defaultValue: 'Il mio account' }), testid: 'account-menu-my' }]
-    : [
-        { to: '/accedi', label: t('marketplace.signIn', { defaultValue: 'Accedi' }), testid: 'account-menu-signin' },
-        { to: '/accedi?vista=crea', label: t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }), testid: 'account-menu-signup' },
-      ];
+    : hasOperatorToken
+      // operatore senza cappello cliente: niente «Accedi» (e' dentro),
+      // ma la porta per averlo, quando gli servira' da cliente
+      ? [{ to: '/account', label: t('marketplace.accountMenuAddClient', { defaultValue: 'Usa Aurya come cliente' }), testid: 'account-menu-add-client' }]
+      : [
+          { to: '/accedi', label: t('marketplace.signIn', { defaultValue: 'Accedi' }), testid: 'account-menu-signin' },
+          { to: '/accedi?vista=crea', label: t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }), testid: 'account-menu-signup' },
+        ];
   // ID-bis (20/8) — chi e' GIA' dentro il gestionale non deve cercarlo:
   // se il token operatore c'e', la sezione professionisti apre da li'.
   const operatorLinks = hasOperatorToken
@@ -194,7 +205,7 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout 
       className="relative rounded-full border border-gray-300 h-8 w-8 flex items-center justify-center text-gray-700 hover:border-primary hover:text-primary transition-colors"
     >
       <CircleUserRound className="h-5 w-5" aria-hidden />
-      {hasPlatformToken && (
+      {loggedIn && (
         <span
           aria-hidden
           className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-white"
@@ -228,7 +239,7 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout 
                   </Link>
                 </li>
               ))}
-              {hasPlatformToken && (
+              {loggedIn && (
                 <li>
                   <button
                     type="button"
@@ -271,7 +282,7 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout 
             </Link>
           </DropdownMenuItem>
         ))}
-        {hasPlatformToken && (
+        {loggedIn && (
           <DropdownMenuItem onSelect={onLogout} className="cursor-pointer" data-testid="account-menu-logout">
             {logoutLabel}
           </DropdownMenuItem>
@@ -356,24 +367,33 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
       return false;
     }
   });
-  // ID-bis — anche il cappello operatore, per la voce «Il tuo gestionale»
-  const hasOperatorToken = (() => {
+  // ID-bis — anche il cappello operatore, per la voce «Il tuo
+  // gestionale». Stato (non semplice lettura): «Esci» deve spegnerlo
+  // senza aspettare un reload.
+  const [hasOperatorToken, setHasOperatorToken] = React.useState(() => {
     try { return Boolean(localStorage.getItem('token')); } catch { return false; }
-  })();
+  });
   const accountTo = hasPlatformToken ? '/account' : '/accedi';
 
   // LR1 — "Esci" dal menu dell'omino: rimuove il token piattaforma E il
   // subscriber token della newsletter (aurya_nl_token, salvato al login
   // AP2), spegne il pallino e riporta alla home: le pagine gated non
   // restano appese a una sessione morta.
+  // ID-quater — «Esci» esce DAVVERO: con la porta unica una persona ha
+  // una sessione sola (a volte con due cappelli), quindi si chiudono
+  // entrambi i token. Prima restava aperto il gestionale e il menu
+  // continuava a mostrare voci da loggato.
   const logoutPlatform = React.useCallback(() => {
     try {
       localStorage.removeItem(PLATFORM_TOKEN_KEY);
       localStorage.removeItem('aurya_nl_token');
+      localStorage.removeItem('token');
     } catch { /* private mode */ }
     setHasPlatformToken(false);
-    navigate('/');
-  }, [navigate]);
+    setHasOperatorToken(false);
+    // hard navigate: l'AuthContext del gestionale deve ripartire pulito
+    window.location.assign('/');
+  }, []);
 
   useEffect(() => {
     if (_destCache) return;

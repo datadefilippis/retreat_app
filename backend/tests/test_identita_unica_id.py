@@ -241,3 +241,54 @@ class TestSuperficieIdBis:
         # il messaggio che evita il bivio: chi ha gia' lo spazio entra da QUI
         assert "stessa email" in box, \
             "il blocco non dice che l'accesso professionale e' questo stesso"
+
+
+class TestMenuCoerenteIdQuater:
+    """ID-quater (20/8, feedback founder): chi e' dentro non deve mai
+    leggere un invito a entrare. Il menu leggeva SOLO il token cliente,
+    cosi' un operatore loggato si vedeva «Accedi / Crea il tuo account»
+    e non trovava «Esci»."""
+
+    SHELL = (FRONTEND_SRC / "features" / "storefront" / "components"
+             / "MarketplaceShell.jsx")
+
+    def test_niente_accedi_per_chi_e_dentro(self):
+        src = self.SHELL.read_text()
+        assert "const loggedIn = hasPlatformToken || hasOperatorToken" in src, \
+            "il menu guarda un cappello solo"
+        blocco = src.split("const userLinks =")[1].split("const operatorLinks")[0]
+        assert "hasOperatorToken" in blocco, \
+            "l'operatore loggato riceve ancora l'invito ad accedere"
+        assert "account-menu-add-client" in blocco, \
+            "all'operatore senza cappello cliente non viene offerto nulla"
+
+    def test_esci_c_e_sempre_quando_si_e_dentro(self):
+        src = self.SHELL.read_text()
+        assert src.count("{loggedIn && (") >= 2, \
+            "«Esci» (o il pallino) guarda ancora il solo token cliente"
+        assert "hasPlatformToken && (" not in src.split("const trigger")[1][:600], \
+            "il pallino di stato ignora il cappello operatore"
+
+    def test_esci_chiude_entrambi_i_cappelli(self):
+        """Con la porta unica la sessione e' una: «Esci» esce davvero."""
+        src = self.SHELL.read_text()
+        fn = src.split("const logoutPlatform")[1].split("}, [")[0]
+        assert "localStorage.removeItem('token')" in fn, \
+            "il gestionale resta aperto dopo «Esci»"
+        assert "setHasOperatorToken(false)" in fn
+        assert "window.location.assign('/')" in fn, \
+            "senza hard navigate l'AuthContext resta con la sessione morta"
+
+    def test_via_per_diventare_professionista(self):
+        """Chi ha creato per sbaglio l'account personale (o cambia
+        mestiere) deve trovare la strada: registrazione professionale
+        con la STESSA email, che al termine collega i cappelli."""
+        acc = (FRONTEND_SRC / "features" / "account" / "AccountPage.js").read_text()
+        assert 'data-testid="account-become-pro"' in acc, \
+            "da /account non si scopre come diventare professionista"
+        assert "/entra-nella-rete?email=" in acc, \
+            "la via non porta l'email che collega i due cappelli"
+        form = (FRONTEND_SRC / "features" / "prelaunch"
+                / "InlineSignupForm.js").read_text()
+        assert "params.get('email')" in form, \
+            "la registrazione professionale non raccoglie l'email dal ponte"
