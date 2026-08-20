@@ -1179,9 +1179,12 @@ export const VerifyEmailPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
+          {/* ID-octies (20/8) — dopo la verifica si va al secondo passo
+              (benvenuto), non al login nudo: era il motivo per cui
+              /benvenuto non lo vedeva nessuno. */}
           {status !== 'loading' && (
-            <Button onClick={() => navigate(`/login?lang=${i18n.language}`)} className="w-full">
-              {t('verify_email.go_to_login', 'Vai al Login')}
+            <Button onClick={() => navigate(`/accedi?next=%2Fbenvenuto&lang=${i18n.language}`)} className="w-full">
+              {t('verify_email.go_to_welcome', 'Entra in Aurya')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           )}

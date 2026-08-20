@@ -136,17 +136,26 @@ export default function AccountLoginPage() {
         { email: email.trim(), password });
       const worlds = res.data?.worlds || [];
       let operator = false;
+      let welcomePending = false;
       worlds.forEach((w) => {
         if (w.type === 'operator') {
           operator = true;
+          welcomePending = !!w.welcome_pending;
           localStorage.setItem('token', w.access_token);
         } else if (w.type === 'client') {
           saveSession(w);
         }
       });
       // operatore → il suo posto di lavoro; cliente → il suo account.
+      // ID-octies: al primo accesso l'operatore passa dal benvenuto
+      // (una volta sola: dopo compilato o saltato non torna piu'),
+      // anche se il ?next= si e' perso verificando su un altro
+      // dispositivo. Un ?next= esplicito ha comunque la precedenza.
+      const dove = operator
+        ? (welcomePending ? '/benvenuto' : '/dashboard')
+        : '/account';
       // Un hard navigate: l'AuthContext deve rileggere il token da zero.
-      window.location.assign(next || (operator ? '/dashboard' : '/account'));
+      window.location.assign(next || dove);
     } catch (err) {
       const status = err?.response?.status;
       const detail = err?.response?.data?.detail || '';

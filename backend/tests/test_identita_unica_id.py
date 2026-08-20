@@ -143,8 +143,10 @@ class TestSuperficieId4:
         assert "'/auth/entra'" in src, "il form non parla con la porta unica"
         assert "localStorage.setItem('token', w.access_token)" in src, \
             "il cappello operatore non viene salvato"
-        assert "next || (operator ? '/dashboard' : '/account')" in src, \
-            "l'operatore non atterra nel suo posto di lavoro"
+        assert "welcomePending ? '/benvenuto' : '/dashboard'" in src \
+            and "next || dove" in src, \
+            "l'operatore non atterra nel suo posto di lavoro (ID-octies: "\
+            "al primo accesso passa dal benvenuto)"
         assert "rawNext.startsWith('/') && !rawNext.startsWith('//')" in src, \
             "manca la guardia open-redirect su ?next="
 

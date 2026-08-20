@@ -72,12 +72,28 @@ def _client_world(account: dict) -> dict:
     }
 
 
-def _operator_world(token_response) -> dict:
+async def _welcome_pending(org_id) -> bool:
+    """ID-octies — il benvenuto (secondo passo) e' ancora da mostrare?
+    Vero finche' nessuno l'ha ne' compilato ne' saltato: cosi' il primo
+    accesso dopo la verifica ci porta UNA volta, e mai piu'."""
+    if not org_id:
+        return False
+    from database import organizations_collection
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "id": 1, "welcome_seen_at": 1})
+    # `is not None`, non `bool(org)`: con la proiezione un documento
+    # SENZA il campo torna {} — falsy — e il benvenuto non sarebbe mai
+    # apparso proprio a chi non l'ha ancora visto.
+    return org is not None and not org.get("welcome_seen_at")
+
+
+def _operator_world(token_response, welcome_pending: bool = False) -> dict:
     """Il cappello operatore, dal TokenResponse del servizio esistente."""
     return {
         "type": "operator",
         "access_token": token_response.access_token,
         "user": token_response.user.model_dump(mode="json"),
+        "welcome_pending": welcome_pending,
     }
 
 
@@ -117,6 +133,8 @@ async def _sso_operator_for_client(account: dict):
                  "name": user_doc.get("name", ""),
                  "role": user_doc["role"],
                  "organization_id": user_doc.get("organization_id")},
+        "welcome_pending": await _welcome_pending(
+            user_doc.get("organization_id")),
     }
 
 
@@ -147,7 +165,9 @@ async def entra(request: Request, body: EntraRequest):
     # ── primo tentativo: mondo operatore ────────────────────────────
     try:
         token_response = await auth_service.login(email, body.password)
-        worlds.append(_operator_world(token_response))
+        worlds.append(_operator_world(
+            token_response,
+            await _welcome_pending(token_response.user.organization_id)))
         sso = await _sso_client_for_operator(token_response.user.id)
         if sso:
             worlds.append({**sso, **await newsletter_status(email)})

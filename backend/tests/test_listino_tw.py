@@ -5581,8 +5581,10 @@ class TestLoginRegia:
         deve portare alla porta unica, mai alla homepage.
         """
         src = self.OPERATOR_LOGIN.read_text()
+        # ID-octies: l'etichetta della verifica non dice piu' «vai al
+        # login» ma «entra in Aurya», e porta al secondo passo
         for label in ("signup.login_link", "forgot_password.back_to_login",
-                      "verify_email.go_to_login"):
+                      "verify_email.go_to_welcome"):
             i = src.index(label)
             # il target sta nel tag/handler subito sopra l'etichetta
             before = src[max(0, i - 400):i]
@@ -5594,6 +5596,11 @@ class TestLoginRegia:
             assert target.startswith(('to="/accedi', 'navigate(`/accedi',
                                       'to="/login', 'navigate(`/login')), \
                 f"{label} porta a {target!r}: deve portare alla porta"
+            # ID-octies: dalla verifica si passa dalla porta ma si
+            # atterra sul benvenuto (?next=), non sul login nudo
+            if label == "verify_email.go_to_welcome":
+                assert "benvenuto" in before[target_at:target_at + 90], \
+                    "dopo la verifica non si va piu' al secondo passo"
 
 
 class TestHomeHp2:

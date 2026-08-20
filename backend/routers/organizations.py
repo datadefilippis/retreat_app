@@ -2242,6 +2242,28 @@ async def upload_profile_photo(
 # TW4: mondo snello = 3 passi (Presentati → Listino → Online); il
 # percorso a 5 passi resta per le org con legacy_commerce acceso (R1).
 
+# ── ID-octies (20/8) — il benvenuto post-verifica ────────────────────────
+# Il secondo passo (/benvenuto: citta', telefono, Instagram, discipline)
+# era irraggiungibile: il signup non rilascia piu' una sessione (serve
+# la verifica email), quindi nessuno ci arrivava. Ora il primo accesso
+# ci porta UNA volta sola, e questo timbro dice che e' gia' successo —
+# compilato o saltato non fa differenza: non si ripropone.
+
+
+@router.post("/current/welcome-seen")
+async def mark_welcome_seen(current_user: dict = Depends(get_current_user)):
+    """Timbra il benvenuto come visto (salvato o saltato). Idempotente."""
+    from database import organizations_collection
+    org_id = current_user.get("organization_id")
+    if not org_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Nessuna organizzazione.")
+    await organizations_collection.update_one(
+        {"id": org_id, "welcome_seen_at": {"$exists": False}},
+        {"$set": {"welcome_seen_at": datetime.now(timezone.utc).isoformat()}})
+    return {"ok": True}
+
+
 @router.get("/current/onboarding-status")
 async def onboarding_status(current_user: dict = Depends(require_admin)):
     from database import (
@@ -2324,6 +2346,9 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
         return {"steps": steps, "completed_count": completed,
                 "total": len(steps), "is_complete": completed == len(steps),
                 "steps_detail": {"profile": profile_detail},
+                # ID-octies — il benvenuto e' gia' passato? (serve alla
+                # pagina per non riproporsi a chi l'ha gia' saltato)
+                "welcome_seen": bool(org_doc.get("welcome_seen_at")),
                 "links": links,
                 "signals": {"stripe_connected": bool(conn),
                             "retreat_created": bool(any_occ),

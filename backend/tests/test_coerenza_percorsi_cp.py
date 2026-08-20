@@ -136,3 +136,45 @@ class TestVisibilitaProfiloCp5:
         assert "is_complete && visMissing.length" in src, \
             "la riga non compare a chi ha finito l'onboarding (il caso vero)"
         assert "/public-profile" in src, "la riga non porta dove si compila"
+
+
+class TestBenvenutoRaggiungibileIdOcties:
+    """ID-octies (20/8, founder) — il secondo passo esisteva ma NON lo
+    vedeva nessuno: il signup non rilascia piu' una sessione (serve la
+    verifica email), quindi /benvenuto era irraggiungibile. Ora: verifica
+    → benvenuto → (compilato o saltato) → dashboard, una volta sola."""
+
+    def test_dopo_la_verifica_si_va_al_benvenuto(self):
+        src = (FRONTEND_SRC / "pages" / "AuthPages.js").read_text()
+        assert "/accedi?next=%2Fbenvenuto" in src, \
+            "dopo la verifica si torna al login nudo: il benvenuto resta invisibile"
+
+    def test_il_primo_accesso_ci_porta_anche_senza_next(self):
+        """Chi verifica sul telefono e poi entra dal computer perde il
+        ?next=: il server dice se il benvenuto e' ancora da fare."""
+        be = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
+        assert "welcome_pending" in be
+        fn = be.split("async def _welcome_pending")[1].split("\ndef ")[0]
+        assert "org is not None" in fn, \
+            "con la proiezione un doc senza il campo torna {} (falsy): il "\
+            "benvenuto non apparirebbe proprio a chi non l'ha mai visto"
+        fe = (FRONTEND_SRC / "features" / "account" / "AccountLoginPage.js").read_text()
+        assert "welcomePending ? '/benvenuto' : '/dashboard'" in fe
+
+    def test_compilato_o_saltato_si_va_in_dashboard(self):
+        src = (FRONTEND_SRC / "features" / "prelaunch" / "WelcomeRetePage.js").read_text()
+        fn = src.split("const next =")[1][:400]
+        assert "welcome-seen" in fn, "il passaggio non viene timbrato"
+        assert "navigate('/dashboard'" in fn, \
+            "non si atterra sulla dashboard (dove vive l'accompagnamento)"
+        assert "'/inizia'" not in fn, "si va ancora alla vecchia destinazione"
+
+    def test_non_si_ripropone(self):
+        be = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        assert '"welcome_seen": bool(org_doc.get("welcome_seen_at"))' in be
+        endpoint = be.split("async def mark_welcome_seen")[1][:500]
+        assert '"welcome_seen_at": {"$exists": False}' in endpoint, \
+            "il timbro non e' idempotente: la data si sposterebbe a ogni giro"
+        fe = (FRONTEND_SRC / "features" / "prelaunch" / "WelcomeRetePage.js").read_text()
+        assert "r.data?.welcome_seen" in fe, \
+            "la pagina si ripropone a chi l'ha gia' vista"

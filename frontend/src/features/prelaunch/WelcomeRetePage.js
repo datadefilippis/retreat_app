@@ -35,6 +35,10 @@ export default function WelcomeRetePage() {
   // si parte vuoti, e i campi vuoti non vengono comunque inviati.
   useEffect(() => {
     let alive = true;
+    // gia' fatto (o saltato) in passato? si tira dritto al lavoro
+    api.get('/organizations/current/onboarding-status').then((r) => {
+      if (alive && r.data?.welcome_seen) navigate('/dashboard', { replace: true });
+    }).catch(() => { /* nel dubbio si mostra: e' saltabile */ });
     api.get('/organizations/current/public-profile').then((r) => {
       if (!alive) return;
       const pp = r.data || {};
@@ -53,7 +57,15 @@ export default function WelcomeRetePage() {
       : cur.length >= DISCIPLINES_MAX ? cur : [...cur, slug]
   ));
 
-  const next = () => navigate('/inizia');
+  // ID-octies (20/8, founder) — compilato o saltato, si atterra sulla
+  // DASHBOARD: li' vive l'accompagnamento a passi (il banner che porta
+  // a /inizia). E si timbra il passaggio, cosi' il benvenuto non
+  // ricompare a ogni accesso.
+  const next = async () => {
+    try { await api.post('/organizations/current/welcome-seen'); }
+    catch { /* il timbro non deve mai bloccare il percorso */ }
+    navigate('/dashboard', { replace: true });
+  };
 
   const save = async (e) => {
     e.preventDefault();
