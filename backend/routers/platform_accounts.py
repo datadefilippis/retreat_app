@@ -184,6 +184,9 @@ class PasswordSignup(BaseModel):
     # creazione account (checkbox nel form). Default False: i client
     # legacy ricevono un 400 onesto, non un errore di schema.
     accepted_terms: bool = False
+    # NL2 — consenso marketing SEPARATO (mai preselezionato lato UI):
+    # vale per entrambe le strade di registrazione, con e senza password
+    wants_newsletter: bool = False
 
 
 class VerifyEmailBody(BaseModel):
@@ -249,11 +252,17 @@ async def password_signup_ep(body: PasswordSignup, request: Request):
     _ua = request.headers.get("user-agent") if request else None
 
     try:
-        return await password_signup(name=body.name, email=body.email,
-                                     password=body.password,
-                                     language=body.language,
-                                     accepted_terms=True,
-                                     request_ip=_req_ip, user_agent=_ua)
+        out = await password_signup(name=body.name, email=body.email,
+                                    password=body.password,
+                                    language=body.language,
+                                    accepted_terms=True,
+                                    request_ip=_req_ip, user_agent=_ua)
+        # NL2 — la Lettera viaggia sul suo flusso (double opt-in), mai
+        # come effetto collaterale silenzioso della creazione account
+        if body.wants_newsletter:
+            await _subscribe_to_letter(request, body.email, body.name,
+                                       body.language)
+        return out
     except ValueError as e:
         msg = str(e)
         if msg == "EMAIL_EXISTS":

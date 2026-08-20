@@ -155,6 +155,49 @@ export default function AccountLoginPage() {
     }
   };
 
+  // NL1-bis — l'alternativa dichiarata: stesso nome/email/consensi, ma
+  // si entra dal link. Riusa il magic link (find-or-create col consenso
+  // timbrato) e NON tocca la strada con password.
+  const submitSignupNoPassword = async () => {
+    if (!signupConsent) {
+      setError(t('landings:account.needConsent', {
+        defaultValue: 'Per creare l’account devi accettare Termini e Privacy.',
+      }));
+      return;
+    }
+    if (!email.trim()) {
+      setError(t('landings:account.needEmail', {
+        defaultValue: 'Scrivi la tua email per ricevere il link di accesso.',
+      }));
+      return;
+    }
+    setSending(true); setError(null);
+    try {
+      await platformApi.post('/platform/auth/magic-link', {
+        name: name.trim() || undefined,
+        email: email.trim(),
+        language: emailLang(),
+        accepted_terms: true,
+        wants_newsletter: !!wantsLetter,
+      });
+      setState('signupSent');
+    } catch (err) {
+      setError(err?.response?.status === 429
+        ? t('landings:account.tooFast', { defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.' })
+        : t('landings:account.requestError', { defaultValue: 'Qualcosa non ha funzionato. Riprova tra un minuto.' }));
+    } finally { setSending(false); }
+  };
+
+  // NL3 — i requisiti si spuntano mentre si scrive: il rifiuto non
+  // arriva piu' a sorpresa dopo l'invio (era il muro del funnel).
+  const pwChecks = [
+    ['len', password.length >= 12, t('landings:account.pwLen', { defaultValue: 'almeno 12 caratteri' })],
+    ['low', /[a-z]/.test(password), t('landings:account.pwLow', { defaultValue: 'una minuscola' })],
+    ['up', /[A-Z]/.test(password), t('landings:account.pwUp', { defaultValue: 'una maiuscola' })],
+    ['num', /\d/.test(password), t('landings:account.pwNum', { defaultValue: 'un numero' })],
+  ];
+  const pwOk = pwChecks.every(([, ok]) => ok);
+
   // OTP a 6 cifre: la strada senza password (invariata)
   const [code, setCode] = useState('');
   const [verifyingCode, setVerifyingCode] = useState(false);
@@ -224,18 +267,20 @@ export default function AccountLoginPage() {
   };
 
   // AP1b — creazione account Aurya (nome, email, password)
-  // NL1 (20/8) — l'account nasce SENZA password: nome, email, consensi.
-  // Passa dal magic link (find-or-create + verifica in un gesto solo):
-  // la password non e' piu' un muro all'ingresso, si imposta dopo da
-  // /account per chi la vuole. Il muro era il vero bug del funnel.
+  // NL1-bis (20/8, decisione founder) — la password torna la strada
+  // PRINCIPALE della registrazione; «senza password» resta come
+  // alternativa esplicita. Perche' allora il funnel non si rompe come
+  // prima: i requisiti si spuntano MENTRE si scrive (pwChecks) invece
+  // di essere scoperti sbagliando sei volte.
   const [wantsLetter, setWantsLetter] = useState(false);   // NL2, mai preselezionata
   const submitSignup = async (e) => {
     e.preventDefault();
     setSending(true); setError(null);
     try {
-      await platformApi.post('/platform/auth/magic-link', {
+      await platformApi.post('/platform/auth/signup', {
         name: name.trim() || undefined,
         email: email.trim(),
+        password,
         language: emailLang(),
         // AP-L — la checkbox e' required nel form: qui arriva sempre true
         accepted_terms: !!signupConsent,
@@ -249,6 +294,10 @@ export default function AccountLoginPage() {
         // NL3 — il rate limit dice cosa fare, non «errore»
         setError(t('landings:account.tooFast', {
           defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.',
+        }));
+      } else if (status === 409) {
+        setError(t('landings:account.signupExists', {
+          defaultValue: 'Questa email ha già un account Aurya. Accedi oppure usa Password dimenticata.',
         }));
       } else if (status === 400 && detail) {
         setError(String(detail));
@@ -462,6 +511,25 @@ export default function AccountLoginPage() {
                 placeholder={t('landings:account.emailPlaceholder', { defaultValue: 'La tua email' })}
                 className={inputCls}
               />
+              <input
+                type="password" required value={password} autoComplete="new-password"
+                onChange={e => setPassword(e.target.value)}
+                placeholder={t('landings:account.passwordPlaceholder', { defaultValue: 'La tua password' })}
+                className={inputCls}
+                data-testid="signup-password"
+              />
+              {/* NL3 — i requisiti si accendono mentre scrivi: prima si
+                  scoprivano solo sbagliando (ed era il muro del funnel) */}
+              <ul className="text-left text-[11px] space-y-0.5" data-testid="pw-checklist">
+                {pwChecks.map(([k, ok, label]) => (
+                  <li key={k} className={ok ? 'text-primary' : 'text-gray-400'}>
+                    <span aria-hidden>{ok ? '✓' : '○'}</span> {label}
+                  </li>
+                ))}
+                <li className="text-gray-400 pt-0.5">
+                  {t('landings:account.pwBreach', { defaultValue: '○ non deve essere una password già comparsa in fughe di dati pubbliche' })}
+                </li>
+              </ul>
               {/* NL2 — la Lettera e' un consenso A PARTE: si puo'
                   chiedere qui, ma non e' mai preselezionata (GDPR) */}
               <label className="flex items-start gap-2 text-left cursor-pointer select-none">
@@ -497,12 +565,18 @@ export default function AccountLoginPage() {
                 </span>
               </label>
               {error && <p className="text-xs text-red-600">{error}</p>}
-              <button type="submit" disabled={sending} className={btnCls} data-testid="signup-submit">
+              <button type="submit" disabled={sending || !pwOk} className={btnCls} data-testid="signup-submit">
                 {sending
                   ? t('landings:account.sending', { defaultValue: 'Invio…' })
                   : t('landings:account.signupSubmit', { defaultValue: 'Crea account' })}
               </button>
             </form>
+            {/* NL1-bis — l'alternativa, dichiarata e secondaria */}
+            <button type="button" onClick={submitSignupNoPassword}
+              disabled={sending} className={`mt-3 ${linkBtnCls}`}
+              data-testid="signup-no-password">
+              {t('landings:account.signupNoPw', { defaultValue: 'Preferisci senza password? Ti mandiamo un link per entrare' })}
+            </button>
             <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
               {t('landings:account.haveAccount', { defaultValue: 'Ho già un account: accedi' })}
             </button>
@@ -516,7 +590,7 @@ export default function AccountLoginPage() {
               {t('landings:account.signupSentTitle', { defaultValue: 'Controlla la tua email' })}
             </h1>
             <p className="mt-2 text-sm text-gray-600" data-testid="signup-sent-body">
-              {t('landings:account.signupSentBody2', { defaultValue: 'Ti abbiamo inviato un link (e un codice) per entrare: il tuo account è pronto. Nessuna password da inventare — se la vorrai, la imposterai dal tuo account.' })}
+              {t('landings:account.signupSentBody3', { defaultValue: 'Ti abbiamo scritto: apri l’email e conferma il tuo indirizzo. Da lì entri nel tuo account.' })}
             </p>
             <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
               {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}
