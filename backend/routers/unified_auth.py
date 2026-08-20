@@ -250,6 +250,16 @@ async def request_client_hat(request: Request,
                             detail="Utente non trovato.")
     try:
         result = await ensure_client_hat_for_operator(user_doc)
+        # ID-quinquies (20/8) — il cappello si indossa SUBITO: la
+        # risposta porta anche il token cliente, cosi' chi ha chiesto
+        # «usa Aurya come cliente» entra senza un secondo accesso.
+        # Legittimo: chi chiede e' gia' autenticato, e il cappello e'
+        # suo (stessa email verificata).
+        from database import platform_accounts_collection
+        account = await platform_accounts_collection.find_one(
+            {"id": result["account_id"]}, {"_id": 0})
+        if account:
+            result = {**result, **_client_world(account)}
     except ValueError as e:
         msg = str(e)
         if msg == "OPERATOR_EMAIL_NOT_VERIFIED":

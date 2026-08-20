@@ -292,3 +292,40 @@ class TestMenuCoerenteIdQuater:
                 / "InlineSignupForm.js").read_text()
         assert "params.get('email')" in form, \
             "la registrazione professionale non raccoglie l'email dal ponte"
+
+
+class TestCappelloInUnGestoIdQuinquies:
+    """ID-quinquies (20/8, feedback founder): «Usa Aurya come cliente»
+    era un LINK a /account che, senza cappello cliente, rimbalzava al
+    login — dove le credenziali da operatore riportavano al gestionale.
+    Giro vizioso: sembrava servisse un secondo account."""
+
+    SHELL = (FRONTEND_SRC / "features" / "storefront" / "components"
+             / "MarketplaceShell.jsx")
+
+    def test_e_un_azione_non_un_link(self):
+        src = self.SHELL.read_text()
+        voce = src.split("account-menu-add-client")[0][-260:]
+        assert "action: 'addClientHat'" in voce, \
+            "la voce e' tornata un link (e il giro vizioso con lei)"
+        assert "'/auth/hats/client'" in src, \
+            "il menu non chiama l'endpoint che crea il cappello"
+
+    def test_il_cappello_si_indossa_subito(self):
+        """Il token cliente torna nella stessa risposta: niente secondo
+        accesso dopo aver chiesto il cappello."""
+        be = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
+        fn = be.split("async def request_client_hat")[1]
+        assert "_client_world(account)" in fn, \
+            "l'endpoint non rilascia il token cliente"
+        fe = self.SHELL.read_text().split("const addClientHat")[1].split("}, [t])")[0]
+        assert "PLATFORM_TOKEN_KEY, res.data.access_token" in fe, \
+            "il token non viene salvato: si finirebbe di nuovo al login"
+        assert "window.location.assign('/account')" in fe
+
+    def test_errore_detto_non_subito(self):
+        """409 (account cliente esistente mai verificato): si spiega,
+        non si lascia girare a vuoto."""
+        fe = self.SHELL.read_text().split("const addClientHat")[1].split("}, [t])")[0]
+        assert "err?.response?.data?.detail" in fe, \
+            "l'errore del backend non arriva mai all'utente"

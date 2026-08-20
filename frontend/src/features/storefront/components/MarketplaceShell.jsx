@@ -156,7 +156,7 @@ function useSmallScreen() {
 // SOLO navigazione e presentazione: i flussi di autenticazione (password,
 // OTP, magic link, login operatori) restano intoccati. Il pallino di
 // stato da loggato resta sull'icona; Esc e click fuori chiudono (Radix).
-function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout }) {
+function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout, onAddClientHat }) {
   const { t } = useTranslation('landings');
   const smallScreen = useSmallScreen();
   const [open, setOpen] = React.useState(false);
@@ -181,7 +181,7 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout 
     : hasOperatorToken
       // operatore senza cappello cliente: niente «Accedi» (e' dentro),
       // ma la porta per averlo, quando gli servira' da cliente
-      ? [{ to: '/account', label: t('marketplace.accountMenuAddClient', { defaultValue: 'Usa Aurya come cliente' }), testid: 'account-menu-add-client' }]
+      ? [{ action: 'addClientHat', label: t('marketplace.accountMenuAddClient', { defaultValue: 'Usa Aurya come cliente' }), testid: 'account-menu-add-client' }]
       : [
           { to: '/accedi', label: t('marketplace.signIn', { defaultValue: 'Accedi' }), testid: 'account-menu-signin' },
           { to: '/accedi?vista=crea', label: t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }), testid: 'account-menu-signup' },
@@ -234,9 +234,16 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout 
             <ul>
               {userLinks.map((l, i) => (
                 <li key={`${l.testid}-${i}`}>
-                  <Link to={l.to} onClick={close} className={itemCls} data-testid={l.testid}>
-                    {l.label}
-                  </Link>
+                  {l.action ? (
+                    <button type="button" className={itemCls} data-testid={l.testid}
+                      onClick={() => { close(); onAddClientHat(); }}>
+                      {l.label}
+                    </button>
+                  ) : (
+                    <Link to={l.to} onClick={close} className={itemCls} data-testid={l.testid}>
+                      {l.label}
+                    </Link>
+                  )}
                 </li>
               ))}
               {loggedIn && (
@@ -276,11 +283,18 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout 
       <DropdownMenuContent align="end" sideOffset={8} className="w-60" data-testid="account-menu-dropdown">
         <DropdownMenuLabel className={menuHeadingCls}>{userHeading}</DropdownMenuLabel>
         {userLinks.map((l, i) => (
-          <DropdownMenuItem key={`${l.testid}-${i}`} asChild>
-            <Link to={l.to} className="cursor-pointer" data-testid={l.testid}>
+          l.action ? (
+            <DropdownMenuItem key={`${l.testid}-${i}`} onSelect={onAddClientHat}
+              className="cursor-pointer" data-testid={l.testid}>
               {l.label}
-            </Link>
-          </DropdownMenuItem>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem key={`${l.testid}-${i}`} asChild>
+              <Link to={l.to} className="cursor-pointer" data-testid={l.testid}>
+                {l.label}
+              </Link>
+            </DropdownMenuItem>
+          )
         ))}
         {loggedIn && (
           <DropdownMenuItem onSelect={onLogout} className="cursor-pointer" data-testid="account-menu-logout">
@@ -379,6 +393,34 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   // subscriber token della newsletter (aurya_nl_token, salvato al login
   // AP2), spegne il pallino e riporta alla home: le pagine gated non
   // restano appese a una sessione morta.
+  // ID-quinquies (20/8) — «Usa Aurya come cliente»: UN gesto. Prima era
+  // un link a /account che, senza cappello cliente, rimbalzava al login
+  // — dove le credenziali da operatore riportavano al gestionale: un
+  // giro vizioso. Ora l'operatore autenticato indossa il cappello e il
+  // token cliente torna nella stessa risposta: niente secondo accesso,
+  // niente secondo account.
+  const addClientHat = React.useCallback(async () => {
+    let opToken = null;
+    try { opToken = localStorage.getItem('token'); } catch { /* private mode */ }
+    if (!opToken) { window.location.assign('/accedi'); return; }
+    try {
+      const res = await api.post('/auth/hats/client', {}, {
+        headers: { Authorization: `Bearer ${opToken}` },
+      });
+      if (res.data?.access_token) {
+        localStorage.setItem(PLATFORM_TOKEN_KEY, res.data.access_token);
+        setHasPlatformToken(true);
+      }
+      window.location.assign('/account');
+    } catch (err) {
+      // 409: esiste gia' un account cliente con quella email, mai
+      // verificato — glielo diciamo invece di lasciarlo girare a vuoto
+      const detail = err?.response?.data?.detail;
+      window.alert(typeof detail === 'string' ? detail
+        : t('marketplace.hatError', { defaultValue: 'Non siamo riusciti ad attivare il tuo profilo cliente. Riprova tra poco.' }));
+    }
+  }, [t]);
+
   // ID-quater — «Esci» esce DAVVERO: con la porta unica una persona ha
   // una sessione sola (a volte con due cappelli), quindi si chiudono
   // entrambi i token. Prima restava aperto il gestionale e il menu
@@ -517,6 +559,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                   hasPlatformToken={hasPlatformToken} hasOperatorToken={hasOperatorToken}
                   operatorTo={operatorTo}
                   onLogout={logoutPlatform}
+                  onAddClientHat={addClientHat}
                 />
                 {/* AN2 — hamburger mobile: ricerca e CTA organizzatori non
                     spariscono più sotto i breakpoint */}
