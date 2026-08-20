@@ -3352,7 +3352,7 @@ class TestPotaturaPs4:
                     'element={<Navigate to="/account" replace />}') in app, \
                 f"{p}: attesa redirect all'account Aurya"
         # strutturali del player corsi legacy: restano vive
-        assert 'path="/account/login" element={<CustomerLoginPage />}' in app
+        assert 'path="/account/login" element={<RedirectPreservingQuery to="/accedi" />}' in app
         assert "CustomerCoursePlayerPage" in app \
             and 'path="/account/courses/:enrollment_id"' in app
         assert 'path="/account/forgot-password"' in app \

@@ -156,7 +156,6 @@ import CustomerProtectedRoute from "./features/customer-portal/CustomerProtected
 // (login = target del gate CustomerProtectedRoute, recupero password e
 // verifica email = link nelle email gia' spedite). La signup legacy e'
 // rediretta: i nuovi utenti passano da /account/accedi (login Aurya).
-import CustomerLoginPage from "./features/customer-portal/auth/LoginPage";
 import CustomerForgotPasswordPage from "./features/customer-portal/auth/ForgotPasswordPage";
 import CustomerResetPasswordPage from "./features/customer-portal/auth/ResetPasswordPage";
 import CustomerVerifyEmailPage from "./features/customer-portal/auth/VerifyEmailPage";
@@ -683,7 +682,13 @@ function AppRoutes() {
           Tutto il resto del vecchio portale (signup, ordini, profilo)
           redirige alle rotte Aurya: la history acquisti vive in
           /account (platform account), il login unico e' /account/accedi. */}
-      <Route path="/account/login" element={<CustomerLoginPage />} />
+      {/* CP4 (20/8) — la porta dormiente si spegne. Il portale clienti
+          org-scoped non e' linkato da nessuna parte e in produzione
+          conta ZERO account e ZERO aule (verificato in sola lettura):
+          l'ingresso passa dalla porta unica, conservando ?next=.
+          Le pagine di verifica/reset restano vive per gli eventuali
+          link gia' spediti. */}
+      <Route path="/account/login" element={<RedirectPreservingQuery to="/accedi" />} />
       <Route path="/account/signup" element={<Navigate to="/accedi?vista=crea" replace />} />
       <Route path="/account/forgot-password" element={<CustomerForgotPasswordPage />} />
       <Route path="/account/reset-password" element={<CustomerResetPasswordPage />} />

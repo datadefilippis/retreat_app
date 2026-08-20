@@ -2276,6 +2276,17 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
             "percent": round(
                 sum(profile_checks.values()) / len(profile_checks) * 100),
             "missing": [k for k, v in profile_checks.items() if not v],
+            # CP5 (20/8) — i due campi che decidono se COMPARI nelle
+            # ricerche (citta' e discipline). Vivono a parte dai check
+            # di completezza per non spostare la barra dell'editor:
+            # servono alla striscia-guida, che senza di loro lasciava
+            # cadere per sempre chi aveva saltato /benvenuto.
+            "visibility_missing": [
+                k for k, v in {
+                    "city": bool(pp.get("city")),
+                    "disciplines": bool(pp.get("disciplines")),
+                }.items() if not v
+            ],
         }
 
         svc = await products_collection.find_one(

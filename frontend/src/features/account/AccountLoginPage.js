@@ -72,7 +72,9 @@ export default function AccountLoginPage() {
   // viste: verifying | expired | form (password, primaria) | otp |
   // sent (codice OTP) | reset | resetSent | signup | signupSent
   const [state, setState] = useState(
-    token ? 'verifying' : params.get('vista') === 'crea' ? 'signup' : 'form');
+    token ? 'verifying'
+      : params.get('vista') === 'crea' ? 'signup'
+        : params.get('vista') === 'recupero' ? 'reset' : 'form');
   // NL2 — dal ponte «iscritto alla Lettera → crea l'account» l'email
   // arriva gia' scritta: un campo in meno da ridigitare
   const [email, setEmail] = useState(params.get('email') || '');
@@ -88,7 +90,8 @@ export default function AccountLoginPage() {
   useEffect(() => {
     if (primoGiro.current) { primoGiro.current = false; return; }
     if (token) return;                       // magic link in corso: non toccare
-    setState(vista === 'crea' ? 'signup' : 'form');
+    setState(vista === 'crea' ? 'signup'
+      : vista === 'recupero' ? 'reset' : 'form');
     setError(null);
   }, [vista, token]);
   const [password, setPassword] = useState('');

@@ -232,6 +232,50 @@ async def recupero(request: Request, body: RecuperoRequest):
     return generic
 
 
+class LetterToggle(BaseModel):
+    subscribe: bool
+
+
+@router.get("/letter")
+async def letter_status(current_user: dict = Depends(get_current_user)):
+    """CP2 (20/8) — lo stato della Lettera per l'email dell'OPERATORE.
+
+    Prima l'operatore poteva iscriversi solo dalle pagine pubbliche e,
+    senza cappello cliente, non sapeva da nessuna parte se fosse
+    iscritto: la Lettera nel gestionale non esisteva.
+    """
+    from services.platform_account_service import newsletter_status
+    st = await newsletter_status(current_user.get("email") or "",
+                                 with_token=False)
+    return {"email": current_user.get("email"),
+            "state": st.get("newsletter_state", "none")}
+
+
+@router.post("/letter")
+@limiter.limit("10/hour")
+async def letter_toggle(request: Request, body: LetterToggle,
+                        current_user: dict = Depends(get_current_user)):
+    """Iscrive o disiscrive l'operatore dalla Lettera, riusando i flussi
+    pubblici (double opt-in e token di disiscrizione inclusi): nessuna
+    logica di marketing duplicata nel gestionale. Il token non viene
+    mai chiesto all'utente — ce l'abbiamo, e' la sua email verificata."""
+    email = (current_user.get("email") or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Email non disponibile.")
+    if body.subscribe:
+        from routers.subscribers import SubscribePayload, subscribe
+        await subscribe(request, SubscribePayload(
+            email=email, consent=True, language="it", source="gestionale"))
+        return {"state": "pending"}
+
+    from core.subscriber_token import generate_subscriber_token
+    from routers.subscribers import TokenPayload, unsubscribe
+    await unsubscribe(request, TokenPayload(
+        token=generate_subscriber_token(email)))
+    return {"state": "unsubscribed"}
+
+
 @router.post("/hats/client")
 @limiter.limit("10/hour")
 async def request_client_hat(request: Request,

@@ -18,6 +18,7 @@ import BillingSection from '../../components/BillingSection';
 import PaymentConnectionsCard from './PaymentConnectionsCard';
 import PaymentMethodsSection from './sections/PaymentMethodsSection';
 import SalesConditionsCard from './sections/SalesConditionsCard';
+import LetterCard from './sections/LetterCard';   // CP2
 import {
   Building,
   Save,
@@ -461,6 +462,9 @@ export const SettingsPage = () => {
             fondo — e' la prima cosa che un operatore cerca quando
             vende (founder 29/7: "non e' chiaro dove si configurano") */}
         {isAdmin ? <SalesConditionsCard /> : null}
+
+        {/* CP2 — la lettera di Aurya: stato e azione sulla SUA email */}
+        <LetterCard />
 
         <LanguageSelector />
 

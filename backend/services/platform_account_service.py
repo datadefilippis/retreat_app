@@ -312,15 +312,25 @@ async def newsletter_status(email: str, *,
 
     ``with_token=False`` (es. GET /platform/me) evita di firmare un JWT
     quando serve solo il booleano per il render.
+
+    CP1 (20/8) — accanto al booleano viaggia ``newsletter_state``:
+    ``none`` | ``pending`` | ``confirmed`` | ``unsubscribed``. Il
+    booleano resta com'era (vale solo per «confermato»: BN3, AP2 e il
+    login non cambiano di una virgola), ma ora la UI puo' dire a chi si
+    e' iscritto e non ha confermato che manca solo il clic nella posta —
+    prima spariva in un limbo e gli si riproponeva l'iscrizione.
     """
     from database import db
 
     email_n = _normalize_email(email)
-    out: Dict[str, Any] = {"newsletter_subscriber": False}
+    out: Dict[str, Any] = {"newsletter_subscriber": False,
+                           "newsletter_state": "none"}
     if not email_n:
         return out
     doc = await db.aurya_subscribers.find_one(
         {"email": email_n}, {"_id": 0, "status": 1})
+    if doc:
+        out["newsletter_state"] = doc.get("status") or "none"
     if doc and doc.get("status") == "confirmed":
         out["newsletter_subscriber"] = True
         if with_token:

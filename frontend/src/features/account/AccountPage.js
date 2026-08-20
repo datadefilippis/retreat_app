@@ -62,6 +62,8 @@ export default function AccountPage() {
   const [me, setMe] = useState(null);
   // ID-bis — in fase rete i ritiri non esistono ancora: il link
   // «Scopri i prossimi ritiri» mentirebbe (feedback founder 20/8)
+  const [resending, setResending] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
   const { sitePhase } = useSiteConfig();
   const isNetwork = sitePhase === 'network';
   const [orders, setOrders] = useState(null);
@@ -122,6 +124,20 @@ export default function AccountPage() {
   const logout = () => {
     localStorage.removeItem(PLATFORM_TOKEN_KEY);
     navigate('/');
+  };
+
+  // CP1 — «rimanda la conferma»: e' una nuova iscrizione con la stessa
+  // email, che il flusso pubblico traduce in un nuovo token + email.
+  const resendLetter = async () => {
+    if (!me?.email) return;
+    setResending(true);
+    try {
+      await platformApi.post('/public/newsletter/subscribe', {
+        email: me.email, consent: true, language: 'it', source: 'account_resend',
+      });
+      setResendSent(true);
+    } catch { /* silenzioso: resta il messaggio di prima */ }
+    finally { setResending(false); }
   };
 
   if (error) {
@@ -384,6 +400,24 @@ export default function AccountPage() {
                 ))}
               </div>
             )
+          ) : me.newsletter_state === 'pending' ? (
+            /* CP1 — chi si e' iscritto e non ha confermato NON deve
+               vedersi riproporre l'iscrizione come se non avesse fatto
+               nulla: manca solo un clic, e glielo diciamo. */
+            <div className="rounded-2xl border border-gray-200 bg-white p-5" data-testid="guides-pending">
+              <p className="text-sm text-gray-600">
+                {t('landings:account.guidesPending', { defaultValue: 'Manca solo la conferma: ti abbiamo scritto per confermare l\u2019iscrizione alla lettera. Apri l\u2019email e clicca il link \u2014 le guide si sbloccano subito dopo.' })}
+              </p>
+              <button type="button" onClick={resendLetter} disabled={resending || resendSent}
+                data-testid="guides-resend"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline disabled:opacity-60">
+                {resendSent
+                  ? t('landings:account.guidesResent', { defaultValue: 'Email rimandata \u2713' })
+                  : resending
+                    ? t('landings:account.guidesResending', { defaultValue: 'Invio\u2026' })
+                    : t('landings:account.guidesResend', { defaultValue: 'Rimanda l\u2019email di conferma' })}
+              </button>
+            </div>
           ) : (
             <div className="rounded-2xl border border-gray-200 bg-white p-5">
               <p className="text-sm text-gray-600">

@@ -275,11 +275,25 @@ export function CheckoutSuccessPage() {
           };
           return (
             <div className="mt-6 space-y-2">
+              {/* CP3 (20/8) — l'account Aurya e' GIA' nato con questo
+                  acquisto (serve al Passaporto): dirlo, invece di
+                  lasciarlo scoprire a chi prova ad accedere con una
+                  password che non ha mai scelto. */}
+              <p className="text-sm text-gray-600" data-testid="checkout-account-ready">
+                {t('storefront:checkoutResult.accountReady', { defaultValue: 'Il tuo account Aurya è già pronto: ci trovi biglietti e ricevute di tutti i tuoi acquisti. Non serve una password — ti mandiamo un link per entrare.' })}
+              </p>
               <button type="button" onClick={activate}
                 className="block w-full rounded-full bg-primary text-white px-5 py-2.5 text-sm font-bold hover:opacity-90">
                 <img src="/logo-aurya-128.png" alt="" aria-hidden className="inline h-5 w-5 mr-1 -mt-0.5 select-none" draggable={false} />
-                {t('storefront:checkoutResult.activatePassport', { defaultValue: 'Attiva il tuo account Aurya: tutti i tuoi acquisti in un posto solo' })}
+                {t('storefront:checkoutResult.activatePassport2', { defaultValue: 'Entra nel tuo account Aurya' })}
               </button>
+              {mktpEmail && (
+                <a href={`/accedi?vista=recupero&email=${encodeURIComponent(mktpEmail)}`}
+                  data-testid="checkout-set-password"
+                  className="block w-full text-center text-xs text-gray-500 underline hover:text-gray-700">
+                  {t('storefront:checkoutResult.setPassword', { defaultValue: 'Preferisci una password? Impostala tu' })}
+                </a>
+              )}
               {/* PS6.6 — il ritorno dice il vero: se il viaggio e'
                   partito da un ritiro/directory (mktp_return) si torna
                   LI'; altrimenti label neutra verso la home (in fase

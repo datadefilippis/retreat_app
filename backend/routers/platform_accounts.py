@@ -376,6 +376,9 @@ async def get_me(account: dict = Depends(get_current_platform_account)):
     from services.platform_account_service import newsletter_status
     nl = await newsletter_status(account.get("email") or "", with_token=False)
     out["newsletter_subscriber"] = nl["newsletter_subscriber"]
+    # CP1 — none | pending | confirmed | unsubscribed: il pending
+    # smette di essere invisibile
+    out["newsletter_state"] = nl.get("newsletter_state", "none")
     # ID-bis (20/8) — /account mostra il cappello professionista se il
     # legame c'e': solo un booleano, mai dati dell'altro mondo.
     out["operator_linked"] = bool(account.get("operator_user_id"))

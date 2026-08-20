@@ -93,7 +93,11 @@ class TestLegameCappelliId3:
         assert 'raise ValueError("CLIENT_ACCOUNT_UNVERIFIED")' in fn
         router = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
         assert "ensure_client_hat_for_operator" in router
-        assert router.count("Depends(get_current_user)") == 1
+        # il provisioning vive DIETRO autenticazione (non conta quante
+        # altre rotte autenticate ci siano: CP2 ne ha aggiunte due)
+        endpoint = router.split('@router.post("/hats/client")')[1][:400]
+        assert "Depends(get_current_user)" in endpoint, \
+            "il cappello si potrebbe chiedere senza essere autenticati"
 
     def test_verifiche_email_agganciano_il_legame(self):
         """Tutte le strade in cui un'email diventa verificata chiamano
@@ -126,8 +130,13 @@ class TestSuperficieId4:
         con se' ?next= e ?token= (i magic link vecchi funzionano)."""
         app = (FRONTEND_SRC / "App.js").read_text()
         assert '<Route path="/accedi" element={<AccountLoginPage />} />' in app
-        assert app.count('<RedirectPreservingQuery to="/accedi" />') == 2, \
-            "un alias e' morto o non conserva la query"
+        # ogni porta storica redirige alla porta unica conservando la
+        # query (CP4 ne ha aggiunta una terza: /account/login)
+        for alias in ('/login', '/account/accedi', '/account/login'):
+            riga = [l for l in app.splitlines()
+                    if f'path="{alias}"' in l]
+            assert riga and 'RedirectPreservingQuery to="/accedi"' in riga[0], \
+                f"{alias}: alias morto o senza conservazione della query"
 
     def test_porta_unica_nel_form(self):
         src = (FRONTEND_SRC / "features" / "account" / "AccountLoginPage.js").read_text()
@@ -342,8 +351,10 @@ class TestVistaSegueLaQueryIdSexies:
                / "AccountLoginPage.js").read_text()
         assert "const vista = params.get('vista')" in src
         blocco = src.split("const primoGiro")[1][:600]
-        assert "setState(vista === 'crea' ? 'signup' : 'form')" in blocco, \
+        assert "setState(vista === 'crea' ? 'signup'" in blocco, \
             "la vista non segue piu' la query: il menu tornera' a mentire"
+        assert "'recupero' ? 'reset'" in blocco, \
+            "CP3: ?vista=recupero non apre piu' la vista password"
         assert "if (token) return;" in blocco, \
             "il magic link in corso verrebbe interrotto dall'effetto"
         assert "primoGiro.current" in blocco, \

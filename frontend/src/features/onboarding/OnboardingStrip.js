@@ -18,7 +18,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Check, ArrowRight, Sparkles, ListChecks } from 'lucide-react';
+import { Check, ArrowRight, Sparkles, ListChecks, MapPin } from 'lucide-react';
 import api from '../../api/client';
 
 export default function OnboardingStrip({ step, refreshKey = 0, className = '' }) {
@@ -33,8 +33,32 @@ export default function OnboardingStrip({ step, refreshKey = 0, className = '' }
     return () => { mounted = false; };
   }, [refreshKey]);
 
+  const s = status?.steps || {};
+  // CP5 (20/8) — chi ha saltato /benvenuto non si vedeva piu' chiedere
+  // citta' e discipline: sono i due campi che decidono se compare nelle
+  // ricerche. Una riga sola, anche a onboarding finito, che sparisce da
+  // sola appena i campi ci sono (non e' un secondo onboarding).
+  const visMissing = status?.steps_detail?.profile?.visibility_missing || [];
+  if (status && status.is_complete && visMissing.length) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3 flex items-center gap-3"
+        data-testid="onboarding-visibility">
+        <MapPin className="h-4 w-4 shrink-0 text-amber-700" aria-hidden />
+        <p className="text-sm text-amber-900 flex-1">
+          {visMissing.includes('city') && visMissing.includes('disciplines')
+            ? t('onboarding.vis_both', { defaultValue: 'Aggiungi la tua città e di cosa ti occupi: senza, non compari nelle ricerche.' })
+            : visMissing.includes('city')
+              ? t('onboarding.vis_city', { defaultValue: 'Aggiungi la tua città: senza, non compari nelle ricerche per zona.' })
+              : t('onboarding.vis_disc', { defaultValue: 'Aggiungi di cosa ti occupi: senza, non compari nei filtri per pratica.' })}
+        </p>
+        <Link to="/public-profile"
+          className="text-sm font-medium text-amber-900 underline whitespace-nowrap">
+          {t('onboarding.vis_cta', { defaultValue: 'Completa il profilo' })}
+        </Link>
+      </div>
+    );
+  }
   if (!status || status.is_complete) return null;
-  const s = status.steps || {};
   if (!('online' in s)) return null; // solo mondo snello
 
   // CS4 — cosa manca per spuntare Presentati (stessi check dell'editor)
