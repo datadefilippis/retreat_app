@@ -156,7 +156,7 @@ function useSmallScreen() {
 // SOLO navigazione e presentazione: i flussi di autenticazione (password,
 // OTP, magic link, login operatori) restano intoccati. Il pallino di
 // stato da loggato resta sull'icona; Esc e click fuori chiudono (Radix).
-function AccountMenu({ hasPlatformToken, operatorTo, onLogout }) {
+function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout }) {
   const { t } = useTranslation('landings');
   const smallScreen = useSmallScreen();
   const [open, setOpen] = React.useState(false);
@@ -175,9 +175,13 @@ function AccountMenu({ hasPlatformToken, operatorTo, onLogout }) {
         { to: '/accedi', label: t('marketplace.signIn', { defaultValue: 'Accedi' }), testid: 'account-menu-signin' },
         { to: '/accedi?vista=crea', label: t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }), testid: 'account-menu-signup' },
       ];
-  const operatorLinks = [
-    { to: operatorTo, label: t('marketplace.accountMenuWork', { defaultValue: 'Lavora con Aurya' }), testid: 'account-menu-operator-join' },
-  ];
+  // ID-bis (20/8) — chi e' GIA' dentro il gestionale non deve cercarlo:
+  // se il token operatore c'e', la sezione professionisti apre da li'.
+  const operatorLinks = hasOperatorToken
+    ? [{ to: '/dashboard', label: t('marketplace.accountMenuGest', { defaultValue: 'Il tuo gestionale' }), testid: 'account-menu-gestionale' }]
+    : [
+        { to: operatorTo, label: t('marketplace.accountMenuWork', { defaultValue: 'Lavora con Aurya' }), testid: 'account-menu-operator-join' },
+      ];
 
   // PS4 — l'omino resta l'entry point universale (tutti i breakpoint,
   // tutte le fasi, network inclusa) e conserva il pallino di stato.
@@ -352,6 +356,10 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
       return false;
     }
   });
+  // ID-bis — anche il cappello operatore, per la voce «Il tuo gestionale»
+  const hasOperatorToken = (() => {
+    try { return Boolean(localStorage.getItem('token')); } catch { return false; }
+  })();
   const accountTo = hasPlatformToken ? '/account' : '/accedi';
 
   // LR1 — "Esci" dal menu dell'omino: rimuove il token piattaforma E il
@@ -486,7 +494,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     alla cieca. Pallino di stato da loggato invariato.
                     Il link testuale "Sei un operatore?" resta a fianco. */}
                 <AccountMenu
-                  hasPlatformToken={hasPlatformToken}
+                  hasPlatformToken={hasPlatformToken} hasOperatorToken={hasOperatorToken}
                   operatorTo={operatorTo}
                   onLogout={logoutPlatform}
                 />

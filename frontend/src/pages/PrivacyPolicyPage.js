@@ -72,7 +72,7 @@ const PrivacyPolicyPage = () => {
             </span>
           </Link>
           <Link
-            to="/signup"
+            to="/entra-nella-rete"
             className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
           >
             <ArrowLeft className="h-4 w-4" />

@@ -3343,7 +3343,7 @@ class TestPotaturaPs4:
         app = self.APP.read_text()
         # redirette alle rotte Aurya
         assert ('path="/account/signup" '
-                'element={<Navigate to="/account/accedi" replace />}') in app
+                'element={<Navigate to="/accedi?vista=crea" replace />}') in app
         for p in ("/account/orders", "/account/orders/:orderId",
                   "/account/profile"):
             assert (f'path="{p}" '
@@ -5457,7 +5457,7 @@ class TestLoginRegia:
         # ID — nel MENU dell'omino «Area professionisti» NON esiste
         # piu' (una voce doppia rifarebbe il bivio); nei footer resta
         # come destinazione, ma sulla porta unica
-        menu = src.split("const operatorLinks = [")[1].split("];")[0]
+        menu = src.split("const operatorLinks")[1].split("];")[0]
         assert "operatorLogin" not in menu, \
             "e' tornata la voce Area professionisti nel menu"
         assert 'to="/login"' not in src, \

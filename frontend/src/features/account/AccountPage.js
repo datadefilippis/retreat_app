@@ -19,6 +19,7 @@ import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import AccountFavorites from '../frequenze/AccountFavorites';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
+import { useSiteConfig } from '../../context/SiteConfigContext';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL || '';
 
@@ -59,6 +60,10 @@ export default function AccountPage() {
   const { t, i18n } = useTranslation('landings');
   const navigate = useNavigate();
   const [me, setMe] = useState(null);
+  // ID-bis — in fase rete i ritiri non esistono ancora: il link
+  // «Scopri i prossimi ritiri» mentirebbe (feedback founder 20/8)
+  const { sitePhase } = useSiteConfig();
+  const isNetwork = sitePhase === 'network';
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState(false);
   // AP2 — guide riservate (solo per iscritti confermati alla lettera)
@@ -79,7 +84,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     const headers = authHeaders();
-    if (!headers) { navigate('/account/accedi', { replace: true }); return; }
+    if (!headers) { navigate('/accedi', { replace: true }); return; }
     let mounted = true;
     Promise.all([
       platformApi.get('/platform/me', { headers }),
@@ -92,7 +97,7 @@ export default function AccountPage() {
       if (!mounted) return;
       if (err?.response?.status === 401) {
         localStorage.removeItem(PLATFORM_TOKEN_KEY);
-        navigate('/account/accedi', { replace: true });
+        navigate('/accedi', { replace: true });
       } else {
         setError(true);
       }
@@ -320,9 +325,11 @@ export default function AccountPage() {
               <p className="text-sm text-gray-600">
                 {t('landings:account.noUpcoming', { defaultValue: 'Nessun ritiro in programma.' })}
               </p>
-              <Link to="/" className="text-sm font-medium text-primary hover:underline">
-                {t('landings:account.browse', { defaultValue: 'Scopri i prossimi ritiri →' })}
-              </Link>
+              {!isNetwork && (
+                <Link to="/" className="text-sm font-medium text-primary hover:underline">
+                  {t('landings:account.browse', { defaultValue: 'Scopri i prossimi ritiri →' })}
+                </Link>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -390,6 +397,25 @@ export default function AccountPage() {
             </div>
           )}
         </section>
+
+        {/* ID-bis (20/8) — il cappello professionista: chi e' anche
+            operatore ritrova il gestionale da qui, senza cercarlo */}
+        {me.operator_linked && (
+          <section className="mb-8" data-testid="account-operator-hat">
+            <h2 className="text-sm font-semibold text-gray-900 mb-2">
+              {t('landings:account.proHatTitle', { defaultValue: 'Il tuo spazio professionale' })}
+            </h2>
+            <a href="/dashboard"
+              className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-5 hover:border-primary transition-colors">
+              <span className="text-sm text-gray-700">
+                {t('landings:account.proHatBody', { defaultValue: 'Questo indirizzo è anche un account da professionista.' })}
+              </span>
+              <span className="text-sm font-medium text-primary whitespace-nowrap ml-4">
+                {t('landings:account.proHatCta', { defaultValue: 'Vai al gestionale →' })}
+              </span>
+            </a>
+          </section>
+        )}
 
         {/* TA5 — Il tuo account: password, dati (GDPR), sessioni.
             Export e cancellazione esistevano solo come API: la promessa

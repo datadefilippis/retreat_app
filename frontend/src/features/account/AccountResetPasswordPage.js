@@ -95,7 +95,7 @@ export default function AccountResetPasswordPage() {
             <p className="mt-2 text-sm text-gray-600">
               {t('landings:account.newPasswordOkBody', { defaultValue: 'Ora puoi accedere al tuo account Aurya con la tua email e la nuova password.' })}
             </p>
-            <Link to="/account/accedi"
+            <Link to="/accedi"
               className="mt-4 block w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold">
               {t('landings:account.goToLogin', { defaultValue: 'Vai all\'accesso' })}
             </Link>
@@ -111,7 +111,7 @@ export default function AccountResetPasswordPage() {
             <p className="mt-2 text-sm text-gray-600">
               {t('landings:account.newPasswordFailBody', { defaultValue: 'Il link è scaduto o è già stato usato. Richiedine uno nuovo dalla pagina di accesso con Password dimenticata.' })}
             </p>
-            <Link to="/account/accedi"
+            <Link to="/accedi"
               className="mt-4 block w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold">
               {t('landings:account.goToLogin', { defaultValue: 'Vai all\'accesso' })}
             </Link>
@@ -120,7 +120,7 @@ export default function AccountResetPasswordPage() {
 
         <p className="mt-6 text-xs text-gray-400">
           <Link to="/" className="hover:underline">
-            {t('landings:account.backToRetreats', { defaultValue: '← Torna ai ritiri' })}
+            {t('landings:account.backToAurya2', { defaultValue: '← Torna su Aurya' })}
           </Link>
         </p>
       </div>

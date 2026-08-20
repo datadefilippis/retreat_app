@@ -1,5 +1,8 @@
 /**
- * AccountLoginPage — /account/accedi (P3 + AP1b).
+ * AccountLoginPage — /accedi, LA PORTA UNICA (P3 + AP1b + ID 20/8).
+ *
+ * /login e /account/accedi vivono come alias redirect: qui una email e
+ * una password valgono per QUALUNQUE cappello (operatore o cliente).
  *
  * AP1b: il login con EMAIL e PASSWORD e' il percorso primario. Sotto,
  * due strade secondarie: "Accedi senza password" (il flusso OTP/magic
@@ -437,7 +440,7 @@ export default function AccountLoginPage() {
               {t('landings:account.signupTitle', { defaultValue: 'Crea il tuo account Aurya' })}
             </h1>
             <p className="mt-1 text-sm text-gray-600">
-              {t('landings:account.signupBody', { defaultValue: 'Un solo account per tutte le tue prenotazioni e le guide.' })}
+              {t('landings:account.signupBody2', { defaultValue: 'L\u2019account personale, per chi partecipa: prenotazioni, esperienze salvate e guide. Gratuito.' })}
             </p>
             <form onSubmit={submitSignup} className="mt-4 space-y-3" data-testid="signup-form">
               <input
@@ -510,9 +513,17 @@ export default function AccountLoginPage() {
           </>
         )}
 
+        {state === 'signup' && (
+          <p className="mt-4 text-xs text-gray-500" data-testid="signup-pro-hint">
+            {t('landings:account.signupProHint', { defaultValue: 'Vuoi proporre le tue esperienze come professionista?' })}{' '}
+            <Link to="/entra-nella-rete" className="underline hover:text-gray-700">
+              {t('landings:account.signupProLink', { defaultValue: 'Apri il tuo spazio' })}
+            </Link>
+          </p>
+        )}
         <p className="mt-6 text-xs text-gray-400">
           <Link to="/" className="hover:underline">
-            {t('landings:account.backToRetreats', { defaultValue: '← Torna ai ritiri' })}
+            {t('landings:account.backToAurya2', { defaultValue: '← Torna su Aurya' })}
           </Link>
         </p>
 

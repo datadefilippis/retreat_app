@@ -55,7 +55,7 @@ export default function AccountVerifyEmailPage() {
             <p className="mt-2 text-sm text-gray-600">
               {t('landings:account.verifyOkBody', { defaultValue: 'Il tuo account Aurya è attivo. Ora puoi accedere con la tua password.' })}
             </p>
-            <Link to="/account/accedi"
+            <Link to="/accedi"
               className="mt-4 block w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold">
               {t('landings:account.goToLogin', { defaultValue: 'Vai all\'accesso' })}
             </Link>
@@ -71,7 +71,7 @@ export default function AccountVerifyEmailPage() {
             <p className="mt-2 text-sm text-gray-600">
               {t('landings:account.verifyFailBody', { defaultValue: 'Il link di conferma è scaduto o è già stato usato. Dalla pagina di accesso puoi usare Password dimenticata: il link che riceverai conferma anche la tua email.' })}
             </p>
-            <Link to="/account/accedi"
+            <Link to="/accedi"
               className="mt-4 block w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold">
               {t('landings:account.goToLogin', { defaultValue: 'Vai all\'accesso' })}
             </Link>
@@ -80,7 +80,7 @@ export default function AccountVerifyEmailPage() {
 
         <p className="mt-6 text-xs text-gray-400">
           <Link to="/" className="hover:underline">
-            {t('landings:account.backToRetreats', { defaultValue: '← Torna ai ritiri' })}
+            {t('landings:account.backToAurya2', { defaultValue: '← Torna su Aurya' })}
           </Link>
         </p>
       </div>

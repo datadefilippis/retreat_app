@@ -170,3 +170,56 @@ class TestSuperficieId4:
         shell = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "MarketplaceShell.jsx").read_text()
         assert 'to="/accedi"' in shell, "il footer non punta alla porta unica"
+
+
+class TestSuperficieIdBis:
+    """ID-bis (20/8, feedback founder dopo il primo giro): dal sito il
+    gestionale resta a un clic, /account mostra il cappello, i link
+    che mentono spariscono."""
+
+    def test_menu_gestionale_per_operatore_loggato(self):
+        src = (FRONTEND_SRC / "features" / "storefront" / "components"
+               / "MarketplaceShell.jsx").read_text()
+        assert "hasOperatorToken" in src, \
+            "il menu non sa del cappello operatore"
+        assert "'/dashboard'" in src and "account-menu-gestionale" in src, \
+            "manca «Il tuo gestionale» per chi e' gia' dentro"
+
+    def test_account_mostra_il_cappello_professionista(self):
+        be = (BACKEND_DIR / "routers" / "platform_accounts.py").read_text()
+        assert '"operator_linked"' in be, "/platform/me non espone il legame"
+        fe = (FRONTEND_SRC / "features" / "account" / "AccountPage.js").read_text()
+        assert "me.operator_linked" in fe \
+            and 'data-testid="account-operator-hat"' in fe, \
+            "/account non mostra il ponte verso il gestionale"
+
+    def test_niente_ritiri_promessi_in_fase_rete(self):
+        """«Scopri i prossimi ritiri» quando i ritiri non esistono e'
+        una promessa falsa: in fase rete il link sparisce."""
+        fe = (FRONTEND_SRC / "features" / "account" / "AccountPage.js").read_text()
+        assert "sitePhase === 'network'" in fe
+        assert "{!isNetwork && (" in fe, \
+            "il link ritiri non e' legato alla fase"
+
+    def test_torna_su_aurya_non_ai_ritiri(self):
+        for f in ("AccountLoginPage.js", "AccountVerifyEmailPage.js",
+                  "AccountResetPasswordPage.js"):
+            src = (FRONTEND_SRC / "features" / "account" / f).read_text()
+            assert "backToRetreats" not in src, \
+                f"{f}: promette ancora i ritiri (fase rete)"
+            assert "backToAurya2" in src
+
+    def test_signup_vecchio_porta_alla_landing(self):
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert ('path="/signup" element='
+                '{<Navigate to="/entra-nella-rete#presentati" replace />}') in app, \
+            "il vecchio /signup condiviso con gli operatori e' morto o va altrove"
+
+    def test_registrazione_omino_dichiara_il_suo_mondo(self):
+        """«Crea il tuo account» dall'omino crea l'account PERSONALE:
+        la vista lo dice, e offre la via professionale accanto."""
+        src = (FRONTEND_SRC / "features" / "account"
+               / "AccountLoginPage.js").read_text()
+        assert "signupBody2" in src and "per chi partecipa" in src
+        assert 'data-testid="signup-pro-hint"' in src \
+            and 'to="/entra-nella-rete"' in src

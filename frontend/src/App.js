@@ -15,7 +15,7 @@ import ModuleAccessPaywall from "./components/ModuleAccessPaywall";
 import QuotaExceededPaywall from "./components/QuotaExceededPaywall";
 
 // Pages
-import { SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from "./pages/AuthPages";
+import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from "./pages/AuthPages";
 // Onda 28 — blocking page for authenticated users who haven't verified
 // their email yet. Wrapped by RequireAuthOnly (defined in this file).
 const VerifyEmailRequiredPage = lazy(() => import("./features/auth/VerifyEmailRequiredPage"));
@@ -235,7 +235,7 @@ const RequireAuthOnly = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/accedi" replace />;
   }
 
   // Already verified (or system_admin) → no reason to stay on the
@@ -261,7 +261,7 @@ const SystemAdminRoute = ({ children }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/accedi" replace />;
   }
 
   if (user.role !== "system_admin") {
@@ -684,7 +684,7 @@ function AppRoutes() {
           redirige alle rotte Aurya: la history acquisti vive in
           /account (platform account), il login unico e' /account/accedi. */}
       <Route path="/account/login" element={<CustomerLoginPage />} />
-      <Route path="/account/signup" element={<Navigate to="/account/accedi" replace />} />
+      <Route path="/account/signup" element={<Navigate to="/accedi?vista=crea" replace />} />
       <Route path="/account/forgot-password" element={<CustomerForgotPasswordPage />} />
       <Route path="/account/reset-password" element={<CustomerResetPasswordPage />} />
       <Route path="/account/verify-email" element={<CustomerVerifyEmailPage />} />
@@ -703,14 +703,10 @@ function AppRoutes() {
         <Route path="/account/courses" element={<CustomerCoursesIndexPage />} />
         <Route path="/account/courses/:enrollment_id" element={<CustomerCoursePlayerPage />} />
       </Route>
-      <Route
-        path="/signup"
-        element={
-          <PublicRoute>
-            <SignupPage />
-          </PublicRoute>
-        }
-      />
+      {/* ID-bis (20/8) — il vecchio link di registrazione condiviso con
+          gli operatori porta alla registrazione NUOVA: la landing
+          professionisti con il form incorporato (RD-bis). */}
+      <Route path="/signup" element={<Navigate to="/entra-nella-rete#presentati" replace />} />
       <Route
         path="/forgot-password"
         element={
