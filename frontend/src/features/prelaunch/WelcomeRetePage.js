@@ -13,7 +13,7 @@
  * Da qui si prosegue su /inizia, che resta l'onboarding vero.
  */
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { BrandLogo } from '../../components/BrandLogo';
@@ -21,7 +21,14 @@ import { DISCIPLINE_FAMILIES, DISCIPLINES_MAX } from '../../lib/disciplines';
 
 export default function WelcomeRetePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation('landings');
+  // ID-nonies — la destinazione che l'accesso portava con se': la
+  // tappa del benvenuto la conserva e la riconsegna. Solo percorsi
+  // interni (mai '//': stessa regola di ogni next della porta).
+  const rawNext = searchParams.get('next') || '';
+  const dest = rawNext.startsWith('/') && !rawNext.startsWith('//')
+    ? rawNext : '/dashboard';
   const [city, setCity] = useState('');
   const [phone, setPhone] = useState('');
   const [instagram, setInstagram] = useState('');
@@ -37,7 +44,7 @@ export default function WelcomeRetePage() {
     let alive = true;
     // gia' fatto (o saltato) in passato? si tira dritto al lavoro
     api.get('/organizations/current/onboarding-status').then((r) => {
-      if (alive && r.data?.welcome_seen) navigate('/dashboard', { replace: true });
+      if (alive && r.data?.welcome_seen) navigate(dest, { replace: true });
     }).catch(() => { /* nel dubbio si mostra: e' saltabile */ });
     api.get('/organizations/current/public-profile').then((r) => {
       if (!alive) return;
@@ -64,7 +71,7 @@ export default function WelcomeRetePage() {
   const next = async () => {
     try { await api.post('/organizations/current/welcome-seen'); }
     catch { /* il timbro non deve mai bloccare il percorso */ }
-    navigate('/dashboard', { replace: true });
+    navigate(dest, { replace: true });
   };
 
   const save = async (e) => {

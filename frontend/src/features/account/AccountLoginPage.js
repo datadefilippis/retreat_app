@@ -156,14 +156,21 @@ export default function AccountLoginPage() {
       });
       // operatore → il suo posto di lavoro; cliente → il suo account.
       // ID-octies: al primo accesso l'operatore passa dal benvenuto
-      // (una volta sola: dopo compilato o saltato non torna piu'),
-      // anche se il ?next= si e' perso verificando su un altro
-      // dispositivo. Un ?next= esplicito ha comunque la precedenza.
-      const dove = operator
-        ? (welcomePending ? '/benvenuto' : '/dashboard')
-        : '/account';
+      // (una volta sola: dopo compilato o saltato non torna piu').
+      // ID-nonies (20/8, founder) — il benvenuto non si scavalca: prima
+      // un ?next= esplicito vinceva e lo saltava IN SILENZIO, senza
+      // timbro. Risultato: primo accesso in dashboard, secondo nel
+      // benvenuto — l'ordine inverso di quello promesso. Ora la tappa
+      // si fa comunque, ma la destinazione non si perde: viaggia come
+      // ?next= del benvenuto, che la riconsegna appena compilato o
+      // saltato.
       // Un hard navigate: l'AuthContext deve rileggere il token da zero.
-      window.location.assign(next || dove);
+      if (operator && welcomePending) {
+        window.location.assign(next
+          ? `/benvenuto?next=${encodeURIComponent(next)}` : '/benvenuto');
+      } else {
+        window.location.assign(next || (operator ? '/dashboard' : '/account'));
+      }
     } catch (err) {
       const status = err?.response?.status;
       const detail = err?.response?.data?.detail || '';

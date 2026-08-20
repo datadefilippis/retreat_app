@@ -159,15 +159,29 @@ class TestBenvenutoRaggiungibileIdOcties:
             "con la proiezione un doc senza il campo torna {} (falsy): il "\
             "benvenuto non apparirebbe proprio a chi non l'ha mai visto"
         fe = (FRONTEND_SRC / "features" / "account" / "AccountLoginPage.js").read_text()
-        assert "welcomePending ? '/benvenuto' : '/dashboard'" in fe
+        # ID-nonies: il benvenuto pendente si fa SEMPRE — un ?next=
+        # esplicito non lo scavalca piu' (lo faceva in silenzio, senza
+        # timbro, e il benvenuto ricompariva all'accesso successivo:
+        # dashboard prima, benvenuto poi — l'ordine inverso). La
+        # destinazione viaggia col benvenuto e viene riconsegnata.
+        assert "if (operator && welcomePending)" in fe
+        assert "/benvenuto?next=" in fe, \
+            "il benvenuto butta via la destinazione del next"
 
-    def test_compilato_o_saltato_si_va_in_dashboard(self):
+    def test_compilato_o_saltato_si_riconsegna_la_destinazione(self):
         src = (FRONTEND_SRC / "features" / "prelaunch" / "WelcomeRetePage.js").read_text()
         fn = src.split("const next =")[1][:400]
         assert "welcome-seen" in fn, "il passaggio non viene timbrato"
-        assert "navigate('/dashboard'" in fn, \
-            "non si atterra sulla dashboard (dove vive l'accompagnamento)"
+        # ID-nonies: si atterra sulla destinazione conservata (dest),
+        # che senza ?next= e' la dashboard
+        assert "navigate(dest" in fn, \
+            "il benvenuto non riconsegna la destinazione conservata"
         assert "'/inizia'" not in fn, "si va ancora alla vecchia destinazione"
+        # il ?next= accetta solo percorsi interni (mai '//')
+        assert "rawNext.startsWith('/')" in src
+        assert "!rawNext.startsWith('//')" in src
+        assert "'/dashboard'" in src.split("const dest")[1][:200], \
+            "senza next non c'e' il ripiego sulla dashboard"
 
     def test_non_si_ripropone(self):
         be = (BACKEND_DIR / "routers" / "organizations.py").read_text()
