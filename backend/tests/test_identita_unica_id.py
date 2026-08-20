@@ -329,3 +329,22 @@ class TestCappelloInUnGestoIdQuinquies:
         fe = self.SHELL.read_text().split("const addClientHat")[1].split("}, [t])")[0]
         assert "err?.response?.data?.detail" in fe, \
             "l'errore del backend non arriva mai all'utente"
+
+
+class TestVistaSegueLaQueryIdSexies:
+    """ID-sexies (20/8, feedback founder): /accedi e /accedi?vista=crea
+    sono la stessa rotta — cambiando solo la query React non rimonta,
+    e dal menu «Crea account» → «Accedi» lasciava a schermo la vista
+    sbagliata (e viceversa)."""
+
+    def test_vista_reagisce_al_parametro(self):
+        src = (FRONTEND_SRC / "features" / "account"
+               / "AccountLoginPage.js").read_text()
+        assert "const vista = params.get('vista')" in src
+        blocco = src.split("const primoGiro")[1][:600]
+        assert "setState(vista === 'crea' ? 'signup' : 'form')" in blocco, \
+            "la vista non segue piu' la query: il menu tornera' a mentire"
+        assert "if (token) return;" in blocco, \
+            "il magic link in corso verrebbe interrotto dall'effetto"
+        assert "primoGiro.current" in blocco, \
+            "senza la guardia del primo giro l'effetto combatte con goTo()"

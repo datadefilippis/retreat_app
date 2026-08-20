@@ -17,7 +17,7 @@
  *
  * Mobile-first (si apre quasi sempre dal telefono, dall'email). noindex.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Mail, CheckCircle2, KeyRound, UserPlus } from 'lucide-react';
@@ -76,6 +76,21 @@ export default function AccountLoginPage() {
   // NL2 — dal ponte «iscritto alla Lettera → crea l'account» l'email
   // arriva gia' scritta: un campo in meno da ridigitare
   const [email, setEmail] = useState(params.get('email') || '');
+
+  // ID-sexies (20/8) — /accedi e /accedi?vista=crea sono la STESSA
+  // rotta: cambiando solo la query React non rimonta e la vista
+  // restava quella di prima (dal menu: «Crea account» poi «Accedi»
+  // lasciava la registrazione a schermo, e viceversa). La vista segue
+  // il parametro; la navigazione interna (goTo) resta libera perche'
+  // l'effetto scatta solo quando la QUERY cambia davvero.
+  const vista = params.get('vista');
+  const primoGiro = useRef(true);
+  useEffect(() => {
+    if (primoGiro.current) { primoGiro.current = false; return; }
+    if (token) return;                       // magic link in corso: non toccare
+    setState(vista === 'crea' ? 'signup' : 'form');
+    setError(null);
+  }, [vista, token]);
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [sending, setSending] = useState(false);
