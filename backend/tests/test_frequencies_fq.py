@@ -964,11 +964,11 @@ class TestSoundPubblicoSp:
         assert '<Route path="/sound/*" element={<FrequenzePage />} />' in app
         # …e /sound esatto e' la porta pubblica
         assert 'path="/sound" element={<SoundLandingPage />}' in app
-        # il cancello vive dentro la pagina: crea/tracce → login?next=
+        # il cancello vive dentro la pagina: crea/tracce → accedi?next=
         page = (FQ_DIR / "FrequenzePage.js").read_text()
         blocco = page.split("const needsAuth =")[1][:900]
         assert "'create'" in page.split("const needsAuth =")[1][:80]
-        assert "/login?next=" in blocco
+        assert "/accedi?next=" in blocco
         assert "verify-email-required" in blocco, \
             "il gate email-verificata di ProtectedRoute va replicato"
 
@@ -1035,8 +1035,8 @@ class TestSoundPubblicoSp:
         (dove Ascolta e' acceso), passando dal login che offre anche la
         registrazione. Una sola verita' condivisa: links.js."""
         links = (FQ_DIR / "links.js").read_text()
-        assert "/sound/esplora" in links and "/login?next=" in links, \
-            "l'invito deve rientrare in Sound passando dal login"
+        assert "/sound/esplora" in links and "/accedi?next=" in links, \
+            "l'invito deve rientrare in Sound passando dalla porta unica (ID)"
         for f in ("FrequenzePage.js", "GuidaView.js", "SoundLandingPage.js"):
             src = (FQ_DIR / f).read_text()
             assert "PRO_ENTRY" in src, f"{f} non usa la destinazione condivisa"

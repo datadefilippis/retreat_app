@@ -259,7 +259,7 @@ export function CheckoutSuccessPage() {
           let mktpEmail = null;
           try { mktpEmail = sessionStorage.getItem('storefront:mktp_email'); } catch { /* no-op */ }
           const activate = async () => {
-            if (!mktpEmail) { window.location.assign('/account/accedi'); return; }
+            if (!mktpEmail) { window.location.assign('/accedi'); return; }
             try {
               const { default: platformApi } = await import('../../api/platformClient');
               // R2a — lingua UI insieme alla richiesta: l'email OTP del
@@ -271,7 +271,7 @@ export function CheckoutSuccessPage() {
                 language: ['it', 'en', 'de', 'fr'].includes(lang) ? lang : undefined,
               });
             } catch { /* enumeration-safe: si prosegue comunque */ }
-            window.location.assign(`/account/accedi?email=${encodeURIComponent(mktpEmail)}&sent=1`);
+            window.location.assign(`/accedi?email=${encodeURIComponent(mktpEmail)}&sent=1`);
           };
           return (
             <div className="mt-6 space-y-2">

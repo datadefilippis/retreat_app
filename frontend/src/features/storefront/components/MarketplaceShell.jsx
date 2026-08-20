@@ -165,17 +165,17 @@ function AccountMenu({ hasPlatformToken, operatorTo, onLogout }) {
   const userHeading = t('marketplace.accountMenuUser', { defaultValue: 'Il tuo account Aurya' });
   const operatorsHeading = t('marketplace.accountMenuOperators', { defaultValue: 'Per i professionisti del benessere' });
   const logoutLabel = t('marketplace.accountMenuLogout', { defaultValue: 'Esci' });
-  // da sloggato entrambe le voci portano a /account/accedi: la pagina ha
-  // gia' il toggle "Crea il tuo account Aurya" (nessun query param di
-  // modalita' esiste, e i form non si toccano: link semplice e onesto)
+  // ID (20/8) — la porta e' UNA: /accedi decide il mondo dal server.
+  // Da sloggato c'e' UN solo «Accedi» (l'etichetta «Il tuo account
+  // Aurya» sopra una porta di meta' account era la causa del bug);
+  // «Area professionisti» sparisce perche' e' la stessa porta.
   const userLinks = hasPlatformToken
     ? [{ to: '/account', label: t('marketplace.accountMenuMy', { defaultValue: 'Il mio account' }), testid: 'account-menu-my' }]
     : [
-        { to: '/account/accedi', label: t('marketplace.signIn', { defaultValue: 'Accedi' }), testid: 'account-menu-signin' },
-        { to: '/account/accedi', label: t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }), testid: 'account-menu-signup' },
+        { to: '/accedi', label: t('marketplace.signIn', { defaultValue: 'Accedi' }), testid: 'account-menu-signin' },
+        { to: '/accedi?vista=crea', label: t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }), testid: 'account-menu-signup' },
       ];
   const operatorLinks = [
-    { to: '/login', label: t('marketplace.operatorLogin', { defaultValue: 'Area professionisti' }), testid: 'account-menu-operator-login' },
     { to: operatorTo, label: t('marketplace.accountMenuWork', { defaultValue: 'Lavora con Aurya' }), testid: 'account-menu-operator-join' },
   ];
 
@@ -352,7 +352,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
       return false;
     }
   });
-  const accountTo = hasPlatformToken ? '/account' : '/account/accedi';
+  const accountTo = hasPlatformToken ? '/account' : '/accedi';
 
   // LR1 — "Esci" dal menu dell'omino: rimuove il token piattaforma E il
   // subscriber token della newsletter (aurya_nl_token, salvato al login
@@ -688,7 +688,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                   <li><Link to="/account" className="hover:text-white">{t('marketplace.myTrips', { defaultValue: 'Le mie esperienze' })}</Link></li>
                   {/* AN7/AP4 — l'account Aurya ha un nome anche in vetrina */}
                   <li><Link to="/account" className="hover:text-white">{t('marketplace.passportLink', { defaultValue: 'Il tuo account Aurya' })}</Link></li>
-                  <li><Link to="/account/accedi" className="hover:text-white">{t('marketplace.signIn', { defaultValue: 'Accedi' })}</Link></li>
+                  <li><Link to="/accedi" className="hover:text-white">{t('marketplace.signIn', { defaultValue: 'Accedi' })}</Link></li>
                 </ul>
               </div>
             )}
@@ -715,7 +715,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                         e' qui, nel mondo a cui appartiene. Gli articoli
                         non hanno cambiato indirizzo. */}
                     <li><Link to="/blog/categoria/operatori" className="hover:text-white" data-testid="footer-nw-risorse-pro">{t('marketplace.footerProResources', { defaultValue: 'Guide per il tuo lavoro' })}</Link></li>
-                    <li><Link to="/login" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area professionisti' })}</Link></li>
+                    <li><Link to="/accedi" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area professionisti' })}</Link></li>
                   </ul>
                 </div>
                 <div>
@@ -779,7 +779,7 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                   {/* founder 27/7 — via 'Porta i tuoi ritiri online':
                       duplicava Area operatori */}
                   <li><Link to={operatorTo} className="hover:text-white">{operatorLabel}</Link></li>
-                  <li><Link to="/login" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area professionisti' })}</Link></li>
+                  <li><Link to="/accedi" className="hover:text-white">{t('marketplace.operatorLogin', { defaultValue: 'Area professionisti' })}</Link></li>
                 </ul>
               </div>
             )}

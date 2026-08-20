@@ -155,7 +155,7 @@ export default function InlineSignupForm() {
       </button>
       <p className="text-center text-xs text-gray-500">
         {tl('opPro.haveAccount', { defaultValue: 'Hai già un account?' })}{' '}
-        <Link to="/login" className="underline text-[#2f5749]">
+        <Link to="/accedi" className="underline text-[#2f5749]">
           {tl('opPro.loginLink', { defaultValue: 'Accedi' })}
         </Link>
       </p>

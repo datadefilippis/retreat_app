@@ -1,0 +1,172 @@
+"""Ciclo ID (20/8/2026) — la porta unica /accedi e il legame dei cappelli.
+
+Il principio da difendere (docs/IDENTITA_UNICA_PLAN_2026-08.md): il
+mondo di appartenenza (operatore/cliente) e' un dettaglio NOSTRO — la
+password lo seleziona, il legame fra identita' VERIFICATE porta l'SSO,
+e nessuna porta secondaria puo' riaprire il bivio che confondeva gli
+operatori (caso Rossato, 20/8: otto 401 sulla porta dei clienti).
+"""
+import os
+from pathlib import Path
+
+import pytest
+import requests
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_SRC = BACKEND_DIR.parent / "frontend" / "src"
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
+
+
+class TestPortaUnicaId2:
+    """/api/auth/entra: una porta, la password seleziona il mondo."""
+
+    def test_porta_montata(self):
+        src = (BACKEND_DIR / "server.py").read_text()
+        assert "unified_auth_router.router" in src, "la porta unica non e' montata"
+
+    def test_errore_unico_generico(self):
+        """Email inesistente e password sbagliata devono essere
+        INDISTINGUIBILI (byte per byte). E il rate limit per email si
+        traveste da stesso errore: mai un segnale diverso."""
+        src = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
+        assert src.count('_GENERIC_401 = "Email o password non corretti."') == 1
+        # il limite per email risponde col GENERICO, non con un 429
+        blocco = src.split("check_email_rate(email, \"unified_login\"")[1][:300]
+        assert "_GENERIC_401" in blocco, \
+            "il rate limit per email rivela l'esistenza dell'account"
+
+    def test_contatore_trasversale(self):
+        """Una porta = un conto. Il bucket e' unico (unified_login),
+        non uno per mondo."""
+        src = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
+        assert '"unified_login"' in src
+        assert "max_per_hour=20" in src, "soglia diversa dalle porte storiche"
+
+    def test_operatore_prima_e_sso_esplicito(self):
+        """Match doppio → operatore per primo; l'SSO arriva SOLO dal
+        legame (operator_user_id / platform_account_id), mai dalla sola
+        coincidenza di email."""
+        src = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
+        assert '"operator_user_id": user_id' in src
+        assert 'worlds.insert(0, sso)' in src, "l'operatore non e' piu' il primo cappello"
+        for guardia in ('"is_active": True', '"email_verified": True'):
+            assert src.count(guardia) >= 2, \
+                "l'SSO deve pretendere account attivi e verificati su ENTRAMBI i lati"
+
+    def test_live_generico_su_email_ignota(self):
+        try:
+            r = requests.post(f"{BASE_URL}/api/auth/entra", json={
+                "email": "nessuno-di-nessuno@example.com",
+                "password": "una-password-qualsiasi-123"}, timeout=10)
+        except requests.RequestException:
+            pytest.skip("backend non raggiungibile")
+        if r.status_code == 429:
+            pytest.skip("rate limit IP (suite calda)")
+        assert r.status_code == 401
+        assert r.json()["detail"] == "Email o password non corretti."
+
+
+class TestLegameCappelliId3:
+    """identity_link_service: le 5 regole del piano."""
+
+    def test_link_solo_fra_email_verificate(self):
+        src = (BACKEND_DIR / "services" / "identity_link_service.py").read_text()
+        fn = src.split("async def link_hats")[1].split("async def")[0]
+        assert 'user_doc.get("email_verified")' in fn
+        assert 'account_doc.get("email_verified")' in fn
+        assert "_norm(user_doc.get(\"email\")) != _norm(account_doc.get(\"email\"))" in fn, \
+            "manca il confronto email: il link accetterebbe coppie qualsiasi"
+
+    def test_auto_link_non_crea_mai(self):
+        src = (BACKEND_DIR / "services" / "identity_link_service.py").read_text()
+        fn = src.split("async def auto_link_by_email")[1].split("async def")[0]
+        assert "insert_one" not in fn, \
+            "auto_link deve COLLEGARE l'esistente, mai creare account"
+
+    def test_cappello_su_gesto_esplicito(self):
+        """Il provisioning vive solo dietro POST /hats/client (operatore
+        autenticato): mai automatico, e mai sopra un account cliente
+        non verificato."""
+        src = (BACKEND_DIR / "services" / "identity_link_service.py").read_text()
+        fn = src.split("async def ensure_client_hat_for_operator")[1]
+        assert 'raise ValueError("OPERATOR_EMAIL_NOT_VERIFIED")' in fn
+        assert 'raise ValueError("CLIENT_ACCOUNT_UNVERIFIED")' in fn
+        router = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
+        assert "ensure_client_hat_for_operator" in router
+        assert router.count("Depends(get_current_user)") == 1
+
+    def test_verifiche_email_agganciano_il_legame(self):
+        """Tutte le strade in cui un'email diventa verificata chiamano
+        l'auto-link: verify operatore, verify/magic/OTP piattaforma."""
+        auth_src = (BACKEND_DIR / "routers" / "auth.py").read_text()
+        assert "auto_link_by_email" in auth_src, "manca l'hook sulla verifica operatore"
+        pa_src = (BACKEND_DIR / "services" / "platform_account_service.py").read_text()
+        assert pa_src.count("auto_link_by_email") >= 3, \
+            "una strada di verifica piattaforma non aggancia il legame"
+
+    def test_cancellazioni_sganciano(self):
+        pa_src = (BACKEND_DIR / "services" / "platform_account_service.py").read_text()
+        assert "unlink_for_account" in pa_src, \
+            "la cancellazione GDPR del cliente lascia il puntatore appeso"
+        auth_src = (BACKEND_DIR / "routers" / "auth.py").read_text()
+        assert "unlink_for_user" in auth_src, \
+            "la disattivazione operatore lascia l'SSO vivo"
+
+    def test_indici_del_legame(self):
+        src = (BACKEND_DIR / "database.py").read_text()
+        assert '"platform_account_id", sparse=True' in src
+        assert '"operator_user_id", sparse=True' in src
+
+
+class TestSuperficieId4:
+    """Una porta visibile, alias vivi, menu onesto."""
+
+    def test_alias_conservano_la_query(self):
+        """/login e /account/accedi non muoiono MAI: redirect che porta
+        con se' ?next= e ?token= (i magic link vecchi funzionano)."""
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert '<Route path="/accedi" element={<AccountLoginPage />} />' in app
+        assert app.count('<RedirectPreservingQuery to="/accedi" />') == 2, \
+            "un alias e' morto o non conserva la query"
+
+    def test_porta_unica_nel_form(self):
+        src = (FRONTEND_SRC / "features" / "account" / "AccountLoginPage.js").read_text()
+        assert "'/auth/entra'" in src, "il form non parla con la porta unica"
+        assert "localStorage.setItem('token', w.access_token)" in src, \
+            "il cappello operatore non viene salvato"
+        assert "next || (operator ? '/dashboard' : '/account')" in src, \
+            "l'operatore non atterra nel suo posto di lavoro"
+        assert "rawNext.startsWith('/') && !rawNext.startsWith('//')" in src, \
+            "manca la guardia open-redirect su ?next="
+
+    def test_niente_soccorso_verso_porte_morte(self):
+        src = (FRONTEND_SRC / "features" / "account" / "AccountLoginPage.js").read_text()
+        assert 'to="/login"' not in src, \
+            "la porta unica rimanda ancora alla porta vecchia"
+
+    def test_menu_una_sola_porta(self):
+        """L'etichetta «Il tuo account Aurya» sopra una porta di meta'
+        account era la CAUSA del bug: da sloggato si accede da UN posto."""
+        src = (FRONTEND_SRC / "features" / "storefront" / "components"
+               / "MarketplaceShell.jsx").read_text()
+        assert "'/accedi'" in src and "'/accedi?vista=crea'" in src
+        assert "account-menu-operator-login" not in src, \
+            "«Area professionisti» e' tornata nel menu: e' la stessa porta"
+        assert "'/account/accedi'" not in src, "il menu punta alla porta vecchia"
+
+    def test_recupero_password_per_tutti_i_mondi(self):
+        fe = (FRONTEND_SRC / "features" / "account" / "AccountLoginPage.js").read_text()
+        assert "'/auth/recupero'" in fe
+        be = (BACKEND_DIR / "routers" / "unified_auth.py").read_text()
+        assert "request_password_reset" in be and "forgot_password" in be, \
+            "il recupero unificato non copre entrambi i mondi"
+        blocco = be.split("async def recupero")[1]
+        assert blocco.count("return generic") >= 2, \
+            "il recupero non risponde sempre neutro (enumeration)"
+
+    def test_link_interni_sulla_porta_unica(self):
+        links = (FRONTEND_SRC / "features" / "frequenze" / "links.js").read_text()
+        assert "/accedi?next=" in links, "PRO_ENTRY punta ancora a /login"
+        shell = (FRONTEND_SRC / "features" / "storefront" / "components"
+                 / "MarketplaceShell.jsx").read_text()
+        assert 'to="/accedi"' in shell, "il footer non punta alla porta unica"

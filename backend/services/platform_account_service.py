@@ -180,6 +180,13 @@ async def consume_magic_link(token: str) -> Optional[Dict[str, Any]]:
     )
     if account:
         logger.info("platform_account: login magic-link per %s", account["id"])
+        # ID (20/8) — email appena verificata: se esiste un operatore
+        # verificato con la stessa email, il legame dei cappelli nasce qui
+        try:
+            from services.identity_link_service import auto_link_by_email
+            await auto_link_by_email(account["email"])
+        except Exception:
+            logger.warning("auto-link cappelli fallito", exc_info=True)
         # P4 — claim retroattivo: l'email e' APPENA stata verificata, e'
         # il momento sicuro per agganciare account org e ordini passati.
         # Best-effort: un errore qui non blocca mai il login.
@@ -234,6 +241,13 @@ async def verify_login_code(email: str, code: str) -> Optional[Dict[str, Any]]:
         {"id": account["id"]},
         {"$set": {"email_verified": True, "last_login_at": _iso(now)}},
     )
+    # ID (20/8) — email appena verificata: se esiste un operatore
+    # verificato con la stessa email, il legame dei cappelli nasce qui
+    try:
+        from services.identity_link_service import auto_link_by_email
+        await auto_link_by_email(email)
+    except Exception:
+        logger.warning("auto-link cappelli fallito", exc_info=True)
     account = await platform_accounts_collection.find_one(
         {"id": account["id"], "is_active": True}, {"_id": 0})
     if account:
@@ -489,6 +503,12 @@ async def verify_signup_email(token: str) -> Dict[str, Any]:
                   "verification_token_expires": None}},
     )
     logger.info("platform_account: email verificata per %s", account["id"])
+    # ID (20/8) — stesso auto-link della strada magic/OTP
+    try:
+        from services.identity_link_service import auto_link_by_email
+        await auto_link_by_email(account["email"])
+    except Exception:
+        logger.warning("auto-link cappelli fallito", exc_info=True)
     # email appena verificata: momento sicuro per il claim retroattivo
     # (stesso aggancio del magic link). Best-effort, mai bloccante.
     try:
@@ -929,6 +949,13 @@ async def delete_account(account: Dict[str, Any]) -> Dict[str, int]:
         {"$unset": {"platform_account_id": ""}},
     )
     await platform_magic_tokens_collection.delete_many({"account_id": aid})
+    # ID (20/8) — regola 4 del legame: il cappello cliente sparisce e
+    # l'eventuale operatore collegato smette di puntarci. Nient'altro.
+    try:
+        from services.identity_link_service import unlink_for_account
+        await unlink_for_account(aid)
+    except Exception:
+        logger.warning("unlink cappelli fallito per %s", aid, exc_info=True)
     await platform_accounts_collection.delete_one({"id": aid})
 
     # NW5 — la Lettera e' titolarita' Aurya: con l'account se ne va

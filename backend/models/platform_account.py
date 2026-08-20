@@ -62,6 +62,12 @@ class PlatformAccount(BaseModel):
     # precedente vengono rifiutati dalla dependency.
     sessions_invalidated_at: Optional[datetime] = None
 
+    # ID (20/8) — il legame dei cappelli: se questa persona e' anche un
+    # operatore, qui vive il suo users.id (e il reciproco
+    # users.platform_account_id punta qui). Solo fra email verificate
+    # da entrambe le parti; regole in services/identity_link_service.py.
+    operator_user_id: Optional[str] = None
+
     created_at: datetime = Field(default_factory=_utc_now)
     last_login_at: Optional[datetime] = None
 

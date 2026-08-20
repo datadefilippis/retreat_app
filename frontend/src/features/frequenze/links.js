@@ -11,4 +11,4 @@
  * senza chiedergli nulla. Con ?next= il login (che porta gia' il suo
  * «non hai un account? registrati») riporta esattamente qui.
  */
-export const PRO_ENTRY = `/login?next=${encodeURIComponent('/sound/esplora')}`;
+export const PRO_ENTRY = `/accedi?next=${encodeURIComponent('/sound/esplora')}`;

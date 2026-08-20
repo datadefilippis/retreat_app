@@ -675,6 +675,8 @@ app.include_router(availability_router.router, prefix="/api")        # /api/avai
 # ── Customer Identity Foundation (v9.0) ─────────────────────────────────
 app.include_router(customer_auth_router.router, prefix="/api")       # /api/customer-auth/*
 app.include_router(platform_accounts_router.router, prefix="/api")   # /api/platform/* (P1 marketplace)
+from routers import unified_auth as unified_auth_router  # noqa: E402  (ciclo ID)
+app.include_router(unified_auth_router.router, prefix="/api")        # /api/auth/entra — la porta unica
 app.include_router(seo_router.router, prefix="/api")                  # /api/public/sitemap.xml (F3)
 app.include_router(seo_shell_router.router)                            # /__seo/* — HTML pubblico con meta server-side (S0.2)
 app.include_router(reviews_router.router, prefix="/api")               # recensioni operatore (PR2)

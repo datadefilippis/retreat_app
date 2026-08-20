@@ -161,10 +161,10 @@ export default function MeditazioniPage() {
             </p>
             <p style={{ fontSize: 13, color: 'var(--dim)', marginTop: 8 }}>
               Hai un account Aurya?{' '}
-              <a href="/account/accedi?next=/meditazioni"
+              <a href="/accedi?next=/meditazioni"
                 style={{ color: 'var(--water)' }}>Accedi</a>
               {' '}· non ce l'hai?{' '}
-              <a href="/account/accedi?next=/meditazioni"
+              <a href="/accedi?next=/meditazioni"
                 style={{ color: 'var(--water)' }}>Crealo gratis</a>
             </p>
           </section>
@@ -266,7 +266,7 @@ export default function MeditazioniPage() {
               e Passaporto.</p>
             <div className="gatefoot" style={{ gap: 8 }}>
               <button type="button" className="primary"
-                onClick={() => { window.location.href = '/account/accedi?next=/meditazioni'; }}>
+                onClick={() => { window.location.href = '/accedi?next=/meditazioni'; }}>
                 Crea il tuo account
               </button>
               <button type="button" onClick={() => setHeartAsk(false)}>Non ora</button>

@@ -956,6 +956,15 @@ async def verify_email(request: Request, body: VerifyEmailRequest):
     except Exception:
         pass
 
+    # ID (20/8) — direzione B del legame: se questa email ha gia' un
+    # cappello cliente VERIFICATO, i due si collegano da soli (regola 1:
+    # solo ora che anche il lato operatore e' verificato). Best-effort.
+    try:
+        from services.identity_link_service import auto_link_by_email
+        await auto_link_by_email(user_doc["email"])
+    except Exception:
+        logger.warning("verify_email: auto-link fallito", exc_info=True)
+
     return VerifyEmailResponse(message="Email verificata con successo!")
 
 
@@ -1187,6 +1196,18 @@ async def deactivate_account(
         {"organization_id": org_id},
         {"$set": {"is_active": False}},
     )
+
+    # ID (20/8) — regola 4: gli operatori disattivati non devono piu'
+    # essere raggiungibili via SSO dal cappello cliente. Best-effort.
+    try:
+        from services.identity_link_service import unlink_for_user
+        members_for_unlink = await users_collection.find(
+            {"organization_id": org_id, "platform_account_id": {"$ne": None}},
+            {"id": 1}).to_list(200)
+        for m in members_for_unlink:
+            await unlink_for_user(m["id"])
+    except Exception:
+        logger.warning("deactivate: unlink cappelli fallito", exc_info=True)
 
     # 6. Notify all org members via email (non-blocking)
     try:

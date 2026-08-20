@@ -1026,7 +1026,7 @@ export default function FrequenzePage() {
   }
   if (needsAuth && !isAuthenticated) {
     const next = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/login?next=${next}`} replace />;
+    return <Navigate to={`/accedi?next=${next}`} replace />;
   }
   if (needsAuth && user && user.role !== 'system_admin' && user.email_verified === false) {
     return <Navigate to="/verify-email-required" replace />;

@@ -1969,9 +1969,11 @@ class TestAccountAp1b:
         'Passaporto', mai trattini lunghi."""
         login = (FRONTEND_SRC / "features" / "account"
                  / "AccountLoginPage.js").read_text()
-        assert "'/platform/auth/login'" in login
+        # ID (20/8) — il login password parla con la porta unica; il
+        # recupero e' unificato (/auth/recupero copre entrambi i mondi)
+        assert "'/auth/entra'" in login
         assert "'/platform/auth/signup'" in login
-        assert "'/platform/auth/password-reset'" in login
+        assert "'/auth/recupero'" in login
         assert 'data-testid="login-no-password"' in login
         assert 'data-testid="login-forgot"' in login
         assert 'data-testid="login-to-signup"' in login
@@ -3285,8 +3287,8 @@ class TestPotaturaPs4:
             "l'omino account deve vivere nell'header marketplace"
         assert "PLATFORM_TOKEN_KEY" in src, \
             "lo stato loggato si legge dal token piattaforma (sincrono)"
-        assert "'/account'" in src and "'/account/accedi'" in src, \
-            "destinazioni: /account da loggato, /account/accedi da sloggato"
+        assert "'/account'" in src and "'/accedi'" in src, \
+            "destinazioni: /account da loggato, /accedi da sloggato (ID)"
         assert "marketplace.accountAria" in src, \
             "aria-label i18n dell'icona account"
         # LR1: l'omino e' il trigger del menu dei due mondi (un <button,
@@ -5402,15 +5404,13 @@ class TestUtentiUt1:
 
 
 class TestLoginRegia:
-    """LR1 (31/7/2026) — la regia dei due login: il menu dell'omino.
-
-    L'icona account dell'header pubblico non naviga piu' alla cieca:
-    apre un menu con DUE sezioni etichettate ("Il tuo account Aurya"
-    per l'utente finale, "Per gli operatori" per il mondo gestionale).
-    Esci rimuove il token piattaforma E aurya_nl_token. Link di
-    soccorso incrociati nelle due pagine di login. I flussi di
-    autenticazione (password, OTP, magic link, login operatori) NON
-    cambiano: solo navigazione e presentazione.
+    """LR1 (31/7) riscritta dal ciclo ID (20/8): la regia NON e' piu'
+    «due login» ma UNA porta (/accedi) che decide il mondo dal server.
+    Il menu dell'omino da sloggato offre un solo accesso; i vecchi
+    soccorsi incrociati sono spariti perche' non c'e' piu' niente da
+    incrociare. Esci rimuove il token piattaforma E aurya_nl_token.
+    I flussi di autenticazione (password, OTP, magic link) NON
+    cambiano: cambia solo chi risponde (POST /api/auth/entra).
     """
 
     SHELL = (FRONTEND_SRC / "features" / "storefront" / "components"
@@ -5438,12 +5438,14 @@ class TestLoginRegia:
 
     def test_lr1_voci_utente(self):
         src = self.SHELL.read_text()
-        # da sloggato: Accedi + Crea il tuo account → /account/accedi
+        # ID — da sloggato: Accedi + Crea il tuo account → /accedi
         assert "marketplace.signIn" in src, "manca la voce Accedi"
         assert "marketplace.accountMenuCreate" in src \
             and "'Crea il tuo account'" in src, \
             "manca la voce Crea il tuo account"
-        assert "'/account/accedi'" in src
+        assert "'/accedi'" in src and "'/accedi?vista=crea'" in src
+        assert "'/account/accedi'" not in src, \
+            "il menu punta ancora alla porta vecchia"
         # da loggato: Il mio account → /account + Esci
         assert "marketplace.accountMenuMy" in src \
             and "'Il mio account'" in src, "manca la voce Il mio account"
@@ -5452,10 +5454,14 @@ class TestLoginRegia:
 
     def test_lr1_voci_operatori(self):
         src = self.SHELL.read_text()
-        # Area operatori → /login (dentro AccountMenu)
-        assert "marketplace.operatorLogin" in src, \
-            "manca la voce Area operatori nel menu"
-        assert "'/login'" in src, "Area operatori deve puntare a /login"
+        # ID — nel MENU dell'omino «Area professionisti» NON esiste
+        # piu' (una voce doppia rifarebbe il bivio); nei footer resta
+        # come destinazione, ma sulla porta unica
+        menu = src.split("const operatorLinks = [")[1].split("];")[0]
+        assert "operatorLogin" not in menu, \
+            "e' tornata la voce Area professionisti nel menu"
+        assert 'to="/login"' not in src, \
+            "un link della shell punta ancora alla porta vecchia"
         # Lavora con Aurya → operatorTo (stessa logica del link testuale:
         # /entra-nella-rete in fase network, /inizia in marketplace)
         assert "marketplace.accountMenuWork" in src \
@@ -5501,12 +5507,14 @@ class TestLoginRegia:
     # ── 4. link di soccorso incrociati nelle due login ───────────────
 
     def test_lr1_soccorso_su_login_utente(self):
+        """ID — sulla porta unica il soccorso «sei un operatore?» non
+        ha piu' senso (stessa porta): resta solo l'invito per chi lo
+        spazio non ce l'ha ancora."""
         src = self.ACCOUNT_LOGIN.read_text()
         assert 'data-testid="operator-rescue-link"' in src
-        assert 'to="/login"' in src, \
-            "il soccorso deve portare all'area operatori"
-        assert "account.operatorHint" in src \
-            and "account.operatorHintLink" in src
+        assert 'to="/login"' not in src, \
+            "la porta unica rimanda ancora alla porta vecchia"
+        assert 'to="/entra-nella-rete"' in src
 
     def test_lr1_soccorso_su_login_operatori(self):
         src = self.OPERATOR_LOGIN.read_text()
@@ -5518,12 +5526,14 @@ class TestLoginRegia:
     # ── 5. i form di autenticazione NON si toccano ───────────────────
 
     def test_lr1_form_utente_intoccati(self):
+        # ID — il form password parla con la porta unica; le strade
+        # senza password e il signup restano sui flussi di piattaforma
         src = self.ACCOUNT_LOGIN.read_text()
         for marker in ('data-testid="password-login-form"',
-                       "'/platform/auth/login'",
+                       "'/auth/entra'",
                        "'/platform/auth/magic-link'",
                        "'/platform/auth/code/verify'",
-                       "'/platform/auth/password-reset'",
+                       "'/auth/recupero'",
                        "'/platform/auth/signup'"):
             assert marker in src, f"flusso auth utente sparito: {marker}"
 
@@ -5562,11 +5572,10 @@ class TestLoginRegia:
                 assert val, f"{lang}: manca login.{k}"
                 assert "—" not in val and "–" not in val
 
-    def test_ritorni_al_login_puntano_a_login_non_alla_home(self):
-        """S0 ha spostato la login operatori dalla root a /login, ma i
-        ritorni dentro AuthPages erano rimasti a "/": chi cliccava
-        «Accedi» dalla registrazione finiva sulla homepage pubblica.
-        Ogni uscita verso la login deve puntare a /login.
+    def test_ritorni_al_login_puntano_alla_porta_unica(self):
+        """S0 sposto' la login dalla root a /login; ID (20/8) l'ha
+        unificata su /accedi. Ogni uscita «Accedi» dentro AuthPages
+        deve portare alla porta unica, mai alla homepage.
         """
         src = self.OPERATOR_LOGIN.read_text()
         for label in ("signup.login_link", "forgot_password.back_to_login",
@@ -5579,8 +5588,9 @@ class TestLoginRegia:
             target_at = max(anchor, nav)
             assert target_at != -1, f"{label}: nessun target trovato"
             target = before[target_at:target_at + 20]
-            assert target.startswith(('to="/login', 'navigate(`/login')), \
-                f"{label} porta a {target!r}: deve portare a /login"
+            assert target.startswith(('to="/accedi', 'navigate(`/accedi',
+                                      'to="/login', 'navigate(`/login')), \
+                f"{label} porta a {target!r}: deve portare alla porta"
 
 
 class TestHomeHp2:
@@ -7711,7 +7721,8 @@ class TestLinkPageLk5:
             "sparito il footer Aurya: e' il loop di crescita (LK2)"
         # Founder 14/8: la CTA porta al login (chi si riconosce entra
         # o si iscrive da li') col gesto "Crea il tuo profilo".
-        assert 'to="/login"' in src, "la CTA footer non porta piu' a /login"
+        # ID (20/8): la porta e' /accedi.
+        assert 'to="/accedi"' in src, "la CTA footer non porta piu' alla porta"
         assert "Crea il tuo profilo" in src
 
     def test_quattro_temi_registrati(self):

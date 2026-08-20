@@ -1567,6 +1567,12 @@ async def create_indexes():
         [("organization_id", 1), ("created_at", -1)], name="fv1_voice_org")
     await voice_assets_collection.create_index("id", unique=True,
                                                name="fv1_voice_id")
+    # ID (20/8) — il legame dei cappelli: due FK sparse, mai un merge.
+    # Servono alla porta unica (SSO) e al lazy repair del legame.
+    await users_collection.create_index(
+        "platform_account_id", sparse=True, name="id_user_hat")
+    await platform_accounts_collection.create_index(
+        "operator_user_id", sparse=True, name="id_account_hat")
 
 def close_db():
     client.close()

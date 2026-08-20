@@ -15,7 +15,7 @@ import ModuleAccessPaywall from "./components/ModuleAccessPaywall";
 import QuotaExceededPaywall from "./components/QuotaExceededPaywall";
 
 // Pages
-import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from "./pages/AuthPages";
+import { SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from "./pages/AuthPages";
 // Onda 28 — blocking page for authenticated users who haven't verified
 // their email yet. Wrapped by RequireAuthOnly (defined in this file).
 const VerifyEmailRequiredPage = lazy(() => import("./features/auth/VerifyEmailRequiredPage"));
@@ -531,15 +531,12 @@ function AppRoutes() {
       {/* redirect permanenti dei vecchi percorsi */}
       <Route path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />} />
       <Route path="/cerca-ritiro" element={<Navigate to="/newsletter" replace />} />
-      {/* S0.1 — la login operatori vive su /login (via dalla root) */}
-      <Route
-        path="/login"
-        element={
-          <PublicRoute>
-            <LoginPage />
-          </PublicRoute>
-        }
-      />
+      {/* ID (20/8) — LA PORTA UNICA. Una email, una password: il server
+          decide il mondo (operatore/cliente) e col legame dei cappelli
+          rilascia entrambi i token (SSO). /login e /account/accedi
+          restano vivi per sempre come alias: i segnalibri non muoiono. */}
+      <Route path="/accedi" element={<AccountLoginPage />} />
+      <Route path="/login" element={<RedirectPreservingQuery to="/accedi" />} />
       <Route path="/come-funziona" element={<HowItWorksGate />} />
       {/* AN5 — il blog di Aurya */}
       {/* SEO1 (11/7, decisione founder): il blog è il motore SEO del
@@ -648,7 +645,7 @@ function AppRoutes() {
       {/* F1 Onda 8: public ticket landing — QR + event details for one holder */}
       <Route path="/t/:token" element={<TicketLandingPage />} />
       {/* P3 Passaporto Ritiri — area personale utente finale (pubblica, noindex) */}
-      <Route path="/account/accedi" element={<AccountLoginPage />} />
+      <Route path="/account/accedi" element={<RedirectPreservingQuery to="/accedi" />} />
       <Route path="/account/verifica" element={<AccountVerifyEmailPage />} />
       <Route path="/account/nuova-password" element={<AccountResetPasswordPage />} />
       <Route path="/account" element={<AccountPage />} />

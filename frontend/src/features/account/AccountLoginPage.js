@@ -61,10 +61,15 @@ export default function AccountLoginPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const token = params.get('token');
+  // ID — ?next= come su ogni porta: solo percorsi interni (mai '//')
+  const rawNext = params.get('next');
+  const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//')
+    ? rawNext : null;
 
   // viste: verifying | expired | form (password, primaria) | otp |
   // sent (codice OTP) | reset | resetSent | signup | signupSent
-  const [state, setState] = useState(token ? 'verifying' : 'form');
+  const [state, setState] = useState(
+    token ? 'verifying' : params.get('vista') === 'crea' ? 'signup' : 'form');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -76,7 +81,7 @@ export default function AccountLoginPage() {
 
   const goTo = (view) => { setState(view); setError(null); };
 
-  useSeoMeta({ title: 'Accedi — le tue esperienze', noindex: true });
+  useSeoMeta({ title: 'Entra in Aurya', noindex: true });
   useEffect(() => {
     const meta = document.createElement('meta');
     meta.name = 'robots'; meta.content = 'noindex';
@@ -92,20 +97,33 @@ export default function AccountLoginPage() {
         // salva SEMPRE (anche se lo StrictMode ha smontato questo mount:
         // la sessione e' valida e il remount la trovera')
         saveSession(res.data);
-        navigate('/account', { replace: true });
+        navigate(next || '/account', { replace: true });
       })
       .catch(() => setState('expired'));
   }, [token, navigate]);
 
-  // AP1b — login password: il percorso primario
+  // ID (20/8) — la PORTA UNICA: una chiamata, il server decide il mondo.
+  // La password e' il selettore; col legame dei cappelli arrivano
+  // entrambi i token (SSO). Le chiavi restano quelle di sempre.
   const passwordLogin = async (e) => {
     e.preventDefault();
     setSending(true); setError(null);
     try {
-      const res = await platformApi.post('/platform/auth/login',
+      const res = await platformApi.post('/auth/entra',
         { email: email.trim(), password });
-      saveSession(res.data);
-      navigate('/account');
+      const worlds = res.data?.worlds || [];
+      let operator = false;
+      worlds.forEach((w) => {
+        if (w.type === 'operator') {
+          operator = true;
+          localStorage.setItem('token', w.access_token);
+        } else if (w.type === 'client') {
+          saveSession(w);
+        }
+      });
+      // operatore → il suo posto di lavoro; cliente → il suo account.
+      // Un hard navigate: l'AuthContext deve rileggere il token da zero.
+      window.location.assign(next || (operator ? '/dashboard' : '/account'));
     } catch (err) {
       const status = err?.response?.status;
       const detail = err?.response?.data?.detail || '';
@@ -113,9 +131,14 @@ export default function AccountLoginPage() {
         setError(t('landings:account.loginLocked', {
           defaultValue: 'Troppi tentativi: accesso bloccato per qualche minuto. Puoi usare Password dimenticata o accedere senza password.',
         }));
-      } else if (status === 403 && detail === 'EMAIL_NOT_VERIFIED') {
+      } else if (status === 403 && (detail === 'EMAIL_NOT_VERIFIED'
+          || detail === 'Email not verified')) {
         setError(t('landings:account.loginNotVerified', {
           defaultValue: 'Prima conferma la tua email: controlla la posta (anche lo spam).',
+        }));
+      } else if (status === 403) {
+        setError(t('landings:account.loginDisabled2', {
+          defaultValue: 'Questo account non è più attivo.',
         }));
       } else {
         setError(t('landings:account.loginError', {
@@ -181,7 +204,9 @@ export default function AccountLoginPage() {
     e.preventDefault();
     setSending(true); setError(null);
     try {
-      await platformApi.post('/platform/auth/password-reset',
+      // ID — dalla porta unica il recupero vale per OGNI mondo in cui
+      // l'email esiste (operatore incluso), risposta sempre neutra
+      await platformApi.post('/auth/recupero',
         { email: email.trim(), language: emailLang() });
       setState('resetSent');
     } catch {
@@ -491,12 +516,14 @@ export default function AccountLoginPage() {
           </Link>
         </p>
 
-        {/* LR1 — link di soccorso incrociato: chi cercava l'area
-            operatori non deve restare intrappolato nel login utente */}
+        {/* ID (20/8) — la porta e' UNICA: il vecchio soccorso «sei un
+            operatore?» non serve piu' (stessa email+password, il server
+            decide il mondo). Resta l'invito per chi uno spazio ancora
+            non ce l'ha. */}
         <p className="mt-2 text-xs text-gray-400" data-testid="operator-rescue-link">
-          {t('landings:account.operatorHint', { defaultValue: 'Sei un operatore?' })}{' '}
-          <Link to="/login" className="underline hover:text-gray-600">
-            {t('landings:account.operatorHintLink', { defaultValue: "Vai all'area operatori" })}
+          {t('landings:account.proJoinHint2', { defaultValue: 'Sei un professionista del benessere senza account?' })}{' '}
+          <Link to="/entra-nella-rete" className="underline hover:text-gray-600">
+            {t('landings:account.proJoinLink2', { defaultValue: 'Apri il tuo spazio' })}
           </Link>
         </p>
       </div>
