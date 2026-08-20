@@ -16,6 +16,7 @@ import api from '../../api/client';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { frequenciesAPI } from '../../api/frequencies';
 import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
+import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import './frequenze.css';
 
 const UNLOCK_STORE = 'fqz_catalog_unlock';   // {email, token} iscritto Lettera
@@ -192,12 +193,18 @@ export default function MeditazioniPage() {
                   } finally { setBusy(false); }
                 }}>Sblocca con la tua email</button>
             </p>
+            {/* NL-octies (20/8, founder) — «Crealo gratis» portava alla
+                schermata di ACCESSO e buttava via l'email appena
+                scritta. Le due strade ora dicono ciascuna la sua, e si
+                portano dietro l'indirizzo e il ritorno qui. */}
             <p style={{ fontSize: 13, color: 'var(--dim)', marginTop: 8 }}>
               Hai un account Aurya?{' '}
-              <a href="/accedi?next=/meditazioni"
+              <a href={entraInAurya(email, '/meditazioni')}
+                data-testid="med-gate-accedi"
                 style={{ color: 'var(--water)' }}>Accedi</a>
               {' '}· non ce l'hai?{' '}
-              <a href="/accedi?next=/meditazioni"
+              <a href={creaAccount(email, '/meditazioni')}
+                data-testid="med-gate-crea"
                 style={{ color: 'var(--water)' }}>Crealo gratis</a>
             </p>
           </section>
@@ -323,7 +330,7 @@ export default function MeditazioniPage() {
               e Passaporto.</p>
             <div className="gatefoot" style={{ gap: 8 }}>
               <button type="button" className="primary"
-                onClick={() => { window.location.href = `/accedi?vista=crea&next=/meditazioni${email ? `&email=${encodeURIComponent(email)}` : ''}`; }}>
+                onClick={() => { window.location.href = creaAccount(email, '/meditazioni'); }}>
                 Crea il tuo account
               </button>
               <button type="button" onClick={() => setHeartAsk(false)}>Non ora</button>

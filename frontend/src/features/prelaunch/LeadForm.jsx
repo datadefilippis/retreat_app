@@ -25,6 +25,7 @@ import api from '../../api/client';
 import platformApi from '../../api/platformClient';
 import { useAuth } from '../../context/AuthContext';
 import { trackEvent } from '../../lib/analytics';
+import { creaAccount } from '../../utils/authLinks';
 
 // Chiavi stabili salvate nel DB (le etichette sono i18n)
 const INTERESTS = ['yoga', 'meditation', 'breathwork', 'sound', 'detox',
@@ -216,11 +217,11 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         {!isOperator && email && !accountEmail && (
           <p className="mt-4 text-xs text-muted-foreground" data-testid="lead-account-bridge">
             {t('form.bridgeBody', { defaultValue: 'Vuoi ritrovare guide ed esperienze su ogni dispositivo?' })}{' '}
-            <a href={`/accedi?vista=crea&email=${encodeURIComponent(email)}`}
+            <a href={creaAccount(email, returnTo)} data-testid="lead-bridge-link"
               className="underline hover:no-underline" style={{ color: accent }}>
               {t('form.bridgeCta', { defaultValue: 'Crea il tuo account Aurya' })}
             </a>{' '}
-            {t('form.bridgeHint', { defaultValue: '(non serve una password)' })}
+            {t('form.bridgeHint2', { defaultValue: '(un minuto: o scegli una password, o entri dal link)' })}
           </p>
         )}
         {!isOperator && accountEmail

@@ -17,6 +17,7 @@ import { frequenciesAPI } from '../../api/frequencies';
 import { startPreview } from './engine/synth';
 import { resolveAudioLayers, resolveVoiceLayers } from './engine/assets';
 import { SafetyLine, useSafetyGate } from './SafetyCurtain';
+import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import './frequenze.css';
 
 const PREVIEW_SEC = 90;
@@ -286,8 +287,13 @@ export default function PublicFrequencyPage() {
             {gateMsg && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 8 }}>{gateMsg}</p>}
             <p style={{ fontSize: 12.5, color: 'var(--dim)', marginTop: 14 }}>
               Hai un account Aurya?{' '}
-              <a href={`/accedi?vista=crea&next=/frequenze/${slug}${email ? `&email=${encodeURIComponent(email)}` : ''}`}
+              <a href={entraInAurya(email, `/frequenze/${slug}`)}
+                data-testid="fqz-gate-accedi"
                 style={{ color: 'var(--water)' }}>Accedi</a>
+              {' '}· non ce l'hai?{' '}
+              <a href={creaAccount(email, `/frequenze/${slug}`)}
+                data-testid="fqz-gate-crea"
+                style={{ color: 'var(--water)' }}>Crealo gratis</a>
               {' '}· oppure{' '}
               <button type="button" className="ghost" style={{ padding: 0, color: 'var(--dim)', textDecoration: 'underline' }}
                 onClick={() => setGateOpen(false)}>riascolta l'anteprima</button>

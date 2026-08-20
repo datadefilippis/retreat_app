@@ -86,7 +86,9 @@ class TestPonteLetteraAccountNl2:
         il ponte vive li', una volta sola, per tutte."""
         src = (FRONTEND_SRC / "features" / "prelaunch" / "LeadForm.jsx").read_text()
         assert 'data-testid="lead-account-bridge"' in src
-        assert "/accedi?vista=crea&email=" in src, \
+        # NL-octies: il link non si scrive piu' a mano, si chiede al
+        # posto unico — ma deve continuare a portare l'email.
+        assert "creaAccount(email" in src, \
             "il ponte non porta l'email gia' compilata"
         assert "!isOperator" in src.split('data-testid="lead-account-bridge"')[0][-400:], \
             "il ponte compare anche ai lead operatore"
@@ -368,3 +370,66 @@ class TestUsciteDaiVicoliNlSexies:
         ind = src.split("const indietro")[1][:220]
         assert "navigate(-1)" in ind and "/newsletter" in ind, \
             "manca la destinazione di ripiego quando non c'e' cronologia"
+
+
+class TestUnaSolaPortaNlOcties:
+    """NL-octies (20/8, founder) — «dalle meditazioni "Crealo gratis" mi
+    porta all'accesso, e l'email che ho appena scritto sparisce; dalla
+    guida invece resta».
+
+    La regola del link alla porta era scritta a mano in ogni pagina,
+    quindi divergeva: chi la scriveva dimenticava `vista=crea` (e finiva
+    sull'accesso) o l'email (e la faceva ridigitare). Ora vive in
+    `utils/authLinks.js` e le pagine la usano invece di ricomporla.
+    """
+
+    HELPER = FRONTEND_SRC / "utils" / "authLinks.js"
+    MED = FRONTEND_SRC / "features" / "frequenze" / "MeditazioniPage.js"
+    FQZ = FRONTEND_SRC / "features" / "frequenze" / "PublicFrequencyPage.js"
+    LEAD = FRONTEND_SRC / "features" / "prelaunch" / "LeadForm.jsx"
+
+    def test_il_posto_unico_esiste_e_dice_le_tre_cose(self):
+        src = self.HELPER.read_text()
+        assert "export function portaAurya" in src
+        assert "export const creaAccount" in src
+        assert "export const entraInAurya" in src
+        # crea = registrazione, non accesso
+        crea = src.split("export const creaAccount")[1][:180]
+        assert "vista: 'crea'" in crea
+        # l'email vuota non finisce nella query come parametro vuoto
+        assert "if (pulita) q.set('email', pulita)" in src
+
+    def test_i_cancelli_non_ricompongono_il_link_a_mano(self):
+        """Il difetto segnalato nasceva dalla riscrittura a mano."""
+        for f in (self.MED, self.FQZ, self.LEAD):
+            src = f.read_text()
+            assert "/accedi?vista=crea" not in src, (
+                f"{f.name} ricompone il link della porta a mano: usa "
+                "creaAccount()/entraInAurya() da utils/authLinks")
+
+    def test_meditazioni_le_due_strade_dicono_ciascuna_la_sua(self):
+        src = self.MED.read_text()
+        accedi = src.split('data-testid="med-gate-accedi"')[0][-160:]
+        crea = src.split('data-testid="med-gate-crea"')[0][-160:]
+        assert "entraInAurya(email, '/meditazioni')" in accedi, \
+            "«Accedi» deve portare all'accesso, con l'email gia' scritta"
+        assert "creaAccount(email, '/meditazioni')" in crea, \
+            "«Crealo gratis» deve aprire la REGISTRAZIONE, non l'accesso"
+
+    def test_traccia_condivisa_allineata(self):
+        src = self.FQZ.read_text()
+        assert 'data-testid="fqz-gate-accedi"' in src
+        assert 'data-testid="fqz-gate-crea"' in src
+        assert "entraInAurya(email," in src and "creaAccount(email," in src
+
+    def test_ponte_del_magazine_porta_email_e_ritorno(self):
+        src = self.LEAD.read_text()
+        assert "creaAccount(email, returnTo)" in src, \
+            "il ponte perde l'email o la pagina da cui si e' partiti"
+
+    def test_il_ponte_non_promette_piu_l_assenza_di_password(self):
+        """NL1-bis: la password e' tornata la strada principale della
+        registrazione. «(non serve una password)» prometteva il mondo
+        di prima."""
+        src = self.LEAD.read_text()
+        assert "non serve una password" not in src

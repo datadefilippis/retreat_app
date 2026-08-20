@@ -92,3 +92,26 @@ Regole verificate:
 5. **`/benvenuto` è saltabile e non torna più.** Chi salta i campi
    (città, telefono, discipline) non li ritrova proposti da nessuna
    parte: restano nel profilo, ma nessuno glieli richiede.
+
+## 6. Il link alla porta — una regola sola (NL-octies, 20/8)
+
+Dai cancelli si invita a entrare o a crearsi l'account. La regola era
+scritta a mano in ogni pagina, quindi divergeva: dalle meditazioni
+«Crealo gratis» apriva l'ACCESSO e perdeva l'email appena digitata;
+dalla traccia condivisa il link diceva «Accedi» e apriva la
+REGISTRAZIONE. Ora vive in `frontend/src/utils/authLinks.js`:
+
+| funzione | apre | porta con se' |
+|---|---|---|
+| `entraInAurya(email, next)` | l'accesso | email + ritorno |
+| `creaAccount(email, next)` | la registrazione (`vista=crea`) | email + ritorno |
+
+La porta (`AccountLoginPage`) legge `vista`, `email` e `next`.
+
+**Limite noto**: `next` vive nella query, quindi vale finche' si resta
+nella stessa scheda (all'accesso riuscito si va li'). Chi crea l'account
+esce verso la posta per la verifica e torna con un link diverso: la
+destinazione si perde e si atterra su `/account`. Portarla fino in fondo
+vuol dire far viaggiare un `return_to` nella mail di verifica
+(`PasswordSignup` / `MagicLinkRequest` non lo prevedono): non fatto,
+deciso a parte.
