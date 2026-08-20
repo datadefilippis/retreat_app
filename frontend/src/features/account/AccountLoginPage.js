@@ -520,10 +520,12 @@ export default function AccountLoginPage() {
                 in fondo l'operatore non lo vedeva e compilava la
                 registrazione sbagliata. Sul login non c'e' affatto:
                 la' la porta e' la stessa per tutti. */}
-            <div className="mt-3 flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left"
+            <div className="mt-3 flex items-center gap-2.5 rounded-xl border border-primary/40 bg-primary/[0.06] px-3 py-2.5 text-left ring-1 ring-primary/15 shadow-[0_0_14px_-2px_hsl(158_28%_30%/0.35)]"
               data-testid="operator-rescue-link">
-              <Briefcase className="h-4 w-4 shrink-0 text-gray-500" aria-hidden />
-              <p className="text-xs leading-snug text-gray-600">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <Briefcase className="h-4 w-4 text-primary" aria-hidden />
+              </span>
+              <p className="text-xs leading-snug text-gray-700">
                 {t('landings:account.proSplit', { defaultValue: 'Sei un professionista del benessere?' })}{' '}
                 <Link to="/entra-nella-rete" data-testid="pro-box-cta"
                   className="font-medium text-primary underline underline-offset-2 hover:no-underline">
