@@ -108,6 +108,17 @@ export default function MeditazioniPage() {
   if (locked) {
     return (
       <div className="fqz" data-testid="fqz-meditazioni-locked">
+        {/* MD (20/8) — le uscite: senza menu del sito, da qui non si
+            tornava piu' indietro. Stesso rimedio di Aurya Sound. */}
+        <div className="topbar">
+          <a className="fqzbrand" href="/" data-testid="fqz-brand" title="Torna su Aurya">
+            <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
+            <span>
+                <b>Aurya</b>
+                <i>torna al sito</i>
+            </span>
+          </a>
+        </div>
         <main style={{ maxWidth: 680, paddingTop: 40 }}>
           <header style={{ display: 'block', textAlign: 'center' }}>
             <h1>Le <em>meditazioni</em> di Aurya</h1>
@@ -169,6 +180,12 @@ export default function MeditazioniPage() {
             </p>
           </section>
         </main>
+        <footer className="fqzfoot" data-testid="fqz-foot">
+          <a href="/">← Torna su Aurya</a>
+          <a href="/sound">Aurya Sound</a>
+          <a href="/blog">Magazine</a>
+          <a href="/newsletter">La Lettera</a>
+        </footer>
       </div>
     );
   }
@@ -176,6 +193,18 @@ export default function MeditazioniPage() {
   /* ── catalogo sbloccato ── */
   return (
     <div className="fqz" data-testid="fqz-meditazioni">
+      {/* MD (20/8) — le uscite: senza menu del sito, da qui non si
+          tornava piu' indietro. Stesso rimedio di Aurya Sound. */}
+      <div className="topbar">
+        <a className="fqzbrand" href="/" data-testid="fqz-brand" title="Torna su Aurya">
+          <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
+          <span>
+            <b>Aurya</b>
+            <i>torna al sito</i>
+          </span>
+        </a>
+      </div>
+
       <header>
         <div>
           <h1>Le <em>meditazioni</em> di Aurya</h1>
@@ -255,6 +284,12 @@ export default function MeditazioniPage() {
           <SafetyLine onOpen={() => setSafety(true)} />
         </section>
       </main>
+      <footer className="fqzfoot" data-testid="fqz-foot">
+        <a href="/">← Torna su Aurya</a>
+        <a href="/sound">Aurya Sound</a>
+        <a href="/blog">Magazine</a>
+        <a href="/newsletter">La Lettera</a>
+      </footer>
 
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
       {heartAsk && (

@@ -1328,3 +1328,47 @@ class TestControindicazioniSf:
         accept_fn = comp.split("const accept = useCallback(")[1].split("}, [")[0]
         assert "acceptSafety()" in accept_fn, \
             "la lettura sposterebbe in avanti la scadenza: rileggere non e' accettare"
+
+
+class TestMeditazioniMd:
+    """MD (20/8, founder) — due difetti dell'area meditazioni: il
+    cursore della traccia pubblica era solo decorativo, e da li' (come
+    dalle meditazioni) non si tornava piu' su Aurya: il menu del sito
+    non c'e' e il design e' un altro mondo."""
+
+    PUB = FQ_DIR / "PublicFrequencyPage.js"
+    MED = FQ_DIR / "MeditazioniPage.js"
+
+    def test_cursore_vivo(self):
+        src = self.PUB.read_text()
+        barra = src.split('data-testid="fqp-seekbar"')[1][:700]
+        assert "onClick" in barra and "getBoundingClientRect" in barra, \
+            "la barra e' di nuovo solo decorativa"
+        assert "playGuarded" in barra, \
+            "il salto scavalca il sipario delle controindicazioni"
+
+    def test_il_cursore_non_scavalca_l_anteprima(self):
+        """Senza sblocco non si puo' saltare oltre i 90 secondi: il
+        cancello della Lettera non si aggira col cursore."""
+        src = self.PUB.read_text()
+        barra = src.split('data-testid="fqp-seekbar"')[1][:700]
+        assert "if (!unlocked)" in barra and "PREVIEW_SEC" in barra, \
+            "col cursore si arriverebbe in fondo senza sbloccare"
+
+    def test_vie_di_uscita_su_entrambe_le_pagine(self):
+        for f in (self.PUB, self.MED):
+            src = f.read_text()
+            assert 'data-testid="fqz-brand"' in src and 'href="/"' in src, \
+                f"{f.name}: manca il marchio che riporta al sito"
+            assert 'data-testid="fqz-foot"' in src, \
+                f"{f.name}: manca il piede con le uscite"
+
+    def test_uscite_anche_dietro_il_cancello(self):
+        """La resa BLOCCATA delle meditazioni (chi non e' iscritto) e'
+        quella in cui restare intrappolati fa piu' danno."""
+        src = self.MED.read_text()
+        bloccata = src.split('data-testid="fqz-meditazioni-locked"')[1] \
+            .split('data-testid="fqz-meditazioni"')[0]
+        assert 'data-testid="fqz-brand"' in bloccata \
+            and 'data-testid="fqz-foot"' in bloccata, \
+            "dietro il cancello non ci sono uscite"
