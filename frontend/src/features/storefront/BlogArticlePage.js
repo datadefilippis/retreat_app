@@ -384,6 +384,12 @@ export default function BlogArticlePage() {
                     </EditorialCta>
                   </p>
                 </Section>
+              ) : article.subscriber ? (
+                /* NL-quinquies (20/8) — a chi e' GIA' iscritto non si
+                   chiede di iscriversi: sarebbe l'invito a fare una
+                   cosa fatta, e chi lo segue si ritrova una seconda
+                   email di conferma senza capire perche'. */
+                null
               ) : (
                 <Section tone="sand" rhythm="flow" width="max-w-2xl">
                   <BlogNewsletterCTA category={article.category} />

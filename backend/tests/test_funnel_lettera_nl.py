@@ -234,9 +234,12 @@ class TestGuideSbloccateDallaSessioneNlQuater:
     def test_la_sessione_sblocca(self):
         src = self.ART.read_text()
         assert "_session_unlocked" in src
-        assert ("if await _subscriber_unlocked(st) "
-                "or await _session_unlocked(request):") in src, \
+        # NL-quinquies ha unificato le due condizioni in out["subscriber"]:
+        # quello che conta e' che la SESSIONE partecipi allo sblocco
+        assert "or await _session_unlocked(request)" in src, \
             "la guida guarda ancora solo il token nel browser"
+        assert 'if out["subscriber"]:' in src, \
+            "il cancello non usa piu' la verita' condivisa"
 
     def test_sblocca_solo_se_confermato(self):
         """Essere loggati non basta: serve l'iscrizione CONFERMATA."""
@@ -261,3 +264,40 @@ class TestGuideSbloccateDallaSessioneNlQuater:
         op = fe.split("if (w.type === 'operator')")[1][:400]
         assert "saveSubscriberToken(w)" in op, \
             "il frontend scarta il token quando arriva dal cappello operatore"
+
+
+class TestNienteInvitiAChiEIscrittoNlQuinquies:
+    """NL-quinquies (20/8) — «sono iscritto ma la pagina mi chiede
+    ancora di iscrivermi»: non era il cancello della guida (quello si
+    apriva), era l'invito in fondo all'ARTICOLO, che non sapeva nulla
+    di chi legge. Chi lo seguiva riceveva una seconda email di conferma
+    senza capire perche'."""
+
+    ART = BACKEND_DIR / "routers" / "articles.py"
+    PAGE = FRONTEND_SRC / "features" / "storefront" / "BlogArticlePage.js"
+
+    def test_l_articolo_dice_se_chi_legge_e_iscritto(self):
+        src = self.ART.read_text()
+        assert 'out["subscriber"] = (await _subscriber_unlocked(st)' in src, \
+            "l'articolo non dichiara se chi lo chiede e' iscritto"
+        # il flag vale su TUTTI gli articoli, non solo le guide riservate
+        i_flag = src.index('out["subscriber"]')
+        i_gate = src.index('if out["gated"]:')
+        assert i_flag < i_gate, \
+            "il flag e' calcolato solo dentro il ramo delle guide riservate"
+
+    def test_una_sola_verita_per_lo_sblocco(self):
+        """Il gate riusa lo stesso flag: niente doppia valutazione che
+        puo' divergere."""
+        src = self.ART.read_text()
+        blocco = src.split('if out["gated"]:')[1][:200]
+        assert 'if out["subscriber"]:' in blocco, \
+            "il cancello ricalcola lo sblocco per conto suo"
+
+    def test_la_cta_tace_con_gli_iscritti(self):
+        src = self.PAGE.read_text()
+        assert "article.subscriber ?" in src, \
+            "l'invito in fondo all'articolo ignora chi e' gia' iscritto"
+        blocco = src.split("article.subscriber ?")[1][:400]
+        assert "null" in blocco.split("BlogNewsletterCTA")[0], \
+            "per gli iscritti si mostra ancora qualcosa al posto dell'invito"

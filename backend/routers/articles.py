@@ -254,8 +254,15 @@ async def get_public_article(request: Request, slug: str, lang: str = "it",
     if out["served_lang"] != "it":
         tr = doc["translations"][lang]
         out["content"] = tr["content"]
+    # NL-quinquies (20/8) — «sono iscritto e la pagina mi chiede ancora
+    # di iscrivermi»: l'invito in fondo all'articolo non sapeva nulla di
+    # chi legge. Ora l'articolo dice se chi lo chiede e' gia' iscritto
+    # confermato, cosi' la CTA puo' tacere. Vale su TUTTI gli articoli,
+    # non solo sulle guide riservate.
+    out["subscriber"] = (await _subscriber_unlocked(st)
+                         or await _session_unlocked(request))
     if out["gated"]:
-        if await _subscriber_unlocked(st) or await _session_unlocked(request):
+        if out["subscriber"]:
             out["unlocked"] = True
         else:
             preview = gated_preview(out["content"])
