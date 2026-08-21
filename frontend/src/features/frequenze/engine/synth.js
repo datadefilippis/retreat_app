@@ -658,20 +658,14 @@ const rampCurve = (param, t0, span, fn, steps = 160, now = 0) => {
  * @returns {{stop: fn, elapsed: fn, setLayerGain: fn(id, gain)}}
  */
 export function startPreview(ctx, score,
-  { fromT = 0, audioLayers = [], voiceLayers = [], voiceDuck = false,
-    fades = true } = {}) {
+  { fromT = 0, audioLayers = [], voiceLayers = [], voiceDuck = false } = {}) {
   const d = score.duration_sec;
   const off = Math.max(0, Math.min(fromT || 0, d - 1));
   const t0 = ctx.currentTime + 0.15 - off;
   const nodes = [], liveG = {};
   const sess = ctx.createGain();
   sess.connect(ctx.destination);
-  /* TS1b — in Crea si ascolta per VERIFICARE, non per meditare: il
-     compositore passa fades:false e l'anteprima parte a volume pieno.
-     Le dissolvenze restano nella traccia pubblicata (render e player
-     pubblico non toccano questo default). */
-  const fi = fades ? (score.fade_in_sec || 0) : 0;
-  const fo = fades ? (score.fade_out_sec || 0) : 0;
+  const fi = score.fade_in_sec || 0, fo = score.fade_out_sec || 0;
   const now = ctx.currentTime;
   const startAt = now + 0.15;
   // Col seek in avanti t0 finisce nel passato (anche sotto zero): ogni

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Accorcia le basi oltre la tolleranza, SFUMANDO — mai taglio netto.
 
-Decisione founder (21/8): tetto a 30 minuti con tolleranza di qualche
-minuto — le basi da «30 e spiccioli» (30,1–30,3) NON si toccano; quelle
-davvero lunghe (45 e 37 min) si portano a 30 con una dissolvenza di
-coda di 12 secondi. Il motivo del tetto non è il peso (lo spezzone lo
+Decisione founder (21/8, rivista in serata): STANDARD a 30 minuti
+esatti — ogni base che supera i 30:00 si porta a 30 con una dissolvenza
+di coda di 12 secondi (mai taglio netto). Il motivo del tetto non è il peso (lo spezzone lo
 ha già azzerato): è che l'ascolto a schermo bloccato regge fino a 30
 minuti, e nessuna traccia deve restarne esclusa.
 
@@ -36,8 +35,10 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parent.parent / "backend"
 sys.path.insert(0, str(BACKEND))
 
-TOLLERANZA_SEC = 1980     # 33 min: «qualche minuto in piu'» del founder
-TARGET_SEC = 1800         # si accorcia a 30
+# 21/8 sera: il founder RITRATTA la tolleranza — si standardizza a 30
+# esatti, sempre con la coda sfumata (mai taglio netto)
+TOLLERANZA_SEC = 1800
+TARGET_SEC = 1800
 FADE_SEC = 12             # la coda si spegne, non si tronca
 BITRATE = 160_000
 

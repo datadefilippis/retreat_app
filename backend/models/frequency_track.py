@@ -220,8 +220,10 @@ def clean_score(raw):
                          else SCORE_VERSION_VOICE if (has_voice or voice_duck)
                          else SCORE_VERSION,
         "duration_sec": round(duration, 1),
-        "fade_in_sec": round(_num(raw.get("fade_in_sec"), 0, 120, 10), 1),
-        "fade_out_sec": round(_num(raw.get("fade_out_sec"), 0, 120, 20), 1),
+        # default 5/10 (21/8, founder): abbastanza per la morbidezza,
+        # abbastanza poco perche' il play non sembri rotto
+        "fade_in_sec": round(_num(raw.get("fade_in_sec"), 0, 120, 5), 1),
+        "fade_out_sec": round(_num(raw.get("fade_out_sec"), 0, 120, 10), 1),
         "layers": layers,
         "phases": phases,
     }

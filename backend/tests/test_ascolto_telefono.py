@@ -392,28 +392,29 @@ class TestToccoESuonoTs:
             assert vecchio not in pulito_s and vecchio not in pulito_r, \
                 f"riapparso un numero locale: {vecchio}"
 
-    def test_l_anteprima_del_compositore_salta_le_dissolvenze(self):
-        """TS1b — in Crea si ascolta per verificare: fades:false. Le
-        dissolvenze restano nel pubblicato: il player pubblico NON
-        passa fades, e il render non conosce proprio l'opzione."""
-        assert "fades = true" in SYNTH            # il default e' fedele
-        assert "fades: false" in PAGE             # solo il compositore
-        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
-        assert "fades" not in _senza_commenti(pub), \
-            "il player pubblico ha toccato le dissolvenze: il pubblicato cambia"
-        assert "fades" not in _senza_commenti(RENDER), \
-            "il render ha imparato a saltare le dissolvenze: l'export mente"
+    def test_anteprima_e_pubblicato_suonano_uguali(self):
+        """21/8 sera, founder RITRATTA TS1b: in Crea si sente
+        ESATTAMENTE cio' che sentira' chi ascolta — dissolvenze
+        comprese, «in maniera uniforme». L'opzione fades non esiste
+        piu' in nessun punto: non puo' tornare di nascosto."""
+        for nome, src in (("synth", SYNTH), ("FrequenzePage", PAGE),
+                          ("render", RENDER)):
+            assert "fades" not in _senza_commenti(src), \
+                f"{nome}: ricomparsa una via con dissolvenze diverse"
 
-    def test_la_nota_dice_dove_sono_finite_le_dissolvenze(self):
-        """Senza questa riga l'operatore crede di aver pubblicato una
-        traccia che parte secca."""
-        assert 'data-testid="fq-nota-fades"' in PAGE
-        blocco = PAGE.split('data-testid="fq-nota-fades"')[1][:700]
-        assert "{fadeIn}" in blocco and "{fadeOut}" in blocco, \
-            "la nota non usa i numeri VERI dell'operatore"
-        prima = PAGE.split('data-testid="fq-nota-fades"')[0][-300:]
-        assert "fadeIn > 0 || fadeOut > 0" in prima, \
-            "la nota comparirebbe anche senza dissolvenze: rumore"
+    def test_i_default_delle_dissolvenze_sono_5_e_10(self):
+        """Decisi dal founder: morbidezza sufficiente, e il play non
+        sembra rotto (il problema che TS1b provava a risolvere)."""
+        assert "useState(5)" in PAGE and "useState(10)" in PAGE
+        modello = (BACKEND_DIR / "models" / "frequency_track.py").read_text()
+        assert '0, 120, 5), 1)' in modello and '0, 120, 10), 1)' in modello
+
+    def test_le_etichette_dicono_cosa_succede_al_suono(self):
+        """«apertura/chiusura» non si capiva (parola del founder):
+        le etichette ora descrivono il suono, e il tooltip completa."""
+        assert "nasce in (s)" in PAGE and "si spegne in (s)" in PAGE
+        assert 'data-testid="fq-nota-fades"' not in PAGE, \
+            "la nota «anteprima senza dissolvenze» non e' piu' vera"
 
     def test_la_barra_segue_il_dito(self):
         """TS2 — SeekBar: capture, movimento ottimistico, UN commit al

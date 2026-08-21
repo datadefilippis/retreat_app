@@ -245,3 +245,28 @@ i 30 (niente tagli netti alle basi da «30 e spiccioli»); Bunny
   ES6 dicono quando riaprirlo; l'architettura (id, non URL; 2 punti di
   costruzione degli indirizzi) rende la predisposizione una mezz'ora
   di lavoro il giorno che servirà.
+
+
+---
+
+## REVISIONE SERALE (21/8) — le tre decisioni finali del founder
+
+1. **Dissolvenze: default 5 e 10** (erano 10 e 20). E le etichette in
+   Crea ora dicono cosa succede al suono: **«nasce in (s)»** e **«si
+   spegne in (s)»**, coi tooltip che completano la frase —
+   «apertura/chiusura» non lo capiva nemmeno il founder.
+2. **UNIFORME: TS1b ritrattata.** In Crea si sente esattamente ciò che
+   sentirà chi ascolta, dissolvenze comprese. L'opzione `fades` è stata
+   RIMOSSA dal motore (non può tornare di nascosto: guardia). Coi
+   default nuovi il play in Crea arriva a volume pieno in 5 s — il
+   problema che TS1b curava (10 s × attacco 12 s = silenzio) non
+   esiste più alla radice, perché l'attacco è 1,5 s da TS1a.
+   La nota «anteprima senza dissolvenze» è stata tolta: non è più vera.
+3. **Tolleranza ritrattata: standard a 30:00.** Anche le quattro basi
+   da 30,1–30,3 sono state portate a 30 esatti con la coda sfumata in
+   12 s. Bonus non richiesto ma benvenuto: la ricodifica le ha portate
+   da 55,4 a ~35 MB l'una (−80 MB di libreria). Guardia viva a 1800,5 s.
+
+Ora la regola è una e senza eccezioni: **nessuna base supera i 30:00**,
+ogni traccia pubblicata è ascoltabile a schermo bloccato, e ciò che
+l'operatore sente in Crea è ciò che il mondo sentirà.

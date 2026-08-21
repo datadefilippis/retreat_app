@@ -179,8 +179,8 @@ export default function FrequenzePage() {
   const [learn, setLearn] = useState(null);              // {title,body}
 
   const [durationMin, setDurationMin] = useState(20);
-  const [fadeIn, setFadeIn] = useState(10);
-  const [fadeOut, setFadeOut] = useState(20);
+  const [fadeIn, setFadeIn] = useState(5);
+  const [fadeOut, setFadeOut] = useState(10);
   const [layers, setLayers] = useState([]);
   const [phases, setPhases] = useState([]);
   const [title, setTitle] = useState('');
@@ -557,9 +557,11 @@ export default function FrequenzePage() {
       if (playTokenRef.current !== token) { setPreparing(false); return; }
     }
     liveRef.current = startPreview(ctx, score,
-      /* TS1b — qui si ascolta per verificare: dissolvenze escluse.
-         Restano nella traccia pubblicata (render e player pubblico). */
-      { fromT, audioLayers, voiceLayers: vLayers, voiceDuck, fades: false });
+      /* 21/8, founder (ritratta TS1b): in Crea si sente ESATTAMENTE
+         cio' che sentira' chi ascolta — dissolvenze comprese. Coi
+         default nuovi (5s, non 10x12 moltiplicati) il play non sembra
+         piu' rotto, e l'uniformita' vale piu' della partenza secca. */
+      { fromT, audioLayers, voiceLayers: vLayers, voiceDuck });
     setPreparing(false);
     setPlaying(true);
     timerRef.current = setInterval(() => {
@@ -1612,11 +1614,14 @@ export default function FrequenzePage() {
                     <input type="number" value={durationMin} min="1" max="30" step="1"
                       onChange={(e) => { const v = +e.target.value; if (!isNaN(v) && v > 0) onDurationChange(v); }} /> min
                   </label>
-                  <label title="Dissolvenza iniziale in secondi">apertura
+                  {/* 21/8, founder: «apertura/chiusura si capisce poco».
+                      Le etichette dicono COSA succede al suono, e il
+                      tooltip completa la frase. */}
+                  <label title="All'inizio il suono nasce dal silenzio e sale piano per questi secondi">nasce in (s)
                     <input type="number" value={fadeIn} min="0" max="120" step="1"
                       onChange={(e) => setFadeIn(+e.target.value || 0)} /> s
                   </label>
-                  <label title="Dissolvenza finale in secondi">chiusura
+                  <label title="Alla fine il suono si spegne dolcemente negli ultimi secondi della sessione">si spegne in (s)
                     <input type="number" value={fadeOut} min="0" max="120" step="1"
                       onChange={(e) => setFadeOut(+e.target.value || 0)} /> s
                   </label>
@@ -1646,19 +1651,6 @@ export default function FrequenzePage() {
                   onCommit={(t) => seekTo(t)} />
               )}
             </div>
-            {/* TS1b — l'anteprima parte a volume pieno: la riga dice
-                DOVE sono finite le dissolvenze, coi numeri veri, o
-                l'operatore crederebbe di aver pubblicato senza. */}
-            {layers.length > 0 && (fadeIn > 0 || fadeOut > 0) && (
-              <div className="continuo-riga" data-testid="fq-nota-fades">
-                {/* riscritta il 21/8: il founder stesso non la capiva —
-                    prova che il copy era per me, non per l'operatore */}
-                Qui l'anteprima parte subito a volume pieno, per lavorare.
-                Chi ascolterà la traccia pubblicata la sentirà nascere dal
-                silenzio in {fadeIn} secondi e spegnersi dolcemente negli
-                ultimi {fadeOut}.
-              </div>
-            )}
             {/* ES3 — quanto chiedera' al dispositivo. Compare solo
                 quando c'e' davvero un problema: una riga che appare
                 sempre non la legge piu' nessuno. La soglia e' bassa

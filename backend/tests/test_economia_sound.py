@@ -327,26 +327,17 @@ class TestFinestraETetto30:
         assert 'max="30"' in pagina
         assert "Math.min(1800, Math.max(60, durationMin * 60))" in pagina
 
-    def test_la_nota_delle_dissolvenze_parla_umano(self):
-        """Riscritta il 21/8: il founder stesso non la capiva — la
-        prova che il copy era per me, non per l'operatore."""
-        pagina = (FQ_DIR / "FrequenzePage.js").read_text()
-        blocco = pagina.split('data-testid="fq-nota-fades"')[1][:600]
-        assert "volume pieno" in blocco
-        assert "{fadeIn}" in blocco and "{fadeOut}" in blocco, \
-            "la nota deve dire i numeri VERI dell'operatore"
-
-    def test_la_libreria_tollera_qualche_minuto_ma_non_di_piu(self):
-        """Guardia VIVA (tolleranza founder: «qualche minuto in piu'
-        rispetto ai 30»): 33 minuti passano, 37 no."""
+    def test_la_libreria_e_standard_a_trenta(self):
+        """Guardia VIVA. 21/8 sera: il founder ritratta la tolleranza —
+        standard a 30:00, sempre con la coda sfumata (lo script)."""
         try:
             from pymongo import MongoClient
             db = MongoClient("mongodb://localhost:27017",
                              serverSelectionTimeoutMS=2000)["retreat_dev"]
             lunghe = [a["title"] for a in db.audio_assets.find(
-                {"duration_sec": {"$gt": 1980}}, {"title": 1})]
+                {"duration_sec": {"$gt": 1800.5}}, {"title": 1})]
         except Exception:
             pytest.skip("Mongo non raggiungibile")
         assert not lunghe, (
-            f"basi oltre i 33 minuti: {lunghe} — "
+            f"basi oltre i 30 minuti: {lunghe} — "
             "scripts/accorcia_basi_lunghe.py --esegui")
