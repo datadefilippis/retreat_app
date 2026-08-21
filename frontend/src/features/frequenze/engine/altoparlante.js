@@ -39,12 +39,30 @@ export function frequenzaDominante(cfg) {
 
 const fmtHz = (hz) => String(hz).replace('.', ',');
 
-/* Il messaggio per UNA scheda: breve, e con il numero VERO di quella
-   scheda — un avviso che dice «110 Hz» spiega, uno generico ammonisce. */
+/* I metodi in cui il numero in cima alla scheda E' GIA' questo tono
+   («432 Hz», «Bordone 110 Hz»): li' ripeterlo non crea equivoci. */
+const TONO_E_IL_TITOLO = { tone: 1, drone: 1 };
+
+/**
+ * Il messaggio per UNA scheda.
+ *
+ * Deve dire il numero vero — un avviso che dice «110 Hz» spiega, uno
+ * generico ammonisce — ma soprattutto deve dire CHE COSA e' quel
+ * numero. Sulle schede ritmiche il titolo porta gia' una frequenza che
+ * e' un'ALTRA cosa: Delta dice «0,5–4 Hz» (il ritmo) e suona su una
+ * portante di 140 Hz (il tono). Un avviso che lascia cadere «140 Hz»
+ * accanto a «0,5–4 Hz» senza spiegare mette in contraddizione la
+ * scheda con se stessa — proprio dove il testo lungo insegna che «una
+ * banda EEG e una frequenza sonora non sono la stessa cosa».
+ */
 export function avvisoCuffie(cfg) {
   const hz = frequenzaDominante(cfg);
   if (hz == null || hz >= SOGLIA_TELEFONO_HZ) return null;
-  return `${fmtHz(hz)} Hz non esce dall'altoparlante del telefono: servono le cuffie.`;
+  const m = cfg.method || 'bin';
+  const coda = `troppo grave per l'altoparlante del telefono: servono le cuffie.`;
+  if (m === 'shepard') return `Le voci più gravi della discesa sono ${coda}`;
+  if (TONO_E_IL_TITOLO[m]) return `Un tono di ${fmtHz(hz)} Hz è ${coda}`;
+  return `Il ritmo viaggia su un tono di ${fmtHz(hz)} Hz, ${coda}`;
 }
 
 /* Il messaggio per uno SCORE (pagina pubblica): guarda i livelli neuro
@@ -60,7 +78,9 @@ export function avvisoCuffieScore(score) {
   const hz = Math.min(...gravi);
   const altro = (score.layers || []).some(
     (l) => l.kind === 'audio' || l.kind === 'voice');
+  // Anche qui il numero va presentato per quello che e': il TONO su cui
+  // viaggiano le frequenze, non il ritmo che la sessione dichiara.
   return altro
-    ? `Dal telefono servono le cuffie: le frequenze (${fmtHz(hz)} Hz) non escono dall'altoparlante, anche se voce e basi si sentono.`
-    : `Dal telefono servono le cuffie: ${fmtHz(hz)} Hz non esce dall'altoparlante.`;
+    ? `Dal telefono servono le cuffie: il tono più grave (${fmtHz(hz)} Hz) non esce dall'altoparlante, anche se voce e basi si sentono.`
+    : `Dal telefono servono le cuffie: il tono su cui viaggiano le frequenze (${fmtHz(hz)} Hz) non esce dall'altoparlante.`;
 }

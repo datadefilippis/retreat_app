@@ -195,3 +195,141 @@ class TestAscoltoContinuoAt3:
     def test_dove_manca_l_api_il_pulsante_non_compare(self):
         assert "'mediaSession' in navigator" in CONTINUO
         assert "continuoSupportato()" in PUB
+
+
+ANELLO = (FQ_DIR / "engine" / "anello.js").read_text()
+SYNTH = (FQ_DIR / "engine" / "synth.js").read_text()
+
+
+class TestAnelloAt4:
+    """
+    AT4 — anche le frequenze reggono il blocco schermo.
+
+    I SUONI della libreria gia' lo reggevano: sono file dentro un
+    <audio loop>. Le frequenze no: sono sintesi WebAudio, che il
+    telefono sospende. Uniformarle vuol dire dare anche a loro un file
+    che gira — e il problema di un file che gira e' il CLIC alla
+    giunzione. Qui si difende l'aritmetica che lo evita.
+    """
+
+    def test_il_respiro_del_motore_e_lo_stesso_numero(self):
+        """anello.js sceglie la durata come multiplo del respiro lento
+        che envAt aggiunge a ogni livello. Se quel periodo cambia in
+        synth.js e non qui, ogni anello ricomincia a scattare — e non
+        se ne accorgerebbe nessuno fino all'orecchio dell'utente."""
+        assert "RESPIRO_MOTORE_SEC = 26" in ANELLO
+        assert "Math.sin((TAU * tAbs) / 26" in SYNTH, \
+            "envAt non usa piu' 26 s: la durata degli anelli va rifatta"
+
+    def test_il_margine_supera_attacco_e_rilascio(self):
+        """envAt apre con un attacco fino a 12 s e chiude con un
+        rilascio fino a 16 s: renderizzati dentro l'anello farebbero
+        PULSARE il giro. Il ritaglio deve cadere in tenuta piena."""
+        assert "MARGINE_SEC = 30" in ANELLO
+        assert "Math.min(12, span * 0.3), r = Math.min(16, span * 0.3)" in SYNTH, \
+            "attacco/rilascio cambiati: il margine dell'anello va ricontrollato"
+
+    def test_prima_prova_i_multipli_del_respiro(self):
+        """L'ordine conta: cercare prima i multipli di 26 s chiude
+        ANCHE il respiro (misurato: 28 schede su 36 chiudono a 26 s
+        esatti). Invertire l'ordine darebbe giri piu' corti ma con uno
+        scalino di livello a ogni giro."""
+        i_con = ANELLO.index("RESPIRO_MOTORE_SEC * k")
+        i_senza = ANELLO.index("for (let D = 1; D <= 100; D++)")
+        assert i_con < i_senza
+
+    def test_la_dissolvenza_c_e_sempre(self):
+        """Dove il calcolo e' esatto le due parti sono IDENTICHE e la
+        dissolvenza non cambia un campione; dove non lo e' (rumore,
+        Shepard, Schumann) copre la giunzione. Applicarla sempre e'
+        gratis e toglie un ramo condizionale che sbaglierebbe."""
+        assert "INCROCIO_SEC = 1.5" in ANELLO
+        assert "export function ritagliaAnello" in ANELLO
+        pulito = _senza_commenti(ANELLO)
+        assert "Math.cos((Math.PI * i) / x)" in pulito, \
+            "la dissolvenza non e' a coseno rialzato: il livello calerebbe a meta'"
+
+    def test_rumore_e_shepard_non_pretendono_fase(self):
+        """Il rumore e' casuale, le voci Shepard accumulano fase per
+        sempre: chiedere all'aritmetica di chiuderli darebbe un giro
+        lunghissimo e comunque sbagliato. Per loro c'e' la dissolvenza."""
+        assert "if (m === 'noise' || m === 'shepard') return [];" in ANELLO
+
+    def test_l_anello_tiene_la_frequenza_che_l_utente_vede(self):
+        """Un tragitto (Delta 4 → 2,5 Hz) non si ripete all'infinito:
+        l'anello e' il punto d'ARRIVO. E se l'utente ha preso il
+        comando col campo, e' il SUO numero — quello che ha davanti."""
+        assert "h.sweepTo != null ? h.sweepTo : h.beat" in PAGE
+        assert "portante = h.carrier" in PAGE
+
+    def test_shepard_non_si_fa_sostituire_le_ottave(self):
+        """Per Shepard f0 sono «ottave al minuto», non un battito:
+        scriverci dentro il numero dell'utente cambierebbe la velocita'
+        della discesa invece della sua altezza."""
+        assert "m === 'shepard' ? (cfg.f0 ?? 1.5) : battito" in ANELLO
+
+    def test_un_solo_lettore_per_sessione_e_anello(self):
+        """Due copie del <audio> + Media Session divergerebbero alla
+        prima modifica, e i comandi della schermata di blocco sono
+        proprio la cosa che non ci si accorge di aver rotto."""
+        pulito = _senza_commenti(CONTINUO)
+        assert pulito.count("new Audio(") == 1
+        assert pulito.count("new window.MediaMetadata") == 1
+        assert "function lettore(" in pulito
+        assert pulito.count("return lettore(") + pulito.count("= lettore(") == 2
+
+    def test_l_anello_non_dichiara_una_fine(self):
+        """Un anello non finisce: dichiarare durata e comandi di
+        spostamento farebbe disegnare al telefono una barra che arriva
+        in fondo e non finisce mai, e frecce che non fanno niente."""
+        assert "if (ciclico || !('setPositionState'" in CONTINUO
+        assert "if (!ciclico) {" in CONTINUO
+        assert "el.loop = !!ciclico" in CONTINUO
+
+    def test_uno_alla_volta(self):
+        """Due frequenze in loop insieme sono un pasticcio, non una
+        sessione: chi vuole sovrapporle usa «+ sessione»."""
+        assert "stopAllCards();          // il vivo tace" in PAGE
+        assert "fermaAnello();" in PAGE       # stopAllCards spegne anche l'anello
+
+    def test_la_scheda_offre_l_anello_solo_sul_telefono(self):
+        blocco = PAGE.split('data-testid="fq-anello"')[0][-500:]
+        assert "solo-telefono-block" in blocco
+        assert "continuoSupportato()" in PAGE
+
+
+class TestAvvisoDiceCosaEIlNumero:
+    """
+    Il founder, 21/8: «su Delta scriviamo in alto 0,5–4 Hz e poi in
+    basso 140 Hz, cioe' quanti Hz sono?».
+
+    Aveva ragione: l'avviso lasciava cadere un numero senza dire che
+    cosa fosse, accanto a un numero che e' un'ALTRA cosa — proprio
+    dove il testo lungo della scheda insegna che «una banda EEG e una
+    frequenza sonora non sono la stessa cosa».
+    """
+
+    def test_sulle_schede_ritmiche_il_numero_e_presentato(self):
+        assert "Il ritmo viaggia su un tono di ${fmtHz(hz)} Hz" in ALTO
+
+    def test_dove_il_titolo_e_gia_il_tono_non_si_spiega_due_volte(self):
+        """Su «432 Hz» o «Bordone 110 Hz» il numero in cima E' il tono:
+        aggiungere «il ritmo viaggia su» inventerebbe un ritmo che non
+        c'e'."""
+        assert "TONO_E_IL_TITOLO = { tone: 1, drone: 1 }" in ALTO
+        assert "Un tono di ${fmtHz(hz)} Hz è ${coda}" in ALTO
+
+    def test_la_discesa_non_ha_un_tono_solo(self):
+        """Shepard sono sette voci su sette ottave: dire «un tono di
+        220 Hz» sarebbe falso, 220 e' solo il centro."""
+        assert "m === 'shepard'" in ALTO
+        assert "Le voci più gravi della discesa" in ALTO
+
+    def test_anche_nella_sessione_il_numero_e_presentato(self):
+        assert "il tono su cui viaggiano le frequenze" in ALTO
+        assert "il tono più grave" in ALTO
+
+    def test_nessun_numero_nudo_rimasto(self):
+        """La formula vecchia — «140 Hz non esce dall'altoparlante» —
+        non deve tornare da nessuna parte."""
+        assert "${fmtHz(hz)} Hz non esce dall'altoparlante" not in ALTO

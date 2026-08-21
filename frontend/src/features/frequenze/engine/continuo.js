@@ -32,6 +32,7 @@
  */
 
 import { renderPcm, wavBlob } from './render';
+import { durataAnello, scoreAnello, ritagliaAnello } from './anello';
 
 export const CONTINUO_SR = 22050;
 export const CONTINUO_MAX_SEC = 1800;   // 30 min: ~158 MB di WAV, il tetto del telefono
@@ -66,13 +67,46 @@ export async function preparaContinuo(
   const pcm = await renderPcm(score, {
     sampleRate: CONTINUO_SR, audioLayers, voiceLayers, voiceDuck, onProgress,
   });
+  return lettore(pcm, score.duration_sec, { titolo, autore }, eventi, false);
+}
+
+/**
+ * L'ANELLO di una scheda: la stessa frequenza, ma in un file che gira
+ * all'infinito — come gia' fanno i suoni della libreria, che sono file
+ * dentro un <audio loop> ed e' il motivo per cui LORO sopravvivono al
+ * blocco schermo e le frequenze no.
+ *
+ * @param cfg       il cfg della scheda
+ * @param battito   il ritmo da tenere (l'arrivo del tragitto, o il
+ *                  numero che l'utente ha imposto col campo)
+ * @param portante  la portante da tenere (idem)
+ */
+export async function preparaAnello(
+  { cfg, battito, portante, titolo, onProgress }, eventi = {},
+) {
+  const { sec, esatto } = durataAnello(cfg, battito);
+  const score = scoreAnello(cfg, battito, portante, sec);
+  const pcm = await renderPcm(score, { sampleRate: CONTINUO_SR, onProgress });
+  const anello = ritagliaAnello(pcm, CONTINUO_SR, sec);
+  const h = lettore(anello, sec, { titolo, autore: null }, eventi, true);
+  h.giroSec = sec;
+  h.giroEsatto = esatto;
+  return h;
+}
+
+/* Il lettore vero e proprio: <audio> + Media Session. Uno solo, per la
+   sessione e per l'anello — due copie divergerebbero alla prima
+   modifica (e i comandi della schermata di blocco sono proprio la
+   cosa che non ci si accorge di aver rotto). */
+function lettore(pcm, d, { titolo, autore }, eventi, ciclico) {
   const url = URL.createObjectURL(wavBlob(pcm, CONTINUO_SR));
   const el = new Audio(url);
   el.preload = 'auto';
-
-  const d = score.duration_sec;
+  el.loop = !!ciclico;
   const posizione = () => {
-    if (!('setPositionState' in navigator.mediaSession)) return;
+    // un anello non ha una fine: dichiararne una farebbe disegnare al
+    // telefono una barra che arriva in fondo e non finisce mai
+    if (ciclico || !('setPositionState' in navigator.mediaSession)) return;
     try {
       navigator.mediaSession.setPositionState(
         { duration: d, playbackRate: 1, position: Math.min(d, el.currentTime) });
@@ -96,9 +130,13 @@ export async function preparaContinuo(
   az('play', () => el.play());
   az('pause', () => el.pause());
   az('stop', () => { el.pause(); el.currentTime = 0; });
-  az('seekbackward', (e2) => { el.currentTime = Math.max(0, el.currentTime - (e2.seekOffset || 15)); });
-  az('seekforward', (e2) => { el.currentTime = Math.min(d, el.currentTime + (e2.seekOffset || 15)); });
-  az('seekto', (e2) => { if (e2.seekTime != null) el.currentTime = e2.seekTime; });
+  // spostarsi dentro un anello non vuol dire niente: sono tutti lo
+  // stesso istante. Registrare i comandi disegnerebbe frecce inerti.
+  if (!ciclico) {
+    az('seekbackward', (e2) => { el.currentTime = Math.max(0, el.currentTime - (e2.seekOffset || 15)); });
+    az('seekforward', (e2) => { el.currentTime = Math.min(d, el.currentTime + (e2.seekOffset || 15)); });
+    az('seekto', (e2) => { if (e2.seekTime != null) el.currentTime = e2.seekTime; });
+  }
 
   return {
     play: () => el.play().catch(() => { /* gesto mancante: la UI mostra ▶ */ }),

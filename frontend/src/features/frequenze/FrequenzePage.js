@@ -32,6 +32,7 @@ import {
 } from './engine/voicefx';
 import { avvisoCuffie } from './engine/altoparlante';
 import { schermoAcceso, schermoLibero } from './engine/veglia';
+import { preparaAnello, continuoSupportato } from './engine/continuo';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS, CAT_SLUG, SLUG_CAT } from './content/biblioteca';
 import GuidaView from './GuidaView';
@@ -201,6 +202,12 @@ export default function FrequenzePage() {
   const ctxRef = useRef(null);
   const liveRef = useRef(null);
   const timerRef = useRef(null);
+  /* AT4 — l'anello: la scheda diventa un file che gira, cosi' regge il
+     blocco schermo come gia' fanno i suoni della libreria. Uno alla
+     volta: due frequenze in loop sono un pasticcio, non una sessione. */
+  const anelloRef = useRef(null);
+  const [anello, setAnello] = useState(null);      // { key, sec }
+  const [anelloProg, setAnelloProg] = useState(null);
   const duration = Math.max(60, durationMin * 60);
 
   // FV3 — le basi respirano piano sotto la voce (parte della ricetta)
@@ -496,10 +503,16 @@ export default function FrequenzePage() {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     setPlaying(false);
   };
+  const fermaAnello = () => {
+    if (anelloRef.current) { anelloRef.current.dispose(); anelloRef.current = null; }
+    setAnello(null);
+    setAnelloProg(null);
+  };
   const stopAllCards = () => {
     Object.values(liveCardsRef.current).forEach((h) => h.stop());
     liveCardsRef.current = {};
     setLiveKeys([]);
+    fermaAnello();
   };
   useEffect(() => () => { stopSession(); stopAllCards(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -602,6 +615,34 @@ export default function FrequenzePage() {
     handles[key] = h;
     setLiveKeys(Object.keys(handles));
   };
+  /* AT4 — l'anello di UNA scheda. Passa dal sipario come ogni via al
+     suono. La frequenza che entra nel file e' quella d'ARRIVO (un
+     tragitto non si puo' ripetere all'infinito) o quella che l'utente
+     ha imposto col campo — cioe' esattamente il numero che vede. */
+  const preparaAnelloScheda = guard(async (key, entry) => {
+    if (anelloProg != null) return;
+    const h = liveCardsRef.current[key];
+    if (!h) return;
+    const cfg = entry.cfg || {};
+    const battito = h.sweepTo != null ? h.sweepTo : h.beat;
+    const portante = h.carrier;
+    stopAllCards();          // il vivo tace: comanda il file. PRIMA di
+    setAnelloProg(0);        // segnare il progresso: stopAllCards lo azzera.
+    try {
+      const a = await preparaAnello({
+        cfg, battito, portante, titolo: cfg.name || entry.t,
+        onProgress: (pr) => setAnelloProg(pr),
+      }, {
+        onPlay: () => {}, onPause: () => {},
+      });
+      anelloRef.current = a;
+      setAnello({ key, sec: a.giroSec });
+      a.play();
+    } catch {
+      setStatus('Non sono riuscito a preparare l\'ascolto continuo');
+    } finally { setAnelloProg(null); }
+  });
+
   const addCardToSession = (entry) => {
     const cfg = entry.cfg || {};
     setLayers((ls) => [...ls, {
@@ -884,6 +925,25 @@ export default function FrequenzePage() {
             )}
           </div>
         )}
+        {live && continuoSupportato() && (
+          /* AT4 — la porta verso l'anello: stesso invito della pagina
+             pubblica, perche' e' la stessa promessa. Solo su telefono:
+             e' li' che lo schermo si blocca e il suono muore. */
+          <div className="continuo-riga solo-telefono-block">
+            {anelloProg != null ? (
+              <span data-testid="fq-anello-prog">
+                <span className="prep">◌</span> Preparo l'ascolto continuo…
+                {' '}{Math.round(anelloProg * 100)}%
+              </span>
+            ) : (
+              <button type="button" className="readmore"
+                data-testid="fq-anello"
+                onClick={() => preparaAnelloScheda(key, entry)}>
+                Prepara l'ascolto a schermo bloccato
+              </button>
+            )}
+          </div>
+        )}
         {live && avvisoCuffie(entry.cfg) && (
           /* AT1 — l'avviso nel momento del play, solo su telefono
              (media query di .solo-telefono) e solo sulle schede il cui
@@ -892,6 +952,13 @@ export default function FrequenzePage() {
           <div className="cuffie-avviso solo-telefono-block"
             data-testid="fq-avviso-cuffie">
             🎧 {avvisoCuffie(entry.cfg)}
+          </div>
+        )}
+        {anello && anello.key === key && (
+          <div className="continuo-riga attivo" data-testid="fq-anello-attivo">
+            Ascolto continuo attivo: puoi bloccare lo schermo.
+            <button type="button" className="readmore" style={{ marginLeft: 10 }}
+              data-testid="fq-anello-ferma" onClick={fermaAnello}>Ferma</button>
           </div>
         )}
         {entry.cfg && (
