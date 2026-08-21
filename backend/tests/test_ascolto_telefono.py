@@ -408,7 +408,7 @@ class TestToccoESuonoTs:
         """Senza questa riga l'operatore crede di aver pubblicato una
         traccia che parte secca."""
         assert 'data-testid="fq-nota-fades"' in PAGE
-        blocco = PAGE.split('data-testid="fq-nota-fades"')[1][:300]
+        blocco = PAGE.split('data-testid="fq-nota-fades"')[1][:700]
         assert "{fadeIn}" in blocco and "{fadeOut}" in blocco, \
             "la nota non usa i numeri VERI dell'operatore"
         prima = PAGE.split('data-testid="fq-nota-fades"')[0][-300:]

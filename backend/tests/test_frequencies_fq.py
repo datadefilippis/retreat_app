@@ -65,11 +65,14 @@ class TestScoreModelFq0:
                             "layers": VALID_SCORE["layers"]}) is None
 
     def test_valori_fuori_range_riportati(self):
-        from models.frequency_track import clean_score, LAYERS_MAX
+        from models.frequency_track import (clean_score, LAYERS_MAX,
+                                            DURATION_MAX)
         s = clean_score({"duration_sec": 10 ** 9,
                          "layers": [{"method": "iso", "f0": 500, "f1": -3,
                                      "gain": 9, "carrier": 1}]})
-        assert s["duration_sec"] == 7200
+        # il tetto si legge dal modello (21/8: 7200 → 1800, decisione
+        # founder — ogni traccia resta ascoltabile a schermo bloccato)
+        assert s["duration_sec"] == DURATION_MAX
         lay = s["layers"][0]
         # il pavimento si legge dal modello: ONDA 3 l'ha abbassato a
         # 0,05 Hz per i ritmi del respiro, e una guardia col numero

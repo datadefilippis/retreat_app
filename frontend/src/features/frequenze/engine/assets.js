@@ -25,7 +25,6 @@ import { anelloDaBuffer } from './anello';
  * brano che evolve (loop:false) si scarica intero, com'e' giusto.
  */
 export const SPEZZONE_SEC = 180;        // ~3 min di tappeto in anello
-const SOGLIA_LUNGA_SEC = 300;           // sotto i 5 min non vale la pena
 const MARGINE_SPEZZONE = 1.25;          // bitrate variabile: si chiede un po' di piu'
 
 const bufferCache = new Map(); // url → { p: Promise<AudioBuffer>, bytes }
@@ -54,26 +53,33 @@ function sfoltisci(inUso) {
 }
 
 /**
- * Quanti byte servono per ~SPEZZONE_SEC di questa base.
+ * Quanti byte servono per `sec` secondi di questa base.
  * Dai metadati dell'asset (size/durata = bitrate medio reale): niente
- * indovinelli, e se i metadati mancano si torna al file intero.
+ * indovinelli; se i metadati mancano, o se il pezzo coprirebbe quasi
+ * tutto il file comunque, si torna al file intero.
  */
-function bytesSpezzone(asset) {
+function bytesParziale(asset, sec) {
   const dur = asset?.duration_sec, size = asset?.size_bytes;
-  if (!dur || !size || dur <= SOGLIA_LUNGA_SEC) return null;
-  return Math.ceil((size / dur) * SPEZZONE_SEC * MARGINE_SPEZZONE);
+  if (!dur || !size || !sec) return null;
+  if (sec >= dur * 0.9) return null;      // tanto vale prenderlo intero
+  return Math.ceil((size / dur) * sec * MARGINE_SPEZZONE);
 }
 
 /**
- * @param tappeto  se valorizzato ({asset}), la base serve come tappeto
- *                 in loop: si prende lo spezzone iniziale e lo si
- *                 chiude in anello. Altrimenti: file intero, come prima.
+ * @param parziale  se valorizzato ({asset, sec, anello}), della base
+ *                  servono solo `sec` secondi: un TAPPETO (anello:true)
+ *                  prende lo spezzone e lo chiude in giro; un BRANO
+ *                  INTERO usato per una finestra (anello:false) prende
+ *                  solo la finestra — la coda la sfuma gia' l'inviluppo
+ *                  del livello, niente da ricucire. Domanda esplicita
+ *                  del founder: «se una traccia da 30 minuti e' usata
+ *                  per 3, si scaricano 3 minuti?» — ora si'.
  */
-export function loadAssetBuffer(ctx, url, inUso = new Set([url]), tappeto = null) {
-  const limite = tappeto ? bytesSpezzone(tappeto.asset) : null;
-  // chiave distinta: la stessa base puo' servire intera in una
-  // sessione e a spezzone in un'altra — due buffer diversi
-  const chiave = limite ? `${url}#tappeto` : url;
+export function loadAssetBuffer(ctx, url, inUso = new Set([url]), parziale = null) {
+  const limite = parziale ? bytesParziale(parziale.asset, parziale.sec) : null;
+  // chiave distinta per taglio: la stessa base puo' servire intera in
+  // una sessione e parziale in un'altra — buffer diversi
+  const chiave = limite ? `${url}#p${limite}` : url;
   if (!bufferCache.has(chiave)) {
     const entry = { bytes: 0 };
     entry.p = fetch(url, limite ? { headers: { Range: `bytes=0-${limite - 1}` } } : {})
@@ -83,12 +89,13 @@ export function loadAssetBuffer(ctx, url, inUso = new Set([url]), tappeto = null
         }
         // 200 su una richiesta con Range = il server non li conosce
         // (dev vecchio, proxy di mezzo): e' arrivato il file intero,
-        // e va trattato come tale — mai tagliarlo in anello.
-        const parziale = limite != null && r.status === 206;
-        return r.arrayBuffer().then((ab) => ({ ab, parziale }));
+        // e va trattato come tale — mai tagliarlo.
+        const ottenuto = limite != null && r.status === 206;
+        return r.arrayBuffer().then((ab) => ({ ab, parziale: ottenuto }));
       })
-      .then(({ ab, parziale }) => ctx.decodeAudioData(ab)
-        .then((buf) => (parziale ? anelloDaBuffer(ctx, buf) : buf)))
+      .then(({ ab, parziale: ottenuto }) => ctx.decodeAudioData(ab)
+        .then((buf) => (ottenuto && parziale?.anello
+          ? anelloDaBuffer(ctx, buf) : buf)))
       .then((buf) => {
         entry.bytes = buf.length * buf.numberOfChannels * 4;
         sfoltisci(inUso);
@@ -115,10 +122,13 @@ export async function resolveAudioLayers(ctx, score, soundsById) {
     const asset = soundsById[l.asset_id];
     if (!asset || !asset.stream_url) continue;
     try {
-      // tappeto = il livello e' in loop: allora basta lo spezzone
-      const buffer = await loadAssetBuffer(
-        ctx, asset.stream_url, inUso,
-        l.loop !== false ? { asset } : null);
+      // tappeto in loop → spezzone in anello; brano intero → solo la
+      // finestra che il mix usa davvero (la coda la sfuma l'inviluppo)
+      const finestra = Math.max(0, (l.end ?? 0) - (l.start ?? 0));
+      const parziale = l.loop !== false
+        ? { asset, sec: SPEZZONE_SEC, anello: true }
+        : (finestra > 0 ? { asset, sec: finestra + 10, anello: false } : null);
+      const buffer = await loadAssetBuffer(ctx, asset.stream_url, inUso, parziale);
       out.push({ id: l.id, buffer, start: l.start, end: l.end,
                  gain: l.gain, loop: l.loop !== false, mute: false });
     } catch (e) { /* base saltata: meglio una sessione parziale che muta */ }
@@ -184,8 +194,10 @@ export function memoriaStimataMB(score, assetsById, sampleRate = 44100) {
     const a = assetsById?.[l.asset_id];
     const dur = a?.duration_sec;
     if (!dur) continue;
-    const usati = (l.loop !== false && dur > SOGLIA_LUNGA_SEC)
-      ? SPEZZONE_SEC : dur;
+    const finestra = Math.max(0, (l.end ?? dur) - (l.start ?? 0));
+    const usati = l.loop !== false
+      ? Math.min(SPEZZONE_SEC, dur)
+      : Math.min(finestra || dur, dur);
     const peso = usati * alSecondo;
     mb += peso;
     if (peso > 150) colpevoli.push(a.title || 'una base');

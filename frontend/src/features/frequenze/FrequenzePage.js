@@ -210,7 +210,7 @@ export default function FrequenzePage() {
   const anelloRef = useRef(null);
   const [anello, setAnello] = useState(null);      // { key, sec }
   const [anelloProg, setAnelloProg] = useState(null);
-  const duration = Math.max(60, durationMin * 60);
+  const duration = Math.min(1800, Math.max(60, durationMin * 60));
 
   // FV3 — le basi respirano piano sotto la voce (parte della ricetta)
   const [voiceDuck, setVoiceDuck] = useState(false);
@@ -1606,7 +1606,10 @@ export default function FrequenzePage() {
                       onChange={(e) => setTitle(e.target.value)} />
                   </label>
                   <label title="Lunghezza totale della sessione">durata
-                    <input type="number" value={durationMin} min="1" max="60" step="1"
+                    {/* tetto 30 (decisione founder 21/8): ogni traccia
+                        pubblicata resta ascoltabile a schermo bloccato,
+                        che regge fino a 30 minuti. Il default resta 20. */}
+                    <input type="number" value={durationMin} min="1" max="30" step="1"
                       onChange={(e) => { const v = +e.target.value; if (!isNaN(v) && v > 0) onDurationChange(v); }} /> min
                   </label>
                   <label title="Dissolvenza iniziale in secondi">apertura
@@ -1648,8 +1651,12 @@ export default function FrequenzePage() {
                 l'operatore crederebbe di aver pubblicato senza. */}
             {layers.length > 0 && (fadeIn > 0 || fadeOut > 0) && (
               <div className="continuo-riga" data-testid="fq-nota-fades">
-                Anteprima senza dissolvenze — nella traccia pubblicata
-                entra in {fadeIn}s ed esce in {fadeOut}s.
+                {/* riscritta il 21/8: il founder stesso non la capiva —
+                    prova che il copy era per me, non per l'operatore */}
+                Qui l'anteprima parte subito a volume pieno, per lavorare.
+                Chi ascolterà la traccia pubblicata la sentirà nascere dal
+                silenzio in {fadeIn} secondi e spegnersi dolcemente negli
+                ultimi {fadeOut}.
               </div>
             )}
             {/* ES3 — quanto chiedera' al dispositivo. Compare solo

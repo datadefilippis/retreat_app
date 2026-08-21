@@ -51,7 +51,11 @@ INTENTS = ("dormire", "meditare", "rilassare", "concentrare",
            "elaborare", "energizzare")
 
 # limiti fisici/di buon senso: gli stessi del prototipo, arrotondati.
-DURATION_MIN, DURATION_MAX = 60, 7200          # 1 min .. 2 h
+DURATION_MIN, DURATION_MAX = 60, 1800          # 1 min .. 30 min
+# 30 e non due ore (decisione founder 21/8): l'ascolto a schermo
+# bloccato — la funzione piu' preziosa su telefono — regge fino a 30
+# minuti (CONTINUO_MAX_SEC). Col tetto, NESSUNA traccia pubblicata
+# resta esclusa da quella funzione.
 LAYERS_MAX = 24
 PHASES_MAX = 12
 # ONDA 3 (21/8) — il pavimento scende da 0,2 a 0,05 Hz per far entrare

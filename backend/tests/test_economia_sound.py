@@ -175,26 +175,27 @@ class TestSpezzoneEs3:
     def test_il_criterio_e_il_flag_loop_non_un_indovinello(self):
         """Un brano che EVOLVE (loop:false) si scarica intero: e' una
         scelta dell'operatore, non un caso da ottimizzare."""
-        assert "l.loop !== false ? { asset } : null" in ASSETS
+        assert "{ asset, sec: SPEZZONE_SEC, anello: true }" in ASSETS
+        assert "anello: false" in ASSETS   # il brano-finestra non va in giro
 
     def test_lo_spezzone_si_calcola_dai_metadati(self):
         """size/durata = bitrate medio reale della base: niente
         indovinelli, e se i metadati mancano si torna al file intero."""
-        blocco = ASSETS.split("function bytesSpezzone")[1][:400]
+        blocco = ASSETS.split("function bytesParziale")[1][:400]
         assert "size / dur" in blocco
         assert "return null" in blocco, "senza metadati deve tornare al file intero"
 
-    def test_sotto_i_cinque_minuti_non_si_tocca_niente(self):
-        """Dove non c'e' problema non si cambia comportamento."""
-        assert "SOGLIA_LUNGA_SEC = 300" in ASSETS
-        assert "dur <= SOGLIA_LUNGA_SEC) return null" in ASSETS
+    def test_le_basi_corte_non_si_toccano(self):
+        """Dove non c'e' problema non si cambia comportamento: se il
+        pezzo coprirebbe quasi tutto il file, si prende intero."""
+        assert "sec >= dur * 0.9) return null" in ASSETS
 
     def test_il_206_e_la_condizione_per_tagliare(self):
         """Se il server IGNORA il Range risponde 200 col file intero:
         chiuderlo in anello taglierebbe un brano di 45 minuti a 3.
         Solo un 206 autorizza il ritaglio."""
         assert "r.status === 206" in ASSETS
-        assert "parziale ? anelloDaBuffer(ctx, buf) : buf" in ASSETS
+        assert "parziale?.anello" in ASSETS and "anelloDaBuffer(ctx, buf) : buf" in ASSETS
 
     def test_la_dissolvenza_e_la_stessa_dell_anello(self):
         """Due materie diverse (PCM Int16 del render, AudioBuffer del
@@ -219,7 +220,7 @@ class TestSpezzoneEs3:
         assert "chiave.split('#')[0]" in blocco
 
     def test_la_stessa_base_puo_servire_intera_e_a_spezzone(self):
-        assert "`${url}#tappeto`" in ASSETS
+        assert "`${url}#p${limite}`" in ASSETS
 
     def test_la_stima_di_memoria_e_in_crea(self):
         """L'operatore deve sapere cosa sta costruendo PRIMA di
@@ -295,3 +296,57 @@ class TestQuotaVoceEs5:
         """Un tetto che nessuno controlla non e' un tetto."""
         assert "used + len(data) > ORG_QUOTA_BYTES" in FREQ
         assert "len(existing) >= CLIPS_MAX_PER_ORG" in FREQ
+
+
+class TestFinestraETetto30:
+    """21/8, domande del founder: «se una traccia da 30 minuti e'
+    usata per 3, si scaricano 3 minuti?» — ora si'. E il tetto dei 30
+    minuti: ogni traccia pubblicata resta ascoltabile a schermo
+    bloccato (CONTINUO_MAX_SEC), nessuna zona d'ombra."""
+
+    def test_il_brano_intero_scarica_solo_la_finestra(self):
+        blocco = ASSETS.split("const finestra")[1][:400]
+        assert "sec: finestra + 10, anello: false" in blocco, \
+            "un brano da 30 min usato per 3 riscaricherebbe tutto"
+
+    def test_il_taglio_del_brano_non_va_in_anello(self):
+        """La coda della finestra la sfuma l'inviluppo del livello:
+        chiuderla in anello sarebbe sbagliato (non e' un tappeto)."""
+        assert "parziale?.anello" in ASSETS.replace("\n", " ")
+
+    def test_la_stima_conosce_la_finestra(self):
+        blocco = ASSETS.split("export function memoriaStimataMB")[1][:800]
+        assert "l.end" in blocco and "l.start" in blocco
+
+    def test_tetto_trenta_nel_modello(self):
+        from models.frequency_track import DURATION_MAX
+        assert DURATION_MAX == 1800
+
+    def test_tetto_trenta_in_crea(self):
+        pagina = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert 'max="30"' in pagina
+        assert "Math.min(1800, Math.max(60, durationMin * 60))" in pagina
+
+    def test_la_nota_delle_dissolvenze_parla_umano(self):
+        """Riscritta il 21/8: il founder stesso non la capiva — la
+        prova che il copy era per me, non per l'operatore."""
+        pagina = (FQ_DIR / "FrequenzePage.js").read_text()
+        blocco = pagina.split('data-testid="fq-nota-fades"')[1][:600]
+        assert "volume pieno" in blocco
+        assert "{fadeIn}" in blocco and "{fadeOut}" in blocco, \
+            "la nota deve dire i numeri VERI dell'operatore"
+
+    def test_la_libreria_tollera_qualche_minuto_ma_non_di_piu(self):
+        """Guardia VIVA (tolleranza founder: «qualche minuto in piu'
+        rispetto ai 30»): 33 minuti passano, 37 no."""
+        try:
+            from pymongo import MongoClient
+            db = MongoClient("mongodb://localhost:27017",
+                             serverSelectionTimeoutMS=2000)["retreat_dev"]
+            lunghe = [a["title"] for a in db.audio_assets.find(
+                {"duration_sec": {"$gt": 1980}}, {"title": 1})]
+        except Exception:
+            pytest.skip("Mongo non raggiungibile")
+        assert not lunghe, (
+            f"basi oltre i 33 minuti: {lunghe} — "
+            "scripts/accorcia_basi_lunghe.py --esegui")
