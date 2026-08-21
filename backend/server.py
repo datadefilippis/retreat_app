@@ -500,6 +500,15 @@ async def _security_headers(request, call_next):
 # ── Static files (product images, logos) ─────────────────────────────────────
 import os
 from fastapi.staticfiles import StaticFiles
+
+# TS7-bis (21/8) — i tipi audio che al sistema mancano: senza, un .m4a
+# esce come text/plain (successo in prod) e Safari puo' storcere il naso.
+import mimetypes
+mimetypes.add_type("audio/mp4", ".m4a")
+mimetypes.add_type("audio/mpeg", ".mp3")
+mimetypes.add_type("audio/ogg", ".ogg")
+mimetypes.add_type("audio/wav", ".wav")
+
 _uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(os.path.join(_uploads_dir, "products"), exist_ok=True)
 os.makedirs(os.path.join(_uploads_dir, "logos"), exist_ok=True)
@@ -556,7 +565,7 @@ class _UploadsCacheControlMiddleware:
         async def _send_with_cache(message):
             if message.get("type") == "http.response.start":
                 status = message.get("status", 0)
-                if status in (200, 304):
+                if status in (200, 206, 304):
                     headers = list(message.get("headers", []))
                     # Skip if upstream already set Cache-Control.
                     has_cc = any(
@@ -573,7 +582,72 @@ class _UploadsCacheControlMiddleware:
         await self._app(scope, receive, _send_with_cache)
 
 
-app.mount("/uploads", StaticFiles(directory=_uploads_dir), name="uploads")
+# TS7-bis (21/8, segnalazione founder) — il SALTO nella barra dei suoni
+# riportava l'audio a zero. Causa: StaticFiles di Starlette 0.37 ignora
+# l'header Range e risponde sempre 200 col file intero — e un browser
+# che non puo' chiedere «i byte da qui in poi» non puo' cercare: mette
+# currentTime, non ha i dati, riparte da capo. Il supporto Range nasce
+# in Starlette 0.38: non si aggiorna il framework per un fix puntuale
+# (FastAPI lo blocca comunque), si insegna il byte-serving al mount.
+import re as _re
+from starlette.responses import Response as _Resp, StreamingResponse as _Stream
+
+_RANGE_RE = _re.compile(r"^bytes=(\d*)-(\d*)$")
+
+
+class _StaticsConRange(StaticFiles):
+    """StaticFiles + byte serving (206/416, Accept-Ranges)."""
+
+    def file_response(self, full_path, stat_result, scope, status_code=200):
+        base = super().file_response(full_path, stat_result, scope, status_code)
+        # dichiarare i Range anche sul 200: e' cosi' che il browser
+        # impara che PUO' chiedere un pezzo
+        base.headers.setdefault("accept-ranges", "bytes")
+        if scope["method"] != "GET" or status_code != 200:
+            return base
+        intest = {k.decode("latin-1").lower(): v.decode("latin-1")
+                  for k, v in scope.get("headers", [])}
+        m = _RANGE_RE.match(intest.get("range", "").strip())
+        if not m or m.group(0) == "bytes=-":
+            return base
+        size = stat_result.st_size
+        inizio_s, fine_s = m.groups()
+        if inizio_s == "":
+            # forma a suffisso: gli ultimi N byte
+            n = int(fine_s)
+            inizio, fine = max(0, size - n), size - 1
+        else:
+            inizio = int(inizio_s)
+            fine = min(int(fine_s), size - 1) if fine_s else size - 1
+        if inizio > fine or inizio >= size:
+            return _Resp(status_code=416,
+                         headers={"content-range": f"bytes */{size}",
+                                  "accept-ranges": "bytes"})
+
+        def _leggi():
+            with open(full_path, "rb") as f:
+                f.seek(inizio)
+                resto = fine - inizio + 1
+                while resto > 0:
+                    pezzo = f.read(min(64 * 1024, resto))
+                    if not pezzo:
+                        break
+                    resto -= len(pezzo)
+                    yield pezzo
+
+        r = _Stream(_leggi(), status_code=206,
+                    media_type=base.media_type or "application/octet-stream")
+        r.headers["content-range"] = f"bytes {inizio}-{fine}/{size}"
+        r.headers["content-length"] = str(fine - inizio + 1)
+        r.headers["accept-ranges"] = "bytes"
+        # validatori del file intero: valgono anche per il pezzo
+        for h in ("etag", "last-modified"):
+            if h in base.headers:
+                r.headers[h] = base.headers[h]
+        return r
+
+
+app.mount("/uploads", _StaticsConRange(directory=_uploads_dir), name="uploads")
 app.add_middleware(_UploadsCacheControlMiddleware)
 
 # ── Legacy routes (prefix /api — do not change) ───────────────────────────────

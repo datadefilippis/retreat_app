@@ -19,9 +19,11 @@ che gia' esisteva per l'export) e si riproduce con <audio> + Media
 Session (engine/continuo.js). Il cancello dei 90 secondi resta
 sovrano: niente file intero per chi ha solo l'anteprima.
 """
+import os
 import re
 from pathlib import Path
 
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_SRC = BACKEND_DIR.parent / "frontend" / "src"
 FQ_DIR = FRONTEND_SRC / "features" / "frequenze"
@@ -531,3 +533,85 @@ class TestBarraSuiSuoni:
         assert "try { e.currentTarget.setPointerCapture(e.pointerId); } catch" in SEEKBAR
         assert "scrubRef" in SEEKBAR
         assert "scrubRef.current == null) return" in SEEKBAR
+
+
+class TestRangeSulleBasi:
+    """
+    TS7-bis (21/8, founder: «provo a muovere la barra e il suono
+    riparte da capo»).
+
+    La causa non era la barra: StaticFiles di Starlette 0.37 ignora
+    l'header Range e risponde sempre 200 col file intero. Un browser
+    che non puo' chiedere «i byte da qui in poi» non puo' cercare
+    dentro un audio: currentTime salta, i dati non ci sono, si riparte
+    da zero. Queste guardie parlano HTTP col server VERO.
+    """
+
+    URL = None
+    FILE = None
+
+    @classmethod
+    def setup_class(cls):
+        import os
+        base = Path(__file__).resolve().parent.parent / "uploads" / "audio"
+        os.makedirs(base, exist_ok=True)
+        cls.FILE = base / "sonda_range_test.bin"
+        cls.FILE.write_bytes(bytes(range(256)) * 40)   # 10.240 byte noti
+        cls.URL = f"{BASE_URL}/uploads/audio/sonda_range_test.bin"
+
+    @classmethod
+    def teardown_class(cls):
+        if cls.FILE and cls.FILE.exists():
+            cls.FILE.unlink()
+
+    def test_il_200_dichiara_i_range(self):
+        """Accept-Ranges sul 200: e' cosi' che il browser impara che
+        PUO' chiedere un pezzo."""
+        import requests
+        r = requests.get(self.URL, timeout=10)
+        assert r.status_code == 200
+        assert r.headers.get("accept-ranges") == "bytes"
+
+    def test_un_pezzo_e_un_206_coi_byte_giusti(self):
+        import requests
+        r = requests.get(self.URL, headers={"Range": "bytes=100-199"}, timeout=10)
+        assert r.status_code == 206, "senza 206 il salto riporta l'audio a zero"
+        assert r.headers["content-range"] == "bytes 100-199/10240"
+        assert r.content == (bytes(range(256)) * 40)[100:200], \
+            "il pezzo NON coincide col file: audio corrotto al salto"
+
+    def test_coda_aperta_e_suffisso(self):
+        import requests
+        r = requests.get(self.URL, headers={"Range": "bytes=10200-"}, timeout=10)
+        assert r.status_code == 206 and len(r.content) == 40
+        r2 = requests.get(self.URL, headers={"Range": "bytes=-40"}, timeout=10)
+        assert r2.status_code == 206
+        assert r2.headers["content-range"] == "bytes 10200-10239/10240"
+
+    def test_fuori_misura_e_un_416(self):
+        import requests
+        r = requests.get(self.URL, headers={"Range": "bytes=999999-"}, timeout=10)
+        assert r.status_code == 416
+        assert r.headers["content-range"] == "bytes */10240"
+
+    def test_il_range_malformato_non_rompe(self):
+        """Un Range che non si capisce si ignora (200 intero), non si
+        esplode: e' quello che fa un server adulto."""
+        import requests
+        r = requests.get(self.URL, headers={"Range": "bytes=abc"}, timeout=10)
+        assert r.status_code == 200
+
+    def test_anche_i_pezzi_sono_cacheabili(self):
+        """I file sono content-addressed: il pezzo e' immutabile quanto
+        l'intero. Senza cache sul 206, ogni salto ripaga la banda."""
+        import requests
+        r = requests.get(self.URL, headers={"Range": "bytes=0-99"}, timeout=10)
+        assert "immutable" in r.headers.get("cache-control", "")
+
+    def test_gli_audio_hanno_il_tipo_giusto(self):
+        """Un .m4a usciva text/plain (successo in prod): il tipo ora e'
+        dichiarato nel server, non lasciato al sistema operativo."""
+        srv = (BACKEND_DIR / "server.py").read_text()
+        for ext, mime in ((".m4a", "audio/mp4"), (".mp3", "audio/mpeg"),
+                          (".ogg", "audio/ogg"), (".wav", "audio/wav")):
+            assert f'mimetypes.add_type("{mime}", "{ext}")' in srv
