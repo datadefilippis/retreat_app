@@ -369,6 +369,32 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   /* founder 2/8/2026 — non piu' una domanda ("sei un operatore?") ma
      una destinazione. E "professionisti", non "operatori": e' la parola
      con cui il founder ha deciso di chiamarli su tutto il sito. */
+/* PRO (21/8, founder) — la voce «Per i professionisti» deve emergere,
+   e deve farlo NELLO STESSO MODO ovunque. Prima erano due cose
+   diverse: su desktop un testo grigio piatto (`text-gray-600`), su
+   mobile una pastiglia TERRACOTTA (#C97B5D) — un colore che non
+   appartiene alla tavolozza di Aurya e che nel menu suonava come un
+   avviso, non come un invito.
+   Ora e' una sola forma, nell'oro di marca: filo d'oro intorno, velo
+   d'oro dentro, testo nell'oro scuro (#8a7440, quello che il sito usa
+   gia' sul chiaro — dal marchio dell'header ai riquadri del profilo).
+   Su desktop la pastiglia e' piu' compatta perche' vive in una barra
+   alta 56 px; la forma, il colore e il comportamento al passaggio del
+   mouse sono gli stessi. */
+const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
+  font-semibold text-[#6f5c33] transition-all
+  hover:border-[#6f5c33] hover:bg-[#8a7440]/[0.14] hover:text-[#5a4b29]
+  hover:shadow-[0_2px_12px_rgba(138,116,64,0.28)]`;
+/* Due misure, non due impressioni:
+   - il TESTO non e' l'oro del marchio (#8a7440): sul velo d'oro sotto
+     di se' darebbe 4,15:1 a corpo 12 px, sotto il minimo. #6f5c33 e'
+     lo stesso oro sceso di tono (5,94:1) e al passaggio del mouse
+     scende ancora (7,81), cosi' il contrasto AUMENTA interagendo;
+   - il BORDO e' oro pieno e non velato: al 60% dava 2,26:1 contro il
+     bianco, sotto il 3:1 che serve a delimitare un controllo. A piena
+     opacita' fa 4,53 — ed e' anche cio' che fa «risplendere» la voce,
+     insieme all'alone d'oro che compare solo al passaggio del mouse. */
+
   const operatorLabel = isNetwork
     ? t('marketplace.forProfessionals', { defaultValue: 'Per i professionisti' })
     : t('marketplace.forOrganizers', { defaultValue: 'Sei un organizzatore?' });
@@ -545,7 +571,9 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               <div className="ml-auto flex items-center gap-2 sm:gap-3">
                 <Link
                   to={operatorTo}
-                  className="hidden md:block text-xs font-medium text-gray-600 hover:text-gray-900 whitespace-nowrap"
+                  data-testid="header-pro-cta"
+                  className={`hidden md:inline-flex items-center whitespace-nowrap
+                              px-3.5 py-1.5 text-xs ${PRO_CTA}`}
                 >
                   {operatorLabel}
                 </Link>
@@ -637,7 +665,8 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               )}
               <li className="pt-1">
                 <Link to={operatorTo} onClick={() => setMobileNavOpen(false)}
-                      className="block rounded-lg bg-[#C97B5D]/10 border border-[#C97B5D]/40 px-3 py-2 text-sm font-semibold text-[#a8593f] hover:bg-[#C97B5D]/20">
+                      data-testid="mobile-pro-cta"
+                      className={`block px-4 py-2.5 text-sm ${PRO_CTA}`}>
                   {operatorLabel}
                 </Link>
               </li>

@@ -356,3 +356,45 @@ class TestStrisciaSoundInHome:
             return                      # slot spento: niente da pesare
         kb = f.stat().st_size / 1024
         assert kb < 400, f"la fotografia della striscia pesa {kb:.0f} KB"
+
+
+class TestVoceProfessionistiPro:
+    """PRO (21/8, founder) — «Per i professionisti» deve emergere, e
+    allo stesso modo su ogni piattaforma. Prima erano due cose diverse:
+    su desktop un testo grigio piatto, su mobile una pastiglia
+    TERRACOTTA (#C97B5D) — un colore fuori dalla tavolozza di Aurya che
+    nel menu suonava come un avviso invece che come un invito."""
+
+    def test_una_forma_sola_per_desktop_e_mobile(self):
+        src = SHELL.read_text()
+        assert "const PRO_CTA = " in src, \
+            "le due voci non condividono piu' la stessa forma"
+        assert 'data-testid="header-pro-cta"' in src
+        assert 'data-testid="mobile-pro-cta"' in src
+        for testid in ("header-pro-cta", "mobile-pro-cta"):
+            blocco = src.split(f'data-testid="{testid}"')[1][:400]
+            assert "${PRO_CTA}" in blocco, \
+                f"{testid} si e' scritta uno stile suo invece di usare la forma condivisa"
+
+    def test_niente_terracotta(self):
+        """Il colore era l'unico problema segnalato dal founder sul
+        mobile: non appartiene ad Aurya."""
+        import re as _re
+        src = SHELL.read_text()
+        codice = _re.sub(r"/\*.*?\*/", "", src, flags=_re.S)
+        for c in ("#C97B5D", "#a8593f"):
+            assert c not in codice, f"il terracotta {c} e' tornato nel menu"
+
+    def test_il_contrasto_regge_sul_velo_d_oro(self):
+        """La pastiglia ha un velo d'oro sotto di se': misurato su
+        QUELLO, non sul bianco. L'oro del marchio (#8a7440) darebbe
+        4,15:1 a corpo 12 px — sotto il minimo."""
+        import re as _re
+        src = SHELL.read_text()
+        forma = src.split("const PRO_CTA = ")[1].split("`;")[0]
+        assert "text-[#6f5c33]" in forma, \
+            "il testo e' tornato a un oro che sul proprio velo non regge"
+        assert "border-[#8a7440]" in forma and "border-[#8a7440]/" not in forma, \
+            "il bordo e' velato: sotto il 3:1 che delimita un controllo"
+        # al passaggio del mouse il contrasto AUMENTA, non cala
+        assert "hover:text-[#5a4b29]" in forma
