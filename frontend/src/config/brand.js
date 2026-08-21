@@ -25,4 +25,9 @@ export const BRAND_EMAIL = 'info@aurya.life';
 // profilo non e' ancora nel codice, e un indirizzo social inventato
 // porta a casa di qualcun altro. Finche' questa costante e' vuota la
 // voce NON compare: appena arriva l'indirizzo vero, si accende da sola.
+//
+// SOC (21/8/2026): l'icona ora vive nella barra di chiusura del footer
+// (© · Privacy · Termini), non tra le «Risorse» — Instagram non e' un
+// contenuto di Aurya, e' il canale dove Aurya sta. Qui va l'URL
+// COMPLETO del profilo, es. 'https://www.instagram.com/nomeprofilo/'.
 export const BRAND_INSTAGRAM = '';

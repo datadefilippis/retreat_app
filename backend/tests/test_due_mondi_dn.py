@@ -177,3 +177,58 @@ class TestLaParentelaEDettaDn5:
         src = (FQ_DIR / "SoundLandingPage.js").read_text()
         assert 'data-testid="sound-parentela"' in src
         assert "studio di Aurya" in src
+
+
+class TestInstagramSoc:
+    """SOC (21/8, founder) — l'icona Instagram nel sito.
+
+    Sta nella barra di chiusura del footer (© · Privacy · Termini) e
+    non tra le «Risorse»: Instagram non e' un contenuto di Aurya, e' il
+    canale dove Aurya sta — e un'uscita dal sito appartiene alla fine
+    della pagina, non alla testata.
+    """
+
+    BRAND = FRONTEND_SRC / "config" / "brand.js"
+
+    def test_l_icona_e_nella_barra_di_chiusura(self):
+        src = SHELL.read_text()
+        assert 'data-testid="footer-instagram"' in src
+        barra = src.split('© {BRAND_NAME}')[1].split("</footer>")[0]
+        assert 'data-testid="footer-instagram"' in barra, \
+            "l'icona non e' nella striscia d'identita' del footer"
+        assert "<Instagram " in src, "e' tornato un link testuale invece dell'icona"
+
+    def test_non_e_ripetuta_nello_stesso_piede(self):
+        """Prima viveva anche come link testuale sotto «Risorse»: due
+        Instagram nello stesso footer sono rumore. Si contano le RESE,
+        non le occorrenze della costante (import e href sono due usi
+        legittimi della stessa cosa)."""
+        src = SHELL.read_text()
+        assert src.count('data-testid="footer-instagram"') == 1, \
+            "Instagram e' reso piu' di una volta nel footer"
+        risorse = src.split("footerResources")[1].split("</div>")[0]
+        assert "BRAND_INSTAGRAM" not in risorse, \
+            "e' tornato il doppione testuale tra le Risorse"
+
+    def test_l_uscita_e_sicura_e_ha_un_nome(self):
+        """Un link che porta fuori si apre altrove e non passa il
+        referrer; un'icona senza testo ha bisogno di un nome per chi
+        naviga con lo screen reader."""
+        src = SHELL.read_text()
+        blocco = src.split('data-testid="footer-instagram"')[0][-400:] \
+            + src.split('data-testid="footer-instagram"')[1][:400]
+        assert 'target="_blank"' in blocco and "noreferrer" in blocco \
+            and "noopener" in blocco
+        assert "aria-label" in blocco, "l'icona non ha un nome accessibile"
+
+    def test_niente_indirizzo_inventato(self):
+        """Finche' il profilo vero non c'e', la costante resta vuota e
+        la voce non compare: un indirizzo social sbagliato porta il
+        pubblico a casa di qualcun altro."""
+        brand = self.BRAND.read_text()
+        riga = [l for l in brand.splitlines()
+                if l.startswith("export const BRAND_INSTAGRAM")][0]
+        valore = riga.split("=")[1].strip().strip("';\" ")
+        assert valore == "" or valore.startswith("https://www.instagram.com/"), \
+            f"BRAND_INSTAGRAM non e' un profilo Instagram valido: {valore!r}"
+        assert "PROVA" not in brand, "e' rimasto un indirizzo di prova"

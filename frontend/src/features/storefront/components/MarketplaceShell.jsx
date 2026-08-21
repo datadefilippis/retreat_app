@@ -18,7 +18,7 @@ import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BRAND_NAME, BRAND_PAYOFF, BRAND_EMAIL, BRAND_INSTAGRAM } from '../../../config/brand';
-import { Search, Menu, X, Lock, Globe, Check, ChevronDown, CircleUserRound } from 'lucide-react';
+import { Search, Menu, X, Lock, Globe, Check, ChevronDown, CircleUserRound, Instagram } from 'lucide-react';
 import { useSiteConfig } from '../../../context/SiteConfigContext';
 import useItalianOnly from '../../../lib/useItalianOnly';
 import { persistMarketplaceLang, getMarketplaceLang } from '../../../hooks/useStorefrontLocale';
@@ -804,13 +804,6 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
                     <li><Link to="/newsletter" className="hover:text-white" data-testid="footer-nw-lettera">{t('marketplace.navLetter', { defaultValue: 'La Lettera di Aurya' })}</Link></li>
                     {/* la guida gratuita e' scesa qui dall'header */}
                     <li><Link to="/blog/kit-pratiche-quotidiane-15-minuti" className="hover:text-white">{t('marketplace.navFreeGuide', { defaultValue: 'Guida gratuita' })}</Link></li>
-                    {BRAND_INSTAGRAM && (
-                      <li>
-                        <a href={BRAND_INSTAGRAM} target="_blank" rel="noreferrer noopener" className="hover:text-white">
-                          Instagram
-                        </a>
-                      </li>
-                    )}
                   </ul>
                 </div>
                 <div>
@@ -867,6 +860,24 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
               <span>© {BRAND_NAME}</span>
               <Link to="/privacy" className="hover:text-white/80">Privacy</Link>
               <Link to="/termini" className="hover:text-white/80">{t('marketplace.terms', { defaultValue: 'Termini' })}</Link>
+              {/* SOC (21/8, founder) — Instagram sta QUI e non tra le
+                  «Risorse»: non e' un contenuto di Aurya, e' il canale
+                  dove Aurya sta. La barra di chiusura e' la striscia
+                  d'identita' del sito (chi siamo, come raggiungerci), e
+                  un'uscita dal sito appartiene alla fine della pagina,
+                  non alla testata. L'icona non ha bisogno di parole,
+                  ma ha bisogno di un nome per chi non la vede. */}
+              {BRAND_INSTAGRAM && (
+                <a href={BRAND_INSTAGRAM} target="_blank" rel="noreferrer noopener"
+                  data-testid="footer-instagram"
+                  aria-label={`${BRAND_NAME} su Instagram`}
+                  title={`${BRAND_NAME} su Instagram`}
+                  className="ml-auto inline-flex items-center justify-center h-8 w-8 rounded-full
+                             border border-white/15 text-white/50 transition-colors
+                             hover:text-white hover:border-white/40">
+                  <Instagram className="h-4 w-4" aria-hidden />
+                </a>
+              )}
             </div>
           </div>
         </footer>
