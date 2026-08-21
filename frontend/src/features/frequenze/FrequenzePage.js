@@ -60,6 +60,7 @@ const SOUND_CATS = ['Ambient', 'Natura', 'Droni', 'Corpo', 'Campane',
 const CAT_HINT = {
   'Bande cerebrali': "Ritmi dell'attività elettrica del cervello.",
   'Altre frequenze': 'Frequenze sonore, fenomeni fisici, accordature e tradizioni.',
+  'Ritmi del corpo': 'Respiro, cuore, passo: ritmi da seguire, non frequenze da subire.',
   'Metodi': 'Tecniche per costruire e modulare uno stimolo sonoro.',
 };
 /* Una riga per tab anche nel mondo dei suoni: chi arriva capisce a
@@ -78,6 +79,10 @@ const CAT_INTRO = {
   'Bande cerebrali': {
     t: 'Cosa sono le bande cerebrali?',
     p: "Il cervello presenta attività elettrica ritmica che possiamo osservare, per esempio, attraverso l'EEG. Delta, Theta, Alpha, Beta e Gamma descrivono diverse gamme di queste oscillazioni. Non sono semplicemente frequenze sonore: qui esploriamo il fenomeno cerebrale e, separatamente, come alcuni stimoli sonori cercano di interagire con esso.",
+  },
+  'Ritmi del corpo': {
+    t: 'Qui il ritmo lo dai tu.',
+    p: "Nelle altre sezioni il suono è l'oggetto dell'ascolto. Qui è un metronomo: un'onda che sale e scende per darti il passo del respiro, o una pulsazione per il cammino. La differenza conta anche per l'onestà di quello che possiamo dire — ciò che la ricerca documenta riguarda la pratica (respirare lentamente, muoversi a tempo), non il suono che la accompagna.",
   },
   'Altre frequenze': {
     t: 'Frequenze diverse, origini diverse.',
@@ -124,8 +129,14 @@ export default function FrequenzePage() {
   const qs = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const VIEW_PATH = { explore: 'esplora', create: 'crea', impara: 'impara', mine: 'tracce' };
   const PATH_VIEW = { esplora: 'explore', crea: 'create', impara: 'impara', tracce: 'mine' };
-  const CAT_SLUG = { 'Bande cerebrali': 'bande-cerebrali', 'Altre frequenze': 'altre-frequenze', 'Metodi': 'metodi' };
-  const SLUG_CAT = { 'bande-cerebrali': 'Bande cerebrali', 'altre-frequenze': 'Altre frequenze', 'metodi': 'Metodi' };
+  /* LN — ogni vista ha il suo URL, quindi ogni categoria ha il suo
+     slug. Una categoria senza slug NON si apre: il clic scrive
+     `?categoria=` vuoto e la tab torna alla prima (successo con «Ritmi
+     del corpo» il 21/8). Le due mappe vanno tenute gemelle. */
+  const CAT_SLUG = { 'Bande cerebrali': 'bande-cerebrali', 'Altre frequenze': 'altre-frequenze',
+    'Ritmi del corpo': 'ritmi-del-corpo', 'Metodi': 'metodi' };
+  const SLUG_CAT = { 'bande-cerebrali': 'Bande cerebrali', 'altre-frequenze': 'Altre frequenze',
+    'ritmi-del-corpo': 'Ritmi del corpo', 'metodi': 'Metodi' };
 
   const seg = location.pathname.split('/').filter(Boolean);   // ['sound','crea',...]
   const view = PATH_VIEW[seg[1]] || 'explore';
@@ -980,14 +991,14 @@ export default function FrequenzePage() {
               <span className="lbl" title="Frequenza del battito a inizio barra">
                 {l.method === 'bil' ? 'alternanza' : 'battito da'}
               </span>
-              <input className="mini" type="number" min="0.2" max="60" step="0.5" value={l.f0}
+              <input className="mini" type="number" min="0.05" max="60" step="0.5" value={l.f0}
                 onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, l.method === 'bil' ? { f0: v, f1: v } : { f0: v }); }} />
               {l.method !== 'bil' && (
                 <>
                   <span className="lbl" title={l.curve === 'wave'
                     ? "L'altro estremo della marea: il battito va qui e torna"
                     : 'Frequenza a fine barra: uguale = ferma, diversa = discesa/salita'}>a</span>
-                  <input className="mini" type="number" min="0.2" max="60" step="0.5" value={l.f1}
+                  <input className="mini" type="number" min="0.05" max="60" step="0.5" value={l.f1}
                     onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { f1: v }); }} />
                   <span className="lbl">Hz</span>
                   <select className="minisel" value={l.curve}

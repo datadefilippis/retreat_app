@@ -40,7 +40,11 @@ INTENTS = ("dormire", "meditare", "rilassare", "concentrare",
 DURATION_MIN, DURATION_MAX = 60, 7200          # 1 min .. 2 h
 LAYERS_MAX = 24
 PHASES_MAX = 12
-BEAT_MIN, BEAT_MAX = 0.2, 60.0                 # Hz del battito
+# ONDA 3 (21/8) — il pavimento scende da 0,2 a 0,05 Hz per far entrare
+# i RITMI DEL CORPO: un respiro lento e' 0,1 Hz (sei al minuto), cioe'
+# meta' del vecchio minimo. Il motore reggeva gia' 0,05 (Math.max(0.05,
+# beat) su ogni LFO): era il modello a chiudere la porta.
+BEAT_MIN, BEAT_MAX = 0.05, 60.0                # Hz del battito
 BIL_BEAT_MAX = 3.0                             # alternanza dx/sx tipica 0.5-1.5
 CARRIER_MIN, CARRIER_MAX = 20.0, 2000.0        # Hz della portante / tono
 # ONDA 2 — il periodo della marea: sotto i 2 s non e' piu' un movimento

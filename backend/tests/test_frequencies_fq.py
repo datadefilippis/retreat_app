@@ -71,7 +71,11 @@ class TestScoreModelFq0:
                                      "gain": 9, "carrier": 1}]})
         assert s["duration_sec"] == 7200
         lay = s["layers"][0]
-        assert lay["f0"] == 60 and lay["f1"] == 0.2
+        # il pavimento si legge dal modello: ONDA 3 l'ha abbassato a
+        # 0,05 Hz per i ritmi del respiro, e una guardia col numero
+        # cablato avrebbe solo detto «e' cambiato», non «e' sbagliato»
+        from models.frequency_track import BEAT_MIN, BEAT_MAX
+        assert lay["f0"] == BEAT_MAX and lay["f1"] == BEAT_MIN
         assert lay["gain"] == 1.0 and lay["carrier"] == 20.0
         # tetto livelli
         many = {"duration_sec": 600,
@@ -1181,7 +1185,12 @@ class TestSoundPubblicoSp:
         import re as _re
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
         bib = (FQ_DIR / "content" / "biblioteca.js").read_text()
-        chunks = _re.split(r"'(Bande cerebrali|Altre frequenze|Metodi)':\[", bib)
+        # Le categorie si SCOPRONO dal file, non si elencano qui: la
+        # prima versione di questa guardia aveva la stessa lista
+        # cablata che doveva proteggere, e quando e' nata «Ritmi del
+        # corpo» (ONDA 3) le sue schede sono finite dentro la categoria
+        # precedente invece di far scattare l'allarme.
+        chunks = _re.split(r"^    '([^']+)':\[", bib, flags=_re.M)
         veri = {}
         for i in range(1, len(chunks), 2):
             titoli = _re.findall(r"\{t:'((?:[^'\\]|\\.)*)'", chunks[i + 1])

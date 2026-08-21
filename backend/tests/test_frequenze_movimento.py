@@ -180,3 +180,70 @@ class TestLaMareaOnda2:
         blocco = page.split('data-testid="fq-layer-period"')[0][-500:]
         assert "l.curve === 'wave'" in blocco, \
             "il campo periodo comparirebbe anche sulle curve monotone"
+
+
+class TestRitmiDelCorpoOnda3:
+    """ONDA 3 — la categoria dove l'evidenza e' dalla nostra parte,
+    ma riguarda la PRATICA (respirare lentamente, muoversi a tempo) e
+    non il suono. Misurato sul render: 6,0 · 4,1 · 60,0 · 120,0 cicli
+    al minuto, scarto max 1,4%."""
+
+    def test_il_pavimento_del_battito_lascia_entrare_il_respiro(self):
+        """Un respiro lento e' 0,1 Hz: meta' del vecchio minimo (0,2).
+        Il motore reggeva gia' 0,05 — era il modello a chiudere."""
+        src = MODEL.read_text()
+        riga = [l for l in src.splitlines()
+                if l.startswith("BEAT_MIN, BEAT_MAX")][0]
+        minimo = float(riga.split("=")[1].split(",")[0])
+        assert minimo <= 0.05, \
+            f"il battito minimo e' {minimo} Hz: i ritmi del respiro non entrano"
+        page = PAGE.read_text()
+        assert 'min="0.2"' not in page, \
+            "l'editor blocca ancora i ritmi lenti che il modello accetta"
+
+    def test_la_categoria_esiste_e_ha_il_suo_indirizzo(self):
+        """LN — ogni vista ha il suo URL. Una categoria senza slug non
+        si apre: il clic scrive `?categoria=` vuoto e la tab torna alla
+        prima. Successo davvero il 21/8, le due mappe vanno gemelle."""
+        bib = BIB.read_text()
+        assert "'Ritmi del corpo':[" in bib
+        page = PAGE.read_text()
+        slug = page.split("const CAT_SLUG =")[1].split("};")[0]
+        inverso = page.split("const SLUG_CAT =")[1].split("};")[0]
+        assert "'ritmi-del-corpo'" in slug and "'ritmi-del-corpo'" in inverso, \
+            "la categoria non ha uno slug: la tab non si aprirebbe"
+        nomi_slug = re.findall(r"'([^']+)': '([a-z-]+)'", slug)
+        nomi_inv = re.findall(r"'([a-z-]+)': '([^']+)'", inverso)
+        assert {v: k for k, v in nomi_slug} == dict(nomi_inv), \
+            "CAT_SLUG e SLUG_CAT non sono piu' gemelle"
+
+    def test_ogni_ritmo_e_quello_che_dichiara(self):
+        """Il titolo dice «sei respiri al minuto»: il cfg deve produrli
+        davvero. 0,1 Hz = 6/min, 1 Hz = 60/min, 2 Hz = 120/min."""
+        bib = BIB.read_text()
+        blocco = bib.split("'Ritmi del corpo':[")[1].split("'Metodi':[")[0]
+        attesi = {"Respiro lento": 0.1, "Respiro pi": 0.07,
+                  "Passo del cuore": 1, "Cadenza del cammino": 2}
+        for titolo, hz in attesi.items():
+            scheda = [b for b in blocco.split("{t:'") if b.startswith(titolo)]
+            assert scheda, f"manca la scheda {titolo}"
+            f0 = float(re.search(r"f0:([\d.]+)", scheda[0]).group(1))
+            assert abs(f0 - hz) < 1e-9, \
+                f"{titolo}: dichiara {hz} Hz ma il cfg suona {f0} Hz"
+
+    def test_l_onesta_della_categoria_e_scritta(self):
+        """Il patto della biblioteca: qui l'effetto documentato e'
+        della pratica, non del suono. Se questa distinzione sparisce,
+        la categoria diventa la promessa che non vogliamo fare."""
+        bib = BIB.read_text()
+        blocco = bib.split("'Ritmi del corpo':[")[1].split("'Metodi':[")[0]
+        assert "non del suono" in blocco, \
+            "sparita la distinzione tra effetto della pratica ed effetto del suono"
+        assert "class=\"warn\"" in blocco, "nessun avvertimento nelle schede"
+        # e il cuore non si fa inseguire da un altoparlante
+        cuore = blocco.split("Passo del cuore")[1][:2500]
+        assert "Il cuore non insegue" in cuore, \
+            "manca la smentita esplicita dell'entrainment cardiaco"
+        page = PAGE.read_text()
+        intro = page.split("'Ritmi del corpo': {")[1][:600]
+        assert "riguarda la pratica" in intro
