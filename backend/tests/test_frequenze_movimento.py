@@ -120,9 +120,12 @@ class TestLaMareaOnda2:
         fn = src.split("export function freqAt")[1].split("\n}")[0]
         assert "l.curve === 'wave'" in fn, "la marea non e' nella matematica condivisa"
         assert "Math.cos" in fn, "la marea non e' derivabile: si sentirebbe uno scatto"
-        # nessun altro punto ricalcola la forma per conto suo
+        # Nessun altro punto ricalcola la MAREA per conto suo. Si cerca
+        # la sua firma — il coseno sul periodo — non un generico
+        # `1 - Math.cos`: quello compare anche nella salita del respiro
+        # (ONDA 6), che e' un'altra forma e ha diritto al suo coseno.
         fuori = src.replace(fn, "")
-        assert "1 - Math.cos" not in fuori, \
+        assert "(TAU * u) / T" not in fuori, \
             "la formula della marea e' scritta due volte: divergeranno"
 
     def test_il_campionamento_segue_il_periodo(self):
@@ -372,3 +375,88 @@ class TestDiscesaInfinitaOnda5:
         portante = bib.split("{t:'Scegliere la portante'")[1].split("cfg:")[0]
         assert "400" in portante and "180" in portante, \
             "la scheda non spiega i due valori predefiniti veri"
+
+
+class TestRespiroVeroOnda6:
+    """ONDA 6 (founder: «non sembrano respiri veri, sembra il mare») —
+    ed era esatto: il soffio modulato e' una sinusoide, sale e scende
+    uguale, senza pause, e comincia a meta' corsa. Il respiro guidato
+    e' un'altra forma: asimmetrica, con la pausa, e con le due fasi
+    distinguibili al timbro.
+
+    Misurato: render 3,3 in / 4,5 out / 2,8 pausa, timbro 1,42x;
+    anteprima (reso offline) 3,5 / 4,3 / 2,8, timbro 1,96x."""
+
+    def test_l_espirazione_e_piu_lunga_dell_inspirazione(self):
+        src = SYNTH.read_text()
+        inn = float(src.split("export const BREATH_IN =")[1].split(";")[0])
+        out = float(src.split("export const BREATH_OUT =")[1].split(";")[0])
+        assert out > inn, \
+            "si espira per meno di quanto si inspira: non e' un respiro"
+        assert inn + out < 1, "senza pausa non si sa dove ricomincia il ciclo"
+
+    def test_il_ciclo_parte_dal_silenzio_e_finisce_in_pausa(self):
+        """Una sinusoide comincia a meta': non dice mai «adesso». La
+        forma del respiro parte da zero e torna a zero."""
+        src = SYNTH.read_text()
+        fn = src.split("export function breathEnv")[1].split("\n}")[0]
+        assert "1 - Math.cos" in fn, "l'inspirazione non parte dal silenzio"
+        assert "return 0;" in fn, "manca la pausa"
+
+    def test_la_coda_dell_espirazione_resta_udibile(self):
+        """Con un coseno puro l'ultimo secondo e' gia' muto e si
+        confonde con la pausa: non si sa piu' quando smettere."""
+        src = SYNTH.read_text()
+        fn = src.split("export function breathEnv")[1].split("\n}")[0]
+        assert "Math.pow(" in fn, \
+            "la coda dell'espirazione sprofonda nel silenzio troppo presto"
+
+    def test_le_due_fasi_si_distinguono_al_timbro(self):
+        """A occhi chiusi la forma da sola non basta: serve un segno
+        che dica in che meta' del respiro sei."""
+        src = SYNTH.read_text()
+        assert "export function breathBright" in src
+        # nel render: un passa-basso a un polo pilotato dalla fase
+        analitico = src.split("if (l.method === 'breath')")[1].split("\n  }")[0]
+        assert "breathBright(ph" in analitico and "l._lp" in analitico
+        # nell'anteprima: un biquad, stessa forma
+        assert src.count("breathBright(u") >= 2, \
+            "l'anteprima non cambia timbro: le due fasi diventano uguali"
+        assert "lowpass" in src
+
+    def test_il_passo_del_respiro_segue_il_battito_ovunque(self):
+        """La «marea del respiro» rallenta: se rallentasse solo nel
+        render, anteprima ed export sarebbero due pratiche diverse."""
+        src = SYNTH.read_text()
+        assert "ritmoRespiro" in src, "la scheda non fa seguire il passo"
+        assert "rateDaHz" in src
+        sessione = src.split("if (l.method === 'breath')")[2] if src.count("if (l.method === 'breath')") > 1 else ""
+        assert "playbackRate" in sessione and "freqAt(l, u, span)" in sessione, \
+            "nella sessione il passo del respiro non segue la curva"
+
+    def test_il_soffio_modulato_resta_quello_di_prima(self):
+        """`noise` non si tocca: e' un'onda e va bene che lo sia. Le
+        ricette gia' salvate devono suonare identiche."""
+        src = SYNTH.read_text()
+        assert "const gate = (1 + Math.sin(pb)) / 2;" in src, \
+            "cambiata la porta del soffio: le ricette salvate cambiano suono"
+        model = MODEL.read_text()
+        assert '"breath"' in model.split("METHODS =")[1].split(")")[0]
+        assert '"noise"' in model.split("METHODS =")[1].split(")")[0]
+
+    def test_la_pausa_non_si_puo_azzerare(self):
+        src = MODEL.read_text()
+        blocco = src.split('if layer["method"] == "breath":')[1][:600]
+        assert "0.95" in blocco, \
+            "inspirazione + espirazione possono mangiarsi tutta la pausa"
+
+    def test_le_schede_del_respiro_usano_il_respiro(self):
+        bib = BIB.read_text()
+        blocco = bib.split("'Ritmi del corpo':[")[1].split("'Metodi':[")[0]
+        respiri = [b for b in blocco.split("{t:'") if b.startswith("Respiro") or b.startswith("Marea")]
+        assert len(respiri) == 3
+        for r in respiri:
+            assert "method:'breath'" in r, \
+                "una scheda del respiro suona ancora come un'onda del mare"
+        # e il testo non promette piu' un'onda
+        assert "non di un’onda" in blocco or "non di un'onda" in blocco

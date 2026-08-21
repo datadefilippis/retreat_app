@@ -34,7 +34,14 @@ VOICE_FX = ("natural", "dream", "temple", "whisper")
 # (3/2 e 5/4). Non e' il tono puro con altre armoniche: e' un accordo.
 # ONDA 5 — `shepard`: la discesa infinita (N voci a un'ottava di
 # distanza che scendono insieme; f0 = ottave al minuto)
-METHODS = ("bin", "iso", "mono", "bil", "noise", "tone", "drone", "shepard")
+# ONDA 6 — `breath`: il respiro guidato. Il soffio modulato (`noise`)
+# resta com'e' — e' un'onda, e va bene che lo sia; questo invece e'
+# asimmetrico, con la pausa e il cambio di timbro tra le due fasi.
+METHODS = ("bin", "iso", "mono", "bil", "noise", "tone", "drone",
+           "shepard", "breath")
+# quote del ciclo: inspirazione ed espirazione (il resto e' pausa)
+INHALE_MIN, INHALE_MAX, INHALE_DEFAULT = 0.10, 0.70, 0.35
+EXHALE_MIN, EXHALE_MAX, EXHALE_DEFAULT = 0.15, 0.85, 0.50
 # il colore del soffio: veicolo del ritmo, non imitazione della natura
 # (per mare, pioggia e vento ci sono le basi vere in libreria)
 NOISE_COLORS = ("pink", "brown", "white")
@@ -144,6 +151,17 @@ def clean_layer(raw, duration):
         "breath": bool(raw.get("breath", True)),
         "mute": bool(raw.get("mute", False)),
     }
+    # ONDA 6 — le due quote vivono solo sul respiro guidato, e la loro
+    # somma non puo' mangiarsi la pausa: senza pausa non si sa dove
+    # ricomincia il ciclo, ed e' quello che distingue un respiro da
+    # un'onda del mare.
+    if layer["method"] == "breath":
+        inn = _num(raw.get("inhale"), INHALE_MIN, INHALE_MAX, INHALE_DEFAULT)
+        exh = _num(raw.get("exhale"), EXHALE_MIN, EXHALE_MAX, EXHALE_DEFAULT)
+        if inn + exh > 0.95:
+            exh = max(EXHALE_MIN, 0.95 - inn)
+        layer["inhale"] = round(inn, 3)
+        layer["exhale"] = round(exh, 3)
     # ONDA 4 — il colore vale solo per il soffio; altrove sarebbe muto.
     # Il rosa e' il default storico: le ricette salvate senza colore
     # devono continuare a suonare rosa, esattamente come prima.
