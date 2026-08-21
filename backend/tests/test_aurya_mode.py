@@ -242,3 +242,88 @@ class TestMotoreImmersivoAv4:
     def test_dispose_completo(self):
         assert "geo.dispose" in MOTORE and "renderer.dispose" in MOTORE
         assert "dispose()" in TELA
+
+
+VISUAL = (FQ_DIR / "visual" / "VisualPage.jsx").read_text()
+
+
+class TestPaginaStrumentoAv2:
+    """
+    AV2 — /sound/visual: «integrata ma isolata» (founder). Il SUO
+    suono, guardato — traccia locale o microfono. La promessa che
+    regge tutto: l'audio non lascia mai il dispositivo.
+    """
+
+    def test_la_rotta_esiste(self):
+        app = (FQ_DIR.parent.parent / "App.js").read_text()
+        assert '"/sound/visual"' in app
+        assert "visual/VisualPage" in app
+
+    def test_l_ingresso_dalla_landing(self):
+        land = (FQ_DIR / "SoundLandingPage.js").read_text()
+        assert 'to="/sound/visual"' in land
+
+    def test_la_promessa_privacy_e_scritta_in_pagina(self):
+        """Non solo architettura: e' una promessa all'utente, e va
+        detta dove carica il file."""
+        # il testo JSX va a capo dove vuole: si confronta normalizzato
+        piatto = " ".join(VISUAL.split())
+        assert "non viene caricato da nessuna parte" in piatto
+
+    def test_la_traccia_non_parte_mai_verso_il_server(self):
+        pulito = _senza_commenti(VISUAL)
+        for vietato in ("fetch(", "axios", "FormData", "upload"):
+            assert vietato not in pulito, \
+                f"la pagina tocca la rete con l'audio dell'utente: {vietato}"
+        assert "URL.createObjectURL" in VISUAL   # file locale, punto
+
+    def test_il_microfono_non_va_agli_altoparlanti(self):
+        """MediaStreamSource → lettore e BASTA: collegarlo a
+        destination e' larsen garantito."""
+        blocco = VISUAL.split("createMediaStreamSource")[1][:300]
+        assert "connect(lettoreRef.current.analyser)" in blocco
+        assert "destination" not in blocco
+
+    def test_il_microfono_si_spegne_davvero(self):
+        """track.stop(), non pausa: la spia del browser deve spegnersi."""
+        assert "getTracks().forEach((t) => t.stop())" in VISUAL
+
+    def test_media_element_source_una_volta_sola(self):
+        """createMediaElementSource si puo' chiamare UNA volta per
+        elemento: l'elemento e' uno e si cambia solo il src."""
+        assert _senza_commenti(VISUAL).count("createMediaElementSource") == 1
+        assert "audioElRef.current.src = urlRef.current" in VISUAL
+
+    def test_pulizia_completa_allo_smontaggio(self):
+        coda = VISUAL.split("useEffect(() => () => {")[1][:500]
+        for pezzo in ("spegniMic", "revokeObjectURL", "close()"):
+            assert pezzo in coda, f"lasciato acceso: {pezzo}"
+
+
+class TestRitmoAv4bis:
+    """«Non sono convinto che si muovano col ritmo» (founder): la
+    causa era la TRIPLA lisciatura — analyser, bande, inseguitore."""
+
+    def test_le_bande_grezze_esistono(self):
+        assert "grezze:" in ANALISI
+        assert "stato.grezze[r.nome] = grezzo" in ANALISI
+
+    def test_il_motore_beve_dal_grezzo(self):
+        """L'inseguitore asimmetrico dev'essere l'UNICA lisciatura del
+        motore: dargli bande gia' lisce = lisciare due volte = scena
+        che non segue il colpo."""
+        assert "L.grezze || L.bande" in MOTORE
+        assert "insegui(env.b, B.bassi" in MOTORE
+
+    def test_il_colpo_del_concept_c_e(self):
+        """Il salto dei bassi fra due fotogrammi, con decadimento
+        rapido: e' il lampo che aggancia la scena al ritmo."""
+        assert "Math.exp(-dt * 4.2)" in MOTORE
+        assert "salto > 0.035" in MOTORE
+        # e il colpo AVVICINA la camera: la scena viene incontro
+        assert "colpo * 1.6" in MOTORE
+
+    def test_lo_zoom_chiesto(self):
+        """Base 17 invece di 26: gli elementi riempiono lo schermo."""
+        assert "17 - respiro" in MOTORE
+        assert "26 - respiro" not in MOTORE

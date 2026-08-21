@@ -140,6 +140,7 @@ const FrequenzePage = lazy(() => import("./features/frequenze/FrequenzePage"));
 const PublicFrequencyPage = lazy(() => import("./features/frequenze/PublicFrequencyPage"));
 const MeditazioniPage = lazy(() => import("./features/frequenze/MeditazioniPage"));
 const SoundLandingPage = lazy(() => import("./features/frequenze/SoundLandingPage"));
+const VisualPage = lazy(() => import("./features/frequenze/visual/VisualPage"));
 // PL17 — lazy come tutte le pagine admin: da eager trascinava Layout
 // (e con lui TUTTE le traduzioni back-office) nel bundle pubblico.
 const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
@@ -980,6 +981,7 @@ function AppRoutes() {
           restano org-scoped: la vera frontiera e' il backend. */}
       {/* SP4 — /sound esatto = la porta pubblica (indice curato) */}
       <Route path="/sound" element={<SoundLandingPage />} />
+      <Route path="/sound/visual" element={<VisualPage />} />
       <Route path="/sound/*" element={<FrequenzePage />} />
       {/* legacy: il vecchio indirizzo del workspace continua a funzionare */}
       <Route path="/frequenze" element={<Navigate to="/sound/esplora" replace />} />

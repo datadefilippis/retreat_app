@@ -68,6 +68,12 @@ export function creaLettore(ctx, { fft = 2048 } = {}) {
 
   const stato = {
     bande: Object.fromEntries(BANDE.map((b) => [b.nome, 0])),
+    /* le bande GREZZE, senza lisciatura nostra: il motore immersivo ha
+       il suo inseguitore asimmetrico, e dargli valori gia' lisciati
+       significa lisciare due volte — la scena perde il colpo (successo:
+       «non sono convinto che si muova col ritmo», founder). Le lisce
+       restano per la Sorgente 2D, che un inseguitore non ce l'ha. */
+    grezze: Object.fromEntries(BANDE.map((b) => [b.nome, 0])),
     energia: 0,
     dominante: 0,
     picco: 0,          // 0..1, scende da solo dopo un colpo
@@ -89,6 +95,7 @@ export function creaLettore(ctx, { fft = 2048 } = {}) {
         if (v > maxV) { maxV = v; maxI = i; }
       }
       const grezzo = clamp01(s / ((r.i1 - r.i0 + 1) * 255));
+      stato.grezze[r.nome] = grezzo;
       // i bassi seguono il colpo, gli alti scintillano: tempi diversi
       const k = r.nome === 'bassi' ? 0.35 : r.nome === 'alti' ? 0.45 : 0.28;
       stato.bande[r.nome] = liscia(stato.bande[r.nome], grezzo, k);

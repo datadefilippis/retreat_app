@@ -323,7 +323,7 @@ export function creaMotore(canvas, lettore, { modo = 'spirale', triade = 'oro' }
   const U = {
     uTime: { value: 0 }, uBass: { value: 0 }, uMid: { value: 0 },
     uHigh: { value: 0 }, uLevel: { value: 0 }, uBreath: { value: 0 },
-    uMode: { value: INDICE_MODO[modo] ?? 2 }, uIntensity: { value: 0.75 },
+    uMode: { value: INDICE_MODO[modo] ?? 2 }, uIntensity: { value: 0.95 },
     uDepth: { value: 1.1 }, uDrift: { value: 0.7 }, uPix: { value: 1 },
     uFog: { value: 0.032 },
     uC0: { value: new THREE.Color() }, uC1: { value: new THREE.Color() },
@@ -388,6 +388,7 @@ export function creaMotore(canvas, lettore, { modo = 'spirale', triade = 'oro' }
   };
 
   let vivo = false, raf = 0, tPrev = 0, tAcc = 0, respiroFase = 0;
+  let colpo = 0, bassiPrima = 0;
   let primo = true;
 
   function ridimensiona(w, h, dpr) {
@@ -406,31 +407,44 @@ export function creaMotore(canvas, lettore, { modo = 'spirale', triade = 'oro' }
     tPrev = ts;
 
     const L = lettore.leggi();
-    env.b = insegui(env.b, L.bande.bassi, dt);
-    env.m = insegui(env.m, L.bande.medi, dt);
-    env.h = insegui(env.h, L.bande.alti, dt);
+    /* le bande GREZZE: l'inseguitore asimmetrico e' l'UNICA lisciatura
+       di questo motore. Con le bande gia' lisce si lisciava due volte
+       e la scena non seguiva il ritmo (parola del founder). */
+    const B = L.grezze || L.bande;
+    env.b = insegui(env.b, B.bassi, dt);
+    env.m = insegui(env.m, B.medi, dt);
+    env.h = insegui(env.h, B.alti, dt);
     env.l = insegui(env.l, L.energia, dt);
+
+    /* il COLPO, dal concept: il salto dei bassi grezzi fra due
+       fotogrammi. Decade in fretta (exp -4.2): e' un lampo, non uno
+       stato — ed e' lui che aggancia la scena al ritmo. */
+    const salto = B.bassi - bassiPrima; bassiPrima = B.bassi;
+    colpo = Math.max(colpo * Math.exp(-dt * 4.2),
+      salto > 0.035 ? Math.min(1, salto * 7) : 0);
 
     respiroFase = (respiroFase + dt / RESPIRO_SEC) % 1;
     const respiro = 0.5 - 0.5 * Math.cos(respiroFase * Math.PI * 2);
     tAcc += dt * 0.44 * (0.5 + env.l * 1.1);
 
     U.uTime.value = tAcc;
-    U.uBass.value = env.b; U.uMid.value = env.m;
+    U.uBass.value = env.b + colpo * 0.6; U.uMid.value = env.m;
     U.uHigh.value = env.h; U.uLevel.value = env.l;
     U.uBreath.value = respiro;
 
-    core.scale.setScalar(2.6 + respiro * 1.6 + env.b * 4.2);
+    core.scale.setScalar(2.6 + respiro * 1.6 + env.b * 4.2 + colpo * 3.0);
     coreMat.opacity = Math.min(0.95, 0.22 + env.l * 1.2 + respiro * 0.12);
     aura.scale.setScalar(34 + respiro * 7 + env.l * 10);
     auraMat.opacity = Math.min(0.14, 0.045 + env.l * 0.10 + respiro * 0.025);
 
     /* la camera respira: dondolio lento, avvicinamento coi bassi */
+    /* ZOOM (founder: «elementi piu' zoomati»): base 17 invece di 26,
+       e il colpo AVVICINA — la scena viene incontro sul battito. */
     const orbita = tAcc * 0.05;
-    const dist = 26 - respiro * 2.2 - env.b * 3.5;
+    const dist = 17 - respiro * 1.8 - env.b * 2.5 - colpo * 1.6;
     camera.position.set(
       Math.sin(orbita) * dist,
-      5.5 + Math.sin(tAcc * 0.11) * 1.6,
+      4.2 + Math.sin(tAcc * 0.11) * 1.4,
       Math.cos(orbita) * dist,
     );
     camera.lookAt(0, 0, 0);

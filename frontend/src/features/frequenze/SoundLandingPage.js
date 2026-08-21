@@ -62,6 +62,15 @@ export default function SoundLandingPage() {
             ))}
           </div>
 
+          {/* AV2 — la stanza dello strumento: il TUO suono, guardato */}
+          <p style={{ marginTop: 18 }}>
+            <Link to="/sound/visual" className="readmore"
+              data-testid="sld-visual" style={{ textDecoration: 'none' }}>
+              ✦ Aurya Mode — porta una tua traccia o il microfono e
+              guarda il suono diventare luce
+            </Link>
+          </p>
+
           <div className="sld-guide">
             <div className="sld-ghead">
               <b>Le fondamenta</b>
