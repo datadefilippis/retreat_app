@@ -127,26 +127,61 @@ export function pinkBuf(actx) {
   return b;
 }
 
+/** Durata del tragitto di una scheda (f0 → f1), in secondi. Lungo
+ *  abbastanza da non sembrare un effetto: e' una discesa, non uno swoosh. */
+export const CARD_SWEEP_SEC = 180;
+
 /**
  * Ascolto live di una SINGOLA frequenza (le schede di Esplora): parte
  * subito, resta accesa finche' non la fermi, si combina con le altre.
- * Porting fedele di startLive del prototipo.
+ *
+ * ONDA 1 (21/8/2026, founder) — la scheda percorre il TRAGITTO che ha
+ * scritto nei dati. Prima qui arrivava un solo numero (`f0`) e restava
+ * fisso: la scheda Delta dichiarava «da 4 a 2,5 Hz» e suonava 4 Hz per
+ * sempre. Curva e respiro esistevano nel motore ma vivevano solo dentro
+ * una sessione composta. Ora la scheda scende (o sale) con la sua curva
+ * in CARD_SWEEP_SEC secondi e poi TIENE il valore d'arrivo — un ascolto
+ * di scheda non ha una fine, quindi non puo' avere un ritorno.
+ * Il tragitto si annulla appena l'utente tocca il battito: da quel
+ * momento comanda lui.
  *
  * @param ctx   AudioContext attivo
- * @param cfg   { method, carrier, timbre } della scheda
+ * @param cfg   { method, carrier, timbre, f0, f1, curve } della scheda
  * @param gain  volume iniziale 0..1
- * @param fval  battito in Hz (o frequenza del tono se method=tone)
- * @returns {{setGain, setBeat, setCarrier, stop}}
+ * @param fval  battito iniziale in Hz (o frequenza del tono se method=tone)
+ * @returns {{setGain, setBeat, setCarrier, stop, sweepTo}}
  */
 export function startCardLive(ctx, cfg, gain, fval) {
   const method = cfg.method || 'bin';
   const timbre = cfg.timbre || 'warm';
   const carrier = method === 'tone' ? fval : (cfg.carrier ?? (method === 'bin' ? 400 : 180));
   let beat = method === 'tone' ? 0 : fval;
+  // il tragitto: solo se la scheda ne dichiara uno e non e' un tono puro
+  const sweepTo = (method !== 'tone' && cfg.f1 != null && cfg.f1 !== beat)
+    ? cfg.f1 : null;
+  const curve = cfg.curve || 'lin';
+  const t0 = ctx.currentTime;
+  const beatAt = (u) => freqAt({ f0: beat, f1: sweepTo, curve }, u, CARD_SWEEP_SEC);
+  const nodesBreath = [];
+  // Il respiro vive su un nodo IN SERIE, non sommato al volume: un
+  // LFO agganciato a g.gain aggiungerebbe ±0,08 in assoluto (cioe'
+  // ±32% su un volume di 0,25), mentre envAt lo definisce ±8%
+  // RELATIVO. Qui out oscilla intorno a 1 e moltiplica: la proporzione
+  // resta giusta a qualunque volume, anche dopo setGain.
+  const out = ctx.createGain();
+  out.gain.value = 1;
+  out.connect(ctx.destination);
   const g = ctx.createGain();
-  g.gain.setValueAtTime(0.0001, ctx.currentTime);
-  g.gain.linearRampToValueAtTime(Math.max(0.0001, gain), ctx.currentTime + 1.5);
-  g.connect(ctx.destination);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(Math.max(0.0001, gain), t0 + 1.5);
+  g.connect(out);
+  if (cfg.breath !== false) {
+    const bl = ctx.createOscillator(), ba = ctx.createGain();
+    bl.frequency.value = 1 / 26;   // stesso periodo di envAt
+    ba.gain.value = 0.08;          // stessa ampiezza di envAt
+    bl.connect(ba); ba.connect(out.gain); bl.start();
+    nodesBreath.push(bl);
+  }
   const nodes = [];
   const mkV = (f, dest) => {
     const parts = timbre === 'warm'
@@ -163,6 +198,10 @@ export function startCardLive(ctx, cfg, gain, fval) {
       set(f2) {
         vs.forEach(([o, mu]) =>
           o.frequency.setTargetAtTime(Math.max(1, f2 * mu), ctx.currentTime, 0.05));
+      },
+      // ogni parziale segue il tragitto sul suo multiplo
+      sweep(draw, fn) {
+        vs.forEach(([o, mu]) => draw(o.frequency, (u) => Math.max(1, fn(u) * mu)));
       },
     };
   };
@@ -205,8 +244,42 @@ export function startCardLive(ctx, cfg, gain, fval) {
     src.start(); lfo.start();
     nodes.push(src, lfo);
   }
+  /* Il tragitto: si disegna UNA volta sui parametri che portano il
+     battito — l'oscillatore destro (binaurale/monoaurale) e l'LFO
+     (isocronico, bilaterale, soffio). Campionato come rampCurve, con la
+     curva dichiarata dalla scheda; all'arrivo il valore resta. */
+  const sweepParams = [];
+  if (sweepTo != null) {
+    const steps = 240;
+    const draw = (param, fn) => {
+      param.cancelScheduledValues(t0);
+      param.setValueAtTime(fn(0), t0);
+      for (let i = 1; i <= steps; i++) {
+        const u = (i / steps) * CARD_SWEEP_SEC;
+        param.linearRampToValueAtTime(fn(u), t0 + u);
+      }
+      sweepParams.push(param);
+    };
+    if (lfo) draw(lfo.frequency, (u) => Math.max(0.05, beatAt(u)));
+    if (vR) vR.sweep(draw, (u) => carrier + beatAt(u));
+  }
+  const fermaIlTragitto = () => {
+    sweepParams.forEach((param) => {
+      const v = param.value;
+      param.cancelScheduledValues(ctx.currentTime);
+      param.setValueAtTime(v, ctx.currentTime);
+    });
+    sweepParams.length = 0;
+  };
+
   return {
     method, carrier, beat, gain,
+    // dove sta andando: la scheda lo mostra mentre suona
+    sweepTo, sweepSec: sweepTo != null ? CARD_SWEEP_SEC : 0,
+    beatNow() {
+      if (sweepTo == null) return beat;
+      return beatAt(Math.min(CARD_SWEEP_SEC, ctx.currentTime - t0));
+    },
     setGain(v) {
       g.gain.setTargetAtTime(Math.max(0.0001, v), ctx.currentTime, 0.08);
       this.gain = v;
@@ -216,15 +289,20 @@ export function startCardLive(ctx, cfg, gain, fval) {
       vL && vL.set(v); vR && vR.set(v + beat);
     },
     setBeat(v) {
-      beat = v; this.beat = v;
+      // da qui comanda l'utente: il tragitto si ferma dov'e' arrivato
+      fermaIlTragitto();
+      beat = v; this.beat = v; this.sweepTo = null;
       if (lfo) lfo.frequency.setTargetAtTime(Math.max(0.05, v), ctx.currentTime, 0.05);
       vR && vR.set(curCarrier + v);
     },
     stop() {
       g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.25);
       setTimeout(() => {
-        nodes.forEach((n) => { try { n.stop(); } catch (e) { /* gia' fermo */ } });
+        nodes.concat(nodesBreath).forEach((n) => {
+          try { n.stop(); } catch (e) { /* gia' fermo */ }
+        });
         try { g.disconnect(); } catch (e) { /* idem */ }
+        try { out.disconnect(); } catch (e) { /* idem */ }
       }, 900);
     },
   };

@@ -558,6 +558,10 @@ export default function FrequenzePage() {
     }
     stopSession();
     const cfg = entry.cfg || {};
+    // ONDA 1 (21/8) — la scheda parte dal suo f0 e il motore la porta a
+    // f1 con la sua curva: prima f1 e curva restavano scritti nei dati
+    // e non si sentivano mai (Delta dichiarava «4 → 2,5» e suonava 4
+    // fissi). Il cfg intero viaggia: il motore legge f1, curve, breath.
     const fval = cfg.method === 'tone' ? (cfg.carrier ?? 432) : (cfg.f0 ?? 10);
     const h = startCardLive(audioCtx(), cfg, cfg.gain ?? 0.25, fval);
     h._entry = entry;
@@ -785,6 +789,16 @@ export default function FrequenzePage() {
             Approfondisci
           </button>
         )}
+        {live && live.sweepTo != null && (
+          /* ONDA 1 — il tragitto e' un'informazione, non un effetto
+             nascosto: chi ascolta deve sapere che il battito si sta
+             muovendo, e dove sta andando. Sparisce se prende il
+             comando col campo qui sotto. */
+          <div className="cardsweep" data-testid="fq-card-sweep">
+            <span className="cs-dot" aria-hidden />
+            in movimento verso {String(live.sweepTo).replace('.', ',')} Hz
+          </div>
+        )}
         {live && (
           <div className="livectl" style={{ display: 'flex' }}>
             <label className="lbl" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -798,7 +812,15 @@ export default function FrequenzePage() {
                 defaultValue={live.method === 'tone' ? live.carrier : live.beat}
                 onChange={(e2) => {
                   const v = +e2.target.value;
-                  if (!isNaN(v)) (live.method === 'tone' ? live.setCarrier(v) : live.setBeat(v));
+                  if (isNaN(v)) return;
+                  if (live.method === 'tone') { live.setCarrier(v); return; }
+                  live.setBeat(v);
+                  // ONDA 1 — setBeat ferma il tragitto DENTRO il motore:
+                  // senza questo risveglio la scheda continuerebbe a
+                  // dire «in movimento verso...» a comando gia' preso.
+                  // (`handles` vive dentro toggleCard: qui la mappa e'
+                  // quella del ref, o e' un ReferenceError silenzioso.)
+                  setLiveKeys(Object.keys(liveCardsRef.current));
                 }}
                 style={{ width: 70 }} /> Hz
             </label>
