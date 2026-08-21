@@ -37,12 +37,25 @@ rsync -avz --delete \
   --exclude='frontend/node_modules' \
   --exclude='backend/uploads/*.csv' \
   --exclude='backend/uploads/*.xlsx' \
+  --exclude='.DS_Store' \
+  --exclude='AFIANCO_Presentation_Report.docx' \
+  --exclude='Codice 2FA Demo.command' \
   -e "ssh -i $SSH_KEY" \
   ./ "${VPS_HOST}:${VPS_DIR}/"
 
 echo ""
 echo "── [2/3] Rebuilding and restarting containers..."
 ssh -i "$SSH_KEY" "$VPS_HOST" "cd $VPS_DIR && $COMPOSE up -d --build"
+
+# La config nginx e' un BIND-MOUNT DI FILE SINGOLO: rsync sostituisce il
+# file (inode nuovo) e il container continua a leggere quello VECCHIO.
+# `nginx -s reload` NON basta — rilegge lo stesso inode. Serve il
+# restart del container. Successo due volte (12/8 certificati, 21/8
+# rotte SEO di /sound): un secondo di blip, sempre meglio di una config
+# che sembra applicata e non lo e'.
+echo ""
+echo "── [2b/3] Restarting nginx (bind-mount: il reload non rilegge il file)..."
+ssh -i "$SSH_KEY" "$VPS_HOST" "cd $VPS_DIR && $COMPOSE restart nginx-proxy"
 
 echo ""
 echo "── [3/3] Waiting for healthcheck..."
@@ -53,3 +66,12 @@ ssh -i "$SSH_KEY" "$VPS_HOST" "cd $VPS_DIR && $COMPOSE ps && echo '---' && curl 
 
 echo ""
 echo "── Deploy complete! https://${DOMAIN}"
+echo ""
+echo "PROMEMORIA — cose che questo script NON fa (e che vanno a mano):"
+echo "  • uploads: NON stanno in $VPS_DIR/backend/uploads ma nel VOLUME"
+echo "    docker (backend_uploads → /app/uploads). Il rsync qui sopra"
+echo "    non li tocca. Per portarne di nuovi:"
+echo "      docker cp <dir>/. ms-backend:/app/uploads/<sotto>/"
+echo "  • migrazioni dati una tantum (es. backfill di campi nuovi)"
+echo "  • script di contenuto (/root/run_content_scripts.sh)"
+
