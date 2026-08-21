@@ -303,5 +303,21 @@ class TestStrisciaSoundInHome:
         blocco = src.split("{SOUND_PHOTO && (")[1].split(")}")[0]
         assert "mix-blend-screen" in blocco
         assert "hue-rotate" in blocco, "il ciano entra senza correzione di tinta"
-        assert "bg-gradient-to-r" in blocco, "manca il velo sul lato del testo"
         assert 'alt=""' in blocco, "l'immagine decorativa ha un alt parlante"
+        # Il velo e' UNIFORME: il testo occupa tutta la larghezza della
+        # striscia (titolo a sinistra, corpo e invito a destra), quindi
+        # un gradiente che si apre da un lato lo lascia scoperto — la
+        # misura sui pixel veri dava 4,69:1 nel punto piu' chiaro.
+        assert "bg-gradient" not in blocco, \
+            "velo a gradiente: un lato del testo resta scoperto"
+        assert "bg-[#122125]/[0.66]" in blocco, \
+            "velo diverso da quello misurato (peggiore 6,41 · tipico 10,09)"
+
+    def test_la_foto_non_pesa_come_un_originale(self):
+        """L'originale era 12000x8000 e 3,8 MB: su una fascia larga
+        1088 px sarebbe un download inutile a ogni visita."""
+        f = FRONTEND_SRC.parent / "public" / "media" / "hp-sound.jpg"
+        if not f.exists():
+            return                      # slot spento: niente da pesare
+        kb = f.stat().st_size / 1024
+        assert kb < 400, f"la fotografia della striscia pesa {kb:.0f} KB"

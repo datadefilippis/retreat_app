@@ -182,7 +182,7 @@ const HERO_POSTER = '/media/aurya-hero-poster.jpg';
    tiene scuro il lato del testo; e una rotazione di tinta appena
    accennata porta il ciano verso l'acqua di Sound (--water). Il
    risultato e' una texture, non un secondo colore di marca. */
-const SOUND_PHOTO = '';
+const SOUND_PHOTO = '/media/hp-sound.jpg';
 
 const PHOTO = {
   magazine: '/media/hero-blog.webp',
@@ -449,11 +449,20 @@ export default function NetworkHomePage() {
               {SOUND_PHOTO && (
                 <div aria-hidden className="pointer-events-none absolute inset-0">
                   <img src={SOUND_PHOTO} alt="" loading="lazy" decoding="async"
-                       className="h-full w-full object-cover opacity-[0.42] mix-blend-screen
+                       className="h-full w-full object-cover opacity-[0.45] mix-blend-screen
                                   [filter:hue-rotate(-22deg)_saturate(0.78)]" />
-                  {/* il testo sta a sinistra: li' il velo resta fitto */}
-                  <div className="absolute inset-0 bg-gradient-to-r
-                                  from-[#122125] via-[#122125]/85 to-[#122125]/40" />
+                  {/* VELO UNIFORME, non a gradiente. Il primo tentativo
+                      apriva il velo verso destra pensando che li' non ci
+                      fosse testo — ma il testo occupa TUTTA la larghezza
+                      (titolo a sinistra, corpo e invito a destra), e la
+                      misura sui pixel veri dell'immagine dava 4,69:1 nel
+                      punto piu' chiaro: appena sopra il minimo, su una
+                      pagina che sta fra 7 e 15 dappertutto.
+                      Con velo 0,66 e immagine 0,45 il caso peggiore
+                      (lo 0,1% di pixel piu' luminosi) e' 6,41 e il tipico
+                      10,09 — e la texture visibile e' persino maggiore,
+                      perche' il velo piu' fitto lascia alzare l'opacita'. */}
+                  <div className="absolute inset-0 bg-[#122125]/[0.66]" />
                 </div>
               )}
               <div aria-hidden className="gold-rule relative" />
