@@ -50,15 +50,18 @@ RETENTION_DAYS=30
 
 # ── Storage Box config ───────────────────────────────────────────────
 STORAGE_HOST="u578174.your-storagebox.de"
-STORAGE_USER="u578174"
+# Sotto-account DEDICATO ad Aurya (21/8): ingabbiato nella sua cartella,
+# non vede e non puo' toccare i backup di AFianco. Se un domani il VPS
+# di Aurya venisse compromesso, l'attaccante arriverebbe solo qui.
+STORAGE_USER="u578174-sub2"
 STORAGE_PORT=23
 # Chiave DEDICATA ai backup (non quella di deploy): se un giorno va
 # revocata si revoca solo questa, e il deploy continua a funzionare.
 STORAGE_KEY="/root/.ssh/aurya_storagebox"
-# Cartella SEPARATA da quella di AFianco sulla stessa Storage Box:
-# due prodotti, due spazi, nessuna rotazione che cancella i file
-# dell'altro (la pulizia sotto lavora dentro STORAGE_DIR).
-STORAGE_DIR="aurya-backups"
+# Il sotto-account atterra GIA' dentro la sua cartella (per lui e'
+# `/home`): scrivere in "aurya-backups" creerebbe un doppione annidato,
+# aurya-backups/aurya-backups/. Qui si sta dove si atterra.
+STORAGE_DIR="."
 
 # ── Encryption config (Phase 1 Step C1) ──────────────────────────────
 # Each backup archive (db_, uploads_, config_) is encrypted with `age`
@@ -345,8 +348,16 @@ fi
 # Plain files SHOULD already be gone (encrypt_file rm's them) but a partial
 # crash could leave them on disk — and plaintext on the VPS is exactly what
 # encryption is supposed to avoid.
-rm -f "${TMP_DIR}/${DB_FILE}" "${TMP_DIR}/${UPLOADS_FILE}" "${TMP_DIR}/${CONFIG_FILE}" \
-      "${TMP_DIR}/${DB_PLAIN}" "${TMP_DIR}/${UPLOADS_PLAIN}" "${TMP_DIR}/${CONFIG_PLAIN}" 2>/dev/null
+# I nomi VUOTI si saltano: nel giro --db-only ${UPLOADS_FILE} e' vuota,
+# e "${TMP_DIR}/" senza nome file e' la CARTELLA — `rm -f` su una
+# directory fallisce, e con `set -e` uccideva lo script DOPO che il
+# backup era gia' riuscito: db caricato, poi email di allarme. Ogni
+# notte. (Trovato provando la modalita' notturna, non quella comoda.)
+for _f in "${DB_FILE}" "${UPLOADS_FILE}" "${CONFIG_FILE}" \
+          "${DB_PLAIN}" "${UPLOADS_PLAIN}" "${CONFIG_PLAIN}"; do
+    [ -n "${_f}" ] && rm -f "${TMP_DIR}/${_f}" 2>/dev/null
+done
+true   # l'ultimo test del ciclo non deve decidere l'esito dello script
 rmdir "${TMP_DIR}" 2>/dev/null || true
 echo "[INFO] $(date) — Local temp files cleaned"
 

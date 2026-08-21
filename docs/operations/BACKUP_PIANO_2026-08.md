@@ -65,7 +65,39 @@ Ora **l'archivio più recente di ogni tipo non si cancella mai**, per
 vecchio che sia. Un backup vecchio è un problema; nessun backup è un
 disastro.
 
-## 5. Cosa deve fare il founder su Hetzner (un minuto)
+## 5. ATTIVO dal 21 agosto 2026
+
+Sotto-account `u578174-sub2` (base `/aurya-backups`, SSH sì, scrittura
+sì, SMB/WebDAV no, **external reachability NO**: il VPS è anche lui a
+Falkenstein e raggiunge la Storage Box dalla rete interna di Hetzner,
+quindi la casella resta chiusa a internet).
+
+Primo giro completo eseguito e **verificato sul remoto**:
+
+| file | dimensione |
+|---|---|
+| `db_20260821_122936.gz.age` | 859 KB |
+| `uploads_20260821_122936.tar.gz.age` | **661.418.091 byte** (631 MB) |
+| `config_20260821_122936.tar.gz.age` | 21 KB (include la catena dei certificati) |
+
+Cifratura verificata: intestazione `age-encryption.org/v1`, chiave
+`age1j9u3de…` — quella con la privata offline del founder. Allarme
+verificato con un fallimento finto: email partita a `info@aurya.life`.
+
+Cron attivo (`/etc/cron.d/aurya-backup`): `--db-only` lun-sab 03:15,
+`--full` domenica 03:40. Rotazione del log via logrotate (con la
+direttiva `su root adm`, senza la quale rifiutava di ruotare).
+
+### Un bug trovato provando la modalità che NON era comoda da provare
+Il giro `--db-only` falliva **dopo** aver caricato tutto: con
+`UPLOADS_FILE` vuota, la pulizia finale faceva `rm -f` sulla CARTELLA
+temporanea invece che su un file; il comando fallisce, `set -e` uccide
+lo script, e sarebbe partita un'email di allarme **ogni notte** per un
+backup in realtà riuscito. Allarme che nessuno avrebbe più letto dopo
+la terza notte — cioè il modo migliore per non accorgersi di un guasto
+vero. Ora i nomi vuoti si saltano.
+
+## 6. Quello che resta da fare: la prova di ripristino (serve la tua chiave)
 
 La Storage Box c'è già e risponde. Manca solo autorizzare **questo**
 server, che prima non aveva alcuna chiave SSH.
@@ -93,16 +125,30 @@ Facoltativi, consigliati:
   immagini dell'intera macchina. Con questo impianto hai i *dati*; con
   gli snapshot hai la *macchina*.
 
-## 6. Cosa succede appena la chiave è autorizzata
+Io posso verificare che i file esistano, siano interi e siano cifrati
+con la chiave giusta — e l'ho fatto. **Non posso aprirli**: la chiave
+privata è offline, ed è giusto così.
 
-1. primo giro **manuale** `--full`, guardandolo girare;
-2. **prova di ripristino vera**: scarico l'archivio, lo decifro con la
-   chiave offline, confronto il dump e un campione di file audio con
-   gli originali. Un backup non verificato è un'ipotesi, non un backup;
-3. cron: `--db-only` ogni notte alle 03:15, `--full` la domenica alle
-   03:40;
-4. prova dell'**allarme**: un fallimento finto per vedere se l'email
-   arriva davvero a `info@aurya.life`.
+La prova la fai tu, una volta, dal tuo Mac (serve `age`:
+`brew install age`):
+
+```bash
+# 1. scarica un archivio dalla Storage Box
+sftp -P 23 u578174-sub2@u578174.your-storagebox.de
+> get db_20260821_122936.gz.age
+> quit
+
+# 2. decifra con la chiave privata (da 1Password / chiavetta)
+age -d -i ~/percorso/chiave-privata.txt db_20260821_122936.gz.age > db.gz
+
+# 3. il dump deve aprirsi e contenere le collection vere
+tar tzf db.gz 2>/dev/null | head || gzip -t db.gz && echo "archivio integro"
+```
+
+Se il passo 2 produce un file e il 3 non protesta, il cerchio è chiuso:
+i backup si possono davvero ripristinare. **Da rifare due volte
+l'anno** — una chiave che non si prova è una chiave che si scopre
+persa nel momento peggiore.
 
 ## 7. Costo
 
