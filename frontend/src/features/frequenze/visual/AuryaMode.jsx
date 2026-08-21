@@ -16,11 +16,11 @@
  *   vede una scena ferma e composta, non un rifiuto.
  */
 import React, { useEffect, useRef } from 'react';
-import * as mandala from './temi/mandala';
+import * as sorgente from './temi/sorgente';
 
-const TEMI = { mandala };
+const TEMI = { sorgente };
 
-export default function AuryaMode({ lettore, tema = 'mandala', attivo = true,
+export default function AuryaMode({ lettore, tema = 'sorgente', attivo = true,
                                     className = '', altezza = 320 }) {
   const canvasRef = useRef(null);
   const rafRef = useRef(0);
@@ -29,7 +29,7 @@ export default function AuryaMode({ lettore, tema = 'mandala', attivo = true,
     const cv = canvasRef.current;
     if (!cv || !lettore || !attivo) return undefined;
     const g = cv.getContext('2d', { alpha: false });
-    const t = TEMI[tema] || mandala;
+    const t = TEMI[tema] || sorgente;
     const quieto = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
     /* Tetto al DPR: su un telefono a 3x una tela da 1000px larga
@@ -49,7 +49,7 @@ export default function AuryaMode({ lettore, tema = 'mandala', attivo = true,
 
     // il fondo pieno una volta sola: da qui in poi ogni fotogramma
     // vela il precedente, ed e' quello che crea la scia
-    g.fillStyle = mandala.COLORI.fondo;
+    g.fillStyle = sorgente.COLORI.fondo;
     g.fillRect(0, 0, w, h);
 
     const t0 = performance.now();
@@ -87,6 +87,6 @@ export default function AuryaMode({ lettore, tema = 'mandala', attivo = true,
     <canvas ref={canvasRef} className={`aurya-mode ${className}`}
       data-testid="aurya-mode"
       style={{ width: '100%', height: altezza, display: 'block',
-               borderRadius: 12, background: mandala.COLORI.fondo }} />
+               borderRadius: 12, background: sorgente.COLORI.fondo }} />
   );
 }

@@ -1,8 +1,7 @@
 """Aurya Mode — guardie di AV1 (21/8/2026).
 
 Piano in docs/AURYA_MODE_ANALISI_AV_2026-08.md. AV1 e' il cuore: lo
-strato che ASCOLTA e un tema che disegna. Se questo e' bello, il resto
-(altri temi, sorgenti, esportazione video) e' ripetizione.
+strato che ASCOLTA e un tema che disegna. Se questo e' bello, il resto e' ripetizione.
 
 Le due regole che si romperebbero in silenzio, e che qui si difendono:
 la visualizzazione non deve MAI toccare il suono, e i colori sono
@@ -17,7 +16,7 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 FQ_DIR = BACKEND_DIR.parent / "frontend" / "src" / "features" / "frequenze"
 
 ANALISI = (FQ_DIR / "visual" / "analisi.js").read_text()
-MANDALA = (FQ_DIR / "visual" / "temi" / "mandala.js").read_text()
+SORGENTE = (FQ_DIR / "visual" / "temi" / "sorgente.js").read_text()
 TELA = (FQ_DIR / "visual" / "AuryaMode.jsx").read_text()
 PUB = (FQ_DIR / "PublicFrequencyPage.js").read_text()
 SYNTH = (FQ_DIR / "engine" / "synth.js").read_text()
@@ -35,7 +34,7 @@ class TestAscoltoAv1:
         che esce da analisi.js. Due letture diverse dello stesso suono
         darebbero due scene che non stanno insieme."""
         assert "createAnalyser" in ANALISI
-        for nome, src in (("mandala", MANDALA), ("AuryaMode", TELA)):
+        for nome, src in (("sorgente", SORGENTE), ("AuryaMode", TELA)):
             assert "createAnalyser" not in src and "getByteFrequencyData" not in src, \
                 f"{nome} si e' fatto un analizzatore suo"
 
@@ -122,13 +121,13 @@ class TestColoriDiCasaAv1:
         for nome, hex_ in (("lamp", "#C9B37E"), ("water", "#66B79C"),
                            ("violet", "#9B8BC4"), ("ink", "#0C1618"),
                            ("bone", "#E9E4D9")):
-            assert hex_ in MANDALA, f"manca il colore di marca {nome}"
+            assert hex_ in SORGENTE, f"manca il colore di marca {nome}"
             assert hex_.lower() in CSS.lower() or hex_ in CSS, \
                 f"{hex_} non e' piu' nella tavolozza del mondo Sound"
 
     def test_niente_arcobaleno(self):
         """Nessun colore inventato fuori dalla famiglia della marca."""
-        trovati = set(re.findall(r"#[0-9A-Fa-f]{6}", MANDALA))
+        trovati = set(re.findall(r"#[0-9A-Fa-f]{6}", SORGENTE))
         ammessi = {"#C9B37E", "#66B79C", "#9B8BC4", "#0C1618", "#E9E4D9"}
         assert trovati <= ammessi, f"colori estranei alla marca: {trovati - ammessi}"
 
@@ -136,24 +135,30 @@ class TestColoriDiCasaAv1:
         """Il trucco piu' comune dei visualizzatori — la tinta che gira
         col tempo — e' esattamente cio' che renderebbe Aurya
         indistinguibile da mille altri."""
-        assert "hsl(" not in MANDALA
+        assert "hsl(" not in SORGENTE
 
 
 class TestTemaComeFunzionePuraAv1:
     def test_il_tema_e_una_funzione_sola(self):
         """Aggiungerne uno non deve toccare nient'altro: e' lo stesso
         contratto delle schede della biblioteca."""
-        assert re.search(r"export function disegna\(g, L, t, \{ w, h \}\)", MANDALA)
-        assert "export const NOME" in MANDALA
+        assert re.search(r"export function disegna\(g, L, t, \{ w, h \}\)", SORGENTE)
+        assert "export const NOME" in SORGENTE
 
     def test_la_scia_invece_della_cancellazione(self):
         """Cancellare a ogni fotogramma da' un disegno che sbatte; un
         velo lascia una memoria luminosa."""
-        assert "fillStyle = rgba(COLORI.fondo, 0.22)" in MANDALA
-        assert "clearRect" not in MANDALA
+        assert "const SCIA" in SORGENTE, "la scia non e' piu' una scelta dichiarata"
+        assert "clearRect" not in SORGENTE
 
     def test_la_somma_della_luce_si_richiude(self):
         """globalCompositeOperation 'lighter' lasciato acceso
         sporcherebbe tutto cio' che disegna dopo."""
-        assert MANDALA.count("globalCompositeOperation = 'lighter'") == 1
-        assert MANDALA.count("globalCompositeOperation = 'source-over'") == 1
+        # il tema apre 'lighter' una volta e lo richiude in coda; il
+        # velo del tempo si disegna in source-over PRIMA di aprirlo
+        assert SORGENTE.count("globalCompositeOperation = 'lighter'") == 1
+        assert SORGENTE.count("globalCompositeOperation = 'source-over'") == 2
+        assert SORGENTE.rstrip().endswith("}"), "il file deve chiudersi col disegna"
+        coda = SORGENTE.split("globalCompositeOperation = 'lighter'")[1]
+        assert "globalCompositeOperation = 'source-over'" in coda, \
+            "lighter lasciato acceso: sporcherebbe cio' che disegna dopo"
