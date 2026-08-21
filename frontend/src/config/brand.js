@@ -30,4 +30,4 @@ export const BRAND_EMAIL = 'info@aurya.life';
 // (© · Privacy · Termini), non tra le «Risorse» — Instagram non e' un
 // contenuto di Aurya, e' il canale dove Aurya sta. Qui va l'URL
 // COMPLETO del profilo, es. 'https://www.instagram.com/nomeprofilo/'.
-export const BRAND_INSTAGRAM = '';
+export const BRAND_INSTAGRAM = 'https://www.instagram.com/aurya.life';
