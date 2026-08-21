@@ -26,6 +26,8 @@ import { prova, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/c
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
 import SeekBar from './SeekBar';
+import AuryaMode from './visual/AuryaMode';
+import { creaLettore } from './visual/analisi';
 
 const PREVIEW_SEC = 90;
 const INTENTS = {
@@ -72,6 +74,12 @@ export default function PublicFrequencyPage() {
   const [contProg, setContProg] = useState(null);
   const [continuo, setContinuo] = useState(false);
   const [contErrore, setContErrore] = useState('');
+  /* AV1 — Aurya Mode: si chiede, non parte da solo. Il lettore si
+     innesta nel grafo UNA volta e resta li'; la tela puo' andare e
+     venire senza toccare il suono. */
+  const [guarda, setGuarda] = useState(false);
+  const [lettore, setLettore] = useState(null);
+  const lettoreRef = useRef(null);
 
   useEffect(() => {
     // SB1 — vecchie chiavi HMAC → prova unica (poi si ricontrolla)
@@ -167,12 +175,21 @@ export default function PublicFrequencyPage() {
       sorvegliaContesto(ctxRef.current, () => stopRef.current());
     }
     const ctx = ctxRef.current;
+    if (!lettoreRef.current) {
+      // l'analizzatore sta FRA il motore e l'altoparlante: legge cio'
+      // che esce davvero, e lascia passare tutto senza toccarlo
+      const l = creaLettore(ctx);
+      l.analyser.connect(ctx.destination);
+      lettoreRef.current = l;
+      setLettore(l);
+    }
     await ctx.resume();
     const { audioLayers, voiceLayers } = await caricaLayers(ctx);
     segnaAscolto();
     liveRef.current = startPreview(ctx, track.score,
       { fromT, audioLayers, voiceLayers,
-        voiceDuck: !!track.score.voice_duck });
+        voiceDuck: !!track.score.voice_duck,
+        uscita: lettoreRef.current?.analyser });
     setPlaying(true);
     timerRef.current = setInterval(() => {
       const cur = liveRef.current ? liveRef.current.elapsed() : 0;
@@ -294,6 +311,16 @@ export default function PublicFrequencyPage() {
           )}
           {track.description && <p>{track.description}</p>}
 
+          {/* AV1 — Aurya Mode. Si accende con un gesto (mai da sola:
+              disegnare consuma) e vive solo mentre il motore suona dal
+              vivo: in ascolto continuo il suono esce da un <audio>, e
+              su iOS portarlo dentro WebAudio lo rimetterebbe sotto il
+              tasto silenzioso. Del resto guardare e ascoltare a
+              schermo bloccato si escludono a vicenda. */}
+          {guarda && lettore && !continuo && (
+            <AuryaMode lettore={lettore} attivo={playing || elapsed > 0}
+              altezza={300} />
+          )}
           <SafetyLine onOpen={openReview} />
           <div className="createbar" style={{ position: 'static', marginTop: 16 }}>
             <button type="button" className={`cb-play${playing ? ' suona' : ''}`} data-testid="fqp-play"
@@ -345,6 +372,15 @@ export default function PublicFrequencyPage() {
                   {' '}{Math.round(contProg * 100)}%
                 </span>
               )}
+            </div>
+          )}
+          {!continuo && (
+            <div className="continuo-riga">
+              <button type="button" className="readmore"
+                data-testid="fqp-guarda"
+                onClick={() => setGuarda((v) => !v)}>
+                {guarda ? 'Nascondi Aurya Mode' : '✦ Guarda il suono'}
+              </button>
             </div>
           )}
           {contErrore && (

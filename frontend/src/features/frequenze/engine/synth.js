@@ -658,13 +658,19 @@ const rampCurve = (param, t0, span, fn, steps = 160, now = 0) => {
  * @returns {{stop: fn, elapsed: fn, setLayerGain: fn(id, gain)}}
  */
 export function startPreview(ctx, score,
-  { fromT = 0, audioLayers = [], voiceLayers = [], voiceDuck = false } = {}) {
+  { fromT = 0, audioLayers = [], voiceLayers = [], voiceDuck = false,
+    uscita = null } = {}) {
   const d = score.duration_sec;
   const off = Math.max(0, Math.min(fromT || 0, d - 1));
   const t0 = ctx.currentTime + 0.15 - off;
   const nodes = [], liveG = {};
   const sess = ctx.createGain();
-  sess.connect(ctx.destination);
+  /* AV1 — l'uscita puo' essere un nodo intermedio (l'analizzatore di
+     Aurya Mode) invece dell'altoparlante: chi visualizza legge
+     ESATTAMENTE cio' che esce, non una copia risintetizzata. Il nodo
+     resta responsabilita' del chiamante: il motore non lo crea e non
+     lo chiude. */
+  sess.connect(uscita || ctx.destination);
   const fi = score.fade_in_sec || 0, fo = score.fade_out_sec || 0;
   const now = ctx.currentTime;
   const startAt = now + 0.15;
