@@ -311,3 +311,73 @@ nomina le basi pesanti. Conosce lo spezzone, quindi non grida al lupo
 sui tappeti.
 
 **Guardie**: `test_economia_sound.py` sale a 23.
+
+
+---
+
+## ES2 ESEGUITA + ES5: una correzione al mio stesso piano
+
+### ES2 — le due basi non compresse
+
+`scripts/comprimi_basi_non_compresse.py` (rieseguibile in produzione,
+con `--esegui`; senza, elenca soltanto).
+
+| base | prima | dopo |
+|---|---|---|
+| Drone caldo 110 Hz | 5,05 MB | **0,41 MB** (−92%) |
+| Pioggia leggera | 5,05 MB | **0,52 MB** (−90%) |
+
+**9,2 MB risparmiati** — per file, a ogni ascolto e in ogni backup: 30
+secondi di suono non costano più 5 MB a chi li ascolta.
+
+Perché è sicuro cambiare il file sotto un asset esistente: gli score
+referenziano l'`asset_id`, **mai l'URL** (`resolveAudioLayers` risolve
+`stream_url` al momento dell'ascolto). E la ricodifica cambia
+l'estensione, quindi cambia l'indirizzo: nessun rischio con la cache
+`immutable` di un anno — il motivo per cui non si sostituiscono mai i
+byte sotto lo stesso URL. Le sessioni già composte suonano senza
+essere toccate. Ordine delle operazioni: prima il documento, poi la
+cancellazione — se il processo muore in mezzo resta un file orfano
+(innocuo), non un asset che punta al nulla (muto).
+
+Verificato dopo: entrambe scaricate e decodificate dai nuovi URL,
+30,0 s stereo.
+
+### ES5 — **era già fatto, e il mio piano diceva il falso**
+
+Avevo scritto che «la crescita dell'unico storage per-operatore non ha
+contratto». **Non è vero, e non l'avevo verificato prima di scriverlo.**
+In `models/voice_asset.py` i tetti ci sono da sempre:
+
+| limite | valore |
+|---|---|
+| durata di uno spezzone | 10 minuti |
+| peso di uno spezzone | 30 MB |
+| **quota totale per organizzazione** | **100 MB** |
+| numero di spezzoni per org | 100 |
+
+E sono **applicati alla registrazione**, non solo dichiarati (`used +
+len(data) > ORG_QUOTA_BYTES` → 400). Quindi la crescita è già limitata
+per costruzione: 100 operatori attivi = 10 GB nel caso peggiore
+assoluto, non una curva aperta.
+
+Resta soltanto il *nice-to-have* che avevo messo in coda a ES5: la
+pulizia degli spezzoni orfani (registrati e mai usati in uno score).
+Con la quota applicata, però, un orfano consuma lo spazio **della
+propria organizzazione** — è un problema che si auto-limita e che
+l'operatore può risolvere da sé. Non lo faccio: sarebbe lavoro per un
+problema che non esiste.
+
+## Stato del ciclo ES
+
+| onda | esito |
+|---|---|
+| ES1 — nginx serve gli audio | **fatta** (verifica al deploy) |
+| ES2 — basi non compresse | **fatta**, −9,2 MB |
+| ES3 — lo spezzone | **fatta**, −92% RAM e banda |
+| ES4 — vetrina indicizzata e paginata | **fatta** |
+| ES5 — quota voce | **già esistente**: niente da fare |
+| ES6 — soglie di spesa | **scritte** (capitolo sopra) |
+
+Il ciclo è chiuso. La prossima spesa non arriva finché non si superano
+le soglie di ES6 — e a quel punto si sa già cosa fare.

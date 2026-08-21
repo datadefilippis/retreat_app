@@ -235,3 +235,63 @@ class TestSpezzoneEs3:
         lupo su sessioni che ormai pesano un decimo."""
         blocco = ASSETS.split("export function memoriaStimataMB")[1][:700]
         assert "SPEZZONE_SEC" in blocco and "l.loop !== false" in blocco
+
+
+SCRIPT_ES2 = (ROOT / "scripts" / "comprimi_basi_non_compresse.py").read_text()
+VOICE_MODEL = (BACKEND_DIR / "models" / "voice_asset.py").read_text()
+
+
+class TestBasiCompresseEs2:
+    def test_lo_script_aggiorna_prima_di_cancellare(self):
+        """Se il processo muore in mezzo deve restare un file orfano
+        (innocuo), non un asset che punta al nulla (base muta)."""
+        corpo = SCRIPT_ES2.split("_ricodifica(vecchio, nuovo)")[1]
+        i_doc = corpo.index("update_one")
+        i_del = corpo.index("vecchio.unlink()")
+        assert i_doc < i_del
+
+    def test_lo_script_cambia_estensione_quindi_indirizzo(self):
+        """I file sono serviti `immutable` per un anno: sostituire i
+        byte sotto lo STESSO url darebbe a meta' utenti la versione
+        vecchia per mesi. Cambiando estensione cambia l'indirizzo."""
+        assert 'with_suffix(".m4a")' in SCRIPT_ES2
+        assert '"mime": "audio/mp4"' in SCRIPT_ES2
+
+    def test_lo_script_non_esegue_per_sbaglio(self):
+        """Tocca file e documenti: senza --esegui deve solo elencare."""
+        assert '"--esegui", action="store_true"' in SCRIPT_ES2
+        assert "if not esegui:" in SCRIPT_ES2
+
+    def test_niente_basi_non_compresse_in_libreria(self):
+        """Guardia viva: una base sopra gli 800 kbps e' un difetto di
+        ingestione (5 MB per 30 secondi), non una scelta di qualita'."""
+        try:
+            from pymongo import MongoClient
+            db = MongoClient("mongodb://localhost:27017",
+                             serverSelectionTimeoutMS=2000)["retreat_dev"]
+            assets = list(db.audio_assets.find(
+                {}, {"title": 1, "size_bytes": 1, "duration_sec": 1}))
+        except Exception:
+            pytest.skip("Mongo non raggiungibile")
+        colpevoli = [a.get("title") for a in assets
+                     if a.get("duration_sec") and a.get("size_bytes")
+                     and a["size_bytes"] * 8 / 1000 / a["duration_sec"] > 800]
+        assert not colpevoli, (
+            f"basi non compresse in libreria: {colpevoli} — "
+            "scripts/comprimi_basi_non_compresse.py --esegui")
+
+
+class TestQuotaVoceEs5:
+    """ES5 era GIA' fatto: il piano diceva il falso, e non l'avevo
+    verificato prima di scriverlo. Questi assert lo fissano, cosi' la
+    prossima analisi parte da un fatto e non da un ricordo."""
+
+    def test_i_tetti_esistono(self):
+        for nome in ("CLIP_MAX_SECONDS", "CLIP_MAX_BYTES",
+                     "ORG_QUOTA_BYTES", "CLIPS_MAX_PER_ORG"):
+            assert f"{nome} = " in VOICE_MODEL, f"sparito il tetto {nome}"
+
+    def test_la_quota_e_APPLICATA_non_solo_dichiarata(self):
+        """Un tetto che nessuno controlla non e' un tetto."""
+        assert "used + len(data) > ORG_QUOTA_BYTES" in FREQ
+        assert "len(existing) >= CLIPS_MAX_PER_ORG" in FREQ
