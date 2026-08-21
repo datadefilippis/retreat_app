@@ -467,25 +467,27 @@ export default function NetworkHomePage() {
               )}
               <div aria-hidden className="gold-rule relative" />
               <div className="relative grid gap-8 p-8 sm:p-10 lg:grid-cols-12 lg:gap-12 lg:p-12">
+                {/* Il titolo E' il nome (testo del founder, 21/8): via
+                    l'occhiello, che diceva «AURYA SOUND» tre centimetri
+                    sopra un titolo «Aurya Sound». L'oro resta nel filo
+                    in testa alla striscia. */}
                 <div className="lg:col-span-5">
-                  <p className="eyebrow" style={{ color: '#c9b37e' }}>
-                    {t('nwHome.soundEyebrow', { defaultValue: 'Aurya Sound' })}
-                  </p>
-                  <DisplayTitle as="h3" size="section" measure="tight" className="mt-4">
-                    {t('nwHome.soundTitle', { defaultValue: 'E poi c’è ascoltare.' })}
+                  <DisplayTitle as="h3" size="section" measure="tight">
+                    {t('nwHome.soundTitle', { defaultValue: 'Aurya Sound' })}
                   </DisplayTitle>
+                  <div aria-hidden className="gold-rule mt-7 max-w-[8rem]" />
                 </div>
                 <div className="lg:col-span-7">
                   <Lede size="lead" tone="inherit" className="opacity-90">
-                    {t('nwHome.soundP1', { defaultValue: 'Il suono è la parte del benessere dove girano più promesse e meno verifiche.' })}
+                    {t('nwHome.soundP1', { defaultValue: 'Lo spazio di Aurya dedicato al suono.' })}
                   </Lede>
                   <Lede size="body" tone="inherit" className="mt-5 opacity-90">
-                    {t('nwHome.soundP2', { defaultValue: 'Aurya Sound fa il contrario: ogni frequenza è raccontata per quello che è, con il livello di evidenza dichiarato e una sezione che dice sempre cosa non sappiamo ancora. Dentro ci sono le meditazioni composte dagli operatori della rete — e, per chi col suono ci lavora, lo studio per crearle.' })}
+                    {t('nwHome.soundP2', { defaultValue: 'Frequenze, suoni, meditazioni e sessioni da ascoltare, esplorare e sperimentare. Aurya Sound offre strumenti per creare e personalizzare sessioni sonore, sia per chi pratica sia per chi conduce esperienze.' })}
                   </Lede>
                   <p className="mt-8">
                     <EditorialCta to="/sound" variant="solid" tone="dark"
                                   data-testid="hp-sound-cta">
-                      {t('nwHome.soundCta', { defaultValue: 'Entra in Aurya Sound' })}
+                      {t('nwHome.soundCta', { defaultValue: 'Esplora Aurya Sound' })}
                     </EditorialCta>
                   </p>
                 </div>
