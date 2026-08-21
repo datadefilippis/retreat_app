@@ -23,6 +23,8 @@ const layer = (cfg) => ({
   // ONDA 2 — il periodo viaggia solo con la marea (come nel modello:
   // sugli altri livelli sarebbe un campo muto)
   ...(cfg.curve === 'wave' ? { period: cfg.period ?? 40 } : {}),
+  // ONDA 4 — idem per il colore, che vale solo per il soffio
+  ...((cfg.method === 'noise') ? { color: cfg.color || 'pink' } : {}),
   start: cfg.start ?? 0,
   end: cfg.end ?? cfg.duration,
   gain: cfg.gain ?? 0.25,

@@ -23,7 +23,23 @@ const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 export const METHOD_LABELS = Object.freeze({
   bin: 'binaurale', iso: 'isocronico', mono: 'monoaurale',
   bil: 'bilaterale', noise: 'soffio', tone: 'tono puro',
+  drone: 'bordone armonico',
 });
+
+/* ONDA 4 (21/8) — il colore del soffio. Il rosa c'era gia' (meno
+   energia sugli acuti del bianco); il marrone scende ancora, il bianco
+   e' il riferimento crudo. NON serve a imitare la natura — per mare,
+   pioggia e vento ci sono le basi VERE in libreria (decisione founder
+   21/8): qui e' il colore del veicolo su cui viaggia il RITMO. */
+export const NOISE_COLORS = Object.freeze({
+  pink: 'rosa', brown: 'marrone', white: 'bianco',
+});
+/* Pareggio dei livelli: misurati sul render, rosa 0,486 · marrone
+   0,171 · bianco 0,141 di RMS. Senza questi fattori cambiare colore
+   cambierebbe il VOLUME, e chi prova i tre soffi sentirebbe la
+   differenza sbagliata. Il rosa resta 1: e' il riferimento storico,
+   e ogni ricetta gia' salvata deve suonare identica. */
+export const NOISE_GAIN = Object.freeze({ pink: 1, brown: 2.84, white: 3.45 });
 export const CURVE_LABELS = Object.freeze({
   lin: 'costante', exp: 'naturale', steps: 'a gradini', wave: 'a onda',
 });
@@ -79,8 +95,16 @@ const voice = (l, th) => (l.timbre === 'warm' ? warm(th) : Math.sin(th));
 /* ── sintesi analitica campione-per-campione (render esatto) ─────────────
    Fase accumulata → continuita' garantita, zero clic sulle transizioni. */
 export function neuroSampleInit(l) {
-  l._ph = 0; l._pk = { b0: 0, b1: 0, b2: 0 };
+  l._ph = 0; l._pk = { b0: 0, b1: 0, b2: 0 }; l._br = 0;
 }
+
+/* Il bordone: fondamentale + quinta e terza in intonazione NATURALE
+   (3/2 e 5/4, i rapporti semplici che non battono tra loro). Il tono
+   puro dava fondamentale + 2ª e 3ª armonica: una nota sola, piu'
+   calda. Questo e' un accordo — la differenza tra un diapason e un
+   armonium. */
+const DRONE_PARTS = [[1, 1], [1.5, 0.55], [1.25, 0.4]];
+const DRONE_NORM = DRONE_PARTS.reduce((a, [, w]) => a + w, 0);
 export function neuroSample(l, tAbs, dt) {
   const span = Math.max(1, l.end - l.start), u = tAbs - l.start;
   if (u < 0 || u > span) return [0, 0];
@@ -88,6 +112,13 @@ export function neuroSample(l, tAbs, dt) {
   if (e <= 0) return [0, 0];
   if (l.method === 'tone') {
     const v = voice(l, TAU * l.carrier * tAbs) * e;
+    return [v, v];
+  }
+  if (l.method === 'drone') {
+    const th = TAU * l.carrier * tAbs;
+    let v = 0;
+    DRONE_PARTS.forEach(([mu, w]) => { v += w * voice(l, th * mu); });
+    v = (v / DRONE_NORM) * e;
     return [v, v];
   }
   const f = freqAt(l, u, span);
@@ -111,12 +142,20 @@ export function neuroSample(l, tAbs, dt) {
   }
   if (l.method === 'noise') {
     const w = Math.random() * 2 - 1, k = l._pk;
-    k.b0 = 0.99765 * k.b0 + w * 0.099046;
-    k.b1 = 0.963 * k.b1 + w * 0.2965164;
-    k.b2 = 0.57 * k.b2 + w * 1.0526913;
-    const pink = (k.b0 + k.b1 + k.b2 + w * 0.1848) * 0.25;
+    let n;
+    if (l.color === 'white') n = w * 0.25 * NOISE_GAIN.white;
+    else if (l.color === 'brown') {
+      // integratore con perdita: -6 dB/ottava, piu' cupo del rosa
+      l._br = (l._br + 0.02 * w) / 1.02;
+      n = l._br * 3.0 * NOISE_GAIN.brown;
+    } else {
+      k.b0 = 0.99765 * k.b0 + w * 0.099046;
+      k.b1 = 0.963 * k.b1 + w * 0.2965164;
+      k.b2 = 0.57 * k.b2 + w * 1.0526913;
+      n = (k.b0 + k.b1 + k.b2 + w * 0.1848) * 0.25;
+    }
     const gate = (1 + Math.sin(pb)) / 2;
-    const v = pink * gate * e * 1.6;
+    const v = n * gate * e * 1.6;
     return [v, v];
   }
   return [0, 0];
@@ -124,22 +163,30 @@ export function neuroSample(l, tAbs, dt) {
 
 /* ── anteprima: grafo WebAudio ──────────────────────────────────────────── */
 
-let pinkBufCache = null;
-export function pinkBuf(actx) {
-  if (pinkBufCache && pinkBufCache.sampleRate === actx.sampleRate) return pinkBufCache;
+const noiseBufCache = {};
+/** Buffer di rumore per colore. La matematica e' la stessa di
+ *  neuroSample: se qui e li' divergessero, anteprima ed export
+ *  suonerebbero due soffi diversi. */
+export function pinkBuf(actx, color = 'pink') {
+  const key = `${color}:${actx.sampleRate}`;
+  if (noiseBufCache[key]) return noiseBufCache[key];
   const n = actx.sampleRate * 4, b = actx.createBuffer(2, n, actx.sampleRate);
   for (let c = 0; c < 2; c++) {
     const d = b.getChannelData(c);
-    let b0 = 0, b1 = 0, b2 = 0;
+    let b0 = 0, b1 = 0, b2 = 0, br = 0;
     for (let i = 0; i < n; i++) {
       const w = Math.random() * 2 - 1;
-      b0 = 0.99765 * b0 + w * 0.099046;
-      b1 = 0.963 * b1 + w * 0.2965164;
-      b2 = 0.57 * b2 + w * 1.0526913;
-      d[i] = (b0 + b1 + b2 + w * 0.1848) * 0.25;
+      if (color === 'white') d[i] = w * 0.25 * NOISE_GAIN.white;
+      else if (color === 'brown') { br = (br + 0.02 * w) / 1.02; d[i] = br * 3.0 * NOISE_GAIN.brown; }
+      else {
+        b0 = 0.99765 * b0 + w * 0.099046;
+        b1 = 0.963 * b1 + w * 0.2965164;
+        b2 = 0.57 * b2 + w * 1.0526913;
+        d[i] = (b0 + b1 + b2 + w * 0.1848) * 0.25;
+      }
     }
   }
-  pinkBufCache = b;
+  noiseBufCache[key] = b;
   return b;
 }
 
@@ -228,6 +275,14 @@ export function startCardLive(ctx, cfg, gain, fval) {
   };
   let vL = null, vR = null, lfo = null, curCarrier = carrier;
   if (method === 'tone') vL = mkV(carrier, g);
+  else if (method === 'drone') {
+    // stessi rapporti di DRONE_PARTS: quinta e terza naturali
+    DRONE_PARTS.forEach(([mu, w]) => {
+      const h = ctx.createGain(); h.gain.value = w / DRONE_NORM; h.connect(g);
+      const v = mkV(carrier * mu, h);
+      if (mu === 1) vL = v;
+    });
+  }
   else if (method === 'bin') {
     const mg = ctx.createChannelMerger(2), gl = ctx.createGain(), gr = ctx.createGain();
     gl.connect(mg, 0, 0); gr.connect(mg, 0, 1); mg.connect(g);
@@ -255,7 +310,7 @@ export function startCardLive(ctx, cfg, gain, fval) {
     vL = mkV(carrier, dst);
   } else if (method === 'noise') {
     const src = ctx.createBufferSource();
-    src.buffer = pinkBuf(ctx); src.loop = true;
+    src.buffer = pinkBuf(ctx, cfg.color); src.loop = true;
     const gate = ctx.createGain(); gate.gain.value = 0.5;
     lfo = ctx.createOscillator();
     const la = ctx.createGain(); la.gain.value = 0.5;
@@ -502,6 +557,12 @@ export function startPreview(ctx, score,
       ? Math.min(3000, Math.max(120, Math.ceil((span / Math.max(2, l.period || WAVE_PERIOD_SEC)) * 24)))
       : 120;
     if (l.method === 'tone') mkVoice(() => l.carrier, g);
+    else if (l.method === 'drone') {
+      DRONE_PARTS.forEach(([mu, w]) => {
+        const h = ctx.createGain(); h.gain.value = w / DRONE_NORM; h.connect(g);
+        mkVoice(() => l.carrier * mu, h);
+      });
+    }
     else if (l.method === 'bin') {
       const m = ctx.createChannelMerger(2), gl = ctx.createGain(), gr = ctx.createGain();
       gl.connect(m, 0, 0); gr.connect(m, 0, 1); m.connect(g);
@@ -531,7 +592,7 @@ export function startPreview(ctx, score,
       mkVoice(() => l.carrier, dst);
     } else if (l.method === 'noise') {
       const src = ctx.createBufferSource();
-      src.buffer = pinkBuf(ctx); src.loop = true;
+      src.buffer = pinkBuf(ctx, l.color); src.loop = true;
       const gate = ctx.createGain(); gate.gain.value = 0.8;
       const lfo = ctx.createOscillator(), la = ctx.createGain(); la.gain.value = 0.8;
       rampCurve(lfo.frequency, s0, span, (u) => beat(u), passi, now);

@@ -247,3 +247,69 @@ class TestRitmiDelCorpoOnda3:
         page = PAGE.read_text()
         intro = page.split("'Ritmi del corpo': {")[1][:600]
         assert "riguarda la pratica" in intro
+
+
+class TestTimbroOnda4:
+    """ONDA 4 — il bordone armonico e il colore del soffio. Misurato:
+    il bordone suona 110 · 165 · 137,5 Hz (fondamentale, quinta 3/2,
+    terza 5/4); i tre colori hanno livelli pari (0,42-0,49 RMS) e
+    contenuto di acuti crescente 0,196 · 0,594 · 1,416."""
+
+    def test_il_bordone_e_un_accordo_non_una_nota(self):
+        """Il tono puro da' la fondamentale con due armoniche: una nota.
+        Il bordone da' quinta e terza NATURALI: rapporti 3/2 e 5/4, i
+        soli che non battono tra loro."""
+        src = SYNTH.read_text()
+        parti = src.split("const DRONE_PARTS =")[1].split(";")[0]
+        assert "1.5" in parti and "1.25" in parti, \
+            "il bordone non usa quinta e terza naturali"
+        assert "drone: 'bordone armonico'" in src, "il metodo non ha etichetta"
+        # e vive in ENTRAMBE le sintesi, o l'export suona diverso
+        assert "l.method === 'drone'" in src, "manca nel render analitico"
+        assert src.count("DRONE_PARTS.forEach") >= 2, \
+            "il bordone non e' in tutte e due le anteprime (scheda e sessione)"
+
+    def test_il_bordone_non_ha_battito_nell_editor(self):
+        page = PAGE.read_text()
+        assert "(l.method === 'tone' || l.method === 'drone')" in page, \
+            "l'editor chiede un battito a un bordone, che non ne ha"
+
+    def test_i_colori_del_soffio_sono_pareggiati(self):
+        """Cambiare colore deve cambiare la GRANA, non il volume: senza
+        pareggio si sentirebbe la differenza sbagliata. Il rosa resta
+        1 — e' il riferimento storico e le ricette salvate devono
+        suonare identiche."""
+        src = SYNTH.read_text()
+        assert "NOISE_GAIN" in src
+        gain = src.split("export const NOISE_GAIN =")[1].split(";")[0]
+        assert "pink: 1" in gain, \
+            "toccato il livello del rosa: le ricette gia' salvate cambierebbero suono"
+        assert "brown:" in gain and "white:" in gain
+        # la stessa matematica nei due gemelli
+        assert "NOISE_GAIN.brown" in src and "NOISE_GAIN.white" in src
+        assert src.count("br = (br + 0.02 * w) / 1.02") + \
+               src.count("l._br = (l._br + 0.02 * w) / 1.02") == 2, \
+            "il marrone e' calcolato in un modo solo: anteprima ed export divergono"
+
+    def test_il_colore_vale_solo_per_il_soffio_e_il_rosa_e_il_default(self):
+        src = MODEL.read_text()
+        assert 'if layer["method"] == "noise":' in src
+        blocco = src.split('if layer["method"] == "noise":')[1][:300]
+        assert '"pink"' in blocco, \
+            "senza default rosa le ricette vecchie cambierebbero colore"
+        assert '"drone"' in src.split("METHODS =")[1].split(")")[0]
+
+    def test_i_suoni_naturali_veri_non_si_imitano(self):
+        """Decisione founder (21/8): per mare, pioggia e vento ci sono
+        le registrazioni VERE in libreria (61 basi, 12 di natura). Il
+        rumore sintetico porta un ritmo, non racconta un paesaggio — e
+        la scheda deve dirlo, o l'utente confonde le due cose."""
+        bib = BIB.read_text()
+        scheda = bib.split("{t:'Il colore del soffio'")[1].split("cfg:")[0]
+        assert "non sono suoni della natura" in scheda
+        assert "libreria" in scheda, \
+            "la scheda non manda alle registrazioni vere"
+        # e da nessuna parte esiste un metodo che finge di essere il mare
+        src = SYNTH.read_text()
+        assert "surf" not in src, \
+            "e' rientrato un metodo che imita la natura invece di usarla"

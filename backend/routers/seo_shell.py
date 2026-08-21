@@ -372,7 +372,10 @@ _SOUND_CARDS = {
                         "Marea del respiro", "Passo del cuore a riposo",
                         "Cadenza del cammino"],
     "Metodi": ["Battito binaurale", "Tono isocronico", "Battito monaurale",
-               "Stimolazione bilaterale", "Soffio modulato", "Tono puro"],
+               "Stimolazione bilaterale", "Soffio modulato",
+               # ONDA 4 (21/8)
+               "Bordone armonico", "Il colore del soffio", "Battimento lento",
+               "Tono puro"],
 }
 
 _SOUND_PAGES = {

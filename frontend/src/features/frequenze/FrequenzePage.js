@@ -21,7 +21,8 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { frequenciesAPI } from '../../api/frequencies';
 import {
-  METHOD_LABELS, CURVE_LABELS, WAVE_PERIOD_SEC, startPreview, startCardLive,
+  METHOD_LABELS, CURVE_LABELS, NOISE_COLORS, WAVE_PERIOD_SEC,
+  startPreview, startCardLive,
 } from './engine/synth';
 import {
   loadAssetBuffer, resolveAudioLayers, resolveVoiceLayers, fileDuration,
@@ -961,15 +962,25 @@ export default function FrequenzePage() {
             onChange={(e) => patchLayer(l.id, { method: e.target.value })}>
             {Object.entries(METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
-          <select className="minisel" value={l.timbre}
-            onChange={(e) => patchLayer(l.id, { timbre: e.target.value })}>
-            <option value="pure">puro</option><option value="warm">caldo</option>
-          </select>
+          {l.method === 'noise' ? (
+            <select className="minisel" value={l.color || 'pink'}
+              data-testid="fq-layer-color" title="Il colore del soffio"
+              onChange={(e) => patchLayer(l.id, { color: e.target.value })}>
+              {Object.entries(NOISE_COLORS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          ) : (
+            <select className="minisel" value={l.timbre}
+              onChange={(e) => patchLayer(l.id, { timbre: e.target.value })}>
+              <option value="pure">puro</option><option value="warm">caldo</option>
+            </select>
+          )}
           <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
             onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
         </div>
         <div className="ctrls r4">
-          {l.method === 'tone' ? (
+          {/* ONDA 4 — il bordone non ha battito: come il tono puro ha
+              solo la sua nota (la quinta e la terza le mette il motore) */}
+          {(l.method === 'tone' || l.method === 'drone') ? (
             <>
               <span className="lbl">frequenza</span>
               <input className="mini" type="number" min="20" max="2000" step="1" value={l.carrier}

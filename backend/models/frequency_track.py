@@ -30,7 +30,12 @@ ACCEPTED_VERSIONS = (None, SCORE_VERSION, SCORE_VERSION_VOICE,
 # preset effetto voce (engine/voicefx.js e' il gemello: tenerli allineati)
 VOICE_FX = ("natural", "dream", "temple", "whisper")
 
-METHODS = ("bin", "iso", "mono", "bil", "noise", "tone")
+# ONDA 4 (21/8) — `drone`: fondamentale + quinta e terza NATURALI
+# (3/2 e 5/4). Non e' il tono puro con altre armoniche: e' un accordo.
+METHODS = ("bin", "iso", "mono", "bil", "noise", "tone", "drone")
+# il colore del soffio: veicolo del ritmo, non imitazione della natura
+# (per mare, pioggia e vento ci sono le basi vere in libreria)
+NOISE_COLORS = ("pink", "brown", "white")
 TIMBRES = ("pure", "warm")
 CURVES = ("lin", "exp", "steps", "wave")
 INTENTS = ("dormire", "meditare", "rilassare", "concentrare",
@@ -137,6 +142,12 @@ def clean_layer(raw, duration):
         "breath": bool(raw.get("breath", True)),
         "mute": bool(raw.get("mute", False)),
     }
+    # ONDA 4 — il colore vale solo per il soffio; altrove sarebbe muto.
+    # Il rosa e' il default storico: le ricette salvate senza colore
+    # devono continuare a suonare rosa, esattamente come prima.
+    if layer["method"] == "noise":
+        layer["color"] = (raw.get("color") if raw.get("color") in NOISE_COLORS
+                          else "pink")
     # ONDA 2 — il periodo esiste solo per la marea: sugli altri livelli
     # sarebbe un campo muto che confonde chi legge il documento
     if layer["curve"] == "wave":

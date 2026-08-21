@@ -64,6 +64,16 @@ esattamente ciò che descrivi: un valore che **va su e giù e torna**.
 - **`breath` nelle schede** — già scritto e già usato nelle sessioni:
   basta accenderlo in Esplora.
 
+> **Correzione del founder (21/8), da tenere per sempre:** per il mare
+> e gli altri suoni naturali **abbiamo le registrazioni vere** — 61
+> basi in libreria, 12 di natura. Non si replicano con la sintesi. Il
+> metodo `surf` proposto qui sotto è quindi **cancellato**: il rumore
+> in Aurya serve a portare un ritmo, non a raccontare un paesaggio.
+> Verificando il codice è caduto anche il metodo `pair`: la «coppia
+> disaccordata» **esiste già** — il battito monoaurale *è* la somma di
+> due toni vicini. Mancava la scheda che lo mostra (battimento lento),
+> non il metodo.
+
 ### B. Metodi che non abbiamo
 
 1. **Coppia disaccordata** (`pair`) — due portanti vicine sullo stesso
