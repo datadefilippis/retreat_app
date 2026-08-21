@@ -58,6 +58,17 @@ class TestUnSoloMarchioDn1:
             assert prop in safety, f"controindicazioni: manca {prop}"
             assert prop in nav, f"passerella: manca {prop} (le due voci sono divergute)"
         assert "var(--alert)" in safety, "l'avviso ha perso il suo rosso"
+        # DN7 — e la MISURA: stessa altezza dell'omino accanto. La
+        # testata allinea al centro invece di stirare: con stretch ogni
+        # figlio prendeva l'altezza del marchio (52px) e le voci brevi
+        # diventavano il doppio dell'omino (salvo dalla sua misura fissa).
+        omino = css.split(".fqz .sam-trigger{")[1].split("}")[0]
+        alt = re.search(r"height:(\d+)px", omino).group(1)
+        assert f"height:{alt}px" in safety, \
+            f"controindicazioni non alte come l'omino ({alt}px)"
+        topbar = [r for r in css.split(".fqz .topbar{")[1:] if "align-items" in r[:80]]
+        assert topbar and "align-items:center" in topbar[0][:80], \
+            "la testata stira i figli invece di allinearli"
 
     def test_niente_doppioni_tra_testata_e_menu(self):
         """DN6 — «Esplora meditazioni» e «Per gli operatori» erano carte

@@ -309,12 +309,13 @@
 /* DN6 (21/8) — stessa voce delle altre della testata: mono 10px,
    maiuscolo, tracking .12em. Restano il bordo e il rosso: e' un
    avviso, non una voce di menu — ma non deve gridare piu' forte. */
-.fqz .safetybtn{border:1px solid var(--alert);background:transparent;
-  color:var(--alert);border-radius:999px;padding:7px 13px;
+.fqz .safetybtn{display:inline-flex;align-items:center;height:32px;
+  border:1px solid var(--alert);background:transparent;
+  color:var(--alert);border-radius:999px;padding:0 13px;
   font-family:var(--mono);font-size:10px;letter-spacing:.12em;
   text-transform:uppercase;cursor:pointer;white-space:nowrap}
 .fqz .safetybtn:hover{background:rgba(224,123,106,.12);color:var(--bone)}
-@media (max-width:640px){.fqz .safetybtn{padding:6px 10px;font-size:9px;letter-spacing:.08em}}
+@media (max-width:640px){.fqz .safetybtn{height:30px;padding:0 10px;font-size:9px;letter-spacing:.08em}}
 .fqz /* ============ OTTIMIZZAZIONE MOBILE / TABLET ============ */
   .bar,.fqz .bar .handle,.fqz .phase,.fqz .seekbar,.fqz .seek-knob{touch-action:none}
 .fqz .taptip{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);transform:translateX(-50%) translateY(8px);
@@ -773,7 +774,11 @@
 
 /* la topbar ora ospita piu' card: respiro fra loro, e la card-link
    non deve ereditare la sottolineatura degli anchor */
-.fqz .topbar{gap:10px;align-items:stretch}
+/* DN7 (21/8) — la testata ALLINEA, non stira: con align-items:stretch
+   ogni figlio prendeva l'altezza del marchio (52px), e «Controindicazioni»
+   diventava il doppio dell'omino accanto (che si salvava solo perche' ha
+   una misura fissa). Le carte-strumento restano alte per conto loro. */
+.fqz .topbar{gap:10px;align-items:center}
 .fqz a.backcard{text-decoration:none}
 @media (max-width:820px){
   .fqz .topbar{flex-wrap:wrap;row-gap:8px}
