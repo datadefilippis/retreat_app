@@ -603,3 +603,54 @@ class TestLaFirmaDellaBiblioteca:
         bib = BIB.read_text()
         assert "<h4>Nella pratica</h4>" not in bib, \
             "una scheda chiude diversamente da tutte le altre"
+
+
+class TestSottotitoliCheOrientano:
+    """Founder (21/8): il sottotitolo verde acqua deve ORIENTARE — dire
+    in poche parole cosa ricorda o a cosa serve, in modo suggestivo ma
+    vero. Non deve ripetere il titolo con altre parole («40 Hz → il
+    ritmo della ricerca Gamma» non diceva nulla)."""
+
+    def test_nessun_sottotitolo_ripete_il_titolo(self):
+        import re as _re
+        bib = BIB.read_text()
+        colpevoli = []
+        for blocco in bib.split("{t:'")[1:]:
+            titolo = blocco.split("'")[0]
+            m = _re.search(r"uso:'((?:[^'\\]|\\.)*)'", blocco)
+            if not m:
+                colpevoli.append(f"{titolo} (nessun sottotitolo)")
+                continue
+            uso = m.group(1)
+            # parole del titolo che ricompaiono quasi identiche: il
+            # sottotitolo starebbe girando a vuoto
+            chiave = [w for w in _re.findall(r"\w{5,}", titolo.lower())]
+            if chiave and all(w in uso.lower() for w in chiave):
+                colpevoli.append(f"{titolo} → {uso}")
+        assert not colpevoli, f"sottotitoli che ripetono il titolo: {colpevoli}"
+
+    def test_ogni_scheda_ha_il_suo_sottotitolo(self):
+        import re as _re
+        bib = BIB.read_text()
+        senza = [b.split("'")[0] for b in bib.split("{t:'")[1:]
+                 if not _re.search(r"uso:'((?:[^'\\]|\\.)*)'", b)]
+        assert not senza, f"schede senza sottotitolo: {senza}"
+
+    def test_la_riga_oro_non_dichiara_il_battito(self):
+        """Founder: il battito l'utente lo cambia mentre ascolta, quindi
+        dichiararlo come fosse fisso e' fuorviante. Nella riga oro resta
+        cio' che IDENTIFICA il suono (la portante, la natura)."""
+        import re as _re
+        bib = BIB.read_text()
+        metodi = bib.split("'Metodi':[")[1]
+        colpevoli = []
+        for blocco in metodi.split("{t:'")[1:]:
+            titolo = blocco.split("'")[0]
+            m = _re.search(r"hz:'((?:[^'\\]|\\.)*)'", blocco)
+            if not m:
+                continue
+            coda = m.group(1).split("in ascolto:")[-1]
+            if "battito" in coda or "pulsazioni/s" in coda or "giro/s" in coda:
+                colpevoli.append(f"{titolo} → {m.group(1)}")
+        assert not colpevoli, \
+            f"la riga oro dichiara un battito che l'utente puo' cambiare: {colpevoli}"
