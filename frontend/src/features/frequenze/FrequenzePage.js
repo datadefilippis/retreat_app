@@ -30,6 +30,8 @@ import {
 import {
   VOICE_PRESETS, buildVoiceChain, cleanVoiceBuffer, connectVoiceSources,
 } from './engine/voicefx';
+import { avvisoCuffie } from './engine/altoparlante';
+import { schermoAcceso, schermoLibero } from './engine/veglia';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS, CAT_SLUG, SLUG_CAT } from './content/biblioteca';
 import GuidaView from './GuidaView';
@@ -230,6 +232,15 @@ export default function FrequenzePage() {
     ctxRef.current.resume();
     return ctxRef.current;
   };
+
+  /* AT2 — finche' qualcosa suona (schede live o linea del tempo), lo
+     schermo non si spegne da solo: qui il motore e' WebAudio dal
+     vivo, e il blocco schermo lo sospenderebbe. Un solo interruttore
+     derivato dallo stato: nessun conteggio sparso nei punti di stop. */
+  useEffect(() => {
+    if (playing || liveKeys.length > 0) { schermoAcceso(); return schermoLibero; }
+    return undefined;
+  }, [playing, liveKeys.length]);
 
   /* ── bozze ── */
   const loadDrafts = async () => {
@@ -804,7 +815,21 @@ export default function FrequenzePage() {
         </div>
         {entry.hz && <div className="hz">{entry.hz}</div>}
         {entry.uso && <div className="uso">{entry.uso}</div>}
-        {entry.cfg && <div className="listen">{LISTEN[entry.cfg.method] || ''}</div>}
+        {entry.cfg && (
+          /* AT1 — due verita' che convivono: «anche in altoparlante»
+             parla del METODO (niente separazione stereo richiesta),
+             ma sul telefono la verita' del DISPOSITIVO vince: se il
+             tono sta sotto quel che l'altoparlante riproduce, dire
+             «anche in altoparlante» sarebbe falso proprio li'. */
+          <div className="listen">
+            {avvisoCuffie(entry.cfg) ? (
+              <>
+                <span className="no-telefono">{LISTEN[entry.cfg.method] || ''}</span>
+                <span className="solo-telefono">🎧 Dal telefono: solo in cuffia</span>
+              </>
+            ) : (LISTEN[entry.cfg.method] || '')}
+          </div>
+        )}
         <div className="body">{shown}</div>
         {(clamped || entry.full) && (
           <button type="button" className="readmore"
@@ -857,6 +882,16 @@ export default function FrequenzePage() {
                 style={{ width: 70 }} /> {live.method === 'breath' ? '' : 'Hz'}
             </label>
             )}
+          </div>
+        )}
+        {live && avvisoCuffie(entry.cfg) && (
+          /* AT1 — l'avviso nel momento del play, solo su telefono
+             (media query di .solo-telefono) e solo sulle schede il cui
+             tono sta davvero sotto quel che l'altoparlante riproduce:
+             quando compare, significa qualcosa. */
+          <div className="cuffie-avviso solo-telefono-block"
+            data-testid="fq-avviso-cuffie">
+            🎧 {avvisoCuffie(entry.cfg)}
           </div>
         )}
         {entry.cfg && (

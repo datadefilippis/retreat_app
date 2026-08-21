@@ -1059,7 +1059,11 @@ class TestSoundPubblicoSp:
         tutti. Resta professionale COMPORRE — e chi ascolta, chiunque
         sia, deve prima leggere gli avvisi di sicurezza."""
         page = (FQ_DIR / "FrequenzePage.js").read_text()
-        foot = page.split("{entry.cfg && (")[1][:700]
+        # ancora sul PULSANTE, non sul primo `{entry.cfg && (` del file:
+        # dal ciclo AT quel pattern compare prima anche per la riga di
+        # metodo, e l'ancora generica prendeva il blocco sbagliato
+        i_bottone = page.index("fq-card-live-")
+        foot = page[i_bottone - 200:i_bottone + 700]
         # Ascolta viene PRIMA di qualsiasi gate di ruolo; il gate copre
         # solo «+ sessione», che sta dopo
         i_ascolta = foot.index("'Ferma' : 'Ascolta'")

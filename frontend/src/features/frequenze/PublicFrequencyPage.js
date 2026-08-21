@@ -15,6 +15,11 @@ import { Link, useParams } from 'react-router-dom';
 import { frequenciesAPI } from '../../api/frequencies';
 import { startPreview } from './engine/synth';
 import { resolveAudioLayers, resolveVoiceLayers } from './engine/assets';
+import { avvisoCuffieScore } from './engine/altoparlante';
+import { schermoAcceso, schermoLibero } from './engine/veglia';
+import {
+  preparaContinuo, continuoDisponibile, continuoSupportato,
+} from './engine/continuo';
 import { SafetyLine, useSafetyGate } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import { prova, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
@@ -60,6 +65,11 @@ export default function PublicFrequencyPage() {
   const timerRef = useRef(null);
   const soundsRef = useRef({});
   const playedRef = useRef(false);
+  /* AT3 — ascolto continuo: il lettore <audio> preparato (sopravvive
+     al blocco schermo), il progresso del render, il flag per la UI */
+  const contRef = useRef(null);
+  const [contProg, setContProg] = useState(null);
+  const [continuo, setContinuo] = useState(false);
 
   useEffect(() => {
     // SB1 — vecchie chiavi HMAC → prova unica (poi si ricontrolla)
@@ -73,21 +83,52 @@ export default function PublicFrequencyPage() {
           (r.data.items || []).map((s) => [s.id, s]));
       })
       .catch(() => { /* la sessione suona senza basi */ });
+    /* AT3 — cambio di traccia SENZA smontaggio (da /frequenze/a a
+       /frequenze/b il componente resta vivo): il file preparato e'
+       quello della traccia di prima — lasciarlo in piedi farebbe
+       suonare A dentro la pagina di B. Si butta via tutto e si
+       riparte, come per elapsed e per il contatore d'ascolto. */
+    return () => {
+      if (liveRef.current) { liveRef.current.stop(); liveRef.current = null; }
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+      if (contRef.current) { contRef.current.dispose(); contRef.current = null; }
+      setContinuo(false);
+      setContProg(null);
+      setPlaying(false);
+      setElapsed(0);
+      playedRef.current = false;
+    };
   }, [slug]);
 
   const stop = () => {
     if (liveRef.current) { liveRef.current.stop(); liveRef.current = null; }
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (contRef.current) contRef.current.pause();   // il suo onPause fa il resto
     setPlaying(false);
   };
-  useEffect(() => () => stop(), []);
-
-  const play = async (fromT = 0) => {
+  useEffect(() => () => {
     stop();
-    if (!track) return;
-    ctxRef.current = ctxRef.current || new (window.AudioContext || window.webkitAudioContext)();
-    const ctx = ctxRef.current;
-    await ctx.resume();
+    // AT3 — il file renderizzato non deve sopravvivere alla pagina
+    if (contRef.current) { contRef.current.dispose(); contRef.current = null; }
+  }, []);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* AT2 — finche' suona il motore dal vivo, lo schermo non si spegne
+     da solo. In modalita' continua non serve: li' l'audio sopravvive
+     al blocco, che e' proprio lo scopo. */
+  useEffect(() => {
+    if (playing && !continuo) { schermoAcceso(); return schermoLibero; }
+    return undefined;
+  }, [playing, continuo]);
+
+  const segnaAscolto = () => {
+    if (playedRef.current) return;
+    playedRef.current = true;
+    frequenciesAPI.registerPlay(slug).catch(() => { /* solo un contatore */ });
+  };
+
+  /* Basi e voce: le stesse per l'ascolto dal vivo e per il render
+     continuo — un solo caricamento, non due percorsi che divergono. */
+  const caricaLayers = async (ctx) => {
     let audioLayers = [];
     if ((track.score.layers || []).some((l) => l.kind === 'audio')) {
       setLoadingAudio(true);
@@ -103,17 +144,30 @@ export default function PublicFrequencyPage() {
       voiceLayers = await resolveVoiceLayers(ctx, track.score, voiceById);
       setLoadingAudio(false);
     }
-    if (!playedRef.current) {
-      playedRef.current = true;
-      frequenciesAPI.registerPlay(slug).catch(() => { /* solo un contatore */ });
+    return { audioLayers, voiceLayers };
+  };
+
+  const play = async (fromT = 0) => {
+    stop();
+    if (!track) return;
+    // AT3 — a lettore pronto si comanda LUI: partenza immediata, e il
+    // suono continua anche a schermo bloccato
+    if (contRef.current) {
+      segnaAscolto();
+      contRef.current.seek(fromT);
+      contRef.current.play();
+      return;
     }
-    const startedAt = fromT;
+    ctxRef.current = ctxRef.current || new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = ctxRef.current;
+    await ctx.resume();
+    const { audioLayers, voiceLayers } = await caricaLayers(ctx);
+    segnaAscolto();
     liveRef.current = startPreview(ctx, track.score,
       { fromT, audioLayers, voiceLayers,
         voiceDuck: !!track.score.voice_duck });
     setPlaying(true);
     timerRef.current = setInterval(() => {
-      const el = startedAt + (liveRef.current ? liveRef.current.elapsed() - startedAt : 0);
       const cur = liveRef.current ? liveRef.current.elapsed() : 0;
       if (cur >= track.score.duration_sec) { stop(); setElapsed(0); return; }
       setElapsed(Math.max(0, cur));
@@ -121,6 +175,39 @@ export default function PublicFrequencyPage() {
     }, 200);
   };
   const playGuarded = guard(play);
+
+  /* AT3 — la preparazione: renderizza la sessione in un file e
+     accende il lettore. Passa dal sipario come ogni altra via al
+     suono, e la pagina la offre solo a sblocco avvenuto: un file
+     intero in mano all'anteprima sarebbe il cancello demolito. */
+  const preparaGuarded = guard(async (fromT = 0) => {
+    if (!track || contRef.current || contProg != null) return;
+    stop();
+    setContProg(0);
+    try {
+      ctxRef.current = ctxRef.current || new (window.AudioContext || window.webkitAudioContext)();
+      const { audioLayers, voiceLayers } = await caricaLayers(ctxRef.current);
+      const h = await preparaContinuo({
+        score: track.score, audioLayers, voiceLayers,
+        voiceDuck: !!track.score.voice_duck,
+        titolo: track.title, autore: track.operator?.name,
+        onProgress: (p) => setContProg(p),
+      }, {
+        onPlay: () => setPlaying(true),
+        onPause: () => setPlaying(false),
+        onEnd: () => { setPlaying(false); setElapsed(0); },
+        onTime: (t) => setElapsed(t),
+      });
+      contRef.current = h;
+      setContinuo(true);
+      segnaAscolto();
+      h.seek(fromT);
+      h.play();
+    } catch {
+      /* render fallito (memoria, base non scaricabile): si resta
+         com'era, con l'ascolto dal vivo che funziona */
+    } finally { setContProg(null); }
+  });
 
   const subscribe = async (e) => {
     e.preventDefault();
@@ -163,6 +250,9 @@ export default function PublicFrequencyPage() {
 
   const d = track.score.duration_sec;
   const frac = Math.min(1, elapsed / d);
+  const avvisoTelefono = avvisoCuffieScore(track.score);
+  const continuoPossibile = unlocked && continuoSupportato()
+    && continuoDisponibile(track.score);
 
   return (
     <div className="fqz" data-testid="fqz-public">
@@ -224,6 +314,44 @@ export default function PublicFrequencyPage() {
               <span className="seek-tot">{fmt(d)}</span>
             </div>
           </div>
+
+          {/* AT1 — l'avviso vive NEL momento del play, non in un
+              cartello all'ingresso: compare solo su telefono (stessa
+              media query di .solo-telefono) e solo se questa sessione
+              ha davvero frequenze che l'altoparlante non riproduce. */}
+          {playing && avvisoTelefono && (
+            <div className="cuffie-avviso solo-telefono-block"
+              data-testid="fqp-avviso-cuffie">
+              🎧 {avvisoTelefono}
+            </div>
+          )}
+
+          {/* AT3 — l'ascolto che sopravvive al blocco schermo: si
+              prepara con un tocco (render visibile), poi il telefono
+              si puo' bloccare — comandi sulla schermata di blocco
+              compresi. Solo a sblocco avvenuto: il cancello dei 90
+              secondi resta sovrano. */}
+          {continuoPossibile && !continuo && (
+            <div className="continuo-riga solo-telefono-block">
+              {contProg == null ? (
+                <button type="button" className="readmore"
+                  data-testid="fqp-continuo"
+                  onClick={() => preparaGuarded(elapsed)}>
+                  Prepara l'ascolto a schermo bloccato
+                </button>
+              ) : (
+                <span data-testid="fqp-continuo-prog">
+                  <span className="prep">◌</span> Preparo l'ascolto continuo…
+                  {' '}{Math.round(contProg * 100)}%
+                </span>
+              )}
+            </div>
+          )}
+          {continuo && (
+            <div className="continuo-riga attivo" data-testid="fqp-continuo-attivo">
+              Ascolto continuo attivo: puoi bloccare lo schermo.
+            </div>
+          )}
 
           {(track.score.phases || []).length > 0 && (
             <div className="legend" style={{ marginTop: 14 }}>
