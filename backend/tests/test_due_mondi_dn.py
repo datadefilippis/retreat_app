@@ -51,12 +51,21 @@ class TestUnSoloMarchioDn1:
         """Le controindicazioni stanno nella testata accanto alle voci
         del menu: stesso corpo e stesso tracking, altrimenti gridano.
         Restano rosse e bordate — e' un avviso, non una voce."""
+        import re as _re
         css = CSS.read_text()
         safety = css.split(".fqz .safetybtn{")[1].split("}")[0]
         nav = css.split(".fqz .tb-nav a{")[1].split("}")[0]
-        for prop in ("font-size:10px", "letter-spacing:.12em", "text-transform:uppercase"):
-            assert prop in safety, f"controindicazioni: manca {prop}"
-            assert prop in nav, f"passerella: manca {prop} (le due voci sono divergute)"
+        # I valori si confrontano FRA LORO, non con un numero scritto
+        # qui: cablare "10px" ha fatto fallire questa guardia appena i
+        # testi sono stati ingranditi per leggibilita', pur restando le
+        # due voci perfettamente allineate. L'intento e' che parlino
+        # uguale, non che parlino piano.
+        misura = lambda b, k: (_re.search(k + r":([\d.]+em|[\d.]+px)", b) or [None, None])[1]
+        for prop in ("font-size", "letter-spacing"):
+            assert misura(safety, prop) == misura(nav, prop), \
+                f"{prop}: controindicazioni {misura(safety, prop)} vs passerella {misura(nav, prop)}"
+        for b, n in ((safety, "controindicazioni"), (nav, "passerella")):
+            assert "text-transform:uppercase" in b, f"{n}: manca il maiuscolo"
         assert "var(--alert)" in safety, "l'avviso ha perso il suo rosso"
         # DN7 — e la MISURA: stessa altezza dell'omino accanto. La
         # testata allinea al centro invece di stirare: con stretch ogni
@@ -72,8 +81,11 @@ class TestUnSoloMarchioDn1:
         pill = css.split(".fqz .tbpill{")[1].split("}")[0]
         assert f"height:{alt}px" in pill, \
             f"le voci della testata non sono alte come l'omino ({alt}px)"
-        for prop in ("font-size:10px", "letter-spacing:.12em", "text-transform:uppercase"):
-            assert prop in pill, f"voce della testata: manca {prop}"
+        # Come sopra: si confronta con la passerella, non con un numero
+        # cablato. Il patto e' «stessa voce», non «voce piccola».
+        assert misura(pill, "font-size") == misura(nav, "font-size"), \
+            f"corpo diverso: pastiglia {misura(pill, 'font-size')} vs passerella {misura(nav, 'font-size')}"
+        assert "text-transform:uppercase" in pill
         topbar = [r for r in css.split(".fqz .topbar{")[1:] if "align-items" in r[:80]]
         assert topbar and "align-items:center" in topbar[0][:80], \
             "la testata stira i figli invece di allinearli"
@@ -398,3 +410,129 @@ class TestVoceProfessionistiPro:
             "il bordo e' velato: sotto il 3:1 che delimita un controllo"
         # al passaggio del mouse il contrasto AUMENTA, non cala
         assert "hover:text-[#5a4b29]" in forma
+
+
+class TestTestataMultipiattaformaPro:
+    """Founder (21/8): «l'omino nella versione mobile non sempre apre
+    correttamente il menu, che esce fuori dallo schermo».
+
+    La causa non era il menu: su telefono la barra andava a capo da
+    sola e l'omino finiva sulla SECONDA riga a SINISTRA. Il menu si
+    apre ancorato a destra del pulsante, quindi da li' si estendeva
+    verso sinistra e usciva. La cura e' mettere l'omino dove deve
+    stare — riga 1 a destra, passerella sotto — non spostare il menu.
+
+    Misurato: 375 px omino a x=331 (bordo 363 su 375), menu 131→363
+    dentro lo schermo; 768 px omino a x=710; 1440 px tutto su una
+    riga con l'omino a x=1305.
+    """
+
+    CSS = FQ_DIR / "frequenze.css"
+
+    def test_su_telefono_la_testata_e_su_due_righe(self):
+        css = self.CSS.read_text()
+        # L'ordine e' cio' che tiene l'omino in alto a destra. Si cerca
+        # nel CSS intero e non dentro un blocco: a 820px ci sono piu'
+        # media query (una preesistente porta gia' flex-wrap) e
+        # spezzare sul primo riscontro guarda il blocco sbagliato.
+        for regola in (".fqz .topbar .fqzbrand{order:1",
+                       ".fqz .topbar .tb-spacer{order:2",
+                       ".fqz .topbar .sam{order:3",
+                       ".fqz .topbar .tb-nav{order:4"):
+            assert regola in css, f"perso l'ordine della testata: {regola}"
+        nav = css.split(".fqz .topbar .tb-nav{order:4")[1].split("}")[0]
+        assert "flex-basis:100%" in nav, \
+            "la passerella non scende su una riga sua: l'omino tornerebbe a sinistra"
+
+    def test_il_menu_non_puo_uscire_dallo_schermo(self):
+        """Rete di sicurezza che vale su TUTTE le piattaforme, non solo
+        dove il difetto e' stato visto."""
+        css = self.CSS.read_text()
+        assert ".fqz .sam-menu{max-width:calc(100vw - 24px)}" in css, \
+            "il menu puo' di nuovo uscire dallo schermo su schermi stretti"
+
+    def test_la_nota_dell_altoparlante_c_e_ed_e_una_riga(self):
+        """27 schede su 32 emettono un tono sotto i 500 Hz e
+        l'altoparlante di un telefono non li riproduce: chi prova senza
+        cuffie sente silenzio e pensa a un guasto. Va detto DOVE serve
+        (telefono) e in una riga, non in un trattato."""
+        src = (FQ_DIR / "SafetyCurtain.js").read_text()
+        assert 'data-testid="fqz-nota-altoparlante"' in src
+        nota = src.split('data-testid="fqz-nota-altoparlante"')[1].split("</span>")[0]
+        testo = nota.split(">")[1].strip()
+        assert len(testo) < 120, f"la nota e' lunga {len(testo)} caratteri: dev'essere una riga"
+        assert "cuffie" in testo and "telefono" in testo
+        css = self.CSS.read_text()
+        assert ".fqz .solo-telefono{display:none}" in css, \
+            "la nota comparirebbe anche su desktop, dove non c'e' niente da spiegare"
+
+
+class TestLeggibilitaTestataSound:
+    """Founder (21/8): «il testo del menu in Aurya Sound e' troppo
+    piccolo, soprattutto da mobile».
+
+    Era vero e misurabile: passerella 10px che su telefono SCENDEVA a
+    9, pastiglie idem, intestazioni del menu a 9. Sotto gli 11px non e'
+    testo, e' grafica — e su telefono, dove si legge peggio, era anche
+    piu' piccolo che su desktop."""
+
+    CSS = FQ_DIR / "frequenze.css"
+
+    def _corpo(self, selettore):
+        import re as _re
+        css = self.CSS.read_text()
+        blocco = css.split(selettore)[1].split("}")[0]
+        m = _re.search(r"font-size:([\d.]+)px", blocco)
+        return float(m.group(1)) if m else None
+
+    def test_nessun_testo_della_testata_sotto_gli_11px(self):
+        for sel in (".fqz .tb-nav a{", ".fqz .sam-tit{",
+                    ".fqz .safetybtn{", ".fqz .tbpill{"):
+            corpo = self._corpo(sel)
+            assert corpo and corpo >= 10.5, \
+                f"{sel} e' a {corpo}px: sotto la soglia della leggibilita'"
+
+    def test_le_voci_del_menu_sono_comode(self):
+        corpo = self._corpo(".fqz .sam-voce{")
+        assert corpo and corpo >= 14, \
+            f"le voci del menu account sono a {corpo}px: sono la cosa che si LEGGE"
+
+    def test_su_telefono_i_testi_non_si_rimpiccioliscono(self):
+        """Il difetto vero non era la misura in se': era che su mobile
+        SCENDEVA. Dove si legge peggio, il testo dev'essere almeno
+        grande quanto altrove."""
+        css = self.CSS.read_text()
+        import re as _re
+        for m in _re.finditer(r"@media \(max-width:640px\)\{([^}]*(?:tb-nav a|safetybtn|tbpill)[^}]*)\}", css):
+            corpi = [float(x) for x in _re.findall(r"font-size:([\d.]+)px", m.group(1))]
+            for c in corpi:
+                assert c >= 11, \
+                    f"su telefono un testo della testata scende a {c}px"
+
+
+class TestOminoInEvidenzaSound:
+    """Founder (21/8): «l'omino mettiamolo fisso in evidenza,
+    contornandolo d'oro come quando ci avviciniamo col mouse».
+
+    Aveva ragione due volte: e' l'unico modo per raggiungere account e
+    uscita, e lo stato «avvicinato col mouse» **su telefono non arriva
+    mai** — quindi l'oro lo vedeva solo chi era su desktop. Ora l'oro
+    e' lo stato normale; il mouse ACCENDE (velo piu' fitto + alone)
+    invece di far comparire. Misurato: bordo e icona 8,06:1
+    sull'inchiostro."""
+
+    CSS = FQ_DIR / "frequenze.css"
+
+    def test_l_oro_e_lo_stato_normale_non_quello_al_passaggio(self):
+        css = self.CSS.read_text()
+        base = css.split(".fqz .sam-trigger{")[1].split("}")[0]
+        assert "border:1px solid var(--lamp)" in base, \
+            "l'omino e' tornato grigio a riposo: su telefono resterebbe grigio per sempre"
+        assert "color:var(--lamp)" in base, "l'icona non e' in oro"
+
+    def test_il_passaggio_del_mouse_accende_invece_di_comparire(self):
+        css = self.CSS.read_text()
+        hov = css.split(".fqz .sam-trigger:hover{")[1].split("}")[0]
+        assert "box-shadow" in hov, "manca l'alone: il passaggio non aggiunge nulla"
+        assert "border-color:var(--lamp)" not in hov, \
+            "l'hover rimette l'oro che ora c'e' gia': non aggiungerebbe niente"

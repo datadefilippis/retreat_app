@@ -64,6 +64,13 @@ export function SafetyLine({ onOpen }) {
   return (
     <div className="safetyline" data-testid="fqz-safety-line">
       <span>{SAFETY_LINE}</span>
+      {/* Solo su telefono: 27 schede su 32 suonano sotto i 500 Hz, e
+          l'altoparlante di un telefono non scende li'. Chi prova senza
+          cuffie sente silenzio e pensa a un guasto. Una riga, dove
+          serve. */}
+      <span className="solo-telefono" data-testid="fqz-nota-altoparlante">
+        Senza cuffie i toni gravi non escono dall’altoparlante del telefono.
+      </span>
       <button type="button" onClick={onOpen}>Cosa devo sapere</button>
     </div>
   );
