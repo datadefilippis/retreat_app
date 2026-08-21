@@ -227,7 +227,7 @@ class TestRitmiDelCorpoOnda3:
         davvero. 0,1 Hz = 6/min, 1 Hz = 60/min, 2 Hz = 120/min."""
         bib = BIB.read_text()
         blocco = bib.split("'Ritmi del corpo':[")[1].split("'Metodi':[")[0]
-        attesi = {"Respiro lento": 0.1, "Respiro pi": 0.07,
+        attesi = {"Ritmo del respiro": 0.1,
                   "Passo del cuore": 1, "Cadenza del cammino": 2}
         for titolo, hz in attesi.items():
             scheda = [b for b in blocco.split("{t:'") if b.startswith(titolo)]
@@ -458,16 +458,33 @@ class TestRespiroVeroOnda6:
         assert "0.95" in blocco, \
             "inspirazione + espirazione possono mangiarsi tutta la pausa"
 
-    def test_le_schede_del_respiro_usano_il_respiro(self):
+    def test_una_sola_guida_del_respiro_ed_e_regolabile(self):
+        """Founder (21/8): tre schede che differiscono solo per un
+        numero sono ridondanti da quando quel numero si cambia dal vivo
+        («respiri/min», fix C4). Ne resta UNA, regolabile."""
         bib = BIB.read_text()
         blocco = bib.split("'Ritmi del corpo':[")[1].split("'Metodi':[")[0]
-        respiri = [b for b in blocco.split("{t:'") if b.startswith("Respiro") or b.startswith("Marea")]
-        assert len(respiri) == 3
-        for r in respiri:
-            assert "method:'breath'" in r, \
-                "una scheda del respiro suona ancora come un'onda del mare"
-        # e il testo non promette piu' un'onda
-        assert "non di un’onda" in blocco or "non di un'onda" in blocco
+        guide = [b for b in blocco.split("{t:'")
+                 if b.startswith(("Respiro", "Ritmo del respiro", "Marea"))]
+        assert len(guide) == 1, \
+            f"le guide del respiro sono {len(guide)}: erano state fuse in una"
+        assert "method:'breath'" in guide[0]
+        assert "regolabile" in guide[0], \
+            "la scheda unica non dice che il passo si cambia"
+        # e cio' che dicevano le schede tolte non e' andato perso
+        assert "quattro al minuto" in guide[0], "persa l'indicazione del respiro lungo"
+        assert "curva a onda" in guide[0], "persa la marea del respiro"
+
+    def test_il_nome_non_promette_un_respiro(self):
+        """Founder: «dato che non corrisponde suono a respiro lo
+        chiamerei diversamente». Il titolo e' la prima promessa che
+        facciamo, e questo suono e' un RITMO, non un respiro."""
+        bib = BIB.read_text()
+        blocco = bib.split("'Ritmi del corpo':[")[1].split("'Metodi':[")[0]
+        titoli = [b.split("'")[0] for b in blocco.split("{t:'")[1:]]
+        assert "Ritmo del respiro" in titoli
+        assert "Respiro lento" not in titoli, \
+            "il titolo promette ancora un respiro invece del suo ritmo"
 
 
 class TestAuditPreGoLive:
@@ -531,12 +548,12 @@ class TestAuditPreGoLive:
 
     def test_s5_la_guida_del_respiro_non_finge(self):
         bib = BIB.read_text()
-        scheda = bib.split("{t:'Respiro lento'")[1].split("},")[0]
+        scheda = bib.split("{t:'Ritmo del respiro'")[1].split("},")[0]
         assert "Non imita un respiro" in scheda
         assert "astratto" in scheda, \
             "il testo non dichiara la natura del suono"
         # tutte e tre le guide hanno la loro nota
         blocco = bib.split("'Ritmi del corpo':[")[1].split("'Metodi':[")[0]
         for r in [b for b in blocco.split("{t:'")
-                  if b.startswith(("Respiro", "Marea"))]:
-            assert "carrier:110" in r, "una guida e' rimasta senza la sua nota"
+                  if b.startswith("Ritmo del respiro")]:
+            assert "carrier:110" in r, "la guida e' rimasta senza la sua nota"

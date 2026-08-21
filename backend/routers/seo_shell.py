@@ -368,8 +368,7 @@ _SOUND_CARDS = {
                         "417 Hz", "528 Hz", "639 Hz", "741 Hz", "852 Hz",
                         "963 Hz"],
     # ONDA 3 (21/8) — i ritmi del corpo: respiro, cuore, passo
-    "Ritmi del corpo": ["Respiro lento", "Respiro più lungo",
-                        "Marea del respiro", "Passo del cuore a riposo",
+    "Ritmi del corpo": ["Ritmo del respiro", "Passo del cuore a riposo",
                         "Cadenza del cammino"],
     "Metodi": ["Battito binaurale", "Tono isocronico", "Battito monaurale",
                "Stimolazione bilaterale", "Soffio modulato",
