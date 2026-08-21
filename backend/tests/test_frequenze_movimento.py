@@ -313,3 +313,62 @@ class TestTimbroOnda4:
         src = SYNTH.read_text()
         assert "surf" not in src, \
             "e' rientrato un metodo che imita la natura invece di usarla"
+
+
+class TestDiscesaInfinitaOnda5:
+    """ONDA 5 — la scala di Shepard-Risset: sette voci a un'ottava di
+    distanza che scendono insieme. Misurato in browser: 37,2 · 74,5 ·
+    148,9 · 297,9 · 595,8 · 1191,5 · 2383,1 Hz (ottave esatte), tutte
+    in discesa dello stesso fattore. E sui numeri: ogni voce scende
+    (156 → 78 → 39 Hz) ma l'insieme dopo un giro e' identico."""
+
+    def test_le_voci_sono_ottave_e_la_campana_le_nasconde(self):
+        src = SYNTH.read_text()
+        assert "const SHEPARD_N" in src and "SHEPARD_BELL" in src
+        bell = src.split("const SHEPARD_BELL =")[1].split(";")[0]
+        assert "Math.sin(Math.PI * x)" in bell, \
+            "senza una campana che va a ZERO agli estremi si sente il rientro"
+        # la posizione e' modulare: e' il wrap a rendere la discesa infinita
+        analitico = src.split("if (l.method === 'shepard')")[1].split("\n  }")[0]
+        assert "% SHEPARD_N" in analitico, "senza il giro la discesa finisce"
+        assert "Math.pow(2, pos)" in analitico, "le voci non distano un'ottava"
+
+    def test_vive_in_tutte_e_tre_le_strade(self):
+        """Render analitico, anteprima della sessione, scheda live: se
+        ne manca una, quel percorso suona un'altra cosa."""
+        src = SYNTH.read_text()
+        assert src.count("SHEPARD_BELL(") >= 3, \
+            "la discesa non e' in tutte e tre le sintesi"
+        assert "method === 'shepard'" in src and "l.method === 'shepard'" in src
+
+    def test_l_orizzonte_della_scheda_e_dichiarato(self):
+        """In una scheda la discesa e' programmata, non generata: dopo
+        l'orizzonte le voci restano ferme. E' una scelta, e va scritta
+        dove qualcuno la leggera' — non scoperta a caso tra un anno."""
+        src = SYNTH.read_text()
+        assert "CARD_SHEPARD_SEC" in src
+        commento = src.split("else if (method === 'shepard')")[1][:900]
+        assert "restano ferme" in commento or "immobile" in commento, \
+            "l'orizzonte non e' spiegato: sembrera' un bug"
+        assert "SESSIONI" in commento, \
+            "non e' detto che nelle sessioni composte la discesa e' esatta"
+
+    def test_la_discesa_non_ha_battito_ne_curva(self):
+        """f0 qui e' «ottave al minuto», non un battito: chiedere un
+        valore d'arrivo e una curva sarebbe chiedere il nulla."""
+        page = PAGE.read_text()
+        assert "'ottave/min'" in page, "l'etichetta mente sul significato di f0"
+        assert "l.method !== 'shepard' && (" in page \
+            or "&& l.method !== 'shepard'" in page, \
+            "l'editor offre valore d'arrivo e curva a una discesa infinita"
+
+    def test_la_scheda_dice_cosa_e_documentato_e_cosa_no(self):
+        bib = BIB.read_text()
+        scheda = bib.split("{t:'Discesa infinita'")[1].split("cfg:")[0]
+        assert "psicoacustica" in scheda
+        assert "Non esistono evidenze" in scheda, \
+            "manca il limite: l'illusione e' documentata, gli effetti no"
+        # e la scheda di mestiere sulla portante
+        portante = bib.split("{t:'Scegliere la portante'")[1].split("cfg:")[0]
+        assert "400" in portante and "180" in portante, \
+            "la scheda non spiega i due valori predefiniti veri"

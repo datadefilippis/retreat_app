@@ -375,6 +375,8 @@ _SOUND_CARDS = {
                "Stimolazione bilaterale", "Soffio modulato",
                # ONDA 4 (21/8)
                "Bordone armonico", "Il colore del soffio", "Battimento lento",
+               # ONDA 5 (21/8)
+               "Discesa infinita", "Scegliere la portante",
                "Tono puro"],
 }
 

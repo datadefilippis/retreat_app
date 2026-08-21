@@ -999,12 +999,15 @@ export default function FrequenzePage() {
                   <span className="lbl">Hz</span>
                 </>
               )}
-              <span className="lbl" title="Frequenza del battito a inizio barra">
-                {l.method === 'bil' ? 'alternanza' : 'battito da'}
+              <span className="lbl" title={l.method === 'shepard'
+                ? 'Quanto scende: ottave al minuto'
+                : 'Frequenza del battito a inizio barra'}>
+                {l.method === 'bil' ? 'alternanza'
+                  : l.method === 'shepard' ? 'ottave/min' : 'battito da'}
               </span>
               <input className="mini" type="number" min="0.05" max="60" step="0.5" value={l.f0}
                 onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, l.method === 'bil' ? { f0: v, f1: v } : { f0: v }); }} />
-              {l.method !== 'bil' && (
+              {l.method !== 'bil' && l.method !== 'shepard' && (
                 <>
                   <span className="lbl" title={l.curve === 'wave'
                     ? "L'altro estremo della marea: il battito va qui e torna"

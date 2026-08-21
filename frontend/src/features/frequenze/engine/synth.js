@@ -23,8 +23,18 @@ const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 export const METHOD_LABELS = Object.freeze({
   bin: 'binaurale', iso: 'isocronico', mono: 'monoaurale',
   bil: 'bilaterale', noise: 'soffio', tone: 'tono puro',
-  drone: 'bordone armonico',
+  drone: 'bordone armonico', shepard: 'discesa infinita',
 });
+
+/* ONDA 5 (21/8) — la scala di Shepard-Risset: N voci distanti
+   un'ottava che scendono INSIEME. Quando la piu' bassa svanisce, in
+   cima ne rientra una nuova: l'insieme e' identico a se' stesso a ogni
+   giro, e l'orecchio sente una discesa che non finisce mai. E'
+   psicoacustica documentata (l'illusione uditiva parallela alla scala
+   di Penrose), non una metafora. La campana di volume e' quello che
+   nasconde il rientro: senza, si sentirebbe il salto. */
+const SHEPARD_N = 7;                       // ottave coperte
+const SHEPARD_BELL = (x) => Math.pow(Math.sin(Math.PI * x), 2);
 
 /* ONDA 4 (21/8) — il colore del soffio. Il rosa c'era gia' (meno
    energia sugli acuti del bianco); il marrone scende ancora, il bianco
@@ -114,6 +124,24 @@ export function neuroSample(l, tAbs, dt) {
     const v = voice(l, TAU * l.carrier * tAbs) * e;
     return [v, v];
   }
+  if (l.method === 'shepard') {
+    // f0 = ottave al minuto (quanto scende); carrier = centro della campana
+    if (!l._sh) l._sh = new Array(SHEPARD_N).fill(0);
+    const rate = Math.max(0.02, l.f0 || 1) / 60;
+    const u = (tAbs * rate) % SHEPARD_N;
+    const fmin = l.carrier / Math.pow(2, SHEPARD_N / 2);
+    let v = 0, wsum = 0;
+    for (let k = 0; k < SHEPARD_N; k++) {
+      const pos = ((k - u) % SHEPARD_N + SHEPARD_N) % SHEPARD_N;
+      const w = SHEPARD_BELL(pos / SHEPARD_N);
+      const f = fmin * Math.pow(2, pos);
+      l._sh[k] += TAU * f * dt;
+      v += w * voice(l, l._sh[k]);
+      wsum += w;
+    }
+    v = (wsum > 0 ? v / wsum : 0) * e;
+    return [v, v];
+  }
   if (l.method === 'drone') {
     const th = TAU * l.carrier * tAbs;
     let v = 0;
@@ -193,6 +221,9 @@ export function pinkBuf(actx, color = 'pink') {
 /** Durata del tragitto di una scheda (f0 → f1), in secondi. Lungo
  *  abbastanza da non sembrare un effetto: e' una discesa, non uno swoosh. */
 export const CARD_SWEEP_SEC = 180;
+/** Orizzonte della discesa infinita in una scheda (vedi il commento
+ *  nel ramo `shepard`): mezz'ora, poi le voci restano dove sono. */
+export const CARD_SHEPARD_SEC = 1800;
 
 /**
  * Ascolto live di una SINGOLA frequenza (le schede di Esplora): parte
@@ -275,6 +306,38 @@ export function startCardLive(ctx, cfg, gain, fval) {
   };
   let vL = null, vR = null, lfo = null, curCarrier = carrier;
   if (method === 'tone') vL = mkV(carrier, g);
+  else if (method === 'shepard') {
+    /* ONDA 5 — la discesa e' un movimento continuo di N voci: qui si
+       programma per CARD_SHEPARD_SEC (mezz'ora). Oltre, le voci
+       restano ferme dove sono: nessun rumore, nessun salto, solo un
+       accordo immobile — e nessuno tiene una scheda in ascolto
+       mezz'ora. Nelle SESSIONI composte la discesa e' esatta su tutta
+       la durata, perche' li' lo span e' noto. */
+    const rate = Math.max(0.02, cfg.f0 || 1) / 60;
+    const giro = SHEPARD_N / rate;
+    const punti = Math.min(3000, Math.max(200,
+      Math.ceil((CARD_SHEPARD_SEC / giro) * 120)));
+    const fmin = carrier / Math.pow(2, SHEPARD_N / 2);
+    for (let k = 0; k < SHEPARD_N; k++) {
+      const posAt = (u) => {
+        const uu = (u * rate) % SHEPARD_N;
+        return ((k - uu) % SHEPARD_N + SHEPARD_N) % SHEPARD_N;
+      };
+      const vg = ctx.createGain(); vg.connect(g);
+      const o = ctx.createOscillator();
+      vg.gain.setValueAtTime(Math.max(0.0001, SHEPARD_BELL(posAt(0) / SHEPARD_N) / 3), t0);
+      o.frequency.setValueAtTime(Math.max(1, fmin * Math.pow(2, posAt(0))), t0);
+      for (let i = 1; i <= punti; i++) {
+        const u = (i / punti) * CARD_SHEPARD_SEC;
+        vg.gain.linearRampToValueAtTime(
+          Math.max(0.0001, SHEPARD_BELL(posAt(u) / SHEPARD_N) / 3), t0 + u);
+        o.frequency.linearRampToValueAtTime(
+          Math.max(1, fmin * Math.pow(2, posAt(u))), t0 + u);
+      }
+      o.connect(vg); o.start();
+      nodes.push(o);
+    }
+  }
   else if (method === 'drone') {
     // stessi rapporti di DRONE_PARTS: quinta e terza naturali
     DRONE_PARTS.forEach(([mu, w]) => {
@@ -556,7 +619,30 @@ export function startPreview(ctx, score,
     const passi = l.curve === 'wave'
       ? Math.min(3000, Math.max(120, Math.ceil((span / Math.max(2, l.period || WAVE_PERIOD_SEC)) * 24)))
       : 120;
-    if (l.method === 'tone') mkVoice(() => l.carrier, g);
+    if (l.method === 'shepard') {
+      /* Le N voci si disegnano: frequenza e volume di ciascuna sono
+         funzioni note del tempo. Densita' legata al GIRO (N/rate), non
+         alla durata: come per la marea, campionare troppo rado
+         ricostruirebbe un'altra discesa. */
+      const rate = Math.max(0.02, l.f0 || 1) / 60;
+      const giro = SHEPARD_N / rate;
+      const punti = Math.min(3000, Math.max(200, Math.ceil((span / giro) * 120)));
+      const fmin = l.carrier / Math.pow(2, SHEPARD_N / 2);
+      for (let k = 0; k < SHEPARD_N; k++) {
+        const posAt = (u) => {
+          const uu = ((l.start + u) * rate) % SHEPARD_N;
+          return ((k - uu) % SHEPARD_N + SHEPARD_N) % SHEPARD_N;
+        };
+        const vg = ctx.createGain(); vg.connect(g);
+        rampCurve(vg.gain, s0, span,
+          (u) => Math.max(0.0001, SHEPARD_BELL(posAt(u) / SHEPARD_N) / 3), punti, now);
+        const o = ctx.createOscillator();
+        rampCurve(o.frequency, s0, span,
+          (u) => Math.max(1, fmin * Math.pow(2, posAt(u))), punti, now);
+        o.connect(vg); o.start(at(s0)); o.stop(at(s0 + span));
+        nodes.push(o);
+      }
+    } else if (l.method === 'tone') mkVoice(() => l.carrier, g);
     else if (l.method === 'drone') {
       DRONE_PARTS.forEach(([mu, w]) => {
         const h = ctx.createGain(); h.gain.value = w / DRONE_NORM; h.connect(g);

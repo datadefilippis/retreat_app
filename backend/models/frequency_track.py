@@ -32,7 +32,9 @@ VOICE_FX = ("natural", "dream", "temple", "whisper")
 
 # ONDA 4 (21/8) — `drone`: fondamentale + quinta e terza NATURALI
 # (3/2 e 5/4). Non e' il tono puro con altre armoniche: e' un accordo.
-METHODS = ("bin", "iso", "mono", "bil", "noise", "tone", "drone")
+# ONDA 5 — `shepard`: la discesa infinita (N voci a un'ottava di
+# distanza che scendono insieme; f0 = ottave al minuto)
+METHODS = ("bin", "iso", "mono", "bil", "noise", "tone", "drone", "shepard")
 # il colore del soffio: veicolo del ritmo, non imitazione della natura
 # (per mare, pioggia e vento ci sono le basi vere in libreria)
 NOISE_COLORS = ("pink", "brown", "white")
