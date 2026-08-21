@@ -292,6 +292,33 @@ class TestAnelloAt4:
         assert "stopAllCards();          // il vivo tace" in PAGE
         assert "fermaAnello();" in PAGE       # stopAllCards spegne anche l'anello
 
+    def test_l_anello_dichiara_su_che_numero_si_e_fermato(self):
+        """Un tragitto non si ripete: l'anello si ferma sull'arrivo.
+        Chi ascolta ha diritto di SAPERE su quale numero — non di
+        dedurlo dal silenzio, che e' il difetto appena corretto
+        sull'avviso cuffie (un numero senza spiegazione)."""
+        blocco = PAGE.split('data-testid="fq-anello-attivo"')[1][:900]
+        assert "anello.battito" in blocco and "anello.portante" in blocco
+        assert "respiri/min" in blocco, "il respiro si parla in respiri al minuto"
+        assert "discesa continua" in blocco, "Shepard non ha un numero da dichiarare"
+
+    def test_le_meditazioni_non_usano_l_anello(self):
+        """L'anello e' una scelta per le SCHEDE (una frequenza sola,
+        che gira). Una meditazione composta ha tragitti, fasi e voce:
+        li' si renderizza per intero, senza cicli."""
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "preparaAnello" not in pub, \
+            "una meditazione messa in loop perderebbe fasi, tragitti e voce"
+        assert "preparaContinuo" in pub
+
+    def test_il_fallimento_del_continuo_non_e_muto(self):
+        """Un catch silenzioso lascia la pagina identica a prima e
+        l'utente crede di aver premuto a vuoto — ed e' anche il motivo
+        per cui un guasto qui potrebbe restare invisibile a me."""
+        assert "setContErrore(" in PUB
+        assert 'data-testid="fqp-continuo-errore"' in PUB
+        assert "catch {\n      /* render fallito" not in PUB
+
     def test_la_scheda_offre_l_anello_solo_sul_telefono(self):
         blocco = PAGE.split('data-testid="fq-anello"')[0][-500:]
         assert "solo-telefono-block" in blocco

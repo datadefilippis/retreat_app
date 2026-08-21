@@ -70,6 +70,7 @@ export default function PublicFrequencyPage() {
   const contRef = useRef(null);
   const [contProg, setContProg] = useState(null);
   const [continuo, setContinuo] = useState(false);
+  const [contErrore, setContErrore] = useState('');
 
   useEffect(() => {
     // SB1 — vecchie chiavi HMAC → prova unica (poi si ricontrolla)
@@ -184,6 +185,7 @@ export default function PublicFrequencyPage() {
     if (!track || contRef.current || contProg != null) return;
     stop();
     setContProg(0);
+    setContErrore('');
     try {
       ctxRef.current = ctxRef.current || new (window.AudioContext || window.webkitAudioContext)();
       const { audioLayers, voiceLayers } = await caricaLayers(ctxRef.current);
@@ -203,9 +205,14 @@ export default function PublicFrequencyPage() {
       segnaAscolto();
       h.seek(fromT);
       h.play();
-    } catch {
-      /* render fallito (memoria, base non scaricabile): si resta
-         com'era, con l'ascolto dal vivo che funziona */
+    } catch (err) {
+      /* Un fallimento QUI non deve essere muto: la pagina resta
+         identica a prima e l'utente crede di aver premuto a vuoto.
+         (Successo davvero: un refactor ha rotto questo percorso e il
+         catch silenzioso me l'ha nascosto.) */
+      console.error('[continuo] preparazione fallita:', err);   // eslint-disable-line no-console
+      setGateMsg('');
+      setContErrore("Non sono riuscito a preparare l'ascolto continuo. L'ascolto normale funziona.");
     } finally { setContProg(null); }
   });
 
@@ -346,6 +353,10 @@ export default function PublicFrequencyPage() {
                 </span>
               )}
             </div>
+          )}
+          {contErrore && (
+            <div className="continuo-riga" data-testid="fqp-continuo-errore"
+              style={{ color: 'var(--alert)' }}>{contErrore}</div>
           )}
           {continuo && (
             <div className="continuo-riga attivo" data-testid="fqp-continuo-attivo">

@@ -106,13 +106,40 @@ della ricerca (prima i multipli del respiro); un solo lettore per
 sessione e anello; l'anello non dichiara una fine né comandi di
 spostamento; e nessun «numero nudo» torna nei testi.
 
-## 6. Restano aperti
+## 6. L'anello peggiora l'ascolto delle meditazioni? No — e non le tocca
 
-- **«Crea» sembra muta sul telefono** — diagnosi in §7, da decidere;
+Domanda del founder. Risposta verificata sul codice, non dedotta:
+
+| pagina | cosa suona | l'anello c'entra? |
+|---|---|---|
+| schede della biblioteca (`/sound/esplora`) | `preparaAnello` | **sì** — è solo qui |
+| meditazione (`/frequenze/:slug`) | `preparaContinuo`, render integrale | **no** |
+| vetrina `/meditazioni` | niente: è una pagina di link | no |
+
+Una meditazione composta ha **fasi, tragitti e voce**: metterla in
+ciclo la mutilerebbe. Lì si renderizza per intero, come composta —
+dissolvenze comprese. Una guardia lo blocca a monte (`preparaAnello`
+non deve comparire in `PublicFrequencyPage`).
+
+**L'unica differenza che esiste davvero** sulle meditazioni è quella
+già dichiarata di AT3, e vale solo se si preme il pulsante: il render
+è a 22.050 Hz, cioè banda fino a 11 kHz. Misurato: le basi della
+libreria sono a **48 kHz**, quindi su mare e pioggia si perde l'aria
+sopra gli 11 kHz. Sulla sintesi (portanti ≤963 Hz) e sulla voce non
+cambia nulla di udibile. Chi non preme il pulsante ascolta esattamente
+come prima.
+
+Se quell'aria conta, la strada è salire a 32.000 Hz per le sessioni
+che contengono basi naturali — al prezzo di abbassare il tetto da 30 a
+circa 20 minuti. Da decidere, non fatto.
+
+## 7. Restano aperti
+
+- **«Crea» sembra muta sul telefono** — diagnosi in §8, da decidere;
 - il pulsante compare solo su telefono, come il resto del ciclo AT: è
   lì che lo schermo si blocca.
 
-## 7. Perché «Crea» sembra non suonare (diagnosi, non ancora risolto)
+## 8. Perché «Crea» sembra non suonare (diagnosi, non ancora risolto)
 
 Segnalazione: *«ho fatto una registrazione, clicco play ma non sento
 nulla; qualsiasi elemento aggiungo alla sessione non si riproduce»*.

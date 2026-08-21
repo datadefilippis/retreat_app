@@ -636,7 +636,8 @@ export default function FrequenzePage() {
         onPlay: () => {}, onPause: () => {},
       });
       anelloRef.current = a;
-      setAnello({ key, sec: a.giroSec });
+      setAnello({ key, sec: a.giroSec, battito, portante,
+                  metodo: cfg.method || 'bin' });
       a.play();
     } catch {
       setStatus('Non sono riuscito a preparare l\'ascolto continuo');
@@ -956,7 +957,17 @@ export default function FrequenzePage() {
         )}
         {anello && anello.key === key && (
           <div className="continuo-riga attivo" data-testid="fq-anello-attivo">
-            Ascolto continuo attivo: puoi bloccare lo schermo.
+            {/* Deve DIRE quale frequenza tiene: un tragitto non si
+                ripete all'infinito, quindi l'anello si ferma
+                sull'arrivo — e chi ascolta ha diritto di sapere su
+                quale numero si e' fermato, non di dedurlo. */}
+            Ascolto continuo attivo · {anello.metodo === 'tone' || anello.metodo === 'drone'
+              ? `tono ${String(anello.portante).replace('.', ',')} Hz`
+              : anello.metodo === 'shepard' ? 'discesa continua'
+                : anello.metodo === 'breath'
+                  ? `${(anello.battito * 60).toFixed(1).replace('.0', '').replace('.', ',')} respiri/min`
+                  : `${String(anello.battito).replace('.', ',')} Hz`}
+            {' '}· puoi bloccare lo schermo.
             <button type="button" className="readmore" style={{ marginLeft: 10 }}
               data-testid="fq-anello-ferma" onClick={fermaAnello}>Ferma</button>
           </div>
