@@ -249,55 +249,70 @@ VISUAL = (FQ_DIR / "visual" / "VisualPage.jsx").read_text()
 
 class TestPaginaStrumentoAv2:
     """
-    AV2 — /sound/visual: «integrata ma isolata» (founder). Il SUO
-    suono, guardato — traccia locale o microfono. La promessa che
-    regge tutto: l'audio non lascia mai il dispositivo.
+    AV2-bis — /sound/visual E' il prototipo HTML del founder,
+    INTEGRALE («era perfetto quello che ti ho mandato»). Markup e
+    script sono ESTRATTI dal suo file, non trascritti; le patch di
+    montaggio sono chirurgiche e queste guardie ne fissano il
+    perimetro.
     """
+
+    PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
+    MARKUP = (FQ_DIR / "visual" / "prototipoMarkup.js").read_text()
+    PAGINA = (FQ_DIR / "visual" / "VisualPage.jsx").read_text()
 
     def test_la_rotta_esiste(self):
         app = (FQ_DIR.parent.parent / "App.js").read_text()
         assert '"/sound/visual"' in app
-        assert "visual/VisualPage" in app
 
-    def test_l_ingresso_dalla_landing(self):
-        land = (FQ_DIR / "SoundLandingPage.js").read_text()
-        assert 'to="/sound/visual"' in land
+    def test_il_prototipo_e_integrale(self):
+        """I numeri del founder: 11 slider, 6 palette, 7 modi, 7
+        preset, 4 camere. Se uno sparisce, il porting ha perso pezzi."""
+        assert self.PROTO.count("['") >= 11 and "'intensity','Intensity'" in self.PROTO
+        assert self.PROTO.count("{ name:'") >= 13   # 6 palette + 7 preset
+        for nome in ("Aurya", "Cosmos", "Anahata", "Prana", "Nirvana",
+                     "Kundalini", "Samadhi"):
+            assert f"name:'{nome}'" in self.PROTO, f"preset perso: {nome}"
+        assert "buildMandala" in self.PROTO, "perso il motore-mandala a petali"
+        assert "'aurya.settings.v2'" in self.PROTO, "perse le impostazioni salvate"
 
-    def test_la_promessa_privacy_e_scritta_in_pagina(self):
-        """Non solo architettura: e' una promessa all'utente, e va
-        detta dove carica il file."""
-        # il testo JSX va a capo dove vuole: si confronta normalizzato
-        piatto = " ".join(VISUAL.split())
+    def test_three_entra_solo_qui_e_lazy(self):
+        assert "import('./prototipo')" in self.PAGINA
+        assert "from 'three'" not in self.PAGINA
+
+    def test_la_promessa_privacy_e_nel_gate(self):
+        piatto = " ".join(self.MARKUP.split())
         assert "non viene caricato da nessuna parte" in piatto
 
-    def test_la_traccia_non_parte_mai_verso_il_server(self):
-        pulito = _senza_commenti(VISUAL)
-        for vietato in ("fetch(", "axios", "FormData", "upload"):
-            assert vietato not in pulito, \
-                f"la pagina tocca la rete con l'audio dell'utente: {vietato}"
-        assert "URL.createObjectURL" in VISUAL   # file locale, punto
-
-    def test_il_microfono_non_va_agli_altoparlanti(self):
-        """MediaStreamSource → lettore e BASTA: collegarlo a
-        destination e' larsen garantito."""
-        blocco = VISUAL.split("createMediaStreamSource")[1][:300]
-        assert "connect(lettoreRef.current.analyser)" in blocco
-        assert "destination" not in blocco
+    def test_l_audio_non_tocca_mai_la_rete(self):
+        pulito = _senza_commenti(self.PROTO)
+        for vietato in ("fetch(", "XMLHttpRequest", "FormData"):
+            assert vietato not in pulito, f"l'audio dell'utente esce: {vietato}"
+        assert "URL.createObjectURL" in self.PROTO
 
     def test_il_microfono_si_spegne_davvero(self):
-        """track.stop(), non pausa: la spia del browser deve spegnersi."""
-        assert "getTracks().forEach((t) => t.stop())" in VISUAL
+        """FIX nostro al prototipo: disconnect() staccava il nodo ma
+        lasciava lo stream vivo — la spia del browser restava accesa
+        per sempre."""
+        blocco = self.PROTO.split("function disconnect()")[1][:300]
+        assert "getTracks().forEach((t) => t.stop())" in blocco
 
-    def test_media_element_source_una_volta_sola(self):
-        """createMediaElementSource si puo' chiamare UNA volta per
-        elemento: l'elemento e' uno e si cambia solo il src."""
-        assert _senza_commenti(VISUAL).count("createMediaElementSource") == 1
-        assert "audioElRef.current.src = urlRef.current" in VISUAL
+    def test_il_microfono_non_va_agli_altoparlanti(self):
+        blocco = self.PROTO.split("createMediaStreamSource")[1][:200]
+        assert "connect(analyser)" in blocco
+        assert "destination" not in blocco, "larsen garantito"
 
-    def test_pulizia_completa_allo_smontaggio(self):
-        coda = VISUAL.split("useEffect(() => () => {")[1][:500]
-        for pezzo in ("spegniMic", "revokeObjectURL", "close()"):
+    def test_lo_smontaggio_e_pulito(self):
+        """Il prototipo era un file standalone che girava per sempre:
+        dentro il sito deve morire con la pagina."""
+        coda = self.PROTO.split("function cleanup()")[1][:600]
+        for pezzo in ("cancelAnimationFrame", "removeEventListener",
+                      "disconnect()", "revokeObjectURL", "ctxA.close",
+                      "renderer.dispose"):
             assert pezzo in coda, f"lasciato acceso: {pezzo}"
+        assert "pulisci?.()" in self.PAGINA
+
+    def test_il_blob_della_traccia_si_revoca(self):
+        assert "if (fileUrl) URL.revokeObjectURL(fileUrl)" in self.PROTO
 
 
 class TestRitmoAv4bis:
