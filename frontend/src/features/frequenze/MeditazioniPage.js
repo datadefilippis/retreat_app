@@ -18,6 +18,7 @@ import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import { prova, emailDellaProva, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
 import './frequenze.css';
+import SoundTopbar from './SoundTopbar';
 
 const INTENTS = {
   dormire: 'Dormire', meditare: 'Meditare', rilassare: 'Rilassare',
@@ -115,15 +116,7 @@ export default function MeditazioniPage() {
       <div className="fqz" data-testid="fqz-meditazioni-locked">
         {/* MD (20/8) — le uscite: senza menu del sito, da qui non si
             tornava piu' indietro. Stesso rimedio di Aurya Sound. */}
-        <div className="topbar">
-          <a className="fqzbrand" href="/" data-testid="fqz-brand" title="Torna su Aurya">
-            <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
-            <span>
-                <b>Aurya</b>
-                <i>torna al sito</i>
-            </span>
-          </a>
-        </div>
+        <SoundTopbar firma="Meditazioni" qui="/meditazioni" />
         <main style={{ maxWidth: 680, paddingTop: 40 }}>
           <header style={{ display: 'block', textAlign: 'center' }}>
             <h1>Le <em>meditazioni</em> di Aurya</h1>
@@ -214,15 +207,7 @@ export default function MeditazioniPage() {
     <div className="fqz" data-testid="fqz-meditazioni">
       {/* MD (20/8) — le uscite: senza menu del sito, da qui non si
           tornava piu' indietro. Stesso rimedio di Aurya Sound. */}
-      <div className="topbar">
-        <a className="fqzbrand" href="/" data-testid="fqz-brand" title="Torna su Aurya">
-          <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
-          <span>
-            <b>Aurya</b>
-            <i>torna al sito</i>
-          </span>
-        </a>
-      </div>
+      <SoundTopbar firma="Meditazioni" qui="/meditazioni" />
 
       {/* SB6 (20/8, founder) — l'iscritto fedele senza account e' a un
           passo dal finalizzare: l'invito vive dove lui e' gia' dentro,

@@ -143,12 +143,15 @@ class TestSuperficieId4:
         assert "'/auth/entra'" in src, "il form non parla con la porta unica"
         assert "localStorage.setItem('token', w.access_token)" in src, \
             "il cappello operatore non viene salvato"
-        assert "welcomePending ? '/benvenuto' : '/dashboard'" in src \
-            and "next || dove" in src, \
+        # ID-nonies (20/8): il benvenuto pendente non si scavalca piu'
+        # nemmeno con un ?next= esplicito — si fa, e la destinazione
+        # viaggia con lui (prima veniva saltato in silenzio e
+        # ricompariva all'accesso dopo).
+        assert "if (operator && welcomePending)" in src \
+            and "/benvenuto?next=" in src, \
             "l'operatore non atterra nel suo posto di lavoro (ID-octies: "\
-            "al primo accesso passa dal benvenuto)"
-        assert "rawNext.startsWith('/') && !rawNext.startsWith('//')" in src, \
-            "manca la guardia open-redirect su ?next="
+            "al primo accesso passa dal benvenuto, ID-nonies: senza "\
+            "perdere dove stava andando)"
 
     def test_niente_soccorso_verso_porte_morte(self):
         src = (FRONTEND_SRC / "features" / "account" / "AccountLoginPage.js").read_text()
@@ -160,7 +163,11 @@ class TestSuperficieId4:
         account era la CAUSA del bug: da sloggato si accede da UN posto."""
         src = (FRONTEND_SRC / "features" / "storefront" / "components"
                / "MarketplaceShell.jsx").read_text()
-        assert "'/accedi'" in src and "'/accedi?vista=crea'" in src
+        # DN2 (21/8): le voci vengono dal modello unico, che veste sia
+        # il menu del sito sia quello del mondo scuro di Aurya Sound
+        assert "vociAccount" in src, "il menu non usa il modello unico"
+        modello = (FRONTEND_SRC / "lib" / "cappelli.js").read_text()
+        assert "'/accedi'" in modello and "'/accedi?vista=crea'" in modello
         assert "account-menu-operator-login" not in src, \
             "«Area professionisti» e' tornata nel menu: e' la stessa porta"
         assert "'/account/accedi'" not in src, "il menu punta alla porta vecchia"
@@ -193,7 +200,8 @@ class TestSuperficieIdBis:
                / "MarketplaceShell.jsx").read_text()
         assert "hasOperatorToken" in src, \
             "il menu non sa del cappello operatore"
-        assert "'/dashboard'" in src and "account-menu-gestionale" in src, \
+        modello = (FRONTEND_SRC / "lib" / "cappelli.js").read_text()
+        assert "'/dashboard'" in modello and "account-menu-gestionale" in modello, \
             "manca «Il tuo gestionale» per chi e' gia' dentro"
 
     def test_account_mostra_il_cappello_professionista(self):
@@ -272,10 +280,14 @@ class TestMenuCoerenteIdQuater:
         src = self.SHELL.read_text()
         assert "const loggedIn = hasPlatformToken || hasOperatorToken" in src, \
             "il menu guarda un cappello solo"
-        blocco = src.split("const userLinks =")[1].split("const operatorLinks")[0]
-        assert "hasOperatorToken" in blocco, \
+        # DN2 (21/8): il RAMO vive nel modello unico (stesse voci nei
+        # due mondi); qui resta il vestito, che deve saper tradurre
+        # anche la voce del cappello cliente.
+        modello = (FRONTEND_SRC / "lib" / "cappelli.js").read_text()
+        ramo = modello.split("export function vociAccount")[1].split("export ")[0]
+        assert "operatore" in ramo and "account-menu-add-client" in ramo, \
             "l'operatore loggato riceve ancora l'invito ad accedere"
-        assert "account-menu-add-client" in blocco, \
+        assert "account-menu-add-client" in src, \
             "all'operatore senza cappello cliente non viene offerto nulla"
 
     def test_esci_c_e_sempre_quando_si_e_dentro(self):
@@ -322,7 +334,8 @@ class TestCappelloInUnGestoIdQuinquies:
     def test_e_un_azione_non_un_link(self):
         src = self.SHELL.read_text()
         voce = src.split("account-menu-add-client")[0][-260:]
-        assert "action: 'addClientHat'" in voce, \
+        modello = (FRONTEND_SRC / "lib" / "cappelli.js").read_text()
+        assert "action: 'addClientHat'" in modello, \
             "la voce e' tornata un link (e il giro vizioso con lei)"
         assert "'/auth/hats/client'" in src, \
             "il menu non chiama l'endpoint che crea il cappello"

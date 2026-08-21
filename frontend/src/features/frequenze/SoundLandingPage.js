@@ -5,6 +5,7 @@ import { PERCORSO } from './content/guida';
 import { PRO_ENTRY } from './links';
 import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import './frequenze.css';
+import SoundTopbar from './SoundTopbar';
 
 /*
  * SP4 — /sound: la porta pubblica di Aurya Sound.
@@ -33,19 +34,17 @@ export default function SoundLandingPage() {
   return (
     <div className="fqz sld" data-testid="fqz-landing">
       {/* SP-ter — la porta pubblica porta anche il ritorno */}
-      <div className="topbar">
-        <a className="fqzbrand" href="/" data-testid="fqz-brand" title="Torna su Aurya">
-          <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
-          <span>
-            <b>Aurya</b>
-            <i>torna al sito</i>
-          </span>
-        </a>
-      </div>
+      <SoundTopbar firma="Sound" qui="/sound" />
       <header>
         <div>
           <h1>Aurya <em>Sound</em></h1>
           <div className="sub">Esperienze sonore progettate per accompagnare diversi stati di presenza.</div>
+          {/* DN5 (21/8) — dichiarare la parentela costa una riga e rende
+              ovvio cio' che il cambio di luce potrebbe far sembrare un
+              altro sito. */}
+          <p className="sld-parentela" data-testid="sound-parentela">
+            Aurya Sound è lo studio di Aurya: qui si compone e si ascolta.
+          </p>
         </div>
       </header>
       <main>

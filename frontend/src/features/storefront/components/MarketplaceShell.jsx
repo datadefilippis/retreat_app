@@ -39,6 +39,7 @@ import {
 } from '../../../components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '../../../components/ui/sheet';
 import { scordaProva } from '../../../lib/cerchio';
+import { vociAccount } from '../../../lib/cappelli';
 
 // S5 — destinazioni top nel footer (link programmatici): cache a livello
 // modulo, il footer è su ogni pagina e non deve rifetchare a ogni nav.
@@ -177,23 +178,28 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout,
   // dentro) e non trovava «Esci». Chi e' dentro non deve mai
   // leggere un invito a entrare.
   const loggedIn = hasPlatformToken || hasOperatorToken;
-  const userLinks = hasPlatformToken
-    ? [{ to: '/account', label: t('marketplace.accountMenuMy', { defaultValue: 'Il mio account' }), testid: 'account-menu-my' }]
-    : hasOperatorToken
-      // operatore senza cappello cliente: niente «Accedi» (e' dentro),
-      // ma la porta per averlo, quando gli servira' da cliente
-      ? [{ action: 'addClientHat', label: t('marketplace.accountMenuAddClient', { defaultValue: 'Usa Aurya come cliente' }), testid: 'account-menu-add-client' }]
-      : [
-          { to: '/accedi', label: t('marketplace.signIn', { defaultValue: 'Accedi' }), testid: 'account-menu-signin' },
-          { to: '/accedi?vista=crea', label: t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }), testid: 'account-menu-signup' },
-        ];
-  // ID-bis (20/8) — chi e' GIA' dentro il gestionale non deve cercarlo:
-  // se il token operatore c'e', la sezione professionisti apre da li'.
-  const operatorLinks = hasOperatorToken
-    ? [{ to: '/dashboard', label: t('marketplace.accountMenuGest', { defaultValue: 'Il tuo gestionale' }), testid: 'account-menu-gestionale' }]
-    : [
-        { to: operatorTo, label: t('marketplace.accountMenuWork', { defaultValue: 'Lavora con Aurya' }), testid: 'account-menu-operator-join' },
-      ];
+  // DN2 (21/8) — le VOCI vengono dal modello unico (lib/cappelli), lo
+  // stesso che veste l'omino nel mondo scuro di Aurya Sound: prima
+  // vivevano solo qui, e un menu che esiste in un mondo solo diverge
+  // dall'altro al primo cambiamento. Qui restano le TRADUZIONI e il
+  // vestito; la logica dei due cappelli (ID/ID-bis/ID-quater) e' una.
+  const ETICHETTE = {
+    'account-menu-my': t('marketplace.accountMenuMy', { defaultValue: 'Il mio account' }),
+    'account-menu-add-client': t('marketplace.accountMenuAddClient', { defaultValue: 'Usa Aurya come cliente' }),
+    'account-menu-signin': t('marketplace.signIn', { defaultValue: 'Accedi' }),
+    'account-menu-signup': t('marketplace.accountMenuCreate', { defaultValue: 'Crea il tuo account' }),
+    'account-menu-gestionale': t('marketplace.accountMenuGest', { defaultValue: 'Il tuo gestionale' }),
+    'account-menu-operator-join': t('marketplace.accountMenuWork', { defaultValue: 'Lavora con Aurya' }),
+  };
+  const vesti = (v) => ({
+    ...v,
+    label: ETICHETTE[v.testid] || v.label,
+    // il funnel professionisti tiene la sua destinazione di fase
+    ...(v.testid === 'account-menu-operator-join' ? { to: operatorTo } : {}),
+  });
+  const modello = vociAccount({ cliente: hasPlatformToken, operatore: hasOperatorToken });
+  const userLinks = modello.tue.map(vesti);
+  const operatorLinks = modello.professionisti.map(vesti);
 
   // PS4 — l'omino resta l'entry point universale (tutti i breakpoint,
   // tutte le fasi, network inclusa) e conserva il pallino di stato.

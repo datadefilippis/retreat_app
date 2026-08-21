@@ -19,6 +19,7 @@ import { SafetyLine, useSafetyGate } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import { prova, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
 import './frequenze.css';
+import SoundTopbar from './SoundTopbar';
 
 const PREVIEW_SEC = 90;
 const INTENTS = {
@@ -169,15 +170,7 @@ export default function PublicFrequencyPage() {
           qui dentro: il menu del sito non c'e' e il design e' un altro
           mondo. Stesso rimedio di Aurya Sound (SP-ter): marchio in
           alto a sinistra e uscite in fondo. */}
-      <div className="topbar">
-        <a className="fqzbrand" href="/" data-testid="fqz-brand" title="Torna su Aurya">
-          <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
-          <span>
-            <b>Aurya</b>
-            <i>torna al sito</i>
-          </span>
-        </a>
-      </div>
+      <SoundTopbar firma="Sound" />
       <header>
         <div>
           <h1>Aurya <em>Sound</em></h1>

@@ -9,8 +9,15 @@
 .fqz{
     --ink:#0C1618; --stone:#122125; --panel:#16272B; --line:#23393D; --line-soft:#1B2E32;
     --bone:#E9E4D9; --dim:#A9BEC2; --dimmer:#86A0A4;
-    --lamp:#DFA45C; --lamp-dim:#8A6636; --water:#6FB3AC; --violet:#9B8BC4; --alert:#C9584B;
-    --a:#6FB3AC; --b:#DFA45C; --c:#9B8BC4;
+    /* DN3 (21/8) — la famiglia degli accenti e' quella della marca, solo
+       schiarita per il fondo scuro: la TINTA non si sposta piu'.
+       lamp  hsl(33,67%,62%) → hsl(42,45%,64%)  = l'oro del sito (#c9b37e)
+       water hsl(174,31%,57%) → hsl(160,30%,56%) = il verde di marca schiarito
+       Prima l'acqua era 30 gradi piu' blu del verde Aurya e l'oro 26
+       punti piu' saturo: due derive ereditate dal prototipo, ed erano
+       loro a far sembrare «un'altra azienda» la stessa stanza di sera. */
+    --lamp:#C9B37E; --lamp-dim:#8A7440; --water:#66B79C; --violet:#9B8BC4; --alert:#C9584B;
+    --a:#66B79C; --b:#C9B37E; --c:#9B8BC4;
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -736,10 +743,16 @@
   border:1px solid transparent;border-radius:11px;text-decoration:none;transition:.18s}
 .fqz .fqzbrand:hover{border-color:var(--line);background:rgba(255,255,255,.02)}
 .fqz .fqzbrand img{display:block;border-radius:7px}
-.fqz .fqzbrand b{display:block;font-family:var(--serif);font-weight:400;font-size:15px;
-  color:var(--bone);letter-spacing:.02em;line-height:1.15}
+/* DN1 (21/8) — UN SOLO MARCHIO. Prima qui il nome era «Aurya» in serif
+   minuscolo, mentre sul sito e' «AURYA» in Cinzel maiuscolo con
+   tracking .28em: stesso medaglione, due lockup — l'unica cosa che non
+   deve mai cambiare tra due prodotti della stessa casa. Ora e' identico
+   (font, maiuscolo, tracking, oro); cambia solo la LUCE del fondo. */
+.fqz .fqzbrand b{display:block;font-family:'Cinzel','Iowan Old Style',
+  'Palatino Linotype',serif;font-weight:500;font-size:17px;text-transform:uppercase;
+  color:var(--lamp);letter-spacing:.28em;line-height:1.15}
 .fqz .fqzbrand i{display:block;font-style:normal;font-family:var(--mono);font-size:9px;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)}
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer);margin-top:3px}
 .fqz .fqzfoot{max-width:1240px;margin:46px auto 0;padding:18px 0 4px;
   border-top:1px solid var(--line-soft);display:flex;gap:22px;flex-wrap:wrap;
   align-items:center}
@@ -763,3 +776,36 @@
   .fqz .topbar{flex-wrap:wrap;row-gap:8px}
   .fqz .topbar .backcard .bc-s{display:none}
 }
+
+/* DN2 (21/8) — l'omino nel buio: stesse voci del menu del sito
+   (lib/cappelli), pelle .fqz. Prima chi era loggato entrava in Sound e
+   smetteva di vedersi: niente account, niente Esci. */
+.fqz .sam{position:relative}
+.fqz .sam-trigger{position:relative;display:flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:transparent;
+  color:var(--dim);cursor:pointer;transition:.18s;padding:0}
+.fqz .sam-trigger:hover{border-color:var(--lamp);color:var(--lamp)}
+.fqz .sam-dot{position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:50%;
+  background:var(--water);box-shadow:0 0 0 2px var(--ink)}
+.fqz .sam-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:60;min-width:232px;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px;
+  box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.fqz .sam-tit{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dimmer);padding:6px 10px 4px}
+.fqz .sam-voce{display:block;width:100%;text-align:left;background:transparent;border:0;
+  font-family:var(--sans);font-size:13px;color:var(--bone);padding:8px 10px;border-radius:8px;
+  text-decoration:none;cursor:pointer;transition:.14s}
+.fqz .sam-voce:hover{background:rgba(255,255,255,.05);color:var(--lamp)}
+.fqz .sam-sep{height:1px;background:var(--line-soft);margin:6px 4px}
+.fqz .sam-err{font-size:11.5px;color:var(--alert);padding:6px 10px;line-height:1.4}
+
+/* DN4 — la passerella: due o tre voci, non l'intero menu del sito.
+   In un posto fatto per chiudere gli occhi, un menu completo e' rumore. */
+.fqz .tb-nav{display:flex;gap:2px;align-items:center;margin-left:6px}
+.fqz .tb-nav a{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dimmer);text-decoration:none;padding:7px 9px;border-radius:8px;transition:.14s}
+.fqz .tb-nav a:hover{color:var(--lamp);background:rgba(255,255,255,.04)}
+.fqz .tb-nav a[aria-current="page"]{color:var(--bone)}
+@media (max-width:640px){.fqz .tb-nav a{padding:6px 6px;font-size:9px;letter-spacing:.08em}}
+
+.fqz .sld-parentela{margin:9px 0 0;font-size:12.5px;color:var(--dim);max-width:52ch;line-height:1.5}

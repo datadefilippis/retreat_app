@@ -35,6 +35,7 @@ import GuidaView from './GuidaView';
 import { PRO_ENTRY } from './links';
 import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
+import SoundTopbar from './SoundTopbar';
 
 const fmt = (s) => {
   s = Math.max(0, Math.round(s));
@@ -1035,19 +1036,10 @@ export default function FrequenzePage() {
   /* ─────────────────────────── RENDER ─────────────────────────── */
   return (
     <div className="fqz" data-testid="fqz-root">
-      <div className="topbar">
-        {/* SP-ter — la via di casa. Aurya Sound e' un mondo visivo a se':
-            senza un marchio cliccabile in alto a sinistra chi arriva dal
-            sito perde il filo (il menu pubblico qui non c'e'). */}
-        <a className="fqzbrand" href="/" data-testid="fqz-brand"
-          title="Torna su Aurya">
-          <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
-          <span>
-            <b>Aurya</b>
-            <i>torna al sito</i>
-          </span>
-        </a>
-        <span className="tb-spacer" />
+      {/* DN1/DN2/DN4 — testata condivisa del mondo Sound: marchio della
+          marca (che e' anche la via di casa), passerella e omino. Gli
+          strumenti di QUESTA vista viaggiano come extra. */}
+      <SoundTopbar firma="Sound" qui="/sound" extra={<>
         {/* SF — sempre a portata, in ogni vista e per chiunque: le
             controindicazioni non si leggono una volta sola */}
         <SafetyButton onClick={openReview} />
@@ -1094,7 +1086,7 @@ export default function FrequenzePage() {
             </span>
           </button>
         )}
-      </div>
+      </>} />
       <header>
         <div>
           <h1>Aurya <em>Sound</em></h1>

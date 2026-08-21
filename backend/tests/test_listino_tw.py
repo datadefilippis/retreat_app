@@ -5447,8 +5447,13 @@ class TestLoginRegia:
         assert "marketplace.accountMenuCreate" in src \
             and "'Crea il tuo account'" in src, \
             "manca la voce Crea il tuo account"
-        assert "'/accedi'" in src and "'/accedi?vista=crea'" in src
-        assert "'/account/accedi'" not in src, \
+        # DN2 (21/8) — le destinazioni vivono nel modello unico
+        # (lib/cappelli), che veste sia questo menu sia l'omino del
+        # mondo scuro; qui restano le traduzioni.
+        assert "vociAccount" in src, "il menu non usa il modello unico"
+        modello = (FRONTEND_SRC / "lib" / "cappelli.js").read_text()
+        assert "'/accedi'" in modello and "'/accedi?vista=crea'" in modello
+        assert "'/account/accedi'" not in modello and "'/account/accedi'" not in src, \
             "il menu punta ancora alla porta vecchia"
         # da loggato: Il mio account → /account + Esci
         assert "marketplace.accountMenuMy" in src \

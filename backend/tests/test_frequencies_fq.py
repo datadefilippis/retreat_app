@@ -1178,9 +1178,15 @@ class TestSoundPubblicoSp:
         """SP-ter — Aurya Sound e' un mondo visivo a se' e il menu del
         sito non c'e': senza marchio in alto e uscite in fondo, chi
         arriva dal sito resta chiuso dentro."""
+        # DN1 (21/8): il marchio non e' piu' ricomposto in ogni pagina,
+        # vive in SoundTopbar (uno solo, per non divergere). La via di
+        # casa deve esserci comunque — direttamente o dalla testata.
+        topbar = (FQ_DIR / "SoundTopbar.jsx").read_text()
+        assert 'data-testid="fqz-brand"' in topbar and 'href="/"' in topbar, \
+            "la testata condivisa non riporta al sito"
         for f in ("FrequenzePage.js", "SoundLandingPage.js"):
             src = (FQ_DIR / f).read_text()
-            assert 'data-testid="fqz-brand"' in src and 'href="/"' in src, \
+            assert "<SoundTopbar" in src or 'data-testid="fqz-brand"' in src, \
                 f"{f}: manca il marchio che riporta al sito"
             assert 'data-testid="fqz-foot"' in src, \
                 f"{f}: manca il piede con le uscite"
@@ -1423,7 +1429,7 @@ class TestMeditazioniMd:
     def test_vie_di_uscita_su_entrambe_le_pagine(self):
         for f in (self.PUB, self.MED):
             src = f.read_text()
-            assert 'data-testid="fqz-brand"' in src and 'href="/"' in src, \
+            assert "<SoundTopbar" in src or 'data-testid="fqz-brand"' in src, \
                 f"{f.name}: manca il marchio che riporta al sito"
             assert 'data-testid="fqz-foot"' in src, \
                 f"{f.name}: manca il piede con le uscite"
@@ -1434,6 +1440,7 @@ class TestMeditazioniMd:
         src = self.MED.read_text()
         bloccata = src.split('data-testid="fqz-meditazioni-locked"')[1] \
             .split('data-testid="fqz-meditazioni"')[0]
-        assert 'data-testid="fqz-brand"' in bloccata \
+        assert ("<SoundTopbar" in bloccata
+                or 'data-testid="fqz-brand"' in bloccata) \
             and 'data-testid="fqz-foot"' in bloccata, \
             "dietro il cancello non ci sono uscite"
