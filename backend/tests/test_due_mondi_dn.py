@@ -35,6 +35,43 @@ class TestUnSoloMarchioDn1:
             "tracking diverso da quello del sito: il marchio non combacia"
         assert "var(--lamp)" in regola, "il marchio non e' nell'oro di marca"
 
+    def test_il_marchio_ha_la_misura_del_sito(self):
+        """DN6 (21/8, founder) — nel buio il medaglione era 26px contro
+        i 36 del sito (h-9) e il nome 17 contro 18: stesso disegno, ma
+        piu' piccolo, e a colpo d'occhio e' un altro marchio."""
+        topbar = (FQ_DIR / "SoundTopbar.jsx").read_text()
+        assert 'width="36" height="36"' in topbar, \
+            "il medaglione non ha la misura del sito (h-9 = 36px)"
+        shell = SHELL.read_text()
+        assert "h-9 w-9" in shell, "cambiata la misura sul sito: riallineare il buio"
+        regola = CSS.read_text().split(".fqz .fqzbrand b{")[1].split("}")[0]
+        assert "font-size:18px" in regola, "il nome non ha la misura del sito (text-lg)"
+
+    def test_la_testata_parla_con_una_voce_sola(self):
+        """Le controindicazioni stanno nella testata accanto alle voci
+        del menu: stesso corpo e stesso tracking, altrimenti gridano.
+        Restano rosse e bordate — e' un avviso, non una voce."""
+        css = CSS.read_text()
+        safety = css.split(".fqz .safetybtn{")[1].split("}")[0]
+        nav = css.split(".fqz .tb-nav a{")[1].split("}")[0]
+        for prop in ("font-size:10px", "letter-spacing:.12em", "text-transform:uppercase"):
+            assert prop in safety, f"controindicazioni: manca {prop}"
+            assert prop in nav, f"passerella: manca {prop} (le due voci sono divergute)"
+        assert "var(--alert)" in safety, "l'avviso ha perso il suo rosso"
+
+    def test_niente_doppioni_tra_testata_e_menu(self):
+        """DN6 — «Esplora meditazioni» e «Per gli operatori» erano carte
+        nella testata del workspace: da quando le stesse destinazioni
+        vivono nella passerella e nel menu dell'omino, sarebbero due
+        modi di dire la stessa cosa nella stessa riga."""
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        testata = page.split("<SoundTopbar")[1].split("</>} />")[0]
+        assert 'data-testid="fqz-top-meditazioni"' not in testata
+        assert 'data-testid="fqz-pro"' not in testata
+        # ma l'invito ai professionisti non sparisce: vive nel menu
+        modello = (FRONTEND_SRC / "lib" / "cappelli.js").read_text()
+        assert "account-menu-operator-join" in modello
+
     def test_il_marchio_e_uno_solo_non_ricomposto_a_mano(self):
         """Il lockup vive in SoundTopbar. Se una vista se lo riscrive,
         al primo ritocco i mondi ridivergono — e' esattamente cosi' che

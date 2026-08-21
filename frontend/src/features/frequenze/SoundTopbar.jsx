@@ -25,7 +25,7 @@ export default function SoundTopbar({ firma = 'Sound', qui = null, extra = null 
   return (
     <div className="topbar">
       <a className="fqzbrand" href="/" data-testid="fqz-brand" title="Torna su Aurya">
-        <img src="/logo-aurya-512.png" alt="" width="26" height="26" />
+        <img src="/logo-aurya-512.png" alt="" width="36" height="36" />
         <span>
           <b>Aurya</b>
           <i>{firma}</i>

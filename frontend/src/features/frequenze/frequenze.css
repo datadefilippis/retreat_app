@@ -306,12 +306,15 @@
   font-family:inherit;font-size:12px;color:var(--water);cursor:pointer;
   text-decoration:underline;text-underline-offset:2px}
 .fqz .safetyline button:hover{color:var(--lamp)}
+/* DN6 (21/8) — stessa voce delle altre della testata: mono 10px,
+   maiuscolo, tracking .12em. Restano il bordo e il rosso: e' un
+   avviso, non una voce di menu — ma non deve gridare piu' forte. */
 .fqz .safetybtn{border:1px solid var(--alert);background:transparent;
-  color:var(--alert);border-radius:999px;padding:8px 15px;
-  font-family:var(--mono);font-size:11px;letter-spacing:.06em;cursor:pointer;
-  white-space:nowrap}
+  color:var(--alert);border-radius:999px;padding:7px 13px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;white-space:nowrap}
 .fqz .safetybtn:hover{background:rgba(224,123,106,.12);color:var(--bone)}
-@media (max-width:640px){.fqz .safetybtn{padding:7px 11px;font-size:10px}}
+@media (max-width:640px){.fqz .safetybtn{padding:6px 10px;font-size:9px;letter-spacing:.08em}}
 .fqz /* ============ OTTIMIZZAZIONE MOBILE / TABLET ============ */
   .bar,.fqz .bar .handle,.fqz .phase,.fqz .seekbar,.fqz .seek-knob{touch-action:none}
 .fqz .taptip{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);transform:translateX(-50%) translateY(8px);
@@ -749,7 +752,7 @@
    deve mai cambiare tra due prodotti della stessa casa. Ora e' identico
    (font, maiuscolo, tracking, oro); cambia solo la LUCE del fondo. */
 .fqz .fqzbrand b{display:block;font-family:'Cinzel','Iowan Old Style',
-  'Palatino Linotype',serif;font-weight:500;font-size:17px;text-transform:uppercase;
+  'Palatino Linotype',serif;font-weight:500;font-size:18px;text-transform:uppercase;
   color:var(--lamp);letter-spacing:.28em;line-height:1.15}
 .fqz .fqzbrand i{display:block;font-style:normal;font-family:var(--mono);font-size:9px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer);margin-top:3px}

@@ -1043,16 +1043,6 @@ export default function FrequenzePage() {
         {/* SF — sempre a portata, in ogni vista e per chiunque: le
             controindicazioni non si leggono una volta sola */}
         <SafetyButton onClick={openReview} />
-        {/* le esperienze gia' composte dagli operatori: raggiungibili
-            dalla testata in ogni ruolo, non solo dal menu delle viste */}
-        <a className="backcard" href="/meditazioni" data-testid="fqz-top-meditazioni"
-          title="Le meditazioni pubblicate dagli operatori">
-          <span className="bc-ic">✧</span>
-          <span>
-            <span className="bc-t">Esplora meditazioni</span><br />
-            <span className="bc-s">esperienze degli operatori</span>
-          </span>
-        </a>
         {canCompose ? (
           <>
             <button type="button" className={`backcard${view === 'mine' ? ' on' : ''}`}
@@ -1074,18 +1064,7 @@ export default function FrequenzePage() {
               </span>
             </button>
           </>
-        ) : (
-          /* visitatore: nessun finto strumento — un solo invito, discreto */
-          <button type="button" className="backcard" data-testid="fqz-pro"
-            title="Aurya Sound per operatori"
-            onClick={() => navigate(PRO_ENTRY)}>
-            <span className="bc-ic">◆</span>
-            <span>
-              <span className="bc-t">Per gli operatori</span><br />
-              <span className="bc-s">componi, registra, pubblica</span>
-            </span>
-          </button>
-        )}
+        ) : null}
       </>} />
       <header>
         <div>
