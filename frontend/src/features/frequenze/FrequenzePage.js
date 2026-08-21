@@ -48,6 +48,9 @@ const LISTEN = {
   bin: '🎧 Effetto solo in cuffia', bil: '🎧 In cuffia (consigliato)',
   iso: '🔊 Anche in altoparlante', mono: '🔊 Anche in altoparlante',
   noise: '🔊 Anche in altoparlante', tone: '🔊 Anche in altoparlante',
+  // C6 (audit 21/8): i metodi nuovi erano usciti senza questa riga
+  drone: '🔊 Anche in altoparlante', shepard: '🔊 Anche in altoparlante',
+  breath: '🔊 Anche in altoparlante',
 };
 /* Le stesse chiavi di SOUND_CATEGORIES lato server, nello stesso
    ordine (guardia di parità nei test): il tab si traduce in categoria
@@ -537,7 +540,16 @@ export default function FrequenzePage() {
 
   const patchLayer = (id, patch) => {
     setLayers((ls) => ls.map((l) => (l.id === id ? { ...l, ...patch } : l)));
-    if (patch.gain !== undefined && liveRef.current) liveRef.current.setLayerGain(id, patch.gain);
+    /* C5 (audit 21/8) — al vivo agiscono volume E muto: prima il muto
+       cambiava solo lo stato, e il livello continuava a suonare — un
+       comando finto. Le modifiche STRUTTURALI (battito, portante,
+       metodo, curve) restano per il prossimo ascolto: le curve si
+       disegnano alla partenza, e la riga sotto il player lo dice. */
+    if (liveRef.current && (patch.gain !== undefined || patch.mute !== undefined)) {
+      const cur = layers.find((l) => l.id === id) || {};
+      const next = { ...cur, ...patch };
+      liveRef.current.setLayerGain(id, next.mute ? 0 : next.gain);
+    }
   };
   const removeLayer = (id) => { stopSession(); setLayers((ls) => ls.filter((l) => l.id !== id)); };
 
@@ -821,15 +833,24 @@ export default function FrequenzePage() {
               <input type="range" min="0" max="0.6" step="0.01" defaultValue={live.gain}
                 onChange={(e2) => live.setGain(+e2.target.value)} style={{ flex: 1 }} />
             </label>
+            {/* C4 (audit 21/8) — ogni metodo mostra il SUO comando, e
+                solo comandi veri: prima bordone, discesa e respiro
+                mostravano un «battito» collegato a niente. La discesa
+                non ha un numero da offrire dal vivo: niente campo. */}
+            {live.method !== 'shepard' && (
             <label className="lbl" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {live.method === 'tone' ? 'frequenza' : 'battito'}
-              <input type="number" step={live.method === 'tone' ? 1 : 0.5}
-                defaultValue={live.method === 'tone' ? live.carrier : live.beat}
+              {live.method === 'tone' || live.method === 'drone' ? 'frequenza'
+                : live.method === 'breath' ? 'respiri/min' : 'battito'}
+              <input type="number"
+                step={live.method === 'tone' || live.method === 'drone' ? 1 : 0.5}
+                defaultValue={live.method === 'tone' || live.method === 'drone' ? live.carrier
+                  : live.method === 'breath' ? +(live.beat * 60).toFixed(1) : live.beat}
                 onChange={(e2) => {
                   const v = +e2.target.value;
                   if (isNaN(v)) return;
-                  if (live.method === 'tone') { live.setCarrier(v); return; }
-                  live.setBeat(v);
+                  if (live.method === 'tone' || live.method === 'drone') { live.setCarrier(v); return; }
+                  // il respiro si parla in respiri al minuto, il motore in Hz
+                  live.setBeat(live.method === 'breath' ? v / 60 : v);
                   // ONDA 1 — setBeat ferma il tragitto DENTRO il motore:
                   // senza questo risveglio la scheda continuerebbe a
                   // dire «in movimento verso...» a comando gia' preso.
@@ -837,8 +858,9 @@ export default function FrequenzePage() {
                   // quella del ref, o e' un ReferenceError silenzioso.)
                   setLiveKeys(Object.keys(liveCardsRef.current));
                 }}
-                style={{ width: 70 }} /> Hz
+                style={{ width: 70 }} /> {live.method === 'breath' ? '' : 'Hz'}
             </label>
+            )}
           </div>
         )}
         {entry.cfg && (
@@ -1409,6 +1431,14 @@ export default function FrequenzePage() {
               </button>
               <button type="button" className="cb-reset" disabled={!layers.length}
                 onClick={resetSession}>Reset</button>
+              {/* C5 — dire cosa agisce subito e cosa no, invece di
+                  lasciare che l'utente lo scopra da un campo che non
+                  risponde */}
+              {playing && (
+                <div className="livehint" data-testid="fq-live-hint">
+                  volume e muto agiscono subito · le altre modifiche si sentono al prossimo ascolto
+                </div>
+              )}
               {/* Su telefono i quattro campi occupavano quattro righe piene:
                   ora stanno dietro un tocco e la barra resta una striscia.
                   Su schermo largo il CSS li rimette in linea (display:contents). */}

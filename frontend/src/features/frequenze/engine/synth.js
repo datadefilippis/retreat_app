@@ -162,19 +162,27 @@ export function neuroSample(l, tAbs, dt) {
     return [v, v];
   }
   if (l.method === 'breath') {
-    /* Rumore bianco filtrato da un passa-basso a un polo, il cui
-       taglio segue la fase: aperto inspirando, chiuso espirando. E'
-       questo, piu' della forma, a far sentire in quale fase sei. */
-    /* La fase la avanza QUESTO ramo: `l._ph` cresce piu' in basso,
+    /* AUDIT §5 (21/8, founder: «troppo fake rispetto al vero respiro»)
+       — e aveva ragione: il rumore filtrato e' vento che finge di
+       essere aria, uncanny valley garantita. La guida NON imita piu':
+       e' un accordo (fondamentale + quinta + terza naturali, come il
+       bordone, ma sulle ARMONICHE della stessa nota) che si gonfia e
+       sgonfia con la forma del respiro. Le armoniche si APRONO inspirando e si chiudono espirando: e' il
+       timbro a dire in che fase sei, senza fingere niente.
+       La fase la avanza QUESTO ramo: `l._ph` cresce piu' in basso,
        dopo i metodi ritmici, e leggerlo qui darebbe sempre 0 — cioe'
        silenzio per sempre (successo davvero). */
     l._ph += TAU * freqAt(l, u, span) * dt;
     const ph = (l._ph / TAU) % 1;
     const amp = breathEnv(ph, l.inhale, l.exhale);
-    const k = 0.008 + 0.55 * breathBright(ph, l.inhale, l.exhale);
-    const y = l._lp || 0;                      // mai undefined: darebbe NaN
-    l._lp = y + k * ((Math.random() * 2 - 1) - y);
-    const v = l._lp * amp * e * 2.2;
+    if (amp <= 0) return [0, 0];
+    const br = breathBright(ph, l.inhale, l.exhale);
+    const th = TAU * l.carrier * tAbs;
+    // armoniche della STESSA nota (2ª e 3ª), non un accordo: la voce
+    // si apre inspirando e si richiude espirando senza cambiare nota
+    const w2 = 0.9 * br, w3 = 0.5 * br;
+    const v = ((Math.sin(th) + w2 * Math.sin(th * 2) + w3 * Math.sin(th * 3))
+      / (1 + w2 + w3)) * amp * e;
     return [v, v];
   }
   if (l.method === 'shepard') {
@@ -372,35 +380,41 @@ export function startCardLive(ctx, cfg, gain, fval) {
     };
   };
   const respiro = (dest, hz, inn, exh) => {
-    /* Catena: rumore bianco → passa-basso (taglio pilotato dalla fase)
-       → volume (forma del respiro). Entrambi i parametri seguono una
-       forma campionata in loop: infinita, esatta, e identica a quella
-       del render. */
+    /* AUDIT §5 — la guida del respiro: una nota con le sue armoniche
+       (2ª e 3ª) dentro l'inviluppo del respiro. Volume = breathEnv;
+       le armoniche pesate da breathBright: la voce si apre inspirando
+       e si richiude espirando, senza cambiare nota. Le forme viaggiano
+       campionate in loop: infinite, esatte, identiche al render. */
     const T = 1 / Math.max(0.02, hz);
-    const src = ctx.createBufferSource();
-    src.buffer = pinkBuf(ctx, 'white'); src.loop = true;
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.Q.value = 0.7;
-    lp.frequency.value = 180;                       // base: espirazione (cupa)
-    const brightSrc = shapeLoop(ctx, (u) => breathBright(u, inn, exh), T);
-    const brightAmt = ctx.createGain(); brightAmt.gain.value = 4200;
-    brightSrc.connect(brightAmt); brightAmt.connect(lp.frequency);
-    const gate = ctx.createGain(); gate.gain.value = 0;
+    const gate = ctx.createGain(); gate.gain.value = 0; gate.connect(dest);
     const envSrc = shapeLoop(ctx, (u) => breathEnv(u, inn, exh), T);
     envSrc.connect(gate.gain);
-    src.connect(lp); lp.connect(gate); gate.connect(dest);
-    src.start(); brightSrc.start(); envSrc.start();
-    // ONDA 6 — il passo del respiro puo' cambiare nel tempo (la marea
-    // del respiro rallenta): la velocita' della forma segue il battito.
-    // playbackRate = N * f / sampleRate, con N campioni per ciclo.
-    ritmoRespiro = [brightSrc.playbackRate, envSrc.playbackRate];
-    return [src, brightSrc, envSrc];
+    const brSrc = shapeLoop(ctx, (u) => breathBright(u, inn, exh), T);
+    const NORM = 2.4;
+    const made = [envSrc, brSrc];
+    [[1, 1, false], [2, 0.9, true], [3, 0.5, true]].forEach(([mu, w, dyn]) => {
+      const o = ctx.createOscillator();
+      o.frequency.value = Math.max(1, carrier * mu);
+      const pg = ctx.createGain();
+      if (dyn) {
+        pg.gain.value = 0;
+        const amt = ctx.createGain(); amt.gain.value = w / NORM;
+        brSrc.connect(amt); amt.connect(pg.gain);
+      } else pg.gain.value = w / NORM;
+      o.connect(pg); pg.connect(gate); o.start(); made.push(o);
+    });
+    envSrc.start(); brSrc.start();
+    // ONDA 6 — il passo puo' cambiare (la marea del respiro rallenta):
+    // la velocita' delle forme segue il battito.
+    ritmoRespiro = [envSrc.playbackRate, brSrc.playbackRate];
+    return made;
   };
   let ritmoRespiro = [];
   const RESPIRO_N = 2048;
   const rateDaHz = (hz) => (RESPIRO_N * Math.max(0.02, hz)) / ctx.sampleRate;
 
   let vL = null, vR = null, lfo = null, curCarrier = carrier;
+  const droneVoices = [];
   if (method === 'tone') vL = mkV(carrier, g);
   else if (method === 'breath') {
     respiro(g, beat, cfg.inhale, cfg.exhale).forEach((n) => nodes.push(n));
@@ -438,10 +452,14 @@ export function startCardLive(ctx, cfg, gain, fval) {
     }
   }
   else if (method === 'drone') {
-    // stessi rapporti di DRONE_PARTS: quinta e terza naturali
+    // stessi rapporti di DRONE_PARTS: quinta e terza naturali.
+    // C4 (audit 21/8): le voci si RACCOLGONO, perche' setCarrier deve
+    // muoverle tutte insieme sui loro rapporti — muovere solo la
+    // fondamentale romperebbe l'accordo.
     DRONE_PARTS.forEach(([mu, w]) => {
       const h = ctx.createGain(); h.gain.value = w / DRONE_NORM; h.connect(g);
       const v = mkV(carrier * mu, h);
+      droneVoices.push([v, mu]);
       if (mu === 1) vL = v;
     });
   }
@@ -560,12 +578,25 @@ export function startCardLive(ctx, cfg, gain, fval) {
     },
     setCarrier(v) {
       curCarrier = v; this.carrier = v;
+      if (droneVoices.length) {
+        droneVoices.forEach(([voz, mu]) => voz.set(v * mu));
+        return;
+      }
       vL && vL.set(v); vR && vR.set(v + beat);
     },
     setBeat(v) {
       // da qui comanda l'utente: il tragitto si ferma dov'e' arrivato
       fermaIlTragitto();
       beat = v; this.beat = v; this.sweepTo = null;
+      // C4 — il passo del respiro e' il playbackRate delle sue forme:
+      // senza questo, il campo sulla scheda sarebbe un comando finto
+      if (ritmoRespiro.length) {
+        ritmoRespiro.forEach((param) => {
+          param.cancelScheduledValues(ctx.currentTime);
+          param.setTargetAtTime(rateDaHz(v), ctx.currentTime, 0.2);
+        });
+        return;
+      }
       if (lfo) lfo.frequency.setTargetAtTime(Math.max(0.05, v), ctx.currentTime, 0.05);
       vR && vR.set(curCarrier + v);
     },
@@ -725,29 +756,35 @@ export function startPreview(ctx, score,
       ? Math.min(3000, Math.max(120, Math.ceil((span / Math.max(2, l.period || WAVE_PERIOD_SEC)) * 24)))
       : 120;
     if (l.method === 'breath') {
-      /* Stessa catena della scheda (rumore bianco → passa-basso
-         pilotato dalla fase → volume): qui i nodi partono e si
-         fermano con la barra del livello. */
+      /* AUDIT §5 — stessa guida della scheda: un accordo dentro
+         l'inviluppo del respiro, armoniche aperte dalla fase. Qui i
+         nodi partono e si fermano con la barra del livello. */
       const T = 1 / Math.max(0.02, l.f0 || 0.1);
-      const src = ctx.createBufferSource();
-      src.buffer = pinkBuf(ctx, 'white'); src.loop = true;
-      const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass'; lp.Q.value = 0.7; lp.frequency.value = 180;
-      const brightSrc = shapeLoop(ctx, (u) => breathBright(u, l.inhale, l.exhale), T);
-      const brightAmt = ctx.createGain(); brightAmt.gain.value = 4200;
-      brightSrc.connect(brightAmt); brightAmt.connect(lp.frequency);
-      const gate = ctx.createGain(); gate.gain.value = 0;
+      const gate = ctx.createGain(); gate.gain.value = 0; gate.connect(g);
       const envSrc = shapeLoop(ctx, (u) => breathEnv(u, l.inhale, l.exhale), T);
       envSrc.connect(gate.gain);
-      src.connect(lp); lp.connect(gate); gate.connect(g);
+      const brSrc = shapeLoop(ctx, (u) => breathBright(u, l.inhale, l.exhale), T);
+      const NORM = 2.4;
+      const made = [envSrc, brSrc];
+      [[1, 1, false], [2, 0.9, true], [3, 0.5, true]].forEach(([mu, w, dyn]) => {
+        const o = ctx.createOscillator();
+        o.frequency.value = Math.max(1, l.carrier * mu);
+        const pg = ctx.createGain();
+        if (dyn) {
+          pg.gain.value = 0;
+          const amt = ctx.createGain(); amt.gain.value = w / NORM;
+          brSrc.connect(amt); amt.connect(pg.gain);
+        } else pg.gain.value = w / NORM;
+        o.connect(pg); pg.connect(gate); made.push(o);
+      });
       // il passo puo' cambiare lungo la barra (marea del respiro):
       // stessa freqAt del render, stessa conversione in playbackRate
       if (l.f0 !== l.f1) {
         const N = 2048;
-        [brightSrc, envSrc].forEach((n) => rampCurve(n.playbackRate, s0, span,
+        [envSrc, brSrc].forEach((n) => rampCurve(n.playbackRate, s0, span,
           (u) => (N * Math.max(0.02, freqAt(l, u, span))) / ctx.sampleRate, 200, now));
       }
-      [src, brightSrc, envSrc].forEach((n) => {
+      made.forEach((n) => {
         n.start(at(s0)); n.stop(at(s0 + span)); nodes.push(n);
       });
     } else if (l.method === 'shepard') {

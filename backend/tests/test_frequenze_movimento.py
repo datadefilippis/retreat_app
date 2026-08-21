@@ -79,7 +79,9 @@ class TestLeSchedeSiMuovonoOnda1:
         assert "cancelScheduledValues" in ferma and "setValueAtTime" in ferma, \
             "senza fissare il valore corrente il parametro salta"
         page = PAGE.read_text()
-        onchange = page.split("live.setBeat(v)")[1][:600]
+        # C4: setBeat ora converte i respiri/min, quindi l'ancora e'
+        # la chiamata, non la firma esatta
+        onchange = page.split("live.setBeat(")[1][:700]
         assert "setLiveKeys(Object.keys(liveCardsRef.current))" in onchange, \
             "la scheda continuerebbe a dire «in movimento» a comando preso"
         # `handles` e' una variabile locale di toggleCard: usarla qui
@@ -413,16 +415,22 @@ class TestRespiroVeroOnda6:
 
     def test_le_due_fasi_si_distinguono_al_timbro(self):
         """A occhi chiusi la forma da sola non basta: serve un segno
-        che dica in che meta' del respiro sei."""
+        che dica in che meta' del respiro sei. AUDIT §5: il segno sono
+        le ARMONICHE della stessa nota (2ª e 3ª) che si aprono
+        inspirando — non piu' un filtro su un rumore che fingeva di
+        essere aria (misurato 1,26x di apertura, forma 3,5/4,8/1,8)."""
         src = SYNTH.read_text()
         assert "export function breathBright" in src
-        # nel render: un passa-basso a un polo pilotato dalla fase
         analitico = src.split("if (l.method === 'breath')")[1].split("\n  }")[0]
-        assert "breathBright(ph" in analitico and "l._lp" in analitico
-        # nell'anteprima: un biquad, stessa forma
+        assert "breathBright(ph" in analitico
+        assert "Math.sin(th * 2)" in analitico and "Math.sin(th * 3)" in analitico, \
+            "le armoniche che aprono la voce sono sparite"
+        # e niente rumore: la guida e' dichiaratamente un tono
+        assert "Math.random" not in analitico, \
+            "il respiro e' tornato a fingere di essere aria"
+        # nell'anteprima: stesse forme in loop
         assert src.count("breathBright(u") >= 2, \
             "l'anteprima non cambia timbro: le due fasi diventano uguali"
-        assert "lowpass" in src
 
     def test_il_passo_del_respiro_segue_il_battito_ovunque(self):
         """La «marea del respiro» rallenta: se rallentasse solo nel
@@ -460,3 +468,75 @@ class TestRespiroVeroOnda6:
                 "una scheda del respiro suona ancora come un'onda del mare"
         # e il testo non promette piu' un'onda
         assert "non di un’onda" in blocco or "non di un'onda" in blocco
+
+
+class TestAuditPreGoLive:
+    """Audit di consistenza (21/8, docs/SOUND_CONSISTENZA_AUDIT_2026-08.md):
+    niente comandi finti, niente promesse plurali con audio singolare,
+    e un respiro che non finge."""
+
+    def test_c4_nessun_campo_morto_sulle_schede_live(self):
+        """Bordone, discesa e respiro mostravano un «battito» collegato
+        a niente: un comando finto fa sembrare finto tutto il resto."""
+        page = PAGE.read_text()
+        assert "live.method !== 'shepard' && (" in page, \
+            "la discesa mostra un campo che non comanda nulla"
+        assert "'respiri/min'" in page and "v / 60" in page, \
+            "il respiro non ha il suo comando (o non converte da respiri/min)"
+        src = SYNTH.read_text()
+        assert "droneVoices" in src, \
+            "setCarrier sul bordone muoverebbe solo la fondamentale"
+        setbeat = src.split("setBeat(v)")[1].split("},")[0]
+        assert "ritmoRespiro" in setbeat, \
+            "il campo del respiro sulla scheda e' di nuovo un comando finto"
+
+    def test_c5_il_muto_agisce_al_vivo_e_il_resto_e_dichiarato(self):
+        page = PAGE.read_text()
+        patch = page.split("const patchLayer")[1].split("};")[0]
+        assert "patch.mute !== undefined" in patch, \
+            "il muto cambia lo stato ma il livello continua a suonare"
+        assert 'data-testid="fq-live-hint"' in page, \
+            "nessuno dice quali modifiche agiscono subito e quali no"
+
+    def test_c6_ogni_metodo_dice_se_serve_la_cuffia(self):
+        page = PAGE.read_text()
+        listen = page.split("const LISTEN = {")[1].split("};")[0]
+        for m in ("bin", "iso", "mono", "bil", "noise", "tone",
+                  "drone", "shepard", "breath"):
+            assert f"{m}:" in listen, f"il metodo {m} non dice cuffie/altoparlante"
+
+    def test_c1_le_armoniche_di_schumann_suonano_la_serie(self):
+        """La riga prometteva quattro modi e l'audio ne suonava uno:
+        ora attraversa la serie a gradini (14,3 → 33) e il testo dice
+        cosa si ascolta."""
+        bib = BIB.read_text()
+        scheda = bib.split("{t:'Armoniche di Schumann'")[1].split("},")[0]
+        assert "curve:'steps'" in scheda and "f1:33" in scheda, \
+            "la scheda promette i modi al plurale e ne suona uno"
+        assert "Cosa ascolti qui" in scheda
+
+    def test_c2_gamma_e_40hz_dichiarano_lo_stesso_stimolo(self):
+        bib = BIB.read_text()
+        assert bib.count("Nota di trasparenza") >= 2, \
+            "due schede suonano identiche senza dirlo"
+
+    def test_s4_i_metodi_dicono_cosa_si_ascolta(self):
+        """Un metodo non E' una frequenza, ma la scheda SUONA un esempio
+        preciso: i suoi numeri vanno detti, come ovunque nel catalogo."""
+        bib = BIB.read_text()
+        metodi = bib.split("'Metodi':[")[1]
+        righe = re.findall(r"hz:'((?:[^'\\]|\\.)*)'", metodi)
+        senza = [r for r in righe if "in ascolto" not in r]
+        assert not senza, f"schede Metodi senza i numeri in ascolto: {senza}"
+
+    def test_s5_la_guida_del_respiro_non_finge(self):
+        bib = BIB.read_text()
+        scheda = bib.split("{t:'Respiro lento'")[1].split("},")[0]
+        assert "Non imita un respiro" in scheda
+        assert "astratto" in scheda, \
+            "il testo non dichiara la natura del suono"
+        # tutte e tre le guide hanno la loro nota
+        blocco = bib.split("'Ritmi del corpo':[")[1].split("'Metodi':[")[0]
+        for r in [b for b in blocco.split("{t:'")
+                  if b.startswith(("Respiro", "Marea"))]:
+            assert "carrier:110" in r, "una guida e' rimasta senza la sua nota"
