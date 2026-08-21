@@ -13,18 +13,26 @@ v2 (FV1, 19/8): aggiunge il layer `kind:'voice'` (spezzone registrato
 dall'operatore, con effetto selezionabile) e il flag `voice_duck` (le
 basi si abbassano sotto la voce). Una ricetta si salva v2 SOLO se usa
 la voce: tutto il pregresso resta v1, byte per byte.
+
+v3 (ONDA 2, 21/8): aggiunge la curva `wave` e il campo `period` — il
+battito non va piu' solo da f0 a f1, puo' andare e TORNARE all'infinito
+(una marea). Stessa regola: una ricetta sale a v3 SOLO se una marea
+c'e' davvero. Le tre curve monotone restano identiche, e una ricetta
+salvata ieri suona oggi byte per byte com'era.
 """
 
 SCORE_VERSION = 1
 SCORE_VERSION_VOICE = 2
-ACCEPTED_VERSIONS = (None, SCORE_VERSION, SCORE_VERSION_VOICE)
+SCORE_VERSION_WAVE = 3
+ACCEPTED_VERSIONS = (None, SCORE_VERSION, SCORE_VERSION_VOICE,
+                     SCORE_VERSION_WAVE)
 
 # preset effetto voce (engine/voicefx.js e' il gemello: tenerli allineati)
 VOICE_FX = ("natural", "dream", "temple", "whisper")
 
 METHODS = ("bin", "iso", "mono", "bil", "noise", "tone")
 TIMBRES = ("pure", "warm")
-CURVES = ("lin", "exp", "steps")
+CURVES = ("lin", "exp", "steps", "wave")
 INTENTS = ("dormire", "meditare", "rilassare", "concentrare",
            "elaborare", "energizzare")
 
@@ -35,6 +43,9 @@ PHASES_MAX = 12
 BEAT_MIN, BEAT_MAX = 0.2, 60.0                 # Hz del battito
 BIL_BEAT_MAX = 3.0                             # alternanza dx/sx tipica 0.5-1.5
 CARRIER_MIN, CARRIER_MAX = 20.0, 2000.0        # Hz della portante / tono
+# ONDA 2 — il periodo della marea: sotto i 2 s non e' piu' un movimento
+# ma un vibrato; sopra i 10 min il ritorno non si percepirebbe.
+PERIOD_MIN, PERIOD_MAX, PERIOD_DEFAULT = 2.0, 600.0, 40.0
 TITLE_MAX = 120
 DESCRIPTION_MAX = 2000
 
@@ -122,6 +133,11 @@ def clean_layer(raw, duration):
         "breath": bool(raw.get("breath", True)),
         "mute": bool(raw.get("mute", False)),
     }
+    # ONDA 2 — il periodo esiste solo per la marea: sugli altri livelli
+    # sarebbe un campo muto che confonde chi legge il documento
+    if layer["curve"] == "wave":
+        layer["period"] = round(
+            _num(raw.get("period"), PERIOD_MIN, PERIOD_MAX, PERIOD_DEFAULT), 2)
     return layer
 
 
@@ -157,9 +173,12 @@ def clean_score(raw):
     phases.sort(key=lambda p: p["t"])
     voice_duck = bool(raw.get("voice_duck", False))
     has_voice = any(l.get("kind") == "voice" for l in layers)
+    has_wave = any(l.get("curve") == "wave" for l in layers)
     score = {
-        # v2 solo dove serve: il pregresso senza voce resta v1 identico
-        "score_version": SCORE_VERSION_VOICE if (has_voice or voice_duck)
+        # la versione sale SOLO dove serve: il pregresso resta identico.
+        # v3 (marea) ha la precedenza su v2 perche' la include.
+        "score_version": SCORE_VERSION_WAVE if has_wave
+                         else SCORE_VERSION_VOICE if (has_voice or voice_duck)
                          else SCORE_VERSION,
         "duration_sec": round(duration, 1),
         "fade_in_sec": round(_num(raw.get("fade_in_sec"), 0, 120, 10), 1),

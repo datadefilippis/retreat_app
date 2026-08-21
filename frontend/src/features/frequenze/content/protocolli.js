@@ -20,6 +20,9 @@ const layer = (cfg) => ({
   f0: cfg.f0 ?? 10,
   f1: cfg.f1 ?? cfg.f0 ?? 10,
   curve: cfg.curve || 'lin',
+  // ONDA 2 — il periodo viaggia solo con la marea (come nel modello:
+  // sugli altri livelli sarebbe un campo muto)
+  ...(cfg.curve === 'wave' ? { period: cfg.period ?? 40 } : {}),
   start: cfg.start ?? 0,
   end: cfg.end ?? cfg.duration,
   gain: cfg.gain ?? 0.25,

@@ -25,12 +25,28 @@ export const METHOD_LABELS = Object.freeze({
   bil: 'bilaterale', noise: 'soffio', tone: 'tono puro',
 });
 export const CURVE_LABELS = Object.freeze({
-  lin: 'costante', exp: 'naturale', steps: 'a gradini',
+  lin: 'costante', exp: 'naturale', steps: 'a gradini', wave: 'a onda',
 });
 
-/** Frequenza del battito al tempo u dentro una barra lunga span. */
+/** ONDA 2 (21/8) — periodo di default della marea, in secondi: lungo
+ *  abbastanza da essere un movimento e non un vibrato. */
+export const WAVE_PERIOD_SEC = 40;
+
+/** Frequenza del battito al tempo u dentro una barra lunga span.
+ *
+ *  ONDA 2 — la curva `wave` non e' un tragitto ma una MAREA: il
+ *  battito va da f0 a f1 e TORNA, all'infinito, con periodo `period`.
+ *  Le altre tre curve vanno da un valore all'altro una volta sola.
+ *  Formula: f0 + (f1-f0) * (1 - cos(2π u / period)) / 2 — parte da f0,
+ *  tocca f1 a meta' periodo, e' derivabile ovunque (nessuno scatto).
+ *  E' l'unico posto dove questa forma vive: render analitico e
+ *  anteprima WebAudio la leggono entrambi da qui. */
 export function freqAt(l, u, span) {
   if (l.f0 === l.f1) return l.f0;
+  if (l.curve === 'wave') {
+    const T = Math.max(2, l.period || WAVE_PERIOD_SEC);
+    return l.f0 + (l.f1 - l.f0) * (1 - Math.cos((TAU * u) / T)) / 2;
+  }
   const x = Math.min(1, Math.max(0, u / span));
   if (l.curve === 'exp' && l.f0 > 0 && l.f1 > 0) {
     return l.f0 * Math.pow(l.f1 / l.f0, x);
@@ -161,7 +177,8 @@ export function startCardLive(ctx, cfg, gain, fval) {
     ? cfg.f1 : null;
   const curve = cfg.curve || 'lin';
   const t0 = ctx.currentTime;
-  const beatAt = (u) => freqAt({ f0: beat, f1: sweepTo, curve }, u, CARD_SWEEP_SEC);
+  const beatAt = (u) => freqAt(
+    { f0: beat, f1: sweepTo, curve, period: cfg.period }, u, CARD_SWEEP_SEC);
   const nodesBreath = [];
   // Il respiro vive su un nodo IN SERIE, non sommato al volume: un
   // LFO agganciato a g.gain aggiungerebbe ±0,08 in assoluto (cioe'
@@ -202,6 +219,10 @@ export function startCardLive(ctx, cfg, gain, fval) {
       // ogni parziale segue il tragitto sul suo multiplo
       sweep(draw, fn) {
         vs.forEach(([o, mu]) => draw(o.frequency, (u) => Math.max(1, fn(u) * mu)));
+      },
+      // idem per la marea: valore centrale e ampiezza scalano insieme
+      tide(modula, center) {
+        vs.forEach(([o, mu]) => { o.frequency.value = Math.max(1, center * mu); modula(o.frequency, mu); });
       },
     };
   };
@@ -249,7 +270,32 @@ export function startCardLive(ctx, cfg, gain, fval) {
      (isocronico, bilaterale, soffio). Campionato come rampCurve, con la
      curva dichiarata dalla scheda; all'arrivo il valore resta. */
   const sweepParams = [];
-  if (sweepTo != null) {
+  /* ONDA 2 — la MAREA in una scheda e' infinita, quindi non si puo'
+     disegnare: si GENERA. Un oscillatore a 1/periodo Hz, con forma
+     -cos (periodic wave: real=[0,-1]), sommato al valore centrale
+     riproduce ESATTAMENTE la formula di freqAt —
+       f0 + (f1-f0)(1-cos(2πu/T))/2  =  mid - amp·cos(2πu/T)
+     — per sempre e con due nodi, invece che con migliaia di rampe
+     schedulate. La stessa marea che il render calcola punto per punto. */
+  const isMarea = curve === 'wave' && sweepTo != null;
+  if (isMarea) {
+    const T = Math.max(2, cfg.period || WAVE_PERIOD_SEC);
+    const mid = (beat + sweepTo) / 2, amp = (sweepTo - beat) / 2;
+    const pw = ctx.createPeriodicWave(
+      new Float32Array([0, -1]), new Float32Array([0, 0]));
+    const modula = (param, mu = 1) => {
+      const osc = ctx.createOscillator(), amt = ctx.createGain();
+      osc.setPeriodicWave(pw);
+      osc.frequency.value = 1 / T;
+      amt.gain.value = amp * mu;
+      osc.connect(amt); amt.connect(param);
+      osc.start();
+      nodes.push(osc);
+      sweepParams.push(param);
+    };
+    if (lfo) { lfo.frequency.value = Math.max(0.05, mid); modula(lfo.frequency); }
+    if (vR) vR.tide(modula, carrier + mid);
+  } else if (sweepTo != null) {
     const steps = 240;
     const draw = (param, fn) => {
       param.cancelScheduledValues(t0);
@@ -274,11 +320,16 @@ export function startCardLive(ctx, cfg, gain, fval) {
 
   return {
     method, carrier, beat, gain,
-    // dove sta andando: la scheda lo mostra mentre suona
-    sweepTo, sweepSec: sweepTo != null ? CARD_SWEEP_SEC : 0,
+    // che movimento sta facendo: la scheda lo racconta mentre suona
+    sweepTo, marea: isMarea,
+    sweepSec: sweepTo != null ? CARD_SWEEP_SEC : 0,
+    periodo: isMarea ? Math.max(2, cfg.period || WAVE_PERIOD_SEC) : 0,
+    da: beat,
     beatNow() {
       if (sweepTo == null) return beat;
-      return beatAt(Math.min(CARD_SWEEP_SEC, ctx.currentTime - t0));
+      const u = ctx.currentTime - t0;
+      // la marea non si ferma all'arrivo: continua a girare
+      return isMarea ? beatAt(u) : beatAt(Math.min(CARD_SWEEP_SEC, u));
     },
     setGain(v) {
       g.gain.setTargetAtTime(Math.max(0.0001, v), ctx.currentTime, 0.08);
@@ -433,13 +484,23 @@ export function startPreview(ctx, score,
       parts.forEach(([m, w]) => {
         const o = ctx.createOscillator(), og = ctx.createGain();
         og.gain.value = w;
-        rampCurve(o.frequency, s0, span, (u) => Math.max(1, fFn(u) * m), 120, now);
+        rampCurve(o.frequency, s0, span, (u) => Math.max(1, fFn(u) * m), passi, now);
         o.connect(og); og.connect(dest);
         o.start(at(s0)); o.stop(at(s0 + span));
         nodes.push(o);
       });
     };
     const beat = (u) => freqAt(l, u, span);
+    /* ONDA 2 — quanti campioni servono per disegnare questa curva.
+       Le curve monotone si accontentano di 120 punti su tutta la
+       barra; una MAREA no: con periodo 40 s su un livello di 20
+       minuti, 120 punti sono un campione ogni 10 s e la curva
+       ricostruita e' un'altra onda (aliasing puro). Qui si chiedono
+       ~24 campioni per periodo, con un tetto perche' ogni punto e' un
+       evento schedulato. */
+    const passi = l.curve === 'wave'
+      ? Math.min(3000, Math.max(120, Math.ceil((span / Math.max(2, l.period || WAVE_PERIOD_SEC)) * 24)))
+      : 120;
     if (l.method === 'tone') mkVoice(() => l.carrier, g);
     else if (l.method === 'bin') {
       const m = ctx.createChannelMerger(2), gl = ctx.createGain(), gr = ctx.createGain();
@@ -451,7 +512,7 @@ export function startPreview(ctx, score,
     } else if (l.method === 'iso') {
       const gate = ctx.createGain(); gate.gain.value = 0.5; gate.connect(g);
       const lfo = ctx.createOscillator(), la = ctx.createGain(); la.gain.value = 0.5;
-      rampCurve(lfo.frequency, s0, span, (u) => beat(u), 120, now);
+      rampCurve(lfo.frequency, s0, span, (u) => beat(u), passi, now);
       lfo.connect(la); la.connect(gate.gain);
       lfo.start(at(s0)); lfo.stop(at(s0 + span));
       nodes.push(lfo);
@@ -462,7 +523,7 @@ export function startPreview(ctx, score,
       if (pan) {
         pan.connect(g);
         const lfo = ctx.createOscillator(), la = ctx.createGain(); la.gain.value = 1;
-        rampCurve(lfo.frequency, s0, span, (u) => beat(u), 120, now);
+        rampCurve(lfo.frequency, s0, span, (u) => beat(u), passi, now);
         lfo.connect(la); la.connect(pan.pan);
         lfo.start(at(s0)); lfo.stop(at(s0 + span));
         nodes.push(lfo);
@@ -473,7 +534,7 @@ export function startPreview(ctx, score,
       src.buffer = pinkBuf(ctx); src.loop = true;
       const gate = ctx.createGain(); gate.gain.value = 0.8;
       const lfo = ctx.createOscillator(), la = ctx.createGain(); la.gain.value = 0.8;
-      rampCurve(lfo.frequency, s0, span, (u) => beat(u), 120, now);
+      rampCurve(lfo.frequency, s0, span, (u) => beat(u), passi, now);
       lfo.connect(la); la.connect(gate.gain);
       src.connect(gate); gate.connect(g);
       src.start(at(s0)); src.stop(at(s0 + span));

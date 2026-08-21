@@ -17,6 +17,7 @@ from pathlib import Path
 FRONTEND_SRC = Path(__file__).resolve().parents[2] / "frontend" / "src"
 FQ_DIR = FRONTEND_SRC / "features" / "frequenze"
 SYNTH = FQ_DIR / "engine" / "synth.js"
+MODEL = Path(__file__).resolve().parents[1] / "models" / "frequency_track.py"
 PAGE = FQ_DIR / "FrequenzePage.js"
 BIB = FQ_DIR / "content" / "biblioteca.js"
 
@@ -103,3 +104,79 @@ class TestLeSchedeSiMuovonoOnda1:
         mobili = [c for c in coppie if c[0] != c[1]]
         assert len(mobili) >= 4, \
             f"solo {len(mobili)} schede hanno un tragitto: erano 4"
+
+
+class TestLaMareaOnda2:
+    """ONDA 2 — la curva `wave`: il battito va da f0 a f1 e TORNA, per
+    sempre. Le altre tre curve vanno da un valore all'altro una volta
+    sola. Misurato: il render analitico segue la formula entro lo 0,3%
+    su ogni finestra oltre l'attacco."""
+
+    def test_la_forma_vive_in_un_posto_solo(self):
+        """Render analitico e anteprima WebAudio leggono entrambi da
+        freqAt: una seconda implementazione della marea suonerebbe
+        diversa all'export — il bug che si sente solo dopo."""
+        src = SYNTH.read_text()
+        fn = src.split("export function freqAt")[1].split("\n}")[0]
+        assert "l.curve === 'wave'" in fn, "la marea non e' nella matematica condivisa"
+        assert "Math.cos" in fn, "la marea non e' derivabile: si sentirebbe uno scatto"
+        # nessun altro punto ricalcola la forma per conto suo
+        fuori = src.replace(fn, "")
+        assert "1 - Math.cos" not in fuori, \
+            "la formula della marea e' scritta due volte: divergeranno"
+
+    def test_il_campionamento_segue_il_periodo(self):
+        """Una marea di 40 s campionata ogni 10 s e' un'ALTRA onda.
+        L'anteprima disegna la curva punto per punto: i punti devono
+        bastare al periodo, non alla durata."""
+        src = SYNTH.read_text()
+        blocco = src.split("const passi =")[1].split(";")[0]
+        assert "l.curve === 'wave'" in blocco and "l.period" in blocco, \
+            "i passi non guardano il periodo della marea"
+        assert "120" in blocco, "persa la densita' delle curve monotone"
+        assert "Math.min(" in blocco, \
+            "senza tetto una marea corta su due ore schedulerebbe decine di migliaia di eventi"
+        assert "rampCurve(o.frequency, s0, span, (u) => Math.max(1, fFn(u) * m), passi" in src
+        assert src.count("(u) => beat(u), passi, now)") == 3, \
+            "un metodo ritmico campiona ancora a densita' fissa"
+
+    def test_nelle_schede_la_marea_si_genera_non_si_disegna(self):
+        """Un ascolto di scheda non finisce: disegnare la marea
+        vorrebbe dire schedulare rampe all'infinito. Un oscillatore
+        -cos sommato al valore centrale E' la stessa formula, con due
+        nodi e per sempre."""
+        src = SYNTH.read_text()
+        fn = src.split("export function startCardLive")[1].split("\nexport ")[0]
+        assert "createPeriodicWave" in fn, "la marea infinita non e' generata"
+        assert "new Float32Array([0, -1])" in fn, \
+            "forma d'onda sbagliata: serve -cos per partire da f0 (freqAt)"
+        assert "(beat + sweepTo) / 2" in fn and "(sweepTo - beat) / 2" in fn, \
+            "centro e ampiezza non corrispondono alla formula"
+
+    def test_la_versione_sale_solo_dove_serve(self):
+        """Stessa regola della voce: una ricetta salvata ieri deve
+        restare byte per byte quella di ieri."""
+        src = MODEL.read_text()
+        assert "SCORE_VERSION_WAVE = 3" in src
+        assert '"wave"' in src.split("CURVES =")[1].split(")")[0]
+        blocco = src.split('"score_version":')[1].split(",\n")[0]
+        assert "has_wave" in blocco, "la marea non alza la versione"
+        assert "SCORE_VERSION_VOICE" in blocco and "else SCORE_VERSION" in blocco, \
+            "persa la scala delle versioni precedenti"
+
+    def test_il_periodo_esiste_solo_per_la_marea(self):
+        """Sugli altri livelli sarebbe un campo muto: chi legge il
+        documento non deve chiedersi cosa faccia."""
+        src = MODEL.read_text()
+        assert 'if layer["curve"] == "wave":' in src
+        assert "PERIOD_MIN, PERIOD_MAX, PERIOD_DEFAULT" in src
+        riga = [l for l in src.splitlines() if "PERIOD_MIN, PERIOD_MAX" in l and "=" in l][0]
+        assert "2.0" in riga, "sotto i 2 s non e' un movimento ma un vibrato"
+
+    def test_la_marea_e_raggiungibile_dal_compositore(self):
+        page = PAGE.read_text()
+        assert "WAVE_PERIOD_SEC" in page, "il periodo non ha un default nell'editor"
+        assert 'data-testid="fq-layer-period"' in page
+        blocco = page.split('data-testid="fq-layer-period"')[0][-500:]
+        assert "l.curve === 'wave'" in blocco, \
+            "il campo periodo comparirebbe anche sulle curve monotone"

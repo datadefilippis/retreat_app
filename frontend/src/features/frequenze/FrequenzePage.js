@@ -21,7 +21,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { frequenciesAPI } from '../../api/frequencies';
 import {
-  METHOD_LABELS, CURVE_LABELS, startPreview, startCardLive,
+  METHOD_LABELS, CURVE_LABELS, WAVE_PERIOD_SEC, startPreview, startCardLive,
 } from './engine/synth';
 import {
   loadAssetBuffer, resolveAudioLayers, resolveVoiceLayers, fileDuration,
@@ -194,11 +194,14 @@ export default function FrequenzePage() {
   const [voiceDuck, setVoiceDuck] = useState(false);
   const hasVoiceLayers = layers.some((l) => l.kind === 'voice');
 
+  // ONDA 2 — la versione la decide comunque il server (clean_score), ma
+  // il client non deve dichiarare il falso: una marea e' v3.
+  const hasWaveLayers = layers.some((l) => l.curve === 'wave');
   const score = useMemo(() => ({
-    score_version: hasVoiceLayers ? 2 : 1, duration_sec: duration,
+    score_version: hasWaveLayers ? 3 : hasVoiceLayers ? 2 : 1, duration_sec: duration,
     fade_in_sec: fadeIn, fade_out_sec: fadeOut, layers, phases,
     ...(hasVoiceLayers ? { voice_duck: voiceDuck } : {}),
-  }), [duration, fadeIn, fadeOut, layers, phases, hasVoiceLayers, voiceDuck]);
+  }), [duration, fadeIn, fadeOut, layers, phases, hasVoiceLayers, hasWaveLayers, voiceDuck]);
 
   // per l'API: via i campi privati di lavoro (_laneEl e' un nodo DOM —
   // serializzarlo manderebbe in circolo JSON.stringify)
@@ -981,14 +984,32 @@ export default function FrequenzePage() {
                 onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, l.method === 'bil' ? { f0: v, f1: v } : { f0: v }); }} />
               {l.method !== 'bil' && (
                 <>
-                  <span className="lbl" title="Frequenza a fine barra: uguale = ferma, diversa = discesa/salita">a</span>
+                  <span className="lbl" title={l.curve === 'wave'
+                    ? "L'altro estremo della marea: il battito va qui e torna"
+                    : 'Frequenza a fine barra: uguale = ferma, diversa = discesa/salita'}>a</span>
                   <input className="mini" type="number" min="0.2" max="60" step="0.5" value={l.f1}
                     onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { f1: v }); }} />
                   <span className="lbl">Hz</span>
                   <select className="minisel" value={l.curve}
-                    onChange={(e) => patchLayer(l.id, { curve: e.target.value })}>
+                    onChange={(e) => {
+                      const curve = e.target.value;
+                      // ONDA 2 — scegliendo la marea il periodo deve
+                      // esistere subito: senza, il campo nascerebbe vuoto
+                      patchLayer(l.id, curve === 'wave' && l.period == null
+                        ? { curve, period: WAVE_PERIOD_SEC } : { curve });
+                    }}>
                     {Object.entries(CURVE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                   </select>
+                  {l.curve === 'wave' && (
+                    <>
+                      <span className="lbl" title="Quanto dura un giro completo: andata e ritorno">ogni</span>
+                      <input className="mini" type="number" min="2" max="600" step="5"
+                        data-testid="fq-layer-period"
+                        value={l.period ?? WAVE_PERIOD_SEC}
+                        onChange={(e) => { const v = +e.target.value; if (!isNaN(v)) patchLayer(l.id, { period: v }); }} />
+                      <span className="lbl">s</span>
+                    </>
+                  )}
                 </>
               )}
             </>

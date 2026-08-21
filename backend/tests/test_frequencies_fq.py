@@ -54,8 +54,14 @@ class TestScoreModelFq0:
         assert clean_score({}) is None
         assert clean_score({"layers": []}) is None
         assert clean_score({"layers": [{"method": "telepatia"}]}) is None
-        # versioni future mai degradate in silenzio (v2 = voce, e' nostra)
-        assert clean_score({"score_version": 3,
+        # Versioni FUTURE mai degradate in silenzio. La sentinella e'
+        # sempre «la prima che non esiste ancora»: era 3, ma dal 21/8 la
+        # v3 e' nostra (ONDA 2, la marea). Si sposta la sentinella, non
+        # si toglie la guardia — e' quella che impedisce di aprire una
+        # ricetta del futuro fingendo di capirla.
+        from models.frequency_track import ACCEPTED_VERSIONS
+        futura = max(v for v in ACCEPTED_VERSIONS if v) + 1
+        assert clean_score({"score_version": futura,
                             "layers": VALID_SCORE["layers"]}) is None
 
     def test_valori_fuori_range_riportati(self):
