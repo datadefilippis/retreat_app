@@ -1443,20 +1443,23 @@ class TestMeditazioniMd:
     MED = FQ_DIR / "MeditazioniPage.js"
 
     def test_cursore_vivo(self):
+        """TS2: la barra e' il componente SeekBar (segue il dito, un
+        commit per gesto) e il commit passa dal sipario."""
         src = self.PUB.read_text()
-        barra = src.split('data-testid="fqp-seekbar"')[1][:700]
-        assert "onClick" in barra and "getBoundingClientRect" in barra, \
-            "la barra e' di nuovo solo decorativa"
-        assert "playGuarded" in barra, \
-            "il salto scavalca il sipario delle controindicazioni"
+        pezzi = src.split('testid="fqp-seekbar"')
+        assert len(pezzi) == 2, "la barra pubblica non esiste piu'"
+        barra = pezzi[0][-400:] + pezzi[1][:400]
+        assert "<SeekBar" in barra, "la barra non e' piu' il componente condiviso"
+        assert "playGuarded" in barra, (
+            "il salto scavalca il sipario delle controindicazioni")
 
     def test_il_cursore_non_scavalca_l_anteprima(self):
         """Senza sblocco non si puo' saltare oltre i 90 secondi: il
         cancello della Lettera non si aggira col cursore."""
         src = self.PUB.read_text()
-        barra = src.split('data-testid="fqp-seekbar"')[1][:700]
-        assert "if (!unlocked)" in barra and "PREVIEW_SEC" in barra, \
-            "col cursore si arriverebbe in fondo senza sbloccare"
+        barra = src.split('testid="fqp-seekbar"')[1][:400]
+        assert "unlocked" in barra and "PREVIEW_SEC" in barra, (
+            "col cursore si arriverebbe in fondo senza sbloccare")
 
     def test_vie_di_uscita_su_entrambe_le_pagine(self):
         for f in (self.PUB, self.MED):

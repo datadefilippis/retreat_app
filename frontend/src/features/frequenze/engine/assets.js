@@ -9,20 +9,45 @@
 
 import { cleanVoiceBuffer } from './voicefx';
 
-const bufferCache = new Map(); // url → Promise<AudioBuffer>
+const bufferCache = new Map(); // url → { p: Promise<AudioBuffer>, bytes }
 
-export function loadAssetBuffer(ctx, url) {
+/* TS4 — il tetto. Un AudioBuffer decodificato pesa ~0,4 MB al secondo
+   (48 kHz stereo float32): tre basi lunghe superano i 200 MB, e su un
+   telefono e' un crash che arriva dopo, lontano dalla causa. Oltre il
+   tetto si liberano le entrate piu' vecchie NON in uso adesso: chi
+   ascolta non perde niente, chi ha solo ascoltato in passato ricarica. */
+const CACHE_MAX_BYTES = 60 * 1024 * 1024;
+
+function sfoltisci(inUso) {
+  let totale = 0;
+  bufferCache.forEach((v) => { totale += v.bytes || 0; });
+  if (totale <= CACHE_MAX_BYTES) return;
+  for (const [url, v] of bufferCache) {           // ordine d'inserimento
+    if (inUso.has(url) || !v.bytes) continue;
+    bufferCache.delete(url);
+    totale -= v.bytes;
+    if (totale <= CACHE_MAX_BYTES) break;
+  }
+}
+
+export function loadAssetBuffer(ctx, url, inUso = new Set([url])) {
   if (!bufferCache.has(url)) {
-    const p = fetch(url)
+    const entry = { bytes: 0 };
+    entry.p = fetch(url)
       .then((r) => {
         if (!r.ok) throw new Error(`base non raggiungibile (${r.status})`);
         return r.arrayBuffer();
       })
       .then((ab) => ctx.decodeAudioData(ab))
+      .then((buf) => {
+        entry.bytes = buf.length * buf.numberOfChannels * 4;
+        sfoltisci(inUso);
+        return buf;
+      })
       .catch((e) => { bufferCache.delete(url); throw e; });
-    bufferCache.set(url, p);
+    bufferCache.set(url, entry);
   }
-  return bufferCache.get(url);
+  return bufferCache.get(url).p;
 }
 
 /**
@@ -33,12 +58,14 @@ export function loadAssetBuffer(ctx, url) {
  */
 export async function resolveAudioLayers(ctx, score, soundsById) {
   const out = [];
+  const inUso = new Set((score.layers || [])
+    .map((l) => soundsById[l.asset_id]?.stream_url).filter(Boolean));
   for (const l of (score.layers || [])) {
     if (l.kind !== 'audio' || l.mute || !l.gain) continue;
     const asset = soundsById[l.asset_id];
     if (!asset || !asset.stream_url) continue;
     try {
-      const buffer = await loadAssetBuffer(ctx, asset.stream_url);
+      const buffer = await loadAssetBuffer(ctx, asset.stream_url, inUso);
       out.push({ id: l.id, buffer, start: l.start, end: l.end,
                  gain: l.gain, loop: l.loop !== false, mute: false });
     } catch (e) { /* base saltata: meglio una sessione parziale che muta */ }
@@ -59,7 +86,9 @@ export async function resolveVoiceLayers(ctx, score, voiceById) {
     const asset = voiceById[l.asset_id];
     if (!asset || !asset.stream_url) continue;
     try {
-      const raw = await loadAssetBuffer(ctx, asset.stream_url);
+      const raw = await loadAssetBuffer(ctx, asset.stream_url,
+        new Set((score.layers || [])
+          .map((l2) => voiceById[l2.asset_id]?.stream_url).filter(Boolean)));
       // FV5 — pulizia deterministica (trim, gate, declick, normalize):
       // il file resta intatto, il buffer suona pulito ovunque uguale
       const buffer = cleanVoiceBuffer(ctx, raw);

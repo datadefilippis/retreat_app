@@ -16,7 +16,7 @@ import { frequenciesAPI } from '../../api/frequencies';
 import { startPreview } from './engine/synth';
 import { resolveAudioLayers, resolveVoiceLayers } from './engine/assets';
 import { avvisoCuffieScore } from './engine/altoparlante';
-import { schermoAcceso, schermoLibero } from './engine/veglia';
+import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import {
   preparaContinuo, continuoDisponibile, continuoSupportato,
 } from './engine/continuo';
@@ -25,6 +25,7 @@ import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import { prova, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
+import SeekBar from './SeekBar';
 
 const PREVIEW_SEC = 90;
 const INTENTS = {
@@ -101,12 +102,14 @@ export default function PublicFrequencyPage() {
     };
   }, [slug]);
 
+  const stopRef = useRef(() => {});
   const stop = () => {
     if (liveRef.current) { liveRef.current.stop(); liveRef.current = null; }
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     if (contRef.current) contRef.current.pause();   // il suo onPause fa il resto
     setPlaying(false);
   };
+  stopRef.current = stop;
   useEffect(() => () => {
     stop();
     // AT3 — il file renderizzato non deve sopravvivere alla pagina
@@ -159,7 +162,10 @@ export default function PublicFrequencyPage() {
       contRef.current.play();
       return;
     }
-    ctxRef.current = ctxRef.current || new (window.AudioContext || window.webkitAudioContext)();
+    if (!ctxRef.current) {
+      ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      sorvegliaContesto(ctxRef.current, () => stopRef.current());
+    }
     const ctx = ctxRef.current;
     await ctx.resume();
     const { audioLayers, voiceLayers } = await caricaLayers(ctx);
@@ -256,7 +262,6 @@ export default function PublicFrequencyPage() {
   if (!track) return <div className="fqz" style={{ minHeight: '100vh' }} />;
 
   const d = track.score.duration_sec;
-  const frac = Math.min(1, elapsed / d);
   const avvisoTelefono = avvisoCuffieScore(track.score);
   const continuoPossibile = unlocked && continuoSupportato()
     && continuoDisponibile(track.score);
@@ -291,35 +296,23 @@ export default function PublicFrequencyPage() {
 
           <SafetyLine onOpen={openReview} />
           <div className="createbar" style={{ position: 'static', marginTop: 16 }}>
-            <button type="button" className="cb-play" data-testid="fqp-play"
+            <button type="button" className={`cb-play${playing ? ' suona' : ''}`} data-testid="fqp-play"
               onClick={() => (playing ? stop() : playGuarded(elapsed >= d - 1 ? 0 : elapsed))}>
               {loadingAudio ? <><span className="prep">◌</span> Preparo…</>
                 : playing ? `⏸ ${fmt(elapsed)}` : elapsed > 0 ? '▶ Riprendi' : '▶ Ascolta'}
             </button>
-            <div className="seekwrap" style={{ display: 'flex' }}>
-              <span className="seek-cur">{fmt(elapsed)}</span>
-              {/* MD (20/8) — la barra era solo decorativa: nessun
-                  gestore, quindi il cursore non si poteva spostare.
-                  Ora si clicca (e si trascina col dito), rispettando
-                  le due regole della pagina: le controindicazioni
-                  passano dal sipario (playGuarded) e senza sblocco non
-                  si va oltre l'anteprima. */}
-              <div className="seekbar" title="Clicca per spostarti nella meditazione"
-                style={{ cursor: 'pointer' }}
-                data-testid="fqp-seekbar"
-                onClick={(e) => {
-                  const r = e.currentTarget.getBoundingClientRect();
-                  const frazione = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-                  let t = frazione * d;
-                  if (!unlocked) t = Math.min(t, PREVIEW_SEC - 1);
-                  setElapsed(t);
-                  playGuarded(t);
-                }}>
-                <div className="seek-fill" style={{ width: `${frac * 100}%` }} />
-                <div className="seek-knob" style={{ left: `${frac * 100}%` }} />
-              </div>
-              <span className="seek-tot">{fmt(d)}</span>
-            </div>
+            {/* TS2 — la barra segue il dito e fa UN commit al
+                rilascio. Le due regole della pagina restano nel
+                commit: sipario (playGuarded) e, senza sblocco, mai
+                oltre l'anteprima. */}
+            <SeekBar cur={elapsed} tot={d} fmt={fmt}
+              testid="fqp-seekbar"
+              titolo="Trascina o tocca per spostarti nella meditazione"
+              onCommit={(tRaw) => {
+                const t = unlocked ? tRaw : Math.min(tRaw, PREVIEW_SEC - 1);
+                setElapsed(t);
+                playGuarded(t);
+              }} />
           </div>
 
           {/* AT1 — l'avviso vive NEL momento del play, non in un

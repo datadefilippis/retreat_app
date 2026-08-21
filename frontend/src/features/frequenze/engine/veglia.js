@@ -51,3 +51,18 @@ export function schermoLibero() {
   voluto = false;
   if (lock) { lock.release().catch(() => {}); lock = null; }
 }
+
+/* TS4 — la sorveglianza del contesto audio. iOS sospende il contesto
+   quando si riprende l'audio (chiamata in arrivo, Siri, cambio app):
+   senza questo aggancio la UI resta su «suona» mentre il suono non
+   c'e' piu' — una bugia identica alla scheda muta del resume mancato.
+   Un listener solo per contesto; al passaggio fuori da 'running' si
+   avvisa la pagina, che ferma la SUA UI (mai il contesto: riprenderlo
+   e' un gesto dell'utente). */
+export function sorvegliaContesto(ctx, onPerso) {
+  if (ctx._fqzSorvegliato) return;
+  ctx._fqzSorvegliato = true;
+  ctx.addEventListener('statechange', () => {
+    if (ctx.state !== 'running') onPerso();
+  });
+}

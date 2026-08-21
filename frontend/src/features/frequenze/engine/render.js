@@ -8,7 +8,7 @@
  * resta lo score (docs/FREQUENZE_PLAN_2026-08.md).
  */
 
-import { neuroSample, neuroSampleInit } from './synth';
+import { neuroSample, neuroSampleInit, attackRelease } from './synth';
 import {
   buildVoiceChain, connectVoiceSources, duckEnvelope, tailSeconds,
 } from './voicefx';
@@ -85,7 +85,7 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
         const src = off.createBufferSource();
         src.buffer = l.buffer; src.loop = l.loop;
         const g = off.createGain(); src.connect(g); g.connect(off.destination);
-        const a = Math.min(6, span * 0.2), r = Math.min(8, span * 0.25);
+        const { a, r } = attackRelease(span);   // TS1a: stessi numeri ovunque
         const ev = (t) => {
           const u = t - l.start;
           if (u <= 0 || u >= span) return 0;

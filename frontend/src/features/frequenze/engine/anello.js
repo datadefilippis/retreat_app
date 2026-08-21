@@ -20,10 +20,10 @@
  *
  * Due accortezze che il calcolo da solo non copre:
  *
- * 1. envAt apre ogni livello con un attacco fino a 12 s e lo chiude con
- *    un rilascio fino a 16 s. Renderizzati dentro l'anello, farebbero
- *    PULSARE il giro. Quindi si renderizza una finestra piu' larga e si
- *    ritaglia il centro, dove il livello e' in tenuta piena.
+ * 1. envAt apre ogni livello con un attacco e lo chiude con un rilascio
+ *    (attackRelease in synth.js — TS1a). Renderizzati dentro l'anello,
+ *    farebbero PULSARE il giro. Quindi si renderizza una finestra piu'
+ *    larga e si ritaglia il centro, dove il livello e' in tenuta piena.
  * 2. rumore e discesa Shepard non hanno fase che torna (il rumore e'
  *    casuale, le voci Shepard accumulano fase per sempre). Per loro
  *    l'aritmetica non basta: interviene la dissolvenza incrociata, che
@@ -34,9 +34,10 @@
 /* Il respiro lento del motore: envAt, `0.08 * Math.sin(TAU*tAbs/26)`.
    Se cambia li', cambia qui — la guardia di parita' lo verifica. */
 export const RESPIRO_MOTORE_SEC = 26;
-/* L'attacco piu' lungo che envAt possa applicare e' 12 s, il rilascio
-   16 s: 30 s di margine per lato tengono il ritaglio in tenuta piena
-   con abbondanza. */
+/* Il margine deve superare attacco+rilascio di envAt (oggi 1,5/2,5 s,
+   TS1a — la guardia tiene i due file d'accordo) E lasciare al motore
+   lo spazio per assestarsi. 30 s: abbondante, e il costo di render e'
+   trascurabile. */
 export const MARGINE_SEC = 30;
 /* La dissolvenza incrociata sulla giunzione. Corta abbastanza da non
    mangiare musica, lunga abbastanza da coprire una discontinuita'. */

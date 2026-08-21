@@ -30,8 +30,8 @@ import {
 import {
   VOICE_PRESETS, buildVoiceChain, cleanVoiceBuffer, connectVoiceSources,
 } from './engine/voicefx';
-import { avvisoCuffie } from './engine/altoparlante';
-import { schermoAcceso, schermoLibero } from './engine/veglia';
+import { avvisoCuffie, avvisoCuffieScore } from './engine/altoparlante';
+import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import { preparaAnello, continuoSupportato } from './engine/continuo';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS, CAT_SLUG, SLUG_CAT } from './content/biblioteca';
@@ -40,6 +40,7 @@ import { PRO_ENTRY } from './links';
 import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
+import SeekBar from './SeekBar';
 
 const fmt = (s) => {
   s = Math.max(0, Math.round(s));
@@ -234,8 +235,13 @@ export default function FrequenzePage() {
     }),
   });
 
+  const persoRef = useRef(() => {});
   const audioCtx = () => {
-    ctxRef.current = ctxRef.current || new (window.AudioContext || window.webkitAudioContext)();
+    if (!ctxRef.current) {
+      ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      // TS4 — se il sistema sospende il contesto, la UI non mente
+      sorvegliaContesto(ctxRef.current, () => persoRef.current());
+    }
     ctxRef.current.resume();
     return ctxRef.current;
   };
@@ -514,6 +520,7 @@ export default function FrequenzePage() {
     setLiveKeys([]);
     fermaAnello();
   };
+  persoRef.current = () => { stopSession(); stopAllCards(); };
   useEffect(() => () => { stopSession(); stopAllCards(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const playSession = async (fromT = 0) => {
@@ -542,7 +549,9 @@ export default function FrequenzePage() {
       if (playTokenRef.current !== token) { setPreparing(false); return; }
     }
     liveRef.current = startPreview(ctx, score,
-      { fromT, audioLayers, voiceLayers: vLayers, voiceDuck });
+      /* TS1b — qui si ascolta per verificare: dissolvenze escluse.
+         Restano nella traccia pubblicata (render e player pubblico). */
+      { fromT, audioLayers, voiceLayers: vLayers, voiceDuck, fades: false });
     setPreparing(false);
     setPlaying(true);
     timerRef.current = setInterval(() => {
@@ -595,7 +604,7 @@ export default function FrequenzePage() {
   };
 
   /* ── schede live (Esplora) — side effect PRIMA del setState ── */
-  const toggleCard = (key, entry) => {
+  const toggleCard = async (key, entry) => {
     const handles = liveCardsRef.current;
     if (handles[key]) {
       handles[key].stop();
@@ -604,6 +613,11 @@ export default function FrequenzePage() {
       return;
     }
     stopSession();
+    /* TS4 — su iOS il contesto puo' essere sospeso (autoplay policy,
+       o un'interruzione): senza QUESTO await la scheda si dichiara in
+       riproduzione e resta muta. playSession gia' attendeva; i due
+       percorsi ora si comportano allo stesso modo. */
+    await audioCtx().resume();
     const cfg = entry.cfg || {};
     // ONDA 1 (21/8) — la scheda parte dal suo f0 e il motore la porta a
     // f1 con la sua curva: prima f1 e curva restavano scritti nei dati
@@ -811,15 +825,22 @@ export default function FrequenzePage() {
   /* ── drag generico (barre, maniglie, fasi) ── */
   const dragX = (e, laneEl, cb) => {
     e.preventDefault(); e.stopPropagation();
+    /* TS2 — capture: il dito che esce dalla barra (su una barra di 20px
+       succede sempre) non perde il gesto. E pointercancel — lo scroll o
+       una chiamata che si riprendono il tocco — pulisce i listener:
+       prima restavano appesi e la barra continuava a seguire fantasmi. */
+    e.currentTarget.setPointerCapture?.(e.pointerId);
     const r = laneEl.getBoundingClientRect();
     let last = e.clientX;
     const move = (ev) => { const dx = (ev.clientX - last) / r.width; last = ev.clientX; cb(dx); };
-    const up = () => {
+    const fine = () => {
       window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointerup', fine);
+      window.removeEventListener('pointercancel', fine);
     };
     window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
+    window.addEventListener('pointerup', fine);
+    window.addEventListener('pointercancel', fine);
   };
 
   /* ── pezzi di UI ── */
@@ -1208,7 +1229,9 @@ export default function FrequenzePage() {
             l.end = v; patchLayer(l.id, { end: v });
           })} />
         </div>
-        {playing && (
+        {elapsed > 0 && (
+          /* TS3 — visibile anche in pausa, fermo sull'ultimo punto:
+             senza, «dove sono?» non aveva risposta a motore fermo. */
           <div className="playhead" style={{ left: `${Math.max(0, (elapsed / duration) * 100)}%` }} />
         )}
       </div>
@@ -1532,7 +1555,7 @@ export default function FrequenzePage() {
         {view === 'create' && (
           <section>
             <div className="createbar">
-              <button type="button" className="cb-play" data-testid="fq-play"
+              <button type="button" className={`cb-play${playing ? ' suona' : ''}`} data-testid="fq-play"
                 disabled={!layers.length}
                 onClick={() => (playing ? stopSession() : playGuarded(0))}>
                 {preparing ? <><span className="prep">◌</span> Preparo…</>
@@ -1596,20 +1619,29 @@ export default function FrequenzePage() {
                   ))}
               </div>
               {layers.length > 0 && (
-                <div className="seekwrap" style={{ display: 'flex' }}>
-                  <span className="seek-cur">{fmt(elapsed)}</span>
-                  <div className="seekbar" title="Clicca per spostarti nella sessione"
-                    onClick={(e) => {
-                      const r = e.currentTarget.getBoundingClientRect();
-                      seekTo(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * duration);
-                    }}>
-                    <div className="seek-fill" style={{ width: `${(elapsed / duration) * 100}%` }} />
-                    <div className="seek-knob" style={{ left: `${(elapsed / duration) * 100}%` }} />
-                  </div>
-                  <span className="seek-tot">{fmt(duration)}</span>
-                </div>
+                <SeekBar cur={elapsed} tot={duration} fmt={fmt}
+                  testid="fq-crea-seekbar"
+                  titolo="Trascina o tocca per spostarti nella sessione"
+                  onCommit={(t) => seekTo(t)} />
               )}
             </div>
+            {/* TS1b — l'anteprima parte a volume pieno: la riga dice
+                DOVE sono finite le dissolvenze, coi numeri veri, o
+                l'operatore crederebbe di aver pubblicato senza. */}
+            {layers.length > 0 && (fadeIn > 0 || fadeOut > 0) && (
+              <div className="continuo-riga" data-testid="fq-nota-fades">
+                Anteprima senza dissolvenze — nella traccia pubblicata
+                entra in {fadeIn}s ed esce in {fadeOut}s.
+              </div>
+            )}
+            {/* TS3 — l'avviso cuffie mancava proprio QUI, dove il
+                founder l'ha cercato: stesso modulo delle altre pagine. */}
+            {playing && avvisoCuffieScore(score) && (
+              <div className="cuffie-avviso solo-telefono-block"
+                data-testid="fq-crea-avviso-cuffie">
+                🎧 {avvisoCuffieScore(score)}
+              </div>
+            )}
 
             <div className="protrow createprot">
               <span className="tag">Parti da un protocollo pronto</span>
@@ -1733,9 +1765,13 @@ export default function FrequenzePage() {
                 <div className="helpstrip">
                   <b>Linea del tempo.</b> Ogni riga è un livello. Trascina la sua barra o scrivi «entra a / esce a» per decidere quando parte e finisce. <b>Battito da → a</b> è la discesa (valori uguali = frequenza ferma), la <b>curva</b> ne è la forma, la <b>portante</b> è il tono che la trasporta.
                 </div>
-                <div className="ruler" title="Clicca per ascoltare da questo punto"
-                  style={{ cursor: 'pointer' }}
-                  onClick={(e) => {
+                <div className="ruler" title="Tocca o trascina per ascoltare da questo punto"
+                  style={{ cursor: 'pointer', touchAction: 'none' }}
+                  onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
+                  onPointerUp={(e) => {
+                    /* TS2 — commit al RILASCIO: un solo riavvio del
+                       motore per gesto, che sia tap o trascinamento. */
+                    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
                     const r = e.currentTarget.getBoundingClientRect();
                     seekTo(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * duration);
                   }}>

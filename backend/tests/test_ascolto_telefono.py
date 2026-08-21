@@ -226,7 +226,7 @@ class TestAnelloAt4:
         rilascio fino a 16 s: renderizzati dentro l'anello farebbero
         PULSARE il giro. Il ritaglio deve cadere in tenuta piena."""
         assert "MARGINE_SEC = 30" in ANELLO
-        assert "Math.min(12, span * 0.3), r = Math.min(16, span * 0.3)" in SYNTH, \
+        assert "Math.min(1.5, span * 0.1)" in SYNTH and "Math.min(2.5, span * 0.15)" in SYNTH, \
             "attacco/rilascio cambiati: il margine dell'anello va ricontrollato"
 
     def test_prima_prova_i_multipli_del_respiro(self):
@@ -360,3 +360,129 @@ class TestAvvisoDiceCosaEIlNumero:
         """La formula vecchia — «140 Hz non esce dall'altoparlante» —
         non deve tornare da nessuna parte."""
         assert "${fmtHz(hz)} Hz non esce dall'altoparlante" not in ALTO
+
+
+SEEKBAR = (FQ_DIR / "SeekBar.jsx").read_text()
+RENDER = (FQ_DIR / "engine" / "render.js").read_text()
+ASSETS = (FQ_DIR / "engine" / "assets.js").read_text()
+
+
+class TestToccoESuonoTs:
+    """
+    Ciclo TS (21/8) — consolidamento mobile dell'area Sound.
+
+    Le radici dei due «bug» del founder («in Crea non si sente nulla»,
+    «il cursore non si sposta») erano: tre dissolvenze moltiplicate
+    (al secondo 3 il volume era al 4,7%) e barre solo-click su un
+    dispositivo dove il gesto naturale e' il drag.
+    """
+
+    def test_una_sola_verita_per_attacco_e_rilascio(self):
+        """TS1a — prima erano 12/16 s nel render e 6/8 s nel live: due
+        gesti diversi per lo stesso livello. Ora attackRelease e' una
+        funzione sola e render/live/anello la importano."""
+        assert "export const attackRelease" in SYNTH
+        assert "attackRelease" in RENDER
+        pulito_s = _senza_commenti(SYNTH)
+        pulito_r = _senza_commenti(RENDER)
+        for vecchio in ("Math.min(12, span", "Math.min(16, span",
+                        "Math.min(6, span * 0.2)", "Math.min(8, span * 0.25)"):
+            assert vecchio not in pulito_s and vecchio not in pulito_r, \
+                f"riapparso un numero locale: {vecchio}"
+
+    def test_l_anteprima_del_compositore_salta_le_dissolvenze(self):
+        """TS1b — in Crea si ascolta per verificare: fades:false. Le
+        dissolvenze restano nel pubblicato: il player pubblico NON
+        passa fades, e il render non conosce proprio l'opzione."""
+        assert "fades = true" in SYNTH            # il default e' fedele
+        assert "fades: false" in PAGE             # solo il compositore
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "fades" not in _senza_commenti(pub), \
+            "il player pubblico ha toccato le dissolvenze: il pubblicato cambia"
+        assert "fades" not in _senza_commenti(RENDER), \
+            "il render ha imparato a saltare le dissolvenze: l'export mente"
+
+    def test_la_nota_dice_dove_sono_finite_le_dissolvenze(self):
+        """Senza questa riga l'operatore crede di aver pubblicato una
+        traccia che parte secca."""
+        assert 'data-testid="fq-nota-fades"' in PAGE
+        blocco = PAGE.split('data-testid="fq-nota-fades"')[1][:300]
+        assert "{fadeIn}" in blocco and "{fadeOut}" in blocco, \
+            "la nota non usa i numeri VERI dell'operatore"
+        prima = PAGE.split('data-testid="fq-nota-fades"')[0][-300:]
+        assert "fadeIn > 0 || fadeOut > 0" in prima, \
+            "la nota comparirebbe anche senza dissolvenze: rumore"
+
+    def test_la_barra_segue_il_dito(self):
+        """TS2 — SeekBar: capture, movimento ottimistico, UN commit al
+        rilascio, e pulizia su cancel E su perdita di capture (successo
+        in verifica: gesto troncato = cursore congelato)."""
+        for pezzo in ("setPointerCapture", "onPointerMove", "onPointerUp",
+                      "onPointerCancel", "onLostPointerCapture"):
+            assert pezzo in SEEKBAR, f"SeekBar senza {pezzo}"
+        assert SEEKBAR.count("onCommit(") == 1, \
+            "piu' commit per gesto = piu' riavvii del motore"
+
+    def test_le_due_pagine_usano_la_stessa_barra(self):
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "<SeekBar" in PAGE and "<SeekBar" in pub
+        # il markup della barra vive SOLO nel componente
+        for nome, src in (("FrequenzePage", PAGE), ("PublicFrequencyPage", pub)):
+            assert 'className="seekbar"' not in src, \
+                f"{nome} si e' ricostruita una barra propria"
+
+    def test_il_righello_commit_al_rilascio(self):
+        blocco = PAGE.split('className="ruler"')[1][:600]
+        assert "onPointerUp" in blocco and "setPointerCapture" in blocco
+        assert "onClick" not in blocco, \
+            "click+pointer insieme = doppio riavvio del motore per tap"
+
+    def test_dragx_sopravvive_alle_interruzioni(self):
+        blocco = PAGE.split("const dragX")[1][:900]
+        assert "setPointerCapture" in blocco
+        assert "pointercancel" in blocco, \
+            "un gesto interrotto lascerebbe la barra a seguire fantasmi"
+
+    def test_si_vede_che_suona(self):
+        """TS3 — il respiro visivo sul play (fermo per chi chiede meno
+        movimento) e il playhead che resta anche in pausa."""
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert PAGE.count("cb-play${playing ? ' suona' : ''}") == 1
+        assert pub.count("cb-play${playing ? ' suona' : ''}") == 1
+        assert "prefers-reduced-motion: no-preference" in \
+            CSS.split("fqz-suona")[0][-200:], \
+            "il respiro visivo ignorerebbe chi chiede quiete"
+        assert "{elapsed > 0 && (" in PAGE   # playhead anche in pausa
+
+    def test_avviso_cuffie_anche_in_crea(self):
+        """Mancava proprio dove il founder l'ha cercato."""
+        assert 'data-testid="fq-crea-avviso-cuffie"' in PAGE
+        blocco = PAGE.split('data-testid="fq-crea-avviso-cuffie"')[0][-400:]
+        assert "avvisoCuffieScore(score)" in blocco
+        assert "solo-telefono-block" in blocco
+
+    def test_le_schede_attendono_il_resume(self):
+        """TS4 — senza await, su iOS una scheda si dichiara in
+        riproduzione e resta muta. playSession attendeva gia': i due
+        percorsi ora si comportano allo stesso modo."""
+        assert "await audioCtx().resume()" in PAGE
+        assert "const toggleCard = async" in PAGE
+
+    def test_il_contesto_e_sorvegliato(self):
+        """Se il sistema sospende l'audio (chiamata, Siri), la UI si
+        ferma invece di mentire. Mai toccare il contesto: riprenderlo
+        e' un gesto dell'utente."""
+        assert "export function sorvegliaContesto" in VEGLIA
+        assert "statechange" in VEGLIA
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "sorvegliaContesto(" in PAGE and "sorvegliaContesto(" in pub
+        assert "ctx.suspend" not in _senza_commenti(VEGLIA)
+
+    def test_la_cache_ha_un_tetto_che_rispetta_chi_ascolta(self):
+        """TS4 — AudioBuffer a 48kHz stereo = ~0,4 MB/s: senza tetto
+        tre basi lunghe superano i 200 MB su telefono. Lo sfoltimento
+        non tocca MAI le basi dello score in ascolto."""
+        assert "CACHE_MAX_BYTES" in ASSETS
+        blocco = ASSETS.split("function sfoltisci")[1][:400]
+        assert "inUso.has(url)" in blocco, \
+            "lo sfoltimento butterebbe basi che stanno suonando"

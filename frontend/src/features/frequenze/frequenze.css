@@ -910,6 +910,16 @@
 .fqz .cuffie-avviso{margin-top:10px;padding:8px 10px;font-size:12.5px;
   line-height:1.5;color:var(--water);border:1px solid rgba(102,183,156,.35);
   border-radius:8px;background:rgba(102,183,156,.07)}
+/* TS3 — quando suona, il pulsante respira: l'occhio sa che il suono
+   c'e' anche quando l'orecchio non ancora (dissolvenze, altoparlante
+   del telefono). Fermo per chi chiede meno movimento. */
+@media (prefers-reduced-motion: no-preference){
+  .fqz .cb-play.suona{animation:fqz-suona 2.6s ease-in-out infinite}
+  @keyframes fqz-suona{
+    0%,100%{box-shadow:0 0 0 0 rgba(102,183,156,0)}
+    50%{box-shadow:0 0 0 6px rgba(102,183,156,.20)}
+  }
+}
 /* AT3 — la riga dell'ascolto continuo, sotto la barra del player */
 .fqz .continuo-riga{margin-top:10px;font-size:12.5px;color:var(--dim)}
 .fqz .continuo-riga.attivo{color:var(--lamp)}

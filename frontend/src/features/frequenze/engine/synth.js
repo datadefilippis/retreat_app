@@ -124,10 +124,25 @@ export function freqAt(l, u, span) {
   return l.f0 + (l.f1 - l.f0) * x;
 }
 
+/* TS1a (21/8, decisione founder) — attacco e rilascio del livello:
+   UNA verita' per render, anteprima live e anello. Prima erano 12/16 s
+   nel render e 6/8 s nel live: due gesti diversi per lo stesso
+   livello, e moltiplicati per la dissolvenza di sessione facevano
+   partire l'ascolto dal silenzio (al secondo 3 il volume era al 4,7%:
+   in Crea sembrava un guasto, sul telefono di piu'). L'anti-click
+   vuole ~20 ms; la morbidezza musicale la governa la dissolvenza di
+   sessione, che l'operatore vede e decide. Qui resta solo un ingresso
+   gentile. NB: cambia anche l'audio delle tracce gia' pubblicate —
+   deciso esplicitamente dal founder (piano TS). */
+export const attackRelease = (span) => ({
+  a: Math.min(1.5, span * 0.1),
+  r: Math.min(2.5, span * 0.15),
+});
+
 /** Inviluppo del livello (attack/release + respiro) al tempo assoluto. */
 export function envAt(l, u, span, tAbs) {
   if (u < 0 || u > span) return 0;
-  const a = Math.min(12, span * 0.3), r = Math.min(16, span * 0.3);
+  const { a, r } = attackRelease(span);
   let e = 1;
   if (u < a) e *= sm(u / a);
   if (span - u < r) e *= sm((span - u) / r);
@@ -643,14 +658,20 @@ const rampCurve = (param, t0, span, fn, steps = 160, now = 0) => {
  * @returns {{stop: fn, elapsed: fn, setLayerGain: fn(id, gain)}}
  */
 export function startPreview(ctx, score,
-  { fromT = 0, audioLayers = [], voiceLayers = [], voiceDuck = false } = {}) {
+  { fromT = 0, audioLayers = [], voiceLayers = [], voiceDuck = false,
+    fades = true } = {}) {
   const d = score.duration_sec;
   const off = Math.max(0, Math.min(fromT || 0, d - 1));
   const t0 = ctx.currentTime + 0.15 - off;
   const nodes = [], liveG = {};
   const sess = ctx.createGain();
   sess.connect(ctx.destination);
-  const fi = score.fade_in_sec || 0, fo = score.fade_out_sec || 0;
+  /* TS1b — in Crea si ascolta per VERIFICARE, non per meditare: il
+     compositore passa fades:false e l'anteprima parte a volume pieno.
+     Le dissolvenze restano nella traccia pubblicata (render e player
+     pubblico non toccano questo default). */
+  const fi = fades ? (score.fade_in_sec || 0) : 0;
+  const fo = fades ? (score.fade_out_sec || 0) : 0;
   const now = ctx.currentTime;
   const startAt = now + 0.15;
   // Col seek in avanti t0 finisce nel passato (anche sotto zero): ogni
@@ -682,7 +703,7 @@ export function startPreview(ctx, score,
     const src = ctx.createBufferSource();
     src.buffer = l.buffer; src.loop = l.loop;
     const g = ctx.createGain(); src.connect(g); g.connect(uG);
-    const a = Math.min(6, span * 0.2), r = Math.min(8, span * 0.25);
+    const { a, r } = attackRelease(span);   // TS1a: stessi numeri del render
     g.gain.setValueAtTime(0.0001, at(s0));
     g.gain.linearRampToValueAtTime(l.gain, at(s0 + a));
     g.gain.setValueAtTime(l.gain, at(s0 + span - r));
