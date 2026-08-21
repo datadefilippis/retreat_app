@@ -106,10 +106,14 @@ class TestFreniAv1:
         assert "quieto" in TELA
 
     def test_pulisce_tutto_allo_smontaggio(self):
-        coda = TELA.split("return () => {")[1][:400]
+        """Due vie (motore 3D e rete 2D), due pulizie: la via 3D fa
+        dispose del motore, la 2D spegne raf/timer/listener."""
+        assert "motoreRef.current.dispose()" in TELA
+        assert "_pulisci?.()" in TELA
+        coda2d = TELA.split("return () => {\n      vivo = false;")[1][:400]
         for pezzo in ("cancelAnimationFrame", "clearTimeout",
                       "removeEventListener", "ro.disconnect"):
-            assert pezzo in coda, f"lasciato acceso: {pezzo}"
+            assert pezzo in coda2d, f"lasciato acceso nella via 2D: {pezzo}"
 
 
 class TestColoriDiCasaAv1:
@@ -162,3 +166,79 @@ class TestTemaComeFunzionePuraAv1:
         coda = SORGENTE.split("globalCompositeOperation = 'lighter'")[1]
         assert "globalCompositeOperation = 'source-over'" in coda, \
             "lighter lasciato acceso: sporcherebbe cio' che disegna dopo"
+
+
+MOTORE = (FQ_DIR / "visual" / "motore3d.js").read_text()
+
+
+class TestMotoreImmersivoAv4:
+    """
+    AV4 — il motore WebGL, adattato dal concept HTML del founder
+    (Three.js, 7 modi nel vertex shader). I trucchi buoni portati
+    com'erano; le regole di casa applicate senza sconti.
+    """
+
+    def test_three_entra_solo_quando_si_guarda(self):
+        """Three pesa ~500KB: nel main sarebbe un dazio per chiunque
+        apre QUALSIASI pagina. Import dinamico, solo qui."""
+        assert "import('./motore3d')" in TELA
+        assert "from 'three'" not in TELA
+        assert "from 'three'" in MOTORE   # l'unico posto
+
+    def test_il_motore_non_tocca_l_audio(self):
+        pulito = _senza_commenti(MOTORE)
+        for vietato in ("createAnalyser", "AudioContext", "getByteFrequencyData"):
+            assert vietato not in pulito, f"il motore tocca l'audio: {vietato}"
+        assert "lettore.leggi()" in MOTORE, \
+            "l'audio deve arrivare dall'unica verita' (analisi.js)"
+
+    def test_le_triadi_sono_di_marca(self):
+        """Ombra→corpo→luce, ma la TINTA e' quella della famiglia: le
+        ombre sono derivate scure degli accenti, dichiarate una volta."""
+        for hex_ in ("#C9B37E", "#66B79C", "#9B8BC4"):
+            assert hex_ in MOTORE, f"manca il corpo di marca {hex_}"
+        trovati = set(re.findall(r"#[0-9A-Fa-f]{6}", MOTORE))
+        ammessi = {"#241D10", "#C9B37E", "#F2E7C8",      # triade oro
+                   "#0E2620", "#66B79C", "#DFF5EC",      # triade acqua
+                   "#1B1630", "#9B8BC4", "#EFE9FA",      # triade viola
+                   "#0E1B1E", "#070E10"}                 # fondale
+        assert trovati <= ammessi, f"colori fuori famiglia: {trovati - ammessi}"
+
+    def test_l_inseguitore_e_asimmetrico(self):
+        """Il segreto musicale del concept: l'energia sale in ~0,25s e
+        scende in ~2s — il colpo si sente, il rumore no. Con un solo
+        tempo la scena o trema o dorme."""
+        assert "0.25" in MOTORE and "2.0" in MOTORE
+        assert "target > cur" in MOTORE
+
+    def test_la_scia_sbiadisce_verso_il_profondo(self):
+        """Il concept insegna: non verso il nero piatto ma verso un
+        gradiente profondo→bordo. E' quello che da' il volume."""
+        assert "uDeep" in MOTORE and "uEdge" in MOTORE
+        assert "smoothstep(.05,.72,r)" in MOTORE
+
+    def test_l_aura_ha_il_dithering(self):
+        """Senza, i gradienti larghi a 8 bit fanno anelli visibili."""
+        assert "Math.random() * 2 - 1" in MOTORE
+
+    def test_i_sette_modi_ci_sono_tutti(self):
+        from_file = re.search(r"export const MODI = \[([^\]]+)\]", MOTORE).group(1)
+        assert from_file.count("'") == 14, "modi persi o aggiunti di nascosto"
+        for u in ("uMode < 0.5", "uMode < 1.5", "uMode < 2.5", "uMode < 3.5",
+                  "uMode < 4.5", "uMode < 5.5"):
+            assert u in MOTORE, f"ramo del vertex shader mancante: {u}"
+
+    def test_si_ferma_quando_nessuno_guarda(self):
+        assert "visibilitychange" in TELA
+        assert "m.ferma()" in TELA
+
+    def test_quiete_significa_niente_galassia(self):
+        """prefers-reduced-motion: una galassia che turbina non e'
+        «movimento ridotto» per nessuna definizione — si resta sul 2D,
+        che in quiete rallenta da solo."""
+        blocco = TELA.split("webgl2 =")[1][:80]
+        assert "!quieto" in blocco
+
+    def test_dispose_completo(self):
+        assert "geo.dispose" in MOTORE and "renderer.dispose" in MOTORE
+        assert "dispose()" in TELA
