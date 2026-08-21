@@ -1043,28 +1043,18 @@ export default function FrequenzePage() {
         {/* SF — sempre a portata, in ogni vista e per chiunque: le
             controindicazioni non si leggono una volta sola */}
         <SafetyButton onClick={openReview} />
-        {canCompose ? (
-          <>
-            <button type="button" className={`backcard${view === 'mine' ? ' on' : ''}`}
-              data-testid="fqz-mine" title="Tutte le tracce che hai creato"
-              onClick={() => setView('mine')}>
-              <span className="bc-ic">♫</span>
-              <span>
-                <span className="bc-t">Le mie tracce</span><br />
-                <span className="bc-s">bozze e pubblicate</span>
-              </span>
-            </button>
-            <button type="button" className="backcard" data-testid="fqz-back"
-              title="Torna al gestionale Aurya"
-              onClick={() => navigate('/dashboard')}>
-              <span className="bc-ic">⌂</span>
-              <span>
-                <span className="bc-t">Gestionale</span><br />
-                <span className="bc-s">torna ad Aurya</span>
-              </span>
-            </button>
-          </>
-        ) : null}
+        {/* DN8 — «Le mie tracce» parla come le altre voci della testata.
+            Il «Gestionale» non e' piu' qui: vive nel menu dell'omino
+            («Il tuo gestionale»), che ogni mondo Aurya ha ormai in
+            alto a destra. */}
+        {canCompose && (
+          <button type="button" className={`tbpill${view === 'mine' ? ' on' : ''}`}
+            data-testid="fqz-mine" title="Tutte le tracce che hai creato"
+            onClick={() => setView('mine')}>
+            <span aria-hidden>♫</span>
+            Le mie tracce
+          </button>
+        )}
       </>} />
       <header>
         <div>

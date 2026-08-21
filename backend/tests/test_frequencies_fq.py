@@ -242,8 +242,15 @@ class TestDesignPrototipoFq05:
         src = (FQ_DIR / "FrequenzePage.js").read_text()
         assert "AppLayout" not in src, \
             "l'app Frequenze e' un prodotto a se': niente guscio gestionale"
-        assert "navigate('/dashboard')" in src, \
-            "manca il ritorno al gestionale dalla testata"
+        # DN8 (21/8): il ritorno al gestionale non e' piu' una carta
+        # nella testata di questa pagina — vive nel menu dell'omino
+        # (lib/cappelli), che qui arriva con SoundTopbar. La via resta,
+        # cambia il posto: e' questo che la guardia deve difendere.
+        assert "<SoundTopbar" in src, \
+            "senza la testata condivisa non c'e' piu' il menu dell'omino"
+        modello = (FRONTEND_SRC / "lib" / "cappelli.js").read_text()
+        assert "'/dashboard'" in modello, \
+            "manca il ritorno al gestionale"
         assert "frequenze.css" in src
         # il sipario di sicurezza c'e' ancora, ma da SF (20/8) si apre
         # davanti al SUONO e il testo vive in content/safety.js
@@ -1137,8 +1144,14 @@ class TestSoundPubblicoSp:
         controlli esistono ancora tutti (solo condizionati)."""
         page = (FQ_DIR / "FrequenzePage.js").read_text()
         for segno in ("'Ferma' : 'Ascolta'", "+ sessione", "Salva bozza",
-                      "fqz-mine", "Gestionale"):
+                      "fqz-mine"):
             assert segno in page, f"perso pezzo operatore: {segno}"
+        # DN8 (21/8): il ritorno al gestionale non e' piu' una carta in
+        # testata — vive nel menu dell'omino, che ogni mondo Aurya ha.
+        # La via NON deve sparire: cambia solo dove sta.
+        modello = (FRONTEND_SRC / "lib" / "cappelli.js").read_text()
+        assert "'/dashboard'" in modello and "account-menu-gestionale" in modello, \
+            "l'operatore non ha piu' la via verso il gestionale"
 
     def test_shell_e_sitemap(self):
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()

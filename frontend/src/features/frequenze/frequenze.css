@@ -309,13 +309,24 @@
 /* DN6 (21/8) — stessa voce delle altre della testata: mono 10px,
    maiuscolo, tracking .12em. Restano il bordo e il rosso: e' un
    avviso, non una voce di menu — ma non deve gridare piu' forte. */
+/* DN8 (21/8) — la FORMA delle voci della testata: una misura sola
+   (quella dell'omino) e un corpo solo. Chi ci sta dentro la eredita e
+   cambia solo il colore — prima ogni voce aveva la sua taglia. */
+.fqz .tbpill{display:inline-flex;align-items:center;gap:7px;height:32px;
+  border:1px solid var(--line);background:transparent;
+  color:var(--dim);border-radius:999px;padding:0 13px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.fqz .tbpill:hover{border-color:var(--lamp);color:var(--lamp)}
+.fqz .tbpill.on{border-color:var(--water);color:var(--water);
+  box-shadow:0 0 0 1px var(--water) inset}
 .fqz .safetybtn{display:inline-flex;align-items:center;height:32px;
   border:1px solid var(--alert);background:transparent;
   color:var(--alert);border-radius:999px;padding:0 13px;
   font-family:var(--mono);font-size:10px;letter-spacing:.12em;
   text-transform:uppercase;cursor:pointer;white-space:nowrap}
 .fqz .safetybtn:hover{background:rgba(224,123,106,.12);color:var(--bone)}
-@media (max-width:640px){.fqz .safetybtn{height:30px;padding:0 10px;font-size:9px;letter-spacing:.08em}}
+@media (max-width:640px){.fqz .safetybtn,.fqz .tbpill{height:30px;padding:0 10px;font-size:9px;letter-spacing:.08em}}
 .fqz /* ============ OTTIMIZZAZIONE MOBILE / TABLET ============ */
   .bar,.fqz .bar .handle,.fqz .phase,.fqz .seekbar,.fqz .seek-knob{touch-action:none}
 .fqz .taptip{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);transform:translateX(-50%) translateY(8px);

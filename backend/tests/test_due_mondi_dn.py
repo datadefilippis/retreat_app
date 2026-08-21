@@ -66,6 +66,14 @@ class TestUnSoloMarchioDn1:
         alt = re.search(r"height:(\d+)px", omino).group(1)
         assert f"height:{alt}px" in safety, \
             f"controindicazioni non alte come l'omino ({alt}px)"
+        # DN8 — e vale per OGNI voce della testata: la forma e' una
+        # sola (.tbpill), il colore cambia. «Le mie tracce» era una
+        # carta a due righe alta il doppio.
+        pill = css.split(".fqz .tbpill{")[1].split("}")[0]
+        assert f"height:{alt}px" in pill, \
+            f"le voci della testata non sono alte come l'omino ({alt}px)"
+        for prop in ("font-size:10px", "letter-spacing:.12em", "text-transform:uppercase"):
+            assert prop in pill, f"voce della testata: manca {prop}"
         topbar = [r for r in css.split(".fqz .topbar{")[1:] if "align-items" in r[:80]]
         assert topbar and "align-items:center" in topbar[0][:80], \
             "la testata stira i figli invece di allinearli"
