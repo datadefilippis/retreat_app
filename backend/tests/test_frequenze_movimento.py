@@ -557,3 +557,49 @@ class TestAuditPreGoLive:
         for r in [b for b in blocco.split("{t:'")
                   if b.startswith("Ritmo del respiro")]:
             assert "carrier:110" in r, "la guida e' rimasta senza la sua nota"
+
+
+class TestLaFirmaDellaBiblioteca:
+    """Il patto che regge Aurya Sound sta in una sezione: «Cosa non
+    sappiamo ancora». Il 21/8 mancava in 10 schede su 36 — le sei
+    bande e le quattro nate nei cicli ONDA 4/5 — non perche' il limite
+    non fosse scritto, ma perche' era nascosto dentro «Cosa dice la
+    ricerca». Un limite senza titolo suo e' un limite che si legge a
+    meta'."""
+
+    def test_ogni_scheda_dichiara_cosa_non_sappiamo(self):
+        import re as _re
+        bib = BIB.read_text()
+        senza = []
+        for blocco in bib.split("{t:'")[1:]:
+            titolo = blocco.split("'")[0]
+            full = _re.search(r"full:'((?:[^'\\]|\\.)*)'", blocco)
+            if not full:
+                senza.append(f"{titolo} (nessun approfondisci)")
+            elif "Cosa non sappiamo ancora" not in full.group(1):
+                senza.append(titolo)
+        assert not senza, \
+            f"schede senza la firma della biblioteca: {senza}"
+
+    def test_ogni_scheda_ha_un_approfondisci_di_sostanza(self):
+        """Non basta esserci: sotto i 400 caratteri non e' un
+        approfondimento, e' una didascalia."""
+        import re as _re
+        bib = BIB.read_text()
+        corte = []
+        for blocco in bib.split("{t:'")[1:]:
+            titolo = blocco.split("'")[0]
+            m = _re.search(r"full:'((?:[^'\\]|\\.)*)'", blocco)
+            if m:
+                testo = _re.sub(r"<[^>]+>", "", m.group(1))
+                if len(testo) < 400:
+                    corte.append(f"{titolo} ({len(testo)})")
+        assert not corte, f"approfondisci troppo scarni: {corte}"
+
+    def test_la_chiusa_e_la_stessa_ovunque(self):
+        """«Nella pratica» sulle bande e «Nella pratica Aurya» altrove:
+        una parola di differenza, ma il lettore che scorre il catalogo
+        la nota."""
+        bib = BIB.read_text()
+        assert "<h4>Nella pratica</h4>" not in bib, \
+            "una scheda chiude diversamente da tutte le altre"
