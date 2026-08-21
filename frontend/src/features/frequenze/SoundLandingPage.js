@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BIB, SOUND_KEYS } from './content/biblioteca';
+import { BIB, SOUND_KEYS, CAT_DESC, CAT_LINK } from './content/biblioteca';
 import { PERCORSO } from './content/guida';
 import { PRO_ENTRY } from './links';
 import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
@@ -16,16 +16,11 @@ import SoundTopbar from './SoundTopbar';
  * pubblicate. Zero motore audio: qui si legge.
  */
 
-const CAT_DESC = {
-  'Bande cerebrali': "I ritmi dell'attività elettrica del cervello: cosa osserva l'EEG, cosa significano delta, theta, alpha, beta e gamma — e cosa non significano.",
-  'Altre frequenze': 'Frequenze sonore, fenomeni fisici, accordature e tradizioni: dal 40 Hz alla risonanza di Schumann, dal 432 Hz alle frequenze del solfeggio, con il loro livello di evidenza.',
-  'Metodi': 'Come si costruisce uno stimolo ritmico: battiti binaurali, monoaurali, toni isocronici, stimolazione bilaterale — e la differenza reale tra loro.',
-};
-const CAT_LINK = {
-  'Bande cerebrali': '/sound/esplora?categoria=bande-cerebrali',
-  'Altre frequenze': '/sound/esplora?categoria=altre-frequenze',
-  'Metodi': '/sound/esplora?categoria=metodi',
-};
+/*
+ * Nomi, slug e descrizioni delle categorie arrivano da content/biblioteca:
+ * la landing NON tiene una sua copia (era il modo in cui «Ritmi del corpo»
+ * usciva senza descrizione e senza link).
+ */
 
 export default function SoundLandingPage() {
   useEffect(() => { document.title = 'Aurya Sound — Il suono, spiegato'; }, []);
@@ -59,7 +54,7 @@ export default function SoundLandingPage() {
 
           <div className="sld-cats" data-testid="fqz-landing-cats">
             {SOUND_KEYS.map((k) => (
-              <Link key={k} to={CAT_LINK[k]} className="sld-cat">
+              <Link key={k} to={CAT_LINK(k)} className="sld-cat">
                 <b>{k}</b>
                 <p>{CAT_DESC[k]}</p>
                 <span className="sld-n">{(BIB[k] || []).length} schede →</span>

@@ -215,3 +215,31 @@ export const BIB={
 export const LEARN_TABS = { 'Guida': 1, 'Glossario': 1 };
 export const SOUND_KEYS = Object.keys(BIB).filter(k => !LEARN_TABS[k]);
 export const LEARN_KEYS = Object.keys(LEARN_TABS);
+
+/*
+ * Le categorie vivono QUI, accanto alle schede che contengono.
+ *
+ * Prima erano scritte tre volte: lo slug in FrequenzePage, e slug +
+ * descrizione di nuovo nella landing. Aggiungendo «Ritmi del corpo»
+ * ne e' stata aggiornata una sola: nella landing la scheda usciva
+ * senza descrizione e con un link `undefined`, quindi cliccarla non
+ * faceva assolutamente nulla. Con una sola mappa quel disallineamento
+ * non e' piu' esprimibile, e la guardia di parita' verifica che ogni
+ * categoria di BIB abbia il suo slug e la sua descrizione.
+ */
+export const CAT_SLUG = {
+  'Bande cerebrali': 'bande-cerebrali',
+  'Altre frequenze': 'altre-frequenze',
+  'Ritmi del corpo': 'ritmi-del-corpo',
+  'Metodi': 'metodi',
+};
+export const SLUG_CAT = Object.fromEntries(
+  Object.entries(CAT_SLUG).map(([cat, slug]) => [slug, cat]),
+);
+export const CAT_DESC = {
+  'Bande cerebrali': "I ritmi dell'attività elettrica del cervello: cosa osserva l'EEG, cosa significano delta, theta, alpha, beta e gamma — e cosa non significano.",
+  'Altre frequenze': 'Frequenze sonore, fenomeni fisici, accordature e tradizioni: dal 40 Hz alla risonanza di Schumann, dal 432 Hz alle frequenze del solfeggio, con il loro livello di evidenza.',
+  'Ritmi del corpo': 'I ritmi lenti che il corpo conosce già: il respiro, il battito, l\'onda che sale e scende. Non frequenze da ascoltare, ma andature da seguire.',
+  'Metodi': 'Come si costruisce uno stimolo ritmico: battiti binaurali, monoaurali, toni isocronici, stimolazione bilaterale — e la differenza reale tra loro.',
+};
+export const CAT_LINK = (cat) => `/sound/esplora?categoria=${CAT_SLUG[cat] || ''}`;

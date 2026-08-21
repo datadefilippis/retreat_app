@@ -31,7 +31,7 @@ import {
   VOICE_PRESETS, buildVoiceChain, cleanVoiceBuffer, connectVoiceSources,
 } from './engine/voicefx';
 import { PROTOCOLLI } from './content/protocolli';
-import { BIB, SOUND_KEYS, LEARN_KEYS } from './content/biblioteca';
+import { BIB, SOUND_KEYS, LEARN_KEYS, CAT_SLUG, SLUG_CAT } from './content/biblioteca';
 import GuidaView from './GuidaView';
 import { PRO_ENTRY } from './links';
 import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
@@ -137,10 +137,6 @@ export default function FrequenzePage() {
      slug. Una categoria senza slug NON si apre: il clic scrive
      `?categoria=` vuoto e la tab torna alla prima (successo con «Ritmi
      del corpo» il 21/8). Le due mappe vanno tenute gemelle. */
-  const CAT_SLUG = { 'Bande cerebrali': 'bande-cerebrali', 'Altre frequenze': 'altre-frequenze',
-    'Ritmi del corpo': 'ritmi-del-corpo', 'Metodi': 'metodi' };
-  const SLUG_CAT = { 'bande-cerebrali': 'Bande cerebrali', 'altre-frequenze': 'Altre frequenze',
-    'ritmi-del-corpo': 'Ritmi del corpo', 'metodi': 'Metodi' };
 
   const seg = location.pathname.split('/').filter(Boolean);   // ['sound','crea',...]
   const view = PATH_VIEW[seg[1]] || 'explore';

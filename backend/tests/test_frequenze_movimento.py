@@ -208,19 +208,22 @@ class TestRitmiDelCorpoOnda3:
 
     def test_la_categoria_esiste_e_ha_il_suo_indirizzo(self):
         """LN — ogni vista ha il suo URL. Una categoria senza slug non
-        si apre: il clic scrive `?categoria=` vuoto e la tab torna alla
-        prima. Successo davvero il 21/8, le due mappe vanno gemelle."""
+        si apre: nella biblioteca il clic scrive `?categoria=` vuoto e la
+        tab torna alla prima; nella landing il link diventa `undefined` e
+        il riquadro non fa NIENTE (successo davvero, segnalato il 21/8).
+        La mappa ora e' una sola, in biblioteca.js: qui si verifica che
+        la categoria ci sia e che entrambe le superfici la peschino da li'."""
         bib = BIB.read_text()
         assert "'Ritmi del corpo':[" in bib
-        page = PAGE.read_text()
-        slug = page.split("const CAT_SLUG =")[1].split("};")[0]
-        inverso = page.split("const SLUG_CAT =")[1].split("};")[0]
-        assert "'ritmi-del-corpo'" in slug and "'ritmi-del-corpo'" in inverso, \
-            "la categoria non ha uno slug: la tab non si aprirebbe"
-        nomi_slug = re.findall(r"'([^']+)': '([a-z-]+)'", slug)
-        nomi_inv = re.findall(r"'([a-z-]+)': '([^']+)'", inverso)
-        assert {v: k for k, v in nomi_slug} == dict(nomi_inv), \
-            "CAT_SLUG e SLUG_CAT non sono piu' gemelle"
+        slug = bib.split("export const CAT_SLUG")[1].split("};")[0]
+        assert "'ritmi-del-corpo'" in slug, \
+            "la categoria non ha uno slug: non si aprirebbe da nessuna parte"
+        desc = bib.split("export const CAT_DESC")[1].split("};")[0]
+        assert "'Ritmi del corpo'" in desc, \
+            "la scheda uscirebbe muta nella landing"
+        land = (FQ_DIR / "SoundLandingPage.js").read_text()
+        assert "CAT_LINK(k)" in land and "CAT_DESC[k]" in land, \
+            "la landing non usa la mappa condivisa"
 
     def test_ogni_ritmo_e_quello_che_dichiara(self):
         """Il titolo dice «sei respiri al minuto»: il cfg deve produrli

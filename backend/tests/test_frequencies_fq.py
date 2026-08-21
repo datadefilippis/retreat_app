@@ -1472,3 +1472,51 @@ class TestMeditazioniMd:
                 or 'data-testid="fqz-brand"' in bloccata) \
             and 'data-testid="fqz-foot"' in bloccata, \
             "dietro il cancello non ci sono uscite"
+
+
+class TestUnaSolaMappaCategorie:
+    """
+    Una categoria nuova deve arrivare OVUNQUE da sola.
+
+    «Ritmi del corpo» e' nata nel ciclo ONDA dentro BIB, ma slug e
+    descrizione erano copiati a mano nella landing: la scheda usciva
+    senza descrizione e con `to={undefined}`, cioe' un riquadro che al
+    clic non faceva niente. Ora la mappa e' una sola, in biblioteca.js,
+    e queste guardie verificano la parita' SCOPRENDO le categorie dal
+    file invece di riscriverne l'elenco (un elenco scritto qui sarebbe
+    la quarta copia dello stesso errore).
+    """
+
+    def _bib(self):
+        return (FQ_DIR / "content" / "biblioteca.js").read_text()
+
+    def _categorie(self, bib):
+        import re
+        cats = re.findall(r"^\s{0,6}'([^']+)'\s*:\s*\[", bib, re.M)
+        assert len(cats) >= 4, f"categorie non riconosciute: {cats}"
+        return cats
+
+    def test_ogni_categoria_ha_slug_e_descrizione(self):
+        bib = self._bib()
+        slug_blocco = bib.split("export const CAT_SLUG")[1].split("};")[0]
+        desc_blocco = bib.split("export const CAT_DESC")[1].split("};")[0]
+        for cat in self._categorie(bib):
+            assert f"'{cat}'" in slug_blocco, f"{cat} senza slug: il link sarebbe morto"
+            assert f"'{cat}'" in desc_blocco, f"{cat} senza descrizione nella landing"
+
+    def test_la_landing_non_tiene_una_copia(self):
+        land = (FQ_DIR / "SoundLandingPage.js").read_text()
+        assert "from './content/biblioteca'" in land and "CAT_DESC" in land
+        assert "const CAT_DESC" not in land and "const CAT_LINK" not in land, \
+            "la landing si e' ricostruita una mappa sua: e' il bug di prima"
+
+    def test_la_biblioteca_non_tiene_una_copia(self):
+        pag = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "CAT_SLUG" in pag and "SLUG_CAT" in pag
+        assert "const CAT_SLUG =" not in pag and "const SLUG_CAT =" not in pag, \
+            "FrequenzePage si e' ricostruita gli slug: tornerebbero a divergere"
+
+    def test_slug_e_categoria_sono_gemelli(self):
+        bib = self._bib()
+        assert "Object.entries(CAT_SLUG)" in bib, \
+            "SLUG_CAT va DERIVATO da CAT_SLUG, non scritto a mano"
