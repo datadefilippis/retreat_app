@@ -313,6 +313,41 @@ class TestStrisciaSoundInHome:
         assert "bg-[#122125]/[0.66]" in blocco, \
             "velo diverso da quello misurato (peggiore 6,41 · tipico 10,09)"
 
+
+    def test_l_oro_della_striscia_e_quello_dei_fondi_scuri(self):
+        """Founder (21/8): oro su titolo e sottotitolo. Ma non l'oro
+        editoriale #c9b37e — sotto il velo e la texture scende a
+        3,49:1 nel punto piu' chiaro. Si usa #d6c49a, che il sito adopera
+        GIA' sui fondi scuri (i titoletti del footer): 9,62 sull'inchiostro,
+        4,17 nel caso peggiore contro una soglia di 3:1 (entrambi i testi
+        sono «grandi» per WCAG: 52 px e 24 px)."""
+        src = self.HOME.read_text()
+        striscia = src.split('data-testid="hp-sound"')[1].split("</Section>")[0]
+        # Si guarda il CODICE, non i commenti: il commento che spiega
+        # perche' NON usiamo l'oro editoriale lo nomina, ovviamente.
+        import re as _re
+        codice = _re.sub(r"\{/\*.*?\*/\}", "", striscia, flags=_re.S)
+        assert codice.count("#d6c49a") >= 2, \
+            "l'oro non e' su titolo E sottotitolo"
+        assert "#c9b37e" not in codice, \
+            "e' tornato l'oro editoriale, che qui non regge la texture"
+        shell = SHELL.read_text()
+        assert "#d6c49a" in shell, \
+            "questo oro non e' piu' quello dei fondi scuri del sito"
+
+    def test_il_sottotitolo_eredita_il_colore(self):
+        """Lede porta `text-current`: e' fatto per EREDITARE. Passargli
+        il colore da className mette due utility sulla stessa cascata e
+        vince quella che capita — successo davvero, il sottotitolo era
+        rimasto crema."""
+        src = self.HOME.read_text()
+        striscia = src.split('data-testid="hp-sound"')[1].split("</Section>")[0]
+        assert 'className="text-[#d6c49a]"' in striscia, \
+            "l'oro del sottotitolo non passa da un contenitore"
+        lede = striscia.split("soundP1")[0]
+        assert '<Lede size="lead" tone="inherit">' in lede, \
+            "il Lede del sottotitolo non eredita piu' il colore"
+
     def test_la_foto_non_pesa_come_un_originale(self):
         """L'originale era 12000x8000 e 3,8 MB: su una fascia larga
         1088 px sarebbe un download inutile a ogni visita."""

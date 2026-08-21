@@ -471,16 +471,34 @@ export default function NetworkHomePage() {
                     l'occhiello, che diceva «AURYA SOUND» tre centimetri
                     sopra un titolo «Aurya Sound». L'oro resta nel filo
                     in testa alla striscia. */}
+                {/* ORO su titolo e sottotitolo (founder, 21/8). Non e'
+                    l'oro editoriale #c9b37e ma #d6c49a: e' quello che il
+                    sito usa GIA' sui fondi scuri (i titoletti del
+                    footer). La differenza non e' estetica ma misurata —
+                    col velo e la texture sotto, l'oro editoriale scende
+                    a 3,49:1 nel punto piu' chiaro, questo tiene 4,17
+                    (tipico 6,56). Entrambi i testi sono «grandi» per
+                    WCAG (52 px e 24 px), quindi la soglia e' 3:1: qui
+                    ci stiamo sopra con margine, non per un pelo.
+                    Il corpo resta crema, che sotto la texture regge
+                    6,41 nel peggiore e 10,09 nel tipico. */}
                 <div className="lg:col-span-5">
-                  <DisplayTitle as="h3" size="section" measure="tight">
+                  <DisplayTitle as="h3" size="section" measure="tight"
+                                className="text-[#d6c49a]">
                     {t('nwHome.soundTitle', { defaultValue: 'Aurya Sound' })}
                   </DisplayTitle>
                   <div aria-hidden className="gold-rule mt-7 max-w-[8rem]" />
                 </div>
                 <div className="lg:col-span-7">
-                  <Lede size="lead" tone="inherit" className="opacity-90">
-                    {t('nwHome.soundP1', { defaultValue: 'Lo spazio di Aurya dedicato al suono.' })}
-                  </Lede>
+                  {/* Lede porta `text-current`: e' fatto per EREDITARE
+                      il colore, non per riceverlo da className (le due
+                      utility si contendono la cascata e vince quella che
+                      capita). Quindi l'oro si mette sul contenitore. */}
+                  <div className="text-[#d6c49a]">
+                    <Lede size="lead" tone="inherit">
+                      {t('nwHome.soundP1', { defaultValue: 'Lo spazio di Aurya dedicato al suono.' })}
+                    </Lede>
+                  </div>
                   <Lede size="body" tone="inherit" className="mt-5 opacity-90">
                     {t('nwHome.soundP2', { defaultValue: 'Frequenze, suoni, meditazioni e sessioni da ascoltare, esplorare e sperimentare. Aurya Sound offre strumenti per creare e personalizzare sessioni sonore, sia per chi pratica sia per chi conduce esperienze.' })}
                   </Lede>
