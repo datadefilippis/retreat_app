@@ -210,3 +210,104 @@ uscire loghi e copertine come octet-stream.
 
 Restano: ES2 (dieta libreria), ES3 (curatela loop + stima RAM in
 Crea), ES5 (quota voce). ES6 è il capitolo delle soglie qui sopra.
+
+
+---
+
+## ES3 RIPENSATA (21 agosto, dopo ES1) — «lo spezzone»
+
+Analisi chiesta dal founder prima di proseguire. Due dati nuovi hanno
+cambiato la mossa giusta.
+
+### Dato 1 — il muro RAM non è un caso limite, è la strada normale
+
+| categoria | basi | corte (<5 min) | lunghe (>10 min) | RAM peggiore |
+|---|---|---|---|---|
+| **ambient** | 18 | **2** | **9** | **908 MB** |
+| natura | 12 | 9 | 1 | 753 MB |
+| tutte le altre | 31 | 16 | 0 | ≤202 MB |
+
+Ambient è *la* categoria del tappeto, e chi compone trova quasi solo
+opzioni lunghe. La curatela da sola (ES3 versione originale) non
+basterebbe: le basi corte ambient **non esistono**, andrebbero prodotte.
+
+### Dato 2 — un pezzo iniziale si decodifica (misurato in browser)
+
+Con i Range HTTP appena accesi, ho provato a scaricare **solo i primi
+~4 MB** di una base e a decodificarli:
+
+| base | scaricato | decodificato | RAM |
+|---|---|---|---|
+| mp3, 55 MB / 30 min | **3,8 MB** | 2,1 min | **42 MB** (era 611) |
+| m4a, 48 MB / 45 min | **3,8 MB** | 3,2 min | **65 MB** (era 908) |
+
+Funziona su **entrambi** i formati (i nostri m4a hanno l'indice in
+testa). Nessuna ricodifica, nessun file nuovo, nessuna curatela: vale
+per le basi di oggi **e** per quelle che verranno.
+
+### La mossa: spezzone + anello
+
+`loadAssetBuffer` chiede, per le basi lunghe, solo il pezzo che serve —
+calcolato dai metadati (`size_bytes / duration_sec` × durata voluta) —
+e ci applica la **stessa dissolvenza incrociata dell'anello** (AT4),
+così il tappeto gira senza scatti.
+
+Il criterio è già nei dati e non va inventato: **il layer ha il flag
+`loop`**.
+
+- `loop: true` (predefinito) = **tappeto** → spezzone da ~3 min in
+  anello. RAM −93%, banda −92%;
+- `loop: false` = **brano intero**, perché l'operatore ha scelto un
+  pezzo che evolve (es. «Uccelli e pianoforte», 37 min composti):
+  si scarica tutto, e la stima di memoria in Crea lo dice.
+
+Guadagni su tre fronti in un colpo: RAM del telefono, banda del server,
+e tempo di attesa prima del suono (4,9 s di decodifica → meno di 1).
+
+**Onestà sul suono**: un tappeto in anello di 3 minuti *non* è la
+stessa cosa di 30 minuti che evolvono. Per un ambient di sottofondo la
+differenza è impercettibile — è quello che fanno tutte le app di
+meditazione — ma è un cambiamento reale e va dichiarato all'operatore,
+non nascosto.
+
+### Perché questo viene PRIMA di ES2
+
+ES2 (ricodifica a 128 kbps) dava −30% di banda e **zero** sulla RAM.
+Lo spezzone dà −92% di banda e −93% di RAM, senza toccare un file.
+ES2 resta valida solo per i **2 file non compressi** (1.411 kbps), che
+sono un difetto di ingestione, non una scelta.
+
+### Ordine aggiornato
+
+**ES3 (spezzone + anello + stima in Crea)** → ES2 ridotta ai 2 file
+non compressi → ES5 (quota voce).
+
+
+### ES3 ESEGUITA — misure prima/dopo
+
+Sulla base peggiore della libreria («Too Brief A Time To Be Anything»,
+45 min, 48,5 MB):
+
+| | prima | dopo |
+|---|---|---|
+| RAM sul dispositivo | **908 MB** | **69 MB** (−92%) |
+| scaricato per ascoltarla | 48,5 MB | **~4,5 MB** (−91%) |
+| attesa prima del suono | 4,9 s | **1,5 s** |
+
+Verificato nel percorso vero dell'app, non solo in laboratorio: una
+sessione in «Crea» con quella base suona, e le richieste di rete
+mostrano **206 Partial Content** — l'app chiede davvero solo lo
+spezzone.
+
+Implementazione: `bytesSpezzone` calcola i byte dai metadati
+dell'asset; `anelloDaBuffer` (in `anello.js`, **stessa curva** della
+dissolvenza dell'anello delle frequenze) chiude il giro scartando
+mezzo secondo di coda. Il ritaglio scatta **solo su un 206**: se il
+server ignorasse i Range risponderebbe 200 col file intero, e
+chiuderlo in anello taglierebbe un brano di 45 minuti a 3.
+
+Seconda metà: `memoriaStimataMB` + riga in Crea sopra i 350 MB, che
+nomina le basi pesanti. Conosce lo spezzone, quindi non grida al lupo
+sui tappeti.
+
+**Guardie**: `test_economia_sound.py` sale a 23.

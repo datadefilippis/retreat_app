@@ -26,6 +26,7 @@ import {
 } from './engine/synth';
 import {
   loadAssetBuffer, resolveAudioLayers, resolveVoiceLayers, fileDuration,
+  memoriaStimataMB,
 } from './engine/assets';
 import {
   VOICE_PRESETS, buildVoiceChain, cleanVoiceBuffer, connectVoiceSources,
@@ -1651,6 +1652,25 @@ export default function FrequenzePage() {
                 entra in {fadeIn}s ed esce in {fadeOut}s.
               </div>
             )}
+            {/* ES3 — quanto chiedera' al dispositivo. Compare solo
+                quando c'e' davvero un problema: una riga che appare
+                sempre non la legge piu' nessuno. La soglia e' bassa
+                (350 MB) perche' e' li' che i telefoni cominciano a
+                chiudere la scheda, non dove crashano di sicuro. */}
+            {(() => {
+              const { mb, colpevoli } = memoriaStimataMB(score, soundsById);
+              if (mb < 350) return null;
+              return (
+                <div className="cuffie-avviso" data-testid="fq-stima-memoria">
+                  Questa sessione chiede circa <b>{mb} MB</b> al dispositivo:
+                  su molti telefoni non partirà.
+                  {colpevoli.length > 0 && (
+                    <> Pesa soprattutto {colpevoli.join(', ')} — una base
+                    in loop suona uguale e pesa un decimo.</>
+                  )}
+                </div>
+              );
+            })()}
             {/* TS3 — l'avviso cuffie mancava proprio QUI, dove il
                 founder l'ha cercato: stesso modulo delle altre pagine. */}
             {playing && avvisoCuffieScore(score) && (

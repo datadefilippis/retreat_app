@@ -485,9 +485,13 @@ class TestToccoESuonoTs:
         tre basi lunghe superano i 200 MB su telefono. Lo sfoltimento
         non tocca MAI le basi dello score in ascolto."""
         assert "CACHE_MAX_BYTES" in ASSETS
-        blocco = ASSETS.split("function sfoltisci")[1][:400]
+        blocco = ASSETS.split("function sfoltisci")[1][:600]
         assert "inUso.has(url)" in blocco, \
             "lo sfoltimento butterebbe basi che stanno suonando"
+        # ES3: la chiave puo' portare il suffisso #tappeto — la
+        # protezione deve ragionare sull'URL nudo, o sfratterebbe
+        # proprio le basi in ascolto
+        assert "chiave.split('#')[0]" in blocco
 
 
 class TestBarraSuiSuoni:

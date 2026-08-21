@@ -140,3 +140,43 @@ export function ritagliaAnello(pcm, sr, durataSec) {
   }
   return out;
 }
+
+
+/**
+ * ES3 — l'anello di una BASE AUDIO (non di una frequenza sintetizzata).
+ *
+ * Stessa idea del ritaglio qui sopra, altra materia: li' PCM Int16
+ * interleaved uscito dal render, qui un AudioBuffer decodificato da un
+ * file. La curva della dissolvenza e' LA STESSA (coseno rialzato, somma
+ * dei pesi = 1): se un giorno si scoprisse che va cambiata, va
+ * cambiata per tutt'e due — e la guardia lo verifica.
+ *
+ * Perche' serve: uno spezzone preso dall'inizio di un file finisce in
+ * un punto qualunque. Mandarlo in loop cosi' farebbe sentire un salto
+ * a ogni giro. Con la coda dissolta sulla testa, il tappeto gira senza
+ * giunzione udibile.
+ *
+ * @param coda  secondi da scartare in fondo PRIMA di incrociare: un
+ *              troncamento a meta' frame lascia spesso silenzio o
+ *              sporco negli ultimi decimi.
+ */
+export function anelloDaBuffer(ctx, buffer, incrocio = INCROCIO_SEC, coda = 0.5) {
+  const sr = buffer.sampleRate;
+  const utile = Math.floor((buffer.duration - coda) * sr);
+  const x = Math.floor(incrocio * sr);
+  // senza spazio per incrociare si restituisce il buffer com'e':
+  // meglio un salto che un tappeto lungo un respiro
+  if (utile <= x * 3) return buffer;
+  const n = utile - x;
+  const out = ctx.createBuffer(buffer.numberOfChannels, n, sr);
+  for (let c = 0; c < buffer.numberOfChannels; c++) {
+    const src = buffer.getChannelData(c);
+    const dst = out.getChannelData(c);
+    dst.set(src.subarray(0, n));
+    for (let i = 0; i < x; i++) {
+      const a = 0.5 * (1 + Math.cos((Math.PI * i) / x));   // 1 → 0
+      dst[i] = dst[i] * a + src[n + i] * (1 - a);
+    }
+  }
+  return out;
+}

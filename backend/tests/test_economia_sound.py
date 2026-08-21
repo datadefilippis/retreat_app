@@ -152,3 +152,86 @@ class TestVetrinaCheScalaEs4:
         d2 = r2.json()
         assert d2["items"], "pagina due vuota: il cursore non funziona"
         assert d2["items"][0]["slug"] != d1["items"][0]["slug"]
+
+
+FQ_DIR = ROOT / "frontend" / "src" / "features" / "frequenze"
+ASSETS = (FQ_DIR / "engine" / "assets.js").read_text()
+ANELLO = (FQ_DIR / "engine" / "anello.js").read_text()
+PAGE = (FQ_DIR / "FrequenzePage.js").read_text()
+
+
+class TestSpezzoneEs3:
+    """
+    ES3 — «lo spezzone». Misurato: una base ambient da 45 min
+    decodificata occupa 908 MB di RAM (x11 rispetto al file), e in
+    libreria 9 basi ambient su 18 sono lunghe: il muro non e' un caso
+    limite, e' la strada normale di chi compone.
+
+    Rimedio: di una base usata come TAPPETO si chiede solo il primo
+    spezzone (Range HTTP) e lo si chiude in anello con la dissolvenza.
+    Misurato dopo: 69 MB e 1,5 s al posto di 908 MB e 4,9 s.
+    """
+
+    def test_il_criterio_e_il_flag_loop_non_un_indovinello(self):
+        """Un brano che EVOLVE (loop:false) si scarica intero: e' una
+        scelta dell'operatore, non un caso da ottimizzare."""
+        assert "l.loop !== false ? { asset } : null" in ASSETS
+
+    def test_lo_spezzone_si_calcola_dai_metadati(self):
+        """size/durata = bitrate medio reale della base: niente
+        indovinelli, e se i metadati mancano si torna al file intero."""
+        blocco = ASSETS.split("function bytesSpezzone")[1][:400]
+        assert "size / dur" in blocco
+        assert "return null" in blocco, "senza metadati deve tornare al file intero"
+
+    def test_sotto_i_cinque_minuti_non_si_tocca_niente(self):
+        """Dove non c'e' problema non si cambia comportamento."""
+        assert "SOGLIA_LUNGA_SEC = 300" in ASSETS
+        assert "dur <= SOGLIA_LUNGA_SEC) return null" in ASSETS
+
+    def test_il_206_e_la_condizione_per_tagliare(self):
+        """Se il server IGNORA il Range risponde 200 col file intero:
+        chiuderlo in anello taglierebbe un brano di 45 minuti a 3.
+        Solo un 206 autorizza il ritaglio."""
+        assert "r.status === 206" in ASSETS
+        assert "parziale ? anelloDaBuffer(ctx, buf) : buf" in ASSETS
+
+    def test_la_dissolvenza_e_la_stessa_dell_anello(self):
+        """Due materie diverse (PCM Int16 del render, AudioBuffer del
+        file) ma UNA curva: se un giorno va cambiata, va cambiata per
+        tutt'e due."""
+        assert "export function anelloDaBuffer" in ANELLO
+        curve = [b for b in ANELLO.split("0.5 * (1 + Math.cos((Math.PI * i) / x))")]
+        assert len(curve) == 3, "le due dissolvenze non usano piu' la stessa curva"
+
+    def test_si_scarta_la_coda_prima_di_incrociare(self):
+        """Un troncamento a meta' frame lascia spesso silenzio o sporco
+        negli ultimi decimi: incrociarci sopra li stamperebbe nel giro."""
+        blocco = ANELLO.split("export function anelloDaBuffer")[1][:600]
+        assert "coda = 0.5" in blocco
+        assert "buffer.duration - coda" in blocco
+
+    def test_lo_sfratto_ragiona_sull_url_nudo(self):
+        """La chiave di cache ora puo' portare #tappeto: confrontare la
+        CHIAVE con gli URL in uso sfratterebbe proprio le basi in
+        ascolto."""
+        blocco = ASSETS.split("function sfoltisci")[1][:500]
+        assert "chiave.split('#')[0]" in blocco
+
+    def test_la_stessa_base_puo_servire_intera_e_a_spezzone(self):
+        assert "`${url}#tappeto`" in ASSETS
+
+    def test_la_stima_di_memoria_e_in_crea(self):
+        """L'operatore deve sapere cosa sta costruendo PRIMA di
+        pubblicarlo, non scoprirlo dai telefoni di chi ascolta."""
+        assert "export function memoriaStimataMB" in ASSETS
+        assert 'data-testid="fq-stima-memoria"' in PAGE
+        blocco = PAGE.split('data-testid="fq-stima-memoria"')[0][-500:]
+        assert "mb < 350) return null" in blocco, \
+            "un avviso che compare sempre non lo legge piu' nessuno"
+
+    def test_la_stima_conosce_lo_spezzone(self):
+        """Se stimasse la durata intera per i tappeti, griderebbe al
+        lupo su sessioni che ormai pesano un decimo."""
+        blocco = ASSETS.split("export function memoriaStimataMB")[1][:700]
+        assert "SPEZZONE_SEC" in blocco and "l.loop !== false" in blocco
