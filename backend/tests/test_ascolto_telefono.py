@@ -515,6 +515,14 @@ class TestBarraSuiSuoni:
         assert "setPreviewT(0)" in blocco, \
             "fermato un suono, la barra resterebbe a meta'"
 
+    def test_la_barra_sta_dentro_la_scheda(self):
+        """Il seekwrap del createbar porta flex:1 0 100%: dentro una
+        SCHEDA (colonna flex) quel 100% e' l'ALTEZZA — la barra
+        esplodeva a tutta scheda, spingeva fuori i pulsanti e restava
+        tagliata da overflow:hidden (screenshot del founder). La regola
+        scoped la riporta a riga normale."""
+        assert ".fqz .card .seekwrap{flex:0 0 auto;width:100%" in CSS
+
     def test_la_capture_non_uccide_il_gesto(self):
         """setPointerCapture puo' lanciare NotFoundError (successo in
         verifica): senza il try, l'intero gesto morirebbe. E il tap

@@ -119,6 +119,13 @@
 .fqz .seek-cur,.fqz .seek-tot{font-family:var(--mono);font-size:11px;color:var(--dim);min-width:44px}
 .fqz .seek-tot{text-align:right}
 .fqz .seekbar{position:relative;flex:1;height:16px;display:flex;align-items:center;cursor:pointer}
+/* TS7 — dentro una SCHEDA il seekwrap non puo' portarsi dietro il
+   flex:1 0 100% del createbar: la scheda e' una COLONNA flex, e li'
+   quel 100% e' l'ALTEZZA — la barra esplodeva a tutta scheda,
+   spingeva fuori i pulsanti e restava tagliata da overflow:hidden
+   (successo: screenshot del founder). Qui e' una riga normale. */
+.fqz .card .seekwrap{flex:0 0 auto;width:100%;margin:2px 0 0;min-width:0}
+.fqz .card .seek-cur,.fqz .card .seek-tot{min-width:34px}
 .fqz .seekbar::before{content:'';position:absolute;left:0;right:0;height:4px;background:var(--line);border-radius:999px}
 .fqz .seek-fill{position:absolute;left:0;height:4px;width:0%;background:var(--water);border-radius:999px}
 .fqz .seek-knob{position:absolute;left:0%;width:13px;height:13px;border-radius:50%;background:var(--water);
