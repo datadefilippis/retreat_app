@@ -185,6 +185,11 @@ services:
       # certbot deve poter SCRIVERE la challenge in /var/www/certbot (no :ro)
       - certbot_conf:/etc/letsencrypt:ro
       - certbot_www:/var/www/certbot
+      # ES1 (21/8) — nginx serve gli audio DIRETTAMENTE (sendfile,
+      # Range nativo): prima ogni download da 55MB passava per l'unico
+      # worker Python del backend, lo stesso che serve tutte le API.
+      # Sola lettura: nginx consegna, non tocca.
+      - backend_uploads:/srv/uploads:ro
     networks:
       - internal
 

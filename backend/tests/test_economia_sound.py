@@ -1,0 +1,154 @@
+"""Ciclo ES — Economia del suono (21/8/2026).
+
+Piano in docs/ECONOMIA_SOUND_PIANO_ES_2026-08.md. Qui si difendono le
+prime due onde:
+
+ES1 — gli audio li serve NGINX dal volume (sendfile, Range nativo),
+non piu' l'unico worker Python del backend — lo stesso che serve
+tutte le API: 20 download simultanei da 55MB rallentavano ordini e
+dashboard.
+
+ES4 — la vetrina /meditazioni: indice (status, published_at) al posto
+di SORT+COLLSCAN, numeri materializzati alla pubblicazione al posto
+dell'array dei livelli trasportato per contarlo, paginazione a cursore
+al posto del to_list(500) che alla traccia 501 faceva SPARIRE le piu'
+vecchie in silenzio.
+"""
+import os
+import re
+from pathlib import Path
+
+import pytest
+import requests
+
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+ROOT = BACKEND_DIR.parent
+
+NGINX = (ROOT / "deploy" / "nginx" / "nginx.conf").read_text()
+COMPOSE = (ROOT / "docker-compose.prod.yml").read_text()
+FREQ = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+DB = (BACKEND_DIR / "database.py").read_text()
+
+
+class TestNginxServeGliAudioEs1:
+    def test_il_volume_e_montato_in_sola_lettura(self):
+        assert "backend_uploads:/srv/uploads:ro" in COMPOSE, \
+            "senza il volume, nginx non ha i file e /uploads muore"
+
+    def test_uploads_e_alias_non_proxy(self):
+        blocco = NGINX.split("location /uploads/")[1].split("}")[0]
+        assert "alias /srv/uploads/" in blocco
+        assert "proxy_pass" not in blocco, \
+            "tornato il tubo verso il worker Python unico"
+        assert "sendfile on" in blocco
+
+    def test_il_freno_anti_raschiatori(self):
+        """/uploads e' pubblico per necessita' (debito noto): il freno
+        per IP ferma chi vuole svuotarci la banda, non l'ascoltatore."""
+        assert "zone=uploads" in NGINX
+        blocco = NGINX.split("location /uploads/")[1].split("}")[0]
+        assert "limit_req zone=uploads" in blocco
+
+    def test_immutable_anche_da_nginx(self):
+        blocco = NGINX.split("location /uploads/")[1].split("}")[0]
+        assert "immutable" in blocco
+
+    def test_i_tipi_coprono_cio_che_vive_in_uploads(self):
+        """`types` in una location SOSTITUISCE la mappa ereditata: se
+        manca un'estensione davvero presente, quel file esce
+        octet-stream. La voce di Chrome e' webm: non deve mancare."""
+        blocco = NGINX.split("location /uploads/")[1].split("types {")[1].split("}")[0]
+        for ext in ("m4a", "mp3", "webm", "webp", "jpeg", "png"):
+            assert re.search(rf"\b{ext}\b", blocco), f"manca {ext}"
+
+    def test_il_fallback_python_resta(self):
+        """Il Range-shim nel backend serve il DEV (dove nginx non c'e')
+        e fa da rete se mai nginx tornasse proxy."""
+        srv = (BACKEND_DIR / "server.py").read_text()
+        assert "_StaticsConRange" in srv
+
+
+class TestVetrinaCheScalaEs4:
+    def test_l_indice_esiste(self):
+        assert 'name="es4_catalog"' in DB
+        assert '[("status", 1), ("published_at", -1)]' in DB
+
+    def test_il_piano_di_query_usa_l_indice(self):
+        """Non la dichiarazione: il PIANO. Prima era SORT+COLLSCAN."""
+        try:
+            from pymongo import MongoClient
+            db = MongoClient("mongodb://localhost:27017",
+                             serverSelectionTimeoutMS=2000)["retreat_dev"]
+            pl = db.frequency_tracks.find({"status": "published"}) \
+                .sort("published_at", -1).explain()
+        except Exception:
+            pytest.skip("Mongo non raggiungibile")
+        assert "COLLSCAN" not in str(pl["queryPlanner"]["winningPlan"]), \
+            "la vetrina e' tornata a scandire l'intera collezione"
+
+    def test_la_pubblicazione_materializza_i_numeri(self):
+        blocco = FREQ.split("def publish_track")[1][:1400]
+        assert '"layers_count": len(score.get("layers")' in blocco
+        assert '"duration_sec": score.get("duration_sec")' in blocco
+
+    def test_il_catalogo_non_trasporta_i_livelli(self):
+        proiezione = FREQ.split("_CATALOG_PROJECTION = ")[1].split("}")[0]
+        assert "score.layers" not in proiezione, \
+            "si ritrasporta l'array dei livelli solo per contarlo"
+
+    def test_niente_piu_tetto_muto_a_500(self):
+        blocco = FREQ.split("async def catalog(request")[1].split("async def ")[0]
+        codice = "\n".join(r for r in blocco.splitlines()
+                           if not r.strip().startswith("#"))
+        assert "to_list(500)" not in codice
+        assert ".to_list(limit)" in codice and "next_before" in codice
+
+    def test_il_cursore_diventa_datetime(self):
+        """published_at in Mongo e' un datetime: un $lt con la stringa
+        del client confronterebbe tipi BSON diversi e non troverebbe
+        MAI niente — vetrina vuota a pagina due, senza errori."""
+        blocco = FREQ.split("async def catalog(request")[1].split("async def ")[0]
+        assert "datetime.fromisoformat" in blocco
+
+    def test_paginazione_dal_vivo(self):
+        """Due pagine da 1: titoli diversi, cursore che avanza, e
+        NIENTE score nel payload."""
+        env = (BACKEND_DIR / ".env")
+        if not env.exists():
+            pytest.skip("niente .env locale")
+        m = re.search(r'^JWT_SECRET_KEY\s*=\s*"?([^"\n]+)"?', env.read_text(), re.M)
+        if not m:
+            pytest.skip("JWT_SECRET_KEY non in .env")
+        # conftest.py inietta un segreto FINTO per tutta la suite:
+        # importare generate_subscriber_token qui firmerebbe col falso
+        # e il server direbbe 403. Si firma a mano col segreto vero,
+        # leggendo scope e algoritmo dal modulo (una verita' sola).
+        import time
+        import jwt as pyjwt
+        mod = (BACKEND_DIR / "core" / "subscriber_token.py").read_text()
+        scope = re.search(r'_SCOPE\s*=\s*"([^"]+)"', mod).group(1)
+        alg = re.search(r'_ALGORITHM\s*=\s*"([^"]+)"', mod).group(1)
+        adesso = int(time.time())
+        tok = pyjwt.encode(
+            {"scope": scope, "email": "davidone@demo.com",
+             "iat": adesso, "exp": adesso + 3600},
+            m.group(1), algorithm=alg)
+        h = {"X-Fqz-Unlock": tok}
+        r1 = requests.get(f"{BASE_URL}/api/frequencies/catalog?limit=1",
+                          headers=h, timeout=10)
+        if r1.status_code == 403:
+            pytest.skip("sblocco non accettato in questo ambiente")
+        d1 = r1.json()
+        if not d1.get("items"):
+            pytest.skip("nessuna traccia pubblicata nell'ambiente")
+        assert "score" not in d1["items"][0]
+        nb = d1.get("next_before")
+        if not nb:
+            return   # una sola traccia: il cursore giustamente manca
+        r2 = requests.get(
+            f"{BASE_URL}/api/frequencies/catalog?limit=1&before={nb}",
+            headers=h, timeout=10)
+        d2 = r2.json()
+        assert d2["items"], "pagina due vuota: il cursore non funziona"
+        assert d2["items"][0]["slug"] != d1["items"][0]["slug"]

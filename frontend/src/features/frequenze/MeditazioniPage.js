@@ -47,16 +47,23 @@ export default function MeditazioniPage() {
     catch { return false; }
   });
 
-  const loadCatalog = async () => {
+  /* ES4 — la vetrina e' paginata: il server manda al massimo 100
+     tracce e un cursore (`next_before`). Prima era to_list(500): alla
+     501esima le piu' vecchie sarebbero SPARITE in silenzio. */
+  const [nextBefore, setNextBefore] = useState(null);
+  const loadCatalog = async (before = null) => {
     try {
       let r;
       if (hasAccount) {
         // il Bearer platform sblocca da solo (verificato dal server)
-        r = await platformApi.get('/frequencies/catalog');
+        r = await platformApi.get('/frequencies/catalog',
+          before ? { params: { before } } : {});
       } else {
-        r = await frequenciesAPI.getCatalog(prova());
+        r = await frequenciesAPI.getCatalog(prova(), before);
       }
-      setItems(r.data.items || []);
+      setItems((prev) => before ? [...(prev || []), ...(r.data.items || [])]
+                               : (r.data.items || []));
+      setNextBefore(r.data.next_before || null);
       setLocked(false);
     } catch (e) {
       const detail = e?.response?.data?.detail;
@@ -304,6 +311,15 @@ export default function MeditazioniPage() {
                   </div>
                 ))}
               </div>
+              {nextBefore && (
+                <p style={{ textAlign: 'center', marginTop: 18 }}>
+                  <button type="button" className="readmore"
+                    data-testid="fqz-carica-altre"
+                    onClick={() => loadCatalog(nextBefore)}>
+                    Carica altre meditazioni
+                  </button>
+                </p>
+              )}
             </>
           )}
           {/* SF — stesso testo di tutto Aurya Sound, da content/safety.js */}

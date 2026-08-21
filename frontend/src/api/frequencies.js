@@ -19,8 +19,10 @@ export const frequenciesAPI = {
   // SB1 (20/8): lo sblocco viaggia con la PROVA UNICA del cerchio (il
   // JWT della Lettera, lib/cerchio.js), non piu' con la coppia
   // email:HMAC — una prova sola per guide e meditazioni.
-  getCatalog: (provaToken) => api.get('/frequencies/catalog',
-    provaToken ? { headers: { 'X-Fqz-Unlock': provaToken } } : {}),
+  getCatalog: (provaToken, before) => api.get('/frequencies/catalog', {
+    ...(provaToken ? { headers: { 'X-Fqz-Unlock': provaToken } } : {}),
+    ...(before ? { params: { before } } : {}),
+  }),
 
   // FQ2 — libreria suoni curata: lettura per tutti, scrittura solo
   // system admin (multipart)

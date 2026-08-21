@@ -1558,6 +1558,11 @@ async def create_indexes():
     # mai pubblicate non ce l'hanno)
     await frequency_tracks_collection.create_index(
         "slug", unique=True, sparse=True, name="fq1_track_slug")
+    # ES4 (21/8) — la vetrina /meditazioni ordina le pubblicate per
+    # data: senza questo indice il piano era SORT + COLLSCAN
+    # sull'intera collezione, bozze comprese (misurato col planner).
+    await frequency_tracks_collection.create_index(
+        [("status", 1), ("published_at", -1)], name="es4_catalog")
     # FQ3 — preferiti dell'account Aurya: un cuore per traccia
     await db.frequency_favorites.create_index(
         [("platform_account_id", 1), ("slug", 1)], unique=True,

@@ -217,11 +217,18 @@ async def publish_track(track_id: str,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Traccia non trovata.")
     slug = track.get("slug") or await _unique_track_slug(track["title"])
+    # ES4 (21/8) — i numeri da vetrina si MATERIALIZZANO qui, una volta:
+    # prima il catalogo trasportava l'intero array dei livelli di ogni
+    # traccia solo per contarli. Si paga alla pubblicazione (rara), non
+    # a ogni apertura della vetrina.
+    score = track.get("score") or {}
     await frequency_tracks_collection.update_one(
         {"id": track_id,
          "organization_id": current_user["organization_id"]},
         {"$set": {"status": "published", "slug": slug,
-                  "published_at": utc_now(), "updated_at": utc_now()}})
+                  "published_at": utc_now(), "updated_at": utc_now(),
+                  "layers_count": len(score.get("layers") or []),
+                  "duration_sec": score.get("duration_sec")}})
     return {"id": track_id, "status": "published", "slug": slug}
 
 
@@ -364,10 +371,15 @@ async def _has_catalog_access(request) -> bool:
     return False
 
 
+# ES4 — niente `score.layers` nella proiezione: i numeri da vetrina
+# sono materializzati alla pubblicazione (con fallback sul solo
+# duration_sec dello score per le tracce pubblicate prima).
 _CATALOG_PROJECTION = {"_id": 0, "slug": 1, "title": 1, "description": 1,
                        "intent": 1, "plays_total": 1, "organization_id": 1,
-                       "score.duration_sec": 1, "score.layers": 1,
-                       "published_at": 1}
+                       "score.duration_sec": 1, "layers_count": 1,
+                       "duration_sec": 1, "published_at": 1}
+
+CATALOG_PAGE_MAX = 100
 
 
 @router.get("/catalog")
@@ -382,9 +394,32 @@ async def catalog(request: Request):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"error": "locked", "tracks_count": count})
+    # ES4 — paginazione a cursore: prima era `to_list(500)`, che alla
+    # traccia numero 501 avrebbe fatto SPARIRE le piu' vecchie dalla
+    # vetrina senza che nessuno se ne accorgesse. Il cursore e'
+    # `published_at` (l'ordine della vetrina): `?before=` riprende da
+    # dove l'ultima pagina e' finita.
+    try:
+        limit = min(CATALOG_PAGE_MAX, max(1, int(
+            request.query_params.get("limit", CATALOG_PAGE_MAX))))
+    except ValueError:
+        limit = CATALOG_PAGE_MAX
+    filtro = {"status": "published"}
+    before = request.query_params.get("before")
+    if before:
+        # published_at in Mongo e' un datetime: la stringa ISO del
+        # client va riportata a datetime, o il $lt confronterebbe tipi
+        # BSON diversi e non troverebbe MAI niente (vetrina vuota a
+        # pagina due, senza errori).
+        from datetime import datetime
+        try:
+            filtro["published_at"] = {
+                "$lt": datetime.fromisoformat(before.replace("Z", "+00:00"))}
+        except ValueError:
+            pass   # cursore malformato: prima pagina, non un errore
     items = await frequency_tracks_collection.find(
-        {"status": "published"}, _CATALOG_PROJECTION,
-    ).sort("published_at", -1).to_list(500)
+        filtro, _CATALOG_PROJECTION,
+    ).sort("published_at", -1).to_list(limit)
     org_ids = {i["organization_id"] for i in items}
     orgs = {o["id"]: o async for o in organizations_collection.find(
         {"id": {"$in": list(org_ids)}},
@@ -395,15 +430,19 @@ async def catalog(request: Request):
         org = orgs.get(it.pop("organization_id")) or {}
         profile = org.get("public_profile") or {}
         score = it.pop("score", None) or {}
-        it["duration_sec"] = score.get("duration_sec")
-        it["layers_count"] = len(score.get("layers") or [])
+        # materializzati alla pubblicazione; il fallback copre le
+        # tracce pubblicate prima di ES4
+        it["duration_sec"] = it.get("duration_sec") or score.get("duration_sec")
+        it["layers_count"] = it.get("layers_count") or 0
         it["operator"] = {
             "name": profile.get("display_name") or org.get("name"),
             "slug": org.get("public_slug"),
         }
         it["plays_total"] = it.get("plays_total") or 0
         out.append(it)
-    return {"items": out}
+    # il cursore per la pagina dopo: assente = la vetrina e' finita
+    next_before = out[-1]["published_at"] if len(out) == limit else None
+    return {"items": out, "next_before": next_before}
 
 
 @router.get("/favorites")
