@@ -268,6 +268,11 @@ export default function FrequenzePage() {
   const soundFileRef = useRef(null);
   const previewAudioRef = useRef(null);          // <audio> condiviso anteprime
   const [previewingId, setPreviewingId] = useState(null);
+  /* TS7 (richiesta founder 21/8) — la barra anche sui suoni: si
+     ascolta, ci si sposta, e se piace si aggiunge alla sessione. Qui
+     e' un media element: lo spostamento e' nativo (el.currentTime),
+     zero riavvii di motore. */
+  const [previewT, setPreviewT] = useState(0);
   const soundsById = useMemo(
     () => Object.fromEntries(sounds.map((s) => [s.id, s])), [sounds]);
   const loadSounds = async () => {
@@ -282,6 +287,7 @@ export default function FrequenzePage() {
       previewAudioRef.current.src = '';
     }
     setPreviewingId(null);
+    setPreviewT(0);
   };
   const [soundLoadingId, setSoundLoadingId] = useState(null);
   const toggleSoundPreview = (asset) => {
@@ -294,6 +300,7 @@ export default function FrequenzePage() {
     el.volume = 0.8;
     setSoundLoadingId(asset.id);
     el.onplaying = () => setSoundLoadingId(null);
+    el.ontimeupdate = () => setPreviewT(el.currentTime);
     el.play().catch(() => { setSoundLoadingId(null); setStatus('Anteprima non disponibile'); });
     setPreviewingId(asset.id);
   };
@@ -829,7 +836,7 @@ export default function FrequenzePage() {
        succede sempre) non perde il gesto. E pointercancel — lo scroll o
        una chiamata che si riprendono il tocco — pulisce i listener:
        prima restavano appesi e la barra continuava a seguire fantasmi. */
-    e.currentTarget.setPointerCapture?.(e.pointerId);
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* gesto senza capture */ }
     const r = laneEl.getBoundingClientRect();
     let last = e.clientX;
     const move = (ev) => { const dx = (ev.clientX - last) / r.width; last = ev.clientX; cb(dx); };
@@ -1372,6 +1379,16 @@ export default function FrequenzePage() {
                               <div className="head"><h3>{s.title}</h3></div>
                               <div className="hz">{fmt(s.duration_sec || 0)} · {(s.size_bytes / 1048576).toFixed(1)} MB</div>
                               <div className="listen">🔊 Base sonora · va in loop sotto le frequenze</div>
+                              {previewingId === s.id && (
+                                <SeekBar cur={previewT}
+                                  tot={s.duration_sec || previewAudioRef.current?.duration || 0}
+                                  fmt={fmt} testid={`fq-sound-seek-${s.id}`}
+                                  titolo="Trascina o tocca per spostarti nel suono"
+                                  onCommit={(t) => {
+                                    const el2 = previewAudioRef.current;
+                                    if (el2) el2.currentTime = t;
+                                  }} />
+                              )}
                               <div className="foot">
                                 {isSystemAdmin && (
                                   <button type="button" className="ghost" title="Elimina dalla libreria"
@@ -1767,11 +1784,12 @@ export default function FrequenzePage() {
                 </div>
                 <div className="ruler" title="Tocca o trascina per ascoltare da questo punto"
                   style={{ cursor: 'pointer', touchAction: 'none' }}
-                  onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
+                  onPointerDown={(e) => {
+                    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* tap */ }
+                  }}
                   onPointerUp={(e) => {
                     /* TS2 — commit al RILASCIO: un solo riavvio del
                        motore per gesto, che sia tap o trascinamento. */
-                    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
                     const r = e.currentTarget.getBoundingClientRect();
                     seekTo(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * duration);
                   }}>

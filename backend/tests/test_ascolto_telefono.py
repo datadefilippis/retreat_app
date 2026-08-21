@@ -486,3 +486,40 @@ class TestToccoESuonoTs:
         blocco = ASSETS.split("function sfoltisci")[1][:400]
         assert "inUso.has(url)" in blocco, \
             "lo sfoltimento butterebbe basi che stanno suonando"
+
+
+class TestBarraSuiSuoni:
+    """
+    Richiesta founder 21/8 sera: «la barra di spostamento anche nei
+    vari suoni, cosi' un utente ascolta e se gli piace la aggiunge
+    alla sessione».
+    """
+
+    def test_l_anteprima_dei_suoni_ha_la_barra(self):
+        assert 'testid={`fq-sound-seek-' in PAGE
+        blocco = PAGE.split("fq-sound-seek-")[0][-400:]
+        assert "previewingId === s.id" in blocco, \
+            "la barra comparirebbe su tutte le schede, non su quella che suona"
+
+    def test_lo_spostamento_e_nativo(self):
+        """Un media element si sposta con currentTime: niente riavvii
+        di motore, il salto e' istantaneo."""
+        blocco = PAGE.split("fq-sound-seek-")[1][:400]
+        assert ".currentTime = t" in blocco
+        assert "playGuarded" not in blocco and "seekTo" not in blocco, \
+            "il salto su un suono non deve passare dal motore delle sessioni"
+
+    def test_il_tempo_scorre_e_si_azzera(self):
+        assert "el.ontimeupdate = () => setPreviewT(el.currentTime)" in PAGE
+        blocco = PAGE.split("const stopSoundPreview")[1][:300]
+        assert "setPreviewT(0)" in blocco, \
+            "fermato un suono, la barra resterebbe a meta'"
+
+    def test_la_capture_non_uccide_il_gesto(self):
+        """setPointerCapture puo' lanciare NotFoundError (successo in
+        verifica): senza il try, l'intero gesto morirebbe. E il tap
+        velocissimo passa da un REF, non dallo stato: down e up possono
+        arrivare prima che React ri-renderizzi."""
+        assert "try { e.currentTarget.setPointerCapture(e.pointerId); } catch" in SEEKBAR
+        assert "scrubRef" in SEEKBAR
+        assert "scrubRef.current == null) return" in SEEKBAR

@@ -22,15 +22,31 @@
  * gate dell'anteprima o altri vincoli stanno nel chiamante (onCommit),
  * non qui.
  */
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 const fr = (e) => {
   const r = e.currentTarget.getBoundingClientRect();
   return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
 };
 
+/* setPointerCapture PUO' lanciare (NotFoundError se il pointer non e'
+   piu' attivo — visto succedere): senza il try, l'eccezione ucciderebbe
+   l'intero gesto. Se la capture fallisce, il tap semplice resta vivo. */
+const cattura = (e) => {
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* tap senza capture */ }
+};
+const haCattura = (e) => {
+  try { return e.currentTarget.hasPointerCapture(e.pointerId); } catch { return false; }
+};
+
 export default function SeekBar({ cur, tot, onCommit, fmt, testid, titolo }) {
-  const [scrub, setScrub] = useState(null);          // frazione sotto il dito
+  const [scrub, setScrubState] = useState(null);     // frazione sotto il dito
+  /* il ref e' la verita' per la LOGICA del gesto: un tap velocissimo fa
+     arrivare down e up prima che React ri-renderizzi, e la closure di
+     up leggerebbe lo scrub del render precedente (null) — gesto perso.
+     Lo stato serve solo a disegnare. */
+  const scrubRef = useRef(null);
+  const setScrub = (v) => { scrubRef.current = v; setScrubState(v); };
   const frac = scrub != null ? scrub : Math.min(1, tot > 0 ? cur / tot : 0);
   return (
     <div className="seekwrap" style={{ display: 'flex' }}>
@@ -38,14 +54,17 @@ export default function SeekBar({ cur, tot, onCommit, fmt, testid, titolo }) {
       <div className="seekbar" data-testid={testid}
         title={titolo} style={{ cursor: 'pointer' }}
         onPointerDown={(e) => {
-          e.currentTarget.setPointerCapture(e.pointerId);
+          cattura(e);
           setScrub(fr(e));
         }}
         onPointerMove={(e) => {
-          if (e.currentTarget.hasPointerCapture(e.pointerId)) setScrub(fr(e));
+          if (haCattura(e)) setScrub(fr(e));
         }}
         onPointerUp={(e) => {
-          if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+          /* commit se il gesto era NOSTRO (capture) o se e' un tap
+             secco su cui la capture non era riuscita: scrub != null
+             dice che il down e' passato di qui */
+          if (!haCattura(e) && scrubRef.current == null) return;
           setScrub(null);
           onCommit(fr(e) * tot);
         }}
