@@ -169,6 +169,21 @@ const HERO_POSTER = '/media/aurya-hero-poster.jpg';
    r03, r08, r09, r05, r02 (landing operatori), chisiamo-aurya (la
    firma dei fondatori: giusta sul Manifesto e su Chi siamo, fuori tono
    in home). */
+/* HS (21/8) — la fotografia della striscia Sound. Vuota finche' il
+   file non c'e': un `src` che punta al nulla e' una richiesta a vuoto a
+   ogni caricamento della home. Appena l'immagine e' in
+   `public/media/hp-sound.jpg`, si accende scrivendo qui il percorso.
+
+   TRATTAMENTO (e il perche'): l'immagine scelta dal founder e' una
+   luce dipinta blu-ciano su nero. Il ciano puro e' l'unico colore
+   lontano dalla tavolozza di Aurya, quindi non si posa MAI a piena
+   forza: entra in `mix-blend-screen` sull'inchiostro, cosi' il nero
+   della foto sparisce e restano solo i filamenti; un velo in gradiente
+   tiene scuro il lato del testo; e una rotazione di tinta appena
+   accennata porta il ciano verso l'acqua di Sound (--water). Il
+   risultato e' una texture, non un secondo colore di marca. */
+const SOUND_PHOTO = '';
+
 const PHOTO = {
   magazine: '/media/hero-blog.webp',
   pros: '/media/prelaunch/r06.jpg',
@@ -399,6 +414,74 @@ export default function NetworkHomePage() {
                 </li>
               ))}
             </ul>
+
+            {/* ── la striscia: Aurya Sound ────────────────────────────
+                HS (21/8/2026, founder) — Sound era in DUE voci di menu e
+                in nessun punto della home: chi ci cliccava attraversava
+                il confine visivo scuro senza sapere cosa fosse. Qui la
+                mappa smette di essere incompleta.
+
+                PERCHE' UNA FASCIA E NON UNA QUARTA COLONNA. Le tre
+                schede sono tre modi di incontrare QUALCUNO: leggere chi
+                scrive, conoscere chi pratica, vivere cio' che propone.
+                Sound non e' un quarto contenuto, e' uno STRUMENTO:
+                messo in fila sembrerebbe la stessa cosa degli altri.
+                E in pratica: la fila e' larga 1088 px, tre schede da
+                341; a quattro diventerebbero 248 l'una — un quarto in
+                meno su una scheda alta 472 con foto, titolo, testo e
+                invito. La griglia non si tocca.
+
+                IL FONDO E' L'INCHIOSTRO DI SOUND (--stone #122125), non
+                il salvia della battuta 3: due verdi adiacenti
+                romperebbero l'alternanza dei fondi (grammatica DS: mai
+                due ancore verdi vicine). Ed e' un'anteprima onesta —
+                chi la vede ha gia' visto il mondo in cui sta per
+                entrare. Resta un OGGETTO sulla sabbia, come le tre
+                schede bianche: il padding della sezione lascia sotto
+                un respiro di sabbia prima del verde.
+
+                IL TITOLO CHIUDE LA FRASE che le tre schede aprono —
+                leggere, conoscere, vivere — e non ha bisogno di
+                spiegare il collegamento: sta appena sotto di loro. */}
+            <div data-testid="hp-sound"
+                 className="relative mt-10 sm:mt-12 overflow-hidden rounded-3xl bg-[#122125]
+                            text-[#f6f2e8] shadow-[0_18px_44px_rgba(18,33,37,0.22)]">
+              {SOUND_PHOTO && (
+                <div aria-hidden className="pointer-events-none absolute inset-0">
+                  <img src={SOUND_PHOTO} alt="" loading="lazy" decoding="async"
+                       className="h-full w-full object-cover opacity-[0.42] mix-blend-screen
+                                  [filter:hue-rotate(-22deg)_saturate(0.78)]" />
+                  {/* il testo sta a sinistra: li' il velo resta fitto */}
+                  <div className="absolute inset-0 bg-gradient-to-r
+                                  from-[#122125] via-[#122125]/85 to-[#122125]/40" />
+                </div>
+              )}
+              <div aria-hidden className="gold-rule relative" />
+              <div className="relative grid gap-8 p-8 sm:p-10 lg:grid-cols-12 lg:gap-12 lg:p-12">
+                <div className="lg:col-span-5">
+                  <p className="eyebrow" style={{ color: '#c9b37e' }}>
+                    {t('nwHome.soundEyebrow', { defaultValue: 'Aurya Sound' })}
+                  </p>
+                  <DisplayTitle as="h3" size="section" measure="tight" className="mt-4">
+                    {t('nwHome.soundTitle', { defaultValue: 'E poi c’è ascoltare.' })}
+                  </DisplayTitle>
+                </div>
+                <div className="lg:col-span-7">
+                  <Lede size="lead" tone="inherit" className="opacity-90">
+                    {t('nwHome.soundP1', { defaultValue: 'Il suono è la parte del benessere dove girano più promesse e meno verifiche.' })}
+                  </Lede>
+                  <Lede size="body" tone="inherit" className="mt-5 opacity-90">
+                    {t('nwHome.soundP2', { defaultValue: 'Aurya Sound fa il contrario: ogni frequenza è raccontata per quello che è, con il livello di evidenza dichiarato e una sezione che dice sempre cosa non sappiamo ancora. Dentro ci sono le meditazioni composte dagli operatori della rete — e, per chi col suono ci lavora, lo studio per crearle.' })}
+                  </Lede>
+                  <p className="mt-8">
+                    <EditorialCta to="/sound" variant="solid" tone="dark"
+                                  data-testid="hp-sound-cta">
+                      {t('nwHome.soundCta', { defaultValue: 'Entra in Aurya Sound' })}
+                    </EditorialCta>
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </Section>
 

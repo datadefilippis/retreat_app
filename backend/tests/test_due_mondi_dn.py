@@ -232,3 +232,76 @@ class TestInstagramSoc:
         assert valore == "" or valore.startswith("https://www.instagram.com/"), \
             f"BRAND_INSTAGRAM non e' un profilo Instagram valido: {valore!r}"
         assert "PROVA" not in brand, "e' rimasto un indirizzo di prova"
+
+
+class TestStrisciaSoundInHome:
+    """HS (21/8, founder) — Aurya Sound viveva in DUE voci di menu e in
+    nessun punto della home: chi ci cliccava attraversava il confine
+    visivo scuro senza sapere cosa fosse. La striscia chiude il buco
+    dentro la battuta che si chiama «la mappa», senza toccare la
+    griglia delle tre schede.
+    """
+
+    HOME = FRONTEND_SRC / "features" / "network" / "NetworkHomePage.js"
+
+    def test_la_mappa_nomina_sound(self):
+        src = self.HOME.read_text()
+        assert 'data-testid="hp-sound"' in src
+        assert 'data-testid="hp-sound-cta"' in src
+        # dentro la sezione dei pilastri, non in una battuta nuova: la
+        # scaletta e' passata da sette a sei per decisione
+        mappa = src.split('data-testid="hp-pillars"')[1].split("</Section>")[0]
+        assert 'data-testid="hp-sound"' in mappa, \
+            "la striscia e' fuori dalla mappa (o e' diventata una settima battuta)"
+
+    def test_le_tre_schede_restano_tre(self):
+        """La fila e' larga 1088 px: tre schede da 341. A quattro
+        diventerebbero 248 l'una — la griglia non si tocca."""
+        src = self.HOME.read_text()
+        assert "lg:grid-cols-3" in src, "la griglia dei pilastri e' cambiata"
+        pillars = src.split("const pillars = [")[1].split("\n  ];")[0]
+        assert pillars.count("id: '") == 3, \
+            "i pilastri non sono piu' tre: Sound doveva restare una striscia"
+
+    def test_il_fondo_e_l_inchiostro_di_sound_non_il_salvia(self):
+        """Due verdi adiacenti romperebbero l'alternanza dei fondi (la
+        battuta 3 e' l'ancora salvia). L'inchiostro di Sound e' anche
+        un'anteprima onesta del mondo in cui si sta per entrare."""
+        src = self.HOME.read_text()
+        blocco = src.split('data-testid="hp-sound"')[1][:400]
+        assert "#122125" in blocco, "la striscia non usa l'inchiostro di Sound"
+        assert "#2f5749" not in blocco, "la striscia e' salvia come la battuta 3"
+
+    def test_una_porta_sola(self):
+        """Il menu ha due voci (Sound e Meditazioni) per un mondo solo:
+        la home non deve replicare la doppia porta."""
+        src = self.HOME.read_text()
+        striscia = src.split('data-testid="hp-sound"')[1].split("</Section>")[0]
+        assert striscia.count("<EditorialCta") == 1, \
+            "la striscia ha piu' di un invito"
+        assert 'to="/meditazioni"' not in striscia, \
+            "seconda porta nella striscia: le meditazioni si nominano nel testo"
+
+    def test_la_foto_non_si_richiede_finche_non_esiste(self):
+        """Un `src` che punta al nulla e' una richiesta a vuoto a ogni
+        caricamento della home."""
+        src = self.HOME.read_text()
+        riga = [l for l in src.splitlines() if l.startswith("const SOUND_PHOTO")][0]
+        valore = riga.split("=")[1].strip().strip("';\" ")
+        assert valore == "" or valore.startswith("/media/"), \
+            f"SOUND_PHOTO non e' un percorso interno: {valore!r}"
+        assert "{SOUND_PHOTO && (" in src, \
+            "l'immagine verrebbe richiesta anche quando non c'e'"
+
+    def test_il_ciano_non_diventa_un_colore_di_marca(self):
+        """La foto scelta e' luce blu-ciano: entra come TEXTURE — in
+        screen sull'inchiostro, velata sul lato del testo e con la
+        tinta spostata verso l'acqua di Sound — non a piena forza."""
+        src = self.HOME.read_text()
+        if "SOUND_PHOTO = ''" not in src:
+            pass  # foto accesa: le regole sotto valgono comunque
+        blocco = src.split("{SOUND_PHOTO && (")[1].split(")}")[0]
+        assert "mix-blend-screen" in blocco
+        assert "hue-rotate" in blocco, "il ciano entra senza correzione di tinta"
+        assert "bg-gradient-to-r" in blocco, "manca il velo sul lato del testo"
+        assert 'alt=""' in blocco, "l'immagine decorativa ha un alt parlante"
