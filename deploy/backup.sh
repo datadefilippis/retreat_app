@@ -1,11 +1,11 @@
 #!/bin/bash
-# ── AFianco — MongoDB + Uploads Backup to Hetzner Storage Box ──────
+# ── Aurya — MongoDB + Uploads Backup to Hetzner Storage Box ────────
 #
 # Usage:
 #   ./deploy/backup.sh
 #
 # Cron (daily at 03:00):
-#   0 3 * * * /opt/margin-sentinel/deploy/backup.sh >> /var/log/ms-backup.log 2>&1
+#   0 3 * * * /opt/aurya/deploy/backup.sh >> /var/log/ms-backup.log 2>&1
 #
 # Requires:
 #   - .env.production in the project root with:
@@ -26,6 +26,22 @@
 
 set -euo pipefail
 
+# ── Cosa salvare in questo giro ──────────────────────────────────────
+# Il database e' piccolo (~1 MB) e cambia in continuazione: si salva
+# OGNI notte. Gli upload sono 639 MB di audio gia' compresso — il gzip
+# non li stringe e ritrasferirli ogni notte significa spedire 19 GB al
+# mese per copiare file che non sono cambiati.
+# Quindi: db ogni notte, upload una volta a settimana (o quando li si
+# e' appena cambiati, con --full).
+#   backup.sh            → db + upload   (giro completo)
+#   backup.sh --db-only  → solo database (giro notturno)
+#   backup.sh --full     → esplicito, uguale a nessun argomento
+MODE="${1:---full}"
+case "$MODE" in
+  --db-only|--full) ;;
+  *) echo "uso: $0 [--db-only|--full]"; exit 2 ;;
+esac
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 TMP_DIR="${PROJECT_DIR}/backups/tmp"
@@ -36,7 +52,13 @@ RETENTION_DAYS=30
 STORAGE_HOST="u578174.your-storagebox.de"
 STORAGE_USER="u578174"
 STORAGE_PORT=23
-STORAGE_DIR="afianco-backups"
+# Chiave DEDICATA ai backup (non quella di deploy): se un giorno va
+# revocata si revoca solo questa, e il deploy continua a funzionare.
+STORAGE_KEY="/root/.ssh/aurya_storagebox"
+# Cartella SEPARATA da quella di AFianco sulla stessa Storage Box:
+# due prodotti, due spazi, nessuna rotazione che cancella i file
+# dell'altro (la pulizia sotto lavora dentro STORAGE_DIR).
+STORAGE_DIR="aurya-backups"
 
 # ── Encryption config (Phase 1 Step C1) ──────────────────────────────
 # Each backup archive (db_, uploads_, config_) is encrypted with `age`
@@ -79,13 +101,13 @@ send_alert_on_failure() {
         return 0
     fi
 
-    local sender_email="${SMTP_FROM_EMAIL:-noreply@afianco.app}"
-    local subject="[AFianco] Backup FAILED on ${HOSTNAME_TAG} (exit=${exit_code})"
-    local body="<h2 style=\"color:#c00\">Backup failure on ${HOSTNAME_TAG}</h2><table style=\"font-family:sans-serif;border-collapse:collapse\"><tr><td style=\"padding:4px 12px 4px 0\"><b>Server</b></td><td>${HOSTNAME_TAG}</td></tr><tr><td style=\"padding:4px 12px 4px 0\"><b>Script</b></td><td>${SCRIPT_NAME}</td></tr><tr><td style=\"padding:4px 12px 4px 0\"><b>Started</b></td><td>${START_TS}</td></tr><tr><td style=\"padding:4px 12px 4px 0\"><b>Failed at</b></td><td>${end_ts}</td></tr><tr><td style=\"padding:4px 12px 4px 0\"><b>Exit code</b></td><td><code>${exit_code}</code></td></tr></table><p style=\"margin-top:16px\">Inspect tail logs:<br><code>tail -100 /var/log/ms-backup.log</code></p><p style=\"color:#666;font-size:0.9em\">Sent automatically by ${SCRIPT_NAME} on backup failure (Phase 1 Step C3).</p>"
+    local sender_email="${SMTP_FROM_EMAIL:-noreply@aurya.life}"
+    local subject="[Aurya] Backup FALLITO su ${HOSTNAME_TAG} (exit=${exit_code})"
+    local body="<h2 style=\"color:#c00\">Backup failure on ${HOSTNAME_TAG}</h2><table style=\"font-family:sans-serif;border-collapse:collapse\"><tr><td style=\"padding:4px 12px 4px 0\"><b>Server</b></td><td>${HOSTNAME_TAG}</td></tr><tr><td style=\"padding:4px 12px 4px 0\"><b>Script</b></td><td>${SCRIPT_NAME}</td></tr><tr><td style=\"padding:4px 12px 4px 0\"><b>Started</b></td><td>${START_TS}</td></tr><tr><td style=\"padding:4px 12px 4px 0\"><b>Failed at</b></td><td>${end_ts}</td></tr><tr><td style=\"padding:4px 12px 4px 0\"><b>Exit code</b></td><td><code>${exit_code}</code></td></tr></table><p style=\"margin-top:16px\">Inspect tail logs:<br><code>tail -100 /var/log/aurya-backup.log</code></p><p style=\"color:#666;font-size:0.9em\">Sent automatically by ${SCRIPT_NAME} on backup failure (Phase 1 Step C3).</p>"
 
     # JSON payload (printf-safe quoting).
     local payload
-    payload=$(printf '{"sender":{"name":"AFianco Ops","email":"%s"},"to":[{"email":"%s"}],"subject":"%s","htmlContent":"%s"}' \
+    payload=$(printf '{"sender":{"name":"Aurya Ops","email":"%s"},"to":[{"email":"%s"}],"subject":"%s","htmlContent":"%s"}' \
         "${sender_email}" "${BACKUP_ALERT_EMAIL}" "${subject}" "${body}")
 
     # 5-second cap so a hung Brevo never delays the next cron tick.
@@ -172,7 +194,11 @@ echo "[INFO] $(date) — MongoDB dump encrypted: ${DB_FILE} (${DB_SIZE})"
 echo "[INFO] $(date) — Archiving uploads volume..."
 UPLOADS_VOLUME=$(docker volume inspect ms-backend-uploads --format '{{.Mountpoint}}' 2>/dev/null || echo "")
 
-if [ -n "${UPLOADS_VOLUME}" ] && [ -d "${UPLOADS_VOLUME}" ]; then
+if [ "${MODE}" = "--db-only" ]; then
+    echo "[INFO] $(date) — Uploads saltati (giro --db-only): l'ultimo"
+    echo "       archivio settimanale resta valido sulla Storage Box."
+    UPLOADS_FILE=""
+elif [ -n "${UPLOADS_VOLUME}" ] && [ -d "${UPLOADS_VOLUME}" ]; then
     tar -czf "${TMP_DIR}/${UPLOADS_PLAIN}" -C "${UPLOADS_VOLUME}" . 2>/dev/null || true
     if [ -f "${TMP_DIR}/${UPLOADS_PLAIN}" ] && [ -s "${TMP_DIR}/${UPLOADS_PLAIN}" ]; then
         encrypt_file "${TMP_DIR}/${UPLOADS_PLAIN}" >/dev/null
@@ -250,9 +276,9 @@ if [ "${LETSENCRYPT_AVAILABLE}" -eq 1 ]; then
     tar -czf "${TMP_DIR}/${CONFIG_PLAIN}" \
         --ignore-failed-read \
         -C / \
-            "opt/margin-sentinel/.env.production" \
-            "opt/margin-sentinel/docker-compose.prod.yml" \
-            "opt/margin-sentinel/deploy/nginx" \
+            "opt/aurya/.env.production" \
+            "opt/aurya/docker-compose.prod.yml" \
+            "opt/aurya/deploy/nginx" \
             "var/spool/cron/crontabs/root" \
         -C "${TMP_DIR}" \
             "letsencrypt" \
@@ -264,9 +290,9 @@ else
     tar -czf "${TMP_DIR}/${CONFIG_PLAIN}" \
         --ignore-failed-read \
         -C / \
-            "opt/margin-sentinel/.env.production" \
-            "opt/margin-sentinel/docker-compose.prod.yml" \
-            "opt/margin-sentinel/deploy/nginx" \
+            "opt/aurya/.env.production" \
+            "opt/aurya/docker-compose.prod.yml" \
+            "opt/aurya/deploy/nginx" \
             "var/spool/cron/crontabs/root" \
         2>/dev/null || true
 fi
@@ -289,18 +315,18 @@ fi
 echo "[INFO] $(date) — Uploading to Storage Box..."
 
 # Create remote directory if it doesn't exist
-ssh -p ${STORAGE_PORT} -o StrictHostKeyChecking=no -o BatchMode=yes \
+ssh -p ${STORAGE_PORT} -i ${STORAGE_KEY} -o StrictHostKeyChecking=no -o BatchMode=yes \
     ${STORAGE_USER}@${STORAGE_HOST} "mkdir -p ${STORAGE_DIR}" 2>/dev/null || true
 
 # Upload database
-scp -P ${STORAGE_PORT} -o BatchMode=yes \
+scp -P ${STORAGE_PORT} -i ${STORAGE_KEY} -o BatchMode=yes \
     "${TMP_DIR}/${DB_FILE}" \
     "${STORAGE_USER}@${STORAGE_HOST}:${STORAGE_DIR}/${DB_FILE}"
 echo "[INFO] $(date) — Uploaded ${DB_FILE}"
 
 # Upload uploads archive (if exists)
 if [ -n "${UPLOADS_FILE}" ] && [ -f "${TMP_DIR}/${UPLOADS_FILE}" ]; then
-    scp -P ${STORAGE_PORT} -o BatchMode=yes \
+    scp -P ${STORAGE_PORT} -i ${STORAGE_KEY} -o BatchMode=yes \
         "${TMP_DIR}/${UPLOADS_FILE}" \
         "${STORAGE_USER}@${STORAGE_HOST}:${STORAGE_DIR}/${UPLOADS_FILE}"
     echo "[INFO] $(date) — Uploaded ${UPLOADS_FILE}"
@@ -308,7 +334,7 @@ fi
 
 # Upload config archive (if produced — Phase 1 Step C5)
 if [ -n "${CONFIG_FILE}" ] && [ -f "${TMP_DIR}/${CONFIG_FILE}" ]; then
-    scp -P ${STORAGE_PORT} -o BatchMode=yes \
+    scp -P ${STORAGE_PORT} -i ${STORAGE_KEY} -o BatchMode=yes \
         "${TMP_DIR}/${CONFIG_FILE}" \
         "${STORAGE_USER}@${STORAGE_HOST}:${STORAGE_DIR}/${CONFIG_FILE}"
     echo "[INFO] $(date) — Uploaded ${CONFIG_FILE}"
@@ -342,7 +368,7 @@ echo "[INFO] $(date) — Local temp files cleaned"
 echo "[INFO] $(date) — Cleaning old backups on Storage Box..."
 
 # 1. List remote files
-REMOTE_LIST=$(sftp -P ${STORAGE_PORT} -o BatchMode=yes -o StrictHostKeyChecking=no \
+REMOTE_LIST=$(sftp -P ${STORAGE_PORT} -i ${STORAGE_KEY} -o BatchMode=yes -o StrictHostKeyChecking=no \
     "${STORAGE_USER}@${STORAGE_HOST}" 2>/dev/null <<EOF
 cd ${STORAGE_DIR}
 ls -1
@@ -359,9 +385,25 @@ else
         || date -v "-${RETENTION_DAYS}d" +%Y%m%d)
 
     # 3. Filter old files
+    #
+    # RETE DI SICUREZZA (aggiunta 21/8, quando gli upload sono passati
+    # a settimanali): l'ULTIMO archivio di ogni tipo non si cancella
+    # MAI, per vecchio che sia. Senza, bastava che il giro settimanale
+    # degli upload fallisse per cinque settimane e la pulizia a 30
+    # giorni portava via l'unica copia rimasta — lasciando il backup
+    # formalmente attivo e di fatto senza upload.
+    KEEP_NEWEST=""
+    for pref in db_ uploads_ config_; do
+        newest=$(echo "${REMOTE_FILES}" | grep -E "^${pref}" | sort | tail -1)
+        [ -n "${newest}" ] && KEEP_NEWEST="${KEEP_NEWEST}${newest}"$'\n'
+    done
+
     DELETE_LIST=()
     while IFS= read -r f; do
         [ -z "$f" ] && continue
+        if echo "${KEEP_NEWEST}" | grep -qxF "$f"; then
+            continue        # e' il piu' recente del suo tipo: intoccabile
+        fi
         FILE_DATE=$(echo "$f" | grep -oE '[0-9]{8}' | head -1)
         if [ -n "${FILE_DATE}" ] && [ "${FILE_DATE}" -lt "${DELETE_BEFORE_DATE}" ]; then
             DELETE_LIST+=("$f")
@@ -378,7 +420,7 @@ else
             SFTP_CMDS="${SFTP_CMDS}rm ${f}"$'\n'
             echo "  - ${f}"
         done
-        if echo "${SFTP_CMDS}" | sftp -P ${STORAGE_PORT} -o BatchMode=yes \
+        if echo "${SFTP_CMDS}" | sftp -P ${STORAGE_PORT} -i ${STORAGE_KEY} -o BatchMode=yes \
             "${STORAGE_USER}@${STORAGE_HOST}" >/dev/null 2>&1; then
             echo "[INFO] $(date) — Deleted ${#DELETE_LIST[@]} file(s) successfully"
         else
