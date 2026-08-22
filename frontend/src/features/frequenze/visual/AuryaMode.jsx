@@ -28,7 +28,8 @@ import './incorporato.css';
 
 export default function AuryaMode({ lettore, attivo = true,
                                     className = '', altezza = 380,
-                                    visual = null, suMotore = null }) {
+                                    visual = null, suMotore = null,
+                                    alTocco = null }) {
   const boxRef = useRef(null);      // la cornice: e' lei che va a tutto schermo
   const telaRef = useRef(null);     // dove il prototipo (o il 2D) vive
   const rafRef = useRef(0);
@@ -118,6 +119,10 @@ export default function AuryaMode({ lettore, attivo = true,
 
   /* ── a tutto schermo ──────────────────────────────────────────── */
   const commuta = useCallback(() => {
+    /* VC6 — in Crea il tocco sulla forma apre lo studio (l'autore
+       sceglie); per chi ascolta resta il tutto schermo, perche' la
+       scena e' gia' stata scelta da chi l'ha composta */
+    if (alTocco) { alTocco(); return; }
     const ora = !pieno;
     setPieno(ora);
     /* Il fullscreen nativo e' un di piu': la classe basta da sola. E
@@ -131,7 +136,7 @@ export default function AuryaMode({ lettore, attivo = true,
       if (ora) box?.requestFullscreen?.()?.catch(() => {});
       else if (document.fullscreenElement) document.exitFullscreen?.()?.catch(() => {});
     } catch { /* browser senza fullscreen: resta la classe */ }
-  }, [pieno]);
+  }, [pieno, alTocco]);
 
   /* Se l'utente esce dal fullscreen nativo (ESC, gesto del sistema) la
      cornice deve tornare nella pagina da sola, o resterebbe una tela
@@ -172,10 +177,12 @@ export default function AuryaMode({ lettore, attivo = true,
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); commuta(); } }}
-      aria-label={pieno ? 'Chiudi lo schermo intero' : 'Guarda a tutto schermo'}>
+      aria-label={alTocco ? 'Apri lo studio della scena'
+        : pieno ? 'Chiudi lo schermo intero' : 'Guarda a tutto schermo'}>
       <div className="avze-tela" ref={telaRef} />
       <span className="avze-hint" data-testid="aurya-mode-pieno">
-        {pieno ? 'Tocca per uscire' : 'Tocca per lo schermo intero'}
+        {alTocco ? 'Tocca per scegliere forma e colori'
+          : pieno ? 'Tocca per uscire' : 'Tocca per lo schermo intero'}
       </span>
     </div>
   );

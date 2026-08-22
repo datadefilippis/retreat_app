@@ -202,7 +202,9 @@ class TestUnMotoreSoloAv5:
     def test_le_forme_sono_quelle_del_preset_aurya(self):
         """Decisione founder: nella meditazione le forme sono quelle di
         default del preset Aurya, con la palette multicolore."""
-        blocco = PROTO.split("if (incorporato){")[1][:700]
+        # da VC6 il ramo si chiama `prestato`: vale per la meditazione
+        # E per lo studio, che partono dallo stesso ambiente
+        blocco = PROTO.split("if (prestato){")[1][:900]
         assert "PRESETS[0]" in blocco, "il preset Aurya non e' piu' quello di partenza"
         assert "p.name === 'Prism'" in blocco, "persa la palette multicolore"
         assert "mode: aurya.mode" in blocco
@@ -221,7 +223,7 @@ class TestUnMotoreSoloAv5:
         contesto che non e' suo (ctxA resta nullo)."""
         # solo il RAMO incorporato: dopo di lui ricomincia ensureCtx,
         # che un contesto lo crea eccome (per la pagina strumento)
-        blocco = PROTO.split("if (incorporato && opz.analizzatore){")[1].split("\n}")[0]
+        blocco = PROTO.split("if (prestato && opz.analizzatore){")[1].split("\n}")[0]
         assert "analyser = opz.analizzatore" in blocco
         assert "new (window.AudioContext" not in blocco
         assert "if (ctxA) ctxA.close()" in PROTO, \
@@ -231,7 +233,7 @@ class TestUnMotoreSoloAv5:
     def test_le_manopole_di_un_altro_giorno_non_entrano(self):
         """localStorage e' della stanza degli esperimenti: la
         meditazione dev'essere sempre lo stesso ambiente."""
-        assert "if (incorporato) return;" in PROTO.split("const save =")[1][:120]
+        assert "if (prestato) return;" in PROTO.split("const save =")[1][:120]
         ramo = PROTO.split("} else {")[1][:200]
         assert "localStorage.getItem('aurya.settings.v2')" in ramo
 
@@ -243,7 +245,8 @@ class TestUnMotoreSoloAv5:
 
     def test_la_misura_e_la_scatola_non_la_finestra(self):
         assert "function misura()" in PROTO
-        assert "if (!incorporato) return { w: innerWidth, h: innerHeight }" in PROTO
+        # incorporato misura la SCATOLA, le altre modalita' la finestra
+        assert "incorporato ? r.width : (window.innerWidth || r.width)" in PROTO
         assert "new ResizeObserver(resize)" in PROTO
 
     def test_tutto_schermo_col_tocco(self):
@@ -387,7 +390,7 @@ class TestScenaDellAutoreVc:
     """
 
     TAB = (FQ_DIR / "visual" / "tabelle.js").read_text()
-    SCENA = (FQ_DIR / "visual" / "ScenaControlli.jsx").read_text()
+    STUDIO = (FQ_DIR / "visual" / "StudioScena.jsx").read_text()
     CREA = (FQ_DIR / "FrequenzePage.js").read_text()
 
     # ── il contratto (VC1) ────────────────────────────────────────────
@@ -441,18 +444,78 @@ class TestScenaDellAutoreVc:
         assert "import" not in codice
 
     # ── la tastiera di Crea (VC3/VC4) ─────────────────────────────────
-    def test_crea_legge_lo_standard_non_una_copia(self):
-        assert "from './tabelle'" in self.SCENA
-        for nome in ("Cosmos", "Anahata", "Samadhi"):
-            assert nome not in self.SCENA, \
-                f"preset copiato a mano in Crea ({nome}): divergera'"
-        assert "ETICHETTE[k] || label" in self.SCENA, \
-            "una variabile nuova dello standard deve comparire comunque"
+    def test_lo_studio_e_il_prototipo_non_una_copia(self):
+        """VC6, decisione founder: «/sound/visual e' lo standard». Chi
+        sceglie in Crea usa QUELLO — stesso markup, stesso script — non
+        una tastiera nostra che un giorno divergerebbe."""
+        assert "from './prototipoMarkup'" in self.STUDIO
+        assert "import('./prototipo')" in self.STUDIO
+        assert "studio: true" in self.STUDIO
+        assert not (VISUAL_DIR / "ScenaControlli.jsx").exists(), \
+            "e' tornata una seconda tastiera: un solo posto dove si sceglie"
+        for nome in ("Cosmos", "Anahata", "Samadhi", "SLIDERS"):
+            assert nome not in self.STUDIO, \
+                f"lo studio si e' copiato lo standard in casa ({nome})"
 
-    def test_ogni_gesto_suona_lo_stesso_strumento(self):
-        assert "motore.applica(patch)" in self.SCENA
-        assert "onCambia(motore.leggi())" in self.SCENA, \
-            "nella bozza vanno i valori RISOLTI, letti dal motore"
+    def test_cio_che_si_sceglie_torna_nella_ricetta(self):
+        assert "alFatto" in self.STUDIO and "onChiudi" in self.STUDIO
+        assert "opz.alFatto?.(fotografia())" in PROTO, \
+            "il «Fatto» deve consegnare i valori RISOLTI, non un preset"
+        assert "if (scelta) setVisual(scelta)" in self.CREA
+
+    def test_lo_studio_sta_fuori_dalla_pagina(self):
+        """Trovato dal vivo: montato dentro Crea lo studio EREDITA il
+        CSS del sito (`.fqz .row` sotto i 900px impilava i valori dei
+        cursori sotto le etichette). Il portale su <body> chiude il
+        passaggio — e toglie di mezzo gli antenati con `transform`,
+        che rompono i `position:fixed`."""
+        assert "createPortal(" in self.STUDIO
+        assert "document.body" in self.STUDIO
+
+    def test_le_sorgenti_dello_strumento_sono_spente(self):
+        """In studio il suono e' la sessione: microfono e carica-traccia
+        non hanno senso, e il gate non deve chiedere nulla."""
+        blocco = PROTO.split("if (studio){")[1][:600]
+        assert "el('gate').style.display = 'none'" in blocco
+        assert "el('srcSect').style.display = 'none'" in blocco
+        assert "La tua sessione" in blocco
+
+    def test_il_marchio_non_porta_via_la_sessione(self):
+        blocco = PROTO.split("if (studio){")[1][:900]
+        assert "marchio.removeAttribute('href')" in blocco, \
+            "il marchio navigherebbe via, buttando l'ascolto in corso"
+
+    def test_su_telefono_i_pannelli_sono_fogli(self):
+        """I due pannelli fissi fanno 438px: piu' larghi di mezzo
+        telefono. Sotto i 760px diventano fogli dal basso, uno alla
+        volta, e la forma resta protagonista."""
+        assert "@media (max-width:760px)" in CSS_PROTO
+        blocco = CSS_PROTO.split("@media (max-width:760px)")[1]
+        assert ".avz.studio #left,.avz.studio #right" in blocco
+        assert "translateY(102%)" in blocco and ".aperto" in blocco
+        assert "62dvh" in blocco, "un foglio non deve mangiarsi lo schermo"
+        assert "env(safe-area-inset-bottom)" in blocco
+        assert "#chipPreset" in blocco and "#chipRegola" in blocco
+
+    def test_una_misura_non_e_mai_zero(self):
+        """Trovato dal vivo: al montaggio la finestra puo' dichiarare
+        0 (telefono che ruota, riquadro che si dimensiona, scheda che
+        torna visibile). Da w=0 nasce un aspect NaN, e NaN e'
+        APPICCICOSO: `x += (k-x)*.08` non guarisce mai — il loto
+        spariva per sempre."""
+        assert "Math.max(1, Math.round(w))" in PROTO
+        assert "window.innerWidth || r.width" in PROTO
+        assert "if (!Number.isFinite(mandFit)) mandFit = 1" in PROTO
+
+    def test_una_sola_verita_sul_campionamento(self):
+        """Lo studio e' la prima modalita' con i pannelli E l'audio
+        prestato: `ctxA.sampleRate` era nullo e i misuratori
+        spegnevano il disegno (la guardia anti-tempesta l'ha detto in
+        una riga sola, invece di sessanta errori al secondo)."""
+        assert "const campionamento = () =>" in PROTO
+        corpo = _senza_commenti(PROTO)
+        assert corpo.count("ctxA.sampleRate") == 1, \
+            "qualcuno legge di nuovo il contesto senza passare da campionamento()"
 
     def test_il_manico_del_motore(self):
         assert "return { pulisci: cleanup, applica, leggi: fotografia };" in PROTO

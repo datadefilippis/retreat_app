@@ -36,7 +36,7 @@ import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia
 import { preparaAnello, continuoSupportato } from './engine/continuo';
 import { creaLettore } from './visual/analisi';
 import AuryaMode from './visual/AuryaMode';
-import ScenaControlli from './visual/ScenaControlli';
+import StudioScena from './visual/StudioScena';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS, CAT_SLUG, SLUG_CAT } from './content/biblioteca';
 import GuidaView from './GuidaView';
@@ -222,7 +222,10 @@ export default function FrequenzePage() {
      arriva da AuryaMode quando la scena monta. */
   const [guarda, setGuarda] = useState(false);
   const [visual, setVisual] = useState(null);
-  const [motore, setMotore] = useState(null);
+  /* VC6 — lo studio: il pannello a tutto schermo dove si sceglie
+     TUTTO (forme, preset, colori, cursori). Si apre toccando la
+     forma; il suono continua a suonare sotto. */
+  const [studio, setStudio] = useState(false);
   const lettoreRef = useRef(null);
 
   // FV3 — le basi respirano piano sotto la voce (parte della ricetta)
@@ -1603,6 +1606,17 @@ export default function FrequenzePage() {
           </section>
         )}
 
+        {/* VC6 — lo studio vive sopra la pagina: la sessione continua a
+            suonare sotto, e cio' che l'autore sceglie torna in un colpo
+            solo dentro la ricetta. */}
+        {studio && (
+          <StudioScena lettore={lettoreRef.current} visual={visual}
+            onChiudi={(scelta) => {
+              if (scelta) setVisual(scelta);
+              setStudio(false);
+            }} />
+        )}
+
         {view === 'create' && (
           <section>
             <div className="createbar">
@@ -1703,15 +1717,19 @@ export default function FrequenzePage() {
                 {lettoreRef.current && (playing || elapsed > 0) ? (
                   <AuryaMode lettore={lettoreRef.current}
                     attivo altezza={280}
-                    visual={visual} suMotore={setMotore} />
+                    visual={visual}
+                    alTocco={() => setStudio(true)} />
                 ) : (
                   <p className="soundlead" data-testid="fq-scena-attesa">
                     Premi <b>▶ Ascolta sessione</b> e la scena si accende
                     col tuo suono.
                   </p>
                 )}
-                <ScenaControlli motore={motore} visual={visual}
-                  onCambia={setVisual} />
+                <button type="button" className="cb-scena scena-apri"
+                  data-testid="fq-studio-apri"
+                  onClick={() => setStudio(true)}>
+                  ✦ Scegli forma e colori
+                </button>
               </div>
             )}
             {/* ES3 — quanto chiedera' al dispositivo. Compare solo

@@ -25,8 +25,18 @@ export function avviaPrototipo(root, opz = {}){
      multicolore. Due schermate che non possono divergere, perche' sono
      letteralmente lo stesso codice (prima erano due motori diversi, ed
      e' esattamente cio' che il founder ha visto e bocciato). */
+  /* VC6 — TRE modalita', un file solo:
+     - strumento (/sound/visual): pannelli, mic/traccia, localStorage;
+     - incorporato (la scena in una meditazione): niente pannelli,
+       analizzatore prestato, memoria nella ricetta;
+     - studio (aperto da Crea): pannelli DELLO STRUMENTO + audio
+       prestato + memoria nella ricetta. Non e' una schermata nuova:
+       e' questa, con le sorgenti spente e un tasto «Fatto». */
   const incorporato = !!opz.incorporato;
+  const studio = !!opz.studio;
+  const prestato = incorporato || studio;   /* il suono e' di altri */
   let tettoParticelle = Infinity;    /* limite di RESA del dispositivo */
+  let stretto = false;               /* schermo da telefono */
   const byId = (id) => root.querySelector('#' + id);
   const ascoltatori = [];
   const winAdd = (ev, fn) => { window.addEventListener(ev, fn); ascoltatori.push([ev, fn]); };
@@ -41,11 +51,11 @@ const MAX_P = 24000, LINE_P = 5200;
 const defaults = { mode:2, pal:0, preset:0, cam:0, react:1.05, quality:1.6 };
 SLIDERS.forEach(([k,,,,d])=>defaults[k]=d);
 let S = Object.assign({}, defaults);
-if (incorporato){
-  /* Meditazione: forme del preset Aurya (Mandala) e palette
-     multicolore. Niente localStorage — la stanza degli esperimenti e'
-     /sound/visual: qui l'ambiente dev'essere sempre lo stesso, e le
-     manopole di un altro giorno non devono cambiare la meditazione. */
+if (prestato){
+  /* Meditazione e studio partono IDENTICI: forme del preset Aurya
+     (Mandala) e palette multicolore. Niente localStorage — la stanza
+     degli esperimenti e' /sound/visual: qui la memoria e' la ricetta,
+     e le manopole di un altro giorno non devono cambiare l'opera. */
   const aurya = PRESETS[0];
   const prism = PALETTES.findIndex((p) => p.name === 'Prism');
   Object.assign(S, aurya.over, { mode: aurya.mode, pal: prism, cam: 2 });
@@ -60,7 +70,7 @@ if (incorporato){
      sull'ambiente di default; il telefono sotto puo' solo LIMARE
      (qualita'/particelle), mai cambiare la scena. */
   if (opz.impostazioni) Object.assign(S, opz.impostazioni);
-  const stretto = Math.min(root.clientWidth || 640, window.innerWidth || 640) < 520;
+  stretto = Math.min(root.clientWidth || 640, window.innerWidth || 640) < 520;
   S.quality = stretto ? 1.25 : 1.5;          /* la batteria di un telefono */
   /* il tetto del telefono NON scrive su S: se finisse nella
      fotografia, l'autore che compone da telefono firmerebbe una scena
@@ -69,7 +79,7 @@ if (incorporato){
 } else {
   try { Object.assign(S, JSON.parse(localStorage.getItem('aurya.settings.v2')||'{}')); } catch(e){}
 }
-const save = () => { if (incorporato) return;
+const save = () => { if (prestato) return;
   try{ localStorage.setItem('aurya.settings.v2', JSON.stringify(S)); }catch(e){} };
 
 /* ============================================================
@@ -88,6 +98,7 @@ controls.minDistance = 5; controls.maxDistance = 80; controls.enablePan = false;
 /* incorporato: la tela sta dentro una pagina che si scorre col dito —
    ruotare la scena ruberebbe lo scroll. La camera si muove da sola. */
 if (incorporato){ controls.enableRotate = false; controls.enableZoom = false; }
+if (studio) root.classList.add('studio');
 
 /* trail/atmosphere layer: instead of flat black, the frame fades toward a
    deep radial gradient — this is what gives the image its sense of volume */
@@ -569,9 +580,12 @@ if (incorporato && S.mode === 4){ camera.position.set(0, 0, 34); controls.target
 
 /* a schermo pieno la misura e' la finestra; incorporato e' la scatola */
 function misura(){
-  if (!incorporato) return { w: innerWidth, h: innerHeight };
   const r = root.getBoundingClientRect();
-  return { w: Math.max(1, Math.round(r.width)), h: Math.max(1, Math.round(r.height)) };
+  const w = incorporato ? r.width : (window.innerWidth || r.width);
+  const h = incorporato ? r.height : (window.innerHeight || r.height);
+  /* mai zero: da w=0 nasce un aspect NaN, e da li' in poi ogni numero
+     che lo tocca resta NaN per sempre (il loto spariva per sempre) */
+  return { w: Math.max(1, Math.round(w)), h: Math.max(1, Math.round(h)) };
 }
 function resize(){
   const { w, h } = misura();
@@ -597,7 +611,7 @@ const bands = { bass:0, mid:0, high:0, level:0 };
    sul motore delle meditazioni). NON creiamo un secondo AudioContext e
    soprattutto non lo chiudiamo allo smontaggio: e' di chi ce lo ha
    prestato, e sta suonando. */
-if (incorporato && opz.analizzatore){
+if (prestato && opz.analizzatore){
   analyser = opz.analizzatore;
   freq = new Uint8Array(analyser.frequencyBinCount);
   time = new Uint8Array(analyser.fftSize);
@@ -652,6 +666,15 @@ function setSourceUI(kind, label){
   byId('gate').style.display = 'none';
 }
 
+/* Il contesto e' NOSTRO solo nello strumento: incorporato e studio
+   suonano su un grafo di altri, e li' ctxA resta nullo. Chi vuole la
+   frequenza di campionamento passa da qui, o esplode il giorno in cui
+   una modalita' ha i pannelli E l'audio prestato — cioe' lo studio
+   (successo davvero, 22/8: la scena restava nera). */
+const campionamento = () => (ctxA && ctxA.sampleRate)
+  || opz.sampleRate
+  || (analyser && analyser.context && analyser.context.sampleRate)
+  || 48000;
 const avg = (a,f,t) => { let s=0; for(let k=f;k<t;k++) s+=a[k]; return s/Math.max(1,(t-f))/255; };
 function readAudio(){
   if (!analyser){
@@ -672,8 +695,7 @@ function dominantHz(){
   if (!analyser) return 0;
   let m = 0, mi = 0;
   for (let k=2;k<freq.length*.6;k++) if (freq[k] > m){ m = freq[k]; mi = k; }
-  const sr = ctxA ? ctxA.sampleRate : (opz.sampleRate || 48000);
-  return m < 14 ? 0 : Math.round(mi * sr / analyser.fftSize);
+  return m < 14 ? 0 : Math.round(mi * campionamento() / analyser.fftSize);
 }
 
 /* ============================================================
@@ -777,6 +799,34 @@ winAdd('keydown', e=>{
 winAdd('dragover', e=>e.preventDefault());
 winAdd('drop', e=>{ e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('audio')) caricaFile(f); });
 
+/* ── VC6 — lo studio: le sorgenti sono spente (il suono e' la
+   sessione che sta suonando in Crea), il marchio chiude invece di
+   navigare via, e su telefono i chip aprono i pannelli come fogli. ── */
+if (studio){
+  el('gate').style.display = 'none';
+  el('srcSect').style.display = 'none';
+  el('srcLabel').textContent = 'La tua sessione';
+  el('micdot').classList.add('live');
+  const chiudi = () => opz.alFatto?.(fotografia());
+  const marchio = root.querySelector('.brand a');
+  if (marchio){ marchio.removeAttribute('href'); marchio.onclick = chiudi; }
+  el('chipFatto').onclick = chiudi;
+  const fogli = { chipPreset: el('left'), chipRegola: el('right') };
+  const apri = (quale) => {
+    Object.keys(fogli).forEach((id) => {
+      const attivo = id === quale && !fogli[id].classList.contains('aperto');
+      fogli[id].classList.toggle('aperto', attivo);
+      el(id).classList.toggle('on', attivo);
+    });
+  };
+  el('chipPreset').onclick = () => apri('chipPreset');
+  el('chipRegola').onclick = () => apri('chipRegola');
+  /* toccare la scena richiude i fogli: la forma torna piena — e' il
+     motivo per cui questa schermata esiste */
+  canvas.addEventListener('pointerdown', () => apri(null));
+  winAdd('keydown', (e) => { if (e.key === 'Escape') chiudi(); });
+}
+
 el('camName').textContent = CAMS[S.cam];
 el('presetName').textContent = PRESETS[S.preset].name;
 el('presetTitle').textContent = PRESETS[S.preset].name.toUpperCase();
@@ -834,7 +884,7 @@ updateMeters = function(breath){
   set('mMid', bands.mid, 'vMid'); set('mHigh', bands.high*1.3, 'vHigh');
   set('mDyn', breath, 'vDyn');
   el('domFreq').textContent = dominantHz().toLocaleString('it-IT') + ' Hz';
-  if (analyser) el('freqRange').textContent = '20 Hz – ' + Math.round(ctxA.sampleRate/2000) + ' kHz';
+  if (analyser) el('freqRange').textContent = '20 Hz – ' + Math.round(campionamento()/2000) + ' kHz';
   drawWave(); drawTopSpec(); drawRadial(breath);
 };
 }   /* ← fine dei pannelli */
@@ -916,11 +966,15 @@ function disegna(){
     const d = camera.position.length();
     const halfH = d * Math.tan(camera.fov * Math.PI/360);
     const vista = misura();
-    const freeW = (incorporato || root.classList.contains('hidden-ui'))
-      ? vista.w : Math.max(240, vista.w - 438);
+    const colonne = !incorporato && !stretto
+      && !root.classList.contains('hidden-ui');
+    const freeW = colonne ? Math.max(240, vista.w - 438) : vista.w;
     const halfW = halfH * camera.aspect * (freeW/vista.w);
     const k = Math.min(halfH, halfW) * .94 / R;
-    mandFit += (k - mandFit) * .08;
+    /* NaN e' appiccicoso: `x += (k - x) * .08` con x NaN resta NaN
+       anche quando k torna buono. Si riparte, invece di sparire. */
+    if (!Number.isFinite(mandFit)) mandFit = 1;
+    if (Number.isFinite(k)) mandFit += (k - mandFit) * .08;
     mandala.scale.setScalar(mandFit);
   }
   const fl = mandala.userData.flower, bk = mandala.userData.backdrop;

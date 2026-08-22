@@ -55,42 +55,11 @@
   .avze-hint { transition: none; }
 }
 
-/* ── VC3/VC4 — la tastiera della scena in Crea ─────────────────────
-   Colori dal mondo Sound (frequenze.css), niente tinte nuove: e' un
-   controllo del gestionale, non un pezzo del visualizzatore. */
-.scnc { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-.scnc-riga { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.scnc-preset {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 6px 12px; border-radius: 999px; cursor: pointer;
-  background: transparent; color: inherit; font: inherit; font-size: 12px;
-  border: 1px solid rgba(233, 228, 217, .18);
-  transition: border-color .25s ease;
+/* ── VC6 — l'invito allo studio, sotto la scena ────────────────── */
+.scena-apri{
+  display:inline-flex; align-items:center; gap:7px; margin-top:10px;
+  padding:9px 16px; border-radius:999px; cursor:pointer;
+  background:transparent; font:inherit; font-size:12px;
+  border:1px solid #9B8BC4; color:#C4B8E0;
 }
-.scnc-preset:hover:not(:disabled) { border-color: rgba(233, 228, 217, .45); }
-.scnc-preset.su { border-color: #C9B37E; }
-.scnc-preset:disabled { opacity: .45; cursor: default; }
-.scnc-punti { display: inline-flex; gap: 2px; }
-.scnc-punti i {
-  width: 7px; height: 7px; border-radius: 50%; display: inline-block;
-}
-.scnc-pal {
-  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
-  border: 2px solid transparent; padding: 0;
-}
-.scnc-pal.su { border-color: #E9E4D9; }
-.scnc-pal:disabled { opacity: .45; cursor: default; }
-.scnc-cam, .scnc-fine {
-  background: transparent; color: inherit; font: inherit; font-size: 12px;
-  border: 1px solid rgba(233, 228, 217, .18); border-radius: 999px;
-  padding: 5px 12px; cursor: pointer; align-self: flex-start;
-}
-.scnc-cam:disabled, .scnc-fine:disabled { opacity: .45; cursor: default; }
-.scnc-cursori {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 10px 18px; padding: 10px 0 2px;
-}
-.scnc-ctl { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
-.scnc-ctl span { display: flex; justify-content: space-between; opacity: .85; }
-.scnc-ctl b { font-variant-numeric: tabular-nums; }
-.scnc-ctl input[type=range] { width: 100%; accent-color: #C9B37E; }
+.scena-apri:hover{ background:#9B8BC4; color:#0C1618; }

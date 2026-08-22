@@ -28,7 +28,7 @@ const MARKUP = `
     <div class="sub">Immersive Mode</div>
   </div>
 
-  <div class="sect">
+  <div class="sect" id="srcSect">
     <div class="lbl">Audio source</div>
     <button class="src on" id="btnMic">
       <svg viewBox="0 0 24 24"><path d="M3 12h2l2-5 2 9 2-12 2 15 2-9 2 4h4"/></svg>Microphone
@@ -116,6 +116,13 @@ const MARKUP = `
 
 <button id="hide"><span id="hideTxt">Hide interface</span>
   <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+
+<!-- ============ CHIPS (studio) ============ -->
+<div id="chips">
+  <button id="chipPreset" type="button">◈ Preset</button>
+  <button id="chipRegola" type="button">☼ Regola</button>
+  <button id="chipFatto" type="button" class="fatto">✓ Fatto</button>
+</div>
 
 <!-- ============ GATE / INFO ============ -->
 <div id="gate"><div class="box">
