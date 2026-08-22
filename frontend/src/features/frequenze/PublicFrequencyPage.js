@@ -28,6 +28,7 @@ import SoundTopbar from './SoundTopbar';
 import SeekBar from './SeekBar';
 import AuryaMode from './visual/AuryaMode';
 import { creaLettore } from './visual/analisi';
+import { creaPonte } from './engine/ponte';
 
 const PREVIEW_SEC = 90;
 const INTENTS = {
@@ -175,6 +176,9 @@ export default function PublicFrequencyPage() {
       sorvegliaContesto(ctxRef.current, () => stopRef.current());
     }
     const ctx = ctxRef.current;
+    /* il canale-musica: parte nel gesto (vedi engine/ponte.js) */
+    const ponte = creaPonte(ctx);
+    ponte.avvia();
     if (!lettoreRef.current) {
       // l'analizzatore OSSERVA il suono da un ramo parallelo (vedi
       // synth.js): l'altoparlante resta collegato direttamente, e la
@@ -189,6 +193,7 @@ export default function PublicFrequencyPage() {
     liveRef.current = startPreview(ctx, track.score,
       { fromT, audioLayers, voiceLayers,
         voiceDuck: !!track.score.voice_duck,
+        sbocco: ctx._fqzPonte?.nodo,
         uscita: lettoreRef.current?.analyser });
     setPlaying(true);
     timerRef.current = setInterval(() => {

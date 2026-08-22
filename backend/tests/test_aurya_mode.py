@@ -69,7 +69,7 @@ class TestNonToccaIlSuonoAv1:
         """L'analizzatore sta FRA il motore e l'altoparlante: legge cio'
         che esce davvero. Ma resta del chiamante — il motore non lo
         crea e non lo chiude."""
-        assert "uscita = null" in SYNTH
+        assert "uscita = null" in SYNTH and "sbocco = null" in SYNTH
         assert "if (uscita) sess.connect(uscita);" in SYNTH
         assert "createAnalyser" not in SYNTH, "il motore non deve farsi l'analizzatore"
 
@@ -655,22 +655,33 @@ class TestScenaDellAutoreVc:
         assert "uscita: lettoreRef.current.analyser" in self.CREA
         assert "creaLettore(ctx)" in self.CREA
 
-    def test_l_analisi_non_sta_nella_strada_del_suono(self):
-        """LA guardia del silenzio, seconda versione — scritta da un
-        difetto vero in PRODUZIONE (22/8): l'analizzatore era IN SERIE
-        (sess → analyser → altoparlante). Su desktop passava, su
-        iPhone no: lo stesso suono si sentiva da solo e spariva dentro
-        una sessione. Un AnalyserNode «foglia» legge benissimo senza
-        essere collegato a valle: l'analisi OSSERVA, non trasporta.
-        L'altoparlante dev'essere collegato SEMPRE e per primo."""
-        assert "sess.connect(ctx.destination);" in SYNTH
+
+    def test_il_suono_esce_dal_canale_musica(self):
+        """LA guardia del silenzio, terza e definitiva — scritta da due
+        difetti veri in PRODUZIONE (22/8, iPhone): su iOS (dove OGNI
+        browser e' WebKit, Brave incluso) il grafo WebAudio collegato a
+        destination e' suono di CONTORNO — il silenziatore lo azzera —
+        mentre un <audio> e' musica e suona sempre. Le anteprime
+        (<audio>) si sentivano, la sessione (WebAudio) no.
+        La regola: il motore sfocia nel PONTE
+        (MediaStreamDestination → <audio playsinline>), UN canale solo
+        per tutte le piattaforme; l'analizzatore resta un osservatore
+        in parallelo — osserva, non trasporta."""
+        ponte = (FQ_DIR / "engine" / "ponte.js").read_text()
+        assert "createMediaStreamDestination" in ponte
+        assert "playsInline = true" in ponte
+        assert "navigator.audioSession" in ponte and "'playback'" in ponte
+        assert "sess.connect(sbocco || ctx.destination);" in SYNTH
         assert "if (uscita) sess.connect(uscita);" in SYNTH
         assert "sess.connect(uscita || ctx.destination)" not in SYNTH, \
             "l'analizzatore e' tornato in mezzo alla strada del suono"
-        # e nessuno deve ricollegarlo a valle: il suono passerebbe due volte
         for nome, src in (("Crea", self.CREA), ("pagina pubblica", PUB)):
+            assert "creaPonte(ctx)" in src, f"{nome}: il ponte non c'e'"
+            assert "ponte.avvia()" in src, \
+                f"{nome}: l'<audio> del ponte va avviato DENTRO il gesto"
+            assert "sbocco:" in src, f"{nome}: il motore non sfocia nel ponte"
             assert "analyser.connect(ctx.destination)" not in src, \
-                f"{nome}: doppio percorso del suono (volume raddoppiato)"
+                f"{nome}: doppio percorso del suono"
 
     def test_la_scena_si_chiede_e_si_salva_con_la_bozza(self):
         assert 'data-testid="fq-guarda"' in self.CREA

@@ -66,3 +66,4 @@ export function sorvegliaContesto(ctx, onPerso) {
     if (ctx.state !== 'running') onPerso();
   });
 }
+

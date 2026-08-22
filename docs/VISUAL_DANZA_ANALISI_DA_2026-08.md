@@ -326,3 +326,70 @@ vita.
 - VC6d: play/pausa della sessione DENTRO lo studio;
 - la X mobile va vista su un telefono vero (verifica strutturale ok);
 - preset che adottino le forme nuove: scelta di firma del founder.
+
+---
+
+# IL CANALE DEL SUONO — analisi del silenzio su iPhone (22 ago, prod)
+
+**Sintomo (founder, in produzione, iPhone + Brave)**: i suoni singoli si
+sentono; la stessa base dentro una SESSIONE no; la meditazione pubblicata
+no. Da desktop tutto funziona.
+
+## I fatti, in matrice
+
+| Percorso | Player | iPhone | Desktop |
+|---|---|---|---|
+| Anteprima suono (Crea) | `<audio>` element | ✅ | ✅ |
+| Ascolto continuo | `<audio>` element | ✅ | ✅ |
+| Sessione in Crea | WebAudio → destination | ❌ | ✅ |
+| Meditazione pubblicata | WebAudio → destination | ❌ | ✅ |
+
+Tre eliminazioni che la matrice impone:
+- **non è Brave**: su iOS ogni browser è WebKit per obbligo (Brave,
+  Chrome, Firefox inclusi) — le regole audio sono quelle di Safari;
+- **non sono i file/codec**: la meditazione muta è PURAMENTE sintetica
+  (oscillatori WebAudio, zero m4a);
+- **non è il mio analizzatore**: rimetterlo in parallelo (fix
+  precedente) era giusto ma non basta — il silenzio precede Aurya Mode
+  come categoria: e' il canale.
+
+## La causa
+
+Su iOS WebKit i due player vivono in regimi diversi: un elemento
+`<audio>` è «media playback» (musica: suona sempre); il grafo WebAudio
+collegato a `ctx.destination` è trattato come suono di CONTORNO —
+soggetto al silenziatore e a politiche più severe. La discriminante
+osservata (si sente ↔ non si sente) coincide ESATTAMENTE con questa
+riga di confine. È lo stesso motivo per cui l'ascolto continuo (ciclo
+AT) fu costruito su `<audio>`.
+
+## La soluzione: UN canale solo, ovunque
+
+Principio: il suono del motore deve uscire dallo STESSO canale delle
+anteprime che già funzionano su ogni dispositivo. Il ponte:
+
+```
+motore (WebAudio) → MediaStreamDestination → <audio playsinline>
+                 ↘ analizzatore (osserva, in parallelo)
+```
+
+- **iPhone**: l'`<audio>` è musica → il silenziatore non lo azzera;
+- **Android/desktop**: comportamento identico a prima, ma ora è UN solo
+  percorso per tutte le piattaforme — ciò che si testa su una vale per
+  le altre («consistente», richiesta founder);
+- l'`<audio>.play()` avviene DENTRO il gesto (il tocco su Ascolta):
+  nessuna politica di autoplay lo blocca;
+- in più, dove esiste (iOS 16.4+): `navigator.audioSession.type =
+  'playback'` — dichiara l'intento anche al sistema;
+- l'analizzatore resta un osservatore in parallelo (fix precedente,
+  ancora valido); l'ascolto continuo resta com'è (già `<audio>`).
+
+## Il processo di verifica (strutturato, non a orecchio)
+
+1. **grafo** (automatico, dal browser): `sess → MediaStreamDestination`
+   presente, `sess → destination` ASSENTE, `<audio>` con `srcObject`
+   attivo e `paused === false` durante il play;
+2. **desktop** (verifico io): sessione in Crea + meditazione;
+3. **iPhone Brave** (founder): suono singolo → sessione → meditazione
+   pubblicata, col silenziatore in ENTRAMBE le posizioni;
+4. **Android** (quando disponibile): stessa checklist.

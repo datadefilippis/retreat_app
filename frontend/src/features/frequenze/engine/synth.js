@@ -659,7 +659,7 @@ const rampCurve = (param, t0, span, fn, steps = 160, now = 0) => {
  */
 export function startPreview(ctx, score,
   { fromT = 0, audioLayers = [], voiceLayers = [], voiceDuck = false,
-    uscita = null } = {}) {
+    uscita = null, sbocco = null } = {}) {
   const d = score.duration_sec;
   const off = Math.max(0, Math.min(fromT || 0, d - 1));
   const t0 = ctx.currentTime + 0.15 - off;
@@ -676,7 +676,13 @@ export function startPreview(ctx, score,
      Un AnalyserNode «foglia» legge benissimo senza essere collegato a
      valle: l'analisi osserva, non trasporta. Il nodo resta del
      chiamante: il motore non lo crea e non lo chiude. */
-  sess.connect(ctx.destination);
+  /* Lo SBOCCO e' il ponte (engine/ponte.js): MediaStreamDestination →
+     <audio>. E' il canale «musica», lo stesso delle anteprime — l'unico
+     che iPhone non azzera (i browser iOS sono tutti WebKit: valeva per
+     Brave come per Safari). Senza ponte (chiamanti legacy o test),
+     l'altoparlante diretto. L'analizzatore resta in PARALLELO: osserva,
+     non trasporta. */
+  sess.connect(sbocco || ctx.destination);
   if (uscita) sess.connect(uscita);
   const fi = score.fade_in_sec || 0, fo = score.fade_out_sec || 0;
   const now = ctx.currentTime;

@@ -34,6 +34,7 @@ import {
 import { avvisoCuffie, avvisoCuffieScore } from './engine/altoparlante';
 import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import { preparaAnello, continuoSupportato } from './engine/continuo';
+import { creaPonte } from './engine/ponte';
 import { creaLettore } from './visual/analisi';
 import AuryaMode from './visual/AuryaMode';
 import StudioScena from './visual/StudioScena';
@@ -561,6 +562,10 @@ export default function FrequenzePage() {
     const token = playTokenRef.current;   // stopSession() l'ha appena incrementato
     setPreparing(true);                   // l'utente vede subito che arriva
     const ctx = audioCtx();
+    /* il PONTE parte DENTRO il gesto, prima di ogni await lungo: e' il
+       canale-musica da cui esce tutta la sessione (engine/ponte.js) */
+    const ponte = creaPonte(ctx);
+    ponte.avvia();
     await ctx.resume();
     if (playTokenRef.current !== token) { setPreparing(false); return; }
     let audioLayers = [];
@@ -592,6 +597,7 @@ export default function FrequenzePage() {
          default nuovi (5s, non 10x12 moltiplicati) il play non sembra
          piu' rotto, e l'uniformita' vale piu' della partenza secca. */
       { fromT, audioLayers, voiceLayers: vLayers, voiceDuck,
+        sbocco: ponte.nodo,
         uscita: lettoreRef.current.analyser });
     setPreparing(false);
     setPlaying(true);
