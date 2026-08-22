@@ -674,9 +674,14 @@ class TestScenaDellAutoreVc:
         blocco = assets.split("if (!ottenuto) throw e;")[1][:400]
         assert "fetch(url)" in blocco and "decodeAudioData(ab2)" in blocco, \
             "il fallback deve riprendere il file INTERO, non riprovare lo stesso pezzo"
-        # e il silenzio non deve piu' essere invisibile
+        # e il silenzio non deve piu' essere invisibile: il pannello di
+        # diagnosi e' stato rimosso a problema risolto, ma la VOCE
+        # dell'errore resta in console — un catch muto ci e' costato
+        # mezza giornata e tre diagnosi sbagliate
         assert "BASE SALTATA" in assets
-        assert "notaDiagnosi" in assets
+        assert "console.warn" in assets
+        assert "catch (e) { /* base saltata" not in assets, \
+            "il catch e' tornato muto"
 
     def test_lo_stop_scende_prima_di_troncare(self):
         """Founder, 22/8: «allo stop un rumore di frequenze fastidioso,

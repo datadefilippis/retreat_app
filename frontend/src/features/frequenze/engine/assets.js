@@ -8,7 +8,6 @@
  */
 
 import { cleanVoiceBuffer } from './voicefx';
-import { notaDiagnosi } from './diagnosi';
 import { anelloDaBuffer } from './anello';
 
 /* ── ES3 (21/8) — lo spezzone ──────────────────────────────────────
@@ -109,8 +108,8 @@ export function loadAssetBuffer(ctx, url, inUso = new Set([url]), parziale = nul
            rifa' la richiesta, intera. */
         .catch((e) => {
           if (!ottenuto) throw e;          // era gia' intero: nulla da riprendere
-          notaDiagnosi('spezzone non decodificabile → riprendo il file intero: '
-            + url.split('/').pop());
+          console.warn('[aurya] spezzone non decodificabile, riprendo il file intero:',
+            url.split('/').pop());
           return fetch(url)
             .then((r) => r.arrayBuffer())
             .then((ab2) => ctx.decodeAudioData(ab2));
@@ -154,8 +153,8 @@ export async function resolveAudioLayers(ctx, score, soundsById) {
       /* base saltata: meglio una sessione parziale che muta. Ma se le
          basi sono tutte qui, «parziale» vuol dire MUTA: il silenzio
          non deve piu' essere invisibile. */
-      notaDiagnosi('BASE SALTATA (' + (asset.stream_url || '').split('/').pop()
-        + '): ' + (e && e.message ? e.message : e));
+      console.warn('[aurya] BASE SALTATA:', (asset.stream_url || '').split('/').pop(),
+        e && e.message ? e.message : e);
     }
   }
   return out;

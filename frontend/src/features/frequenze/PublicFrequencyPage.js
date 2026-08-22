@@ -29,7 +29,6 @@ import SeekBar from './SeekBar';
 import AuryaMode from './visual/AuryaMode';
 import { creaLettore } from './visual/analisi';
 import { creaPonte } from './engine/ponte';
-import { avviaDiagnosi } from './engine/diagnosi';
 
 const PREVIEW_SEC = 90;
 const INTENTS = {
@@ -191,10 +190,6 @@ export default function PublicFrequencyPage() {
     await ctx.resume();
     const { audioLayers, voiceLayers } = await caricaLayers(ctx);
     segnaAscolto();
-    /* ?diag=1 — il pannello che mostra il flusso VERO sul dispositivo
-       vero (engine/diagnosi.js): stato, livello del grafo, ponte */
-    avviaDiagnosi({ ctx, analyser: lettoreRef.current?.analyser,
-      ponte, etichetta: 'meditazione' });
     liveRef.current = startPreview(ctx, track.score,
       { fromT, audioLayers, voiceLayers,
         voiceDuck: !!track.score.voice_duck,

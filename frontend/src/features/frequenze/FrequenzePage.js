@@ -35,7 +35,6 @@ import { avvisoCuffie, avvisoCuffieScore } from './engine/altoparlante';
 import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import { preparaAnello, continuoSupportato } from './engine/continuo';
 import { creaPonte } from './engine/ponte';
-import { avviaDiagnosi } from './engine/diagnosi';
 import { creaLettore } from './visual/analisi';
 import AuryaMode from './visual/AuryaMode';
 import StudioScena from './visual/StudioScena';
@@ -592,8 +591,6 @@ export default function FrequenzePage() {
          volte. */
       lettoreRef.current = l;
     }
-    avviaDiagnosi({ ctx, analyser: lettoreRef.current.analyser,
-      ponte, etichetta: 'crea' });   /* ?diag=1 */
     liveRef.current = startPreview(ctx, score,
       /* 21/8, founder (ritratta TS1b): in Crea si sente ESATTAMENTE
          cio' che sentira' chi ascolta — dissolvenze comprese. Coi
