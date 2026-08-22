@@ -1329,6 +1329,22 @@ class TestVoceNelVisual:
         assert "/[?&]polso=1/" in PROTO
         assert "polso.presenza = g; polso.pronto = pronto" in PROTO
 
+    def test_il_governatore_della_resa(self):
+        """23/8 — la diagnosi ?polso=1 ha detto la verita': fps 30-32
+        sul telefono del founder = gli scatti. Il moto era gia' calmo
+        (colpi 0, respiro neutro): era la RESA. Il governatore misura
+        gli fps e scende gradini (particelle, pixelRatio) finche' il
+        moto torna fluido; il gradino si ricorda per dispositivo."""
+        PROTO = self._proto()
+        assert "function governaResa(dt)" in PROTO
+        assert "governaResa(dt);" in PROTO.split("function disegna()")[1][:200]
+        assert "if (_fpsMed < 45) _fpsCattivo += dt" in PROTO
+        assert "localStorage.setItem('aurya.resa.v1'" in PROTO
+        # i gradini scendono, mai risalgono in sessione (niente pompaggio)
+        assert PROTO.count("GRADINI_RESA[") == 2   # caricamento + discesa
+        # in REC comanda il video: il governatore sta fermo
+        assert "if (exportAttivo) return;                /* in REC comanda il video */" in PROTO
+
     def test_l_html_di_ingresso_non_si_cacha(self):
         """22/8: il founder ha testato TRE round su build vecchie
         («nulla sta cambiando») — la shell usciva senza header sul

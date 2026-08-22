@@ -41,6 +41,16 @@ export function avviaPrototipo(root, opz = {}){
   let tettoParticelle = Infinity;    /* limite di RESA del dispositivo */
   let stretto = false;               /* schermo da telefono */
   let exportAttivo = null;           /* {w,h} durante la registrazione */
+  /* IL GOVERNATORE DELLA RESA (23/8 — la diagnosi ?polso=1 sul
+     telefono del founder ha detto la verita': fps 30-32 costanti =
+     GLI SCATTI. Colpi a zero, respiro neutro, sipario a posto: il
+     moto era gia' calmo, era il telefono a non reggere la scena a
+     60. Sei round di taratura del gesto non potevano curarlo).
+     Misura gli fps veri e scende gradini di qualita' finche' il moto
+     torna fluido: meglio una scena piu' rada che una scena a scatti.
+     Il gradino si ricorda per dispositivo: la prossima apertura
+     nasce gia' giusta. */
+  let _fpsMed = 60, _fpsCattivo = 0, _gradino = 0, _governatoreT = 0;
   let wmPronto = null;               /* watermark: {scena, sprite, ar} */
   let fermaExport = () => {};        /* riempita dal modulo export */
   let spingiFrame = null;            /* REC: consegna il fotogramma appena disegnato */
@@ -885,6 +895,30 @@ function misura(){
      che lo tocca resta NaN per sempre (il loto spariva per sempre) */
   return { w: Math.max(1, Math.round(w)), h: Math.max(1, Math.round(h)) };
 }
+const GRADINI_RESA = [
+  () => { tettoParticelle = Math.min(tettoParticelle, 6000); },
+  () => { S.quality = 1.0; resize(); },
+  () => { tettoParticelle = 2800; },
+];
+try {
+  const g0 = Math.min(+localStorage.getItem('aurya.resa.v1') || 0, GRADINI_RESA.length);
+  for (let i = 0; i < g0; i++) GRADINI_RESA[i]();
+  _gradino = g0;
+} catch (e) { /* senza memoria si riparte dal pieno */ }
+function governaResa(dt){
+  if (exportAttivo) return;                /* in REC comanda il video */
+  _fpsMed += (1 / Math.max(dt, 1e-3) - _fpsMed) * Math.min(1, dt * 2);
+  _governatoreT += dt;
+  if (_governatoreT < 4) return;           /* riscaldamento: shader, cache */
+  if (_fpsMed < 45) _fpsCattivo += dt;
+  else _fpsCattivo = Math.max(0, _fpsCattivo - dt * 2);
+  if (_fpsCattivo > 1.5 && _gradino < GRADINI_RESA.length){
+    GRADINI_RESA[_gradino](); _gradino++; _fpsCattivo = 0;
+    try { localStorage.setItem('aurya.resa.v1', String(_gradino)); } catch (e) { /* pazienza */ }
+    console.info('[aurya] resa: gradino', _gradino, '- fps', _fpsMed.toFixed(0));
+  }
+}
+
 function resize(){
   if (exportAttivo) return;          /* EX: la risoluzione e' del video */
   const { w, h } = misura();
@@ -2039,7 +2073,7 @@ if (!studio && !incorporato){
    l'HTML usciva senza no-cache) e i numeri del moto ogni mezzo
    secondo. Solo con ?polso=1: zero costi per tutti gli altri. */
 if (!incorporato && /[?&]polso=1/.test(window.location.search)){
-  const BUILD = 'sipario-completo 23/8';
+  const BUILD = 'governatore 23/8';
   const dg = document.createElement('div');
   dg.style.cssText = 'position:fixed;left:8px;top:8px;z-index:80;'
     + 'background:rgba(3,2,8,.82);color:#9ef7c3;font:10px/1.6 monospace;'
@@ -2060,7 +2094,8 @@ if (!incorporato && /[?&]polso=1/.test(window.location.search)){
       + '\npronto ' + (polso.pronto || 0).toFixed(2)
       + '\nvita   ' + polso.vita.toFixed(2)
       + '\ncolpo  ' + polso.colpo.toFixed(2)
-      + '\nrespiro ' + polso.ondaLenta.toFixed(2);
+      + '\nrespiro ' + polso.ondaLenta.toFixed(2)
+      + '\nresa   g' + _gradino + ' q' + S.quality;
   }, 500);
 }
 
@@ -2154,6 +2189,7 @@ function frame(){
 }
 function disegna(){
   const dt = Math.min(clock.getDelta(), .05);
+  governaResa(dt);
   readAudio();
   battePolso(dt);
 
