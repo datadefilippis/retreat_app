@@ -198,3 +198,87 @@ totale la vita scende in <1 s, e la veglia è un quadro che respira appena
 
 La Reactivity resta la manopola per chi vuole più nervo: Full moltiplica,
 ma la base è calma — siamo una piattaforma di meditazione, non un club.
+
+---
+
+# DA6 — L'anima tonale: la melodia deve avere una forma (22 ago, notte)
+
+**Richiesta founder**: «se una musica da bassa diventa sempre più alta mi
+aspetto la stessa elevazione nel visual […] le forme devono rappresentare
+una melodia, non muoversi randomicamente. Serve la stessa anima.»
+
+## 1. La diagnosi: manca il terzo asse
+
+La musica vive su tre assi, e il ballerino finora ne sente due:
+
+| Asse | Domanda | Stato |
+|---|---|---|
+| **Dinamica** (energia) | *quanto* suono c'è | ✓ DA1 — la vita |
+| **Ritmo** (tempo) | *quando* succede | ✓ DA2/DA3 — battito, colpo, onde |
+| **Altezza** (registro, melodia) | *cosa* sta suonando | ✗ **quasi assente** |
+
+Oggi bass/mid/high entrano come tre energie scalari — muovono *quanto*,
+mai *dove*. Una melodia che sale di un'ottava cambia appena i pesi: la
+scena non «sale» con lei. È esattamente ciò che il founder percepisce:
+si muove, ma senza la logica della musica.
+
+## 2. I principi (percezione cross-modale, non gusto)
+
+La mappatura suono→spazio non è arbitraria: esistono associazioni
+universali, misurate, le stesse che rendono leggibile qualsiasi
+visualizzazione musicale:
+
+1. **Altezza → elevazione**: note acute = alto, leggero; gravi = basso,
+   massiccio. È l'associazione cross-modale più forte che si conosca
+   (perfino i neonati la mostrano). → *la scena deve salire quando la
+   musica sale*.
+2. **Altezza → luce e finezza**: acuto = chiaro, minuto; grave = scuro,
+   grande. → registro sulla banda colore (dentro la triade dell'autore)
+   e sulla taglia delle particelle.
+3. **Melodia → slancio**: non basta la posizione, serve la DERIVATA —
+   una scala che sale è un gesto ascensionale, un glissando che scende è
+   una ricaduta. → `slancio = d(registro)/dt`, lisciato.
+4. **Spettro → topologia**: il principio da ingegnere del suono. Ogni
+   forma ha una geometria naturale su cui STENDERE lo spettro — bassi al
+   centro, acuti in periferia (mandala, spirale); bassi in basso, acuti
+   in alto (elica). Così **ogni banda muove la SUA zona**: un basso che
+   pulsa gonfia il cuore, un arpeggio acuto fa scintillare i bordi — in
+   tempo reale, nota per nota, SENZA scuotere tutta la scena (che è ciò
+   che in DA5 abbiamo reso calmo). Località = correlazione visibile
+   senza nervosismo.
+
+## 3. Cosa si aggiunge (DA6)
+
+**All'orecchio (il polso)**:
+- `spettro8`: 8 bande logaritmiche 60 Hz–8 kHz, lisciate con tempi medi
+  (più vive dei muscoli globali, perché locali);
+- `registro`: la bilancia grave↔acuto (centroide in ottave, già DA2, ora
+  mappato davvero);
+- `slancio`: la derivata del registro, lisciata e limitata — il gesto
+  melodico.
+
+**Agli shader** (uniform: `uSpettro[8]`, `uRegistro`, `uSlancio`):
+- **elevazione globale**: il baricentro sale/scende col registro; lo
+  slancio dà il moto ascensionale quando la melodia sale;
+- **luce**: il registro sposta la banda colore verso la punta chiara
+  della triade dell'autore (mai fuori palette);
+- **taglia**: acuto = polvere fine, grave = globi morbidi;
+- **zone spettrali per forma** (la topologia): mandala = corone
+  (centro→bassi, bordo→acuti); spirale/ripple = raggio; elica = altezza;
+  breath = guscio; nebula = quota. Ogni banda anima la sua zona.
+
+**«Serve più 3D?»** — Risposta onesta: no, serve più *semantica* nello
+spazio 3D che già c'è. L'elevazione, lo slancio e le zone spettrali
+danno profondità percepita più di qualsiasi geometria nuova, perché il
+movimento acquista significato. Se dopo questo il 3D sembrerà ancora
+poco, il passo successivo è la parallasse (camera che respira sul
+registro), non nuovi poligoni.
+
+## 4. La prova (sonde tonali)
+
+- tono puro a 100 Hz vs 1200 Hz → `registro` basso vs alto, scena bassa
+  e scura vs alta e chiara;
+- «discesa infinita» (shepard, già in libreria metodi) → `slancio`
+  stabilmente negativo: la scena deve RICADERE con lei, per tutta la
+  durata — il test perfetto perché il gesto non finisce mai;
+- glissando (marea del battito) → l'onda viaggia attraverso le zone.

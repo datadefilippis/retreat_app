@@ -751,6 +751,38 @@ class TestBallerinoDa:
         # e l'ampiezza sfuma ANCHE negli shader
         assert "* uBeatAmp;" in PROTO
 
+    def test_l_anima_tonale_c_e(self):
+        """DA6, founder: «se una musica da bassa diventa sempre piu'
+        alta mi aspetto la stessa elevazione nel visual». Il terzo asse
+        della musica (COSA suona) entra con tre gesti universali:
+        elevazione col registro, slancio con la derivata, zone
+        spettrali sulla topologia di ogni forma. Prova strumentale:
+        tono 100 Hz → registro 0.19; 1200 Hz → 0.76 (atteso 0.76);
+        salita in crossfade → slancio +0.5 nel gesto."""
+        assert "uniform float uSpettro[8];" in PROTO
+        assert PROTO.count("float spettro(float z){") == 2, \
+            "la topologia spettrale deve vivere in ENTRAMBI i vertex"
+        assert "reg * 2.6 + uSlancio * 1.5" in PROTO      # elevazione+slancio
+        assert "loc*.30*e" in PROTO                        # corone del mandala
+        assert "(1.0 - reg*.30)" in PROTO                  # acuto=polvere fine
+
+    def test_il_registro_e_una_tendenza_non_una_nota(self):
+        """DA6, founder: «con melodie tranquille tutto scattoso e
+        nervoso» — un'elevazione che segue ogni nota sarebbe un
+        ascensore impazzito. Il registro insegue lento (tau ~1,8 s):
+        e' la tendenza della melodia; la brillantezza resta viva per
+        lo scintillio."""
+        assert "(1 - Math.exp(-dt / 1.8))" in PROTO
+        assert "polso.registro = polso.brillantezza" not in PROTO
+
+    def test_lo_shepard_non_e_un_test_valido(self):
+        """Nota di metodo, incisa qui perche' non si ripeta: la
+        «discesa infinita» ha il centroide STAZIONARIO per costruzione
+        (l'illusione inganna l'orecchio, non l'FFT). Lo slancio si
+        verifica con una salita vera (crossfade grave→acuto), mai con
+        lo shepard."""
+        assert True
+
     def test_la_sonda_non_e_rimasta(self):
         assert "__polso" not in PROTO
 
@@ -784,8 +816,11 @@ class TestRitmoAv4bis:
         adattiva: sente anche un cambio di nota."""
         assert "kick > .035" not in PROTO, "e' tornato il rilevatore da percussioni"
         assert "flux" in PROTO and "_fluxMedia * 3.2" in PROTO
-        # DA5: un'onda per frase, non per nota — refrattario
-        assert "_refrattario = 1.6" in PROTO
+        # DA5/DA6: un'onda per frase, non per nota — refrattario, e su
+        # musica dolce la soglia assoluta conta piu' della relativa
+        assert "_refrattario = 2.2" in PROTO
+        assert "+ 0.012" in PROTO
+        assert "(0.3 + 0.7 * polso.vita)" in PROTO
         assert "Math.exp(-dt * 4.2)" in PROTO      # il decadimento resta
         assert "MAND_U.uHit.value = hit" in PROTO
 

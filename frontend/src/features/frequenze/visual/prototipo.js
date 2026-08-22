@@ -200,6 +200,7 @@ const U = {
      onde PROPAGATIVE (uHitT in tempo-scena) */
   uVita:{value:0}, uBeatPhase:{value:0}, uBeatAmp:{value:0},
   uSlow:{value:.5}, uHitT:{value:-10},
+  uSpettro:{value:new Float32Array(8)}, uRegistro:{value:.5}, uSlancio:{value:0},
 };
 
 const NOISE = `
@@ -255,11 +256,20 @@ precision highp float;
 attribute vec3 aSeed; attribute float aRad, aAng, aArm, aSize, aRnd;
 uniform float uTime,uBass,uMid,uHigh,uLevel,uBreath,uMode,uIntensity,uScale,uSpeed,
               uDepth,uGlow,uDrift,uPix,uLine,uFog,uKeep,
-              uVita,uBeatPhase,uBeatAmp,uSlow,uHitT;
+              uVita,uBeatPhase,uBeatAmp,uSlow,uHitT,
+              uRegistro,uSlancio;
+uniform float uSpettro[8];
 uniform vec3 uC0,uC1,uC2;
 varying vec3 vCol; varying float vA;
 ${NOISE}
 mat2 rot(float a){ float c=cos(a),s=sin(a); return mat2(c,-s,s,c); }
+/* DA6 — lo spettro steso sulla topologia della forma: z=0 al cuore
+   (bassi), z=1 al bordo (acuti). Ogni banda muove la SUA zona. */
+float spettro(float z){
+  float x = clamp(z, 0.0, 0.999) * 7.0;
+  int i = int(floor(x));
+  return mix(uSpettro[i], uSpettro[i+1], fract(x));
+}
 
 void main(){
   if (aRnd > uKeep) {              /* uniform density thinning */
@@ -275,6 +285,8 @@ void main(){
      la musica entra come coreografia, non come tremolio */
   float beat = (.5 - .5*cos(uBeatPhase*6.28318)) * uBeatAmp;
   float dtH  = max(t - uHitT, 0.0);
+  float reg  = uRegistro - .5;       /* -0.5 grave .. +0.5 acuto */
+  float zona = rad;                  /* default: cuore→bordo */
   vec3 p; float shade = rad;
   float sym = 0.0;                   /* radial-symmetry accent */
 
@@ -288,6 +300,7 @@ void main(){
     shade = rad*.5 + br*.5;
 
   } else if (uMode < 1.5) {                           /* NEBULA — curl-drift cloud */
+    zona = aSeed.y;                  /* nebula: bassi in basso, acuti in alto */
     vec3 q = (aSeed - .5) * vec3(20.0, 9.0*uDepth, 20.0);
     float w = snoise(q*.09 + vec3(0.0, t*.06, 0.0));
     q += vec3(snoise(q*.07 + 31.0), snoise(q*.07 + 57.0), snoise(q*.07 + 83.0))
@@ -328,6 +341,7 @@ void main(){
   } else if (uMode < 5.5) {                           /* HELIX — ascending double strand */
     float side = mod(aArm,2.0)*3.14159;
     float u = (rad-.5)*26.0;
+    zona = rad;                      /* elica: la zona E' l'altezza */
     float rr = 3.0 + mid*2.4*e + sin(u*.32 + t*.6)*.55 + sw*.35;
     float tw2 = u*.42 + t*.55 + side + beat*.38*e*sin(u*.2);
     p = vec3(cos(tw2)*rr, u*.52*uDepth, sin(tw2)*rr);
@@ -354,6 +368,18 @@ void main(){
   float hitW = exp(-abs(rr0 - dtH*9.0)*.45) * exp(-dtH*1.1);
   p += (p / rr0) * hitW * (.55 + bass*.7*e);
 
+  /* DA6 — l'anima tonale, tre gesti universali:
+     1. la ZONA: la banda dello spettro che abita questo punto lo
+        gonfia — un basso pulsa il cuore, un arpeggio scintilla il
+        bordo, in tempo reale, senza scuotere il resto;
+     2. l'ELEVAZIONE: la scena sale col REGISTRO (la tendenza lenta
+        della melodia) — musica acuta = scena alta e aperta;
+     3. lo SLANCIO: melodia che sale = moto ascensionale; che ricade =
+        la scena ricade con lei. */
+  float loc = spettro(zona);
+  p *= 1.0 + loc * .13 * e * uVita;
+  p.y += (reg * 2.6 + uSlancio * 1.5) * uVita * (.4 + rad*.6);
+
   /* organic drift — the same field for every form, so motion always reads natural */
   float dAmp = uDrift * (.34 + mid*.9*e + br*.22) * (1.0 - sym*.72);
   vec3 dn = vec3(
@@ -368,7 +394,7 @@ void main(){
   gl_Position = projectionMatrix * mv;
 
   /* colour: shadow → body → light, with a warm core and a cool depth wash */
-  float band = clamp(shade*.72 + hi*.35*e + aSeed.z*.16 + br*.10, 0.0, 1.0);
+  float band = clamp(shade*.72 + hi*.30*e + reg*.34 + loc*.14 + aSeed.z*.16 + br*.10, 0.0, 1.0);
   vec3 col = band < .5 ? mix(uC0, uC1, band*2.0) : mix(uC1, uC2, (band-.5)*2.0);
   float hot = smoothstep(.30, 0.0, rad) * (.35 + bass*1.1*e);
   col += hot * vec3(1.0, .84, .62);
@@ -389,7 +415,8 @@ void main(){
   vA = base * (.38 + uVita*.34 + uLevel*.65*e)
        * mix(1.0, tw, .40 + hi*.35) * (.62 + fog*.38)
        * (1.0 + hitW*.45);
-  gl_PointSize = aSize * uPix * uGlow * (1.0 + bass*.28*e + br*.10) * (250.0 / dist);
+  gl_PointSize = aSize * uPix * uGlow * (1.0 + bass*.28*e + br*.10)
+                 * (1.0 - reg*.30) * (250.0 / dist);
 }`;
 
 const FRAG = `
@@ -456,7 +483,14 @@ const MAND_VERT = `
 precision highp float;
 attribute float aTheta, aU, aSide, aR0, aLen, aWid, aLayer, aSpin, aKind, aScale;
 uniform float uTime,uBass,uMid,uHigh,uLevel,uBreath,uIntensity,uScale,uGlow,uPix,uPoint,uDepth,uHit,
-              uVita,uBeatPhase,uBeatAmp,uSlow,uHitT;
+              uVita,uBeatPhase,uBeatAmp,uSlow,uHitT,
+              uRegistro,uSlancio;
+uniform float uSpettro[8];
+float spettro(float z){
+  float x = clamp(z, 0.0, 0.999) * 7.0;
+  int i = int(floor(x));
+  return mix(uSpettro[i], uSpettro[i+1], fract(x));
+}
 uniform vec3 uC0,uC1,uC2;
 varying vec3 vCol; varying float vA;
 void main(){
@@ -467,6 +501,11 @@ void main(){
      attraversa il loto dal centro verso i bordi */
   float beatW = (.5 - .5*cos(uBeatPhase*6.28318 - aTheta - aLayer*2.2)) * uBeatAmp;
   float dtH   = max(t - uHitT, 0.0);
+  /* DA6 — le corone sono la topologia dello spettro: il cuore sente i
+     bassi, il bordo gli acuti. Un arpeggio fa fiorire i petali
+     esterni, un basso pulsa il centro — nota per nota. */
+  float loc = spettro(aLayer) * uVita;
+  float reg = uRegistro - .5;
   float rot   = (t*0.010 + 0.075*sin(t*0.42) + 0.03*sin(t*1.05)) * aSpin;   /* sways, doesn't just spin */   /* crowns stay coherent — one lotus, not a pinwheel */
   float wave  = 0.5 - 0.5*cos((br - aLayer*0.30) * 6.28318);
   float pulse = sin(t*0.7 - aLayer*3.0);
@@ -480,7 +519,8 @@ void main(){
     float ondaColpo = exp(-abs((aR0 + aLen*aU) - dtH*10.0)*.5) * exp(-dtH*1.2);
     float reach = 1.0 + 0.14*sin(t*0.62 - ph*1.6 - aLayer*1.4)
                       + 0.06*sin(t*1.35 + veil*0.5)
-                      + uBass*0.38*e + uHit*0.18 + ondaColpo*.25;
+                      + uBass*0.38*e + uHit*0.18 + ondaColpo*.25
+                      + loc*.30*e;
     float fat   = 1.0 + 0.12*sin(t*0.48 + ph*2.1 + aLayer*2.2)
                       + uMid*0.42*e + uHit*0.14;
     float open = 1.0 + wave*0.07 + 0.05*sin(t*0.24 + aLayer*2.0)
@@ -494,7 +534,8 @@ void main(){
     float lat = aSide * wid * pow(sin(3.14159*aU), 0.34) * ripple;
     float curl = (0.16*sin(t*0.45 + ph*1.3 + aLayer*1.9) + uMid*0.14*e) * aU*aU;
     th = aTheta + rot + lat + curl;
-    float dome = (0.45 + 0.55*sin(t*0.15)) * (0.5 + br*0.5);
+    float dome = (0.45 + 0.55*sin(t*0.15)) * (0.5 + br*0.5)
+                 * (1.0 + reg*.55);   /* acuto = loto che si innalza */
     z = (sin(3.14159*aU) * (0.75 + 0.45*sin(t*0.9 - ph*1.7)) * dome * aScale
          + (aLayer - 0.35) * 1.3 * dome
          + sin(t*1.25 + ph*2.3) * 0.55 * (0.35 + uMid*1.4*e + uHit*0.5)
@@ -508,11 +549,13 @@ void main(){
   }
 
   vec3 p = vec3(cos(th)*r, sin(th)*r, z);
+  p.z += uSlancio * 1.1 * uVita;      /* la melodia che sale lo solleva */
   vec4 mv = modelViewMatrix * vec4(p * uScale, 1.0);
   gl_Position = projectionMatrix * mv;
 
   float tip  = aKind < 0.5 ? sin(3.14159*aU) : 1.0;
-  float band = clamp(0.46 + (1.0-aLayer)*0.16 + (1.0-aScale)*0.14 + tip*0.16 + uHigh*0.14*e + br*0.06, 0.0, 1.0);
+  float band = clamp(0.46 + (1.0-aLayer)*0.16 + (1.0-aScale)*0.14 + tip*0.16
+                     + uHigh*0.12*e + reg*0.26 + loc*0.12 + br*0.06, 0.0, 1.0);
   vec3 col = band < .5 ? mix(uC0, uC1, band*2.0) : mix(uC1, uC2, (band-.5)*2.0);
   col += smoothstep(4.0, 0.0, r) * (0.45 + uBass*0.7*e) * vec3(1.0, 0.80, 0.52);
   vCol = col;
@@ -764,7 +807,19 @@ const avg = (a,f,t) => { let s=0; for(let k=f;k<t;k++) s+=a[k]; return s/Math.ma
 const polso = {
   vita: 0, colpo: 0, battitoHz: 0, fase: 0, fiducia: 0,
   ondaLenta: .5, escursioneLenta: 0, brillantezza: 0,
+  /* DA6 — il terzo asse: COSA sta suonando, non solo quanto e quando.
+     spettro8: lo spettro steso su 8 bande logaritmiche (60 Hz-8 kHz),
+     da spalmare sulla TOPOLOGIA di ogni forma (bassi al centro, acuti
+     al bordo…): ogni banda muove la sua zona, nota per nota, senza
+     scuotere la scena intera. registro: la bilancia grave-acuto.
+     slancio: la DERIVATA del registro — una melodia che sale e' un
+     gesto ascensionale, non una posizione. */
+  spettro8: new Float32Array(8),
+  registro: .5, slancio: 0,
 };
+/* i bordi delle 8 bande in Hz (logaritmici, ~un'ottava l'una) */
+const _BANDE8 = [60, 120, 240, 480, 960, 1920, 3840, 5800, 8000];
+let _slancioGrezzo = 0, _registroPrec = .5;
 let _prevFreq = null, _fluxMedia = 0.004, _picco = 0.18, _refrattario = 0;
 let _lento = 0, _lentoMin = 1, _lentoMax = 0;
 const _INV_PASSO = 1 / 45;                 /* inviluppo campionato a 45 Hz */
@@ -793,13 +848,30 @@ function battePolso(dt){
   /* DA5 — un'onda per FRASE musicale, non una per nota: soglia piu'
      alta e periodo refrattario. Prima ogni cambio di nota lanciava
      un'onda a piena forza («troppo su e giu'», founder). */
-  const soglia = _fluxMedia * 3.2 + 0.006;
+  const soglia = _fluxMedia * 3.2 + 0.012;
   _refrattario = Math.max(0, _refrattario - dt);
   if (flux > soglia && _refrattario === 0){
-    polso.colpo = Math.min(1, (flux - soglia) * 45);
-    _refrattario = 1.6;
+    polso.colpo = Math.min(1, (flux - soglia) * 40) * (0.3 + 0.7 * polso.vita);
+    _refrattario = 2.2;
   } else polso.colpo *= Math.exp(-dt * 4.2);
   _fluxMedia += (flux - _fluxMedia) * Math.min(1, dt * 1.2);
+
+  /* DA6 — le 8 bande: piu' vive dei muscoli globali (sono locali:
+     un arpeggio che scintilla su un bordo non stressa come una scena
+     che sobbalza tutta), comunque lisciate */
+  {
+    const hzBin = campionamento() / analyser.fftSize;
+    for (let b = 0; b < 8; b++){
+      const i0 = Math.max(2, Math.round(_BANDE8[b] / hzBin));
+      const i1 = Math.min(freq.length - 1, Math.round(_BANDE8[b + 1] / hzBin));
+      let sm = 0;
+      for (let i = i0; i <= i1; i++) sm += freq[i];
+      const v = Math.min(1, (sm / Math.max(1, i1 - i0 + 1) / 255) * 1.6);
+      const cur = polso.spettro8[b];
+      const kk = v > cur ? 2.2 : 0.9;
+      polso.spettro8[b] = cur + (v - cur) * (1 - Math.exp(-kk * dt));
+    }
+  }
 
   /* brillantezza: centroide spettrale */
   let somma = 0, pesata = 0;
@@ -812,6 +884,20 @@ function battePolso(dt){
     cen = Math.max(0, Math.min(1, Math.log2(Math.max(hz, 50) / 50) / 6));
   }
   polso.brillantezza += (cen - polso.brillantezza) * Math.min(1, dt * 3);
+
+  /* DA6 — registro e slancio: il registro e' il centroide in ottave
+     (gia' lisciato sopra); lo slancio e' la sua derivata, lisciata e
+     limitata — positivo quando la musica SALE. */
+  /* la brillantezza resta viva (scintillio); il REGISTRO — che alza
+     e abbassa la scena — insegue LENTO (tau ~1,8 s): e' la tendenza
+     della melodia, non la singola nota. Lo slancio deriva dal
+     registro lento: una scala che sale e' un gesto, un trillo no. */
+  polso.registro += (polso.brillantezza - polso.registro)
+    * (1 - Math.exp(-dt / 1.8));
+  const deriva = (polso.registro - _registroPrec) / Math.max(dt, 1e-3);
+  _registroPrec = polso.registro;
+  _slancioGrezzo += (deriva - _slancioGrezzo) * Math.min(1, dt * 2);
+  polso.slancio = Math.max(-1, Math.min(1, _slancioGrezzo * 4));
 
   /* vita: energia normalizzata (autogain col pavimento: il rumore di
      fondo non deve sembrare un concerto) */
@@ -1232,6 +1318,9 @@ function disegna(){
   const rampa = Math.max(0, Math.min(1, (polso.fiducia - 0.2) / 0.3));
   U.uBeatAmp.value = rampa;
   U.uSlow.value = polso.ondaLenta;
+  U.uSpettro.value.set(polso.spettro8);
+  U.uRegistro.value = polso.registro;
+  U.uSlancio.value = polso.slancio;
   /* il colpo del polso (flusso spettrale) comanda anche il vecchio
      canale uHit e scrive l'istante per l'onda propagativa */
   if (polso.colpo > hit){ U.uHitT.value = tAcc; }
