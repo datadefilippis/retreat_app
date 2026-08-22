@@ -1311,11 +1311,20 @@ class TestVoceNelVisual:
         assert "let _presenza = 0" in PROTO
         assert "if (_presenza < 0.6) _fluxMedia = Math.max(_fluxMedia, flux * 0.8)" in PROTO
         assert "* (0.3 + 0.7 * polso.vita) * _presenza" in PROTO
-        assert "* _presenza;" in PROTO.split("polso.slancio")[1][:80]
         assert "(0.7 + 1.5 * _presenza)" in PROTO
-        # la stima del battito NON passa dalla presenza: l'orecchio
-        # impara anche nel primo respiro, e' il gesto che si trattiene
-        assert "_acAcc" in PROTO
+        # IL SIPARIO (round 2, proposta founder): mentre l'orecchio
+        # impara, la scena resta nel respiro di veglia e si FONDE
+        # nella danza — smoothstep sulla presenza, bande scalate per
+        # tutti i consumatori a valle, stato interno intatto
+        assert "const g = _presenza * _presenza * (3 - 2 * _presenza)" in PROTO
+        assert "polso.vita = 0.45 + (_vitaRaw - 0.45) * g" in PROTO
+        assert "polso.spettro8[b] = _sp8[b] * g" in PROTO
+        assert "bands.bass *= g; bands.mid *= g; bands.high *= g; bands.level *= g" in PROTO
+        # e il sipario sta in FONDO a battePolso: l'analisi (flux,
+        # inviluppo, autocorrelazione) legge i valori GREZZI —
+        # l'orecchio impara a piena voce, il gesto si trattiene
+        corpo = PROTO.split("function battePolso")[1]
+        assert corpo.index("_invPrec = busta") < corpo.index("IL SIPARIO")
 
     def test_i_quattro_stili_sono_quelli_di_crea(self):
         """un solo vocabolario: Naturale, Sogno, Tempio, Sussurro —

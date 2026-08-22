@@ -1090,6 +1090,8 @@ let _prevFreq = null, _fluxMedia = 0.004, _picco = 0.18, _refrattario = 0;
    in ~1,4 s quando il suono si accende e scala colpi, slancio e
    velocita' di reazione: l'attacco di un compressore, ma visivo. */
 let _presenza = 0;
+let _vitaRaw = 0.45;                       /* lo stato vero; polso.vita e' l'uscita */
+const _sp8 = new Float32Array(8);          /* idem per le 8 bande */
 let _lento = 0, _lentoMin = 1, _lentoMax = 0;
 const _INV_PASSO = 1 / 45;                 /* inviluppo campionato a 45 Hz */
 const _INV_N = 256;                        /* ~5,7 s di storia */
@@ -1099,7 +1101,8 @@ let _bustaPrec = 0;
 
 function battePolso(dt){
   if (!analyser){                          /* idle: veglia media, ferma */
-    polso.vita += (0.45 - polso.vita) * Math.min(1, dt * 2);
+    _vitaRaw += (0.45 - _vitaRaw) * Math.min(1, dt * 2);
+    polso.vita = _vitaRaw;
     polso.colpo = Math.max(0, polso.colpo - dt);
     return;
   }
@@ -1119,7 +1122,7 @@ function battePolso(dt){
      un'onda a piena forza («troppo su e giu'», founder). */
   const vivoSuono = bands.level > 0.02 ? 1 : 0;
   _presenza += (vivoSuono - _presenza)
-    * (1 - Math.exp(-dt / (vivoSuono ? 1.4 : 0.4)));
+    * (1 - Math.exp(-dt / (vivoSuono ? 1.8 : 0.4)));
   /* nel primo respiro la soglia INSEGUE il flusso senza sparare:
      niente onde spurie mentre il rilevatore impara il brano */
   if (_presenza < 0.6) _fluxMedia = Math.max(_fluxMedia, flux * 0.8);
@@ -1143,9 +1146,9 @@ function battePolso(dt){
       let sm = 0;
       for (let i = i0; i <= i1; i++) sm += freq[i];
       const v = Math.min(1, (sm / Math.max(1, i1 - i0 + 1) / 255) * 1.6);
-      const cur = polso.spettro8[b];
+      const cur = _sp8[b];
       const kk = v > cur ? (0.8 + 1.4 * _presenza) : 0.9;
-      polso.spettro8[b] = cur + (v - cur) * (1 - Math.exp(-kk * dt));
+      _sp8[b] = cur + (v - cur) * (1 - Math.exp(-kk * dt));
     }
   }
 
@@ -1173,7 +1176,7 @@ function battePolso(dt){
   const deriva = (polso.registro - _registroPrec) / Math.max(dt, 1e-3);
   _registroPrec = polso.registro;
   _slancioGrezzo += (deriva - _slancioGrezzo) * Math.min(1, dt * 2);
-  polso.slancio = Math.max(-1, Math.min(1, _slancioGrezzo * 4)) * _presenza;
+  polso.slancio = Math.max(-1, Math.min(1, _slancioGrezzo * 4));
 
   /* vita: energia normalizzata (autogain col pavimento: il rumore di
      fondo non deve sembrare un concerto) */
@@ -1183,9 +1186,9 @@ function battePolso(dt){
      stop) non e' un pianissimo: li' la scena deve saperlo in un
      secondo, non in otto (founder: «l'ho messa in pausa e continua a
      muoversi»). */
-  const k = target > polso.vita ? (0.7 + 1.5 * _presenza)
+  const k = target > _vitaRaw ? (0.7 + 1.5 * _presenza)
     : (bands.level < 0.015 ? 1.6 : 0.4);
-  polso.vita += (target - polso.vita) * (1 - Math.exp(-k * dt));
+  _vitaRaw += (target - _vitaRaw) * (1 - Math.exp(-k * dt));
 
   /* onda lenta: maree e crescendo (tau ~6 s, escursione su ~25 s) */
   _lento += (bands.level - _lento) * Math.min(1, dt / 6);
@@ -1194,6 +1197,7 @@ function battePolso(dt){
   polso.escursioneLenta = _lentoMax - _lentoMin;
   polso.ondaLenta = polso.escursioneLenta > 0.02
     ? (_lento - _lentoMin) / polso.escursioneLenta : .5;
+
 
   /* battito di modulazione: inviluppo → autocorrelazione ogni 0,6 s */
   const busta = bands.bass * .7 + bands.mid * .3;
@@ -1262,6 +1266,22 @@ function battePolso(dt){
     _salita = sale;
   }
   _invPrec = busta;
+
+  /* IL SIPARIO DELL'INGRESSO (founder: «se il sistema deve imparare
+     il brano, meglio un movimento automatico naturale in quel
+     frangente»). Mentre l'orecchio impara, la scena resta nel suo
+     RESPIRO DI VEGLIA — la vita a 0.45, le bande a zero, come nel
+     silenzio — e si fonde nella danza con una curva morbida
+     (smoothstep sulla presenza, ~2,5 s percepiti). Le bande scalate
+     qui valgono per TUTTI i consumatori a valle (inviluppi, uniform,
+     camera, respiro): il gesto entra tutto insieme, dolcemente.
+     L'analisi qui sopra ha gia' letto i valori GREZZI: l'orecchio
+     impara a piena voce, e' solo il gesto che si trattiene. */
+  const g = _presenza * _presenza * (3 - 2 * _presenza);
+  polso.vita = 0.45 + (_vitaRaw - 0.45) * g;
+  for (let b = 0; b < 8; b++) polso.spettro8[b] = _sp8[b] * g;
+  polso.slancio *= g;
+  bands.bass *= g; bands.mid *= g; bands.high *= g; bands.level *= g;
 }
 
 function readAudio(){
