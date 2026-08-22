@@ -17,6 +17,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SLIDERS, PALETTES, MODES, PRESETS, CAMS,
          LISCIATURA_ANALYSER } from './tabelle';
+import { VOICE_PRESETS, buildVoiceChain,
+         connectVoiceSources } from '../engine/voicefx';
 
 export function avviaPrototipo(root, opz = {}){
   /* AV5 (22/8) — il MOTORE e' UNO SOLO. La pagina strumento monta il
@@ -926,42 +928,81 @@ function ensureCtx(){
   }
   if (ctxA.state === 'suspended') ctxA.resume();
 }
-function disconnect(){
-  if (srcNode){ try{ srcNode.disconnect(); }catch(e){} srcNode = null; }
+/* ── MX (22/8, richiesta founder dal telefono) — LE SORGENTI
+   COESISTONO: traccia caricata E microfono insieme, la scena danza
+   sul mix e l'export lo registra. La topologia che lo permette senza
+   fischi: la TRACCIA va all'orecchio (analyser) E all'altoparlante;
+   il MIC va SOLO all'orecchio — se passasse dall'altoparlante
+   rientrerebbe nel mic (feedback, il vecchio grafo lo rischiava gia'
+   perche' analyser era collegato a destination). L'export spilla
+   dall'analyser: sente il mix per costruzione. ── */
+let micNode = null;
+function spegniMic(){
+  if (micNode){ try{ micNode.disconnect(); }catch(e){} micNode = null; }
   if (micStream){ micStream.getTracks().forEach((t) => t.stop()); micStream = null; }
+}
+function disconnect(){
+  spegniMic();
+  if (srcNode){ try{ srcNode.disconnect(); }catch(e){} srcNode = null; }
+}
+function aggiornaSorgenti(){
+  const micOn = !!micStream;
+  const fileOn = !!player._nome;
+  mode = micOn && fileOn ? 'mix' : micOn ? 'mic' : fileOn ? 'file' : 'none';
+  byId('srcLabel').textContent =
+    mode === 'mix' ? 'Mic + ' + player._nome
+    : mode === 'mic' ? 'Mic attivo'
+    : mode === 'file' ? player._nome
+    : 'Sorgente inattiva';
+  byId('micdot').classList.toggle('live', mode !== 'none');
+  byId('btnMic').classList.toggle('on', micOn);
+  byId('btnFile').classList.toggle('on', fileOn);
+  if (mode !== 'none') byId('gate').style.display = 'none';
 }
 
 async function attivaMic(){
-  ensureCtx(); disconnect();
+  ensureCtx();
+  if (micStream){ spegniMic(); aggiornaSorgenti(); return; }   /* e' un interruttore */
   try{
     const stream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:false, noiseSuppression:false, autoGainControl:false } });
     micStream = stream;
-    srcNode = ctxA.createMediaStreamSource(stream);
-    srcNode.connect(analyser);
-    mode = 'mic'; player.pause();
-    setSourceUI('mic', 'Mic attivo');
+    micNode = ctxA.createMediaStreamSource(stream);
+    micNode.connect(analyser);
+    aggiornaSorgenti();
   } catch(err){
-    setSourceUI('none', 'Microfono negato');
+    byId('srcLabel').textContent = 'Microfono negato';
   }
 }
 function caricaFile(file){
-  ensureCtx(); disconnect();
+  ensureCtx();
   if (fileUrl) URL.revokeObjectURL(fileUrl);
   fileUrl = URL.createObjectURL(file);
   player.src = fileUrl;
-  if (!player._node) player._node = ctxA.createMediaElementSource(player);
-  srcNode = player._node;
-  srcNode.connect(analyser); analyser.connect(ctxA.destination);
+  player._nome = file.name.replace(/\.[^.]+$/,'').slice(0,22);
+  if (!player._node){
+    player._node = ctxA.createMediaElementSource(player);
+    player._node.connect(analyser);
+    player._node.connect(ctxA.destination);   /* la traccia si sente; il mic mai */
+  }
   player.play();
-  mode = 'file';
-  setSourceUI('file', file.name.replace(/\.[^.]+$/,'').slice(0,22));
+  aggiornaSorgenti();
 }
-function setSourceUI(kind, label){
-  byId('srcLabel').textContent = label;
-  byId('micdot').classList.toggle('live', kind !== 'none');
-  byId('btnMic').classList.toggle('on', kind === 'mic');
-  byId('btnFile').classList.toggle('on', kind === 'file');
-  byId('gate').style.display = 'none';
+/* DM (22/8) — una demo di Aurya e' una traccia come le altre: cambia
+   solo da dove arriva (l'URL di piattaforma invece del file). */
+function caricaDemo(d){
+  ensureCtx();
+  if (fileUrl){ URL.revokeObjectURL(fileUrl); fileUrl = null; }
+  player.src = d.stream_url;
+  player._nome = d.title.slice(0, 22);
+  if (!player._node){
+    player._node = ctxA.createMediaElementSource(player);
+    player._node.connect(analyser);
+    player._node.connect(ctxA.destination);
+  }
+  player.play();
+  aggiornaSorgenti();
+  root.querySelectorAll('#demoList button').forEach((b) =>
+    b.classList.toggle('on', b.dataset.demo === d.id));
 }
 
 /* Il contesto e' NOSTRO solo nello strumento: incorporato e studio
@@ -1294,6 +1335,32 @@ el('info').onclick = e=>{ if (e.target.id === 'info') el('info').classList.remov
 
 el('btnMic').onclick = attivaMic;
 el('gateMic').onclick = attivaMic;
+if (!studio && !incorporato){
+  fetch('/api/public/visual-demos')
+    .then((r) => (r.ok ? r.json() : []))
+    .then((demos) => {
+      if (!Array.isArray(demos) || !demos.length) return;
+      const riga = (d, breve) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.dataset.demo = d.id;
+        b.innerHTML = breve
+          ? d.title
+          : d.title + '<span class="cat">' + (d.category || '') + '</span>';
+        b.onclick = () => caricaDemo(d);
+        return b;
+      };
+      const lista = el('demoList');
+      demos.forEach((d) => lista.appendChild(riga(d, false)));
+      el('demoSect').hidden = false;
+      const gl = el('gateDemoList');
+      if (gl){
+        demos.slice(0, 4).forEach((d) => gl.appendChild(riga(d, true)));
+        el('gateDemos').hidden = false;
+      }
+    })
+    .catch(() => { /* senza demo lo strumento resta intero */ });
+}
 el('btnFile').onclick = ()=>el('fileIn').click();
 el('gateFile').onclick = ()=>el('fileIn').click();
 el('fileIn').onchange = e=>{ if (e.target.files[0]) caricaFile(e.target.files[0]); };
@@ -1301,7 +1368,7 @@ el('fileIn').onchange = e=>{ if (e.target.files[0]) caricaFile(e.target.files[0]
 winAdd('keydown', e=>{
   if (e.key === 'h' || e.key === 'H') el('hide').click();
   else if (e.key === 'f' || e.key === 'F') el('fsBtn').click();
-  else if (e.key === ' ' && mode === 'file'){ e.preventDefault(); player.paused ? player.play() : player.pause(); }
+  else if (e.key === ' ' && (mode === 'file' || mode === 'mix')){ e.preventDefault(); player.paused ? player.play() : player.pause(); }
   else if (/^[1-9]$/.test(e.key)) setMode(+e.key - 1);
 });
 winAdd('dragover', e=>e.preventDefault());
@@ -1314,6 +1381,7 @@ if (studio){
   el('gate').style.display = 'none';
   el('srcSect').style.display = 'none';
   el('expSect').style.display = 'none';   /* EX: si esporta dallo strumento */
+  el('voceSect').style.display = 'none';  /* VX: la voce vive nello strumento */
   /* In cima si legge COSA si sta guardando: il titolo che l'autore ha
      dato alla sessione, e solo finche' non ne ha dato uno, «La tua
      sessione». */
@@ -1413,6 +1481,7 @@ if (!studio && !incorporato){
   });
   let rec = null, pezzi = [], spillo = null, tSonda = null, tInizio = 0, veglia = null;
   let tPompa = null;                      /* la pompa di riserva dei fotogrammi */
+  let voceExport = null;                  /* {sources, chain} del take nel video */
   let ultimo = null;                      /* l'ultimo video pronto, in attesa del tocco */
   let spinte = 0;                         /* fotogrammi consegnati nella REC in corso */
   const notaBase = el('expSect').querySelector('.exp-nota').textContent;
@@ -1518,11 +1587,119 @@ if (!studio && !incorporato){
   const mmss = (sec) => Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
   function nota(msg){ el('expSect').querySelector('.exp-nota').textContent = msg || notaBase; }
 
+  /* ══ VX (22/8) — LA VOCE COL SUO STILE. Il take resta CRUDO sul
+     dispositivo: lo stile (gli stessi preset di Crea) si applica al
+     PLAYBACK, mai inciso — per questo si puo' cambiare da Sogno a
+     Sussurro dopo aver ascoltato, e solo alla fine fare il video.
+     Il take parte INSIEME alla traccia (currentTime=0): l'allineamento
+     e' la ragione per cui NON si usa cleanVoiceBuffer qui — il suo
+     trim dei silenzi in testa sposterebbe la voce rispetto alla
+     musica. Il compressore della catena pulisce comunque davanti. ══ */
+  let takeBuffer = null, takeRec = null, takePezzi = [];
+  let takeStile = 'dream';
+  let takeTimer = null, takeInizio = 0;
+  let mixVivo = null;                     /* {sources, chain} del riascolto */
+
+  function dipingiVoceUI(){
+    const b = el('voceRec');
+    b.classList.toggle('reg', !!takeRec);
+    b.querySelector('span').textContent = takeRec
+      ? 'Ferma la voce ' + mmss((performance.now() - takeInizio) / 1000)
+      : (takeBuffer ? 'Rifai la voce' : 'Registra la voce');
+    el('voceLeggio').hidden = !takeBuffer;
+    el('vocePlay').classList.toggle('on', !!mixVivo);
+    el('vocePlay').innerHTML = mixVivo ? '&#9632; Ferma' : '&#9654; Riascolta';
+    root.querySelectorAll('#voceStili button').forEach((x) =>
+      x.classList.toggle('on', x.dataset.stile === takeStile));
+  }
+
+  function fermaMix(){
+    if (!mixVivo) return;
+    mixVivo.sources.forEach((src) => { try { src.onended = null; src.stop(); } catch (e) { /* gia' fermo */ } });
+    try { mixVivo.chain.output.disconnect(); } catch (e) { /* niente */ }
+    mixVivo = null;
+    try { player.pause(); } catch (e) { /* niente */ }
+    dipingiVoceUI();
+  }
+
+  function playMix(){
+    if (mixVivo){ fermaMix(); return; }
+    if (!takeBuffer) return;
+    ensureCtx();
+    const chain = buildVoiceChain(ctxA, takeStile, 0.6);
+    chain.output.connect(ctxA.destination);
+    chain.output.connect(analyser);          /* la scena danza anche qui */
+    const sources = connectVoiceSources(ctxA, takeBuffer, chain);
+    const t0 = ctxA.currentTime + 0.05;
+    sources.forEach((src) => src.start(t0));
+    sources[0].onended = () => fermaMix();
+    if (player._nome){ player.currentTime = 0; player.play(); }
+    mixVivo = { sources, chain };
+    dipingiVoceUI();
+  }
+
+  async function avviaTake(){
+    if (takeRec){ try { takeRec.stop(); } catch (e) { /* niente */ } return; }
+    fermaMix();
+    ensureCtx();
+    if (!micStream) await attivaMic();
+    if (!micStream) return;                  /* negato: l'etichetta lo dice gia' */
+    takePezzi = [];
+    try { takeRec = new MediaRecorder(micStream); } catch (e) { return; }
+    takeRec.ondataavailable = (ev) => { if (ev.data && ev.data.size) takePezzi.push(ev.data); };
+    takeRec.onstop = async () => {
+      clearInterval(takeTimer); takeTimer = null;
+      const blob = new Blob(takePezzi, { type: takeRec.mimeType || 'audio/mp4' });
+      takeRec = null; takePezzi = [];
+      try { player.pause(); } catch (e) { /* niente */ }
+      try {
+        const ab = await blob.arrayBuffer();
+        takeBuffer = await ctxA.decodeAudioData(ab);
+      } catch (e) {
+        takeBuffer = null;
+        el('voceRec').querySelector('span').textContent = 'Registrazione illeggibile: riprova';
+      }
+      aggiornaSorgenti();
+      dipingiVoceUI();
+    };
+    /* il take parte INSIEME alla traccia: e' l'allineamento del mix */
+    if (player._nome){ player.currentTime = 0; player.play(); }
+    takeRec.start();
+    takeInizio = performance.now();
+    takeTimer = setInterval(dipingiVoceUI, 500);
+    dipingiVoceUI();
+  }
+
+  function scartaTake(){
+    fermaMix();
+    takeBuffer = null;
+    aggiornaSorgenti();
+    dipingiVoceUI();
+  }
+
+  Object.keys(VOICE_PRESETS).forEach((k) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.stile = k;
+    b.textContent = VOICE_PRESETS[k].label;
+    b.onclick = () => {
+      takeStile = k;
+      const eraVivo = !!mixVivo;
+      if (eraVivo){ fermaMix(); playMix(); }   /* riparte con lo stile nuovo */
+      dipingiVoceUI();
+    };
+    el('voceStili').appendChild(b);
+  });
+  el('voceRec').onclick = avviaTake;
+  el('vocePlay').onclick = playMix;
+  el('voceScarta').onclick = scartaTake;
+  dipingiVoceUI();
+
   async function avviaRec(quale){
     if (rec) return;
     /* un video di meditazione senza suono e' un errore, non una
        scelta: prima la sorgente (mic o traccia), poi il quadro */
-    if (mode === 'none'){ nota('Prima scegli una sorgente: microfono o traccia.'); return; }
+    if (mode === 'none' && !takeBuffer){ nota('Prima scegli una sorgente: microfono, traccia o voce registrata.'); return; }
     const fmt = FORMATI[quale];
     ensureCtx();
     await preparaMarchio();
@@ -1610,6 +1787,22 @@ if (!studio && !incorporato){
        duplicato innocuo tra i 30-60 veri, in secondo piano tiene il
        video integro (quadro fermo, audio che scorre). */
     tPompa = setInterval(() => { if (spingiFrame) spingiFrame(); }, 250);
+    /* VX: se c'e' un take, nel video va LUI con lo stile scelto — il
+       mic vivo si spegne (doppia voce e rumore di stanza), la traccia
+       riparte da zero perche' il take e' allineato al suo inizio. */
+    if (takeBuffer){
+      spegniMic(); fermaMix();
+      const chain = buildVoiceChain(ctxA, takeStile, 0.6);
+      chain.output.connect(ctxA.destination);
+      chain.output.connect(analyser);
+      const sources = connectVoiceSources(ctxA, takeBuffer, chain);
+      const t0 = ctxA.currentTime + 0.05;
+      sources.forEach((src) => src.start(t0));
+      if (player._nome){ player.currentTime = 0; player.play(); }
+      else sources[0].onended = () => fermaRec();   /* solo voce: fine take = fine video */
+      voceExport = { sources, chain };
+      aggiornaSorgenti();
+    }
     try { veglia = await navigator.wakeLock?.request('screen'); } catch (e) { veglia = null; }
     tInizio = performance.now();
     el('recPill').hidden = false;
@@ -1639,6 +1832,11 @@ if (!studio && !incorporato){
     /* si torna alla vista viva PRIMA di consegnare il file */
     exportAttivo = null; spingiFrame = null;
     clearInterval(tPompa); tPompa = null;
+    if (voceExport){
+      voceExport.sources.forEach((src) => { try { src.onended = null; src.stop(); } catch (e) { /* fermo */ } });
+      try { voceExport.chain.output.disconnect(); } catch (e) { /* niente */ }
+      voceExport = null;
+    }
     root.classList.remove('registra');
     el('recPill').hidden = true;
     canvas.style.objectFit = '';

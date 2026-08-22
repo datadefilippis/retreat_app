@@ -4575,3 +4575,32 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
             if digits:
                 out["link_page"]["whatsapp"] = digits
     return out
+
+
+# ── DM (22/8) — le demo ambient per /sound/visual ────────────────────
+# Il visual pubblico merita musica subito, senza chiedere un file:
+# una manciata di basi di piattaforma (gia' servite da nginx su
+# /uploads) curata A MANO — titoli, non id, cosi' la lista sopravvive
+# a un re-import delle basi. Endpoint pubblico: niente auth, niente
+# dati sensibili, solo titoli e url gia' pubblici.
+VISUAL_DEMO_TITLES = [
+    "Atmosfera",
+    "Galaxy",
+    "Onde dell'oceano",
+    "Pioggia leggera",
+    "Drone caldo 110 Hz",
+    "Campana tibetana lunga",
+]
+
+
+@router.get("/visual-demos")
+async def visual_demos():
+    from database import audio_assets_collection
+    items = await audio_assets_collection.find(
+        {"owner": "platform", "title": {"$in": VISUAL_DEMO_TITLES}},
+        {"_id": 0, "id": 1, "title": 1, "category": 1,
+         "duration_sec": 1, "stream_url": 1},
+    ).to_list(length=20)
+    by_title = {a["title"]: a for a in items}
+    # l'ordine e' quello curato, non quello del database
+    return [by_title[t] for t in VISUAL_DEMO_TITLES if t in by_title]

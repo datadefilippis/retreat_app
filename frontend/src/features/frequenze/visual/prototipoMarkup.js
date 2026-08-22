@@ -35,8 +35,32 @@ const MARKUP = `
     <button class="src" id="btnFile">
       <svg viewBox="0 0 24 24"><circle cx="7" cy="18" r="2.6"/><path d="M9.6 18V5l10-2v12"/><circle cx="17.2" cy="15" r="2.6"/></svg>Upload Track
     </button>
+    <!-- DM (22/8) — le musiche di Aurya, per provare subito -->
+    <div id="demoSect" hidden>
+      <div class="lbl demo-lbl">Prova con una musica di Aurya</div>
+      <div id="demoList"></div>
+    </div>
     <input type="file" id="fileIn" accept="audio/*" hidden>
     <audio id="player" crossorigin="anonymous"></audio>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- VX (22/8) — la voce col suo stile: take crudo, stile al playback -->
+  <div class="sect" id="voceSect">
+    <div class="lbl">La tua voce</div>
+    <button class="src" id="voceRec">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></svg><span>Registra la voce</span>
+    </button>
+    <div id="voceLeggio" hidden>
+      <div id="voceStili"></div>
+      <div class="voce-riga">
+        <button id="vocePlay" type="button">&#9654; Riascolta</button>
+        <button id="voceScarta" type="button">Scarta</button>
+      </div>
+      <div class="voce-nota">La voce resta sul tuo dispositivo. Lo stile
+      scelto qui vale anche per il video.</div>
+    </div>
   </div>
 
   <div class="rule"></div>
@@ -155,6 +179,10 @@ const MARKUP = `
   <p>Visualizer immersivo audio-reattivo per la meditazione. Attiva il microfono per far respirare l'immagine con la stanza, oppure carica la tua traccia. <b>Tutto accade sul tuo dispositivo: il tuo audio non viene caricato da nessuna parte.</b></p>
   <button class="cta" id="gateMic">Attiva microfono</button>
   <button class="cta ghost" id="gateFile">Carica traccia</button>
+  <div id="gateDemos" hidden>
+    <div class="gate-demo-lbl">oppure prova una musica di Aurya</div>
+    <div id="gateDemoList"></div>
+  </div>
 </div></div>
 
 <div id="info"><div class="card">

@@ -365,16 +365,21 @@ class TestPaginaStrumentoAv2:
 
     def test_l_audio_non_tocca_mai_la_rete(self):
         pulito = _senza_commenti(self.PROTO)
+        # DM (22/8): l'unico fetch ammesso e' la lista PUBBLICA delle
+        # demo (titoli e url gia' pubblici) — mai l'audio dell'utente
+        senza_demo = pulito.replace("fetch('/api/public/visual-demos')", "")
         for vietato in ("fetch(", "XMLHttpRequest", "FormData"):
-            assert vietato not in pulito, f"l'audio dell'utente esce: {vietato}"
+            assert vietato not in senza_demo, f"l'audio dell'utente esce: {vietato}"
         assert "URL.createObjectURL" in self.PROTO
 
     def test_il_microfono_si_spegne_davvero(self):
         """FIX nostro al prototipo: disconnect() staccava il nodo ma
         lasciava lo stream vivo — la spia del browser restava accesa
         per sempre."""
-        blocco = self.PROTO.split("function disconnect()")[1][:300]
+        blocco = self.PROTO.split("function spegniMic()")[1][:300]
         assert "getTracks().forEach((t) => t.stop())" in blocco
+        # e disconnect() la usa: chi spegne tutto spegne anche il mic
+        assert "spegniMic();" in self.PROTO.split("function disconnect()")[1][:120]
 
     def test_il_microfono_non_va_agli_altoparlanti(self):
         blocco = self.PROTO.split("createMediaStreamSource")[1][:200]
@@ -1145,7 +1150,7 @@ class TestExportVideo:
         """un video di meditazione senza suono e' un errore, non una
         scelta: senza mic o traccia la registrazione non parte."""
         blocco = self._blocco()
-        assert "if (mode === 'none')" in blocco
+        assert "if (mode === 'none' && !takeBuffer)" in blocco
 
     def test_il_video_ha_la_scala_dell_occhio(self):
         """founder da iPhone: «nel video e' piu' chiaro, meno di
@@ -1167,3 +1172,83 @@ class TestExportVideo:
         PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
         assert "Math.pow(1 - fadeBase, dt * 60)" in PROTO
         assert "fadeUniforms.uFade.value = Math.max" not in PROTO
+
+
+class TestVoceNelVisual:
+    """Ciclo MX+DM+VX (22/8, richieste founder dal telefono): sorgenti
+    che coesistono, demo di piattaforma, la voce col suo stile."""
+
+    def _proto(self):
+        return (FQ_DIR / "visual" / "prototipo.js").read_text()
+
+    def test_le_sorgenti_coesistono_senza_fischi(self):
+        """MX: traccia e microfono insieme. La topologia che lo
+        permette: la traccia va all'orecchio E all'altoparlante, il
+        mic SOLO all'orecchio — analyser collegato a destination
+        (il vecchio grafo) manderebbe il mic in altoparlante:
+        feedback."""
+        PROTO = self._proto()
+        assert "analyser.connect(ctxA.destination)" not in PROTO
+        assert PROTO.count("player._node.connect(ctxA.destination)") == 2  # file + demo
+        assert "micNode.connect(analyser)" in PROTO
+        assert "micNode.connect(ctxA.destination)" not in PROTO
+        # il mic e' un interruttore, non spegne piu' la traccia
+        assert "if (micStream){ spegniMic(); aggiornaSorgenti(); return; }" in PROTO
+        assert "mode = micOn && fileOn ? 'mix'" in PROTO
+
+    def test_le_demo_sono_una_lista_curata_e_pubblica(self):
+        """DM: /api/public/visual-demos serve titoli gia' pubblici,
+        curati per TITOLO (sopravvivono a un re-import), nell'ordine
+        scelto a mano."""
+        pub = (BACKEND_DIR / "routers" / "public.py").read_text()
+        assert "VISUAL_DEMO_TITLES" in pub
+        assert '"owner": "platform"' in pub
+        assert "by_title[t] for t in VISUAL_DEMO_TITLES" in pub
+        PROTO = self._proto()
+        assert "fetch('/api/public/visual-demos')" in PROTO
+        # senza demo lo strumento resta intero (niente crash)
+        assert "senza demo lo strumento resta intero" in PROTO
+        MARKUP = (FQ_DIR / "visual" / "prototipoMarkup.js").read_text()
+        assert 'id="demoSect"' in MARKUP and 'id="gateDemos"' in MARKUP
+
+    def test_il_take_e_crudo_e_lo_stile_vive_al_playback(self):
+        """VX: la voce si registra CRUDA e lo stile (i preset di Crea,
+        riusati) si applica al playback — per questo si puo' cambiare
+        da Sogno a Sussurro DOPO aver ascoltato, e solo alla fine fare
+        il video."""
+        PROTO = self._proto()
+        assert "from '../engine/voicefx'" in PROTO
+        assert "buildVoiceChain(ctxA, takeStile" in PROTO
+        assert "connectVoiceSources(ctxA, takeBuffer" in PROTO
+        # il take NON passa dalla pulizia: il trim dei silenzi in testa
+        # sposterebbe la voce rispetto alla traccia (sono allineati)
+        assert "cleanVoiceBuffer(" not in PROTO
+        # e non viene mai inciso con lo stile dentro
+        assert "takeBuffer = await ctxA.decodeAudioData(ab)" in PROTO
+
+    def test_il_take_parte_insieme_alla_traccia(self):
+        """l'allineamento del mix: al via del take (e al via del video
+        col take) la traccia riparte da zero."""
+        PROTO = self._proto()
+        assert PROTO.count("player.currentTime = 0; player.play();") >= 3  # take, riascolto, export
+
+    def test_il_video_col_take_spegne_il_mic_vivo(self):
+        """doppia voce e rumore di stanza: nel video va il take con lo
+        stile, il microfono aperto si spegne."""
+        PROTO = self._proto()
+        assert "if (takeBuffer){\n      spegniMic(); fermaMix();" in PROTO.replace("\r", "")
+        # solo voce senza traccia: fine take = fine video
+        assert "sources[0].onended = () => fermaRec()" in PROTO
+
+    def test_lo_studio_non_ha_voce_ne_demo(self):
+        PROTO = self._proto()
+        assert "el('voceSect').style.display = 'none'" in PROTO
+        # demo e voce si montano solo nello strumento
+        assert "if (!studio && !incorporato){\n  fetch('/api/public/visual-demos')" in PROTO
+
+    def test_i_quattro_stili_sono_quelli_di_crea(self):
+        """un solo vocabolario: Naturale, Sogno, Tempio, Sussurro —
+        VOICE_PRESETS e' gia' il gemello del backend (guardia FV2)."""
+        PROTO = self._proto()
+        assert "Object.keys(VOICE_PRESETS).forEach" in PROTO
+        assert "VOICE_PRESETS[k].label" in PROTO
