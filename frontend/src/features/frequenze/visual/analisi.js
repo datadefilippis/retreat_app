@@ -18,6 +18,8 @@
  * e' giusto cosi': la scena respira invece di pulsare.
  */
 
+import { LISCIATURA_ANALYSER } from './tabelle';
+
 /* Bande in Hz. Gli estremi contano: 20 Hz e' sotto l'udibile utile,
    20 kHz e' oltre quasi ogni orecchio adulto. */
 export const BANDE = [
@@ -48,10 +50,11 @@ const liscia = (vecchio, nuovo, k) => vecchio + (nuovo - vecchio) * k;
 export function creaLettore(ctx, { fft = 2048 } = {}) {
   const analyser = ctx.createAnalyser();
   analyser.fftSize = fft;
-  /* La lisciatura DEL BROWSER e' volutamente bassa: preferisco
-     lisciare io, banda per banda, con tempi diversi. Con 0.8 qui
-     dentro ogni scelta successiva sarebbe gia' compromessa. */
-  analyser.smoothingTimeConstant = 0.5;
+  /* La lisciatura DEL BROWSER viene dallo standard (DA2): un valore
+     solo per strumento, studio e meditazione — due orecchie diverse
+     facevano ballare la stessa scena in modi diversi. Resta bassa:
+     le lisciature vere, banda per banda, le facciamo noi. */
+  analyser.smoothingTimeConstant = LISCIATURA_ANALYSER;
   analyser.minDecibels = -90;
   analyser.maxDecibels = -10;
 

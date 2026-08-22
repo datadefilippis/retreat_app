@@ -51,3 +51,9 @@ export const PRESETS = [
   { name:'Samadhi',   mode:6, pal:5, over:{intensity:76,scale:134,speed:38,trails:91,glow:98,drift:44,breath:13,depth:110} },
 ];
 export const CAMS = ['Orbit','Still','Breathe','Drift'];
+
+/* DA2 (22/8) — UNA SOLA ORECCHIA. La lisciatura dell'analyser era 0.88
+   nello strumento e 0.5 nell'analizzatore prestato (analisi.js): la
+   stessa scena ballava piu' o meno nervosa a seconda della porta da
+   cui entravi. Il valore e' uno, e sta nello standard. */
+export const LISCIATURA_ANALYSER = 0.62;

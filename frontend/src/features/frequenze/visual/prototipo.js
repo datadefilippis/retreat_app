@@ -15,7 +15,8 @@
      e' il prototipo, riga per riga. */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { SLIDERS, PALETTES, MODES, PRESETS, CAMS } from './tabelle';
+import { SLIDERS, PALETTES, MODES, PRESETS, CAMS,
+         LISCIATURA_ANALYSER } from './tabelle';
 
 export function avviaPrototipo(root, opz = {}){
   /* AV5 (22/8) — il MOTORE e' UNO SOLO. La pagina strumento monta il
@@ -194,6 +195,10 @@ const U = {
   uBright:{value:1}, uContrast:{value:1}, uPix:{value:1}, uFog:{value:.032},
   uC0:{value:new THREE.Color()}, uC1:{value:new THREE.Color()}, uC2:{value:new THREE.Color()},
   uTex:{value:sprite()}, uLine:{value:0}, uKeep:{value:1},
+  /* DA — il polso entra negli shader: vita (carburante), fase del
+     battito (coreografie), onda lenta, e l'istante del colpo per le
+     onde PROPAGATIVE (uHitT in tempo-scena) */
+  uVita:{value:0}, uBeatPhase:{value:0}, uSlow:{value:.5}, uHitT:{value:-10},
 };
 
 const NOISE = `
@@ -248,7 +253,8 @@ const VERT = `
 precision highp float;
 attribute vec3 aSeed; attribute float aRad, aAng, aArm, aSize, aRnd;
 uniform float uTime,uBass,uMid,uHigh,uLevel,uBreath,uMode,uIntensity,uScale,uSpeed,
-              uDepth,uGlow,uDrift,uPix,uLine,uFog,uKeep;
+              uDepth,uGlow,uDrift,uPix,uLine,uFog,uKeep,
+              uVita,uBeatPhase,uSlow,uHitT;
 uniform vec3 uC0,uC1,uC2;
 varying vec3 vCol; varying float vA;
 ${NOISE}
@@ -264,13 +270,17 @@ void main(){
   float br   = uBreath;              /* 0..1 slow respiration */
   float sw   = br*2.0 - 1.0;         /* -1..1 */
   float bass = uBass, mid = uMid, hi = uHigh;
+  /* DA3 — il battito come FASE (0..1 liscio) e l'istante del colpo:
+     la musica entra come coreografia, non come tremolio */
+  float beat = .5 - .5*cos(uBeatPhase*6.28318);
+  float dtH  = max(t - uHitT, 0.0);
   vec3 p; float shade = rad;
   float sym = 0.0;                   /* radial-symmetry accent */
 
   if (uMode < 0.5) {                                  /* BREATH — luminous sphere shell */
     vec3 dir = normalize(aSeed - .5 + 1e-4);
     float shell = 4.6 + rad*2.4;
-    float r = shell * (1.0 + sw*.16 + bass*.32*e);
+    float r = shell * (1.0 + sw*.16 + bass*.62*e + beat*.10*e + uSlow*.12);
     p = dir * r;
     p += dir * snoise(dir*2.2 + vec3(0.0, t*.12, 0.0)) * (.9 + mid*3.0*e);
     p.y *= uDepth;
@@ -280,14 +290,15 @@ void main(){
     vec3 q = (aSeed - .5) * vec3(20.0, 9.0*uDepth, 20.0);
     float w = snoise(q*.09 + vec3(0.0, t*.06, 0.0));
     q += vec3(snoise(q*.07 + 31.0), snoise(q*.07 + 57.0), snoise(q*.07 + 83.0))
-         * (2.4 + mid*4.0*e + br*1.2);
+         * (1.2 + mid*7.5*e + br*1.2 + beat*1.4*e);
     p = q + vec3(0.0, w*1.6, 0.0);
     shade = clamp(w*.4 + .5 + rad*.25, 0.0, 1.0);
 
   } else if (uMode < 2.5) {                           /* SPIRAL — galactic disc */
     float r = pow(rad,.72) * 11.5 * (1.0 + sw*.05);
-    r += bass * 1.2 * e * sin(r*.55 - t*1.2);
-    float a = aAng + r*.70 + t*.42/(.55 + r*.16) + mid*.35*e;
+    r += bass * 2.4 * e * sin(r*.55 - t*1.2);
+    r += beat * e * .9 * sin(r*.8 - uBeatPhase*6.28318);   /* onda che gira col battito */
+    float a = aAng + r*.70 + t*.42/(.55 + r*.16) + mid*.7*e;
     float thick = (.12 + (1.0-rad)*.46) * uDepth;
     p = vec3(cos(a)*r, (aSeed.y-.5)*thick*2.0, sin(a)*r);
     p.xz += (aSeed.xz-.5) * (.30 + r*.085) * (1.0 + hi*1.2*e);
@@ -300,7 +311,8 @@ void main(){
   } else if (uMode < 3.5) {                           /* FLOW — toroidal current */
     float a = aSeed.x*6.28318 + t*.26 + rad*1.1;
     float b = aSeed.y*6.28318 + t*.5;
-    float R = 7.4 + bass*1.8*e + sw*.5, r2 = 2.0 + rad*2.0 + mid*1.4*e;
+    float R = 7.4 + bass*3.4*e + sw*.5 + beat*.7*e,
+          r2 = 2.0 + rad*2.0 + mid*2.6*e + hi*.9*e*sin(rad*9.0 + t);
     p = vec3((R + r2*cos(b))*cos(a), r2*sin(b)*uDepth, (R + r2*cos(b))*sin(a));
     p.xz *= rot(sin(t*.16)*.5);
     shade = .5 + .5*sin(b);
@@ -308,26 +320,38 @@ void main(){
   } else if (uMode < 4.5) {                           /* MANDALA — ambient dust halo */
     vec3 dir = normalize(aSeed - .5 + 1e-4);
     float r = 3.0 + pow(rad,.8)*13.0;
-    p = dir * r * (1.0 + sw*.06 + bass*.12*e);
+    p = dir * r * (1.0 + sw*.06 + bass*.24*e + beat*.05*e);
     p.z *= .55; p.y *= uDepth;
     shade = rad;
 
   } else if (uMode < 5.5) {                           /* HELIX — ascending double strand */
     float side = mod(aArm,2.0)*3.14159;
     float u = (rad-.5)*26.0;
-    float rr = 3.0 + mid*1.8*e + sin(u*.32 + t*.6)*.55 + sw*.35;
-    p = vec3(cos(u*.42 + t*.55 + side)*rr, u*.52*uDepth, sin(u*.42 + t*.55 + side)*rr);
-    p += (aSeed-.5)*(.45 + hi*1.4*e);
+    float rr = 3.0 + mid*3.6*e + sin(u*.32 + t*.6)*.55 + sw*.35;
+    float tw2 = u*.42 + t*.55 + side + beat*.55*e*sin(u*.2);
+    p = vec3(cos(tw2)*rr, u*.52*uDepth, sin(tw2)*rr);
+    p += (aSeed-.5)*(.45 + hi*2.2*e);
     shade = clamp(rad*.6 + br*.3, 0.0, 1.0);
 
   } else {                                            /* RIPPLE — concentric rings */
     float ring = floor(rad*10.0)/10.0;
-    float r = ring*12.0 + sin(t*1.0 - ring*6.5)*(.6 + bass*2.2*e);
+    float r = ring*12.0 + sin(t*1.0 - ring*6.5)*(.4 + bass*3.4*e);
+    /* il colpo EMETTE un anello: un fronte che parte dal centro e
+       attraversa gli anelli — la scena non sobbalza, il gesto viaggia */
+    float fronte = exp(-abs(ring*12.0 - dtH*7.0)*.55) * exp(-dtH*.9);
+    r += fronte * (1.6 + bass*2.0*e);
     float a = aSeed.x*6.28318 + t*.14*(1.0 + ring*.6);
     p = vec3(cos(a)*r, (aSeed.y-.5)*.35*uDepth + sin(t*.8 - ring*4.5)*(.7 + sw*.4)*uDepth, sin(a)*r);
     shade = ring;
     sym = .5;
   }
+
+  /* DA3 — il colpo ATTRAVERSA la scena: un fronte sferico che parte
+     dal centro (come un gesto attraversa il corpo di un ballerino),
+     invece di un sobbalzo uniforme di tutto insieme */
+  float rr0 = length(p) + 1e-3;
+  float hitW = exp(-abs(rr0 - dtH*9.0)*.45) * exp(-dtH*1.1);
+  p += (p / rr0) * hitW * (1.1 + bass*1.4*e);
 
   /* organic drift — the same field for every form, so motion always reads natural */
   float dAmp = uDrift * (.34 + mid*.9*e + br*.22) * (1.0 - sym*.72);
@@ -361,7 +385,9 @@ void main(){
   float base = (uLine > .5 ? .14 : .86) * mix(1.0, .30, big) * dust;
 
   vCol = col;
-  vA = base * (.72 + uLevel*.7*e) * mix(1.0, tw, .40 + hi*.35) * (.62 + fog*.38);
+  vA = base * (.38 + uVita*.34 + uLevel*.65*e)
+       * mix(1.0, tw, .40 + hi*.35) * (.62 + fog*.38)
+       * (1.0 + hitW*.9);
   gl_PointSize = aSize * uPix * uGlow * (1.0 + bass*.55*e + br*.10) * (250.0 / dist);
 }`;
 
@@ -422,16 +448,24 @@ const MAND_U = {
   uBreath:U.uBreath, uIntensity:U.uIntensity, uScale:U.uScale, uGlow:U.uGlow,
   uBright:{ value:1 }, uContrast:U.uContrast, uPix:U.uPix, uDepth:U.uDepth, uHit:{ value:0 },
   uC0:U.uC0, uC1:U.uC1, uC2:U.uC2, uTex:U.uTex, uPoint:{ value:0 },
+  uVita:U.uVita, uBeatPhase:U.uBeatPhase, uSlow:U.uSlow, uHitT:U.uHitT,
   /* own brightness so the mandala can sit brighter without blowing out the point field */
 };
 const MAND_VERT = `
 precision highp float;
 attribute float aTheta, aU, aSide, aR0, aLen, aWid, aLayer, aSpin, aKind, aScale;
-uniform float uTime,uBass,uMid,uHigh,uLevel,uBreath,uIntensity,uScale,uGlow,uPix,uPoint,uDepth,uHit;
+uniform float uTime,uBass,uMid,uHigh,uLevel,uBreath,uIntensity,uScale,uGlow,uPix,uPoint,uDepth,uHit,
+              uVita,uBeatPhase,uSlow,uHitT;
 uniform vec3 uC0,uC1,uC2;
 varying vec3 vCol; varying float vA;
 void main(){
   float t = uTime, e = uIntensity, br = uBreath;
+  /* DA3 — il battito apre i petali come un'ONDA che gira per le
+     corone (fase spaziale sull'angolo e sulla corona: movimento che
+     viaggia, mai luce che lampeggia — anti-strobo), e il colpo
+     attraversa il loto dal centro verso i bordi */
+  float beatW = .5 - .5*cos(uBeatPhase*6.28318 - aTheta - aLayer*2.2);
+  float dtH   = max(t - uHitT, 0.0);
   float rot   = (t*0.010 + 0.075*sin(t*0.42) + 0.03*sin(t*1.05)) * aSpin;   /* sways, doesn't just spin */   /* crowns stay coherent — one lotus, not a pinwheel */
   float wave  = 0.5 - 0.5*cos((br - aLayer*0.30) * 6.28318);
   float pulse = sin(t*0.7 - aLayer*3.0);
@@ -442,12 +476,14 @@ void main(){
     float ph   = aTheta * 1.0;                            /* per-petal phase */
     float veil = aScale * 6.28318;                        /* per-contour phase */
     /* petals reach and retract in a travelling wave around the crown */
-    float reach = 1.0 + 0.22*sin(t*0.62 - ph*1.6 - aLayer*1.4)
-                      + 0.09*sin(t*1.35 + veil*0.5)
-                      + uBass*0.26*e + uHit*0.20;
-    float fat   = 1.0 + 0.20*sin(t*0.48 + ph*2.1 + aLayer*2.2)
-                      + uMid*0.34*e + uHit*0.16;
-    float open = 1.0 + wave*0.07 + 0.05*sin(t*0.24 + aLayer*2.0);
+    float ondaColpo = exp(-abs((aR0 + aLen*aU) - dtH*10.0)*.5) * exp(-dtH*1.2);
+    float reach = 1.0 + 0.14*sin(t*0.62 - ph*1.6 - aLayer*1.4)
+                      + 0.06*sin(t*1.35 + veil*0.5)
+                      + uBass*0.55*e + uHit*0.24 + ondaColpo*.45;
+    float fat   = 1.0 + 0.12*sin(t*0.48 + ph*2.1 + aLayer*2.2)
+                      + uMid*0.60*e + uHit*0.18;
+    float open = 1.0 + wave*0.07 + 0.05*sin(t*0.24 + aLayer*2.0)
+                     + beatW*0.20*e;
     float len = aLen * aScale * open * reach;
     float wid = aWid * aScale * open * fat;
     r  = (aR0 + len*aU) * grow;
@@ -481,7 +517,10 @@ void main(){
   vCol = col;
 
   float kindA = aKind < 0.5 ? (0.30 + 0.16*aLayer) : (aKind < 1.5 ? 0.34 : 0.45);
-  vA = kindA * (0.55 + uLevel*0.5*e + br*0.10) * (aKind < 0.5 ? (0.45 + 0.55*tip) : 1.0);
+  float ondaL = aKind < 0.5 ? exp(-abs(aR0 - dtH*10.0)*.5) * exp(-dtH*1.2) : 0.0;
+  vA = kindA * (0.30 + uVita*0.28 + uLevel*0.55*e + br*0.10)
+       * (aKind < 0.5 ? (0.45 + 0.55*tip) : 1.0)
+       * (1.0 + ondaL*.7);
   if (uPoint > 0.5) { vA *= 1.6; gl_PointSize = (1.2 + 1.8*aLayer) * uPix * uGlow * (150.0 / max(-mv.z,1.0)); }
 }`;
 const MAND_FRAG = `
@@ -649,7 +688,8 @@ function ensureCtx(){
   if (!ctxA){
     ctxA = new (window.AudioContext || window.webkitAudioContext)();
     analyser = ctxA.createAnalyser();
-    analyser.fftSize = 2048; analyser.smoothingTimeConstant = .88;
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = LISCIATURA_ANALYSER;   /* DA2: una sola orecchia */
     freq = new Uint8Array(analyser.frequencyBinCount);
     time = new Uint8Array(analyser.fftSize);
   }
@@ -703,6 +743,150 @@ const campionamento = () => (ctxA && ctxA.sampleRate)
   || (analyser && analyser.context && analyser.context.sampleRate)
   || 48000;
 const avg = (a,f,t) => { let s=0; for(let k=f;k<t;k++) s+=a[k]; return s/Math.max(1,(t-f))/255; };
+
+/* ══ DA2 — IL POLSO ══════════════════════════════════════════════
+   Le meditazioni Aurya non hanno percussioni: sono droni, battiti
+   binaurali/isochronic (0.05-60 Hz da contratto), maree. Il loro
+   ritmo vive nella MODULAZIONE d'ampiezza — e il vecchio rilevatore
+   (salto dei soli bassi) non lo sentiva mai. Il polso estrae:
+   - colpo:      flusso spettrale (novita' su TUTTO lo spettro — anche
+                 un cambio di nota, non solo una cassa);
+   - battitoHz:  il battito di modulazione 0.3..14 Hz, per
+                 autocorrelazione dell'inviluppo → la scena pulsa alla
+                 frequenza dell'ENTRAINMENT della ricetta;
+   - fase:       oscillatore agganciato dolcemente ai picchi
+                 dell'inviluppo (fase SPAZIALE nei shader: movimento
+                 che gira, mai luce che sbatte — anti-strobo);
+   - ondaLenta:  maree/crescendo/respiri guidati (0..1 normalizzato);
+   - vita:       energia normalizzata con autogain — il carburante di
+                 tutto il moto (DA1). */
+const polso = {
+  vita: 0, colpo: 0, battitoHz: 0, fase: 0, fiducia: 0,
+  ondaLenta: .5, escursioneLenta: 0, brillantezza: 0,
+};
+let _prevFreq = null, _fluxMedia = 0.004, _picco = 0.18;
+let _lento = 0, _lentoMin = 1, _lentoMax = 0;
+const _INV_PASSO = 1 / 45;                 /* inviluppo campionato a 45 Hz */
+const _INV_N = 256;                        /* ~5,7 s di storia */
+const _inv = new Float32Array(_INV_N);
+let _invI = 0, _invAcc = 0, _acAcc = 0, _invPrec = 0, _salita = false;
+let _bustaPrec = 0;
+
+function battePolso(dt){
+  if (!analyser){                          /* idle: veglia media, ferma */
+    polso.vita += (0.45 - polso.vita) * Math.min(1, dt * 2);
+    polso.colpo = Math.max(0, polso.colpo - dt);
+    return;
+  }
+  /* colpo: flusso spettrale con soglia adattiva */
+  const n75 = Math.floor(freq.length * .75);
+  let flux = 0;
+  if (_prevFreq){
+    for (let k = 2; k < n75; k++){
+      const d = freq[k] - _prevFreq[k];
+      if (d > 0) flux += d;
+    }
+    flux /= n75 * 255;
+  } else { _prevFreq = new Uint8Array(freq.length); }
+  _prevFreq.set(freq);
+  const soglia = _fluxMedia * 2.4 + 0.003;
+  if (flux > soglia) polso.colpo = Math.min(1, (flux - soglia) * 60);
+  else polso.colpo *= Math.exp(-dt * 4.2);
+  _fluxMedia += (flux - _fluxMedia) * Math.min(1, dt * 1.2);
+
+  /* brillantezza: centroide spettrale */
+  let somma = 0, pesata = 0;
+  for (let k = 2; k < n75; k++){ somma += freq[k]; pesata += freq[k] * k; }
+  let cen = polso.brillantezza;
+  if (somma > 40){
+    const hz = (pesata / somma) * campionamento() / analyser.fftSize;
+    /* scala d'OTTAVE (50 Hz→0, ~3200 Hz→1): in lineare una meditazione
+       — tutta energia sotto i 200 Hz — leggeva 0.02, inutilizzabile */
+    cen = Math.max(0, Math.min(1, Math.log2(Math.max(hz, 50) / 50) / 6));
+  }
+  polso.brillantezza += (cen - polso.brillantezza) * Math.min(1, dt * 3);
+
+  /* vita: energia normalizzata (autogain col pavimento: il rumore di
+     fondo non deve sembrare un concerto) */
+  _picco = Math.max(_picco * Math.exp(-dt / 12), bands.level, 0.18);
+  const target = Math.min(1, bands.level / _picco);
+  const k = target > polso.vita ? 2.2 : 0.4;   /* sale svelta, scende piano */
+  polso.vita += (target - polso.vita) * (1 - Math.exp(-k * dt));
+
+  /* onda lenta: maree e crescendo (tau ~6 s, escursione su ~25 s) */
+  _lento += (bands.level - _lento) * Math.min(1, dt / 6);
+  _lentoMin = Math.min(_lentoMin + dt / 25, _lento);
+  _lentoMax = Math.max(_lentoMax - dt / 25, _lento);
+  polso.escursioneLenta = _lentoMax - _lentoMin;
+  polso.ondaLenta = polso.escursioneLenta > 0.02
+    ? (_lento - _lentoMin) / polso.escursioneLenta : .5;
+
+  /* battito di modulazione: inviluppo → autocorrelazione ogni 0,6 s */
+  const busta = bands.bass * .7 + bands.mid * .3;
+  _invAcc += dt;
+  const daScrivere = Math.floor(_invAcc / _INV_PASSO);
+  for (let j = 1; j <= daScrivere; j++){
+    const f = j / daScrivere;               /* interpolazione lineare */
+    _inv[_invI % _INV_N] = _bustaPrec + (busta - _bustaPrec) * f;
+    _invI++;
+  }
+  _invAcc -= daScrivere * _INV_PASSO;
+  _bustaPrec = busta;
+  _acAcc += dt;
+  if (_acAcc >= 0.6 && _invI >= _INV_N){
+    _acAcc = 0;
+    let media = 0;
+    for (let i = 0; i < _INV_N; i++) media += _inv[i];
+    media /= _INV_N;
+    let ac0 = 0;
+    for (let i = 0; i < _INV_N; i++){ const d = _inv[i] - media; ac0 += d * d; }
+    if (ac0 > 1e-5){
+      let meglio = 0, lagMeglio = 0;
+      const lagMin = 3, lagMax = 150;      /* 45/150=0.3 Hz .. 45/3=15 Hz */
+      const acDi = new Float32Array(lagMax + 1);
+      for (let lag = lagMin; lag <= lagMax; lag++){
+        let ac = 0;
+        for (let i = 0; i < _INV_N - lag; i++){
+          ac += (_inv[i] - media) * (_inv[i + lag] - media);
+        }
+        acDi[lag] = ac / ac0;
+        if (acDi[lag] > meglio){ meglio = acDi[lag]; lagMeglio = lag; }
+      }
+      /* la FONDAMENTALE (regola classica del pitch detection): dal
+         massimo globale si RADDOPPIA il lag finche' la correlazione
+         regge — la fondamentale sta ai lag lunghi, le armoniche ai
+         corti. (La prima versione preferiva i lag corti ed e' stata
+         smentita dalla traccia-sonda: 4.44 stimati su un battito
+         VERO a 2.0.) */
+      if (lagMeglio > 0){
+        while (lagMeglio * 2 <= lagMax && acDi[lagMeglio * 2] >= meglio * 0.72){
+          lagMeglio *= 2; meglio = acDi[lagMeglio];
+        }
+      }
+      if (meglio > 0.25 && lagMeglio > 0){
+        const hz = 1 / (_INV_PASSO * lagMeglio);
+        polso.battitoHz += (hz - polso.battitoHz) * .3;
+        polso.fiducia += (meglio - polso.fiducia) * .3;
+      } else {
+        polso.fiducia *= .6;
+      }
+    }
+  }
+  /* la fase: oscillatore + aggancio dolce al picco dell'inviluppo */
+  if (polso.fiducia > 0.2 && polso.battitoHz > 0.05){
+    polso.fase = (polso.fase + dt * polso.battitoHz) % 1;
+    const sale = busta > _invPrec;
+    if (_salita && !sale){                 /* picco locale: fase → 0 */
+      let err = polso.fase; if (err > .5) err -= 1;
+      polso.fase = (polso.fase - err * 0.12 + 1) % 1;
+    }
+    _salita = sale;
+  } else {
+    polso.fase = (polso.fase + dt * 0.1) % 1;   /* riposo: deriva lenta */
+  }
+  _invPrec = busta;
+}
+
 function readAudio(){
   if (!analyser){
     const t = performance.now()/1000;   /* idle: keeps the image alive, very softly */
@@ -960,7 +1144,7 @@ updateMeters = function(breath){
    ============================================================ */
 const clock = new THREE.Clock();
 const env = { b:0, m:0, h:0, l:0 };
-let tAcc = 0, breathPhase = 0, camBob = 0, mandFit = 1, hit = 0, bassPrev = 0;
+let tAcc = 0, breathPhase = 0, camBob = 0, mandFit = 1, hit = 0;
 
 /* asymmetric follower: rises in ~0.25 s, falls over ~2 s */
 function follow(cur, target, dt){
@@ -981,6 +1165,7 @@ function frame(){
 function disegna(){
   const dt = Math.min(clock.getDelta(), .05);
   readAudio();
+  battePolso(dt);
 
   const R = S.react;
   env.b = follow(env.b, bands.bass, dt);
@@ -991,18 +1176,26 @@ function disegna(){
   /* continuous respiration, eased — the backbone of the motion */
   breathPhase = (breathPhase + dt / S.breath) % 1;
   const raw = .5 - .5*Math.cos(breathPhase * Math.PI * 2);
-  const breath = raw*raw*(3 - 2*raw);      /* smoothstep for a held inhale/exhale */
+  let breath = raw*raw*(3 - 2*raw);        /* smoothstep for a held inhale/exhale */
+  /* DA1 — il respiro era «la spina dorsale del moto» e NON guardava
+     mai l'audio. Ora: ampiezza scalata dalla vita (a silenzio quasi
+     piatto, centrato), e se la sessione ha una modulazione lenta
+     vera (marea, crescendo, respiro guidato) il respiro segue QUELLA. */
+  breath = .5 + (breath - .5) * (0.15 + 0.85 * polso.vita);
+  const marea = Math.min(1, Math.max(0, (polso.escursioneLenta - 0.05) * 12));
+  breath = breath * (1 - marea) + polso.ondaLenta * marea;
 
-  tAcc += dt * (S.speed/100) * (0.5 + env.l * 1.1 * R);
+  /* DA1 — l'energia e' il CARBURANTE. Prima: pavimento 0.5 → a
+     silenzio la scena teneva il 65-70% del moto («si muove uguale da
+     ferma», founder). Ora il pavimento e' la veglia (0.12): senza
+     suono la scena rallenta visibilmente, col suono corre. */
+  tAcc += dt * (S.speed/100) * (0.12 + polso.vita * 0.85 * R);
   U.uTime.value = tAcc;
   U.uBass.value = env.b * R;
   U.uMid.value  = env.m * R;
   U.uHigh.value = env.h * R;
   U.uLevel.value = env.l * R;
   U.uBreath.value = breath;
-  /* transient detector: gives the shapes a beat to move on */
-  const kick = bands.bass - bassPrev; bassPrev = bands.bass;
-  hit = Math.max(hit * Math.exp(-dt*4.2), kick > .035 ? Math.min(1, kick*7) : 0);
   MAND_U.uHit.value = hit * R;
 
   U.uIntensity.value = S.intensity/100;
@@ -1010,11 +1203,18 @@ function disegna(){
   U.uSpeed.value = S.speed/100;
   U.uDepth.value = S.depth/100;
   U.uGlow.value = S.glow/100;
-  U.uDrift.value = S.drift/100;
+  U.uDrift.value = S.drift/100 * (0.2 + 0.8 * polso.vita);   /* DA1 */
   U.uBright.value = S.brightness/100;
   MAND_U.uBright.value = S.brightness/100 * 1.7;
   U.uContrast.value = S.contrast/100;
   U.uPix.value = renderer.getPixelRatio() * .92;
+  U.uVita.value = polso.vita;
+  U.uBeatPhase.value = polso.fiducia > 0.2 ? polso.fase : 0.25;
+  U.uSlow.value = polso.ondaLenta;
+  /* il colpo del polso (flusso spettrale) comanda anche il vecchio
+     canale uHit e scrive l'istante per l'onda propagativa */
+  if (polso.colpo > hit){ U.uHitT.value = tAcc; }
+  hit = Math.max(hit * Math.exp(-dt*4.2), polso.colpo);
 
   const P = PALETTES[S.pal].c;
   U.uC0.value.set(P[0]); U.uC1.value.set(P[1]); U.uC2.value.set(P[2]);
@@ -1063,7 +1263,8 @@ function disegna(){
 
   /* camera: always a slow, weightless glide */
   camBob += dt;
-  if (S.cam === 0){ controls.autoRotate = true; controls.autoRotateSpeed = .16 + env.l*1.1*R; }
+  if (S.cam === 0){ controls.autoRotate = true;
+    controls.autoRotateSpeed = .04 + polso.vita * .5 * R; }   /* DA1 */
   else controls.autoRotate = false;
   if (S.cam === 2){
     /* mentre l'autore trascina o avvicina, la camera e' SUA: il loop

@@ -667,6 +667,75 @@ class TestScenaDellAutoreVc:
         assert "ScenaControlli" not in PUB
 
 
+class TestBallerinoDa:
+    """
+    Ciclo DA (22/8) — «un oggetto che si muove come un ballerino e si
+    adatta alla musica» (founder). Prima: a silenzio la scena teneva il
+    65-70% del moto, il respiro era un metronomo sordo, l'audio pesava
+    il 15-20% del gesto. Piano in docs/VISUAL_DANZA_ANALISI_DA_2026-08.md;
+    prova strumentale: battito VERO a 2.0 Hz stimato 1.94, fiducia 0.74,
+    vita→0 allo stop.
+    """
+
+    def test_l_energia_e_il_carburante(self):
+        """DA1: senza suono la scena rallenta alla veglia (pavimento
+        0.12, non 0.5); col suono corre. Tutto il moto autonomo scorre
+        su uTime, quindi questa riga governa la danza intera."""
+        assert "0.12 + polso.vita * 0.85 * R" in PROTO
+        assert "(0.5 + env.l * 1.1 * R)" not in PROTO, \
+            "e' tornato il pavimento che faceva ballare il silenzio"
+
+    def test_il_respiro_non_e_piu_un_metronomo_sordo(self):
+        """L'ampiezza segue la vita (a silenzio quasi piatto e
+        CENTRATO), e se la sessione ha una marea vera il respiro segue
+        quella."""
+        assert ".5 + (breath - .5) * (0.15 + 0.85 * polso.vita)" in PROTO
+        assert "polso.ondaLenta * marea" in PROTO
+
+    def test_il_polso_sente_la_modulazione(self):
+        """Il battito delle nostre ricette (binaurale/isochronic) vive
+        nella modulazione d'ampiezza 0.3-14 Hz, non nei transienti:
+        autocorrelazione dell'inviluppo, con la regola della
+        FONDAMENTALE (dal massimo si raddoppia il lag finche' la
+        correlazione regge — la sonda ha smentito la preferenza per i
+        lag corti: 4.44 stimati su un battito vero a 2.0)."""
+        assert "const lagMin = 3, lagMax = 150" in PROTO
+        assert "lagMeglio * 2 <= lagMax && acDi[lagMeglio * 2] >= meglio * 0.72" in PROTO
+        # e i fotogrammi lenti non sporcano l'inviluppo: interpolazione
+        assert "_bustaPrec + (busta - _bustaPrec) * f" in PROTO
+
+    def test_vita_con_autogain_e_pavimento(self):
+        """L'energia si normalizza sul brano (autogain), ma col
+        pavimento: il rumore di fondo non deve sembrare un concerto."""
+        assert "Math.max(_picco * Math.exp(-dt / 12), bands.level, 0.18)" in PROTO
+
+    def test_il_battito_e_movimento_mai_lampeggio(self):
+        """ANTI-STROBO: la fase del battito guida geometria e fase
+        SPAZIALE (aprirsi, viaggiare, torcersi) — mai la luminanza.
+        Una pulsazione luminosa a frequenza da entrainment sarebbe uno
+        strobo, e quello e' territorio fotosensibilita'."""
+        frag_gal = PROTO.split("const FRAG = `")[1].split("`;")[0]
+        frag_man = PROTO.split("const MAND_FRAG = `")[1].split("`;")[0]
+        for frag in (frag_gal, frag_man):
+            assert "uBeatPhase" not in frag, "il battito e' arrivato alla luce"
+        # e nei vertex il battito entra con fase spaziale, non globale
+        assert "uBeatPhase*6.28318 - aTheta" in PROTO
+
+    def test_il_colpo_attraversa_la_scena(self):
+        """Eventi PROPAGATIVI: il colpo e' un fronte che parte dal
+        centro e viaggia (come un gesto attraversa un ballerino), non
+        un sobbalzo uniforme. In piu' Ripple EMETTE un anello vero."""
+        assert "exp(-abs(rr0 - dtH*9.0)*.45)" in PROTO      # galassia
+        assert "exp(-abs((aR0 + aLen*aU) - dtH*10.0)*.5)" in PROTO   # petali
+        assert "fronte" in PROTO                             # ripple
+
+    def test_la_luce_sa_se_c_e_vita(self):
+        assert "uVita*.34" in PROTO and "uVita*0.28" in PROTO
+
+    def test_la_sonda_non_e_rimasta(self):
+        assert "__polso" not in PROTO
+
+
 class TestRitmoAv4bis:
     """«Non sono convinto che si muovano col ritmo» (founder): la
     causa era la TRIPLA lisciatura — analyser, bande, inseguitore."""
@@ -675,19 +744,28 @@ class TestRitmoAv4bis:
         assert "grezze:" in ANALISI
         assert "stato.grezze[r.nome] = grezzo" in ANALISI
 
-    def test_il_motore_beve_da_un_analizzatore_poco_lisciato(self):
-        """L'inseguitore asimmetrico del prototipo dev'essere l'UNICA
-        lisciatura pesante: l'analizzatore che gli passiamo sta a 0.5,
-        non a 0.88, e le bande le calcola lui dai bin grezzi."""
-        assert "smoothingTimeConstant = 0.5" in ANALISI
+    def test_una_sola_orecchia(self):
+        """DA2: la lisciatura dell'analyser era 0.88 nello strumento e
+        0.5 nell'analizzatore prestato — la stessa scena ballava piu' o
+        meno nervosa a seconda della porta. Ora e' UN valore, nello
+        standard, e nessuno ne scrive altri per conto suo."""
+        tab = (FQ_DIR / "visual" / "tabelle.js").read_text()
+        assert "export const LISCIATURA_ANALYSER" in tab
+        assert "smoothingTimeConstant = LISCIATURA_ANALYSER" in ANALISI
+        assert "smoothingTimeConstant = LISCIATURA_ANALYSER" in PROTO
+        for src in (ANALISI, PROTO):
+            assert not re.search(r"smoothingTimeConstant\s*=\s*[\d.]", src), \
+                "qualcuno ha rimesso un numero a mano: due orecchie di nuovo"
         assert "analyser.getByteFrequencyData(freq)" in PROTO
 
-    def test_il_colpo_del_prototipo_c_e(self):
-        """Il salto dei bassi fra due fotogrammi, con decadimento
-        rapido: e' il lampo che aggancia la scena al ritmo."""
-        assert "Math.exp(-dt*4.2)" in PROTO
-        assert "kick > .035" in PROTO
-        # e il colpo arriva ai petali del mandala
+    def test_il_colpo_e_del_polso_su_tutto_lo_spettro(self):
+        """DA2: il vecchio rilevatore (salto dei soli bassi) su una
+        meditazione non scattava MAI — droni e battiti non hanno
+        percussioni. Il colpo ora e' flusso spettrale con soglia
+        adattiva: sente anche un cambio di nota."""
+        assert "kick > .035" not in PROTO, "e' tornato il rilevatore da percussioni"
+        assert "flux" in PROTO and "_fluxMedia * 2.4" in PROTO
+        assert "Math.exp(-dt * 4.2)" in PROTO      # il decadimento resta
         assert "MAND_U.uHit.value = hit" in PROTO
 
     def test_la_camera_respira_col_suono(self):
