@@ -288,6 +288,7 @@ void main(){
   float dtH  = max(t - uHitT, 0.0);
   float reg  = uRegistro - .5;       /* -0.5 grave .. +0.5 acuto */
   float zona = rad;                  /* default: cuore→bordo */
+  float fadeForma = 1.0;             /* i rami sfumano i propri bordi */
   vec3 p; float shade = rad;
   float sym = 0.0;                   /* radial-symmetry accent */
 
@@ -339,15 +340,42 @@ void main(){
     p.z *= .55; p.y *= uDepth;
     shade = rad;
 
-  } else if (uMode < 5.5) {                           /* HELIX — ascending double strand */
+  } else if (uMode < 5.5) {                           /* HELIX — kundalini */
+    /* FM2 (founder: «la vedo vuota, manca energia, potenza»). Tre
+       popolazioni: i FILAMENTI, i PONTI che li legano come gradini, e
+       le SCINTILLE che risalgono l'asse. E l'energia RISALE: la quota
+       scorre col tempo e con la vita — la colonna sale davvero. Il
+       riciclo si nasconde sfumando le estremita' (fadeForma). */
     float side = mod(aArm,2.0)*3.14159;
-    float u = (rad-.5)*26.0;
-    zona = rad;                      /* elica: la zona E' l'altezza */
+    float asc = fract(rad + t*0.022*(0.25 + uVita));   /* risalita */
+    float u = (asc-.5)*26.0;
+    zona = asc;
     float rr = 3.0 + mid*2.4*e + sin(u*.32 + t*.6)*.55 + sw*.35;
     float tw2 = u*.42 + t*.55 + side + beat*.38*e*sin(u*.2);
-    p = vec3(cos(tw2)*rr, u*.52*uDepth, sin(tw2)*rr);
-    p += (aSeed-.5)*(.45 + hi*1.5*e);
-    shade = clamp(rad*.6 + br*.3, 0.0, 1.0);
+    if (aRnd > .86){                 /* scintille: l'asse di luce */
+      float a2 = fract(rad*7.0 + t*(0.09 + uVita*0.15));
+      u = (a2-.5)*26.0;
+      zona = a2;
+      float rs = .45 + spettro(a2)*1.6*e;
+      p = vec3(cos(rad*47.0 + t*.8)*rs, u*.52*uDepth, sin(rad*47.0 + t*.8)*rs);
+      shade = .92;
+    } else if (aRnd > .68){          /* ponti: i gradini fra le due spire */
+      float ub = (fract(rad*3.0 + asc*.13) - .5)*26.0;
+      float twp = ub*.42 + t*.55 + beat*.38*e*sin(ub*.2);
+      float rrp = 3.0 + mid*2.4*e + sin(ub*.32 + t*.6)*.55;
+      vec2 A = vec2(cos(twp), sin(twp)) * rrp;
+      vec2 B = -A;                   /* il filamento opposto: fase +π */
+      vec2 P = mix(A, B, aSeed.z);
+      p = vec3(P.x, ub*.52*uDepth, P.y);
+      zona = clamp(ub/26.0 + .5, 0.0, 1.0);
+      u = ub;
+      shade = .5 + spettro(zona)*.4;
+    } else {                         /* i filamenti, che ora salgono */
+      p = vec3(cos(tw2)*rr, u*.52*uDepth, sin(tw2)*rr);
+      p += (aSeed-.5)*(.45 + hi*1.5*e);
+      shade = clamp(asc*.6 + br*.3, 0.0, 1.0);
+    }
+    fadeForma = 1.0 - smoothstep(9.5, 13.2, abs(u));
 
   } else {                                            /* RIPPLE — concentric rings */
     float ring = floor(rad*10.0)/10.0;
@@ -415,7 +443,7 @@ void main(){
   vCol = col;
   vA = base * (.38 + uVita*.34 + uLevel*.65*e)
        * mix(1.0, tw, .40 + hi*.35) * (.62 + fog*.38)
-       * (1.0 + hitW*.45);
+       * (1.0 + hitW*.45) * fadeForma;
   gl_PointSize = aSize * uPix * uGlow * (1.0 + bass*.28*e + br*.10)
                  * (1.0 - reg*.30) * (250.0 / dist);
 }`;
@@ -552,6 +580,27 @@ void main(){
   }
 
   vec3 p = vec3(cos(th)*r, sin(th)*r, z);
+
+  /* FM1 — la SFERA ARMILLARE (founder: «i cerchi attorno al mandala
+     piu' 3D e piu' vivi, che si muovono armonicamente col mandala»).
+     Ogni anello esce dal piano e PRECESSA come in un astrolabio:
+     un'inclinazione lenta attorno a un asse suo, che il suono accende
+     appena. E ogni anello abita la SUA zona di spettro (le zone
+     medio-alte: il cuore del loto ha gia' i bassi): quando la sua
+     banda suona, l'anello respira. Rotazione di Rodrigues: costa tre
+     prodotti, gira sulla GPU. */
+  if (aKind > 0.5){
+    float anello = clamp((aR0 - 12.0) / 10.0, 0.0, 1.0);
+    float lb = spettro(0.35 + anello * 0.6) * uVita;
+    p.xy *= 1.0 + lb * .12 * e;
+    float ax = aLayer * 2.6 + anello * 3.7;
+    vec3 asse = vec3(cos(ax), sin(ax), 0.0);
+    float tilt = (0.35 + 0.30 * sin(t * 0.06 + anello * 9.0))
+               * (0.45 + uSlow * .35 + lb * .5 + beatW * .25);
+    float ca = cos(tilt), sa = sin(tilt);
+    p = p * ca + cross(asse, p) * sa + asse * dot(asse, p) * (1.0 - ca);
+  }
+
   p.z += uSlancio * 1.1 * uVita;      /* la melodia che sale lo solleva */
   vec4 mv = modelViewMatrix * vec4(p * uScale, 1.0);
   gl_Position = projectionMatrix * mv;
