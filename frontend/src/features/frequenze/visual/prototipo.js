@@ -18,7 +18,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SLIDERS, PALETTES, MODES, PRESETS, CAMS,
          LISCIATURA_ANALYSER } from './tabelle';
 import { VOICE_PRESETS, buildVoiceChain,
-         connectVoiceSources } from '../engine/voicefx';
+         connectVoiceSources, makeImpulse } from '../engine/voicefx';
 
 export function avviaPrototipo(root, opz = {}){
   /* AV5 (22/8) — il MOTORE e' UNO SOLO. La pagina strumento monta il
@@ -958,6 +958,20 @@ function disconnect(){
   spegniMic();
   if (srcNode){ try{ srcNode.disconnect(); }catch(e){} srcNode = null; }
 }
+/* VX-tempi (22/8) — «da quando far partire una registrazione o una
+   musica», come il taglio in Crea. mm:ss o secondi nudi. */
+function daTempo(str){
+  const m = String(str || '').trim().match(/^(\d+):([0-5]?\d)$/);
+  if (m) return (+m[1]) * 60 + (+m[2]);
+  const sec = parseFloat(str);
+  return Number.isFinite(sec) && sec >= 0 ? sec : 0;
+}
+function riparteMusica(){
+  if (!player._nome) return false;
+  player.currentTime = daTempo(byId('offMusica').value);
+  player.play();
+  return true;
+}
 function aggiornaSorgenti(){
   const micOn = !!micStream;
   const fileOn = !!player._nome;
@@ -970,6 +984,8 @@ function aggiornaSorgenti(){
   byId('micdot').classList.toggle('live', mode !== 'none');
   byId('btnMic').classList.toggle('on', micOn);
   byId('btnFile').classList.toggle('on', fileOn);
+  const riga = byId('rigaOffMusica');
+  if (riga) riga.hidden = !fileOn;
   if (mode !== 'none') byId('gate').style.display = 'none';
 }
 
@@ -1409,6 +1425,12 @@ if (studio){
    grammatica (tendine dal basso, chip, X, tocco sulla scena =
    richiudi). L'incorporato non ha pannelli e non c'entra. ── */
 if (!incorporato) {
+  /* UF (22/8): il pannello sinistro e' un flusso a sezioni — gli
+     header aprono e chiudono, cosi' le funzioni nuove non si
+     accalcano (richiesta founder: «non perdersi») */
+  root.querySelectorAll('#left .sect.chiudibile > .lbl.sez').forEach((h) => {
+    h.onclick = () => h.parentElement.classList.toggle('chiusa');
+  });
   const fogli = { chipPreset: el('left'), chipRegola: el('right') };
   /* «Telefono» si decide sulla misura ROBUSTA, non sulla finestra
      nuda: `innerWidth` puo' dichiarare 0 mentre il riquadro si
@@ -1635,10 +1657,28 @@ if (!studio && !incorporato){
     dipingiVoceUI();
   }
 
+  /* il riverbero costruisce l'impulso la PRIMA volta, in sincrono:
+     scaldarlo prima del play evita il singhiozzo iniziale */
+  function scaldaStile(){
+    try {
+      const pr = VOICE_PRESETS[takeStile];
+      if (pr && pr.wet > 0) makeImpulse(ctxA, pr.reverbSec, pr.reverbTone);
+    } catch (e) { /* niente */ }
+  }
+
   function playMix(){
     if (mixVivo){ fermaMix(); return; }
     if (!takeBuffer) return;
     ensureCtx();
+    /* IL MIC SI SPEGNE NEL RIASCOLTO (founder da iPhone: «scatti per
+       qualche secondo, poi il volume della registrazione si
+       abbassa»). Il mic vivo durante il playback: (1) sente
+       l'altoparlante e sporca l'analisi — la scena scatta finche' la
+       cancellazione d'eco del telefono non si adatta; (2) tiene iOS
+       in sessione play-and-record, che DUCKA l'uscita. Il take c'e'
+       gia': il mic aperto non serve a nulla qui. */
+    spegniMic(); aggiornaSorgenti();
+    scaldaStile();
     const chain = buildVoiceChain(ctxA, takeStile, 0.6);
     const vg = ctxA.createGain();
     vg.gain.value = voceGainAuto * volVoce;  /* la manopola «Voce» */
@@ -1646,10 +1686,10 @@ if (!studio && !incorporato){
     vg.connect(ctxA.destination);
     vg.connect(analyser);                    /* la scena danza anche qui */
     const sources = connectVoiceSources(ctxA, takeBuffer, chain);
-    const t0 = ctxA.currentTime + 0.05;
+    const t0 = ctxA.currentTime + 0.05 + daTempo(el('offVoce').value);
     sources.forEach((src) => src.start(t0));
     sources[0].onended = () => fermaMix();
-    if (player._nome){ player.currentTime = 0; player.play(); }
+    riparteMusica();
     mixVivo = { sources, chain, vg };
     dipingiVoceUI();
   }
@@ -1671,6 +1711,7 @@ if (!studio && !incorporato){
       try {
         const ab = await blob.arrayBuffer();
         takeBuffer = await ctxA.decodeAudioData(ab);
+        scaldaStile();
         /* i mic dei telefoni registrano prudenti: normalizzazione di
            SOLO GUADAGNO al picco (-1.4 dB), mai trim — l'allineamento
            con la traccia e' sacro. Tetto 6x: oltre si alza solo il
@@ -1690,8 +1731,9 @@ if (!studio && !incorporato){
       aggiornaSorgenti();
       dipingiVoceUI();
     };
-    /* il take parte INSIEME alla traccia: e' l'allineamento del mix */
-    if (player._nome){ player.currentTime = 0; player.play(); }
+    /* il take parte INSIEME alla traccia (dal punto scelto):
+       e' l'allineamento del mix */
+    riparteMusica();
     takeRec.start();
     takeInizio = performance.now();
     takeTimer = setInterval(dipingiVoceUI, 500);
@@ -1712,6 +1754,7 @@ if (!studio && !incorporato){
     b.textContent = VOICE_PRESETS[k].label;
     b.onclick = () => {
       takeStile = k;
+      if (ctxA) scaldaStile();                 /* l'impulso e' pronto al play */
       const eraVivo = !!mixVivo;
       if (eraVivo){ fermaMix(); playMix(); }   /* riparte con lo stile nuovo */
       dipingiVoceUI();
@@ -1839,10 +1882,9 @@ if (!studio && !incorporato){
       vg.connect(ctxA.destination);
       vg.connect(analyser);
       const sources = connectVoiceSources(ctxA, takeBuffer, chain);
-      const t0 = ctxA.currentTime + 0.05;
+      const t0 = ctxA.currentTime + 0.05 + daTempo(el('offVoce').value);
       sources.forEach((src) => src.start(t0));
-      if (player._nome){ player.currentTime = 0; player.play(); }
-      else sources[0].onended = () => fermaRec();   /* solo voce: fine take = fine video */
+      if (!riparteMusica()) sources[0].onended = () => fermaRec();   /* solo voce: fine take = fine video */
       voceExport = { sources, chain, vg };
       aggiornaSorgenti();
     }
@@ -1896,6 +1938,7 @@ if (!studio && !incorporato){
     const mb = mbv >= 10 ? String(Math.round(mbv)) : (Math.max(0.1, mbv)).toFixed(1);
     ultimo = { blob, nome: `aurya-${fmt.nome}.${est}`, mb };
     const b = el('expSalva');
+    el('expSect').classList.remove('chiusa');   /* il risultato si mostra */
     b.hidden = false;
     b.querySelector('span').textContent = `Salva video (${mb} MB)`;
     nota('Il video e\u2019 pronto: salvalo, resta solo qui finche\u2019 non ricarichi.');

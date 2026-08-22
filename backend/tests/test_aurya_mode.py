@@ -1232,10 +1232,43 @@ class TestVoceNelVisual:
         assert "takeBuffer = await ctxA.decodeAudioData(ab)" in PROTO
 
     def test_il_take_parte_insieme_alla_traccia(self):
-        """l'allineamento del mix: al via del take (e al via del video
-        col take) la traccia riparte da zero."""
+        """l'allineamento del mix: al via del take, del riascolto e
+        del video la traccia riparte dal PUNTO SCELTO (VX-tempi) —
+        una sola funzione, tre chiamate."""
         PROTO = self._proto()
-        assert PROTO.count("player.currentTime = 0; player.play();") >= 3  # take, riascolto, export
+        assert "function riparteMusica()" in PROTO
+        assert "player.currentTime = daTempo(byId('offMusica').value)" in PROTO
+        assert PROTO.count("riparteMusica()") >= 4   # def + take + riascolto + export
+        # e la voce ha il suo ingresso, in riascolto E in export
+        assert PROTO.count("daTempo(el('offVoce').value)") == 2
+
+    def test_il_riascolto_spegne_il_mic(self):
+        """founder da iPhone: «scatti per qualche secondo, poi il
+        volume si abbassa». Il mic vivo durante il playback sporca
+        l'analisi (eco dell'altoparlante) e tiene iOS in sessione
+        play-and-record che DUCKA l'uscita. Nel riascolto il mic si
+        spegne, come gia' nell'export."""
+        PROTO = self._proto()
+        blocco = PROTO.split("function playMix()")[1][:900]
+        assert "spegniMic();" in blocco
+        # e il riverbero si scalda PRIMA del play (il primo impulso
+        # si costruisce in sincrono: singhiozzo)
+        assert "function scaldaStile()" in PROTO
+        assert "makeImpulse(ctxA, pr.reverbSec, pr.reverbTone)" in PROTO
+        assert PROTO.count("scaldaStile()") >= 4     # def + decode + play + stile
+
+    def test_il_pannello_e_un_flusso(self):
+        """UF: sezioni numerate richiudibili — la musica, la voce, il
+        video in testa; analisi, livelli e scena ripiegati sotto."""
+        MARKUP = (FQ_DIR / "visual" / "prototipoMarkup.js").read_text()
+        assert "1 &middot; La musica" in MARKUP
+        assert "2 &middot; La tua voce" in MARKUP
+        assert "3 &middot; Il video" in MARKUP
+        assert MARKUP.count('class="sect chiudibile chiusa"') == 4
+        PROTO = self._proto()
+        assert "h.parentElement.classList.toggle('chiusa')" in PROTO
+        # il video pronto si mostra da solo
+        assert "el('expSect').classList.remove('chiusa')" in PROTO
 
     def test_il_video_col_take_spegne_il_mic_vivo(self):
         """doppia voce e rumore di stanza: nel video va il take con lo

@@ -27,14 +27,19 @@ const MARKUP = `
     </a>
   </div>
 
-  <div class="sect" id="srcSect">
-    <div class="lbl">Audio source</div>
+  <div class="sect chiudibile" id="srcSect">
+    <div class="lbl sez">1 &middot; La musica</div>
     <button class="src on" id="btnMic">
       <svg viewBox="0 0 24 24"><path d="M3 12h2l2-5 2 9 2-12 2 15 2-9 2 4h4"/></svg>Microphone
     </button>
     <button class="src" id="btnFile">
       <svg viewBox="0 0 24 24"><circle cx="7" cy="18" r="2.6"/><path d="M9.6 18V5l10-2v12"/><circle cx="17.2" cy="15" r="2.6"/></svg>Upload Track
     </button>
+    <!-- il punto di partenza della musica: vale per take, riascolto e video -->
+    <div class="tempo-riga" id="rigaOffMusica" hidden>
+      <label>Parte da <input type="text" id="offMusica" value="0:00" inputmode="numeric" size="5"></label>
+    </div>
+
     <!-- DM (22/8) — le musiche di Aurya, per provare subito -->
     <div id="demoSect" hidden>
       <div class="lbl demo-lbl">Prova con una musica di Aurya</div>
@@ -47,8 +52,8 @@ const MARKUP = `
   <div class="rule"></div>
 
   <!-- VX (22/8) — la voce col suo stile: take crudo, stile al playback -->
-  <div class="sect" id="voceSect">
-    <div class="lbl">La tua voce</div>
+  <div class="sect chiudibile" id="voceSect">
+    <div class="lbl sez">2 &middot; La tua voce</div>
     <button class="src" id="voceRec">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></svg><span>Registra la voce</span>
     </button>
@@ -57,6 +62,9 @@ const MARKUP = `
       <div class="voce-riga">
         <button id="vocePlay" type="button">&#9654; Riascolta</button>
         <button id="voceScarta" type="button">Scarta</button>
+      </div>
+      <div class="tempo-riga">
+        <label>La voce entra a <input type="text" id="offVoce" value="0:00" inputmode="numeric" size="5"></label>
       </div>
       <!-- l'equilibrio del mix: vale per il riascolto E per il video -->
       <div class="voce-vol">
@@ -75,8 +83,8 @@ const MARKUP = `
   <div class="rule"></div>
 
   <!-- EX (22/8) — l'export video: locale, due formati, watermark -->
-  <div class="sect" id="expSect">
-    <div class="lbl">Esporta video</div>
+  <div class="sect chiudibile chiusa" id="expSect">
+    <div class="lbl sez">3 &middot; Il video</div>
     <button class="src" id="expYT">
       <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/></svg>YouTube · 16:9
     </button>
@@ -92,8 +100,8 @@ const MARKUP = `
 
   <div class="rule"></div>
 
-  <div class="sect">
-    <div class="lbl">Analysis</div>
+  <div class="sect chiudibile chiusa">
+    <div class="lbl sez">Analisi</div>
     <div>
       <div class="lbl">Frequency range</div>
       <div class="mono" id="freqRange">20 Hz – 20 kHz</div>
@@ -105,7 +113,8 @@ const MARKUP = `
     </div>
   </div>
 
-  <div class="sect" id="meters">
+  <div class="sect chiudibile chiusa" id="meters">
+    <div class="lbl sez">Livelli</div>
     <div class="ctl"><div class="row"><span class="lbl">Intensity</span><span class="val" id="vInt">0%</span></div>
       <div class="meter m-int"><i id="mInt"></i></div></div>
     <div class="ctl"><div class="row"><span class="lbl">Bass</span><span class="val" id="vBass">0%</span></div>
@@ -120,7 +129,8 @@ const MARKUP = `
 
   <div class="rule"></div>
 
-  <div class="sect">
+  <div class="sect chiudibile chiusa">
+    <div class="lbl sez">La scena</div>
     <div class="lbl">Visual preset</div>
     <div class="stepper"><button id="prevPreset">‹</button><span id="presetName">Cosmos</span><button id="nextPreset">›</button></div>
     <div class="lbl">Camera</div>
@@ -177,7 +187,7 @@ const MARKUP = `
 
 <!-- ============ CHIPS (studio) ============ -->
 <div id="chips">
-  <button id="chipPreset" type="button">◈ Preset</button>
+  <button id="chipPreset" type="button">♪ Regia</button>
   <button id="chipRegola" type="button">☼ Regola</button>
   <button id="chipFatto" type="button" class="fatto">✓ Fatto</button>
 </div>

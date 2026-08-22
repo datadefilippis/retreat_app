@@ -379,3 +379,27 @@
 .avz .voce-vol label input{flex:1}
 .avz .voce-vol label span{min-width:34px;text-align:right;
   font-variant-numeric:tabular-nums;color:var(--ink,#ded9ec)}
+
+/* ── VX-tempi (22/8) — i punti di partenza ──────────────────────── */
+.avz .tempo-riga{margin:7px 0}
+.avz .tempo-riga label{
+  display:flex;align-items:center;gap:8px;
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint,#8a84a0);
+}
+.avz .tempo-riga input{
+  width:52px;padding:4px 6px;text-align:center;
+  border:1px solid rgba(255,255,255,.12);border-radius:7px;
+  background:rgba(255,255,255,.04);color:var(--ink,#ded9ec);
+  font-family:inherit;font-size:11px;font-variant-numeric:tabular-nums;
+}
+
+/* ── UF (22/8) — il pannello sinistro e' un flusso a sezioni ────── */
+.avz .sect.chiudibile>.lbl.sez{
+  cursor:pointer;user-select:none;-webkit-user-select:none;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.avz .sect.chiudibile>.lbl.sez::after{content:'\25be';opacity:.45;font-size:9px}
+.avz .sect.chiusa>.lbl.sez::after{content:'\25b8'}
+.avz .sect.chiusa>*{display:none}
+.avz .sect.chiusa>.lbl.sez{display:flex}
