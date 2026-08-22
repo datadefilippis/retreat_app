@@ -32,6 +32,7 @@ export default function AuryaMode({ lettore, attivo = true,
                                     alTocco = null }) {
   const boxRef = useRef(null);      // la cornice: e' lei che va a tutto schermo
   const telaRef = useRef(null);     // dove il prototipo (o il 2D) vive
+  const manicoRef = useRef(null);   // il motore vivo, per cambiargli la scena
   const rafRef = useRef(0);
   const [pieno, setPieno] = useState(false);
   const [quieta, setQuieta] = useState(false);
@@ -59,6 +60,7 @@ export default function AuryaMode({ lettore, attivo = true,
                l'ambiente di default (AV5) */
             impostazioni: visual || undefined,
           });
+          manicoRef.current = manico;
           /* VC3 — Crea suona questo strumento con la sua tastiera */
           suMotore?.(manico);
         } catch {
@@ -68,6 +70,7 @@ export default function AuryaMode({ lettore, attivo = true,
       return () => {
         smontato = true;
         suMotore?.(null);
+        manicoRef.current = null;
         manico?.pulisci?.();
         tela.innerHTML = '';
       };
@@ -116,6 +119,17 @@ export default function AuryaMode({ lettore, attivo = true,
       tela.innerHTML = '';
     };
   }, [lettore, attivo]);
+
+  /* La scena puo' cambiare mentre il motore gira (l'autore l'ha appena
+     scelta nello studio): si applica al volo, senza rimontare nulla.
+     Il montaggio guarda solo `lettore`/`attivo` — se dipendesse anche
+     da `visual`, ogni ritocco ricostruirebbe 24.000 particelle, e
+     senza questo effetto la tela resterebbe ferma alla scena di
+     partenza (successo davvero: dopo lo studio la preview mostrava
+     ancora il mandala). */
+  useEffect(() => {
+    if (visual) manicoRef.current?.applica?.(visual);
+  }, [visual]);
 
   /* ── a tutto schermo ──────────────────────────────────────────── */
   const commuta = useCallback(() => {

@@ -463,6 +463,22 @@ class TestScenaDellAutoreVc:
             "il «Fatto» deve consegnare i valori RISOLTI, non un preset"
         assert "if (scelta) setVisual(scelta)" in self.CREA
 
+    def test_la_scena_scelta_arriva_alla_tela_gia_accesa(self):
+        """Segnalato dal founder: dopo lo studio la preview in Crea
+        restava al mandala. La tela riceveva la scena SOLO al
+        montaggio, e il montaggio non dipende da `visual` — di
+        proposito: rimontare vuol dire ricostruire 24.000 particelle a
+        ogni ritocco. La scena si applica al volo sul motore vivo."""
+        assert "manicoRef.current?.applica?.(visual)" in TELA
+        assert "}, [visual]);" in TELA
+        assert "}, [lettore, attivo]);" in TELA, \
+            "se il montaggio dipendesse da `visual`, ogni ritocco ricostruirebbe la scena"
+
+    def test_pubblicare_porta_con_se_la_scena(self):
+        """Chi pubblica non deve ricordarsi di salvare prima."""
+        blocco = self.CREA.split("const publishTrack")[1][:200]
+        assert "await save()" in blocco
+
     def test_lo_studio_sta_fuori_dalla_pagina(self):
         """Trovato dal vivo: montato dentro Crea lo studio EREDITA il
         CSS del sito (`.fqz .row` sotto i 900px impilava i valori dei
