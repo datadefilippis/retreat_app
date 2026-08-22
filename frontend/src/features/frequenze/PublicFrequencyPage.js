@@ -176,10 +176,10 @@ export default function PublicFrequencyPage() {
     }
     const ctx = ctxRef.current;
     if (!lettoreRef.current) {
-      // l'analizzatore sta FRA il motore e l'altoparlante: legge cio'
-      // che esce davvero, e lascia passare tutto senza toccarlo
+      // l'analizzatore OSSERVA il suono da un ramo parallelo (vedi
+      // synth.js): l'altoparlante resta collegato direttamente, e la
+      // strada del suono e' identica a quella di sempre
       const l = creaLettore(ctx);
-      l.analyser.connect(ctx.destination);
       lettoreRef.current = l;
       setLettore(l);
     }

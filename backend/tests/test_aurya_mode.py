@@ -70,7 +70,7 @@ class TestNonToccaIlSuonoAv1:
         che esce davvero. Ma resta del chiamante — il motore non lo
         crea e non lo chiude."""
         assert "uscita = null" in SYNTH
-        assert "sess.connect(uscita || ctx.destination)" in SYNTH
+        assert "if (uscita) sess.connect(uscita);" in SYNTH
         assert "createAnalyser" not in SYNTH, "il motore non deve farsi l'analizzatore"
 
     def test_la_tela_non_crea_ne_ferma_audio(self):
@@ -655,17 +655,22 @@ class TestScenaDellAutoreVc:
         assert "uscita: lettoreRef.current.analyser" in self.CREA
         assert "creaLettore(ctx)" in self.CREA
 
-    def test_l_analizzatore_lascia_passare_il_suono(self):
-        """LA guardia del silenzio (regressione vera, 22/8): chi passa
-        `uscita` dirotta il suono DENTRO l'analizzatore. Se quello non
-        e' collegato all'altoparlante, il suono entra e non esce piu' —
-        e la scena continua a muoversi, perche' i dati li legge
-        comunque. Un bug che si vede solo ascoltando."""
+    def test_l_analisi_non_sta_nella_strada_del_suono(self):
+        """LA guardia del silenzio, seconda versione — scritta da un
+        difetto vero in PRODUZIONE (22/8): l'analizzatore era IN SERIE
+        (sess → analyser → altoparlante). Su desktop passava, su
+        iPhone no: lo stesso suono si sentiva da solo e spariva dentro
+        una sessione. Un AnalyserNode «foglia» legge benissimo senza
+        essere collegato a valle: l'analisi OSSERVA, non trasporta.
+        L'altoparlante dev'essere collegato SEMPRE e per primo."""
+        assert "sess.connect(ctx.destination);" in SYNTH
+        assert "if (uscita) sess.connect(uscita);" in SYNTH
+        assert "sess.connect(uscita || ctx.destination)" not in SYNTH, \
+            "l'analizzatore e' tornato in mezzo alla strada del suono"
+        # e nessuno deve ricollegarlo a valle: il suono passerebbe due volte
         for nome, src in (("Crea", self.CREA), ("pagina pubblica", PUB)):
-            if "uscita:" not in src:
-                continue
-            assert "analyser.connect(ctx.destination)" in src, \
-                f"{nome}: l'analizzatore e' un vicolo cieco, non un passaggio"
+            assert "analyser.connect(ctx.destination)" not in src, \
+                f"{nome}: doppio percorso del suono (volume raddoppiato)"
 
     def test_la_scena_si_chiede_e_si_salva_con_la_bozza(self):
         assert 'data-testid="fq-guarda"' in self.CREA

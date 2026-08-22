@@ -579,12 +579,11 @@ export default function FrequenzePage() {
     // dal nodo di sessione). L'analizzatore e' trasparente al suono.
     if (!lettoreRef.current) {
       const l = creaLettore(ctx);
-      /* L'analizzatore sta FRA il motore e l'altoparlante: legge cio'
-         che esce davvero E LASCIA PASSARE. Senza questa riga il suono
-         entra e non esce piu' — silenzio totale (successo davvero,
-         22/8: la scena si muoveva lo stesso, perche' i dati li legge
-         comunque, e io ho verificato l'immagine senza ascoltare). */
-      l.analyser.connect(ctx.destination);
+      /* L'analizzatore e' un OSSERVATORE, non un tratto di strada: il
+         motore lo aggancia in parallelo (synth.js) e l'altoparlante
+         resta collegato direttamente. Percio' qui NON si collega a
+         destination — farlo significherebbe far passare il suono due
+         volte. */
       lettoreRef.current = l;
     }
     liveRef.current = startPreview(ctx, score,

@@ -665,12 +665,19 @@ export function startPreview(ctx, score,
   const t0 = ctx.currentTime + 0.15 - off;
   const nodes = [], liveG = {};
   const sess = ctx.createGain();
-  /* AV1 — l'uscita puo' essere un nodo intermedio (l'analizzatore di
-     Aurya Mode) invece dell'altoparlante: chi visualizza legge
-     ESATTAMENTE cio' che esce, non una copia risintetizzata. Il nodo
-     resta responsabilita' del chiamante: il motore non lo crea e non
-     lo chiude. */
-  sess.connect(uscita || ctx.destination);
+  /* L'ALTOPARLANTE PER PRIMO, SEMPRE. L'analizzatore di Aurya Mode
+     (`uscita`) si aggancia in PARALLELO come osservatore: riceve lo
+     stesso identico segnale, ma NON sta in mezzo alla strada del
+     suono.
+     Prima era in serie (sess → analyser → altoparlante) e su iPhone
+     quella catena non passava: da desktop si sentiva, da telefono il
+     suono dentro una sessione spariva mentre lo stesso suono
+     ascoltato da solo si sentiva (founder, 22/8, in produzione).
+     Un AnalyserNode «foglia» legge benissimo senza essere collegato a
+     valle: l'analisi osserva, non trasporta. Il nodo resta del
+     chiamante: il motore non lo crea e non lo chiude. */
+  sess.connect(ctx.destination);
+  if (uscita) sess.connect(uscita);
   const fi = score.fade_in_sec || 0, fo = score.fade_out_sec || 0;
   const now = ctx.currentTime;
   const startAt = now + 0.15;
