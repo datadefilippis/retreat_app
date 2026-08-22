@@ -1408,7 +1408,7 @@ if (!studio && !incorporato){
      la registrazione tradiva, perche' differivano proprio in questo). */
   const OPZ_REC = () => ({
     mimeType: MIME || undefined,
-    videoBitsPerSecond: 10_000_000,
+    videoBitsPerSecond: 12_000_000,          /* le scene scure fanno banding sotto */
     audioBitsPerSecond: 192_000,
   });
   let rec = null, pezzi = [], spillo = null, tSonda = null, tInizio = 0, veglia = null;
@@ -1548,12 +1548,23 @@ if (!studio && !incorporato){
     }
     conto.hidden = true;
     if (rec) return;                                   /* doppio tocco durante il conto */
-    /* il quadro del video: risoluzione fissa, canvas in letterbox */
-    exportAttivo = quadro;
+    /* IL QUADRO ALLA SCALA DELL'OCCHIO (founder da iPhone, 22/8:
+       «nel video e' piu' chiaro, meno di qualita', meno immersivo»).
+       gl_PointSize e' in pixel FISICI: a pixelRatio 1 su un buffer
+       largo 1080 le particelle restavano dei pixel che avevano — nel
+       quadro diventavano relativamente piccole: scena rada, glow
+       magro, nero slavato. Il video ora e' una VISTA larga come
+       quella che l'utente sta guardando, resa col pixelRatio che
+       porta il buffer ESATTAMENTE ai pixel del video: la geometria
+       del live, la risoluzione dell'export. */
+    const vistaPre = misura();
+    const vw = Math.max(240, Math.min(vistaPre.w, quadro.w));
+    const vh = Math.round(vw * quadro.h / quadro.w);
+    exportAttivo = { w: vw, h: vh, nome: quadro.nome };   /* misura() = la vista */
     canvas.style.objectFit = 'contain';
     canvas.style.background = '#000';
-    renderer.setPixelRatio(1);
-    renderer.setSize(quadro.w, quadro.h, false);
+    renderer.setPixelRatio(quadro.w / vw);
+    renderer.setSize(vw, vh, false);
     camera.aspect = quadro.w / quadro.h;
     camera.updateProjectionMatrix();
     root.classList.add('registra');
@@ -1576,6 +1587,8 @@ if (!studio && !incorporato){
     const vtr = cattura.getVideoTracks()[0];
     spinte = 0;
     spingiFrame = () => {
+      copiaCtx.fillStyle = '#05040a';        /* il fondo della scena, sempre */
+      copiaCtx.fillRect(0, 0, quadro.w, quadro.h);
       copiaCtx.drawImage(canvas, 0, 0, quadro.w, quadro.h);
       try { vtr.requestFrame?.(); } catch (e) { /* la cattura a 30fps resta */ }
       spinte += 1;
@@ -1857,6 +1870,7 @@ function disegna(){
        solo se sono aperti, e solo dove sono colonne (su telefono
        sono tendine che stanno sopra, non accanto) */
     const colonne = !incorporato && !root.classList.contains('hidden-ui')
+      && !exportAttivo                       /* in REC i pannelli sono spenti */
       && !window.matchMedia('(max-width:760px)').matches;
     const rubata = !colonne ? 0
       : (byId('left')?.dataset.aperto === '1' ? 232 : 0)

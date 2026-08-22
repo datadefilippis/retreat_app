@@ -54,7 +54,7 @@ const MARKUP = `
       <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg><span>Salva video</span>
     </button>
     <div class="exp-nota">Si registra sul tuo dispositivo: nulla viene
-    caricato. Circa 75 MB al minuto, massimo 10 minuti.</div>
+    caricato. Circa 90 MB al minuto, massimo 10 minuti.</div>
   </div>
 
   <div class="rule"></div>

@@ -1146,3 +1146,15 @@ class TestExportVideo:
         scelta: senza mic o traccia la registrazione non parte."""
         blocco = self._blocco()
         assert "if (mode === 'none')" in blocco
+
+    def test_il_video_ha_la_scala_dell_occhio(self):
+        """founder da iPhone: «nel video e' piu' chiaro, meno di
+        qualita', meno immersivo». gl_PointSize e' in pixel fisici:
+        il video a pixelRatio 1 rendeva le particelle relativamente
+        piccole. Il video e' una VISTA larga come quella live, resa
+        col pixelRatio che porta il buffer ai pixel del video."""
+        blocco = self._blocco()
+        assert "renderer.setPixelRatio(quadro.w / vw)" in blocco
+        assert "renderer.setPixelRatio(1)" not in blocco
+        # e la copia ha SEMPRE il fondo della scena sotto
+        assert "copiaCtx.fillStyle = '#05040a'" in blocco
