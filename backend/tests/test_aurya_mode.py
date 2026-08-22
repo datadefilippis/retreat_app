@@ -678,6 +678,23 @@ class TestScenaDellAutoreVc:
         assert "BASE SALTATA" in assets
         assert "notaDiagnosi" in assets
 
+    def test_lo_stop_scende_prima_di_troncare(self):
+        """Founder, 22/8: «allo stop un rumore di frequenze fastidioso,
+        idem andando indietro». Due cause nel vecchio stop: nodi
+        troncati subito (click) con la rampa arrivata a nodi morti; e
+        durante il fade-in la rampa di salita GIA' programmata vinceva
+        sulla discesa — il suono risaliva dopo lo stop. L'ordine e' la
+        cura: cancellare le rampe, scendere, POI fermare."""
+        # nel file ci sono piu' stop(): quello della SESSIONE e' dopo
+        # `elapsed:` (l'handle di startPreview)
+        blocco = SYNTH.split("elapsed: () => ctx.currentTime - t0")[1]
+        blocco = blocco.split("stop() {")[1].split("},")[0]
+        assert "cancelScheduledValues" in blocco, \
+            "senza cancellare le rampe, il fade-in programmato risale sopra lo stop"
+        prima = blocco.index("setTargetAtTime(0.0001")
+        dopo = blocco.index("n.stop()")
+        assert prima < dopo, "i nodi vanno fermati DOPO la discesa, non prima"
+
     def test_il_suono_esce_dal_canale_musica(self):
         """LA guardia del silenzio, terza e definitiva — scritta da due
         difetti veri in PRODUZIONE (22/8, iPhone): su iOS (dove OGNI

@@ -616,6 +616,10 @@ export function startCardLive(ctx, cfg, gain, fval) {
       vR && vR.set(curCarrier + v);
     },
     stop() {
+      /* stessa regola dello stop di sessione: prima si cancellano le
+         rampe programmate, o una salita in corso vince sulla discesa */
+      try { g.gain.cancelScheduledValues(ctx.currentTime);
+            g.gain.setValueAtTime(g.gain.value, ctx.currentTime); } catch (e) { /* ctx chiuso */ }
       g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.25);
       setTimeout(() => {
         nodes.concat(nodesBreath).forEach((n) => {
@@ -900,8 +904,26 @@ export function startPreview(ctx, score,
         Math.max(0.0001, gain / (h.base || 1)), ctx.currentTime, 0.06);
     },
     stop() {
-      nodes.forEach((n) => { try { n.stop(); } catch (e) { /* gia' fermo */ } });
-      try { sess.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.15); } catch (e) { /* ctx chiuso */ }
+      /* L'ORDINE E' LA CURA (founder, 22/8: «allo stop un rumore di
+         frequenze fastidioso, idem andando indietro»). Due errori nel
+         vecchio stop:
+         1. i nodi venivano TRONCATI subito (click), e la rampa di
+            rilascio arrivava dopo, a nodi gia' morti;
+         2. se lo stop cadeva durante il fade-in, la rampa di SALITA
+            gia' programmata sul volume VINCEVA sulla discesa: per
+            mezzo secondo il suono RISALIVA dopo lo stop, finche' il
+            distacco lo troncava — il «rumore fastidioso».
+         Ordine giusto: cancellare le rampe programmate, scendere a
+         zero in ~80 ms, e SOLO POI fermare i nodi e staccare. */
+      const t = ctx.currentTime;
+      try {
+        sess.gain.cancelScheduledValues(t);
+        sess.gain.setValueAtTime(sess.gain.value, t);
+        sess.gain.setTargetAtTime(0.0001, t, 0.05);
+      } catch (e) { /* ctx chiuso */ }
+      setTimeout(() => {
+        nodes.forEach((n) => { try { n.stop(); } catch (e) { /* gia' fermo */ } });
+      }, 200);
       setTimeout(() => { try { sess.disconnect(); } catch (e) { /* idem */ } }, 600);
     },
   };
