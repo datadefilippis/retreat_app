@@ -25,6 +25,12 @@ flake8>=7.0.0
 mypy>=1.8.0
 python-jose>=3.3.0
 requests>=2.31.0
+# httpx: usato da services/bunny/client.py (import a livello di modulo in
+# routers/organizations.py). Arrivava per via TRANSITIVA da `anthropic`;
+# la potatura R4 ha tolto anthropic e la dipendenza e' rimasta scoperta —
+# una bomba innescata al primo rebuild del backend (22/8: il backend non
+# partiva piu', «No module named httpx»). Ora e' dichiarata.
+httpx>=0.27,<1.0
 pandas>=2.2.0
 numpy>=1.26.0
 python-multipart>=0.0.9
