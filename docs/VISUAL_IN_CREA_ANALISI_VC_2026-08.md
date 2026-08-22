@@ -193,3 +193,113 @@ prima delle manopole. Ogni onda lascia il sistema pubblicabile.
    della traccia. Va bene così, o serve un «cambia solo la scena» rapido?
 3. **I 7 preset così come sono** nel prototipo, o una selezione curata per
    Crea? Proposta: tutti e 7 — sono già buoni e già suoi.
+
+---
+
+# VC6 — Lo studio della scena (analisi, 22 agosto sera)
+
+**Richiesta founder**: tutte le regolazioni — parametri, colori, preset,
+forma — in un pannello a tutto schermo, «esattamente come /sound/visual»:
+cliccando sulla forma in Crea si apre lo studio, tornando indietro le scelte
+restano salvate per quella meditazione. Ottimizzato mobile; i pannelli si
+chiudono per vedere la forma a schermo pieno.
+
+## 1. La tesi: lo studio ESISTE già, va solo invitato
+
+`/sound/visual` è già il pannello a tutto schermo che il founder descrive:
+pannelli laterali, 11 cursori, palette, preset, modi, «Hide interface» (H)
+per vedere la forma nuda, fullscreen (F). Non si costruisce una seconda
+schermata: si monta **lo stesso prototipo** dentro Crea in una terza
+modalità. La lezione di AV5 resta la legge: mai due versioni della stessa
+cosa.
+
+La matrice delle modalità diventa:
+
+| | pannelli | audio | memoria |
+|---|---|---|---|
+| **strumento** (`/sound/visual`) | sì | mic / file dell'utente | localStorage |
+| **incorporato** (meditazione, scena in Crea) | no | analizzatore prestato | la ricetta |
+| **studio** (nuovo) | sì | analizzatore prestato | la ricetta (via `leggi()` alla chiusura) |
+
+Cioè: `studio` = pannelli dello strumento + audio dell'incorporato. Tre
+flag ortogonali, un file solo.
+
+## 2. Cosa cambia nel motore (`opz.studio`)
+
+- **Sorgenti spente**: niente mic, niente carica-traccia, niente gate — il
+  suono è la sessione che suona sotto. L'etichetta sorgente dice «La tua
+  sessione». (Patch al markup con assert: id alla sezione sorgenti, così
+  la si nasconde con una classe, non cercando bottoni alla cieca.)
+- **localStorage OFF** (come incorporato): la memoria è la bozza. `save()`
+  già è un no-op fuori dallo strumento puro; il ramo si allarga a studio.
+- **La stessa base d'ambiente**: la taratura AV5 (trails 92, glow 132…)
+  esce dal ramo incorporato in un oggetto `AMBIENTE` condiviso: studio e
+  meditazione partono IDENTICI, poi `opz.impostazioni` (la scena della
+  bozza) vince su tutto.
+- **Il marchio chiude, non naviga**: in studio il brand AURYA non deve
+  portare a /sound (perderesti la sessione): diventa «← Torna alla
+  sessione», più un bottone «✓ Fatto» esplicito nel topbar.
+- **Round-trip**: Crea apre lo studio passando `impostazioni: visual`;
+  alla chiusura chiama `manico.leggi()` → `setVisual` → si salva con la
+  bozza. Nessun canale nuovo: il manico di VC1 basta.
+- Il ramo audio `if (incorporato && opz.analizzatore)` diventa
+  `if (opz.analizzatore)` — vale per entrambe le modalità prestate.
+
+## 3. Il flusso in Crea
+
+- Il tasto «✦ Guarda il suono» resta: accende la scheda-scena.
+- **Tap sulla scena** (solo in Crea): apre lo **studio** a tutto schermo —
+  non più il semplice fullscreen. Per chi ascolta (pagina pubblica) il tap
+  resta fullscreen puro: la scelta è autoriale, lo studio non esiste lì.
+- **La striscia inline (ScenaControlli) SPARISCE**: il founder ha chiesto
+  tutte le regolazioni nel pannello. Un solo posto dove si sceglie = meno
+  UI in Crea, zero divergenza possibile. Il file si elimina; le guardie
+  VC3 si riscrivono sullo studio.
+- L'audio **continua a suonare** mentre lo studio è aperto: è un overlay
+  nella stessa pagina (`.avz` è già `position:fixed inset:0`), non una
+  navigazione. Chiudendo, la sessione è dove l'avevi lasciata.
+- Studio aperto **da fermo**: si passa `analizzatore` solo se sta suonando;
+  senza, il prototipo usa il suo moto idle (respiro finto, già suo) — si
+  scelgono forma e colori su una scena che si muove piano. Un chip lo dice:
+  «Ascolta dalla sessione per vederla reagire». Niente autoplay: il suono
+  si chiede, regola di casa.
+
+## 4. Mobile — il lavoro vero
+
+Stato attuale del prototipo sotto i 1080px: solo la modebar si stringe.
+I pannelli fissi laterali (438px totali) su un telefono da 390px coprono
+tutto. Piano:
+
+- **Fogli dal basso**: sotto i 760px, `#left` e `#right` diventano fogli a
+  tutta larghezza ancorati in basso (`max-height: 62dvh`, scroll interno),
+  chiusi di default, aperti UNO alla volta da una barra di chip:
+  `[◈ Preset] [☼ Regola] [▦ Forme]` + «Fatto». Solo CSS + una manciata di
+  listener nel ramo studio: il DOM dei pannelli non si tocca.
+- **La forma resta protagonista**: fogli chiusi = scena piena (è già lo
+  spirito hidden-ui del prototipo). Aprire un foglio copre al massimo il
+  60% dello schermo, la scena respira sopra.
+- Touch: target ≥44px sui chip, `safe-area-inset-bottom`, cursori nativi
+  (già ok), OrbitControls touch già funziona (la tela è fullscreen, non
+  c'è scroll da rubare).
+- Batteria: `S.quality` già limato su schermi stretti; il tetto particelle
+  di resa (VC1) già non firma la ricetta.
+- Desktop resta ESATTAMENTE il prototipo: le patch mobile vivono sotto
+  media query e classe `.studio`, la pagina `/sound/visual` non cambia di
+  un pixel.
+
+## 5. Onde
+
+- **VC6a — il motore sa fare lo studio**: flag + sorgenti spente +
+  `AMBIENTE` condiviso + brand-chiude + «Fatto»; guardie di matrice.
+- **VC6b — Crea**: overlay `StudioScena` (monta markup+`avviaPrototipo`
+  con `studio`), tap sulla scena lo apre, round-trip `leggi()`→bozza,
+  eliminazione ScenaControlli e riscrittura guardie.
+- **VC6c — mobile**: fogli dal basso, chip, safe-area, topbar compresso.
+- **VC6d — rifiniture**: play/pausa della sessione DENTRO lo studio (per
+  non uscire a far partire il suono), evidenza del preset attivo.
+
+## 6. Proposte (non bloccanti, si parte con questi default)
+
+1. La striscia inline sparisce del tutto → **sì** (un solo posto).
+2. Play/pausa dentro lo studio → **sì, ma in VC6d** (prima il flusso).
+3. Chi ascolta non vede mai lo studio → già deciso (scena autoriale).
