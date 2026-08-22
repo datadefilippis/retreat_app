@@ -264,6 +264,13 @@ uniform vec3 uC0,uC1,uC2;
 varying vec3 vCol; varying float vA;
 ${NOISE}
 mat2 rot(float a){ float c=cos(a),s=sin(a); return mat2(c,-s,s,c); }
+/* i 4 vertici del tetraedro: segni alternati a prodotto positivo */
+vec3 tetra(float k){
+  if (k < 0.5) return vec3( 1.,  1.,  1.);
+  if (k < 1.5) return vec3( 1., -1., -1.);
+  if (k < 2.5) return vec3(-1.,  1., -1.);
+  return vec3(-1., -1.,  1.);
+}
 /* DA6 — lo spettro steso sulla topologia della forma: z=0 al cuore
    (bassi), z=1 al bordo (acuti). Ogni banda muove la SUA zona. */
 float spettro(float z){
@@ -377,7 +384,7 @@ void main(){
     }
     fadeForma = 1.0 - smoothstep(9.5, 13.2, abs(u));
 
-  } else {                                            /* RIPPLE — concentric rings */
+  } else if (uMode < 6.5) {                           /* RIPPLE — concentric rings */
     float ring = floor(rad*10.0)/10.0;
     float r = ring*12.0 + sin(t*1.0 - ring*6.5)*(.4 + bass*2.2*e);
     /* il colpo EMETTE un anello: un fronte che parte dal centro e
@@ -388,6 +395,102 @@ void main(){
     p = vec3(cos(a)*r, (aSeed.y-.5)*.35*uDepth + sin(t*.8 - ring*4.5)*(.7 + sw*.4)*uDepth, sin(a)*r);
     shade = ring;
     sym = .5;
+
+  } else if (uMode < 7.5) {                           /* FLOWER — fiore della vita */
+    /* 19 cerchi sulla griglia esagonale: gli anelli esterni EMERGONO
+       dal seme con l'onda lenta; le intersezioni si accendono da sole
+       dove i cerchi si sovrappongono (piu' particelle = piu' luce) */
+    float cer = floor(aRnd*18.999);
+    float R1 = 3.1;
+    vec2 c = vec2(0.0);
+    float anl = 0.0;
+    if (cer >= 1.0 && cer < 7.0){
+      float a6 = (cer-1.0)*1.04720; c = vec2(cos(a6),sin(a6))*R1; anl = 1.0;
+    } else if (cer >= 7.0){
+      float k = cer-7.0; float a12 = k*.52360;
+      float rr = (mod(k,2.0) < .5 ? 2.0 : 1.7320)*R1;
+      c = vec2(cos(a12),sin(a12))*rr; anl = 2.0;
+    }
+    float emg = anl < .5 ? 1.0 : (anl < 1.5 ? .78 + .22*uSlow : .55 + .45*uSlow);
+    float th2 = aSeed.x*6.28318 + t*.08*(mod(cer,2.0) < .5 ? 1.0 : -1.0);
+    vec2 q2 = c*emg + vec2(cos(th2),sin(th2))*R1*(1.0 + beat*.05);
+    float d2 = length(q2);
+    zona = clamp(d2/9.0, 0.0, 1.0);
+    /* cupola: il fiore vive su una calotta, mai piatto di profilo */
+    p = vec3(q2, (2.1 - d2*d2*.05)*(.8 + br*.3) + (aSeed.z-.5)*.8);
+    p.yz *= rot(.55 + sin(t*.04)*.14);
+    shade = .35 + spettro(zona)*.5 + beat*.12;
+    sym = .45;
+
+  } else if (uMode < 8.5) {                           /* MERKABA — i due tetraedri */
+    /* foschia lungo gli spigoli, mai fili: uno ruota col battito,
+       l'altro con l'onda lenta, in controtempo */
+    float duo = step(.5, fract(aRnd*7.31));
+    float sp = floor(aSeed.z*5.999);
+    float vi = sp < 3.0 ? 0.0 : (sp < 5.0 ? 1.0 : 2.0);
+    float vj = sp < 1.0 ? 1.0 : (sp < 2.0 ? 2.0 : (sp < 3.0 ? 3.0 :
+               (sp < 4.0 ? 2.0 : 3.0)));
+    float f = aSeed.x;
+    vec3 base = mix(tetra(vi), tetra(vj), f) * 3.9;
+    if (duo > .5) base = -base;                       /* la stella doppia */
+    base += vec3(snoise(aSeed*7.0 + t*.09),
+                 snoise(aSeed*9.0 + 31.0),
+                 snoise(aSeed*11.0 + 57.0)) * (.55 + mid*1.1*e);
+    float ang = duo < .5
+      ? (t*.11 + beat*.5)
+      : -(t*.085 + uSlow*.9);
+    base.xz *= rot(ang);
+    p = base * (1.0 + bass*.14*e + sw*.05);
+    zona = clamp(f, 0.0, 1.0);
+    shade = .35 + .65*smoothstep(.82, 1.0, max(f, 1.0-f));  /* vertici stellari */
+    sym = .3;
+
+  } else if (uMode < 9.5) {                           /* TORUS — il campo che scorre */
+    /* il respiro perpetuo: le particelle avvolgono la sezione del
+       toro e rientrano dal polo — un fiume che non ricicla mai
+       visibilmente. Flow e' il toro fermo; questo e' il toro VIVO. */
+    float phi = aSeed.y*6.28318 + t*(.20 + uVita*.45);
+    float psi = aAng + t*.03 + snoise(vec3(aSeed.xy*3.0, t*.05))*.22;
+    zona = fract(phi/6.28318);
+    float rsec = 2.4 + spettro(zona)*1.1*e + br*.35;
+    float Rtor = 6.6 + bass*1.3*e;
+    p = vec3((Rtor + rsec*cos(phi))*cos(psi),
+             rsec*sin(phi)*uDepth,
+             (Rtor + rsec*cos(phi))*sin(psi));
+    p += (aSeed-.5)*.6;
+    p.yz *= rot(.5 + sin(t*.05)*.1);                  /* inclinato: si vede il volume */
+    shade = .5 + .5*sin(phi);
+
+  } else if (uMode < 10.5) {                          /* OCEAN — l'onda cosmica */
+    /* una superficie d'acqua di luce: le creste viaggiano con la
+       marea del suono, la spuma scintilla sugli acuti */
+    vec2 g = (aSeed.xz - .5) * vec2(30.0, 22.0);
+    float amp = .9 + bass*2.0*e + uSlow*1.1;
+    float y = (sin(g.x*.32 + t*.6)*.9
+             + sin(g.x*.18 + g.y*.24 - t*.42)*.7
+             + sin(g.y*.45 + t*.3)*.4) * amp;
+    zona = clamp(aSeed.x, 0.0, 1.0);
+    y += spettro(zona) * .8 * e * sin(g.x*1.3 - t*2.0);
+    float cresta = smoothstep(.55*amp, 1.35*amp, y);
+    p = vec3(g.x, (y - 2.2)*uDepth*.55, g.y);
+    shade = .3 + cresta*.6;
+    if (aRnd > .88){                                  /* la spuma */
+      p.y += .4 + cresta*1.1 + hi*1.2*e;
+      shade = .95;
+    }
+
+  } else {                                            /* PORTAL — il varco */
+    /* il tunnel che tira dentro, LENTO per scelta (mai nausea): gli
+       anelli scorrono verso chi guarda, la spirale gira col battito */
+    float d = fract(aRad + t*(.026 + uVita*.045));
+    float rP = (4.6 - d*1.6) * (1.0 + spettro(1.0 - d)*.22*e);
+    float thP = aAng + d*7.0 + t*.15 + beat*.3*d;
+    p = vec3(cos(thP)*rP, sin(thP)*rP, mix(-26.0, 7.0, d));
+    p.xy += (aSeed.xy-.5)*(.8 - d*.5);
+    zona = 1.0 - d;
+    shade = .25 + d*.75;
+    fadeForma = smoothstep(.02, .12, d) * (1.0 - smoothstep(.88, 1.0, d));
+    sym = .3;
   }
 
   /* DA3 — il colpo ATTRAVERSA la scena: un fronte sferico che parte
@@ -565,10 +668,17 @@ void main(){
     float lat = aSide * wid * pow(sin(3.14159*aU), 0.34) * ripple;
     float curl = (0.16*sin(t*0.45 + ph*1.3 + aLayer*1.9) + uMid*0.14*e) * aU*aU;
     th = aTheta + rot + lat + curl;
-    float dome = (0.45 + 0.55*sin(t*0.15)) * (0.5 + br*0.5)
+    /* FM0 — il dome non scende mai sotto un pavimento: di lato il
+       loto deve restare un VOLUME, non una lama */
+    float dome = (0.62 + 0.38*sin(t*0.15)) * (0.62 + br*0.38)
                  * (1.0 + reg*.55);   /* acuto = loto che si innalza */
     z = (sin(3.14159*aU) * (0.75 + 0.45*sin(t*0.9 - ph*1.7)) * dome * aScale
          + (aLayer - 0.35) * 1.3 * dome
+         /* FM0 — la COPPA (i petali si sollevano verso la punta, come
+            un loto vero) e lo SPESSORE (i contorni si sfalsano in
+            quota: di profilo un piumaggio, non una linea) */
+         + aU*aU * 1.6 * aScale * (0.7 + dome*0.5)
+         + (1.0 - aScale) * 0.9
          + sin(t*1.25 + ph*2.3) * 0.55 * (0.35 + uMid*1.4*e + uHit*0.5)
          + pulse * 0.24) * uDepth;
   } else if (aKind < 1.5) {                           /* wide backdrop circle */
@@ -1166,7 +1276,7 @@ winAdd('keydown', e=>{
   if (e.key === 'h' || e.key === 'H') el('hide').click();
   else if (e.key === 'f' || e.key === 'F') el('fsBtn').click();
   else if (e.key === ' ' && mode === 'file'){ e.preventDefault(); player.paused ? player.play() : player.pause(); }
-  else if (/^[1-7]$/.test(e.key)) setMode(+e.key - 1);
+  else if (/^[1-9]$/.test(e.key)) setMode(+e.key - 1);
 });
 winAdd('dragover', e=>e.preventDefault());
 winAdd('drop', e=>{ e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('audio')) caricaFile(f); });

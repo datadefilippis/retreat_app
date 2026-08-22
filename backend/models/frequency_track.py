@@ -90,7 +90,8 @@ VISUAL_RANGES = {                     # chiave: (min, max, default)
     "depth": (20, 260, 120), "brightness": (20, 200, 100),
     "contrast": (30, 180, 96),
 }
-VISUAL_MODES = 7      # forme (0..6): Breath..Ripple
+# FM3 (22/8): +5 forme mistiche (Flower, Merkaba, Torus, Ocean, Portal)
+VISUAL_MODES = 12     # forme (0..11): Breath..Portal
 VISUAL_PALETTES = 6   # palette (0..5): Aurea..Prism
 VISUAL_CAMS = 4       # camere (0..3): Orbit..Drift
 # default di mode/pal/cam = l'ambiente delle meditazioni (AV5):

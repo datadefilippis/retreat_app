@@ -289,12 +289,15 @@ class TestUnMotoreSoloAv5:
         """Senza, i gradienti larghi a 8 bit fanno anelli visibili."""
         assert "Math.random()*2-1" in PROTO
 
-    def test_i_sette_modi_ci_sono_tutti(self):
+    def test_le_dodici_forme_ci_sono_tutte(self):
+        """Le 7 del prototipo + le 5 mistiche di FM3 (founder: «falli
+        tutti e 5, li voglio tutti!»)."""
         tab = (VISUAL_DIR / "tabelle.js").read_text()
         blocco = tab.split("const MODES = [")[1].split("];")[0]
         for nome in ("Breath", "Nebula", "Spiral", "Flow", "Mandala",
-                     "Helix", "Ripple"):
-            assert f"['{nome}'" in blocco, f"modo perso: {nome}"
+                     "Helix", "Ripple",
+                     "Flower", "Merkaba", "Torus", "Ocean", "Portal"):
+            assert f"['{nome}'" in blocco, f"forma persa: {nome}"
 
     def test_quiete_significa_niente_galassia(self):
         """prefers-reduced-motion: una galassia che turbina non e'
@@ -811,6 +814,33 @@ class TestBallerinoDa:
         assert "U.uHitAmp.value = polso.colpo" in PROTO
         assert PROTO.count("* uHitAmp") >= 4, \
             "un'onda ha perso la forza del suo colpo"
+
+    def test_le_forme_nuove_hanno_il_ballerino_dentro(self):
+        """FM3: ogni forma nuova nasce col motore del ciclo DA — zone
+        spettrali, battito come fase, e per il Portale il fade dei
+        bordi. Non esistono forme «sorde»."""
+        for ancora in ("FLOWER", "MERKABA", "TORUS", "OCEAN", "PORTAL"):
+            assert ancora in PROTO, f"ramo mancante: {ancora}"
+        flower = PROTO.split("FLOWER")[1].split("MERKABA")[0]
+        assert "uSlow" in flower and "spettro(zona)" in flower
+        merkaba = PROTO.split("MERKABA")[1].split("TORUS")[0]
+        assert "beat" in merkaba and "uSlow" in merkaba, \
+            "i due tetraedri devono ruotare uno col battito, l'altro con l'onda"
+        torus = PROTO.split("TORUS")[1].split("OCEAN")[0]
+        assert "uVita" in torus, "il fiume del toro scorre con la vita"
+        portal = PROTO.split("PORTAL")[1].split("organic drift")[0]
+        assert "fadeForma" in portal, "il tunnel senza fade mostra il riciclo"
+        # e il varco resta LENTO: la velocita' del tunnel e' un numero
+        # piccolo per scelta (nausea), non un caso
+        assert ".026 + uVita*.045" in portal
+
+    def test_il_loto_regge_ogni_prospettiva(self):
+        """FM0, founder: «di lato sembra sottile, perde consistenza».
+        Tre difese: il dome ha un pavimento (mai lama), la COPPA
+        costante (aU^2), lo SPESSORE dei contorni sfalsati in quota."""
+        assert "0.62 + 0.38*sin(t*0.15)" in PROTO
+        assert "aU*aU * 1.6 * aScale" in PROTO
+        assert "(1.0 - aScale) * 0.9" in PROTO
 
     def test_la_sonda_non_e_rimasta(self):
         assert "__polso" not in PROTO
