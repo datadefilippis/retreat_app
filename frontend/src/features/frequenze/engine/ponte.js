@@ -44,6 +44,7 @@ export function creaPonte(ctx) {
      fragile (e non e' ispezionabile). Nessuna UI: e' solo un condotto. */
   el.dataset.fqzPonte = '1';
   try { document.body.appendChild(el); } catch { /* SSR/test */ }
+  let timerRilascio = null;
   const ponte = {
     /* lo sbocco del motore: startPreview ci si collega */
     nodo,
@@ -51,10 +52,23 @@ export function creaPonte(ctx) {
     /* da chiamare nel GESTO: se il play dell'elemento fallisse (non
        dovrebbe: siamo dentro un tocco), non deve rompere la sessione */
     async avvia() {
+      clearTimeout(timerRilascio);
       try { await el.play(); } catch { /* il grafo suona comunque dove puo' */ }
     },
     ferma() {
       try { el.pause(); } catch { /* niente */ }
+    },
+    /* IL RILASCIO (founder, 22/8: «in pausa resta una vibrazione
+       costante, sparisce solo ricaricando» — su iPhone). Un <audio>
+       lasciato in play su uno stream ammutolito, su iOS, RIPETE in
+       loop l'ultimo buffer: un ronzio perpetuo. Il ponte va quindi
+       messo in pausa a ogni stop — ma non subito: la coda morbida
+       dello stop (rampa 80ms + arresto nodi 200ms + distacco 600ms)
+       deve uscire tutta. 900ms, annullati se un nuovo play arriva
+       prima (il clearTimeout in avvia). */
+    rilascia(ms = 900) {
+      clearTimeout(timerRilascio);
+      timerRilascio = setTimeout(() => { try { el.pause(); } catch { /* niente */ } }, ms);
     },
   };
   ctx._fqzPonte = ponte;

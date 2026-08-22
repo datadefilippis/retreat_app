@@ -700,6 +700,39 @@ class TestScenaDellAutoreVc:
         dopo = blocco.index("n.stop()")
         assert prima < dopo, "i nodi vanno fermati DOPO la discesa, non prima"
 
+    def test_la_durata_e_onesta(self):
+        """Ciclo DU (founder, 22/8): tetto 30 FINTO (a schermo 35, il
+        motore a 30), popup di adattamento A OGNI CIFRA digitata sopra
+        la tastiera del telefono, e il default nascosto di 20 min che
+        inganna chi monta 5 minuti di tracce. Ora: AUTO di default (la
+        sessione dura quanto il contenuto, pill sempre a vista), FISSA
+        solo per scelta dal foglio, commit al rilascio, tetto vero e
+        SPIEGATO."""
+        assert "const [durataFissaMin, setDurataFissaMin] = useState(null)" in self.CREA, \
+            "il default deve essere AUTO (null), non un numero nascosto"
+        assert 'data-testid="fq-durata"' in self.CREA          # la pill
+        assert 'data-testid="fq-foglio-durata"' in self.CREA   # il foglio
+        assert "Il massimo è 30 minuti" in self.CREA           # il tetto spiegato
+        assert "onDurationChange" not in self.CREA, \
+            "e' tornato il commit per-cifra che apriva il popup sulla tastiera"
+        # il protocollo porta la SUA durata (non il pavimento dell'AUTO)
+        assert "durataProtocollo" in self.CREA
+        # e riaprendo una bozza, durata=fine tracce → torna AUTO
+        assert "Math.abs(d - fine) < 1 ? null" in self.CREA
+
+    def test_il_ponte_si_rilascia_alla_pausa(self):
+        """Founder (22/8, iPhone): «in pausa resta una vibrazione
+        costante, sparisce solo ricaricando». Un <audio> lasciato in
+        play su uno stream ammutolito, su iOS, ripete in loop l'ultimo
+        buffer. Il ponte va in pausa a ogni stop — ma DOPO la coda
+        morbida (rilascio ritardato), e un nuovo play lo annulla."""
+        ponte = (FQ_DIR / "engine" / "ponte.js").read_text()
+        assert "rilascia(ms = 900)" in ponte
+        assert "clearTimeout(timerRilascio)" in ponte.split("async avvia()")[1][:200], \
+            "un nuovo play deve annullare il rilascio in volo, o pausera' il suono nuovo"
+        for nome, src in (("Crea", self.CREA), ("pagina pubblica", PUB)):
+            assert "_fqzPonte?.rilascia?.()" in src, f"{nome}: il ponte resta in play per sempre"
+
     def test_il_suono_esce_dal_canale_musica(self):
         """LA guardia del silenzio, terza e definitiva — scritta da due
         difetti veri in PRODUZIONE (22/8, iPhone): su iOS (dove OGNI

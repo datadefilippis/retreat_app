@@ -116,6 +116,8 @@ export default function PublicFrequencyPage() {
     if (liveRef.current) { liveRef.current.stop(); liveRef.current = null; }
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     if (contRef.current) contRef.current.pause();   // il suo onPause fa il resto
+    /* la pausa del ponte, ritardata: via la vibrazione iOS (v. Crea) */
+    ctxRef.current?._fqzPonte?.rilascia?.();
     setPlaying(false);
   };
   stopRef.current = stop;

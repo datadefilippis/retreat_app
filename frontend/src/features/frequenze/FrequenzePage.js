@@ -182,7 +182,13 @@ export default function FrequenzePage() {
   const [ask, setAsk] = useState(null);                  // {title,msg,opts:[[label,fn]]}
   const [learn, setLearn] = useState(null);              // {title,body}
 
-  const [durationMin, setDurationMin] = useState(20);
+  /* DU (22/8) — LA DURATA E' AUTO di default: la sessione dura quanto
+     il suo contenuto (l'ultima traccia). Il vecchio default nascosto
+     di 20 min ingannava: chi montava 5 minuti di tracce si ritrovava
+     15 minuti di loop mai chiesti. `durataFissaMin` e' null in AUTO;
+     un numero solo se l'autore la FISSA (dal foglio della pill). */
+  const [durataFissaMin, setDurataFissaMin] = useState(null);
+  const [foglioDurata, setFoglioDurata] = useState(false);
   const [fadeIn, setFadeIn] = useState(5);
   const [fadeOut, setFadeOut] = useState(10);
   const [layers, setLayers] = useState([]);
@@ -214,7 +220,12 @@ export default function FrequenzePage() {
   const anelloRef = useRef(null);
   const [anello, setAnello] = useState(null);      // { key, sec }
   const [anelloProg, setAnelloProg] = useState(null);
-  const duration = Math.min(1800, Math.max(60, durationMin * 60));
+  /* la fine dell'ultima traccia: in AUTO e' LEI la durata */
+  const maxEndSec = layers.length
+    ? Math.max(...layers.map((l) => l.end || 0)) : 0;
+  const duration = Math.min(1800, Math.max(60,
+    durataFissaMin != null ? durataFissaMin * 60 : (maxEndSec || 60)));
+  const durataAuto = durataFissaMin == null;
 
   /* VC2/VC3 — la scena dell'autore. `visual` = i valori RISOLTI che
      viaggeranno nella ricetta (null = mai toccata: default e niente
@@ -535,6 +546,10 @@ export default function FrequenzePage() {
     playTokenRef.current += 1;
     if (liveRef.current) { liveRef.current.stop(); liveRef.current = null; }
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    /* il ponte si mette in pausa DOPO la coda morbida dello stop: un
+       <audio> lasciato in play su uno stream muto, su iOS, ripete in
+       loop l'ultimo buffer — la «vibrazione costante» (founder, 22/8) */
+    ctxRef.current?._fqzPonte?.rilascia?.();
     setPlaying(false);
   };
   const fermaAnello = () => {
@@ -632,7 +647,14 @@ export default function FrequenzePage() {
   /* ── protocolli ── */
   const applyProtocol = (name) => {
     stopSession();
-    const built = PROTOCOLLI[name].build(duration);
+    /* DU — un protocollo e' una ricetta COMPLETA: porta la sua durata
+       (20 min) e la FISSA, dichiarandola nella pill. Prima si
+       costruiva sulla durata corrente: in AUTO a sessione vuota
+       valeva il pavimento di 60s, e «Dormire» nasceva compresso in un
+       minuto. */
+    const durataProtocollo = PROTOCOLLI[name].durataMin || 20;
+    setDurataFissaMin(durataProtocollo);
+    const built = PROTOCOLLI[name].build(durataProtocollo * 60);
     setLayers(built.layers.map((l) => ({ ...l, id: ++_uid })));
     setPhases(built.phases);
     setIntent(PROTOCOLLI[name].intent);
@@ -758,7 +780,13 @@ export default function FrequenzePage() {
       const t = (await frequenciesAPI.get(id)).data, s = t.score || {};
       setTrackId(t.id); setTitle(t.title || ''); setIntent(t.intent || null);
       setTrackStatus(t.status || 'draft'); setTrackSlug(t.slug || null);
-      setDurationMin(Math.round((s.duration_sec || 1200) / 60));
+      /* la ricetta porta solo il numero risolto: se coincide con la
+         fine dell'ultima traccia era (o equivale a) una durata AUTO */
+      {
+        const fine = Math.max(0, ...((s.layers || []).map((l) => l.end || 0)));
+        const d = s.duration_sec || 1200;
+        setDurataFissaMin(Math.abs(d - fine) < 1 ? null : Math.round(d / 60));
+      }
       setFadeIn(s.fade_in_sec ?? 10); setFadeOut(s.fade_out_sec ?? 20);
       setLayers((s.layers || []).map((l) => ({ ...l, id: ++_uid })));
       setPhases(s.phases || []);
@@ -842,10 +870,23 @@ export default function FrequenzePage() {
 
   /* ── durata: riadatta o mantieni ── */
   const prevDurRef = useRef(duration);
-  const onDurationChange = (mins) => {
-    const newD = Math.max(60, mins * 60), oldD = prevDurRef.current;
-    setDurationMin(mins);
+  /* DU — si arriva qui SOLO da un gesto compiuto (preset o invio nel
+     foglio), MAI a ogni cifra digitata: era il popup che si apriva
+     sopra la tastiera del telefono a meta' numero. E il tetto e' VERO:
+     prima si poteva vedere 35 a schermo mentre il motore suonava 30. */
+  const fissaDurata = (mins) => {
+    if (!Number.isFinite(mins) || mins < 1) return;
+    if (mins > 30) {
+      setStatus('Il massimo è 30 minuti: è il limite dell\'ascolto a schermo bloccato, così ogni sessione pubblicata resta ascoltabile ovunque');
+      mins = 30;
+    }
+    setFoglioDurata(false);
+    const newD = Math.max(60, mins * 60), oldD = duration;
+    setDurataFissaMin(mins);
     if (!layers.length || oldD === newD) { prevDurRef.current = newD; return; }
+    /* il dialogo di adattamento ha senso solo se la nuova durata
+       TAGLIA tracce esistenti: allungare non tocca nessuno */
+    if (newD >= maxEndSec) { prevDurRef.current = newD; return; }
     stopSession();
     const rescale = () => {
       const k = newD / oldD;
@@ -869,6 +910,14 @@ export default function FrequenzePage() {
       opts: [['Riadatta in proporzione', rescale], ['Mantieni le posizioni', clamp]],
     });
     prevDurRef.current = newD;
+  };
+
+  /* DU — tornare all'automatica: la durata si riallinea alle tracce,
+     senza dialoghi (nessun taglio possibile: E' la fine delle tracce) */
+  const tornaDurataAuto = () => {
+    setDurataFissaMin(null);
+    setFoglioDurata(false);
+    setStatus('La durata ora segue le tracce');
   };
 
   /* ── drag generico (barre, maniglie, fasi) ── */
@@ -1122,7 +1171,15 @@ export default function FrequenzePage() {
             onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { start: Math.max(0, Math.min(v, l.end - 0.5)) }); }} />
           <span className="lbl" title="Secondo in cui il suono esce">esce a</span>
           <input className="mini t-out" type="text" defaultValue={fmt(l.end)} key={`out${l.id}-${Math.round(l.end)}`}
-            onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { end: Math.max(l.start + 0.5, Math.min(v, duration)) }); }} />
+            onBlur={(e) => { const v = parseT(e.target.value); if (v === null) return;
+              /* DU3 — il tetto PARLA, non taglia in silenzio. In AUTO
+                 la fine della traccia PUO' allungare la sessione (fino
+                 a 30); in FISSA si ferma alla durata scelta. */
+              const tetto = durataAuto ? 1800 : duration;
+              if (v > tetto) setStatus(durataAuto
+                ? 'Il massimo è 30 minuti: è il limite dell\'ascolto a schermo bloccato'
+                : `La sessione è fissata a ${fmt(duration)}: allungala dalla pill della durata, o riporta la traccia dentro`);
+              patchLayer(l.id, { end: Math.max(l.start + 0.5, Math.min(v, tetto)) }); }} />
           <span className="lbl dur-tot">({fmt(l.end - l.start)})</span>
         </div>
         {l.kind === 'voice' ? (
@@ -1655,11 +1712,43 @@ export default function FrequenzePage() {
               {/* Su telefono i quattro campi occupavano quattro righe piene:
                   ora stanno dietro un tocco e la barra resta una striscia.
                   Su schermo largo il CSS li rimette in linea (display:contents). */}
+              {/* DU — la durata e' SEMPRE a vista, mai in un campo
+                  nascosto: la pill dice quanto dura e PERCHE' (segue le
+                  tracce, o l'hai fissata tu). Un tocco apre il foglio. */}
+              <button type="button" className="cb-opt cb-durata" data-testid="fq-durata"
+                onClick={() => setFoglioDurata((v) => !v)}>
+                ⏱ {layers.length || !durataAuto ? fmt(duration) : '—'}
+                <small>{durataAuto ? (layers.length ? ' · segue le tracce' : ' · si adatta alle tracce') : ' · impostata'}</small>
+              </button>
+              {foglioDurata && (
+                <div className="foglio-durata" data-testid="fq-foglio-durata">
+                  <div className="fd-riga">
+                    {[5, 10, 15, 20, 30].map((m) => (
+                      <button key={m} type="button"
+                        className={durataFissaMin === m ? 'su' : ''}
+                        onClick={() => fissaDurata(m)}>{m}′</button>
+                    ))}
+                    <input type="number" min="1" max="30" step="1"
+                      placeholder="min" data-testid="fq-durata-min"
+                      defaultValue={durataAuto ? '' : durataFissaMin}
+                      onKeyDown={(e) => { if (e.key === 'Enter') fissaDurata(+e.currentTarget.value); }}
+                      onBlur={(e) => { if (e.target.value !== '') fissaDurata(+e.target.value); }} />
+                  </div>
+                  <button type="button" className={`fd-auto${durataAuto ? ' su' : ''}`}
+                    data-testid="fq-durata-auto" onClick={tornaDurataAuto}>
+                    Automatica — segue le tracce
+                  </button>
+                  <p className="fd-nota">Massimo 30 minuti: è il limite
+                  dell'ascolto a schermo bloccato, così ogni sessione
+                  pubblicata resta ascoltabile ovunque.</p>
+                </div>
+              )}
+              {/* DU — tutto il resto configurabile sta dietro UN tocco */}
               <button type="button" className="cb-opt" data-testid="fq-setup"
                 aria-expanded={setupOpen}
-                title="Titolo, durata, apertura e chiusura della sessione"
+                title="Titolo, apertura e chiusura della sessione"
                 onClick={() => setSetupOpen((o) => !o)}>
-                {setupOpen ? '▴' : '▾'} {durationMin} min
+                ⚙ Impostazioni {setupOpen ? '▴' : '▾'}
               </button>
               <div className={`cb-collapse${setupOpen ? ' open' : ''}`}>
                 <div className="cb-fields">
@@ -1668,13 +1757,8 @@ export default function FrequenzePage() {
                       placeholder="La mia sessione"
                       onChange={(e) => setTitle(e.target.value)} />
                   </label>
-                  <label title="Lunghezza totale della sessione">durata
-                    {/* tetto 30 (decisione founder 21/8): ogni traccia
-                        pubblicata resta ascoltabile a schermo bloccato,
-                        che regge fino a 30 minuti. Il default resta 20. */}
-                    <input type="number" value={durationMin} min="1" max="30" step="1"
-                      onChange={(e) => { const v = +e.target.value; if (!isNaN(v) && v > 0) onDurationChange(v); }} /> min
-                  </label>
+                  {/* DU — la durata non vive piu' qui: ha la sua pill,
+                      sempre a vista, col foglio dei preset */}
                   {/* 21/8, founder: «apertura/chiusura si capisce poco».
                       Le etichette dicono COSA succede al suono, e il
                       tooltip completa la frase. */}
@@ -1958,7 +2042,7 @@ export default function FrequenzePage() {
       {canCompose && view !== 'create' && layers.length > 0 && (
         <div className="sessionfoot">
           <span className="sf-dot">◆</span>
-          <span className="sf-txt">La tua sessione · {layers.length} {layers.length === 1 ? 'livello' : 'livelli'} · {durationMin} min</span>
+          <span className="sf-txt">La tua sessione · {layers.length} {layers.length === 1 ? 'livello' : 'livelli'} · {fmt(duration)}</span>
           <div className="spacer" style={{ flex: 1 }} />
           <button type="button" className="primary" onClick={() => setView('create')}>Vai a Crea →</button>
         </div>
