@@ -1299,6 +1299,24 @@ class TestVoceNelVisual:
         # la voce puo' salire fino al doppio, la musica solo scendere
         assert 'id="volVoce" min="0" max="200"' in MARKUP.replace("\n", " ").replace("  ", " ") or 'max="200"' in MARKUP
 
+    def test_l_ingresso_e_morbido(self):
+        """founder da iPhone: «appena parte il suono, tutte le immagini
+        sono scattose». All'attacco la soglia dei colpi partiva da
+        zero (onde piene sui primi transienti), l'autogain della vita
+        saturava subito (accelerata di colpo) — e la voce e' fatta di
+        attacchi. La presenza sale in ~1,4s e scala colpi, slancio e
+        velocita' di reazione; nel primo respiro la soglia INSEGUE il
+        flusso senza sparare."""
+        PROTO = self._proto()
+        assert "let _presenza = 0" in PROTO
+        assert "if (_presenza < 0.6) _fluxMedia = Math.max(_fluxMedia, flux * 0.8)" in PROTO
+        assert "* (0.3 + 0.7 * polso.vita) * _presenza" in PROTO
+        assert "* _presenza;" in PROTO.split("polso.slancio")[1][:80]
+        assert "(0.7 + 1.5 * _presenza)" in PROTO
+        # la stima del battito NON passa dalla presenza: l'orecchio
+        # impara anche nel primo respiro, e' il gesto che si trattiene
+        assert "_acAcc" in PROTO
+
     def test_i_quattro_stili_sono_quelli_di_crea(self):
         """un solo vocabolario: Naturale, Sogno, Tempio, Sussurro —
         VOICE_PRESETS e' gia' il gemello del backend (guardia FV2)."""

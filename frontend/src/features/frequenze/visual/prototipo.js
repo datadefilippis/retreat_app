@@ -1081,6 +1081,15 @@ const polso = {
 const _BANDE8 = [60, 120, 240, 480, 960, 1920, 3840, 5800, 8000];
 let _slancioGrezzo = 0, _registroPrec = .5;
 let _prevFreq = null, _fluxMedia = 0.004, _picco = 0.18, _refrattario = 0;
+/* L'INGRESSO MORBIDO (founder da iPhone: «appena parte il suono,
+   tutte le immagini sono scattose»). All'attacco: la soglia dei
+   colpi parte da zero (i primi transienti sparano onde piene),
+   l'autogain della vita satura alla prima nota (tutte le velocita'
+   accelerano di colpo), le bande salgono ripide. E la VOCE e' fatta
+   di attacchi: ogni frase ricominciava lo strappo. La presenza sale
+   in ~1,4 s quando il suono si accende e scala colpi, slancio e
+   velocita' di reazione: l'attacco di un compressore, ma visivo. */
+let _presenza = 0;
 let _lento = 0, _lentoMin = 1, _lentoMax = 0;
 const _INV_PASSO = 1 / 45;                 /* inviluppo campionato a 45 Hz */
 const _INV_N = 256;                        /* ~5,7 s di storia */
@@ -1108,10 +1117,17 @@ function battePolso(dt){
   /* DA5 — un'onda per FRASE musicale, non una per nota: soglia piu'
      alta e periodo refrattario. Prima ogni cambio di nota lanciava
      un'onda a piena forza («troppo su e giu'», founder). */
+  const vivoSuono = bands.level > 0.02 ? 1 : 0;
+  _presenza += (vivoSuono - _presenza)
+    * (1 - Math.exp(-dt / (vivoSuono ? 1.4 : 0.4)));
+  /* nel primo respiro la soglia INSEGUE il flusso senza sparare:
+     niente onde spurie mentre il rilevatore impara il brano */
+  if (_presenza < 0.6) _fluxMedia = Math.max(_fluxMedia, flux * 0.8);
   const soglia = _fluxMedia * 3.2 + 0.012;
   _refrattario = Math.max(0, _refrattario - dt);
   if (flux > soglia && _refrattario === 0){
-    polso.colpo = Math.min(1, (flux - soglia) * 40) * (0.3 + 0.7 * polso.vita);
+    polso.colpo = Math.min(1, (flux - soglia) * 40)
+      * (0.3 + 0.7 * polso.vita) * _presenza;
     _refrattario = 2.2;
   } else polso.colpo *= Math.exp(-dt * 4.2);
   _fluxMedia += (flux - _fluxMedia) * Math.min(1, dt * 1.2);
@@ -1128,7 +1144,7 @@ function battePolso(dt){
       for (let i = i0; i <= i1; i++) sm += freq[i];
       const v = Math.min(1, (sm / Math.max(1, i1 - i0 + 1) / 255) * 1.6);
       const cur = polso.spettro8[b];
-      const kk = v > cur ? 2.2 : 0.9;
+      const kk = v > cur ? (0.8 + 1.4 * _presenza) : 0.9;
       polso.spettro8[b] = cur + (v - cur) * (1 - Math.exp(-kk * dt));
     }
   }
@@ -1157,7 +1173,7 @@ function battePolso(dt){
   const deriva = (polso.registro - _registroPrec) / Math.max(dt, 1e-3);
   _registroPrec = polso.registro;
   _slancioGrezzo += (deriva - _slancioGrezzo) * Math.min(1, dt * 2);
-  polso.slancio = Math.max(-1, Math.min(1, _slancioGrezzo * 4));
+  polso.slancio = Math.max(-1, Math.min(1, _slancioGrezzo * 4)) * _presenza;
 
   /* vita: energia normalizzata (autogain col pavimento: il rumore di
      fondo non deve sembrare un concerto) */
@@ -1167,7 +1183,7 @@ function battePolso(dt){
      stop) non e' un pianissimo: li' la scena deve saperlo in un
      secondo, non in otto (founder: «l'ho messa in pausa e continua a
      muoversi»). */
-  const k = target > polso.vita ? 2.2
+  const k = target > polso.vita ? (0.7 + 1.5 * _presenza)
     : (bands.level < 0.015 ? 1.6 : 0.4);
   polso.vita += (target - polso.vita) * (1 - Math.exp(-k * dt));
 
