@@ -1922,7 +1922,15 @@ function disegna(){
   }
   controls.update();
 
-  fadeUniforms.uFade.value = Math.max(.025, 1 - S.trails/100);
+  /* LA SCIA IN TEMPO REALE, NON IN FOTOGRAMMI (founder da iPhone,
+     22/8: «anche lo sfondo e' diverso: a volte piu' scuro, a volte
+     piu' chiaro»). La dissolvenza si applica UNA VOLTA PER FRAME:
+     a 120fps la scia si spegneva in fretta (sfondo scuro e pulito),
+     sotto carico — l'export rende piu' pixel — i fps calano e la
+     luce si accumula (sfondo slavato). Normalizzata sul riferimento
+     60fps: stessa scia in secondi, qualunque sia il framerate. */
+  const fadeBase = Math.max(.025, 1 - S.trails/100);
+  fadeUniforms.uFade.value = Math.min(1, 1 - Math.pow(1 - fadeBase, dt * 60));
   renderer.render(fadeScene, fadeCam);
   renderer.render(scene, camera);
   if (exportAttivo && wmPronto) renderer.render(wmPronto.scena, fadeCam);

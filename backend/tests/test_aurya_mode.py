@@ -1158,3 +1158,12 @@ class TestExportVideo:
         assert "renderer.setPixelRatio(1)" not in blocco
         # e la copia ha SEMPRE il fondo della scena sotto
         assert "copiaCtx.fillStyle = '#05040a'" in blocco
+
+    def test_la_scia_vive_in_secondi_non_in_fotogrammi(self):
+        """la dissolvenza dello sfondo si applicava una volta per
+        frame: a 120fps scia corta (sfondo scuro), sotto carico scia
+        lunga (sfondo slavato) — lo sfondo del video non somigliava
+        al sito. Normalizzata sul riferimento 60fps col dt."""
+        PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
+        assert "Math.pow(1 - fadeBase, dt * 60)" in PROTO
+        assert "fadeUniforms.uFade.value = Math.max" not in PROTO
