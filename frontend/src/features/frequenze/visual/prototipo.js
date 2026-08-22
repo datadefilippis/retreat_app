@@ -201,6 +201,7 @@ const U = {
   uVita:{value:0}, uBeatPhase:{value:0}, uBeatAmp:{value:0},
   uSlow:{value:.5}, uHitT:{value:-10},
   uSpettro:{value:new Float32Array(8)}, uRegistro:{value:.5}, uSlancio:{value:0},
+  uHitAmp:{value:0},
 };
 
 const NOISE = `
@@ -257,7 +258,7 @@ attribute vec3 aSeed; attribute float aRad, aAng, aArm, aSize, aRnd;
 uniform float uTime,uBass,uMid,uHigh,uLevel,uBreath,uMode,uIntensity,uScale,uSpeed,
               uDepth,uGlow,uDrift,uPix,uLine,uFog,uKeep,
               uVita,uBeatPhase,uBeatAmp,uSlow,uHitT,
-              uRegistro,uSlancio;
+              uRegistro,uSlancio,uHitAmp;
 uniform float uSpettro[8];
 uniform vec3 uC0,uC1,uC2;
 varying vec3 vCol; varying float vA;
@@ -353,7 +354,7 @@ void main(){
     float r = ring*12.0 + sin(t*1.0 - ring*6.5)*(.4 + bass*2.2*e);
     /* il colpo EMETTE un anello: un fronte che parte dal centro e
        attraversa gli anelli — la scena non sobbalza, il gesto viaggia */
-    float fronte = exp(-abs(ring*12.0 - dtH*7.0)*.55) * exp(-dtH*.9);
+    float fronte = exp(-abs(ring*12.0 - dtH*7.0)*.55) * exp(-dtH*.9) * uHitAmp;
     r += fronte * (1.6 + bass*2.0*e);
     float a = aSeed.x*6.28318 + t*.14*(1.0 + ring*.6);
     p = vec3(cos(a)*r, (aSeed.y-.5)*.35*uDepth + sin(t*.8 - ring*4.5)*(.7 + sw*.4)*uDepth, sin(a)*r);
@@ -365,7 +366,7 @@ void main(){
      dal centro (come un gesto attraversa il corpo di un ballerino),
      invece di un sobbalzo uniforme di tutto insieme */
   float rr0 = length(p) + 1e-3;
-  float hitW = exp(-abs(rr0 - dtH*9.0)*.45) * exp(-dtH*1.1);
+  float hitW = exp(-abs(rr0 - dtH*9.0)*.45) * exp(-dtH*1.1) * uHitAmp;
   p += (p / rr0) * hitW * (.55 + bass*.7*e);
 
   /* DA6 — l'anima tonale, tre gesti universali:
@@ -476,7 +477,9 @@ const MAND_U = {
   uBreath:U.uBreath, uIntensity:U.uIntensity, uScale:U.uScale, uGlow:U.uGlow,
   uBright:{ value:1 }, uContrast:U.uContrast, uPix:U.uPix, uDepth:U.uDepth, uHit:{ value:0 },
   uC0:U.uC0, uC1:U.uC1, uC2:U.uC2, uTex:U.uTex, uPoint:{ value:0 },
-  uVita:U.uVita, uBeatPhase:U.uBeatPhase, uSlow:U.uSlow, uHitT:U.uHitT,
+  uVita:U.uVita, uBeatPhase:U.uBeatPhase, uBeatAmp:U.uBeatAmp,
+  uSlow:U.uSlow, uHitT:U.uHitT, uHitAmp:U.uHitAmp,
+  uSpettro:U.uSpettro, uRegistro:U.uRegistro, uSlancio:U.uSlancio,
   /* own brightness so the mandala can sit brighter without blowing out the point field */
 };
 const MAND_VERT = `
@@ -484,7 +487,7 @@ precision highp float;
 attribute float aTheta, aU, aSide, aR0, aLen, aWid, aLayer, aSpin, aKind, aScale;
 uniform float uTime,uBass,uMid,uHigh,uLevel,uBreath,uIntensity,uScale,uGlow,uPix,uPoint,uDepth,uHit,
               uVita,uBeatPhase,uBeatAmp,uSlow,uHitT,
-              uRegistro,uSlancio;
+              uRegistro,uSlancio,uHitAmp;
 uniform float uSpettro[8];
 float spettro(float z){
   float x = clamp(z, 0.0, 0.999) * 7.0;
@@ -516,7 +519,7 @@ void main(){
     float ph   = aTheta * 1.0;                            /* per-petal phase */
     float veil = aScale * 6.28318;                        /* per-contour phase */
     /* petals reach and retract in a travelling wave around the crown */
-    float ondaColpo = exp(-abs((aR0 + aLen*aU) - dtH*10.0)*.5) * exp(-dtH*1.2);
+    float ondaColpo = exp(-abs((aR0 + aLen*aU) - dtH*10.0)*.5) * exp(-dtH*1.2) * uHitAmp;
     float reach = 1.0 + 0.14*sin(t*0.62 - ph*1.6 - aLayer*1.4)
                       + 0.06*sin(t*1.35 + veil*0.5)
                       + uBass*0.38*e + uHit*0.18 + ondaColpo*.25
@@ -561,7 +564,7 @@ void main(){
   vCol = col;
 
   float kindA = aKind < 0.5 ? (0.30 + 0.16*aLayer) : (aKind < 1.5 ? 0.34 : 0.45);
-  float ondaL = aKind < 0.5 ? exp(-abs(aR0 - dtH*10.0)*.5) * exp(-dtH*1.2) : 0.0;
+  float ondaL = aKind < 0.5 ? exp(-abs(aR0 - dtH*10.0)*.5) * exp(-dtH*1.2) * uHitAmp : 0.0;
   vA = kindA * (0.30 + uVita*0.28 + uLevel*0.55*e + br*0.10)
        * (aKind < 0.5 ? (0.45 + 0.55*tip) : 1.0)
        * (1.0 + ondaL*.35);
@@ -816,6 +819,11 @@ const polso = {
      gesto ascensionale, non una posizione. */
   spettro8: new Float32Array(8),
   registro: .5, slancio: 0,
+  /* DA7 — quanto l'inviluppo OSCILLA davvero (deviazione/media). Un
+     pad tranquillo ha profondita' ~0: il battito visivo deve tacere,
+     anche se l'autocorrelazione trova una periodicita' debole —
+     altrimenti la scena fa avanti-indietro «senza senso» (founder). */
+  profondita: 0,
 };
 /* i bordi delle 8 bande in Hz (logaritmici, ~un'ottava l'una) */
 const _BANDE8 = [60, 120, 240, 480, 960, 1920, 3840, 5800, 8000];
@@ -938,6 +946,8 @@ function battePolso(dt){
     media /= _INV_N;
     let ac0 = 0;
     for (let i = 0; i < _INV_N; i++){ const d = _inv[i] - media; ac0 += d * d; }
+    const prof = media > 0.02 ? Math.sqrt(ac0 / _INV_N) / media : 0;
+    polso.profondita += (Math.min(1, prof) - polso.profondita) * .3;
     if (ac0 > 1e-5){
       let meglio = 0, lagMeglio = 0;
       const lagMin = 3, lagMax = 150;      /* 45/150=0.3 Hz .. 45/3=15 Hz */
@@ -1315,15 +1325,26 @@ function disegna(){
   U.uBeatPhase.value = polso.fase;
   /* l'ampiezza del battito sfuma con la fiducia (rampa 0.2→0.5):
      niente on/off al confine della soglia */
-  const rampa = Math.max(0, Math.min(1, (polso.fiducia - 0.2) / 0.3));
-  U.uBeatAmp.value = rampa;
+  /* DA7 — fiducia E profondita': un isochronic marcato balla pieno,
+     un pad con una periodicita' debole non balla affatto — su musica
+     tranquillissima il va-e-vieni «senza senso» era questo. */
+  const rampa = Math.max(0, Math.min(1, (polso.fiducia - 0.25) / 0.3));
+  const prof = Math.max(0, Math.min(1, (polso.profondita - 0.06) / 0.14));
+  U.uBeatAmp.value = rampa * prof;
   U.uSlow.value = polso.ondaLenta;
   U.uSpettro.value.set(polso.spettro8);
   U.uRegistro.value = polso.registro;
   U.uSlancio.value = polso.slancio;
   /* il colpo del polso (flusso spettrale) comanda anche il vecchio
      canale uHit e scrive l'istante per l'onda propagativa */
-  if (polso.colpo > hit){ U.uHitT.value = tAcc; }
+  if (polso.colpo > hit){
+    U.uHitT.value = tAcc;
+    /* l'onda porta la forza del colpo che l'ha generata: un tocco
+       gentile increspa, un fortissimo attraversa. Prima l'ampiezza
+       era FISSA: ogni colpettino lanciava la stessa onda («scatti
+       senza senso», founder). */
+    U.uHitAmp.value = polso.colpo;
+  }
   hit = Math.max(hit * Math.exp(-dt*4.2), polso.colpo);
 
   const P = PALETTES[S.pal].c;

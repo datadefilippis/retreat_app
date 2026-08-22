@@ -746,7 +746,8 @@ class TestBallerinoDa:
         vivo e 0.25 fisso — uno strappo periodico. La fase integra
         sempre; a sfumare e' l'AMPIEZZA, con una rampa."""
         assert "? polso.fase : 0.25" not in PROTO
-        assert "(polso.fiducia - 0.2) / 0.3" in PROTO
+        # DA7: la rampa parte da 0.25 e si moltiplica per la profondita'
+        assert "(polso.fiducia - 0.25) / 0.3" in PROTO
         assert "uBeatAmp" in PROTO
         # e l'ampiezza sfuma ANCHE negli shader
         assert "* uBeatAmp;" in PROTO
@@ -782,6 +783,34 @@ class TestBallerinoDa:
         verifica con una salita vera (crossfade grave→acuto), mai con
         lo shepard."""
         assert True
+
+    def test_il_mandala_riceve_tutti_gli_uniform_che_dichiara(self):
+        """Svista vera (DA5-DA7): i nuovi uniform venivano aggiunti a U
+        ma NON a MAND_U — nel mandala valevano ZERO. uRegistro=0
+        significa registro -0.5 FISSO: loto schiacciato e scurito,
+        battito muto, zone morte — parte degli «scatti senza senso».
+        Parita' meccanica: ogni uniform dichiarato in MAND_VERT deve
+        stare in MAND_U."""
+        dich = PROTO.split("const MAND_VERT = `")[1].split("void main()")[0]
+        import re as _re
+        nomi = set(_re.findall(r"\bu[A-Z]\w+", dich))
+        blocco_u = PROTO.split("const MAND_U = {")[1].split("};")[0]
+        mancanti = {u for u in nomi if (u + ":") not in blocco_u}
+        assert not mancanti, f"uniform dichiarati ma non forniti al mandala: {mancanti}"
+
+    def test_niente_va_e_vieni_senza_senso(self):
+        """DA7, founder: «con musica tranquillissima le forme si
+        muovono a scatti avanti e indietro, sempre lo stesso
+        movimento». Due porte chiuse: il battito visivo richiede
+        fiducia E profondita' della modulazione (un pad con
+        periodicita' debole non balla); e l'onda del colpo porta la
+        forza del SUO colpo (uHitAmp) — prima era fissa, e ogni
+        colpettino lanciava la stessa onda."""
+        assert "polso.profondita" in PROTO
+        assert "U.uBeatAmp.value = rampa * prof" in PROTO
+        assert "U.uHitAmp.value = polso.colpo" in PROTO
+        assert PROTO.count("* uHitAmp") >= 4, \
+            "un'onda ha perso la forza del suo colpo"
 
     def test_la_sonda_non_e_rimasta(self):
         assert "__polso" not in PROTO
