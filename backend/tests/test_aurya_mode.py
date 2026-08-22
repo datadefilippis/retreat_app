@@ -656,6 +656,28 @@ class TestScenaDellAutoreVc:
         assert "creaLettore(ctx)" in self.CREA
 
 
+    def test_uno_spezzone_indecifrabile_non_lascia_muta_la_sessione(self):
+        """LA causa vera del silenzio su iPhone (22/8, trovata col
+        pannello ?diag=1: contesto running, currentTime che avanza,
+        `livelloGrafo: 0`). Le basi in loop si scaricano a SPEZZONE
+        (Range, risparmio banda del ciclo ES): un m4a tagliato a meta'
+        e' un file incompleto — i decoder permissivi lo accettano,
+        Safari iOS lo RIFIUTA. Il rifiuto finiva in un catch muto, la
+        base spariva dal mix e una sessione fatta di sole basi restava
+        senza un solo campione.
+        Ora: se lo spezzone non si decodifica si riprende il file
+        INTERO (si perde la banda, mai il suono), e ogni base saltata
+        lascia una nota nella diagnosi."""
+        assets = (FQ_DIR / "engine" / "assets.js").read_text()
+        assert "if (!ottenuto) throw e;" in assets, \
+            "manca il fallback: senza, un decoder severo azzera la sessione"
+        blocco = assets.split("if (!ottenuto) throw e;")[1][:400]
+        assert "fetch(url)" in blocco and "decodeAudioData(ab2)" in blocco, \
+            "il fallback deve riprendere il file INTERO, non riprovare lo stesso pezzo"
+        # e il silenzio non deve piu' essere invisibile
+        assert "BASE SALTATA" in assets
+        assert "notaDiagnosi" in assets
+
     def test_il_suono_esce_dal_canale_musica(self):
         """LA guardia del silenzio, terza e definitiva — scritta da due
         difetti veri in PRODUZIONE (22/8, iPhone): su iOS (dove OGNI

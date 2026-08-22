@@ -32,6 +32,13 @@ export function diagnosiAttiva() {
   } catch { return false; }
 }
 
+/* l'ultimo pannello acceso, per chi vuole lasciare una nota senza
+   conoscerlo (assets.js: i fallimenti di decodifica) */
+let attivo = null;
+export function notaDiagnosi(testo) {
+  try { if (attivo) attivo.nota(testo); } catch { /* mai rompere per una nota */ }
+}
+
 export function avviaDiagnosi({ ctx, analyser, ponte, etichetta = '' }) {
   if (!diagnosiAttiva() || !ctx) return null;
   if (ctx._fqzDiag) { ctx._fqzDiag.aggiorna({ analyser, ponte }); return ctx._fqzDiag; }
@@ -119,5 +126,6 @@ export function avviaDiagnosi({ ctx, analyser, ponte, etichetta = '' }) {
     spegni() { clearInterval(timer); box.remove(); },
   };
   ctx._fqzDiag = manico;
+  attivo = manico;
   return manico;
 }

@@ -8,6 +8,7 @@
  */
 
 import { cleanVoiceBuffer } from './voicefx';
+import { notaDiagnosi } from './diagnosi';
 import { anelloDaBuffer } from './anello';
 
 /* ── ES3 (21/8) — lo spezzone ──────────────────────────────────────
@@ -95,7 +96,25 @@ export function loadAssetBuffer(ctx, url, inUso = new Set([url]), parziale = nul
       })
       .then(({ ab, parziale: ottenuto }) => ctx.decodeAudioData(ab)
         .then((buf) => (ottenuto && parziale?.anello
-          ? anelloDaBuffer(ctx, buf) : buf)))
+          ? anelloDaBuffer(ctx, buf) : buf))
+        /* SE LO SPEZZONE NON SI DECODIFICA, SI PRENDE IL FILE INTERO.
+           Un m4a tagliato a meta' e' un file incompleto: i decoder
+           permissivi (desktop) lo accettano, quelli severi no —
+           Safari iOS lo RIFIUTA. E il rifiuto finiva in un catch
+           silenzioso piu' a valle: la base spariva dal mix e la
+           sessione restava muta senza dire nulla (founder, 22/8: da
+           telefono niente suono, con `livelloGrafo: 0` nel pannello).
+           Qui si perde il risparmio di banda per QUESTA base, mai il
+           suono. L'ArrayBuffer e' stato consumato dal decoder: si
+           rifa' la richiesta, intera. */
+        .catch((e) => {
+          if (!ottenuto) throw e;          // era gia' intero: nulla da riprendere
+          notaDiagnosi('spezzone non decodificabile → riprendo il file intero: '
+            + url.split('/').pop());
+          return fetch(url)
+            .then((r) => r.arrayBuffer())
+            .then((ab2) => ctx.decodeAudioData(ab2));
+        }))
       .then((buf) => {
         entry.bytes = buf.length * buf.numberOfChannels * 4;
         sfoltisci(inUso);
@@ -131,7 +150,13 @@ export async function resolveAudioLayers(ctx, score, soundsById) {
       const buffer = await loadAssetBuffer(ctx, asset.stream_url, inUso, parziale);
       out.push({ id: l.id, buffer, start: l.start, end: l.end,
                  gain: l.gain, loop: l.loop !== false, mute: false });
-    } catch (e) { /* base saltata: meglio una sessione parziale che muta */ }
+    } catch (e) {
+      /* base saltata: meglio una sessione parziale che muta. Ma se le
+         basi sono tutte qui, «parziale» vuol dire MUTA: il silenzio
+         non deve piu' essere invisibile. */
+      notaDiagnosi('BASE SALTATA (' + (asset.stream_url || '').split('/').pop()
+        + '): ' + (e && e.message ? e.message : e));
+    }
   }
   return out;
 }
