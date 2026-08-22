@@ -574,7 +574,16 @@ export default function FrequenzePage() {
     }
     // VC2 — la scena beve dal mix intero (voce compresa: tutto passa
     // dal nodo di sessione). L'analizzatore e' trasparente al suono.
-    if (!lettoreRef.current) lettoreRef.current = creaLettore(ctx);
+    if (!lettoreRef.current) {
+      const l = creaLettore(ctx);
+      /* L'analizzatore sta FRA il motore e l'altoparlante: legge cio'
+         che esce davvero E LASCIA PASSARE. Senza questa riga il suono
+         entra e non esce piu' — silenzio totale (successo davvero,
+         22/8: la scena si muoveva lo stesso, perche' i dati li legge
+         comunque, e io ho verificato l'immagine senza ascoltare). */
+      l.analyser.connect(ctx.destination);
+      lettoreRef.current = l;
+    }
     liveRef.current = startPreview(ctx, score,
       /* 21/8, founder (ritratta TS1b): in Crea si sente ESATTAMENTE
          cio' che sentira' chi ascolta — dissolvenze comprese. Coi
@@ -1605,6 +1614,16 @@ export default function FrequenzePage() {
               </button>
               <button type="button" className="cb-reset" disabled={!layers.length}
                 onClick={resetSession}>Reset</button>
+              {/* VC2 — la scena si chiede, non parte da sola (disegnare
+                  consuma), e si chiede DA QUI: in coda alla barra, sotto
+                  il cursore di scorrimento, finiva fuori schermo e non
+                  la trovava nessuno (founder, 22/8). */}
+              <button type="button" className="cb-scena" data-testid="fq-guarda"
+                disabled={!layers.length}
+                title="La scena reagisce al suono della sessione: scegli forme e colori, si salvano con la bozza"
+                onClick={() => setGuarda((g) => !g)}>
+                ✦ {guarda ? 'Nascondi la scena' : 'Guarda il suono'}
+              </button>
               {/* C5 — dire cosa agisce subito e cosa no, invece di
                   lasciare che l'utente lo scopra da un campo che non
                   risponde */}
@@ -1672,15 +1691,6 @@ export default function FrequenzePage() {
                   titolo="Trascina o tocca per spostarti nella sessione"
                   onCommit={(t) => seekTo(t)} />
               )}
-              {/* VC2 — la scena si chiede, non parte da sola (disegnare
-                  consuma). Il testo cambia con lo stato: mai un tasto
-                  che sembra rotto. */}
-              <button type="button" className="cb-opt" data-testid="fq-guarda"
-                disabled={!layers.length}
-                title="La scena reagisce al suono della sessione: scegli forme e colori, si salvano con la bozza"
-                onClick={() => setGuarda((g) => !g)}>
-                ✦ {guarda ? 'Nascondi la scena' : 'Guarda il suono'}
-              </button>
             </div>
 
             {/* VC2/VC3/VC4 — la scena dell'autore: il palco su cui

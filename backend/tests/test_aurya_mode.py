@@ -477,6 +477,18 @@ class TestScenaDellAutoreVc:
         assert "uscita: lettoreRef.current.analyser" in self.CREA
         assert "creaLettore(ctx)" in self.CREA
 
+    def test_l_analizzatore_lascia_passare_il_suono(self):
+        """LA guardia del silenzio (regressione vera, 22/8): chi passa
+        `uscita` dirotta il suono DENTRO l'analizzatore. Se quello non
+        e' collegato all'altoparlante, il suono entra e non esce piu' —
+        e la scena continua a muoversi, perche' i dati li legge
+        comunque. Un bug che si vede solo ascoltando."""
+        for nome, src in (("Crea", self.CREA), ("pagina pubblica", PUB)):
+            if "uscita:" not in src:
+                continue
+            assert "analyser.connect(ctx.destination)" in src, \
+                f"{nome}: l'analizzatore e' un vicolo cieco, non un passaggio"
+
     def test_la_scena_si_chiede_e_si_salva_con_la_bozza(self):
         assert 'data-testid="fq-guarda"' in self.CREA
         assert "...(visual ? { visual } : {})" in self.CREA
