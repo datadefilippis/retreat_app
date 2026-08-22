@@ -41,6 +41,24 @@ const MARKUP = `
 
   <div class="rule"></div>
 
+  <!-- EX (22/8) — l'export video: locale, due formati, watermark -->
+  <div class="sect" id="expSect">
+    <div class="lbl">Esporta video</div>
+    <button class="src" id="expYT">
+      <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/></svg>YouTube · 16:9
+    </button>
+    <button class="src" id="expIG">
+      <svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/></svg>Instagram · 9:16
+    </button>
+    <button class="src" id="expSalva" hidden>
+      <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg><span>Salva video</span>
+    </button>
+    <div class="exp-nota">Si registra sul tuo dispositivo: nulla viene
+    caricato. Circa 75 MB al minuto, massimo 10 minuti.</div>
+  </div>
+
+  <div class="rule"></div>
+
   <div class="sect">
     <div class="lbl">Analysis</div>
     <div>
@@ -116,6 +134,13 @@ const MARKUP = `
 
 <button id="hide"><span id="hideTxt">Hide interface</span>
   <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+
+<!-- ============ REC (export) ============ -->
+<div id="recConto" hidden>3</div>
+<div id="recPill" hidden>
+  <span class="rec-dot"></span> REC <span id="recTempo">0:00</span>
+  <button id="recStop" type="button">stop</button>
+</div>
 
 <!-- ============ CHIPS (studio) ============ -->
 <div id="chips">

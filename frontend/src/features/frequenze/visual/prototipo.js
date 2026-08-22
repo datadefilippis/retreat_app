@@ -38,6 +38,10 @@ export function avviaPrototipo(root, opz = {}){
   const prestato = incorporato || studio;   /* il suono e' di altri */
   let tettoParticelle = Infinity;    /* limite di RESA del dispositivo */
   let stretto = false;               /* schermo da telefono */
+  let exportAttivo = null;           /* {w,h} durante la registrazione */
+  let wmPronto = null;               /* watermark: {scena, sprite, ar} */
+  let fermaExport = () => {};        /* riempita dal modulo export */
+  let spingiFrame = null;            /* REC: consegna il fotogramma appena disegnato */
   const byId = (id) => root.querySelector('#' + id);
   const ascoltatori = [];
   const winAdd = (ev, fn) => { window.addEventListener(ev, fn); ascoltatori.push([ev, fn]); };
@@ -104,6 +108,7 @@ controls.minDistance = 5; controls.maxDistance = 80; controls.enablePan = false;
    ruotare la scena ruberebbe lo scroll. La camera si muove da sola. */
 if (incorporato){ controls.enableRotate = false; controls.enableZoom = false; }
 if (studio) root.classList.add('studio');
+if (!studio && !incorporato) root.classList.add('fogli');   /* VM1: lo strumento */
 
 /* trail/atmosphere layer: instead of flat black, the frame fades toward a
    deep radial gradient — this is what gives the image its sense of volume */
@@ -866,8 +871,11 @@ controls.addEventListener('end', () => {
   manoUtente = false; distBase = camera.position.length();
 });
 
-/* a schermo pieno la misura e' la finestra; incorporato e' la scatola */
+/* a schermo pieno la misura e' la finestra; incorporato e' la scatola;
+   durante l'EXPORT e' la risoluzione del video (l'auto-fit del loto e
+   le pose devono ragionare sul quadro che si sta registrando) */
 function misura(){
+  if (exportAttivo) return { w: exportAttivo.w, h: exportAttivo.h };
   const r = root.getBoundingClientRect();
   const w = incorporato ? r.width : (window.innerWidth || r.width);
   const h = incorporato ? r.height : (window.innerHeight || r.height);
@@ -876,6 +884,7 @@ function misura(){
   return { w: Math.max(1, Math.round(w)), h: Math.max(1, Math.round(h)) };
 }
 function resize(){
+  if (exportAttivo) return;          /* EX: la risoluzione e' del video */
   const { w, h } = misura();
   renderer.setPixelRatio(Math.min(devicePixelRatio, S.quality));
   renderer.setSize(w, h, false);
@@ -1304,6 +1313,7 @@ winAdd('drop', e=>{ e.preventDefault(); const f = e.dataTransfer.files[0]; if (f
 if (studio){
   el('gate').style.display = 'none';
   el('srcSect').style.display = 'none';
+  el('expSect').style.display = 'none';   /* EX: si esporta dallo strumento */
   /* In cima si legge COSA si sta guardando: il titolo che l'autore ha
      dato alla sessione, e solo finche' non ne ha dato uno, «La tua
      sessione». */
@@ -1314,6 +1324,12 @@ if (studio){
   const marchio = root.querySelector('.brand a');
   if (marchio){ marchio.removeAttribute('href'); marchio.onclick = chiudi; }
   el('chipFatto').onclick = chiudi;
+}
+
+/* ── VM1 — i FOGLI mobile valgono per studio E strumento: stessa
+   grammatica (tendine dal basso, chip, X, tocco sulla scena =
+   richiudi). L'incorporato non ha pannelli e non c'entra. ── */
+if (!incorporato) {
   const fogli = { chipPreset: el('left'), chipRegola: el('right') };
   /* «Telefono» si decide sulla misura ROBUSTA, non sulla finestra
      nuda: `innerWidth` puo' dichiarare 0 mentre il riquadro si
@@ -1360,7 +1376,305 @@ if (studio){
      pannelli non danno fastidio, e restano dove sono. */
   canvas.addEventListener('pointerdown', () => { if (telefono()) chiudiTutti(); });
   segnaChip();
-  winAdd('keydown', (e) => { if (e.key === 'Escape') chiudi(); });
+  if (studio) winAdd('keydown', (e) => { if (e.key === 'Escape') opz.alFatto?.(fotografia()); });
+}
+
+/* ============================================================
+   EX (22/8) — L'EXPORT VIDEO. Tutto sul dispositivo dell'utente:
+   canvas.captureStream + MediaRecorder, l'audio spillato
+   dall'analizzatore (che gia' ascolta mic o traccia). Il file NON
+   viene mai caricato: nasce e muore in locale. Due quadri:
+   YouTube 1920x1080 e Instagram 1080x1920 — durante la
+   registrazione il renderer disegna ALLA RISOLUZIONE DEL VIDEO e
+   il canvas si mostra in letterbox (quel che vedi e' quel che
+   esporti). Watermark Aurya in basso a destra, avorio con ombra
+   scura: leggibile su ogni colore di scena.
+   ============================================================ */
+if (!studio && !incorporato){
+  const FORMATI = {
+    expYT: { w: 1920, h: 1080, nome: 'youtube' },
+    expIG: { w: 1080, h: 1920, nome: 'instagram' },
+  };
+  /* mp4 dove il browser lo sa scrivere (Safari, Chrome recenti):
+     e' il formato che YouTube e Instagram accettano senza storie.
+     Altrove webm, e lo si dice con onesta' nel nome del file. */
+  const MIME = ['video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm']
+    .find((m) => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+  const TETTO_S = 600;                    /* 10 minuti: ~750 MB, oltre e' una trappola */
+  /* le opzioni del recorder: UNICHE, usate identiche dal collaudo e
+     dalla registrazione vera. E NIENTE timeslice su start(): con il
+     timeslice l'encoder mp4 sotto sforzo consegna chunk senza video
+     e il file esce di solo audio (successo qui — il collaudo passava,
+     la registrazione tradiva, perche' differivano proprio in questo). */
+  const OPZ_REC = () => ({
+    mimeType: MIME || undefined,
+    videoBitsPerSecond: 10_000_000,
+    audioBitsPerSecond: 192_000,
+  });
+  let rec = null, pezzi = [], spillo = null, tSonda = null, tInizio = 0, veglia = null;
+  let tPompa = null;                      /* la pompa di riserva dei fotogrammi */
+  let ultimo = null;                      /* l'ultimo video pronto, in attesa del tocco */
+  let spinte = 0;                         /* fotogrammi consegnati nella REC in corso */
+  const notaBase = el('expSect').querySelector('.exp-nota').textContent;
+
+  /* Il marchio: logo + AURYA su un canvas 2D, misurato sul testo
+     vero (niente aria trasparente che sposterebbe l'ancora). Ombra
+     morbida scura sotto l'avorio: il contrasto su qualunque scena. */
+  async function preparaMarchio(){
+    if (wmPronto) return;
+    /* il logo con un TIMEOUT DURO: img.decode() puo' restare appeso
+       per sempre (successo in dev) e nessuna attesa senza fondo deve
+       stare sulla strada del REC. Senza logo resta la scritta. */
+    const img = new Image(); img.src = '/logo-aurya-512.png';
+    await new Promise((r) => {
+      const via = setTimeout(r, 1500);
+      img.onload = () => { clearTimeout(via); r(); };
+      img.onerror = () => { clearTimeout(via); r(); };
+    });
+    try { await document.fonts?.load('600 120px Cinzel'); } catch (e) { /* fallback serif */ }
+    const font = "600 120px Cinzel, Georgia, serif";
+    const sonda = document.createElement('canvas').getContext('2d');
+    sonda.font = font;
+    const logoH = 168, gap = 34, pad = 26;
+    const testoW = sonda.measureText('AURYA').width;
+    const cv = document.createElement('canvas');
+    cv.width = Math.ceil(pad + (img.naturalWidth ? logoH + gap : 0) + testoW + pad);
+    cv.height = 224;
+    const c2 = cv.getContext('2d');
+    c2.shadowColor = 'rgba(0,0,0,.8)'; c2.shadowBlur = 20; c2.shadowOffsetY = 4;
+    let x = pad;
+    if (img.naturalWidth){ c2.drawImage(img, x, (cv.height - logoH) / 2, logoH, logoH); x += logoH + gap; }
+    c2.font = font; c2.textBaseline = 'middle'; c2.fillStyle = '#f3ecdd';
+    c2.fillText('AURYA', x, cv.height / 2 + 6);
+    c2.shadowColor = 'transparent';                    /* secondo passaggio: bordi nitidi */
+    if (img.naturalWidth) c2.drawImage(img, pad, (cv.height - logoH) / 2, logoH, logoH);
+    c2.fillText('AURYA', x, cv.height / 2 + 6);
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: new THREE.CanvasTexture(cv), transparent: true, depthTest: false, opacity: .92,
+    }));
+    const scena = new THREE.Scene(); scena.add(sprite);
+    wmPronto = { scena, sprite, ar: cv.width / cv.height };
+  }
+  /* in basso a destra, in coordinate del QUADRO del video (la
+     fadeCam e' ortografica -1..1 su entrambi gli assi) */
+  function posaMarchio(fmt){
+    const hPx = Math.round(fmt.h * 0.052);             /* ~56px su 1080 */
+    const mPx = Math.round(fmt.h * 0.03);
+    const hN = 2 * hPx / fmt.h, wN = 2 * (hPx * wmPronto.ar) / fmt.w;
+    wmPronto.sprite.scale.set(wN, hN, 1);
+    wmPronto.sprite.position.set(1 - 2 * mPx / fmt.w - wN / 2, -1 + 2 * mPx / fmt.h + hN / 2, 0);
+  }
+
+  /* IL COLLAUDO. Non tutti gli encoder reggono il 1080p (quelli
+     software mollano e scrivono ZERO byte video senza dire niente:
+     successo qui — il file usciva di solo audio). Prima di registrare
+     davvero si prova l'encoder per ~400ms alla risoluzione voluta e,
+     se tace, si scala. Meglio un video a meta' risoluzione che un
+     file muto consegnato come buono. */
+  function collauda(w, h){
+    return new Promise((fine) => {
+      try {
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const c2 = cv.getContext('2d');
+        const cs = cv.captureStream(30);
+        const tr = cs.getVideoTracks()[0];
+        /* il collaudo dev'essere IDENTICO alla registrazione vera:
+           COMPOSITO video+audio. Il solo-video reggeva risoluzioni
+           dove il composito poi moriva (successo qui). L'oscillatore
+           sfocia solo nel collaudo: non passa dall'altoparlante. */
+        const msd = ctxA.createMediaStreamDestination();
+        const osc = ctxA.createOscillator();
+        osc.connect(msd); osc.start();
+        const fl = new MediaStream([...cs.getVideoTracks(), ...msd.stream.getAudioTracks()]);
+        const r = new MediaRecorder(fl, OPZ_REC());
+        const pezzi = [];
+        r.ondataavailable = (e) => pezzi.push(e.data);
+        r.onstop = () => {
+          try { osc.stop(); } catch (e) { /* niente */ }
+          /* il giudizio e' la DECODIFICA, non il peso: un file di
+             solo audio pesa comunque qualcosa e mentirebbe */
+          const vd = document.createElement('video');
+          vd.muted = true;
+          vd.src = URL.createObjectURL(new Blob(pezzi, { type: MIME || 'video/webm' }));
+          const via = setTimeout(() => fine(false), 2000);
+          const esito = (ok) => { clearTimeout(via); URL.revokeObjectURL(vd.src); fine(ok); };
+          vd.onseeked = () => esito(vd.videoWidth > 0);
+          vd.onerror = () => esito(false);
+          vd.currentTime = 0.1;
+        };
+        r.start();
+        let i = 0;
+        const giro = setInterval(() => {
+          c2.fillStyle = i++ % 2 ? '#123' : '#321';
+          c2.fillRect(0, 0, w, h);
+          try { tr.requestFrame?.(); } catch (e) { /* niente */ }
+          if (i > 8){ clearInterval(giro); try { r.stop(); } catch (e) { fine(false); } }
+        }, 40);
+      } catch (e) { fine(false); }
+    });
+  }
+
+  const mmss = (sec) => Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
+  function nota(msg){ el('expSect').querySelector('.exp-nota').textContent = msg || notaBase; }
+
+  async function avviaRec(quale){
+    if (rec) return;
+    /* un video di meditazione senza suono e' un errore, non una
+       scelta: prima la sorgente (mic o traccia), poi il quadro */
+    if (mode === 'none'){ nota('Prima scegli una sorgente: microfono o traccia.'); return; }
+    const fmt = FORMATI[quale];
+    ensureCtx();
+    await preparaMarchio();
+    nota('Collaudo del registratore\u2026');
+    let quadro = null;
+    for (const k of [1, 0.5, 0.25]){
+      const w = Math.round(fmt.w * k / 2) * 2, h = Math.round(fmt.h * k / 2) * 2;
+      if (await collauda(w, h)){ quadro = { w, h, nome: fmt.nome }; break; }
+    }
+    if (!quadro){
+      nota('Questo browser non riesce a registrare video: prova con Safari o Chrome aggiornati.');
+      return;
+    }
+    nota();
+    console.info('[aurya] export:', quadro.w + 'x' + quadro.h, MIME || 'default');
+    posaMarchio(quadro);
+    /* conto alla rovescia: il tempo di posare il telefono e respirare */
+    const conto = el('recConto');
+    conto.hidden = false;
+    for (let i = 3; i > 0; i--){
+      conto.textContent = String(i);
+      await new Promise((r) => setTimeout(r, 800));
+    }
+    conto.hidden = true;
+    if (rec) return;                                   /* doppio tocco durante il conto */
+    /* il quadro del video: risoluzione fissa, canvas in letterbox */
+    exportAttivo = quadro;
+    canvas.style.objectFit = 'contain';
+    canvas.style.background = '#000';
+    renderer.setPixelRatio(1);
+    renderer.setSize(quadro.w, quadro.h, false);
+    camera.aspect = quadro.w / quadro.h;
+    camera.updateProjectionMatrix();
+    root.classList.add('registra');
+    /* video dal canvas, audio spillato dall'analizzatore (che gia'
+       sente mic o traccia); senza sorgente il video esce silenzioso */
+    spillo = ctxA.createMediaStreamDestination();
+    try { analyser.connect(spillo); } catch (e) { /* gia' collegato */ }
+    /* NON si cattura il canvas WebGL direttamente: senza
+       preserveDrawingBuffer la cattura arriva a buffer gia' svuotato
+       e il video esce di 0 byte (successo, verificato qui). E tenere
+       preserveDrawingBuffer acceso costerebbe a TUTTI, sempre. Quindi:
+       un canvas 2D di COPIA, riempito nel frame loop SUBITO dopo il
+       render (nello stesso task il buffer e' ancora valido, lo
+       garantisce la spec) — ed e' la copia che si registra. Costo:
+       una drawImage a fotogramma, solo mentre si registra. */
+    const copia = document.createElement('canvas');
+    copia.width = quadro.w; copia.height = quadro.h;
+    const copiaCtx = copia.getContext('2d');
+    const cattura = copia.captureStream(30);
+    const vtr = cattura.getVideoTracks()[0];
+    spinte = 0;
+    spingiFrame = () => {
+      copiaCtx.drawImage(canvas, 0, 0, quadro.w, quadro.h);
+      try { vtr.requestFrame?.(); } catch (e) { /* la cattura a 30fps resta */ }
+      spinte += 1;
+    };
+    const flusso = new MediaStream([
+      ...cattura.getVideoTracks(),
+      ...spillo.stream.getAudioTracks(),
+    ]);
+    pezzi = []; ultimo = null; el('expSalva').hidden = true;
+    rec = new MediaRecorder(flusso, OPZ_REC());
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) pezzi.push(e.data); };
+    rec.onstop = consegna;
+    rec.start();
+    /* LA POMPA DI RISERVA. Il fotogramma lo consegna il frame loop
+       (rAF), ma rAF SI SOSPENDE quando la pagina finisce in secondo
+       piano — e un video senza fotogrammi e' un file di solo audio
+       (successo qui: pannello nascosto, «0 frame spinti»). Ogni 250ms
+       si rispinge l'ultimo quadro disegnato: in primo piano e' un
+       duplicato innocuo tra i 30-60 veri, in secondo piano tiene il
+       video integro (quadro fermo, audio che scorre). */
+    tPompa = setInterval(() => { if (spingiFrame) spingiFrame(); }, 250);
+    try { veglia = await navigator.wakeLock?.request('screen'); } catch (e) { veglia = null; }
+    tInizio = performance.now();
+    el('recPill').hidden = false;
+    tSonda = setInterval(() => {
+      const sec = (performance.now() - tInizio) / 1000;
+      el('recTempo').textContent = mmss(sec);
+      if (sec >= TETTO_S) fermaRec();
+    }, 500);
+    /* la traccia caricata finisce = il video finisce con lei */
+    player.addEventListener('ended', fermaRec, { once: true });
+  }
+
+  function fermaRec(){
+    if (!rec) return;
+    clearInterval(tSonda); tSonda = null;
+    clearInterval(tPompa); tPompa = null;
+    player.removeEventListener('ended', fermaRec);
+    try { rec.stop(); } catch (e) { consegna(); }
+  }
+
+  async function consegna(){
+    console.info('[aurya] export finito:', spinte, 'frame spinti');
+    const fmt = exportAttivo || FORMATI.expYT;
+    const est = MIME.startsWith('video/mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(pezzi, { type: MIME || 'video/webm' });
+    rec = null; pezzi = [];
+    /* si torna alla vista viva PRIMA di consegnare il file */
+    exportAttivo = null; spingiFrame = null;
+    clearInterval(tPompa); tPompa = null;
+    root.classList.remove('registra');
+    el('recPill').hidden = true;
+    canvas.style.objectFit = '';
+    canvas.style.background = '';
+    resize();
+    try { analyser.disconnect(spillo); } catch (e) { /* niente */ }
+    spillo = null;
+    try { veglia?.release(); } catch (e) { /* niente */ } veglia = null;
+    if (!blob.size){ nota('Registrazione vuota: riprova.'); return; }
+    /* il salvataggio parte da un TOCCO, mai da qui: iOS concede il
+       foglio di condivisione solo dentro un gesto dell'utente */
+    const mbv = blob.size / 1048576;
+    const mb = mbv >= 10 ? String(Math.round(mbv)) : (Math.max(0.1, mbv)).toFixed(1);
+    ultimo = { blob, nome: `aurya-${fmt.nome}.${est}`, mb };
+    const b = el('expSalva');
+    b.hidden = false;
+    b.querySelector('span').textContent = `Salva video (${mb} MB)`;
+    nota('Il video e\u2019 pronto: salvalo, resta solo qui finche\u2019 non ricarichi.');
+  }
+
+  async function salva(){
+    if (!ultimo) return;
+    const { blob, nome, mb } = ultimo;
+    /* su telefono il foglio di condivisione (salva nei Ricordi,
+       manda dove vuoi); altrove il download diretto */
+    const file = new File([blob], nome, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] })){
+      try { await navigator.share({ files: [file] }); nota(`Video consegnato (${mb} MB).`); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; /* altrimenti: download */ }
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nome;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+    nota(`Video scaricato: ${nome} (${mb} MB).`);
+  }
+
+  if (!window.MediaRecorder || !canvas.captureStream){
+    el('expSect').querySelector('.exp-nota').textContent =
+      'Questo browser non sa registrare video. Prova con Safari o Chrome aggiornati.';
+    el('expYT').disabled = true; el('expIG').disabled = true;
+  } else {
+    el('expYT').onclick = () => avviaRec('expYT');
+    el('expIG').onclick = () => avviaRec('expIG');
+    el('recStop').onclick = fermaRec;
+    el('expSalva').onclick = salva;
+    fermaExport = fermaRec;          /* lo smontaggio deve poterla fermare */
+  }
 }
 
 el('camName').textContent = CAMS[S.cam];
@@ -1597,6 +1911,12 @@ function disegna(){
   fadeUniforms.uFade.value = Math.max(.025, 1 - S.trails/100);
   renderer.render(fadeScene, fadeCam);
   renderer.render(scene, camera);
+  if (exportAttivo && wmPronto) renderer.render(wmPronto.scena, fadeCam);
+  /* la cattura automatica di captureStream, su un canvas WebGL senza
+     preserveDrawingBuffer, arriva A BUFFER GIA' SVUOTATO e registra
+     il nulla (successo qui: blob da 0 byte). Il fotogramma va
+     consegnato A MANO nel momento in cui e' appena stato disegnato. */
+  if (spingiFrame) spingiFrame();
 
   if (updateMeters && ++uiTick % 3 === 0) updateMeters(breath);
 }
@@ -1634,6 +1954,7 @@ frame();
   }
 
   function cleanup(){
+    fermaExport();                   /* mai lasciare un recorder appeso */
     vivo = false;
     cancelAnimationFrame(rafId);
     ascoltatori.forEach(([ev, fn]) => window.removeEventListener(ev, fn));

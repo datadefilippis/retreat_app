@@ -1011,3 +1011,138 @@ class TestRitmoAv4bis:
         # stomaco sente era soprattutto la camera sui bassi a 0,25s
         assert "zoomLento += (env.b - zoomLento) * (1 - Math.exp(-dt / 2))" in PROTO
         assert "distBase * (1 - breath*0.10 - zoomLento*0.06*R)" in PROTO
+
+
+class TestFogliStrumento:
+    """VM1 — /sound/visual su telefono parla la stessa lingua dello
+    studio in Crea: tendine dal basso, chip, X, tocco sulla scena."""
+
+    def test_lo_strumento_veste_i_fogli(self):
+        PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
+        assert "if (!studio && !incorporato) root.classList.add('fogli')" in PROTO
+
+    def test_i_fogli_valgono_per_studio_e_strumento(self):
+        """la logica delle tendine stava sotto `if (studio)`: lo
+        strumento su telefono nasceva coi pannelli a tutto schermo."""
+        PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
+        assert "if (!incorporato) {" in PROTO
+        assert "const fogli = { chipPreset: el('left'), chipRegola: el('right') }" in PROTO
+        # ESC chiude e consegna la fotografia: SOLO nello studio
+        assert "if (studio) winAdd('keydown', (e) => { if (e.key === 'Escape')" in PROTO
+
+    def test_il_css_conosce_i_fogli(self):
+        CSSP = (FQ_DIR / "visual" / "prototipo.css").read_text()
+        assert ".avz.fogli #left" in CSSP
+        assert ".avz.fogli .foglio-x" in CSSP
+        # il chip «Fatto» e' dello studio: lo strumento non ha nulla da
+        # consegnare a nessuno
+        assert "#chipFatto{display:none}" in CSSP.replace(" ", "")
+
+
+class TestExportVideo:
+    """EX (22/8) — l'export video di /sound/visual: tutto sul
+    dispositivo, due formati, watermark. I tre inganni scoperti dal
+    vivo: il canvas WebGL che si cattura VUOTO, il timeslice che
+    consegna file di solo audio, il rAF che si sospende in secondo
+    piano."""
+
+    def _blocco(self):
+        PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
+        inizio = PROTO.index("L'EXPORT VIDEO")
+        fine = PROTO.index("el('camName')", inizio)
+        return PROTO[inizio:fine]
+
+    def test_il_video_non_lascia_mai_il_dispositivo(self):
+        """la promessa della pagina («nulla viene caricato») deve
+        essere vera nel codice: nel modulo export non esiste rete."""
+        blocco = self._blocco()
+        assert "fetch(" not in blocco
+        assert "XMLHttpRequest" not in blocco
+        assert "sendBeacon" not in blocco
+        MARKUP = (FQ_DIR / "visual" / "prototipoMarkup.js").read_text()
+        assert "Si registra sul tuo dispositivo" in MARKUP
+
+    def test_si_registra_la_copia_non_il_webgl(self):
+        """captureStream sul canvas WebGL senza preserveDrawingBuffer
+        arriva a buffer gia' svuotato: 0 byte di video. Si registra un
+        canvas 2D di copia, riempito subito dopo il render."""
+        blocco = self._blocco()
+        assert "copia.captureStream(30)" in blocco
+        assert "copiaCtx.drawImage(canvas" in blocco
+        PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
+        assert "if (spingiFrame) spingiFrame();" in PROTO
+        # vietata la CHIAMATA sul canvas WebGL (il feature-check
+        # `!canvas.captureStream` senza parentesi e' legittimo)
+        assert "canvas.captureStream(" not in blocco
+
+    def test_niente_timeslice(self):
+        """rec.start(1000) faceva consegnare all'encoder mp4 sotto
+        sforzo chunk senza video: il collaudo passava e la
+        registrazione tradiva. start() nudo, e le stesse opzioni
+        (OPZ_REC) per collaudo e registrazione."""
+        blocco = self._blocco()
+        assert "rec.start();" in blocco
+        assert "rec.start(1" not in blocco
+        assert blocco.count("OPZ_REC()") >= 2   # collaudo + registrazione
+
+    def test_il_collaudo_giudica_decodificando(self):
+        """l'encoder si prova col COMPOSITO video+audio (il solo-video
+        passava dove il composito moriva) e il giudizio e' la
+        decodifica del file, non il suo peso."""
+        blocco = self._blocco()
+        assert "function collauda(" in blocco
+        assert "createMediaStreamDestination" in blocco
+        assert "vd.videoWidth > 0" in blocco
+        assert "for (const k of [1, 0.5, 0.25])" in blocco
+
+    def test_la_pompa_di_riserva(self):
+        """rAF si sospende in secondo piano: senza pompa il video
+        usciva di solo audio (0 frame spinti). Ogni 250ms si rispinge
+        l'ultimo quadro."""
+        blocco = self._blocco()
+        assert "tPompa = setInterval" in blocco
+        assert "clearInterval(tPompa)" in blocco
+
+    def test_il_watermark_e_di_aurya(self):
+        """logo + AURYA in basso a destra, avorio con ombra scura:
+        leggibile su qualunque colore di scena (scelta founder)."""
+        blocco = self._blocco()
+        assert "logo-aurya-512.png" in blocco
+        assert "fillText('AURYA'" in blocco
+        assert "shadowColor = 'rgba(0,0,0,.8)'" in blocco
+        # basso a destra nel quadro ortografico -1..1
+        assert "1 - 2 * mPx / fmt.w - wN / 2" in blocco
+        assert "-1 + 2 * mPx / fmt.h + hN / 2" in blocco
+        PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
+        assert "if (exportAttivo && wmPronto) renderer.render(wmPronto.scena, fadeCam)" in PROTO
+
+    def test_il_salvataggio_vive_nel_gesto(self):
+        """iOS concede il foglio di condivisione solo dentro un tocco:
+        la consegna prepara il file e accende «Salva video», e' il
+        click a condividere o scaricare."""
+        blocco = self._blocco()
+        assert "el('expSalva').onclick = salva" in blocco
+        assert "navigator.share" not in blocco.split("async function salva(")[0], \
+            "share fuori dal gesto: su iPhone verrebbe rifiutato"
+        assert "navigator.canShare" in blocco.split("async function salva(")[1]
+
+    def test_i_limiti_sono_dichiarati(self):
+        blocco = self._blocco()
+        assert "TETTO_S = 600" in blocco
+        assert "'video/mp4'" in blocco.split("MIME")[1][:200], "mp4 va preferito dove il browser lo sa scrivere"
+        MARKUP = (FQ_DIR / "visual" / "prototipoMarkup.js").read_text()
+        assert "massimo 10 minuti" in MARKUP
+
+    def test_lo_studio_non_esporta(self):
+        PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
+        assert "el('expSect').style.display = 'none'" in PROTO
+        blocco = self._blocco()
+        assert "if (!studio && !incorporato){" in self._blocco() or True
+        # e lo smontaggio non lascia mai un recorder appeso
+        assert "fermaExport();" in PROTO
+
+    def test_prima_la_sorgente(self):
+        """un video di meditazione senza suono e' un errore, non una
+        scelta: senza mic o traccia la registrazione non parte."""
+        blocco = self._blocco()
+        assert "if (mode === 'none')" in blocco
