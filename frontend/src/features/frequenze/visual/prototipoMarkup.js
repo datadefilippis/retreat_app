@@ -19,13 +19,12 @@ const MARKUP = `
 
 <!-- ============ LEFT PANEL ============ -->
 <aside id="left" class="panel">
+  <button class="foglio-x" type="button" aria-label="Chiudi il pannello">✕</button>
   <div class="brand">
-    <svg viewBox="0 0 24 24"><path d="M12 2C8 7 6 12 6 16c0 3.3 2.7 6 6 6"/><path d="M12 22c3.3 0 6-2.7 6-6 0-4-2-9-6-14"/><path d="M12 22V6"/></svg>
-    <a href="/sound" style="text-decoration:none;color:inherit"><h1>AURYA</h1></a>
-  </div>
-  <div>
-    <div class="title" id="presetTitle">COSMOS</div>
-    <div class="sub">Immersive Mode</div>
+    <img src="/logo-aurya-512.png" alt="" aria-hidden="true">
+    <a href="/sound" style="text-decoration:none;color:inherit">
+      <h1>AURYA</h1><span class="sezione">Visuals</span>
+    </a>
   </div>
 
   <div class="sect" id="srcSect">
@@ -87,6 +86,7 @@ const MARKUP = `
 
 <!-- ============ RIGHT PANEL ============ -->
 <aside id="right" class="panel">
+  <button class="foglio-x" type="button" aria-label="Chiudi il pannello">✕</button>
   <div class="lbl">Visual controls</div>
   <div id="sliders" class="sect" style="gap:15px"></div>
 

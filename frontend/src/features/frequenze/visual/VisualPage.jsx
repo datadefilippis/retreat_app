@@ -20,7 +20,7 @@ export default function VisualPage() {
   const rootRef = useRef(null);
 
   useEffect(() => {
-    document.title = 'Aurya Mode — Immersive Visualizer';
+    document.title = 'Aurya Visuals';
     const root = rootRef.current;
     if (!root) return undefined;
     root.innerHTML = MARKUP;

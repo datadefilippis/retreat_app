@@ -1611,6 +1611,7 @@ export default function FrequenzePage() {
             solo dentro la ricetta. */}
         {studio && (
           <StudioScena lettore={lettoreRef.current} visual={visual}
+            titolo={title}
             onChiudi={(scelta) => {
               if (scelta) setVisual(scelta);
               setStudio(false);

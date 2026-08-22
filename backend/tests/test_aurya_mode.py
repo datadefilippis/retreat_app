@@ -173,6 +173,7 @@ PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
 CSS_PROTO = (FQ_DIR / "visual" / "prototipo.css").read_text()
 CSS_EMB = (FQ_DIR / "visual" / "incorporato.css").read_text()
 MARKUP_EMB = (FQ_DIR / "visual" / "markupIncorporato.js").read_text()
+MARKUP_PROTO = (FQ_DIR / "visual" / "prototipoMarkup.js").read_text()
 VISUAL_DIR = FQ_DIR / "visual"
 
 
@@ -479,6 +480,55 @@ class TestScenaDellAutoreVc:
         blocco = self.CREA.split("const publishTrack")[1][:200]
         assert "await save()" in blocco
 
+    def test_il_marchio_e_quello_di_casa(self):
+        """Prima qui «AURYA» compariva DUE volte: il marchio del
+        prototipo e il titolo grande, che mostra il nome del preset —
+        e il preset di casa si chiama Aurya. Ora c'e' il logo che sta
+        in ogni pagina del sito, AURYA nella tipografia di casa, e
+        sotto il nome della sezione."""
+        assert "/logo-aurya-512.png" in MARKUP_PROTO
+        assert "<span class=\"sezione\">Visuals</span>" in MARKUP_PROTO
+        assert 'id="presetTitle"' not in MARKUP_PROTO, "il doppione e' tornato"
+        assert "'Cinzel'" in CSS_PROTO
+        # e chi scriveva quel titolo deve tollerarne l'assenza
+        assert "if (titolo) titolo.textContent" in PROTO
+
+    def test_il_titolo_della_sessione_in_cima(self):
+        """Richiesta founder: in alto si legge il titolo che l'autore
+        ha dato alla sessione; «La tua sessione» solo finche' non ce
+        n'e' uno."""
+        blocco = PROTO.split("if (studio){")[1][:900]
+        assert "opz.titolo" in blocco and "|| 'La tua sessione'" in blocco
+        assert "titolo={title}" in self.CREA
+        assert "titolo," in self.STUDIO
+
+    def test_i_pannelli_si_chiudono_con_un_gesto(self):
+        """Richiesta founder: da desktop i pannelli si chiudono per
+        vedere la scena a tutto schermo, e si riaprono altrettanto
+        semplicemente. Un solo interruttore (data-aperto); a decidere
+        cosa significhi «chiuso» — scorrere di lato o scendere in
+        basso — e' il CSS."""
+        assert "f.dataset.aperto = apre ? '1' : '0'" in PROTO
+        assert 'translateX(-102%)' in CSS_PROTO and 'translateX(102%)' in CSS_PROTO
+        largo = CSS_PROTO.split("@media (min-width:761px)")[1]
+        assert '#chipPreset,.avz.studio #chipRegola{display:inline-flex}' in largo, \
+            "senza i chip a schermo largo, un pannello chiuso non si riapre piu'"
+
+    def test_la_tendina_ha_la_sua_x(self):
+        assert 'class="foglio-x"' in MARKUP_PROTO
+        assert ".foglio-x" in CSS_PROTO
+        assert "b.closest('.panel').dataset.aperto = '0'" in PROTO
+
+    def test_la_soglia_non_si_decide_a_finestra_zero(self):
+        """Stessa trappola del NaN: al montaggio `innerWidth` puo'
+        dichiarare 0, e zero E' minore di 760 — un desktop nascerebbe
+        coi pannelli chiusi. Si usa la misura robusta, e la soglia si
+        riapplica quando viene attraversata davvero."""
+        assert "const telefono = () => misura().w <= 760" in PROTO
+        assert "mqTelefono.addEventListener('change', partenzaFogli)" in PROTO
+        assert "mqTelefono.removeEventListener" in PROTO, \
+            "il listener della soglia resterebbe acceso dopo l'uscita"
+
     def test_lo_studio_sta_fuori_dalla_pagina(self):
         """Trovato dal vivo: montato dentro Crea lo studio EREDITA il
         CSS del sito (`.fqz .row` sotto i 900px impilava i valori dei
@@ -508,7 +558,10 @@ class TestScenaDellAutoreVc:
         assert "@media (max-width:760px)" in CSS_PROTO
         blocco = CSS_PROTO.split("@media (max-width:760px)")[1]
         assert ".avz.studio #left,.avz.studio #right" in blocco
-        assert "translateY(102%)" in blocco and ".aperto" in blocco
+        # da VC7 l'interruttore e' data-aperto, uno solo per tutt'e
+        # due i formati (il CSS decide se «chiuso» sia di lato o giu')
+        assert "translateY(102%)" in blocco
+        assert '[data-aperto="1"]' in blocco
         assert "62dvh" in blocco, "un foglio non deve mangiarsi lo schermo"
         assert "env(safe-area-inset-bottom)" in blocco
         assert "#chipPreset" in blocco and "#chipRegola" in blocco

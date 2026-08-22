@@ -41,6 +41,10 @@ export function avviaPrototipo(root, opz = {}){
   const ascoltatori = [];
   const winAdd = (ev, fn) => { window.addEventListener(ev, fn); ascoltatori.push([ev, fn]); };
   let vivo = true, rafId = 0, micStream = null, fileUrl = null;
+  /* la soglia di larghezza: UN solo oggetto, o togliere il listener
+     non toglierebbe niente (si registra e si smonta sullo stesso) */
+  const mqTelefono = window.matchMedia('(max-width:760px)');
+  const ascoltatoriMq = [];
 
 
 /* ============================================================
@@ -767,7 +771,10 @@ function applyPreset(k){
   Object.assign(S, p.over);
   U.uMode.value = S.mode;
   el('presetName').textContent = p.name;
-  el('presetTitle').textContent = p.name.toUpperCase();
+  /* il titolo grande e' stato tolto: ripeteva «AURYA» sotto il
+     marchio. Il nome del preset vive nel suo selettore, qui sotto. */
+  const titolo = el('presetTitle');
+  if (titolo) titolo.textContent = p.name.toUpperCase();
   painters.forEach(f=>f());
   paintModes(); paintPal(); save();
 }
@@ -805,31 +812,67 @@ winAdd('drop', e=>{ e.preventDefault(); const f = e.dataTransfer.files[0]; if (f
 if (studio){
   el('gate').style.display = 'none';
   el('srcSect').style.display = 'none';
-  el('srcLabel').textContent = 'La tua sessione';
+  /* In cima si legge COSA si sta guardando: il titolo che l'autore ha
+     dato alla sessione, e solo finche' non ne ha dato uno, «La tua
+     sessione». */
+  const titolo = (opz.titolo || '').trim();
+  el('srcLabel').textContent = titolo || 'La tua sessione';
   el('micdot').classList.add('live');
   const chiudi = () => opz.alFatto?.(fotografia());
   const marchio = root.querySelector('.brand a');
   if (marchio){ marchio.removeAttribute('href'); marchio.onclick = chiudi; }
   el('chipFatto').onclick = chiudi;
   const fogli = { chipPreset: el('left'), chipRegola: el('right') };
-  const apri = (quale) => {
-    Object.keys(fogli).forEach((id) => {
-      const attivo = id === quale && !fogli[id].classList.contains('aperto');
-      fogli[id].classList.toggle('aperto', attivo);
-      el(id).classList.toggle('on', attivo);
-    });
+  /* «Telefono» si decide sulla misura ROBUSTA, non sulla finestra
+     nuda: `innerWidth` puo' dichiarare 0 mentre il riquadro si
+     dimensiona, e zero e' minore di 760 — un desktop nascerebbe coi
+     pannelli chiusi. misura() ha gia' la rete (ripiega sulla scatola
+     vera e non scende mai sotto 1). La soglia resta la stessa del CSS. */
+  const telefono = () => misura().w <= 760;
+  const segnaChip = () => Object.keys(fogli).forEach((id) =>
+    el(id).classList.toggle('on', fogli[id].dataset.aperto === '1'));
+  /* Su schermo largo i pannelli nascono aperti e si chiudono a
+     scomparsa laterale; su telefono nascono chiusi e salgono come
+     tendine, una alla volta (due coprirebbero tutto).
+     La misura NON si decide una volta sola al montaggio: in quel
+     momento la finestra puo' ancora dichiarare zero — e uno zero
+     «e' minore di 760», quindi un desktop nascerebbe col telefono in
+     mente, pannelli chiusi (successo davvero). Si riapplica quando la
+     soglia viene attraversata davvero. */
+  const partenzaFogli = () => {
+    const v = telefono() ? '0' : '1';
+    Object.values(fogli).forEach((f) => { f.dataset.aperto = v; });
+    segnaChip();
   };
-  el('chipPreset').onclick = () => apri('chipPreset');
-  el('chipRegola').onclick = () => apri('chipRegola');
-  /* toccare la scena richiude i fogli: la forma torna piena — e' il
-     motivo per cui questa schermata esiste */
-  canvas.addEventListener('pointerdown', () => apri(null));
+  partenzaFogli();
+  mqTelefono.addEventListener('change', partenzaFogli);
+  ascoltatoriMq.push(partenzaFogli);
+  const commuta = (quale) => {
+    const f = fogli[quale];
+    const apre = f.dataset.aperto !== '1';
+    if (apre && telefono()) Object.values(fogli).forEach((x) => { x.dataset.aperto = '0'; });
+    f.dataset.aperto = apre ? '1' : '0';
+    segnaChip();
+  };
+  const chiudiTutti = () => {
+    Object.values(fogli).forEach((f) => { f.dataset.aperto = '0'; });
+    segnaChip();
+  };
+  el('chipPreset').onclick = () => commuta('chipPreset');
+  el('chipRegola').onclick = () => commuta('chipRegola');
+  root.querySelectorAll('.foglio-x').forEach((b) => {
+    b.onclick = () => { b.closest('.panel').dataset.aperto = '0'; segnaChip(); };
+  });
+  /* toccare la scena richiude le tendine: la forma torna piena — e'
+     il motivo per cui questa schermata esiste. Su schermo largo i
+     pannelli non danno fastidio, e restano dove sono. */
+  canvas.addEventListener('pointerdown', () => { if (telefono()) chiudiTutti(); });
+  segnaChip();
   winAdd('keydown', (e) => { if (e.key === 'Escape') chiudi(); });
 }
 
 el('camName').textContent = CAMS[S.cam];
 el('presetName').textContent = PRESETS[S.preset].name;
-el('presetTitle').textContent = PRESETS[S.preset].name.toUpperCase();
 paintModes(); paintPal(); paintSeg('react','react'); paintSeg('quality','quality');
 
 /* ---- scopes ---- */
@@ -966,9 +1009,15 @@ function disegna(){
     const d = camera.position.length();
     const halfH = d * Math.tan(camera.fov * Math.PI/360);
     const vista = misura();
-    const colonne = !incorporato && !stretto
-      && !root.classList.contains('hidden-ui');
-    const freeW = colonne ? Math.max(240, vista.w - 438) : vista.w;
+    /* larghezza DAVVERO libera: i pannelli laterali tolgono spazio
+       solo se sono aperti, e solo dove sono colonne (su telefono
+       sono tendine che stanno sopra, non accanto) */
+    const colonne = !incorporato && !root.classList.contains('hidden-ui')
+      && !window.matchMedia('(max-width:760px)').matches;
+    const rubata = !colonne ? 0
+      : (byId('left')?.dataset.aperto === '1' ? 232 : 0)
+      + (byId('right')?.dataset.aperto === '1' ? 206 : 0);
+    const freeW = Math.max(240, vista.w - rubata);
     const halfW = halfH * camera.aspect * (freeW/vista.w);
     const k = Math.min(halfH, halfW) * .94 / R;
     /* NaN e' appiccicoso: `x += (k - x) * .08` con x NaN resta NaN
@@ -1038,6 +1087,7 @@ frame();
     vivo = false;
     cancelAnimationFrame(rafId);
     ascoltatori.forEach(([ev, fn]) => window.removeEventListener(ev, fn));
+    ascoltatoriMq.forEach((fn) => mqTelefono.removeEventListener('change', fn));
     osservatore?.disconnect();
     disconnect();
     player?.pause();

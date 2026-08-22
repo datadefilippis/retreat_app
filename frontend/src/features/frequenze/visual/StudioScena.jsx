@@ -25,7 +25,7 @@ import { createPortal } from 'react-dom';
 import MARKUP from './prototipoMarkup';
 import './prototipo.css';
 
-export default function StudioScena({ lettore, visual, onChiudi }) {
+export default function StudioScena({ lettore, visual, titolo, onChiudi }) {
   const rootRef = useRef(null);
   /* la chiusura cambia a ogni render (chiude sopra `visual`), ma il
      motore si monta UNA volta sola: il riferimento evita di
@@ -54,6 +54,9 @@ export default function StudioScena({ lettore, visual, onChiudi }) {
           analizzatore: lettore?.analyser,
           sampleRate: lettore?.analyser?.context?.sampleRate,
           impostazioni: visual || undefined,
+          /* in cima si legge il titolo che l'autore ha dato alla
+             sessione — «La tua sessione» solo finche' non ce n'e' uno */
+          titolo,
           alFatto: (scelta) => chiudiRef.current?.(scelta),
         });
       } catch {
