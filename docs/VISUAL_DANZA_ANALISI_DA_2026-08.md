@@ -282,3 +282,47 @@ registro), non nuovi poligoni.
   stabilmente negativo: la scena deve RICADERE con lei, per tutta la
   durata — il test perfetto perché il gesto non finisce mai;
 - glissando (marea del battito) → l'onda viaggia attraverso le zone.
+
+---
+
+# CONSOLIDAMENTO FINALE (22 ago, sera) — lo stato dell'area visual
+
+Rianalisi completa richiesta dal founder: tutte le superfici, tutte le
+forme, l'anima sonora. Stato: SOLIDO, con il perimetro che segue.
+
+## Le quattro superfici, una catena sola
+
+| Superficie | Cosa monta | Verificato |
+|---|---|---|
+| `/sound/visual` (strumento) | prototipo integrale, mic/file, localStorage | ✓ pannelli, 12 forme, marchio |
+| Studio (da Crea) | prototipo + pannelli, audio della sessione, «Fatto»→ricetta | ✓ giro completo con salvataggio |
+| Preview in Crea | prototipo incorporato, scena della bozza, applica() al volo | ✓ cambia all'uscita dallo studio |
+| Meditazione pubblica | prototipo incorporato, scena dell'AUTORE dalla ricetta | ✓ end-to-end (Torus via score) |
+
+UN solo motore (prototipo.js), UN solo orecchio (polso, lisciatura nello
+standard), UNA sola verità sui dati (score.visual, valori risolti,
+inquadratura compresa, pose di casa per chi non la salva).
+
+## L'anima sonora, forma per forma (stato da sound engineer)
+
+Tutte le 12 forme bevono dal polso: vita (carburante), battito (fase
+spaziale, con porta di profondità), colpo (flusso spettrale, onde
+propagative con la forza del colpo), registro/slancio (elevazione),
+zone spettrali (topologia per forma):
+
+Breath=guscio (slow+battito) · Nebula=quota · Spiral=raggio+onda di
+densità sul battito · Flow=raggio+brillantezza · Mandala=corone (cuore
+bassi, bordo acuti) + armilla per banda · Helix=altezza + risalita con
+la vita · Ripple=anelli emessi dal colpo · Flower=raggio + emersione
+con l'onda lenta · Merkaba=radiale (cuore→punte) + controtempo
+battito/onda · Torus=sezione + fiume con la vita · Ocean=lunghezza
+d'onda + marea + spuma acuti · Portal=profondità + scorrimento con la
+vita.
+
+## Ciò che resta aperto (dichiarato, non urgente)
+
+- Taratura estetica fine col founder su musica ricca (pesi per forma);
+- AV3: export video MP4 (9:16/16:9) e «suono del PC» come sorgente;
+- VC6d: play/pausa della sessione DENTRO lo studio;
+- la X mobile va vista su un telefono vero (verifica strutturale ok);
+- preset che adottino le forme nuove: scelta di firma del founder.

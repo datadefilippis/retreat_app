@@ -441,7 +441,7 @@ void main(){
       : -(t*.085 + uSlow*.9);
     base.xz *= rot(ang);
     p = base * (1.0 + bass*.14*e + sw*.05);
-    zona = clamp(f, 0.0, 1.0);
+    zona = clamp(length(p) / 7.0, 0.0, 1.0);   /* bassi al cuore, acuti alle punte */
     shade = .35 + .65*smoothstep(.82, 1.0, max(f, 1.0-f));  /* vertici stellari */
     sym = .3;
 
@@ -830,6 +830,24 @@ scene.add(mandala);
    qui si applica: la meditazione e la preview in Crea mostrano il suo
    punto di vista, non uno di fabbrica. Senza, il loto si guarda in
    faccia come prima. */
+/* FM4 (founder: «le forme piatte partono schiacciate, viste di
+   lato») — ogni forma ha la sua POSA naturale: i dischi (Spiral,
+   Ripple) si guardano dall'alto, il loto e il varco in faccia,
+   l'oceano da elevati. L'inquadratura salvata dall'AUTORE vince
+   sempre (inquadra() ha la precedenza, ovunque). */
+const POSE = [
+  [0, 4.0, 26],    /* Breath  */  [0, 6.5, 28],   /* Nebula  */
+  [0, 20.0, 17],   /* Spiral  */  [0, 9.0, 26],   /* Flow    */
+  [0, 0.0, 34],    /* Mandala */  [0, 2.0, 30],   /* Helix   */
+  [0, 21.0, 14],   /* Ripple  */  [0, 3.0, 30],   /* Flower  */
+  [0, 5.0, 27],    /* Merkaba */  [0, 8.0, 26],   /* Torus   */
+  [0, 12.0, 26],   /* Ocean   */  [0, 1.0, 27],   /* Portal  */
+];
+function posaCamera(k){
+  const P = POSE[Math.max(0, Math.min(POSE.length - 1, Math.round(k)))];
+  camera.position.set(P[0], P[1], P[2]);
+  controls.target.set(0, 0, 0);
+}
 function inquadra(v){
   if (!v || ![v.cam_x, v.cam_y, v.cam_z].every(Number.isFinite)) return false;
   camera.position.set(v.cam_x, v.cam_y, v.cam_z);
@@ -837,9 +855,7 @@ function inquadra(v){
                                             il centro e' sempre l'origine */
   return true;
 }
-if (!inquadra(opz.impostazioni) && prestato && S.mode === 4){
-  camera.position.set(0, 0, 34); controls.target.set(0,0,0);
-}
+if (!inquadra(opz.impostazioni)) posaCamera(S.mode);
 /* la distanza di partenza: il respiro della camera modula INTORNO a
    questa, non intorno a un 28 fisso — altrimenti l'avvicinamento
    scelto dall'autore verrebbe buttato via a ogni fotogramma */
@@ -1229,7 +1245,8 @@ MODES.forEach(([name,path],k)=>{
 const paintModes = ()=>[...bar.querySelectorAll('.mode')].forEach((b,k)=>b.classList.toggle('on', k===S.mode));
 function setMode(k){
   S.mode = k; U.uMode.value = k; paintModes(); save();
-  if (k === 4){ camera.position.set(0, 0, 34); controls.target.set(0,0,0); }
+  posaCamera(k);
+  distBase = camera.position.length();
 }
 
 function paintSeg(id, key){
@@ -1593,7 +1610,8 @@ frame();
     Object.assign(S, patch);
     if ('mode' in patch){
       U.uMode.value = S.mode;
-      if (S.mode === 4){ camera.position.set(0, 0, 34); controls.target.set(0,0,0); }
+      posaCamera(S.mode);
+      distBase = camera.position.length();
     }
     /* l'inquadratura scelta nello studio: e' cosi' che la preview in
        Crea si allinea appena si torna indietro */

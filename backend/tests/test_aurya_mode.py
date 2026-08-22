@@ -842,6 +842,23 @@ class TestBallerinoDa:
         assert "aU*aU * 1.6 * aScale" in PROTO
         assert "(1.0 - aScale) * 0.9" in PROTO
 
+    def test_ogni_forma_ha_la_sua_posa(self):
+        """FM4, founder: «le forme piatte partono schiacciate, viste
+        di lato». Ogni forma ha un'inquadratura di casa (i dischi
+        dall'alto, il loto e il varco in faccia); l'inquadratura
+        salvata dall'AUTORE vince sempre."""
+        assert "const POSE = [" in PROTO
+        blocco = PROTO.split("const POSE = [")[1].split("];")[0]
+        from models.frequency_track import VISUAL_MODES
+        import re as _re
+        terne = _re.findall(r"\[\s*[\d.-]+\s*,\s*[\d.-]+\s*,\s*[\d.-]+\s*\]", blocco)
+        assert len(terne) == VISUAL_MODES, \
+            f"pose ({len(terne)}) e forme ({VISUAL_MODES}) fuori sincrono"
+        # la posa si applica dove la forma cambia, MAI sopra la scelta
+        # dell'autore
+        assert "if (!inquadra(opz.impostazioni)) posaCamera(S.mode)" in PROTO
+        assert PROTO.count("posaCamera(") >= 4   # def + montaggio + setMode + applica
+
     def test_la_sonda_non_e_rimasta(self):
         assert "__polso" not in PROTO
 
