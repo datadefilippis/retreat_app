@@ -1309,9 +1309,17 @@ class TestVoceNelVisual:
         flusso senza sparare."""
         PROTO = self._proto()
         assert "let _presenza = 0" in PROTO
-        assert "if (_presenza < 0.6) _fluxMedia = Math.max(_fluxMedia, flux * 0.8)" in PROTO
-        assert "* (0.3 + 0.7 * polso.vita) * _presenza" in PROTO
-        assert "(0.7 + 1.5 * _presenza)" in PROTO
+        # LA MATURITA' (round 3): colpi e slancio tacciono finche' il
+        # brano non e' ascoltato da ~9s — la soglia insegue fino ad
+        # allora (niente finestra di decadimento che spara a raffica)
+        assert "const pronto = Math.min(1, Math.max(0, (_maturo - 5) / 4))" in PROTO
+        assert "if (pronto < 1) _fluxMedia = Math.max(_fluxMedia, flux * 0.8)" in PROTO
+        assert "&& pronto > 0" in PROTO
+        assert "* (0.3 + 0.7 * polso.vita) * pronto" in PROTO
+        assert "polso.slancio *= g * pronto" in PROTO
+        # e le salite restano tai-chi anche a sipario aperto
+        assert "(0.55 + 0.65 * _presenza)" in PROTO
+        assert "(0.7 + 0.8 * _presenza)" in PROTO
         # IL SIPARIO (round 2, proposta founder): mentre l'orecchio
         # impara, la scena resta nel respiro di veglia e si FONDE
         # nella danza — smoothstep sulla presenza, bande scalate per
