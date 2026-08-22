@@ -284,7 +284,8 @@ class TestUnMotoreSoloAv5:
         assert "Math.random()*2-1" in PROTO
 
     def test_i_sette_modi_ci_sono_tutti(self):
-        blocco = PROTO.split("const MODES = [")[1].split("];")[0]
+        tab = (VISUAL_DIR / "tabelle.js").read_text()
+        blocco = tab.split("const MODES = [")[1].split("];")[0]
         for nome in ("Breath", "Nebula", "Spiral", "Flow", "Mandala",
                      "Helix", "Ripple"):
             assert f"['{nome}'" in blocco, f"modo perso: {nome}"
@@ -322,12 +323,17 @@ class TestPaginaStrumentoAv2:
 
     def test_il_prototipo_e_integrale(self):
         """I numeri del founder: 11 slider, 6 palette, 7 modi, 7
-        preset, 4 camere. Se uno sparisce, il porting ha perso pezzi."""
-        assert self.PROTO.count("['") >= 11 and "'intensity','Intensity'" in self.PROTO
-        assert self.PROTO.count("{ name:'") >= 13   # 6 palette + 7 preset
+        preset, 4 camere. Da VC1 le tabelle vivono in tabelle.js (lo
+        standard che anche Crea legge), estratte verbatim: i contenuti
+        si controllano la' e il prototipo deve berle da la'."""
+        tab = (FQ_DIR / "visual" / "tabelle.js").read_text()
+        assert "'intensity','Intensity'" in tab
+        assert tab.count("{ name:'") >= 13   # 6 palette + 7 preset
         for nome in ("Aurya", "Cosmos", "Anahata", "Prana", "Nirvana",
                      "Kundalini", "Samadhi"):
-            assert f"name:'{nome}'" in self.PROTO, f"preset perso: {nome}"
+            assert f"name:'{nome}'" in tab, f"preset perso: {nome}"
+        assert "from './tabelle'" in self.PROTO, \
+            "il prototipo non legge piu' lo standard"
         assert "buildMandala" in self.PROTO, "perso il motore-mandala a petali"
         assert "'aurya.settings.v2'" in self.PROTO, "perse le impostazioni salvate"
 
@@ -369,6 +375,120 @@ class TestPaginaStrumentoAv2:
 
     def test_il_blob_della_traccia_si_revoca(self):
         assert "if (fileUrl) URL.revokeObjectURL(fileUrl)" in self.PROTO
+
+
+class TestScenaDellAutoreVc:
+    """
+    VC1-VC4 (22/8) — la scena e' parte della composizione. Decisioni
+    founder: la scena e' DELL'AUTORE (chi ascolta tiene solo il tutto
+    schermo); /sound/visual e' LO STANDARD («se aggiungeremo nuovi
+    preset o nuove variabili, compariranno anche in Crea»); il ritocco
+    post-pubblicazione passa dal normale ritira→bozza→ripubblica.
+    """
+
+    TAB = (FQ_DIR / "visual" / "tabelle.js").read_text()
+    SCENA = (FQ_DIR / "visual" / "ScenaControlli.jsx").read_text()
+    CREA = (FQ_DIR / "FrequenzePage.js").read_text()
+
+    # ── il contratto (VC1) ────────────────────────────────────────────
+    def test_la_scena_si_valida_con_la_filosofia_listino(self):
+        from models.frequency_track import clean_visual
+        assert clean_visual(None) is None and clean_visual("x") is None
+        vis = clean_visual({"intensity": 999, "pal": 42, "mode": -3})
+        assert vis["intensity"] == 200      # riportato nel range
+        assert vis["pal"] == 5 and vis["mode"] == 0
+        assert vis["particles"] == 17000    # default della tabella
+        assert clean_visual({})["mode"] == 4  # vuoto = ambiente AV5
+
+    def test_la_scena_viaggia_nella_ricetta_e_il_pregresso_non_cambia(self):
+        from models.frequency_track import clean_score
+        base = {"score_version": 1, "duration_sec": 300,
+                "layers": [{"method": "bin", "carrier": 200,
+                            "f0": 8, "f1": 8}]}
+        senza = clean_score(dict(base))
+        assert "visual" not in senza, "ricetta mai toccata = campo assente"
+        con = clean_score({**base, "visual": {"mode": 2, "pal": 0}})
+        assert con["visual"]["mode"] == 2 and con["visual"]["pal"] == 0
+        assert con["score_version"] == 1, "la scena non deve alzare la versione"
+
+    def test_parita_backend_frontend_sullo_standard(self):
+        """LA guardia della decisione founder: i range del backend sono
+        lo specchio della tabella SLIDERS. Un cursore nuovo nello
+        standard che il backend non conosce verrebbe strappato dal
+        validatore in silenzio — qui invece esplode un test."""
+        from models.frequency_track import (
+            VISUAL_RANGES, VISUAL_MODES, VISUAL_PALETTES, VISUAL_CAMS)
+        righe = re.findall(
+            r"\['(\w+)','[^']*',(-?\d+),(-?\d+),(-?\d+),", self.TAB)
+        fe = {k: (int(lo), int(hi), int(d)) for k, lo, hi, d in righe}
+        assert fe, "tabella SLIDERS non leggibile: aggiornare la guardia"
+        assert fe == VISUAL_RANGES, (
+            f"BE e standard divergono: solo FE {set(fe) - set(VISUAL_RANGES)},"
+            f" solo BE {set(VISUAL_RANGES) - set(fe)}, o range diversi")
+        blocco_pal = self.TAB.split("const PALETTES = [")[1].split("];")[0]
+        assert blocco_pal.count("name:'") == VISUAL_PALETTES
+        blocco_modi = self.TAB.split("const MODES = [")[1].split("];")[0]
+        assert blocco_modi.count("['") == VISUAL_MODES
+        blocco_cam = self.TAB.split("const CAMS = [")[1].split("]")[0]
+        assert blocco_cam.count("'") == VISUAL_CAMS * 2
+
+    def test_lo_standard_non_pesa_500kb(self):
+        """tabelle.js e' fatto per essere importato da Crea: se
+        importasse Three, Crea pagherebbe il motore per leggere
+        quattro liste."""
+        codice = re.sub(r"/\*.*?\*/", "", self.TAB, flags=re.S)
+        assert "three" not in codice.lower()
+        assert "import" not in codice
+
+    # ── la tastiera di Crea (VC3/VC4) ─────────────────────────────────
+    def test_crea_legge_lo_standard_non_una_copia(self):
+        assert "from './tabelle'" in self.SCENA
+        for nome in ("Cosmos", "Anahata", "Samadhi"):
+            assert nome not in self.SCENA, \
+                f"preset copiato a mano in Crea ({nome}): divergera'"
+        assert "ETICHETTE[k] || label" in self.SCENA, \
+            "una variabile nuova dello standard deve comparire comunque"
+
+    def test_ogni_gesto_suona_lo_stesso_strumento(self):
+        assert "motore.applica(patch)" in self.SCENA
+        assert "onCambia(motore.leggi())" in self.SCENA, \
+            "nella bozza vanno i valori RISOLTI, letti dal motore"
+
+    def test_il_manico_del_motore(self):
+        assert "return { pulisci: cleanup, applica, leggi: fotografia };" in PROTO
+        blocco = PROTO.split("function applica(patch){")[1][:400]
+        assert "U.uMode.value = S.mode" in blocco, \
+            "applica() deve trattare il modo come setMode"
+        assert "if (opz.impostazioni) Object.assign(S, opz.impostazioni)" in PROTO
+
+    def test_il_telefono_lima_ma_non_firma(self):
+        """Trovato salvando DAL VIVO: il tetto del telefono era scritto
+        su S.particles e finiva nella fotografia — l'autore che compone
+        da telefono avrebbe firmato una scena limata anche per chi
+        ascolta da desktop. Il tetto e' un limite di RESA: vive nel
+        loop, mai nelle impostazioni."""
+        assert "tettoParticelle = 9000" in PROTO
+        assert "Math.min(S.particles, tettoParticelle) / MAX_P" in PROTO
+        assert "S.particles = Math.min" not in PROTO, \
+            "il tetto e' tornato a scrivere sulla scelta dell'autore"
+
+    # ── il flusso in Crea (VC2) ───────────────────────────────────────
+    def test_l_anteprima_esce_dall_analizzatore(self):
+        assert "uscita: lettoreRef.current.analyser" in self.CREA
+        assert "creaLettore(ctx)" in self.CREA
+
+    def test_la_scena_si_chiede_e_si_salva_con_la_bozza(self):
+        assert 'data-testid="fq-guarda"' in self.CREA
+        assert "...(visual ? { visual } : {})" in self.CREA
+        assert "setVisual(s.visual || null)" in self.CREA, \
+            "riaprire la bozza deve riportare la scena"
+        assert self.CREA.count("setVisual(null)") >= 1, \
+            "la bozza nuova non deve ereditare la scena della vecchia"
+
+    def test_chi_ascolta_vede_la_scena_dell_autore(self):
+        assert "visual={track.score?.visual || null}" in PUB
+        # e non ha una tastiera per cambiarla: la scelta e' autoriale
+        assert "ScenaControlli" not in PUB
 
 
 class TestRitmoAv4bis:

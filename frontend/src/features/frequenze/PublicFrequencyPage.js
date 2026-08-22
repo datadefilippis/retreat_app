@@ -319,7 +319,11 @@ export default function PublicFrequencyPage() {
               schermo bloccato si escludono a vicenda. */}
           {guarda && lettore && !continuo && (
             <AuryaMode lettore={lettore} attivo={playing || elapsed > 0}
-              altezza={300} />
+              altezza={300}
+              /* VC1 — la scena e' dell'AUTORE (decisione founder): se
+                 l'ha scelta in Crea viaggia nella ricetta e chi
+                 ascolta vede quella; senza, l'ambiente di default */
+              visual={track.score?.visual || null} />
           )}
           <SafetyLine onOpen={openReview} />
           <div className="createbar" style={{ position: 'static', marginTop: 16 }}>

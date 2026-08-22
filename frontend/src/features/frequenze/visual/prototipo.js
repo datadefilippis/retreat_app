@@ -15,6 +15,7 @@
      e' il prototipo, riga per riga. */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { SLIDERS, PALETTES, MODES, PRESETS, CAMS } from './tabelle';
 
 export function avviaPrototipo(root, opz = {}){
   /* AV5 (22/8) — il MOTORE e' UNO SOLO. La pagina strumento monta il
@@ -25,6 +26,7 @@ export function avviaPrototipo(root, opz = {}){
      letteralmente lo stesso codice (prima erano due motori diversi, ed
      e' esattamente cio' che il founder ha visto e bocciato). */
   const incorporato = !!opz.incorporato;
+  let tettoParticelle = Infinity;    /* limite di RESA del dispositivo */
   const byId = (id) => root.querySelector('#' + id);
   const ascoltatori = [];
   const winAdd = (ev, fn) => { window.addEventListener(ev, fn); ascoltatori.push([ev, fn]); };
@@ -34,47 +36,6 @@ export function avviaPrototipo(root, opz = {}){
 /* ============================================================
    1. SETTINGS
    ============================================================ */
-const SLIDERS = [
-  ['intensity','Intensity',0,200,72,'%'],
-  ['scale','Scale',40,220,126,'%'],
-  ['speed','Speed',10,180,44,'%'],
-  ['breath','Breath cycle',4,16,9,'s'],
-  ['drift','Drift',0,200,80,'%'],
-  ['particles','Particles',2000,24000,17000,''],
-  ['glow','Glow',10,200,104,'%'],
-  ['trails','Trails',0,96,88,'%'],
-  ['depth','Depth',20,260,120,'%'],
-  ['brightness','Brightness',20,200,100,'%'],
-  ['contrast','Contrast',30,180,96,'%'],
-];
-/* deep, luminous triads: shadow → body → light */
-const PALETTES = [
-  { name:'Aurea',   sw:'#8b5cf6', c:['#160f3a','#8b5cf6','#ffd9a0'] },
-  { name:'Quartz',  sw:'#e879b9', c:['#2b0a2e','#e879b9','#ffe6ef'] },
-  { name:'Amber',   sw:'#f59e0b', c:['#2e1206','#f59e0b','#fff2c2'] },
-  { name:'Jade',    sw:'#2dd4a7', c:['#03271f','#2dd4a7','#e2fff5'] },
-  { name:'Abyss',   sw:'#38bdf8', c:['#061c46','#38bdf8','#e6f8ff'] },
-  { name:'Prism',   sw:'conic-gradient(#f59e0b,#ec4899,#8b5cf6,#22d3ee,#f59e0b)', c:['#f59e0b','#a855f7','#8ff0ff'] },
-];
-const MODES = [
-  ['Breath','M12 4v16M8 8c-2 2-2 6 0 8M16 8c2 2 2 6 0 8'],
-  ['Nebula','M6 14a4 4 0 0 1 1-7 5 5 0 0 1 9-1 4 4 0 0 1 2 8z'],
-  ['Spiral','M12 12a3 3 0 1 0 3 3c0-3-3-5-6-5s-6 2.7-6 6'],
-  ['Flow','M4 8c4-4 8 4 12 0M4 16c4-4 8 4 12 0'],
-  ['Mandala','M12 3c2.6 3.4 2.6 6 0 8.4-2.6-2.4-2.6-5 0-8.4M21 12c-3.4 2.6-6 2.6-8.4 0 2.4-2.6 5-2.6 8.4 0M12 21c-2.6-3.4-2.6-6 0-8.4 2.6 2.4 2.6 5 0 8.4M3 12c3.4-2.6 6-2.6 8.4 0-2.4 2.6-5 2.6-8.4 0'],
-  ['Helix','M8 3c8 4-8 14 0 18M16 3c-8 4 8 14 0 18'],
-  ['Ripple','M12 12h.01M12 12a4 4 0 0 1 0 0M6 12a6 6 0 0 1 12 0M3 12a9 9 0 0 1 18 0'],
-];
-const PRESETS = [
-  { name:'Aurya',     mode:4, pal:2, over:{intensity:80,scale:94,speed:36,trails:55,glow:96,drift:16,breath:10,depth:100,brightness:100,contrast:100} },
-  { name:'Cosmos',    mode:2, pal:0, over:{intensity:72,scale:126,speed:44,trails:88,glow:104,drift:80,breath:9,depth:120,brightness:100} },
-  { name:'Anahata',   mode:4, pal:3, over:{intensity:82,scale:118,speed:34,trails:90,glow:112,drift:52,breath:11,depth:90} },
-  { name:'Prana',     mode:0, pal:4, over:{intensity:64,scale:132,speed:26,trails:92,glow:120,drift:66,breath:12,depth:130} },
-  { name:'Nirvana',   mode:1, pal:1, over:{intensity:90,scale:140,speed:30,trails:86,glow:130,drift:120,breath:10,depth:150} },
-  { name:'Kundalini', mode:5, pal:2, over:{intensity:86,scale:120,speed:52,trails:84,glow:106,drift:70,breath:8,depth:140} },
-  { name:'Samadhi',   mode:6, pal:5, over:{intensity:76,scale:134,speed:38,trails:91,glow:98,drift:44,breath:13,depth:110} },
-];
-const CAMS = ['Orbit','Still','Breathe','Drift'];
 const MAX_P = 24000, LINE_P = 5200;
 
 const defaults = { mode:2, pal:0, preset:0, cam:0, react:1.05, quality:1.6 };
@@ -94,9 +55,17 @@ if (incorporato){
      valori da vetrina, a schermo intero, la scena quasi spariva. */
   S.trails = 92; S.glow = 132; S.depth = 135; S.drift = 34;
   S.intensity = 96; S.brightness = 122; S.contrast = 104; S.scale = 102;
-  const stretto = Math.min(root.clientWidth || 640, window.innerWidth) < 520;
+  S.particles = 15000;
+  /* VC1 — la scena dell'AUTORE: valori risolti dallo score. Vincono
+     sull'ambiente di default; il telefono sotto puo' solo LIMARE
+     (qualita'/particelle), mai cambiare la scena. */
+  if (opz.impostazioni) Object.assign(S, opz.impostazioni);
+  const stretto = Math.min(root.clientWidth || 640, window.innerWidth || 640) < 520;
   S.quality = stretto ? 1.25 : 1.5;          /* la batteria di un telefono */
-  S.particles = stretto ? 9000 : 15000;
+  /* il tetto del telefono NON scrive su S: se finisse nella
+     fotografia, l'autore che compone da telefono firmerebbe una scena
+     limata anche per chi ascolta da desktop */
+  if (stretto) tettoParticelle = 9000;
 } else {
   try { Object.assign(S, JSON.parse(localStorage.getItem('aurya.settings.v2')||'{}')); } catch(e){}
 }
@@ -936,7 +905,7 @@ function disegna(){
   fadeUniforms.uDeep.value.set(P[0]).multiplyScalar(.26);
   auraMat.color.set(P[1]);
 
-  U.uKeep.value = S.particles / MAX_P;
+  U.uKeep.value = Math.min(S.particles, tettoParticelle) / MAX_P;
   /* filaments only where consecutive indices are true spatial neighbours */
   lines.visible = S.particles > 3000 && (S.mode === 0 || S.mode === 2 || S.mode === 5);
 
@@ -992,7 +961,26 @@ function disegna(){
 }
 frame();
 
-  return function cleanup(){
+  /* VC1 — il manico per chi monta il prototipo: applica() scrive le
+     stesse S che muovono i pannelli della pagina strumento (il loop le
+     rilegge a ogni fotogramma), leggi() fotografa cio' che si salva
+     nella ricetta. Una tastiera diversa, lo STESSO strumento. */
+  function applica(patch){
+    Object.assign(S, patch);
+    if ('mode' in patch){
+      U.uMode.value = S.mode;
+      if (S.mode === 4){ camera.position.set(0, 0, 34); controls.target.set(0,0,0); }
+    }
+    if ('quality' in patch) resize();
+    save();                       /* in incorporato e' un no-op voluto */
+  }
+  function fotografia(){
+    const out = { mode: S.mode, pal: S.pal, cam: S.cam };
+    SLIDERS.forEach(([k]) => { out[k] = S[k]; });
+    return out;
+  }
+
+  function cleanup(){
     vivo = false;
     cancelAnimationFrame(rafId);
     ascoltatori.forEach(([ev, fn]) => window.removeEventListener(ev, fn));
@@ -1005,5 +993,7 @@ frame();
     if (ctxA) ctxA.close().catch(() => {});
     renderer.dispose();
     geo.dispose(); lineGeo.dispose();
-  };
+  }
+
+  return { pulisci: cleanup, applica, leggi: fotografia };
 }

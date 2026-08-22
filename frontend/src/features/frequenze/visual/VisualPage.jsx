@@ -24,16 +24,16 @@ export default function VisualPage() {
     const root = rootRef.current;
     if (!root) return undefined;
     root.innerHTML = MARKUP;
-    let pulisci = null;
+    let manico = null;
     let smontato = false;
     // lo script del prototipo (con Three) entra SOLO qui, lazy
     import('./prototipo').then(({ avviaPrototipo }) => {
       if (smontato) return;
-      pulisci = avviaPrototipo(root);
+      manico = avviaPrototipo(root);
     });
     return () => {
       smontato = true;
-      pulisci?.();
+      manico?.pulisci?.();
       root.innerHTML = '';
     };
   }, []);

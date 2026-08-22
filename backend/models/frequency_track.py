@@ -71,6 +71,32 @@ PERIOD_MIN, PERIOD_MAX, PERIOD_DEFAULT = 2.0, 600.0, 40.0
 TITLE_MAX = 120
 DESCRIPTION_MAX = 2000
 
+# ── VC1 (22/8) — la SCENA e' parte della ricetta ───────────────────────────
+# L'autore sceglie forme, parametri e colori in Crea; chi ascolta vede la
+# scena dell'autore. Decisione founder: /sound/visual e' lo STANDARD —
+# questi range sono lo specchio della tabella SLIDERS del prototipo
+# (frontend/src/features/frequenze/visual/tabelle.js) e una guardia di
+# parita' li tiene d'accordo: se di la' nasce un cursore, qui si vede.
+# Si salvano valori RISOLTI, mai il nome del preset: se domani un preset
+# cambia taratura, le opere pubblicate non cambiano faccia all'insaputa
+# di chi le ha firmate (stessa ragione delle dissolvenze esplicite).
+# Campo OPZIONALE dello score: chi non sceglie non lo scrive, e il
+# pregresso resta byte per byte com'era (niente bump di score_version).
+VISUAL_RANGES = {                     # chiave: (min, max, default)
+    "intensity": (0, 200, 72), "scale": (40, 220, 126),
+    "speed": (10, 180, 44), "breath": (4, 16, 9),
+    "drift": (0, 200, 80), "particles": (2000, 24000, 17000),
+    "glow": (10, 200, 104), "trails": (0, 96, 88),
+    "depth": (20, 260, 120), "brightness": (20, 200, 100),
+    "contrast": (30, 180, 96),
+}
+VISUAL_MODES = 7      # forme (0..6): Breath..Ripple
+VISUAL_PALETTES = 6   # palette (0..5): Aurea..Prism
+VISUAL_CAMS = 4       # camere (0..3): Orbit..Drift
+# default di mode/pal/cam = l'ambiente delle meditazioni (AV5):
+# Mandala, multicolore, camera che respira
+VISUAL_DEFAULTS = {"mode": 4, "pal": 5, "cam": 2}
+
 
 def _num(value, lo, hi, default):
     """Numero nel range [lo, hi], o default se non interpretabile."""
@@ -180,6 +206,29 @@ def clean_layer(raw, duration):
     return layer
 
 
+def clean_visual(raw):
+    """La scena validata, o None se il campo non c'e' o non e' un dict.
+
+    Filosofia listino, come per il resto dello score: i valori fuori
+    range si riportano nel range, le chiavi sconosciute cadono (se il
+    prototipo evolve, la guardia di parita' costringe ad aggiornare
+    QUI, non a fidarsi del client). None = il campo resta assente e la
+    ricetta e' identica a prima di VC.
+    """
+    if not isinstance(raw, dict):
+        return None
+    vis = {}
+    for k, (lo, hi, d) in VISUAL_RANGES.items():
+        vis[k] = int(round(_num(raw.get(k), lo, hi, d)))
+    vis["mode"] = int(_num(raw.get("mode"), 0, VISUAL_MODES - 1,
+                           VISUAL_DEFAULTS["mode"]))
+    vis["pal"] = int(_num(raw.get("pal"), 0, VISUAL_PALETTES - 1,
+                          VISUAL_DEFAULTS["pal"]))
+    vis["cam"] = int(_num(raw.get("cam"), 0, VISUAL_CAMS - 1,
+                          VISUAL_DEFAULTS["cam"]))
+    return vis
+
+
 def clean_score(raw):
     """Score v1 validato, o None se il documento non e' uno score.
 
@@ -229,6 +278,11 @@ def clean_score(raw):
     }
     if has_voice or voice_duck:
         score["voice_duck"] = voice_duck
+    # VC1 — la scena viaggia dentro la ricetta: additivo puro, i
+    # lettori vecchi la ignorano, chi non l'ha scelta non la scrive
+    visual = clean_visual(raw.get("visual"))
+    if visual is not None:
+        score["visual"] = visual
     return score
 
 

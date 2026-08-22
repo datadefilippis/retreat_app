@@ -34,6 +34,9 @@ import {
 import { avvisoCuffie, avvisoCuffieScore } from './engine/altoparlante';
 import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import { preparaAnello, continuoSupportato } from './engine/continuo';
+import { creaLettore } from './visual/analisi';
+import AuryaMode from './visual/AuryaMode';
+import ScenaControlli from './visual/ScenaControlli';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS, CAT_SLUG, SLUG_CAT } from './content/biblioteca';
 import GuidaView from './GuidaView';
@@ -212,6 +215,16 @@ export default function FrequenzePage() {
   const [anelloProg, setAnelloProg] = useState(null);
   const duration = Math.min(1800, Math.max(60, durationMin * 60));
 
+  /* VC2/VC3 — la scena dell'autore. `visual` = i valori RISOLTI che
+     viaggeranno nella ricetta (null = mai toccata: default e niente
+     campo salvato). Il lettore (analisi.js) si innesta sull'anteprima
+     e resta per tutta la vita del contesto; il manico del motore
+     arriva da AuryaMode quando la scena monta. */
+  const [guarda, setGuarda] = useState(false);
+  const [visual, setVisual] = useState(null);
+  const [motore, setMotore] = useState(null);
+  const lettoreRef = useRef(null);
+
   // FV3 — le basi respirano piano sotto la voce (parte della ricetta)
   const [voiceDuck, setVoiceDuck] = useState(false);
   const hasVoiceLayers = layers.some((l) => l.kind === 'voice');
@@ -229,6 +242,9 @@ export default function FrequenzePage() {
   // serializzarlo manderebbe in circolo JSON.stringify)
   const scorePayload = () => ({
     ...score,
+    // VC3 — la scena scelta viaggia NELLA ricetta (valori risolti);
+    // chi non l'ha mai toccata non scrive il campo: pregresso intatto
+    ...(visual ? { visual } : {}),
     layers: layers.map((l) => {
       const clean = {};
       Object.keys(l).forEach((k) => { if (!k.startsWith('_')) clean[k] = l[k]; });
@@ -556,12 +572,16 @@ export default function FrequenzePage() {
       vLayers = await resolveVoiceLayers(ctx, score, voiceById);
       if (playTokenRef.current !== token) { setPreparing(false); return; }
     }
+    // VC2 — la scena beve dal mix intero (voce compresa: tutto passa
+    // dal nodo di sessione). L'analizzatore e' trasparente al suono.
+    if (!lettoreRef.current) lettoreRef.current = creaLettore(ctx);
     liveRef.current = startPreview(ctx, score,
       /* 21/8, founder (ritratta TS1b): in Crea si sente ESATTAMENTE
          cio' che sentira' chi ascolta — dissolvenze comprese. Coi
          default nuovi (5s, non 10x12 moltiplicati) il play non sembra
          piu' rotto, e l'uniformita' vale piu' della partenza secca. */
-      { fromT, audioLayers, voiceLayers: vLayers, voiceDuck });
+      { fromT, audioLayers, voiceLayers: vLayers, voiceDuck,
+        uscita: lettoreRef.current.analyser });
     setPreparing(false);
     setPlaying(true);
     timerRef.current = setInterval(() => {
@@ -726,6 +746,7 @@ export default function FrequenzePage() {
       setLayers((s.layers || []).map((l) => ({ ...l, id: ++_uid })));
       setPhases(s.phases || []);
       setVoiceDuck(!!s.voice_duck);
+      setVisual(s.visual || null);   // VC3 — la scena torna con la bozza
       // la bozza aperta sta nell'URL: il refresh la ricarica invece di
       // buttarti fuori (nav=false quando e' l'URL stesso a chiederla)
       if (nav) navigate(`/sound/crea?bozza=${t.id}`);
@@ -795,6 +816,7 @@ export default function FrequenzePage() {
       opts: [['Sì, svuota', () => {
         setLayers([]); setPhases([]); setTrackId(null); setTitle(''); setIntent(null);
         setTrackStatus('draft'); setTrackSlug(null); setVoiceDuck(false);
+        setVisual(null);   // VC3 — la bozza nuova non eredita la scena
         if (qs.get('bozza')) navigate('/sound/crea', { replace: true });
         setStatus('Sessione svuotata');
       }]],
@@ -1650,7 +1672,38 @@ export default function FrequenzePage() {
                   titolo="Trascina o tocca per spostarti nella sessione"
                   onCommit={(t) => seekTo(t)} />
               )}
+              {/* VC2 — la scena si chiede, non parte da sola (disegnare
+                  consuma). Il testo cambia con lo stato: mai un tasto
+                  che sembra rotto. */}
+              <button type="button" className="cb-opt" data-testid="fq-guarda"
+                disabled={!layers.length}
+                title="La scena reagisce al suono della sessione: scegli forme e colori, si salvano con la bozza"
+                onClick={() => setGuarda((g) => !g)}>
+                ✦ {guarda ? 'Nascondi la scena' : 'Guarda il suono'}
+              </button>
             </div>
+
+            {/* VC2/VC3/VC4 — la scena dell'autore: il palco su cui
+                l'ascolto avviene, con la tastiera per sceglierla.
+                Cio' che vedi qui e' ESATTAMENTE cio' che vedra' chi
+                ascolta: stesso motore, stessi valori salvati. */}
+            {guarda && (
+              <div className="creascena" data-testid="fq-crea-scena"
+                style={{ marginTop: 12 }}>
+                {lettoreRef.current && (playing || elapsed > 0) ? (
+                  <AuryaMode lettore={lettoreRef.current}
+                    attivo altezza={280}
+                    visual={visual} suMotore={setMotore} />
+                ) : (
+                  <p className="soundlead" data-testid="fq-scena-attesa">
+                    Premi <b>▶ Ascolta sessione</b> e la scena si accende
+                    col tuo suono.
+                  </p>
+                )}
+                <ScenaControlli motore={motore} visual={visual}
+                  onCambia={setVisual} />
+              </div>
+            )}
             {/* ES3 — quanto chiedera' al dispositivo. Compare solo
                 quando c'e' davvero un problema: una riga che appare
                 sempre non la legge piu' nessuno. La soglia e' bassa

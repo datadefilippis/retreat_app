@@ -27,7 +27,8 @@ import { MARKUP_INCORPORATO } from './markupIncorporato';
 import './incorporato.css';
 
 export default function AuryaMode({ lettore, attivo = true,
-                                    className = '', altezza = 380 }) {
+                                    className = '', altezza = 380,
+                                    visual = null, suMotore = null }) {
   const boxRef = useRef(null);      // la cornice: e' lei che va a tutto schermo
   const telaRef = useRef(null);     // dove il prototipo (o il 2D) vive
   const rafRef = useRef(0);
@@ -39,7 +40,7 @@ export default function AuryaMode({ lettore, attivo = true,
     const tela = telaRef.current;
     if (!tela || !lettore || !attivo) return undefined;
     let smontato = false;
-    let pulisci = null;
+    let manico = null;
     const quieto = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const webgl2 = !quieto && !!document.createElement('canvas').getContext('webgl2');
 
@@ -49,18 +50,24 @@ export default function AuryaMode({ lettore, attivo = true,
       import('./prototipo').then(({ avviaPrototipo }) => {
         if (smontato) return;
         try {
-          pulisci = avviaPrototipo(tela, {
+          manico = avviaPrototipo(tela, {
             incorporato: true,
             analizzatore: lettore.analyser,
             sampleRate: lettore.analyser?.context?.sampleRate,
+            /* VC1 — la scena dell'autore, risolta dallo score; senza,
+               l'ambiente di default (AV5) */
+            impostazioni: visual || undefined,
           });
+          /* VC3 — Crea suona questo strumento con la sua tastiera */
+          suMotore?.(manico);
         } catch {
           tela.innerHTML = '';       // WebGL c'e' ma non parte: si resta al buio
         }
       }).catch(() => {});
       return () => {
         smontato = true;
-        pulisci?.();
+        suMotore?.(null);
+        manico?.pulisci?.();
         tela.innerHTML = '';
       };
     }
