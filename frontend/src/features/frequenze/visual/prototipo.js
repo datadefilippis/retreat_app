@@ -937,6 +937,19 @@ function ensureCtx(){
    perche' analyser era collegato a destination). L'export spilla
    dall'analyser: sente il mix per costruzione. ── */
 let micNode = null;
+/* VX-vol (22/8, founder: «la musica sovrasta la registrazione») —
+   la traccia passa da un GainNode: e' la manopola «Musica», e vale
+   per l'altoparlante e per il video insieme (l'export spilla a valle). */
+let trackGain = null, volMusica = 1, volVoce = 1;
+function nodoMusica(){
+  if (!trackGain){
+    trackGain = ctxA.createGain();
+    trackGain.gain.value = volMusica;
+    trackGain.connect(analyser);
+    trackGain.connect(ctxA.destination);
+  }
+  return trackGain;
+}
 function spegniMic(){
   if (micNode){ try{ micNode.disconnect(); }catch(e){} micNode = null; }
   if (micStream){ micStream.getTracks().forEach((t) => t.stop()); micStream = null; }
@@ -981,8 +994,7 @@ function caricaFile(file){
   player._nome = file.name.replace(/\.[^.]+$/,'').slice(0,22);
   if (!player._node){
     player._node = ctxA.createMediaElementSource(player);
-    player._node.connect(analyser);
-    player._node.connect(ctxA.destination);   /* la traccia si sente; il mic mai */
+    player._node.connect(nodoMusica());       /* la traccia si sente; il mic mai */
   }
   player.play();
   aggiornaSorgenti();
@@ -996,8 +1008,7 @@ function caricaDemo(d){
   player._nome = d.title.slice(0, 22);
   if (!player._node){
     player._node = ctxA.createMediaElementSource(player);
-    player._node.connect(analyser);
-    player._node.connect(ctxA.destination);
+    player._node.connect(nodoMusica());
   }
   player.play();
   aggiornaSorgenti();
@@ -1597,6 +1608,7 @@ if (!studio && !incorporato){
      musica. Il compressore della catena pulisce comunque davanti. ══ */
   let takeBuffer = null, takeRec = null, takePezzi = [];
   let takeStile = 'dream';
+  let voceGainAuto = 1;                   /* la normalizzazione del take */
   let takeTimer = null, takeInizio = 0;
   let mixVivo = null;                     /* {sources, chain} del riascolto */
 
@@ -1617,6 +1629,7 @@ if (!studio && !incorporato){
     if (!mixVivo) return;
     mixVivo.sources.forEach((src) => { try { src.onended = null; src.stop(); } catch (e) { /* gia' fermo */ } });
     try { mixVivo.chain.output.disconnect(); } catch (e) { /* niente */ }
+    try { mixVivo.vg.disconnect(); } catch (e) { /* niente */ }
     mixVivo = null;
     try { player.pause(); } catch (e) { /* niente */ }
     dipingiVoceUI();
@@ -1627,14 +1640,17 @@ if (!studio && !incorporato){
     if (!takeBuffer) return;
     ensureCtx();
     const chain = buildVoiceChain(ctxA, takeStile, 0.6);
-    chain.output.connect(ctxA.destination);
-    chain.output.connect(analyser);          /* la scena danza anche qui */
+    const vg = ctxA.createGain();
+    vg.gain.value = voceGainAuto * volVoce;  /* la manopola «Voce» */
+    chain.output.connect(vg);
+    vg.connect(ctxA.destination);
+    vg.connect(analyser);                    /* la scena danza anche qui */
     const sources = connectVoiceSources(ctxA, takeBuffer, chain);
     const t0 = ctxA.currentTime + 0.05;
     sources.forEach((src) => src.start(t0));
     sources[0].onended = () => fermaMix();
     if (player._nome){ player.currentTime = 0; player.play(); }
-    mixVivo = { sources, chain };
+    mixVivo = { sources, chain, vg };
     dipingiVoceUI();
   }
 
@@ -1655,6 +1671,18 @@ if (!studio && !incorporato){
       try {
         const ab = await blob.arrayBuffer();
         takeBuffer = await ctxA.decodeAudioData(ab);
+        /* i mic dei telefoni registrano prudenti: normalizzazione di
+           SOLO GUADAGNO al picco (-1.4 dB), mai trim — l'allineamento
+           con la traccia e' sacro. Tetto 6x: oltre si alza solo il
+           rumore di stanza. */
+        let picco = 0;
+        for (let c = 0; c < takeBuffer.numberOfChannels; c++){
+          const d = takeBuffer.getChannelData(c);
+          for (let i = 0; i < d.length; i += 16){
+            const v = Math.abs(d[i]); if (v > picco) picco = v;
+          }
+        }
+        voceGainAuto = picco > 0.001 ? Math.min(6, 0.85 / picco) : 1;
       } catch (e) {
         takeBuffer = null;
         el('voceRec').querySelector('span').textContent = 'Registrazione illeggibile: riprova';
@@ -1693,6 +1721,18 @@ if (!studio && !incorporato){
   el('voceRec').onclick = avviaTake;
   el('vocePlay').onclick = playMix;
   el('voceScarta').onclick = scartaTake;
+  el('volMusica').oninput = (e) => {
+    volMusica = e.target.value / 100;
+    el('volMusicaVal').textContent = e.target.value + '%';
+    if (trackGain) trackGain.gain.value = volMusica;
+  };
+  el('volVoce').oninput = (e) => {
+    volVoce = e.target.value / 100;
+    el('volVoceVal').textContent = e.target.value + '%';
+    const g = voceGainAuto * volVoce;
+    if (mixVivo && mixVivo.vg) mixVivo.vg.gain.value = g;
+    if (voceExport && voceExport.vg) voceExport.vg.gain.value = g;
+  };
   dipingiVoceUI();
 
   async function avviaRec(quale){
@@ -1793,14 +1833,17 @@ if (!studio && !incorporato){
     if (takeBuffer){
       spegniMic(); fermaMix();
       const chain = buildVoiceChain(ctxA, takeStile, 0.6);
-      chain.output.connect(ctxA.destination);
-      chain.output.connect(analyser);
+      const vg = ctxA.createGain();
+      vg.gain.value = voceGainAuto * volVoce;   /* lo stesso equilibrio del riascolto */
+      chain.output.connect(vg);
+      vg.connect(ctxA.destination);
+      vg.connect(analyser);
       const sources = connectVoiceSources(ctxA, takeBuffer, chain);
       const t0 = ctxA.currentTime + 0.05;
       sources.forEach((src) => src.start(t0));
       if (player._nome){ player.currentTime = 0; player.play(); }
       else sources[0].onended = () => fermaRec();   /* solo voce: fine take = fine video */
-      voceExport = { sources, chain };
+      voceExport = { sources, chain, vg };
       aggiornaSorgenti();
     }
     try { veglia = await navigator.wakeLock?.request('screen'); } catch (e) { veglia = null; }
@@ -1835,6 +1878,7 @@ if (!studio && !incorporato){
     if (voceExport){
       voceExport.sources.forEach((src) => { try { src.onended = null; src.stop(); } catch (e) { /* fermo */ } });
       try { voceExport.chain.output.disconnect(); } catch (e) { /* niente */ }
+      try { voceExport.vg.disconnect(); } catch (e) { /* niente */ }
       voceExport = null;
     }
     root.classList.remove('registra');

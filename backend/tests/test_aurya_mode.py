@@ -1189,7 +1189,12 @@ class TestVoceNelVisual:
         feedback."""
         PROTO = self._proto()
         assert "analyser.connect(ctxA.destination)" not in PROTO
-        assert PROTO.count("player._node.connect(ctxA.destination)") == 2  # file + demo
+        # la traccia passa dal nodo Musica (VX-vol), che sfocia in
+        # orecchio E altoparlante — mai un collegamento diretto
+        assert PROTO.count("player._node.connect(nodoMusica())") == 2  # file + demo
+        assert "player._node.connect(ctxA.destination)" not in PROTO
+        assert "trackGain.connect(analyser)" in PROTO
+        assert "trackGain.connect(ctxA.destination)" in PROTO
         assert "micNode.connect(analyser)" in PROTO
         assert "micNode.connect(ctxA.destination)" not in PROTO
         # il mic e' un interruttore, non spegne piu' la traccia
@@ -1245,6 +1250,21 @@ class TestVoceNelVisual:
         assert "el('voceSect').style.display = 'none'" in PROTO
         # demo e voce si montano solo nello strumento
         assert "if (!studio && !incorporato){\n  fetch('/api/public/visual-demos')" in PROTO
+
+    def test_l_equilibrio_musica_voce(self):
+        """VX-vol (founder: «la musica sovrasta la registrazione»):
+        il take si normalizza al picco (SOLO guadagno, mai trim —
+        l'allineamento e' sacro) e due manopole Musica/Voce muovono i
+        gain dal vivo, riascolto ed export compresi."""
+        PROTO = self._proto()
+        assert "voceGainAuto = picco > 0.001 ? Math.min(6, 0.85 / picco) : 1" in PROTO
+        assert "vg.gain.value = voceGainAuto * volVoce" in PROTO
+        assert PROTO.count("voceGainAuto * volVoce") >= 3   # riascolto + export + cursore
+        assert "if (trackGain) trackGain.gain.value = volMusica" in PROTO
+        MARKUP = (FQ_DIR / "visual" / "prototipoMarkup.js").read_text()
+        assert 'id="volMusica"' in MARKUP and 'id="volVoce"' in MARKUP
+        # la voce puo' salire fino al doppio, la musica solo scendere
+        assert 'id="volVoce" min="0" max="200"' in MARKUP.replace("\n", " ").replace("  ", " ") or 'max="200"' in MARKUP
 
     def test_i_quattro_stili_sono_quelli_di_crea(self):
         """un solo vocabolario: Naturale, Sogno, Tempio, Sussurro —

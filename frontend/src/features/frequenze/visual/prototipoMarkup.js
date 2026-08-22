@@ -58,6 +58,15 @@ const MARKUP = `
         <button id="vocePlay" type="button">&#9654; Riascolta</button>
         <button id="voceScarta" type="button">Scarta</button>
       </div>
+      <!-- l'equilibrio del mix: vale per il riascolto E per il video -->
+      <div class="voce-vol">
+        <label>Musica
+          <input type="range" id="volMusica" min="0" max="100" value="100">
+          <span id="volMusicaVal">100%</span></label>
+        <label>Voce
+          <input type="range" id="volVoce" min="0" max="200" value="100">
+          <span id="volVoceVal">100%</span></label>
+      </div>
       <div class="voce-nota">La voce resta sul tuo dispositivo. Lo stile
       scelto qui vale anche per il video.</div>
     </div>
