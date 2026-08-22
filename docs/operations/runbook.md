@@ -1,15 +1,62 @@
-# AFianco Operations Runbook
+# Runbook operativo — ATTENZIONE: due progetti, due server
 
-10 procedures for recurring operational tasks. Each is self-contained: in
-panic mode at 03:00, jump straight to the relevant section without reading
-anything else. All procedures assume:
+> ## ⛔ REGOLA ZERO — prima di toccare qualunque cosa in produzione
+>
+> **Verifica dove punta il dominio, e fai combaciare il target.**
+>
+> ```bash
+> dig +short aurya.life A     # → 46.224.0.96 (Aurya)
+> ```
+>
+> Questo repository è **Aurya** (`aurya.life`). Il runbook qui sotto
+> nasce come fork da **AFianco** (`afianco.app`) e molte procedure
+> riportano ancora i valori di QUEL server: sono corretti per AFianco,
+> sbagliati per Aurya. Quando una procedura nomina
+> `46.224.29.40`, `/opt/margin-sentinel` o il database
+> `margin_sentinel`, sta parlando di AFianco.
+>
+> **Incidente reale del 22 agosto 2026**: seguendo alla lettera
+> l'intestazione vecchia di questo file ho deployato Aurya sul server
+> di AFianco — rsync `--delete` sopra il suo codice, container
+> ricostruiti, **afianco.app giù per ~15 minuti**. I dati non sono
+> stati toccati e il ripristino è avvenuto dallo snapshot
+> `/opt/margin-sentinel.PRE_DEPLOY_20260623` + le immagini Docker
+> `pre-deploy-20260623`. I segnali c'erano tutti (nome directory,
+> nome DB, certificati `afianco.app`, container fermi da mesi) e li
+> ho scambiati per «trappole d'ambiente» invece che per la prova di
+> essere sul server sbagliato. Da qui la Regola Zero.
 
-- SSH access to the production VPS: `ssh root@46.224.29.40`
-- Production stack: `/opt/margin-sentinel/` with `docker-compose.prod.yml`
+## I due server, in chiaro
+
+| | **Aurya** (questo repo) | **AFianco** (altro progetto) |
+|---|---|---|
+| Dominio | `aurya.life` | `afianco.app` |
+| IP | **46.224.0.96** | 46.224.29.40 |
+| Hostname | `ubuntu-4gb-fsn1-1` | `ubuntu-4gb-nbg1-1` |
+| Chiave SSH | **`~/.ssh/aurya_deploy`** | `~/.ssh/id_ed25519` |
+| Directory | **`/opt/aurya`** | `/opt/margin-sentinel` |
+| Database | **`aurya_prod`** | `margin_sentinel` |
+| Certificati | `live/aurya.life` | `live/afianco.app` |
+
+I default di `deploy/deploy-prod.sh` sono già quelli di **Aurya**: se ti
+ritrovi a forzare `VPS_DIR` o `SSH_KEY` a mano, fermati e rileggi la
+Regola Zero — probabilmente stai puntando al server sbagliato. Lo script
+ha una guardia che confronta il target col DNS e si rifiuta di partire
+se non combaciano.
+
+## Procedure ereditate da AFianco
+
+Le 10 procedure che seguono assumono l'ambiente **AFianco**:
+
+- SSH: `ssh -i ~/.ssh/id_ed25519 root@46.224.29.40`
+- Stack: `/opt/margin-sentinel/` con `docker-compose.prod.yml`
 - Containers: `ms-backend`, `ms-frontend`, `ms-mongodb`, `ms-nginx`
+  (stessi nomi su entrambi i server: **non sono un indizio di dove sei**)
 - DB: `margin_sentinel` (MongoDB 7.0)
 - Storage Box: `u578174@u578174.your-storagebox.de:afianco-backups/` (port 23, SFTP)
 - Public URL: `https://afianco.app`
+
+Per Aurya, sostituisci coi valori della tabella qui sopra.
 
 When in doubt, **prefer the safer of two options** and check Sentry +
 healthcheck before declaring an issue resolved.

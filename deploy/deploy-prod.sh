@@ -20,6 +20,33 @@ SSH_KEY="${SSH_KEY:-$HOME/.ssh/aurya_deploy}"
 DOMAIN="${DOMAIN:-aurya.life}"
 COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env.production"
 
+# ── GUARDIA DEL BERSAGLIO (22/8/2026) ──────────────────────────────
+# Il 22 agosto questo deploy e' finito sul server di AFianco perche' il
+# runbook — ereditato dal fork — riportava l'IP di QUELL'altro progetto:
+# rsync --delete sopra il suo codice e afianco.app giu' per 15 minuti.
+# Da allora lo script si rifiuta di partire se il target non e' il
+# server a cui punta davvero il dominio. La macchina controlla, non la
+# memoria di chi lancia.
+echo "── [0/3] Verifica del bersaglio (DNS vs VPS_HOST)..."
+IP_DNS="$(dig +short "$DOMAIN" A 2>/dev/null | tail -1)"
+IP_TARGET="${VPS_HOST##*@}"
+if [ -z "$IP_DNS" ]; then
+  echo "   ⚠  DNS di $DOMAIN non risolvibile: verifica a mano prima di procedere." >&2
+  exit 1
+fi
+if [ "$IP_DNS" != "$IP_TARGET" ]; then
+  cat >&2 <<FINE
+   ⛔ FERMO: stai puntando al server SBAGLIATO.
+      $DOMAIN risponde su .... $IP_DNS
+      tu stai deployando su ... $IP_TARGET
+   Se e' voluto, esporta FORZA_BERSAGLIO=1. Altrimenti rileggi la
+   Regola Zero in docs/operations/runbook.md.
+FINE
+  [ "${FORZA_BERSAGLIO:-0}" = "1" ] || exit 1
+  echo "   (forzato a mano: FORZA_BERSAGLIO=1)"
+fi
+echo "   ✓ $DOMAIN → $IP_TARGET: bersaglio giusto"
+
 echo "── [1/3] Syncing files to VPS..."
 rsync -avz --delete \
   --exclude='.git' \
