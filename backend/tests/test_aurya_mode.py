@@ -273,9 +273,11 @@ class TestUnMotoreSoloAv5:
         assert CSS_PROTO.count(".avz") > 60
 
     def test_l_inseguitore_e_asimmetrico(self):
-        """Il segreto musicale del prototipo: l'energia sale in ~0,25s
-        e scende in ~2s — il colpo si sente, il rumore no."""
-        assert "target > cur ? 4.2 : 0.85" in PROTO
+        """Sale piu' svelto di come scende — ma da DA5 a passo di
+        tai-chi (0,7s/1,8s): il 4.2/0.85 originale era da club, e ogni
+        fluttuazione di nota entrava nella geometria («piu' stress che
+        relax», founder). L'orecchio resta veloce per conto suo."""
+        assert "target > cur ? 1.5 : 0.55" in PROTO
 
     def test_la_scia_sbiadisce_verso_il_profondo(self):
         """Non verso il nero piatto ma verso un gradiente
@@ -681,7 +683,8 @@ class TestBallerinoDa:
         """DA1: senza suono la scena rallenta alla veglia (pavimento
         0.12, non 0.5); col suono corre. Tutto il moto autonomo scorre
         su uTime, quindi questa riga governa la danza intera."""
-        assert "0.12 + polso.vita * 0.85 * R" in PROTO
+        # DA5: veglia da quadro (3,5%), non passeggiata (12%)
+        assert "0.035 + polso.vita * 0.95 * R" in PROTO
         assert "(0.5 + env.l * 1.1 * R)" not in PROTO, \
             "e' tornato il pavimento che faceva ballare il silenzio"
 
@@ -689,7 +692,7 @@ class TestBallerinoDa:
         """L'ampiezza segue la vita (a silenzio quasi piatto e
         CENTRATO), e se la sessione ha una marea vera il respiro segue
         quella."""
-        assert ".5 + (breath - .5) * (0.15 + 0.85 * polso.vita)" in PROTO
+        assert ".5 + (breath - .5) * (0.05 + 0.95 * polso.vita)" in PROTO
         assert "polso.ondaLenta * marea" in PROTO
 
     def test_il_polso_sente_la_modulazione(self):
@@ -732,6 +735,22 @@ class TestBallerinoDa:
     def test_la_luce_sa_se_c_e_vita(self):
         assert "uVita*.34" in PROTO and "uVita*0.28" in PROTO
 
+    def test_la_pausa_e_silenzio_vero(self):
+        """DA5, founder: «l'ho messa in pausa e continua a muoversi».
+        Il silenzio TOTALE non e' un pianissimo: la vita scende in ~1 s
+        (misurato: 0.42 → 0.014 dopo un secondo), non in otto."""
+        assert "bands.level < 0.015 ? 1.6 : 0.4" in PROTO
+
+    def test_la_fase_del_battito_non_salta_mai(self):
+        """DA5: al confine della fiducia la fase SALTAVA tra il valore
+        vivo e 0.25 fisso — uno strappo periodico. La fase integra
+        sempre; a sfumare e' l'AMPIEZZA, con una rampa."""
+        assert "? polso.fase : 0.25" not in PROTO
+        assert "(polso.fiducia - 0.2) / 0.3" in PROTO
+        assert "uBeatAmp" in PROTO
+        # e l'ampiezza sfuma ANCHE negli shader
+        assert "* uBeatAmp;" in PROTO
+
     def test_la_sonda_non_e_rimasta(self):
         assert "__polso" not in PROTO
 
@@ -764,7 +783,9 @@ class TestRitmoAv4bis:
         percussioni. Il colpo ora e' flusso spettrale con soglia
         adattiva: sente anche un cambio di nota."""
         assert "kick > .035" not in PROTO, "e' tornato il rilevatore da percussioni"
-        assert "flux" in PROTO and "_fluxMedia * 2.4" in PROTO
+        assert "flux" in PROTO and "_fluxMedia * 3.2" in PROTO
+        # DA5: un'onda per frase, non per nota — refrattario
+        assert "_refrattario = 1.6" in PROTO
         assert "Math.exp(-dt * 4.2)" in PROTO      # il decadimento resta
         assert "MAND_U.uHit.value = hit" in PROTO
 
@@ -773,4 +794,7 @@ class TestRitmoAv4bis:
         respiro e sui bassi, invece di girare intorno. Da VC8 respira
         intorno alla distanza SCELTA dall'autore, non a un 28 fisso."""
         assert "cam: 2" in PROTO
-        assert "distBase * (1 - breath*0.125 - env.b*0.08*R)" in PROTO
+        # DA5: lo zoom insegue con tau ~2s — il su-e-giu' che lo
+        # stomaco sente era soprattutto la camera sui bassi a 0,25s
+        assert "zoomLento += (env.b - zoomLento) * (1 - Math.exp(-dt / 2))" in PROTO
+        assert "distBase * (1 - breath*0.10 - zoomLento*0.06*R)" in PROTO

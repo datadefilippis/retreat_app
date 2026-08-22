@@ -153,3 +153,48 @@ la scena lo sa»), DA2-DA3 costruiscono la danza, DA4 la dimostra.
 - `/sound/visual` con mic/traccia: il polso vale anche lì (un DJ set nel
   microfono ballerà per davvero — è il caso facile; il difficile e più
   prezioso sono le nostre meditazioni, ed è per quello che c'è DA2).
+
+---
+
+# DA5 — Taratura v2: «scattoso, più stress che relax» (22 ago, sera)
+
+**Feedback founder dopo il primo ascolto**: la pausa non ferma la scena;
+il movimento è scattoso, «troppo su e giù rispetto alle note».
+
+## La diagnosi (tutte cause verificate nel codice)
+
+**Pausa che non ferma** — tre cause che si sommano:
+1. la vita scende con tau ~2,5 s: servono 5-8 s prima che la quiete si
+   percepisca;
+2. la «veglia» è alta: tempo al 12%, respiro al 15%, deriva al 20%,
+   orbita accesa — sommati, si legge «continua a muoversi»;
+3. nessuna distinzione tra «suono debole» e «silenzio vero»: la pausa è
+   silenzio VERO e merita una discesa rapida.
+
+**Scattosità** — cinque cause che si sommano:
+1. l'inseguitore delle bande sale in 0,25 s (k=4.2) e alimenta TUTTI i
+   canali geometrici: ogni fluttuazione di nota entra nei muscoli;
+2. **la camera** «Breathe» zooma con i bassi a 0,25 s: il su-e-giù che lo
+   stomaco sente è soprattutto suo — il movimento di camera è il più
+   stressante di tutti;
+3. il colpo scatta troppo spesso (soglia 2.4×media): su musica con note
+   ogni cambio lancia un'onda con ampiezze forti (reach +45%, luce +90%);
+4. la fase del battito SALTA quando la fiducia oscilla intorno alla
+   soglia (`fiducia > 0.2 ? fase : 0.25`): strappi periodici;
+5. pesi DA3 tarati troppo alti per il contesto meditativo, e la taglia
+   delle particelle pompa coi bassi.
+
+## Il principio della cura: due velocità per due mestieri
+
+L'ORECCHIO resta veloce (il colpo e il battito vanno sentiti al volo);
+i MUSCOLI diventano lenti — gesti tai-chi: salita ~0,7 s, discesa ~1,8 s.
+La camera lentissima (tau 2 s: accompagna, non insegue). Il colpo diventa
+raro e prezioso: soglia più alta, periodo refrattario 1,6 s, ampiezze
+dimezzate — un'onda ogni frase musicale, non una per nota. La fase del
+battito non salta mai: continua a integrare, è l'AMPIEZZA che sfuma con
+la fiducia (rampa, non soglia). La pausa diventa quiete vera: su silenzio
+totale la vita scende in <1 s, e la veglia è un quadro che respira appena
+(tempo 3,5%, deriva 6%, orbita spenta).
+
+La Reactivity resta la manopola per chi vuole più nervo: Full moltiplica,
+ma la base è calma — siamo una piattaforma di meditazione, non un club.
