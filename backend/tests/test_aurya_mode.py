@@ -529,6 +529,38 @@ class TestScenaDellAutoreVc:
         assert "mqTelefono.removeEventListener" in PROTO, \
             "il listener della soglia resterebbe acceso dopo l'uscita"
 
+    def test_l_inquadratura_e_parte_della_scena(self):
+        """Segnalato dal founder: «col mouse calibro la traiettoria di
+        una forma, ma nella preview della meditazione e in Crea resta
+        sempre standard». La camera era l'unica cosa che l'autore
+        poteva muovere senza che la ricetta se ne accorgesse."""
+        from models.frequency_track import clean_visual
+        vis = clean_visual({"cam_x": -13.671, "cam_y": 4.33, "cam_z": 24.19})
+        assert (vis["cam_x"], vis["cam_y"], vis["cam_z"]) == (-13.67, 4.33, 24.19)
+        # facoltativa: chi non la tocca non se la ritrova scritta
+        assert "cam_x" not in clean_visual({"mode": 2})
+        # e non entra a meta': una terna incompleta o degenere non e'
+        # un punto di vista
+        assert "cam_x" not in clean_visual({"cam_x": 5, "cam_y": 5})
+        assert "cam_x" not in clean_visual({"cam_x": 0, "cam_y": 0, "cam_z": 0})
+
+    def test_l_inquadratura_viaggia_in_tutt_e_due_i_versi(self):
+        assert "out.cam_x" in PROTO and "function inquadra(v)" in PROTO
+        # si applica al montaggio (meditazione) E al volo (preview in
+        # Crea, tornando dallo studio)
+        assert "inquadra(opz.impostazioni)" in PROTO
+        assert "if (inquadra(patch)) distBase" in PROTO
+
+    def test_il_respiro_non_strappa_la_camera_di_mano(self):
+        """La camera «Breathe» modulava intorno a un 28 fisso: qualsiasi
+        avvicinamento scelto dall'autore veniva buttato via a ogni
+        fotogramma. Ora respira intorno alla SUA distanza, e mentre
+        trascina il loop non gliela tocca."""
+        assert "28 - breath*3.5" not in PROTO
+        assert "distBase * (1 - breath" in PROTO
+        assert "if (!manoUtente)" in PROTO
+        assert "controls.addEventListener('end'" in PROTO
+
     def test_lo_studio_sta_fuori_dalla_pagina(self):
         """Trovato dal vivo: montato dentro Crea lo studio EREDITA il
         CSS del sito (`.fqz .row` sotto i 900px impilava i valori dei
@@ -660,6 +692,7 @@ class TestRitmoAv4bis:
 
     def test_la_camera_respira_col_suono(self):
         """Nella meditazione la camera e' «Breathe»: si avvicina sul
-        respiro e sui bassi, invece di girare intorno."""
+        respiro e sui bassi, invece di girare intorno. Da VC8 respira
+        intorno alla distanza SCELTA dall'autore, non a un 28 fisso."""
         assert "cam: 2" in PROTO
-        assert "28 - breath*3.5 - env.b*2.2*R" in PROTO
+        assert "distBase * (1 - breath*0.125 - env.b*0.08*R)" in PROTO

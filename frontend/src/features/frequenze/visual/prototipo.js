@@ -580,7 +580,30 @@ const mandala = buildMandala();
 scene.add(mandala);
 /* il preset Aurya guarda il loto in faccia (nella pagina lo fa
    setMode; incorporato non c'e' nessuno a premere) */
-if (incorporato && S.mode === 4){ camera.position.set(0, 0, 34); controls.target.set(0,0,0); }
+/* VC8 — l'INQUADRATURA e' parte della scena. Se l'autore l'ha
+   calibrata col mouse nello studio, la ricetta se la porta dietro e
+   qui si applica: la meditazione e la preview in Crea mostrano il suo
+   punto di vista, non uno di fabbrica. Senza, il loto si guarda in
+   faccia come prima. */
+function inquadra(v){
+  if (!v || ![v.cam_x, v.cam_y, v.cam_z].every(Number.isFinite)) return false;
+  camera.position.set(v.cam_x, v.cam_y, v.cam_z);
+  controls.target.set(0, 0, 0);          /* la panoramica e' disattivata:
+                                            il centro e' sempre l'origine */
+  return true;
+}
+if (!inquadra(opz.impostazioni) && prestato && S.mode === 4){
+  camera.position.set(0, 0, 34); controls.target.set(0,0,0);
+}
+/* la distanza di partenza: il respiro della camera modula INTORNO a
+   questa, non intorno a un 28 fisso — altrimenti l'avvicinamento
+   scelto dall'autore verrebbe buttato via a ogni fotogramma */
+let distBase = camera.position.length();
+let manoUtente = false;
+controls.addEventListener('start', () => { manoUtente = true; });
+controls.addEventListener('end', () => {
+  manoUtente = false; distBase = camera.position.length();
+});
 
 /* a schermo pieno la misura e' la finestra; incorporato e' la scatola */
 function misura(){
@@ -1043,8 +1066,11 @@ function disegna(){
   if (S.cam === 0){ controls.autoRotate = true; controls.autoRotateSpeed = .16 + env.l*1.1*R; }
   else controls.autoRotate = false;
   if (S.cam === 2){
-    const d = 28 - breath*3.5 - env.b*2.2*R;
-    camera.position.setLength(d);
+    /* mentre l'autore trascina o avvicina, la camera e' SUA: il loop
+       non gliela strappa di mano a meta' gesto */
+    if (!manoUtente) {
+      camera.position.setLength(distBase * (1 - breath*0.125 - env.b*0.08*R));
+    }
     controls.autoRotate = true; controls.autoRotateSpeed = .1;
   }
   if (S.cam === 3){
@@ -1074,12 +1100,23 @@ frame();
       U.uMode.value = S.mode;
       if (S.mode === 4){ camera.position.set(0, 0, 34); controls.target.set(0,0,0); }
     }
+    /* l'inquadratura scelta nello studio: e' cosi' che la preview in
+       Crea si allinea appena si torna indietro */
+    if (inquadra(patch)) distBase = camera.position.length();
     if ('quality' in patch) resize();
     save();                       /* in incorporato e' un no-op voluto */
   }
   function fotografia(){
     const out = { mode: S.mode, pal: S.pal, cam: S.cam };
     SLIDERS.forEach(([k]) => { out[k] = S[k]; });
+    /* l'inquadratura calibrata col mouse. Sul respiro si salva la
+       distanza BASE, non quella dell'istante: salvare a meta' respiro
+       significherebbe congelare un'inspirazione. */
+    const dir = camera.position.clone().normalize().multiplyScalar(
+      S.cam === 2 ? distBase : camera.position.length());
+    out.cam_x = +dir.x.toFixed(2);
+    out.cam_y = +dir.y.toFixed(2);
+    out.cam_z = +dir.z.toFixed(2);
     return out;
   }
 
@@ -1095,6 +1132,7 @@ frame();
     /* si chiude SOLO il contesto nostro: quello prestato dalle
        meditazioni sta suonando */
     if (ctxA) ctxA.close().catch(() => {});
+    controls.dispose();
     renderer.dispose();
     geo.dispose(); lineGeo.dispose();
   }

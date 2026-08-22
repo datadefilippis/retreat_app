@@ -96,6 +96,13 @@ VISUAL_CAMS = 4       # camere (0..3): Orbit..Drift
 # default di mode/pal/cam = l'ambiente delle meditazioni (AV5):
 # Mandala, multicolore, camera che respira
 VISUAL_DEFAULTS = {"mode": 4, "pal": 5, "cam": 2}
+# VC8 — l'INQUADRATURA calibrata col mouse. Facoltativa: chi non la
+# tocca non la scrive, e la scena parte dal punto di vista di casa.
+# Il limite e' quello della camera del prototipo (distanza 5..80): un
+# po' di margine per le componenti, e sotto l'unita' non e' un punto
+# di vista ma un errore.
+VISUAL_CAM_MAX = 120.0
+VISUAL_CAM_MIN_DIST = 1.0
 
 
 def _num(value, lo, hi, default):
@@ -226,6 +233,13 @@ def clean_visual(raw):
                           VISUAL_DEFAULTS["pal"]))
     vis["cam"] = int(_num(raw.get("cam"), 0, VISUAL_CAMS - 1,
                           VISUAL_DEFAULTS["cam"]))
+    # l'inquadratura entra solo se e' un punto di vista intero e sensato:
+    # mezza terna, o una terna degenere nell'origine, non lo e'
+    assi = [_num(raw.get(k), -VISUAL_CAM_MAX, VISUAL_CAM_MAX, None)
+            for k in ("cam_x", "cam_y", "cam_z")]
+    if all(a is not None for a in assi):
+        if (assi[0] ** 2 + assi[1] ** 2 + assi[2] ** 2) ** 0.5 >= VISUAL_CAM_MIN_DIST:
+            vis["cam_x"], vis["cam_y"], vis["cam_z"] = (round(a, 2) for a in assi)
     return vis
 
 
