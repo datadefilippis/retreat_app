@@ -330,6 +330,15 @@ class TestPaginaStrumentoAv2:
         app = (FQ_DIR.parent.parent / "App.js").read_text()
         assert '"/sound/visual"' in app
 
+    def test_la_rotta_arriva_davvero_all_utente(self):
+        """Il 22/8 in produzione /sound/visual dava 404: nginx manda
+        tutto /sound/* al prerender SEO, che conosceva solo le pagine
+        editoriali piu' crea e tracce. Una rotta SPA nuova sotto
+        /sound non basta dichiararla in App.js — va riconosciuta anche
+        di la', o l'utente non ci arriva."""
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert '("crea", "tracce", "visual")' in shell
+
     def test_il_prototipo_e_integrale(self):
         """I numeri del founder: 11 slider, 6 palette, 7 modi, 7
         preset, 4 camere. Da VC1 le tabelle vivono in tabelle.js (lo

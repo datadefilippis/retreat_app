@@ -425,7 +425,11 @@ async def _meta_sound(parts: list) -> Optional[dict]:
     redirige al login)."""
     base = _base_url()
     sub = parts[0] if parts else None
-    if sub in ("crea", "tracce"):
+    # `visual` (Aurya Visuals, AV2) e' della stessa natura di crea e
+    # tracce: uno STRUMENTO, non una pagina editoriale. Senza questa
+    # riga nginx lo manda al prerender, il prerender non lo conosce e
+    # l'utente prende un 404 (successo davvero, deploy del 22/8).
+    if sub in ("crea", "tracce", "visual"):
         meta = {**_SOUND_PAGES[None], "noindex": True}
         return {**meta, "canonical": None, "hreflang": None}
     if sub == "impara":
