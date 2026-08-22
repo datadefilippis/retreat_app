@@ -21,8 +21,14 @@
  */
 export function diagnosiAttiva() {
   try {
-    return typeof window !== 'undefined'
-      && new URLSearchParams(window.location.search).get('diag') === '1';
+    if (typeof window === 'undefined') return false;
+    const q = new URLSearchParams(window.location.search).get('diag');
+    /* APPICCICOSA: entrare una volta con ?diag=1 la accende anche per
+       le pagine successive (su telefono editare l'URL a ogni passo e'
+       attrito che uccide la diagnosi). ?diag=0 la spegne. */
+    if (q === '1') localStorage.setItem('fqz_diag', '1');
+    if (q === '0') localStorage.removeItem('fqz_diag');
+    return q === '1' || localStorage.getItem('fqz_diag') === '1';
   } catch { return false; }
 }
 
