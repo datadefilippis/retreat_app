@@ -1079,7 +1079,7 @@ const polso = {
 };
 /* i bordi delle 8 bande in Hz (logaritmici, ~un'ottava l'una) */
 const _BANDE8 = [60, 120, 240, 480, 960, 1920, 3840, 5800, 8000];
-let _slancioGrezzo = 0, _registroPrec = .5;
+let _slancioGrezzo = 0, _registroPrec = .5, _registroRaw = .5;
 let _prevFreq = null, _fluxMedia = 0.004, _picco = 0.18, _refrattario = 0;
 /* L'INGRESSO MORBIDO (founder da iPhone: «appena parte il suono,
    tutte le immagini sono scattose»). All'attacco: la soglia dei
@@ -1183,10 +1183,10 @@ function battePolso(dt){
      e abbassa la scena — insegue LENTO (tau ~1,8 s): e' la tendenza
      della melodia, non la singola nota. Lo slancio deriva dal
      registro lento: una scala che sale e' un gesto, un trillo no. */
-  polso.registro += (polso.brillantezza - polso.registro)
+  _registroRaw += (polso.brillantezza - _registroRaw)
     * (1 - Math.exp(-dt / 1.8));
-  const deriva = (polso.registro - _registroPrec) / Math.max(dt, 1e-3);
-  _registroPrec = polso.registro;
+  const deriva = (_registroRaw - _registroPrec) / Math.max(dt, 1e-3);
+  _registroPrec = _registroRaw;
   _slancioGrezzo += (deriva - _slancioGrezzo) * Math.min(1, dt * 2);
   polso.slancio = Math.max(-1, Math.min(1, _slancioGrezzo * 4));
 
@@ -1293,7 +1293,17 @@ function battePolso(dt){
   polso.vita = 0.45 + (_vitaRaw - 0.45) * g;
   for (let b = 0; b < 8; b++) polso.spettro8[b] = _sp8[b] * g;
   polso.slancio *= g * pronto;
+  /* anche il RESPIRO e l'ELEVAZIONE passano dal sipario (22/8, terzo
+     round: erano le due strade rimaste scoperte). L'onda lenta,
+     appena l'escursione superava 0.02, saltava dal neutro 0.5 a ~1 —
+     uno scatto STRUTTURALE dell'ampiezza del respiro proprio nella
+     finestra incriminata. Il registro si assestava da 0.5 al registro
+     del brano con guadagno 2.6 sull'elevazione. Neutri: 0.5. */
+  polso.ondaLenta = 0.5 + (polso.ondaLenta - 0.5) * g * pronto;
+  polso.escursioneLenta *= g * pronto;
+  polso.registro = 0.5 + (_registroRaw - 0.5) * g * pronto;
   bands.bass *= g; bands.mid *= g; bands.high *= g; bands.level *= g;
+  polso.presenza = g; polso.pronto = pronto;   /* per la diagnosi ?polso=1 */
 }
 
 function readAudio(){
@@ -2021,6 +2031,37 @@ if (!studio && !incorporato){
     el('expSalva').onclick = salva;
     fermaExport = fermaRec;          /* lo smontaggio deve poterla fermare */
   }
+}
+
+/* LA DIAGNOSI DEL POLSO (?polso=1) — dopo tre round «a occhio»
+   serviva la misura sul telefono vero: build in chiaro (per sapere
+   COSA sta girando: tre round sono stati testati su build vecchie,
+   l'HTML usciva senza no-cache) e i numeri del moto ogni mezzo
+   secondo. Solo con ?polso=1: zero costi per tutti gli altri. */
+if (!incorporato && /[?&]polso=1/.test(window.location.search)){
+  const BUILD = 'sipario-completo 23/8';
+  const dg = document.createElement('div');
+  dg.style.cssText = 'position:fixed;left:8px;top:8px;z-index:80;'
+    + 'background:rgba(3,2,8,.82);color:#9ef7c3;font:10px/1.6 monospace;'
+    + 'padding:8px 10px;border-radius:8px;pointer-events:none;white-space:pre';
+  document.body.appendChild(dg);
+  let ultimoT = performance.now(), fpsMed = 60;
+  const misuraFps = () => {
+    const t = performance.now();
+    fpsMed += (1000 / Math.max(1, t - ultimoT) - fpsMed) * 0.08;
+    ultimoT = t;
+    requestAnimationFrame(misuraFps);
+  };
+  requestAnimationFrame(misuraFps);
+  setInterval(() => {
+    dg.textContent = 'build  ' + BUILD
+      + '\nfps    ' + fpsMed.toFixed(0)
+      + '\nsipario ' + (polso.presenza || 0).toFixed(2)
+      + '\npronto ' + (polso.pronto || 0).toFixed(2)
+      + '\nvita   ' + polso.vita.toFixed(2)
+      + '\ncolpo  ' + polso.colpo.toFixed(2)
+      + '\nrespiro ' + polso.ondaLenta.toFixed(2);
+  }, 500);
 }
 
 el('camName').textContent = CAMS[S.cam];

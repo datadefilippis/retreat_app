@@ -1228,7 +1228,8 @@ async def seo_shell(full_path: str):
     if hit and now - hit[1] < _CACHE_TTL:
         cached_status = hit[2] if len(hit) > 2 else 200
         return Response(hit[0], media_type="text/html",
-                        status_code=cached_status)
+                        status_code=cached_status,
+                        headers={"Cache-Control": "no-cache"})
 
     meta = None
     try:
@@ -1258,6 +1259,11 @@ async def seo_shell(full_path: str):
         page = template
         status = 404
     _CACHE[path] = (page, now, status)
-    # cache corta lato proxy/browser: i contenuti cambiano coi publish
+    # L'HTML D'INGRESSO NON SI CACHA MAI (22/8: il founder ha testato
+    # per TRE round build vecchie — «nulla sta cambiando» — perche'
+    # questa risposta usciva senza header sul ramo caldo e con 300s
+    # sul freddo, e il telefono decideva da solo). no-cache = il
+    # browser RIVALIDA a ogni apertura: 3KB, costo zero, build sempre
+    # fresca. I chunk hanno l'hash nel nome e restano cacheabili.
     return Response(page, media_type="text/html", status_code=status,
-                    headers={"Cache-Control": "public, max-age=300"})
+                    headers={"Cache-Control": "no-cache"})

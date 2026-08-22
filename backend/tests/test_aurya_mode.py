@@ -1320,6 +1320,25 @@ class TestVoceNelVisual:
         # e le salite restano tai-chi anche a sipario aperto
         assert "(0.55 + 0.65 * _presenza)" in PROTO
         assert "(0.7 + 0.8 * _presenza)" in PROTO
+        # round 3: anche RESPIRO ed ELEVAZIONE passano dal sipario —
+        # erano le due strade scoperte (l'onda lenta saltava da 0.5 a
+        # ~1 appena l'escursione superava 0.02: uno scatto strutturale)
+        assert "polso.ondaLenta = 0.5 + (polso.ondaLenta - 0.5) * g * pronto" in PROTO
+        assert "polso.registro = 0.5 + (_registroRaw - 0.5) * g * pronto" in PROTO
+        # e la diagnosi ?polso=1 esiste: mai piu' tre round alla cieca
+        assert "/[?&]polso=1/" in PROTO
+        assert "polso.presenza = g; polso.pronto = pronto" in PROTO
+
+    def test_l_html_di_ingresso_non_si_cacha(self):
+        """22/8: il founder ha testato TRE round su build vecchie
+        («nulla sta cambiando») — la shell usciva senza header sul
+        ramo caldo e con 300s sul freddo. no-cache = il browser
+        rivalida a ogni apertura; i chunk hanno l'hash nel nome."""
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert shell.count('"Cache-Control": "no-cache"') == 2
+        assert 'max-age=300' not in shell
+        ngx = (FQ_DIR.parent.parent.parent / "nginx.conf").read_text()
+        assert 'add_header Cache-Control "no-cache";' in ngx
         # IL SIPARIO (round 2, proposta founder): mentre l'orecchio
         # impara, la scena resta nel respiro di veglia e si FONDE
         # nella danza — smoothstep sulla presenza, bande scalate per
