@@ -106,10 +106,11 @@ class TestFreniAv1:
         assert "quieto" in TELA
 
     def test_pulisce_tutto_allo_smontaggio(self):
-        """Due vie (motore 3D e rete 2D), due pulizie: la via 3D fa
-        dispose del motore, la 2D spegne raf/timer/listener."""
-        assert "motoreRef.current.dispose()" in TELA
-        assert "_pulisci?.()" in TELA
+        """Due vie (prototipo e rete 2D), due pulizie: la via immersiva
+        chiama la pulizia che il prototipo restituisce e svuota la
+        tela, la 2D spegne raf/timer/listener."""
+        assert "pulisci?.()" in TELA
+        assert "tela.innerHTML = ''" in TELA
         coda2d = TELA.split("return () => {\n      vivo = false;")[1][:400]
         for pezzo in ("cancelAnimationFrame", "clearTimeout",
                       "removeEventListener", "ro.disconnect"):
@@ -168,69 +169,125 @@ class TestTemaComeFunzionePuraAv1:
             "lighter lasciato acceso: sporcherebbe cio' che disegna dopo"
 
 
-MOTORE = (FQ_DIR / "visual" / "motore3d.js").read_text()
+PROTO = (FQ_DIR / "visual" / "prototipo.js").read_text()
+CSS_PROTO = (FQ_DIR / "visual" / "prototipo.css").read_text()
+CSS_EMB = (FQ_DIR / "visual" / "incorporato.css").read_text()
+MARKUP_EMB = (FQ_DIR / "visual" / "markupIncorporato.js").read_text()
+VISUAL_DIR = FQ_DIR / "visual"
 
 
-class TestMotoreImmersivoAv4:
+class TestUnMotoreSoloAv5:
     """
-    AV4 — il motore WebGL, adattato dal concept HTML del founder
-    (Three.js, 7 modi nel vertex shader). I trucchi buoni portati
-    com'erano; le regole di casa applicate senza sconti.
+    AV5 (22/8) — la meditazione e la pagina strumento montano LO STESSO
+    file. Prima erano due motori diversi per la stessa cosa, ed e'
+    esattamente cio' che il founder ha visto e bocciato («non e' per
+    nulla simile al prototipo»). Queste guardie difendono l'unicita':
+    se qualcuno ricrea un secondo motore, qui si rompe.
     """
+
+    def test_esiste_un_solo_motore(self):
+        assert not (VISUAL_DIR / "motore3d.js").exists(), \
+            "e' tornato un secondo motore: la divergenza ricomincia da qui"
+        scene = [f.name for f in VISUAL_DIR.glob("*.js")
+                 if "new THREE.WebGLRenderer" in f.read_text()]
+        assert scene == ["prototipo.js"], f"scene Three fuori dal prototipo: {scene}"
 
     def test_three_entra_solo_quando_si_guarda(self):
         """Three pesa ~500KB: nel main sarebbe un dazio per chiunque
-        apre QUALSIASI pagina. Import dinamico, solo qui."""
-        assert "import('./motore3d')" in TELA
+        apre QUALSIASI pagina. Import dinamico, in tutt'e due i posti."""
+        assert "import('./prototipo')" in TELA
         assert "from 'three'" not in TELA
-        assert "from 'three'" in MOTORE   # l'unico posto
+        assert "from 'three'" in PROTO   # l'unico posto
 
-    def test_il_motore_non_tocca_l_audio(self):
-        pulito = _senza_commenti(MOTORE)
-        for vietato in ("createAnalyser", "AudioContext", "getByteFrequencyData"):
-            assert vietato not in pulito, f"il motore tocca l'audio: {vietato}"
-        assert "lettore.leggi()" in MOTORE, \
-            "l'audio deve arrivare dall'unica verita' (analisi.js)"
+    def test_le_forme_sono_quelle_del_preset_aurya(self):
+        """Decisione founder: nella meditazione le forme sono quelle di
+        default del preset Aurya, con la palette multicolore."""
+        blocco = PROTO.split("if (incorporato){")[1][:700]
+        assert "PRESETS[0]" in blocco, "il preset Aurya non e' piu' quello di partenza"
+        assert "p.name === 'Prism'" in blocco, "persa la palette multicolore"
+        assert "mode: aurya.mode" in blocco
 
-    def test_le_triadi_sono_di_marca(self):
-        """Ombra→corpo→luce, ma la TINTA e' quella della famiglia: le
-        ombre sono derivate scure degli accenti, dichiarate una volta."""
-        for hex_ in ("#C9B37E", "#66B79C", "#9B8BC4"):
-            assert hex_ in MOTORE, f"manca il corpo di marca {hex_}"
-        trovati = set(re.findall(r"#[0-9A-Fa-f]{6}", MOTORE))
-        ammessi = {"#241D10", "#C9B37E", "#F2E7C8",      # triade oro
-                   "#0E2620", "#66B79C", "#DFF5EC",      # triade acqua
-                   "#1B1630", "#9B8BC4", "#EFE9FA",      # triade viola
-                   "#0E1B1E", "#070E10"}                 # fondale
-        assert trovati <= ammessi, f"colori fuori famiglia: {trovati - ammessi}"
+    def test_la_meditazione_e_un_ambiente_non_un_pannello(self):
+        """Niente pannelli, niente cancello: nel markup incorporato ci
+        sono solo la tela e la vignettatura."""
+        assert "if (!incorporato){" in PROTO, "i pannelli non sono piu' isolati"
+        for pannello in ("sliders", "gate", "modebar", "presetName"):
+            assert pannello not in MARKUP_EMB, f"pannello nella meditazione: {pannello}"
+        assert 'id="gl"' in MARKUP_EMB and 'id="vig"' in MARKUP_EMB
+
+    def test_l_audio_e_prestato_mai_creato(self):
+        """La tela non possiede il suono: nella meditazione riceve
+        l'analizzatore del grafo che sta suonando, e non chiude un
+        contesto che non e' suo (ctxA resta nullo)."""
+        # solo il RAMO incorporato: dopo di lui ricomincia ensureCtx,
+        # che un contesto lo crea eccome (per la pagina strumento)
+        blocco = PROTO.split("if (incorporato && opz.analizzatore){")[1].split("\n}")[0]
+        assert "analyser = opz.analizzatore" in blocco
+        assert "new (window.AudioContext" not in blocco
+        assert "if (ctxA) ctxA.close()" in PROTO, \
+            "il contesto si chiude solo se e' nostro"
+        assert "analizzatore: lettore.analyser" in TELA
+
+    def test_le_manopole_di_un_altro_giorno_non_entrano(self):
+        """localStorage e' della stanza degli esperimenti: la
+        meditazione dev'essere sempre lo stesso ambiente."""
+        assert "if (incorporato) return;" in PROTO.split("const save =")[1][:120]
+        ramo = PROTO.split("} else {")[1][:200]
+        assert "localStorage.getItem('aurya.settings.v2')" in ramo
+
+    def test_lo_scroll_non_viene_rubato(self):
+        """Dentro una pagina che si scorre col dito, trascinare la
+        scena significa non poter piu' scendere."""
+        assert "controls.enableRotate = false" in PROTO
+        assert "if (incorporato){ controls.enableRotate" in PROTO
+
+    def test_la_misura_e_la_scatola_non_la_finestra(self):
+        assert "function misura()" in PROTO
+        assert "if (!incorporato) return { w: innerWidth, h: innerHeight }" in PROTO
+        assert "new ResizeObserver(resize)" in PROTO
+
+    def test_tutto_schermo_col_tocco(self):
+        """Richiesta founder: «le forme con un clicco sullo schermo
+        possono essere viste a tutto schermo». Su iPhone il fullscreen
+        nativo per un elemento non esiste: la verita' e' la classe."""
+        assert ".avze.pieno" in CSS_EMB and "position: fixed" in CSS_EMB
+        # la promessa DEVE avere il catch: dentro un iframe senza
+        # permesso il rifiuto diventa un errore non gestito in faccia
+        # all'utente (visto dal vivo: «Permissions check failed»)
+        assert "requestFullscreen?.()?.catch(" in TELA
+        assert "exitFullscreen?.()?.catch(" in TELA
+        assert "'Escape'" in TELA, "senza via d'uscita da tastiera si resta intrappolati"
+        assert "fullscreenchange" in TELA
+
+    def test_il_foglio_del_prototipo_non_esce_dalla_stanza(self):
+        """Il CSS estratto conteneva regole GLOBALI (*, a, :root, .row,
+        .sub): una volta caricata la pagina ripitturavano il sito
+        intero — .sub e' usata nella landing Sound. Tutto sotto .avz."""
+        for globale in ("\n*{", "\n:root{", "\na{", "\n  a{", "\n  *{",
+                        "\n  :root{", "\n  .row{", "\n  .sub{"):
+            assert globale not in CSS_PROTO, f"regola globale rimasta: {globale!r}"
+        assert CSS_PROTO.count(".avz") > 60
 
     def test_l_inseguitore_e_asimmetrico(self):
-        """Il segreto musicale del concept: l'energia sale in ~0,25s e
-        scende in ~2s — il colpo si sente, il rumore no. Con un solo
-        tempo la scena o trema o dorme."""
-        assert "0.25" in MOTORE and "2.0" in MOTORE
-        assert "target > cur" in MOTORE
+        """Il segreto musicale del prototipo: l'energia sale in ~0,25s
+        e scende in ~2s — il colpo si sente, il rumore no."""
+        assert "target > cur ? 4.2 : 0.85" in PROTO
 
     def test_la_scia_sbiadisce_verso_il_profondo(self):
-        """Il concept insegna: non verso il nero piatto ma verso un
-        gradiente profondo→bordo. E' quello che da' il volume."""
-        assert "uDeep" in MOTORE and "uEdge" in MOTORE
-        assert "smoothstep(.05,.72,r)" in MOTORE
+        """Non verso il nero piatto ma verso un gradiente
+        profondo→bordo: e' quello che da' il volume."""
+        assert "uDeep" in PROTO and "uEdge" in PROTO
+        assert "smoothstep(.05,.72,r)" in PROTO
 
     def test_l_aura_ha_il_dithering(self):
         """Senza, i gradienti larghi a 8 bit fanno anelli visibili."""
-        assert "Math.random() * 2 - 1" in MOTORE
+        assert "Math.random()*2-1" in PROTO
 
     def test_i_sette_modi_ci_sono_tutti(self):
-        from_file = re.search(r"export const MODI = \[([^\]]+)\]", MOTORE).group(1)
-        assert from_file.count("'") == 14, "modi persi o aggiunti di nascosto"
-        for u in ("uMode < 0.5", "uMode < 1.5", "uMode < 2.5", "uMode < 3.5",
-                  "uMode < 4.5", "uMode < 5.5"):
-            assert u in MOTORE, f"ramo del vertex shader mancante: {u}"
-
-    def test_si_ferma_quando_nessuno_guarda(self):
-        assert "visibilitychange" in TELA
-        assert "m.ferma()" in TELA
+        blocco = PROTO.split("const MODES = [")[1].split("];")[0]
+        for nome in ("Breath", "Nebula", "Spiral", "Flow", "Mandala",
+                     "Helix", "Ripple"):
+            assert f"['{nome}'" in blocco, f"modo perso: {nome}"
 
     def test_quiete_significa_niente_galassia(self):
         """prefers-reduced-motion: una galassia che turbina non e'
@@ -240,8 +297,7 @@ class TestMotoreImmersivoAv4:
         assert "!quieto" in blocco
 
     def test_dispose_completo(self):
-        assert "geo.dispose" in MOTORE and "renderer.dispose" in MOTORE
-        assert "dispose()" in TELA
+        assert "geo.dispose" in PROTO and "renderer.dispose" in PROTO
 
 
 VISUAL = (FQ_DIR / "visual" / "VisualPage.jsx").read_text()
@@ -323,22 +379,23 @@ class TestRitmoAv4bis:
         assert "grezze:" in ANALISI
         assert "stato.grezze[r.nome] = grezzo" in ANALISI
 
-    def test_il_motore_beve_dal_grezzo(self):
-        """L'inseguitore asimmetrico dev'essere l'UNICA lisciatura del
-        motore: dargli bande gia' lisce = lisciare due volte = scena
-        che non segue il colpo."""
-        assert "L.grezze || L.bande" in MOTORE
-        assert "insegui(env.b, B.bassi" in MOTORE
+    def test_il_motore_beve_da_un_analizzatore_poco_lisciato(self):
+        """L'inseguitore asimmetrico del prototipo dev'essere l'UNICA
+        lisciatura pesante: l'analizzatore che gli passiamo sta a 0.5,
+        non a 0.88, e le bande le calcola lui dai bin grezzi."""
+        assert "smoothingTimeConstant = 0.5" in ANALISI
+        assert "analyser.getByteFrequencyData(freq)" in PROTO
 
-    def test_il_colpo_del_concept_c_e(self):
+    def test_il_colpo_del_prototipo_c_e(self):
         """Il salto dei bassi fra due fotogrammi, con decadimento
         rapido: e' il lampo che aggancia la scena al ritmo."""
-        assert "Math.exp(-dt * 4.2)" in MOTORE
-        assert "salto > 0.035" in MOTORE
-        # e il colpo AVVICINA la camera: la scena viene incontro
-        assert "colpo * 1.6" in MOTORE
+        assert "Math.exp(-dt*4.2)" in PROTO
+        assert "kick > .035" in PROTO
+        # e il colpo arriva ai petali del mandala
+        assert "MAND_U.uHit.value = hit" in PROTO
 
-    def test_lo_zoom_chiesto(self):
-        """Base 17 invece di 26: gli elementi riempiono lo schermo."""
-        assert "17 - respiro" in MOTORE
-        assert "26 - respiro" not in MOTORE
+    def test_la_camera_respira_col_suono(self):
+        """Nella meditazione la camera e' «Breathe»: si avvicina sul
+        respiro e sui bassi, invece di girare intorno."""
+        assert "cam: 2" in PROTO
+        assert "28 - breath*3.5 - env.b*2.2*R" in PROTO

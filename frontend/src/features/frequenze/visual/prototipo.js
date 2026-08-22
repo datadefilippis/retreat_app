@@ -16,7 +16,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-export function avviaPrototipo(root){
+export function avviaPrototipo(root, opz = {}){
+  /* AV5 (22/8) — il MOTORE e' UNO SOLO. La pagina strumento monta il
+     prototipo intero; le meditazioni montano LO STESSO file in modo
+     «incorporato»: niente pannelli, audio prestato dal grafo che sta
+     gia' suonando, forme fissate sul preset Aurya con palette
+     multicolore. Due schermate che non possono divergere, perche' sono
+     letteralmente lo stesso codice (prima erano due motori diversi, ed
+     e' esattamente cio' che il founder ha visto e bocciato). */
+  const incorporato = !!opz.incorporato;
   const byId = (id) => root.querySelector('#' + id);
   const ascoltatori = [];
   const winAdd = (ev, fn) => { window.addEventListener(ev, fn); ascoltatori.push([ev, fn]); };
@@ -72,8 +80,28 @@ const MAX_P = 24000, LINE_P = 5200;
 const defaults = { mode:2, pal:0, preset:0, cam:0, react:1.05, quality:1.6 };
 SLIDERS.forEach(([k,,,,d])=>defaults[k]=d);
 let S = Object.assign({}, defaults);
-try { Object.assign(S, JSON.parse(localStorage.getItem('aurya.settings.v2')||'{}')); } catch(e){}
-const save = () => { try{ localStorage.setItem('aurya.settings.v2', JSON.stringify(S)); }catch(e){} };
+if (incorporato){
+  /* Meditazione: forme del preset Aurya (Mandala) e palette
+     multicolore. Niente localStorage — la stanza degli esperimenti e'
+     /sound/visual: qui l'ambiente dev'essere sempre lo stesso, e le
+     manopole di un altro giorno non devono cambiare la meditazione. */
+  const aurya = PRESETS[0];
+  const prism = PALETTES.findIndex((p) => p.name === 'Prism');
+  Object.assign(S, aurya.over, { mode: aurya.mode, pal: prism, cam: 2 });
+  /* Piu' profondo E piu' luminoso del preset da pannello. Una
+     meditazione non ha colpi: l'immagine non puo' vivere di transienti
+     come una traccia ritmica, deve vivere del tono tenuto. Con i
+     valori da vetrina, a schermo intero, la scena quasi spariva. */
+  S.trails = 92; S.glow = 132; S.depth = 135; S.drift = 34;
+  S.intensity = 96; S.brightness = 122; S.contrast = 104; S.scale = 102;
+  const stretto = Math.min(root.clientWidth || 640, window.innerWidth) < 520;
+  S.quality = stretto ? 1.25 : 1.5;          /* la batteria di un telefono */
+  S.particles = stretto ? 9000 : 15000;
+} else {
+  try { Object.assign(S, JSON.parse(localStorage.getItem('aurya.settings.v2')||'{}')); } catch(e){}
+}
+const save = () => { if (incorporato) return;
+  try{ localStorage.setItem('aurya.settings.v2', JSON.stringify(S)); }catch(e){} };
 
 /* ============================================================
    2. SCENE
@@ -88,6 +116,9 @@ camera.position.set(0, 6.5, 28);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = .04; controls.rotateSpeed = .45;
 controls.minDistance = 5; controls.maxDistance = 80; controls.enablePan = false;
+/* incorporato: la tela sta dentro una pagina che si scorre col dito —
+   ruotare la scena ruberebbe lo scroll. La camera si muove da sola. */
+if (incorporato){ controls.enableRotate = false; controls.enableZoom = false; }
 
 /* trail/atmosphere layer: instead of flat black, the frame fades toward a
    deep radial gradient — this is what gives the image its sense of volume */
@@ -563,14 +594,29 @@ function buildMandala(){
 }
 const mandala = buildMandala();
 scene.add(mandala);
+/* il preset Aurya guarda il loto in faccia (nella pagina lo fa
+   setMode; incorporato non c'e' nessuno a premere) */
+if (incorporato && S.mode === 4){ camera.position.set(0, 0, 34); controls.target.set(0,0,0); }
 
+/* a schermo pieno la misura e' la finestra; incorporato e' la scatola */
+function misura(){
+  if (!incorporato) return { w: innerWidth, h: innerHeight };
+  const r = root.getBoundingClientRect();
+  return { w: Math.max(1, Math.round(r.width)), h: Math.max(1, Math.round(r.height)) };
+}
 function resize(){
-  const w = innerWidth, h = innerHeight;
+  const { w, h } = misura();
   renderer.setPixelRatio(Math.min(devicePixelRatio, S.quality));
   renderer.setSize(w, h, false);
   camera.aspect = w/h; camera.updateProjectionMatrix();
 }
 winAdd('resize', resize); resize();
+/* la scatola cambia misura anche senza che la finestra si muova
+   (a tutto schermo, rotazione, layout) */
+let osservatore = null;
+if (incorporato && window.ResizeObserver){
+  osservatore = new ResizeObserver(resize); osservatore.observe(root);
+}
 
 /* ============================================================
    3. AUDIO
@@ -578,6 +624,16 @@ winAdd('resize', resize); resize();
 let ctxA = null, analyser = null, freq = null, time = null, srcNode = null, mode = 'none';
 const player = byId('player');
 const bands = { bass:0, mid:0, high:0, level:0 };
+/* Incorporato: l'analizzatore arriva da fuori (analisi.js, innestato
+   sul motore delle meditazioni). NON creiamo un secondo AudioContext e
+   soprattutto non lo chiudiamo allo smontaggio: e' di chi ce lo ha
+   prestato, e sta suonando. */
+if (incorporato && opz.analizzatore){
+  analyser = opz.analizzatore;
+  freq = new Uint8Array(analyser.frequencyBinCount);
+  time = new Uint8Array(analyser.fftSize);
+  mode = 'esterno';
+}
 
 function ensureCtx(){
   if (!ctxA){
@@ -647,13 +703,20 @@ function dominantHz(){
   if (!analyser) return 0;
   let m = 0, mi = 0;
   for (let k=2;k<freq.length*.6;k++) if (freq[k] > m){ m = freq[k]; mi = k; }
-  return m < 14 ? 0 : Math.round(mi * ctxA.sampleRate / analyser.fftSize);
+  const sr = ctxA ? ctxA.sampleRate : (opz.sampleRate || 48000);
+  return m < 14 ? 0 : Math.round(mi * sr / analyser.fftSize);
 }
 
 /* ============================================================
    4. UI
    ============================================================ */
 const el = byId;
+/* Tutta la sezione 4 (pannelli, slider, palette, preset, scorciatoie,
+   drag&drop, oscilloscopi) vive SOLO nella pagina strumento: nella
+   meditazione il markup non li contiene nemmeno. L'unica cosa che deve
+   uscire di qui e' il pennello dei misuratori, che il loop chiama. */
+let updateMeters = null, uiTick = 0;   /* il contatore lo legge il loop */
+if (!incorporato){
 const slidersBox = el('sliders');
 const painters = [];
 SLIDERS.forEach(([key,label,min,max,,unit])=>{
@@ -681,8 +744,8 @@ PALETTES.forEach((p,k)=>{
 const paintPal = ()=>{
   [...palBox.children].forEach((b,k)=>b.classList.toggle('on', k===S.pal));
   const p = PALETTES[S.pal];                     /* UI accents follow the image */
-  document.documentElement.style.setProperty('--a1', p.c[1]);
-  document.documentElement.style.setProperty('--a2', p.c[2]);
+  root.style.setProperty('--a1', p.c[1]);
+  root.style.setProperty('--a2', p.c[2]);
 };
 
 const bar = el('modebar');
@@ -755,7 +818,6 @@ const wave = el('wave').getContext('2d');
 const topSpec = el('topSpec').getContext('2d');
 const radial = el('radial').getContext('2d');
 const pct = v => Math.round(Math.min(1,v)*100) + '%';
-let uiTick = 0;
 
 function drawWave(){
   const c = wave.canvas, w = c.width, h = c.height;
@@ -797,7 +859,7 @@ function drawRadial(breath){
     radial.stroke();
   }
 }
-function updateMeters(breath){
+updateMeters = function(breath){
   const set = (m,v,t) => { el(m).style.width = Math.min(100, v*100) + '%'; el(t).textContent = pct(v); };
   set('mInt', bands.level*1.6, 'vInt'); set('mBass', bands.bass, 'vBass');
   set('mMid', bands.mid, 'vMid'); set('mHigh', bands.high*1.3, 'vHigh');
@@ -805,7 +867,8 @@ function updateMeters(breath){
   el('domFreq').textContent = dominantHz().toLocaleString('it-IT') + ' Hz';
   if (analyser) el('freqRange').textContent = '20 Hz – ' + Math.round(ctxA.sampleRate/2000) + ' kHz';
   drawWave(); drawTopSpec(); drawRadial(breath);
-}
+};
+}   /* ← fine dei pannelli */
 
 /* ============================================================
    5. LOOP — slow attack, slower release: nothing snaps
@@ -823,6 +886,14 @@ function follow(cur, target, dt){
 function frame(){
   if (!vivo) return;
   rafId = requestAnimationFrame(frame);
+  try { disegna(); } catch (err) {
+    /* meglio una scena ferma che un errore ripetuto sessanta volte al
+       secondo: si spegne il loop e si dice una volta cos'e' successo */
+    vivo = false; cancelAnimationFrame(rafId);
+    console.error('Aurya Mode: il disegno si e\' fermato —', err);
+  }
+}
+function disegna(){
   const dt = Math.min(clock.getDelta(), .05);
   readAudio();
 
@@ -875,9 +946,10 @@ function frame(){
     const R = 11.4 * (S.scale/100) * 1.18;                  /* outer radius at peak grow */
     const d = camera.position.length();
     const halfH = d * Math.tan(camera.fov * Math.PI/360);
-    const freeW = root.classList.contains('hidden-ui')
-      ? innerWidth : Math.max(240, innerWidth - 438);
-    const halfW = halfH * camera.aspect * (freeW/innerWidth);
+    const vista = misura();
+    const freeW = (incorporato || root.classList.contains('hidden-ui'))
+      ? vista.w : Math.max(240, vista.w - 438);
+    const halfW = halfH * camera.aspect * (freeW/vista.w);
     const k = Math.min(halfH, halfW) * .94 / R;
     mandFit += (k - mandFit) * .08;
     mandala.scale.setScalar(mandFit);
@@ -916,7 +988,7 @@ function frame(){
   renderer.render(fadeScene, fadeCam);
   renderer.render(scene, camera);
 
-  if (++uiTick % 3 === 0) updateMeters(breath);
+  if (updateMeters && ++uiTick % 3 === 0) updateMeters(breath);
 }
 frame();
 
@@ -924,9 +996,12 @@ frame();
     vivo = false;
     cancelAnimationFrame(rafId);
     ascoltatori.forEach(([ev, fn]) => window.removeEventListener(ev, fn));
+    osservatore?.disconnect();
     disconnect();
-    player.pause();
+    player?.pause();
     if (fileUrl) URL.revokeObjectURL(fileUrl);
+    /* si chiude SOLO il contesto nostro: quello prestato dalle
+       meditazioni sta suonando */
     if (ctxA) ctxA.close().catch(() => {});
     renderer.dispose();
     geo.dispose(); lineGeo.dispose();

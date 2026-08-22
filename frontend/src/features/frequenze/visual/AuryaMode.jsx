@@ -1,86 +1,75 @@
 /**
- * Aurya Mode — la tela (AV1→AV4, 22/8/2026).
+ * Aurya Mode — la tela dentro una meditazione (AV1 → AV5, 22/8/2026).
  *
- * Due motori, una regola: la tela NON crea audio, non lo ferma, non
- * lo tocca — riceve il lettore (analisi.js) e disegna.
+ * Regola che non cambia: la tela NON crea audio, non lo ferma, non lo
+ * tocca. Riceve il lettore (analisi.js) e disegna.
  *
- * - MOTORE IMMERSIVO (motore3d, dal concept del founder): WebGL,
- *   16.000 particelle, sette modi. Si carica LAZY — Three.js entra in
- *   memoria solo quando qualcuno preme «Guarda», mai prima;
- * - SORGENTE (canvas 2D): la rete — dove WebGL manca o fallisce, la
- *   scena di luce leggera c'e' comunque.
+ * Cosa cambia con AV5: il motore non e' piu' una mia interpretazione
+ * del concept, e' IL PROTOTIPO DEL FOUNDER — lo stesso file che regge
+ * /sound/visual, montato «incorporato»: senza pannelli, con
+ * l'analizzatore prestato dal grafo che sta suonando, e le forme
+ * fissate sul preset Aurya con la palette multicolore. Due motori
+ * diversi per la stessa cosa erano il motivo per cui la meditazione
+ * non somigliava allo strumento; ora non possono divergere.
  *
- * I freni restano quelli di sempre: DPR limitato, disegno FERMO a
- * pagina nascosta, prefers-reduced-motion rispettato (nel motore 3D:
- * si resta sul 2D, che in quiete rallenta da solo — una galassia che
- * turbina non e' «movimento ridotto» per nessuna definizione).
+ * - IMMERSIVO (prototipo + Three): lazy, entra in memoria solo quando
+ *   qualcuno preme «Guarda»;
+ * - SORGENTE (canvas 2D): la rete, dove WebGL manca o fallisce.
+ *
+ * Un tocco apre la scena a tutto schermo. Il fullscreen nativo su
+ * iPhone non esiste per un elemento qualsiasi: la verita' e' una
+ * classe CSS che funziona ovunque, e dove il nativo c'e' si aggiunge
+ * sopra per far sparire anche le barre del browser.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as sorgente from './temi/sorgente';
-
-const MODI_NOMI = {
-  respiro: 'Respiro', nebulosa: 'Nebulosa', spirale: 'Spirale',
-  flusso: 'Flusso', alone: 'Alone', elica: 'Elica', onde: 'Onde',
-};
+import { MARKUP_INCORPORATO } from './markupIncorporato';
+import './incorporato.css';
 
 export default function AuryaMode({ lettore, attivo = true,
                                     className = '', altezza = 380 }) {
-  const canvasRef = useRef(null);
-  const motoreRef = useRef(null);
+  const boxRef = useRef(null);      // la cornice: e' lei che va a tutto schermo
+  const telaRef = useRef(null);     // dove il prototipo (o il 2D) vive
   const rafRef = useRef(0);
-  const [modo, setModo] = useState('spirale');
-  const [immersivo, setImmersivo] = useState(null);   // null = da decidere
+  const [pieno, setPieno] = useState(false);
+  const [quieta, setQuieta] = useState(false);
 
+  /* ── il motore ────────────────────────────────────────────────── */
   useEffect(() => {
-    const cv = canvasRef.current;
-    if (!cv || !lettore || !attivo) return undefined;
+    const tela = telaRef.current;
+    if (!tela || !lettore || !attivo) return undefined;
     let smontato = false;
+    let pulisci = null;
     const quieto = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
     const webgl2 = !quieto && !!document.createElement('canvas').getContext('webgl2');
 
-    /* ── via immersiva: Three arriva SOLO adesso, lazy ── */
+    /* ── via immersiva: il prototipo, lazy (Three arriva solo qui) ── */
     if (webgl2) {
-      let ro;
-      import('./motore3d').then(({ creaMotore }) => {
+      tela.innerHTML = MARKUP_INCORPORATO;
+      import('./prototipo').then(({ avviaPrototipo }) => {
         if (smontato) return;
         try {
-          const m = creaMotore(cv, lettore, { modo });
-          motoreRef.current = m;
-          const misura = () => {
-            const r = cv.getBoundingClientRect();
-            m.ridimensiona(Math.max(1, r.width), Math.max(1, r.height), dpr);
-          };
-          misura();
-          ro = new ResizeObserver(misura);
-          ro.observe(cv);
-          const visibilita = () => {
-            if (document.visibilityState === 'visible') m.avvia(); else m.ferma();
-          };
-          document.addEventListener('visibilitychange', visibilita);
-          m._pulisci = () => {
-            document.removeEventListener('visibilitychange', visibilita);
-            ro?.disconnect();
-          };
-          m.avvia();
-          setImmersivo(true);
+          pulisci = avviaPrototipo(tela, {
+            incorporato: true,
+            analizzatore: lettore.analyser,
+            sampleRate: lettore.analyser?.context?.sampleRate,
+          });
         } catch {
-          setImmersivo(false);   // WebGL c'e' ma non parte: rete 2D
+          tela.innerHTML = '';       // WebGL c'e' ma non parte: si resta al buio
         }
-      }).catch(() => setImmersivo(false));
+      }).catch(() => {});
       return () => {
         smontato = true;
-        if (motoreRef.current) {
-          motoreRef.current._pulisci?.();
-          motoreRef.current.dispose();
-          motoreRef.current = null;
-        }
+        pulisci?.();
+        tela.innerHTML = '';
       };
     }
 
     /* ── la rete: Sorgente 2D ── */
-    setImmersivo(false);
+    const cv = document.createElement('canvas');
+    cv.className = 'avze-2d';
+    tela.appendChild(cv);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const g = cv.getContext('2d', { alpha: false });
     let w = 0, h = 0;
     const misura = () => {
@@ -116,34 +105,71 @@ export default function AuryaMode({ lettore, attivo = true,
       clearTimeout(rafRef.current);
       document.removeEventListener('visibilitychange', visibilita);
       ro.disconnect();
+      tela.innerHTML = '';
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lettore, attivo]);
 
-  // il cambio modo NON ricrea il motore: e' un uniform
-  useEffect(() => { motoreRef.current?.impostaModo(modo); }, [modo]);
+  /* ── a tutto schermo ──────────────────────────────────────────── */
+  const commuta = useCallback(() => {
+    const ora = !pieno;
+    setPieno(ora);
+    /* Il fullscreen nativo e' un di piu': la classe basta da sola. E
+       fallisce piu' spesso di quanto sembri — dentro un iframe senza
+       permesso, o quando il gesto non lo convince. Restituisce una
+       PROMESSA: senza catch il rifiuto diventa un errore non gestito
+       (visto dal vivo: «Permissions check failed»), e un try/catch
+       intorno alla chiamata non lo prende. */
+    const box = boxRef.current;
+    try {
+      if (ora) box?.requestFullscreen?.()?.catch(() => {});
+      else if (document.fullscreenElement) document.exitFullscreen?.()?.catch(() => {});
+    } catch { /* browser senza fullscreen: resta la classe */ }
+  }, [pieno]);
+
+  /* Se l'utente esce dal fullscreen nativo (ESC, gesto del sistema) la
+     cornice deve tornare nella pagina da sola, o resterebbe una tela
+     fissa sopra tutto. L'evento arriva solo dove il nativo esiste —
+     dove non esiste (iPhone) non c'e' niente da sincronizzare. */
+  useEffect(() => {
+    const sincro = () => { if (!document.fullscreenElement) setPieno(false); };
+    document.addEventListener('fullscreenchange', sincro);
+    return () => document.removeEventListener('fullscreenchange', sincro);
+  }, []);
+
+  useEffect(() => {
+    if (!pieno) return undefined;
+    const prima = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';   // niente pagina che scorre dietro
+    const esci = (e) => { if (e.key === 'Escape') setPieno(false); };
+    document.addEventListener('keydown', esci);
+    return () => {
+      document.body.style.overflow = prima;
+      document.removeEventListener('keydown', esci);
+    };
+  }, [pieno]);
+
+  /* l'invito si fa da parte dopo qualche secondo */
+  useEffect(() => {
+    setQuieta(false);
+    const t = setTimeout(() => setQuieta(true), 4200);
+    return () => clearTimeout(t);
+  }, [pieno]);
 
   if (!attivo) return null;
   return (
-    <div style={{ position: 'relative' }}>
-      <canvas ref={canvasRef} className={`aurya-mode ${className}`}
-        data-testid="aurya-mode"
-        style={{ width: '100%', height: altezza, display: 'block',
-                 borderRadius: 12, background: sorgente.COLORI.fondo }} />
-      {immersivo && (
-        <button type="button" data-testid="aurya-mode-modo"
-          onClick={() => {
-            const tutti = Object.keys(MODI_NOMI);
-            setModo(tutti[(tutti.indexOf(modo) + 1) % tutti.length]);
-          }}
-          style={{ position: 'absolute', top: 10, right: 10,
-                   background: 'rgba(12,22,24,.55)', color: '#C9B37E',
-                   border: '1px solid rgba(201,179,126,.35)', borderRadius: 999,
-                   padding: '5px 12px', fontSize: 11, letterSpacing: '.08em',
-                   cursor: 'pointer' }}>
-          {MODI_NOMI[modo]} ›
-        </button>
-      )}
+    <div ref={boxRef}
+      className={`avze${pieno ? ' pieno' : ''}${quieta ? ' quieta' : ''} ${className}`}
+      data-testid="aurya-mode"
+      style={pieno ? undefined : { height: altezza }}
+      onClick={commuta}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); commuta(); } }}
+      aria-label={pieno ? 'Chiudi lo schermo intero' : 'Guarda a tutto schermo'}>
+      <div className="avze-tela" ref={telaRef} />
+      <span className="avze-hint" data-testid="aurya-mode-pieno">
+        {pieno ? 'Tocca per uscire' : 'Tocca per lo schermo intero'}
+      </span>
     </div>
   );
 }

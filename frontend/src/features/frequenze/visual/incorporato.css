@@ -1,0 +1,56 @@
+/* Aurya Mode dentro una meditazione (AV5, 22/8/2026).
+   Il foglio del prototipo e' tutto chiuso sotto .avz — la stanza a
+   schermo pieno. Qui serve l'opposto: una finestra dentro la pagina.
+   Poche righe, e la vignettatura del prototipo (che e' cio' che da'
+   volume all'immagine senza costare un post-processing). */
+
+.avze {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #05040a;
+  cursor: zoom-in;
+  /* la tela e' un ambiente: si tocca, non si scorre sopra */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.avze-tela { position: absolute; inset: 0; }
+.avze #stage { position: absolute; inset: 0; }
+.avze canvas#gl { display: block; width: 100%; height: 100%; }
+.avze canvas.avze-2d { display: block; width: 100%; height: 100%; }
+.avze #vig {
+  position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: radial-gradient(ellipse 78% 68% at 50% 50%,
+    rgba(0, 0, 0, 0) 42%, rgba(3, 2, 8, .62) 100%);
+}
+
+/* A tutto schermo. Il vero fullscreen del browser non c'e' su iPhone
+   (li' solo i video lo ottengono): la verita' e' questa classe, che
+   funziona ovunque. Dove il fullscreen nativo c'e', si aggiunge sopra
+   per togliere anche le barre. */
+.avze.pieno {
+  position: fixed; inset: 0; z-index: 90;
+  width: 100vw; height: 100vh; height: 100dvh;
+  border-radius: 0; cursor: zoom-out;
+}
+
+.avze-hint {
+  position: absolute; right: 10px; bottom: 9px; z-index: 3;
+  pointer-events: none;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(233, 230, 242, .5);
+  background: rgba(5, 4, 10, .42);
+  border: 1px solid rgba(233, 230, 242, .12);
+  border-radius: 999px; padding: 4px 10px;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  transition: opacity .5s ease;
+}
+/* dopo qualche secondo si fa da parte: e' un ambiente, non un pannello */
+.avze.quieta .avze-hint { opacity: 0; }
+.avze:hover .avze-hint { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .avze-hint { transition: none; }
+}
