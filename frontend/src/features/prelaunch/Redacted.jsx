@@ -12,7 +12,7 @@ import React from 'react';
 
 const PLACEHOLDER = {
   title: 'Un ritiro in arrivo su Aurya al lancio',
-  name: 'Organizzatore verificato',
+  name: 'Professionista verificato',
   text: 'Profilo completo disponibile al lancio, con recensioni verificate e contatti diretti',
 };
 

@@ -48,7 +48,7 @@ export default function ExperiencesPage() {
       : t('landings:experiences.seoTitle', {
           defaultValue: 'Esperienze olistiche: massaggi, corsi e soggiorni | Aurya' }),
     description: t('landings:experiences.seoDesc', {
-      defaultValue: 'Massaggi, trattamenti, corsi e soggiorni olistici dagli organizzatori di Aurya. Prenoti online, paghi in sicurezza.',
+      defaultValue: 'Massaggi, trattamenti, corsi e soggiorni olistici dai professionisti di Aurya. Prenoti online, paghi in sicurezza.',
     }),
     canonicalPath: categoria ? `/esperienze/${categoria}` : '/esperienze',
     noindex: !loading && items.length === 0,

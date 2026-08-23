@@ -431,9 +431,9 @@ export default function OperatorsIndexPage() {
       ? t('landings:operators.seoTitleCat', {
           cat: catLabel, defaultValue: 'Operatori di {{cat}} | Aurya' })
       : t('landings:operators.seoTitle', {
-          defaultValue: 'Tutti gli organizzatori di ritiri ed esperienze | Aurya' }),
+          defaultValue: 'Tutti i professionisti del benessere | Aurya' }),
     description: t('landings:operators.seoDesc', {
-      defaultValue: 'Scopri gli organizzatori di ritiri ed esperienze olistiche su Aurya: profili, prossime date e prenotazione online con caparra.',
+      defaultValue: 'Scopri i professionisti del benessere su Aurya: pratiche, esperienze e percorsi, con profili, prossime date e prenotazione online.',
     }),
     canonicalPath: categoria ? `/operatori/${categoria}` : '/operatori',
     // 0 risultati = pagina indice vuota: mai in SERP (regola S5).
@@ -478,27 +478,29 @@ export default function OperatorsIndexPage() {
             {categoria ? (
               <>
                 <Link to="/operatori" className="hover:text-white hover:underline">
-                  {t('landings:operators.heading', { defaultValue: 'Organizzatori' })}
+                  {t('landings:operators.heading', { defaultValue: 'Professionisti' })}
                 </Link>
                 <span className="mx-1.5">›</span>
                 <span className="text-white">{catLabel}</span>
               </>
             ) : (
               <span className="text-white">
-                {t('landings:operators.heading', { defaultValue: 'Organizzatori' })}
+                {t('landings:operators.heading', { defaultValue: 'Professionisti' })}
               </span>
             )}
           </nav>
           <BrandPayoff tone="hero" size="sm" className="mb-2" />
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
+            {/* il titolo dice il mestiere per intero; il breadcrumb e il
+                menu restano corti (operators.heading) */}
             {categoria
               ? t('landings:operators.headingCat', {
-                  cat: catLabel, defaultValue: 'Organizzatori di {{cat}}' })
-              : t('landings:operators.heading', { defaultValue: 'Organizzatori' })}
+                  cat: catLabel, defaultValue: 'Professionisti di {{cat}}' })
+              : t('landings:operators.pageTitle', { defaultValue: 'Professionisti del benessere' })}
           </h1>
           <p className="mt-2.5 text-white/90 max-w-2xl text-hero-shadow">
             {t('landings:operators.subtitle', {
-              defaultValue: 'Le persone e i centri dietro i ritiri: scopri chi organizza, cosa propone e prenota direttamente online.',
+              defaultValue: 'Scopri chi si prende cura del tuo benessere: professionisti, operatori e centri, le loro pratiche, esperienze e percorsi.',
             })}
           </p>
 
@@ -681,7 +683,7 @@ export default function OperatorsIndexPage() {
               <SearchX className="h-7 w-7 text-[#376254]" aria-hidden />
             </div>
             <p className="mt-4 text-lg font-semibold text-foreground">
-              {t('landings:operators.emptyTitle', { defaultValue: 'Nessun organizzatore qui, per ora' })}
+              {t('landings:operators.emptyTitle', { defaultValue: 'Nessun professionista qui, per ora' })}
             </p>
             <p className="text-muted-foreground mt-1.5 text-sm">
               {quando
@@ -690,7 +692,7 @@ export default function OperatorsIndexPage() {
                   })
                 : geoValue
                   ? t('landings:operators.emptySuggestRadius', {
-                      defaultValue: 'In questa zona non abbiamo ancora organizzatori: allarga il raggio o cambia località.',
+                      defaultValue: 'In questa zona non abbiamo ancora professionisti: allarga il raggio o cambia località.',
                     })
                   : categoria
                     ? t('landings:operators.emptySuggestCategory', {

@@ -242,7 +242,7 @@ export default function RetreatsCalendarPage() {
               type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder={t('landings:calendar.searchPlaceholder', { defaultValue: 'Cerca un ritiro, un luogo, un organizzatore…' })}
+              placeholder={t('landings:calendar.searchPlaceholder', { defaultValue: 'Cerca un ritiro, un luogo, un professionista…' })}
               className="w-full rounded-full border-0 bg-white/95 backdrop-blur px-6 py-3.5 md:py-4 text-base text-gray-900 shadow-2xl focus:outline-none focus:ring-2 focus:ring-[#d6c49a]"
             />
           </div>}

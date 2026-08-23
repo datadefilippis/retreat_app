@@ -1245,7 +1245,7 @@ export default function StorefrontPage({ aboutMode = false } = {}) {
             </Link>
           </div>
           <p className="text-xs text-gray-400 text-center">
-            {/* F2.1 — ecosistema: profilo organizzatore + directory
+            {/* F2.1 — ecosistema: profilo professionista + directory
                 (solo footer: mai dentro il funnel di checkout) */}
             <a href={`/s/${slug}/chi-siamo`} className="hover:underline">
               {t('storefront:footer.operatorProfile', { defaultValue: 'Chi siamo' })}

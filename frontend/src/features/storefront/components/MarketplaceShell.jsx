@@ -327,7 +327,7 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout,
 // definizione: chi aggiunge una superficie la aggiunge QUI.
 const NAV_ITEMS = [
   { to: '/', key: 'marketplace.navRetreats', fallback: 'Ritiri' },
-  { to: '/operatori', key: 'marketplace.navOperators', fallback: 'Organizzatori' },
+  { to: '/operatori', key: 'marketplace.navOperators', fallback: 'Professionisti' },
   { to: '/destinazioni', key: 'marketplace.navDestinations', fallback: 'Destinazioni' },
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
 ];
@@ -397,7 +397,7 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
 
   const operatorLabel = isNetwork
     ? t('marketplace.forProfessionals', { defaultValue: 'Per i professionisti' })
-    : t('marketplace.forOrganizers', { defaultValue: 'Sei un organizzatore?' });
+    : t('marketplace.forOrganizers', { defaultValue: 'Sei un professionista?' });
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [destinations, setDestinations] = React.useState(_destCache || []);
@@ -873,7 +873,7 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
             ) : (
               <div>
                 <p className="font-brand text-[#d6c49a] mb-3 text-[11px] uppercase tracking-[0.25em] select-none">
-                  {t('marketplace.footerOrganizers', { defaultValue: 'Organizzatori' })}
+                  {t('marketplace.footerOrganizers', { defaultValue: 'Professionisti' })}
                 </p>
                 <ul className="space-y-1.5 text-white/70">
                   {/* founder 27/7 — via 'Porta i tuoi ritiri online':

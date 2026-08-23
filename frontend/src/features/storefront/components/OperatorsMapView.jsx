@@ -42,7 +42,7 @@ export default function OperatorsMapView({ items }) {
   if (!pinned.length) {
     return (
       <p className="text-sm text-gray-500 py-16 text-center">
-        {t('operators.mapEmpty', { defaultValue: 'Nessun organizzatore con posizione sulla mappa per questi filtri.' })}
+        {t('operators.mapEmpty', { defaultValue: 'Nessun professionista con posizione sulla mappa per questi filtri.' })}
       </p>
     );
   }

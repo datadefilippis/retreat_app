@@ -194,7 +194,7 @@ export default function DestinationsPage() {
                   place: label,
                   defaultValue: 'Le date in programma a {{place}}: prenoti online con la caparra, il saldo più avanti.' })
               : t('landings:destinations.subtitle', {
-                  defaultValue: 'I luoghi dove i nostri organizzatori tengono ritiri ed esperienze, aggiornati in tempo reale.' })}
+                  defaultValue: 'I luoghi dove i nostri professionisti tengono ritiri ed esperienze, aggiornati in tempo reale.' })}
           </p>
         </div>
       </header>
@@ -243,7 +243,7 @@ export default function DestinationsPage() {
               <section className="mt-12">
                 <h2 className="font-heading text-xl font-bold text-foreground mb-4">
                   {t('landings:destinations.operatorsHere', {
-                    place: label, defaultValue: 'Organizzatori a {{place}}' })}
+                    place: label, defaultValue: 'Professionisti a {{place}}' })}
                 </h2>
                 <div className="flex flex-wrap gap-3">
                   {/* PL13 — niente chip per i campioni: nome redatto e

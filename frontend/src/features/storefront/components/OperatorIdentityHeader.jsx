@@ -59,7 +59,7 @@ export default function OperatorIdentityHeader({ data, t }) {
             )}
             {(data.founded_year || data.member_since) && (
               <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
-                ✓ {t('landings:operator.memberSince', { defaultValue: 'Organizzatore dal {{year}}', year: data.founded_year || data.member_since })}
+                ✓ {t('landings:operator.memberSince', { defaultValue: 'Professionista del benessere dal {{year}}', year: data.founded_year || data.member_since })}
               </span>
             )}
             {data.retreats_organized > 0 && (

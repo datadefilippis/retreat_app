@@ -407,7 +407,7 @@ export default function ProductLandingPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-3">
           <nav className="text-xs text-gray-500" data-testid="landing-profile-breadcrumb">
             <Link to="/operatori" className="hover:text-primary hover:underline">
-              {t('landings:operators.heading', { defaultValue: 'Organizzatori' })}
+              {t('landings:operators.heading', { defaultValue: 'Professionisti' })}
             </Link>
             <span className="mx-1.5" aria-hidden>›</span>
             <Link to={`/o/${orgSlug}`} className="hover:text-primary hover:underline">

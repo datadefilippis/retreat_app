@@ -308,7 +308,7 @@ function ReviewsSection({ orgSlug, stats, onWrite, refreshKey, t, i18n }) {
               {r.reply?.body && (
                 <div className="mt-3 rounded-xl bg-secondary/60 p-3 border-l-2 border-primary">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-primary mb-1">
-                    {t('landings:reviews.operatorReply', { defaultValue: 'Risposta dell\'organizzatore' })}
+                    {t('landings:reviews.operatorReply', { defaultValue: 'Risposta del professionista' })}
                   </p>
                   <p className="text-sm text-gray-700 whitespace-pre-line">{r.reply.body}</p>
                 </div>
@@ -398,7 +398,7 @@ export default function OperatorProfilePage() {
   const rs = data?.reviews_stats;
   useSeoMeta({
     title: data?.name
-      ? `${data.name}${data.city ? ` · ritiri a ${data.city}` : ''} · profilo organizzatore`
+      ? `${data.name}${data.city ? ` · ritiri a ${data.city}` : ''} · profilo professionista`
       : undefined,
     description: (data?.tagline || data?.bio)
       ? String(data.tagline || data.bio).slice(0, 155) : undefined,
@@ -464,7 +464,7 @@ export default function OperatorProfilePage() {
       <div className="max-w-6xl mx-auto px-4 pt-3">
         <nav className="text-xs text-gray-500">
           <Link to="/operatori" className="hover:text-primary hover:underline">
-            {t('landings:operators.heading', { defaultValue: 'Organizzatori' })}
+            {t('landings:operators.heading', { defaultValue: 'Professionisti' })}
           </Link>
           <span className="mx-1.5" aria-hidden>›</span>
           <span className="text-gray-700">{data.name}</span>

@@ -241,3 +241,42 @@ def test_retreat_billing_feature_keys_exist_in_all_locales():
             if f"{short}_info" not in feats:
                 missing.append(f"{loc}: {short}_info")
     assert not missing, "Copy mancante per voci di pricing:\n" + "\n".join(missing)
+
+
+class TestLessicoProfessionisti:
+    """23/8 (founder): «sostituiamo completamente la parola
+    organizzatori e rimpiazziamola con Professionista/Professionisti».
+
+    Non e' un ritocco di copy: e' come Aurya chiama le persone che
+    ospita. Chi organizza un ritiro e' solo UNO dei mestieri della
+    rete — l'etichetta vecchia escludeva chi tiene uno studio, un
+    centro o riceve su appuntamento. La guardia impedisce che la
+    parola rientri di soppiatto dalle superfici che l'utente legge:
+    le traduzioni italiane (la fonte vera) e i meta della shell SEO
+    (cio' che vedono Google e le anteprime social).
+
+    Restano fuori: i commenti nel codice, le altre lingue (il sito
+    pubblico e' solo italiano) e gli articoli del Magazine gia'
+    pubblicati, che sono testi d'autore.
+    """
+
+    def test_le_traduzioni_italiane_dicono_professionisti(self):
+        for f in sorted((LOCALES_DIR / "it").glob("*.json")):
+            testo = f.read_text().lower()
+            assert "organizzator" not in testo, (
+                f"{f.name}: e' tornata la parola vecchia — il lessico di "
+                f"Aurya dice Professionista/Professionisti")
+
+    def test_i_meta_del_sito_dicono_professionisti(self):
+        shell = (REPO_ROOT / "backend" / "routers" / "seo_shell.py").read_text()
+        assert "organizzator" not in shell.lower()
+
+    def test_il_titolo_e_il_breadcrumb_restano_distinti(self):
+        """Il breadcrumb e il menu stanno stretti («Professionisti»),
+        il titolo della pagina dice il mestiere per intero: due chiavi
+        diverse, non una sola riusata."""
+        land = json.loads((LOCALES_DIR / "it" / "landings.json").read_text())
+        assert land["operators"]["heading"] == "Professionisti"
+        assert land["operators"]["pageTitle"] == "Professionisti del benessere"
+        assert land["operator"]["memberSince"].startswith(
+            "Professionista del benessere dal")

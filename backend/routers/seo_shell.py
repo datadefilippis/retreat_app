@@ -248,7 +248,7 @@ async def _meta_home() -> dict:
                          "url": f"{base}/logo-aurya-512.png"},
                 "description": ("La casa dei ritiri olistici italiani: "
                                 "trova e prenota ritiri ed esperienze di "
-                                "benessere con organizzatori verificati."),
+                                "benessere con professionisti verificati."),
                 "email": "info@aurya.life",
                 "founder": [
                     {"@type": "Person", "name": "Davide De Filippis"},
@@ -925,7 +925,7 @@ async def _meta_experiences(category: Optional[str] = None) -> dict:
         "title": (f"Esperienze di {label} | Aurya" if label
                   else "Esperienze olistiche: massaggi, corsi e soggiorni | Aurya"),
         "description": ("Massaggi, trattamenti, corsi e soggiorni olistici "
-                        "dagli organizzatori di Aurya. Prenoti online, paghi "
+                        "dai professionisti di Aurya. Prenoti online, paghi "
                         "in sicurezza."),
         "canonical": f"{base}{path}",
         "hreflang": _hub_hreflang(f"{base}{path}"),
@@ -959,11 +959,11 @@ async def _meta_operators_index(category: Optional[str] = None) -> dict:
             "image": f"{base}/og-cover.jpg",
         }
     return {
-        "title": (f"Operatori di {label} | Aurya" if label
-                  else "Tutti gli organizzatori di ritiri ed esperienze | Aurya"),
-        "description": ("Scopri gli organizzatori di ritiri ed esperienze "
-                        "olistiche su Aurya: profili, prossime date e "
-                        "prenotazione online con caparra."),
+        "title": (f"Professionisti di {label} | Aurya" if label
+                  else "Tutti i professionisti del benessere | Aurya"),
+        "description": ("Scopri i professionisti del benessere su Aurya: "
+                        "pratiche, esperienze e percorsi, con profili, "
+                        "prossime date e prenotazione online."),
         "canonical": f"{base}{path}",
         "hreflang": _hub_hreflang(f"{base}{path}"),
         "image": f"{base}/og-cover.jpg",
@@ -1060,11 +1060,11 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     # Title local-oriented: "{nome} · ritiri a {città} | Aurya" cattura la
     # query di brand+luogo dell'operatore.
     title = f"{name} · ritiri a {city} | Aurya" if city \
-        else f"{name} · organizzatore su Aurya"
+        else f"{name} · professionista su Aurya"
     desc = bio or (f"Ritiri ed esperienze di {name}"
                    + (f" a {city}" if city else "") + " su Aurya.")
     crumbs = sx.breadcrumb([("Aurya", f"{base}/"),
-                            ("Organizzatori", f"{base}/operatori"),
+                            ("Professionisti", f"{base}/operatori"),
                             (name, canonical)])
     hreflang = {"it": canonical, "x-default": canonical}
     for _lang, _f in (profile.get("translations") or {}).items():

@@ -497,7 +497,7 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
             </p>
             <p className="text-sm text-gray-600 mb-4">
               {t('landings:event.otherCartBody', {
-                defaultValue: 'Si acquista da un organizzatore alla volta: ogni prenotazione va direttamente al suo organizzatore. L\'altro carrello resta salvato — puoi completarlo dopo.',
+                defaultValue: 'Si acquista da un professionista alla volta: ogni prenotazione va direttamente al suo professionista. L\'altro carrello resta salvato — puoi completarlo dopo.',
               })}
             </p>
             <div className="space-y-2">
@@ -1161,7 +1161,7 @@ export default function EventLandingPage() {
               <ul className="rounded-xl border border-gray-200 bg-white p-4 space-y-2 text-xs text-gray-600">
                 <li className="flex items-start gap-2">
                   <ShieldCheck className="h-4 w-4 shrink-0 text-[#376254]" aria-hidden />
-                  <span>{t('landings:event.trustSecure', { defaultValue: 'Pagamento sicuro con carta. I tuoi dati non passano mai dall\'organizzatore.' })}</span>
+                  <span>{t('landings:event.trustSecure', { defaultValue: 'Pagamento sicuro con carta. I tuoi dati non passano mai dall\'professionista.' })}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Sprout className="h-4 w-4 shrink-0 text-[#376254]" aria-hidden />
