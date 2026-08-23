@@ -1475,12 +1475,33 @@ class TestIlMaster:
         for vietato in ("ffmpeg", "lamejs", "pydub", "audioop", "Mp3Encoder"):
             assert vietato not in src, f"encoder nel backend: {vietato}"
 
-    def test_il_publish_dalla_sessione_genera_il_master(self):
+    def test_prima_si_pubblica_poi_il_master(self):
+        """24/8, bug founder: «clicco Pubblica e non funziona» — il
+        render (minuti) stava DAVANTI alla pubblicazione. Ora il
+        publish e' immediato (link subito) e il master si genera
+        dopo, con progresso; se fallisce la traccia RESTA pubblicata
+        col percorso classico."""
         crea = (FQ_DIR / "FrequenzePage.js").read_text()
-        assert "await frequenciesAPI.uploadMaster(trackId, blob)" in crea
-        assert "mp3Blob(pcm, 44100," in crea and "192)" in crea
-        # se il master fallisce si pubblica COMUNQUE, e lo si dice
-        assert "Master non generato: pubblico col percorso classico" in crea
+        blocco = crea.split("const publishTrack")[1].split("const unpublishTrack")[0]
+        assert blocco.index("await publishById(trackId)") \
+            < blocco.index("uploadMaster(trackId, blob)")
+        assert "mp3Blob(pcm, 44100," in blocco and "192)" in blocco
+        assert "la traccia resta pubblicata col percorso classico" in blocco
+
+    def test_lo_slug_segue_il_titolo_e_i_vecchi_link_vivono(self):
+        """24/8, founder: la sua traccia era /senza-titolo (pubblicata
+        col titolo ancora vuoto e slug congelato per sempre). Ora lo
+        slug segue il titolo a ogni publish (deduplica -2/-3 che
+        ignora se stessa) e il vecchio scende in slug_precedenti: i
+        link gia' condivisi NON muoiono."""
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        assert "async def _trova_pubblicata(" in src
+        assert '{"$or": [{"slug": slug}, {"slug_precedenti": slug}]' in src
+        assert 'escludi_id=track_id' in src
+        assert '"slug_precedenti": precedenti' in src
+        # tutte e quattro le porte pubbliche passano dal cercatore
+        assert src.count("await _trova_pubblicata(slug") == 3   # public, pass, serve
+        assert '{"$or": [{"slug": slug}, {"slug_precedenti": slug}]},\n         "status": "published"},\n        {"$inc": {"plays_total": 1}}' in src.replace("\r","") or "slug_precedenti" in src.split("register_play")[1][:400]
 
     def test_il_player_preferisce_il_master(self):
         pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()

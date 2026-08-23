@@ -846,20 +846,21 @@ export default function FrequenzePage() {
     catch { setStatus(url); }
   };
 
-  /* IL MASTER (23/8) — il render si fa UNA volta, QUI, alla
-     pubblicazione: il browser dell'operatore (la macchina giusta, il
-     momento giusto) renderizza il mix intero e lo carica. Chi ascolta
-     ricevera' UN file in streaming come una canzone — non 12 basi da
-     risintetizzare (~700 MB di RAM). Se il master fallisce si
-     pubblica COMUNQUE col percorso di sempre (fallback synth) e lo si
-     dice: mai un errore client tra l'operatore e il suo pubblico. */
+  /* IL MASTER (23/8, riordinato 24/8 su bug del founder: «clicco
+     Pubblica e non funziona») — l'ordine di ieri metteva il RENDER
+     (minuti, su una traccia lunga) davanti alla pubblicazione: il
+     link arrivava solo alla fine e sembrava tutto rotto. Ora PRIMA
+     si pubblica (immediato, link subito, come sempre), POI si genera
+     il master con progresso visibile: nel frattempo chi ascolta usa
+     il percorso classico, e a master caricato passa al file. */
   const publishTrack = async () => {
     if (!trackId) return;
     await save();
+    await publishById(trackId);
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       try {
-        setStatus('Master: carico le basi…');
+        setStatus('Pubblicata. Ora preparo il master: carico le basi…');
         const aLayers = layers.some((l) => l.kind === 'audio')
           ? await resolveAudioLayers(ctx, score, soundsById) : [];
         const vLayers = hasVoiceLayers
@@ -873,14 +874,13 @@ export default function FrequenzePage() {
           (pr) => setStatus(`Master: comprimo… ${Math.round(pr * 100)}%`), 192);
         setStatus(`Master: carico ${(blob.size / 1048576).toFixed(0)} MB…`);
         await frequenciesAPI.uploadMaster(trackId, blob);
+        setStatus('Master pronto: da ora chi ascolta riceve il file, leggero.');
       } finally {
         ctx.close().catch(() => { /* niente */ });
       }
     } catch (e) {
-      setStatus('Master non generato: pubblico col percorso classico — '
-        + 'riapri la sessione e ripubblica per rigenerarlo');
+      setStatus('Master non generato: la traccia resta pubblicata col percorso classico — ripubblica per riprovare');
     }
-    await publishById(trackId);
   };
   const unpublishTrack = () => unpublishById(trackId);
 

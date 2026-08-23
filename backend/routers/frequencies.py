@@ -204,18 +204,33 @@ _PUBLIC_PROJECTION = {"_id": 0, "id": 1, "slug": 1, "title": 1,
 _SLUG_ATTEMPTS = 50
 
 
-async def _unique_track_slug(base: str) -> str:
+async def _unique_track_slug(base: str, escludi_id: str = None) -> str:
     from models.event_occurrence import slugify
     from database import frequency_tracks_collection
     root = slugify(base)[:46] or "sessione"
     candidate = root
     for n in range(2, _SLUG_ATTEMPTS + 2):
-        clash = await frequency_tracks_collection.find_one(
-            {"slug": candidate}, {"_id": 1})
+        filtro = {"$or": [{"slug": candidate},
+                          {"slug_precedenti": candidate}]}
+        if escludi_id:
+            filtro["id"] = {"$ne": escludi_id}
+        clash = await frequency_tracks_collection.find_one(filtro, {"_id": 1})
         if not clash:
             return candidate
         candidate = f"{root}-{n}"
     return f"{root}-{uuid.uuid4().hex[:6]}"
+
+
+async def _trova_pubblicata(slug: str, projection: dict):
+    """La traccia pubblicata per slug — anche coi LINK DI IERI: lo
+    slug segue il titolo a ogni pubblicazione (founder, 24/8: la sua
+    «Rinascita» era /senza-titolo perche' pubblicata col titolo ancora
+    vuoto), ma i vecchi slug restano in slug_precedenti e i link gia'
+    condivisi continuano a rispondere."""
+    from database import frequency_tracks_collection
+    return await frequency_tracks_collection.find_one(
+        {"$or": [{"slug": slug}, {"slug_precedenti": slug}],
+         "status": "published"}, projection)
 
 
 @router.post("/tracks/{track_id}/publish")
@@ -228,7 +243,18 @@ async def publish_track(track_id: str,
     if not track:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Traccia non trovata.")
-    slug = track.get("slug") or await _unique_track_slug(track["title"])
+    # lo slug SEGUE IL TITOLO: se il titolo di oggi produce una radice
+    # diversa (es. la traccia fu pubblicata da «Senza titolo»), se ne
+    # genera uno nuovo e il vecchio scende in slug_precedenti — i link
+    # gia' in giro non muoiono. La deduplica (-2, -3…) ignora se stessa.
+    from models.event_occurrence import slugify
+    slug = track.get("slug")
+    root = slugify(track["title"])[:46] or "sessione"
+    precedenti = list(track.get("slug_precedenti") or [])
+    if not slug or not (slug == root or slug.startswith(root + "-")):
+        if slug:
+            precedenti = list(dict.fromkeys(precedenti + [slug]))
+        slug = await _unique_track_slug(track["title"], escludi_id=track_id)
     # ES4 (21/8) — i numeri da vetrina si MATERIALIZZANO qui, una volta:
     # prima il catalogo trasportava l'intero array dei livelli di ogni
     # traccia solo per contarli. Si paga alla pubblicazione (rara), non
@@ -238,6 +264,7 @@ async def publish_track(track_id: str,
         {"id": track_id,
          "organization_id": current_user["organization_id"]},
         {"$set": {"status": "published", "slug": slug,
+                  "slug_precedenti": precedenti,
                   "published_at": utc_now(), "updated_at": utc_now(),
                   "layers_count": len(score.get("layers") or []),
                   "duration_sec": score.get("duration_sec")}})
@@ -313,10 +340,7 @@ async def master_pass(slug: str, request: Request):
     if not await _has_catalog_access(request):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Serve lo sblocco del cerchio.")
-    from database import frequency_tracks_collection
-    track = await frequency_tracks_collection.find_one(
-        {"slug": slug, "status": "published"},
-        {"_id": 0, "master_file": 1})
+    track = await _trova_pubblicata(slug, {"_id": 0, "master_file": 1})
     if not track or not track.get("master_file"):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Master non disponibile.")
@@ -334,10 +358,7 @@ async def serve_master(slug: str, request: Request,
         if not await _has_catalog_access(request):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="Serve lo sblocco del cerchio.")
-    from database import frequency_tracks_collection
-    track = await frequency_tracks_collection.find_one(
-        {"slug": slug, "status": "published"},
-        {"_id": 0, "master_file": 1})
+    track = await _trova_pubblicata(slug, {"_id": 0, "master_file": 1})
     nome = (track or {}).get("master_file")
     if not nome or "/" in nome or ".." in nome:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -375,8 +396,7 @@ async def unpublish_track(track_id: str,
 async def public_track(slug: str):
     """Payload del player pubblico: ricetta + chi l'ha composta."""
     from database import frequency_tracks_collection, organizations_collection
-    track = await frequency_tracks_collection.find_one(
-        {"slug": slug, "status": "published"}, _PUBLIC_PROJECTION)
+    track = await _trova_pubblicata(slug, _PUBLIC_PROJECTION)
     if not track:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Traccia non trovata.")
@@ -413,7 +433,8 @@ async def public_track(slug: str):
 async def register_play(slug: str):
     from database import frequency_tracks_collection
     await frequency_tracks_collection.update_one(
-        {"slug": slug, "status": "published"},
+        {"$or": [{"slug": slug}, {"slug_precedenti": slug}],
+         "status": "published"},
         {"$inc": {"plays_total": 1}})
 
 
