@@ -75,8 +75,36 @@ function bytesParziale(asset, sec) {
  *                  del founder: «se una traccia da 30 minuti e' usata
  *                  per 3, si scaricano 3 minuti?» — ora si'.
  */
+/* C2 (23/8) — IL RITAGLIO: copia solo i primi `sec` secondi di un
+   buffer e lascia l'originale al garbage collector. Serve quando si
+   era chiesto un pezzo ma e' arrivato il file intero (iOS rifiuta i
+   monconi m4a anche col moov in testa — verificato con afinfo: il
+   moov dichiara campioni che nel moncone non ci sono; oppure un
+   server senza Range). Il picco di decodifica resta, ma e'
+   transitorio e una base alla volta; il RESIDENTE crolla: la
+   «Meditazione rinascita» del founder teneva ~2 GB di PCM. */
+function ritaglia(ctx, buffer, sec) {
+  const n = Math.min(buffer.length, Math.ceil(sec * buffer.sampleRate));
+  if (n >= buffer.length * 0.95) return buffer;   // era gia' corto
+  const out = ctx.createBuffer(buffer.numberOfChannels, n, buffer.sampleRate);
+  for (let c = 0; c < buffer.numberOfChannels; c++) {
+    out.copyToChannel(buffer.getChannelData(c).subarray(0, n), c);
+  }
+  return out;
+}
+
 export function loadAssetBuffer(ctx, url, inUso = new Set([url]), parziale = null) {
-  const limite = parziale ? bytesParziale(parziale.asset, parziale.sec) : null;
+  /* C1 (23/8) — IL TAPPETO PRE-PRODOTTO: per un anello, se l'asset ha
+     il file `tappeto_url` (i primi ~3 minuti, confezionati come file
+     COMPLETO), si scarica quello: decodificabile ovunque per
+     costruzione — niente Range, niente scommesse col decoder di iOS,
+     niente fallback da file intero. */
+  if (parziale && parziale.anello && parziale.asset && parziale.asset.tappeto_url) {
+    url = parziale.asset.tappeto_url;
+    parziale = { ...parziale, tappetoFile: true };
+  }
+  const limite = (parziale && !parziale.tappetoFile)
+    ? bytesParziale(parziale.asset, parziale.sec) : null;
   // chiave distinta per taglio: la stessa base puo' servire intera in
   // una sessione e parziale in un'altra — buffer diversi
   const chiave = limite ? `${url}#p${limite}` : url;
@@ -94,8 +122,7 @@ export function loadAssetBuffer(ctx, url, inUso = new Set([url]), parziale = nul
         return r.arrayBuffer().then((ab) => ({ ab, parziale: ottenuto }));
       })
       .then(({ ab, parziale: ottenuto }) => ctx.decodeAudioData(ab)
-        .then((buf) => (ottenuto && parziale?.anello
-          ? anelloDaBuffer(ctx, buf) : buf))
+        .then((buf) => confeziona(ctx, buf, parziale, !ottenuto))
         /* SE LO SPEZZONE NON SI DECODIFICA, SI PRENDE IL FILE INTERO.
            Un m4a tagliato a meta' e' un file incompleto: i decoder
            permissivi (desktop) lo accettano, quelli severi no —
@@ -112,7 +139,8 @@ export function loadAssetBuffer(ctx, url, inUso = new Set([url]), parziale = nul
             url.split('/').pop());
           return fetch(url)
             .then((r) => r.arrayBuffer())
-            .then((ab2) => ctx.decodeAudioData(ab2));
+            .then((ab2) => ctx.decodeAudioData(ab2))
+            .then((intero) => confeziona(ctx, intero, parziale, true));
         }))
       .then((buf) => {
         entry.bytes = buf.length * buf.numberOfChannels * 4;
@@ -125,6 +153,22 @@ export function loadAssetBuffer(ctx, url, inUso = new Set([url]), parziale = nul
   return bufferCache.get(chiave).p;
 }
 
+/* Il buffer decodificato prende la sua forma finale: l'anello per i
+   tappeti, il ritaglio quando e' arrivato piu' file del necessario.
+   Identico a prima nei casi felici; nuovo solo dove il fallback
+   consegnava l'intero e ce lo tenevamo tutto in RAM. */
+function confeziona(ctx, buf, parziale, viaggiatoIntero) {
+  if (!parziale) return buf;
+  if (parziale.tappetoFile) return anelloDaBuffer(ctx, buf);
+  if (!viaggiatoIntero) {
+    return parziale.anello ? anelloDaBuffer(ctx, buf) : buf;
+  }
+  const voluto = parziale.anello ? SPEZZONE_SEC : parziale.sec;
+  const tagliato = ritaglia(ctx, buf, voluto);
+  if (tagliato === buf) return buf;               // base corta: com'era sempre
+  return parziale.anello ? anelloDaBuffer(ctx, tagliato) : tagliato;
+}
+
 /**
  * Risolve i layer audio di uno score in audioLayers per il motore
  * (startPreview / renderPcm): [{id, buffer, start, end, gain, loop,
@@ -134,7 +178,10 @@ export function loadAssetBuffer(ctx, url, inUso = new Set([url]), parziale = nul
 export async function resolveAudioLayers(ctx, score, soundsById) {
   const out = [];
   const inUso = new Set((score.layers || [])
-    .map((l) => soundsById[l.asset_id]?.stream_url).filter(Boolean));
+    .flatMap((l) => {
+      const a = soundsById[l.asset_id];
+      return a ? [a.stream_url, a.tappeto_url] : [];
+    }).filter(Boolean));
   for (const l of (score.layers || [])) {
     if (l.kind !== 'audio' || l.mute || !l.gain) continue;
     const asset = soundsById[l.asset_id];

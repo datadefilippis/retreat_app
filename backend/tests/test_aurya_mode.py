@@ -1375,3 +1375,55 @@ class TestVoceNelVisual:
         PROTO = self._proto()
         assert "Object.keys(VOICE_PRESETS).forEach" in PROTO
         assert "VOICE_PRESETS[k].label" in PROTO
+
+
+class TestTappetiPreProdotti:
+    """C1+C2 (23/8) — la «Meditazione rinascita» del founder: 12 basi,
+    ~114 MB di rete e ~2 GB di PCM su iPhone. La causa: iOS rifiuta
+    gli m4a monchi ANCHE col moov in testa (verificato con afinfo —
+    il moov dichiara campioni che nel moncone non ci sono), quindi lo
+    spezzone via Range cadeva sempre al file intero. Nota per il
+    futuro: il faststart NON e' la cura, l'esperimento l'ha smentito.
+
+    Cura in due mosse: il TAPPETO pre-prodotto (file completo di ~190s
+    per ogni base lunga, decodificabile ovunque per costruzione) e il
+    RITAGLIO (se arriva l'intero, si tiene solo la porzione usata)."""
+
+    def _assets(self):
+        return (FQ_DIR / "engine" / "assets.js").read_text()
+
+    def test_l_anello_preferisce_il_tappeto_file(self):
+        src = self._assets()
+        assert "parziale.asset.tappeto_url" in src
+        assert "url = parziale.asset.tappeto_url" in src
+        # il tappeto e' un file completo: niente Range su di lui
+        assert "!parziale.tappetoFile" in src
+
+    def test_il_ritaglio_quando_arriva_l_intero(self):
+        src = self._assets()
+        assert "function ritaglia(ctx, buffer, sec)" in src
+        assert "function confeziona(ctx, buf, parziale, viaggiatoIntero)" in src
+        # il fallback dal moncone rifiutato ora si ritaglia
+        assert "confeziona(ctx, intero, parziale, true)" in src
+        # e i tappeti in uso non si sfrattano dalla cache
+        assert "[a.stream_url, a.tappeto_url]" in src
+
+    def test_le_api_portano_il_tappeto(self):
+        for nome in ("frequencies.py", "public.py"):
+            src = (BACKEND_DIR / "routers" / nome).read_text()
+            assert '"tappeto_url": 1' in src, f"{nome}: proiezione senza tappeto"
+
+    def test_la_fabbrica_esiste_ed_e_prudente(self):
+        fab = (BACKEND_DIR / "scripts" / "prepara_tappeti.py").read_text()
+        assert "TAPPETO_SEC = 190" in fab       # SPEZZONE_SEC + cucitura
+        assert "SOGLIA_SEC = 240" in fab        # le basi corte non si toccano
+        assert "afconvert" in fab               # mac: niente ffmpeg richiesto
+
+    def test_i_tappeti_locali_sono_veri(self):
+        """almeno una base lunga deve avere il suo tappeto accanto,
+        e il tappeto deve essere un file sostanzioso (non un moncone)."""
+        audio = BACKEND_DIR / "uploads" / "audio"
+        tappeti = list(audio.glob("*.tappeto.m4a"))
+        assert len(tappeti) >= 30, f"solo {len(tappeti)} tappeti in dev"
+        for t in tappeti[:5]:
+            assert t.stat().st_size > 1_000_000, f"{t.name} sospettosamente piccolo"

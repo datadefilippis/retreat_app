@@ -277,7 +277,7 @@ async def public_track(slug: str):
         from database import voice_assets_collection
         clips = await voice_assets_collection.find(
             {"id": {"$in": voice_ids}},
-            {"_id": 0, "id": 1, "stream_url": 1, "duration_sec": 1},
+            {"_id": 0, "id": 1, "stream_url": 1, "tappeto_url": 1, "duration_sec": 1},
         ).to_list(len(voice_ids))
         track["voice_assets"] = clips
     return track
@@ -494,7 +494,7 @@ async def remove_favorite(slug: str,
 # scrittura SOLO system admin, con licenza annotata.
 
 _SOUND_PROJECTION = {"_id": 0, "id": 1, "title": 1, "category": 1,
-                     "duration_sec": 1, "size_bytes": 1, "stream_url": 1}
+                     "duration_sec": 1, "size_bytes": 1, "stream_url": 1, "tappeto_url": 1}
 
 
 @router.get("/sounds")
@@ -584,7 +584,7 @@ from models.voice_asset import TITLE_MAX as VOICE_TITLE_MAX  # noqa: E402
 VOICE_DIR = Path(__file__).resolve().parent.parent / "uploads" / "voice"
 
 _VOICE_PROJECTION = {"_id": 0, "id": 1, "title": 1, "duration_sec": 1,
-                     "size_bytes": 1, "stream_url": 1, "created_at": 1,
+                     "size_bytes": 1, "stream_url": 1, "tappeto_url": 1, "created_at": 1,
                      "trim_start": 1, "trim_end": 1}
 
 

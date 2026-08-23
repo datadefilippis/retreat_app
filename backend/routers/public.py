@@ -4599,7 +4599,7 @@ async def visual_demos():
     items = await audio_assets_collection.find(
         {"owner": "platform", "title": {"$in": VISUAL_DEMO_TITLES}},
         {"_id": 0, "id": 1, "title": 1, "category": 1,
-         "duration_sec": 1, "stream_url": 1},
+         "duration_sec": 1, "stream_url": 1, "tappeto_url": 1},
     ).to_list(length=20)
     by_title = {a["title"]: a for a in items}
     # l'ordine e' quello curato, non quello del database
