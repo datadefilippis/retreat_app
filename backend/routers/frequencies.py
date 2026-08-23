@@ -511,9 +511,14 @@ async def _has_catalog_access(request) -> bool:
         try:
             from auth import decode_token
             payload = decode_token(auth_header[7:])
-            if payload.get("type") == "platform" and payload.get("sub"):
+            # platform (account Aurya) O operatore loggato: un account
+            # e' PIU' del cerchio — e il client attacca il Bearer org a
+            # ogni chiamata (24/8: l'operatore che ascoltava la SUA
+            # meditazione prendeva 401 e il client lo sbatteva al login)
+            if payload.get("sub") and (payload.get("type") == "platform"
+                                       or payload.get("org_id")):
                 return True
-        except Exception:  # token non-platform o scaduto: non sblocca
+        except Exception:  # token scaduto o estraneo: non sblocca
             pass
     return False
 

@@ -1448,6 +1448,24 @@ class TestIlMaster:
         # e la location masters viene PRIMA della /uploads/ generica
         assert ngx.index("location /uploads/masters/") < ngx.index("location /uploads/ {")
 
+    def test_un_401_sul_master_non_butta_mai_al_login(self):
+        """24/8, founder: «clicco Ascolta e mi reindirizza al login».
+        La catena: il client attacca il Bearer ORG a ogni chiamata,
+        il portiere non lo riconosceva -> 401 -> l'interceptor
+        globale CANCELLAVA il token e sbatteva al login. Due difese:
+        (1) l'operatore loggato E' del cerchio (org_id nel token
+        sblocca); (2) master-pass e' marcata skipAuthRedirect — un
+        401 li' significa «vai di synth», mai «vai al login»."""
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        corpo = src.split("async def _has_catalog_access")[1][:1400]
+        assert 'payload.get("org_id")' in corpo
+        cli = (FQ_DIR.parent.parent / "api" / "client.js").read_text()
+        assert "error.config?.skipAuthRedirect" in cli
+        # e la marca sta PRIMA del ramo che cancella il token
+        assert cli.index("skipAuthRedirect") < cli.index("removeItem('token')")
+        fapi = (FQ_DIR.parent.parent / "api" / "frequencies.js").read_text()
+        assert "skipAuthRedirect: true" in fapi.split("masterPass")[1][:200]
+
     def test_il_portiere_verifica_sempre(self):
         """niente pass valido E niente sblocco => 401. Il pass e'
         scoped alla traccia e muore in ore (mai la prova del cerchio

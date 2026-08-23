@@ -21,7 +21,8 @@ export const frequenciesAPI = {
   },
   masterPass: (slug, provaToken) => api.get(
     `/frequencies/public/${slug}/master-pass`,
-    provaToken ? { headers: { 'X-Fqz-Unlock': provaToken } } : {}),
+    { skipAuthRedirect: true,
+      ...(provaToken ? { headers: { 'X-Fqz-Unlock': provaToken } } : {}) }),
   unpublish: (trackId) => api.post(`/frequencies/tracks/${trackId}/unpublish`),
   getPublic: (slug) => api.get(`/frequencies/public/${slug}`),
   registerPlay: (slug) => api.post(`/frequencies/public/${slug}/play`),

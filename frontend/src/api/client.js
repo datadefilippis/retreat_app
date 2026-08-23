@@ -31,6 +31,11 @@ let isRedirecting = false;
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // le chiamate marcate skipAuthRedirect gestiscono il 401 da sole
+    // (es. master-pass: un 401 li' significa «usa il percorso synth»,
+    // non «butta il token dell'operatore e vai al login» — successo
+    // il 24/8: Ascolta reindirizzava al login)
+    if (error.config?.skipAuthRedirect) return Promise.reject(error);
     if (error.response?.status === 401 && !isRedirecting) {
       isRedirecting = true;
       localStorage.removeItem('token');
