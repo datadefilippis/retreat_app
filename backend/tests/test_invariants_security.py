@@ -12418,3 +12418,42 @@ class TestSEC_E_8_23_WidgetI18nFinalSweep:
             f"profile-editor ha solo {t_calls} t() calls (atteso >= 15). "
             f"Coverage incompleta dopo W4.9."
         )
+
+
+class TestMicrofonoConsentito:
+    """23/8 — il founder, registrando la voce per una meditazione:
+    «Microfono non disponibile o permesso negato». Non era il suo
+    telefono: la Permissions-Policy del sito diceva `microphone=()`,
+    cioe' vietato a CHIUNQUE, la pagina stessa inclusa — il browser
+    rifiutava getUserMedia senza nemmeno chiedere il consenso.
+
+    Due funzioni vive registrano la voce: il leggio di Crea (le
+    meditazioni guidate) e /sound/visual. Finche' esistono, il
+    microfono resta `(self)`: permesso alla nostra origine soltanto,
+    e comunque col consenso esplicito dell'utente.
+
+    La camera invece resta vietata: nessuna funzione la usa.
+    """
+
+    def _policy(self):
+        srv = (BACKEND_DIR / "server.py").read_text()
+        ngx = (BACKEND_DIR.parent / "deploy" / "nginx" / "nginx.conf").read_text()
+        return srv, ngx
+
+    def test_il_microfono_e_permesso_alla_nostra_origine(self):
+        srv, ngx = self._policy()
+        for nome, src in (("server.py", srv), ("nginx.conf", ngx)):
+            righe = [r for r in src.splitlines()
+                     if "Permissions-Policy" in r and "microphone" in r]
+            assert righe, f"{nome}: nessuna Permissions-Policy col microfono"
+            for r in righe:
+                assert "microphone=(self)" in r, (
+                    f"{nome}: microfono richiuso — la registrazione della "
+                    f"voce (Crea, /sound/visual) smette di funzionare")
+
+    def test_la_camera_resta_vietata(self):
+        srv, ngx = self._policy()
+        for nome, src in (("server.py", srv), ("nginx.conf", ngx)):
+            for r in src.splitlines():
+                if "Permissions-Policy" in r and "camera" in r:
+                    assert "camera=()" in r, f"{nome}: camera aperta senza motivo"

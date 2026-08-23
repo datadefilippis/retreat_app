@@ -486,8 +486,11 @@ async def _security_headers(request, call_next):
     response = await call_next(request)
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    # microphone=(self): la voce dell'operatore si registra dentro il
+    # sito (leggio di Crea, /sound/visual). Con la lista vuota il
+    # browser rifiuta getUserMedia senza nemmeno chiedere all'utente.
     response.headers.setdefault(
-        "Permissions-Policy", "camera=(), microphone=(), payment=(self)"
+        "Permissions-Policy", "camera=(), microphone=(self), payment=(self)"
     )
     # HSTS solo in produzione (dietro HTTPS): su localhost HTTP il browser
     # lo ignora, ma meglio non insegnare mai il dominio dev al preload.
