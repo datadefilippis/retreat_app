@@ -56,8 +56,13 @@ export default function PublicFrequencyPage() {
      non piu' un flag locale scritto al solo subscribe: quel flag
      faceva ascoltare la traccia intera a chiunque digitasse un
      indirizzo qualsiasi, senza conferma. */
+  /* 24/8 — anche l'OPERATORE e' sbloccato: il suo login vive in
+     `token` (non platform_token) e per giorni il player lo ha
+     trattato da visitatore qualunque — sul suo telefono finiva sul
+     percorso pesante (crash) o sul cancello della SUA newsletter. */
   const [unlocked, setUnlocked] = useState(() =>
-    !!prova() || !!localStorage.getItem('platform_token'));
+    !!prova() || !!localStorage.getItem('platform_token')
+    || !!localStorage.getItem('token'));
   const [attesaConferma, setAttesaConferma] = useState(false);
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
@@ -69,6 +74,7 @@ export default function PublicFrequencyPage() {
   const timerRef = useRef(null);
   const soundsRef = useRef({});
   const masterKORef = useRef(false);      /* master fallito: si sintetizza */
+  const passRef = useRef(null);           /* il pass del master, PRE-SCORTATO */
   const playedRef = useRef(false);
   /* AT3 — ascolto continuo: il lettore <audio> preparato (sopravvive
      al blocco schermo), il progresso del render, il flag per la UI */
@@ -87,7 +93,21 @@ export default function PublicFrequencyPage() {
     // SB1 — vecchie chiavi HMAC → prova unica (poi si ricontrolla)
     migraVecchieChiavi().then(() => { if (prova()) setUnlocked(true); });
     frequenciesAPI.getPublic(slug)
-      .then((r) => setTrack(r.data))
+      .then((r) => {
+        setTrack(r.data);
+        /* LA PRE-SCORTA DEL PASS (24/8, lezione del gesto su iOS):
+           un el.play() dopo un giro di rete perde il gesto utente e
+           viene rifiutato in silenzio — «clicco una volta niente,
+           riclicco e parte» (founder). Il pass si chiede ORA, cosi'
+           al click il lettore nasce sincrono, dentro il gesto. */
+        if (r.data.master_pronto
+            && (prova() || localStorage.getItem('platform_token')
+                || localStorage.getItem('token'))) {
+          frequenciesAPI.masterPass(slug, prova())
+            .then((rp) => { passRef.current = rp.data.pass; })
+            .catch(() => { /* al click si tenta la via lenta */ });
+        }
+      })
       .catch(() => setNotFound(true));
     frequenciesAPI.listSounds()
       .then((r) => {
@@ -221,9 +241,15 @@ export default function PublicFrequencyPage() {
     }
     if (track.master_pronto && unlocked && !contRef.current && !masterKORef.current) {
       try {
-        const risp = await frequenciesAPI.masterPass(slug, prova());
+        /* col pass pre-scortato niente rete tra il tocco e il play */
+        let passo = passRef.current;
+        if (!passo) {
+          const risp = await frequenciesAPI.masterPass(slug, prova());
+          passo = risp.data.pass;
+          passRef.current = passo;
+        }
         const base = process.env.REACT_APP_BACKEND_URL || '';
-        const src = `${base}/api/frequencies/public/${slug}/master?pass=${encodeURIComponent(risp.data.pass)}`;
+        const src = `${base}/api/frequencies/public/${slug}/master?pass=${encodeURIComponent(passo)}`;
         const h = lettoreDaUrl(src, track.score.duration_sec,
           { titolo: track.title, autore: track.operator?.name }, {
             onPlay: () => setPlaying(true),

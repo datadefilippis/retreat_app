@@ -1466,6 +1466,25 @@ class TestIlMaster:
         fapi = (FQ_DIR.parent.parent / "api" / "frequencies.js").read_text()
         assert "skipAuthRedirect: true" in fapi.split("masterPass")[1][:200]
 
+    def test_l_operatore_e_sbloccato_anche_lato_client(self):
+        """24/8, founder dal telefono: «sono loggato con l'account
+        operatore che ha creato la meditazione e ancora bugga».
+        unlocked guardava solo prova() e platform_token: il login
+        operatore vive in `token` e il player lo trattava da
+        visitatore. E il ramo master faceva rete PRIMA di el.play():
+        su iOS il gesto si perde e il play muore in silenzio («clicco
+        una volta niente, riclicco e parte») — il pass ora si
+        PRE-SCORTA al caricamento."""
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        blocco = pub.split("const [unlocked")[1][:300]
+        assert "localStorage.getItem('token')" in blocco
+        assert "passRef" in pub
+        assert "LA PRE-SCORTA DEL PASS" in pub
+        # nel ramo master il play col pass pre-scortato non attende rete
+        ramo = pub.split("track.master_pronto && unlocked")[1][:600]
+        assert "let passo = passRef.current" in ramo
+        assert "if (!passo)" in ramo
+
     def test_l_anteprima_e_un_file_leggero(self):
         """M3 (24/8): i 90s del cancello come FILE pubblico ritagliato
         dal master A COLPI DI BYTE (frame MP3 indipendenti, niente
