@@ -529,6 +529,10 @@ async def upload_sound(file: UploadFile = File(...),
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File oltre {MAX_FILE_BYTES // (1024 * 1024)}MB.")
+    # NOTA TAPPETI (23/8): una base oltre i ~4 minuti merita il suo
+    # {nome}.tappeto.m4a (scripts/prepara_tappeti.py, gira sul mac) —
+    # senza, su iPhone l'anello ripiega sul file intero. La fabbrica
+    # e' idempotente: si rilancia dopo gli upload e si ricarica.
     asset_id = str(uuid.uuid4())
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     path = AUDIO_DIR / f"{asset_id}.{ext}"
