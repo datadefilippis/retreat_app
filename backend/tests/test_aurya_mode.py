@@ -1485,6 +1485,22 @@ class TestIlMaster:
         assert "let passo = passRef.current" in ramo
         assert "if (!passo)" in ramo
 
+    def test_il_ripiego_del_master_non_e_mai_il_synth(self):
+        """24/8, il test del founder che ha chiuso il cerchio: «sono
+        uscito dall'account e improvvisamente l'audio e' partito».
+        Da loggato: ramo master -> il server rifiutava il token del
+        telefono (vecchio) -> e il ripiego era il SYNTH che uccide i
+        telefoni. Ora: master KO -> la verita' del server vince
+        (unlocked=false) e parte SUBITO l'anteprima leggera; il synth
+        resta solo come extrema ratio senza anteprima."""
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        catchm = pub.split("annota('master KO")[1][:700]
+        assert "setUnlocked(false)" in catchm
+        assert "avviaAnteprima(); return;" in catchm
+        # e la diagnosi d'ascolto esiste: mai piu' giorni alla cieca
+        assert "/[?&]ascolto=1/" in pub
+        assert "ramo: MASTER" in pub and "ramo: ANTEPRIMA" in pub and "ramo: SYNTH" in pub
+
     def test_l_anteprima_e_un_file_leggero(self):
         """M3 (24/8): i 90s del cancello come FILE pubblico ritagliato
         dal master A COLPI DI BYTE (frame MP3 indipendenti, niente

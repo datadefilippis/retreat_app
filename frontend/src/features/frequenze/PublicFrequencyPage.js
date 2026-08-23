@@ -75,6 +75,22 @@ export default function PublicFrequencyPage() {
   const soundsRef = useRef({});
   const masterKORef = useRef(false);      /* master fallito: si sintetizza */
   const passRef = useRef(null);           /* il pass del master, PRE-SCORTATO */
+  /* LA DIAGNOSI D'ASCOLTO (?ascolto=1) — dopo giorni di «solita
+     situazione» dal telefono del founder, si misura sul dispositivo:
+     ramo scelto, stati, errori JS catturati. Zero costi senza flag. */
+  const diagOn = /[?&]ascolto=1/.test(window.location.search);
+  const [diag, setDiag] = useState([]);
+  const annota = (riga) => { if (diagOn) setDiag((d) => [...d.slice(-7), riga]); };
+  useEffect(() => {
+    if (!diagOn) return undefined;
+    const suErr = (e) => annota('ERR ' + (e.message || e.reason?.message || String(e.reason || e)).slice(0, 90));
+    window.addEventListener('error', suErr);
+    window.addEventListener('unhandledrejection', suErr);
+    return () => {
+      window.removeEventListener('error', suErr);
+      window.removeEventListener('unhandledrejection', suErr);
+    };
+  }, [diagOn]);  // eslint-disable-line react-hooks/exhaustive-deps
   const playedRef = useRef(false);
   /* AT3 — ascolto continuo: il lettore <audio> preparato (sopravvive
      al blocco schermo), il progresso del render, il flag per la UI */
@@ -104,8 +120,8 @@ export default function PublicFrequencyPage() {
             && (prova() || localStorage.getItem('platform_token')
                 || localStorage.getItem('token'))) {
           frequenciesAPI.masterPass(slug, prova())
-            .then((rp) => { passRef.current = rp.data.pass; })
-            .catch(() => { /* al click si tenta la via lenta */ });
+            .then((rp) => { passRef.current = rp.data.pass; annota('pre-scorta pass: OK'); })
+            .catch((e) => annota('pre-scorta pass KO: ' + (e?.response?.status || 'rete')));
         }
       })
       .catch(() => setNotFound(true));
@@ -209,38 +225,44 @@ export default function PublicFrequencyPage() {
        percorso pesante: sul telefono il tab moriva di RAM. Ora
        ascolta un file di ~2 MB ritagliato dal master; il cancello
        arriva ai 90 secondi come sempre. */
+    const avviaAnteprima = () => {
+      annota('ramo: ANTEPRIMA (file 90s)');
+      const h = lettoreDaUrl(track.anteprima_url,
+        Math.min(PREVIEW_SEC, track.score.duration_sec),
+        { titolo: track.title, autore: track.operator?.name }, {
+          onPlay: () => setPlaying(true),
+          onPause: () => setPlaying(false),
+          onEnd: () => { setPlaying(false); setGateOpen(true); },
+          onTime: (t2) => {
+            setElapsed(t2);
+            if (t2 >= PREVIEW_SEC) { h.pause(); setGateOpen(true); }
+          },
+        });
+      contRef.current = h;
+      setContinuo(true);
+      if (!lettoreRef.current) {
+        const l2 = creaLettore(ctx);
+        lettoreRef.current = l2;
+        setLettore(l2);
+      }
+      h.presaAnalisi(ctx, lettoreRef.current.analyser);
+      segnaAscolto();
+      h.seek(fromT);
+      h.play();
+    };
     if (!unlocked && track.anteprima_url && !contRef.current && !masterKORef.current) {
       try {
-        const h = lettoreDaUrl(track.anteprima_url,
-          Math.min(PREVIEW_SEC, track.score.duration_sec),
-          { titolo: track.title, autore: track.operator?.name }, {
-            onPlay: () => setPlaying(true),
-            onPause: () => setPlaying(false),
-            onEnd: () => { setPlaying(false); setGateOpen(true); },
-            onTime: (t2) => {
-              setElapsed(t2);
-              if (t2 >= PREVIEW_SEC) { h.pause(); setGateOpen(true); }
-            },
-          });
-        contRef.current = h;
-        setContinuo(true);
-        if (!lettoreRef.current) {
-          const l2 = creaLettore(ctx);
-          lettoreRef.current = l2;
-          setLettore(l2);
-        }
-        h.presaAnalisi(ctx, lettoreRef.current.analyser);
-        segnaAscolto();
-        h.seek(fromT);
-        h.play();
+        avviaAnteprima();
         return;
       } catch (err) {
+        annota('anteprima KO: ' + (err?.message || 'errore'));
         console.warn('[anteprima] non disponibile, sintetizzo:', err?.message);  // eslint-disable-line no-console
         masterKORef.current = true;
       }
     }
     if (track.master_pronto && unlocked && !contRef.current && !masterKORef.current) {
       try {
+        annota('ramo: MASTER (pass ' + (passRef.current ? 'pre-scortato' : 'da chiedere') + ')');
         /* col pass pre-scortato niente rete tra il tocco e il play */
         let passo = passRef.current;
         if (!passo) {
@@ -273,10 +295,25 @@ export default function PublicFrequencyPage() {
         h.play();
         return;
       } catch (err) {
-        console.warn('[master] non disponibile, sintetizzo:', err?.message);  // eslint-disable-line no-console
+        /* LA TRAPPOLA CHIUSA (24/8): qui si ripiegava sul SYNTH — la
+           strada che sui telefoni muore di RAM. Un token scaduto nel
+           localStorage bastava: unlocked sembrava vero, il server
+           diceva 401, e il fallback era il crash. Ora il ripiego e'
+           l'ANTEPRIMA leggera (90s + cancello): se il server ti
+           rifiuta, per lui non sei sbloccato — e il telefono vive. */
+        annota('master KO: ' + (err?.response?.status || err?.message || 'errore'));
+        console.warn('[master] non disponibile:', err?.message);  // eslint-disable-line no-console
+        if (track.anteprima_url) {
+          /* la verita' del server vince: per lui non sei sbloccato.
+             E il ripiego parte SUBITO — mai piu' il synth che uccide
+             i telefoni quando esiste la via leggera. */
+          setUnlocked(false);
+          try { avviaAnteprima(); return; } catch (e2) { /* si scende al synth */ }
+        }
         masterKORef.current = true;
       }
     }
+    annota('ramo: SYNTH (risintesi delle basi)');
     /* il canale-musica: parte nel gesto (vedi engine/ponte.js) */
     const ponte = creaPonte(ctx);
     ponte.avvia();
@@ -376,6 +413,20 @@ export default function PublicFrequencyPage() {
     } finally { setSubscribing(false); }
   };
 
+  const pannelloDiag = diagOn ? (
+    <div style={{ position: 'fixed', left: 8, bottom: 8, zIndex: 90,
+                  background: 'rgba(3,2,8,.88)', color: '#9ef7c3',
+                  font: '10px/1.6 monospace', padding: '8px 10px',
+                  borderRadius: 8, maxWidth: '92vw', whiteSpace: 'pre-wrap' }}>
+      {'build ascolto 24/8\n'
+        + 'sbloccato ' + String(unlocked)
+        + ' | master ' + String(!!track?.master_pronto)
+        + ' | anteprima ' + String(!!track?.anteprima_url)
+        + ' | token ' + String(!!localStorage.getItem('token'))
+        + '\n' + (diag.length ? diag.join('\n') : '(nessun evento)')}
+    </div>
+  ) : null;
+
   if (notFound) {
     return (
       <div className="fqz">
@@ -398,6 +449,7 @@ export default function PublicFrequencyPage() {
 
   return (
     <div className="fqz" data-testid="fqz-public">
+      {pannelloDiag}
       {/* MD (20/8) — chi arriva da un link condiviso restava chiuso
           qui dentro: il menu del sito non c'e' e il design e' un altro
           mondo. Stesso rimedio di Aurya Sound (SP-ter): marchio in
