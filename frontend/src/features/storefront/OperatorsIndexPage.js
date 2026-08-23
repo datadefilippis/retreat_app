@@ -456,7 +456,12 @@ export default function OperatorsIndexPage() {
   });
 
   return (
-    <MarketplaceShell>
+    /* noSearch (23/8, founder): questa E' una directory, coi suoi
+       filtri sotto. La scorciatoia "Dove? · Quando? · Che ritiro?"
+       nella barra del menu rimandava altrove (la home dei ritiri) e
+       si confondeva coi filtri veri della pagina. Stessa scelta gia'
+       fatta sul calendario ritiri. */
+    <MarketplaceShell noSearch>
       {/* PN — sulla rotta anteprima i dati sono VERI: niente banner
           "d'esempio" (su /operatori marketplace si spegne da solo) */}
       {!isPreview && <PrelaunchBanner audience="operator" />}
