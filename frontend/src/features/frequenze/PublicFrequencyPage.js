@@ -184,6 +184,41 @@ export default function PublicFrequencyPage() {
        streaming (come una canzone: partenza immediata, RAM da
        streaming, schermo bloccato nativo) invece di risintetizzare
        le basi. Qualunque intoppo -> percorso synth di sempre. */
+    /* L'ANTEPRIMA-FILE (M3, 24/8) — chi NON e' sbloccato (chiunque
+       riceva un link condiviso) prima sintetizzava i 90 secondi col
+       percorso pesante: sul telefono il tab moriva di RAM. Ora
+       ascolta un file di ~2 MB ritagliato dal master; il cancello
+       arriva ai 90 secondi come sempre. */
+    if (!unlocked && track.anteprima_url && !contRef.current && !masterKORef.current) {
+      try {
+        const h = lettoreDaUrl(track.anteprima_url,
+          Math.min(PREVIEW_SEC, track.score.duration_sec),
+          { titolo: track.title, autore: track.operator?.name }, {
+            onPlay: () => setPlaying(true),
+            onPause: () => setPlaying(false),
+            onEnd: () => { setPlaying(false); setGateOpen(true); },
+            onTime: (t2) => {
+              setElapsed(t2);
+              if (t2 >= PREVIEW_SEC) { h.pause(); setGateOpen(true); }
+            },
+          });
+        contRef.current = h;
+        setContinuo(true);
+        if (!lettoreRef.current) {
+          const l2 = creaLettore(ctx);
+          lettoreRef.current = l2;
+          setLettore(l2);
+        }
+        h.presaAnalisi(ctx, lettoreRef.current.analyser);
+        segnaAscolto();
+        h.seek(fromT);
+        h.play();
+        return;
+      } catch (err) {
+        console.warn('[anteprima] non disponibile, sintetizzo:', err?.message);  // eslint-disable-line no-console
+        masterKORef.current = true;
+      }
+    }
     if (track.master_pronto && unlocked && !contRef.current && !masterKORef.current) {
       try {
         const risp = await frequenciesAPI.masterPass(slug, prova());
@@ -297,6 +332,13 @@ export default function PublicFrequencyPage() {
         setUnlocked(true);
         setGateOpen(false);
         setGateMsg('');
+        /* il lettore dell'ANTEPRIMA (90s) va smontato: il prossimo
+           play costruisce quello del master, intero */
+        if (contRef.current) {
+          try { contRef.current.dispose(); } catch (e2) { /* niente */ }
+          contRef.current = null;
+          setContinuo(false);
+        }
         play(0);
       } else {
         // prima iscrizione: la traccia intera si apre col click

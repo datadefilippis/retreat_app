@@ -1466,6 +1466,23 @@ class TestIlMaster:
         fapi = (FQ_DIR.parent.parent / "api" / "frequencies.js").read_text()
         assert "skipAuthRedirect: true" in fapi.split("masterPass")[1][:200]
 
+    def test_l_anteprima_e_un_file_leggero(self):
+        """M3 (24/8): i 90s del cancello come FILE pubblico ritagliato
+        dal master A COLPI DI BYTE (frame MP3 indipendenti, niente
+        encoder nel server). Prima i non-sbloccati — chiunque riceva
+        un link condiviso — sintetizzavano col percorso pesante e sul
+        telefono il tab moriva («in Safari va in errore», founder)."""
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        assert "def _ritaglia_anteprima(" in src
+        assert "24000 * ANTEPRIMA_SEC" in src        # 192kbps CBR
+        assert '"anteprima_url": f"/uploads/anteprime/' in src
+        assert '"anteprima_url": 1' in src            # nel payload pubblico
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "!unlocked && track.anteprima_url" in pub
+        assert "if (t2 >= PREVIEW_SEC) { h.pause(); setGateOpen(true); }" in pub
+        # allo sblocco il lettore dell'anteprima si smonta
+        assert "contRef.current.dispose()" in pub.split("esito === 'sbloccato'")[1][:600]
+
     def test_il_portiere_verifica_sempre(self):
         """niente pass valido E niente sblocco => 401. Il pass e'
         scoped alla traccia e muore in ore (mai la prova del cerchio

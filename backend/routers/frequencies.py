@@ -46,6 +46,21 @@ AUDIO_DIR = Path(__file__).resolve().parent.parent / "uploads" / "audio"
 MASTERS_DIR = Path(__file__).resolve().parent.parent / "uploads" / "masters"
 MASTER_MAX_BYTES = 64 * 1024 * 1024      # 30 min a 192 kbps ~ 41 MB + margine
 MASTER_PASS_TTL_SEC = 6 * 3600
+# L'ANTEPRIMA (M3, 24/8): i 90 secondi del cancello, come FILE
+# pubblico (~2 MB). Prima i non-sbloccati — cioe' CHIUNQUE riceva un
+# link condiviso — sintetizzavano l'anteprima col percorso pesante, e
+# sul telefono il tab moriva di RAM (founder: «in Safari va in
+# errore»). Si RITAGLIA dal master a colpi di byte: i frame MP3 sono
+# indipendenti, un taglio netto suona — niente encoder nel server.
+ANTEPRIME_DIR = Path(__file__).resolve().parent.parent / "uploads" / "anteprime"
+ANTEPRIMA_SEC = 92                       # 90 del cancello + respiro
+
+
+def _ritaglia_anteprima(master_bytes: bytes) -> bytes:
+    # 192 kbps CBR: byte al secondo = 24000. Un margine di 4 KB copre
+    # header/tag in testa. Se il master fosse piu' corto, resta tutto.
+    quota = 24000 * ANTEPRIMA_SEC + 4096
+    return master_bytes[:quota]
 
 logger = logging.getLogger(__name__)
 
@@ -200,7 +215,8 @@ async def delete_track(track_id: str,
 _PUBLIC_PROJECTION = {"_id": 0, "id": 1, "slug": 1, "title": 1,
                       "description": 1, "intent": 1, "score": 1,
                       "plays_total": 1, "organization_id": 1,
-                      "master_file": 1, "master_bytes": 1}
+                      "master_file": 1, "master_bytes": 1,
+                      "anteprima_url": 1}
 _SLUG_ATTEMPTS = 50
 
 
@@ -296,16 +312,25 @@ async def upload_master(track_id: str,
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Master sospettosamente piccolo.")
     MASTERS_DIR.mkdir(parents=True, exist_ok=True)
+    ANTEPRIME_DIR.mkdir(parents=True, exist_ok=True)
     import time as _time
-    nome = f"{track_id}.{int(_time.time())}.mp3"
+    epoca = int(_time.time())
+    nome = f"{track_id}.{epoca}.mp3"
     (MASTERS_DIR / nome).write_bytes(data)
+    # l'anteprima nasce dal master, qui, senza encoder: taglio di byte
+    nome_ant = f"{track_id}.{epoca}.mp3"
+    (ANTEPRIME_DIR / nome_ant).write_bytes(_ritaglia_anteprima(data))
     for vecchio in MASTERS_DIR.glob(f"{track_id}.*.mp3"):
         if vecchio.name != nome:
+            vecchio.unlink(missing_ok=True)
+    for vecchio in ANTEPRIME_DIR.glob(f"{track_id}.*.mp3"):
+        if vecchio.name != nome_ant:
             vecchio.unlink(missing_ok=True)
     await frequency_tracks_collection.update_one(
         {"id": track_id,
          "organization_id": current_user["organization_id"]},
         {"$set": {"master_file": nome, "master_bytes": len(data),
+                  "anteprima_url": f"/uploads/anteprime/{nome_ant}",
                   "master_at": utc_now(), "updated_at": utc_now()}})
     return {"id": track_id, "master_bytes": len(data)}
 
@@ -413,6 +438,7 @@ async def public_track(slug: str):
     track["plays_total"] = track.get("plays_total") or 0
     # IL MASTER: il player lo preferisce; senza, percorso synth di sempre
     track["master_pronto"] = bool(track.pop("master_file", None))
+    # l'anteprima pubblica dei 90s viaggia nel payload (e' statica)
     # FV4 — la ricetta v2 referenzia spezzoni voce per asset_id: il
     # player anonimo non puo' interrogare l'endpoint org-scoped, quindi
     # gli URL viaggiano nel payload (solo id+stream: mai id interni)
