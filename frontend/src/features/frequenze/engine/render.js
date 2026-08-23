@@ -155,11 +155,13 @@ export function wavBlob(pcm, sr) {
   return new Blob([buf], { type: 'audio/wav' });
 }
 
-// MP3 a 320 kbps CBR: il massimo del formato — preserva la separazione dei
-// canali (essenziale per i battiti binaurali) con degradazione impercettibile.
-export async function mp3Blob(pcm, sr, onProgress) {
+// MP3 CBR. 320 kbps (default) per l'export dell'operatore: il massimo
+// del formato, separazione dei canali intatta (battiti binaurali).
+// IL MASTER di pubblicazione usa 192: per un ascolto in streaming e'
+// trasparente e il file di 27 minuti pesa ~37 MB invece di ~62.
+export async function mp3Blob(pcm, sr, onProgress, kbps = 320) {
   const { default: lamejs } = await import('./lamejs.vendor');
-  const enc = new lamejs.Mp3Encoder(2, sr, 320);
+  const enc = new lamejs.Mp3Encoder(2, sr, kbps);
   const frames = pcm.length / 2, BLK = 1152 * 64, parts = [];
   const L = new Int16Array(BLK), R = new Int16Array(BLK);
   for (let i = 0; i < frames; i += BLK) {

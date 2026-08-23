@@ -11,6 +11,17 @@ export const frequenciesAPI = {
 
   // FQ1 — pubblicazione e ascolto pubblico
   publish: (trackId) => api.post(`/frequencies/tracks/${trackId}/publish`),
+  // IL MASTER (23/8): il mix renderizzato alla pubblicazione dal
+  // browser dell'operatore — chi ascolta riceve un file in streaming
+  uploadMaster: (trackId, blob) => {
+    const fd = new FormData();
+    fd.append('file', blob, 'master.mp3');
+    return api.post(`/frequencies/tracks/${trackId}/master`, fd,
+      { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  masterPass: (slug, provaToken) => api.get(
+    `/frequencies/public/${slug}/master-pass`,
+    provaToken ? { headers: { 'X-Fqz-Unlock': provaToken } } : {}),
   unpublish: (trackId) => api.post(`/frequencies/tracks/${trackId}/unpublish`),
   getPublic: (slug) => api.get(`/frequencies/public/${slug}`),
   registerPlay: (slug) => api.post(`/frequencies/public/${slug}/play`),

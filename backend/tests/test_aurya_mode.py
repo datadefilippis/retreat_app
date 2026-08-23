@@ -1427,3 +1427,74 @@ class TestTappetiPreProdotti:
         assert len(tappeti) >= 30, f"solo {len(tappeti)} tappeti in dev"
         for t in tappeti[:5]:
             assert t.stat().st_size > 1_000_000, f"{t.name} sospettosamente piccolo"
+
+
+class TestIlMaster:
+    """IL MASTER (23/8, docs/PIANO_MASTER_2026-08.md) — «un mix deve
+    pesare quanto una traccia standard» (founder). Il render si fa UNA
+    volta, alla pubblicazione, sul browser dell'operatore; chi ascolta
+    riceve un file in streaming. Guardie sui punti che non devono
+    scivolare."""
+
+    def test_il_master_non_e_mai_statico(self):
+        """un file statico pubblico sarebbe il cancello demolito da
+        un'altra porta: nginx lo marca internal (solo X-Accel-Redirect)
+        e il backend fa il portiere."""
+        ngx = (BACKEND_DIR.parent / "deploy" / "nginx" / "nginx.conf").read_text()
+        blocco = ngx.split("location /uploads/masters/")[1].split("}")[0]
+        assert "internal;" in blocco
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        assert '"X-Accel-Redirect": f"/uploads/masters/{nome}"' in src
+        # e la location masters viene PRIMA della /uploads/ generica
+        assert ngx.index("location /uploads/masters/") < ngx.index("location /uploads/ {")
+
+    def test_il_portiere_verifica_sempre(self):
+        """niente pass valido E niente sblocco => 401. Il pass e'
+        scoped alla traccia e muore in ore (mai la prova del cerchio
+        nei log di nginx)."""
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        assert 'payload.get("scope") == "fqz_master"' in src
+        assert 'payload.get("slug") == slug' in src
+        assert "MASTER_PASS_TTL_SEC = 6 * 3600" in src
+        blocco = src.split("async def serve_master")[1].split("async def")[0]
+        assert "_has_catalog_access" in blocco
+        # traversal: il nome file dal DB non naviga
+        assert '"/" in nome or ".." in nome' in blocco
+
+    def test_il_repubblica_spazza_i_vecchi(self):
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        blocco = src.split("async def upload_master")[1].split("async def")[0]
+        assert 'MASTERS_DIR.glob(f"{track_id}.*.mp3")' in blocco
+        assert "vecchio.unlink" in blocco
+        assert "MASTER_MAX_BYTES" in blocco
+
+    def test_il_server_non_renderizza_mai(self):
+        """zero CPU server: il render e' del client dell'operatore.
+        Nessun encoder o ffmpeg nel backend."""
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        for vietato in ("ffmpeg", "lamejs", "pydub", "audioop", "Mp3Encoder"):
+            assert vietato not in src, f"encoder nel backend: {vietato}"
+
+    def test_il_publish_dalla_sessione_genera_il_master(self):
+        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "await frequenciesAPI.uploadMaster(trackId, blob)" in crea
+        assert "mp3Blob(pcm, 44100," in crea and "192)" in crea
+        # se il master fallisce si pubblica COMUNQUE, e lo si dice
+        assert "Master non generato: pubblico col percorso classico" in crea
+
+    def test_il_player_preferisce_il_master(self):
+        pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "track.master_pronto && unlocked" in pub
+        assert "lettoreDaUrl(src, track.score.duration_sec" in pub
+        # qualunque intoppo -> synth di sempre (mai un player muto)
+        assert "masterKORef.current = true" in pub
+
+    def test_l_audio_resta_puro_e_il_visual_prende_la_copia(self):
+        """la lezione AT3: un grafo in mezzo si sospende a schermo
+        bloccato. L'elemento suona nativo; l'analyser beve dalla COPIA
+        (captureStream standard: il moz di Firefox DIROTTA e
+        ammutolisce). Il suono prima del visual."""
+        cont = (FQ_DIR / "engine" / "continuo.js").read_text()
+        assert "createMediaElementSource" not in cont
+        assert "el.captureStream ? el.captureStream() : null" in cont
+        assert "mozCaptureStream()" not in cont

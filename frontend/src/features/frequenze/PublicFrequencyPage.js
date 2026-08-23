@@ -18,7 +18,7 @@ import { resolveAudioLayers, resolveVoiceLayers } from './engine/assets';
 import { avvisoCuffieScore } from './engine/altoparlante';
 import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import {
-  preparaContinuo, continuoDisponibile, continuoSupportato,
+  preparaContinuo, continuoDisponibile, continuoSupportato, lettoreDaUrl,
 } from './engine/continuo';
 import { SafetyLine, useSafetyGate } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
@@ -68,6 +68,7 @@ export default function PublicFrequencyPage() {
   const liveRef = useRef(null);
   const timerRef = useRef(null);
   const soundsRef = useRef({});
+  const masterKORef = useRef(false);      /* master fallito: si sintetizza */
   const playedRef = useRef(false);
   /* AT3 — ascolto continuo: il lettore <audio> preparato (sopravvive
      al blocco schermo), il progresso del render, il flag per la UI */
@@ -178,6 +179,43 @@ export default function PublicFrequencyPage() {
       sorvegliaContesto(ctxRef.current, () => stopRef.current());
     }
     const ctx = ctxRef.current;
+    /* IL MASTER (23/8) — se la traccia ha il mix renderizzato alla
+       pubblicazione e l'ascolto e' sbloccato, si suona QUEL file in
+       streaming (come una canzone: partenza immediata, RAM da
+       streaming, schermo bloccato nativo) invece di risintetizzare
+       le basi. Qualunque intoppo -> percorso synth di sempre. */
+    if (track.master_pronto && unlocked && !contRef.current && !masterKORef.current) {
+      try {
+        const risp = await frequenciesAPI.masterPass(slug, prova());
+        const base = process.env.REACT_APP_BACKEND_URL || '';
+        const src = `${base}/api/frequencies/public/${slug}/master?pass=${encodeURIComponent(risp.data.pass)}`;
+        const h = lettoreDaUrl(src, track.score.duration_sec,
+          { titolo: track.title, autore: track.operator?.name }, {
+            onPlay: () => setPlaying(true),
+            onPause: () => setPlaying(false),
+            onEnd: () => { setPlaying(false); setElapsed(0); },
+            onTime: (t2) => setElapsed(t2),
+          });
+        contRef.current = h;
+        setContinuo(true);
+        /* il visual danza sulla COPIA del flusso (presaAnalisi): se il
+           browser non la offre, la scena resta nel respiro di veglia
+           — il suono non si tocca */
+        if (!lettoreRef.current) {
+          const l2 = creaLettore(ctx);
+          lettoreRef.current = l2;
+          setLettore(l2);
+        }
+        h.presaAnalisi(ctx, lettoreRef.current.analyser);
+        segnaAscolto();
+        h.seek(fromT);
+        h.play();
+        return;
+      } catch (err) {
+        console.warn('[master] non disponibile, sintetizzo:', err?.message);  // eslint-disable-line no-console
+        masterKORef.current = true;
+      }
+    }
     /* il canale-musica: parte nel gesto (vedi engine/ponte.js) */
     const ponte = creaPonte(ctx);
     ponte.avvia();

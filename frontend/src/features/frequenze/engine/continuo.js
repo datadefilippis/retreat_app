@@ -98,9 +98,26 @@ export async function preparaAnello(
    sessione e per l'anello — due copie divergerebbero alla prima
    modifica (e i comandi della schermata di blocco sono proprio la
    cosa che non ci si accorge di aver rotto). */
-function lettore(pcm, d, { titolo, autore }, eventi, ciclico) {
+function lettore(pcm, d, meta, eventi, ciclico) {
   const url = URL.createObjectURL(wavBlob(pcm, CONTINUO_SR));
+  return lettoreDaSrc(url, d, meta, eventi, { ciclico, daRevocare: true });
+}
+
+/* IL MASTER (23/8) — lo stesso lettore, ma la sorgente e' un URL di
+   rete: il file renderizzato ALLA PUBBLICAZIONE dal browser
+   dell'operatore, servito in streaming. L'elemento resta un <audio>
+   PURO (niente grafo in mezzo: un grafo si sospende a schermo
+   bloccato — la lezione AT3); per il visual, `presaAnalisi(analyser)`
+   aggancia una COPIA via captureStream dove il browser la offre —
+   dove manca, la scena resta nel respiro di veglia. Il suono prima
+   del visual. */
+export function lettoreDaUrl(url, d, meta, eventi = {}) {
+  return lettoreDaSrc(url, d, meta, eventi, { ciclico: false, daRevocare: false });
+}
+
+function lettoreDaSrc(url, d, { titolo, autore }, eventi, { ciclico, daRevocare }) {
   const el = new Audio(url);
+  el.crossOrigin = 'anonymous';
   el.preload = 'auto';
   el.loop = !!ciclico;
   const posizione = () => {
@@ -143,11 +160,28 @@ function lettore(pcm, d, { titolo, autore }, eventi, ciclico) {
     pause: () => el.pause(),
     seek: (t) => { el.currentTime = Math.max(0, Math.min(d, t)); },
     currentTime: () => el.currentTime,
+    /* la presa per il visual: una COPIA del flusso verso l'analyser,
+       senza dirottare l'uscita dell'elemento (MediaElementSource la
+       dirotterebbe: canale-contorno su iOS e silenzio a schermo
+       bloccato). Se captureStream non c'e', si torna false e la scena
+       resta in veglia. */
+    presaAnalisi: (ctx, analyser) => {
+      try {
+        /* SOLO captureStream standard: il mozCaptureStream di
+           Firefox DIROTTA l'uscita (elemento muto) — meglio niente
+           visual che niente suono */
+        const flusso = el.captureStream ? el.captureStream() : null;
+        if (!flusso || !flusso.getAudioTracks().length) return false;
+        const src = ctx.createMediaStreamSource(flusso);
+        src.connect(analyser);
+        return true;
+      } catch { return false; }
+    },
     dispose: () => {
       el.pause();
       el.removeAttribute('src');
       el.load();
-      URL.revokeObjectURL(url);
+      if (daRevocare) URL.revokeObjectURL(url);
       ['play', 'pause', 'stop', 'seekbackward', 'seekforward', 'seekto']
         .forEach((nome) => az(nome, null));
       navigator.mediaSession.metadata = null;

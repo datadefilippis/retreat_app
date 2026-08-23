@@ -16,7 +16,8 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import (
-    APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status,
+    APIRouter, Depends, File, Form, HTTPException, Query, Request, Response,
+    UploadFile, status,
 )
 from pydantic import BaseModel
 
@@ -35,6 +36,16 @@ from models.frequency_track import (
 
 # i byte delle basi vivono qui, serviti dallo static mount /uploads
 AUDIO_DIR = Path(__file__).resolve().parent.parent / "uploads" / "audio"
+# IL MASTER (23/8) — il mix renderizzato ALLA PUBBLICAZIONE dal browser
+# dell'operatore: chi ascolta riceve UN file in streaming (~37 MB per
+# 27 min) invece di risintetizzare 12 basi (~700 MB di RAM). La
+# directory vive nel volume uploads ma NON e' servita staticamente:
+# nginx la marca `internal` e la consegna solo via X-Accel-Redirect,
+# dopo che il portiere qui sotto ha verificato lo sblocco — un file
+# statico pubblico sarebbe il cancello demolito da un'altra porta.
+MASTERS_DIR = Path(__file__).resolve().parent.parent / "uploads" / "masters"
+MASTER_MAX_BYTES = 64 * 1024 * 1024      # 30 min a 192 kbps ~ 41 MB + margine
+MASTER_PASS_TTL_SEC = 6 * 3600
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +199,8 @@ async def delete_track(track_id: str,
 
 _PUBLIC_PROJECTION = {"_id": 0, "id": 1, "slug": 1, "title": 1,
                       "description": 1, "intent": 1, "score": 1,
-                      "plays_total": 1, "organization_id": 1}
+                      "plays_total": 1, "organization_id": 1,
+                      "master_file": 1, "master_bytes": 1}
 _SLUG_ATTEMPTS = 50
 
 
@@ -232,6 +244,118 @@ async def publish_track(track_id: str,
     return {"id": track_id, "status": "published", "slug": slug}
 
 
+@router.post("/tracks/{track_id}/master")
+async def upload_master(track_id: str,
+                        file: UploadFile = File(...),
+                        current_user: dict = Depends(get_current_user)):
+    """Riceve il master renderizzato dal client dell'operatore.
+    Nome content-addressed ({id}.{epoch}.mp3): il re-publish carica un
+    file nuovo e spazza i precedenti — un master per traccia, mai
+    orfani. Il server non renderizza mai (zero CPU): custodisce."""
+    from database import frequency_tracks_collection
+    track = await frequency_tracks_collection.find_one(
+        {"id": track_id,
+         "organization_id": current_user["organization_id"]},
+        {"_id": 0, "id": 1})
+    if not track:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Traccia non trovata.")
+    data = await file.read()
+    if len(data) > MASTER_MAX_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Master oltre {MASTER_MAX_BYTES // (1024 * 1024)}MB.")
+    if len(data) < 100_000:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Master sospettosamente piccolo.")
+    MASTERS_DIR.mkdir(parents=True, exist_ok=True)
+    import time as _time
+    nome = f"{track_id}.{int(_time.time())}.mp3"
+    (MASTERS_DIR / nome).write_bytes(data)
+    for vecchio in MASTERS_DIR.glob(f"{track_id}.*.mp3"):
+        if vecchio.name != nome:
+            vecchio.unlink(missing_ok=True)
+    await frequency_tracks_collection.update_one(
+        {"id": track_id,
+         "organization_id": current_user["organization_id"]},
+        {"$set": {"master_file": nome, "master_bytes": len(data),
+                  "master_at": utc_now(), "updated_at": utc_now()}})
+    return {"id": track_id, "master_bytes": len(data)}
+
+
+def _firma_master_pass(slug: str) -> str:
+    """Pass effimero per l'<audio>: un elemento non sa mandare header,
+    e mettere la prova del cerchio in query la regalerebbe ai log. Il
+    pass e' scoped alla traccia e muore in ore."""
+    import time as _time
+    import jwt as _jwt
+    return _jwt.encode(
+        {"scope": "fqz_master", "slug": slug,
+         "exp": int(_time.time()) + MASTER_PASS_TTL_SEC},
+        os.environ["JWT_SECRET_KEY"], algorithm="HS256")
+
+
+def _verifica_master_pass(token: str, slug: str) -> bool:
+    try:
+        import jwt as _jwt
+        payload = _jwt.decode(token, os.environ["JWT_SECRET_KEY"],
+                              algorithms=["HS256"])
+        return (payload.get("scope") == "fqz_master"
+                and payload.get("slug") == slug)
+    except Exception:
+        return False
+
+
+@router.get("/public/{slug}/master-pass")
+async def master_pass(slug: str, request: Request):
+    """Il portiere di giorno: la prova del cerchio (header) si scambia
+    con un pass che l'<audio> puo' portare in query."""
+    if not await _has_catalog_access(request):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Serve lo sblocco del cerchio.")
+    from database import frequency_tracks_collection
+    track = await frequency_tracks_collection.find_one(
+        {"slug": slug, "status": "published"},
+        {"_id": 0, "master_file": 1})
+    if not track or not track.get("master_file"):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Master non disponibile.")
+    return {"pass": _firma_master_pass(slug)}
+
+
+@router.get("/public/{slug}/master")
+async def serve_master(slug: str, request: Request,
+                       secondo: Optional[str] = Query(default=None, alias="pass")):
+    """Il portiere di notte: verifica il pass (o lo sblocco diretto) e
+    consegna via X-Accel-Redirect — nginx serve i byte (sendfile,
+    Range nativo per il seek), il backend non li tocca mai. In dev,
+    senza nginx davanti, ripiega su FileResponse."""
+    if not (secondo and _verifica_master_pass(secondo, slug)):
+        if not await _has_catalog_access(request):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail="Serve lo sblocco del cerchio.")
+    from database import frequency_tracks_collection
+    track = await frequency_tracks_collection.find_one(
+        {"slug": slug, "status": "published"},
+        {"_id": 0, "master_file": 1})
+    nome = (track or {}).get("master_file")
+    if not nome or "/" in nome or ".." in nome:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Master non disponibile.")
+    if os.environ.get("ENVIRONMENT", "development").lower() == "production":
+        return Response(status_code=200, headers={
+            "X-Accel-Redirect": f"/uploads/masters/{nome}",
+            "Content-Type": "audio/mpeg",
+            "Cache-Control": "private, max-age=3600",
+        })
+    from fastapi.responses import FileResponse
+    percorso = MASTERS_DIR / nome
+    if not percorso.exists():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="File master assente.")
+    return FileResponse(percorso, media_type="audio/mpeg")
+
+
 @router.post("/tracks/{track_id}/unpublish")
 async def unpublish_track(track_id: str,
                           current_user: dict = Depends(get_current_user)):
@@ -267,6 +391,8 @@ async def public_track(slug: str):
         "slug": (org or {}).get("public_slug"),
     }
     track["plays_total"] = track.get("plays_total") or 0
+    # IL MASTER: il player lo preferisce; senza, percorso synth di sempre
+    track["master_pronto"] = bool(track.pop("master_file", None))
     # FV4 — la ricetta v2 referenzia spezzoni voce per asset_id: il
     # player anonimo non puo' interrogare l'endpoint org-scoped, quindi
     # gli URL viaggiano nel payload (solo id+stream: mai id interni)

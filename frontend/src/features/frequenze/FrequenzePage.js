@@ -32,6 +32,7 @@ import {
   VOICE_PRESETS, buildVoiceChain, cleanVoiceBuffer, connectVoiceSources,
 } from './engine/voicefx';
 import { avvisoCuffie, avvisoCuffieScore } from './engine/altoparlante';
+import { renderPcm, mp3Blob } from './engine/render';
 import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import { preparaAnello, continuoSupportato } from './engine/continuo';
 import { creaPonte } from './engine/ponte';
@@ -845,9 +846,40 @@ export default function FrequenzePage() {
     catch { setStatus(url); }
   };
 
+  /* IL MASTER (23/8) — il render si fa UNA volta, QUI, alla
+     pubblicazione: il browser dell'operatore (la macchina giusta, il
+     momento giusto) renderizza il mix intero e lo carica. Chi ascolta
+     ricevera' UN file in streaming come una canzone — non 12 basi da
+     risintetizzare (~700 MB di RAM). Se il master fallisce si
+     pubblica COMUNQUE col percorso di sempre (fallback synth) e lo si
+     dice: mai un errore client tra l'operatore e il suo pubblico. */
   const publishTrack = async () => {
     if (!trackId) return;
     await save();
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      try {
+        setStatus('Master: carico le basi…');
+        const aLayers = layers.some((l) => l.kind === 'audio')
+          ? await resolveAudioLayers(ctx, score, soundsById) : [];
+        const vLayers = hasVoiceLayers
+          ? await resolveVoiceLayers(ctx, score, voiceById) : [];
+        const pcm = await renderPcm(score, {
+          sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers,
+          voiceDuck,
+          onProgress: (pr) => setStatus(`Master: renderizzo… ${Math.round(pr * 100)}%`),
+        });
+        const blob = await mp3Blob(pcm, 44100,
+          (pr) => setStatus(`Master: comprimo… ${Math.round(pr * 100)}%`), 192);
+        setStatus(`Master: carico ${(blob.size / 1048576).toFixed(0)} MB…`);
+        await frequenciesAPI.uploadMaster(trackId, blob);
+      } finally {
+        ctx.close().catch(() => { /* niente */ });
+      }
+    } catch (e) {
+      setStatus('Master non generato: pubblico col percorso classico — '
+        + 'riapri la sessione e ripubblica per rigenerarlo');
+    }
     await publishById(trackId);
   };
   const unpublishTrack = () => unpublishById(trackId);
