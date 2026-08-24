@@ -29,8 +29,8 @@ import {
   memoriaStimataMB,
 } from './engine/assets';
 import {
-  VOICE_PRESETS, CLEAN_MODES, buildVoiceChain, cleanVoiceBuffer,
-  connectVoiceSources,
+  VOICE_PRESETS, CLEAN_MODES, CLEAN_ALIAS, buildVoiceChain, cleanVoiceBuffer,
+  connectVoiceSources, ultimaPulizia,
 } from './engine/voicefx';
 import { avvisoCuffie, avvisoCuffieScore } from './engine/altoparlante';
 import { renderPcm, mp3Blob } from './engine/render';
@@ -513,7 +513,7 @@ export default function FrequenzePage() {
     try {
       // stessa pulizia dell'ascolto in sessione: cio' che provi e' cio' che va in onda
       const buffer = cleanVoiceBuffer(ctx, await loadAssetBuffer(ctx, clip.stream_url),
-        clip.clean_mode || 'pulita');
+        clip.clean_mode || 'auto');
       const chain = buildVoiceChain(ctx, prevFx, 0.6);
       chain.output.connect(ctx.destination);
       // si ascolta il taglio, non il file: cio' che provi e' cio' che va in onda
@@ -524,6 +524,14 @@ export default function FrequenzePage() {
          i modi si sentiva meno che nell'ascolto vero. «Cio' che provi
          e' cio' che va in onda» dev'essere vero fino in fondo. */
       const dkPrev = 0.012;          // l'attacco netto di sempre
+      /* si DICE cosa e' successo: «rumore tolto» o «era gia' pulita».
+         Chi registra non deve indovinare se il filtro ha lavorato. */
+      const esito = ultimaPulizia;
+      if ((clip.clean_mode || 'auto') !== 'grezza') {
+        setStatus(esito.rumoreTolto
+          ? `«${clip.title}»: rumore di fondo tolto`
+          : `«${clip.title}»: era già pulita, nessun rumore da togliere`);
+      }
       const t0Prev = ctx.currentTime;
       chain.input.gain.setValueAtTime(0.0001, t0Prev);
       chain.input.gain.linearRampToValueAtTime(1, t0Prev + dkPrev);
@@ -621,7 +629,7 @@ export default function FrequenzePage() {
      ovunque quel take sia usato (anteprima, sessione, master). Il
      file non si tocca mai: e' matematica applicata all'ascolto. */
   const saveVoiceClean = async (clip, mode) => {
-    if ((clip.clean_mode || 'pulita') === mode) return;
+    if ((CLEAN_ALIAS[clip.clean_mode] || 'auto') === mode) return;
     setVoiceClips((cs) => cs.map((c) => (
       c.id === clip.id ? { ...c, clean_mode: mode } : c)));
     setStatus(`Voce «${clip.title}»: pulizia ${CLEAN_MODES[mode].label.toLowerCase()}`);
@@ -1387,7 +1395,7 @@ export default function FrequenzePage() {
                 modo si cambia DA QUI: dove si guardano i livelli. */}
             <select className="minisel" data-testid={`fq-clean-sel-${l.id}`}
               title="Come si ripulisce questa registrazione all'ascolto"
-              value={voiceById[l.asset_id]?.clean_mode || 'pulita'}
+              value={CLEAN_ALIAS[voiceById[l.asset_id]?.clean_mode] || 'auto'}
               onChange={(e) => {
                 const clip = voiceById[l.asset_id];
                 if (clip) saveVoiceClean(clip, e.target.value);
@@ -2228,7 +2236,7 @@ export default function FrequenzePage() {
                             {Object.entries(CLEAN_MODES).map(([k, m]) => (
                               <button key={k} type="button" title={m.hint}
                                 data-testid={`fq-clean-${k}`}
-                                className={`chip${(c.clean_mode || 'pulita') === k ? ' on' : ''}`}
+                                className={`chip${(CLEAN_ALIAS[c.clean_mode] || 'auto') === k ? ' on' : ''}`}
                                 onClick={() => saveVoiceClean(c, k)}>{m.label}</button>
                             ))}
                           </div>

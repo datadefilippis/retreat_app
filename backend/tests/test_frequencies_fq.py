@@ -1665,11 +1665,11 @@ class TestRefinementCrea:
         i take esistenti restano «pulita» = suono di oggi."""
         vfx = (FQ_DIR / "engine" / "voicefx.js").read_text()
         assert "export const CLEAN_MODES" in vfx
-        assert "cleanVoiceBuffer(ctx, buffer, mode = 'pulita')" in vfx
+        assert "cleanVoiceBuffer(ctx, buffer, modoChiesto = 'auto')" in vfx
         assert "if (mode === 'grezza') return buffer" in vfx
         # SS (24/8): in «pulita» non c'e' piu' un GATE ma la
         # SOTTRAZIONE SPETTRALE — niente attenuazioni sul volume
-        assert "if (mode === 'pulita') {" in vfx
+        assert "if (serveRipulire) {" in vfx      # la misura, non un modo
         assert "sottraiRumoreCanale" in vfx
         assert "gains[w] = 0.25" not in vfx and "floor * 2;" not in vfx
         # la cache distingue i modi (cambiare modo ricalcola)
@@ -1678,8 +1678,8 @@ class TestRefinementCrea:
         ass = (FQ_DIR / "engine" / "assets.js").read_text()
         assert "asset.clean_mode || 'pulita'" in ass
         src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
-        assert 'VOICE_CLEAN_MODES = ("naturale", "pulita", "grezza")' in src
-        assert '"clean_mode": "naturale"' in src     # i take NUOVI
+        assert 'VOICE_CLEAN_MODES = ("auto", "grezza", "naturale", "pulita")' in src
+        assert '"clean_mode": "auto"' in src         # i take NUOVI
 
     def test_il_modo_governa_anche_l_attacco(self):
         """VP-bis (24/8, founder in prod: «cambio da pulita a naturale
@@ -1719,8 +1719,31 @@ class TestRefinementCrea:
         assert "Math.max(m - forza * profilo[k], pavimento * m)" in vfx
         # IL GATE NON ESISTE PIU'
         assert "gains[w] = 0.25" not in vfx and "gains[w] = 0.12" not in vfx
-        assert "if (mode === 'pulita') {" in vfx    # la sottrazione, non il gate
+        assert "if (serveRipulire) {" in vfx        # la sottrazione, non il gate
         assert "sottraiRumoreCanale(dst, 1.5, 0.1)" in vfx
+
+    def test_due_modi_non_tre_e_il_rumore_lo_decide_la_misura(self):
+        """24/8, founder: «grezza, pulita e naturale hanno ancora
+        ragione di esistere?». Misurato: su una registrazione gia'
+        pulita «naturale» e «pulita» davano lo STESSO risultato
+        (-19,1 dB entrambe) — una scelta che non cambia niente
+        confonde. Ora due modi, e la sottrazione si accende SOLO se il
+        rumore c'e' davvero (fondo entro 40 dB dalla voce): e' una
+        misura, non una domanda a chi registra."""
+        vfx = (FQ_DIR / "engine" / "voicefx.js").read_text()
+        # il blocco dei MODI ha due voci sole (l'alias, piu' sotto,
+        # nomina ancora naturale/pulita ed e' giusto cosi')
+        modi = vfx.split("CLEAN_MODES = Object.freeze({")[1].split("});")[0]
+        assert "auto:" in modi and "grezza:" in modi
+        assert "naturale:" not in modi and "pulita:" not in modi
+        # i nomi di ieri restano leggibili: nessun suono cambia da solo
+        assert "export const CLEAN_ALIAS" in vfx
+        assert "naturale: 'auto', pulita: 'auto'" in vfx
+        # la decisione e' misurata e RACCONTATA
+        assert "const serveRipulire = rapporto > 0.01" in vfx
+        assert "export let ultimaPulizia" in vfx
+        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "era già pulita, nessun rumore da togliere" in crea
 
     def test_il_mixer_dice_il_modo_vero(self):
         """la riga del livello voce diceva «tua voce · pulita» FISSO,
@@ -1729,7 +1752,7 @@ class TestRefinementCrea:
         crea = (FQ_DIR / "FrequenzePage.js").read_text()
         assert "🎙 tua voce · pulita" not in crea
         assert 'data-testid={`fq-clean-sel-${l.id}`}' in crea
-        assert "value={voiceById[l.asset_id]?.clean_mode || 'pulita'}" in crea
+        assert "value={CLEAN_ALIAS[voiceById[l.asset_id]?.clean_mode] || 'auto'}" in crea
 
     def test_il_taglio_della_base(self):
         """La voce aveva il taglio, le basi no. clip_in sul layer, con

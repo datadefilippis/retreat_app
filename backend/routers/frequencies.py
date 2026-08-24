@@ -49,7 +49,10 @@ MASTER_PASS_TTL_SEC = 6 * 3600
 # VP (24/8) — i tre modi della pulizia voce. Il gemello nel client:
 # engine/voicefx.js (cleanVoiceBuffer). Assente sul documento = i take
 # di prima del 24/8: valgono «pulita», il suono non cambia da solo.
-VOICE_CLEAN_MODES = ("naturale", "pulita", "grezza")
+# DUE modi (24/8): «auto» sistema (e toglie il rumore SOLO se ce n'e'
+# davvero: lo misura), «grezza» non tocca. I nomi di ieri restano
+# accettati e valgono auto — chi ha gia' scelto non cambia suono.
+VOICE_CLEAN_MODES = ("auto", "grezza", "naturale", "pulita")
 # L'ANTEPRIMA (M3, 24/8): i 90 secondi del cancello, come FILE
 # pubblico (~2 MB). Prima i non-sbloccati — cioe' CHIUNQUE riceva un
 # link condiviso — sintetizzavano l'anteprima col percorso pesante, e
@@ -872,7 +875,7 @@ async def record_voice_clip(file: UploadFile = File(...),
         # l'autore sceglie: i take NUOVI nascono «naturale» (volume e
         # bordi, nessun gate); i take gia' esistenti, senza campo,
         # valgono «pulita» — cioe' suonano ESATTAMENTE come oggi.
-        "clean_mode": "naturale",
+        "clean_mode": "auto",
     }
     await voice_assets_collection.insert_one(dict(asset))
     asset.pop("_id", None)

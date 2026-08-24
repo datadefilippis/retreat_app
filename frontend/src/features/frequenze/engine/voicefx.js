@@ -191,10 +191,22 @@ export function connectVoiceSources(ctx, buffer, chain) {
      grezza    — la registrazione cosi' com'e'.
    La cache tiene conto del modo: lo stesso buffer con due modi sono
    due suoni diversi. */
+/* DUE MODI, non tre (24/8 — founder: «grezza, pulita e naturale
+   hanno ancora ragione di esistere?»). Misurato: su una
+   registrazione gia' pulita «naturale» e «pulita» davano lo STESSO
+   identico risultato (-19,1 dB entrambe) — una scelta che non
+   cambia niente e' una scelta che confonde. Ora il rumore lo
+   riconosce il sistema: la sottrazione si accende SOLO se c'e'
+   davvero qualcosa da togliere. All'autore resta la sola domanda
+   che sa rispondere: «sistemala tu» oppure «non toccarla». */
 export const CLEAN_MODES = Object.freeze({
-  naturale: { label: 'Naturale', hint: 'Volume pareggiato e bordi puliti: l\u2019attacco resta naturale.' },
-  pulita: { label: 'Pulita', hint: 'Toglie il rumore di fondo anche mentre parli, senza abbassare l\u2019attacco.' },
+  auto: { label: 'Sistemata', hint: 'Bordi, volume e — se serve — il rumore di fondo. Il resto non si tocca.' },
   grezza: { label: 'Grezza', hint: 'Nessun ritocco: la registrazione com\u2019e\u2019.' },
+});
+/* i nomi di ieri restano leggibili: chi ha gia' scelto non si vede
+   cambiare il suono sotto i piedi (naturale/pulita → auto) */
+export const CLEAN_ALIAS = Object.freeze({
+  naturale: 'auto', pulita: 'auto', auto: 'auto', grezza: 'grezza',
 });
 
 /* ══ LA SOTTRAZIONE SPETTRALE (24/8/2026) ═══════════════════════════
@@ -324,8 +336,14 @@ function sottraiRumoreCanale(canale, forza = 1.5, pavimento = 0.1) {
   return out;
 }
 
+/* l'ultima pulizia, per poterla RACCONTARE nella UI: «rumore tolto»
+   oppure «era gia' pulita». Chi registra deve sapere cosa e'
+   successo, non fidarsi. */
+export let ultimaPulizia = { rumoreTolto: false, rapporto: 0 };
+
 const cleanCache = new WeakMap();
-export function cleanVoiceBuffer(ctx, buffer, mode = 'pulita') {
+export function cleanVoiceBuffer(ctx, buffer, modoChiesto = 'auto') {
+  const mode = CLEAN_ALIAS[modoChiesto] || 'auto';
   if (mode === 'grezza') return buffer;
   const perBuffer = cleanCache.get(buffer);
   if (perBuffer && perBuffer[mode]) return perBuffer[mode];
@@ -348,7 +366,12 @@ export function cleanVoiceBuffer(ctx, buffer, mode = 'pulita') {
     if (rms[w] >= speechThr) { if (first < 0) first = w; last = w; }
   }
   if (first < 0) { ricorda(buffer, mode, buffer); return buffer; } // solo silenzio
-  const pad = Math.round(0.15 * sr);
+  /* il respiro prima della prima parola: 60ms invece di 150. Il pad
+     lungo lasciava mezzo secondo di rampa in testa anche quando la
+     voce partiva subito (misurato su «Spezzone 3»: -41 dB nei primi
+     0,5s contro -19 di regime). 60ms bastano a non tagliare l'attacco
+     della consonante, e la voce entra quando entra davvero. */
+  const pad = Math.round(0.06 * sr);
   const start = Math.max(0, first * win - pad);
   const end = Math.min(n, (last + 1) * win + pad);
   /* NIENTE PIU' GATE (24/8, founder: «perche' per togliere il rumore
@@ -372,10 +395,20 @@ export function cleanVoiceBuffer(ctx, buffer, mode = 'pulita') {
     const f = Math.min(Math.round(0.02 * sr), Math.floor(len / 4)); // declick
     for (let i = 0; i < f; i++) { const k = i / f; dst[i] *= k; dst[len - 1 - i] *= k; }
   }
-  /* la sottrazione lavora sul TAGLIATO (dopo trim e declick) e prima
+  /* LA SOTTRAZIONE SI ACCENDE DA SOLA. Il rumore si misura: fondo
+     (10° percentile) contro voce (mediana dei frame parlati). Se il
+     fondo sta piu' di 40 dB sotto la voce, la stanza era gia' quieta
+     e togliere «rumore» significherebbe solo togliere aria. Sopra
+     quella soglia si pulisce: e' una misura, non un'opinione da
+     chiedere a chi registra.
+     La sottrazione lavora sul TAGLIATO (dopo trim e declick) e prima
      della normalizzazione: cosi' il livello finale tiene conto del
      rumore gia' tolto, invece di alzarlo insieme alla voce. */
-  if (mode === 'pulita') {
+  const parlati = Array.from(rms).filter((v) => v >= speechThr).sort((a, b) => a - b);
+  const voceTipica = parlati.length ? parlati[Math.floor(parlati.length / 2)] : 0;
+  const rapporto = voceTipica > 0 ? floor / voceTipica : 0;
+  const serveRipulire = rapporto > 0.01;     // fondo entro 40 dB dalla voce
+  if (serveRipulire) {
     for (let c = 0; c < ch; c++) {
       const dst = out.getChannelData(c);
       const pulito = sottraiRumoreCanale(dst, 1.5, 0.1);
@@ -387,6 +420,7 @@ export function cleanVoiceBuffer(ctx, buffer, mode = 'pulita') {
       for (let i = 0; i < len; i++) { const av = Math.abs(dst[i]); if (av > peak) peak = av; }
     }
   }
+  ultimaPulizia = { rumoreTolto: serveRipulire, rapporto };
   if (peak > 0.001) {
     const k = Math.min(0.9 / peak, 8);                     // alza al massimo x8
     if (k < 0.999 || k > 1.05) {
