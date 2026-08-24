@@ -1,6 +1,5 @@
 import React from 'react';
 import { PERCORSO, BANDE, APPROFONDIMENTI, GLOSSARIO } from './content/guida';
-import { PRO_ENTRY } from './links';
 
 /*
  * Aurya Sound — Le fondamenta.
@@ -29,7 +28,7 @@ function Deep({ k, onLearn }) {
   );
 }
 
-function Guida({ onExplore, onLearn, proCta }) {
+function Guida({ onExplore, onLearn }) {
   return (
     <div className="gd" data-testid="fqz-guida">
 
@@ -441,15 +440,6 @@ function Guida({ onExplore, onLearn, proCta }) {
           onClick={() => onExplore('Bande cerebrali')}>
           Esplora Aurya Sound
         </button>
-        {proCta && (
-          /* SP3 — per il pubblico la chiusura ha una seconda uscita:
-             gli operatori ascoltano e costruiscono */
-          <p className="gd-pro" data-testid="fqz-cta-guida">
-            Gli operatori combinano frequenze, metodi e la propria voce in una sessione
-            da condividere con le persone che accompagnano.{' '}
-            <a href={PRO_ENTRY}>Scopri Aurya Sound per operatori →</a>
-          </p>
-        )}
       </section>
     </div>
   );
@@ -482,8 +472,8 @@ function Glossario({ onExplore }) {
   );
 }
 
-export default function GuidaView({ tab, onExplore, onLearn, proCta = false }) {
+export default function GuidaView({ tab, onExplore, onLearn }) {
   return tab === 'Glossario'
     ? <Glossario onExplore={onExplore} />
-    : <Guida onExplore={onExplore} onLearn={onLearn} proCta={proCta} />;
+    : <Guida onExplore={onExplore} onLearn={onLearn} />;
 }

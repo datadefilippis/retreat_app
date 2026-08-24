@@ -43,7 +43,6 @@ import StudioScena from './visual/StudioScena';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS, CAT_SLUG, SLUG_CAT } from './content/biblioteca';
 import GuidaView from './GuidaView';
-import { PRO_ENTRY } from './links';
 import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
@@ -1753,7 +1752,7 @@ export default function FrequenzePage() {
                   <div className="gd-time">Tempo di lettura · circa 5 min</div>
                 )}
                 <GuidaView tab={activeTab} onExplore={goExplore} onLearn={setLearn}
-                  proCta={!canCompose} />
+                  />
               </>
             ) : view === 'explore' && world === 'sound' ? (
               <>
@@ -1937,18 +1936,12 @@ export default function FrequenzePage() {
                     </div>
                   ));
                 })()}
-                {!canCompose && view === 'explore' && (
-                  /* SP3 — chi ha scorso tutta la biblioteca e' interessato:
-                     un solo blocco, in fondo, mai sulle card */
-                  <div className="probox" data-testid="fqz-cta-explore">
-                    <b>Vuoi andare oltre l'esplorazione?</b>
-                    <p>Ascoltare è solo l'inizio: gli operatori combinano frequenze, metodi
-                      e la propria voce in una sessione, e la pubblicano con un link.</p>
-                    <button type="button" className="pro-cta" onClick={() => navigate(PRO_ENTRY)}>
-                      Scopri Aurya Sound per operatori →
-                    </button>
-                  </div>
-                )}
+                {/* PC (24/8) — l'invito «per operatori» e' stato tolto:
+                    comporre non e' piu' di tutti gli operatori ma un
+                    privilegio che concede il system admin (/admin/sound).
+                    Invitare all'iscrizione promettendo la creazione
+                    sarebbe una promessa che non possiamo mantenere. */
+                }
               </>
             )}
           </section>
@@ -2442,16 +2435,6 @@ export default function FrequenzePage() {
                 <div dangerouslySetInnerHTML={{ __html: learn.body }} />
               ) : (learn.body || '').split(/\n\n+/).map((p, i) => <p key={i}>{p.replace(/\n/g, ' ')}</p>)}
             </div>
-            {learn.cta && (
-              /* SP3 — il momento di massima intenzione, la riga meno
-                 invadente: solo visitatori, solo schede della biblioteca */
-              <div className="proline" data-testid="fqz-cta-learn">
-                Vuoi portarla dentro una tua sessione?{' '}
-                <button type="button" onClick={() => navigate(PRO_ENTRY)}>
-                  Scopri Aurya Sound per operatori →
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}

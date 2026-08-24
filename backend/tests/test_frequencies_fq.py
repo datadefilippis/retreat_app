@@ -1111,33 +1111,35 @@ class TestSoundPubblicoSp:
             assert f"if (canCompose) {fn}()" in page, \
                 f"{fn} deve caricare solo per chi compone"
 
-    def test_cta_gerarchia(self):
-        """1 primaria (landing) + 3 contestuali (popup, fine biblioteca,
-        chiusura Guida). MAI sulle card in griglia."""
-        landing = (FQ_DIR / "SoundLandingPage.js").read_text()
-        assert "Vuoi andare oltre l'esplorazione?" in landing
-        assert "fqz-cta-landing" in landing
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
-        assert "fqz-cta-learn" in page and "fqz-cta-explore" in page
-        guida = (FQ_DIR / "GuidaView.js").read_text()
-        assert "fqz-cta-guida" in guida
-        # la card in griglia non contiene la CTA: solo il popup (flag cta)
-        card_zone = page.split("const renderCard")[1].split("const bibKeys")[0]
-        assert "PRO_ENTRY" not in card_zone, \
-            "la CTA non sta sulle card: 40 card = 40 pubblicita'"
-        # e il flag cta si accende solo per i visitatori
-        assert "cta: !canCompose" in card_zone
+    def test_niente_inviti_a_diventare_operatore_in_sound(self):
+        """STORIA DI UNA DECISIONE:
+         · agosto (SP3): quattro inviti «Scopri Aurya Sound per
+           operatori» — 1 primario sulla landing + 3 contestuali;
+         · 24/8: comporre diventa un PRIVILEGIO su invito
+           (/admin/sound) e il founder li fa togliere tutti — «invitare
+           gli operatori a ottenere di piu'» sarebbe una promessa che
+           non possiamo mantenere.
+        Le frequenze restano libere per tutti: cambia l'invito, non
+        l'ascolto."""
+        for f in ("SoundLandingPage.js", "FrequenzePage.js", "GuidaView.js"):
+            src = (FQ_DIR / f).read_text()
+            assert "Scopri Aurya Sound per operatori" not in src, \
+                f"{f}: e' tornato l'invito a comporre"
+            assert "PRO_ENTRY" not in src, f"{f}: e' tornata la destinazione pro"
+        for testid in ("fqz-cta-landing", "fqz-cta-explore",
+                       "fqz-cta-learn", "fqz-cta-guida"):
+            for f in ("SoundLandingPage.js", "FrequenzePage.js", "GuidaView.js"):
+                assert testid not in (FQ_DIR / f).read_text()
+        # e la destinazione condivisa non esiste piu'
+        assert not (FQ_DIR / "links.js").exists()
 
-    def test_cta_porta_dentro_sound_non_altrove(self):
-        """L'invito «per operatori» porta alla biblioteca da operatore
-        (dove Ascolta e' acceso), passando dal login che offre anche la
-        registrazione. Una sola verita' condivisa: links.js."""
-        links = (FQ_DIR / "links.js").read_text()
-        assert "/sound/esplora" in links and "/accedi?next=" in links, \
-            "l'invito deve rientrare in Sound passando dalla porta unica (ID)"
+    def test_la_porta_del_login_resta_sana(self):
+        """Gli inviti «per operatori» non ci sono piu' (24/8), ma la
+        porta a cui portavano deve restare corretta per chi ci arriva
+        da altrove: il next si propaga alla registrazione e non
+        accetta destinazioni esterne."""
         for f in ("FrequenzePage.js", "GuidaView.js", "SoundLandingPage.js"):
             src = (FQ_DIR / f).read_text()
-            assert "PRO_ENTRY" in src, f"{f} non usa la destinazione condivisa"
             assert "/professionisti" not in src, \
                 f"{f}: rotta inesistente (finiva sul catch-all → homepage)"
         # il login propaga il next anche alla registrazione, e non

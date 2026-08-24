@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BIB, SOUND_KEYS, CAT_DESC, CAT_LINK } from './content/biblioteca';
 import { PERCORSO } from './content/guida';
-import { PRO_ENTRY } from './links';
 import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
@@ -84,19 +83,6 @@ export default function SoundLandingPage() {
               ))}
             </div>
             <Link className="sld-glink" to="/sound/impara">Leggi la Guida →</Link>
-          </div>
-
-          {/* SP3 — LA CTA primaria: una, qui */}
-          <div className="probox" data-testid="fqz-cta-landing">
-            <b>Vuoi andare oltre l'esplorazione?</b>
-            <p>
-              Le frequenze le ascolti liberamente. Gli operatori possono anche
-              combinarle con metodi e con la propria voce, e pubblicare la sessione
-              con un link da condividere.
-            </p>
-            <Link to={PRO_ENTRY}>
-              <button type="button" className="pro-cta">Scopri Aurya Sound per operatori →</button>
-            </Link>
           </div>
 
           {/* SF — la porta pubblica dice subito com'è fatto l'ascolto */}
