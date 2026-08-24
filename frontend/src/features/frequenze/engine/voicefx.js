@@ -193,9 +193,136 @@ export function connectVoiceSources(ctx, buffer, chain) {
    due suoni diversi. */
 export const CLEAN_MODES = Object.freeze({
   naturale: { label: 'Naturale', hint: 'Volume pareggiato e bordi puliti: l\u2019attacco resta naturale.' },
-  pulita: { label: 'Pulita', hint: 'Anche il fruscio nelle pause: per stanze rumorose.' },
+  pulita: { label: 'Pulita', hint: 'Toglie il rumore di fondo anche mentre parli, senza abbassare l\u2019attacco.' },
   grezza: { label: 'Grezza', hint: 'Nessun ritocco: la registrazione com\u2019e\u2019.' },
 });
+
+/* ══ LA SOTTRAZIONE SPETTRALE (24/8/2026) ═══════════════════════════
+ * Founder: «perche' non si puo' togliere il rumore di fondo senza
+ * abbassare i decibel all'inizio?». Perche' il GATE guarda solo il
+ * VOLUME: sotto soglia abbassa, e per lui «fruscio» e «voce che
+ * attacca piano» sono la stessa cosa. Questo invece guarda il COLORE:
+ * impara l'impronta in frequenza del rumore dai frame piu' quieti e
+ * la sottrae da TUTTI i frame. Cosi' il fruscio sparisce anche
+ * mentre parli, e l'attacco resta intero — non si abbassa niente, si
+ * toglie solo cio' che e' rumore.
+ *
+ * STFT con finestra di Hann, salto 1/4 (overlap-add che ricostruisce
+ * esatto), sottrazione con pavimento: si toglie `forza` volte il
+ * rumore stimato, ma non si scende mai sotto `pavimento` volte il
+ * segnale — il pavimento e' cio' che evita il «gorgoglio» metallico
+ * dei riduttori troppo aggressivi.
+ */
+const FFT_N = 1024;                     // ~21ms a 48k: la voce ci sta
+const HOP = FFT_N / 4;
+
+/* FFT radix-2 in loco (Cooley-Tukey): niente librerie, ~40 righe.
+   re/im sono Float32Array di lunghezza n (potenza di 2). */
+function fft(re, im, inversa) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) {          // bit reversal
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) {
+      let t = re[i]; re[i] = re[j]; re[j] = t;
+      t = im[i]; im[i] = im[j]; im[j] = t;
+    }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const ang = (inversa ? 2 : -2) * Math.PI / len;
+    const wr = Math.cos(ang), wi = Math.sin(ang);
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < len / 2; k++) {
+        const ur = re[i + k], ui = im[i + k];
+        const vr = re[i + k + len / 2] * cr - im[i + k + len / 2] * ci;
+        const vi = re[i + k + len / 2] * ci + im[i + k + len / 2] * cr;
+        re[i + k] = ur + vr; im[i + k] = ui + vi;
+        re[i + k + len / 2] = ur - vr; im[i + k + len / 2] = ui - vi;
+        const nr = cr * wr - ci * wi;
+        ci = cr * wi + ci * wr; cr = nr;
+      }
+    }
+  }
+  if (inversa) for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
+}
+
+/**
+ * Toglie il rumore di fondo di un canale senza toccare le dinamiche.
+ * @param canale Float32Array
+ * @param forza  quante volte il rumore stimato si sottrae (1.5 = deciso)
+ * @param pavimento quanto del segnale resta comunque (0.1 = -20dB)
+ */
+function sottraiRumoreCanale(canale, forza = 1.5, pavimento = 0.1) {
+  const n = canale.length;
+  if (n < FFT_N * 4) return canale;             // troppo corto: si lascia stare
+  const finestra = new Float32Array(FFT_N);
+  for (let i = 0; i < FFT_N; i++) {
+    finestra[i] = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / FFT_N);
+  }
+  const nFrame = Math.floor((n - FFT_N) / HOP) + 1;
+  const bins = FFT_N / 2 + 1;
+  const modulo = new Float32Array(nFrame * bins);
+  const fase = new Float32Array(nFrame * bins);
+  const energia = new Float32Array(nFrame);
+  const re = new Float32Array(FFT_N), im = new Float32Array(FFT_N);
+
+  for (let f = 0; f < nFrame; f++) {            // ANALISI
+    const off = f * HOP;
+    for (let i = 0; i < FFT_N; i++) { re[i] = canale[off + i] * finestra[i]; im[i] = 0; }
+    fft(re, im, false);
+    let en = 0;
+    for (let k = 0; k < bins; k++) {
+      const m = Math.hypot(re[k], im[k]);
+      modulo[f * bins + k] = m;
+      fase[f * bins + k] = Math.atan2(im[k], re[k]);
+      en += m;
+    }
+    energia[f] = en;
+  }
+
+  /* IL PROFILO DEL RUMORE: la mediana dei frame piu' quieti (il 15%
+     inferiore). La mediana, non la media: un colpo secco in mezzo al
+     silenzio non deve insegnare al filtro che quello e' rumore. */
+  const ordine = Array.from(energia.keys()).sort((a, b) => energia[a] - energia[b]);
+  const quanti = Math.max(3, Math.floor(nFrame * 0.15));
+  const quieti = ordine.slice(0, quanti);
+  const profilo = new Float32Array(bins);
+  const colonna = new Float32Array(quanti);
+  for (let k = 0; k < bins; k++) {
+    for (let i = 0; i < quanti; i++) colonna[i] = modulo[quieti[i] * bins + k];
+    const ord = Array.prototype.slice.call(colonna).sort((a, b) => a - b);
+    profilo[k] = ord[Math.floor(quanti / 2)];
+  }
+
+  const out = new Float32Array(n);
+  const pesi = new Float32Array(n);
+  for (let f = 0; f < nFrame; f++) {            // SINTESI
+    const off = f * HOP;
+    for (let k = 0; k < bins; k++) {
+      const m = modulo[f * bins + k];
+      const pulito = Math.max(m - forza * profilo[k], pavimento * m);
+      const p = fase[f * bins + k];
+      re[k] = pulito * Math.cos(p);
+      im[k] = pulito * Math.sin(p);
+      if (k > 0 && k < FFT_N / 2) {             // simmetria hermitiana
+        re[FFT_N - k] = re[k];
+        im[FFT_N - k] = -im[k];
+      }
+    }
+    fft(re, im, true);
+    for (let i = 0; i < FFT_N; i++) {
+      out[off + i] += re[i] * finestra[i];
+      pesi[off + i] += finestra[i] * finestra[i];
+    }
+  }
+  for (let i = 0; i < n; i++) if (pesi[i] > 1e-6) out[i] /= pesi[i];
+  // le code fuori dalle finestre restano com'erano
+  for (let i = 0; i < FFT_N; i++) out[i] = out[i] || canale[i];
+  for (let i = n - FFT_N; i < n; i++) out[i] = out[i] || canale[i];
+  return out;
+}
 
 const cleanCache = new WeakMap();
 export function cleanVoiceBuffer(ctx, buffer, mode = 'pulita') {
@@ -224,17 +351,15 @@ export function cleanVoiceBuffer(ctx, buffer, mode = 'pulita') {
   const pad = Math.round(0.15 * sr);
   const start = Math.max(0, first * win - pad);
   const end = Math.min(n, (last + 1) * win + pad);
-  /* il gate vive SOLO in «pulita», e piu' gentile di prima: soglia
-     piu' bassa (1.4× il fondo invece di 2×), fondo a -12 dB invece
-     di -18, e code piu' lunghe in entrambe le direzioni — cosi' un
-     attacco morbido non viene mai schiacciato. */
+  /* NIENTE PIU' GATE (24/8, founder: «perche' per togliere il rumore
+     bisogna abbassare l'inizio?»). Il gate guardava il VOLUME e non
+     sapeva distinguere il fruscio da una voce che attacca piano: per
+     questo mangiava gli attacchi. In «pulita» ora lavora la
+     SOTTRAZIONE SPETTRALE, piu' sotto: guarda il COLORE del rumore e
+     lo toglie da tutto, anche mentre parli, senza toccare le
+     dinamiche. I gains restano a 1: la struttura resta (trim,
+     declick, normalizzazione), cambia CHI pulisce. */
   const gains = new Float32Array(nw).fill(1);
-  if (mode === 'pulita') {
-    const gateThr = floor * 1.4;
-    for (let w = 0; w < nw; w++) if (rms[w] < gateThr) gains[w] = 0.25;
-    for (let w = 1; w < nw; w++) gains[w] = Math.max(gains[w], gains[w - 1] * 0.92);
-    for (let w = nw - 2; w >= 0; w--) gains[w] = Math.max(gains[w], gains[w + 1] * 0.92);
-  }
   const len = end - start;
   const out = ctx.createBuffer(ch, len, sr);
   let peak = 0;
@@ -246,6 +371,21 @@ export function cleanVoiceBuffer(ctx, buffer, mode = 'pulita') {
     }
     const f = Math.min(Math.round(0.02 * sr), Math.floor(len / 4)); // declick
     for (let i = 0; i < f; i++) { const k = i / f; dst[i] *= k; dst[len - 1 - i] *= k; }
+  }
+  /* la sottrazione lavora sul TAGLIATO (dopo trim e declick) e prima
+     della normalizzazione: cosi' il livello finale tiene conto del
+     rumore gia' tolto, invece di alzarlo insieme alla voce. */
+  if (mode === 'pulita') {
+    for (let c = 0; c < ch; c++) {
+      const dst = out.getChannelData(c);
+      const pulito = sottraiRumoreCanale(dst, 1.5, 0.1);
+      if (pulito !== dst) dst.set(pulito);
+    }
+    peak = 0;
+    for (let c = 0; c < ch; c++) {
+      const dst = out.getChannelData(c);
+      for (let i = 0; i < len; i++) { const av = Math.abs(dst[i]); if (av > peak) peak = av; }
+    }
   }
   if (peak > 0.001) {
     const k = Math.min(0.9 / peak, 8);                     // alza al massimo x8

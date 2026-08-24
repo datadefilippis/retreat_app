@@ -1338,7 +1338,7 @@ class TestLibreriaSuoniSl:
 
     def test_card_in_ordine(self):
         src = (FQ_DIR / "FrequenzePage.js").read_text()
-        blocco = src.split("const inCat = sounds")[1][:400]
+        blocco = src.split("const inCat = (momento")[1][:700]
         assert ".sort(" in blocco and "localeCompare" in blocco, \
             "le basi non hanno un ordine dichiarato"
         assert "numeric: true" in blocco, \
@@ -1667,10 +1667,11 @@ class TestRefinementCrea:
         assert "export const CLEAN_MODES" in vfx
         assert "cleanVoiceBuffer(ctx, buffer, mode = 'pulita')" in vfx
         assert "if (mode === 'grezza') return buffer" in vfx
-        # il gate vive SOLO in pulita, e piu' gentile di prima
+        # SS (24/8): in «pulita» non c'e' piu' un GATE ma la
+        # SOTTRAZIONE SPETTRALE — niente attenuazioni sul volume
         assert "if (mode === 'pulita') {" in vfx
-        assert "floor * 1.4" in vfx and "gains[w] = 0.25" in vfx
-        assert "floor * 2;" not in vfx
+        assert "sottraiRumoreCanale" in vfx
+        assert "gains[w] = 0.25" not in vfx and "floor * 2;" not in vfx
         # la cache distingue i modi (cambiare modo ricalcola)
         assert "function ricorda(buffer, mode, out)" in vfx
         # i chiamanti passano il modo dell'asset
@@ -1689,13 +1690,37 @@ class TestRefinementCrea:
         modo governa anche quello: 120ms «pulita», 12ms gli altri."""
         ass = (FQ_DIR / "engine" / "assets.js").read_text()
         assert "clean_mode: modo," in ass          # il modo arriva al motore
+        # SS (24/8): l'attacco e' netto SEMPRE (12ms) — il fade lungo
+        # era la pezza che mascherava il gate, e il gate non c'e' piu'
         syn = (FQ_DIR / "engine" / "synth.js").read_text()
-        assert "const dk = (l.clean_mode || 'pulita') === 'pulita' ? 0.12 : 0.012" in syn
-        assert "const dk = 0.12;" not in syn
+        assert "const dk = 0.012;" in syn and "const dk = 0.12;" not in syn
         ren = (FQ_DIR / "engine" / "render.js").read_text()
-        assert "const dkBase = (l.clean_mode || 'pulita') === 'pulita' ? 0.12 : 0.012" in ren
-        # il master dice quello che si sente in Crea
-        assert "Math.min(dkBase, playLen / 4)" in ren
+        assert "Math.min(0.012, playLen / 4)" in ren
+        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "const dkPrev = 0.012;" in crea      # anche l'anteprima
+
+    def test_il_rumore_si_toglie_senza_abbassare_l_attacco(self):
+        """SS (24/8) — la domanda del founder: «perche' per togliere il
+        rumore di fondo bisogna per forza abbassare i decibel
+        all'inizio?». Non bisogna: il GATE guardava il VOLUME e non
+        sapeva distinguere il fruscio da una voce che attacca piano.
+        La SOTTRAZIONE SPETTRALE guarda il COLORE: impara l'impronta
+        del rumore dai frame quieti e la toglie da tutti i frame, anche
+        mentre si parla, senza toccare le dinamiche.
+        MISURATO sulla registrazione del founder: rumore nelle pause
+        -8,2 dB, voce 0,0 dB (intatta)."""
+        vfx = (FQ_DIR / "engine" / "voicefx.js").read_text()
+        assert "function sottraiRumoreCanale(" in vfx
+        assert "function fft(re, im, inversa)" in vfx
+        # il profilo del rumore e' la MEDIANA dei frame quieti: un
+        # colpo secco nel silenzio non deve insegnare cosa e' rumore
+        assert "ord[Math.floor(quanti / 2)]" in vfx
+        # e il pavimento evita il gorgoglio dei riduttori aggressivi
+        assert "Math.max(m - forza * profilo[k], pavimento * m)" in vfx
+        # IL GATE NON ESISTE PIU'
+        assert "gains[w] = 0.25" not in vfx and "gains[w] = 0.12" not in vfx
+        assert "if (mode === 'pulita') {" in vfx    # la sottrazione, non il gate
+        assert "sottraiRumoreCanale(dst, 1.5, 0.1)" in vfx
 
     def test_il_mixer_dice_il_modo_vero(self):
         """la riga del livello voce diceva «tua voce · pulita» FISSO,
@@ -1765,7 +1790,9 @@ class TestMomentiDelViaggio:
         assert '"moment": 1,' in src                        # proiezione
         assert '"moments": SOUND_MOMENTS' in src            # lista
         page = (FQ_DIR / "FrequenzePage.js").read_text()
-        assert "!momento || s.moment === momento" in page   # il filtro
+        # quando comanda il momento, la lista e' la sua (le categorie
+        # si spengono: categoria AND momento lasciava 0 schede)
+        assert "sounds.filter((s) => s.moment === momento)" in page
 
     def test_un_suono_senza_momento_resta_valido(self):
         """tutta la libreria di prima non ha il momento: deve restare

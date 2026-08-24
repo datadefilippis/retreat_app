@@ -523,7 +523,7 @@ export default function FrequenzePage() {
          non applicava il fade d'ingresso, quindi qui la differenza tra
          i modi si sentiva meno che nell'ascolto vero. «Cio' che provi
          e' cio' che va in onda» dev'essere vero fino in fondo. */
-      const dkPrev = (clip.clean_mode || 'pulita') === 'pulita' ? 0.12 : 0.012;
+      const dkPrev = 0.012;          // l'attacco netto di sempre
       const t0Prev = ctx.currentTime;
       chain.input.gain.setValueAtTime(0.0001, t0Prev);
       chain.input.gain.linearRampToValueAtTime(1, t0Prev + dkPrev);
