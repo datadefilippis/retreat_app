@@ -981,6 +981,49 @@ export default function FrequenzePage() {
     catch { setStatus(url); }
   };
 
+  /* L'EXPORT DELL'OPERATORE (reintegrato 24/8 su richiesta del
+     founder — c'era prima del rebrand di agosto e serviva «il file
+     per l'aula»). Usa la STESSA pipeline del master (renderPcm →
+     mp3Blob): cio' che scarichi e' identico a cio' che pubblichi, non
+     una seconda verita' che diverge al primo cambio. A 320 kbps —
+     qui non si sta in streaming, si tiene un file: il massimo del
+     formato. Non tocca ne' la bozza ne' la pubblicazione. */
+  const [esportando, setEsportando] = useState(null);   // {pct, fase}
+  const esportaMp3 = async () => {
+    if (!layers.length || esportando) return;
+    stopSession();
+    setEsportando({ pct: 0, fase: 'Preparo' });
+    const ctx = audioCtx();
+    try {
+      setEsportando({ pct: 0, fase: 'Carico le basi' });
+      const aLayers = layers.some((l) => l.kind === 'audio')
+        ? await resolveAudioLayers(ctx, score, soundsById) : [];
+      const vLayers = hasVoiceLayers
+        ? await resolveVoiceLayers(ctx, score, voiceById) : [];
+      const pcm = await renderPcm(score, {
+        sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers, voiceDuck,
+        onProgress: (pr) => setEsportando({ pct: pr, fase: 'Renderizzo' }),
+      });
+      const blob = await mp3Blob(pcm, 44100,
+        (pr) => setEsportando({ pct: pr, fase: 'Comprimo' }), 320);
+      /* il nome dice COSA c'e' dentro: titolo, durata, data — chi
+         scarica dieci sessioni non deve aprirle per riconoscerle */
+      const pezzi = (title || 'sessione').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48);
+      const nome = `aurya-${pezzi || 'sessione'}-${Math.round(duration / 60)}min-`
+        + `${new Date().toISOString().slice(0, 10)}.mp3`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = nome;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      setStatus(`Scaricato «${nome}» · ${(blob.size / 1048576).toFixed(0)} MB`);
+    } catch (e) {
+      setStatus('Export non riuscito: prova con una sessione più corta');
+    } finally { setEsportando(null); }
+  };
+
   /* IL MASTER (23/8, riordinato 24/8 su bug del founder: «clicco
      Pubblica e non funziona») — l'ordine di ieri metteva il RENDER
      (minuti, su una traccia lunga) davanti alla pubblicazione: il
@@ -2057,6 +2100,14 @@ export default function FrequenzePage() {
               {/* salva/pubblica restano sempre a vista, anche a campi chiusi */}
               <div className="cb-export">
                   <span className="status">{status}</span>
+                  <button type="button" data-testid="fq-export" className="cb-save"
+                    disabled={!!esportando || !layers.length}
+                    title="Scarica la sessione come file MP3 — per l'aula, per la chiavetta, per te"
+                    onClick={esportaMp3}>
+                    {esportando
+                      ? `${esportando.fase}… ${Math.round(esportando.pct * 100)}%`
+                      : '⤓ Esporta MP3'}
+                  </button>
                   <button type="button" data-testid="fq-save" className="cb-save"
                     disabled={saving || !layers.length}
                     onClick={save}>{saving ? 'Salvo…' : trackId ? 'Aggiorna bozza' : 'Salva bozza'}</button>

@@ -837,10 +837,16 @@ class TestLeggioVoceFv3:
         assert "resolveVoiceLayers" in src
         play = src.split("const playSession")[1].split("const seekTo")[0]
         assert "voiceLayers" in play and "voiceDuck" in play
-        # decisione founder 19/8: NESSUN export nella UI del compositore
-        # (la capacita' resta nel motore: render.js, guardia FV2)
-        assert "doExport" not in src and "Esporta MP3" not in src, \
-            "l'export non deve riapparire in Crea"
+        # STORIA DI UNA DECISIONE, ribaltata dal founder:
+        #  · 19/8 «Crea asciutta»: l'export sparisce dalla UI del
+        #    compositore (la capacita' resta nel motore, render.js);
+        #  · 24/8: «vorrei reintegrare la possibilita' di esportare
+        #    una meditazione in mp3» — torna, ma con un vincolo che
+        #    prima non c'era: DEVE usare la pipeline del master, cosi'
+        #    il file scaricato e la meditazione pubblicata non possono
+        #    divergere (vedi test_l_export_mp3_dell_operatore).
+        assert "esportaMp3" in src, "l'export dell'operatore e' sparito di nuovo"
+        assert "doExport" not in src, "e' tornata la vecchia implementazione a due formati"
 
 
 class TestPuliziaVoceFv5:
@@ -1753,6 +1759,24 @@ class TestRefinementCrea:
         assert "🎙 tua voce · pulita" not in crea
         assert 'data-testid={`fq-clean-sel-${l.id}`}' in crea
         assert "value={CLEAN_ALIAS[voiceById[l.asset_id]?.clean_mode] || 'auto'}" in crea
+
+    def test_l_export_mp3_dell_operatore(self):
+        """Reintegrato 24/8 (c'era prima del rebrand di agosto: «il
+        file per l'aula»). Deve usare la STESSA pipeline del master —
+        una seconda pipeline diverge al primo cambio e l'operatore si
+        ritrova un file che non somiglia a cio' che ha pubblicato."""
+        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        blocco = crea.split("const esportaMp3 = async ()")[1].split("};")[0]
+        assert "renderPcm(score," in blocco and "sampleRate: 44100" in blocco
+        assert "resolveAudioLayers" in blocco and "resolveVoiceLayers" in blocco
+        # 320 kbps: qui si tiene un file, non si sta in streaming
+        assert "mp3Blob(pcm, 44100," in blocco and "320)" in blocco
+        # non tocca bozza ne' pubblicazione
+        assert "uploadMaster" not in blocco and "publishById" not in blocco
+        assert "frequenciesAPI" not in blocco
+        # il nome dice cosa c'e' dentro
+        assert "aurya-${pezzi" in blocco and "min-" in blocco
+        assert 'data-testid="fq-export"' in crea
 
     def test_il_taglio_della_base(self):
         """La voce aveva il taglio, le basi no. clip_in sul layer, con
