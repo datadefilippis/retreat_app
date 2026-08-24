@@ -35,8 +35,30 @@ class ComposerToggle(BaseModel):
 async def list_composers(current_user: dict = Depends(require_system_admin)):
     """Tutte le org con lo stato del privilegio e i numeri del loro
     comporre (tracce totali/pubblicate, ultima attività): il contesto
-    per decidere, non una lista nuda di interruttori."""
-    from database import organizations_collection, frequency_tracks_collection
+    per decidere, non una lista nuda di interruttori.
+
+    Con l'EMAIL di chi guida l'org (24/8, founder: «per identificare
+    subito l'utente»): il nome dell'organizzazione non basta a
+    riconoscere una persona — l'email si': e' quella con cui scrive,
+    accede e a cui si risponde. Si prende l'admin dell'org (il piu'
+    vecchio: chi l'ha aperta), o un membro qualunque se manca.
+    """
+    from database import (organizations_collection, frequency_tracks_collection,
+                          users_collection)
+
+    # una sola passata sugli utenti: l'admin piu' vecchio per org
+    # (niente una query per riga — la lista cresce con la piattaforma)
+    referenti = {}
+    async for u in users_collection.find(
+            {"organization_id": {"$ne": None}},
+            {"_id": 0, "organization_id": 1, "email": 1, "role": 1,
+             "created_at": 1}).sort("created_at", 1):
+        org_id = u.get("organization_id")
+        gia = referenti.get(org_id)
+        # il primo admin vince; un 'user' tiene il posto finche' non
+        # compare un admin (org senza admin: meglio un'email che nulla)
+        if gia is None or (gia.get("role") != "admin" and u.get("role") == "admin"):
+            referenti[org_id] = {"email": u.get("email"), "role": u.get("role")}
 
     conteggi = {}
     pipeline = [
@@ -61,6 +83,7 @@ async def list_composers(current_user: dict = Depends(require_system_admin)):
             "name": org.get("name"),
             "slug": org.get("public_slug"),
             "sound_composer": bool(org.get("sound_composer")),
+            "email": (referenti.get(org["id"]) or {}).get("email"),
             "tracks_total": c.get("totali", 0),
             "tracks_published": c.get("pubblicate", 0),
             "last_track_at": c.get("ultima"),

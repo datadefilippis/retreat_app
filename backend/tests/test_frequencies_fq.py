@@ -1579,6 +1579,22 @@ class TestPrivilegioDelComporre:
         lay = (FQ_DIR.parent.parent / "components" / "Layout.js").read_text()
         assert 'data-testid="nav-admin-sound"' in lay
 
+    def test_la_lista_dice_CHI_c_e_dietro(self):
+        """24/8, founder: «oltre al nome dell'account metti anche
+        l'email per identificare subito l'utente». Il nome dell'org
+        non identifica una persona; l'email si'. Una sola passata
+        sugli utenti (niente query per riga) e l'admin piu' vecchio
+        come referente."""
+        ads = (BACKEND_DIR / "routers" / "admin_sound.py").read_text()
+        assert "referenti" in ads
+        assert '"email": (referenti.get(org["id"]) or {}).get("email")' in ads
+        # una sola passata: mai una find per organizzazione
+        assert ads.count("users_collection.find") == 1
+        page = (FQ_DIR.parent / "admin" / "SoundAccessPage.js").read_text()
+        assert "{o.email}" in page
+        # e l'email si cerca
+        assert "(o.email || '').toLowerCase().includes(q)" in page
+
     def test_l_operatore_senza_invito_ha_una_spiegazione(self):
         page = (FQ_DIR / "FrequenzePage.js").read_text()
         assert "senzaInvito" in page

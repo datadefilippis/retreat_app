@@ -37,6 +37,7 @@ const SoundAccessPage = () => {
     if (!q) return items || [];
     return (items || []).filter((o) =>
       (o.name || '').toLowerCase().includes(q)
+      || (o.email || '').toLowerCase().includes(q)
       || (o.slug || '').toLowerCase().includes(q));
   }, [items, filtro]);
 
@@ -83,7 +84,7 @@ const SoundAccessPage = () => {
           <Input
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
-            placeholder="Cerca per nome o slug…"
+            placeholder="Cerca per nome, email o slug…"
             className="pl-9"
           />
         </div>
@@ -101,7 +102,12 @@ const SoundAccessPage = () => {
                    data-testid={`sound-access-row-${o.id}`}>
                 <Music className={`h-4 w-4 shrink-0 ${o.sound_composer ? 'text-emerald-600' : 'text-gray-300'}`} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">{o.name || o.id}</p>
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {o.name || o.id}
+                    {o.email && (
+                      <span className="ml-2 font-normal text-gray-500">{o.email}</span>
+                    )}
+                  </p>
                   <p className="text-xs text-gray-500 truncate">
                     {o.tracks_total > 0
                       ? `${o.tracks_total} tracce · ${o.tracks_published} pubblicate · ultima ${quando(o.last_track_at)}`
