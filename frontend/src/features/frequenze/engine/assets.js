@@ -258,10 +258,17 @@ export async function resolveVoiceLayers(ctx, score, voiceById) {
       // il file resta intatto, il buffer suona pulito ovunque uguale.
       // VP (24/8): il MODO e' dell'autore, sull'asset; assente = i
       // take di prima, che restano «pulita» e non cambiano suono.
-      const buffer = cleanVoiceBuffer(ctx, raw, asset.clean_mode || 'pulita');
+      const modo = asset.clean_mode || 'pulita';
+      const buffer = cleanVoiceBuffer(ctx, raw, modo);
       out.push({ id: l.id, buffer, start: l.start, end: l.end,
                  gain: l.gain, fx: l.fx || 'dream',
                  fx_amount: l.fx_amount ?? 0.6,
+                 /* VP-bis (24/8) — il modo arriva fino al MOTORE: non
+                    governa solo la pulizia del buffer ma anche il
+                    fade d'ingresso, che era 120ms per tutti e teneva
+                    l'attacco morbido anche in «naturale» (founder:
+                    «cambio e non cambia nulla»). */
+                 clean_mode: modo,
                  clip_in: l.clip_in || 0, mute: false });
     } catch (e) { /* spezzone saltato: sessione parziale, mai muta */ }
   }

@@ -760,8 +760,11 @@ export function startPreview(ctx, score,
     liveG[l.id] = { node: uG, base: l.gain };
     const vg = ctx.createGain(); vg.connect(uG); vg.gain.value = l.gain;
     chain.output.connect(vg);
-    // declick corto sul segnale DRY in ingresso: la coda non si tronca
-    const dk = 0.12;
+    /* VP-bis — il fade d'ingresso E' il modo: 120ms su «pulita»
+       (l'attacco arrotondato di sempre), 12ms su «naturale» e
+       «grezza» — quel tanto che basta a non fare click. Era fisso a
+       120ms e rendeva «naturale» indistinguibile. */
+    const dk = (l.clean_mode || 'pulita') === 'pulita' ? 0.12 : 0.012;
     chain.input.gain.setValueAtTime(0.0001, at(s0));
     chain.input.gain.linearRampToValueAtTime(1, at(s0 + dk));
     chain.input.gain.setValueAtTime(1, at(s0 + playLen - dk));

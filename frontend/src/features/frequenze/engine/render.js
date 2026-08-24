@@ -27,7 +27,10 @@ async function renderWetVoice(l, d, sr) {
   const chain = buildVoiceChain(off, l.fx, l.fx_amount);
   const gv = off.createGain(); gv.gain.value = l.gain;
   chain.output.connect(gv); gv.connect(off.destination);
-  const dk = Math.min(0.12, playLen / 4);
+  /* VP-bis — lo stesso attacco del vivo: il master non puo' suonare
+     diverso da cio' che l'autore ha scelto in Crea */
+  const dkBase = (l.clean_mode || 'pulita') === 'pulita' ? 0.12 : 0.012;
+  const dk = Math.min(dkBase, playLen / 4);
   chain.input.gain.setValueAtTime(0.0001, 0);
   chain.input.gain.linearRampToValueAtTime(1, dk);
   chain.input.gain.setValueAtTime(1, Math.max(dk, playLen - dk));

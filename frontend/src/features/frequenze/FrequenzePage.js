@@ -1348,8 +1348,23 @@ export default function FrequenzePage() {
             <span className="val v1">{Math.round((l.fx_amount ?? 0.6) * 100)}%</span>
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
-            <span className="val" title="Silenzi ai bordi, fruscio nelle pause e volume sono sistemati da soli all'ascolto. Il taglio della registrazione si imposta nel riquadro «La tua voce», qui sopra.">
-              🎙 tua voce · pulita
+            {/* VP-bis (24/8, founder: «cambio pulizia e nel mixer trovo
+                sempre pulita») — la scritta era FISSA: diceva «pulita»
+                qualunque cosa avessi scelto. Ora dice il vero, e il
+                modo si cambia DA QUI: dove si guardano i livelli. */}
+            <select className="minisel" data-testid={`fq-clean-sel-${l.id}`}
+              title="Come si ripulisce questa registrazione all'ascolto"
+              value={voiceById[l.asset_id]?.clean_mode || 'pulita'}
+              onChange={(e) => {
+                const clip = voiceById[l.asset_id];
+                if (clip) saveVoiceClean(clip, e.target.value);
+              }}>
+              {Object.entries(CLEAN_MODES).map(([k, m]) => (
+                <option key={k} value={k}>{`🎙 ${m.label}`}</option>
+              ))}
+            </select>
+            <span className="val" title="Il taglio della registrazione si imposta nel riquadro «La tua voce», qui sopra.">
+              tua voce
               {((voiceById[l.asset_id]?.trim_start || 0)
                 + (voiceById[l.asset_id]?.trim_end || 0)) > 0 ? ' · tagliata' : ''}
             </span>

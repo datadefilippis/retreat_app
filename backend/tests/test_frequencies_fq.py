@@ -1680,6 +1680,32 @@ class TestRefinementCrea:
         assert 'VOICE_CLEAN_MODES = ("naturale", "pulita", "grezza")' in src
         assert '"clean_mode": "naturale"' in src     # i take NUOVI
 
+    def test_il_modo_governa_anche_l_attacco(self):
+        """VP-bis (24/8, founder in prod: «cambio da pulita a naturale
+        e non cambia nulla»). Misurato sulla sua registrazione: il
+        trim toglie gia' la testa silenziosa e il gate tocca ~150ms —
+        ma il FADE d'ingresso della catena voce era 120ms PER TUTTI,
+        e teneva l'attacco arrotondato anche in «naturale». Ora il
+        modo governa anche quello: 120ms «pulita», 12ms gli altri."""
+        ass = (FQ_DIR / "engine" / "assets.js").read_text()
+        assert "clean_mode: modo," in ass          # il modo arriva al motore
+        syn = (FQ_DIR / "engine" / "synth.js").read_text()
+        assert "const dk = (l.clean_mode || 'pulita') === 'pulita' ? 0.12 : 0.012" in syn
+        assert "const dk = 0.12;" not in syn
+        ren = (FQ_DIR / "engine" / "render.js").read_text()
+        assert "const dkBase = (l.clean_mode || 'pulita') === 'pulita' ? 0.12 : 0.012" in ren
+        # il master dice quello che si sente in Crea
+        assert "Math.min(dkBase, playLen / 4)" in ren
+
+    def test_il_mixer_dice_il_modo_vero(self):
+        """la riga del livello voce diceva «tua voce · pulita» FISSO,
+        qualunque modo fosse scelto: il founder cambiava e vedeva
+        sempre «pulita». Ora e' un selettore col valore vero."""
+        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "🎙 tua voce · pulita" not in crea
+        assert 'data-testid={`fq-clean-sel-${l.id}`}' in crea
+        assert "value={voiceById[l.asset_id]?.clean_mode || 'pulita'}" in crea
+
     def test_il_taglio_della_base(self):
         """La voce aveva il taglio, le basi no. clip_in sul layer, con
         l'ORDINE che conta: taglio PRIMA, anello DOPO — un anello
