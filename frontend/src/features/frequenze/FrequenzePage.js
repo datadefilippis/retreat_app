@@ -55,6 +55,10 @@ const fmt = (s) => {
 };
 let _uid = 5000;
 
+/* L'EXPORT PESA COME IL MASTER (192 kbps): la meditazione che scarichi
+   e quella che pubblichi sono lo stesso file, stesso peso. */
+const EXPORT_KBPS = 192;
+
 /* TF (24/8) — IL CAMPO TEMPO che non tradisce.
  *
  * Quello di prima era un input NON controllato (defaultValue) con una
@@ -985,10 +989,19 @@ export default function FrequenzePage() {
      founder — c'era prima del rebrand di agosto e serviva «il file
      per l'aula»). Usa la STESSA pipeline del master (renderPcm →
      mp3Blob): cio' che scarichi e' identico a cio' che pubblichi, non
-     una seconda verita' che diverge al primo cambio. A 320 kbps —
-     qui non si sta in streaming, si tiene un file: il massimo del
-     formato. Non tocca ne' la bozza ne' la pubblicazione. */
+     una seconda verita' che diverge al primo cambio.
+     STESSO PESO DEL MASTER (192 kbps, 24/8 — founder: «voglio per
+     l'export lo stesso meccanismo dove la traccia si comprime»): la
+     meditazione da 27 minuti pesa ~38 MB come quella pubblicata,
+     non 63. Il 320 dava un file grande il doppio per una differenza
+     che su una meditazione — droni, respiri, voce — non si sente.
+     Nota: il file scaricato NON contiene le tracce separate ne'
+     audio grezzo, e' il mix gia' cotto e compresso. Non tocca ne'
+     la bozza ne' la pubblicazione. */
   const [esportando, setEsportando] = useState(null);   // {pct, fase}
+  /* il peso si sa PRIMA di premere: kbps × secondi / 8. Chi esporta
+     una meditazione lunga deve poterlo decidere, non scoprirlo. */
+  const pesoStimatoMB = Math.max(1, Math.round((EXPORT_KBPS * duration) / 8 / 1024));
   const esportaMp3 = async () => {
     if (!layers.length || esportando) return;
     stopSession();
@@ -1005,7 +1018,7 @@ export default function FrequenzePage() {
         onProgress: (pr) => setEsportando({ pct: pr, fase: 'Renderizzo' }),
       });
       const blob = await mp3Blob(pcm, 44100,
-        (pr) => setEsportando({ pct: pr, fase: 'Comprimo' }), 320);
+        (pr) => setEsportando({ pct: pr, fase: 'Comprimo' }), EXPORT_KBPS);
       /* il nome dice COSA c'e' dentro: titolo, durata, data — chi
          scarica dieci sessioni non deve aprirle per riconoscerle */
       const pezzi = (title || 'sessione').toLowerCase()
@@ -2106,7 +2119,7 @@ export default function FrequenzePage() {
                     onClick={esportaMp3}>
                     {esportando
                       ? `${esportando.fase}… ${Math.round(esportando.pct * 100)}%`
-                      : '⤓ Esporta MP3'}
+                      : `⤓ Esporta MP3 (~${pesoStimatoMB} MB)`}
                   </button>
                   <button type="button" data-testid="fq-save" className="cb-save"
                     disabled={saving || !layers.length}

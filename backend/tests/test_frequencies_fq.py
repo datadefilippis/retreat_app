@@ -1769,8 +1769,13 @@ class TestRefinementCrea:
         blocco = crea.split("const esportaMp3 = async ()")[1].split("};")[0]
         assert "renderPcm(score," in blocco and "sampleRate: 44100" in blocco
         assert "resolveAudioLayers" in blocco and "resolveVoiceLayers" in blocco
-        # 320 kbps: qui si tiene un file, non si sta in streaming
-        assert "mp3Blob(pcm, 44100," in blocco and "320)" in blocco
+        # STESSO PESO DEL MASTER (192): il file scaricato e quello
+        # pubblicato sono la stessa cosa — 27 min = ~38 MB, non 63
+        assert "mp3Blob(pcm, 44100," in blocco and "EXPORT_KBPS)" in blocco
+        assert "const EXPORT_KBPS = 192;" in crea
+        # e il peso si sa PRIMA di premere
+        assert "pesoStimatoMB" in crea
+        assert "(EXPORT_KBPS * duration) / 8 / 1024" in crea
         # non tocca bozza ne' pubblicazione
         assert "uploadMaster" not in blocco and "publishById" not in blocco
         assert "frequenciesAPI" not in blocco
