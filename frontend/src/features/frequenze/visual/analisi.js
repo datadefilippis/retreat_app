@@ -47,20 +47,27 @@ const liscia = (vecchio, nuovo, k) => vecchio + (nuovo - vecchio) * k;
  *              abbastanza fine per le bande, abbastanza grosso da
  *              costare poco su un telefono.
  */
-export function creaLettore(ctx, { fft = 2048 } = {}) {
-  const analyser = ctx.createAnalyser();
-  analyser.fftSize = fft;
-  /* La lisciatura DEL BROWSER viene dallo standard (DA2): un valore
-     solo per strumento, studio e meditazione — due orecchie diverse
-     facevano ballare la stessa scena in modi diversi. Resta bassa:
-     le lisciature vere, banda per banda, le facciamo noi. */
-  analyser.smoothingTimeConstant = LISCIATURA_ANALYSER;
-  analyser.minDecibels = -90;
-  analyser.maxDecibels = -10;
+export function creaLettore(ctx, { fft = 2048, analyser: prestato = null } = {}) {
+  /* VS3 (24/8) — l'analizzatore puo' arrivare da FUORI: dove il flusso
+     non si puo' spillare (Safari non ha captureStream sui media) la
+     scena danza sulla RICETTA, dipinta con questa stessa superficie
+     (ricetta.js). Da qui in giu' non cambia una riga: chi legge non
+     deve sapere se sta guardando un segnale o una partitura. */
+  const analyser = prestato || ctx.createAnalyser();
+  if (!prestato) {
+    analyser.fftSize = fft;
+    /* La lisciatura DEL BROWSER viene dallo standard (DA2): un valore
+       solo per strumento, studio e meditazione — due orecchie diverse
+       facevano ballare la stessa scena in modi diversi. Resta bassa:
+       le lisciature vere, banda per banda, le facciamo noi. */
+    analyser.smoothingTimeConstant = LISCIATURA_ANALYSER;
+    analyser.minDecibels = -90;
+    analyser.maxDecibels = -10;
+  }
 
   const bins = analyser.frequencyBinCount;
   const dati = new Uint8Array(bins);
-  const hzPerBin = ctx.sampleRate / 2 / bins;
+  const hzPerBin = (analyser.context?.sampleRate || ctx.sampleRate) / 2 / bins;
   // indici precalcolati: fare la divisione a ogni fotogramma per ogni
   // banda e' lavoro inutile 60 volte al secondo
   const range = BANDE.map((b) => ({

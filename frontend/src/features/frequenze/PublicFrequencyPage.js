@@ -28,6 +28,7 @@ import SoundTopbar from './SoundTopbar';
 import SeekBar from './SeekBar';
 import AuryaMode from './visual/AuryaMode';
 import { creaLettore } from './visual/analisi';
+import { creaLettoreDaRicetta } from './visual/ricetta';
 import { creaPonte } from './engine/ponte';
 
 const PREVIEW_SEC = 90;
@@ -104,6 +105,40 @@ export default function PublicFrequencyPage() {
   const [guarda, setGuarda] = useState(false);
   const [lettore, setLettore] = useState(null);
   const lettoreRef = useRef(null);
+
+  /* VS1/VS3 (24/8) — LA SCENA HA BISOGNO DI UN'ANALISI VIVA.
+     Col master il suono esce da un <audio> PURO, e puro deve restare:
+     un grafo in mezzo lo rimetterebbe sotto il tasto silenzioso e lo
+     ucciderebbe a schermo bloccato (lezione AT3). Si tenta quindi la
+     presa sul FLUSSO — una copia, l'uscita non si tocca — e dove il
+     browser non la offre (Safari non ha captureStream sui media:
+     proprio l'iPhone, dov'e' nato «Guarda il suono») si dipinge la
+     RICETTA. Due strade, una sola scena, e il suono identico. */
+  const agganciaVisual = (ctx, h, score) => {
+    const dallaRicetta = (perche) => {
+      const l = creaLettoreDaRicetta(ctx, score, () => h.currentTime());
+      lettoreRef.current = l;
+      setLettore(l);
+      annota('visual: ricetta dipinta (' + perche + ')');
+    };
+    const vero = creaLettore(ctx);
+    h.presaAnalisi(ctx, vero.analyser, (ok) => {
+      if (!ok) { dallaRicetta('flusso non disponibile'); return; }
+      lettoreRef.current = vero;
+      setLettore(vero);
+      annota('visual: flusso vero');
+      /* La rete che nessuno vede: il flusso puo' esserci e non portare
+         niente (copia muta). Se dopo qualche secondo di suono vero
+         l'energia e' ancora zero, la scena non e' ferma per scelta —
+         e' morta, e si passa alla ricetta. */
+      setTimeout(() => {
+        if (lettoreRef.current !== vero) return;
+        if (h.currentTime() > 1 && vero.leggi().energia < 0.002) {
+          dallaRicetta('flusso muto');
+        }
+      }, 3500);
+    });
+  };
 
   useEffect(() => {
     // SB1 — vecchie chiavi HMAC → prova unica (poi si ricontrolla)
@@ -240,12 +275,7 @@ export default function PublicFrequencyPage() {
         });
       contRef.current = h;
       setContinuo(true);
-      if (!lettoreRef.current) {
-        const l2 = creaLettore(ctx);
-        lettoreRef.current = l2;
-        setLettore(l2);
-      }
-      h.presaAnalisi(ctx, lettoreRef.current.analyser);
+      agganciaVisual(ctx, h, track.score);
       segnaAscolto();
       h.seek(fromT);
       h.play();
@@ -281,15 +311,7 @@ export default function PublicFrequencyPage() {
           });
         contRef.current = h;
         setContinuo(true);
-        /* il visual danza sulla COPIA del flusso (presaAnalisi): se il
-           browser non la offre, la scena resta nel respiro di veglia
-           — il suono non si tocca */
-        if (!lettoreRef.current) {
-          const l2 = creaLettore(ctx);
-          lettoreRef.current = l2;
-          setLettore(l2);
-        }
-        h.presaAnalisi(ctx, lettoreRef.current.analyser);
+        agganciaVisual(ctx, h, track.score);
         segnaAscolto();
         h.seek(fromT);
         h.play();
@@ -368,6 +390,7 @@ export default function PublicFrequencyPage() {
       });
       contRef.current = h;
       setContinuo(true);
+      agganciaVisual(ctxRef.current, h, track.score);
       segnaAscolto();
       h.seek(fromT);
       h.play();
@@ -476,13 +499,19 @@ export default function PublicFrequencyPage() {
           )}
           {track.description && <p>{track.description}</p>}
 
-          {/* AV1 — Aurya Mode. Si accende con un gesto (mai da sola:
-              disegnare consuma) e vive solo mentre il motore suona dal
-              vivo: in ascolto continuo il suono esce da un <audio>, e
-              su iOS portarlo dentro WebAudio lo rimetterebbe sotto il
-              tasto silenzioso. Del resto guardare e ascoltare a
-              schermo bloccato si escludono a vicenda. */}
-          {guarda && lettore && !continuo && (
+          {/* AV1 — Aurya Mode. Si accende con un gesto: mai da sola,
+              disegnare consuma.
+
+              VS1 (24/8) — qui c'era anche `!continuo`. Nacque quando
+              l'ascolto continuo era il caso raro e non si sapeva
+              analizzare un <audio> senza dirottarlo; poi e' arrivato
+              IL MASTER e il caso raro e' diventato l'UNICO — quella
+              condizione non proteggeva piu' niente, spegneva il visual
+              su ogni meditazione (founder: «il suono non si visualizza
+              piu'»). Ora si disegna quando c'e' un'analisi viva,
+              qualunque strada l'abbia portata (agganciaVisual): il
+              suono non si tocca in nessuna delle due. */}
+          {guarda && lettore && (
             <AuryaMode lettore={lettore} attivo={playing || elapsed > 0}
               altezza={300}
               /* VC1 — la scena e' dell'AUTORE (decisione founder): se

@@ -1894,3 +1894,83 @@ class TestMomentiDelViaggio:
         assert '"sha1": impronta' in imp
         assert '--prova' in imp
 
+class TestVisualInAscolto:
+    """VS (24/8/2026) — il visual torna a vedersi nelle meditazioni.
+
+    Founder: «nelle meditazioni il suono non si visualizza più».
+    Non era la compressione: era `!continuo` nella condizione di
+    disegno, scritta quando l'ascolto continuo era il caso raro e
+    diventata — con IL MASTER — l'interruttore che spegneva la scena
+    ovunque. Vedi docs/PIANO_VISUAL_ASCOLTO_2026-08.md.
+    """
+
+    def test_la_scena_non_e_spenta_dall_ascolto_continuo(self):
+        """LA GUARDIA CENTRALE: se `!continuo` torna nella condizione,
+        il visual sparisce di nuovo da OGNI meditazione — e sparisce in
+        silenzio, che è il modo in cui è passato inosservato per un
+        giorno intero."""
+        page = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "{guarda && lettore && (" in page, \
+            "la scena si disegna quando c'e' un'analisi viva"
+        assert "guarda && lettore && !continuo" not in page, \
+            "`!continuo` spegneva il visual su tutte le tracce col master"
+
+    def test_ogni_ramo_di_ascolto_aggancia_la_scena(self):
+        """anteprima, master e file preparato: tre strade al suono, una
+        sola scena. Un ramo che non aggancia è un ramo che non si vede
+        — e nessuno se ne accorge finché non lo prova quel ramo lì."""
+        page = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert page.count("agganciaVisual(ctx") >= 3
+
+    def test_la_ricetta_dipinge_dove_il_flusso_non_si_puo_spillare(self):
+        """Safari non ha captureStream sui media: sull'iPhone la presa
+        sul flusso non può riuscire. Senza la ricetta dipinta il fix
+        varrebbe solo su Chrome — cioè non sul telefono del founder."""
+        ric = (FQ_DIR / "visual" / "ricetta.js").read_text()
+        # la superficie di un AnalyserNode, tutta: il motore visivo non
+        # deve poter distinguere un segnale da una partitura
+        for pezzo in ("fftSize", "frequencyBinCount",
+                      "getByteFrequencyData", "getByteTimeDomainData"):
+            assert pezzo in ric, f"manca {pezzo}: il prototipo non la accetterebbe"
+        page = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "creaLettoreDaRicetta" in page
+        # l'analyser prestato entra dalla porta di analisi.js, non da
+        # una seconda catena di lettura che poi diverge
+        analisi = (FQ_DIR / "visual" / "analisi.js").read_text()
+        assert "analyser: prestato = null" in analisi
+
+    def test_il_suono_resta_puro_su_ogni_strada(self):
+        """LA LEZIONE AT3, per iscritto: portare l'<audio> dentro
+        WebAudio darebbe il visual gratis e ucciderebbe l'ascolto a
+        schermo bloccato. È la scorciatoia che NON si prende — ed è il
+        motivo per cui esiste la ricetta dipinta."""
+        # la strada delle MEDITAZIONI: qui l'<audio> non si dirotta mai.
+        # (Nello studio /sound/visual il dirottamento e' legittimo e c'e':
+        # li' si analizza un file scelto a mano, non c'e' un master da
+        # streammare ne' un ascolto a schermo bloccato da proteggere.)
+        for nome in ("engine/continuo.js", "PublicFrequencyPage.js",
+                     "visual/ricetta.js", "visual/analisi.js"):
+            assert "createMediaElementSource" not in (FQ_DIR / nome).read_text(), nome
+
+    def test_la_presa_dichiara_l_esito_invece_di_tacere(self):
+        """prima si tentava una volta sola alla nascita dell'elemento
+        (nessuna traccia ancora) e il `false` non lo leggeva nessuno:
+        la scena restava morta senza che il codice lo sapesse."""
+        cont = (FQ_DIR / "engine" / "continuo.js").read_text()
+        assert "presaAnalisi: (ctx, analyser, esito)" in cont
+        assert "esito?.(false)" in cont and "esito?.(true)" in cont
+        assert "addEventListener('playing'" in cont
+        assert "chiudiPresa" in cont, "il timer va chiuso allo smontaggio"
+
+    def test_la_scena_dell_autore_arriva_a_chi_ascolta(self):
+        """VC1: la seconda domanda del founder («impostare visual
+        selezionato in crea») ha la stessa risposta della prima — la
+        scena viaggiava già nella ricetta, era il visual a non esserci."""
+        page = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        assert "visual={track.score?.visual || null}" in page
+        from models.frequency_track import clean_score
+        s = clean_score({"duration_sec": 300,
+                         "layers": [{"method": "tone", "carrier": 220,
+                                     "f0": 8, "f1": 8, "start": 0, "end": 300}],
+                         "visual": {"tema": "sorgente"}})
+        assert s.get("visual"), "la scena deve sopravvivere alla pulizia dello score"

@@ -117,6 +117,9 @@ export function lettoreDaUrl(url, d, meta, eventi = {}) {
 
 function lettoreDaSrc(url, d, { titolo, autore }, eventi, { ciclico, daRevocare }) {
   const el = new Audio(url);
+  /* l'attesa della presa (VS2) va chiusa allo smontaggio: un timer che
+     sopravvive al lettore terrebbe in vita l'elemento appena buttato */
+  let chiudiPresa = null;
   el.crossOrigin = 'anonymous';
   el.preload = 'auto';
   el.loop = !!ciclico;
@@ -163,21 +166,52 @@ function lettoreDaSrc(url, d, { titolo, autore }, eventi, { ciclico, daRevocare 
     /* la presa per il visual: una COPIA del flusso verso l'analyser,
        senza dirottare l'uscita dell'elemento (MediaElementSource la
        dirotterebbe: canale-contorno su iOS e silenzio a schermo
-       bloccato). Se captureStream non c'e', si torna false e la scena
-       resta in veglia. */
-    presaAnalisi: (ctx, analyser) => {
-      try {
-        /* SOLO captureStream standard: il mozCaptureStream di
-           Firefox DIROTTA l'uscita (elemento muto) — meglio niente
-           visual che niente suono */
-        const flusso = el.captureStream ? el.captureStream() : null;
-        if (!flusso || !flusso.getAudioTracks().length) return false;
-        const src = ctx.createMediaStreamSource(flusso);
-        src.connect(analyser);
-        return true;
-      } catch { return false; }
+       bloccato).
+
+       VS2 (24/8) — l'esito arriva QUANDO SI SA, non subito: prima si
+       tentava una volta sola alla nascita dell'elemento, quando le
+       tracce non esistono ancora, e falliva anche su Chrome, dove
+       avrebbe funzionato. Ora si riprova al primo `playing` e per
+       qualche battuta. Se non riesce lo si DICE, e chi ha chiamato
+       passa alla ricetta (visual/ricetta.js) invece di restare con una
+       scena morta e nessuno che se ne accorga. */
+    presaAnalisi: (ctx, analyser, esito) => {
+      let fatto = false, giri = 0, battuta = 0;
+      const smetti = () => {
+        el.removeEventListener('playing', quandoSuona);
+        clearInterval(battuta);
+        battuta = 0;
+      };
+      const tenta = () => {
+        if (fatto) return true;
+        try {
+          /* SOLO captureStream standard: il mozCaptureStream di
+             Firefox DIROTTA l'uscita (elemento muto) — meglio niente
+             visual che niente suono */
+          const flusso = el.captureStream ? el.captureStream() : null;
+          if (!flusso || !flusso.getAudioTracks().length) return false;
+          ctx.createMediaStreamSource(flusso).connect(analyser);
+          fatto = true;
+          esito?.(true);
+          return true;
+        } catch { return false; }
+      };
+      function quandoSuona() { if (tenta()) smetti(); }
+      /* Safari non ha captureStream sui media: non c'e' niente da
+         attendere, e far aspettare la risposta gia' nota terrebbe la
+         scena ferma per tre secondi buoni */
+      if (!el.captureStream) { esito?.(false); return false; }
+      if (tenta()) return true;
+      battuta = setInterval(() => {
+        if (tenta()) { smetti(); return; }
+        if (++giri > 12) { smetti(); esito?.(false); }     // ~3 secondi
+      }, 250);
+      el.addEventListener('playing', quandoSuona);
+      chiudiPresa = smetti;
+      return false;
     },
     dispose: () => {
+      chiudiPresa?.();
       el.pause();
       el.removeAttribute('src');
       el.load();
