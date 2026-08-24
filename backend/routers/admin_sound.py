@@ -1,0 +1,100 @@
+"""PC3 (24/8/2026) — /admin/sound: chi può COMPORRE in Aurya Sound.
+
+Decisione founder: la creazione delle meditazioni non è più di tutti
+gli operatori — è un privilegio (`organizations.sound_composer`) che
+il system admin concede da una PAGINA dedicata (non un tab: richiesta
+esplicita). Le superfici pubbliche (frequenze, tutorial, meditazioni
+pubblicate) non c'entrano: il privilegio governa il comporre, non
+l'esistere di ciò che è già stato composto.
+
+- GET  /admin/sound/composers            → elenco org con conteggi
+- POST /admin/sound/composers/{org_id}   → {enabled} + audit trail
+
+Modellato su admin_feature_flags (require_system_admin + AuditLog).
+"""
+
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+
+from auth import require_system_admin
+from models import AuditLog
+from repositories import audit_repository
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/admin/sound", tags=["Admin Aurya Sound"])
+
+
+class ComposerToggle(BaseModel):
+    enabled: bool
+
+
+@router.get("/composers")
+async def list_composers(current_user: dict = Depends(require_system_admin)):
+    """Tutte le org con lo stato del privilegio e i numeri del loro
+    comporre (tracce totali/pubblicate, ultima attività): il contesto
+    per decidere, non una lista nuda di interruttori."""
+    from database import organizations_collection, frequency_tracks_collection
+
+    conteggi = {}
+    pipeline = [
+        {"$group": {
+            "_id": "$organization_id",
+            "totali": {"$sum": 1},
+            "pubblicate": {"$sum": {"$cond": [
+                {"$eq": ["$status", "published"]}, 1, 0]}},
+            "ultima": {"$max": "$updated_at"},
+        }},
+    ]
+    async for r in frequency_tracks_collection.aggregate(pipeline):
+        conteggi[r["_id"]] = r
+
+    out = []
+    async for org in organizations_collection.find(
+            {}, {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
+                 "sound_composer": 1}):
+        c = conteggi.get(org["id"], {})
+        out.append({
+            "id": org["id"],
+            "name": org.get("name"),
+            "slug": org.get("public_slug"),
+            "sound_composer": bool(org.get("sound_composer")),
+            "tracks_total": c.get("totali", 0),
+            "tracks_published": c.get("pubblicate", 0),
+            "last_track_at": c.get("ultima"),
+        })
+    # prima chi compone, poi chi ha materiale, poi l'alfabeto
+    out.sort(key=lambda o: (not o["sound_composer"],
+                            -o["tracks_total"], o["name"] or ""))
+    return {"items": out}
+
+
+@router.post("/composers/{org_id}")
+async def set_composer(org_id: str, body: ComposerToggle,
+                       current_user: dict = Depends(require_system_admin)):
+    from database import organizations_collection
+
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "id": 1, "name": 1, "sound_composer": 1})
+    if not org:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Organizzazione non trovata.")
+    prima = bool(org.get("sound_composer"))
+    await organizations_collection.update_one(
+        {"id": org_id}, {"$set": {"sound_composer": bool(body.enabled)}})
+
+    await audit_repository.create(AuditLog(
+        organization_id=None,
+        user_id=current_user["user_id"],
+        action="admin_set_sound_composer",
+        resource_type="organization",
+        resource_id=org_id,
+        details={
+            "previous_value": prima,
+            "new_value": bool(body.enabled),
+            "org_name": org.get("name"),
+        },
+    ))
+    return {"id": org_id, "sound_composer": bool(body.enabled)}

@@ -79,6 +79,9 @@ export async function iscriviESblocca({ email, source, returnTo,
   await api.post('/public/newsletter/subscribe', {
     email: (email || '').trim(), consent: true, language, source,
     wants_experiences: wantsExperiences, return_to: returnTo || undefined,
+    // questo E' un cancello di sblocco: al gia'-confermato la prova
+    // arriva dalla riga sotto, niente magic link via email
+    unlock_flow: true,
     ...(name ? { name } : {}),
   });
   try {

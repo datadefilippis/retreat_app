@@ -1152,9 +1152,15 @@ class TestSoundPubblicoSp:
         Ascolta) finche' la chiamata non tornava. Il token si legge
         subito e copre la finestra."""
         page = (FQ_DIR / "FrequenzePage.js").read_text()
-        riga = [l for l in page.splitlines() if "const canCompose" in l][0]
-        assert "authLoading" in riga and "localStorage.getItem('token')" in riga, \
-            "canCompose deve reggere anche mentre /auth/me e' in volo"
+        # PC2 (24/8): canCompose = privilegio sound_composer; la
+        # finestra di /auth/me la copre la CACHE del flag (chi l'aveva
+        # ieri non vede lampeggiare la biblioteca, chi non l'ha mai
+        # avuto non vede mai l'area sbagliata)
+        i = page.index("const canCompose")
+        blocco = page[i:i + 400]
+        assert "user.sound_composer" in blocco
+        assert "authLoading" in blocco
+        assert "aurya_sound_composer" in blocco
 
     def test_operatore_intatto(self):
         """Per chi compone il comportamento resta quello di oggi: i
@@ -1530,3 +1536,77 @@ class TestUnaSolaMappaCategorie:
         bib = self._bib()
         assert "Object.entries(CAT_SLUG)" in bib, \
             "SLUG_CAT va DERIVATO da CAT_SLUG, non scritto a mano"
+
+
+class TestPrivilegioDelComporre:
+    """PC1-PC3 (24/8, decisione founder) — comporre non e' piu' di
+    tutti gli operatori: e' un privilegio per-org (sound_composer) che
+    il system admin concede dalla pagina dedicata /admin/sound."""
+
+    def test_il_portiere_copre_tutti_gli_endpoint_del_comporre(self):
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        assert "async def require_sound_composer" in src
+        # l'UNICA occorrenza di get_current_user e' dentro il portiere
+        # stesso: nessun endpoint del comporre lo usa direttamente
+        assert src.count("Depends(get_current_user))") == 1
+        assert src.count("Depends(require_sound_composer))") == 12
+        # e le porte pubbliche NON passano dal portiere
+        assert "def list_sounds():" in src          # lettura libera
+
+    def test_le_superfici_pubbliche_non_dipendono_dal_privilegio(self):
+        """il privilegio governa il COMPORRE, non l'esistere: /public/*
+        e /sounds restano senza require_sound_composer."""
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        for fetta in (src.split("async def public_track")[1].split("async def")[0],
+                      src.split("async def serve_master")[1].split("async def")[0]):
+            assert "require_sound_composer" not in fetta
+
+    def test_il_flag_viaggia_nel_profilo(self):
+        srv = (BACKEND_DIR / "services" / "auth_service.py").read_text()
+        assert 'sound_composer = bool(org_doc.get("sound_composer"))' in srv
+        mod = (BACKEND_DIR / "models" / "user.py").read_text()
+        assert "sound_composer: bool = False" in mod
+
+    def test_la_pagina_admin_e_separata_e_tracciata(self):
+        """richiesta esplicita: PAGINA nel menu, non tab. E ogni cambio
+        nell'audit trail."""
+        ads = (BACKEND_DIR / "routers" / "admin_sound.py").read_text()
+        assert 'prefix="/admin/sound"' in ads
+        assert "require_system_admin" in ads
+        assert 'action="admin_set_sound_composer"' in ads
+        app = (FQ_DIR.parent.parent / "App.js").read_text()
+        assert 'path="/admin/sound"' in app
+        lay = (FQ_DIR.parent.parent / "components" / "Layout.js").read_text()
+        assert 'data-testid="nav-admin-sound"' in lay
+
+    def test_l_operatore_senza_invito_ha_una_spiegazione(self):
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "senzaInvito" in page
+        assert "su invito" in page
+        # mai un muro muto: c'e' un contatto
+        assert "mailto:info@aurya.life" in page
+
+    def test_la_migrazione_non_chiude_fuori_i_pionieri(self):
+        mig = (BACKEND_DIR / "scripts" / "pc1_sound_composer_migration.py").read_text()
+        assert 'distinct("organization_id")' in mig
+        assert '"sound_composer": True' in mig
+
+
+class TestSbloccoSenzaEmail:
+    """Parte 2 (24/8, founder): un gia'-iscritto che sblocca contenuti
+    (guide o meditazioni) NON riceve piu' il magic link — la prova
+    arriva dalla chiamata unlock un istante dopo, e l'email era solo
+    un costo col copy sbagliato."""
+
+    def test_il_ramo_confermato_rispetta_unlock_flow(self):
+        src = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
+        blocco = src.split('existing.get("status") == "confirmed"')[1][:900]
+        assert "if not payload.unlock_flow:" in blocco
+        assert "_send_access_email" in blocco     # il form puro lo manda ancora
+        assert "unlock_flow: Optional[bool] = False" in src
+
+    def test_i_cancelli_dichiarano_il_contesto(self):
+        cerchio = (FQ_DIR.parent.parent / "lib" / "cerchio.js").read_text()
+        assert "unlock_flow: true" in cerchio
+        lead = (FQ_DIR.parent.parent / "features" / "prelaunch" / "LeadForm.jsx").read_text()
+        assert "unlock_flow: !!onSbloccato" in lead

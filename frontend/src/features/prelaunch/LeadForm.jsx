@@ -156,6 +156,9 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           travel: (wantsExperiences ? expTravel : travel) || null,
           budget: budget || null,
           consent: true,
+          // il cancello di una guida (onSbloccato presente) sblocca
+          // con la chiamata successiva: niente magic link ridondante
+          unlock_flow: !!onSbloccato,
         });
         trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: context || 'landing' });
         // SB2 (20/8) — gia' confermato? La prova arriva subito e il

@@ -56,6 +56,26 @@ ANTEPRIME_DIR = Path(__file__).resolve().parent.parent / "uploads" / "anteprime"
 ANTEPRIMA_SEC = 92                       # 90 del cancello + respiro
 
 
+async def require_sound_composer(
+        current_user: dict = Depends(get_current_user)) -> dict:
+    """PC1 (24/8, decisione founder) — comporre e' un PRIVILEGIO: non
+    tutti gli operatori, solo quelli a cui il system admin lo concede
+    (organizations.sound_composer, pagina /admin/sound). Le superfici
+    pubbliche (frequenze, tutorial, meditazioni pubblicate, /sounds in
+    lettura) non passano di qui: il privilegio governa il COMPORRE,
+    non l'esistere di cio' che e' gia' stato composto."""
+    from database import organizations_collection
+    org = await organizations_collection.find_one(
+        {"id": current_user["organization_id"]},
+        {"_id": 0, "sound_composer": 1})
+    if not (org or {}).get("sound_composer"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="La composizione di Aurya Sound e' su invito: "
+                   "scrivici e ne parliamo.")
+    return current_user
+
+
 def _ritaglia_anteprima(master_bytes: bytes) -> bytes:
     # 192 kbps CBR: byte al secondo = 24000. Un margine di 4 KB copre
     # header/tag in testa. Se il master fosse piu' corto, resta tutto.
@@ -106,7 +126,7 @@ def _validated_score(raw: dict) -> dict:
 
 
 @router.get("/tracks")
-async def list_tracks(current_user: dict = Depends(get_current_user)):
+async def list_tracks(current_user: dict = Depends(require_sound_composer)):
     from database import frequency_tracks_collection
     items = await frequency_tracks_collection.find(
         {"organization_id": current_user["organization_id"]},
@@ -121,7 +141,7 @@ async def list_tracks(current_user: dict = Depends(get_current_user)):
 
 @router.post("/tracks", status_code=status.HTTP_201_CREATED)
 async def create_track(payload: TrackCreate,
-                       current_user: dict = Depends(get_current_user)):
+                       current_user: dict = Depends(require_sound_composer)):
     from database import frequency_tracks_collection
     org_id = current_user["organization_id"]
     count = await frequency_tracks_collection.count_documents(
@@ -152,7 +172,7 @@ async def create_track(payload: TrackCreate,
 
 @router.get("/tracks/{track_id}")
 async def get_track(track_id: str,
-                    current_user: dict = Depends(get_current_user)):
+                    current_user: dict = Depends(require_sound_composer)):
     from database import frequency_tracks_collection
     track = await frequency_tracks_collection.find_one(
         {"id": track_id,
@@ -165,7 +185,7 @@ async def get_track(track_id: str,
 
 @router.patch("/tracks/{track_id}")
 async def update_track(track_id: str, payload: TrackUpdate,
-                       current_user: dict = Depends(get_current_user)):
+                       current_user: dict = Depends(require_sound_composer)):
     from database import frequency_tracks_collection
     updates = {}
     if payload.title is not None:
@@ -196,7 +216,7 @@ async def update_track(track_id: str, payload: TrackUpdate,
 
 @router.delete("/tracks/{track_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_track(track_id: str,
-                       current_user: dict = Depends(get_current_user)):
+                       current_user: dict = Depends(require_sound_composer)):
     from database import frequency_tracks_collection
     result = await frequency_tracks_collection.delete_one(
         {"id": track_id,
@@ -251,7 +271,7 @@ async def _trova_pubblicata(slug: str, projection: dict):
 
 @router.post("/tracks/{track_id}/publish")
 async def publish_track(track_id: str,
-                        current_user: dict = Depends(get_current_user)):
+                        current_user: dict = Depends(require_sound_composer)):
     from database import frequency_tracks_collection
     track = await frequency_tracks_collection.find_one(
         {"id": track_id,
@@ -290,7 +310,7 @@ async def publish_track(track_id: str,
 @router.post("/tracks/{track_id}/master")
 async def upload_master(track_id: str,
                         file: UploadFile = File(...),
-                        current_user: dict = Depends(get_current_user)):
+                        current_user: dict = Depends(require_sound_composer)):
     """Riceve il master renderizzato dal client dell'operatore.
     Nome content-addressed ({id}.{epoch}.mp3): il re-publish carica un
     file nuovo e spazza i precedenti — un master per traccia, mai
@@ -404,7 +424,7 @@ async def serve_master(slug: str, request: Request,
 
 @router.post("/tracks/{track_id}/unpublish")
 async def unpublish_track(track_id: str,
-                          current_user: dict = Depends(get_current_user)):
+                          current_user: dict = Depends(require_sound_composer)):
     from database import frequency_tracks_collection
     result = await frequency_tracks_collection.find_one_and_update(
         {"id": track_id,
@@ -771,7 +791,7 @@ _VOICE_PROJECTION = {"_id": 0, "id": 1, "title": 1, "duration_sec": 1,
 
 
 @router.get("/voice")
-async def list_voice_clips(current_user: dict = Depends(get_current_user)):
+async def list_voice_clips(current_user: dict = Depends(require_sound_composer)):
     from database import voice_assets_collection
     org_id = current_user["organization_id"]
     items = await voice_assets_collection.find(
@@ -786,7 +806,7 @@ async def list_voice_clips(current_user: dict = Depends(get_current_user)):
 async def record_voice_clip(file: UploadFile = File(...),
                             title: str = Form(...),
                             duration_sec: float = Form(0),
-                            current_user: dict = Depends(get_current_user)):
+                            current_user: dict = Depends(require_sound_composer)):
     from database import voice_assets_collection
     org_id = current_user["organization_id"]
     ext = ext_for_mime(file.content_type)
@@ -854,7 +874,7 @@ class VoiceClipUpdate(BaseModel):
 
 @router.patch("/voice/{asset_id}")
 async def update_voice_clip(asset_id: str, payload: VoiceClipUpdate,
-                            current_user: dict = Depends(get_current_user)):
+                            current_user: dict = Depends(require_sound_composer)):
     from database import voice_assets_collection
     asset = await voice_assets_collection.find_one(
         {"id": asset_id, "organization_id": current_user["organization_id"]},
@@ -891,7 +911,7 @@ async def update_voice_clip(asset_id: str, payload: VoiceClipUpdate,
 
 @router.delete("/voice/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_voice_clip(asset_id: str,
-                            current_user: dict = Depends(get_current_user)):
+                            current_user: dict = Depends(require_sound_composer)):
     from database import voice_assets_collection
     org_id = current_user["organization_id"]
     asset = await voice_assets_collection.find_one(

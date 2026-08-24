@@ -37,7 +37,7 @@ class TestNginxServeGliAudioEs1:
             "senza il volume, nginx non ha i file e /uploads muore"
 
     def test_uploads_e_alias_non_proxy(self):
-        blocco = NGINX.split("location /uploads/")[1].split("}")[0]
+        blocco = NGINX.split("location /uploads/ {")[1].split("}")[0]
         assert "alias /srv/uploads/" in blocco
         assert "proxy_pass" not in blocco, \
             "tornato il tubo verso il worker Python unico"
@@ -47,18 +47,18 @@ class TestNginxServeGliAudioEs1:
         """/uploads e' pubblico per necessita' (debito noto): il freno
         per IP ferma chi vuole svuotarci la banda, non l'ascoltatore."""
         assert "zone=uploads" in NGINX
-        blocco = NGINX.split("location /uploads/")[1].split("}")[0]
+        blocco = NGINX.split("location /uploads/ {")[1].split("}")[0]
         assert "limit_req zone=uploads" in blocco
 
     def test_immutable_anche_da_nginx(self):
-        blocco = NGINX.split("location /uploads/")[1].split("}")[0]
+        blocco = NGINX.split("location /uploads/ {")[1].split("}")[0]
         assert "immutable" in blocco
 
     def test_i_tipi_coprono_cio_che_vive_in_uploads(self):
         """`types` in una location SOSTITUISCE la mappa ereditata: se
         manca un'estensione davvero presente, quel file esce
         octet-stream. La voce di Chrome e' webm: non deve mancare."""
-        blocco = NGINX.split("location /uploads/")[1].split("types {")[1].split("}")[0]
+        blocco = NGINX.split("location /uploads/ {")[1].split("types {")[1].split("}")[0]
         for ext in ("m4a", "mp3", "webm", "webp", "jpeg", "png"):
             assert re.search(rf"\b{ext}\b", blocco), f"manca {ext}"
 
@@ -88,7 +88,7 @@ class TestVetrinaCheScalaEs4:
             "la vetrina e' tornata a scandire l'intera collezione"
 
     def test_la_pubblicazione_materializza_i_numeri(self):
-        blocco = FREQ.split("def publish_track")[1][:1400]
+        blocco = FREQ.split("def publish_track")[1][:3000]
         assert '"layers_count": len(score.get("layers")' in blocco
         assert '"duration_sec": score.get("duration_sec")' in blocco
 
@@ -195,7 +195,9 @@ class TestSpezzoneEs3:
         chiuderlo in anello taglierebbe un brano di 45 minuti a 3.
         Solo un 206 autorizza il ritaglio."""
         assert "r.status === 206" in ASSETS
-        assert "parziale?.anello" in ASSETS and "anelloDaBuffer(ctx, buf) : buf" in ASSETS
+        # C2 (23/8): la confezione del buffer vive in confeziona()
+        assert "function confeziona(ctx, buf, parziale, viaggiatoIntero)" in ASSETS
+        assert "parziale.anello ? anelloDaBuffer(ctx, buf) : buf" in ASSETS
 
     def test_la_dissolvenza_e_la_stessa_dell_anello(self):
         """Due materie diverse (PCM Int16 del render, AudioBuffer del
@@ -312,7 +314,8 @@ class TestFinestraETetto30:
     def test_il_taglio_del_brano_non_va_in_anello(self):
         """La coda della finestra la sfuma l'inviluppo del livello:
         chiuderla in anello sarebbe sbagliato (non e' un tappeto)."""
-        assert "parziale?.anello" in ASSETS.replace("\n", " ")
+        # C2: la scelta anello/finestra e' dentro confeziona()
+        assert "parziale.anello ?" in ASSETS
 
     def test_la_stima_conosce_la_finestra(self):
         blocco = ASSETS.split("export function memoriaStimataMB")[1][:800]

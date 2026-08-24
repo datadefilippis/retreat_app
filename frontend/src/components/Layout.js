@@ -37,8 +37,7 @@ import { ListChecks,
   UserCircle,
   Star,
   Wallet,
-  Eye,
-} from 'lucide-react';
+  Eye, Music } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Separator } from '../components/ui/separator';
@@ -458,6 +457,15 @@ export const Sidebar = () => {
                   >
                     <ShieldAlert className="h-4 w-4" />
                     Admin Panel
+                  </NavLink>
+                  {/* PC3 — il privilegio del comporre: pagina propria */}
+                  <NavLink
+                    to="/admin/sound"
+                    data-testid="nav-admin-sound"
+                    className={navLinkClass}
+                  >
+                    <Music className="h-4 w-4" />
+                    Aurya Sound
                   </NavLink>
                 </nav>
               </>

@@ -162,6 +162,11 @@ class UserResponse(BaseModel):
     accepted_terms_at: Optional[str] = None
     current_terms_version: Optional[str] = None
     consent_needs_refresh: bool = False
+    # PC2 (24/8) — comporre in Aurya Sound e' un privilegio per-org
+    # concesso dal system admin (/admin/sound): il client disegna
+    # l'area di creazione solo se questo flag e' vero. La VERITA' sta
+    # negli endpoint (require_sound_composer), qui c'e' il disegno.
+    sound_composer: bool = False
 
 
 class UserInvite(BaseModel):

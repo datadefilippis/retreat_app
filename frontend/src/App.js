@@ -145,6 +145,7 @@ const VisualPage = lazy(() => import("./features/frequenze/visual/VisualPage"));
 // (e con lui TUTTE le traduzioni back-office) nel bundle pubblico.
 const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
 const AdminPage = lazy(() => import("./features/admin/AdminPage"));
+const SoundAccessPage = lazy(() => import("./features/admin/SoundAccessPage"));
 const PlansPage = lazy(() => import("./pages/PlansPage"));
 
 // Customer Identity Foundation (v9.0)
@@ -1038,6 +1039,16 @@ function AppRoutes() {
         element={
           <SystemAdminRoute>
             <AdminPage />
+          </SystemAdminRoute>
+        }
+      />
+
+      {/* PC3 — pagina SEPARATA (non tab): chi puo' comporre in Aurya Sound */}
+      <Route
+        path="/admin/sound"
+        element={
+          <SystemAdminRoute>
+            <SoundAccessPage />
           </SystemAdminRoute>
         }
       />

@@ -114,6 +114,10 @@ class SubscribePayload(BaseModel):
     # BN3 — dal gate di una guida: dopo la conferma si torna li'
     return_to: Optional[str] = Field(default=None, max_length=200)
     consent: bool = False
+    # 24/8 — il subscribe arriva da un CANCELLO di sblocco: il
+    # gia'-confermato non riceve il magic link (la prova arriva
+    # dalla chiamata unlock subito dopo)
+    unlock_flow: Optional[bool] = False
 
 
 class TokenPayload(BaseModel):
@@ -276,12 +280,18 @@ async def subscribe(request: Request, payload: SubscribePayload):
         if existing and existing.get("status") == "confirmed":
             await db.aurya_subscribers.update_one(
                 {"email": email}, {"$set": doc_set})
-            # gia' confermato che rimette la email (nuovo dispositivo,
-            # gate di una guida): magic link di accesso, non silenzio.
-            # La risposta resta identica: nessun oracolo di enumerazione.
-            _send_access_email(email, payload.name,
-                               generate_subscriber_token(email),
-                               _safe_return_to(payload.return_to))
+            # Gia' confermato che rimette la email. DUE contesti diversi
+            # (founder, 24/8): (a) un FORM della Lettera senza seguito →
+            # magic link di accesso, come sempre; (b) un CANCELLO di
+            # sblocco (guide, meditazioni: unlock_flow dal client) → la
+            # prova arriva DALLA CHIAMATA UNLOCK un istante dopo, e
+            # l'email era solo un costo con il copy sbagliato («parlava
+            # di guide» sotto una meditazione). La risposta resta
+            # identica: nessun oracolo di enumerazione.
+            if not payload.unlock_flow:
+                _send_access_email(email, payload.name,
+                                   generate_subscriber_token(email),
+                                   _safe_return_to(payload.return_to))
             return {"ok": True}
         # nuovo, pending o unsubscribed (re-optin) → (ri)parte la conferma
         doc_set["status"] = "pending"

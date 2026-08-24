@@ -129,7 +129,25 @@ export default function FrequenzePage() {
      pubblica (Ascolta e + Sessione spariti) per tutta la durata della
      chiamata — e per sempre, se il backend tarda. Se /auth/me fallisce,
      AuthContext cancella il token e il render si corregge da solo. */
-  const canCompose = !!user || (authLoading && !!localStorage.getItem('token'));
+  /* PC2 (24/8, decisione founder) — comporre e' un PRIVILEGIO: non
+     basta piu' essere operatore, serve sound_composer concesso dal
+     system admin (/admin/sound). L'ottimismo del reload usa la CACHE
+     del flag (scritta a ogni /auth/me): chi l'aveva ieri non vede la
+     biblioteca lampeggiare, chi non l'ha mai avuto non vede mai
+     l'area sbagliata. La VERA frontiera restano le API (403). */
+  const canCompose = user
+    ? !!user.sound_composer
+    : (authLoading && !!localStorage.getItem('token')
+       && localStorage.getItem('aurya_sound_composer') === '1');
+  useEffect(() => {
+    if (!user) return;
+    try {
+      localStorage.setItem('aurya_sound_composer', user.sound_composer ? '1' : '0');
+    } catch { /* private mode */ }
+  }, [user]);
+  /* l'operatore SENZA invito che apre /sound/crea o /sound/tracce
+     merita una spiegazione, non la biblioteca muta */
+  const senzaInvito = !!user && !user.sound_composer;
   /* ── LN — ogni pagina ha il suo link ──────────────────────────────
      L'URL e' l'unica verita' per vista e tab: /sound/esplora|crea|
      impara|tracce (+ /impara/glossario), con lo stato fine nelle
@@ -1394,6 +1412,30 @@ export default function FrequenzePage() {
   }
   if (needsAuth && user && user.role !== 'system_admin' && user.email_verified === false) {
     return <Navigate to="/verify-email-required" replace />;
+  }
+  /* PC2 — l'operatore SENZA INVITO su /sound/crea o /sound/tracce:
+     una spiegazione gentile, non un muro muto ne' la biblioteca che
+     appare al posto sbagliato. Un operatore incuriosito e' un lead. */
+  if (needsAuth && senzaInvito) {
+    return (
+      <div className="fqz" data-testid="fqz-root">
+        <main>
+          <section className="bib" style={{ maxWidth: 560, margin: '80px auto', textAlign: 'center' }}>
+            <h1>Aurya <em>Sound</em></h1>
+            <p className="soundlead" style={{ marginTop: 18 }}>
+              La composizione delle meditazioni è su invito: la stiamo
+              aprendo a pochi professionisti alla volta, con cura.
+            </p>
+            <p className="soundlead" style={{ marginTop: 10 }}>
+              Ti piacerebbe comporre con Aurya Sound?{' '}
+              <a href="mailto:info@aurya.life?subject=Aurya%20Sound%20%E2%80%94%20vorrei%20comporre">
+                Scrivici
+              </a>{' '}e ne parliamo.
+            </p>
+          </section>
+        </main>
+      </div>
+    );
   }
 
   /* ─────────────────────────── RENDER ─────────────────────────── */
