@@ -83,6 +83,21 @@ function bytesParziale(asset, sec) {
    server senza Range). Il picco di decodifica resta, ma e'
    transitorio e una base alla volta; il RESIDENTE crolla: la
    «Meditazione rinascita» del founder teneva ~2 GB di PCM. */
+/* TG — via i primi `sec` secondi: la testa della base che l'autore
+   non vuole. Copia (l'originale resta in cache, condiviso con chi
+   quella base la usa intera). */
+function senzaTesta(ctx, buffer, sec) {
+  const da = Math.min(Math.floor(sec * buffer.sampleRate),
+                      Math.max(0, buffer.length - Math.ceil(buffer.sampleRate * 0.2)));
+  if (da <= 0) return buffer;
+  const out = ctx.createBuffer(buffer.numberOfChannels,
+                               buffer.length - da, buffer.sampleRate);
+  for (let c = 0; c < buffer.numberOfChannels; c++) {
+    out.copyToChannel(buffer.getChannelData(c).subarray(da), c);
+  }
+  return out;
+}
+
 function ritaglia(ctx, buffer, sec) {
   const n = Math.min(buffer.length, Math.ceil(sec * buffer.sampleRate));
   if (n >= buffer.length * 0.95) return buffer;   // era gia' corto
@@ -190,12 +205,28 @@ export async function resolveAudioLayers(ctx, score, soundsById) {
       // tappeto in loop → spezzone in anello; brano intero → solo la
       // finestra che il mix usa davvero (la coda la sfuma l'inviluppo)
       const finestra = Math.max(0, (l.end ?? 0) - (l.start ?? 0));
-      const parziale = l.loop !== false
-        ? { asset, sec: SPEZZONE_SEC, anello: true }
-        : (finestra > 0 ? { asset, sec: finestra + 10, anello: false } : null);
-      const buffer = await loadAssetBuffer(ctx, asset.stream_url, inUso, parziale);
+      /* TG (24/8) — IL TAGLIO DELLA BASE. Col taglio si scarica un po'
+         di piu' (i secondi buttati stanno in testa al file, tutte le
+         vie li portano) e si taglia QUI, sul buffer.
+         ORDINE OBBLIGATO per i loop: prima il taglio, POI l'anello —
+         un anello gia' cucito, tagliato dopo, perderebbe la cucitura
+         e si sentirebbe un click a ogni giro. Quindi col taglio si
+         chiede il buffer SENZA anello e lo si chiude qui. */
+      const tagl = Math.max(0, l.clip_in || 0);
+      const inLoop = l.loop !== false;
+      const parziale = inLoop
+        ? { asset, sec: SPEZZONE_SEC + tagl, anello: tagl === 0 }
+        : (finestra > 0 ? { asset, sec: finestra + tagl + 10, anello: false } : null);
+      let buffer = await loadAssetBuffer(ctx, asset.stream_url, inUso, parziale);
+      if (tagl > 0) {
+        buffer = senzaTesta(ctx, buffer, tagl);
+        if (inLoop) buffer = anelloDaBuffer(ctx, buffer);
+      }
       out.push({ id: l.id, buffer, start: l.start, end: l.end,
-                 gain: l.gain, loop: l.loop !== false, mute: false });
+                 gain: l.gain, loop: l.loop !== false, mute: false,
+                 /* il taglio e' gia' DENTRO il buffer (senzaTesta):
+                    il motore non deve saltare altro */
+                 clip_in: 0 });
     } catch (e) {
       /* base saltata: meglio una sessione parziale che muta. Ma se le
          basi sono tutte qui, «parziale» vuol dire MUTA: il silenzio
@@ -224,8 +255,10 @@ export async function resolveVoiceLayers(ctx, score, voiceById) {
         new Set((score.layers || [])
           .map((l2) => voiceById[l2.asset_id]?.stream_url).filter(Boolean)));
       // FV5 — pulizia deterministica (trim, gate, declick, normalize):
-      // il file resta intatto, il buffer suona pulito ovunque uguale
-      const buffer = cleanVoiceBuffer(ctx, raw);
+      // il file resta intatto, il buffer suona pulito ovunque uguale.
+      // VP (24/8): il MODO e' dell'autore, sull'asset; assente = i
+      // take di prima, che restano «pulita» e non cambiano suono.
+      const buffer = cleanVoiceBuffer(ctx, raw, asset.clean_mode || 'pulita');
       out.push({ id: l.id, buffer, start: l.start, end: l.end,
                  gain: l.gain, fx: l.fx || 'dream',
                  fx_amount: l.fx_amount ?? 0.6,

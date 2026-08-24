@@ -759,7 +759,10 @@ class TestMotoreVoceFv2:
         import re
         from models.frequency_track import VOICE_FX
         src = (FQ_DIR / "engine" / "voicefx.js").read_text()
-        js_keys = re.findall(r"^  (\w+): \{", src, re.M)
+        # solo il blocco VOICE_PRESETS: dal 24/8 il file ospita anche
+        # CLEAN_MODES (i modi di pulizia), che ha la stessa forma
+        blocco = src.split("VOICE_PRESETS = Object.freeze({")[1].split("\n});")[0]
+        js_keys = re.findall(r"^  (\w+): \{", blocco, re.M)
         assert sorted(js_keys) == sorted(VOICE_FX), \
             f"preset disallineati: js={js_keys} py={list(VOICE_FX)}"
 
@@ -1626,3 +1629,78 @@ class TestSbloccoSenzaEmail:
         assert "unlock_flow: true" in cerchio
         lead = (FQ_DIR.parent.parent / "features" / "prelaunch" / "LeadForm.jsx").read_text()
         assert "unlock_flow: !!onSbloccato" in lead
+
+
+class TestRefinementCrea:
+    """TF+VP+TG (24/8) — i tre difetti trovati dal founder componendo
+    un mix vero: i campi tempo che non prendevano il valore, la voce
+    che partiva bassa, la base che non si poteva tagliare."""
+
+    def _crea(self):
+        return (FQ_DIR / "FrequenzePage.js").read_text()
+
+    def test_il_campo_tempo_non_tradisce(self):
+        """Era un input NON controllato con chiave sui secondi
+        ARROTONDATI e conferma solo al blur: chi scriveva e premeva
+        subito Ascolta perdeva il valore. Ora bozza locale + Invio."""
+        crea = self._crea()
+        assert "function CampoTempo(" in crea
+        assert "onKeyDown" in crea and "e.key === 'Enter'" in crea
+        assert "setBozza(null)" in crea            # Esc annulla
+        # nessun campo tempo torna al vecchio schema
+        assert 'defaultValue={fmt(l.start)}' not in crea
+        assert 'key={`in${l.id}' not in crea
+        # e la correzione PARLA
+        assert "l'entrata può arrivare al massimo a" in crea
+        assert "l'uscita deve venire dopo" in crea
+
+    def test_i_gesti_del_punto_d_ascolto(self):
+        crea = self._crea()
+        assert "⟵ da qui" in crea and "fin qui ⟶" in crea
+        assert "taglia fin qui" in crea
+
+    def test_la_pulizia_voce_e_dell_autore(self):
+        """La voce partiva bassa: era il GATE anti-fruscio (attacco
+        morbido sotto soglia → -18dB, poi risaliva). Ora tre modi;
+        i take esistenti restano «pulita» = suono di oggi."""
+        vfx = (FQ_DIR / "engine" / "voicefx.js").read_text()
+        assert "export const CLEAN_MODES" in vfx
+        assert "cleanVoiceBuffer(ctx, buffer, mode = 'pulita')" in vfx
+        assert "if (mode === 'grezza') return buffer" in vfx
+        # il gate vive SOLO in pulita, e piu' gentile di prima
+        assert "if (mode === 'pulita') {" in vfx
+        assert "floor * 1.4" in vfx and "gains[w] = 0.25" in vfx
+        assert "floor * 2;" not in vfx
+        # la cache distingue i modi (cambiare modo ricalcola)
+        assert "function ricorda(buffer, mode, out)" in vfx
+        # i chiamanti passano il modo dell'asset
+        ass = (FQ_DIR / "engine" / "assets.js").read_text()
+        assert "asset.clean_mode || 'pulita'" in ass
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        assert 'VOICE_CLEAN_MODES = ("naturale", "pulita", "grezza")' in src
+        assert '"clean_mode": "naturale"' in src     # i take NUOVI
+
+    def test_il_taglio_della_base(self):
+        """La voce aveva il taglio, le basi no. clip_in sul layer, con
+        l'ORDINE che conta: taglio PRIMA, anello DOPO — un anello
+        cucito e poi tagliato perderebbe la cucitura (click a ogni
+        giro)."""
+        mod = (BACKEND_DIR / "models" / "frequency_track.py").read_text()
+        assert '"clip_in": round(_num(raw.get("clip_in"), 0, 3600, 0), 3)' in mod
+        ass = (FQ_DIR / "engine" / "assets.js").read_text()
+        assert "function senzaTesta(ctx, buffer, sec)" in ass
+        blocco = ass.split("const tagl = Math.max(0, l.clip_in || 0)")[1][:700]
+        assert "buffer = senzaTesta(ctx, buffer, tagl)" in blocco
+        assert blocco.index("senzaTesta(ctx, buffer, tagl)") < blocco.index("anelloDaBuffer(ctx, buffer)")
+        # e si scarica quel che serve, non i secondi buttati
+        assert "sec: SPEZZONE_SEC + tagl" in ass
+
+    def test_il_motore_regge_il_taglio_anche_da_solo(self):
+        """difesa in profondita': se un clip_in arrivasse al motore
+        (score vecchi, altri chiamanti), live e render lo rispettano
+        allo stesso modo — e il loop riparte dal punto scelto."""
+        syn = (FQ_DIR / "engine" / "synth.js").read_text()
+        assert "src.loopStart = Math.min(l.clip_in" in syn
+        ren = (FQ_DIR / "engine" / "render.js").read_text()
+        assert "src.loopStart = tagl" in ren
+        assert "tagl + ((t0 - l.start) % utile)" in ren

@@ -46,6 +46,10 @@ AUDIO_DIR = Path(__file__).resolve().parent.parent / "uploads" / "audio"
 MASTERS_DIR = Path(__file__).resolve().parent.parent / "uploads" / "masters"
 MASTER_MAX_BYTES = 64 * 1024 * 1024      # 30 min a 192 kbps ~ 41 MB + margine
 MASTER_PASS_TTL_SEC = 6 * 3600
+# VP (24/8) — i tre modi della pulizia voce. Il gemello nel client:
+# engine/voicefx.js (cleanVoiceBuffer). Assente sul documento = i take
+# di prima del 24/8: valgono «pulita», il suono non cambia da solo.
+VOICE_CLEAN_MODES = ("naturale", "pulita", "grezza")
 # L'ANTEPRIMA (M3, 24/8): i 90 secondi del cancello, come FILE
 # pubblico (~2 MB). Prima i non-sbloccati — cioe' CHIUNQUE riceva un
 # link condiviso — sintetizzavano l'anteprima col percorso pesante, e
@@ -787,7 +791,7 @@ VOICE_DIR = Path(__file__).resolve().parent.parent / "uploads" / "voice"
 
 _VOICE_PROJECTION = {"_id": 0, "id": 1, "title": 1, "duration_sec": 1,
                      "size_bytes": 1, "stream_url": 1, "tappeto_url": 1, "created_at": 1,
-                     "trim_start": 1, "trim_end": 1}
+                     "trim_start": 1, "trim_end": 1, "clean_mode": 1}
 
 
 @router.get("/voice")
@@ -856,6 +860,13 @@ async def record_voice_clip(file: UploadFile = File(...),
         # FV6 — nasce intera: il taglio si decide dopo, sullo spezzone
         "trim_start": 0.0,
         "trim_end": 0.0,
+        # VP (24/8, founder: «la voce inizia bassa e poi si alza») —
+        # era il GATE anti-fruscio della pulizia: un attacco morbido
+        # finiva sotto soglia e usciva a -18dB, poi risaliva. Ora
+        # l'autore sceglie: i take NUOVI nascono «naturale» (volume e
+        # bordi, nessun gate); i take gia' esistenti, senza campo,
+        # valgono «pulita» — cioe' suonano ESATTAMENTE come oggi.
+        "clean_mode": "naturale",
     }
     await voice_assets_collection.insert_one(dict(asset))
     asset.pop("_id", None)
@@ -870,6 +881,7 @@ class VoiceClipUpdate(BaseModel):
     title: Optional[str] = None
     trim_start: Optional[float] = None
     trim_end: Optional[float] = None
+    clean_mode: Optional[str] = None       # naturale | pulita | grezza
 
 
 @router.patch("/voice/{asset_id}")
@@ -898,6 +910,11 @@ async def update_voice_clip(asset_id: str, payload: VoiceClipUpdate,
             asset.get("duration_sec"))
         changes["trim_start"] = start
         changes["trim_end"] = end
+    if payload.clean_mode is not None:
+        if payload.clean_mode not in VOICE_CLEAN_MODES:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="Modo di pulizia sconosciuto.")
+        changes["clean_mode"] = payload.clean_mode
     if changes:
         await voice_assets_collection.update_one(
             {"id": asset_id,

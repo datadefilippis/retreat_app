@@ -78,12 +78,18 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
       const off = new OfflineAudioContext(2, frames, sr);
       audio.forEach((l) => {
         const span = Math.max(1, Math.min(l.end, d) - l.start);
+        /* TG (24/8) — il taglio della base: `clip_in` sono i secondi
+           saltati dentro il file. Il render deve dire ESATTAMENTE
+           quello che si sente in Crea (e' il master di domani). */
+        const tagl = Math.min(l.clip_in || 0, Math.max(0, l.buffer.duration - 0.2));
+        const utile = Math.max(0.2, l.buffer.duration - tagl);
         const segEnd = l.loop ? l.start + span
-                              : Math.min(l.start + span, l.start + l.buffer.duration);
+                              : Math.min(l.start + span, l.start + utile);
         if (segEnd <= cs || l.start >= cs + len) return;
         const t0 = Math.max(l.start, cs), tE = Math.min(segEnd, cs + len);
         const src = off.createBufferSource();
         src.buffer = l.buffer; src.loop = l.loop;
+        if (l.loop && tagl > 0) { src.loopStart = tagl; src.loopEnd = l.buffer.duration; }
         const g = off.createGain(); src.connect(g); g.connect(off.destination);
         const { a, r } = attackRelease(span);   // TS1a: stessi numeri ovunque
         const ev = (t) => {
@@ -100,7 +106,7 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
             if (pt > t0 && pt < tE) g.gain.linearRampToValueAtTime(ev(pt), pt - cs);
           });
         g.gain.linearRampToValueAtTime(ev(tE), tE - cs);
-        const offst = l.loop ? (t0 - l.start) % l.buffer.duration : t0 - l.start;
+        const offst = l.loop ? tagl + ((t0 - l.start) % utile) : tagl + (t0 - l.start);
         src.start(t0 - cs, Math.min(offst, Math.max(0, l.buffer.duration - 0.001)));
         src.stop(tE - cs);
       });

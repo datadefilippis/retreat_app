@@ -68,6 +68,9 @@ export const frequenciesAPI = {
     api.patch(`/frequencies/voice/${assetId}`, { title }),
   // FV6 — il taglio e' una proprieta' della REGISTRAZIONE: si decide
   // una volta nel leggio e vale ovunque quello spezzone venga usato
+  // VP (24/8) — il modo di pulizia sceglie l'autore, sullo spezzone
+  setVoiceClean: (assetId, cleanMode) =>
+    api.patch(`/frequencies/voice/${assetId}`, { clean_mode: cleanMode }),
   trimVoice: (assetId, { trimStart, trimEnd }) =>
     api.patch(`/frequencies/voice/${assetId}`,
       { trim_start: trimStart, trim_end: trimEnd }),

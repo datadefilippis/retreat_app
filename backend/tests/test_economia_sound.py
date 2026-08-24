@@ -175,7 +175,9 @@ class TestSpezzoneEs3:
     def test_il_criterio_e_il_flag_loop_non_un_indovinello(self):
         """Un brano che EVOLVE (loop:false) si scarica intero: e' una
         scelta dell'operatore, non un caso da ottimizzare."""
-        assert "{ asset, sec: SPEZZONE_SEC, anello: true }" in ASSETS
+        # TG (24/8): la richiesta porta anche il taglio (`+ tagl`),
+        # e l'anello si cuce dopo quando c'e' un taglio
+        assert "sec: SPEZZONE_SEC + tagl, anello: tagl === 0" in ASSETS
         assert "anello: false" in ASSETS   # il brano-finestra non va in giro
 
     def test_lo_spezzone_si_calcola_dai_metadati(self):
@@ -307,8 +309,8 @@ class TestFinestraETetto30:
     bloccato (CONTINUO_MAX_SEC), nessuna zona d'ombra."""
 
     def test_il_brano_intero_scarica_solo_la_finestra(self):
-        blocco = ASSETS.split("const finestra")[1][:400]
-        assert "sec: finestra + 10, anello: false" in blocco, \
+        blocco = ASSETS.split("const finestra")[1][:1200]
+        assert "sec: finestra + tagl + 10, anello: false" in blocco, \
             "un brano da 30 min usato per 3 riscaricherebbe tutto"
 
     def test_il_taglio_del_brano_non_va_in_anello(self):

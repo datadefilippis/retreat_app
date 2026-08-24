@@ -143,6 +143,11 @@ def clean_layer(raw, duration):
             "gain": _num(raw.get("gain"), 0.0, 1.0, 0.7),
             "loop": bool(raw.get("loop", True)),
             "mute": bool(raw.get("mute", False)),
+            # TG (24/8, founder: «se non voglio i primi 10 secondi?»)
+            # — secondi da saltare DENTRO la base. Stesso nome e stessa
+            # semantica del taglio voce: un vocabolario solo. Assente
+            # o 0 = la base parte da capo, come sempre.
+            "clip_in": round(_num(raw.get("clip_in"), 0, 3600, 0), 3),
         }
     if raw.get("kind") == "voice":
         asset_id = raw.get("asset_id")

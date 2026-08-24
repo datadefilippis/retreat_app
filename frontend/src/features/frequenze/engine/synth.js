@@ -719,16 +719,29 @@ export function startPreview(ctx, score,
     liveG[l.id] = { node: uG, base: l.gain };
     const src = ctx.createBufferSource();
     src.buffer = l.buffer; src.loop = l.loop;
+    /* TG — col taglio, il GIRO deve ricominciare dal punto scelto:
+       senza loopStart WebAudio torna a 0 dal secondo giro e i secondi
+       tagliati riapparirebbero (il taglio varrebbe solo la prima
+       volta). loopEnd resta la fine del buffer. */
+    if (l.loop && (l.clip_in || 0) > 0) {
+      src.loopStart = Math.min(l.clip_in, Math.max(0, l.buffer.duration - 0.2));
+      src.loopEnd = l.buffer.duration;
+    }
     const g = ctx.createGain(); src.connect(g); g.connect(uG);
     const { a, r } = attackRelease(span);   // TS1a: stessi numeri del render
     g.gain.setValueAtTime(0.0001, at(s0));
     g.gain.linearRampToValueAtTime(l.gain, at(s0 + a));
     g.gain.setValueAtTime(l.gain, at(s0 + span - r));
     g.gain.linearRampToValueAtTime(0.0001, at(s0 + span));
-    const startOffset = off > l.start ? off - l.start : 0;
+    /* TG (24/8) — il taglio della base: `clip_in` sono i secondi da
+       saltare dentro il file. In loop il giro riparte dal punto
+       scelto (modulo la parte utile); intero, si somma all'offset. */
+    const tagl = Math.min(l.clip_in || 0, Math.max(0, l.buffer.duration - 0.2));
+    const seek = off > l.start ? off - l.start : 0;
+    const utile = Math.max(0.2, l.buffer.duration - tagl);
     const when = at(s0);
-    src.start(when, l.loop ? startOffset % l.buffer.duration
-                           : Math.min(startOffset, l.buffer.duration - 0.001));
+    src.start(when, l.loop ? tagl + (seek % utile)
+                           : Math.min(tagl + seek, l.buffer.duration - 0.001));
     src.stop(at(s0 + span));
     nodes.push(src);
   });

@@ -29,7 +29,8 @@ import {
   memoriaStimataMB,
 } from './engine/assets';
 import {
-  VOICE_PRESETS, buildVoiceChain, cleanVoiceBuffer, connectVoiceSources,
+  VOICE_PRESETS, CLEAN_MODES, buildVoiceChain, cleanVoiceBuffer,
+  connectVoiceSources,
 } from './engine/voicefx';
 import { avvisoCuffie, avvisoCuffieScore } from './engine/altoparlante';
 import { renderPcm, mp3Blob } from './engine/render';
@@ -53,6 +54,63 @@ const fmt = (s) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
 let _uid = 5000;
+
+/* TF (24/8) — IL CAMPO TEMPO che non tradisce.
+ *
+ * Quello di prima era un input NON controllato (defaultValue) con una
+ * chiave che dipendeva dai secondi ARROTONDATI: spostavi la barra di
+ * mezzo secondo e il campo mostrava ancora il numero vecchio; e
+ * confermava solo perdendo il fuoco — chi scriveva e premeva subito
+ * Ascolta vedeva il suo valore sparire nel nulla (founder, 24/8:
+ * «non mi prendeva cio' che inserivo»). Qui:
+ *   - mentre scrivi comanda il TUO testo (bozza locale);
+ *   - Invio conferma, Esc annulla, il fuoco perso conferma;
+ *   - fuori dal campo il valore vero si riflette SEMPRE (nessuna
+ *     chiave-fantasma: la bozza si azzera e si rilegge il modello);
+ *   - la correzione PARLA (onCorretto), mai un cambio muto.
+ * Formati accettati: 90 · 1:30 · 1.30 · 01:30 — la stessa cosa.
+ */
+export function leggiTempo(testo) {
+  const t = (testo || '').trim().replace(',', '.');
+  if (!t) return null;
+  const m = t.match(/^(\d{1,3})[:.](\d{1,2})$/);
+  if (m) return (+m[1]) * 60 + (+m[2]);
+  const v = parseFloat(t);
+  return Number.isFinite(v) && v >= 0 ? v : null;
+}
+
+function CampoTempo({ valore, onConferma, className = 'mini', titolo, testid }) {
+  const [bozza, setBozza] = useState(null);
+  const mostrato = bozza != null ? bozza : fmt(valore);
+  const conferma = () => {
+    if (bozza == null) return;
+    const v = leggiTempo(bozza);
+    setBozza(null);                       // il campo torna al valore VERO
+    if (v != null) onConferma(v);
+  };
+  return (
+    <input
+      className={className}
+      type="text"
+      inputMode="numeric"
+      title={titolo}
+      data-testid={testid}
+      value={mostrato}
+      onChange={(e) => setBozza(e.target.value)}
+      onFocus={(e) => e.target.select()}
+      onBlur={conferma}
+      onKeyDown={(e) => {
+        /* keyCode come rete: certe tastiere/IME (e certi automatismi)
+           mandano l'invio senza `key` — meglio due strade che un
+           campo che non conferma */
+        const invio = e.key === 'Enter' || e.keyCode === 13;
+        const esc = e.key === 'Escape' || e.keyCode === 27;
+        if (invio) { e.preventDefault(); e.currentTarget.blur(); }
+        else if (esc) { setBozza(null); e.currentTarget.blur(); }
+      }}
+    />
+  );
+}
 
 const LISTEN = {
   bin: '🎧 Effetto solo in cuffia', bil: '🎧 In cuffia (consigliato)',
@@ -362,6 +420,11 @@ export default function FrequenzePage() {
       id: ++_uid, kind: 'audio', asset_id: asset.id,
       name: asset.title, start: 0, end: duration,
       gain: 0.7, loop: true, mute: false,
+      /* la durata della base viaggia col livello (chiave privata: le
+         `_` non finiscono mai nella ricetta salvata). Serve al campo
+         «parte da» per sapere fin dove si puo' tagliare anche prima
+         che la libreria sia caricata. */
+      _dur: asset.duration_sec || 0,
     }]);
     setStatus(`«${asset.title}» aggiunta alla sessione — vai a «Crea»`);
   };
@@ -433,7 +496,8 @@ export default function FrequenzePage() {
     setVoicePrevLoading(clip.id);
     try {
       // stessa pulizia dell'ascolto in sessione: cio' che provi e' cio' che va in onda
-      const buffer = cleanVoiceBuffer(ctx, await loadAssetBuffer(ctx, clip.stream_url));
+      const buffer = cleanVoiceBuffer(ctx, await loadAssetBuffer(ctx, clip.stream_url),
+        clip.clean_mode || 'pulita');
       const chain = buildVoiceChain(ctx, prevFx, 0.6);
       chain.output.connect(ctx.destination);
       // si ascolta il taglio, non il file: cio' che provi e' cio' che va in onda
@@ -529,6 +593,18 @@ export default function FrequenzePage() {
   const [trimOpen, setTrimOpen] = useState(null);   // id spezzone aperto
   // barra di ascolto su telefono: titolo/durata/dissolvenze dietro un tocco
   const [setupOpen, setSetupOpen] = useState(false);
+  /* VP (24/8) — il modo di pulizia: si sceglie una volta, vale
+     ovunque quel take sia usato (anteprima, sessione, master). Il
+     file non si tocca mai: e' matematica applicata all'ascolto. */
+  const saveVoiceClean = async (clip, mode) => {
+    if ((clip.clean_mode || 'pulita') === mode) return;
+    setVoiceClips((cs) => cs.map((c) => (
+      c.id === clip.id ? { ...c, clean_mode: mode } : c)));
+    setStatus(`Voce «${clip.title}»: pulizia ${CLEAN_MODES[mode].label.toLowerCase()}`);
+    try { await frequenciesAPI.setVoiceClean(clip.id, mode); }
+    catch { setStatus('Pulizia non salvata'); loadVoice(); }
+  };
+
   const saveVoiceTrim = async (clip, nextStart, nextEnd) => {
     const dur = clip.duration_sec || 0;
     let s = Math.max(0, Math.min(nextStart, Math.max(0, dur - 1)));
@@ -995,13 +1071,6 @@ export default function FrequenzePage() {
   const gstep = duration <= 300 ? 60 : duration <= 900 ? 120 : 300;
   const liveCount = liveKeys.length;
 
-  const parseT = (s) => {
-    s = (s || '').trim();
-    if (/^\d+:\d{1,2}$/.test(s)) { const [m, x] = s.split(':'); return +m * 60 + +x; }
-    const v = parseFloat(s);
-    return isNaN(v) ? null : v;
-  };
-
   const renderCard = (entry, idx) => {
     const key = `${curTab}:${idx}`;
     const live = liveCardsRef.current[key];
@@ -1215,21 +1284,52 @@ export default function FrequenzePage() {
         {/* FV6 — la voce ha lo STESSO specchietto degli altri suoni:
             entra a / esce a. Il taglio della registrazione si decide
             una volta sola nel leggio, qui sopra. */}
+        {/* TF (24/8) — i tempi si scrivono e si CONFERMANO (Invio o
+            fuori dal campo), e se il valore va corretto lo si dice.
+            «⟵ da qui» / «fin qui ⟶» prendono il punto in cui stai
+            ascoltando: chi compone ragiona per punti, non per numeri. */}
         <div className="ctrls timerow">
           <span className="lbl" title="Secondo in cui il suono entra">entra a</span>
-          <input className="mini t-in" type="text" defaultValue={fmt(l.start)} key={`in${l.id}-${Math.round(l.start)}`}
-            onBlur={(e) => { const v = parseT(e.target.value); if (v !== null) patchLayer(l.id, { start: Math.max(0, Math.min(v, l.end - 0.5)) }); }} />
+          <CampoTempo
+            className="mini t-in" valore={l.start} testid={`t-in-${l.id}`}
+            titolo="Quando entra. Scrivi 90 · 1:30 · 1.30 e premi Invio"
+            onConferma={(v) => {
+              const max = l.end - 0.5;
+              const ok = Math.max(0, Math.min(v, max));
+              if (ok !== v) setStatus(v < 0
+                ? 'Un tempo non può essere negativo'
+                : `«${l.name || 'il livello'}» esce a ${fmt(l.end)}: l'entrata può arrivare al massimo a ${fmt(max)}`);
+              patchLayer(l.id, { start: ok });
+            }} />
+          {playing && (
+            <button type="button" className="chip mini-t"
+              title="Porta l'entrata al punto in cui stai ascoltando"
+              onClick={() => patchLayer(l.id, {
+                start: Math.max(0, Math.min(elapsed, l.end - 0.5)) })}>⟵ da qui</button>
+          )}
           <span className="lbl" title="Secondo in cui il suono esce">esce a</span>
-          <input className="mini t-out" type="text" defaultValue={fmt(l.end)} key={`out${l.id}-${Math.round(l.end)}`}
-            onBlur={(e) => { const v = parseT(e.target.value); if (v === null) return;
+          <CampoTempo
+            className="mini t-out" valore={l.end} testid={`t-out-${l.id}`}
+            titolo="Quando esce. Scrivi 90 · 1:30 · 1.30 e premi Invio"
+            onConferma={(v) => {
               /* DU3 — il tetto PARLA, non taglia in silenzio. In AUTO
                  la fine della traccia PUO' allungare la sessione (fino
                  a 30); in FISSA si ferma alla durata scelta. */
               const tetto = durataAuto ? 1800 : duration;
+              const ok = Math.max(l.start + 0.5, Math.min(v, tetto));
               if (v > tetto) setStatus(durataAuto
                 ? 'Il massimo è 30 minuti: è il limite dell\'ascolto a schermo bloccato'
                 : `La sessione è fissata a ${fmt(duration)}: allungala dalla pill della durata, o riporta la traccia dentro`);
-              patchLayer(l.id, { end: Math.max(l.start + 0.5, Math.min(v, tetto)) }); }} />
+              else if (ok !== v) setStatus(
+                `«${l.name || 'il livello'}» entra a ${fmt(l.start)}: l'uscita deve venire dopo`);
+              patchLayer(l.id, { end: ok });
+            }} />
+          {playing && (
+            <button type="button" className="chip mini-t"
+              title="Porta l'uscita al punto in cui stai ascoltando"
+              onClick={() => patchLayer(l.id, {
+                end: Math.max(l.start + 0.5, Math.min(elapsed, durataAuto ? 1800 : duration)) })}>fin qui ⟶</button>
+          )}
           <span className="lbl dur-tot">({fmt(l.end - l.start)})</span>
         </div>
         {l.kind === 'voice' ? (
@@ -1261,6 +1361,28 @@ export default function FrequenzePage() {
               onClick={() => patchLayer(l.id, { loop: l.loop === false })}>loop</button>
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
+            {/* TG (24/8, founder: «non sono interessato ai primi 10
+                secondi») — il taglio della base: i secondi saltati
+                dentro il file. Il file non si tocca: si rimette 0
+                quando si vuole. */}
+            <span className="lbl" title="Secondi saltati all'inizio della base">parte da</span>
+            <CampoTempo
+              className="mini t-clip" valore={l.clip_in || 0} testid={`t-clip-${l.id}`}
+              titolo="Salta l'inizio della base. Scrivi 10 · 0:10 e premi Invio"
+              onConferma={(v) => {
+                const dur = l._dur || soundsById[l.asset_id]?.duration_sec || 0;
+                const max = dur ? Math.max(0, dur - 1) : v;
+                const ok = Math.max(0, Math.min(v, max));
+                if (ok !== v && dur) setStatus(
+                  `«${l.name || 'la base'}» dura ${fmt(dur)}: puoi saltarne al massimo ${fmt(max)}`);
+                patchLayer(l.id, { clip_in: ok });
+              }} />
+            {playing && elapsed > l.start && (
+              <button type="button" className="chip mini-t"
+                title="Salta la base fino al punto in cui stai ascoltando"
+                onClick={() => patchLayer(l.id, {
+                  clip_in: Math.max(0, (l.clip_in || 0) + (elapsed - l.start)) })}>taglia fin qui</button>
+            )}
             <span className="val">base della libreria</span>
           </div>
         ) : (
@@ -2019,6 +2141,19 @@ export default function FrequenzePage() {
                             Restano {fmt(clipUseful(c))} di {fmt(c.duration_sec || 0)}.
                             Il file resta intero: puoi rimettere 0 quando vuoi.
                           </span>
+                          {/* VP — la pulizia: «Naturale» lascia
+                              l'attacco com'e' (la voce non parte piu'
+                              bassa), «Pulita» toglie anche il fruscio
+                              nelle pause, «Grezza» non tocca nulla. */}
+                          <div className="vd-clean">
+                            <span className="lbl">pulizia</span>
+                            {Object.entries(CLEAN_MODES).map(([k, m]) => (
+                              <button key={k} type="button" title={m.hint}
+                                data-testid={`fq-clean-${k}`}
+                                className={`chip${(c.clean_mode || 'pulita') === k ? ' on' : ''}`}
+                                onClick={() => saveVoiceClean(c, k)}>{m.label}</button>
+                            ))}
+                          </div>
                         </div>
                       )}
                       </React.Fragment>

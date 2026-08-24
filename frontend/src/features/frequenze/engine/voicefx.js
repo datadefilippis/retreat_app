@@ -180,9 +180,28 @@ export function connectVoiceSources(ctx, buffer, chain) {
  * leggero anti-fruscio nelle pause (soglia RELATIVA al fondo della
  * registrazione: il respiro voluto, piu' forte del fondo, sopravvive)
  * → declick 20ms ai bordi → normalizzazione di picco a -1 dB. */
+/* VP (24/8) — I TRE MODI DELLA PULIZIA (founder: «ogni registrazione
+   inizia bassa e poi il volume si alza — si puo' regolare?»).
+   Era il GATE: una voce che attacca dolcemente sta sotto soglia per
+   qualche decina di ms, usciva a -18 dB e risaliva a scalini. Ora:
+     naturale — volume pareggiato + silenzi ai bordi. NIENTE gate:
+                 l'attacco resta com'e' (default dei take nuovi);
+     pulita    — anche il gate sulle pause, per stanze rumorose
+                 (comportamento storico, addolcito);
+     grezza    — la registrazione cosi' com'e'.
+   La cache tiene conto del modo: lo stesso buffer con due modi sono
+   due suoni diversi. */
+export const CLEAN_MODES = Object.freeze({
+  naturale: { label: 'Naturale', hint: 'Volume pareggiato e bordi puliti: l\u2019attacco resta naturale.' },
+  pulita: { label: 'Pulita', hint: 'Anche il fruscio nelle pause: per stanze rumorose.' },
+  grezza: { label: 'Grezza', hint: 'Nessun ritocco: la registrazione com\u2019e\u2019.' },
+});
+
 const cleanCache = new WeakMap();
-export function cleanVoiceBuffer(ctx, buffer) {
-  if (cleanCache.has(buffer)) return cleanCache.get(buffer);
+export function cleanVoiceBuffer(ctx, buffer, mode = 'pulita') {
+  if (mode === 'grezza') return buffer;
+  const perBuffer = cleanCache.get(buffer);
+  if (perBuffer && perBuffer[mode]) return perBuffer[mode];
   const sr = buffer.sampleRate, ch = buffer.numberOfChannels, n = buffer.length;
   const data = [];
   for (let c = 0; c < ch; c++) data.push(buffer.getChannelData(c));
@@ -201,16 +220,21 @@ export function cleanVoiceBuffer(ctx, buffer) {
   for (let w = 0; w < nw; w++) {
     if (rms[w] >= speechThr) { if (first < 0) first = w; last = w; }
   }
-  if (first < 0) { cleanCache.set(buffer, buffer); return buffer; } // solo silenzio
+  if (first < 0) { ricorda(buffer, mode, buffer); return buffer; } // solo silenzio
   const pad = Math.round(0.15 * sr);
   const start = Math.max(0, first * win - pad);
   const end = Math.min(n, (last + 1) * win + pad);
-  // gate: le pause sotto ~fondo×2 scendono a -18dB, con rilascio morbido
-  const gateThr = floor * 2;
+  /* il gate vive SOLO in «pulita», e piu' gentile di prima: soglia
+     piu' bassa (1.4× il fondo invece di 2×), fondo a -12 dB invece
+     di -18, e code piu' lunghe in entrambe le direzioni — cosi' un
+     attacco morbido non viene mai schiacciato. */
   const gains = new Float32Array(nw).fill(1);
-  for (let w = 0; w < nw; w++) if (rms[w] < gateThr) gains[w] = 0.12;
-  for (let w = 1; w < nw; w++) gains[w] = Math.max(gains[w], gains[w - 1] * 0.85);
-  for (let w = nw - 2; w >= 0; w--) gains[w] = Math.max(gains[w], gains[w + 1] * 0.85);
+  if (mode === 'pulita') {
+    const gateThr = floor * 1.4;
+    for (let w = 0; w < nw; w++) if (rms[w] < gateThr) gains[w] = 0.25;
+    for (let w = 1; w < nw; w++) gains[w] = Math.max(gains[w], gains[w - 1] * 0.92);
+    for (let w = nw - 2; w >= 0; w--) gains[w] = Math.max(gains[w], gains[w + 1] * 0.92);
+  }
   const len = end - start;
   const out = ctx.createBuffer(ch, len, sr);
   let peak = 0;
@@ -232,8 +256,16 @@ export function cleanVoiceBuffer(ctx, buffer) {
       }
     }
   }
-  cleanCache.set(buffer, out);
+  ricorda(buffer, mode, out);
   return out;
+}
+
+/* la cache e' per (buffer, modo): cambiare modo nel leggio deve
+   ricalcolare, non riesumare il suono di prima */
+function ricorda(buffer, mode, out) {
+  const per = cleanCache.get(buffer) || {};
+  per[mode] = out;
+  cleanCache.set(buffer, per);
 }
 
 /**
