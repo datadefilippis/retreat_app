@@ -293,6 +293,10 @@ export default function FrequenzePage() {
   const [intent, setIntent] = useState(null);
   const [trackId, setTrackId] = useState(null);
   const [trackStatus, setTrackStatus] = useState('draft');
+  /* la FIRMA della ricetta al momento della pubblicazione: se lo
+     score di adesso e' diverso, il master sul server e' vecchio e
+     l'export deve renderizzare invece di scaricarlo. */
+  const [firmaPubblicata, setFirmaPubblicata] = useState(null);
   const [trackSlug, setTrackSlug] = useState(null);
   const [drafts, setDrafts] = useState([]);
   const [playing, setPlaying] = useState(false);
@@ -919,6 +923,9 @@ export default function FrequenzePage() {
       const t = (await frequenciesAPI.get(id)).data, s = t.score || {};
       setTrackId(t.id); setTitle(t.title || ''); setIntent(t.intent || null);
       setTrackStatus(t.status || 'draft'); setTrackSlug(t.slug || null);
+      /* appena aperta, la sessione E' quella pubblicata: il master
+         sul server la rappresenta ancora (finche' non si tocca) */
+      setFirmaPubblicata(t.status === 'published' ? 'DA_CALCOLARE' : null);
       /* la ricetta porta solo il numero risolto: se coincide con la
          fine dell'ultima traccia era (o equivale a) una durata AUTO */
       {
@@ -964,7 +971,10 @@ export default function FrequenzePage() {
     try {
       const r = await frequenciesAPI.publish(id);
       loadDrafts();
-      if (id === trackId) { setTrackStatus('published'); setTrackSlug(r.data.slug); }
+      if (id === trackId) {
+        setTrackStatus('published'); setTrackSlug(r.data.slug);
+        setFirmaPubblicata(JSON.stringify(scorePayload()));
+      }
       const url = `${window.location.origin}/frequenze/${r.data.slug}`;
       try { await navigator.clipboard.writeText(url); } catch { /* niente clipboard */ }
       setStatus(`In ascolto pubblico su ${url} — link copiato`);
@@ -974,7 +984,7 @@ export default function FrequenzePage() {
     try {
       await frequenciesAPI.unpublish(id);
       loadDrafts();
-      if (id === trackId) setTrackStatus('draft');
+      if (id === trackId) { setTrackStatus('draft'); setFirmaPubblicata(null); }
       setStatus('Traccia riportata in bozza: il link pubblico non risponde più');
     } catch { setStatus('Errore'); }
   };
@@ -982,6 +992,31 @@ export default function FrequenzePage() {
     const url = `${window.location.origin}/frequenze/${slug}`;
     try { await navigator.clipboard.writeText(url); setStatus('Link copiato: ' + url); }
     catch { setStatus(url); }
+  };
+
+  /* aprendo una bozza GIA' pubblicata, la firma si calcola quando lo
+     score e' davvero montato (i layer arrivano dopo il setState):
+     un solo giro, appena i pezzi sono al loro posto. */
+  useEffect(() => {
+    if (firmaPubblicata !== 'DA_CALCOLARE' || !layers.length) return;
+    setFirmaPubblicata(JSON.stringify(scorePayload()));
+  }, [firmaPubblicata, layers]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* il nome del file e il salvataggio: una volta sola, usati sia dal
+     master scaricato sia dal render */
+  const nomeExport = () => {
+    const pezzi = (title || 'sessione').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48);
+    return `aurya-${pezzi || 'sessione'}-${Math.round(duration / 60)}min-`
+      + `${new Date().toISOString().slice(0, 10)}.mp3`;
+  };
+  const scaricaBlob = (blob, nome) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = nome;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
   };
 
   /* L'EXPORT DELL'OPERATORE (reintegrato 24/8 su richiesta del
@@ -1007,6 +1042,32 @@ export default function FrequenzePage() {
     setEsportando({ pct: 0, fase: 'Preparo' });
     const ctx = audioCtx();
     try {
+      /* SE IL MASTER C'E' GIA', SI SCARICA QUELLO (24/8, founder:
+         «l'export ci mette tantissimo tempo»). Il master della
+         traccia pubblicata E' questo file — stessa pipeline, stessi
+         192 kbps: rifarlo da capo significa aspettare minuti per
+         riottenere byte identici. Se la sessione e' cambiata dopo la
+         pubblicazione si renderizza (il master sarebbe vecchio) —
+         per questo si confronta l'ora dell'ultima modifica. */
+      const firmaOra = JSON.stringify(scorePayload());
+      if (trackStatus === 'published' && trackSlug && firmaPubblicata === firmaOra) {
+        setEsportando({ pct: 0.5, fase: 'Prendo il master' });
+        try {
+          const pass = (await frequenciesAPI.masterPass(trackSlug)).data.pass;
+          const base = process.env.REACT_APP_BACKEND_URL || '';
+          const r = await fetch(
+            `${base}/api/frequencies/public/${trackSlug}/master?pass=${encodeURIComponent(pass)}`);
+          if (!r.ok) throw new Error('master non raggiungibile');
+          const blob = await r.blob();
+          scaricaBlob(blob, nomeExport());
+          setStatus(`Scaricato dal master pubblicato · ${(blob.size / 1048576).toFixed(0)} MB`);
+          setEsportando(null);
+          return;
+        } catch (e) {
+          /* nessun master o non raggiungibile: si renderizza, come
+             prima. Mai un export fallito per questa scorciatoia. */
+        }
+      }
       setEsportando({ pct: 0, fase: 'Carico le basi' });
       const aLayers = layers.some((l) => l.kind === 'audio')
         ? await resolveAudioLayers(ctx, score, soundsById) : [];
@@ -1018,18 +1079,8 @@ export default function FrequenzePage() {
       });
       const blob = await mp3Blob(pcm, 44100,
         (pr) => setEsportando({ pct: pr, fase: 'Comprimo' }), EXPORT_KBPS);
-      /* il nome dice COSA c'e' dentro: titolo, durata, data — chi
-         scarica dieci sessioni non deve aprirle per riconoscerle */
-      const pezzi = (title || 'sessione').toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48);
-      const nome = `aurya-${pezzi || 'sessione'}-${Math.round(duration / 60)}min-`
-        + `${new Date().toISOString().slice(0, 10)}.mp3`;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = nome;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      const nome = nomeExport();
+      scaricaBlob(blob, nome);
       setStatus(`Scaricato «${nome}» · ${(blob.size / 1048576).toFixed(0)} MB`);
     } catch (e) {
       setStatus('Export non riuscito: prova con una sessione più corta');
@@ -1083,6 +1134,7 @@ export default function FrequenzePage() {
       opts: [['Sì, svuota', () => {
         setLayers([]); setPhases([]); setTrackId(null); setTitle(''); setIntent(null);
         setTrackStatus('draft'); setTrackSlug(null); setVoiceDuck(false);
+        setFirmaPubblicata(null);
         setVisual(null);   // VC3 — la bozza nuova non eredita la scena
         if (qs.get('bozza')) navigate('/sound/crea', { replace: true });
         setStatus('Sessione svuotata');
@@ -2112,7 +2164,11 @@ export default function FrequenzePage() {
                     onClick={esportaMp3}>
                     {esportando
                       ? `${esportando.fase}… ${Math.round(esportando.pct * 100)}%`
-                      : `⤓ Esporta MP3 (~${pesoStimatoMB} MB)`}
+                      : (trackStatus === 'published' && firmaPubblicata
+                         && firmaPubblicata !== 'DA_CALCOLARE'
+                         && firmaPubblicata === JSON.stringify(scorePayload()))
+                        ? '⤓ Esporta MP3 (dal master, subito)'
+                        : `⤓ Esporta MP3 (~${pesoStimatoMB} MB)`}
                   </button>
                   <button type="button" data-testid="fq-save" className="cb-save"
                     disabled={saving || !layers.length}

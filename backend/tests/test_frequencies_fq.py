@@ -1778,12 +1778,40 @@ class TestRefinementCrea:
         # e il peso si sa PRIMA di premere
         assert "pesoStimatoMB" in crea
         assert "(EXPORT_KBPS * duration) / 8 / 1024" in crea
-        # non tocca bozza ne' pubblicazione
+        # non tocca bozza ne' pubblicazione: l'unica chiamata ammessa
+        # e' masterPass, che LEGGE (serve a riusare il master gia'
+        # pubblicato invece di rifarlo — vedi il test qui sotto)
         assert "uploadMaster" not in blocco and "publishById" not in blocco
-        assert "frequenciesAPI" not in blocco
-        # il nome dice cosa c'e' dentro
-        assert "aurya-${pezzi" in blocco and "min-" in blocco
+        assert "save(" not in blocco and "trimVoice" not in blocco
+        api_usate = [r for r in blocco.splitlines() if "frequenciesAPI." in r]
+        assert all("masterPass" in r for r in api_usate), \
+            f"l'export scrive sul server: {api_usate}"
+        # il nome dice cosa c'e' dentro (una sola funzione, usata sia
+        # dal master scaricato sia dal render)
+        assert "const nomeExport = ()" in crea
+        assert "aurya-${pezzi" in crea and "min-" in crea
+        assert "nomeExport()" in blocco
         assert 'data-testid="fq-export"' in crea
+
+    def test_l_export_riusa_il_master_quando_c_e(self):
+        """24/8, founder: «l'export ci mette tantissimo tempo». Il
+        file esisteva GIA' sul server — il master della traccia
+        pubblicata, stessa pipeline e stessi 192 kbps: rifarlo da capo
+        significa aspettare minuti per riottenere byte identici. Ora
+        se la sessione e' pubblicata E non e' cambiata dopo (firma
+        dello score) si scarica quello; altrimenti si renderizza."""
+        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        blocco = crea.split("const esportaMp3 = async ()")[1].split("};")[0]
+        assert "trackStatus === 'published' && trackSlug && firmaPubblicata === firmaOra" in blocco
+        assert "masterPass(trackSlug)" in blocco
+        # se il master non c'e' o non risponde, si renderizza: mai un
+        # export fallito per colpa della scorciatoia
+        assert "si renderizza, come" in blocco
+        # la firma vive col ciclo di vita della pubblicazione
+        assert "const [firmaPubblicata, setFirmaPubblicata]" in crea
+        assert "setFirmaPubblicata(null)" in crea      # ritiro e reset
+        # e il pulsante lo dice
+        assert "dal master, subito" in crea
 
     def test_il_taglio_della_base(self):
         """La voce aveva il taglio, le basi no. clip_in sul layer, con
@@ -1865,3 +1893,4 @@ class TestMomentiDelViaggio:
         assert 'hashlib.sha1(dati).hexdigest()' in imp
         assert '"sha1": impronta' in imp
         assert '--prova' in imp
+
