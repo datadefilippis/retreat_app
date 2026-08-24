@@ -123,6 +123,19 @@ const LISTEN = {
 /* Le stesse chiavi di SOUND_CATEGORIES lato server, nello stesso
    ordine (guardia di parità nei test): il tab si traduce in categoria
    con un semplice toLowerCase. */
+/* I MOMENTI (24/8) — il secondo asse della libreria: non «com'e'
+   fatto» un suono ma «a che punto del viaggio serve». L'ORDINE E' DEL
+   FOUNDER e non e' alfabetico: si arriva, ci si attiva, si ATTRAVERSA
+   la catarsi, poi si sale, poi si rientra. Gemello di SOUND_MOMENTS
+   nel backend (guardia di parita' nei test). */
+const SOUND_MOMENTI = [
+  ['arrivo', 'Arrivo', 'Il primo respiro: si posa, si scende di un gradino'],
+  ['attivazione', 'Attivazione', 'Il corpo si sveglia: qualcosa comincia a muoversi'],
+  ['catarsi', 'Catarsi', 'Il passaggio intenso: si attraversa, non si aggira'],
+  ['ascesa', 'Ascesa', 'Dopo il varco si sale: luce, apertura, ampiezza'],
+  ['rientro', 'Rientro', 'Si torna a casa piano: il ritorno e\u2019 parte del viaggio'],
+];
+
 const SOUND_CATS = ['Ambient', 'Natura', 'Droni', 'Corpo', 'Campane',
   'Ritmi', 'Voce', 'Transizioni'];
 
@@ -228,6 +241,9 @@ export default function FrequenzePage() {
   const view = PATH_VIEW[seg[1]] || 'explore';
   const world = view === 'explore' && qs.get('mondo') === 'suoni' ? 'sound' : 'freq';
   const soundCat = SOUND_CATS.find((c) => c.toLowerCase() === (qs.get('categoria') || '')) || SOUND_CATS[0];
+  /* il momento e' un filtro TRASVERSALE alle categorie: «mostrami
+     tutti gli Arrivi» e' il gesto con cui si costruisce l'arco */
+  const [momento, setMomento] = useState(null);
   const curTab = view === 'impara'
     ? (seg[2] === 'glossario' ? 'Glossario' : 'Guida')
     : (SLUG_CAT[qs.get('categoria')] || SOUND_KEYS[0]);
@@ -503,6 +519,14 @@ export default function FrequenzePage() {
       // si ascolta il taglio, non il file: cio' che provi e' cio' che va in onda
       const off = Math.min(clip.trim_start || 0, Math.max(0, buffer.duration - 0.2));
       const len = Math.min(clipUseful(clip), Math.max(0.2, buffer.duration - off));
+      /* VP-ter — anche l'ATTACCO e' quello della sessione: l'anteprima
+         non applicava il fade d'ingresso, quindi qui la differenza tra
+         i modi si sentiva meno che nell'ascolto vero. «Cio' che provi
+         e' cio' che va in onda» dev'essere vero fino in fondo. */
+      const dkPrev = (clip.clean_mode || 'pulita') === 'pulita' ? 0.12 : 0.012;
+      const t0Prev = ctx.currentTime;
+      chain.input.gain.setValueAtTime(0.0001, t0Prev);
+      chain.input.gain.linearRampToValueAtTime(1, t0Prev + dkPrev);
       const sources = connectVoiceSources(ctx, buffer, chain);
       sources.forEach((s) => { s.start(ctx.currentTime, off); s.stop(ctx.currentTime + len); });
       sources[0].onended = () => {
@@ -603,6 +627,15 @@ export default function FrequenzePage() {
     setStatus(`Voce «${clip.title}»: pulizia ${CLEAN_MODES[mode].label.toLowerCase()}`);
     try { await frequenciesAPI.setVoiceClean(clip.id, mode); }
     catch { setStatus('Pulizia non salvata'); loadVoice(); }
+    /* VP-ter (24/8) — SI ASCOLTA SUBITO: se l'anteprima di questo
+       spezzone sta suonando, riparte col modo nuovo. La differenza
+       vive nei primi decimi (misurata: ~10 dB sui primi 50 ms): se
+       per sentirla si deve fermare, riavviare e ricordare com'era
+       prima, non la sente nessuno. */
+    if (previewingId === clip.id) {
+      await toggleVoicePreview(clip);                 // ferma
+      await toggleVoicePreview({ ...clip, clean_mode: mode });
+    }
   };
 
   const saveVoiceTrim = async (clip, nextStart, nextEnd) => {
@@ -1660,25 +1693,55 @@ export default function FrequenzePage() {
               </>
             ) : view === 'explore' && world === 'sound' ? (
               <>
+                {/* IL VIAGGIO — la riga dei momenti sta SOPRA i timbri:
+                    e' la domanda che ci si fa per prima quando si
+                    compone («a che punto sono?»), e taglia le
+                    categorie invece di sostituirle. */}
+                <div className="tabs momenti" data-testid="fq-momenti">
+                  <div className="tabgroup">
+                    <div className="tabgroup-row">
+                      <button type="button"
+                        className={`tab tab-mom${!momento ? ' on' : ''}`}
+                        onClick={() => setMomento(null)}>Tutti</button>
+                      {SOUND_MOMENTI.map(([k, label, aiuto]) => (
+                        <button key={k} type="button" title={aiuto}
+                          data-testid={`fq-mom-${k}`}
+                          className={`tab tab-mom${momento === k ? ' on' : ''}`}
+                          onClick={() => setMomento(momento === k ? null : k)}>{label}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
                 <div className="tabs">
                   <div className="tabgroup">
                     <div className="tabgroup-row">
                       {SOUND_CATS.map((c) => (
                         <button key={c} type="button"
-                          className={`tab tab-sound${soundCat === c ? ' on' : ''}`}
+                          disabled={!!momento}
+                          title={momento ? 'Stai guardando un momento del viaggio: tocca «Tutti» per tornare ai timbri' : undefined}
+                          className={`tab tab-sound${soundCat === c ? ' on' : ''}${momento ? ' spenta' : ''}`}
                           onClick={() => setSoundCat(c)}>{c}</button>
                       ))}
                     </div>
                   </div>
                 </div>
                 <div className="tabhint" data-testid="fq-sound-hint">
-                  {SOUND_HINT[soundCat]}
+                  {momento
+                    ? (SOUND_MOMENTI.find(([k]) => k === momento) || [])[2]
+                    : SOUND_HINT[soundCat]}
                 </div>
                 {(() => {
                   // ordine stabile e prevedibile: alfabetico con i numeri
                   // letti come numeri, cosi' «1 · Radice» apre la serie
-                  const inCat = sounds
-                    .filter((s) => s.category === soundCat.toLowerCase())
+                  /* Quando si sceglie un MOMENTO comanda lui, e le
+                     categorie si spengono: chiedere «gli Arrivi» E
+                     «gli Ambient» insieme lascia una manciata di
+                     schede e fa sembrare vuota una libreria piena
+                     (successo al primo collaudo: 0 risultati). Il
+                     momento e' una domanda piu' grande del timbro. */
+                  const inCat = (momento
+                    ? sounds.filter((s) => s.moment === momento)
+                    : sounds.filter((s) => s.category === soundCat.toLowerCase()))
                     .sort((a, b) => a.title.localeCompare(b.title, 'it', { numeric: true }));
                   return (
                     <>

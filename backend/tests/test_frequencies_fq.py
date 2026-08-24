@@ -1730,3 +1730,57 @@ class TestRefinementCrea:
         ren = (FQ_DIR / "engine" / "render.js").read_text()
         assert "src.loopStart = tagl" in ren
         assert "tagl + ((t0 - l.start) % utile)" in ren
+
+
+class TestMomentiDelViaggio:
+    """MO (24/8) — il secondo asse della libreria: la CATEGORIA dice
+    com'è fatto un suono, il MOMENTO dice a che punto del viaggio
+    serve. Sono ortogonali (un drone può stare nell'Arrivo o nella
+    Catarsi): il momento non sostituisce nulla, aggiunge il modo in cui
+    si compone davvero una meditazione."""
+
+    def test_l_ordine_e_drammaturgia_non_alfabeto(self):
+        """L'ordine è del founder: si arriva, ci si attiva, si
+        ATTRAVERSA la catarsi, poi si sale, poi si rientra. Chi lo
+        riordina alfabeticamente cambia il senso del viaggio."""
+        from models.audio_asset import SOUND_MOMENTS
+        assert list(SOUND_MOMENTS) == ["arrivo", "attivazione", "catarsi",
+                                       "ascesa", "rientro"]
+        # e la catarsi viene PRIMA dell'ascesa (l'errore facile)
+        chiavi = list(SOUND_MOMENTS)
+        assert chiavi.index("catarsi") < chiavi.index("ascesa")
+
+    def test_i_due_vocabolari_sono_gemelli(self):
+        import re
+        from models.audio_asset import SOUND_MOMENTS
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        blocco = page.split("const SOUND_MOMENTI = [")[1].split("];")[0]
+        chiavi_js = re.findall(r"\['(\w+)'", blocco)
+        assert chiavi_js == list(SOUND_MOMENTS), \
+            f"momenti disallineati: js={chiavi_js} py={list(SOUND_MOMENTS)}"
+
+    def test_il_momento_viaggia_dal_backend_alla_libreria(self):
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        assert '"moment": clean_moment(moment)' in src     # upload
+        assert '"moment": 1,' in src                        # proiezione
+        assert '"moments": SOUND_MOMENTS' in src            # lista
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "!momento || s.moment === momento" in page   # il filtro
+
+    def test_un_suono_senza_momento_resta_valido(self):
+        """tutta la libreria di prima non ha il momento: deve restare
+        visibile e usabile (il filtro «Tutti» è il default)."""
+        from models.audio_asset import clean_moment
+        assert clean_moment(None) is None and clean_moment("boh") is None
+        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        assert "const [momento, setMomento] = useState(null)" in page
+
+    def test_gli_strumenti_di_import_esistono_e_sono_prudenti(self):
+        cen = (BACKEND_DIR / "scripts" / "censimento_sound_new.py").read_text()
+        imp = (BACKEND_DIR / "scripts" / "importa_sound_new.py").read_text()
+        # il censimento MISURA e PROPONE, non importa
+        assert "audio_assets" not in cen
+        # l'import riconosce per IMPRONTA: si rilancia senza duplicare
+        assert 'hashlib.sha1(dati).hexdigest()' in imp
+        assert '"sha1": impronta' in imp
+        assert '--prova' in imp

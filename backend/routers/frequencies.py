@@ -25,8 +25,8 @@ from auth import (
     get_current_platform_account, get_current_user, require_system_admin,
 )
 from models.audio_asset import (
-    LICENSE_MAX, MAX_FILE_BYTES, SOUND_CATEGORIES,
-    clean_category, safe_extension,
+    LICENSE_MAX, MAX_FILE_BYTES, SOUND_CATEGORIES, SOUND_MOMENTS,
+    clean_category, clean_moment, safe_extension,
 )
 from models.audio_asset import TITLE_MAX as SOUND_TITLE_MAX
 from models.common import utc_now
@@ -696,6 +696,7 @@ async def remove_favorite(slug: str,
 # scrittura SOLO system admin, con licenza annotata.
 
 _SOUND_PROJECTION = {"_id": 0, "id": 1, "title": 1, "category": 1,
+                     "moment": 1,
                      "duration_sec": 1, "size_bytes": 1, "stream_url": 1, "tappeto_url": 1}
 
 
@@ -704,7 +705,8 @@ async def list_sounds():
     from database import audio_assets_collection
     items = await audio_assets_collection.find(
         {}, _SOUND_PROJECTION).sort("created_at", -1).to_list(500)
-    return {"items": items, "categories": SOUND_CATEGORIES}
+    return {"items": items, "categories": SOUND_CATEGORIES,
+            "moments": SOUND_MOMENTS}
 
 
 @router.post("/sounds", status_code=status.HTTP_201_CREATED)
@@ -713,6 +715,7 @@ async def upload_sound(file: UploadFile = File(...),
                        category: str = Form(...),
                        duration_sec: float = Form(0),
                        license_note: str = Form(""),
+                       moment: str = Form(""),
                        admin: dict = Depends(require_system_admin)):
     cat = clean_category(category)
     if not cat:
@@ -745,6 +748,9 @@ async def upload_sound(file: UploadFile = File(...),
         "owner": "platform",
         "title": clean_title,
         "category": cat,
+        # il MOMENTO del viaggio (facoltativo): l'asse che dice a che
+        # punto della meditazione serve questo suono
+        "moment": clean_moment(moment),
         "duration_sec": round(max(0.0, float(duration_sec or 0)), 1),
         "size_bytes": len(data),
         "mime": file.content_type,

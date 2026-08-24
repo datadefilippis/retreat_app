@@ -965,3 +965,19 @@
   border-radius:7px;opacity:.85;
 }
 .fqz .chip.mini-t:hover{opacity:1}
+
+/* I MOMENTI (24/8) — la riga del viaggio, sopra i timbri: si legge
+   come un percorso, non come un elenco di filtri */
+.fqz .tabs.momenti{margin-bottom:6px}
+.fqz .tab.tab-mom{
+  border-color:rgba(192,132,252,.28);
+  letter-spacing:.06em;
+}
+.fqz .tab.tab-mom.on{
+  border-color:rgba(192,132,252,.75);
+  background:rgba(192,132,252,.14);
+  color:#efe7ff;
+}
+
+/* quando comanda il momento, i timbri restano visibili ma in disparte */
+.fqz .tab.tab-sound.spenta{opacity:.35;cursor:default}

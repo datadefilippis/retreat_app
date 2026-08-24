@@ -40,7 +40,9 @@ INDIZI = [
                  "healing", "cinematic", "piano", "acoustic", "guitar",
                  "flute", "atmosphere", "soundscape", "yoga", "sleep")),
 ]
-MOMENTI = ("Arrivo", "Attivazione", "Ascesa", "Catarsi", "Rientro")
+# L'ORDINE E' DEL FOUNDER (24/8) e non e' alfabetico: si arriva, ci
+# si attiva, si ATTRAVERSA la catarsi, poi si sale, poi si rientra.
+MOMENTI = ("Arrivo", "Attivazione", "Catarsi", "Ascesa", "Rientro")
 
 
 def durata(path):
