@@ -83,12 +83,21 @@ class TestNonToccaIlSuonoAv1:
         assert "useState(false)" in PUB.split("const [guarda")[1][:60]
         assert 'data-testid="fqp-guarda"' in PUB
 
-    def test_niente_tela_in_ascolto_continuo(self):
-        """In continuo il suono esce da un <audio>: portarlo dentro
-        WebAudio su iOS lo rimetterebbe sotto il tasto silenzioso. E
-        guardare a schermo bloccato non ha senso comunque."""
-        blocco = PUB.split("{guarda && lettore")[1][:120]
-        assert "!continuo" in blocco
+    def test_la_tela_vive_anche_in_ascolto_continuo(self):
+        """LA DECISIONE E' CAMBIATA (VS1, 24/8). Questa guardia diceva
+        il contrario: niente tela in continuo, perche' all'epoca (AV1)
+        analizzare un <audio> significava dirottarlo dentro WebAudio —
+        il tasto silenzioso su iOS. Poi e' arrivato IL MASTER, il
+        continuo e' diventato l'UNICO modo di ascoltare, e la scena ha
+        imparato a danzare senza toccare il suono (captureStream in
+        copia, o la ricetta dipinta dove il flusso non c'e' —
+        visual/ricetta.js). Il principio che resta sotto guardia e'
+        quello vero: IL SUONO NON SI TOCCA, la scena si'."""
+        blocco = PUB.split("{guarda && lettore")[1][:200]
+        assert "!continuo" not in blocco, \
+            "la scena tornerebbe spenta su ogni traccia col master (VS1)"
+        assert "createMediaElementSource" not in PUB, \
+            "il suono delle meditazioni non si dirotta MAI (AT3)"
 
 
 class TestFreniAv1:

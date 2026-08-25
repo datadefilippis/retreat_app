@@ -1200,7 +1200,11 @@ class TestSoundPubblicoSp:
         # nginx instrada /sound* alla shell (entrambe le conf di deploy)
         for conf in ("nginx.conf", "nginx-bootstrap.conf"):
             src = (BACKEND_DIR.parent / "deploy" / "nginx" / conf).read_text()
-            assert "|sound)(/|$)" in src, f"{conf}: /sound non arriva alla shell"
+            # GS5 (25/8) — l'alternation e' cresciuta (le rotte app ora
+            # passano dalla shell per il noindex): l'ancora non e' piu'
+            # "sound e' l'ultima", ma "sound c'e'"
+            assert "|sound|" in src or "|sound)(/|$)" in src, \
+                f"{conf}: /sound non arriva alla shell"
 
     def test_parita_titoli_shell_biblioteca(self):
         """_SOUND_CARDS e' una copia dichiarata (Docker non vede i
