@@ -170,9 +170,53 @@ def _inject(template: str, meta: dict) -> str:
     # pagine non avevano testo. Google stesso indicizza il primo HTML
     # senza aspettare la coda di rendering.
     if meta.get("content_html"):
-        out = out.replace('<div id="root"></div>',
-                          f'<div id="root">{meta["content_html"]}</div>', 1)
+        # FP (26/8, founder: «per un momento vedo una schermata bianca
+        # piena di testi, poi il sito si compone») — il contenuto
+        # server-side arrivava NUDO: nessuna classe, nessuno stile, e
+        # per il mezzo secondo prima che React monti l'app la pagina
+        # era HTML di default anni novanta. Nasconderlo sarebbe
+        # cloaking (testo per i crawler, invisibile alle persone) e
+        # tradirebbe chi naviga senza JavaScript. La cura giusta e'
+        # VESTIRLO: un foglio di stile minimo, incorporato nella
+        # risposta (nessuna richiesta in piu'), con i colori e la
+        # tipografia di Aurya. Il primo istante diventa una pagina
+        # voluta — crema, colonna centrata, marchio in testa — e il
+        # montaggio dell'app un passaggio morbido invece di un salto.
+        out = out.replace("</head>", _SSR_STILE + "</head>", 1)
+        out = out.replace(
+            '<div id="root"></div>',
+            f'<div id="root"><div class="ssrp">{meta["content_html"]}'
+            "</div></div>", 1)
     return out
+
+
+# Il vestito del primo istante: pochi byte, dentro la risposta stessa.
+# Georgia e' il serif di sistema piu' vicino al carattere del sito e
+# non costa un caricamento; la colonna a 680px e' la misura di lettura
+# del Magazine; crema/salvia/oro sono la palette del brand.
+_SSR_STILE = (
+    "<style>"
+    "body{background:#f6f3ec;margin:0}"
+    ".ssrp{font-family:Georgia,'Times New Roman',serif;color:#22302b;"
+    "line-height:1.65;padding:34px 24px 80px;min-height:100vh}"
+    ".ssrp::before{content:'AURYA';display:block;text-align:center;"
+    "letter-spacing:.32em;color:#7d6a3a;font-size:14px;margin:0 0 36px}"
+    ".ssrp h1{color:#1c2e27;font-size:1.85rem;line-height:1.25;"
+    "max-width:680px;margin:0 auto 18px}"
+    ".ssrp h2{color:#2f4a40;font-size:1.25rem;max-width:680px;"
+    "margin:28px auto 10px}"
+    ".ssrp p,.ssrp ul,.ssrp ol{max-width:680px;margin:0 auto 14px}"
+    ".ssrp ul,.ssrp ol{padding-left:22px}"
+    ".ssrp li{margin-bottom:8px}"
+    ".ssrp a{color:#2f6254;text-underline-offset:3px}"
+    ".ssrp img{display:block;max-width:680px;width:100%;height:auto;"
+    "margin:0 auto 18px;border-radius:12px}"
+    ".ssrp aside{max-width:640px;margin:0 auto 22px;padding:16px 20px;"
+    "background:#fff;border-left:3px solid #b9a26a;border-radius:0 10px 10px 0}"
+    ".ssrp aside h2{margin-top:0}"
+    ".ssrp nav{max-width:680px;margin:26px auto 0;padding-top:18px;"
+    "border-top:1px solid #ddd7c7}"
+    "</style>")
 
 
 def _abs_image(url: Optional[str]) -> str:

@@ -619,6 +619,22 @@ class TestSbloccoIndicizzazioneGs:
             "i correlati devono venire dallo stesso argomento"
         assert '"slug": {"$ne": slug}' in blocco, "un articolo non si autolinkia"
 
+    def test_il_primo_istante_e_vestito(self):
+        """FP (26/8) — founder: «per un momento vedo una schermata
+        bianca piena di testi, poi il sito si compone». Il contenuto
+        server-side era HTML nudo fino al montaggio dell'app.
+        Nasconderlo = cloaking; la cura e' vestirlo: stile minimo
+        INCORPORATO (zero richieste extra) con la palette del brand.
+        Se questo salta, il primo istante torna anni novanta."""
+        src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert "_SSR_STILE" in src
+        assert 'class="ssrp"' in src, "il contenuto SSR non ha il vestito"
+        assert "background:#f6f3ec" in src, "manca il fondo crema del brand"
+        assert "content:'AURYA'" in src, "manca il marchio nel primo istante"
+        # lo stile viaggia DENTRO la risposta: mai un file esterno, che
+        # arriverebbe dopo il testo e riporterebbe il lampo
+        assert '<link' not in src.split("_SSR_STILE = (")[1][:900]
+
     def test_nginx_comprime_cio_che_vale_la_pena(self):
         """T1 (25/8) — MISURATO in produzione: main.js usciva a
         2.045.088 byte NON compressi anche chiedendo gzip, perche' la
