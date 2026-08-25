@@ -1915,6 +1915,37 @@ class TestVisualInAscolto:
         assert "guarda && lettore && !continuo" not in page, \
             "`!continuo` spegneva il visual su tutte le tracce col master"
 
+    def test_l_interruttore_del_visual_resta_mentre_si_ascolta(self):
+        """VS4 — il fix di ieri era METÀ del fix: tolsi `!continuo` dalla
+        scena e lo lasciai sul PULSANTE, così il visual si vedeva solo
+        se lo chiedevi PRIMA di premere play; premuto play, il pulsante
+        spariva (founder). L'interruttore dev'esserci quando viene
+        voglia — cioè mentre il suono suona."""
+        page = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        i = page.index('data-testid="fqp-guarda"')
+        prima = page[max(0, i - 400):i]
+        assert "!continuo" not in prima, \
+            "il pulsante «Guarda il suono» non deve sparire quando parte l'ascolto"
+
+    def test_solo_due_cose_possono_sparire_in_ascolto_continuo(self):
+        """LA GUARDIA CHE AVREBBE PRESO ANCHE VS4: `!continuo` è una
+        condizione che ha già cambiato significato una volta da sola
+        (era il caso raro, col master è l'unico). Ogni suo uso vivo va
+        enumerato qui, così il prossimo che ne aggiunge uno deve dire
+        perché — invece di spegnere qualcosa in silenzio."""
+        page = (FQ_DIR / "PublicFrequencyPage.js").read_text()
+        # la prosa lo cita fra apici inversi (`!continuo`), il codice no:
+        # e' il modo piu' onesto di separare i due, visto che i commenti
+        # qui raccontano la storia proprio di questa condizione
+        vive = [r.strip() for r in page.splitlines()
+                if "!continuo" in r and "`!continuo`" not in r]
+        assert len(vive) == 2, f"usi vivi di !continuo cambiati: {vive}"
+        # 1. il risveglio schermo: con l'ascolto continuo non serve,
+        #    il suono sopravvive al blocco da solo
+        assert any("schermoAcceso" in r for r in vive), vive
+        # 2. il pulsante «prepara»: a preparazione fatta non ha più senso
+        assert any("continuoPossibile" in r for r in vive), vive
+
     def test_ogni_ramo_di_ascolto_aggancia_la_scena(self):
         """anteprima, master e file preparato: tre strade al suono, una
         sola scena. Un ramo che non aggancia è un ramo che non si vede

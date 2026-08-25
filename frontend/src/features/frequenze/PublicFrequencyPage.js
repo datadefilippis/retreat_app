@@ -572,15 +572,23 @@ export default function PublicFrequencyPage() {
               )}
             </div>
           )}
-          {!continuo && (
-            <div className="continuo-riga">
-              <button type="button" className="readmore"
-                data-testid="fqp-guarda"
-                onClick={() => setGuarda((v) => !v)}>
-                {guarda ? 'Nascondi Aurya Mode' : '✦ Guarda il suono'}
-              </button>
-            </div>
-          )}
+          {/* VS4 (25/8) — l'INTERRUTTORE resta acceso mentre si ascolta.
+              Anche qui c'era `!continuo`: ieri ho tolto quella
+              condizione dalla SCENA e ho lasciato quella del PULSANTE,
+              cosi' il visual si vedeva solo se lo chiedevi PRIMA di
+              premere play — premuto play, il pulsante spariva e non
+              c'era piu' modo di chiederlo (founder). Il fix di ieri era
+              meta' del fix: la stessa condizione viveva in due posti.
+              Restare opt-in e' voluto (disegnare consuma: AV1), ma la
+              scelta dev'essere disponibile QUANDO viene voglia — cioe'
+              mentre il suono suona. */}
+          <div className="continuo-riga">
+            <button type="button" className="readmore"
+              data-testid="fqp-guarda"
+              onClick={() => setGuarda((v) => !v)}>
+              {guarda ? 'Nascondi Aurya Mode' : '✦ Guarda il suono'}
+            </button>
+          </div>
           {contErrore && (
             <div className="continuo-riga" data-testid="fqp-continuo-errore"
               style={{ color: 'var(--alert)' }}>{contErrore}</div>
