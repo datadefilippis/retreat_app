@@ -1195,6 +1195,110 @@ async def _meta_operators_index(category: Optional[str] = None) -> dict:
     }
 
 
+async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
+    """ES1 (25/8) — la DIRECTORY dei professionisti registrati.
+
+    Attenzione a non confonderla con `/operatori`: quella e' la pagina
+    che RACCONTA la rete (perche' esiste, come si entra), questa e'
+    l'elenco di chi c'e'. Due intenti diversi, due pagine diverse:
+    nessun contenuto doppio.
+
+    La pagina viva chiama l'API con `preview=1`, che salta lo specchio
+    di fase del pre-lancio e serve gli operatori VERI: qui si fa lo
+    stesso perimetro, o il crawler vedrebbe una lista diversa da quella
+    che vede la persona (che e' la definizione di cloaking).
+    """
+    from database import organizations_collection
+    base = _base_url()
+    canonical = f"{base}/esplora-operatori"
+    titolo = "Professionisti del benessere in Italia | Aurya"
+    descr = ("Scopri i professionisti del benessere su Aurya: pratiche, "
+             "discipline e percorsi, raccontati uno a uno.")
+
+    voci, quanti = "", 0
+    try:
+        orgs = await organizations_collection.find(
+            {"is_sample": {"$ne": True}, "is_active": {"$ne": False},
+             "exclude_from_listings": {"$ne": True},
+             "public_slug": {"$nin": [None, ""]}},
+            {"_id": 0, "name": 1, "public_slug": 1, "public_profile": 1},
+        ).sort("name", 1).to_list(200)
+        quanti = len(orgs)
+        from models.disciplines import DISCIPLINES
+        righe = []
+        for o in orgs:
+            pp = o.get("public_profile") or {}
+            dove = ", ".join(x for x in (pp.get("city"), pp.get("region")) if x)
+            disc = ", ".join(DISCIPLINES[d] for d in (pp.get("disciplines") or [])
+                             if d in DISCIPLINES)
+            coda = " — ".join(x for x in (dove, disc) if x)
+            righe.append(
+                f'<li><a href="/o/{_html.escape(o["public_slug"])}">'
+                f'{_html.escape(o.get("name") or o["public_slug"])}</a>'
+                + (f" — {_html.escape(coda)}" if coda else "") + "</li>")
+        voci = "".join(righe)
+    except Exception:   # noqa: BLE001 — la shell non muore mai per il DB
+        pass
+
+    corpo = (f"<div><h1>Professionisti del benessere</h1>"
+             f"<p>{_html.escape(descr)}</p>"
+             + (f"<ul>{voci}</ul>" if voci else "")
+             + '<p><a href="/operatori">Come funziona la rete Aurya</a> · '
+               '<a href="/blog">Il Magazine</a></p></div>')
+    return {
+        "title": titolo,
+        "description": descr,
+        # le varianti per categoria mostrano un sottoinsieme della
+        # stessa lista: una sola pagina negli indici
+        "canonical": canonical,
+        "hreflang": _hub_hreflang(canonical),
+        "image": f"{base}/og-cover.jpg",
+        "content_html": corpo,
+        # anti thin-content: un elenco vuoto non si indicizza. Quando
+        # entra il primo professionista si accende da solo.
+        "noindex": quanti == 0,
+    }
+
+
+async def _meta_esplora_ritiri(categoria: Optional[str] = None,
+                               regione: Optional[str] = None) -> dict:
+    """ES2 (25/8) — il calendario dei ritiri.
+
+    Oggi e' VUOTO, e va bene cosi': i campioni del pre-lancio sono
+    stati rimossi e i professionisti veri non hanno ancora pubblicato.
+    Resta `noindex` finche' e' vuoto (promettere ritiri che non ci sono
+    e' il rimbalzo garantito) e **si accende da solo** al primo evento
+    pubblicato: e' esattamente cio' che il founder ha chiesto — non
+    dover fare niente quel giorno.
+    """
+    base = _base_url()
+    canonical = f"{base}/esplora-ritiri"
+    quanti = 0
+    try:
+        from services.seo_listing import listable_retreats
+        quanti = len(await listable_retreats())
+    except Exception:   # noqa: BLE001
+        quanti = 0
+    corpo = ("<div><h1>Ritiri ed esperienze di benessere</h1>"
+             "<p>Il calendario dei ritiri dei professionisti della rete "
+             "Aurya: date, luoghi e chi li conduce.</p>"
+             + ("" if quanti else
+                "<p>Non ci sono ancora ritiri in calendario. "
+                "Intanto puoi conoscere i professionisti della rete.</p>")
+             + '<p><a href="/esplora-operatori">I professionisti</a> · '
+               '<a href="/blog">Il Magazine</a></p></div>')
+    return {
+        "title": "Ritiri ed esperienze di benessere in Italia | Aurya",
+        "description": ("Il calendario dei ritiri dei professionisti della "
+                        "rete Aurya: date, luoghi e chi li conduce."),
+        "canonical": canonical,
+        "hreflang": _hub_hreflang(canonical),
+        "image": f"{base}/og-cover.jpg",
+        "content_html": corpo,
+        "noindex": quanti == 0,
+    }
+
+
 async def _meta_operator(org_slug: str) -> Optional[dict]:
     from database import stores_collection, organizations_collection
     from services import seo_schema as sx
@@ -1456,6 +1560,21 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_product(head, parts[1], parts[2])
     if head == "operatori":
         return await _meta_operators_index(parts[1] if len(parts) > 1 else None)
+    # ES (25/8) — le due directory vere della fase rete. Nate come
+    # anteprime non linkate (29/7) e tenute fuori dagli indici finche'
+    # la vetrina conteneva i CAMPIONI del pre-lancio. Rimossi quelli
+    # (scripts/pulisci_campioni_prelancio.py), qui dentro c'e' solo
+    # roba vera: /esplora-operatori elenca i professionisti registrati,
+    # /esplora-ritiri i loro eventi — oggi zero, e si riempira' da
+    # solo. Decisione founder: indicizzarle ORA, cosi' quando
+    # pubblicheranno i primi ritiri non ci sara' niente da fare.
+    if head == "esplora-operatori":
+        return await _meta_esplora_operatori(
+            parts[1] if len(parts) > 1 else None)
+    if head == "esplora-ritiri":
+        return await _meta_esplora_ritiri(
+            parts[1] if len(parts) > 1 else None,
+            parts[2] if len(parts) > 2 else None)
     if head == "destinazioni":
         return await _meta_destination(parts[1] if len(parts) > 1 else None)
     # DS3: /esperienze fuori per ora (redirect alla home lato SPA)

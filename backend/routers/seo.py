@@ -143,6 +143,27 @@ async def build_core() -> str:
     # /operatori è la landing della rete e resta (indicizzabile).
     if site_phase() == "network":
         urls.append(_url(f"{base}/operatori", priority="0.8"))
+        # ES (25/8) — le due directory della fase rete entrano in
+        # sitemap SOLO quando hanno contenuto: una pagina dichiarata ai
+        # crawler e poi trovata vuota e' una promessa mancata, e la
+        # sitemap e' il posto dove le promesse si contano. Si accendono
+        # da sole — nessuna azione il giorno del primo ritiro.
+        # LEZIONE SEO2, ripetuta: questo ramo prima NON toccava il DB
+        # (i test unit girano senza loop motor) e i due conteggi lo
+        # cambiano. Avvolti: una sitemap che esplode e' peggio di una
+        # sitemap senza le due directory.
+        try:
+            from database import organizations_collection
+            if await organizations_collection.count_documents(
+                    {"is_sample": {"$ne": True}, "is_active": {"$ne": False},
+                     "exclude_from_listings": {"$ne": True},
+                     "public_slug": {"$nin": [None, ""]}}):
+                urls.append(_url(f"{base}/esplora-operatori", priority="0.9"))
+            from services.seo_listing import listable_retreats
+            if await listable_retreats():
+                urls.append(_url(f"{base}/esplora-ritiri", priority="0.9"))
+        except Exception:   # noqa: BLE001 — mai una sitemap rotta
+            pass
         return _wrap(urls, "core")
 
     urls.append(_url(f"{base}/come-funziona", priority="0.6"))

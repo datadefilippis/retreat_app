@@ -802,9 +802,16 @@ async def robots_txt():
     # profilo-negozio le linka), ma non le promuoviamo ai crawler —
     # niente Allow, sotto-sitemap vuote. L'Allow delle sotto-sitemap
     # resta sempre: è quello che batte "Disallow: /api/".
-    # PP2 — /esplora-*: anteprime deliberatamente non linkate (richiesta
-    # founder 29/7) con noindex solo client-side → il Disallow è la
-    # cintura in più, valida in entrambe le fasi.
+    # PP2→ES (25/8) — /esplora-* NON è più vietata. Il Disallow nacque
+    # quando quelle pagine mostravano i CAMPIONI del pre-lancio: sei
+    # organizzazioni senza proprietario con dieci ritiri inventati in
+    # località reali. Rimossi i campioni
+    # (scripts/pulisci_campioni_prelancio.py), lì dentro c'è solo roba
+    # vera — i professionisti registrati — e sono le uniche due
+    # directory che la fase rete abbia. Decisione founder: indicizzarle
+    # ora. Il vuoto è governato dal noindex anti-thin-content nella
+    # shell, che si spegne da solo al primo contenuto: mai più una
+    # regola statica che decide al posto dei dati.
     from core.prelaunch import site_phase
     marketplace_allows = ("" if site_phase() == "network"
                           else "Allow: /ritiri\nAllow: /e/\nAllow: /o/\n")
@@ -821,7 +828,6 @@ async def robots_txt():
         "Allow: /api/public/\n"
         "Disallow: /dashboard\n"
         "Disallow: /api/\n"
-        "Disallow: /esplora-\n"
         f"Sitemap: {build_public_url('/sitemap.xml')}\n"
     )
     return Response(txt, media_type="text/plain")

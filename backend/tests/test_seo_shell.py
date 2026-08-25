@@ -420,6 +420,58 @@ class TestSbloccoIndicizzazioneGs:
         for rotta in ("login", "accedi", "inizia", "account"):
             assert f"Disallow: /{rotta}" not in src, rotta
 
+    @pytest.mark.asyncio
+    async def test_le_directory_esplora_sono_indicizzabili(self, monkeypatch):
+        """ES (25/8) — /esplora-* nacquero come anteprime VIETATE ai
+        crawler, perche' mostravano i CAMPIONI del pre-lancio (sei org
+        senza proprietario, dieci ritiri inventati in localita' vere).
+        Rimossi quelli, li' dentro c'e' solo roba vera e sono le uniche
+        due directory della fase rete."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        for rotta in ("/esplora-operatori", "/esplora-ritiri"):
+            meta = await shell.resolve_meta(rotta)
+            assert meta, f"{rotta} non arriva alla shell"
+            assert meta.get("content_html"), f"{rotta} servirebbe un body vuoto"
+            assert meta.get("canonical"), rotta
+        server = (BACKEND_DIR / "server.py").read_text()
+        assert "Disallow: /esplora-" not in server, \
+            "il Disallow e' tornato: le directory sparirebbero dagli indici"
+        nginx = (BACKEND_DIR.parent / "deploy" / "nginx"
+                 / "nginx.conf").read_text()
+        assert "esplora-operatori" in nginx and "esplora-ritiri" in nginx, \
+            "senza nginx quelle rotte tornano al frontend statico (body vuoto)"
+
+    @pytest.mark.asyncio
+    async def test_una_directory_vuota_non_si_indicizza_e_si_accende_da_sola(
+            self, monkeypatch):
+        """LA REGOLA CHE EVITA LAVORO FUTURO (richiesta founder):
+        promettere ai crawler un calendario di ritiri che non esiste e'
+        il rimbalzo garantito, ma nessuno deve ricordarsi di togliere
+        il noindex il giorno del primo evento. Decide il DATO."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        blocco = src.split("async def _meta_esplora_ritiri")[1].split("async def _meta_operator")[0]
+        assert '"noindex": quanti == 0' in blocco, \
+            "il vuoto deve decidersi dai dati, non da una costante"
+        assert "listable_retreats" in blocco
+        # e la sitemap segue la stessa regola
+        seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        assert "esplora-ritiri" in seo and "listable_retreats" in seo
+
+    def test_lo_script_dei_campioni_non_puo_toccare_i_veri(self):
+        """La pulizia dei campioni gira su un database di PRODUZIONE
+        dove vivono 4 professionisti veri. Le guardie dello script sono
+        la differenza tra una pulizia e un disastro."""
+        src = (BACKEND_DIR / "scripts"
+               / "pulisci_campioni_prelancio.py").read_text()
+        assert '{"is_sample": True}' in src, "deve selezionare SOLO i campioni"
+        for guardia in ("orders_collection.count_documents",
+                        "customers_collection.count_documents",
+                        "users_collection.count_documents"):
+            assert guardia in src, f"manca la guardia {guardia}"
+        assert "sys.exit" in src, "senza uscita, le guardie sono decorative"
+        assert "--prova" in src and "--esegui" in src
+
     def test_llms_full_esiste_e_rispetta_il_cancello(self):
         """T2 — llms.txt e' l'indice, llms-full.txt e' il TESTO: la
         porta dei motori generativi, che citano fonti oggi mentre le
