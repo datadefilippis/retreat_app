@@ -355,6 +355,38 @@ qualcosa di utile gratis abbastanza a lungo da diventare un punto di
 riferimento, poi si guadagna da ciò che quel punto di riferimento
 rende possibile.
 
+## Il tempo che abbiamo davvero
+
+C'è un ultimo numero da mettere sul tavolo, ed è il più vincolante di
+tutti: **siamo in due, e tutti e due abbiamo un altro lavoro a tempo
+pieno.**
+
+Aurya vive delle sere e dei fine settimana. In termini concreti,
+significa un bilancio realistico di **10-15 ore a settimana in due**
+— nelle settimane buone. Ogni numero di questo piano è calibrato su
+quel bilancio, e ogni volta che un obiettivo sembrerà timido, la
+domanda giusta non è «si può fare di più?» ma «si può fare di più
+*con dodici ore a settimana*?».
+
+Questo vincolo produce tre regole che valgono più di qualsiasi
+strategia:
+
+1. **Ogni settimana, una cosa che resta.** Un racconto finito, un
+   articolo pubblicato, una lettera spedita. Una. Il rischio di chi
+   lavora nei ritagli non è la lentezza — è la dispersione: sette
+   cose a metà valgono zero, una cosa finita si accumula.
+2. **Prima ciò che lavora mentre dormiamo.** Un articolo scritto una
+   volta porta lettori per anni; un'ora di gestione porta un'ora.
+   A parità di tempo, vince sempre ciò che si accumula — con
+   un'eccezione dichiarata: l'accompagnamento dei professionisti non
+   si accumula ma è il fossato, e il suo tempo è sacro.
+3. **Il piano misura in stagioni, non in mesi.** Se un'azienda a
+   tempo pieno fa in sei mesi quello che noi facciamo in dodici, non
+   stiamo fallendo: stiamo pagando il prezzo — giusto — di non aver
+   mollato due stipendi per un'ipotesi. Il giorno in cui i numeri
+   diranno che Aurya può comprare il tempo di uno di noi due, sarà il
+   piano stesso a dirlo. Non prima.
+
 ---
 
 # PARTE QUINTA — Le sette cose che abbiamo costruito
@@ -615,6 +647,17 @@ vuole ha comunque il profilo gratuito, completo e curato. Ed è
 volontario per definizione: si compra quando si è visto quello dei
 colleghi e lo si vuole per sé.
 
+**E come si concilia col fatto che ai primi lo regaliamo?** Con una
+sequenza dichiarata, non con un ripensamento. Per i primi cinquanta il
+racconto è compreso e resta loro per sempre: è il prezzo che paghiamo
+noi per costruire la rete, e chi entra presto se lo guadagna. Quando
+ci sarà una lista d'attesa, chi arriva dopo avrà comunque il profilo
+gratuito — quello non si tocca mai — e potrà *scegliere* di comprare
+il racconto. Il momento del passaggio non è una data: è un fatto
+osservabile, l'esistenza della lista d'attesa. Finché dobbiamo
+convincere noi le persone a entrare, il racconto è il nostro
+investimento; quando saranno loro a bussare, diventa un servizio.
+
 ### L'abbonamento alle meditazioni — e come convive col gratis
 
 Questa riga merita una spiegazione in più, perché sembra contraddire
@@ -702,10 +745,19 @@ conversazioni. E il canale migliore ce l'abbiamo già — chi cerca su
 Google «codice ATECO operatore olistico» è esattamente la persona che
 vogliamo, e in quel momento ha un problema che noi sappiamo risolvere.
 
-*L'intervista come regalo.* Ogni professionista che entra riceve una
-conversazione vera e un racconto scritto da noi. È gratis e ci costa
-tempo. L'idea è che **chi riceve una pagina di cui è fiero la
-condivida**, e che ogni condivisione sia un collegamento che ci
+*L'intervista come investimento — e il suo destino, dichiarato
+subito.* Ogni professionista che entra adesso riceve una conversazione
+vera e un racconto scritto da noi. **Per i primi cinquanta è gratuita,
+e resta loro per sempre**: è il nostro investimento per costruire la
+rete, e lo diciamo con queste parole. Poi — quando la rete sarà viva e
+ci sarà chi aspetta di entrare — il racconto diventa un servizio a
+pagamento per chi arriva dopo. Non è un ripensamento: è il percorso,
+scritto qui prima di cominciare. E ha un effetto onesto che non
+nascondiamo: dà a chi entra ora un motivo vero per entrare ora, e a
+chi è entrato presto un privilegio guadagnato — *sono dei fondatori*.
+
+L'idea dietro il regalo è che **chi riceve una pagina di cui è fiero
+la condivida**, e che ogni condivisione sia un collegamento che ci
 avvicina a Google.
 
 Attenzione però: questa è la scommessa del piano, **non un fatto
@@ -724,7 +776,9 @@ cinquanta è esattamente ciò che serve, ed è anche il modo in cui
 impariamo cosa li blocca davvero.
 
 *Il patto, detto a voce, a ognuno.* «Aurya è gratis, e la parte che
-usi oggi resterà gratis. Un giorno guadagneremo, e te lo diremo prima
+usi oggi resterà gratis. Il racconto che ti facciamo è compreso, ed è
+tuo per sempre. Un giorno guadagneremo — da chi entrerà dopo di te, e
+da cose in più che potrai scegliere o ignorare — e te lo diremo prima
 di farlo.» Questa frase, mantenuta, vale più di qualsiasi funzione.
 
 **Cosa guardiamo**: professionisti attivi, profili completi, **quanti
@@ -813,7 +867,9 @@ che si ripaga, non una spesa. (Il perché si parte proprio da questo
 corso, e in cosa può allargarsi la linea, è spiegato nella Parte
 Sesta.)
 
-**Il racconto professionale** — €150-300 una tantum.
+**Il racconto professionale** — €150-300 una tantum, **per chi entra
+dopo i primi cinquanta** (ai fondatori è compreso, per sempre — la
+sequenza è spiegata nella Parte Sesta).
 *La prova*: un servizio di presenza professionale — foto, testi,
 racconto — si paga sul mercato molto di più. Qui è artigianale, con
 un risultato che resta. Chi non lo vuole non lo compra: nessun
@@ -927,9 +983,16 @@ utile arriva fra sei-otto settimane: se a fine ottobre le pagine
 trovate da Google non salgono, l'ipotesi va rivista prima di
 costruirci sopra.
 
-**Ipotesi 2 — I professionisti entrano a 10-15 al mese** una volta
-avviato il reclutamento. *Ipotesi media*: dipende dal tempo che
-dedichiamo alle conversazioni, ed è il collo di bottiglia vero.
+**Ipotesi 2 — I professionisti entrano a 4-6 al mese**, cioè circa
+uno a settimana. È il ritmo onesto per due persone con un altro
+lavoro: un'intervista fatta bene, col racconto scritto e l'onboarding,
+costa 3-4 ore — un quarto del nostro bilancio settimanale. *È il
+collo di bottiglia dichiarato del piano*, e infatti l'anno 2
+presuppone di scioglierlo: o il progetto genera abbastanza da
+comprare tempo (uno di noi riduce l'altro lavoro), oppure i numeri
+dal secondo anno in poi **slittano di 6-12 mesi senza cambiare di
+natura**. È scritto qui perché nessuno dei due debba fingersi
+sorpreso.
 
 **Ipotesi 3 — Su cento professionisti che leggono, uno compra il
 corso.** *È l'ipotesi più fragile* — uno su cento è una stima normale
@@ -945,16 +1008,16 @@ mantiene nessuno**, e serve un'altra entrata accanto.
 
 | da dove | quanto |
 |---|---|
-| Racconti professionali a pagamento (circa 15) | €3.500 |
 | Corso, dal lancio in avanti (circa 50 copie) | €7.500 |
 | Esperienze online (la nostra quota) | €1.500 |
-| **Totale anno 1** | **≈ €12.500** |
+| Racconti a pagamento — pochi, e va bene così: i primi cinquanta lo hanno compreso | €1.500 |
+| **Totale anno 1** | **≈ €10.500** |
 
-*Dove si arriva*: 60-80 professionisti, 2.000-3.000 visite mensili,
-600-1.000 contatti in lista (grazie alle guide gratuite), 20-30
-meditazioni.
+*Dove si arriva, al ritmo di uno a settimana*: 45-60 professionisti,
+2.000-3.000 visite mensili, 600-1.000 contatti in lista (grazie alle
+guide gratuite), 20-30 meditazioni.
 
-Il valore dell'anno non sono i dodicimila euro: è **il patrimonio che
+Il valore dell'anno non sono i diecimila euro: è **il patrimonio che
 resta** — le persone, i contenuti, i collegamenti, la lista, e la
 prova che qualcuno paga.
 
@@ -971,8 +1034,12 @@ prova che qualcuno paga.
 | **Totale anno 2** | | **≈ €84.500** |
 
 **Ci vive comodamente una persona, e due in modo stretto.** È l'anno
-della verità: se questi numeri arrivano, il terzo arriva quasi da
-solo.
+della verità, e ha una condizione dichiarata: questi numeri
+presuppongono che **uno di noi due possa dedicare ad Aurya più delle
+sere** — ed è l'anno 1, se va come previsto, a dire se il salto è
+sensato. Se non lo è ancora, tutto slitta di due-quattro stagioni
+senza cambiare di natura. Se questi numeri arrivano, il terzo anno
+arriva quasi da solo.
 
 *Dove si arriva*: 200-250 professionisti, 10.000-15.000 visite
 mensili, 3.000-4.000 contatti in lista.
@@ -1006,7 +1073,7 @@ ipotesi rendesse la metà:
 
 | | prudente (metà) | atteso | buono (+50%) |
 |---|---|---|---|
-| Anno 1 | €6.000 | €12.500 | €19.000 |
+| Anno 1 | €5.000 | €10.500 | €16.000 |
 | Anno 2 | €42.000 | €84.500 | €127.000 |
 | Anno 3 | €113.000 | €227.000 | €340.000 |
 
@@ -1167,7 +1234,7 @@ altri, saremo tutti gli altri.
 | mese | cosa | come si vede se funziona |
 |---|---|---|
 | **1** | **Sistemare la misura**: escludere le nostre visite, riconciliare i due contatori. Chiedere il collegamento ai 6 professionisti, col bollino pronto. Riempire il catalogo delle meditazioni. | un numero di traffico affidabile; primi collegamenti |
-| **2** | Reclutare 15 professionisti, uno per uno. Gruppo WhatsApp della rete. **La prima guida gratuita in cambio dell'email.** Due articoli per professionisti. | professionisti attivi; contatti in lista |
+| **2** | Reclutare 4-5 professionisti — uno a settimana, il ritmo che il tempo permette. Gruppo WhatsApp della rete. **La prima guida gratuita in cambio dell'email.** Un articolo per professionisti. | professionisti attivi; contatti in lista |
 | **3** | La prima esperienza online a pagamento. Il primo incontro mensile. Le pagine per disciplina, se i nomi bastano. | **il primo euro incassato**; e soprattutto **il primo euro portato a un professionista** |
 
 ## Le tre cose da guardare, in quest'ordine
@@ -1203,9 +1270,12 @@ altri, saremo tutti gli altri.
 
 ---
 
-*Questo documento va riletto ogni tre mesi con i numeri veri accanto.
-Le previsioni sbagliate non sono un problema: sono un'informazione.
-Il problema sarebbe non guardarle.*
+*Questa è la versione consolidata del piano — quella su cui ci
+diamo la parola. Va riletta ogni tre mesi con i numeri veri accanto:
+le previsioni sbagliate non sono un problema, sono un'informazione.
+Il problema sarebbe non guardarle. E ogni modifica futura si fa qui
+dentro, datata, non a voce: un piano che cambia senza lasciare
+traccia non è un piano, è un umore.*
 
 *E una nota su come sono stati letti i numeri interni. Una prima
 stesura conteneva un errore grosso: un totale aggregato letto senza
