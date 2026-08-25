@@ -82,6 +82,28 @@ ssh -i "$SSH_KEY" "$VPS_HOST" "cd $VPS_DIR && $COMPOSE up -d --build"
 # che sembra applicata e non lo e'.
 echo ""
 echo "── [2b/3] Restarting nginx (bind-mount: il reload non rilegge il file)..."
+# LA PROVA PRIMA DEL RIAVVIO (26/8/2026, dopo un sito giu' per una
+# regex). nginx legge `{` e `}` come delimitatori di blocco: un
+# quantificatore {1,6} non quotato lo fa morire all'avvio, e siccome
+# qui si RIAVVIA (il bind-mount non rilegge col reload) il container
+# entra in loop e il sito sparisce. `nginx -t` costa un secondo e
+# risponde alla sola domanda che conta: questa config parte?
+# Se non parte ci si ferma PRIMA, con i container vecchi ancora in
+# piedi e il sito acceso.
+echo "   verifico la configurazione prima di toccare nulla..."
+if ! ssh -i "$SSH_KEY" "$VPS_HOST" \
+        "docker exec ms-nginx nginx -t -c /etc/nginx/nginx.conf" 2>&1 \
+        | grep -q "syntax is ok"; then
+  echo ""
+  echo "   ✗ FERMO: la configurazione nginx non e' valida."
+  ssh -i "$SSH_KEY" "$VPS_HOST" \
+      "docker exec ms-nginx nginx -t -c /etc/nginx/nginx.conf" 2>&1 | tail -5
+  echo ""
+  echo "   Il sito e' ancora ACCESO con la configurazione precedente."
+  echo "   Correggi deploy/nginx/nginx.conf e rilancia il deploy."
+  exit 1
+fi
+echo "   ✓ configurazione valida"
 ssh -i "$SSH_KEY" "$VPS_HOST" "cd $VPS_DIR && $COMPOSE restart nginx-proxy"
 
 echo ""

@@ -111,10 +111,33 @@ class TestRegistroRotte:
         senza una regola loro, il catch-all li 404-erebbe e il sito
         resterebbe senza vestiti."""
         conf = NGINX.read_text(encoding="utf-8")
-        assert "location ~* \\.[A-Za-z0-9]{1,6}$" in conf
+        # la regex DEVE stare fra virgolette: nginx legge le graffe
+        # come delimitatori di blocco e senza quelle non parte proprio
+        # (loop di riavvio, sito giu' — successo il 26/8)
+        assert 'location ~* "\\.[A-Za-z0-9]{1,6}$"' in conf
         # e la regola deve venire PRIMA del catch-all
-        assert (conf.index("location ~* \\.[A-Za-z0-9]{1,6}$")
+        assert (conf.index('location ~* "\\.[A-Za-z0-9]{1,6}$"')
                 < conf.index("Tutto il resto NON ESISTE"))
+
+    def test_il_deploy_prova_nginx_prima_di_riavviarlo(self):
+        """26/8 — una regex con le graffe non quotate ha fatto morire
+        nginx all'avvio: siccome il deploy RIAVVIA (il bind-mount non
+        rilegge col reload), il container e' entrato in loop e il sito
+        e' sparito. `nginx -t` costa un secondo e risponde alla sola
+        domanda che conta: questa configurazione parte? Se non parte ci
+        si ferma prima, coi container vecchi ancora in piedi."""
+        sh = (BACKEND_DIR.parent / "deploy" / "deploy-prod.sh").read_text()
+        assert "nginx -t" in sh, "il deploy puo' ancora spegnere il sito"
+        assert sh.index("nginx -t") < sh.index("restart nginx-proxy"), \
+            "la prova deve venire PRIMA del riavvio"
+        # fra la prova e il riavvio ci dev'essere l'uscita: senza,
+        # il deploy stampa l'errore e riavvia lo stesso.
+        # NB: si lavora con gli INDICI e non con split() — «nginx -t»
+        # compare tre volte (commento + due chiamate) e split tagliava
+        # prima dell'exit, facendo fallire una guardia corretta.
+        fra = sh[sh.index("nginx -t"):sh.index("restart nginx-proxy")]
+        assert "exit 1" in fra, \
+            "se la config e' rotta il deploy deve FERMARSI, non proseguire"
 
     def test_le_pubbliche_hanno_davvero_delle_meta(self):
         """Una rotta dichiarata pubblica ma senza un ramo nella shell
