@@ -103,6 +103,27 @@ def main():
             elif args.verboso:
                 print(f"  ok  /{percorso:<28} [{tipo}] {code}")
 
+    # Le SUPERFICI NON-PAGINA: sitemap, API pubbliche, file caricati.
+    # Non sono rotte del registro, ma vivono nello stesso file di nginx
+    # e una regola scritta male se le prende (26/8: la regex degli
+    # asset ha reso HTML la sitemap e 404 le immagini degli articoli).
+    for percorso, atteso_tipo in (
+            ("api/public/sitemap-core.xml", "xml"),
+            ("api/public/sitemap-articles.xml", "xml"),
+            ("sitemap.xml", "xml"),
+            ("robots.txt", "text"),
+            ("llms.txt", "text"),
+    ):
+        code, corpo, _ = apri(base, percorso)
+        provate += 1
+        if code != 200:
+            problemi.append(f"  /{percorso:<28} [servizio] risponde {code}")
+        elif atteso_tipo == "xml" and "<urlset" not in corpo and "<sitemapindex" not in corpo:
+            problemi.append(f"  /{percorso:<28} [servizio] non e' XML "
+                            "(una regex se l'e' preso?)")
+        elif args.verboso:
+            print(f"  ok  /{percorso:<28} [{atteso_tipo}]")
+
     for p in INVENTATE:
         code, _, _ = apri(base, p)
         provate += 1

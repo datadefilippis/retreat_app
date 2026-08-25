@@ -106,6 +106,34 @@ class TestRegistroRotte:
         assert '@router.get("/404")' in shell
         assert "status_code=404" in shell
 
+    def test_le_regex_non_rubano_api_e_uploads(self):
+        """26/8, IL DANNO PIU' GRAVE DI QUESTO CICLO. In nginx una
+        REGEX batte un prefisso: la regola degli asset
+        (`~* "\\.[A-Za-z0-9]{1,6}$"`) intercettava anche
+        /api/public/sitemap-core.xml e /uploads/.../cover.webp — la
+        sitemap tornava HTML vuoto e le immagini degli articoli
+        rispondevano 404. Il prefisso vince solo se dichiarato `^~`,
+        ed e' l'unica cosa che tiene separate due regole entrambe
+        legittime."""
+        conf = (BACKEND_DIR.parent / "deploy" / "nginx"
+                / "nginx.conf").read_text()
+        for prefisso in ("/api/", "/uploads/"):
+            assert f"location ^~ {prefisso}" in conf, (
+                f"{prefisso} senza ^~: la regex degli asset se lo prende")
+
+    def test_il_404_non_riceve_il_percorso_richiesto(self):
+        """`proxy_pass http://host/uri` APPENDE il resto del percorso:
+        /pagina-inventata diventava /__seo/404pagina-inventata, cioe'
+        una chiave di cache diversa per ogni indirizzo inventato — la
+        cache senza fine che l'endpoint unico doveva evitare. Con
+        `rewrite ... break` il percorso e' fisso."""
+        conf = (BACKEND_DIR.parent / "deploy" / "nginx"
+                / "nginx.conf").read_text()
+        coda = conf.split("Tutto il resto NON ESISTE")[1]
+        assert "rewrite ^ /__seo/404 break;" in coda
+        assert "proxy_pass http://backend:8000/__seo/404" not in coda, (
+            "con l'URI in proxy_pass nginx appende il percorso richiesto")
+
     def test_gli_asset_non_finiscono_nel_404(self):
         """js, css, font e immagini non hanno un segmento nel registro:
         senza una regola loro, il catch-all li 404-erebbe e il sito
