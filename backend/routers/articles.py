@@ -78,6 +78,10 @@ def _localized(doc: Dict[str, Any], lang: str) -> Dict[str, Any]:
         "slug": doc["slug"],
         "title": doc["title"],
         "description": doc.get("description"),
+        # M1 — «In breve» viaggia col pezzo: la pagina lo disegna in
+        # testa, la shell lo rende server-side, llms-full lo include.
+        # Non si traduce (solo-italiano dal 2/8).
+        "in_breve": doc.get("in_breve"),
         "category": doc.get("category"),
         "featured_image_url": doc.get("featured_image_url"),
         "author_name": doc.get("author_name") or "Aurya",

@@ -313,6 +313,38 @@ export default function BlogArticlePage() {
                 misura di lettura del kit (Lede sta a 62ch). Il vestito
                 tipografico e' in index.css, .blog-content. */}
             <Section tone="cream" rhythm="flow" width="max-w-[38rem]">
+              {/* M1 (25/8) — «In breve»: la risposta fattuale PRIMA del
+                  racconto. Gli articoli aprono con una scena — la voce
+                  del brand, che non si tocca — ma chi arriva da una
+                  ricerca precisa («codice ateco operatore olistico»)
+                  vuole il fatto, e i motori generativi citano paragrafi
+                  auto-contenuti, non preamboli. Sta qui e non nell'hero
+                  perche' e' l'ingresso della LETTURA, non del titolo.
+                  Le guide riservate non lo mostrano: il loro contenuto
+                  e' dietro il cerchio, e un riassunto completo in cima
+                  sarebbe il cancello scavalcato. */}
+              {!article.gated && article.in_breve && (
+                <aside data-testid="article-in-breve"
+                       className="mb-10 rounded-2xl border border-foreground/10
+                                  bg-white/60 p-6 sm:p-7">
+                  <h2 className="eyebrow mb-4">
+                    {t('blog.inBreve', { defaultValue: 'In breve' })}
+                  </h2>
+                  <ul className="space-y-2.5 text-[0.975rem] leading-relaxed
+                                 text-foreground/85">
+                    {article.in_breve.split('\n')
+                      .map((r) => r.trim().replace(/^[-•]\s*/, ''))
+                      .filter(Boolean)
+                      .map((riga, i) => (
+                        <li key={i} className="flex gap-3">
+                          <span aria-hidden className="mt-[0.55em] h-1 w-1 shrink-0
+                                                       rounded-full bg-[#7d6a3a]" />
+                          <span>{riga}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </aside>
+              )}
               <div className={article.gated ? 'blog-content gated-content' : 'blog-content'}>
                 <LegalMarkdownRenderer content={article.content} />
               </div>

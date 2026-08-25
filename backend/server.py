@@ -956,7 +956,8 @@ async def llms_full_txt():
     arts = await (_db.articles
                   .find({"published": True},
                         {"_id": 0, "slug": 1, "title": 1, "description": 1,
-                         "category": 1, "content": 1, "access": 1})
+                         "category": 1, "content": 1, "access": 1,
+                         "in_breve": 1})
                   .sort("published_at", -1).limit(300).to_list(300))
 
     righe = [
@@ -991,6 +992,13 @@ async def llms_full_txt():
         desc = (a.get("description") or "").strip()
         if desc:
             righe.append(f"Sommario: {desc}")
+        # M1 — «In breve» in testa anche qui: e' il blocco pensato per
+        # essere citato, e questo file esiste per farsi citare
+        breve = (a.get("in_breve") or "").strip()
+        if breve:
+            righe += ["", "**In breve:**"]
+            righe += [f"- {r.strip().lstrip('-• ')}"
+                      for r in breve.split("\n") if r.strip()]
         righe += ["", contenuto + nota, "", "---", ""]
     if riservati:
         righe.append(f"_{riservati} guide sono riservate: qui compare solo "

@@ -873,7 +873,8 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
         {"slug": slug, "published": True},
         {"_id": 0, "title": 1, "description": 1, "featured_image_url": 1,
          "published_at": 1, "updated_at": 1, "translations": 1,
-         "author_name": 1, "content": 1, "category": 1, "access": 1},
+         "author_name": 1, "content": 1, "category": 1, "access": 1,
+         "in_breve": 1},
     )
     if not doc:
         return None
@@ -936,6 +937,12 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
     elif content_md:
         jsonld["articleBody"] = _md_to_text(content_md)
         jsonld["wordCount"] = len(jsonld["articleBody"].split())
+    # `abstract` e' il campo schema.org per il sommario di un'opera:
+    # dichiararlo aiuta chi legge i dati strutturati invece del testo
+    if (doc.get("in_breve") or "").strip():
+        jsonld["abstract"] = " ".join(
+            r.strip().lstrip("-• ") for r in doc["in_breve"].split("\n")
+            if r.strip())[:1200]
     from models.article import ARTICLE_CATEGORIES
     if doc.get("category") in ARTICLE_CATEGORIES:
         jsonld["articleSection"] = ARTICLE_CATEGORIES[doc["category"]]
@@ -1000,10 +1007,25 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
                 '<a href="/operatori">I professionisti della rete</a></p>'
                 "</nav>")
 
+    # M1 (25/8) — «In breve» PRIMA del racconto. Gli articoli aprono
+    # con una scena (la voce del brand, che non si tocca): bella da
+    # leggere, impossibile da citare. Questo blocco da' la risposta
+    # fattuale in testa, dove un motore generativo la trova. Sta nel
+    # markup come <aside> perche' e' cio' che e': un a-parte che
+    # riassume, non l'inizio dell'articolo.
+    breve = (doc.get("in_breve") or "").strip()
+    breve_html = ""
+    if breve and not gated:
+        righe = "".join(f"<li>{_html.escape(r.strip().lstrip('-• '))}</li>"
+                        for r in breve.split("\n") if r.strip())
+        breve_html = (f'<aside><h2>In breve</h2><ul>{righe}</ul></aside>'
+                      if righe else "")
+
     content_html = (
         '<article>'
         f'<h1>{_html.escape(doc["title"])}</h1>'
         + (f'<img src="{_html.escape(image)}" alt=""/>' if image else '')
+        + breve_html
         + body_html
         + '</article>'
         + rete

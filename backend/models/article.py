@@ -78,6 +78,19 @@ class ArticleTranslation(BaseModel):
 class ArticleCreate(BaseModel):
     title: str = Field(min_length=3, max_length=180)
     description: Optional[str] = Field(default=None, max_length=400)
+    # M1 (25/8/2026) — «IN BREVE»: la risposta fattuale, prima del
+    # racconto. MISURATO su quattro articoli veri: tre aprono con una
+    # scena («Il modulo e' quasi finito. Nome, indirizzo...»), che e'
+    # la voce del brand e non si tocca — ma chi cerca «codice ateco
+    # operatore olistico» vuole IL CODICE, e un motore generativo che
+    # cerca una frase da citare trova un preambolo. Questo blocco sta
+    # SOPRA la scena: due-quattro frasi auto-contenute, ognuna vera da
+    # sola, fuori dal contesto. E' cio' che AI Overview, Perplexity e
+    # ChatGPT citano — il canale dove un dominio giovane puo' essere
+    # letto ORA invece che fra mesi.
+    # Diverso dalla `description`: quella e' l'esca in SERP (una frase,
+    # invoglia); questo e' il contenuto (risponde, e basta a se stesso).
+    in_breve: Optional[str] = Field(default=None, max_length=1200)
     content: str = Field(min_length=1)
     category: Optional[str] = None
     featured_image_url: Optional[str] = None
@@ -114,6 +127,7 @@ class ArticleUpdate(BaseModel):
     ArticleCreate, o il PATCH lo scarta in silenzio."""
     title: Optional[str] = Field(default=None, min_length=3, max_length=180)
     description: Optional[str] = Field(default=None, max_length=400)
+    in_breve: Optional[str] = Field(default=None, max_length=1200)
     content: Optional[str] = None
     category: Optional[str] = None
     featured_image_url: Optional[str] = None
@@ -148,6 +162,7 @@ class Article(BaseModel):
     slug: str
     title: str
     description: Optional[str] = None
+    in_breve: Optional[str] = None
     content: str
     category: Optional[str] = None
     featured_image_url: Optional[str] = None

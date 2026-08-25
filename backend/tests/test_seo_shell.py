@@ -495,6 +495,50 @@ class TestSbloccoIndicizzazioneGs:
         assert "sys.exit" in src, "senza uscita, le guardie sono decorative"
         assert "--prova" in src and "--esegui" in src
 
+    def test_in_breve_arriva_a_tutte_le_superfici(self):
+        """M1 (25/8) — MISURA: su quattro articoli presi a caso TRE
+        aprono con una scena. E' la voce del brand e non si tocca — ma
+        chi cerca «codice ateco operatore olistico» vuole il codice, e
+        un motore generativo che cerca una frase da citare trova un
+        preambolo. «In breve» sta SOPRA il racconto, e deve arrivare
+        DOVUNQUE: se lo rende solo il client, i crawler senza JS (i
+        motori AI, proprio quelli per cui esiste) non lo vedono."""
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert '"in_breve": 1' in shell, "la shell non lo legge nemmeno"
+        assert "<h2>In breve</h2>" in shell, "non finisce nell'HTML servito"
+        assert 'jsonld["abstract"]' in shell, "manca nei dati strutturati"
+        server = (BACKEND_DIR / "server.py").read_text()
+        assert "**In breve:**" in server, "manca in llms-full.txt"
+        api = (BACKEND_DIR / "routers" / "articles.py").read_text()
+        assert '"in_breve": doc.get("in_breve")' in api
+
+    def test_in_breve_e_nei_tre_modelli(self):
+        """Il file models/article.py lo dice da solo: un campo nuovo va
+        aggiunto in ArticleCreate E in ArticleUpdate, o il PATCH lo
+        scarta IN SILENZIO — la redazione scriverebbe l'In breve e al
+        salvataggio sparirebbe, senza un errore."""
+        src = (BACKEND_DIR / "models" / "article.py").read_text()
+        assert src.count("in_breve") >= 3, \
+            "in_breve manca in uno dei tre modelli (Create/Update/Article)"
+
+    def test_una_guida_riservata_non_regala_il_riassunto(self):
+        """Il cancello del cerchio vale anche per «In breve»: un
+        riassunto completo in cima a una guida riservata sarebbe il
+        cancello scavalcato dalla porta di servizio."""
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert "if breve and not gated:" in shell
+        pagina = (BACKEND_DIR.parent / "frontend" / "src" / "features"
+                  / "storefront" / "BlogArticlePage.js").read_text()
+        assert "!article.gated && article.in_breve" in pagina
+
+    def test_lo_script_in_breve_non_sovrascrive_il_lavoro_a_mano(self):
+        """Le bozze sono TRATTE dagli articoli, ma la voce finale e'
+        della redazione: rilanciare lo script dopo una revisione non
+        deve cancellarla."""
+        src = (BACKEND_DIR / "scripts" / "in_breve_articoli.py").read_text()
+        assert 'if (doc.get("in_breve") or "").strip() and not args.sovrascrivi' in src
+        assert "--prova" in src and "--esegui" in src
+
     def test_la_directory_non_e_orfana(self):
         """T7 (25/8) — /esplora-operatori era indicizzabile e con ZERO
         link interni: in SEO un documento senza voti dal proprio sito

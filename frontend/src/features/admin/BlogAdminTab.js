@@ -18,6 +18,7 @@ import LegalMarkdownRenderer from '../../components/legal/LegalMarkdownRenderer'
 const EMPTY = {
   title: '',
   description: '',
+  in_breve: '',
   content: '',
   category: '',
   access: 'public',
@@ -70,6 +71,7 @@ export default function BlogAdminTab() {
     setForm({
       title: doc.title || '',
       description: doc.description || '',
+      in_breve: doc.in_breve || '',
       content: doc.content || '',
       category: doc.category || '',
       access: doc.access || 'public',
@@ -104,6 +106,7 @@ export default function BlogAdminTab() {
       const payload = {
         title: form.title.trim(),
         description: form.description.trim() || null,
+        in_breve: form.in_breve.trim() || null,
         content: form.content,
         category: form.category || null,
         access: form.access || 'public',
@@ -219,6 +222,26 @@ export default function BlogAdminTab() {
           <textarea value={form.description} rows={2} maxLength={400}
                     onChange={e => setForm({ ...form, description: e.target.value })}
                     className={`${inputCls} resize-y`} />
+        </div>
+
+        {/* M1 (25/8) — «In breve»: la risposta fattuale che sta SOPRA il
+            racconto. Diverso dalla descrizione qui sopra, che e' l'esca
+            in SERP (una frase, invoglia): questo e' contenuto, e ogni
+            riga dev'essere vera da sola, fuori dal contesto — perche'
+            e' cosi' che una macchina la cita. */}
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            In breve — una riga per punto (la risposta prima del racconto)
+          </label>
+          <textarea value={form.in_breve} rows={4} maxLength={1200}
+                    placeholder={'Il codice ATECO più usato è 96.09.09.\nNon esiste un codice dedicato agli operatori olistici.\nLa scelta cambia il regime fiscale, non la legittimità.'}
+                    onChange={e => setForm({ ...form, in_breve: e.target.value })}
+                    className={`${inputCls} resize-y`} />
+          <p className="mt-1 text-[11px] text-gray-500">
+            Da 2 a 4 righe. Ogni riga dev'essere vera da sola: è quello
+            che le risposte AI citano, e chi arriva da una ricerca
+            precisa legge prima di tutto.
+          </p>
         </div>
 
         <div>
