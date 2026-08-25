@@ -532,16 +532,152 @@ vogliamo l'indirizzo, non i nove euro. Una guida venduta rende una
 volta; una guida regalata in cambio dell'email rende ogni volta che
 scriviamo. Dentro c'è valore vero, e il prezzo è il contatto.
 
-## Cosa si paga — e perché è giusto pagarlo
+## Cosa si paga — uno per uno, con il suo perché
 
-| cosa | perché non è «informazione travestita» |
-|---|---|
-| **Il corso** | non spiega cos'è la partita IVA (quello è gratis, nel Magazine): *accompagna* a mettere in ordine la propria attività, con esercizi, modelli e un risultato alla fine. Si paga il cambiamento, non le nozioni |
-| **Le esperienze dal vivo** | un'ora con una persona vera non è replicabile né scaricabile |
-| **Il racconto professionale** | un servizio artigianale con un risultato che resta tuo per sempre |
-| **L'abbonamento alle meditazioni** | il catalogo *completo* e l'ascolto senza limiti: una parte resta gratis, l'abbondanza si paga |
-| **Il Club** | accesso, priorità e assistenza: non contenuto |
-| **La commissione** | si paga solo su un guadagno che prima non c'era |
+Qui ogni cosa a pagamento è spiegata per intero: cos'è, chi la paga,
+perché è giusto pagarla, e quando si accende. Le prove che la domanda
+esiste — chi paga già per cose simili, e quanto — sono nella Parte
+Ottava: qui c'è la logica, lì i riscontri.
+
+### Il corso — e perché proprio *questo* corso
+
+**Cos'è.** Un percorso per professionisti che insegna il mestiere
+*intorno* alla pratica: mettere in ordine la parte fiscale, dare un
+prezzo giusto al proprio lavoro, riempire un ritiro, farsi trovare.
+Con esercizi, modelli pronti e un risultato concreto alla fine — non
+una serie di video da guardare, un lavoro da fare accompagnati.
+
+**Perché è giusto pagarlo, se gli articoli sono gratis.** L'articolo
+sul codice ATECO ti spiega *cos'è* il problema: quello è sapere, e
+resta gratis. Il corso ti porta *dall'altra parte* del problema — esci
+con la tua situazione sistemata, il tuo listino prezzato, il tuo
+ritiro impostato. La differenza è la stessa che passa fra leggere un
+articolo sullo yoga e fare un corso di yoga: nessuno si aspetta che il
+secondo sia gratuito perché esiste il primo.
+
+**Perché parte da qui, e non da un altro tema.** Non è un'idea buttata
+lì: è la conclusione di tre fatti che abbiamo davanti.
+
+1. *È l'unico corso che raggiunge persone che già arrivano da noi.*
+   Gli articoli su fiscalità e prezzi sono il nostro canale di
+   reclutamento: chi li legge è un professionista con quel problema
+   aperto, in quel momento. Non dobbiamo cercare il pubblico del
+   corso — è già in casa.
+2. *È l'unico spazio scoperto.* Le scuole olistiche vendono la
+   disciplina (e la vendono cara); nessuno vende la sopravvivenza
+   economica. Un corso di reiki nostro competirebbe con cento scuole;
+   un corso sul mestiere non compete con nessuno.
+3. *È il corso che fa guadagnare chi lo compra.* Chi impara a prezzare
+   un ritiro recupera il costo del corso al primo ritiro. E questo non
+   è solo un argomento di vendita: è il motore di tutto il piano —
+   **un professionista che guadagna di più è un professionista che
+   potrà permettersi il Club, la promozione, la commissione.** Ogni
+   euro che il corso gli fa guadagnare torna nel sistema.
+
+**E dopo?** Il corso sul mestiere è *il primo di una linea*, non un
+prodotto solitario. Quando avrà dimostrato che il modello funziona, la
+linea si allarga in due direzioni naturali: corsi *dei* professionisti
+della rete (l'insegnante di yoga nidra della rete tiene il suo corso
+introduttivo, noi mettiamo il palco e tratteniamo una quota — stessa
+logica delle esperienze dal vivo, in formato registrato) e corsi *per
+le persone* (come si inizia a meditare, condotto da un volto vero
+della rete — non da un narratore anonimo). Ma prima uno, venduto bene,
+che provi il modello. Aprire tre linee di corsi prima di averne
+venduto uno è il modo classico di non venderne nessuno.
+
+### Le esperienze dal vivo
+
+**Cos'è.** Una sessione online condotta da un professionista della
+rete — un cerchio, una meditazione guidata, un incontro a tema — a cui
+si partecipa pagando un biglietto (10-25 €). Noi organizziamo,
+promuoviamo e tratteniamo una quota; il resto va a chi conduce.
+
+**Perché è giusto pagarla.** Un'ora dal vivo con una persona vera è il
+contrario dell'informazione: non si può registrare, riassumere o
+trovare altrove. È il prodotto più antico del mondo — il tempo di
+qualcuno che sa fare una cosa — e nessuno si aspetta che sia gratis.
+
+**Il suo ruolo nel piano** va oltre il ricavo, che all'inizio è
+piccolo: è **il primo momento in cui Aurya mette dei soldi in tasca a
+un professionista.** È la prova, per lui e per tutti quelli a cui lo
+racconterà, che stare con noi rende.
+
+### Il racconto professionale
+
+**Cos'è.** L'intervista, il testo scritto dalla redazione, le foto
+coordinate: la presenza professionale di una persona, fatta a mano
+(150-300 €, una volta sola).
+
+**Perché è giusto pagarlo.** È un servizio artigianale con un
+risultato che resta — il racconto è tuo, lo usi anche fuori da Aurya,
+per sempre. Non è un canone per esistere sulla piattaforma: chi non lo
+vuole ha comunque il profilo gratuito, completo e curato. Ed è
+volontario per definizione: si compra quando si è visto quello dei
+colleghi e lo si vuole per sé.
+
+### L'abbonamento alle meditazioni — e come convive col gratis
+
+Questa riga merita una spiegazione in più, perché sembra contraddire
+quello che abbiamo detto tre pagine fa: *le meditazioni sono il regalo
+che vale un'email*. Come fanno a essere sia il regalo sia il prodotto?
+
+**Sono due piani della stessa biblioteca, e si accendono in tempi
+diversi.** Oggi, e per tutta la prima stagione, le meditazioni sono
+poche e sono **tutte gratuite** per chi si iscrive: servono a riempire
+la lista, e basta. Quando la biblioteca sarà cresciuta — trenta
+sessioni e oltre — si sdoppia: **una selezione resta gratuita per
+sempre** (e continua a fare il suo lavoro di porta d'ingresso), il
+catalogo completo diventa l'abbonamento. Chi paga non paga
+l'informazione: paga **l'abbondanza** — tutto il catalogo, le novità,
+l'ascolto senza limiti.
+
+È lo stesso identico modello delle app di meditazione che già
+funzionano nel mondo: una parte libera che fa conoscere, un abbonamento
+per chi vuole tutto. Non c'è contraddizione: c'è una sequenza. Il
+regalo costruisce il pubblico; quando il pubblico e il catalogo ci
+sono, l'abbondanza si vende.
+
+### Il Club
+
+**Cos'è.** La quota annuale (49-89 €) per i professionisti che
+vogliono di più: priorità nell'elenco, il badge con l'intervista, il
+corso incluso, una promozione all'anno, la possibilità di comporre
+meditazioni, e qualcuno che risponde quando serve aiuto.
+
+**Perché è giusto pagarlo.** Perché non è contenuto e non è il
+biglietto d'ingresso: è **accesso e precedenza**. Il livello gratuito
+resta per sempre, con tutto quello che serve per lavorare. Il Club è
+la differenza fra viaggiare e viaggiare in prima fila — e si propone
+solo quando la fila esiste, cioè quando il profilo porta visite che si
+possono contare.
+
+### La commissione sulle prenotazioni
+
+**Cos'è.** Il 5% su una prenotazione incassata online attraverso di
+noi, quando il negozio sarà acceso.
+
+**Perché è giusto pagarla.** Perché si paga solo nel momento in cui il
+professionista **ha appena incassato soldi che senza di noi non
+avrebbe visto**. Zero vendite, zero commissione. È il modello che gli
+organizzatori italiani già accettano sulle piattaforme straniere — con
+la differenza che noi li conosciamo per nome.
+
+## Come si tiene tutto insieme
+
+Le sei cose qui sopra non partono insieme: si accendono una alla
+volta, ognuna quando la precedente ha preparato il terreno. La
+sequenza precisa — con i tempi e le prove di domanda — è nelle Parti
+Ottava e Nona. Ma la logica d'insieme sta in tre righe:
+
+1. **Il gratis costruisce il pubblico** (articoli, guide, meditazioni
+   libere, profili) — e ogni pezzo gratuito ha scritto sopra cosa ci
+   compra.
+2. **I primi pagamenti vengono da chi cerca** (esperienze,
+   abbonamento) — perché chi compra qualcosa che vuole non si sente
+   sfruttato.
+3. **I professionisti pagano per ultimi, e solo dopo aver
+   guadagnato** (corso che si ripaga, racconto volontario, Club quando
+   le visite ci sono, commissione solo sul venduto).
 
 La linea è netta e va difesa nel tempo, perché la tentazione di
 spostarla arriverà: ogni volta che qualcosa di gratuito funziona,
@@ -673,7 +809,9 @@ insegna il mestiere intorno: fiscalità, prezzi, come farsi trovare,
 come si riempie un ritiro. I nostri sette articoli su questi temi
 sono già l'indice del corso, e chi impara a prezzare un ritiro
 recupera il costo del corso al primo ritiro. Si vende un investimento
-che si ripaga, non una spesa.
+che si ripaga, non una spesa. (Il perché si parte proprio da questo
+corso, e in cosa può allargarsi la linea, è spiegato nella Parte
+Sesta.)
 
 **Il racconto professionale** — €150-300 una tantum.
 *La prova*: un servizio di presenza professionale — foto, testi,
@@ -699,6 +837,46 @@ comporre meditazioni, e **qualcuno che risponde** — che per chi non è
 pratico di tecnologia vale da sola la quota. E il livello gratuito
 resta per sempre: il Club è un di più, mai un pedaggio.
 
+## Il terzo lato: le aziende del settore
+
+Finora abbiamo parlato di persone e professionisti. C'è un terzo
+pubblico che pagherà, e conviene nominarlo adesso anche se si accende
+per ultimo: **le aziende che vivono di questo settore.** Le scuole di
+formazione che cercano allievi. Le strutture che ospitano ritiri e
+cercano organizzatori. I produttori di ciò che i professionisti usano.
+
+**Cosa gli vendiamo: il nostro pubblico, dichiaratamente.** Quando il
+sito avrà traffico vero, una scuola olistica pagherà volentieri per
+essere presente davanti ai nostri lettori — perché chi legge «come si
+diventa operatore» o «partita IVA per operatori olistici» è
+*esattamente* il suo cliente, nel momento esatto della decisione.
+Nessuna pubblicità generalista raggiunge quel pubblico con quella
+precisione.
+
+**Come si fa nel modo giusto, e come no.** Non i banner automatici dei
+circuiti pubblicitari: su un sito di nicchia rendono spiccioli,
+sporcano le pagine e regalano ai lettori pubblicità di chiunque —
+compresi quelli che promettono guarigioni, cioè esattamente ciò contro
+cui scriviamo. Invece: **sponsorizzazioni dirette e selezionate** — un
+partner alla volta, scelto da noi, sempre dichiarato come tale, mai
+travestito da articolo. Uno spazio nella Lettera, una presenza sulle
+pagine giuste del Magazine, una collaborazione raccontata. Il valore
+per il partner è la precisione; il valore per noi è che un solo
+accordo diretto rende più di mille banner.
+
+**E i «profili in evidenza»?** Per i professionisti quella leva esiste
+già nel piano, in due forme coerenti fra loro: la **priorità
+nell'elenco** è un beneficio del Club (continuativa, per chi è dentro),
+e la **promozione sui nostri canali** è l'uscita singola a pagamento.
+Non serve un terzo prodotto che si sovrapponga: serve che questi due
+funzionino.
+
+**Quando.** Solo con traffico misurabile — secondo anno, realisticamente
+— e con un listino onesto basato sui numeri veri delle pagine. Vendere
+visibilità prima di averla è il modo più rapido per non vendere mai
+più niente: la prima scuola che paga e non vede risultati lo racconta
+alle altre.
+
 ## L'ordine di accensione
 
 1. **Le guide gratuite in cambio dell'email** *(subito)* — non
@@ -710,6 +888,9 @@ resta per sempre: il Club è un di più, mai un pedaggio.
 5. **L'abbonamento alle meditazioni** *(quando la biblioteca
    esiste)*.
 6. **Club e commissioni** *(terza stagione)*.
+7. **Le sponsorizzazioni delle aziende del settore** *(quando il
+   traffico è misurabile)* — per ultime, perché si vendono numeri
+   veri, non promesse.
 
 ---
 
@@ -805,7 +986,7 @@ mensili, 3.000-4.000 contatti in lista.
 | Club Aurya | 300 iscritti | €26.700 |
 | Esperienze online | 100 sessioni al mese | €48.000 |
 | Commissioni | 80 al mese, €30 l'una | €28.800 |
-| Promozioni e collaborazioni | | €15.000 |
+| Promozioni, sponsorizzazioni di settore e collaborazioni | scuole, strutture, partner scelti | €15.000 |
 | **Totale anno 3** | | **≈ €227.000** |
 
 **Qui ci vivono due persone bene, e c'è margine per una terza** — che
