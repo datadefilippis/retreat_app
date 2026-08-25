@@ -420,6 +420,23 @@ class TestSbloccoIndicizzazioneGs:
         for rotta in ("login", "accedi", "inizia", "account"):
             assert f"Disallow: /{rotta}" not in src, rotta
 
+    def test_nginx_comprime_cio_che_vale_la_pena(self):
+        """T1 (25/8) — MISURATO in produzione: main.js usciva a
+        2.045.088 byte NON compressi anche chiedendo gzip, perche' la
+        conf non aveva UNA sola direttiva. ~1,5 MB di troppo su ogni
+        prima visita: LCP e budget di rendering, proprio su un sito
+        che al crawler chiede di eseguire JS."""
+        conf = (BACKEND_DIR.parent / "deploy" / "nginx"
+                / "nginx.conf").read_text()
+        assert "gzip on;" in conf
+        assert "gzip_vary on;" in conf, "senza Vary le cache servono il file sbagliato"
+        for tipo in ("application/javascript", "text/css", "application/json",
+                     "image/svg+xml", "application/xml"):
+            assert tipo in conf, f"{tipo} resta non compresso"
+        # i formati gia' compressi NON si ricomprimono
+        for gia in ("image/webp", "video/mp4", "font/woff2"):
+            assert gia not in conf.split("gzip_types")[1].split(";")[0], gia
+
     def test_hreflang_onesti_in_fase_rete(self, monkeypatch):
         """GS4 — dichiarare ?lang=en su contenuto italiano confonde la
         classificazione di lingua, che e' esattamente cio' che ci
