@@ -18,6 +18,7 @@ import SoundAccountMenu from './SoundAccountMenu';
 const PASSERELLA = [
   { to: '/meditazioni', label: 'Meditazioni' },
   { to: '/sound', label: 'Sound' },
+  { to: '/sound/lab', label: 'Lab' },
   { to: '/blog', label: 'Magazine' },
 ];
 

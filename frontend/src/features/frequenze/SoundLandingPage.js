@@ -70,6 +70,17 @@ export default function SoundLandingPage() {
             </Link>
           </p>
 
+          {/* LAB — la biblioteca che si tocca: un vero generatore di
+              segnali, e a passi l'intero banco (oscilloscopio, spettro,
+              sweep sullo stesso motore) */}
+          <p style={{ marginTop: 8 }}>
+            <Link to="/sound/lab" className="readmore"
+              data-testid="sld-lab" style={{ textDecoration: 'none' }}>
+              ⚗ Il Laboratorio — genera un segnale vero e misuralo:
+              frequenza, forma d'onda, ampiezza, fase
+            </Link>
+          </p>
+
           <div className="sld-guide">
             <div className="sld-ghead">
               <b>Le fondamenta</b>

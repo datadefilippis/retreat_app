@@ -633,7 +633,38 @@ _SOUND_PAGES = {
                         "banda cerebrale, entrainment, battito binaurale, "
                         "frequenza portante e le altre."),
     },
+    # LAB (25/8) — il laboratorio: pagina pubblica e indicizzabile
+    # (e' contenuto vero, e in italiano non ce l'ha nessuno)
+    "lab": {
+        "title": "Sound Lab: il laboratorio del suono nel browser | Aurya",
+        "description": ("Un generatore di segnali vero, nel browser: "
+                        "sinusoide, quadra, triangolare e dente di sega, "
+                        "frequenza al centesimo di Hertz, ampiezza e fase. "
+                        "E a passi: oscilloscopio, spettro e sweep."),
+    },
 }
+
+
+def _lab_content_html() -> str:
+    """Corpo per i crawler di /sound/lab: cosa fa il laboratorio OGGI
+    (il generatore) — niente promesse spacciate per funzioni."""
+    return (
+        "<h1>Aurya Sound Lab — il laboratorio del suono</h1>"
+        "<p>La biblioteca di Aurya Sound spiega il suono; il Laboratorio "
+        "lo fa toccare. Un vero generatore di segnali digitale che gira "
+        "nel browser: l'onda che senti è calcolata mentre la ascolti, "
+        "non è una registrazione.</p>"
+        "<h2>Il generatore</h2>"
+        "<ul>"
+        "<li>Quattro forme d'onda: sinusoide, quadra, triangolare, "
+        "dente di sega.</li>"
+        "<li>Frequenza precisa al centesimo di Hertz, da 20 Hz a "
+        "20 kHz, su scala logaritmica.</li>"
+        "<li>Ampiezza e fase regolabili, senza click né salti.</li>"
+        "</ul>"
+        "<p>Il banco crescerà sullo stesso motore: oscilloscopio, "
+        "analizzatore di spettro e sweep di frequenza.</p>"
+    )
 
 
 def _sound_index_html() -> str:
@@ -660,6 +691,16 @@ async def _meta_sound(parts: list) -> Optional[dict]:
     if sub in ("crea", "tracce", "visual"):
         meta = {**_SOUND_PAGES[None], "noindex": True}
         return {**meta, "canonical": None, "hreflang": None}
+    # LAB (25/8) — a differenza di crea/tracce/visual e' una pagina
+    # PUBBLICA: senza questo ramo il renderer non la conosce e chi
+    # arriva da fuori prende un 404 (la trappola gia' pagata con
+    # /sound/visual il 22/8).
+    if sub == "lab":
+        canonical = f"{base}/sound/lab"
+        return {**_SOUND_PAGES["lab"], "canonical": canonical,
+                "hreflang": _hub_hreflang(canonical),
+                "image": f"{base}/og-cover.jpg",
+                "content_html": _lab_content_html()}
     if sub == "impara":
         key = "glossario" if len(parts) > 1 and parts[1] == "glossario" else "impara"
         slug = "/sound/impara/glossario" if key == "glossario" else "/sound/impara"

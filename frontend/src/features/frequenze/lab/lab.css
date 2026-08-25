@@ -1,0 +1,85 @@
+/**
+ * IL VESTITO DEL LAB (25/8/2026) — sopra la palette di frequenze.css.
+ *
+ * Stessa stanza scura del mondo Sound: pannelli --panel, numeri mono
+ * color --lamp (l'oro è UNO, e ce l'ha il numero della frequenza),
+ * tracce e accenti in --water. Niente estetica da DAW: un banco di
+ * legno scuro con uno strumento sopra, non una plancia.
+ */
+
+.fqz.lab main{max-width:760px;margin:0 auto}
+
+.fqz .lab-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:22px 24px;margin-top:18px}
+.fqz .lab-chead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.fqz .lab-chead h2{margin:0;font-size:15px;letter-spacing:.14em;text-transform:uppercase}
+.fqz .lab-cnote{color:var(--dimmer);font-size:12px}
+
+/* le forme: sagome, non icone */
+.fqz .lab-forme{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.fqz .lab-forma{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:var(--stone);border:1px solid var(--line-soft);border-radius:10px;
+  padding:10px 6px;color:var(--dim);cursor:pointer;font:inherit}
+.fqz .lab-forma svg{width:34px;height:24px;display:block}
+.fqz .lab-forma i{font-style:normal;font-size:11px;letter-spacing:.04em}
+.fqz .lab-forma.viva{color:var(--bone);border-color:var(--lamp-dim);background:var(--ink)}
+.fqz .lab-forma.viva svg{color:var(--lamp)}
+
+/* la frequenza — il protagonista */
+.fqz .lab-freq{margin-top:20px}
+.fqz .lab-freq-num{display:flex;align-items:baseline;gap:8px;justify-content:center}
+.fqz .lab-freq-num input{
+  width:220px;background:transparent;border:none;border-bottom:1px solid var(--line);
+  color:var(--lamp);font-family:var(--mono);font-size:40px;text-align:right;
+  padding:0 2px 4px;outline:none}
+.fqz .lab-freq-num input:focus{border-bottom-color:var(--lamp-dim)}
+.fqz .lab-freq-num b{color:var(--dim);font-size:16px;font-weight:600}
+.fqz .lab-freq-note{
+  display:flex;justify-content:space-between;align-items:baseline;
+  color:var(--dimmer);font-size:11px;margin-top:6px}
+.fqz .lab-nota{color:var(--dim);font-size:12px}
+
+/* i cursori, sobri */
+.fqz .lab-slider{
+  -webkit-appearance:none;appearance:none;width:100%;height:22px;
+  background:transparent;margin-top:8px;cursor:pointer}
+.fqz .lab-slider::-webkit-slider-runnable-track{
+  height:2px;background:var(--line);border-radius:1px}
+.fqz .lab-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--bone);border:1px solid var(--lamp-dim);margin-top:-6px}
+.fqz .lab-slider::-moz-range-track{height:2px;background:var(--line);border-radius:1px}
+.fqz .lab-slider::-moz-range-thumb{
+  width:12px;height:12px;border-radius:50%;background:var(--bone);
+  border:1px solid var(--lamp-dim)}
+
+/* ampiezza e fase */
+.fqz .lab-parametri{
+  display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.fqz .lab-par span{display:flex;justify-content:space-between;font-size:12px;color:var(--dim)}
+.fqz .lab-par span b{font-family:var(--mono);color:var(--bone);font-weight:500}
+.fqz .lab-par small{display:block;color:var(--dimmer);font-size:10.5px;line-height:1.45;margin-top:4px}
+
+/* l'azione */
+.fqz .lab-azione{margin-top:22px;text-align:center}
+.fqz .lab-play{
+  font:inherit;font-size:14px;letter-spacing:.08em;cursor:pointer;
+  background:var(--lamp);color:var(--ink);border:none;border-radius:999px;
+  padding:12px 34px}
+.fqz .lab-play.fermo{background:var(--stone);color:var(--bone);border:1px solid var(--line)}
+.fqz .lab-volume{color:var(--dimmer);font-size:11.5px;margin:12px auto 0;max-width:420px}
+
+.fqz .lab-biblio{
+  border-top:1px solid var(--line-soft);margin-top:20px;padding-top:14px;
+  font-size:12.5px;color:var(--dim)}
+.fqz .lab-biblio a{color:var(--water);text-decoration:none}
+
+.fqz .lab-arrivo{color:var(--dimmer);font-size:12px;margin-top:18px}
+
+@media (max-width:640px){
+  .fqz .lab-forme{grid-template-columns:repeat(2,1fr)}
+  .fqz .lab-parametri{grid-template-columns:1fr}
+  .fqz .lab-freq-num input{width:170px;font-size:32px}
+}

@@ -135,6 +135,7 @@ async def build_core() -> str:
         _url(f"{base}/sound/esplora", priority="0.6"),
         _url(f"{base}/sound/impara", priority="0.6"),
         _url(f"{base}/sound/impara/glossario", priority="0.4"),
+        _url(f"{base}/sound/lab", priority="0.5"),
         # GS5 (25/8) — privacy/termini NON stanno piu' qui: sono rotte
         # di servizio (noindex nella shell) e dichiararle in sitemap
         # mentre si chiede il noindex e' un segnale in conflitto. In
