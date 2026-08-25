@@ -1658,7 +1658,11 @@ def _registro() -> dict:
     global _REGISTRO_CACHE
     if _REGISTRO_CACHE is None:
         import json
-        percorso = (Path(__file__).resolve().parent.parent.parent
+        # dentro `backend/`, non alla radice: il contesto di build
+        # dell'immagine e' backend/, e un file fuori non ci entra —
+        # successo il 26/8, con le rotte di servizio che rispondevano
+        # 404 in produzione perche' il registro non c'era.
+        percorso = (Path(__file__).resolve().parent.parent
                     / "config" / "rotte.json")
         try:
             d = json.loads(percorso.read_text(encoding="utf-8"))
@@ -1668,9 +1672,13 @@ def _registro() -> dict:
                 "app": set(d.get("app") or []),
             }
         except Exception as exc:   # noqa: BLE001
-            # senza registro NON si inventa: si lascia passare tutto
-            # (comportamento di prima) invece di 404-are il sito intero
-            logger.error("seo_shell: registro rotte illeggibile: %s", exc)
+            # IL RIPIEGO DEVE ESSERE PERMISSIVO, non restrittivo.
+            # Con gli insiemi vuoti ogni percorso diventa «sconosciuto»
+            # e il sito intero risponde 404: un file mancante
+            # spegnerebbe tutto. Meglio il comportamento di prima —
+            # nessun 404 automatico — e un errore forte nei log.
+            logger.error("seo_shell: registro rotte illeggibile (%s): "
+                         "nessun percorso verra' dichiarato inesistente", exc)
             _REGISTRO_CACHE = {"pubblica": set(), "servizio": set(),
                                "app": set(), "assente": True}
     return _REGISTRO_CACHE
@@ -1769,7 +1777,12 @@ async def resolve_meta(path: str) -> Optional[dict]:
                 "description": ("Guide oneste sul benessere e i "
                                 "professionisti che lo praticano."),
                 "canonical": None, "hreflang": None}
-    # tutto il resto NON ESISTE: 404 vero (lo dice il chiamante)
+    # tutto il resto NON ESISTE: 404 vero (lo dice il chiamante).
+    # Se pero' il registro non si e' potuto leggere non si condanna
+    # niente: senza la lista, «sconosciuto» non vuol dire niente.
+    if _registro().get("assente"):
+        return {"title": "Aurya", "description": "",
+                "noindex": True, "canonical": None, "hreflang": None}
     return None
 
 

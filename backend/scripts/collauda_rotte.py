@@ -27,7 +27,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-REGISTRO = Path(__file__).resolve().parent.parent.parent / "config" / "rotte.json"
+REGISTRO = Path(__file__).resolve().parent.parent / "config" / "rotte.json"
 
 # esempi concreti per i segmenti che senza una parte variabile
 # rimandano o non esistono (un /o/ da solo non è un profilo)
@@ -40,18 +40,37 @@ CAMPIONI = {
 INVENTATE = ["pagina-inventata", "wp-admin", "a/b/c", "xyz123",
              "blog-non-esiste", "admin-login"]
 
+# «pubblica» non vuol dire «sempre in SERP»: in fase rete alcune
+# superfici del marketplace sono spente per scelta (RT5) e altre si
+# spengono da sole quando sono vuote (anti thin-content). Sono
+# comportamenti VOLUTI, non difetti — e vanno dichiarati qui invece
+# che scoperti ogni volta.
+FASE_NOINDEX = {"ritiri", "destinazioni", "esplora-ritiri", "esperienze"}
+# /come-funziona racconta il percorso d'acquisto: in fase rete non
+# esiste e risponde 404 apposta (LC2)
+FASE_404 = {"come-funziona"}
+
 
 def apri(base, percorso):
+    """Ritorna (stato, html, noindex). Il noindex si cerca in DUE posti:
+    il meta nella pagina (rotte servite dal renderer) e l'header
+    X-Robots-Tag (rotte dell'app, che il renderer non vede mai — è
+    nginx a dichiararlo). Guardare solo l'HTML dava 29 falsi allarmi."""
     req = urllib.request.Request(
         f"{base}/{percorso}",
         headers={"User-Agent": "Mozilla/5.0 (compatible; CollaudoAurya/1.0)"})
     try:
         with urllib.request.urlopen(req, timeout=20) as r:
-            return r.status, r.read().decode("utf-8", "ignore")
+            html = r.read().decode("utf-8", "ignore")
+            hdr = r.headers.get("X-Robots-Tag", "")
+            return r.status, html, ("noindex" in hdr
+                                    or 'content="noindex"' in html)
     except urllib.error.HTTPError as e:
-        return e.code, e.read().decode("utf-8", "ignore")
+        html = e.read().decode("utf-8", "ignore")
+        return e.code, html, ("noindex" in (e.headers.get("X-Robots-Tag") or "")
+                              or 'content="noindex"' in html)
     except Exception as e:                      # noqa: BLE001
-        return 0, str(e)
+        return 0, str(e), False
 
 
 def main():
@@ -70,13 +89,12 @@ def main():
             if seg in CAMPIONI and CAMPIONI[seg] is None:
                 continue                        # serve una parte variabile
             percorso = CAMPIONI.get(seg) or seg
-            code, html = apri(base, percorso)
+            code, html, noindex = apri(base, percorso)
             provate += 1
-            noindex = 'content="noindex"' in html or "noindex" in html[:2000]
             male = None
-            if code != 200:
+            if code != 200 and not (tipo == "pubblica" and seg in FASE_404):
                 male = f"risponde {code}, atteso 200"
-            elif tipo == "pubblica" and noindex:
+            elif tipo == "pubblica" and noindex and seg not in FASE_NOINDEX:
                 male = "è contenuto ma dichiara noindex"
             elif tipo in ("servizio", "app") and not noindex:
                 male = "non dichiara noindex"
@@ -86,7 +104,7 @@ def main():
                 print(f"  ok  /{percorso:<28} [{tipo}] {code}")
 
     for p in INVENTATE:
-        code, _ = apri(base, p)
+        code, _, _ = apri(base, p)
         provate += 1
         if code != 404:
             problemi.append(f"  /{p:<28} [inventata] risponde {code}, atteso 404")

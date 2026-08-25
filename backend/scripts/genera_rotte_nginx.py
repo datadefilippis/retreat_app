@@ -24,7 +24,7 @@ import sys
 from pathlib import Path
 
 RADICE = Path(__file__).resolve().parent.parent.parent
-REGISTRO = RADICE / "config" / "rotte.json"
+REGISTRO = RADICE / "backend" / "config" / "rotte.json"
 NGINX = RADICE / "deploy" / "nginx" / "nginx.conf"
 
 INIZIO_SHELL = "    # <<< ROTTE-RENDERER (generato: scripts/genera_rotte_nginx.py) >>>"

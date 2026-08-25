@@ -28,7 +28,7 @@ if str(BACKEND_DIR) not in sys.path:
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-not-for-production")
 
 RADICE = BACKEND_DIR.parent
-REGISTRO = RADICE / "config" / "rotte.json"
+REGISTRO = BACKEND_DIR / "config" / "rotte.json"
 APP_JS = RADICE / "frontend" / "src" / "App.js"
 NGINX = RADICE / "deploy" / "nginx" / "nginx.conf"
 
