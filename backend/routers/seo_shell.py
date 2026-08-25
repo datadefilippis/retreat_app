@@ -1259,6 +1259,36 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     for _lang, _f in (profile.get("translations") or {}).items():
         if _lang in ("en", "de", "fr") and (_f or {}).get("bio"):
             hreflang[_lang] = f"{canonical}?lang={_lang}"
+
+    # GS7 (25/8) — IL PROFILO PARLA. Misurato in produzione: i profili
+    # dei professionisti veri rispondevano 200 con meta e JSON-LD
+    # perfetti e un BODY DI 46 CARATTERI. Sono le pagine che nessun
+    # elenco puo' replicare (bio scritta, discipline, il racconto) e
+    # sono anche il bersaglio del volano-backlink del piano: ogni
+    # professionista che linka il suo profilo mandava i crawler su una
+    # pagina muta. Qui va il testo VERO del profilo — bio e tagline le
+    # ha scritte la redazione con la persona, non sono riempitivo.
+    from models.disciplines import DISCIPLINES
+    pezzi = [f"<div><h1>{_html.escape(name)}</h1>"]
+    if profile.get("tagline"):
+        pezzi.append(f"<p>{_html.escape(profile['tagline'][:300])}</p>")
+    bio_piena = (profile.get("bio") or "").strip()
+    if bio_piena:
+        for capo in bio_piena.split("\n"):
+            if capo.strip():
+                pezzi.append(f"<p>{_html.escape(capo.strip()[:1200])}</p>")
+    # DISCIPLINES e' gia' slug → etichetta leggibile (models/disciplines)
+    disc = [DISCIPLINES[d] for d in (profile.get("disciplines") or [])
+            if d in DISCIPLINES]
+    if disc:
+        pezzi.append("<p>Pratiche: " + ", ".join(
+            _html.escape(d) for d in disc) + "</p>")
+    dove = ", ".join(x for x in (city, region) if x)
+    if dove:
+        pezzi.append(f"<p>Dove: {_html.escape(dove)}</p>")
+    pezzi.append('<p><a href="/operatori">Tutti i professionisti della '
+                 'rete Aurya</a> · <a href="/blog">Il Magazine</a></p></div>')
+
     return {
         "title": title,
         "description": desc,
@@ -1266,6 +1296,7 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
         "image": image,
         "jsonld": [jsonld, crumbs] if crumbs else jsonld,
         "hreflang": hreflang,
+        "content_html": "".join(pezzi),
     }
 
 

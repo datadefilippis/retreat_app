@@ -440,6 +440,23 @@ class TestSbloccoIndicizzazioneGs:
         assert '/termini"' not in src
 
     @pytest.mark.asyncio
+    async def test_il_profilo_del_professionista_parla(self, monkeypatch):
+        """GS7 — misurato in PRODUZIONE: i profili veri rispondevano
+        200 con meta e JSON-LD perfetti e un body di 46 caratteri.
+        Sono le pagine che nessun elenco puo' replicare, ed erano anche
+        il bersaglio del volano-backlink: chi linkava il proprio
+        profilo mandava i crawler su una pagina muta."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        corpo = src.split("GS7 (25/8)")[1][:2200]
+        # il testo VERO del profilo, non un riassunto generato
+        for campo in ("tagline", "bio", "disciplines"):
+            assert campo in corpo, f"il corpo del profilo ignora {campo}"
+        assert '"content_html": "".join(pezzi)' in corpo, \
+            "il corpo costruito non viene consegnato alla shell"
+        assert "_html.escape(name)" in corpo, "nome non escapato"
+
+    @pytest.mark.asyncio
     async def test_operatori_e_brand_hanno_un_corpo(self, monkeypatch):
         """GS2/GS3 — anche /operatori e le pagine di brand erano 46
         caratteri inglesi: ora un corpo italiano con h1 e link."""
