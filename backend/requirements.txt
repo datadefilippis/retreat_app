@@ -19,7 +19,7 @@ pytest>=8.0.0
 pytest-asyncio>=0.23.0
 # Track S Step 4.4 — coverage report generation in CI workflow
 pytest-cov>=4.1.0
-black>=24.1.1
+black>=24.10.0
 isort>=5.13.2
 flake8>=7.0.0
 mypy>=1.8.0
