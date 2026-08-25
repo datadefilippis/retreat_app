@@ -188,13 +188,24 @@ export default function RetreatsCalendarPage() {
     return bits.join(' ');
   })();
   useSeoMeta({
-    title: `${seoHeading} | Aurya`,
+    title: isPreview
+      ? 'Ritiri ed esperienze di benessere in Italia | Aurya'
+      : `${seoHeading} | Aurya`,
     description: `Trova e prenota ${catLabel ? catLabel.toLowerCase() + ' ' : ''}ritiri${region ? ' a ' + region : ''}: date, prezzi e disponibilità in tempo reale, con prenotazione e caparra online.`,
-    canonicalPath: (routeParams.categoria || routeParams.regione)
-      ? window.location.pathname : '/',
-    // PN — /esplora-ritiri e' un'anteprima non linkata: mai in SERP
-    // (stesso pattern noindex di OperatorsIndexPage su esplora)
-    noindex: isPreview,
+    // ES (25/8) — su /esplora-ritiri il canonico e' SE STESSA: in fase
+    // rete la home NON e' la directory dei ritiri (e' il racconto del
+    // brand), quindi il vecchio canonical '/' mandava i crawler su un
+    // documento che non c'entra.
+    canonicalPath: isPreview ? '/esplora-ritiri'
+      : (routeParams.categoria || routeParams.regione)
+        ? window.location.pathname : '/',
+    // ES (25/8) — CADE il `noindex: isPreview`: il calendario e' vuoto
+    // perche' i campioni finti sono stati rimossi, e si riempira' con
+    // i ritiri veri. Resta fuori dagli indici finche' e' vuoto (una
+    // pagina che promette ritiri inesistenti e' un rimbalzo) e si
+    // accende DA SOLA al primo evento — la stessa regola che governa
+    // la shell e la sitemap: decide il dato, non una costante.
+    noindex: !loading && (data?.items || []).length === 0,
     // F3 — ItemList dei ritiri visibili (max 20: ai crawler serve il
     // segnale di lista, non l'inventario completo)
     jsonLd: (data?.items || []).length > 0 ? {

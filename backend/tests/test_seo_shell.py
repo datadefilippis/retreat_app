@@ -458,6 +458,29 @@ class TestSbloccoIndicizzazioneGs:
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
         assert "esplora-ritiri" in seo and "listable_retreats" in seo
 
+    def test_il_client_non_annulla_il_lavoro_della_shell(self):
+        """LA TRAPPOLA PIU' SUBDOLA di tutto il ciclo: la shell serve
+        meta perfetti, poi React monta e li RISCRIVE. Google legge il
+        DOM renderizzato, quindi vince il client. Qui il client
+        forzava `noindex: isPreview` sulle rotte esplora e puntava il
+        canonical a /operatori e a / — due documenti diversi. Con
+        quelle righe, tutto il server-side di questo ciclo sarebbe
+        stato annullato al primo rendering, e in Search Console
+        avremmo visto «pagina esclusa da noindex» senza capire
+        perche'."""
+        FE = BACKEND_DIR.parent / "frontend" / "src" / "features" / "storefront"
+        ops = (FE / "OperatorsIndexPage.js").read_text()
+        rit = (FE / "RetreatsCalendarPage.js").read_text()
+        for nome, src in (("operatori", ops), ("ritiri", rit)):
+            assert "noindex: isPreview," not in src, \
+                f"{nome}: il client rimette noindex e annulla la shell"
+            assert "isPreview || (!loading" not in src, nome
+            assert "isPreview ? '/esplora-" in src, \
+                f"{nome}: su esplora il canonico dev'essere se stessa"
+        # e il vuoto resta governato dai dati, in entrambe
+        assert "!loading && items.length === 0" in ops
+        assert "!loading && (data?.items || []).length === 0" in rit
+
     def test_lo_script_dei_campioni_non_puo_toccare_i_veri(self):
         """La pulizia dei campioni gira su un database di PRODUZIONE
         dove vivono 4 professionisti veri. Le guardie dello script sono

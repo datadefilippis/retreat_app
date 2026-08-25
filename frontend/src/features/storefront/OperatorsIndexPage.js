@@ -427,19 +427,34 @@ export default function OperatorsIndexPage() {
     ? t(`landings:categories.${categoria}`, { defaultValue: categoria }) : '';
 
   useSeoMeta({
-    title: categoria
-      ? t('landings:operators.seoTitleCat', {
-          cat: catLabel, defaultValue: 'Operatori di {{cat}} | Aurya' })
-      : t('landings:operators.seoTitle', {
-          defaultValue: 'Tutti i professionisti del benessere | Aurya' }),
+    // il titolo dev'essere lo STESSO che serve la shell: due writer
+    // che dicono due cose sono due verita' per la stessa URL
+    title: isPreview
+      ? 'Professionisti del benessere in Italia | Aurya'
+      : categoria
+        ? t('landings:operators.seoTitleCat', {
+            cat: catLabel, defaultValue: 'Operatori di {{cat}} | Aurya' })
+        : t('landings:operators.seoTitle', {
+            defaultValue: 'Tutti i professionisti del benessere | Aurya' }),
     description: t('landings:operators.seoDesc', {
       defaultValue: 'Scopri i professionisti del benessere su Aurya: pratiche, esperienze e percorsi, con profili, prossime date e prenotazione online.',
     }),
-    canonicalPath: categoria ? `/operatori/${categoria}` : '/operatori',
+    // ES (25/8) — su /esplora-operatori il canonico e' SE STESSA. Prima
+    // puntava a /operatori, che in fase rete e' un'ALTRA pagina (il
+    // racconto della rete, non l'elenco): dichiarare canonico un
+    // documento diverso e' il modo piu' rapido per farsi ignorare
+    // entrambi.
+    canonicalPath: isPreview ? '/esplora-operatori'
+      : (categoria ? `/operatori/${categoria}` : '/operatori'),
     // 0 risultati = pagina indice vuota: mai in SERP (regola S5).
-    // PN — la rotta /esplora-operatori e' un'anteprima non linkata:
-    // noindex sempre, qualunque sia il contenuto.
-    noindex: isPreview || (!loading && items.length === 0),
+    // ES (25/8) — CADE il `noindex: isPreview`. Nacque quando qui
+    // dentro c'erano i campioni del pre-lancio; rimossi quelli, questa
+    // e' la directory dei professionisti VERI ed e' la pagina che
+    // vogliamo in SERP. ATTENZIONE: questa riga governa il DOM
+    // renderizzato, ed e' quello che Google legge davvero — con
+    // `isPreview` qui, tutto il lavoro server-side della shell
+    // verrebbe annullato al primo rendering.
+    noindex: !loading && items.length === 0,
     jsonLd: items.length > 0 ? {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
