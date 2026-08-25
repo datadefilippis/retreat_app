@@ -649,7 +649,7 @@ colleghi e lo si vuole per sé.
 
 **E come si concilia col fatto che ai primi lo regaliamo?** Con una
 sequenza dichiarata, non con un ripensamento. Per i primi cinquanta il
-racconto è compreso e resta loro per sempre: è il prezzo che paghiamo
+racconto è incluso e resta loro per sempre: è il prezzo che paghiamo
 noi per costruire la rete, e chi entra presto se lo guadagna. Quando
 ci sarà una lista d'attesa, chi arriva dopo avrà comunque il profilo
 gratuito — quello non si tocca mai — e potrà *scegliere* di comprare
@@ -776,7 +776,7 @@ cinquanta è esattamente ciò che serve, ed è anche il modo in cui
 impariamo cosa li blocca davvero.
 
 *Il patto, detto a voce, a ognuno.* «Aurya è gratis, e la parte che
-usi oggi resterà gratis. Il racconto che ti facciamo è compreso, ed è
+usi oggi resterà gratis. Il racconto che ti facciamo è incluso, ed è
 tuo per sempre. Un giorno guadagneremo — da chi entrerà dopo di te, e
 da cose in più che potrai scegliere o ignorare — e te lo diremo prima
 di farlo.» Questa frase, mantenuta, vale più di qualsiasi funzione.
@@ -868,7 +868,7 @@ corso, e in cosa può allargarsi la linea, è spiegato nella Parte
 Sesta.)
 
 **Il racconto professionale** — €150-300 una tantum, **per chi entra
-dopo i primi cinquanta** (ai fondatori è compreso, per sempre — la
+dopo i primi cinquanta** (ai fondatori è incluso, per sempre — la
 sequenza è spiegata nella Parte Sesta).
 *La prova*: un servizio di presenza professionale — foto, testi,
 racconto — si paga sul mercato molto di più. Qui è artigianale, con
@@ -1006,18 +1006,38 @@ verificare per primo.**
 Non ci si vive. Va detto senza giri: **il primo anno Aurya non
 mantiene nessuno**, e serve un'altra entrata accanto.
 
+E i numeri qui sotto sono volutamente piccoli, perché devono tornare
+col resto del piano — voce per voce.
+
+**Il corso** si costruisce con le nostre ore: registrarlo e
+confezionarlo costa due-tre mesi del nostro bilancio settimanale.
+Lancio realistico nell'ultimo trimestre, venduto **alla nostra lista**
+(600-1.000 contatti a quel punto), non al mondo: 20-30 copie è la
+stima onesta di un primo lancio.
+
+**I racconti a pagamento** nell'anno 1 valgono **zero**, ed è la
+conseguenza diretta di una nostra promessa: i primi cinquanta ce
+l'hanno **incluso** — è il patto dei fondatori — e l'anno si chiude
+proprio intorno a quota cinquanta. Il racconto comincia a rendere
+dall'anno 2, quando esiste una lista d'attesa. Metterlo a ricavo
+nell'anno 1, come faceva una versione precedente di questo piano, era
+incoerente con la nostra stessa matematica.
+
+**Le esperienze online** partono presto (bastano sei professionisti) e
+rendono poco ciascuna: il loro valore nell'anno 1 non è il ricavo, è
+la prova.
+
 | da dove | quanto |
 |---|---|
-| Corso, dal lancio in avanti (circa 50 copie) | €7.500 |
+| Corso — lancio nell'ultimo trimestre, 20-30 copie alla lista | €4.000 |
 | Esperienze online (la nostra quota) | €1.500 |
-| Racconti a pagamento — pochi, e va bene così: i primi cinquanta lo hanno compreso | €1.500 |
-| **Totale anno 1** | **≈ €10.500** |
+| **Totale anno 1** | **≈ €5.500** |
 
 *Dove si arriva, al ritmo di uno a settimana*: 45-60 professionisti,
 2.000-3.000 visite mensili, 600-1.000 contatti in lista (grazie alle
 guide gratuite), 20-30 meditazioni.
 
-Il valore dell'anno non sono i diecimila euro: è **il patrimonio che
+Il valore dell'anno non sono i cinquemila euro: è **il patrimonio che
 resta** — le persone, i contenuti, i collegamenti, la lista, e la
 prova che qualcuno paga.
 
@@ -1025,7 +1045,7 @@ prova che qualcuno paga.
 
 | da dove | ipotesi | quanto |
 |---|---|---|
-| Corso professionisti | 200 copie a €149 | €29.800 |
+| Corso professionisti | 200 copie a €149: il corso ESISTE già, la lista è 5 volte più grande, e vende tutto l'anno invece di un trimestre | €29.800 |
 | Abbonamento meditazioni | 400 abbonati a €39 | €15.600 |
 | Club Aurya | 100 iscritti a €89 | €8.900 |
 | Esperienze online | 40 sessioni al mese, quota €40 | €19.200 |
@@ -1073,7 +1093,7 @@ ipotesi rendesse la metà:
 
 | | prudente (metà) | atteso | buono (+50%) |
 |---|---|---|---|
-| Anno 1 | €5.000 | €10.500 | €16.000 |
+| Anno 1 | €2.500 | €5.500 | €8.500 |
 | Anno 2 | €42.000 | €84.500 | €127.000 |
 | Anno 3 | €113.000 | €227.000 | €340.000 |
 
