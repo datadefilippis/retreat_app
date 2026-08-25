@@ -30,7 +30,7 @@ python-dotenv>=1.0.1
 
 # Data processing (CSV/XLSX parsing)
 pandas==3.0.1
-numpy>=1.26.0
+numpy>=1.26.4
 openpyxl==3.1.5
 xlrd==2.0.2
 
