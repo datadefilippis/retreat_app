@@ -914,6 +914,86 @@ async def llms_txt():
     return Response(testo, media_type="text/plain; charset=utf-8")
 
 
+@app.get("/llms-full.txt", include_in_schema=False)
+async def llms_full_txt():
+    """T2 (25/8/2026) — il Magazine INTERO, in un file solo.
+
+    `llms.txt` e' l'INDICE: dice quali pagine esistono e di cosa
+    parlano. `llms-full.txt` e' il TESTO: la convenzione vuole che un
+    assistente possa ingerire tutto il sito senza seguire 47 link e
+    senza eseguire JavaScript. Per noi e' la porta dei motori
+    generativi — quelli che citano le fonti nelle risposte, dove un
+    dominio nuovo puo' essere letto ORA invece che fra sei mesi come
+    nelle SERP classiche.
+
+    Il markdown esce COM'E': e' gia' il formato che gli LLM
+    preferiscono (titoli, liste, enfasi), e appiattirlo butterebbe la
+    struttura che rende il contenuto estraibile.
+
+    Le guide riservate entrano con la loro sola ANTEPRIMA, la stessa
+    che vede chi non e' iscritto: il cancello del cerchio vale per gli
+    assistenti come per le persone — mai un file che regala cio' che
+    il sito protegge.
+    """
+    import time as _time
+    from fastapi.responses import Response
+
+    now = _time.monotonic()
+    hit = _LLMS_CACHE.get("full")
+    if hit and now - hit[1] < 3600:
+        return Response(hit[0], media_type="text/plain; charset=utf-8")
+
+    from database import db as _db
+    from models.article import ARTICLE_CATEGORIES
+    from services.url_builder import build_public_url
+
+    arts = await (_db.articles
+                  .find({"published": True},
+                        {"_id": 0, "slug": 1, "title": 1, "description": 1,
+                         "category": 1, "content": 1, "access": 1})
+                  .sort("published_at", -1).limit(300).to_list(300))
+
+    righe = [
+        "# Aurya — il Magazine, per intero",
+        "",
+        "> Guide oneste sul benessere e i professionisti che lo praticano.",
+        "> In italiano, senza promesse di guarigione, con le fonti citate.",
+        "> Payoff del brand: \"Ci si fida di qualcuno, non di qualcosa\".",
+        f"> Indice delle pagine: {build_public_url('/llms.txt')}",
+        "",
+        f"Articoli inclusi: {len(arts)}.",
+        "",
+        "---",
+        "",
+    ]
+    riservati = 0
+    for a in arts:
+        contenuto = (a.get("content") or "").strip()
+        nota = ""
+        if a.get("access") == "subscriber" and contenuto:
+            from routers.articles import gated_preview
+            contenuto = gated_preview(contenuto)["content"].strip()
+            riservati += 1
+            nota = ("\n\n_(Anteprima: la guida completa e' riservata a chi "
+                    "riceve la Lettera di Aurya.)_")
+        cat = ARTICLE_CATEGORIES.get(a.get("category"), "")
+        righe.append(f"## {a['title']}")
+        righe.append("")
+        righe.append(f"URL: {build_public_url('/blog/' + a['slug'])}")
+        if cat:
+            righe.append(f"Argomento: {cat}")
+        desc = (a.get("description") or "").strip()
+        if desc:
+            righe.append(f"Sommario: {desc}")
+        righe += ["", contenuto + nota, "", "---", ""]
+    if riservati:
+        righe.append(f"_{riservati} guide sono riservate: qui compare solo "
+                     "la loro anteprima pubblica._")
+    testo = "\n".join(righe) + "\n"
+    _LLMS_CACHE["full"] = (testo, now)
+    return Response(testo, media_type="text/plain; charset=utf-8")
+
+
 @app.get("/api/health")
 async def health_check(verbose: bool = False):
     """Health check with MongoDB + Stripe connectivity verification.

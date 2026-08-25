@@ -420,6 +420,31 @@ class TestSbloccoIndicizzazioneGs:
         for rotta in ("login", "accedi", "inizia", "account"):
             assert f"Disallow: /{rotta}" not in src, rotta
 
+    def test_llms_full_esiste_e_rispetta_il_cancello(self):
+        """T2 — llms.txt e' l'indice, llms-full.txt e' il TESTO: la
+        porta dei motori generativi, che citano fonti oggi mentre le
+        SERP classiche ci faranno aspettare mesi. Ma le guide
+        riservate entrano con la sola anteprima: il cancello del
+        cerchio vale per gli assistenti come per le persone."""
+        src = (BACKEND_DIR / "server.py").read_text()
+        assert '@app.get("/llms-full.txt"' in src
+        corpo = src.split("async def llms_full_txt")[1][:3000]
+        assert "gated_preview" in corpo, \
+            "llms-full regalerebbe le guide riservate"
+        assert '"published": True' in corpo, "solo articoli pubblicati"
+
+    def test_gli_articoli_si_linkano_tra_loro(self):
+        """T5 — MISURATO: l'articolo sul Reiki linkava 2 pezzi su 47.
+        Un Magazine senza rete interna e' 47 pagine sole. La rete si
+        costruisce dai DATI (stesso argomento, i piu' recenti), non
+        chiedendo alla redazione di infilare link a mano in 47 testi."""
+        src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        blocco = src.split("T5 (25/8)")[1][:1800]
+        assert "Continua a leggere" in blocco
+        assert '"category": doc.get("category")' in blocco, \
+            "i correlati devono venire dallo stesso argomento"
+        assert '"slug": {"$ne": slug}' in blocco, "un articolo non si autolinkia"
+
     def test_nginx_comprime_cio_che_vale_la_pena(self):
         """T1 (25/8) — MISURATO in produzione: main.js usciva a
         2.045.088 byte NON compressi anche chiedendo gzip, perche' la

@@ -959,12 +959,48 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
         from routers.articles import gated_preview as _gp
         visible_md = _gp(content_md)["content"]
     body_html = render_markdown(visible_md)
+    # T5 (25/8) — LA RETE DEI LINK INTERNI. Misurato: l'articolo sul
+    # Reiki linkava DUE pezzi su 47. Un Magazine senza rete interna e'
+    # 47 pagine sole: l'autorita' che arriva sulla home non si
+    # distribuisce, e il lettore non ha una seconda porta.
+    # Si costruisce QUI, server-side, invece di chiedere alla redazione
+    # di infilare link a mano in 47 testi: i link nascono dai DATI
+    # (stesso argomento, i piu' recenti) e restano giusti da soli
+    # quando il Magazine cresce. I link che l'autrice scrive dentro il
+    # testo restano quelli che contano: questi sono la rete di fondo.
+    correlati = await (db.articles
+                       .find({"published": True,
+                              "slug": {"$ne": slug},
+                              "category": doc.get("category")},
+                             {"_id": 0, "slug": 1, "title": 1})
+                       .sort("published_at", -1).limit(4).to_list(4))
+    if len(correlati) < 4:
+        visti = {c["slug"] for c in correlati} | {slug}
+        altri = await (db.articles
+                       .find({"published": True,
+                              "slug": {"$nin": list(visti)}},
+                            {"_id": 0, "slug": 1, "title": 1})
+                       .sort("published_at", -1).limit(4 - len(correlati))
+                       .to_list(4))
+        correlati += altri
+    rete = ""
+    if correlati:
+        voci = "".join(
+            f'<li><a href="/blog/{_html.escape(c["slug"])}">'
+            f'{_html.escape(c["title"])}</a></li>' for c in correlati)
+        rete = ("<nav><h2>Continua a leggere</h2>"
+                f"<ul>{voci}</ul>"
+                '<p><a href="/blog">Tutti gli articoli del Magazine</a> · '
+                '<a href="/operatori">I professionisti della rete</a></p>'
+                "</nav>")
+
     content_html = (
         '<article>'
         f'<h1>{_html.escape(doc["title"])}</h1>'
         + (f'<img src="{_html.escape(image)}" alt=""/>' if image else '')
         + body_html
         + '</article>'
+        + rete
     )
     return {
         "title": f"{doc['title']} | Aurya",
