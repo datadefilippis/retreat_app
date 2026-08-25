@@ -811,7 +811,14 @@ async def robots_txt():
     txt = (
         "User-agent: *\n"
         f"{marketplace_allows}"
-        "Allow: /api/public/sitemap-\n"
+        # GS6 (25/8, sblocco indicizzazione) — TUTTO /api/public/ e'
+        # leggibile dai crawler, non solo le sitemap: le pagine non
+        # renderizzate server-side caricano i contenuti da qui, e col
+        # solo Disallow il rendering di Google falliva PER MANO NOSTRA
+        # (body vuoto anche in seconda ondata → pagine classificate
+        # inglesi, «Traduci questa pagina» in SERP). La regola robots:
+        # il percorso piu' lungo vince, Allow batte il Disallow sotto.
+        "Allow: /api/public/\n"
         "Disallow: /dashboard\n"
         "Disallow: /api/\n"
         "Disallow: /esplora-\n"

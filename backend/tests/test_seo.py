@@ -50,10 +50,14 @@ class TestSitemapUrl:
         monkeypatch.setenv("SITE_PHASE", "network")
         xml = await build_core()
         for path in ("/manifesto", "/chi-siamo", "/entra-nella-rete",
-                     "/newsletter", "/operatori", "/privacy", "/termini"):
+                     "/newsletter", "/operatori"):
             assert f"{path}</loc>" in xml, f"manca {path}"
+        # GS5 (25/8) — privacy/termini USCITE dalla sitemap: sono rotte
+        # di servizio con noindex nella shell, e sitemap+noindex sono
+        # segnali in conflitto (in Search Console stavano tra le poche
+        # pagine indicizzate, al posto degli articoli).
         for assente in ("/come-funziona", "/ritiri",
-                        "/destinazioni"):
+                        "/destinazioni", "/privacy", "/termini"):
             assert assente not in xml, f"non deve esserci {assente}"
 
     @pytest.mark.asyncio

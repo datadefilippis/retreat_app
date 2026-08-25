@@ -190,11 +190,146 @@ def _abs_image(url: Optional[str]) -> str:
 
 def _hub_hreflang(canonical: str) -> dict:
     """Hub UI-translated in tutte e 4 le lingue (i18n files completi):
-    alternates piene, x-default italiano."""
+    alternates piene, x-default italiano.
+
+    GS4 (25/8, sblocco indicizzazione) — in fase RETE gli alternates
+    mentono: la UI e' tradotta ma i CONTENUTI (articoli, profili) sono
+    solo italiani (decisione solo-italiano del 2/8). Dichiarare a
+    Google una ?lang=en che serve contenuto italiano e' rumore che
+    confonde la classificazione di lingua — ed e' ESATTAMENTE la
+    classificazione di lingua a tradirci (pagine col body vuoto gia'
+    indicizzate come inglesi: «Traduci questa pagina» in SERP). In
+    marketplace gli alternates tornano da soli."""
     out = {"it": canonical, "x-default": canonical}
+    from core.prelaunch import site_phase
+    if site_phase() == "network":
+        return out
     for lang in ("en", "de", "fr"):
         out[lang] = f"{canonical}?lang={lang}"
     return out
+
+
+# ── GS1 (25/8) — la home PARLA ai crawler ────────────────────────────────────
+# Misurato in Search Console: la home era indicizzata col copy
+# marketplace di LUGLIO, e le pagine d'ingresso col body vuoto venivano
+# classificate INGLESI («Traduci questa pagina») perche' l'unico testo
+# nel body era "You need to enable JavaScript to run this app". La
+# pagina piu' forte del sito non diceva niente a Google — e quel niente
+# era pure in un'altra lingua.
+#
+# Il copy e' quello del founder (HP5, 2/8): la FONTE e' il locale
+# frontend/src/locales/it/landings.json (chiavi nwHome.*) — in Docker
+# il backend non vede i sorgenti frontend, quindi le stringhe vivono
+# qui COPIATE e una guardia di parita' le confronta col locale, come
+# per la biblioteca Sound e le tabelle del visual. React monta sopra
+# e sostituisce: l'utente vede la home viva, il crawler legge questa.
+_HOME_COPY = {
+    "heroTitle": "Il benessere inizia dalle persone.",
+    "heroP1": ("Trovare il professionista giusto, comprendere una pratica "
+               "o scegliere un’esperienza non dovrebbe essere una "
+               "questione di fortuna."),
+    "heroP2": ("Aurya è uno spazio dedicato a chi vuole orientarsi nel "
+               "mondo del benessere con maggiore consapevolezza."),
+    "heroP3": ("Attraverso contenuti, professionisti raccontati con cura "
+               "ed esperienze selezionate, aiutiamo le persone a trovare "
+               "ciò che fa davvero per loro."),
+    "findTitle": ("Un luogo dove conoscere, confrontare e scegliere "
+                  "con consapevolezza"),
+    "findP1": "Il benessere non è fatto solo di discipline.",
+    "findP2": "È fatto di persone, approcci, esperienze e percorsi diversi.",
+    "findP3": "Per questo Aurya non nasce come una semplice directory.",
+    "findP4": ("Nasce per aiutarti a orientarti, conoscere chi hai davanti "
+               "e scegliere con maggiore consapevolezza."),
+    "pillarMagTitle": "Magazine",
+    "pillarMagText": ("Guide, approfondimenti e storie per capire il mondo "
+                      "del benessere senza semplificazioni e senza "
+                      "promesse facili."),
+    "pillarProTitle": "Professionisti",
+    "pillarProText": ("Stiamo costruendo una rete di professionisti "
+                      "raccontati attraverso le loro storie, il loro "
+                      "metodo e la loro esperienza."),
+    "pillarExpTitle": "Esperienze",
+    "pillarExpText": ("Workshop, ritiri ed eventi per trasformare ciò che "
+                      "hai scoperto in qualcosa da vivere."),
+    "whyTitle": "Perché esiste Aurya?",
+    "whyP2": "Trovare un professionista è semplice.",
+    "whyP3": "Scegliere quello giusto è ciò che conta.",
+    "whyP4": ("Noi crediamo che ogni percorso inizi dalla fiducia, e che "
+              "la fiducia abbia bisogno di tempo, conoscenza e trasparenza."),
+    "magTitle": "Dal Magazine",
+    "magBody": ("Il Magazine è il cuore di Aurya. Qui raccontiamo pratiche, "
+                "persone e idee che aiutano a comprendere il benessere con "
+                "uno sguardo aperto, concreto e curioso."),
+    "prosTitle": "Per chi dedica la propria vita al benessere degli altri.",
+    "prosP4": ("Aurya nasce anche per questo: raccontare il tuo lavoro con "
+               "cura, aiutarti a costruire una presenza digitale autorevole "
+               "e, nel tempo, offrirti gli strumenti per far crescere la "
+               "tua attività."),
+    "letterTitle": "Ricevi la Lettera di Aurya.",
+    "letterP6": ("Solo contenuti scelti con cura, da ricevere con calma e "
+                 "leggere con attenzione."),
+}
+
+
+async def _home_content_html() -> str:
+    """Il corpo della home in HTML semantico: il racconto del founder
+    piu' i LINK — dalla pagina col piu' alto PageRank del sito verso
+    gli articoli (che aspettano in coda di indicizzazione) e le porte
+    della rete. E' anche cio' che ripara la classificazione di lingua:
+    finalmente c'e' dell'ITALIANO nel body."""
+    from database import db
+    c = {k: _html.escape(v) for k, v in _HOME_COPY.items()}
+    parti = [
+        "<div>",
+        f"<h1>{c['heroTitle']}</h1>",
+        f"<p>{c['heroP1']}</p><p>{c['heroP2']}</p><p>{c['heroP3']}</p>",
+        f"<h2>{c['findTitle']}</h2>",
+        f"<p>{c['findP1']} {c['findP2']}</p>",
+        f"<p>{c['findP3']} {c['findP4']}</p>",
+        "<ul>",
+        (f"<li><a href=\"/blog\">{c['pillarMagTitle']}</a> — "
+         f"{c['pillarMagText']}</li>"),
+        (f"<li><a href=\"/operatori\">{c['pillarProTitle']}</a> — "
+         f"{c['pillarProText']}</li>"),
+        f"<li>{c['pillarExpTitle']} — {c['pillarExpText']}</li>",
+        "</ul>",
+        f"<h2>{c['whyTitle']}</h2>",
+        f"<p>{c['whyP2']} {c['whyP3']} {c['whyP4']}</p>",
+        f"<p><a href=\"/manifesto\">Leggi il Manifesto</a> · "
+        f"<a href=\"/chi-siamo\">Chi siamo</a></p>",
+        f"<h2>{c['magTitle']}</h2>",
+        f"<p>{c['magBody']}</p>",
+    ]
+    # gli articoli piu' recenti, con link VERI: e' la corsia dalla home
+    # al Magazine che i crawler non avevano mai visto
+    try:
+        docs = await (db.articles
+                      .find({"published": True},
+                            {"_id": 0, "slug": 1, "title": 1,
+                             "description": 1})
+                      .sort("published_at", -1).to_list(8))
+    except Exception:   # noqa: BLE001 — senza DB la home resta il racconto
+        docs = []
+    if docs:
+        parti.append("<ul>")
+        for d in docs:
+            parti.append(
+                f"<li><a href=\"/blog/{_html.escape(d['slug'])}\">"
+                f"{_html.escape(d['title'])}</a> — "
+                f"{_html.escape((d.get('description') or '')[:160])}</li>")
+        parti.append("</ul>")
+    parti += [
+        "<p><a href=\"/blog\">Tutti gli articoli del Magazine</a></p>",
+        f"<h2>{c['prosTitle']}</h2>",
+        f"<p>{c['prosP4']}</p>",
+        "<p><a href=\"/entra-nella-rete\">Entra nella rete</a></p>",
+        f"<h2>{c['letterTitle']}</h2>",
+        f"<p>{c['letterP6']}</p>",
+        "<p><a href=\"/newsletter\">Scopri la Lettera</a> · "
+        "<a href=\"/sound\">Aurya Sound</a></p>",
+        "</div>",
+    ]
+    return "".join(parti)
 
 
 async def _meta_home() -> dict:
@@ -209,11 +344,15 @@ async def _meta_home() -> dict:
     # dichiarava due titoli. Il ramo marketplace resta intatto: al
     # lancio quelle parole tornano vere da sole.
     from core.prelaunch import site_phase
+    content_html = None
     if site_phase() == "network":
         title = "Aurya | Il benessere inizia dalle persone"
         description = ("Guide oneste sul benessere e i professionisti "
                        "che lo praticano, raccontati uno a uno. "
                        "Per orientarsi prima di scegliere.")
+        # GS1 — solo in fase rete: la home marketplace e' la directory,
+        # un'altra pagina, e questo racconto non le appartiene
+        content_html = await _home_content_html()
     else:
         # AN1 — il title porta la promessa, non solo la categoria
         # (docs/BRAND_AURYA.md): caparra protetta + recensioni verificate.
@@ -226,6 +365,7 @@ async def _meta_home() -> dict:
         "description": description,
         "canonical": f"{base}/",
         "hreflang": _hub_hreflang(f"{base}/"),
+        **({"content_html": content_html} if content_html else {}),
         "image": f"{base}/media/aurya-hero-poster.jpg",
         # SEO6 — WebSite + Organization: l'entita' Aurya nel Knowledge
         # Graph (logo, fondatori, contatto). sameAs si aggiunge quando
@@ -330,6 +470,18 @@ _BRAND_PAGES = {
 }
 
 
+# GS2 (25/8) — un corpo MINIMO per le pagine di brand: h1 + il
+# riassunto + i link di navigazione. Non e' il copy completo (quello
+# vive nella SPA e duplicarlo qui sarebbe una seconda verita' che
+# deriva): e' abbastanza ITALIANO da riparare la classificazione di
+# lingua (body vuoto → unico testo inglese → «Traduci questa pagina»)
+# e abbastanza link da tenere il crawler in cammino.
+_BRAND_BODY_LINKS = (
+    '<p><a href="/">Aurya</a> · <a href="/blog">Il Magazine</a> · '
+    '<a href="/operatori">La rete dei professionisti</a> · '
+    '<a href="/newsletter">La Lettera</a></p>')
+
+
 async def _meta_brand_page(slug: str) -> Optional[dict]:
     from core.prelaunch import site_phase
     page = _BRAND_PAGES.get(slug)
@@ -344,10 +496,16 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
         return None
     base = _base_url()
     canonical = f"{base}/{page.get('canonical_slug', slug)}"
+    # GS2 — il titolo senza il suffisso brand fa da h1
+    h1 = _html.escape(page["title"].split("|")[0].strip())
+    body = (f"<div><h1>{h1}</h1>"
+            f"<p>{_html.escape(page['description'])}</p>"
+            f"{_BRAND_BODY_LINKS}</div>")
     return {
         **page,
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
+        "content_html": body,
         # immagine per-pagina se dichiarata (landing lead), altrimenti og-cover
         "image": (f"{base}{page['image']}" if page.get("image")
                   else f"{base}/og-cover.jpg"),
@@ -943,6 +1101,38 @@ async def _meta_operators_index(category: Optional[str] = None) -> dict:
     # varianti /operatori/{cat} rendono la stessa landing: canonical
     # sulla radice.
     if site_phase() == "network":
+        # GS3 (25/8) — anche questa landing era un body vuoto (46
+        # caratteri inglesi). Il corpo: il racconto + i LINK ai profili
+        # dei membri (/o/{slug}) — la corsia dei crawler verso le
+        # pagine che nessun elenco puo' replicare. Stesso perimetro di
+        # /public/network/members.
+        descr = ("Costruiamo una rete di professionisti del "
+                 "benessere, una persona alla volta. Ogni "
+                 "profilo nasce da una conversazione vera.")
+        membri_html = ""
+        try:
+            from database import organizations_collection
+            orgs = await organizations_collection.find(
+                {"network_member": True, "is_active": {"$ne": False},
+                 "is_sample": {"$ne": True},
+                 "exclude_from_listings": {"$ne": True},
+                 "public_slug": {"$nin": [None, ""]}},
+                {"_id": 0, "name": 1, "public_slug": 1},
+            ).sort("name", 1).to_list(100)
+            if orgs:
+                voci = "".join(
+                    f'<li><a href="/o/{_html.escape(o["public_slug"])}">'
+                    f'{_html.escape(o.get("name") or o["public_slug"])}'
+                    f"</a></li>" for o in orgs)
+                membri_html = f"<ul>{voci}</ul>"
+        except Exception:   # noqa: BLE001 — senza DB resta il racconto
+            pass
+        body = ("<div><h1>La rete Aurya</h1>"
+                f"<p>{_html.escape(descr)}</p>"
+                f"{membri_html}"
+                '<p><a href="/entra-nella-rete">Sei un professionista '
+                "del benessere? Entra nella rete</a></p>"
+                f"{_BRAND_BODY_LINKS}</div>")
         return {
             # OF3 — "operatori" e' il nome interno, "professionisti"
             # quello che il sito usa da agosto. E la vecchia descrizione
@@ -951,11 +1141,10 @@ async def _meta_operators_index(category: Optional[str] = None) -> dict:
             # quello che si trova arrivando e' il modo piu' rapido di
             # far rimbalzare chi arriva.
             "title": "La rete Aurya | I professionisti che stiamo conoscendo",
-            "description": ("Costruiamo una rete di professionisti del "
-                            "benessere, una persona alla volta. Ogni "
-                            "profilo nasce da una conversazione vera."),
+            "description": descr,
             "canonical": f"{base}/operatori",
             "hreflang": _hub_hreflang(f"{base}/operatori"),
+            "content_html": body,
             "image": f"{base}/og-cover.jpg",
         }
     return {
@@ -1167,6 +1356,19 @@ _PRODUCT_KINDS = ("p", "ph", "dg", "co", "r")
 _PHASE_NOINDEX_HEADS = ("ritiri", "destinazioni", "esperienze")
 
 
+# GS5 (25/8) — le rotte APP: pagine vive per le persone, mai per gli
+# indici. Misurato in Search Console: /inizia, /login, /termini erano
+# INDICIZZATE (una pure classificata inglese, per il body vuoto) mentre
+# 46 articoli su 47 aspettavano in coda — il crawl budget di un dominio
+# nuovo sprecato sulla porta di servizio. Queste rotte prima non
+# passavano dalla shell (andavano al frontend statico, nessun modo di
+# dire noindex): ora nginx le instrada qui e la shell risponde 200 +
+# noindex. NB: NON vanno messe in Disallow nel robots — un crawler che
+# non puo' leggere la pagina non ne vede nemmeno il noindex.
+_APP_NOINDEX_ROUTES = ("login", "accedi", "inizia", "benvenuto",
+                       "account", "termini", "privacy")
+
+
 async def resolve_meta(path: str) -> Optional[dict]:
     """path SENZA query, es. '/e/borgo-sereno/ritiro-x'. None = 404 →
     si serve comunque la shell neutra (la SPA mostrerà il suo 404)."""
@@ -1174,6 +1376,9 @@ async def resolve_meta(path: str) -> Optional[dict]:
     if not parts:
         return await _meta_home()
     head = parts[0]
+    if head in _APP_NOINDEX_ROUTES:
+        return {"title": "Aurya", "description": "",
+                "noindex": True, "canonical": None, "hreflang": None}
     if head == "ritiri":
         if len(parts) == 1:
             return await _meta_home()          # /ritiri redirige alla home

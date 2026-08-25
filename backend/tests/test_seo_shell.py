@@ -352,3 +352,101 @@ class TestSe1ContentInBody:
         # javascript: non passa la whitelist dei link
         cattivo = render_markdown("[x](javascript:alert(1))")
         assert "<a " not in cattivo
+
+
+class TestSbloccoIndicizzazioneGs:
+    """GS (25/8/2026) — lo sblocco dell'indicizzazione, misurato in
+    Search Console: 20 pagine indicizzate e SBAGLIATE (/inizia, /login,
+    /termini, home col copy di luglio, una classificata inglese) mentre
+    46 articoli su 47 aspettavano in coda. Tre cause, tre guardie:
+    body vuoto sulle pagine d'ingresso, robots che bloccava il
+    rendering, nessun modo di dire noindex alle rotte app.
+    Piano: docs/SEO_SBLOCCO_E_SCALATA_2026-08.md."""
+
+    @pytest.mark.asyncio
+    async def test_la_home_parla_ai_crawler(self, monkeypatch):
+        """GS1 — la pagina col piu' alto PageRank del sito diceva 46
+        caratteri INGLESI. Ora: racconto del founder + link agli
+        articoli. Se questo torna vuoto, Google riclassifica la home
+        come pagina inglese senza contenuto — di nuovo."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        meta = await shell.resolve_meta("/")
+        html = meta.get("content_html") or ""
+        assert len(html) > 1500, "la home deve avere un corpo vero"
+        assert "Il benessere inizia dalle persone." in html
+        for porta in ('href="/blog"', 'href="/operatori"',
+                      'href="/entra-nella-rete"', 'href="/newsletter"'):
+            assert porta in html, f"manca la porta {porta}"
+
+    def test_parita_copy_home_col_locale(self):
+        """il copy della home vive in DUE posti (locale it = fonte,
+        shell = copia per Docker): questa guardia e' il patto — se il
+        founder cambia una parola nel locale, la shell deve seguirla."""
+        import json
+        locale = json.loads(
+            (BACKEND_DIR.parent / "frontend" / "src" / "locales" / "it"
+             / "landings.json").read_text())["nwHome"]
+        for k, v in shell._HOME_COPY.items():
+            assert k in locale, f"chiave {k} sparita dal locale"
+            assert v == locale[k], (
+                f"nwHome.{k}: la shell dice «{v[:40]}…» ma il locale "
+                f"dice «{locale[k][:40]}…» — allineare la shell")
+
+    @pytest.mark.asyncio
+    async def test_le_rotte_app_sono_noindex(self, monkeypatch):
+        """GS5 — /inizia e /login stavano nell'indice al posto degli
+        articoli. La shell risponde 200+noindex; nginx DEVE mandarle
+        alla shell (prima andavano al frontend statico, dove nessuno
+        puo' dire noindex)."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        for rotta in ("/login", "/accedi", "/inizia", "/benvenuto",
+                      "/account", "/termini", "/privacy"):
+            meta = await shell.resolve_meta(rotta)
+            assert meta and meta.get("noindex") is True, rotta
+        nginx = (BACKEND_DIR.parent / "deploy" / "nginx"
+                 / "nginx.conf").read_text()
+        for nome in ("login", "accedi", "inizia", "benvenuto",
+                     "account", "termini", "privacy"):
+            assert nome in nginx, f"nginx non instrada /{nome} alla shell"
+
+    def test_robots_apre_le_api_pubbliche(self):
+        """GS6 — 'Disallow: /api/' bloccava le chiamate con cui le
+        pagine non-SSR caricano i contenuti: il rendering di Google
+        falliva PER MANO NOSTRA. L'Allow piu' lungo vince sul Disallow."""
+        src = (BACKEND_DIR / "server.py").read_text()
+        assert 'Allow: /api/public/\\n' in src
+        # e le rotte noindex NON devono finire in Disallow: un crawler
+        # che non puo' leggere la pagina non ne vede il noindex
+        for rotta in ("login", "accedi", "inizia", "account"):
+            assert f"Disallow: /{rotta}" not in src, rotta
+
+    def test_hreflang_onesti_in_fase_rete(self, monkeypatch):
+        """GS4 — dichiarare ?lang=en su contenuto italiano confonde la
+        classificazione di lingua, che e' esattamente cio' che ci
+        tradiva («Traduci questa pagina» in SERP)."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        alt = shell._hub_hreflang("https://aurya.life/")
+        assert set(alt) == {"it", "x-default"}
+        monkeypatch.setenv("SITE_PHASE", "marketplace")
+        alt = shell._hub_hreflang("https://aurya.life/")
+        assert set(alt) == {"it", "x-default", "en", "de", "fr"}
+
+    def test_privacy_termini_fuori_dalla_sitemap(self):
+        """GS5 — noindex + presenza in sitemap sono segnali in
+        conflitto: le pagine legali escono dalla core."""
+        src = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        assert '/privacy"' not in src.replace("privacy-", ""), \
+            "privacy e' tornata in sitemap con il noindex addosso"
+        assert '/termini"' not in src
+
+    @pytest.mark.asyncio
+    async def test_operatori_e_brand_hanno_un_corpo(self, monkeypatch):
+        """GS2/GS3 — anche /operatori e le pagine di brand erano 46
+        caratteri inglesi: ora un corpo italiano con h1 e link."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        ops = await shell.resolve_meta("/operatori")
+        assert "<h1>La rete Aurya</h1>" in (ops.get("content_html") or "")
+        assert 'href="/entra-nella-rete"' in ops["content_html"]
+        man = await shell.resolve_meta("/manifesto")
+        assert "<h1>" in (man.get("content_html") or "")
+        assert 'href="/blog"' in man["content_html"]

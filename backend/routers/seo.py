@@ -130,8 +130,11 @@ async def build_core() -> str:
         _url(f"{base}/sound/esplora", priority="0.6"),
         _url(f"{base}/sound/impara", priority="0.6"),
         _url(f"{base}/sound/impara/glossario", priority="0.4"),
-        _url(f"{base}/privacy", priority="0.3"),
-        _url(f"{base}/termini", priority="0.3"),
+        # GS5 (25/8) — privacy/termini NON stanno piu' qui: sono rotte
+        # di servizio (noindex nella shell) e dichiararle in sitemap
+        # mentre si chiede il noindex e' un segnale in conflitto. In
+        # Search Console erano tra le POCHE pagine indicizzate, con lo
+        # snippet generico del sito — sporcizia al posto degli articoli.
     ]
 
     # RT5 — fase rete: il marketplace è spento, la sitemap dice la
@@ -301,9 +304,15 @@ async def build_articles() -> str:
     hreflang solo sulle lingue con traduzione vera (title+content)."""
     from database import db
     base = _base_url()
-    urls = [_url(f"{base}/blog", priority="0.6",
-                 hreflang={"it": f"{base}/blog", "x-default": f"{base}/blog",
-                           **{l: f"{base}/blog?lang={l}" for l in _LANGS}})]
+    # GS4 (25/8) — in fase rete l'hub dichiara solo l'italiano: gli
+    # alternates ?lang= servivano contenuto italiano con UI tradotta,
+    # e Google gia' classificava male la lingua del sito. Gli articoli
+    # con traduzione VERA (title+content) tengono i loro, sotto.
+    from core.prelaunch import site_phase
+    _hub_alt = {"it": f"{base}/blog", "x-default": f"{base}/blog"}
+    if site_phase() != "network":
+        _hub_alt.update({l: f"{base}/blog?lang={l}" for l in _LANGS})
+    urls = [_url(f"{base}/blog", priority="0.6", hreflang=_hub_alt)]
     # BN5 — hub categoria del Magazine: in sitemap solo quelli con
     # almeno un articolo (pagina in sitemap ⟺ contenuto reale)
     cats = await db.articles.distinct("category", {"published": True})

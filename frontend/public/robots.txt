@@ -9,6 +9,7 @@ Disallow: /orders
 Disallow: /settings
 Disallow: /t/
 Disallow: /b/
+Allow: /api/public/
 Disallow: /api/
 
 Sitemap: https://aurya.life/api/public/sitemap.xml

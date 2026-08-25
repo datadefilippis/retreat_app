@@ -252,8 +252,13 @@ def test_seo5_robots_allows_child_sitemaps():
     """SEO5 — Disallow /api/ NON deve coprire le sotto-sitemap: senza
     l'Allow esplicito Google legge l'indice ma rileva 0 pagine."""
     server = (BACKEND_DIR / "server.py").read_text(encoding="utf-8")
-    assert 'Allow: /api/public/sitemap-' in server, \
-        "regressione: le sotto-sitemap tornerebbero bloccate dal robots"
+    # GS6 (25/8) — l'Allow si e' ALLARGATO a tutto /api/public/: non
+    # solo le sitemap ma anche le API dei contenuti, che il rendering
+    # di Google chiama per le pagine non-SSR (col solo Disallow il
+    # body restava vuoto anche in seconda ondata). L'Allow largo copre
+    # le sitemap: lo scopo originale di SEO5 resta protetto.
+    assert 'Allow: /api/public/\\n' in server, \
+        "regressione: /api/public/ tornerebbe bloccato dal robots"
 
 
 def test_seo6_shell_hard_404_and_organization():
