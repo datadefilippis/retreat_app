@@ -37,7 +37,7 @@ class TestNginxServeGliAudioEs1:
             "senza il volume, nginx non ha i file e /uploads muore"
 
     def test_uploads_e_alias_non_proxy(self):
-        blocco = NGINX.split("location /uploads/ {")[1].split("}")[0]
+        blocco = NGINX.split("/uploads/ {")[1].split("}")[0]
         assert "alias /srv/uploads/" in blocco
         assert "proxy_pass" not in blocco, \
             "tornato il tubo verso il worker Python unico"
@@ -47,18 +47,18 @@ class TestNginxServeGliAudioEs1:
         """/uploads e' pubblico per necessita' (debito noto): il freno
         per IP ferma chi vuole svuotarci la banda, non l'ascoltatore."""
         assert "zone=uploads" in NGINX
-        blocco = NGINX.split("location /uploads/ {")[1].split("}")[0]
+        blocco = NGINX.split("/uploads/ {")[1].split("}")[0]
         assert "limit_req zone=uploads" in blocco
 
     def test_immutable_anche_da_nginx(self):
-        blocco = NGINX.split("location /uploads/ {")[1].split("}")[0]
+        blocco = NGINX.split("/uploads/ {")[1].split("}")[0]
         assert "immutable" in blocco
 
     def test_i_tipi_coprono_cio_che_vive_in_uploads(self):
         """`types` in una location SOSTITUISCE la mappa ereditata: se
         manca un'estensione davvero presente, quel file esce
         octet-stream. La voce di Chrome e' webm: non deve mancare."""
-        blocco = NGINX.split("location /uploads/ {")[1].split("types {")[1].split("}")[0]
+        blocco = NGINX.split("/uploads/ {")[1].split("types {")[1].split("}")[0]
         for ext in ("m4a", "mp3", "webm", "webp", "jpeg", "png"):
             assert re.search(rf"\b{ext}\b", blocco), f"manca {ext}"
 

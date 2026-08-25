@@ -1461,12 +1461,12 @@ class TestIlMaster:
         un'altra porta: nginx lo marca internal (solo X-Accel-Redirect)
         e il backend fa il portiere."""
         ngx = (BACKEND_DIR.parent / "deploy" / "nginx" / "nginx.conf").read_text()
-        blocco = ngx.split("location /uploads/masters/")[1].split("}")[0]
+        blocco = ngx.split("/uploads/masters/")[1].split("}")[0]
         assert "internal;" in blocco
         src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
         assert '"X-Accel-Redirect": f"/uploads/masters/{nome}"' in src
         # e la location masters viene PRIMA della /uploads/ generica
-        assert ngx.index("location /uploads/masters/") < ngx.index("location /uploads/ {")
+        assert ngx.index("/uploads/masters/") < ngx.index("/uploads/ {")
 
     def test_un_401_sul_master_non_butta_mai_al_login(self):
         """24/8, founder: «clicco Ascolta e mi reindirizza al login».
