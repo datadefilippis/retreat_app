@@ -93,14 +93,20 @@ reggere per anni, comincio dalla verità.
 
 | | |
 |---|---|
-| Professionisti iscritti | **6** — di cui solo 2 hanno pubblicato i propri servizi, e 2 non hanno ancora una pagina pubblica |
+| Professionisti iscritti | **6** — di cui una è Valentina. Quindi **5 esterni**: 4 hanno una pagina pubblica, **1 solo ha pubblicato i propri servizi** |
 | Prenotazioni confermate | **0** |
 | Ricavi, dall'inizio | **€0** |
 | Articoli pubblicati | **47** (circa 75.000 parole) |
 | Meditazioni pubblicate | **1** |
-| Iscritti alla Lettera | **8** (di cui 3 hanno confermato l'iscrizione) |
-| Visite al sito, tracciate finora | circa **100** |
-| Persone arrivate da Google | praticamente **zero** |
+| Iscritti alla Lettera | **1 persona esterna.** In tutto ci sono tre iscrizioni confermate, ma due siamo noi due |
+| Visitatori distinti in 38 giorni | **86** — con le riserve spiegate qui sotto |
+| Persone arrivate da Google | **zero** |
+
+Sulla Lettera vale la pena essere precisi, perché il numero grezzo
+inganna: nel sistema risultano otto indirizzi, ma cinque non hanno mai
+confermato l'iscrizione — e senza conferma non ricevono niente e non
+possiamo scrivergli. Dei tre confermati, due siamo noi. **La Lettera,
+oggi, ha un lettore.**
 
 Detta così sembra un fallimento. Non lo è, ma va guardata in faccia:
 **Aurya oggi non è un'attività, è un cantiere.** C'è un patrimonio
@@ -123,33 +129,48 @@ La parte tecnica è sistemata. Resta la parte che non si sistema con il
 codice: **qualcuno deve cominciare a collegarci.** Ci torno più
 avanti, perché è la leva più importante che abbiamo.
 
-## La scoperta che ha cambiato il piano
+## Da dove arrivano le persone, davvero
 
-Guardando da dove arrivano quelle cento visite, è venuto fuori un
-dato che non mi aspettavo.
+Questa è la parte che conta di più, perché è quella su cui è facile
+raccontarsi una storia comoda. Ecco i numeri esatti, presi uno per
+uno.
 
-**Sessantatré su cento arrivano dai social, e atterrano sulla
-pagina-link di un professionista.** Altre ventisette sono persone che
-aprono direttamente un profilo.
+In trentotto giorni, **ottantasei persone distinte** hanno aperto
+qualcosa su Aurya. Dove sono andate:
 
-La pagina-link è quella cosa che si mette nella biografia di
-Instagram: un indirizzo solo, che raccoglie tutti i tuoi contatti e i
-tuoi servizi. Su Aurya ogni professionista ne ha una, ed è più bella e
-più utile di quelle che si usano di solito, perché racconta anche chi
-è e cosa fa.
+| dove | quante | da dove arrivavano |
+|---|---|---|
+| La pagina-link **di Aurya** — la nostra | 66 | dal **nostro** Instagram (57) e da Facebook (5) |
+| Il profilo di un professionista | 30 | quasi tutte «dirette»: link incollato, o mandato per messaggio |
+| Il resto | 4 | navigazione interna al sito |
 
-Il significato è questo, e conviene leggerlo due volte:
+Le persone che sono arrivate fino al profilo di un professionista
+sono state **ventuno**. In cinque settimane.
 
-> **Non siamo noi a portare persone ai professionisti. Sono i
-> professionisti a portare persone a noi.**
+**La lettura onesta è questa: oggi Aurya non ha traffico, e quel poco
+che c'è lo portiamo noi con Instagram.** Le trenta visite ai profili
+non arrivano da ricerche né da collegamenti pubblici: sono link
+passati a mano, probabilmente per messaggio. È il segno che qualche
+professionista comincia a usare la sua pagina — ed è un buon segno,
+piccolo — ma non è ancora un canale.
 
-È un numero piccolo — cento visite non sono niente — ma indica una
-direzione precisa. La parte di Aurya che oggi funziona non è il
-negozio online: è **la vetrina personale**. È l'unica cosa che un
-professionista può usare da subito senza cambiare niente del suo
-lavoro, e ogni volta che la condivide porta qui il suo pubblico.
+### Una nota sulla misura, che è un problema a sé
 
-Su questa scoperta è costruito tutto il resto del piano.
+Va detto anche questo, perché altrimenti finiamo per discutere di
+numeri che non significano la stessa cosa.
+
+Abbiamo **due contatori che dicono cose diverse**. Google Analytics
+si accende solo se una persona accetta i cookie: chi rifiuta o ignora
+la finestrella, per Analytics non è mai passato — quindi **Analytics
+vede meno del vero**. Il nostro contatore interno non usa cookie e non
+chiede permessi, quindi vede tutti, ma **non esclude noi due** e
+qualche visita automatica gli sfugge — quindi **vede più del vero**.
+
+La verità sta in mezzo, e finché non la stringiamo non possiamo
+decidere niente sulla base del traffico. **Sistemare la misura è il
+primo compito operativo del piano**, prima ancora di scrivere un
+articolo in più: escludere le nostre visite, e riconciliare i due
+contatori.
 
 ## La verità sui soldi, oggi
 
@@ -188,33 +209,53 @@ cosa servono e cosa ci facciamo.
 **Cos'è.** Il pannello dove un professionista tiene i suoi servizi, i
 suoi ritiri, i suoi clienti, i suoi incassi. Funziona ed è completo.
 
-**Il problema, detto sinceramente.** È troppo per chi ce l'ha. Una
-persona che riceve tre clienti al mese non ha bisogno di un sistema
-per gestire i clienti: ha bisogno di una pagina che la faccia trovare.
-Il gestionale è un investimento fatto pensando al futuro, e nel
-presente rischia di spaventare — perché chi apre un pannello pieno di
-voci che non capisce si sente inadeguato e chiude.
+**Come lo usiamo oggi.** Quando qualcuno si iscrive non gli diciamo
+«ecco il tuo gestionale»: gli diciamo **una cosa sola da fare —
+costruisci il tuo profilo**. È lì che serve arrivare il primo giorno,
+ed è l'unica cosa che gli cambia qualcosa subito.
 
-**Cosa facciamo.** Non si toglie e non si vende: **si nasconde finché
-non serve.** Chi entra vede una cosa sola — *costruisci la tua
-pagina* — e le altre compaiono quando servono davvero: pubblichi un
-ritiro e appare la gestione degli iscritti; ricevi il primo ordine e
-appare la parte degli incassi.
+Il resto resta lì, visibile e disponibile. **Non nascondiamo niente**,
+e non è una sfumatura: nascondere significherebbe trattare gli
+strumenti come un problema, e trattare la persona come qualcuno che
+non può capire. È il contrario di quello che siamo.
 
-Non serve costruire niente di nuovo. Serve mostrare meno.
+**Cosa facciamo — si accompagna, non si nasconde.** Le funzioni si
+introducono quando la sua attività le chiama, e gliele mostriamo noi:
+pubblica il primo ritiro e gli facciamo vedere come si seguono gli
+iscritti; comincia ad avere clienti che tornano e gli mostriamo dove
+si tengono. Ogni volta è una conversazione, non una notifica.
+
+Il vantaggio di questo modo è doppio. La persona non si sente
+inadeguata perché non le abbiamo mai chiesto tutto insieme. E ogni
+funzione nuova diventa **un motivo per risentirci** — che è
+esattamente il tipo di rapporto che vogliamo costruire.
+
+Non serve costruire niente di nuovo. Serve dire una cosa alla volta.
 
 ## 2 · La vetrina personale — il cuore di tutto
 
 **Cos'è.** Il profilo pubblico di ogni professionista, e la pagina-link
 da mettere nella biografia di Instagram.
 
-**Perché è il centro.** Per tre motivi che si tengono insieme.
+**Perché ci puntiamo.** Per due motivi buoni e una speranza, e
+conviene tenerli distinti.
 
-È l'unica cosa che genera traffico oggi. È l'unica cosa utilizzabile
-subito, senza cambiare abitudini. Ed è **il nostro motore di
-crescita**: ogni profilo è una pagina che nessun elenco può copiare —
-c'è dentro una storia vera — e ogni professionista che la mette nella
-sua biografia manda qui il suo pubblico.
+*Il primo motivo, solido*: è **l'unica cosa di Aurya utilizzabile
+subito**, senza che il professionista cambi niente del suo lavoro. Non
+deve imparare un gestionale, non deve collegare pagamenti, non deve
+pubblicare un ritiro. Deve solo avere una pagina che lo racconta.
+
+*Il secondo motivo, solido*: ogni profilo è **una pagina che nessun
+elenco può copiare**, perché dentro c'è una storia vera. Per Google
+questo conta, e col tempo conterà molto.
+
+*La speranza, da verificare*: che i professionisti la condividano e
+portino qui il loro pubblico. **Oggi non è ancora successo in modo
+misurabile** — trenta visite in cinque settimane sui profili, quasi
+tutte da link passati a mano. Non è zero, ma non è ancora un canale.
+È l'ipotesi numero uno da mettere alla prova nei prossimi tre mesi, e
+il modo per provarla è semplice: chiedere il collegamento a tutti e
+sei e guardare cosa cambia.
 
 **Cosa facciamo.**
 
@@ -320,7 +361,7 @@ abbonamento. Ci torno nella parte sui conti.
 
 ## 6 · La Lettera
 
-**Cos'è.** La nostra newsletter. Oggi ha otto iscritti.
+**Cos'è.** La nostra newsletter. Oggi ha **un lettore esterno**: tre iscritti confermati, di cui due siamo noi.
 
 **Il ruolo, che è più importante del numero.** È **l'unico canale che
 possediamo davvero.** Instagram ci presta attenzione e può togliercela
@@ -393,10 +434,19 @@ vogliamo, e in quel momento ha un problema che noi sappiamo risolvere.
 
 *L'intervista come regalo.* Ogni professionista che entra riceve una
 conversazione vera e un racconto scritto da noi. È gratis e ci costa
-tempo. Ma succede una cosa: **chi riceve una pagina di cui è fiero, la
-condivide.** E ogni condivisione è un collegamento che ci porta più
-vicino a Google. Non è un trucco — è che una cosa fatta bene si mostra
-da sola.
+tempo. L'idea è che **chi riceve una pagina di cui è fiero la
+condivida**, e che ogni condivisione sia un collegamento che ci
+avvicina a Google.
+
+Attenzione però: questa è la scommessa del piano, **non un fatto
+dimostrato**. Finora i profili hanno raccolto trenta visite in cinque
+settimane, quasi tutte da link mandati per messaggio — che è un modo
+privato di condividere, e a Google non arriva. Nei prossimi tre mesi
+va verificata sul serio: si chiede il collegamento a tutti, si dà il
+bollino pronto da incollare, e **si guarda quanti lo mettono
+davvero.** Se dopo tre mesi nessuno l'ha fatto, il problema non è
+Google: è che la pagina non li rende abbastanza fieri, e dobbiamo
+capire perché.
 
 *L'accompagnamento.* Mezz'ora in videochiamata per costruire il
 profilo insieme, e si esce con la pagina pronta da mettere in
@@ -575,9 +625,16 @@ queste, salta il modello — e vale la pena controllarle ogni trimestre.
 
 **Ipotesi 1 — Il Magazine porta persone.** Con due articoli al mese e
 i collegamenti dai professionisti, si arriva a 1.000-3.000 visite
-mensili in 9-12 mesi, e a 10.000-30.000 nel secondo anno. *È
-l'ipotesi più solida*: è quello che succede normalmente a un sito con
-contenuti buoni e collegamenti veri.
+mensili in 9-12 mesi, e a 10.000-30.000 nel secondo anno.
+
+*È l'ipotesi più solida in teoria — ed è quella con meno prove oggi.*
+È quello che succede normalmente a un sito con contenuti buoni e
+collegamenti veri, e i contenuti buoni li abbiamo. Ma di persone
+arrivate da Google finora ne abbiamo **zero**, e il difetto tecnico
+che ce lo impediva è stato risolto pochi giorni fa. Il primo segnale
+utile arriverà fra sei-otto settimane: se a fine ottobre le pagine
+trovate da Google non salgono, l'ipotesi va rivista prima di
+costruirci sopra.
 
 **Ipotesi 2 — I professionisti entrano al ritmo di 10-15 al mese**
 una volta avviato il reclutamento. *Ipotesi media*: dipende da quanto
@@ -744,7 +801,13 @@ giornalisti citano volentieri i numeri, molto meno le opinioni.
 
 ## Instagram
 
-**A cosa serve davvero**: non a vendere. Serve a **tenere il rapporto
+**A cosa serve davvero.** Va detta una cosa che i numeri hanno reso
+evidente: **Instagram è oggi l'unico canale che porta persone su
+Aurya.** Cinquantasette delle nostre visite arrivano da lì. Non è un
+canale accessorio in attesa che Google si svegli: per adesso è
+l'unico che abbiamo, e va trattato come tale.
+
+Detto questo, il suo scopo non è vendere. Serve a **tenere il rapporto
 con i professionisti** e a far vedere che Aurya esiste ed è bella.
 
 *Il formato principale è il ritratto*: un professionista, la sua
@@ -847,7 +910,7 @@ altri, saremo tutti gli altri.
 
 | mese | cosa | come si vede se funziona |
 |---|---|---|
-| **1** | Chiedere il collegamento ai 6 professionisti. Riempire il catalogo delle meditazioni. Completare i riepiloghi in testa agli articoli. | pagine trovate da Google; primi collegamenti in arrivo |
+| **1** | **Sistemare la misura**: escludere le nostre visite, riconciliare i due contatori. Chiedere il collegamento ai 6 professionisti, col bollino pronto. Riempire il catalogo delle meditazioni. | un numero di traffico di cui ci si può fidare; primi collegamenti in arrivo |
 | **2** | Reclutare 15 nuovi professionisti, uno per uno. Aprire il gruppo WhatsApp della rete. Pubblicare la prima guida a pagamento. Due articoli per professionisti. | professionisti attivi; iscritti alla Lettera |
 | **3** | La prima esperienza online a pagamento. Il primo incontro mensile della rete. Le pagine per disciplina, se i nomi bastano. | **il primo euro incassato**; e soprattutto **il primo euro portato a un professionista** |
 
@@ -869,3 +932,13 @@ altri, saremo tutti gli altri.
 *Questo documento va riletto ogni tre mesi con i numeri veri accanto.
 Le previsioni sbagliate non sono un problema: sono un'informazione.
 Il problema sarebbe non guardarle.*
+
+*E una nota su come sono stati letti i numeri di questa versione. La
+prima stesura conteneva un errore grosso: avevo scritto che la maggior
+parte delle visite arrivava dai social sulle pagine dei
+professionisti, e ne avevo ricavato che erano loro a portare traffico
+a noi. Guardando i record uno per uno è venuto fuori il contrario —
+quelle visite erano sulla pagina di Aurya, dal nostro Instagram.
+L'errore nasceva dall'aver letto un totale senza controllare cosa
+contenesse. Vale come regola per tutte le prossime volte: **un numero
+aggregato non è un fatto finché non si è guardato dentro.***
