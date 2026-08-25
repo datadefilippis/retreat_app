@@ -126,6 +126,11 @@ async def build_core() -> str:
         _url(f"{base}/newsletter", priority="0.7"),
         # SP5 — Aurya Sound pubblico: solo le pagine editoriali
         # (crea/tracce sono workspace: noindex e fuori di qui)
+        # ES2 (25/8) — pagine pubbliche vere che non erano dichiarate:
+        # /meditazioni e' persino nel menu, /costi risponde alla domanda
+        # che ogni professionista fa per prima
+        _url(f"{base}/meditazioni", priority="0.7"),
+        _url(f"{base}/costi", priority="0.6"),
         _url(f"{base}/sound", priority="0.7"),
         _url(f"{base}/sound/esplora", priority="0.6"),
         _url(f"{base}/sound/impara", priority="0.6"),

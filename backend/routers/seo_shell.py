@@ -466,6 +466,26 @@ _BRAND_PAGES = {
                         "costruito Aurya, come lavoriamo e cosa vogliamo "
                         "che diventi nei prossimi dieci anni."),
     },
+    # ES2 (25/8) — DUE PAGINE PUBBLICHE CHE ERANO MUTE. Trovate
+    # censendo gli URL che rispondono 200: /meditazioni e' linkata dal
+    # menu e dalla landing Sound, /costi e' la pagina dei prezzi — e
+    # tutte e due servivano ai crawler 46 caratteri e il TITOLO
+    # MARKETPLACE di luglio, perche' non erano nell'elenco delle rotte
+    # che passano di qui. Il difetto della home, in piccolo, su due
+    # pagine che nessuno aveva pensato di controllare.
+    "meditazioni": {
+        "title": "Le meditazioni di Aurya | Sessioni vibrazionali",
+        "description": ("Sessioni sonore composte dai professionisti della "
+                        "rete Aurya, per dormire, meditare, rilassarsi. "
+                        "L'ascolto è riservato a chi fa parte del cerchio."),
+    },
+    "costi": {
+        "title": "Quanto costa Aurya | Piani e commissioni, per intero",
+        "description": ("La piattaforma è gratuita: profilo, listino, "
+                        "ritiri e clienti non si pagano. Fino al 31 "
+                        "dicembre 2026 nessun costo, nemmeno sulle "
+                        "prenotazioni. Poi scegli tu."),
+    },
     "come-funziona": {
         "title": "Come funziona Aurya: prenota ritiri olistici con caparra e pagamento diretto",
         "description": ("Scegli il ritiro, blocca il posto con una piccola "

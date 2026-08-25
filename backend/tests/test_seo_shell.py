@@ -495,6 +495,30 @@ class TestSbloccoIndicizzazioneGs:
         assert "sys.exit" in src, "senza uscita, le guardie sono decorative"
         assert "--prova" in src and "--esegui" in src
 
+    @pytest.mark.asyncio
+    async def test_nessuna_pagina_pubblica_resta_muta(self, monkeypatch):
+        """ES2 (25/8) — trovate CENSENDO gli URL che rispondono 200:
+        /meditazioni (linkata dal menu!) e /costi servivano ai crawler
+        46 caratteri e il TITOLO MARKETPLACE di luglio, perche' nessuno
+        le aveva messe nell'elenco delle rotte che passano dalla shell.
+        Il difetto della home, in piccolo, su pagine che nessuno aveva
+        pensato di controllare.
+
+        LA REGOLA: una pagina pubblica o passa di qui, o e' muta. Se
+        se ne aggiunge una, va aggiunta in TRE posti — shell, nginx,
+        sitemap — e questa guardia li verifica tutti e tre."""
+        monkeypatch.setenv("SITE_PHASE", "network")
+        nginx = (BACKEND_DIR.parent / "deploy" / "nginx"
+                 / "nginx.conf").read_text()
+        seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        for rotta in ("meditazioni", "costi"):
+            meta = await shell.resolve_meta(f"/{rotta}")
+            assert meta and meta.get("content_html"), f"/{rotta} muta"
+            assert "Ritiri ed esperienze olistiche" not in meta["title"], \
+                f"/{rotta} serve ancora il titolo marketplace"
+            assert rotta in nginx, f"nginx non instrada /{rotta}"
+            assert rotta in seo, f"/{rotta} non e' in sitemap"
+
     def test_in_breve_arriva_a_tutte_le_superfici(self):
         """M1 (25/8) — MISURA: su quattro articoli presi a caso TRE
         aprono con una scena. E' la voce del brand e non si tocca — ma
