@@ -495,6 +495,37 @@ class TestSbloccoIndicizzazioneGs:
         assert "sys.exit" in src, "senza uscita, le guardie sono decorative"
         assert "--prova" in src and "--esegui" in src
 
+    def test_la_directory_non_e_orfana(self):
+        """T7 (25/8) — /esplora-operatori era indicizzabile e con ZERO
+        link interni: in SEO un documento senza voti dal proprio sito
+        vale quanto un documento che non esiste. Ora la linkano la
+        home, il racconto della rete e ogni profilo."""
+        src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        # la home (blocco _home_content_html) e la pagina rete
+        assert src.count('href="/esplora-operatori"') >= 3, \
+            "la directory deve avere piu' di una porta interna"
+
+    def test_i_profili_veri_sono_dichiarati_in_sitemap(self):
+        """ES (25/8) — restavano fuori da ogni sitemap perche' il
+        criterio era il solo flag editoriale `network_member` (0 su 13
+        in produzione). Una pagina che il sito LINKA e non dichiara e'
+        una pagina che chiediamo a Google di indovinare."""
+        src = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        blocco = src.split("async def build_operators")[1][:2000]
+        assert '"$or": [{"network_member": True}' in blocco
+        assert '"is_sample": {"$ne": True}' in blocco, \
+            "i campioni non devono poter rientrare dalla finestra"
+
+    def test_media_e_font_non_pagano_un_giro_di_rete_ogni_volta(self):
+        """T8 — solo /static/ era in cache: il video da 1,6 MB e ogni
+        immagine uscivano con no-cache. Sette giorni e non un anno: i
+        nomi non hanno l'hash, quindi `immutable` sarebbe una bugia."""
+        conf = (BACKEND_DIR.parent / "frontend" / "nginx.conf").read_text()
+        assert "mp4|webm" in conf and "woff2" in conf
+        assert "max-age=604800" in conf
+        assert "immutable" not in conf.split("location ~*")[1], \
+            "immutable su nomi senza hash congela un file per un anno"
+
     def test_llms_full_esiste_e_rispetta_il_cancello(self):
         """T2 — llms.txt e' l'indice, llms-full.txt e' il TESTO: la
         porta dei motori generativi, che citano fonti oggi mentre le

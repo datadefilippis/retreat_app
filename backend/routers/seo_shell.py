@@ -289,8 +289,14 @@ async def _home_content_html() -> str:
         "<ul>",
         (f"<li><a href=\"/blog\">{c['pillarMagTitle']}</a> — "
          f"{c['pillarMagText']}</li>"),
+        # T7 (25/8) — DUE porte, non una: il racconto della rete e
+        # l'elenco di chi c'e'. Prima la home linkava solo il primo, e
+        # /esplora-operatori — la pagina con i professionisti veri —
+        # restava ORFANA: indicizzabile ma senza un solo voto interno,
+        # che in SEO vale quanto non esistere.
         (f"<li><a href=\"/operatori\">{c['pillarProTitle']}</a> — "
-         f"{c['pillarProText']}</li>"),
+         f"{c['pillarProText']} "
+         f"<a href=\"/esplora-operatori\">Vedi i professionisti</a></li>"),
         f"<li>{c['pillarExpTitle']} — {c['pillarExpText']}</li>",
         "</ul>",
         f"<h2>{c['whyTitle']}</h2>",
@@ -1166,7 +1172,9 @@ async def _meta_operators_index(category: Optional[str] = None) -> dict:
         body = ("<div><h1>La rete Aurya</h1>"
                 f"<p>{_html.escape(descr)}</p>"
                 f"{membri_html}"
-                '<p><a href="/entra-nella-rete">Sei un professionista '
+                '<p><a href="/esplora-operatori">Vedi i professionisti '
+                "della rete</a> · "
+                '<a href="/entra-nella-rete">Sei un professionista '
                 "del benessere? Entra nella rete</a></p>"
                 f"{_BRAND_BODY_LINKS}</div>")
         return {
@@ -1426,8 +1434,9 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     dove = ", ".join(x for x in (city, region) if x)
     if dove:
         pezzi.append(f"<p>Dove: {_html.escape(dove)}</p>")
-    pezzi.append('<p><a href="/operatori">Tutti i professionisti della '
-                 'rete Aurya</a> · <a href="/blog">Il Magazine</a></p></div>')
+    pezzi.append('<p><a href="/esplora-operatori">Tutti i professionisti '
+                 'della rete Aurya</a> · <a href="/blog">Il Magazine</a>'
+                 '</p></div>')
 
     return {
         "title": title,

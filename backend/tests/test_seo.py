@@ -72,20 +72,35 @@ class TestSitemapUrl:
     @pytest.mark.asyncio
     async def test_operators_sitemap_members_only_in_network_pp2b(
             self, monkeypatch):
-        """PP2b (ok founder 4/8) — in fase rete la sitemap operators
-        elenca i SOLI membri della rete, e il solo profilo /o/: mai
-        /s/ (lo store non esiste nel mondo snello)."""
+        """PP2b (4/8) → ES (25/8): IL CRITERIO E' CAMBIATO.
+
+        Elencava i soli `network_member`. Ma quel flag dice
+        «intervistato e accolto» ed e' una decisione editoriale del
+        founder, mentre la sitemap ha un compito meccanico: dichiarare
+        le pagine indicizzabili e linkate. Da quando
+        /esplora-operatori e' aperta ed elenca i professionisti
+        registrati, i loro profili sono proprio quello — e restavano
+        fuori da OGNI sitemap solo perche' nessuno aveva alzato un
+        flag. Una pagina che il sito linka e non dichiara e' una
+        pagina che chiediamo a Google di indovinare.
+
+        Cosa resta sotto guardia: solo profili /o/ (mai /s/: lo store
+        non esiste nel mondo snello), e mai i campioni ne' chi e'
+        escluso dagli elenchi."""
         monkeypatch.setenv("SITE_PHASE", "network")
         xml = await build_operators()
         assert "/s/" not in xml, "store in sitemap in fase rete"
         import re
         locs = re.findall(r"<loc>([^<]+)</loc>", xml)
         assert all("/o/" in u for u in locs), f"URL non-profilo: {locs}"
-        # ogni voce corrisponde a un membro vero della rete
+        # il perimetro: niente campioni, niente esclusi dagli elenchi
         from database import organizations_collection
-        n_members = await organizations_collection.count_documents(
-            {"network_member": True, "is_active": {"$ne": False}})
-        assert len(locs) <= n_members
+        n_ammessi = await organizations_collection.count_documents(
+            {"is_active": {"$ne": False}, "is_sample": {"$ne": True},
+             "exclude_from_listings": {"$ne": True},
+             "$or": [{"network_member": True},
+                     {"public_slug": {"$nin": [None, ""]}}]})
+        assert len(locs) <= n_ammessi
 
     def test_index_declares_operators_in_network_pp2b(self, monkeypatch):
         monkeypatch.setenv("SITE_PHASE", "network")
