@@ -635,6 +635,56 @@ class TestSbloccoIndicizzazioneGs:
         # arriverebbe dopo il testo e riporterebbe il lampo
         assert '<link' not in src.split("_SSR_STILE = (")[1][:900]
 
+    def test_le_lingue_non_italiane_non_viaggiano_verso_tutti(self):
+        """BX (26/8) — MISURATO: ~470 KB di traduzioni en/de/fr
+        viaggiavano verso OGNI visitatore, quando il default e'
+        l'italiano ed e' pure la strategia dichiarata. Ora l'italiano
+        resta nel bundle e le altre lingue sono chunk per-lingua che
+        si scaricano solo al cambio lingua (main: 575→418 KB gzip).
+        Se un import statico en/de/fr rientra, il regalo torna."""
+        import re
+        src = (BACKEND_DIR.parent / "frontend" / "src" / "i18n.js").read_text()
+        statici = re.findall(r"^import \w+ from '\./locales/(en|de|fr)/",
+                             src, re.M)
+        assert not statici, f"import statici non-it tornati: {statici}"
+        assert "partialBundledLanguages: true" in src
+        assert 'webpackChunkName: "lingua-en"' in src, \
+            "senza il chunkName ogni namespace diventa un chunk a se'"
+        # il backend pigro NON deve rispondere per l'italiano o per i
+        # namespace admin: risponde vuoto e lascia fare a chi di dovere
+        assert "if (!thunk) return cb(null, {});" in src
+
+    def test_il_contatore_non_ci_conta(self):
+        """MT (26/8) — le nostre visite finivano nei numeri (86
+        «visitatori» in 38 giorni, noi compresi a ogni deploy).
+        L'impronta giornaliera salata impedisce di riconoscerci a
+        posteriori: si esclude ALLA FONTE — token di lavoro nel
+        browser, o il patto del telefono (?siamo-noi, una volta,
+        per sempre)."""
+        src = (BACKEND_DIR.parent / "frontend" / "src" / "features"
+               / "storefront" / "lib" / "useTrackView.js").read_text()
+        assert "isNoi()" in src and "siamo-noi" in src
+        assert "localStorage.getItem('token')" in src, \
+            "l'operatore che guarda il proprio profilo si conta da solo"
+        assert "platform_token" in src
+        # il rifiuto dello storage NON deve zittire il contatore per
+        # tutti: nel dubbio si conta (return false nel catch)
+        assert "return false;   // storage negato" in src
+
+    def test_le_fonti_si_automatizzano_solo_se_inequivocabili(self):
+        """Fonti (26/8) — la diagnosi «zero link esterni» era
+        un'estrapolazione da UN articolo (errore d'aggregato, di
+        nuovo): la redazione linkava gia' dove contava. Il pass
+        automatico tocca SOLO leggi e istituzioni (link ufficiale
+        unico); gli studi restano alla redazione — linkare lo studio
+        sbagliato e' peggio che non linkare."""
+        src = (BACKEND_DIR / "scripts" / "fonti_istituzionali.py").read_text()
+        assert "normattiva.it" in src and "inps.it" in src
+        assert "DA_REDAZIONE" in src, "il rapporto per gli studi deve esistere"
+        assert '"$set": {"content": nuovo' in src
+        # ancoraggio alla frase esatta: se il testo e' cambiato si salta
+        assert "la frase attesa non c'è più" in src
+
     def test_nginx_comprime_cio_che_vale_la_pena(self):
         """T1 (25/8) — MISURATO in produzione: main.js usciva a
         2.045.088 byte NON compressi anche chiedendo gzip, perche' la

@@ -54,9 +54,39 @@ function send(payload) {
   }
 }
 
+// MT (26/8/2026) — LE NOSTRE VISITE NON SI CONTANO. Misurato: 86
+// «visitatori» in 38 giorni, e dentro c'eravamo anche noi due, a ogni
+// prova e a ogni deploy. L'impronta giornaliera salata rende
+// impossibile riconoscerci a posteriori: va impedito ALLA FONTE.
+// Due cinture:
+//   1. chi ha un token di lavoro nel browser (operatore o admin) non
+//      viene tracciato — copre noi nei browser di lavoro, e copre
+//      anche l'operatore che guarda il proprio profilo e si contava
+//      da solo come visitatore;
+//   2. il patto del telefono: aprire UNA volta ?siamo-noi marca il
+//      browser per sempre (chiave locale) e il ping tace — per i
+//      nostri telefoni, dove non siamo sempre loggati.
+const CHIAVE_NOI = 'aurya_siamo_noi';
+
+export function isNoi() {
+  try {
+    if (new URLSearchParams(window.location.search).has('siamo-noi')) {
+      localStorage.setItem(CHIAVE_NOI, '1');
+    }
+    return (
+      localStorage.getItem(CHIAVE_NOI) === '1'
+      || !!localStorage.getItem('token')
+      || !!localStorage.getItem('platform_token')
+    );
+  } catch {
+    return false;   // storage negato (incognito duro): meglio contare
+  }
+}
+
 export default function useTrackView(surface, slug) {
   useEffect(() => {
     if (!surface || !slug) return undefined;
+    if (isNoi()) return undefined;   // MT — mai contarci da soli
     const timer = setTimeout(() => {
       const referrer = document.referrer || '';
       const channel = resolveChannel(

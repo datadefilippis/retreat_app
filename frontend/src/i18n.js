@@ -39,50 +39,17 @@ import customerPortalIt from './locales/it/customer_portal.json';
 // Wave GDPR-Admin Phase E — re-consent modal, cookie banner, sub-processors page
 import legalIt from './locales/it/legal.json';
 
-import commonEn from './locales/en/common.json';
-import authEn from './locales/en/auth.json';
-import prelaunchEn from './locales/en/prelaunch.json';
 // PL17 — restano sincroni: usati dai banner billing/paywall EAGER
-import settingsEn from './locales/en/settings.json';
-import modulesPageEn from './locales/en/modules_page.json';
 
 
-import catalogEn from './locales/en/catalog.json';
-import storefrontEn from './locales/en/storefront.json';
-import landingsEn from './locales/en/landings.json';
-import customerAuthEn from './locales/en/customer_auth.json';
-import customerPortalEn from './locales/en/customer_portal.json';
-import legalEn from './locales/en/legal.json';
 
-import commonDe from './locales/de/common.json';
-import authDe from './locales/de/auth.json';
-import prelaunchDe from './locales/de/prelaunch.json';
 // PL17 — restano sincroni: usati dai banner billing/paywall EAGER
-import settingsDe from './locales/de/settings.json';
-import modulesPageDe from './locales/de/modules_page.json';
 
 
-import catalogDe from './locales/de/catalog.json';
-import storefrontDe from './locales/de/storefront.json';
-import landingsDe from './locales/de/landings.json';
-import customerAuthDe from './locales/de/customer_auth.json';
-import customerPortalDe from './locales/de/customer_portal.json';
-import legalDe from './locales/de/legal.json';
 
-import commonFr from './locales/fr/common.json';
-import authFr from './locales/fr/auth.json';
-import prelaunchFr from './locales/fr/prelaunch.json';
 // PL17 — restano sincroni: usati dai banner billing/paywall EAGER
-import settingsFr from './locales/fr/settings.json';
-import modulesPageFr from './locales/fr/modules_page.json';
 
 
-import catalogFr from './locales/fr/catalog.json';
-import storefrontFr from './locales/fr/storefront.json';
-import landingsFr from './locales/fr/landings.json';
-import customerAuthFr from './locales/fr/customer_auth.json';
-import customerPortalFr from './locales/fr/customer_portal.json';
-import legalFr from './locales/fr/legal.json';
 
 // ── Supported languages ─────────────────────────────────────────────────────
 export const SUPPORTED_LANGUAGES = [
@@ -251,12 +218,74 @@ const COLD_START_LNG = _detectColdStartLanguage();
 
 // ── Resources ───────────────────────────────────────────────────────────────
 const resources = {
-
+  // BX (26/8/2026) — QUI VIVE SOLO L'ITALIANO. Le altre tre lingue
+  // pesavano ~1.300 KB e viaggiavano verso OGNI visitatore, quando il
+  // default e' l'italiano ed e' pure la strategia dichiarata
+  // (solo-italiano, 2/8). Ora en/de/fr sono chunk per-lingua che si
+  // scaricano SOLO quando qualcuno cambia lingua: il caricatore pigro
+  // qui sotto, stesso principio di PL17 per i namespace admin.
   it: { common: commonIt, auth: authIt, catalog: catalogIt, storefront: storefrontIt, landings: landingsIt, customer_auth: customerAuthIt, customer_portal: customerPortalIt, legal: legalIt, prelaunch: prelaunchIt, settings: settingsIt, modules_page: modulesPageIt },
-  en: { common: commonEn, auth: authEn, catalog: catalogEn, storefront: storefrontEn, landings: landingsEn, customer_auth: customerAuthEn, customer_portal: customerPortalEn, legal: legalEn, prelaunch: prelaunchEn, settings: settingsEn, modules_page: modulesPageEn },
-  de: { common: commonDe, auth: authDe, catalog: catalogDe, storefront: storefrontDe, landings: landingsDe, customer_auth: customerAuthDe, customer_portal: customerPortalDe, legal: legalDe, prelaunch: prelaunchDe, settings: settingsDe, modules_page: modulesPageDe },
-  fr: { common: commonFr, auth: authFr, catalog: catalogFr, storefront: storefrontFr, landings: landingsFr, customer_auth: customerAuthFr, customer_portal: customerPortalFr, legal: legalFr, prelaunch: prelaunchFr, settings: settingsFr, modules_page: modulesPageFr },
+};
 
+// I pacchetti per lingua: ogni thunk e' un import ESPLICITO (webpack
+// deve vederli staticamente) e il webpackChunkName uguale li fonde in
+// UN chunk per lingua — un solo giro di rete quando serve.
+const PIGRI = {
+  en: {
+    common: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/common.json'),
+    auth: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/auth.json'),
+    catalog: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/catalog.json'),
+    storefront: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/storefront.json'),
+    landings: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/landings.json'),
+    customer_auth: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/customer_auth.json'),
+    customer_portal: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/customer_portal.json'),
+    legal: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/legal.json'),
+    prelaunch: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/prelaunch.json'),
+    settings: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/settings.json'),
+    modules_page: () => import(/* webpackChunkName: "lingua-en" */ './locales/en/modules_page.json'),
+  },
+  de: {
+    common: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/common.json'),
+    auth: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/auth.json'),
+    catalog: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/catalog.json'),
+    storefront: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/storefront.json'),
+    landings: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/landings.json'),
+    customer_auth: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/customer_auth.json'),
+    customer_portal: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/customer_portal.json'),
+    legal: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/legal.json'),
+    prelaunch: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/prelaunch.json'),
+    settings: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/settings.json'),
+    modules_page: () => import(/* webpackChunkName: "lingua-de" */ './locales/de/modules_page.json'),
+  },
+  fr: {
+    common: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/common.json'),
+    auth: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/auth.json'),
+    catalog: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/catalog.json'),
+    storefront: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/storefront.json'),
+    landings: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/landings.json'),
+    customer_auth: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/customer_auth.json'),
+    customer_portal: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/customer_portal.json'),
+    legal: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/legal.json'),
+    prelaunch: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/prelaunch.json'),
+    settings: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/settings.json'),
+    modules_page: () => import(/* webpackChunkName: "lingua-fr" */ './locales/fr/modules_page.json'),
+  },
+};
+
+// Il «backend» di i18next che legge dai chunk. Per tutto cio' che non
+// e' un namespace pubblico di en/de/fr risponde subito con un bundle
+// vuoto: i namespace admin restano affare di i18n-admin (PL17), e
+// l'italiano e' gia' nel bundle — nessuna richiesta inutile.
+const caricatorePigro = {
+  type: 'backend',
+  init() { /* niente da preparare */ },
+  read(lng, ns, cb) {
+    const thunk = PIGRI[lng] && PIGRI[lng][ns];
+    if (!thunk) return cb(null, {});
+    thunk()
+      .then((m) => cb(null, m.default || m))
+      .catch((e) => cb(e, null));
+  },
 };
 
 // PL17 — qui vive SOLO il pubblico (landing, marketplace, portale
@@ -264,8 +293,10 @@ const resources = {
 // i18n-admin.js, caricato dal guscio Layout dentro i chunk lazy admin:
 // ~307KB gzip fuori dal percorso del visitatore.
 // ── Initialize ──────────────────────────────────────────────────────────────
-i18n.use(initReactI18next).init({
+i18n.use(caricatorePigro).use(initReactI18next).init({
   resources,
+  // BX — l'italiano e' nel bundle, il resto arriva dal backend pigro
+  partialBundledLanguages: true,
   // Smart initial language for storefront URLs (see _detectColdStartLanguage).
   // null/undefined → i18next falls back to fallbackLng. This is purely a
   // first-paint optimization; the resolver chain still owns the
