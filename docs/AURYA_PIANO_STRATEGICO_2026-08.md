@@ -14,17 +14,17 @@ non ho potuto evitarle le ho spiegate la prima volta che compaiono.
 Deve poterlo leggere chiunque di noi due in qualsiasi momento e
 ritrovarci dentro, senza bisogno di traduzioni.
 
-È diviso in tre movimenti. Il primo racconta cos'è Aurya oggi, con i
-numeri veri — anche quelli che non fanno piacere. Il secondo spiega
-come si costruisce la crescita, pezzo per pezzo. Il terzo fa i conti:
-quanto serve per vivere di questo, da dove arriverebbero quei soldi, e
-in quanto tempo.
+È costruito come lo costruirebbe un analista che riceve un'azienda in
+mano e deve capire tre cose: **in che mercato sta, contro chi gioca, e
+se i soldi che immagina di guadagnare esistono davvero.** Solo dopo
+aver risposto a queste tre domande arriva il piano — perché un piano
+scritto prima delle risposte è un desiderio con le tabelle.
 
-Una premessa che vale per tutto: **i numeri di questo documento sono
-quelli reali**, letti dentro la piattaforma, non stime ottimistiche.
-Le previsioni sono dichiarate come previsioni, con le ipotesi scritte
-accanto, così che chiunque possa non essere d'accordo su un numero
-senza dover buttare via il ragionamento.
+I numeri interni sono quelli veri, letti dentro la piattaforma. I
+numeri di mercato vengono da fonti pubbliche, elencate in fondo al
+documento. Le previsioni sono dichiarate come previsioni, con le
+ipotesi scritte accanto, così che si possa non essere d'accordo su un
+numero senza dover buttare via il ragionamento.
 
 ---
 
@@ -32,16 +32,16 @@ senza dover buttare via il ragionamento.
 
 ## Che cos'è Aurya, detto semplice
 
-Immagina una persona che ha appena finito un periodo pesante e pensa:
+Immagina una persona che ha appena chiuso un periodo pesante e pensa:
 *forse dovrei provare qualcosa per me.* Apre il telefono, cerca
 «reiki» insieme al nome della sua città, e trova trenta profili.
 
 Hanno tutti belle foto. Parlano tutti di ascolto, di percorso, di
 energia. Alcuni hanno sigle che lei non ha mai sentito. Nessuno di
 loro sta mentendo — sono quasi tutte persone serie — ma lei non ha
-nessun modo di capire quale sia quello giusto per lei. Non c'è un albo
-da consultare, quasi nessuno scrive quanto costa, e da nessuna parte
-c'è scritto cosa succede davvero durante una seduta.
+nessun modo di capire quale sia quello giusto. Non c'è un albo da
+consultare, quasi nessuno scrive quanto costa, e da nessuna parte c'è
+scritto cosa succede davvero durante una seduta.
 
 Alla fine sceglie in base alla foto. Oppure non sceglie affatto.
 
@@ -51,9 +51,9 @@ Dall'altra parte c'è un'altra persona, ed è quella che conosciamo
 meglio. Ha studiato anni per imparare un mestiere fatto di relazione e
 di mani, e si ritrova a doverne fare un secondo che non ha mai scelto:
 farsi trovare. Non è a suo agio con la tecnologia, non ha soldi da
-mettere in pubblicità, e ogni ora che passa a sistemare un sito è
-un'ora tolta alla pratica. Spesso guadagna poco. Gli strumenti che il
-mercato le offre sono cari, complicati, o tutte e due le cose.
+mettere in pubblicità, e ogni ora passata a sistemare un sito è un'ora
+tolta alla pratica. Spesso guadagna poco. Gli strumenti che il mercato
+le offre sono cari, complicati, o tutte e due le cose.
 
 **Aurya nasce anche per lei.**
 
@@ -66,28 +66,195 @@ dove **si capisce** — con guide oneste, scritte senza niente da
 vendere — e dove **si conosce chi lavora**, perché ogni professionista
 non è una scheda ma una storia raccontata per bene.
 
-## Perché questo è il momento giusto
+---
 
-Il benessere olistico italiano è un mondo grande e disordinato.
-Migliaia di persone che lavorano da sole, quasi nessuna struttura che
-le tenga insieme, e — questo è il punto — **nessuno che ne parli con
-autorevolezza.**
+# PARTE SECONDA — Il mercato in cui stiamo entrando
 
-I grandi portali di salute trattano il tema di sfuggita, per fare
-numero. Le associazioni di categoria fanno elenchi di iscritti. Le
-piattaforme internazionali di prenotazione parlano inglese a un
-mercato che vive in italiano.
+Prima di decidere come guadagnare, bisogna sapere se intorno ci sono
+dei soldi. La risposta breve è: sì, tanti — ma non tutti sono per noi,
+e la parte onesta di questa sezione è distinguere il mare dal nostro
+stagno.
 
-Nessuno oggi ha insieme le due cose: **contenuti di cui ci si fida e
-persone raccontate una per una.** Quel posto vuoto è dove stiamo
-costruendo.
+## Il quadro grande
+
+L'economia del benessere in Italia vale, secondo il Global Wellness
+Institute, circa **140 miliardi di dollari l'anno** — decimo mercato
+al mondo. Dentro ci sta di tutto: cosmetica, alimentazione, palestre,
+turismo termale. Non è il nostro mercato: è l'oceano in cui il nostro
+mercato nuota. Ma due dettagli di quel rapporto ci riguardano da
+vicino: fra i settori **cresciuti più in fretta** dal 2019 c'è il
+**benessere mentale**, e l'Italia è fra i primi dieci paesi al mondo
+anche nella **medicina tradizionale e complementare** — che è
+esattamente il mondo dei nostri professionisti.
+
+Scendendo verso di noi, i numeri restano solidi:
+
+- **Sei milioni di italiani praticano yoga** — quasi uno su dieci — e
+  sono **raddoppiati dal 2019**. Non è una moda che passa: è
+  un'abitudine che si sta radicando.
+- **Circa il 12% degli italiani medita** con regolarità, in crescita.
+- Il solo comparto termale e del benessere fisico muove **2,8
+  miliardi di euro l'anno con 14 milioni di frequentatori**.
+
+E il segnale più importante per noi non viene dal benessere, ma da un
+mercato cugino. **Unobravo**, la piattaforma italiana degli psicologi
+online, ha superato i **124 milioni di euro di fatturato con 8.000
+professionisti affiliati** — partita nel 2019 con cinquemila euro di
+capitale. **Serenis**, la seconda, ha superato i 25 milioni. Cosa
+dimostrano? Che **gli italiani pagano volentieri, online, per la cura
+della persona** — quando qualcuno rende facile trovarla e fidarsi. Il
+loro settore è regolamentato e il nostro no, quindi i numeri non si
+copiano; ma il gesto di fondo — *cerco online qualcuno di cui fidarmi
+per stare meglio, e pago* — è lo stesso identico gesto su cui è
+costruita Aurya.
+
+## Il nostro stagno, misurato
+
+Il mercato *nostro* — quello che possiamo davvero servire — è fatto di
+due popolazioni.
+
+**Chi offre.** Gli operatori olistici italiani non hanno un albo,
+quindi nessuno li ha mai contati con precisione. Gli indizi dicono che
+sono decine di migliaia: le associazioni di categoria ne registrano
+migliaia ciascuna, le scuole di formazione — un mercato a sé, vivo e
+pagante — ne diplomano di continuo, e già nel 2017 si contavano oltre
+**800 scuole di yoga** sul territorio. Per il piano basta un'ipotesi
+prudente: se in Italia lavorano **30-50.000 operatori del benessere**
+in senso largo, e ad Aurya ne servissero **mille** per l'obiettivo di
+lungo periodo, staremmo parlando del **2-3% del mercato**. Non serve
+vincere: serve una fetta piccola di un campo grande.
+
+**Chi cerca.** I sei milioni di praticanti yoga e i milioni che
+meditano sono il bacino largo. Il segmento caldo — chi cerca
+attivamente un ritiro o un professionista — è più piccolo ma provato:
+sulla sola BookRetreats, una piattaforma internazionale, sono
+elencati **298 ritiri yoga in Italia con oltre 11.000 recensioni**.
+Ogni recensione è una persona che ha pagato centinaia di euro per un
+ritiro italiano, prenotandolo online. **La domanda esiste, ed è già
+abituata a pagare.** Solo che oggi passa da piattaforme straniere.
+
+## Il buco nel mercato
+
+Mettendo insieme i pezzi, il posto vuoto si vede a occhio nudo:
+
+- chi fa **contenuti** sul benessere (i grandi portali) non ha le
+  persone: fa articoli generici per fare volume;
+- chi fa **elenchi** (le directory, i registri delle associazioni) non
+  ha i contenuti né il racconto: schede, non storie;
+- chi fa **prenotazioni** (le piattaforme internazionali) non parla
+  davvero italiano e tratta i ritiri italiani come inventario;
+- chi fa **meditazione** (le grandi app) non è nemmeno tradotto:
+  **Calm, l'app di meditazione più famosa del mondo, non esiste in
+  italiano.** Headspace è quasi tutta in inglese. Costano 50-58 euro
+  l'anno e nessuna delle due ha una voce italiana o un volto vero
+  dietro le sessioni.
+
+**Nessuno, oggi, tiene insieme contenuti autorevoli in italiano,
+persone raccontate una per una, e gli strumenti per lavorarci.** Quel
+posto vuoto è Aurya. Non è una garanzia — i posti vuoti a volte sono
+vuoti per buone ragioni, e la ragione qui è che è un lavoro lungo che
+non paga subito. Ma è un posto vero.
 
 ---
 
-# PARTE SECONDA — Dove siamo davvero
+# PARTE TERZA — La concorrenza, guardata in faccia
+
+Un'analisi seria non chiede «chi fa la stessa cosa nostra?» — nessuno
+la fa, ed è irrilevante. Chiede: **da chi andranno le persone e i
+professionisti, se non vengono da noi?** Ecco la mappa.
+
+## I portali di contenuti — *my-personaltrainer, Cure-Naturali e simili*
+
+Giganti: milioni di visite al mese, articoli su ogni pratica.
+**Cosa fanno bene**: coprono tutto, stanno in cima a Google da anni.
+**Cosa non faranno mai**: la profondità onesta. Sono fabbriche di
+articoli pagate per il volume; non diranno mai «quanto costa una
+seduta e quali domande fare», e non racconteranno mai una persona.
+**Come ci si gioca**: non di fronte — sulle ricerche generiche
+(«reiki cos'è») vincono loro per anni ancora — ma di fianco, sulle
+ricerche di *decisione*: quanto costa, come scelgo, cosa aspettarmi.
+Lì il gigante non c'è.
+
+## Le directory e i registri — *Italia Olistica, gli elenchi delle associazioni*
+
+**Cosa fanno bene**: esistono da anni, hanno centinaia di iscritti.
+**Cosa non fanno**: tutto il resto. Schede grigie, zero racconto, zero
+contenuti, siti fermi a dieci anni fa. Un professionista ci si iscrive
+per dovere, non per orgoglio.
+**Come ci si gioca**: la nostra pagina è quella che il professionista
+*condivide con orgoglio*. È una differenza che non si misura in
+funzioni: si misura in quante persone mettono il link nella propria
+biografia. Ed è per questo che la misuriamo.
+
+## Le piattaforme di prenotazione ritiri — *Tripaneer, BookRetreats*
+
+**Cosa fanno bene**: il modello. Commissione solo sul venduto, nessun
+costo fisso, inventario mondiale. I 298 ritiri italiani sulla loro
+vetrina dimostrano che gli organizzatori italiani *già accettano* di
+pagare una commissione a una piattaforma.
+**Cosa non fanno**: l'Italia. Interfacce in inglese, assistenza
+lontana, nessun radicamento, nessun contenuto italiano.
+**Come ci si gioca**: non subito. Quando il nostro negozio aprirà,
+giocheremo sulla prossimità: siamo italiani, ci conosci, ti abbiamo
+raccontato, l'assistenza risponde in italiano e ha un nome. Intanto,
+la loro esistenza è la **prova di mercato** del nostro modello a
+commissione.
+
+## Le app di meditazione — *Calm, Headspace, Insight Timer*
+
+**Cosa fanno bene**: prodotto impeccabile, catalogo sterminato, prezzi
+ancorati (50-58 €/anno).
+**Cosa non fanno**: l'italiano, e le persone. Calm non è tradotta. Le
+voci sono narratori, non professionisti che puoi incontrare.
+**Come ci si gioca**: Aurya Sound non deve battere Calm — sarebbe
+velleitario dirlo e stupido provarci. Deve essere un'altra cosa:
+**meditazioni in italiano, composte da professionisti veri che hanno
+un volto, un profilo e una pratica a cui puoi arrivare.** Da app di
+meditazione a ponte fra l'ascolto e la persona. In quella forma, un
+abbonamento a 39 €/anno — sotto l'ancora dei giganti — è credibile.
+
+## Le scuole di formazione olistica
+
+**Cosa fanno bene**: dimostrano ogni giorno che **i professionisti
+olistici pagano per formarsi** — corsi da centinaia fino a migliaia di
+euro, un intero mercato di diplomi e attestati.
+**Cosa non fanno**: quasi nessuna insegna *il mestiere intorno alla
+pratica* — fiscalità, prezzi, come farsi trovare, come si riempie un
+ritiro. Insegnano la disciplina, non la sopravvivenza economica.
+**Come ci si gioca**: è lo spazio esatto del nostro corso. Non
+competiamo con le scuole — semmai un giorno ci manderanno gli
+allievi — perché vendiamo l'unica cosa che non vendono loro.
+
+## I gestionali di prenotazione — *le agende online generaliste*
+
+Esistono, costano un abbonamento mensile, e sono fatti per
+parrucchieri e centri estetici. Il nostro gestionale è gratuito e
+cucito sul mestiere (ritiri, cerchi, sedute). Non è il campo su cui
+vinciamo — è il campo su cui non perdiamo.
+
+## La sintesi, in una tabella
+
+| chi | contenuti | persone raccontate | italiano vero | strumenti | meditazioni |
+|---|---|---|---|---|---|
+| Portali di contenuti | in volume | — | sì | — | — |
+| Directory e registri | — | schede | sì | — | — |
+| Piattaforme ritiri | — | — | tradotto | prenotazione | — |
+| App di meditazione | — | — | **no** | — | in inglese |
+| Scuole di formazione | didattici | — | sì | — | — |
+| **Aurya** | **onesti e profondi** | **una per una** | **sì** | **gratuiti** | **di professionisti veri** |
+
+Nessuna singola riga di questa tabella è una fortezza. **La
+combinazione sì**: ricostruirla richiede anni di contenuti, centinaia
+di interviste e uno strumento che nessuno ha. È il tipo di vantaggio
+che non si compra — si accumula. Ed è anche il motivo per cui il piano
+è lungo: l'unica cosa che non possiamo comprare è il tempo.
+
+---
+
+# PARTE QUARTA — Dove siamo davvero
 
 Nessun piano regge su numeri gonfiati, e siccome questo piano deve
-reggere per anni, comincio dalla verità.
+reggere per anni, questa sezione dice la verità.
 
 ## I numeri, al 26 agosto 2026
 
@@ -114,9 +281,6 @@ vero — quarantasette articoli scritti bene sono una cosa che quasi
 nessuno ha — e c'è tutto il resto ancora da fare.
 
 ## Perché non arriva nessuno da Google
-
-Il motivo è tecnico e vale la pena spiegarlo, perché condiziona il
-piano intero.
 
 Google trova le pagine seguendo i collegamenti da un sito all'altro,
 come si segue una strada. Aurya è nata a luglio: **nessun sito al
@@ -156,9 +320,6 @@ piccolo — ma non è ancora un canale.
 
 ### Una nota sulla misura, che è un problema a sé
 
-Va detto anche questo, perché altrimenti finiamo per discutere di
-numeri che non significano la stessa cosa.
-
 Abbiamo **due contatori che dicono cose diverse**. Google Analytics
 si accende solo se una persona accetta i cookie: chi rifiuta o ignora
 la finestrella, per Analytics non è mai passato — quindi **Analytics
@@ -169,19 +330,17 @@ qualche visita automatica gli sfugge — quindi **vede più del vero**.
 La verità sta in mezzo, e finché non la stringiamo non possiamo
 decidere niente sulla base del traffico. **Sistemare la misura è il
 primo compito operativo del piano**, prima ancora di scrivere un
-articolo in più: escludere le nostre visite, e riconciliare i due
-contatori.
+articolo in più.
 
 ## La verità sui soldi, oggi
 
 Aurya è gratuita. Completamente, per tutti, per ogni funzione.
 
 L'unico guadagno previsto è una commissione del 5% sulle prenotazioni
-incassate online. E **nessuno la usa**, per due motivi che si
-sommano: collegare il sistema di pagamento è complicato per chi non è
-pratico di tecnologia, e chi si fa pagare di persona non paga niente.
-Chi ragiona bene sceglie l'incasso di persona. Sta facendo la cosa
-giusta.
+incassate online. E **nessuno la usa**: collegare il sistema di
+pagamento è complicato per chi non è pratico di tecnologia, e chi si
+fa pagare di persona non paga niente. Chi ragiona bene sceglie
+l'incasso di persona. Sta facendo la cosa giusta.
 
 Quindi va detto chiaramente, e va tenuto fermo per tutto il resto del
 documento:
@@ -191,18 +350,14 @@ documento:
 > così — a patto di saperlo, e di costruire il guadagno da un'altra
 > parte.
 
-È esattamente quello che fanno tutti i progetti che poi funzionano:
-prima si dà qualcosa di utile gratis abbastanza a lungo da diventare
-un punto di riferimento, poi si guadagna da ciò che quel punto di
-riferimento rende possibile.
+È quello che fanno tutti i progetti che poi funzionano: prima si dà
+qualcosa di utile gratis abbastanza a lungo da diventare un punto di
+riferimento, poi si guadagna da ciò che quel punto di riferimento
+rende possibile.
 
 ---
 
-# PARTE TERZA — Le sette cose che abbiamo costruito
-
-Aurya oggi è fatta di sette pezzi. Alcuni sono pronti e sottoutilizzati,
-altri sono pronti e servono al momento sbagliato. Ecco cosa sono, a
-cosa servono e cosa ci facciamo.
+# PARTE QUINTA — Le sette cose che abbiamo costruito
 
 ## 1 · Il gestionale
 
@@ -225,25 +380,21 @@ pubblica il primo ritiro e gli facciamo vedere come si seguono gli
 iscritti; comincia ad avere clienti che tornano e gli mostriamo dove
 si tengono. Ogni volta è una conversazione, non una notifica.
 
-Il vantaggio di questo modo è doppio. La persona non si sente
-inadeguata perché non le abbiamo mai chiesto tutto insieme. E ogni
-funzione nuova diventa **un motivo per risentirci** — che è
-esattamente il tipo di rapporto che vogliamo costruire.
+Il vantaggio è doppio. La persona non si sente inadeguata perché non
+le abbiamo mai chiesto tutto insieme. E ogni funzione nuova diventa
+**un motivo per risentirci** — che è esattamente il tipo di rapporto
+che vogliamo costruire.
 
-Non serve costruire niente di nuovo. Serve dire una cosa alla volta.
+## 2 · La vetrina personale
 
-## 2 · La vetrina personale — il cuore di tutto
-
-**Cos'è.** Il profilo pubblico di ogni professionista, e la pagina-link
-da mettere nella biografia di Instagram.
+**Cos'è.** Il profilo pubblico di ogni professionista, e la
+pagina-link da mettere nella biografia di Instagram.
 
 **Perché ci puntiamo.** Per due motivi buoni e una speranza, e
 conviene tenerli distinti.
 
 *Il primo motivo, solido*: è **l'unica cosa di Aurya utilizzabile
-subito**, senza che il professionista cambi niente del suo lavoro. Non
-deve imparare un gestionale, non deve collegare pagamenti, non deve
-pubblicare un ritiro. Deve solo avere una pagina che lo racconta.
+subito**, senza che il professionista cambi niente del suo lavoro.
 
 *Il secondo motivo, solido*: ogni profilo è **una pagina che nessun
 elenco può copiare**, perché dentro c'è una storia vera. Per Google
@@ -257,46 +408,17 @@ tutte da link passati a mano. Non è zero, ma non è ancora un canale.
 il modo per provarla è semplice: chiedere il collegamento a tutti e
 sei e guardare cosa cambia.
 
-**Cosa facciamo.**
-
-*La costruiamo insieme a loro.* Non un video tutorial: mezz'ora in
-videochiamata, e alla fine la pagina esiste. Per una persona poco
-pratica di tecnologia questa è la differenza fra iscriversi e
-arrendersi.
-
-*La proponiamo per quello che è*: «sostituisci il tuo Linktree con una
-pagina che parla di te». Non stiamo chiedendo un favore — stiamo
-dando qualcosa di meglio, gratis.
-
-*Mostriamo i numeri.* Ogni professionista vede quante persone hanno
-aperto la sua pagina e da dove sono arrivate. È la prova concreta che
-stare su Aurya serve — ed è ciò che un giorno renderà naturale
-pagare, senza che nessuno si senta preso in giro.
-
 ## 3 · L'elenco dei professionisti
 
-**Cos'è.** La pagina dove si sfogliano i professionisti per disciplina
-e per luogo.
-
 **Il problema.** Con sei nomi, un elenco è una promessa non mantenuta.
-Chi ci arriva cercando «operatori olistici in Italia» e trova sei
-schede se ne va, e la prossima volta non torna.
 
-**Cosa facciamo — prima la densità, poi la vetrina.**
-
-Fino a circa trenta professionisti l'elenco esiste e funziona, ma non
-è la porta principale del sito: la porta è il Magazine.
-
-Da trenta in su apriamo le pagine per disciplina — una pagina per il
-reiki, una per lo yoga — che hanno senso solo quando ci sono almeno
-tre o quattro nomi ciascuna.
-
-Da cento in su apriamo le pagine **disciplina più città**: «reiki a
-Bologna», «massaggio ayurvedico a Torino». Quelle sono la vera miniera,
-perché è così che le persone cercano davvero. Ma aprirle prima, con
-una pagina vuota per ogni città d'Italia, insegnerebbe a Google che il
-nostro sito promette e non mantiene — e da quella reputazione non si
-torna indietro in fretta.
+**Cosa facciamo — prima la densità, poi la vetrina.** Fino a circa
+trenta professionisti l'elenco esiste ma non è la porta principale del
+sito: la porta è il Magazine. Da trenta, si aprono le pagine per
+disciplina. Da cento, le pagine **disciplina più città** («reiki a
+Bologna») — la miniera vera, perché è così che le persone cercano. Ma
+aprirle prima, vuote, insegnerebbe a Google che promettiamo e non
+manteniamo.
 
 ## 4 · Il Magazine
 
@@ -306,117 +428,129 @@ quanto costa, cita le fonti e non promette guarigioni.
 
 **Perché è il patrimonio numero uno.** È l'unica cosa che possiamo far
 crescere senza dipendere da nessuno. È ciò che porterà le persone. Ed
-è anche il motivo per cui i professionisti si fideranno di noi: chi
-scrive così non tratterà nessuno come una scheda in un database.
+è il motivo per cui i professionisti si fideranno di noi.
 
-**Cosa facciamo — due lettori, due filoni.**
+**I due filoni.** *Chi cerca aiuto*: come si sceglie, quanto costa,
+cosa aspettarsi — le ricerche vicine alla decisione, che i portali
+generalisti non presidiano. *Chi lavora*: fiscalità, assicurazione,
+prezzi, come si riempie un ritiro — concorrenza quasi zero, e **ogni
+lettore è un professionista che potrebbe iscriversi.** L'unico posto
+dove farsi trovare su Google e reclutare sono la stessa attività.
 
-*Il filone di chi cerca aiuto.* «Come si sceglie», «quanto costa»,
-«cosa aspettarsi», «le domande da fare prima di prenotare». È il tipo
-di ricerca più vicino al momento della decisione, ed è quello che i
-grandi portali non presidiano, perché a loro conviene parlare di temi
-generici che fanno più visite.
-
-*Il filone di chi lavora.* Il codice fiscale dell'attività, la partita
-IVA, l'assicurazione, la legge che regola queste professioni, come si
-calcola il prezzo di un ritiro, come si riempiono i posti. Qui la
-concorrenza è quasi zero, e — questa è la parte importante — **ogni
-persona che legge questi articoli è un professionista che potrebbe
-iscriversi.** È l'unico posto dove farsi trovare su Google e trovare
-nuovi iscritti sono la stessa identica attività.
-
-*Il ritmo*: due articoli al mese. E prima di scriverne di nuovi, si
-aggiornano quelli che stanno quasi in prima pagina su Google: spingere
-un articolo dal dodicesimo al quinto posto porta più persone che
-scriverne uno nuovo da zero.
+*Il ritmo*: due articoli al mese, e prima di scrivere il nuovo si
+aggiorna quello che sta quasi in prima pagina.
 
 ## 5 · Le meditazioni
 
 **Cos'è.** Uno strumento con cui i professionisti compongono sessioni
-sonore, e una piccola biblioteca da ascoltare, riservata a chi si
-iscrive alla Lettera o si crea un account.
+sonore, e una biblioteca da ascoltare, riservata a chi si iscrive.
 
-**Cos'è davvero.** Non è un prodotto: è **il regalo che vale un
-indirizzo email.** È l'unica cosa su Aurya che una persona vuole
-*avere* subito, ed è la ragione più forte per lasciarci il proprio
-contatto. Ed è difficilissima da copiare: nessun concorrente ha uno
-strumento del genere.
+**Cos'è davvero.** Il **regalo che vale un indirizzo email** — l'unica
+cosa su Aurya che una persona vuole *avere* subito. E, in prospettiva,
+il nostro prodotto più difendibile: come visto nella parte sulla
+concorrenza, **le grandi app di meditazione non parlano italiano e
+non hanno volti.** Le nostre sessioni hanno una voce italiana e un
+professionista vero dietro, raggiungibile.
 
-**Cosa facciamo.**
-
-Restano gratuite e riservate: si ascoltano iscrivendosi. È il modo in
-cui la Lettera cresce.
-
-Il catalogo va riempito — una meditazione non è una biblioteca. Serve
-una campagna dedicata con i professionisti che sanno comporle,
-possibilmente accompagnandoli mentre lo fanno.
-
-E ogni meditazione **porta il nome di chi l'ha creata**, con il
-collegamento al suo profilo. Non è un file audio: è un biglietto da
-visita che si ascolta, e che quel professionista condividerà con
-orgoglio.
-
-Più avanti, quando la biblioteca sarà vera, diventa la base di un
-abbonamento. Ci torno nella parte sui conti.
+**Cosa facciamo.** Restano gratuite e riservate agli iscritti — è il
+motore della Lettera. Il catalogo va riempito con una campagna
+dedicata. E ogni meditazione porta la firma di chi l'ha creata, con
+la porta verso il suo profilo: non un file, un biglietto da visita
+che si ascolta.
 
 ## 6 · La Lettera
 
-**Cos'è.** La nostra newsletter. Oggi ha **un lettore esterno**: tre iscritti confermati, di cui due siamo noi.
+**Cos'è.** La nostra newsletter. Oggi ha **un lettore esterno**: tre
+iscritti confermati, di cui due siamo noi.
 
-**Il ruolo, che è più importante del numero.** È **l'unico canale che
-possediamo davvero.** Instagram ci presta attenzione e può togliercela
-domani cambiando le sue regole; Google può cambiare idea su di noi da
-un giorno all'altro. La lista degli iscritti no: quella è nostra, e
-nessuno può portarcela via.
-
-Ogni cosa che facciamo — un articolo, un post, una meditazione — deve
+**Il ruolo, più importante del numero.** È **l'unico canale che
+possediamo davvero.** Instagram può cambiarci le regole domani; Google
+può cambiare idea su di noi da un giorno all'altro. La lista è
+nostra, e nessuno può portarcela via. Ogni cosa che facciamo deve
 avere come punto di arrivo la Lettera.
 
-**Cosa regaliamo per meritarci un indirizzo**, in ordine di forza:
-
-1. **Le meditazioni.** Il gancio più forte, ed è già pronto.
-2. **Le guide riservate.** Versioni più profonde di ciò che il
-   Magazine dà in parte: «Le dodici domande da fare prima di prenotare
-   un ritiro», «Come si legge la formazione di un operatore».
-3. **Per i professionisti, il kit di partenza.** Modelli di consenso,
-   una lista di controllo fiscale, il foglio per calcolare il prezzo
-   di un ritiro. Cose che fanno risparmiare soldi veri a chi ne ha
-   pochi — e che nessuno regala.
-
-*Il ritmo*: una ogni due o tre settimane, e mai una lettera scritta
-per dovere. **Due liste separate** — le persone da una parte, i
-professionisti dall'altra — perché la stessa lettera scritta per
-entrambi non parla a nessuno dei due.
+*Il ritmo*: una ogni due o tre settimane, mai scritta per dovere.
+**Due liste separate** — persone e professionisti — perché la stessa
+lettera per entrambi non parla a nessuno dei due.
 
 ## 7 · Il negozio online
 
-**Cos'è.** La possibilità di prenotare e pagare un ritiro direttamente
-sul sito, con una caparra, e una commissione del 5% per noi.
+**Cos'è.** Prenotare e pagare un ritiro sul sito, con caparra, e una
+commissione del 5% per noi.
 
-**Lo stato.** Spento. Il calendario è vuoto — abbiamo appena tolto i
-ritiri finti che c'erano per riempire la vetrina, ed è stata la
-decisione giusta — e nessuno ha collegato il sistema di pagamento.
+**Lo stato.** Spento, e per scelta: calendario vuoto (abbiamo tolto i
+ritiri finti), nessun pagamento collegato.
 
-**Cosa facciamo — non si apre finché non c'è chi compra.**
+**Cosa facciamo — non si apre finché non c'è chi compra.** Un negozio
+senza passanti è una vetrina in una via deserta: i professionisti
+farebbero la fatica, non venderebbero niente, e concluderebbero che
+Aurya non serve. **Il costo di aprire troppo presto si misura in
+fiducia, ed è l'unica cosa che non si può ricomprare.**
 
-Un negozio senza passanti è una vetrina in una via deserta. I
-professionisti farebbero la fatica di collegare i pagamenti, non
-venderebbero niente, e concluderebbero che Aurya non serve. **Il costo
-di aprire troppo presto non si misura in soldi: si misura in fiducia,
-ed è l'unica cosa che non si può ricomprare.**
-
-Le tre condizioni per aprirlo, tutte e tre insieme:
-
-- almeno **mille visite al mese** che arrivano da Google;
-- almeno **cinquanta professionisti** con il profilo completo;
-- almeno **dieci ritiri veri** pubblicati.
-
-E quando si apre, i pagamenti si collegano **insieme a noi**, in
-videochiamata, uno per uno. Non con una guida scritta.
+Le tre condizioni per aprirlo, tutte e tre insieme: almeno **mille
+visite al mese da Google**, almeno **cinquanta professionisti** con
+profilo completo, almeno **dieci ritiri veri** pubblicati. E i
+pagamenti si collegano **insieme a noi**, uno per uno.
 
 ---
 
-# PARTE QUARTA — Come si cresce
+# PARTE SESTA — Gratis e a pagamento: dove passa la linea
+
+Questa parte risponde a una domanda precisa: *cosa diamo gratis, cosa
+facciamo pagare, e cosa ci compra il gratis?* Perché il gratuito, in
+un progetto come questo, non è generosità: **è la spesa di marketing
+più efficiente che esista** — a patto di sapere cosa deve rendere.
+
+## Il principio
+
+> **Si regala l'informazione. Si fa pagare la trasformazione.**
+
+Una guida si legge e si è imparato qualcosa: quella è informazione, e
+in un mondo dove tutto si trova, farla pagare significa solo non
+farla leggere. Un corso si segue e alla fine *si è cambiato qualcosa
+nel proprio lavoro*: quella è trasformazione, e la si paga
+volentieri. In mezzo ci sono l'accesso (il Club), il servizio su
+misura (il racconto professionale), e l'esperienza dal vivo. Tutte
+cose che non si possono «trovare gratis altrove», perché non sono
+informazione.
+
+## Cosa è gratis — e cosa ci compra
+
+| cosa regaliamo | cosa ci compra in cambio |
+|---|---|
+| **Tutti gli articoli del Magazine**, per sempre | l'autorevolezza, le visite da Google, e la fiducia — di chi legge e di chi un giorno comprerà il corso |
+| **Le guide scaricabili** (le dodici domande, il kit fiscale, il calcolatore del prezzo) | **l'indirizzo email.** Ogni guida è una porta d'ingresso alla Lettera: si scarica lasciando il contatto |
+| **Le meditazioni della biblioteca** | l'indirizzo email di chi *cerca* benessere — l'altra popolazione |
+| **Il profilo e la pagina-link** del professionista | i collegamenti verso Aurya, il passaparola, e il diritto — un giorno — di proporre qualcosa a pagamento |
+| **L'intervista e il racconto** ai primi della rete | la rete stessa, e le storie che diventano contenuto per Instagram e per il Magazine |
+| **Il gruppo WhatsApp e l'incontro mensile** | l'appartenenza, che è la materia prima del Club |
+
+Nota bene la seconda riga, perché è una correzione rispetto a come la
+pensavamo prima: **le guide non si vendono.** Nessuno paga nove euro
+per un documento, e chi lo farebbe è esattamente la persona di cui
+vogliamo l'indirizzo, non i nove euro. Una guida venduta rende una
+volta; una guida regalata in cambio dell'email rende ogni volta che
+scriviamo. Dentro c'è valore vero, e il prezzo è il contatto.
+
+## Cosa si paga — e perché è giusto pagarlo
+
+| cosa | perché non è «informazione travestita» |
+|---|---|
+| **Il corso** | non spiega cos'è la partita IVA (quello è gratis, nel Magazine): *accompagna* a mettere in ordine la propria attività, con esercizi, modelli e un risultato alla fine. Si paga il cambiamento, non le nozioni |
+| **Le esperienze dal vivo** | un'ora con una persona vera non è replicabile né scaricabile |
+| **Il racconto professionale** | un servizio artigianale con un risultato che resta tuo per sempre |
+| **L'abbonamento alle meditazioni** | il catalogo *completo* e l'ascolto senza limiti: una parte resta gratis, l'abbondanza si paga |
+| **Il Club** | accesso, priorità e assistenza: non contenuto |
+| **La commissione** | si paga solo su un guadagno che prima non c'era |
+
+La linea è netta e va difesa nel tempo, perché la tentazione di
+spostarla arriverà: ogni volta che qualcosa di gratuito funziona,
+verrà voglia di farlo pagare. È quasi sempre l'errore da non fare:
+**il gratuito che funziona è il motivo per cui il pagato vende.**
+
+---
+
+# PARTE SETTIMA — Come si cresce
 
 La crescita di Aurya ha tre stagioni. Ognuna ha un obiettivo solo, e
 la tentazione da evitare è sempre la stessa: correre alla stagione
@@ -440,170 +574,154 @@ avvicina a Google.
 
 Attenzione però: questa è la scommessa del piano, **non un fatto
 dimostrato**. Finora i profili hanno raccolto trenta visite in cinque
-settimane, quasi tutte da link mandati per messaggio — che è un modo
-privato di condividere, e a Google non arriva. Nei prossimi tre mesi
-va verificata sul serio: si chiede il collegamento a tutti, si dà il
-bollino pronto da incollare, e **si guarda quanti lo mettono
+settimane, quasi tutte da link mandati per messaggio — un modo
+privato di condividere, che a Google non arriva. Nei prossimi tre
+mesi va verificata sul serio: si chiede il collegamento a tutti, si
+dà il bollino pronto da incollare, e **si guarda quanti lo mettono
 davvero.** Se dopo tre mesi nessuno l'ha fatto, il problema non è
 Google: è che la pagina non li rende abbastanza fieri, e dobbiamo
 capire perché.
 
 *L'accompagnamento.* Mezz'ora in videochiamata per costruire il
-profilo insieme, e si esce con la pagina pronta da mettere in
-biografia. Sembra poco scalabile, ed è vero. Ma con i primi cinquanta
-è esattamente ciò che serve, ed è anche il modo in cui impariamo cosa
-li blocca davvero.
+profilo insieme. Sembra poco scalabile, ed è vero. Ma con i primi
+cinquanta è esattamente ciò che serve, ed è anche il modo in cui
+impariamo cosa li blocca davvero.
 
 *Il patto, detto a voce, a ognuno.* «Aurya è gratis, e la parte che
 usi oggi resterà gratis. Un giorno guadagneremo, e te lo diremo prima
 di farlo.» Questa frase, mantenuta, vale più di qualsiasi funzione.
 
-**Cosa guardiamo per capire se funziona**: quanti professionisti
-attivi, quanti profili completi, **quanti di loro ci hanno messo un
-collegamento dai loro canali**, quanti iscritti alla Lettera.
+**Cosa guardiamo**: professionisti attivi, profili completi, **quanti
+ci hanno collegato dai loro canali**, contatti in lista.
 
 ## Seconda stagione — Le persone *(da 50 a 200 professionisti)*
 
 **L'obiettivo: farsi trovare, e dare la prima prova di valore.**
 
-Il lavoro su Google comincia a rendere — l'obiettivo realistico è fra
-le mille e le tremila visite al mese entro sei-nove mesi. Le pagine
-per disciplina si aprono man mano che si riempiono.
-
-Cominciano **i primi guadagni, ma solo dal lato delle persone**, mai
-dai professionisti. Il perché è nella parte sui conti.
-
-E ai professionisti si mostra il numero: *il tuo profilo ha ricevuto
-duecento visite questo mese.* È così che ci si guadagna il diritto di
-chiedere qualcosa, un giorno.
+Il lavoro su Google comincia a rendere — obiettivo realistico
+1.000-3.000 visite mensili entro sei-nove mesi. Le pagine per
+disciplina si aprono man mano che si riempiono. Cominciano **i primi
+guadagni, ma solo dal lato delle persone.** E ai professionisti si
+mostra il numero: *il tuo profilo ha ricevuto duecento visite questo
+mese.* È così che ci si guadagna il diritto di chiedere, un giorno.
 
 ## Terza stagione — Il mercato *(da 200 in su)*
 
 Il negozio si accende, i pagamenti si collegano con
 l'accompagnamento. La commissione diventa accettabile perché è su
-guadagni **che prima non esistevano**: nessuno paga su ciò che già
-aveva.
-
-Ed è qui che il Club dei professionisti diventa proponibile senza che
-nessuno storca il naso.
+guadagni **che prima non esistevano.** Ed è qui che il Club diventa
+proponibile senza che nessuno storca il naso.
 
 ---
 
-# PARTE QUINTA — Come si guadagna
+# PARTE OTTAVA — Come si guadagna, e la prova che la domanda esiste
 
 ## La regola che tiene tutto in piedi
 
 > **Non si chiede niente a chi non ha ancora ricevuto niente.**
 
 Il professionista olistico medio guadagna poco e ha già la sensazione
-di pagare troppi strumenti che non gli portano nulla — il sito che ha
-fatto fare e non visita nessuno, il gestionale degli appuntamenti,
-l'abbonamento a quella cosa che gli avevano consigliato. Se Aurya
+di pagare troppi strumenti che non gli portano nulla. Se Aurya
 diventa l'ennesima voce in quella lista, non perdiamo un cliente:
-perdiamo la reputazione. E la reputazione è l'unica cosa su cui
-stiamo costruendo.
+perdiamo la reputazione. Da qui la scelta controintuitiva: **prima si
+guadagna dalle persone che cercano, poi dai professionisti che
+offrono.**
 
-Da qui discende una scelta precisa e controintuitiva:
+E per ogni fonte di guadagno, questa volta, c'è scritta anche **la
+prova che qualcuno paga già per una cosa simile** — perché la domanda
+giusta è proprio questa: la domanda esiste davvero?
 
-> **Prima si guadagna dalle persone che cercano. Poi dai professionisti
-> che offrono.**
+## Lato persone
 
-Perché una persona che paga per un contenuto o per un'esperienza non
-si sente sfruttata: ha comprato qualcosa che voleva. E un
-professionista che vede arrivare gente paga volentieri, perché sta
-comprando un ritorno che ha già visto coi suoi occhi.
+**L'abbonamento alle meditazioni** — €4/mese o €39/anno, quando la
+biblioteca avrà almeno trenta sessioni.
+*La prova che la domanda esiste*: Calm e Headspace vendono
+abbonamenti a 50-58 €/anno a milioni di persone, **senza nemmeno
+parlare italiano**. Il 12% degli italiani medita. Non dobbiamo
+convincere nessuno che la meditazione guidata valga un abbonamento —
+l'hanno già fatto i giganti. Dobbiamo essere la versione italiana,
+umana e radicata, a un prezzo sotto la loro ancora.
+*Perché è il guadagno più interessante*: è l'unico che cresce senza
+che noi lavoriamo di più.
 
-## Da dove arrivano i soldi — lato persone
+**Le esperienze dal vivo online** — la persona paga €10-25, noi
+tratteniamo il 20-30%.
+*La prova*: cerchi, meditazioni guidate e sessioni live si vendono
+già ovunque a quei prezzi — nei gruppi, nelle liste private dei
+singoli operatori, sulle piattaforme di eventi. La domanda c'è;
+quello che manca agli operatori è il pubblico e l'organizzazione,
+cioè esattamente ciò che portiamo noi.
+*Perché è la mossa che consiglio di più*: si fa con sei
+professionisti, non con duecento. Costa quasi zero. E produce la
+prova che ci manca: **il professionista si ritrova in tasca soldi che
+senza Aurya non avrebbe.** Da lì, ogni conversazione cambia.
 
-**L'abbonamento alle meditazioni.** Quando la biblioteca sarà vera
-(diciamo trenta sessioni), l'accesso completo diventa un abbonamento:
-circa **€4 al mese, o €39 all'anno**. È il guadagno più promettente
-del piano perché è l'unico che **cresce senza che noi lavoriamo di
-più**: la trentunesima persona che si abbona non ci costa niente più
-della trentesima.
+**La commissione sulle prenotazioni** — 5%, terza stagione.
+*La prova*: 298 ritiri italiani sono già in vendita su piattaforme
+straniere a commissione. Gli organizzatori italiani accettano già
+questo modello — solo che oggi lo pagano a piattaforme che non li
+conoscono e non li raccontano.
 
-**Le guide approfondite.** Raccolte del Magazine confezionate bene, in
-formato scaricabile: **€9-19 l'una**. Il contenuto esiste già, va solo
-impacchettato. Guadagno piccolo, ma è il primo, e serve a scoprire una
-cosa fondamentale: *qualcuno è disposto a darci dei soldi?*
+## Lato professionisti
 
-**Le esperienze dal vivo online.** Sessioni condotte dai
-professionisti della rete — un cerchio, una meditazione guidata, mezz'ora
-di domande e risposte. La persona paga **€10-25**, e noi tratteniamo
-il **20-30%**.
+**Il corso: «Il mestiere, oltre la pratica»** — €99-199.
+*La prova, ed è la più solida di tutte*: esiste un intero mercato di
+scuole che vendono formazione olistica a centinaia o migliaia di
+euro. I professionisti di questo settore **pagano già per formarsi**
+— ma quasi tutta l'offerta insegna la disciplina, quasi nessuno
+insegna il mestiere intorno: fiscalità, prezzi, come farsi trovare,
+come si riempie un ritiro. I nostri sette articoli su questi temi
+sono già l'indice del corso, e chi impara a prezzare un ritiro
+recupera il costo del corso al primo ritiro. Si vende un investimento
+che si ripaga, non una spesa.
 
-Questa, di tutto il piano, è la mossa che consiglio con più
-convinzione, e spiego perché. **Si può fare con sei professionisti
-invece che con duecento.** Costa quasi niente da organizzare. E
-produce esattamente la prova che oggi ci manca: il professionista si
-ritrova in tasca dei soldi che senza Aurya non avrebbe avuto. Da quel
-momento in poi, ogni conversazione con lui è diversa.
+**Il racconto professionale** — €150-300 una tantum.
+*La prova*: un servizio di presenza professionale — foto, testi,
+racconto — si paga sul mercato molto di più. Qui è artigianale, con
+un risultato che resta. Chi non lo vuole non lo compra: nessun
+canone, nessuna tassa.
 
-**La commissione sulle prenotazioni.** Il 5% sui ritiri, quando il
-negozio sarà acceso. Terza stagione.
+**La promozione sui nostri canali** — €50-150 a uscita, ma **solo
+quando i canali avranno un pubblico**: vendere spazi vuoti è il modo
+più rapido per bruciare la fiducia.
 
-## Da dove arrivano i soldi — lato professionisti
+**Il Club Aurya** — €49-89/anno, terza stagione.
+*La prova*: le associazioni di categoria del settore incassano già
+quote annuali comparabili, dando in cambio meno di quello che daremo
+noi. Il modello «quota annuale per appartenere» è già normale in
+questo mondo.
+*Il momento è tutto*: proporlo oggi significa chiedere soldi per una
+promessa; proporlo quando il profilo porta duecento visite al mese
+significa chiedere mezza seduta per una cosa che ne genera diverse.
+Cosa deve contenere: priorità nell'elenco, il badge verificato con
+l'intervista, il corso incluso, una promozione all'anno, il poter
+comporre meditazioni, e **qualcuno che risponde** — che per chi non è
+pratico di tecnologia vale da sola la quota. E il livello gratuito
+resta per sempre: il Club è un di più, mai un pedaggio.
 
-**Il racconto professionale.** Intervista, testo scritto da noi, foto
-coordinate: **€150-300 una tantum.** La differenza con un abbonamento
-è tutta qui: è **un servizio con una cosa in mano alla fine**. Chi
-paga riceve un racconto che resta suo, che può usare anche fuori da
-Aurya. Nessuno si sente tassato per esistere.
+## L'ordine di accensione
 
-**La promozione sui nostri canali.** Un'uscita su Instagram, uno spazio
-nella Lettera, un articolo dedicato: **€50-150.** Ha senso solo quando
-quei canali hanno un pubblico vero, altrimenti stiamo vendendo aria.
-
-**Il corso: «Il mestiere, oltre la pratica».** Un percorso video su
-fiscalità, prezzi, presenza online, come si riempie un ritiro:
-**€99-199.**
-
-Questo è **il guadagno più solido di tutto il piano**, e vale la pena
-capire perché. I sette articoli per professionisti che abbiamo già
-scritto *sono l'indice del corso*: il lavoro concettuale è fatto. E
-affrontano i problemi per cui una persona paga volentieri, perché non
-sono spese — sono investimenti che gli fanno guadagnare di più.
-Qualcuno che impara a prezzare correttamente un ritiro recupera
-duecento euro al primo ritiro.
-
-**Il Club Aurya.** Quota annuale, **€49-89.** Ma qui il momento è
-tutto, e merita un discorso a parte.
-
-### Sul Club: quando è una bella idea e quando è una trappola
-
-Proporre un club a €49 **oggi** significa chiedere soldi per una
-promessa. Proporlo quando il profilo di quella persona riceve
-duecento visite al mese significa chiedere il prezzo di mezza seduta
-per una cosa che gliene porta diverse. Stessa cifra, due mondi
-diversi.
-
-**Cosa deve contenere perché non sia una tassa.** Ogni voce deve
-essere qualcosa che quella persona non può avere gratis altrove:
-
-- comparire **più in alto** nell'elenco e nelle pagine per disciplina;
-- il **badge verificato** con l'intervista;
-- il **corso incluso**, e i suoi aggiornamenti;
-- **una promozione all'anno** sui nostri canali;
-- poter **comporre e distribuire meditazioni** col proprio nome;
-- **qualcuno che risponde.** Per chi non è pratico di tecnologia
-  questa voce, da sola, vale la quota.
-
-E soprattutto: **il livello gratuito resta, per sempre**, con profilo
-e pagina-link. Il Club è un di più, mai un pedaggio. Il giorno che per
-stare su Aurya bisogna pagare, Aurya ha smesso di essere quello che
-diciamo di essere.
+1. **Le guide gratuite in cambio dell'email** *(subito)* — non
+   rendono soldi, rendono la lista. È la fondazione.
+2. **Le esperienze online** *(mesi 3-6)* — il primo euro a un
+   professionista.
+3. **Il racconto a pagamento** *(quando c'è lista d'attesa)*.
+4. **Il corso** *(mesi 6-12)* — il pezzo grosso.
+5. **L'abbonamento alle meditazioni** *(quando la biblioteca
+   esiste)*.
+6. **Club e commissioni** *(terza stagione)*.
 
 ---
 
-# PARTE SESTA — I conti
+# PARTE NONA — I conti
 
 Qui smetto di raccontare e faccio l'analista. Ogni numero che segue è
 un'ipotesi dichiarata: si può discutere, ed è giusto farlo.
 
 ## Quanto serve, esattamente
 
-Poniamo l'obiettivo in modo concreto: **due persone che vivono di
-Aurya**, con una serenità ragionevole.
+Obiettivo concreto: **due persone che vivono di Aurya**, con una
+serenità ragionevole.
 
 | voce | all'anno |
 |---|---|
@@ -616,56 +734,48 @@ Aurya**, con una serenità ragionevole.
 Arrotondiamo per prudenza: **€100.000 all'anno**, cioè circa **€8.300
 al mese.**
 
-Sembra tanto. Vediamo se è raggiungibile, e in quanto tempo.
-
 ## Le ipotesi su cui poggia tutto
 
-Prima dei numeri, le tre cose che devono essere vere. Se saltano
-queste, salta il modello — e vale la pena controllarle ogni trimestre.
-
 **Ipotesi 1 — Il Magazine porta persone.** Con due articoli al mese e
-i collegamenti dai professionisti, si arriva a 1.000-3.000 visite
-mensili in 9-12 mesi, e a 10.000-30.000 nel secondo anno.
-
+i collegamenti dai professionisti, 1.000-3.000 visite mensili in 9-12
+mesi, 10.000-30.000 nel secondo anno.
 *È l'ipotesi più solida in teoria — ed è quella con meno prove oggi.*
-È quello che succede normalmente a un sito con contenuti buoni e
-collegamenti veri, e i contenuti buoni li abbiamo. Ma di persone
-arrivate da Google finora ne abbiamo **zero**, e il difetto tecnico
-che ce lo impediva è stato risolto pochi giorni fa. Il primo segnale
-utile arriverà fra sei-otto settimane: se a fine ottobre le pagine
+Di persone arrivate da Google ne abbiamo zero, e il difetto tecnico
+che lo impediva è stato risolto pochi giorni fa. Il primo segnale
+utile arriva fra sei-otto settimane: se a fine ottobre le pagine
 trovate da Google non salgono, l'ipotesi va rivista prima di
 costruirci sopra.
 
-**Ipotesi 2 — I professionisti entrano al ritmo di 10-15 al mese**
-una volta avviato il reclutamento. *Ipotesi media*: dipende da quanto
-tempo dedichiamo alle conversazioni, ed è il collo di bottiglia vero
-del piano.
+**Ipotesi 2 — I professionisti entrano a 10-15 al mese** una volta
+avviato il reclutamento. *Ipotesi media*: dipende dal tempo che
+dedichiamo alle conversazioni, ed è il collo di bottiglia vero.
 
-**Ipotesi 3 — Su cento persone che leggono un articolo per
-professionisti, una compra il corso.** *È l'ipotesi più fragile* — un
-lettore su cento è una stima normale per un prodotto da €149 venduto
-da chi si è guadagnato fiducia, ma finché non vendiamo il primo corso
-non lo sappiamo. **È il numero da verificare per primo.**
+**Ipotesi 3 — Su cento professionisti che leggono, uno compra il
+corso.** *È l'ipotesi più fragile* — uno su cento è una stima normale
+per un prodotto da €149 venduto da chi si è guadagnato fiducia, e il
+mercato della formazione olistica pagata esiste ed è florido; ma
+finché non vendiamo il primo corso non lo sappiamo. **È il numero da
+verificare per primo.**
 
 ## Anno 1 — La semina *(mesi 1-12)*
 
-Non ci si vive. Va detto subito e senza giri: **il primo anno Aurya
-non mantiene nessuno**, e serve un'altra entrata accanto.
+Non ci si vive. Va detto senza giri: **il primo anno Aurya non
+mantiene nessuno**, e serve un'altra entrata accanto.
 
 | da dove | quanto |
 |---|---|
-| Guide e raccolte scaricabili | €600 |
 | Racconti professionali a pagamento (circa 15) | €3.500 |
-| Corso, dal lancio in avanti (circa 50 copie) | €7.000 |
+| Corso, dal lancio in avanti (circa 50 copie) | €7.500 |
 | Esperienze online (la nostra quota) | €1.500 |
-| **Totale anno 1** | **≈ €12.600** |
+| **Totale anno 1** | **≈ €12.500** |
 
 *Dove si arriva*: 60-80 professionisti, 2.000-3.000 visite mensili,
-600-1.000 iscritti alla Lettera, 20-30 meditazioni.
+600-1.000 contatti in lista (grazie alle guide gratuite), 20-30
+meditazioni.
 
-Il valore di quest'anno non sono i dodicimila euro: è **il patrimonio
-che resta** — le persone, i contenuti, i collegamenti, e la prova che
-qualcuno paga.
+Il valore dell'anno non sono i dodicimila euro: è **il patrimonio che
+resta** — le persone, i contenuti, i collegamenti, la lista, e la
+prova che qualcuno paga.
 
 ## Anno 2 — La trazione
 
@@ -674,17 +784,17 @@ qualcuno paga.
 | Corso professionisti | 200 copie a €149 | €29.800 |
 | Abbonamento meditazioni | 400 abbonati a €39 | €15.600 |
 | Club Aurya | 100 iscritti a €89 | €8.900 |
-| Esperienze online | 40 sessioni al mese, nostra quota €40 | €19.200 |
+| Esperienze online | 40 sessioni al mese, quota €40 | €19.200 |
 | Racconti e promozioni | | €7.000 |
-| Commissioni sulle prenotazioni | negozio appena acceso | €4.000 |
+| Commissioni | negozio appena acceso | €4.000 |
 | **Totale anno 2** | | **≈ €84.500** |
 
 **Ci vive comodamente una persona, e due in modo stretto.** È l'anno
-della verità: se i numeri del secondo anno arrivano, il terzo arriva
-quasi da solo.
+della verità: se questi numeri arrivano, il terzo arriva quasi da
+solo.
 
 *Dove si arriva*: 200-250 professionisti, 10.000-15.000 visite
-mensili, 3.000-4.000 iscritti alla Lettera.
+mensili, 3.000-4.000 contatti in lista.
 
 ## Anno 3 — L'indipendenza
 
@@ -694,68 +804,50 @@ mensili, 3.000-4.000 iscritti alla Lettera.
 | Abbonamento meditazioni | 1.200 abbonati | €46.800 |
 | Club Aurya | 300 iscritti | €26.700 |
 | Esperienze online | 100 sessioni al mese | €48.000 |
-| Commissioni sulle prenotazioni | 80 al mese, €30 l'una | €28.800 |
+| Commissioni | 80 al mese, €30 l'una | €28.800 |
 | Promozioni e collaborazioni | | €15.000 |
 | **Totale anno 3** | | **≈ €227.000** |
 
-**Qui ci vivono due persone bene, e c'è margine per pagarne una
-terza** — che a quel punto serve, perché il collo di bottiglia
-diventerà il tempo.
+**Qui ci vivono due persone bene, e c'è margine per una terza** — che
+a quel punto serve, perché il collo di bottiglia sarà il tempo.
 
-*Dove si arriva*: 600-800 professionisti, 30.000-50.000 visite
-mensili, 10.000 iscritti alla Lettera.
+Per dare una misura esterna: se l'abbonamento alle meditazioni
+arrivasse anche solo allo **0,1% degli italiani che meditano**,
+sarebbero migliaia di abbonati — più dell'intera riga dell'anno 3.
+Non è una promessa: è per dire che il tetto del mercato è molto più
+alto del nostro obiettivo, e che l'obiettivo non richiede nessun
+miracolo di quota.
 
 ## E se andasse peggio?
 
-Un piano che prevede solo lo scenario buono non è un piano. Ecco cosa
-succede se le cose vanno a metà — cioè se ogni ipotesi rende la metà
-di quanto sperato.
+Un piano che prevede solo lo scenario buono non è un piano. Se ogni
+ipotesi rendesse la metà:
 
 | | prudente (metà) | atteso | buono (+50%) |
 |---|---|---|---|
-| Anno 1 | €6.000 | €12.600 | €19.000 |
+| Anno 1 | €6.000 | €12.500 | €19.000 |
 | Anno 2 | €42.000 | €84.500 | €127.000 |
 | Anno 3 | €113.000 | €227.000 | €340.000 |
 
 **Anche nello scenario prudente, il terzo anno mantiene due persone.**
-È questo che rende il piano difendibile: non ha bisogno che tutto vada
-bene. Ha bisogno di tempo e di costanza.
+È questo che rende il piano difendibile: non ha bisogno che tutto
+vada bene. Ha bisogno di tempo e di costanza.
 
 Il vero rischio non è che i numeri siano più bassi. **È fermarsi al
 mese otto**, quando si è lavorato tanto, il guadagno è ancora
 ridicolo, e sembra che non stia succedendo niente — mentre invece sta
 succedendo tutto, solo sottoterra.
 
-## L'ordine in cui accendere le cose
-
-Non tutti insieme. In quest'ordine, e ognuno insegna qualcosa per il
-successivo:
-
-1. **Le guide scaricabili** *(mesi 1-3)* — ci dicono se qualcuno paga.
-2. **Le esperienze online** *(mesi 3-6)* — portano il primo euro a un
-   professionista, e cambiano tutte le conversazioni successive.
-3. **Il racconto a pagamento** *(quando c'è lista d'attesa per
-   entrare)*.
-4. **Il corso** *(mesi 6-12)* — il pezzo grosso.
-5. **L'abbonamento alle meditazioni** *(quando la biblioteca esiste)* —
-   quello che cresce da solo.
-6. **Club e commissioni** *(terza stagione)*.
-
 ---
 
-# PARTE SETTIMA — Farsi trovare
-
-Questa parte parla di come si arriva su Google. Provo a spiegarla in
-modo che si capisca senza saperne niente.
+# PARTE DECIMA — Farsi trovare
 
 ## Il tetto di vetro: i collegamenti
 
 Google decide chi mettere in alto guardando, fra le altre cose,
-**quanti siti collegano il tuo**. Ogni collegamento è come una persona
-che dice «di questi qui ti puoi fidare». Aurya oggi ne ha **zero**.
-
-Senza quelli, ogni miglioramento tecnico è una macchina perfetta senza
-benzina.
+**quanti siti collegano il tuo**. Ogni collegamento è una persona che
+dice «di questi ti puoi fidare». Aurya ne ha **zero**. Senza quelli,
+ogni miglioramento tecnico è una macchina perfetta senza benzina.
 
 E qui abbiamo un vantaggio che nessun concorrente può copiarci:
 
@@ -763,125 +855,104 @@ E qui abbiamo un vantaggio che nessun concorrente può copiarci:
 > si compra e non si chiede come favore: si merita, dando a quella
 > persona una pagina di cui va fiera.
 
-*Come si fa, concretamente:*
-
-- Il momento giusto per chiedere il collegamento è **alla consegna del
-  racconto**, quando la persona ha appena ricevuto qualcosa.
-- Le diamo un **bollino già pronto** da incollare sul suo sito
-  («Profilo verificato su Aurya»): non deve capire niente di tecnico.
-- Le suggeriamo il collegamento **nella biografia di Instagram** — e
-  siccome la nostra pagina-link è più utile di Linktree, non è un
-  favore: è un miglioramento.
+*Come si fa*: il momento giusto per chiedere è **alla consegna del
+racconto**; si dà un **bollino già pronto** da incollare («Profilo
+verificato su Aurya»); si suggerisce il collegamento **nella
+biografia di Instagram** — e siccome la nostra pagina-link è più
+utile di Linktree, non è un favore: è un miglioramento.
 
 *L'obiettivo*: 15-20 siti che ci collegano in tre mesi, una
 cinquantina entro l'anno.
 
 ## Le altre leve, in ordine di forza
 
-**Gli articoli per professionisti.** Poca concorrenza, persone molto
-motivate, e ogni lettore è un possibile iscritto. È l'unico posto dove
-farsi trovare e trovare professionisti sono la stessa attività.
+**Gli articoli per professionisti** — poca concorrenza, lettori
+motivati, e ogni lettore è un possibile iscritto.
 
-**Gli articoli per chi cerca aiuto.** «Quanto costa», «come si
-sceglie»: vicini al momento della decisione e poco presidiati.
+**Gli articoli per chi cerca** — «quanto costa», «come si sceglie»:
+vicini alla decisione, poco presidiati.
 
-**Le pagine disciplina più città.** La miniera vera, ma solo quando ci
-sono i nomi. Prima sarebbero pagine vuote.
+**Le pagine disciplina più città** — la miniera, ma solo con i nomi
+dentro.
 
-**Farsi leggere dalle intelligenze artificiali.** Quando qualcuno fa
-una domanda a ChatGPT o vede la risposta automatica di Google, quelle
-risposte citano delle fonti. Un sito nuovo può essere citato **subito**
-lì, mentre nelle ricerche normali deve aspettare mesi. Abbiamo già
-preparato il sito per farsi leggere così, e su metà degli articoli c'è
-un riepilogo in testa fatto apposta perché sia citabile. Va completato.
+**Farsi leggere dalle intelligenze artificiali.** Le risposte
+automatiche (ChatGPT, la risposta in cima a Google) citano fonti — e
+un sito nuovo può essere citato **subito**, mentre nelle ricerche
+normali aspetta mesi. Il sito è già predisposto; su metà degli
+articoli c'è un riepilogo fatto apposta per essere citabile. Va
+completato.
 
-**Farsi nominare da altri.** L'articolo sui costi può diventare un
-piccolo «Osservatorio dei prezzi del benessere olistico in Italia»: i
-giornalisti citano volentieri i numeri, molto meno le opinioni.
+**Farsi nominare.** L'articolo sui costi può diventare
+l'«Osservatorio dei prezzi del benessere olistico in Italia»: i
+giornalisti citano i numeri, non le opinioni.
 
 ## Instagram
 
-**A cosa serve davvero.** Va detta una cosa che i numeri hanno reso
-evidente: **Instagram è oggi l'unico canale che porta persone su
-Aurya.** Cinquantasette delle nostre visite arrivano da lì. Non è un
-canale accessorio in attesa che Google si svegli: per adesso è
-l'unico che abbiamo, e va trattato come tale.
-
-Detto questo, il suo scopo non è vendere. Serve a **tenere il rapporto
-con i professionisti** e a far vedere che Aurya esiste ed è bella.
+Va detta una cosa che i numeri hanno reso evidente: **Instagram è
+oggi l'unico canale che porta persone su Aurya** — 57 delle nostre
+visite vengono da lì. Non è un canale accessorio: per adesso è
+l'unico, e va trattato come tale.
 
 *Il formato principale è il ritratto*: un professionista, la sua
-storia, una fotografia. È il contenuto che **loro ricondividono** — e
-ogni ricondivisione ci porta il loro pubblico. È il modo di crescere
-più economico che abbiamo, e coincide esattamente con ciò che già
-facciamo.
+storia, una fotografia. È il contenuto che **loro ricondividono**, e
+ogni ricondivisione porta il loro pubblico da noi. *Poi il pezzo di
+Magazine* a schede, e *il suono* — un frammento di meditazione con le
+immagini che danzano, riconoscibile e nostro.
 
-*Poi il pezzo di Magazine* ridotto a poche schermate: le guide oneste
-funzionano bene in quel formato.
-
-*E il suono*: un frammento di meditazione con le immagini che si
-muovono al ritmo. È riconoscibile e non lo fa nessun altro.
-
-La biografia porta alla Lettera, non al sito.
-
-**Cosa guardiamo**: non quanti ci seguono, ma **quanti professionisti
-ci ricondividono** e quante iscrizioni alla Lettera arrivano da lì.
+La biografia porta alla Lettera, non al sito. E la metrica che conta
+non è quanti ci seguono: è **quanti professionisti ricondividono** e
+quante iscrizioni arrivano.
 
 ## La comunità
 
-Non si «apre» una comunità: ci si accorge che è nata. Nell'ordine:
-
-1. **Un gruppo WhatsApp dei professionisti della rete**, fino a una
-   cinquantina. Costa zero e vale moltissimo per chi passa le giornate
-   da solo. È lì che nasce l'appartenenza — ed è lì che un giorno il
-   Club sembrerà una cosa naturale.
-2. **Un incontro online al mese**: un tema, un ospite, mezz'ora. È la
-   prova generale, gratuita, delle esperienze a pagamento.
-3. **Il Club** solo quando quel gruppo comincerà a chiedere da solo più
-   di quanto possiamo dare gratis. Sarà quello il segnale, e arriverà
-   da loro.
+Non si «apre» una comunità: ci si accorge che è nata. Nell'ordine: il
+**gruppo WhatsApp** della rete (fino a ~50, costa zero, vale
+moltissimo per chi lavora da solo), l'**incontro online mensile** (la
+prova generale gratuita delle esperienze a pagamento), e **il Club**
+solo quando il gruppo chiederà da solo più di quanto possiamo dare
+gratis. Sarà quello il segnale, e arriverà da loro.
 
 ---
 
-# PARTE OTTAVA — Cosa può diventare Aurya
+# PARTE UNDICESIMA — Cosa può diventare Aurya
 
-Fin qui il piano. Questa parte è la visione: dove può arrivare se le
-tre stagioni funzionano.
+Fin qui l'analisi. Questa parte è la visione — con i piedi dentro i
+numeri appena visti.
 
 **Aurya può diventare il posto dove il benessere italiano si fida.**
 
-Non il più grande elenco — quello lo può fare chiunque abbia soldi da
-buttare in pubblicità. Il posto **di cui ci si fida**: dove una
-persona va per capire prima di scegliere, e dove un professionista
-vuole essere perché esserci significa qualcosa.
+Non il più grande elenco: quello lo può fare chiunque abbia budget
+pubblicitario. Il posto **di cui ci si fida** — dove una persona va
+per capire prima di scegliere, e dove un professionista vuole essere
+perché esserci significa qualcosa.
 
 Da lì si aprono tre strade, e non si escludono:
 
-**Aurya come voce.** Il Magazine diventa la testata di riferimento del
-settore in Italia. Chi scrive di benessere ci cita, i giornalisti ci
-chiamano per i dati, e i contenuti diventano libri, corsi, forse un
-podcast. Il guadagno viene da contenuti e formazione, e non dipende da
-nessuna piattaforma.
+**Aurya come voce.** Il Magazine diventa la testata di riferimento
+del settore. In un mercato da 140 miliardi di dollari senza un
+riferimento editoriale credibile, il primo che lo costruisce con
+serietà se lo tiene per anni. Da lì: contenuti, formazione, forse un
+giorno un podcast o un libro. Guadagno indipendente da qualsiasi
+piattaforma.
 
 **Aurya come standard.** Il badge verificato — con l'intervista vera
-dietro — diventa un segno che vale nel settore. Non un albo, che non
-possiamo creare: **una reputazione**, che nel vuoto normativo italiano
-può contare quanto un albo. Quel giorno, essere su Aurya smette di
-essere una scelta di visibilità e diventa una scelta di credibilità.
+dietro — diventa un segno riconosciuto. Non un albo, che non possiamo
+creare: **una reputazione**, che nel vuoto normativo italiano può
+contare quanto un albo. Quel giorno, essere su Aurya smette di essere
+visibilità e diventa credibilità.
 
 **Aurya come mercato.** Quando ci sono persone e professionisti, le
-prenotazioni arrivano da sole. È la strada più ricca, ed è anche
-l'unica che non funziona se le prime due non sono già vere.
+prenotazioni arrivano. I 298 ritiri italiani oggi in vendita su
+piattaforme straniere sono la dimostrazione che il mercato c'è — e
+che aspetta qualcuno che lo serva in italiano, con dei volti.
 
-La cosa importante è l'ordine: **voce, poi standard, poi mercato.**
-Chi parte dal mercato costruisce un elenco in più. Chi parte dalla
-voce costruisce qualcosa che non si copia.
+L'ordine conta: **voce, poi standard, poi mercato.** Chi parte dal
+mercato costruisce un elenco in più. Chi parte dalla voce costruisce
+qualcosa che non si copia.
 
 ---
 
-# PARTE NONA — Cosa non faremo
-
-Le cose che non si fanno contano quanto quelle che si fanno.
+# PARTE DODICESIMA — Cosa non faremo
 
 **Non apriremo il negozio prima che ci siano le persone.** Costa la
 fiducia dei professionisti, che non si ricompra.
@@ -890,15 +961,19 @@ fiducia dei professionisti, che non si ricompra.
 qualcosa.** Se il primo euro che chiediamo arriva prima del primo
 cliente che portiamo, siamo un costo, non un compagno di strada.
 
+**Non venderemo l'informazione.** Le guide e gli articoli sono
+gratis, per sempre: sono loro che costruiscono l'autorevolezza e
+riempiono la lista. Si vendono la trasformazione, l'esperienza,
+l'accesso e il servizio — mai il sapere.
+
 **Non riempiremo le pagine di contenuti finti** per sembrare più
-grandi. L'abbiamo già fatto una volta con i ritiri di esempio e
-l'abbiamo disfatto: era la cosa giusta, e la rifaremmo.
+grandi. Fatto una volta, disfatto, imparato.
 
-**Non compreremo pubblicità né collegamenti** finché quello che
-arriva da solo non dà segno di vita. Pagheremmo per portare gente su
-un sito che ancora non sa trattenerla.
+**Non compreremo pubblicità né collegamenti** finché l'organico non
+dà segno di vita.
 
-**Non tradurremo in quattro lingue.** La forza va tutta sull'italiano.
+**Non tradurremo in quattro lingue.** La forza va tutta sull'italiano
+— ed è un vantaggio, non un limite: i giganti non parlano italiano.
 
 **Non cambieremo il modo di scrivere.** Il tono del Magazine *è* il
 vantaggio competitivo. Il giorno in cui scriveremo come tutti gli
@@ -906,26 +981,44 @@ altri, saremo tutti gli altri.
 
 ---
 
-# PARTE DECIMA — I prossimi novanta giorni
+# PARTE TREDICESIMA — I prossimi novanta giorni
 
 | mese | cosa | come si vede se funziona |
 |---|---|---|
-| **1** | **Sistemare la misura**: escludere le nostre visite, riconciliare i due contatori. Chiedere il collegamento ai 6 professionisti, col bollino pronto. Riempire il catalogo delle meditazioni. | un numero di traffico di cui ci si può fidare; primi collegamenti in arrivo |
-| **2** | Reclutare 15 nuovi professionisti, uno per uno. Aprire il gruppo WhatsApp della rete. Pubblicare la prima guida a pagamento. Due articoli per professionisti. | professionisti attivi; iscritti alla Lettera |
-| **3** | La prima esperienza online a pagamento. Il primo incontro mensile della rete. Le pagine per disciplina, se i nomi bastano. | **il primo euro incassato**; e soprattutto **il primo euro portato a un professionista** |
+| **1** | **Sistemare la misura**: escludere le nostre visite, riconciliare i due contatori. Chiedere il collegamento ai 6 professionisti, col bollino pronto. Riempire il catalogo delle meditazioni. | un numero di traffico affidabile; primi collegamenti |
+| **2** | Reclutare 15 professionisti, uno per uno. Gruppo WhatsApp della rete. **La prima guida gratuita in cambio dell'email.** Due articoli per professionisti. | professionisti attivi; contatti in lista |
+| **3** | La prima esperienza online a pagamento. Il primo incontro mensile. Le pagine per disciplina, se i nomi bastano. | **il primo euro incassato**; e soprattutto **il primo euro portato a un professionista** |
 
 ## Le tre cose da guardare, in quest'ordine
 
-1. **Quanti professionisti ci collegano spontaneamente.** Misura se il
-   racconto che facciamo vale davvero. Se nessuno lo condivide, il
-   problema non è Google: è quello che scriviamo.
+1. **Quanti professionisti ci collegano spontaneamente** — misura se
+   il racconto vale. Se nessuno condivide, il problema non è Google.
+2. **Quante persone arrivano da Google ogni mese** — misura se il
+   Magazine lavora.
+3. **Il primo euro portato a un professionista** — la metrica che
+   apre tutte le altre. Prima di quella, ogni discorso sulla
+   monetizzazione resta teoria.
 
-2. **Quante persone arrivano da Google ogni mese.** Misura se il
-   Magazine sta lavorando per noi.
+---
 
-3. **Il primo euro portato a un professionista.** È la metrica che
-   apre tutte le altre. Finché non succede, ogni discorso sulla
-   monetizzazione resta teoria — e noi lo sapremo.
+## Le fonti dei numeri di mercato
+
+- Global Wellness Institute — *Wellness Economy: Italy* (economia del
+  benessere italiana ~140,6 miliardi di dollari; benessere mentale
+  fra i settori a maggior crescita; Italia top 10 in dieci categorie).
+- ANSA, giugno 2025 — 6 milioni di italiani praticano yoga, raddoppio
+  dal 2019.
+- Torrinomedica — circa il 12% degli italiani pratica meditazione.
+- Federterme 2024 — comparto termale/benessere: 2,8 miliardi di euro,
+  14 milioni di frequentatori.
+- BookRetreats — 298 ritiri yoga in Italia, oltre 11.000 recensioni.
+- Tripaneer (pagina partner) — modello a sola commissione, nessun
+  costo fisso per l'organizzatore.
+- MilanoToday / Moneta — Unobravo: 124 milioni di euro di fatturato,
+  8.000 psicologi; Serenis: oltre 25 milioni.
+- Il Sole 24 Ore / App Store — Calm €49,99/anno (non disponibile in
+  italiano); Headspace €57,99/anno.
+- Galileo / EventiYoga — oltre 800 scuole di yoga in Italia (2017).
 
 ---
 
@@ -933,12 +1026,10 @@ altri, saremo tutti gli altri.
 Le previsioni sbagliate non sono un problema: sono un'informazione.
 Il problema sarebbe non guardarle.*
 
-*E una nota su come sono stati letti i numeri di questa versione. La
-prima stesura conteneva un errore grosso: avevo scritto che la maggior
-parte delle visite arrivava dai social sulle pagine dei
-professionisti, e ne avevo ricavato che erano loro a portare traffico
-a noi. Guardando i record uno per uno è venuto fuori il contrario —
-quelle visite erano sulla pagina di Aurya, dal nostro Instagram.
-L'errore nasceva dall'aver letto un totale senza controllare cosa
-contenesse. Vale come regola per tutte le prossime volte: **un numero
-aggregato non è un fatto finché non si è guardato dentro.***
+*E una nota su come sono stati letti i numeri interni. Una prima
+stesura conteneva un errore grosso: un totale aggregato letto senza
+controllare cosa contenesse aveva fatto credere che i professionisti
+stessero già portando traffico ad Aurya. Guardando i record uno per
+uno è emerso il contrario. Vale come regola per tutte le prossime
+volte: **un numero aggregato non è un fatto finché non si è guardato
+dentro.***
