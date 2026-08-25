@@ -167,6 +167,16 @@ async def build_core() -> str:
             from services.seo_listing import listable_retreats
             if await listable_retreats():
                 urls.append(_url(f"{base}/esplora-ritiri", priority="0.9"))
+            # RS (26/8) — LE MEDITAZIONI PUBBLICATE. Sono il link che
+            # l'operatore condivide coi suoi clienti, e non stavano in
+            # nessuna sitemap: trovate insieme alla loro pagina muta,
+            # censendo il registro delle rotte.
+            from database import frequency_tracks_collection
+            async for t in frequency_tracks_collection.find(
+                    {"status": "published", "slug": {"$nin": [None, ""]}},
+                    {"_id": 0, "slug": 1, "updated_at": 1}).limit(500):
+                urls.append(_url(f"{base}/frequenze/{t['slug']}",
+                                 priority="0.6", lastmod=t.get("updated_at")))
         except Exception:   # noqa: BLE001 — mai una sitemap rotta
             pass
         return _wrap(urls, "core")

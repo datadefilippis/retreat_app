@@ -1360,7 +1360,18 @@ class TestVoceNelVisual:
         ramo caldo e con 300s sul freddo. no-cache = il browser
         rivalida a ogni apertura; i chunk hanno l'hash nel nome."""
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        assert shell.count('"Cache-Control": "no-cache"') == 2
+        # RS (26/8) — l'ancora era il NUMERO di occorrenze (== 2), e si
+        # e' rotta appena la shell ha imparato a rispondere 404 sugli
+        # indirizzi che non esistono: la terza occorrenza era GIUSTA.
+        # Ora si verifica l'intento: OGNI risposta HTML della shell
+        # esce con no-cache. Cosi' la guardia regge quando la shell
+        # cresce, e resta rossa se qualcuno toglie l'header.
+        risposte_html = shell.count('media_type="text/html"')
+        senza_cache = shell.count('"Cache-Control": "no-cache"')
+        assert risposte_html >= 2, "la shell non serve piu' HTML?"
+        assert senza_cache == risposte_html, (
+            f"{risposte_html} risposte HTML ma {senza_cache} con no-cache: "
+            "una esce cacheabile e il founder rivedra' build vecchie")
         assert 'max-age=300' not in shell
         ngx = (FQ_DIR.parent.parent.parent / "nginx.conf").read_text()
         assert 'add_header Cache-Control "no-cache";' in ngx

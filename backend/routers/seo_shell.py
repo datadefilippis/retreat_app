@@ -1349,6 +1349,66 @@ async def _meta_esplora_ritiri(categoria: Optional[str] = None,
     }
 
 
+async def _meta_frequenza(slug: str) -> Optional[dict]:
+    """RS (26/8) — LA MEDITAZIONE PUBBLICA parlava di ritiri.
+
+    Trovata dalla guardia del registro appena l'ho scritta:
+    /frequenze/{slug} e' la pagina che l'operatore CONDIVIDE — il link
+    che manda ai suoi clienti — e serviva ai crawler 46 caratteri e il
+    titolo marketplace di luglio. Il terzo caso identico in due giorni:
+    la prova che il problema non erano le singole pagine ma il non
+    avere un elenco.
+    """
+    from database import frequency_tracks_collection, organizations_collection
+    base = _base_url()
+    t = await frequency_tracks_collection.find_one(
+        {"slug": slug, "status": "published"},
+        {"_id": 0, "title": 1, "description": 1, "organization_id": 1,
+         "score": 1, "updated_at": 1})
+    if not t:
+        return None
+    minuti = int(round((t.get("score") or {}).get("duration_sec", 0) / 60))
+    autore = ""
+    try:
+        org = await organizations_collection.find_one(
+            {"id": t.get("organization_id")}, {"_id": 0, "name": 1})
+        autore = (org or {}).get("name") or ""
+    except Exception:   # noqa: BLE001
+        pass
+    titolo = t.get("title") or "Meditazione"
+    desc = (t.get("description") or "").strip() or (
+        f"Una sessione sonora di {minuti} minuti"
+        + (f", composta da {autore}" if autore else "")
+        + ", da ascoltare su Aurya Sound.")
+    canonical = f"{base}/frequenze/{slug}"
+    return {
+        "title": f"{titolo} | Aurya Sound",
+        "description": desc[:300],
+        "canonical": canonical,
+        "hreflang": {"it": canonical, "x-default": canonical},
+        "image": f"{base}/og-cover.jpg",
+        "content_html": (f"<div><h1>{_html.escape(titolo)}</h1>"
+                         f"<p>{_html.escape(desc[:300])}</p>"
+                         + (f"<p>Composta da {_html.escape(autore)}</p>"
+                            if autore else "")
+                         + f"<p>Durata: {minuti} minuti</p>"
+                         '<p><a href="/meditazioni">Tutte le meditazioni</a>'
+                         ' · <a href="/sound">Aurya Sound</a></p></div>'),
+        "jsonld": [{
+            "@context": "https://schema.org",
+            "@type": "AudioObject",
+            "name": titolo,
+            "description": desc[:300],
+            "url": canonical,
+            "duration": f"PT{minuti}M",
+            "inLanguage": "it",
+            "isAccessibleForFree": False,
+            **({"creator": {"@type": "Organization", "name": autore}}
+               if autore else {}),
+        }],
+    }
+
+
 async def _meta_operator(org_slug: str) -> Optional[dict]:
     from database import stores_collection, organizations_collection
     from services import seo_schema as sx
@@ -1587,6 +1647,40 @@ _PHASE_NOINDEX_HEADS = ("ritiri", "destinazioni", "esperienze")
 # dire noindex): ora nginx le instrada qui e la shell risponde 200 +
 # noindex. NB: NON vanno messe in Disallow nel robots — un crawler che
 # non puo' leggere la pagina non ne vede nemmeno il noindex.
+def _registro() -> dict:
+    """RS (26/8) — il registro delle rotte, letto una volta.
+
+    `config/rotte.json` e' la fonte: da li' nginx sa dove mandare una
+    richiesta e da li' la shell sa se un percorso ESISTE. Prima questa
+    lista viveva qui a mano, e nginx ne aveva un'altra: due elenchi che
+    dicevano cose diverse sullo stesso sito.
+    """
+    global _REGISTRO_CACHE
+    if _REGISTRO_CACHE is None:
+        import json
+        percorso = (Path(__file__).resolve().parent.parent.parent
+                    / "config" / "rotte.json")
+        try:
+            d = json.loads(percorso.read_text(encoding="utf-8"))
+            _REGISTRO_CACHE = {
+                "pubblica": set(d.get("pubblica") or []),
+                "servizio": set(d.get("servizio") or []),
+                "app": set(d.get("app") or []),
+            }
+        except Exception as exc:   # noqa: BLE001
+            # senza registro NON si inventa: si lascia passare tutto
+            # (comportamento di prima) invece di 404-are il sito intero
+            logger.error("seo_shell: registro rotte illeggibile: %s", exc)
+            _REGISTRO_CACHE = {"pubblica": set(), "servizio": set(),
+                               "app": set(), "assente": True}
+    return _REGISTRO_CACHE
+
+
+_REGISTRO_CACHE = None
+
+# le rotte che esistono ma non si indicizzano MAI: il gestionale e le
+# pagine di servizio (login, token, legali). 200 + noindex, non 404:
+# sono pagine vere, semplicemente non sono contenuto.
 _APP_NOINDEX_ROUTES = ("login", "accedi", "inizia", "benvenuto",
                        "account", "termini", "privacy")
 
@@ -1598,7 +1692,11 @@ async def resolve_meta(path: str) -> Optional[dict]:
     if not parts:
         return await _meta_home()
     head = parts[0]
-    if head in _APP_NOINDEX_ROUTES:
+    reg = _registro()
+    # RS (26/8) — servizio e app ESISTONO ma non sono contenuto: 200
+    # con noindex, mai 404. (Le app in genere non arrivano nemmeno qui:
+    # nginx le manda al frontend. Questo ramo le copre se ci finiscono.)
+    if head in _APP_NOINDEX_ROUTES or head in reg["servizio"] or head in reg["app"]:
         return {"title": "Aurya", "description": "",
                 "noindex": True, "canonical": None, "hreflang": None}
     if head == "ritiri":
@@ -1659,7 +1757,43 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_blog_article(parts[1])
     if head == "sound":                       # SP5 — biblioteca educativa
         return await _meta_sound(parts[1:])
+    if head == "frequenze" and len(parts) == 2:   # RS — meditazione pubblica
+        return await _meta_frequenza(parts[1])
+    # RS (26/8) — un segmento PUBBLICO senza un ramo qui sopra e' una
+    # rotta che il registro conosce ma che nessuno ha ancora dotato di
+    # meta: si serve la shell neutra (200), non un 404 — la pagina
+    # esiste davvero e per le persone funziona. Il difetto si vede
+    # nella guardia di parita', non addosso al visitatore.
+    if head in _registro()["pubblica"]:
+        return {"title": "Aurya | Il benessere inizia dalle persone",
+                "description": ("Guide oneste sul benessere e i "
+                                "professionisti che lo praticano."),
+                "canonical": None, "hreflang": None}
+    # tutto il resto NON ESISTE: 404 vero (lo dice il chiamante)
     return None
+
+
+@router.get("/404")
+async def seo_404():
+    """RS (26/8) — la porta del «non esiste».
+
+    nginx manda QUI tutto ciò che il registro non conosce, e ci manda
+    un percorso SOLO (/__seo/404), non l'indirizzo richiesto: la shell
+    cacha per percorso, e ricevere indirizzi arbitrari sarebbe una
+    cache che cresce senza fine — cioè un modo per esaurire la memoria
+    del server scrivendo URL a caso.
+
+    Si risponde 404 VERO (è ciò che mancava: prima ogni indirizzo
+    inventato rispondeva 200) servendo comunque la SPA, così chi ci
+    arriva vede la pagina «non trovato» di Aurya e non un errore nudo.
+    """
+    pagina = _inject(_index_html(), {
+        "title": "Pagina non trovata | Aurya",
+        "description": "",
+        "noindex": True, "canonical": None, "hreflang": None,
+    })
+    return Response(pagina, media_type="text/html", status_code=404,
+                    headers={"Cache-Control": "no-cache"})
 
 
 @router.get("/{full_path:path}")
