@@ -1418,10 +1418,20 @@ class TestAnteprimaMarketplace:
                 assert it["sample"] is prelaunch, \
                     f"default cambiato su /{ep} (fase prelaunch={prelaunch})"
 
-    def test_rotte_esplora_presenti_e_noindex(self):
-        """Le rotte /esplora-* montano le pagine marketplace in OGNI
-        fase, chiedono preview=1 e si marcano noindex; nessuna voce di
-        menu/footer le linka (restano raggiungibili solo via URL)."""
+    def test_rotte_esplora_presenti_e_indicizzabili(self):
+        """LA DECISIONE E' CAMBIATA (ES, 25/8). Questa guardia chiedeva
+        `noindex` sulle rotte /esplora-*: giusto finche' quelle pagine
+        mostravano i CAMPIONI del pre-lancio (sei organizzazioni senza
+        proprietario, dieci ritiri inventati in localita' reali).
+        Rimossi i campioni, li' dentro ci sono i professionisti VERI e
+        sono le uniche due directory della fase rete: il founder ha
+        chiesto di indicizzarle ORA, cosi' al primo ritiro pubblicato
+        non ci sara' niente da fare.
+
+        Cosa resta sotto guardia: le rotte esistono in ogni fase,
+        chiedono `preview=1` (i dati veri, non lo specchio di fase), e
+        nessuna voce di menu le linka — restano porte laterali per chi
+        arriva dai motori, non voci di navigazione."""
         app = (FRONTEND_SRC / "App.js").read_text()
         assert 'path="/esplora-ritiri"' in app
         assert 'path="/esplora-ritiri/:categoria"' in app
@@ -1431,12 +1441,18 @@ class TestAnteprimaMarketplace:
                / "RetreatsCalendarPage.js").read_text()
         assert "'/esplora-ritiri'" in cal
         assert "q.preview = 1" in cal
-        assert "noindex: isPreview" in cal
+        # ES — il noindex ora dipende dai DATI, non dalla rotta.
+        # Si ancora alla forma CODICE (con la virgola): i commenti qui
+        # accanto citano la riga vecchia per raccontare il cambio, e
+        # una guardia che inciampa nella prosa non custodisce niente.
+        assert "noindex: isPreview," not in cal
+        assert "!loading && (data?.items || []).length === 0" in cal
         assert "${basePath}/${category}" in cal   # navigazione interna
         ops = (FRONTEND_SRC / "features" / "storefront"
                / "OperatorsIndexPage.js").read_text()
         assert "q.preview = 1" in ops
-        assert "noindex: isPreview ||" in ops
+        assert "noindex: isPreview ||" not in ops
+        assert "!loading && items.length === 0" in ops
         # nessun link di menu/footer verso le rotte anteprima
         shell = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "MarketplaceShell.jsx").read_text()
