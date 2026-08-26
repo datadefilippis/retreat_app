@@ -270,6 +270,10 @@ audio_assets_collection = db.audio_assets
 # FV1 — spezzoni voce dell'operatore (metadati; i byte stanno in
 # uploads/voice/{org_id}/). Org-scoped, solo registrazione in-app.
 voice_assets_collection = db.voice_assets
+# P2 (26/8) — Sound Professional: i protocolli a passi dell'operatore.
+# Collezione SEPARATA dalle tracce (decisione D1): le tracce sono
+# contenuto pubblicabile, i protocolli sono strumenti privati di lavoro.
+sound_protocols_collection = db.sound_protocols
 
 
 # ── Phase 3 (Store consolidation) — slug-index lifecycle helpers ────────────
@@ -1572,6 +1576,13 @@ async def create_indexes():
         [("organization_id", 1), ("created_at", -1)], name="fv1_voice_org")
     await voice_assets_collection.create_index("id", unique=True,
                                                name="fv1_voice_id")
+    # P2 (26/8) — i protocolli si listano per org e stato, dal piu'
+    # recente: e' l'UNICA query di lista, e porta sempre l'org davanti.
+    await sound_protocols_collection.create_index(
+        [("organization_id", 1), ("stato", 1), ("updated_at", -1)],
+        name="p2_protocolli_org")
+    await sound_protocols_collection.create_index("id", unique=True,
+                                                  name="p2_protocollo_id")
     # ID (20/8) — il legame dei cappelli: due FK sparse, mai un merge.
     # Servono alla porta unica (SSO) e al lazy repair del legame.
     await users_collection.create_index(

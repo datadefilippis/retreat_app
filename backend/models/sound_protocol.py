@@ -8,19 +8,24 @@ Un protocollo e' DUE verita' affiancate:
     secondo il contratto v1 — il motore suona QUELLA, e non sa nulla
     del professionista.
 
-IL COMPILATORE VIVE IN JAVASCRIPT, e in un posto solo: l'anteprima del
-Builder deve compilare nel browser, e due implementazioni divergono
-sempre. Il server pero' non si fida: quando arrivera' il CRUD (P2), lo
-score si valida con `clean_score` (la fonte della verita' che gia'
-esiste) e gli step si validano QUI, strutturalmente, con le STESSE
-costanti del contratto — importate, mai ricopiate. La parita' fra le
-costanti JS del compilatore e queste e' sotto guardia nei test P1.
+DOVE VIVE IL COMPILATORE (corretto in P2, 26/8). P1 aveva scritto
+«vive in JavaScript, e in un posto solo». Sbagliato: il server deve
+essere l'autorita' — lo score non puo' arrivare dal client — e il
+container backend e' python:3.12-slim, senza Node. L'autorita' e'
+quindi `services/sound_compiler.py`; `pro/compilatore.js` resta lo
+SPECCHIO per l'anteprima del Builder. Una guardia esegue entrambi
+sulle stesse fixture e pretende lo stesso risultato (test P2).
+Gli step si validano QUI, strutturalmente, con le STESSE costanti del
+contratto — importate, mai ricopiate.
 
-VERSIONI: `versione` avanza a ogni salvataggio che cambia gli step; lo
-score compilato di una versione salvata e' IMMUTABILE — le sessioni
-(P5) ne porteranno comunque uno snapshot (`score_eseguito`), cosi'
-«ho eseguito il protocollo X versione 3» riproduce esattamente quel
-suono anche se il protocollo poi cambia.
+VERSIONI: `versione` avanza a ogni salvataggio che CAMBIA GLI STEP
+(rinominare non e' una versione nuova); lo score di una versione
+salvata e' immutabile, e quello sostituito finisce in
+`versioni_precedenti` — il minimo perche' «la versione precedente
+resti recuperabile». Non e' la storia completa e non vuole esserlo:
+le sessioni (P5) porteranno comunque il proprio snapshot dello score
+eseguito, cosi' «ho eseguito il protocollo X versione 3» riproduce
+quel suono anche se il protocollo poi cambia.
 
 NIENTE in questo file tocca la salute: e' un partito preso, non una
 dimenticanza (vedi discovery, sez. I). `note_operative` e' testo
@@ -49,6 +54,10 @@ NOTE_MAX = 4000
 
 STATI = ("bozza", "attivo", "archiviato")
 VISIBILITA = ("org",)                             # V1: solo privati per-org
+# quante versioni sostituite si tengono a bordo del documento (le piu'
+# recenti). Uno score da 24 passi pesa ~4 KB: dieci stanno larghi nei
+# 16 MB di Mongo, e oltre la decima all'indietro nessuno guarda.
+VERSIONI_TENUTE = 10
 
 
 def clean_steps(raw):
@@ -140,6 +149,9 @@ class SoundProtocol(BaseModel):
     stato: Literal["bozza", "attivo", "archiviato"] = "bozza"
     visibilita: Literal["org"] = "org"
     versione: int = 1
+    # gli score sostituiti, dal piu' recente: {versione, score,
+    # durata_sec, sostituita_il}. Vedi VERSIONI_TENUTE.
+    versioni_precedenti: List[dict] = Field(default_factory=list)
     origine: dict = Field(default_factory=lambda: {"tipo": "proprio"})
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)

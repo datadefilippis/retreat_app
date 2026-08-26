@@ -772,6 +772,9 @@ app.include_router(setup_wizard_router.router, prefix="/api")        # /api/setu
 # FQ0 (18/8) — Frequenze by Aurya: bozze tracce vibrazionali org-scoped
 from routers import frequencies as frequencies_router
 app.include_router(frequencies_router.router, prefix="/api")         # /api/frequencies/*
+# P2 (26/8) — Sound Professional: CRUD protocolli, gate per-org
+from routers import sound_pro as sound_pro_router
+app.include_router(sound_pro_router.router, prefix="/api")           # /api/sound/pro/*
 
 
 @app.get("/sitemap.xml", include_in_schema=False)
