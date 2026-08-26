@@ -995,8 +995,10 @@ function AppRoutes() {
           trappola del Lab). Il cancello vive dentro la pagina: senza
           il privilegio non si disegna un Builder funzionante, e le API
           rispondono comunque 403. */}
-      <Route path="/sound/pro" element={<SoundProPage />} />
-      <Route path="/sound/pro/:id" element={<SoundProPage />} />
+      {/* M-URL (26/8): ogni vista di Professional ha il suo URL —
+          la pagina risolve i segmenti da sola (catalogo/:id, percorso/:id,
+          registro, protocollo/:id). Sempre PRIMA del catch-all. */}
+      <Route path="/sound/pro/*" element={<SoundProPage />} />
       <Route path="/sound/*" element={<FrequenzePage />} />
       {/* legacy: il vecchio indirizzo del workspace continua a funzionare */}
       <Route path="/frequenze" element={<Navigate to="/sound/esplora" replace />} />

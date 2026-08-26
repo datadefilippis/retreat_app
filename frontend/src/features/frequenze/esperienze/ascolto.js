@@ -48,13 +48,19 @@ const BATTITO_MS = 250;
  * @param onTic  (secondi) — quanto e' passato, per l'interfaccia
  * @param onFine ()        — l'esperienza e' arrivata in fondo da sola
  * @param onPerso ()       — il contesto audio e' morto (schermo bloccato)
+ * @param analisi (M4, 26/8) — true per avere il RUBINETTO: un
+ *        AnalyserNode inserito fra il motore e il ponte, per chi
+ *        vuole DISEGNARE cio' che suona (le onde del rito
+ *        professionale). Additivo per contratto: senza l'opzione non
+ *        nasce nessun nodo e il percorso audio e' identico a prima —
+ *        CALM e GROUND non passano di qui e non cambiano.
  */
-export function creaAscolto(score, { onTic, onFine, onPerso } = {}) {
+export function creaAscolto(score, { onTic, onFine, onPerso, analisi } = {}) {
   const durata = score.duration_sec;
   /* la soglia dell'altoparlante del telefono NON si ricopia qui:
      la decide engine/altoparlante.js, come per il player pubblico */
   const avviso = avvisoCuffieScore(score);
-  let ctx = null, live = null, tic = null;
+  let ctx = null, live = null, tic = null, sonda = null;
   /* LA BANDIERINA DEL GESTO (P0, 26/8). `avvia()` aspetta il resume
      del contesto PRIMA di assegnare `live`: due tocchi rapidi — sul
      telefono capita — passavano entrambi la guardia e partivano DUE
@@ -79,6 +85,9 @@ export function creaAscolto(score, { onTic, onFine, onPerso } = {}) {
     durata,
     inAscolto: () => !!live,
     trascorso: () => (live ? Math.max(0, live.elapsed()) : 0),
+    /* il rubinetto per i pittori: null finche' non si e' avviato,
+       o se l'analisi non e' stata chiesta */
+    analisi: () => sonda,
 
     /** Da chiamare DENTRO il gesto: contesto e ponte lo esigono. */
     async avvia() {
@@ -92,7 +101,15 @@ export function creaAscolto(score, { onTic, onFine, onPerso } = {}) {
         await ctx.resume();
         schermoAcceso();
         sorvegliaContesto(ctx, () => { spegni(); onPerso?.(); });
-        live = startPreview(ctx, score, { sbocco: ponte.nodo });
+        /* il rubinetto: il suono ci passa ATTRAVERSO e arriva
+           identico al ponte — l'analyser non colora, legge */
+        if (analisi && !sonda) {
+          sonda = ctx.createAnalyser();
+          sonda.fftSize = 2048;
+          sonda.smoothingTimeConstant = 0.85;
+          sonda.connect(ponte.nodo);
+        }
+        live = startPreview(ctx, score, { sbocco: sonda || ponte.nodo });
         tic = setInterval(() => {
           if (!live) return;
           const t = Math.max(0, live.elapsed());

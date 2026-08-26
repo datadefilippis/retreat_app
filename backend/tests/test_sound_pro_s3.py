@@ -130,10 +130,13 @@ class TestIlVissuto:
         src = _senza_commenti(RITO.read_text())
         assert "note_operative" in src
         assert "Private" in src or "private" in src
-        assert "ascolto anonimo" in src.lower() or "facoltativo" in src.lower(), \
+        assert "facoltativo" in src.lower(), \
             "il legame col cliente deve essere dichiaratamente facoltativo"
-        # il cliente si sceglie da lista del CRM, non si scrive a mano
-        assert "customersAPI.list" in src
+        # il cliente si sceglie/crea nel CRM via il combobox condiviso
+        # (M-CRM): la lista vera sta in ScegliPersona
+        assert "ScegliPersona" in src
+        scegli = _senza_commenti((PRO / "ScegliPersona.jsx").read_text())
+        assert "customersAPI.list" in scegli
 
 
 class TestPaginaERipescaggio:

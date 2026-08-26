@@ -88,11 +88,12 @@ class TestPagina:
         """/sound/* mangia tutto ciò che gli sta dopo: è la trappola
         già annotata nel codice per il Lab, e pagata con /sound/visual."""
         src = APP_JS.read_text()
-        pro = src.find('path="/sound/pro"')
+        pro = src.find('path="/sound/pro/*"')
         catch = src.find('path="/sound/*"')
         assert pro != -1 and catch != -1, "rotte mancanti in App.js"
         assert pro < catch, "/sound/pro sta DOPO il catch-all: sarà mangiata"
-        assert 'path="/sound/pro/:id"' in src, "manca la rotta dell'editor"
+        # M-URL (26/8): una wildcard sola, i segmenti li risolve la pagina
+        assert 'path="/sound/pro/*"' in src, "manca la wildcard di Professional"
         assert 'lazy(() => import("./features/frequenze/pro/SoundProPage"))' in src
 
     def test_02_il_renderer_conosce_pro_e_non_la_indicizza(self):
@@ -383,7 +384,6 @@ class TestFormaEConfini:
             "frontend/src/features/frequenze/content/calm.js",
             "frontend/src/features/frequenze/content/ground.js",
             "frontend/src/features/frequenze/content/esperienze.js",
-            "frontend/src/features/frequenze/esperienze",
             "frontend/src/features/frequenze/PublicFrequencyPage.js",
             "frontend/src/features/frequenze/FrequenzePage.js",
             "frontend/src/features/frequenze/MeditazioniPage.js",

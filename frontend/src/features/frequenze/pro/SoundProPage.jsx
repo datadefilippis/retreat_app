@@ -55,6 +55,7 @@ import Rito, { quandoFa } from './Rito';
 import { messaggio } from './errori';
 import { andamento, sintesi } from './andamento';
 import Partitura from './Partitura';
+import ScegliPersona from './ScegliPersona';
 import '../frequenze.css';
 import './pro.css';
 
@@ -343,7 +344,7 @@ function Editor({ id, onSalvato }) {
       setPassi((data.steps || []).map(daDsl));
       setAvviso(`Salvato · versione ${data.versione} · ${fmtTempo(data.durata_sec)}`);
       onSalvato?.();
-      if (!protocollo) navigate(`/sound/pro/${data.id}`, { replace: true });
+      if (!protocollo) navigate(`/sound/pro/protocollo/${data.id}`, { replace: true });
     } catch (e) {
       const { indice, testo } = leggiErroreServer(messaggio(e, 'Salvataggio non riuscito.'));
       if (indice != null) setErroriPasso({ [indice]: testo });
@@ -478,9 +479,8 @@ function SchedaCore({ p, onChiudi, onAvvia }) {
   );
 }
 
-function Catalogo({ onAvvia }) {
-  const [aperto, setAperto] = useState(null);
-  const scelto = aperto ? CATALOGO.find((p) => p.id === aperto) : null;
+function Catalogo({ onAvvia, apertoId, onApri, onChiudi }) {
+  const scelto = apertoId ? CATALOGO.find((p) => p.id === apertoId) : null;
   return (
     <section className="pro-catalogo" data-testid="pro-catalogo">
       <h2 className="pro-scaffale">Catalogo Aurya</h2>
@@ -489,13 +489,12 @@ function Catalogo({ onAvvia }) {
         origine, evidenza e limiti: si sceglie sapendo cosa si sceglie.
       </p>
       {scelto ? (
-        <SchedaCore p={scelto} onChiudi={() => setAperto(null)}
-          onAvvia={onAvvia} />
+        <SchedaCore p={scelto} onChiudi={onChiudi} onAvvia={onAvvia} />
       ) : (
         <div className="cards">
           {CATALOGO.map((p) => (
             <button key={p.id} type="button" className="card pro-core-card"
-              onClick={() => setAperto(p.id)} data-testid={`pro-core-${p.id}`}>
+              onClick={() => onApri(p.id)} data-testid={`pro-core-${p.id}`}>
               <div className="head">
                 <h3>{p.titolo}</h3>
                 {p.evidenza.grado
@@ -562,7 +561,7 @@ function Lista({ chiave, onAvvia }) {
         </div>
         <span className="pro-spazio" />
         <button type="button" className="primary" data-testid="pro-nuovo"
-          onClick={() => navigate('/sound/pro/nuovo')}>+ Nuovo protocollo</button>
+          onClick={() => navigate('/sound/pro/protocollo/nuovo')}>+ Nuovo protocollo</button>
       </div>
 
       {avviso && <p className="pro-errore">{avviso}</p>}
@@ -603,7 +602,7 @@ function Lista({ chiave, onAvvia }) {
                   </button>
                 )}
                 <button type="button" className="add"
-                  onClick={() => navigate(`/sound/pro/${p.id}`)}>Apri</button>
+                  onClick={() => navigate(`/sound/pro/protocollo/${p.id}`)}>Apri</button>
                 {p.stato !== 'archiviato' && (
                   <button type="button" className="live" data-testid="pro-avvia-mio"
                     onClick={async () => {
@@ -629,18 +628,10 @@ function Lista({ chiave, onAvvia }) {
 
 /* ── I PERCORSI (M2): i programmi del metodo ───────────────────────── */
 function SchedaPercorso({ pc, onChiudi, onAvvia }) {
-  const [clienti, setClienti] = useState([]);
-  const [clienteId, setClienteId] = useState('');
+  const [cliente, setCliente] = useState(null);   // {id, nome} | null
+  const clienteId = cliente?.id || '';
   /* le tappe COMPLETATE da questo cliente in questo percorso */
   const [fatte, setFatte] = useState(null);
-
-  useEffect(() => {
-    let vivo = true;
-    customersAPI.list(true, 200)
-      .then((r) => { if (vivo) setClienti(r.data || []); })
-      .catch(() => { /* senza clienti resta la vista semplice */ });
-    return () => { vivo = false; };
-  }, []);
 
   useEffect(() => {
     if (!clienteId) { setFatte(null); return undefined; }
@@ -696,13 +687,9 @@ function SchedaPercorso({ pc, onChiudi, onAvvia }) {
 
       <label className="pro-campo">
         <span className="pro-lab">Il progresso di <i>facoltativo</i></span>
-        <select value={clienteId} onChange={(e) => setClienteId(e.target.value)}
-          data-testid="pc-cliente">
-          <option value="">Senza legame — tappe libere</option>
-          {clienti.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+        <ScegliPersona valore={cliente} onScegli={setCliente}
+          placeholder="Senza legame — cerca o crea la persona"
+          testid="pc-cliente" />
       </label>
 
       <ol className="pc-tappe" data-testid="pc-tappe">
@@ -732,9 +719,8 @@ function SchedaPercorso({ pc, onChiudi, onAvvia }) {
   );
 }
 
-function Percorsi({ onAvvia }) {
-  const [aperto, setAperto] = useState(null);
-  const scelto = aperto ? PERCORSI.find((p) => p.id === aperto) : null;
+function Percorsi({ onAvvia, apertoId, onApri, onChiudi }) {
+  const scelto = apertoId ? PERCORSI.find((p) => p.id === apertoId) : null;
   return (
     <section className="pro-percorsi" data-testid="pro-percorsi">
       <h2 className="pro-scaffale">Percorsi</h2>
@@ -744,13 +730,12 @@ function Percorsi({ onAvvia }) {
         che punto è ogni persona.
       </p>
       {scelto ? (
-        <SchedaPercorso pc={scelto} onChiudi={() => setAperto(null)}
-          onAvvia={onAvvia} />
+        <SchedaPercorso pc={scelto} onChiudi={onChiudi} onAvvia={onAvvia} />
       ) : (
         <div className="cards">
           {PERCORSI.map((pc) => (
             <button key={pc.id} type="button" className="card pro-core-card"
-              onClick={() => setAperto(pc.id)} data-testid={`pc-card-${pc.id}`}>
+              onClick={() => onApri(pc.id)} data-testid={`pc-card-${pc.id}`}>
               <div className="head">
                 <h3>{pc.titolo}</h3>
                 <span className="badge pro-badge-aurya">PERCORSO</span>
@@ -894,7 +879,8 @@ function Registro() {
   const [items, setItems] = useState(null);
   const [nomi, setNomi] = useState({});
   const [stato, setStato] = useState('');
-  const [cliente, setCliente] = useState('');
+  const [persona, setPersona] = useState(null);   // {id, nome} | null
+  const cliente = persona?.id || '';
 
   useEffect(() => {
     let vivo = true;
@@ -926,13 +912,10 @@ function Registro() {
   return (
     <section data-testid="pro-registro">
       <div className="pro-testata">
-        <select value={cliente} onChange={(e) => setCliente(e.target.value)}
-          data-testid="reg-filtro-cliente">
-          <option value="">Tutte le persone</option>
-          {Object.entries(nomi).map(([id, nome]) => (
-            <option key={id} value={id}>{nome}</option>
-          ))}
-        </select>
+        {/* la ricerca non inventa persone: niente creazione da un filtro */}
+        <ScegliPersona valore={persona} onScegli={setPersona}
+          permettiCrea={false} placeholder="Tutte le persone — cerca…"
+          testid="reg-filtro-cliente" />
         <select value={stato} onChange={(e) => setStato(e.target.value)}
           data-testid="reg-filtro-stato">
           <option value="">Ogni esito</option>
@@ -942,7 +925,7 @@ function Registro() {
         </select>
       </div>
       {cliente && items?.length > 0 && (
-        <QuadroPersona items={items} nome={nomi[cliente] || '—'} />
+        <QuadroPersona items={items} nome={persona?.nome || nomi[cliente] || '—'} />
       )}
       {items === null && <p className="pro-vuoto">Un momento…</p>}
       {items?.length === 0 && (
@@ -1006,11 +989,28 @@ function SessioniAperte({ chiave }) {
 
 /* ── LA PAGINA ─────────────────────────────────────────────────────── */
 export default function SoundProPage() {
-  const { id } = useParams();
+  /* M-URL — ogni vista ha il suo indirizzo. I segmenti dopo /sound/pro:
+       (vuoto)            la home (percorsi + catalogo + i tuoi)
+       registro           il quaderno
+       catalogo/:id       la scheda di un protocollo core
+       percorso/:id       la scheda di un percorso
+       protocollo/nuovo   l'editor, pagina bianca
+       protocollo/:id     l'editor su un protocollo proprio
+     I vecchi /sound/pro/:id (editor P3) continuano a funzionare:
+     un segmento solo e ignoto vale come id dell'editor. */
+  const navigate = useNavigate();
+  const splat = useParams()['*'] || '';
+  const seg = splat.split('/').filter(Boolean);
+  const vista = seg[0] === 'registro' ? 'registro' : 'protocolli';
+  const schedaCoreId = seg[0] === 'catalogo' ? seg[1] || null : null;
+  const schedaPercorsoId = seg[0] === 'percorso' ? seg[1] || null : null;
+  const id = seg[0] === 'protocollo' ? (seg[1] || 'nuovo')
+    : (seg.length === 1
+       && !['registro', 'catalogo', 'percorso'].includes(seg[0])
+       ? seg[0] : null);
   const { user, loading } = useAuth();
   const [chiave, setChiave] = useState(0);
   const [rito, setRito] = useState(null);           // {protocollo, percorso}
-  const [vista, setVista] = useState('protocolli');   // protocolli | registro
 
   useEffect(() => { document.title = 'Protocolli — Aurya Sound Professional'; }, []);
 
@@ -1048,11 +1048,29 @@ export default function SoundProPage() {
         onEsci={() => { setRito(null); setChiave((k) => k + 1); }} />;
     }
     if (vista === 'registro') return <Registro />;
+    if (schedaCoreId) {
+      return <Catalogo apertoId={schedaCoreId}
+        onApri={(pid) => navigate(`/sound/pro/catalogo/${pid}`)}
+        onChiudi={() => navigate('/sound/pro')}
+        onAvvia={(protocollo) => setRito({ protocollo })} />;
+    }
+    if (schedaPercorsoId) {
+      return <Percorsi apertoId={schedaPercorsoId}
+        onApri={(pid) => navigate(`/sound/pro/percorso/${pid}`)}
+        onChiudi={() => navigate('/sound/pro')}
+        onAvvia={(protocollo, percorso) => setRito({ protocollo, percorso })} />;
+    }
     return (
       <>
         <SessioniAperte chiave={chiave} />
-        <Percorsi onAvvia={(protocollo, percorso) => setRito({ protocollo, percorso })} />
-        <Catalogo onAvvia={(protocollo) => setRito({ protocollo })} />
+        <Percorsi apertoId={null}
+          onApri={(pid) => navigate(`/sound/pro/percorso/${pid}`)}
+          onChiudi={() => navigate('/sound/pro')}
+          onAvvia={(protocollo, percorso) => setRito({ protocollo, percorso })} />
+        <Catalogo apertoId={null}
+          onApri={(pid) => navigate(`/sound/pro/catalogo/${pid}`)}
+          onChiudi={() => navigate('/sound/pro')}
+          onAvvia={(protocollo) => setRito({ protocollo })} />
         <h2 className="pro-scaffale" data-testid="pro-scaffale-tuoi">I tuoi protocolli</h2>
         <p className="pro-scaffale-sotto">
           I protocolli che progetti tu, privati della tua organizzazione,
@@ -1061,7 +1079,8 @@ export default function SoundProPage() {
         <Lista chiave={chiave} onAvvia={(protocollo) => setRito({ protocollo })} />
       </>
     );
-  }, [loading, user, abilitato, id, chiave, rito, vista]);
+  }, [loading, user, abilitato, id, chiave, rito, vista,
+      schedaCoreId, schedaPercorsoId]);
 
   return (
     <div className="fqz pro">
@@ -1073,12 +1092,13 @@ export default function SoundProPage() {
         </div>
         {abilitato && !id && (
           <div className="viewswitch">
-            {[['protocolli', 'Protocolli'], ['registro', 'Registro']].map(([v, label]) => (
-              <button key={v} type="button"
-                className={`vbtn${vista === v ? ' on' : ''}`}
-                onClick={() => setVista(v)}
-                data-testid={`pro-vista-${v}`}>{label}</button>
-            ))}
+            {[['protocolli', 'Protocolli', '/sound/pro'],
+              ['registro', 'Registro', '/sound/pro/registro']].map(([v, label, a]) => (
+                <button key={v} type="button"
+                  className={`vbtn${vista === v ? ' on' : ''}`}
+                  onClick={() => navigate(a)}
+                  data-testid={`pro-vista-${v}`}>{label}</button>
+              ))}
           </div>
         )}
       </header>

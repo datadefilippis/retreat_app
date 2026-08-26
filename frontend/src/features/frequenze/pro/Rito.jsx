@@ -33,11 +33,12 @@
  * una collezione separata).
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { customersAPI } from '../../../api/customers';
 import { soundProAPI } from '../../../api/soundPro';
 import { creaAscolto } from '../esperienze/ascolto';
 import { useSafetyGate } from '../SafetyCurtain';
 import { messaggio } from './errori';
+import ScegliPersona from './ScegliPersona';
+import Onde from './Onde';
 import Partitura from './Partitura';
 
 const mmss = (s) => {
@@ -77,8 +78,8 @@ function Scala({ valore, onScegli, testid }) {
 export default function Rito({ protocollo, percorso = null, onEsci }) {
   /* preparazione | ascolto | congedo | salvato */
   const [fase, setFase] = useState('preparazione');
-  const [clienti, setClienti] = useState([]);
-  const [clienteId, setClienteId] = useState('');
+  const [cliente, setCliente] = useState(null);   // {id, nome} | null
+  const clienteId = cliente?.id || '';
   /* la volta scorsa con QUESTA persona: null = non chiesto,
      false = mai stata, oggetto = l'ultima sessione chiusa */
   const [ultima, setUltima] = useState(null);
@@ -94,16 +95,6 @@ export default function Rito({ protocollo, percorso = null, onEsci }) {
   const sessioneRef = useRef(null);     // {id, chiusa: bool}
   const ascoltatoRef = useRef(0);
   const { guard, curtain } = useSafetyGate();
-
-  /* il cliente è un legame col CRM, facoltativo: la sessione anonima
-     è legittima */
-  useEffect(() => {
-    let vivo = true;
-    customersAPI.list(true, 200)
-      .then((r) => { if (vivo) setClienti(r.data?.customers || r.data || []); })
-      .catch(() => { /* senza lista si resta anonimi: non è un errore */ });
-    return () => { vivo = false; };
-  }, []);
 
   /* LA CONTINUITÀ (S4): scelto il cliente, si chiede al registro
      com'è andata la volta scorsa — è il momento in cui il registro
@@ -125,6 +116,7 @@ export default function Rito({ protocollo, percorso = null, onEsci }) {
   const ascolto = useCallback(() => {
     if (!ascoltoRef.current) {
       ascoltoRef.current = creaAscolto(protocollo.score, {
+        analisi: true,
         onTic: (t) => { ascoltatoRef.current = t; setTrascorso(t); },
         onFine: () => { setEsito('completata'); setFase('congedo'); },
         /* schermo bloccato o contesto morto: la sessione si chiude
@@ -230,6 +222,9 @@ export default function Rito({ protocollo, percorso = null, onEsci }) {
     return (
       <div className="rito rito-ascolto" data-testid="rito-ascolto">
         <p className="rito-titolo-quieto">{protocollo.titolo}</p>
+        {/* le onde VERE: il rubinetto del player, disegnato — se
+            l'analyser non c'è ancora, una linea quieta */}
+        <Onde sorgente={() => ascoltoRef.current?.analisi?.()} />
         <div className="rito-barra" role="progressbar"
           aria-valuemin={0} aria-valuemax={protocollo.durata_sec}
           aria-valuenow={Math.round(trascorso)}>
@@ -317,14 +312,11 @@ export default function Rito({ protocollo, percorso = null, onEsci }) {
       <Partitura score={protocollo.score} altezza={64} />
 
       <label className="pro-campo">
-        <span className="pro-lab">Con chi <i>facoltativo</i></span>
-        <select value={clienteId} onChange={(e) => setClienteId(e.target.value)}
-          data-testid="rito-cliente">
-          <option value="">Nessun legame — ascolto anonimo</option>
-          {clienti.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+        <span className="pro-lab">Con chi <i>facoltativo — cerca, o crea al volo</i></span>
+        {/* il CRM è UNO: chi nasce qui è già nel gestionale */}
+        <ScegliPersona valore={cliente} onScegli={setCliente}
+          placeholder="Nessun legame — cerca o crea la persona"
+          testid="rito-cliente" />
         {clienteId && ultima && (
           <span className="rito-ultima" data-testid="rito-ultima">
             La volta scorsa: <b>{ultima.protocollo?.titolo}</b>

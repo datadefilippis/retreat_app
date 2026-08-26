@@ -200,7 +200,6 @@ class TestLaPorta:
              "frontend/src/features/frequenze/PublicFrequencyPage.js",
              "frontend/src/features/frequenze/SoundLandingPage.js",
              "frontend/src/features/frequenze/FrequenzePage.js",
-             "frontend/src/features/frequenze/esperienze",
              "frontend/src/features/frequenze/lab",
              "frontend/src/features/frequenze/engine",
              "frontend/src/features/frequenze/content"],

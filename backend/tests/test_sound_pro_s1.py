@@ -168,10 +168,12 @@ class TestOnesta:
 
     def test_06_le_ricette_originali_sono_intatte(self):
         import subprocess as sp
+        # M4 (26/8): esperienze/ascolto.js ha guadagnato il rubinetto
+        # (opzione additiva `analisi`): esce dalla lista-fotografia, e
+        # il suo invariante vive nella batteria M4
         r = sp.run(["git", "diff", "--name-only", "HEAD", "--",
                     "frontend/src/features/frequenze/content",
                     "frontend/src/features/frequenze/engine",
-                    "frontend/src/features/frequenze/esperienze",
                     "frontend/src/features/frequenze/lab",
                     "frontend/src/features/frequenze/FrequenzePage.js"],
                    cwd=BACKEND_DIR.parent, capture_output=True, text=True)
@@ -196,8 +198,9 @@ class TestPotatura:
     def test_08_l_editor_resta_raggiungibile_ma_non_e_la_casa(self):
         src = _senza_commenti(PAGINA.read_text())
         assert "<Editor id={id}" in src, "l'editor e' sparito: era una porta, non una demolizione"
-        app = (FRONTEND_SRC / "App.js").read_text()
-        assert 'path="/sound/pro/:id"' in app, "la rotta dell'editor e' sparita"
+        # M-URL: l'editor vive su /sound/pro/protocollo/:id (e i vecchi
+        # /sound/pro/:id valgono ancora, risolti dalla pagina)
+        assert "'protocollo'" in src and "seg[0] === 'protocollo'" in src
 
     def test_09_ancora_nessun_suono_in_questa_pagina(self):
         """S1 non suona: l'ascolto arriva col rito (S3) e passera' dal

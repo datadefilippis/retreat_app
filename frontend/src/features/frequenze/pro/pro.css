@@ -390,3 +390,35 @@
   border-radius: 6px; background: #0D1A1E;
 }
 .fqz .reg-andamento figcaption { margin-top: 6px; }
+
+/* ── M-CRM: scegli persona ────────────────────────────────────────── */
+.fqz .persona { position: relative; min-width: 220px; }
+.fqz .persona input { width: 100%; }
+.fqz .persona-tendina {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 30;
+  list-style: none; margin: 0; padding: 4px;
+  background: #14262B; border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 14px 34px #00000080;
+  max-height: 260px; overflow-y: auto;
+}
+.fqz .persona-tendina li button {
+  display: block; width: 100%; text-align: left;
+  font-family: var(--sans); font-size: 13px; letter-spacing: 0;
+  text-transform: none; color: var(--bone);
+  background: none; border: none; border-radius: 7px; padding: 9px 11px;
+  cursor: pointer;
+}
+.fqz .persona-tendina li button:hover { background: #1E353B; color: var(--bone); }
+.fqz .persona-crea button { color: var(--lamp) !important; }
+.fqz .persona-scelta {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--water); border-radius: 999px;
+  padding: 7px 8px 7px 14px; font-size: 13px; color: var(--bone);
+}
+
+/* ── M4/1: le onde in sessione ────────────────────────────────────── */
+.fqz .onde {
+  display: block; width: 100%; border-radius: 12px;
+  border: 1px solid var(--line-soft);
+}
+.fqz .rito-ascolto { max-width: 60ch; }

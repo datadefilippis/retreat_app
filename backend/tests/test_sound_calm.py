@@ -122,11 +122,17 @@ class TestArchitettura:
         non la pagina: ne' l'uno ne' l'altra si fabbricano nodi audio."""
         assert "startPreview" in _codice(ASCOLTO), \
             "l'ascolto non usa il motore di casa"
-        for f in (PAGINA, ASCOLTO):
-            src = _codice(f)
-            for vietato in ("createOscillator", "createGain", "createAnalyser",
-                            "OscillatorNode"):
-                assert vietato not in src, f"{f.name} si fabbrica {vietato}"
+        # l'invariante vero: nessuno si fabbrica un SUONO. L'analyser
+        # non produce audio — legge; dal 26/8 (M4) il player ha il
+        # rubinetto opzionale per le onde del rito professionale, e
+        # vietarglielo qui sarebbe una guardia a fotografia.
+        src = _codice(PAGINA)
+        for vietato in ("createOscillator", "createGain", "createAnalyser",
+                        "OscillatorNode"):
+            assert vietato not in src, f"{PAGINA.name} si fabbrica {vietato}"
+        src = _codice(ASCOLTO)
+        for vietato in ("createOscillator", "createGain", "OscillatorNode"):
+            assert vietato not in src, f"{ASCOLTO.name} si fabbrica {vietato}"
         # e la pagina non conosce piu' il motore: e' il senso dello step
         assert "startPreview" not in _codice(PAGINA), \
             "la pagina e' tornata a parlare col motore"
@@ -157,9 +163,14 @@ class TestArchitettura:
         assert "CALM:" not in _codice(FQ / "content" / "protocolli.js")
 
     def test_il_suono_esce_dal_ponte(self):
+        """L'invariante: il suono arriva SEMPRE al ponte — dritto, o
+        passando dal rubinetto (M4), che al ponte e' connesso."""
         src = _codice(ASCOLTO)
-        assert "creaPonte" in src and "sbocco: ponte.nodo" in src, \
+        assert "creaPonte" in src, \
             "senza ponte, su iPhone il suono se ne va col silenziatore"
+        assert "sbocco: sonda || ponte.nodo" in src
+        assert "sonda.connect(ponte.nodo)" in src, \
+            "il rubinetto non sfocia nel ponte: il suono si perde"
         assert "ctx.destination" not in src
 
     def test_nessun_orologio_pilota_il_suono(self):
