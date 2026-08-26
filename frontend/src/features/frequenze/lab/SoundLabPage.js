@@ -15,6 +15,7 @@ import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
 import Generatore from './Generatore';
 import Oscilloscopio from './Oscilloscopio';
 import Spettro from './Spettro';
+import Spettrogramma from './Spettrogramma';
 import { creaLaboratorio } from './motore';
 import '../frequenze.css';
 import './lab.css';
@@ -59,6 +60,9 @@ export default function SoundLabPage() {
         {/* stessa presa, altro dominio: il tempo sopra, le frequenze
             qui. Nemmeno lo spettro sa chi genera il segnale. */}
         <Spettro ottieniAnalisi={() => labRef.current?.analisi || null} />
+
+        {/* e il tempo dello spettro: stessa presa, terza lettura */}
+        <Spettrogramma ottieniAnalisi={() => labRef.current?.analisi || null} />
 
         {/* le controindicazioni valgono anche qui, stessa porta */}
         <SafetyLine onOpen={() => setSafety(true)} />

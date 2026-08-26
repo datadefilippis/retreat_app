@@ -94,8 +94,13 @@
   color:var(--dimmer);font-family:var(--mono);font-size:10.5px;
   margin-top:8px;letter-spacing:.03em}
 
+/* lo spettrogramma vuole piu' respiro in verticale: l'asse Y sono le
+   frequenze, e schiacciarle rende indistinguibili le armoniche */
+.fqz .lab-tela-alta{height:260px}
+
 @media (max-width:640px){
   .fqz .lab-tela{height:170px}
+  .fqz .lab-tela-alta{height:230px}
 }
 
 @media (max-width:640px){

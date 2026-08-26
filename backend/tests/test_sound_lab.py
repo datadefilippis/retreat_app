@@ -178,7 +178,7 @@ class TestSpettro:
         audio o apre un contesto: osservano e basta. E' la regola che
         rendera' il microfono un cambio di sorgente, non di
         strumenti."""
-        for nome in ("Oscilloscopio.jsx", "Spettro.jsx"):
+        for nome in ("Oscilloscopio.jsx", "Spettro.jsx", "Spettrogramma.jsx"):
             src = (LAB / nome).read_text()
             importati = re.findall(r"^import .*?from '([^']+)'", src, re.M)
             assert "./motore" not in importati, f"{nome}: importa il motore"
@@ -241,8 +241,12 @@ class TestSpettro:
         assert src.index("<Generatore") < src.index("<Oscilloscopio") \
             < src.index("<Spettro"), \
             "l'ordine del banco e' generatore, tempo, frequenze"
-        assert src.count("labRef.current?.analisi") == 2, \
-            "i due strumenti non ricevono la stessa analisi"
+        # OGNI pannello d'analisi riceve la stessa presa: il conteggio
+        # esatto lo tiene la guardia del banco completo, che cresce a
+        # ogni strumento nuovo
+        assert src.count("ottieniAnalisi={() => labRef.current?.analisi") \
+            == src.count("ottieniAnalisi="), \
+            "un pannello riceve un'analisi diversa dagli altri"
 
     def test_il_motore_non_e_stato_toccato_per_lo_spettro(self):
         """Lo STEP 3 non doveva cambiare il motore: `spettro()` e
@@ -252,6 +256,69 @@ class TestSpettro:
         assert "spettro(buf)" in src and "hzPerBin" in src
         assert "frequenza(" not in src, \
             "aggiunto un metodo nuovo al motore invece di riusare spettro()"
+
+
+class TestSpettrogramma:
+    """STEP 4: lo spettro nel tempo. Il contratto e' quello di tutti
+    (verificato da TestSpettro.test_ogni_tela_rispetta_il_contratto,
+    che ora include anche questo pannello); qui cio' che e' suo."""
+
+    def test_la_mappa_delle_frequenze_e_gemella_dello_spettro(self):
+        """I due pannelli si leggono INSIEME: stessa partenza a 20 Hz,
+        stessa finestra in dBFS, stessa log fino a Nyquist. Le
+        costanti sono ricopiate (i pannelli non si conoscono fra
+        loro), quindi vanno tenute gemelle a mano — da qui."""
+        sp = (LAB / "Spettro.jsx").read_text()
+        sg = (LAB / "Spettrogramma.jsx").read_text()
+        for costante in ("const F_MIN = 20;", "const DB_MIN = -96, DB_MAX = 0;"):
+            assert costante in sp and costante in sg, \
+                f"le scale si sono scollate: {costante}"
+        assert "Math.log10" in sg, "l'asse delle frequenze non e' logaritmico"
+
+    def test_le_colonne_vanno_a_tempo_non_a_fotogramma(self):
+        """Se l'asse X fosse «un fotogramma per colonna», su un
+        telefono lento la stessa immagine varrebbe un tempo diverso e
+        la finestra dichiarata sarebbe una bugia."""
+        src = (LAB / "Spettrogramma.jsx").read_text()
+        assert "MS_COLONNA" in src and "performance.now()" in src
+        assert "debito" in src, "il tempo trascorso non si accumula"
+        assert "MAX_COLONNE" in src, \
+            "dopo una pausa lunga si recupererebbe all'infinito"
+
+    def test_scorre_invece_di_ridisegnare(self):
+        """L'immagine E' la memoria: una traslazione e una colonna
+        nuova, non la storia ricalcolata a ogni fotogramma."""
+        src = (LAB / "Spettrogramma.jsx").read_text()
+        assert "c2d.drawImage(tela" in src, "non trasla la storia"
+        assert "putImageData" in src and "createImageData" in src, \
+            "la colonna nuova non si scrive per pixel"
+        assert "for (let k = k0; k < k1; k++)" in src, \
+            "la riga non prende il massimo dei bin che le competono"
+
+    def test_la_scala_di_colore_e_sobria(self):
+        """Una sola famiglia di colori dalla palette del Lab: niente
+        arcobaleno, niente neon, nessun colore cablato a mano."""
+        src = (LAB / "Spettrogramma.jsx").read_text()
+        assert "function rampa(" in src
+        for tinta in ("--ink", "--water", "--bone"):
+            assert tinta in src, f"la rampa non usa {tinta} della palette"
+        assert "hsl(" not in src, "scala arcobaleno (hsl) nel Lab"
+
+    def test_il_banco_e_in_ordine_e_completo(self):
+        src = (LAB / "SoundLabPage.js").read_text()
+        assert src.index("<Generatore") < src.index("<Oscilloscopio") \
+            < src.index("<Spettro ") < src.index("<Spettrogramma"), \
+            "l'ordine del banco: genera, tempo, frequenze, frequenze nel tempo"
+        assert src.count("labRef.current?.analisi") == 3, \
+            "i tre strumenti non ricevono la stessa analisi"
+
+    def test_il_motore_resta_invariato_anche_allo_step_4(self):
+        """Nessuna API nuova: `spettro()` serviva a due pannelli e ne
+        serve tre."""
+        src = (LAB / "motore.js").read_text()
+        assert "spettro(buf)" in src and "hzPerBin" in src
+        assert "spettrogramma" not in src.lower(), \
+            "il motore ha imparato a conoscere un pannello"
 
 
 class TestTelaio:
