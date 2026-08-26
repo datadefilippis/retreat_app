@@ -274,6 +274,9 @@ voice_assets_collection = db.voice_assets
 # Collezione SEPARATA dalle tracce (decisione D1): le tracce sono
 # contenuto pubblicabile, i protocolli sono strumenti privati di lavoro.
 sound_protocols_collection = db.sound_protocols
+# S2 (26/8) — il registro delle sessioni: una riga per esecuzione,
+# org-scoped, mai cancellata (chi sbaglia chiude come interrotta).
+sound_sessions_collection = db.sound_sessions
 
 
 # ── Phase 3 (Store consolidation) — slug-index lifecycle helpers ────────────
@@ -1583,6 +1586,16 @@ async def create_indexes():
         name="p2_protocolli_org")
     await sound_protocols_collection.create_index("id", unique=True,
                                                   name="p2_protocollo_id")
+    # S2 — il registro si sfoglia per org dal piu' recente, e per
+    # cliente (la timeline di S4); l'id e' la chiave del ciclo di vita
+    await sound_sessions_collection.create_index(
+        [("organization_id", 1), ("iniziata_il", -1)],
+        name="s2_sessioni_org")
+    await sound_sessions_collection.create_index(
+        [("organization_id", 1), ("customer_id", 1), ("iniziata_il", -1)],
+        name="s2_sessioni_cliente")
+    await sound_sessions_collection.create_index("id", unique=True,
+                                                 name="s2_sessione_id")
     # ID (20/8) — il legame dei cappelli: due FK sparse, mai un merge.
     # Servono alla porta unica (SSO) e al lazy repair del legame.
     await users_collection.create_index(

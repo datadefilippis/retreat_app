@@ -100,6 +100,11 @@ async def cascade_hard_delete(org_id: str) -> Dict[str, int]:
     _newsletter_collections = [
         ("newsletter_forms", _db.newsletter_forms),
         ("newsletter_subscriptions", _db.newsletter_subscriptions),
+        # S2 (26/8) — Sound Professional muore con l'org: i protocolli
+        # privati e il registro delle sessioni non devono sopravvivere
+        # come orfani con organization_id morto.
+        ("sound_protocols", _db.sound_protocols),
+        ("sound_sessions", _db.sound_sessions),
     ]
     for name, collection in (_ORG_SCOPED_COLLECTIONS
                              + _newsletter_collections):
