@@ -203,6 +203,31 @@ ampiezza di composizioni né forza d'evidenza (survey interne).*
 | C7 | = M3 ascolto a casa (delivery remota) | codice |
 | C8 | PROVE SOCIALI dal pilot: casi raccontati onesti, mai percentuali da survey | pilot |
 
+### C0 · LA VOCE DELLE EVIDENZE (feedback founder 26/8 sera — FATTO)
+«Siamo troppo critici contro noi stessi: l'operatore pensa "allora
+non serve a niente".» La correzione non è gonfiare, è INVERTIRE
+L'ORDINE e NOMINARE LE TEORIE:
+- **prima ciò che è documentato, poi il confine** — e il confine
+  detto come professionalità («sappiamo dove finisce la nostra
+  evidenza»), mai come resa;
+- **ogni scheda nomina la sua teoria** (campo `teoria` + fonti):
+  entrainment uditivo/ASSR, respirazione di risonanza
+  (Lehrer/Gevirtz), psicoacustica delle basse, stimolazione
+  bilaterale (contesto EMDR), 40 Hz gamma — come i concorrenti
+  nominano la polivagale, ma con àncore misurabili;
+- **l'àncora dura è l'ASSR**: che il cervello segua la stimolazione
+  ritmica è neurofisiologia consolidata (si usa in audiologia
+  clinica) — è il nostro «backed by science» vero, da usare in
+  landing;
+- **vietato l'autosabotaggio** (guardia): «il più debole», «la più
+  severa», «non serve a niente» non esistono più — gli stessi fatti
+  si dicono in avanti («dove funziona bene lo diciamo; dove la
+  letteratura è contrastante lo diciamo pure: è così che si usa uno
+  strumento da professionisti»).
+La polivagale si cita nel Metodo come cornice ALTRUI, per confronto.
+In landing (M7bc) il registro è: scienza in avanti, ASSR + review +
+risonanza respiratoria nominate, limiti presenti ma mai in apertura.
+
 Ordine: C1+C2 → C3 → C4 → C6 → C5 → M3 → pilot → C8.
 MAI copiare: percentuali-survey nei titoli, teoria-ombrello come
 marketing, hardware come lucchetto.

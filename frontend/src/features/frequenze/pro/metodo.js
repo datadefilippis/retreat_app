@@ -59,20 +59,26 @@ export const METODO = Object.freeze([
   },
   {
     id: 'basi',
-    titolo: 'Da dove viene',
-    testo: 'Da due sorgenti, dichiarate scheda per scheda. La '
-      + 'LETTERATURA sulla stimolazione uditiva ritmica — battiti '
-      + 'binaurali e toni isocronici — che documenta effetti reali ma '
-      + 'onesti: da piccoli a moderati sul rilassamento (è il nostro '
-      + 'grado B), deboli sul potenziamento cognitivo (grado C, e la '
-      + 'scheda lo dice). E il BANCO Aurya: le esperienze come CALM e '
-      + 'GROUND sono composizioni progettate e misurate da noi, '
-      + 'fisicamente, frequenza per frequenza. Ci ispiriamo alla '
-      + 'disciplina dei programmi internazionali di ascolto '
-      + 'professionale — la dose, la cadenza, la progressione — con una '
-      + 'differenza che è la nostra identità: loro mettono le '
-      + 'percentuali nei titoli e le cautele nelle note a piè di '
-      + 'pagina; noi mettiamo i limiti sulla scheda, in faccia.',
+    titolo: 'Le teorie e le evidenze',
+    testo: 'Partiamo da un fatto misurabile: il cervello SEGUE la '
+      + 'stimolazione sonora ritmica. Si chiama risposta uditiva '
+      + 'stazionaria (ASSR), è neurofisiologia consolidata — si usa '
+      + 'perfino in audiologia clinica. Su questa base lavora '
+      + 'l’ENTRAINMENT UDITIVO: battiti binaurali e toni isocronici, '
+      + 'con review che documentano effetti reali sull’ansia di stato '
+      + 'e sul rilassamento (Garcia-Argibay 2019, Chaieb 2015 — il '
+      + 'nostro grado B). Accanto: la RESPIRAZIONE DI RISONANZA a sei '
+      + 'atti al minuto (Lehrer e Gevirtz), l’evidenza più forte di '
+      + 'tutto questo campo, che è la nostra direzione di sviluppo; la '
+      + 'PSICOACUSTICA delle basse frequenze, dove il suono diventa '
+      + 'percezione corporea; e il BANCO Aurya, dove ogni esperienza è '
+      + 'progettata e misurata fisicamente, frequenza per frequenza. '
+      + 'Ogni scheda dichiara la SUA teoria e le sue fonti — come i '
+      + 'programmi internazionali dichiarano le loro cornici, la '
+      + 'teoria polivagale fra tutte; noi scegliamo àncore più vicine '
+      + 'alla misura. Ed è per questo che i limiti stanno sulla '
+      + 'scheda, non a piè di pagina: chi sa dove finisce la propria '
+      + 'evidenza è chi la sta usando davvero.',
   },
   {
     id: 'non-e',

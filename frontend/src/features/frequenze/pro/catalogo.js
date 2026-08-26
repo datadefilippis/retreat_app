@@ -33,6 +33,16 @@
  * Due strati, sempre: la SCHEDA (questo file) è ciò che l'operatore
  * legge; lo SCORE (costruisci()) è ciò che il motore suona. La
  * matematica non compare mai sulla scheda.
+ *
+ * LA VOCE DELLE EVIDENZE (C0, feedback founder 26/8: «siamo troppo
+ * critici contro noi stessi»): l'onestà non è autocritica. La regola:
+ * PRIMA ciò che è documentato, POI il confine — e il confine detto
+ * come professionalità («sappiamo dove finisce»), mai come resa.
+ * Ogni scheda NOMINA la sua teoria (`teoria`): entrainment uditivo e
+ * ASSR, respirazione di risonanza, psicoacustica — come i programmi
+ * internazionali nominano la polivagale, ma con àncore misurabili.
+ * Stessi fatti di prima, ordine giusto. Le frasi da autosabotaggio
+ * («il più debole», «la più severa») sono VIETATE da guardia.
  */
 import { ESPERIENZE } from '../content/esperienze';
 import { PROTOCOLLI } from '../content/protocolli';
@@ -117,6 +127,9 @@ export const CATALOGO = Object.freeze([
     come: 'In cassa o in cuffia, a volume moderato. La persona seduta '
       + 'o distesa; tu presente, senza dover fare nulla: il suono '
       + 'tiene lo spazio.',
+    teoria: 'Progettazione psicoacustica su un arco di distensione '
+      + '(intensità e ritmo decrescenti); il battito lento in cuffia '
+      + 'si appoggia all’entrainment uditivo. Misurata al banco Aurya.',
     cuffie: 'consigliate',
   }),
   daEsperienza('ground', {
@@ -131,10 +144,29 @@ export const CATALOGO = Object.freeze([
     come: 'Meglio un buon diffusore che scenda nei bassi, oppure '
       + 'cuffie. Persona distesa, luce bassa. Ottima come chiusura di '
       + 'un lavoro corporeo.',
+    teoria: 'Psicoacustica delle basse frequenze — il suono grave è '
+      + 'percezione anche corporea, non solo uditiva — nella scia '
+      + 'della tradizione vibroacustica. Arco progettato e misurato '
+      + 'al banco Aurya.',
     cuffie: 'consigliate',
   }),
   daIntento('Rilassare', {
     livello: 'base',
+    evidenza: {
+      grado: 'B',
+      nota: 'Le review sulla stimolazione uditiva ritmica documentano '
+        + 'effetti reali sull’ansia di stato e sul rilassamento — da '
+        + 'piccoli a moderati, già dopo circa dieci minuti di ascolto. '
+        + 'È l’uso meglio documentato di questa famiglia di suoni, e '
+        + 'questa scheda ci sta dentro per intero: stato stabile, '
+        + 'nessuna discesa, nessun rientro necessario.',
+      revisione: '2026-08',
+    },
+    teoria: 'Entrainment uditivo (battiti binaurali): il cervello '
+      + 'segue in modo misurabile una stimolazione ritmica — la '
+      + 'risposta uditiva stazionaria (ASSR) è neurofisiologia '
+      + 'consolidata. Review: Garcia-Argibay et al. 2019; Chaieb '
+      + 'et al. 2015.',
     sottotitolo: 'Uno stato stabile, senza discese e senza rientri.',
     racconto: 'L’uso meglio documentato dell’intero catalogo: un '
       + 'battito binaurale che si stabilizza e ci resta, senza discese '
@@ -151,6 +183,17 @@ export const CATALOGO = Object.freeze([
   }),
   daIntento('Dormire', {
     livello: 'base',
+    evidenza: {
+      grado: 'B',
+      nota: 'Le review documentano un accompagnamento reale al '
+        + 'rilassamento pre-sonno (effetti da piccoli a moderati). Il '
+        + 'confine, detto da professionisti: per l’insonnia clinica la '
+        + 'via d’elezione è la CBT-I — questo protocollo la affianca, '
+        + 'non la sostituisce.',
+      revisione: '2026-08',
+    },
+    teoria: 'Entrainment uditivo verso ritmi lenti, sull’arco dei '
+      + 'protocolli di induzione descritti in letteratura.',
     sottotitolo: 'Una discesa in tre tempi verso il pre-sonno.',
     racconto: 'Un arco che scende in tre tempi: la quiete '
       + 'dell’ingresso, la discesa, e un soffio che resta quando i '
@@ -163,6 +206,18 @@ export const CATALOGO = Object.freeze([
   }),
   daIntento('Meditare', {
     livello: 'base',
+    evidenza: {
+      grado: 'B',
+      nota: 'L’arco alpha→theta è la struttura classica dei '
+        + 'protocolli di induzione descritti in letteratura, e il '
+        + 'theta è la banda più studiata. Effetti documentati e '
+        + 'onesti: reali, di entità modesta — il valore sta '
+        + 'nell’accompagnare una pratica che esiste già. Il rientro '
+        + 'finale fa parte del protocollo.',
+      revisione: '2026-08',
+    },
+    teoria: 'Entrainment uditivo (ASSR) su banda theta; pratica '
+      + 'contemplativa assistita dal suono.',
     sottotitolo: 'Ingresso, profondità, e un rientro che riporta su.',
     racconto: 'L’arco classico dei protocolli di induzione: si '
       + 'scende, si resta, e alla fine si RISALE — il rientro fa '
@@ -177,6 +232,19 @@ export const CATALOGO = Object.freeze([
   }),
   daIntento('Elaborare', {
     livello: 'attenzione',
+    evidenza: {
+      grado: 'C',
+      nota: 'La stimolazione bilaterale alternata è un componente '
+        + 'sonoro presente in protocolli clinici strutturati (contesto '
+        + 'EMDR), ed è questo a renderla interessante per un lavoro '
+        + 'accompagnato. Il confine è netto e professionale: quei '
+        + 'protocolli sono condotti da terapeuti formati, e questo '
+        + 'strumento non li sostituisce — accompagna, con te presente.',
+      revisione: '2026-08',
+    },
+    teoria: 'Stimolazione bilaterale alternata — componente sonoro '
+      + 'studiato nel contesto EMDR (Shapiro); qui come '
+      + 'accompagnamento condotto, su fondo theta.',
     sottotitolo: 'Alternanza destra/sinistra su un fondo lento.',
     racconto: 'Un fondo lento e fermo, e un suono che passa da un '
       + 'orecchio all’altro, una volta al secondo. L’alternanza '
@@ -193,12 +261,23 @@ export const CATALOGO = Object.freeze([
   }),
   daIntento('Concentrare', {
     livello: 'base',
+    evidenza: {
+      grado: 'C',
+      nota: 'Sul piano dell’attivazione il ritmo beta/SMR fa il suo '
+        + 'lavoro di sottofondo; sul potenziamento cognitivo vero e '
+        + 'proprio gli studi sono contrastanti, con segnali negativi '
+        + 'sui compiti complessi. Uso giusto: attivare, non potenziare.',
+      revisione: '2026-08',
+    },
+    teoria: 'Entrainment su ritmi beta/SMR; letteratura sul '
+      + 'potenziamento cognitivo contrastante — la scheda si usa per '
+      + 'l’attivazione, dove regge.',
     sottotitolo: 'Una salita verso un ritmo attivo, che poi si assesta.',
     racconto: 'Sale, resta alto, si assesta: uno stato attivo voluto, '
-      + 'senza rientro. La nota di evidenza è la più severa del '
-      + 'catalogo — le prove sul potenziamento cognitivo sono deboli — '
-      + 'e la lasciamo parlare: questa scheda è un sottofondo '
-      + 'attivante, non una promessa.',
+      + 'senza rientro. Dove funziona bene lo diciamo — come '
+      + 'sottofondo attivante su lavoro semplice e ripetitivo — e '
+      + 'dove la letteratura è contrastante lo diciamo pure: è così '
+      + 'che si usa uno strumento da professionisti.',
     indicazioni: 'Come sottofondo attivante su compiti semplici e '
       + 'ripetitivi. Da evitare sui compiti complessi.',
     come: 'In cuffia o in cassa, come sottofondo. Non per sessioni '
@@ -207,6 +286,19 @@ export const CATALOGO = Object.freeze([
   }),
   daIntento('Energizzare', {
     livello: 'base',
+    evidenza: {
+      grado: 'C',
+      nota: 'La salita verso beta è attivazione documentata nel suo '
+        + 'piccolo; il passaggio a 40 Hz tocca la frequenza con la '
+        + 'letteratura più viva degli ultimi anni (risposta gamma/ASSR, '
+        + 'con una linea di ricerca importante in corso). Qui è un '
+        + 'accento breve, non una promessa: uno stato attivo offerto '
+        + 'al momento giusto.',
+      revisione: '2026-08',
+    },
+    teoria: 'Entrainment uditivo; il 40 Hz è la singola frequenza con '
+      + 'la letteratura più attiva (gamma/ASSR, inclusi i lavori del '
+      + 'MIT sulla stimolazione a 40 Hz).',
     sottotitolo: 'Una salita che finisce in alto, senza rientro.',
     racconto: 'Dal ritmo d’ingresso a uno stato attivo, con un breve '
       + 'passaggio a 40 Hz — la singola frequenza più studiata della '

@@ -46,7 +46,7 @@ class TestIlMetodo:
                 ("cuffie stereo", "con che attrezzo?"),
                 ("conduzione ossea", "le ossee vanno bene?"),
                 ("non esistono frequenze che", "è biorisonanza?"),
-                ("programmi internazionali di ascolto", "con chi competiamo?"),
+                ("programmi internazionali", "con chi competiamo?"),
                 ("grado b", "ci siamo ispirati alla letteratura?"),
                 ("banco aurya", "da dove vengono le esperienze?"),
                 ("la volta scorsa", "perché il registro?")):
@@ -77,6 +77,58 @@ class TestIlMetodo:
         assert "'Il metodo'" in src, "manca la voce in testata"
         assert 'data-testid="pro-invito-metodo"' in src, \
             "il primo giro non ha l'invito"
+
+
+class TestLaVoceDelleEvidenze:
+    """C0 (feedback founder 26/8): «siamo troppo critici contro noi
+    stessi». L'onestà non è autocritica: prima ciò che è documentato,
+    poi il confine — e ogni scheda NOMINA la sua teoria."""
+
+    def test_01b_ogni_scheda_nomina_la_sua_teoria(self):
+        src = _senza_commenti(CATALOGO.read_text())
+        assert src.count("teoria: '") == 8, \
+            "non tutte le schede nominano la teoria"
+        basso = _testo(CATALOGO)
+        for ancora in ("entrainment", "assr", "psicoacustica",
+                       "garcia-argibay", "emdr", "shapiro"):
+            assert ancora in basso, f"manca l'àncora: {ancora}"
+        pagina = _senza_commenti(PAGINA.read_text())
+        assert 'data-testid="pro-teoria"' in pagina, \
+            "la scheda non mostra la teoria"
+
+    def test_01c_niente_autosabotaggio(self):
+        """Le frasi che fanno dire «allora non serve a niente» sono
+        VIETATE — il confine si dice come professionalità, mai come
+        resa."""
+        for f in (CATALOGO, METODO):
+            basso = _testo(f)
+            for resa in ("il più debole", "la più severa",
+                         "il più scarso", "purtroppo",
+                         'non serve a niente', 'non serve a nulla',
+                         'non aspettarti'):
+                assert resa not in basso, f"{f.name}: autosabotaggio «{resa}»"
+
+    def test_01d_il_metodo_parte_dal_fatto_misurabile(self):
+        """La sezione basi apre con l'ASSR (l'àncora dura), nomina la
+        respirazione di risonanza (l'evidenza più forte del campo) e
+        la polivagale (la cornice dei concorrenti, per confronto)."""
+        basso = _testo(METODO)
+        for pezzo in ("risposta uditiva", "assr", "audiologia",
+                      "respirazione di risonanza", "lehrer",
+                      "polivagale", "chaieb"):
+            assert pezzo in basso, f"le basi hanno perso: {pezzo}"
+        # e la polivagale è citata come cornice ALTRUI, non nostra
+        i = basso.find("polivagale")
+        contesto = basso[max(0, i - 160):i + 60]
+        assert "programmi internazionali" in contesto or "cornici" in contesto
+
+    def test_01e_le_note_nuove_tengono_le_negazioni_dove_servono(self):
+        """Voce affermativa ≠ confini spariti: Dormire affianca la
+        CBT-I senza sostituirla, Elaborare resta condotto."""
+        basso = _testo(CATALOGO)
+        assert "non la sostituisce" in basso or "non li sostituisce" in basso
+        assert "cbt-i" in basso
+        assert "attivare, non potenziare" in basso
 
 
 class TestLeSchedeConsolidate:

@@ -441,6 +441,10 @@ function SchedaCore({ p, onChiudi, onAvvia }) {
           <div><dt>Come si conduce</dt>
             <dd data-testid="pro-come">{p.come}</dd></div>
         )}
+        {p.teoria && (
+          <div><dt>Si appoggia a</dt>
+            <dd data-testid="pro-teoria">{p.teoria}</dd></div>
+        )}
         <div>
           <dt>Cuffie</dt>
           <dd>
