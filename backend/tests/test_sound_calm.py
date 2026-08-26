@@ -17,6 +17,8 @@ FRONTEND_SRC = BACKEND_DIR.parent / "frontend" / "src"
 FQ = FRONTEND_SRC / "features" / "frequenze"
 CALM = FQ / "content" / "calm.js"
 PAGINA = FQ / "calm" / "CalmPage.js"
+ASCOLTO = FQ / "esperienze" / "ascolto.js"
+REGISTRO = FQ / "content" / "esperienze.js"
 
 
 def _codice(p: Path) -> str:
@@ -100,15 +102,136 @@ class TestIlProtocollo:
             assert vietato not in src, f"CALM ha guadagnato {vietato}"
 
 
+class TestContrattoDelProtocollo:
+    """FASE 4 (consolidamento) — gli score delle esperienze INTEGRATE
+    devono rispettare lo stesso contratto degli score degli operatori.
+
+    Il punto delicato: la fonte della verita' resta UNA — il
+    validatore del server (`models.frequency_track`). Qui non si
+    riscrivono le regole: si estraggono i numeri dal file JS
+    dell'esperienza e si passano al validatore VERO. Se un valore
+    fosse fuori range, `clean_layer` lo riporterebbe dentro — e la
+    differenza fra quello che abbiamo scritto e quello che il
+    contratto accetta e' il difetto. Nessuna seconda implementazione.
+    """
+
+    @staticmethod
+    def _layers_di(js: str):
+        """I livelli scritti in un protocollo integrato, come dizionari."""
+        blocchi = re.findall(r"layer\(\{(.*?)\}\)", js, re.S)
+        fuori = []
+        for b in blocchi:
+            d = {}
+            for chiave, valore in re.findall(r"(\w+):\s*'([^']*)'", b):
+                d[chiave] = valore
+            for chiave, valore in re.findall(r"(\w+):\s*(-?[\d.]+)\b", b):
+                d[chiave] = float(valore)
+            # alMinuto(8) → 8/60 Hz: la conversione e' del protocollo
+            for chiave, valore in re.findall(r"(\w+):\s*alMinuto\(([\d.]+)\)", b):
+                d[chiave] = float(valore) / 60.0
+            fuori.append(d)
+        return fuori
+
+    def test_ogni_livello_di_calm_passa_il_validatore_senza_essere_corretto(self):
+        import sys
+        sys.path.insert(0, str(BACKEND_DIR))
+        from models.frequency_track import clean_layer, DURATION_MIN, DURATION_MAX
+
+        js = CALM.read_text()
+        durata = float(re.search(r"CALM_DURATA = (\d+)", js).group(1))
+        assert DURATION_MIN <= durata <= DURATION_MAX, \
+            f"durata {durata}s fuori dal contratto ({DURATION_MIN}-{DURATION_MAX})"
+
+        livelli = self._layers_di(js)
+        assert len(livelli) == 3, f"letti {len(livelli)} livelli invece di 3"
+        for l in livelli:
+            pulito = clean_layer(dict(l), durata)
+            assert pulito is not None, f"{l.get('name')}: rifiutato dal contratto"
+            # il validatore riporta i valori fuori range DENTRO il range:
+            # se ha dovuto correggere qualcosa, quel qualcosa era fuori
+            for campo in ("carrier", "f0", "f1", "gain", "start", "end"):
+                if campo not in l:
+                    continue
+                assert abs(pulito[campo] - l[campo]) < 0.01, \
+                    (f"{l.get('name')}: {campo} = {l[campo]} e' stato "
+                     f"riportato a {pulito[campo]} dal contratto")
+            assert pulito["method"] == l["method"]
+            assert pulito.get("curve", "lin") == l.get("curve", "lin")
+
+    def test_lo_score_intero_e_accettato(self):
+        """Non solo i livelli: la forma completa, con le fasi."""
+        import sys
+        sys.path.insert(0, str(BACKEND_DIR))
+        from models.frequency_track import clean_score, PHASES_MAX, LAYERS_MAX
+
+        js = CALM.read_text()
+        durata = float(re.search(r"CALM_DURATA = (\d+)", js).group(1))
+        fasi = [{"t": float(t), "name": n}
+                for t, n in re.findall(r"\{ t: (\d+), name: '(\w+)' \}", js)]
+        score = {
+            "score_version": 1, "duration_sec": durata,
+            "fade_in_sec": float(re.search(r"CALM_FADE_IN = (\d+)", js).group(1)),
+            "fade_out_sec": float(re.search(r"CALM_FADE_OUT = (\d+)", js).group(1)),
+            "layers": [dict(l) for l in self._layers_di(js)],
+            "phases": fasi,
+        }
+        pulito = clean_score(score)
+        assert pulito is not None, "lo score di CALM non e' uno score valido"
+        assert len(pulito["layers"]) == len(score["layers"]), \
+            "il contratto ha scartato un livello"
+        assert len(pulito["phases"]) == len(fasi) <= PHASES_MAX
+        assert len(pulito["layers"]) <= LAYERS_MAX
+        assert pulito["duration_sec"] == durata
+
+    def test_la_regola_vale_per_OGNI_esperienza_registrata(self):
+        """La guardia non e' su CALM: e' sul registro. Una futura
+        esperienza che scivolasse fuori dai limiti verrebbe fermata
+        qui, senza che nessuno debba ricordarsi di aggiungere un test."""
+        registro = (FQ / "content" / "esperienze.js").read_text()
+        ids = re.findall(r"^  (\w+): \{", registro, re.M)
+        assert ids, "il registro non elenca nessuna esperienza"
+        for eid in ids:
+            protocollo = FQ / "content" / f"{eid}.js"
+            assert protocollo.exists(), \
+                f"{eid}: registrata ma senza protocollo in content/{eid}.js"
+            js = protocollo.read_text()
+            assert "duration_sec:" in js and "layers:" in js, \
+                f"{eid}: il protocollo non ha la forma di uno score"
+            # il tetto di casa per le esperienze integrate
+            m = re.search(r"_DURATA = (\d+)", js)
+            assert m and int(m.group(1)) <= 600, \
+                f"{eid}: le esperienze integrate durano al massimo 10 minuti"
+
+
 class TestArchitettura:
     """esperienza → protocollo (dati) → synth → ponte → audio."""
 
-    def test_calm_non_ha_un_motore_suo(self):
-        src = _codice(PAGINA)
-        assert "startPreview" in src, "la pagina non usa il motore di casa"
-        for vietato in ("createOscillator", "createGain", "createAnalyser",
-                        "OscillatorNode"):
-            assert vietato not in src, f"la pagina si fabbrica {vietato}"
+    def test_nessuno_si_fabbrica_un_motore(self):
+        """Dal consolidamento il motore lo chiama l'ASCOLTO condiviso,
+        non la pagina: ne' l'uno ne' l'altra si fabbricano nodi audio."""
+        assert "startPreview" in _codice(ASCOLTO), \
+            "l'ascolto non usa il motore di casa"
+        for f in (PAGINA, ASCOLTO):
+            src = _codice(f)
+            for vietato in ("createOscillator", "createGain", "createAnalyser",
+                            "OscillatorNode"):
+                assert vietato not in src, f"{f.name} si fabbrica {vietato}"
+        # e la pagina non conosce piu' il motore: e' il senso dello step
+        assert "startPreview" not in _codice(PAGINA), \
+            "la pagina e' tornata a parlare col motore"
+
+    def test_il_player_e_condiviso_e_sottile(self):
+        """Dodici gesti duplicati sono diventati uno solo. L'ascolto
+        resta React-free, come il motore del Lab."""
+        src = _codice(ASCOLTO)
+        importati = re.findall(r"^import .*?from '([^']+)'", src, re.M)
+        assert all(i.startswith('../engine/') for i in importati), \
+            f"l'ascolto importa altro dalle primitive di casa: {importati}"
+        assert "react" not in src.lower()
+        for gesto in ("creaPonte", "ponte.avvia()", "ctx.resume()",
+                      "schermoAcceso()", "sorvegliaContesto", "startPreview",
+                      "schermoLibero()", "rilascia()", "ctx?.close()"):
+            assert gesto in src, f"l'ascolto ha perso il gesto {gesto}"
 
     def test_il_protocollo_e_dati_e_riusa_la_fabbrica(self):
         """`layer()` e' UNA in tutta Aurya Sound: CALM la importa invece
@@ -123,7 +246,7 @@ class TestArchitettura:
         assert "CALM:" not in _codice(FQ / "content" / "protocolli.js")
 
     def test_il_suono_esce_dal_ponte(self):
-        src = _codice(PAGINA)
+        src = _codice(ASCOLTO)
         assert "creaPonte" in src and "sbocco: ponte.nodo" in src, \
             "senza ponte, su iPhone il suono se ne va col silenziatore"
         assert "ctx.destination" not in src
@@ -131,8 +254,11 @@ class TestArchitettura:
     def test_nessun_orologio_pilota_il_suono(self):
         """L'unico setInterval sta nella pagina e scrive solo quanto
         manca: se si fermasse, il suono continuerebbe identico."""
-        src = _codice(PAGINA)
-        assert src.count("setInterval") == 1
+        assert "setInterval" not in _codice(PAGINA), \
+            "la pagina si e' rifatta un orologio suo"
+        src = _codice(ASCOLTO)
+        assert src.count("setInterval") == 1, \
+            "l'ascolto ha piu' di un orologio"
         blocco = src.split("setInterval")[1][:400]
         for vietato in ("imposta(", "frequency", "gain.", "startPreview"):
             assert vietato not in blocco, \
@@ -144,14 +270,28 @@ class TestArchitettura:
         src = _codice(PAGINA)
         assert "useSafetyGate" in src and "guard(avvia)" in src, \
             "si puo' partire senza passare dal sipario"
-        assert "schermoAcceso()" in src and "schermoLibero()" in src
-        assert "sorvegliaContesto" in src, \
-            "se il contesto audio muore, la pagina non se ne accorge"
+        # lo schermo e la sorveglianza vivono nell'ascolto condiviso
+        asc = _codice(ASCOLTO)
+        assert "schermoAcceso()" in asc and "schermoLibero()" in asc
+        assert "sorvegliaContesto" in asc, \
+            "se il contesto audio muore, nessuno se ne accorge"
+        assert "onPerso" in _codice(PAGINA), \
+            "la pagina non dice all'utente perche' il suono si e' fermato"
 
     def test_si_spegne_tutto_uscendo(self):
+        assert "smonta()" in _codice(PAGINA), "uscendo la pagina non smonta nulla"
+        asc = _codice(ASCOLTO)
+        assert "live.stop()" in asc and "ctx?.close()" in asc, \
+            "il contesto audio resta aperto"
+
+    def test_la_pagina_prende_i_dati_dal_registro(self):
         src = _codice(PAGINA)
-        assert "liveRef.current?.stop()" in src or "liveRef.current.stop()" in src
-        assert "ctxRef.current?.close()" in src, "il contesto audio resta aperto"
+        assert "esperienza('calm')" in src, "la pagina non usa il registro"
+        for duplicato in ("360", "CALM_DURATA", "costruisciCalm"):
+            assert duplicato not in src, \
+                f"la pagina tiene una copia di «{duplicato}»"
+        reg = _codice(REGISTRO)
+        assert "costruisci: costruisciCalm" in reg and "durata: CALM_DURATA" in reg
 
 
 class TestLaPromessa:
@@ -170,8 +310,23 @@ class TestLaPromessa:
         # il testo va a capo nel JSX: si confronta a spazi normalizzati
         testo = " ".join(PAGINA.read_text().split())
         assert "battito lento fra i due canali" in testo
-        assert "senza cuffie l'esperienza resta intera" in testo, \
+        # la vecchia riga («senza cuffie resta intera») era ottimista:
+        # le tre portanti di CALM stanno TUTTE sotto la soglia
+        # dell'altoparlante del telefono (500 Hz, engine/altoparlante.js)
+        assert "senza cuffie l'esperienza resta intera" not in testo
+        assert "dall'altoparlante di un telefono i toni gravi si perdono" in testo
+        assert "non sono obbligatorie" in testo, \
             "chi non ha le cuffie non deve sentirsi escluso"
+
+    def test_l_avviso_cuffie_e_quello_di_casa(self):
+        """La soglia non si ricopia: la decide engine/altoparlante.js,
+        come per il player degli operatori."""
+        asc = _codice(ASCOLTO)
+        assert "avvisoCuffieScore(score)" in asc
+        assert "500" not in asc, "la soglia e' stata ricopiata nel player"
+        pag = _codice(PAGINA)
+        assert "calm-avviso-cuffie" in pag and "solo-telefono-block" in pag, \
+            "l'avviso non compare, o compare anche dove non serve"
 
     def test_dice_cosa_non_e(self):
         testo = " ".join(PAGINA.read_text().split())
