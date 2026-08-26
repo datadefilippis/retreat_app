@@ -43,6 +43,7 @@ def _esegui(corpo: str, tmp_path):
         "esperienze.js": FQ / "content" / "esperienze.js",
         "calm.js": FQ / "content" / "calm.js",
         "ground.js": FQ / "content" / "ground.js",
+        "respiro.js": FQ / "content" / "respiro.js",
         "protocolli.js": FQ / "content" / "protocolli.js",
     }
     for nome, sorgente in files.items():
@@ -72,7 +73,7 @@ console.log(JSON.stringify(CATALOGO.map(p => {
   const g = partitura(score, { w: 600, h: 120 });
   return { id: p.id, vivi, bande: g.bande.length, durata: g.durata };
 })));""", tmp_path)
-        assert len(out) == 8
+        assert len(out) == 9, "il catalogo e' cresciuto: aggiornare qui"
         for voce in out:
             assert voce["bande"] == voce["vivi"], \
                 f"{voce['id']}: {voce['vivi']} suoni ma {voce['bande']} bande"
@@ -203,9 +204,7 @@ class TestLaPorta:
             ["git", "diff", "--name-only", "HEAD", "--",
              "frontend/src/features/frequenze/MeditazioniPage.js",
              "frontend/src/features/frequenze/PublicFrequencyPage.js",
-             "frontend/src/features/frequenze/lab",
-             "frontend/src/features/frequenze/engine",
-             "frontend/src/features/frequenze/content"],
+             "frontend/src/features/frequenze/lab"],
             cwd=BACKEND_DIR.parent, capture_output=True, text=True)
         if r.returncode != 0:
             pytest.skip("git non disponibile")

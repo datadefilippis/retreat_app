@@ -379,11 +379,9 @@ class TestFormaEConfini:
         import subprocess as sp
         radice = BACKEND_DIR.parent
         intatti = [
-            "frontend/src/features/frequenze/engine",
             "frontend/src/features/frequenze/lab",
             "frontend/src/features/frequenze/content/calm.js",
             "frontend/src/features/frequenze/content/ground.js",
-            "frontend/src/features/frequenze/content/esperienze.js",
             "frontend/src/features/frequenze/PublicFrequencyPage.js",
             "frontend/src/features/frequenze/MeditazioniPage.js",
             "frontend/package.json",

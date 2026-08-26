@@ -50,6 +50,9 @@ def _esegui_percorsi(corpo: str, tmp_path):
              "esperienze.js": FQ / "content" / "esperienze.js",
              "calm.js": FQ / "content" / "calm.js",
              "ground.js": FQ / "content" / "ground.js",
+            "respiro.js": FQ / "content" / "respiro.js",
+             "respiro.js": FQ / "content" / "respiro.js",
+        "respiro.js": FQ / "content" / "respiro.js",
              "protocolli.js": FQ / "content" / "protocolli.js"}
     for nome, sorgente in files.items():
         testo = sorgente.read_text()

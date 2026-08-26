@@ -647,6 +647,13 @@ _SOUND_PAGES = {
                         "sonora che va e viene e una pulsazione lenta. "
                         "Non è una terapia e non promette effetti."),
     },
+    "respiro": {
+        "title": "RESPIRO: dieci minuti a sei respiri al minuto | Aurya Sound",
+        "description": ("Una guida sonora alla respirazione lenta: una "
+                        "nota che sale mentre inspiri e scende mentre "
+                        "espiri, a sei atti al minuto con l'espirazione "
+                        "più lunga. Gratuita, senza registrarsi."),
+    },
     # LAB (25/8) — il laboratorio: pagina pubblica e indicizzabile
     # (e' contenuto vero, e in italiano non ce l'ha nessuno)
     "lab": {
@@ -755,6 +762,26 @@ def _sound_index_html() -> str:
     return "".join(parts)
 
 
+def _respiro_content_html() -> str:
+    """Corpo per i crawler di /sound/respiro. La scheda con le basi
+    piu' solide del catalogo: si puo' essere precisi senza promettere."""
+    return (
+        "<h2>Dieci minuti a sei respiri al minuto</h2>"
+        "<p>RESPIRO e' una guida sonora alla respirazione lenta: una "
+        "nota che sale mentre inspiri e scende mentre espiri, e un "
+        "tocco discreto che segna ogni svolta. Non devi contare: devi "
+        "solo seguire.</p>"
+        "<p>Il ritmo e' costante — sei atti al minuto, con "
+        "l'espirazione piu' lunga dell'inspirazione (rapporto 4:6) — "
+        "ed e' proprio la costanza a essere la pratica. La "
+        "respirazione di risonanza intorno ai sei atti al minuto e' la "
+        "pratica con la letteratura piu' robusta fra quelle che "
+        "accompagniamo con il suono. Non e' una terapia e non "
+        "sostituisce alcun percorso clinico.</p>"
+        "<p>L'ascolto e' libero, senza registrarsi, come le altre "
+        "<a href=\"/sound\">esperienze di Aurya Sound</a>.</p>")
+
+
 def _professional_content_html() -> str:
     """Corpo per i crawler di /sound/professional: la vendita in
     forma leggibile — scienza in avanti (registro C0), mai promesse."""
@@ -815,6 +842,12 @@ async def _meta_sound(parts: list) -> Optional[dict]:
                 "hreflang": _hub_hreflang(canonical),
                 "image": f"{base}/og-cover.jpg",
                 "content_html": _calm_content_html()}
+    if sub == "respiro":
+        canonical = f"{base}/sound/respiro"
+        return {**_SOUND_PAGES["respiro"], "canonical": canonical,
+                "hreflang": _hub_hreflang(canonical),
+                "image": f"{base}/og-cover.jpg",
+                "content_html": _respiro_content_html()}
     if sub == "ground":
         canonical = f"{base}/sound/ground"
         return {**_SOUND_PAGES["ground"], "canonical": canonical,

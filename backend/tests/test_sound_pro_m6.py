@@ -86,7 +86,7 @@ class TestLaVoceDelleEvidenze:
 
     def test_01b_ogni_scheda_nomina_la_sua_teoria(self):
         src = _senza_commenti(CATALOGO.read_text())
-        assert src.count("teoria: '") == 8, \
+        assert src.count("teoria: '") == 9, \
             "non tutte le schede nominano la teoria"
         basso = _testo(CATALOGO)
         for ancora in ("entrainment", "assr", "psicoacustica",
@@ -133,7 +133,7 @@ class TestLaVoceDelleEvidenze:
 
 class TestLeSchedeConsolidate:
     def test_04_ogni_scheda_dice_come_si_conduce(self):
-        assert _senza_commenti(CATALOGO.read_text()).count("come: '") == 8, \
+        assert _senza_commenti(CATALOGO.read_text()).count("come: '") == 9, \
             "non tutte le schede dicono come condursi"
         src = _testo(CATALOGO)
         # le parole dell'attrezzatura, dove servono

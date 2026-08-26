@@ -314,8 +314,12 @@ class TestNessunaRegressione:
                      "Elaborare", "Energizzare"):
             assert f"  {nome}: {{" in src, f"protocollo {nome} sparito"
 
-    def test_il_motore_non_e_stato_toccato(self):
-        """La specifica aveva verificato che le API bastavano: se il
-        motore e' cambiato per CALM, la verifica era sbagliata."""
-        synth = (FQ / "engine" / "synth.js").read_text()
-        assert "calm" not in synth.lower()
+    def test_il_motore_non_conosce_calm(self):
+        """L'invariante: il motore non ha casi speciali per una
+        singola esperienza — se dovesse sapere cos'e' CALM, la
+        verifica delle API era sbagliata. Si legge il CODICE: dal 26/8
+        (Respiro 2.0) un commento NOMINA CALM per spiegare perche' la
+        guida del respiro e' opt-in, e la prosa che protegge non e'
+        la cosa da vietare."""
+        synth = _codice(FQ / "engine" / "synth.js").lower()
+        assert "calm" not in synth

@@ -54,6 +54,46 @@ export function breathEnv(u, inn = BREATH_IN, out = BREATH_OUT) {
   return 0;                                                          // pausa
 }
 
+/* RESPIRO 2.0 (26/8) — LA GUIDA CHE SI PUO' ANTICIPARE.
+ *
+ * Il difetto del respiro-texture, detto dal founder e confermato
+ * dalla letteratura sui pacer: l'inviluppo dice DOVE SEI, non QUANDO
+ * CAMBIERA'. Chi respira insegue invece di anticipare. Le due cure
+ * documentate (convenzione dei dispositivi respiratori + studi sui
+ * pacer uditivi):
+ *   - l'ALTEZZA che scivola: sale inspirando, scende espirando. E' la
+ *     pendenza a far prevedere l'arrivo;
+ *   - il TOCCO alla svolta: un accenno all'inizio di ogni fase — non
+ *     un bip, un dito su una campana.
+ * Entrambe sono OPT-IN (`guida: true` sul livello): il respiro come
+ * TEXTURE (CALM) resta identico — una campanella ogni cinque secondi
+ * dentro un'esperienza di quiete sarebbe un difetto, non una cura.
+ * Due usi, due comportamenti, un metodo solo.
+ *
+ * Il rapporto 4:6 fra inspirazione ed espirazione (raccomandato per
+ * massimizzare la variabilita' cardiaca) NON e' il default: lo
+ * dichiara la ricetta che lo usa, dove la promessa viene fatta. */
+export const BREATH_GLIDE_SEMI = 3;   // l'escursione dell'altezza (semitoni)
+const TICK_QUOTA = 0.05;              // quanto dura il tocco, in quota di ciclo
+
+/** Altezza 0..1 alla fase: sale inspirando, scende espirando, ferma in pausa. */
+export function breathPitch(u, inn = BREATH_IN, out = BREATH_OUT) {
+  const a = Math.min(0.9, Math.max(0.05, inn));
+  const b = Math.min(0.95 - a, Math.max(0.05, out));
+  if (u < a) return (1 - Math.cos((Math.PI * u) / a)) / 2;      // sale
+  if (u < a + b) return (1 + Math.cos((Math.PI * (u - a)) / b)) / 2;  // scende
+  return 0;                                                     // pausa in basso
+}
+
+/** Il tocco alla svolta: 1→0 nei primi istanti della fase chiesta. */
+export function breathTick(u, inn = BREATH_IN, out = BREATH_OUT, quale = 'in') {
+  const a = Math.min(0.9, Math.max(0.05, inn));
+  const x0 = quale === 'in' ? 0 : a;
+  let d = u - x0;
+  if (d < 0) d += 1;
+  return d < TICK_QUOTA ? Math.pow(1 - d / TICK_QUOTA, 2.5) : 0;
+}
+
 /** Chiarezza 0..1 alla stessa fase: l'aria che entra e' piu' brillante. */
 export function breathBright(u, inn = BREATH_IN, out = BREATH_OUT) {
   const a = Math.min(0.9, Math.max(0.05, inn));
@@ -190,14 +230,31 @@ export function neuroSample(l, tAbs, dt) {
     l._ph += TAU * freqAt(l, u, span) * dt;
     const ph = (l._ph / TAU) % 1;
     const amp = breathEnv(ph, l.inhale, l.exhale);
-    if (amp <= 0) return [0, 0];
     const br = breathBright(ph, l.inhale, l.exhale);
-    const th = TAU * l.carrier * tAbs;
+    /* la GUIDA (opt-in): l'altezza scivola col respiro. La fase audio
+       si accumula — con una frequenza che cambia non si puo' usare
+       tAbs, o la nota salterebbe a ogni variazione. */
+    const gl = l.guida
+      ? Math.pow(2, (BREATH_GLIDE_SEMI * breathPitch(ph, l.inhale, l.exhale)) / 12)
+      : 1;
+    l._bth = (l._bth || 0) + TAU * l.carrier * gl * dt;
+    const th = l.guida ? l._bth : TAU * l.carrier * tAbs;
     // armoniche della STESSA nota (2ª e 3ª), non un accordo: la voce
     // si apre inspirando e si richiude espirando senza cambiare nota
     const w2 = 0.9 * br, w3 = 0.5 * br;
-    const v = ((Math.sin(th) + w2 * Math.sin(th * 2) + w3 * Math.sin(th * 3))
+    let v = ((Math.sin(th) + w2 * Math.sin(th * 2) + w3 * Math.sin(th * 3))
       / (1 + w2 + w3)) * amp * e;
+    if (l.guida) {
+      /* i TOCCHI alla svolta: due accenni, uno per fase — piu' chiaro
+         quello dell'inspirazione, come un dito su una campana. Vivono
+         FUORI dall'inviluppo (all'inizio dell'inspirazione l'inviluppo
+         e' ancora a zero: dentro, non si sentirebbero). */
+      const ti = breathTick(ph, l.inhale, l.exhale, 'in');
+      const te = breathTick(ph, l.inhale, l.exhale, 'out');
+      if (ti > 0) v += 0.10 * ti * Math.sin(TAU * l.carrier * 4 * tAbs) * e;
+      if (te > 0) v += 0.07 * te * Math.sin(TAU * l.carrier * 3 * tAbs) * e;
+    }
+    if (v === 0) return [0, 0];
     return [v, v];
   }
   if (l.method === 'shepard') {
@@ -822,9 +879,29 @@ export function startPreview(ctx, score,
       const brSrc = shapeLoop(ctx, (u) => breathBright(u, l.inhale, l.exhale), T);
       const NORM = 2.4;
       const made = [envSrc, brSrc];
+      /* RESPIRO 2.0 — la GUIDA anche qui: cio' che si esporta deve
+         suonare come cio' che si ascolta. Stesse forme del vivo,
+         campionate in loop invece che per campione. */
+      const glSrc = l.guida
+        ? shapeLoop(ctx, (u) => breathPitch(u, l.inhale, l.exhale), T) : null;
+      if (glSrc) made.push(glSrc);
       [[1, 1, false], [2, 0.9, true], [3, 0.5, true]].forEach(([mu, w, dyn]) => {
         const o = ctx.createOscillator();
-        o.frequency.value = Math.max(1, l.carrier * mu);
+        const base = Math.max(1, l.carrier * mu);
+        o.frequency.value = base;
+        if (glSrc) {
+          /* la forma 0..1 diventa Hz: da `base` a `base` + i semitoni
+             della guida (in Hz la curva e' lineare, ma su tre semitoni
+             l'orecchio non distingue) */
+          const su = ctx.createGain();
+          su.gain.value = base * (Math.pow(2, BREATH_GLIDE_SEMI / 12) - 1);
+          glSrc.connect(su); su.connect(o.frequency);
+          /* `made` sono le SORGENTI: chi non ha start() non ci entra
+             (un GainNode qui dentro fa morire l'avvio dell'intera
+             barra — successo davvero, 26/8). I guadagni vivono
+             appesi al grafo e muoiono con esso. */
+          nodes.push(su);
+        }
         const pg = ctx.createGain();
         if (dyn) {
           pg.gain.value = 0;
@@ -833,6 +910,21 @@ export function startPreview(ctx, score,
         } else pg.gain.value = w / NORM;
         o.connect(pg); pg.connect(gate); made.push(o);
       });
+      if (l.guida) {
+        /* i tocchi: FUORI dal gate dell'inviluppo, come nel vivo */
+        [['in', 4, 0.10], ['out', 3, 0.07]].forEach(([quale, mu, amp]) => {
+          const tk = shapeLoop(ctx,
+            (u) => breathTick(u, l.inhale, l.exhale, quale), T);
+          const tg = ctx.createGain(); tg.gain.value = 0;
+          const amt = ctx.createGain(); amt.gain.value = amp;
+          tk.connect(amt); amt.connect(tg.gain);
+          const o = ctx.createOscillator();
+          o.frequency.value = Math.max(1, l.carrier * mu);
+          o.connect(tg); tg.connect(g);
+          made.push(tk, o);          // le sorgenti
+          nodes.push(amt, tg);       // i guadagni: solo da tenere in vita
+        });
+      }
       // il passo puo' cambiare lungo la barra (marea del respiro):
       // stessa freqAt del render, stessa conversione in playbackRate
       if (l.f0 !== l.f1) {

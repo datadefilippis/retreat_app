@@ -132,6 +132,37 @@ export const CATALOGO = Object.freeze([
       + 'si appoggia all’entrainment uditivo. Misurata al banco Aurya.',
     cuffie: 'consigliate',
   }),
+  daEsperienza('respiro', {
+    livello: 'base',
+    evidenza: {
+      grado: 'A',
+      nota: 'È la scheda con le basi più solide del catalogo, e per '
+        + 'una ragione precisa: qui la pratica documentata non è '
+        + '«ascoltare un suono», è RESPIRARE a un certo ritmo. La '
+        + 'respirazione di risonanza (~6 atti al minuto, con '
+        + 'espirazione più lunga dell’inspirazione) è la pratica con '
+        + 'la letteratura più robusta di tutto questo campo — e un '
+        + 'RCT del 2026 ha mostrato che il ritmo fisso a 6 vale '
+        + 'quanto quello misurato persona per persona. Il suono qui '
+        + 'fa una cosa sola, e la fa con precisione: dà il tempo.',
+      revisione: '2026-08',
+    },
+    teoria: 'Respirazione di risonanza (Lehrer, Gevirtz): a circa sei '
+      + 'atti al minuto la variabilità cardiaca raggiunge la sua '
+      + 'ampiezza massima. Rapporto 4:6 fra inspirazione ed '
+      + 'espirazione, come raccomandato. Il suono è un pacer: '
+      + 'l’altezza sale e scende col respiro e un tocco segna ogni '
+      + 'svolta — le convenzioni dei pacer uditivi studiati.',
+    indicazioni: 'Dieci minuti di respirazione guidata: la pratica '
+      + 'più «attiva» del catalogo, e la più facile da riportare a '
+      + 'casa. Ottima come apertura o come lavoro a sé.',
+    come: 'In cuffia o in cassa, indifferentemente: la guida è una '
+      + 'nota, non un battito fra le orecchie. Persona seduta con la '
+      + 'schiena dritta, o distesa. Dille solo: «segui il suono, non '
+      + 'contare». Se all’inizio il ritmo sembra lento, è normale: '
+      + 'sei atti al minuto sono meno di quanto si respiri di solito.',
+    cuffie: 'consigliate',
+  }),
   daEsperienza('ground', {
     livello: 'base',
     racconto: 'Un registro basso che si sente prima nel corpo che '

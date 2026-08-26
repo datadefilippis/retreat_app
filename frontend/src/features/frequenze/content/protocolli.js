@@ -27,6 +27,15 @@ export const layer = (cfg) => ({
   ...(cfg.curve === 'wave' ? { period: cfg.period ?? 40 } : {}),
   // ONDA 4 — idem per il colore, che vale solo per il soffio
   ...((cfg.method === 'noise') ? { color: cfg.color || 'pink' } : {}),
+  /* C2 (26/8) — e le quote del respiro, piu' la GUIDA: senza questo
+     passaggio una ricetta che chiede 4:6 e i cue di anticipazione
+     otterrebbe i default, cioe' un altro suono. Vivono solo sul
+     respiro, come il colore vive solo sul soffio. */
+  ...((cfg.method === 'breath') ? {
+    ...(cfg.inhale != null ? { inhale: cfg.inhale } : {}),
+    ...(cfg.exhale != null ? { exhale: cfg.exhale } : {}),
+    ...(cfg.guida ? { guida: true } : {}),
+  } : {}),
   start: cfg.start ?? 0,
   end: cfg.end ?? cfg.duration,
   gain: cfg.gain ?? 0.25,

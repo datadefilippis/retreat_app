@@ -995,6 +995,7 @@ function AppRoutes() {
       {/* LE ESPERIENZE — una presentazione sola, prima del catch-all */}
       <Route path="/sound/calm" element={<EsperienzaPage id="calm" />} />
       <Route path="/sound/ground" element={<EsperienzaPage id="ground" />} />
+      <Route path="/sound/respiro" element={<EsperienzaPage id="respiro" />} />
       {/* P3 — il Builder professionale, PRIMA del catch-all (stessa
           trappola del Lab). Il cancello vive dentro la pagina: senza
           il privilegio non si disegna un Builder funzionante, e le API

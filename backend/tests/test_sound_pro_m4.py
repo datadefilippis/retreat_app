@@ -53,11 +53,22 @@ class TestIlRubinetto:
         assert "analisi" not in esp, \
             "le esperienze hanno acceso il rubinetto: non era il patto"
 
-    def test_03_le_ricette_e_il_motore_restano_intatti(self):
+    def test_03_le_esperienze_pubblicate_non_cambiano_suono(self):
+        """L'invariante durevole. La lista-fotografia e' caduta con C2
+        (Respiro 2.0 ESTENDE il motore, opt-in, ed e' il suo mestiere):
+        quel che deve restare vero e' che le ricette gia' pubblicate
+        suonino come prima — nessuna di loro chiede la guida, e il Lab
+        resta fuori."""
         import subprocess as sp
+        for nome in ("calm.js", "ground.js"):
+            # SENZA commenti: la parola «guida» vive nella prosa di
+            # CALM (che il respiro lo usa come texture, e lo spiega) —
+            # quel che non deve esserci e' il CAMPO
+            testo = _senza_commenti((FQ / "content" / nome).read_text())
+            assert "guida:" not in testo, f"{nome} e' diventata un pacer"
         r = sp.run(["git", "diff", "--name-only", "HEAD", "--",
-                    "frontend/src/features/frequenze/engine",
-                    "frontend/src/features/frequenze/content",
+                    "frontend/src/features/frequenze/content/calm.js",
+                    "frontend/src/features/frequenze/content/ground.js",
                     "frontend/src/features/frequenze/lab"],
                    cwd=BACKEND_DIR.parent, capture_output=True, text=True)
         if r.returncode != 0:

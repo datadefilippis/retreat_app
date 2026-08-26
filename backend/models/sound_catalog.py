@@ -23,6 +23,7 @@ registri un riferimento sbagliato.
 # id → (titolo, versione, durata_sec)
 CATALOGO_CORE = {
     "calm":        ("CALM",        1, 360),
+    "respiro":     ("RESPIRO",     1, 600),
     "ground":      ("GROUND",      1, 480),
     "rilassare":   ("Rilassare",   1, 1200),
     "dormire":     ("Dormire",     1, 1200),

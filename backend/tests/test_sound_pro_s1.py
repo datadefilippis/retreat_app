@@ -44,6 +44,7 @@ def _esegui_catalogo(corpo: str, tmp_path):
         "esperienze.js": FQ / "content" / "esperienze.js",
         "calm.js": FQ / "content" / "calm.js",
         "ground.js": FQ / "content" / "ground.js",
+        "respiro.js": FQ / "content" / "respiro.js",
         "protocolli.js": FQ / "content" / "protocolli.js",
     }
     for nome, sorgente in files.items():
@@ -80,10 +81,10 @@ console.log(JSON.stringify(CATALOGO.map(p => ({
   stato: p.stato, versione: p.versione,
   costruisce: typeof p.costruisci === 'function',
 }))));""", tmp_path)
-        assert len(out) == 8
+        assert len(out) == 9
         assert [p["id"] for p in out] == [
-            "calm", "ground", "rilassare", "dormire", "meditare",
-            "elaborare", "concentrare", "energizzare"]
+            "calm", "respiro", "ground", "rilassare", "dormire",
+            "meditare", "elaborare", "concentrare", "energizzare"]
         for p in out:
             for campo in ("titolo", "sottotitolo", "racconto",
                           "indicazioni", "nota", "costruisce"):
@@ -166,20 +167,23 @@ class TestOnesta:
                 assert re.search(r"NON |non lo sostituisce|non è", nota), \
                     f"nota clinica senza negazione: «{nota[:80]}»"
 
-    def test_06_le_ricette_originali_sono_intatte(self):
+    def test_06_il_catalogo_avvolge_ricette_che_vivono_altrove(self):
+        """L'invariante durevole (la lista-fotografia e' caduta con C2,
+        che AGGIUNGE ricette per mestiere): ogni voce del catalogo cita
+        una ricetta che vive in content/ — il catalogo non ne ospita
+        nessuna, e il Lab resta fuori da tutto questo."""
         import subprocess as sp
-        # M4 (26/8): esperienze/ascolto.js ha guadagnato il rubinetto
-        # (opzione additiva `analisi`): esce dalla lista-fotografia, e
-        # il suo invariante vive nella batteria M4
+        src = _senza_commenti(CATALOGO.read_text())
+        # le sole fabbriche di score sono i due avvolgitori
+        assert src.count("costruisci:") == 2, \
+            "una voce si fabbrica lo score da sola invece di avvolgere"
+        assert "daEsperienza" in src and "daIntento" in src
         r = sp.run(["git", "diff", "--name-only", "HEAD", "--",
-                    "frontend/src/features/frequenze/content",
-                    "frontend/src/features/frequenze/engine",
                     "frontend/src/features/frequenze/lab"],
                    cwd=BACKEND_DIR.parent, capture_output=True, text=True)
         if r.returncode != 0:
             pytest.skip("git non disponibile")
-        assert not r.stdout.strip(), \
-            f"S1 doveva solo AVVOLGERE, ha toccato: {r.stdout}"
+        assert not r.stdout.strip(), f"il Lab e' stato toccato: {r.stdout}"
 
 
 # ── 7-9 · la potatura: la home e' il catalogo, e non suona niente ─────────

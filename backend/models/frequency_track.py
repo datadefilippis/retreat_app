@@ -205,6 +205,14 @@ def clean_layer(raw, duration):
             exh = max(EXHALE_MIN, 0.95 - inn)
         layer["inhale"] = round(inn, 3)
         layer["exhale"] = round(exh, 3)
+        # C2 (26/8) — LA GUIDA: i cue di anticipazione (altezza che
+        # scivola + tocco alla svolta) che trasformano il respiro da
+        # texture a pacer. E' una bandiera, non un numero, e vive solo
+        # dove vive il respiro. Senza questa riga una traccia guidata,
+        # una volta salvata, tornerebbe indietro texture: si
+        # ascolterebbe una cosa e se ne pubblicherebbe un'altra.
+        if bool(raw.get("guida")):
+            layer["guida"] = True
     # ONDA 4 — il colore vale solo per il soffio; altrove sarebbe muto.
     # Il rosa e' il default storico: le ricette salvate senza colore
     # devono continuare a suonare rosa, esattamente come prima.

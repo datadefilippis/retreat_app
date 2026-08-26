@@ -28,6 +28,7 @@
  */
 import { costruisciCalm, CALM_DURATA } from './calm';
 import { costruisciGround, GROUND_DURATA } from './ground';
+import { costruisciRespiro, RESPIRO_DURATA, RESPIRO_AL_MINUTO } from './respiro';
 
 export const ESPERIENZE = Object.freeze({
   calm: {
@@ -50,6 +51,20 @@ export const ESPERIENZE = Object.freeze({
       + 'o un altoparlante vero, l’esperienza è intera.',
     durata: GROUND_DURATA,
     costruisci: costruisciGround,
+  },
+  respiro: {
+    id: 'respiro',
+    titolo: 'RESPIRO',
+    sottotitolo: `Dieci minuti a ${RESPIRO_AL_MINUTO} respiri al minuto.`,
+    racconto: 'Una nota che sale mentre inspiri e scende mentre '
+      + 'espiri, e un tocco che segna ogni svolta: non devi contare, '
+      + 'devi solo seguire. Il ritmo è costante — sei atti al minuto, '
+      + 'con l’espirazione più lunga dell’inspirazione — ed è proprio '
+      + 'la costanza a essere la pratica.',
+    cuffie: 'In cuffia o in cassa: la guida si sente bene comunque, '
+      + 'perché è una nota e non un battito fra le orecchie.',
+    durata: RESPIRO_DURATA,
+    costruisci: costruisciRespiro,
   },
 });
 

@@ -137,6 +137,7 @@ async def build_core() -> str:
         _url(f"{base}/sound/impara/glossario", priority="0.4"),
         _url(f"{base}/sound/calm", priority="0.7"),
         _url(f"{base}/sound/ground", priority="0.7"),
+        _url(f"{base}/sound/respiro", priority="0.7"),
         _url(f"{base}/sound/lab", priority="0.5"),
         _url(f"{base}/sound/professional", priority="0.7"),
         # GS5 (25/8) — privacy/termini NON stanno piu' qui: sono rotte
