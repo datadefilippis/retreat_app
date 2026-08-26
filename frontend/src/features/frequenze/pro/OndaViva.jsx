@@ -19,7 +19,9 @@
  */
 import React, { useEffect, useRef } from 'react';
 
-const COLORI = ['#c9b37e', '#8fd0c2', '#f6f2e8', '#6f9c8f'];
+/* 26/8, rifinitura del giorno: la tavolozza e' quella DA LETTURA per
+   fondo chiaro — le onde vivono su avorio, non piu' nel buio */
+const COLORI = ['#A8925C', '#3E7663', '#6F5FA0', '#2F6152'];
 const TETTO_PULSAZIONE = 1; // Hz visivi — mai oltre (anti-strobo)
 
 /** Da uno score alle voci visive: numeri del suono → numeri del segno. */

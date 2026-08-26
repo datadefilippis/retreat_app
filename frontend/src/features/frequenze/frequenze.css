@@ -1302,3 +1302,27 @@
 .fqz .mini,.fqz .minisel{background:#FFFFFF}
 .fqz .vd-name{background:transparent}
 .fqz .name{background:transparent}
+
+/* ═══ RIFINITURA DEL GIORNO (26/8, founder) — gli stati «acceso» che
+   sparivano e le tele delle onde in armonia col fondo nuovo ═══ */
+
+/* --ink torna a fare il FONDO-TELA (le tele dipingono il bg leggendo
+   questo token): perla, non piu' inchiostro. Ogni uso di --ink come
+   colore di testo era gia' stato ri-dichiarato esplicito nel GIORNO. */
+.fqz{--ink:#FBF7EE}
+
+/* le tele del Lab: avorio, coi tratti nei toni da lettura (le tele
+   leggono i token, quindi si vestono da sole) */
+.fqz .lab-tela{background:#FBF7EE}
+.fqz .lab-forma.viva{background:#22333A}
+
+/* gli stati «acceso» che sul chiaro non si leggevano piu' */
+.fqz .tab.tab-mom{border-color:rgba(111,95,160,.45);color:#6F5FA0}
+.fqz .tab.tab-mom.on{border-color:#6F5FA0;background:rgba(111,95,160,.14);color:#4E4180}
+.fqz .createbar .cb-scena{border-color:#A99BCB;color:#6F5FA0}
+.fqz .foglio-durata .fd-riga button.su,
+.fqz .foglio-durata .fd-auto.su{border-color:#2F6152;color:#2F6152}
+.fqz .vd-rec{color:#B0392B;border-color:#B0392B}
+.fqz .vd-rec:hover{background:rgba(176,57,43,.08)}
+.fqz .vd-clip.playing{border-color:#A8925C}
+.fqz .learnclose:hover{color:var(--bone);border-color:var(--violet)}

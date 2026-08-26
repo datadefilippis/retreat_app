@@ -525,3 +525,8 @@
 .fqz .rito-barra i{background:#C9B37E}
 .fqz .pro-evidenza{border-left-color:#C9B37E}
 .fqz .prof-hero h1{color:var(--bone)}
+
+/* le onde in armonia col giorno: partitura e andamento su avorio,
+   i tratti sono gia' nei toni da lettura (leggono i token) */
+.fqz .partitura svg,.fqz .reg-andamento svg{
+  background:#FBF7EE;border:1px solid var(--line-soft)}
