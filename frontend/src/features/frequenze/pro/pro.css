@@ -472,3 +472,38 @@
 .fqz .prof-grazie a { color: var(--lamp); }
 .fqz .prof-nota { font-size: 11.5px; color: var(--dimmer); margin: 10px 0 0; }
 .fqz .prof-nota a { color: var(--dim); }
+
+/* ═══ LUCE TERZA (26/8, founder) — solo design: superfici piu' chiare,
+   corpi di lettura +1px, raggi moderni. Vedi la testata del livello
+   omonimo in frequenze.css. ═══ */
+.fqz .pro-scheda,.fqz .pro-passo,.fqz .pro-scheda-core,.fqz .reg-riga,
+.fqz .reg-quadro,.fqz .prof-pilastri article{
+  background:linear-gradient(180deg,#1E3840,#16282E)}
+.fqz .pro-scheda,.fqz .pro-passo,.fqz .pro-scheda-core{border-radius:16px}
+.fqz .pro-riepilogo{background:#16282E;border-radius:16px}
+.fqz .reg-riga,.fqz .reg-quadro,.fqz .pc-tappa{border-radius:12px}
+.fqz .persona-tendina{background:var(--panel)}
+.fqz .persona-tendina li button:hover{background:#24424A}
+.fqz .partitura svg,.fqz .reg-andamento svg{background:#12262B}
+.fqz .pro-vuoto{font-size:14px}
+.fqz .pro-dice{font-size:13.5px}
+.fqz .pro-errore{font-size:13px}
+.fqz .pro-aiuto{font-size:12.5px}
+.fqz .pro-scaffale-sotto{font-size:13.5px}
+.fqz .pro-sotto{font-size:13.5px}
+.fqz .pro-racconto{font-size:14.5px}
+.fqz .pro-dati dd{font-size:13.5px}
+.fqz .pro-evidenza p{font-size:13.5px}
+.fqz .pro-evidenza{border-radius:10px}
+.fqz .rito-ripescaggio{border-radius:10px;font-size:13px}
+.fqz .rito-cuffie{font-size:13.5px}
+.fqz .rito-esito{font-size:14.5px}
+.fqz .rito-ultima{font-size:13px}
+.fqz .rito-nota-tappa{font-size:13px}
+.fqz .reg-testa{font-size:13.5px}
+.fqz .reg-note{font-size:14px}
+.fqz .reg-sintesi{font-size:13px}
+.fqz .pc-cosa b{font-size:14px}
+.fqz .pc-nota{font-size:12px}
+.fqz .metodo-sezione p{font-size:15px}
+.fqz .pro-invito-metodo{font-size:13.5px}

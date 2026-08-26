@@ -534,11 +534,16 @@ class TestVetrinaMeditazioniFq3:
                               headers={"X-Fqz-Unlock": finto},
                               timeout=10)
             assert r2.status_code == 403, finto
-        # il Bearer di un OPERATORE non e' un account Aurya: non sblocca
+        # Il Bearer di un OPERATORE loggato SBLOCCA (decisione 24/8,
+        # in _has_catalog_access: un account e' PIU' del cerchio — e
+        # il client attacca il Bearer org a ogni chiamata, quindi
+        # l'operatore che ascoltava la SUA meditazione prendeva 401 e
+        # veniva sbattuto al login). Questa guardia diceva la regola
+        # del 20/8; ora dice quella vera.
         hdr = _login()
         r3 = requests.get(f"{BASE_URL}/api/frequencies/catalog",
                           headers=hdr, timeout=10)
-        assert r3.status_code == 403
+        assert r3.status_code == 200
 
     def test_unlock_iscritto_apre_il_catalogo(self):
         """Iscrizione reale via endpoint Lettera consolidato (non si

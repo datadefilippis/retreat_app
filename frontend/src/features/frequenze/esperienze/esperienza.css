@@ -64,3 +64,12 @@
   margin: 0 0 18px; max-width: 40ch;
 }
 .fqz .esp-lettera a { color: var(--lamp); }
+
+/* ═══ LUCE TERZA (26/8, founder) — solo misure: la lettura sale di un
+   punto, la scena resta silenziosa. ═══ */
+.fqz .esp-lead{font-size:20px}
+.fqz .esp-nota{font-size:14.5px}
+.fqz .esp-perso{font-size:13.5px}
+.fqz .esp-patto{font-size:12.5px}
+.fqz .esp-invito{font-size:18px}
+.fqz .esp-durata{font-size:12px}
