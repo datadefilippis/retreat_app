@@ -640,6 +640,13 @@ _SOUND_PAGES = {
                         "sonoro che rallenta e un battito lento fra i due "
                         "canali. Non è una terapia e non promette effetti."),
     },
+    "ground": {
+        "title": "GROUND: otto minuti per ritrovare il peso | Aurya Sound",
+        "description": ("Un'esperienza sonora di otto minuti costruita "
+                        "attorno a un registro basso e fermo, una materia "
+                        "sonora che va e viene e una pulsazione lenta. "
+                        "Non è una terapia e non promette effetti."),
+    },
     # LAB (25/8) — il laboratorio: pagina pubblica e indicizzabile
     # (e' contenuto vero, e in italiano non ce l'ha nessuno)
     "lab": {
@@ -674,6 +681,32 @@ def _calm_content_html() -> str:
         "<p>Nient'altro: niente campane, niente rumore, niente voce. "
         "Cosa sappiamo davvero del suono, e cosa no, è raccontato "
         "scheda per scheda nella biblioteca di Aurya Sound.</p>"
+    )
+
+
+def _ground_content_html() -> str:
+    """Corpo per i crawler di /sound/ground. Racconta l'esperienza per
+    quello che è — nessuna affermazione fisiologica."""
+    return (
+        "<h1>GROUND — otto minuti per ritrovare il peso</h1>"
+        "<p>Un'esperienza sonora costruita attorno a una nota bassa che "
+        "resta ferma dall'inizio alla fine. Non è una terapia e non "
+        "promette effetti: è un ascolto progettato con cura.</p>"
+        "<h2>Com'è fatta</h2>"
+        "<ul>"
+        "<li><b>Il peso</b>: un registro basso e stabile, la terra su "
+        "cui si posa tutto il resto.</li>"
+        "<li><b>La materia</b>: una presenza scura che va e viene "
+        "lentamente, come una marea.</li>"
+        "<li><b>La pulsazione</b>: un passo lento — più lento di "
+        "qualunque tempo musicale.</li>"
+        "<li><b>L'apertura</b>: verso la fine tutto si semplifica e lo "
+        "spazio si allarga; resta solo il peso.</li>"
+        "</ul>"
+        "<p>Le cuffie contano davvero: il registro basso di GROUND non "
+        "esce dall'altoparlante di un telefono. Cosa sappiamo del "
+        "suono, e cosa no, è raccontato scheda per scheda nella "
+        "biblioteca di Aurya Sound.</p>"
     )
 
 
@@ -745,6 +778,12 @@ async def _meta_sound(parts: list) -> Optional[dict]:
                 "hreflang": _hub_hreflang(canonical),
                 "image": f"{base}/og-cover.jpg",
                 "content_html": _calm_content_html()}
+    if sub == "ground":
+        canonical = f"{base}/sound/ground"
+        return {**_SOUND_PAGES["ground"], "canonical": canonical,
+                "hreflang": _hub_hreflang(canonical),
+                "image": f"{base}/og-cover.jpg",
+                "content_html": _ground_content_html()}
     if sub == "lab":
         canonical = f"{base}/sound/lab"
         return {**_SOUND_PAGES["lab"], "canonical": canonical,

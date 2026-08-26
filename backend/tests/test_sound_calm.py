@@ -16,9 +16,17 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 FRONTEND_SRC = BACKEND_DIR.parent / "frontend" / "src"
 FQ = FRONTEND_SRC / "features" / "frequenze"
 CALM = FQ / "content" / "calm.js"
-PAGINA = FQ / "calm" / "CalmPage.js"
+PAGINA = FQ / "esperienze" / "EsperienzaPage.js"
 ASCOLTO = FQ / "esperienze" / "ascolto.js"
 REGISTRO = FQ / "content" / "esperienze.js"
+
+
+def _prosa(p: Path) -> str:
+    """Il testo come lo legge una persona: spazi normalizzati e le
+    stringhe ricucite (nel JS una frase lunga si spezza con `' + '`,
+    e cercarla intera nel sorgente non la trova mai)."""
+    t = " ".join(p.read_text().split())
+    return t.replace("' + '", "").replace('" + "', "")
 
 
 def _codice(p: Path) -> str:
@@ -286,7 +294,7 @@ class TestArchitettura:
 
     def test_la_pagina_prende_i_dati_dal_registro(self):
         src = _codice(PAGINA)
-        assert "esperienza('calm')" in src, "la pagina non usa il registro"
+        assert "esperienza(id)" in src, "la pagina non usa il registro"
         for duplicato in ("360", "CALM_DURATA", "costruisciCalm"):
             assert duplicato not in src, \
                 f"la pagina tiene una copia di «{duplicato}»"
@@ -302,19 +310,19 @@ class TestLaPromessa:
         "terapeutic", "theta", "onde cerebrali", "resetta", "scientificamente",
     ])
     def test_nessuna_affermazione_fisiologica(self, bugia):
-        for f in (CALM, PAGINA):
+        for f in (CALM, PAGINA, REGISTRO):
             testo = f.read_text().lower()
             assert bugia not in testo, f"{f.name}: promette «{bugia}»"
 
     def test_il_binaurale_e_descritto_per_quello_che_si_sente(self):
-        # il testo va a capo nel JSX: si confronta a spazi normalizzati
-        testo = " ".join(PAGINA.read_text().split())
+        # i testi di CALM vivono nel registro (la pagina e' comune)
+        testo = _prosa(REGISTRO)
         assert "battito lento fra i due canali" in testo
         # la vecchia riga («senza cuffie resta intera») era ottimista:
         # le tre portanti di CALM stanno TUTTE sotto la soglia
         # dell'altoparlante del telefono (500 Hz, engine/altoparlante.js)
-        assert "senza cuffie l'esperienza resta intera" not in testo
-        assert "dall'altoparlante di un telefono i toni gravi si perdono" in testo
+        assert "esperienza resta intera" not in testo
+        assert "di un telefono i toni gravi si perdono" in testo
         assert "non sono obbligatorie" in testo, \
             "chi non ha le cuffie non deve sentirsi escluso"
 
@@ -325,11 +333,11 @@ class TestLaPromessa:
         assert "avvisoCuffieScore(score)" in asc
         assert "500" not in asc, "la soglia e' stata ricopiata nel player"
         pag = _codice(PAGINA)
-        assert "calm-avviso-cuffie" in pag and "solo-telefono-block" in pag, \
+        assert "esp-avviso-cuffie" in pag and "solo-telefono-block" in pag, \
             "l'avviso non compare, o compare anche dove non serve"
 
     def test_dice_cosa_non_e(self):
-        testo = " ".join(PAGINA.read_text().split())
+        testo = _prosa(PAGINA)   # il patto vale per tutte le esperienze
         assert "Non è una terapia e non promette effetti" in testo
 
 
@@ -338,7 +346,8 @@ class TestLaPorta:
 
     def test_rotta_lazy_prima_del_catchall(self):
         src = (FRONTEND_SRC / "App.js").read_text()
-        assert 'lazy(() => import("./features/frequenze/calm/CalmPage"))' in src
+        assert ('lazy(() => import("./features/frequenze/esperienze/'
+                'EsperienzaPage"))') in src
         assert src.index('path="/sound/calm"') < src.index('path="/sound/*"'), \
             "il catch-all mangia CALM"
 
@@ -360,9 +369,11 @@ class TestLaPorta:
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
         assert "/sound/calm" in seo
         landing = (FQ / "SoundLandingPage.js").read_text()
-        assert 'data-testid="sld-calm"' in landing
-        assert landing.index("sld-calm") < landing.index("fqz-landing-cats"), \
-            "CALM deve stare prima delle schede: si ascolta prima di studiare"
+        assert 'data-testid="sld-esperienze"' in landing
+        assert "ELENCO.map" in landing, \
+            "la landing non prende le esperienze dal registro"
+        assert landing.index("sld-esperienze") < landing.index("fqz-landing-cats"), \
+            "le esperienze stanno prima delle schede: si ascolta prima di studiare"
 
     def test_niente_tecnicismi_davanti_all_utente(self):
         """Chi ascolta non deve vedere il Laboratorio."""

@@ -982,14 +982,18 @@
 /* quando comanda il momento, i timbri restano visibili ma in disparte */
 .fqz .tab.tab-sound.spenta{opacity:.35;cursor:default}
 
-/* CALM sulla porta di Sound (26/8/2026): l'esperienza prima dello
-   studio — un solo riquadro, l'oro riservato al nome. */
-.fqz .sld-calm{margin:0 0 22px}
-.fqz .sld-calm a{
+/* LE ESPERIENZE sulla porta di Sound (26/8/2026): si ascolta prima di
+   studiare — riquadri sobri, l'oro riservato ai nomi. */
+.fqz .sld-esp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 22px}
+.fqz .sld-esp a{
   display:block;text-decoration:none;background:var(--panel);
   border:1px solid var(--lamp-dim);border-radius:14px;padding:20px 22px}
-.fqz .sld-calm a:hover{border-color:var(--lamp)}
-.fqz .sld-calm b{
+.fqz .sld-esp a:hover{border-color:var(--lamp)}
+.fqz .sld-esp b{
   display:block;font-family:Cinzel, var(--serif);letter-spacing:.26em;
   text-transform:uppercase;color:var(--lamp);font-size:17px;margin-bottom:8px}
-.fqz .sld-calm span{display:block;color:var(--dim);font-size:13.5px;line-height:1.55}
+.fqz .sld-esp span{display:block;color:var(--dim);font-size:13.5px;line-height:1.55}
+.fqz .sld-esp i{
+  display:block;margin-top:10px;font-style:normal;font-family:var(--mono);
+  font-size:11px;color:var(--dimmer);letter-spacing:.05em}
+@media (max-width:640px){ .fqz .sld-esp{grid-template-columns:1fr} }

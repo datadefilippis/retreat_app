@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BIB, SOUND_KEYS, CAT_DESC, CAT_LINK } from './content/biblioteca';
 import { PERCORSO } from './content/guida';
+import { ELENCO } from './content/esperienze';
 import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
@@ -51,14 +52,17 @@ export default function SoundLandingPage() {
             alla tradizione. Si legge, si approfondisce — e si ascolta.
           </p>
 
-          {/* CALM (26/8) — la prima esperienza vera: sta PRIMA delle
-              schede, perche' si ascolta prima di studiare */}
-          <div className="sld-calm" data-testid="sld-calm">
-            <Link to="/sound/calm">
-              <b>CALM</b>
-              <span>Una breve esperienza sonora per creare uno spazio di
-                calma. Sei minuti — si può fare adesso.</span>
-            </Link>
+          {/* LE ESPERIENZE (26/8) — stanno PRIMA delle schede, perche'
+              si ascolta prima di studiare. L'elenco viene dal registro:
+              aggiungerne una non tocca questa pagina. */}
+          <div className="sld-esp" data-testid="sld-esperienze">
+            {ELENCO.map((e) => (
+              <Link key={e.id} to={`/sound/${e.id}`} data-testid={`sld-${e.id}`}>
+                <b>{e.titolo}</b>
+                <span>{e.sottotitolo}</span>
+                <i>{Math.round(e.durata / 60)} minuti</i>
+              </Link>
+            ))}
           </div>
 
           <div className="sld-cats" data-testid="fqz-landing-cats">
