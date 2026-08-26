@@ -114,6 +114,59 @@ class TestGeneratore:
         assert "lab-volume" in ui and "volume basso" in ui
 
 
+class TestOscilloscopio:
+    """STEP 2: il dominio del tempo. Il contratto: la tela disegna i
+    dati veri, non conosce il generatore, e il banco ha UN ciclo."""
+
+    def test_disegna_i_dati_veri_senza_conoscere_il_generatore(self):
+        """La tela riceve `ottieniAnalisi` e basta: niente motore,
+        niente generatore, niente analyser proprio. E' il contratto
+        che rendera' il microfono un cambio di sorgente, non di
+        strumenti."""
+        src = (LAB / "Oscilloscopio.jsx").read_text()
+        importati = re.findall(r"^import .*?from '([^']+)'", src, re.M)
+        assert "./motore" not in importati and "./Generatore" not in importati, \
+            "l'oscilloscopio conosce il generatore: il microfono trovera' la porta murata"
+        assert "createAnalyser" not in src, \
+            "si e' fatto un analyser suo invece di osservare quello del motore"
+        assert "analisi.tempo(" in src, \
+            "non legge i campioni veri (getFloatTimeDomainData via analisi)"
+
+    def test_il_trigger_esiste_ed_ha_l_isteresi(self):
+        """Senza trigger la traccia scorre e lo strumento sembra
+        rotto; senza isteresi il rumore fa scattare a vuoto."""
+        src = (LAB / "Oscilloscopio.jsx").read_text()
+        assert "function trigger(" in src
+        assert "armato" in src and "picco * 0.08" in src, \
+            "l'isteresi adattiva e' sparita dal trigger"
+
+    def test_freeze_ferma_il_disegno_non_il_suono(self):
+        src = (LAB / "Oscilloscopio.jsx").read_text()
+        assert "freezeRef" in src and "lab-freeze" in src
+        # da congelati si smette di ACQUISIRE ma si ridipinge l'ultimo
+        # buffer: un resize non deve cancellare la traccia ferma
+        assert "!freezeRef.current" in src
+
+    def test_un_solo_ciclo_di_disegno_per_tutto_il_banco(self):
+        """La regola vale per ogni strumento presente e futuro: il
+        rAF vive SOLO nel quadro, i pannelli iscrivono pittori.
+        E il quadro dorme quando la pagina non si vede."""
+        quadro = (LAB / "quadro.js").read_text()
+        assert "requestAnimationFrame" in quadro
+        assert "visibilitychange" in quadro and "document.hidden" in quadro
+        for f in LAB.glob("*.jsx"):
+            assert "requestAnimationFrame" not in f.read_text(), \
+                f"{f.name}: un ciclo suo invece del quadro condiviso"
+        assert "iscrivi" in (LAB / "Oscilloscopio.jsx").read_text()
+
+    def test_la_pagina_monta_la_tela_sotto_il_generatore(self):
+        src = (LAB / "SoundLabPage.js").read_text()
+        assert src.index("<Generatore") < src.index("<Oscilloscopio"), \
+            "la gerarchia del banco e' GENERATORE poi OSCILLOSCOPIO"
+        assert "labRef.current?.analisi" in src, \
+            "alla tela non arriva l'analisi del motore"
+
+
 class TestTelaio:
     """STEP 0: la rotta, la shell, la sitemap — le trappole gia' viste."""
 

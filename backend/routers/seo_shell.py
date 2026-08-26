@@ -662,8 +662,13 @@ def _lab_content_html() -> str:
         "20 kHz, su scala logaritmica.</li>"
         "<li>Ampiezza e fase regolabili, senza click né salti.</li>"
         "</ul>"
-        "<p>Il banco crescerà sullo stesso motore: oscilloscopio, "
-        "analizzatore di spettro e sweep di frequenza.</p>"
+        "<h2>L'oscilloscopio</h2>"
+        "<p>Il segnale nel dominio del tempo, campione per campione: "
+        "trigger a zero-crossing per una traccia stabile, fermo "
+        "immagine mentre il suono continua. Disegna i dati veri "
+        "dell'analizzatore, non un'animazione.</p>"
+        "<p>Il banco crescerà sullo stesso motore: analizzatore di "
+        "spettro e sweep di frequenza.</p>"
     )
 
 
