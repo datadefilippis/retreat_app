@@ -110,106 +110,9 @@ class TestIlProtocollo:
             assert vietato not in src, f"CALM ha guadagnato {vietato}"
 
 
-class TestContrattoDelProtocollo:
-    """FASE 4 (consolidamento) — gli score delle esperienze INTEGRATE
-    devono rispettare lo stesso contratto degli score degli operatori.
-
-    Il punto delicato: la fonte della verita' resta UNA — il
-    validatore del server (`models.frequency_track`). Qui non si
-    riscrivono le regole: si estraggono i numeri dal file JS
-    dell'esperienza e si passano al validatore VERO. Se un valore
-    fosse fuori range, `clean_layer` lo riporterebbe dentro — e la
-    differenza fra quello che abbiamo scritto e quello che il
-    contratto accetta e' il difetto. Nessuna seconda implementazione.
-    """
-
-    @staticmethod
-    def _layers_di(js: str):
-        """I livelli scritti in un protocollo integrato, come dizionari."""
-        blocchi = re.findall(r"layer\(\{(.*?)\}\)", js, re.S)
-        fuori = []
-        for b in blocchi:
-            d = {}
-            for chiave, valore in re.findall(r"(\w+):\s*'([^']*)'", b):
-                d[chiave] = valore
-            for chiave, valore in re.findall(r"(\w+):\s*(-?[\d.]+)\b", b):
-                d[chiave] = float(valore)
-            # alMinuto(8) → 8/60 Hz: la conversione e' del protocollo
-            for chiave, valore in re.findall(r"(\w+):\s*alMinuto\(([\d.]+)\)", b):
-                d[chiave] = float(valore) / 60.0
-            fuori.append(d)
-        return fuori
-
-    def test_ogni_livello_di_calm_passa_il_validatore_senza_essere_corretto(self):
-        import sys
-        sys.path.insert(0, str(BACKEND_DIR))
-        from models.frequency_track import clean_layer, DURATION_MIN, DURATION_MAX
-
-        js = CALM.read_text()
-        durata = float(re.search(r"CALM_DURATA = (\d+)", js).group(1))
-        assert DURATION_MIN <= durata <= DURATION_MAX, \
-            f"durata {durata}s fuori dal contratto ({DURATION_MIN}-{DURATION_MAX})"
-
-        livelli = self._layers_di(js)
-        assert len(livelli) == 3, f"letti {len(livelli)} livelli invece di 3"
-        for l in livelli:
-            pulito = clean_layer(dict(l), durata)
-            assert pulito is not None, f"{l.get('name')}: rifiutato dal contratto"
-            # il validatore riporta i valori fuori range DENTRO il range:
-            # se ha dovuto correggere qualcosa, quel qualcosa era fuori
-            for campo in ("carrier", "f0", "f1", "gain", "start", "end"):
-                if campo not in l:
-                    continue
-                assert abs(pulito[campo] - l[campo]) < 0.01, \
-                    (f"{l.get('name')}: {campo} = {l[campo]} e' stato "
-                     f"riportato a {pulito[campo]} dal contratto")
-            assert pulito["method"] == l["method"]
-            assert pulito.get("curve", "lin") == l.get("curve", "lin")
-
-    def test_lo_score_intero_e_accettato(self):
-        """Non solo i livelli: la forma completa, con le fasi."""
-        import sys
-        sys.path.insert(0, str(BACKEND_DIR))
-        from models.frequency_track import clean_score, PHASES_MAX, LAYERS_MAX
-
-        js = CALM.read_text()
-        durata = float(re.search(r"CALM_DURATA = (\d+)", js).group(1))
-        fasi = [{"t": float(t), "name": n}
-                for t, n in re.findall(r"\{ t: (\d+), name: '(\w+)' \}", js)]
-        score = {
-            "score_version": 1, "duration_sec": durata,
-            "fade_in_sec": float(re.search(r"CALM_FADE_IN = (\d+)", js).group(1)),
-            "fade_out_sec": float(re.search(r"CALM_FADE_OUT = (\d+)", js).group(1)),
-            "layers": [dict(l) for l in self._layers_di(js)],
-            "phases": fasi,
-        }
-        pulito = clean_score(score)
-        assert pulito is not None, "lo score di CALM non e' uno score valido"
-        assert len(pulito["layers"]) == len(score["layers"]), \
-            "il contratto ha scartato un livello"
-        assert len(pulito["phases"]) == len(fasi) <= PHASES_MAX
-        assert len(pulito["layers"]) <= LAYERS_MAX
-        assert pulito["duration_sec"] == durata
-
-    def test_la_regola_vale_per_OGNI_esperienza_registrata(self):
-        """La guardia non e' su CALM: e' sul registro. Una futura
-        esperienza che scivolasse fuori dai limiti verrebbe fermata
-        qui, senza che nessuno debba ricordarsi di aggiungere un test."""
-        registro = (FQ / "content" / "esperienze.js").read_text()
-        ids = re.findall(r"^  (\w+): \{", registro, re.M)
-        assert ids, "il registro non elenca nessuna esperienza"
-        for eid in ids:
-            protocollo = FQ / "content" / f"{eid}.js"
-            assert protocollo.exists(), \
-                f"{eid}: registrata ma senza protocollo in content/{eid}.js"
-            js = protocollo.read_text()
-            assert "duration_sec:" in js and "layers:" in js, \
-                f"{eid}: il protocollo non ha la forma di uno score"
-            # il tetto di casa per le esperienze integrate
-            m = re.search(r"_DURATA = (\d+)", js)
-            assert m and int(m.group(1)) <= 600, \
-                f"{eid}: le esperienze integrate durano al massimo 10 minuti"
-
+# Il CONTRATTO non si verifica piu' qui: vive in
+# test_sound_esperienze.py, dove gira sul REGISTRO — cosi' vale anche
+# per le esperienze che verranno, senza che nessuno debba ricordarsene.
 
 class TestArchitettura:
     """esperienza → protocollo (dati) → synth → ponte → audio."""
@@ -321,10 +224,9 @@ class TestLaPromessa:
         # la vecchia riga («senza cuffie resta intera») era ottimista:
         # le tre portanti di CALM stanno TUTTE sotto la soglia
         # dell'altoparlante del telefono (500 Hz, engine/altoparlante.js)
+        # la riga e' UNA sola (P1): il dettaglio per i telefoni lo
+        # dicono gia' la riga di sicurezza e l'avviso di sistema
         assert "esperienza resta intera" not in testo
-        assert "di un telefono i toni gravi si perdono" in testo
-        assert "non sono obbligatorie" in testo, \
-            "chi non ha le cuffie non deve sentirsi escluso"
 
     def test_l_avviso_cuffie_e_quello_di_casa(self):
         """La soglia non si ricopia: la decide engine/altoparlante.js,

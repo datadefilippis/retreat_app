@@ -14,9 +14,10 @@
  * Ogni voce ha soltanto:
  *   titolo, sottotitolo   cosa vede chi arriva
  *   racconto              com'e' fatta, in una battuta
- *   cuffie                cosa cambia senza cuffie — parole diverse per
- *                         esperienze diverse, perche' la dipendenza dal
- *                         registro basso non e' la stessa
+ *   cuffie                UNA riga sola: cosa cambia con le cuffie. Il
+ *                         dettaglio per i telefoni lo dicono gia' la riga
+ *                         di sicurezza e l'avviso di sistema — dirlo tre
+ *                         volte prima di partire era un muro di testo
  *   durata                secondi (il tetto di casa e' 10 minuti)
  *   costruisci(d)         → lo score, valido secondo il contratto v1
  *
@@ -33,10 +34,8 @@ export const ESPERIENZE = Object.freeze({
     id: 'calm',
     titolo: 'CALM',
     sottotitolo: 'Una breve esperienza sonora per creare uno spazio di calma.',
-    racconto: 'Sei minuti. Un suono che rallenta, e ti lascia rallentare.',
-    cuffie: 'Con le cuffie percepisci anche un battito lento fra i due '
-      + 'canali. Le cuffie non sono obbligatorie, ma dall’altoparlante '
-      + 'di un telefono i toni gravi si perdono: se puoi, usale.',
+    racconto: 'Un suono che rallenta, e ti lascia rallentare.',
+    cuffie: 'Con le cuffie percepisci anche un battito lento fra i due canali.',
     durata: CALM_DURATA,
     costruisci: costruisciCalm,
   },
@@ -47,10 +46,8 @@ export const ESPERIENZE = Object.freeze({
     racconto: 'Un registro basso che resta fermo, una materia sonora che '
       + 'va e viene, una pulsazione lenta. Andando avanti tutto si '
       + 'semplifica, e alla fine resta solo il peso.',
-    cuffie: 'Qui le cuffie contano davvero: il peso di GROUND vive in un '
-      + 'registro basso che l’altoparlante di un telefono non riesce a '
-      + 'riprodurre. Con le cuffie, o un altoparlante vero, l’esperienza '
-      + 'è intera.',
+    cuffie: 'Il peso di GROUND vive in un registro basso: con le cuffie, '
+      + 'o un altoparlante vero, l’esperienza è intera.',
     durata: GROUND_DURATA,
     costruisci: costruisciGround,
   },

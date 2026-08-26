@@ -15,6 +15,9 @@
   font-size:30px;color:var(--lamp);margin:0 0 18px}
 .fqz .esp-porta h1::after{content:none}
 .fqz .esp-lead{font-family:var(--serif);font-size:19px;line-height:1.5;color:var(--bone);margin:0 auto 22px;max-width:26em}
+.fqz .esp-durata{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.10em;
+  color:var(--dimmer);text-transform:uppercase;margin:-10px 0 22px}
 .fqz .esp-nota{color:var(--dim);font-size:13.5px;line-height:1.65;margin:0 auto 30px;max-width:30em}
 .fqz .esp-inizia{
   font:inherit;font-size:14px;letter-spacing:.14em;text-transform:uppercase;

@@ -55,6 +55,15 @@ export function creaAscolto(score, { onTic, onFine, onPerso } = {}) {
      la decide engine/altoparlante.js, come per il player pubblico */
   const avviso = avvisoCuffieScore(score);
   let ctx = null, live = null, tic = null;
+  /* LA BANDIERINA DEL GESTO (P0, 26/8). `avvia()` aspetta il resume
+     del contesto PRIMA di assegnare `live`: due tocchi rapidi — sul
+     telefono capita — passavano entrambi la guardia e partivano DUE
+     sessioni. La seconda sovrascriveva la prima, che restava a suonare
+     senza che nessuno potesse piu' fermarla: «Termina» ne spegneva una
+     e l'altra tornava udibile al riavvio, sovrapposta.
+     MISURATO: dopo il doppio tocco il picco era 0,32 invece di 0,08.
+     Qui la porta si chiude SUBITO, prima di ogni attesa. */
+  let avviando = false;
 
   const spegni = () => {
     clearInterval(tic); tic = null;
@@ -73,21 +82,26 @@ export function creaAscolto(score, { onTic, onFine, onPerso } = {}) {
 
     /** Da chiamare DENTRO il gesto: contesto e ponte lo esigono. */
     async avvia() {
-      if (live) return;
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!ctx) ctx = new Ctx();
-      const ponte = creaPonte(ctx);
-      ponte.avvia();
-      await ctx.resume();
-      schermoAcceso();
-      sorvegliaContesto(ctx, () => { spegni(); onPerso?.(); });
-      live = startPreview(ctx, score, { sbocco: ponte.nodo });
-      tic = setInterval(() => {
-        if (!live) return;
-        const t = Math.max(0, live.elapsed());
-        if (t >= durata) { spegni(); onFine?.(); return; }
-        onTic?.(t);
-      }, BATTITO_MS);
+      if (live || avviando) return;
+      avviando = true;
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!ctx) ctx = new Ctx();
+        const ponte = creaPonte(ctx);
+        ponte.avvia();
+        await ctx.resume();
+        schermoAcceso();
+        sorvegliaContesto(ctx, () => { spegni(); onPerso?.(); });
+        live = startPreview(ctx, score, { sbocco: ponte.nodo });
+        tic = setInterval(() => {
+          if (!live) return;
+          const t = Math.max(0, live.elapsed());
+          if (t >= durata) { spegni(); onFine?.(); return; }
+          onTic?.(t);
+        }, BATTITO_MS);
+      } finally {
+        avviando = false;
+      }
     },
 
     /** Interruzione voluta: il motore ha la sua discesa morbida. */

@@ -124,6 +124,11 @@ export default function EsperienzaPage({ id }) {
           ) : (
             <>
               <p className="esp-lead">{exp.sottotitolo}</p>
+              {/* quanto dura si sa PRIMA di entrare: chi arriva da un
+                  link diretto non deve scoprirlo premendo Inizia */}
+              <p className="esp-durata" data-testid="esp-durata">
+                {Math.round(exp.durata / 60)} minuti
+              </p>
               {perso && (
                 <p className="esp-perso" data-testid="esp-perso" aria-live="polite">
                   L'ascolto si è interrotto: sul telefono il suono dal vivo

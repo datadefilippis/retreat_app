@@ -122,55 +122,9 @@ class TestLoScoreApprovato:
             assert vietato not in src, f"GROUND ha guadagnato {vietato}"
 
 
-class TestContrattoDelProtocollo:
-    """Gli stessi limiti degli score degli operatori. La fonte della
-    verita' resta UNA: il validatore del server."""
-
-    def test_ogni_livello_passa_il_validatore_senza_essere_corretto(self):
-        import sys
-        sys.path.insert(0, str(BACKEND_DIR))
-        from models.frequency_track import clean_layer, DURATION_MIN, DURATION_MAX
-
-        js = _codice(GROUND)
-        durata = float(re.search(r"GROUND_DURATA = (\d+)", js).group(1))
-        assert DURATION_MIN <= durata <= DURATION_MAX
-        for l in _layers(js):
-            grezzo = dict(l)
-            if grezzo.get("end") is None:
-                grezzo["end"] = durata        # «fino in fondo»
-            pulito = clean_layer(grezzo, durata)
-            assert pulito is not None, f"{l.get('name')}: rifiutato dal contratto"
-            for campo in ("carrier", "f0", "f1", "gain", "start", "end"):
-                if l.get(campo) is None:      # «fino in fondo»: lo mette il motore
-                    continue
-                assert abs(pulito[campo] - l[campo]) < 0.01, \
-                    (f"{l.get('name')}: {campo} = {l[campo]} riportato a "
-                     f"{pulito[campo]} dal contratto")
-            # il colore vale solo per il soffio, e dev'essere quello scelto
-            if l["method"] == "noise":
-                assert pulito["color"] == "brown"
-
-    def test_lo_score_intero_e_accettato(self):
-        import sys
-        sys.path.insert(0, str(BACKEND_DIR))
-        from models.frequency_track import clean_score
-
-        js = _codice(GROUND)
-        durata = float(re.search(r"GROUND_DURATA = (\d+)", js).group(1))
-        fasi = [{"t": float(t), "name": n}
-                for t, n in re.findall(r"\{ t: (\d+), name: '([^']+)' \}", js)]
-        score = {
-            "score_version": 1, "duration_sec": durata,
-            "fade_in_sec": 16.0, "fade_out_sec": 30.0,
-            "layers": [{**l, "end": (l["end"] if l.get("end") is not None else durata)}
-                       for l in _layers(js)],
-            "phases": fasi,
-        }
-        pulito = clean_score(score)
-        assert pulito is not None, "lo score di GROUND non e' valido"
-        assert len(pulito["layers"]) == 4 and len(pulito["phases"]) == 5
-        assert pulito["duration_sec"] == 480
-
+# Il CONTRATTO non si verifica piu' qui: vive in
+# test_sound_esperienze.py, dove gira sul REGISTRO — cosi' vale anche
+# per le esperienze che verranno, senza che nessuno debba ricordarsene.
 
 class TestNienteDuplicati:
     """GROUND non doveva portarsi dietro nulla."""
@@ -236,8 +190,9 @@ class TestLaPromessa:
         senza cuffie sarebbe falso — le tre portanti stanno tutte sotto
         la soglia dell'altoparlante del telefono."""
         reg = _prosa(REGISTRO)
-        assert "le cuffie contano davvero" in reg.lower()
-        assert "non riesce a riprodurre" in reg or "non riproduce" in reg
+        assert "registro basso" in reg.lower(), \
+            "non si dice da cosa dipende GROUND"
+        assert "l’esperienza è intera" in reg
         # e l'avviso vero lo calcola il motore, non un'etichetta
         assert "avvisoCuffieScore" in _codice(ASCOLTO)
 
