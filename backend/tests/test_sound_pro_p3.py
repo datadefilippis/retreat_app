@@ -156,12 +156,15 @@ class TestLista:
 
     def test_07_niente_di_cio_che_il_brief_vieta(self):
         """Né ricerca, né tag, né analytics, né condivisione, né
-        duplicazione — e niente player: il Builder non suona."""
+        duplicazione — e niente audio DIRETTO: la pagina compone e
+        registra, chi suona è il rito (pro/Rito.jsx, S3), che a sua
+        volta passa dal player condiviso. «sessione» e «customer» erano
+        vietate in P3 perché fuori scope: da S2/S3 SONO lo scope."""
         src = _senza_commenti(PAGINA.read_text()).lower()
         for vietato in ("startpreview", "audiocontext", "creaponte",
                         "duplica", "analytics", "waveform", "canvas",
                         "biofeedback", "biorisonanza", "cafl",
-                        "customer", "sessione", "diagnos", "terap"):
+                        "diagnos", "terap"):
             assert vietato not in src, f"il Builder contiene «{vietato}»"
         assert "engine/" not in src and "../engine" not in src
 

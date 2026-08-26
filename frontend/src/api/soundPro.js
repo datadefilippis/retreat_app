@@ -13,4 +13,15 @@ export const soundProAPI = {
   update: (id, updates) => api.patch(`/sound/pro/protocolli/${id}`, updates),
   // DELETE archivia, non distrugge (decisione P2)
   archive: (id) => api.delete(`/sound/pro/protocolli/${id}`),
+
+  // S2/S3 — il registro delle sessioni. Il client manda tipo e id del
+  // protocollo, MAI uno score: snapshot, durate e appartenenza sono
+  // del server (e l'ascolto dichiarato viene cappato lato server).
+  sessioni: {
+    apri: (data) => api.post('/sound/pro/sessioni', data),
+    chiudi: (id, data) => api.post(`/sound/pro/sessioni/${id}/chiusura`, data),
+    aggiorna: (id, data) => api.patch(`/sound/pro/sessioni/${id}`, data),
+    list: (params) => api.get('/sound/pro/sessioni', { params }),
+    get: (id) => api.get(`/sound/pro/sessioni/${id}`),
+  },
 };

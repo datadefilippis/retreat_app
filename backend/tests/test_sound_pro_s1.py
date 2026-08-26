@@ -189,7 +189,7 @@ class TestPotatura:
         tuoi = src.find('data-testid="pro-scaffale-tuoi"')
         assert cat != -1 and tuoi != -1
         # nel render della home il catalogo precede i protocolli propri
-        home = src.find("<Catalogo />")
+        home = src.find("<Catalogo ")
         lista = src.find("<Lista chiave=")
         assert home != -1 and lista != -1 and home < lista
 

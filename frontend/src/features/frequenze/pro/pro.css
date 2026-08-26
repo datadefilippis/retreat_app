@@ -191,3 +191,66 @@
   .fqz .pro-dati div { grid-template-columns: 1fr; gap: 2px; }
   .fqz .pro-scheda-core { padding: 16px 15px; }
 }
+
+/* ── S3: il rito della sessione ───────────────────────────────────── */
+.fqz .rito { max-width: 56ch; display: grid; gap: 18px; }
+.fqz .rito h2 {
+  font-family: var(--serif); font-weight: 400; font-size: 22px;
+  margin: 0; color: var(--bone);
+}
+.fqz .rito-scala { display: flex; gap: 6px; flex-wrap: wrap; }
+.fqz .rito-tacca {
+  min-width: 38px; height: 38px; padding: 0; border-radius: 9px;
+  font-family: var(--mono); font-size: 13px;
+}
+.fqz .rito-tacca.on {
+  background: var(--lamp); border-color: var(--lamp);
+  color: #122123; font-weight: 700;
+}
+.fqz .rito select {
+  background: var(--stone); border: 1px solid var(--line);
+  color: var(--bone); border-radius: 8px; padding: 10px 12px;
+  font-family: var(--sans); font-size: 14px; width: 100%;
+}
+.fqz .rito textarea {
+  background: var(--stone); border: 1px solid var(--line);
+  color: var(--bone); border-radius: 8px; padding: 10px 12px;
+  font-family: var(--sans); font-size: 14px; line-height: 1.6;
+  resize: vertical; width: 100%;
+}
+
+/* l'ascolto: schermo pulito, al centro, solo il tempo */
+.fqz .rito-ascolto {
+  max-width: 44ch; margin: 8vh auto 0; text-align: center;
+  justify-items: center;
+}
+.fqz .rito-titolo-quieto {
+  font-family: var(--serif); font-size: 18px; color: var(--dim); margin: 0;
+}
+.fqz .rito-barra {
+  width: 100%; height: 3px; border-radius: 999px; background: var(--line);
+  overflow: hidden;
+}
+.fqz .rito-barra i {
+  display: block; height: 100%; background: var(--lamp);
+  transform-origin: left; transition: transform .25s linear;
+}
+.fqz .rito-resta {
+  font-family: var(--mono); font-size: 30px; color: var(--bone);
+  margin: 0; font-variant-numeric: tabular-nums;
+}
+.fqz .rito-cuffie { font-size: 12.5px; color: var(--dim); line-height: 1.6; margin: 0; }
+.fqz .rito-esito { font-size: 13.5px; color: var(--bone); line-height: 1.65; margin: 0; }
+.fqz .rito-fatto { font-family: var(--serif); font-size: 17px; color: var(--lamp); margin: 0; }
+
+/* il ripescaggio delle sessioni rimaste aperte */
+.fqz .rito-ripescaggio {
+  border: 1px solid var(--line-soft); border-left: 3px solid var(--alert);
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 18px;
+  font-size: 12.5px; color: var(--dim);
+}
+.fqz .rito-ripescaggio p { margin: 0 0 8px; }
+.fqz .rito-ripescaggio-riga {
+  display: flex; align-items: center; gap: 12px; padding: 4px 0;
+  color: var(--bone);
+}

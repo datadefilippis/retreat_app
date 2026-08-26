@@ -28,10 +28,14 @@
  * non è un editor — l'operatore SCEGLIE, non compone. La home è il
  * CATALOGO (pro/catalogo.js, le schede oneste dei protocolli curati)
  * più i protocolli propri; il sequencer resta raggiungibile alle sue
- * rotte come porta avanzata, non come casa. Qui non suona niente:
- * l'avvio dell'ascolto arriva col passo successivo del piano
- * (docs/SOUND_PROFESSIONAL_PIANO_2026-08.md), e passerà dal player
- * condiviso delle esperienze — non da un player nuovo.
+ * rotte come porta avanzata, non come casa.
+ *
+ * DAL RITO IN POI (S3): da ogni scheda si AVVIA UNA SESSIONE. Il rito
+ * vive in pro/Rito.jsx — è LUI a parlare col player condiviso; questa
+ * pagina continua a non toccare l'audio (la guardia S1 lo impone), le
+ * passa i dati e basta. Le sessioni rimaste aperte (scheda chiusa a
+ * metà ascolto) si ripescano dalla home e si chiudono come
+ * interrotte: il registro non deve avere righe eternamente in corso.
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -45,6 +49,7 @@ import { PERCENTO_DEFAULT, PERCENTO_MAX, PERCENTO_MIN, aGain, aPercento } from '
 import SoundTopbar from '../SoundTopbar';
 import { SafetyCurtain } from '../SafetyCurtain';
 import { CATALOGO, ORIGINI } from './catalogo';
+import Rito from './Rito';
 import '../frequenze.css';
 import './pro.css';
 
@@ -402,7 +407,7 @@ function Editor({ id, onSalvato }) {
 }
 
 /* ── IL CATALOGO: le schede dei protocolli curati ──────────────────── */
-function SchedaCore({ p, onChiudi }) {
+function SchedaCore({ p, onChiudi, onAvvia }) {
   const [contro, setContro] = useState(false);
   const esperienza = p.origine === 'benessere';
   return (
@@ -445,6 +450,12 @@ function SchedaCore({ p, onChiudi }) {
       </div>
 
       <div className="pro-azioni-scheda">
+        <button type="button" className="primary" data-testid="pro-avvia-core"
+          onClick={() => onAvvia({
+            tipo: 'core', id: p.id, titolo: p.titolo,
+            durata_sec: p.durata_sec, cuffie_testo: p.cuffie_testo || null,
+            score: p.costruisci(),
+          })}>Avvia una sessione</button>
         <button type="button" className="ghost" onClick={() => setContro(true)}
           data-testid="pro-controindicazioni">Controindicazioni</button>
         {(p.id === 'calm' || p.id === 'ground') && (
@@ -458,7 +469,7 @@ function SchedaCore({ p, onChiudi }) {
   );
 }
 
-function Catalogo() {
+function Catalogo({ onAvvia }) {
   const [aperto, setAperto] = useState(null);
   const scelto = aperto ? CATALOGO.find((p) => p.id === aperto) : null;
   return (
@@ -469,7 +480,8 @@ function Catalogo() {
         origine, evidenza e limiti: si sceglie sapendo cosa si sceglie.
       </p>
       {scelto ? (
-        <SchedaCore p={scelto} onChiudi={() => setAperto(null)} />
+        <SchedaCore p={scelto} onChiudi={() => setAperto(null)}
+          onAvvia={onAvvia} />
       ) : (
         <div className="cards">
           {CATALOGO.map((p) => (
@@ -496,7 +508,7 @@ function Catalogo() {
 }
 
 /* ── LA LISTA ──────────────────────────────────────────────────────── */
-function Lista({ chiave }) {
+function Lista({ chiave, onAvvia }) {
   const navigate = useNavigate();
   const [stato, setStato] = useState(null);
   const [items, setItems] = useState(null);
@@ -582,6 +594,20 @@ function Lista({ chiave }) {
                 )}
                 <button type="button" className="add"
                   onClick={() => navigate(`/sound/pro/${p.id}`)}>Apri</button>
+                {p.stato !== 'archiviato' && (
+                  <button type="button" className="live" data-testid="pro-avvia-mio"
+                    onClick={async () => {
+                      try {
+                        const { data } = await soundProAPI.get(p.id);
+                        onAvvia({
+                          tipo: 'operatore', id: data.id, titolo: data.nome,
+                          durata_sec: data.durata_sec, score: data.score,
+                        });
+                      } catch (e) {
+                        setAvviso(e?.response?.data?.detail || 'Protocollo non aperto.');
+                      }
+                    }}>Sessione</button>
+                )}
               </div>
             </div>
           ))}
@@ -591,11 +617,54 @@ function Lista({ chiave }) {
   );
 }
 
+/* ── IL RIPESCAGGIO: le sessioni rimaste aperte ────────────────────── */
+function SessioniAperte({ chiave }) {
+  const [aperte, setAperte] = useState([]);
+  useEffect(() => {
+    let vivo = true;
+    soundProAPI.sessioni.list({ stato: 'in_corso' })
+      .then((r) => { if (vivo) setAperte(r.data?.items || []); })
+      .catch(() => { /* la home resta usabile anche senza */ });
+    return () => { vivo = false; };
+  }, [chiave]);
+  if (!aperte.length) return null;
+  const chiudi = async (id) => {
+    try {
+      /* ascolto sconosciuto: non si accredita niente — meglio uno
+         zero onesto di una durata inventata dal muro */
+      await soundProAPI.sessioni.chiudi(id, {
+        esito: 'interrotta', ascolto_sec: 0,
+      });
+      setAperte((prec) => prec.filter((x) => x.id !== id));
+    } catch { /* resta in lista, si riprova */ }
+  };
+  return (
+    <div className="rito-ripescaggio" data-testid="pro-sessioni-aperte">
+      <p>
+        {aperte.length === 1
+          ? 'Una sessione è rimasta aperta.'
+          : `${aperte.length} sessioni sono rimaste aperte.`}
+        {' '}Il registro non deve avere righe in corso per sempre:
+      </p>
+      {aperte.map((a) => (
+        <div key={a.id} className="rito-ripescaggio-riga">
+          <span>{a.protocollo?.titolo}</span>
+          <button type="button" className="ghost" onClick={() => chiudi(a.id)}
+            data-testid={`pro-chiudi-aperta-${a.id}`}>
+            Chiudi come interrotta
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── LA PAGINA ─────────────────────────────────────────────────────── */
 export default function SoundProPage() {
   const { id } = useParams();
   const { user, loading } = useAuth();
   const [chiave, setChiave] = useState(0);
+  const [rito, setRito] = useState(null);
 
   useEffect(() => { document.title = 'Protocolli — Aurya Sound Professional'; }, []);
 
@@ -628,18 +697,23 @@ export default function SoundProPage() {
       );
     }
     if (id) return <Editor id={id} onSalvato={() => setChiave((k) => k + 1)} />;
+    if (rito) {
+      return <Rito protocollo={rito}
+        onEsci={() => { setRito(null); setChiave((k) => k + 1); }} />;
+    }
     return (
       <>
-        <Catalogo />
+        <SessioniAperte chiave={chiave} />
+        <Catalogo onAvvia={setRito} />
         <h2 className="pro-scaffale" data-testid="pro-scaffale-tuoi">I tuoi protocolli</h2>
         <p className="pro-scaffale-sotto">
           I protocolli che progetti tu, privati della tua organizzazione,
           con versioni e storia.
         </p>
-        <Lista chiave={chiave} />
+        <Lista chiave={chiave} onAvvia={setRito} />
       </>
     );
-  }, [loading, user, abilitato, id, chiave]);
+  }, [loading, user, abilitato, id, chiave, rito]);
 
   return (
     <div className="fqz pro">
