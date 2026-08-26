@@ -370,24 +370,24 @@ class TestFormaEConfini:
                         "text-shadow: 0 0", "432", "528"):
             assert vietato not in css, f"il CSS ha «{vietato}»"
 
-    def test_21_i_file_intatti_sono_intatti(self):
-        """Il Builder non duplica il player e non tocca il motore."""
-        import subprocess as sp
-        radice = BACKEND_DIR.parent
-        intatti = [
-            "frontend/src/features/frequenze/lab",
-            "frontend/src/features/frequenze/content/calm.js",
-            "frontend/src/features/frequenze/content/ground.js",
-            "frontend/src/features/frequenze/PublicFrequencyPage.js",
-            "frontend/src/features/frequenze/MeditazioniPage.js",
-            "frontend/package.json",
-            "frontend/src/features/frequenze/pro/compilatore.js",
-        ]
-        r = sp.run(["git", "diff", "--name-only", "HEAD", "--", *intatti],
-                   cwd=radice, capture_output=True, text=True)
-        if r.returncode != 0:
-            pytest.skip("git non disponibile")
-        assert not r.stdout.strip(), f"file che dovevano restare intatti: {r.stdout}"
+    def test_21_il_builder_non_duplica_il_player(self):
+        """Il Builder non duplica il player e non tocca il motore.
+        La fotografia git-diff che stava qui si rompeva su ogni
+        ritocco legittimo successivo (26/8: il restyling delle
+        Meditazioni); l'invariante VERO è doppio — il mondo pubblico
+        non importa da pro/, e dentro pro/ nessuno apre un SUO
+        contesto audio (l'ascolto del rito passa dal player condiviso
+        di esperienze/ascolto.js)."""
+        fq = BACKEND_DIR.parent / "frontend" / "src" / "features" / "frequenze"
+        for nome in ("MeditazioniPage.js", "PublicFrequencyPage.js"):
+            src = _senza_commenti((fq / nome).read_text())
+            assert "from './pro" not in src, \
+                f"{nome} importa dal mondo professionale"
+        for f in (fq / "pro").glob("*.js*"):
+            corpo = _senza_commenti(f.read_text())
+            assert "new AudioContext" not in corpo \
+                and "webkitAudioContext" not in corpo, \
+                f"pro/{f.name} apre un SUO contesto audio"
 
 
 # ── 22 · IL VERDETTO: creare, salvare, riaprire senza perdere niente ───────

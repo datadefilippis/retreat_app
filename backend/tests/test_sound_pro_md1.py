@@ -190,18 +190,17 @@ class TestLaPorta:
         assert m and "/sound/pro" not in m.group(1), \
             "Professional è finito nella passerella degli anonimi"
 
-    def test_10_le_pagine_pubbliche_non_sono_cambiate(self):
+    def test_10_le_pagine_pubbliche_non_dipendono_da_pro(self):
         """La topbar è condivisa col mondo pubblico: la modifica è
-        additiva e condizionale, i file pubblici restano intatti."""
-        # L1/L3 (26/8) hanno toccato legittimamente FrequenzePage
-        # (redirect Crea) e SoundLandingPage (porta di sistema):
-        # l'invariante resta sui player pubblici e sul motore
-        r = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD", "--",
-             "frontend/src/features/frequenze/MeditazioniPage.js",
-             "frontend/src/features/frequenze/PublicFrequencyPage.js",
-             "frontend/src/features/frequenze/lab"],
-            cwd=BACKEND_DIR.parent, capture_output=True, text=True)
-        if r.returncode != 0:
-            pytest.skip("git non disponibile")
-        assert not r.stdout.strip(), f"toccato: {r.stdout}"
+        additiva e condizionale. La fotografia git-diff che stava qui
+        si rompeva su ogni ritocco legittimo successivo (successo il
+        26/8 col restyling delle Meditazioni): l'invariante VERO è il
+        confine — i player pubblici e il Lab non importano nulla dal
+        mondo professionale."""
+        for nome in ("MeditazioniPage.js", "PublicFrequencyPage.js"):
+            src = _senza_commenti((FQ / nome).read_text())
+            assert "from './pro" not in src and "from '../pro" not in src, \
+                f"{nome} importa dal mondo professionale"
+        for f in (FQ / "lab").glob("*.js*"):
+            assert "/pro/" not in _senza_commenti(f.read_text()), \
+                f"lab/{f.name} importa dal mondo professionale"

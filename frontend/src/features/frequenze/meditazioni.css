@@ -1,0 +1,121 @@
+/*
+ * IL VESTITO DELLE MEDITAZIONI (26/8/2026, founder) — solo design.
+ *
+ * «Piu' chiara, in armonia col resto del sito ma che dia l'idea di
+ * meditazione/metafisica: moderna, luminosa, eterea ma non kitsch.»
+ *
+ * Come: una classe modificatrice `.med` sopra la pelle .fqz — eredita
+ * tutto il mondo Sound (tokens, testata, cancelli) e cambia SOLO
+ * l'atmosfera e le schede. Niente nel resto del buio si muove.
+ *
+ * L'eterea senza kitsch: nessun mandala, nessun viola psichedelico —
+ * tre aloni di LUCE (oro, salvia, violetto di marca, tutti sotto il
+ * 15% di alpha) che salgono dal bordo alto come un'alba, superfici di
+ * vetro chiaro, e il filo d'oro che si dissolve ai lati. La metafisica
+ * sta nella luce, non nei simboli.
+ */
+
+/* ── l'atmosfera: un'alba sopra il buio ─────────────────────────────── */
+.fqz.med{
+  background:
+    radial-gradient(1000px 540px at 50% -14%, rgba(201,179,126,.16) 0%, transparent 62%),
+    radial-gradient(900px 620px at 10% 6%, rgba(102,183,156,.11) 0%, transparent 55%),
+    radial-gradient(900px 620px at 90% 12%, rgba(155,139,196,.10) 0%, transparent 55%),
+    radial-gradient(1400px 900px at 50% 118%, #1A3138 0%, transparent 60%),
+    linear-gradient(180deg,#152A30 0%,#101F24 100%);
+}
+
+/* ── la testata: centrata, serif, il filo che si dissolve ───────────── */
+.fqz.med header{display:block;text-align:center;position:relative;
+  padding:22px 0 26px;margin-bottom:18px}
+.fqz.med h1{font-size:40px;letter-spacing:.005em}
+.fqz.med header::after{left:50%;transform:translateX(-50%);
+  width:min(380px,72%);
+  background:linear-gradient(90deg,transparent,var(--lamp) 50%,transparent)}
+.fqz.med .sub{font-family:var(--serif);font-style:italic;text-transform:none;
+  letter-spacing:.02em;font-size:15.5px;color:var(--dim);margin-top:8px}
+.fqz.med header .backcard{position:absolute;right:0;top:14px}
+@media (max-width:760px){
+  .fqz.med header .backcard{position:static;margin:18px auto 0}
+  .fqz.med h1{font-size:31px}
+}
+
+/* ── la sala: vetro chiaro, niente cassa scura ──────────────────────── */
+.fqz.med .bib{border-radius:22px;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+  border-color:rgba(255,255,255,.09);
+  box-shadow:0 24px 70px rgba(6,18,22,.35),inset 0 1px 0 #ffffff12}
+
+/* i filtri d'intento: pillole quiete, non linguette da console */
+.fqz.med .tab{border-radius:999px;font-family:var(--sans);text-transform:none;
+  letter-spacing:.01em;font-size:13.5px;padding:9px 18px}
+.fqz.med .tabs{border-bottom:none;padding-bottom:4px}
+
+/* ── la scheda: una carta di luce ───────────────────────────────────── */
+.fqz.med .cards{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.fqz.med .card{position:relative;border-radius:20px;padding:20px 20px 18px;gap:9px;
+  background:linear-gradient(165deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.015) 100%);
+  border-color:rgba(255,255,255,.10)}
+.fqz.med .card::before{content:none}         /* via la barretta da console */
+.fqz.med .card:hover{border-color:rgba(201,179,126,.35);
+  box-shadow:0 18px 44px rgba(6,18,22,.45),0 0 24px rgba(201,179,126,.08)}
+.fqz.med .card h3{font-size:19px;line-height:1.3;padding-right:40px}
+
+/* l'intento: un occhiello d'oro, come sul sito chiaro */
+.fqz.med .med-intento{font-family:var(--mono);font-size:10px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--lamp);order:-1}
+.fqz.med .med-dati{font-family:var(--mono);font-size:11.5px;color:var(--dimmer);
+  letter-spacing:.03em}
+.fqz.med .card .body{font-size:14px;line-height:1.65;color:var(--dim)}
+
+/* ── il cuore: un gesto, non un carattere ───────────────────────────── */
+.fqz.med .med-cuore{position:absolute;top:14px;right:14px;width:38px;height:38px;
+  display:grid;place-items:center;padding:0;cursor:pointer;
+  border:1px solid rgba(255,255,255,.12);border-radius:50%;
+  background:rgba(255,255,255,.04);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .18s,
+             background .18s,box-shadow .18s}
+.fqz.med .med-cuore svg{width:17px;height:17px;display:block;
+  fill:transparent;stroke:var(--dimmer);stroke-width:1.6;
+  transition:fill .2s,stroke .2s,transform .2s}
+.fqz.med .med-cuore:hover{transform:scale(1.08);border-color:rgba(201,179,126,.5);
+  background:rgba(201,179,126,.08)}
+.fqz.med .med-cuore:hover svg{stroke:var(--lamp)}
+.fqz.med .med-cuore.on{border-color:rgba(201,179,126,.55);
+  background:rgba(201,179,126,.10);
+  box-shadow:0 0 16px rgba(201,179,126,.25)}
+.fqz.med .med-cuore.on svg{fill:var(--lamp);stroke:var(--lamp)}
+@media (prefers-reduced-motion:no-preference){
+  .fqz.med .med-cuore.on svg{animation:med-battito .5s cubic-bezier(.2,.8,.2,1)}
+  @keyframes med-battito{0%{transform:scale(.7)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
+}
+
+/* ── il piede: la firma col NOME, e Ascolta che si vede ─────────────── */
+.fqz.med .med-piede{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-top:auto;padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.07)}
+.fqz.med .med-firma{font-family:var(--sans);font-size:13.5px;color:var(--dim);
+  text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.fqz.med .med-firma i{font-style:normal;color:var(--dimmer)}
+.fqz.med .med-firma b{font-weight:600;color:var(--bone)}
+.fqz.med a.med-firma:hover b{color:var(--lamp)}
+.fqz.med .med-ascolta{font-family:var(--sans);font-size:14px;font-weight:600;
+  letter-spacing:.02em;text-decoration:none;color:var(--lamp);
+  border:1px solid rgba(201,179,126,.55);border-radius:999px;
+  padding:9px 20px;min-height:38px;display:inline-flex;align-items:center;
+  transition:background .18s,color .18s,border-color .18s,box-shadow .18s}
+.fqz.med .med-ascolta:hover{background:var(--lamp);color:#14211B;
+  border-color:var(--lamp);box-shadow:0 6px 18px rgba(201,179,126,.3)}
+
+/* ── multipiattaforma: bersagli comodi, una colonna serena ──────────── */
+@media (max-width:640px){
+  .fqz.med .cards{grid-template-columns:1fr;gap:13px}
+  .fqz.med .card{padding:18px 16px 16px}
+  .fqz.med .med-ascolta{padding:10px 22px;min-height:42px}
+  .fqz.med .med-cuore{width:40px;height:40px}
+  .fqz.med .sub{font-size:14.5px}
+}
+@media (min-width:641px) and (max-width:900px){
+  .fqz.med .cards{grid-template-columns:repeat(2,1fr)}
+}

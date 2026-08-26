@@ -11,6 +11,7 @@ products/orders/stores. Vedi docs/FREQUENZE_PLAN_2026-08.md.
 
 import logging
 import os
+import re
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -426,7 +427,36 @@ async def serve_master(slug: str, request: Request,
     if not percorso.exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="File master assente.")
-    return FileResponse(percorso, media_type="audio/mpeg")
+    # Il seek dell'<audio> vive di richieste Range (206): in prod le
+    # gestisce nginx, ma la FileResponse di Starlette 0.37 le IGNORA e
+    # risponde 200 col file intero — così in dev «mandare avanti» la
+    # meditazione resettava il play (founder, 26/8). Il 206 qui è
+    # fatto a mano; un Range malformato ripiega sul file intero.
+    intervallo = request.headers.get("range", "")
+    m = re.match(r"bytes=(\d*)-(\d*)$", intervallo.strip())
+    if m and (m.group(1) or m.group(2)):
+        totale = percorso.stat().st_size
+        if m.group(1):
+            inizio = int(m.group(1))
+            fine = int(m.group(2)) if m.group(2) else totale - 1
+        else:                      # bytes=-N: gli ultimi N byte
+            inizio = max(0, totale - int(m.group(2)))
+            fine = totale - 1
+        fine = min(fine, totale - 1)
+        if 0 <= inizio <= fine:
+            with open(percorso, "rb") as f:
+                f.seek(inizio)
+                pezzo = f.read(fine - inizio + 1)
+            return Response(pezzo, status_code=206, media_type="audio/mpeg", headers={
+                "Content-Range": f"bytes {inizio}-{fine}/{totale}",
+                "Accept-Ranges": "bytes",
+                "Cache-Control": "private, max-age=3600",
+            })
+        return Response(status_code=416,
+                        headers={"Content-Range": f"bytes */{totale}"})
+    risposta = FileResponse(percorso, media_type="audio/mpeg")
+    risposta.headers["Accept-Ranges"] = "bytes"
+    return risposta
 
 
 @router.post("/tracks/{track_id}/unpublish")

@@ -183,8 +183,14 @@ class TestSuperficieId4:
             "il recupero non risponde sempre neutro (enumeration)"
 
     def test_link_interni_sulla_porta_unica(self):
-        links = (FRONTEND_SRC / "features" / "frequenze" / "links.js").read_text()
-        assert "/accedi?next=" in links, "PRO_ENTRY punta ancora a /login"
+        # links.js e' morto il 24/8 (0ec4bab8: via gli inviti «per
+        # operatori»); l'invariante — chi non e' loggato viene portato
+        # alla porta unica /accedi, mai a /login — vive nel redirect
+        # di FrequenzePage.
+        pagina = (FRONTEND_SRC / "features" / "frequenze"
+                  / "FrequenzePage.js").read_text()
+        assert "/accedi?next=" in pagina, \
+            "il redirect di Crea punta ancora a /login"
         shell = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "MarketplaceShell.jsx").read_text()
         assert 'to="/accedi"' in shell, "il footer non punta alla porta unica"

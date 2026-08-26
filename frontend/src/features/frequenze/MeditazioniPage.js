@@ -18,7 +18,15 @@ import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import { prova, emailDellaProva, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
 import './frequenze.css';
+import './meditazioni.css';
 import SoundTopbar from './SoundTopbar';
+
+/* il cuore disegnato (founder 26/8): un gesto, non un carattere */
+const Cuore = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 20.2S5.6 16 3.2 12.4C1.1 9.3 2.7 5.4 6 5.4c2 0 3.1 1 4.2 2.5.7 1 .9 1 1.6 0C12.9 6.4 14 5.4 16 5.4c3.3 0 4.9 3.9 2.8 7C16.4 16 12 20.2 12 20.2z" />
+  </svg>
+);
 
 const INTENTS = {
   dormire: 'Dormire', meditare: 'Meditare', rilassare: 'Rilassare',
@@ -120,7 +128,7 @@ export default function MeditazioniPage() {
   /* ── schermo d'invito (catalogo bloccato) ── */
   if (locked) {
     return (
-      <div className="fqz" data-testid="fqz-meditazioni-locked">
+      <div className="fqz med" data-testid="fqz-meditazioni-locked">
         {/* MD (20/8) — le uscite: senza menu del sito, da qui non si
             tornava piu' indietro. Stesso rimedio di Aurya Sound. */}
         <SoundTopbar firma="Meditazioni" qui="/meditazioni" />
@@ -211,7 +219,7 @@ export default function MeditazioniPage() {
 
   /* ── catalogo sbloccato ── */
   return (
-    <div className="fqz" data-testid="fqz-meditazioni">
+    <div className="fqz med" data-testid="fqz-meditazioni">
       {/* MD (20/8) — le uscite: senza menu del sito, da qui non si
           tornava piu' indietro. Stesso rimedio di Aurya Sound. */}
       <SoundTopbar firma="Meditazioni" qui="/meditazioni" />
@@ -278,38 +286,43 @@ export default function MeditazioniPage() {
                 </div>
               )}
               <div className="cards" data-testid="fq-catalog-cards">
-                {shown.map((t) => (
-                  <div key={t.slug} className="card">
-                    <div className="head">
-                      <h3>{t.title}</h3>
-                      <button type="button" title={favorites.includes(t.slug)
-                        ? 'Togli dalle preferite' : 'Salva tra le preferite'}
-                        onClick={() => toggleFavorite(t.slug)}
-                        style={{ border: 'none', background: 'none', fontSize: 16, padding: '0 2px',
-                                 color: favorites.includes(t.slug) ? 'var(--alert)' : 'var(--dimmer)' }}>
-                        {favorites.includes(t.slug) ? '♥' : '♡'}
+                {shown.map((t) => {
+                  const fav = favorites.includes(t.slug);
+                  return (
+                    <div key={t.slug} className="card">
+                      {/* founder 26/8 — il cuore e' un gesto disegnato */}
+                      <button type="button" aria-pressed={fav}
+                        className={`med-cuore${fav ? ' on' : ''}`}
+                        title={fav ? 'Togli dalle preferite' : 'Salva tra le preferite'}
+                        onClick={() => toggleFavorite(t.slug)}>
+                        <Cuore />
                       </button>
-                    </div>
-                    {t.intent && <div className="hz">{INTENTS[t.intent] || t.intent}</div>}
-                    <div className="uso">
-                      {fmt(t.duration_sec)} · {t.operator?.name}
-                      {t.plays_total > 0 && ` · ${t.plays_total} ascolti`}
-                    </div>
-                    {t.description && <div className="body">{t.description.slice(0, 120)}</div>}
-                    <div className="foot">
-                      {t.operator?.slug && (
-                        <Link to={`/o/${t.operator.slug}`} className="add"
-                          style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-                          Chi la firma
-                        </Link>
+                      {t.intent && (
+                        <div className="med-intento">{INTENTS[t.intent] || t.intent}</div>
                       )}
-                      <Link to={`/frequenze/${t.slug}`} className="live"
-                        style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-                        Ascolta
-                      </Link>
+                      <h3>{t.title}</h3>
+                      <div className="med-dati">
+                        {fmt(t.duration_sec)}
+                        {t.plays_total > 0 && ` · ${t.plays_total} ascolti`}
+                      </div>
+                      {t.description && <div className="body">{t.description.slice(0, 120)}</div>}
+                      {/* founder 26/8 — la firma e' il NOME di chi l'ha
+                          composta, non un'etichetta */}
+                      <div className="med-piede">
+                        {t.operator?.slug ? (
+                          <Link to={`/o/${t.operator.slug}`} className="med-firma">
+                            <i>di </i><b>{t.operator?.name}</b>
+                          </Link>
+                        ) : (
+                          <span className="med-firma"><i>di </i><b>{t.operator?.name}</b></span>
+                        )}
+                        <Link to={`/frequenze/${t.slug}`} className="med-ascolta">
+                          Ascolta
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               {nextBefore && (
                 <p style={{ textAlign: 'center', marginTop: 18 }}>
