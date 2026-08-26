@@ -1057,7 +1057,9 @@ class TestSoundPubblicoSp:
         # la wildcard NON e' piu' avvolta da ProtectedRoute…
         assert '<Route path="/sound/*" element={<FrequenzePage />} />' in app
         # …e /sound esatto e' la porta pubblica
-        assert 'path="/sound" element={<SoundLandingPage />}' in app
+        # L3-bis (26/8): /sound = landing CHIARA di sistema; il buio
+        # comincia entrando (l'hub scuro e' /sound/esplora)
+        assert 'path="/sound" element={<SoundHomePage />}' in app
         # il cancello vive dentro la pagina: crea/tracce → accedi?next=
         page = (FQ_DIR / "FrequenzePage.js").read_text()
         blocco = page.split("const needsAuth =")[1][:900]

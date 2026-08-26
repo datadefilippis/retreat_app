@@ -18,7 +18,9 @@ import SoundAccountMenu from './SoundAccountMenu';
 
 const PASSERELLA = [
   { to: '/meditazioni', label: 'Meditazioni' },
-  { to: '/sound', label: 'Sound' },
+  /* L3-bis — /sound e' la landing CHIARA di sistema: l'hub del mondo
+     scuro e' la biblioteca */
+  { to: '/sound/esplora', label: 'Sound' },
   { to: '/sound/lab', label: 'Lab' },
   { to: '/blog', label: 'Magazine' },
 ];
@@ -30,8 +32,15 @@ export default function SoundTopbar({ firma = 'Sound', qui = null, extra = null 
      sarebbe rumore, non una porta. AuthProvider avvolge l'app intera,
      quindi il hook e' sicuro anche sulle pagine pubbliche. */
   const { user } = useAuth();
-  const voci = user?.sound_professional
-    ? [...PASSERELLA, { to: '/sound/pro', label: 'Professional' }]
+  /* IL TRIGGER (richiesta founder): ogni operatore loggato vede la
+     via Professional — chi ha il privilegio va allo strumento, chi
+     non ce l'ha va alla pagina di vendita. Una voce, due destinazioni.
+     Gli anonimi la scoprono dalla landing di sistema. */
+  const voci = user
+    ? [...PASSERELLA, {
+        to: user.sound_professional ? '/sound/pro' : '/sound/professional',
+        label: 'Professional',
+      }]
     : PASSERELLA;
   return (
     <div className="topbar">

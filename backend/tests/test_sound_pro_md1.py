@@ -181,15 +181,17 @@ class TestLaVeste:
 
 # ── 9-10 · la porta (M7a) ──────────────────────────────────────────────────
 class TestLaPorta:
-    def test_09_professional_solo_con_privilegio(self):
+    def test_09_professional_per_gli_operatori_due_destinazioni(self):
+        """Evoluto con L3-bis: la voce appare per OGNI operatore
+        loggato — chi ha il privilegio va allo strumento, chi non ce
+        l'ha alla vendita. Gli ANONIMI restano senza voce (la
+        scoprono dalla landing di sistema)."""
         src = _senza_commenti(TOPBAR.read_text())
-        assert "user?.sound_professional" in src
-        assert "'/sound/pro'" in src and "'Professional'" in src
-        # la voce nasce dal condizionale, NON dentro PASSERELLA: per
-        # gli anonimi la passerella resta identica a prima
+        assert "user.sound_professional ? '/sound/pro' : '/sound/professional'" in src
+        assert "user\n    ? [...PASSERELLA" in src or "= user ?" in src or "user\r" in src or "const voci = user" in src
         m = re.search(r"const PASSERELLA = \[(.*?)\];", src, re.S)
         assert m and "/sound/pro" not in m.group(1), \
-            "Professional è finito nella passerella di tutti"
+            "Professional è finito nella passerella degli anonimi"
 
     def test_10_le_pagine_pubbliche_non_sono_cambiate(self):
         """La topbar è condivisa col mondo pubblico: la modifica è

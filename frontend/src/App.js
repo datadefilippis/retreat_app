@@ -139,7 +139,7 @@ const PublicProfilePage = lazy(() => import("./features/settings/PublicProfilePa
 const FrequenzePage = lazy(() => import("./features/frequenze/FrequenzePage"));
 const PublicFrequencyPage = lazy(() => import("./features/frequenze/PublicFrequencyPage"));
 const MeditazioniPage = lazy(() => import("./features/frequenze/MeditazioniPage"));
-const SoundLandingPage = lazy(() => import("./features/frequenze/SoundLandingPage"));
+const SoundHomePage = lazy(() => import("./features/frequenze/SoundHomePage"));
 const VisualPage = lazy(() => import("./features/frequenze/visual/VisualPage"));
 const SoundLabPage = lazy(() => import("./features/frequenze/lab/SoundLabPage"));
 const EsperienzaPage = lazy(() => import("./features/frequenze/esperienze/EsperienzaPage"));
@@ -984,8 +984,11 @@ function AppRoutes() {
           /login?next=), cosi' la wildcard monta un solo elemento e la
           sessione dell'operatore sopravvive alla navigazione. Le API
           restano org-scoped: la vera frontiera e' il backend. */}
-      {/* SP4 — /sound esatto = la porta pubblica (indice curato) */}
-      <Route path="/sound" element={<SoundLandingPage />} />
+      {/* L3-bis (26/8) — /sound = LA LANDING DI SISTEMA, coi colori
+          del sito: il blu comincia entrando (esplora, esperienze,
+          lab, meditazioni). La vecchia porta scura (SoundLandingPage)
+          e' ritirata dalla rotta; il suo indice vive in /sound/esplora. */}
+      <Route path="/sound" element={<SoundHomePage />} />
       <Route path="/sound/visual" element={<VisualPage />} />
       {/* LAB — PRIMA del catch-all, o FrequenzePage se lo mangia */}
       <Route path="/sound/lab" element={<SoundLabPage />} />

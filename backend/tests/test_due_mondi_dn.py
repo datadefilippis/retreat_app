@@ -179,9 +179,12 @@ class TestOminoAncheNelBuioDn2:
         assert "SoundAccountMenu" in topbar, "nel buio non c'e' l'omino"
         # DN4 — la passerella e' corta: in un posto fatto per chiudere
         # gli occhi, l'intero menu del sito sarebbe rumore
-        voci = re.findall(r"to: '(/[a-z-]*)'", topbar)
+        # L3-bis (26/8): /sound e' la landing CHIARA di sistema —
+        # l'hub del mondo scuro e' la biblioteca (/sound/esplora)
+        voci = re.findall(r"to: '([^']+)'", topbar.split("const PASSERELLA")[1]
+                          .split("];")[0])
         assert 0 < len(voci) <= 4, f"passerella troppo lunga: {voci}"
-        assert "/meditazioni" in voci and "/sound" in voci
+        assert "/meditazioni" in voci and "/sound/esplora" in voci
 
 
 class TestLaParentelaEDettaDn5:

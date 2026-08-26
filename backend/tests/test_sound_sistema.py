@@ -50,7 +50,7 @@ class TestL1CreaInvisibile:
         assert "canCompose" in src
 
     def test_03_la_porta_di_sistema_non_nomina_crea(self):
-        src = _testo(FQ / "SoundLandingPage.js").lower()
+        src = _testo(FQ / "SoundHomePage.jsx").lower()
         assert "/sound/crea" not in src, "la porta pubblicizza l'atelier"
 
 
@@ -76,15 +76,39 @@ class TestL2InvitoLettera:
 
 
 class TestL3PortaDiSistema:
-    def test_06_la_via_professionale_e_in_fondo_e_distinta(self):
-        src = _senza_commenti((FQ / "SoundLandingPage.js").read_text())
+    def test_06_la_landing_di_sistema_racconta_e_poi_vende(self):
+        """L3-bis (visione founder): UNA landing chiara per tutto
+        Aurya Sound, storytelling prima — apertura, perché, basi,
+        stanze — e la via professionale in fondo (sage, l'ancora del
+        sito). Il blu comincia entrando."""
+        src = _senza_commenti((FQ / "SoundHomePage.jsx").read_text())
+        assert "MarketplaceShell" in src, "la landing non e' nel mondo chiaro"
         assert 'data-testid="sld-professional"' in src
         assert 'to="/sound/professional"' in src
-        # prima ci si fida (biblioteca, esperienze), poi si compra:
-        # la sezione pro viene DOPO le esperienze nel sorgente
-        esp = src.find("sld-esperienze")
+        # l'ordine narrativo: basi e stanze PRIMA della vendita
+        basi = src.find("sh-basi")
+        stanze = src.find("sh-dentro")
         pro = src.find("sld-professional")
-        assert -1 < esp < pro, "la vendita prima della fiducia"
+        assert -1 < basi < stanze < pro, "la vendita prima del racconto"
+        # le quattro stanze, tutte
+        for porta in ("sh-porta-esplora", "sh-porta-esperienze",
+                      "sh-porta-lab", "sh-porta-meditazioni"):
+            assert porta in src, f"manca la stanza: {porta}"
+        # e la voce: ASSR nominata, promesse mai
+        basso = _testo(FQ / "SoundHomePage.jsx").lower()
+        assert "assr" in basso and "risonanza" in basso
+        for veleno in ("guarig", "chakra", "biorisonanza", "528",
+                       "ti sentirai", "garantis"):
+            assert veleno not in basso
+
+    def test_06b_il_trigger_per_ogni_operatore(self):
+        """Richiesta founder: dall'area gratuita, l'operatore loggato
+        vede la via Professional — una voce, due destinazioni (col
+        privilegio lo strumento, senza la vendita)."""
+        src = _senza_commenti((FQ / "SoundTopbar.jsx").read_text())
+        assert "user.sound_professional ? '/sound/pro' : '/sound/professional'" in src
+        # e l'hub scuro e' la biblioteca, non la landing chiara
+        assert "{ to: '/sound/esplora', label: 'Sound' }" in src
 
 
 class TestL4LaVendita:
