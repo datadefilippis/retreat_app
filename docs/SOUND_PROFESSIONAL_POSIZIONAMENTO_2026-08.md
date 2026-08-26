@@ -178,3 +178,31 @@ da un cliente · «lo pagheresti? quanto?» · «cosa diresti a un collega?»
 M3 = privacy da curare come il resto; landing = la tentazione di
 gonfiare i claim (le guardie valgono anche per il marketing — mai i
 «numeri da sondaggio interno» alla Unyte).
+
+
+---
+
+## 5 · Il consolidamento competitivo (onde C, 26/8 sera)
+
+*Dallo studio fine di Unyte: il loro volume è MOLTIPLICAZIONE — un
+protocollo (5h) × 6 playlist (vesti musicali per gusti/età) × 3
+livelli di filtraggio (Connect/Core/Balance = titolazione) ≈ 30 ore
+percepite. La solidità percepita è: moltiplicazione + struttura
+clinica (dolce→pieno→mantenimento) + contorno professionale
+(formazione obbligatoria, assessment nel portale, community). NON è
+ampiezza di composizioni né forza d'evidenza (survey interne).*
+
+| onda | cosa | natura |
+|---|---|---|
+| C1 | LA MOLTIPLICAZIONE: ogni protocollo → famiglia (durate breve/media/piena × intensità dolce/piena × 2 vesti timbriche sui protocolli di punta) ≈ 40 combinazioni oneste. Le ricette per intento sono già parametriche; l'intensità = gain+profondità battito (la nostra titolazione, dichiarata) | codice+Lab |
+| C2 | LE SITUAZIONI: Respiro (~6/min, punta di lancia + ponte HRV), Soglia (3′ apertura), Congedo (3′ chiusura), Pausa (5′), Radicamento attivo, Ambiente (sala) → 14-16 schede | Lab+editoriale |
+| C3 | LE VIE dei percorsi: dolce / piena / mantenimento (logica Connect/Core/Balance) | dati |
+| C4 | L'ACCOGLIENZA: intake leggero (3-4 dimensioni soggettive 1-10 a inizio/fine percorso), sempre dichiarato vissuto | codice |
+| C5 | LA FORMAZIONE CERTIFICATA: Metodo→corso con verifica e attestato «Operatore di Ascolto Guidato Aurya L1». Il fossato Unyte: per competere è il non-negoziabile | founder+me |
+| C6 | LA PAGINA DELLE BASI (pubblica+in-product): bibliografia per scheda, manifesto onestà, aggregati anonimi VERI dal registro appena esistono | editoriale |
+| C7 | = M3 ascolto a casa (delivery remota) | codice |
+| C8 | PROVE SOCIALI dal pilot: casi raccontati onesti, mai percentuali da survey | pilot |
+
+Ordine: C1+C2 → C3 → C4 → C6 → C5 → M3 → pilot → C8.
+MAI copiare: percentuali-survey nei titoli, teoria-ombrello come
+marketing, hardware come lucchetto.
