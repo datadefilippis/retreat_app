@@ -144,6 +144,7 @@ const VisualPage = lazy(() => import("./features/frequenze/visual/VisualPage"));
 const SoundLabPage = lazy(() => import("./features/frequenze/lab/SoundLabPage"));
 const EsperienzaPage = lazy(() => import("./features/frequenze/esperienze/EsperienzaPage"));
 const SoundProPage = lazy(() => import("./features/frequenze/pro/SoundProPage"));
+const ProfessionalLanding = lazy(() => import("./features/frequenze/ProfessionalLanding"));
 // PL17 — lazy come tutte le pagine admin: da eager trascinava Layout
 // (e con lui TUTTE le traduzioni back-office) nel bundle pubblico.
 const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
@@ -998,6 +999,9 @@ function AppRoutes() {
       {/* M-URL (26/8): ogni vista di Professional ha il suo URL —
           la pagina risolve i segmenti da sola (catalogo/:id, percorso/:id,
           registro, protocollo/:id). Sempre PRIMA del catch-all. */}
+      {/* L4 — la VENDITA è pubblica e indicizzata; lo strumento
+          (/sound/pro) resta noindex. Due indirizzi, due nature. */}
+      <Route path="/sound/professional" element={<ProfessionalLanding />} />
       <Route path="/sound/pro/*" element={<SoundProPage />} />
       <Route path="/sound/*" element={<FrequenzePage />} />
       {/* legacy: il vecchio indirizzo del workspace continua a funzionare */}

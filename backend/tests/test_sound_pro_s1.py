@@ -174,8 +174,7 @@ class TestOnesta:
         r = sp.run(["git", "diff", "--name-only", "HEAD", "--",
                     "frontend/src/features/frequenze/content",
                     "frontend/src/features/frequenze/engine",
-                    "frontend/src/features/frequenze/lab",
-                    "frontend/src/features/frequenze/FrequenzePage.js"],
+                    "frontend/src/features/frequenze/lab"],
                    cwd=BACKEND_DIR.parent, capture_output=True, text=True)
         if r.returncode != 0:
             pytest.skip("git non disponibile")

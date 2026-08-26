@@ -113,6 +113,22 @@ export default function SoundLandingPage() {
           {/* SF — la porta pubblica dice subito com'è fatto l'ascolto */}
           <SafetyLine onOpen={() => setSafety(true)} />
 
+          {/* L3 (26/8, sistema) — il terzo piano della casa: la via
+              professionale, DISTINTA e in fondo (prima ci si fida,
+              poi si compra). Crea non esiste, qui: e' l'atelier. */}
+          <div className="sld-pro" data-testid="sld-professional">
+            <div>
+              <strong>Per i professionisti del benessere</strong>
+              <span>
+                Aurya Sound Professional: protocolli d'ascolto con basi
+                dichiarate, percorsi con una cadenza, e il registro di
+                ogni sessione coi tuoi clienti.
+              </span>
+            </div>
+            <Link className="sld-pro-cta" to="/sound/professional"
+              data-testid="sld-pro-link">Scopri Professional →</Link>
+          </div>
+
           <div className="sld-bridge" data-testid="fqz-landing-meditazioni">
             <span>Preferisci un'esperienza già composta?</span>{' '}
             <Link to="/meditazioni">Scopri le meditazioni degli operatori →</Link>

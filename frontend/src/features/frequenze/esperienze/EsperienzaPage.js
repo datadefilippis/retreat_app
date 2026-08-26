@@ -25,6 +25,7 @@ import { Link } from 'react-router-dom';
 import SoundTopbar from '../SoundTopbar';
 import { SafetyLine, useSafetyGate } from '../SafetyCurtain';
 import { esperienza } from '../content/esperienze';
+import { prova } from '../../../lib/cerchio';
 import { creaAscolto } from './ascolto';
 import '../frequenze.css';
 import './esperienza.css';
@@ -116,6 +117,16 @@ export default function EsperienzaPage({ id }) {
               <p className="esp-lead" data-testid="esp-fine" aria-live="polite">
                 Fine. Resta ancora un momento, prima di tornare.
               </p>
+              {/* L2 (26/8, sistema) — l'INVITO, non un muro: il
+                  momento dopo un'esperienza e' quello di massima
+                  benevolenza. Chi e' gia' nel cerchio (prova) non
+                  riceve inviti a entrarci. */}
+              {!prova() && (
+                <p className="esp-lettera" data-testid="esp-invito-lettera">
+                  Ti è rimasta addosso? Una volta al mese raccontiamo
+                  il suono nella <Link to="/newsletter">Lettera</Link>.
+                </p>
+              )}
               <button type="button" className="esp-inizia"
                 data-testid="esp-ricomincia" onClick={avviaGuardato}>
                 Ricomincia

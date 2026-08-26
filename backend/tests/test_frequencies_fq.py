@@ -1190,9 +1190,11 @@ class TestSoundPubblicoSp:
     def test_shell_e_sitemap(self):
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
         assert '"sound"' in shell and "_meta_sound" in shell
-        blocco = shell.split("async def _meta_sound")[1][:900]
+        blocco = shell.split("async def _meta_sound")[1]
         assert '"crea", "tracce"' in blocco and "noindex" in blocco, \
             "il workspace non si indicizza"
+        # L4 (26/8): la VENDITA invece si indicizza, distinta
+        assert '"professional"' in blocco
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
         assert "/sound/esplora" in seo and "/sound/impara" in seo
         assert "/sound/crea" not in seo and "/sound/tracce" not in seo, \
@@ -1610,12 +1612,17 @@ class TestPrivilegioDelComporre:
         # e l'email si cerca
         assert "(o.email || '').toLowerCase().includes(q)" in page
 
-    def test_l_operatore_senza_invito_ha_una_spiegazione(self):
+    def test_l_operatore_senza_invito_non_vede_l_atelier(self):
+        """L1 (26/8, sistema): Crea e' l'atelier PROPRIETARIO — il
+        vecchio cartello «su invito» la palesava. Ora chi non ha il
+        privilegio viene accompagnato in silenzio a /sound; la
+        concessione resta al system admin (/admin/sound, invariata)."""
         page = (FQ_DIR / "FrequenzePage.js").read_text()
         assert "senzaInvito" in page
-        assert "su invito" in page
-        # mai un muro muto: c'e' un contatto
-        assert "mailto:info@aurya.life" in page
+        blocco = page[page.find("needsAuth && senzaInvito"):]
+        assert '<Navigate to="/sound" replace />' in blocco[:400]
+        assert "mailto:info@aurya.life" not in page, \
+            "la vetrina di Crea e' tornata"
 
     def test_la_migrazione_non_chiude_fuori_i_pionieri(self):
         mig = (BACKEND_DIR / "scripts" / "pc1_sound_composer_migration.py").read_text()

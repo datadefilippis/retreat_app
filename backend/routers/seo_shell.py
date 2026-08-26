@@ -755,6 +755,26 @@ def _sound_index_html() -> str:
     return "".join(parts)
 
 
+def _professional_content_html() -> str:
+    """Corpo per i crawler di /sound/professional: la vendita in
+    forma leggibile — scienza in avanti (registro C0), mai promesse."""
+    return (
+        "<h2>L'ascolto guidato, per professionisti del benessere</h2>"
+        "<p>Il cervello segue la stimolazione sonora ritmica: si "
+        "chiama risposta uditiva stazionaria (ASSR) ed è "
+        "neurofisiologia consolidata. Aurya Sound Professional dà ai "
+        "professionisti protocolli d'ascolto strutturati — con basi "
+        "dichiarate scheda per scheda e gradi di evidenza — percorsi "
+        "di più settimane con dose e cadenza, e il registro di ogni "
+        "sessione: con chi, cosa, com'è andata.</p>"
+        "<p>Niente attrezzatura proprietaria: bastano cuffie stereo "
+        "per i protocolli binaurali e un buon diffusore per i "
+        "registri bassi. Le esperienze CALM e GROUND si possono "
+        "ascoltare gratuitamente su "
+        "<a href=\"/sound\">Aurya Sound</a>; l'accesso a "
+        "Professional è su invito.</p>")
+
+
 async def _meta_sound(parts: list) -> Optional[dict]:
     """/sound[...]. Esplora e Impara sono editoriali e indicizzabili;
     crea e tracce sono il workspace operatore: vivi ma noindex (la SPA
@@ -765,6 +785,23 @@ async def _meta_sound(parts: list) -> Optional[dict]:
     # tracce: uno STRUMENTO, non una pagina editoriale. Senza questa
     # riga nginx lo manda al prerender, il prerender non lo conosce e
     # l'utente prende un 404 (successo davvero, deploy del 22/8).
+    # L4 (26/8) — la pagina di VENDITA di Professional: pubblica e
+    # indicizzata (lo strumento /sound/pro resta noindex qui sotto).
+    if sub == "professional":
+        canonical = f"{base}/sound/professional"
+        return {
+            "title": "Aurya Sound Professional — l'ascolto guidato "
+                     "per professionisti | Aurya",
+            "description": (
+                "Protocolli d'ascolto strutturati da condurre coi tuoi "
+                "clienti: basi dichiarate scheda per scheda, percorsi "
+                "con dose e cadenza, il registro di ogni sessione. "
+                "Nessuna attrezzatura da comprare."),
+            "canonical": canonical,
+            "hreflang": _hub_hreflang(canonical),
+            "image": f"{base}/og-cover.jpg",
+            "content_html": _professional_content_html(),
+        }
     if sub in ("crea", "tracce", "visual", "pro"):
         meta = {**_SOUND_PAGES[None], "noindex": True}
         return {**meta, "canonical": None, "hreflang": None}

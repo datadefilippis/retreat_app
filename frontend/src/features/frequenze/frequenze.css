@@ -997,3 +997,13 @@
   display:block;margin-top:10px;font-style:normal;font-family:var(--mono);
   font-size:11px;color:var(--dimmer);letter-spacing:.05em}
 @media (max-width:640px){ .fqz .sld-esp{grid-template-columns:1fr} }
+
+/* L3 (26/8) — la via professionale sulla porta del mondo Sound */
+.fqz .sld-pro{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:space-between;
+  padding:20px 22px;border:1px solid var(--line-soft);border-left:3px solid var(--lamp);border-radius:12px;margin:26px 0 0;
+  background:linear-gradient(180deg,#182A2E,#111F23)}
+.fqz .sld-pro strong{display:block;font-family:var(--serif);font-size:17px;font-weight:400;color:var(--bone);margin-bottom:4px}
+.fqz .sld-pro span{font-size:12.5px;color:var(--dim);line-height:1.6;max-width:52ch;display:block}
+.fqz .sld-pro-cta{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:#122123;background:linear-gradient(180deg,#E6AE68,#D49B4E);border-radius:9px;padding:11px 16px;text-decoration:none;white-space:nowrap}
+.fqz .sld-pro-cta:hover{background:linear-gradient(180deg,#F0BC7C,#E0A85F)}

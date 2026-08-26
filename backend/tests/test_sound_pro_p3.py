@@ -385,7 +385,6 @@ class TestFormaEConfini:
             "frontend/src/features/frequenze/content/ground.js",
             "frontend/src/features/frequenze/content/esperienze.js",
             "frontend/src/features/frequenze/PublicFrequencyPage.js",
-            "frontend/src/features/frequenze/FrequenzePage.js",
             "frontend/src/features/frequenze/MeditazioniPage.js",
             "frontend/package.json",
             "frontend/src/features/frequenze/pro/compilatore.js",

@@ -194,12 +194,13 @@ class TestLaPorta:
     def test_10_le_pagine_pubbliche_non_sono_cambiate(self):
         """La topbar è condivisa col mondo pubblico: la modifica è
         additiva e condizionale, i file pubblici restano intatti."""
+        # L1/L3 (26/8) hanno toccato legittimamente FrequenzePage
+        # (redirect Crea) e SoundLandingPage (porta di sistema):
+        # l'invariante resta sui player pubblici e sul motore
         r = subprocess.run(
             ["git", "diff", "--name-only", "HEAD", "--",
              "frontend/src/features/frequenze/MeditazioniPage.js",
              "frontend/src/features/frequenze/PublicFrequencyPage.js",
-             "frontend/src/features/frequenze/SoundLandingPage.js",
-             "frontend/src/features/frequenze/FrequenzePage.js",
              "frontend/src/features/frequenze/lab",
              "frontend/src/features/frequenze/engine",
              "frontend/src/features/frequenze/content"],

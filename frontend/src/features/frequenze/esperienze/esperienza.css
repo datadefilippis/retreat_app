@@ -57,3 +57,10 @@
   .fqz .esp-lead{font-size:17px}
   .fqz .esp-ascolto{padding:12vh 18px 0}
 }
+
+/* L2 (26/8) — l'invito alla Lettera, a fine esperienza */
+.fqz .esp-lettera {
+  font-size: 13px; color: var(--dim); line-height: 1.6;
+  margin: 0 0 18px; max-width: 40ch;
+}
+.fqz .esp-lettera a { color: var(--lamp); }

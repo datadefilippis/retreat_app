@@ -1698,29 +1698,13 @@ export default function FrequenzePage() {
   if (needsAuth && user && user.role !== 'system_admin' && user.email_verified === false) {
     return <Navigate to="/verify-email-required" replace />;
   }
-  /* PC2 — l'operatore SENZA INVITO su /sound/crea o /sound/tracce:
-     una spiegazione gentile, non un muro muto ne' la biblioteca che
-     appare al posto sbagliato. Un operatore incuriosito e' un lead. */
+  /* L1 (26/8, sistema) — Crea e' l'atelier PROPRIETARIO di Aurya: il
+     vecchio cartello «su invito» la palesava a chi non doveva
+     saperne. Chi non ha il privilegio non vede niente: redirect
+     silenzioso alla porta del mondo Sound. La concessione resta al
+     system admin (/admin/sound), e chi ce l'ha non nota differenze. */
   if (needsAuth && senzaInvito) {
-    return (
-      <div className="fqz" data-testid="fqz-root">
-        <main>
-          <section className="bib" style={{ maxWidth: 560, margin: '80px auto', textAlign: 'center' }}>
-            <h1>Aurya <em>Sound</em></h1>
-            <p className="soundlead" style={{ marginTop: 18 }}>
-              La composizione delle meditazioni è su invito: la stiamo
-              aprendo a pochi professionisti alla volta, con cura.
-            </p>
-            <p className="soundlead" style={{ marginTop: 10 }}>
-              Ti piacerebbe comporre con Aurya Sound?{' '}
-              <a href="mailto:info@aurya.life?subject=Aurya%20Sound%20%E2%80%94%20vorrei%20comporre">
-                Scrivici
-              </a>{' '}e ne parliamo.
-            </p>
-          </section>
-        </main>
-      </div>
-    );
+    return <Navigate to="/sound" replace />;
   }
 
   /* ─────────────────────────── RENDER ─────────────────────────── */
