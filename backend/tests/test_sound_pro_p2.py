@@ -19,7 +19,6 @@ database e' quello vero di test, con prefisso e pulizia.
 """
 import json
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -401,8 +400,7 @@ class TestCatenaECompilatori:
         assert clean_score(salvato["score"]) == salvato["score"]
 
 
-_NODE = shutil.which("node") or \
-    "/Users/davidedefilippis/.nvm/versions/node/v22.13.1/bin/node"
+from nodo import NODE as _NODE
 
 
 @pytest.mark.skipif(not Path(_NODE).exists(), reason="node non disponibile")

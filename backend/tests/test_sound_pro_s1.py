@@ -13,7 +13,6 @@ score prodotto al validatore VERO del server (clean_score).
 """
 import json
 import re
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -25,10 +24,7 @@ FQ = FRONTEND_SRC / "features" / "frequenze"
 CATALOGO = FQ / "pro" / "catalogo.js"
 PAGINA = FQ / "pro" / "SoundProPage.jsx"
 
-_NODE = shutil.which("node") or \
-    "/Users/davidedefilippis/.nvm/versions/node/v22.13.1/bin/node"
-node_c_e = pytest.mark.skipif(not Path(_NODE).exists(),
-                              reason="node non disponibile")
+from nodo import NODE as _NODE, node_c_e  # noqa: F401
 
 
 def _senza_commenti(testo: str) -> str:

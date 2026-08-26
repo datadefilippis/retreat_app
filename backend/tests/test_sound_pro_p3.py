@@ -17,7 +17,6 @@ compilatore vero. Dove la prova è strutturale invece che renderizzata,
 """
 import json
 import re
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -30,10 +29,7 @@ PAGINA = PRO / "SoundProPage.jsx"
 CSS = PRO / "pro.css"
 APP_JS = FRONTEND_SRC / "App.js"
 
-_NODE = shutil.which("node") or \
-    "/Users/davidedefilippis/.nvm/versions/node/v22.13.1/bin/node"
-node_c_e = pytest.mark.skipif(not Path(_NODE).exists(),
-                              reason="node non disponibile")
+from nodo import NODE as _NODE, node_c_e  # noqa: F401
 
 
 def _senza_commenti(testo: str) -> str:

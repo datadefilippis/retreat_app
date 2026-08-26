@@ -14,7 +14,6 @@ Cosa dimostrano, in ordine di importanza:
 """
 import json
 import re
-import shutil
 import subprocess
 import sys
 from datetime import timedelta
@@ -47,8 +46,7 @@ PASSI = [
     {"metodo": "tone", "hz": 220, "durata_sec": 300, "gain": 0.3},
 ]
 
-_NODE = shutil.which("node") or \
-    "/Users/davidedefilippis/.nvm/versions/node/v22.13.1/bin/node"
+from nodo import NODE as _NODE
 
 
 @pytest.fixture

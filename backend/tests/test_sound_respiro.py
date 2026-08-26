@@ -12,7 +12,6 @@ alla svolta. Entrambe OPT-IN: il respiro-texture di CALM non cambia.
 """
 import json
 import re
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -24,10 +23,7 @@ FQ = FRONTEND_SRC / "features" / "frequenze"
 RICETTA = FQ / "content" / "respiro.js"
 SYNTH = FQ / "engine" / "synth.js"
 
-_NODE = shutil.which("node") or \
-    "/Users/davidedefilippis/.nvm/versions/node/v22.13.1/bin/node"
-node_c_e = pytest.mark.skipif(not Path(_NODE).exists(),
-                              reason="node non disponibile")
+from nodo import NODE as _NODE, node_c_e  # noqa: F401
 
 
 def _senza_commenti(testo: str) -> str:

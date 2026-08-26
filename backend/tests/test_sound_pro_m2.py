@@ -8,7 +8,6 @@ server — il registro non può mentire nemmeno per sbaglio.
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -28,10 +27,7 @@ PRO = FQ / "pro"
 from fastapi import HTTPException  # noqa: E402
 from routers import sound_sessions  # noqa: E402
 
-_NODE = shutil.which("node") or \
-    "/Users/davidedefilippis/.nvm/versions/node/v22.13.1/bin/node"
-node_c_e = pytest.mark.skipif(not Path(_NODE).exists(),
-                              reason="node non disponibile")
+from nodo import NODE as _NODE, node_c_e  # noqa: F401
 
 PREFIX = "test_m2_"
 ORG = PREFIX + "org"

@@ -15,7 +15,6 @@ la minima correzione.
 """
 import json
 import re
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -26,9 +25,7 @@ FRONTEND_SRC = BACKEND_DIR.parent / "frontend" / "src"
 FQ = FRONTEND_SRC / "features" / "frequenze"
 COMPILATORE = FQ / "pro" / "compilatore.js"
 
-_NODE = shutil.which("node") or "/Users/davidedefilippis/.nvm/versions/node/v22.13.1/bin/node"
-node_c_e = pytest.mark.skipif(not Path(_NODE).exists(),
-                              reason="node non disponibile su questa macchina")
+from nodo import NODE as _NODE, node_c_e  # noqa: F401
 
 
 def _esegui(steps, funzione="compila"):
