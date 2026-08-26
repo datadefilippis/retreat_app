@@ -470,6 +470,7 @@ async def get_current_user_info(user_id: str) -> UserResponse:
     currency = "EUR"
     default_iva = None
     sound_composer = False
+    sound_professional = False
     org_id = user_doc.get("organization_id")
     if org_id:
         org_doc = await organization_repository.find_by_id(org_id)
@@ -477,6 +478,7 @@ async def get_current_user_info(user_id: str) -> UserResponse:
             currency = org_doc.get("currency") or "EUR"
             default_iva = (org_doc.get("settings") or {}).get("default_iva")
             sound_composer = bool(org_doc.get("sound_composer"))
+            sound_professional = bool(org_doc.get("sound_professional"))
 
     # ── Phase E re-consent gate ──────────────────────────────────────────
     from core.legal_versions import current_version_string
@@ -510,4 +512,5 @@ async def get_current_user_info(user_id: str) -> UserResponse:
         current_terms_version=current_version,
         consent_needs_refresh=needs_refresh,
         sound_composer=sound_composer,
+        sound_professional=sound_professional,
     )

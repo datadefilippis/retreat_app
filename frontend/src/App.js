@@ -143,6 +143,7 @@ const SoundLandingPage = lazy(() => import("./features/frequenze/SoundLandingPag
 const VisualPage = lazy(() => import("./features/frequenze/visual/VisualPage"));
 const SoundLabPage = lazy(() => import("./features/frequenze/lab/SoundLabPage"));
 const EsperienzaPage = lazy(() => import("./features/frequenze/esperienze/EsperienzaPage"));
+const SoundProPage = lazy(() => import("./features/frequenze/pro/SoundProPage"));
 // PL17 — lazy come tutte le pagine admin: da eager trascinava Layout
 // (e con lui TUTTE le traduzioni back-office) nel bundle pubblico.
 const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
@@ -990,6 +991,12 @@ function AppRoutes() {
       {/* LE ESPERIENZE — una presentazione sola, prima del catch-all */}
       <Route path="/sound/calm" element={<EsperienzaPage id="calm" />} />
       <Route path="/sound/ground" element={<EsperienzaPage id="ground" />} />
+      {/* P3 — il Builder professionale, PRIMA del catch-all (stessa
+          trappola del Lab). Il cancello vive dentro la pagina: senza
+          il privilegio non si disegna un Builder funzionante, e le API
+          rispondono comunque 403. */}
+      <Route path="/sound/pro" element={<SoundProPage />} />
+      <Route path="/sound/pro/:id" element={<SoundProPage />} />
       <Route path="/sound/*" element={<FrequenzePage />} />
       {/* legacy: il vecchio indirizzo del workspace continua a funzionare */}
       <Route path="/frequenze" element={<Navigate to="/sound/esplora" replace />} />

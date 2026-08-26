@@ -167,6 +167,10 @@ class UserResponse(BaseModel):
     # l'area di creazione solo se questo flag e' vero. La VERITA' sta
     # negli endpoint (require_sound_composer), qui c'e' il disegno.
     sound_composer: bool = False
+    # P3 (26/8) — stessa natura, altro privilegio: i protocolli
+    # professionali. Il client disegna il Builder solo se e' vero; la
+    # VERITA' sta in require_sound_professional (routers/sound_pro.py).
+    sound_professional: bool = False
 
 
 class UserInvite(BaseModel):

@@ -346,7 +346,15 @@ class TestPaginaStrumentoAv2:
         /sound non basta dichiararla in App.js — va riconosciuta anche
         di la', o l'utente non ci arriva."""
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        assert '("crea", "tracce", "visual")' in shell
+        # la guardia era scritta sulla tupla ESATTA, e cosi' si rompeva
+        # ogni volta che nasceva uno strumento nuovo sotto /sound (P3,
+        # 26/8). Quel che deve restare vero e' l'appartenenza: `visual`
+        # e' uno strumento, e il renderer deve conoscerlo.
+        strumenti = re.search(
+            r'if sub in \(([^)]+)\):\s*\n\s*meta = \{\*\*_SOUND_PAGES'
+            r'\[None\], "noindex": True\}', shell)
+        assert strumenti, "il ramo «workspace operatore» di _meta_sound e' sparito"
+        assert '"visual"' in strumenti.group(1)
 
     def test_il_prototipo_e_integrale(self):
         """I numeri del founder: 11 slider, 6 palette, 7 modi, 7
