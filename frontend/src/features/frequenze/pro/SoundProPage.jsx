@@ -51,6 +51,7 @@ import SoundTopbar from '../SoundTopbar';
 import { SafetyCurtain } from '../SafetyCurtain';
 import { CATALOGO, ORIGINI } from './catalogo';
 import Rito, { quandoFa } from './Rito';
+import Partitura from './Partitura';
 import '../frequenze.css';
 import './pro.css';
 
@@ -424,6 +425,10 @@ function SchedaCore({ p, onChiudi, onAvvia }) {
 
       <p className="pro-racconto">{p.racconto}</p>
 
+      {/* M-D — la partitura: lo score disegnato. La risposta visiva a
+          «cosa succederà», generata dai dati veri del protocollo. */}
+      <Partitura score={p.costruisci()} dettaglio />
+
       <dl className="pro-dati">
         <div><dt>Durata</dt><dd>{Math.round(p.durata_sec / 60)} minuti</dd></div>
         <div><dt>Quando usarlo</dt><dd>{p.indicazioni}</dd></div>
@@ -498,6 +503,7 @@ function Catalogo({ onAvvia }) {
                 {Math.round(p.durata_sec / 60)} min
                 {' · '}{p.cuffie === 'necessarie' ? 'cuffie necessarie' : 'cuffie consigliate'}
               </div>
+              <Partitura score={p.costruisci()} />
               <div className="body">{p.sottotitolo}</div>
               <div className="pro-quando">{ORIGINI[p.origine]}</div>
             </button>

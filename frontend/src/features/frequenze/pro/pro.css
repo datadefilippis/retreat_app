@@ -304,3 +304,35 @@
   .fqz .reg-cliente { order: 5; }
   .fqz .reg-tempo { order: 6; text-align: right; }
 }
+
+/* ── M-D/1: la partitura ──────────────────────────────────────────── */
+.fqz .partitura { margin: 0; }
+.fqz .partitura svg {
+  display: block; width: 100%; height: auto;
+  border-radius: 8px; background: #0D1A1E;
+}
+.fqz .pro-core-card .partitura svg { height: 44px; }
+.fqz .partitura.grande { margin: 4px 0 6px; }
+.fqz .partitura-fase {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .06em;
+  fill: var(--dimmer); text-transform: uppercase;
+}
+.fqz .partitura-piede {
+  display: flex; align-items: center; gap: 12px; margin-top: 6px;
+}
+.fqz .partitura-tempo {
+  font-family: var(--mono); font-size: 10px; color: var(--dimmer);
+  font-variant-numeric: tabular-nums;
+}
+.fqz .partitura-legenda {
+  flex: 1; display: flex; justify-content: center; gap: 14px;
+  flex-wrap: wrap;
+}
+.fqz .partitura-voce {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--dim);
+}
+.fqz .partitura-voce i {
+  width: 14px; height: 4px; border-radius: 999px; display: inline-block;
+}

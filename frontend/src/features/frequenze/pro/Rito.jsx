@@ -37,6 +37,7 @@ import { customersAPI } from '../../../api/customers';
 import { soundProAPI } from '../../../api/soundPro';
 import { creaAscolto } from '../esperienze/ascolto';
 import { useSafetyGate } from '../SafetyCurtain';
+import Partitura from './Partitura';
 
 const mmss = (s) => {
   const t = Math.max(0, Math.round(s || 0));
@@ -294,6 +295,8 @@ export default function Rito({ protocollo, onEsci }) {
         <button type="button" className="ghost" onClick={onEsci}
           data-testid="rito-annulla">×</button>
       </div>
+
+      <Partitura score={protocollo.score} altezza={64} />
 
       <label className="pro-campo">
         <span className="pro-lab">Con chi <i>facoltativo</i></span>
