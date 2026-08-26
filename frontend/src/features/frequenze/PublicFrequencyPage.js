@@ -24,6 +24,7 @@ import { SafetyLine, useSafetyGate } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import { prova, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
 import './frequenze.css';
+import './meditazioni.css';
 import SoundTopbar from './SoundTopbar';
 import SeekBar from './SeekBar';
 import AuryaMode from './visual/AuryaMode';
@@ -452,7 +453,7 @@ export default function PublicFrequencyPage() {
 
   if (notFound) {
     return (
-      <div className="fqz">
+      <div className="fqz med">
         <main style={{ paddingTop: 60, textAlign: 'center' }}>
           <h1>Aurya <em>Sound</em></h1>
           <p className="soundlead" style={{ marginTop: 18 }}>
@@ -463,7 +464,7 @@ export default function PublicFrequencyPage() {
       </div>
     );
   }
-  if (!track) return <div className="fqz" style={{ minHeight: '100vh' }} />;
+  if (!track) return <div className="fqz med" style={{ minHeight: '100vh' }} />;
 
   const d = track.score.duration_sec;
   const avvisoTelefono = avvisoCuffieScore(track.score);
@@ -471,7 +472,7 @@ export default function PublicFrequencyPage() {
     && continuoDisponibile(track.score);
 
   return (
-    <div className="fqz" data-testid="fqz-public">
+    <div className="fqz med" data-testid="fqz-public">
       {pannelloDiag}
       {/* MD (20/8) — chi arriva da un link condiviso restava chiuso
           qui dentro: il menu del sito non c'e' e il design e' un altro

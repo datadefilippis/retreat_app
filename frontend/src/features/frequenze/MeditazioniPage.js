@@ -32,6 +32,23 @@ const INTENTS = {
   dormire: 'Dormire', meditare: 'Meditare', rilassare: 'Rilassare',
   concentrare: 'Concentrare', elaborare: 'Elaborare', energizzare: 'Energizzare',
 };
+
+/* founder 26/8 — ogni intento porta la sua tonalita' (famiglia di
+   marca, versioni da fondo chiaro): un velo in testa alla carta e
+   l'onda-firma. Il contrasto senza il kitsch. */
+const TONI = {
+  dormire: 'viola', elaborare: 'viola',
+  meditare: 'salvia', concentrare: 'acqua',
+  rilassare: 'oro', energizzare: 'oro',
+};
+
+/* l'onda-firma: una riga di suono disegnata, nel colore del tono */
+const OndaFirma = () => (
+  <svg className="med-onda" viewBox="0 0 120 12" aria-hidden="true"
+    preserveAspectRatio="none">
+    <path d="M0 6 C 10 0, 20 12, 30 6 S 50 0, 60 6 S 80 12, 90 6 S 110 0, 120 6" />
+  </svg>
+);
 const fmt = (s) => {
   s = Math.max(0, Math.round(s || 0));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -289,7 +306,8 @@ export default function MeditazioniPage() {
                 {shown.map((t) => {
                   const fav = favorites.includes(t.slug);
                   return (
-                    <div key={t.slug} className="card">
+                    <div key={t.slug}
+                      className={`card med-tono-${TONI[t.intent] || 'oro'}`}>
                       {/* founder 26/8 — il cuore e' un gesto disegnato */}
                       <button type="button" aria-pressed={fav}
                         className={`med-cuore${fav ? ' on' : ''}`}
@@ -305,6 +323,7 @@ export default function MeditazioniPage() {
                         {fmt(t.duration_sec)}
                         {t.plays_total > 0 && ` · ${t.plays_total} ascolti`}
                       </div>
+                      <OndaFirma />
                       {t.description && <div className="body">{t.description.slice(0, 120)}</div>}
                       {/* founder 26/8 — la firma e' il NOME di chi l'ha
                           composta, non un'etichetta */}
