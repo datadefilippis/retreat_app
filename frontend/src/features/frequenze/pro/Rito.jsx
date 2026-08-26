@@ -43,6 +43,16 @@ const mmss = (s) => {
   return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
 };
 
+/** «quando», come lo direbbe una persona. */
+export function quandoFa(iso) {
+  const giorni = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (giorni <= 0) return 'oggi';
+  if (giorni === 1) return 'ieri';
+  if (giorni < 30) return `${giorni} giorni fa`;
+  return new Date(iso).toLocaleDateString('it-IT',
+    { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 /** La scala del vissuto: dieci tacche, nessun aggettivo. */
 function Scala({ valore, onScegli, testid }) {
   return (
@@ -62,6 +72,9 @@ export default function Rito({ protocollo, onEsci }) {
   const [fase, setFase] = useState('preparazione');
   const [clienti, setClienti] = useState([]);
   const [clienteId, setClienteId] = useState('');
+  /* la volta scorsa con QUESTA persona: null = non chiesto,
+     false = mai stata, oggetto = l'ultima sessione chiusa */
+  const [ultima, setUltima] = useState(null);
   const [pre, setPre] = useState(null);
   const [post, setPost] = useState(null);
   const [note, setNote] = useState('');
@@ -84,6 +97,23 @@ export default function Rito({ protocollo, onEsci }) {
       .catch(() => { /* senza lista si resta anonimi: non è un errore */ });
     return () => { vivo = false; };
   }, []);
+
+  /* LA CONTINUITÀ (S4): scelto il cliente, si chiede al registro
+     com'è andata la volta scorsa — è il momento in cui il registro
+     ripaga. Solo sessioni CHIUSE: una riga in corso non è memoria. */
+  useEffect(() => {
+    if (!clienteId) { setUltima(null); return undefined; }
+    let vivo = true;
+    soundProAPI.sessioni.list({ customer_id: clienteId })
+      .then((r) => {
+        if (!vivo) return;
+        const chiuse = (r.data?.items || [])
+          .filter((x) => x.stato !== 'in_corso');
+        setUltima(chiuse[0] || false);
+      })
+      .catch(() => { if (vivo) setUltima(null); });
+    return () => { vivo = false; };
+  }, [clienteId]);
 
   const ascolto = useCallback(() => {
     if (!ascoltoRef.current) {
@@ -274,6 +304,21 @@ export default function Rito({ protocollo, onEsci }) {
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
+        {clienteId && ultima && (
+          <span className="rito-ultima" data-testid="rito-ultima">
+            La volta scorsa: <b>{ultima.protocollo?.titolo}</b>
+            {' · '}{quandoFa(ultima.iniziata_il)}
+            {ultima.feedback_pre != null && ultima.feedback_post != null
+              && ` · da ${ultima.feedback_pre} a ${ultima.feedback_post}`}
+            {ultima.stato === 'interrotta' && ' · interrotta'}
+            {ultima.stato === 'persa' && ' · audio caduto'}
+          </span>
+        )}
+        {clienteId && ultima === false && (
+          <span className="rito-ultima" data-testid="rito-prima-volta">
+            Prima sessione insieme.
+          </span>
+        )}
       </label>
 
       <label className="pro-campo">

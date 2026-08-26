@@ -41,6 +41,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { soundProAPI } from '../../../api/soundPro';
+import { customersAPI } from '../../../api/customers';
 import {
   BATTITO_MAX, BATTITO_MIN, PASSI_MAX, PORTANTE_MAX, PORTANTE_MIN,
   durataTotale,
@@ -49,7 +50,7 @@ import { PERCENTO_DEFAULT, PERCENTO_MAX, PERCENTO_MIN, aGain, aPercento } from '
 import SoundTopbar from '../SoundTopbar';
 import { SafetyCurtain } from '../SafetyCurtain';
 import { CATALOGO, ORIGINI } from './catalogo';
-import Rito from './Rito';
+import Rito, { quandoFa } from './Rito';
 import '../frequenze.css';
 import './pro.css';
 
@@ -617,6 +618,140 @@ function Lista({ chiave, onAvvia }) {
   );
 }
 
+/* ── IL REGISTRO (S4): il quaderno si sfoglia ──────────────────────── */
+const ESITO_LABEL = {
+  in_corso: 'In corso',
+  completata: 'Completata',
+  interrotta: 'Interrotta',
+  persa: 'Audio caduto',
+};
+
+function RigaSessione({ s, nome }) {
+  const [aperta, setAperta] = useState(false);
+  const [dettaglio, setDettaglio] = useState(null);
+  const apri = async () => {
+    if (aperta) { setAperta(false); return; }
+    setAperta(true);
+    if (!dettaglio) {
+      try {
+        const { data } = await soundProAPI.sessioni.get(s.id);
+        setDettaglio(data);
+      } catch { setDettaglio({ note_operative: '' }); }
+    }
+  };
+  return (
+    <li className={`reg-riga${aperta ? ' aperta' : ''}`} data-testid="reg-riga">
+      <button type="button" className="reg-testa" onClick={apri}>
+        <span className="reg-quando">{quandoFa(s.iniziata_il)}</span>
+        <span className="reg-titolo">
+          {s.protocollo?.titolo}
+          {s.protocollo?.tipo === 'operatore' && <i> · tuo</i>}
+        </span>
+        <span className="reg-cliente">{nome || '—'}</span>
+        <span className={`reg-esito e-${s.stato}`}>{ESITO_LABEL[s.stato]}</span>
+        <span className="reg-tempo">
+          {fmtTempo(s.ascolto_sec ?? 0)} / {fmtTempo(s.durata_prevista_sec)}
+        </span>
+        <span className="reg-vissuto">
+          {s.feedback_pre != null || s.feedback_post != null
+            ? `${s.feedback_pre ?? '·'} → ${s.feedback_post ?? '·'}`
+            : ''}
+        </span>
+      </button>
+      {aperta && (
+        <div className="reg-dettaglio" data-testid="reg-dettaglio">
+          {dettaglio === null ? (
+            <p className="pro-vuoto">Apro…</p>
+          ) : (
+            <>
+              <p className="reg-note">
+                {dettaglio.note_operative
+                  ? dettaglio.note_operative
+                  : 'Nessuna nota.'}
+              </p>
+              <p className="pro-quando">
+                Versione {s.protocollo?.versione}
+                {dettaglio.score_snapshot
+                  ? ' · score fotografato alla sessione'
+                  : ' · protocollo del catalogo (riferimento immutabile)'}
+              </p>
+            </>
+          )}
+        </div>
+      )}
+    </li>
+  );
+}
+
+function Registro() {
+  const [items, setItems] = useState(null);
+  const [nomi, setNomi] = useState({});
+  const [stato, setStato] = useState('');
+  const [cliente, setCliente] = useState('');
+
+  useEffect(() => {
+    let vivo = true;
+    /* i nomi si risolvono anche per i clienti disattivati: il
+       registro è memoria, non deve dimenticare chi c'era */
+    customersAPI.list(false, 500)
+      .then((r) => {
+        if (!vivo) return;
+        const mappa = {};
+        (r.data || []).forEach((c) => { mappa[c.id] = c.name; });
+        setNomi(mappa);
+      })
+      .catch(() => { /* senza nomi restano i trattini */ });
+    return () => { vivo = false; };
+  }, []);
+
+  useEffect(() => {
+    let vivo = true;
+    setItems(null);
+    soundProAPI.sessioni.list({
+      ...(stato ? { stato } : {}),
+      ...(cliente ? { customer_id: cliente } : {}),
+    })
+      .then((r) => { if (vivo) setItems(r.data?.items || []); })
+      .catch(() => { if (vivo) setItems([]); });
+    return () => { vivo = false; };
+  }, [stato, cliente]);
+
+  return (
+    <section data-testid="pro-registro">
+      <div className="pro-testata">
+        <select value={cliente} onChange={(e) => setCliente(e.target.value)}
+          data-testid="reg-filtro-cliente">
+          <option value="">Tutte le persone</option>
+          {Object.entries(nomi).map(([id, nome]) => (
+            <option key={id} value={id}>{nome}</option>
+          ))}
+        </select>
+        <select value={stato} onChange={(e) => setStato(e.target.value)}
+          data-testid="reg-filtro-stato">
+          <option value="">Ogni esito</option>
+          {Object.entries(ESITO_LABEL).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
+          ))}
+        </select>
+      </div>
+      {items === null && <p className="pro-vuoto">Un momento…</p>}
+      {items?.length === 0 && (
+        <div className="emptycreate" data-testid="reg-vuoto">
+          <p>Il registro è vuoto{cliente || stato ? ' con questi filtri' : ''}.
+            {' '}Ogni sessione avviata dal catalogo finisce qui.</p>
+        </div>
+      )}
+      {items?.length > 0 && (
+        <ul className="registro" data-testid="reg-lista">
+          {items.map((s) => (
+            <RigaSessione key={s.id} s={s} nome={nomi[s.customer_id]} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 /* ── IL RIPESCAGGIO: le sessioni rimaste aperte ────────────────────── */
 function SessioniAperte({ chiave }) {
   const [aperte, setAperte] = useState([]);
@@ -665,6 +800,7 @@ export default function SoundProPage() {
   const { user, loading } = useAuth();
   const [chiave, setChiave] = useState(0);
   const [rito, setRito] = useState(null);
+  const [vista, setVista] = useState('protocolli');   // protocolli | registro
 
   useEffect(() => { document.title = 'Protocolli — Aurya Sound Professional'; }, []);
 
@@ -701,6 +837,7 @@ export default function SoundProPage() {
       return <Rito protocollo={rito}
         onEsci={() => { setRito(null); setChiave((k) => k + 1); }} />;
     }
+    if (vista === 'registro') return <Registro />;
     return (
       <>
         <SessioniAperte chiave={chiave} />
@@ -713,7 +850,7 @@ export default function SoundProPage() {
         <Lista chiave={chiave} onAvvia={setRito} />
       </>
     );
-  }, [loading, user, abilitato, id, chiave, rito]);
+  }, [loading, user, abilitato, id, chiave, rito, vista]);
 
   return (
     <div className="fqz pro">
@@ -723,6 +860,16 @@ export default function SoundProPage() {
           <h1>I <em>protocolli</em></h1>
           <p className="sub">Sound Professional</p>
         </div>
+        {abilitato && !id && (
+          <div className="viewswitch">
+            {[['protocolli', 'Protocolli'], ['registro', 'Registro']].map(([v, label]) => (
+              <button key={v} type="button"
+                className={`vbtn${vista === v ? ' on' : ''}`}
+                onClick={() => setVista(v)}
+                data-testid={`pro-vista-${v}`}>{label}</button>
+            ))}
+          </div>
+        )}
       </header>
       <main>{corpo}</main>
     </div>

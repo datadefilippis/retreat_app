@@ -254,3 +254,53 @@
   display: flex; align-items: center; gap: 12px; padding: 4px 0;
   color: var(--bone);
 }
+
+/* ── S4: il registro e la continuità ──────────────────────────────── */
+.fqz .rito-ultima {
+  font-size: 12.5px; color: var(--lamp); line-height: 1.6;
+}
+.fqz .rito-ultima b { color: var(--bone); font-weight: 600; }
+
+.fqz .registro { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.fqz .reg-riga {
+  border: 1px solid var(--line-soft); border-radius: 10px;
+  background: linear-gradient(180deg, #182A2E, #111F23);
+}
+.fqz .reg-riga.aperta { border-color: var(--line); }
+.fqz .reg-testa {
+  display: grid; width: 100%;
+  grid-template-columns: 92px minmax(0, 1.4fr) minmax(0, 1fr) 110px 92px 64px;
+  gap: 12px; align-items: baseline; padding: 12px 16px;
+  background: none; border: none; text-align: left;
+  font-family: var(--sans); font-size: 13px; letter-spacing: 0;
+  text-transform: none; color: var(--bone); cursor: pointer;
+}
+.fqz .reg-quando { font-family: var(--mono); font-size: 10.5px; color: var(--dimmer); }
+.fqz .reg-titolo { color: var(--bone); }
+.fqz .reg-titolo i { font-style: normal; color: var(--dimmer); font-size: 11px; }
+.fqz .reg-cliente { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fqz .reg-esito { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.fqz .reg-esito.e-completata { color: var(--water); }
+.fqz .reg-esito.e-interrotta { color: var(--dim); }
+.fqz .reg-esito.e-persa { color: var(--alert); }
+.fqz .reg-esito.e-in_corso { color: var(--lamp); }
+.fqz .reg-tempo { font-family: var(--mono); font-size: 11px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.fqz .reg-vissuto { font-family: var(--mono); font-size: 11.5px; color: var(--lamp); font-variant-numeric: tabular-nums; }
+.fqz .reg-dettaglio { padding: 0 16px 14px; }
+.fqz .reg-note { font-size: 13px; color: var(--bone); line-height: 1.65; margin: 0 0 8px; white-space: pre-wrap; }
+.fqz .pro-testata select {
+  background: var(--stone); border: 1px solid var(--line); color: var(--bone);
+  border-radius: 8px; padding: 8px 11px; font-family: var(--sans); font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .fqz .reg-testa {
+    grid-template-columns: 1fr 1fr; gap: 4px 12px; padding: 12px 14px;
+  }
+  .fqz .reg-quando { order: 1; }
+  .fqz .reg-esito { order: 2; text-align: right; }
+  .fqz .reg-titolo { order: 3; }
+  .fqz .reg-vissuto { order: 4; text-align: right; }
+  .fqz .reg-cliente { order: 5; }
+  .fqz .reg-tempo { order: 6; text-align: right; }
+}
