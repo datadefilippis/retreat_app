@@ -667,8 +667,12 @@ def _lab_content_html() -> str:
         "trigger a zero-crossing per una traccia stabile, fermo "
         "immagine mentre il suono continua. Disegna i dati veri "
         "dell'analizzatore, non un'animazione.</p>"
-        "<p>Il banco crescerà sullo stesso motore: analizzatore di "
-        "spettro e sweep di frequenza.</p>"
+        "<h2>L'analizzatore di spettro</h2>"
+        "<p>Le frequenze che compongono il segnale, su scala "
+        "logaritmica: la fondamentale e le sue armoniche, con il picco "
+        "principale letto al decimo di Hertz.</p>"
+        "<p>Il banco crescerà sullo stesso motore: lo sweep di "
+        "frequenza.</p>"
     )
 
 

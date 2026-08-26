@@ -14,6 +14,7 @@ import SoundTopbar from '../SoundTopbar';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
 import Generatore from './Generatore';
 import Oscilloscopio from './Oscilloscopio';
+import Spettro from './Spettro';
 import { creaLaboratorio } from './motore';
 import '../frequenze.css';
 import './lab.css';
@@ -55,12 +56,16 @@ export default function SoundLabPage() {
             segnale — domani sara' il microfono e non cambiera' riga */}
         <Oscilloscopio ottieniAnalisi={() => labRef.current?.analisi || null} />
 
+        {/* stessa presa, altro dominio: il tempo sopra, le frequenze
+            qui. Nemmeno lo spettro sa chi genera il segnale. */}
+        <Spettro ottieniAnalisi={() => labRef.current?.analisi || null} />
+
         {/* le controindicazioni valgono anche qui, stessa porta */}
         <SafetyLine onOpen={() => setSafety(true)} />
 
         <p className="lab-arrivo" data-testid="lab-arrivo">
-          Il banco crescerà: analizzatore di spettro e sweep di frequenza
-          si costruiscono qui, sullo stesso motore.
+          Il banco crescerà: lo sweep di frequenza si costruisce qui,
+          sullo stesso motore.
         </p>
       </main>
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}

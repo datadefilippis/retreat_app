@@ -167,6 +167,93 @@ class TestOscilloscopio:
             "alla tela non arriva l'analisi del motore"
 
 
+class TestSpettro:
+    """STEP 3: il dominio delle frequenze. Lo Spettro nasce con lo
+    STESSO contratto dell'Oscilloscopio — e queste guardie lo dicono
+    una volta per entrambi, cosi' vale anche per gli strumenti che
+    verranno."""
+
+    def test_ogni_tela_rispetta_il_contratto(self):
+        """Nessun pannello conosce il generatore, si fabbrica nodi
+        audio o apre un contesto: osservano e basta. E' la regola che
+        rendera' il microfono un cambio di sorgente, non di
+        strumenti."""
+        for nome in ("Oscilloscopio.jsx", "Spettro.jsx"):
+            src = (LAB / nome).read_text()
+            importati = re.findall(r"^import .*?from '([^']+)'", src, re.M)
+            assert "./motore" not in importati, f"{nome}: importa il motore"
+            assert "./Generatore" not in importati, f"{nome}: importa il Generatore"
+            assert set(importati) <= {"react", "./quadro"}, \
+                f"{nome}: importa altro dal contratto ({importati})"
+            for vietato in ("createAnalyser", "AudioContext", "createGain",
+                            "createOscillator"):
+                assert vietato not in src, f"{nome}: si fabbrica {vietato}"
+
+    def test_lo_spettro_legge_i_dati_veri(self):
+        """getFloatFrequencyData attraverso l'analisi del motore: il
+        motore aveva gia' `spettro()` e `hzPerBin` dallo STEP 1, non
+        e' stato aggiunto nulla."""
+        src = (LAB / "Spettro.jsx").read_text()
+        assert "analisi.spettro(" in src and "analisi.hzPerBin" in src, \
+            "lo spettro non legge i dati veri dell'analyser"
+        # la scala verticale e' in dBFS, NON la finestra
+        # min/maxDecibels dell'analyser: quelle governano solo l'API a
+        # byte, e col tetto di fabbrica a -30 dB ogni ampiezza sopra un
+        # quarto si schiacciava in cima (trovato misurando, 26/8)
+        assert "DB_MIN = -96, DB_MAX = 0" in src
+        assert "minDecibels" not in src.split("*/")[-1], \
+            "la finestra a byte e' tornata a governare la scala float"
+
+    def test_disegna_per_pixel_e_legge_il_picco_col_vertice(self):
+        """Le due scelte che lo rendono uno strumento: il massimo dei
+        bin per colonna (su scala log un picco stretto sparirebbe) e
+        l'interpolazione parabolica (la FFT ha passo ~5 Hz: senza, il
+        picco di 137,42 si leggerebbe 137,9)."""
+        src = (LAB / "Spettro.jsx").read_text()
+        assert "function vertice(" in src, "manca l'interpolazione parabolica"
+        assert "for (let k = k0; k < k1; k++)" in src, \
+            "non prende il massimo dei bin che competono alla colonna"
+        assert "Math.log10" in src, "la scala delle frequenze non e' logaritmica"
+
+    def test_un_solo_ciclo_di_disegno_in_tutto_il_banco(self):
+        """La regola vale per OGNI pannello, presente e futuro: il rAF
+        vive solo nel quadro."""
+        for f in list(LAB.glob("*.jsx")) + [LAB / "SoundLabPage.js",
+                                            LAB / "motore.js"]:
+            assert "requestAnimationFrame" not in f.read_text(), \
+                f"{f.name}: un ciclo suo invece del quadro condiviso"
+        quadro = (LAB / "quadro.js").read_text()
+        assert quadro.count("requestAnimationFrame") >= 1
+        assert "iscrivi" in (LAB / "Spettro.jsx").read_text()
+
+    def test_il_picco_non_re_iscrive_il_pittore(self):
+        """Trappola React: se il picco (che cambia a ogni frame)
+        finisse nelle dipendenze dell'effetto, il pittore si
+        iscriverebbe e disiscriverebbe sessanta volte al secondo. Il
+        disegno usa un ref, lo stato serve solo all'etichetta."""
+        src = (LAB / "Spettro.jsx").read_text()
+        assert "piccoRef" in src, "il picco non ha un ref per il disegno"
+        assert "}, [ottieniAnalisi]);" in src, \
+            "le dipendenze dell'effetto non sono stabili"
+
+    def test_il_banco_e_in_ordine(self):
+        src = (LAB / "SoundLabPage.js").read_text()
+        assert src.index("<Generatore") < src.index("<Oscilloscopio") \
+            < src.index("<Spettro"), \
+            "l'ordine del banco e' generatore, tempo, frequenze"
+        assert src.count("labRef.current?.analisi") == 2, \
+            "i due strumenti non ricevono la stessa analisi"
+
+    def test_il_motore_non_e_stato_toccato_per_lo_spettro(self):
+        """Lo STEP 3 non doveva cambiare il motore: `spettro()` e
+        `hzPerBin` c'erano gia'. Se qualcuno aggiunge un metodo
+        dedicato allo spettro, e' segno che il contratto e' scivolato."""
+        src = (LAB / "motore.js").read_text()
+        assert "spettro(buf)" in src and "hzPerBin" in src
+        assert "frequenza(" not in src, \
+            "aggiunto un metodo nuovo al motore invece di riusare spettro()"
+
+
 class TestTelaio:
     """STEP 0: la rotta, la shell, la sitemap — le trappole gia' viste."""
 
