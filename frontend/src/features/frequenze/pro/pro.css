@@ -129,3 +129,65 @@
   .fqz .pro-durata { margin-left: auto; }
   .fqz .pro-azioni button.primary { flex: 1 1 100%; }
 }
+
+/* ── S1: il catalogo e le schede oneste ───────────────────────────── */
+.fqz .pro-scaffale {
+  font-family: var(--serif); font-weight: 400; font-size: 19px;
+  color: var(--bone); margin: 26px 0 4px;
+}
+.fqz .pro-scaffale-sotto {
+  font-size: 12.5px; color: var(--dim); line-height: 1.6;
+  margin: 0 0 14px; max-width: 62ch;
+}
+.fqz .pro-core-card {
+  text-align: left; font-family: var(--sans); text-transform: none;
+  letter-spacing: 0; font-size: 13px; cursor: pointer;
+}
+.fqz .pro-core-card:hover { border-color: var(--lamp); color: inherit; }
+.fqz .pro-badge-grado { color: var(--water); border-color: var(--water); }
+.fqz .pro-badge-aurya { color: var(--lamp); border-color: var(--lamp); }
+
+.fqz .pro-scheda-core {
+  border: 1px solid var(--line-soft); border-radius: 12px;
+  padding: 22px; background: linear-gradient(180deg, #182A2E, #111F23);
+  max-width: 64ch;
+}
+.fqz .pro-scheda-core h2 {
+  font-family: var(--serif); font-weight: 400; font-size: 22px;
+  margin: 0 0 4px; color: var(--bone);
+}
+.fqz .pro-sotto { margin: 0; font-size: 13px; color: var(--dim); }
+.fqz .pro-racconto {
+  font-size: 13.5px; color: var(--bone); line-height: 1.7; margin: 14px 0 18px;
+}
+.fqz .pro-dati { margin: 0 0 18px; display: grid; gap: 10px; }
+.fqz .pro-dati div { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+.fqz .pro-dati dt {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--dim); padding-top: 2px;
+}
+.fqz .pro-dati dd { margin: 0; font-size: 13px; color: var(--bone); line-height: 1.55; }
+
+.fqz .pro-evidenza {
+  border: 1px solid var(--line-soft); border-left: 3px solid var(--lamp);
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 16px;
+}
+.fqz .pro-evidenza.con-grado { border-left-color: var(--water); }
+.fqz .pro-evidenza p { margin: 6px 0; font-size: 12.5px; color: var(--dim); line-height: 1.65; }
+.fqz .pro-grado {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--water);
+  border: 1px solid var(--water); border-radius: 999px; padding: 2px 9px;
+}
+.fqz .pro-revisione {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em;
+  color: var(--dimmer);
+}
+.fqz .pro-azioni-scheda { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.fqz .pro-ascolta-link { font-size: 12.5px; color: var(--lamp); text-decoration: none; }
+.fqz .pro-ascolta-link:hover { text-decoration: underline; }
+
+@media (max-width: 760px) {
+  .fqz .pro-dati div { grid-template-columns: 1fr; gap: 2px; }
+  .fqz .pro-scheda-core { padding: 16px 15px; }
+}

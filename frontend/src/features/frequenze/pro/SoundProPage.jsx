@@ -23,6 +23,15 @@
  * perdere tempo (un numero fuori scala si vede subito), ma non è una
  * seconda copia del contratto: quando il server rifiuta, il suo
  * messaggio vince e si appende al passo che lo ha causato.
+ *
+ * RI-DESTINATA IN S1 (26/8, audit di prodotto): Sound Professional
+ * non è un editor — l'operatore SCEGLIE, non compone. La home è il
+ * CATALOGO (pro/catalogo.js, le schede oneste dei protocolli curati)
+ * più i protocolli propri; il sequencer resta raggiungibile alle sue
+ * rotte come porta avanzata, non come casa. Qui non suona niente:
+ * l'avvio dell'ascolto arriva col passo successivo del piano
+ * (docs/SOUND_PROFESSIONAL_PIANO_2026-08.md), e passerà dal player
+ * condiviso delle esperienze — non da un player nuovo.
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -34,6 +43,8 @@ import {
 } from './compilatore';
 import { PERCENTO_DEFAULT, PERCENTO_MAX, PERCENTO_MIN, aGain, aPercento } from './volume';
 import SoundTopbar from '../SoundTopbar';
+import { SafetyCurtain } from '../SafetyCurtain';
+import { CATALOGO, ORIGINI } from './catalogo';
 import '../frequenze.css';
 import './pro.css';
 
@@ -390,6 +401,100 @@ function Editor({ id, onSalvato }) {
   );
 }
 
+/* ── IL CATALOGO: le schede dei protocolli curati ──────────────────── */
+function SchedaCore({ p, onChiudi }) {
+  const [contro, setContro] = useState(false);
+  const esperienza = p.origine === 'benessere';
+  return (
+    <div className="pro-scheda-core" data-testid={`pro-scheda-${p.id}`}>
+      <div className="pro-testata">
+        <div>
+          <h2>{p.titolo}</h2>
+          <p className="pro-sotto">{p.sottotitolo}</p>
+        </div>
+        <button type="button" className="ghost" onClick={onChiudi}
+          data-testid="pro-scheda-chiudi">×</button>
+      </div>
+
+      <p className="pro-racconto">{p.racconto}</p>
+
+      <dl className="pro-dati">
+        <div><dt>Durata</dt><dd>{Math.round(p.durata_sec / 60)} minuti</dd></div>
+        <div><dt>Quando usarlo</dt><dd>{p.indicazioni}</dd></div>
+        <div>
+          <dt>Cuffie</dt>
+          <dd>
+            {p.cuffie === 'necessarie' ? 'Necessarie' : 'Consigliate'}
+            {p.cuffie_testo && <span className="pro-aiuto"> — {p.cuffie_testo}</span>}
+          </dd>
+        </div>
+        <div><dt>Origine</dt><dd>{ORIGINI[p.origine]}</dd></div>
+      </dl>
+
+      {/* LA SCHEDA ONESTA: la nota di evidenza si mostra INTERA,
+          punti deboli compresi — è il patto del brand */}
+      <div className={`pro-evidenza${esperienza ? '' : ' con-grado'}`}
+        data-testid={`pro-evidenza-${p.id}`}>
+        {p.evidenza.grado && (
+          <span className="pro-grado" title="Grado di evidenza">
+            Evidenza {p.evidenza.grado}
+          </span>
+        )}
+        <p>{p.evidenza.nota}</p>
+        <span className="pro-revisione">Scheda rivista: {p.evidenza.revisione}</span>
+      </div>
+
+      <div className="pro-azioni-scheda">
+        <button type="button" className="ghost" onClick={() => setContro(true)}
+          data-testid="pro-controindicazioni">Controindicazioni</button>
+        {(p.id === 'calm' || p.id === 'ground') && (
+          <a className="pro-ascolta-link" href={`/sound/${p.id}`}>
+            Ascolta la versione pubblica →
+          </a>
+        )}
+      </div>
+      {contro && <SafetyCurtain mode="review" onClose={() => setContro(false)} />}
+    </div>
+  );
+}
+
+function Catalogo() {
+  const [aperto, setAperto] = useState(null);
+  const scelto = aperto ? CATALOGO.find((p) => p.id === aperto) : null;
+  return (
+    <section className="pro-catalogo" data-testid="pro-catalogo">
+      <h2 className="pro-scaffale">Catalogo Aurya</h2>
+      <p className="pro-scaffale-sotto">
+        Protocolli curati e mantenuti da Aurya. Ogni scheda dichiara
+        origine, evidenza e limiti: si sceglie sapendo cosa si sceglie.
+      </p>
+      {scelto ? (
+        <SchedaCore p={scelto} onChiudi={() => setAperto(null)} />
+      ) : (
+        <div className="cards">
+          {CATALOGO.map((p) => (
+            <button key={p.id} type="button" className="card pro-core-card"
+              onClick={() => setAperto(p.id)} data-testid={`pro-core-${p.id}`}>
+              <div className="head">
+                <h3>{p.titolo}</h3>
+                {p.evidenza.grado
+                  ? <span className="badge pro-badge-grado">{p.evidenza.grado}</span>
+                  : <span className="badge pro-badge-aurya">AURYA</span>}
+              </div>
+              <div className="hz">
+                {Math.round(p.durata_sec / 60)} min
+                {' · '}{p.cuffie === 'necessarie' ? 'cuffie necessarie' : 'cuffie consigliate'}
+              </div>
+              <div className="body">{p.sottotitolo}</div>
+              <div className="pro-quando">{ORIGINI[p.origine]}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 /* ── LA LISTA ──────────────────────────────────────────────────────── */
 function Lista({ chiave }) {
   const navigate = useNavigate();
@@ -522,9 +627,18 @@ export default function SoundProPage() {
         </div>
       );
     }
-    return id
-      ? <Editor id={id} onSalvato={() => setChiave((k) => k + 1)} />
-      : <Lista chiave={chiave} />;
+    if (id) return <Editor id={id} onSalvato={() => setChiave((k) => k + 1)} />;
+    return (
+      <>
+        <Catalogo />
+        <h2 className="pro-scaffale" data-testid="pro-scaffale-tuoi">I tuoi protocolli</h2>
+        <p className="pro-scaffale-sotto">
+          I protocolli che progetti tu, privati della tua organizzazione,
+          con versioni e storia.
+        </p>
+        <Lista chiave={chiave} />
+      </>
+    );
   }, [loading, user, abilitato, id, chiave]);
 
   return (
@@ -532,7 +646,7 @@ export default function SoundProPage() {
       <SoundTopbar firma="Professional" />
       <header>
         <div>
-          <h1>I tuoi <em>protocolli</em></h1>
+          <h1>I <em>protocolli</em></h1>
           <p className="sub">Sound Professional</p>
         </div>
       </header>
