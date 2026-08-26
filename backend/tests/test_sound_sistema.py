@@ -77,28 +77,39 @@ class TestL2InvitoLettera:
 
 class TestL3PortaDiSistema:
     def test_06_la_landing_di_sistema_racconta_e_poi_vende(self):
-        """L3-bis (visione founder): UNA landing chiara per tutto
-        Aurya Sound, storytelling prima — apertura, perché, basi,
-        stanze — e la via professionale in fondo (sage, l'ancora del
-        sito). Il blu comincia entrando."""
+        """L3-ter (testo del founder, 26/8 sera): UNA landing nei
+        colori del sito che racconta tutto Aurya Sound — apertura, i
+        fenomeni, le porte, le esperienze, le meditazioni, i due
+        linguaggi — e SOLO DOPO la via professionale. Il blu compare
+        nelle bande fotografiche, dove stai per entrare."""
         src = _senza_commenti((FQ / "SoundHomePage.jsx").read_text())
         assert "MarketplaceShell" in src, "la landing non e' nel mondo chiaro"
         assert 'data-testid="sld-professional"' in src
         assert 'to="/sound/professional"' in src
-        # l'ordine narrativo: basi e stanze PRIMA della vendita
-        basi = src.find("sh-basi")
-        stanze = src.find("sh-dentro")
-        pro = src.find("sld-professional")
-        assert -1 < basi < stanze < pro, "la vendita prima del racconto"
-        # le quattro stanze, tutte
-        for porta in ("sh-porta-esplora", "sh-porta-esperienze",
-                      "sh-porta-lab", "sh-porta-meditazioni"):
+        # l'ordine narrativo: i fenomeni e le porte PRIMA della sezione
+        # di vendita (il rimando in apertura e' un'altra cosa: e' un
+        # cartello, non il discorso)
+        fenomeni = src.find("sh-fenomeni")
+        porte = src.find("sh-porte")
+        esperienze = src.find("sh-porta-esperienze")
+        pro = src.find('data-testid="sld-professional"')
+        assert -1 < fenomeni < porte < esperienze < pro, \
+            "la vendita prima del racconto"
+        # le stanze, tutte
+        for porta in ("sh-porta-esplora", "sh-porta-impara",
+                      "sh-porta-lab", "sh-porta-esperienze",
+                      "sh-porta-meditazioni"):
             assert porta in src, f"manca la stanza: {porta}"
-        # e la voce: ASSR nominata, promesse mai
+        # le tre fotografie come bande, e il disclaimer in fondo
+        assert src.count("/media/sound/") >= 3, "le tre foto non ci sono"
+        assert 'data-testid="sh-disclaimer"' in src
+        # la voce: le parole del veleno solo dentro la negazione
         basso = _testo(FQ / "SoundHomePage.jsx").lower()
-        assert "assr" in basso and "risonanza" in basso
-        for veleno in ("guarig", "chakra", "biorisonanza", "528",
-                       "ti sentirai", "garantis"):
+        i = basso.find("guarire")
+        assert i != -1 and "non promette" in basso[max(0, i - 200):i], \
+            "«guarire» deve vivere solo dentro la negazione"
+        for veleno in ("chakra", "biorisonanza", "528", "ti sentirai",
+                       "garantis", "riequilibr"):
             assert veleno not in basso
 
     def test_06b_il_trigger_per_ogni_operatore(self):
