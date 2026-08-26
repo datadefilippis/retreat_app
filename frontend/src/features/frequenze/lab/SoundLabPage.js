@@ -45,6 +45,17 @@ export default function SoundLabPage() {
   const [fermo, setFermo] = useState(eFermo());
   useEffect(() => ascoltaFermo(setFermo), []);
 
+  /* la striscia deve poter distinguere «ferme mentre suona» da
+     «ferme e basta»: il generatore avvisa quando si accende o si
+     spegne, cosi' il testo non promette un suono che non c'e'. */
+  const [suona, setSuona] = useState(false);
+  /* l'avviso serve a FAR ridisegnare la striscia; la verita', quando
+     si ridisegna, si chiede al motore — cosi' resta onesta anche se un
+     giorno qualcuno spegnesse il suono senza passare dal pulsante. */
+  const suonaDavvero = labRef.current
+    ? labRef.current.generatore.stato().attivo
+    : suona;
+
   /* lasciare la pagina spegne il banco — e scongela, altrimenti il
      tempo fermo resterebbe fermo anche al ritorno */
   useEffect(() => () => { labRef.current?.spegni(); congela(false); }, []);
@@ -64,7 +75,7 @@ export default function SoundLabPage() {
         </div>
       </header>
       <main>
-        <Generatore ottieniLab={ottieniLab} />
+        <Generatore ottieniLab={ottieniLab} onSuono={setSuona} />
 
         {/* IL COMANDO DEL BANCO: uno solo, fra la sorgente e le sue
             letture — perche' e' li' che passa il confine fra il tempo
@@ -78,7 +89,9 @@ export default function SoundLabPage() {
           </button>
           <span>
             {fermo
-              ? 'le tre letture sono ferme — il suono continua'
+              ? (suonaDavvero
+                ? 'le tre letture sono ferme — il suono continua'
+                : 'le tre letture sono ferme')
               : 'un segnale, un tempo, tre letture'}
           </span>
         </div>

@@ -137,5 +137,21 @@
 @media (max-width:640px){
   .fqz .lab-forme{grid-template-columns:repeat(2,1fr)}
   .fqz .lab-parametri{grid-template-columns:1fr}
-  .fqz .lab-freq-num input{width:170px;font-size:32px}
+  .fqz .lab-freq-num input{width:170px}
+}
+
+/* IL NUMERONE NON E' UN CAMPO QUALUNQUE (26/8/2026).
+ *
+ * index.css impone `input{font-size:16px!important}` sotto i 767px:
+ * e' la difesa contro lo zoom automatico di iOS, che scatta quando si
+ * tocca un campo scritto sotto i 16px. Giusta ovunque — ma qui
+ * schiacciava il protagonista della pagina alla misura del testo
+ * corrente, e sul telefono il Lab perdeva la sua gerarchia.
+ *
+ * Si riprende la misura con la stessa forza, senza rinunciare alla
+ * difesa: 32px e' SOPRA la soglia dei 16, quindi iOS non zooma. La
+ * finestra e' quella della regola globale (767), non 640, o fra i due
+ * valori il numerone tornerebbe piccolo. */
+@media screen and (max-width:767px){
+  .fqz .lab-freq-num input{font-size:32px !important}
 }

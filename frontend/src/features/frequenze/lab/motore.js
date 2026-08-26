@@ -231,7 +231,14 @@ export function creaLaboratorio(ctx) {
 
       ferma() {
         if (!stato.attivo) return;
-        corsa = null;                          // spegnere ferma anche la corsa
+        /* SI SPEGNE DOVE SIAMO. Prima si azzerava la corsa e basta:
+           `stato.freq` restava la META, cosi' fermare uno sweep a
+           1092 Hz faceva dire allo stato «100» — una frequenza mai
+           suonata — e alla ripartenza il generatore attaccava di li'.
+           Fissare la frequenza corrente PRIMA di chiudere la corsa
+           tiene lo stato onesto. */
+        stato.freq = freqOra();
+        corsa = null;
         const t = ctx.currentTime;
         master.gain.cancelScheduledValues(t);
         master.gain.setValueAtTime(master.gain.value, t);

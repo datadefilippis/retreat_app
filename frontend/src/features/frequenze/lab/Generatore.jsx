@@ -54,7 +54,7 @@ const SAGOME = {
   sawtooth: 'M2 20 L16 4 L16 20 L30 4',
 };
 
-export default function Generatore({ ottieniLab }) {
+export default function Generatore({ ottieniLab, onSuono }) {
   const [forma, setForma] = useState('sine');
   const [freq, setFreq] = useState(440);
   const [campo, setCampo] = useState('440');        // il testo mentre si scrive
@@ -91,13 +91,18 @@ export default function Generatore({ ottieniLab }) {
     comanda({ freq: v });
   };
 
+  /* l'unico punto in cui il suono si accende o si spegne: da qui si
+     avvisa anche il banco, che deve poter dire la verita' quando
+     congela (letture ferme «e il suono continua», oppure e basta) */
+  const suono = (acceso) => { setAttivo(acceso); onSuono?.(acceso); };
+
   const alterna = async () => {
     const lab = ottieniLab();                       // nasce QUI, nel gesto
     labRef.current = lab;
-    if (attivo) { lab.generatore.ferma(); setAttivo(false); return; }
+    if (attivo) { lab.generatore.ferma(); suono(false); return; }
     lab.generatore.imposta({ forma, freq, amp, fase: (fase * Math.PI) / 180 });
     await lab.generatore.avvia();
-    setAttivo(true);
+    suono(true);
   };
 
   /* smontaggio della pagina = silenzio, senza aspettare il GC */
@@ -140,7 +145,7 @@ export default function Generatore({ ottieniLab }) {
       corsaRef.current = false; setInCorsa(false);
       return;
     }
-    if (!attivo) { await lab.generatore.avvia(); setAttivo(true); }
+    if (!attivo) { await lab.generatore.avvia(); suono(true); }
     const f0 = numero(da, MIN_UI, MAX_UI, 100);
     const f1 = numero(a, MIN_UI, MAX_UI, 1600);
     const sec = numero(durata, 0.1, 300, 8);

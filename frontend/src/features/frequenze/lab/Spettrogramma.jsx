@@ -70,6 +70,10 @@ const rgb = (css, fallback) => {
 export default function Spettrogramma({ ottieniAnalisi, fermo }) {
   const telaRef = useRef(null);
   const [finestra, setFinestra] = useState(null);   // secondi di storia a schermo
+  /* a banco spento non c'e' storia da mostrare: lo si dice, come fa
+     l'oscilloscopio, invece di lasciare un rettangolo muto */
+  const attesaRef = useRef(true);
+  const [attesa, setAttesa] = useState(true);
 
   useEffect(() => {
     const tela = telaRef.current;
@@ -153,7 +157,16 @@ export default function Spettrogramma({ ottieniAnalisi, fermo }) {
       if (fermo) return;                             // fermo: la storia non avanza
 
       const analisi = ottieniAnalisi();
-      if (!analisi) return;
+      if (!analisi) {
+        /* A RIPOSO: lo strumento mostra la sua scala e aspetta. Non
+           si inventa una traccia, non si anima: si vedono gli assi,
+           come su un oscilloscopio spento. (Vale solo prima del primo
+           Genera: dopo, l'analisi esiste anche a suono fermo, e la
+           storia gia' scritta non si tocca.) */
+        etichette(W, H, dpr);
+        return;
+      }
+      if (attesaRef.current) { attesaRef.current = false; setAttesa(false); }
       const N = analisi.analyser.frequencyBinCount;
       if (!db.buf || db.buf.length !== N) db.buf = new Float32Array(N);
       fMaxRef.current = analisi.analyser.context.sampleRate / 2;
@@ -221,7 +234,8 @@ export default function Spettrogramma({ ottieniAnalisi, fermo }) {
         <span>frequenza in verticale · log</span>
         <span data-testid="lab-finestra">
           {fermo ? 'immagine ferma — il suono continua'
-            : finestra ? `finestra ${String(finestra).replace('.', ',')} s` : ''}
+            : attesa ? 'in attesa di un segnale'
+              : finestra ? `finestra ${String(finestra).replace('.', ',')} s` : ''}
         </span>
         <span>più chiaro = più energia</span>
       </div>

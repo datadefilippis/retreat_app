@@ -471,8 +471,10 @@ class TestSweep:
         ui = (LAB / "Generatore.jsx").read_text()
         assert "imposta({ freq: lab.generatore.stato().freq })" in ui, \
             "fermare la corsa non tiene la nota dove si trova"
-        # e spegnere il generatore chiude anche la corsa
-        assert "corsa = null;                          // spegnere ferma anche la corsa" in src
+        # e spegnere il generatore chiude anche la corsa (il come sta
+        # nella guardia A1 dello STEP 7: prima si fissa dove siamo)
+        blocco = src.split("ferma() {")[1][:700]
+        assert "corsa = null;" in blocco
 
     def test_la_voce_nuova_eredita_la_corsa(self):
         """Cambiare forma a meta' sweep crea un oscillatore nuovo: se
@@ -507,6 +509,76 @@ class TestSweep:
         pagina = (LAB / "SoundLabPage.js").read_text()
         assert "lab-sweep" not in pagina and "secondi:" not in pagina, \
             "i comandi dello sweep sono usciti dal generatore"
+
+
+class TestRifinitura:
+    """STEP 7 (26/8): le quattro correzioni uscite dall'audit. Nessuna
+    funzione nuova — solo cose che mentivano."""
+
+    def test_spegnere_non_fa_saltare_la_frequenza_alla_meta(self):
+        """A1. Prima `ferma()` azzerava la corsa e basta: `stato.freq`
+        restava la META, cosi' fermare uno sweep a 1092 Hz faceva dire
+        allo stato «100» — mai suonata — e alla ripartenza il
+        generatore attaccava di li'."""
+        src = (LAB / "motore.js").read_text()
+        blocco = src.split("ferma() {")[1][:700]
+        assert "stato.freq = freqOra();" in blocco, \
+            "spegnendo non si fissa la frequenza corrente"
+        assert blocco.index("stato.freq = freqOra();") < blocco.index("corsa = null"), \
+            "si azzera la corsa PRIMA di leggerla: freqOra() direbbe la meta'"
+
+    def test_il_numerone_resiste_alla_regola_globale(self):
+        """B1. index.css impone input{font-size:16px!important} sotto
+        i 767 (difesa anti-zoom iOS): schiacciava il protagonista
+        della pagina. Si riprende la misura con la stessa forza, e la
+        finestra dev'essere quella della regola globale (767), non 640
+        — o fra i due valori il numerone tornerebbe piccolo."""
+        css = (LAB / "lab.css").read_text()
+        blocco = css.split("@media screen and (max-width:767px)")[1][:200]
+        assert ".lab-freq-num input{font-size:32px !important}" in blocco
+        # 32 e' sopra la soglia dei 16: la difesa anti-zoom regge
+        globale = (FRONTEND_SRC / "index.css").read_text()
+        assert "font-size: 16px !important;" in globale, \
+            "la regola globale e' cambiata: rivedere la difesa del Lab"
+
+    def test_lo_spettrogramma_a_riposo_mostra_la_sua_scala(self):
+        """B2. Prima del primo Genera era un rettangolo nero muto,
+        mentre gli altri due strumenti mostravano la griglia."""
+        src = (LAB / "Spettrogramma.jsx").read_text()
+        blocco = src.split("if (!analisi) {")[1][:400]
+        assert "etichette(W, H, dpr);" in blocco, \
+            "a riposo non disegna gli assi"
+        # e lo DICE, come fa l'oscilloscopio
+        assert "'in attesa di un segnale'" in src
+        # ma non inventa dati: nessuna traccia finta a riposo
+        assert "putImageData" not in blocco and "Math.random" not in src
+
+    def test_la_striscia_non_promette_suono_che_non_ce(self):
+        """B4. Congelando a generatore spento diceva «il suono
+        continua». Ora il generatore avvisa quando si accende e si
+        spegne, e la striscia dice la verita' in entrambi i casi."""
+        pagina = (LAB / "SoundLabPage.js").read_text()
+        assert "const [suona, setSuona] = useState(false);" in pagina
+        assert "onSuono={setSuona}" in pagina
+        assert "? 'le tre letture sono ferme — il suono continua'" in pagina
+        # l'avviso fa RIDISEGNARE, ma la verita' si chiede al motore:
+        # cosi' regge anche se il suono si spegnesse fuori dal pulsante
+        assert "labRef.current.generatore.stato().attivo" in pagina
+        assert "suonaDavvero" in pagina
+        assert ": 'le tre letture sono ferme'" in pagina
+        ui = (LAB / "Generatore.jsx").read_text()
+        assert "const suono = (acceso) => { setAttivo(acceso); onSuono?.(acceso); };" in ui, \
+            "il generatore non avvisa piu' il banco"
+        assert "setAttivo(true)" not in ui and "setAttivo(false)" not in ui, \
+            "c'e' ancora una via che accende il suono senza avvisare"
+
+    def test_lo_slider_resta_libero_durante_la_corsa(self):
+        """B3 e' stato ESCLUSO dal founder: prendere il volante a
+        meta' sweep resta possibile, senza indicatori."""
+        ui = (LAB / "Generatore.jsx").read_text()
+        freq = ui.split('className="lab-freq"')[1].split('</div>')[0]
+        assert "disabled" not in freq, \
+            "il campo/slider della frequenza e' stato bloccato: B3 non si fa"
 
 
 class TestTelaio:
