@@ -507,3 +507,21 @@
 .fqz .pc-nota{font-size:12px}
 .fqz .metodo-sezione p{font-size:15px}
 .fqz .pro-invito-metodo{font-size:13.5px}
+
+/* ═══ IL GIORNO (26/8, founder) — anche Professional attraversa la
+   soglia: carte bianche su perla; la partitura e l'andamento restano
+   FINESTRE scure sul suono. ═══ */
+.fqz .pro-scheda,.fqz .pro-passo,.fqz .pro-scheda-core,.fqz .reg-riga,
+.fqz .reg-quadro,.fqz .prof-pilastri article{
+  background:#FFFFFF;border-color:var(--line-soft)}
+.fqz .pro-riepilogo{background:#FBF7EE;border-color:var(--line-soft)}
+.fqz .persona-tendina{box-shadow:0 14px 34px rgba(60,50,30,.18)}
+.fqz .persona-tendina li button:hover{background:rgba(201,179,126,.12)}
+.fqz .reg-riga.aperta{border-color:#C9B37E}
+.fqz .pc-tappa.prossima{border-color:#C9B37E}
+.fqz .pc-tappa.prossima .pc-num{color:#8A7440;border-color:#C9B37E}
+.fqz .rito-tacca.on{background:#C9B37E;border-color:#C9B37E;color:#22333A}
+.fqz .rito-barra{background:#E4DCC9}
+.fqz .rito-barra i{background:#C9B37E}
+.fqz .pro-evidenza{border-left-color:#C9B37E}
+.fqz .prof-hero h1{color:var(--bone)}
