@@ -19,6 +19,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FORME } from './motore';
+import { iscrivi } from './quadro';
 import { CAT_LINK } from '../content/biblioteca';
 
 const MIN_UI = 20, MAX_UI = 20000;
@@ -62,6 +63,15 @@ export default function Generatore({ ottieniLab }) {
   const [attivo, setAttivo] = useState(false);
   const labRef = useRef(null);
 
+  /* LO SWEEP (STEP 6). I tre campi sono testo finche' non si parte:
+     la corsa vera vive nel motore, come rampa sull'AudioParam. */
+  const [da, setDa] = useState('100');
+  const [a, setA] = useState('1600');
+  const [durata, setDurata] = useState('8');
+  const [inCorsa, setInCorsa] = useState(false);
+  const corsaRef = useRef(false);
+  const ultimaLettura = useRef(0);
+
   /* il motore, se gia' nato, segue ogni comando; se non e' nato,
      nascera' al primo Genera con lo stato corrente */
   const comanda = (patch) => { labRef.current?.generatore.imposta(patch); };
@@ -92,6 +102,54 @@ export default function Generatore({ ottieniLab }) {
 
   /* smontaggio della pagina = silenzio, senza aspettare il GC */
   useEffect(() => () => { labRef.current?.generatore.ferma(); }, []);
+
+  /* IL NUMERO SEGUE LA CORSA. Nessun orologio nuovo: ci si mette in
+     coda al giro del banco (il quadro e' l'unico che batte il tempo)
+     e si legge il motore, che e' l'unica verita' sulla frequenza. Si
+     aggiorna una decina di volte al secondo: la cifra si legge, e
+     React non lavora per nulla. */
+  useEffect(() => iscrivi(() => {
+    const lab = labRef.current;
+    if (!lab) return;
+    const s = lab.generatore.stato();
+    if (s.corsa) {
+      const ora = performance.now();
+      if (ora - ultimaLettura.current < 80) return;
+      ultimaLettura.current = ora;
+      const v = Math.round(s.freq * 100) / 100;
+      setFreq(v); setCampo(String(v));
+      if (!corsaRef.current) { corsaRef.current = true; setInCorsa(true); }
+    } else if (corsaRef.current) {
+      corsaRef.current = false; setInCorsa(false);
+      const v = Math.round(s.freq * 100) / 100;   // la meta', esatta
+      setFreq(v); setCampo(String(v));
+    }
+  }), []);
+
+  const numero = (testo, min, max, ripiego) => {
+    const v = parseFloat(String(testo).replace(',', '.'));
+    if (!Number.isFinite(v)) return ripiego;
+    return Math.min(Math.max(v, min), max);
+  };
+
+  const alternaSweep = async () => {
+    const lab = ottieniLab();                   // nel gesto: iOS lo esige
+    labRef.current = lab;
+    if (inCorsa) {                              // interrompere = tenere la nota
+      lab.generatore.imposta({ freq: lab.generatore.stato().freq });
+      corsaRef.current = false; setInCorsa(false);
+      return;
+    }
+    if (!attivo) { await lab.generatore.avvia(); setAttivo(true); }
+    const f0 = numero(da, MIN_UI, MAX_UI, 100);
+    const f1 = numero(a, MIN_UI, MAX_UI, 1600);
+    const sec = numero(durata, 0.1, 300, 8);
+    setDa(String(f0)); setA(String(f1)); setDurata(String(sec));
+    lab.generatore.imposta({ forma, amp, fase: (fase * Math.PI) / 180 });
+    lab.generatore.imposta({ freq: f0 });                 // si parte da qui
+    lab.generatore.imposta({ freq: f1, secondi: sec });   // e si corre
+    corsaRef.current = true; setInCorsa(true);
+  };
 
   const nota = notaVicina(freq);
 
@@ -172,6 +230,39 @@ export default function Generatore({ ottieniLab }) {
         <p className="lab-volume" data-testid="lab-volume">
           Parti dal volume basso: un tono puro a piena ampiezza è più
           forte di quanto sembri, soprattutto in cuffia.
+        </p>
+      </div>
+
+      {/* LO SWEEP: tre numeri e un comando. La corsa e' una rampa vera
+          sull'AudioParam — nessun orologio, nessuna animazione. */}
+      <div className="lab-sweep" data-testid="lab-sweep">
+        <h3>Sweep</h3>
+        <div className="lab-sweep-campi">
+          <label>Da
+            <input value={da} inputMode="decimal" data-testid="lab-sweep-da"
+              disabled={inCorsa} onChange={(e) => setDa(e.target.value)} />
+            <i>Hz</i>
+          </label>
+          <label>A
+            <input value={a} inputMode="decimal" data-testid="lab-sweep-a"
+              disabled={inCorsa} onChange={(e) => setA(e.target.value)} />
+            <i>Hz</i>
+          </label>
+          <label>Durata
+            <input value={durata} inputMode="decimal" data-testid="lab-sweep-durata"
+              disabled={inCorsa} onChange={(e) => setDurata(e.target.value)} />
+            <i>s</i>
+          </label>
+          <button type="button" data-testid="lab-sweep-avvia"
+            className={'lab-freeze' + (inCorsa ? ' fermo' : '')}
+            onClick={alternaSweep}>
+            {inCorsa ? '■ Ferma sweep' : '↗ Avvia sweep'}
+          </button>
+        </div>
+        <p className="lab-sweep-nota" data-testid="lab-sweep-nota">
+          {inCorsa
+            ? 'in corsa — la frequenza sale per ottave, non per Hertz'
+            : 'la salita è esponenziale: raddoppi uguali in tempi uguali'}
         </p>
       </div>
 

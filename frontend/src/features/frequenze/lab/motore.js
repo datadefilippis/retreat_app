@@ -86,6 +86,31 @@ export function creaLaboratorio(ctx) {
   const stato = { forma: 'sine', freq: 440, amp: 0.25, fase: 0, attivo: false };
   let voce = null;                             // { osc, gain } vivo
 
+  /* LA CORSA (STEP 6, 26/8/2026) — lo sweep di frequenza.
+   *
+   * Non e' un timer che ritocca la frequenza sessanta volte al
+   * secondo: e' UNA rampa esponenziale sull'AudioParam, calcolata dal
+   * motore audio campione per campione. Continua a scheda nascosta e
+   * a schermo spento (dove ogni orologio JavaScript dorme), la durata
+   * e' esatta e la curva e' esponenziale per natura — cioe' diritta
+   * all'orecchio, che le frequenze le sente in ottave.
+   *
+   * Qui si tiene solo il PROMEMORIA della rampa (da, a, quando, per
+   * quanto): serve a dire che frequenza suona ADESSO senza inventare
+   * una seconda verita'. La formula sotto e' la stessa che il browser
+   * usa per la rampa — v(t) = da · (a/da)^u — quindi il numero
+   * scritto e il suono non possono divergere: sono la stessa cosa
+   * letta due volte. */
+  let corsa = null;
+
+  const freqOra = () => {
+    if (!corsa) return stato.freq;
+    const u = (ctx.currentTime - corsa.t0) / corsa.durata;
+    if (u >= 1) { const fine = corsa.a; corsa = null; return fine; }
+    if (u <= 0) return corsa.da;
+    return corsa.da * Math.pow(corsa.a / corsa.da, u);
+  };
+
   /* onde con fase gia' calcolate: (forma, fase arrotondata) → wave */
   const cache = new Map();
   const onda = (forma, fase) => {
@@ -103,7 +128,19 @@ export function creaLaboratorio(ctx) {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     vesti(osc);
-    osc.frequency.value = clampF(stato.freq);
+    /* la voce nuova nasce DOVE SIAMO, non alla meta: se una corsa e'
+       in atto (cambio di forma a meta' sweep) eredita il pezzo di
+       rampa che resta, altrimenti si perderebbe lo sweep. */
+    const ora = freqOra();
+    osc.frequency.value = ora;
+    if (corsa) {
+      const t0 = ctx.currentTime;
+      const resta = corsa.t0 + corsa.durata - t0;
+      if (resta > 0) {
+        osc.frequency.setValueAtTime(ora, t0);
+        osc.frequency.exponentialRampToValueAtTime(corsa.a, t0 + resta);
+      }
+    }
     gain.gain.value = guadagno;
     osc.connect(gain); gain.connect(master);
     osc.start();
@@ -129,18 +166,37 @@ export function creaLaboratorio(ctx) {
     limiti: { min: 1, max: nyquist },
 
     generatore: {
-      stato: () => ({ ...stato }),
+      /* `freq` e' la frequenza che suona ADESSO (durante una corsa si
+         muove); `meta` e' dove sta andando; `corsa` e' il promemoria
+         della rampa, o null se non c'e'. */
+      stato: () => ({ ...stato, freq: freqOra(), meta: stato.freq,
+                      corsa: corsa ? { ...corsa } : null }),
 
       imposta(patch = {}) {
         const t = ctx.currentTime;
         if (patch.freq !== undefined) {
+          /* CON `secondi` e' una corsa, SENZA e' il gesto di sempre —
+             il comportamento vecchio non cambia di una virgola. */
+          const secondi = Math.max(0, +patch.secondi || 0);
+          const partenza = freqOra();          // dove siamo davvero ora
           stato.freq = clampF(patch.freq);
           if (voce) {
-            /* setTargetAtTime: scivola senza zipper, qualunque sia
-               il passo del controllo */
-            voce.osc.frequency.cancelScheduledValues(t);
-            voce.osc.frequency.setTargetAtTime(stato.freq, t, DK / 3);
-          }
+            const p = voce.osc.frequency;
+            /* cancellare basta a interrompere: non ci sono timer da
+               spegnere ne' animazioni da rincorrere, perche' non ce
+               n'e' mai stato uno */
+            p.cancelScheduledValues(t);
+            if (secondi > 0) {
+              p.setValueAtTime(partenza, t);
+              p.exponentialRampToValueAtTime(stato.freq, t + secondi);
+              corsa = { da: partenza, a: stato.freq, t0: t, durata: secondi };
+            } else {
+              /* setTargetAtTime: scivola senza zipper, qualunque sia
+                 il passo del controllo */
+              p.setTargetAtTime(stato.freq, t, DK / 3);
+              corsa = null;
+            }
+          } else corsa = null;                 // a motore spento non si corre
         }
         if (patch.amp !== undefined) {
           stato.amp = Math.min(Math.max(+patch.amp || 0, 0), 1);
@@ -175,6 +231,7 @@ export function creaLaboratorio(ctx) {
 
       ferma() {
         if (!stato.attivo) return;
+        corsa = null;                          // spegnere ferma anche la corsa
         const t = ctx.currentTime;
         master.gain.cancelScheduledValues(t);
         master.gain.setValueAtTime(master.gain.value, t);

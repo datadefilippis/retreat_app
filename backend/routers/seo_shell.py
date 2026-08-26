@@ -671,8 +671,11 @@ def _lab_content_html() -> str:
         "<p>Le frequenze che compongono il segnale, su scala "
         "logaritmica: la fondamentale e le sue armoniche, con il picco "
         "principale letto al decimo di Hertz.</p>"
-        "<p>Il banco crescerà sullo stesso motore: lo sweep di "
-        "frequenza.</p>"
+        "<h2>Lo sweep di frequenza</h2>"
+        "<p>Una salita (o discesa) continua da una frequenza a "
+        "un'altra nella durata che scegli: la rampa è esponenziale, "
+        "cioè procede per ottave, e le tre letture la mostrano "
+        "mentre accade.</p>"
     )
 
 

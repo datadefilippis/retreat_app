@@ -2,8 +2,8 @@
  * /sound/lab — IL LABORATORIO (STEP 0, 25/8/2026).
  *
  * Il banco: la biblioteca spiega il suono, qui il suono si genera, si
- * osserva, si misura. V1 = il Generatore; oscilloscopio, spettro e
- * sweep arrivano a passi, sullo stesso motore.
+ * osserva, si misura. Una sorgente (col suo sweep) e tre letture —
+ * tempo, frequenze, frequenze nel tempo — tutte sullo stesso motore.
  *
  * La pagina POSSIEDE il ciclo di vita del motore: `ottieniLab()` crea
  * AudioContext + laboratorio al primo gesto (mai prima: iOS vuole il
@@ -98,8 +98,8 @@ export default function SoundLabPage() {
         <SafetyLine onOpen={() => setSafety(true)} />
 
         <p className="lab-arrivo" data-testid="lab-arrivo">
-          Il banco crescerà: lo sweep di frequenza si costruisce qui,
-          sullo stesso motore.
+          Un segnale, un tempo, tre letture: quello che senti è quello
+          che vedi, misurato mentre accade.
         </p>
       </main>
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}

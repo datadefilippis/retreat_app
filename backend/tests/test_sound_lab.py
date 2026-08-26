@@ -419,6 +419,96 @@ class TestBancoUnico:
         assert "if (!pittori.size || document.hidden) return;" in quadro
 
 
+class TestSweep:
+    """STEP 6 (26/8): la corsa di frequenza.
+
+    Una rampa VERA sull'AudioParam, non un orologio che ritocca la
+    frequenza. Il motivo per cui la scelta non e' di gusto: il quadro
+    muore a pagina nascosta e un timer JavaScript dorme con lo
+    schermo, mentre l'audio continua — uno sweep guidato da loro si
+    inchioderebbe a meta'. La rampa la calcola il motore audio,
+    campione per campione, e non se ne accorge nemmeno."""
+
+    def test_la_corsa_e_una_rampa_non_un_orologio(self):
+        src = (LAB / "motore.js").read_text()
+        assert "exponentialRampToValueAtTime(stato.freq, t + secondi)" in src, \
+            "lo sweep non e' una rampa sull'AudioParam"
+        codice = re.sub(r"/\*.*?\*/|//[^\n]*", "", src, flags=re.S)
+        for orologio in ("setInterval", "setTimeout", "requestAnimationFrame"):
+            assert orologio not in codice, f"il motore pilota la corsa con {orologio}"
+
+    def test_una_sola_verita_sulla_frequenza(self):
+        """Il numero scritto e il suono devono essere la stessa cosa
+        letta due volte: `freqOra()` usa la STESSA formula della rampa
+        del browser, v(t) = da · (a/da)^u."""
+        src = (LAB / "motore.js").read_text()
+        assert "const freqOra = () =>" in src
+        assert "corsa.da * Math.pow(corsa.a / corsa.da, u)" in src, \
+            "la frequenza mostrata non segue la curva della rampa"
+        assert "freq: freqOra()" in src, \
+            "stato() non dice la frequenza che suona adesso"
+        # e il generatore LEGGE quella, non ne tiene una sua
+        ui = (LAB / "Generatore.jsx").read_text()
+        assert "lab.generatore.stato()" in ui
+        codice = re.sub(r"/\*.*?\*/|//[^\n]*", "", ui, flags=re.S)
+        for orologio in ("setInterval", "setTimeout", "requestAnimationFrame"):
+            assert orologio not in codice, f"il generatore usa {orologio}"
+        assert "iscrivi(" in ui, \
+            "il numero non segue il giro del banco (si e' fatto un orologio suo)"
+
+    def test_imposta_senza_secondi_non_e_cambiata(self):
+        """Il gesto di sempre deve restare identico: senza `secondi`
+        si scivola col setTargetAtTime di prima."""
+        src = (LAB / "motore.js").read_text()
+        assert "p.setTargetAtTime(stato.freq, t, DK / 3);" in src
+        assert "const secondi = Math.max(0, +patch.secondi || 0);" in src
+
+    def test_interrompere_non_lascia_niente_dietro(self):
+        """Non ci sono timer da spegnere perche' non ce n'e' mai stato
+        uno: cancellare la programmazione basta."""
+        src = (LAB / "motore.js").read_text()
+        assert "p.cancelScheduledValues(t);" in src
+        ui = (LAB / "Generatore.jsx").read_text()
+        assert "imposta({ freq: lab.generatore.stato().freq })" in ui, \
+            "fermare la corsa non tiene la nota dove si trova"
+        # e spegnere il generatore chiude anche la corsa
+        assert "corsa = null;                          // spegnere ferma anche la corsa" in src
+
+    def test_la_voce_nuova_eredita_la_corsa(self):
+        """Cambiare forma a meta' sweep crea un oscillatore nuovo: se
+        nascesse alla meta', la rampa sarebbe persa."""
+        src = (LAB / "motore.js").read_text()
+        blocco = src.split("const nuovaVoce")[1][:700]
+        assert "const ora = freqOra();" in blocco
+        assert "exponentialRampToValueAtTime(corsa.a" in blocco, \
+            "la voce nuova non riprende il pezzo di rampa che resta"
+
+    def test_i_pannelli_non_sanno_nulla_dello_sweep(self):
+        """La prova che la catena regge: le tre tele vedono la
+        diagonale perche' la diagonale C'E', non perche' qualcuno
+        gliel'ha detta."""
+        for nome in ("Oscilloscopio.jsx", "Spettro.jsx", "Spettrogramma.jsx"):
+            src = (LAB / nome).read_text()
+            # si giudica il CODICE spogliato dei commenti: «corsa
+            # libera» e' lo stato del trigger da sempre, e lo
+            # spettrogramma misura la sua finestra «in secondi» —
+            # parole innocenti che non c'entrano con lo sweep
+            codice = re.sub(r"/\*.*?\*/|//[^\n]*", "", src, flags=re.S)
+            assert "sweep" not in codice.lower(), f"{nome}: sa dello sweep"
+            assert "imposta(" not in codice and "secondi:" not in codice, \
+                f"{nome}: tocca la frequenza invece di leggere il segnale"
+
+    def test_lo_sweep_e_nel_generatore_non_altrove(self):
+        ui = (LAB / "Generatore.jsx").read_text()
+        assert 'data-testid="lab-sweep"' in ui
+        for campo in ("lab-sweep-da", "lab-sweep-a", "lab-sweep-durata",
+                      "lab-sweep-avvia"):
+            assert campo in ui, f"manca il campo {campo}"
+        pagina = (LAB / "SoundLabPage.js").read_text()
+        assert "lab-sweep" not in pagina and "secondi:" not in pagina, \
+            "i comandi dello sweep sono usciti dal generatore"
+
+
 class TestTelaio:
     """STEP 0: la rotta, la shell, la sitemap — le trappole gia' viste."""
 
