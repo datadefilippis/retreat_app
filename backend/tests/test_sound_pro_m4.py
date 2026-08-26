@@ -109,7 +109,8 @@ class TestGliIndirizzi:
         segmento solo e ignoto vale come id dell'editor."""
         src = _senza_commenti(PAGINA.read_text())
         assert "seg.length === 1" in src
-        assert "!['registro', 'catalogo', 'percorso'].includes(seg[0])" in src
+        assert ("!['registro', 'catalogo', 'percorso', 'metodo']"
+                ".includes(seg[0])") in src
 
     def test_09_il_renderer_copre_tutto_il_sottoalbero(self):
         """_meta_sound guarda solo parts[0]: 'pro' copre anche

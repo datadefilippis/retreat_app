@@ -75,10 +75,13 @@ function Scala({ valore, onScegli, testid }) {
  *                  totale, nota} — la sessione la dichiara al server,
  *                  che verifica la coerenza tappa↔protocollo.
  */
-export default function Rito({ protocollo, percorso = null, onEsci }) {
+export default function Rito({ protocollo, percorso = null,
+  clienteIniziale = null, onEsci }) {
   /* preparazione | ascolto | congedo | salvato */
   const [fase, setFase] = useState('preparazione');
-  const [cliente, setCliente] = useState(null);   // {id, nome} | null
+  /* la persona scelta a monte (scheda percorso) arriva già qui:
+     si sceglie UNA volta — e resta cambiabile (×) */
+  const [cliente, setCliente] = useState(clienteIniziale);
   const clienteId = cliente?.id || '';
   /* la volta scorsa con QUESTA persona: null = non chiesto,
      false = mai stata, oggetto = l'ultima sessione chiusa */

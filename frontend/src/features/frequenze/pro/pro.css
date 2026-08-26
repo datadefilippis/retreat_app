@@ -422,3 +422,21 @@
   border: 1px solid var(--line-soft);
 }
 .fqz .rito-ascolto { max-width: 60ch; }
+
+/* ── M6: il metodo e l'invito ─────────────────────────────────────── */
+.fqz .metodo { max-width: 62ch; display: grid; gap: 26px; }
+.fqz .metodo-sezione h2 {
+  font-family: var(--serif); font-weight: 400; font-size: 20px;
+  color: var(--lamp); margin: 0 0 8px;
+}
+.fqz .metodo-sezione p {
+  font-size: 14px; color: var(--bone); line-height: 1.75; margin: 0;
+}
+.fqz .pro-invito-metodo {
+  font-size: 13px; color: var(--dim); margin: 0 0 6px;
+}
+.fqz .pro-link {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--sans); font-size: 13px; letter-spacing: 0;
+  text-transform: none; color: var(--lamp); text-decoration: underline;
+}

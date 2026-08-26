@@ -56,6 +56,7 @@ import { messaggio } from './errori';
 import { andamento, sintesi } from './andamento';
 import Partitura from './Partitura';
 import ScegliPersona from './ScegliPersona';
+import { METODO as SEZIONI_METODO } from './metodo';
 import '../frequenze.css';
 import './pro.css';
 
@@ -436,6 +437,10 @@ function SchedaCore({ p, onChiudi, onAvvia }) {
       <dl className="pro-dati">
         <div><dt>Durata</dt><dd>{Math.round(p.durata_sec / 60)} minuti</dd></div>
         <div><dt>Quando usarlo</dt><dd>{p.indicazioni}</dd></div>
+        {p.come && (
+          <div><dt>Come si conduce</dt>
+            <dd data-testid="pro-come">{p.come}</dd></div>
+        )}
         <div>
           <dt>Cuffie</dt>
           <dd>
@@ -626,8 +631,22 @@ function Lista({ chiave, onAvvia }) {
   );
 }
 
+/* ── IL METODO (M6): le parole del prodotto ────────────────────────── */
+function Metodo() {
+  return (
+    <section className="metodo" data-testid="pro-metodo">
+      {SEZIONI_METODO.map((sez) => (
+        <article key={sez.id} className="metodo-sezione">
+          <h2>{sez.titolo}</h2>
+          <p>{sez.testo}</p>
+        </article>
+      ))}
+    </section>
+  );
+}
+
 /* ── I PERCORSI (M2): i programmi del metodo ───────────────────────── */
-function SchedaPercorso({ pc, onChiudi, onAvvia }) {
+function SchedaPercorso({ pc, onChiudi, onAvvia, chiave }) {
   const [cliente, setCliente] = useState(null);   // {id, nome} | null
   const clienteId = cliente?.id || '';
   /* le tappe COMPLETATE da questo cliente in questo percorso */
@@ -646,7 +665,9 @@ function SchedaPercorso({ pc, onChiudi, onAvvia }) {
       })
       .catch(() => { if (vivo) setFatte(null); });
     return () => { vivo = false; };
-  }, [clienteId, pc.id]);
+    /* `chiave` cambia al ritorno dal rito: il progresso si rilegge
+       da solo — la tappa appena chiusa si spunta senza ricaricare */
+  }, [clienteId, pc.id, chiave]);
 
   /* la PROSSIMA: la prima tappa non ancora completata */
   const prossima = fatte
@@ -656,6 +677,8 @@ function SchedaPercorso({ pc, onChiudi, onAvvia }) {
   const avviaTappa = (i) => {
     const voce = CATALOGO.find((c) => c.id === pc.tappe[i].protocollo);
     if (!voce) return;
+    /* la persona scelta QUI viaggia fino al rito: si sceglie una
+       volta sola (feedback founder 26/8) */
     onAvvia({
       tipo: 'core', id: voce.id, titolo: voce.titolo,
       durata_sec: voce.durata_sec, cuffie_testo: voce.cuffie_testo || null,
@@ -663,7 +686,7 @@ function SchedaPercorso({ pc, onChiudi, onAvvia }) {
     }, {
       id: pc.id, titolo: pc.titolo, tappa: i + 1,
       totale: pc.tappe.length, nota: pc.tappe[i].nota || null,
-    });
+    }, cliente);
   };
 
   return (
@@ -719,7 +742,7 @@ function SchedaPercorso({ pc, onChiudi, onAvvia }) {
   );
 }
 
-function Percorsi({ onAvvia, apertoId, onApri, onChiudi }) {
+function Percorsi({ onAvvia, apertoId, onApri, onChiudi, chiave }) {
   const scelto = apertoId ? PERCORSI.find((p) => p.id === apertoId) : null;
   return (
     <section className="pro-percorsi" data-testid="pro-percorsi">
@@ -730,7 +753,8 @@ function Percorsi({ onAvvia, apertoId, onApri, onChiudi }) {
         che punto è ogni persona.
       </p>
       {scelto ? (
-        <SchedaPercorso pc={scelto} onChiudi={onChiudi} onAvvia={onAvvia} />
+        <SchedaPercorso pc={scelto} onChiudi={onChiudi} onAvvia={onAvvia}
+          chiave={chiave} />
       ) : (
         <div className="cards">
           {PERCORSI.map((pc) => (
@@ -1001,12 +1025,13 @@ export default function SoundProPage() {
   const navigate = useNavigate();
   const splat = useParams()['*'] || '';
   const seg = splat.split('/').filter(Boolean);
-  const vista = seg[0] === 'registro' ? 'registro' : 'protocolli';
+  const vista = seg[0] === 'registro' ? 'registro'
+    : seg[0] === 'metodo' ? 'metodo' : 'protocolli';
   const schedaCoreId = seg[0] === 'catalogo' ? seg[1] || null : null;
   const schedaPercorsoId = seg[0] === 'percorso' ? seg[1] || null : null;
   const id = seg[0] === 'protocollo' ? (seg[1] || 'nuovo')
     : (seg.length === 1
-       && !['registro', 'catalogo', 'percorso'].includes(seg[0])
+       && !['registro', 'catalogo', 'percorso', 'metodo'].includes(seg[0])
        ? seg[0] : null);
   const { user, loading } = useAuth();
   const [chiave, setChiave] = useState(0);
@@ -1045,9 +1070,11 @@ export default function SoundProPage() {
     if (id) return <Editor id={id} onSalvato={() => setChiave((k) => k + 1)} />;
     if (rito) {
       return <Rito protocollo={rito.protocollo} percorso={rito.percorso}
+        clienteIniziale={rito.cliente || null}
         onEsci={() => { setRito(null); setChiave((k) => k + 1); }} />;
     }
     if (vista === 'registro') return <Registro />;
+    if (vista === 'metodo') return <Metodo />;
     if (schedaCoreId) {
       return <Catalogo apertoId={schedaCoreId}
         onApri={(pid) => navigate(`/sound/pro/catalogo/${pid}`)}
@@ -1055,18 +1082,26 @@ export default function SoundProPage() {
         onAvvia={(protocollo) => setRito({ protocollo })} />;
     }
     if (schedaPercorsoId) {
-      return <Percorsi apertoId={schedaPercorsoId}
+      return <Percorsi apertoId={schedaPercorsoId} chiave={chiave}
         onApri={(pid) => navigate(`/sound/pro/percorso/${pid}`)}
         onChiudi={() => navigate('/sound/pro')}
-        onAvvia={(protocollo, percorso) => setRito({ protocollo, percorso })} />;
+        onAvvia={(protocollo, percorso, cliente) =>
+          setRito({ protocollo, percorso, cliente })} />;
     }
     return (
       <>
         <SessioniAperte chiave={chiave} />
-        <Percorsi apertoId={null}
+        <p className="pro-invito-metodo" data-testid="pro-invito-metodo">
+          Primo giro qui dentro? <button type="button" className="pro-link"
+            onClick={() => navigate('/sound/pro/metodo')}>
+            Due minuti su cos'è l'ascolto guidato e come si conduce →
+          </button>
+        </p>
+        <Percorsi apertoId={null} chiave={chiave}
           onApri={(pid) => navigate(`/sound/pro/percorso/${pid}`)}
           onChiudi={() => navigate('/sound/pro')}
-          onAvvia={(protocollo, percorso) => setRito({ protocollo, percorso })} />
+          onAvvia={(protocollo, percorso, cliente) =>
+            setRito({ protocollo, percorso, cliente })} />
         <Catalogo apertoId={null}
           onApri={(pid) => navigate(`/sound/pro/catalogo/${pid}`)}
           onChiudi={() => navigate('/sound/pro')}
@@ -1093,7 +1128,8 @@ export default function SoundProPage() {
         {abilitato && !id && (
           <div className="viewswitch">
             {[['protocolli', 'Protocolli', '/sound/pro'],
-              ['registro', 'Registro', '/sound/pro/registro']].map(([v, label, a]) => (
+              ['registro', 'Registro', '/sound/pro/registro'],
+              ['metodo', 'Il metodo', '/sound/pro/metodo']].map(([v, label, a]) => (
                 <button key={v} type="button"
                   className={`vbtn${vista === v ? ' on' : ''}`}
                   onClick={() => navigate(a)}
