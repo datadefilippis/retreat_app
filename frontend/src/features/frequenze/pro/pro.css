@@ -374,3 +374,19 @@
   .fqz .pc-durata { display: none; }
   .fqz .pc-tappa button { grid-column: 2; justify-self: start; }
 }
+
+/* ── M5: il quadro della persona ──────────────────────────────────── */
+.fqz .reg-quadro {
+  border: 1px solid var(--line-soft); border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 14px;
+  background: linear-gradient(180deg, #182A2E, #111F23);
+}
+.fqz .reg-sintesi { margin: 0 0 10px; font-size: 12.5px; color: var(--dim); line-height: 1.6; }
+.fqz .reg-sintesi b { color: var(--bone); font-weight: 600; }
+.fqz .reg-pc { color: var(--water); }
+.fqz .reg-andamento { margin: 0; }
+.fqz .reg-andamento svg {
+  display: block; width: 100%; height: 90px;
+  border-radius: 6px; background: #0D1A1E;
+}
+.fqz .reg-andamento figcaption { margin-top: 6px; }

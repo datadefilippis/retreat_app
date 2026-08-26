@@ -53,6 +53,7 @@ import { CATALOGO, ORIGINI } from './catalogo';
 import { PERCORSI } from './percorsi';
 import Rito, { quandoFa } from './Rito';
 import { messaggio } from './errori';
+import { andamento, sintesi } from './andamento';
 import Partitura from './Partitura';
 import '../frequenze.css';
 import './pro.css';
@@ -837,6 +838,58 @@ function RigaSessione({ s, nome }) {
   );
 }
 
+/* M5 — il quadro della persona: sintesi onesta + vissuto disegnato.
+   Si mostra SOLO col filtro persona attivo: un andamento aggregato di
+   persone diverse non significherebbe niente. */
+function QuadroPersona({ items, nome }) {
+  const chiuse = useMemo(
+    () => [...items].reverse().filter((s) => s.stato !== 'in_corso'),
+    [items]);
+  const sin = useMemo(() => sintesi(chiuse), [chiuse]);
+  const geo = useMemo(() => andamento(chiuse, { w: 600, h: 90 }), [chiuse]);
+  if (!sin.totale) return null;
+  return (
+    <div className="reg-quadro" data-testid="reg-quadro">
+      <p className="reg-sintesi" data-testid="reg-sintesi">
+        <b>{nome}</b> · {sin.totale} {sin.totale === 1 ? 'sessione' : 'sessioni'}
+        {' — '}{sin.completate} {sin.completate === 1 ? 'completata' : 'completate'}
+        {sin.interrotte > 0 && `, ${sin.interrotte} ${sin.interrotte === 1 ? 'interrotta' : 'interrotte'}`}
+        {sin.perse > 0 && `, ${sin.perse} con audio caduto`}
+        {sin.percorsi.map((pc) => (
+          <span key={pc.id} className="reg-pc" data-testid={`reg-pc-${pc.id}`}>
+            {' '}· {pc.titolo} {pc.fatte}/{pc.totale}
+          </span>
+        ))}
+      </p>
+      {geo.linea.length >= 2 && (
+        <figure className="reg-andamento" data-testid="reg-andamento">
+          <svg viewBox={`0 0 600 90`} preserveAspectRatio="none" role="img"
+            aria-label={`Il vissuto dichiarato su ${geo.linea.length} sessioni`}>
+            {geo.righe.map((r) => (
+              <line key={r.valore} x1="0" x2="600" y1={r.y} y2={r.y}
+                stroke="var(--line-soft)" strokeWidth="1" />
+            ))}
+            <polyline points={geo.linea.map(([x, y]) => `${x},${y}`).join(' ')}
+              fill="none" stroke="var(--lamp)" strokeWidth="1.5" opacity="0.8" />
+            {geo.segmenti.map((sg, i) => (
+              <g key={i}>
+                <line x1={sg.x} x2={sg.x} y1={sg.y0} y2={sg.y1}
+                  stroke="var(--water)" strokeWidth="2" opacity="0.7" />
+                <circle cx={sg.x} cy={sg.y1} r="3" fill="var(--lamp)" />
+                <circle cx={sg.x} cy={sg.y0} r="2" fill="var(--dim)" />
+              </g>
+            ))}
+          </svg>
+          <figcaption className="pro-aiuto">
+            Da 1 a 10, come dichiarato: il punto piccolo è il prima, il
+            punto pieno il dopo. Nessuna media, nessuna interpretazione.
+          </figcaption>
+        </figure>
+      )}
+    </div>
+  );
+}
+
 function Registro() {
   const [items, setItems] = useState(null);
   const [nomi, setNomi] = useState({});
@@ -888,6 +941,9 @@ function Registro() {
           ))}
         </select>
       </div>
+      {cliente && items?.length > 0 && (
+        <QuadroPersona items={items} nome={nomi[cliente] || '—'} />
+      )}
       {items === null && <p className="pro-vuoto">Un momento…</p>}
       {items?.length === 0 && (
         <div className="emptycreate" data-testid="reg-vuoto">
