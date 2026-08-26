@@ -25,8 +25,12 @@ prova di serietà. Si AGGIUNGE un invito (non un muro): a fine
 esperienza, «Ricevi la Lettera» — il momento di massima benevolenza.
 
 **Crea**: oggi il cartello «su invito» la PALESA. Va nascosta
-davvero: viste assenti per chi non ha il privilegio, URL diretto →
-redirect silenzioso a /sound. Chi deve saperlo lo sa dal founder.
+davvero — MA SOLO per chi non ha il privilegio: viste assenti, URL
+diretto → redirect silenzioso a /sound. IL MECCANISMO DI CONCESSIONE
+NON SI TOCCA (precisazione founder 26/8): resta il system admin ad
+assegnarla dalla pagina /admin/sound (flag sound_composer per-org,
+con audit — ciclo PC, invariato); chi ha la concessione vede e usa
+Crea esattamente come oggi. Sparisce la pubblicità di Crea, non Crea.
 
 **Professional**: la vendita è pubblica e indicizzata
 (/sound/professional), lo strumento resta app noindex (/sound/pro).
