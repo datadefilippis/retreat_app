@@ -340,9 +340,8 @@ const NAV_ITEMS = [
 // Lettera scendono nel footer (colonna Risorse). Un menu di sei voci
 // non ha una gerarchia: chi arriva non capisce da dove cominciare.
 //
-// "La Rete" porta un'etichetta di stato (in arrivo) perche' oggi la
-// pagina racconta una rete che sta nascendo: dirlo nel menu evita la
-// delusione di chi ci clicca aspettandosi un elenco pieno.
+// "La Rete" non porta piu' l'etichetta «in arrivo» (founder, 26/8):
+// in produzione ci sono i primi professionisti, la rete e' arrivata.
 const NETWORK_NAV_ITEMS = [
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
   // SP4 — la biblioteca educativa sul suono e' contenuto pubblico come
@@ -352,8 +351,7 @@ const NETWORK_NAV_ITEMS = [
   // le esperienze gia' composte dagli operatori: la sorella di Sound
   { to: '/meditazioni', key: 'marketplace.navMeditations', fallback: 'Meditazioni' },
   { to: '/manifesto', key: 'marketplace.navManifesto', fallback: 'Manifesto' },
-  { to: '/operatori', key: 'marketplace.navNetwork', fallback: 'La Rete',
-    hint: { key: 'marketplace.navNetworkSoon', fallback: 'in arrivo' } },
+  { to: '/operatori', key: 'marketplace.navNetwork', fallback: 'La Rete' },
   { to: '/chi-siamo', key: 'marketplace.navAbout', fallback: 'Chi siamo' },
 ];
 

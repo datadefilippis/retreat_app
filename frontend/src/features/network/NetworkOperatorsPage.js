@@ -27,23 +27,18 @@
  * ripiega sulla tagline; senza nessuna delle due restano il volto e il
  * nome, che sono comunque una persona.
  *
- * ── IL PUNTO DELICATO: LA PAGINA VUOTA ────────────────────────────
- * Il founder ha lasciato una nota di regia — «qui puoi inserire una
- * preview con "In arrivo", oppure un box "I primi profili saranno
- * pubblicati prossimamente"» — e quella nota non e' testo da stampare:
- * e' un'istruzione. Risolta con due stati veri, non con un ripiego.
- *   CON PERSONE  le schede si mostrano come prima, sotto il testo che
- *                le annuncia. Fino a due profili ognuno prende una
- *                riga intera (ritratto a mezza colonna, voce accanto,
- *                lato alternato); da tre in su torna la griglia.
- *   SENZA        al loro posto compare un OGGETTO: un pannello salvia
- *                dentro la sezione bianca, con il filo d'oro,
- *                l'occhiello "In arrivo", la riga del founder e la
- *                porta della Lettera. Occupa lo stesso spazio che
- *                occuperebbero le schede, ha lo stesso peso visivo, e
- *                per questo si legge come una scelta e non come un
- *                buco. Una riga di testo grigio avrebbe detto
- *                l'esatto contrario: che qui manca qualcosa.
+ * ── GLI STATI ─────────────────────────────────────────────────────
+ *   CON PERSONE  founder 26/8, coi primi profili VERI in produzione:
+ *                griglia UNICA e uniforme dal primo profilo in poi
+ *                (2 → 3 → 4 colonne; schede 4/5 identiche, vedi
+ *                PersonCard). Il vecchio layout a righe intere per i
+ *                primi due e' morto sul campo: ritratti enormi e, con
+ *                object-contain, ognuno del suo formato.
+ *   SENZA        un OGGETTO: il pannello salvia dentro la sezione
+ *                bianca, con il filo d'oro, l'occhiello "In arrivo",
+ *                la riga del founder e la porta della Lettera. Occupa
+ *                lo spazio delle schede e ne ha il peso: si legge come
+ *                una scelta, non come un buco.
  * Non e' un tratteggio "placeholder" e non simula schede finte:
  * disegnare il fantasma di quello che non c'e' e' la versione
  * educata della bugia.
@@ -103,14 +98,12 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import api from '../../api/client';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import BrandPayoff from '../../components/BrandPayoff';
-import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
 import {
-  Section, DisplayTitle, Lede, Quote, PersonCard, truncateWords,
+  Section, DisplayTitle, Lede, PersonCard,
   EditorialCta, PhotoOpener, PhotoBand,
 } from '../../components/editorial';
 
@@ -119,11 +112,12 @@ import {
 const OPENER_PHOTO = '/media/prelaunch/r10.jpg';  // mani sulla schiena, macro
 const BAND_PHOTO = '/media/prelaunch/r05.jpg';    // il cairn, una pietra alla volta
 
-/* 280 = il tetto che il system admin ha gia' davanti quando sceglie la
-   frase. Tagliarla una seconda volta qui vorrebbe dire mettere dei
-   puntini su una scelta editoriale gia' fatta: chi l'ha scritta sa
-   dove finisce. */
-const QUOTE_MAX = 280;
+/* 280 resta il tetto editoriale del system admin; in GRIGLIA pero' la
+   voce si ferma prima (founder 26/8): su schede da quattro colonne una
+   frase piena diventa una colonna di testo e i volti perdono il ritmo.
+   Il taglio e' gentile (truncateWords, dentro PersonCard) e la frase
+   intera vive sul profilo e nell'intervista. */
+const QUOTE_GRID = 170;
 
 /* La riga display che fa da perno dentro una sezione: non e' un altro
    capoverso, e' la frase su cui la sezione gira. Stesso trattamento su
@@ -179,95 +173,16 @@ export default function NetworkOperatorsPage() {
     },
   ];
 
-  /* DUE MODI DI MOSTRARE LE PERSONE, e la soglia sta a due.
-     Fino a due profili ognuno prende una RIGA INTERA: il ritratto vale
-     mezza colonna e la voce sta accanto. Da tre in su la griglia ha
-     abbastanza materia per reggersi da sola, e una riga per uno
-     diventerebbe una pagina lunghissima. */
+  /* UN SOLO MODO DI MOSTRARE LE PERSONE (founder 26/8). Il layout a
+     righe intere per i primi due profili e' morto in produzione: i
+     ritratti a mezza colonna erano enormi, e con object-contain ogni
+     foto portava il suo rapporto — la pagina sembrava fatta di formati
+     diversi. Ora la griglia e' UNA, dal primo profilo in poi: schede
+     uniformi (4/5, vedi PersonCard), piu' piccole e piu' fitte — 2
+     colonne da tablet, 3 su schermi medi, 4 su desktop. Una persona
+     sola occupa una casella della stessa griglia: e' una rete che
+     cresce, non un'eccezione da impaginare. */
   const list = members || [];
-  const few = list.length > 0 && list.length <= 2;
-
-  /* La riga di una persona quando le persone sono poche. Non e' una
-     PersonCard piu' grande: e' un'altra impaginazione (ritratto a
-     mezza colonna, voce accanto) fatta con gli stessi mattoni del kit,
-     cosi' l'ordine di lettura resta volto → nome → pratica → sigillo →
-     voce. Il lato si alterna, come chiede la grammatica DS. */
-  const personRow = (m, i) => {
-    const photo = m.portrait_url || m.cover_url;
-    const place = [m.city, m.region].filter(Boolean).join(', ');
-    const practice = catLabel(m.category);
-    const voice = truncateWords(m.quote || m.tagline, QUOTE_MAX);
-    const photoRight = i % 2 === 1;
-    return (
-      <li key={m.slug} data-testid="nw-person"
-          className="grid items-center gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-14">
-        {/* Il ritratto non e' un link: il nome qui accanto e' grande
-            abbastanza da essere il bersaglio, e due link identici di
-            fila costringono chi ascolta la pagina a sentire due volte
-            la stessa destinazione. Lo spazio e' riservato (aspect-4/5)
-            anche mentre la foto arriva: nessun salto. */}
-        <div className={`group lg:col-span-5 ${photoRight ? 'lg:order-last' : ''}`}>
-          <div className="aspect-[4/5] w-full overflow-hidden bg-[#e8e2d4]">
-            {photo ? (
-              <img
-                src={photo}
-                alt=""
-                aria-hidden
-                loading="lazy"
-                decoding="async"
-                /* founder 14/8 — ritratto INTERO (vedi PersonCard):
-                   cover centrato decapitava le foto verticali */
-                className="h-full w-full object-contain motion-safe:transition-transform
-                           motion-safe:duration-[900ms] motion-safe:ease-out
-                           motion-safe:group-hover:scale-[1.03]"
-              />
-            ) : (
-              /* niente stock: un campo di colore col nome, e basta */
-              <span aria-hidden
-                    className="flex h-full w-full items-end p-6 font-display text-3xl text-[#2f5749]/45">
-                {m.name}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="lg:col-span-7">
-          <DisplayTitle as="h3" size="section" measure="title"
-                        className="text-[1.9rem] sm:text-[2.3rem] lg:text-[2.6rem]">
-            <Link
-              to={`/o/${m.slug}`}
-              className="rounded-sm transition-colors hover:text-[#2f5749]
-                         focus-visible:outline-none focus-visible:ring-2
-                         focus-visible:ring-[#2f5749] focus-visible:ring-offset-4
-                         focus-visible:ring-offset-white"
-            >
-              {m.name}
-            </Link>
-          </DisplayTitle>
-          {(practice || place) && (
-            <p className="mt-3 text-base text-foreground/70">
-              {[practice, place].filter(Boolean).join(' · ')}
-            </p>
-          )}
-          {m.verified && (
-            <p className="mt-4">
-              <VerifiedAuryaBadge variant="on-light" size="md" />
-            </p>
-          )}
-          {voice && (
-            <Quote size="page" className="mt-7 text-foreground/85">{voice}</Quote>
-          )}
-          {m.has_interview && (
-            <p className="mt-7">
-              <EditorialCta to={`/o/${m.slug}/intervista`} variant="quiet">
-                {t('nwOps.readInterview', { defaultValue: 'Leggi l’intervista' })}
-              </EditorialCta>
-            </p>
-          )}
-        </div>
-      </li>
-    );
-  };
 
   return (
     <MarketplaceShell noSearch>
@@ -432,18 +347,19 @@ export default function NetworkOperatorsPage() {
                   </div>
                 </div>
               </div>
-            ) : few ? (
-              <ul className="mt-14 list-none space-y-20 p-0 sm:mt-16 lg:space-y-24">
-                {list.map(personRow)}
-              </ul>
             ) : (
-              <ul className="mt-14 grid list-none gap-x-8 gap-y-14 p-0 sm:mt-16
-                             sm:grid-cols-2 lg:grid-cols-3">
+              /* founder 26/8 — griglia unica e uniforme: 2 → 3 → 4
+                 colonne. La voce in griglia si tronca prima (170) del
+                 tetto editoriale (280): su una scheda da ~250px una
+                 citazione lunga diventa una colonna di testo, e la
+                 griglia perde il ritmo dei volti. */
+              <ul className="mt-14 grid list-none gap-x-6 gap-y-12 p-0 sm:mt-16
+                             sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {list.map(m => (
                   <li key={m.slug} data-testid="nw-person">
                     <PersonCard
                       person={{ ...m, category: catLabel(m.category) }}
-                      quoteMaxChars={QUOTE_MAX}
+                      quoteMaxChars={QUOTE_GRID}
                     />
                     {m.has_interview && (
                       <p className="mt-4">

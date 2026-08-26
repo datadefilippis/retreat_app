@@ -14,8 +14,9 @@
  * il volto e il nome. Una scheda non deve mai sembrare rotta perche'
  * manca un campo facoltativo.
  *
- * Lo spazio dell'immagine e' RISERVATO (aspect-[3/4]) anche senza
- * foto: nessun salto di layout al caricamento.
+ * Lo spazio dell'immagine e' RISERVATO (aspect-[4/5]) anche senza
+ * foto: nessun salto di layout al caricamento. Il 4/5 e' il formato
+ * UNICO della rete (founder 26/8): ogni ritratto lo riempie.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -45,18 +46,21 @@ export default function PersonCard({ person, quoteMaxChars = 120 }) {
         to={`/o/${slug}`}
         className="block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f5749] focus-visible:ring-offset-4 focus-visible:ring-offset-background"
       >
-        <div className="aspect-[3/4] w-full overflow-hidden bg-[#e8e2d4]">
+        <div className="aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#e8e2d4]">
           {photo ? (
             <img
               src={photo}
               alt={name ? `Ritratto di ${name}` : ''}
               loading="lazy"
               decoding="async"
-              /* founder 14/8 — il ritratto si mostra INTERO: object-cover
-                 centrato tagliava le teste sulle foto verticali. Con
-                 contain la foto appoggia sul fondo sabbia del riquadro
-                 (effetto passe-partout), mai un volto tagliato. */
-              className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
+              /* founder 26/8 — il formato si UNIFORMA (supera il 14/8):
+                 con object-contain ogni foto portava il suo rapporto e
+                 la griglia sembrava fatta di formati diversi. Ora tutte
+                 le schede sono 4/5 e la foto RIEMPIE il riquadro; il
+                 problema del 14/8 (cover centrato decapitava i ritratti
+                 verticali) si risolve ancorando il ritaglio al terzo
+                 alto, dove stanno i volti, non tornando al contain. */
+              className="h-full w-full object-cover object-[50%_25%] transition-transform duration-700 group-hover:scale-[1.02]"
             />
           ) : (
             /* niente stock: un campo di colore col nome, e basta */
@@ -65,7 +69,7 @@ export default function PersonCard({ person, quoteMaxChars = 120 }) {
             </span>
           )}
         </div>
-        <h3 className="font-display text-2xl sm:text-[1.65rem] mt-5 leading-tight text-foreground">
+        <h3 className="font-display text-xl sm:text-[1.4rem] mt-4 leading-tight text-foreground">
           {name}
         </h3>
       </Link>

@@ -7192,16 +7192,19 @@ class TestReteSw5:
     def test_sw5_pagina_usa_il_kit_e_le_schede_grandi(self):
         src = self._page()
         assert "components/editorial" in src, "il kit editoriale non e' importato"
-        # LC8 — brand v3: TitleLine e' uscito (titoli a frase unica),
-        # Quote e' entrato (la voce della pagina). Il resto del kit
+        # LC8 — brand v3: TitleLine e' uscito (titoli a frase unica).
+        # Founder 26/8: col layout a righe grandi e' uscita anche la
+        # Quote DALLA PAGINA — la voce vive dentro PersonCard, che e'
+        # l'unico posto dove le persone si mostrano. Il resto del kit
         # resta il dispositivo da difendere.
-        for pezzo in ("Section", "DisplayTitle", "Quote", "Lede",
+        for pezzo in ("Section", "DisplayTitle", "Lede",
                       "PersonCard", "EditorialCta"):
             assert pezzo in src, f"manca dal kit: {pezzo}"
         assert src.count('as="h1"') == 1, "l'h1 e' uno solo"
         # la citazione e la pratica arrivano davvero dal payload nuovo
         assert "m.category" in src, "la pratica non viene passata alla scheda"
         card = self.CARD.read_text()
+        assert "Quote" in card, "la voce della scheda e' sparita dal kit"
         assert "quote" in card and "category" in card
         # niente vestito fatto a mano: era il difetto della pagina vecchia
         for vecchio in ("bg-gradient-sidebar", "rounded-2xl border",
@@ -7244,8 +7247,12 @@ class TestReteSw5:
         nessuna non deve sembrare in errore.
         LC8 — brand v3: lo stato vuoto e' il pannello salvia 'In
         arrivo' (nw-people-soon) con la CTA Lettera — verificato in
-        pagina dopo LC3, quando la rete e' rimasta davvero vuota. Con
-        pochi membri la lista passa alle righe grandi (few)."""
+        pagina dopo LC3, quando la rete e' rimasta davvero vuota.
+        Founder 26/8, coi primi profili VERI in produzione: il layout
+        a righe grandi (few) e' morto sul campo — ritratti enormi e,
+        con object-contain, ognuno del suo formato. La griglia e' UNA,
+        uniforme, fino a 4 colonne su desktop, e le schede hanno un
+        formato unico (4/5, cover ancorato in alto)."""
         src = self._page()
         assert 'data-testid="nw-people-soon"' in src, \
             "manca il pannello d'attesa dello stato vuoto"
@@ -7253,8 +7260,13 @@ class TestReteSw5:
             "lo stato vuoto deve dire cosa succede e offrire la Lettera"
         assert "members === null" in src, "lo stato di caricamento e' sparito"
         assert "list.length === 0" in src, "il ramo vuoto e' sparito"
-        assert "few ?" in src, \
-            "con pochi membri la griglia deve stringersi (righe grandi)"
+        assert "few ?" not in src, \
+            "il layout a righe grandi e' tornato (founder 26/8: griglia unica)"
+        assert "lg:grid-cols-4" in src, \
+            "su desktop la griglia deve arrivare a 4 colonne"
+        card = self.CARD.read_text()
+        assert "aspect-[4/5]" in card and "object-cover" in card, \
+            "il formato delle schede non e' piu' uniforme"
 
     def test_sw5_intervista_resta_raggiungibile(self):
         """La citazione invita, la pagina dell'intervista mantiene: il
