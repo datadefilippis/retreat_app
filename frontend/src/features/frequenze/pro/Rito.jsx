@@ -68,7 +68,12 @@ function Scala({ valore, onScegli, testid }) {
   );
 }
 
-export default function Rito({ protocollo, onEsci }) {
+/**
+ * @param percorso  (M2, facoltativo) la tappa: {id, titolo, tappa,
+ *                  totale, nota} — la sessione la dichiara al server,
+ *                  che verifica la coerenza tappa↔protocollo.
+ */
+export default function Rito({ protocollo, percorso = null, onEsci }) {
   /* preparazione | ascolto | congedo | salvato */
   const [fase, setFase] = useState('preparazione');
   const [clienti, setClienti] = useState([]);
@@ -166,6 +171,8 @@ export default function Rito({ protocollo, onEsci }) {
       const { data } = await soundProAPI.sessioni.apri({
         protocollo_tipo: protocollo.tipo,
         protocollo_id: protocollo.id,
+        ...(percorso ? { percorso_id: percorso.id,
+                         percorso_tappa: percorso.tappa } : {}),
         ...(clienteId ? { customer_id: clienteId } : {}),
         ...(pre != null ? { feedback_pre: pre } : {}),
       });
@@ -286,11 +293,21 @@ export default function Rito({ protocollo, onEsci }) {
     <div className="rito" data-testid="rito-preparazione">
       <div className="pro-testata">
         <div>
+          {percorso && (
+            <p className="rito-tappa" data-testid="rito-tappa">
+              {percorso.titolo} · tappa {percorso.tappa} di {percorso.totale}
+            </p>
+          )}
           <h2>{protocollo.titolo}</h2>
           <p className="pro-sotto">
             {Math.round(protocollo.durata_sec / 60)} minuti
             {protocollo.cuffie_testo ? ` · ${protocollo.cuffie_testo}` : ''}
           </p>
+          {percorso?.nota && (
+            <p className="rito-nota-tappa" data-testid="rito-nota-tappa">
+              {percorso.nota}
+            </p>
+          )}
         </div>
         <button type="button" className="ghost" onClick={onEsci}
           data-testid="rito-annulla">×</button>

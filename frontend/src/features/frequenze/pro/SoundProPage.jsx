@@ -50,6 +50,7 @@ import { PERCENTO_DEFAULT, PERCENTO_MAX, PERCENTO_MIN, aGain, aPercento } from '
 import SoundTopbar from '../SoundTopbar';
 import { SafetyCurtain } from '../SafetyCurtain';
 import { CATALOGO, ORIGINI } from './catalogo';
+import { PERCORSI } from './percorsi';
 import Rito, { quandoFa } from './Rito';
 import Partitura from './Partitura';
 import '../frequenze.css';
@@ -624,6 +625,147 @@ function Lista({ chiave, onAvvia }) {
   );
 }
 
+/* ── I PERCORSI (M2): i programmi del metodo ───────────────────────── */
+function SchedaPercorso({ pc, onChiudi, onAvvia }) {
+  const [clienti, setClienti] = useState([]);
+  const [clienteId, setClienteId] = useState('');
+  /* le tappe COMPLETATE da questo cliente in questo percorso */
+  const [fatte, setFatte] = useState(null);
+
+  useEffect(() => {
+    let vivo = true;
+    customersAPI.list(true, 200)
+      .then((r) => { if (vivo) setClienti(r.data || []); })
+      .catch(() => { /* senza clienti resta la vista semplice */ });
+    return () => { vivo = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!clienteId) { setFatte(null); return undefined; }
+    let vivo = true;
+    soundProAPI.sessioni.list({ customer_id: clienteId, stato: 'completata' })
+      .then((r) => {
+        if (!vivo) return;
+        const set = new Set((r.data?.items || [])
+          .filter((x) => x.percorso?.id === pc.id)
+          .map((x) => x.percorso.tappa));
+        setFatte(set);
+      })
+      .catch(() => { if (vivo) setFatte(null); });
+    return () => { vivo = false; };
+  }, [clienteId, pc.id]);
+
+  /* la PROSSIMA: la prima tappa non ancora completata */
+  const prossima = fatte
+    ? pc.tappe.findIndex((_, i) => !fatte.has(i + 1)) + 1 || null
+    : null;
+
+  const avviaTappa = (i) => {
+    const voce = CATALOGO.find((c) => c.id === pc.tappe[i].protocollo);
+    if (!voce) return;
+    onAvvia({
+      tipo: 'core', id: voce.id, titolo: voce.titolo,
+      durata_sec: voce.durata_sec, cuffie_testo: voce.cuffie_testo || null,
+      score: voce.costruisci(),
+    }, {
+      id: pc.id, titolo: pc.titolo, tappa: i + 1,
+      totale: pc.tappe.length, nota: pc.tappe[i].nota || null,
+    });
+  };
+
+  return (
+    <div className="pro-scheda-core" data-testid={`pc-scheda-${pc.id}`}>
+      <div className="pro-testata">
+        <div>
+          <h2>{pc.titolo}</h2>
+          <p className="pro-sotto">{pc.sottotitolo}</p>
+        </div>
+        <button type="button" className="ghost" onClick={onChiudi}
+          data-testid="pc-chiudi">×</button>
+      </div>
+      <p className="pro-racconto">{pc.racconto}</p>
+      <dl className="pro-dati">
+        <div>
+          <dt>Cadenza</dt>
+          <dd>{pc.durata.settimane} settimane · {pc.durata.a_settimana} a settimana</dd>
+        </div>
+        <div><dt>Quando usarlo</dt><dd>{pc.indicazioni}</dd></div>
+      </dl>
+
+      <label className="pro-campo">
+        <span className="pro-lab">Il progresso di <i>facoltativo</i></span>
+        <select value={clienteId} onChange={(e) => setClienteId(e.target.value)}
+          data-testid="pc-cliente">
+          <option value="">Senza legame — tappe libere</option>
+          {clienti.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </label>
+
+      <ol className="pc-tappe" data-testid="pc-tappe">
+        {pc.tappe.map((t, i) => {
+          const voce = CATALOGO.find((c) => c.id === t.protocollo);
+          const fatta = fatte?.has(i + 1);
+          const éProssima = prossima === i + 1;
+          return (
+            <li key={i}
+              className={`pc-tappa${fatta ? ' fatta' : ''}${éProssima ? ' prossima' : ''}`}>
+              <span className="pc-num">{fatta ? '✓' : i + 1}</span>
+              <span className="pc-cosa">
+                <b>{voce?.titolo}</b>
+                {t.nota && <span className="pc-nota">{t.nota}</span>}
+              </span>
+              <span className="pc-durata">{Math.round((voce?.durata_sec || 0) / 60)}′</span>
+              <button type="button" className={éProssima ? 'primary' : 'add'}
+                onClick={() => avviaTappa(i)}
+                data-testid={`pc-avvia-${i + 1}`}>
+                {éProssima ? 'Prossima tappa' : 'Avvia'}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+function Percorsi({ onAvvia }) {
+  const [aperto, setAperto] = useState(null);
+  const scelto = aperto ? PERCORSI.find((p) => p.id === aperto) : null;
+  return (
+    <section className="pro-percorsi" data-testid="pro-percorsi">
+      <h2 className="pro-scaffale">Percorsi</h2>
+      <p className="pro-scaffale-sotto">
+        Programmi di più settimane, con una cadenza e una progressione:
+        il protocollo giusto, nell'ordine giusto. Il registro ricorda a
+        che punto è ogni persona.
+      </p>
+      {scelto ? (
+        <SchedaPercorso pc={scelto} onChiudi={() => setAperto(null)}
+          onAvvia={onAvvia} />
+      ) : (
+        <div className="cards">
+          {PERCORSI.map((pc) => (
+            <button key={pc.id} type="button" className="card pro-core-card"
+              onClick={() => setAperto(pc.id)} data-testid={`pc-card-${pc.id}`}>
+              <div className="head">
+                <h3>{pc.titolo}</h3>
+                <span className="badge pro-badge-aurya">PERCORSO</span>
+              </div>
+              <div className="hz">
+                {pc.durata.settimane} settimane · {pc.durata.a_settimana}/sett
+                {' · '}{pc.tappe.length} tappe
+              </div>
+              <div className="body">{pc.sottotitolo}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 /* ── IL REGISTRO (S4): il quaderno si sfoglia ──────────────────────── */
 const ESITO_LABEL = {
   in_corso: 'In corso',
@@ -652,6 +794,11 @@ function RigaSessione({ s, nome }) {
         <span className="reg-titolo">
           {s.protocollo?.titolo}
           {s.protocollo?.tipo === 'operatore' && <i> · tuo</i>}
+          {s.percorso && (
+            <i data-testid="reg-percorso">
+              {' '}· {s.percorso.titolo} {s.percorso.tappa}/{s.percorso.totale}
+            </i>
+          )}
         </span>
         <span className="reg-cliente">{nome || '—'}</span>
         <span className={`reg-esito e-${s.stato}`}>{ESITO_LABEL[s.stato]}</span>
@@ -805,7 +952,7 @@ export default function SoundProPage() {
   const { id } = useParams();
   const { user, loading } = useAuth();
   const [chiave, setChiave] = useState(0);
-  const [rito, setRito] = useState(null);
+  const [rito, setRito] = useState(null);           // {protocollo, percorso}
   const [vista, setVista] = useState('protocolli');   // protocolli | registro
 
   useEffect(() => { document.title = 'Protocolli — Aurya Sound Professional'; }, []);
@@ -840,20 +987,21 @@ export default function SoundProPage() {
     }
     if (id) return <Editor id={id} onSalvato={() => setChiave((k) => k + 1)} />;
     if (rito) {
-      return <Rito protocollo={rito}
+      return <Rito protocollo={rito.protocollo} percorso={rito.percorso}
         onEsci={() => { setRito(null); setChiave((k) => k + 1); }} />;
     }
     if (vista === 'registro') return <Registro />;
     return (
       <>
         <SessioniAperte chiave={chiave} />
-        <Catalogo onAvvia={setRito} />
+        <Percorsi onAvvia={(protocollo, percorso) => setRito({ protocollo, percorso })} />
+        <Catalogo onAvvia={(protocollo) => setRito({ protocollo })} />
         <h2 className="pro-scaffale" data-testid="pro-scaffale-tuoi">I tuoi protocolli</h2>
         <p className="pro-scaffale-sotto">
           I protocolli che progetti tu, privati della tua organizzazione,
           con versioni e storia.
         </p>
-        <Lista chiave={chiave} onAvvia={setRito} />
+        <Lista chiave={chiave} onAvvia={(protocollo) => setRito({ protocollo })} />
       </>
     );
   }, [loading, user, abilitato, id, chiave, rito, vista]);

@@ -27,7 +27,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from models.audit import AuditLog
 from models.common import generate_id, utc_now
-from models.sound_catalog import protocollo_core
+from models.sound_catalog import percorso_core, protocollo_core
 from models.sound_session import (
     FEEDBACK_MAX, FEEDBACK_MIN, NOTE_MAX, SoundSession,
 )
@@ -45,7 +45,8 @@ SESSIONI_LISTA_MAX = 500
 # la lista e' il registro sfogliabile: leggera, senza snapshot e
 # SENZA note (le note si aprono sulla singola sessione)
 _LIST_PROJECTION = {
-    "_id": 0, "id": 1, "protocollo": 1, "stato": 1, "customer_id": 1,
+    "_id": 0, "id": 1, "protocollo": 1, "percorso": 1, "stato": 1,
+    "customer_id": 1,
     "booking_id": 1, "durata_prevista_sec": 1, "ascolto_sec": 1,
     "feedback_pre": 1, "feedback_post": 1,
     "iniziata_il": 1, "terminata_il": 1,
@@ -71,6 +72,12 @@ class SessioneApri(BaseModel):
 
     protocollo_tipo: Literal["core", "operatore"]
     protocollo_id: str
+    # M2 — la sessione puo' essere una TAPPA di un percorso curato:
+    # o entrambi i campi o nessuno, e la coerenza la verifica il
+    # server (il percorso esiste, la tappa e' nel range, e quella
+    # tappa suona DAVVERO questo protocollo)
+    percorso_id: Optional[str] = None
+    percorso_tappa: Optional[int] = Field(default=None, ge=1)
     customer_id: Optional[str] = None
     booking_id: Optional[str] = None
     feedback_pre: Optional[int] = Field(default=None, ge=FEEDBACK_MIN,
@@ -116,6 +123,37 @@ async def _audit(current_user: dict, azione: str, sessione_id: str,
     except Exception:
         logger.warning("sound_sessions: audit %s fallito", azione,
                        exc_info=True)
+
+
+def _verifica_percorso(payload) -> Optional[dict]:
+    """La tappa dichiarata, resa onesta: o percorso+tappa insieme o
+    niente; il percorso esiste nello specchio; la tappa e' nel range;
+    e quella tappa suona DAVVERO il protocollo della sessione — una
+    sessione di CALM non puo' dichiararsi «tappa 3 di Radicamento»
+    se la tappa 3 e' GROUND. Il registro non deve poter mentire
+    nemmeno per sbaglio."""
+    if payload.percorso_id is None and payload.percorso_tappa is None:
+        return None
+    if payload.percorso_id is None or payload.percorso_tappa is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Percorso e tappa vanno dichiarati insieme.")
+    voce = percorso_core(payload.percorso_id)
+    if not voce:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Percorso non in catalogo.")
+    titolo, tappe = voce
+    if payload.percorso_tappa > len(tappe):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Il percorso ha {len(tappe)} tappe.")
+    if (payload.protocollo_tipo != "core"
+            or tappe[payload.percorso_tappa - 1] != payload.protocollo_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"La tappa {payload.percorso_tappa} di «{titolo}» "
+                   f"suona un altro protocollo.")
+    return {"id": payload.percorso_id, "titolo": titolo,
+            "tappa": payload.percorso_tappa, "totale": len(tappe)}
 
 
 async def _verifica_legami(current_user: dict, customer_id, booking_id):
@@ -179,6 +217,7 @@ async def apri_sessione(payload: SessioneApri,
                            payload.booking_id)
     riferimento, snapshot, durata = await _risolvi_protocollo(
         current_user, payload.protocollo_tipo, payload.protocollo_id)
+    tappa = _verifica_percorso(payload)
 
     now = utc_now()
     sessione = {
@@ -188,6 +227,7 @@ async def apri_sessione(payload: SessioneApri,
         "customer_id": payload.customer_id,
         "booking_id": payload.booking_id,
         "protocollo": riferimento,
+        "percorso": tappa,
         "score_snapshot": snapshot,
         "durata_prevista_sec": durata,
         "stato": "in_corso",

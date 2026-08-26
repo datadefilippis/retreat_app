@@ -36,3 +36,30 @@ CATALOGO_CORE = {
 def protocollo_core(protocollo_id):
     """(titolo, versione, durata_sec) oppure None se non esiste."""
     return CATALOGO_CORE.get(protocollo_id)
+
+
+# ── M2 (26/8) — lo specchio dei PERCORSI ────────────────────────────
+# Il percorso vero e' frontend/.../pro/percorsi.js (contenuto
+# editoriale in git). Al server servono solo i metadati per validare
+# una sessione che dichiara «tappa N del percorso X»: quali percorsi
+# esistono, quante tappe hanno, quale protocollo suona ogni tappa.
+# Le note editoriali NON si specchiano. Parita' sotto guardia (test
+# M2, eseguendo percorsi.js in Node).
+#
+# id → (titolo, [protocollo_id di ogni tappa, in ordine])
+PERCORSI_CORE = {
+    "radicamento": ("Radicamento",
+                    ["ground", "rilassare", "ground", "ground",
+                     "rilassare", "ground", "ground", "ground"]),
+    "verso-il-sonno": ("Verso il sonno",
+                       ["rilassare", "rilassare", "dormire", "dormire",
+                        "rilassare", "dormire"]),
+    "spazio-di-calma": ("Spazio di calma",
+                        ["calm", "calm", "rilassare", "calm",
+                         "rilassare", "calm"]),
+}
+
+
+def percorso_core(percorso_id):
+    """(titolo, tappe) oppure None se non esiste."""
+    return PERCORSI_CORE.get(percorso_id)

@@ -336,3 +336,41 @@
 .fqz .partitura-voce i {
   width: 14px; height: 4px; border-radius: 999px; display: inline-block;
 }
+
+/* ── M2: i percorsi ───────────────────────────────────────────────── */
+.fqz .rito-tappa {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--water); margin: 0 0 4px;
+}
+.fqz .rito-nota-tappa {
+  font-size: 12.5px; color: var(--dim); font-style: italic;
+  margin: 6px 0 0; line-height: 1.6;
+}
+.fqz .pc-tappe { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 8px; }
+.fqz .pc-tappa {
+  display: grid; grid-template-columns: 30px minmax(0, 1fr) 40px auto;
+  gap: 12px; align-items: center;
+  border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px 14px;
+}
+.fqz .pc-tappa.prossima { border-color: var(--lamp); }
+.fqz .pc-tappa.fatta { opacity: .55; }
+.fqz .pc-num {
+  width: 26px; height: 26px; border-radius: 999px;
+  border: 1px solid var(--line); display: inline-flex;
+  align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; color: var(--dim);
+}
+.fqz .pc-tappa.fatta .pc-num { color: var(--water); border-color: var(--water); }
+.fqz .pc-tappa.prossima .pc-num { color: var(--lamp); border-color: var(--lamp); }
+.fqz .pc-cosa { display: grid; gap: 2px; min-width: 0; }
+.fqz .pc-cosa b { font-size: 13.5px; color: var(--bone); font-weight: 600; }
+.fqz .pc-nota { font-size: 11.5px; color: var(--dimmer); line-height: 1.5; }
+.fqz .pc-durata {
+  font-family: var(--mono); font-size: 11px; color: var(--dim);
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+@media (max-width: 760px) {
+  .fqz .pc-tappa { grid-template-columns: 30px minmax(0, 1fr); }
+  .fqz .pc-durata { display: none; }
+  .fqz .pc-tappa button { grid-column: 2; justify-self: start; }
+}

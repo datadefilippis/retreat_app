@@ -66,6 +66,11 @@ class SoundSession(BaseModel):
     booking_id: Optional[str] = None
 
     protocollo: RiferimentoProtocollo
+    # M2 — se la sessione e' una tappa di un percorso curato:
+    # {id, titolo, tappa, totale}. Verificato dal server contro lo
+    # specchio (sound_catalog.PERCORSI_CORE): la tappa deve suonare
+    # davvero il protocollo della sessione.
+    percorso: Optional[dict] = None
     score_snapshot: Optional[dict] = None      # solo tipo=operatore
     durata_prevista_sec: float
 

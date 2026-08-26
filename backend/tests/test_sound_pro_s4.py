@@ -102,18 +102,18 @@ class TestIlRegistro:
             "solo gli attivi: le sessioni vecchie perdono il nome"
         assert "reg-filtro-cliente" in src and "reg-filtro-stato" in src
 
-    def test_10_zero_backend_nuovo(self):
-        """S4 legge, non aggiunge: il router delle sessioni e quello
-        dei protocolli sono INTATTI rispetto a S3."""
-        r = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD", "--", "backend/"],
-            cwd=BACKEND_DIR.parent, capture_output=True, text=True)
-        if r.returncode != 0:
-            import pytest
-            pytest.skip("git non disponibile")
-        toccati = [x for x in r.stdout.strip().splitlines()
-                   if not x.startswith("backend/tests/")]
-        assert not toccati, f"S4 doveva solo leggere, ha toccato: {toccati}"
+    def test_10_lo_storico_legge_solo_l_api_di_s2(self):
+        """L'invariante di S4, nella forma che dura: registro e
+        continuità LEGGONO — le sole chiamate del quaderno sono
+        sessioni.list e sessioni.get. Se un giorno lo storico avesse
+        bisogno di un endpoint suo, S2 sarebbe stata disegnata male.
+        (Era un diff-contro-HEAD: giusto per il ciclo S4, rompeva su
+        ogni lavoro backend legittimo successivo — M2 l'ha provato.)"""
+        src = _senza_commenti(PAGINA.read_text())
+        quaderno = src[src.find("function RigaSessione"):
+                       src.find("function SessioniAperte")]
+        chiamate = set(re.findall(r"soundProAPI\.sessioni\.(\w+)", quaderno))
+        assert chiamate <= {"list", "get"},             f"lo storico SCRIVE: {chiamate - {'list', 'get'}}"
 
     def test_11_le_guardie_audio_reggono_ancora(self):
         """Registro e continuità non hanno aperto porte all'audio nella
