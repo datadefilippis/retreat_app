@@ -78,7 +78,14 @@
 
 .fqz .lab-arrivo{color:var(--dimmer);font-size:12px;margin-top:18px}
 
-/* l'oscilloscopio: una tela quieta, il freeze come unico comando */
+/* il comando del banco: una striscia sobria fra la sorgente e le
+   letture — non una barra di trasporto */
+.fqz .lab-banco{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  margin:16px 0 2px;padding:0 4px}
+.fqz .lab-banco > span{color:var(--dimmer);font-size:11.5px}
+
+/* le tele: quiete, senza comandi propri */
 .fqz .lab-spazio{flex:1}
 .fqz .lab-freeze{
   font:inherit;font-size:11.5px;letter-spacing:.05em;cursor:pointer;

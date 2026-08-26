@@ -59,13 +59,11 @@ const scriviHz = (hz) => (hz >= 1000
   ? `${(hz / 1000).toFixed(hz >= 10000 ? 1 : 2).replace('.', ',')} kHz`
   : `${hz.toFixed(hz < 100 ? 2 : 1).replace('.', ',')} Hz`);
 
-export default function Spettro({ ottieniAnalisi }) {
+export default function Spettro({ ottieniAnalisi, fermo }) {
   const telaRef = useRef(null);
   const dbRef = useRef(null);          // ultimo spettro acquisito
   const hzBinRef = useRef(0);
   const fMaxRef = useRef(0);
-  const freezeRef = useRef(false);
-  const [freeze, setFreeze] = useState(false);
   /* il picco vive in un ref per il DISEGNO (che gira a ogni frame) e
      in uno stato solo per l'ETICHETTA: se finisse nelle dipendenze
      dell'effetto, il pittore si re-iscriverebbe sessanta volte al
@@ -79,7 +77,7 @@ export default function Spettro({ ottieniAnalisi }) {
     const c2d = tela.getContext('2d');
     let tinte = null;
 
-    const dipingi = () => {
+    const dipingi = (fermo) => {
       const dpr = window.devicePixelRatio || 1;
       const W = Math.round(tela.clientWidth * dpr);
       const H = Math.round(tela.clientHeight * dpr);
@@ -101,7 +99,7 @@ export default function Spettro({ ottieniAnalisi }) {
       const analisi = ottieniAnalisi();
       const dbMin = DB_MIN, dbMax = DB_MAX;
       if (analisi) {
-        if (!freezeRef.current) {
+        if (!fermo) {
           const N = analisi.analyser.frequencyBinCount;
           if (!dbRef.current || dbRef.current.length !== N) {
             dbRef.current = new Float32Array(N);
@@ -169,7 +167,7 @@ export default function Spettro({ ottieniAnalisi }) {
          a un difetto misurato. */
       c2d.lineJoin = 'round';
       c2d.lineCap = 'round';
-      c2d.strokeStyle = freezeRef.current ? tinte.fermo : tinte.traccia;
+      c2d.strokeStyle = fermo ? tinte.fermo : tinte.traccia;
       c2d.beginPath();
       if (db && hzBin) {
         let primo = true;
@@ -192,7 +190,7 @@ export default function Spettro({ ottieniAnalisi }) {
       if (db && hzBin) {
         c2d.lineTo(W, HG); c2d.lineTo(0, HG); c2d.closePath();
         c2d.globalAlpha = 0.10;
-        c2d.fillStyle = freezeRef.current ? tinte.fermo : tinte.traccia;
+        c2d.fillStyle = fermo ? tinte.fermo : tinte.traccia;
         c2d.fill();
         c2d.globalAlpha = 1;
       }
@@ -231,19 +229,13 @@ export default function Spettro({ ottieniAnalisi }) {
       <div className="lab-chead">
         <h2>Spettro</h2>
         <span className="lab-cnote">le frequenze che compongono il segnale</span>
-        <span className="lab-spazio" />
-        <button type="button" data-testid="lab-freeze-spettro"
-          className={'lab-freeze' + (freeze ? ' fermo' : '')}
-          onClick={() => { freezeRef.current = !freeze; setFreeze(!freeze); }}>
-          {freeze ? '● Riprendi' : '❄ Congela'}
-        </button>
       </div>
       <canvas ref={telaRef} className="lab-tela" role="img"
         aria-label="Spettro: le frequenze presenti nel segnale" />
       <div className="lab-scope-info">
         <span>scala logaritmica · {F_MIN} Hz → Nyquist</span>
         <span data-testid="lab-picco" className="lab-picco">
-          {freeze ? 'immagine ferma — il suono continua'
+          {fermo ? 'immagine ferma — il suono continua'
             : picco ? `picco ${scriviHz(picco.hz)}` : 'nessun picco'}
         </span>
         <span>ampiezza in dB</span>

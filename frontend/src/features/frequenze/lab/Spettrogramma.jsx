@@ -67,10 +67,8 @@ const rgb = (css, fallback) => {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 };
 
-export default function Spettrogramma({ ottieniAnalisi }) {
+export default function Spettrogramma({ ottieniAnalisi, fermo }) {
   const telaRef = useRef(null);
-  const freezeRef = useRef(false);
-  const [freeze, setFreeze] = useState(false);
   const [finestra, setFinestra] = useState(null);   // secondi di storia a schermo
 
   useEffect(() => {
@@ -80,7 +78,16 @@ export default function Spettrogramma({ ottieniAnalisi }) {
     const fMaxRef = { current: 0 };
     const db = { buf: null };
 
-    const prepara = (W, H, dpr) => {
+    /* ALLESTIRE e SVUOTARE sono due cose diverse — distinguerle e' la
+     * cura di un difetto latente trovato leggendo (26/8): tinte,
+     * passo e colonna nascevano solo dentro lo svuotamento, che gira
+     * SOLO al cambio di misura. Se il pittore si ri-iscriveva senza
+     * che la tela cambiasse (basta un re-render della pagina), il
+     * disegno ripartiva senza colori e moriva alla prima riga — in
+     * silenzio, perche' il quadro non fa cadere il banco per un
+     * pittore rotto. Ora l'allestimento si rifa' quando serve, e la
+     * storia sopravvive. */
+    const allestisci = (W, H, dpr) => {
       const s = getComputedStyle(tela);
       tinte = {
         ink: rgb(s.getPropertyValue('--ink'), [12, 22, 24]),
@@ -93,12 +100,17 @@ export default function Spettrogramma({ ottieniAnalisi }) {
       passo = Math.max(1, Math.round(dpr));
       colonna = c2d.createImageData(passo, H);
       c2d.imageSmoothingEnabled = false;             // traslazione netta
-      /* fondo pulito: la storia riparte, e si dice */
+      const utili = W - GUTTER * dpr;
+      setFinestra(Math.round((utili / passo) * MS_COLONNA / 100) / 10);
+    };
+
+    /* la tela cambiata di misura si svuota: la storia riparte da qui.
+       E' il prezzo onesto dello scorrimento — l'immagine E' la
+       memoria, e la memoria non si stira. */
+    const svuota = (W, H) => {
       c2d.fillStyle = `rgb(${tinte.ink.join(',')})`;
       c2d.fillRect(0, 0, W, H);
       debito = 0; ultimo = 0;
-      const utili = W - GUTTER * dpr;
-      setFinestra(Math.round((utili / passo) * MS_COLONNA / 100) / 10);
     };
 
     const etichette = (W, H, dpr) => {
@@ -126,19 +138,19 @@ export default function Spettrogramma({ ottieniAnalisi }) {
       });
     };
 
-    const dipingi = () => {
+    const dipingi = (fermo) => {
       const dpr = window.devicePixelRatio || 1;
       const W = Math.round(tela.clientWidth * dpr);
       const H = Math.round(tela.clientHeight * dpr);
       if (!W || !H) return;
       if (tela.width !== W || tela.height !== H) {
         tela.width = W; tela.height = H;
-        /* la tela cambiata di misura si svuota: la storia riparte da
-           qui. E' il prezzo onesto dello scorrimento — l'immagine E'
-           la memoria, e la memoria non si stira. */
-        prepara(W, H, dpr);
+        allestisci(W, H, dpr);
+        svuota(W, H);
+      } else if (!tinte) {
+        allestisci(W, H, dpr);        // ri-iscritto: si riprende, non si cancella
       }
-      if (freezeRef.current) return;                 // fermo: nulla si muove
+      if (fermo) return;                             // fermo: la storia non avanza
 
       const analisi = ottieniAnalisi();
       if (!analisi) return;
@@ -202,19 +214,13 @@ export default function Spettrogramma({ ottieniAnalisi }) {
       <div className="lab-chead">
         <h2>Spettrogramma</h2>
         <span className="lab-cnote">lo spettro che scorre: il tempo va a destra</span>
-        <span className="lab-spazio" />
-        <button type="button" data-testid="lab-freeze-spettrogramma"
-          className={'lab-freeze' + (freeze ? ' fermo' : '')}
-          onClick={() => { freezeRef.current = !freeze; setFreeze(!freeze); }}>
-          {freeze ? '● Riprendi' : '❄ Congela'}
-        </button>
       </div>
       <canvas ref={telaRef} className="lab-tela lab-tela-alta" role="img"
         aria-label="Spettrogramma: le frequenze del segnale nel tempo" />
       <div className="lab-scope-info">
         <span>frequenza in verticale · log</span>
         <span data-testid="lab-finestra">
-          {freeze ? 'immagine ferma — il suono continua'
+          {fermo ? 'immagine ferma — il suono continua'
             : finestra ? `finestra ${String(finestra).replace('.', ',')} s` : ''}
         </span>
         <span>più chiaro = più energia</span>

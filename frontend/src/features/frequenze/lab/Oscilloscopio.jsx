@@ -47,13 +47,11 @@ function trigger(buf) {
   return { da: 0, ok: false };            // corsa libera: silenzio o DC
 }
 
-export default function Oscilloscopio({ ottieniAnalisi }) {
+export default function Oscilloscopio({ ottieniAnalisi, fermo }) {
   const telaRef = useRef(null);
   const acqRef = useRef(null);            // l'ultimo buffer acquisito
   const daRef = useRef(0);                // indice del trigger nel buffer
   const srRef = useRef(0);
-  const freezeRef = useRef(false);
-  const [freeze, setFreeze] = useState(false);
   const [aggancio, setAggancio] = useState(false);
   const [vivo, setVivo] = useState(false);
 
@@ -62,7 +60,7 @@ export default function Oscilloscopio({ ottieniAnalisi }) {
     const c2d = tela.getContext('2d');
     let tinte = null;                     // i colori della palette, letti una volta
 
-    const dipingi = () => {
+    const dipingi = (fermo) => {
       /* la tela segue la card (responsive), in pixel veri */
       const dpr = window.devicePixelRatio || 1;
       const W = Math.round(tela.clientWidth * dpr);
@@ -83,7 +81,7 @@ export default function Oscilloscopio({ ottieniAnalisi }) {
 
       /* acquisizione — salvo che da congelati */
       const analisi = ottieniAnalisi();
-      if (analisi && !freezeRef.current) {
+      if (analisi && !fermo) {
         const N = analisi.analyser.fftSize;
         if (!acqRef.current || acqRef.current.length !== N) {
           acqRef.current = new Float32Array(N);
@@ -116,7 +114,7 @@ export default function Oscilloscopio({ ottieniAnalisi }) {
       /* la traccia */
       const buf = acqRef.current;
       c2d.lineWidth = Math.max(1.25, 1.25 * dpr);
-      c2d.strokeStyle = freezeRef.current ? tinte.fermo : tinte.traccia;
+      c2d.strokeStyle = fermo ? tinte.fermo : tinte.traccia;
       c2d.beginPath();
       if (buf) {
         const da = daRef.current;
@@ -142,19 +140,13 @@ export default function Oscilloscopio({ ottieniAnalisi }) {
       <div className="lab-chead">
         <h2>Oscilloscopio</h2>
         <span className="lab-cnote">il segnale nel tempo, campione per campione</span>
-        <span className="lab-spazio" />
-        <button type="button" data-testid="lab-freeze"
-          className={'lab-freeze' + (freeze ? ' fermo' : '')}
-          onClick={() => { freezeRef.current = !freeze; setFreeze(!freeze); }}>
-          {freeze ? '● Riprendi' : '❄ Congela'}
-        </button>
       </div>
       <canvas ref={telaRef} className="lab-tela" role="img"
         aria-label="Oscilloscopio: la forma d'onda del segnale nel tempo" />
       <div className="lab-scope-info">
         <span>{ms ? `finestra ${ms} ms · ${FINESTRA} campioni` : 'in attesa di un segnale'}</span>
         <span data-testid="lab-aggancio">
-          {freeze ? 'immagine ferma — il suono continua'
+          {fermo ? 'immagine ferma — il suono continua'
             : vivo ? (aggancio ? 'trigger agganciato' : 'corsa libera') : ''}
         </span>
         <span>asse ±1 · zero al centro</span>

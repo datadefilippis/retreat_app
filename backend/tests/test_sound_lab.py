@@ -141,11 +141,15 @@ class TestOscilloscopio:
             "l'isteresi adattiva e' sparita dal trigger"
 
     def test_freeze_ferma_il_disegno_non_il_suono(self):
+        """STEP 5: il fermo non e' piu' del pannello ma del banco. Qui
+        resta la meta' che riguarda l'oscilloscopio: da fermi si
+        smette di ACQUISIRE ma si continua a ridipingere l'ultimo
+        campione, cosi' un cambio di misura non cancella la traccia."""
         src = (LAB / "Oscilloscopio.jsx").read_text()
-        assert "freezeRef" in src and "lab-freeze" in src
-        # da congelati si smette di ACQUISIRE ma si ridipinge l'ultimo
-        # buffer: un resize non deve cancellare la traccia ferma
-        assert "!freezeRef.current" in src
+        assert "if (analisi && !fermo) {" in src, \
+            "da fermi l'oscilloscopio acquisisce lo stesso"
+        assert "c2d.stroke();" in src.split("if (analisi && !fermo)")[1], \
+            "da fermi non ridipinge: al ridimensionamento perde la traccia"
 
     def test_un_solo_ciclo_di_disegno_per_tutto_il_banco(self):
         """La regola vale per ogni strumento presente e futuro: il
@@ -241,10 +245,9 @@ class TestSpettro:
         assert src.index("<Generatore") < src.index("<Oscilloscopio") \
             < src.index("<Spettro"), \
             "l'ordine del banco e' generatore, tempo, frequenze"
-        # OGNI pannello d'analisi riceve la stessa presa: il conteggio
-        # esatto lo tiene la guardia del banco completo, che cresce a
-        # ogni strumento nuovo
-        assert src.count("ottieniAnalisi={() => labRef.current?.analisi") \
+        # OGNI pannello riceve LA STESSA presa, e una sola volta:
+        # dallo STEP 5 e' una callback stabile, non un'arrow nel JSX
+        assert src.count("ottieniAnalisi={ottieniAnalisi}") \
             == src.count("ottieniAnalisi="), \
             "un pannello riceve un'analisi diversa dagli altri"
 
@@ -309,7 +312,7 @@ class TestSpettrogramma:
         assert src.index("<Generatore") < src.index("<Oscilloscopio") \
             < src.index("<Spettro ") < src.index("<Spettrogramma"), \
             "l'ordine del banco: genera, tempo, frequenze, frequenze nel tempo"
-        assert src.count("labRef.current?.analisi") == 3, \
+        assert src.count("ottieniAnalisi={ottieniAnalisi}") == 3, \
             "i tre strumenti non ricevono la stessa analisi"
 
     def test_il_motore_resta_invariato_anche_allo_step_4(self):
@@ -319,6 +322,101 @@ class TestSpettrogramma:
         assert "spettro(buf)" in src and "hzPerBin" in src
         assert "spettrogramma" not in src.lower(), \
             "il motore ha imparato a conoscere un pannello"
+
+
+class TestBancoUnico:
+    """STEP 5 (26/8): un segnale, un tempo, tre letture.
+
+    Il congelamento e' del BANCO, non dei pannelli: il tempo VISIVO
+    vive nel quadro — che e' gia' l'unico padrone del tempo di
+    rendering — e il suono non lo sfiora."""
+
+    def test_il_tempo_fermo_ha_un_padrone_solo(self):
+        quadro = (LAB / "quadro.js").read_text()
+        assert "let tempoFermo = false;" in quadro, \
+            "il tempo visivo non abita nel quadro"
+        for nome in ("congela", "eFermo", "ascoltaFermo"):
+            assert f"export function {nome}" in quadro, f"manca {nome}()"
+        # i pittori ricevono il fermo dal quadro, non se lo inventano
+        assert "p(tempoFermo)" in quadro
+
+    def test_nessun_pannello_tiene_un_fermo_suo(self):
+        """Tre freeze indipendenti erano tre verita' possibili sullo
+        stesso istante. Ora i pannelli LEGGONO il fermo: come
+        parametro del pittore (per disegnare) e come prop (per
+        dirlo) — nessuno lo possiede."""
+        for nome in ("Oscilloscopio.jsx", "Spettro.jsx", "Spettrogramma.jsx"):
+            src = (LAB / nome).read_text()
+            assert "freezeRef" not in src, f"{nome}: ha ancora un fermo suo"
+            assert "setFreeze" not in src, f"{nome}: ha ancora uno stato di fermo"
+            assert "congela(" not in src, f"{nome}: comanda il fermo del banco"
+            assert "const dipingi = (fermo) =>" in src, \
+                f"{nome}: il pittore non riceve il tempo dal quadro"
+
+    def test_il_comando_e_del_banco_e_uno_solo(self):
+        pagina = (LAB / "SoundLabPage.js").read_text()
+        assert 'data-testid="lab-congela"' in pagina
+        assert pagina.count("data-testid=\"lab-congela\"") == 1, \
+            "il comando e' duplicato"
+        # sta FRA la sorgente e le letture: e' li' che passa il confine
+        assert pagina.index("<Generatore") < pagina.index('data-testid="lab-banco"') \
+            < pagina.index("<Oscilloscopio"), \
+            "il comando non sta fra il generatore e le sue letture"
+        for nome in ("Oscilloscopio.jsx", "Spettro.jsx", "Spettrogramma.jsx"):
+            src = (LAB / nome).read_text()
+            assert "<button" not in src, f"{nome}: ha ancora un pulsante suo"
+
+    def test_la_pagina_si_iscrive_invece_di_copiare(self):
+        """Lo stato React del pulsante e' una SOTTOSCRIZIONE al quadro,
+        non una seconda verita' da tenere allineata a mano."""
+        pagina = (LAB / "SoundLabPage.js").read_text()
+        assert "useState(eFermo())" in pagina and "ascoltaFermo(setFermo)" in pagina
+        assert "congela(!fermo)" in pagina, "il pulsante non parla col quadro"
+
+    def test_la_presa_e_stabile(self):
+        """Difetto trovato leggendo (26/8): la presa era un'arrow
+        scritta nel JSX, quindi NUOVA a ogni render della pagina —
+        i tre pittori si disiscrivevano e riscrivevano per nulla.
+        Con uno stato di pagina (il fermo) sarebbe successo a ogni
+        clic, e lo spettrogramma ci moriva dentro (vedi sotto)."""
+        pagina = (LAB / "SoundLabPage.js").read_text()
+        assert "useCallback(() => labRef.current?.analisi || null, [])" in pagina, \
+            "la presa non e' stabile fra un render e l'altro"
+        assert "ottieniAnalisi={() => " not in pagina, \
+            "e' tornata un'arrow nel JSX"
+
+    def test_lo_spettrogramma_sopravvive_a_una_ri_iscrizione(self):
+        """Il difetto latente: tinte, passo e colonna nascevano solo
+        dentro lo svuotamento, che gira SOLO al cambio di misura. Un
+        pittore ri-iscritto senza resize ripartiva senza colori e
+        moriva alla prima riga — in silenzio, perche' il quadro non
+        fa cadere il banco per un pittore rotto."""
+        src = (LAB / "Spettrogramma.jsx").read_text()
+        assert "const allestisci = (" in src and "const svuota = (" in src, \
+            "allestire e svuotare sono ancora la stessa cosa"
+        assert "} else if (!tinte) {" in src, \
+            "senza questo, un pittore ri-iscritto muore muto"
+        # e svuotare resta legato al SOLO cambio di misura
+        assert "svuota(W, H);" in src.split("tela.height = H;")[1][:200]
+
+    def test_il_fermo_non_tocca_il_suono(self):
+        """La prova di principio, in codice: nel quadro (dove vive il
+        fermo) non si nomina il motore; e il congelamento non passa
+        mai dal generatore."""
+        quadro = (LAB / "quadro.js").read_text()
+        importati = re.findall(r"^import .*?from '([^']+)'", quadro, re.M)
+        assert not importati, f"il quadro ha imparato a conoscere qualcuno: {importati}"
+        pagina = (LAB / "SoundLabPage.js").read_text()
+        blocco = pagina.split('data-testid="lab-banco"')[1][:400]
+        assert "generatore" not in blocco.lower(), \
+            "il comando del banco tocca il generatore: non e' piu' un fermo visivo"
+
+    def test_il_quadro_dorme_ancora_a_pagina_nascosta(self):
+        """Il fermo condiviso non deve aver intaccato la regola di
+        prima: niente rAF quando la pagina non si vede."""
+        quadro = (LAB / "quadro.js").read_text()
+        assert "document.hidden" in quadro and "visibilitychange" in quadro
+        assert "if (!pittori.size || document.hidden) return;" in quadro
 
 
 class TestTelaio:
