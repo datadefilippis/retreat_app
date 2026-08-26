@@ -10,7 +10,9 @@
 let _uid = 0;
 // Portante di default: 400 Hz per il binaurale (percezione del battito più
 // nitida con portanti 200-500 Hz), 180 Hz per gli altri metodi.
-const layer = (cfg) => ({
+/* CALM (26/8/2026) riusa questa fabbrica invece di copiarsela: la
+   forma di un livello dev'essere UNA in tutta Aurya Sound. */
+export const layer = (cfg) => ({
   id: ++_uid,
   kind: 'neuro',
   name: cfg.name || 'Livello',

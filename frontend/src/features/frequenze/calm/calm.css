@@ -1,0 +1,52 @@
+/**
+ * CALM — il vestito dell'esperienza (26/8/2026).
+ *
+ * Piu' silenzioso del Laboratorio: una colonna stretta, molto respiro
+ * intorno, un solo accento. Durante l'ascolto lo schermo si svuota
+ * quasi del tutto — chi ascolta non deve avere niente da guardare.
+ */
+
+.fqz.calm main{max-width:520px;margin:0 auto;text-align:center}
+
+/* la porta */
+.fqz .calm-porta{padding:6vh 20px 0}
+.fqz .calm-porta h1{
+  font-family:Cinzel, var(--serif);letter-spacing:.30em;text-transform:uppercase;
+  font-size:30px;color:var(--lamp);margin:0 0 18px}
+.fqz .calm-porta h1::after{content:none}
+.fqz .calm-lead{font-family:var(--serif);font-size:19px;line-height:1.5;color:var(--bone);margin:0 auto 22px;max-width:26em}
+.fqz .calm-nota{color:var(--dim);font-size:13.5px;line-height:1.65;margin:0 auto 30px;max-width:30em}
+.fqz .calm-inizia{
+  font:inherit;font-size:14px;letter-spacing:.14em;text-transform:uppercase;
+  cursor:pointer;background:var(--lamp);color:var(--ink);border:none;
+  border-radius:999px;padding:14px 46px}
+.fqz .calm-inizia:hover{background:var(--bone)}
+.fqz .calm-patto{
+  color:var(--dimmer);font-size:11.5px;line-height:1.6;margin:26px auto 0;max-width:30em}
+.fqz .calm-patto a{color:var(--water);text-decoration:none}
+.fqz .calm-porta .safetyline{margin-top:14px}
+
+/* l'ascolto: quasi niente */
+.fqz .calm-ascolto{padding:16vh 20px 0}
+.fqz .calm-invito{font-family:var(--serif);font-size:17px;color:var(--dim);margin:0 0 40px}
+.fqz .calm-barra{
+  height:1px;background:var(--line);border-radius:1px;overflow:hidden;
+  max-width:320px;margin:0 auto}
+.fqz .calm-barra i{
+  display:block;height:100%;background:var(--lamp-dim);
+  transform-origin:left center;transition:transform .25s linear}
+.fqz .calm-resta{
+  font-family:var(--mono);font-size:12px;color:var(--dimmer);
+  letter-spacing:.06em;margin:14px 0 0}
+.fqz .calm-esci{
+  font:inherit;font-size:11.5px;letter-spacing:.05em;cursor:pointer;
+  background:transparent;border:none;color:var(--dimmer);
+  margin-top:46px;padding:8px 12px}
+.fqz .calm-esci:hover{color:var(--dim)}
+
+@media (max-width:640px){
+  .fqz .calm-porta{padding:4vh 18px 0}
+  .fqz .calm-porta h1{font-size:25px}
+  .fqz .calm-lead{font-size:17px}
+  .fqz .calm-ascolto{padding:12vh 18px 0}
+}

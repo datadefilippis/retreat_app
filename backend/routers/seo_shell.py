@@ -633,6 +633,13 @@ _SOUND_PAGES = {
                         "banda cerebrale, entrainment, battito binaurale, "
                         "frequenza portante e le altre."),
     },
+    "calm": {
+        "title": "CALM: una breve esperienza sonora | Aurya Sound",
+        "description": ("Sei minuti di ascolto costruito per creare uno "
+                        "spazio di calma: un fondo stabile, un respiro "
+                        "sonoro che rallenta e un battito lento fra i due "
+                        "canali. Non è una terapia e non promette effetti."),
+    },
     # LAB (25/8) — il laboratorio: pagina pubblica e indicizzabile
     # (e' contenuto vero, e in italiano non ce l'ha nessuno)
     "lab": {
@@ -643,6 +650,31 @@ _SOUND_PAGES = {
                         "E a passi: oscilloscopio, spettro e sweep."),
     },
 }
+
+
+def _calm_content_html() -> str:
+    """Corpo per i crawler di /sound/calm. Racconta l'esperienza per
+    quello che è — nessuna affermazione fisiologica."""
+    return (
+        "<h1>CALM — una breve esperienza sonora</h1>"
+        "<p>Sei minuti di ascolto costruito per creare uno spazio di "
+        "calma. Non è una terapia e non promette effetti: è un suono "
+        "progettato con cura, che rallenta e ti lascia rallentare.</p>"
+        "<h2>Com'è fatta</h2>"
+        "<ul>"
+        "<li><b>Un fondo stabile</b>: una nota bassa e calda, presente "
+        "dall'inizio alla fine, che fa da stanza.</li>"
+        "<li><b>Un respiro sonoro</b>: un ritmo udibile che rallenta "
+        "lungo tutta l'esperienza. Non chiede nulla — chi vuole lo "
+        "segue.</li>"
+        "<li><b>Un battito lento</b>, nella parte centrale: con le "
+        "cuffie si percepisce una piccola differenza fra i due canali. "
+        "Senza cuffie l'esperienza resta intera.</li>"
+        "</ul>"
+        "<p>Nient'altro: niente campane, niente rumore, niente voce. "
+        "Cosa sappiamo davvero del suono, e cosa no, è raccontato "
+        "scheda per scheda nella biblioteca di Aurya Sound.</p>"
+    )
 
 
 def _lab_content_html() -> str:
@@ -707,6 +739,12 @@ async def _meta_sound(parts: list) -> Optional[dict]:
     # PUBBLICA: senza questo ramo il renderer non la conosce e chi
     # arriva da fuori prende un 404 (la trappola gia' pagata con
     # /sound/visual il 22/8).
+    if sub == "calm":
+        canonical = f"{base}/sound/calm"
+        return {**_SOUND_PAGES["calm"], "canonical": canonical,
+                "hreflang": _hub_hreflang(canonical),
+                "image": f"{base}/og-cover.jpg",
+                "content_html": _calm_content_html()}
     if sub == "lab":
         canonical = f"{base}/sound/lab"
         return {**_SOUND_PAGES["lab"], "canonical": canonical,

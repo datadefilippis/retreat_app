@@ -51,6 +51,16 @@ export default function SoundLandingPage() {
             alla tradizione. Si legge, si approfondisce — e si ascolta.
           </p>
 
+          {/* CALM (26/8) — la prima esperienza vera: sta PRIMA delle
+              schede, perche' si ascolta prima di studiare */}
+          <div className="sld-calm" data-testid="sld-calm">
+            <Link to="/sound/calm">
+              <b>CALM</b>
+              <span>Una breve esperienza sonora per creare uno spazio di
+                calma. Sei minuti — si può fare adesso.</span>
+            </Link>
+          </div>
+
           <div className="sld-cats" data-testid="fqz-landing-cats">
             {SOUND_KEYS.map((k) => (
               <Link key={k} to={CAT_LINK(k)} className="sld-cat">
