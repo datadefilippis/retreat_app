@@ -52,6 +52,7 @@ import { SafetyCurtain } from '../SafetyCurtain';
 import { CATALOGO, ORIGINI } from './catalogo';
 import { PERCORSI } from './percorsi';
 import Rito, { quandoFa } from './Rito';
+import { messaggio } from './errori';
 import Partitura from './Partitura';
 import '../frequenze.css';
 import './pro.css';
@@ -292,7 +293,7 @@ function Editor({ id, onSalvato }) {
         setNote(data.note_operative || '');
         setPassi((data.steps || []).map(daDsl));
       } catch (e) {
-        if (vivo) setAvviso(e?.response?.data?.detail || 'Protocollo non trovato.');
+        if (vivo) setAvviso(messaggio(e, 'Protocollo non trovato.'));
       } finally {
         if (vivo) setCaricando(false);
       }
@@ -343,7 +344,7 @@ function Editor({ id, onSalvato }) {
       onSalvato?.();
       if (!protocollo) navigate(`/sound/pro/${data.id}`, { replace: true });
     } catch (e) {
-      const { indice, testo } = leggiErroreServer(e?.response?.data?.detail);
+      const { indice, testo } = leggiErroreServer(messaggio(e, 'Salvataggio non riuscito.'));
       if (indice != null) setErroriPasso({ [indice]: testo });
       setAvviso(indice != null ? `Passo ${indice + 1}: ${testo}` : testo);
     } finally {
@@ -530,7 +531,7 @@ function Lista({ chiave, onAvvia }) {
         const { data } = await soundProAPI.list(stato);
         if (vivo) setItems(data.items || []);
       } catch (e) {
-        if (vivo) { setItems([]); setAvviso(e?.response?.data?.detail || 'Non riesco a leggere i protocolli.'); }
+        if (vivo) { setItems([]); setAvviso(messaggio(e, 'Non riesco a leggere i protocolli.')); }
       }
     })();
     return () => { vivo = false; };
@@ -542,7 +543,7 @@ function Lista({ chiave, onAvvia }) {
       await soundProAPI.archive(p.id);
       setItems((prec) => prec.filter((x) => x.id !== p.id));
     } catch (e) {
-      setAvviso(e?.response?.data?.detail || 'Non archiviato.');
+      setAvviso(messaggio(e, 'Non archiviato.'));
     }
   };
 
@@ -612,7 +613,7 @@ function Lista({ chiave, onAvvia }) {
                           durata_sec: data.durata_sec, score: data.score,
                         });
                       } catch (e) {
-                        setAvviso(e?.response?.data?.detail || 'Protocollo non aperto.');
+                        setAvviso(messaggio(e, 'Protocollo non aperto.'));
                       }
                     }}>Sessione</button>
                 )}

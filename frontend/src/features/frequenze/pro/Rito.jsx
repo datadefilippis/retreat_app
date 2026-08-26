@@ -37,6 +37,7 @@ import { customersAPI } from '../../../api/customers';
 import { soundProAPI } from '../../../api/soundPro';
 import { creaAscolto } from '../esperienze/ascolto';
 import { useSafetyGate } from '../SafetyCurtain';
+import { messaggio } from './errori';
 import Partitura from './Partitura';
 
 const mmss = (s) => {
@@ -180,8 +181,8 @@ export default function Rito({ protocollo, percorso = null, onEsci }) {
     } catch (e) {
       a.ferma();
       setFase('preparazione');
-      setErrore(e?.response?.data?.detail
-        || 'La sessione non è stata registrata: ascolto fermato.');
+      setErrore(messaggio(e,
+        'La sessione non è stata registrata: ascolto fermato.'));
     }
   };
   const avviaGuardato = guard(avvia);
@@ -215,7 +216,7 @@ export default function Rito({ protocollo, percorso = null, onEsci }) {
       setFase('salvato');
     } catch (e) {
       if (s) s.chiusa = false;
-      setErrore(e?.response?.data?.detail || 'Non salvato: riprova.');
+      setErrore(messaggio(e, 'Non salvato: riprova.'));
     } finally {
       setSalvando(false);
     }

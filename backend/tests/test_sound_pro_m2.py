@@ -237,3 +237,60 @@ class TestInterfaccia:
         pagina = _senza_commenti((PRO / "SoundProPage.jsx").read_text()).lower()
         for vietato in ("creaascolto", "startpreview", "audiocontext"):
             assert vietato not in pagina
+
+
+# ── fix 26/8 · il 422 non ammazza più la pagina ────────────────────────────
+@node_c_e
+class TestErroreSempreUnaFrase:
+    """Il bug trovato dal founder al play dei percorsi: il backend
+    stantio rispondeva 422 e il `detail` di FastAPI — un ARRAY di
+    oggetti — finiva dritto in un <p>: React moriva («Objects are not
+    valid as a React child») e al posto del rito compariva «Qualcosa
+    è andato storto». Da qui la regola: ogni catch passa dal
+    normalizzatore, e dal normalizzatore esce SEMPRE una stringa."""
+
+    def test_11_il_normalizzatore_dice_sempre_una_frase(self, tmp_path):
+        import shutil as _sh
+        _sh.copy(PRO / "errori.js", tmp_path / "errori.js")
+        script = (
+            f"import {{ messaggio }} from "
+            f"{json.dumps(str(tmp_path / 'errori.js'))};\n"
+            """
+const casi = [
+  { e: { response: { data: { detail: 'Limite raggiunto.' } } }, atteso: 'Limite raggiunto.' },
+  // il 422 vero di FastAPI: array di oggetti {loc, msg, type}
+  { e: { response: { data: { detail: [
+      { loc: ['body', 'percorso_id'], msg: 'Extra inputs are not permitted', type: 'extra_forbidden' },
+      { loc: ['body', 'x'], msg: 'Field required', type: 'missing' },
+    ] } } }, atteso: 'Extra inputs are not permitted · Field required' },
+  { e: { response: { data: { detail: [{ strano: 1 }] } } }, atteso: 'fallback' },
+  { e: { response: { data: { detail: { oggetto: 'nudo' } } } }, atteso: 'fallback' },
+  { e: undefined, atteso: 'fallback' },
+  { e: new Error('rete giu'), atteso: 'fallback' },
+];
+const esiti = casi.map(c => {
+  const out = messaggio(c.e, 'fallback');
+  return { ok: out === c.atteso, tipo: typeof out, out };
+});
+console.log(JSON.stringify(esiti));
+""")
+        import subprocess as _sp
+        r = _sp.run([_NODE, "--input-type=module", "-e", script],
+                    capture_output=True, text=True, timeout=30)
+        assert r.returncode == 0, r.stderr[:300]
+        esiti = json.loads(r.stdout.strip().splitlines()[-1])
+        for i, e in enumerate(esiti):
+            assert e["tipo"] == "string", f"caso {i}: uscito un {e['tipo']}"
+            assert e["ok"], f"caso {i}: «{e['out']}»"
+
+    def test_12_nessun_detail_crudo_nel_jsx(self):
+        """La regola strutturale: `e?.response?.data?.detail` non
+        compare più in NESSUN file del modulo pro — si passa dal
+        normalizzatore, sempre."""
+        for f in sorted(PRO.glob("*.jsx")):
+            src = _senza_commenti(f.read_text())
+            assert "e?.response?.data?.detail" not in src, \
+                f"{f.name}: un detail crudo può ancora crashare il render"
+        err = _senza_commenti((PRO / "errori.js").read_text())
+        assert "import" not in err.split("export")[0], \
+            "il normalizzatore deve restare puro"
