@@ -1,12 +1,15 @@
 /**
- * /sound — LA LANDING DI AURYA SOUND (26/8/2026 sera, seconda mano).
+ * /sound — LA LANDING DI AURYA SOUND (26/8/2026 sera, terza mano).
  *
- * Il testo e' del founder, verbatim. Il disegno risponde alle tre
- * cose che mi ha chiesto guardando la prima mano: testi PIU' GRANDI
- * (la scala del sito — i lead a `Lede`, il corpo a text-base/lg, non
- * piu' un 15px minuto), piu' CONTRASTO (le sezioni si alternano
- * chiaro/scuro invece di scorrere tutte crema) e l'ORO di marca dove
- * non sporca: occhielli, filetti, numerali, i richiami sulle bande.
+ * La terza mano risponde alla revisione PM+UX del founder:
+ *  - VIA le frasi ellittiche coi due punti («Non ricordare:
+ *    registrare») — si scrive in italiano, con frasi intere
+ *  - MENO negazioni: una pagina che dice sempre «non» finisce per
+ *    non dire niente
+ *  - le tre PORTE più quadrate e più in evidenza: copy corto, carta
+ *    intera cliccabile, rialzo all'hover
+ *  - da ascoltare SOLO CALM e GROUND (decisione founder: RESPIRO
+ *    resta nel catalogo ma non in vetrina)
  *
  * LE FOTOGRAFIE SONO UN RACCONTO. La pagina e' chiara come il sito, e
  * il BUIO arriva dove stai per entrare nel suono:
@@ -14,9 +17,6 @@
  *   seta    le trame morbide — «poi puoi semplicemente ascoltare»
  *   trame   le scie — le Meditazioni, dove il linguaggio cambia
  *   fuoco   il blu che diventa arancio — il futuro, la risposta
- * L'ultima e' scelta apposta: e' la sola con del caldo dentro, e sta
- * dove il discorso smette di parlare di suono e comincia a parlare
- * di persone.
  */
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -25,7 +25,7 @@ import {
   DisplayTitle, Lede, PhotoBand, PhotoOpener, Section,
 } from '../../components/editorial';
 import {
-  Bottone, Occhiello, ORO, Richiamo, Righe, Rilievo, Scheda, Testo, VERDE,
+  Bottone, Occhiello, ORO, Richiamo, Rilievo, Testo, VERDE,
 } from './soundKit';
 
 const ONDA = '/media/sound/onda.jpg';
@@ -34,28 +34,43 @@ const TRAME = '/media/sound/trame.jpg';
 const FUOCO = '/media/sound/fuoco.jpg';
 
 const PASSI = [
-  ['01', 'Studiamo', 'Partiamo da fenomeni sonori, ritmici e fisiologici e analizziamo ciò che è disponibile.'],
+  ['01', 'Studiamo', 'Partiamo dai fenomeni sonori, ritmici e fisiologici e da ciò che la ricerca dice davvero.'],
   ['02', 'Progettiamo', 'Trasformiamo i principi in una struttura sonora.'],
-  ['03', 'Misuriamo', 'Utilizziamo il Sound Lab per verificare ciò che abbiamo costruito.'],
-  ['04', 'Ascoltiamo', 'Lo trasformiamo in un’esperienza reale.'],
-  ['05', 'Documentiamo', 'La struttura e le basi dell’esperienza rimangono leggibili.'],
+  ['03', 'Misuriamo', 'Verifichiamo nel Sound Lab ciò che abbiamo costruito.'],
+  ['04', 'Ascoltiamo', 'Ne facciamo un’esperienza reale, da vivere in cuffia.'],
+  ['05', 'Documentiamo', 'La struttura e le basi restano leggibili, per chiunque.'],
 ];
 
+/* le PORTE: copy corto, carta intera cliccabile */
+const PORTE = [
+  {
+    id: 'sh-porta-esplora', occhiello: 'Esplora', titolo: 'La Biblioteca',
+    to: '/sound/esplora', accento: ORO, cta: 'Esplora la Biblioteca',
+    testo: '36 schede in quattro mondi: bande cerebrali, frequenze, ritmi del corpo, metodi. Ogni scheda parte dal fenomeno, mai dal mito.',
+  },
+  {
+    id: 'sh-porta-impara', occhiello: 'Impara', titolo: 'Il linguaggio del suono',
+    to: '/sound/impara', accento: VERDE, cta: 'Inizia a imparare',
+    testo: 'Frequenza, binaurale, entrainment, spettro: le parole del suono spiegate in una guida semplice, senza mistero aggiunto.',
+  },
+  {
+    id: 'sh-porta-lab', occhiello: 'Sperimenta', titolo: 'Sound Lab',
+    to: '/sound/lab', accento: ORO, cta: 'Entra nel Lab',
+    testo: 'Genera una frequenza e guarda il segnale vero: forma d’onda, spettro, sweep. Il modo più diretto per giocare con il suono.',
+  },
+];
+
+/* da ascoltare: SOLO CALM e GROUND (decisione founder, 26/8) */
 const ESPERIENZE = [
   {
     id: 'calm', titolo: 'CALM', sotto: '6 minuti per rallentare.',
     righe: ['Un fondo stabile. Un respiro sonoro che si distende. Un battito lento che appare e poi scompare.',
-      'Un’esperienza costruita per accompagnarti verso un ritmo più quieto.'],
+      'Costruita per accompagnarti verso un ritmo più quieto.'],
   },
   {
-    id: 'ground', titolo: 'GROUND', sotto: '8 minuti per scendere di tono.',
-    righe: ['Un registro grave. Una pulsazione lenta. Materia sonora. Poi sempre meno.',
-      'GROUND lavora sulla percezione del peso, della profondità e dello spazio attraverso il suono.'],
-  },
-  {
-    id: 'respiro', titolo: 'RESPIRO', sotto: '10 minuti a sei respiri al minuto.',
-    righe: ['Una nota che sale mentre inspiri e scende mentre espiri. Un tocco segna ogni svolta.',
-      'Non devi contare: devi solo seguire. È il ritmo costante a essere la pratica.'],
+    id: 'ground', titolo: 'GROUND', sotto: '8 minuti per toccare terra.',
+    righe: ['Un registro grave, una pulsazione lenta, materia sonora che piano piano si dirada.',
+      'GROUND lavora sulla percezione del peso, della profondità e dello spazio.'],
   },
 ];
 
@@ -114,12 +129,11 @@ export default function SoundHomePage() {
               ))}
           </div>
           <Testo className="mt-12 max-w-2xl">
-            Sono fenomeni diversi. Aurya Sound nasce per esplorarli e
+            Sono fenomeni diversi, e Aurya Sound nasce per esplorarli e
             trasformarli in esperienze sonore progettate.
           </Testo>
           <Rilievo className="mt-6 max-w-2xl">
-            Non una raccolta di tracce.<br />
-            Un modo diverso di lavorare con il suono.
+            Non una raccolta di tracce: un modo diverso di ascoltare.
           </Rilievo>
         </Section>
 
@@ -129,41 +143,33 @@ export default function SoundHomePage() {
             Parti da ciò che ti incuriosisce.
           </DisplayTitle>
           <div className="mt-12 grid gap-7 lg:grid-cols-3">
-            <Scheda occhiello="Esplora" titolo="La Biblioteca"
-              testid="sh-porta-esplora"
-              footer={<Richiamo to="/sound/esplora">Esplora la Biblioteca →</Richiamo>}>
-              <p>Che cos’è davvero un binaural beat? Cosa succede quando
-                ascolti un tono isocronico? Cosa significa una frequenza
-                di 10 Hz?</p>
-              <p>Aurya raccoglie <b className="text-foreground">36 schede</b> organizzate
-                in quattro mondi: bande cerebrali, altre frequenze, ritmi
-                del corpo, metodi.</p>
-              <p>Ogni scheda parte dal fenomeno e ti aiuta a orientarti.</p>
-            </Scheda>
-            <Scheda occhiello="Impara" titolo="Il linguaggio del suono"
-              testid="sh-porta-impara" accento={VERDE}
-              footer={<Richiamo to="/sound/impara">Inizia a imparare →</Richiamo>}>
-              <p className="font-serif text-lg text-foreground">
-                Frequenza. Ampiezza. Binaurale. Entrainment. Isocronico.
-                Spettro. Ritmo.
-              </p>
-              <p>Parole che incontri continuamente quando entri nel mondo
-                del sound.</p>
-              <p>Abbiamo raccolto i concetti essenziali in una guida
-                semplice, senza trasformare il suono in qualcosa di più
-                misterioso di quanto sia.</p>
-            </Scheda>
-            <Scheda occhiello="Sperimenta" titolo="Sound Lab"
-              testid="sh-porta-lab"
-              footer={<Richiamo to="/sound/lab">Entra nel Lab →</Richiamo>}>
-              <p>Qui puoi smettere di leggere e iniziare a vedere.</p>
-              <p>Genera una frequenza. Osserva la forma d’onda. Guarda lo
-                spettro. Segui uno sweep.</p>
-              <p>Il Lab mostra il segnale reale che stai ascoltando, non
-                una rappresentazione preparata. È il nostro banco di
-                prova — ed è anche il modo più semplice per iniziare a
-                giocare con il suono.</p>
-            </Scheda>
+            {PORTE.map((p) => (
+              <Link key={p.id} to={p.to} data-testid={p.id}
+                className="group relative flex flex-col rounded-2xl bg-white
+                           border border-[#e8e0ce] p-8 lg:p-9 lg:min-h-[330px]
+                           shadow-[0_1px_0_rgba(0,0,0,0.04)]
+                           transition duration-200 hover:-translate-y-1
+                           hover:shadow-[0_18px_40px_-18px_rgba(20,33,43,0.3)]
+                           focus-visible:outline focus-visible:outline-2
+                           focus-visible:outline-offset-2">
+                <span aria-hidden
+                  className="absolute left-8 right-8 top-0 h-1 rounded-b"
+                  style={{ background: p.accento }} />
+                <Occhiello className="mt-2">{p.occhiello}</Occhiello>
+                <h3 className="font-serif text-2xl sm:text-3xl mb-4 text-foreground">
+                  {p.titolo}
+                </h3>
+                <p className="flex-1 text-base leading-relaxed text-muted-foreground">
+                  {p.testo}
+                </p>
+                <span className="mt-8 inline-flex items-center gap-2 self-start
+                                 text-base text-foreground border-b pb-1
+                                 border-[#c9b37e] transition
+                                 group-hover:border-foreground">
+                  {p.cta} →
+                </span>
+              </Link>
+            ))}
           </div>
         </Section>
 
@@ -176,13 +182,13 @@ export default function SoundHomePage() {
             Il suono è fatto per essere vissuto.
           </DisplayTitle>
           <p className="mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-            Perché alla fine non è fatto per essere studiato soltanto.
-            Tre esperienze brevi, accessibili gratuitamente.
+            Studiarlo è metà del viaggio. L’altra metà è ascoltarlo:
+            due esperienze brevi, gratuite, da vivere in cuffia.
           </p>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-4xl">
             {ESPERIENZE.map((e) => (
               <div key={e.id}
-                className="rounded-2xl border border-white/20 bg-black/25 backdrop-blur-sm p-7">
+                className="rounded-2xl border border-white/20 bg-black/25 backdrop-blur-sm p-8">
                 <h3 className="font-serif text-3xl text-white">{e.titolo}</h3>
                 <p className="mt-1 mb-5 text-sm" style={{ color: '#e0cfa4' }}>{e.sotto}</p>
                 <div className="space-y-3 text-[15px] leading-relaxed text-white/80">
@@ -208,19 +214,17 @@ export default function SoundHomePage() {
           </DisplayTitle>
           <div className="mt-7 max-w-2xl space-y-5">
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Non tutto deve essere un protocollo. A volte il suono non
-              deve spiegarti qualcosa: deve semplicemente accompagnarti.
+              Qui il linguaggio cambia: non siamo più nel laboratorio,
+              siamo dentro l’esperienza. A volte il suono non deve
+              spiegarti qualcosa — deve semplicemente accompagnarti.
             </p>
             <p className="font-serif text-2xl text-white text-hero-shadow">
               Voce. Musica. Paesaggi sonori. Composizioni originali. Silenzio.
             </p>
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Qui il linguaggio cambia. Non siamo più nel laboratorio:
-              siamo dentro l’esperienza. Ogni meditazione nasce come un
-              piccolo viaggio — una voce apre lo spazio, il suono lo
-              accompagna, la musica cambia insieme alla pratica. E quando
-              finisce, non deve essere rimasto altro che quello che ti
-              serviva.
+              Ogni meditazione nasce come un piccolo viaggio: una voce
+              apre lo spazio, il suono lo accompagna, la musica cambia
+              insieme alla pratica.
             </p>
           </div>
           <div className="mt-10">
@@ -241,8 +245,8 @@ export default function SoundHomePage() {
               <span aria-hidden className="block h-[3px] w-16 mb-6"
                 style={{ background: ORO }} />
               <Occhiello>Esperienze sonore</Occhiello>
-              <p className="font-serif text-2xl mb-4">CALM, GROUND, RESPIRO.</p>
-              <Testo>Suono come fenomeno. Struttura, ritmo, frequenza, percezione.</Testo>
+              <p className="font-serif text-2xl mb-4">CALM e GROUND.</p>
+              <Testo>Suono come fenomeno: struttura, ritmo, frequenza, percezione.</Testo>
             </div>
             <div>
               <span aria-hidden className="block h-[3px] w-16 mb-6"
@@ -253,8 +257,8 @@ export default function SoundHomePage() {
             </div>
           </div>
           <Rilievo className="mt-14 max-w-3xl">
-            Due linguaggi diversi. Lo stesso desiderio: creare esperienze
-            che abbiano senso ascoltare.
+            Due linguaggi diversi, lo stesso desiderio: creare esperienze
+            che abbia senso ascoltare.
           </Rilievo>
         </Section>
 
@@ -266,39 +270,18 @@ export default function SoundHomePage() {
           <DisplayTitle id="sh-pro" size="section" className="text-[#f6f2e8]">
             Aurya Sound Professional
           </DisplayTitle>
-          <div className="mt-8 grid gap-10 lg:grid-cols-2 max-w-5xl">
-            <div className="space-y-5">
-              <p className="text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85">
-                Se lavori con persone attraverso meditazione,
-                respirazione, pratiche corporee o percorsi di benessere,
-                probabilmente non hai bisogno di un altro software per
-                creare musica. Hai bisogno di strumenti pronti per il tuo
-                lavoro.
-              </p>
-              <p className="font-serif text-2xl sm:text-3xl text-[#f6f2e8]">
-                Non devi progettare una frequenza.<br />
-                Devi scegliere un’esperienza.
-              </p>
-            </div>
-            <div className="space-y-5">
-              <p className="text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85">
-                Aurya Sound Professional mette a disposizione una libreria
-                di protocolli sonori strutturati, progettati per essere
-                utilizzati durante le sessioni. Ogni protocollo ha una
-                propria struttura: intento, durata, progressione, elementi
-                sonori, basi di riferimento, indicazioni di conduzione.
-              </p>
-              <p className="text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85">
-                Una sessione non dovrebbe scomparire quando il suono
-                finisce: con Professional mantieni uno storico — quale
-                protocollo, quale versione, quando, quanto è durato, le
-                tue note.
-              </p>
-              <p className="font-serif text-xl" style={{ color: '#e0cfa4' }}>
-                Non ricordare: registrare.<br />
-                Non improvvisare ogni volta: costruire un percorso.
-              </p>
-            </div>
+          <div className="mt-8 max-w-3xl space-y-6">
+            <p className="text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85">
+              Se accompagni persone — nella meditazione, nel respiro,
+              nelle pratiche corporee — non ti serve un altro software
+              per creare musica. Ti serve una libreria di protocolli
+              sonori pronti da condurre, e uno storico che ricordi ogni
+              sessione al posto tuo.
+            </p>
+            <p className="font-serif text-2xl sm:text-3xl text-[#f6f2e8]">
+              Non devi progettare una frequenza.<br />
+              Devi scegliere un’esperienza.
+            </p>
           </div>
           <div className="mt-12">
             <Bottone to="/sound/professional" tono="chiaro">
@@ -316,8 +299,8 @@ export default function SoundHomePage() {
           <div className="mt-8 max-w-3xl space-y-5">
             <Testo>
               Il mondo del suono è pieno di affermazioni. Alcune hanno
-              basi interessanti. Altre sono ancora oggetto di ricerca.
-              Altre appartengono alla tradizione. Noi preferiamo
+              basi interessanti, altre sono ancora oggetto di ricerca,
+              altre appartengono alla tradizione. Noi preferiamo
               distinguerle.
             </Testo>
             <Testo>
@@ -342,7 +325,9 @@ export default function SoundHomePage() {
           <DisplayTitle id="sh-processo" size="section">
             Dalla ricerca all’esperienza.
           </DisplayTitle>
-          <Lede size="small" className="mt-5">Il processo è semplice.</Lede>
+          <Lede size="small" className="mt-5">
+            Ogni esperienza nasce dallo stesso metodo.
+          </Lede>
           <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
             {PASSI.map(([n, titolo, testo]) => (
               <li key={n}>
@@ -368,14 +353,10 @@ export default function SoundHomePage() {
           </DisplayTitle>
           <div className="mt-7 max-w-2xl space-y-5">
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Oggi Aurya Sound lavora principalmente sul suono. Ma stiamo
-              costruendo qualcosa di più interessante.
-            </p>
-            <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Il prossimo passo di Sound Professional è il biofeedback:
-              non soltanto creare uno stimolo, ma poter osservare cosa
-              succede durante una sessione. Respirazione. Variabilità.
-              Segnali fisiologici. Risposta nel tempo.
+              Oggi Aurya Sound lavora sul suono. Il prossimo passo di
+              Sound Professional è il biofeedback: non soltanto creare
+              uno stimolo, ma poter osservare cosa succede durante una
+              sessione — respirazione, variabilità, risposta nel tempo.
             </p>
             <p className="font-serif text-2xl text-white text-hero-shadow">
               Il suono come stimolo. I dati come osservazione.

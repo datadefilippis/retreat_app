@@ -1,25 +1,25 @@
 /**
- * /sound/professional — LA PAGINA DI VENDITA (testo del founder,
- * 26/8/2026 sera).
+ * /sound/professional — LA PAGINA DI VENDITA (26/8/2026 sera,
+ * seconda mano dopo la revisione PM+UX del founder).
  *
  * Pubblica e indicizzata: qui si SPIEGA e si DESIDERA; lo strumento
  * (/sound/pro) resta app e resta noindex.
  *
- * Il testo e' del founder, verbatim. Il disegno segue la stessa mano
- * della landing di sistema: scala tipografica del sito, contrasto fra
- * le sezioni, l'oro come accento — e le fotografie come bande.
- *   spirale  la spirale di luce: apre. E' struttura e precisione, che
- *            e' esattamente cio' che questa pagina vende
- *   caleido  il caleidoscopio: i percorsi, la ripetizione che diventa
- *            forma
- *   fuoco    il blu che diventa arancio: il futuro, la risposta
+ * Cosa e' cambiato dalla prima mano:
+ *  - VIA i doppioni: «Non è un nuovo Lab» e «Costruito per essere
+ *    utilizzato» dicevano la stessa cosa in due sezioni — ora e' UNA
+ *    sezione sola. «Per chi» non e' piu' un'isola: sta attaccata al
+ *    form, come passo di qualificazione del funnel
+ *  - VIA le frasi ellittiche coi due punti e le raffiche di «non»:
+ *    resta la terzina del hero (e' la firma) e una lista sola
+ *  - la scatola nera non mostra piu' finestre statiche: mostra
+ *    L'ONDA VIVA — le voci degli score veri (costruisci() del
+ *    catalogo) che si muovono a schermo, MUTE. La pagina non suona.
  *
- * LE PARTITURE sono VERE: generate dagli score reali del catalogo, e
- * incastonate come FINESTRE del mondo scuro dentro la pagina chiara —
- * «vedi il protocollo prima di ascoltarlo» non e' un'immagine, e' la
- * cosa stessa.
+ * Le fotografie: spirale (apertura — struttura e precisione), caleido
+ * (i percorsi — la ripetizione che diventa forma), fuoco (il futuro).
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/client';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
@@ -27,22 +27,21 @@ import {
   DisplayTitle, Lede, PhotoBand, PhotoOpener, Section,
 } from '../../components/editorial';
 import {
-  Bottone, Occhiello, ORO, Righe, Rilievo, Scheda, Testo, VERDE,
+  Bottone, Occhiello, ORO, Rilievo, Scheda, Testo, VERDE,
 } from './soundKit';
-import Partitura from './pro/Partitura';
+import OndaViva from './pro/OndaViva';
 import { CATALOGO } from './pro/catalogo';
 import { PERCORSI } from './pro/percorsi';
 import { messaggio } from './pro/errori';
-import './frequenze.css';
 
 const SPIRALE = '/media/sound/spirale.jpg';
 const CALEIDO = '/media/sound/caleido.jpg';
 const FUOCO = '/media/sound/fuoco.jpg';
 
 const PROTOCOLLI = [
-  ['Rilassare', 'Un’esperienza sonora costruita intorno alla stimolazione ritmica e a una progressione verso frequenze più lente.'],
-  ['GROUND', 'Un’esperienza profonda costruita intorno a registro basso, pulsazione e percezione dello spazio.'],
-  ['CALM', 'Un arco breve pensato intorno al rallentamento, al respiro sonoro e a un battito lento.'],
+  ['Rilassare', 'Stimolazione ritmica e una progressione verso frequenze più lente.'],
+  ['GROUND', 'Registro basso, pulsazione, percezione del peso e dello spazio.'],
+  ['CALM', 'Un arco breve intorno al rallentamento, al respiro sonoro e a un battito lento.'],
 ];
 
 const STORICO = ['Persona', 'Protocollo', 'Versione', 'Data', 'Durata', 'Note'];
@@ -54,12 +53,18 @@ const PRATICHE = ['Meditazione', 'Breathwork', 'Sound healing',
   'Pratiche corporee', 'Percorsi di rilassamento', 'Esperienze olistiche'];
 
 /* la FINESTRA: un riquadro del mondo scuro dentro la pagina chiara */
-function Finestra({ children }) {
+function Finestra({ etichetta, sotto, children }) {
   return (
-    <div className="fqz rounded-2xl p-4 sm:p-6"
+    <figure className="rounded-2xl overflow-hidden"
       style={{ background: '#0E1B1E', border: '1px solid #1B2E32' }}>
-      {children}
-    </div>
+      <div className="p-4 sm:p-5">{children}</div>
+      {etichetta && (
+        <figcaption className="flex items-baseline justify-between px-5 pb-4">
+          <span className="font-serif text-lg text-[#f6f2e8]">{etichetta}</span>
+          {sotto && <span className="text-sm text-[#8fd0c2]">{sotto}</span>}
+        </figcaption>
+      )}
+    </figure>
   );
 }
 
@@ -72,8 +77,11 @@ export default function ProfessionalLanding() {
   const [racconto, setRacconto] = useState('');
   const [stato, setStato] = useState(null);   // null | 'invio' | 'fatto' | errore
 
-  const ground = CATALOGO.find((p) => p.id === 'ground');
-  const respiro = CATALOGO.find((p) => p.id === 'respiro');
+  /* gli score VERI del catalogo, calcolati una volta sola */
+  const ground = useMemo(
+    () => CATALOGO.find((p) => p.id === 'ground')?.costruisci(), []);
+  const calm = useMemo(
+    () => CATALOGO.find((p) => p.id === 'calm')?.costruisci(), []);
 
   const chiedi = async (e) => {
     e.preventDefault();
@@ -107,20 +115,15 @@ export default function ProfessionalLanding() {
             Il suono, portato nella tua pratica.
           </DisplayTitle>
           <Lede className="mt-8 max-w-2xl text-white/90 text-hero-shadow" tone="inherit">
-            Protocolli sonori strutturati per professionisti del benessere.
+            Protocolli sonori strutturati, pronti da condurre, con uno
+            storico delle sessioni.
           </Lede>
           <div className="mt-7 max-w-xl space-y-2 text-base sm:text-lg text-white/75 text-hero-shadow">
             <p>Non una playlist.</p>
             <p>Non un generatore di frequenze.</p>
             <p>Non un’altra raccolta di tracce.</p>
           </div>
-          <p className="mt-7 max-w-2xl text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-            Aurya Sound Professional ti offre una libreria di esperienze
-            sonore progettate e pronte da condurre, con una struttura
-            precisa, una documentazione chiara e uno storico delle
-            sessioni.
-          </p>
-          <p className="mt-6 font-serif text-2xl sm:text-3xl text-white text-hero-shadow">
+          <p className="mt-8 font-serif text-2xl sm:text-3xl text-white text-hero-shadow">
             Tu ti occupi della persona.<br />Aurya si occupa del suono.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-6">
@@ -131,7 +134,7 @@ export default function ProfessionalLanding() {
           </div>
         </PhotoOpener>
 
-        {/* ── QUANDO IL SUONO ENTRA DAVVERO ──────────────────────── */}
+        {/* ── IL PROBLEMA → LA PROMESSA ──────────────────────────── */}
         <Section tone="cream" labelledBy="prof-entra">
           <DisplayTitle id="prof-entra" size="section">
             Quando il suono entra davvero nella sessione.
@@ -139,42 +142,32 @@ export default function ProfessionalLanding() {
           <div className="mt-8 grid gap-12 lg:grid-cols-2 max-w-5xl">
             <div className="space-y-5">
               <Testo>
-                Forse oggi utilizzi già musica, meditazioni o soundscape
-                durante il tuo lavoro. Ma una traccia rimane una traccia.
-              </Testo>
-              <div className="space-y-2 border-l-2 pl-6" style={{ borderColor: ORO }}>
-                <p className="font-serif text-2xl">Premi play.</p>
-                <p className="font-serif text-2xl">Finisce.</p>
-              </div>
-              <Testo>
-                La sessione continua nella tua testa, nei tuoi appunti,
-                nella tua esperienza.
+                Forse usi già musica o soundscape nel tuo lavoro. Ma una
+                traccia rimane una traccia: parte, finisce, e quello che
+                è successo resta soltanto nella tua memoria e nei tuoi
+                appunti.
               </Testo>
             </div>
             <div className="space-y-5">
               <Testo>
-                Aurya Sound Professional nasce per fare un passo in più:
-                trasformare l’ascolto in una pratica strutturata.
+                Aurya Sound Professional trasforma l’ascolto in una
+                pratica strutturata.
               </Testo>
               <Rilievo>
-                Ogni esperienza ha un’intenzione, una durata, una
-                progressione e una logica sonora.
+                Ogni esperienza ha un’intenzione, una durata e una
+                progressione. E ogni sessione lascia una traccia scritta.
               </Rilievo>
-              <Testo>E ogni sessione può essere ricordata.</Testo>
             </div>
           </div>
         </Section>
 
         {/* ── LA LIBRERIA ────────────────────────────────────────── */}
         <Section tone="sand" labelledBy="prof-libreria" data-testid="prof-protocolli">
-          <Occhiello>Non devi sapere come costruire un protocollo</Occhiello>
+          <Occhiello>La libreria dei protocolli</Occhiello>
           <DisplayTitle id="prof-libreria" size="section">
-            Devi sapere quale esperienza vuoi condurre.
+            Non devi costruire un protocollo.<br />
+            Devi scegliere quale esperienza condurre.
           </DisplayTitle>
-          <Lede size="small" className="mt-5 max-w-2xl">
-            Aurya mette a tua disposizione una libreria di protocolli già
-            strutturati.
-          </Lede>
           <div className="mt-12 grid gap-7 lg:grid-cols-3">
             {PROTOCOLLI.map(([titolo, testo], i) => (
               <Scheda key={titolo} titolo={titolo}
@@ -185,56 +178,58 @@ export default function ProfessionalLanding() {
             ))}
           </div>
           <Testo className="mt-9 max-w-2xl">
-            E altri protocolli organizzati per differenti intenzioni di
-            pratica.
+            E altri protocolli, organizzati per intenzione di pratica:
+            ognuno con struttura, durata, basi di riferimento e
+            indicazioni di conduzione.
           </Testo>
-          <div className="mt-12 max-w-2xl space-y-2">
-            <Testo>Non devi progettare la frequenza.</Testo>
-            <Testo>Non devi scegliere decine di parametri.</Testo>
-          </div>
           <Rilievo className="mt-8">Scegli. Conduci. Osserva.</Rilievo>
         </Section>
 
-        {/* ── NON È UN NUOVO LAB ─────────────────────────────────── */}
-        <Section tone="sage" labelledBy="prof-nonlab">
-          <DisplayTitle id="prof-nonlab" size="section" className="text-[#f6f2e8]">
-            Il tuo lavoro non è creare il suono.<br />È accompagnare la persona.
+        {/* ── LA SCATOLA NERA → L'ONDA VIVA ──────────────────────── */}
+        <Section tone="cream" labelledBy="prof-onda" data-testid="prof-onda">
+          <Occhiello>Vedi il protocollo prima di ascoltarlo</Occhiello>
+          <DisplayTitle id="prof-onda" size="section">
+            Il suono non è una scatola nera.
           </DisplayTitle>
-          <div className="mt-8 grid gap-12 lg:grid-cols-2 max-w-5xl">
-            <div className="space-y-5">
-              <p className="text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85">
-                Questo è il motivo per cui Professional non è un nuovo
-                Sound Lab. Il Lab esiste per chi vuole esplorare il
-                suono. Professional esiste per chi vuole utilizzarlo.
-              </p>
-              <div className="space-y-2 text-base sm:text-lg text-[#f6f2e8]/70">
-                <p>Niente oscillatori da configurare.</p>
-                <p>Niente frequenze da calcolare.</p>
-                <p>Niente sessioni da montare ogni volta.</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <p className="font-serif text-3xl text-[#f6f2e8]">Apri il protocollo.</p>
-              <p className="font-serif text-3xl text-[#f6f2e8]">Leggi la struttura.</p>
-              <p className="font-serif text-3xl text-[#f6f2e8]">Avvia l’ascolto.</p>
-              <p className="mt-6 text-base sm:text-lg leading-relaxed"
-                style={{ color: '#e0cfa4' }}>
-                E torna a occuparti della persona che hai davanti.
-              </p>
-            </div>
+          <Lede size="small" className="mt-5 max-w-2xl">
+            Queste onde non sono una decorazione: si muovono con i
+            numeri veri di GROUND e CALM — le stesse voci, le stesse
+            ampiezze, lo stesso battito che poi ascolti.
+          </Lede>
+          <div className="mt-10 grid gap-7 lg:grid-cols-2 max-w-5xl">
+            {ground && (
+              <Finestra etichetta="GROUND" sotto="8 minuti · registro grave">
+                <OndaViva score={ground} altezza={210} />
+              </Finestra>
+            )}
+            {calm && (
+              <Finestra etichetta="CALM" sotto="6 minuti · battito lento">
+                <OndaViva score={calm} altezza={210} />
+              </Finestra>
+            )}
+          </div>
+          <div className="mt-10 max-w-3xl space-y-4">
+            <Testo>
+              Di ogni protocollo puoi guardare l’arco completo: quando
+              entra un elemento, quando scompare, come rallenta il ritmo.
+            </Testo>
+            <Rilievo>
+              Quello che vedi corrisponde a ciò che suona.
+            </Rilievo>
           </div>
         </Section>
 
         {/* ── LO STORICO ─────────────────────────────────────────── */}
         <Section tone="paper" labelledBy="prof-storico">
-          <Occhiello>Una sessione non dovrebbe sparire quando finisce</Occhiello>
+          <Occhiello>Una sessione non sparisce quando finisce</Occhiello>
           <DisplayTitle id="prof-storico" size="section">
-            Il tuo lavoro, invece, rimane.
+            Il tuo lavoro rimane.
           </DisplayTitle>
           <div className="mt-10 grid gap-12 lg:grid-cols-2 max-w-5xl items-start">
             <div>
               <Testo className="mb-7">
-                Per ogni sessione puoi mantenere uno storico.
+                Per ogni sessione lo storico conserva ciò che ti serve
+                la volta successiva.
               </Testo>
               <ul className="grid grid-cols-2 gap-3">
                 {STORICO.map((v) => (
@@ -255,9 +250,10 @@ export default function ProfessionalLanding() {
                 </p>
               </div>
               <div className="mt-8 space-y-3">
-                <Rilievo>La volta successiva non devi ricordare.</Rilievo>
-                <Rilievo>Puoi guardare.</Rilievo>
-                <Testo>E costruire da lì il passo successivo.</Testo>
+                <Rilievo>
+                  La volta dopo non parti da zero: apri lo storico e
+                  riparti da lì.
+                </Rilievo>
               </div>
             </div>
           </div>
@@ -269,12 +265,11 @@ export default function ProfessionalLanding() {
           <Occhiello tono="chiaro">Dalla singola sessione al percorso</Occhiello>
           <DisplayTitle id="prof-percorsi" size="section"
             className="text-white text-hero-shadow">
-            Una pratica diventa interessante quando smette di essere un
-            episodio isolato.
+            Una sessione è un episodio.<br />Un percorso è una pratica.
           </DisplayTitle>
           <p className="mt-7 max-w-2xl text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-            Per questo Professional non pensa soltanto alle singole
-            esperienze: puoi costruire percorsi strutturati nel tempo.
+            Con Professional puoi costruire percorsi strutturati nel
+            tempo, con un inizio, una progressione e una continuità.
           </p>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {PERCORSI.map((pc) => (
@@ -293,56 +288,19 @@ export default function ProfessionalLanding() {
               </div>
             ))}
           </div>
-          <div className="mt-12 max-w-2xl space-y-2">
-            <p className="text-base sm:text-lg text-white/70">Non una playlist infinita.</p>
-            <p className="font-serif text-2xl text-white text-hero-shadow">
-              Un percorso con un inizio, una progressione e una continuità.
-            </p>
-          </div>
         </PhotoBand>
-
-        {/* ── LA TRASPARENZA: le partiture ───────────────────────── */}
-        <Section tone="cream" labelledBy="prof-partiture" data-testid="prof-partiture">
-          <Occhiello>Vedi il protocollo prima di ascoltarlo</Occhiello>
-          <DisplayTitle id="prof-partiture" size="section">
-            Il suono non è una scatola nera.
-          </DisplayTitle>
-          <div className="mt-8 grid gap-12 lg:grid-cols-2 max-w-5xl items-center">
-            <div className="space-y-5">
-              <Testo>
-                Ogni protocollo può essere visualizzato attraverso il suo
-                arco temporale. Puoi vedere quando entra un elemento,
-                quando scompare, come cambia il ritmo, quanto dura
-                l’esperienza.
-              </Testo>
-              <Rilievo>
-                Quello che vedi corrisponde a ciò che accade realmente
-                nel suono.
-              </Rilievo>
-            </div>
-            <div className="space-y-5">
-              {ground && (
-                <Finestra><Partitura score={ground.costruisci()} dettaglio /></Finestra>
-              )}
-              {respiro && (
-                <Finestra><Partitura score={respiro.costruisci()} /></Finestra>
-              )}
-            </div>
-          </div>
-        </Section>
 
         {/* ── LE BASI ────────────────────────────────────────────── */}
         <Section tone="sand" labelledBy="prof-basi" data-testid="prof-onesta">
-          <Occhiello>Non devi credere alle frequenze</Occhiello>
+          <Occhiello>Le basi, dichiarate</Occhiello>
           <DisplayTitle id="prof-basi" size="section">
-            Devi sapere cosa stai utilizzando.
+            Sai sempre cosa stai proponendo.
           </DisplayTitle>
           <div className="mt-8 max-w-3xl space-y-5">
             <Testo>
               Il mondo delle frequenze è pieno di promesse. Aurya sceglie
-              un approccio diverso: ogni protocollo viene accompagnato
-              dalle proprie basi di riferimento e dalla spiegazione del
-              principio sonoro utilizzato.
+              la strada opposta: ogni protocollo dichiara le proprie basi
+              di riferimento e il principio sonoro che utilizza.
             </Testo>
           </div>
           <ul className="mt-10 flex flex-wrap gap-3">
@@ -362,43 +320,42 @@ export default function ProfessionalLanding() {
               2019, Chaieb 2015) — evidenza promettente, non definitiva.
             </Testo>
           </div>
-          <div className="mt-12 max-w-3xl space-y-4">
-            <Rilievo>E dove l’evidenza è limitata, lo diciamo.</Rilievo>
-            <Testo>
-              Perché un professionista non ha bisogno di promesse più
-              grandi. Ha bisogno di sapere cosa sta proponendo.
-            </Testo>
-          </div>
+          <Rilievo className="mt-10 max-w-3xl">
+            E dove l’evidenza è limitata, lo diciamo.
+          </Rilievo>
         </Section>
 
-        {/* ── FUNZIONA E BASTA ───────────────────────────────────── */}
-        <Section tone="paper" labelledBy="prof-usare">
-          <DisplayTitle id="prof-usare" size="section">
-            Costruito per essere utilizzato.<br />
-            Non per essere studiato per mesi.
+        {/* ── SEMPLICE PER SCELTA ────────────────────────────────── */}
+        <Section tone="sage" labelledBy="prof-usare">
+          <Occhiello tono="chiaro">Semplice per scelta</Occhiello>
+          <DisplayTitle id="prof-usare" size="section" className="text-[#f6f2e8]">
+            Apri il protocollo. Leggi la struttura.<br />Avvia l’ascolto.
           </DisplayTitle>
-          <div className="mt-10 grid gap-12 lg:grid-cols-2 max-w-5xl">
-            <div className="space-y-3">
-              <Testo>Non devi diventare un esperto di acustica.</Testo>
-              <Testo>Non devi imparare a programmare frequenze.</Testo>
-              <Testo>Non devi acquistare apparecchiature dedicate.</Testo>
+          <div className="mt-8 grid gap-12 lg:grid-cols-2 max-w-5xl">
+            <div className="space-y-5">
+              <p className="text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85">
+                Professional non è un nuovo Sound Lab: il Lab esiste per
+                chi vuole esplorare il suono, Professional per chi vuole
+                usarlo nelle sessioni. Niente oscillatori da configurare,
+                niente frequenze da calcolare, niente sessioni da montare
+                ogni volta.
+              </p>
+              <p className="font-serif text-2xl" style={{ color: '#e0cfa4' }}>
+                E torni a occuparti della persona che hai davanti.
+              </p>
             </div>
             <div>
-              <Rilievo className="mb-6">
-                Aurya Sound Professional funziona direttamente dal browser.
-              </Rilievo>
+              <p className="text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85 mb-6">
+                Funziona direttamente dal browser. Nessuna attrezzatura
+                speciale, nessuna installazione.
+              </p>
               <div className="flex flex-wrap gap-3">
                 {['Computer', 'Tablet', 'Cuffie o sistema audio'].map((v) => (
-                  <span key={v} className="rounded-full px-5 py-2 text-base"
-                    style={{ background: '#f2ece0' }}>{v}</span>
+                  <span key={v}
+                    className="rounded-full border border-[#f6f2e8]/30 px-5 py-2 text-base text-[#f6f2e8]/90">
+                    {v}
+                  </span>
                 ))}
-              </div>
-              <Testo className="mt-5">
-                Nessuna attrezzatura speciale, nessuna installazione.
-              </Testo>
-              <div className="mt-8 space-y-1">
-                <p className="font-serif text-2xl">Apri la sessione.</p>
-                <p className="font-serif text-2xl">E inizi.</p>
               </div>
             </div>
           </div>
@@ -414,122 +371,102 @@ export default function ProfessionalLanding() {
           </DisplayTitle>
           <div className="mt-7 max-w-2xl space-y-5">
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Oggi Aurya Sound Professional lavora sullo stimolo sonoro.
-              Il prossimo passo è iniziare a osservare anche la risposta
-              della persona.
-            </p>
-            <p className="text-base sm:text-lg text-white/75">
-              Biofeedback. Respirazione. Variabilità cardiaca. Segnali
-              fisiologici. Andamento nel tempo.
+              Oggi Professional lavora sullo stimolo sonoro. Il prossimo
+              passo è osservare anche la risposta della persona:
+              respirazione, variabilità cardiaca, andamento nel tempo.
             </p>
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              L’obiettivo non è dire alla persona cosa dovrebbe sentire.
-              È permettere all’operatore di osservare ciò che accade
-              durante la pratica.
+              Non per dire alla persona cosa dovrebbe sentire — per
+              permettere a te di osservare ciò che accade durante la
+              pratica.
             </p>
             <p className="font-serif text-2xl sm:text-3xl text-white text-hero-shadow">
               Suono → risposta → osservazione → nuova sessione.
             </p>
-            <p className="text-base sm:text-lg leading-relaxed" style={{ color: '#e0cfa4' }}>
-              È qui che Sound Professional può diventare qualcosa di
-              molto più grande di una libreria audio.
-            </p>
           </div>
         </PhotoBand>
 
-        {/* ── PER CHI ────────────────────────────────────────────── */}
-        <Section tone="cream" labelledBy="prof-perchi">
-          <Occhiello>Un nuovo strumento per chi lavora con le persone</Occhiello>
-          <DisplayTitle id="prof-perchi" size="section">Se utilizzi</DisplayTitle>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl">
+        {/* ── L'ACCESSO (con la qualificazione) ──────────────────── */}
+        <Section tone="cream" labelledBy="prof-accesso" id="accesso"
+          data-testid="prof-invito">
+          <Occhiello>Per chi lavora con le persone</Occhiello>
+          <DisplayTitle id="prof-accesso" size="section">
+            Porta il suono nella tua pratica.
+          </DisplayTitle>
+          <ul className="mt-8 flex flex-wrap gap-3 max-w-3xl">
             {PRATICHE.map((p) => (
-              <li key={p} className="border-l-2 pl-5 py-2 text-lg sm:text-xl font-serif"
-                style={{ borderColor: ORO }}>{p}</li>
+              <li key={p} className="rounded-full px-5 py-2 text-base"
+                style={{ background: '#f2ece0' }}>{p}</li>
             ))}
           </ul>
-          <Testo className="mt-12 max-w-2xl">
-            Aurya Sound Professional può diventare una nuova parte della
-            tua pratica.
+          <Testo className="mt-8 max-w-2xl">
+            Professional non sostituisce il tuo metodo: ti dà un nuovo
+            strumento con cui lavorare. Stiamo aprendo l’accesso
+            progressivamente, per costruire il prodotto insieme a chi lo
+            usa davvero nelle proprie sessioni.
           </Testo>
-          <Rilievo className="mt-6 max-w-2xl">
-            Non sostituisce il tuo metodo. Ti dà un nuovo strumento con
-            cui lavorare.
-          </Rilievo>
-        </Section>
-
-        {/* ── L'ACCESSO ──────────────────────────────────────────── */}
-        <Section tone="sage" labelledBy="prof-accesso" id="accesso"
-          data-testid="prof-invito">
-          <DisplayTitle id="prof-accesso" size="section" className="text-[#f6f2e8]">
-            Inizia a usare Aurya Sound Professional.
-          </DisplayTitle>
-          <p className="mt-7 max-w-2xl text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85">
-            Stiamo aprendo l’accesso progressivamente a un gruppo di
-            professionisti. Vogliamo costruire il prodotto insieme a chi
-            lo utilizza realmente nelle proprie sessioni.
-          </p>
 
           {stato === 'fatto' ? (
             <div className="mt-10 max-w-2xl rounded-2xl border-2 p-8"
               style={{ borderColor: ORO }} data-testid="prof-grazie">
-              <p className="font-serif text-2xl text-[#f6f2e8] mb-3">
+              <p className="font-serif text-2xl mb-3">
                 Ricevuto. Ti ricontattiamo noi.
               </p>
-              <p className="text-base text-[#f6f2e8]/80">
+              <p className="text-base text-muted-foreground">
                 Nel frattempo puoi{' '}
                 <Link to="/sound" className="underline">esplorare Aurya Sound</Link>{' '}
                 — la biblioteca, il Lab e le esperienze sono liberi.
               </p>
             </div>
           ) : (
-            <form className="mt-10 max-w-2xl" onSubmit={chiedi}>
-              <p className="font-serif text-2xl text-[#f6f2e8] mb-2">
-                Richiedi l’accesso
-              </p>
-              <p className="text-base text-[#f6f2e8]/75 mb-7">
-                Lascia il tuo contatto e raccontaci brevemente chi sei e
-                come lavori.
+            <form className="mt-12 max-w-2xl rounded-2xl border-2 p-8 sm:p-10"
+              style={{ borderColor: ORO }} onSubmit={chiedi}>
+              <p className="font-serif text-2xl mb-2">Richiedi l’accesso</p>
+              <p className="text-base text-muted-foreground mb-7">
+                Lascia il tuo contatto e raccontaci in due righe chi sei
+                e come lavori.
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <input type="text" value={nome} placeholder="Il tuo nome"
                   onChange={(e) => setNome(e.target.value)}
                   data-testid="prof-nome"
-                  className="rounded-xl border border-[#f6f2e8]/25 bg-[#f6f2e8]/10
-                             px-5 py-4 text-base text-[#f6f2e8] placeholder:text-[#f6f2e8]/50" />
+                  className="rounded-xl border border-[#d8cfba] bg-white
+                             px-5 py-4 text-base" />
                 <input type="email" value={email} required
                   placeholder="La tua email"
                   onChange={(e) => setEmail(e.target.value)}
                   data-testid="prof-email"
-                  className="rounded-xl border border-[#f6f2e8]/25 bg-[#f6f2e8]/10
-                             px-5 py-4 text-base text-[#f6f2e8] placeholder:text-[#f6f2e8]/50" />
+                  className="rounded-xl border border-[#d8cfba] bg-white
+                             px-5 py-4 text-base" />
               </div>
               <textarea value={racconto} rows={3} maxLength={1000}
                 placeholder="Chi sei e come lavori"
                 onChange={(e) => setRacconto(e.target.value)}
                 data-testid="prof-racconto"
-                className="mt-4 w-full rounded-xl border border-[#f6f2e8]/25 bg-[#f6f2e8]/10
-                           px-5 py-4 text-base text-[#f6f2e8] placeholder:text-[#f6f2e8]/50" />
-              <div className="mt-7">
+                className="mt-4 w-full rounded-xl border border-[#d8cfba] bg-white
+                           px-5 py-4 text-base" />
+              <div className="mt-7 flex flex-wrap items-center gap-5">
                 <button type="submit" disabled={stato === 'invio'}
                   data-testid="prof-invia"
                   className="inline-flex items-center gap-2 rounded-full px-8 py-4
                              text-base font-medium transition hover:opacity-90 disabled:opacity-50"
-                  style={{ background: ORO, color: '#14212b' }}>
+                  style={{ background: VERDE, color: '#f6f2e8' }}>
                   {stato === 'invio' ? 'Invio…' : 'Richiedi l’accesso →'}
                 </button>
+                <span className="text-sm text-muted-foreground">Accesso su invito.</span>
               </div>
               {typeof stato === 'string' && stato !== 'invio' && (
-                <p className="mt-4 text-base text-[#ffd7d7]">{stato}</p>
+                <p className="mt-4 text-base text-[#a03434]">{stato}</p>
               )}
             </form>
           )}
 
-          <div className="mt-20 border-t border-[#f6f2e8]/20 pt-10">
-            <Occhiello tono="chiaro">Aurya Sound Professional</Occhiello>
-            <p className="text-base text-[#f6f2e8]/80">
+          <div className="mt-20 border-t pt-10" style={{ borderColor: '#e8e0ce' }}>
+            <Occhiello>Aurya Sound Professional</Occhiello>
+            <p className="text-base text-muted-foreground">
               Protocolli sonori · Sessioni · Percorsi · Storico · Biofeedback
             </p>
-            <p className="mt-8 max-w-3xl text-sm leading-relaxed text-[#f6f2e8]/60"
+            <p className="mt-8 max-w-3xl text-sm leading-relaxed text-muted-foreground"
               data-testid="prof-disclaimer">
               Aurya Sound Professional è uno strumento per esperienze di
               benessere e accompagnamento. Non è un dispositivo medico e

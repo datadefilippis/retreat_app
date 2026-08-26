@@ -161,16 +161,24 @@ class TestL4LaVendita:
         assert not re.search(r"\bcur(a|e|are)\b", basso)
 
     def test_11_le_prove_visive_sono_vere(self):
-        """Le partiture in vendita si generano dagli score REALI del
-        catalogo: nessun mockup."""
+        """Revisione founder 26/8 sera: nella scatola nera non finestre
+        statiche ma L'ONDA VIVA. Resta l'invariante di prima: le prove
+        visive si generano dagli score REALI del catalogo (nessun
+        mockup) e la pagina di vendita NON suona."""
         src = _senza_commenti((FQ / "ProfessionalLanding.jsx").read_text())
         assert "from './pro/catalogo'" in src
-        assert "<Partitura" in src
+        assert "<OndaViva" in src
         assert "costruisci()" in src
         # e la pagina non suona: e' vendita, non strumento
         basso = src.lower()
         for vietato in ("creaascolto", "audiocontext", "startpreview"):
             assert vietato not in basso
+        # l'onda stessa e' MUTA (nessun contesto audio) e viva davvero
+        onda = _senza_commenti((FQ / "pro" / "OndaViva.jsx").read_text())
+        assert "AudioContext" not in onda and "createOscillator" not in onda
+        assert "requestAnimationFrame" in onda
+        assert "prefers-reduced-motion" in onda, \
+            "l'onda deve sapersi fermare per chi lo chiede"
 
     def test_12_il_funnel_e_quello_esistente(self):
         """La CTA scrive sul funnel leads gia' in produzione
