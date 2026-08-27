@@ -40,6 +40,7 @@ import { PeriodSelector } from '../../components/insights/PeriodSelector';
 import { KpiOverviewSection } from './components/KpiOverviewSection';
 import { CustomerTable } from './components/CustomerTable';
 import { CustomerProfileSlide } from './components/CustomerProfileSlide';
+import NuovoCliente from './components/NuovoCliente';
 import { StatCard, DonutSplit } from '../../components/charts';
 import ContactActions from '../../components/ContactActions';
 
@@ -235,6 +236,9 @@ export default function CustomerInsightsPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <PeriodSelector value={period} onChange={setPeriod} />
           <div className="flex items-center gap-3 self-start md:self-auto">
+          {/* la porta di creazione manuale: stessa rubrica di ordini,
+              rito e link riservati (fonte unica, niente sync) */}
+          <NuovoCliente onCreato={onRefresh} />
           {/* RS4 — il ponte verso i form newsletter: gli iscritti
               accendono il consenso marketing che si vede QUI */}
           <Link to="/newsletter-forms"
