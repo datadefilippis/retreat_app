@@ -116,6 +116,31 @@ test impedisce a un refactor futuro di importare il cerchio dentro
   dalla voce del sito chiaro resta perche' i due menu vivono in
   mondi diversi. Guardie NV2 evolute di conseguenza.
 
+- **TM8 — gli spezzoni seguono la sessione** (1 giornata, trovato
+  dal founder): oggi le registrazioni vocali del leggio sono un POOL
+  DI ORG — restano a vista sempre, anche dopo il reset della
+  sessione, e questo racconta una bugia (sembrano parte della
+  sessione nuova). La regola giusta, detta dal founder: gli spezzoni
+  si comportano COME I LIVELLI — il reset li fa sparire dal leggio,
+  riaprire la bozza/traccia in cui furono creati li fa riapparire.
+  Il disegno:
+  1. ogni spezzone nasce LEGATO alla sessione di lavoro (bozza
+     aperta, o sessione nuova non ancora salvata); al Salva bozza i
+     legami si consolidano sul documento della traccia;
+  2. il leggio mostra SOLO gli spezzoni della sessione aperta: reset
+     → leggio vuoto; apri una bozza → i suoi spezzoni tornano;
+  3. gli spezzoni orfani di una sessione mai salvata si puliscono
+     (lato server, con la scopa esistente dei voice asset);
+  4. gli spezzoni ESISTENTI (pre-TM8, senza legame) non spariscono
+     in silenzio: un'adozione una-tantum li lega alle tracce che li
+     referenziano nello score; quelli che nessuno score usa restano
+     visibili in un ripiego dichiarato («Spezzoni senza sessione»)
+     finche' il founder non li usa o elimina — mai cancellare
+     registrazioni di voce senza consenso;
+  5. guardie: reset→leggio vuoto, bozza→spezzoni suoi, gli score
+     pubblicati continuano a risolvere i loro clip (l'ascolto NON
+     cambia: il legame governa il LEGGIO, non la risoluzione audio).
+
 ## 4 · Fuori scope
 
 Analytics per link oltre i contatori, scadenza automatica dei link,
