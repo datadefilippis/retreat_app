@@ -1,210 +1,186 @@
-# Crea Studio — sblocco automatico con l'abbonamento e TRACCE RISERVATE (ciclo TR, v2)
+# Crea Studio col piano Pro — il piano, spiegato (ciclo TR, v3)
 
-*Piano v2, deciso col founder il 27/8/2026. Supera la v1 su un punto:
-Studio NON è un modulo a prezzo separato — si accende AUTOMATICAMENTE
-con l'abbonamento Aurya Pro esistente (19€), prova gratuita compresa.
-Il resto della v1 (due cappelli, tre visibilità, esclusione dalla
-pubblica) resta e qui si dettaglia. Obiettivi dichiarati dal founder:
-preciso, isolato, scalabile, e SOPRATTUTTO: non rompere ciò che oggi
-funziona — in produzione lui e Valentina usano Crea e pubblicano
-nelle Meditazioni, e devono continuare a farlo identico.*
+*v3 del 27/8/2026, riscritta perché si capisca. Due correzioni del
+founder rispetto alla v2: (1) se l'operatore smette di pagare, i link
+dei suoi clienti SI SPENGONO — non c'è periodo di grazia; (2) serviva
+chiarezza sul pannello system admin: nessun conflitto, qui è spiegato
+come convivono. Il principio resta: preciso, isolato, scalabile, e
+il flusso di chi oggi usa Crea in produzione (founder e Valentina)
+non cambia di un byte.*
 
 ---
 
-## 0 · I fatti del sistema (verificati in codice, non supposti)
+## 1 · In una frase
 
-- `organizations.plan` ∈ `free|starter|pro|enterprise`;
-  `organizations.billing_status` ∈ `none|trialing|active|past_due|canceled|manual`.
-- La memoria anti-doppia-prova ESISTE già:
-  `has_used_trial_plan_slug` (sopravvive a cancellazioni e rientri).
-- `organizations.sound_composer` è il privilegio manuale del system
-  admin (pannello `/admin/sound` con audit) che oggi cancella l'unico
-  gate dei 12 endpoint del compositore.
-- Il provisioning piani (`services/plan_provisioning.py`) e il
-  lifecycle billing esistono e NON vanno toccati.
+**Chi paga l'abbonamento Aurya Pro (19€) ha Crea Studio: compone le
+sue meditazioni e le condivide in privato coi suoi clienti. Chi ha la
+concessione manuale del system admin (oggi: tu e Valentina) ha Crea
+COMPLETO, come oggi: compone E pubblica nelle Meditazioni di Aurya.**
 
-## 1 · Il principio architetturale: DERIVARE, MAI SINCRONIZZARE
+## 2 · Le due chiavi (e perché il pannello admin non va in conflitto)
 
-Lo sblocco automatico non scrive nessun flag alla sottoscrizione: si
-CALCOLA a ogni richiesta da ciò che è già vero. Una funzione pura,
-in un posto solo:
+Immagina due chiavi diverse per la stessa stanza (Crea):
 
-```python
-# services/studio_access.py — l'UNICA definizione di "Studio attivo"
-def studio_attivo(org) -> bool:
-    if org.get("sound_studio_override") == "off":   # kill switch
-        return False
-    if org.get("sound_composer"):                    # founder, Valentina
-        return True
-    if org.get("sound_studio_override") == "on":     # partnership/manuale
-        return True
-    return (org.get("plan") == "pro"
-            and org.get("billing_status") in ("active", "trialing", "manual"))
-```
+**CHIAVE 1 — la concessione manuale.** È quella che esiste OGGI: la
+dai tu dal pannello `/admin/sound`, org per org. **Non cambia niente**:
+stesso pannello, stesso interruttore, stesso audit. Chi ce l'ha può
+fare TUTTO — comporre, pubblicare nelle Meditazioni pubbliche di
+Aurya, e (novità) anche condividere tracce in privato. Questa chiave
+non scade mai: non c'entra col billing.
 
-Perché così e non con un flag scritto dai webhook: ogni copia
-sincronizzata è una deriva che aspetta di succedere (abbonamento
-scaduto ma flag rimasto acceso, o viceversa). Derivando, il giorno in
-cui cambia il prezzo o si aggiunge un piano si tocca UNA funzione.
-`sound_studio_override` è un campo nuovo, additivo, a tre stati
-(assente = normale, `on` = concessione manuale, `off` = spegnimento
-d'emergenza per-org): copre partnership e abusi senza toccare billing.
+**CHIAVE 2 — l'abbonamento (nuova, automatica).** Chi ha il piano Pro
+attivo ha Crea Studio senza che nessuno debba fare niente: il sistema
+lo capisce da solo guardando l'abbonamento, a ogni richiesta. Questa
+chiave apre comporre + condividere in privato. **NON apre mai le
+Meditazioni pubbliche**: il server rifiuta la pubblicazione pubblica
+a chi ha solo questa chiave, anche se qualcuno provasse per vie
+traverse.
 
-**La prova gratuita è quella che già esiste.** `billing_status ==
-"trialing"` è uno stato del piano Pro col suo anti-doppia-prova
-(`has_used_trial_plan_slug`): Studio si accende in prova perché
-`trialing` è negli stati validi — zero codice nuovo per il trial, al
-più una scelta commerciale (attivare i giorni di prova sul piano Pro
-se oggi non sono configurati).
+**Come convivono — le tre regole:**
+1. Il pannello admin **continua a esistere identico** per la chiave 1.
+2. Nel pannello aggiungiamo una colonna in sola lettura che ti mostra
+   chi ha la chiave 2 («Studio: attivo via abbonamento»), così hai la
+   regia completa in un posto solo — ma non devi gestirla: si accende
+   e spegne da sola col billing.
+3. Un'org può avere entrambe le chiavi (es. un giorno Valentina con
+   un suo abbonamento): vince sempre la più ampia, cioè la manuale.
+   E per le emergenze c'è un interruttore per-org («spegni Studio»)
+   che chiude la chiave 2 a una specifica org anche se paga — il
+   kill switch per gli abusi.
 
-## 2 · I due cappelli: chi può cosa (e perché tu e Valentina non cambiate)
+**In pratica per te non cambia nulla**: continui a dare e togliere la
+chiave 1 come oggi. La chiave 2 lavora da sola.
 
-| Capacità | `sound_composer` (manuale) | Studio (derivato dal Pro) |
-|---|---|---|
-| Comporre in Crea | ✅ | ✅ |
-| Pubblicare nelle **Meditazioni pubbliche** | ✅ | ❌ **mai** (403 dal server) |
-| Pubblicare **riservato** + condividere link | ✅ | ✅ |
+## 3 · Cosa succede quando un operatore si abbona (il film)
 
-- I 12 endpoint del compositore passano da
-  `require_sound_composer` a un nuovo `require_sound_crea` =
-  `sound_composer OR studio_attivo(org)`. Il vecchio
-  `require_sound_composer` NON si tocca: resta il gate della
-  pubblicazione pubblica e del pannello admin.
-- Il **publish** è il portiere unico della visibilità:
-  `visibility="public"` richiede `sound_composer` (server-side, non
-  una UI nascosta); senza, il server forza `private`. Tu e Valentina
-  avete `sound_composer` → pubblicate in pubblico ESATTAMENTE come
-  oggi, e in più potete creare condivisioni riservate.
-- `/admin/sound` resta la regia: concessione composer invariata, in
-  più la colonna (sola lettura) «Studio: attivo via Pro / override /
-  spento» e il comando override on/off con audit.
+1. L'operatore sottoscrive il Pro (o parte la prova gratuita — è
+   quella già esistente del piano, col blocco anti-seconda-prova già
+   in produzione).
+2. Alla prima visita in area Sound trova Crea aperto, con una
+   schermata di benvenuto («Benvenuto nello Studio») che spiega le
+   tre mosse: registra, componi, condividi.
+3. Compone. Quando pubblica, la traccia è **automaticamente
+   riservata**: non gli viene nemmeno mostrata l'opzione «Meditazioni
+   di Aurya» (e se la chiedesse al server a mano, riceverebbe un no).
+4. Dalla lista delle sue tracce sceglie un contatto dal suo CRM (o ne
+   crea uno al volo) e genera **il link personale di quel contatto**.
+   Lo invia con WhatsApp o email dai pulsanti che già esistono.
+5. Il cliente apre il link e ascolta. Senza registrarsi, senza
+   scaricare niente: il player è quello di Aurya.
 
-## 3 · La condivisione: un LINK PER CONTATTO, revocabile a persona
+## 4 · Il link del cliente: come funziona, e le tue tre domande
 
-Risposta alle tre domande del founder (il link è solo per quell'utente?
-serve un account? come si revoca?):
+- **«Il link è accessibile solo a quell'utente?»** Ogni contatto ha
+  il SUO link, diverso da quello di chiunque altro (un codice casuale
+  impossibile da indovinare, registrato da noi). Tecnicamente chi
+  possiede il link può aprirlo — come un invito personale: se Marco
+  lo gira, sta girando il SUO invito, e l'operatore lo vede (ogni
+  link conta i suoi ascolti e l'ultima apertura). Il lucchetto duro
+  per-persona (verifica dell'email del cliente prima dell'ascolto) è
+  la fase 2: il disegno la prevede già, si accende con un flag.
+- **«Deve creare un account?»** No, per scelta: obbligare il cliente
+  di uno yoga teacher a registrarsi su Aurya ammazza l'uso al primo
+  invio. L'account cliente è la fase 3, se e quando servirà.
+- **«E se l'operatore vuole revocare?»** Un click sul singolo link:
+  quel contatto smette di ascoltare SUBITO, gli altri continuano.
+  Niente da rigenerare, niente link degli altri da rimandare.
 
-**La condivisione è un oggetto di prima classe**, non un URL furbo:
+## 5 · Se l'operatore smette di pagare (deciso dal founder)
 
-```
-sound_shares {
-  id, org_id, track_id,
-  contact_id,                  // il contatto CRM (ScegliPersona esiste già)
-  token,                       // 128 bit random, opaco — NON un JWT
-  stato: "attivo" | "revocato",
-  creato_il, revocato_il,
-  accessi: int, ultimo_accesso // il seme delle analytics future
-}
-// indici: token (unico), (org_id, track_id), (org_id, contact_id)
-```
+**I link si spengono.** Abbonamento scaduto o annullato → Crea si
+chiude E tutti i link dei suoi clienti smettono di suonare, subito.
+Il cliente che apre un link spento vede un messaggio neutro («Questo
+ascolto non è al momento disponibile») — mai una colpa esposta al
+cliente; l'operatore invece vede chiaro nel gestionale il perché e il
+bottone per riattivare. Le tracce e i link **non si cancellano**:
+alla riattivazione tutto riprende esattamente da dov'era, senza
+rigenerare niente. (Tecnicamente è la scelta più semplice: il
+controllo dell'abbonamento sta anche sulla rotta d'ascolto.)
 
-- **Un link a persona**: `/ascolta/{token}`. Ogni contatto riceve il
-  SUO link. Revocare Marco non tocca il link di Giulia: la revoca è
-  `stato="revocato"`, effetto immediato, un click. (Il token opaco in
-  DB batte il JWT proprio qui: la revoca è vera, non "aspetta la
-  scadenza".)
-- **Niente account per chi ascolta** (fase 1, dichiarata onestamente
-  nella UI): obbligare il cliente di uno yoga teacher a registrarsi
-  su Aurya ucciderebbe l'uso al primo invio. Il modello di fiducia è
-  «link personale, non in elenco, revocabile» — un gradino SOPRA
-  l'unlisted di YouTube perché è per-persona e tracciato. Chi inoltra
-  il link, inoltra il proprio nome: `ultimo_accesso`/`accessi`
-  rendono visibile l'anomalia all'operatore.
-- **Fase 2 (non ora, il modello la prevede)**: flag per-share
-  `richiede_verifica` — il cliente conferma la propria email con un
-  codice (riuso dell'infra del cerchio) e il server lega il token al
-  cookie di prova. Fase 3 (non ora): account cliente vero.
-- **Il suono viaggia sicuro**: il player della pagina `/ascolta` è il
-  `PublicFrequencyPage` con un gate diverso — verificato lo share
-  (esiste, attivo, traccia `private`+pubblicata, e Studio o composer
-  dell'org... vedi §5 per il decaduto), il server conia il master-pass
-  effimero già esistente (scope nuovo `fqz_condivisa`) e nginx serve
-  i byte come oggi (X-Accel, Range nativo). Pagina `noindex`, fuori
-  da sitemap e shell; rate-limit sulla rotta; nessun elenco pubblico
-  di token da nessuna parte.
-- **L'invio** riusa `ContactActions` (wa.me/mailto col gate GDPR già
-  costruito): il messaggio precompilato porta il link. Niente email
-  transazionali nuove in fase 1.
+Le org con la chiave 1 (tu e Valentina) non c'entrano col billing:
+niente si spegne mai per loro.
 
-## 4 · Le tre visibilità della traccia (additive, zero migrazioni)
+## 6 · Il muro: le prove che l'attuale non si rompe
 
-`draft` → `published/public` (composer only, com'è oggi: catalogo,
-SEO) → `published/private` (Studio o composer: solo link per
-contatto). Campo `visibility` con **assenza = public**: nessuna
-migrazione, i documenti esistenti non si toccano. L'esclusione dal
-pubblico è STRUTTURALE: il filtro `visibility != "private"` vive
-nella query-base del catalogo (stile `_mio()`: un posto solo,
-guardato), e da lì ereditano catalogo, sitemap, shell SEO, profilo
-operatore, contatori della vetrina.
+Prima di qualunque deploy, questi test devono essere verdi — sono il
+contratto del «non bugghi l'attuale»:
 
-## 5 · Quando l'abbonamento decade (deciso ora, non scoperto poi)
+1. **Il test di Valentina**: org con la chiave 1 e senza abbonamento →
+   compone, pubblica nelle Meditazioni, la traccia appare in catalogo.
+   Identico a oggi, byte per byte.
+2. Org con solo chiave 2 → pubblica: la traccia è privata; il
+   tentativo di pubblicazione pubblica riceve un no dal server; la
+   traccia non appare MAI in catalogo, sitemap, SEO, profilo.
+3. Org senza chiavi (free/starter) → Crea chiuso, come oggi.
+4. Link revocato → non suona più; gli altri link della stessa traccia
+   sì.
+5. Abbonamento scaduto → Crea chiuso E i link non suonano; alla
+   riattivazione tutto riprende.
+6. Prova gratuita → Studio attivo; seconda prova → negata (già
+   garantito dal billing esistente).
+7. Interruttore d'emergenza «off» → Studio spento anche se paga.
 
-- `past_due`/`canceled` → `studio_attivo` = false → **niente nuove**
-  composizioni, pubblicazioni o condivisioni (403 con messaggio che
-  spiega e porta a /costi).
-- **Le condivisioni esistenti CONTINUANO a suonare**: il cliente
-  finale non va punito per il rinnovo mancato del suo operatore. Le
-  tracce restano (sono dati dell'org, mai cancellati dal billing).
-  Il check della rotta `/ascolta` guarda lo share, NON lo stato
-  dell'abbonamento. Se un giorno servirà un tetto, sarà una decisione
-  esplicita, non un effetto collaterale.
-- Riattivazione → tutto riprende da dov'era. Zero stati intermedi.
+## 7 · Le onde (ordine di costruzione)
 
-## 6 · Il muro anti-regressione (la parte "non bugghi l'attuale")
+- **TR1 — la chiave 2** (mezza giornata): la funzione unica che dice
+  «Studio attivo?» leggendo l'abbonamento, il nuovo controllo sugli
+  endpoint di Crea, l'interruttore d'emergenza, la colonna nel
+  pannello admin. Test 1, 3, 6, 7.
+- **TR2 — riservata vs pubblica** (mezza giornata): il campo di
+  visibilità sulla traccia (assente = pubblica: zero migrazioni sui
+  dati esistenti), il portiere sulla pubblicazione, il filtro
+  strutturale che tiene le private fuori da ogni superficie pubblica.
+  Test 2.
+- **TR3 — i link per contatto** (una giornata): l'oggetto-condivisione
+  (org, traccia, contatto, codice, stato, contatori), gli endpoint
+  crea/lista/revoca, la pagina d'ascolto `/ascolta/{codice}` col
+  controllo abbonamento, il collegamento al player e al file master
+  già esistenti. Test 4 e 5.
+- **TR4 — la UI** (una giornata): il benvenuto nello Studio, la
+  scelta di visibilità al publish (solo per chi ha la chiave 1), il
+  pannello condivisioni nelle «mie tracce» (scegli contatto → crea
+  link → invia → revoca), il messaggio neutro del link spento.
+- **TR5 — i doveri** (mezza giornata): cancellazione definitiva che
+  porta via anche condivisioni e master privati; la riga nei ToS
+  sulla titolarità («le meditazioni che componi restano tue»);
+  niente dati nuovi sul cliente finale oltre al contatore.
+- **TR6 — il collaudo**: il muro del §6 completo + il film del §3
+  provato per intero, compresa la revoca e la scadenza.
 
-Guardie che DEVONO esistere prima del deploy, come test API veri:
+TR1+TR2+TR3 stanno insieme in un branch (~2 giorni); TR4 sopra;
+TR5-TR6 prima del deploy. Deploy SOLO col muro verde e col tuo go.
 
-1. **L'invarianza del founder**: org con `sound_composer` (senza Pro)
-   → compone, pubblica in pubblico, la traccia appare in catalogo —
-   il flusso di oggi, byte per byte. È il test che protegge te e
-   Valentina.
-2. Org Pro attiva senza composer → compone; publish `public` → 403;
-   publish → `private` forzato; la traccia NON appare MAI in
-   catalogo, sitemap, shell, profilo (ricerca per slug su tutte le
-   superfici).
-3. Org free/starter → 403 su tutti gli endpoint del compositore
-   (com'è oggi per chi non ha il privilegio).
-4. Share revocato → 403 su `/ascolta` e sul master; gli altri share
-   della stessa traccia continuano.
-5. Billing decaduto → niente nuove condivisioni, ma share esistente
-   suona.
-6. `trialing` → Studio attivo; trial già consumato
-   (`has_used_trial_plan_slug`) → nessun secondo trial (già garantito
-   dal billing esistente, la guardia lo fotografa).
-7. Override `off` → tutto spento anche con Pro attivo (kill switch).
-
-## 7 · Le onde
-
-- **TR1 — l'accesso derivato** (½ giorno): `studio_access.py` +
-  `require_sound_crea` sui 12 endpoint + campo override + colonna in
-  `/admin/sound`. Guardie 1, 3, 6, 7.
-- **TR2 — la visibilità** (½ giorno): campo `visibility`, portiere
-  sul publish, filtro strutturale nella query-base. Guardia 2.
-- **TR3 — gli share** (1 giorno): collezione+indici, endpoint
-  crea/lista/revoca (org-scoped via `_mio`-style), rotta `/ascolta/
-  {token}`, master-pass `fqz_condivisa`, `noindex`. Guardie 4, 5.
-- **TR4 — la UI** (1 giorno): al publish la scelta (se composer)
-  Meditazioni/Riservata; in «Le mie tracce» il pannello condivisioni
-  (ScegliPersona → crea link → copia/WhatsApp via ContactActions →
-  revoca); per gli org Pro senza composer la scelta non appare:
-  riservata e basta. Empty-state in Crea per chi arriva dal Pro
-  («Benvenuto nello Studio»).
-- **TR5 — i doveri** (½ giorno): hard delete porta via share e master
-  privati; riga ToS sulla titolarità dei contenuti («le meditazioni
-  che componi restano tue» va scritto nel legal, non solo in
-  landing); privacy: il contatto è già CRM (base contrattuale),
-  l'ascoltatore anonimo non genera dati nuovi oltre il contatore.
-- **TR6 — il collaudo del muro**: la suite del §6 completa, più lo
-  smoke sul flusso intero (Pro si abbona → compone → condivide →
-  cliente ascolta → revoca → 403).
-
-Ordine: TR1→TR2→TR3 sono il cuore e vanno insieme in un branch;
-TR4 sopra; TR5-TR6 prima di qualunque deploy. Niente deploy senza il
-muro del §6 verde e senza il go esplicito.
-
-## 8 · Cosa resta fuori (detto per non rifarlo)
+## 8 · Fuori scope, detto per non rifarlo
 
 Verifica email per-share (fase 2), account cliente (fase 3),
-analytics d'ascolto oltre il contatore, percorsi/serie assegnati,
-email transazionali, watermark audio. E il catalogo Professional
-resta com'è: spento in vetrina, substrato della fase-vibrazioni.
+analytics oltre i contatori, percorsi assegnati, email transazionali,
+watermark audio. Il catalogo Professional resta com'è: spento in
+vetrina, substrato della futura fase-vibrazioni.
+
+---
+
+## Appendice tecnica (per l'implementazione)
+
+- **Chiave 2 derivata, mai sincronizzata** — una funzione sola:
+  `studio_attivo(org) = override!="off" AND (sound_composer OR
+  override=="on" OR (plan=="pro" AND billing_status in
+  {active,trialing,manual}))`. Campi reali già in produzione:
+  `organizations.plan`, `organizations.billing_status`,
+  `has_used_trial_plan_slug` (anti-doppia-prova). Campo nuovo:
+  `sound_studio_override` ∈ {assente, "on", "off"}.
+- **Gate**: `require_sound_crea` = chiave 1 O chiave 2, sui 12
+  endpoint del compositore; `require_sound_composer` resta INTATTO e
+  guarda solo la chiave 1 (pubblicazione pubblica, pannello admin).
+- **Visibilità**: `frequency_tracks.visibility` ∈ {assente=public,
+  "private"}; filtro `visibility != "private"` nella query-base del
+  catalogo (un solo punto, guardato — stile `_mio()`).
+- **Share**: collezione `sound_shares{id, org_id, track_id,
+  contact_id, token(128-bit random, opaco — non JWT: la revoca deve
+  essere immediata), stato, creato_il, revocato_il, accessi,
+  ultimo_accesso}`; indici su token (unico), (org_id, track_id),
+  (org_id, contact_id). Rotta `/ascolta/{token}`: share attivo AND
+  traccia privata pubblicata AND studio_attivo(org proprietaria) →
+  master-pass effimero (scope `fqz_condivisa`) → nginx serve i byte
+  (X-Accel, Range). Pagina noindex, fuori da sitemap/shell; rate
+  limit sulla rotta.
+- **Invio**: riuso di ContactActions (wa.me/mailto + gate GDPR).
