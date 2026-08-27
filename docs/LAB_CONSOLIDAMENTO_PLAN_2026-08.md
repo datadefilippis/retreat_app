@@ -143,19 +143,52 @@ di tutto:
   tridimensionale di suo) NON esistono: un'onda di pressione è
   un'onda di pressione. Il Lab lo dice con le etichette di casa
   (A/B/C) — la credibilità di Aurya vale più di una parola di moda.
-- Varianti REALI da aggiungere al Generatore, ognuna col suo
-  cartellino:
-  - **rumori colorati** (bianco/rosa/marrone) — servono anche come
-    segnale di prova per LB3;
-  - **FM alla Chowning** — le campane sintetiche per confronto con
-    quelle vere di LB4 (2 operatori bastano per un timbro campana);
-  - **isocroni e battimenti** già di casa nel prodotto: qui si
-    montano sul banco e si MISURANO (lo spettrogramma li racconta);
-  - **Shepard** — l'illusione della scala infinita (il catalogo ha
-    già la «discesa infinita»: il Lab ne mostra il trucco);
-  - **onda disegnata / catturata**: un ciclo disegnato col dito o
-    prelevato dal microfono → PeriodicWave (il telaio della fase di
-    oggi lo permette quasi gratis).
+- **Il principio delle meraviglie (27/8, founder: «onde belle,
+  affascinanti — vortici, geometrie, trascendenti»): la geometria
+  non si aggiunge al suono, EMERGE dal suono.** Ogni meraviglia del
+  catalogo e' un fenomeno vero mostrato dal lato giusto — mai un
+  effetto dipinto sopra. Tre famiglie:
+
+  *Lo spazio (col telaio HRTF dell'Orbita):*
+  - **il Vortice** — orbita a spirale che si stringe salendo (o si
+    allarga scendendo), Doppler naturale del PannerNode, un filo di
+    glissando: il suono avvita attorno alla testa;
+  - **la rotazione nella testa** — sfasamento interaurale che ruota
+    piano: la sorgente gira DENTRO il cranio (lateralizzazione di
+    fase, psicoacustica documentata).
+
+  *La geometria (che emerge dai rapporti):*
+  - **i Rapporti** — l'intervallo scelto come rapporto intero (2:1,
+    3:2, 4:3, 5:4): lo SENTI come consonanza e lo VEDI in XY — le
+    figure di Lissajous sono la geometria dell'intervallo; stonato
+    di poco, la figura RUOTA (il vortice geometrico a schermo);
+  - **il Mandala** — vista polare dell'oscilloscopio (l'onda avvolta
+    in cerchio, raggio = ampiezza): ogni timbro un mandala che
+    respira; stesso analyser, solo un pittore nuovo;
+  - **Phi** — due sorgenti in rapporto aureo 1:1,618…: il numero
+    «piu' irrazionale» da' un battimento che non si ripete MAI;
+    etichetta C sul simbolo, matematica vera sul fenomeno.
+
+  *L'illusione e il trascendente (psicoacustica vera):*
+  - **Shepard-Risset** — la scala infinita (il catalogo ha gia' la
+    «discesa infinita»: il Lab ne mostra il trucco) + il ritmo di
+    Risset che accelera per sempre;
+  - **il terzo suono (Tartini)** — 1200+1500 Hz e l'orecchio genera
+    un 300 Hz che NELL'ARIA NON C'E' (lo spettro lo dimostra: il
+    picco manca);
+  - **la fondamentale fantasma** — armoniche 400+600+800 senza il
+    200: il cervello sente il 200. Il suono che non c'e'.
+
+  *Il banco classico:*
+  - **rumori colorati** (bianco/rosa/marrone) — anche segnale di
+    prova per LB3;
+  - **FM alla Chowning** — campane sintetiche da confrontare con
+    quelle vere di LB4;
+  - **la corda pizzicata** (Karplus-Strong) — una corda simulata in
+    ~20 righe, fisica vera che decade da sola;
+  - **isocroni e battimenti** di casa: sul banco, misurati;
+  - **onda disegnata / catturata** — un ciclo col dito o dal mic →
+    PeriodicWave (il telaio della fase lo permette quasi gratis).
 
 *Effort: 2–3 giornate a moduli indipendenti (si può spezzare).
 Rischio: nessuno tecnico; il rischio è di vetrina — ogni onda entra
