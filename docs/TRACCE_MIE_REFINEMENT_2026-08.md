@@ -84,6 +84,38 @@ test impedisce a un refactor futuro di importare il cerchio dentro
   sparisce. E da operatore chiave-2: UN solo pulsante, mai la parola
   Meditazioni nei suoi gesti.
 
+- **TM6 — la campana d'uscita** (1 giornata, richiesta founder):
+  oggi uscire da Crea con una sessione montata mostra il DIALOGO
+  NATIVO del browser (la passerella e' fatta di <a href> puri: ogni
+  click e' una ricarica completa e scatta il beforeunload — brutto,
+  generico, non stilizzabile) e scatta SEMPRE, anche a sessione
+  appena salvata (il segnale e' `layers > 0`, non lo stato). Tre
+  cure, in ordine di importanza:
+  1. **il dirty VERO**: una firma della sessione (`firmaSalvata`,
+     dallo stesso scorePayload che gia' firma il pubblicato) — ogni
+     azione di sessione (aggiungi/modifica livello, registrazione,
+     taglio, durata, scena) la sporca; Salva bozza, Pubblica e
+     l'apertura di una bozza la puliscono. Niente avviso se pulita:
+     il popup smette di gridare al lupo;
+  2. **il modale PROPRIO**: niente piu' window.confirm ne' dialogo
+     nativo per le navigazioni interne — un modale del mondo Sound
+     (gate/gatebox, vestito Ora d'oro, comodo anche col dito) con
+     TRE gesti: «Salva ed esci» (salva la bozza e naviga), «Esci
+     senza salvare», «Resta». Il beforeunload resta SOLO come rete
+     per la chiusura del tab (li' il browser impone il suo dialogo,
+     non e' stilizzabile per policy);
+  3. **tutte le uscite passano dalla campana**: la barra delle
+     stanze (Lab), la passerella (Meditazioni, Magazine — oggi
+     ricaricano e basta), il marchio verso casa. Meccanismo: la
+     pagina registra una guardia d'uscita che SoundTopbar e
+     StanzeSound consultano prima di navigare.
+
+- **TM7 — la voce si chiama «Aurya Sound»** (¼ giornata, deciso
+  founder): la voce di passerella «Biblioteca» diventa «Aurya
+  Sound» — e' il nome del mondo, non di una stanza; la distinzione
+  dalla voce del sito chiaro resta perche' i due menu vivono in
+  mondi diversi. Guardie NV2 evolute di conseguenza.
+
 ## 4 · Fuori scope
 
 Analytics per link oltre i contatori, scadenza automatica dei link,
