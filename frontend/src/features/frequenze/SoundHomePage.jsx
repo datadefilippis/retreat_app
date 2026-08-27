@@ -1,28 +1,39 @@
 /**
- * /sound — LA LANDING DI AURYA SOUND (27/8/2026, quarta mano).
+ * /sound — LA LANDING DI AURYA SOUND (27/8/2026, quinta mano).
  *
- * La quarta mano nasce da tre decisioni del founder:
- *  - ASCOLTA SUBITO: il campione-eroe e' una MEDITAZIONE VERA
- *    (mondo nuovo, 27 minuti in produzione) in anteprima INLINE — i
- *    primi 90 secondi, il taglio che gia' governa tutto il sistema.
- *    A fine anteprima il patto: l'ascolto completo e' del cerchio.
- *    CALM e GROUND retrocedono a riga («la materia prima»): complete
- *    e gratuite, ma la sintesi pura non e' la cosa piu' esperienziale
- *    per chi arriva da fuori — lo ha detto lui, e aveva ragione.
- *  - UNA SOLA banda fotografica per le Meditazioni: due bande scure
- *    una sotto l'altra non funzionavano, in mezzo ora c'e' il chiaro
- *    (ed e' proprio la sezione dove si ascolta).
- *  - la via professionale e' un PONTE alla landing dedicata di Crea
- *    Studio (/sound/studio): il form vive la', non piu' qui.
+ * La quinta mano cuce IL FILO UNICO. Il difetto visto dal founder:
+ * la pagina faceva ascoltare una meditazione («Ascolta subito») e la
+ * sezione DOPO presentava le Meditazioni come una novita' — il
+ * racconto si mangiava la coda. E in giro restavano concetti di
+ * Professional (biofeedback di sessione, «portalo nel tuo lavoro»
+ * senza dire come) che abbiamo tolto dalla vetrina.
  *
- * LE FOTOGRAFIE SONO UN RACCONTO. La pagina e' chiara come il sito, e
- * il BUIO arriva dove stai per entrare nel suono:
+ * L'ARCO ADESSO E' UNO, e ogni sezione prepara la successiva:
+ *   1. il suono come strumento          (apertura)
+ *   2. non tutto il suono e' musica     (i fenomeni)
+ *   3. studialo                          (le tre porte)
+ *   4. poi il linguaggio cambia: LE MEDITAZIONI — e ne ascolti una
+ *      ADESSO (anteprima 90s, patto della Lettera; la materia prima
+ *      CALM/GROUND in coda come radice, non come doppione)
+ *   5. chi le compone? l'atelier: CREA — ed e' qui che il racconto
+ *      diventa il trigger per i professionisti (/sound/studio)
+ *   6. chiunque componga, le regole non cambiano (l'onesta')
+ *   7. il metodo (i cinque passi)
+ *   8. il futuro: dal suono alla vibrazione (senza gergo da catalogo)
+ *   9. il congedo (esplora + la porta di Crea Studio)
+ *
+ * I trigger verso Crea Studio sono TRE, a intensita' crescente:
+ * il richiamo nell'apertura, la banda «chi le compone», il box del
+ * congedo. Le sezioni «due linguaggi» e il pitch salvia sono morte:
+ * dicevano cose che il filo ora dice da solo.
+ *
+ * LE FOTOGRAFIE SONO UN RACCONTO:
  *   onda    il vortice — l'apertura
- *   trame   le scie — le Meditazioni, dove il linguaggio cambia
- *   fuoco   il blu che diventa arancio — il futuro, la risposta
+ *   trame   le scie — chi compone, l'atelier
+ *   fuoco   il blu che diventa arancio — il futuro, la vibrazione
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { frequenciesAPI } from '../../api/frequencies';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import {
@@ -33,7 +44,6 @@ import {
 } from './soundKit';
 
 const ONDA = '/media/sound/onda.jpg';
-
 const TRAME = '/media/sound/trame.jpg';
 const FUOCO = '/media/sound/fuoco.jpg';
 
@@ -64,14 +74,13 @@ const PORTE = [
   },
 ];
 
-/* IL CAMPIONE-ERO̲E in vetrina (founder 27/8): la meditazione vera di
+/* IL CAMPIONE-EROE in vetrina (founder 27/8): la meditazione vera di
    produzione. Se in un ambiente la traccia non esiste, la sezione si
-   piega con grazia: niente player, restano il racconto e la materia
-   prima. Quando ci saranno piu' meditazioni, qui nascera' il flag
-   «in vetrina» — per ora la scelta e' del founder ed e' una. */
+   piega con grazia: niente player, resta il racconto. Quando ci
+   saranno piu' meditazioni, qui nascera' il flag «in vetrina». */
 const VETRINA_SLUG = 'meditazione-mondo-nuovo-onde-delta';
 
-/* la materia prima: complete e gratuite, ma non piu' schede-eroe */
+/* la materia prima: complete e gratuite, la radice del linguaggio */
 const ASSAGGI = [
   ['CALM', '/sound/calm', '6 minuti per rallentare'],
   ['GROUND', '/sound/ground', '8 minuti per toccare terra'],
@@ -150,14 +159,6 @@ export default function SoundHomePage() {
   useEffect(() => {
     document.title = 'Aurya Sound — Il suono può diventare uno strumento | Aurya';
   }, []);
-  /* la via professionale (founder 26/8 sera): si promuove CREA, non
-     il catalogo Professional — il funnel e' lo stesso dei leads */
-  const { hash } = useLocation();
-  useEffect(() => {
-    if (hash === '#professionisti') {
-      document.getElementById('professionisti')?.scrollIntoView({ block: 'start' });
-    }
-  }, [hash]);
   /* il campione in vetrina: se la traccia non c'e' (altro ambiente),
      la sezione si piega con grazia — mai una scatola rotta */
   const [vetrina, setVetrina] = useState(null);
@@ -173,7 +174,7 @@ export default function SoundHomePage() {
     <MarketplaceShell noSearch>
       <div className="bg-background" data-testid="sound-home">
 
-        {/* ── APERTURA ───────────────────────────────────────────── */}
+        {/* ── 1 · APERTURA ───────────────────────────────────────── */}
         <PhotoOpener image={ONDA} focus="50% 50%" height="tall" align="left"
           width="max-w-4xl" labelledBy="sh-title" data-testid="sh-open">
           <Occhiello tono="chiaro">Aurya Sound</Occhiello>
@@ -187,18 +188,20 @@ export default function SoundHomePage() {
             trasformarlo in esperienze da ascoltare.
           </Lede>
           <p className="mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-white/80 text-hero-shadow">
-            Puoi studiarlo. Puoi sperimentarlo. Puoi semplicemente
-            ascoltarlo. E, se sei un professionista, puoi portarlo nel
-            tuo lavoro.
+            Puoi studiarlo, sperimentarlo, o semplicemente ascoltarlo.
+            E se accompagni persone, puoi comporlo per loro.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-6">
             <Bottone to="/sound/esplora" tono="chiaro" testid="sh-cta-esplora">
               Esplora Aurya Sound
             </Bottone>
+            <Richiamo to="/sound/studio" tono="chiaro" testid="sh-hero-studio">
+              Per i professionisti: Crea Studio →
+            </Richiamo>
           </div>
         </PhotoOpener>
 
-        {/* ── NON TUTTO IL SUONO È MUSICA ─────────────────────────── */}
+        {/* ── 2 · NON TUTTO IL SUONO È MUSICA ─────────────────────── */}
         <Section tone="cream" labelledBy="sh-fenomeni">
           <DisplayTitle id="sh-fenomeni" size="section">
             Non tutto il suono è musica.
@@ -224,7 +227,7 @@ export default function SoundHomePage() {
           </Rilievo>
         </Section>
 
-        {/* ── LE TRE PORTE ───────────────────────────────────────── */}
+        {/* ── 3 · LE TRE PORTE (studia) ───────────────────────────── */}
         <Section tone="sand" labelledBy="sh-porte">
           <DisplayTitle id="sh-porte" size="section">
             Parti da ciò che ti incuriosisce.
@@ -260,31 +263,38 @@ export default function SoundHomePage() {
           </div>
         </Section>
 
-        {/* ── ASCOLTA SUBITO (chiaro: il respiro fra le fotografie) ──
-            Il campione-eroe e' una meditazione VERA in anteprima
-            inline; CALM e GROUND sono la materia prima, in riga. Il
-            testid sh-porta-esperienze resta qui: e' sempre la stanza
-            dell'ascolto, e' cambiato cosa si ascolta per primo. */}
+        {/* ── 4 · LE MEDITAZIONI — e ne ascolti una ADESSO ─────────
+            Il punto in cui il linguaggio cambia: dal laboratorio
+            all'esperienza. La sezione E' la presentazione delle
+            Meditazioni, e la prova e' immediata: il player. */}
         <Section tone="paper" labelledBy="sh-esperienze"
           data-testid="sh-porta-esperienze">
-          <Occhiello>Ascolta subito</Occhiello>
+          <Occhiello>Poi il linguaggio cambia</Occhiello>
           <DisplayTitle id="sh-esperienze" size="section">
-            Il suono è fatto per essere vissuto.
+            Dallo studio all’esperienza: le Meditazioni.
           </DisplayTitle>
-          <Lede size="small" className="mt-5 max-w-2xl">
-            Studiarlo è metà del viaggio. L’altra metà comincia qui,
-            adesso: premi play.
+          <Lede size="small" className="mt-5 max-w-3xl">
+            Fin qui il suono si spiega. Nelle Meditazioni ti accompagna:
+            una voce apre lo spazio, la musica e il paesaggio sonoro lo
+            tengono, e il suono smette di essere un fenomeno da capire.
+            La prova migliore è farla, adesso.
           </Lede>
           {vetrina && (
             <div className="mt-10 max-w-3xl">
               <AnteprimaMeditazione track={vetrina} />
             </div>
           )}
+          <div className="mt-8">
+            <Richiamo to="/meditazioni" testid="sh-porta-meditazioni">
+              Tutte le Meditazioni →
+            </Richiamo>
+          </div>
           <div className="mt-10 max-w-3xl border-t pt-7"
             style={{ borderColor: '#e8e0ce' }}>
             <p className="text-base text-muted-foreground">
-              E se vuoi sentire la materia prima — il fenomeno nudo,
-              senza voce — due esperienze complete e gratuite:
+              E se vuoi sentire da dove nasce questo linguaggio — il
+              fenomeno nudo, senza voce — due esperienze complete e
+              gratuite:
             </p>
             <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
               {ASSAGGI.map(([nome, to, sotto]) => (
@@ -296,88 +306,29 @@ export default function SoundHomePage() {
           </div>
         </Section>
 
-        {/* ── LE MEDITAZIONI ─────────────────────────────────────── */}
+        {/* ── 5 · CHI LE COMPONE: CREA — il trigger nel racconto ────
+            La domanda che il player ha appena piantato («chi ha fatto
+            questa voce?») trova qui la risposta, e la risposta E' la
+            via professionale. */}
         <PhotoBand image={TRAME} focus="50% 50%" width="max-w-4xl"
-          labelledBy="sh-meditazioni" data-testid="sh-porta-meditazioni">
-          <Occhiello tono="chiaro">E poi c’è un altro modo di usare il suono</Occhiello>
-          <DisplayTitle id="sh-meditazioni" size="section"
+          labelledBy="sh-crea" data-testid="sld-crea">
+          <Occhiello tono="chiaro">Ogni meditazione ha una voce</Occhiello>
+          <DisplayTitle id="sh-crea" size="section"
             className="text-white text-hero-shadow">
-            Le Meditazioni Aurya
+            Composte con Crea, l’atelier di Aurya.
           </DisplayTitle>
           <div className="mt-7 max-w-2xl space-y-5">
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Qui il linguaggio cambia: non siamo più nel laboratorio,
-              siamo dentro l’esperienza. A volte il suono non deve
-              spiegarti qualcosa — deve semplicemente accompagnarti.
-            </p>
-            <p className="font-serif text-2xl text-white text-hero-shadow">
-              Voce. Musica. Paesaggi sonori. Composizioni originali. Silenzio.
+              La meditazione che hai appena sentito è nata qui: la voce
+              registrata dal browser, le basi sonore, le frequenze, la
+              scena visiva. Un unico strumento, nessuno studio di
+              registrazione.
             </p>
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Ogni meditazione nasce come un piccolo viaggio: una voce
-              apre lo spazio, il suono lo accompagna, la musica cambia
-              insieme alla pratica.
+              E lo stesso atelier ora si apre, su invito, a chi
+              accompagna persone.
             </p>
-          </div>
-          <div className="mt-10">
-            <Bottone to="/meditazioni" tono="chiaro">Scopri le Meditazioni →</Bottone>
-          </div>
-          <p className="mt-7 text-sm text-white/60">
-            Le Meditazioni Aurya vengono pubblicate attraverso La Lettera.
-          </p>
-        </PhotoBand>
-
-        {/* ── I DUE LINGUAGGI ────────────────────────────────────── */}
-        <Section tone="paper" labelledBy="sh-due">
-          <DisplayTitle id="sh-due" size="section">
-            Due modi diversi di lavorare con il suono.
-          </DisplayTitle>
-          <div className="mt-12 grid gap-10 md:grid-cols-2 max-w-4xl">
-            <div>
-              <span aria-hidden className="block h-[3px] w-16 mb-6"
-                style={{ background: ORO }} />
-              <Occhiello>Esperienze sonore</Occhiello>
-              <p className="font-serif text-2xl mb-4">CALM e GROUND.</p>
-              <Testo>Suono come fenomeno: struttura, ritmo, frequenza, percezione.</Testo>
-            </div>
-            <div>
-              <span aria-hidden className="block h-[3px] w-16 mb-6"
-                style={{ background: VERDE }} />
-              <Occhiello>Meditazioni Aurya</Occhiello>
-              <p className="font-serif text-2xl mb-4">Voce, musica e paesaggio sonoro.</p>
-              <Testo>Suono come esperienza narrativa.</Testo>
-            </div>
-          </div>
-          <Rilievo className="mt-14 max-w-3xl">
-            Due linguaggi diversi, lo stesso desiderio: creare esperienze
-            che abbia senso ascoltare.
-          </Rilievo>
-        </Section>
-
-        {/* ── LA VIA PROFESSIONALE: CREA ─────────────────────────────
-            Deciso dal founder (26/8 sera): il catalogo Professional
-            non si sponsorizza finche' il suo valore non superera' il
-            premere play (la via delle vibrazioni e' la sua fase due).
-            Quello che ha GIA' dimostrato valore e' l'atelier: qui si
-            promette Crea — comporre per i propri clienti — e si
-            raccoglie l'interesse sul funnel leads esistente. */}
-        <Section tone="sage" labelledBy="sh-pro" id="professionisti"
-          data-testid="sld-crea">
-          <Occhiello tono="chiaro">
-            Per chi accompagna persone
-          </Occhiello>
-          <DisplayTitle id="sh-pro" size="section" className="text-[#f6f2e8]">
-            Componi per chi accompagni.
-          </DisplayTitle>
-          <div className="mt-8 max-w-3xl space-y-6">
-            <p className="text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85">
-              Crea è l’atelier con cui nascono le esperienze e le
-              meditazioni di Aurya: voce, basi sonore, frequenze e
-              scena visiva, in un unico strumento che funziona dal
-              browser. Lo apriamo progressivamente a professionisti
-              selezionati — su invito o in partnership.
-            </p>
-            <p className="font-serif text-2xl sm:text-3xl text-[#f6f2e8]">
+            <p className="font-serif text-2xl sm:text-3xl text-white text-hero-shadow">
               Le tue meditazioni, con la tua voce.<br />
               Condivise in privato con i tuoi clienti.
             </p>
@@ -386,15 +337,15 @@ export default function SoundHomePage() {
             <Bottone to="/sound/studio" tono="chiaro" testid="sld-crea-cta">
               Scopri Crea Studio →
             </Bottone>
-            <span className="text-sm text-[#f6f2e8]/60">
+            <span className="text-sm text-white/60">
               Accesso su invito. Le meditazioni che componi restano tue.
             </span>
           </div>
-        </Section>
+        </PhotoBand>
 
-        {/* ── L'ONESTÀ ───────────────────────────────────────────── */}
+        {/* ── 6 · L'ONESTÀ — chiunque componga, le regole non cambiano */}
         <Section tone="cream" labelledBy="sh-evidenza">
-          <Occhiello>Il nostro approccio parte da una cosa semplice</Occhiello>
+          <Occhiello>Chiunque componga, le regole non cambiano</Occhiello>
           <DisplayTitle id="sh-evidenza" size="section">
             Non tutte le frequenze hanno la stessa evidenza.
           </DisplayTitle>
@@ -422,7 +373,7 @@ export default function SoundHomePage() {
           </Testo>
         </Section>
 
-        {/* ── IL PROCESSO ────────────────────────────────────────── */}
+        {/* ── 7 · IL METODO ──────────────────────────────────────── */}
         <Section tone="sand" labelledBy="sh-processo">
           <DisplayTitle id="sh-processo" size="section">
             Dalla ricerca all’esperienza.
@@ -445,29 +396,31 @@ export default function SoundHomePage() {
           </Rilievo>
         </Section>
 
-        {/* ── IL FUTURO ──────────────────────────────────────────── */}
+        {/* ── 8 · IL FUTURO — dal suono alla vibrazione ─────────────
+            Niente gergo da catalogo professionale: la visione di
+            Aurya Sound, detta per tutti. */}
         <PhotoBand image={FUOCO} focus="50% 45%" width="max-w-4xl"
           labelledBy="sh-futuro" data-testid="sh-futuro">
           <Occhiello tono="chiaro">E questo è solo l’inizio</Occhiello>
           <DisplayTitle id="sh-futuro" size="section"
             className="text-white text-hero-shadow">
-            Dal suono alla risposta.
+            Dal suono alla vibrazione.
           </DisplayTitle>
           <div className="mt-7 max-w-2xl space-y-5">
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Oggi Aurya Sound lavora sul suono. Il prossimo passo è
-              la risposta: non soltanto creare uno stimolo, ma poter
-              osservare cosa succede durante una sessione —
-              respirazione, variabilità, vibrazione, risposta nel tempo.
+              Oggi il suono di Aurya si ascolta. Il passo su cui stiamo
+              lavorando è quello in cui si sente: la vibrazione che
+              arriva al corpo, e la risposta — respiro, battito — che
+              si può osservare nel tempo.
             </p>
             <p className="font-serif text-2xl text-white text-hero-shadow">
-              Il suono come stimolo. I dati come osservazione.
-              L’esperienza come percorso.
+              Il suono come stimolo. Il corpo come risposta.
+              L’esperienza come viaggio.
             </p>
           </div>
         </PhotoBand>
 
-        {/* ── IL CONGEDO ─────────────────────────────────────────── */}
+        {/* ── 9 · IL CONGEDO ─────────────────────────────────────── */}
         <Section tone="cream" labelledBy="sh-fine">
           <DisplayTitle id="sh-fine" size="section">Aurya Sound</DisplayTitle>
           <div className="mt-6 space-y-2">
@@ -483,9 +436,9 @@ export default function SoundHomePage() {
             style={{ borderColor: ORO }}>
             <Occhiello>Se sei un professionista del benessere</Occhiello>
             <p className="font-serif text-2xl sm:text-3xl mb-6">
-              Componi le tue meditazioni con Crea.
+              Componi le tue meditazioni con Crea Studio.
             </p>
-            <Bottone href="#professionisti">Raccontami di più →</Bottone>
+            <Bottone to="/sound/studio">Scopri Crea Studio →</Bottone>
           </div>
 
           <div className="mt-20 grid gap-10 sm:grid-cols-2 max-w-4xl">
@@ -502,7 +455,8 @@ export default function SoundHomePage() {
             <div>
               <Occhiello>Per i professionisti</Occhiello>
               <p className="text-base text-muted-foreground leading-relaxed">
-                Crea · Voce e basi sonore · Meditazioni private per i tuoi clienti
+                <Link to="/sound/studio" className="hover:text-foreground">Crea Studio</Link>
+                {' '}· La tua voce · Meditazioni private per i tuoi clienti
               </p>
             </div>
           </div>
