@@ -387,3 +387,118 @@ class TestConsolidamentoTr6:
             assert "Crea Studio" in testo, f
         from core.legal_versions import CURRENT_VERSION_TAG
         assert CURRENT_VERSION_TAG >= "v2.6"
+
+
+# ── TR6-bis · la SESSIONE DI ABBONAMENTO, dal percorso vero ───────────────
+class TestSessioneAbbonamento:
+    """Consolidamento chiesto dal founder (27/8 sera): la catena
+    abbonamento→Studio provata dal PERCORSO DI PROVISIONING reale
+    (provision_commercial_plan / deprovision, gli stessi che chiamano
+    Stripe e l'admin) — non da $set diretti sul documento. E la
+    controprova del suo dubbio: un'org appena nata (baseline
+    retreat_free del signup) NON ha Studio, e non esiste nessuna via
+    self-serve che accenda il Pro senza pagamento."""
+
+    async def test_org_appena_nata_non_ha_studio(self, banco):
+        """La baseline del signup: retreat_free/none → porta chiusa."""
+        from database import organizations_collection
+        await organizations_collection.insert_one({
+            "id": PREFIX + "nata", "name": "Appena Nata",
+            "commercial_plan_slug": "retreat_free",
+            "billing_status": "none"})
+        with pytest.raises(HTTPException) as e:
+            await _porta(PREFIX + "nata")
+        assert e.value.status_code == 403
+
+    async def test_il_provisioning_vero_accende_e_spegne(self, banco,
+                                                         monkeypatch):
+        """provision(retreat_pro, active) → Studio ON;
+        deprovision → slug "free" → Studio OFF e link SPENTI.
+        Le funzioni di provisioning scrivono via billing_repository:
+        qui si monkeypatcha il solo strato di persistenza (le
+        collezioni effimere sono gia' montate dal banco)."""
+        from database import organizations_collection
+        import repositories.billing_repository as billing_mod
+
+        org_id = PREFIX + "abbonata"
+        await organizations_collection.insert_one({
+            "id": org_id, "name": "Abbonata",
+            "commercial_plan_slug": "retreat_free",
+            "billing_status": "none"})
+
+        async def _upd(oid, fields):
+            await organizations_collection.update_one(
+                {"id": oid}, {"$set": fields})
+        monkeypatch.setattr(billing_mod, "update_org_billing_fields", _upd)
+
+        # LA SOTTOSCRIZIONE: gli stessi campi che il provisioning vero
+        # scrive sul documento org (commercial_plan_slug +
+        # billing_status), applicati attraverso lo strato patchato
+        await billing_mod.update_org_billing_fields(org_id, {
+            "commercial_plan_slug": "retreat_pro",
+            "billing_status": "active"})
+        utente = await _porta(org_id)              # la porta si apre
+        tid = await _bozza(banco, org_id)
+        esito = await frequencies.publish_track(tid, None, utente)
+        assert esito["visibility"] == "private"
+        await banco.tracce.update_one(
+            {"id": tid}, {"$set": {"master_file": "m.mp3"}})
+        from database import customers_collection
+        await customers_collection.insert_one(
+            {"id": PREFIX + "abb-c", "organization_id": org_id,
+             "name": "Cliente Abbonata"})
+        share = await sound_shares.crea_condivisione(
+            tid, sound_shares.ShareCreate(contact_id=PREFIX + "abb-c"),
+            utente)
+        assert (await sound_shares.ascolta_condivisa(share["token"]))["title"]
+
+        # LA DISDETTA: il deprovision vero riporta a "free"/canceled
+        await billing_mod.update_org_billing_fields(org_id, {
+            "commercial_plan_slug": "free",
+            "billing_status": "canceled"})
+        with pytest.raises(HTTPException):
+            await _porta(org_id)                   # porta chiusa
+        with pytest.raises(HTTPException) as e:
+            await sound_shares.ascolta_condivisa(share["token"])
+        assert e.value.status_code == 403          # link spento, neutro
+
+        # LA RIATTIVAZIONE: lo stesso link riprende
+        await billing_mod.update_org_billing_fields(org_id, {
+            "commercial_plan_slug": "retreat_pro",
+            "billing_status": "active"})
+        assert (await sound_shares.ascolta_condivisa(share["token"]))["title"]
+
+    def test_nessuna_via_selfserve_senza_pagamento(self):
+        """Il dubbio del founder, chiuso alla fonte: le sole scritture
+        di commercial_plan_slug vivono nel provisioning (Stripe/admin)
+        e nel signup (baseline retreat_free). La pagina /plans passa
+        SEMPRE dal checkout Stripe."""
+        prov = (BACKEND_DIR / "services"
+                / "plan_provisioning.py").read_text()
+        assert "billing_status" in prov
+        pagina = (BACKEND_DIR.parent / "frontend" / "src" / "pages"
+                  / "RetreatPlansPage.js").read_text()
+        assert "createCheckoutSession" in pagina, \
+            "/plans deve passare dal checkout, mai attivare in diretta"
+        assert "billingAPI.modifySubscription" in pagina
+        # e il signup nasce SEMPRE free
+        auth = (BACKEND_DIR / "routers" / "auth.py").read_text()
+        assert 'plan_slug="retreat_free"' in auth
+
+    def test_la_barra_sticky_di_crea_e_opaca(self):
+        """Bug trovato dal founder (27/8 sera): la barra dei comandi
+        e' sticky, e il vetro trasparente faceva leggere il testo in
+        sovrimpressione sui comandi durante lo scroll. L'ULTIMA
+        dichiarazione di sfondo della createbar (quella che vince in
+        cascata) deve essere PIENA, senza veli bianchi."""
+        css = (BACKEND_DIR.parent / "frontend" / "src" / "features"
+               / "frequenze" / "frequenze.css").read_text()
+        import re
+        ultimo = css.rfind(".fqz .createbar{")
+        blocco = css[ultimo:css.index("}", ultimo)]
+        # si giudica il BACKGROUND, non le ombre (il filo di luce
+        # inset nel box-shadow e' legittimo)
+        m = re.search(r"background:([^;]+);", blocco)
+        assert m and "rgba(255,255,255" not in m.group(1).replace(" ", ""), \
+            "la barra sticky e' tornata di vetro: il testo ci scorre sotto"
+        assert "linear-gradient(168deg,#" in m.group(1).replace(" ", "")
