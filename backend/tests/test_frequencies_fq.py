@@ -1185,9 +1185,13 @@ class TestSoundPubblicoSp:
         """Per chi compone il comportamento resta quello di oggi: i
         controlli esistono ancora tutti (solo condizionati)."""
         page = (FQ_DIR / "FrequenzePage.js").read_text()
-        for segno in ("'Ferma' : 'Ascolta'", "+ sessione", "Salva bozza",
-                      "fqz-mine"):
+        for segno in ("'Ferma' : 'Ascolta'", "+ sessione", "Salva bozza"):
             assert segno in page, f"perso pezzo operatore: {segno}"
+        # NV3: «Le mie tracce» (fqz-mine) vive nella barra unica delle
+        # stanze, condivisa col Lab — non piu' nella topbar
+        barra = (FQ_DIR / "StanzeSound.jsx").read_text()
+        assert "fqz-mine" in barra
+        assert "StanzeSound" in page
         # DN8 (21/8): il ritorno al gestionale non e' piu' una carta in
         # testata — vive nel menu dell'omino, che ogni mondo Aurya ha.
         # La via NON deve sparire: cambia solo dove sta.
@@ -1360,7 +1364,7 @@ class TestLibreriaSuoniSl:
 
     def test_card_in_ordine(self):
         src = (FQ_DIR / "FrequenzePage.js").read_text()
-        blocco = src.split("const inCat = (momento")[1][:700]
+        blocco = src.split("const inCat = sounds")[1][:700]
         assert ".sort(" in blocco and "localeCompare" in blocco, \
             "le basi non hanno un ordine dichiarato"
         assert "numeric: true" in blocco, \
@@ -1900,9 +1904,14 @@ class TestMomentiDelViaggio:
         assert '"moment": 1,' in src                        # proiezione
         assert '"moments": SOUND_MOMENTS' in src            # lista
         page = (FQ_DIR / "FrequenzePage.js").read_text()
-        # quando comanda il momento, la lista e' la sua (le categorie
-        # si spengono: categoria AND momento lasciava 0 schede)
-        assert "sounds.filter((s) => s.moment === momento)" in page
+        # NV4 (27/8, BUSSOLA): i due assi si COMBINANO in AND — mai
+        # piu' filtri spenti; il caso vuoto ha il messaggio coi click
+        # che allentano (fq-allenta-*). La regola vecchia («quando
+        # comanda il momento le categorie si spengono») e' morta
+        # per decisione founder.
+        assert "!momento || s.moment === momento" in page
+        assert "!timbro || s.category === timbro.toLowerCase()" in page
+        assert "disabled={!!momento}" not in page
 
     def test_un_suono_senza_momento_resta_valido(self):
         """tutta la libreria di prima non ha il momento: deve restare

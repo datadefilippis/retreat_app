@@ -46,6 +46,8 @@ import GuidaView from './GuidaView';
 import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
+import StanzeSound from './StanzeSound';
+import TriggerStudio from './TriggerStudio';
 import CondivisioniTraccia from './pro/Condivisioni';
 import SeekBar from './SeekBar';
 
@@ -247,7 +249,11 @@ export default function FrequenzePage() {
   const seg = location.pathname.split('/').filter(Boolean);   // ['sound','crea',...]
   const view = PATH_VIEW[seg[1]] || 'explore';
   const world = view === 'explore' && qs.get('mondo') === 'suoni' ? 'sound' : 'freq';
-  const soundCat = SOUND_CATS.find((c) => c.toLowerCase() === (qs.get('categoria') || '')) || SOUND_CATS[0];
+  /* NV4 — il timbro e' un filtro come il momento: null = Tutti.
+     L'upload resta ancorato a una categoria vera (la prima, se il
+     filtro e' su Tutti): una base senza categoria non esiste. */
+  const timbro = SOUND_CATS.find((c) => c.toLowerCase() === (qs.get('categoria') || '')) || null;
+  const soundCat = timbro || SOUND_CATS[0];
   /* il momento e' un filtro TRASVERSALE alle categorie: «mostrami
      tutti gli Arrivi» e' il gesto con cui si costruisce l'arco */
   const [momento, setMomento] = useState(null);
@@ -257,7 +263,9 @@ export default function FrequenzePage() {
 
   const setView = (v) => navigate(`/sound/${VIEW_PATH[v]}`);
   const setWorld = (w) => navigate(w === 'sound' ? '/sound/esplora?mondo=suoni' : '/sound/esplora', { replace: true });
-  const setSoundCat = (c) => navigate(`/sound/esplora?mondo=suoni&categoria=${c.toLowerCase()}`, { replace: true });
+  const setSoundCat = (c) => navigate(
+    c ? `/sound/esplora?mondo=suoni&categoria=${c.toLowerCase()}`
+      : '/sound/esplora?mondo=suoni', { replace: true });
   const setCurTab = (k) => {
     if (view === 'impara') navigate(k === 'Glossario' ? '/sound/impara/glossario' : '/sound/impara', { replace: true });
     else navigate(`/sound/esplora?categoria=${CAT_SLUG[k] || ''}`, { replace: true });
@@ -1727,36 +1735,21 @@ export default function FrequenzePage() {
         {/* SF — sempre a portata, in ogni vista e per chiunque: le
             controindicazioni non si leggono una volta sola */}
         <SafetyButton onClick={openReview} />
-        {/* DN8 — «Le mie tracce» parla come le altre voci della testata.
-            Il «Gestionale» non e' piu' qui: vive nel menu dell'omino
-            («Il tuo gestionale»), che ogni mondo Aurya ha ormai in
-            alto a destra. */}
-        {canCompose && (
-          <button type="button" className={`tbpill${view === 'mine' ? ' on' : ''}`}
-            data-testid="fqz-mine" title="Tutte le tracce che hai creato"
-            onClick={() => setView('mine')}>
-            <span aria-hidden>♫</span>
-            Le mie tracce
-          </button>
-        )}
+        {/* NV3 (27/8) — «Le mie tracce» non vive piu' qui: sta nella
+            barra delle stanze, accanto a Crea. Le stanze in UNA barra
+            sola era il punto dell'analisi BUSSOLA. */}
       </>} />
       <header>
         <div>
           <h1>Aurya <em>Sound</em></h1>
           <div className="sub">Esperienze sonore progettate per accompagnare diversi stati di presenza.</div>
         </div>
-        <div className="viewswitch">
-          <button type="button" className={`vbtn${view === 'explore' ? ' on' : ''}`}
-            onClick={() => setView('explore')}>Esplora</button>
-          {canCompose && (
-            <button type="button" className={`vbtn${view === 'create' ? ' on' : ''}`}
-              onClick={() => setView('create')}>
-              Crea {layers.length > 0 && <span className="vcount">{layers.length}</span>}
-            </button>
-          )}
-          <button type="button" className={`vbtn${view === 'impara' ? ' on' : ''}`}
-            onClick={() => setView('impara')}>Impara</button>
-        </div>
+        {/* NV3 — LA BARRA UNICA delle stanze (StanzeSound): Esplora ·
+            Lab · Impara per tutti, Crea · Le mie tracce con le
+            chiavi. Condivisa col Lab: un solo posto dove orientarsi. */}
+        <StanzeSound creaBadge={layers.length}
+          attiva={{ explore: 'esplora', create: 'crea',
+                    impara: 'impara', mine: 'tracce' }[view]} />
       </header>
 
       <main>
@@ -1808,6 +1801,7 @@ export default function FrequenzePage() {
                     categorie invece di sostituirle. */}
                 <div className="tabs momenti" data-testid="fq-momenti">
                   <div className="tabgroup">
+                    <span className="tabgroup-lbl">Momento del viaggio</span>
                     <div className="tabgroup-row">
                       <button type="button"
                         className={`tab tab-mom${!momento ? ' on' : ''}`}
@@ -1821,23 +1815,32 @@ export default function FrequenzePage() {
                     </div>
                   </div>
                 </div>
+                {/* NV4 (27/8) — i due assi si COMBINANO: momento E
+                    timbro insieme, mai piu' pulsanti spenti. Il caso
+                    «risultato vuoto» ha il suo messaggio onesto qui
+                    sotto, coi click che allentano. */}
                 <div className="tabs">
                   <div className="tabgroup">
+                    <span className="tabgroup-lbl">Timbro</span>
                     <div className="tabgroup-row">
+                      <button type="button"
+                        className={`tab tab-sound${!timbro ? ' on' : ''}`}
+                        onClick={() => setSoundCat(null)}>Tutti</button>
                       {SOUND_CATS.map((c) => (
                         <button key={c} type="button"
-                          disabled={!!momento}
-                          title={momento ? 'Stai guardando un momento del viaggio: tocca «Tutti» per tornare ai timbri' : undefined}
-                          className={`tab tab-sound${soundCat === c ? ' on' : ''}${momento ? ' spenta' : ''}`}
-                          onClick={() => setSoundCat(c)}>{c}</button>
+                          className={`tab tab-sound${timbro === c ? ' on' : ''}`}
+                          onClick={() => setSoundCat(timbro === c ? null : c)}>{c}</button>
                       ))}
                     </div>
                   </div>
                 </div>
                 <div className="tabhint" data-testid="fq-sound-hint">
-                  {momento
-                    ? (SOUND_MOMENTI.find(([k]) => k === momento) || [])[2]
-                    : SOUND_HINT[soundCat]}
+                  {momento && timbro
+                    ? `${(SOUND_MOMENTI.find(([k]) => k === momento) || [])[1]} · ${timbro}`
+                    : momento
+                      ? (SOUND_MOMENTI.find(([k]) => k === momento) || [])[2]
+                      : timbro ? SOUND_HINT[timbro]
+                        : 'Tutta la libreria, ordinata per titolo.'}
                 </div>
                 {(() => {
                   // ordine stabile e prevedibile: alfabetico con i numeri
@@ -1848,9 +1851,11 @@ export default function FrequenzePage() {
                      schede e fa sembrare vuota una libreria piena
                      (successo al primo collaudo: 0 risultati). Il
                      momento e' una domanda piu' grande del timbro. */
-                  const inCat = (momento
-                    ? sounds.filter((s) => s.moment === momento)
-                    : sounds.filter((s) => s.category === soundCat.toLowerCase()))
+                  /* NV4 — i due assi in AND: ogni combinazione e'
+                     legittima; il vuoto ha il suo messaggio onesto. */
+                  const inCat = sounds
+                    .filter((s) => (!momento || s.moment === momento)
+                      && (!timbro || s.category === timbro.toLowerCase()))
                     .sort((a, b) => a.title.localeCompare(b.title, 'it', { numeric: true }));
                   return (
                     <>
@@ -1891,8 +1896,31 @@ export default function FrequenzePage() {
                         <div className="soundsoon" data-testid="fq-soundsoon">
                           <div className="soundsoon-ic">♫</div>
                           <div>
-                            <strong>{sounds.length ? `Ancora nessuna base in ${soundCat}` : 'Libreria in arrivo'}</strong>
-                            <span>Le basi sonore curate di Aurya, pronte da combinare con le frequenze. Le tracce si compongono solo con i suoni della piattaforma.</span>
+                            <strong>
+                              {!sounds.length ? 'Libreria in arrivo'
+                                : momento && timbro
+                                  ? `Nessuna base ${timbro} per questo momento`
+                                  : timbro ? `Ancora nessuna base in ${timbro}`
+                                    : 'Nessuna base per questo momento'}
+                            </strong>
+                            <span>
+                              {sounds.length && (momento || timbro)
+                                ? 'Prova ad allentare un filtro: '
+                                : 'Le basi sonore curate di Aurya, pronte da combinare con le frequenze. Le tracce si compongono solo con i suoni della piattaforma.'}
+                              {sounds.length > 0 && momento && (
+                                <button type="button" className="howto"
+                                  style={{ marginLeft: 0 }}
+                                  data-testid="fq-allenta-momento"
+                                  onClick={() => setMomento(null)}>tutti i momenti</button>
+                              )}
+                              {sounds.length > 0 && momento && timbro && ' · '}
+                              {sounds.length > 0 && timbro && (
+                                <button type="button" className="howto"
+                                  style={{ marginLeft: 0 }}
+                                  data-testid="fq-allenta-timbro"
+                                  onClick={() => setSoundCat(null)}>tutti i timbri</button>
+                              )}
+                            </span>
                           </div>
                         </div>
                       )}
@@ -1992,6 +2020,10 @@ export default function FrequenzePage() {
             )}
           </section>
         )}
+
+        {/* NV5 — il funnel professionale: presente nelle stanze di
+            lettura, invisibile a chi ha gia' le chiavi */}
+        {(view === 'explore' || view === 'impara') && <TriggerStudio />}
 
         {view === 'mine' && (
           <section className="bib" data-testid="fq-mine">

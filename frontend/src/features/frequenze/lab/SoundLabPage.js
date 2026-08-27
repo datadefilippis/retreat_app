@@ -11,6 +11,7 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import SoundTopbar from '../SoundTopbar';
+import StanzeSound from '../StanzeSound';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
 import Generatore from './Generatore';
 import Oscilloscopio from './Oscilloscopio';
@@ -73,6 +74,9 @@ export default function SoundLabPage() {
             niente trucchi: l'onda che senti è calcolata mentre la ascolti.
           </p>
         </div>
+        {/* NV3 — la stessa barra delle stanze di tutto il mondo Sound:
+            il Lab non e' piu' un'isola */}
+        <StanzeSound attiva="lab" />
       </header>
       <main>
         <Generatore ottieniLab={ottieniLab} onSuono={setSuona} />

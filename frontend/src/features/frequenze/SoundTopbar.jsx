@@ -18,10 +18,13 @@ import SoundAccountMenu from './SoundAccountMenu';
 
 const PASSERELLA = [
   { to: '/meditazioni', label: 'Meditazioni' },
-  /* L3-bis — /sound e' la landing CHIARA di sistema: l'hub del mondo
-     scuro e' la biblioteca */
-  { to: '/sound/esplora', label: 'Sound' },
-  { to: '/sound/lab', label: 'Lab' },
+  /* NV2 (27/8, analisi BUSSOLA) — la voce si chiamava «Sound» come
+     quella del menu del sito, ma portava altrove (biblioteca, non
+     landing): stessa parola, due posti. Ora dice il suo nome vero —
+     lo stesso della porta sulla landing («La Biblioteca»). E il Lab
+     esce dalla passerella: e' una STANZA della biblioteca, vive
+     nella barra delle stanze (StanzeSound), non nel menu. */
+  { to: '/sound/esplora', label: 'Biblioteca' },
   { to: '/blog', label: 'Magazine' },
 ];
 

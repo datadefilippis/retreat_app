@@ -174,8 +174,11 @@ class TestL3PortaDiSistema:
         assert "'/sound/pro'" in src
         assert "'/sound/professional'" not in src, \
             "la passerella pubblicizza ancora la vendita"
-        # e l'hub scuro e' la biblioteca, non la landing chiara
-        assert "{ to: '/sound/esplora', label: 'Sound' }" in src
+        # NV2 (27/8, BUSSOLA): la voce dice il suo nome vero — non piu'
+        # «Sound» (che nel menu del sito porta altrove) — e il Lab e'
+        # una STANZA (StanzeSound), non una voce di menu
+        assert "{ to: '/sound/esplora', label: 'Biblioteca' }" in src
+        assert "label: 'Lab'" not in src, "il Lab e' tornato in passerella"
 
 
 class TestL4LaVendita:
@@ -245,3 +248,51 @@ class TestL4LaVendita:
         assert "'sound_professional'" in src
         # e il fallimento parla (normalizzatore, mai detail crudo)
         assert "messaggio(" in src
+
+
+class TestBussolaNv:
+    """Il ciclo NV (27/8, analisi BUSSOLA): una barra sola per le
+    stanze, filtri che si combinano, il funnel professionale presente
+    dove si legge e assente per chi ha gia' le chiavi."""
+
+    def test_nv3_la_barra_unica_esiste_ed_e_condivisa(self):
+        barra = (FQ / "StanzeSound.jsx").read_text()
+        for stanza in ("'/sound/esplora'", "'/sound/lab'",
+                       "'/sound/impara'", "'/sound/crea'",
+                       "'/sound/tracce'"):
+            assert stanza in barra, f"manca la stanza {stanza}"
+        # condivisa: la monta anche il Lab (niente piu' isola)
+        lab = (FQ / "lab" / "SoundLabPage.js").read_text()
+        assert "StanzeSound" in lab
+        # e Crea/Tracce appaiono SOLO con le chiavi
+        assert "sound_crea" in barra
+
+    def test_nv4_i_filtri_non_si_spengono_mai(self):
+        src = _senza_commenti((FQ / "FrequenzePage.js").read_text())
+        assert "disabled={!!momento}" not in src, \
+            "i timbri tornano a spegnersi quando c'e' un momento"
+        assert "' spenta'" not in src, "la classe del filtro spento e' viva"
+        # i due assi si combinano in AND
+        assert "!momento || s.moment === momento" in src
+        assert "!timbro || s.category === timbro.toLowerCase()" in src
+        # e il vuoto ha i click che allentano
+        assert 'data-testid="fq-allenta-momento"' in src
+        assert 'data-testid="fq-allenta-timbro"' in src
+
+    def test_nv5_il_trigger_professionale(self):
+        trig = _senza_commenti((FQ / "TriggerStudio.jsx").read_text())
+        assert "sound_crea" in trig and "return null" in trig, \
+            "il trigger deve sparire per chi ha le chiavi"
+        assert '"/sound/studio"' in trig
+        assert "Crea Studio" in trig     # un nome solo, ovunque
+        # montato dove si legge: biblioteca/guida e meditazioni
+        assert "TriggerStudio" in _senza_commenti(
+            (FQ / "FrequenzePage.js").read_text())
+        assert "TriggerStudio" in _senza_commenti(
+            (FQ / "MeditazioniPage.js").read_text())
+
+    def test_nv1_strumenti_ha_la_copertina(self):
+        page = (FRONTEND_SRC / "pages" / "StrumentiPage.js").read_text()
+        assert "/media/sound/spirale.jpg" in page, \
+            "Sound Studio senza copertina"
+        assert "object-cover" in page

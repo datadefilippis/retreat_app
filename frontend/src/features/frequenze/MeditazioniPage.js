@@ -20,6 +20,7 @@ import { prova, emailDellaProva, sblocca, iscriviESblocca, migraVecchieChiavi } 
 import './frequenze.css';
 import './meditazioni.css';
 import SoundTopbar from './SoundTopbar';
+import TriggerStudio from './TriggerStudio';
 
 /* il cuore disegnato (founder 26/8): un gesto, non un carattere */
 const Cuore = () => (
@@ -358,6 +359,9 @@ export default function MeditazioniPage() {
           <SafetyLine onOpen={() => setSafety(true)} />
         </section>
       </main>
+      {/* NV5 — il funnel professionale anche qui: chi ascolta le
+          meditazioni degli altri e' spesso chi potrebbe comporle */}
+      <main style={{ marginTop: 0 }}><TriggerStudio /></main>
       <footer className="fqzfoot" data-testid="fqz-foot">
         <a href="/">← Torna su Aurya</a>
         <a href="/sound">Aurya Sound</a>
