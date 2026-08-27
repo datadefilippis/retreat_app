@@ -170,9 +170,24 @@ cose precise — e le chiede al software, non ancora all'hardware:
    stabile per minuti, ampiezza calibrata con rampa (i pattern di
    Chladni vivono in finestre strette di frequenza);
 2. **il resonance finder**: sweep LENTO + il microfono che ascolta la
-   risposta del sistema fisico (`onTick` di LB1 + l'orecchio di LB2)
-   → il grafico eccitazione/risposta con i picchi segnati: trovi le
-   risonanze della TUA piastra/coppa e le salvi come preset;
+   risposta del sistema fisico (la rampa del motore + l'orecchio di
+   LB2) → il grafico eccitazione/risposta con i picchi segnati: trovi
+   le risonanze della TUA piastra/coppa e le salvi come preset.
+   E vale per QUALSIASI OGGETTO (27/8, founder): bottiglia, lattina,
+   bicchiere — due strade complementari:
+   - *il colpo* (passiva, gia' con LB2/LB3): l'oggetto colpito suona
+     SOLO sui suoi modi — lo spettro del colpo e' la risposta; la
+     bottiglia ne ha due di nature diverse (il «ping» del vetro =
+     modi strutturali; il tono di soffio = risonanza di Helmholtz
+     dell'aria: con l'acqua il primo scende e il secondo sale — un
+     esperimento didattico perfetto);
+   - *lo sweep* (attiva, LB6): quando il colpo non basta, si
+     interroga l'oggetto con la rampa e il mic sente dove canta.
+   Trovata la frequenza, la tieni addosso all'oggetto col tono
+   fermo e GUARDI la reazione (riso, acqua, vibrazione): cimatica
+   con oggetti di casa. Onesta' dichiarata: sotto ~200 Hz
+   l'altoparlante del telefono spinge poco — per muovere davvero
+   serve l'export WAV verso un ampli;
 3. **uscita dedicata**: modo mono (una piastra ha un attuatore solo),
    opzione di disattivare il limiter di comodo, **export WAV** del
    tono/sweep per amplificatori e attuatori esterni;
