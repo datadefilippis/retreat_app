@@ -19,9 +19,10 @@
  */
 import React, { useEffect, useRef } from 'react';
 
-/* 26/8, rifinitura del giorno: la tavolozza e' quella DA LETTURA per
-   fondo chiaro — le onde vivono su avorio, non piu' nel buio */
-const COLORI = ['#A8925C', '#3E7663', '#6F5FA0', '#2F6152'];
+/* 26/8, il crepuscolo: la landing e' una pagina chiara del sito, ma
+   queste onde sono una FINESTRA su Aurya Sound — e Aurya Sound e'
+   petrolio. La tavolozza e' quella di casa sua. */
+const COLORI = ['#D9C08A', '#7FC9B0', '#B5A6DE', '#6FB8A4'];
 const TETTO_PULSAZIONE = 1; // Hz visivi — mai oltre (anti-strobo)
 
 /** Da uno score alle voci visive: numeri del suono → numeri del segno. */

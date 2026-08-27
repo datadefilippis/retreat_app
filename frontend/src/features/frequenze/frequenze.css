@@ -1133,196 +1133,175 @@
 /* il numerino sulla linea del percorso segue il fondo nuovo */
 .fqz .gd-path .n{background:#132428}
 
+
 /* ═══════════════════════════════════════════════════════════════════
-   IL GIORNO (26/8/2026, founder) — tutto il mondo Sound attraversa la
-   soglia: biblioteca, guida, Lab, Crea, Professional. Stesso fondo e
-   stessa luce delle Meditazioni: perla, e l'aurora dei tre accenti.
-   SOLO apparenza. Questo livello supera la «Luce terza» qui sopra
-   (stessa cascata, viene dopo) — quella schiariva il buio, questa lo
-   attraversa.
+   IL CREPUSCOLO (26/8/2026, founder) — il colore di Aurya Sound.
+   Scelta dopo aver visto tre strade dal vivo: «procediamo con B su
+   tutta l'area Sound».
 
-   La regola degli accenti: per il TESTO si usano le versioni da
-   lettura (oro #8A7440, verde #2F6152, violetto #6F5FA0 — l'oro pieno
-   sul chiaro non tiene il contrasto), per i PIENI resta l'oro di
-   marca #C9B37E coi testi scuri. I token si ribaltano; i pochi pieni
-   che usavano var(--lamp) come fondo vengono ri-puntati qui sotto.
+   IL RAGIONAMENTO. Il difetto del vecchio mondo non era il buio: era
+   il NERO (#0C1618, praticamente inchiostro, con ombre pesanti e
+   grigi a basso contrasto). E il perla della mano precedente era il
+   colore DEL SITO: entrando in Sound non si percepiva di essere
+   entrati da nessuna parte. Il crepuscolo e' il terzo registro —
+   petrolio di mezzo tono, tre volte piu' chiaro del vecchio buio e
+   con del colore dentro: il blu-verde dell'acqua profonda e della
+   stanza con le luci basse. Il testo sta a ~9:1, molto sopra il
+   minimo AA: si legge MEGLIO di prima, non peggio.
 
-   Le FINESTRE restano scure: le tele del Lab, la partitura, la scena
-   Aurya Mode — sono viste sul suono dentro la pagina di giorno.
+   Questo livello supera la «Luce terza» qui sopra (stessa cascata,
+   viene dopo) e ne conserva il lavoro buono: la scala tipografica
+   cresciuta e i raggi moderni restano, cambia la luce. I primi
+   blocchi del file — quelli che le guardie leggono (DN3, AV1) —
+   non sono toccati: --lamp resta l'oro di marca e la tinta di
+   --water resta nella famiglia del verde Aurya.
+
+   L'ORO E' LA LUCE. Su petrolio l'oro di marca #C9B37E finalmente
+   sta al suo posto: non deve piu' scurirsi per farsi leggere (era il
+   compromesso del fondo chiaro). Sui PIENI porta testo scuro.
    ═══════════════════════════════════════════════════════════════════ */
 
 .fqz{
-  --stone:#FFFFFF; --panel:#FFFFFF;
-  --line:#DCD3BE; --line-soft:#E8E0CE;
-  --bone:#25333A; --dim:#54686D; --dimmer:#6E8286;
-  --lamp:#8A7440; --lamp-dim:#A8925C;
-  --water:#2F6152; --violet:#6F5FA0; --alert:#A8443A;
-  --a:#3E7663; --b:#8A7440; --c:#6F5FA0;
+  --stone:#2A4A51; --panel:#33565D;
+  --line:#456F77; --line-soft:#3A5F66;
+  --bone:#EAF2F0; --dim:#B9D0D0; --dimmer:#97B2B4;
+  --ink:#223E44;                      /* fondo-tela: lo leggono i canvas */
+  --lamp:#D9C08A; --lamp-dim:#A8925C;
+  --water:#7FC9B0; --violet:#B5A6DE; --alert:#E08A7C;
+  --a:#7FC9B0; --b:#D9C08A; --c:#B5A6DE;
 }
 .fqz{
   background:
-    radial-gradient(1000px 560px at 50% -12%, rgba(201,179,126,.22) 0%, transparent 60%),
-    radial-gradient(900px 620px at 10% 4%, rgba(102,183,156,.13) 0%, transparent 55%),
-    radial-gradient(900px 620px at 90% 10%, rgba(155,139,196,.11) 0%, transparent 55%),
-    linear-gradient(180deg,#FDFBF6 0%,#F4EEE1 100%);
+    radial-gradient(1100px 600px at 50% -12%, rgba(201,179,126,.16) 0%, transparent 58%),
+    radial-gradient(900px 620px at 8% 2%, rgba(102,183,156,.14) 0%, transparent 55%),
+    radial-gradient(900px 660px at 92% 8%, rgba(155,139,196,.13) 0%, transparent 55%),
+    linear-gradient(180deg,#2C4C52 0%,#213C43 100%);
 }
-.fqz ::selection{background:#C9B37E55;color:var(--bone)}
-/* --ink resta l'inchiostro (testo scuro sui pieni d'oro); dove faceva
-   da FONDO, il fondo nuovo si dichiara qui */
-.fqz{--ink:#22333A}
-.fqz .gd-path .n{background:#FBF7EE}
-.fqz .sam-dot{box-shadow:0 0 0 2px #FDFBF6}
+.fqz ::selection{background:rgba(201,179,126,.35);color:#F5FAF8}
+.fqz .gd-path .n{background:#294850}
+.fqz .sam-dot{box-shadow:0 0 0 2px #2C4C52}
 
-/* ── le superfici: carta bianca su perla ──────────────────────────── */
-.fqz .bib{background:rgba(255,255,255,.6);border-color:var(--line-soft);
-  box-shadow:0 24px 70px rgba(88,74,44,.10),inset 0 1px 0 #ffffff}
-.fqz .card{background:#FFFFFF;border-color:var(--line-soft);
-  box-shadow:0 1px 0 rgba(0,0,0,.03)}
-.fqz .card:hover{border-color:rgba(201,179,126,.65);
-  box-shadow:0 18px 44px rgba(88,74,44,.14)}
-.fqz .card.gA::before,.fqz .card.gB::before,.fqz .card.gC::before{box-shadow:none}
+/* ── le superfici: vetro sul petrolio, non casse nere ─────────────── */
+.fqz .bib{background:rgba(255,255,255,.05);border-color:var(--line-soft);
+  box-shadow:0 24px 70px rgba(8,24,28,.22),inset 0 1px 0 rgba(255,255,255,.06)}
+.fqz .card{background:rgba(255,255,255,.055);border-color:var(--line-soft);
+  box-shadow:none}
+.fqz .card:hover{border-color:var(--lamp-dim);
+  box-shadow:0 16px 36px rgba(8,24,28,.28)}
 .fqz .card table td:first-child,.fqz .card table th:first-child{
-  background:#FFFFFF}
+  background:#2F5057}
 .fqz .card.playing{border-color:var(--water);
-  box-shadow:0 0 0 1px var(--water) inset,0 10px 28px rgba(88,74,44,.14)}
-.fqz .legend{background:#F7F2E7;border-color:var(--line-soft)}
-.fqz .protnote{background:#F7F2E7}
-.fqz .catintro{background:linear-gradient(90deg,rgba(138,116,64,.07),transparent 70%)}
-.fqz .methodkey{background:rgba(138,116,64,.05)}
-.fqz .emptycreate{border-color:var(--line)}
-.fqz .backcard{background:#FFFFFF;border-color:var(--line-soft);
-  box-shadow:0 1px 0 rgba(0,0,0,.04)}
-.fqz .backcard:hover{border-color:#C9B37E;box-shadow:0 10px 26px rgba(60,50,30,.12)}
-.fqz .backcard .bc-ic{background:rgba(201,179,126,.12)}
-.fqz .backcard.on{border-color:var(--water);box-shadow:0 0 0 1px var(--water) inset}
-.fqz .backcard.on .bc-ic{background:rgba(102,183,156,.12)}
-.fqz .worldswitch{background:#F0EADD;border-color:var(--line-soft)}
+  box-shadow:0 0 0 1px var(--water) inset,0 10px 28px rgba(8,24,28,.3)}
+.fqz .legend,.fqz .protnote,.fqz .safetyline,.fqz .backcard,
+.fqz .voicedesk,.fqz .vd-trim,.fqz .emptycreate{background:rgba(255,255,255,.05)}
+.fqz .catintro{background:linear-gradient(90deg,rgba(201,179,126,.10),transparent 70%)}
+.fqz .methodkey{background:rgba(255,255,255,.035)}
+.fqz .backcard:hover{border-color:var(--lamp);
+  box-shadow:0 10px 26px rgba(8,24,28,.35)}
+.fqz .backcard .bc-ic{background:rgba(201,179,126,.14)}
+.fqz .backcard.on .bc-ic{background:rgba(127,201,176,.14)}
+.fqz .worldswitch{background:rgba(0,0,0,.16);border-color:var(--line-soft)}
 .fqz .wbtn.on,.fqz .wbtn[data-world="sound"].on{
-  background:#FFFFFF;color:var(--bone);box-shadow:0 2px 8px rgba(60,50,30,.14)}
-.fqz .soundsoon,.fqz .uploadzone{background:linear-gradient(180deg,#FBF7EE,#F4EEE1);
-  border-color:#9FBFB2}
-.fqz .uploadzone:hover,.fqz .uploadzone.over{
-  background:linear-gradient(180deg,#FFFFFF,#F7F2E7);border-color:var(--water);
-  box-shadow:0 12px 30px rgba(88,74,44,.14)}
-.fqz .soundsoon-ic,.fqz .uz-icon{box-shadow:0 0 16px rgba(102,183,156,.2),
-  inset 0 0 12px rgba(102,183,156,.08)}
-.fqz .sessionfoot{background:rgba(255,255,255,.92);border-color:var(--water);
-  box-shadow:0 -8px 30px rgba(88,74,44,.14)}
-.fqz .taptip{background:#FFFFFF;border-color:var(--water);color:var(--bone);
-  box-shadow:0 10px 30px rgba(60,50,30,.25)}
-.fqz .sam-menu{box-shadow:0 18px 40px rgba(60,50,30,.18)}
-.fqz .sam-voce:hover{background:rgba(201,179,126,.10);color:#5C4D26}
-.fqz .tb-nav a:hover{color:#7D6A3A;background:rgba(201,179,126,.10)}
-.fqz .fqzbrand:hover{background:rgba(201,179,126,.08)}
+  background:rgba(255,255,255,.09);color:var(--bone);
+  box-shadow:0 2px 8px rgba(8,24,28,.28)}
+.fqz .soundsoon,.fqz .uploadzone{
+  background:rgba(255,255,255,.045);border-color:#5C8E86}
+.fqz .uploadzone:hover,.fqz .uploadzone.over{background:rgba(255,255,255,.07);
+  border-color:var(--water);box-shadow:0 12px 30px rgba(8,24,28,.3)}
+.fqz .soundsoon-ic,.fqz .uz-icon{
+  box-shadow:0 0 16px rgba(127,201,176,.22),inset 0 0 12px rgba(127,201,176,.12)}
+.fqz .sessionfoot{background:rgba(44,76,82,.94);border-color:var(--water);
+  box-shadow:0 -8px 30px rgba(8,24,28,.4)}
+.fqz .taptip{background:#25444B;border-color:var(--water);color:var(--bone);
+  box-shadow:0 10px 30px rgba(8,24,28,.55)}
+.fqz .sam-menu{background:var(--panel);box-shadow:0 18px 40px rgba(8,24,28,.5)}
+.fqz .sam-voce:hover{background:rgba(255,255,255,.07);color:var(--lamp)}
+.fqz .tb-nav a:hover{color:var(--lamp);background:rgba(255,255,255,.06)}
+.fqz .fqzbrand:hover{background:rgba(255,255,255,.05)}
 .fqz .sam-trigger{background:rgba(201,179,126,.12)}
-.fqz .sam-trigger:hover{background:rgba(201,179,126,.22);color:#5C4D26;
-  box-shadow:0 0 0 3px rgba(201,179,126,.2)}
-.fqz .gate{background:rgba(37,51,58,.5)}
-.fqz .gatebox,.fqz .learnbox{box-shadow:0 30px 80px rgba(60,50,30,.25)}
-.fqz .learnbox{border-color:#C9BEE0;background:#FFFFFF}
-.fqz .safetyline{background:rgba(255,255,255,.6)}
-.fqz .voicedesk,.fqz .vd-trim{background:#FBF7EE}
-.fqz .livehint{color:var(--dimmer)}
+.fqz .sam-trigger:hover{background:rgba(201,179,126,.22);color:var(--bone);
+  box-shadow:0 0 0 3px rgba(201,179,126,.18)}
+.fqz .gate{background:rgba(20,38,43,.86)}
+.fqz .gatebox,.fqz .learnbox{background:var(--panel);
+  box-shadow:0 30px 80px rgba(8,24,28,.6),inset 0 1px 0 rgba(255,255,255,.06)}
+.fqz .learnbox{border-color:#5F5484}
+.fqz .warnbox{background:rgba(224,138,124,.10)}
 
-/* ── Crea: lo studio in luce (le corsie restano leggibili) ────────── */
-.fqz .createbar{background:#FFFFFF;border-color:var(--line-soft);
-  box-shadow:0 14px 40px rgba(88,74,44,.12),inset 0 1px 0 #ffffff}
-.fqz .foglio-durata{background:#FFFFFF;border-color:var(--line-soft);
-  box-shadow:0 14px 40px rgba(60,50,30,.2)}
-.fqz .foglio-durata .fd-riga button,.fqz .foglio-durata .fd-auto{border-color:var(--line)}
-.fqz .foglio-durata .fd-riga input{background:#FFFFFF;border-color:var(--line)}
+/* ── Crea: lo studio in penombra ──────────────────────────────────── */
+.fqz .createbar{background:rgba(255,255,255,.06);border-color:#4B7B7E;
+  box-shadow:0 14px 40px rgba(8,24,28,.35),0 0 0 1px rgba(127,201,176,.12),
+             inset 0 1px 0 rgba(255,255,255,.06)}
+.fqz .foglio-durata{background:#2E5158;border-color:#4B7B7E;
+  box-shadow:0 14px 40px rgba(8,24,28,.5)}
+.fqz .foglio-durata .fd-riga button,.fqz .foglio-durata .fd-auto{border-color:#4B7B7E}
+.fqz .foglio-durata .fd-riga input{background:#22414A;border-color:#4B7B7E}
 .fqz .foglio-durata .fd-nota{color:var(--dimmer)}
-.fqz .score{background:#FFFFFF;border-color:var(--line-soft);
-  box-shadow:0 20px 60px rgba(88,74,44,.10),inset 0 1px 0 #ffffff}
-.fqz .ruler{background:#FBF7EE}
-.fqz .phases{background:#F7F2E7}
-.fqz .helpstrip{background:#FBF7EE}
-.fqz .meta{background:#FBF7EE}
+.fqz .score{background:rgba(255,255,255,.04);border-color:var(--line-soft);
+  box-shadow:0 20px 60px rgba(8,24,28,.25),inset 0 1px 0 rgba(255,255,255,.06)}
+.fqz .ruler,.fqz .meta{background:rgba(0,0,0,.12)}
+.fqz .phases,.fqz .helpstrip{background:rgba(0,0,0,.16)}
 .fqz .seek-cur,.fqz .seek-tot{color:var(--dim)}
-.fqz .seekbar::before{background:#E4DCC9}
-.fqz .exportrow{border-color:var(--line)}
-.fqz .cb-save{border-color:var(--bone);color:var(--bone)}
-.fqz .cb-save:hover:not(:disabled){border-color:#000;color:#000}
-
-/* ── la guida e il glossario ──────────────────────────────────────── */
-.fqz .gd-nav{background:rgba(253,251,246,.92)}
-.fqz .gd-m,.fqz .gd-two > div,.fqz .gd-ways button{background:#FFFFFF;
-  border-color:var(--line-soft)}
-.fqz .gd-ways button:hover{border-color:#C9B37E;background:#FFFDF7}
-.fqz .gd-fourth,.fqz .gd-grades > div{background:rgba(138,116,64,.04)}
-.fqz .gd-box{background:rgba(138,116,64,.04)}
-.fqz .gd-box.strong{background:linear-gradient(90deg,rgba(201,179,126,.10),transparent 75%)}
-.fqz .gd-arc{background:linear-gradient(90deg,rgba(102,183,156,.08),
-  rgba(201,179,126,.08) 55%,rgba(155,139,196,.08));border-color:var(--line-soft)}
-.fqz .gd-strip{border-color:var(--line)}
-.fqz .gd-strip span{border-color:var(--line-soft)}
-.fqz .gd-hero-sub{color:var(--water)}
-
-/* ── la landing scura di /sound/esplora e i suoi riquadri ─────────── */
-.fqz .sld-cat{background:#FFFFFF;border-color:var(--line-soft)}
-.fqz .sld-cat:hover{border-color:#C9B37E;background:#FFFDF7}
-.fqz .sld-guide{background:linear-gradient(90deg,rgba(102,183,156,.09),transparent 70%)}
-.fqz .sld-esp a{border-color:#C9B37E}
-.fqz .sld-esp a:hover{border-color:#8A7440;box-shadow:0 10px 26px rgba(60,50,30,.12)}
-.fqz .sld-pro{background:#FFFFFF;border-left-color:#C9B37E}
-.fqz .probox{background:linear-gradient(180deg,rgba(201,179,126,.10),transparent)}
-
-/* ── i PIENI restano nell'oro di marca, coi testi scuri ───────────── */
-.fqz .vbtn.on{background:#C9B37E;border-color:#C9B37E;color:#22333A}
-.fqz .vbtn.on:hover{background:#D9C08A;border-color:#D9C08A;color:#22333A}
-.fqz .tab-sound.on{background:#C9B37E;border-color:#C9B37E;color:#22333A}
-.fqz .tab-sound.on:hover{background:#D9C08A;border-color:#D9C08A;color:#22333A}
-.fqz .tab-learn.on{color:#FFFFFF}
-.fqz .tab-learn.on:hover{color:#FFFFFF}
-.fqz .gd-final:hover{background:#C9B37E;color:#22333A;border-color:#C9B37E}
-.fqz .probox button:hover{background:#C9B37E;color:#22333A;border-color:#C9B37E}
-.fqz .sl::-webkit-slider-thumb{background:#C9B37E}
-.fqz .sl::-moz-range-thumb{background:#C9B37E}
-.fqz .prog i{background:#C9B37E}
-.fqz .vcount{color:#FFFFFF}
-.fqz .vbtn.on .vcount{background:#22333A;color:#E8D9B0}
-.fqz .createbar .cb-reset:hover:not(:disabled){color:#FFFFFF}
-.fqz .createbar .cb-scena:hover:not(:disabled){color:#FFFFFF}
+.fqz .seekbar::before{background:rgba(255,255,255,.14)}
 .fqz .seek-fill,.fqz .seek-knob{background:var(--water)}
-.fqz .seek-knob{box-shadow:0 0 6px rgba(47,97,82,.45)}
-
-/* ── le FINESTRE sul suono restano scure, e si dichiarano ─────────── */
-.fqz .lab-tela{background:#0E1B1E;border-radius:14px}
-.fqz .lab-forma.viva{background:#22333A}
-.fqz .lab-forma.viva svg{color:#C9B37E}
-.fqz .lab-play{background:#C9B37E;color:#22333A}
-.fqz .bib canvas{border-radius:18px}
-
-/* i campi: la Luce terza li aveva scuriti con un valore esplicito
-   (#12262B) che il ribaltone dei token non poteva raggiungere */
+.fqz .seek-knob{box-shadow:0 0 6px var(--water)}
+.fqz .exportrow{border-color:var(--line-soft)}
+.fqz .cb-save{border-color:var(--bone);color:var(--bone)}
+.fqz .cb-save:hover:not(:disabled){border-color:#fff;color:#fff}
 .fqz input[type=number],.fqz input[type=text],.fqz input[type=email],
-.fqz input[type=password],.fqz input[type=tel],.fqz select{
-  background:#FFFFFF;border-color:var(--line);color:var(--bone)}
-.fqz input::placeholder{color:var(--dimmer)}
-.fqz .mini,.fqz .minisel{background:#FFFFFF}
-.fqz .vd-name{background:transparent}
-.fqz .name{background:transparent}
+.fqz input[type=password],.fqz input[type=tel],.fqz select,
+.fqz textarea{background:#22414A}
 
-/* ═══ RIFINITURA DEL GIORNO (26/8, founder) — gli stati «acceso» che
-   sparivano e le tele delle onde in armonia col fondo nuovo ═══ */
+/* ── la guida, il glossario, la biblioteca ────────────────────────── */
+.fqz .gd-nav{background:rgba(44,76,82,.92)}
+.fqz .gd-m,.fqz .gd-two > div,.fqz .gd-ways button,
+.fqz .gd-fourth,.fqz .gd-grades > div,.fqz .gd-box{background:rgba(255,255,255,.04)}
+.fqz .gd-ways button:hover{border-color:var(--lamp-dim);background:rgba(201,179,126,.08)}
+.fqz .gd-box.strong{background:linear-gradient(90deg,rgba(201,179,126,.09),transparent 75%)}
+.fqz .gd-arc{border-color:var(--line-soft);
+  background:linear-gradient(90deg,rgba(127,201,176,.07),
+    rgba(201,179,126,.07) 55%,rgba(181,166,222,.07))}
+.fqz .sld-cat{background:rgba(255,255,255,.045);border-color:var(--line-soft)}
+.fqz .sld-cat:hover{border-color:var(--lamp-dim);background:rgba(201,179,126,.07)}
+.fqz .sld-guide{background:linear-gradient(90deg,rgba(127,201,176,.08),transparent 70%)}
+.fqz .sld-esp a{background:rgba(255,255,255,.05);border-color:var(--lamp-dim)}
+.fqz .sld-esp a:hover{border-color:var(--lamp);box-shadow:0 12px 30px rgba(8,24,28,.3)}
+.fqz .sld-pro{background:rgba(255,255,255,.05);border-left-color:var(--lamp)}
+.fqz .probox{background:linear-gradient(180deg,rgba(201,179,126,.08),transparent)}
 
-/* --ink torna a fare il FONDO-TELA (le tele dipingono il bg leggendo
-   questo token): perla, non piu' inchiostro. Ogni uso di --ink come
-   colore di testo era gia' stato ri-dichiarato esplicito nel GIORNO. */
-.fqz{--ink:#FBF7EE}
+/* ── i PIENI: l'oro di marca, col testo scuro sopra ───────────────── */
+.fqz button.primary{background:linear-gradient(180deg,#D9C08A,#C9B37E);
+  border-color:#D9C08A;color:#1C3238}
+.fqz button.primary:hover:not(:disabled){
+  background:linear-gradient(180deg,#E4CD9C,#D4BE8A);border-color:#E4CD9C;color:#1C3238}
+.fqz .vbtn.on,.fqz .tab-sound.on{background:#C9B37E;border-color:#C9B37E;color:#1C3238}
+.fqz .vbtn.on:hover,.fqz .tab-sound.on:hover{
+  background:#D9C08A;border-color:#D9C08A;color:#1C3238}
+.fqz .vcount{background:var(--water);color:#0F2A26}
+.fqz .vbtn.on .vcount{background:#1C3238;color:var(--lamp)}
+.fqz .tab-learn.on,.fqz .tab-learn.on:hover{color:#181330}
+.fqz .gd-final:hover,.fqz .probox button:hover{
+  background:#C9B37E;color:#1C3238;border-color:#C9B37E}
+.fqz .sl::-webkit-slider-thumb,.fqz .sl::-moz-range-thumb{background:var(--lamp)}
+.fqz .prog i{background:var(--lamp)}
+.fqz .createbar .cb-play{background:linear-gradient(180deg,#8FD3BE,#6FB8A4);
+  border-color:#8FD3BE;color:#08201D}
+.fqz .createbar .cb-play:hover:not(:disabled){
+  background:linear-gradient(180deg,#A3E0CC,#82C7B2);border-color:#A3E0CC;color:#08201D}
+.fqz .createbar .cb-reset:hover:not(:disabled),
+.fqz .createbar .cb-scena:hover:not(:disabled){color:#1C3238}
+.fqz .createbar .cb-scena{border-color:#B5A6DE;color:#CBBEEB}
+.fqz .tab.tab-mom{border-color:rgba(181,166,222,.35);color:#CBBEEB}
+.fqz .tab.tab-mom.on{border-color:rgba(181,166,222,.8);
+  background:rgba(181,166,222,.16);color:#EDE7FF}
+.fqz .foglio-durata .fd-riga button.su,.fqz .foglio-durata .fd-auto.su{
+  border-color:var(--water);color:var(--water)}
+.fqz .vd-rec{color:#E08A7C;border-color:#C0655A}
+.fqz .vd-rec:hover{background:rgba(224,138,124,.14)}
+.fqz .vd-clip.playing{border-color:var(--lamp)}
 
-/* le tele del Lab: avorio, coi tratti nei toni da lettura (le tele
-   leggono i token, quindi si vestono da sole) */
-.fqz .lab-tela{background:#FBF7EE}
-.fqz .lab-forma.viva{background:#22333A}
-
-/* gli stati «acceso» che sul chiaro non si leggevano piu' */
-.fqz .tab.tab-mom{border-color:rgba(111,95,160,.45);color:#6F5FA0}
-.fqz .tab.tab-mom.on{border-color:#6F5FA0;background:rgba(111,95,160,.14);color:#4E4180}
-.fqz .createbar .cb-scena{border-color:#A99BCB;color:#6F5FA0}
-.fqz .foglio-durata .fd-riga button.su,
-.fqz .foglio-durata .fd-auto.su{border-color:#2F6152;color:#2F6152}
-.fqz .vd-rec{color:#B0392B;border-color:#B0392B}
-.fqz .vd-rec:hover{background:rgba(176,57,43,.08)}
-.fqz .vd-clip.playing{border-color:#A8925C}
-.fqz .learnclose:hover{color:var(--bone);border-color:var(--violet)}
+/* ── le tele: il petrolio profondo, un gradino sotto il fondo ─────── */
+.fqz .lab-tela{background:#1B343B;border-color:var(--line-soft);border-radius:14px}
+.fqz .lab-forma.viva{background:#1B343B;border-color:var(--lamp-dim)}
+.fqz .lab-forma.viva svg{color:var(--lamp)}
+.fqz .lab-play{background:var(--lamp);color:#1C3238}
+.fqz .bib canvas{border-radius:18px}

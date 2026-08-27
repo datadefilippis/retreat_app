@@ -1,56 +1,42 @@
 /*
- * IL VESTITO DELLE MEDITAZIONI (26/8/2026, founder — seconda mano).
+ * IL VESTITO DELLE MEDITAZIONI (26/8/2026, founder — terza mano).
  *
- * La prima mano alzava la luce ma restava nel buio del mondo Sound, e
- * il founder l'ha bocciata: «ti avevo chiesto qualcosa di piu' in
- * linea, piu' luminoso, etereo». La seconda mano attraversa la
- * soglia: /meditazioni e' una pagina di GIORNO — perla e crema come
- * il resto del sito — con l'aurora dei tre accenti di marca (oro,
- * salvia, violetto) che respira in alto. L'eterea senza kitsch:
- * niente mandala, niente viola psichedelico — luce, vetro bianco,
- * un filo d'oro.
+ * LE TRE MANI, e perche'. La prima schiariva il buio e il founder la
+ * boccio' («piu' luminoso, etereo»); la seconda attraverso' la soglia
+ * e porto' la pagina nel perla del sito; guardando l'insieme il
+ * founder ha visto il difetto vero — nel perla, entrare in Aurya
+ * Sound non si sente, perche' e' il colore del sito. Ha scelto IL
+ * CREPUSCOLO (frequenze.css, ultimo livello) per tutta l'area Sound,
+ * e questa pagina lo indossa come tutte le altre.
  *
- * Come: la classe .med sopra la pelle .fqz RIBALTA i tokens neutri
- * (testo scuro su fondo chiaro) dentro il suo perimetro — cosi' ogni
- * pezzo condiviso (testata, cancello, modali, form) si veste da solo
- * senza toccare una riga del buio. Gli accenti restano di famiglia,
- * nelle versioni DA LETTURA per fondo chiaro (l'oro pieno #C9B37E
- * sul crema non tiene il contrasto: per il testo si usa #7D6A3A,
- * lo stesso del sito).
+ * Cosa resta della mano chiara, perche' era giusto: l'impaginazione
+ * (testata centrata col filo che si dissolve, carte a griglia), il
+ * CUORE disegnato col suo battito, le TONALITA' per intento, l'onda-
+ * firma, il respiro sotto le carte, la firma col NOME di chi compone.
+ * Cambia la luce, non la forma.
+ *
+ * Come: .med eredita tutti i tokens del crepuscolo da .fqz — qui non
+ * si ridichiara nemmeno un token. Restano solo le cose che sono DI
+ * QUESTA PAGINA: l'aurora piu' presente (e' la stanza dell'ascolto,
+ * la piu' morbida del mondo Sound) e i pezzi che esistono solo qui.
  */
 
-/* ── i tokens, ribaltati: giorno ────────────────────────────────────── */
-.fqz.med{
-  --ink:#FDFBF6;                 /* usato come "fondo dietro" dai pezzi condivisi */
-  --stone:#FFFFFF;               /* input e superfici incassate */
-  --panel:#FFFFFF;
-  --line:#DCD3BE; --line-soft:#E8E0CE;
-  --bone:#25333A;                /* il testo: inchiostro caldo */
-  --dim:#54686D; --dimmer:#6E8286;
-  --lamp-dim:#A8925C;
-  --water:#2F5749;               /* il verde di marca, da lettura */
-  --violet:#6F5FA0;
-  --alert:#A8443A;
-}
-
-/* ── l'atmosfera: perla, e l'aurora che respira in alto ─────────────── */
+/* ── l'atmosfera: la stessa del crepuscolo, con l'aurora piu' viva ─── */
 .fqz.med{
   background:
-    radial-gradient(1000px 560px at 50% -12%, rgba(201,179,126,.22) 0%, transparent 60%),
-    radial-gradient(900px 620px at 10% 4%, rgba(102,183,156,.13) 0%, transparent 55%),
-    radial-gradient(900px 620px at 90% 10%, rgba(155,139,196,.11) 0%, transparent 55%),
-    linear-gradient(180deg,#FDFBF6 0%,#F4EEE1 100%);
+    radial-gradient(1000px 560px at 50% -12%, rgba(201,179,126,.20) 0%, transparent 60%),
+    radial-gradient(900px 620px at 10% 4%, rgba(102,183,156,.17) 0%, transparent 55%),
+    radial-gradient(900px 620px at 90% 10%, rgba(155,139,196,.15) 0%, transparent 55%),
+    linear-gradient(180deg,#2C4C52 0%,#1F3A41 100%);
 }
-.fqz.med ::selection{background:#C9B37E55;color:var(--bone)}
 
 /* ── la testata: centrata, serif, il filo che si dissolve ───────────── */
 .fqz.med header{display:block;text-align:center;position:relative;
   padding:22px 0 26px;margin-bottom:18px}
-.fqz.med h1{font-size:40px;letter-spacing:.005em;color:var(--bone)}
-.fqz.med h1 em{color:#7D6A3A}
+.fqz.med h1{font-size:40px;letter-spacing:.005em}
 .fqz.med header::after{left:50%;transform:translateX(-50%);
   width:min(380px,72%);
-  background:linear-gradient(90deg,transparent,#C9B37E 50%,transparent)}
+  background:linear-gradient(90deg,transparent,var(--lamp) 50%,transparent)}
 .fqz.med .sub{font-family:var(--serif);font-style:italic;text-transform:none;
   letter-spacing:.02em;font-size:15.5px;color:var(--dim);margin-top:8px}
 .fqz.med header .backcard{position:absolute;right:0;top:14px}
@@ -59,63 +45,61 @@
   .fqz.med h1{font-size:31px}
 }
 
-/* la carta «Le mie preferite» si veste di giorno */
-.fqz.med .backcard{background:#FFFFFF;border-color:var(--line-soft);
-  box-shadow:0 1px 0 rgba(0,0,0,.04)}
-.fqz.med .backcard:hover{border-color:#C9B37E;
-  box-shadow:0 10px 26px rgba(60,50,30,.12)}
-.fqz.med .backcard .bc-ic{color:#7D6A3A;border-color:#C9B37E;
-  background:rgba(201,179,126,.12)}
-
-/* ── la sala: vetro bianco su perla ─────────────────────────────────── */
-.fqz.med .bib{border-radius:22px;
-  background:rgba(255,255,255,.6);
-  border-color:var(--line-soft);
-  box-shadow:0 24px 70px rgba(88,74,44,.10),inset 0 1px 0 #ffffff}
+/* ── la sala: piu' morbida delle altre stanze ───────────────────────── */
+.fqz.med .bib{border-radius:22px}
 .fqz.med .bib h2::before{content:none}
 
-/* i filtri d'intento: pillole quiete */
+/* i filtri d'intento: pillole quiete, non linguette da console */
 .fqz.med .tab{border-radius:999px;font-family:var(--sans);text-transform:none;
-  letter-spacing:.01em;font-size:13.5px;padding:9px 18px;
-  border-color:var(--line);color:var(--dim);background:#FFFFFF}
-.fqz.med .tab-sound:hover{border-color:#C9B37E;color:#7D6A3A}
-.fqz.med .tab-sound.on{background:#C9B37E;border-color:#C9B37E;color:#22333A}
+  letter-spacing:.01em;font-size:13.5px;padding:9px 18px}
 .fqz.med .tabs{border-bottom:none;padding-bottom:4px}
 
-/* ── la scheda: una carta bianca nella luce ─────────────────────────── */
+/* ── la scheda: una carta di vetro, col velo del suo tono ───────────── */
 .fqz.med .cards{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.fqz.med .card{position:relative;border-radius:20px;padding:20px 20px 18px;gap:9px;
-  background:#FFFFFF;border-color:var(--line-soft);
-  box-shadow:0 1px 0 rgba(0,0,0,.03)}
-.fqz.med .card::before{content:none}
-.fqz.med .card:hover{border-color:rgba(201,179,126,.65);
-  box-shadow:0 18px 44px rgba(88,74,44,.14),0 0 0 1px rgba(201,179,126,.2)}
-.fqz.med .card h3{font-size:19px;line-height:1.3;padding-right:40px;color:var(--bone)}
+.fqz.med .card{position:relative;border-radius:20px;padding:20px 20px 18px;gap:9px}
+.fqz.med .card::before{content:none}         /* via la barretta da console */
+.fqz.med .card h3{font-size:19px;line-height:1.3;padding-right:40px}
 
-/* l'intento: occhiello nell'oro da lettura del sito */
+/* LE TONALITA' degli intenti: un velo in testa alla carta e l'onda-
+   firma nel colore del tono. Famiglia di marca, versioni da fondo
+   scuro — il contrasto senza il kitsch. */
+.fqz.med .card{--tono:#D9C08A;--tono-velo:rgba(201,179,126,.14)}
+.fqz.med .card.med-tono-salvia{--tono:#7FC9B0;--tono-velo:rgba(127,201,176,.14)}
+.fqz.med .card.med-tono-viola{--tono:#B5A6DE;--tono-velo:rgba(181,166,222,.16)}
+.fqz.med .card.med-tono-acqua{--tono:#7EC1C7;--tono-velo:rgba(126,193,199,.14)}
+.fqz.med .card{background:
+  linear-gradient(180deg,var(--tono-velo) 0%,rgba(255,255,255,.05) 46%)}
+.fqz.med .med-intento{color:var(--tono)}
+.fqz.med .card:hover{border-color:var(--tono);
+  box-shadow:0 18px 44px rgba(8,24,28,.3)}
+
 .fqz.med .med-intento{font-family:var(--mono);font-size:10px;
-  letter-spacing:.2em;text-transform:uppercase;color:#7D6A3A;order:-1}
+  letter-spacing:.2em;text-transform:uppercase;order:-1}
 .fqz.med .med-dati{font-family:var(--mono);font-size:11.5px;color:var(--dimmer);
   letter-spacing:.03em}
 .fqz.med .card .body{font-size:14px;line-height:1.65;color:var(--dim)}
+
+/* l'onda-firma: una riga di suono disegnata, il tocco finale */
+.fqz.med .med-onda{width:88px;height:10px;fill:none;
+  stroke:var(--tono);stroke-width:1.7;stroke-linecap:round;opacity:.6}
 
 /* ── il cuore: un gesto, non un carattere ───────────────────────────── */
 .fqz.med .med-cuore{position:absolute;top:14px;right:14px;width:38px;height:38px;
   display:grid;place-items:center;padding:0;cursor:pointer;
   border:1px solid var(--line);border-radius:50%;
-  background:#FFFFFF;
+  background:rgba(255,255,255,.05);
   transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .18s,
              background .18s,box-shadow .18s}
 .fqz.med .med-cuore svg{width:17px;height:17px;display:block;
   fill:transparent;stroke:var(--dimmer);stroke-width:1.6;
   transition:fill .2s,stroke .2s,transform .2s}
-.fqz.med .med-cuore:hover{transform:scale(1.08);border-color:#C9B37E;
-  background:rgba(201,179,126,.10)}
-.fqz.med .med-cuore:hover svg{stroke:#7D6A3A}
-.fqz.med .med-cuore.on{border-color:#C9B37E;
-  background:rgba(201,179,126,.14);
-  box-shadow:0 0 16px rgba(201,179,126,.35)}
-.fqz.med .med-cuore.on svg{fill:#C9B37E;stroke:#A8925C}
+.fqz.med .med-cuore:hover{transform:scale(1.08);border-color:var(--lamp);
+  background:rgba(201,179,126,.12)}
+.fqz.med .med-cuore:hover svg{stroke:var(--lamp)}
+.fqz.med .med-cuore.on{border-color:var(--lamp);
+  background:rgba(201,179,126,.16);
+  box-shadow:0 0 16px rgba(201,179,126,.25)}
+.fqz.med .med-cuore.on svg{fill:var(--lamp);stroke:var(--lamp)}
 @media (prefers-reduced-motion:no-preference){
   .fqz.med .med-cuore.on svg{animation:med-battito .5s cubic-bezier(.2,.8,.2,1)}
   @keyframes med-battito{0%{transform:scale(.7)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
@@ -130,48 +114,18 @@
   white-space:nowrap}
 .fqz.med .med-firma i{font-style:normal;color:var(--dimmer)}
 .fqz.med .med-firma b{font-weight:600;color:var(--bone)}
-.fqz.med a.med-firma:hover b{color:#7D6A3A}
+.fqz.med a.med-firma:hover b{color:var(--lamp)}
 .fqz.med .med-ascolta{font-family:var(--sans);font-size:14px;font-weight:600;
-  letter-spacing:.02em;text-decoration:none;color:#6B5A30;
-  border:1px solid rgba(168,146,92,.75);border-radius:999px;
-  background:#FFFFFF;
+  letter-spacing:.02em;text-decoration:none;color:var(--lamp);
+  border:1px solid rgba(201,179,126,.55);border-radius:999px;
+  background:transparent;
   padding:9px 20px;min-height:38px;display:inline-flex;align-items:center;
   transition:background .18s,color .18s,border-color .18s,box-shadow .18s}
-.fqz.med .med-ascolta:hover{background:#C9B37E;color:#22333A;
-  border-color:#C9B37E;box-shadow:0 6px 18px rgba(160,132,70,.35)}
+.fqz.med .med-ascolta:hover{background:var(--lamp);color:#1C3238;
+  border-color:var(--lamp);box-shadow:0 6px 18px rgba(201,179,126,.28)}
 
-/* ── i pezzi condivisi che si vestono di giorno ─────────────────────── */
-/* il cancello e i suoi testi vivono dei tokens ribaltati; qui solo i
-   ritocchi che i tokens non coprono */
-.fqz.med input[type=email],.fqz.med input[type=text]{background:#FFFFFF;
-  border-color:var(--line)}
-.fqz.med .warnbox{background:#FFF7EF;border-color:#D8A08F;color:var(--bone)}
-.fqz.med .readmore{border-color:#B4A8D6;color:var(--violet)}
-.fqz.med .readmore:hover{border-color:var(--violet);color:#5A4B8A;
-  background:rgba(111,95,160,.07)}
-.fqz.med .emptycreate{border-color:var(--line);color:var(--dim)}
-.fqz.med .fqzfoot{border-top-color:var(--line-soft)}
-.fqz.med .fqzfoot a{color:var(--dimmer)}
-.fqz.med .fqzfoot a:hover{color:#7D6A3A}
-.fqz.med .fqzfoot a:first-child{color:var(--dim)}
-.fqz.med .safetyline{background:#FFFFFF99;border-color:var(--line)}
-.fqz.med .safetyline button{color:var(--water)}
-.fqz.med .safetyline button:hover{color:#7D6A3A}
-/* la testata condivisa (marchio, passerella, omino) sul chiaro */
-.fqz.med .fqzbrand b{color:#7D6A3A}
-.fqz.med .fqzbrand:hover{background:rgba(201,179,126,.08);border-color:var(--line)}
-.fqz.med .tb-nav a:hover{color:#7D6A3A;background:rgba(201,179,126,.10)}
-.fqz.med .sam-trigger{border-color:#A8925C;color:#7D6A3A;
-  background:rgba(201,179,126,.12)}
-.fqz.med .sam-trigger:hover{background:rgba(201,179,126,.22);color:#5C4D26;
-  box-shadow:0 0 0 3px rgba(201,179,126,.2)}
-.fqz.med .sam-menu{box-shadow:0 18px 40px rgba(60,50,30,.18)}
-.fqz.med .sam-voce:hover{background:rgba(201,179,126,.10);color:#5C4D26}
-.fqz.med .topbar{border-bottom-color:var(--line-soft)}
-/* il velo dei modali resta scuro: e' un velo, non una superficie */
-.fqz.med .gate{background:rgba(37,51,58,.5)}
-.fqz.med .gatebox{box-shadow:0 30px 80px rgba(60,50,30,.25)}
-.fqz.med .primary{box-shadow:0 4px 14px rgba(160,132,70,.3)}
+/* ── il respiro: le controindicazioni non stanno incollate alle carte ── */
+.fqz.med .safetyline{margin:30px 0 0}
 
 /* ── multipiattaforma: bersagli comodi, una colonna serena ──────────── */
 @media (max-width:640px){
@@ -184,43 +138,3 @@
 @media (min-width:641px) and (max-width:900px){
   .fqz.med .cards{grid-template-columns:repeat(2,1fr)}
 }
-
-/* ═══ TERZA MANO (26/8, founder): le tonalita', il respiro, il player ═══ */
-
-/* ── le TONALITA' degli intenti: un velo in testa alla carta e
-   l'onda-firma nel colore del tono. Famiglia di marca, versioni da
-   fondo chiaro — il contrasto senza il kitsch. ─────────────────────── */
-.fqz.med .card{--tono:#A8925C;--tono-velo:rgba(201,179,126,.13)}
-.fqz.med .card.med-tono-salvia{--tono:#3E6B57;--tono-velo:rgba(102,183,156,.14)}
-.fqz.med .card.med-tono-viola{--tono:#6F5FA0;--tono-velo:rgba(155,139,196,.15)}
-.fqz.med .card.med-tono-acqua{--tono:#33655E;--tono-velo:rgba(72,143,131,.14)}
-.fqz.med .card{background:linear-gradient(180deg,var(--tono-velo) 0%,#FFFFFF 46%)}
-.fqz.med .med-intento{color:var(--tono)}
-.fqz.med .card:hover{border-color:var(--tono);
-  box-shadow:0 18px 44px rgba(88,74,44,.14)}
-
-/* l'onda-firma: una riga di suono disegnata, il tocco finale */
-.fqz.med .med-onda{width:88px;height:10px;fill:none;
-  stroke:var(--tono);stroke-width:1.7;stroke-linecap:round;opacity:.55}
-
-/* ── il respiro: le controindicazioni non stanno incollate alle carte ── */
-.fqz.med .safetyline{margin:30px 0 0}
-
-/* ── il PLAYER PUBBLICO attraversa la stessa soglia ─────────────────── */
-.fqz.med .createbar{background:#FFFFFF;border-color:var(--line-soft);
-  box-shadow:0 14px 40px rgba(88,74,44,.10),inset 0 1px 0 #ffffff}
-.fqz.med .seek-cur,.fqz.med .seek-tot{color:var(--dim)}
-.fqz.med .seekbar::before{background:#E4DCC9}
-.fqz.med .seek-fill{background:#2F5749}
-.fqz.med .seek-knob{background:#2F5749;box-shadow:0 0 6px rgba(47,87,73,.45)}
-.fqz.med .learn-kicker{color:#6F5FA0}
-.fqz.med .status{color:var(--dim)}
-.fqz.med .cuffie-avviso{color:#2F5749;border-color:rgba(47,87,73,.35);
-  background:rgba(102,183,156,.10)}
-.fqz.med .continuo-riga{color:var(--dim)}
-.fqz.med .continuo-riga.attivo{color:#7D6A3A}
-/* la scena (Aurya Mode) resta un mondo scuro: e' una FINESTRA sul
-   suono dentro la pagina di giorno — bordo e angoli glielo dicono */
-.fqz.med .bib canvas{border-radius:18px}
-.fqz.med .gatebox h2 em{color:#7D6A3A}
-.fqz.med .learnbox{background:#FFFFFF}

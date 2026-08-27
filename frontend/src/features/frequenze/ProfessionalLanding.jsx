@@ -52,17 +52,18 @@ const PRINCIPI = ['Entrainment', 'Binaural beats', 'Stimolazione ritmica',
 const PRATICHE = ['Meditazione', 'Breathwork', 'Sound healing',
   'Pratiche corporee', 'Percorsi di rilassamento', 'Esperienze olistiche'];
 
-/* la FINESTRA sull'onda: avorio nel mondo chiaro (rifinitura 26/8 —
-   prima era un riquadro scuro, ora l'onda vive nella stessa luce) */
+/* la FINESTRA sull'onda: un riquadro di Aurya Sound dentro la pagina
+   chiara del sito. Col crepuscolo (26/8) la metafora torna VERA — di
+   la' dal vetro c'e' davvero il petrolio. */
 function Finestra({ etichetta, sotto, children }) {
   return (
     <figure className="rounded-2xl overflow-hidden"
-      style={{ background: '#FBF7EE', border: '1px solid #E8E0CE' }}>
+      style={{ background: '#26454C', border: '1px solid #3A5F66' }}>
       <div className="p-4 sm:p-5">{children}</div>
       {etichetta && (
         <figcaption className="flex items-baseline justify-between px-5 pb-4">
-          <span className="font-serif text-lg text-[#25333A]">{etichetta}</span>
-          {sotto && <span className="text-sm text-[#3E7663]">{sotto}</span>}
+          <span className="font-serif text-lg text-[#EAF2F0]">{etichetta}</span>
+          {sotto && <span className="text-sm text-[#7FC9B0]">{sotto}</span>}
         </figcaption>
       )}
     </figure>

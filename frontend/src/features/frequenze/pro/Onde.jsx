@@ -64,9 +64,10 @@ export default function Onde({ sorgente, altezza = 180 }) {
       if (!vivo) return;
       quadro = requestAnimationFrame(dipingi);
       const { w, h } = misura();
-      /* rifinitura del giorno (26/8): l'onda vive su avorio, in
-         armonia col fondo nuovo — le scie nei toni da lettura */
-      pennello.fillStyle = '#FBF7EE';
+      /* crepuscolo (26/8): l'onda vive nel petrolio profondo, un
+         gradino sotto il fondo della stanza — cosi' la tela si stacca
+         senza essere un buco nero */
+      pennello.fillStyle = '#1B343B';
       pennello.fillRect(0, 0, w, h);
 
       const analyser = sorgente?.();
@@ -80,9 +81,9 @@ export default function Onde({ sorgente, altezza = 180 }) {
         scia2[i] += (scia1[i] - scia2[i]) * 0.08;
         scia1[i] += (ora[i] - scia1[i]) * 0.22;
       }
-      linea(scia2, '#B9C7C3', 3, 0.55);
-      linea(scia1, '#3E7663', 2, 0.6);
-      linea(ora, '#A8925C', 1.6, 0.95);
+      linea(scia2, '#3E5A60', 3, 0.5);
+      linea(scia1, '#7FC9B0', 2, 0.65);
+      linea(ora, '#D9C08A', 1.6, 0.95);
     };
     dipingi();
 
