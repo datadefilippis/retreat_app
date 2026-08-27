@@ -26,7 +26,7 @@ const STANZE = [
 ];
 
 export default function StanzeSound({ attiva, creaBadge = 0,
-  avvisoUscita = 0 }) {
+  primaDiUscire = null }) {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const chiavi = user
@@ -48,14 +48,10 @@ export default function StanzeSound({ attiva, creaBadge = 0,
           data-testid={id === 'tracce' ? 'fqz-mine' : `stanza-${id}`}
           onClick={() => {
             if (attiva === id) return;
-            /* NV6-bis (founder): il Lab e' una pagina propria — uscire
-               da Crea con una sessione montata la chiude. L'avviso
-               prima del salto, mai la perdita muta. */
-            if (id === 'lab' && avvisoUscita > 0
-                && !window.confirm(
-                  `Stai lasciando Crea: la sessione in corso `
-                  + `(${avvisoUscita} ${avvisoUscita === 1 ? 'livello' : 'livelli'}) si chiude. `
-                  + `Se non l'hai salvata come bozza andrà persa. Uscire?`)) {
+            /* TM6 — il Lab e' una pagina propria: uscire da Crea con
+               una sessione sporca passa dalla CAMPANA (il modale di
+               casa, tre gesti), mai piu' dal confirm nativo. */
+            if (id === 'lab' && primaDiUscire && primaDiUscire(to, false)) {
               return;
             }
             navigate(to);

@@ -175,10 +175,10 @@ class TestL3PortaDiSistema:
         assert "'/sound/pro'" not in src
         assert "'/sound/professional'" not in src, \
             "la passerella pubblicizza ancora la vendita"
-        # NV2 (27/8, BUSSOLA): la voce dice il suo nome vero — non piu'
-        # «Sound» (che nel menu del sito porta altrove) — e il Lab e'
-        # una STANZA (StanzeSound), non una voce di menu
-        assert "{ to: '/sound/esplora', label: 'Biblioteca' }" in src
+        # NV2 (27/8, BUSSOLA) poi TM7 (27/8, founder): la voce porta il
+        # nome del MONDO — dentro il buio «Aurya Sound» e' casa, non una
+        # stanza. Il Lab resta una STANZA (StanzeSound), non voce di menu.
+        assert "{ to: '/sound/esplora', label: 'Aurya Sound' }" in src
         assert "label: 'Lab'" not in src, "il Lab e' tornato in passerella"
 
 

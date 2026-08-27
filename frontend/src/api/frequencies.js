@@ -67,16 +67,20 @@ export const frequenciesAPI = {
   // FV1 — spezzoni voce dell'operatore: org-scoped, SOLO registrazione
   // in-app (il blob arriva dal MediaRecorder, mai da un file manager)
   listVoice: () => api.get('/frequencies/voice'),
-  recordVoice: ({ blob, mime, title, durationSec }) => {
+  recordVoice: ({ blob, mime, title, durationSec, trackId = null }) => {
     const fd = new FormData();
     const ext = (mime || '').includes('mp4') ? 'm4a'
       : (mime || '').includes('ogg') ? 'ogg' : 'webm';
     fd.append('file', new File([blob], `voce.${ext}`, { type: mime }));
     fd.append('title', title);
     fd.append('duration_sec', durationSec || 0);
+    if (trackId) fd.append('track_id', trackId);   // TM8: nasce legata
     return api.post('/frequencies/voice', fd,
       { headers: { 'Content-Type': 'multipart/form-data' } });
   },
+  // TM8 — l'adozione: lega lo spezzone alla sua sessione
+  updateVoice: (assetId, patch) =>
+    api.patch(`/frequencies/voice/${assetId}`, patch),
   renameVoice: (assetId, title) =>
     api.patch(`/frequencies/voice/${assetId}`, { title }),
   // FV6 — il taglio e' una proprieta' della REGISTRAZIONE: si decide

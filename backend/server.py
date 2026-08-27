@@ -164,6 +164,12 @@ async def lifespan(app: FastAPI):
     # Seed commercial plans (idempotent upsert -- runs in all environments)
     try:
         await seed_commercial_plans()
+        # TM8 — adozione spezzoni voce + scopa orfani (idempotente)
+        try:
+            from services.voice_adoption import adotta_spezzoni
+            await adotta_spezzoni()
+        except Exception as e:   # noqa: BLE001 — mai bloccare l'avvio
+            logging.warning(f"voice_adoption all'avvio fallita: {e}")
     except Exception as e:
         logging.error(f"Failed to seed commercial plans: {e}")
     # One-time migration: plan redesign v1 (idempotent, flag-gated)

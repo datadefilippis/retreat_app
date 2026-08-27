@@ -22,7 +22,7 @@ const quando = (iso) => {
   } catch { return ''; }
 };
 
-export default function CondivisioniTraccia({ trackId }) {
+export default function CondivisioniTraccia({ trackId, onCambio = null }) {
   const [items, setItems] = useState(null);   // null = caricamento
   const [persona, setPersona] = useState(null);
   const [msg, setMsg] = useState('');
@@ -51,6 +51,7 @@ export default function CondivisioniTraccia({ trackId }) {
       const r = await frequenciesAPI.createShare(trackId, persona.id);
       setPersona(null);
       carica();
+      if (onCambio) onCambio();   // TM2: il conteggio in scheda resta vero
       await copia(r.data.token);
     } catch (e) {
       setMsg(messaggio(e, 'Non creato: riprova.'));
@@ -61,6 +62,7 @@ export default function CondivisioniTraccia({ trackId }) {
     try {
       await frequenciesAPI.revokeShare(share.id);
       carica();
+      if (onCambio) onCambio();
       setMsg(`Link di ${share.contact_name || 'contatto'} revocato: non suona più.`);
     } catch { setMsg('Revoca non riuscita.'); }
   };

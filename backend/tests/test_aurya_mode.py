@@ -1580,10 +1580,15 @@ class TestIlMaster:
         dopo, con progresso; se fallisce la traccia RESTA pubblicata
         col percorso classico."""
         crea = (FQ_DIR / "FrequenzePage.js").read_text()
-        blocco = crea.split("const publishTrack")[1].split("const unpublishTrack")[0]
+        # TM5 (27/8): il render vive in generaMaster (un forno solo,
+        # usato anche pubblicando dalla lista) — l'ordine resta:
+        # prima il publish, poi il forno.
+        blocco = crea.split("const publishTrack")[1].split("const pubblicaDaLista")[0]
         assert blocco.index("await publishById(trackId)") \
-            < blocco.index("uploadMaster(trackId, blob)")
-        assert "mp3Blob(pcm, 44100," in blocco and "192)" in blocco
+            < blocco.index("generaMaster(trackId, scorePayload())")
+        forno = crea.split("const generaMaster")[1].split("const publishTrack")[0]
+        assert "uploadMaster(id, blob)" in forno
+        assert "mp3Blob(pcm, 44100," in forno and "192)" in forno
         assert "la traccia resta pubblicata col percorso classico" in blocco
 
     def test_lo_slug_segue_il_titolo_e_i_vecchi_link_vivono(self):

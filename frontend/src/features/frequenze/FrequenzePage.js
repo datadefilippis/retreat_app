@@ -309,8 +309,18 @@ export default function FrequenzePage() {
      score di adesso e' diverso, il master sul server e' vecchio e
      l'export deve renderizzare invece di scaricarlo. */
   const [firmaPubblicata, setFirmaPubblicata] = useState(null);
+  /* TM6 — il DIRTY VERO: la firma dell'ultimo salvataggio. Ogni
+     azione di sessione la fa divergere; Salva/Pubblica/apertura la
+     riallineano. 'DA_CALCOLARE' = bozza appena aperta (pulita, la
+     firma arriva quando i layer sono montati). */
+  const [firmaSalvata, setFirmaSalvata] = useState(null);
+  const [clipsFresche, setClipsFresche] = useState(0);
+  const clipsSessioneRef = useRef([]);   // TM8: spezzoni di questa sessione
   const [trackSlug, setTrackSlug] = useState(null);
   const [drafts, setDrafts] = useState([]);
+  /* TM2 — il pannello dei link riservati e' RIPIEGATO di default:
+     una riga col conteggio, si apre solo quando serve. */
+  const [sharesAperti, setSharesAperti] = useState({});
   const [playing, setPlaying] = useState(false);
   const [preparing, setPreparing] = useState(false);  // decode in corso
   const [elapsed, setElapsed] = useState(0);
@@ -407,12 +417,15 @@ export default function FrequenzePage() {
   useEffect(() => { if (canCompose) loadDrafts(); }, [canCompose]);
   /* NV6-bis — anche la chiusura del tab avvisa, finche' c'e' una
      sessione montata (il browser mostra il suo dialogo standard) */
+  const sporcaRef = useRef(false);
   useEffect(() => {
-    if (!layers.length) return undefined;
-    const h = (e) => { e.preventDefault(); e.returnValue = ''; };
+    const h = (e) => {
+      if (!sporcaRef.current) return;
+      e.preventDefault(); e.returnValue = '';
+    };
     window.addEventListener('beforeunload', h);
     return () => window.removeEventListener('beforeunload', h);
-  }, [layers.length]);
+  }, []);
 
   /* ── libreria suoni (FQ2) ── */
   const [sounds, setSounds] = useState([]);
@@ -500,7 +513,10 @@ export default function FrequenzePage() {
   /* ── FV3: il leggio — spezzoni voce dell'operatore ──
    * SOLO registrazione in-app (decisione founder 18/8: niente upload).
    * Gli handle di MediaRecorder/stream vivono in ref, MAI negli updater. */
-  const [voiceClips, setVoiceClips] = useState([]);
+  const [voiceClips, setVoiceClips] = useState([]);   // il leggio: la SESSIONE
+  const [voiceSenza, setVoiceSenza] = useState([]);   // ripiego: senza sessione
+  const [voiceTutti, setVoiceTutti] = useState([]);   // risoluzione playback
+  const [senzaAperto, setSenzaAperto] = useState(false);
   const [recState, setRecState] = useState('idle');   // idle | rec
   const [recSecs, setRecSecs] = useState(0);
   const [prevFx, setPrevFx] = useState('dream');      // preset di prova
@@ -510,11 +526,22 @@ export default function FrequenzePage() {
   const recSecsRef = useRef(0);
   const recTimerRef = useRef(null);
   const voicePrevRef = useRef(null);    // anteprima spezzone in corso
+  /* TM8 — la RISOLUZIONE resta sul pool intero (uno score puo'
+     referenziare uno spezzone adottato da un'altra traccia: l'audio
+     non deve rompersi MAI); il LEGGIO invece e' della sessione. */
   const voiceById = useMemo(
-    () => Object.fromEntries(voiceClips.map((c) => [c.id, c])), [voiceClips]);
-  const loadVoice = async () => {
-    try { setVoiceClips((await frequenciesAPI.listVoice()).data.items || []); }
-    catch { /* non bloccante */ }
+    () => Object.fromEntries(voiceTutti.map((c) => [c.id, c])), [voiceTutti]);
+  const loadVoice = async (tid = trackId) => {
+    try {
+      const tutti = (await frequenciesAPI.listVoice()).data.items || [];
+      setVoiceTutti(tutti);
+      const locali = clipsSessioneRef.current;
+      setVoiceClips(tid
+        ? tutti.filter((c) => c.track_id === tid || locali.includes(c.id))
+        : tutti.filter((c) => locali.includes(c.id)));
+      setVoiceSenza(tutti.filter((c) => c.track_id == null
+        && !locali.includes(c.id)));
+    } catch { /* non bloccante */ }
   };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (canCompose) loadVoice(); }, [canCompose]);
@@ -602,7 +629,12 @@ export default function FrequenzePage() {
       try {
         const n = voiceClips.length + 1;
         const r = await frequenciesAPI.recordVoice({
-          blob, mime: blob.type, title: `Spezzone ${n}`, durationSec: dur });
+          blob, mime: blob.type, title: `Spezzone ${n}`, durationSec: dur,
+          trackId });
+        // TM8: lo spezzone appartiene a QUESTA sessione (se la bozza
+        // non esiste ancora, l'adozione avviene al Salva)
+        clipsSessioneRef.current = [...clipsSessioneRef.current, r.data.id];
+        setClipsFresche((n2) => n2 + 1);
         await loadVoice();
         setStatus(`«${r.data.title}» tra i tuoi spezzoni — rinominalo per ritrovarlo`);
       } catch (e) {
@@ -637,6 +669,15 @@ export default function FrequenzePage() {
       clip_in: clip.trim_start || 0,
     }]);
     setStatus(`«${clip.title}» sulla linea del tempo a ${fmt(start)} — effetto Sogno`);
+    /* TM8 — usato in QUESTA sessione: sale dal ripiego al leggio e al
+       Salva bozza viene adottato dalla traccia (consenso col gesto). */
+    if (!voiceClips.some((c) => c.id === clip.id)) {
+      setVoiceClips((cs) => [...cs, clip]);
+      setVoiceSenza((cs) => cs.filter((c) => c.id !== clip.id));
+      if (!clipsSessioneRef.current.includes(clip.id)) {
+        clipsSessioneRef.current.push(clip.id);
+      }
+    }
   };
   const renameVoiceClip = async (clip, name) => {
     const t = (name || '').trim();
@@ -655,10 +696,16 @@ export default function FrequenzePage() {
   /* VP (24/8) — il modo di pulizia: si sceglie una volta, vale
      ovunque quel take sia usato (anteprima, sessione, master). Il
      file non si tocca mai: e' matematica applicata all'ascolto. */
+  /* TM8 — lo stesso spezzone puo' vivere nel leggio di sessione o nel
+     ripiego «senza sessione»: l'aggiornamento ottimistico tocca tutte
+     le liste, cosi' il gesto non dipende da dove sta la riga. */
+  const aggiornaClip = (id, patch) => {
+    const f = (cs) => cs.map((c) => (c.id === id ? { ...c, ...patch } : c));
+    setVoiceClips(f); setVoiceSenza(f); setVoiceTutti(f);
+  };
   const saveVoiceClean = async (clip, mode) => {
     if ((CLEAN_ALIAS[clip.clean_mode] || 'auto') === mode) return;
-    setVoiceClips((cs) => cs.map((c) => (
-      c.id === clip.id ? { ...c, clean_mode: mode } : c)));
+    aggiornaClip(clip.id, { clean_mode: mode });
     setStatus(`Voce «${clip.title}»: pulizia ${CLEAN_MODES[mode].label.toLowerCase()}`);
     try { await frequenciesAPI.setVoiceClean(clip.id, mode); }
     catch { setStatus('Pulizia non salvata'); loadVoice(); }
@@ -679,8 +726,7 @@ export default function FrequenzePage() {
     let e = Math.max(0, Math.min(nextEnd, Math.max(0, dur - s - 1)));
     s = Math.round(s * 2) / 2; e = Math.round(e * 2) / 2;
     if (s === (clip.trim_start || 0) && e === (clip.trim_end || 0)) return;
-    setVoiceClips((cs) => cs.map((c) => (
-      c.id === clip.id ? { ...c, trim_start: s, trim_end: e } : c)));
+    aggiornaClip(clip.id, { trim_start: s, trim_end: e });
     const len = Math.max(1, dur - s - e);
     setLayers((ls) => ls.map((l) => (
       l.kind === 'voice' && l.asset_id === clip.id
@@ -922,16 +968,29 @@ export default function FrequenzePage() {
     const name = title.trim() || 'Senza titolo';
     setSaving(true);
     try {
+      let idFinale = trackId;
       if (trackId) {
         await frequenciesAPI.update(trackId, { title: name, score: scorePayload(), intent });
         setStatus(`Bozza «${name}» aggiornata`);
       } else {
         const r = await frequenciesAPI.create({ title: name, score: scorePayload(), intent });
+        idFinale = r.data.id;
         setTrackId(r.data.id);
         // timbra la bozza appena nata nell'URL (replace: niente history)
         if (view === 'create') navigate(`/sound/crea?bozza=${r.data.id}`, { replace: true });
         setStatus(`Bozza «${name}» salvata`);
       }
+      /* TM8 — l'ADOZIONE si consolida qui: gli spezzoni nati in
+         questa sessione si legano alla bozza (idempotente) */
+      for (const cid of clipsSessioneRef.current) {
+        try { await frequenciesAPI.updateVoice(cid, { track_id: idFinale }); }
+        catch { /* non bloccante: l'adozione ritenta al prossimo salva */ }
+      }
+      clipsSessioneRef.current = [];
+      /* TM6 — la campana tace: tutto cio' che c'era e' salvato */
+      setFirmaSalvata(JSON.stringify(scorePayload()));
+      setClipsFresche(0);
+      loadVoice(idFinale);
       loadDrafts();
     } catch (e) {
       setStatus(e?.response?.data?.detail || 'Errore nel salvataggio');
@@ -943,6 +1002,12 @@ export default function FrequenzePage() {
       const t = (await frequenciesAPI.get(id)).data, s = t.score || {};
       setTrackId(t.id); setTitle(t.title || ''); setIntent(t.intent || null);
       setTrackStatus(t.status || 'draft'); setTrackSlug(t.slug || null);
+      /* TM8: il leggio diventa quello di QUESTA traccia */
+      clipsSessioneRef.current = [];
+      setClipsFresche(0);
+      loadVoice(t.id);
+      /* TM6: appena aperta la sessione E' la bozza — pulita */
+      setFirmaSalvata('DA_CALCOLARE');
       /* appena aperta, la sessione E' quella pubblicata: il master
          sul server la rappresenta ancora (finche' non si tocca) */
       setFirmaPubblicata(t.status === 'published' ? 'DA_CALCOLARE' : null);
@@ -987,6 +1052,13 @@ export default function FrequenzePage() {
     }]],
   });
 
+  /* TM1 — il gesto pubblico non e' mai un click distratto: la
+     conferma dice DOVE va la traccia, con le parole delle Meditazioni. */
+  const confermaMeditazioni = (d) => setAsk({
+    title: 'Nelle Meditazioni di Aurya?',
+    msg: `«${d.title}» andrà nelle Meditazioni pubbliche di Aurya, visibile a tutti gli iscritti. Pubblicare?`,
+    opts: [['Sì, pubblica', () => pubblicaDaLista(d.id)]],
+  });
   const publishById = async (id, visibility = null) => {
     /* TR2 — senza chiave 1 il server pubblica RISERVATO comunque:
        questa scelta governa solo cosa si dice all'autore. */
@@ -1027,6 +1099,13 @@ export default function FrequenzePage() {
     if (firmaPubblicata !== 'DA_CALCOLARE' || !layers.length) return;
     setFirmaPubblicata(JSON.stringify(scorePayload()));
   }, [firmaPubblicata, layers]);   // eslint-disable-line react-hooks/exhaustive-deps
+  /* TM6 — il gemello per la firma del SALVATO: quando la bozza aperta
+     ha montato i suoi layer, la firma si materializza e la campana
+     sa distinguere «aperta e intatta» da «toccata» */
+  useEffect(() => {
+    if (firmaSalvata !== 'DA_CALCOLARE' || !layers.length) return;
+    setFirmaSalvata(JSON.stringify(scorePayload()));
+  }, [firmaSalvata, layers]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   /* il nome del file e il salvataggio: una volta sola, usati sia dal
      master scaricato sia dal render */
@@ -1120,33 +1199,53 @@ export default function FrequenzePage() {
      si pubblica (immediato, link subito, come sempre), POI si genera
      il master con progresso visibile: nel frattempo chi ascolta usa
      il percorso classico, e a master caricato passa al file. */
+  /* TM5 — trovato al collaudo: pubblicare da «Le mie tracce» non
+     generava il master, e /ascolta (che suona SOLO dal file) dava
+     404 al cliente. Il render ora parte dalla RICETTA — la stessa
+     strada da Crea (score di sessione) e dalla lista (score dal
+     server): un solo forno per il master. */
+  const generaMaster = async (id, ricetta) => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    try {
+      const strati = ricetta.layers || [];
+      setStatus('Pubblicata. Ora preparo il master: carico le basi…');
+      const aLayers = strati.some((l) => l.kind === 'audio')
+        ? await resolveAudioLayers(ctx, ricetta, soundsById) : [];
+      const vLayers = strati.some((l) => l.kind === 'voice')
+        ? await resolveVoiceLayers(ctx, ricetta, voiceById) : [];
+      const pcm = await renderPcm(ricetta, {
+        sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers,
+        voiceDuck: !!ricetta.voice_duck,
+        onProgress: (pr) => setStatus(`Master: renderizzo… ${Math.round(pr * 100)}%`),
+      });
+      const blob = await mp3Blob(pcm, 44100,
+        (pr) => setStatus(`Master: comprimo… ${Math.round(pr * 100)}%`), 192);
+      setStatus(`Master: carico ${(blob.size / 1048576).toFixed(0)} MB…`);
+      await frequenciesAPI.uploadMaster(id, blob);
+      setStatus('Master pronto: da ora chi ascolta riceve il file, leggero.');
+    } finally {
+      ctx.close().catch(() => { /* niente */ });
+    }
+  };
   const publishTrack = async () => {
     if (!trackId) return;
     await save();
     await publishById(trackId);
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      try {
-        setStatus('Pubblicata. Ora preparo il master: carico le basi…');
-        const aLayers = layers.some((l) => l.kind === 'audio')
-          ? await resolveAudioLayers(ctx, score, soundsById) : [];
-        const vLayers = hasVoiceLayers
-          ? await resolveVoiceLayers(ctx, score, voiceById) : [];
-        const pcm = await renderPcm(score, {
-          sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers,
-          voiceDuck,
-          onProgress: (pr) => setStatus(`Master: renderizzo… ${Math.round(pr * 100)}%`),
-        });
-        const blob = await mp3Blob(pcm, 44100,
-          (pr) => setStatus(`Master: comprimo… ${Math.round(pr * 100)}%`), 192);
-        setStatus(`Master: carico ${(blob.size / 1048576).toFixed(0)} MB…`);
-        await frequenciesAPI.uploadMaster(trackId, blob);
-        setStatus('Master pronto: da ora chi ascolta riceve il file, leggero.');
-      } finally {
-        ctx.close().catch(() => { /* niente */ });
-      }
+      await generaMaster(trackId, scorePayload());
     } catch (e) {
       setStatus('Master non generato: la traccia resta pubblicata col percorso classico — ripubblica per riprovare');
+    }
+  };
+  /* la via della LISTA: pubblica e poi inforna il master dalla
+     ricetta salvata sul server (in lista non c'e' una sessione). */
+  const pubblicaDaLista = async (id, visibility = null) => {
+    await publishById(id, visibility);
+    try {
+      const t = (await frequenciesAPI.get(id)).data;
+      if ((t?.score?.layers || []).length) await generaMaster(id, t.score);
+    } catch {
+      setStatus('Master non generato: apri la traccia e ripubblica per riprovare');
     }
   };
   const unpublishTrack = () => unpublishById(trackId);
@@ -1161,6 +1260,11 @@ export default function FrequenzePage() {
         setLayers([]); setPhases([]); setTrackId(null); setTitle(''); setIntent(null);
         setTrackStatus('draft'); setTrackSlug(null); setVoiceDuck(false);
         setFirmaPubblicata(null);
+        /* TM6+TM8: sessione nuova = campana muta e leggio vuoto
+           (gli spezzoni non adottati li pulisce la scopa del server) */
+        setFirmaSalvata(null); setClipsFresche(0);
+        clipsSessioneRef.current = [];
+        loadVoice(null);
         setVisual(null);   // VC3 — la bozza nuova non eredita la scena
         if (qs.get('bozza')) navigate('/sound/crea', { replace: true });
         setStatus('Sessione svuotata');
@@ -1733,13 +1837,113 @@ export default function FrequenzePage() {
     return <Navigate to="/sound" replace />;
   }
 
+  /* TM6 — LA CAMPANA D'USCITA. Suona solo se c'e' davvero qualcosa
+     da perdere: layer divergenti dall'ultimo salvataggio, o spezzoni
+     registrati e non ancora consolidati. Tre gesti nel modale di
+     casa (setAsk): Salva ed esci / Esci senza salvare / Annulla. */
+  const sporca = (layers.length > 0
+    && firmaSalvata !== 'DA_CALCOLARE'
+    && firmaSalvata !== JSON.stringify(scorePayload()))
+    || clipsFresche > 0;
+  sporcaRef.current = sporca;
+  const chiediUscita = (to, esterna = false) => {
+    if (!sporca) return false;
+    const esci = () => {
+      if (esterna) window.location.assign(to);
+      else navigate(to);
+    };
+    setAsk({
+      title: 'Sessione non salvata',
+      msg: layers.length
+        ? `La sessione in corso (${layers.length} ${layers.length === 1 ? 'livello' : 'livelli'}${clipsFresche ? `, ${clipsFresche} spezzoni nuovi` : ''}) non è salvata: uscendo andrà persa.`
+        : `Hai ${clipsFresche} ${clipsFresche === 1 ? 'spezzone registrato' : 'spezzoni registrati'} non ancora legati a una bozza.`,
+      opts: [
+        ['Salva ed esci', async () => { await save(); esci(); }],
+        ['Esci senza salvare', esci],
+      ],
+    });
+    return true;
+  };
+
   /* ─────────────────────────── RENDER ─────────────────────────── */
+  /* TM8 — la riga del leggio, una sola per le due liste (sessione e
+     ripiego): rinomina, durata, anteprima, taglio, «+ sessione», ×. */
+  const rigaClip = (c) => (
+                      <React.Fragment key={c.id}>
+                      <div className={`vd-clip${voicePrevId === c.id ? ' playing' : ''}`}>
+                        <input className="vd-name" type="text" defaultValue={c.title}
+                          key={`${c.id}-${c.title}`}
+                          onBlur={(e) => renameVoiceClip(c, e.target.value)} />
+                        <span className="vd-dur"
+                          title={(c.trim_start || c.trim_end)
+                            ? `Registrazione intera ${fmt(c.duration_sec || 0)}, tagliata`
+                            : 'Durata della registrazione'}>
+                          {fmt(clipUseful(c))}
+                        </span>
+                        <button type="button" className="chip"
+                          onClick={() => toggleVoicePreview(c)}>
+                          {voicePrevLoading === c.id ? <span className="prep">◌</span>
+                            : voicePrevId === c.id ? '■' : '▶'}
+                        </button>
+                        <button type="button"
+                          className={`chip${trimOpen === c.id ? ' on' : ''}`}
+                          title="Taglia i secondi di troppo all'inizio e alla fine di questa registrazione"
+                          data-testid={`fq-trim-${c.id}`}
+                          onClick={() => setTrimOpen(trimOpen === c.id ? null : c.id)}>
+                          ✂ taglio{(c.trim_start || c.trim_end) ? ' ·' : ''}
+                        </button>
+                        <button type="button" className="add"
+                          title="La piazza al punto del cursore"
+                          onClick={() => addVoiceToSession(c)}>+ sessione</button>
+                        <button type="button" className="ghost"
+                          onClick={() => removeVoiceClip(c)}>×</button>
+                      </div>
+                      {trimOpen === c.id && (
+                        <div className="vd-trim" data-testid="fq-trimrow">
+                          <span className="lbl">togli dall'inizio</span>
+                          <input className="mini" type="number" min="0" step="0.5"
+                            value={c.trim_start || 0}
+                            onChange={(e) => {
+                              const v = +e.target.value;
+                              if (!isNaN(v)) saveVoiceTrim(c, v, c.trim_end || 0);
+                            }} />
+                          <span className="lbl">togli dalla fine</span>
+                          <input className="mini" type="number" min="0" step="0.5"
+                            value={c.trim_end || 0}
+                            onChange={(e) => {
+                              const v = +e.target.value;
+                              if (!isNaN(v)) saveVoiceTrim(c, c.trim_start || 0, v);
+                            }} />
+                          <span className="lbl">s</span>
+                          <span className="vd-hint">
+                            Restano {fmt(clipUseful(c))} di {fmt(c.duration_sec || 0)}.
+                            Il file resta intero: puoi rimettere 0 quando vuoi.
+                          </span>
+                          {/* VP — la pulizia: «Naturale» lascia
+                              l'attacco com'e' (la voce non parte piu'
+                              bassa), «Pulita» toglie anche il fruscio
+                              nelle pause, «Grezza» non tocca nulla. */}
+                          <div className="vd-clean">
+                            <span className="lbl">pulizia</span>
+                            {Object.entries(CLEAN_MODES).map(([k, m]) => (
+                              <button key={k} type="button" title={m.hint}
+                                data-testid={`fq-clean-${k}`}
+                                className={`chip${(CLEAN_ALIAS[c.clean_mode] || 'auto') === k ? ' on' : ''}`}
+                                onClick={() => saveVoiceClean(c, k)}>{m.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      </React.Fragment>
+  );
+
   return (
     <div className="fqz" data-testid="fqz-root">
       {/* DN1/DN2/DN4 — testata condivisa del mondo Sound: marchio della
           marca (che e' anche la via di casa), passerella e omino. Gli
           strumenti di QUESTA vista viaggiano come extra. */}
-      <SoundTopbar firma="Sound" qui="/sound" extra={<>
+      <SoundTopbar firma="Sound" qui="/sound" primaDiUscire={chiediUscita}
+        extra={<>
         {/* SF — sempre a portata, in ogni vista e per chiunque: le
             controindicazioni non si leggono una volta sola */}
         <SafetyButton onClick={openReview} />
@@ -1756,7 +1960,7 @@ export default function FrequenzePage() {
             Lab · Impara per tutti, Crea · Le mie tracce con le
             chiavi. Condivisa col Lab: un solo posto dove orientarsi. */}
         <StanzeSound creaBadge={layers.length}
-          avvisoUscita={layers.length}
+          primaDiUscire={chiediUscita}
           attiva={{ explore: 'esplora', create: 'crea',
                     impara: 'impara', mine: 'tracce' }[view]} />
       </header>
@@ -2045,13 +2249,19 @@ export default function FrequenzePage() {
             ) : (
               <div className="cards">
                 {drafts.map((d) => {
-                  /* TR4 — la RISERVATA e' il terzo stato della scheda:
-                     niente slug in mostra, e al suo posto il pannello
-                     dei link per contatto. */
+                  /* TM1+TM2 — la scheda racconta il processo: tre stati
+                     (bozza / riservata / nelle Meditazioni), UN gesto
+                     primario per stato, l'elimina fuori dalla riga, il
+                     pannello dei link ripiegabile col conteggio. */
                   const riservata = d.status === 'published'
                     && d.visibility === 'private';
+                  const pubblica = d.status === 'published' && !riservata;
+                  const linkAperti = !!sharesAperti[d.id];
                   return (
-                  <div key={d.id} className={`card${d.status === 'published' ? ' playing' : ''}`}>
+                  <div key={d.id} className={`card mine-card${d.status === 'published' ? ' playing' : ''}`}>
+                    <button type="button" className="mine-del" title="Elimina la traccia"
+                      aria-label={`Elimina «${d.title}»`}
+                      onClick={() => removeDraft(d.id, d.title)}>×</button>
                     <div className="head">
                       <h3>{d.title}</h3>
                       <span className="badge" style={d.status !== 'published'
@@ -2065,40 +2275,56 @@ export default function FrequenzePage() {
                     </div>
                     <div className="hz">
                       {fmt(d.duration_sec || 0)} · {d.layers_count} {d.layers_count === 1 ? 'livello' : 'livelli'}
-                      {d.status === 'published' && !riservata && ` · ${d.plays_total || 0} ascolti`}
+                      {pubblica && ` · Nelle Meditazioni · ${d.plays_total || 0} ascolti`}
+                      {riservata && ` · Riservata · ${d.shares_attivi || 0} ${(d.shares_attivi || 0) === 1 ? 'link attivo' : 'link attivi'}`}
                     </div>
-                    {d.status === 'published' && !riservata && d.slug && (
+                    {pubblica && d.slug && (
                       <div className="listen">/frequenze/{d.slug}</div>
                     )}
-                    <div className="foot" style={{ flexWrap: 'wrap', gap: 6 }}>
-                      <button type="button" className="ghost" title="Elimina"
-                        onClick={() => removeDraft(d.id, d.title)}>×</button>
-                      {d.status === 'published' && !riservata && d.slug && (
-                        <button type="button" className="add"
-                          onClick={() => copyPublicLink(d.slug)}>Copia link</button>
-                      )}
-                      {d.status === 'published' ? (
-                        <button type="button" className="add"
-                          onClick={() => unpublishById(d.id)}>Ritira</button>
-                      ) : user?.sound_composer ? (
-                        /* chiave 1: le due strade, dichiarate */
-                        <>
-                          <button type="button" className="add"
-                            onClick={() => publishById(d.id)}>Pubblica</button>
-                          <button type="button" className="add"
+                    <div className="foot mine-foot">
+                      {d.status !== 'published' ? (
+                        user?.sound_composer ? (
+                          /* chiave 1: le due strade, dette per nome.
+                             Il gesto pubblico chiede conferma: mai un
+                             click distratto verso la vetrina. */
+                          <>
+                            <button type="button" className="primo"
+                              data-testid="fq-pubblica-meditazioni"
+                              onClick={() => confermaMeditazioni(d)}>Nelle Meditazioni</button>
+                            <button type="button" className="add"
+                              data-testid="fq-pubblica-riservata"
+                              onClick={() => pubblicaDaLista(d.id, 'private')}>Riservata ai clienti</button>
+                          </>
+                        ) : (
+                          /* solo chiave 2: una strada sola — e nei suoi
+                             gesti la parola Meditazioni non esiste. */
+                          <button type="button" className="primo"
                             data-testid="fq-pubblica-riservata"
-                            onClick={() => publishById(d.id, 'private')}>Riservata</button>
+                            onClick={() => pubblicaDaLista(d.id, 'private')}>Pubblica per i tuoi clienti</button>
+                        )
+                      ) : riservata ? (
+                        <>
+                          <button type="button" className="primo"
+                            data-testid="fq-link-riservati"
+                            aria-expanded={linkAperti}
+                            onClick={() => setSharesAperti((v) => ({ ...v, [d.id]: !v[d.id] }))}>
+                            Link riservati ({d.shares_attivi || 0}) {linkAperti ? '▾' : '▸'}
+                          </button>
+                          <button type="button" className="add"
+                            onClick={() => unpublishById(d.id)}>Riporta in bozza</button>
                         </>
                       ) : (
-                        /* solo chiave 2: una strada sola, detta onesta */
-                        <button type="button" className="add"
-                          data-testid="fq-pubblica-riservata"
-                          onClick={() => publishById(d.id, 'private')}>Pubblica riservata</button>
+                        <>
+                          <button type="button" className="primo"
+                            onClick={() => copyPublicLink(d.slug)}>Copia link</button>
+                          <button type="button" className="add"
+                            onClick={() => unpublishById(d.id)}>Ritira dalle Meditazioni</button>
+                        </>
                       )}
                       <button type="button" className="live"
                         onClick={() => openDraft(d.id)}>Apri</button>
                     </div>
-                    {riservata && <CondivisioniTraccia trackId={d.id} />}
+                    {riservata && linkAperti && <CondivisioniTraccia trackId={d.id} onCambio={loadDrafts} />}
                   </div>
                   );
                 })}
@@ -2332,7 +2558,7 @@ export default function FrequenzePage() {
                   </button>
                 )}
               </div>
-              {voiceClips.length > 0 && (
+              {(voiceClips.length > 0 || voiceSenza.length > 0) && (
                 <>
                   <div className="vd-tryrow">
                     <span className="lbl">prova gli spezzoni con</span>
@@ -2346,75 +2572,30 @@ export default function FrequenzePage() {
                     <span className="vd-hint">{(VOICE_PRESETS[prevFx] || {}).hint}</span>
                   </div>
                   <div className="vd-clips">
-                    {voiceClips.map((c) => (
-                      <React.Fragment key={c.id}>
-                      <div className={`vd-clip${voicePrevId === c.id ? ' playing' : ''}`}>
-                        <input className="vd-name" type="text" defaultValue={c.title}
-                          key={`${c.id}-${c.title}`}
-                          onBlur={(e) => renameVoiceClip(c, e.target.value)} />
-                        <span className="vd-dur"
-                          title={(c.trim_start || c.trim_end)
-                            ? `Registrazione intera ${fmt(c.duration_sec || 0)}, tagliata`
-                            : 'Durata della registrazione'}>
-                          {fmt(clipUseful(c))}
-                        </span>
-                        <button type="button" className="chip"
-                          onClick={() => toggleVoicePreview(c)}>
-                          {voicePrevLoading === c.id ? <span className="prep">◌</span>
-                            : voicePrevId === c.id ? '■' : '▶'}
-                        </button>
-                        <button type="button"
-                          className={`chip${trimOpen === c.id ? ' on' : ''}`}
-                          title="Taglia i secondi di troppo all'inizio e alla fine di questa registrazione"
-                          data-testid={`fq-trim-${c.id}`}
-                          onClick={() => setTrimOpen(trimOpen === c.id ? null : c.id)}>
-                          ✂ taglio{(c.trim_start || c.trim_end) ? ' ·' : ''}
-                        </button>
-                        <button type="button" className="add"
-                          title="La piazza al punto del cursore"
-                          onClick={() => addVoiceToSession(c)}>+ sessione</button>
-                        <button type="button" className="ghost"
-                          onClick={() => removeVoiceClip(c)}>×</button>
-                      </div>
-                      {trimOpen === c.id && (
-                        <div className="vd-trim" data-testid="fq-trimrow">
-                          <span className="lbl">togli dall'inizio</span>
-                          <input className="mini" type="number" min="0" step="0.5"
-                            value={c.trim_start || 0}
-                            onChange={(e) => {
-                              const v = +e.target.value;
-                              if (!isNaN(v)) saveVoiceTrim(c, v, c.trim_end || 0);
-                            }} />
-                          <span className="lbl">togli dalla fine</span>
-                          <input className="mini" type="number" min="0" step="0.5"
-                            value={c.trim_end || 0}
-                            onChange={(e) => {
-                              const v = +e.target.value;
-                              if (!isNaN(v)) saveVoiceTrim(c, c.trim_start || 0, v);
-                            }} />
-                          <span className="lbl">s</span>
-                          <span className="vd-hint">
-                            Restano {fmt(clipUseful(c))} di {fmt(c.duration_sec || 0)}.
-                            Il file resta intero: puoi rimettere 0 quando vuoi.
-                          </span>
-                          {/* VP — la pulizia: «Naturale» lascia
-                              l'attacco com'e' (la voce non parte piu'
-                              bassa), «Pulita» toglie anche il fruscio
-                              nelle pause, «Grezza» non tocca nulla. */}
-                          <div className="vd-clean">
-                            <span className="lbl">pulizia</span>
-                            {Object.entries(CLEAN_MODES).map(([k, m]) => (
-                              <button key={k} type="button" title={m.hint}
-                                data-testid={`fq-clean-${k}`}
-                                className={`chip${(CLEAN_ALIAS[c.clean_mode] || 'auto') === k ? ' on' : ''}`}
-                                onClick={() => saveVoiceClean(c, k)}>{m.label}</button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      </React.Fragment>
-                    ))}
+                    {voiceClips.map(rigaClip)}
                   </div>
+                  {/* TM8 — il ripiego dichiarato: registrazioni che
+                      nessuna sessione ha adottato (pre-regola, o di
+                      bozze mai salvate). Non si cancellano da sole:
+                      «+ sessione» le adotta, la × le elimina. */}
+                  {voiceSenza.length > 0 && (
+                    <div className="vd-senza" data-testid="fq-voice-senza">
+                      <button type="button" className="vd-senza-toggle"
+                        onClick={() => setSenzaAperto((v) => !v)}>
+                        {senzaAperto ? '▾' : '▸'} Spezzoni senza sessione ({voiceSenza.length})
+                      </button>
+                      {senzaAperto && (
+                        <>
+                          <span className="vd-hint">
+                            Registrazioni non legate a questa sessione. «+ sessione» le porta qui dentro; al Salva bozza restano con la traccia.
+                          </span>
+                          <div className="vd-clips">
+                            {voiceSenza.map(rigaClip)}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                   {hasVoiceLayers && (
                     <label className="vd-duck">
                       <input type="checkbox" checked={voiceDuck}

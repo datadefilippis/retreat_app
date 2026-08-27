@@ -175,10 +175,21 @@ async def list_tracks(current_user: dict = Depends(require_sound_crea)):
         {"organization_id": current_user["organization_id"]},
         _LIST_PROJECTION,
     ).sort("updated_at", -1).to_list(TRACKS_MAX_PER_ORG)
+    # TM2 — la scheda dice «Riservata · N link attivi» senza aprire il
+    # pannello: il conteggio arriva con la lista, un'aggregazione sola.
+    from database import sound_shares_collection
+    conte = {}
+    async for r in sound_shares_collection.aggregate([
+        {"$match": {"organization_id": current_user["organization_id"],
+                    "stato": "attivo"}},
+        {"$group": {"_id": "$track_id", "n": {"$sum": 1}}},
+    ]):
+        conte[r["_id"]] = r["n"]
     for it in items:
         score = it.pop("score", None) or {}
         it["duration_sec"] = score.get("duration_sec")
         it["layers_count"] = len(score.get("layers") or [])
+        it["shares_attivi"] = conte.get(it["id"], 0)
     return {"items": items}
 
 
@@ -900,15 +911,25 @@ VOICE_DIR = Path(__file__).resolve().parent.parent / "uploads" / "voice"
 
 _VOICE_PROJECTION = {"_id": 0, "id": 1, "title": 1, "duration_sec": 1,
                      "size_bytes": 1, "stream_url": 1, "tappeto_url": 1, "created_at": 1,
-                     "trim_start": 1, "trim_end": 1, "clean_mode": 1}
+                     "trim_start": 1, "trim_end": 1, "clean_mode": 1,
+                     "track_id": 1}
 
 
 @router.get("/voice")
-async def list_voice_clips(current_user: dict = Depends(require_sound_crea)):
+async def list_voice_clips(track_id: Optional[str] = Query(default=None),
+                           senza: Optional[int] = Query(default=None),
+                           current_user: dict = Depends(require_sound_crea)):
+    """TM8 (27/8, founder) — gli spezzoni SEGUONO LA SESSIONE, come i
+    livelli: `?track_id=X` da' quelli della traccia aperta,
+    `?senza=1` gli spezzoni senza sessione (i legacy pre-adozione,
+    il ripiego dichiarato del leggio). Senza parametri resta il pool
+    intero (compatibilita' e regia admin)."""
     from database import voice_assets_collection
     org_id = current_user["organization_id"]
+    legame = ({"track_id": track_id} if track_id
+              else {"track_id": None} if senza else {})
     items = await voice_assets_collection.find(
-        {"organization_id": org_id}, _VOICE_PROJECTION,
+        {"organization_id": org_id, **legame}, _VOICE_PROJECTION,
     ).sort("created_at", -1).to_list(CLIPS_MAX_PER_ORG)
     used = sum(i.get("size_bytes") or 0 for i in items)
     return {"items": items, "quota_bytes": ORG_QUOTA_BYTES,
@@ -919,9 +940,19 @@ async def list_voice_clips(current_user: dict = Depends(require_sound_crea)):
 async def record_voice_clip(file: UploadFile = File(...),
                             title: str = Form(...),
                             duration_sec: float = Form(0),
+                            track_id: Optional[str] = Form(default=None),
                             current_user: dict = Depends(require_sound_crea)):
-    from database import voice_assets_collection
+    from database import frequency_tracks_collection, voice_assets_collection
     org_id = current_user["organization_id"]
+    # TM8 — il legame nasce con la registrazione: se arriva un
+    # track_id deve essere una traccia DELLA org (un id altrui e'
+    # indistinguibile da uno inventato: si ignora, lo spezzone nasce
+    # senza sessione e verra' adottato al salvataggio)
+    legame = None
+    if track_id:
+        mia = await frequency_tracks_collection.find_one(
+            {"id": track_id, "organization_id": org_id}, {"_id": 0, "id": 1})
+        legame = track_id if mia else None
     ext = ext_for_mime(file.content_type)
     if not ext:
         raise HTTPException(
@@ -965,6 +996,7 @@ async def record_voice_clip(file: UploadFile = File(...),
         "mime": (file.content_type or "").split(";")[0],
         "stream_url": f"/uploads/voice/{org_id}/{asset_id}.{ext}",
         "recorded_by": current_user.get("email"),
+        "track_id": legame,          # TM8: la sessione di nascita
         "created_at": utc_now(),
         # FV6 — nasce intera: il taglio si decide dopo, sullo spezzone
         "trim_start": 0.0,
@@ -986,11 +1018,14 @@ async def record_voice_clip(file: UploadFile = File(...),
 
 class VoiceClipUpdate(BaseModel):
     """Titolo e/o taglio dello spezzone. Ogni campo e' facoltativo:
-    si rinomina senza toccare il taglio e si taglia senza rinominare."""
+    si rinomina senza toccare il taglio e si taglia senza rinominare.
+    TM8: `track_id` lega lo spezzone alla sua sessione (consolidato
+    al Salva bozza)."""
     title: Optional[str] = None
     trim_start: Optional[float] = None
     trim_end: Optional[float] = None
     clean_mode: Optional[str] = None       # naturale | pulita | grezza
+    track_id: Optional[str] = None
 
 
 @router.patch("/voice/{asset_id}")
@@ -1024,6 +1059,18 @@ async def update_voice_clip(asset_id: str, payload: VoiceClipUpdate,
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail="Modo di pulizia sconosciuto.")
         changes["clean_mode"] = payload.clean_mode
+    if payload.track_id is not None:
+        # TM8 — l'adozione al salvataggio: il legame va a una traccia
+        # DELLA org (un id altrui = un id inventato: 400)
+        from database import frequency_tracks_collection
+        mia = await frequency_tracks_collection.find_one(
+            {"id": payload.track_id,
+             "organization_id": current_user["organization_id"]},
+            {"_id": 0, "id": 1})
+        if not mia:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="Traccia non trovata.")
+        changes["track_id"] = payload.track_id
     if changes:
         await voice_assets_collection.update_one(
             {"id": asset_id,
