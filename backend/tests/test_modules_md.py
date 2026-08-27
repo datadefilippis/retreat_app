@@ -139,6 +139,10 @@ PROMISE_ENFORCEMENT = {
     "billing.features.retreat_stores_3":           ("limit", "commerce_retreat_pro", "stores_max", 3),
     "billing.features.retreat_team_5":             ("platform", "team_members", 5),
     "billing.features.retreat_priority_support":   ("process", "canale supporto dedicato"),
+    # TR6 (27/8) — Studio incluso nel Pro: l'enforcement e' la chiave 2
+    # derivata (studio_attivo su commercial_plan_slug), portiere
+    # require_sound_crea sui 12 endpoint del comporre + rotta share
+    "billing.features.retreat_sound_studio":       ("code", "services.studio_access.studio_attivo + require_sound_crea (TR1)"),
     # ── founding / partner ──
     "billing.features.retreat_everything_pro":     ("code", "module_plans identici al pro"),
     "billing.features.retreat_founding_free":      ("code", "price_monthly 0 + assegnazione admin"),

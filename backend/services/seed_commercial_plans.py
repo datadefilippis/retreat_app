@@ -418,6 +418,8 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
             "billing.features.retreat_everything_free",
             "billing.features.retreat_zero_fee",
             "billing.features.retreat_featured",
+            # TR6 (27/8) — Crea Studio incluso nel Pro
+            "billing.features.retreat_sound_studio",
             # AB5: via catalogo/vetrine/team — o non sono differenze
             # vere (listino senza limiti su entrambi) o le pagine sono
             # nascoste nel mondo snello. Il Pro si vende su tre cose.
@@ -511,6 +513,18 @@ async def seed_commercial_plans() -> None:
         doc["created_at"] = doc["created_at"].isoformat()
         doc["updated_at"] = doc["updated_at"].isoformat()
         await billing_repository.upsert_commercial_plan(doc)
+
+    # TR6 (27/8) — features_display e' un campo PROTETTO (admin-editable):
+    # l'upsert non lo tocca sui DB esistenti, quindi la voce nuova di
+    # Sound Studio non arriverebbe MAI a chi ha gia' il catalogo (dev e
+    # prod). Ritocco chirurgico e idempotente: $addToSet aggiunge la
+    # chiave solo se manca, senza sovrascrivere eventuali modifiche
+    # admin. Si auto-applica a ogni avvio, in ogni ambiente.
+    from database import commercial_plans_collection as _piani
+    await _piani.update_one(
+        {"slug": "retreat_pro"},
+        {"$addToSet": {"features_display":
+                       "billing.features.retreat_sound_studio"}})
 
     # Purga dei piani legacy AFianco dal DB (16/7/2026, consolidamento
     # AU): il pannello admin deve mostrare SOLO il catalogo Aurya.

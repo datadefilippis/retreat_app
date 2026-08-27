@@ -62,9 +62,9 @@ async def banco(monkeypatch, tmp_path):
     await db.organizations.insert_many([
         {"id": ORG_VALE, "name": "Valentina", "sound_composer": True},
         {"id": ORG_PRO, "name": "Studio Pro",
-         "plan": "pro", "billing_status": "active"},
-        {"id": ORG_FREE, "name": "Base", "plan": "free",
-         "billing_status": "none"},
+         "commercial_plan_slug": "retreat_pro", "billing_status": "active"},
+        {"id": ORG_FREE, "name": "Base",
+         "commercial_plan_slug": "retreat_free", "billing_status": "none"},
     ])
     await db.customers.insert_one(
         {"id": PREFIX + "marco", "organization_id": ORG_PRO,
@@ -258,12 +258,22 @@ class TestShare:
 # ── 6-7 · la funzione della verita': trial, override, kill switch ─────────
 class TestStudioAttivo:
     def test_gli_stati_del_billing(self):
-        base = {"plan": "pro"}
+        """Il campo e' commercial_plan_slug: il collaudo TR6 ha
+        trovato che `plan` e' legacy (None/"free" anche su org
+        abbonate) — la guardia fotografa la fonte giusta."""
+        base = {"commercial_plan_slug": "retreat_pro"}
         for stato, atteso in (("active", True), ("trialing", True),
                               ("manual", True), ("past_due", False),
                               ("canceled", False), ("none", False)):
             assert studio_attivo({**base, "billing_status": stato}) is atteso
-        assert studio_attivo({"plan": "starter",
+        # Founding e Partner = trattamento Pro: Studio incluso
+        for piano in ("retreat_founding", "retreat_partner"):
+            assert studio_attivo({"commercial_plan_slug": piano,
+                                  "billing_status": "manual"}) is True
+        assert studio_attivo({"commercial_plan_slug": "retreat_free",
+                              "billing_status": "active"}) is False
+        # il campo LEGACY non accende niente: era il difetto
+        assert studio_attivo({"plan": "pro",
                               "billing_status": "active"}) is False
         assert studio_attivo({}) is False
         assert studio_attivo(None) is False
@@ -272,7 +282,8 @@ class TestStudioAttivo:
         assert studio_attivo({"sound_composer": True}) is True
         assert studio_attivo({"sound_studio_override": "on"}) is True
         # il kill switch vince su TUTTO: abbonamento e chiave manuale
-        assert studio_attivo({"sound_studio_override": "off", "plan": "pro",
+        assert studio_attivo({"sound_studio_override": "off",
+                              "commercial_plan_slug": "retreat_pro",
                               "billing_status": "active"}) is False
         assert studio_attivo({"sound_studio_override": "off",
                               "sound_composer": True}) is False
@@ -310,3 +321,69 @@ class TestMuroStatico:
         codice = re.sub(r"^\s*#.*$", " ", codice, flags=re.M)
         assert "jwt" not in codice.lower(), \
             "la revoca deve essere immediata: token in DB, non JWT"
+
+
+# ── TR6 · il consolidamento commerciale (27/8, founder) ───────────────────
+class TestConsolidamentoTr6:
+    FRONTEND = BACKEND_DIR.parent / "frontend" / "src"
+
+    def test_strumenti_la_casa_dei_moduli_premium(self):
+        """La pagina /strumenti: visibile a TUTTI gli operatori nel
+        menu (a differenza di /modules), stato da user.sound_crea, i
+        due gesti giusti (apri se attivo, attiva il Pro se no)."""
+        page = (self.FRONTEND / "pages" / "StrumentiPage.js").read_text()
+        assert 'data-testid="strumenti-page"' in page
+        assert "user?.sound_crea" in page
+        assert "'/sound/crea'" in page and "'/plans'" in page
+        assert "'/sound/studio'" in page       # la landing, per capire
+        app = (self.FRONTEND / "App.js").read_text()
+        assert 'path="/strumenti"' in app
+        layout = (self.FRONTEND / "components" / "Layout.js").read_text()
+        assert "'/strumenti'" in layout
+        # nel registro delle rotte e' APP (dietro login, noindex)
+        import json
+        rotte = json.loads(
+            (BACKEND_DIR / "config" / "rotte.json").read_text())
+        assert "strumenti" in rotte["app"]
+
+    def test_la_voce_del_piano_dice_sound_studio(self):
+        """Le voci dell'abbonamento nominano Sound Studio OVUNQUE si
+        vendono i piani: seed (che alimenta /plans in-app), ritocco
+        idempotente per i DB esistenti (features_display e' un campo
+        protetto: senza $addToSet la voce non arriverebbe MAI in
+        prod), i quattro locali, e la pagina pubblica /costi."""
+        seed = (BACKEND_DIR / "services"
+                / "seed_commercial_plans.py").read_text()
+        assert "billing.features.retreat_sound_studio" in seed
+        assert "$addToSet" in seed, \
+            "campo protetto: senza il ritocco la voce non arriva ai DB vivi"
+        import json
+        for lingua in ("it", "en", "de", "fr"):
+            loc = json.loads((self.FRONTEND / "locales" / lingua
+                              / "settings.json").read_text())
+            testo = json.dumps(loc)
+            assert "retreat_sound_studio" in testo, f"manca in {lingua}"
+        costi = (self.FRONTEND / "features" / "prelaunch"
+                 / "PricingPage.js").read_text()
+        assert "Aurya Sound Studio" in costi
+
+    def test_hard_delete_porta_via_tracce_share_e_file(self):
+        """TR5 — le tracce di Crea (buco pre-esistente), gli share e i
+        loro file (master + anteprima) muoiono con l'org."""
+        src = (BACKEND_DIR / "services"
+               / "hard_delete_service.py").read_text()
+        assert '"frequency_tracks"' in src
+        assert '"sound_shares"' in src
+        assert "master_file" in src and "anteprima_url" in src
+
+    def test_il_legal_nomina_le_composizioni(self):
+        """TR5 — art. 9.1 nomina esplicitamente composizioni audio e
+        meditazioni come Contenuto di esclusiva proprieta'
+        dell'Operatore, nelle quattro lingue; la versione e' bumpata
+        (l'hash lo verifica gia' test_anima_an)."""
+        for f in ("terms_it.md", "terms_en.md", "terms_de.md",
+                  "terms_fr.md"):
+            testo = (BACKEND_DIR / "legal" / f).read_text()
+            assert "Crea Studio" in testo, f
+        from core.legal_versions import CURRENT_VERSION_TAG
+        assert CURRENT_VERSION_TAG >= "v2.6"

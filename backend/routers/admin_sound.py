@@ -78,7 +78,7 @@ async def list_composers(current_user: dict = Depends(require_system_admin)):
     async for org in organizations_collection.find(
             {}, {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
                  "sound_composer": 1, "sound_studio_override": 1,
-                 "plan": 1, "billing_status": 1}):
+                 "commercial_plan_slug": 1, "billing_status": 1}):
         c = conteggi.get(org["id"], {})
         out.append({
             "id": org["id"],
@@ -89,7 +89,7 @@ async def list_composers(current_user: dict = Depends(require_system_admin)):
             # il pannello la MOSTRA (regia completa in un posto solo)
             "studio_attivo": studio_attivo(org),
             "studio_override": org.get("sound_studio_override"),
-            "plan": org.get("plan"),
+            "plan": org.get("commercial_plan_slug"),
             "billing_status": org.get("billing_status"),
             "email": (referenti.get(org["id"]) or {}).get("email"),
             "tracks_total": c.get("totali", 0),

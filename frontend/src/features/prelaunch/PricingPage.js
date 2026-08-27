@@ -58,6 +58,9 @@ const PRO_FEATURES = [
    'A parità di data, i tuoi ritiri compaiono per primi, con il segno ✦ In evidenza.'],
   ['Supporto prioritario',
    'Le tue richieste passano davanti: ti rispondiamo per primi.'],
+  // TR6 (27/8) — Studio e' incluso nel Pro: la promessa sta anche qui
+  ['Aurya Sound Studio',
+   'Componi meditazioni con la tua voce, basi sonore e frequenze, dal browser. Le condividi in privato coi tuoi clienti: un link a persona, revocabile.'],
 ];
 
 export default function PricingPage() {

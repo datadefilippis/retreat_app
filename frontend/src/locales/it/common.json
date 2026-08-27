@@ -31,7 +31,8 @@
     "cashflow": "Incassi",
     "visibility": "Visibilità",
     "listino": "Listino",
-    "retreats": "Ritiri"
+    "retreats": "Ritiri",
+    "strumenti": "Strumenti"
   },
   "actions": {
     "save": "Salva",

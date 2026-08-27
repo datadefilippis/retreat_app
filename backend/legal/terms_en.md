@@ -220,7 +220,7 @@ The Operator is responsible for their own Stripe Connect account, for the inform
 
 ### 9.1 Ownership
 
-The Content uploaded to the Platform remains the **exclusive property** of the Operator. The Provider claims no ownership rights over such Content.
+The Content uploaded to the Platform remains the **exclusive property** of the Operator. The Provider claims no ownership rights over such Content. Content also includes audio compositions and meditations created by the Operator with the Platform's composition tools (Aurya Sound / Crea Studio), including the Operator's voice recordings: they remain the Operator's exclusive property, and sharing them via reserved links grants the Provider no rights beyond the technical licence under art. 9.2.
 
 ### 9.2 License to the Provider
 

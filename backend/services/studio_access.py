@@ -29,11 +29,19 @@ che vince su tutto, abbonamento compreso. Assente = vita normale.
 # piattaforma che il billing già contempla.
 STATI_BILLING_VALIDI = ("active", "trialing", "manual")
 
+# I piani che accendono Studio. TROVATO DAL COLLAUDO TR6 (27/8): la
+# fonte del piano corrente è `commercial_plan_slug` (retreat_pro,
+# retreat_founding, retreat_partner...), NON il campo legacy `plan`
+# (spesso None/"free" anche su org abbonate) — col campo sbagliato
+# nessun abbonato vero avrebbe mai avuto Studio. Founding e Partner
+# sono trattamento-Pro assegnato dall'admin: Studio incluso.
+PIANI_STUDIO = ("retreat_pro", "retreat_founding", "retreat_partner")
+
 # La proiezione minima che serve a decidere: chiederla tutta uguale
 # ovunque tiene le query piccole e il contratto visibile.
 PROIEZIONE_STUDIO = {
     "_id": 0, "sound_composer": 1, "sound_studio_override": 1,
-    "plan": 1, "billing_status": 1,
+    "commercial_plan_slug": 1, "billing_status": 1,
 }
 
 
@@ -51,7 +59,7 @@ def studio_attivo(org: dict | None) -> bool:
         return True
     if org.get("sound_studio_override") == "on":
         return True
-    return (org.get("plan") == "pro"
+    return (org.get("commercial_plan_slug") in PIANI_STUDIO
             and org.get("billing_status") in STATI_BILLING_VALIDI)
 
 

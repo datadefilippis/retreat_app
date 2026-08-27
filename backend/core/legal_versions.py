@@ -38,7 +38,7 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.5"
+CURRENT_VERSION_TAG: Final[str] = "v2.6"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
@@ -105,6 +105,18 @@ History:
     esistente (l'hash del bundle cambia): al 13/8 riguarda 2 utenti
     operatore, ed e' il motivo per cui si e' scelto di farlo ADESSO e
     non a rete cresciuta. Stesse modifiche in EN/DE/FR.
+  - v2.6 (TR5, 2026-08-27) — Termini art. 9.1: menzione ESPLICITA
+    delle composizioni audio e meditazioni create con gli strumenti
+    della Piattaforma (Aurya Sound / Crea Studio), registrazioni
+    vocali incluse, come Contenuto di esclusiva proprieta'
+    dell'Operatore; la condivisione via link riservati non da' al
+    Fornitore diritti oltre la licenza tecnica del 9.2. Chiarimento
+    del principio GIA' presente nel 9.1 (nessuna nuova finalita',
+    base giuridica o sub-responsabile): reso esplicito ora che Crea
+    Studio si apre in abbonamento e la promessa «le meditazioni che
+    componi restano tue» sta anche in landing. Il bump innesca il
+    re-consent esistente (come v2.4/v2.5: pochi utenti, meglio ora
+    che a rete cresciuta). Stesse modifiche in EN/DE/FR.
   - v2.5 (fee-truth, 2026-08-13) — Termini art. 7 e definizioni
     riallineati al prodotto reale (audit fee del 13/8):
     (a) perimetro della Commissione di piattaforma: da "solo sulle
@@ -132,7 +144,7 @@ History:
     EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "df5d56e4e937e85e"
+CURRENT_VERSION_HASH: Final[str] = "30715016c1144ebf"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

@@ -220,7 +220,7 @@ Der Veranstalter ist für sein Stripe-Connect-Konto, die Stripe im Rahmen der Ve
 
 ### 9.1 Eigentum
 
-Die auf die Plattform hochgeladenen Inhalte bleiben **ausschließliches Eigentum** des Veranstalters. Der Anbieter beansprucht keinerlei Eigentumsrechte an diesen Inhalten.
+Die auf die Plattform hochgeladenen Inhalte bleiben **ausschließliches Eigentum** des Veranstalters. Der Anbieter beansprucht keinerlei Eigentumsrechte an diesen Inhalten. Zu den Inhalten gehören auch Audio-Kompositionen und Meditationen, die der Veranstalter mit den Kompositionswerkzeugen der Plattform (Aurya Sound / Crea Studio) erstellt, einschließlich seiner Sprachaufnahmen: Sie bleiben sein ausschließliches Eigentum, und ihre Weitergabe über reservierte Links räumt dem Anbieter keine Rechte ein, die über die technische Lizenz gemäß Art. 9.2 hinausgehen.
 
 ### 9.2 Lizenz an den Anbieter
 

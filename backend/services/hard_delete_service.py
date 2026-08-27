@@ -105,7 +105,27 @@ async def cascade_hard_delete(org_id: str) -> Dict[str, int]:
         # come orfani con organization_id morto.
         ("sound_protocols", _db.sound_protocols),
         ("sound_sessions", _db.sound_sessions),
+        # TR5 (27/8) — le tracce di Crea, gli share e i loro FILE
+        # muoiono con l'org. Le tracce erano un buco pre-esistente:
+        # sarebbero sopravvissute come orfane, coi master su disco.
+        ("frequency_tracks", _db.frequency_tracks),
+        ("sound_shares", _db.sound_shares),
     ]
+    # i file audio delle tracce (master + anteprima) si raccolgono
+    # PRIMA di cancellare i documenti, e cadono con la stessa scopa
+    # dei file dei dataset qui sotto
+    try:
+        async for doc in _db.frequency_tracks.find(
+                f, {"_id": 0, "master_file": 1, "anteprima_url": 1}):
+            if doc.get("master_file"):
+                file_keys.append(f"masters/{doc['master_file']}")
+            ant = doc.get("anteprima_url") or ""
+            if ant.startswith("/uploads/"):
+                file_keys.append(ant[len("/uploads/"):])
+    except Exception as e:
+        logger.warning(
+            "hard_delete: failed to collect sound files for org %s: %s",
+            org_id, e)
     for name, collection in (_ORG_SCOPED_COLLECTIONS
                              + _newsletter_collections):
         try:

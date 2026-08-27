@@ -306,7 +306,9 @@
       "retreat_founding_free_info": "Three months of Pro with no fee: the plan reserved for early organizers.",
       "retreat_founding_feedback_info": "A direct call with the team every week: your feedback drives development.",
       "retreat_zero_fee_info": "No platform commission on bookings.",
-      "retreat_no_monthly_info": "Zero monthly fee: the partner plan is invite-only."
+      "retreat_no_monthly_info": "Zero monthly fee: the partner plan is invite-only.",
+      "retreat_sound_studio": "Aurya Sound Studio: compose meditations and share them privately with your clients",
+      "retreat_sound_studio_info": "Record your voice from the browser, compose with sound beds and frequencies, and share with a personal link per client — revocable at any time. The meditations you compose remain yours."
     },
     "quota": {
       "warning_title": "Approaching the limit",

@@ -31,7 +31,8 @@
     "cashflow": "Payments",
     "visibility": "Visibility",
     "listino": "Price list",
-    "retreats": "Retreats"
+    "retreats": "Retreats",
+    "strumenti": "Tools"
   },
   "actions": {
     "save": "Save",

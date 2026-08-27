@@ -220,7 +220,7 @@ L'Opérateur est responsable de son compte Stripe Connect, des informations four
 
 ### 9.1 Propriété
 
-Le Contenu téléversé sur la Plateforme demeure la **propriété exclusive** de l'Opérateur. Le Fournisseur ne revendique aucun droit de propriété sur ce Contenu.
+Le Contenu téléversé sur la Plateforme demeure la **propriété exclusive** de l'Opérateur. Le Fournisseur ne revendique aucun droit de propriété sur ce Contenu. Le Contenu comprend également les compositions audio et méditations créées par l'Opérateur avec les outils de composition de la Plateforme (Aurya Sound / Crea Studio), y compris ses enregistrements vocaux : ils demeurent sa propriété exclusive, et leur partage via des liens réservés ne confère au Fournisseur aucun droit au-delà de la licence technique prévue à l'art. 9.2.
 
 ### 9.2 Licence au Fournisseur
 

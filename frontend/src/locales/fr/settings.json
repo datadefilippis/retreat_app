@@ -305,7 +305,9 @@
       "retreat_founding_free_info": "Trois mois de Pro sans abonnement : le plan réservé aux premiers organisateurs.",
       "retreat_founding_feedback_info": "Un échange direct hebdomadaire avec l’équipe : vos retours guident le développement.",
       "retreat_zero_fee_info": "Aucune commission de plateforme sur les réservations.",
-      "retreat_no_monthly_info": "Aucun abonnement mensuel : le plan partenaire est sur invitation."
+      "retreat_no_monthly_info": "Aucun abonnement mensuel : le plan partenaire est sur invitation.",
+      "retreat_sound_studio": "Aurya Sound Studio : composez des méditations et partagez-les en privé avec vos clients",
+      "retreat_sound_studio_info": "Enregistrez votre voix depuis le navigateur, composez avec des nappes sonores et des fréquences, et partagez via un lien personnel par client — révocable à tout moment. Vos méditations restent votre propriété."
     },
     "quota": {
       "warning_title": "Limite proche",

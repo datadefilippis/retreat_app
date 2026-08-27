@@ -220,7 +220,7 @@ L'Operatore e' responsabile del proprio account Stripe Connect, delle informazio
 
 ### 9.1 Proprieta'
 
-Il Contenuto caricato sulla Piattaforma rimane di **esclusiva proprieta'** dell'Operatore. Il Fornitore non rivendica alcun diritto di proprieta' su tale Contenuto.
+Il Contenuto caricato sulla Piattaforma rimane di **esclusiva proprieta'** dell'Operatore. Il Fornitore non rivendica alcun diritto di proprieta' su tale Contenuto. Rientrano nel Contenuto anche le composizioni audio e le meditazioni create dall'Operatore con gli strumenti di composizione della Piattaforma (Aurya Sound / Crea Studio), incluse le registrazioni vocali dell'Operatore: restano di sua esclusiva proprieta', e la loro condivisione tramite link riservati non attribuisce al Fornitore alcun diritto ulteriore rispetto alla licenza tecnica di cui all'art. 9.2.
 
 ### 9.2 Licenza al Fornitore
 

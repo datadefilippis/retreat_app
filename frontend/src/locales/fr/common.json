@@ -31,7 +31,8 @@
     "cashflow": "Encaissements",
     "visibility": "Visibilité",
     "listino": "Tarifs",
-    "retreats": "Retraites"
+    "retreats": "Retraites",
+    "strumenti": "Outils"
   },
   "actions": {
     "save": "Enregistrer",

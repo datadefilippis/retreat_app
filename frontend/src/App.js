@@ -153,6 +153,7 @@ const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
 const AdminPage = lazy(() => import("./features/admin/AdminPage"));
 const SoundAccessPage = lazy(() => import("./features/admin/SoundAccessPage"));
 const PlansPage = lazy(() => import("./pages/PlansPage"));
+const StrumentiPage = lazy(() => import("./pages/StrumentiPage"));
 
 // Customer Identity Foundation (v9.0)
 import { CustomerAuthProvider } from "./context/CustomerAuthContext";
@@ -953,6 +954,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PlansPage />
+          </ProtectedRoute>
+        }
+      />
+      {/* TR6 — la casa dei moduli premium (Sound Studio, e i prossimi) */}
+      <Route
+        path="/strumenti"
+        element={
+          <ProtectedRoute>
+            <StrumentiPage />
           </ProtectedRoute>
         }
       />

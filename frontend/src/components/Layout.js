@@ -66,6 +66,9 @@ const fixedNavTop = [
 
 // System — admin tools
 const systemNav = [
+  // TR6 (founder, 27/8) — la casa dei moduli premium: visibile a
+  // tutti gli operatori (a differenza di /modules, solo-sysadmin)
+  { nameKey: 'nav.strumenti',       href: '/strumenti',       icon: Sparkles,    end: true },
   { nameKey: 'nav.modules',         href: '/modules',         icon: Blocks,      end: true },
   { nameKey: 'nav.data_integrity',  href: '/data-integrity',  icon: ShieldCheck, end: true },
   { nameKey: 'nav.team',            href: '/team',            icon: Users },
