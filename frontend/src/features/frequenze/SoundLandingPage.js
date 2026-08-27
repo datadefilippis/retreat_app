@@ -113,20 +113,22 @@ export default function SoundLandingPage() {
           {/* SF — la porta pubblica dice subito com'è fatto l'ascolto */}
           <SafetyLine onOpen={() => setSafety(true)} />
 
-          {/* L3 (26/8, sistema) — il terzo piano della casa: la via
-              professionale, DISTINTA e in fondo (prima ci si fida,
-              poi si compra). Crea non esiste, qui: e' l'atelier. */}
-          <div className="sld-pro" data-testid="sld-professional">
+          {/* Deciso dal founder (26/8 sera): la via professionale
+              promossa e' CREA — comporre per i propri clienti — non
+              piu' il catalogo Professional (che resta strumento, non
+              vetrina, finche' non avra' un valore oltre il play). */}
+          <div className="sld-pro" data-testid="sld-crea">
             <div>
               <strong>Per i professionisti del benessere</strong>
               <span>
-                Aurya Sound Professional: protocolli d'ascolto con basi
-                dichiarate, percorsi con una cadenza, e il registro di
-                ogni sessione coi tuoi clienti.
+                Crea è l’atelier con cui nascono le esperienze e le
+                meditazioni di Aurya. Lo apriamo progressivamente a chi
+                accompagna persone: componi le tue meditazioni e
+                condividile con i tuoi clienti.
               </span>
             </div>
-            <Link className="sld-pro-cta" to="/sound/professional"
-              data-testid="sld-pro-link">Scopri Professional →</Link>
+            <Link className="sld-pro-cta" to="/sound#professionisti"
+              data-testid="sld-crea-link">Scopri come →</Link>
           </div>
 
           <div className="sld-bridge" data-testid="fqz-landing-meditazioni">

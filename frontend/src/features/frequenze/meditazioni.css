@@ -27,15 +27,15 @@
    piu' morbida del mondo Sound, quindi la luce e' piu' presente e
    scende dal centro invece che dai lati. */
 .fqz.med{
-  background:linear-gradient(172deg,
-    #2F5359 0%, #2A4A57 30%, #264155 56%, #223C48 78%, #1E383C 100%);
+  background:linear-gradient(178deg,
+    #443D4B 0%, #393F4C 28%, #2D3F48 54%, #24393F 78%, #1E3236 100%);
 }
 .fqz.med::before{
   background:
-    radial-gradient(1100px 700px at 50% -10%, rgba(201,179,126,.24) 0%, transparent 62%),
-    radial-gradient(1000px 820px at 4% 20%,  rgba(102,183,156,.20) 0%, transparent 58%),
-    radial-gradient(1000px 860px at 96% 46%, rgba(155,139,196,.20) 0%, transparent 60%),
-    radial-gradient(1200px 800px at 50% 106%, rgba(127,201,176,.14) 0%, transparent 62%);
+    radial-gradient(1200px 660px at 50% -22%, rgba(224,166,95,.30) 0%, transparent 60%),
+    radial-gradient(1000px 820px at 4% 24%,  rgba(155,139,196,.14) 0%, transparent 58%),
+    radial-gradient(1000px 860px at 96% 50%, rgba(102,183,156,.13) 0%, transparent 60%),
+    radial-gradient(1200px 800px at 50% 108%, rgba(127,201,176,.12) 0%, transparent 62%);
 }
 
 /* ── la testata: centrata, serif, il filo che si dissolve ───────────── */

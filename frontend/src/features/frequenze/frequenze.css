@@ -1334,21 +1334,33 @@
    di vetro e non di cartone.
    ═══════════════════════════════════════════════════════════════════ */
 
+/* ═══ ORA D'ORO (26/8 sera, founder) — «un colore che ricordi il
+   sole, non monocolore, che trasferisca suono e armonia».
+   L'immagine e' UNA: il tramonto sull'acqua. In alto il SOLE (un
+   bagliore ambra vero, non un velo pallido), in mezzo il crepuscolo
+   prugna, in basso l'acqua profonda — tre tinte in un solo viaggio
+   verticale. LA REGOLA DURA, misurata nel browser: il picco del sole
+   sta SOPRA la colonna del testo (centro a -26%) — dietro il titolo
+   il bagliore non supera ~il 14% e i contrasti tengono (7,2:1 il
+   testo pieno, 5,1:1 il secondario). Era il difetto del crepuscolo:
+   l'aurora al 22% DIETRO le parole portava il secondario a 3,7:1. ═══ */
 .fqz{
   isolation:isolate;              /* cosi' gli strati a z-index -1 stanno
                                      sopra il fondo e sotto il contenuto */
-  background:linear-gradient(168deg,
-    #2E5058 0%, #2A4A57 28%, #274355 52%, #233E4A 76%, #1F3A3C 100%);
+  background:linear-gradient(175deg,
+    #413B49 0%, #383E4B 26%, #2D3F48 52%, #24393F 78%, #1E3236 100%);
 }
+/* il testo si scalda con la stanza: avorio, non piu' glaciale */
+.fqz{--bone:#F2EDE4;--dim:#CDC9BE;--dimmer:#A6AAA1}
 
-/* 1 · l'aurora ferma: la luce della stanza */
+/* 1 · la luce ferma: il sole sopra, i riflessi ai lati, l'acqua sotto */
 .fqz::before{
   content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:
-    radial-gradient(1200px 720px at 78% -6%,  rgba(201,179,126,.22) 0%, transparent 62%),
-    radial-gradient(1000px 820px at 0% 14%,   rgba(102,183,156,.20) 0%, transparent 58%),
-    radial-gradient(1100px 900px at 92% 54%,  rgba(155,139,196,.19) 0%, transparent 60%),
-    radial-gradient(1300px 820px at 16% 104%, rgba(201,179,126,.15) 0%, transparent 62%);
+    radial-gradient(1300px 640px at 50% -26%, rgba(224,166,95,.34) 0%, transparent 58%),
+    radial-gradient(760px 520px at 86% 2%,    rgba(201,179,126,.12) 0%, transparent 55%),
+    radial-gradient(900px 760px at 2% 32%,    rgba(155,139,196,.12) 0%, transparent 58%),
+    radial-gradient(1100px 780px at 78% 108%, rgba(102,183,156,.13) 0%, transparent 60%);
 }
 
 /* 3 · la grana: il velo che rende il gradiente una superficie */

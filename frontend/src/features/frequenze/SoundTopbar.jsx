@@ -32,15 +32,14 @@ export default function SoundTopbar({ firma = 'Sound', qui = null, extra = null 
      sarebbe rumore, non una porta. AuthProvider avvolge l'app intera,
      quindi il hook e' sicuro anche sulle pagine pubbliche. */
   const { user } = useAuth();
-  /* IL TRIGGER (richiesta founder): ogni operatore loggato vede la
-     via Professional — chi ha il privilegio va allo strumento, chi
-     non ce l'ha va alla pagina di vendita. Una voce, due destinazioni.
-     Gli anonimi la scoprono dalla landing di sistema. */
-  const voci = user
-    ? [...PASSERELLA, {
-        to: user.sound_professional ? '/sound/pro' : '/sound/professional',
-        label: 'Professional',
-      }]
+  /* Deciso dal founder (26/8 sera): Professional NON si sponsorizza
+     finche' il catalogo non avra' un valore che superi il premere
+     play — la via professionale promossa e' CREA (vedi la landing di
+     sistema). La voce quindi appare SOLO a chi ha gia' il privilegio
+     e porta allo strumento; per tutti gli altri la passerella resta
+     quella di sempre, senza vetrine. */
+  const voci = user?.sound_professional
+    ? [...PASSERELLA, { to: '/sound/pro', label: 'Professional' }]
     : PASSERELLA;
   return (
     <div className="topbar">

@@ -77,22 +77,26 @@ class TestL2InvitoLettera:
 
 class TestL3PortaDiSistema:
     def test_06_la_landing_di_sistema_racconta_e_poi_vende(self):
-        """L3-ter (testo del founder, 26/8 sera): UNA landing nei
-        colori del sito che racconta tutto Aurya Sound — apertura, i
-        fenomeni, le porte, le esperienze, le meditazioni, i due
-        linguaggi — e SOLO DOPO la via professionale. Il blu compare
-        nelle bande fotografiche, dove stai per entrare."""
+        """L3-ter, EVOLUTO col founder (26/8 sera): la via
+        professionale promossa e' CREA — «componi per chi accompagni,
+        condividi in privato coi tuoi clienti» — NON il catalogo
+        Professional, che resta strumento senza vetrina finche' il suo
+        valore non superera' il premere play. L'ordine narrativo non
+        cambia: prima il racconto, poi la via professionale."""
         src = _senza_commenti((FQ / "SoundHomePage.jsx").read_text())
         assert "MarketplaceShell" in src, "la landing non e' nel mondo chiaro"
-        assert 'data-testid="sld-professional"' in src
-        assert 'to="/sound/professional"' in src
+        assert 'data-testid="sld-crea"' in src
+        # il catalogo Professional NON si promuove piu' da qui
+        assert 'to="/sound/professional"' not in src, \
+            "la vetrina di Professional e' rientrata dalla finestra"
+        # e la via Crea raccoglie l'interesse sul funnel esistente
+        assert "'/public/leads'" in src and "'sound_crea'" in src
         # l'ordine narrativo: i fenomeni e le porte PRIMA della sezione
-        # di vendita (il rimando in apertura e' un'altra cosa: e' un
-        # cartello, non il discorso)
+        # di vendita
         fenomeni = src.find("sh-fenomeni")
         porte = src.find("sh-porte")
         esperienze = src.find("sh-porta-esperienze")
-        pro = src.find('data-testid="sld-professional"')
+        pro = src.find('data-testid="sld-crea"')
         assert -1 < fenomeni < porte < esperienze < pro, \
             "la vendita prima del racconto"
         # le stanze, tutte
@@ -112,12 +116,15 @@ class TestL3PortaDiSistema:
                        "garantis", "riequilibr"):
             assert veleno not in basso
 
-    def test_06b_il_trigger_per_ogni_operatore(self):
-        """Richiesta founder: dall'area gratuita, l'operatore loggato
-        vede la via Professional — una voce, due destinazioni (col
-        privilegio lo strumento, senza la vendita)."""
+    def test_06b_la_voce_solo_a_chi_ha_il_privilegio(self):
+        """Evoluto col founder (26/8 sera): niente piu' vetrina di
+        Professional nella passerella — la voce appare SOLO a chi ha
+        il privilegio, e porta allo strumento."""
         src = _senza_commenti((FQ / "SoundTopbar.jsx").read_text())
-        assert "user.sound_professional ? '/sound/pro' : '/sound/professional'" in src
+        assert "user?.sound_professional" in src
+        assert "'/sound/pro'" in src
+        assert "'/sound/professional'" not in src, \
+            "la passerella pubblicizza ancora la vendita"
         # e l'hub scuro e' la biblioteca, non la landing chiara
         assert "{ to: '/sound/esplora', label: 'Sound' }" in src
 

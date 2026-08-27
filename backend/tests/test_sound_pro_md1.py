@@ -178,14 +178,17 @@ class TestLaVeste:
 
 # ── 9-10 · la porta (M7a) ──────────────────────────────────────────────────
 class TestLaPorta:
-    def test_09_professional_per_gli_operatori_due_destinazioni(self):
-        """Evoluto con L3-bis: la voce appare per OGNI operatore
-        loggato — chi ha il privilegio va allo strumento, chi non ce
-        l'ha alla vendita. Gli ANONIMI restano senza voce (la
-        scoprono dalla landing di sistema)."""
+    def test_09_professional_solo_a_chi_ha_il_privilegio(self):
+        """Evoluto due volte: con L3-bis la voce era per ogni operatore
+        (due destinazioni); il 26/8 sera il founder ha tolto la vetrina
+        — Professional non si promuove finche' il catalogo non avra' un
+        valore oltre il play. La voce resta SOLO per chi ha il
+        privilegio, e porta allo strumento."""
         src = _senza_commenti(TOPBAR.read_text())
-        assert "user.sound_professional ? '/sound/pro' : '/sound/professional'" in src
-        assert "user\n    ? [...PASSERELLA" in src or "= user ?" in src or "user\r" in src or "const voci = user" in src
+        assert "user?.sound_professional" in src
+        assert "'/sound/pro'" in src
+        assert "'/sound/professional'" not in src, \
+            "la passerella pubblicizza ancora la vendita"
         m = re.search(r"const PASSERELLA = \[(.*?)\];", src, re.S)
         assert m and "/sound/pro" not in m.group(1), \
             "Professional è finito nella passerella degli anonimi"

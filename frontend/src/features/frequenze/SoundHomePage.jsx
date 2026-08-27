@@ -18,8 +18,9 @@
  *   trame   le scie — le Meditazioni, dove il linguaggio cambia
  *   fuoco   il blu che diventa arancio — il futuro, la risposta
  */
-import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import api from '../../api/client';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import {
   DisplayTitle, Lede, PhotoBand, PhotoOpener, Section,
@@ -78,6 +79,34 @@ export default function SoundHomePage() {
   useEffect(() => {
     document.title = 'Aurya Sound — Il suono può diventare uno strumento | Aurya';
   }, []);
+  /* la via professionale (founder 26/8 sera): si promuove CREA, non
+     il catalogo Professional — il funnel e' lo stesso dei leads */
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash === '#professionisti') {
+      document.getElementById('professionisti')?.scrollIntoView({ block: 'start' });
+    }
+  }, [hash]);
+  const [email, setEmail] = useState('');
+  const [nome, setNome] = useState('');
+  const [stato, setStato] = useState(null);   // null | 'invio' | 'fatto' | errore
+  const chiedi = async (e) => {
+    e.preventDefault();
+    if (!email.trim() || stato === 'invio') return;
+    setStato('invio');
+    try {
+      await api.post('/public/leads', {
+        type: 'operator',
+        email: email.trim(),
+        name: nome.trim() || null,
+        message: 'Aurya Sound Crea — richiesta di accesso per professionisti',
+        interests: ['sound_crea'],
+      });
+      setStato('fatto');
+    } catch {
+      setStato('Non inviato: riprova fra un momento.');
+    }
+  };
 
   return (
     <MarketplaceShell noSearch>
@@ -105,9 +134,6 @@ export default function SoundHomePage() {
             <Bottone to="/sound/esplora" tono="chiaro" testid="sh-cta-esplora">
               Esplora Aurya Sound
             </Bottone>
-            <Richiamo to="/sound/professional" tono="chiaro" testid="sld-pro-link">
-              Scopri Sound Professional →
-            </Richiamo>
           </div>
         </PhotoOpener>
 
@@ -262,32 +288,68 @@ export default function SoundHomePage() {
           </Rilievo>
         </Section>
 
-        {/* ── PROFESSIONAL ───────────────────────────────────────── */}
-        <Section tone="sage" labelledBy="sh-pro" data-testid="sld-professional">
+        {/* ── LA VIA PROFESSIONALE: CREA ─────────────────────────────
+            Deciso dal founder (26/8 sera): il catalogo Professional
+            non si sponsorizza finche' il suo valore non superera' il
+            premere play (la via delle vibrazioni e' la sua fase due).
+            Quello che ha GIA' dimostrato valore e' l'atelier: qui si
+            promette Crea — comporre per i propri clienti — e si
+            raccoglie l'interesse sul funnel leads esistente. */}
+        <Section tone="sage" labelledBy="sh-pro" id="professionisti"
+          data-testid="sld-crea">
           <Occhiello tono="chiaro">
-            Ma il suono può diventare anche uno strumento professionale
+            Per chi accompagna persone
           </Occhiello>
           <DisplayTitle id="sh-pro" size="section" className="text-[#f6f2e8]">
-            Aurya Sound Professional
+            Componi per chi accompagni.
           </DisplayTitle>
           <div className="mt-8 max-w-3xl space-y-6">
             <p className="text-base sm:text-lg leading-relaxed text-[#f6f2e8]/85">
-              Se accompagni persone — nella meditazione, nel respiro,
-              nelle pratiche corporee — non ti serve un altro software
-              per creare musica. Ti serve una libreria di protocolli
-              sonori pronti da condurre, e uno storico che ricordi ogni
-              sessione al posto tuo.
+              Crea è l’atelier con cui nascono le esperienze e le
+              meditazioni di Aurya: voce, basi sonore, frequenze e
+              scena visiva, in un unico strumento che funziona dal
+              browser. Lo apriamo progressivamente a professionisti
+              selezionati — su invito o in partnership.
             </p>
             <p className="font-serif text-2xl sm:text-3xl text-[#f6f2e8]">
-              Non devi progettare una frequenza.<br />
-              Devi scegliere un’esperienza.
+              Le tue meditazioni, con la tua voce.<br />
+              Condivise in privato con i tuoi clienti.
             </p>
           </div>
-          <div className="mt-12">
-            <Bottone to="/sound/professional" tono="chiaro">
-              Scopri Sound Professional →
-            </Bottone>
-          </div>
+          {stato === 'fatto' ? (
+            <p className="mt-10 max-w-2xl text-base sm:text-lg text-[#f6f2e8]"
+              data-testid="sld-crea-grazie">
+              Ricevuto. Ti ricontattiamo noi per raccontarti come funziona.
+            </p>
+          ) : (
+            <form className="mt-10 flex max-w-2xl flex-wrap gap-4" onSubmit={chiedi}>
+              <input type="text" value={nome} placeholder="Il tuo nome"
+                onChange={(e) => setNome(e.target.value)}
+                data-testid="sld-crea-nome"
+                className="min-w-[180px] flex-1 rounded-xl border border-[#f6f2e8]/25
+                           bg-[#f6f2e8]/10 px-5 py-3.5 text-base text-[#f6f2e8]
+                           placeholder:text-[#f6f2e8]/50" />
+              <input type="email" value={email} required placeholder="La tua email"
+                onChange={(e) => setEmail(e.target.value)}
+                data-testid="sld-crea-email"
+                className="min-w-[220px] flex-1 rounded-xl border border-[#f6f2e8]/25
+                           bg-[#f6f2e8]/10 px-5 py-3.5 text-base text-[#f6f2e8]
+                           placeholder:text-[#f6f2e8]/50" />
+              <button type="submit" disabled={stato === 'invio'}
+                data-testid="sld-crea-invia"
+                className="rounded-full px-7 py-3.5 text-base font-medium transition
+                           hover:opacity-90 disabled:opacity-50"
+                style={{ background: ORO, color: '#14212b' }}>
+                {stato === 'invio' ? 'Invio…' : 'Raccontami di più →'}
+              </button>
+              {typeof stato === 'string' && stato !== 'invio' && (
+                <p className="w-full text-sm text-[#ffd7d7]">{stato}</p>
+              )}
+            </form>
+          )}
+          <p className="mt-6 text-sm text-[#f6f2e8]/60">
+            Accesso su invito. Le meditazioni che componi restano tue.
+          </p>
         </Section>
 
         {/* ── L'ONESTÀ ───────────────────────────────────────────── */}
@@ -353,10 +415,10 @@ export default function SoundHomePage() {
           </DisplayTitle>
           <div className="mt-7 max-w-2xl space-y-5">
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Oggi Aurya Sound lavora sul suono. Il prossimo passo di
-              Sound Professional è il biofeedback: non soltanto creare
-              uno stimolo, ma poter osservare cosa succede durante una
-              sessione — respirazione, variabilità, risposta nel tempo.
+              Oggi Aurya Sound lavora sul suono. Il prossimo passo è
+              la risposta: non soltanto creare uno stimolo, ma poter
+              osservare cosa succede durante una sessione —
+              respirazione, variabilità, vibrazione, risposta nel tempo.
             </p>
             <p className="font-serif text-2xl text-white text-hero-shadow">
               Il suono come stimolo. I dati come osservazione.
@@ -381,9 +443,9 @@ export default function SoundHomePage() {
             style={{ borderColor: ORO }}>
             <Occhiello>Se sei un professionista del benessere</Occhiello>
             <p className="font-serif text-2xl sm:text-3xl mb-6">
-              Porta Aurya Sound nelle tue sessioni.
+              Componi le tue meditazioni con Crea.
             </p>
-            <Bottone to="/sound/professional">Scopri Sound Professional →</Bottone>
+            <Bottone href="#professionisti">Raccontami di più →</Bottone>
           </div>
 
           <div className="mt-20 grid gap-10 sm:grid-cols-2 max-w-4xl">
@@ -398,9 +460,9 @@ export default function SoundHomePage() {
               </p>
             </div>
             <div>
-              <Occhiello>Aurya Sound Professional</Occhiello>
+              <Occhiello>Per i professionisti</Occhiello>
               <p className="text-base text-muted-foreground leading-relaxed">
-                Protocolli · Sessioni · Percorsi · Storico · Biofeedback
+                Crea · Voce e basi sonore · Meditazioni private per i tuoi clienti
               </p>
             </div>
           </div>
