@@ -68,6 +68,24 @@ class TestLaPorta:
         assert "customersAPI.list" in persona
 
 
+class TestIlTrattino:
+    """27/8, founder: i clienti creati a mano mostravano «status.null»
+    (chiave i18n grezza) e la stringa letterale «\\u2014» — in un nodo
+    di testo JSX gli escape non esistono. Il valore assente si dice
+    con UN TRATTINO, sempre."""
+
+    def test_07_niente_escape_ne_chiavi_grezze(self):
+        for nome in ("components/CustomerTable.jsx",
+                     "components/CustomerProfileSlide.jsx",
+                     "CustomerInsightsPage.jsx"):
+            src = (CI / nome).read_text()
+            assert "u2014" not in src, f"{nome}: trattino scritto come escape"
+        tabella = (CI / "components" / "CustomerTable.jsx").read_text()
+        # lo stato assente non passa da t(): niente «status.null»
+        assert "row.customer_status ? (" in tabella
+        assert tabella.count("—") >= 3
+
+
 PREFIX = "test_nc_"
 ORG = PREFIX + "org"
 ALTRA = PREFIX + "altra"

@@ -92,24 +92,24 @@ export const CustomerProfileSlide = ({ customerId, customerSummary, open, onOpen
               value={
                 customerSummary?.total_revenue != null
                   ? formatCurrency(customerSummary.total_revenue, currency)
-                  : '\u2014'
+                  : '—'
               }
             />
             <Stat
               label={t('profile.transactionCount')}
-              value={customerSummary?.transaction_count ?? '\u2014'}
+              value={customerSummary?.transaction_count ?? '—'}
             />
             <Stat
               label={t('profile.avgValue')}
               value={
                 customerSummary?.avg_transaction_value != null
                   ? formatCurrency(customerSummary.avg_transaction_value, currency)
-                  : '\u2014'
+                  : '—'
               }
             />
             <Stat
               label={t('profile.lastPurchase')}
-              value={customerSummary?.last_purchase_date || '\u2014'}
+              value={customerSummary?.last_purchase_date || '—'}
             />
           </div>
 
@@ -164,15 +164,15 @@ export const CustomerProfileSlide = ({ customerId, customerSummary, open, onOpen
                         {e.kind === 'order' ? t('profile.kindOrder') : t('profile.kindSale')}
                       </span>
                       <span className="text-foreground truncate">
-                        {e.description || e.order_number || e.product_id || '\u2014'}
+                        {e.description || e.order_number || e.product_id || '—'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-muted-foreground">{e.date || '\u2014'}</span>
+                      <span className="text-muted-foreground">{e.date || '—'}</span>
                       <span className="font-medium tabular-nums">
                         {e.amount != null
                           ? formatCurrency(e.amount, e.currency || currency)
-                          : '\u2014'}
+                          : '—'}
                       </span>
                     </div>
                   </li>

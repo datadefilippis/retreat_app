@@ -221,9 +221,13 @@ export const CustomerTable = ({
                       </Badge>
                     </td>
                     <td className="px-3 py-2 hidden md:table-cell">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[row.customer_status] || ''}`}>
-                        {t(`status.${camelStatus(row.customer_status)}`, { defaultValue: row.customer_status })}
-                      </span>
+                      {row.customer_status ? (
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[row.customer_status] || ''}`}>
+                          {t(`status.${camelStatus(row.customer_status)}`, { defaultValue: row.customer_status })}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
                       {formatCurrency(row.total_revenue || 0, currency)}
@@ -232,14 +236,14 @@ export const CustomerTable = ({
                       {row.transaction_count}
                     </td>
                     <td className="px-3 py-2 hidden lg:table-cell whitespace-nowrap text-muted-foreground">
-                      {row.last_purchase_date || '\u2014'}
+                      {row.last_purchase_date || '—'}
                     </td>
                     <td className="px-3 py-2 text-center hidden md:table-cell tabular-nums">
                       <RiskScore score={row.churn_risk_score} />
                     </td>
                     <td className="px-3 py-2 text-center hidden md:table-cell">
                       <span title={t(`trend.${row.trend_direction}`, { defaultValue: row.trend_direction })}>
-                        {TREND_GLYPH[row.trend_direction] || '\u2014'}
+                        {TREND_GLYPH[row.trend_direction] || '—'}
                       </span>
                     </td>
                     {/* CI-admin-vis: Account column.
@@ -377,7 +381,7 @@ function camelStatus(s) {
 }
 
 function RiskScore({ score }) {
-  if (score == null) return <span className="text-muted-foreground">\u2014</span>;
+  if (score == null) return <span className="text-muted-foreground">—</span>;
   const color =
     score >= 60 ? 'text-red-600' :
     score >= 30 ? 'text-amber-600' :

@@ -595,6 +595,6 @@ function BarSparkline({ pct }) {
 
 
 function formatPct(v, locale = 'it-IT') {
-  if (v == null) return '\u2014';
+  if (v == null) return '—';
   return `${v.toLocaleString(locale, { maximumFractionDigits: 1 })}\u00A0%`;
 }
