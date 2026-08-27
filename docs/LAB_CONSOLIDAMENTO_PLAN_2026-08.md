@@ -194,6 +194,25 @@ di tutto:
 Rischio: nessuno tecnico; il rischio è di vetrina — ogni onda entra
 SOLO col suo cartellino di verità.*
 
+## Le didascalie — ogni modulo si racconta *(trasversale, 27/8 founder)*
+
+Ogni pannello e ogni onda nasce con la sua **didascalia breve** (2–3
+righe, tono da museo della scienza: cosa stai vedendo, perche' e'
+interessante, cosa provare) + dove serve l'approfondimento col
+pattern «learn» gia' in casa nella biblioteca. Non si spedisce un
+modulo muto: la didascalia fa parte della definizione di fatto.
+Il tono, con tre esempi che fanno da diapason:
+
+- *Vortice* — «Il suono gira davvero attorno alla tua testa: e' la
+  spazializzazione HRTF, la stessa matematica con cui il cervello
+  localizza i suoni nel mondo. Chiudi gli occhi e seguilo.»;
+- *Terzo suono* — «Stiamo suonando solo 1200 e 1500 Hz. Il 300 Hz
+  che senti lo sta generando il tuo orecchio: nell'aria non c'e' —
+  guarda lo spettro. Si chiama tono di Tartini, dal 1714.»;
+- *Rapporti* — «Un intervallo musicale e' un rapporto tra numeri:
+  3:2 e' la quinta. La figura che vedi E' quel rapporto disegnato —
+  quando la senti consonante, stai sentendo la geometria.».
+
 ## LB6 — VERSO LA CIMATICA *(il traguardo dichiarato)*
 
 La cimatica (sabbia su piastra, acqua in coppa) chiede al Lab quattro
@@ -235,6 +254,62 @@ cimatica nel Lab è fisica visibile, non medicina.
 
 *Effort: 2 giornate (senza hardware). Dipende da LB1+LB2.*
 
+## LB7 — IL VESTITO DEGLI STRUMENTI: il redesign dei grafici *(27/8, founder)*
+
+I tre pannelli (oscilloscopio, spettro, spettrogramma) funzionano ma
+vestono ancora da prototipo. Diventano **strumenti belli da guardare
+anche spenti** — estetica da strumentazione moderna dentro l'Ora
+d'oro del mondo Sound:
+
+- **traccia viva**: linea con bagliore (glow) e persistenza al
+  fosforo per l'oscilloscopio (la scia che svanisce, come sugli
+  oscilloscopi veri — e' anche INFORMAZIONE: mostra la stabilita');
+- **spettro**: area riempita con gradiente che si spegne verso il
+  fondo, picco principale marcato con quota in Hz leggibile,
+  griglia sottile che non urla, etichette in --mono;
+- **spettrogramma**: mappa colori curata (percettivamente uniforme,
+  dal blu profondo all'oro del mondo), niente arcobaleni da anni 90;
+- **il numerone** (frequenza) come protagonista tipografico — la
+  cifra e' il cuore dello strumento, si vede da un metro;
+- **micro-transizioni**: i cambi (forma, sorgente, congela) si
+  muovono con le rampe che il suono gia' usa — l'occhio e
+  l'orecchio ricevono lo stesso gesto;
+- tutto CSS + canvas gia' in casa: zero dipendenze, zero costo
+  server; i pittori restano nel contratto `quadro.js` (un solo rAF).
+
+*Effort: 1,5 giornate. Si puo' fare in qualunque momento dopo LB1;
+ideale prima di LB5 cosi' le meraviglie nascono gia' vestite.*
+
+## LB8 — LA REVISIONE OLISTICA: bello, facile, utile *(il sigillo)*
+
+A valle delle onde, un giro completo sul Lab come ESPERIENZA — non
+una lista di pannelli ma un laboratorio dove si entra, ci si
+orienta e si ha voglia di restare:
+
+- **la navigazione**: indice del banco sempre a portata (le sezioni
+  del Lab come stanze — generatore, letture, orecchio, meraviglie,
+  esperimenti), scroll con ancore, la barra dello strumento sticky
+  senza rubare schermo; su telefono i fogli alla maniera di VM1;
+- **il primo minuto**: chi entra a freddo deve capire in 60 secondi
+  cosa si fa qui — un invito iniziale («premi play, muovi la
+  frequenza, guarda lo spettro rispondere») al posto del silenzio;
+- **i percorsi guidati**: 3–4 esperimenti raccontati passo-passo
+  che legano i moduli («Misura la tua bottiglia»: colpo → spettro →
+  accordatore → risintesi; «La geometria degli intervalli»: rapporti
+  → XY → mandala; «L'orecchio che inventa»: Tartini → fondamentale
+  fantasma) — e' qui che «utile e interessante» diventa concreto;
+- **la coerenza dei comandi**: stessi cursori, stessi campi, stesse
+  distanze in ogni pannello; gli stati vuoti parlano; ogni azione
+  distruttiva chiede col modale di casa;
+- **l'accessibilita'**: fuochi visibili, contrasti misurati, tutto
+  usabile col dito su schermo piccolo (la lezione dei 767px e' gia'
+  in memoria);
+- **il collaudo del racconto**: una persona che non ha mai visto il
+  Lab lo attraversa senza guida — se si perde, e' un difetto nostro.
+
+*Effort: 1,5–2 giornate. Va per ultimo: rivede TUTTO quello che le
+onde hanno costruito.*
+
 ---
 
 ## Solidità trasversale (in ogni onda)
@@ -251,9 +326,12 @@ cimatica nel Lab è fisica visibile, non medicina.
 ## Ordine consigliato e totale
 
 **LB1 → LB2 → LB3 → LB4** è la spina dorsale (la campana del founder:
-~6 giornate). **LB5** si affianca a piacere (moduli indipendenti).
-**LB6** chiude quando LB1+LB2 sono in piedi. Totale: ~10–12 giornate
-spezzabili in cicli piccoli, ognuno rilasciabile da solo.
+~6 giornate). **LB7** (vestito dei grafici) ideale subito dopo LB1,
+così tutto il resto nasce già vestito. **LB5** si affianca a piacere
+(moduli indipendenti, con didascalia). **LB6** chiude quando LB1+LB2
+sono in piedi. **LB8** (revisione olistica) sigilla il ciclo per
+ultimo. Totale: ~13–15 giornate spezzabili in cicli piccoli, ognuno
+rilasciabile da solo.
 
 ## Fuori scope, di proposito
 
