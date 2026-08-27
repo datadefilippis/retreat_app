@@ -41,7 +41,7 @@ def _blocco_mine(src: str) -> str:
     alla chiusura delle cards)."""
     a = src.find("drafts.map((d) => {")
     assert a > -1, "il map delle tracce non esiste piu'"
-    b = src.find("CondivisioniTraccia trackId={d.id}", a)
+    b = src.find("{condividi && (", a)
     assert b > -1
     return src[a:b]
 
@@ -84,14 +84,20 @@ class TestLessicoTm1:
 
 class TestSchedaTm2:
     def test_04_un_pannello_ripiegabile(self):
-        """Il pannello dei link si apre solo quando serve: una riga
-        «Link riservati (N)» col conteggio, non un pannello fisso."""
+        """TM2, rivisto dal founder (27/8 sera, «il riquadro si
+        allunga troppo»): il pannello e' un FOGLIO (overlay gate) —
+        la scheda mostra solo «Link riservati (N)» e non si allunga
+        mai; dentro il foglio la lista SCORRE (max-height) e il nome
+        lungo si tronca con l'ellissi invece di uscire dal riquadro."""
         src = _pagina()
-        assert "sharesAperti" in src
+        assert "setCondividi({ id: d.id" in src
         assert "Link riservati (" in src
-        # CondivisioniTraccia montata SOLO dietro il toggle
-        assert re.search(r"riservata && linkAperti && <CondivisioniTraccia",
-                         src), "il pannello e' tornato sempre aperto"
+        # il foglio e' montato UNA volta, fuori dalle carte
+        assert re.search(r"condividi && \(\s*<CondivisioniTraccia", src)
+        assert "linkAperti" not in src, "il pannello inline e' tornato"
+        css = (FQ / "frequenze.css").read_text()
+        assert "cond-lista" in css and "overflow-y:auto" in css
+        assert "text-overflow:ellipsis" in css.split(".cond-chi b")[1][:200]
 
     def test_05_elimina_fuori_dalla_riga(self):
         src = _pagina()

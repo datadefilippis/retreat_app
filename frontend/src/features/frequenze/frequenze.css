@@ -1455,3 +1455,37 @@
   font-size:12.5px;padding:4px 6px}
 .fqz .vd-senza-toggle:hover{color:var(--lamp)}
 .fqz .vd-senza .vd-hint{display:block;margin:6px 0 8px}
+
+/* ═══ TM2-bis (27/8 sera, founder) — il FOGLIO dei link riservati ═══
+   La scheda non si allunga: i link vivono in un overlay. Righe a due
+   colonne che non escono mai dal riquadro (min-width:0 + ellissi),
+   lista che scorre oltre le ~5 righe, gesti che su telefono vanno a
+   capo sotto il nome. */
+.fqz .condivisioni-box{width:min(560px,92vw)}
+.fqz .condivisioni-box h2 em{font-style:italic}
+.fqz .cond-spiega{margin:2px 0 14px}
+.fqz .cond-crea{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.fqz .cond-crea .persona{flex:1;min-width:200px}
+.fqz .cond-crea .add{white-space:nowrap}
+.fqz .cond-msg{font-size:12.5px;color:var(--water);margin:10px 0 0;
+  overflow-wrap:anywhere}
+.fqz .cond-lista{list-style:none;margin:14px 0 0;padding:0;
+  max-height:min(320px,42vh);overflow-y:auto}
+.fqz .cond-lista li{display:flex;align-items:center;gap:10px;
+  justify-content:space-between;flex-wrap:wrap;
+  padding:9px 2px;border-top:1px solid var(--line-soft)}
+.fqz .cond-lista li:first-child{border-top:none}
+.fqz .cond-chi{min-width:0;flex:1}
+.fqz .cond-chi b{display:block;color:var(--bone);font-weight:600;
+  font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fqz .cond-chi span{display:block;color:var(--dimmer);font-size:11.5px;
+  margin-top:2px}
+.fqz .cond-gesti{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.fqz .cond-lista.spenti{max-height:140px}
+.fqz .cond-lista.spenti .cond-chi b{color:var(--dimmer)}
+.fqz .cond-revocati{border-color:transparent;color:var(--dimmer);
+  font-size:12px;padding:6px 2px;margin-top:8px}
+.fqz .cond-revocati:hover{color:var(--dim)}
+@media (max-width:560px){
+  .fqz .cond-gesti{flex-basis:100%;justify-content:flex-end}
+}

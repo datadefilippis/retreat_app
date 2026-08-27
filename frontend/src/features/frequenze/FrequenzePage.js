@@ -318,9 +318,10 @@ export default function FrequenzePage() {
   const clipsSessioneRef = useRef([]);   // TM8: spezzoni di questa sessione
   const [trackSlug, setTrackSlug] = useState(null);
   const [drafts, setDrafts] = useState([]);
-  /* TM2 — il pannello dei link riservati e' RIPIEGATO di default:
-     una riga col conteggio, si apre solo quando serve. */
-  const [sharesAperti, setSharesAperti] = useState({});
+  /* TM2, rivisto dal founder (27/8 sera): il pannello dei link e' un
+     FOGLIO (overlay) — la scheda mostra solo il conteggio e non si
+     allunga mai, dentro il foglio la lista scorre. */
+  const [condividi, setCondividi] = useState(null);   // {id, titolo}
   const [playing, setPlaying] = useState(false);
   const [preparing, setPreparing] = useState(false);  // decode in corso
   const [elapsed, setElapsed] = useState(0);
@@ -2256,7 +2257,6 @@ export default function FrequenzePage() {
                   const riservata = d.status === 'published'
                     && d.visibility === 'private';
                   const pubblica = d.status === 'published' && !riservata;
-                  const linkAperti = !!sharesAperti[d.id];
                   return (
                   <div key={d.id} className={`card mine-card${d.status === 'published' ? ' playing' : ''}`}>
                     <button type="button" className="mine-del" title="Elimina la traccia"
@@ -2306,9 +2306,8 @@ export default function FrequenzePage() {
                         <>
                           <button type="button" className="primo"
                             data-testid="fq-link-riservati"
-                            aria-expanded={linkAperti}
-                            onClick={() => setSharesAperti((v) => ({ ...v, [d.id]: !v[d.id] }))}>
-                            Link riservati ({d.shares_attivi || 0}) {linkAperti ? '▾' : '▸'}
+                            onClick={() => setCondividi({ id: d.id, titolo: d.title })}>
+                            Link riservati ({d.shares_attivi || 0})
                           </button>
                           <button type="button" className="add"
                             onClick={() => unpublishById(d.id)}>Riporta in bozza</button>
@@ -2324,11 +2323,15 @@ export default function FrequenzePage() {
                       <button type="button" className="live"
                         onClick={() => openDraft(d.id)}>Apri</button>
                     </div>
-                    {riservata && linkAperti && <CondivisioniTraccia trackId={d.id} onCambio={loadDrafts} />}
                   </div>
                   );
                 })}
               </div>
+            )}
+            {condividi && (
+              <CondivisioniTraccia trackId={condividi.id}
+                titolo={condividi.titolo} onCambio={loadDrafts}
+                onChiudi={() => setCondividi(null)} />
             )}
             {status && <p className="soundlead" style={{ marginTop: 12 }}>{status}</p>}
           </section>

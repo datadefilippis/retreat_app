@@ -16,6 +16,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { customersAPI } from '../../../api/customers';
 import { messaggio } from './errori';
+import './pro.css';   // il componente porta il suo vestito (usato anche fuori da /sound/pro)
 
 export default function ScegliPersona({
   valore,            // {id, nome} | null
