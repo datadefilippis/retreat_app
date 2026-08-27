@@ -165,13 +165,14 @@ class TestL3PortaDiSistema:
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
         assert "/sound/studio" in seo
 
-    def test_06b_la_voce_solo_a_chi_ha_il_privilegio(self):
-        """Evoluto col founder (26/8 sera): niente piu' vetrina di
-        Professional nella passerella — la voce appare SOLO a chi ha
-        il privilegio, e porta allo strumento."""
+    def test_06b_professional_fuori_dal_menu(self):
+        """Evoluto col founder (27/8): Professional NON si usa — la
+        passerella non lo nomina per NESSUNO, nemmeno per chi ha il
+        privilegio (lo strumento resta per URL, col suo portiere)."""
         src = _senza_commenti((FQ / "SoundTopbar.jsx").read_text())
-        assert "user?.sound_professional" in src
-        assert "'/sound/pro'" in src
+        assert "sound_professional" not in src, \
+            "la passerella conosce ancora Professional"
+        assert "'/sound/pro'" not in src
         assert "'/sound/professional'" not in src, \
             "la passerella pubblicizza ancora la vendita"
         # NV2 (27/8, BUSSOLA): la voce dice il suo nome vero — non piu'

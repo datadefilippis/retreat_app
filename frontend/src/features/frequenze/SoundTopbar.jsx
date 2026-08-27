@@ -34,16 +34,13 @@ export default function SoundTopbar({ firma = 'Sound', qui = null, extra = null 
      identica a prima: un link che porta a un cartello «su invito»
      sarebbe rumore, non una porta. AuthProvider avvolge l'app intera,
      quindi il hook e' sicuro anche sulle pagine pubbliche. */
-  const { user } = useAuth();
-  /* Deciso dal founder (26/8 sera): Professional NON si sponsorizza
-     finche' il catalogo non avra' un valore che superi il premere
-     play — la via professionale promossa e' CREA (vedi la landing di
-     sistema). La voce quindi appare SOLO a chi ha gia' il privilegio
-     e porta allo strumento; per tutti gli altri la passerella resta
-     quella di sempre, senza vetrine. */
-  const voci = user?.sound_professional
-    ? [...PASSERELLA, { to: '/sound/pro', label: 'Professional' }]
-    : PASSERELLA;
+  const { user } = useAuth();   // per l'omino e il menu account
+  /* Deciso dal founder (27/8, ribadito): Professional NON si usa —
+     niente voce in passerella, per NESSUNO. Lo strumento /sound/pro
+     resta vivo per URL (col suo portiere), substrato della futura
+     fase-vibrazioni: un menu che lo nomina sarebbe una vetrina, e la
+     vetrina l'abbiamo spenta. */
+  const voci = PASSERELLA;
   return (
     <div className="topbar">
       <a className="fqzbrand" href="/" data-testid="fqz-brand" title="Torna su Aurya">

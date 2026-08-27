@@ -405,6 +405,14 @@ export default function FrequenzePage() {
   };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (canCompose) loadDrafts(); }, [canCompose]);
+  /* NV6-bis — anche la chiusura del tab avvisa, finche' c'e' una
+     sessione montata (il browser mostra il suo dialogo standard) */
+  useEffect(() => {
+    if (!layers.length) return undefined;
+    const h = (e) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', h);
+    return () => window.removeEventListener('beforeunload', h);
+  }, [layers.length]);
 
   /* ── libreria suoni (FQ2) ── */
   const [sounds, setSounds] = useState([]);
@@ -1748,6 +1756,7 @@ export default function FrequenzePage() {
             Lab · Impara per tutti, Crea · Le mie tracce con le
             chiavi. Condivisa col Lab: un solo posto dove orientarsi. */}
         <StanzeSound creaBadge={layers.length}
+          avvisoUscita={layers.length}
           attiva={{ explore: 'esplora', create: 'crea',
                     impara: 'impara', mine: 'tracce' }[view]} />
       </header>

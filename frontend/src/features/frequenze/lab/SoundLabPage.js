@@ -12,6 +12,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import SoundTopbar from '../SoundTopbar';
 import StanzeSound from '../StanzeSound';
+import TriggerStudio from '../TriggerStudio';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
 import Generatore from './Generatore';
 import Oscilloscopio from './Oscilloscopio';
@@ -118,6 +119,8 @@ export default function SoundLabPage() {
           Un segnale, un tempo, tre letture: quello che senti è quello
           che vedi, misurato mentre accade.
         </p>
+        {/* NV5 — il funnel professionale anche nel Lab */}
+        <TriggerStudio />
       </main>
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
       <footer className="fqzfoot">

@@ -610,8 +610,13 @@ class TestTelaio:
     def test_sitemap_e_navigazione(self):
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
         assert "/sound/lab" in seo, "il Lab non e' in sitemap"
+        # NV3 (27/8, BUSSOLA): il Lab non e' piu' una voce di menu —
+        # e' una STANZA nella barra unica (StanzeSound), condivisa con
+        # la biblioteca. La passerella non lo nomina.
         topbar = (FRONTEND_SRC / "features" / "frequenze" / "SoundTopbar.jsx").read_text()
-        assert "'/sound/lab'" in topbar, "il Lab non e' nella passerella"
+        assert "'/sound/lab'" not in topbar, "il Lab e' tornato in passerella"
+        barra = (FRONTEND_SRC / "features" / "frequenze" / "StanzeSound.jsx").read_text()
+        assert "'/sound/lab'" in barra, "il Lab non e' fra le stanze"
         landing = (FRONTEND_SRC / "features" / "frequenze" / "SoundLandingPage.js").read_text()
         assert "sld-lab" in landing, "la landing non porta al Lab"
 

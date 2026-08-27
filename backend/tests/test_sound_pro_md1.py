@@ -178,20 +178,19 @@ class TestLaVeste:
 
 # ── 9-10 · la porta (M7a) ──────────────────────────────────────────────────
 class TestLaPorta:
-    def test_09_professional_solo_a_chi_ha_il_privilegio(self):
-        """Evoluto due volte: con L3-bis la voce era per ogni operatore
-        (due destinazioni); il 26/8 sera il founder ha tolto la vetrina
-        — Professional non si promuove finche' il catalogo non avra' un
-        valore oltre il play. La voce resta SOLO per chi ha il
-        privilegio, e porta allo strumento."""
+    def test_09_professional_fuori_dal_menu_per_tutti(self):
+        """Evoluto tre volte: L3-bis (voce per ogni operatore), 26/8
+        (solo col privilegio), e 27/8 il founder ha chiuso: Professional
+        NON si usa — NESSUNA voce in passerella, per nessuno. Lo
+        strumento /sound/pro resta vivo per URL col suo portiere,
+        substrato della fase-vibrazioni."""
         src = _senza_commenti(TOPBAR.read_text())
-        assert "user?.sound_professional" in src
-        assert "'/sound/pro'" in src
-        assert "'/sound/professional'" not in src, \
-            "la passerella pubblicizza ancora la vendita"
+        assert "sound_professional" not in src, \
+            "la passerella conosce ancora Professional"
+        assert "'/sound/pro'" not in src and "'/sound/professional'" not in src, \
+            "la passerella pubblicizza ancora Professional"
         m = re.search(r"const PASSERELLA = \[(.*?)\];", src, re.S)
-        assert m and "/sound/pro" not in m.group(1), \
-            "Professional è finito nella passerella degli anonimi"
+        assert m and "/sound/pro" not in m.group(1)
 
     def test_10_le_pagine_pubbliche_non_dipendono_da_pro(self):
         """La topbar è condivisa col mondo pubblico: la modifica è
