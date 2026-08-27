@@ -127,7 +127,7 @@ export default function SoundLandingPage() {
                 condividile con i tuoi clienti.
               </span>
             </div>
-            <Link className="sld-pro-cta" to="/sound#professionisti"
+            <Link className="sld-pro-cta" to="/sound/studio"
               data-testid="sld-crea-link">Scopri come →</Link>
           </div>
 

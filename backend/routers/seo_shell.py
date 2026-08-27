@@ -802,6 +802,24 @@ def _professional_content_html() -> str:
         "Professional è su invito.</p>")
 
 
+def _studio_content_html() -> str:
+    """Corpo per i crawler di /sound/studio: la via professionale
+    promossa (27/8) — l'atelier, non il catalogo."""
+    return (
+        "<h2>Componi le tue meditazioni, con la tua voce</h2>"
+        "<p>Crea Studio è l'atelier con cui nascono le meditazioni di "
+        "Aurya, aperto progressivamente ai professionisti del "
+        "benessere. Si registra la propria voce dal browser, si "
+        "compone con basi sonore, frequenze e scena visiva, e si "
+        "condivide con un link riservato: le meditazioni che componi "
+        "restano tue e non entrano nel catalogo pubblico.</p>"
+        "<p>Niente da installare e niente studio di registrazione: "
+        "funziona dal browser, su computer e tablet. Le esperienze "
+        "gratuite di <a href=\"/sound\">Aurya Sound</a> sono composte "
+        "con lo stesso strumento; l'accesso a Crea Studio è su "
+        "invito o in partnership.</p>")
+
+
 async def _meta_sound(parts: list) -> Optional[dict]:
     """/sound[...]. Esplora e Impara sono editoriali e indicizzabili;
     crea e tracce sono il workspace operatore: vivi ma noindex (la SPA
@@ -828,6 +846,23 @@ async def _meta_sound(parts: list) -> Optional[dict]:
             "hreflang": _hub_hreflang(canonical),
             "image": f"{base}/og-cover.jpg",
             "content_html": _professional_content_html(),
+        }
+    # CREA STUDIO (27/8) — la via professionale promossa: pubblica e
+    # indicizzata come la vendita di Professional (che resta viva ma
+    # non piu' linkata).
+    if sub == "studio":
+        canonical = f"{base}/sound/studio"
+        return {
+            "title": "Crea Studio — componi le tue meditazioni | Aurya",
+            "description": (
+                "L'atelier con cui nascono le meditazioni di Aurya, "
+                "aperto ai professionisti del benessere: registra la "
+                "tua voce dal browser, componi con basi e frequenze, "
+                "condividi in privato con i tuoi clienti."),
+            "canonical": canonical,
+            "hreflang": _hub_hreflang(canonical),
+            "image": f"{base}/og-cover.jpg",
+            "content_html": _studio_content_html(),
         }
     if sub in ("crea", "tracce", "visual", "pro"):
         meta = {**_SOUND_PAGES[None], "noindex": True}

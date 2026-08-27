@@ -1,26 +1,29 @@
 /**
- * /sound — LA LANDING DI AURYA SOUND (26/8/2026 sera, terza mano).
+ * /sound — LA LANDING DI AURYA SOUND (27/8/2026, quarta mano).
  *
- * La terza mano risponde alla revisione PM+UX del founder:
- *  - VIA le frasi ellittiche coi due punti («Non ricordare:
- *    registrare») — si scrive in italiano, con frasi intere
- *  - MENO negazioni: una pagina che dice sempre «non» finisce per
- *    non dire niente
- *  - le tre PORTE più quadrate e più in evidenza: copy corto, carta
- *    intera cliccabile, rialzo all'hover
- *  - da ascoltare SOLO CALM e GROUND (decisione founder: RESPIRO
- *    resta nel catalogo ma non in vetrina)
+ * La quarta mano nasce da tre decisioni del founder:
+ *  - ASCOLTA SUBITO: il campione-eroe e' una MEDITAZIONE VERA
+ *    (mondo nuovo, 27 minuti in produzione) in anteprima INLINE — i
+ *    primi 90 secondi, il taglio che gia' governa tutto il sistema.
+ *    A fine anteprima il patto: l'ascolto completo e' del cerchio.
+ *    CALM e GROUND retrocedono a riga («la materia prima»): complete
+ *    e gratuite, ma la sintesi pura non e' la cosa piu' esperienziale
+ *    per chi arriva da fuori — lo ha detto lui, e aveva ragione.
+ *  - UNA SOLA banda fotografica per le Meditazioni: due bande scure
+ *    una sotto l'altra non funzionavano, in mezzo ora c'e' il chiaro
+ *    (ed e' proprio la sezione dove si ascolta).
+ *  - la via professionale e' un PONTE alla landing dedicata di Crea
+ *    Studio (/sound/studio): il form vive la', non piu' qui.
  *
  * LE FOTOGRAFIE SONO UN RACCONTO. La pagina e' chiara come il sito, e
  * il BUIO arriva dove stai per entrare nel suono:
  *   onda    il vortice — l'apertura
- *   seta    le trame morbide — «poi puoi semplicemente ascoltare»
  *   trame   le scie — le Meditazioni, dove il linguaggio cambia
  *   fuoco   il blu che diventa arancio — il futuro, la risposta
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import api from '../../api/client';
+import { frequenciesAPI } from '../../api/frequencies';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import {
   DisplayTitle, Lede, PhotoBand, PhotoOpener, Section,
@@ -30,7 +33,7 @@ import {
 } from './soundKit';
 
 const ONDA = '/media/sound/onda.jpg';
-const SETA = '/media/sound/seta.jpg';
+
 const TRAME = '/media/sound/trame.jpg';
 const FUOCO = '/media/sound/fuoco.jpg';
 
@@ -61,19 +64,87 @@ const PORTE = [
   },
 ];
 
-/* da ascoltare: SOLO CALM e GROUND (decisione founder, 26/8) */
-const ESPERIENZE = [
-  {
-    id: 'calm', titolo: 'CALM', sotto: '6 minuti per rallentare.',
-    righe: ['Un fondo stabile. Un respiro sonoro che si distende. Un battito lento che appare e poi scompare.',
-      'Costruita per accompagnarti verso un ritmo più quieto.'],
-  },
-  {
-    id: 'ground', titolo: 'GROUND', sotto: '8 minuti per toccare terra.',
-    righe: ['Un registro grave, una pulsazione lenta, materia sonora che piano piano si dirada.',
-      'GROUND lavora sulla percezione del peso, della profondità e dello spazio.'],
-  },
+/* IL CAMPIONE-ERO̲E in vetrina (founder 27/8): la meditazione vera di
+   produzione. Se in un ambiente la traccia non esiste, la sezione si
+   piega con grazia: niente player, restano il racconto e la materia
+   prima. Quando ci saranno piu' meditazioni, qui nascera' il flag
+   «in vetrina» — per ora la scelta e' del founder ed e' una. */
+const VETRINA_SLUG = 'meditazione-mondo-nuovo-onde-delta';
+
+/* la materia prima: complete e gratuite, ma non piu' schede-eroe */
+const ASSAGGI = [
+  ['CALM', '/sound/calm', '6 minuti per rallentare'],
+  ['GROUND', '/sound/ground', '8 minuti per toccare terra'],
 ];
+
+const fmtMin = (s) => `${Math.round((s || 0) / 60)} minuti`;
+
+/* ── il player dell'anteprima: un patto, non una trappola ──────────
+   Un <audio> puro sul file dei 90 secondi (M3): niente motore,
+   niente WebAudio — la pagina resta leggera. A fine corsa l'invito. */
+function AnteprimaMeditazione({ track }) {
+  const el = useRef(null);
+  const [vivo, setVivo] = useState(false);
+  const [cur, setCur] = useState(0);
+  const [fine, setFine] = useState(false);
+  const tot = 90;
+  const toggle = () => {
+    const a = el.current;
+    if (!a) return;
+    if (vivo) { a.pause(); return; }
+    a.play().catch(() => { /* gesto negato: resta il ▶ */ });
+  };
+  return (
+    <div className="rounded-2xl border-2 p-7 sm:p-9" style={{ borderColor: ORO }}
+      data-testid="sh-anteprima">
+      <Occhiello>
+        Anteprima · i primi 90 secondi
+        {(track.score?.duration_sec || track.duration_sec) > 180
+          && ` di ${fmtMin(track.score?.duration_sec || track.duration_sec)}`}
+      </Occhiello>
+      <p className="font-serif text-2xl sm:text-3xl mb-1">{track.title}</p>
+      {track.operator?.name && (
+        <p className="text-sm text-muted-foreground mb-6">
+          di {track.operator.name}
+        </p>
+      )}
+      <audio ref={el} src={track.anteprima_url} preload="none"
+        onPlay={() => setVivo(true)} onPause={() => setVivo(false)}
+        onTimeUpdate={(e) => setCur(e.target.currentTime)}
+        onEnded={() => { setVivo(false); setFine(true); }} />
+      {fine ? (
+        <div data-testid="sh-anteprima-patto">
+          <Rilievo>L’ascolto completo è di chi riceve la Lettera.</Rilievo>
+          <div className="mt-6 flex flex-wrap items-center gap-6">
+            <Bottone to={`/frequenze/${track.slug}`}>Continua l’ascolto →</Bottone>
+            <Richiamo to="/newsletter">Ricevi la Lettera</Richiamo>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-5">
+          <button type="button" onClick={toggle} data-testid="sh-anteprima-play"
+            aria-label={vivo ? 'Pausa' : 'Ascolta l’anteprima'}
+            className="grid h-14 w-14 shrink-0 place-items-center rounded-full
+                       text-xl transition hover:opacity-90"
+            style={{ background: ORO, color: '#14212b' }}>
+            {vivo ? '❚❚' : '▶'}
+          </button>
+          <div className="min-w-0 flex-1">
+            <div className="h-1.5 w-full overflow-hidden rounded-full"
+              style={{ background: '#EDE5D2' }}>
+              <div className="h-full rounded-full transition-[width] duration-300"
+                style={{ width: `${Math.min(100, (cur / tot) * 100)}%`, background: ORO }} />
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {vivo ? 'Chiudi gli occhi. Al resto pensa la voce.'
+                : 'Premi play: si ascolta da qui, in cuffia è un’altra cosa.'}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SoundHomePage() {
   useEffect(() => {
@@ -87,26 +158,16 @@ export default function SoundHomePage() {
       document.getElementById('professionisti')?.scrollIntoView({ block: 'start' });
     }
   }, [hash]);
-  const [email, setEmail] = useState('');
-  const [nome, setNome] = useState('');
-  const [stato, setStato] = useState(null);   // null | 'invio' | 'fatto' | errore
-  const chiedi = async (e) => {
-    e.preventDefault();
-    if (!email.trim() || stato === 'invio') return;
-    setStato('invio');
-    try {
-      await api.post('/public/leads', {
-        type: 'operator',
-        email: email.trim(),
-        name: nome.trim() || null,
-        message: 'Aurya Sound Crea — richiesta di accesso per professionisti',
-        interests: ['sound_crea'],
-      });
-      setStato('fatto');
-    } catch {
-      setStato('Non inviato: riprova fra un momento.');
-    }
-  };
+  /* il campione in vetrina: se la traccia non c'e' (altro ambiente),
+     la sezione si piega con grazia — mai una scatola rotta */
+  const [vetrina, setVetrina] = useState(null);
+  useEffect(() => {
+    let vivo = true;
+    frequenciesAPI.getPublic(VETRINA_SLUG)
+      .then((r) => { if (vivo && r.data?.anteprima_url) setVetrina(r.data); })
+      .catch(() => { /* niente vetrina: la pagina vive lo stesso */ });
+    return () => { vivo = false; };
+  }, []);
 
   return (
     <MarketplaceShell noSearch>
@@ -199,36 +260,41 @@ export default function SoundHomePage() {
           </div>
         </Section>
 
-        {/* ── LE ESPERIENZE (banda scura) ─────────────────────────── */}
-        <PhotoBand image={SETA} focus="50% 55%" width="max-w-5xl"
-          labelledBy="sh-esperienze" data-testid="sh-porta-esperienze">
-          <Occhiello tono="chiaro">Poi puoi semplicemente ascoltare</Occhiello>
-          <DisplayTitle id="sh-esperienze" size="section"
-            className="text-white text-hero-shadow">
+        {/* ── ASCOLTA SUBITO (chiaro: il respiro fra le fotografie) ──
+            Il campione-eroe e' una meditazione VERA in anteprima
+            inline; CALM e GROUND sono la materia prima, in riga. Il
+            testid sh-porta-esperienze resta qui: e' sempre la stanza
+            dell'ascolto, e' cambiato cosa si ascolta per primo. */}
+        <Section tone="paper" labelledBy="sh-esperienze"
+          data-testid="sh-porta-esperienze">
+          <Occhiello>Ascolta subito</Occhiello>
+          <DisplayTitle id="sh-esperienze" size="section">
             Il suono è fatto per essere vissuto.
           </DisplayTitle>
-          <p className="mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-            Studiarlo è metà del viaggio. L’altra metà è ascoltarlo:
-            due esperienze brevi, gratuite, da vivere in cuffia.
-          </p>
-          <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-4xl">
-            {ESPERIENZE.map((e) => (
-              <div key={e.id}
-                className="rounded-2xl border border-white/20 bg-black/25 backdrop-blur-sm p-8">
-                <h3 className="font-serif text-3xl text-white">{e.titolo}</h3>
-                <p className="mt-1 mb-5 text-sm" style={{ color: '#e0cfa4' }}>{e.sotto}</p>
-                <div className="space-y-3 text-[15px] leading-relaxed text-white/80">
-                  {e.righe.map((r) => <p key={r}>{r}</p>)}
-                </div>
-                <div className="mt-7">
-                  <Richiamo to={`/sound/${e.id}`} tono="chiaro">
-                    Ascolta {e.titolo} →
-                  </Richiamo>
-                </div>
-              </div>
-            ))}
+          <Lede size="small" className="mt-5 max-w-2xl">
+            Studiarlo è metà del viaggio. L’altra metà comincia qui,
+            adesso: premi play.
+          </Lede>
+          {vetrina && (
+            <div className="mt-10 max-w-3xl">
+              <AnteprimaMeditazione track={vetrina} />
+            </div>
+          )}
+          <div className="mt-10 max-w-3xl border-t pt-7"
+            style={{ borderColor: '#e8e0ce' }}>
+            <p className="text-base text-muted-foreground">
+              E se vuoi sentire la materia prima — il fenomeno nudo,
+              senza voce — due esperienze complete e gratuite:
+            </p>
+            <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
+              {ASSAGGI.map(([nome, to, sotto]) => (
+                <Richiamo key={nome} to={to}>
+                  {nome} <span className="text-muted-foreground">· {sotto}</span>
+                </Richiamo>
+              ))}
+            </div>
           </div>
-        </PhotoBand>
+        </Section>
 
         {/* ── LE MEDITAZIONI ─────────────────────────────────────── */}
         <PhotoBand image={TRAME} focus="50% 50%" width="max-w-4xl"
@@ -316,40 +382,14 @@ export default function SoundHomePage() {
               Condivise in privato con i tuoi clienti.
             </p>
           </div>
-          {stato === 'fatto' ? (
-            <p className="mt-10 max-w-2xl text-base sm:text-lg text-[#f6f2e8]"
-              data-testid="sld-crea-grazie">
-              Ricevuto. Ti ricontattiamo noi per raccontarti come funziona.
-            </p>
-          ) : (
-            <form className="mt-10 flex max-w-2xl flex-wrap gap-4" onSubmit={chiedi}>
-              <input type="text" value={nome} placeholder="Il tuo nome"
-                onChange={(e) => setNome(e.target.value)}
-                data-testid="sld-crea-nome"
-                className="min-w-[180px] flex-1 rounded-xl border border-[#f6f2e8]/25
-                           bg-[#f6f2e8]/10 px-5 py-3.5 text-base text-[#f6f2e8]
-                           placeholder:text-[#f6f2e8]/50" />
-              <input type="email" value={email} required placeholder="La tua email"
-                onChange={(e) => setEmail(e.target.value)}
-                data-testid="sld-crea-email"
-                className="min-w-[220px] flex-1 rounded-xl border border-[#f6f2e8]/25
-                           bg-[#f6f2e8]/10 px-5 py-3.5 text-base text-[#f6f2e8]
-                           placeholder:text-[#f6f2e8]/50" />
-              <button type="submit" disabled={stato === 'invio'}
-                data-testid="sld-crea-invia"
-                className="rounded-full px-7 py-3.5 text-base font-medium transition
-                           hover:opacity-90 disabled:opacity-50"
-                style={{ background: ORO, color: '#14212b' }}>
-                {stato === 'invio' ? 'Invio…' : 'Raccontami di più →'}
-              </button>
-              {typeof stato === 'string' && stato !== 'invio' && (
-                <p className="w-full text-sm text-[#ffd7d7]">{stato}</p>
-              )}
-            </form>
-          )}
-          <p className="mt-6 text-sm text-[#f6f2e8]/60">
-            Accesso su invito. Le meditazioni che componi restano tue.
-          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-6">
+            <Bottone to="/sound/studio" tono="chiaro" testid="sld-crea-cta">
+              Scopri Crea Studio →
+            </Bottone>
+            <span className="text-sm text-[#f6f2e8]/60">
+              Accesso su invito. Le meditazioni che componi restano tue.
+            </span>
+          </div>
         </Section>
 
         {/* ── L'ONESTÀ ───────────────────────────────────────────── */}

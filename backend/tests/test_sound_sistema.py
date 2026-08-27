@@ -89,8 +89,9 @@ class TestL3PortaDiSistema:
         # il catalogo Professional NON si promuove piu' da qui
         assert 'to="/sound/professional"' not in src, \
             "la vetrina di Professional e' rientrata dalla finestra"
-        # e la via Crea raccoglie l'interesse sul funnel esistente
-        assert "'/public/leads'" in src and "'sound_crea'" in src
+        # e la via Crea e' un PONTE alla landing dedicata (27/8):
+        # il form vive la', qui la promessa
+        assert 'to="/sound/studio"' in src
         # l'ordine narrativo: i fenomeni e le porte PRIMA della sezione
         # di vendita
         fenomeni = src.find("sh-fenomeni")
@@ -115,6 +116,54 @@ class TestL3PortaDiSistema:
         for veleno in ("chakra", "biorisonanza", "528", "ti sentirai",
                        "garantis", "riequilibr"):
             assert veleno not in basso
+
+    def test_06_ter_ascolta_subito_e_un_patto(self):
+        """Founder 27/8: il campione-eroe della landing e' una
+        MEDITAZIONE VERA in anteprima inline — i primi 90 secondi, il
+        taglio che gia' governa il sistema — e a fine corsa il patto
+        della Lettera. CALM e GROUND retrocedono a materia prima. La
+        vetrina si piega con grazia se la traccia non esiste."""
+        src = _senza_commenti((FQ / "SoundHomePage.jsx").read_text())
+        assert "meditazione-mondo-nuovo-onde-delta" in src
+        assert 'data-testid="sh-anteprima"' in src
+        assert "anteprima_url" in src, "il player non usa il file dei 90s"
+        # il patto, non la trappola: a fine anteprima l'invito
+        assert 'data-testid="sh-anteprima-patto"' in src
+        assert 'to="/newsletter"' in src
+        # niente motore: la landing resta leggera
+        basso = src.lower()
+        for vietato in ("creaascolto", "audiocontext", "startpreview"):
+            assert vietato not in basso
+        # la grazia: senza traccia la sezione vive lo stesso
+        assert "setVetrina" in src and ".catch(" in src
+
+    def test_06_quater_crea_studio_ha_la_sua_landing(self):
+        """La landing dedicata (27/8): /sound/studio racconta
+        l'atelier, il form scrive sul funnel esistente con interesse
+        sound_crea, le prove visive sono score veri, la pagina non
+        suona, e la voce resta quella di casa."""
+        src = _senza_commenti((FQ / "CreaStudioLanding.jsx").read_text())
+        assert "'/public/leads'" in src
+        assert "type: 'operator'" in src and "'sound_crea'" in src
+        assert "<OndaViva" in src and "costruisci()" in src
+        basso = _testo(FQ / "CreaStudioLanding.jsx").lower()
+        for vietato in ("creaascolto", "audiocontext", "startpreview"):
+            assert vietato not in basso
+        for veleno in ("guarig", "riequilibr", "chakra", "528",
+                       "ti sentirai", "garantis"):
+            assert veleno not in basso, f"la landing dice «{veleno}»"
+        # rotta, shell e sitemap
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/sound/studio"' in app
+        assert app.find('path="/sound/studio"') < app.find('path="/sound/*"')
+        import sys
+        sys.path.insert(0, str(BACKEND_DIR))
+        from routers.seo_shell import _meta_sound
+        studio = asyncio.run(_meta_sound(["studio"]))
+        assert studio and not studio.get("noindex")
+        assert studio["canonical"].endswith("/sound/studio")
+        seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        assert "/sound/studio" in seo
 
     def test_06b_la_voce_solo_a_chi_ha_il_privilegio(self):
         """Evoluto col founder (26/8 sera): niente piu' vetrina di
