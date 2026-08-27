@@ -114,6 +114,22 @@ const SoundAccessPage = () => {
                       : 'Nessuna traccia'}
                   </p>
                 </div>
+                {/* TR1 — la CHIAVE 2, in sola lettura: si accende da
+                    sola col piano Pro (o con l'override). L'interruttore
+                    a destra resta la chiave 1 (Meditazioni pubbliche). */}
+                <span data-testid={`studio-stato-${o.id}`}
+                  className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] ${
+                    o.studio_override === 'off'
+                      ? 'border-red-300 text-red-600'
+                      : o.studio_attivo
+                        ? 'border-emerald-300 text-emerald-700'
+                        : 'border-gray-200 text-gray-400'}`}>
+                  {o.studio_override === 'off' ? 'Studio spento (override)'
+                    : !o.studio_attivo ? 'Studio: no'
+                      : o.sound_composer ? 'Studio via concessione'
+                        : o.studio_override === 'on' ? 'Studio via override'
+                          : `Studio via ${o.plan || 'piano'}`}
+                </span>
                 <Switch
                   checked={o.sound_composer}
                   disabled={salvando === o.id}

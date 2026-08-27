@@ -10,7 +10,9 @@ export const frequenciesAPI = {
   remove: (trackId) => api.delete(`/frequencies/tracks/${trackId}`),
 
   // FQ1 — pubblicazione e ascolto pubblico
-  publish: (trackId) => api.post(`/frequencies/tracks/${trackId}/publish`),
+  publish: (trackId, visibility = null) => api.post(
+    `/frequencies/tracks/${trackId}/publish`,
+    visibility ? { visibility } : {}),
   // IL MASTER (23/8): il mix renderizzato alla pubblicazione dal
   // browser dell'operatore — chi ascolta riceve un file in streaming
   uploadMaster: (trackId, blob) => {
@@ -25,6 +27,17 @@ export const frequenciesAPI = {
       ...(provaToken ? { headers: { 'X-Fqz-Unlock': provaToken } } : {}) }),
   unpublish: (trackId) => api.post(`/frequencies/tracks/${trackId}/unpublish`),
   getPublic: (slug) => api.get(`/frequencies/public/${slug}`),
+
+  // TR3 — le CONDIVISIONI: un link per contatto, revocabile a persona
+  createShare: (trackId, contactId) => api.post(
+    `/frequencies/tracks/${trackId}/condivisioni`, { contact_id: contactId }),
+  listShares: (trackId) => api.get(`/frequencies/tracks/${trackId}/condivisioni`),
+  revokeShare: (shareId) => api.post(`/frequencies/condivisioni/${shareId}/revoca`),
+  // il lato del cliente: senza account, la porta e' il token
+  getCondivisa: (token) => api.get(`/frequencies/condivise/${token}`,
+    { skipAuthRedirect: true }),
+  condivisaMasterUrl: (token) => `${process.env.REACT_APP_BACKEND_URL || ''}`
+    + `/api/frequencies/condivise/${token}/master`,
   registerPlay: (slug) => api.post(`/frequencies/public/${slug}/play`),
 
   // FQ3 — vetrina /meditazioni: catalogo dietro sblocco server-side.

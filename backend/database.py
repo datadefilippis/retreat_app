@@ -277,6 +277,10 @@ sound_protocols_collection = db.sound_protocols
 # S2 (26/8) — il registro delle sessioni: una riga per esecuzione,
 # org-scoped, mai cancellata (chi sbaglia chiude come interrotta).
 sound_sessions_collection = db.sound_sessions
+# TR3 (27/8) — le CONDIVISIONI: un link per contatto, revocabile a
+# persona. Il token e' opaco e vive qui (non un JWT): la revoca deve
+# essere immediata, non «aspetta la scadenza».
+sound_shares_collection = db.sound_shares
 
 
 # ── Phase 3 (Store consolidation) — slug-index lifecycle helpers ────────────
@@ -1588,6 +1592,14 @@ async def create_indexes():
                                                   name="p2_protocollo_id")
     # S2 — il registro si sfoglia per org dal piu' recente, e per
     # cliente (la timeline di S4); l'id e' la chiave del ciclo di vita
+    # TR3 — gli share: il token e' la chiave d'ascolto (unica), la
+    # lista vive per traccia e per contatto, sempre org davanti
+    await sound_shares_collection.create_index("token", unique=True,
+                                               name="tr3_share_token")
+    await sound_shares_collection.create_index(
+        [("organization_id", 1), ("track_id", 1)], name="tr3_share_track")
+    await sound_shares_collection.create_index(
+        [("organization_id", 1), ("contact_id", 1)], name="tr3_share_contatto")
     await sound_sessions_collection.create_index(
         [("organization_id", 1), ("iniziata_il", -1)],
         name="s2_sessioni_org")

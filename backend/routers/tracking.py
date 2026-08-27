@@ -52,7 +52,8 @@ async def _resolve_org_for(surface: str, slug: str) -> Optional[str]:
         return (org or {}).get("id")
     if surface == "event":
         occ = await event_occurrences_collection.find_one(
-            {"slug": slug, "status": "published"},
+            {"slug": slug, "status": "published",
+             "visibility": {"$ne": "private"}},
             {"_id": 0, "organization_id": 1})
         return (occ or {}).get("organization_id")
     return None

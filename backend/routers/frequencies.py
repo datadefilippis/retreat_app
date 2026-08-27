@@ -71,7 +71,12 @@ async def require_sound_composer(
     (organizations.sound_composer, pagina /admin/sound). Le superfici
     pubbliche (frequenze, tutorial, meditazioni pubblicate, /sounds in
     lettura) non passano di qui: il privilegio governa il COMPORRE,
-    non l'esistere di cio' che e' gia' stato composto."""
+    non l'esistere di cio' che e' gia' stato composto.
+
+    TR1 (27/8) — da oggi questo e' il cancello della CHIAVE 1
+    soltanto: la pubblicazione nelle Meditazioni pubbliche. La porta
+    di Crea e' `require_sound_crea` qui sotto, che accetta anche la
+    chiave 2 (l'abbonamento Pro)."""
     from database import organizations_collection
     org = await organizations_collection.find_one(
         {"id": current_user["organization_id"]},
@@ -82,6 +87,36 @@ async def require_sound_composer(
             detail="La composizione di Aurya Sound e' su invito: "
                    "scrivici e ne parliamo.")
     return current_user
+
+
+async def require_sound_crea(
+        current_user: dict = Depends(get_current_user)) -> dict:
+    """TR1 (27/8, founder) — la porta di Crea ha DUE CHIAVI: la
+    concessione manuale (`sound_composer`, che apre anche le
+    Meditazioni pubbliche) e l'abbonamento Pro attivo (che apre
+    comporre + condividere in privato, MAI il catalogo pubblico).
+    La decisione vive in UN posto (services/studio_access.py):
+    qui si chiede, non si ridecide.
+
+    Sul current_user viaggia `_sound_composer`: il publish decide la
+    visibilita' ammessa senza una seconda query."""
+    from services.studio_access import org_per_studio, studio_attivo
+    org = await org_per_studio(current_user["organization_id"])
+    if not studio_attivo(org):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Crea Studio si accende con il piano Aurya Pro: "
+                   "attivalo da Impostazioni → Piano, o scrivici.")
+    current_user["_sound_composer"] = bool(org.get("sound_composer"))
+    return current_user
+
+
+# TR2 — IL MURO. Le tracce riservate non escono MAI da una superficie
+# pubblica: catalogo, pagina per slug, contatore ascolti, preferite,
+# sitemap, shell SEO. Ogni filtro pubblico passa da qui — un posto
+# solo, guardato. L'assenza del campo vale "public": zero migrazioni.
+def solo_pubbliche(filtro: dict) -> dict:
+    return {**filtro, "visibility": {"$ne": "private"}}
 
 
 def _ritaglia_anteprima(master_bytes: bytes) -> bytes:
@@ -98,7 +133,7 @@ TRACKS_MAX_PER_ORG = 200  # tetto anti-runaway: sono documenti da pochi KB
 
 _LIST_PROJECTION = {
     "_id": 0, "id": 1, "title": 1, "intent": 1, "status": 1,
-    "slug": 1, "plays_total": 1,
+    "slug": 1, "plays_total": 1, "visibility": 1,
     "created_at": 1, "updated_at": 1,
     # della ricetta, in lista, serve solo la durata
     "score.duration_sec": 1, "score.layers": 1,
@@ -134,7 +169,7 @@ def _validated_score(raw: dict) -> dict:
 
 
 @router.get("/tracks")
-async def list_tracks(current_user: dict = Depends(require_sound_composer)):
+async def list_tracks(current_user: dict = Depends(require_sound_crea)):
     from database import frequency_tracks_collection
     items = await frequency_tracks_collection.find(
         {"organization_id": current_user["organization_id"]},
@@ -149,7 +184,7 @@ async def list_tracks(current_user: dict = Depends(require_sound_composer)):
 
 @router.post("/tracks", status_code=status.HTTP_201_CREATED)
 async def create_track(payload: TrackCreate,
-                       current_user: dict = Depends(require_sound_composer)):
+                       current_user: dict = Depends(require_sound_crea)):
     from database import frequency_tracks_collection
     org_id = current_user["organization_id"]
     count = await frequency_tracks_collection.count_documents(
@@ -180,7 +215,7 @@ async def create_track(payload: TrackCreate,
 
 @router.get("/tracks/{track_id}")
 async def get_track(track_id: str,
-                    current_user: dict = Depends(require_sound_composer)):
+                    current_user: dict = Depends(require_sound_crea)):
     from database import frequency_tracks_collection
     track = await frequency_tracks_collection.find_one(
         {"id": track_id,
@@ -193,7 +228,7 @@ async def get_track(track_id: str,
 
 @router.patch("/tracks/{track_id}")
 async def update_track(track_id: str, payload: TrackUpdate,
-                       current_user: dict = Depends(require_sound_composer)):
+                       current_user: dict = Depends(require_sound_crea)):
     from database import frequency_tracks_collection
     updates = {}
     if payload.title is not None:
@@ -224,7 +259,7 @@ async def update_track(track_id: str, payload: TrackUpdate,
 
 @router.delete("/tracks/{track_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_track(track_id: str,
-                       current_user: dict = Depends(require_sound_composer)):
+                       current_user: dict = Depends(require_sound_crea)):
     from database import frequency_tracks_collection
     result = await frequency_tracks_collection.delete_one(
         {"id": track_id,
@@ -273,13 +308,20 @@ async def _trova_pubblicata(slug: str, projection: dict):
     condivisi continuano a rispondere."""
     from database import frequency_tracks_collection
     return await frequency_tracks_collection.find_one(
-        {"$or": [{"slug": slug}, {"slug_precedenti": slug}],
-         "status": "published"}, projection)
+        solo_pubbliche({"$or": [{"slug": slug}, {"slug_precedenti": slug}],
+                        "status": "published"}), projection)
+
+
+class PublishBody(BaseModel):
+    """TR2 — la scelta di visibilita' al publish. Assente = la via
+    storica (pubblica) per chi ha la chiave 1."""
+    visibility: Optional[str] = None      # "public" | "private" | None
 
 
 @router.post("/tracks/{track_id}/publish")
 async def publish_track(track_id: str,
-                        current_user: dict = Depends(require_sound_composer)):
+                        body: Optional[PublishBody] = None,
+                        current_user: dict = Depends(require_sound_crea)):
     from database import frequency_tracks_collection
     track = await frequency_tracks_collection.find_one(
         {"id": track_id,
@@ -287,6 +329,25 @@ async def publish_track(track_id: str,
     if not track:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Traccia non trovata.")
+    # TR2 — IL PORTIERE DELLA VISIBILITA'. La pubblicazione PUBBLICA
+    # (le Meditazioni di Aurya) e' della sola chiave 1: chi ha solo
+    # l'abbonamento pubblica RISERVATO, qualunque cosa chieda — non e'
+    # una UI nascosta, e' il server che rifiuta. Il founder e Valentina
+    # (chiave 1) senza body pubblicano in pubblico come sempre.
+    richiesta = (body.visibility if body else None) or None
+    if richiesta not in (None, "public", "private"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Visibilita' sconosciuta.")
+    if current_user.get("_sound_composer"):
+        visibility = richiesta or "public"
+    else:
+        if richiesta == "public":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="La pubblicazione nelle Meditazioni di Aurya e' "
+                       "su invito: le tue tracce si condividono in "
+                       "privato, coi tuoi link.")
+        visibility = "private"
     # lo slug SEGUE IL TITOLO: se il titolo di oggi produce una radice
     # diversa (es. la traccia fu pubblicata da «Senza titolo»), se ne
     # genera uno nuovo e il vecchio scende in slug_precedenti — i link
@@ -309,16 +370,18 @@ async def publish_track(track_id: str,
          "organization_id": current_user["organization_id"]},
         {"$set": {"status": "published", "slug": slug,
                   "slug_precedenti": precedenti,
+                  "visibility": visibility,
                   "published_at": utc_now(), "updated_at": utc_now(),
                   "layers_count": len(score.get("layers") or []),
                   "duration_sec": score.get("duration_sec")}})
-    return {"id": track_id, "status": "published", "slug": slug}
+    return {"id": track_id, "status": "published", "slug": slug,
+            "visibility": visibility}
 
 
 @router.post("/tracks/{track_id}/master")
 async def upload_master(track_id: str,
                         file: UploadFile = File(...),
-                        current_user: dict = Depends(require_sound_composer)):
+                        current_user: dict = Depends(require_sound_crea)):
     """Riceve il master renderizzato dal client dell'operatore.
     Nome content-addressed ({id}.{epoch}.mp3): il re-publish carica un
     file nuovo e spazza i precedenti — un master per traccia, mai
@@ -412,7 +475,14 @@ async def serve_master(slug: str, request: Request,
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="Serve lo sblocco del cerchio.")
     track = await _trova_pubblicata(slug, {"_id": 0, "master_file": 1})
-    nome = (track or {}).get("master_file")
+    return _risposta_master((track or {}).get("master_file"), request)
+
+
+def _risposta_master(nome: Optional[str], request: Request):
+    """TR3 — la CONSEGNA del master, estratta: la usano la via del
+    cerchio (qui sopra) e la via dei link riservati
+    (routers/sound_shares.py). In prod consegna nginx (X-Accel,
+    Range nativo); in dev il 206 fatto a mano del 26/8."""
     if not nome or "/" in nome or ".." in nome:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Master non disponibile.")
@@ -461,7 +531,7 @@ async def serve_master(slug: str, request: Request,
 
 @router.post("/tracks/{track_id}/unpublish")
 async def unpublish_track(track_id: str,
-                          current_user: dict = Depends(require_sound_composer)):
+                          current_user: dict = Depends(require_sound_crea)):
     from database import frequency_tracks_collection
     result = await frequency_tracks_collection.find_one_and_update(
         {"id": track_id,
@@ -516,8 +586,8 @@ async def public_track(slug: str):
 async def register_play(slug: str):
     from database import frequency_tracks_collection
     await frequency_tracks_collection.update_one(
-        {"$or": [{"slug": slug}, {"slug_precedenti": slug}],
-         "status": "published"},
+        solo_pubbliche({"$or": [{"slug": slug}, {"slug_precedenti": slug}],
+                        "status": "published"}),
         {"$inc": {"plays_total": 1}})
 
 
@@ -625,7 +695,7 @@ async def catalog(request: Request):
     from database import frequency_tracks_collection, organizations_collection
     if not await _has_catalog_access(request):
         count = await frequency_tracks_collection.count_documents(
-            {"status": "published"})
+            solo_pubbliche({"status": "published"}))
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"error": "locked", "tracks_count": count})
@@ -639,7 +709,7 @@ async def catalog(request: Request):
             request.query_params.get("limit", CATALOG_PAGE_MAX))))
     except ValueError:
         limit = CATALOG_PAGE_MAX
-    filtro = {"status": "published"}
+    filtro = solo_pubbliche({"status": "published"})
     before = request.query_params.get("before")
     if before:
         # published_at in Mongo e' un datetime: la stringa ISO del
@@ -688,7 +758,7 @@ async def list_favorites(account: dict = Depends(get_current_platform_account)):
         {"_id": 0, "slug": 1}).to_list(500)
     slugs = [f["slug"] for f in favs]
     tracks = await frequency_tracks_collection.find(
-        {"slug": {"$in": slugs}, "status": "published"},
+        solo_pubbliche({"slug": {"$in": slugs}, "status": "published"}),
         {"_id": 0, "slug": 1, "title": 1, "intent": 1,
          "score.duration_sec": 1}).to_list(500)
     by_slug = {t["slug"]: t for t in tracks}
@@ -834,7 +904,7 @@ _VOICE_PROJECTION = {"_id": 0, "id": 1, "title": 1, "duration_sec": 1,
 
 
 @router.get("/voice")
-async def list_voice_clips(current_user: dict = Depends(require_sound_composer)):
+async def list_voice_clips(current_user: dict = Depends(require_sound_crea)):
     from database import voice_assets_collection
     org_id = current_user["organization_id"]
     items = await voice_assets_collection.find(
@@ -849,7 +919,7 @@ async def list_voice_clips(current_user: dict = Depends(require_sound_composer))
 async def record_voice_clip(file: UploadFile = File(...),
                             title: str = Form(...),
                             duration_sec: float = Form(0),
-                            current_user: dict = Depends(require_sound_composer)):
+                            current_user: dict = Depends(require_sound_crea)):
     from database import voice_assets_collection
     org_id = current_user["organization_id"]
     ext = ext_for_mime(file.content_type)
@@ -925,7 +995,7 @@ class VoiceClipUpdate(BaseModel):
 
 @router.patch("/voice/{asset_id}")
 async def update_voice_clip(asset_id: str, payload: VoiceClipUpdate,
-                            current_user: dict = Depends(require_sound_composer)):
+                            current_user: dict = Depends(require_sound_crea)):
     from database import voice_assets_collection
     asset = await voice_assets_collection.find_one(
         {"id": asset_id, "organization_id": current_user["organization_id"]},
@@ -967,7 +1037,7 @@ async def update_voice_clip(asset_id: str, payload: VoiceClipUpdate,
 
 @router.delete("/voice/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_voice_clip(asset_id: str,
-                            current_user: dict = Depends(require_sound_composer)):
+                            current_user: dict = Depends(require_sound_crea)):
     from database import voice_assets_collection
     org_id = current_user["organization_id"]
     asset = await voice_assets_collection.find_one(

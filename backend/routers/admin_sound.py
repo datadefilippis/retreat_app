@@ -74,15 +74,23 @@ async def list_composers(current_user: dict = Depends(require_system_admin)):
         conteggi[r["_id"]] = r
 
     out = []
+    from services.studio_access import studio_attivo
     async for org in organizations_collection.find(
             {}, {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
-                 "sound_composer": 1}):
+                 "sound_composer": 1, "sound_studio_override": 1,
+                 "plan": 1, "billing_status": 1}):
         c = conteggi.get(org["id"], {})
         out.append({
             "id": org["id"],
             "name": org.get("name"),
             "slug": org.get("public_slug"),
             "sound_composer": bool(org.get("sound_composer")),
+            # TR1 — la CHIAVE 2, in sola lettura: si accende col Pro,
+            # il pannello la MOSTRA (regia completa in un posto solo)
+            "studio_attivo": studio_attivo(org),
+            "studio_override": org.get("sound_studio_override"),
+            "plan": org.get("plan"),
+            "billing_status": org.get("billing_status"),
             "email": (referenti.get(org["id"]) or {}).get("email"),
             "tracks_total": c.get("totali", 0),
             "tracks_published": c.get("pubblicate", 0),
@@ -121,3 +129,44 @@ async def set_composer(org_id: str, body: ComposerToggle,
         },
     ))
     return {"id": org_id, "sound_composer": bool(body.enabled)}
+
+
+class StudioOverride(BaseModel):
+    """TR1 — l'interruttore d'emergenza della chiave 2: "on" accende
+    Studio a mano (partnership, senza abbonamento), "off" lo spegne a
+    una specifica org anche se paga, None torna alla vita normale
+    (decide l'abbonamento)."""
+    override: str | None = None          # "on" | "off" | None
+
+
+@router.post("/studio/{org_id}")
+async def set_studio_override(org_id: str, body: StudioOverride,
+                              current_user: dict = Depends(require_system_admin)):
+    if body.override not in (None, "on", "off"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Override sconosciuto.")
+    from database import organizations_collection
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "id": 1, "name": 1,
+                         "sound_studio_override": 1})
+    if not org:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Organizzazione non trovata.")
+    prima = org.get("sound_studio_override")
+    if body.override is None:
+        await organizations_collection.update_one(
+            {"id": org_id}, {"$unset": {"sound_studio_override": ""}})
+    else:
+        await organizations_collection.update_one(
+            {"id": org_id},
+            {"$set": {"sound_studio_override": body.override}})
+    await audit_repository.create(AuditLog(
+        organization_id=None,
+        user_id=current_user["user_id"],
+        action="admin_set_sound_studio_override",
+        resource_type="organization",
+        resource_id=org_id,
+        details={"previous_value": prima, "new_value": body.override,
+                 "org_name": org.get("name")},
+    ))
+    return {"id": org_id, "studio_override": body.override}

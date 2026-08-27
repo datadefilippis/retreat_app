@@ -178,8 +178,10 @@ async def build_core() -> str:
             # nessuna sitemap: trovate insieme alla loro pagina muta,
             # censendo il registro delle rotte.
             from database import frequency_tracks_collection
+            # TR2 — le tracce RISERVATE non entrano in sitemap
             async for t in frequency_tracks_collection.find(
-                    {"status": "published", "slug": {"$nin": [None, ""]}},
+                    {"status": "published", "slug": {"$nin": [None, ""]},
+                     "visibility": {"$ne": "private"}},
                     {"_id": 0, "slug": 1, "updated_at": 1}).limit(500):
                 urls.append(_url(f"{base}/frequenze/{t['slug']}",
                                  priority="0.6", lastmod=t.get("updated_at")))

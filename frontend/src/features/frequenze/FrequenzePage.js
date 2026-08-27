@@ -46,6 +46,7 @@ import GuidaView from './GuidaView';
 import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
+import CondivisioniTraccia from './pro/Condivisioni';
 import SeekBar from './SeekBar';
 
 const fmt = (s) => {
@@ -209,19 +210,22 @@ export default function FrequenzePage() {
      del flag (scritta a ogni /auth/me): chi l'aveva ieri non vede la
      biblioteca lampeggiare, chi non l'ha mai avuto non vede mai
      l'area sbagliata. La VERA frontiera restano le API (403). */
+  /* TR1 (27/8) — la porta ha DUE CHIAVI: sound_crea (concessione
+     manuale O piano Pro attivo, derivato dal server a ogni /auth/me).
+     sound_composer resta il flag della SOLA pubblicazione pubblica. */
   const canCompose = user
-    ? !!user.sound_composer
+    ? !!user.sound_crea
     : (authLoading && !!localStorage.getItem('token')
-       && localStorage.getItem('aurya_sound_composer') === '1');
+       && localStorage.getItem('aurya_sound_crea') === '1');
   useEffect(() => {
     if (!user) return;
     try {
-      localStorage.setItem('aurya_sound_composer', user.sound_composer ? '1' : '0');
+      localStorage.setItem('aurya_sound_crea', user.sound_crea ? '1' : '0');
     } catch { /* private mode */ }
   }, [user]);
-  /* l'operatore SENZA invito che apre /sound/crea o /sound/tracce
+  /* l'operatore SENZA chiavi che apre /sound/crea o /sound/tracce
      merita una spiegazione, non la biblioteca muta */
-  const senzaInvito = !!user && !user.sound_composer;
+  const senzaInvito = !!user && !user.sound_crea;
   /* ── LN — ogni pagina ha il suo link ──────────────────────────────
      L'URL e' l'unica verita' per vista e tab: /sound/esplora|crea|
      impara|tracce (+ /impara/glossario), con lo stato fine nelle
@@ -967,17 +971,23 @@ export default function FrequenzePage() {
     }]],
   });
 
-  const publishById = async (id) => {
+  const publishById = async (id, visibility = null) => {
+    /* TR2 — senza chiave 1 il server pubblica RISERVATO comunque:
+       questa scelta governa solo cosa si dice all'autore. */
     try {
-      const r = await frequenciesAPI.publish(id);
+      const r = await frequenciesAPI.publish(id, visibility);
       loadDrafts();
       if (id === trackId) {
         setTrackStatus('published'); setTrackSlug(r.data.slug);
         setFirmaPubblicata(JSON.stringify(scorePayload()));
       }
-      const url = `${window.location.origin}/frequenze/${r.data.slug}`;
-      try { await navigator.clipboard.writeText(url); } catch { /* niente clipboard */ }
-      setStatus(`In ascolto pubblico su ${url} — link copiato`);
+      if (r.data.visibility === 'private') {
+        setStatus('Pubblicata come RISERVATA: crea i link per i tuoi contatti da «Le mie tracce».');
+      } else {
+        const url = `${window.location.origin}/frequenze/${r.data.slug}`;
+        try { await navigator.clipboard.writeText(url); } catch { /* niente clipboard */ }
+        setStatus(`In ascolto pubblico su ${url} — link copiato`);
+      }
     } catch (e) { setStatus(e?.response?.data?.detail || 'Pubblicazione fallita'); }
   };
   const unpublishById = async (id) => {
@@ -1993,42 +2003,64 @@ export default function FrequenzePage() {
               </div>
             ) : (
               <div className="cards">
-                {drafts.map((d) => (
+                {drafts.map((d) => {
+                  /* TR4 — la RISERVATA e' il terzo stato della scheda:
+                     niente slug in mostra, e al suo posto il pannello
+                     dei link per contatto. */
+                  const riservata = d.status === 'published'
+                    && d.visibility === 'private';
+                  return (
                   <div key={d.id} className={`card${d.status === 'published' ? ' playing' : ''}`}>
                     <div className="head">
                       <h3>{d.title}</h3>
-                      <span className="badge" style={d.status === 'published'
-                        ? { color: 'var(--water)', borderColor: 'var(--water)' }
-                        : { color: 'var(--dimmer)', borderColor: 'var(--line)' }}>
-                        {d.status === 'published' ? 'PUBBLICA' : 'BOZZA'}
+                      <span className="badge" style={d.status !== 'published'
+                        ? { color: 'var(--dimmer)', borderColor: 'var(--line)' }
+                        : riservata
+                          ? { color: 'var(--violet)', borderColor: 'var(--violet)' }
+                          : { color: 'var(--water)', borderColor: 'var(--water)' }}>
+                        {d.status !== 'published' ? 'BOZZA'
+                          : riservata ? 'RISERVATA' : 'PUBBLICA'}
                       </span>
                     </div>
                     <div className="hz">
                       {fmt(d.duration_sec || 0)} · {d.layers_count} {d.layers_count === 1 ? 'livello' : 'livelli'}
-                      {d.status === 'published' && ` · ${d.plays_total || 0} ascolti`}
+                      {d.status === 'published' && !riservata && ` · ${d.plays_total || 0} ascolti`}
                     </div>
-                    {d.status === 'published' && d.slug && (
+                    {d.status === 'published' && !riservata && d.slug && (
                       <div className="listen">/frequenze/{d.slug}</div>
                     )}
                     <div className="foot" style={{ flexWrap: 'wrap', gap: 6 }}>
                       <button type="button" className="ghost" title="Elimina"
                         onClick={() => removeDraft(d.id, d.title)}>×</button>
-                      {d.status === 'published' && d.slug && (
+                      {d.status === 'published' && !riservata && d.slug && (
                         <button type="button" className="add"
                           onClick={() => copyPublicLink(d.slug)}>Copia link</button>
                       )}
                       {d.status === 'published' ? (
                         <button type="button" className="add"
                           onClick={() => unpublishById(d.id)}>Ritira</button>
+                      ) : user?.sound_composer ? (
+                        /* chiave 1: le due strade, dichiarate */
+                        <>
+                          <button type="button" className="add"
+                            onClick={() => publishById(d.id)}>Pubblica</button>
+                          <button type="button" className="add"
+                            data-testid="fq-pubblica-riservata"
+                            onClick={() => publishById(d.id, 'private')}>Riservata</button>
+                        </>
                       ) : (
+                        /* solo chiave 2: una strada sola, detta onesta */
                         <button type="button" className="add"
-                          onClick={() => publishById(d.id)}>Pubblica</button>
+                          data-testid="fq-pubblica-riservata"
+                          onClick={() => publishById(d.id, 'private')}>Pubblica riservata</button>
                       )}
                       <button type="button" className="live"
                         onClick={() => openDraft(d.id)}>Apri</button>
                     </div>
+                    {riservata && <CondivisioniTraccia trackId={d.id} />}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             {status && <p className="soundlead" style={{ marginTop: 12 }}>{status}</p>}

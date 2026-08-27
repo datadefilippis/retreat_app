@@ -1170,15 +1170,16 @@ class TestSoundPubblicoSp:
         Ascolta) finche' la chiamata non tornava. Il token si legge
         subito e copre la finestra."""
         page = (FQ_DIR / "FrequenzePage.js").read_text()
-        # PC2 (24/8): canCompose = privilegio sound_composer; la
-        # finestra di /auth/me la copre la CACHE del flag (chi l'aveva
-        # ieri non vede lampeggiare la biblioteca, chi non l'ha mai
-        # avuto non vede mai l'area sbagliata)
+        # PC2 (24/8) evoluto con TR1 (27/8): canCompose = la porta a
+        # DUE chiavi (sound_crea, derivata dal server); la finestra di
+        # /auth/me la copre la CACHE del flag (chi l'aveva ieri non
+        # vede lampeggiare la biblioteca, chi non l'ha mai avuto non
+        # vede mai l'area sbagliata)
         i = page.index("const canCompose")
-        blocco = page[i:i + 400]
-        assert "user.sound_composer" in blocco
+        blocco = page[i:i + 500]
+        assert "user.sound_crea" in blocco
         assert "authLoading" in blocco
-        assert "aurya_sound_composer" in blocco
+        assert "aurya_sound_crea" in blocco
 
     def test_operatore_intatto(self):
         """Per chi compone il comportamento resta quello di oggi: i
@@ -1568,12 +1569,21 @@ class TestPrivilegioDelComporre:
     il system admin concede dalla pagina dedicata /admin/sound."""
 
     def test_il_portiere_copre_tutti_gli_endpoint_del_comporre(self):
+        """Evoluto con TR1 (27/8, founder): la porta di Crea ha DUE
+        chiavi (require_sound_crea = concessione manuale O piano Pro),
+        e require_sound_composer resta il cancello della SOLA
+        pubblicazione pubblica — vive dentro il publish come flag
+        (_sound_composer), non piu' come dipendenza diretta."""
         src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
         assert "async def require_sound_composer" in src
-        # l'UNICA occorrenza di get_current_user e' dentro il portiere
-        # stesso: nessun endpoint del comporre lo usa direttamente
-        assert src.count("Depends(get_current_user))") == 1
-        assert src.count("Depends(require_sound_composer))") == 12
+        assert "async def require_sound_crea" in src
+        # le DUE occorrenze di get_current_user sono i due portieri:
+        # nessun endpoint del comporre lo usa direttamente
+        assert src.count("Depends(get_current_user))") == 2
+        assert src.count("Depends(require_sound_crea))") == 12
+        assert src.count("Depends(require_sound_composer))") == 0
+        # la decisione vive in un posto solo
+        assert "from services.studio_access import" in src
         # e le porte pubbliche NON passano dal portiere
         assert "def list_sounds():" in src          # lettura libera
 

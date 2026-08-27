@@ -1641,7 +1641,8 @@ async def _meta_frequenza(slug: str) -> Optional[dict]:
     from database import frequency_tracks_collection, organizations_collection
     base = _base_url()
     t = await frequency_tracks_collection.find_one(
-        {"slug": slug, "status": "published"},
+        {"slug": slug, "status": "published",
+         "visibility": {"$ne": "private"}},
         {"_id": 0, "title": 1, "description": 1, "organization_id": 1,
          "score": 1, "updated_at": 1})
     if not t:

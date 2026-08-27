@@ -777,6 +777,8 @@ from routers import sound_pro as sound_pro_router
 app.include_router(sound_pro_router.router, prefix="/api")           # /api/sound/pro/*
 from routers import sound_sessions as sound_sessions_router
 app.include_router(sound_sessions_router.router, prefix="/api")      # /api/sound/pro/sessioni/* (S2)
+from routers import sound_shares as sound_shares_router
+app.include_router(sound_shares_router.router, prefix="/api")        # /api/frequencies/condivisioni + /condivise (TR3)
 
 
 @app.get("/sitemap.xml", include_in_schema=False)

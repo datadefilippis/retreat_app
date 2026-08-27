@@ -471,6 +471,7 @@ async def get_current_user_info(user_id: str) -> UserResponse:
     default_iva = None
     sound_composer = False
     sound_professional = False
+    sound_crea = False
     org_id = user_doc.get("organization_id")
     if org_id:
         org_doc = await organization_repository.find_by_id(org_id)
@@ -479,6 +480,10 @@ async def get_current_user_info(user_id: str) -> UserResponse:
             default_iva = (org_doc.get("settings") or {}).get("default_iva")
             sound_composer = bool(org_doc.get("sound_composer"))
             sound_professional = bool(org_doc.get("sound_professional"))
+            # TR1 — la porta di Crea per il frontend: derivata, mai
+            # copiata (services/studio_access.py e' l'unica verita')
+            from services.studio_access import studio_attivo
+            sound_crea = studio_attivo(org_doc)
 
     # ── Phase E re-consent gate ──────────────────────────────────────────
     from core.legal_versions import current_version_string
@@ -513,4 +518,5 @@ async def get_current_user_info(user_id: str) -> UserResponse:
         consent_needs_refresh=needs_refresh,
         sound_composer=sound_composer,
         sound_professional=sound_professional,
+        sound_crea=sound_crea,
     )
