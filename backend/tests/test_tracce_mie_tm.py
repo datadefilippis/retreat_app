@@ -115,6 +115,21 @@ class TestSchedaTm2:
             "il conteggio deve contare SOLO i link attivi"
 
 
+class TestOrdineFermoTm9:
+    def test_06b_la_lista_non_si_rimescola(self):
+        """TM9 (27/8, founder): pubblicare toccava updated_at e la
+        scheda saltava in cima — «non si capisce piu' dove ci si
+        trova». Ai refresh l'ordine visibile resta quello che l'occhio
+        conosce: schede ferme coi dati aggiornati sul posto, le nuove
+        in testa, le eliminate fuori."""
+        src = _pagina()
+        a = src.find("const loadDrafts")
+        corpo = src[a:a + 900]
+        assert "if (!prima.length) return nuovi;" in corpo
+        assert "byId.has(d.id)" in corpo, "le schede ferme si aggiornano sul posto"
+        assert "[...freschi, ...fermi]" in corpo
+
+
 class TestMuroUiTm3:
     def test_07_pubblico_solo_nel_ramo_chiave_1(self):
         """Il pulsante verso le Meditazioni esiste UNA volta, dentro

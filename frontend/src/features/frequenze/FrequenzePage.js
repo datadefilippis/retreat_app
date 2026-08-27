@@ -412,7 +412,25 @@ export default function FrequenzePage() {
 
   /* ── bozze ── */
   const loadDrafts = async () => {
-    try { setDrafts((await frequenciesAPI.list()).data.items || []); } catch { /* non bloccante */ }
+    try {
+      const nuovi = (await frequenciesAPI.list()).data.items || [];
+      /* TM9 (27/8, founder) — la lista NON si rimescola sotto il
+         click: il server ordina per ultima modifica, ma pubblicare
+         tocca la traccia e la faceva saltare in cima — e non si
+         capiva piu' dove si era. Da qui in poi: al primo carico vale
+         l'ordine del server; ai refresh successivi ogni scheda resta
+         DOVE STA (si aggiornano i suoi dati sul posto), le tracce
+         nuove entrano in testa, le eliminate escono. */
+      setDrafts((prima) => {
+        if (!prima.length) return nuovi;
+        const byId = new Map(nuovi.map((d) => [d.id, d]));
+        const fermi = prima.filter((d) => byId.has(d.id))
+          .map((d) => byId.get(d.id));
+        const freschi = nuovi.filter(
+          (d) => !prima.some((p) => p.id === d.id));
+        return [...freschi, ...fermi];
+      });
+    } catch { /* non bloccante */ }
   };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (canCompose) loadDrafts(); }, [canCompose]);
