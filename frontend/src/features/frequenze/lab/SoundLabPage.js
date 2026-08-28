@@ -18,6 +18,7 @@ import Generatore from './Generatore';
 import SecondaVoce from './SecondaVoce';
 import Orecchio from './Orecchio';
 import Ritratto from './Ritratto';
+import Meraviglie from './Meraviglie';
 import Oscilloscopio from './Oscilloscopio';
 import Spettro from './Spettro';
 import Spettrogramma from './Spettrogramma';
@@ -106,6 +107,10 @@ export default function SoundLabPage() {
         {/* LB3 — il ritratto: sei secondi di cattura (mic o banco) e
             l'analisi offline scrive la carta d'identita' del suono */}
         <Ritratto ottieniLab={ottieniLab} />
+
+        {/* LB5 — le meraviglie oneste: fenomeni veri col cartellino,
+            una alla volta, la didascalia si apre con l'esperimento */}
+        <Meraviglie ottieniLab={ottieniLab} />
 
         {/* IL COMANDO DEL BANCO: uno solo, fra la sorgente e le sue
             letture — perche' e' li' che passa il confine fra il tempo

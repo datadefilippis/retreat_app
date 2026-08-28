@@ -953,3 +953,80 @@ class TestVestitoLb7:
         assert "transition:color .18s ease" in css
         assert "inset 0 2px 14px" in css, "le tele hanno perso l'ombra interna"
 
+class TestMeraviglieLb5:
+    """LB5 (28/8/2026) — le meraviglie oneste. Collaudate una per una
+    (RMS acceso/spento): tutte suonano e tutte tacciono al secondo
+    click; le didascalie si aprono con l'esperimento."""
+
+    def test_i_fenomeni_sono_react_free_e_dal_ponte(self):
+        """fenomeni.js: matematica e nodi, niente React; il suono
+        entra SOLO da lab.ingresso o dalle voci del banco — mai
+        ctx.destination. (Si chiama fenomeni.js e non meraviglie.js:
+        la trappola case-insensitive del Mac non si paga due volte.)"""
+        src = (LAB / "fenomeni.js").read_text()
+        codice = re.sub(r"/\*.*?\*/", " ", src, flags=re.S)
+        codice = re.sub(r"^\s*//.*$", " ", codice, flags=re.M)
+        assert "react" not in codice.lower()
+        assert "ctx.destination" not in codice
+        assert "lab.ingresso" in src
+        assert not (LAB / "meraviglie.js").exists(), \
+            "meraviglie.js collide con Meraviglie.jsx sul Mac"
+
+    def test_ogni_meraviglia_ha_il_cartellino_e_la_didascalia(self):
+        """La regola LB: nessun modulo muto — e nessuna meraviglia
+        senza cartellino di verita' (A documentato / C tradizione)."""
+        src = (LAB / "fenomeni.js").read_text()
+        import json as _
+        voci = re.findall(r"cartellino: '([AC])'", src)
+        didascalie = src.count("didascalia: '")
+        righe = src.count("riga: '")
+        assert len(voci) >= 12, "il catalogo si e' svuotato"
+        assert didascalie == len(voci) and righe == len(voci), \
+            "una meraviglia e' rimasta muta"
+        # phi porta il cartellino C: il simbolo e' tradizione
+        a = src.index("id: 'phi'")
+        assert "cartellino: 'C'" in src[a:a + 200]
+
+    def test_l_orbita_vive_nel_motore_audio(self):
+        """Il vortice non e' un timer: due LFO in QUADRATURA ESATTA
+        (coseno via PeriodicWave) sugli AudioParam del panner — il
+        moto continua a schermo spento. L'unico orologio dichiarato
+        e' quello di Shepard, e la didascalia lo dice."""
+        src = (LAB / "fenomeni.js").read_text()
+        assert "lfoQuadratura" in src
+        assert "panningModel = 'HRTF'" in src
+        a = src.index("function vortice")
+        assert "setInterval" not in src[a:src.index("function rotazioneTesta")]
+        b = src.index("id: 'shepard'")
+        assert "orologio" in src[b:b + 700].lower()
+
+    def test_la_corda_non_esplode(self):
+        """Trappola pagata DUE volte: nel lowpass di WebAudio il Q e'
+        in DECIBEL — il default e' un picco sopra l'unita' e l'anello
+        di Karplus-Strong si autoalimentava (RMS 2e28). Q a -10 dB e
+        ritorno sotto l'unita': misurato 0.022 → 0.0014 in 4 s."""
+        src = (LAB / "fenomeni.js").read_text()
+        a = src.index("function cordaPizzicata")
+        blocco = src[a:a + 1600]
+        assert "filtro.Q.value = -10" in blocco, \
+            "il Q del biquad e' tornato risonante: l'anello esplode"
+        m = re.search(r"ritorno\.gain\.value = (0\.\d+)", blocco)
+        assert m and float(m.group(1)) < 1
+
+    def test_i_rapporti_pilotano_il_banco(self):
+        """Ottava, quinta e phi non hanno oscillatori propri: parlano
+        alle DUE VOCI del banco (il telaio LB1), cosi' il modo XY
+        disegna la figura di Lissajous dell'intervallo."""
+        src = (LAB / "fenomeni.js").read_text()
+        a = src.index("function rapporto")
+        blocco = src[a:a + 700]
+        assert "generatore.imposta" in blocco and "generatore2.imposta" in blocco
+        assert "createOscillator" not in blocco
+
+    def test_il_pannello_e_la_mano(self):
+        src = (LAB / "Meraviglie.jsx").read_text()
+        assert "from './fenomeni'" in src
+        assert "createOscillator" not in src and "AudioContext" not in src
+        assert "lab-mer-onesta" in src, \
+            "la dichiarazione contro le «frequenze 3D» e' sparita"
+
