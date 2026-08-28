@@ -16,6 +16,7 @@ import TriggerStudio from '../TriggerStudio';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
 import Generatore from './Generatore';
 import SecondaVoce from './SecondaVoce';
+import Orecchio from './Orecchio';
 import Oscilloscopio from './Oscilloscopio';
 import Spettro from './Spettro';
 import Spettrogramma from './Spettrogramma';
@@ -96,6 +97,10 @@ export default function SoundLabPage() {
             da banco. Gemella della A nella fabbrica del motore. */}
         <SecondaVoce ottieniLab={ottieniLab}
           onSuono={() => setSuona((v) => !v)} />
+
+        {/* LB2 — l'orecchio: il microfono e' un cambio di sorgente,
+            le tre letture non se ne accorgono (contratto ospite) */}
+        <Orecchio ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi} />
 
         {/* IL COMANDO DEL BANCO: uno solo, fra la sorgente e le sue
             letture — perche' e' li' che passa il confine fra il tempo

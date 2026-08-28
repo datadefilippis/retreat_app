@@ -312,8 +312,11 @@ class TestSpettrogramma:
         assert src.index("<Generatore") < src.index("<Oscilloscopio") \
             < src.index("<Spettro ") < src.index("<Spettrogramma"), \
             "l'ordine del banco: genera, tempo, frequenze, frequenze nel tempo"
-        assert src.count("ottieniAnalisi={ottieniAnalisi}") == 3, \
-            "i tre strumenti non ricevono la stessa analisi"
+        # Evoluta con LB2: anche l'Orecchio riceve la stessa presa
+        # (l'accordatore legge il dominio del tempo) — quattro
+        # consumatori, un'analisi sola.
+        assert src.count("ottieniAnalisi={ottieniAnalisi}") == 4, \
+            "gli strumenti non ricevono la stessa analisi"
 
     def test_il_motore_resta_invariato_anche_allo_step_4(self):
         """Nessuna API nuova: `spettro()` serviva a due pannelli e ne
@@ -713,4 +716,70 @@ class TestSecondaVoceLb1:
         assert "conterà quando" not in src, "la nota promette ancora il futuro"
         assert "180°" in src
         assert 'data-testid="lab-orecchio"' in src
+
+class TestOrecchioLb2:
+    """LB2 (27/8/2026) — il microfono entra nel Lab. Collaudato con
+    buffer sintetici (armoniche + 5% rumore): 110→109.94,
+    137.42→137.35, 440→440.08, 1750→1750.14 — entro ±0.1 Hz; il
+    silenzio e il rumore puro rispondono null."""
+
+    def test_i_filtri_da_videochiamata_sono_spenti(self):
+        """Qui si vince o si perde: echo cancellation, noise
+        suppression e auto gain mangiano code di risonanza, parziali
+        acuti e dinamica — esattamente cio' che si vuole misurare."""
+        src = (LAB / "motore.js").read_text()
+        assert "echoCancellation: false" in src
+        assert "noiseSuppression: false" in src
+        assert "autoGainControl: false" in src
+
+    def test_il_mic_e_un_osservato_mai_una_sorgente_sonora(self):
+        """La privacy e' un fatto di GRAFO: il nodo del microfono va
+        solo all'analyser (via analisi.sorgente) — mai verso master o
+        ponte. Niente feedback, niente audio in uscita."""
+        src = (LAB / "motore.js").read_text()
+        a = src.index("orecchio: {")
+        blocco = src[a:src.index("analisi: {", a)]
+        assert "createMediaStreamSource" in blocco
+        assert ".connect(master" not in blocco and ".connect(ponte" not in blocco
+        # e chiudere ferma DAVVERO la cattura (la spia del browser si spegne)
+        assert "getTracks().forEach((t) => t.stop())" in blocco
+        # spegnere il banco chiude anche l'orecchio
+        assert "lab.orecchio.chiudi();" in src
+
+    def test_l_accordatore_e_matematica_pura(self):
+        """React-free, senza nodi audio: riceve campioni, risponde
+        Hz. Anti-ottava (primo picco ≥90% del max), vertice
+        parabolico, normalizzazione per sovrapposizione (senza, i lag
+        lunghi partono svantaggiati: misurato 137.42→137.72)."""
+        src = (LAB / "accordatore.js").read_text()
+        codice = re.sub(r"/\*.*?\*/", " ", src, flags=re.S)
+        codice = re.sub(r"^\s*//.*$", " ", codice, flags=re.M)
+        assert "react" not in codice.lower()
+        assert "createOscillator" not in src and "AudioContext" not in src
+        assert "QUASI_MASSIMO" in src, "l'anti-ottava e' sparito"
+        assert "(acc / conta) / energiaMedia" in src, \
+            "la normalizzazione per sovrapposizione e' sparita: bias sui lag lunghi"
+        assert "return null" in src, "un accordatore che inventa numeri non e' uno strumento"
+
+    def test_le_note_hanno_una_tabella_sola(self):
+        """notaVicina e' nata nel Generatore e l'Orecchio la usa:
+        fonte unica in note.js, niente doppioni."""
+        gen = (LAB / "Generatore.jsx").read_text()
+        orecchio = (LAB / "Orecchio.jsx").read_text()
+        assert "from './note'" in gen and "from './note'" in orecchio
+        assert "const NOTE = [" not in gen, "la tabella e' tornata doppia"
+
+    def test_il_pannello_rispetta_i_contratti(self):
+        """Niente nodi audio nel componente; l'errore del permesso ha
+        una voce garbata; la didascalia c'e' e dice la verita' sulla
+        privacy; la lettura passa dal giro del banco (iscrivi), non da
+        un orologio suo."""
+        src = (LAB / "Orecchio.jsx").read_text()
+        assert "createMediaStreamSource" not in src and "getUserMedia" not in src
+        assert "NotAllowedError" in src
+        assert "lab-didascalia" in src
+        assert "non lascia" in src, "la promessa di privacy e' sparita dal pannello"
+        assert "iscrivi(" in src and "setInterval" not in src
+        # smontare il pannello chiude il microfono
+        assert "orecchio.chiudi()" in src
 

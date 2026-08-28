@@ -179,3 +179,16 @@
   border-radius:999px;color:var(--dim);background:transparent}
 .fqz .lab-modo.vivo{color:var(--bone);border-color:var(--lamp-dim);
   background:var(--ink)}
+
+/* ═══ LB2 (27/8) — l'Orecchio e l'accordatore ═══ */
+.fqz .lab-accordatore{margin:14px 0 2px;text-align:center}
+.fqz .lab-orecchio-num{justify-content:center}
+.fqz .lab-orecchio-num span{font-family:var(--mono);font-size:44px;
+  color:var(--lamp);letter-spacing:.02em}
+.fqz .lab-orecchio .lab-nota{display:block;margin-top:4px;font-size:13px}
+.fqz .lab-orecchio-attesa{color:var(--dimmer);font-size:13px;
+  padding:14px 0;margin:0}
+.fqz .lab-orecchio-errore{color:var(--alert)}
+@media screen and (max-width:767px){
+  .fqz .lab-orecchio-num span{font-size:36px !important}
+}

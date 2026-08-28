@@ -20,6 +20,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FORME, ORECCHIE } from './motore';
 import { iscrivi } from './quadro';
+import { notaVicina } from './note';
 import { CAT_LINK } from '../content/biblioteca';
 
 const MIN_UI = 20, MAX_UI = 20000;
@@ -28,18 +29,6 @@ const MIN_UI = 20, MAX_UI = 20000;
 const posAHz = (p) => MIN_UI * Math.pow(MAX_UI / MIN_UI, p);
 const hzAPos = (hz) => Math.log(hz / MIN_UI) / Math.log(MAX_UI / MIN_UI);
 
-/* la nota piu' vicina, nomenclatura italiana — il ponte col mondo
-   musicale che il lettore della biblioteca gia' conosce */
-const NOTE = ['Do', 'Do♯', 'Re', 'Re♯', 'Mi', 'Fa', 'Fa♯', 'Sol', 'Sol♯', 'La', 'La♯', 'Si'];
-function notaVicina(hz) {
-  if (!hz || hz <= 0) return null;
-  const n = Math.round(12 * Math.log2(hz / 440));           // semitoni da La4
-  const giusta = 440 * Math.pow(2, n / 12);
-  const idx = ((n % 12) + 12 + 9) % 12;                     // La4 = indice 9
-  const ottava = 4 + Math.floor((n + 9) / 12);
-  const cents = Math.round(1200 * Math.log2(hz / giusta));
-  return { nome: `${NOTE[idx]}${ottava}`, giusta, cents };
-}
 
 const ETICHETTE = {
   sine: 'Sinusoide', square: 'Quadra',

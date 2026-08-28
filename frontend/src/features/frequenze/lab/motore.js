@@ -114,6 +114,7 @@ export function creaLaboratorio(ctx) {
      l'ultimo buffer in loop (22/8) */
   const sorgenti = [];
   const qualcunoSuona = () => sorgenti.some((s) => s._attivo());
+  let mic = null;                              // { stream, nodo } dell'orecchio
 
   /* ═══ LA FABBRICA DELLE SORGENTI (LB1) ═══
      Una macchina sola per la A e la B: stato, voce, corsa (sweep),
@@ -322,6 +323,41 @@ export function creaLaboratorio(ctx) {
     /* la voce B (LB1) — gemella: stessa fabbrica, stessi gesti */
     generatore2: creaSorgente(),
 
+    /* ═══ L'ORECCHIO (LB2) — il microfono entra nel banco ═══
+       Il mic e' un OSSERVATO, mai una sorgente sonora: si collega
+       all'analyser via `analisi.sorgente(...)` e BASTA — nessuna via
+       verso master o ponte, quindi niente feedback e niente audio che
+       lascia il dispositivo. I filtri «da videochiamata» del browser
+       si spengono: mangerebbero code di risonanza, parziali acuti e
+       dinamica — esattamente cio' che il Lab vuole misurare. */
+    orecchio: {
+      attivo: () => !!mic,
+      async apri() {
+        if (mic) return;
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('senza-mic');
+        }
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+          },
+        });
+        try { await ctx.resume(); } catch { /* gia' attivo */ }
+        const nodo = ctx.createMediaStreamSource(stream);
+        mic = { stream, nodo };
+        lab.analisi.sorgente(nodo);        // il banco ora guarda il mic
+      },
+      chiudi() {
+        if (!mic) return;
+        mic.stream.getTracks().forEach((t) => t.stop());
+        try { mic.nodo.disconnect(); } catch { /* gia' */ }
+        mic = null;
+        lab.analisi.sorgente(null);        // si torna al mix delle voci
+      },
+    },
+
     analisi: {
       analyser,
       tempo(buf) { analyser.getFloatTimeDomainData(buf); return buf; },
@@ -338,6 +374,7 @@ export function creaLaboratorio(ctx) {
     },
 
     spegni() {
+      lab.orecchio.chiudi();
       sorgenti.forEach((s) => { s.ferma(); s._stacca(); });
       try { master.disconnect(); } catch { /* niente */ }
       delete ctx._fqzLab;
