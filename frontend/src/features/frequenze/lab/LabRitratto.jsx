@@ -6,10 +6,10 @@ import React from 'react';
 import Stanza from './Stanza';
 import Orecchio from './Orecchio';
 import Ritratto from './Ritratto';
-import { usaLab } from './usaLab';
+import { useLab } from './usaLab';
 
 export default function LabRitratto() {
-  const { ottieniLab, ottieniAnalisi, ottieniVivo } = usaLab();
+  const { ottieniLab, ottieniAnalisi, ottieniVivo } = useLab();
   return (
     <Stanza slug="ritratto" titolo="Il Ritratto"
       domanda="Di cosa è fatto il suono del mio oggetto?"

@@ -6,11 +6,11 @@ import React from 'react';
 import Stanza from './Stanza';
 import Meraviglie from './Meraviglie';
 import LettureBanco from './LettureBanco';
-import { usaLab } from './usaLab';
+import { useLab } from './usaLab';
 
 export default function LabMeraviglie() {
   const { ottieniLab, ottieniAnalisi, ottieniXY,
-          fermo, suonaDavvero } = usaLab();
+          fermo, suonaDavvero } = useLab();
   return (
     <Stanza slug="meraviglie" titolo="Le Meraviglie"
       domanda="Cosa sa fare davvero il suono — senza trucchi?"

@@ -6,10 +6,10 @@ import React from 'react';
 import Stanza from './Stanza';
 import Orecchio from './Orecchio';
 import LettureBanco from './LettureBanco';
-import { usaLab } from './usaLab';
+import { useLab } from './usaLab';
 
 export default function LabOrecchio() {
-  const { ottieniLab, ottieniAnalisi, ottieniVivo, fermo, suonaDavvero } = usaLab();
+  const { ottieniLab, ottieniAnalisi, ottieniVivo, fermo, suonaDavvero } = useLab();
   return (
     <Stanza slug="orecchio" titolo="L’Orecchio"
       domanda="Che nota è? Che suono fa il mondo?"

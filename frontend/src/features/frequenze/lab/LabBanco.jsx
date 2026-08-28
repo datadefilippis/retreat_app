@@ -7,11 +7,11 @@ import Stanza from './Stanza';
 import Generatore from './Generatore';
 import SecondaVoce from './SecondaVoce';
 import LettureBanco from './LettureBanco';
-import { usaLab } from './usaLab';
+import { useLab } from './usaLab';
 
 export default function LabBanco() {
   const { ottieniLab, ottieniAnalisi, ottieniXY,
-          fermo, setSuona, suonaDavvero } = usaLab();
+          fermo, setSuona, suonaDavvero } = useLab();
   return (
     <Stanza slug="banco" titolo="Il Banco"
       domanda="Com’è fatto un suono?"

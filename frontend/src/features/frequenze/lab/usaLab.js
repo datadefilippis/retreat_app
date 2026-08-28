@@ -12,7 +12,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { creaLaboratorio } from './motore';
 import { ascoltaFermo, congela, eFermo } from './quadro';
 
-export function usaLab() {
+/* si chiama useLab (non usaLab): la regola dei hook di React esige
+   il prefisso 'use' — senza, la BUILD DI PRODUZIONE fallisce (pagato
+   il 28/8: il dev server con l'eslint spento mascherava tutto). */
+export function useLab() {
   const labRef = useRef(null);
 
   const ottieniLab = useCallback(() => {

@@ -5,10 +5,10 @@
 import React from 'react';
 import Stanza from './Stanza';
 import Risonanze from './Risonanze';
-import { usaLab } from './usaLab';
+import { useLab } from './usaLab';
 
 export default function LabRisonanze() {
-  const { ottieniLab, ottieniAnalisi } = usaLab();
+  const { ottieniLab, ottieniAnalisi } = useLab();
   return (
     <Stanza slug="risonanze" titolo="Le Risonanze"
       domanda="A quale frequenza canta il mio oggetto?"

@@ -1188,7 +1188,7 @@ class TestOlisticaLb8:
         for stanza in ("LabBanco", "LabOrecchio", "LabRitratto",
                        "LabMeraviglie", "LabRisonanze"):
             pag = (LAB / f"{stanza}.jsx").read_text()
-            assert "usaLab()" in pag, f"{stanza}: non usa il ciclo di vita comune"
+            assert "useLab()" in pag, f"{stanza}: non usa il ciclo di vita comune"
             assert "creaLaboratorio" not in pag, \
                 f"{stanza}: si fabbrica il motore da sola"
 
