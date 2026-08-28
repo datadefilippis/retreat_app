@@ -401,3 +401,11 @@
 @media (max-width:560px){
   .fqz .lab-rz-chips{margin-left:0;flex-basis:100%}
 }
+
+/* UX 28/8 — IL CRUSCOTTO TI SEGUE: la barra del tono e' sticky (il
+   pattern del createbar) e OPACA — la regola di casa del 27/8: un
+   elemento che galleggia sul contenuto non e' mai una finestra. */
+.fqz .lab-rz-tono{position:sticky;top:10px;z-index:20;
+  background:linear-gradient(168deg,#375B63 0%,#2B4951 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),
+             0 14px 40px rgba(8,24,28,.4),0 0 0 1px rgba(201,179,126,.18)}

@@ -158,6 +158,14 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
   };
 
   /* ■ ferma il SUONO, la misura resta in mano; ✕ chiude la barra */
+  /* UX (28/8, founder): «dai salvataggi clicco play ma per stoppare
+     devo tornare su al cruscotto». Ogni ▶ e' un INTERRUTTORE SUL
+     POSTO: se la SUA frequenza sta suonando mostra ■ e la spegne
+     da li' — mai costringere lo scroll per fare silenzio. */
+  const staSuonando = (hz) => tonoVivo
+    && Math.abs((tonoHz || 0) - (+hz)) < 0.05;
+  const alternaQui = (hz) => (staSuonando(hz) ? fermaTono() : tieni(hz));
+
   const fermaTono = () => {
     labRef.current?.generatore.ferma();
     setTonoVivo(false);
@@ -407,10 +415,13 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
           {picchi.map((p) => (
             <span key={p.hz} className="lab-ris-picco">
               <b>{scriviHz(p.hz)} Hz</b> (+{String(p.db).replace('.', ',')} dB)
-              <button type="button" className="chip"
+              <button type="button"
+                className={'chip' + (staSuonando(p.hz) ? ' on' : '')}
                 data-testid={`lab-ris-tieni-${Math.round(p.hz)}`}
                 title="Tieni questa frequenza: la senti e la aggiusti"
-                onClick={() => tieni(p.hz)}>▶ Tienila</button>
+                onClick={() => alternaQui(p.hz)}>
+                {staSuonando(p.hz) ? '■ Ferma' : '▶ Tienila'}
+              </button>
               <button type="button" className="chip" title="Scarica 30 s di tono a questa frequenza (WAV per un ampli)"
                 onClick={async () => scarica(await tonoWav(p.hz, 30), `tono-${p.hz}hz.wav`)}>
                 ⤓
@@ -448,9 +459,12 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
               <b>
                 {(v.tipo === 'scoperta' ? [v.hz] : (v.risonanze || []))
                   .map((hz) => (
-                    <button key={hz} type="button" className="chip lab-quaderno-hz"
-                      title="Risuona questa frequenza"
-                      onClick={() => tieni(hz)}>▶ {scriviHz(hz)}</button>
+                    <button key={hz} type="button"
+                      className={'chip lab-quaderno-hz' + (staSuonando(hz) ? ' on' : '')}
+                      title={staSuonando(hz) ? 'Ferma' : 'Risuona questa frequenza'}
+                      onClick={() => alternaQui(hz)}>
+                      {staSuonando(hz) ? '■' : '▶'} {scriviHz(hz)}
+                    </button>
                   ))}
               </b>
               <button type="button" className="ghost" title="Elimina"

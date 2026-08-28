@@ -1454,8 +1454,9 @@ class TestCicloRz:
         for tid in ("lab-rz-salva-scoperta", "lab-rz-tienila",
                     "lab-rz-chiudi", "lab-rz-etichetta"):
             assert tid in src, f"manca {tid} nella barra del tono"
-        assert "tieni(p.hz)" in src, "i picchi hanno perso il ▶"
-        assert "tieni(hz)" in src, "il quaderno ha perso il ▶"
+        # evoluto con gli interruttori sul posto: il gesto e' alternaQui
+        assert "alternaQui(p.hz)" in src, "i picchi hanno perso l'interruttore"
+        assert "alternaQui(hz)" in src, "il quaderno ha perso l'interruttore"
 
     def test_il_passo_fine_parte_dal_motore(self):
         """Due tocchi rapidi leggevano lo stesso stato React e il
@@ -1479,6 +1480,23 @@ class TestCicloRz:
         assert "i tuoi occhi sono lo" in src
         assert 'data-testid="lab-rz-viva"' in src, \
             "il numerone dello sweep e' sparito"
+
+    def test_gli_interruttori_sul_posto_e_il_cruscotto_che_segue(self):
+        """UX del founder (28/8): «dai salvataggi clicco play ma per
+        stoppare devo tornare su al cruscotto». Ogni ▶ (picchi e
+        quaderno) e' un interruttore sul posto (misurato: play dal
+        quaderno → chip ■ → stop da li' → silenzio); e la barra del
+        tono e' STICKY e OPACA (il pattern del createbar — la regola
+        del 27/8: cio' che galleggia non e' mai una finestra)."""
+        src = (LAB / "Risonanze.jsx").read_text()
+        assert "staSuonando" in src and "alternaQui" in src
+        assert src.count("alternaQui(") >= 2, \
+            "un ▶ ha perso l'interruttore sul posto"
+        css = (LAB / "lab.css").read_text()
+        blocco = css.split(".fqz .lab-rz-tono{position:sticky")
+        assert len(blocco) == 2, "la barra del tono non e' piu' sticky"
+        assert "linear-gradient(168deg,#375B63" in blocco[1][:300], \
+            "la barra sticky ha perso l'opacita': finestra sul contenuto"
 
     def test_il_quaderno_vivo(self):
         """Due tipi di voce (sweep e scoperta etichettata), ogni
