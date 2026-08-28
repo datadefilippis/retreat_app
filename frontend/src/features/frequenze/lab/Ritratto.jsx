@@ -52,6 +52,21 @@ export default function Ritratto({ ottieniLab }) {
     try { await lab.ctx.resume(); } catch { /* gia' attivo */ }
     zittisci();
     setEsito(null); setNiente(false); setSpenti([]); setMsg('');
+    /* IL CASO DEL FOUNDER (28/8): registrava la voce ma il microfono
+       era chiuso — il banco ascoltava il silenzio delle sorgenti
+       spente e rispondeva «troppo piano». Ora il Ritratto apre
+       l'orecchio DA SOLO quando nessuna sorgente sta suonando; se il
+       microfono viene negato, lo si dice SUBITO, senza sprecare sei
+       secondi di conto. */
+    const suonaBanco = lab.generatore.stato().attivo
+      || lab.generatore2.stato().attivo;
+    if (!lab.orecchio.attivo() && !suonaBanco) {
+      try { await lab.orecchio.apri(); } catch {
+        setNiente(false);
+        setMsg('Per ritrarre la tua voce o un oggetto serve il microfono — oppure accendi una sorgente al Banco e ritrai quella.');
+        return;
+      }
+    }
     setFase('registro'); setConto(SECONDI);
     contoRef.current = setInterval(
       () => setConto((c) => Math.max(0, c - 1)), 1000);
@@ -64,6 +79,18 @@ export default function Ritratto({ ottieniLab }) {
       const r = analizza(campioni, sampleRate);
       presaRef.current = campioni; srRef.current = sampleRate;
       setEsito(r); setNiente(!r);
+      if (!r) {
+        /* si guarda COSA e' andato storto, e lo si dice: il silenzio
+           ha una cura diversa dal «troppo piano» */
+        let picco = 0;
+        for (let i = 0; i < campioni.length; i++) {
+          const a = Math.abs(campioni[i]);
+          if (a > picco) picco = a;
+        }
+        setMsg(picco < 0.003
+          ? 'Ho ascoltato solo silenzio: controlla che il microfono sia aperto e che il volume d’ingresso non sia a zero.'
+          : 'Ho sentito qualcosa ma troppo piano o troppo breve per un ritratto: riprova più vicino al microfono, con un suono tenuto.');
+      }
       setFase('pronto');
     } catch {
       clearInterval(contoRef.current);
@@ -165,10 +192,9 @@ export default function Ritratto({ ottieniLab }) {
         </p>
       </div>
 
-      {niente && (
+      {msg && !esito && (
         <p className="lab-orecchio-errore" data-testid="lab-ritratto-vuoto">
-          Non ho trovato un suono da ritrarre: troppo piano, o troppo
-          breve. Riprova più vicino al microfono.
+          {msg}
         </p>
       )}
 
@@ -252,7 +278,7 @@ export default function Ritratto({ ottieniLab }) {
                 </button>
               )}
             </div>
-            {msg && <p className="lab-volume" aria-live="polite">{msg}</p>}
+            {msg && !niente && <p className="lab-volume" aria-live="polite">{msg}</p>}
             <p className="lab-didascalia" data-testid="lab-fonderia-didascalia">
               <b>L&rsquo;A/B è il laboratorio.</b> Originale e rifusione,
               stesso orecchio: la rifusione è la SOMMA dei modi in

@@ -9,7 +9,7 @@ import LettureBanco from './LettureBanco';
 import { usaLab } from './usaLab';
 
 export default function LabOrecchio() {
-  const { ottieniLab, ottieniAnalisi, fermo, suonaDavvero } = usaLab();
+  const { ottieniLab, ottieniAnalisi, ottieniVivo, fermo, suonaDavvero } = usaLab();
   return (
     <Stanza slug="orecchio" titolo="L’Orecchio"
       domanda="Che nota è? Che suono fa il mondo?"
@@ -24,7 +24,8 @@ export default function LabOrecchio() {
         'Colpisci un bicchiere davanti allo spettro e guarda i SUOI modi apparire',
         'Osserva la tua voce nello spettrogramma: le armoniche sono righe parallele',
       ]}>
-      <Orecchio ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi} />
+      <Orecchio ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi}
+        ottieniVivo={ottieniVivo} />
       <LettureBanco ottieniAnalisi={ottieniAnalisi}
         fermo={fermo} suonaDavvero={suonaDavvero} />
     </Stanza>

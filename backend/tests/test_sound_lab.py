@@ -1189,3 +1189,63 @@ class TestOlisticaLb8:
             assert "usaLab()" in pag, f"{stanza}: non usa il ciclo di vita comune"
             assert "creaLaboratorio" not in pag, \
                 f"{stanza}: si fabbrica il motore da sola"
+
+class TestVoceDelFounder:
+    """Consolidamento 28/8 — il caso vero del founder: registrava
+    «aummm» e il Lab rispondeva «troppo piano». Due difetti trovati e
+    curati con evidenza:
+    1) il microfono era chiuso e il banco ritraeva il silenzio delle
+       sorgenti spente (riprodotto: stesso messaggio del founder);
+    2) una voce con vibrato mette nello spettro le BANDE LATERALI
+       (146 con satelliti a 136/151/156) che sporcavano la tabella.
+    Dopo: aummm sintetico → 146/292/438/584 esatti; campana col
+    doppietto 1.8 intatta; verdetto del silenzio dedicato."""
+
+    def test_il_ritratto_apre_l_orecchio_da_solo(self):
+        """Se nessuna sorgente suona, registrare significa VOLERE il
+        microfono: lo si apre senza chiedere un click in un altro
+        pannello; se viene negato lo si dice SUBITO, senza sprecare
+        sei secondi di conto."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "orecchio.apri()" in src
+        a = src.index("const suonaBanco")
+        blocco = src[a:a + 700]
+        assert "generatore2.stato().attivo" in src[a - 200:a + 200]
+        assert "return;" in blocco, "il mic negato non ferma il conto"
+        assert "serve il microfono" in src
+
+    def test_i_verdetti_sono_onesti(self):
+        """Il silenzio ha una cura diversa dal «troppo piano»: si
+        guarda il picco della cattura e si dice il vero."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "Ho ascoltato solo silenzio" in src
+        assert "troppo piano o troppo breve" in src
+        assert "picco < 0.003" in src, \
+            "il verdetto non distingue piu' il silenzio dal piano"
+
+    def test_le_bande_laterali_restano_fuori_dal_ritratto(self):
+        """Il vibrato di una voce mette picchi VERI a ±(4-10) Hz dal
+        parziale: sono la firma della modulazione, non modi. Un picco
+        ≥6 dB piu' debole e vicino (fra i doppietti e 15 Hz) a uno
+        forte si lascia fuori; i doppietti veri (<5 Hz) e i modi
+        distinti (>15 Hz) non si toccano — la campana resta intatta."""
+        src = (LAB / "ritrattista.js").read_text()
+        assert "q.db > p.db + 6" in src
+        assert ">= DOPPIETTO_HZ" in src and "< 15" in src
+
+    def test_l_orecchio_non_possiede_lo_stato(self):
+        """Il microfono puo' aprirlo anche il Ritratto: il pannello
+        Orecchio LEGGE lo stato dal motore a ogni giro e si allinea
+        (accordatore vivo anche se l'ha aperto qualcun altro).
+        ottieniVivo non crea mai il lab: il gesto resta sovrano."""
+        src = (LAB / "Orecchio.jsx").read_text()
+        assert "ottieniVivo" in src
+        assert "attivo !== accesoRef.current" in src, \
+            "il pannello e' tornato a possedere lo stato del mic"
+        hook = (LAB / "usaLab.js").read_text()
+        assert "const ottieniVivo = useCallback(() => labRef.current, [])" in hook
+        # e le stanze con l'orecchio la passano
+        for stanza in ("LabOrecchio.jsx", "LabRitratto.jsx"):
+            assert "ottieniVivo={ottieniVivo}" in (LAB / stanza).read_text(), \
+                f"{stanza}: l'orecchio non riceve il lab vivo"
+

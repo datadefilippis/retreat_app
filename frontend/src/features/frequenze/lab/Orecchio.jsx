@@ -22,11 +22,12 @@ import { iscrivi } from './quadro';
 import { fondamentale } from './accordatore';
 import { notaVicina } from './note';
 
-export default function Orecchio({ ottieniLab, ottieniAnalisi }) {
+export default function Orecchio({ ottieniLab, ottieniAnalisi, ottieniVivo = null }) {
   const [acceso, setAcceso] = useState(false);
   const [errore, setErrore] = useState(null);
   const [lettura, setLettura] = useState(null);   // {hz, nota, cents, chiarezza}
   const labRef = useRef(null);
+  const accesoRef = useRef(false);
   const bufRef = useRef(null);
   const ultime = useRef([]);                      // la mediana delle letture
   const ultimaVolta = useRef(0);
@@ -35,13 +36,15 @@ export default function Orecchio({ ottieniLab, ottieniAnalisi }) {
     setErrore(null);
     const lab = ottieniLab();                     // nel gesto: iOS lo esige
     labRef.current = lab;
-    if (acceso) {
+    if (acceso || lab.orecchio.attivo()) {
       lab.orecchio.chiudi();
+      accesoRef.current = false;
       setAcceso(false); setLettura(null); ultime.current = [];
       return;
     }
     try {
       await lab.orecchio.apri();
+      accesoRef.current = true;
       setAcceso(true);
     } catch (e) {
       setErrore(e && e.name === 'NotAllowedError'
@@ -54,8 +57,24 @@ export default function Orecchio({ ottieniLab, ottieniAnalisi }) {
   useEffect(() => () => { labRef.current?.orecchio.chiudi(); }, []);
 
   useEffect(() => iscrivi(() => {
-    const lab = labRef.current;
-    if (!lab || !lab.orecchio.attivo()) return;
+    /* IL MICROFONO PUO' APRIRLO ANCHE IL RITRATTO (caso del founder,
+       28/8): il pannello non possiede lo stato, lo LEGGE dal motore
+       a ogni giro e si allinea — cosi' l'accordatore vive anche
+       quando l'orecchio l'ha aperto qualcun altro. ottieniVivo non
+       crea mai il lab (il gesto resta sovrano). */
+    let lab = labRef.current;
+    if (!lab && ottieniVivo) {
+      lab = ottieniVivo();
+      if (lab) labRef.current = lab;
+    }
+    if (!lab) return;
+    const attivo = lab.orecchio.attivo();
+    if (attivo !== accesoRef.current) {
+      accesoRef.current = attivo;
+      setAcceso(attivo);
+      if (!attivo) { setLettura(null); ultime.current = []; }
+    }
+    if (!attivo) return;
     const ora = performance.now();
     if (ora - ultimaVolta.current < 90) return;
     ultimaVolta.current = ora;
@@ -78,7 +97,7 @@ export default function Orecchio({ ottieniLab, ottieniAnalisi }) {
     const mediana = ordinate[Math.floor(ordinate.length / 2)];
     const nota = notaVicina(mediana);
     setLettura({ hz: mediana, nota, chiarezza: f.chiarezza });
-  }), [ottieniAnalisi]);
+  }), [ottieniAnalisi, ottieniVivo]);
 
   return (
     <section className="lab-card lab-orecchio" data-testid="lab-orecchio">

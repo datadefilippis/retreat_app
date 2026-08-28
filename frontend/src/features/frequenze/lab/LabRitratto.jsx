@@ -9,7 +9,7 @@ import Ritratto from './Ritratto';
 import { usaLab } from './usaLab';
 
 export default function LabRitratto() {
-  const { ottieniLab, ottieniAnalisi } = usaLab();
+  const { ottieniLab, ottieniAnalisi, ottieniVivo } = usaLab();
   return (
     <Stanza slug="ritratto" titolo="Il Ritratto"
       domanda="Di cosa è fatto il suono del mio oggetto?"
@@ -25,7 +25,8 @@ export default function LabRitratto() {
         'Leggi la tabella dei suoi modi: frequenze, vite, doppietti',
         'Riascolta in A/B: originale contro rifusione — poi spegni un parziale e risenti',
       ]}>
-      <Orecchio ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi} />
+      <Orecchio ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi}
+        ottieniVivo={ottieniVivo} />
       <Ritratto ottieniLab={ottieniLab} />
     </Stanza>
   );

@@ -26,6 +26,9 @@ export function usaLab() {
   /* le prese, STABILI: un'arrow nel JSX ri-iscriverebbe i pittori a
      ogni render (trappola pagata allo STEP 5) */
   const ottieniAnalisi = useCallback(() => labRef.current?.analisi || null, []);
+  /* il lab GIA' NATO, o null — per chi deve solo GUARDARE lo stato
+     (mai crearlo: AudioContext vuole il gesto) */
+  const ottieniVivo = useCallback(() => labRef.current, []);
   const ottieniXY = useCallback(() => {
     const lab = labRef.current;
     if (!lab) return null;
@@ -47,6 +50,6 @@ export function usaLab() {
   /* lasciare la stanza spegne il banco — e scongela */
   useEffect(() => () => { labRef.current?.spegni(); congela(false); }, []);
 
-  return { ottieniLab, ottieniAnalisi, ottieniXY,
+  return { ottieniLab, ottieniAnalisi, ottieniXY, ottieniVivo,
            fermo, suona, setSuona, suonaDavvero };
 }

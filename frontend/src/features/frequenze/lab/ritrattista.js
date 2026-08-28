@@ -160,8 +160,21 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
     grezzi.push({ hz: (b + delta) * hzPerBin, db: v - maxDb });
   }
   grezzi.sort((x, y) => y.db - x.db);
-  const scelti = grezzi.slice(0, PARZIALI_MAX * 2).sort((x, y) => x.hz - y.hz);
+  let scelti = grezzi.slice(0, PARZIALI_MAX * 2).sort((x, y) => x.hz - y.hz);
   if (!scelti.length) return null;
+
+  /* LE BANDE LATERALI (caso «aummm» del founder, 28/8): una voce con
+     vibrato mette nello spettro picchi VERI a ±(4-10) Hz dal
+     parziale — sono la firma della modulazione, non modi
+     dell'oggetto, e sporcavano la tabella (146 con satelliti a 136,
+     151, 156). Un picco molto piu' debole (≥6 dB) e vicino (fra la
+     finestra dei doppietti e 15 Hz) a uno forte e' una banda
+     laterale: si lascia fuori dal ritratto. I doppietti veri (<5 Hz)
+     e i modi distinti (>15 Hz) non si toccano. */
+  scelti = scelti.filter((p) => !scelti.some((q) => q !== p
+    && q.db > p.db + 6
+    && Math.abs(q.hz - p.hz) >= DOPPIETTO_HZ
+    && Math.abs(q.hz - p.hz) < 15));
 
   /* i DOPPIETTI: coppie entro DOPPIETTO_HZ — si tengono INSIEME
      (il battimento e' informazione, non rumore da fondere) */
