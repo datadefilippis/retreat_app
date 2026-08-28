@@ -341,4 +341,9 @@ qualunque promessa terapeutica.
 
 ---
 
-*In attesa del «procedi» — si parte da LB1.*
+**ESEGUITO PER INTERO il 27-28/8/2026** (solo locale, deploy al go):
+LB1 630ba5ae · LB2 b79178f3 · LB3 917f769c · LB4 e6039815 ·
+LB7 57c124fc · LB5 5e93d960 · LB6 b2481dcb · LB8 ae5e72bb.
+91 guardie in tests/test_sound_lab.py. Resta al founder il collaudo
+col MICROFONO VERO (il pannello dell'automazione lo blocca):
+accordatore, ritratto di una campana vera, cercatore di risonanze.
