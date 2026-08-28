@@ -185,6 +185,18 @@ export default function Generatore({ ottieniLab, onSuono }) {
           aria-label="Frequenza (scala logaritmica)"
           value={hzAPos(freq)}
           onChange={(e) => scegliFreq(posAHz(+e.target.value))} />
+        {/* LB6 — il passo fine della cimatica: i pattern vivono in
+            finestre strette, ±0,1 Hz e' un gesto, non un numero
+            da riscrivere */}
+        <div className="lab-passofine">
+          {[-1, -0.1, 0.1, 1].map((d) => (
+            <button key={d} type="button" className="chip"
+              data-testid={`lab-fine-${d}`}
+              onClick={() => scegliFreq(Math.min(MAX_UI, Math.max(MIN_UI, freq + d)))}>
+              {d > 0 ? '+' : '−'}{String(Math.abs(d)).replace('.', ',')}
+            </button>
+          ))}
+        </div>
         <div className="lab-freq-note">
           <span>20 Hz</span>
           {nota && (

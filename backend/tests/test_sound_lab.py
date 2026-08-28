@@ -45,6 +45,11 @@ class TestArchitettura:
             # (il silenziatore iOS non c'entra). L'unica forma ammessa
             # e' quella della fonderia dentro renderizzaWav.
             codice = codice.replace("campana(ctx, ctx.destination", "")
+            # LB6: i WAV di cimatica.js nascono in un contesto OFFLINE
+            # (g.connect(ctx.destination) dentro tonoWav/sweepWav):
+            # anche li' la destination e' il file del render
+            if f.name == "cimatica.js":
+                codice = codice.replace("g.connect(ctx.destination)", "")
             # LB7: 'destination-out' e' un modo di COMPOSIZIONE del
             # canvas (la scia al fosforo), non un nodo audio
             codice = codice.replace("'destination-out'", "")
@@ -320,10 +325,10 @@ class TestSpettrogramma:
         assert src.index("<Generatore") < src.index("<Oscilloscopio") \
             < src.index("<Spettro ") < src.index("<Spettrogramma"), \
             "l'ordine del banco: genera, tempo, frequenze, frequenze nel tempo"
-        # Evoluta con LB2: anche l'Orecchio riceve la stessa presa
-        # (l'accordatore legge il dominio del tempo) — quattro
-        # consumatori, un'analisi sola.
-        assert src.count("ottieniAnalisi={ottieniAnalisi}") == 4, \
+        # Evoluta con LB2 e LB6: l'Orecchio (accordatore) e le
+        # Risonanze (Goertzel sullo sweep) ricevono la stessa presa —
+        # cinque consumatori, un'analisi sola.
+        assert src.count("ottieniAnalisi={ottieniAnalisi}") == 5, \
             "gli strumenti non ricevono la stessa analisi"
 
     def test_il_motore_resta_invariato_anche_allo_step_4(self):
@@ -1029,4 +1034,57 @@ class TestMeraviglieLb5:
         assert "createOscillator" not in src and "AudioContext" not in src
         assert "lab-mer-onesta" in src, \
             "la dichiarazione contro le «frequenze 3D» e' sparita"
+
+class TestCimaticaLb6:
+    """LB6 (28/8/2026) — verso la cimatica. Collaudo: trovaPicchi su
+    curva sintetica (risonanze iniettate a 220/+8dB e 513/+14dB →
+    trovate 221.7 e 509.3, entro il passo della griglia); WAV al byte
+    esatto; il passo fine muove la frequenza di 0,1."""
+
+    def test_gli_attrezzi_sono_react_free(self):
+        src = (LAB / "cimatica.js").read_text()
+        codice = re.sub(r"/\*.*?\*/", " ", src, flags=re.S)
+        codice = re.sub(r"^\s*//.*$", " ", codice, flags=re.M)
+        assert "react" not in codice.lower()
+        # i WAV escono da un contesto OFFLINE (un file, non un altoparlante)
+        assert "OfflineAudioContext" in src
+        assert "linearRampToValueAtTime" in src, \
+            "i toni per gli ampli hanno perso la rampa: fronte secco"
+
+    def test_il_quaderno_e_dichiarato_e_mai_bloccante(self):
+        """Gli esperimenti restano SU QUESTO DISPOSITIVO (localStorage
+        dentro try/catch: un browser che lo nega non rompe il banco) —
+        e il pannello lo dice."""
+        src = (LAB / "cimatica.js").read_text()
+        assert "localStorage" in src
+        assert src.count("try {") >= 3, "il quaderno puo' bloccare il banco"
+        pann = (LAB / "Risonanze.jsx").read_text()
+        assert "su questo dispositivo" in pann
+
+    def test_il_cercatore_chiude_il_cerchio(self):
+        """Genera (sweep della voce A) → eccita → ascolta (il mic e'
+        OBBLIGATORIO: senza, si sentirebbe solo se stessi, e il
+        pannello lo dice) → misura (Goertzel alla frequenza CORRENTE
+        dello sweep, letta dal motore: una sola verita')."""
+        src = (LAB / "Risonanze.jsx").read_text()
+        assert "orecchio.attivo()" in src and "orecchio.apri()" in src
+        assert "serve il microfono" in src
+        assert "goertzel" in src
+        assert "generatore.stato()" in src, \
+            "la frequenza della misura non viene piu' dal motore"
+        assert "iscrivi(" in src and "setInterval" not in src
+
+    def test_l_onesta_dell_altoparlante(self):
+        """Sotto i ~200 Hz l'altoparlante di un telefono non muove
+        niente: il WAV per gli ampli esiste APPOSTA, e la nota c'e'."""
+        src = (LAB / "Risonanze.jsx").read_text()
+        assert "non muove niente" in src
+        assert "lab-ris-wav-sweep" in src
+
+    def test_il_passo_fine_della_cimatica(self):
+        """I pattern di Chladni vivono in finestre strette: ±0,1 Hz
+        e' un gesto sul Generatore, non un numero da riscrivere."""
+        src = (LAB / "Generatore.jsx").read_text()
+        assert "lab-passofine" in src
+        assert "[-1, -0.1, 0.1, 1]" in src
 

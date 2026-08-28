@@ -255,3 +255,24 @@
   border:1px solid var(--line);border-radius:50%;color:var(--dim)}
 .fqz .lab-cartellino.cA{color:var(--water);border-color:var(--water)}
 .fqz .lab-cartellino.cC{color:var(--violet);border-color:var(--violet)}
+
+/* ═══ LB6 (28/8) — le Risonanze e il passo fine ═══ */
+.fqz .lab-passofine{display:flex;gap:6px;justify-content:center;
+  margin:8px 0 2px}
+.fqz .lab-ris-tela{height:170px;margin-top:12px}
+.fqz .lab-ris-esito{display:flex;gap:10px;flex-wrap:wrap;
+  align-items:center;margin-top:10px}
+.fqz .lab-ris-picco{display:inline-flex;gap:6px;align-items:center;
+  font-family:var(--mono);font-size:12px;color:var(--dim);
+  border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+.fqz .lab-ris-picco b{color:var(--lamp);font-weight:600}
+.fqz .lab-quaderno{margin-top:14px;padding-top:10px;
+  border-top:1px dashed var(--line-soft)}
+.fqz .lab-quaderno h3{margin:0 0 8px;font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer)}
+.fqz .lab-quaderno-riga{display:flex;gap:10px;align-items:center;
+  font-size:12px;color:var(--dim);padding:5px 0;
+  border-bottom:1px solid var(--line-soft)}
+.fqz .lab-quaderno-riga b{color:var(--bone);font-family:var(--mono);
+  flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}

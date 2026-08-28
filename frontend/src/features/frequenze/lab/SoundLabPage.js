@@ -19,6 +19,7 @@ import SecondaVoce from './SecondaVoce';
 import Orecchio from './Orecchio';
 import Ritratto from './Ritratto';
 import Meraviglie from './Meraviglie';
+import Risonanze from './Risonanze';
 import Oscilloscopio from './Oscilloscopio';
 import Spettro from './Spettro';
 import Spettrogramma from './Spettrogramma';
@@ -111,6 +112,10 @@ export default function SoundLabPage() {
         {/* LB5 — le meraviglie oneste: fenomeni veri col cartellino,
             una alla volta, la didascalia si apre con l'esperimento */}
         <Meraviglie ottieniLab={ottieniLab} />
+
+        {/* LB6 — il cercatore di risonanze: sweep + orecchio, il
+            cerchio del banco (genera → eccita → ascolta → misura) */}
+        <Risonanze ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi} />
 
         {/* IL COMANDO DEL BANCO: uno solo, fra la sorgente e le sue
             letture — perche' e' li' che passa il confine fra il tempo

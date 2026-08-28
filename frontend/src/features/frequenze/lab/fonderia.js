@@ -93,7 +93,7 @@ export function campana(ctx, uscita, ritratto, opzioni = {}) {
 }
 
 /* ── WAV: 16 bit PCM mono — il formato che ogni ampli capisce ──── */
-function wavDaCampioni(campioni, sampleRate) {
+export function wavDaCampioni(campioni, sampleRate) {
   const n = campioni.length;
   const buf = new ArrayBuffer(44 + n * 2);
   const v = new DataView(buf);

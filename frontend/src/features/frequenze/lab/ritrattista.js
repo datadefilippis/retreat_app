@@ -66,7 +66,7 @@ const db = (v) => 20 * Math.log10(Math.max(v, 1e-12));
 
 /* Goertzel: l'ampiezza di UNA frequenza in una finestra — per gli
    inviluppi costa n·parziali, non una FFT per fotogramma */
-function goertzel(buf, da, quanti, sr, hz) {
+export function goertzel(buf, da, quanti, sr, hz) {
   const w = 2 * Math.PI * hz / sr;
   const c = 2 * Math.cos(w);
   let s0 = 0, s1 = 0, s2 = 0;
