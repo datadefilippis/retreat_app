@@ -21,6 +21,7 @@ import { frequenciesAPI } from '../../../api/frequencies';
 import { analizza } from './ritrattista';
 import { campana, renderizzaWav } from './fonderia';
 import RitrattoVisual from './RitrattoVisual';
+import OndaViva from './OndaViva';
 import { notaVicina } from './note';
 
 const SECONDI = 6;
@@ -45,6 +46,30 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     if (vivoRef.current) { vivoRef.current.ferma(); vivoRef.current = null; }
     setInSuono(null);
   };
+
+  /* Gancio di collaudo (29/8): il pane di anteprima blocca il
+     microfono, ma la fonderia e l'onda viva si devono poter provare
+     — __fqzRitratto.provaEsito() monta un ritratto sintetico (tre
+     modi da campana) senza registrare. Solo console, mai UI. */
+  useEffect(() => {
+    try {
+      window.__fqzRitratto = {
+        provaEsito: () => {
+          labRef.current = ottieniLab();
+          setNiente(false); setSpenti([]); setMsg('');
+          setEsito({
+            natura: 'modi', armonico: false, fondamentaleHz: 220,
+            parziali: [
+              { hz: 220, db: 0, t60: 2.2 },
+              { hz: 587, db: -7, t60: 1.4 },
+              { hz: 1122, db: -13, t60: 0.8 },
+            ],
+          });
+        },
+      };
+    } catch { /* SSR/test */ }
+    return () => { try { delete window.__fqzRitratto; } catch { /* via */ } };
+  }, []);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => { clearInterval(contoRef.current); zittisci(); },
     []);   // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -322,6 +347,10 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
                   onChange={(e) => setRespiro(+e.target.value)} />
               </label>
             </div>
+            {/* L'ONDA VIVA (29/8): mentre l'A/B suona, la forma d'onda
+                vera dal master — trigger dell'Oscilloscopio, scia al
+                fosforo. Si apre solo col suono. */}
+            <OndaViva ottieniAnalisi={ottieniAnalisi} attivo={inSuono} />
             <div className="lab-fonderia-gesti">
               <button type="button" className="lab-freeze"
                 data-testid="lab-fonderia-wav" onClick={scaricaWav}>

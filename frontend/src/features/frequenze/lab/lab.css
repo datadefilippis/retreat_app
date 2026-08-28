@@ -409,3 +409,29 @@
   background:linear-gradient(168deg,#375B63 0%,#2B4951 100%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.12),
              0 14px 40px rgba(8,24,28,.4),0 0 0 1px rgba(201,179,126,.18)}
+
+/* ── L'ONDA VIVA (Ritratto, 29/8/2026) ─────────────────────────────
+   La forma d'onda della fonderia mentre suona: si apre col suono e
+   si richiude nel silenzio (max-height + opacita', niente scatti). */
+.fqz .lab-ondaviva{
+  max-height:0; opacity:0; overflow:hidden; margin:0;
+  transition:max-height .45s ease, opacity .35s ease, margin .45s ease;
+}
+.fqz .lab-ondaviva.viva{ max-height:200px; opacity:1; margin:10px 0 4px; }
+.fqz .lab-ondaviva-testa{
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap:10px; font-size:.78rem; letter-spacing:.04em;
+  color:var(--ink-dim,#8FAAA6); margin:0 2px 6px;
+}
+.fqz .lab-ondaviva-stato{
+  font-size:.7rem; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--ink-dim,#8FAAA6); opacity:.7;
+}
+.fqz .lab-ondaviva-stato.ok{ color:var(--water,#66B79C); opacity:1; }
+.fqz .lab-ondaviva-tela{
+  display:block; width:100%; height:132px;
+  border-radius:12px; border:1px solid var(--line-soft,#1B2E32);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(102,183,156,0.05), transparent 60%),
+    linear-gradient(180deg, #0E1D21 0%, #0B171A 100%);
+}

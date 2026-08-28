@@ -1507,3 +1507,52 @@ class TestCicloRz:
         assert "lab-quaderno-hz" in src
         assert 'data-testid="lab-rz-passi"' in src
 
+
+
+class TestOndaViva:
+    """L'ONDA VIVA (29/8/2026) — la forma d'onda della fonderia.
+
+    Desiderio del founder: «dopo che si e' sintetizzato un suono e lo
+    si ascolta, mostrare l'onda di quel suono in movimento in maniera
+    professionale e stilosa». Professionale = campioni veri dal master
+    (analisi.tempo) agganciati col TRIGGER dell'Oscilloscopio —
+    importato, mai ricopiato. Collaudato nel pane: tenuto → classe
+    viva + «agganciata» + 49k pixel fuori asse; colpo → si richiude
+    da sola alla morte del suono.
+    """
+
+    def test_l_onda_viva_usa_le_verita_del_banco(self):
+        """Trigger dell'Oscilloscopio + quadro: una verita', un ciclo."""
+        src = (LAB / "OndaViva.jsx").read_text()
+        assert "import { trigger } from './Oscilloscopio'" in src, \
+            "l'aggancio deve essere UNO: si importa, non si ricopia"
+        assert "import { iscrivi } from './quadro'" in src, \
+            "un solo requestAnimationFrame per tutto il banco"
+        assert "analisi.tempo(" in src, \
+            "l'onda deve venire dai campioni VERI del master"
+        osc = (LAB / "Oscilloscopio.jsx").read_text()
+        assert "export function trigger" in osc, \
+            "Oscilloscopio non esporta piu' il trigger — OndaViva orfana"
+
+    def test_l_onda_appare_nel_ritratto_quando_suona(self):
+        """Nel Ritratto, legata a inSuono: si apre col suono e basta."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "import OndaViva from './OndaViva'" in src
+        assert "attivo={inSuono}" in src, \
+            "l'onda deve seguire cio' che suona (orig/colpo/tenuto)"
+        assert "ottieniAnalisi={ottieniAnalisi}" in src
+        assert "__fqzRitratto" in src, \
+            "senza il gancio di collaudo la fonderia non si prova senza mic"
+
+    def test_il_vestito_si_apre_e_si_chiude(self):
+        """CSS: chiusa nel silenzio (max-height 0), aperta da viva,
+        con la transizione che rende il gesto fluido."""
+        css = (LAB / "lab.css").read_text()
+        base = css.split(".fqz .lab-ondaviva{")
+        assert len(base) == 2, "manca (o e' doppia) la regola base"
+        assert "max-height:0" in base[1][:200], "da spenta deve essere chiusa"
+        viva = css.split(".fqz .lab-ondaviva.viva{")
+        assert len(viva) == 2 and "max-height:200px" in viva[1][:80], \
+            "da viva deve aprirsi"
+        assert "transition:max-height" in base[1][:300], \
+            "senza transizione l'apertura e' uno scatto"

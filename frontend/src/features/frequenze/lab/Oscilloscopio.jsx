@@ -31,7 +31,9 @@ const MARGINE_Y = 0.88;         // ±1 non tocca i bordi
 
 /* zero-crossing in salita con isteresi adattiva.
    Ritorna l'indice di partenza e se l'aggancio e' riuscito. */
-function trigger(buf) {
+/* Esportato per OndaViva (Ritratto): l'aggancio e' UNA verita',
+   non due copie che derivano. */
+export function trigger(buf) {
   const fine = buf.length - FINESTRA;
   let picco = 0;
   for (let i = 0; i < fine; i++) {
