@@ -1421,17 +1421,25 @@ class TestCicloRz:
     quaderno dopo un reload → fermata."""
 
     def test_il_fermo_e_una_misura(self):
-        """Fermare lo sweep non spegne: interrompe la rampa e TIENE
-        la nota dove sei (il pattern del Generatore) — e si entra nel
-        tono in mano."""
+        """Rivista col founder (28/8, stessa giornata): «quando
+        stoppiamo il suono si deve fermare». Il fermo CATTURA la
+        frequenza (prima si legge, poi si spegne) e fa SILENZIO —
+        risentirla e' un gesto esplicito (▶ Tienila). Misurato:
+        cattura 73,1 → fine +1 → Tienila suona 74,1 nello stesso
+        tick (il numero vive in un ref sincrono); ✕ chiude e tace."""
         src = (LAB / "Risonanze.jsx").read_text()
         assert "fermaLoSweep" in src
-        assert "rampa interrotta = nota tenuta" in src
         assert "'■ Ferma QUI'" in src
-        # niente piu' generatore.ferma() dentro il fermo dello sweep
         a = src.index("const fermaLoSweep")
-        assert "generatore.ferma()" not in src[a:a + 400], \
-            "il fermo spegne di nuovo il suono: il momento si perde"
+        blocco = src[a:a + 600]
+        assert "generatore.ferma()" in blocco, \
+            "il fermo non spegne: il founder ha chiesto silenzio"
+        assert blocco.index("stato().freq") < blocco.index("generatore.ferma()"), \
+            "si spegne PRIMA di leggere: la frequenza catturata e' persa"
+        assert 'data-testid="lab-rz-tienila"' in src
+        assert 'data-testid="lab-rz-chiudi"' in src
+        assert "tonoHzRef" in src, \
+            "il numero e' tornato solo stato React: i tocchi rapidi si perdono"
 
     def test_il_tono_in_mano_ha_le_sue_tre_porte(self):
         """Dal fermo dello sweep, dal ▶ di un picco, dal ▶ del

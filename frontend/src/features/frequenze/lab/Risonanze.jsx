@@ -43,6 +43,8 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
   const [occhio, setOcchio] = useState(false);    // misura senza microfono
   const [freqViva, setFreqViva] = useState(null); // il numerone durante lo sweep
   const [tonoHz, setTonoHz] = useState(null);     // il tono in mano
+  const tonoHzRef = useRef(null);                 // la verita' sincrona del numero
+  const [tonoVivo, setTonoVivo] = useState(false); // sta suonando?
   const [tonoAmp, setTonoAmp] = useState(0.5);
   const [etichetta, setEtichetta] = useState('');
   const [picchi, setPicchi] = useState(null);
@@ -92,13 +94,18 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
     setFase('sweep');
   };
 
-  /* IL FERMO E' UNA MISURA (RZ1): interrompe la rampa e TIENE la
-     nota dove sei — il momento della moneta non si butta piu' via */
+  /* IL FERMO E' UNA MISURA (RZ1, rivisto col founder 28/8: «quando
+     stoppiamo il suono si deve fermare»): il fermo CATTURA la
+     frequenza e fa SILENZIO — la misura resta in mano, e risentirla
+     e' un gesto esplicito (▶ Tienila). Fermare ferma: com'e' giusto
+     che sia. */
   const fermaLoSweep = () => {
     const lab = labRef.current;
-    const qui = lab.generatore.stato().freq;
-    lab.generatore.imposta({ freq: qui });        // rampa interrotta = nota tenuta
-    setTonoHz(+qui.toFixed(1));
+    const qui = lab.generatore.stato().freq;      // PRIMA si legge, poi si spegne
+    lab.generatore.ferma();
+    tonoHzRef.current = +qui.toFixed(1);
+    setTonoHz(tonoHzRef.current);
+    setTonoVivo(false);
     setFase('tono');
     concludi(true);
   };
@@ -107,7 +114,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
     const trovati = occhioRef.current ? [] : trovaPicchi(puntiRef.current);
     if (!occhioRef.current) setPicchi(trovati);
     if (fermatoAMano) {
-      setMsg('Fermato: il tono è in mano — aggiusta fine e guarda l’oggetto.');
+      setMsg('Fermato: la frequenza è tua. ▶ Tienila per risentirla, aggiusta fine, salva.');
     } else if (occhioRef.current) {
       setMsg('Sweep finito. Se non hai visto l’oggetto vibrare, riprova più lento (durata maggiore) o su un campo diverso.');
     } else {
@@ -125,40 +132,49 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
       orecchio: 'entrambe', fase: 1e-7 });
     lab.generatore.imposta({ freq: hz });
     await lab.generatore.avvia();
-    setTonoHz(+(+hz).toFixed(1));
+    tonoHzRef.current = +(+hz).toFixed(1);
+    setTonoHz(tonoHzRef.current);
+    setTonoVivo(true);
     setFase('tono');
     setMsg('');
   };
 
   const aggiusta = (dHz) => {
-    const lab = labRef.current; if (!lab) return;
-    /* si parte dal MOTORE, non dallo stato React: due tocchi rapidi
-       leggevano la stessa base e il secondo cancellava il primo
-       (misurato: +1 e +0,1 da 78 davano 78,1). Il motore aggiorna
-       stato.freq in modo sincrono dentro imposta(). */
-    const base = lab.generatore.stato().freq;
-    const nuovo = Math.min(18000, Math.max(20, base + dHz));
-    lab.generatore.imposta({ freq: nuovo });
-    setTonoHz(+nuovo.toFixed(1));
+    const lab = labRef.current;
+    /* a tono VIVO si parte dal MOTORE (stato React stantio: due
+       tocchi rapidi si cancellavano — misurato); a tono spento si
+       lavora sul numero, e il ▶ suonera' quello */
+    const base = (tonoVivo && lab)
+      ? lab.generatore.stato().freq : (tonoHzRef.current || 0);
+    const nuovo = +Math.min(18000, Math.max(20, base + dHz)).toFixed(1);
+    if (tonoVivo && lab) lab.generatore.imposta({ freq: nuovo });
+    tonoHzRef.current = nuovo;
+    setTonoHz(nuovo);
   };
 
   const cambiaAmp = (v) => {
     setTonoAmp(v);
-    labRef.current?.generatore.imposta({ amp: v });
+    if (tonoVivo) labRef.current?.generatore.imposta({ amp: v });
   };
 
+  /* ■ ferma il SUONO, la misura resta in mano; ✕ chiude la barra */
   const fermaTono = () => {
     labRef.current?.generatore.ferma();
+    setTonoVivo(false);
+  };
+  const chiudiTono = () => {
+    if (tonoVivo) labRef.current?.generatore.ferma();
+    setTonoVivo(false);
     setFase('pronto');
   };
 
   /* RZ5 — la SCOPERTA nel quaderno: una frequenza sola, etichettata */
   const salvaScoperta = () => {
-    if (!tonoHz) return;
+    if (!tonoHzRef.current) return;
     const voce = {
       tipo: 'scoperta',
       quando: new Date().toISOString().slice(0, 16).replace('T', ' '),
-      hz: tonoHz,
+      hz: tonoHzRef.current,
       etichetta: etichetta.trim().slice(0, 40) || null,
     };
     if (salvaNelQuaderno(voce)) {
@@ -362,12 +378,19 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
             <button type="button" className="lab-freeze"
               onClick={async () => scarica(await tonoWav(tonoHz, 30),
                 `tono-${tonoHz}hz.wav`)}>⤓ WAV</button>
-            <button type="button" className="lab-play fermo"
-              data-testid="lab-rz-ferma-tono" onClick={fermaTono}>■ Ferma</button>
+            <button type="button"
+              className={'lab-play' + (tonoVivo ? ' fermo' : '')}
+              data-testid="lab-rz-tienila"
+              onClick={() => (tonoVivo ? fermaTono() : tieni(tonoHzRef.current))}>
+              {tonoVivo ? '■ Ferma' : '▶ Tienila'}
+            </button>
+            <button type="button" className="ghost" title="Chiudi la barra"
+              data-testid="lab-rz-chiudi" onClick={chiudiTono}>✕</button>
           </div>
           <p className="lab-volume">
-            Il tono è fermo dove l&rsquo;hai lasciato: aggiusta di ±0,1 e
-            guarda l&rsquo;oggetto — le risonanze vivono in finestre strette.
+            {tonoVivo
+              ? 'Sta suonando: aggiusta di ±0,1 e guarda l’oggetto — le risonanze vivono in finestre strette.'
+              : 'Silenzio: la frequenza è tua. ▶ Tienila per risentirla quando vuoi.'}
           </p>
         </div>
       )}
