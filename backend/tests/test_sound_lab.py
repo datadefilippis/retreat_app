@@ -1314,3 +1314,71 @@ class TestViaArmonica:
         assert 'data-testid="lab-ritratto-vibrato"' in src, \
             "il vibrato misurato non si mostra"
 
+class TestConsolidamentoRitratto:
+    """28/8 — consolidamento del Ritratto su richiesta del founder
+    («siamo in grado di registrare e sintetizzare qualsiasi suono?»).
+    La risposta onesta e' NO, e il Ritratto ora CLASSIFICA la natura
+    del suono e insegna: modi (campana, lattina), intonato (voce, con
+    vibrato), melodia (la nota viaggia), soffio (vento, respiro — non
+    ha modi da mettere in tabella). Evidenze del collaudo: campana e
+    lattina 4/4 modi (doppietto e vite intatti), voce intonata con
+    vibrato, melodia 164.7→220.1; il rumore sintetico ~75-80% soffio
+    (il classificatore e' probabilistico e lo si dice)."""
+
+    def test_le_quattro_nature_esistono(self):
+        src = (LAB / "ritrattista.js").read_text()
+        for natura in ("'soffio'", "'melodia'", "'intonato'", "'modi'"):
+            assert f"natura: {natura}" in src, f"manca la natura {natura}"
+
+    def test_l_ordine_dei_giudici(self):
+        """La via armonica parla PRIMA del giudice del soffio: chi e'
+        intonato esce subito, e il giudice puo' essere severo senza
+        bocciare una voce."""
+        src = (LAB / "ritrattista.js").read_text()
+        assert src.index("_viaArmonica(campioni") \
+            < src.index("_qualcosaDiFermo(campioni"), \
+            "il giudice del soffio parla prima della via armonica"
+
+    def test_il_giudice_del_soffio_e_fisica_non_soglie(self):
+        """Cinque giri di collaudo per arrivarci (tutti nel codice):
+        STABILITA' fra finestre ADIACENTI (i modi di una lattina
+        muoiono presto; il periodogramma del rumore e' indipendente
+        anche fra finestre attaccate) + COERENZA del decadere
+        (residuo dal fit lineare, con la serie TRONCATA al ginocchio
+        dove il modo muore nel rumore)."""
+        src = (LAB / "ritrattista.js").read_text()
+        assert "_qualcosaDiFermo" in src
+        assert "cime(da + W)" in src, \
+            "le finestre non sono piu' adiacenti: la lattina torna soffio"
+        assert "massimo - 40" in src, \
+            "il troncamento al ginocchio e' sparito: la lattina torna soffio"
+        assert "<= 2.6" in src
+
+    def test_i_verdetti_maestro_nel_pannello(self):
+        """Soffio e melodia non sono errori: sono lezioni — col dato
+        misurato (picco in dB, da nota a nota) e il gesto giusto da
+        provare."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert 'data-testid="lab-ritratto-soffio"' in src
+        assert 'data-testid="lab-ritratto-melodia"' in src
+        assert "colpirlo" in src, "il soffio non insegna il gesto del colpo"
+        assert "una sola altezza" in src, \
+            "la melodia non insegna il gesto della nota ferma"
+
+    def test_la_griglia_e_le_corde(self):
+        """Desktop: l'esito in DUE colonne (scena a sinistra, tabella
+        e rifusione a destra) — la picture e' immediata; sotto i
+        1080px si torna in colonna. Le corde: un canvas col contratto
+        dei pannelli (iscrivi, niente nodi audio, niente rAF suo)."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "lab-ritratto-griglia" in src
+        assert "<RitrattoVisual" in src
+        assert 'data-testid="lab-ritratto-lettura"' in src
+        vis = (LAB / "RitrattoVisual.jsx").read_text()
+        assert "iscrivi(" in vis
+        assert "createOscillator" not in vis and "AudioContext" not in vis
+        assert "requestAnimationFrame" not in vis
+        css = (LAB / "lab.css").read_text()
+        assert "grid-template-columns:minmax(320px,5fr) minmax(360px,6fr)" in css
+        assert "@media (max-width:1080px)" in css
+

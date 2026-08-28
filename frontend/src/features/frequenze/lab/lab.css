@@ -349,3 +349,25 @@
 .fqz .lab-sala-profilo span{flex:1;min-width:240px;font-size:12.5px;
   color:var(--dim);line-height:1.6}
 .fqz .lab-sala-profilo a{color:var(--lamp);text-decoration:none}
+
+/* ═══ Consolidamento Ritratto (28/8) — la griglia e le corde ═══
+   Su desktop l'esito vive in DUE colonne (la scena a sinistra, la
+   tabella e la rifusione a destra): la picture e' immediata, senza
+   scroll. Sotto i 1080px si torna in colonna. */
+.fqz .lab-ritratto-griglia{display:grid;gap:18px;
+  grid-template-columns:minmax(320px,5fr) minmax(360px,6fr);
+  align-items:start}
+.fqz .lab-ritratto-griglia > .lab-ritratto-onesta{grid-column:1 / -1}
+@media (max-width:1080px){
+  .fqz .lab-ritratto-griglia{grid-template-columns:1fr}
+}
+.fqz .lab-ritratto-tela{height:210px}
+.fqz .lab-ritratto-visual{margin:10px 0 2px}
+.fqz .lab-ritratto-visual-nota{margin:8px 0 0;font-size:11.5px;
+  color:var(--dimmer);line-height:1.6}
+.fqz .lab-ritratto-visual-nota b{color:var(--dim)}
+.fqz .lab-ritratto-lettura{margin:10px 0 0;font-size:12.5px;
+  color:var(--dim);line-height:1.65;padding:10px 14px;
+  border-left:2px solid var(--lamp-dim);
+  background:linear-gradient(90deg,rgba(201,179,126,.06),transparent 70%)}
+.fqz .lab-verdetto{margin-top:12px}

@@ -146,6 +146,23 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
   const lobo = 16;
   let maxDb = -Infinity;
   for (let b = bMin; b <= bMax; b++) if (mag[b] > maxDb) maxDb = mag[b];
+
+  /* IL SOFFIO SI RICONOSCE DALLA STABILITA' (terzo giro, i primi
+     due misurati e bocciati: «nessun picco» non basta perche' le
+     fluttuazioni della FFT di un rumore superano la soglia locale;
+     la prominenza globale nemmeno, perche' un rumore PENDENTE — il
+     rosa, il respiro — svetta comunque sulla mediana. Il
+     discriminante vero e' il TEMPO: un modo sta FERMO alla stessa
+     frequenza tra l'inizio e la fine della registrazione, la
+     fluttuazione di un rumore cambia posto. Si confrontano i picchi
+     forti di due finestre lontane: nessuno stabile = soffio. */
+  const verdettoSoffio = () => ({
+    versione: 1,
+    natura: 'soffio',
+    sampleRate,
+    durataSec: +(N0 / sampleRate).toFixed(2),
+    piccoDb: +db(picco).toFixed(1),
+  });
   const grezzi = [];
   for (let b = bMin + lobo; b <= bMax - lobo; b++) {
     const v = mag[b];
@@ -163,7 +180,21 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
   }
   grezzi.sort((x, y) => y.db - x.db);
   let scelti = grezzi.slice(0, PARZIALI_MAX * 2).sort((x, y) => x.hz - y.hz);
-  if (!scelti.length) return null;
+  /* IL SOFFIO (consolidamento del Ritratto, 28/8): vento, respiro,
+     fruscio, mare — c'e' energia ma NON ci sono modi: lo spettro e'
+     liscio, nessun picco emerge dal pavimento. Prima si rispondeva
+     «troppo piano» (falso: era forte); ora si dice la natura vera —
+     e' rumore, non note, e la rifusione additiva non puo' replicarlo.
+     E' un verdetto che INSEGNA, non un fallimento. */
+  if (!scelti.length) {
+    return picco >= 0.01 ? {
+      versione: 1,
+      natura: 'soffio',
+      sampleRate,
+      durataSec: +(N0 / sampleRate).toFixed(2),
+      piccoDb: +db(picco).toFixed(1),
+    } : null;
+  }
 
   /* LE BANDE LATERALI (caso «aummm» del founder, 28/8): una voce con
      vibrato mette nello spettro picchi VERI a ±(4-10) Hz dal
@@ -249,9 +280,20 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
      campana che sfuma non passano e restano sulla via dei modi. */
   {
     const armonico = _viaArmonica(campioni, da, L, sampleRate, tenuti);
-    if (armonico) {
+    if (armonico && armonico.mutevole) {
       return {
         versione: 1,
+        natura: 'melodia',
+        sampleRate,
+        durataSec: +(N0 / sampleRate).toFixed(2),
+        f0minHz: armonico.f0minHz,
+        f0maxHz: armonico.f0maxHz,
+      };
+    }
+    if (armonico && !armonico.mutevole) {
+      return {
+        versione: 1,
+        natura: 'intonato',
         armonico: true,
         continuo,
         sampleRate,
@@ -263,6 +305,12 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
     }
   }
 
+  /* il giudice del soffio parla DOPO la via armonica: chi e'
+     intonato e' gia' uscito, e qui si puo' essere severi */
+  if (picco >= 0.01 && !_qualcosaDiFermo(campioni, da, L, sampleRate)) {
+    return verdettoSoffio();
+  }
+
   /* rapporto e scarto in cents dall'armonico teorico piu' vicino */
   for (const p of tenuti) {
     p.rapporto = p.hz / fondo.hz;
@@ -272,6 +320,7 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
 
   return {
     versione: 1,
+    natura: 'modi',
     sampleRate,
     durataSec: +(N0 / sampleRate).toFixed(2),
     codaSec: +(L / sampleRate).toFixed(2),
@@ -294,6 +343,94 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
   };
 }
 
+/* due FFT corte, agli estremi del segmento: i 3 picchi piu' forti
+   della prima devono ritrovarsi (entro 3 Hz o lo 0,5%) fra i 6 piu'
+   forti della seconda — ne basta UNO fermo per dire «non e' un
+   soffio». Le finestre sono ADIACENTI, non agli estremi (quarto
+   giro, misurato: una lattina ha modi che vivono mezzo secondo — a
+   fine registrazione erano gia' morti e passava per soffio; il
+   periodogramma di un rumore e' indipendente anche fra finestre
+   attaccate, quindi l'adiacenza non regala stabilita' al vento). */
+function _qualcosaDiFermo(campioni, da, L, sampleRate) {
+  const W = 1 << 15;                              // ~0,74 s
+  if (L < W * 2) return true;                     // troppo corto per giudicare
+  const cime = (inizio) => {
+    const re = new Float64Array(W), im = new Float64Array(W);
+    for (let i = 0; i < W; i++) {
+      const h = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (W - 1));
+      re[i] = campioni[inizio + i] * h;
+    }
+    fft(re, im);
+    const hzB = sampleRate / W;
+    const b0 = Math.max(2, Math.floor(FIN_MIN / hzB));
+    const b1 = Math.min(W / 2 - 2, Math.ceil(FIN_MAX / hzB));
+    const m = new Float64Array(b1 + 2);
+    for (let b = b0 - 1; b <= b1 + 1; b++) m[b] = db(Math.hypot(re[b], im[b]));
+    const trovate = [];
+    for (let b = b0 + 8; b <= b1 - 8; b++) {
+      const v = m[b];
+      let cima = true;
+      for (let k = 1; k <= 8; k++) {
+        if (m[b - k] > v || m[b + k] > v) { cima = false; break; }
+      }
+      if (cima) trovate.push({ hz: b * hzB, db: v });
+    }
+    trovate.sort((x, y) => y.db - x.db);
+    return trovate;
+  };
+  const prime = cime(da).slice(0, 3);
+  const seconde = cime(da + W).slice(0, 6);
+
+  /* QUINTO GIRO (respiro sintetico, misurato): un rumore a BANDA
+     STRETTA concentra le cime in pochi bin e per caso «combacia»
+     fra le due finestre. L'ultima parola ce l'ha la COERENZA: un
+     modo vero decade LISCIO (i dB seguono una retta), l'ampiezza di
+     un rumore filtrato sfarfalla di ±5 dB anche in un terzo di
+     secondo. Dieci Goertzel corti sul candidato, fit lineare,
+     residuo: sopra i 4 dB di scarto non e' un modo. La finestra
+     corta (0,18 s → lobo ~5 Hz) perdona il vibrato di una voce. */
+  const coerente = (hz) => {
+    const Wg = 8192, quante = 12;
+    if (L < Wg * 5) return true;         // troppo breve per giudicare
+    const dbs = [];
+    for (let k = 0; k < quante && da + (k + 1) * Wg <= da + L; k++) {
+      dbs.push(db(goertzel(campioni, da + k * Wg, Wg, sampleRate, hz)));
+    }
+    /* SESTO GIRO (lattina, misurato): quando il modo muore nel
+       rumore la serie fa un GINOCCHIO — retta ripida poi plateau —
+       e il fit lineare esplodeva. Si giudica solo il tratto VIVO:
+       la serie si tronca appena scende 40 dB sotto il suo massimo. */
+    const massimo = Math.max(...dbs);
+    let vivi = dbs.length;
+    for (let k = 0; k < dbs.length; k++) {
+      if (dbs[k] < massimo - 40) { vivi = k; break; }
+    }
+    const serie = dbs.slice(0, vivi);
+    if (serie.length < 4) return true;   // vissuto troppo poco: gia' provato dal match
+    const n = serie.length;
+    let sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (let k = 0; k < n; k++) {
+      sx += k; sy += serie[k]; sxx += k * k; sxy += k * serie[k];
+    }
+    const m = (n * sxy - sx * sy) / (n * sxx - sx * sx || 1);
+    const q = (sy - m * sx) / n;
+    let res = 0;
+    for (let k = 0; k < n; k++) {
+      const e = serie[k] - (m * k + q);
+      res += e * e;
+    }
+    /* 3,2 dB: i modi veri (vibrato perdonato dal lobo largo, e il
+       battimento di un doppietto assorbito in parte dalla retta)
+       stanno sotto; il rumore filtrato sfarfalla a 4-6. La soglia
+       puo' essere severa perche' i suoni INTONATI escono dalla via
+       armonica PRIMA di arrivare da questo giudice. */
+    return Math.sqrt(res / n) <= 2.6;
+  };
+
+  return prime.some((p) => seconde.some((q) =>
+    Math.abs(q.hz - p.hz) <= Math.max(3, p.hz * 0.005)) && coerente(p.hz));
+}
+
 function _viaArmonica(campioni, da, L, sampleRate, picchiFft) {
   const finestra = 4096, passo = 2048;
   const quanti = Math.floor((L - finestra) / passo);
@@ -313,6 +450,16 @@ function _viaArmonica(campioni, da, L, sampleRate, picchiFft) {
   const f0 = ordinati[Math.floor(ordinati.length / 2)];
   if (!f0 || f0 < 40) return null;
 
+  /* LA MELODIA: se la fondamentale VIAGGIA (piu' del 12%: ben oltre
+     ogni vibrato) non e' una nota tenuta — e' una melodia o un
+     parlato. Il ritratto fotografa UN istante: si dice cosa si e'
+     sentito (da nota a nota) e si insegna il gesto giusto. */
+  const e5 = ordinati[Math.floor(ordinati.length * 0.05)];
+  const e95 = ordinati[Math.floor(ordinati.length * 0.95)];
+  if ((e95 - e5) / f0 > 0.12) {
+    return { mutevole: true, f0minHz: +e5.toFixed(1), f0maxHz: +e95.toFixed(1) };
+  }
+
   /* il suono deve DAVVERO stare sulla serie armonica: i picchi FFT
      forti devono cadere vicino a un multiplo di f0 (un bordone di
      due toni scorrelati non passa di qui) */
@@ -326,9 +473,7 @@ function _viaArmonica(campioni, da, L, sampleRate, picchiFft) {
   }
 
   /* il VIBRATO: quanto oscilla la fondamentale, e quanto in fretta */
-  const p5 = ordinati[Math.floor(ordinati.length * 0.05)];
-  const p95 = ordinati[Math.floor(ordinati.length * 0.95)];
-  const profonditaHz = +((p95 - p5) / 2).toFixed(2);
+  const profonditaHz = +((e95 - e5) / 2).toFixed(2);
   let giri = 0;
   let sopraMedia = null;
   for (const hz of intonati) {

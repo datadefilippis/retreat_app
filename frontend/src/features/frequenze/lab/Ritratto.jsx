@@ -20,10 +20,12 @@ import { useAuth } from '../../../context/AuthContext';
 import { frequenciesAPI } from '../../../api/frequencies';
 import { analizza } from './ritrattista';
 import { campana, renderizzaWav } from './fonderia';
+import RitrattoVisual from './RitrattoVisual';
+import { notaVicina } from './note';
 
 const SECONDI = 6;
 
-export default function Ritratto({ ottieniLab }) {
+export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
   const { user } = useAuth();
   const [fase, setFase] = useState('pronto');     // pronto | registro | analizzo
   const [conto, setConto] = useState(0);
@@ -198,8 +200,36 @@ export default function Ritratto({ ottieniLab }) {
         </p>
       )}
 
-      {esito && (
-        <div className="lab-ritratto-esito" data-testid="lab-ritratto-esito">
+      {/* I VERDETTI-MAESTRO: quando il suono NON si puo' mettere in
+          tabella, il Ritratto insegna il perche' — non fallisce. */}
+      {esito && esito.natura === 'soffio' && (
+        <div className="lab-didascalia lab-verdetto" data-testid="lab-ritratto-soffio">
+          <b>È un soffio.</b> Ho sentito energia ({esito.piccoDb} dB di
+          picco) ma nessun modo: lo spettro è liscio, come il vento, il
+          respiro o il mare. I soffi sono fatti di <b>rumore</b>, non di
+          note — non c&rsquo;è una tabella da scrivere, e una somma di onde
+          pure non può rifonderli. Se vuoi sentirne la famiglia, nelle
+          Meraviglie ci sono i rumori colorati; se volevi ritrarre un
+          oggetto, prova a <b>colpirlo</b>: il colpo sveglia i suoi modi.
+        </div>
+      )}
+      {esito && esito.natura === 'melodia' && (
+        <div className="lab-didascalia lab-verdetto" data-testid="lab-ritratto-melodia">
+          <b>La nota si muove.</b> Ho sentito un suono intonato ma la
+          fondamentale ha viaggiato da <b>{String(esito.f0minHz).replace('.', ',')} Hz</b>
+          {notaVicina(esito.f0minHz) && ` (${notaVicina(esito.f0minHz).nome})`} a{' '}
+          <b>{String(esito.f0maxHz).replace('.', ',')} Hz</b>
+          {notaVicina(esito.f0maxHz) && ` (${notaVicina(esito.f0maxHz).nome})`}:
+          è una melodia, o un parlato. Il ritratto fotografa <b>una</b> nota
+          tenuta — canta un suono fermo («aaah» su una sola altezza) e
+          riprova. Le melodie intere sono un altro mestiere: qui si
+          studia com&rsquo;è fatto UN suono.
+        </div>
+      )}
+
+      {esito && esito.parziali && (
+        <div className="lab-ritratto-esito lab-ritratto-griglia" data-testid="lab-ritratto-esito">
+        <div className="lab-ritratto-colA">
           <p className="lab-ritratto-riga">
             {esito.armonico ? 'Suono intonato · fondamentale ' : 'Fondamentale '}
             <b>{esito.fondamentaleHz} Hz</b>
@@ -214,6 +244,18 @@ export default function Ritratto({ ottieniLab }) {
             {esito.rumoreFondoDb !== null
               && ` · fondo della stanza ${esito.rumoreFondoDb} dB`}
           </p>
+
+          <RitrattoVisual esito={esito} ottieniAnalisi={ottieniAnalisi}
+            vivo={inSuono !== null} />
+
+          <p className="lab-ritratto-lettura" data-testid="lab-ritratto-lettura">
+            {esito.natura === 'intonato'
+              ? 'Suono intonato: le corde sono le tue armoniche — multipli esatti della fondamentale. È la firma di una voce o di una corda.'
+              : 'Ogni riga della tabella è un «modo»: una delle note pure di cui è fatto il tuo suono. Una corda li ha in rapporti interi; una campana no — ed è per questo che suona da campana.'}
+          </p>
+        </div>
+
+        <div className="lab-ritratto-colB">
           <div className="lab-ritratto-scroll">
             <table className="lab-ritratto-tabella">
               <thead>
@@ -247,7 +289,7 @@ export default function Ritratto({ ottieniLab }) {
             </table>
           </div>
 
-          {/* ── LB4: LA CAMPANA RIFATTA ── */}
+          {/* ── LB4: LA RIFUSIONE ── */}
           <div className="lab-fonderia" data-testid="lab-fonderia">
             <h3>La rifusione — la copia sintetica costruita dalla tabella</h3>
             <p className="lab-volume" data-testid="lab-fonderia-spiega">
@@ -305,6 +347,8 @@ export default function Ritratto({ ottieniLab }) {
               Il <b>tenuto</b> è anche il WAV per la cimatica.
             </p>
           </div>
+
+          </div>{/* /colB */}
 
           <p className="lab-ritratto-onesta">
             Le <b>frequenze</b> sono affidabili al decimo di Hz; le

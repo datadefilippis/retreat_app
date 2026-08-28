@@ -27,7 +27,7 @@ export default function LabRitratto() {
       ]}>
       <Orecchio ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi}
         ottieniVivo={ottieniVivo} />
-      <Ritratto ottieniLab={ottieniLab} />
+      <Ritratto ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi} />
     </Stanza>
   );
 }
