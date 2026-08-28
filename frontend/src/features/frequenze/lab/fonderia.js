@@ -156,3 +156,42 @@ export async function renderizzaWav(ritratto, opzioni = {}) {
 
 /* banco di prova per i collaudi dalla console */
 try { window.__fqzFonderia = { vociDelRitratto, campana, renderizzaWav }; } catch { /* SSR */ }
+
+/* ── il quaderno dei ritratti (29/8/2026) ──────────────────────────
+ * Il desiderio del founder: un registro anche nel Ritratto, come il
+ * quaderno delle Risonanze. Qui la voce e' un RITRATTO intero
+ * (tabella dei modi + spenti + respiro): salvi la campana di casa
+ * una volta e la rifondi quando vuoi, senza microfono ne' nuova
+ * registrazione. La registrazione originale NON si salva (pesa e
+ * l'A/B ha senso solo appena registrato): il quaderno ricorda la
+ * carta d'identita', non la voce. Stessa filosofia di cimatica.js:
+ * localStorage, mai bloccante, resta su questo dispositivo. */
+
+const CHIAVE_RITRATTI = 'fqz_lab_ritratti';
+const RITRATTI_MAX = 24;
+
+export function leggiRitratti() {
+  try {
+    const v = JSON.parse(localStorage.getItem(CHIAVE_RITRATTI) || '[]');
+    return Array.isArray(v) ? v : [];
+  } catch { return []; }
+}
+
+export function salvaRitratto(voce) {
+  try {
+    const q = leggiRitratti();
+    q.unshift(voce);
+    localStorage.setItem(CHIAVE_RITRATTI,
+      JSON.stringify(q.slice(0, RITRATTI_MAX)));
+    return true;
+  } catch { return false; }
+}
+
+export function cancellaRitratto(indice) {
+  try {
+    const q = leggiRitratti();
+    q.splice(indice, 1);
+    localStorage.setItem(CHIAVE_RITRATTI, JSON.stringify(q));
+    return q;
+  } catch { return leggiRitratti(); }
+}

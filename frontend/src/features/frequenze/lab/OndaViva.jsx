@@ -32,7 +32,9 @@ const NOMI = {
   tenuto: 'la rifusione — tenuta',
 };
 
-export default function OndaViva({ ottieniAnalisi, attivo }) {
+/* `nome` (opzionale) sovrascrive il nome di battesimo: il quaderno
+   dei ritratti lo usa per dire l'etichetta della voce che suona. */
+export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
   const telaRef = useRef(null);
   const acqRef = useRef(null);
   const daRef = useRef(0);
@@ -148,7 +150,7 @@ export default function OndaViva({ ottieniAnalisi, attivo }) {
     <div className={`lab-ondaviva${attivo ? ' viva' : ''}`}
       data-testid="lab-ondaviva" aria-hidden={!attivo}>
       <div className="lab-ondaviva-testa">
-        <span>L’onda, dal vivo{attivo ? ` — ${NOMI[attivo] || ''}` : ''}</span>
+        <span>L’onda, dal vivo{attivo ? ` — ${nome || NOMI[attivo] || ''}` : ''}</span>
         <span className={`lab-ondaviva-stato${aggancio ? ' ok' : ''}`}>
           {aggancio ? 'agganciata' : 'in corsa'}
         </span>

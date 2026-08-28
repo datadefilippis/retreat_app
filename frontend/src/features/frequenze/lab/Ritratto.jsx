@@ -19,7 +19,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { frequenciesAPI } from '../../../api/frequencies';
 import { analizza } from './ritrattista';
-import { campana, renderizzaWav } from './fonderia';
+import { campana, renderizzaWav, leggiRitratti, salvaRitratto,
+  cancellaRitratto } from './fonderia';
 import RitrattoVisual from './RitrattoVisual';
 import OndaViva from './OndaViva';
 import { notaVicina } from './note';
@@ -34,8 +35,11 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
   const [niente, setNiente] = useState(false);    // analisi senza esito
   const [spenti, setSpenti] = useState([]);       // parziali esclusi (hz)
   const [respiro, setRespiro] = useState(1);      // moltiplicatore delle vite
-  const [inSuono, setInSuono] = useState(null);   // 'orig'|'colpo'|'tenuto'
+  const [inSuono, setInSuono] = useState(null);   // 'orig'|'colpo'|'tenuto'|'q:i:modo'
   const [msg, setMsg] = useState('');
+  /* Il quaderno dei ritratti (29/8): registro come nelle Risonanze */
+  const [salvati, setSalvati] = useState(leggiRitratti);
+  const [etichetta, setEtichetta] = useState('');
   const labRef = useRef(null);
   const contoRef = useRef(null);
   const presaRef = useRef(null);                  // i campioni registrati
@@ -155,6 +159,55 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
       setTimeout(() => setInSuono((cosa) => (cosa === 'colpo' ? null : cosa)),
         esec.durataSec * 1000);
     }
+  };
+
+  /* ── il quaderno dei ritratti (29/8) ─────────────────────────────
+     La lezione delle Risonanze, applicata qui: ogni voce si suona e
+     si ferma SUL POSTO (▶ diventa ■ nella sua chip, mai risalire),
+     e la voce ricorda anche spenti+respiro — la rifusione salvata
+     suona come la sentivi quando l'hai salvata. */
+  const salvaNelQuaderno = () => {
+    if (!esito) return;
+    const voce = {
+      quando: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      etichetta: etichetta.trim().slice(0, 40) || null,
+      esito, spenti, respiro,
+    };
+    if (salvaRitratto(voce)) {
+      setSalvati(leggiRitratti());
+      setEtichetta('');
+      setMsg('Ritratto salvato nel quaderno (resta su questo dispositivo).');
+    } else setMsg('Quaderno non disponibile su questo browser.');
+  };
+
+  const suonaDalQuaderno = async (i, modo) => {
+    const chiave = `q:${i}:${modo}`;
+    if (inSuono === chiave) { zittisci(); return; }
+    const voce = salvati[i]; if (!voce) return;
+    const lab = ottieniLab();
+    labRef.current = lab;
+    zittisci();
+    try { await lab.ctx.resume(); } catch { /* attivo */ }
+    await lab.ponte.avvia();
+    const esec = campana(lab.ctx, lab.ingresso, voce.esito,
+      { modo, respiro: voce.respiro ?? 1, spenti: voce.spenti || [] });
+    if (!esec) return;
+    vivoRef.current = esec;
+    setInSuono(chiave);
+    if (modo === 'colpo') {
+      setTimeout(() => setInSuono((cosa) => (cosa === chiave ? null : cosa)),
+        esec.durataSec * 1000);
+    }
+  };
+
+  const apriDalQuaderno = (i) => {
+    const voce = salvati[i]; if (!voce) return;
+    zittisci();
+    setEsito(voce.esito);
+    setSpenti(voce.spenti || []);
+    setRespiro(voce.respiro ?? 1);
+    setNiente(false); presaRef.current = null;
+    setMsg(`Ritratto «${voce.etichetta || 'senza nome'}» aperto dal quaderno — l’originale registrato non c’è: il quaderno ricorda la tabella, non la voce.`);
   };
 
   const scaricaWav = async () => {
@@ -326,7 +379,9 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
             </p>
             <div className="lab-fonderia-gesti">
               <button type="button" className={'lab-freeze' + (inSuono === 'orig' ? ' fermo' : '')}
-                data-testid="lab-ab-originale"
+                data-testid="lab-ab-originale" disabled={!presaRef.current}
+                title={presaRef.current ? undefined
+                  : 'Ritratto aperto dal quaderno: l’originale non è salvato'}
                 onClick={() => (inSuono === 'orig' ? zittisci() : suonaOriginale())}>
                 {inSuono === 'orig' ? '■ Originale' : '▶ Originale'}
               </button>
@@ -349,9 +404,20 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
             </div>
             {/* L'ONDA VIVA (29/8): mentre l'A/B suona, la forma d'onda
                 vera dal master — trigger dell'Oscilloscopio, scia al
-                fosforo. Si apre solo col suono. */}
-            <OndaViva ottieniAnalisi={ottieniAnalisi} attivo={inSuono} />
+                fosforo. Si apre solo col suono (di QUESTA fonderia:
+                il quaderno ha la sua tela, accanto alle sue chip). */}
+            <OndaViva ottieniAnalisi={ottieniAnalisi}
+              attivo={['orig', 'colpo', 'tenuto'].includes(inSuono) ? inSuono : null} />
             <div className="lab-fonderia-gesti">
+              <input type="text" className="lab-rz-etichetta"
+                data-testid="lab-ritratto-etichetta"
+                placeholder="etichetta («la mia campana»)…" maxLength={40}
+                value={etichetta}
+                onChange={(e) => setEtichetta(e.target.value)} />
+              <button type="button" className="lab-freeze"
+                data-testid="lab-ritratto-salva" onClick={salvaNelQuaderno}>
+                Salva nel quaderno
+              </button>
               <button type="button" className="lab-freeze"
                 data-testid="lab-fonderia-wav" onClick={scaricaWav}>
                 ⤓ WAV (tenuto, 10 s)
@@ -384,6 +450,51 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
             <b> ampiezze</b> sotto i 100 Hz e sopra i 15 kHz sono
             indicative — un microfono da telefono colora lo spettro.
           </p>
+        </div>
+      )}
+
+      {/* IL QUADERNO DEI RITRATTI (29/8) — il registro, come nelle
+          Risonanze: vive anche senza un ritratto appena fatto, cosi'
+          torni sulla pagina e risuoni la campana di ieri. Ogni voce
+          si suona e si ferma SUL POSTO. */}
+      {salvati.length > 0 && (
+        <div className="lab-quaderno" data-testid="lab-ritratto-quaderno">
+          <h3>Il quaderno dei ritratti</h3>
+          {salvati.map((v, i) => (
+            <div key={`${v.quando}-${i}`} className="lab-quaderno-riga">
+              <span>{v.quando} · {v.etichetta || 'senza nome'}
+                {' · '}{Math.round(v.esito?.fondamentaleHz || 0)} Hz
+                {' · '}{(v.esito?.parziali || []).length} modi
+              </span>
+              <b>
+                <button type="button"
+                  className={'chip lab-quaderno-hz' + (inSuono === `q:${i}:colpo` ? ' on' : '')}
+                  title={inSuono === `q:${i}:colpo` ? 'Ferma' : 'Rifondi: colpo'}
+                  onClick={() => suonaDalQuaderno(i, 'colpo')}>
+                  {inSuono === `q:${i}:colpo` ? '■' : '▶'} Colpo
+                </button>
+                <button type="button"
+                  className={'chip lab-quaderno-hz' + (inSuono === `q:${i}:tenuto` ? ' on' : '')}
+                  title={inSuono === `q:${i}:tenuto` ? 'Ferma' : 'Rifondi: tenuto'}
+                  onClick={() => suonaDalQuaderno(i, 'tenuto')}>
+                  {inSuono === `q:${i}:tenuto` ? '■' : '∿'} Tenuto
+                </button>
+                <button type="button" className="chip lab-quaderno-hz"
+                  title="Apri questo ritratto: tabella, corde e fonderia"
+                  onClick={() => apriDalQuaderno(i)}>
+                  Apri
+                </button>
+              </b>
+              <button type="button" className="ghost" title="Elimina"
+                onClick={() => { if (String(inSuono).startsWith('q:')) zittisci(); setSalvati(cancellaRitratto(i)); }}>×</button>
+            </div>
+          ))}
+          <OndaViva ottieniAnalisi={ottieniAnalisi}
+            attivo={String(inSuono).startsWith('q:') ? inSuono : null}
+            nome={String(inSuono).startsWith('q:')
+              ? (salvati[+String(inSuono).split(':')[1]]?.etichetta || 'dal quaderno')
+              : null} />
+          <p className="lab-cnote">i ritratti restano su questo dispositivo — il quaderno ricorda la tabella, non la registrazione originale</p>
         </div>
       )}
 

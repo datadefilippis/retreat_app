@@ -1538,8 +1538,10 @@ class TestOndaViva:
         """Nel Ritratto, legata a inSuono: si apre col suono e basta."""
         src = (LAB / "Ritratto.jsx").read_text()
         assert "import OndaViva from './OndaViva'" in src
-        assert "attivo={inSuono}" in src, \
-            "l'onda deve seguire cio' che suona (orig/colpo/tenuto)"
+        # Evoluta col quaderno dei ritratti (29/8): la tela della
+        # fonderia segue SOLO i suoi tre gesti (il quaderno ha la sua)
+        assert "['orig', 'colpo', 'tenuto'].includes(inSuono) ? inSuono : null" in src, \
+            "l'onda della fonderia deve seguire solo orig/colpo/tenuto"
         assert "ottieniAnalisi={ottieniAnalisi}" in src
         assert "__fqzRitratto" in src, \
             "senza il gancio di collaudo la fonderia non si prova senza mic"
@@ -1556,3 +1558,66 @@ class TestOndaViva:
             "da viva deve aprirsi"
         assert "transition:max-height" in base[1][:300], \
             "senza transizione l'apertura e' uno scatto"
+
+
+class TestQuadernoRitratti:
+    """IL QUADERNO DEI RITRATTI (29/8/2026) — il registro del Ritratto.
+
+    Desiderio del founder: «salvare dei toni come nelle risonanze, un
+    registro anche li'». La voce e' un ritratto INTERO (esito + spenti
+    + respiro): salvi la campana una volta, la rifondi quando vuoi
+    senza microfono. Collaudato nel pane: salva → riga «campana di
+    prova · 220 Hz · 3 modi», tenuto dal quaderno → chip ■ + onda viva
+    del quaderno con l'etichetta, stop sul posto, Apri → Originale
+    disabilitato con l'onesta' («ricorda la tabella, non la voce»),
+    sopravvive al cambio pagina, x pulisce lo store.
+    """
+
+    def test_lo_storage_vive_in_fonderia_con_chiave_propria(self):
+        """Chiave separata dal quaderno RZ, letture mai bloccanti."""
+        src = (LAB / "fonderia.js").read_text()
+        assert "'fqz_lab_ritratti'" in src, "manca la chiave del quaderno"
+        for fn in ("leggiRitratti", "salvaRitratto", "cancellaRitratto"):
+            assert f"export function {fn}" in src, f"manca {fn}"
+        assert src.count("try {") >= 3, \
+            "lo storage deve essere try/catch: mai bloccare il banco"
+        # la chiave RZ resta in cimatica.js e non si confonde
+        assert "'fqz_lab_quaderno'" not in src, \
+            "il quaderno dei ritratti NON deve rubare la chiave delle Risonanze"
+
+    def test_la_voce_ricorda_come_la_sentivi(self):
+        """Si salva esito + spenti + respiro: la rifusione salvata
+        suona come quando l'hai salvata."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "esito, spenti, respiro," in src, \
+            "la voce deve portare anche spenti e respiro"
+        assert "lab-ritratto-etichetta" in src and "lab-ritratto-salva" in src
+
+    def test_il_registro_suona_sul_posto_e_vive_da_solo(self):
+        """La lezione RZ: ogni ▶ e' un interruttore sul posto; e il
+        quaderno si vede anche senza un ritratto appena fatto."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "suonaDalQuaderno" in src and "apriDalQuaderno" in src
+        assert "if (inSuono === chiave) { zittisci(); return; }" in src, \
+            "il ▶ del quaderno deve fermare SUL POSTO (toggle, non solo play)"
+        assert "lab-ritratto-quaderno" in src
+        # fuori dal blocco {esito && ...}: il quaderno viene DOPO la
+        # chiusura della griglia e prima della didascalia finale
+        assert src.index("lab-ritratto-quaderno") > src.index("lab-ritratto-onesta"), \
+            "il quaderno deve vivere fuori dal blocco dell'esito"
+
+    def test_l_onesta_dell_originale_mancante(self):
+        """Aperto dal quaderno, l'Originale non esiste: il bottone si
+        spegne e il messaggio dice il perche'."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "disabled={!presaRef.current}" in src, \
+            "senza presa l'Originale deve spegnersi, non mentire"
+        assert "ricorda la tabella, non la voce" in src
+
+    def test_l_onda_del_quaderno_porta_l_etichetta(self):
+        """OndaViva accetta `nome`: la tela del quaderno dice CHI suona."""
+        onda = (LAB / "OndaViva.jsx").read_text()
+        assert "nome = null" in onda and "nome ||" in onda
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert src.count("<OndaViva") == 2, \
+            "due tele: una per la fonderia, una accanto al quaderno"
