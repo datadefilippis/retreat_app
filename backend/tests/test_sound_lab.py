@@ -1449,8 +1449,10 @@ class TestCicloRz:
         assert 'data-testid="lab-rz-tono"' in src
         assert "`lab-rz-fine-${d}`" in src, \
             "il passo fine ha perso le sue chips"
-        for tid in ("lab-rz-salva-scoperta", "lab-rz-ferma-tono",
-                    "lab-rz-etichetta"):
+        # lab-rz-ferma-tono e' diventato lab-rz-tienila (il fermo del
+        # founder: ▶/■ un solo interruttore, ✕ per chiudere)
+        for tid in ("lab-rz-salva-scoperta", "lab-rz-tienila",
+                    "lab-rz-chiudi", "lab-rz-etichetta"):
             assert tid in src, f"manca {tid} nella barra del tono"
         assert "tieni(p.hz)" in src, "i picchi hanno perso il ▶"
         assert "tieni(hz)" in src, "il quaderno ha perso il ▶"
