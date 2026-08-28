@@ -1102,9 +1102,11 @@ class TestCimaticaLb6:
         OBBLIGATORIO: senza, si sentirebbe solo se stessi, e il
         pannello lo dice) → misura (Goertzel alla frequenza CORRENTE
         dello sweep, letta dal motore: una sola verita')."""
+        # Evoluta col ciclo RZ (28/8): il microfono non e' piu'
+        # OBBLIGATORIO — senza, la misura passa alla via A OCCHIO
+        # (sweep + gli occhi dell'utente), il metodo della moneta.
         src = (LAB / "Risonanze.jsx").read_text()
         assert "orecchio.attivo()" in src and "orecchio.apri()" in src
-        assert "serve il microfono" in src
         assert "goertzel" in src
         assert "generatore.stato()" in src, \
             "la frequenza della misura non viene piu' dal motore"
@@ -1408,4 +1410,72 @@ class TestSottoperiodo:
         sicura."""
         src = (LAB / "accordatore.js").read_text()
         assert "mai un numero sbagliato" in src
+
+class TestCicloRz:
+    """Ciclo RZ (28/8/2026) — le Risonanze come ciclo vivo, dal caso
+    della moneta del founder (fermava lo sweep quando la vedeva
+    danzare e il momento andava perso). Collaudo end-to-end: sweep a
+    occhio → fermo a 78.0 (=freqOra esatta) col TONO CHE RESTA (RMS
+    0.353) → passo fine (due tocchi rapidi si SOMMANO: 79.2) →
+    scoperta «moneta sul telefono» nel quaderno → riaperta dal
+    quaderno dopo un reload → fermata."""
+
+    def test_il_fermo_e_una_misura(self):
+        """Fermare lo sweep non spegne: interrompe la rampa e TIENE
+        la nota dove sei (il pattern del Generatore) — e si entra nel
+        tono in mano."""
+        src = (LAB / "Risonanze.jsx").read_text()
+        assert "fermaLoSweep" in src
+        assert "rampa interrotta = nota tenuta" in src
+        assert "'■ Ferma QUI'" in src
+        # niente piu' generatore.ferma() dentro il fermo dello sweep
+        a = src.index("const fermaLoSweep")
+        assert "generatore.ferma()" not in src[a:a + 400], \
+            "il fermo spegne di nuovo il suono: il momento si perde"
+
+    def test_il_tono_in_mano_ha_le_sue_tre_porte(self):
+        """Dal fermo dello sweep, dal ▶ di un picco, dal ▶ del
+        quaderno — stessa barra: numerone, passo fine, ampiezza,
+        etichetta, salva, ferma."""
+        src = (LAB / "Risonanze.jsx").read_text()
+        assert 'data-testid="lab-rz-tono"' in src
+        assert "`lab-rz-fine-${d}`" in src, \
+            "il passo fine ha perso le sue chips"
+        for tid in ("lab-rz-salva-scoperta", "lab-rz-ferma-tono",
+                    "lab-rz-etichetta"):
+            assert tid in src, f"manca {tid} nella barra del tono"
+        assert "tieni(p.hz)" in src, "i picchi hanno perso il ▶"
+        assert "tieni(hz)" in src, "il quaderno ha perso il ▶"
+
+    def test_il_passo_fine_parte_dal_motore(self):
+        """Due tocchi rapidi leggevano lo stesso stato React e il
+        secondo cancellava il primo (misurato: +1 e +0,1 da 78 davano
+        78,1). La base viene dal motore, che aggiorna stato.freq in
+        modo sincrono."""
+        src = (LAB / "Risonanze.jsx").read_text()
+        a = src.index("const aggiusta")
+        blocco = src[a:a + 600]
+        assert "lab.generatore.stato().freq" in blocco
+        assert "(tonoHz || 0) + dHz" not in blocco
+
+    def test_la_via_a_occhio_esiste_e_si_dichiara(self):
+        """Senza microfono la misura non si nega: sweep a occhio, il
+        numerone dice dove sei, e la didascalia consacra il metodo
+        («i tuoi occhi sono lo strumento»)."""
+        src = (LAB / "Risonanze.jsx").read_text()
+        assert "aOcchio = true" in src
+        assert "serve il microfono" not in src, \
+            "la misura e' tornata a esigere il microfono"
+        assert "i tuoi occhi sono lo" in src
+        assert 'data-testid="lab-rz-viva"' in src, \
+            "il numerone dello sweep e' sparito"
+
+    def test_il_quaderno_vivo(self):
+        """Due tipi di voce (sweep e scoperta etichettata), ogni
+        frequenza risuonabile con un tocco, e i quattro passi del
+        ciclo in testata."""
+        src = (LAB / "Risonanze.jsx").read_text()
+        assert "tipo: 'scoperta'" in src and "tipo: 'sweep'" in src
+        assert "lab-quaderno-hz" in src
+        assert 'data-testid="lab-rz-passi"' in src
 

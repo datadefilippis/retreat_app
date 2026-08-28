@@ -1,21 +1,26 @@
 /**
- * LE RISONANZE — il cercatore (LB6, 28/8/2026).
+ * LE RISONANZE — il cercatore (LB6; ciclo RZ 28/8/2026).
  *
- * Il Lab si chiude a cerchio: GENERA (lo sweep lento della voce A) →
- * ECCITA (l'altoparlante investe l'oggetto: bottiglia, bicchiere,
- * piastra) → ASCOLTA (il microfono sente la risposta) → MISURA (il
- * Goertzel alla frequenza CORRENTE dello sweep, letta dal motore con
- * freqOra — il numero e il suono sono la stessa verita').
+ * Il caso della moneta del founder ha riscritto il pannello: metteva
+ * una moneta sull'altoparlante, fermava lo sweep quando la vedeva
+ * danzare — e il pannello buttava via il momento. Ora l'esperienza
+ * e' un CICLO, non una corsa:
  *
- * La curva eccitazione→risposta si disegna DAL VIVO mentre lo sweep
- * corre; alla fine i picchi emergono dal pavimento e diventano le
- * risonanze del TUO oggetto — salvabili nel quaderno di banco (su
- * questo dispositivo) ed esportabili come WAV per un amplificatore
- * (l'altoparlante del telefono sotto i ~200 Hz non muove niente).
+ *   prepara → interroga (sweep) → TROVA (con la curva del microfono,
+ *   o CON GLI OCCHI) → il fermo cattura la frequenza e il tono resta
+ *   IN MANO → aggiusti fine, osservi l'oggetto → salvi nel quaderno
+ *   → risuoni quando vuoi (dai picchi, dal quaderno).
+ *
+ * La via «a occhio» e' un metodo dichiarato: senza microfono lo
+ * sweep parte lo stesso, il numerone dice dove sei, e i tuoi occhi
+ * sono lo strumento. Il fermo dello sweep NON spegne il suono: la
+ * nota resta esattamente dove l'hai fermata (e' il pattern del
+ * Generatore: interrompere la rampa = tenere la nota).
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { iscrivi } from './quadro';
 import { goertzel } from './ritrattista';
+import { notaVicina } from './note';
 import { trovaPicchi, tonoWav, sweepWav, leggiQuaderno,
   salvaNelQuaderno, cancellaDalQuaderno } from './cimatica';
 
@@ -28,18 +33,27 @@ const scarica = (blob, nome) => {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 };
 
+const scriviHz = (hz) => String((+hz).toFixed(1)).replace('.', ',');
+
 export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
   const [da, setDa] = useState('60');
   const [a, setA] = useState('1200');
   const [durata, setDurata] = useState('45');
-  const [inCorsa, setInCorsa] = useState(false);
-  const [picchi, setPicchi] = useState(null);     // null = mai corso
+  const [fase, setFase] = useState('pronto');     // pronto | sweep | tono
+  const [occhio, setOcchio] = useState(false);    // misura senza microfono
+  const [freqViva, setFreqViva] = useState(null); // il numerone durante lo sweep
+  const [tonoHz, setTonoHz] = useState(null);     // il tono in mano
+  const [tonoAmp, setTonoAmp] = useState(0.5);
+  const [etichetta, setEtichetta] = useState('');
+  const [picchi, setPicchi] = useState(null);
   const [msg, setMsg] = useState('');
   const [quaderno, setQuaderno] = useState(leggiQuaderno);
   const labRef = useRef(null);
   const telaRef = useRef(null);
-  const puntiRef = useRef([]);                    // {hz, db} della corsa
-  const corsaRef = useRef(false);
+  const puntiRef = useRef([]);
+  const faseRef = useRef('pronto');
+  faseRef.current = fase;
+  const occhioRef = useRef(false);
   const ultimaRef = useRef(0);
   const bufRef = useRef(null);
   const limitiRef = useRef([60, 1200]);
@@ -49,78 +63,160 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
     return Number.isFinite(v) ? Math.min(Math.max(v, min), max) : rip;
   };
 
+  /* ── L'INTERROGAZIONE (lo sweep) ─────────────────────────────── */
   const misura = async () => {
     const lab = ottieniLab();                     // nel gesto
     labRef.current = lab;
-    if (corsaRef.current) {                       // fermare a meta'
-      corsaRef.current = false; setInCorsa(false);
-      lab.generatore.ferma();
-      concludi();
-      return;
-    }
-    setMsg('');
+    if (faseRef.current === 'sweep') { fermaLoSweep(); return; }
+    setMsg(''); setPicchi(null);
+    /* RZ4 — senza microfono la misura non si nega: si dichiara la
+       via A OCCHIO (sweep + i tuoi occhi), che e' come il founder
+       ha trovato la risonanza della sua moneta */
+    let aOcchio = false;
     if (!lab.orecchio.attivo()) {
-      try { await lab.orecchio.apri(); } catch {
-        setMsg('Per misurare la risposta serve il microfono: senza, sentirei solo me stesso.');
-        return;
-      }
+      try { await lab.orecchio.apri(); } catch { aOcchio = true; }
     }
+    occhioRef.current = aOcchio;
+    setOcchio(aOcchio);
     const f0 = numero(da, 20, 18000, 60);
     const f1 = numero(a, 20, 18000, 1200);
     const sec = numero(durata, 10, 300, 45);
     setDa(String(f0)); setA(String(f1)); setDurata(String(sec));
     limitiRef.current = [Math.min(f0, f1), Math.max(f0, f1)];
     puntiRef.current = [];
-    setPicchi(null);
     lab.generatore.imposta({ forma: 'sine', amp: 0.5, orecchio: 'entrambe',
       fase: 1e-7 });
     lab.generatore.imposta({ freq: f0 });
     await lab.generatore.avvia();
     lab.generatore.imposta({ freq: f1, secondi: sec });
-    corsaRef.current = true; setInCorsa(true);
+    setFase('sweep');
   };
 
-  const concludi = () => {
-    const trovati = trovaPicchi(puntiRef.current);
-    setPicchi(trovati);
-    setMsg(trovati.length
-      ? `${trovati.length} risonanze trovate: sono i punti dove il tuo oggetto canta.`
-      : 'Nessun picco netto: prova più piano con lo sweep (durata maggiore) o più vicino all’oggetto.');
+  /* IL FERMO E' UNA MISURA (RZ1): interrompe la rampa e TIENE la
+     nota dove sei — il momento della moneta non si butta piu' via */
+  const fermaLoSweep = () => {
+    const lab = labRef.current;
+    const qui = lab.generatore.stato().freq;
+    lab.generatore.imposta({ freq: qui });        // rampa interrotta = nota tenuta
+    setTonoHz(+qui.toFixed(1));
+    setFase('tono');
+    concludi(true);
   };
 
-  /* il campionatore + il pittore: in coda al giro del banco */
+  const concludi = (fermatoAMano = false) => {
+    const trovati = occhioRef.current ? [] : trovaPicchi(puntiRef.current);
+    if (!occhioRef.current) setPicchi(trovati);
+    if (fermatoAMano) {
+      setMsg('Fermato: il tono è in mano — aggiusta fine e guarda l’oggetto.');
+    } else if (occhioRef.current) {
+      setMsg('Sweep finito. Se non hai visto l’oggetto vibrare, riprova più lento (durata maggiore) o su un campo diverso.');
+    } else {
+      setMsg(trovati.length
+        ? `${trovati.length} risonanze trovate: sono i punti dove il tuo oggetto canta — ▶ per tenerle.`
+        : 'Nessun picco netto dalla curva: prova più lento, più vicino, o a occhio (ferma tu quando vedi vibrare).');
+    }
+  };
+
+  /* ── IL TONO IN MANO (RZ2): tre porte, una barra ─────────────── */
+  const tieni = async (hz) => {
+    const lab = ottieniLab();                     // nel gesto
+    labRef.current = lab;
+    lab.generatore.imposta({ forma: 'sine', amp: tonoAmp,
+      orecchio: 'entrambe', fase: 1e-7 });
+    lab.generatore.imposta({ freq: hz });
+    await lab.generatore.avvia();
+    setTonoHz(+(+hz).toFixed(1));
+    setFase('tono');
+    setMsg('');
+  };
+
+  const aggiusta = (dHz) => {
+    const lab = labRef.current; if (!lab) return;
+    /* si parte dal MOTORE, non dallo stato React: due tocchi rapidi
+       leggevano la stessa base e il secondo cancellava il primo
+       (misurato: +1 e +0,1 da 78 davano 78,1). Il motore aggiorna
+       stato.freq in modo sincrono dentro imposta(). */
+    const base = lab.generatore.stato().freq;
+    const nuovo = Math.min(18000, Math.max(20, base + dHz));
+    lab.generatore.imposta({ freq: nuovo });
+    setTonoHz(+nuovo.toFixed(1));
+  };
+
+  const cambiaAmp = (v) => {
+    setTonoAmp(v);
+    labRef.current?.generatore.imposta({ amp: v });
+  };
+
+  const fermaTono = () => {
+    labRef.current?.generatore.ferma();
+    setFase('pronto');
+  };
+
+  /* RZ5 — la SCOPERTA nel quaderno: una frequenza sola, etichettata */
+  const salvaScoperta = () => {
+    if (!tonoHz) return;
+    const voce = {
+      tipo: 'scoperta',
+      quando: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      hz: tonoHz,
+      etichetta: etichetta.trim().slice(0, 40) || null,
+    };
+    if (salvaNelQuaderno(voce)) {
+      setQuaderno(leggiQuaderno());
+      setEtichetta('');
+      setMsg('Scoperta salvata nel quaderno (resta su questo dispositivo).');
+    } else setMsg('Quaderno non disponibile su questo browser.');
+  };
+
+  const salvaSweep = () => {
+    if (!picchi || !picchi.length) return;
+    const voce = {
+      tipo: 'sweep',
+      quando: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      da: limitiRef.current[0], a: limitiRef.current[1],
+      risonanze: picchi.map((p) => p.hz),
+    };
+    if (salvaNelQuaderno(voce)) {
+      setQuaderno(leggiQuaderno());
+      setMsg('Salvato nel quaderno di banco (resta su questo dispositivo).');
+    } else setMsg('Quaderno non disponibile su questo browser.');
+  };
+
+  /* ── il campionatore + il numerone + il pittore ──────────────── */
   useEffect(() => iscrivi(() => {
     const lab = labRef.current;
-    const tela = telaRef.current;
-    if (!tela) return;
 
-    /* campiona (10 volte al secondo) mentre la corsa e' viva */
-    if (lab && corsaRef.current) {
+    if (lab && faseRef.current === 'sweep') {
       const s = lab.generatore.stato();
       const ora = performance.now();
       if (ora - ultimaRef.current >= 100) {
         ultimaRef.current = ora;
-        const analisi = ottieniAnalisi();
-        if (analisi) {
-          const N = analisi.analyser.fftSize;
-          if (!bufRef.current || bufRef.current.length !== N) {
-            bufRef.current = new Float32Array(N);
+        setFreqViva(s.freq);
+        if (!occhioRef.current) {
+          const analisi = ottieniAnalisi();
+          if (analisi) {
+            const N = analisi.analyser.fftSize;
+            if (!bufRef.current || bufRef.current.length !== N) {
+              bufRef.current = new Float32Array(N);
+            }
+            analisi.tempo(bufRef.current);
+            const sr = analisi.analyser.context.sampleRate;
+            const amp = goertzel(bufRef.current, 0, Math.min(N, 4096), sr, s.freq);
+            puntiRef.current.push({ hz: s.freq,
+              db: 20 * Math.log10(Math.max(amp, 1e-7)) });
           }
-          analisi.tempo(bufRef.current);
-          const sr = analisi.analyser.context.sampleRate;
-          const amp = goertzel(bufRef.current, 0, Math.min(N, 4096), sr, s.freq);
-          puntiRef.current.push({ hz: s.freq,
-            db: 20 * Math.log10(Math.max(amp, 1e-7)) });
         }
-        if (!s.corsa) {                            // la rampa e' finita
-          corsaRef.current = false; setInCorsa(false);
+        if (!s.corsa) {                            // la rampa e' arrivata in fondo
           lab.generatore.ferma();
+          setFase('pronto');
           concludi();
         }
       }
     }
 
-    /* il disegno della curva */
+    /* il disegno della curva (solo con la via del microfono) */
+    const tela = telaRef.current;
+    if (!tela) return;
     const dpr = window.devicePixelRatio || 1;
     const W = Math.round(tela.clientWidth * dpr);
     const H = Math.round(tela.clientHeight * dpr);
@@ -159,7 +255,6 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
       });
       c2d.stroke();
       c2d.shadowBlur = 0;
-      /* i picchi trovati, in oro con la quota */
       (picchi || []).forEach((p) => {
         const x = xDaHz(p.hz);
         c2d.strokeStyle = oro;
@@ -167,86 +262,140 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
         c2d.fillStyle = oro;
         c2d.font = `${Math.round(10 * dpr)}px ui-monospace, Menlo, monospace`;
         c2d.textAlign = x > W - 50 * dpr ? 'right' : 'left';
-        c2d.fillText(`${String(p.hz).replace('.', ',')}`,
-          x + (x > W - 50 * dpr ? -4 : 4) * dpr, 14 * dpr);
+        c2d.fillText(scriviHz(p.hz), x + (x > W - 50 * dpr ? -4 : 4) * dpr, 14 * dpr);
       });
     } else {
       c2d.fillStyle = nota;
       c2d.font = `${Math.round(10 * dpr)}px ui-monospace, Menlo, monospace`;
       c2d.textAlign = 'center';
-      c2d.fillText('la curva eccitazione → risposta si disegna qui, dal vivo',
+      c2d.fillText(occhioRef.current
+        ? 'via a occhio: niente curva — lo strumento sei tu'
+        : 'la curva eccitazione → risposta si disegna qui, dal vivo',
         W / 2, H / 2);
     }
   }), [ottieniAnalisi, picchi]);   // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => () => {
-    if (corsaRef.current) labRef.current?.generatore.ferma();
-  }, []);
+  useEffect(() => () => { labRef.current?.generatore.ferma(); }, []);
 
-  const salva = () => {
-    if (!picchi || !picchi.length) return;
-    const voce = {
-      quando: new Date().toISOString().slice(0, 16).replace('T', ' '),
-      da: limitiRef.current[0], a: limitiRef.current[1],
-      risonanze: picchi.map((p) => p.hz),
-    };
-    if (salvaNelQuaderno(voce)) {
-      setQuaderno(leggiQuaderno());
-      setMsg('Salvato nel quaderno di banco (resta su questo dispositivo).');
-    } else setMsg('Quaderno non disponibile su questo browser.');
-  };
+  const notaTono = tonoHz ? notaVicina(tonoHz) : null;
+  const notaViva = freqViva ? notaVicina(freqViva) : null;
 
   return (
     <section className="lab-card lab-risonanze" data-testid="lab-risonanze">
       <div className="lab-chead">
         <h2>Le Risonanze</h2>
-        <span className="lab-cnote">genera → eccita → ascolta → misura: il cerchio del banco</span>
+        <span className="lab-cnote">genera → eccita → trova → tieni → osserva: il ciclo del banco</span>
       </div>
+
+      {/* RZ6 — i quattro passi, sempre in vista */}
+      <ol className="lab-rz-passi" data-testid="lab-rz-passi">
+        <li><b>Prepara</b>: l&rsquo;oggetto (moneta, bottiglia, bicchiere) vicino all&rsquo;altoparlante.</li>
+        <li><b>Interroga</b>: avvia lo sweep — col microfono la curva ascolta, senza <i>guardi tu</i>.</li>
+        <li><b>Tieni</b>: quando canta (o danza), ferma: la nota resta in mano e la aggiusti fine.</li>
+        <li><b>Salva</b>: la scoperta va nel quaderno, e la risuoni quando vuoi.</li>
+      </ol>
 
       <div className="lab-sweep-campi">
         <label>Da
           <input value={da} inputMode="decimal" data-testid="lab-ris-da"
-            disabled={inCorsa} onChange={(e) => setDa(e.target.value)} />
+            disabled={fase === 'sweep'} onChange={(e) => setDa(e.target.value)} />
           <i>Hz</i>
         </label>
         <label>A
           <input value={a} inputMode="decimal" data-testid="lab-ris-a"
-            disabled={inCorsa} onChange={(e) => setA(e.target.value)} />
+            disabled={fase === 'sweep'} onChange={(e) => setA(e.target.value)} />
           <i>Hz</i>
         </label>
         <label>Durata
           <input value={durata} inputMode="decimal" data-testid="lab-ris-durata"
-            disabled={inCorsa} onChange={(e) => setDurata(e.target.value)} />
+            disabled={fase === 'sweep'} onChange={(e) => setDurata(e.target.value)} />
           <i>s</i>
         </label>
-        <button type="button" className={'lab-play' + (inCorsa ? ' fermo' : '')}
+        <button type="button" className={'lab-play' + (fase === 'sweep' ? ' fermo' : '')}
           data-testid="lab-ris-misura" onClick={misura}>
-          {inCorsa ? '■ Ferma la misura' : '◉ Misura le risonanze'}
+          {fase === 'sweep' ? '■ Ferma QUI' : '◉ Interroga con lo sweep'}
         </button>
       </div>
-      <p className="lab-volume">
-        Metti l&rsquo;oggetto (bottiglia, bicchiere, piastra) vicino
-        all&rsquo;altoparlante e al microfono. Lo sweep lo interroga piano:
-        dove la curva fa un picco, l&rsquo;oggetto canta.
-      </p>
+
+      {/* il numerone dello sweep: dove siamo, mentre corriamo */}
+      {fase === 'sweep' && freqViva && (
+        <div className="lab-rz-viva" data-testid="lab-rz-viva">
+          <span className="lab-rz-hz">{scriviHz(freqViva)}</span><b>Hz</b>
+          {notaViva && <i>{notaViva.nome}</i>}
+          <em>{occhio ? 'guarda l’oggetto: quando vibra, ferma' : 'la curva sta ascoltando'}</em>
+        </div>
+      )}
+
+      {/* RZ1+RZ2 — IL TONO IN MANO */}
+      {fase === 'tono' && tonoHz && (
+        <div className="lab-rz-tono" data-testid="lab-rz-tono">
+          <div className="lab-rz-tonoriga">
+            <span className="lab-rz-hz">{scriviHz(tonoHz)}</span><b>Hz</b>
+            {notaTono && (
+              <i>{notaTono.nome}
+                {notaTono.cents !== 0 && ` ${notaTono.cents > 0 ? '+' : ''}${notaTono.cents}c`}</i>
+            )}
+            <span className="lab-rz-chips">
+              {[-1, -0.1, 0.1, 1].map((d) => (
+                <button key={d} type="button" className="chip"
+                  data-testid={`lab-rz-fine-${d}`}
+                  onClick={() => aggiusta(d)}>
+                  {d > 0 ? '+' : '−'}{String(Math.abs(d)).replace('.', ',')}
+                </button>
+              ))}
+            </span>
+          </div>
+          <div className="lab-rz-tonoriga">
+            <label className="lab-par lab-rz-amp">
+              <span>Ampiezza <b>{Math.round(tonoAmp * 100)}%</b></span>
+              <input type="range" className="lab-slider" min="0.05" max="0.9"
+                step="0.05" value={tonoAmp}
+                onChange={(e) => cambiaAmp(+e.target.value)} />
+            </label>
+            <input className="lab-rz-etichetta" value={etichetta}
+              placeholder="etichetta (es. moneta)" maxLength={40}
+              data-testid="lab-rz-etichetta"
+              onChange={(e) => setEtichetta(e.target.value)} />
+            <button type="button" className="lab-freeze"
+              data-testid="lab-rz-salva-scoperta"
+              onClick={salvaScoperta}>Salva scoperta</button>
+            <button type="button" className="lab-freeze"
+              onClick={async () => scarica(await tonoWav(tonoHz, 30),
+                `tono-${tonoHz}hz.wav`)}>⤓ WAV</button>
+            <button type="button" className="lab-play fermo"
+              data-testid="lab-rz-ferma-tono" onClick={fermaTono}>■ Ferma</button>
+          </div>
+          <p className="lab-volume">
+            Il tono è fermo dove l&rsquo;hai lasciato: aggiusta di ±0,1 e
+            guarda l&rsquo;oggetto — le risonanze vivono in finestre strette.
+          </p>
+        </div>
+      )}
+
       {msg && <p className="lab-volume" aria-live="polite" data-testid="lab-ris-msg">{msg}</p>}
 
-      <canvas ref={telaRef} className="lab-tela lab-ris-tela" role="img"
-        aria-label="Curva eccitazione-risposta con le risonanze trovate" />
+      {!occhio && (
+        <canvas ref={telaRef} className="lab-tela lab-ris-tela" role="img"
+          aria-label="Curva eccitazione-risposta con le risonanze trovate" />
+      )}
 
       {picchi && picchi.length > 0 && (
         <div className="lab-ris-esito" data-testid="lab-ris-esito">
           {picchi.map((p) => (
             <span key={p.hz} className="lab-ris-picco">
-              <b>{String(p.hz).replace('.', ',')} Hz</b> (+{String(p.db).replace('.', ',')} dB)
+              <b>{scriviHz(p.hz)} Hz</b> (+{String(p.db).replace('.', ',')} dB)
+              <button type="button" className="chip"
+                data-testid={`lab-ris-tieni-${Math.round(p.hz)}`}
+                title="Tieni questa frequenza: la senti e la aggiusti"
+                onClick={() => tieni(p.hz)}>▶ Tienila</button>
               <button type="button" className="chip" title="Scarica 30 s di tono a questa frequenza (WAV per un ampli)"
                 onClick={async () => scarica(await tonoWav(p.hz, 30), `tono-${p.hz}hz.wav`)}>
-                ⤓ tono
+                ⤓
               </button>
             </span>
           ))}
           <button type="button" className="lab-freeze" data-testid="lab-ris-salva"
-            onClick={salva}>Salva nel quaderno</button>
+            onClick={salvaSweep}>Salva nel quaderno</button>
         </div>
       )}
 
@@ -262,13 +411,25 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
           sotto i 200 Hz l&rsquo;altoparlante del telefono non muove niente</span>
       </div>
 
+      {/* RZ5 — il quaderno vivo: sweep e scoperte, tutte risuonabili */}
       {quaderno.length > 0 && (
         <div className="lab-quaderno" data-testid="lab-quaderno">
           <h3>Il quaderno di banco</h3>
           {quaderno.map((v, i) => (
             <div key={`${v.quando}-${i}`} className="lab-quaderno-riga">
-              <span>{v.quando} · {v.da}→{v.a} Hz</span>
-              <b>{(v.risonanze || []).map((hz) => String(hz).replace('.', ',')).join(' · ')} Hz</b>
+              <span>{v.quando}
+                {v.tipo === 'scoperta'
+                  ? ` · ${v.etichetta || 'scoperta'}`
+                  : ` · ${v.da}→${v.a} Hz`}
+              </span>
+              <b>
+                {(v.tipo === 'scoperta' ? [v.hz] : (v.risonanze || []))
+                  .map((hz) => (
+                    <button key={hz} type="button" className="chip lab-quaderno-hz"
+                      title="Risuona questa frequenza"
+                      onClick={() => tieni(hz)}>▶ {scriviHz(hz)}</button>
+                  ))}
+              </b>
               <button type="button" className="ghost" title="Elimina"
                 onClick={() => setQuaderno(cancellaDalQuaderno(i))}>×</button>
             </div>
@@ -280,11 +441,13 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
       {/* la didascalia — ogni modulo si racconta (regola LB) */}
       <p className="lab-didascalia" data-testid="lab-ris-didascalia">
         <b>Cimatica, primo passo.</b> Ogni oggetto risuona solo sulle
-        sue frequenze: lo sweep gliele chiede tutte, il microfono
-        ascolta quando risponde. Trovata la risonanza, tienila addosso
-        all&rsquo;oggetto col tono fermo (o col WAV su un ampli) e GUARDA:
-        riso sulla lattina, acqua nel bicchiere — le figure che si
-        formano sono i suoi modi, resi visibili.
+        sue frequenze: lo sweep gliele chiede tutte. Col microfono la
+        curva ascolta la risposta; <b>senza, i tuoi occhi sono lo
+        strumento</b> — se vedi l&rsquo;oggetto danzare, ferma: il banco
+        ricorda dove eri e ti lascia la nota in mano. Trovata la
+        risonanza, tienila addosso all&rsquo;oggetto e guarda: riso, acqua,
+        monete — le figure che si formano sono i suoi modi, resi
+        visibili.
       </p>
     </section>
   );
