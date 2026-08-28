@@ -97,6 +97,14 @@ export function creaLaboratorio(ctx) {
 
   let osservato = master;                      // cio' che l'analyser guarda ora
 
+  /* LB4 — L'INGRESSO: la presa per i suonatori di banco (la campana
+     rifatta della fonderia, il playback dell'originale nell'A/B).
+     Entra nel master, quindi rispetta la regola del ponte e viene
+     osservato dall'analyser come tutto il resto. */
+  const ingresso = ctx.createGain();
+  ingresso.gain.value = 1;
+  ingresso.connect(master);
+
   /* onde con fase gia' calcolate: (forma, fase arrotondata) → wave.
      La cache e' del banco: le due sorgenti la condividono. */
   const cache = new Map();
@@ -316,6 +324,7 @@ export function creaLaboratorio(ctx) {
   const lab = {
     ctx,
     ponte,
+    ingresso,
     limiti: { min: 1, max: nyquist },
 
     /* la voce A — l'interfaccia di sempre, non cambia di una virgola */

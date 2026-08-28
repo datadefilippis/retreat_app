@@ -40,6 +40,11 @@ class TestArchitettura:
             # citano il divieto per spiegarlo) si tolgono prima
             codice = re.sub(r"/\*.*?\*/|//[^\n]*", "", f.read_text(),
                             flags=re.S)
+            # Evoluta con LB4: la destination di un OFFLINE context non
+            # e' una via verso l'altoparlante — e' il file del render
+            # (il silenziatore iOS non c'entra). L'unica forma ammessa
+            # e' quella della fonderia dentro renderizzaWav.
+            codice = codice.replace("campana(ctx, ctx.destination", "")
             assert "destination" not in codice.replace(
                 "createMediaStreamDestination", ""), \
                 f"{f.name}: collega ctx.destination invece del ponte"
@@ -846,4 +851,65 @@ class TestRitrattoLb3:
         assert "lab-didascalia" in src
         css = (LAB / "lab.css").read_text()
         assert "overflow-x:auto" in css.split(".lab-ritratto-scroll")[1][:60]
+
+class TestFonderiaLb4:
+    """LB4 (28/8/2026) — la campana rifatta. La prova del CERCHIO,
+    misurata al collaudo: ritratto → fonderia → ritratto restituisce
+    gli stessi numeri (220 Hz col doppietto a 1.80, T60 8.11/4.01/2.10
+    su 8/4/2) — la rifusione e' fedele per costruzione."""
+
+    def test_la_fonderia_e_matematica_pura(self):
+        """React-free, nessun contesto proprio: riceve ctx e USCITA —
+        nel Lab e' lab.ingresso (→ master → ponte), nell'export
+        l'OfflineAudioContext. La regola del ponte resta intatta."""
+        src = (LAB / "fonderia.js").read_text()
+        codice = re.sub(r"/\*.*?\*/", " ", src, flags=re.S)
+        codice = re.sub(r"^\s*//.*$", " ", codice, flags=re.M)
+        assert "react" not in codice.lower()
+        assert "new AudioContext" not in src and "webkitAudioContext" not in src
+        assert "ctx.destination" not in codice.replace(
+            "campana(ctx, ctx.destination", ""), \
+            "la fonderia decide lei dove va il suono"
+
+    def test_il_doppietto_rinasce_da_coppia_vera(self):
+        """Il battimento non e' un effetto: e' la COPPIA di
+        oscillatori del doppietto (il ritratto porta anche il db del
+        gemello, aggiunto apposta in LB4)."""
+        fond = (LAB / "fonderia.js").read_text()
+        assert "p.doppietto" in fond and "doppietto.hz" in fond
+        rit = (LAB / "ritrattista.js").read_text()
+        assert "db: +p.doppietto.db.toFixed(1)" in rit, \
+            "il doppietto ha perso la sua ampiezza: la rifusione suonera' finta"
+
+    def test_colpo_e_tenuto_e_il_tetto_di_uscita(self):
+        """Due modi dichiarati; la somma delle ampiezze non supera il
+        tetto (USCITA_PICCO): due campane rifuse non fanno clipping."""
+        src = (LAB / "fonderia.js").read_text()
+        assert "'colpo'" in src and "ATTACCO_TENUTO" in src
+        assert "USCITA_PICCO" in src
+        assert "exponentialRampToValueAtTime" in src, \
+            "il decadere del colpo non e' piu' esponenziale"
+
+    def test_l_ingresso_del_banco(self):
+        """lab.ingresso: la presa per i suonatori di banco (rifusione,
+        A/B dell'originale) — entra nel master, quindi ponte e
+        analyser la vedono come tutto il resto."""
+        src = (LAB / "motore.js").read_text()
+        assert "ingresso.connect(master)" in src
+        assert "ingresso," in src           # esposto sul lab
+
+    def test_il_pannello_ha_l_ab_e_l_onesta(self):
+        """A/B originale/colpo/tenuto, parziali accendibili, respiro,
+        WAV per tutti; la consegna in libreria SOLO per il system
+        admin (la scrittura della libreria e' sua per contratto FQ2).
+        E la didascalia dice cosa la rifusione NON cattura."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        for tid in ("lab-ab-originale", "lab-ab-colpo", "lab-ab-tenuto",
+                    "lab-fonderia-wav"):
+            assert f'data-testid="{tid}"' in src
+        a = src.index("lab-fonderia-libreria")
+        assert "user?.role === 'system_admin'" in src[a - 300:a], \
+            "la consegna in libreria non e' piu' dietro il system admin"
+        assert "category: 'campane'" in src
+        assert "non ha catturato" in src, "l'onesta' sull'attacco e' sparita"
 

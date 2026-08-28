@@ -237,6 +237,7 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
       t60: p.t60 === null ? null : +p.t60.toFixed(2),
       doppietto: p.doppietto ? {
         hz: +p.doppietto.hz.toFixed(2),
+        db: +p.doppietto.db.toFixed(1),
         battito: +p.doppietto.battito.toFixed(2),
       } : null,
     })),

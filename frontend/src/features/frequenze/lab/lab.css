@@ -209,3 +209,14 @@
 .fqz .lab-ritratto-tabella tr.fondo td:first-child{color:var(--lamp)}
 .fqz .lab-ritratto-onesta{margin:10px 0 0;font-size:11.5px;
   color:var(--dimmer);line-height:1.55}
+
+/* ═══ LB4 (28/8) — la fonderia ═══ */
+.fqz .lab-fonderia{margin-top:16px;padding-top:14px;
+  border-top:1px dashed var(--line-soft)}
+.fqz .lab-fonderia h3{margin:0 0 10px;font-size:12px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.fqz .lab-fonderia-gesti{display:flex;gap:8px;flex-wrap:wrap;
+  align-items:center;margin-bottom:8px}
+.fqz .lab-respiro{min-width:170px;flex:1;max-width:260px}
+.fqz .lab-ritratto-tabella tr.spento td{opacity:.38}
+.fqz .lab-ritratto-tabella td input[type="checkbox"]{accent-color:var(--lamp)}
