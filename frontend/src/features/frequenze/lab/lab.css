@@ -276,3 +276,25 @@
 .fqz .lab-quaderno-riga b{color:var(--bone);font-family:var(--mono);
   flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
   white-space:nowrap}
+
+/* ═══ LB8 (28/8) — la revisione olistica ═══ */
+.fqz.lab{scroll-behavior:smooth}
+.fqz .lab-invito{max-width:1240px;margin:0 auto 12px;font-size:13.5px;
+  color:var(--dim);line-height:1.6}
+.fqz .lab-invito b{color:var(--bone)}
+.fqz .lab-invito a{color:var(--lamp)}
+.fqz .lab-indice{max-width:1240px;margin:0 auto 18px;display:flex;
+  gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;
+  -webkit-overflow-scrolling:touch}
+.fqz .lab-indice a{flex-shrink:0;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--dim);border:1px solid var(--line);border-radius:999px;
+  padding:6px 12px;text-decoration:none;
+  transition:color .18s ease,border-color .18s ease}
+.fqz .lab-indice a:hover{color:var(--lamp);border-color:var(--lamp-dim)}
+[id^="lab-sezione-"]{scroll-margin-top:76px}
+.fqz .lab-percorso-passi{margin:10px 0 4px;padding-left:22px}
+.fqz .lab-percorso-passi li{font-size:12.5px;color:var(--dim);
+  line-height:1.65;margin-bottom:7px}
+.fqz .lab-percorso-passi a{color:var(--lamp);text-decoration:none}
+.fqz .lab-percorso-passi a:hover{text-decoration:underline}

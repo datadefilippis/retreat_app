@@ -1088,3 +1088,42 @@ class TestCimaticaLb6:
         assert "lab-passofine" in src
         assert "[-1, -0.1, 0.1, 1]" in src
 
+class TestOlisticaLb8:
+    """LB8 (28/8/2026) — la revisione olistica: il Lab come
+    ESPERIENZA. Collaudo: 8 voci d'indice, 8 ancore, ZERO link rotti
+    (verificato dal DOM vivo), 3 percorsi che si aprono."""
+
+    def test_il_primo_minuto_e_l_indice(self):
+        """Chi entra a freddo capisce in 60 secondi cosa si fa qui;
+        le stanze del banco sono a portata di pollice."""
+        src = (LAB / "SoundLabPage.js").read_text()
+        assert 'data-testid="lab-invito"' in src
+        assert 'data-testid="lab-indice"' in src
+        # ogni voce dell'indice punta a un'ancora che ESISTE in pagina
+        voci = re.findall(r"\['#(lab-sezione-[a-z2]+)'", src)
+        assert len(voci) == 8, "l'indice ha perso una stanza"
+        percorsi = (LAB / "Percorsi.jsx").read_text()
+        ids = set(re.findall(r'id="(lab-sezione-[a-z2]+)"', src))
+        ids |= set(re.findall(r'id="(lab-sezione-[a-z2]+)"', percorsi))
+        for v in voci:
+            assert v in ids, f"ancora rotta nell'indice: {v}"
+
+    def test_i_percorsi_legano_gli_strumenti(self):
+        """Tre esperimenti guidati, contenuto puro (nessun nodo
+        audio): ogni passo porta a una stanza vera del banco."""
+        src = (LAB / "Percorsi.jsx").read_text()
+        assert "createOscillator" not in src and "AudioContext" not in src
+        assert src.count("id: '") == 3, "un percorso e' sparito"
+        pagina = (LAB / "SoundLabPage.js").read_text()
+        ids = set(re.findall(r'id="(lab-sezione-[a-z2]+)"', pagina))
+        for ancora in set(re.findall(r"'#(lab-sezione-[a-z2]+)'", src)):
+            assert ancora in ids or ancora == "lab-sezione-percorsi", \
+                f"il percorso porta a una stanza che non c'e': {ancora}"
+
+    def test_le_ancore_non_finiscono_sotto_la_testata(self):
+        """scroll-margin-top: senza, il salto d'ancora nasconde il
+        titolo della stanza sotto la barra; e lo scorrimento e' morbido."""
+        css = (LAB / "lab.css").read_text()
+        assert "scroll-margin-top" in css
+        assert "scroll-behavior:smooth" in css
+

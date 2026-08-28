@@ -20,6 +20,7 @@ import Orecchio from './Orecchio';
 import Ritratto from './Ritratto';
 import Meraviglie from './Meraviglie';
 import Risonanze from './Risonanze';
+import Percorsi from './Percorsi';
 import Oscilloscopio from './Oscilloscopio';
 import Spettro from './Spettro';
 import Spettrogramma from './Spettrogramma';
@@ -94,33 +95,69 @@ export default function SoundLabPage() {
         <StanzeSound attiva="lab" />
       </header>
       <main>
-        <Generatore ottieniLab={ottieniLab} onSuono={setSuona} />
+        {/* LB8 — IL PRIMO MINUTO: chi entra a freddo capisce subito
+            cosa si fa qui; e l'INDICE del banco: le stanze a portata
+            di pollice, con le ancore (scroll-margin nel CSS). */}
+        <p className="lab-invito" data-testid="lab-invito">
+          Premi <b>▶ Genera</b>, muovi la frequenza, guarda lo spettro
+          rispondere: qui ogni suono si vede e si misura mentre accade.
+          Non sai da dove partire? <a href="#lab-sezione-percorsi">Segui un percorso →</a>
+        </p>
+        <nav className="lab-indice" data-testid="lab-indice"
+          aria-label="Le sezioni del banco">
+          {[['#lab-sezione-generatore', 'Genera'],
+            ['#lab-sezione-voce2', 'Voce B'],
+            ['#lab-sezione-orecchio', 'Orecchio'],
+            ['#lab-sezione-letture', 'Letture'],
+            ['#lab-sezione-ritratto', 'Ritratto'],
+            ['#lab-sezione-meraviglie', 'Meraviglie'],
+            ['#lab-sezione-risonanze', 'Risonanze'],
+            ['#lab-sezione-percorsi', 'Percorsi']].map(([a, n]) => (
+              <a key={a} href={a}>{n}</a>
+          ))}
+        </nav>
+
+        <div id="lab-sezione-generatore">
+          <Generatore ottieniLab={ottieniLab} onSuono={setSuona} />
+        </div>
 
         {/* LB1 — la seconda voce: interferenza, battimenti, binaurale
             da banco. Gemella della A nella fabbrica del motore. */}
-        <SecondaVoce ottieniLab={ottieniLab}
-          onSuono={() => setSuona((v) => !v)} />
+        <div id="lab-sezione-voce2">
+          <SecondaVoce ottieniLab={ottieniLab}
+            onSuono={() => setSuona((v) => !v)} />
+        </div>
 
         {/* LB2 — l'orecchio: il microfono e' un cambio di sorgente,
             le tre letture non se ne accorgono (contratto ospite) */}
-        <Orecchio ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi} />
+        <div id="lab-sezione-orecchio">
+          <Orecchio ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi} />
+        </div>
 
         {/* LB3 — il ritratto: sei secondi di cattura (mic o banco) e
             l'analisi offline scrive la carta d'identita' del suono */}
-        <Ritratto ottieniLab={ottieniLab} />
+        <div id="lab-sezione-ritratto">
+          <Ritratto ottieniLab={ottieniLab} />
+        </div>
 
         {/* LB5 — le meraviglie oneste: fenomeni veri col cartellino,
             una alla volta, la didascalia si apre con l'esperimento */}
-        <Meraviglie ottieniLab={ottieniLab} />
+        <div id="lab-sezione-meraviglie">
+          <Meraviglie ottieniLab={ottieniLab} />
+        </div>
 
         {/* LB6 — il cercatore di risonanze: sweep + orecchio, il
             cerchio del banco (genera → eccita → ascolta → misura) */}
-        <Risonanze ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi} />
+        <div id="lab-sezione-risonanze">
+          <Risonanze ottieniLab={ottieniLab} ottieniAnalisi={ottieniAnalisi} />
+        </div>
+
+        <Percorsi />
 
         {/* IL COMANDO DEL BANCO: uno solo, fra la sorgente e le sue
             letture — perche' e' li' che passa il confine fra il tempo
             del suono e il tempo dell'immagine. */}
-        <div className="lab-banco" data-testid="lab-banco">
+        <div className="lab-banco" id="lab-sezione-letture" data-testid="lab-banco">
           <button type="button" data-testid="lab-congela"
             className={'lab-freeze' + (fermo ? ' fermo' : '')}
             aria-pressed={fermo}
