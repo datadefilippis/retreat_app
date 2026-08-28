@@ -717,37 +717,73 @@ def _ground_content_html() -> str:
     )
 
 
-def _lab_content_html() -> str:
+_LAB_STANZE = {
+    "banco": {
+        "title": "Il Banco — genera un suono e guardalo | Aurya Sound Lab",
+        "description": (
+            "Un generatore di segnali vero nel browser: due voci, "
+            "interferenza, battimenti, figure di Lissajous — e tre "
+            "letture (oscilloscopio, spettro, spettrogramma) che "
+            "mostrano il suono mentre accade."),
+    },
+    "orecchio": {
+        "title": "L'Orecchio — accordatore e analisi dal microfono | Aurya Sound Lab",
+        "description": (
+            "Apri il microfono e il banco ascolta il mondo: "
+            "accordatore di precisione (nota e cents), spettro e "
+            "spettrogramma della tua voce o di un oggetto colpito. "
+            "Il suono non lascia il dispositivo."),
+    },
+    "ritratto": {
+        "title": "Il Ritratto — la carta d'identità di un suono | Aurya Sound Lab",
+        "description": (
+            "Registra sei secondi di una campana o di un bicchiere: "
+            "l'analisi ne scrive i modi (frequenze, vite, doppietti) "
+            "e la fonderia lo risintetizza — confronto A/B con "
+            "l'originale."),
+    },
+    "meraviglie": {
+        "title": "Le Meraviglie — 13 fenomeni sonori veri | Aurya Sound Lab",
+        "description": (
+            "Suono 3D (HRTF), il terzo suono di Tartini, la "
+            "fondamentale fantasma, la scala infinita di Shepard, "
+            "rumori colorati, la corda di Karplus-Strong: fenomeni "
+            "documentati, ognuno col suo cartellino di verità."),
+    },
+    "risonanze": {
+        "title": "Le Risonanze — a che frequenza canta un oggetto | Aurya Sound Lab",
+        "description": (
+            "Sweep + microfono: la curva eccitazione-risposta trova "
+            "le risonanze di bottiglie, bicchieri e piastre. Il primo "
+            "passo della cimatica, con l'export WAV per amplificatori."),
+    },
+}
+
+
+def _lab_content_html(stanza=None) -> str:
     """Corpo per i crawler di /sound/lab: cosa fa il laboratorio OGGI
     (il generatore) — niente promesse spacciate per funzioni."""
+    if stanza in _LAB_STANZE:
+        d = _LAB_STANZE[stanza]
+        titolo = d["title"].split(" | ")[0]
+        return (
+            f"<h1>{titolo}</h1>"
+            f"<p>{d['description']}</p>"
+            "<p><a href=\"/sound/lab\">Tutte le stanze del Lab</a> · "
+            "<a href=\"/sound/impara/glossario\">Il glossario del suono</a></p>"
+        )
     return (
         "<h1>Aurya Sound Lab — il laboratorio del suono</h1>"
-        "<p>La biblioteca di Aurya Sound spiega il suono; il Laboratorio "
-        "lo fa toccare. Un vero generatore di segnali digitale che gira "
-        "nel browser: l'onda che senti è calcolata mentre la ascolti, "
-        "non è una registrazione.</p>"
-        "<h2>Il generatore</h2>"
+        "<p>La biblioteca spiega il suono: qui il suono si tocca. "
+        "Un laboratorio vero nel browser, diviso in stanze — ognuna "
+        "risponde a una domanda.</p>"
         "<ul>"
-        "<li>Quattro forme d'onda: sinusoide, quadra, triangolare, "
-        "dente di sega.</li>"
-        "<li>Frequenza precisa al centesimo di Hertz, da 20 Hz a "
-        "20 kHz, su scala logaritmica.</li>"
-        "<li>Ampiezza e fase regolabili, senza click né salti.</li>"
+        "<li><a href=\"/sound/lab/banco\">Il Banco</a> — com'e' fatto un suono?</li>"
+        "<li><a href=\"/sound/lab/orecchio\">L'Orecchio</a> — che nota e'? che suono fa il mondo?</li>"
+        "<li><a href=\"/sound/lab/ritratto\">Il Ritratto</a> — di cosa e' fatto il suono del mio oggetto?</li>"
+        "<li><a href=\"/sound/lab/meraviglie\">Le Meraviglie</a> — cosa sa fare davvero il suono?</li>"
+        "<li><a href=\"/sound/lab/risonanze\">Le Risonanze</a> — a quale frequenza canta il mio oggetto?</li>"
         "</ul>"
-        "<h2>L'oscilloscopio</h2>"
-        "<p>Il segnale nel dominio del tempo, campione per campione: "
-        "trigger a zero-crossing per una traccia stabile, fermo "
-        "immagine mentre il suono continua. Disegna i dati veri "
-        "dell'analizzatore, non un'animazione.</p>"
-        "<h2>L'analizzatore di spettro</h2>"
-        "<p>Le frequenze che compongono il segnale, su scala "
-        "logaritmica: la fondamentale e le sue armoniche, con il picco "
-        "principale letto al decimo di Hertz.</p>"
-        "<h2>Lo sweep di frequenza</h2>"
-        "<p>Una salita (o discesa) continua da una frequenza a "
-        "un'altra nella durata che scegli: la rampa è esponenziale, "
-        "cioè procede per ottave, e le tre letture la mostrano "
-        "mentre accade.</p>"
     )
 
 
@@ -890,11 +926,21 @@ async def _meta_sound(parts: list) -> Optional[dict]:
                 "image": f"{base}/og-cover.jpg",
                 "content_html": _ground_content_html()}
     if sub == "lab":
-        canonical = f"{base}/sound/lab"
-        return {**_SOUND_PAGES["lab"], "canonical": canonical,
+        # LU (28/8) — il Lab e' una casa con le STANZE, ognuna col suo
+        # indirizzo e la sua meta (la trappola di /sound/visual del
+        # 22/8: un sotto-percorso che la shell non conosce e' un 404
+        # per chi arriva da fuori). Una stanza sconosciuta cade nel
+        # 404 vero del registro.
+        stanza = parts[1] if len(parts) > 1 else None
+        if stanza is not None and stanza not in _LAB_STANZE:
+            return None
+        slug = f"/sound/lab/{stanza}" if stanza else "/sound/lab"
+        canonical = f"{base}{slug}"
+        meta = _LAB_STANZE[stanza] if stanza else _SOUND_PAGES["lab"]
+        return {**meta, "canonical": canonical,
                 "hreflang": _hub_hreflang(canonical),
                 "image": f"{base}/og-cover.jpg",
-                "content_html": _lab_content_html()}
+                "content_html": _lab_content_html(stanza)}
     if sub == "impara":
         key = "glossario" if len(parts) > 1 and parts[1] == "glossario" else "impara"
         slug = "/sound/impara/glossario" if key == "glossario" else "/sound/impara"

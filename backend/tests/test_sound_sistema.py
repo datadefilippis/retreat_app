@@ -262,9 +262,10 @@ class TestBussolaNv:
                        "'/sound/impara'", "'/sound/crea'",
                        "'/sound/tracce'"):
             assert stanza in barra, f"manca la stanza {stanza}"
-        # condivisa: la monta anche il Lab (niente piu' isola)
-        lab = (FQ / "lab" / "SoundLabPage.js").read_text()
-        assert "StanzeSound" in lab
+        # condivisa: la montano la Sala del Lab e il telaio delle
+        # stanze (ciclo LU: la pagina unica e' diventata una casa)
+        assert "StanzeSound" in (FQ / "lab" / "LabSala.jsx").read_text()
+        assert "StanzeSound" in (FQ / "lab" / "Stanza.jsx").read_text()
         # e Crea/Tracce appaiono SOLO con le chiavi
         assert "sound_crea" in barra
 

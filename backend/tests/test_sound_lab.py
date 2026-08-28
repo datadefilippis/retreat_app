@@ -177,10 +177,13 @@ class TestOscilloscopio:
         assert "iscrivi" in (LAB / "Oscilloscopio.jsx").read_text()
 
     def test_la_pagina_monta_la_tela_sotto_il_generatore(self):
-        src = (LAB / "SoundLabPage.js").read_text()
-        assert src.index("<Generatore") < src.index("<Oscilloscopio"), \
-            "la gerarchia del banco e' GENERATORE poi OSCILLOSCOPIO"
-        assert "labRef.current?.analisi" in src, \
+        # Migrata col ciclo LU (28/8): la pagina unica e' diventata la
+        # casa con le stanze — la verita' vive in LabBanco/LettureBanco
+        # e nel hook usaLab, uno per tutte le stanze.
+        src = (LAB / "LabBanco.jsx").read_text()
+        assert src.index("<Generatore") < src.index("<LettureBanco"), \
+            "la gerarchia del banco e' SORGENTI poi LETTURE"
+        assert "labRef.current?.analisi" in (LAB / "usaLab.js").read_text(), \
             "alla tela non arriva l'analisi del motore"
 
 
@@ -235,7 +238,7 @@ class TestSpettro:
     def test_un_solo_ciclo_di_disegno_in_tutto_il_banco(self):
         """La regola vale per OGNI pannello, presente e futuro: il rAF
         vive solo nel quadro."""
-        for f in list(LAB.glob("*.jsx")) + [LAB / "SoundLabPage.js",
+        for f in list(LAB.glob("*.jsx")) + [LAB / "usaLab.js",
                                             LAB / "motore.js"]:
             assert "requestAnimationFrame" not in f.read_text(), \
                 f"{f.name}: un ciclo suo invece del quadro condiviso"
@@ -254,15 +257,19 @@ class TestSpettro:
             "le dipendenze dell'effetto non sono stabili"
 
     def test_il_banco_e_in_ordine(self):
-        src = (LAB / "SoundLabPage.js").read_text()
-        assert src.index("<Generatore") < src.index("<Oscilloscopio") \
-            < src.index("<Spettro"), \
-            "l'ordine del banco e' generatore, tempo, frequenze"
-        # OGNI pannello riceve LA STESSA presa, e una sola volta:
-        # dallo STEP 5 e' una callback stabile, non un'arrow nel JSX
-        assert src.count("ottieniAnalisi={ottieniAnalisi}") \
-            == src.count("ottieniAnalisi="), \
-            "un pannello riceve un'analisi diversa dagli altri"
+        # Migrata col ciclo LU (28/8): la pagina unica e' diventata la
+        # casa con le stanze — la verita' vive in LabBanco/LettureBanco
+        # e nel hook usaLab, uno per tutte le stanze.
+        src = (LAB / "LettureBanco.jsx").read_text()
+        assert src.index("<Oscilloscopio") < src.index("<Spettro "), \
+            "l'ordine delle letture e' tempo, poi frequenze"
+        # OGNI pannello riceve LA STESSA presa, e una sola volta —
+        # in TUTTE le stanze (callback stabile, mai arrow nel JSX)
+        for stanza in LAB.glob("Lab*.jsx"):
+            pag = stanza.read_text()
+            assert pag.count("ottieniAnalisi={ottieniAnalisi}") \
+                == pag.count("ottieniAnalisi="), \
+                f"{stanza.name}: una presa diversa dalle altre"
 
     def test_il_motore_non_e_stato_toccato_per_lo_spettro(self):
         """Lo STEP 3 non doveva cambiare il motore: `spettro()` e
@@ -321,15 +328,18 @@ class TestSpettrogramma:
         assert "hsl(" not in src, "scala arcobaleno (hsl) nel Lab"
 
     def test_il_banco_e_in_ordine_e_completo(self):
-        src = (LAB / "SoundLabPage.js").read_text()
-        assert src.index("<Generatore") < src.index("<Oscilloscopio") \
-            < src.index("<Spettro ") < src.index("<Spettrogramma"), \
-            "l'ordine del banco: genera, tempo, frequenze, frequenze nel tempo"
-        # Evoluta con LB2 e LB6: l'Orecchio (accordatore) e le
-        # Risonanze (Goertzel sullo sweep) ricevono la stessa presa —
-        # cinque consumatori, un'analisi sola.
-        assert src.count("ottieniAnalisi={ottieniAnalisi}") == 5, \
-            "gli strumenti non ricevono la stessa analisi"
+        # Migrata col ciclo LU (28/8): la pagina unica e' diventata la
+        # casa con le stanze — la verita' vive in LabBanco/LettureBanco
+        # e nel hook usaLab, uno per tutte le stanze.
+        src = (LAB / "LettureBanco.jsx").read_text()
+        assert src.index("<Oscilloscopio") < src.index("<Spettro ") \
+            < src.index("<Spettrogramma"), \
+            "l'ordine delle letture: tempo, frequenze, frequenze nel tempo"
+        # ogni stanza che ascolta o misura riceve la presa dell'analisi
+        for stanza in ("LabBanco.jsx", "LabOrecchio.jsx",
+                       "LabMeraviglie.jsx", "LabRisonanze.jsx"):
+            assert "ottieniAnalisi" in (LAB / stanza).read_text(), \
+                f"{stanza}: ha perso la presa dell'analisi"
 
     def test_il_motore_resta_invariato_anche_allo_step_4(self):
         """Nessuna API nuova: `spettro()` serviva a due pannelli e ne
@@ -370,14 +380,18 @@ class TestBancoUnico:
                 f"{nome}: il pittore non riceve il tempo dal quadro"
 
     def test_il_comando_e_del_banco_e_uno_solo(self):
-        pagina = (LAB / "SoundLabPage.js").read_text()
-        assert 'data-testid="lab-congela"' in pagina
-        assert pagina.count("data-testid=\"lab-congela\"") == 1, \
-            "il comando e' duplicato"
-        # sta FRA la sorgente e le letture: e' li' che passa il confine
-        assert pagina.index("<Generatore") < pagina.index('data-testid="lab-banco"') \
-            < pagina.index("<Oscilloscopio"), \
-            "il comando non sta fra il generatore e le sue letture"
+        # Migrata col ciclo LU (28/8): la pagina unica e' diventata la
+        # casa con le stanze — la verita' vive in LabBanco/LettureBanco
+        # e nel hook usaLab, uno per tutte le stanze.
+        blocco = (LAB / "LettureBanco.jsx").read_text()
+        assert blocco.count("data-testid=\"lab-congela\"") == 1, \
+            "il comando e' duplicato (o sparito)"
+        # sta FRA la sorgente e le letture: prima delle tele nel blocco
+        assert blocco.index('data-testid="lab-banco"') \
+            < blocco.index("<Oscilloscopio"), \
+            "il comando non sta prima delle letture"
+        pagina = (LAB / "LabBanco.jsx").read_text()
+        assert pagina.index("<Generatore") < pagina.index("<LettureBanco")
         # Evoluta con LB1 (27/8): il divieto riguarda i comandi di
         # TEMPO (congela/riprendi restano del banco, uno solo). Un
         # selettore di MODO di lettura (Tempo/XY nell'oscilloscopio,
@@ -393,9 +407,10 @@ class TestBancoUnico:
     def test_la_pagina_si_iscrive_invece_di_copiare(self):
         """Lo stato React del pulsante e' una SOTTOSCRIZIONE al quadro,
         non una seconda verita' da tenere allineata a mano."""
-        pagina = (LAB / "SoundLabPage.js").read_text()
-        assert "useState(eFermo())" in pagina and "ascoltaFermo(setFermo)" in pagina
-        assert "congela(!fermo)" in pagina, "il pulsante non parla col quadro"
+        hook = (LAB / "usaLab.js").read_text()
+        assert "useState(eFermo())" in hook and "ascoltaFermo(setFermo)" in hook
+        blocco = (LAB / "LettureBanco.jsx").read_text()
+        assert "congela(!fermo)" in blocco, "il pulsante non parla col quadro"
 
     def test_la_presa_e_stabile(self):
         """Difetto trovato leggendo (26/8): la presa era un'arrow
@@ -403,11 +418,12 @@ class TestBancoUnico:
         i tre pittori si disiscrivevano e riscrivevano per nulla.
         Con uno stato di pagina (il fermo) sarebbe successo a ogni
         clic, e lo spettrogramma ci moriva dentro (vedi sotto)."""
-        pagina = (LAB / "SoundLabPage.js").read_text()
-        assert "useCallback(() => labRef.current?.analisi || null, [])" in pagina, \
+        hook = (LAB / "usaLab.js").read_text()
+        assert "useCallback(() => labRef.current?.analisi || null, [])" in hook, \
             "la presa non e' stabile fra un render e l'altro"
-        assert "ottieniAnalisi={() => " not in pagina, \
-            "e' tornata un'arrow nel JSX"
+        for stanza in LAB.glob("Lab*.jsx"):
+            assert "ottieniAnalisi={() => " not in stanza.read_text(), \
+                f"{stanza.name}: e' tornata un'arrow nel JSX"
 
     def test_lo_spettrogramma_sopravvive_a_una_ri_iscrizione(self):
         """Il difetto latente: tinte, passo e colonna nascevano solo
@@ -430,8 +446,8 @@ class TestBancoUnico:
         quadro = (LAB / "quadro.js").read_text()
         importati = re.findall(r"^import .*?from '([^']+)'", quadro, re.M)
         assert not importati, f"il quadro ha imparato a conoscere qualcuno: {importati}"
-        pagina = (LAB / "SoundLabPage.js").read_text()
-        blocco = pagina.split('data-testid="lab-banco"')[1][:400]
+        blocco = (LAB / "LettureBanco.jsx").read_text() \
+            .split('data-testid="lab-banco"')[1][:400]
         assert "generatore" not in blocco.lower(), \
             "il comando del banco tocca il generatore: non e' piu' un fermo visivo"
 
@@ -530,9 +546,10 @@ class TestSweep:
         for campo in ("lab-sweep-da", "lab-sweep-a", "lab-sweep-durata",
                       "lab-sweep-avvia"):
             assert campo in ui, f"manca il campo {campo}"
-        pagina = (LAB / "SoundLabPage.js").read_text()
-        assert "lab-sweep" not in pagina and "secondi:" not in pagina, \
-            "i comandi dello sweep sono usciti dal generatore"
+        for stanza in LAB.glob("Lab*.jsx"):
+            pag = stanza.read_text()
+            assert "lab-sweep" not in pag and "secondi:" not in pag, \
+                f"{stanza.name}: i comandi dello sweep sono usciti dal generatore"
 
 
 class TestRifinitura:
@@ -581,15 +598,16 @@ class TestRifinitura:
         """B4. Congelando a generatore spento diceva «il suono
         continua». Ora il generatore avvisa quando si accende e si
         spegne, e la striscia dice la verita' in entrambi i casi."""
-        pagina = (LAB / "SoundLabPage.js").read_text()
-        assert "const [suona, setSuona] = useState(false);" in pagina
-        assert "onSuono={setSuona}" in pagina
-        assert "? 'le tre letture sono ferme — il suono continua'" in pagina
+        hook = (LAB / "usaLab.js").read_text()
+        assert "const [suona, setSuona] = useState(false);" in hook
+        assert "onSuono={setSuona}" in (LAB / "LabBanco.jsx").read_text()
+        blocco = (LAB / "LettureBanco.jsx").read_text()
+        assert "? 'le letture sono ferme — il suono continua'" in blocco
         # l'avviso fa RIDISEGNARE, ma la verita' si chiede al motore:
         # cosi' regge anche se il suono si spegnesse fuori dal pulsante
-        assert "labRef.current.generatore.stato().attivo" in pagina
-        assert "suonaDavvero" in pagina
-        assert ": 'le tre letture sono ferme'" in pagina
+        assert "labRef.current" in hook and ".stato().attivo" in hook
+        assert "suonaDavvero" in hook
+        assert ": 'le letture sono ferme'" in blocco
         ui = (LAB / "Generatore.jsx").read_text()
         assert "const suono = (acceso) => { setAttivo(acceso); onSuono?.(acceso); };" in ui, \
             "il generatore non avvisa piu' il banco"
@@ -612,9 +630,15 @@ class TestTelaio:
         """/sound/lab deve stare PRIMA di /sound/* o FrequenzePage se
         lo mangia; e il Lab resta un chunk lazy (il main non cresce)."""
         src = (FRONTEND_SRC / "App.js").read_text()
-        assert 'lazy(() => import("./features/frequenze/lab/SoundLabPage"))' in src
+        # LU (28/8): la casa con le stanze — sei rotte lazy, tutte
+        # prima del catch-all
+        for stanza in ("LabSala", "LabBanco", "LabOrecchio",
+                       "LabRitratto", "LabMeraviglie", "LabRisonanze"):
+            assert f'lazy(() => import("./features/frequenze/lab/{stanza}"))' in src, \
+                f"manca la rotta lazy di {stanza}"
         assert src.index('path="/sound/lab"') < src.index('path="/sound/*"'), \
             "il catch-all mangia il Lab"
+        assert src.index('path="/sound/lab/risonanze"') < src.index('path="/sound/*"')
 
     @pytest.mark.asyncio
     async def test_la_shell_conosce_il_lab(self):
@@ -628,8 +652,18 @@ class TestTelaio:
         assert meta is not None, "la shell non conosce /sound/lab: 404"
         assert not meta.get("noindex"), "il Lab e' pubblico, non workspace"
         assert meta["canonical"].endswith("/sound/lab")
-        assert "generatore" in meta.get("content_html", "").lower(), \
-            "il corpo per i crawler non racconta il generatore"
+        assert "stanze" in meta.get("content_html", "").lower(), \
+            "la Sala non racconta le stanze ai crawler"
+        # LU (28/8): OGNI stanza ha il suo indirizzo e la sua meta —
+        # la trappola di /sound/visual non si paga per sei
+        for stanza in ("banco", "orecchio", "ritratto",
+                       "meraviglie", "risonanze"):
+            m = await shell.resolve_meta(f"/sound/lab/{stanza}")
+            assert m is not None, f"la shell non conosce la stanza {stanza}"
+            assert m["canonical"].endswith(f"/sound/lab/{stanza}")
+            assert m.get("content_html"), f"{stanza}: senza corpo per i crawler"
+        # e una stanza inventata e' un 404 vero
+        assert await shell.resolve_meta("/sound/lab/inventata") is None
 
     def test_sitemap_e_navigazione(self):
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
@@ -649,9 +683,9 @@ class TestTelaio:
         Il Lab la LINKA (e' la biblioteca che si tocca), non la sposta."""
         src = (LAB / "Generatore.jsx").read_text()
         assert "CAT_LINK" in src, "il ponte Lab → biblioteca e' sparito"
-        pagina = (LAB / "SoundLabPage.js").read_text()
-        assert "SafetyCurtain" in pagina and "SafetyLine" in pagina, \
-            "le controindicazioni non valgono nel Lab"
+        telaio = (LAB / "Stanza.jsx").read_text()
+        assert "SafetyCurtain" in telaio and "SafetyLine" in telaio, \
+            "le controindicazioni non valgono nelle stanze"
 
 class TestSecondaVoceLb1:
     """LB1 (27/8/2026) — la seconda sorgente. Le promesse misurate al
@@ -703,8 +737,8 @@ class TestSecondaVoceLb1:
         presa XY dalla pagina senza conoscere il generatore."""
         motore = (LAB / "motore.js").read_text()
         assert "tap.getFloatTimeDomainData(buf)" in motore
-        pagina = (LAB / "SoundLabPage.js").read_text()
-        assert "ottieniXY" in pagina
+        assert "ottieniXY" in (LAB / "usaLab.js").read_text()
+        assert "ottieniXY={ottieniXY}" in (LAB / "LabBanco.jsx").read_text()
         scope = (LAB / "Oscilloscopio.jsx").read_text()
         assert "ottieniXY" in scope
         assert "Lissajous" in scope, "il modo XY ha perso la didascalia"
@@ -1089,41 +1123,69 @@ class TestCimaticaLb6:
         assert "[-1, -0.1, 0.1, 1]" in src
 
 class TestOlisticaLb8:
-    """LB8 (28/8/2026) — la revisione olistica: il Lab come
-    ESPERIENZA. Collaudo: 8 voci d'indice, 8 ancore, ZERO link rotti
-    (verificato dal DOM vivo), 3 percorsi che si aprono."""
+    """LB8, RISCRITTA col ciclo LU (28/8): l'olistica non e' piu'
+    l'indice di una pagina-magazzino — e' la CASA. La Sala accoglie
+    (carte con la domanda di ogni stanza, «da dove parto» per
+    profili), i percorsi attraversano le stanze con link veri.
+    Collaudo dal DOM vivo: 5 carte, 3 profili, 3 percorsi, zero
+    link rotti."""
 
-    def test_il_primo_minuto_e_l_indice(self):
-        """Chi entra a freddo capisce in 60 secondi cosa si fa qui;
-        le stanze del banco sono a portata di pollice."""
-        src = (LAB / "SoundLabPage.js").read_text()
-        assert 'data-testid="lab-invito"' in src
-        assert 'data-testid="lab-indice"' in src
-        # ogni voce dell'indice punta a un'ancora che ESISTE in pagina
-        voci = re.findall(r"\['#(lab-sezione-[a-z2]+)'", src)
-        assert len(voci) == 8, "l'indice ha perso una stanza"
-        percorsi = (LAB / "Percorsi.jsx").read_text()
-        ids = set(re.findall(r'id="(lab-sezione-[a-z2]+)"', src))
-        ids |= set(re.findall(r'id="(lab-sezione-[a-z2]+)"', percorsi))
-        for v in voci:
-            assert v in ids, f"ancora rotta nell'indice: {v}"
+    ROTTE = ("/sound/lab/banco", "/sound/lab/orecchio",
+             "/sound/lab/ritratto", "/sound/lab/meraviglie",
+             "/sound/lab/risonanze")
 
-    def test_i_percorsi_legano_gli_strumenti(self):
-        """Tre esperimenti guidati, contenuto puro (nessun nodo
-        audio): ogni passo porta a una stanza vera del banco."""
+    def test_la_sala_accoglie(self):
+        src = (LAB / "LabSala.jsx").read_text()
+        # niente strumenti nella Sala: accoglie, non suona
+        assert "usaLab" not in src and "creaLaboratorio" not in src
+        assert 'data-testid="lab-sala-stanze"' in src
+        # ogni carta porta a una rotta vera e dice la sua DOMANDA
+        for rotta in self.ROTTE:
+            assert f"via: '{rotta}'" in src, f"manca la carta di {rotta}"
+        assert src.count("domanda:") == 5
+        assert 'data-testid="lab-sala-profili"' in src, \
+            "il «da dove parto?» per profili e' sparito"
+
+    def test_i_percorsi_attraversano_le_stanze(self):
+        """I passi portano alle stanze con <Link> veri (non piu'
+        ancore di pagina), e il filo si ricorda con sessionStorage
+        dentro try/catch (mai bloccante)."""
         src = (LAB / "Percorsi.jsx").read_text()
         assert "createOscillator" not in src and "AudioContext" not in src
         assert src.count("id: '") == 3, "un percorso e' sparito"
-        pagina = (LAB / "SoundLabPage.js").read_text()
-        ids = set(re.findall(r'id="(lab-sezione-[a-z2]+)"', pagina))
-        for ancora in set(re.findall(r"'#(lab-sezione-[a-z2]+)'", src)):
-            assert ancora in ids or ancora == "lab-sezione-percorsi", \
-                f"il percorso porta a una stanza che non c'e': {ancora}"
+        assert "from 'react-router-dom'" in src
+        for rotta in set(re.findall(r"'(/sound/lab/[a-z]+)'", src)):
+            assert rotta in self.ROTTE, f"passo verso una stanza che non c'e': {rotta}"
+        assert "sessionStorage" in src and "catch" in src
 
-    def test_le_ancore_non_finiscono_sotto_la_testata(self):
-        """scroll-margin-top: senza, il salto d'ancora nasconde il
-        titolo della stanza sotto la barra; e lo scorrimento e' morbido."""
-        css = (LAB / "lab.css").read_text()
-        assert "scroll-margin-top" in css
-        assert "scroll-behavior:smooth" in css
+    def test_ogni_stanza_risponde_alla_sua_domanda(self):
+        """Il telaio (Stanza.jsx) impone la testata didattica: la
+        DOMANDA, il «perche' ti interessa» per il neofita, le tre
+        azioni concrete — PRIMA degli strumenti. E il ponte col
+        glossario c'e' in ogni stanza."""
+        telaio = (LAB / "Stanza.jsx").read_text()
+        assert 'data-testid="lab-domanda"' in telaio
+        assert "Perché ti interessa" in telaio
+        assert "Cosa puoi fare qui" in telaio
+        assert "/sound/impara/glossario" in telaio, \
+            "il ponte col glossario e' sparito dal telaio"
+        assert 'data-testid="lab-ritorno-sala"' in telaio, \
+            "da una stanza non si torna alla Sala"
+        for stanza in ("LabBanco", "LabOrecchio", "LabRitratto",
+                       "LabMeraviglie", "LabRisonanze"):
+            pag = (LAB / f"{stanza}.jsx").read_text()
+            assert "domanda=" in pag and "perche=" in pag, \
+                f"{stanza}: senza testata didattica"
+            assert "azioni={[" in pag, f"{stanza}: senza azioni concrete"
 
+    def test_il_ciclo_di_vita_e_uno_per_tutte_le_stanze(self):
+        """usaLab: il motore nasce al gesto, si spegne allo
+        smontaggio, scongela — UNA disciplina, non cinque copie."""
+        hook = (LAB / "usaLab.js").read_text()
+        assert "labRef.current?.spegni(); congela(false);" in hook
+        for stanza in ("LabBanco", "LabOrecchio", "LabRitratto",
+                       "LabMeraviglie", "LabRisonanze"):
+            pag = (LAB / f"{stanza}.jsx").read_text()
+            assert "usaLab()" in pag, f"{stanza}: non usa il ciclo di vita comune"
+            assert "creaLaboratorio" not in pag, \
+                f"{stanza}: si fabbrica il motore da sola"

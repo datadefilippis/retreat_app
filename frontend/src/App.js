@@ -141,7 +141,14 @@ const PublicFrequencyPage = lazy(() => import("./features/frequenze/PublicFreque
 const MeditazioniPage = lazy(() => import("./features/frequenze/MeditazioniPage"));
 const SoundHomePage = lazy(() => import("./features/frequenze/SoundHomePage"));
 const VisualPage = lazy(() => import("./features/frequenze/visual/VisualPage"));
-const SoundLabPage = lazy(() => import("./features/frequenze/lab/SoundLabPage"));
+/* LU (28/8) — il Lab e' una casa con le stanze: la Sala accoglie,
+   ogni stanza ha il suo indirizzo (condivisibile, con la sua SEO). */
+const LabSala = lazy(() => import("./features/frequenze/lab/LabSala"));
+const LabBanco = lazy(() => import("./features/frequenze/lab/LabBanco"));
+const LabOrecchio = lazy(() => import("./features/frequenze/lab/LabOrecchio"));
+const LabRitratto = lazy(() => import("./features/frequenze/lab/LabRitratto"));
+const LabMeraviglie = lazy(() => import("./features/frequenze/lab/LabMeraviglie"));
+const LabRisonanze = lazy(() => import("./features/frequenze/lab/LabRisonanze"));
 const EsperienzaPage = lazy(() => import("./features/frequenze/esperienze/EsperienzaPage"));
 const SoundProPage = lazy(() => import("./features/frequenze/pro/SoundProPage"));
 const ProfessionalLanding = lazy(() => import("./features/frequenze/ProfessionalLanding"));
@@ -1003,7 +1010,12 @@ function AppRoutes() {
       <Route path="/sound" element={<SoundHomePage />} />
       <Route path="/sound/visual" element={<VisualPage />} />
       {/* LAB — PRIMA del catch-all, o FrequenzePage se lo mangia */}
-      <Route path="/sound/lab" element={<SoundLabPage />} />
+      <Route path="/sound/lab" element={<LabSala />} />
+      <Route path="/sound/lab/banco" element={<LabBanco />} />
+      <Route path="/sound/lab/orecchio" element={<LabOrecchio />} />
+      <Route path="/sound/lab/ritratto" element={<LabRitratto />} />
+      <Route path="/sound/lab/meraviglie" element={<LabMeraviglie />} />
+      <Route path="/sound/lab/risonanze" element={<LabRisonanze />} />
       {/* LE ESPERIENZE — una presentazione sola, prima del catch-all */}
       <Route path="/sound/calm" element={<EsperienzaPage id="calm" />} />
       <Route path="/sound/ground" element={<EsperienzaPage id="ground" />} />
