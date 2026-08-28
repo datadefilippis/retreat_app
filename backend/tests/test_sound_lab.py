@@ -783,3 +783,67 @@ class TestOrecchioLb2:
         # smontare il pannello chiude il microfono
         assert "orecchio.chiudi()" in src
 
+class TestRitrattoLb3:
+    """LB3 (27-28/8/2026) — il Ritratto. Collaudato con una campana
+    sintetica (doppietto 220/221.8, rapporti 1·2.7·4.9, T60 8/4/2 s,
+    rumore): fondamentale 220.00, battito 1.80 Hz, T60 8.12/4.01/2.06
+    in 105 ms; e end-to-end vivo: registrate le voci del banco a
+    330 e 700.5 Hz → il ritratto legge 330.00 e 700.50."""
+
+    def test_il_ritrattista_e_matematica_pura(self):
+        """FFT nostra (radix-2), Goertzel per gli inviluppi, vertice
+        parabolico: niente dipendenze, niente nodi audio, niente
+        React nel codice."""
+        src = (LAB / "ritrattista.js").read_text()
+        codice = re.sub(r"/\*.*?\*/", " ", src, flags=re.S)
+        codice = re.sub(r"^\s*//.*$", " ", codice, flags=re.M)
+        assert "react" not in codice.lower()
+        assert "createOscillator" not in codice and "AudioContext" not in codice
+        assert "export function fft" in src
+        assert "goertzel" in src
+        assert "DOPPIETTO_HZ" in src, "i doppietti sono spariti dal ritratto"
+
+    def test_il_nome_schiva_la_collisione_del_mac(self):
+        """Trappola pagata: Ritratto.jsx e ritratto.js COLLIDONO sul
+        filesystem case-insensitive del Mac e CRA rifiuta l'import
+        («Cannot find module»). Il modulo matematico si chiama
+        ritrattista.js — e ritratto.js non deve rinascere."""
+        assert (LAB / "ritrattista.js").exists()
+        assert not (LAB / "ritratto.js").exists(), \
+            "ritratto.js e' rinato: collide con Ritratto.jsx sul Mac"
+
+    def test_il_suono_tenuto_ha_il_suo_ramo(self):
+        """In un suono continuo il «picco» cade dove capita: se dopo
+        resta meno di un secondo si analizza la parte lunga e il
+        fondo-stanza tace (non c'e' un prima del colpo)."""
+        src = (LAB / "ritrattista.js").read_text()
+        assert "continuo = true" in src
+        assert "continuo," in src               # il ritratto lo dichiara
+
+    def test_la_registrazione_cattura_l_osservato(self):
+        """analisi.registra prende i campioni CRUDI di cio' che il
+        banco guarda (mic o voci) — l'uscita dello ScriptProcessor
+        va nel master a guadagno ZERO (deve battere, non suonare):
+        mai ctx.destination."""
+        src = (LAB / "motore.js").read_text()
+        a = src.index("registra(secondi")
+        blocco = src[a:a + 2200]
+        assert "createScriptProcessor" in blocco
+        assert "muto.gain.value = 0" in blocco
+        assert "ctx.destination" not in blocco
+        # il tetto: mai piu' di 12 secondi in RAM
+        assert "12" in blocco
+
+    def test_il_pannello_rispetta_i_contratti(self):
+        """Niente matematica nel componente (vive nel ritrattista),
+        tabella dentro uno scroll orizzontale (telefono), la nota di
+        onesta' sul microfono c'e', la didascalia pure."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "from './ritrattista'" in src
+        assert "createScriptProcessor" not in src and "fft" not in src
+        assert "lab-ritratto-scroll" in src
+        assert "colora lo spettro" in src, "la nota di onesta' e' sparita"
+        assert "lab-didascalia" in src
+        css = (LAB / "lab.css").read_text()
+        assert "overflow-x:auto" in css.split(".lab-ritratto-scroll")[1][:60]
+

@@ -371,6 +371,47 @@ export function creaLaboratorio(ctx) {
         osservato = nodo || master;
       },
       hzPerBin: ctx.sampleRate / analyser.fftSize,
+
+      /* LB3 — LA PRESA DI REGISTRAZIONE: cattura i campioni CRUDI di
+         cio' che il banco sta guardando (il microfono se l'orecchio
+         e' aperto, altrimenti il mix delle voci) — l'analyser tiene
+         solo l'ultimo respiro (186 ms), il ritratto vuole secondi.
+         ScriptProcessor: deprecato ma senza pari in semplicita', e
+         per una cattura di pochi secondi e' lo strumento giusto (il
+         worklet arrivera' se mai servira' in produzione). Il nodo ha
+         bisogno di un'uscita per battere: la si manda nel master a
+         guadagno ZERO — silenzio, non un percorso sonoro nuovo. */
+      registra(secondi = 6) {
+        const sr = ctx.sampleRate;
+        const totale = Math.floor(Math.min(Math.max(+secondi || 6, 1), 12) * sr);
+        return new Promise((risolvi, fallisci) => {
+          let presi = 0;
+          const campioni = new Float32Array(totale);
+          const sp = ctx.createScriptProcessor(4096, 1, 1);
+          const muto = ctx.createGain();
+          muto.gain.value = 0;
+          const fonte = osservato;
+          const chiudi = () => {
+            try { fonte.disconnect(sp); } catch { /* gia' */ }
+            try { sp.disconnect(); muto.disconnect(); } catch { /* gia' */ }
+          };
+          sp.onaudioprocess = (e) => {
+            const dentro = e.inputBuffer.getChannelData(0);
+            const resta = totale - presi;
+            campioni.set(resta >= dentro.length ? dentro
+              : dentro.subarray(0, resta), presi);
+            presi += Math.min(dentro.length, resta);
+            if (presi >= totale) {
+              chiudi();
+              risolvi({ campioni, sampleRate: sr });
+            }
+          };
+          try {
+            fonte.connect(sp);
+            sp.connect(muto); muto.connect(master);
+          } catch (e) { chiudi(); fallisci(e); }
+        });
+      },
     },
 
     spegni() {
