@@ -53,9 +53,30 @@ export function campana(ctx, uscita, ritratto, opzioni = {}) {
   const vive = [];
   let durataSec = 0;
 
+  /* IL VIBRATO MISURATO (28/8, caso «aummm»): se il ritratto e'
+     armonico e porta il vibrato, la rifusione lo RISUONA — un solo
+     LFO alla velocita' misurata, e ogni armonica riceve la
+     profondita' scalata per il suo rapporto (il vibrato di una voce
+     modula tutte le armoniche insieme, in proporzione). Senza
+     questo, una voce rifusa era un organo immobile. */
+  let lfo = null;
+  const vibrato = modo === 'tenuto' && ritratto.vibrato
+    && ritratto.fondamentaleHz ? ritratto.vibrato : null;
+  if (vibrato) {
+    lfo = ctx.createOscillator();
+    lfo.frequency.value = Math.min(12, Math.max(0.5, vibrato.rateHz || 5));
+    lfo.start(t0);
+  }
+
   for (const v of voci) {
     const osc = ctx.createOscillator();
     osc.frequency.value = v.hz;
+    if (lfo) {
+      const prof = ctx.createGain();
+      prof.gain.value = vibrato.profonditaHz
+        * (v.hz / ritratto.fondamentaleHz);
+      lfo.connect(prof); prof.connect(osc.frequency);
+    }
     const gain = ctx.createGain();
     gain.gain.value = 0;
     osc.connect(gain); gain.connect(uscita);
@@ -80,6 +101,7 @@ export function campana(ctx, uscita, ritratto, opzioni = {}) {
 
   const ferma = () => {
     const t = ctx.currentTime;
+    if (lfo) { try { lfo.stop(t + 0.3); } catch { /* gia' */ } }
     for (const v of vive) {
       try {
         v.gain.gain.cancelScheduledValues(t);

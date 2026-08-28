@@ -953,7 +953,9 @@ class TestFonderiaLb4:
         assert "user?.role === 'system_admin'" in src[a - 300:a], \
             "la consegna in libreria non e' piu' dietro il system admin"
         assert "category: 'campane'" in src
-        assert "non ha catturato" in src, "l'onesta' sull'attacco e' sparita"
+        # riformulata col caso «aummm»: l'onesta' su cio' che la
+        # rifusione non cattura resta, con parole nuove
+        assert "non cattura" in src, "l'onesta' sui limiti e' sparita"
 
 class TestVestitoLb7:
     """LB7 (28/8/2026) — il vestito degli strumenti: estetica da
@@ -1248,4 +1250,67 @@ class TestVoceDelFounder:
         for stanza in ("LabOrecchio.jsx", "LabRitratto.jsx"):
             assert "ottieniVivo={ottieniVivo}" in (LAB / stanza).read_text(), \
                 f"{stanza}: l'orecchio non riceve il lab vivo"
+
+class TestViaArmonica:
+    """28/8, seconda visita del caso «aummm»: il founder sentiva la
+    rifusione «diversa, anche gli Hz». Vero: una voce con vibrato
+    (±1,2%) spezzava le armoniche in bande di modulazione
+    (432.8/438/443.2 attorno alla terza) e la copia era stonata e
+    immobile. La cura e' un CAMBIO DI STRUMENTO per i suoni intonati.
+    Evidenze del collaudo: voce vibrata → armoniche ESATTE
+    146.06/292.11/438.17… con vibrato misurato ±1.24 a 4.7 Hz; voce
+    ferma → vibrato null; bordone 330+700.5 → resta modale; campana →
+    intatta (220, doppietto 1.8, T60 8.13); e il CERCHIO: la
+    rifusione tenuta ritratta di nuovo da' 146.00 col vibrato vivo."""
+
+    def test_la_via_si_tenta_sempre_coi_suoi_cancelli(self):
+        """Primo giro sbagliato e pagato: la via era agganciata al
+        ramo «continuo», che dipende da DOVE cade il picco — una voce
+        tenuta col picco a meta' passava dalla via del colpo. Ora si
+        tenta sempre, e decidono i TRE cancelli: 60% dei fotogrammi
+        intonati, picchi forti sulla serie armonica, almeno due
+        armoniche."""
+        src = (LAB / "ritrattista.js").read_text()
+        assert "_viaArmonica" in src
+        assert "if (continuo) {\n    const armonico" not in src, \
+            "la via armonica e' tornata prigioniera del ramo continuo"
+        assert "intonati.length < quanti * 0.6" in src
+        assert "sopra.length / forti.length < 0.7" in src
+        assert "tenute.length < 2" in src
+
+    def test_le_armoniche_inseguono_la_fondamentale(self):
+        """Il Goertzel non misura a k·f0 fisso: insegue la
+        fondamentale DEL FOTOGRAMMA (k·traccia[f]) — cosi' il vibrato
+        non diluisce l'ampiezza. E la fondamentale viene
+        dall'accordatore: una matematica sola per orecchio e
+        ritratto."""
+        src = (LAB / "ritrattista.js").read_text()
+        assert "k * traccia[f]" in src
+        assert "from './accordatore'" in src
+
+    def test_il_vibrato_e_un_dato_e_la_fonderia_lo_risuona(self):
+        """profondita' (p95-p5)/2 e velocita' (giri di segno / 2t);
+        sotto ±0,3 Hz non si dichiara. La fonderia nel TENUTO monta
+        UN LFO alla velocita' misurata e scala la profondita' per il
+        rapporto di ogni armonica — misurato sul render: ±0.91 a
+        4.5 Hz, armoniche esatte."""
+        rit = (LAB / "ritrattista.js").read_text()
+        assert "profonditaHz" in rit and "rateHz" in rit
+        assert "profonditaHz >= 0.3" in rit
+        fond = (LAB / "fonderia.js").read_text()
+        assert "ritratto.vibrato" in fond
+        assert "* (v.hz / ritratto.fondamentaleHz)" in fond, \
+            "il vibrato non scala piu' con l'armonica"
+
+    def test_il_pannello_spiega_colpo_e_tenuto(self):
+        """La domanda del founder («ma tenuto cosa sarebbe? e
+        colpo?») e' la diagnosi: i due modi ora si spiegano nel
+        pannello, e le attese per una voce sono dette («non sara'
+        mai te: e' il tuo spettro suonato da onde pure»)."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert 'data-testid="lab-fonderia-spiega"' in src
+        assert "oggetto percosso" in src and "strofinata" in src
+        assert "non sarà mai «te»" in src
+        assert 'data-testid="lab-ritratto-vibrato"' in src, \
+            "il vibrato misurato non si mostra"
 

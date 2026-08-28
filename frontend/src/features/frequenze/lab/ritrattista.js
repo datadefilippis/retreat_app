@@ -26,6 +26,8 @@
  * 44,1 kHz il bin vale 0,34 Hz e il vertice scende sotto il decimo.
  */
 
+import { fondamentale } from './accordatore';
+
 const MAX_CAMPIONI = 1 << 17;      // ~3 s a 44.1k: la coda che si analizza
 const PARZIALI_MAX = 16;
 const SOPRA_FONDO_DB = 18;         // un picco deve emergere dal pavimento
@@ -226,6 +228,41 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
     p.t60 = pendenza < -0.5 ? Math.min(99, -60 / pendenza) : null;
   }
 
+  /* ═══ LA VIA ARMONICA (caso «aummm» del founder, 28/8) ═══
+     Un suono TENUTO e INTONATO (una voce, una corda tenuta, una
+     campana strofinata) ha il vibrato: la fondamentale oscilla, e
+     la FFT lunga spezza ogni armonica nelle sue bande di
+     modulazione — misurato: con ±1,2% di vibrato la 3ª armonica
+     diventava 432,8/438/443,2 e la rifusione suonava stonata.
+     La cura e' cambiare STRUMENTO, non stringere il filtro: per i
+     suoni tenuti la fondamentale si INSEGUE nel tempo (la stessa
+     autocorrelazione dell'accordatore, fotogramma per fotogramma),
+     le armoniche si misurano col Goertzel a k·f0, e il vibrato
+     smette di essere rumore: diventa un DATO del ritratto
+     (profondita' e velocita'), che la fonderia potra' risuonare.
+     La via si TENTA SEMPRE (primo giro sbagliato: era agganciata al
+     ramo «continuo», ma quello dipende da DOVE cade il picco — una
+     voce tenuta col picco a meta' passava dalla via del colpo).
+     Sono i suoi tre cancelli a decidere: 60% dei fotogrammi con una
+     fondamentale, i picchi FFT forti che cadono sulla serie
+     armonica, almeno due armoniche — un bordone inarmonico o una
+     campana che sfuma non passano e restano sulla via dei modi. */
+  {
+    const armonico = _viaArmonica(campioni, da, L, sampleRate, tenuti);
+    if (armonico) {
+      return {
+        versione: 1,
+        armonico: true,
+        continuo,
+        sampleRate,
+        durataSec: +(N0 / sampleRate).toFixed(2),
+        codaSec: +(L / sampleRate).toFixed(2),
+        rumoreFondoDb: null,
+        ...armonico,
+      };
+    }
+  }
+
   /* rapporto e scarto in cents dall'armonico teorico piu' vicino */
   for (const p of tenuti) {
     p.rapporto = p.hz / fondo.hz;
@@ -254,6 +291,85 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
         battito: +p.doppietto.battito.toFixed(2),
       } : null,
     })),
+  };
+}
+
+function _viaArmonica(campioni, da, L, sampleRate, picchiFft) {
+  const finestra = 4096, passo = 2048;
+  const quanti = Math.floor((L - finestra) / passo);
+  if (quanti < 8) return null;
+
+  /* la fondamentale, fotogramma per fotogramma */
+  const traccia = [];
+  for (let f = 0; f < quanti; f++) {
+    const fetta = campioni.subarray(da + f * passo, da + f * passo + finestra);
+    const r = fondamentale(fetta, sampleRate);
+    traccia.push(r ? r.hz : null);
+  }
+  const intonati = traccia.filter((x) => x !== null);
+  if (intonati.length < quanti * 0.6) return null;   // non e' un suono intonato
+
+  const ordinati = [...intonati].sort((a, b) => a - b);
+  const f0 = ordinati[Math.floor(ordinati.length / 2)];
+  if (!f0 || f0 < 40) return null;
+
+  /* il suono deve DAVVERO stare sulla serie armonica: i picchi FFT
+     forti devono cadere vicino a un multiplo di f0 (un bordone di
+     due toni scorrelati non passa di qui) */
+  const forti = picchiFft.filter((p) => p.db >= -30);
+  if (forti.length) {
+    const sopra = forti.filter((p) => {
+      const k = Math.max(1, Math.round(p.hz / f0));
+      return Math.abs(p.hz - k * f0) <= Math.max(4, f0 * 0.04);
+    });
+    if (sopra.length / forti.length < 0.7) return null;
+  }
+
+  /* il VIBRATO: quanto oscilla la fondamentale, e quanto in fretta */
+  const p5 = ordinati[Math.floor(ordinati.length * 0.05)];
+  const p95 = ordinati[Math.floor(ordinati.length * 0.95)];
+  const profonditaHz = +((p95 - p5) / 2).toFixed(2);
+  let giri = 0;
+  let sopraMedia = null;
+  for (const hz of intonati) {
+    const ora = hz > f0;
+    if (sopraMedia !== null && ora !== sopraMedia) giri++;
+    sopraMedia = ora;
+  }
+  const secondi = (quanti * passo) / sampleRate;
+  const rateHz = +((giri / 2) / secondi).toFixed(1);
+  const vibrato = profonditaHz >= 0.3
+    ? { profonditaHz, rateHz } : null;
+
+  /* le armoniche: Goertzel a k·f0 INSEGUENDO la fondamentale del
+     fotogramma (cosi' il vibrato non diluisce la misura), mediana
+     sui fotogrammi intonati */
+  const parziali = [];
+  let piuForte = -Infinity;
+  for (let k = 1; k <= PARZIALI_MAX && k * f0 < FIN_MAX; k++) {
+    const ampiezze = [];
+    for (let f = 0; f < quanti; f++) {
+      if (traccia[f] === null) continue;
+      ampiezze.push(goertzel(campioni, da + f * passo, finestra,
+        sampleRate, k * traccia[f]));
+    }
+    if (!ampiezze.length) continue;
+    ampiezze.sort((a, b) => a - b);
+    const dbK = db(ampiezze[Math.floor(ampiezze.length / 2)]);
+    if (dbK > piuForte) piuForte = dbK;
+    parziali.push({ hz: +(k * f0).toFixed(2), grezzo: dbK, rapporto: k });
+  }
+  const tenute = parziali
+    .map((p) => ({ hz: p.hz, db: +(p.grezzo - piuForte).toFixed(1),
+                   rapporto: p.rapporto, cents: 0, t60: null,
+                   doppietto: null }))
+    .filter((p) => p.db >= -50);
+  if (tenute.length < 2) return null;
+
+  return {
+    fondamentaleHz: +f0.toFixed(2),
+    vibrato,
+    parziali: tenute,
   };
 }
 

@@ -201,7 +201,14 @@ export default function Ritratto({ ottieniLab }) {
       {esito && (
         <div className="lab-ritratto-esito" data-testid="lab-ritratto-esito">
           <p className="lab-ritratto-riga">
-            Fondamentale <b>{esito.fondamentaleHz} Hz</b>
+            {esito.armonico ? 'Suono intonato · fondamentale ' : 'Fondamentale '}
+            <b>{esito.fondamentaleHz} Hz</b>
+            {esito.vibrato && (
+              <span data-testid="lab-ritratto-vibrato">
+                {' '}· vibrato ±{String(esito.vibrato.profonditaHz).replace('.', ',')} Hz
+                {' '}a {String(esito.vibrato.rateHz).replace('.', ',')} Hz
+              </span>
+            )}
             {' '}· {esito.continuo ? 'suono tenuto · analizzati' : 'coda analizzata'}
             {' '}{String(esito.codaSec).replace('.', ',')} s
             {esito.rumoreFondoDb !== null
@@ -242,7 +249,14 @@ export default function Ritratto({ ottieniLab }) {
 
           {/* ── LB4: LA CAMPANA RIFATTA ── */}
           <div className="lab-fonderia" data-testid="lab-fonderia">
-            <h3>La campana rifatta</h3>
+            <h3>La rifusione — la copia sintetica costruita dalla tabella</h3>
+            <p className="lab-volume" data-testid="lab-fonderia-spiega">
+              <b>Colpo</b> la suona come un oggetto percosso (ogni modo
+              parte e muore con la sua vita); <b>Tenuto</b> tiene i
+              modi fermi, come una campana strofinata
+              {esito.armonico ? ' — e per un suono intonato respira col vibrato misurato' : ''}.
+              Confrontala con l&rsquo;<b>Originale</b>: è il gioco.
+            </p>
             <div className="lab-fonderia-gesti">
               <button type="button" className={'lab-freeze' + (inSuono === 'orig' ? ' fermo' : '')}
                 data-testid="lab-ab-originale"
@@ -282,11 +296,13 @@ export default function Ritratto({ ottieniLab }) {
             <p className="lab-didascalia" data-testid="lab-fonderia-didascalia">
               <b>L&rsquo;A/B è il laboratorio.</b> Originale e rifusione,
               stesso orecchio: la rifusione è la SOMMA dei modi in
-              tabella — spegnine uno e risenti; se manca qualcosa, è
-              ciò che il ritratto non ha catturato (l&rsquo;attacco
-              percussivo, il rumore del battente). Il <b>tenuto</b> fa
-              cantare la campana come strofinata — è anche il WAV per
-              gli esperimenti di cimatica.
+              tabella — spegnine uno e risenti; ciò che manca è ciò
+              che il ritratto non cattura. Per una <b>campana</b> è
+              quasi tutto (l&rsquo;attacco percussivo a parte); per una
+              <b> voce</b> la rifusione non sarà mai «te»: è il tuo
+              spettro suonato da onde pure — senti l&rsquo;altezza e il
+              colore delle vocali, non il respiro né le consonanti.
+              Il <b>tenuto</b> è anche il WAV per la cimatica.
             </p>
           </div>
 
