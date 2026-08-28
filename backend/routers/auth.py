@@ -47,8 +47,17 @@ async def signup(request: Request, user_data: UserCreate):
     # access — bot non deve consumare resource).
     # Uniform 202 success on trigger: bot can't distinguish "caught"
     # from "succeeded" → anti-enumeration preserved.
-    from core.honeypot import is_honeypot_triggered
-    if is_honeypot_triggered(user_data.website):
+    from core.honeypot import is_honeypot_triggered, is_autofill_signature
+    # Hotfix 28/8/2026: honeypot == email = firma dell'autofill Android
+    # (WebView social riempie anche i campi nascosti) — e' un umano,
+    # il signup procede. Vedi core/honeypot.py::is_autofill_signature.
+    if is_honeypot_triggered(user_data.website) and \
+            is_autofill_signature(user_data.website, user_data.email):
+        logger.info(
+            "merchant signup: honeypot pieno ma == email — firma autofill, "
+            "umano, si procede. email=%s", user_data.email)
+    if (is_honeypot_triggered(user_data.website)
+            and not is_autofill_signature(user_data.website, user_data.email)):
         _hp_ip = None
         try:
             from core.rate_limiting import get_real_ip

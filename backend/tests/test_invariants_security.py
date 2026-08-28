@@ -5965,6 +5965,48 @@ class TestSEC_O_4_1_HoneypotFieldAntiBot:
             "'customer_signup_honeypot'."
         )
 
+    # ── Hotfix 28/8/2026: la vittima dell'autofill ──────────────────
+    # Incidente crescitacuore@gmail.com: Samsung in WebView social,
+    # l'autofill Android riempie anche il campo nascosto → honeypot ==
+    # email → utente REALE scartata come bot con finto 202. La firma
+    # dell'autofill (valore identico all'email) ora fa passare l'umano.
+
+    def test_autofill_signature_riconosce_l_umano(self):
+        """honeypot == email (case/spazi insensibile) = autofill umano."""
+        from core.honeypot import is_autofill_signature
+        assert is_autofill_signature(
+            "crescitacuore@gmail.com", "crescitacuore@gmail.com") is True
+        assert is_autofill_signature(
+            "  Crescitacuore@Gmail.com ", "crescitacuore@gmail.com") is True
+
+    def test_autofill_signature_non_apre_ai_bot(self):
+        """Valori da bot (URL, testo, vuoti, non-stringhe) NON firmano."""
+        from core.honeypot import is_autofill_signature
+        assert is_autofill_signature(
+            "https://spam.example.com", "a@b.com") is False
+        assert is_autofill_signature("Mario Rossi", "a@b.com") is False
+        assert is_autofill_signature("", "a@b.com") is False
+        assert is_autofill_signature(None, "a@b.com") is False
+        assert is_autofill_signature("a@b.com", None) is False
+        assert is_autofill_signature(42, "a@b.com") is False  # type: ignore
+
+    def test_entrambi_i_signup_perdonano_l_autofill(self):
+        """I due router scartano come bot SOLO se manca la firma autofill."""
+        import inspect
+        from routers import auth
+        from routers import customer_auth
+        for fn, nome in ((auth.signup, "merchant"),
+                         (customer_auth.signup, "customer")):
+            src = inspect.getsource(fn)
+            assert "is_autofill_signature" in src, (
+                f"{nome} signup non conosce la firma autofill — "
+                f"gli umani con autofill Android restano scartati come bot."
+            )
+            assert "not is_autofill_signature" in src, (
+                f"{nome} signup: il ramo bot deve scattare solo SENZA "
+                f"firma autofill (and not is_autofill_signature)."
+            )
+
 
 # ──────────────────────────────────────────────────────────────────────────
 # Track O Step 4.2 — Password breach check via HIBP k-anonymity

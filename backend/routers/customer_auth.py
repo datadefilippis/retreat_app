@@ -150,8 +150,17 @@ async def signup(body: SignupRequest, request: Request):
     # Track O Step 4.1 — honeypot anti-bot check.
     # If filled, return uniform 202 success (anti-enumeration: bot can't
     # distinguish "caught" from "succeeded") + log + audit + metric.
-    from core.honeypot import is_honeypot_triggered
-    if is_honeypot_triggered(body.website):
+    from core.honeypot import is_honeypot_triggered, is_autofill_signature
+    # Hotfix 28/8/2026: honeypot == email = firma dell'autofill Android
+    # (WebView social riempie anche i campi nascosti) — e' un umano,
+    # il signup procede. Vedi core/honeypot.py::is_autofill_signature.
+    if is_honeypot_triggered(body.website) and \
+            is_autofill_signature(body.website, body.email):
+        logger.info(
+            "customer signup: honeypot pieno ma == email — firma autofill, "
+            "umano, si procede. email=%s", body.email)
+    if (is_honeypot_triggered(body.website)
+            and not is_autofill_signature(body.website, body.email)):
         logger.warning(
             "customer signup honeypot triggered — bot caught. "
             "slug=%s email=%s ip=%s ua=%s honeypot_value=%r",

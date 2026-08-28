@@ -90,4 +90,34 @@ def is_honeypot_triggered(honeypot_value: Optional[str]) -> bool:
     return bool(honeypot_value.strip())
 
 
-__all__ = ["HONEYPOT_FIELD_NAME", "is_honeypot_triggered"]
+def is_autofill_signature(honeypot_value: Optional[str],
+                          email: Optional[str]) -> bool:
+    """True se il honeypot pieno porta la firma dell'AUTOFILL umano.
+
+    Incidente 28/8/2026 (crescitacuore@gmail.com): utente reale su
+    Samsung Galaxy A52s dentro una WebView (link da app social) — il
+    servizio di autofill Android IGNORA autocomplete="off" e riempie
+    anche i campi nascosti fuori schermo. Risultato: honeypot_value ==
+    la SUA email, signup scartato come bot, finto 202, lei in attesa
+    di una verifica mai spedita. Due tentativi, zero account.
+
+    La firma: l'autofill duplica nel campo-esca lo stesso valore di un
+    campo vero. Un bot naive ci mette URL o testo di riempimento, non
+    l'email identica a quella con cui si sta registrando. Quindi:
+    honeypot == email (case-insensitive, spazi ai bordi ignorati) →
+    umano vittima di autofill, il signup deve procedere.
+
+    Rischio accettato e documentato: un bot che riempie TUTTI i campi
+    con la stessa email ora passa — era comunque fuori dal threat
+    model del honeypot (cura vera: CAPTCHA, O4.4). L'anti-enumeration
+    resta intatta: la risposta non cambia forma in nessun ramo.
+    """
+    if not honeypot_value or not email:
+        return False
+    if not isinstance(honeypot_value, str) or not isinstance(email, str):
+        return False
+    return honeypot_value.strip().lower() == email.strip().lower()
+
+
+__all__ = ["HONEYPOT_FIELD_NAME", "is_honeypot_triggered",
+           "is_autofill_signature"]
