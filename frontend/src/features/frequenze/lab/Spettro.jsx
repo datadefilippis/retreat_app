@@ -159,7 +159,9 @@ export default function Spettro({ ottieniAnalisi, fermo }) {
       c2d.moveTo(0, HG + 0.5); c2d.lineTo(W, HG + 0.5);
       c2d.stroke();
 
-      /* la traccia: una colonna per pixel, col MASSIMO dei suoi bin */
+      /* la traccia: una colonna per pixel, col MASSIMO dei suoi bin.
+         LB7 — la cresta ha un filo di bagliore e l'area sotto si
+         spegne in gradiente verso il fondo: presenza, non neon. */
       c2d.lineWidth = Math.max(1.25, 1.25 * dpr);
       /* giunture tonde: sulle creste piu' acute lo spigolo di fabbrica
          allunga la punta oltre il vertice. Qui la differenza e' di
@@ -185,14 +187,19 @@ export default function Spettro({ ottieniAnalisi, fermo }) {
       } else {
         c2d.moveTo(0, HG); c2d.lineTo(W, HG);              // banco spento
       }
+      c2d.shadowBlur = 5 * dpr;
+      c2d.shadowColor = fermo ? tinte.fermo : tinte.traccia;
       c2d.stroke();
-      /* velo sotto la traccia: presenza, non decorazione */
+      c2d.shadowBlur = 0;
+      /* l'area sotto la traccia: gradiente che si spegne verso il fondo */
       if (db && hzBin) {
         c2d.lineTo(W, HG); c2d.lineTo(0, HG); c2d.closePath();
-        c2d.globalAlpha = 0.10;
-        c2d.fillStyle = fermo ? tinte.fermo : tinte.traccia;
+        const velo = c2d.createLinearGradient(0, 0, 0, HG);
+        const base = fermo ? tinte.fermo : tinte.traccia;
+        velo.addColorStop(0, base + '59');      // ~35% in cima
+        velo.addColorStop(1, base + '00');      // nulla sul fondo
+        c2d.fillStyle = velo;
         c2d.fill();
-        c2d.globalAlpha = 1;
       }
 
       /* le etichette dell'asse: solo le decadi, mono e discrete */
@@ -218,6 +225,17 @@ export default function Spettro({ ottieniAnalisi, fermo }) {
         c2d.moveTo(x, yPicco - 4 * dpr);
         c2d.lineTo(x, yPicco - 11 * dpr);
         c2d.stroke();
+        /* LB7 — la quota accanto alla tacca: lo strumento risponde
+           dove guardi, senza cercare la riga dei numeri */
+        const testo = piccoRef.current.hz >= 1000
+          ? `${(piccoRef.current.hz / 1000).toFixed(2).replace('.', ',')}k`
+          : piccoRef.current.hz.toFixed(1).replace('.', ',');
+        c2d.fillStyle = tinte.fermo;
+        c2d.font = `${Math.round(10 * dpr)}px ui-monospace, Menlo, monospace`;
+        c2d.textBaseline = 'bottom';
+        c2d.textAlign = x > W - 60 * dpr ? 'right' : 'left';
+        c2d.fillText(testo, x + (x > W - 60 * dpr ? -5 : 5) * dpr,
+          Math.max(12 * dpr, yPicco - 13 * dpr));
       }
     };
 

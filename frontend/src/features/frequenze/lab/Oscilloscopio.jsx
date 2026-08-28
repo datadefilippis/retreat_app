@@ -67,6 +67,15 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo, ottieniXY = null 
     const tela = telaRef.current;
     const c2d = tela.getContext('2d');
     let tinte = null;                     // i colori della palette, letti una volta
+    /* LB7 — LA SCIA AL FOSFORO: le tracce vecchie non spariscono di
+       colpo, sbiadiscono — come sui tubi a fosfori veri. Non e'
+       decorazione: la scia E' informazione (un segnale stabile lascia
+       una scia sottile, uno che cambia la allarga). Vive su un livello
+       fuori schermo: si sbiadisce con un velo di destination-out, ci
+       si disegna la traccia col bagliore, e il quadro compone griglia
+       nitida + scia + traccia viva. */
+    const scia = document.createElement('canvas');
+    const sciaC2d = scia.getContext('2d');
 
     const dipingi = (fermo) => {
       /* la tela segue la card (responsive), in pixel veri */
@@ -151,23 +160,46 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo, ottieniXY = null 
       c2d.strokeStyle = tinte.asse;       // lo zero, appena piu' presente
       c2d.beginPath(); c2d.moveTo(0, H / 2); c2d.lineTo(W, H / 2); c2d.stroke();
 
-      /* la traccia */
-      const buf = acqRef.current;
-      c2d.lineWidth = Math.max(1.25, 1.25 * dpr);
-      c2d.strokeStyle = fermo ? tinte.fermo : tinte.traccia;
-      c2d.beginPath();
-      if (buf) {
-        const da = daRef.current;
-        for (let i = 0; i < FINESTRA; i++) {
-          const v = buf[da + i] || 0;
-          const x = (i / (FINESTRA - 1)) * W;
-          const y = H / 2 - v * (H / 2) * MARGINE_Y;
-          if (i === 0) c2d.moveTo(x, y); else c2d.lineTo(x, y);
-        }
-      } else {
-        c2d.moveTo(0, H / 2); c2d.lineTo(W, H / 2);   // banco spento: linea di riposo
+      /* la traccia — prima sulla scia (che sbiadisce), poi viva */
+      if (scia.width !== W || scia.height !== H) {
+        scia.width = W; scia.height = H;
       }
-      c2d.stroke();
+      const buf = acqRef.current;
+      const traccia = (ctx2, spessore, colore, bagliore) => {
+        ctx2.lineWidth = spessore;
+        ctx2.strokeStyle = colore;
+        ctx2.lineJoin = 'round'; ctx2.lineCap = 'round';
+        if (bagliore) { ctx2.shadowBlur = 6 * dpr; ctx2.shadowColor = colore; }
+        ctx2.beginPath();
+        if (buf) {
+          const da = daRef.current;
+          for (let i = 0; i < FINESTRA; i++) {
+            const v = buf[da + i] || 0;
+            const x = (i / (FINESTRA - 1)) * W;
+            const y = H / 2 - v * (H / 2) * MARGINE_Y;
+            if (i === 0) ctx2.moveTo(x, y); else ctx2.lineTo(x, y);
+          }
+        } else {
+          ctx2.moveTo(0, H / 2); ctx2.lineTo(W, H / 2);   // banco spento
+        }
+        ctx2.stroke();
+        ctx2.shadowBlur = 0;
+      };
+      if (!fermo) {
+        /* la scia sbiadisce di un velo a ogni giro, poi accoglie la
+           traccia nuova gia' col suo bagliore */
+        sciaC2d.globalCompositeOperation = 'destination-out';
+        sciaC2d.globalAlpha = 0.22;
+        sciaC2d.fillRect(0, 0, W, H);
+        sciaC2d.globalAlpha = 1;
+        sciaC2d.globalCompositeOperation = 'source-over';
+        if (buf) traccia(sciaC2d, Math.max(1, 1 * dpr), tinte.traccia, true);
+      }
+      c2d.globalAlpha = 0.55;
+      c2d.drawImage(scia, 0, 0);
+      c2d.globalAlpha = 1;
+      traccia(c2d, Math.max(1.25, 1.25 * dpr),
+        fermo ? tinte.fermo : tinte.traccia, !fermo);
     };
 
     return iscrivi(dipingi);

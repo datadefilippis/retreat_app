@@ -220,3 +220,18 @@
 .fqz .lab-respiro{min-width:170px;flex:1;max-width:260px}
 .fqz .lab-ritratto-tabella tr.spento td{opacity:.38}
 .fqz .lab-ritratto-tabella td input[type="checkbox"]{accent-color:var(--lamp)}
+
+/* ═══ LB7 (28/8) — il vestito degli strumenti ═══
+   Micro-transizioni: i comandi si muovono con la calma delle rampe
+   del suono (niente scatti); il numerone respira appena quando
+   cambia; le tele hanno l'ombra interna di uno strumento vero. */
+.fqz .lab-card button,.fqz .lab-card select,.fqz .lab-forma,
+.fqz .lab-modo,.fqz .lab-play,.fqz .lab-freeze{
+  transition:color .18s ease,border-color .18s ease,
+    background-color .18s ease,opacity .18s ease}
+.fqz .lab-slider{transition:opacity .18s ease}
+.fqz .lab-freq-num input{transition:color .25s ease}
+.fqz .lab-tela{box-shadow:inset 0 2px 14px rgba(4,12,15,.5),
+  inset 0 0 0 1px rgba(255,255,255,.03)}
+.fqz .lab-orecchio-num span{text-shadow:0 0 18px rgba(201,179,126,.35)}
+.fqz .lab-ritratto-tabella tr{transition:opacity .2s ease}

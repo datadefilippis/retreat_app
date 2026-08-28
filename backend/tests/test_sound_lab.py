@@ -45,6 +45,9 @@ class TestArchitettura:
             # (il silenziatore iOS non c'entra). L'unica forma ammessa
             # e' quella della fonderia dentro renderizzaWav.
             codice = codice.replace("campana(ctx, ctx.destination", "")
+            # LB7: 'destination-out' e' un modo di COMPOSIZIONE del
+            # canvas (la scia al fosforo), non un nodo audio
+            codice = codice.replace("'destination-out'", "")
             assert "destination" not in codice.replace(
                 "createMediaStreamDestination", ""), \
                 f"{f.name}: collega ctx.destination invece del ponte"
@@ -912,4 +915,41 @@ class TestFonderiaLb4:
             "la consegna in libreria non e' piu' dietro il system admin"
         assert "category: 'campane'" in src
         assert "non ha catturato" in src, "l'onesta' sull'attacco e' sparita"
+
+class TestVestitoLb7:
+    """LB7 (28/8/2026) — il vestito degli strumenti: estetica da
+    strumentazione vera, tutta canvas+CSS, zero dipendenze."""
+
+    def test_l_oscilloscopio_ha_la_scia_al_fosforo(self):
+        """La scia non e' decorazione, e' informazione (un segnale
+        stabile lascia una scia sottile): livello fuori schermo che
+        sbiadisce con destination-out, traccia viva col bagliore."""
+        src = (LAB / "Oscilloscopio.jsx").read_text()
+        assert "destination-out" in src, "la scia al fosforo e' sparita"
+        assert "shadowBlur" in src, "il bagliore della traccia e' sparito"
+
+    def test_lo_spettro_ha_velo_e_quota(self):
+        """L'area sotto la cresta si spegne in GRADIENTE verso il
+        fondo (non piu' un velo piatto), e il picco porta la sua
+        quota in Hz accanto alla tacca d'oro."""
+        src = (LAB / "Spettro.jsx").read_text()
+        assert "createLinearGradient" in src
+        assert "fillText(testo" in src, "la quota del picco e' sparita"
+
+    def test_lo_spettrogramma_canta_in_oro(self):
+        """La rampa del mondo: NOTTE → acqua → ORO → osso. Quattro
+        fermate della casa, niente arcobaleni; l'oro arriva solo dove
+        l'energia canta (misurato: 440 Hz a mezza ampiezza sta
+        sull'acqua, il fondo e' notte [10,22,30])."""
+        src = (LAB / "Spettrogramma.jsx").read_text()
+        assert "NOTTE" in src
+        assert "tinte.lamp" in src, "la rampa ha perso la fermata d'oro"
+
+    def test_le_micro_transizioni(self):
+        """I comandi si muovono con la calma delle rampe del suono:
+        transizioni brevi su bottoni e selettori, l'ombra interna
+        delle tele, il respiro del numerone."""
+        css = (LAB / "lab.css").read_text()
+        assert "transition:color .18s ease" in css
+        assert "inset 0 2px 14px" in css, "le tele hanno perso l'ombra interna"
 

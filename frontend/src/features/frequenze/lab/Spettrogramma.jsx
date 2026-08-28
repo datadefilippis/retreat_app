@@ -45,14 +45,20 @@ const MS_COLONNA = 40;          // 25 colonne al secondo
 const MAX_COLONNE = 6;          // dopo una pausa non si recupera all'infinito
 const GUTTER = 30;              // la striscia delle etichette, che non scorre
 
-/* la scala d'intensita': buio → acqua → crema. Una sola famiglia di
-   colori, nessun arcobaleno. La gamma scurisce la parte bassa, cosi'
-   le code di dispersione non diventano foschia. */
-function rampa(t, ink, water, bone) {
+/* LB7 — la scala d'intensita' del mondo: notte → acqua → ORO → osso.
+   Quattro fermate della stessa casa (niente arcobaleni da anni 90);
+   la gamma scurisce la parte bassa, cosi' le code di dispersione non
+   diventano foschia, e l'oro arriva solo dove l'energia canta. */
+const NOTTE = [10, 22, 30];
+function rampa(t, ink, water, bone, lamp) {
   const u = Math.pow(Math.max(0, Math.min(1, t)), 1.5);
-  const [a, b, q] = u < 0.62
-    ? [ink, water, u / 0.62]
-    : [water, bone, (u - 0.62) / 0.38];
+  const fermate = [
+    [0, NOTTE], [0.45, water], [0.78, lamp || [201, 179, 126]], [1, bone],
+  ];
+  let i = 0;
+  while (i < fermate.length - 2 && u > fermate[i + 1][0]) i++;
+  const [u0, a] = fermate[i], [u1, b] = fermate[i + 1];
+  const q = Math.max(0, Math.min(1, (u - u0) / (u1 - u0 || 1)));
   return [
     (a[0] + (b[0] - a[0]) * q) | 0,
     (a[1] + (b[1] - a[1]) * q) | 0,
@@ -97,6 +103,7 @@ export default function Spettrogramma({ ottieniAnalisi, fermo }) {
         ink: rgb(s.getPropertyValue('--ink'), [12, 22, 24]),
         water: rgb(s.getPropertyValue('--water'), [102, 183, 156]),
         bone: rgb(s.getPropertyValue('--bone'), [233, 228, 217]),
+        lamp: rgb(s.getPropertyValue('--lamp'), [201, 179, 126]),
         linea: s.getPropertyValue('--line-soft').trim() || '#1B2E32',
         nota: s.getPropertyValue('--dimmer').trim() || '#86A0A4',
         fermo: s.getPropertyValue('--lamp').trim() || '#C9B37E',
@@ -198,7 +205,7 @@ export default function Spettrogramma({ ottieniAnalisi, fermo }) {
         let v = -Infinity;
         for (let k = k0; k < k1; k++) if (db.buf[k] > v) v = db.buf[k];
         const [r, g, b] = rampa((v - DB_MIN) / (DB_MAX - DB_MIN),
-          tinte.ink, tinte.water, tinte.bone);
+          tinte.ink, tinte.water, tinte.bone, tinte.lamp);
         for (let i = 0; i < passo; i++) {
           const o = (y * passo + i) * 4;
           px[o] = r; px[o + 1] = g; px[o + 2] = b; px[o + 3] = 255;
