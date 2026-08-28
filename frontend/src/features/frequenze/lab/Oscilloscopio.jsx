@@ -47,13 +47,21 @@ function trigger(buf) {
   return { da: 0, ok: false };            // corsa libera: silenzio o DC
 }
 
-export default function Oscilloscopio({ ottieniAnalisi, fermo }) {
+export default function Oscilloscopio({ ottieniAnalisi, fermo, ottieniXY = null }) {
   const telaRef = useRef(null);
   const acqRef = useRef(null);            // l'ultimo buffer acquisito
   const daRef = useRef(0);                // indice del trigger nel buffer
   const srRef = useRef(0);
   const [aggancio, setAggancio] = useState(false);
   const [vivo, setVivo] = useState(false);
+  /* LB1 — il MODO: 'tempo' e' l'oscilloscopio di sempre; 'xy' mette
+     la sorgente A sull'asse X e la B sulla Y — le figure di
+     Lissajous. Il modo vive in un ref per il pittore (che non deve
+     ri-iscriversi) e in uno stato per i bottoni. */
+  const [modo, setModo] = useState('tempo');
+  const modoRef = useRef('tempo');
+  const xyARef = useRef(null);
+  const xyBRef = useRef(null);
 
   useEffect(() => {
     const tela = telaRef.current;
@@ -77,6 +85,38 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo }) {
           traccia: s.getPropertyValue('--water').trim() || '#66B79C',
           fermo: s.getPropertyValue('--lamp').trim() || '#C9B37E',
         };
+      }
+
+      /* ── modo XY (LB1): A sull'asse X, B sulla Y ── */
+      if (modoRef.current === 'xy') {
+        const xy = ottieniXY && ottieniXY();
+        if (!tinte) return;
+        if (xy && !fermo) {
+          const N = 2048;
+          if (!xyARef.current) { xyARef.current = new Float32Array(N); xyBRef.current = new Float32Array(N); }
+          xy.a(xyARef.current); xy.b(xyBRef.current);
+        }
+        c2d.clearRect(0, 0, W, H);
+        c2d.lineWidth = 1;
+        c2d.strokeStyle = tinte.griglia;
+        c2d.beginPath();                       // la croce degli assi
+        c2d.moveTo(W / 2, 0); c2d.lineTo(W / 2, H);
+        c2d.moveTo(0, H / 2); c2d.lineTo(W, H / 2);
+        c2d.stroke();
+        const A = xyARef.current, B = xyBRef.current;
+        if (A && B) {
+          const lato = Math.min(W, H) / 2 * MARGINE_Y;
+          c2d.lineWidth = Math.max(1.25, 1.25 * dpr);
+          c2d.strokeStyle = fermo ? tinte.fermo : tinte.traccia;
+          c2d.beginPath();
+          for (let i = 0; i < A.length; i++) {
+            const x = W / 2 + A[i] * lato;
+            const y = H / 2 - B[i] * lato;
+            if (i === 0) c2d.moveTo(x, y); else c2d.lineTo(x, y);
+          }
+          c2d.stroke();
+        }
+        return;
       }
 
       /* acquisizione — salvo che da congelati */
@@ -131,7 +171,7 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo }) {
     };
 
     return iscrivi(dipingi);
-  }, [ottieniAnalisi]);
+  }, [ottieniAnalisi, ottieniXY]);
 
   const ms = srRef.current ? ((FINESTRA / srRef.current) * 1000).toFixed(1).replace('.', ',') : null;
 
@@ -139,18 +179,44 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo }) {
     <section className="lab-card lab-scope" data-testid="lab-oscilloscopio">
       <div className="lab-chead">
         <h2>Oscilloscopio</h2>
-        <span className="lab-cnote">il segnale nel tempo, campione per campione</span>
+        <span className="lab-cnote">
+          {modo === 'xy'
+            ? 'sorgente A sull\u2019asse X, sorgente B sulla Y'
+            : 'il segnale nel tempo, campione per campione'}
+        </span>
+        {ottieniXY && (
+          <div className="lab-modi" role="radiogroup" aria-label="Modo di lettura">
+            {['tempo', 'xy'].map((m) => (
+              <button key={m} type="button" role="radio" aria-checked={modo === m}
+                className={'lab-modo' + (modo === m ? ' vivo' : '')}
+                data-testid={`lab-scope-${m}`}
+                onClick={() => { modoRef.current = m; setModo(m); }}>
+                {m === 'xy' ? 'XY' : 'Tempo'}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <canvas ref={telaRef} className="lab-tela" role="img"
         aria-label="Oscilloscopio: la forma d'onda del segnale nel tempo" />
-      <div className="lab-scope-info">
-        <span>{ms ? `finestra ${ms} ms · ${FINESTRA} campioni` : 'in attesa di un segnale'}</span>
-        <span data-testid="lab-aggancio">
-          {fermo ? 'immagine ferma — il suono continua'
-            : vivo ? (aggancio ? 'trigger agganciato' : 'corsa libera') : ''}
-        </span>
-        <span>asse ±1 · zero al centro</span>
-      </div>
+      {modo === 'xy' ? (
+        <p className="lab-didascalia" data-testid="lab-xy-didascalia">
+          <b>Figure di Lissajous.</b> Un intervallo musicale è un
+          rapporto tra numeri: A e B a 2:1 (l&rsquo;ottava) disegnano un
+          otto, 3:2 (la quinta) un nodo in più. Se il rapporto è
+          leggermente stonato, la figura ruota — stai vedendo la fase
+          che scorre.
+        </p>
+      ) : (
+        <div className="lab-scope-info">
+          <span>{ms ? `finestra ${ms} ms · ${FINESTRA} campioni` : 'in attesa di un segnale'}</span>
+          <span data-testid="lab-aggancio">
+            {fermo ? 'immagine ferma — il suono continua'
+              : vivo ? (aggancio ? 'trigger agganciato' : 'corsa libera') : ''}
+          </span>
+          <span>asse ±1 · zero al centro</span>
+        </div>
+      )}
     </section>
   );
 }

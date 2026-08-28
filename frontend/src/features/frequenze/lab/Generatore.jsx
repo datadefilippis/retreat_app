@@ -18,7 +18,7 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FORME } from './motore';
+import { FORME, ORECCHIE } from './motore';
 import { iscrivi } from './quadro';
 import { CAT_LINK } from '../content/biblioteca';
 
@@ -60,6 +60,7 @@ export default function Generatore({ ottieniLab, onSuono }) {
   const [campo, setCampo] = useState('440');        // il testo mentre si scrive
   const [amp, setAmp] = useState(0.25);
   const [fase, setFase] = useState(0);              // gradi, per la mano
+  const [orecchio, setOrecchio] = useState('entrambe');   // LB1: dove suona
   const [attivo, setAttivo] = useState(false);
   const labRef = useRef(null);
 
@@ -100,7 +101,8 @@ export default function Generatore({ ottieniLab, onSuono }) {
     const lab = ottieniLab();                       // nasce QUI, nel gesto
     labRef.current = lab;
     if (attivo) { lab.generatore.ferma(); suono(false); return; }
-    lab.generatore.imposta({ forma, freq, amp, fase: (fase * Math.PI) / 180 });
+    lab.generatore.imposta({ forma, freq, amp, orecchio,
+      fase: (fase * Math.PI) / 180 });
     await lab.generatore.avvia();
     suono(true);
   };
@@ -221,8 +223,22 @@ export default function Generatore({ ottieniLab, onSuono }) {
               const g = +e.target.value; setFase(g);
               comanda({ fase: (g * Math.PI) / 180 });
             }} />
-          <small>con una sorgente sola la fase non si sente: conterà
-            quando le sorgenti saranno due (interferenza)</small>
+          <small>da sola non si sente: accendi la Sorgente B alla
+            stessa frequenza e portala a 180° — le onde si cancellano
+            (interferenza)</small>
+        </label>
+        <label className="lab-par">
+          <span>Dove suona</span>
+          <select value={orecchio} aria-label="Canale della sorgente A"
+            data-testid="lab-orecchio"
+            onChange={(e) => { setOrecchio(e.target.value); comanda({ orecchio: e.target.value }); }}>
+            {ORECCHIE.map((o) => (
+              <option key={o} value={o}>
+                {o === 'entrambe' ? 'Entrambe le orecchie'
+                  : o === 'sinistra' ? 'Solo sinistra' : 'Solo destra'}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 

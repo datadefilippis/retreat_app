@@ -362,9 +362,17 @@ class TestBancoUnico:
         assert pagina.index("<Generatore") < pagina.index('data-testid="lab-banco"') \
             < pagina.index("<Oscilloscopio"), \
             "il comando non sta fra il generatore e le sue letture"
+        # Evoluta con LB1 (27/8): il divieto riguarda i comandi di
+        # TEMPO (congela/riprendi restano del banco, uno solo). Un
+        # selettore di MODO di lettura (Tempo/XY nell'oscilloscopio,
+        # role="radio") e' un'altra cosa: cambia cosa si guarda, non
+        # quando. Ogni <button> nei pannelli deve essere un radio.
         for nome in ("Oscilloscopio.jsx", "Spettro.jsx", "Spettrogramma.jsx"):
             src = (LAB / nome).read_text()
-            assert "<button" not in src, f"{nome}: ha ancora un pulsante suo"
+            assert "lab-congela" not in src and "lab-freeze" not in src, \
+                f"{nome}: ha un comando di tempo suo"
+            assert src.count("<button") == src.count('role="radio"'), \
+                f"{nome}: ha un pulsante che non e' un selettore di modo"
 
     def test_la_pagina_si_iscrive_invece_di_copiare(self):
         """Lo stato React del pulsante e' una SOTTOSCRIZIONE al quadro,
@@ -628,3 +636,81 @@ class TestTelaio:
         pagina = (LAB / "SoundLabPage.js").read_text()
         assert "SafetyCurtain" in pagina and "SafetyLine" in pagina, \
             "le controindicazioni non valgono nel Lab"
+
+class TestSecondaVoceLb1:
+    """LB1 (27/8/2026) — la seconda sorgente. Le promesse misurate al
+    collaudo strumentale (via __fqzLab, pagina nascosta):
+    solo A = 0.177 RMS (ampiezza onesta), costruttiva 0.353,
+    controfase 0.0004, battimenti 440+444 con RMS che respira."""
+
+    def test_le_voci_sono_gemelle_di_una_fabbrica(self):
+        """Una macchina sola (creaSorgente) costruisce A e B: la A non
+        puo' cambiare comportamento senza che la B la segua."""
+        src = (LAB / "motore.js").read_text()
+        assert src.count("function creaSorgente") == 1
+        assert "generatore: creaSorgente()" in src
+        assert "generatore2: creaSorgente()" in src
+
+    def test_dove_suona_e_un_interruttore_non_un_pan(self):
+        """Trappola pagata al collaudo: lo StereoPanner a potenza
+        costante toglie 3 dB al centro (ampiezza 25% → picco 0.177) e
+        lo strumento MENTIVA sull'ampiezza. I canali sono guadagni
+        espliciti: al centro 1 e 1, di lato 1 e 0."""
+        src = (LAB / "motore.js").read_text()
+        assert "createStereoPanner" not in src, \
+            "il pan-law e' tornato: l'ampiezza mente di 3 dB"
+        assert "entrambe: [1, 1]" in src
+        assert "sinistra: [1, 0]" in src and "destra: [0, 1]" in src
+
+    def test_il_phase_lock_esiste(self):
+        """Misurato: senza riferimento comune, «fase 180°» e' 180°
+        rispetto al caso (RMS giu' 4:1 invece che a zero). Ogni voce
+        parte a un istante PROGRAMMATO e la sua onda e' ruotata di
+        2π·f·tS: la fase e' riferita all'origine del contesto, e la
+        cancellazione misura -59 dB."""
+        src = (LAB / "motore.js").read_text()
+        assert "osc.start(tS)" in src, "la partenza non e' piu' programmata"
+        assert "stato.fase + DUE_PI * ora * tS" in src, \
+            "manca la rotazione di compensazione: la fase torna casuale"
+
+    def test_il_ponte_chiude_con_l_ultima_voce(self):
+        """Con due voci il rilascio del ponte non puo' piu' essere
+        cieco: si chiude solo quando TUTTE tacciono (lezione iOS del
+        22/8: l'<audio> su stream muto loopa l'ultimo buffer)."""
+        src = (LAB / "motore.js").read_text()
+        assert "qualcunoSuona" in src
+        assert "if (!qualcunoSuona()) ponte.rilascia();" in src
+
+    def test_l_xy_legge_le_voci_separate(self):
+        """Le figure di Lissajous vogliono i DUE segnali: ogni voce ha
+        il suo rubinetto (tap pre-canali), e l'oscilloscopio riceve la
+        presa XY dalla pagina senza conoscere il generatore."""
+        motore = (LAB / "motore.js").read_text()
+        assert "tap.getFloatTimeDomainData(buf)" in motore
+        pagina = (LAB / "SoundLabPage.js").read_text()
+        assert "ottieniXY" in pagina
+        scope = (LAB / "Oscilloscopio.jsx").read_text()
+        assert "ottieniXY" in scope
+        assert "Lissajous" in scope, "il modo XY ha perso la didascalia"
+        assert "creaLaboratorio" not in scope   # il contratto regge
+
+    def test_la_seconda_voce_rispetta_i_contratti(self):
+        """SecondaVoce: React e' la mano, il suono sta nel motore —
+        niente nodi audio nel componente; e la didascalia c'e' (regola
+        LB: nessun modulo muto)."""
+        src = (LAB / "SecondaVoce.jsx").read_text()
+        assert "generatore2" in src
+        assert "createOscillator" not in src and "AudioContext" not in src
+        assert "lab-didascalia" in src
+        assert "interferenza" in src.lower()
+
+    def test_il_generatore_a_dice_la_verita_nuova(self):
+        """La nota della fase prometteva il futuro («contera' quando le
+        sorgenti saranno due»): ora le sorgenti sono due e la nota
+        insegna il gesto della cancellazione. E anche la A sceglie
+        dove suonare."""
+        src = (LAB / "Generatore.jsx").read_text()
+        assert "conterà quando" not in src, "la nota promette ancora il futuro"
+        assert "180°" in src
+        assert 'data-testid="lab-orecchio"' in src
+

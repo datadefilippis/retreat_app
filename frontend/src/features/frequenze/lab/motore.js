@@ -1,10 +1,12 @@
 /**
- * IL MOTORE DEL LAB (25/8/2026) — React-free, come prototipo.js.
+ * IL MOTORE DEL LAB (25/8/2026; due sorgenti dal 27/8, ciclo LB1) —
+ * React-free, come prototipo.js.
  *
  * Un solo grafo per tutto il Laboratorio:
  *
- *   generatore → master ─┬→ analyser (osservatore)
- *                        └→ ponte.nodo → <audio> → altoparlante
+ *   sorgente A ─ livello ─ pan ─┐
+ *                               ├→ master ─┬→ analyser (osservatore)
+ *   sorgente B ─ livello ─ pan ─┘          └→ ponte.nodo → <audio>
  *
  * Tre regole ereditate dal resto del motore, pagate in produzione:
  *
@@ -12,14 +14,24 @@
  *    collegato a ctx.destination e' suono «di contorno», azzerabile
  *    dal silenziatore. MAI connect(ctx.destination) in questo file.
  * 2. L'analisi e' un ospite: guarda, non trasporta (visual/analisi.js).
- *    `analisi.sorgente(nodo)` accetta QUALSIASI nodo — oggi il
- *    generatore, domani un MediaStreamSource dal microfono: e' la
+ *    `analisi.sorgente(nodo)` accetta QUALSIASI nodo — oggi il mix
+ *    delle sorgenti, domani un MediaStreamSource dal microfono: e' la
  *    presa per tutto il futuro del Lab, e i moduli che leggono
  *    l'analyser non sapranno mai da dove viene il segnale.
  * 3. Nessun parametro salta: ampiezza e frequenza si muovono con
  *    rampe (DK = 12 ms, la costante di casa), il cambio di forma o di
  *    fase e' un CROSSFADE fra due oscillatori — cambiare `type` a
  *    caldo produce un click.
+ *
+ * LB1 — LA SECONDA SORGENTE. Le due voci sono GEMELLE: la stessa
+ * fabbrica (creaSorgente) le costruisce entrambe, quindi la A si
+ * comporta al bit come prima e la B non puo' divergere. Ognuna ha il
+ * suo livello (ampiezza + declick), il suo pan («dove suona»:
+ * entrambe le orecchie, solo sinistra, solo destra — e' cosi' che
+ * l'interferenza e il binaurale da banco diventano un gesto) e un
+ * rubinetto privato per il modo XY dell'oscilloscopio (le figure di
+ * Lissajous vogliono i DUE segnali separati, il mix non basta).
+ * Il ponte si rilascia solo quando TUTTE le voci tacciono.
  *
  * LA FASE. L'OscillatorNode nativo non ce l'ha: si ottiene con
  * setPeriodicWave. La serie di Fourier della forma, con ogni armonica
@@ -34,6 +46,8 @@ const XFADE = 0.024;        // crossfade cambio forma/fase
 const ARMONICHE = 512;      // fino a ~20 kHz gia' da un fondamentale di 40 Hz
 
 export const FORME = ['sine', 'square', 'triangle', 'sawtooth'];
+export const ORECCHIE = ['entrambe', 'sinistra', 'destra'];
+const CANALI = { entrambe: [1, 1], sinistra: [1, 0], destra: [0, 1] };
 
 /* Coefficiente b_k della serie di Fourier (seno) della forma.
    Le stesse serie delle forme native — la normalizzazione del
@@ -75,97 +89,124 @@ export function creaLaboratorio(ctx) {
   analyser.fftSize = 8192;                     // ~5.4 Hz/bin a 44.1k
   analyser.smoothingTimeConstant = 0.55;
 
-  /* ── l'uscita del generatore ────────────────────────────────── */
+  /* ── l'uscita del banco: il MIX delle sorgenti ──────────────── */
   const master = ctx.createGain();
-  master.gain.value = 0;
+  master.gain.value = 1;                       // il volume vive nelle voci
   master.connect(analyser);                    // osserva
   master.connect(ponte.nodo);                  // trasporta — MAI ctx.destination
 
   let osservato = master;                      // cio' che l'analyser guarda ora
 
-  const stato = { forma: 'sine', freq: 440, amp: 0.25, fase: 0, attivo: false };
-  let voce = null;                             // { osc, gain } vivo
-
-  /* LA CORSA (STEP 6, 26/8/2026) — lo sweep di frequenza.
-   *
-   * Non e' un timer che ritocca la frequenza sessanta volte al
-   * secondo: e' UNA rampa esponenziale sull'AudioParam, calcolata dal
-   * motore audio campione per campione. Continua a scheda nascosta e
-   * a schermo spento (dove ogni orologio JavaScript dorme), la durata
-   * e' esatta e la curva e' esponenziale per natura — cioe' diritta
-   * all'orecchio, che le frequenze le sente in ottave.
-   *
-   * Qui si tiene solo il PROMEMORIA della rampa (da, a, quando, per
-   * quanto): serve a dire che frequenza suona ADESSO senza inventare
-   * una seconda verita'. La formula sotto e' la stessa che il browser
-   * usa per la rampa — v(t) = da · (a/da)^u — quindi il numero
-   * scritto e il suono non possono divergere: sono la stessa cosa
-   * letta due volte. */
-  let corsa = null;
-
-  const freqOra = () => {
-    if (!corsa) return stato.freq;
-    const u = (ctx.currentTime - corsa.t0) / corsa.durata;
-    if (u >= 1) { const fine = corsa.a; corsa = null; return fine; }
-    if (u <= 0) return corsa.da;
-    return corsa.da * Math.pow(corsa.a / corsa.da, u);
-  };
-
-  /* onde con fase gia' calcolate: (forma, fase arrotondata) → wave */
+  /* onde con fase gia' calcolate: (forma, fase arrotondata) → wave.
+     La cache e' del banco: le due sorgenti la condividono. */
   const cache = new Map();
   const onda = (forma, fase) => {
     const chiave = forma + '@' + Math.round(fase * 1000);
-    if (!cache.has(chiave)) cache.set(chiave, ondaConFase(ctx, forma, fase));
+    if (!cache.has(chiave)) {
+      if (cache.size > 128) cache.clear();   // il phase-lock ne conia di nuove
+      cache.set(chiave, ondaConFase(ctx, forma, fase));
+    }
     return cache.get(chiave);
   };
 
-  const vesti = (osc) => {
-    if (stato.fase === 0) osc.type = stato.forma;
-    else osc.setPeriodicWave(onda(stato.forma, stato.fase));
-  };
+  /* il ponte si apre col primo suono e si chiude con l'ultimo:
+     su iOS un <audio> lasciato in play su uno stream muto ripete
+     l'ultimo buffer in loop (22/8) */
+  const sorgenti = [];
+  const qualcunoSuona = () => sorgenti.some((s) => s._attivo());
 
-  const nuovaVoce = (guadagno) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    vesti(osc);
-    /* la voce nuova nasce DOVE SIAMO, non alla meta: se una corsa e'
-       in atto (cambio di forma a meta' sweep) eredita il pezzo di
-       rampa che resta, altrimenti si perderebbe lo sweep. */
-    const ora = freqOra();
-    osc.frequency.value = ora;
-    if (corsa) {
-      const t0 = ctx.currentTime;
-      const resta = corsa.t0 + corsa.durata - t0;
-      if (resta > 0) {
-        osc.frequency.setValueAtTime(ora, t0);
-        osc.frequency.exponentialRampToValueAtTime(corsa.a, t0 + resta);
+  /* ═══ LA FABBRICA DELLE SORGENTI (LB1) ═══
+     Una macchina sola per la A e la B: stato, voce, corsa (sweep),
+     livello (ampiezza+declick), pan, e il rubinetto XY. */
+  function creaSorgente() {
+    const stato = { forma: 'sine', freq: 440, amp: 0.25, fase: 0,
+                    attivo: false, orecchio: 'entrambe' };
+    let voce = null;                           // { osc, gain } vivo
+    let corsa = null;                          // promemoria dello sweep
+
+    const livello = ctx.createGain();          // ampiezza + declick della voce
+    livello.gain.value = 0;
+    /* «Dove suona» e' un INTERRUTTORE di canale, non un pan: lo
+       StereoPanner a potenza costante toglieva 3 dB al centro
+       (misurato: ampiezza 25% → picco 0,177) e lo strumento mentiva
+       sull'ampiezza. Due guadagni espliciti L/R tengono il livello
+       onesto: al centro 1 e 1, di lato 1 e 0. */
+    const gL = ctx.createGain(); const gR = ctx.createGain();
+    gL.gain.value = 1; gR.gain.value = 1;
+    const unione = ctx.createChannelMerger(2);
+    livello.connect(gL); livello.connect(gR);
+    gL.connect(unione, 0, 0); gR.connect(unione, 0, 1);
+    unione.connect(master);
+
+    /* il rubinetto privato del modo XY: legge QUESTA voce, prima del
+       pan — le figure di Lissajous vogliono i segnali separati */
+    const tap = ctx.createAnalyser();
+    tap.fftSize = 2048;
+    livello.connect(tap);
+
+    const freqOra = () => {
+      if (!corsa) return stato.freq;
+      const u = (ctx.currentTime - corsa.t0) / corsa.durata;
+      if (u >= 1) { const fine = corsa.a; corsa = null; return fine; }
+      if (u <= 0) return corsa.da;
+      return corsa.da * Math.pow(corsa.a / corsa.da, u);
+    };
+
+    /* IL PHASE-LOCK (LB1, misurato al collaudo): due oscillatori
+       partono in istanti diversi, quindi «fase 180°» sarebbe 180°
+       rispetto a un riferimento CASUALE — la cancellazione prometteva
+       e non manteneva (RMS giu' di 4:1 invece che a zero). La cura:
+       ogni voce nasce a un istante PROGRAMMATO (osc.start(tS)) e la
+       sua onda viene ruotata di 2π·f·tS in piu', cosi' la fase di
+       TUTTE le voci e' riferita all'origine del contesto (t=0).
+       A pari frequenza, 180° significa davvero opposizione.
+       Il lock vale finche' la frequenza non scivola (slider, sweep):
+       basta ridare un tocco alla fase per riallineare — la voce si
+       ricrea e si riaggancia. */
+    const DUE_PI = 2 * Math.PI;
+    const vesti = (osc, faseEff) => {
+      const f = ((faseEff % DUE_PI) + DUE_PI) % DUE_PI;
+      if (f < 1e-4 || DUE_PI - f < 1e-4) osc.type = stato.forma;
+      else osc.setPeriodicWave(onda(stato.forma, f));
+    };
+
+    const nuovaVoce = (guadagno) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      /* la voce nuova nasce DOVE SIAMO, non alla meta: se una corsa e'
+         in atto (cambio di forma a meta' sweep) eredita il pezzo di
+         rampa che resta, altrimenti si perderebbe lo sweep. */
+      const ora = freqOra();
+      const tS = ctx.currentTime + 0.006;      // partenza programmata
+      vesti(osc, stato.fase + DUE_PI * ora * tS);
+      osc.frequency.value = ora;
+      if (corsa) {
+        const resta = corsa.t0 + corsa.durata - tS;
+        if (resta > 0) {
+          osc.frequency.setValueAtTime(ora, tS);
+          osc.frequency.exponentialRampToValueAtTime(corsa.a, tS + resta);
+        }
       }
-    }
-    gain.gain.value = guadagno;
-    osc.connect(gain); gain.connect(master);
-    osc.start();
-    return { osc, gain };
-  };
+      gain.gain.value = guadagno;
+      osc.connect(gain); gain.connect(livello);
+      osc.start(tS);
+      return { osc, gain };
+    };
 
-  /* cambio forma o fase a caldo: la voce vecchia scende, la nuova
-     sale, si incrociano in XFADE — l'orecchio sente una sola nota */
-  const rimpiazza = () => {
-    if (!voce) return;
-    const via = voce, t = ctx.currentTime;
-    voce = nuovaVoce(0);
-    voce.gain.gain.linearRampToValueAtTime(1, t + XFADE);
-    via.gain.gain.setValueAtTime(1, t);
-    via.gain.gain.linearRampToValueAtTime(0, t + XFADE);
-    via.osc.stop(t + XFADE + 0.05);
-    via.osc.onended = () => { try { via.gain.disconnect(); } catch { /* gia' */ } };
-  };
+    /* cambio forma o fase a caldo: la voce vecchia scende, la nuova
+       sale, si incrociano in XFADE — l'orecchio sente una sola nota */
+    const rimpiazza = () => {
+      if (!voce) return;
+      const via = voce, t = ctx.currentTime;
+      voce = nuovaVoce(0);
+      voce.gain.gain.linearRampToValueAtTime(1, t + XFADE);
+      via.gain.gain.setValueAtTime(1, t);
+      via.gain.gain.linearRampToValueAtTime(0, t + XFADE);
+      via.osc.stop(t + XFADE + 0.05);
+      via.osc.onended = () => { try { via.gain.disconnect(); } catch { /* gia' */ } };
+    };
 
-  const lab = {
-    ctx,
-    ponte,
-    limiti: { min: 1, max: nyquist },
-
-    generatore: {
+    const api = {
       /* `freq` e' la frequenza che suona ADESSO (durante una corsa si
          muove); `meta` e' dove sta andando; `corsa` e' il promemoria
          della rampa, o null se non c'e'. */
@@ -201,9 +242,16 @@ export function creaLaboratorio(ctx) {
         if (patch.amp !== undefined) {
           stato.amp = Math.min(Math.max(+patch.amp || 0, 0), 1);
           if (stato.attivo) {
-            master.gain.cancelScheduledValues(t);
-            master.gain.setTargetAtTime(stato.amp, t, DK / 3);
+            livello.gain.cancelScheduledValues(t);
+            livello.gain.setTargetAtTime(stato.amp, t, DK / 3);
           }
+        }
+        if (patch.orecchio !== undefined && ORECCHIE.includes(patch.orecchio)
+            && patch.orecchio !== stato.orecchio) {
+          stato.orecchio = patch.orecchio;
+          const [vL, vR] = CANALI[stato.orecchio];
+          gL.gain.setTargetAtTime(vL, t, DK / 3);
+          gR.gain.setTargetAtTime(vR, t, DK / 3);
         }
         let rifare = false;
         if (patch.forma !== undefined && FORME.includes(patch.forma)
@@ -223,9 +271,9 @@ export function creaLaboratorio(ctx) {
         await ponte.avvia();
         voce = nuovaVoce(1);
         const t = ctx.currentTime;
-        master.gain.cancelScheduledValues(t);
-        master.gain.setValueAtTime(0, t);
-        master.gain.linearRampToValueAtTime(stato.amp, t + DK);
+        livello.gain.cancelScheduledValues(t);
+        livello.gain.setValueAtTime(0, t);
+        livello.gain.linearRampToValueAtTime(stato.amp, t + DK);
         stato.attivo = true;
       },
 
@@ -240,9 +288,9 @@ export function creaLaboratorio(ctx) {
         stato.freq = freqOra();
         corsa = null;
         const t = ctx.currentTime;
-        master.gain.cancelScheduledValues(t);
-        master.gain.setValueAtTime(master.gain.value, t);
-        master.gain.linearRampToValueAtTime(0, t + DK);
+        livello.gain.cancelScheduledValues(t);
+        livello.gain.setValueAtTime(livello.gain.value, t);
+        livello.gain.linearRampToValueAtTime(0, t + DK);
         if (voce) {
           voce.osc.stop(t + DK + 0.05);
           const via = voce;
@@ -250,11 +298,29 @@ export function creaLaboratorio(ctx) {
           voce = null;
         }
         stato.attivo = false;
-        /* il rilascio del ponte: su iOS un <audio> lasciato in play su
-           uno stream muto ripete l'ultimo buffer in loop (22/8) */
-        ponte.rilascia();
+        /* l'ultima voce che tace chiude il ponte */
+        if (!qualcunoSuona()) ponte.rilascia();
       },
-    },
+
+      /* il rubinetto XY: i campioni di QUESTA voce, per Lissajous */
+      tempo(buf) { tap.getFloatTimeDomainData(buf); return buf; },
+
+      _attivo: () => stato.attivo,
+      _stacca() { try { livello.disconnect(); unione.disconnect(); } catch { /* via */ } },
+    };
+    sorgenti.push(api);
+    return api;
+  }
+
+  const lab = {
+    ctx,
+    ponte,
+    limiti: { min: 1, max: nyquist },
+
+    /* la voce A — l'interfaccia di sempre, non cambia di una virgola */
+    generatore: creaSorgente(),
+    /* la voce B (LB1) — gemella: stessa fabbrica, stessi gesti */
+    generatore2: creaSorgente(),
 
     analisi: {
       analyser,
@@ -272,7 +338,7 @@ export function creaLaboratorio(ctx) {
     },
 
     spegni() {
-      lab.generatore.ferma();
+      sorgenti.forEach((s) => { s.ferma(); s._stacca(); });
       try { master.disconnect(); } catch { /* niente */ }
       delete ctx._fqzLab;
     },

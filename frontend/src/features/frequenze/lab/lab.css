@@ -155,3 +155,27 @@
 @media screen and (max-width:767px){
   .fqz .lab-freq-num input{font-size:32px !important}
 }
+
+/* ═══ LB1 (27/8) — la seconda voce e il modo XY ═══ */
+.fqz .lab-voce2-riga{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.fqz .lab-voce2-riga .lab-par{flex:1;min-width:180px}
+.fqz .lab-voce2 select{width:100%;padding:8px 10px;border:1px solid var(--line);
+  border-radius:3px;background:var(--ink);color:var(--bone);font-size:13px}
+.fqz .lab-parametri select{width:100%;padding:8px 10px;border:1px solid var(--line);
+  border-radius:3px;background:var(--ink);color:var(--bone);font-size:13px}
+.fqz .lab-voce2-freq{margin-bottom:12px}
+.fqz .lab-voce2-freq .lab-freq-num input{font-size:26px}
+
+/* la didascalia — ogni modulo si racconta (regola trasversale LB) */
+.fqz .lab-didascalia{margin:12px 0 0;padding:10px 14px;font-size:12.5px;
+  line-height:1.6;color:var(--dim);border-left:2px solid var(--lamp-dim);
+  background:linear-gradient(90deg,rgba(201,179,126,.06),transparent 70%)}
+.fqz .lab-didascalia b{color:var(--bone);font-weight:600}
+
+/* i modi dell'oscilloscopio (Tempo / XY) */
+.fqz .lab-modi{display:flex;gap:4px;margin-left:auto}
+.fqz .lab-modo{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:5px 12px;border:1px solid var(--line);
+  border-radius:999px;color:var(--dim);background:transparent}
+.fqz .lab-modo.vivo{color:var(--bone);border-color:var(--lamp-dim);
+  background:var(--ink)}

@@ -15,6 +15,7 @@ import StanzeSound from '../StanzeSound';
 import TriggerStudio from '../TriggerStudio';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
 import Generatore from './Generatore';
+import SecondaVoce from './SecondaVoce';
 import Oscilloscopio from './Oscilloscopio';
 import Spettro from './Spettro';
 import Spettrogramma from './Spettrogramma';
@@ -41,6 +42,14 @@ export default function SoundLabPage() {
      disiscrivevano e riscrivevano per nulla. Con uno stato di pagina
      (il congelamento, qui sotto) sarebbe successo a ogni clic. */
   const ottieniAnalisi = useCallback(() => labRef.current?.analisi || null, []);
+  /* LB1 — la presa XY: i campioni delle DUE voci, separati (il mix
+     non basta per Lissajous). Stessa disciplina: una presa stabile. */
+  const ottieniXY = useCallback(() => {
+    const lab = labRef.current;
+    if (!lab) return null;
+    return { a: (buf) => lab.generatore.tempo(buf),
+             b: (buf) => lab.generatore2.tempo(buf) };
+  }, []);
 
   /* IL TEMPO VISIVO E' DEL BANCO, e vive nel quadro: qui non se ne
      tiene una copia, ci si iscrive. Congelare non tocca il suono. */
@@ -55,7 +64,8 @@ export default function SoundLabPage() {
      si ridisegna, si chiede al motore — cosi' resta onesta anche se un
      giorno qualcuno spegnesse il suono senza passare dal pulsante. */
   const suonaDavvero = labRef.current
-    ? labRef.current.generatore.stato().attivo
+    ? (labRef.current.generatore.stato().attivo
+       || labRef.current.generatore2.stato().attivo)
     : suona;
 
   /* lasciare la pagina spegne il banco — e scongela, altrimenti il
@@ -82,6 +92,11 @@ export default function SoundLabPage() {
       <main>
         <Generatore ottieniLab={ottieniLab} onSuono={setSuona} />
 
+        {/* LB1 — la seconda voce: interferenza, battimenti, binaurale
+            da banco. Gemella della A nella fabbrica del motore. */}
+        <SecondaVoce ottieniLab={ottieniLab}
+          onSuono={() => setSuona((v) => !v)} />
+
         {/* IL COMANDO DEL BANCO: uno solo, fra la sorgente e le sue
             letture — perche' e' li' che passa il confine fra il tempo
             del suono e il tempo dell'immagine. */}
@@ -103,7 +118,8 @@ export default function SoundLabPage() {
 
         {/* l'oscilloscopio riceve SOLO l'analisi: non sa chi genera il
             segnale — domani sara' il microfono e non cambiera' riga */}
-        <Oscilloscopio ottieniAnalisi={ottieniAnalisi} fermo={fermo} />
+        <Oscilloscopio ottieniAnalisi={ottieniAnalisi} fermo={fermo}
+          ottieniXY={ottieniXY} />
 
         {/* stessa presa, altro dominio: il tempo sopra, le frequenze
             qui. Nemmeno lo spettro sa chi genera il segnale. */}
