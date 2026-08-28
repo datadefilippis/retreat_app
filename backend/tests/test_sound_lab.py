@@ -1382,3 +1382,30 @@ class TestConsolidamentoRitratto:
         assert "grid-template-columns:minmax(320px,5fr) minmax(360px,6fr)" in css
         assert "@media (max-width:1080px)" in css
 
+class TestSottoperiodo:
+    """28/8, esperimento del founder: rifusione col solo parziale a
+    4884 Hz e l'accordatore diceva «1628» — 4884/3 esatto. Un tono
+    sopra maxHz ha il periodo vero FUORI dal campo di ricerca e
+    l'autocorrelazione aggancia un multiplo. Cura: il controllo del
+    sottoperiodo (lag/2..lag/8 anche sotto il campo, promosso se la
+    correlazione regge all'85%). Evidenze: 4884.31→4884.8 (era 1628),
+    2500→2499.7 (era 1250), e i timbri ricchi NON vengono promossi
+    all'ottava (146 e 220 con armoniche restano 145.9/219.9); il
+    cerchio del founder: rifusione a un parziale → letta 4885."""
+
+    def test_il_controllo_esiste_e_promuove_il_periodo_vero(self):
+        src = (LAB / "accordatore.js").read_text()
+        assert "SOTTOPERIODO" in src
+        assert "lagFine / k" in src, "il controllo dei sottoperiodi e' sparito"
+        assert ">= 0.85 * b" in src, \
+            "la soglia di promozione e' cambiata: rischio ottave promosse"
+        # dal piu' corto che regge: k parte da 8 e scende
+        assert "let k = 8; k >= 2; k--" in src
+
+    def test_lo_strumento_non_mente_fuori_campo(self):
+        """La regola scritta nel codice: uno strumento risponde
+        giusto o tace — mai un numero sbagliato con la faccia
+        sicura."""
+        src = (LAB / "accordatore.js").read_text()
+        assert "mai un numero sbagliato" in src
+

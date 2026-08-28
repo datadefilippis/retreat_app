@@ -81,7 +81,40 @@ export function fondamentale(buf, sampleRate,
   const a = r[scelto - 1], b = r[scelto], c = r[scelto + 1];
   const denom = a - 2 * b + c;
   const delta = denom !== 0 ? 0.5 * (a - c) / denom : 0;
-  const lagFine = scelto + Math.max(-0.5, Math.min(0.5, delta));
+  let lagFine = scelto + Math.max(-0.5, Math.min(0.5, delta));
+
+  /* IL SOTTOPERIODO (caso del founder, 28/8: rifusione a 4884 Hz e
+     l'accordatore diceva «1628» — 4884/3 esatto). Un tono SOPRA
+     maxHz ha il periodo vero FUORI dal campo di ricerca, e
+     l'autocorrelazione aggancia il primo multiplo che vi cade
+     dentro. Prima di rispondere si prova lag/2..lag/8, anche sotto
+     il campo: se la correlazione regge (>=85% del picco), il
+     periodo vero e' il piu' corto che regge — e la risposta e'
+     quella, anche oltre maxHz. Uno strumento risponde giusto o
+     tace: mai un numero sbagliato con la faccia sicura. */
+  const rA = (lag) => {
+    const l = Math.round(lag);
+    if (l < 2 || l >= N - 2) return 0;
+    let acc = 0;
+    const conta = N - l;
+    for (let i = 0; i < conta; i++) {
+      acc += (buf[i] - media) * (buf[i + l] - media);
+    }
+    return (acc / conta) / energiaMedia;
+  };
+  for (let k = 8; k >= 2; k--) {
+    const cand = lagFine / k;
+    if (cand < 2) continue;
+    if (rA(cand) >= 0.85 * b) {
+      /* vertice locale attorno al sottoperiodo trovato */
+      const l0 = Math.round(cand);
+      const ra = rA(l0 - 1), rb = rA(l0), rc = rA(l0 + 1);
+      const den2 = ra - 2 * rb + rc;
+      const d2 = den2 !== 0 ? 0.5 * (ra - rc) / den2 : 0;
+      lagFine = l0 + Math.max(-0.5, Math.min(0.5, d2));
+      break;
+    }
+  }
 
   return { hz: sampleRate / lagFine, chiarezza: b };
 }
