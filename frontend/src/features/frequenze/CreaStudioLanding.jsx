@@ -124,7 +124,6 @@ export default function CreaStudioLanding() {
             <Bottone href="#accesso" tono="chiaro" testid="studio-cta-hero">
               Richiedi l’accesso →
             </Bottone>
-            <span className="text-sm text-white/60">Accesso su invito.</span>
           </div>
         </PhotoOpener>
 
@@ -246,6 +245,13 @@ export default function CreaStudioLanding() {
             partnership: vogliamo costruirlo insieme a chi lo userà
             davvero con i propri clienti.
           </Testo>
+          {/* FN5 (30/8) — la prova sociale: il portfolio di Crea sono
+              le meditazioni gia' pubblicate. Chi esita, ascolta. */}
+          <Rilievo className="mt-6 max-w-2xl" data-testid="studio-prova-sociale">
+            Le meditazioni che senti su Aurya{' '}
+            <Link to="/meditazioni" className="underline underline-offset-4">
+              nascono qui</Link>.
+          </Rilievo>
 
           {stato === 'fatto' ? (
             <div className="mt-10 max-w-2xl rounded-2xl border-2 p-8"
@@ -265,7 +271,8 @@ export default function CreaStudioLanding() {
               <p className="font-serif text-2xl mb-2">Richiedi l’accesso</p>
               <p className="text-base text-muted-foreground mb-7">
                 Lascia il tuo contatto e raccontaci in due righe chi sei
-                e come lavori.
+                e come lavori. Ti rispondiamo in pochi giorni: si parte
+                con una chiacchierata di venti minuti.
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <input type="text" value={nome} placeholder="Il tuo nome"

@@ -35,6 +35,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { frequenciesAPI } from '../../api/frequencies';
+import CancelloLettera from './CancelloLettera';
+import { prova } from '../../lib/cerchio';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import {
   DisplayTitle, Lede, PhotoBand, PhotoOpener, Section,
@@ -91,11 +93,12 @@ const fmtMin = (s) => `${Math.round((s || 0) / 60)} minuti`;
 /* ── il player dell'anteprima: un patto, non una trappola ──────────
    Un <audio> puro sul file dei 90 secondi (M3): niente motore,
    niente WebAudio — la pagina resta leggera. A fine corsa l'invito. */
-function AnteprimaMeditazione({ track }) {
+function AnteprimaMeditazione({ track, ctaMeditazioni }) {
   const el = useRef(null);
   const [vivo, setVivo] = useState(false);
   const [cur, setCur] = useState(0);
   const [fine, setFine] = useState(false);
+  const [sbloccato, setSbloccato] = useState(!!prova());
   const tot = 90;
   const toggle = () => {
     const a = el.current;
@@ -120,15 +123,41 @@ function AnteprimaMeditazione({ track }) {
       <audio ref={el} src={track.anteprima_url} preload="none"
         onPlay={() => setVivo(true)} onPause={() => setVivo(false)}
         onTimeUpdate={(e) => setCur(e.target.currentTime)}
-        onEnded={() => { setVivo(false); setFine(true); }} />
+        onEnded={() => {
+          setVivo(false); setFine(true);
+          /* FN1 — il segno del pedaggio pagato: la pagina traccia
+             aprira' il cancello all'arrivo, senza secondo ascolto */
+          try { sessionStorage.setItem('fqz_anteprima_finita', '1'); } catch { /* privato */ }
+        }} />
       {fine ? (
-        <div data-testid="sh-anteprima-patto">
-          <Rilievo>L’ascolto completo è di chi riceve la Lettera.</Rilievo>
-          <div className="mt-6 flex flex-wrap items-center gap-6">
-            <Bottone to={`/frequenze/${track.slug}`}>Continua l’ascolto →</Bottone>
-            <Richiamo to="/newsletter">Ricevi la Lettera</Richiamo>
+        sbloccato ? (
+          /* FN3 — iscritto SUL POSTO: la landing non ti molla */
+          <div data-testid="sh-anteprima-sbloccata">
+            <Rilievo>Sei dentro. Buon ascolto.</Rilievo>
+            <div className="mt-6 flex flex-wrap items-center gap-6">
+              <Bottone to={`/frequenze/${track.slug}`}>
+                Ascolta la meditazione completa →
+              </Bottone>
+              <Richiamo to="/meditazioni">{ctaMeditazioni}</Richiamo>
+            </div>
           </div>
-        </div>
+        ) : (
+          /* FN2+FN3 — a fine anteprima il cancello appare QUI, subito,
+             col form: niente salti di pagina tra il desiderio e l'email */
+          <div data-testid="sh-anteprima-patto">
+            <CancelloLettera slug={track.slug} variante="chiaro"
+              durataSec={track.score?.duration_sec || track.duration_sec}
+              onSbloccato={() => setSbloccato(true)}>
+              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                <button type="button" className="underline"
+                  onClick={() => { setFine(false); setCur(0); }}>
+                  Riascolta l’anteprima
+                </button>
+                <Link to="/meditazioni" className="underline">{ctaMeditazioni}</Link>
+              </div>
+            </CancelloLettera>
+          </div>
+        )
       ) : (
         <div className="flex items-center gap-5">
           <button type="button" onClick={toggle} data-testid="sh-anteprima-play"
@@ -162,13 +191,26 @@ export default function SoundHomePage() {
   /* il campione in vetrina: se la traccia non c'e' (altro ambiente),
      la sezione si piega con grazia — mai una scatola rotta */
   const [vetrina, setVetrina] = useState(null);
+  /* FN4 — il numero VERO del catalogo: se il server e' sbloccato
+     conta gli item, da chiuso il 403 porta tracks_count. Fallback:
+     il bottone parla senza numero. */
+  const [quante, setQuante] = useState(0);
   useEffect(() => {
     let vivo = true;
     frequenciesAPI.getPublic(VETRINA_SLUG)
       .then((r) => { if (vivo && r.data?.anteprima_url) setVetrina(r.data); })
       .catch(() => { /* niente vetrina: la pagina vive lo stesso */ });
+    frequenciesAPI.getCatalog(prova())
+      .then((r) => { if (vivo) setQuante((r.data?.items || []).length); })
+      .catch((e) => {
+        const n = e?.response?.data?.detail?.tracks_count;
+        if (vivo && n) setQuante(n);
+      });
     return () => { vivo = false; };
   }, []);
+
+  const ctaMeditazioni = quante > 1
+    ? `Le ${quante} Meditazioni →` : 'Tutte le Meditazioni →';
 
   return (
     <MarketplaceShell noSearch>
@@ -191,12 +233,16 @@ export default function SoundHomePage() {
             Puoi studiarlo, sperimentarlo, o semplicemente ascoltarlo.
             E se accompagni persone, puoi comporlo per loro.
           </p>
+          {/* FN4 (30/8) — l'hero vende il gancio piu' caldo: la
+              meditazione che ascolti ADESSO. Il richiamo professionale
+              esce dall'hero: ha la sua band (sezione Crea) — un
+              pubblico, una porta. */}
           <div className="mt-10 flex flex-wrap items-center gap-6">
-            <Bottone to="/sound/esplora" tono="chiaro" testid="sh-cta-esplora">
-              Esplora Aurya Sound
+            <Bottone href="#sh-esperienze" tono="chiaro" testid="sh-cta-ascolta">
+              Ascolta una meditazione — 90 secondi
             </Bottone>
-            <Richiamo to="/sound/studio" tono="chiaro" testid="sh-hero-studio">
-              Per i professionisti: Crea Studio →
+            <Richiamo to="/sound/esplora" tono="chiaro" testid="sh-cta-esplora">
+              Esplora Aurya Sound →
             </Richiamo>
           </div>
         </PhotoOpener>
@@ -281,13 +327,13 @@ export default function SoundHomePage() {
           </Lede>
           {vetrina && (
             <div className="mt-10 max-w-3xl">
-              <AnteprimaMeditazione track={vetrina} />
+              <AnteprimaMeditazione track={vetrina} ctaMeditazioni={ctaMeditazioni} />
             </div>
           )}
           <div className="mt-8">
-            <Richiamo to="/meditazioni" testid="sh-porta-meditazioni">
-              Tutte le Meditazioni →
-            </Richiamo>
+            <Bottone to="/meditazioni" testid="sh-porta-meditazioni">
+              {ctaMeditazioni}
+            </Bottone>
           </div>
           <div className="mt-10 max-w-3xl border-t pt-7"
             style={{ borderColor: '#e8e0ce' }}>
@@ -368,9 +414,6 @@ export default function SoundHomePage() {
             <Rilievo>Distinguiamo quello che non sappiamo.</Rilievo>
             <Rilievo>E lasciamo spazio all’esperienza.</Rilievo>
           </div>
-          <Testo className="mt-10 max-w-2xl">
-            È il nostro modo di costruire qualcosa che possa durare.
-          </Testo>
         </Section>
 
         {/* ── 7 · IL METODO ──────────────────────────────────────── */}
@@ -378,9 +421,6 @@ export default function SoundHomePage() {
           <DisplayTitle id="sh-processo" size="section">
             Dalla ricerca all’esperienza.
           </DisplayTitle>
-          <Lede size="small" className="mt-5">
-            Ogni esperienza nasce dallo stesso metodo.
-          </Lede>
           <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
             {PASSI.map(([n, titolo, testo]) => (
               <li key={n}>
@@ -391,9 +431,6 @@ export default function SoundHomePage() {
               </li>
             ))}
           </ol>
-          <Rilievo className="mt-16 max-w-3xl">
-            Il suono può essere affascinante senza diventare misterioso.
-          </Rilievo>
         </Section>
 
         {/* ── 8 · IL FUTURO — dal suono alla vibrazione ─────────────

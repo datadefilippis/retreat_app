@@ -127,9 +127,17 @@ class TestL3PortaDiSistema:
         assert "meditazione-mondo-nuovo-onde-delta" in src
         assert 'data-testid="sh-anteprima"' in src
         assert "anteprima_url" in src, "il player non usa il file dei 90s"
-        # il patto, non la trappola: a fine anteprima l'invito
+        # il patto, non la trappola: a fine anteprima l'invito.
+        # Evoluta col ciclo FN (30/8): non piu' due link verso
+        # /newsletter — il CANCELLO col form compare SUL POSTO
+        # (CancelloLettera, iscrizione senza cambiare pagina), e il
+        # segno di sessione evita il secondo pedaggio sulla traccia.
         assert 'data-testid="sh-anteprima-patto"' in src
-        assert 'to="/newsletter"' in src
+        assert "<CancelloLettera" in src
+        assert "fqz_anteprima_finita" in src, \
+            "manca il segno del pedaggio pagato (FN1)"
+        assert 'data-testid="sh-anteprima-sbloccata"' in src, \
+            "dopo l'iscrizione la landing deve offrire l'ascolto completo"
         # niente motore: la landing resta leggera
         basso = src.lower()
         for vietato in ("creaascolto", "audiocontext", "startpreview"):

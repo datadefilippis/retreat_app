@@ -132,11 +132,17 @@ class TestPonteLetteraAccountNl2:
         # sua volta chiama la route pubblica — la cattura resta viva.
         cerchio = (FRONTEND_SRC / "lib" / "cerchio.js").read_text()
         assert "/public/newsletter/subscribe" in cerchio
-        for f in ("features/frequenze/MeditazioniPage.js",
-                  "features/frequenze/PublicFrequencyPage.js"):
-            src = (FRONTEND_SRC / f).read_text()
-            assert "iscriviESblocca" in src, \
-                f"{f}: sparita l'iscrizione email-only"
+        # Evoluta col ciclo FN (30/8): sulla pagina traccia il form
+        # vive nel cancello condiviso (CancelloLettera) — il cervello
+        # resta iscriviESblocca, la pagina lo monta.
+        assert "iscriviESblocca" in (FRONTEND_SRC /
+            "features/frequenze/MeditazioniPage.js").read_text(), \
+            "MeditazioniPage: sparita l'iscrizione email-only"
+        cancello = (FRONTEND_SRC /
+            "features/frequenze/CancelloLettera.jsx").read_text()
+        assert "iscriviESblocca" in cancello
+        assert "<CancelloLettera" in (FRONTEND_SRC /
+            "features/frequenze/PublicFrequencyPage.js").read_text()
 
 
 class TestErroriCheAiutanoNl3:
@@ -427,9 +433,11 @@ class TestUnaSolaPortaNlOcties:
             "«Crealo gratis» deve aprire la REGISTRAZIONE, non l'accesso"
 
     def test_traccia_condivisa_allineata(self):
-        src = self.FQZ.read_text()
-        assert 'data-testid="fqz-gate-accedi"' in src
-        assert 'data-testid="fqz-gate-crea"' in src
+        # Evoluta FN (30/8): le porte dell'account vivono nel cancello
+        # condiviso, coi testid cancello-*.
+        src = (self.FQZ.parent / "CancelloLettera.jsx").read_text()
+        assert 'data-testid="cancello-accedi"' in src
+        assert 'data-testid="cancello-crea"' in src
         assert "entraInAurya(email," in src and "creaAccount(email," in src
 
     def test_ponte_del_magazine_porta_email_e_ritorno(self):
@@ -496,8 +504,13 @@ class TestCerchioProvaUnicaSb:
         qualsiasi: il buco gemello di NL-septies."""
         src = self.TRACK.read_text()
         assert "fqz_listener_ok" not in src
-        assert "iscriviESblocca" in src
-        assert "attesaConferma" in src, \
+        # FN (30/8): il cervello dell'iscrizione sta nel cancello
+        # condiviso; la pagina monta il componente.
+        assert "<CancelloLettera" in src
+        assert "iscriviESblocca" in (self.TRACK.parent
+            / "CancelloLettera.jsx").read_text()
+        assert "setAttesa(true)" in (self.TRACK.parent
+            / "CancelloLettera.jsx").read_text(), \
             "la prima iscrizione deve aspettare il click nell'email"
 
     def test_sb3_il_ritorno_serve_tutti_i_cancelli(self):

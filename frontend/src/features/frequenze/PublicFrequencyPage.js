@@ -21,8 +21,8 @@ import {
   preparaContinuo, continuoDisponibile, continuoSupportato, lettoreDaUrl,
 } from './engine/continuo';
 import { SafetyLine, useSafetyGate } from './SafetyCurtain';
-import { creaAccount, entraInAurya } from '../../utils/authLinks';
-import { prova, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
+import { prova, migraVecchieChiavi } from '../../lib/cerchio';
+import CancelloLettera from './CancelloLettera';
 import './frequenze.css';
 import './meditazioni.css';
 import SoundTopbar from './SoundTopbar';
@@ -65,10 +65,23 @@ export default function PublicFrequencyPage() {
   const [unlocked, setUnlocked] = useState(() =>
     !!prova() || !!localStorage.getItem('platform_token')
     || !!localStorage.getItem('token'));
-  const [attesaConferma, setAttesaConferma] = useState(false);
-  const [email, setEmail] = useState('');
-  const [consent, setConsent] = useState(false);
-  const [subscribing, setSubscribing] = useState(false);
+
+  /* FN1 (30/8, il fix del founder) — IL PEDAGGIO SI PAGA UNA VOLTA.
+     Chi arriva dalla landing con l'anteprima gia' consumata
+     (?da=anteprima, o il segno di sessione lasciato a fine corsa)
+     non deve riascoltare 90 secondi per vedere il cancello: il
+     cancello lo accoglie all'arrivo. Chi e' sbloccato non lo vede
+     comunque (la condizione di render resta gateOpen && !unlocked);
+     chi arriva freddo da un link condiviso vive il flusso di sempre. */
+  useEffect(() => {
+    if (!track || unlocked) return;
+    let daAnteprima = false;
+    try {
+      daAnteprima = new URLSearchParams(window.location.search).get('da') === 'anteprima'
+        || sessionStorage.getItem('fqz_anteprima_finita') === '1';
+    } catch { /* private mode: pazienza */ }
+    if (daAnteprima) setGateOpen(true);
+  }, [track, unlocked]);
   const [gateMsg, setGateMsg] = useState('');
 
   const ctxRef = useRef(null);
@@ -406,35 +419,19 @@ export default function PublicFrequencyPage() {
     } finally { setContProg(null); }
   });
 
-  const subscribe = async (e) => {
-    e.preventDefault();
-    if (!consent) { setGateMsg('Serve il consenso alla Lettera'); return; }
-    setSubscribing(true);
+  /* FN2 (30/8) — la meccanica del form vive in CancelloLettera; qui
+     resta il gesto di casa: a sblocco avvenuto si smonta il lettore
+     dell'anteprima e si riparte da zero col master. */
+  const dopoSblocco = () => {
+    setUnlocked(true);
+    setGateOpen(false);
     setGateMsg('');
-    try {
-      const esito = await iscriviESblocca({
-        email, source: `frequenze:${slug}`, returnTo: `/frequenze/${slug}`,
-      });
-      if (esito === 'sbloccato') {
-        setUnlocked(true);
-        setGateOpen(false);
-        setGateMsg('');
-        /* il lettore dell'ANTEPRIMA (90s) va smontato: il prossimo
-           play costruisce quello del master, intero */
-        if (contRef.current) {
-          try { contRef.current.dispose(); } catch (e2) { /* niente */ }
-          contRef.current = null;
-          setContinuo(false);
-        }
-        play(0);
-      } else {
-        // prima iscrizione: la traccia intera si apre col click
-        // nell'email — che riporta QUI (SB3)
-        setAttesaConferma(true);
-      }
-    } catch (err) {
-      setGateMsg(err?.response?.data?.detail || 'Iscrizione non riuscita, riprova');
-    } finally { setSubscribing(false); }
+    if (contRef.current) {
+      try { contRef.current.dispose(); } catch (e2) { /* niente */ }
+      contRef.current = null;
+      setContinuo(false);
+    }
+    play(0);
   };
 
   const pannelloDiag = diagOn ? (
@@ -629,71 +626,18 @@ export default function PublicFrequencyPage() {
       {gateOpen && !unlocked && (
         <div className="gate">
           <div className="gatebox" style={{ maxWidth: 520 }}>
-            <h2>Continua l'ascolto</h2>
-            <p>
-              I primi {PREVIEW_SEC} secondi sono liberi. Per ascoltare tutta la
-              sessione iscriviti alla <b>Lettera di Aurya</b> — pratiche,
-              ritiri e nuove tracce, senza rumore — oppure entra col tuo
-              account.
-            </p>
-            {attesaConferma && (
-              <div className="warnbox" style={{ margin: '12px 0', textAlign: 'left' }}
-                data-testid="fqz-attesa-conferma">
-                Ti abbiamo scritto: apri l’email e clicca il link di conferma.
-                Il link ti riporta qui, con la sessione intera sbloccata.
-              </div>
-            )}
-            <form onSubmit={subscribe}>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <input type="email" required value={email}
-                  placeholder="la tua email"
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={{ flex: 1, minWidth: 200 }} />
-                <button type="submit" className="primary" disabled={subscribing}>
-                  {subscribing ? 'Un attimo…' : 'Iscriviti e ascolta'}
-                </button>
-              </div>
-              <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start',
-                              fontSize: 12, color: 'var(--dim)', marginTop: 10, cursor: 'pointer' }}>
-                <input type="checkbox" checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)} />
-                <span>Acconsento a ricevere la Lettera di Aurya. Confermerai
-                  dall'email che ti arriva; disiscrizione in un click.
-                  {' '}<a href="/privacy" target="_blank" rel="noreferrer"
-                    style={{ color: 'var(--water)' }}>Privacy</a></span>
-              </label>
-            </form>
+            <CancelloLettera slug={slug} durataSec={track?.score?.duration_sec}
+              onSbloccato={dopoSblocco}>
+              <p style={{ fontSize: 12.5, color: 'var(--dim)', marginTop: 8 }}>
+                Oppure{' '}
+                <button type="button" className="ghost"
+                  style={{ padding: 0, color: 'var(--dim)', textDecoration: 'underline' }}
+                  onClick={() => setGateOpen(false)}>riascolta l'anteprima</button>
+                {' '}· <a href="/meditazioni" style={{ color: 'var(--water)' }}
+                  data-testid="cancello-tutte">tutte le Meditazioni</a>
+              </p>
+            </CancelloLettera>
             {gateMsg && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 8 }}>{gateMsg}</p>}
-            {/* SB2 — chi e' GIA' iscritto non rifa' la fila: dichiara
-                l'email e riprende l'ascolto, come sulle meditazioni */}
-            <p style={{ fontSize: 12.5, color: 'var(--dim)', marginTop: 14 }}>
-              Sei già iscritto alla Lettera?{' '}
-              <button type="button" className="readmore" style={{ display: 'inline' }}
-                data-testid="fqz-gate-already"
-                onClick={async () => {
-                  if (!email) { setGateMsg('Scrivi la tua email qui sopra e ripremi'); return; }
-                  setSubscribing(true); setGateMsg('');
-                  try {
-                    await sblocca(email);
-                    setUnlocked(true); setGateOpen(false); play(0);
-                  } catch (err) {
-                    setGateMsg(err?.response?.data?.detail || 'Email non riconosciuta');
-                  } finally { setSubscribing(false); }
-                }}>Sblocca con la tua email</button>
-            </p>
-            <p style={{ fontSize: 12.5, color: 'var(--dim)', marginTop: 8 }}>
-              Hai un account Aurya?{' '}
-              <a href={entraInAurya(email, `/frequenze/${slug}`)}
-                data-testid="fqz-gate-accedi"
-                style={{ color: 'var(--water)' }}>Accedi</a>
-              {' '}· non ce l'hai?{' '}
-              <a href={creaAccount(email, `/frequenze/${slug}`)}
-                data-testid="fqz-gate-crea"
-                style={{ color: 'var(--water)' }}>Crealo gratis</a>
-              {' '}· oppure{' '}
-              <button type="button" className="ghost" style={{ padding: 0, color: 'var(--dim)', textDecoration: 'underline' }}
-                onClick={() => setGateOpen(false)}>riascolta l'anteprima</button>
-            </p>
           </div>
         </div>
       )}
