@@ -11,12 +11,25 @@
  * - il server e' un deposito passivo: numeri ed etichette, mai audio.
  */
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
+import api from '../../../api/client';
 import { leggiQuaderno, salvaListaQuaderno } from './cimatica';
 import { leggiRitratti, salvaListaRitratti } from './fonderia';
 
+/* I DUE CAPPELLI (founder 30/8): il quaderno segue chi sei, con
+   qualunque cappello — account Aurya (platform_token) O operatore
+   loggato (token). Il client giusto porta il token giusto; il
+   backend distingue dal type del JWT. */
 export const haAccount = () => {
-  try { return !!localStorage.getItem(PLATFORM_TOKEN_KEY); }
-  catch { return false; }
+  try {
+    return !!localStorage.getItem(PLATFORM_TOKEN_KEY)
+      || !!localStorage.getItem('token');
+  } catch { return false; }
+};
+
+const clientGiusto = () => {
+  try {
+    return localStorage.getItem(PLATFORM_TOKEN_KEY) ? platformApi : api;
+  } catch { return platformApi; }
 };
 
 const idNuovo = () =>
@@ -53,7 +66,7 @@ export async function sincronizza() {
       risonanze: battezza(leggiQuaderno()),
       ritratti: battezza(leggiRitratti()),
     };
-    const r = await platformApi.get('/frequencies/quaderno');
+    const r = await clientGiusto().get('/frequencies/quaderno');
     const remote = (r.data && r.data.registri) || {};
     const fusi = {
       risonanze: fondi(locali.risonanze, remote.risonanze),
@@ -61,7 +74,7 @@ export async function sincronizza() {
     };
     salvaListaQuaderno(fusi.risonanze);
     salvaListaRitratti(fusi.ritratti);
-    await platformApi.put('/frequencies/quaderno', { registri: fusi });
+    await clientGiusto().put('/frequencies/quaderno', { registri: fusi });
     return true;
   } catch { return false; }
 }

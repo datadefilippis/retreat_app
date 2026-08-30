@@ -453,8 +453,16 @@
     linear-gradient(180deg, #0E1D21 0%, #0B171A 100%);
 }
 
-/* FA4 (FARO) — l'invito del quaderno: una riga, mai un muro */
-.fqz .lab-invito-quaderno{margin:10px 0 0;font-size:12.5px;
-  color:var(--dim);border-top:1px dashed rgba(201,179,126,.3);
-  padding-top:10px}
-.fqz .lab-invito-quaderno a{color:var(--water);text-decoration:underline}
+/* FA4 (FARO) + evidenza (founder 30/8): l'invito del quaderno e'
+   una CARD bordata d'oro, non una riga che si confonde col resto */
+.fqz .lab-invito-quaderno{margin:14px 0 0;padding:14px 16px;
+  border:1px solid rgba(201,179,126,.55);border-radius:12px;
+  background:linear-gradient(180deg,rgba(201,179,126,.10),rgba(201,179,126,.04));
+  font-size:13.5px;color:var(--bone)}
+.fqz .lab-invito-titolo{margin:0 0 4px;color:var(--lamp);font-weight:700}
+.fqz .lab-invito-quaderno p{margin:0 0 8px}
+.fqz .lab-invito-gesti{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.fqz .lab-invito-crea{background:var(--lamp);color:#14212b !important;
+  padding:8px 16px;border-radius:999px;text-decoration:none;font-weight:700}
+.fqz .lab-invito-crea:hover{background:#EDB673}
+.fqz .lab-invito-accedi{color:var(--water);text-decoration:underline}

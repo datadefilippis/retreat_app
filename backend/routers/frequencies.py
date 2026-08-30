@@ -796,19 +796,37 @@ _QUADERNO_MAX_VOCI = 200
 _QUADERNO_MAX_VOCE_BYTES = 4096
 
 
+async def _identita_quaderno(
+        credentials=Depends(__import__("auth").platform_security)) -> str:
+    """La chiave del quaderno remoto, per ENTRAMBI i cappelli
+    (richiesta founder 30/8: «sia utente che operatore»).
+
+    - account Aurya (token type=platform) → l'id dell'account;
+    - operatore loggato (token org) → "op:{user_id}", namespace
+      separato nello stesso indice unico.
+    Un solo endpoint, due identita': il quaderno segue CHI SEI,
+    con qualunque cappello tu entri."""
+    from auth import decode_token, get_current_platform_account, get_current_user
+    payload = decode_token(credentials.credentials)
+    if payload.get("type") == "platform":
+        account = await get_current_platform_account(credentials)
+        return account["id"]
+    user = await get_current_user(credentials)
+    return f"op:{user['user_id']}"
+
+
 @router.get("/quaderno")
-async def leggi_quaderno(
-        account: dict = Depends(get_current_platform_account)):
+async def leggi_quaderno(chiave: str = Depends(_identita_quaderno)):
     from database import db
     doc = await db.sound_quaderni.find_one(
-        {"platform_account_id": account["id"]}, {"_id": 0, "registri": 1})
+        {"platform_account_id": chiave}, {"_id": 0, "registri": 1})
     return {"registri": (doc or {}).get("registri") or {}}
 
 
 @router.put("/quaderno")
 async def scrivi_quaderno(
         body: dict = Body(...),
-        account: dict = Depends(get_current_platform_account)):
+        chiave: str = Depends(_identita_quaderno)):
     import json as _json
     registri = body.get("registri")
     if not isinstance(registri, dict):
@@ -827,7 +845,7 @@ async def scrivi_quaderno(
         puliti[nome] = buone
     from database import db
     await db.sound_quaderni.update_one(
-        {"platform_account_id": account["id"]},
+        {"platform_account_id": chiave},
         {"$set": {"registri": puliti, "updated_at": utc_now()},
          "$setOnInsert": {"created_at": utc_now()}},
         upsert=True)

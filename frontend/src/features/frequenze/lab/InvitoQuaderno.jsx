@@ -15,13 +15,20 @@ import { creaAccount, entraInAurya } from '../../../utils/authLinks';
 export default function InvitoQuaderno({ stanza }) {
   if (haAccount()) return null;
   const dove = `/sound/lab/${stanza}?da=quaderno`;
+  /* Founder (30/8): il testo si confondeva coi bianchi intorno —
+     l'invito diventa una CARD bordata d'oro con bottone pieno:
+     l'utente va incentivato, non sussurrato. */
   return (
-    <p className="lab-invito-quaderno" data-testid="lab-invito-quaderno">
-      Salvato su questo dispositivo. Con un account Aurya (gratis) il
-      tuo quaderno ti segue ovunque —{' '}
-      <a href={creaAccount('', dove)}>crea l&rsquo;account</a>
-      {' '}·{' '}
-      <a href={entraInAurya('', dove)}>accedi</a>
-    </p>
+    <div className="lab-invito-quaderno" data-testid="lab-invito-quaderno">
+      <p className="lab-invito-titolo">Salvato su questo dispositivo.</p>
+      <p>Con un account Aurya, gratis, il tuo quaderno ti segue
+        ovunque: lo ritrovi da telefono e computer, per sempre.</p>
+      <p className="lab-invito-gesti">
+        <a className="lab-invito-crea" href={creaAccount('', dove)}>
+          Crea l&rsquo;account gratis</a>
+        <a className="lab-invito-accedi" href={entraInAurya('', dove)}>
+          Ho già un account</a>
+      </p>
+    </div>
   );
 }

@@ -1680,8 +1680,12 @@ class TestFa4QuadernoCheTiSegue:
         assert '@router.get("/quaderno")' in src
         assert '@router.put("/quaderno")' in src
         blocco = src[src.index("_QUADERNO_REGISTRI"):]
-        assert blocco.count("get_current_platform_account") >= 2, \
-            "il quaderno remoto e' dell'ACCOUNT (stessa auth dei preferiti)"
+        # Evoluta 30/8 (founder: «sia utente che operatore»): l'auth
+        # e' _identita_quaderno, che accetta i DUE cappelli — account
+        # platform (id) e operatore (op:{user_id}), namespace separati.
+        assert blocco.count("_identita_quaderno") >= 3, \
+            "il quaderno remoto deve valere per entrambi i cappelli"
+        assert 'f"op:{user[' in blocco, "manca il namespace operatore"
         assert "_QUADERNO_MAX_VOCE_BYTES" in src, \
             "senza tetto per-voce il quaderno diventa un deposito di audio"
 
