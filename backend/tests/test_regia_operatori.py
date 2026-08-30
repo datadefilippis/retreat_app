@@ -100,3 +100,35 @@ class TestBonificaAfianco:
         for gesto in ("handleToggleNetwork", "handleToggleDirectory",
                       "handleToggleStatus", "setDeleteOrg"):
             assert gesto in blocco[:6000], f"manca il gesto {gesto} nello specchietto"
+
+
+class TestRo2SecondaViaPubblicazione:
+    """RO2 (30/8) — IL CASO SILVIA. Il suo profilo era VIVO su
+    /o/{slug} (gradino GT6: salvataggio con bio → public_slug + flag
+    legacy is_storefront_published) ma /esplora-operatori e lo
+    specchietto admin guardavano SOLO la collezione stores: profilo
+    online, directory e admin che dicevano «non pubblicato». Il
+    criterio giusto e' quello di _resolve_org: store pubblicato
+    OPPURE via legacy. Nessuna «forza pubblicazione» admin: il
+    prodotto pubblica gia' da solo al salvataggio con bio."""
+
+    def test_esplora_conosce_la_seconda_via(self):
+        src = (BACKEND / "routers" / "public.py").read_text()
+        blocco = src[src.index("async def public_operators_index"):]
+        assert '"store_settings.is_storefront_published": True' in blocco[:6000], \
+            "esplora-operatori ignora di nuovo i profili GT6"
+        assert '"id": {"$nin": org_ids}' in blocco[:6000], \
+            "le pseudo-vetrine non devono duplicare chi ha gia' lo store"
+
+    def test_lo_specchietto_conosce_la_seconda_via(self):
+        src = (BACKEND / "routers" / "admin.py").read_text()
+        blocco = src[src.index("slug_pubblico"):]
+        assert '"store_settings.is_storefront_published": True' in blocco[:2500], \
+            "lo specchietto dice «non pubblicato» a profili online"
+
+    def test_il_criterio_resta_quello_di_resolve_org(self):
+        """La fonte di verita' della pubblicazione e' _resolve_org:
+        se cambia li', queste due viste vanno riallineate."""
+        src = (BACKEND / "routers" / "public.py").read_text()
+        r = src[src.index("async def _resolve_org_uncached"):]
+        assert "is_storefront_published" in r[:3000]

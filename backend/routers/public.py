@@ -4049,6 +4049,23 @@ async def public_operators_index(
          "description": 1, "logo_url": 1},
     ).to_list(500)
     org_ids = [s["organization_id"] for s in stores]
+    # RO2 (30/8, il caso Silvia) — LA SECONDA VIA DELLA PUBBLICAZIONE.
+    # I profili nati dal gradino GT6 (salvataggio con bio →
+    # public_slug + store_settings.is_storefront_published) sono VIVI
+    # su /o/{slug} (_resolve_org li risolve) ma questo indice guardava
+    # solo la collezione stores: profili pubblici invisibili in
+    # /esplora-operatori. Qui entrano come pseudo-vetrine — nome, bio,
+    # discipline e tutto il resto arrivano comunque dall'org, come per
+    # gli altri. Stesso criterio di _resolve_org, nessun nuovo flag.
+    for lr in await organizations_collection.find(
+            {"public_slug": {"$nin": [None, ""]},
+             "store_settings.is_storefront_published": True,
+             "is_active": {"$ne": False}, "deactivated_at": None,
+             "id": {"$nin": org_ids}},
+            {"_id": 0, "id": 1, "public_slug": 1}).to_list(500):
+        stores.append({"organization_id": lr["id"], "slug": lr["public_slug"],
+                       "name": None, "description": None, "logo_url": None})
+    org_ids = [s["organization_id"] for s in stores]
     orgs = {o["id"]: o for o in await organizations_collection.find(
         {"id": {"$in": org_ids}, "is_active": {"$ne": False},
          "deactivated_at": None},

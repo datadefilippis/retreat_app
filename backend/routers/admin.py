@@ -217,7 +217,8 @@ async def list_organizations(
     # RO (30/8) — lo specchietto: due query batch sulla PAGINA (non
     # per-riga) per dire di ogni org (a) se la vetrina e' pubblicata
     # (il criterio di /esplora-operatori) e (b) l'email del titolare.
-    from database import stores_collection, users_collection
+    from database import (stores_collection, users_collection,
+                          organizations_collection)
     org_ids = [d["id"] for d in docs]
     slug_pubblico: dict = {}
     async for st in stores_collection.find(
@@ -226,6 +227,16 @@ async def list_organizations(
              "slug": {"$nin": [None, ""]}},
             {"_id": 0, "organization_id": 1, "slug": 1}):
         slug_pubblico.setdefault(st["organization_id"], st["slug"])
+    # RO2 (30/8, il caso Silvia) — anche qui la SECONDA VIA: un
+    # profilo pubblicato dal gradino GT6 (public_slug + flag legacy)
+    # e' vivo su /o/{slug} — lo specchietto diceva «non pubblicato»
+    # a un profilo online. Stesso criterio di _resolve_org.
+    async for og in organizations_collection.find(
+            {"id": {"$in": org_ids},
+             "public_slug": {"$nin": [None, ""]},
+             "store_settings.is_storefront_published": True},
+            {"_id": 0, "id": 1, "public_slug": 1}):
+        slug_pubblico.setdefault(og["id"], og["public_slug"])
     pubblicate = set(slug_pubblico)
     email_titolare: dict = {}
     async for u in users_collection.find(
