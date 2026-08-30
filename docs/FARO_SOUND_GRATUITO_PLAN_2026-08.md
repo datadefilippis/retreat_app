@@ -194,8 +194,15 @@ due varianti (email / account), sempre con `source`. La mappa:
 | Landing /sound | fine anteprima 90s (ciclo FN, già live) | EMAIL — cancello meditazione | `cancello:{slug}` |
 | /meditazioni | lucchetto (già live) | EMAIL | `frequenze:{slug}` |
 
-Chi ha già l'email e salva nel quaderno → l'invito diventa account.
-Chi ha già l'account → nessun invito, mai.
+**LA REGOLA DEL SILENZIO (contratto del componente, con guardia):**
+`InvitoSound` controlla le due prove PRIMA di rendere qualsiasi cosa —
+la prova del cerchio (già iscritto alla Lettera) spegne ogni invito
+email; il token di piattaforma (già loggato) spegne TUTTO. Chi ha
+l'email ma non l'account vede solo la proposta account al primo
+salvataggio. Chi ha entrambi non vede mai nulla. Un utente servito
+non riceve richieste: è la stessa regola già viva nel funnel FN
+(cancello invisibile da sbloccati), estesa per contratto a ogni
+trigger presente e futuro — e una guardia la fotografa.
 
 **Lato admin (verificato)**: ogni subscribe porta già `source`; il
 dettaglio utente mostra «da: {fonte}» e c'è l'aggregato per fonte.
