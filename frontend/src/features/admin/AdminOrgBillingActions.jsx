@@ -1,19 +1,19 @@
 /**
- * AdminOrgBillingActions — system_admin per-org billing controls.
+ * AdminOrgBillingActions — le azioni di fatturazione (ciclo PA, 30/8/2026).
  *
- * Onda 8 (v5.8). Mounted inside the OrganizationsTab detail dialog.
- * Renders 4 collapsible sections:
- *   1. Usage    — usage-summary view for the selected org
- *   2. Custom Plan — form to create + apply a custom plan
- *   3. Extend Trial — quick form for trial_ends_at extension
- *   4. Impersonate — generate a 30min impersonation token + open in new tab
+ * Due sole sezioni, perche' due sole esistono nella verita' di Aurya:
+ *   1. Utilizzo   — i numeri veri dell'org (metriche dei moduli vivi)
+ *   2. Impersona  — token di 30 minuti per entrare come l'org
  *
- * All actions are audit-logged on the backend. The component is purely
- * additive — does not replace existing OrganizationsTab capabilities.
+ * Sono USCITI (PA4): Custom-Plan (i piani sono quattro, non su
+ * misura), gli add-on (zero in prod, svuotati da AB5) e l'estensione
+ * del trial (il Pro ha trial_days: 0 — il trial non esiste). Le
+ * rotte backend restano: e' la UI a dire solo cio' che esiste.
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, Activity, Cog, Clock, UserCheck, AlertCircle, ExternalLink, Package, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Activity, UserCheck, AlertCircle, ExternalLink } from 'lucide-react';
 import { adminAPI } from '../../api';
+import { nomePiano, nomeStato, nomeMetrica } from './pianiAurya';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 
@@ -60,18 +60,20 @@ function UsagePanel({ orgId }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>Plan: <strong className="text-foreground">{data.commercial_plan_slug}</strong></span>
+        <span>Piano: <strong className="text-foreground">{nomePiano(data.commercial_plan_slug)}</strong></span>
         <span>·</span>
-        <span>Status: <strong className="text-foreground">{data.billing_status}</strong></span>
+        <span>Stato: <strong className="text-foreground">{nomeStato(data.billing_status)}</strong></span>
         {data.legacy_pricing_lock && <Badge className="bg-purple-50 text-purple-700 border-0 text-[10px]">🔒 Legacy</Badge>}
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Metrics</h4>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Utilizzo</h4>
         <div className="space-y-1.5">
-          {(data.metrics || []).map((m) => (
-            <div key={m.key} className="flex items-center justify-between text-sm py-1.5 px-2 rounded bg-gray-50 border border-gray-100">
-              <span className="font-medium">{m.module}.{m.key}</span>
+          {/* PA4 — solo la verita': le metriche dei moduli SPENTI
+              (l'AI chat che su Aurya non esiste) non si mostrano */}
+          {(data.metrics || []).filter((m) => m.status !== 'off').map((m) => (
+            <div key={`${m.module}.${m.key}`} className="flex items-center justify-between text-sm py-1.5 px-2 rounded bg-gray-50 border border-gray-100">
+              <span className="font-medium">{nomeMetrica(m.module, m.key)}</span>
               <div className="flex items-center gap-2">
                 <span className="tabular-nums text-xs text-muted-foreground">
                   {m.limit === -1 ? `${m.used} / ∞` : `${m.used} / ${m.limit}`}
@@ -122,241 +124,6 @@ function UsagePanel({ orgId }) {
 
 
 // ── Sub-component: Custom plan creator ───────────────────────────────────────
-
-function CustomPlanPanel({ orgId, onApplied }) {
-  const [templateSlug, setTemplateSlug] = useState('core');
-  const [overridesJson, setOverridesJson] = useState('{\n  "ai_assistant": {"chat": 500},\n  "commerce": {"orders_monthly": 5000}\n}');
-  const [priceOverride, setPriceOverride] = useState('');
-  const [trialOverride, setTrialOverride] = useState('');
-  const [notes, setNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-
-  const handleSubmit = async () => {
-    setError(null);
-    setResult(null);
-    let overrides;
-    try {
-      overrides = JSON.parse(overridesJson);
-    } catch (e) {
-      setError('Overrides JSON is invalid');
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await adminAPI.createCustomPlan(orgId, {
-        template_slug: templateSlug,
-        overrides,
-        price_monthly_override: priceOverride === '' ? null : Number(priceOverride),
-        trial_days_override: trialOverride === '' ? null : Number(trialOverride),
-        notes,
-      });
-      setResult(res);
-    } catch (e) {
-      setError(e?.response?.data?.detail || e?.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleApply = async () => {
-    if (!result?.custom_plan_slug) return;
-    setSubmitting(true);
-    try {
-      await adminAPI.setOrgCommercialPlan(orgId, result.custom_plan_slug, notes || 'Custom plan applied via Onda 8 admin UI');
-      setResult({ ...result, applied: true });
-      if (onApplied) onApplied(result.custom_plan_slug);
-    } catch (e) {
-      setError(e?.response?.data?.detail || e?.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Template plan</label>
-          <select
-            value={templateSlug}
-            onChange={(e) => setTemplateSlug(e.target.value)}
-            className="w-full px-3 py-1.5 text-sm border rounded-md"
-            disabled={submitting}
-          >
-            <option value="free">free</option>
-            <option value="starter">starter (Solo)</option>
-            <option value="core">core (Commerce Starter)</option>
-            <option value="pro">pro (Commerce Pro)</option>
-            <option value="enterprise">enterprise (Custom)</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Price override (€/mo)</label>
-          <input
-            type="number"
-            step="0.01"
-            placeholder="leave blank = template price"
-            value={priceOverride}
-            onChange={(e) => setPriceOverride(e.target.value)}
-            className="w-full px-3 py-1.5 text-sm border rounded-md"
-            disabled={submitting}
-          />
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Trial days override</label>
-          <input
-            type="number"
-            placeholder="leave blank = template trial"
-            value={trialOverride}
-            onChange={(e) => setTrialOverride(e.target.value)}
-            className="w-full px-3 py-1.5 text-sm border rounded-md"
-            disabled={submitting}
-          />
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Notes (audit)</label>
-          <input
-            type="text"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="e.g. Beta partner — strategic deal"
-            className="w-full px-3 py-1.5 text-sm border rounded-md"
-            disabled={submitting}
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">
-          Limit overrides (JSON: {`{module: {feature: limit}}`})
-        </label>
-        <textarea
-          value={overridesJson}
-          onChange={(e) => setOverridesJson(e.target.value)}
-          rows={6}
-          className="w-full px-3 py-2 text-xs font-mono border rounded-md"
-          disabled={submitting}
-        />
-        <p className="text-[10px] text-muted-foreground mt-1">
-          Use -1 for unlimited. Module keys: ai_assistant, cashflow_monitor, product_catalog, commerce, customers_light.
-        </p>
-      </div>
-
-      {error && (
-        <div className="text-xs text-red-700 bg-red-50 border border-red-200 p-2 rounded flex items-start gap-2">
-          <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
-          <span>{String(error)}</span>
-        </div>
-      )}
-
-      {result?.ok && !result.applied && (
-        <div className="text-xs bg-amber-50 border border-amber-200 p-3 rounded space-y-2">
-          <p className="font-medium text-amber-900">
-            Custom plan created: <code className="font-mono">{result.custom_plan_slug}</code>
-          </p>
-          <p className="text-amber-800">{result.next_step}</p>
-          <Button size="sm" onClick={handleApply} disabled={submitting}>
-            {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-            Apply this plan now
-          </Button>
-        </div>
-      )}
-
-      {result?.applied && (
-        <div className="text-xs bg-green-50 border border-green-200 p-3 rounded text-green-800">
-          ✓ Plan applied. The org is now on <code className="font-mono">{result.custom_plan_slug}</code>.
-        </div>
-      )}
-
-      {!result && (
-        <Button onClick={handleSubmit} disabled={submitting}>
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Create custom plan
-        </Button>
-      )}
-    </div>
-  );
-}
-
-
-// ── Sub-component: Trial extension ───────────────────────────────────────────
-
-function ExtendTrialPanel({ orgId, onExtended }) {
-  const [extraDays, setExtraDays] = useState(7);
-  const [reason, setReason] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-
-  const handleSubmit = async () => {
-    setError(null);
-    setResult(null);
-    if (!reason.trim()) {
-      setError('Reason is required (audit trail).');
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await adminAPI.extendTrial(orgId, Number(extraDays), reason);
-      setResult(res);
-      if (onExtended) onExtended(res);
-    } catch (e) {
-      setError(e?.response?.data?.detail || e?.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Extra days (1–365)</label>
-          <input
-            type="number"
-            min={1}
-            max={365}
-            value={extraDays}
-            onChange={(e) => setExtraDays(e.target.value)}
-            className="w-full px-3 py-1.5 text-sm border rounded-md"
-            disabled={submitting}
-          />
-        </div>
-      </div>
-      <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">Reason (required, audited)</label>
-        <input
-          type="text"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="e.g. Beta tester, holiday support, partner agreement"
-          className="w-full px-3 py-1.5 text-sm border rounded-md"
-          disabled={submitting}
-        />
-      </div>
-
-      {error && (
-        <div className="text-xs text-red-700 bg-red-50 border border-red-200 p-2 rounded">{String(error)}</div>
-      )}
-
-      {result?.ok && (
-        <div className="text-xs bg-green-50 border border-green-200 p-3 rounded text-green-800">
-          ✓ Trial extended. New end date: <strong>{new Date(result.new_trial_ends_at).toLocaleString()}</strong>
-        </div>
-      )}
-
-      <Button onClick={handleSubmit} disabled={submitting || !reason.trim()}>
-        {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-        Extend trial by {extraDays} days
-      </Button>
-    </div>
-  );
-}
-
-
-// ── Sub-component: Impersonate ──────────────────────────────────────────────
 
 function ImpersonatePanel({ orgId }) {
   const [reason, setReason] = useState('');
@@ -433,235 +200,6 @@ function ImpersonatePanel({ orgId }) {
 
 // ── Sub-component: Add-ons (manual assign / remove) ─────────────────────────
 
-function AddonsPanel({ orgId }) {
-  const [active, setActive] = useState([]);
-  const [available, setAvailable] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Assign form state
-  const [pickedSlug, setPickedSlug] = useState('');
-  const [pickedQty, setPickedQty] = useState(1);
-  const [reason, setReason] = useState('');
-  const [notes, setNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [activeRes, plansRes] = await Promise.all([
-        adminAPI.listOrgAddons(orgId),
-        adminAPI.getCommercialPlans(),
-      ]);
-      setActive(Array.isArray(activeRes) ? activeRes : []);
-      const onlyAddons = (plansRes || []).filter((p) => p.is_addon);
-      setAvailable(onlyAddons);
-      if (onlyAddons.length > 0 && !pickedSlug) {
-        setPickedSlug(onlyAddons[0].slug);
-      }
-    } catch (e) {
-      setError(e?.response?.data?.detail || e?.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [orgId, pickedSlug]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const handleAssign = async () => {
-    setError(null);
-    if (!pickedSlug) { setError('Pick an add-on.'); return; }
-    if (!reason.trim()) { setError('Reason is required (audit).'); return; }
-    setSubmitting(true);
-    try {
-      await adminAPI.assignOrgAddon(orgId, {
-        addon_slug: pickedSlug,
-        quantity: Number(pickedQty) || 1,
-        reason: reason.trim(),
-        notes: notes.trim(),
-      });
-      setReason('');
-      setNotes('');
-      setPickedQty(1);
-      await load();
-    } catch (e) {
-      setError(e?.response?.data?.detail || e?.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleRemove = async (slug) => {
-    const why = window.prompt(
-      `Remove add-on "${slug}" from this org?\n\nReason (required, audit):`,
-    );
-    if (!why || !why.trim()) return;
-    setSubmitting(true);
-    try {
-      const res = await adminAPI.removeOrgAddon(orgId, slug, why.trim());
-      if (res?.stripe_warning) {
-        // eslint-disable-next-line no-alert
-        window.alert(res.stripe_warning);
-      }
-      await load();
-    } catch (e) {
-      setError(e?.response?.data?.detail || e?.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const pickedPlan = available.find((p) => p.slug === pickedSlug);
-
-  return (
-    <div className="space-y-5">
-      {/* Active add-ons */}
-      <div>
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-          Active add-ons {loading ? '' : `(${active.length})`}
-        </h4>
-        {loading ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground p-2">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading…
-          </div>
-        ) : active.length === 0 ? (
-          <div className="text-sm text-muted-foreground italic p-2">No active add-ons.</div>
-        ) : (
-          <div className="space-y-1.5">
-            {active.map((a) => (
-              <div
-                key={a.addon_slug}
-                className="flex items-center justify-between text-sm py-2 px-3 rounded border border-gray-200 bg-white"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium truncate">{a.name}</span>
-                    {a.is_custom_override && (
-                      <Badge className="bg-purple-50 text-purple-700 border-0 text-[10px]">
-                        custom override
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground tabular-nums">
-                    ×{a.quantity} · €{a.price_monthly}/mo · since {a.started_at?.slice(0, 10)}
-                    {a.assigned_by ? ` · by ${a.assigned_by}` : ''}
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  onClick={() => handleRemove(a.addon_slug)}
-                  disabled={submitting}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Assign form */}
-      <div className="border-t pt-4">
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-          Assign new add-on (custom override · no Stripe billing)
-        </h4>
-        <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 p-2 rounded mb-3 flex items-start gap-2">
-          <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-          <span>
-            This grants the add-on directly without going through Stripe. Use for
-            comps, beta deals, or manual contracts. The org will NOT be billed
-            for this add-on by Stripe.
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">
-              Add-on
-            </label>
-            <select
-              value={pickedSlug}
-              onChange={(e) => setPickedSlug(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border rounded-md"
-              disabled={submitting || available.length === 0}
-            >
-              {available.map((p) => (
-                <option key={p.slug} value={p.slug}>
-                  {p.name} (€{p.price_monthly}/mo · max ×{p.max_quantity || 1})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">
-              Quantity (max {pickedPlan?.max_quantity || 1})
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={pickedPlan?.max_quantity || 1}
-              value={pickedQty}
-              onChange={(e) => setPickedQty(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border rounded-md"
-              disabled={submitting}
-            />
-          </div>
-        </div>
-
-        <div className="mt-3">
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">
-            Reason (required, audited)
-          </label>
-          <input
-            type="text"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="e.g. Beta partner — comp for early adopter"
-            className="w-full px-3 py-1.5 text-sm border rounded-md"
-            disabled={submitting}
-          />
-        </div>
-
-        <div className="mt-3">
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">
-            Notes (optional, persisted on the row)
-          </label>
-          <input
-            type="text"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="e.g. Granted for 3 months"
-            className="w-full px-3 py-1.5 text-sm border rounded-md"
-            disabled={submitting}
-          />
-        </div>
-
-        {error && (
-          <div className="mt-3 text-xs text-red-700 bg-red-50 border border-red-200 p-2 rounded flex items-start gap-2">
-            <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
-            <span>{String(error)}</span>
-          </div>
-        )}
-
-        <div className="mt-3">
-          <Button onClick={handleAssign} disabled={submitting || !pickedSlug || !reason.trim()}>
-            {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <Plus className="h-4 w-4 mr-2" />
-            )}
-            Assign add-on
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
 // ── Top-level component ─────────────────────────────────────────────────────
 
 export default function AdminOrgBillingActions({ orgId, onClose }) {
@@ -670,11 +208,8 @@ export default function AdminOrgBillingActions({ orgId, onClose }) {
   if (!orgId) return null;
 
   const sections = [
-    { key: 'usage', label: 'Usage', icon: Activity },
-    { key: 'custom_plan', label: 'Custom Plan', icon: Cog },
-    { key: 'addons', label: 'Add-ons', icon: Package },
-    { key: 'extend_trial', label: 'Extend Trial', icon: Clock },
-    { key: 'impersonate', label: 'Impersonate', icon: UserCheck },
+    { key: 'usage', label: 'Utilizzo', icon: Activity },
+    { key: 'impersonate', label: 'Impersona', icon: UserCheck },
   ];
 
   return (
@@ -701,9 +236,6 @@ export default function AdminOrgBillingActions({ orgId, onClose }) {
       </div>
       <div className="p-4">
         {section === 'usage' && <UsagePanel orgId={orgId} />}
-        {section === 'custom_plan' && <CustomPlanPanel orgId={orgId} onApplied={onClose} />}
-        {section === 'addons' && <AddonsPanel orgId={orgId} />}
-        {section === 'extend_trial' && <ExtendTrialPanel orgId={orgId} onExtended={onClose} />}
         {section === 'impersonate' && <ImpersonatePanel orgId={orgId} />}
       </div>
     </div>

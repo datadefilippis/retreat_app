@@ -17,24 +17,16 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../../components/ui/select';
 import {
-  Building2, ChevronRight, RefreshCw, CreditCard, Loader2, Package,
-  CheckCircle2, AlertTriangle, Info, Trash2,
+  Building2, ChevronRight, RefreshCw, CreditCard, Loader2,
+  AlertTriangle, Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '../../lib/utils';
-import OrgCommercialStateDialog from './OrgCommercialStateDialog';
+import { PIANI, nomePiano, classePiano, nomeStato } from './pianiAurya';
 import AdminOrgBillingActions from './AdminOrgBillingActions';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const planColors = {
-  free:       'bg-gray-100 text-gray-700',
-  core:       'bg-blue-100 text-blue-700',
-  pro:        'bg-violet-100 text-violet-700',
-  enterprise: 'bg-amber-100 text-amber-700',
-  // Legacy fallback
-  starter:    'bg-blue-100 text-blue-700',
-};
 
 const STATUS_COLORS = {
   active:   'bg-green-100 text-green-700',
@@ -46,9 +38,7 @@ const STATUS_COLORS = {
 };
 
 const PlanBadge = ({ plan }) => (
-  <Badge className={planColors[plan] || 'bg-gray-100 text-gray-700'}>
-    {plan || 'N/A'}
-  </Badge>
+  <Badge className={classePiano(plan)}>{nomePiano(plan)}</Badge>
 );
 
 const StatusBadge = ({ isActive }) =>
@@ -57,29 +47,6 @@ const StatusBadge = ({ isActive }) =>
   ) : (
     <Badge className="bg-red-100 text-red-800">Suspended</Badge>
   );
-
-const SyncBadge = ({ overview }) => {
-  if (!overview) return <Badge className="bg-gray-50 text-gray-400 text-xs">—</Badge>;
-  if (overview.is_out_of_sync) {
-    return (
-      <Badge className="bg-red-100 text-red-700 text-xs">
-        <AlertTriangle className="h-3 w-3 mr-0.5" /> Drift
-      </Badge>
-    );
-  }
-  if (overview.has_warnings) {
-    return (
-      <Badge className="bg-amber-100 text-amber-700 text-xs">
-        <Info className="h-3 w-3 mr-0.5" /> Warning
-      </Badge>
-    );
-  }
-  return (
-    <Badge className="bg-green-100 text-green-700 text-xs">
-      <CheckCircle2 className="h-3 w-3 mr-0.5" /> OK
-    </Badge>
-  );
-};
 
 const ACTION_LABELS = {
   review_missing_catalog_plan:      'Missing plan',
@@ -114,11 +81,6 @@ const OrganizationsTab = () => {
 
   const setAction = (key, val) =>
     setActionLoading((prev) => ({ ...prev, [key]: val }));
-
-  // Commercial state dialog (Phase 3C)
-  const [commercialStateOpen, setCommercialStateOpen] = useState(false);
-  const [commercialStateOrgId, setCommercialStateOrgId] = useState(null);
-  const [commercialStateOrgName, setCommercialStateOrgName] = useState('');
 
   // Commercial overview (Phase 3D)
   const [commercialOverview, setCommercialOverview] = useState({});  // keyed by org.id
@@ -403,20 +365,26 @@ const OrganizationsTab = () => {
             </div>
             <Button variant="outline" size="sm" onClick={() => { fetchOrgs(); fetchCommercialOverview(); }} disabled={loading}>
               <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              Aggiorna
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleRunAuditNow}
+              disabled={auditRunning} title="Verifica che ogni org sia allineata al suo piano">
+              {auditRunning ? 'Controllo…' : 'Controlla i piani'}
             </Button>
           </div>
           {/* Onda 10 Step E.2 — drift overview banner. Always rendered; visual
               severity reflects current per-org overview. Click a metric to
               jump-filter the table; "Run scan" hits the same audit as the
               daily cron job (Step E.1) and refreshes the overview. */}
+          {/* PA3 (30/8, la verita' di Aurya): il banner parla SOLO
+              quando c'e' un problema — il verde permanente era rumore
+              quotidiano. Il controllo a mano vive nel bottone qui sotto. */}
+          {anyIssue && (<>
           <div
             className={`mt-3 rounded-md border px-3 py-2 ${
               driftCount > 0
                 ? 'border-red-200 bg-red-50'
-                : warningsCount > 0 || restrictedCount > 0
-                ? 'border-amber-200 bg-amber-50'
-                : 'border-emerald-200 bg-emerald-50'
+                : 'border-amber-200 bg-amber-50'
             }`}
           >
             <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -427,7 +395,7 @@ const OrganizationsTab = () => {
                   }`}
                 />
                 <span className="font-medium">
-                  {anyIssue ? 'Catalog drift detected' : 'Catalog in sync'}
+                  Piani da riallineare
                 </span>
                 {lastAuditAt && (
                   <span className="text-xs text-muted-foreground">
@@ -541,13 +509,13 @@ const OrganizationsTab = () => {
             {/* Onda 10 Step E.3 — plan + billing status dropdowns. Compose
                 with the commercial filter (AND). */}
             <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
-              <span className="text-xs text-muted-foreground">Plan:</span>
+              <span className="text-xs text-muted-foreground">Piano:</span>
               <Select value={planFilter} onValueChange={setPlanFilter}>
                 <SelectTrigger className="h-7 text-xs w-[140px]">
                   <SelectValue placeholder="All plans" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All plans</SelectItem>
+                  <SelectItem value="all">Tutti i piani</SelectItem>
                   {commercialPlans
                     .filter((p) => !p.is_addon)
                     .map((p) => (
@@ -559,19 +527,18 @@ const OrganizationsTab = () => {
                 </SelectContent>
               </Select>
 
-              <span className="text-xs text-muted-foreground ml-1">Status:</span>
+              <span className="text-xs text-muted-foreground ml-1">Stato:</span>
               <Select value={billingStatusFilter} onValueChange={setBillingStatusFilter}>
                 <SelectTrigger className="h-7 text-xs w-[140px]">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="trialing">Trialing</SelectItem>
-                  <SelectItem value="past_due">Past due</SelectItem>
-                  <SelectItem value="canceled">Canceled</SelectItem>
-                  <SelectItem value="manual">Manual</SelectItem>
-                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="all">Tutti gli stati</SelectItem>
+                  <SelectItem value="active">Attivo</SelectItem>
+                  <SelectItem value="manual">Manuale</SelectItem>
+                  <SelectItem value="past_due">Pagamento scaduto</SelectItem>
+                  <SelectItem value="canceled">Annullato</SelectItem>
+                  <SelectItem value="none">—</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -590,6 +557,7 @@ const OrganizationsTab = () => {
               )}
             </div>
           </div>
+          </>)}
         </CardHeader>
 
         <CardContent>
@@ -641,13 +609,12 @@ const OrganizationsTab = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Sync</TableHead>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Piano</TableHead>
                     <TableHead>Profilo</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>Stato</TableHead>
+                    <TableHead>Creata</TableHead>
+                    <TableHead className="text-right">Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -667,11 +634,6 @@ const OrganizationsTab = () => {
                         )}
                       </TableCell>
                       <TableCell><PlanBadge plan={org.commercial_plan_slug || org.plan} /></TableCell>
-                      <TableCell>
-                        {overviewLoading
-                          ? <Skeleton className="h-5 w-14" />
-                          : <SyncBadge overview={ov} />}
-                      </TableCell>
                       <TableCell>
                         {org.profile_published && org.profile_slug ? (
                           <a href={`/o/${org.profile_slug}`} target="_blank"
@@ -699,26 +661,14 @@ const OrganizationsTab = () => {
                             onClick={() => openDetail(org.id)}
                           >
                             <ChevronRight className="h-4 w-4 mr-1" />
-                            Details
+                            Dettagli
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => openPlanDialog(org)}
                           >
-                            Plan
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setCommercialStateOrgId(org.id);
-                              setCommercialStateOrgName(org.name);
-                              setCommercialStateOpen(true);
-                            }}
-                          >
-                            <Package className="h-3.5 w-3.5 mr-1" />
-                            Commercial
+                            Piano
                           </Button>
                           {/* RT3 — sigillo della rete: accogli/rimuovi
                               il membro (governa /operatori in fase network) */}
@@ -762,7 +712,7 @@ const OrganizationsTab = () => {
                             onClick={() => handleToggleStatus(org)}
                             disabled={actionLoading[`${org.id}_status`]}
                           >
-                            {org.is_active ? 'Suspend' : 'Reactivate'}
+                            {org.is_active ? 'Sospendi' : 'Riattiva'}
                           </Button>
                           <Button
                             variant="outline"
@@ -883,7 +833,7 @@ const OrganizationsTab = () => {
                 <div>
                   <h3 className="font-semibold mb-1 flex items-center gap-1.5">
                     <CreditCard className="h-4 w-4" />
-                    Billing
+                    Abbonamento
                   </h3>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
                     <span className="text-muted-foreground">Commercial Plan</span>
@@ -892,7 +842,7 @@ const OrganizationsTab = () => {
                     <span className="text-muted-foreground">Billing Status</span>
                     <span>
                       <Badge className={STATUS_COLORS[billingData.billing_status] || STATUS_COLORS.none}>
-                        {billingData.billing_status || 'none'}
+                        {nomeStato(billingData.billing_status)}
                       </Badge>
                     </span>
 
@@ -1019,9 +969,44 @@ const OrganizationsTab = () => {
                     4 collapsible sub-panels: Usage / Custom Plan / Extend
                     Trial / Impersonate. Mounted at the bottom of the detail
                     dialog so existing fields stay above the fold. */}
+                {/* PA3 (30/8) — il MOTORE si ripiega: drift e
+                    riallineamento al piano vivono qui, dichiarati come
+                    cosa tecnica, non in prima linea. */}
+                {(() => {
+                  const ov = commercialOverview[detailData.id];
+                  const problemi = ov && (ov.is_out_of_sync || ov.has_warnings);
+                  return (
+                    <details className="mt-6 rounded border px-3 py-2"
+                      data-testid="org-stato-tecnico">
+                      <summary className="text-sm font-semibold text-muted-foreground cursor-pointer">
+                        Stato tecnico (provisioning) — {problemi ? '⚠ da riallineare' : 'allineato'}
+                      </summary>
+                      <div className="mt-3 space-y-2 text-sm">
+                        <p className="text-muted-foreground">
+                          Ogni piano accende le sue funzioni in automatico.
+                          Se qui segna un disallineamento, «Riallinea»
+                          riporta l'org alla definizione del suo piano.
+                        </p>
+                        <Button variant="outline" size="sm"
+                          onClick={async () => {
+                            try {
+                              await adminAPI.reprovisionOrg(detailData.id);
+                              toast.success('Org riallineata al suo piano');
+                              fetchCommercialOverview();
+                            } catch (err) {
+                              toast.error(err.response?.data?.detail || 'Riallineamento fallito');
+                            }
+                          }}>
+                          Riallinea al piano
+                        </Button>
+                      </div>
+                    </details>
+                  );
+                })()}
+
                 <div className="mt-6">
                   <h3 className="font-semibold mb-2 text-sm uppercase tracking-wide text-muted-foreground">
-                    Billing actions
+                    Azioni di fatturazione
                   </h3>
                   <AdminOrgBillingActions
                     orgId={detailData.id}
@@ -1034,55 +1019,51 @@ const OrganizationsTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* ── Change Commercial Plan Dialog ─────────────────────────────────── */}
+      {/* ── Dialog «Cambia piano» (PA2) ─────────────────────────────────── */}
       <Dialog open={planOpen} onOpenChange={setPlanOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Change Commercial Plan — {planOrg?.name}</DialogTitle>
+            <DialogTitle>Cambia piano — {planOrg?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Current plan:{' '}
-              <strong>{planOrg?.commercial_plan_slug || planOrg?.plan || 'free'}</strong>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              This changes the effective billing plan and re-provisions all module subscriptions.
+              Piano attuale:{' '}
+              <strong>{nomePiano(planOrg?.commercial_plan_slug || planOrg?.plan || 'retreat_free')}</strong>
             </p>
             <Select value={planValue} onValueChange={setPlanValue}>
               <SelectTrigger>
-                <SelectValue placeholder="Select plan…" />
+                <SelectValue placeholder="Scegli il piano…" />
               </SelectTrigger>
               <SelectContent>
                 {commercialPlans.map((cp) => (
                   <SelectItem key={cp.slug} value={cp.slug}>
-                    {cp.name}{' '}
-                    {cp.price_monthly > 0 ? `(€${cp.price_monthly}/mo)` : '(Free)'}
+                    {nomePiano(cp.slug)}
+                    {cp.price_monthly > 0 ? ` — €${cp.price_monthly}/mese` : ' — gratuito'}
+                    {PIANI[cp.slug]?.riservato ? ' · riservato (solo admin)' : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {PIANI[planValue]?.riservato && (
+              <p className="text-xs text-amber-700">
+                Piano riservato: non compare nel pricing pubblico, lo
+                assegni solo tu.
+              </p>
+            )}
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setPlanOpen(false)}>
-                Cancel
+                Annulla
               </Button>
               <Button
                 onClick={handleSavePlan}
                 disabled={planSaving || !planValue}
               >
-                {planSaving ? 'Saving…' : 'Set Commercial Plan'}
+                {planSaving ? 'Salvo…' : 'Assegna il piano'}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* ── Commercial State Dialog (Phase 3C) ──────────────────────── */}
-      <OrgCommercialStateDialog
-        orgId={commercialStateOrgId}
-        orgName={commercialStateOrgName}
-        open={commercialStateOpen}
-        onOpenChange={setCommercialStateOpen}
-      />
 
       {/* ── Hard Delete Org Dialog ───────────────────────────────────── */}
       <Dialog open={!!deleteOrg} onOpenChange={(open) => { if (!open) { setDeleteOrg(null); setDeleteConfirmName(''); } }}>
@@ -1100,9 +1081,10 @@ const OrganizationsTab = () => {
             </p>
             <div className="text-xs bg-red-50 border border-red-200 rounded p-3 space-y-1 text-red-700">
               <p>• Tutti gli utenti dell'organizzazione</p>
-              <p>• Acquisti, vendite, spese, costi fissi</p>
-              <p>• Clienti, fornitori, prodotti</p>
-              <p>• File caricati, conversazioni AI, alert</p>
+              <p>• Ordini, incassi e prenotazioni</p>
+              <p>• Clienti e listino (servizi, ritiri, eventi)</p>
+              <p>• Profilo pubblico, foto e file caricati</p>
+              <p>• Tracce e condivisioni di Aurya Sound</p>
               <p>• Abbonamento Stripe (se presente)</p>
               <p className="font-semibold pt-1">Questa azione è IRREVERSIBILE.</p>
             </div>
