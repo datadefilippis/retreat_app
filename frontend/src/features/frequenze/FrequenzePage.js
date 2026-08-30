@@ -17,7 +17,7 @@
  * arriva con FQ2 (audio_assets).
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { frequenciesAPI } from '../../api/frequencies';
 import {
@@ -42,6 +42,12 @@ import AuryaMode from './visual/AuryaMode';
 import StudioScena from './visual/StudioScena';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS, CAT_SLUG, SLUG_CAT } from './content/biblioteca';
+import { sluggifica } from './content/slugScheda';
+
+/* FA7 — l'insieme degli slug con pagina propria: le card della
+   biblioteca linkano, le voci della Guida restano col popup */
+const slugSchede = new Set(
+  Object.values(BIB).flat().map((s) => sluggifica(s.t)));
 import GuidaView from './GuidaView';
 import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
@@ -1409,10 +1415,20 @@ export default function FrequenzePage() {
         )}
         <div className="body">{shown}</div>
         {(clamped || entry.full) && (
+          /* FA7 — dalla biblioteca si APPROFONDISCE sulla pagina-scheda
+             (URL proprio, crawlabile); il popup resta per le voci senza
+             pagina (la Guida) */
+          slugSchede.has(sluggifica(entry.t)) ? (
+            <RouterLink className="readmore" data-testid="fqz-approfondisci-link"
+              to={`/sound/esplora/${sluggifica(entry.t)}`}>
+              Approfondisci
+            </RouterLink>
+          ) : (
           <button type="button" className="readmore"
             onClick={() => setLearn({ title: entry.t, body: entry.full || entry.body, cta: !canCompose })}>
             Approfondisci
           </button>
+          )
         )}
         {live && live.sweepTo != null && (
           /* ONDA 1 — il tragitto e' un'informazione, non un effetto

@@ -607,6 +607,79 @@ _SOUND_CARDS = {
                "Tono puro"],
 }
 
+# FA7 (piano FARO, 30/8) — LE PAGINE-SCHEDA: ~36 URL di contenuto
+# vero. La fonte editoriale resta frontend/content/biblioteca.js; il
+# backend serve la copia esportata (backend/data/biblioteca_seo.json,
+# script frontend/scripts/esporta_biblioteca.mjs). La guardia di
+# parita' fa rosso se le due si allontanano.
+_BIBLIOTECA_SEO_CACHE = None
+
+
+def _biblioteca_seo() -> dict:
+    global _BIBLIOTECA_SEO_CACHE
+    if _BIBLIOTECA_SEO_CACHE is None:
+        import json as _json
+        from pathlib import Path as _P
+        percorso = _P(__file__).resolve().parents[1] / "config" / "biblioteca_seo.json"
+        try:
+            _BIBLIOTECA_SEO_CACHE = _json.loads(percorso.read_text())
+        except Exception:
+            _BIBLIOTECA_SEO_CACHE = {}
+    return _BIBLIOTECA_SEO_CACHE
+
+
+def _scheda_lab_dove(scheda: dict) -> tuple:
+    """Dove PROVARE il fenomeno: il ponte biblioteca→Lab."""
+    titolo = (scheda.get("t") or "").lower()
+    if "risonanz" in titolo or "schumann" in titolo:
+        return ("/sound/lab/risonanze", "Le Risonanze")
+    return ("/sound/lab/banco", "Il Banco del Lab")
+
+
+def _scheda_content_html(slug: str, scheda: dict) -> str:
+    import json as _json
+    base = _base_url()
+    sorelle = [(sl, sc) for sl, sc in _biblioteca_seo().items()
+               if sc.get("categoria") == scheda.get("categoria") and sl != slug][:3]
+    lab_url, lab_nome = _scheda_lab_dove(scheda)
+    ld = _json.dumps({
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "Article", "headline": scheda.get("t"),
+             "description": (scheda.get("body") or "")[:200],
+             "inLanguage": "it",
+             "author": {"@type": "Organization", "name": "Aurya"},
+             "mainEntityOfPage": f"{base}/sound/esplora/{slug}"},
+            {"@type": "BreadcrumbList", "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Aurya Sound",
+                 "item": f"{base}/sound"},
+                {"@type": "ListItem", "position": 2, "name": "Esplora",
+                 "item": f"{base}/sound/esplora"},
+                {"@type": "ListItem", "position": 3, "name": scheda.get("t"),
+                 "item": f"{base}/sound/esplora/{slug}"},
+            ]},
+        ],
+    }, ensure_ascii=False)
+    righe = [
+        f"<script type=\"application/ld+json\">{ld}</script>",
+        "<p><a href=\"/sound\">Aurya Sound</a> › "
+        "<a href=\"/sound/esplora\">Esplora</a> › "
+        f"{scheda.get('t')}</p>",
+        f"<h1>{scheda.get('t')} — {scheda.get('uso')}</h1>",
+        f"<p><b>{scheda.get('hz')}</b> · categoria: {scheda.get('categoria')}"
+        f" · grado di evidenza: {scheda.get('g')}</p>",
+        scheda.get("full") or f"<p>{scheda.get('body')}</p>",
+        f"<p><a href=\"{lab_url}\">Provala dal vivo: {lab_nome}</a> · "
+        "<a href=\"/sound/esplora\">Ascoltala nella biblioteca</a> · "
+        "<a href=\"/sound/impara\">Le fondamenta</a></p>",
+    ]
+    if sorelle:
+        righe.append("<p>Schede sorelle: " + " · ".join(
+            f"<a href=\"/sound/esplora/{sl}\">{sc.get('t')}</a>"
+            for sl, sc in sorelle) + "</p>")
+    return "".join(righe)
+
+
 _SOUND_PAGES = {
     None: {
         "title": "Aurya Sound: onde cerebrali, frequenze e metodi | Aurya",
@@ -868,6 +941,20 @@ async def _meta_sound(parts: list) -> Optional[dict]:
     # l'utente prende un 404 (successo davvero, deploy del 22/8).
     # L4 (26/8) — la pagina di VENDITA di Professional: pubblica e
     # indicizzata (lo strumento /sound/pro resta noindex qui sotto).
+    # FA7 — la pagina-scheda: /sound/esplora/{slug}
+    if sub == "esplora" and len(parts) == 2:
+        scheda = _biblioteca_seo().get(parts[1])
+        if not scheda:
+            return None                      # slug ignoto = 404 onesto
+        canonical = f"{base}/sound/esplora/{parts[1]}"
+        return {
+            "title": f"{scheda['t']} — {scheda['uso']} | Aurya Sound",
+            "description": (scheda.get("body") or "")[:155],
+            "canonical": canonical,
+            "hreflang": _hub_hreflang(canonical),
+            "image": f"{base}/og-cover.jpg",
+            "content_html": _scheda_content_html(parts[1], scheda),
+        }
     if sub == "professional":
         canonical = f"{base}/sound/professional"
         return {

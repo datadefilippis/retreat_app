@@ -134,6 +134,7 @@ import { CheckoutSuccessPage, CheckoutCancelPage, PayLinkUnavailablePage } from 
 const TeamPage = lazy(() => import("./features/team/TeamPage"));
 const SettingsPage = lazy(() => import("./features/settings/SettingsPage"));
 const PublicProfilePage = lazy(() => import("./features/settings/PublicProfilePage"));
+const SchedaBibliotecaPage = lazy(() => import("./features/frequenze/SchedaBibliotecaPage"));
 // FQ0 — Frequenze by Aurya: compositore tracce vibrazionali (lazy: il
 // motore di sintesi e l'encoder MP3 vivono solo nel suo chunk)
 const FrequenzePage = lazy(() => import("./features/frequenze/FrequenzePage"));
@@ -1008,6 +1009,9 @@ function AppRoutes() {
           lab, meditazioni). La vecchia porta scura (SoundLandingPage)
           e' ritirata dalla rotta; il suo indice vive in /sound/esplora. */}
       <Route path="/sound" element={<SoundHomePage />} />
+      {/* FA7 (FARO) — la pagina-scheda della biblioteca: PRIMA del
+          catch-all /sound/* o la vista esplora se la mangia */}
+      <Route path="/sound/esplora/:slug" element={<SchedaBibliotecaPage />} />
       <Route path="/sound/visual" element={<VisualPage />} />
       {/* LAB — PRIMA del catch-all, o FrequenzePage se lo mangia */}
       <Route path="/sound/lab" element={<LabSala />} />

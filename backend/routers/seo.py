@@ -133,6 +133,12 @@ async def build_core() -> str:
         _url(f"{base}/costi", priority="0.6"),
         _url(f"{base}/sound", priority="0.7"),
         _url(f"{base}/sound/esplora", priority="0.6"),
+        # FA7 (FARO, 30/8) — le pagine-scheda della biblioteca: ~36
+        # spoke di contenuto vero (stessa fonte della shell:
+        # data/biblioteca_seo.json, esportata dal frontend)
+        *[_url(f"{base}/sound/esplora/{slug}", priority="0.5")
+          for slug in sorted(__import__("routers.seo_shell",
+              fromlist=["_biblioteca_seo"])._biblioteca_seo())],
         _url(f"{base}/sound/impara", priority="0.6"),
         _url(f"{base}/sound/impara/glossario", priority="0.4"),
         _url(f"{base}/sound/calm", priority="0.7"),
