@@ -72,7 +72,7 @@ function Finestra({ etichetta, sotto, children }) {
 
 export default function ProfessionalLanding() {
   useEffect(() => {
-    document.title = 'Aurya Sound Professional — il suono nella tua pratica | Aurya';
+    document.title = 'Aurya Sound Professional: il suono nella tua pratica | Aurya';
   }, []);
   const [email, setEmail] = useState('');
   const [nome, setNome] = useState('');
@@ -95,7 +95,7 @@ export default function ProfessionalLanding() {
         email: email.trim(),
         name: nome.trim() || null,
         message: racconto.trim()
-          || 'Aurya Sound Professional — richiesta di accesso',
+          || 'Aurya Sound Professional, richiesta di accesso',
         interests: ['sound_professional'],
       });
       setStato('fatto');
@@ -195,7 +195,7 @@ export default function ProfessionalLanding() {
           </DisplayTitle>
           <Lede size="small" className="mt-5 max-w-2xl">
             Queste onde non sono una decorazione: si muovono con i
-            numeri veri di GROUND e CALM — le stesse voci, le stesse
+            numeri veri di GROUND e CALM, le stesse voci, le stesse
             ampiezze, lo stesso battito che poi ascolti.
           </Lede>
           <div className="mt-10 grid gap-7 lg:grid-cols-2 max-w-5xl">
@@ -319,7 +319,7 @@ export default function ProfessionalLanding() {
               neurofisiologia consolidata, usata ogni giorno in
               audiologia clinica. Che questo accompagni il rilassamento
               è indicato dalle review sull’entrainment (Garcia-Argibay
-              2019, Chaieb 2015) — evidenza promettente, non definitiva.
+              2019, Chaieb 2015), evidenza promettente, non definitiva.
             </Testo>
           </div>
           <Rilievo className="mt-10 max-w-3xl">
@@ -378,7 +378,7 @@ export default function ProfessionalLanding() {
               respirazione, variabilità cardiaca, andamento nel tempo.
             </p>
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
-              Non per dire alla persona cosa dovrebbe sentire — per
+              Non per dire alla persona cosa dovrebbe sentire, per
               permettere a te di osservare ciò che accade durante la
               pratica.
             </p>
@@ -416,8 +416,8 @@ export default function ProfessionalLanding() {
               </p>
               <p className="text-base text-muted-foreground">
                 Nel frattempo puoi{' '}
-                <Link to="/sound" className="underline">esplorare Aurya Sound</Link>{' '}
-                — la biblioteca, il Lab e le esperienze sono liberi.
+                <Link to="/sound" className="underline">esplorare Aurya Sound</Link>:
+                la biblioteca, il Lab e le esperienze sono liberi.
               </p>
             </div>
           ) : (

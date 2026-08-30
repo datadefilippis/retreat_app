@@ -179,7 +179,7 @@ const CAT_INTRO = {
   },
   'Ritmi del corpo': {
     t: 'Qui il ritmo lo dai tu.',
-    p: "Nelle altre sezioni il suono è l'oggetto dell'ascolto. Qui è un metronomo: un'onda che sale e scende per darti il passo del respiro, o una pulsazione per il cammino. La differenza conta anche per l'onestà di quello che possiamo dire — ciò che la ricerca documenta riguarda la pratica (respirare lentamente, muoversi a tempo), non il suono che la accompagna.",
+    p: "Nelle altre sezioni il suono è l'oggetto dell'ascolto. Qui è un metronomo: un'onda che sale e scende per darti il passo del respiro, o una pulsazione per il cammino. La differenza conta anche per l'onestà di quello che possiamo dire, ciò che la ricerca documenta riguarda la pratica (respirare lentamente, muoversi a tempo), non il suono che la accompagna.",
   },
   'Altre frequenze': {
     t: 'Frequenze diverse, origini diverse.',
@@ -287,7 +287,7 @@ export default function FrequenzePage() {
     const name = view === 'impara'
       ? (curTab === 'Glossario' ? 'Glossario' : 'Le fondamenta')
       : { explore: 'Esplora', create: 'Crea', mine: 'Le mie tracce' }[view];
-    document.title = `Aurya Sound — ${name}`;
+    document.title = `Aurya Sound | ${name}`;
   }, [view, curTab]);
   /* SF (20/8) — le controindicazioni si aprono prima del SUONO, non
      prima della pagina: chi arriva a leggere la Guida non trova un muro
@@ -507,7 +507,7 @@ export default function FrequenzePage() {
          che la libreria sia caricata. */
       _dur: asset.duration_sec || 0,
     }]);
-    setStatus(`«${asset.title}» aggiunta alla sessione — vai a «Crea»`);
+    setStatus(`«${asset.title}» aggiunta alla sessione, vai a «Crea»`);
   };
 
   const uploadSound = async (file) => {
@@ -661,7 +661,7 @@ export default function FrequenzePage() {
         clipsSessioneRef.current = [...clipsSessioneRef.current, r.data.id];
         setClipsFresche((n2) => n2 + 1);
         await loadVoice();
-        setStatus(`«${r.data.title}» tra i tuoi spezzoni — rinominalo per ritrovarlo`);
+        setStatus(`«${r.data.title}» tra i tuoi spezzoni, rinominalo per ritrovarlo`);
       } catch (e) {
         setStatus(e?.response?.data?.detail || 'Registrazione non salvata');
       }
@@ -670,7 +670,7 @@ export default function FrequenzePage() {
     recRef.current = mr;
     recSecsRef.current = 0;
     setRecSecs(0); setRecState('rec');
-    setStatus('Sto registrando — parla pure. Cuffie se la sessione è in ascolto.');
+    setStatus('Sto registrando, parla pure. Cuffie se la sessione è in ascolto.');
     recTimerRef.current = setInterval(() => {
       recSecsRef.current += 1;
       setRecSecs(recSecsRef.current);
@@ -693,7 +693,7 @@ export default function FrequenzePage() {
       start, end, gain: 0.9, fx: 'dream', fx_amount: 0.6, mute: false,
       clip_in: clip.trim_start || 0,
     }]);
-    setStatus(`«${clip.title}» sulla linea del tempo a ${fmt(start)} — effetto Sogno`);
+    setStatus(`«${clip.title}» sulla linea del tempo a ${fmt(start)}, effetto Sogno`);
     /* TM8 — usato in QUESTA sessione: sale dal ripiego al leggio e al
        Salva bozza viene adottato dalla traccia (consenso col gesto). */
     if (!voiceClips.some((c) => c.id === clip.id)) {
@@ -805,7 +805,7 @@ export default function FrequenzePage() {
     stopSoundPreview();
     if (Object.keys(liveCardsRef.current).length) {
       stopAllCards();
-      setStatus('Schede in ascolto fermate — ora suona la linea del tempo');
+      setStatus('Schede in ascolto fermate, ora suona la linea del tempo');
     }
     if (!layers.length) return;
     const token = playTokenRef.current;   // stopSession() l'ha appena incrementato
@@ -906,7 +906,7 @@ export default function FrequenzePage() {
     } else applyProtocol(name);
   };
 
-  /* ── schede live (Esplora) — side effect PRIMA del setState ── */
+  /* ── schede live (Esplora), side effect PRIMA del setState ── */
   const toggleCard = async (key, entry) => {
     const handles = liveCardsRef.current;
     if (handles[key]) {
@@ -972,7 +972,7 @@ export default function FrequenzePage() {
       curve: cfg.curve || 'lin', start: cfg.start ?? 0, end: duration,
       gain: cfg.gain ?? 0.25, breath: true, mute: false,
     }]);
-    setStatus(`«${entry.t}» aggiunta alla sessione — vai a «Crea» per strutturarla`);
+    setStatus(`«${entry.t}» aggiunta alla sessione, vai a «Crea» per strutturarla`);
   };
   const composeAllLive = () => {
     const entries = Object.values(liveCardsRef.current);
@@ -1012,7 +1012,7 @@ export default function FrequenzePage() {
         catch { /* non bloccante: l'adozione ritenta al prossimo salva */ }
       }
       clipsSessioneRef.current = [];
-      /* TM6 — la campana tace: tutto cio' che c'era e' salvato */
+      /* TM6, la campana tace: tutto cio' che c'era e' salvato */
       setFirmaSalvata(JSON.stringify(scorePayload()));
       setClipsFresche(0);
       loadVoice(idFinale);
@@ -1031,7 +1031,7 @@ export default function FrequenzePage() {
       clipsSessioneRef.current = [];
       setClipsFresche(0);
       loadVoice(t.id);
-      /* TM6: appena aperta la sessione E' la bozza — pulita */
+      /* TM6: appena aperta la sessione E' la bozza, pulita */
       setFirmaSalvata('DA_CALCOLARE');
       /* appena aperta, la sessione E' quella pubblicata: il master
          sul server la rappresenta ancora (finche' non si tocca) */
@@ -1099,7 +1099,7 @@ export default function FrequenzePage() {
       } else {
         const url = `${window.location.origin}/frequenze/${r.data.slug}`;
         try { await navigator.clipboard.writeText(url); } catch { /* niente clipboard */ }
-        setStatus(`In ascolto pubblico su ${url} — link copiato`);
+        setStatus(`In ascolto pubblico su ${url}, link copiato`);
       }
     } catch (e) { setStatus(e?.response?.data?.detail || 'Pubblicazione fallita'); }
   };
@@ -1259,7 +1259,7 @@ export default function FrequenzePage() {
     try {
       await generaMaster(trackId, scorePayload());
     } catch (e) {
-      setStatus('Master non generato: la traccia resta pubblicata col percorso classico — ripubblica per riprovare');
+      setStatus('Master non generato: la traccia resta pubblicata col percorso classico, ripubblica per riprovare');
     }
   };
   /* la via della LISTA: pubblica e poi inforna il master dalla
@@ -1447,7 +1447,7 @@ export default function FrequenzePage() {
               <input type="range" min="0" max="0.6" step="0.01" defaultValue={live.gain}
                 onChange={(e2) => live.setGain(+e2.target.value)} style={{ flex: 1 }} />
             </label>
-            {/* C4 (audit 21/8) — ogni metodo mostra il SUO comando, e
+            {/* C4 (audit 21/8), ogni metodo mostra il SUO comando, e
                 solo comandi veri: prima bordone, discesa e respiro
                 mostravano un «battito» collegato a niente. La discesa
                 non ha un numero da offrire dal vivo: niente campo. */}
@@ -1510,7 +1510,7 @@ export default function FrequenzePage() {
           <div className="continuo-riga attivo" data-testid="fq-anello-attivo">
             {/* Deve DIRE quale frequenza tiene: un tragitto non si
                 ripete all'infinito, quindi l'anello si ferma
-                sull'arrivo — e chi ascolta ha diritto di sapere su
+                sull'arrivo, e chi ascolta ha diritto di sapere su
                 quale numero si e' fermato, non di dedurlo. */}
             Ascolto continuo attivo · {anello.metodo === 'tone' || anello.metodo === 'drone'
               ? `tono ${String(anello.portante).replace('.', ',')} Hz`
@@ -1594,10 +1594,10 @@ export default function FrequenzePage() {
             onChange={(e) => patchLayer(l.id, { gain: +e.target.value })} />
           <span className="val v1">{Math.round(l.gain * 100)}%</span>
         </div>
-        {/* FV6 — la voce ha lo STESSO specchietto degli altri suoni:
+        {/* FV6, la voce ha lo STESSO specchietto degli altri suoni:
             entra a / esce a. Il taglio della registrazione si decide
             una volta sola nel leggio, qui sopra. */}
-        {/* TF (24/8) — i tempi si scrivono e si CONFERMANO (Invio o
+        {/* TF (24/8), i tempi si scrivono e si CONFERMANO (Invio o
             fuori dal campo), e se il valore va corretto lo si dice.
             «⟵ da qui» / «fin qui ⟶» prendono il punto in cui stai
             ascoltando: chi compone ragiona per punti, non per numeri. */}
@@ -1662,7 +1662,7 @@ export default function FrequenzePage() {
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
             {/* VP-bis (24/8, founder: «cambio pulizia e nel mixer trovo
-                sempre pulita») — la scritta era FISSA: diceva «pulita»
+                sempre pulita»), la scritta era FISSA: diceva «pulita»
                 qualunque cosa avessi scelto. Ora dice il vero, e il
                 modo si cambia DA QUI: dove si guardano i livelli. */}
             <select className="minisel" data-testid={`fq-clean-sel-${l.id}`}
@@ -1690,7 +1690,7 @@ export default function FrequenzePage() {
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
             {/* TG (24/8, founder: «non sono interessato ai primi 10
-                secondi») — il taglio della base: i secondi saltati
+                secondi»), il taglio della base: i secondi saltati
                 dentro il file. Il file non si tocca: si rimette 0
                 quando si vuole. */}
             <span className="lbl" title="Secondi saltati all'inizio della base">parte da</span>
@@ -1736,7 +1736,7 @@ export default function FrequenzePage() {
             onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
         </div>
         <div className="ctrls r4">
-          {/* ONDA 4 — il bordone non ha battito: come il tono puro ha
+          {/* ONDA 4, il bordone non ha battito: come il tono puro ha
               solo la sua nota (la quinta e la terza le mette il motore) */}
           {(l.method === 'tone' || l.method === 'drone') ? (
             <>
@@ -1954,7 +1954,7 @@ export default function FrequenzePage() {
                             Restano {fmt(clipUseful(c))} di {fmt(c.duration_sec || 0)}.
                             Il file resta intero: puoi rimettere 0 quando vuoi.
                           </span>
-                          {/* VP — la pulizia: «Naturale» lascia
+                          {/* VP, la pulizia: «Naturale» lascia
                               l'attacco com'e' (la voce non parte piu'
                               bassa), «Pulita» toglie anche il fruscio
                               nelle pause, «Grezza» non tocca nulla. */}
@@ -1974,15 +1974,15 @@ export default function FrequenzePage() {
 
   return (
     <div className="fqz" data-testid="fqz-root">
-      {/* DN1/DN2/DN4 — testata condivisa del mondo Sound: marchio della
+      {/* DN1/DN2/DN4, testata condivisa del mondo Sound: marchio della
           marca (che e' anche la via di casa), passerella e omino. Gli
           strumenti di QUESTA vista viaggiano come extra. */}
       <SoundTopbar firma="Sound" qui="/sound" primaDiUscire={chiediUscita}
         extra={<>
-        {/* SF — sempre a portata, in ogni vista e per chiunque: le
+        {/* SF, sempre a portata, in ogni vista e per chiunque: le
             controindicazioni non si leggono una volta sola */}
         <SafetyButton onClick={openReview} />
-        {/* NV3 (27/8) — «Le mie tracce» non vive piu' qui: sta nella
+        {/* NV3 (27/8), «Le mie tracce» non vive piu' qui: sta nella
             barra delle stanze, accanto a Crea. Le stanze in UNA barra
             sola era il punto dell'analisi BUSSOLA. */}
       </>} />
@@ -1991,7 +1991,7 @@ export default function FrequenzePage() {
           <h1>Aurya <em>Sound</em></h1>
           <div className="sub">Esperienze sonore progettate per accompagnare diversi stati di presenza.</div>
         </div>
-        {/* NV3 — LA BARRA UNICA delle stanze (StanzeSound): Esplora ·
+        {/* NV3, LA BARRA UNICA delle stanze (StanzeSound): Esplora ·
             Lab · Impara per tutti, Crea · Le mie tracce con le
             chiavi. Condivisa col Lab: un solo posto dove orientarsi. */}
         <StanzeSound creaBadge={layers.length}
@@ -2001,7 +2001,7 @@ export default function FrequenzePage() {
       </header>
 
       <main>
-        {/* SF — dove si ascolta, la riga sta a vista; nella Guida no:
+        {/* SF, dove si ascolta, la riga sta a vista; nella Guida no:
             lì il tema è trattato per esteso, e un cartello sopra un
             testo che spiega la stessa cosa è solo rumore. */}
         {view !== 'impara' && <SafetyLine onOpen={openReview} />}
@@ -2025,7 +2025,7 @@ export default function FrequenzePage() {
                 <p>Una guida essenziale per orientarti tra onde cerebrali, stimolazione ritmica, frequenze e metodi di ascolto. Parti dalle basi, approfondisci ciò che ti interessa e poi torna alla biblioteca per ascoltare.</p>
               </>
             ) : world === 'sound' ? (
-              <p className="soundlead">Le basi sonore sono la tela su cui posare le frequenze — e potrai sovrapporne più di una. Le sceglierai qui e le combinerai nella sessione, esattamente come le frequenze.</p>
+              <p className="soundlead">Le basi sonore sono la tela su cui posare le frequenze, e potrai sovrapporne più di una. Le sceglierai qui e le combinerai nella sessione, esattamente come le frequenze.</p>
             ) : (
               <p>Esplora frequenze, vibrazioni e metodi di ascolto. Scopri cosa sono, cosa sappiamo davvero su di esse e come vengono utilizzate nelle pratiche sonore. Puoi ascoltarle singolarmente, combinarle e portarle nelle tue sessioni.</p>
             )}
@@ -2043,7 +2043,7 @@ export default function FrequenzePage() {
               </>
             ) : view === 'explore' && world === 'sound' ? (
               <>
-                {/* IL VIAGGIO — la riga dei momenti sta SOPRA i timbri:
+                {/* IL VIAGGIO, la riga dei momenti sta SOPRA i timbri:
                     e' la domanda che ci si fa per prima quando si
                     compone («a che punto sono?»), e taglia le
                     categorie invece di sostituirle. */}
@@ -2063,7 +2063,7 @@ export default function FrequenzePage() {
                     </div>
                   </div>
                 </div>
-                {/* NV4 (27/8) — i due assi si COMBINANO: momento E
+                {/* NV4 (27/8), i due assi si COMBINANO: momento E
                     timbro insieme, mai piu' pulsanti spenti. Il caso
                     «risultato vuoto» ha il suo messaggio onesto qui
                     sotto, coi click che allentano. */}
@@ -2180,7 +2180,7 @@ export default function FrequenzePage() {
                             {uploading ? 'Carico…' : `+ Carica una base in ${soundCat}`}
                           </button>
                           <span className="lbl" style={{ fontSize: 10 }}>
-                            mp3 · m4a · ogg · wav, max 60MB — solo materiale licenziato o CC0
+                            mp3 · m4a · ogg · wav, max 60MB, solo materiale licenziato o CC0
                           </span>
                           <input ref={soundFileRef} type="file" accept="audio/*" hidden
                             onChange={(e) => { uploadSound(e.target.files[0]); e.target.value = ''; }} />
@@ -2195,7 +2195,7 @@ export default function FrequenzePage() {
               <>
                 {liveCount > 0 && view === 'explore' && (
                   <div className="livebar on">
-                    <span>{liveCount} in riproduzione — le frequenze si combinano</span>
+                    <span>{liveCount} in riproduzione, le frequenze si combinano</span>
                     <span className="spacer" style={{ flex: 1 }} />
                     {canCompose && (
                       <button type="button" onClick={composeAllLive}>+ tutte alla sessione</button>
@@ -2258,7 +2258,7 @@ export default function FrequenzePage() {
                     </div>
                   ));
                 })()}
-                {/* PC (24/8) — l'invito «per operatori» e' stato tolto:
+                {/* PC (24/8), l'invito «per operatori» e' stato tolto:
                     comporre non e' piu' di tutti gli operatori ma un
                     privilegio che concede il system admin (/admin/sound).
                     Invitare all'iscrizione promettendo la creazione
@@ -2269,7 +2269,7 @@ export default function FrequenzePage() {
           </section>
         )}
 
-        {/* NV5 — il funnel professionale: presente nelle stanze di
+        {/* NV5, il funnel professionale: presente nelle stanze di
             lettura, invisibile a chi ha gia' le chiavi */}
         {(view === 'explore' || view === 'impara') && <TriggerStudio />}
 
@@ -2371,7 +2371,7 @@ export default function FrequenzePage() {
           </section>
         )}
 
-        {/* VC6 — lo studio vive sopra la pagina: la sessione continua a
+        {/* VC6, lo studio vive sopra la pagina: la sessione continua a
             suonare sotto, e cio' che l'autore sceglie torna in un colpo
             solo dentro la ricetta. */}
         {studio && (
@@ -2394,7 +2394,7 @@ export default function FrequenzePage() {
               </button>
               <button type="button" className="cb-reset" disabled={!layers.length}
                 onClick={resetSession}>Reset</button>
-              {/* VC2 — la scena si chiede, non parte da sola (disegnare
+              {/* VC2, la scena si chiede, non parte da sola (disegnare
                   consuma), e si chiede DA QUI: in coda alla barra, sotto
                   il cursore di scorrimento, finiva fuori schermo e non
                   la trovava nessuno (founder, 22/8). */}
@@ -2404,7 +2404,7 @@ export default function FrequenzePage() {
                 onClick={() => setGuarda((g) => !g)}>
                 ✦ {guarda ? 'Nascondi la scena' : 'Guarda il suono'}
               </button>
-              {/* C5 — dire cosa agisce subito e cosa no, invece di
+              {/* C5, dire cosa agisce subito e cosa no, invece di
                   lasciare che l'utente lo scopra da un campo che non
                   risponde */}
               {playing && (
@@ -2415,7 +2415,7 @@ export default function FrequenzePage() {
               {/* Su telefono i quattro campi occupavano quattro righe piene:
                   ora stanno dietro un tocco e la barra resta una striscia.
                   Su schermo largo il CSS li rimette in linea (display:contents). */}
-              {/* DU — la durata e' SEMPRE a vista, mai in un campo
+              {/* DU, la durata e' SEMPRE a vista, mai in un campo
                   nascosto: la pill dice quanto dura e PERCHE' (segue le
                   tracce, o l'hai fissata tu). Un tocco apre il foglio. */}
               <button type="button" className="cb-opt cb-durata" data-testid="fq-durata"
@@ -2439,14 +2439,14 @@ export default function FrequenzePage() {
                   </div>
                   <button type="button" className={`fd-auto${durataAuto ? ' su' : ''}`}
                     data-testid="fq-durata-auto" onClick={tornaDurataAuto}>
-                    Automatica — segue le tracce
+                    Automatica, segue le tracce
                   </button>
                   <p className="fd-nota">Massimo 30 minuti: è il limite
                   dell'ascolto a schermo bloccato, così ogni sessione
                   pubblicata resta ascoltabile ovunque.</p>
                 </div>
               )}
-              {/* DU — tutto il resto configurabile sta dietro UN tocco */}
+              {/* DU, tutto il resto configurabile sta dietro UN tocco */}
               <button type="button" className="cb-opt" data-testid="fq-setup"
                 aria-expanded={setupOpen}
                 title="Titolo, apertura e chiusura della sessione"
@@ -2460,7 +2460,7 @@ export default function FrequenzePage() {
                       placeholder="La mia sessione"
                       onChange={(e) => setTitle(e.target.value)} />
                   </label>
-                  {/* DU — la durata non vive piu' qui: ha la sua pill,
+                  {/* DU, la durata non vive piu' qui: ha la sua pill,
                       sempre a vista, col foglio dei preset */}
                   {/* 21/8, founder: «apertura/chiusura si capisce poco».
                       Le etichette dicono COSA succede al suono, e il
@@ -2480,7 +2480,7 @@ export default function FrequenzePage() {
                   <span className="status">{status}</span>
                   <button type="button" data-testid="fq-export" className="cb-save"
                     disabled={!!esportando || !layers.length}
-                    title="Scarica la sessione come file MP3 — per l'aula, per la chiavetta, per te"
+                    title="Scarica la sessione come file MP3, per l'aula, per la chiavetta, per te"
                     onClick={esportaMp3}>
                     {esportando
                       ? `${esportando.fase}… ${Math.round(esportando.pct * 100)}%`
@@ -2497,7 +2497,7 @@ export default function FrequenzePage() {
                     <button type="button" data-testid="fq-unpublish"
                       title={trackSlug ? `Pubblica su /frequenze/${trackSlug}` : ''}
                       style={{ borderColor: 'var(--water)', color: 'var(--water)' }}
-                      onClick={unpublishTrack}>● Pubblica­ta — ritira</button>
+                      onClick={unpublishTrack}>● Pubblica­ta, ritira</button>
                   ) : (
                     <button type="button" data-testid="fq-publish" className="primary"
                       disabled={!layers.length}
@@ -2512,7 +2512,7 @@ export default function FrequenzePage() {
               )}
             </div>
 
-            {/* VC2/VC3/VC4 — la scena dell'autore: il palco su cui
+            {/* VC2/VC3/VC4, la scena dell'autore: il palco su cui
                 l'ascolto avviene, con la tastiera per sceglierla.
                 Cio' che vedi qui e' ESATTAMENTE cio' che vedra' chi
                 ascolta: stesso motore, stessi valori salvati. */}
@@ -2537,7 +2537,7 @@ export default function FrequenzePage() {
                 </button>
               </div>
             )}
-            {/* ES3 — quanto chiedera' al dispositivo. Compare solo
+            {/* ES3, quanto chiedera' al dispositivo. Compare solo
                 quando c'e' davvero un problema: una riga che appare
                 sempre non la legge piu' nessuno. La soglia e' bassa
                 (350 MB) perche' e' li' che i telefoni cominciano a
@@ -2550,13 +2550,13 @@ export default function FrequenzePage() {
                   Questa sessione chiede circa <b>{mb} MB</b> al dispositivo:
                   su molti telefoni non partirà.
                   {colpevoli.length > 0 && (
-                    <> Pesa soprattutto {colpevoli.join(', ')} — una base
+                    <> Pesa soprattutto {colpevoli.join(', ')}, una base
                     in loop suona uguale e pesa un decimo.</>
                   )}
                 </div>
               );
             })()}
-            {/* TS3 — l'avviso cuffie mancava proprio QUI, dove il
+            {/* TS3, l'avviso cuffie mancava proprio QUI, dove il
                 founder l'ha cercato: stesso modulo delle altre pagine. */}
             {playing && avvisoCuffieScore(score) && (
               <div className="cuffie-avviso solo-telefono-block"
@@ -2578,7 +2578,7 @@ export default function FrequenzePage() {
               </div>
             </div>
 
-            {/* FV3 — il leggio: la tua voce dentro la sessione */}
+            {/* FV3, il leggio: la tua voce dentro la sessione */}
             <div className="voicedesk" data-testid="fqz-voicedesk">
               <div className="vd-head">
                 <span className="tag">🎙 La tua voce</span>
@@ -2611,7 +2611,7 @@ export default function FrequenzePage() {
                   <div className="vd-clips">
                     {voiceClips.map(rigaClip)}
                   </div>
-                  {/* TM8 — il ripiego dichiarato: registrazioni che
+                  {/* TM8, il ripiego dichiarato: registrazioni che
                       nessuna sessione ha adottato (pre-regola, o di
                       bozze mai salvate). Non si cancellano da sole:
                       «+ sessione» le adotta, la × le elimina. */}
@@ -2706,7 +2706,7 @@ export default function FrequenzePage() {
               </div>
             )}
             <p className="note">
-              Il <b>binaurale</b> dà l'effetto solo in cuffia: dalle casse si sente comunque, ma resta un battimento fisico, non stimolazione binaurale. <b>Isocronico</b> e <b>monoaurale</b> portano il battito nel segnale — per grotta e aula usa questi.
+              Il <b>binaurale</b> dà l'effetto solo in cuffia: dalle casse si sente comunque, ma resta un battimento fisico, non stimolazione binaurale. <b>Isocronico</b> e <b>monoaurale</b> portano il battito nel segnale, per grotta e aula usa questi.
               Timbro <b>caldo</b> più tollerabile del puro sulle sessioni lunghe; il <b>soffio</b> nasconde l'entrainment in un rumore rosa.
             </p>
           </section>
@@ -2731,7 +2731,7 @@ export default function FrequenzePage() {
         </div>
       )}
 
-      {/* SF — il sipario vive nel hook: si apre davanti al primo
+      {/* SF, il sipario vive nel hook: si apre davanti al primo
           suono e su richiesta dal pulsante «Controindicazioni». */}
       {curtain}
 

@@ -50,7 +50,7 @@ export function useLab() {
        || labRef.current.generatore2.stato().attivo)
     : suona;
 
-  /* lasciare la stanza spegne il banco — e scongela */
+  /* lasciare la stanza spegne il banco, e scongela */
   useEffect(() => () => { labRef.current?.spegni(); congela(false); }, []);
 
   return { ottieniLab, ottieniAnalisi, ottieniXY, ottieniVivo,

@@ -69,7 +69,7 @@ export default function RitrattoVisual({ esito, ottieniAnalisi, vivo }) {
 
       c2d.clearRect(0, 0, W, H);
 
-      /* la sagoma dello SPETTRO VIVO, dietro — solo mentre suona */
+      /* la sagoma dello SPETTRO VIVO, dietro, solo mentre suona */
       const analisi = ottieniAnalisi && ottieniAnalisi();
       if (vivoRef.current && analisi) {
         const N = analisi.analyser.frequencyBinCount;

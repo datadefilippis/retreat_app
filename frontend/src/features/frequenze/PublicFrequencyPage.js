@@ -471,7 +471,7 @@ export default function PublicFrequencyPage() {
   return (
     <div className="fqz med" data-testid="fqz-public">
       {pannelloDiag}
-      {/* MD (20/8) — chi arriva da un link condiviso restava chiuso
+      {/* MD (20/8), chi arriva da un link condiviso restava chiuso
           qui dentro: il menu del sito non c'e' e il design e' un altro
           mondo. Stesso rimedio di Aurya Sound (SP-ter): marchio in
           alto a sinistra e uscite in fondo. */}
@@ -497,13 +497,13 @@ export default function PublicFrequencyPage() {
           )}
           {track.description && <p>{track.description}</p>}
 
-          {/* AV1 — Aurya Mode. Si accende con un gesto: mai da sola,
+          {/* AV1, Aurya Mode. Si accende con un gesto: mai da sola,
               disegnare consuma.
 
-              VS1 (24/8) — qui c'era anche `!continuo`. Nacque quando
+              VS1 (24/8), qui c'era anche `!continuo`. Nacque quando
               l'ascolto continuo era il caso raro e non si sapeva
               analizzare un <audio> senza dirottarlo; poi e' arrivato
-              IL MASTER e il caso raro e' diventato l'UNICO — quella
+              IL MASTER e il caso raro e' diventato l'UNICO, quella
               condizione non proteggeva piu' niente, spegneva il visual
               su ogni meditazione (founder: «il suono non si visualizza
               piu'»). Ora si disegna quando c'e' un'analisi viva,
@@ -524,7 +524,7 @@ export default function PublicFrequencyPage() {
               {loadingAudio ? <><span className="prep">◌</span> Preparo…</>
                 : playing ? `⏸ ${fmt(elapsed)}` : elapsed > 0 ? '▶ Riprendi' : '▶ Ascolta'}
             </button>
-            {/* TS2 — la barra segue il dito e fa UN commit al
+            {/* TS2, la barra segue il dito e fa UN commit al
                 rilascio. Le due regole della pagina restano nel
                 commit: sipario (playGuarded) e, senza sblocco, mai
                 oltre l'anteprima. */}
@@ -538,7 +538,7 @@ export default function PublicFrequencyPage() {
               }} />
           </div>
 
-          {/* AT1 — l'avviso vive NEL momento del play, non in un
+          {/* AT1, l'avviso vive NEL momento del play, non in un
               cartello all'ingresso: compare solo su telefono (stessa
               media query di .solo-telefono) e solo se questa sessione
               ha davvero frequenze che l'altoparlante non riproduce. */}
@@ -549,9 +549,9 @@ export default function PublicFrequencyPage() {
             </div>
           )}
 
-          {/* AT3 — l'ascolto che sopravvive al blocco schermo: si
+          {/* AT3, l'ascolto che sopravvive al blocco schermo: si
               prepara con un tocco (render visibile), poi il telefono
-              si puo' bloccare — comandi sulla schermata di blocco
+              si puo' bloccare, comandi sulla schermata di blocco
               compresi. Solo a sblocco avvenuto: il cancello dei 90
               secondi resta sovrano. */}
           {continuoPossibile && !continuo && (
@@ -570,15 +570,15 @@ export default function PublicFrequencyPage() {
               )}
             </div>
           )}
-          {/* VS4 (25/8) — l'INTERRUTTORE resta acceso mentre si ascolta.
+          {/* VS4 (25/8), l'INTERRUTTORE resta acceso mentre si ascolta.
               Anche qui c'era `!continuo`: ieri ho tolto quella
               condizione dalla SCENA e ho lasciato quella del PULSANTE,
               cosi' il visual si vedeva solo se lo chiedevi PRIMA di
-              premere play — premuto play, il pulsante spariva e non
+              premere play, premuto play, il pulsante spariva e non
               c'era piu' modo di chiederlo (founder). Il fix di ieri era
               meta' del fix: la stessa condizione viveva in due posti.
               Restare opt-in e' voluto (disegnare consuma: AV1), ma la
-              scelta dev'essere disponibile QUANDO viene voglia — cioe'
+              scelta dev'essere disponibile QUANDO viene voglia, cioe'
               mentre il suono suona. */}
           <div className="continuo-riga">
             <button type="button" className="readmore"
@@ -611,7 +611,7 @@ export default function PublicFrequencyPage() {
               Tutte le meditazioni di Aurya →
             </Link>
           </p>
-          {/* SF — l'avviso sta PRIMA del pulsante, non in fondo alla
+          {/* SF, l'avviso sta PRIMA del pulsante, non in fondo alla
               pagina: chi arriva da un link condiviso preme ▶ e basta. */}
         </section>
       </main>

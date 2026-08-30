@@ -63,7 +63,7 @@ function Finestra({ etichetta, sotto, children }) {
 
 export default function CreaStudioLanding() {
   useEffect(() => {
-    document.title = 'Crea Studio — componi le tue meditazioni | Aurya';
+    document.title = 'Crea Studio: componi le tue meditazioni | Aurya';
   }, []);
   const [email, setEmail] = useState('');
   const [nome, setNome] = useState('');
@@ -86,7 +86,7 @@ export default function CreaStudioLanding() {
         email: email.trim(),
         name: nome.trim() || null,
         message: racconto.trim()
-          || 'Crea Studio — richiesta di accesso',
+          || 'Crea Studio, richiesta di accesso',
         interests: ['sound_crea'],
       });
       setStato('fatto');
@@ -137,7 +137,7 @@ export default function CreaStudioLanding() {
               <Testo>
                 Dal vivo, la tua voce accompagna: apre lo spazio, guida
                 il respiro, chiude il cerchio. Poi la persona torna a
-                casa, e di quella voce non resta niente — fino alla
+                casa, e di quella voce non resta niente, fino alla
                 prossima sessione.
               </Testo>
             </div>
@@ -245,7 +245,7 @@ export default function CreaStudioLanding() {
             partnership: vogliamo costruirlo insieme a chi lo userà
             davvero con i propri clienti.
           </Testo>
-          {/* FN5 (30/8) — la prova sociale: il portfolio di Crea sono
+          {/* FN5 (30/8), la prova sociale: il portfolio di Crea sono
               le meditazioni gia' pubblicate. Chi esita, ascolta. */}
           <Rilievo className="mt-6 max-w-2xl" data-testid="studio-prova-sociale">
             Le meditazioni che senti su Aurya{' '}
@@ -261,8 +261,8 @@ export default function CreaStudioLanding() {
               </p>
               <p className="text-base text-muted-foreground">
                 Nel frattempo puoi{' '}
-                <Link to="/sound" className="underline">esplorare Aurya Sound</Link>{' '}
-                — la biblioteca, il Lab e le esperienze sono liberi.
+                <Link to="/sound" className="underline">esplorare Aurya Sound</Link>:
+                la biblioteca, il Lab e le esperienze sono liberi.
               </p>
             </div>
           ) : (

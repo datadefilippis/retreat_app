@@ -327,9 +327,9 @@ export function creaLaboratorio(ctx) {
     ingresso,
     limiti: { min: 1, max: nyquist },
 
-    /* la voce A — l'interfaccia di sempre, non cambia di una virgola */
+    /* la voce A, l'interfaccia di sempre, non cambia di una virgola */
     generatore: creaSorgente(),
-    /* la voce B (LB1) — gemella: stessa fabbrica, stessi gesti */
+    /* la voce B (LB1), gemella: stessa fabbrica, stessi gesti */
     generatore2: creaSorgente(),
 
     /* ═══ L'ORECCHIO (LB2) — il microfono entra nel banco ═══

@@ -184,7 +184,7 @@ export default function Generatore({ ottieniLab, onSuono }) {
         ))}
       </div>
 
-      {/* la frequenza — il protagonista */}
+      {/* la frequenza, il protagonista */}
       <div className="lab-freq">
         <div className="lab-freq-num">
           <input value={campo} inputMode="decimal" aria-label="Frequenza in Hertz"
@@ -198,7 +198,7 @@ export default function Generatore({ ottieniLab, onSuono }) {
           aria-label="Frequenza (scala logaritmica)"
           value={hzAPos(freq)}
           onChange={(e) => scegliFreq(posAHz(+e.target.value))} />
-        {/* LB6 — il passo fine della cimatica: i pattern vivono in
+        {/* LB6, il passo fine della cimatica: i pattern vivono in
             finestre strette, ±0,1 Hz e' un gesto, non un numero
             da riscrivere */}
         <div className="lab-passofine">
@@ -238,7 +238,7 @@ export default function Generatore({ ottieniLab, onSuono }) {
               comanda({ fase: (g * Math.PI) / 180 });
             }} />
           <small>da sola non si sente: accendi la Sorgente B alla
-            stessa frequenza e portala a 180° — le onde si cancellano
+            stessa frequenza e portala a 180°, le onde si cancellano
             (interferenza)</small>
         </label>
         <label className="lab-par">
@@ -269,7 +269,7 @@ export default function Generatore({ ottieniLab, onSuono }) {
       </div>
 
       {/* LO SWEEP: tre numeri e un comando. La corsa e' una rampa vera
-          sull'AudioParam — nessun orologio, nessuna animazione. */}
+          sull'AudioParam, nessun orologio, nessuna animazione. */}
       <div className="lab-sweep" data-testid="lab-sweep">
         <h3>Sweep</h3>
         <div className="lab-sweep-campi">
@@ -296,9 +296,9 @@ export default function Generatore({ ottieniLab, onSuono }) {
         </div>
         <p className="lab-sweep-nota" data-testid="lab-sweep-nota">
           {inCorsa
-            ? 'in corsa — la frequenza sale per ottave, non per Hertz'
+            ? 'in corsa, la frequenza sale per ottave, non per Hertz'
             : fermatoA
-              ? <>Fermato a <b>{String(fermatoA).replace('.', ',')} Hz</b> — premi ▶ qui sopra e riparti da lì</>
+              ? <>Fermato a <b>{String(fermatoA).replace('.', ',')} Hz</b>: premi ▶ qui sopra e riparti da lì</>
               : 'la salita è esponenziale: raddoppi uguali in tempi uguali'}
         </p>
       </div>

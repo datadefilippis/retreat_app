@@ -606,7 +606,8 @@ class TestRifinitura:
         assert "const [suona, setSuona] = useState(false);" in hook
         assert "onSuono={setSuona}" in (LAB / "LabBanco.jsx").read_text()
         blocco = (LAB / "LettureBanco.jsx").read_text()
-        assert "? 'le letture sono ferme — il suono continua'" in blocco
+        # Evoluta 30/8 (founder): via i trattini dal copy di Sound
+        assert "? 'le letture sono ferme, il suono continua'" in blocco
         # l'avviso fa RIDISEGNARE, ma la verita' si chiede al motore:
         # cosi' regge anche se il suono si spegnesse fuori dal pulsante
         assert "labRef.current" in hook and ".stato().attivo" in hook
@@ -676,7 +677,10 @@ class TestTelaio:
         # e' una STANZA nella barra unica (StanzeSound), condivisa con
         # la biblioteca. La passerella non lo nomina.
         topbar = (FRONTEND_SRC / "features" / "frequenze" / "SoundTopbar.jsx").read_text()
-        assert "'/sound/lab'" not in topbar, "il Lab e' tornato in passerella"
+        # Evoluta 30/8: il founder ha RIMESSO il Lab in passerella
+        # («Aurya Lab» e' una delle tre porte del mondo; Magazine esce)
+        assert "label: 'Aurya Lab'" in topbar
+        assert "label: 'Magazine'" not in topbar, "Magazine e' tornato in passerella"
         barra = (FRONTEND_SRC / "features" / "frequenze" / "StanzeSound.jsx").read_text()
         assert "'/sound/lab'" in barra, "il Lab non e' fra le stanze"
         landing = (FRONTEND_SRC / "features" / "frequenze" / "SoundLandingPage.js").read_text()

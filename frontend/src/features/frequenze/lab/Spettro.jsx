@@ -253,7 +253,7 @@ export default function Spettro({ ottieniAnalisi, fermo }) {
       <div className="lab-scope-info">
         <span>scala logaritmica · {F_MIN} Hz → Nyquist</span>
         <span data-testid="lab-picco" className="lab-picco">
-          {fermo ? 'immagine ferma — il suono continua'
+          {fermo ? 'immagine ferma, il suono continua'
             : picco ? `picco ${scriviHz(picco.hz)}` : 'nessun picco'}
         </span>
         <span>ampiezza in dB</span>

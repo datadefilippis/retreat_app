@@ -240,7 +240,7 @@ export default function Spettrogramma({ ottieniAnalisi, fermo }) {
       <div className="lab-scope-info">
         <span>frequenza in verticale · log</span>
         <span data-testid="lab-finestra">
-          {fermo ? 'immagine ferma — il suono continua'
+          {fermo ? 'immagine ferma, il suono continua'
             : attesa ? 'in attesa di un segnale'
               : finestra ? `finestra ${String(finestra).replace('.', ',')} s` : ''}
         </span>

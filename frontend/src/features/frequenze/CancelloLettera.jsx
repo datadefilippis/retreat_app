@@ -75,7 +75,7 @@ export default function CancelloLettera({
       </h2>
       <p className={chiaro ? S.corpo : undefined}>
         {durataSec > 120 && <>Sono {fmtMin(durataSec)} in tutto. </>}
-        L&rsquo;iscrizione alla newsletter di Aurya — la Lettera — è
+        L&rsquo;iscrizione alla newsletter di Aurya, la Lettera, è
         <b> gratuita</b>: pratiche, esperienze e nuove meditazioni,
         ogni tanto. Ti sblocchi una volta e ascolti tutto.
       </p>

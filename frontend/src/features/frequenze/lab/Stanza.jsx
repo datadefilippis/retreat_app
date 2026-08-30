@@ -33,7 +33,7 @@ export default function Stanza({
 }) {
   const [safety, setSafety] = useState(false);
   useEffect(() => {
-    document.title = `${titolo} — Aurya Sound Lab`;
+    document.title = `${titolo} | Aurya Sound Lab`;
   }, [titolo]);
 
   return (
@@ -74,7 +74,7 @@ export default function Stanza({
         </p>
       </main>
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
-      {/* FA8 — l'invito del mondo Sound, con la fonte della stanza
+      {/* FA8, l'invito del mondo Sound, con la fonte della stanza
           (regola del silenzio nel componente) */}
       <div className="lab-invito-fondo">
         <InvitoSound fonte={`sound:lab:${slug}`} dove={`/sound/lab/${slug}`} />

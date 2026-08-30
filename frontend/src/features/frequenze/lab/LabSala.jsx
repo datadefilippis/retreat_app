@@ -32,7 +32,7 @@ const STANZE = [
   {
     via: '/sound/lab/ritratto', nome: 'Il Ritratto',
     domanda: 'Di cosa è fatto il suono del mio oggetto?',
-    cosa: 'Sei secondi di registrazione e ne esce la carta d’identità acustica — poi il banco la rifonde e la confronti con l’originale.',
+    cosa: 'Sei secondi di registrazione e ne esce la carta d’identità acustica, poi il banco la rifonde e la confronti con l’originale.',
   },
   {
     via: '/sound/lab/meraviglie', nome: 'Le Meraviglie',
@@ -60,7 +60,7 @@ const PROFILI = [
 
 export default function LabSala() {
   useEffect(() => {
-    document.title = 'Aurya Sound Lab — Il laboratorio del suono';
+    document.title = 'Aurya Sound Lab: il laboratorio del suono';
   }, []);
   return (
     <div className="fqz lab" data-testid="lab-page">
@@ -71,7 +71,7 @@ export default function LabSala() {
           <div className="sub">Genera un segnale. Osservalo. Misuralo.</div>
           <p className="sld-parentela">
             La biblioteca spiega il suono: qui il suono si tocca. Un vero
-            laboratorio nel tuo dispositivo — niente registrazioni,
+            laboratorio nel tuo dispositivo, niente registrazioni,
             niente trucchi: ogni onda che senti è calcolata mentre la
             ascolti, e ogni affermazione si misura con gli strumenti.
           </p>
@@ -80,7 +80,7 @@ export default function LabSala() {
       </header>
       <main>
         {/* LE STANZE: ognuna risponde a una domanda, ognuna ha il suo
-            indirizzo — si entra dove porta la propria curiosita' */}
+            indirizzo, si entra dove porta la propria curiosita' */}
         <div className="lab-sala-stanze" data-testid="lab-sala-stanze">
           {STANZE.map((s) => (
             <Link key={s.via} to={s.via} className="lab-sala-carta"
@@ -93,7 +93,7 @@ export default function LabSala() {
           ))}
         </div>
 
-        {/* DA DOVE PARTO — la mano tesa per profilo */}
+        {/* DA DOVE PARTO, la mano tesa per profilo */}
         <section className="lab-card lab-sala-profili" data-testid="lab-sala-profili">
           <div className="lab-chead">
             <h2>Da dove parto?</h2>
@@ -113,10 +113,10 @@ export default function LabSala() {
 
         <p className="lab-arrivo" data-testid="lab-arrivo">
           Un laboratorio onesto: quello che senti è quello che vedi,
-          misurato mentre accade — e quello che non è dimostrato porta
+          misurato mentre accade, e quello che non è dimostrato porta
           il suo cartellino.
         </p>
-        {/* NV5 — il funnel professionale anche nel Lab */}
+        {/* NV5, il funnel professionale anche nel Lab */}
         <TriggerStudio />
       </main>
       <footer className="fqzfoot">

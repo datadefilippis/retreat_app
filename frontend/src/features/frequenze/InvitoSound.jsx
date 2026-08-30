@@ -61,9 +61,10 @@ export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro'
     <div className={chiaro ? 'mt-6' : 'fqz-invito-sound'}
       data-testid="invito-sound">
       <p className={chiaro ? 'text-sm text-muted-foreground mb-2' : undefined}>
-        Questo materiale è gratuito e cresce. La newsletter di Aurya —
-        la Lettera — porta le nuove schede, le esperienze e le
-        meditazioni, ogni tanto. Gratis.
+        Vuoi ricevere nuovi contenuti come questo? Lascia la tua
+        email: ti avvisiamo quando pubblichiamo nuove guide sul suono
+        e nuove meditazioni da ascoltare. È gratis, una email ogni
+        tanto, e ti disiscrivi quando vuoi.
       </p>
       <form onSubmit={iscrivi}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

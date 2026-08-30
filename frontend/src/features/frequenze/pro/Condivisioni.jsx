@@ -88,10 +88,10 @@ export default function CondivisioniTraccia({
         data-testid="fq-condivisioni">
         <button type="button" className="learnclose" title="Chiudi"
           onClick={onChiudi}>×</button>
-        <h2>Link riservati{titolo ? <> — <em>{titolo}</em></> : null}</h2>
+        <h2>Link riservati{titolo ? <>, <em>{titolo}</em></> : null}</h2>
         <p className="cond-spiega">
           Un link personale per contatto, revocabile quando vuoi. I
-          contatti sono quelli del tuo gestionale — non serve che
+          contatti sono quelli del tuo gestionale, non serve che
           abbiano ordini; se una persona non c’è ancora, creala qui
           col nome e basta.
         </p>

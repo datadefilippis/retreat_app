@@ -68,7 +68,11 @@
   font:inherit;font-size:14px;letter-spacing:.08em;cursor:pointer;
   background:var(--lamp);color:var(--ink);border:none;border-radius:999px;
   padding:12px 34px}
+/* hover proprio del ▶: l'oro si SCHIARISCE, il testo resta scuro
+   (mai piu' oro-su-oro) */
+.fqz .lab-play:hover:not(:disabled):not(.fermo){background:#EDB673;color:var(--ink)}
 .fqz .lab-play.fermo{background:var(--stone);color:var(--bone);border:1px solid var(--line)}
+.fqz .lab-play.fermo:hover{border-color:var(--lamp);color:var(--lamp)}
 .fqz .lab-volume{color:var(--dimmer);font-size:11.5px;margin:12px auto 0;max-width:420px}
 
 /* lo sweep: tre numeri in fila e un comando, niente di piu' */
@@ -310,7 +314,9 @@
   display:inline-block}
 .fqz .lab-ritorno a{display:inline-flex;align-items:center;gap:6px;
   font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--ink,#EDE8DC);
+  /* Founder (30/8): il testo usava var(--ink) che nel mondo scuro
+     e' quasi nero — su sfondo scuro spariva. Chiaro esplicito. */
+  text-transform:uppercase;color:#F2EDE0;
   text-decoration:none;padding:9px 16px;border-radius:999px;
   background:linear-gradient(168deg,#375B63 0%,#2B4951 100%);
   border:1px solid rgba(201,179,126,.45);

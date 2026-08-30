@@ -430,7 +430,7 @@ function SchedaCore({ p, onChiudi, onAvvia }) {
 
       <p className="pro-racconto">{p.racconto}</p>
 
-      {/* M-D — la partitura: lo score disegnato. La risposta visiva a
+      {/* M-D, la partitura: lo score disegnato. La risposta visiva a
           «cosa succederà», generata dai dati veri del protocollo. */}
       <Partitura score={p.costruisci()} dettaglio />
 
@@ -449,14 +449,14 @@ function SchedaCore({ p, onChiudi, onAvvia }) {
           <dt>Cuffie</dt>
           <dd>
             {p.cuffie === 'necessarie' ? 'Necessarie' : 'Consigliate'}
-            {p.cuffie_testo && <span className="pro-aiuto"> — {p.cuffie_testo}</span>}
+            {p.cuffie_testo && <span className="pro-aiuto">, {p.cuffie_testo}</span>}
           </dd>
         </div>
         <div><dt>Origine</dt><dd>{ORIGINI[p.origine]}</dd></div>
       </dl>
 
       {/* LA SCHEDA ONESTA: la nota di evidenza si mostra INTERA,
-          punti deboli compresi — è il patto del brand */}
+          punti deboli compresi, è il patto del brand */}
       <div className={`pro-evidenza${esperienza ? '' : ' con-grado'}`}
         data-testid={`pro-evidenza-${p.id}`}>
         {p.evidenza.grado && (
@@ -715,7 +715,7 @@ function SchedaPercorso({ pc, onChiudi, onAvvia, chiave }) {
       <label className="pro-campo">
         <span className="pro-lab">Il progresso di <i>facoltativo</i></span>
         <ScegliPersona valore={cliente} onScegli={setCliente}
-          placeholder="Senza legame — cerca o crea la persona"
+          placeholder="Senza legame, cerca o crea la persona"
           testid="pc-cliente" />
       </label>
 
@@ -865,7 +865,7 @@ function QuadroPersona({ items, nome }) {
     <div className="reg-quadro" data-testid="reg-quadro">
       <p className="reg-sintesi" data-testid="reg-sintesi">
         <b>{nome}</b> · {sin.totale} {sin.totale === 1 ? 'sessione' : 'sessioni'}
-        {' — '}{sin.completate} {sin.completate === 1 ? 'completata' : 'completate'}
+        {', '}{sin.completate} {sin.completate === 1 ? 'completata' : 'completate'}
         {sin.interrotte > 0 && `, ${sin.interrotte} ${sin.interrotte === 1 ? 'interrotta' : 'interrotte'}`}
         {sin.perse > 0 && `, ${sin.perse} con audio caduto`}
         {sin.percorsi.map((pc) => (
@@ -942,7 +942,7 @@ function Registro() {
       <div className="pro-testata">
         {/* la ricerca non inventa persone: niente creazione da un filtro */}
         <ScegliPersona valore={persona} onScegli={setPersona}
-          permettiCrea={false} placeholder="Tutte le persone — cerca…"
+          permettiCrea={false} placeholder="Tutte le persone, cerca…"
           testid="reg-filtro-cliente" />
         <select value={stato} onChange={(e) => setStato(e.target.value)}
           data-testid="reg-filtro-stato">
@@ -1041,7 +1041,7 @@ export default function SoundProPage() {
   const [chiave, setChiave] = useState(0);
   const [rito, setRito] = useState(null);           // {protocollo, percorso}
 
-  useEffect(() => { document.title = 'Protocolli — Aurya Sound Professional'; }, []);
+  useEffect(() => { document.title = 'Protocolli | Aurya Sound Professional'; }, []);
 
   /* IL CANCELLO. Come in FrequenzePage: qui si decide solo COSA
      DISEGNARE — la frontiera vera sono le API, che rispondono 403

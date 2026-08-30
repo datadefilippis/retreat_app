@@ -131,7 +131,7 @@ function AnteprimaMeditazione({ track, ctaMeditazioni }) {
         }} />
       {fine ? (
         sbloccato ? (
-          /* FN3 — iscritto SUL POSTO: la landing non ti molla */
+          /* FN3, iscritto SUL POSTO: la landing non ti molla */
           <div data-testid="sh-anteprima-sbloccata">
             <Rilievo>Sei dentro. Buon ascolto.</Rilievo>
             <div className="mt-6 flex flex-wrap items-center gap-6">
@@ -186,7 +186,7 @@ function AnteprimaMeditazione({ track, ctaMeditazioni }) {
 
 export default function SoundHomePage() {
   useEffect(() => {
-    document.title = 'Aurya Sound — Il suono può diventare uno strumento | Aurya';
+    document.title = 'Aurya Sound: il suono può diventare uno strumento | Aurya';
   }, []);
   /* il campione in vetrina: se la traccia non c'e' (altro ambiente),
      la sezione si piega con grazia — mai una scatola rotta */
@@ -233,13 +233,13 @@ export default function SoundHomePage() {
             Puoi studiarlo, sperimentarlo, o semplicemente ascoltarlo.
             E se accompagni persone, puoi comporlo per loro.
           </p>
-          {/* FN4 (30/8) — l'hero vende il gancio piu' caldo: la
+          {/* FN4 (30/8), l'hero vende il gancio piu' caldo: la
               meditazione che ascolti ADESSO. Il richiamo professionale
-              esce dall'hero: ha la sua band (sezione Crea) — un
+              esce dall'hero: ha la sua band (sezione Crea), un
               pubblico, una porta. */}
           <div className="mt-10 flex flex-wrap items-center gap-6">
             <Bottone href="#sh-esperienze" tono="chiaro" testid="sh-cta-ascolta">
-              Ascolta una meditazione — 90 secondi
+              Ascolta una meditazione, 90 secondi
             </Bottone>
             <Richiamo to="/sound/esplora" tono="chiaro" testid="sh-cta-esplora">
               Esplora Aurya Sound →
@@ -309,7 +309,7 @@ export default function SoundHomePage() {
           </div>
         </Section>
 
-        {/* ── 4 · LE MEDITAZIONI — e ne ascolti una ADESSO ─────────
+        {/* ── 4 · LE MEDITAZIONI, e ne ascolti una ADESSO ─────────
             Il punto in cui il linguaggio cambia: dal laboratorio
             all'esperienza. La sezione E' la presentazione delle
             Meditazioni, e la prova e' immediata: il player. */}
@@ -338,8 +338,8 @@ export default function SoundHomePage() {
           <div className="mt-10 max-w-3xl border-t pt-7"
             style={{ borderColor: '#e8e0ce' }}>
             <p className="text-base text-muted-foreground">
-              E se vuoi sentire da dove nasce questo linguaggio — il
-              fenomeno nudo, senza voce — due esperienze complete e
+              E se vuoi sentire da dove nasce questo linguaggio, il
+              fenomeno nudo, senza voce, due esperienze complete e
               gratuite:
             </p>
             <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
@@ -352,7 +352,7 @@ export default function SoundHomePage() {
           </div>
         </Section>
 
-        {/* ── 5 · CHI LE COMPONE: CREA — il trigger nel racconto ────
+        {/* ── 5 · CHI LE COMPONE: CREA, il trigger nel racconto ────
             La domanda che il player ha appena piantato («chi ha fatto
             questa voce?») trova qui la risposta, e la risposta E' la
             via professionale. */}
@@ -389,7 +389,7 @@ export default function SoundHomePage() {
           </div>
         </PhotoBand>
 
-        {/* ── 6 · L'ONESTÀ — chiunque componga, le regole non cambiano */}
+        {/* ── 6 · L'ONESTÀ, chiunque componga, le regole non cambiano */}
         <Section tone="cream" labelledBy="sh-evidenza">
           <Occhiello>Chiunque componga, le regole non cambiano</Occhiello>
           <DisplayTitle id="sh-evidenza" size="section">
@@ -433,7 +433,7 @@ export default function SoundHomePage() {
           </ol>
         </Section>
 
-        {/* ── 8 · IL FUTURO — dal suono alla vibrazione ─────────────
+        {/* ── 8 · IL FUTURO, dal suono alla vibrazione ─────────────
             Niente gergo da catalogo professionale: la visione di
             Aurya Sound, detta per tutti. */}
         <PhotoBand image={FUOCO} focus="50% 45%" width="max-w-4xl"
@@ -447,7 +447,7 @@ export default function SoundHomePage() {
             <p className="text-base sm:text-lg leading-relaxed text-white/85 text-hero-shadow">
               Oggi il suono di Aurya si ascolta. Il passo su cui stiamo
               lavorando è quello in cui si sente: la vibrazione che
-              arriva al corpo, e la risposta — respiro, battito — che
+              arriva al corpo, e la risposta, respiro, battito, che
               si può osservare nel tempo.
             </p>
             <p className="font-serif text-2xl text-white text-hero-shadow">

@@ -147,7 +147,7 @@ export default function MeditazioniPage() {
   if (locked) {
     return (
       <div className="fqz med" data-testid="fqz-meditazioni-locked">
-        {/* MD (20/8) — le uscite: senza menu del sito, da qui non si
+        {/* MD (20/8), le uscite: senza menu del sito, da qui non si
             tornava piu' indietro. Stesso rimedio di Aurya Sound. */}
         <SoundTopbar firma="Meditazioni" qui="/meditazioni" />
         <main style={{ maxWidth: 680, paddingTop: 40 }}>
@@ -160,8 +160,8 @@ export default function MeditazioniPage() {
           <section className="bib" style={{ textAlign: 'center', marginTop: 10 }}>
             <p style={{ fontSize: 15, lineHeight: 1.7 }}>
               {teaserCount > 0
-                ? <>Qui dentro {teaserCount === 1 ? "c'è una sessione composta" : `ci sono ${teaserCount} sessioni composte`} dagli operatori di Aurya — per dormire, meditare, rilassarsi, concentrarsi.</>
-                : <>Qui vivranno le sessioni composte dagli operatori di Aurya — per dormire, meditare, rilassarsi, concentrarsi.</>}
+                ? <>Qui dentro {teaserCount === 1 ? "c'è una sessione composta" : `ci sono ${teaserCount} sessioni composte`} dagli operatori di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>
+                : <>Qui vivranno le sessioni composte dagli operatori di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>}
               {' '}<b>L'ascolto è riservato a chi fa parte del cerchio</b>: chi riceve
               la Lettera o ha un account Aurya.
             </p>
@@ -188,7 +188,7 @@ export default function MeditazioniPage() {
                               textAlign: 'left', cursor: 'pointer' }}>
                 <input type="checkbox" checked={consent}
                   onChange={(e) => setConsent(e.target.checked)} />
-                <span>Acconsento a ricevere la Lettera di Aurya — pratiche,
+                <span>Acconsento a ricevere la Lettera di Aurya, pratiche,
                   ritiri e nuove meditazioni, senza rumore. Disiscrizione in un
                   click. <a href="/privacy" target="_blank" rel="noreferrer"
                     style={{ color: 'var(--water)' }}>Privacy</a></span>
@@ -209,7 +209,7 @@ export default function MeditazioniPage() {
                   } finally { setBusy(false); }
                 }}>Sblocca con la tua email</button>
             </p>
-            {/* NL-octies (20/8, founder) — «Crealo gratis» portava alla
+            {/* NL-octies (20/8, founder), «Crealo gratis» portava alla
                 schermata di ACCESSO e buttava via l'email appena
                 scritta. Le due strade ora dicono ciascuna la sua, e si
                 portano dietro l'indirizzo e il ritorno qui. */}
@@ -238,11 +238,11 @@ export default function MeditazioniPage() {
   /* ── catalogo sbloccato ── */
   return (
     <div className="fqz med" data-testid="fqz-meditazioni">
-      {/* MD (20/8) — le uscite: senza menu del sito, da qui non si
+      {/* MD (20/8), le uscite: senza menu del sito, da qui non si
           tornava piu' indietro. Stesso rimedio di Aurya Sound. */}
       <SoundTopbar firma="Meditazioni" qui="/meditazioni" />
 
-      {/* SB6 (20/8, founder) — l'iscritto fedele senza account e' a un
+      {/* SB6 (20/8, founder), l'iscritto fedele senza account e' a un
           passo dal finalizzare: l'invito vive dove lui e' gia' dentro,
           con l'email della prova, e si puo' congedare. */}
       {!hasAccount && prova() && !ponteVia && (
@@ -254,7 +254,7 @@ export default function MeditazioniPage() {
             Vuoi ritrovare meditazioni, guide e preferite su ogni dispositivo?{' '}
             <a href={creaAccount(emailDellaProva(), '/meditazioni')}
               data-testid="ponte-account-crea"
-              style={{ color: 'var(--water)' }}>Crea il tuo account</a> — un minuto.
+              style={{ color: 'var(--water)' }}>Crea il tuo account</a>, un minuto.
           </span>
           <button type="button" className="ghost" data-testid="ponte-account-via"
             style={{ padding: '2px 8px', fontSize: 12 }}
@@ -309,7 +309,7 @@ export default function MeditazioniPage() {
                   return (
                     <div key={t.slug}
                       className={`card med-tono-${TONI[t.intent] || 'oro'}`}>
-                      {/* founder 26/8 — il cuore e' un gesto disegnato */}
+                      {/* founder 26/8, il cuore e' un gesto disegnato */}
                       <button type="button" aria-pressed={fav}
                         className={`med-cuore${fav ? ' on' : ''}`}
                         title={fav ? 'Togli dalle preferite' : 'Salva tra le preferite'}
@@ -326,7 +326,7 @@ export default function MeditazioniPage() {
                       </div>
                       <OndaFirma />
                       {t.description && <div className="body">{t.description.slice(0, 120)}</div>}
-                      {/* founder 26/8 — la firma e' il NOME di chi l'ha
+                      {/* founder 26/8, la firma e' il NOME di chi l'ha
                           composta, non un'etichetta */}
                       <div className="med-piede">
                         {t.operator?.slug ? (
@@ -355,11 +355,11 @@ export default function MeditazioniPage() {
               )}
             </>
           )}
-          {/* SF — stesso testo di tutto Aurya Sound, da content/safety.js */}
+          {/* SF, stesso testo di tutto Aurya Sound, da content/safety.js */}
           <SafetyLine onOpen={() => setSafety(true)} />
         </section>
       </main>
-      {/* NV5 — il funnel professionale anche qui: chi ascolta le
+      {/* NV5, il funnel professionale anche qui: chi ascolta le
           meditazioni degli altri e' spesso chi potrebbe comporle */}
       <main style={{ marginTop: 0 }}><TriggerStudio /></main>
       <footer className="fqzfoot" data-testid="fqz-foot">
@@ -375,7 +375,7 @@ export default function MeditazioniPage() {
           <div className="gatebox" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
             <h2>Le preferite vivono nel tuo account</h2>
             <p>Per salvare una meditazione e ritrovarla quando vuoi serve un
-              account Aurya — gratuito, ed è lo stesso con cui segui prenotazioni
+              account Aurya, gratuito, ed è lo stesso con cui segui prenotazioni
               e Passaporto.</p>
             <div className="gatefoot" style={{ gap: 8 }}>
               <button type="button" className="primary"

@@ -225,7 +225,7 @@ export default function Rito({ protocollo, percorso = null,
     return (
       <div className="rito rito-ascolto" data-testid="rito-ascolto">
         <p className="rito-titolo-quieto">{protocollo.titolo}</p>
-        {/* le onde VERE: il rubinetto del player, disegnato — se
+        {/* le onde VERE: il rubinetto del player, disegnato, se
             l'analyser non c'è ancora, una linea quieta */}
         <Onde sorgente={() => ascoltoRef.current?.analisi?.()} />
         <div className="rito-barra" role="progressbar"
@@ -315,10 +315,10 @@ export default function Rito({ protocollo, percorso = null,
       <Partitura score={protocollo.score} altezza={64} />
 
       <label className="pro-campo">
-        <span className="pro-lab">Con chi <i>facoltativo — cerca, o crea al volo</i></span>
+        <span className="pro-lab">Con chi <i>facoltativo, cerca, o crea al volo</i></span>
         {/* il CRM è UNO: chi nasce qui è già nel gestionale */}
         <ScegliPersona valore={cliente} onScegli={setCliente}
-          placeholder="Nessun legame — cerca o crea la persona"
+          placeholder="Nessun legame, cerca o crea la persona"
           testid="rito-cliente" />
         {clienteId && ultima && (
           <span className="rito-ultima" data-testid="rito-ultima">

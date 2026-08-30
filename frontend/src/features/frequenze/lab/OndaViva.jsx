@@ -28,8 +28,8 @@ const MARGINE_Y = 0.86;
 
 const NOMI = {
   orig: 'l’originale registrato',
-  colpo: 'la rifusione — colpo',
-  tenuto: 'la rifusione — tenuta',
+  colpo: 'la rifusione a colpo',
+  tenuto: 'la rifusione tenuta',
 };
 
 /* `nome` (opzionale) sovrascrive il nome di battesimo: il quaderno
@@ -68,7 +68,7 @@ export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
         };
       }
 
-      /* acquisizione dal master — salvo che a tempo fermo */
+      /* acquisizione dal master, salvo che a tempo fermo */
       const analisi = ottieniAnalisi();
       if (analisi && !fermo) {
         const N = analisi.analyser.fftSize;
@@ -150,7 +150,7 @@ export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
     <div className={`lab-ondaviva${attivo ? ' viva' : ''}`}
       data-testid="lab-ondaviva" aria-hidden={!attivo}>
       <div className="lab-ondaviva-testa">
-        <span>L’onda, dal vivo{attivo ? ` — ${nome || NOMI[attivo] || ''}` : ''}</span>
+        <span>L’onda dal vivo{attivo ? `: ${nome || NOMI[attivo] || ''}` : ''}</span>
         <span className={`lab-ondaviva-stato${aggancio ? ' ok' : ''}`}>
           {aggancio ? 'agganciata' : 'in corsa'}
         </span>

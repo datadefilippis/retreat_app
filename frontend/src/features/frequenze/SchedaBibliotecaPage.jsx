@@ -34,7 +34,7 @@ export default function SchedaBibliotecaPage() {
 
   useEffect(() => {
     if (scheda) {
-      document.title = `${scheda.t} — ${scheda.uso} | Aurya Sound`;
+      document.title = `${scheda.t}: ${scheda.uso} | Aurya Sound`;
     }
   }, [scheda]);
 
@@ -74,7 +74,7 @@ export default function SchedaBibliotecaPage() {
             {GRADI[scheda.g] || ''}
           </p>
         </header>
-        {/* il testo editoriale VERBATIM della biblioteca — nostro,
+        {/* il testo editoriale VERBATIM della biblioteca, nostro,
             scritto in casa: l'inserimento diretto e' voluto */}
         <article className="fqz-scheda-testo" data-testid="scheda-testo"
           dangerouslySetInnerHTML={{ __html: scheda.full || `<p>${scheda.body}</p>` }} />

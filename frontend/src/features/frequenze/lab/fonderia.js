@@ -114,7 +114,7 @@ export function campana(ctx, uscita, ritratto, opzioni = {}) {
   return { ferma, durataSec };
 }
 
-/* ── WAV: 16 bit PCM mono — il formato che ogni ampli capisce ──── */
+/* ── WAV: 16 bit PCM mono, il formato che ogni ampli capisce ──── */
 export function wavDaCampioni(campioni, sampleRate) {
   const n = campioni.length;
   const buf = new ArrayBuffer(44 + n * 2);
@@ -177,7 +177,7 @@ export function leggiRitratti() {
   } catch { return []; }
 }
 
-/* FA4 — come in cimatica: il battesimo per il quaderno remoto */
+/* FA4, come in cimatica: il battesimo per il quaderno remoto */
 const _idNuovoR = () =>
   Math.random().toString(16).slice(2) + Date.now().toString(16);
 

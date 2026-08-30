@@ -45,10 +45,9 @@ class TestFn2CancelloInChiaro:
         c = (FQ / "CancelloLettera.jsx").read_text()
         assert "riservata agli iscritti" in c
         assert "gratuita" in c
-        # il brand e' apposizione, non premessa: nel copy la frase
-        # e' «newsletter di Aurya — la Lettera —» (il commento in
-        # testa al file non conta: si cerca la frase resa)
-        assert "newsletter di Aurya — la Lettera" in c
+        # il brand e' apposizione, non premessa (30/8: senza trattini,
+        # per volere del founder, la frase usa le virgole)
+        assert "newsletter di Aurya, la Lettera" in c
 
     def test_le_tre_porte_restano(self):
         """Iscriviti / gia' iscritto / account: nessuna via persa."""

@@ -12,12 +12,12 @@ export default function LabRisonanze() {
   return (
     <Stanza slug="risonanze" titolo="Le Risonanze"
       domanda="A quale frequenza canta il mio oggetto?"
-      perche={<>Ogni oggetto ha frequenze a cui <b>risuona</b> — dove
+      perche={<>Ogni oggetto ha frequenze a cui <b>risuona</b>, dove
         basta pochissima energia per farlo vibrare forte. Qui il banco
         le trova da solo: uno sweep lento lo interroga, il microfono
         ascolta quando risponde, e la curva ti mostra i picchi. È il
         primo passo della cimatica: trovata la frequenza, tienila
-        addosso all&rsquo;oggetto e <b>guarda</b> — riso sulla lattina,
+        addosso all&rsquo;oggetto e <b>guarda</b>, riso sulla lattina,
         acqua nel bicchiere.</>}
       azioni={[
         'Metti una bottiglia vicino ad altoparlante e microfono, avvia la misura',

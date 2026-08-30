@@ -22,7 +22,7 @@ export default function LettureBanco({
   return (
     <>
       {/* IL COMANDO DEL BANCO: uno solo, fra la sorgente e le sue
-          letture — e' li' che passa il confine fra il tempo del
+          letture, e' li' che passa il confine fra il tempo del
           suono e il tempo dell'immagine. */}
       <div className="lab-banco" data-testid="lab-banco">
         <button type="button" data-testid="lab-congela"
@@ -34,7 +34,7 @@ export default function LettureBanco({
         <span>
           {fermo
             ? (suonaDavvero
-              ? 'le letture sono ferme — il suono continua'
+              ? 'le letture sono ferme, il suono continua'
               : 'le letture sono ferme')
             : 'quello che senti è quello che vedi, misurato mentre accade'}
         </span>

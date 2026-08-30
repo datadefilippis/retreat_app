@@ -26,7 +26,9 @@ const PASSERELLA = [
   /* TM7 (27/8, founder) — la voce porta il nome del MONDO: dentro il
      buio «Aurya Sound» e' casa, non una stanza. */
   { to: '/sound/esplora', label: 'Aurya Sound' },
-  { to: '/blog', label: 'Magazine' },
+  /* Founder (30/8): il Lab TORNA in passerella col suo nome — e' una
+     delle tre porte del mondo. Magazine esce: non e' casa Sound. */
+  { to: '/sound/lab', label: 'Aurya Lab' },
 ];
 
 export default function SoundTopbar({ firma = 'Sound', qui = null,

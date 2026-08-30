@@ -52,7 +52,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
   const [picchi, setPicchi] = useState(null);
   const [msg, setMsg] = useState('');
   const [quaderno, setQuaderno] = useState(leggiQuaderno);
-  /* FA4 — se c'e' l'account, il quaderno remoto si fonde al volo */
+  /* FA4, se c'e' l'account, il quaderno remoto si fonde al volo */
   useEffect(() => {
     let vivo = true;
     sincronizza().then((ok) => { if (ok && vivo) setQuaderno(leggiQuaderno()); });
@@ -127,7 +127,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
       setMsg('Sweep finito. Se non hai visto l’oggetto vibrare, riprova più lento (durata maggiore) o su un campo diverso.');
     } else {
       setMsg(trovati.length
-        ? `${trovati.length} risonanze trovate: sono i punti dove il tuo oggetto canta — ▶ per tenerle.`
+        ? `${trovati.length} risonanze trovate: sono i punti dove il tuo oggetto canta, ▶ per tenerle.`
         : 'Nessun picco netto dalla curva: prova più lento, più vicino, o a occhio (ferma tu quando vedi vibrare).');
     }
   };
@@ -184,7 +184,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
     setFase('pronto');
   };
 
-  /* RZ5 — la SCOPERTA nel quaderno: una frequenza sola, etichettata */
+  /* RZ5, la SCOPERTA nel quaderno: una frequenza sola, etichettata */
   const salvaScoperta = () => {
     if (!tonoHzRef.current) return;
     const voce = {
@@ -303,7 +303,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
       c2d.font = `${Math.round(10 * dpr)}px ui-monospace, Menlo, monospace`;
       c2d.textAlign = 'center';
       c2d.fillText(occhioRef.current
-        ? 'via a occhio: niente curva — lo strumento sei tu'
+        ? 'via a occhio: niente curva, lo strumento sei tu'
         : 'la curva eccitazione → risposta si disegna qui, dal vivo',
         W / 2, H / 2);
     }
@@ -321,10 +321,10 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
         <span className="lab-cnote">genera → eccita → trova → tieni → osserva: il ciclo del banco</span>
       </div>
 
-      {/* RZ6 — i quattro passi, sempre in vista */}
+      {/* RZ6, i quattro passi, sempre in vista */}
       <ol className="lab-rz-passi" data-testid="lab-rz-passi">
         <li><b>Prepara</b>: l&rsquo;oggetto (moneta, bottiglia, bicchiere) vicino all&rsquo;altoparlante.</li>
-        <li><b>Interroga</b>: avvia lo sweep — col microfono la curva ascolta, senza <i>guardi tu</i>.</li>
+        <li><b>Interroga</b>: avvia lo sweep, col microfono la curva ascolta, senza <i>guardi tu</i>.</li>
         <li><b>Tieni</b>: quando canta (o danza), ferma: la nota resta in mano e la aggiusti fine.</li>
         <li><b>Salva</b>: la scoperta va nel quaderno, e la risuoni quando vuoi.</li>
       </ol>
@@ -360,7 +360,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
         </div>
       )}
 
-      {/* RZ1+RZ2 — IL TONO IN MANO */}
+      {/* RZ1+RZ2, IL TONO IN MANO */}
       {fase === 'tono' && tonoHz && (
         <div className="lab-rz-tono" data-testid="lab-rz-tono">
           <div className="lab-rz-tonoriga">
@@ -407,7 +407,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
           </div>
           <p className="lab-volume">
             {tonoVivo
-              ? 'Sta suonando: aggiusta di ±0,1 e guarda l’oggetto — le risonanze vivono in finestre strette.'
+              ? 'Sta suonando: aggiusta di ±0,1 e guarda l’oggetto, le risonanze vivono in finestre strette.'
               : 'Silenzio: la frequenza è tua. ▶ Tienila per risentirla quando vuoi.'}
           </p>
         </div>
@@ -451,11 +451,11 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
             'sweep.wav')}>
           ⤓ WAV dello sweep
         </button>
-        <span className="lab-cnote">per amplificatori e attuatori esterni —
+        <span className="lab-cnote">per amplificatori e attuatori esterni:
           sotto i 200 Hz l&rsquo;altoparlante del telefono non muove niente</span>
       </div>
 
-      {/* RZ5 — il quaderno vivo: sweep e scoperte, tutte risuonabili */}
+      {/* RZ5, il quaderno vivo: sweep e scoperte, tutte risuonabili */}
       {quaderno.length > 0 && (
         <div className="lab-quaderno" data-testid="lab-quaderno">
           <h3>Il quaderno di banco</h3>
@@ -486,15 +486,15 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
         </div>
       )}
 
-      {/* la didascalia — ogni modulo si racconta (regola LB) */}
+      {/* la didascalia, ogni modulo si racconta (regola LB) */}
       <p className="lab-didascalia" data-testid="lab-ris-didascalia">
         <b>Cimatica, primo passo.</b> Ogni oggetto risuona solo sulle
         sue frequenze: lo sweep gliele chiede tutte. Col microfono la
         curva ascolta la risposta; <b>senza, i tuoi occhi sono lo
-        strumento</b> — se vedi l&rsquo;oggetto danzare, ferma: il banco
+        strumento</b>, se vedi l&rsquo;oggetto danzare, ferma: il banco
         ricorda dove eri e ti lascia la nota in mano. Trovata la
         risonanza, tienila addosso all&rsquo;oggetto e guarda: riso, acqua,
-        monete — le figure che si formano sono i suoi modi, resi
+        monete, le figure che si formano sono i suoi modi, resi
         visibili.
       </p>
     </section>

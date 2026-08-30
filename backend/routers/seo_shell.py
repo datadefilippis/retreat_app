@@ -792,7 +792,7 @@ def _ground_content_html() -> str:
 
 _LAB_STANZE = {
     "banco": {
-        "title": "Il Banco — genera un suono e guardalo | Aurya Sound Lab",
+        "title": "Il Banco: genera un suono e guardalo | Aurya Sound Lab",
         "description": (
             "Un generatore di segnali vero nel browser: due voci, "
             "interferenza, battimenti, figure di Lissajous — e tre "
@@ -800,7 +800,7 @@ _LAB_STANZE = {
             "mostrano il suono mentre accade."),
     },
     "orecchio": {
-        "title": "L'Orecchio — accordatore e analisi dal microfono | Aurya Sound Lab",
+        "title": "L'Orecchio: accordatore e analisi dal microfono | Aurya Sound Lab",
         "description": (
             "Apri il microfono e il banco ascolta il mondo: "
             "accordatore di precisione (nota e cents), spettro e "
@@ -808,7 +808,7 @@ _LAB_STANZE = {
             "Il suono non lascia il dispositivo."),
     },
     "ritratto": {
-        "title": "Il Ritratto — la carta d'identità di un suono | Aurya Sound Lab",
+        "title": "Il Ritratto: la carta d'identità di un suono | Aurya Sound Lab",
         "description": (
             "Registra sei secondi di una campana o di un bicchiere: "
             "l'analisi ne scrive i modi (frequenze, vite, doppietti) "
@@ -816,7 +816,7 @@ _LAB_STANZE = {
             "l'originale."),
     },
     "meraviglie": {
-        "title": "Le Meraviglie — 13 fenomeni sonori veri | Aurya Sound Lab",
+        "title": "Le Meraviglie: 13 fenomeni sonori veri | Aurya Sound Lab",
         "description": (
             "Suono 3D (HRTF), il terzo suono di Tartini, la "
             "fondamentale fantasma, la scala infinita di Shepard, "
@@ -824,7 +824,7 @@ _LAB_STANZE = {
             "documentati, ognuno col suo cartellino di verità."),
     },
     "risonanze": {
-        "title": "Le Risonanze — a che frequenza canta un oggetto | Aurya Sound Lab",
+        "title": "Le Risonanze: a che frequenza canta un oggetto | Aurya Sound Lab",
         "description": (
             "Sweep + microfono: la curva eccitazione-risposta trova "
             "le risonanze di bottiglie, bicchieri e piastre. Il primo "
@@ -948,7 +948,7 @@ async def _meta_sound(parts: list) -> Optional[dict]:
             return None                      # slug ignoto = 404 onesto
         canonical = f"{base}/sound/esplora/{parts[1]}"
         return {
-            "title": f"{scheda['t']} — {scheda['uso']} | Aurya Sound",
+            "title": f"{scheda['t']}: {scheda['uso']} | Aurya Sound",
             "description": (scheda.get("body") or "")[:155],
             "canonical": canonical,
             "hreflang": _hub_hreflang(canonical),
@@ -958,7 +958,7 @@ async def _meta_sound(parts: list) -> Optional[dict]:
     if sub == "professional":
         canonical = f"{base}/sound/professional"
         return {
-            "title": "Aurya Sound Professional — l'ascolto guidato "
+            "title": "Aurya Sound Professional: l'ascolto guidato "
                      "per professionisti | Aurya",
             "description": (
                 "Protocolli d'ascolto strutturati da condurre coi tuoi "
@@ -976,7 +976,7 @@ async def _meta_sound(parts: list) -> Optional[dict]:
     if sub == "studio":
         canonical = f"{base}/sound/studio"
         return {
-            "title": "Crea Studio — componi le tue meditazioni | Aurya",
+            "title": "Crea Studio: componi le tue meditazioni | Aurya",
             "description": (
                 "L'atelier con cui nascono le meditazioni di Aurya, "
                 "aperto ai professionisti del benessere: registra la "

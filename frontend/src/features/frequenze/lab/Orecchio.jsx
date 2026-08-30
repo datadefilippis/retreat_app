@@ -147,7 +147,7 @@ export default function Orecchio({ ottieniLab, ottieniAnalisi, ottieniVivo = nul
         </div>
       )}
 
-      {/* la didascalia — ogni modulo si racconta (regola LB) */}
+      {/* la didascalia, ogni modulo si racconta (regola LB) */}
       <p className="lab-didascalia" data-testid="lab-orecchio-didascalia">
         <b>Cosa sta succedendo.</b> Il suono non lascia mai il tuo
         dispositivo: il microfono si collega solo all&rsquo;analisi, niente

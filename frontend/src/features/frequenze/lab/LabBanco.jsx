@@ -15,7 +15,7 @@ export default function LabBanco() {
   return (
     <Stanza slug="banco" titolo="Il Banco"
       domanda="Com’è fatto un suono?"
-      perche={<>Ogni suono che senti — una voce, una campana, il mare —
+      perche={<>Ogni suono che senti (una voce, una campana, il mare)
         è fatto di onde. Qui ne generi una <b>tu</b>, e la guardi mentre
         suona: è il modo più veloce per capire cosa significano parole
         come frequenza, volume, timbro. Niente registrazioni, niente

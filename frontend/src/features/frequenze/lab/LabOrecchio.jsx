@@ -14,7 +14,7 @@ export default function LabOrecchio() {
     <Stanza slug="orecchio" titolo="L’Orecchio"
       domanda="Che nota è? Che suono fa il mondo?"
       perche={<>Il banco può ascoltare, oltre che generare: apri il
-        microfono e le letture ti mostrano il suono <b>vero</b> — la tua
+        microfono e le letture ti mostrano il suono <b>vero</b>, la tua
         voce, un bicchiere colpito, la stanza in cui sei.
         L&rsquo;accordatore ti dice la nota con la precisione di uno
         strumento. E il suono non lascia mai il tuo dispositivo: il

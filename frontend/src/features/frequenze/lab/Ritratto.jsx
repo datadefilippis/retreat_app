@@ -39,7 +39,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
   const [msg, setMsg] = useState('');
   /* Il quaderno dei ritratti (29/8): registro come nelle Risonanze */
   const [salvati, setSalvati] = useState(leggiRitratti);
-  /* FA4 — l'account fonde il quaderno remoto al volo */
+  /* FA4, l'account fonde il quaderno remoto al volo */
   useEffect(() => {
     let vivo = true;
     sincronizza().then((ok) => { if (ok && vivo) setSalvati(leggiRitratti()); });
@@ -100,7 +100,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     if (!lab.orecchio.attivo() && !suonaBanco) {
       try { await lab.orecchio.apri(); } catch {
         setNiente(false);
-        setMsg('Per ritrarre la tua voce o un oggetto serve il microfono — oppure accendi una sorgente al Banco e ritrai quella.');
+        setMsg('Per ritrarre la tua voce o un oggetto serve il microfono, oppure accendi una sorgente al Banco e ritrai quella.');
         return;
       }
     }
@@ -214,7 +214,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     setSpenti(voce.spenti || []);
     setRespiro(voce.respiro ?? 1);
     setNiente(false); presaRef.current = null;
-    setMsg(`Ritratto «${voce.etichetta || 'senza nome'}» aperto dal quaderno — l’originale registrato non c’è: il quaderno ricorda la tabella, non la voce.`);
+    setMsg(`Ritratto «${voce.etichetta || 'senza nome'}» aperto dal quaderno, l’originale registrato non c’è: il quaderno ricorda la tabella, non la voce.`);
   };
 
   const scaricaWav = async () => {
@@ -266,13 +266,13 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
       )}
 
       {/* I VERDETTI-MAESTRO: quando il suono NON si puo' mettere in
-          tabella, il Ritratto insegna il perche' — non fallisce. */}
+          tabella, il Ritratto insegna il perche', non fallisce. */}
       {esito && esito.natura === 'soffio' && (
         <div className="lab-didascalia lab-verdetto" data-testid="lab-ritratto-soffio">
           <b>È un soffio.</b> Ho sentito energia ({esito.piccoDb} dB di
           picco) ma nessun modo: lo spettro è liscio, come il vento, il
           respiro o il mare. I soffi sono fatti di <b>rumore</b>, non di
-          note — non c&rsquo;è una tabella da scrivere, e una somma di onde
+          note, non c&rsquo;è una tabella da scrivere, e una somma di onde
           pure non può rifonderli. Se vuoi sentirne la famiglia, nelle
           Meraviglie ci sono i rumori colorati; se volevi ritrarre un
           oggetto, prova a <b>colpirlo</b>: il colpo sveglia i suoi modi.
@@ -286,7 +286,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
           <b>{String(esito.f0maxHz).replace('.', ',')} Hz</b>
           {notaVicina(esito.f0maxHz) && ` (${notaVicina(esito.f0maxHz).nome})`}:
           è una melodia, o un parlato. Il ritratto fotografa <b>una</b> nota
-          tenuta — canta un suono fermo («aaah» su una sola altezza) e
+          tenuta, canta un suono fermo («aaah» su una sola altezza) e
           riprova. Le melodie intere sono un altro mestiere: qui si
           studia com&rsquo;è fatto UN suono.
         </div>
@@ -315,8 +315,8 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
 
           <p className="lab-ritratto-lettura" data-testid="lab-ritratto-lettura">
             {esito.natura === 'intonato'
-              ? 'Suono intonato: le corde sono le tue armoniche — multipli esatti della fondamentale. È la firma di una voce o di una corda.'
-              : 'Ogni riga della tabella è un «modo»: una delle note pure di cui è fatto il tuo suono. Una corda li ha in rapporti interi; una campana no — ed è per questo che suona da campana.'}
+              ? 'Suono intonato: le corde sono le tue armoniche, multipli esatti della fondamentale. È la firma di una voce o di una corda.'
+              : 'Ogni riga della tabella è un «modo»: una delle note pure di cui è fatto il tuo suono. Una corda li ha in rapporti interi; una campana no, ed è per questo che suona da campana.'}
           </p>
         </div>
 
@@ -356,12 +356,12 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
 
           {/* ── LB4: LA RIFUSIONE ── */}
           <div className="lab-fonderia" data-testid="lab-fonderia">
-            <h3>La rifusione — la copia sintetica costruita dalla tabella</h3>
+            <h3>La rifusione, la copia sintetica costruita dalla tabella</h3>
             <p className="lab-volume" data-testid="lab-fonderia-spiega">
               <b>Colpo</b> la suona come un oggetto percosso (ogni modo
               parte e muore con la sua vita); <b>Tenuto</b> tiene i
               modi fermi, come una campana strofinata
-              {esito.armonico ? ' — e per un suono intonato respira col vibrato misurato' : ''}.
+              {esito.armonico ? ', e per un suono intonato respira col vibrato misurato' : ''}.
               Confrontala con l&rsquo;<b>Originale</b>: è il gioco.
             </p>
             <div className="lab-fonderia-gesti">
@@ -390,7 +390,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
               </label>
             </div>
             {/* L'ONDA VIVA (29/8): mentre l'A/B suona, la forma d'onda
-                vera dal master — trigger dell'Oscilloscopio, scia al
+                vera dal master, trigger dell'Oscilloscopio, scia al
                 fosforo. Si apre solo col suono (di QUESTA fonderia:
                 il quaderno ha la sua tela, accanto alle sue chip). */}
             <OndaViva ottieniAnalisi={ottieniAnalisi}
@@ -410,7 +410,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
                 ⤓ WAV (tenuto, 10 s)
               </button>
               {/* FA3 (piano FARO, 30/8): la consegna in libreria e'
-                  USCITA dalla stanza — il gesto dell'utente e' il
+                  USCITA dalla stanza, il gesto dell'utente e' il
                   quaderno; il system admin carica dalla sua casa
                   (/admin/sound). Era comunque visibile solo a lui. */}
             </div>
@@ -418,11 +418,11 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
             <p className="lab-didascalia" data-testid="lab-fonderia-didascalia">
               <b>L&rsquo;A/B è il laboratorio.</b> Originale e rifusione,
               stesso orecchio: la rifusione è la SOMMA dei modi in
-              tabella — spegnine uno e risenti; ciò che manca è ciò
+              tabella, spegnine uno e risenti; ciò che manca è ciò
               che il ritratto non cattura. Per una <b>campana</b> è
               quasi tutto (l&rsquo;attacco percussivo a parte); per una
               <b> voce</b> la rifusione non sarà mai «te»: è il tuo
-              spettro suonato da onde pure — senti l&rsquo;altezza e il
+              spettro suonato da onde pure, senti l&rsquo;altezza e il
               colore delle vocali, non il respiro né le consonanti.
               Il <b>tenuto</b> è anche il WAV per la cimatica.
             </p>
@@ -433,12 +433,12 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
           <p className="lab-ritratto-onesta">
             Le <b>frequenze</b> sono affidabili al decimo di Hz; le
             <b> ampiezze</b> sotto i 100 Hz e sopra i 15 kHz sono
-            indicative — un microfono da telefono colora lo spettro.
+            indicative, un microfono da telefono colora lo spettro.
           </p>
         </div>
       )}
 
-      {/* IL QUADERNO DEI RITRATTI (29/8) — il registro, come nelle
+      {/* IL QUADERNO DEI RITRATTI (29/8), il registro, come nelle
           Risonanze: vive anche senza un ritratto appena fatto, cosi'
           torni sulla pagina e risuoni la campana di ieri. Ogni voce
           si suona e si ferma SUL POSTO. */}
@@ -484,11 +484,11 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
         </div>
       )}
 
-      {/* la didascalia — ogni modulo si racconta (regola LB) */}
+      {/* la didascalia, ogni modulo si racconta (regola LB) */}
       <p className="lab-didascalia" data-testid="lab-ritratto-didascalia">
         <b>Cosa stai leggendo.</b> Ogni oggetto vibra solo sui suoi
         modi: la tabella è l&rsquo;elenco dei modi del tuo suono. Una corda
-        ha rapporti quasi interi (2, 3, 4…); una campana no — e i
+        ha rapporti quasi interi (2, 3, 4…); una campana no, e i
         <b> doppietti</b>, coppie di modi quasi coincidenti, sono lo
         «shimmer» che senti girare. La colonna <b>vita</b> dice quanto
         ogni modo resiste prima di spegnersi: gli acuti muoiono prima.

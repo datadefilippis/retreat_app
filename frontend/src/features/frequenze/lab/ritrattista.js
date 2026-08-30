@@ -134,7 +134,7 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
     mag[b] = db(Math.hypot(re[b], im[b]));
   }
 
-  /* il pavimento spettrale: la mediana — robusta ai picchi */
+  /* il pavimento spettrale: la mediana, robusta ai picchi */
   const copia = [];
   for (let b = bMin; b <= bMax; b += 7) copia.push(mag[b]);
   copia.sort((a, b2) => a - b2);

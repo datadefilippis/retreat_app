@@ -130,7 +130,7 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo, ottieniXY = null 
         return;
       }
 
-      /* acquisizione — salvo che da congelati */
+      /* acquisizione, salvo che da congelati */
       const analisi = ottieniAnalisi();
       if (analisi && !fermo) {
         const N = analisi.analyser.fftSize;
@@ -145,7 +145,7 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo, ottieniXY = null 
         setVivo(true);
       }
 
-      /* griglia: molto discreta — l'asse dello zero, ±½, otto tempi */
+      /* griglia: molto discreta, l'asse dello zero, ±½, otto tempi */
       c2d.clearRect(0, 0, W, H);
       c2d.lineWidth = 1;
       c2d.strokeStyle = tinte.griglia;
@@ -162,7 +162,7 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo, ottieniXY = null 
       c2d.strokeStyle = tinte.asse;       // lo zero, appena piu' presente
       c2d.beginPath(); c2d.moveTo(0, H / 2); c2d.lineTo(W, H / 2); c2d.stroke();
 
-      /* la traccia — prima sulla scia (che sbiadisce), poi viva */
+      /* la traccia, prima sulla scia (che sbiadisce), poi viva */
       if (scia.width !== W || scia.height !== H) {
         scia.width = W; scia.height = H;
       }
@@ -238,14 +238,14 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo, ottieniXY = null 
           <b>Figure di Lissajous.</b> Un intervallo musicale è un
           rapporto tra numeri: A e B a 2:1 (l&rsquo;ottava) disegnano un
           otto, 3:2 (la quinta) un nodo in più. Se il rapporto è
-          leggermente stonato, la figura ruota — stai vedendo la fase
+          leggermente stonato, la figura ruota, stai vedendo la fase
           che scorre.
         </p>
       ) : (
         <div className="lab-scope-info">
           <span>{ms ? `finestra ${ms} ms · ${FINESTRA} campioni` : 'in attesa di un segnale'}</span>
           <span data-testid="lab-aggancio">
-            {fermo ? 'immagine ferma — il suono continua'
+            {fermo ? 'immagine ferma, il suono continua'
               : vivo ? (aggancio ? 'trigger agganciato' : 'corsa libera') : ''}
           </span>
           <span>asse ±1 · zero al centro</span>

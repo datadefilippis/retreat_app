@@ -34,7 +34,7 @@ const mmss = (s) => {
   return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
 };
 
-/* la banda: una foglia — entra morbida, sta, esce morbida */
+/* la banda: una foglia, entra morbida, sta, esce morbida */
 function foglia({ x0, x1, yc, alto, punta }) {
   const a = alto / 2;
   return [

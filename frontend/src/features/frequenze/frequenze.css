@@ -48,7 +48,11 @@
 .fqz button{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:transparent;
     color:var(--bone);border:1px solid var(--line);padding:9px 15px;border-radius:8px;cursor:pointer;
     transition:border-color .16s,color .16s,background .16s,transform .1s,box-shadow .16s}
-.fqz button:hover:not(:disabled):not(.primary):not(.on):not(.cb-play):not(.cb-reset):not(.gd-final):not(.pro-cta):not(.primo){border-color:var(--lamp);color:var(--lamp)}
+/* Founder (30/8): «molti testi scompaiono col mouse sopra» — la
+   colpa era QUESTA regola: dipinge il testo d'oro al passaggio, e
+   sui bottoni con lo SFONDO d'oro (il ▶ del Lab) il testo spariva.
+   Ogni bottone a sfondo chiaro va escluso e riceve il SUO hover. */
+.fqz button:hover:not(:disabled):not(.primary):not(.on):not(.cb-play):not(.cb-reset):not(.gd-final):not(.pro-cta):not(.primo):not(.lab-play){border-color:var(--lamp);color:var(--lamp)}
 .fqz button:active:not(:disabled){transform:translateY(1px)}
 .fqz button:disabled{opacity:.35;cursor:not-allowed}
 .fqz button.primary{background:linear-gradient(180deg,#E6AE68,#D49B4E);color:#141F13;border-color:#E6AE68;font-weight:700;box-shadow:0 4px 14px #DFA45C33}

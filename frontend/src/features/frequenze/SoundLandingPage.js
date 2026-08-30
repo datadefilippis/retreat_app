@@ -23,18 +23,18 @@ import SoundTopbar from './SoundTopbar';
  */
 
 export default function SoundLandingPage() {
-  useEffect(() => { document.title = 'Aurya Sound — Il suono, spiegato'; }, []);
+  useEffect(() => { document.title = 'Aurya Sound: il suono, spiegato'; }, []);
   const [safety, setSafety] = useState(false);   // SF — lettura su richiesta
 
   return (
     <div className="fqz sld" data-testid="fqz-landing">
-      {/* SP-ter — la porta pubblica porta anche il ritorno */}
+      {/* SP-ter, la porta pubblica porta anche il ritorno */}
       <SoundTopbar firma="Sound" qui="/sound" />
       <header>
         <div>
           <h1>Aurya <em>Sound</em></h1>
           <div className="sub">Esperienze sonore progettate per accompagnare diversi stati di presenza.</div>
-          {/* DN5 (21/8) — dichiarare la parentela costa una riga e rende
+          {/* DN5 (21/8), dichiarare la parentela costa una riga e rende
               ovvio cio' che il cambio di luce potrebbe far sembrare un
               altro sito. */}
           <p className="sld-parentela" data-testid="sound-parentela">
@@ -49,10 +49,10 @@ export default function SoundLandingPage() {
             Una biblioteca educativa su onde cerebrali, frequenze e metodi di
             stimolazione sonora. Ogni scheda dichiara il suo livello di evidenza:
             ciò che è documentato, ciò che è ricerca in corso, ciò che appartiene
-            alla tradizione. Si legge, si approfondisce — e si ascolta.
+            alla tradizione. Si legge, si approfondisce, e si ascolta.
           </p>
 
-          {/* LE ESPERIENZE (26/8) — stanno PRIMA delle schede, perche'
+          {/* LE ESPERIENZE (26/8), stanno PRIMA delle schede, perche'
               si ascolta prima di studiare. L'elenco viene dal registro:
               aggiungerne una non tocca questa pagina. */}
           <div className="sld-esp" data-testid="sld-esperienze">
@@ -75,22 +75,22 @@ export default function SoundLandingPage() {
             ))}
           </div>
 
-          {/* AV2 — la stanza dello strumento: il TUO suono, guardato */}
+          {/* AV2, la stanza dello strumento: il TUO suono, guardato */}
           <p style={{ marginTop: 18 }}>
             <Link to="/sound/visual" className="readmore"
               data-testid="sld-visual" style={{ textDecoration: 'none' }}>
-              ✦ Aurya Mode — porta una tua traccia o il microfono e
+              ✦ Aurya Mode, porta una tua traccia o il microfono e
               guarda il suono diventare luce
             </Link>
           </p>
 
-          {/* LAB — la biblioteca che si tocca: un vero generatore di
+          {/* LAB, la biblioteca che si tocca: un vero generatore di
               segnali, e a passi l'intero banco (oscilloscopio, spettro,
               sweep sullo stesso motore) */}
           <p style={{ marginTop: 8 }}>
             <Link to="/sound/lab" className="readmore"
               data-testid="sld-lab" style={{ textDecoration: 'none' }}>
-              ⚗ Il Laboratorio — genera un segnale vero e misuralo:
+              ⚗ Il Laboratorio, genera un segnale vero e misuralo:
               frequenza, forma d'onda, ampiezza, fase
             </Link>
           </p>
@@ -110,11 +110,11 @@ export default function SoundLandingPage() {
             <Link className="sld-glink" to="/sound/impara">Leggi la Guida →</Link>
           </div>
 
-          {/* SF — la porta pubblica dice subito com'è fatto l'ascolto */}
+          {/* SF, la porta pubblica dice subito com'è fatto l'ascolto */}
           <SafetyLine onOpen={() => setSafety(true)} />
 
           {/* Deciso dal founder (26/8 sera): la via professionale
-              promossa e' CREA — comporre per i propri clienti — non
+              promossa e' CREA, comporre per i propri clienti, non
               piu' il catalogo Professional (che resta strumento, non
               vetrina, finche' non avra' un valore oltre il play). */}
           <div className="sld-pro" data-testid="sld-crea">

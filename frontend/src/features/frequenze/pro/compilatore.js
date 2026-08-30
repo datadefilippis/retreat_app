@@ -43,7 +43,7 @@
  * contratto cambia, il test rompe qui prima che il compilatore menta.
  */
 
-/* — gemelli di frequency_track.py (guardia di parita' nel backend) — */
+/*, gemelli di frequency_track.py (guardia di parita' nel backend), */
 export const PASSI_MAX = 24;              // LAYERS_MAX
 export const DURATA_MIN = 60;             // DURATION_MIN
 export const DURATA_MAX = 1800;           // DURATION_MAX

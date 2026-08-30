@@ -118,7 +118,7 @@ export const CATALOGO = Object.freeze([
   daEsperienza('calm', {
     livello: 'base',
     racconto: 'Sei minuti per aprire uno spazio: un fondo caldo che '
-      + 'rallenta, un respiro sonoro che si allarga e — in cuffia — un '
+      + 'rallenta, un respiro sonoro che si allarga e, in cuffia, un '
       + 'battito lento che accompagna. È la soglia che molti operatori '
       + 'usano fra l’arrivo e il lavoro, o fra il lavoro e il ritorno '
       + 'al mondo.',
@@ -141,7 +141,7 @@ export const CATALOGO = Object.freeze([
         + '«ascoltare un suono», è RESPIRARE a un certo ritmo. La '
         + 'respirazione di risonanza (~6 atti al minuto, con '
         + 'espirazione più lunga dell’inspirazione) è la pratica con '
-        + 'la letteratura più robusta di tutto questo campo — e un '
+        + 'la letteratura più robusta di tutto questo campo, e un '
         + 'RCT del 2026 ha mostrato che il ritmo fisso a 6 vale '
         + 'quanto quello misurato persona per persona. Il suono qui '
         + 'fa una cosa sola, e la fa con precisione: dà il tempo.',
@@ -152,7 +152,7 @@ export const CATALOGO = Object.freeze([
       + 'ampiezza massima. Rapporto 4:6 fra inspirazione ed '
       + 'espirazione, come raccomandato. Il suono è un pacer: '
       + 'l’altezza sale e scende col respiro e un tocco segna ogni '
-      + 'svolta — le convenzioni dei pacer uditivi studiati.',
+      + 'svolta, le convenzioni dei pacer uditivi studiati.',
     indicazioni: 'Dieci minuti di respirazione guidata: la pratica '
       + 'più «attiva» del catalogo, e la più facile da riportare a '
       + 'casa. Ottima come apertura o come lavoro a sé.',
@@ -168,15 +168,15 @@ export const CATALOGO = Object.freeze([
     racconto: 'Un registro basso che si sente prima nel corpo che '
       + 'nelle orecchie, una materia sonora che va e viene come una '
       + 'marea, una pulsazione che rallenta. Verso la fine tutto si '
-      + 'semplifica: resta il peso — e il peso è il punto. Progettata '
+      + 'semplifica: resta il peso, e il peso è il punto. Progettata '
       + 'e misurata al banco Aurya, frequenza per frequenza.',
     indicazioni: 'Otto minuti per ritrovare peso e presenza, '
       + 'anche come chiusura di un lavoro corporeo.',
     come: 'Meglio un buon diffusore che scenda nei bassi, oppure '
       + 'cuffie. Persona distesa, luce bassa. Ottima come chiusura di '
       + 'un lavoro corporeo.',
-    teoria: 'Psicoacustica delle basse frequenze — il suono grave è '
-      + 'percezione anche corporea, non solo uditiva — nella scia '
+    teoria: 'Psicoacustica delle basse frequenze, il suono grave è '
+      + 'percezione anche corporea, non solo uditiva, nella scia '
       + 'della tradizione vibroacustica. Arco progettato e misurato '
       + 'al banco Aurya.',
     cuffie: 'consigliate',
@@ -186,7 +186,7 @@ export const CATALOGO = Object.freeze([
     evidenza: {
       grado: 'B',
       nota: 'Le review sulla stimolazione uditiva ritmica documentano '
-        + 'effetti reali sull’ansia di stato e sul rilassamento — da '
+        + 'effetti reali sull’ansia di stato e sul rilassamento, da '
         + 'piccoli a moderati, già dopo circa dieci minuti di ascolto. '
         + 'È l’uso meglio documentato di questa famiglia di suoni, e '
         + 'questa scheda ci sta dentro per intero: stato stabile, '
@@ -194,7 +194,7 @@ export const CATALOGO = Object.freeze([
       revisione: '2026-08',
     },
     teoria: 'Entrainment uditivo (battiti binaurali): il cervello '
-      + 'segue in modo misurabile una stimolazione ritmica — la '
+      + 'segue in modo misurabile una stimolazione ritmica, la '
       + 'risposta uditiva stazionaria (ASSR) è neurofisiologia '
       + 'consolidata. Review: Garcia-Argibay et al. 2019; Chaieb '
       + 'et al. 2015.',
@@ -219,7 +219,7 @@ export const CATALOGO = Object.freeze([
       nota: 'Le review documentano un accompagnamento reale al '
         + 'rilassamento pre-sonno (effetti da piccoli a moderati). Il '
         + 'confine, detto da professionisti: per l’insonnia clinica la '
-        + 'via d’elezione è la CBT-I — questo protocollo la affianca, '
+        + 'via d’elezione è la CBT-I, questo protocollo la affianca, '
         + 'non la sostituisce.',
       revisione: '2026-08',
     },
@@ -228,7 +228,7 @@ export const CATALOGO = Object.freeze([
     sottotitolo: 'Una discesa in tre tempi verso il pre-sonno.',
     racconto: 'Un arco che scende in tre tempi: la quiete '
       + 'dell’ingresso, la discesa, e un soffio che resta quando i '
-      + 'toni si ritirano. Accompagna il passaggio — non lo forza.',
+      + 'toni si ritirano. Accompagna il passaggio, non lo forza.',
     indicazioni: 'Per accompagnare il passaggio verso il sonno. '
       + 'Da ascoltare già distesi.',
     come: 'Serale: già a letto o sul lettino, luci basse. Cuffie '
@@ -242,7 +242,7 @@ export const CATALOGO = Object.freeze([
       nota: 'L’arco alpha→theta è la struttura classica dei '
         + 'protocolli di induzione descritti in letteratura, e il '
         + 'theta è la banda più studiata. Effetti documentati e '
-        + 'onesti: reali, di entità modesta — il valore sta '
+        + 'onesti: reali, di entità modesta, il valore sta '
         + 'nell’accompagnare una pratica che esiste già. Il rientro '
         + 'finale fa parte del protocollo.',
       revisione: '2026-08',
@@ -251,7 +251,7 @@ export const CATALOGO = Object.freeze([
       + 'contemplativa assistita dal suono.',
     sottotitolo: 'Ingresso, profondità, e un rientro che riporta su.',
     racconto: 'L’arco classico dei protocolli di induzione: si '
-      + 'scende, si resta, e alla fine si RISALE — il rientro fa '
+      + 'scende, si resta, e alla fine si RISALE, il rientro fa '
       + 'parte della pratica, perché nessuno va lasciato in fondo. '
       + 'Per accompagnare una meditazione seduta, tua o guidata da te.',
     indicazioni: 'Per accompagnare una pratica meditativa seduta.',
@@ -270,22 +270,22 @@ export const CATALOGO = Object.freeze([
         + 'EMDR), ed è questo a renderla interessante per un lavoro '
         + 'accompagnato. Il confine è netto e professionale: quei '
         + 'protocolli sono condotti da terapeuti formati, e questo '
-        + 'strumento non li sostituisce — accompagna, con te presente.',
+        + 'strumento non li sostituisce, accompagna, con te presente.',
       revisione: '2026-08',
     },
-    teoria: 'Stimolazione bilaterale alternata — componente sonoro '
+    teoria: 'Stimolazione bilaterale alternata, componente sonoro '
       + 'studiato nel contesto EMDR (Shapiro); qui come '
       + 'accompagnamento condotto, su fondo theta.',
     sottotitolo: 'Alternanza destra/sinistra su un fondo lento.',
     racconto: 'Un fondo lento e fermo, e un suono che passa da un '
       + 'orecchio all’altro, una volta al secondo. L’alternanza '
       + 'bilaterale compare in protocolli clinici condotti da '
-      + 'professionisti formati: QUESTO strumento non li sostituisce — '
+      + 'professionisti formati: QUESTO strumento non li sostituisce, '
       + 'è un accompagnamento, e va condotto, mai lasciato da solo.',
     indicazioni: 'Per un lavoro interiore accompagnato, con qualcuno '
       + 'che guida. Non è uno strumento da lasciare da soli.',
     come: 'Solo in cuffia: l’alternanza è destra/sinistra. Tu '
-      + 'presente per tutta la durata — è la scheda col livello '
+      + 'presente per tutta la durata, è la scheda col livello '
       + '«attenzione», ed è un livello che va preso sul serio.',
     cuffie: 'necessarie',
     cuffie_testo: 'L’alternanza destra/sinistra esiste solo in cuffia.',
@@ -301,12 +301,12 @@ export const CATALOGO = Object.freeze([
       revisione: '2026-08',
     },
     teoria: 'Entrainment su ritmi beta/SMR; letteratura sul '
-      + 'potenziamento cognitivo contrastante — la scheda si usa per '
+      + 'potenziamento cognitivo contrastante, la scheda si usa per '
       + 'l’attivazione, dove regge.',
     sottotitolo: 'Una salita verso un ritmo attivo, che poi si assesta.',
     racconto: 'Sale, resta alto, si assesta: uno stato attivo voluto, '
-      + 'senza rientro. Dove funziona bene lo diciamo — come '
-      + 'sottofondo attivante su lavoro semplice e ripetitivo — e '
+      + 'senza rientro. Dove funziona bene lo diciamo, come '
+      + 'sottofondo attivante su lavoro semplice e ripetitivo, e '
       + 'dove la letteratura è contrastante lo diciamo pure: è così '
       + 'che si usa uno strumento da professionisti.',
     indicazioni: 'Come sottofondo attivante su compiti semplici e '
@@ -332,7 +332,7 @@ export const CATALOGO = Object.freeze([
       + 'MIT sulla stimolazione a 40 Hz).',
     sottotitolo: 'Una salita che finisce in alto, senza rientro.',
     racconto: 'Dal ritmo d’ingresso a uno stato attivo, con un breve '
-      + 'passaggio a 40 Hz — la singola frequenza più studiata della '
+      + 'passaggio a 40 Hz, la singola frequenza più studiata della '
       + 'letteratura recente. Finisce in alto, senza rientro: come un '
       + 'caffè sonoro, va offerto al momento giusto.',
     indicazioni: 'Per cominciare, o per riprendersi da un calo. '

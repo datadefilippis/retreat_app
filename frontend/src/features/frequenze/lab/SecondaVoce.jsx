@@ -142,11 +142,11 @@ export default function SecondaVoce({ ottieniLab, onSuono }) {
         </p>
       </div>
 
-      {/* la didascalia — ogni modulo si racconta (regola LB) */}
+      {/* la didascalia, ogni modulo si racconta (regola LB) */}
       <p className="lab-didascalia" data-testid="lab-voce2-didascalia">
         <b>Cosa provare.</b> Stessa frequenza della A e fase a 180°: le
         onde si cancellano (interferenza). 440 e 444 Hz nello stesso
-        orecchio: senti un battito a 4 Hz — è la differenza tra le due.
+        orecchio: senti un battito a 4 Hz, è la differenza tra le due.
         Una voce per orecchio (in cuffia): è il principio binaurale
         delle sessioni, qui sul banco.
       </p>

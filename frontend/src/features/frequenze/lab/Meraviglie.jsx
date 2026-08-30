@@ -20,7 +20,7 @@ const FAMIGLIE = [
 ];
 const CARTELLINI = {
   A: ['A', 'Fenomeno documentato dalla fisica e dalla psicoacustica'],
-  C: ['C', 'Valore simbolico della tradizione — il fenomeno resta vero'],
+  C: ['C', 'Valore simbolico della tradizione, il fenomeno resta vero'],
 };
 
 export default function Meraviglie({ ottieniLab }) {
@@ -51,7 +51,7 @@ export default function Meraviglie({ ottieniLab }) {
     <section className="lab-card lab-meraviglie" data-testid="lab-meraviglie">
       <div className="lab-chead">
         <h2>Le Meraviglie</h2>
-        <span className="lab-cnote">fenomeni veri, mostrati dal lato giusto — una alla volta</span>
+        <span className="lab-cnote">fenomeni veri, mostrati dal lato giusto, una alla volta</span>
       </div>
 
       {FAMIGLIE.map(([fam, titolo]) => (
@@ -90,7 +90,7 @@ export default function Meraviglie({ ottieniLab }) {
       <p className="lab-didascalia" data-testid="lab-mer-onesta">
         <b>Perché i cartellini.</b> Qui fuori si vendono «frequenze 3D»
         e onde miracolose. Il suono spazializzato esiste (è l&rsquo;HRTF del
-        Vortice); un&rsquo;onda «tridimensionale di suo» no — un&rsquo;onda di
+        Vortice); un&rsquo;onda «tridimensionale di suo» no, un&rsquo;onda di
         pressione è un&rsquo;onda di pressione. Ogni meraviglia di questo
         catalogo è un fenomeno che puoi misurare con gli strumenti qui
         sopra: è la differenza tra stupire e mentire.

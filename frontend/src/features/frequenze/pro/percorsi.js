@@ -53,7 +53,7 @@ export const PERCORSI = Object.freeze([
       + 'e non c’è un traguardo: c’è un’abitudine che '
       + 'si costruisce.',
     indicazioni: 'Pratica serale. Non è un trattamento '
-      + 'dell’insonnia — la nota di evidenza di Dormire lo dice '
+      + 'dell’insonnia, la nota di evidenza di Dormire lo dice '
       + 'chiaramente, e vale per tutto il percorso.',
     durata: { settimane: 3, a_settimana: 2 },
     tappe: [
