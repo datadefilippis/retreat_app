@@ -98,10 +98,6 @@ const OrganizationsTab = () => {
   const [loading, setLoading] = useState(true);
   const [total, setTotal]     = useState(0);
 
-  // Known/available modules catalog (fetched once from /modules/available)
-  // Used to show ALL modules in detail dialog, not just DB records.
-  const [availableModules, setAvailableModules] = useState([]);
-
   // Detail dialog
   const [detailOpen, setDetailOpen]       = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -118,19 +114,6 @@ const OrganizationsTab = () => {
 
   const setAction = (key, val) =>
     setActionLoading((prev) => ({ ...prev, [key]: val }));
-
-  // Pricing plans (fetched once on mount)
-  const [pricingPlans, setPricingPlans] = useState([]);
-
-  // Subscriptions for the currently open detail dialog
-  const [orgSubs, setOrgSubs] = useState([]);
-  const [subsLoading, setSubsLoading] = useState(false);
-
-  // Subscription change dialog
-  const [subDialogOpen, setSubDialogOpen]     = useState(false);
-  const [subDialogModule, setSubDialogModule] = useState('');
-  const [subDialogPlanId, setSubDialogPlanId] = useState('');
-  const [subSaving, setSubSaving]             = useState(false);
 
   // Commercial state dialog (Phase 3C)
   const [commercialStateOpen, setCommercialStateOpen] = useState(false);
@@ -161,18 +144,9 @@ const OrganizationsTab = () => {
   // ── Fetch available module catalog once on mount ────────────────────────────
 
   useEffect(() => {
-    adminAPI.listAvailableModules()
-      .then((res) => {
-        // Keep only available modules (skip future/unavailable ones)
-        const avail = (res.data ?? []).filter((m) => m.is_available);
-        setAvailableModules(avail);
-      })
-      .catch(() => {
-        // Non-critical: detail dialog will fall back to showing only DB records
-      });
-    adminAPI.listPricingPlans()
-      .then((res) => setPricingPlans(res.data ?? []))
-      .catch(() => {});
+    // RO (30/8) — bonifica AFianco: via il catalogo moduli e i pricing
+    // plans per-modulo (l'era pre-Aurya). Gli abbonamenti VERI sono i
+    // piani commerciali (free/retreat/pro): solo quelli si caricano.
     adminAPI.getCommercialPlans()
       .then((data) => setCommercialPlans(Array.isArray(data) ? data : []))
       .catch(() => {});
@@ -255,16 +229,11 @@ const OrganizationsTab = () => {
     setDetailOpen(true);
     setDetailLoading(true);
     setDetailData(null);
-    setOrgSubs([]);
     setBillingData(null);
     setReconcileResult(null);
     try {
-      const [orgRes, subsRes] = await Promise.all([
-        adminAPI.getOrganization(orgId),
-        adminAPI.listOrgSubscriptions(orgId),
-      ]);
+      const orgRes = await adminAPI.getOrganization(orgId);
       setDetailData(orgRes.data);
-      setOrgSubs(subsRes.data ?? []);
       // Fetch billing data (non-blocking — detail dialog renders immediately)
       adminAPI.getOrgBilling(orgId)
         .then((data) => setBillingData(data))
@@ -325,6 +294,25 @@ const OrganizationsTab = () => {
     }
   };
 
+  // RO (30/8) — il lucchetto della directory: governa /esplora-operatori
+  // (la rete resta un sigillo a parte; questo e' solo «appari nelle liste»)
+  const handleToggleDirectory = async (org) => {
+    const next = !org.directory_listed;
+    const key = `${org.id}_directory`;
+    setAction(key, true);
+    try {
+      await adminAPI.setDirectoryListed(org.id, next);
+      toast.success(next
+        ? `"${org.name}" di nuovo nelle liste pubbliche`
+        : `"${org.name}" nascosta dalle liste pubbliche`);
+      fetchOrgs();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Aggiornamento directory fallito');
+    } finally {
+      setAction(key, false);
+    }
+  };
+
   // ── Hard Delete Org ─────────────────────────────────────────────────────────
 
   const [deleteOrg, setDeleteOrg] = useState(null);
@@ -370,81 +358,6 @@ const OrganizationsTab = () => {
     }
   };
 
-  // ── Module toggle ───────────────────────────────────────────────────────────
-
-  const handleToggleModule = async (orgId, moduleKey, isCurrentlyActive) => {
-    // Explicit confirmation before any module state change
-    const verb = isCurrentlyActive ? 'Deactivate' : 'Activate';
-    if (!window.confirm(`${verb} module "${moduleKey}" for this organization?`)) return;
-
-    const key = `${orgId}_${moduleKey}`;
-    setAction(key, true);
-    try {
-      if (isCurrentlyActive) {
-        await adminAPI.deactivateModule(orgId, moduleKey);
-        toast.success(`Module "${moduleKey}" deactivated`);
-      } else {
-        await adminAPI.activateModule(orgId, moduleKey);
-        toast.success(`Module "${moduleKey}" activated`);
-      }
-      // Refresh detail data separately — a refresh failure should not
-      // hide the success toast or revert the optimistic UI update.
-      try {
-        const res = await adminAPI.getOrganization(orgId);
-        setDetailData(res.data);
-      } catch {
-        toast.warning('Module updated — close and reopen Details for the latest state.');
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to update module');
-    } finally {
-      setAction(key, false);
-    }
-  };
-
-  // ── Subscription handlers ──────────────────────────────────────────────────
-
-  const openSubDialog = (moduleKey) => {
-    const existing = orgSubs.find((s) => s.module_key === moduleKey);
-    setSubDialogModule(moduleKey);
-    setSubDialogPlanId(existing?.pricing_plan_id || '');
-    setSubDialogOpen(true);
-  };
-
-  const handleSaveSub = async () => {
-    if (!subDialogPlanId || !detailData) return;
-    setSubSaving(true);
-    try {
-      await adminAPI.setOrgSubscription(detailData.id, subDialogModule, subDialogPlanId);
-      toast.success(`Subscription updated for ${subDialogModule}`);
-      setSubDialogOpen(false);
-      // Refresh subscriptions
-      const res = await adminAPI.listOrgSubscriptions(detailData.id);
-      setOrgSubs(res.data ?? []);
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to update subscription');
-    } finally {
-      setSubSaving(false);
-    }
-  };
-
-  const handleCancelSub = async (moduleKey) => {
-    if (!detailData) return;
-    if (!window.confirm(`Cancel subscription for "${moduleKey}"? The org will fall back to the free tier.`)) return;
-    const key = `${detailData.id}_sub_${moduleKey}`;
-    setAction(key, true);
-    try {
-      await adminAPI.cancelOrgSubscription(detailData.id, moduleKey);
-      toast.success(`Subscription cancelled for ${moduleKey}`);
-      const res = await adminAPI.listOrgSubscriptions(detailData.id);
-      setOrgSubs(res.data ?? []);
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to cancel subscription');
-    } finally {
-      setAction(key, false);
-    }
-  };
-
   // ── Reconcile ──────────────────────────────────────────────────────────────
 
   const handleReconcile = async (apply = false) => {
@@ -469,42 +382,6 @@ const OrganizationsTab = () => {
     } finally {
       setReconcileLoading(false);
     }
-  };
-
-  // Get unique module keys that have pricing plans
-  const modulesWithPlans = [...new Set(pricingPlans.map((p) => p.module_key))];
-
-  // ── Module list for detail dialog ───────────────────────────────────────────
-  //
-  // Merges the platform-level catalog (availableModules) with the org's current
-  // DB records (detailData.modules).  If the catalog isn't loaded yet, falls
-  // back to showing only DB records.
-  //
-  const buildModuleList = (orgDetail) => {
-    if (!orgDetail) return [];
-
-    const dbMap = {};
-    (orgDetail.modules ?? []).forEach((m) => { dbMap[m.module_key] = m; });
-
-    if (availableModules.length > 0) {
-      // Full merged view: catalog drives the list
-      return availableModules.map((m) => ({
-        module_key: m.key,
-        name:       m.name,
-        category:   m.category,
-        is_active:  dbMap[m.key]?.is_active ?? false,
-        in_db:      !!dbMap[m.key],
-      }));
-    }
-
-    // Fallback: only DB records (catalog not loaded)
-    return (orgDetail.modules ?? []).map((m) => ({
-      module_key: m.module_key,
-      name:       m.module_key,
-      category:   null,
-      is_active:  m.is_active,
-      in_db:      true,
-    }));
   };
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -767,6 +644,7 @@ const OrganizationsTab = () => {
                     <TableHead>Name</TableHead>
                     <TableHead>Plan</TableHead>
                     <TableHead>Sync</TableHead>
+                    <TableHead>Profilo</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -779,8 +657,8 @@ const OrganizationsTab = () => {
                     <TableRow key={org.id}>
                       <TableCell>
                         <div className="font-medium">{org.name}</div>
-                        {org.industry && (
-                          <div className="text-xs text-muted-foreground">{org.industry}</div>
+                        {org.admin_email && (
+                          <div className="text-xs text-muted-foreground">{org.admin_email}</div>
                         )}
                         {ov?.recommended_action && (
                           <div className="text-xs text-muted-foreground mt-0.5">
@@ -793,6 +671,21 @@ const OrganizationsTab = () => {
                         {overviewLoading
                           ? <Skeleton className="h-5 w-14" />
                           : <SyncBadge overview={ov} />}
+                      </TableCell>
+                      <TableCell>
+                        {org.profile_published && org.profile_slug ? (
+                          <a href={`/o/${org.profile_slug}`} target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-primary underline underline-offset-2"
+                            title="Apri il profilo pubblico">
+                            /o/{org.profile_slug} ↗
+                          </a>
+                        ) : (
+                          <span className="text-xs text-muted-foreground"
+                            title="La vetrina non e' pubblicata: non appare in esplora-operatori">
+                            non pubblicato
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell><StatusBadge isActive={org.is_active} /></TableCell>
                       <TableCell className="text-sm text-muted-foreground">
@@ -837,6 +730,21 @@ const OrganizationsTab = () => {
                             title="Membro della rete Aurya"
                           >
                             {org.network_member ? '✓ Rete' : 'Rete'}
+                          </Button>
+                          {/* RO (30/8) — il lucchetto della directory:
+                              governa la presenza nelle liste pubbliche
+                              (/esplora-operatori, sitemap). Ha effetto
+                              visibile solo a vetrina pubblicata. */}
+                          <Button
+                            variant={org.directory_listed ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => handleToggleDirectory(org)}
+                            disabled={actionLoading[`${org.id}_directory`]}
+                            title={org.profile_published
+                              ? 'Presenza nelle liste pubbliche (esplora-operatori)'
+                              : 'Vetrina non pubblicata: il lucchetto vale da quando pubblica'}
+                          >
+                            {org.directory_listed ? '✓ Directory' : 'Directory'}
                           </Button>
                           {/* TW3 — la strada di ritorno del commerce
                               legacy (physical/digital/corsi/store) */}
@@ -892,33 +800,83 @@ const OrganizationsTab = () => {
             </div>
           ) : detailData ? (
             <div className="space-y-6 text-sm">
-              {/* ── Metadata grid ─────────────────────────────────────── */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <span className="text-muted-foreground">Plan: </span>
-                  <PlanBadge plan={detailData.commercial_plan_slug || detailData.plan} />
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Status: </span>
-                  <StatusBadge isActive={detailData.is_active} />
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Industry: </span>
-                  {detailData.industry || '—'}
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Currency: </span>
-                  {detailData.currency || '—'}
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Timezone: </span>
-                  {detailData.timezone || '—'}
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Created: </span>
-                  {formatDate(detailData.created_at)}
-                </div>
-              </div>
+              {/* ── RO (30/8): LO SPECCHIETTO — l'essenziale per la
+                  regia: chi e', come si raggiunge, dove appare, e i
+                  quattro gesti (rete, directory, sospendi, elimina).
+                  Via Industry/Currency/Timezone: reperti AFianco. */}
+              {(() => {
+                const riga = orgs.find((o) => o.id === detailData.id) || {};
+                const titolare = (detailData.users || []).find((u) => u.role === 'admin')
+                  || (detailData.users || [])[0];
+                return (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-muted-foreground">Piano: </span>
+                        <PlanBadge plan={detailData.commercial_plan_slug || riga.commercial_plan_slug} />
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Stato: </span>
+                        <StatusBadge isActive={detailData.is_active} />
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Titolare: </span>
+                        {titolare ? `${titolare.name}` : '—'}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Email: </span>
+                        {titolare?.email || riga.admin_email || '—'}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Creata: </span>
+                        {formatDate(detailData.created_at)}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Profilo pubblico: </span>
+                        {riga.profile_published && riga.profile_slug ? (
+                          <a href={`/o/${riga.profile_slug}`} target="_blank" rel="noreferrer"
+                            className="text-primary underline underline-offset-2">
+                            /o/{riga.profile_slug} ↗
+                          </a>
+                        ) : 'non pubblicato'}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Rete: </span>
+                        {riga.network_member ? '✓ membro' : '—'}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Directory: </span>
+                        {riga.directory_listed ? '✓ nelle liste' : 'nascosta'}
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <Button size="sm"
+                        variant={riga.network_member ? 'default' : 'outline'}
+                        disabled={actionLoading[`${riga.id}_network`]}
+                        onClick={() => handleToggleNetwork(riga)}>
+                        {riga.network_member ? '✓ Rete' : 'Rete'}
+                      </Button>
+                      <Button size="sm"
+                        variant={riga.directory_listed ? 'default' : 'outline'}
+                        disabled={actionLoading[`${riga.id}_directory`]}
+                        onClick={() => handleToggleDirectory(riga)}>
+                        {riga.directory_listed ? '✓ Directory' : 'Directory'}
+                      </Button>
+                      <Button size="sm"
+                        variant={detailData.is_active ? 'destructive' : 'default'}
+                        disabled={actionLoading[`${riga.id}_status`]}
+                        onClick={() => handleToggleStatus(riga)}>
+                        {detailData.is_active ? 'Sospendi' : 'Riattiva'}
+                      </Button>
+                      <Button size="sm" variant="outline"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => { setDeleteOrg(riga); setDeleteConfirmName(''); }}>
+                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Elimina
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* ── Billing Detail (v5+) ──────────────────────────────── */}
               {billingData && (
@@ -1021,128 +979,6 @@ const OrganizationsTab = () => {
                 </div>
               )}
 
-              {/* ── Modules (merged catalog view) ─────────────────────── */}
-              {(() => {
-                const moduleList = buildModuleList(detailData);
-                const activeCount = moduleList.filter((m) => m.is_active).length;
-                return (
-                  <div>
-                    <h3 className="font-semibold mb-1">
-                      Modules
-                    </h3>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      {activeCount} active / {moduleList.length} available
-                    </p>
-                    {moduleList.length === 0 ? (
-                      <p className="text-muted-foreground">No modules configured.</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {moduleList.map((mod) => (
-                          <div
-                            key={mod.module_key}
-                            className="flex items-center justify-between rounded border px-3 py-2"
-                          >
-                            <div>
-                              <span className="font-medium">{mod.name}</span>
-                              {mod.category && (
-                                <span className="ml-1.5 text-xs text-muted-foreground">
-                                  · {mod.category}
-                                </span>
-                              )}
-                              <span
-                                className={`ml-2 text-xs font-medium ${
-                                  mod.is_active ? 'text-green-600' : 'text-muted-foreground'
-                                }`}
-                              >
-                                {mod.is_active ? 'active' : 'inactive'}
-                              </span>
-                            </div>
-                            <Button
-                              variant={mod.is_active ? 'outline' : 'default'}
-                              size="sm"
-                              disabled={actionLoading[`${detailData.id}_${mod.module_key}`]}
-                              onClick={() =>
-                                handleToggleModule(
-                                  detailData.id,
-                                  mod.module_key,
-                                  mod.is_active,
-                                )
-                              }
-                            >
-                              {mod.is_active ? 'Deactivate' : 'Activate'}
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-              {/* ── Module Subscriptions (Advanced — collapsed) ─────── */}
-              {modulesWithPlans.length > 0 && (
-                <details className="mt-2">
-                  <summary className="text-sm font-semibold text-muted-foreground cursor-pointer hover:text-foreground">
-                    Module Subscriptions (Advanced) — {modulesWithPlans.length} modules
-                  </summary>
-                  <p className="text-xs text-muted-foreground mt-1 mb-3">
-                    Per-module overrides bypass the commercial plan. Use &quot;Change Commercial Plan&quot; for normal plan changes.
-                  </p>
-                  <div className="space-y-2">
-                    {modulesWithPlans.map((mk) => {
-                      const sub = orgSubs.find((s) => s.module_key === mk);
-                      return (
-                        <div
-                          key={mk}
-                          className="flex items-center justify-between rounded border px-3 py-2"
-                        >
-                          <div>
-                            <span className="font-medium">{mk}</span>
-                            {sub ? (
-                              <>
-                                <Badge className="ml-2 bg-blue-100 text-blue-700">
-                                  {sub.plan_name || sub.pricing_plan_id}
-                                </Badge>
-                                {sub.price_monthly != null && (
-                                  <span className="ml-1.5 text-xs text-muted-foreground">
-                                    {sub.price_monthly === 0
-                                      ? 'Free'
-                                      : `€${sub.price_monthly}/mo`}
-                                  </span>
-                                )}
-                              </>
-                            ) : (
-                              <span className="ml-2 text-xs text-muted-foreground">
-                                No subscription — free tier
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openSubDialog(mk)}
-                            >
-                              {sub ? 'Change' : 'Assign'}
-                            </Button>
-                            {sub && (
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleCancelSub(mk)}
-                                disabled={actionLoading[`${detailData.id}_sub_${mk}`]}
-                              >
-                                Cancel
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </details>
-              )}
-
               {/* ── Users ─────────────────────────────────────────────── */}
               <div>
                 <h3 className="font-semibold mb-3">
@@ -1234,51 +1070,6 @@ const OrganizationsTab = () => {
                 disabled={planSaving || !planValue}
               >
                 {planSaving ? 'Saving…' : 'Set Commercial Plan'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Subscription Change Dialog ──────────────────────────────────── */}
-      <Dialog open={subDialogOpen} onOpenChange={setSubDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>
-              <CreditCard className="inline h-4 w-4 mr-1.5 -mt-0.5" />
-              Subscription — {subDialogModule}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Org: <strong>{detailData?.name}</strong>
-            </p>
-            <Select value={subDialogPlanId} onValueChange={setSubDialogPlanId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select pricing plan…" />
-              </SelectTrigger>
-              <SelectContent>
-                {pricingPlans
-                  .filter((p) => p.module_key === subDialogModule)
-                  .map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                      {p.price_monthly === 0
-                        ? ' — Free'
-                        : ` — €${p.price_monthly}/mo`}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setSubDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveSub}
-                disabled={subSaving || !subDialogPlanId}
-              >
-                {subSaving ? 'Saving…' : 'Save Subscription'}
               </Button>
             </div>
           </div>

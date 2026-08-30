@@ -107,7 +107,9 @@ def _dt(val: object) -> datetime:
 
 # ── Org parsers ───────────────────────────────────────────────────────────────
 
-def _org_summary(doc: dict) -> OrgSummary:
+def _org_summary(doc: dict, *, profile_published: bool = False,
+                 admin_email: str | None = None,
+                 profile_slug: str | None = None) -> OrgSummary:
     # I timestamp non sono garantiti su TUTTI i doc (le org campione del
     # prelaunch nascono senza updated_at): un KeyError qui butta giu'
     # l'INTERA lista organizzazioni in admin, non solo la riga rotta.
@@ -128,6 +130,11 @@ def _org_summary(doc: dict) -> OrgSummary:
         interview_status=_interview_status(doc),
         interview_verified_at=(
             (doc.get("public_profile") or {}).get("interview_verified_at")),
+        # RO (30/8) — lo specchietto della regia
+        directory_listed=not bool(doc.get("exclude_from_listings")),
+        profile_published=profile_published,
+        admin_email=admin_email,
+        profile_slug=profile_slug,
         created_at=_dt(created),
         updated_at=_dt(doc.get("updated_at") or created),
     )
@@ -207,8 +214,36 @@ async def list_organizations(
         await admin_repository.count_organizations(),
         await admin_repository.list_organizations(skip=skip, limit=limit),
     )
+    # RO (30/8) — lo specchietto: due query batch sulla PAGINA (non
+    # per-riga) per dire di ogni org (a) se la vetrina e' pubblicata
+    # (il criterio di /esplora-operatori) e (b) l'email del titolare.
+    from database import stores_collection, users_collection
+    org_ids = [d["id"] for d in docs]
+    slug_pubblico: dict = {}
+    async for st in stores_collection.find(
+            {"organization_id": {"$in": org_ids}, "is_published": True,
+             "is_active": True, "visibility": "public",
+             "slug": {"$nin": [None, ""]}},
+            {"_id": 0, "organization_id": 1, "slug": 1}):
+        slug_pubblico.setdefault(st["organization_id"], st["slug"])
+    pubblicate = set(slug_pubblico)
+    email_titolare: dict = {}
+    async for u in users_collection.find(
+            {"organization_id": {"$in": org_ids}},
+            {"_id": 0, "organization_id": 1, "email": 1, "role": 1}):
+        oid = u.get("organization_id")
+        # il primo admin vince; un membro qualsiasi fa da riserva
+        if u.get("role") == "admin" or oid not in email_titolare:
+            email_titolare.setdefault(oid, u.get("email"))
+            if u.get("role") == "admin":
+                email_titolare[oid] = u.get("email")
     return OrgListResponse(
-        items=[_org_summary(d) for d in docs],
+        items=[_org_summary(
+            d,
+            profile_published=(d["id"] in pubblicate),
+            admin_email=email_titolare.get(d["id"]),
+            profile_slug=slug_pubblico.get(d["id"]),
+        ) for d in docs],
         total=total,
         skip=skip,
         limit=limit,
@@ -434,6 +469,32 @@ async def set_network_member(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Organization not found")
     return {"org_id": org_id, "network_member": member}
+
+
+@router.put(
+    "/organizations/{org_id}/directory",
+    summary="RO — mostra o nascondi un'org dalle liste pubbliche (XL1)",
+)
+async def set_directory_listed(
+    org_id: str,
+    body: dict = Body(...),
+    current_user: dict = Depends(require_system_admin),
+):
+    """Il lucchetto della directory. `exclude_from_listings` (XL1)
+    esisteva gia' ed era rispettato da /esplora-operatori, dalle
+    sitemap e dalla shell SEO — ma nessuna UI lo governava: si
+    toccava a mano nel database. Da oggi (richiesta founder 30/8) e'
+    un interruttore admin: listed=False esclude l'org dalle liste
+    pubbliche ANCHE con vetrina pubblicata; listed=True la rimette.
+    Non tocca la rete (network_member) ne' il profilo dell'operatore:
+    e' solo la visibilita' nelle liste aggregate."""
+    listed = bool(body.get("listed"))
+    from database import organizations_collection
+    result = await organizations_collection.update_one(
+        {"id": org_id}, {"$set": {"exclude_from_listings": not listed}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return {"org_id": org_id, "directory_listed": listed}
 
 
 # ── PV2 — L'intervista passa al system admin ─────────────────────────────────

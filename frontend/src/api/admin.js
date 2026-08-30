@@ -30,6 +30,10 @@ export const adminAPI = {
   setNetworkMember: (orgId, member) =>
     api.put(`/admin/organizations/${orgId}/network-member`, { member }).then((r) => r.data),
 
+  // RO (30/8) — il lucchetto della directory (exclude_from_listings, XL1)
+  setDirectoryListed: (orgId, listed) =>
+    api.put(`/admin/organizations/${orgId}/directory`, { listed }).then((r) => r.data),
+
   // UT1 — tab Utenti: la clientela finale (account Aurya + guest per email)
   listPlatformUsers: (params = {}) =>
     api.get('/admin/platform/users', { params }).then((r) => r.data),

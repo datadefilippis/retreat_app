@@ -38,6 +38,18 @@ class OrgSummary(BaseModel):
     # none | draft | published; verified_at = timbro della pubblicazione
     interview_status: str = "none"
     interview_verified_at: Optional[str] = None
+    # RO (30/8) — lo specchietto della regia operatori:
+    # directory_listed = NON escluso dalle liste pubbliche (XL1: il
+    # lucchetto exclude_from_listings, finora orfano di UI);
+    # profile_published = la vetrina/profilo e' pubblicata (e' il
+    # criterio con cui /esplora-operatori decide chi appare);
+    # admin_email = il recapito del titolare, per riconoscere l'org.
+    directory_listed: bool = True
+    profile_published: bool = False
+    admin_email: Optional[str] = None
+    # slug del profilo pubblico, SOLO se pubblicato (link /o/{slug}
+    # sempre valido; da non pubblicato il pubblico fa 404)
+    profile_slug: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
