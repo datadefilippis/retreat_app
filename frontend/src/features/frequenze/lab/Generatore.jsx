@@ -128,14 +128,27 @@ export default function Generatore({ ottieniLab, onSuono }) {
     return Math.min(Math.max(v, min), max);
   };
 
+  const [fermatoA, setFermatoA] = useState(null); // FA1: la misura del fermo
   const alternaSweep = async () => {
     const lab = ottieniLab();                   // nel gesto: iOS lo esige
     labRef.current = lab;
-    if (inCorsa) {                              // interrompere = tenere la nota
-      lab.generatore.imposta({ freq: lab.generatore.stato().freq });
+    if (inCorsa) {
+      /* FA1 (FARO, 30/8) — LA DECISIONE RZ VALE OVUNQUE: «quando
+         stoppiamo il suono si DEVE fermare» (founder, 28/8, sulle
+         Risonanze; qui sopravviveva il vecchio «interrompere =
+         tenere la nota» e lo sweep continuava a suonare). Il fermo
+         e' una misura: si CATTURA la frequenza del momento, si fa
+         SILENZIO, e il numero resta in mano — premi ▶ e riparti
+         esattamente da li'. */
+      const qui = lab.generatore.stato().freq;
+      lab.generatore.imposta({ freq: qui });    // cancella la rampa
+      lab.generatore.ferma();
+      suono(false);
+      setFermatoA(+qui.toFixed(1));
       corsaRef.current = false; setInCorsa(false);
       return;
     }
+    setFermatoA(null);
     if (!attivo) { await lab.generatore.avvia(); suono(true); }
     const f0 = numero(da, MIN_UI, MAX_UI, 100);
     const f1 = numero(a, MIN_UI, MAX_UI, 1600);
@@ -284,7 +297,9 @@ export default function Generatore({ ottieniLab, onSuono }) {
         <p className="lab-sweep-nota" data-testid="lab-sweep-nota">
           {inCorsa
             ? 'in corsa — la frequenza sale per ottave, non per Hertz'
-            : 'la salita è esponenziale: raddoppi uguali in tempi uguali'}
+            : fermatoA
+              ? <>Fermato a <b>{String(fermatoA).replace('.', ',')} Hz</b> — premi ▶ qui sopra e riparti da lì</>
+              : 'la salita è esponenziale: raddoppi uguali in tempi uguali'}
         </p>
       </div>
 

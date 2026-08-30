@@ -12,12 +12,11 @@
  * l'originale registrato, il colpo e il tenuto, i parziali che si
  * spengono uno a uno sentendo subito la differenza, il respiro che
  * allunga le vite. Il WAV si porta a casa (e' anche l'uscita per gli
- * ampli della cimatica); il system admin puo' consegnare la campana
- * alla libreria suoni (categoria Campane) — il ponte col prodotto.
+ * ampli della cimatica). FA3 (FARO, 30/8): la consegna in libreria e'
+ * uscita dalla stanza — il gesto qui e' il QUADERNO; l'admin carica
+ * dalla sua casa (/admin/sound).
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
-import { frequenciesAPI } from '../../../api/frequencies';
 import { analizza } from './ritrattista';
 import { campana, renderizzaWav, leggiRitratti, salvaRitratto,
   cancellaRitratto } from './fonderia';
@@ -28,7 +27,6 @@ import { notaVicina } from './note';
 const SECONDI = 6;
 
 export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
-  const { user } = useAuth();
   const [fase, setFase] = useState('pronto');     // pronto | registro | analizzo
   const [conto, setConto] = useState(0);
   const [esito, setEsito] = useState(null);       // il ritratto, o null
@@ -225,26 +223,6 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     setMsg('WAV pronto: 10 s di tenuto, per ascolto o per un ampli.');
   };
 
-  const inLibreria = async () => {
-    if (!esito) return;
-    setMsg('Rifondo e consegno alla libreria…');
-    try {
-      const blob = await renderizzaWav(esito,
-        { modo: 'tenuto', secondi: 30, respiro, spenti });
-      await frequenciesAPI.uploadSound({
-        file: new File([blob], `campana-${Math.round(esito.fondamentaleHz)}hz.wav`,
-          { type: 'audio/wav' }),
-        title: `Campana rifatta · ${Math.round(esito.fondamentaleHz)} Hz`,
-        category: 'campane',
-        durationSec: 30,
-        licenseNote: 'rifusa nel Lab dal ritratto (LB4)',
-      });
-      setMsg('Consegnata: la trovi in Crea, categoria Campane.');
-    } catch {
-      setMsg('Consegna non riuscita.');
-    }
-  };
-
   const alternaParziale = (hz) => setSpenti((v) => (
     v.includes(hz) ? v.filter((x) => x !== hz) : [...v, hz]));
 
@@ -422,12 +400,10 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
                 data-testid="lab-fonderia-wav" onClick={scaricaWav}>
                 ⤓ WAV (tenuto, 10 s)
               </button>
-              {user?.role === 'system_admin' && (
-                <button type="button" className="lab-freeze"
-                  data-testid="lab-fonderia-libreria" onClick={inLibreria}>
-                  → Nella libreria (Campane)
-                </button>
-              )}
+              {/* FA3 (piano FARO, 30/8): la consegna in libreria e'
+                  USCITA dalla stanza — il gesto dell'utente e' il
+                  quaderno; il system admin carica dalla sua casa
+                  (/admin/sound). Era comunque visibile solo a lui. */}
             </div>
             {msg && !niente && <p className="lab-volume" aria-live="polite">{msg}</p>}
             <p className="lab-didascalia" data-testid="lab-fonderia-didascalia">

@@ -509,8 +509,12 @@ class TestSweep:
         src = (LAB / "motore.js").read_text()
         assert "p.cancelScheduledValues(t);" in src
         ui = (LAB / "Generatore.jsx").read_text()
-        assert "imposta({ freq: lab.generatore.stato().freq })" in ui, \
-            "fermare la corsa non tiene la nota dove si trova"
+        # Evoluta FA1 (FARO, 30/8): fermare la corsa non «tiene la
+        # nota» — CATTURA la frequenza (cancella la rampa) e fa
+        # SILENZIO. La decisione RZ del founder vale ovunque.
+        assert "const qui = lab.generatore.stato().freq;" in ui
+        assert "imposta({ freq: qui })" in ui, \
+            "il fermo deve cancellare la rampa sul punto catturato"
         # e spegnere il generatore chiude anche la corsa (il come sta
         # nella guardia A1 dello STEP 7: prima si fissa dove siamo)
         blocco = src.split("ferma() {")[1][:700]
@@ -949,10 +953,13 @@ class TestFonderiaLb4:
         for tid in ("lab-ab-originale", "lab-ab-colpo", "lab-ab-tenuto",
                     "lab-fonderia-wav"):
             assert f'data-testid="{tid}"' in src
-        a = src.index("lab-fonderia-libreria")
-        assert "user?.role === 'system_admin'" in src[a - 300:a], \
-            "la consegna in libreria non e' piu' dietro il system admin"
-        assert "category: 'campane'" in src
+        # FA3 (FARO, 30/8): la consegna in libreria e' USCITA dalla
+        # stanza — il gesto e' il quaderno; l'admin carica da
+        # /admin/sound. (Era gia' solo-admin: il founder la vedeva
+        # perche' loggato da admin.)
+        assert "lab-fonderia-libreria" not in src, \
+            "la consegna in libreria e' tornata nella stanza (FA3)"
+        assert "uploadSound" not in src
         # riformulata col caso «aummm»: l'onesta' su cio' che la
         # rifusione non cattura resta, con parole nuove
         assert "non cattura" in src, "l'onesta' sui limiti e' sparita"
@@ -1621,3 +1628,34 @@ class TestQuadernoRitratti:
         src = (LAB / "Ritratto.jsx").read_text()
         assert src.count("<OndaViva") == 2, \
             "due tele: una per la fonderia, una accanto al quaderno"
+
+
+class TestFaroFondamenta:
+    """FARO FA1-FA3 (30/8/2026) — gli attriti tolti dal mondo gratuito.
+
+    FA1: nel Banco «interrompere lo sweep = tenere la nota» era la
+    scelta vecchia gia' bocciata dal founder nelle Risonanze («quando
+    stoppiamo il suono si DEVE fermare», 28/8) — sopravviveva in una
+    stanza e lo sweep continuava a suonare dopo lo stop. FA2: la via
+    del ritorno era una riga di testo invisibile su mobile.
+    """
+
+    def test_fa1_lo_sweep_si_ferma_e_cattura(self):
+        src = (LAB / "Generatore.jsx").read_text()
+        blocco = src[src.index("const alternaSweep"):]
+        assert "lab.generatore.ferma()" in blocco[:1600], \
+            "fermare lo sweep deve fare SILENZIO (decisione RZ)"
+        assert "setFermatoA" in blocco[:1600], \
+            "il fermo e' una misura: la frequenza si cattura"
+        assert "interrompere = tenere la nota" not in src, \
+            "la scelta vecchia e' tornata"
+        assert "Fermato a" in src, "il numero catturato va mostrato"
+
+    def test_fa2_il_ritorno_e_una_pill_sticky(self):
+        css = (LAB / "lab.css").read_text()
+        blocco = css[css.index(".fqz .lab-ritorno{"):]
+        assert "position:sticky" in blocco[:200]
+        assert "linear-gradient" in blocco[:900], \
+            "cio' che galleggia sul contenuto e' OPACO (regola di casa)"
+        tela = (LAB / "Stanza.jsx").read_text()
+        assert 'data-testid="lab-ritorno-sala"' in tela

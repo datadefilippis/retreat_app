@@ -300,11 +300,22 @@
 .fqz .lab-percorso-passi a:hover{text-decoration:underline}
 
 /* ═══ LU (28/8) — la casa con le stanze ═══ */
-.fqz .lab-ritorno{margin:0 0 6px}
-.fqz .lab-ritorno a{font-family:var(--mono);font-size:10.5px;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer);
-  text-decoration:none}
-.fqz .lab-ritorno a:hover{color:var(--lamp)}
+/* FA2 (FARO, 30/8): la via del ritorno era una riga di testo che su
+   mobile spariva — «uno che entra in una casella non sa come tornare
+   indietro» (founder). Ora e' una PILL STICKY: resta in alto a
+   sinistra durante lo scroll, sfondo PIENO (la regola di casa: cio'
+   che galleggia sul contenuto non e' mai una finestra), tap-target
+   da pollice. Vive nel telaio Stanza: vale per ogni stanza. */
+.fqz .lab-ritorno{margin:0 0 10px;position:sticky;top:10px;z-index:40;
+  display:inline-block}
+.fqz .lab-ritorno a{display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink,#EDE8DC);
+  text-decoration:none;padding:9px 16px;border-radius:999px;
+  background:linear-gradient(168deg,#375B63 0%,#2B4951 100%);
+  border:1px solid rgba(201,179,126,.45);
+  box-shadow:0 6px 18px -8px rgba(0,0,0,.55)}
+.fqz .lab-ritorno a:hover{color:var(--lamp);border-color:var(--lamp)}
 .fqz .lab-testata{max-width:1240px;margin:0 auto 18px;display:flex;
   gap:16px;flex-wrap:wrap}
 .fqz .lab-testata>div{flex:1;min-width:260px;padding:14px 18px;

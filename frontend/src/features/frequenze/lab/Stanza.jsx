@@ -41,7 +41,7 @@ export default function Stanza({
       <header>
         <div>
           <p className="lab-ritorno">
-            <Link to="/sound/lab" data-testid="lab-ritorno-sala">← La Sala del Lab</Link>
+            <Link to="/sound/lab" data-testid="lab-ritorno-sala">← Sala del Lab</Link>
           </p>
           <h1>{titolo}</h1>
           <div className="sub" data-testid="lab-domanda">{domanda}</div>
