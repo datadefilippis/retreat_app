@@ -18,6 +18,8 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { analizza } from './ritrattista';
+import InvitoQuaderno from './InvitoQuaderno';
+import { sincronizza, spingi } from './quadernoRemoto';
 import { campana, renderizzaWav, leggiRitratti, salvaRitratto,
   cancellaRitratto } from './fonderia';
 import RitrattoVisual from './RitrattoVisual';
@@ -37,6 +39,12 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
   const [msg, setMsg] = useState('');
   /* Il quaderno dei ritratti (29/8): registro come nelle Risonanze */
   const [salvati, setSalvati] = useState(leggiRitratti);
+  /* FA4 — l'account fonde il quaderno remoto al volo */
+  useEffect(() => {
+    let vivo = true;
+    sincronizza().then((ok) => { if (ok && vivo) setSalvati(leggiRitratti()); });
+    return () => { vivo = false; };
+  }, []);
   const [etichetta, setEtichetta] = useState('');
   const labRef = useRef(null);
   const contoRef = useRef(null);
@@ -174,7 +182,8 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     if (salvaRitratto(voce)) {
       setSalvati(leggiRitratti());
       setEtichetta('');
-      setMsg('Ritratto salvato nel quaderno (resta su questo dispositivo).');
+      setMsg('Ritratto salvato nel quaderno.');
+      spingi();
     } else setMsg('Quaderno non disponibile su questo browser.');
   };
 
@@ -470,7 +479,8 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
             nome={String(inSuono).startsWith('q:')
               ? (salvati[+String(inSuono).split(':')[1]]?.etichetta || 'dal quaderno')
               : null} />
-          <p className="lab-cnote">i ritratti restano su questo dispositivo — il quaderno ricorda la tabella, non la registrazione originale</p>
+          <p className="lab-cnote">il quaderno ricorda la tabella, non la registrazione originale</p>
+          <InvitoQuaderno stanza="ritratto" />
         </div>
       )}
 

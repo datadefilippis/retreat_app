@@ -177,10 +177,21 @@ export function leggiRitratti() {
   } catch { return []; }
 }
 
+/* FA4 — come in cimatica: il battesimo per il quaderno remoto */
+const _idNuovoR = () =>
+  Math.random().toString(16).slice(2) + Date.now().toString(16);
+
+export function salvaListaRitratti(voci) {
+  try {
+    localStorage.setItem(CHIAVE_RITRATTI,
+      JSON.stringify((voci || []).slice(0, RITRATTI_MAX)));
+  } catch { /* privato */ }
+}
+
 export function salvaRitratto(voce) {
   try {
     const q = leggiRitratti();
-    q.unshift(voce);
+    q.unshift({ ...voce, client_id: _idNuovoR(), salvata_il: Date.now() });
     localStorage.setItem(CHIAVE_RITRATTI,
       JSON.stringify(q.slice(0, RITRATTI_MAX)));
     return true;

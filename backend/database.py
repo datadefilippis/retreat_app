@@ -281,6 +281,9 @@ sound_sessions_collection = db.sound_sessions
 # persona. Il token e' opaco e vive qui (non un JWT): la revoca deve
 # essere immediata, non «aspetta la scadenza».
 sound_shares_collection = db.sound_shares
+# FA4 (FARO, 30/8) — i quaderni del Lab che seguono l'account: un
+# documento per platform_account, solo numeri ed etichette (mai audio).
+sound_quaderni_collection = db.sound_quaderni
 
 
 # ── Phase 3 (Store consolidation) — slug-index lifecycle helpers ────────────
@@ -1596,6 +1599,8 @@ async def create_indexes():
     # lista vive per traccia e per contatto, sempre org davanti
     await sound_shares_collection.create_index("token", unique=True,
                                                name="tr3_share_token")
+    await sound_quaderni_collection.create_index(
+        "platform_account_id", unique=True, name="fa4_quaderno_account")
     await sound_shares_collection.create_index(
         [("organization_id", 1), ("track_id", 1)], name="tr3_share_track")
     await sound_shares_collection.create_index(

@@ -1659,3 +1659,46 @@ class TestFaroFondamenta:
             "cio' che galleggia sul contenuto e' OPACO (regola di casa)"
         tela = (LAB / "Stanza.jsx").read_text()
         assert 'data-testid="lab-ritorno-sala"' in tela
+
+
+class TestFa4QuadernoCheTiSegue:
+    """FA4 (piano FARO, 30/8/2026) — i quaderni persistenti.
+
+    Collaudato end-to-end nel pane: voce legacy senza client_id →
+    anonimo vede l'invito; con platform_token l'invito SPARISCE
+    (regola del silenzio), la voce viene battezzata e spinta al
+    server; localStorage cancellato → al reload la voce TORNA dal
+    quaderno remoto («moneta di collaudo»).
+    """
+
+    def test_gli_endpoint_vivono_sull_account(self):
+        src = (BACKEND_DIR / "routers" / "frequencies.py").read_text()
+        assert '@router.get("/quaderno")' in src
+        assert '@router.put("/quaderno")' in src
+        blocco = src[src.index("_QUADERNO_REGISTRI"):]
+        assert blocco.count("get_current_platform_account") >= 2, \
+            "il quaderno remoto e' dell'ACCOUNT (stessa auth dei preferiti)"
+        assert "_QUADERNO_MAX_VOCE_BYTES" in src, \
+            "senza tetto per-voce il quaderno diventa un deposito di audio"
+
+    def test_le_voci_nascono_battezzate(self):
+        for f in ("cimatica.js", "fonderia.js"):
+            src = (LAB / f).read_text()
+            assert "client_id" in src and "salvata_il" in src, \
+                f"{f}: le voci nuove devono nascere col battesimo"
+
+    def test_la_fusione_e_best_effort_e_per_client_id(self):
+        src = (LAB / "quadernoRemoto.js").read_text()
+        assert "fondi" in src and "client_id" in src
+        assert src.count("catch") >= 3, \
+            "il sync e' best-effort: MAI bloccare un salvataggio"
+        assert "battezza" in src, "le voci legacy ricevono l'id alla fusione"
+
+    def test_l_invito_rispetta_la_regola_del_silenzio(self):
+        src = (LAB / "InvitoQuaderno.jsx").read_text()
+        assert "if (haAccount()) return null;" in src, \
+            "chi ha l'account non vede MAI l'invito (contratto FARO)"
+        for stanza in ("Risonanze.jsx", "Ritratto.jsx"):
+            pagina = (LAB / stanza).read_text()
+            assert "<InvitoQuaderno" in pagina, f"{stanza}: invito assente"
+            assert "sincronizza()" in pagina, f"{stanza}: manca il sync al mount"

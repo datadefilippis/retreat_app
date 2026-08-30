@@ -17,8 +17,8 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import (
-    APIRouter, Depends, File, Form, HTTPException, Query, Request, Response,
-    UploadFile, status,
+    APIRouter, Body, Depends, File, Form, HTTPException, Query, Request,
+    Response, UploadFile, status,
 )
 from pydantic import BaseModel
 
@@ -781,6 +781,57 @@ async def list_favorites(account: dict = Depends(get_current_platform_account)):
             t["duration_sec"] = score.get("duration_sec")
             items.append(t)
     return {"items": items, "slugs": slugs}
+
+
+# ── FA4 (piano FARO, 30/8/2026) — IL QUADERNO CHE TI SEGUE ─────────
+# I quaderni del Lab (scoperte delle Risonanze, ritratti) nascono in
+# localStorage: un dispositivo, una vita. Con l'account Aurya (stessa
+# auth dei preferiti) diventano persistenti: il client fonde
+# locale+server per client_id e scrive da entrambe le parti. Il
+# server e' un deposito passivo con i tetti: MAI audio, solo numeri
+# ed etichette — costo ~zero, schema unico per ogni registro futuro.
+
+_QUADERNO_REGISTRI = {"risonanze", "ritratti"}
+_QUADERNO_MAX_VOCI = 200
+_QUADERNO_MAX_VOCE_BYTES = 4096
+
+
+@router.get("/quaderno")
+async def leggi_quaderno(
+        account: dict = Depends(get_current_platform_account)):
+    from database import db
+    doc = await db.sound_quaderni.find_one(
+        {"platform_account_id": account["id"]}, {"_id": 0, "registri": 1})
+    return {"registri": (doc or {}).get("registri") or {}}
+
+
+@router.put("/quaderno")
+async def scrivi_quaderno(
+        body: dict = Body(...),
+        account: dict = Depends(get_current_platform_account)):
+    import json as _json
+    registri = body.get("registri")
+    if not isinstance(registri, dict):
+        raise HTTPException(status_code=422, detail="registri mancanti")
+    puliti = {}
+    for nome, voci in registri.items():
+        if nome not in _QUADERNO_REGISTRI or not isinstance(voci, list):
+            continue
+        buone = []
+        for v in voci[:_QUADERNO_MAX_VOCI]:
+            if not isinstance(v, dict) or not v.get("client_id"):
+                continue
+            if len(_json.dumps(v, ensure_ascii=False)) > _QUADERNO_MAX_VOCE_BYTES:
+                continue          # una voce non puo' portare audio o romanzi
+            buone.append(v)
+        puliti[nome] = buone
+    from database import db
+    await db.sound_quaderni.update_one(
+        {"platform_account_id": account["id"]},
+        {"$set": {"registri": puliti, "updated_at": utc_now()},
+         "$setOnInsert": {"created_at": utc_now()}},
+        upsert=True)
+    return {"registri": {k: len(v) for k, v in puliti.items()}}
 
 
 @router.put("/favorites/{slug}", status_code=status.HTTP_204_NO_CONTENT)

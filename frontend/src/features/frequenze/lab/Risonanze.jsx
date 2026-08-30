@@ -21,6 +21,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { iscrivi } from './quadro';
 import { goertzel } from './ritrattista';
 import { notaVicina } from './note';
+import InvitoQuaderno from './InvitoQuaderno';
+import { sincronizza, spingi } from './quadernoRemoto';
 import { trovaPicchi, tonoWav, sweepWav, leggiQuaderno,
   salvaNelQuaderno, cancellaDalQuaderno } from './cimatica';
 
@@ -50,6 +52,12 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
   const [picchi, setPicchi] = useState(null);
   const [msg, setMsg] = useState('');
   const [quaderno, setQuaderno] = useState(leggiQuaderno);
+  /* FA4 — se c'e' l'account, il quaderno remoto si fonde al volo */
+  useEffect(() => {
+    let vivo = true;
+    sincronizza().then((ok) => { if (ok && vivo) setQuaderno(leggiQuaderno()); });
+    return () => { vivo = false; };
+  }, []);
   const labRef = useRef(null);
   const telaRef = useRef(null);
   const puntiRef = useRef([]);
@@ -188,7 +196,8 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
     if (salvaNelQuaderno(voce)) {
       setQuaderno(leggiQuaderno());
       setEtichetta('');
-      setMsg('Scoperta salvata nel quaderno (resta su questo dispositivo).');
+      setMsg('Scoperta salvata nel quaderno.');
+      spingi();
     } else setMsg('Quaderno non disponibile su questo browser.');
   };
 
@@ -202,7 +211,8 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
     };
     if (salvaNelQuaderno(voce)) {
       setQuaderno(leggiQuaderno());
-      setMsg('Salvato nel quaderno di banco (resta su questo dispositivo).');
+      setMsg('Salvato nel quaderno di banco.');
+      spingi();
     } else setMsg('Quaderno non disponibile su questo browser.');
   };
 
@@ -472,6 +482,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
             </div>
           ))}
           <p className="lab-cnote">gli esperimenti restano su questo dispositivo</p>
+          <InvitoQuaderno stanza="risonanze" />
         </div>
       )}
 

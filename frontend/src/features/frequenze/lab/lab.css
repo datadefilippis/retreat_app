@@ -446,3 +446,9 @@
     radial-gradient(120% 90% at 50% 0%, rgba(102,183,156,0.05), transparent 60%),
     linear-gradient(180deg, #0E1D21 0%, #0B171A 100%);
 }
+
+/* FA4 (FARO) — l'invito del quaderno: una riga, mai un muro */
+.fqz .lab-invito-quaderno{margin:10px 0 0;font-size:12.5px;
+  color:var(--dim);border-top:1px dashed rgba(201,179,126,.3);
+  padding-top:10px}
+.fqz .lab-invito-quaderno a{color:var(--water);text-decoration:underline}

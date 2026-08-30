@@ -87,10 +87,22 @@ export function leggiQuaderno() {
   } catch { return []; }
 }
 
+/* FA4 — il battesimo: ogni voce nasce con client_id e salvata_il,
+   cosi' il quaderno remoto la riconosce su ogni dispositivo */
+const _idNuovo = () =>
+  Math.random().toString(16).slice(2) + Date.now().toString(16);
+
+export function salvaListaQuaderno(voci) {
+  try {
+    localStorage.setItem(CHIAVE_QUADERNO,
+      JSON.stringify((voci || []).slice(0, QUADERNO_MAX)));
+  } catch { /* privato */ }
+}
+
 export function salvaNelQuaderno(voce) {
   try {
     const q = leggiQuaderno();
-    q.unshift(voce);
+    q.unshift({ ...voce, client_id: _idNuovo(), salvata_il: Date.now() });
     localStorage.setItem(CHIAVE_QUADERNO,
       JSON.stringify(q.slice(0, QUADERNO_MAX)));
     return true;
