@@ -495,9 +495,14 @@ class TestPubblicazioneFq1:
         cancello chiede Lettera (source frequenze:slug) o account."""
         src = (FQ_DIR / "PublicFrequencyPage.js").read_text()
         assert "startPreview" in src and "resolveAudioLayers" in src
-        assert "PREVIEW_SEC" in src and "frequenze:${slug}" in src
-        # SB2: l'iscrizione passa dal posto unico (lib/cerchio)
-        assert "iscriviESblocca" in src
+        # Evoluta FN (30/8): il cancello e' il componente condiviso;
+        # il source dell'iscrizione ora e' cancello:{slug}.
+        assert "PREVIEW_SEC" in src and "<CancelloLettera" in src
+        cancello = (FQ_DIR / "CancelloLettera.jsx").read_text()
+        assert "cancello:${slug" in cancello
+        # SB2: l'iscrizione passa dal posto unico (lib/cerchio),
+        # che dal ciclo FN vive dentro il cancello condiviso
+        assert "iscriviESblocca" in cancello
         assert "platform_token" in src, "l'account Aurya deve sbloccare da solo"
         assert "SafetyLine" in src and "useSafetyGate" in src, \
             "manca il disclaimer salute (SF: arriva da content/safety.js)"

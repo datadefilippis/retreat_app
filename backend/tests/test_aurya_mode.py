@@ -1543,8 +1543,10 @@ class TestIlMaster:
         pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
         assert "!unlocked && track.anteprima_url" in pub
         assert "if (t2 >= PREVIEW_SEC) { h.pause(); setGateOpen(true); }" in pub
-        # allo sblocco il lettore dell'anteprima si smonta
-        assert "contRef.current.dispose()" in pub.split("esito === 'sbloccato'")[1][:600]
+        # allo sblocco il lettore dell'anteprima si smonta.
+        # Evoluta col ciclo FN (30/8): il form vive in CancelloLettera,
+        # il gesto post-sblocco della pagina e' dopoSblocco().
+        assert "contRef.current.dispose()" in pub.split("const dopoSblocco")[1][:600]
 
     def test_il_portiere_verifica_sempre(self):
         """niente pass valido E niente sblocco => 401. Il pass e'
