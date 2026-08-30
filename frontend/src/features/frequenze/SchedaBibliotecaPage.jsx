@@ -12,6 +12,7 @@ import { Link, useParams } from 'react-router-dom';
 import SoundTopbar from './SoundTopbar';
 import { BIB } from './content/biblioteca';
 import { sluggifica } from './content/slugScheda';
+import InvitoSound from './InvitoSound';
 import './frequenze.css';
 
 const GRADI = {
@@ -86,6 +87,8 @@ export default function SchedaBibliotecaPage() {
             Provala dal vivo: {labNome} →
           </Link>
         </div>
+        <InvitoSound fonte={`sound:esplora:${slug}`}
+          dove={`/sound/esplora/${slug}`} />
         {sorelle.length > 0 && (
           <p className="fqz-scheda-sorelle" data-testid="scheda-sorelle">
             Schede sorelle:{' '}

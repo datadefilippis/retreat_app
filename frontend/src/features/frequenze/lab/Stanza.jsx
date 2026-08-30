@@ -16,6 +16,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SoundTopbar from '../SoundTopbar';
+import InvitoSound from '../InvitoSound';
 import StanzeSound from '../StanzeSound';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
 import '../frequenze.css';
@@ -73,6 +74,11 @@ export default function Stanza({
         </p>
       </main>
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
+      {/* FA8 — l'invito del mondo Sound, con la fonte della stanza
+          (regola del silenzio nel componente) */}
+      <div className="lab-invito-fondo">
+        <InvitoSound fonte={`sound:lab:${slug}`} dove={`/sound/lab/${slug}`} />
+      </div>
       <footer className="fqzfoot">
         <Link to="/sound/lab">← La Sala del Lab</Link>
         <a href="/sound/esplora">La biblioteca</a>

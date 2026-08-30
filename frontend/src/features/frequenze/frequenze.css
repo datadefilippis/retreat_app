@@ -1510,3 +1510,11 @@
   font-weight:600}
 .fqz .fqz-scheda-sorelle{font-size:13.5px;color:var(--dim)}
 .fqz .fqz-scheda-sorelle a{color:var(--water)}
+
+/* FA8 — l'invito del mondo Sound: una riga col form, mai un muro */
+.fqz .fqz-invito-sound{max-width:560px;margin:26px auto 0;
+  border-top:1px dashed rgba(201,179,126,.3);padding-top:14px;
+  font-size:13.5px;color:var(--dim)}
+.fqz .fqz-invito-sound a{color:var(--water)}
+.fqz .fqz-invito-errore{color:var(--alert)}
+.fqz .lab-invito-fondo{max-width:1240px;margin:0 auto;padding:0 20px}

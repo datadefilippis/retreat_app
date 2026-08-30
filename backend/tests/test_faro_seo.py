@@ -100,3 +100,35 @@ class TestPaginaScheda:
         assert (FRONTEND / "scripts" / "esporta_biblioteca.mjs").exists()
         assert (FRONTEND / "src" / "features" / "frequenze" / "content"
                 / "slugScheda.js").exists()
+
+
+class TestFa8InvitoSound:
+    """FA8 (FARO) — l'invito unico del mondo gratuito, con la REGOLA
+    DEL SILENZIO nel contratto: chi ha la prova della Lettera, un
+    account o un login operatore non vede nulla — il controllo sta
+    PRIMA del render. Collaudato nel pane: visibile da anonimo su
+    scheda e stanza, ASSENTE con la prova in tasca."""
+
+    def test_la_regola_del_silenzio_e_nel_contratto(self):
+        src = (FRONTEND / "src" / "features" / "frequenze"
+               / "InvitoSound.jsx").read_text()
+        assert "if (servito()) return null;" in src
+        blocco = src[src.index("const servito"):src.index("export default")]
+        assert "prova()" in blocco and "PLATFORM_TOKEN_KEY" in blocco \
+            and "'token'" in blocco, \
+            "le TRE prove (Lettera, account, operatore) spengono l'invito"
+
+    def test_ogni_montaggio_porta_la_fonte(self):
+        scheda = (FRONTEND / "src" / "features" / "frequenze"
+                  / "SchedaBibliotecaPage.jsx").read_text()
+        assert "sound:esplora:${slug}" in scheda.replace("`", "")
+        stanza = (FRONTEND / "src" / "features" / "frequenze"
+                  / "lab" / "Stanza.jsx").read_text()
+        assert "sound:lab:${slug}" in stanza.replace("`", "")
+
+    def test_l_invito_non_e_un_cancello(self):
+        src = (FRONTEND / "src" / "features" / "frequenze"
+               / "InvitoSound.jsx").read_text()
+        assert "gratuito" in src and "iscriviESblocca" in src
+        assert "riservat" not in src, \
+            "l'invito offre di piu', non toglie: mai copy da cancello"
