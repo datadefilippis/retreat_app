@@ -244,6 +244,7 @@ const PlatformUsersTab = () => {
               <TableRow>
                 <TableHead>Utente</TableHead>
                 <TableHead>Newsletter</TableHead>
+                <TableHead>Fonte</TableHead>
                 <TableHead className="text-right">Ordini</TableHead>
                 <TableHead className="text-right">Speso</TableHead>
                 <TableHead>Operatori</TableHead>
@@ -265,6 +266,16 @@ const PlatformUsersTab = () => {
                     )}
                   </TableCell>
                   <TableCell><NewsletterDot status={u.newsletter_status} /></TableCell>
+                  {/* FA5 (FARO) — da dove arriva l'iscrizione: il
+                      canale si legge in riga, senza aprire il dettaglio */}
+                  <TableCell className="text-xs text-muted-foreground"
+                    title={u.newsletter_source || ''}>
+                    {u.newsletter_source
+                      ? (u.newsletter_source.length > 22
+                        ? u.newsletter_source.slice(0, 22) + '…'
+                        : u.newsletter_source)
+                      : '—'}
+                  </TableCell>
                   <TableCell className="text-right">
                     <span className="font-medium">{u.orders_count}</span>
                     {u.orders_count > u.confirmed_orders && (

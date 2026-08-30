@@ -428,6 +428,10 @@ def _ut1_base_pipeline() -> list:
             "name": {"$ifNull": ["$account_name", "$guest_name"]},
             "type": {"$cond": ["$has_account", "account", "guest"]},
             "newsletter_status": {"$first": "$_nl.status"},
+            # FA5 (FARO, 30/8) — la FONTE dell'iscrizione in riga:
+            # il founder targhettizza per canale (sound:*, cancello:*,
+            # frequenze:*, newsletter...) senza aprire ogni dettaglio.
+            "newsletter_source": {"$first": "$_nl.source"},
         }},
         {"$unset": ["_nl", "account_name", "guest_name", "has_account"]},
     ]
@@ -529,6 +533,7 @@ async def platform_users(
             "created_at": it.get("created_at"),
             "last_login_at": it.get("last_login_at"),
             "newsletter_status": it.get("newsletter_status"),
+            "newsletter_source": it.get("newsletter_source"),
             "orders_count": it.get("orders_count") or 0,
             "confirmed_orders": it.get("confirmed_orders") or 0,
             "total_spent": round(float(it.get("total_spent") or 0), 2),

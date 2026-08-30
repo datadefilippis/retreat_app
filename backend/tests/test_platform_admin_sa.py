@@ -358,3 +358,26 @@ class TestAuryaOnlyCatalogAu:
     def test_signup_baseline_is_retreat_free(self):
         src = (BACKEND_DIR / "services" / "auth_service.py").read_text()
         assert 'plan_slug="retreat_free"' in src
+
+
+class TestFa5FonteInRiga:
+    """FA5 (piano FARO, 30/8/2026) — il canale si legge in riga.
+
+    Il founder targhettizza per fonte (sound:*, cancello:*,
+    frequenze:*): la lista Utenti porta newsletter_source in ogni
+    riga e la colonna Fonte in tabella — senza aprire il dettaglio.
+    """
+
+    def test_la_pipeline_porta_la_fonte(self):
+        from pathlib import Path
+        src = (Path(__file__).resolve().parents[1]
+               / "routers" / "admin_platform.py").read_text()
+        assert '"newsletter_source": {"$first": "$_nl.source"}' in src
+        assert '"newsletter_source": it.get("newsletter_source")' in src
+
+    def test_la_tabella_ha_la_colonna(self):
+        from pathlib import Path
+        ui = (Path(__file__).resolve().parents[2] / "frontend" / "src"
+              / "features" / "admin" / "PlatformUsersTab.js").read_text()
+        assert "<TableHead>Fonte</TableHead>" in ui
+        assert "u.newsletter_source" in ui
