@@ -57,9 +57,13 @@ export default function OperatorIdentityHeader({ data, t }) {
                 ★ {rs.avg} · {t('landings:reviews.countShort', { count: rs.count, defaultValue: '{{count}} recensioni' })}
               </span>
             )}
-            {(data.founded_year || data.member_since) && (
+            {/* 30/8 (founder): la frase dice «su Aurya dal» — quindi
+                l'anno DEVE essere member_since (creazione su Aurya),
+                non founded_year: «su Aurya dal 2015» con l'anno di
+                inizio attivita' sarebbe una bugia. */}
+            {data.member_since && (
               <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
-                ✓ {t('landings:operator.memberSince', { defaultValue: 'Professionista del benessere dal {{year}}', year: data.founded_year || data.member_since })}
+                ✓ {t('landings:operator.memberSince', { defaultValue: 'Professionista del benessere su Aurya dal {{year}}', year: data.member_since })}
               </span>
             )}
             {data.retreats_organized > 0 && (

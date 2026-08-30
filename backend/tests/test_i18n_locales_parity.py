@@ -278,5 +278,7 @@ class TestLessicoProfessionisti:
         land = json.loads((LOCALES_DIR / "it" / "landings.json").read_text())
         assert land["operators"]["heading"] == "Professionisti"
         assert land["operators"]["pageTitle"] == "Professionisti del benessere"
+        # Evoluta 30/8 (founder): la copertina dice l'appartenenza
+        # («su Aurya dal»), e l'anno e' member_since — non founded_year.
         assert land["operator"]["memberSince"].startswith(
-            "Professionista del benessere dal")
+            "Professionista del benessere su Aurya dal")

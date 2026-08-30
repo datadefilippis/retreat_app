@@ -1485,10 +1485,13 @@ class TestPolishLM5:
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "OperatorsIndexPage.js").read_text()
         assert 'data-testid="operators-empty"' in page
-        assert "Togli la data" in page
+        # Evoluta 30/8 (founder): il filtro «Quando?» e' uscito dalla
+        # pagina — con lui il gesto «Togli la data». Restano i gesti
+        # legati ai filtri vivi: raggio e categoria.
+        assert "Togli la data" not in page
         assert "Allarga il raggio" in page
         # i suggerimenti sono azioni vere sui filtri, non solo testo
-        assert "onClick={() => setQuando('')}" in page
+        # (il gesto della data e' uscito col filtro Quando, 30/8)
         assert "setGeo({ ...geoValue, radius: 250 })" in page
 
 

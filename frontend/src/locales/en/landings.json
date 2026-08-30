@@ -501,7 +501,7 @@
     "upcoming": "Upcoming retreats",
     "upcoming_plural": "Upcoming retreats ({{count}})",
     "noUpcoming": "No retreats scheduled right now. Come back soon.",
-    "memberSince": "Organizer since {{year}}",
+    "memberSince": "Wellness professional on Aurya since {{year}}",
     "retreatsOrganized_one": "{{count}} retreat organized",
     "retreatsOrganized_other": "{{count}} retreats organized",
     "about": "About us",

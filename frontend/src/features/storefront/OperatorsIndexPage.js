@@ -31,14 +31,6 @@ import BrandPayoff from '../../components/BrandPayoff';
 // la mappa e' l'unico punto di traduzione.
 const SORT_PARAM = { distanza: 'distance', valutazione: 'rating', prezzo: 'price' };
 
-// LM4 — "Quando": ?quando=YYYY-MM-DD (+ ?fascia=) in URL; l'API riceve
-// date/time_from/time_to. Le fasce sono un vocabolario umano fisso.
-const FASCIA_PARAM = {
-  mattina: ['06:00', '12:00'],
-  pomeriggio: ['12:00', '18:00'],
-  sera: ['18:00', '23:59'],
-};
-
 // LM4 — "Primo posto: gio 30 lug, 14:00" dal next_available dell'indice
 function formatNextAvailable(na, lang) {
   try {
@@ -335,11 +327,8 @@ export default function OperatorsIndexPage() {
   const ordina = params.get('ordina') || '';
   const defaultOrdina = geoValue ? 'distanza' : 'valutazione';
   const effectiveOrdina = SORT_PARAM[ordina] ? ordina : defaultOrdina;
-  // LM4 — "Quando" in URL (?quando=YYYY-MM-DD, ?fascia=mattina|...)
-  const quando = params.get('quando') || '';
   // DI — filtro per disciplina dichiarata (query string, no path)
   const disciplina = params.get('disciplina') || '';
-  const fascia = params.get('fascia') || '';
 
   const setGeo = (next) => {
     const q = new URLSearchParams(params);
@@ -361,20 +350,6 @@ export default function OperatorsIndexPage() {
     setParams(q, { replace: true });
   };
 
-  // LM4 — Quando: la data guida, la fascia e' un raffinamento che non
-  // vive da sola (senza data si spegne anche lei)
-  const setQuando = (next) => {
-    const q = new URLSearchParams(params);
-    if (next) q.set('quando', next);
-    else { q.delete('quando'); q.delete('fascia'); }
-    setParams(q, { replace: true });
-  };
-  const setFascia = (next) => {
-    const q = new URLSearchParams(params);
-    if (next && FASCIA_PARAM[next]) q.set('fascia', next);
-    else q.delete('fascia');
-    setParams(q, { replace: true });
-  };
 
   // LM3 — "Cosa": la categoria resta un segmento di path indicizzabile
   // (/operatori/yoga); i filtri in query string sopravvivono al cambio
@@ -395,12 +370,6 @@ export default function OperatorsIndexPage() {
     // LM3 — ordinamento esplicito solo se l'utente l'ha scelto: il
     // default (distance con geo, rating senza) lo applica il backend
     if (SORT_PARAM[ordina]) q.sort = SORT_PARAM[ordina];
-    // LM4 — Quando: data + fascia mappata su time_from/time_to
-    if (quando) {
-      q.date = quando;
-      const banda = FASCIA_PARAM[fascia];
-      if (banda) { q.time_from = banda[0]; q.time_to = banda[1]; }
-    }
     if (disciplina) q.discipline = disciplina;   // DI
     if (uiLang !== 'it') q.lang = uiLang;
     if (isPreview) q.preview = 1;   // PN — dati veri sulla rotta esplora
@@ -409,7 +378,7 @@ export default function OperatorsIndexPage() {
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [categoria, geoLat, geoLng, geoRadius, ordina, quando, fascia, disciplina, uiLang, isPreview]);
+  }, [categoria, geoLat, geoLng, geoRadius, ordina, disciplina, uiLang, isPreview]);
 
   const items = data?.items || [];
   const categories = useMemo(
@@ -600,44 +569,10 @@ export default function OperatorsIndexPage() {
                 </option>
               ))}
             </select>
-            {/* LM4 — Quando: visibile SOLO se l'indice di disponibilita'
-                esiste (date_filter_ready); data nativa + fascia opzionale */}
-            {data?.date_filter_ready && (
-              <div className="flex flex-none items-center gap-1.5" data-testid="operators-when-filter">
-                <span className="hidden xl:inline text-xs text-gray-500 whitespace-nowrap">
-                  {t('landings:operators.whenLabel', { defaultValue: 'Quando?' })}
-                </span>
-                <input
-                  type="date"
-                  value={quando}
-                  min={new Date().toISOString().slice(0, 10)}
-                  onChange={(e) => setQuando(e.target.value)}
-                  aria-label={t('landings:operators.whenLabel', { defaultValue: 'Quando?' })}
-                  className="flex-none w-36 lg:w-40 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
-                />
-                {quando && (
-                  <select
-                    value={fascia}
-                    onChange={(e) => setFascia(e.target.value)}
-                    aria-label={t('landings:operators.whenBandLabel', { defaultValue: 'Fascia oraria' })}
-                    className="flex-none w-32 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
-                  >
-                    <option value="">
-                      {t('landings:operators.whenAllDay', { defaultValue: 'Tutto il giorno' })}
-                    </option>
-                    <option value="mattina">
-                      {t('landings:operators.whenMorning', { defaultValue: 'Mattina' })}
-                    </option>
-                    <option value="pomeriggio">
-                      {t('landings:operators.whenAfternoon', { defaultValue: 'Pomeriggio' })}
-                    </option>
-                    <option value="sera">
-                      {t('landings:operators.whenEvening', { defaultValue: 'Sera' })}
-                    </option>
-                  </select>
-                )}
-              </div>
-            )}
+            {/* 30/8 (founder): il filtro «Quando?» (data+fascia) e' USCITO
+                dalla pagina — filtro inutile in fase rete, la scoperta
+                passa da Dove/Cosa. L'API resta capace (?date=): e' solo
+                la UI a non offrirlo piu'. */}
             {/* Ordina — Distanza solo con geo attivo (come il backend) */}
             <label className="flex-none flex items-center gap-1.5">
               <span className="hidden md:inline text-xs text-gray-500 whitespace-nowrap">
@@ -701,11 +636,7 @@ export default function OperatorsIndexPage() {
               {t('landings:operators.emptyTitle', { defaultValue: 'Nessun professionista qui, per ora' })}
             </p>
             <p className="text-muted-foreground mt-1.5 text-sm">
-              {quando
-                ? t('landings:operators.emptySuggestDate', {
-                    defaultValue: 'Per quella data non risulta posto libero: prova un altro giorno o togli la data.',
-                  })
-                : geoValue
+              {geoValue
                   ? t('landings:operators.emptySuggestRadius', {
                       defaultValue: 'In questa zona non abbiamo ancora professionisti: allarga il raggio o cambia località.',
                     })
@@ -716,15 +647,6 @@ export default function OperatorsIndexPage() {
                     : t('landings:operators.emptyBody', { defaultValue: 'Prova un\'altra categoria o torna alla directory dei ritiri.' })}
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-              {quando && (
-                <button
-                  type="button"
-                  onClick={() => setQuando('')}
-                  className="rounded-full border border-[#376254] text-[#376254] bg-white px-4 py-1.5 text-sm font-semibold hover:bg-[#376254]/5 transition-colors"
-                >
-                  {t('landings:operators.emptyClearDate', { defaultValue: 'Togli la data' })}
-                </button>
-              )}
               {geoValue && geoRadius < 250 && (
                 <button
                   type="button"
