@@ -19,6 +19,7 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { iscrivi } from './quadro';
+import { curaMicrofono } from './microfono';
 import { fondamentale } from './accordatore';
 import { notaVicina } from './note';
 
@@ -47,9 +48,8 @@ export default function Orecchio({ ottieniLab, ottieniAnalisi, ottieniVivo = nul
       accesoRef.current = true;
       setAcceso(true);
     } catch (e) {
-      setErrore(e && e.name === 'NotAllowedError'
-        ? 'Permesso negato: per ascoltare serve il consenso al microfono.'
-        : 'Nessun microfono disponibile su questo dispositivo.');
+      /* la voce unica del microfono (lab/microfono.js) */
+      setErrore(curaMicrofono(e));
     }
   };
 

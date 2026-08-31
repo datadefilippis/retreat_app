@@ -18,6 +18,7 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { analizza } from './ritrattista';
+import { curaMicrofono } from './microfono';
 import InvitoQuaderno from './InvitoQuaderno';
 import { sincronizza, spingi } from './quadernoRemoto';
 import { campana, renderizzaWav, leggiRitratti, salvaRitratto,
@@ -98,9 +99,11 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     const suonaBanco = lab.generatore.stato().attivo
       || lab.generatore2.stato().attivo;
     if (!lab.orecchio.attivo() && !suonaBanco) {
-      try { await lab.orecchio.apri(); } catch {
+      try { await lab.orecchio.apri(); } catch (e) {
         setNiente(false);
-        setMsg('Per ritrarre la tua voce o un oggetto serve il microfono, oppure accendi una sorgente al Banco e ritrai quella.');
+        /* la voce unica del microfono (founder 30/8): dice la cura
+           vera, non un generico «serve il microfono» */
+        setMsg(curaMicrofono(e) + ' Oppure accendi una sorgente al Banco e ritrai quella.');
         return;
       }
     }

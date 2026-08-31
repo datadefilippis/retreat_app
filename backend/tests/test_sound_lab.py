@@ -831,7 +831,9 @@ class TestOrecchioLb2:
         un orologio suo."""
         src = (LAB / "Orecchio.jsx").read_text()
         assert "createMediaStreamSource" not in src and "getUserMedia" not in src
-        assert "NotAllowedError" in src
+        # Evoluta 30/8: la mappa degli errori vive in lab/microfono.js
+        # (la voce unica); il pannello la importa.
+        assert "curaMicrofono" in src
         assert "lab-didascalia" in src
         assert "non lascia" in src, "la promessa di privacy e' sparita dal pannello"
         assert "iscrivi(" in src and "setInterval" not in src
@@ -1710,3 +1712,36 @@ class TestFa4QuadernoCheTiSegue:
             pagina = (LAB / stanza).read_text()
             assert "<InvitoQuaderno" in pagina, f"{stanza}: invito assente"
             assert "sincronizza()" in pagina, f"{stanza}: manca il sync al mount"
+
+
+class TestCuraMicrofono:
+    """Founder (30/8, dal telefono): «nessun microfono disponibile»
+    copriva OGNI errore. Ora (1) il motore RITENTA liscio quando i
+    vincoli anti-filtro vengono rifiutati (meglio una misura con
+    l'asterisco che nessuna; permesso negato NON si ritenta), e (2)
+    la voce unica lab/microfono.js dice la cura giusta per ogni caso,
+    col codice tecnico tra parentesi per la diagnosi remota.
+    Collaudato nel pane: ApiMancante e NotFoundError parlano chiaro.
+    """
+
+    def test_il_motore_ritenta_liscio(self):
+        src = (LAB / "motore.js").read_text()
+        blocco = src[src.index("async apri()"):]
+        assert blocco.count("getUserMedia") >= 3, \
+            "manca il fallback audio:true sui vincoli rifiutati"
+        assert "NotAllowedError" in blocco[:1800], \
+            "il permesso negato NON si ritenta: si rispetta"
+        assert "ApiMancante" in blocco[:1200], \
+            "l'API assente (browser in-app) deve avere il suo nome"
+
+    def test_la_voce_unica_conosce_le_cure(self):
+        voce = (LAB / "microfono.js").read_text()
+        for caso in ("NotAllowedError", "NotFoundError", "NotReadableError",
+                     "SecurityError", "ApiMancante"):
+            assert caso in voce, f"manca la cura per {caso}"
+        assert "Safari o Chrome" in voce, \
+            "il browser in-app merita la via d'uscita, non un vicolo cieco"
+        for stanza in ("Orecchio.jsx", "Ritratto.jsx"):
+            assert "curaMicrofono" in (LAB / stanza).read_text(), \
+                f"{stanza} non passa dalla voce unica"
+        assert "Nessun microfono disponibile" not in (LAB / "Orecchio.jsx").read_text()

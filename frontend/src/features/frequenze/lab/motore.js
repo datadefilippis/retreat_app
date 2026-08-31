@@ -344,15 +344,33 @@ export function creaLaboratorio(ctx) {
       async apri() {
         if (mic) return;
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          throw new Error('senza-mic');
+          /* niente API: capita nei browser DENTRO le app (Instagram,
+             Facebook) e nei contesti non sicuri. Il nome viaggia
+             fino alla UI, che dira' la cura giusta. */
+          const e = new Error('senza-mic');
+          e.name = 'ApiMancante';
+          throw e;
         }
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: false,
-          },
-        });
+        /* Il caso del telefono (founder 30/8): i tre filtri spenti
+           sono la RICHIESTA giusta per misurare, ma se un dispositivo
+           la rifiuta (vincoli non soddisfabili, stack audio strano)
+           non deve morire tutto il microfono: si ritenta LISCIO
+           (audio: true) e si annota che i filtri potrebbero essere
+           accesi. Meglio una misura con l'asterisco che nessuna. */
+        let stream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false,
+            },
+          });
+        } catch (err) {
+          if (err && (err.name === 'NotAllowedError'
+                      || err.name === 'SecurityError')) throw err;
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
         try { await ctx.resume(); } catch { /* gia' attivo */ }
         const nodo = ctx.createMediaStreamSource(stream);
         mic = { stream, nodo };
