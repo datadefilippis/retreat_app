@@ -368,6 +368,22 @@ export function creaLaboratorio(ctx) {
            si CHIUDE e si chiede la rinascita col mic vivo — il lab
            nuovo nasce in PlayAndRecord e riproduzione e cattura
            convivono. */
+        /* LA SERRATURA ERAVAMO NOI (indagine profonda 31/8, dopo
+           quattro tentativi): il PONTE (22/8, meditazioni mute su
+           iPhone) dichiara navigator.audioSession.type='playback' —
+           e quella dichiarazione BLOCCA la sessione della pagina in
+           sola-riproduzione: iOS risponde «AudioSession category is
+           not compatible with audio capture» a qualunque richiesta
+           di microfono, qualunque context si chiuda o sospenda. La
+           cura e' l'altra faccia della stessa API: PRIMA del
+           permesso si dichiara play-and-record (riproduzione E
+           cattura convivono); chiudi() torna a playback, cosi' la
+           garanzia del 22/8 resta intatta quando il mic non serve. */
+        try {
+          if (navigator.audioSession) {
+            navigator.audioSession.type = 'play-and-record';
+          }
+        } catch { /* API assente: nessun blocco da sciogliere */ }
         const eraAttivo = ctx.state === 'running';
         if (eraAttivo) { try { await ctx.suspend(); } catch { /* pazienza */ } }
         /* IL QUARTO COLPEVOLE (referto «permesso-a-sessione-libera»,
@@ -496,6 +512,13 @@ export function creaLaboratorio(ctx) {
         try { mic.nodo.disconnect(); } catch { /* gia' */ }
         mic = null;
         lab.analisi.sorgente(null);        // si torna al mix delle voci
+        /* la sessione torna MUSICA: la garanzia del ponte (22/8) vale
+           di nuovo appena il microfono non serve piu' */
+        try {
+          if (navigator.audioSession) {
+            navigator.audioSession.type = 'playback';
+          }
+        } catch { /* niente */ }
       },
     },
 

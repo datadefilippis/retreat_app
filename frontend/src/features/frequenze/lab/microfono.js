@@ -20,8 +20,13 @@ export function curaMicrofono(e) {
   };
   /* il referto per la diagnosi remota: nome, fase, testo del browser
      e dettaglio tecnico — tutto tra parentesi, in coda alla cura */
+  let sessione = null;
+  try {
+    sessione = navigator.audioSession
+      ? `sessione ${navigator.audioSession.type}` : null;
+  } catch { /* API assente */ }
   const referto = [nome, e && e.fase, e && e.message,
-    e && e.dettaglio].filter(Boolean).join(' · ');
+    e && e.dettaglio, sessione].filter(Boolean).join(' · ');
   return (cure[nome]
     || 'Il microfono non risponde: riprova, o apri la pagina in Safari o Chrome.')
     + ' (' + referto + ')';

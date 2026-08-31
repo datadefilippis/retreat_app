@@ -1733,9 +1733,10 @@ class TestCuraMicrofono:
         blocco = src[src.index("async apri()"):]
         assert blocco.count("getUserMedia") >= 3, \
             "manca il fallback audio:true sui vincoli rifiutati"
-        # ampliata col terzo colpevole: il commento della categoria
-        # allunga la testa di apri(), la sostanza non cambia
-        assert "NotAllowedError" in blocco[:3200], \
+        # strutturale (31/8): niente finestre di caratteri — l'ORDINE
+        # e' il contratto: il rispetto del permesso negato viene
+        # PRIMA del fallback liscio
+        assert blocco.index("NotAllowedError") < blocco.index("{ audio: true }"), \
             "il permesso negato NON si ritenta: si rispetta"
         assert "ApiMancante" in blocco[:1200], \
             "l'API assente (browser in-app) deve avere il suo nome"
@@ -1773,7 +1774,9 @@ class TestVitaDeiContext:
 
     def test_il_mic_si_rilascia_se_il_collegamento_fallisce(self):
         src = (LAB / "motore.js").read_text()
-        blocco = src[src.index("async apri()"):src.index("chiudi()")]
+        # il blocco finisce ad adottaStream: la parola «chiudi()» ora
+        # vive anche in un commento di apri() e troncava la fetta
+        blocco = src[src.index("async apri()"):src.index("async adottaStream")]
         assert "getTracks().forEach((t) => t.stop())" in blocco, \
             "permesso preso + collegamento fallito = spia mic accesa a vuoto"
 
@@ -1821,7 +1824,7 @@ class TestCategoriaDellaSessione:
     def test_la_sospensione_precede_il_permesso(self):
         src = (LAB / "motore.js").read_text()
         blocco = src[src.index("async apri()"):]
-        assert "await ctx.suspend()" in blocco[:2000], \
+        assert blocco.index("await ctx.suspend()") < blocco.index("getUserMedia({"), \
             "il context in riproduzione va sospeso PRIMA di chiedere il mic"
 
     def test_il_secondo_gradino_chiude_e_rinasce(self):
@@ -1860,3 +1863,45 @@ class TestQuartoColpevole:
         blocco = src[src.index("async apri()"):]
         assert "liberaTutto(ctx)" in blocco[:3600], \
             "prima del permesso si libera l'audio dell'INTERA scheda"
+
+
+class TestLaSerraturaEravamoNoi:
+    """L'INDAGINE PROFONDA (31/8, dopo quattro tentativi falliti sul
+    telefono del founder): la serratura era NOSTRA. Il ponte (22/8,
+    meditazioni mute su iPhone) dichiara audioSession.type='playback'
+    — e quella dichiarazione blocca la sessione della pagina in
+    sola-riproduzione: iOS risponde «AudioSession category is not
+    compatible with audio capture» a OGNI richiesta di microfono,
+    qualunque context si chiuda. Nessuna scopa poteva bastare.
+
+    La cura e' l'altra faccia della stessa API: PRIMA del permesso
+    play-and-record; chiudi() torna a playback (la garanzia del
+    ponte resta). Collaudato con la simulazione fedele di WebKit:
+    ZERO rifiuti, mic acceso al primo colpo, playback ristabilito
+    alla chiusura."""
+
+    def test_prima_del_permesso_si_dichiara_la_cattura(self):
+        src = (LAB / "motore.js").read_text()
+        blocco = src[src.index("async apri()"):]
+        i_dichiara = blocco.index("'play-and-record'")
+        i_permesso = blocco.index("getUserMedia({")
+        assert i_dichiara < i_permesso, \
+            "play-and-record va dichiarato PRIMA di chiedere il microfono"
+
+    def test_chiudi_restituisce_la_musica(self):
+        src = (LAB / "motore.js").read_text()
+        blocco = src[src.index("      chiudi() {"):]
+        assert "'playback'" in blocco[:900], \
+            "alla chiusura la sessione torna musica (garanzia del 22/8)"
+
+    def test_il_ponte_dichiara_ancora_musica(self):
+        """La cura del 22/8 NON si tocca: senza, le meditazioni
+        sintetiche tornano mute sull'iPhone silenziato."""
+        ponte = (FRONTEND_SRC / "features" / "frequenze" / "engine"
+                 / "ponte.js").read_text()
+        assert "navigator.audioSession" in ponte and "'playback'" in ponte
+
+    def test_il_referto_dice_la_sessione(self):
+        voce = (LAB / "microfono.js").read_text()
+        assert "navigator.audioSession" in voce, \
+            "il referto senza il tipo di sessione e' cieco sul colpevole vero"
