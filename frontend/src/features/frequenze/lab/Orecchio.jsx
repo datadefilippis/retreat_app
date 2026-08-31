@@ -48,6 +48,20 @@ export default function Orecchio({ ottieniLab, ottieniAnalisi, ottieniVivo = nul
       accesoRef.current = true;
       setAcceso(true);
     } catch (e) {
+      /* LA RINASCITA COL MIC VIVO (iOS, frequenze diverse): il
+         motore ha chiuso il context e ci consegna lo stream gia'
+         concesso — il lab nuovo nasce alla frequenza giusta e lo
+         adotta, senza secondo permesso. */
+      if (e && e.name === 'RinascitaMic' && e.stream) {
+        try {
+          const nuovo = ottieniLab();      // ctx chiuso → rinasce
+          labRef.current = nuovo;
+          await nuovo.orecchio.adottaStream(e.stream);
+          accesoRef.current = true;
+          setAcceso(true);
+          return;
+        } catch (e2) { setErrore(curaMicrofono(e2)); return; }
+      }
       /* la voce unica del microfono (lab/microfono.js) */
       setErrore(curaMicrofono(e));
     }

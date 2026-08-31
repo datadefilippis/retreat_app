@@ -100,18 +100,31 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
       || lab.generatore2.stato().attivo;
     if (!lab.orecchio.attivo() && !suonaBanco) {
       try { await lab.orecchio.apri(); } catch (e) {
-        setNiente(false);
-        /* la voce unica del microfono (founder 30/8): dice la cura
-           vera, non un generico «serve il microfono» */
-        setMsg(curaMicrofono(e) + ' Oppure accendi una sorgente al Banco e ritrai quella.');
-        return;
+        /* la rinascita col mic vivo (iOS, frequenze diverse) */
+        if (e && e.name === 'RinascitaMic' && e.stream) {
+          try {
+            const nuovo = ottieniLab();
+            labRef.current = nuovo;
+            await nuovo.orecchio.adottaStream(e.stream);
+          } catch (e2) {
+            setNiente(false);
+            setMsg(curaMicrofono(e2) + ' Oppure accendi una sorgente al Banco e ritrai quella.');
+            return;
+          }
+        } else {
+          setNiente(false);
+          /* la voce unica del microfono (founder 30/8): dice la cura
+             vera, non un generico «serve il microfono» */
+          setMsg(curaMicrofono(e) + ' Oppure accendi una sorgente al Banco e ritrai quella.');
+          return;
+        }
       }
     }
     setFase('registro'); setConto(SECONDI);
     contoRef.current = setInterval(
       () => setConto((c) => Math.max(0, c - 1)), 1000);
     try {
-      const { campioni, sampleRate } = await lab.analisi.registra(SECONDI);
+      const { campioni, sampleRate } = await labRef.current.analisi.registra(SECONDI);
       clearInterval(contoRef.current);
       setFase('analizzo');
       /* un respiro al browser prima del conto pesante */

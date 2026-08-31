@@ -15,6 +15,7 @@ export function curaMicrofono(e) {
     SecurityError: 'Il browser blocca il microfono su questa pagina: controlla i permessi del sito nelle impostazioni.',
     NotFoundError: 'Il browser non trova un microfono: controlla che non sia disattivato nelle impostazioni del telefono.',
     NotReadableError: 'Il microfono è occupato da un’altra app: chiudila e riprova.',
+    InvalidStateError: 'Il motore audio del telefono ha rifiutato il collegamento: chiudi le altre app o schede che usano l’audio e riprova.',
     ApiMancante: 'Questo browser non dà accesso al microfono: apri la pagina in Safari o Chrome (non dal browser interno di un’app).',
   };
   return (cure[nome]

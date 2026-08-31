@@ -1770,3 +1770,32 @@ class TestVitaDeiContext:
         blocco = src[src.index("async apri()"):src.index("chiudi()")]
         assert "getTracks().forEach((t) => t.stop())" in blocco, \
             "permesso preso + collegamento fallito = spia mic accesa a vuoto"
+
+
+class TestRinascitaColMicVivo:
+    """Il SECONDO colpevole iOS (founder 30/8 notte, stesso errore a
+    pagina fresca): su iPhone il context nasce alla frequenza
+    dell'altoparlante (44,1k) ma il mic consegna 48k, e WebKit
+    rifiuta createMediaStreamSource con InvalidStateError se le
+    frequenze non coincidono (desktop: coincidono sempre). La cura
+    canonica: chiudere il context, far RINASCERE il lab col mic gia'
+    vivo (adotta la frequenza di cattura) e ADOTTARE lo stream senza
+    secondo permesso. Collaudato nel pane con lo stub WebKit:
+    1a chiamata rifiutata, rinascita, 2a passa, mic acceso.
+    """
+
+    def test_il_motore_chiede_la_rinascita_sul_mismatch(self):
+        src = (LAB / "motore.js").read_text()
+        blocco = src[src.index("async apri()"):]
+        assert "'RinascitaMic'" in blocco.replace('"', "'"), \
+            "l'InvalidStateError del collegamento deve chiedere la rinascita"
+        assert "e2.stream = stream" in blocco, \
+            "lo stream concesso e' il lasciapassare: viaggia con l'errore"
+        assert "async adottaStream(stream)" in src, \
+            "il lab nuovo deve poter adottare lo stream senza altro permesso"
+
+    def test_le_stanze_completano_il_giro(self):
+        for stanza in ("Orecchio.jsx", "Ritratto.jsx"):
+            src = (LAB / stanza).read_text()
+            assert "RinascitaMic" in src and "adottaStream" in src, \
+                f"{stanza}: la rinascita col mic vivo non e' cablata"

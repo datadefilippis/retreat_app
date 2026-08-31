@@ -377,9 +377,39 @@ export function creaLaboratorio(ctx) {
           mic = { stream, nodo };
           lab.analisi.sorgente(nodo);      // il banco ora guarda il mic
         } catch (err) {
-          /* permesso OTTENUTO ma collegamento fallito (context morto):
-             lo stream va spento subito, o il telefono resta con la
-             spia del microfono accesa senza che nulla ascolti */
+          /* IL SECONDO COLPEVOLE DI iOS (founder 30/8 notte, stesso
+             InvalidStateError anche a pagina fresca): su iPhone il
+             context nasce alla frequenza dell'ALTOPARLANTE (44,1k)
+             ma il microfono consegna 48k, e WebKit rifiuta
+             createMediaStreamSource se le frequenze non coincidono.
+             La cura canonica: si CHIUDE questo context e si chiede
+             la RINASCITA col microfono gia' vivo — il context nuovo,
+             nato in regime di cattura, adotta la frequenza giusta.
+             Lo stream NON si spegne: e' il lasciapassare (il permesso
+             gia' concesso) che il lab nuovo adottera'. */
+          if (err && err.name === 'InvalidStateError') {
+            try { ctx.close(); } catch { /* gia' */ }
+            const e2 = new Error('rinascita-mic');
+            e2.name = 'RinascitaMic';
+            e2.stream = stream;
+            throw e2;
+          }
+          /* ogni altro fallimento: lo stream va spento subito, o il
+             telefono resta con la spia del microfono accesa a vuoto */
+          stream.getTracks().forEach((t) => t.stop());
+          throw err;
+        }
+      },
+      /* la seconda meta' della rinascita: il lab NUOVO adotta lo
+         stream gia' concesso, senza richiedere il permesso */
+      async adottaStream(stream) {
+        if (mic) return;
+        try {
+          try { await ctx.resume(); } catch { /* gia' attivo */ }
+          const nodo = ctx.createMediaStreamSource(stream);
+          mic = { stream, nodo };
+          lab.analisi.sorgente(nodo);
+        } catch (err) {
           stream.getTracks().forEach((t) => t.stop());
           throw err;
         }
