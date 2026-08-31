@@ -368,8 +368,19 @@ export function creaLaboratorio(ctx) {
           });
         } catch (err) {
           if (err && (err.name === 'NotAllowedError'
-                      || err.name === 'SecurityError')) throw err;
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                      || err.name === 'SecurityError')) {
+            err.fase = 'permesso';
+            throw err;
+          }
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          } catch (err2) {
+            /* diagnosi remota (founder, il telefono): la FASE e il
+               testo di WebKit viaggiano fino alla UI — e' il
+               referto, non un ornamento */
+            if (err2) err2.fase = 'permesso-liscio';
+            throw err2;
+          }
         }
         try {
           try { await ctx.resume(); } catch { /* gia' attivo */ }
@@ -392,8 +403,10 @@ export function creaLaboratorio(ctx) {
             const e2 = new Error('rinascita-mic');
             e2.name = 'RinascitaMic';
             e2.stream = stream;
+            e2.origine = err;
             throw e2;
           }
+          if (err) err.fase = 'collegamento';
           /* ogni altro fallimento: lo stream va spento subito, o il
              telefono resta con la spia del microfono accesa a vuoto */
           stream.getTracks().forEach((t) => t.stop());
@@ -410,6 +423,18 @@ export function creaLaboratorio(ctx) {
           mic = { stream, nodo };
           lab.analisi.sorgente(nodo);
         } catch (err) {
+          if (err) {
+            err.fase = 'adozione';
+            /* il referto delle frequenze: la firma del mismatch iOS */
+            try {
+              const t = stream.getAudioTracks()[0];
+              const st = t && t.getSettings ? t.getSettings() : {};
+              err.dettaglio = `ctx ${ctx.sampleRate}Hz` +
+                (st.sampleRate ? ` mic ${st.sampleRate}Hz` : '') +
+                ` tracce ${stream.getAudioTracks().length}` +
+                ` stato ${ctx.state}`;
+            } catch { /* il referto non deve mai rompere */ }
+          }
           stream.getTracks().forEach((t) => t.stop());
           throw err;
         }

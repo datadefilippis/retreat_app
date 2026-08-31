@@ -18,7 +18,11 @@ export function curaMicrofono(e) {
     InvalidStateError: 'Il motore audio del telefono ha rifiutato il collegamento: chiudi le altre app o schede che usano l’audio e riprova.',
     ApiMancante: 'Questo browser non dà accesso al microfono: apri la pagina in Safari o Chrome (non dal browser interno di un’app).',
   };
+  /* il referto per la diagnosi remota: nome, fase, testo del browser
+     e dettaglio tecnico — tutto tra parentesi, in coda alla cura */
+  const referto = [nome, e && e.fase, e && e.message,
+    e && e.dettaglio].filter(Boolean).join(' · ');
   return (cure[nome]
     || 'Il microfono non risponde: riprova, o apri la pagina in Safari o Chrome.')
-    + ' (' + nome + ')';
+    + ' (' + referto + ')';
 }
