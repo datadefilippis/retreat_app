@@ -357,31 +357,67 @@ export function creaLaboratorio(ctx) {
            non deve morire tutto il microfono: si ritenta LISCIO
            (audio: true) e si annota che i filtri potrebbero essere
            accesi. Meglio una misura con l'asterisco che nessuna. */
+        /* IL TERZO COLPEVOLE — LA CATEGORIA DELLA SESSIONE (referto
+           del founder, 30/8 notte: «AudioSession category is not
+           compatible with audio capture»): su iOS una pagina col
+           motore audio in RIPRODUZIONE blocca la cattura — e noi il
+           context lo creiamo sempre prima del microfono. Cura in
+           due gradini: (1) si SOSPENDE il context prima del
+           permesso, cosi' la categoria si libera; (2) se non basta,
+           si CHIUDE e si chiede la rinascita col mic vivo — il lab
+           nuovo nasce in PlayAndRecord e riproduzione e cattura
+           convivono. */
+        const eraAttivo = ctx.state === 'running';
+        if (eraAttivo) { try { await ctx.suspend(); } catch { /* pazienza */ } }
+        const chiedi = async () => {
+          try {
+            return await navigator.mediaDevices.getUserMedia({
+              audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+              },
+            });
+          } catch (err) {
+            if (err && (err.name === 'NotAllowedError'
+                        || err.name === 'SecurityError')) {
+              err.fase = 'permesso';
+              throw err;
+            }
+            try {
+              return await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err2) {
+              /* diagnosi remota: la FASE e il testo di WebKit
+                 viaggiano fino alla UI — e' il referto */
+              if (err2) err2.fase = 'permesso-liscio';
+              throw err2;
+            }
+          }
+        };
         let stream;
         try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-              echoCancellation: false,
-              noiseSuppression: false,
-              autoGainControl: false,
-            },
-          });
+          stream = await chiedi();
         } catch (err) {
-          if (err && (err.name === 'NotAllowedError'
-                      || err.name === 'SecurityError')) {
-            err.fase = 'permesso';
-            throw err;
+          if (err && err.name === 'InvalidStateError') {
+            /* la sospensione non e' bastata: via il context, il
+               permesso si richiede a sessione LIBERA, e il lab
+               rinasce col mic gia' vivo */
+            try { ctx.close(); } catch { /* gia' */ }
+            let s2;
+            try {
+              s2 = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err3) {
+              if (err3) err3.fase = 'permesso-a-sessione-libera';
+              throw err3;
+            }
+            const e2 = new Error('rinascita-mic');
+            e2.name = 'RinascitaMic';
+            e2.stream = s2;
+            throw e2;
           }
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          } catch (err2) {
-            /* diagnosi remota (founder, il telefono): la FASE e il
-               testo di WebKit viaggiano fino alla UI — e' il
-               referto, non un ornamento */
-            if (err2) err2.fase = 'permesso-liscio';
-            throw err2;
-          }
+          throw err;
         }
+        if (eraAttivo) { try { await ctx.resume(); } catch { /* dopo */ } }
         try {
           try { await ctx.resume(); } catch { /* gia' attivo */ }
           const nodo = ctx.createMediaStreamSource(stream);

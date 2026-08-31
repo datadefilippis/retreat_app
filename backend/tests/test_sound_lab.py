@@ -1729,7 +1729,9 @@ class TestCuraMicrofono:
         blocco = src[src.index("async apri()"):]
         assert blocco.count("getUserMedia") >= 3, \
             "manca il fallback audio:true sui vincoli rifiutati"
-        assert "NotAllowedError" in blocco[:1800], \
+        # ampliata col terzo colpevole: il commento della categoria
+        # allunga la testa di apri(), la sostanza non cambia
+        assert "NotAllowedError" in blocco[:3200], \
             "il permesso negato NON si ritenta: si rispetta"
         assert "ApiMancante" in blocco[:1200], \
             "l'API assente (browser in-app) deve avere il suo nome"
@@ -1799,3 +1801,29 @@ class TestRinascitaColMicVivo:
             src = (LAB / stanza).read_text()
             assert "RinascitaMic" in src and "adottaStream" in src, \
                 f"{stanza}: la rinascita col mic vivo non e' cablata"
+
+
+class TestCategoriaDellaSessione:
+    """IL TERZO COLPEVOLE iOS — chiuso dal REFERTO del founder
+    (30/8 notte): «AudioSession category is not compatible with
+    audio capture» in fase permesso-liscio. Su iOS una pagina col
+    motore audio in RIPRODUZIONE blocca la cattura, e noi il context
+    lo creiamo sempre prima del microfono. Cura in due gradini:
+    suspend prima del permesso (libera la categoria); se non basta,
+    close + permesso a sessione libera + rinascita col mic vivo.
+    Collaudato nel pane: 2 rifiuti, chiusura, 3o permesso concesso,
+    rinascita, mic acceso senza errori."""
+
+    def test_la_sospensione_precede_il_permesso(self):
+        src = (LAB / "motore.js").read_text()
+        blocco = src[src.index("async apri()"):]
+        assert "await ctx.suspend()" in blocco[:2000], \
+            "il context in riproduzione va sospeso PRIMA di chiedere il mic"
+
+    def test_il_secondo_gradino_chiude_e_rinasce(self):
+        src = (LAB / "motore.js").read_text()
+        blocco = src[src.index("async apri()"):]
+        assert "permesso-a-sessione-libera" in blocco, \
+            "senza il secondo gradino la categoria bloccata e' un vicolo cieco"
+        assert blocco.index("ctx.close()") < blocco.index("permesso-a-sessione-libera"), \
+            "il permesso a sessione libera va chiesto DOPO la chiusura"
