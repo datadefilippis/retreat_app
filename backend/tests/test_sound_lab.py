@@ -474,6 +474,10 @@ class TestSweep:
         assert "exponentialRampToValueAtTime(stato.freq, t + secondi)" in src, \
             "lo sweep non e' una rampa sull'AudioParam"
         codice = re.sub(r"/\*.*?\*/|//[^\n]*", "", src, flags=re.S)
+        # Il RESPIRO della sessione iOS (31/8) e' l'unica eccezione
+        # ammessa: 150ms perche' il sistema rilasci la categoria audio
+        # dopo ctx.close() — NON pilota l'audio, aspetta il sistema.
+        codice = codice.replace("await new Promise((r) => setTimeout(r, 150));", "")
         for orologio in ("setInterval", "setTimeout", "requestAnimationFrame"):
             assert orologio not in codice, f"il motore pilota la corsa con {orologio}"
 
