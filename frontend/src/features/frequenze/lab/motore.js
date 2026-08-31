@@ -40,6 +40,7 @@
  * A fase 0 si usano i tipi nativi (purezza massima, zero calcoli).
  */
 import { creaPonte } from '../engine/ponte';
+import { liberaTutto } from '../../../lib/contestiAudio';
 
 const DK = 0.012;           // declick: nessun salto piu' rapido di 12 ms
 const XFADE = 0.024;        // crossfade cambio forma/fase
@@ -369,6 +370,14 @@ export function creaLaboratorio(ctx) {
            convivono. */
         const eraAttivo = ctx.state === 'running';
         if (eraAttivo) { try { await ctx.suspend(); } catch { /* pazienza */ } }
+        /* IL QUARTO COLPEVOLE (referto «permesso-a-sessione-libera»,
+           31/8): la SPA naviga senza ricaricare e i context delle
+           ALTRE pagine (player, esplora, anteprima) restano vivi —
+           su iOS uno solo in riproduzione tiene la sessione in
+           playback e blocca la cattura OVUNQUE. Prima del permesso
+           si libera l'audio dell'intera scheda: gli altri context si
+           sospendono, i media si fermano. */
+        try { await liberaTutto(ctx); } catch { /* best-effort */ }
         const chiedi = async () => {
           try {
             return await navigator.mediaDevices.getUserMedia({

@@ -1,3 +1,6 @@
+// il registro dei context audio (31/8): va avvolto PRIMA che
+// qualunque motore crei il suo — quindi qui, in testa a tutto
+import './lib/contestiAudio';
 import React from "react";
 import ReactDOM from "react-dom/client";
 // Phase 1 Step A2 — Sentry init via side-effect import. MUST be the first

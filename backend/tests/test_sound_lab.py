@@ -1829,5 +1829,34 @@ class TestCategoriaDellaSessione:
         blocco = src[src.index("async apri()"):]
         assert "permesso-a-sessione-libera" in blocco, \
             "senza il secondo gradino la categoria bloccata e' un vicolo cieco"
-        assert blocco.index("ctx.close()") < blocco.index("permesso-a-sessione-libera"), \
+        # la fase compare anche nel commento del quarto colpevole:
+        # l'ordine si misura sull'ASSEGNAZIONE della fase
+        assert blocco.index("await ctx.close()") < blocco.index("err3.fase"), \
             "il permesso a sessione libera va chiesto DOPO la chiusura"
+
+
+class TestQuartoColpevole:
+    """Il QUARTO colpevole iOS (referto «permesso-a-sessione-libera»,
+    31/8): la SPA naviga senza ricaricare e i context delle ALTRE
+    pagine (player, esplora, anteprima) restano vivi — su iOS uno
+    solo in riproduzione tiene la sessione in playback e blocca la
+    cattura ovunque. Cura: l'ANAGRAFE dei context (costruttore
+    avvolto in testa a index.js) + liberaTutto() prima del permesso:
+    gli altri context si sospendono, i media si fermano. Collaudato
+    nel pane: context estraneo running → sweep → suspended →
+    permesso concesso → mic acceso."""
+
+    def test_l_anagrafe_avvolge_il_costruttore(self):
+        lib = (FRONTEND_SRC / "lib" / "contestiAudio.js").read_text()
+        assert "__auryaRegistro" in lib and "liberaTutto" in lib
+        assert "audio, video" in lib, "anche i media si fermano"
+        idx = (FRONTEND_SRC / "index.js").read_text()
+        assert "contestiAudio" in idx
+        assert idx.index("contestiAudio") < idx.index("import App"), \
+            "l'anagrafe va avvolta PRIMA che qualunque motore nasca"
+
+    def test_il_permesso_arriva_a_scheda_liberata(self):
+        src = (LAB / "motore.js").read_text()
+        blocco = src[src.index("async apri()"):]
+        assert "liberaTutto(ctx)" in blocco[:3600], \
+            "prima del permesso si libera l'audio dell'INTERA scheda"
