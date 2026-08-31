@@ -401,8 +401,14 @@ export function creaLaboratorio(ctx) {
           if (err && err.name === 'InvalidStateError') {
             /* la sospensione non e' bastata: via il context, il
                permesso si richiede a sessione LIBERA, e il lab
-               rinasce col mic gia' vivo */
-            try { ctx.close(); } catch { /* gia' */ }
+               rinasce col mic gia' vivo.
+               NB (31/8): close() e' ASINCRONO — senza await si
+               chiedeva il microfono mentre iOS stava ancora
+               smontando la sessione, che risultava ancora occupata
+               e rifiutava di nuovo. Si aspetta la chiusura VERA, e
+               un respiro perche' il sistema rilasci la categoria. */
+            try { await ctx.close(); } catch { /* gia' */ }
+            await new Promise((r) => setTimeout(r, 150));
             let s2;
             try {
               s2 = await navigator.mediaDevices.getUserMedia({ audio: true });
