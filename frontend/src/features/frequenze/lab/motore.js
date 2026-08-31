@@ -371,10 +371,18 @@ export function creaLaboratorio(ctx) {
                       || err.name === 'SecurityError')) throw err;
           stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         }
-        try { await ctx.resume(); } catch { /* gia' attivo */ }
-        const nodo = ctx.createMediaStreamSource(stream);
-        mic = { stream, nodo };
-        lab.analisi.sorgente(nodo);        // il banco ora guarda il mic
+        try {
+          try { await ctx.resume(); } catch { /* gia' attivo */ }
+          const nodo = ctx.createMediaStreamSource(stream);
+          mic = { stream, nodo };
+          lab.analisi.sorgente(nodo);      // il banco ora guarda il mic
+        } catch (err) {
+          /* permesso OTTENUTO ma collegamento fallito (context morto):
+             lo stream va spento subito, o il telefono resta con la
+             spia del microfono accesa senza che nulla ascolti */
+          stream.getTracks().forEach((t) => t.stop());
+          throw err;
+        }
       },
       chiudi() {
         if (!mic) return;
@@ -445,6 +453,13 @@ export function creaLaboratorio(ctx) {
       lab.orecchio.chiudi();
       sorgenti.forEach((s) => { s.ferma(); s._stacca(); });
       try { master.disconnect(); } catch { /* niente */ }
+      /* IL CASO DEL TELEFONO (founder 30/8, InvalidStateError su
+         Safari E Brave = stesso WebKit): il context non veniva MAI
+         chiuso — una stanza dopo l'altra li accumulava, e iOS oltre
+         il suo limite (circa quattro) li UCCIDE. Il primo morto che
+         incontra createMediaStreamSource risponde InvalidStateError.
+         La stanza possiede il suo motore (LU): quando muore, chiude. */
+      try { ctx.close(); } catch { /* gia' chiuso */ }
       delete ctx._fqzLab;
     },
   };

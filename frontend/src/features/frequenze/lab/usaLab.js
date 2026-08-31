@@ -19,6 +19,14 @@ export function useLab() {
   const labRef = useRef(null);
 
   const ottieniLab = useCallback(() => {
+    /* LA RINASCITA (founder 30/8, il telefono): iOS puo' UCCIDERE un
+       AudioContext (limite di sistema) — un lab col context chiuso e'
+       un morto che cammina e ogni nodo nuovo risponde
+       InvalidStateError. Al gesto successivo si ricrea da zero. */
+    if (labRef.current && labRef.current.ctx.state === 'closed') {
+      try { labRef.current.spegni(); } catch { /* gia' morto */ }
+      labRef.current = null;
+    }
     if (!labRef.current) {
       const Ctx = window.AudioContext || window.webkitAudioContext;
       labRef.current = creaLaboratorio(new Ctx());

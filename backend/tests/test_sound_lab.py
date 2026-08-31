@@ -1745,3 +1745,28 @@ class TestCuraMicrofono:
             assert "curaMicrofono" in (LAB / stanza).read_text(), \
                 f"{stanza} non passa dalla voce unica"
         assert "Nessun microfono disponibile" not in (LAB / "Orecchio.jsx").read_text()
+
+
+class TestVitaDeiContext:
+    """Founder (30/8 notte, InvalidStateError su Safari E Brave =
+    stesso WebKit): i context non venivano MAI chiusi — le stanze li
+    accumulavano e iOS oltre il suo limite li uccide; il primo morto
+    che incontra createMediaStreamSource risponde InvalidStateError.
+    Tre difese, tutte e tre necessarie."""
+
+    def test_spegni_chiude_il_context(self):
+        src = (LAB / "motore.js").read_text()
+        blocco = src[src.index("spegni() {"):]
+        assert "ctx.close()" in blocco[:800], \
+            "senza close i context si accumulano e iOS li uccide"
+
+    def test_il_lab_morto_rinasce_al_gesto(self):
+        src = (LAB / "usaLab.js").read_text()
+        assert "state === 'closed'" in src, \
+            "un lab col context chiuso e' un morto che cammina"
+
+    def test_il_mic_si_rilascia_se_il_collegamento_fallisce(self):
+        src = (LAB / "motore.js").read_text()
+        blocco = src[src.index("async apri()"):src.index("chiudi()")]
+        assert "getTracks().forEach((t) => t.stop())" in blocco, \
+            "permesso preso + collegamento fallito = spia mic accesa a vuoto"
