@@ -125,6 +125,7 @@
     "event_needs_capacity_check": "Pagamento in attesa — verificare disponibilità posti",
     "awaiting_payment": "In attesa di pagamento",
     "approval_required": "Approvazione richiesta — verificare disponibilità prima di confermare",
+    "appointment_request": "Richiesta di appuntamento: il cliente aspetta la tua conferma",
     "rental_availability": "Verificare disponibilità date noleggio prima di confermare",
     "event_availability": "Verificare disponibilità posti ritiro prima di confermare",
     "delivered_not_paid": "Consegnato ma pagamento non registrato"

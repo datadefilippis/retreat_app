@@ -658,8 +658,17 @@ class TestOperatorProfileMultilang:
 
     def test_mobile_card_above_description(self):
         """OP1 — su mobile la carta d'identità sale sotto la copertina
-        (order-1) e i contenuti scendono (order-2); desktop invariato."""
+        e i contenuti scendono; desktop invariato.
+        IG1+IG5 (3/9/2026): l'identita' (avatar, nome, citta',
+        discipline) vive nella TESTATA condivisa, quindi e' gia' sopra
+        i contenuti su ogni schermo; l'aside e' rimasto coi CONTATTI e
+        su mobile scende in fondo (order-3) — il primo schermo e' per
+        identita' e prenotazione."""
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "OperatorProfilePage.js").read_text()
+        header = (FRONTEND_SRC / "features" / "storefront" / "components"
+                  / "OperatorIdentityHeader.jsx").read_text()
         assert "order-2 lg:order-1" in page        # contenuti
-        assert "order-1 lg:order-2" in page        # carta d'identità
+        assert "order-3 lg:order-2" in page        # contatti, in fondo su mobile
+        assert 'data-testid="identity-card"' in header
+        assert page.index("<OperatorIdentityHeader") < page.index("order-2 lg:order-1")

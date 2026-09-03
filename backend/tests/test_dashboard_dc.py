@@ -72,13 +72,24 @@ class TestDc2Tesoreria:
         assert "in_ritardo_count" in home
 
     def test_todo_excludes_drafts_and_reads_fulfillment(self):
+        """Guardia STRUTTURALE (ordine via index, non finestre di
+        caratteri: slittano a ogni commento). IG5 (3/9/2026): la
+        richiesta di appuntamento del cliente (bozza con
+        needs_approval) sta tra le cose da gestire e NON tra i carrelli
+        mai completati — ogni ordine in una riga sola."""
         src = (BACKEND_DIR / "routers" / "orders.py").read_text()
         i = src.index('agg["needs_action_count"]')
-        chunk = src[i - 600:i + 300]
-        assert '"fulfillment": 1' in chunk, \
+        blocco = src[src.rindex("async def payments_overview", 0, i):
+                     src.index("return agg", i)]
+        assert '"fulfillment": 1' in blocco, \
             "la proiezione deve portare order.fulfillment"
-        assert 'o.get("status") == "confirmed"' in chunk, \
+        assert 'o.get("status") == "confirmed"' in blocco, \
             "le bozze hanno gia' la loro riga: niente doppio conteggio"
+        assert "_richiesta_cliente(o)" in blocco and \
+            'not _richiesta_cliente(o)' in blocco, \
+            "la richiesta del cliente va tra le cose da gestire, non tra i carrelli"
+        regole = (BACKEND_DIR / "services" / "commerce_rules.py").read_text()
+        assert '"reason": "appointment_request"' in regole
 
 
 class TestDc3Newsletter:

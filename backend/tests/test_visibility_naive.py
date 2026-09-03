@@ -49,3 +49,15 @@ class TestGuardia:
         assert '_aware(o.get("created_at"))' in src, \
             "il confronto created_at vs inizio-mese deve normalizzare il fuso"
         assert 'if (o.get("created_at") or prev_start) >= cur_start' not in src
+
+    def test_la_query_vede_anche_le_stringhe_iso(self):
+        """Seconda meta' del bug (IG5): il servizio ordini salva
+        created_at come STRINGA ISO, la query solo-datetime non le
+        vedeva mai → «Prenotazioni 0» per tutti in prod. Ora la query
+        chiede in entrambe le forme."""
+        src = (BACKEND / "routers" / "visibility.py").read_text()
+        i = src.index('"items.occurrence_id": 1')
+        blocco = src[i - 900:i]
+        assert '{"created_at": {"$gte": prev_start, "$lt": cur_end}}' in blocco
+        assert '{"created_at": {"$gte": _iso(prev_start), "$lt": _iso(cur_end)}}' in blocco
+        assert '"$or"' in blocco

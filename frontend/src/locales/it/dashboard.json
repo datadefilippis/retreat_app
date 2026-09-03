@@ -129,7 +129,11 @@
     "seats": "posti",
     "trend_title": "Andamento incassi, mese per mese",
     "trend_empty": "Il grafico si riempie con il primo incasso.",
-    "avg_ticket": "per ordine, in media"
+    "avg_ticket": "per ordine, in media",
+    "visits_title": "Visite al profilo, questo mese",
+    "visits_from_aurya": "tramite Aurya",
+    "visits_from_outside": "da link tuoi e social",
+    "visits_30d": "ultimi 30 giorni"
   },
   "onboarding": {
     "title": "Inizia qui",

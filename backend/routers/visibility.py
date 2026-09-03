@@ -108,9 +108,19 @@ async def _build(org_id: str) -> Dict[str, Any]:
 
     cur_start, cur_end = _month_bounds(now)
     prev_start, _ = _month_bounds(_prev_month(now))
+    # IG5 (3/9/2026) — gli ordini creati dal servizio ordini portano
+    # created_at come STRINGA ISO (utc_now().isoformat), quelli di
+    # altri percorsi come datetime: una query solo-datetime non vedeva
+    # MAI i primi → «Prenotazioni 0» per tutti, in prod. Si chiede in
+    # entrambe le forme (le stringhe ISO si ordinano bene per prefisso).
+    def _iso(d: datetime) -> str:
+        return d.strftime("%Y-%m-%dT%H:%M:%S")
     orders = await orders_collection.find(
         {"organization_id": org_id, "status": {"$in": list(_BOOKED)},
-         "created_at": {"$gte": prev_start, "$lt": cur_end}},
+         "$or": [
+             {"created_at": {"$gte": prev_start, "$lt": cur_end}},
+             {"created_at": {"$gte": _iso(prev_start), "$lt": _iso(cur_end)}},
+         ]},
         {"_id": 0, "created_at": 1, "sales_channel": 1,
          "items.occurrence_id": 1},
     ).to_list(_MAX_ORDERS)

@@ -252,7 +252,12 @@ async def create_event_wizard(
         product_model = Product(
             organization_id=org_id,
             item_type="event_ticket",
-            **body.product.model_dump(),
+            # IG5 (3/9/2026) — metadata e' Optional nel payload ma il
+            # Product lo vuole dict: senza questo default un client che
+            # non manda metadata riceveva 400 «Input should be a valid
+            # dictionary» (emerso creando un ritiro via API).
+            **{**body.product.model_dump(),
+               "metadata": body.product.metadata or {}},
         )
         prod_doc = product_model.model_dump(mode="json")
         await products_collection.insert_one(prod_doc)

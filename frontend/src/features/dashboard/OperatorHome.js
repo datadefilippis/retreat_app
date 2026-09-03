@@ -7,11 +7,14 @@
  *
  * IG4 (3/9/2026, ciclo VETRINA) — la lettura in un colpo solo, dall'alto:
  *   0. Avviso calendario bloccato (GT1b) — se c'è, viene prima di tutto.
- *   1. Panoramica — quattro numeri del MESE con il loro significato:
- *      incassato · in arrivo · prenotazioni · visite al profilo.
- *      Ogni tessera è un link alla pagina dove si approfondisce.
- *      La card «Visibilità» (VT5) si fonde qui: prima stava in fondo
- *      e compariva solo con visite > 0; uno zero è una verità.
+ *   1. Panoramica — tre numeri del MESE con il loro significato:
+ *      incassato · in arrivo · prenotazioni. Ogni tessera è un link
+ *      alla pagina dove si approfondisce.
+ *   4. Visite al profilo (in fondo, IG5 su richiesta del founder):
+ *      quante persone aprono la pagina pubblica e quante TRAMITE
+ *      Aurya (directory+ricerca), con gli ultimi 30 giorni. Evolve la
+ *      card «Visibilità» VT5 (compariva solo con visite > 0; uno zero
+ *      è una verità). Modulo commerce spento → niente sezione.
  *   2. Da fare — le azioni PRIMA dei grafici: ordini da gestire,
  *      bozze, recensioni, ritardi. Ogni voce è un link al posto dove
  *      si agisce. Se non c'è nulla, una riga serena, non una card.
@@ -162,6 +165,14 @@ export default function OperatorHome() {
   const visitsPrev = vis?.visits?.previous || 0;
   const bookCur = vis?.bookings?.current || 0;
   const bookPrev = vis?.bookings?.previous || 0;
+  // IG5 (founder 3/9) — «quante visite ricevo TRAMITE Aurya»: il
+  // backend distingue gia' i canali (directory+search = Aurya; social/
+  // direct/store = da fuori). aurya_visits e' la sua somma.
+  const daAurya = visAvailable ? (visibility?.aurya_visits || 0) : 0;
+  const daFuori = Math.max(0, visitsCur - daAurya);
+  const giorni30 = (visAvailable ? (visibility?.last_30d || []) : []).map((d) => ({
+    label: String(d.day || '').slice(8, 10), value: d.visits || 0,
+  }));
 
   const cardCls = 'rounded-2xl border bg-card p-4 flex flex-col';
   const headCls = 'flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3';
@@ -199,7 +210,7 @@ export default function OperatorHome() {
         </h2>
         <p className="text-xs text-muted-foreground" data-testid="home-oggi">{todayLong(i18n.language)}</p>
       </div>
-      <div className={`grid gap-3 grid-cols-2 ${visAvailable ? 'lg:grid-cols-4' : 'lg:grid-cols-2'}`} data-testid="home-panoramica">
+      <div className={`grid gap-3 grid-cols-2 ${visAvailable ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`} data-testid="home-panoramica">
         <Tessera
           to="/incassi"
           testid="tile-incassato"
@@ -223,30 +234,17 @@ export default function OperatorHome() {
           ) : t('home.tile_expected_sub', { defaultValue: 'da incassare, già prenotato' })}
         />
         {visAvailable && (
-          <>
-            <Tessera
-              to="/orders"
-              testid="tile-prenotazioni"
-              icon={CalendarCheck}
-              label={t('home.visibility_bookings_title', { defaultValue: 'Prenotazioni' })}
-              loading={visibility === null}
-              value={bookCur}
-              sub={(bookCur || bookPrev)
-                ? <Delta cur={bookCur} prev={bookPrev} t={t} />
-                : t('home.tile_bookings_sub', { defaultValue: 'ordini confermati nel mese' })}
-            />
-            <Tessera
-              to="/visibilita"
-              testid="tile-visite"
-              icon={Eye}
-              label={t('home.visibility_visits_title', { defaultValue: 'Visite al profilo' })}
-              loading={visibility === null}
-              value={visitsCur}
-              sub={(visitsCur || visitsPrev)
-                ? <Delta cur={visitsCur} prev={visitsPrev} t={t} />
-                : t('home.tile_visits_sub', { defaultValue: 'chi apre la tua pagina pubblica' })}
-            />
-          </>
+          <Tessera
+            to="/orders"
+            testid="tile-prenotazioni"
+            icon={CalendarCheck}
+            label={t('home.visibility_bookings_title', { defaultValue: 'Prenotazioni' })}
+            loading={visibility === null}
+            value={bookCur}
+            sub={(bookCur || bookPrev)
+              ? <Delta cur={bookCur} prev={bookPrev} t={t} />
+              : t('home.tile_bookings_sub', { defaultValue: 'ordini confermati nel mese' })}
+          />
         )}
       </div>
     </section>
@@ -394,6 +392,60 @@ export default function OperatorHome() {
         </Link>
       </div>
     </div>
+
+    {/* ── 4. Visite al profilo (IG5, founder): quante persone aprono la
+        pagina pubblica e QUANTE arrivano tramite Aurya. In basso, una
+        riga sola: numero del mese con confronto, la quota Aurya, gli
+        ultimi 30 giorni. Modulo spento → la sezione non c'e'. ── */}
+    {visAvailable && (
+      <section className={cardCls} data-testid="home-visite" aria-labelledby="home-visite-titolo">
+        <div className={headCls}>
+          <Eye className="h-3.5 w-3.5" />
+          <span id="home-visite-titolo">{t('home.visits_title', { defaultValue: 'Visite al profilo, questo mese' })}</span>
+        </div>
+        {visibility === null ? (
+          <div className="h-16 animate-pulse rounded-lg bg-muted" />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-[auto_1fr] md:items-end">
+            <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
+              <div>
+                <p className="text-3xl font-bold tracking-tight tabular-nums leading-none">{visitsCur}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {(visitsCur || visitsPrev)
+                    ? <Delta cur={visitsCur} prev={visitsPrev} t={t} />
+                    : t('home.tile_visits_sub', { defaultValue: 'chi apre la tua pagina pubblica' })}
+                </p>
+              </div>
+              <dl className="flex gap-5 text-sm">
+                <div>
+                  <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    {t('home.visits_from_aurya', { defaultValue: 'tramite Aurya' })}
+                  </dt>
+                  <dd className="font-semibold tabular-nums text-[#376254]">{daAurya}</dd>
+                </div>
+                <div>
+                  <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    {t('home.visits_from_outside', { defaultValue: 'da link tuoi e social' })}
+                  </dt>
+                  <dd className="font-semibold tabular-nums">{daFuori}</dd>
+                </div>
+              </dl>
+            </div>
+            {giorni30.some((g) => g.value > 0) && (
+              <div className="min-w-0">
+                <MiniBars data={giorni30} height={40} valueFormatter={(v) => `${v}`} />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {t('home.visits_30d', { defaultValue: 'ultimi 30 giorni' })}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+        <Link to="/visibilita" className={footLink}>
+          {t('home.visibility_all', { defaultValue: 'Vai a Visibilità' })} <ArrowRight className="h-3 w-3" />
+        </Link>
+      </section>
+    )}
     </div>
   );
 }

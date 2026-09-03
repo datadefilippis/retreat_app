@@ -16,8 +16,20 @@
  * foto.
  */
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Flower2, MapPin } from 'lucide-react';
 import VerifiedAuryaBadge from '../../../components/VerifiedAuryaBadge';
+// DI — label discipline (specchio di models/disciplines.py)
+import { disciplineLabel } from '../../../lib/disciplines';
+
+/* la destinazione: /destinazioni/{regione|città} come link interno
+   (era nell'aside: ora la città ha UNA casa, qui) */
+export function placeSlugOf(data) {
+  const base = data.region || data.city;
+  if (!base) return null;
+  return String(base).toLowerCase().normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
 
 export default function OperatorIdentityHeader({ data, t }) {
   const accent = data.brand_color || '#16281F';
@@ -27,6 +39,8 @@ export default function OperatorIdentityHeader({ data, t }) {
      qualunque proporzione di foto) */
   const avatar = data.logo_url || data.portrait_url;
   const luogo = [data.city, data.region].filter(Boolean).join(', ');
+  const placeSlug = placeSlugOf(data);
+  const discipline = Array.isArray(data.disciplines) ? data.disciplines : [];
   return (
     <header className="relative" data-testid="operator-identity">
       {/* la cover: banda ad altezza FISSA — ogni foto va bene */}
@@ -47,7 +61,7 @@ export default function OperatorIdentityHeader({ data, t }) {
              data-testid="identity-card">
           <div className="flex items-start gap-4">
             {avatar && (
-              <img src={avatar} alt={`Foto di ${data.name}`}
+              <img src={avatar} alt={data.logo_url ? `Logo di ${data.name}` : `Foto di ${data.name}`}
                    className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-full
                               object-cover object-[center_25%] bg-gray-100
                               ring-2 ring-[#c9b37e]/70 shadow-md" />
@@ -64,7 +78,11 @@ export default function OperatorIdentityHeader({ data, t }) {
               {luogo && (
                 <p className="mt-1.5 flex items-center gap-1 text-sm text-gray-500">
                   <MapPin className="h-3.5 w-3.5 text-[#376254]" aria-hidden />
-                  {luogo}
+                  {placeSlug ? (
+                    <Link to={`/destinazioni/${placeSlug}`} className="hover:text-[#376254] hover:underline">
+                      {luogo}
+                    </Link>
+                  ) : luogo}
                 </p>
               )}
             </div>
@@ -101,6 +119,25 @@ export default function OperatorIdentityHeader({ data, t }) {
               </span>
             )}
           </div>
+          {/* DI (founder 14/8) — le discipline dichiarate: sono identità,
+              quindi stanno qui (IG5: prima vivevano nell'aside, che su
+              mobile le mostrava lontano dal nome). Chip nel verde del
+              brand, label da lib/disciplines.js */}
+          {discipline.length > 0 && (
+            <div className="mt-4 rounded-xl border border-[#376254]/15 bg-[#376254]/[0.04] px-3.5 py-3"
+                 data-testid="profile-disciplines">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#376254] mb-2">
+                {t('landings:operator.myDisciplines', { defaultValue: 'Le mie discipline' })}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {discipline.map(d => (
+                  <span key={d} className="rounded-full bg-white border border-[#376254]/25 px-2.5 py-0.5 text-xs font-medium text-[#376254]">
+                    {disciplineLabel(d)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

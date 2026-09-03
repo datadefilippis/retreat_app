@@ -7534,8 +7534,11 @@ class TestDisciplineDi:
         assert "optgroup" in esplora and "DISCIPLINE_FAMILIES" in esplora
         assert "presenti" in esplora and "data?.disciplines?.[d.slug]" in esplora, \
             "il filtro mostra di nuovo il catalogo intero"
+        # IG5 (3/9/2026): le chip discipline sono identita', quindi
+        # vivono nella testata condivisa (OperatorIdentityHeader), non
+        # piu' nell'aside del profilo — una casa sola, su ogni schermo
         profilo = (FRONTEND_SRC / "features" / "storefront"
-                   / "OperatorProfilePage.js").read_text()
+                   / "components" / "OperatorIdentityHeader.jsx").read_text()
         assert 'data-testid="profile-disciplines"' in profilo
 
 

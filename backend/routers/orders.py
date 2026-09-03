@@ -463,15 +463,24 @@ async def payments_overview(current_user: dict = Depends(get_verified_user)):
         {"_id": 0, "status": 1, "payment_intent": 1, "payment_status": 1,
          "source": 1, "total": 1, "items": 1, "fulfillment": 1},
     ).to_list(2000)
-    # DC2 — «Ordini da gestire» = solo CONFERMATI con qualcosa da fare:
-    # le bozze hanno gia' la loro riga («Bozze aperte») e contarle in
+    # DC2 — «Ordini da gestire» = CONFERMATI con qualcosa da fare: le
+    # bozze hanno gia' la loro riga («Bozze aperte») e contarle in
     # entrambe faceva apparire lo stesso carrello due volte nel Da fare.
+    # IG5 (3/9/2026) — eccezione onesta: la RICHIESTA DI APPUNTAMENTO
+    # del cliente e' una bozza solo tecnicamente (needs_approval, vedi
+    # derive_review_info): sta tra le cose da gestire, NON tra i
+    # carrelli mai completati. Ogni ordine resta in UNA riga sola.
+    def _richiesta_cliente(o):
+        return (o.get("status") == "draft"
+                and (derive_review_info(o) or {}).get("state") == "needs_approval")
     agg["needs_action_count"] = sum(
         1 for o in open_orders
-        if o.get("status") == "confirmed"
-        and (derive_review_info(o) or {}).get("state")
+        if (o.get("status") == "confirmed"
+            and (derive_review_info(o) or {}).get("state"))
+        or _richiesta_cliente(o)
     )
-    agg["draft_count"] = sum(1 for o in open_orders if o.get("status") == "draft")
+    agg["draft_count"] = sum(1 for o in open_orders
+                             if o.get("status") == "draft" and not _richiesta_cliente(o))
     return agg
 
 

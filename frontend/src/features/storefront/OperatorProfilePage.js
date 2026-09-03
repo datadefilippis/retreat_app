@@ -25,8 +25,7 @@ import MiniCalendario from './components/MiniCalendario';
 // listino si espande su un harness che riusa il checkout dello storefront
 // (CheckoutForm/OrderSummary/useCheckoutForm, zero fork di logica).
 import InlineServiceCheckout from './components/checkout/InlineServiceCheckout';
-// DI — label discipline (specchio di models/disciplines.py)
-import { disciplineLabel } from '../../lib/disciplines';
+// DI — le chip discipline vivono nella testata (OperatorIdentityHeader)
 
 function fmtPrice(n) {
   if (n == null) return null;
@@ -67,7 +66,7 @@ function Gallery({ photos, name, t }) {
   if (!photos?.length) return null;
   return (
     <section id="foto" className="mt-8">
-      <h2 className="font-heading text-xl font-bold text-foreground mb-3">
+      <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
         {t('landings:operator.gallery', { defaultValue: 'Foto' })}
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -249,7 +248,7 @@ function ReviewsSection({ orgSlug, stats, onWrite, refreshKey, t, i18n }) {
   return (
     <section id="recensioni" className="mt-10 scroll-mt-20">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-heading text-xl font-bold text-foreground">
+        <h2 className="profile-h2 font-heading text-xl font-bold text-foreground flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
           {t('landings:reviews.heading', { defaultValue: 'Recensioni' })}
           {total > 0 && <span className="text-muted-foreground font-normal text-base"> ({total})</span>}
         </h2>
@@ -481,14 +480,17 @@ export default function OperatorProfilePage() {
 
   const socials = data.socials || {};
   const extUrl = (u) => (u && !u.startsWith('http') ? `https://${u}` : u);
-  const placeSlug = (data.region || data.city)
-    ? String(data.region || data.city).toLowerCase().normalize('NFKD')
-        .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-    : null;
+  /* IG5 (founder 3/9): «Prenota una sessione» esiste SOLO se c'e' un
+     listino da cui prenotare — su un profilo senza servizi non c'e'
+     nulla da prenotare, quindi niente bottone (ne' in card ne' flottante) */
+  const hasListino = Array.isArray(data.listino) && data.listino.length > 0;
+  const hasContacts = !!(data.languages?.length || data.contacts?.public_email
+    || data.contacts?.public_phone || socials.instagram || socials.website || socials.facebook);
+  const hasUpcoming = Array.isArray(data.upcoming) && data.upcoming.length > 0;
 
   return (
     <MarketplaceShell>
-    <div className="bg-gray-50">
+    <div className={`bg-gray-50 ${hasListino ? 'pb-20 lg:pb-0' : ''}`}>
       <div className="max-w-6xl mx-auto px-4 pt-3">
         <nav className="text-xs text-gray-500">
           <Link to="/operatori" className="hover:text-primary hover:underline">
@@ -510,7 +512,7 @@ export default function OperatorProfilePage() {
         <div className="min-w-0 order-2 lg:order-1">
           {data.bio && (
             <section id="chi-siamo">
-              <h2 className="font-heading text-xl font-bold text-foreground mb-3">
+              <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
                 {t('landings:operator.about', { defaultValue: 'Chi siamo' })}
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">{data.bio}</p>
@@ -523,7 +525,7 @@ export default function OperatorProfilePage() {
               L'ancora #intervista continua a rispondere. */}
           {Array.isArray(data.interview) && data.interview.length > 0 && (
             <section id="intervista" className="mt-8 scroll-mt-20" data-testid="interview-teaser">
-              <h2 className="font-heading text-xl font-bold text-foreground mb-1">
+              <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-1 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
                 {t('landings:operator.interviewTitle', { defaultValue: 'L’intervista' })}
               </h2>
               <p className="text-sm text-gray-500 mb-4">
@@ -560,7 +562,7 @@ export default function OperatorProfilePage() {
               La landing /p/ resta come link secondario "Vedi dettagli". */}
           {Array.isArray(data.listino) && data.listino.length > 0 && (
             <section id="listino" className="mt-8 scroll-mt-20" data-testid="profile-listino">
-              <h2 className="font-heading text-xl font-bold text-foreground mb-3">
+              <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
                 {t('landings:operator.listino', { defaultValue: 'Servizi e prezzi' })}
               </h2>
               <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100">
@@ -571,8 +573,12 @@ export default function OperatorProfilePage() {
                   return (
                   <div key={rowKey} id={`servizio-${row.slug || row.product_id}`}
                        className="scroll-mt-24">
-                    <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-                      <div className="min-w-0 flex-1">
+                    {/* IG5 — su mobile la riga si legge in due righe: nome,
+                        durata e nota a tutta larghezza; sotto, prezzo e
+                        bottone. Prima nome e descrizione si schiacciavano in
+                        una colonna stretta accanto al prezzo. */}
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 px-4 py-3">
+                      <div className="min-w-0 sm:flex-1">
                         <p className="font-medium text-gray-900">{row.name}</p>
                         <p className="text-xs text-gray-500">
                           {[row.duration_minutes ? `${row.duration_minutes} min` : null,
@@ -597,6 +603,7 @@ export default function OperatorProfilePage() {
                           </Link>
                         )}
                       </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-3">
                       <span className={`whitespace-nowrap ${row.on_request
                           ? 'text-xs font-medium text-gray-500'
                           : 'text-base font-bold text-[#376254]'}`}>
@@ -628,6 +635,7 @@ export default function OperatorProfilePage() {
                             : t('landings:operator.requestAppt', { defaultValue: 'Richiedi appuntamento' })}
                         </Link>
                       ) : null}
+                      </div>
                     </div>
                     {expanded && row.product_id && (
                       <div className="border-t border-gray-100 bg-gray-50/70 px-3 py-4 sm:px-4"
@@ -663,14 +671,14 @@ export default function OperatorProfilePage() {
               ritiri pubblicati si vedono SEMPRE, anche in fase network
               e anche senza Stripe (il gate GT1b vale solo per la
               directory, non per la pagina personale) */}
-          {true && (
+          {/* IG5 — senza ritiri in agenda la sezione NON compare: un
+              titolo con «Nessun ritiro in programma» era rumore, non
+              informazione (l'ancora #ritiri risponde solo se c'e' qualcosa) */}
+          {hasUpcoming && (
           <section id="ritiri" className="mt-8 scroll-mt-20">
-            <h2 className="font-heading text-xl font-bold text-foreground mb-3">
+            <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
               {t('landings:operator.upcoming', { count: data.upcoming_count })}
             </h2>
-            {data.upcoming.length === 0 ? (
-              <p className="text-gray-500">{t('landings:operator.noUpcoming')}</p>
-            ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {data.upcoming.map(item => (
                   <Link key={item.url} to={item.url}
@@ -695,7 +703,6 @@ export default function OperatorProfilePage() {
                   </Link>
                 ))}
               </div>
-            )}
           </section>
           )}
 
@@ -706,44 +713,33 @@ export default function OperatorProfilePage() {
                           refreshKey={reviewsKey} t={t} i18n={i18n} />
         </div>
 
-        {/* ── Sidebar carta d'identità ── */}
-        <aside className="order-1 lg:order-2 lg:sticky lg:top-20 self-start space-y-4">
-          {/* IG1 (3/9, evolve la decisione del 14/8): il ritratto non
-              vive piu' qui a grandezza naturale — l'identita' sta
-              nella card della testata (avatar tondo, ritaglio sicuro
-              per ogni proporzione) e la foto INTERA resta visibile
-              in galleria col lightbox. La tagline ha una casa sola
-              (la testata): via il doppione. */}
-          <a href="#listino" data-testid="profile-cta-prenota"
-             className="block w-full rounded-full bg-[#376254] text-white text-center
-                        px-4 py-3 text-sm font-bold hover:bg-[#2c4f43] transition-colors">
-            {t('landings:operator.bookSession', { defaultValue: 'Prenota una sessione' })}
-          </a>
-          <div className="rounded-2xl border border-border bg-card p-5">
-            {/* DI (founder 14/8) — le discipline dichiarate, chip nel
-                verde del brand (label da lib/disciplines.js) */}
-            {(data.disciplines || []).length > 0 && (
-              <div className="mb-3 flex flex-wrap gap-1.5" data-testid="profile-disciplines">
-                {data.disciplines.map(d => (
-                  <span key={d} className="rounded-full bg-[#376254]/10 px-2 py-0.5 text-[11px] text-[#376254]">
-                    {disciplineLabel(d)}
-                  </span>
-                ))}
-              </div>
-            )}
+        {/* ── Sidebar: la porta d'azione (desktop) + i contatti ──
+            IG1 (3/9): il ritratto non vive piu' qui a grandezza
+            naturale — l'identita' sta nella card della testata e la
+            foto INTERA resta in galleria col lightbox.
+            IG5 (founder 3/9): su mobile la porta d'azione e' UNA, la
+            barra flottante in basso (piaceva quella): il bottone in
+            card resta solo desktop, dove la barra non c'e'. Discipline
+            e citta' sono salite nella testata (una casa sola), la
+            recensione si scrive dalla sezione Recensioni: qui restano i
+            CONTATTI, che su mobile scendono in fondo (order-3) dopo
+            bio, listino, foto e ritiri — il primo schermo e' per
+            l'identita' e la prenotazione. */}
+        {(hasListino || hasContacts) && (
+        <aside className="order-3 lg:order-2 lg:sticky lg:top-20 self-start space-y-4">
+          {hasListino && (
+            <a href="#listino" data-testid="profile-cta-prenota"
+               className="hidden lg:block w-full rounded-full bg-[#376254] text-white text-center
+                          px-4 py-3 text-sm font-bold hover:bg-[#2c4f43] transition-colors">
+              {t('landings:operator.bookSession', { defaultValue: 'Prenota una sessione' })}
+            </a>
+          )}
+          {hasContacts && (
+          <div className="rounded-2xl border border-border bg-card p-5" data-testid="profile-contacts">
+            <h2 className="profile-h2 font-heading text-base font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-4 before:w-1 before:rounded-full before:bg-[#c9b37e]">
+              {t('landings:operator.contacts', { defaultValue: 'Contatti' })}
+            </h2>
             <dl className="space-y-2 text-sm">
-              {(data.city || data.region) && (
-                <div className="flex items-start gap-2">
-                  <span aria-hidden>📍</span>
-                  {placeSlug ? (
-                    <Link to={`/destinazioni/${placeSlug}`} className="text-primary hover:underline">
-                      {[data.city, data.region].filter(Boolean).join(', ')}
-                    </Link>
-                  ) : (
-                    <span className="text-gray-700">{[data.city, data.region].filter(Boolean).join(', ')}</span>
-                  )}
-                </div>
-              )}
               {data.languages?.length > 0 && (
                 <div className="flex items-start gap-2">
                   <span aria-hidden>💬</span>
@@ -785,18 +781,14 @@ export default function OperatorProfilePage() {
               </div>
             )}
           </div>
-
-          {/* PN0 — via "Visita il negozio": il profilo E' il negozio
-              (il listino e i ritiri si comprano da qui) */}
-          <button type="button" onClick={() => setWriteOpen(true)}
-                  className="block w-full rounded-2xl border border-primary text-primary text-center px-4 py-3 text-sm font-semibold hover:bg-primary hover:text-white transition-colors">
-            ★ {t('landings:reviews.writeCta', { defaultValue: 'Scrivi una recensione' })}
-          </button>
+          )}
         </aside>
+        )}
       </main>
 
-      {/* IG1 — CTA sticky mobile: mai perdere la porta d'azione */}
-      {Array.isArray(data.listino) && data.listino.length > 0 && !listinoInVista && (
+      {/* IG1 — CTA flottante mobile: mai perdere la porta d'azione.
+          IG5: e' l'UNICA porta su mobile, e solo se c'e' un listino */}
+      {hasListino && !listinoInVista && (
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 p-3
                         bg-white/95 backdrop-blur border-t border-gray-200"
              data-testid="profile-cta-sticky">

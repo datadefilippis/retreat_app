@@ -493,6 +493,16 @@ def derive_review_info(order: dict) -> Optional[Dict]:
         return {"state": "needs_approval", "reason": "approval_required"}
 
     items = order.get("items", [])
+    # IG5 (3/9/2026) — la RICHIESTA DI APPUNTAMENTO inviata dal profilo
+    # (transaction_mode=request → source «storefront», come un carrello)
+    # era invisibile alla triage: finiva tra i «carrelli mai completati».
+    # E' invece la cosa piu' importante da fare per chi vende sedute:
+    # il cliente aspetta una conferma.
+    if source.startswith("storefront") and any(
+            it.get("transaction_mode") == "request"
+            or it.get("service_custom_request") for it in items):
+        return {"state": "needs_approval", "reason": "appointment_request"}
+
     has_rental = any(it.get("rental_date_from") for it in items)
     has_event = any(it.get("occurrence_id") for it in items)
 

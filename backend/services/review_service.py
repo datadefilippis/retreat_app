@@ -83,6 +83,34 @@ async def request_review_otp(org_slug: str, email: str,
     _send_review_otp_email(email_n, code, org_slug, locale)
 
 
+def _otp_base(org_slug: str, email: str) -> Dict[str, Any]:
+    return {
+        "org_slug": org_slug,
+        "email_hash": _email_hash(email),
+        "used_at": None,
+        "expires_at": {"$gt": _iso(utc_now())},
+        "attempts": {"$lt": OTP_MAX_ATTEMPTS},
+    }
+
+
+async def _peek_otp(org_slug: str, email: str, code: str) -> bool:
+    """IG5 (3/9/2026) — verifica SENZA consumare: il codice si brucia
+    solo a recensione accettata. Prima si consumava subito e chi
+    inciampava in una regola successiva («solo chi ha prenotato», testo
+    troppo corto) doveva chiedere un codice nuovo. Il tentativo
+    sbagliato conta comunque verso il lockout."""
+    from database import review_otps_collection
+
+    ok = await review_otps_collection.find_one(
+        {**_otp_base(org_slug, email), "code_hash": _hash_code(code or "")},
+        {"_id": 1})
+    if ok:
+        return True
+    await review_otps_collection.update_many(
+        _otp_base(org_slug, email), {"$inc": {"attempts": 1}})
+    return False
+
+
 async def _consume_otp(org_slug: str, email: str, code: str) -> bool:
     """Verifica one-shot atomica (find_one_and_update): due submit
     concorrenti con lo stesso codice non passano entrambi; il tentativo
@@ -161,7 +189,10 @@ async def submit_review(*, org_slug: str, email: str, code: str,
     from database import organizations_collection, reviews_collection
     from routers.public import _resolve_org
 
-    if not await _consume_otp(org_slug, email, code):
+    # IG5 — prima si GUARDA il codice (prova di possesso dell'email: da
+    # qui in poi si puo' dire se quell'email ha prenotato), lo si
+    # CONSUMA solo a recensione accettata, in fondo.
+    if not await _peek_otp(org_slug, email, code):
         raise ReviewError("invalid_code", "Codice non valido o scaduto")
 
     org = await _resolve_org(org_slug)     # 404 se l'org non è pubblica
@@ -194,6 +225,11 @@ async def submit_review(*, org_slug: str, email: str, code: str,
     existing = await reviews_collection.find_one(
         {"organization_id": org_id, "author_email_hash": email_hash},
         {"_id": 0, "id": 1, "created_at": 1})
+
+    # tutto valido: ORA il codice si brucia (atomico: due submit
+    # concorrenti con lo stesso codice non passano entrambi)
+    if not await _consume_otp(org_slug, email, code):
+        raise ReviewError("invalid_code", "Codice non valido o scaduto")
 
     status = "published" if verified else "pending"
     doc = {

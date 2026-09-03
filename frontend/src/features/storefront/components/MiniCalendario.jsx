@@ -51,7 +51,7 @@ export default function MiniCalendario({ upcoming, t }) {
   return (
     <section id="calendario" className="mt-8 scroll-mt-20"
       data-testid="profile-calendario">
-      <h2 className="font-heading text-xl font-bold text-foreground mb-3">
+      <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
         {t('landings:operator.calendar', { defaultValue: 'Calendario' })}
       </h2>
       <div className="rounded-2xl border border-gray-200 bg-white p-4 max-w-sm">
