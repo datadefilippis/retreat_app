@@ -1,74 +1,103 @@
 /**
- * OperatorIdentityHeader — la testata identitaria dell'operatore (PV3,
- * docs/PROFILO_VERIFICATO_PIANO_2026-07.md).
+ * OperatorIdentityHeader — la testata identitaria dell'operatore (PV3;
+ * ridisegnata col ciclo IG, 3/9/2026).
  *
- * UNA sola testata per profilo (/o/:slug) e pagina intervista
- * (/o/:slug/intervista): stessa cover con overlay, stesso avatar,
- * stessa fila di badge. La continuità tra le due pagine (richiesta
- * founder) non è "stile simile": è lo STESSO componente, quindi non
- * può divergere. PV4 aggiungerà qui il badge Verificato Aurya e
- * comparirà su entrambe le pagine gratis.
+ * UNA sola testata per profilo (/o/:slug) e pagina intervista: lo
+ * STESSO componente, quindi non può divergere (decisione PV3).
+ *
+ * IG1 (founder, il carosello): prima la cover mangiava il primo
+ * schermo del telefono col nome annegato nella foto. Ora il disegno
+ * è quello della card d'identità: la cover è una BANDA ad altezza
+ * fissa (qualunque proporzione abbia la foto caricata: object-cover
+ * ritaglia, mai il layout che balla), e sotto sale una CARD bianca
+ * con l'avatar tondo (ritaglio alto-centrale: sicuro per i ritratti
+ * verticali), il nome, la tagline, la città e la fila dei badge.
+ * Uno screenshot del primo schermo ora mostra CHI SEI, non solo una
+ * foto.
  */
 import React from 'react';
-import { Flower2 } from 'lucide-react';
+import { Flower2, MapPin } from 'lucide-react';
 import VerifiedAuryaBadge from '../../../components/VerifiedAuryaBadge';
 
 export default function OperatorIdentityHeader({ data, t }) {
   const accent = data.brand_color || '#16281F';
   const rs = data.reviews_stats;
+  /* l'avatar: il logo se c'è, altrimenti il ritratto — sempre tondo,
+     sempre ritagliato dal centro-alto (le teste restano dentro con
+     qualunque proporzione di foto) */
+  const avatar = data.logo_url || data.portrait_url;
+  const luogo = [data.city, data.region].filter(Boolean).join(', ');
   return (
-    <header className="text-white relative mt-2" style={{ backgroundColor: accent }}>
-      {data.cover_url && (
-        <>
+    <header className="relative" data-testid="operator-identity">
+      {/* la cover: banda ad altezza FISSA — ogni foto va bene */}
+      <div className="relative h-44 sm:h-60 overflow-hidden"
+           style={{ backgroundColor: accent }}>
+        {data.cover_url && (
           <img src={data.cover_url} alt="" aria-hidden fetchPriority="high"
                className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/45" />
-        </>
-      )}
-      <div className="relative max-w-6xl mx-auto px-4 py-14 flex items-center gap-5">
-        {data.logo_url && (
-          <img src={data.logo_url} alt={`Logo di ${data.name}`}
-               className="h-20 w-20 rounded-full object-cover bg-white/10 border-2 border-white/50 shadow-lg" />
         )}
-        <div>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold">{data.name}</h1>
-          {data.tagline && (
-            <p className="text-white/90 mt-1">{data.tagline}</p>
-          )}
-          <div className="flex flex-wrap items-center gap-2 mt-3">
-            {/* PV4 — badge "Verificato Aurya": PRIMA di In evidenza,
-                solo quando l'intervista è pubblicata (il payload espone
-                interview_verified_at soltanto in quel caso). La fila
-                badge è unica per profilo e pagina intervista: appare
-                su entrambe. */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+      </div>
+
+      {/* la card d'identità che sale sopra la cover */}
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="relative -mt-12 sm:-mt-14 rounded-2xl border border-gray-200
+                        bg-white shadow-[0_10px_30px_-16px_rgba(22,40,31,0.35)]
+                        p-5 sm:p-6"
+             data-testid="identity-card">
+          <div className="flex items-start gap-4">
+            {avatar && (
+              <img src={avatar} alt={`Foto di ${data.name}`}
+                   className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-full
+                              object-cover object-[center_25%] bg-gray-100
+                              ring-2 ring-[#c9b37e]/70 shadow-md" />
+            )}
+            <div className="min-w-0 flex-1 pt-0.5">
+              <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+                {data.name}
+              </h1>
+              {data.tagline && (
+                <p className="text-gray-600 mt-1 text-sm sm:text-base line-clamp-2">
+                  {data.tagline}
+                </p>
+              )}
+              {luogo && (
+                <p className="mt-1.5 flex items-center gap-1 text-sm text-gray-500">
+                  <MapPin className="h-3.5 w-3.5 text-[#376254]" aria-hidden />
+                  {luogo}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            {/* PV4 — badge "Verificato Aurya": prima della fila,
+                solo a intervista pubblicata */}
             {data.interview_verified_at && (
               <span data-testid="verified-badge-slot">
-                <VerifiedAuryaBadge variant="on-photo" size="md" />
+                <VerifiedAuryaBadge variant="on-light" size="md" />
               </span>
             )}
-            {/* GT3 — badge dei piani "In evidenza" */}
             {data.featured && (
-              <span className="rounded-full bg-white/25 backdrop-blur px-2.5 py-1 text-[11px] font-semibold">
+              <span className="rounded-full bg-[#c9b37e]/20 text-[#8a7440] px-2.5 py-1 text-[11px] font-semibold">
                 ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
               </span>
             )}
             {rs?.count > 0 && (
-              <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
+              <span className="rounded-full bg-gray-100 text-gray-700 px-2.5 py-1 text-[11px] font-medium">
                 ★ {rs.avg} · {t('landings:reviews.countShort', { count: rs.count, defaultValue: '{{count}} recensioni' })}
               </span>
             )}
-            {/* 30/8 (founder): la frase dice «su Aurya dal» — quindi
-                l'anno DEVE essere member_since (creazione su Aurya),
-                non founded_year: «su Aurya dal 2015» con l'anno di
-                inizio attivita' sarebbe una bugia. */}
+            {/* 30/8 (founder): «su Aurya dal» = member_since, mai
+                founded_year (sarebbe una bugia) */}
             {data.member_since && (
-              <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
+              <span className="rounded-full bg-[#376254]/10 text-[#376254] px-2.5 py-1 text-[11px] font-medium">
                 ✓ {t('landings:operator.memberSince', { defaultValue: 'Professionista del benessere su Aurya dal {{year}}', year: data.member_since })}
               </span>
             )}
             {data.retreats_organized > 0 && (
-              <span className="rounded-full bg-white/15 backdrop-blur px-2.5 py-1 text-[11px] font-medium">
-                <Flower2 className="inline h-3 w-3 mr-0.5 align-[-1px]" aria-hidden /> {t('landings:operator.retreatsOrganized', { defaultValue: '{{count}} ritiri organizzati', count: data.retreats_organized })}
+              <span className="rounded-full bg-gray-100 text-gray-700 px-2.5 py-1 text-[11px] font-medium">
+                <Flower2 className="inline h-3 w-3 mr-0.5 align-[-1px] text-[#376254]" aria-hidden />
+                {t('landings:operator.retreatsOrganized', { defaultValue: '{{count}} ritiri organizzati', count: data.retreats_organized })}
               </span>
             )}
           </div>

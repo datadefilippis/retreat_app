@@ -524,7 +524,11 @@
     "interviewCtaListinoSub": "Il listino completo",
     "interviewCtaReviews": "Le recensioni",
     "interviewCtaReviewsSub": "Cosa raccontano le persone",
-    "viewDetails": "Vedi dettagli"
+    "viewDetails": "Vedi dettagli",
+    "bookSession": "Prenota una sessione",
+    "calendar": "Calendario",
+    "calendarDay": "Vedi cosa c’è in programma",
+    "calendarHint": "I giorni in verde hanno un appuntamento in programma: tocca per vedere."
   },
   "account": {
     "title": "Le mie prenotazioni",

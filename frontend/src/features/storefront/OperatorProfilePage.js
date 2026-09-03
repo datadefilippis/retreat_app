@@ -20,6 +20,7 @@ import MarketplaceShell from './components/MarketplaceShell';
 // PV3 — la testata identitaria è condivisa con la pagina intervista
 // (/o/:slug/intervista): stesso componente, continuità garantita.
 import OperatorIdentityHeader from './components/OperatorIdentityHeader';
+import MiniCalendario from './components/MiniCalendario';
 // PN3 — l'acquisto del servizio avviene TUTTO sul profilo: la riga di
 // listino si espande su un harness che riusa il checkout dello storefront
 // (CheckoutForm/OrderSummary/useCheckoutForm, zero fork di logica).
@@ -338,6 +339,33 @@ export default function OperatorProfilePage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [writeOpen, setWriteOpen] = useState(false);
+  /* IG1 — la barra sticky mobile «Prenota una sessione»: si mostra
+     finche' il listino non e' in vista (poi il bottone ce l'hai li') */
+  const [listinoInVista, setListinoInVista] = useState(false);
+  useEffect(() => {
+    /* su scroll, non IntersectionObserver: piu' prevedibile negli
+       ambienti emulati e costa nulla (una lettura per frame max) */
+    let ticket = null;
+    const guarda = () => {
+      if (ticket) return;
+      ticket = requestAnimationFrame(() => {
+        ticket = null;
+        const sez = document.getElementById('listino');
+        if (!sez) return;
+        const r = sez.getBoundingClientRect();
+        setListinoInVista(r.top < window.innerHeight * 0.8 && r.bottom > 0);
+      });
+    };
+    guarda();
+    window.addEventListener('scroll', guarda, { passive: true });
+    window.addEventListener('resize', guarda);
+    return () => {
+      window.removeEventListener('scroll', guarda);
+      window.removeEventListener('resize', guarda);
+      if (ticket) cancelAnimationFrame(ticket);
+    };
+  }, [data]);
+
   const [reviewsKey, setReviewsKey] = useState(0);
   // PN3 — riga di listino espansa (una alla volta): l'acquisto avviene
   // in pagina, niente navigazione verso /p/ come CTA primaria.
@@ -569,7 +597,9 @@ export default function OperatorProfilePage() {
                           </Link>
                         )}
                       </div>
-                      <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+                      <span className={`whitespace-nowrap ${row.on_request
+                          ? 'text-xs font-medium text-gray-500'
+                          : 'text-base font-bold text-[#376254]'}`}>
                         {row.on_request
                           ? t('landings:operator.priceOnRequest', { defaultValue: 'Su richiesta' })
                           : (row.price != null ? `${Number(row.price).toFixed(0)} €` : '')}
@@ -623,7 +653,11 @@ export default function OperatorProfilePage() {
             </section>
           )}
 
-          <Gallery photos={data.photos} name={data.name} t={t} />
+          <Gallery
+            photos={data.portrait_url && !(data.photos || []).includes(data.portrait_url)
+              ? [data.portrait_url, ...(data.photos || [])]
+              : data.photos}
+            name={data.name} t={t} />
 
           {/* PN0 — il profilo e' la vetrina dell'operatore: i suoi
               ritiri pubblicati si vedono SEMPRE, anche in fase network
@@ -665,6 +699,8 @@ export default function OperatorProfilePage() {
           </section>
           )}
 
+          <MiniCalendario upcoming={data.upcoming} t={t} />
+
           <ReviewsSection orgSlug={org_slug} stats={rs}
                           onWrite={() => setWriteOpen(true)}
                           refreshKey={reviewsKey} t={t} i18n={i18n} />
@@ -672,18 +708,18 @@ export default function OperatorProfilePage() {
 
         {/* ── Sidebar carta d'identità ── */}
         <aside className="order-1 lg:order-2 lg:sticky lg:top-20 self-start space-y-4">
+          {/* IG1 (3/9, evolve la decisione del 14/8): il ritratto non
+              vive piu' qui a grandezza naturale — l'identita' sta
+              nella card della testata (avatar tondo, ritaglio sicuro
+              per ogni proporzione) e la foto INTERA resta visibile
+              in galleria col lightbox. La tagline ha una casa sola
+              (la testata): via il doppione. */}
+          <a href="#listino" data-testid="profile-cta-prenota"
+             className="block w-full rounded-full bg-[#376254] text-white text-center
+                        px-4 py-3 text-sm font-bold hover:bg-[#2c4f43] transition-colors">
+            {t('landings:operator.bookSession', { defaultValue: 'Prenota una sessione' })}
+          </a>
           <div className="rounded-2xl border border-border bg-card p-5">
-            {data.portrait_url && (
-              /* founder 14/8 — il ritratto si mostra INTERO: l'altezza
-                 fissa (h-52) + object-cover tagliava la testa sulle
-                 foto verticali. Altezza naturale e la card si adatta;
-                 il max-h evita sidebar chilometriche. */
-              <img src={data.portrait_url} alt={data.name}
-                   className="w-full h-auto max-h-96 object-contain rounded-xl mb-4" />
-            )}
-            {data.tagline && (
-              <p className="text-sm text-gray-700 italic mb-3">"{data.tagline}"</p>
-            )}
             {/* DI (founder 14/8) — le discipline dichiarate, chip nel
                 verde del brand (label da lib/disciplines.js) */}
             {(data.disciplines || []).length > 0 && (
@@ -758,6 +794,19 @@ export default function OperatorProfilePage() {
           </button>
         </aside>
       </main>
+
+      {/* IG1 — CTA sticky mobile: mai perdere la porta d'azione */}
+      {Array.isArray(data.listino) && data.listino.length > 0 && !listinoInVista && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 p-3
+                        bg-white/95 backdrop-blur border-t border-gray-200"
+             data-testid="profile-cta-sticky">
+          <a href="#listino"
+             className="block w-full rounded-full bg-[#376254] text-white text-center
+                        px-4 py-3 text-sm font-bold shadow-lg">
+            {t('landings:operator.bookSession', { defaultValue: 'Prenota una sessione' })}
+          </a>
+        </div>
+      )}
 
       {writeOpen && (
         <WriteReviewModal orgSlug={org_slug} t={t} i18n={i18n}
