@@ -4,8 +4,9 @@
  * CF4 ha assorbito il sistema di widget pinnabili (widgetRegistry,
  * DashboardWidgetCard, PinToDashboardButton, /api/preferences/dashboard):
  * la home non si configura, si legge. Tutto il contenuto vive in
- * OperatorHome — tre card auto-alimentate (prossimi ritiri, incassi
- * dalla stessa fonte di /incassi, da fare con link all'azione).
+ * OperatorHome — auto-alimentata, letta dall'alto in un colpo (IG4):
+ * i quattro numeri del mese, le cose da fare con link all'azione,
+ * prossimi ritiri e andamento incassi (stessa fonte di /incassi).
  * L'analisi approfondita vive nelle pagine dedicate: /incassi,
  * /reviews, /modules/customers-light.
  */

@@ -57,3 +57,59 @@ class TestVetrinaMockup:
         assert "fetch(" not in cal and "api." not in cal.lower()
         pagina = (STORE / "OperatorProfilePage.js").read_text()
         assert "<MiniCalendario" in pagina
+
+
+DASH = FE / "features" / "dashboard"
+
+
+class TestDashboardIG4:
+    """IG4 (3/9/2026) — la home operatore si legge in un colpo, dall'alto:
+    numeri del mese, cose da fare, agenda e andamento. Il founder ha
+    scartato il saluto «Benvenuta, {nome}» («e se si tratta di un
+    uomo?»): la riga di apertura e' la data, uguale per tutti. Le
+    tessere sono INSIGHT del nostro sistema, non i numeri del mockup."""
+
+    def test_nessun_saluto_con_genere(self):
+        home = (DASH / "OperatorHome.js").read_text()
+        assert "Benvenut" not in home and "Bentornat" not in home, \
+            "un saluto declinato sbaglia genere: la riga di apertura e' la data"
+        assert 'data-testid="home-oggi"' in home
+
+    def test_i_numeri_del_mese_prima_di_tutto(self):
+        home = (DASH / "OperatorHome.js").read_text()
+        ordine = [home.index(k) for k in (
+            'data-testid="home-panoramica"', 'data-testid="home-dafare"',
+            'data-testid="home-ritiri"', 'data-testid="home-andamento"')]
+        assert ordine == sorted(ordine), \
+            "gerarchia: Questo mese → Da fare → Prossimi ritiri → Andamento"
+        for tile in ("tile-incassato", "tile-in-arrivo", "tile-prenotazioni", "tile-visite"):
+            assert f'testid="{tile}"' in home
+
+    def test_stesse_sei_fonti_nessuna_chiamata_nuova(self):
+        home = (DASH / "OperatorHome.js").read_text()
+        for ep in ("/event-occurrences/admin/list", "/orders/payments-overview",
+                   "/analytics/cashflow", "/reviews",
+                   "/organizations/current/onboarding-status", "/analytics/visibility"):
+            assert ep in home
+        assert home.count("api.get(") == 6, "IG4 e' pelle: nessuna chiamata in piu'"
+
+    def test_visibilita_spenta_niente_zero_finto(self):
+        """Il modulo commerce puo' essere spento (403): le tessere del
+        mese spariscono, come faceva la vecchia card. Mai uno zero finto."""
+        home = (DASH / "OperatorHome.js").read_text()
+        assert "visRes.value.data || {}) : false" in home
+        assert "visAvailable && (" in home
+
+    def test_il_grafico_non_mostra_il_futuro_a_zero(self):
+        home = (DASH / "OperatorHome.js").read_text()
+        assert "months.filter((m) => m.month <= ym)" in home, \
+            "i 3 secchi futuri del cashflow sembravano un crollo"
+
+    def test_posti_come_barra_e_chiavi_italiane(self):
+        import json
+        home = (DASH / "OperatorHome.js").read_text()
+        assert "reserved_seats" in home and "style={{ width: `${pct}%` }}" in home
+        it = json.loads((FE / "locales" / "it" / "dashboard.json").read_text())["home"]
+        for k in ("overview_title", "tile_collected", "tile_collected_sub", "tile_expected_sub",
+                  "tile_overdue_sub", "delta_same", "delta_vs", "seats", "trend_title", "avg_ticket"):
+            assert k in it, f"chiave italiana mancante: {k}"

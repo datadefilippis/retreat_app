@@ -114,7 +114,22 @@
     "visibility_impressions": "apparizioni",
     "visibility_visits": "visite",
     "visibility_bookings": "prenotazioni",
-    "visibility_all": "Vai a Visibilità"
+    "visibility_all": "Vai a Visibilità",
+    "overview_title": "Questo mese",
+    "tile_collected": "Incassato",
+    "tile_collected_sub": "{{amount}} negli ultimi 12 mesi",
+    "tile_expected_sub": "da incassare, già prenotato",
+    "tile_overdue_sub": "{{amount}} in ritardo",
+    "visibility_bookings_title": "Prenotazioni",
+    "tile_bookings_sub": "ordini confermati nel mese",
+    "visibility_visits_title": "Visite al profilo",
+    "tile_visits_sub": "chi apre la tua pagina pubblica",
+    "delta_same": "come il mese scorso",
+    "delta_vs": "sul mese scorso",
+    "seats": "posti",
+    "trend_title": "Andamento incassi, mese per mese",
+    "trend_empty": "Il grafico si riempie con il primo incasso.",
+    "avg_ticket": "per ordine, in media"
   },
   "onboarding": {
     "title": "Inizia qui",

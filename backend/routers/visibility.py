@@ -53,6 +53,21 @@ def _month_bounds(dt: datetime) -> "tuple[datetime, datetime]":
     return start, nxt
 
 
+def _aware(value) -> Optional[datetime]:
+    """Un datetime confrontabile con i limiti del mese (aware, UTC).
+    Dal DB arrivano naive (= UTC per contratto); i documenti storici
+    possono portare stringhe ISO; il resto e' «nessuna data»."""
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    if isinstance(value, str) and value:
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+    return None
+
+
 async def _month_views(db, org_id: str, prefix: str) -> Dict[str, int]:
     """visits (somma hits) e uniques (doc) del mese."""
     rows = await db.page_views.aggregate([
@@ -99,10 +114,14 @@ async def _build(org_id: str) -> Dict[str, Any]:
         {"_id": 0, "created_at": 1, "sales_channel": 1,
          "items.occurrence_id": 1},
     ).to_list(_MAX_ORDERS)
+    # IG4 (3/9/2026) — Mongo restituisce i datetime SENZA fuso (client
+    # non tz_aware) e qui si confrontavano con un inizio-mese aware:
+    # TypeError → 500 per ogni org con un ordine confermato nel mese
+    # corrente o precedente, cioe' proprio per gli operatori attivi.
     cur_orders = [o for o in orders
-                  if (o.get("created_at") or prev_start) >= cur_start]
+                  if (_aware(o.get("created_at")) or prev_start) >= cur_start]
     prev_orders = [o for o in orders
-                   if (o.get("created_at") or cur_end) < cur_start]
+                   if (_aware(o.get("created_at")) or cur_end) < cur_start]
 
     # ── canali del mese (visite; raggruppati lato UI) ────────────────
     ch_rows = await db.page_views.aggregate([

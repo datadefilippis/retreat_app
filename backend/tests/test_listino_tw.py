@@ -4384,7 +4384,10 @@ class TestProfiloPv3:
         assert "OperatorIdentityHeader" in self.PROFILE.read_text()
         header = self.HEADER.read_text()
         assert "verified-badge-slot" in header       # slot badge PV4 previsto
-        assert "bg-black/45" in header               # stesso overlay cover
+        # IG1 (3/9/2026): la cover e' una banda ad altezza fissa con
+        # gradiente scuro in basso (era un velo pieno bg-black/45): la
+        # card d'identita' sale sopra la cover, il testo non ci sta piu'
+        assert "from-black/50" in header             # stesso gradiente cover
 
     def test_back_to_profile_always_visible(self):
         page = self.PAGE.read_text()

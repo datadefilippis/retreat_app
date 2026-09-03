@@ -76,13 +76,24 @@ esistente. Se l'org non ha nulla in agenda, il calendario NON
 compare (mai una griglia vuota). Zero API: è un modo nuovo di
 disegnare dati vecchi.
 
-### IG4 — LA DASHBOARD «BENVENUTA» (desktop, per lo screen 3)
-Sulla home operatore: saluto «Benvenuta, {nome}» in serif,
-**Panoramica** a 3 stat-card (Prenotazioni · Eventi · Clienti — i
-numeri che la dashboard già possiede), lista «Prossime prenotazioni»
-(data · servizio · cliente · ora, già in pagina oggi). Solo
-gerarchia, spaziature e card: nessun numero nuovo, nessun calcolo
-nuovo.
+### IG4 — LA HOME OPERATORE LETTA IN UN COLPO (desktop, per lo screen 3)
+*Rivisto col founder il 3/9: NIENTE saluto «Benvenuta, {nome}» («e se
+si tratta di un uomo?») e NON i numeri del mockup, ma insight del
+nostro sistema, utili all'operatore.* La home si legge dall'alto:
+1. **Questo mese** — quattro tessere-link: Incassato del mese (sotto,
+   il rotante 12 mesi) · In arrivo (o «in ritardo» in terracotta) ·
+   Prenotazioni (con «+N sul mese scorso») · Visite al profilo (idem).
+   La vecchia card Visibilità, in fondo e solo con visite > 0, si
+   fonde qui; modulo commerce spento (403) → le due tessere non
+   compaiono, mai uno zero finto. Riga di apertura: la data di oggi.
+2. **Da fare** — le azioni prima dei grafici; se nulla, una riga.
+3. **Prossimi ritiri** con i posti come barra · **Andamento incassi
+   mese per mese** fino al mese corrente (i 3 secchi futuri a zero
+   del cashflow sembravano un crollo) + ticket medio.
+Stesse sei chiamate di prima (guardia), solo gerarchia e disegno.
+**Bug vero trovato seedando**: `/analytics/visibility` confrontava
+`created_at` naive con l'inizio-mese aware → 500 per ogni org con un
+ordine confermato nel mese: chiuso (`_aware`, test_visibility_naive).
 
 ### IG5 — COERENZA & POLISH TRASVERSALE
 Ritmo a 8pt, angoli 16px, UNA ombra morbida di casa, serif nei
