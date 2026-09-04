@@ -277,7 +277,11 @@ class TestLessicoProfessionisti:
         diverse, non una sola riusata."""
         land = json.loads((LOCALES_DIR / "it" / "landings.json").read_text())
         assert land["operators"]["heading"] == "Professionisti"
-        assert land["operators"]["pageTitle"] == "Professionisti del benessere"
+        # SR1 (3/9/2026): /operatori e' la directory e il titolo nomina la
+        # rete («I professionisti della rete Aurya»); resta distinto dal
+        # breadcrumb, che e' la regola di questa guardia
+        assert land["operators"]["pageTitle"] == "I professionisti della rete Aurya"
+        assert land["operators"]["pageTitle"] != land["operators"]["heading"]
         # Evoluta 30/8 (founder): la copertina dice l'appartenenza
         # («su Aurya dal»), e l'anno e' member_since — non founded_year.
         assert land["operator"]["memberSince"].startswith(
