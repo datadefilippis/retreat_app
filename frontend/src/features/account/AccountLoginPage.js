@@ -611,7 +611,7 @@ export default function AccountLoginPage() {
             </h1>
             <p className="mt-1 text-sm text-gray-600">
               {isPro
-                ? t('landings:account.proSignupBody', { defaultValue: 'Per chi pratica: profilo pubblico, prenotazioni e calendario. Gratuito.' })
+                ? t('landings:account.proSignupBody2', { defaultValue: 'Il tuo spazio professionale su Aurya. Gratuito.' })
                 : t('landings:account.signupBody2', { defaultValue: 'L\u2019account personale, per chi partecipa: prenotazioni, esperienze salvate e guide. Gratuito.' })}
             </p>
             {/* ID-septies (20/8) — lo split sta QUI, prima del form:
@@ -639,8 +639,10 @@ export default function AccountLoginPage() {
                 <label htmlFor="signup-pro-toggle" className="block text-sm font-semibold text-gray-800 cursor-pointer">
                   {t('landings:account.proToggle', { defaultValue: 'Sono un professionista del benessere' })}
                 </label>
-                <p className="text-[11px] text-gray-500">
-                  {t('landings:account.proToggleHint', { defaultValue: 'Il form si adatta e apri il tuo spazio da qui.' })}{' '}
+                {/* RU-ter (founder 4/9): la riga dice cosa OTTIENI, non
+                    che «il form si adatta» (lo vede da solo) */}
+                <p className="mt-0.5 text-xs leading-snug text-gray-600">
+                  {t('landings:account.proToggleHint2', { defaultValue: 'Ottieni il gestionale e l’area riservata ai professionisti: crei il tuo profilo pubblico, gestisci prenotazioni e calendario e vendi online sessioni, eventi e ritiri.' })}{' '}
                   <Link to="/entra-nella-rete" data-testid="pro-box-cta"
                     className="font-medium text-primary underline underline-offset-2 hover:no-underline">
                     {t('landings:account.proToggleMore', { defaultValue: 'Come funziona' })}
