@@ -22,6 +22,9 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Mail, CheckCircle2, KeyRound, UserPlus, Briefcase } from 'lucide-react';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
+import api from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
+import { extractApiError } from '../../pages/AuthPages';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import { salvaProva, emailDellaProva } from '../../lib/cerchio';
@@ -62,8 +65,26 @@ export default function AccountLoginPage() {
     return ['it', 'en', 'de', 'fr'].includes(lang) ? lang : undefined;
   };
   const navigate = useNavigate();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const token = params.get('token');
+  // RU (4/9, founder) — UNA scheda per entrambe le registrazioni. Fino a
+  // ieri «Sei un professionista?» rimandava a /entra-nella-rete (landing
+  // lunga, form in fondo): due form separati. Ora un interruttore riadatta
+  // la stessa scheda e l'operatore si registra da qui, con la STESSA
+  // signup() di AuthContext che usa /entra-nella-rete (che resta intatta).
+  // ?pro=1 accende l'interruttore da URL (deep link per il menu, domani).
+  const { signup: operatorSignup } = useAuth();
+  const [isPro, setIsPro] = useState(params.get('pro') === '1');
+  const proParam = params.get('pro');
+  useEffect(() => { setIsPro(proParam === '1'); }, [proParam]);
+  const [orgName, setOrgName] = useState('');
+  const [website, setWebsite] = useState('');   // honeypot: gli umani non lo vedono
+  const togglePro = (on) => {
+    setIsPro(on); setError(null);
+    const p = new URLSearchParams(params);
+    if (on) p.set('pro', '1'); else p.delete('pro');
+    setParams(p, { replace: true });
+  };
   // ID — ?next= come su ogni porta: solo percorsi interni (mai '//')
   const rawNext = params.get('next');
   const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//')
@@ -318,6 +339,48 @@ export default function AccountLoginPage() {
   const submitSignup = async (e) => {
     e.preventDefault();
     setSending(true); setError(null);
+    // RU — interruttore acceso: registrazione OPERATORE dalla stessa
+    // scheda (nome + nome attività obbligatori, honeypot, un solo
+    // consenso che il backend timbra come accepted_terms). 202 = email
+    // di verifica in arrivo; il primo accesso passa poi da /benvenuto.
+    if (isPro) {
+      try {
+        await operatorSignup(email.trim(), password, name.trim(), orgName.trim(),
+          undefined, !!signupConsent, emailLang() || 'it', website);
+        // RU (founder) — la spunta del Cerchio vale anche qui: viaggia
+        // sul SUO flusso (double opt-in), mai come effetto silenzioso
+        // dello spazio appena aperto. Best-effort: se fallisce, lo
+        // spazio e' comunque creato e l'esito non cambia.
+        if (wantsLetter) {
+          try {
+            await api.post('/public/newsletter/subscribe', {
+              email: email.trim(), name: name.trim() || null,
+              language: emailLang() || 'it', source: 'signup_pro',
+              consent: true,
+            });
+          } catch { /* iscrizione facoltativa: non blocca */ }
+        }
+        setState('signupSentPro');
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 429) {
+          setError(t('landings:account.tooFast', {
+            defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.',
+          }));
+        } else if (status === 409) {
+          setError(t('landings:account.proSignupExists', {
+            defaultValue: 'Questa email ha già uno spazio su Aurya. Accedi oppure usa Password dimenticata.',
+          }));
+        } else {
+          setError(extractApiError(err, t('landings:account.requestError', {
+            defaultValue: 'Qualcosa non ha funzionato. Riprova tra un minuto.',
+          })));
+        }
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
     try {
       await platformApi.post('/platform/auth/signup', {
         name: name.trim() || undefined,
@@ -534,36 +597,75 @@ export default function AccountLoginPage() {
         {state === 'signup' && (
           <>
             <UserPlus className="h-8 w-8 text-primary mx-auto" />
-            <h1 className="mt-3 text-lg font-bold text-gray-900">
-              {t('landings:account.signupTitle', { defaultValue: 'Crea il tuo account Aurya' })}
+            <h1 className="mt-3 text-lg font-bold text-gray-900" data-testid="signup-title">
+              {isPro
+                ? t('landings:account.proSignupTitle', { defaultValue: 'Apri il tuo spazio su Aurya' })
+                : t('landings:account.signupTitle', { defaultValue: 'Crea il tuo account Aurya' })}
             </h1>
             <p className="mt-1 text-sm text-gray-600">
-              {t('landings:account.signupBody2', { defaultValue: 'L\u2019account personale, per chi partecipa: prenotazioni, esperienze salvate e guide. Gratuito.' })}
+              {isPro
+                ? t('landings:account.proSignupBody', { defaultValue: 'Per chi pratica: profilo pubblico, prenotazioni e calendario. Gratuito.' })
+                : t('landings:account.signupBody2', { defaultValue: 'L\u2019account personale, per chi partecipa: prenotazioni, esperienze salvate e guide. Gratuito.' })}
             </p>
             {/* ID-septies (20/8) — lo split sta QUI, prima del form:
                 in fondo l'operatore non lo vedeva e compilava la
                 registrazione sbagliata. Sul login non c'e' affatto:
-                la' la porta e' la stessa per tutti. */}
-            <div className="mt-3 flex items-center gap-2.5 rounded-xl border border-primary/40 bg-primary/[0.06] px-3 py-2.5 text-left ring-1 ring-primary/15 shadow-[0_0_14px_-2px_hsl(158_28%_30%/0.35)]"
+                la' la porta e' la stessa per tutti.
+                RU (4/9) — lo split non rimanda piu' altrove: e' un
+                interruttore che riadatta QUESTA scheda. Il link a
+                /entra-nella-rete resta, per chi vuole capire prima. */}
+            <div className={`mt-3 flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left ring-1 transition-colors ${
+              isPro
+                ? 'border-primary bg-primary/[0.10] ring-primary/30'
+                : 'border-primary/40 bg-primary/[0.06] ring-primary/15 shadow-[0_0_14px_-2px_hsl(158_28%_30%/0.35)]'}`}
               data-testid="operator-rescue-link">
+              <input
+                type="checkbox" id="signup-pro-toggle" checked={isPro}
+                onChange={e => togglePro(e.target.checked)}
+                className="h-5 w-5 shrink-0 rounded border-gray-300 accent-primary cursor-pointer"
+                data-testid="signup-pro-toggle"
+              />
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                 <Briefcase className="h-4 w-4 text-primary" aria-hidden />
               </span>
-              <p className="text-xs leading-snug text-gray-700">
-                {t('landings:account.proSplit', { defaultValue: 'Sei un professionista del benessere?' })}{' '}
-                <Link to="/entra-nella-rete" data-testid="pro-box-cta"
-                  className="font-medium text-primary underline underline-offset-2 hover:no-underline">
-                  {t('landings:account.proSplitCta', { defaultValue: 'Apri il tuo spazio' })}
-                </Link>
-              </p>
+              <div className="leading-snug">
+                <label htmlFor="signup-pro-toggle" className="block text-sm font-semibold text-gray-800 cursor-pointer">
+                  {t('landings:account.proToggle', { defaultValue: 'Sono un professionista del benessere' })}
+                </label>
+                <p className="text-[11px] text-gray-500">
+                  {t('landings:account.proToggleHint', { defaultValue: 'Il form si adatta e apri il tuo spazio da qui.' })}{' '}
+                  <Link to="/entra-nella-rete" data-testid="pro-box-cta"
+                    className="font-medium text-primary underline underline-offset-2 hover:no-underline">
+                    {t('landings:account.proToggleMore', { defaultValue: 'Come funziona' })}
+                  </Link>
+                </p>
+              </div>
             </div>
             <form onSubmit={submitSignup} className="mt-4 space-y-3" data-testid="signup-form">
               <input
-                type="text" value={name} autoComplete="name"
+                type="text" value={name} autoComplete="name" required={isPro}
                 onChange={e => setName(e.target.value)}
                 placeholder={t('landings:account.namePlaceholder', { defaultValue: 'Il tuo nome' })}
                 className={inputCls}
               />
+              {isPro && (
+                <>
+                  {/* RU — il nome dell'attivita' e' cio' che diventa il
+                      profilo pubblico: obbligatorio come in /entra-nella-rete */}
+                  <input
+                    type="text" required value={orgName} autoComplete="organization"
+                    onChange={e => setOrgName(e.target.value)}
+                    placeholder={t('landings:account.proOrgPlaceholder', { defaultValue: 'Nome della tua attività' })}
+                    className={inputCls}
+                    data-testid="signup-org"
+                  />
+                  {/* honeypot: fuori dalla vista, i bot lo compilano e il
+                      backend li scarta (identico a /entra-nella-rete) */}
+                  <input type="text" value={website} onChange={e => setWebsite(e.target.value)}
+                    name="website" tabIndex={-1} autoComplete="off" aria-hidden="true"
+                    style={{ position: 'absolute', left: '-9999px', height: 0, width: 0, opacity: 0 }} />
+                </>
+              )}
               <input
                 type="email" required value={email} autoComplete="email"
                 onChange={e => setEmail(e.target.value)}
@@ -590,7 +692,10 @@ export default function AccountLoginPage() {
                 </li>
               </ul>
               {/* NL2 — la Lettera e' un consenso A PARTE: si puo'
-                  chiedere qui, ma non e' mai preselezionata (GDPR) */}
+                  chiedere qui, ma non e' mai preselezionata (GDPR).
+                  RU (founder 4/9) — resta possibile ANCHE per il
+                  professionista: con l'interruttore acceso l'iscrizione
+                  parte a parte, sul suo flusso double opt-in. */}
               <label className="flex items-start gap-2 text-left cursor-pointer select-none">
                 <input
                   type="checkbox" checked={wantsLetter}
@@ -627,15 +732,21 @@ export default function AccountLoginPage() {
               <button type="submit" disabled={sending || !pwOk} className={btnCls} data-testid="signup-submit">
                 {sending
                   ? t('landings:account.sending', { defaultValue: 'Invio…' })
-                  : t('landings:account.signupSubmit', { defaultValue: 'Crea account' })}
+                  : isPro
+                    ? t('landings:account.proSignupSubmit', { defaultValue: 'Crea il tuo spazio' })
+                    : t('landings:account.signupSubmit', { defaultValue: 'Crea account' })}
               </button>
             </form>
-            {/* NL1-bis — l'alternativa, dichiarata e secondaria */}
+            {/* NL1-bis — l'alternativa, dichiarata e secondaria.
+                RU — non esiste per l'operatore (nessun magic link sul
+                suo cappello): con l'interruttore acceso sparisce. */}
+            {!isPro && (
             <button type="button" onClick={submitSignupNoPassword}
               disabled={sending} className={`mt-3 ${linkBtnCls}`}
               data-testid="signup-no-password">
               {t('landings:account.signupNoPw', { defaultValue: 'Preferisci senza password? Ti mandiamo un link per entrare' })}
             </button>
+            )}
             <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
               {t('landings:account.haveAccount', { defaultValue: 'Ho già un account: accedi' })}
             </button>
@@ -650,6 +761,23 @@ export default function AccountLoginPage() {
             </h1>
             <p className="mt-2 text-sm text-gray-600" data-testid="signup-sent-body">
               {t('landings:account.signupSentBody3', { defaultValue: 'Ti abbiamo scritto: apri l’email e conferma il tuo indirizzo. Da lì entri nel tuo account.' })}
+            </p>
+            <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
+              {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}
+            </button>
+          </>
+        )}
+
+        {/* RU — esito della registrazione OPERATORE dalla scheda unica:
+            verifica email, poi login e /benvenuto (ID-octies) */}
+        {state === 'signupSentPro' && (
+          <>
+            <CheckCircle2 className="h-8 w-8 text-primary mx-auto" />
+            <h1 className="mt-3 text-lg font-bold text-gray-900">
+              {t('landings:account.signupSentTitle', { defaultValue: 'Controlla la tua email' })}
+            </h1>
+            <p className="mt-2 text-sm text-gray-600" data-testid="signup-sent-pro-body">
+              {t('landings:account.proSignupSentBody', { defaultValue: 'Ti abbiamo scritto: apri l’email e clicca il link di verifica. Poi entri con email e password e ti guidiamo nel tuo spazio.' })}
             </p>
             <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
               {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}
