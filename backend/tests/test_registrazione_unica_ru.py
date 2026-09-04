@@ -55,6 +55,14 @@ class TestInterruttoreNellaStessaScheda:
         assert "text-sm font-semibold" in label
         assert "Sono un professionista del benessere" in label
 
+    def test_uscendo_dalla_registrazione_si_spegne(self):
+        """RU-bis (founder 4/9): «procedi a resettare il flag». Tornando
+        al login o dopo l'invio l'interruttore si spegne e ?pro sparisce:
+        la scheda riparte sempre neutra, il deep link vale per l'arrivo."""
+        src = PORTA.read_text()
+        goto = src.split("const goTo = (view) => {")[1].split("\n  };")[0]
+        assert "if (view !== 'signup' && isPro) togglePro(false);" in goto
+
     def test_deep_link_pro_accende_l_interruttore(self):
         """?pro=1 accende l'interruttore da URL e spegnerlo lo toglie:
         domani il menu «Diventa professionista Aurya» puo' puntarci."""

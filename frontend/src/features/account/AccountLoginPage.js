@@ -127,7 +127,14 @@ export default function AccountLoginPage() {
   // timbrato sull'account (aurya_legal) e nell'audit consensi.
   const [signupConsent, setSignupConsent] = useState(false);
 
-  const goTo = (view) => { setState(view); setError(null); };
+  const goTo = (view) => {
+    setState(view); setError(null);
+    // RU-bis (founder 4/9): uscendo dalla registrazione (torni al login,
+    // o hai gia' inviato) l'interruttore professionista si spegne da
+    // solo e ?pro sparisce: la scheda riparte sempre neutra. Il deep
+    // link ?pro=1 vale solo per l'arrivo.
+    if (view !== 'signup' && isPro) togglePro(false);
+  };
 
   useSeoMeta({ title: 'Entra in Aurya', noindex: true });
   useEffect(() => {
