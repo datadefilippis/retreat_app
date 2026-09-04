@@ -244,9 +244,11 @@ export default function NetworkHomePage() {
       numeral: '02',
       image: PHOTO.pros,
       title: t('nwHome.pillarProTitle', { defaultValue: "Professionisti" }),
-      text: t('nwHome.pillarProText', { defaultValue: "Stiamo costruendo una rete di professionisti raccontati attraverso le loro storie, il loro metodo e la loro esperienza." }),
+      // SR2 — niente promesse di cantiere: quelle vivono nel Manifesto.
+      // Qui si dice cosa trovi, e la porta si chiama come nel menu.
+      text: t('nwHome.pillarProText', { defaultValue: "Persone che conosciamo una per una: la loro storia, il modo in cui lavorano, i loro servizi e i loro ritiri." }),
       to: NETWORK_PATH,
-      ctaLabel: t('nwHome.pillarProCta', { defaultValue: "Scopri la rete" }),
+      ctaLabel: t('nwHome.pillarProCta', { defaultValue: "Scopri i professionisti" }),
     },
     {
       id: 'esperienze',
@@ -324,13 +326,16 @@ export default function NetworkHomePage() {
               </Lede>
             </div>
             {/* due azioni, ma di peso diverso: la prima e' la porta di
-                casa (il Magazine e' l'unica cosa gia' viva), la
-                seconda smista l'altro pubblico senza contendersela.
+                casa, la seconda smista l'altro pubblico senza
+                contendersela. SR2 (3/9/2026, SITO IMMEDIATO): la porta
+                di casa e' la DIRECTORY dei professionisti — quando la
+                rete era vuota era il Magazine «l'unica cosa gia' viva»;
+                ora chi cerca qualcuno lo trova dal primo schermo.
                 In colonna su mobile: affiancate, la secondaria
                 finirebbe schiacciata sotto i 375px. */}
             <div className="mt-9 flex flex-col items-center gap-5 sm:mt-10 sm:flex-row sm:justify-center sm:gap-8">
-              <EditorialCta to={MAGAZINE_PATH} variant="solid" tone="dark" data-testid="hp-hero-cta">
-                {t('nwHome.heroCta', { defaultValue: "Esplora il Magazine" })}
+              <EditorialCta to={NETWORK_PATH} variant="solid" tone="dark" data-testid="hp-hero-cta">
+                {t('nwHome.heroCta', { defaultValue: "Scopri i professionisti" })}
               </EditorialCta>
               {/* LC6 — stessa parola dell'header: "professionisti".
                   La stessa destinazione aveva due nomi (header "Per i
@@ -544,15 +549,16 @@ export default function NetworkHomePage() {
               <div aria-hidden className="gold-rule mt-8 max-w-[10rem]" />
             </div>
             <div className="lg:col-span-8">
-              {/* tone inherit: sul verde l'opacita' di default mangia
-                  contrasto, e il crema all'80% scenderebbe sotto AA */}
-              <Lede size="lead" tone="inherit" className="opacity-90">
-                {t('nwHome.whyP1', { defaultValue: "Ogni giorno migliaia di persone cercano un professionista del benessere." })}
-              </Lede>
-              {/* l'antitesi: due righe display separate da un filo.
+              {/* SR2 (3/9/2026, SITO IMMEDIATO — founder: «troppe
+                  informazioni, uno si stanca»): il perche' per esteso
+                  (fiducia, tempo, trasparenza, «abbiamo deciso di
+                  costruire Aurya») vive nel Manifesto, che e' casa sua.
+                  Qui resta l'antitesi in due righe display — la frase
+                  che definisce il progetto — e la porta per leggere il
+                  resto. Da sei capoversi a due righe.
                   I fili sono decorativi (sono bordi, non testo), le
                   righe stanno a piena opacita' — 7,28:1 sul salvia. */}
-              <div className="mt-9 border-t border-[#f6f2e8]/20 sm:mt-10">
+              <div className="border-t border-[#f6f2e8]/20">
                 <p className="border-b border-[#f6f2e8]/20 py-6 font-display text-[1.4rem]
                               leading-[1.24] tracking-[-0.015em] sm:py-7 sm:text-[1.75rem] lg:text-[1.95rem]">
                   {t('nwHome.whyP2', { defaultValue: "Trovare un professionista è semplice." })}
@@ -562,20 +568,7 @@ export default function NetworkHomePage() {
                   {t('nwHome.whyP3', { defaultValue: "Scegliere quello giusto è ciò che conta." })}
                 </p>
               </div>
-              <div className="mt-9 grid gap-7 sm:gap-10 lg:grid-cols-2">
-                <Lede size="body" tone="inherit" className="opacity-90">
-                  {t('nwHome.whyP4', { defaultValue: "Noi crediamo che ogni percorso inizi dalla fiducia, e che la fiducia abbia bisogno di tempo, conoscenza e trasparenza." })}
-                </Lede>
-                <div>
-                  <Lede size="body" tone="inherit">
-                    {t('nwHome.whyP5', { defaultValue: "Per questo abbiamo deciso di costruire Aurya." })}
-                  </Lede>
-                  <Lede size="body" tone="inherit" className="mt-3 opacity-90">
-                    {t('nwHome.whyP6', { defaultValue: "Uno spazio dove contenuti, persone ed esperienze possano incontrarsi e crescere insieme." })}
-                  </Lede>
-                </div>
-              </div>
-              <div className="mt-10">
+              <div className="mt-9">
                 <EditorialCta to="/manifesto" variant="light" data-testid="hp-why-cta">
                   {t('nwHome.whyCta', { defaultValue: "Leggi il Manifesto" })}
                 </EditorialCta>
@@ -685,18 +678,17 @@ export default function NetworkHomePage() {
               <p>{t('nwHome.prosP2', { defaultValue: "Un modo di lavorare." })}</p>
               <p>{t('nwHome.prosP3', { defaultValue: "Un motivo per cui ha scelto questo percorso." })}</p>
             </div>
-            <Lede size="body" className="mt-8">
-              {t('nwHome.prosP4', { defaultValue: "Aurya nasce anche per questo: raccontare il tuo lavoro con cura, aiutarti a costruire una presenza digitale autorevole e, nel tempo, offrirti gli strumenti per far crescere la tua attività." })}
-            </Lede>
-            <Lede size="body" tone="inherit" className="mt-5">
+            {/* SR2 (3/9/2026): il capoverso lungo («presenza digitale
+                autorevole, strumenti per crescere») e' il discorso della
+                landing /entra-nella-rete, non della home: qui resta il
+                crescendo del founder, l'invito in una riga e UNA porta
+                (il Manifesto ha gia' la sua, due sezioni sopra). */}
+            <Lede size="body" tone="inherit" className="mt-8">
               {t('nwHome.prosP5', { defaultValue: "Se sei un professionista del benessere, ci piacerebbe conoscerti." })}
             </Lede>
-            <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
+            <div className="mt-9">
               <EditorialCta to={JOIN_PATH} variant="solid" data-testid="hp-pros-cta">
                 {t('nwHome.prosCta', { defaultValue: "Entra nella rete" })}
-              </EditorialCta>
-              <EditorialCta to="/manifesto" variant="quiet" data-testid="hp-pros-cta-alt">
-                {t('nwHome.prosCtaAlt', { defaultValue: "Scopri la nostra visione" })}
               </EditorialCta>
             </div>
           </div>

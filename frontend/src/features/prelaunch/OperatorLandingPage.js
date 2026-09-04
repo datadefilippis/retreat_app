@@ -585,19 +585,29 @@ export default function OperatorLandingPage() {
             <DisplayTitle as="h2" id="ol-faq-title" size="section" measure="title">
               {t('opPro.faqTitle', { defaultValue: 'Domande frequenti.' })}
             </DisplayTitle>
-            <dl className="mt-10 sm:mt-12">
+            {/* SR5 (3/9/2026, SITO IMMEDIATO — founder: «troppe
+                informazioni, uno si stanca»): le cinque risposte
+                restano tutte nel DOM (i crawler le leggono) ma si
+                aprono UNA alla volta: <details> nativo, zero JS, la
+                domanda e' il pulsante. La pagina passa da otto blocchi
+                di testo pieno a una lista di cinque domande. */}
+            <div className="mt-10 sm:mt-12" data-testid="ol-faq-list">
               {faq.map((f, i) => (
-                <div key={f.q}
-                     className={`py-7 ${i > 0 ? 'border-t border-[#1e2f28]/[0.10]' : 'pt-0'}`}>
-                  <dt className="font-display text-[1.3rem] leading-snug text-foreground sm:text-[1.5rem]">
-                    {f.q}
-                  </dt>
-                  <dd className="mt-3 max-w-[62ch] text-base leading-relaxed text-foreground/75 sm:text-lg">
+                <details key={f.q}
+                         className={`group py-5 ${i > 0 ? 'border-t border-[#1e2f28]/[0.10]' : 'pt-0'}`}>
+                  <summary className="flex cursor-pointer list-none items-start justify-between gap-4
+                                      font-display text-[1.2rem] leading-snug text-foreground sm:text-[1.4rem]
+                                      [&::-webkit-details-marker]:hidden">
+                    <span>{f.q}</span>
+                    <span aria-hidden
+                          className="mt-1 shrink-0 text-[#8a7440] transition-transform group-open:rotate-45">+</span>
+                  </summary>
+                  <div className="mt-3 max-w-[62ch] text-base leading-relaxed text-foreground/75 sm:text-lg">
                     {f.a}
-                  </dd>
-                </div>
+                  </div>
+                </details>
               ))}
-            </dl>
+            </div>
           </div>
         </Section>
 

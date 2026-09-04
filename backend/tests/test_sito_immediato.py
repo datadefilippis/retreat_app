@@ -81,6 +81,35 @@ class TestSr1Directory:
         assert 'canonical = f"{base}/operatori"' in src[j:j + 1500]
         assert 'href="/esplora-operatori"' not in src
 
+    def test_sr2_home_la_porta_di_casa_e_la_directory(self):
+        """SR2 — hero: la primaria porta ai professionisti; la card
+        Professionisti non dice piu' «stiamo costruendo» (vive nel
+        Manifesto); il perche' e' l'antitesi in due righe + la porta;
+        la sezione professionisti chiude con l'invito e UNA porta."""
+        home = (FE / "features" / "network" / "NetworkHomePage.js").read_text()
+        i = home.index('data-testid="hp-hero-cta"')
+        assert "NETWORK_PATH" in home[i - 200:i]
+        assert "stiamo costruendo" not in home[home.index("id: 'professionisti'"):home.index("id: 'esperienze'")].lower()
+        why = home[home.index('data-testid="hp-why"'):home.index('data-testid="hp-why-cta"')]
+        for k in ("whyP1", "whyP4", "whyP5", "whyP6"):
+            assert f"nwHome.{k}" not in why, f"il perche' per esteso ({k}) vive nel Manifesto"
+        pros = home[home.index('data-testid="hp-pros"'):home.index('data-testid="hp-letter"')]
+        assert "nwHome.prosP4" not in pros and "hp-pros-cta-alt" not in pros
+        it = json.loads((FE / "locales" / "it" / "landings.json").read_text())["nwHome"]
+        assert it["heroCta"] == "Scopri i professionisti"
+        assert "stiamo costruendo" not in it["pillarProText"].lower()
+        # la shell SSR dice quello che dice la pagina
+        shell = (BACKEND / "routers" / "seo_shell.py").read_text()
+        assert "Stiamo costruendo una rete di professionisti" not in shell
+        assert "c['whyP4']" not in shell and "c['prosP4']" not in shell
+
+    def test_sr5_faq_della_landing_si_aprono_una_alla_volta(self):
+        landing = (FE / "features" / "prelaunch" / "OperatorLandingPage.js").read_text()
+        blocco = landing[landing.index('data-testid="ol-faq"'):landing.index('data-testid="ol-who"')]
+        assert "<details" in blocco and "<summary" in blocco, \
+            "le FAQ restano nel DOM ma si aprono una alla volta"
+        assert "{f.a}" in blocco, "la risposta deve restare nel DOM per i crawler"
+
     def test_nessun_link_interno_dice_ancora_la_rete_come_destinazione(self):
         """I link a /operatori restano (l'URL e' stabile): cambiano le
         etichette che promettevano «la rete» come pagina-racconto."""

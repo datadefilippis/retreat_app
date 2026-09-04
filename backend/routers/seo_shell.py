@@ -289,26 +289,25 @@ _HOME_COPY = {
                       "del benessere senza semplificazioni e senza "
                       "promesse facili."),
     "pillarProTitle": "Professionisti",
-    "pillarProText": ("Stiamo costruendo una rete di professionisti "
-                      "raccontati attraverso le loro storie, il loro "
-                      "metodo e la loro esperienza."),
+    # SR2 (3/9/2026) — la shell dice quello che dice la pagina: il
+    # «stiamo costruendo» vive nel Manifesto; il perche' resta
+    # l'antitesi in due righe; la sezione professionisti chiude con
+    # l'invito in una riga (il capoverso lungo e' della landing).
+    "pillarProText": ("Persone che conosciamo una per una: la loro storia, "
+                      "il modo in cui lavorano, i loro servizi e i loro "
+                      "ritiri."),
     "pillarExpTitle": "Esperienze",
     "pillarExpText": ("Workshop, ritiri ed eventi per trasformare ciò che "
                       "hai scoperto in qualcosa da vivere."),
     "whyTitle": "Perché esiste Aurya?",
     "whyP2": "Trovare un professionista è semplice.",
     "whyP3": "Scegliere quello giusto è ciò che conta.",
-    "whyP4": ("Noi crediamo che ogni percorso inizi dalla fiducia, e che "
-              "la fiducia abbia bisogno di tempo, conoscenza e trasparenza."),
     "magTitle": "Dal Magazine",
     "magBody": ("Il Magazine è il cuore di Aurya. Qui raccontiamo pratiche, "
                 "persone e idee che aiutano a comprendere il benessere con "
                 "uno sguardo aperto, concreto e curioso."),
     "prosTitle": "Per chi dedica la propria vita al benessere degli altri.",
-    "prosP4": ("Aurya nasce anche per questo: raccontare il tuo lavoro con "
-               "cura, aiutarti a costruire una presenza digitale autorevole "
-               "e, nel tempo, offrirti gli strumenti per far crescere la "
-               "tua attività."),
+    "prosP5": "Se sei un professionista del benessere, ci piacerebbe conoscerti.",
     "letterTitle": "Ricevi la Lettera di Aurya.",
     "letterP6": ("Solo contenuti scelti con cura, da ricevere con calma e "
                  "leggere con attenzione."),
@@ -342,7 +341,7 @@ async def _home_content_html() -> str:
         f"<li>{c['pillarExpTitle']} — {c['pillarExpText']}</li>",
         "</ul>",
         f"<h2>{c['whyTitle']}</h2>",
-        f"<p>{c['whyP2']} {c['whyP3']} {c['whyP4']}</p>",
+        f"<p>{c['whyP2']} {c['whyP3']}</p>",
         f"<p><a href=\"/manifesto\">Leggi il Manifesto</a> · "
         f"<a href=\"/chi-siamo\">Chi siamo</a></p>",
         f"<h2>{c['magTitle']}</h2>",
@@ -369,7 +368,7 @@ async def _home_content_html() -> str:
     parti += [
         "<p><a href=\"/blog\">Tutti gli articoli del Magazine</a></p>",
         f"<h2>{c['prosTitle']}</h2>",
-        f"<p>{c['prosP4']}</p>",
+        f"<p>{c['prosP5']}</p>",
         "<p><a href=\"/entra-nella-rete\">Entra nella rete</a></p>",
         f"<h2>{c['letterTitle']}</h2>",
         f"<p>{c['letterP6']}</p>",

@@ -5733,11 +5733,15 @@ class TestHomeHp2:
         assert "Per i professionisti" in blocco
         assert "JOIN_PATH" in blocco, \
             "la secondaria porta al funnel professionisti"
-        # la primaria punta al Magazine passando dalla costante
+        # SR2 (3/9/2026, SITO IMMEDIATO): la primaria porta alla
+        # DIRECTORY dei professionisti (NETWORK_PATH = /operatori): chi
+        # cerca qualcuno deve avere la porta nel primo schermo. Prima
+        # portava al Magazine, «l'unica cosa gia' viva» quando la rete
+        # era vuota.
         i_solid = blocco.index('variant="solid"')
         intorno = blocco[max(0, i_solid - 200):i_solid + 200]
-        assert "MAGAZINE_PATH" in intorno, \
-            "la CTA primaria dell'hero deve portare al Magazine"
+        assert "NETWORK_PATH" in intorno, \
+            "la CTA primaria dell'hero deve portare ai professionisti"
 
     def test_hp2_payoff_occhiello_sopra_l_h1(self):
         """Il payoff di brand resta l'occhiello dell'hero, sopra l'h1."""

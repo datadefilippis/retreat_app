@@ -157,7 +157,35 @@ SR1 (mezza giornata, è la richiesta) → SR3 (ore) → SR2 (mezza
 giornata) → SR4+SR6 (ore) → SR5 (mezza giornata) → SR7 trasversale.
 Totale ~2 giornate. Deploy in uno o due giri, col go del founder.
 
-## 5 · Decisione da prendere prima di SR1
+## 4b · Stato al 3/9/2026 sera (founder: «procediamo, per la decisione seguo il tuo consiglio»)
+
+- **SR1 FATTO** (3bd81804): /operatori = directory in ogni fase,
+  /esplora-operatori rimanda, copertina «I professionisti della rete
+  Aurya» + una riga + «Come nasce la rete →», shell SEO delega alla
+  directory (canonico unico, h1 = SPA), etichette allineate. Regola di
+  visibilità: pubblicati e non esclusi. Trovato e chiuso in corsa il
+  bug del numero d'ordine (max lessicografico: dopo ORD-9999 collisione
+  infinita).
+- **SR3 FATTO** (stesso commit): header a quattro voci.
+- **SR2 FATTO**: hero → «Scopri i professionisti», card Professionisti
+  senza «stiamo costruendo», «Perché esiste Aurya?» ridotto
+  all'antitesi in due righe + porta, sezione professionisti senza il
+  capoverso lungo e con una porta sola; shell SSR allineata. Home da
+  529 a 450 parole. RINVIATO: i «3 volti veri» nella card (serve una
+  chiamata in home; si valuta con la prossima onda).
+- **SR4/SR6 RIDIMENSIONATE, con giudizio**: le code di Manifesto e Chi
+  siamo sono corte (due righe + CTA) e guardiate come «movimenti»
+  scritti dal founder; il Manifesto è la pagina che PUÒ dire «stiamo
+  costruendo» e ospitare la Lettera. La ridondanza vera stava in home e
+  in La Rete, ed è uscita da lì. Le due pagine restano com'erano.
+- **SR5 FATTO (parte 1)**: FAQ della landing in accordion nativo
+  (<details>, testo nel DOM per i crawler): da 945 a ~720 parole
+  visibili. Tagli ulteriori toccherebbero il testo del founder
+  («Per chi è Aurya», la chiusura): da decidere insieme.
+- **SR7**: guardie in tests/test_sito_immediato.py (gate, redirect,
+  dati veri, copertina, menu, shell, home, FAQ).
+
+## 5 · Decisione da prendere prima di SR1 (PRESA: pubblicati e non esclusi)
 La directory mostra **tutti i profili pubblicati** (regola esplora,
 oggi 8) oppure **solo i membri della rete** (flag admin, oggi gli
 stessi 8)? Proposta: pubblicati e non esclusi, con «Verificato» come
