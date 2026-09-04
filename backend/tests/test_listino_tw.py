@@ -5533,9 +5533,13 @@ class TestLoginRegia:
         (operatorTo: /entra-nella-rete in rete, /inizia in
         marketplace)."""
         src = self.SHELL.read_text()
-        assert "marketplace.forProfessionals" in src \
-            and "'Per i professionisti'" in src, \
+        assert "marketplace.forProfessionals" in src, \
             "il link testuale professionisti dell'header deve restare"
+        # founder 4/9/2026: l'etichetta dice il GESTO («Diventa
+        # professionista Aurya»), non piu' la categoria. Il DISPOSITIVO
+        # difeso resta lo stesso: un link testuale al funnel, che segue
+        # la fase — il testo lo decide il founder, non il test.
+        assert "'Diventa professionista Aurya'" in src
         assert "const operatorTo = isNetwork" in src, \
             "il link deve seguire la fase (operatorTo)"
 

@@ -327,7 +327,7 @@ function AccountMenu({ hasPlatformToken, hasOperatorToken, operatorTo, onLogout,
 // definizione: chi aggiunge una superficie la aggiunge QUI.
 const NAV_ITEMS = [
   { to: '/', key: 'marketplace.navRetreats', fallback: 'Ritiri' },
-  { to: '/operatori', key: 'marketplace.navOperators', fallback: 'Professionisti' },
+  { to: '/operatori', key: 'marketplace.navOperators', fallback: 'I nostri professionisti' },
   { to: '/destinazioni', key: 'marketplace.navDestinations', fallback: 'Destinazioni' },
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
 ];
@@ -351,7 +351,7 @@ const NAV_ITEMS = [
 // dentro Chi siamo e nel footer: le pagine restano vive e indicizzate,
 // escono solo dal menu.
 const NETWORK_NAV_ITEMS = [
-  { to: '/operatori', key: 'marketplace.navOperators', fallback: 'Professionisti' },
+  { to: '/operatori', key: 'marketplace.navOperators', fallback: 'I nostri professionisti' },
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
   // SP4 — la biblioteca educativa sul suono e' contenuto pubblico come
   // il Magazine: voce propria («Sound» e' un nome, resta cosi' in ogni
@@ -398,8 +398,11 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
      opacita' fa 4,53 — ed e' anche cio' che fa «risplendere» la voce,
      insieme all'alone d'oro che compare solo al passaggio del mouse. */
 
+  /* founder 4/9/2026: la voce evidenziata dice il GESTO, non la
+     categoria («Diventa professionista Aurya» invece di «Per i
+     professionisti»): chi legge capisce cosa succede se clicca. */
   const operatorLabel = isNetwork
-    ? t('marketplace.forProfessionals', { defaultValue: 'Per i professionisti' })
+    ? t('marketplace.forProfessionals', { defaultValue: 'Diventa professionista Aurya' })
     : t('marketplace.forOrganizers', { defaultValue: 'Sei un professionista?' });
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -752,7 +755,7 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
                     fase, quindi una sola etichetta, la stessa del menu:
                     «Professionisti» (era «La Rete» / «Esplora operatori»). */}
                 <li><Link to="/operatori" className="hover:text-white" data-testid="footer-nw-operatori">
-                  {t('marketplace.navOperators', { defaultValue: 'Professionisti' })}
+                  {t('marketplace.navOperators', { defaultValue: 'I nostri professionisti' })}
                 </Link></li>
                 {/* HP2 → SW3 — "Chi siamo". La nota di direzione
                     creativa che stava qui e' rientrata: il founder ha
