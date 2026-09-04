@@ -731,7 +731,7 @@ export default function NetworkHomePage() {
                            tracking-[-0.015em] text-hero-shadow sm:text-[1.55rem]">
               <li>{t('nwHome.letterP2', { defaultValue: "Meditazioni riservate." })}</li>
               <li>{t('nwHome.letterP3', { defaultValue: "Ritiri ed esperienze in anteprima." })}</li>
-              <li>{t('nwHome.letterP4', { defaultValue: "La Lettera, ogni due settimane." })}</li>
+              <li>{t('nwHome.letterP4', { defaultValue: "La Lettera, quando vale la pena." })}</li>
             </ul>
             <div aria-hidden className="gold-rule mt-8 w-24" />
             <Lede size="body" tone="inherit" className="mt-7 max-w-[46ch] text-hero-shadow opacity-90">

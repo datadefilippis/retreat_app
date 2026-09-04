@@ -176,6 +176,13 @@ Ordine: CN4 (subito) → CN1 → CN2 → CN3 → CN5; CN0 cresce in parallelo
 - **CN5 FATTO**: tests/test_cerchio_cn.py; metriche GA da leggere a 30
   giorni (generate_lead landing vs confirm).
 - **CN0** cresce in parallelo (contenuto del founder), nessun numero in pagina.
+- **Rifinitura della sera (founder)**: il form della landing torna
+  COMPLETO (nome, email, città, raggio, interessi; preferenza accesa,
+  consenso spento); via ogni cadenza dichiarata («La Lettera, quando
+  vale la pena», mai «ogni due settimane»: è un vincolo); via le righe
+  che «sembrano finte» (chi scrive, nessun automatismo) → al loro
+  posto «Prova prima di entrare»: due assaggi veri e cliccabili
+  (novanta secondi di meditazione riservata; chi c'è nella rete).
 - Deploy: col go del founder, dopo il build di audit.
 
 ## 4 · Decisioni da prendere prima di partire (PRESE il 3/9)

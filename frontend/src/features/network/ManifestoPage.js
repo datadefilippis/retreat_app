@@ -146,7 +146,7 @@ export default function ManifestoPage() {
      estratti come etichette, perche' estrarli vorrebbe dire riscriverle. */
   const steps = [
     t('manifesto.buildingStep1', { defaultValue: 'Oggi è uno spazio dove leggere, comprendere e orientarsi.' }),
-    t('manifesto.buildingStep2', { defaultValue: 'Nei prossimi mesi inizieremo a raccontare i primi professionisti che entreranno nella rete.' }),
+    t('manifesto.buildingStep2', { defaultValue: 'Oggi raccontiamo i primi professionisti della rete, uno per uno.' }),
     t('manifesto.buildingStep3', { defaultValue: 'Poi arriveranno esperienze, workshop, ritiri e strumenti che renderanno più semplice organizzare e vivere il benessere.' }),
   ];
 
@@ -298,11 +298,8 @@ export default function ManifestoPage() {
                 <span className="block">{t('manifesto.howClose1', { defaultValue: 'Preferiamo crescere lentamente.' })}</span>
                 <span className="block">{t('manifesto.howClose2', { defaultValue: 'Ma costruire qualcosa che possa durare.' })}</span>
               </p>
-              <div className="mt-9">
-                <EditorialCta to="/newsletter" variant="quiet" data-testid="mf-cta-letter-top">
-                  {t('manifesto.ctaLetter', { defaultValue: 'Entra nel Cerchio di Aurya' })}
-                </EditorialCta>
-              </div>
+              {/* SR4 (3/9/2026): qui c'era un secondo invito al Cerchio;
+                  la porta si offre una volta sola, nella firma */}
             </div>
           </div>
         </Section>
@@ -396,32 +393,12 @@ export default function ManifestoPage() {
             il testo dice "ci piacerebbe conoscerti", cioe' parla a chi
             deve ancora candidarsi, mentre /operatori e' la pagina di chi
             e' gia' stato raccontato. */}
-        <Section tone="sand" rhythm="screen" width="max-w-3xl"
-                 id="mf-professionista" labelledBy="mf-pro-title">
-          <div data-testid="mf-pro" className="grid gap-8 lg:grid-cols-12 lg:gap-10">
-            <div className="lg:col-span-5">
-              <DisplayTitle as="h2" id="mf-pro-title" size="section" measure="tight"
-                            className="text-[1.9rem] sm:text-[2.4rem] lg:text-[2.4rem]">
-                {t('manifesto.proTitle', { defaultValue: 'Se sei un professionista' })}
-              </DisplayTitle>
-            </div>
-            <div className="lg:col-span-7">
-              <Lede size="body">
-                {t('manifesto.proP1', { defaultValue: 'Stiamo iniziando a conoscere le prime persone che entreranno a far parte della rete Aurya.' })}
-              </Lede>
-              <Lede size="body" className="mt-5">
-                {t('manifesto.proP2', { defaultValue: 'Se condividi questa visione e senti che il tuo lavoro merita di essere raccontato con cura, ci piacerebbe conoscerti.' })}
-              </Lede>
-              <div className="mt-8">
-                <EditorialCta to="/entra-nella-rete" variant="solid" data-testid="mf-cta-pro">
-                  {t('manifesto.ctaPro', { defaultValue: 'Scopri la pagina dedicata ai professionisti' })}
-                </EditorialCta>
-              </div>
-            </div>
-          </div>
-        </Section>
+        {/* SR4 (3/9/2026, founder: «rimozione ridondanze»): qui c'era
+            «Se sei un professionista» — la stessa porta della pill in
+            header, della home e della firma qui sotto. La porta resta
+            una, nella firma. */}
 
-        {/* ── 7. SE VUOI SEGUIRE IL PROGETTO — la firma ────────────
+        {/* ── 7. LA FIRMA — le due porte ───────────────────────────
             Il settimo blocco e' ospitato dentro lo split con la
             fotografia vera dei fondatori. Tenere la firma come nona
             sezione a se' avrebbe messo tre congedi di fila; qui invece
@@ -447,11 +424,10 @@ export default function ManifestoPage() {
             <DisplayTitle as="h2" id="mf-follow-title" size="section" measure="title">
               {t('manifesto.followTitle', { defaultValue: 'Se vuoi seguire il progetto' })}
             </DisplayTitle>
+            {/* SR4: due righe, non tre — la promessa senza vincoli di
+                cadenza («quando vale il tuo tempo», mai «ogni N») */}
             <Lede size="body" className="mt-6">
-              {t('manifesto.followP1', { defaultValue: 'Aurya cambierà molto nei prossimi mesi.' })}
-            </Lede>
-            <Lede size="body" className="mt-4">
-              {t('manifesto.followP2', { defaultValue: 'Se ti interessa il modo in cui immaginiamo il benessere e vuoi seguire questa evoluzione fin dall’inizio, puoi ricevere la nostra lettera.' })}
+              {t('manifesto.followP2', { defaultValue: 'Se ti interessa il modo in cui immaginiamo il benessere, il Cerchio è il posto dove lo raccontiamo per primi: meditazioni riservate, ritiri in anteprima, la Lettera.' })}
             </Lede>
             <Lede size="body" className="mt-4">
               {t('manifesto.followP3', { defaultValue: 'Scriveremo solo quando avremo qualcosa che vale davvero il tuo tempo.' })}
@@ -464,8 +440,8 @@ export default function ManifestoPage() {
               <EditorialCta to="/newsletter" variant="solid" data-testid="mf-cta-letter">
                 {t('manifesto.ctaLetterPrimary', { defaultValue: 'Entra nel Cerchio di Aurya' })}
               </EditorialCta>
-              <EditorialCta to="/blog" variant="quiet" data-testid="mf-cta-magazine">
-                {t('manifesto.ctaMagazine', { defaultValue: 'Esplora il Magazine' })}
+              <EditorialCta to="/entra-nella-rete" variant="quiet" data-testid="mf-cta-pro">
+                {t('manifesto.ctaPro', { defaultValue: 'Sei un professionista?' })}
               </EditorialCta>
             </div>
           </div>

@@ -173,11 +173,18 @@ Totale ~2 giornate. Deploy in uno o due giri, col go del founder.
   capoverso lungo e con una porta sola; shell SSR allineata. Home da
   529 a 450 parole. RINVIATO: i «3 volti veri» nella card (serve una
   chiamata in home; si valuta con la prossima onda).
-- **SR4/SR6 RIDIMENSIONATE, con giudizio**: le code di Manifesto e Chi
-  siamo sono corte (due righe + CTA) e guardiate come «movimenti»
-  scritti dal founder; il Manifesto è la pagina che PUÒ dire «stiamo
-  costruendo» e ospitare la Lettera. La ridondanza vera stava in home e
-  in La Rete, ed è uscita da lì. Le due pagine restano com'erano.
+- **SR4 FATTA la sera (founder: «in chi siamo vedo cose ridondanti...
+  integrare il manifesto o tenere separato?»)**: due pagine, DUE RUOLI,
+  zero doppioni. Manifesto = il perché (domanda, credo, cinque
+  principi, cosa costruiamo): esce «Se sei un professionista» (porta
+  detta tre volte) e il secondo invito al Cerchio; la firma tiene le
+  due porte. 486→433 parole. Chi siamo = la fiducia (la domanda + porta
+  al Manifesto, i due percorsi con la foto, i quattro tempi con «Scopri
+  i professionisti», chiusura con tre porte e indirizzo): escono la
+  domanda distesa, i quattro principi doppi e la scala delle «persone
+  che costruiranno». 417→198 parole.
+- **SR6**: la Lettera/il Cerchio in home (form), landing, footer e
+  nelle firme di Manifesto e Chi siamo. Basta.
 - **SR5 FATTO (parte 1)**: FAQ della landing in accordion nativo
   (<details>, testo nel DOM per i crawler): da 945 a ~720 parole
   visibili. Tagli ulteriori toccherebbero il testo del founder

@@ -82,7 +82,7 @@ export default function CancelloLettera({
         {durataSec > 120 && <>Sono {fmtMin(durataSec)} in tutto. </>}
         Entrare è <b>gratis</b>: lasci l&rsquo;email, confermi, e da
         quel momento ascolti tutte le meditazioni riservate, ricevi i
-        ritiri in anteprima e la Lettera ogni due settimane.
+        ritiri in anteprima e la Lettera.
       </p>
       {attesa && (
         <div className={chiaro ? S.warn : 'warnbox'}

@@ -31,7 +31,7 @@ def _send_reminder_email(email: str, name, token: str) -> bool:
             <p>{saluto}</p>
             <p>ti manca un clic per entrare nel <strong>Cerchio di Aurya</strong>:
             le meditazioni riservate, i ritiri e le esperienze in anteprima,
-            la Lettera ogni due settimane.</p>
+            la Lettera quando vale la pena.</p>
             <p style="text-align: center;">
                 <a href="{url}" class="btn">Entro nel Cerchio</a>
             </p>

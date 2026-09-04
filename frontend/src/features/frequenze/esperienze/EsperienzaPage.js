@@ -124,7 +124,7 @@ export default function EsperienzaPage({ id }) {
               {!prova() && (
                 <p className="esp-lettera" data-testid="esp-invito-lettera">
                   Ti è rimasta addosso? Nel <Link to="/newsletter">Cerchio di Aurya</Link> trovi
-                  le meditazioni riservate e, ogni due settimane, la Lettera.
+                  le meditazioni riservate, i ritiri in anteprima e la Lettera.
                 </p>
               )}
               <button type="button" className="esp-inizia"

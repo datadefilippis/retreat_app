@@ -6254,7 +6254,8 @@ class TestManifestoSw1:
         ("mf-how", "manifesto.howTitle"),
         ("mf-principles", "manifesto.principlesTitle"),
         ("mf-building", "manifesto.buildingTitle"),
-        ("mf-pro", "manifesto.proTitle"),
+        # SR4 (3/9/2026): «Se sei un professionista» (mf-pro) e' uscito —
+        # la porta vive nella firma, una volta sola
         ("mf-follow", "manifesto.followTitle"),
     )
 
@@ -6344,21 +6345,23 @@ class TestManifestoSw1:
                 f"fatto non verificato nel copy: '{inventato}'"
 
     def test_sw1_doppia_cta_discreta(self):
-        """LC8 — le uscite del Manifesto brand v3: due CTA a meta'
-        pagina (Magazine e Lettera, quiet) e le due chiusure — la
-        sezione professionisti (mf-cta-pro → /entra-nella-rete) e la
-        sezione seguire il progetto (Lettera + Magazine)."""
+        """LC8 → SR4 (3/9/2026, founder: «rimozione ridondanze»): il
+        Manifesto tiene UNA CTA a meta' pagina (il Magazine, quiet) e
+        UNA chiusura, la firma dei fondatori, con le due porte: il
+        Cerchio (piena) e «Sei un professionista?» (quiet). La sezione
+        «Se sei un professionista» e' uscita (era la stessa porta detta
+        due volte) e con lei il secondo invito al Cerchio a meta' pagina."""
         src = self._page()
         assert 'data-testid="mf-cta-magazine-top"' in src
-        assert 'data-testid="mf-cta-letter-top"' in src
-        blocco_pro = src[src.index('data-testid="mf-pro"'):]
-        assert 'to="/entra-nella-rete"' in blocco_pro[:2200], \
-            "la sezione professionisti deve portare a /entra-nella-rete"
+        assert 'data-testid="mf-cta-letter-top"' not in src, \
+            "il Cerchio si offre una volta sola, nella firma"
+        assert 'data-testid="mf-pro"' not in src, \
+            "la sezione professionisti e' una ridondanza: la porta sta nella firma"
         blocco_follow = src[src.index('data-testid="mf-follow"'):]
         assert 'to="/newsletter"' in blocco_follow, \
-            "la chiusura deve offrire la Lettera"
-        assert 'to="/blog"' in blocco_follow, \
-            "la chiusura deve offrire il Magazine"
+            "la chiusura deve offrire il Cerchio"
+        assert 'to="/entra-nella-rete"' in blocco_follow, \
+            "la chiusura deve offrire la porta dei professionisti"
 
     # ── 4. SEO nella voce ────────────────────────────────────────────
 

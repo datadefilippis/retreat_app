@@ -87,7 +87,7 @@ export default function NewsletterConfirmPage() {
               {t('nlConfirm.title', { defaultValue: 'Sei nel Cerchio di Aurya' })}
             </h1>
             <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-gray-600">
-              {t('nlConfirm.body', { defaultValue: 'Da adesso: le meditazioni riservate sono aperte, i ritiri e le esperienze ti arrivano in anteprima, e la Lettera ogni due settimane.' })}
+              {t('nlConfirm.body', { defaultValue: 'Da adesso: le meditazioni riservate sono aperte, i ritiri e le esperienze ti arrivano in anteprima, e la Lettera quando vale la pena.' })}
             </p>
             {!next && (
               <div className="mt-6">

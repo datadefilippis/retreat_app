@@ -186,7 +186,7 @@ def _send_confirm_email(email: str, name: Optional[str], token: str,
             <ul>
                 <li>le <strong>meditazioni riservate</strong>, gratis;</li>
                 <li>i <strong>ritiri e le esperienze in anteprima</strong>, prima che siano pieni;</li>
-                <li>la <strong>Lettera</strong>, ogni due settimane: una pratica raccontata bene e una persona della rete.</li>
+                <li>la <strong>Lettera</strong>: una pratica raccontata bene e una persona della rete, quando vale la pena.</li>
             </ul>
             <p style="text-align: center;">
                 <a href="{url}" class="btn">Entro nel Cerchio</a>

@@ -37,14 +37,22 @@ class TestCn1Landing:
         for k in ("r1t", "r2t", "r3t"):
             assert it[k]
         assert "riservate" in it["r1t"] and "anteprima" in it["r2t"] and "Lettera" in it["r3t"]
-        # niente conteggi ne' «in arrivo» (founder: meno dettagli inutili)
+        # niente conteggi, niente «in arrivo», niente cadenza dichiarata
+        # (founder 3/9: «meno dettagli inutili»; «ogni due settimane mi
+        # vincolo»), niente anti-promesse in apertura
         testo = " ".join(it.values()).lower()
-        for vietato in ("una meditazione", "1 meditazione", "in arrivo", "notifiche", "rumore"):
+        for vietato in ("1 meditazione", "in arrivo", "ogni due settimane",
+                        "notifiche", "rumore", "nessun automatismo"):
             assert vietato not in testo, f"in landing non si dice «{vietato}»"
 
     def test_preferenza_ritiri_accesa_con_la_citta(self):
         src = (PRE / "NewsletterLandingPage.js").read_text()
-        assert "experiencesOptIn" in src and "experiencesDefault" in src and "experiencesLight" in src
+        # founder 3/9 sera: nome e interessi restano nel form della
+        # landing (niente variante leggera qui; la home la usa)
+        assert "experiencesOptIn" in src and "experiencesDefault" in src
+        assert "experiencesLight" not in src, "la landing mostra citta', raggio e interessi"
+        i = src.index("<LeadForm")
+        assert "showName\n" in src[i:i + 400] or "showName " in src[i:i + 400], "il nome resta nel form"
         form = (PRE / "LeadForm.jsx").read_text()
         assert "useState(\n    Boolean(experiencesOptIn && experiencesDefault))" in form
         assert "{!experiencesLight && (<>" in form, "la variante leggera mostra solo la citta'"
@@ -97,8 +105,14 @@ class TestCn3Ribrand:
         assert "nel Cerchio di Aurya" in med and "Sei già nel Cerchio?" in med
         shell_fe = (FE / "features" / "storefront" / "components" / "MarketplaceShell.jsx").read_text()
         assert "'Il Cerchio di Aurya'" in shell_fe
-        # la Lettera resta il nome dell'email dentro il Cerchio: non sparisce
-        assert "La Lettera, ogni due settimane" in landings["nwHome"]["letterP4"]
+        # la Lettera resta il nome dell'email dentro il Cerchio: non sparisce,
+        # ma senza cadenza dichiarata (founder: «altrimenti mi vincolo»)
+        assert landings["nwHome"]["letterP4"] == "La Lettera, quando vale la pena."
+        for f in ("features/network/NetworkHomePage.js", "features/frequenze/CancelloLettera.jsx",
+                  "features/prelaunch/NewsletterConfirmPage.js", "features/prelaunch/NewsletterLandingPage.js"):
+            assert "ogni due settimane" not in (FE / f).read_text(), f"{f}: cadenza dichiarata"
+        for f in ("routers/subscribers.py", "services/cerchio_reminder.py"):
+            assert "ogni due settimane" not in (BACKEND / f).read_text(), f"{f}: cadenza dichiarata"
 
 
 class TestCn4PaginaLink:

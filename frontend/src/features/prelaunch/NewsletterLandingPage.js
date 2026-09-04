@@ -19,7 +19,7 @@
  * La pila di valore è solo di cose vere, nell'ordine in cui
  * convertono: meditazioni riservate (sbloccate dall'email confermata),
  * ritiri ed esperienze in anteprima (la preferenza esiste già: qui
- * parte ACCESA, con la città), la Lettera ogni due settimane. Il
+ * parte ACCESA, con la città), la Lettera quando vale la pena. Il
  * salvataggio del Lab richiede l'account: si promette solo come
  * «passo dopo» (il ponte vive nella pagina di conferma).
  *
@@ -42,6 +42,7 @@
  * (misure LT1 in git), foreground su sabbia/bianco > 12.
  */
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Headphones, CalendarHeart, Mail } from 'lucide-react';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
@@ -52,7 +53,6 @@ import {
 } from '../../components/editorial';
 
 const OPENER_PHOTO = '/media/hero-destination.webp';
-const FOUNDERS_PHOTO = '/media/chisiamo-aurya.jpg';
 const SAGE = '#2f5749';
 
 /** la scheda del form: bianco pieno, l'unico della pagina, così l'occhio ci finisce dentro */
@@ -66,14 +66,17 @@ function SchedaForm({ t, id, context, titolo }) {
           {titolo}
         </p>
       )}
+      {/* founder 3/9 sera: nome e interessi restano nel form (il nome
+          e' il saluto delle email, gli interessi rendono vera
+          l'anteprima «nella tua zona, sui tuoi temi»): niente variante
+          leggera qui, solo la preferenza accesa */}
       <LeadForm
         type="traveler"
         subscribe
         compact
-        showName={false}
+        showName
         experiencesOptIn
         experiencesDefault
-        experiencesLight
         accent={SAGE}
         context={context === 'hero' ? 'newsletter' : 'newsletter_fondo'}
         ctaLabel={t('nl.cta', { defaultValue: 'Entra nel Cerchio' })}
@@ -92,7 +95,7 @@ export default function NewsletterLandingPage() {
 
   useSeoMeta({
     title: t('nl.seoTitle', { defaultValue: 'Il Cerchio di Aurya | Meditazioni riservate, ritiri in anteprima, una lettera quando vale' }),
-    description: t('nl.seoDesc', { defaultValue: 'Entra nel Cerchio di Aurya: meditazioni riservate gratuite, ritiri ed esperienze olistiche in anteprima nella tua zona e la Lettera, ogni due settimane. Ti cancelli con un clic.' }),
+    description: t('nl.seoDesc', { defaultValue: 'Entra nel Cerchio di Aurya: meditazioni riservate gratuite, ritiri ed esperienze olistiche in anteprima nella tua zona e la Lettera, quando vale la pena. Ti cancelli con un clic.' }),
     canonicalPath: '/newsletter',
   });
 
@@ -109,15 +112,29 @@ export default function NewsletterLandingPage() {
     },
     {
       Icon: Mail,
-      title: t('nl.r3t', { defaultValue: 'La Lettera, ogni due settimane' }),
-      body: t('nl.r3b', { defaultValue: 'Una pratica raccontata bene e una persona della rete da conoscere. Si legge in cinque minuti, e vale il tempo che ci metti.' }),
+      // founder 3/9 sera: nessuna cadenza dichiarata (una frequenza
+      // promessa e' un vincolo, non un valore): arriva quando vale la pena
+      title: t('nl.r3t', { defaultValue: 'La Lettera' }),
+      body: t('nl.r3b', { defaultValue: 'Una pratica raccontata bene e una persona della rete da conoscere. Arriva quando vale la pena leggerla, non a scadenza.' }),
     },
   ];
 
-  const perChi = [
-    t('nl.who1', { defaultValue: 'Per chi ama approfondire.' }),
-    t('nl.who2', { defaultValue: 'Per chi preferisce capire prima di scegliere.' }),
-    t('nl.who3', { defaultValue: 'Per chi cerca un professionista, un ritiro o una pratica, e vuole sapere prima degli altri.' }),
+  /* founder 3/9 sera: via le righe che «sembrano quasi fake» (chi
+     scrive, nessun automatismo...). Al loro posto una cosa che si puo'
+     FARE prima di entrare: due assaggi veri, che sono la prova migliore. */
+  const assaggi = [
+    {
+      to: '/meditazioni',
+      title: t('nl.a1t', { defaultValue: 'Ascolta un assaggio' }),
+      body: t('nl.a1b', { defaultValue: 'Novanta secondi di una meditazione riservata, senza iscriverti. Se ti fa bene, il resto è dentro.' }),
+      cta: t('nl.a1c', { defaultValue: 'Vai alle meditazioni' }),
+    },
+    {
+      to: '/operatori',
+      title: t('nl.a2t', { defaultValue: 'Guarda chi c’è nella rete' }),
+      body: t('nl.a2b', { defaultValue: 'I professionisti che raccontiamo, con i loro servizi e i loro ritiri: sono loro che ti avviseremo per primi.' }),
+      cta: t('nl.a2c', { defaultValue: 'Scopri i professionisti' }),
+    },
   ];
 
   return (
@@ -186,33 +203,28 @@ export default function NewsletterLandingPage() {
           </div>
         </Section>
 
-        {/* ── 3. PER CHI E' + CHI SCRIVE — la fiducia, in una sezione ── */}
-        <Section tone="sand" rhythm="screen" width="max-w-6xl" labelledBy="nl-who-title">
-          <div data-testid="nl-who" className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
-            <div className="lg:col-span-7">
-              <DisplayTitle as="h2" id="nl-who-title" size="section" measure="title">
-                {t('nl.whoTitle', { defaultValue: 'Per chi è il Cerchio?' })}
-              </DisplayTitle>
-              <div className="mt-7 space-y-2">
-                {perChi.map((line) => (
-                  <p key={line} className="text-balance text-lg leading-relaxed text-foreground/85 sm:text-xl">
-                    {line}
+        {/* ── 3. PROVA PRIMA DI ENTRARE — due assaggi veri ─────────── */}
+        <Section tone="sand" rhythm="screen" width="max-w-5xl" labelledBy="nl-who-title">
+          <div data-testid="nl-who">
+            <DisplayTitle as="h2" id="nl-who-title" size="section" measure="title">
+              {t('nl.whoTitle', { defaultValue: 'Prova prima di entrare.' })}
+            </DisplayTitle>
+            <div className="mt-10 grid gap-6 sm:gap-7 lg:grid-cols-2">
+              {assaggi.map((a) => (
+                <Link key={a.to} to={a.to}
+                      className="group flex h-full flex-col rounded-[1.75rem] bg-white p-7 ring-1 ring-[#1e2f28]/[0.07] shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)] transition-shadow hover:shadow-[0_1px_2px_rgba(30,47,40,0.06),0_24px_48px_-24px_rgba(30,47,40,0.35)] sm:p-8">
+                  <h3 className="font-display text-[1.4rem] leading-tight text-foreground sm:text-2xl">
+                    {a.title}
+                  </h3>
+                  <p className="mt-3 max-w-[46ch] text-pretty text-[0.975rem] leading-relaxed text-foreground/75 sm:text-base">
+                    {a.body}
                   </p>
-                ))}
-              </div>
-              <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-foreground/75 sm:text-lg">
-                {t('nl.who4', { defaultValue: 'Lo scriviamo noi due, Davide e Valentina, con i professionisti che incontriamo. Nessun automatismo, nessuna casella riempita per riempirla.' })}
-              </p>
-              <p className="mt-5 font-display text-xl italic text-foreground sm:text-2xl">
-                {t('nl.signature', { defaultValue: 'Davide e Valentina' })}
-              </p>
+                  <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2f5749] group-hover:underline">
+                    {a.cta} →
+                  </span>
+                </Link>
+              ))}
             </div>
-            <figure className="lg:col-span-5">
-              <img src={FOUNDERS_PHOTO}
-                   alt={t('nl.foundersAlt', { defaultValue: 'Davide e Valentina, i fondatori di Aurya' })}
-                   loading="lazy"
-                   className="aspect-[4/5] w-full rounded-[1.75rem] object-cover object-[50%_35%] shadow-[0_18px_40px_-24px_rgba(30,47,40,0.35)]" />
-            </figure>
           </div>
         </Section>
 
