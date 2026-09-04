@@ -333,14 +333,12 @@ async def _home_content_html() -> str:
         "<ul>",
         (f"<li><a href=\"/blog\">{c['pillarMagTitle']}</a> — "
          f"{c['pillarMagText']}</li>"),
-        # T7 (25/8) — DUE porte, non una: il racconto della rete e
-        # l'elenco di chi c'e'. Prima la home linkava solo il primo, e
-        # /esplora-operatori — la pagina con i professionisti veri —
-        # restava ORFANA: indicizzabile ma senza un solo voto interno,
-        # che in SEO vale quanto non esistere.
+        # T7 (25/8) → SR1 (3/9): la directory dei professionisti VIVE
+        # su /operatori (era /esplora-operatori, che ora rimanda li'):
+        # una porta sola, mai piu' orfana.
         (f"<li><a href=\"/operatori\">{c['pillarProTitle']}</a> — "
          f"{c['pillarProText']} "
-         f"<a href=\"/esplora-operatori\">Vedi i professionisti</a></li>"),
+         f"<a href=\"/operatori\">Vedi i professionisti</a></li>"),
         f"<li>{c['pillarExpTitle']} — {c['pillarExpText']}</li>",
         "</ul>",
         f"<h2>{c['whyTitle']}</h2>",
@@ -1588,73 +1586,13 @@ async def _meta_experiences(category: Optional[str] = None) -> dict:
 
 
 async def _meta_operators_index(category: Optional[str] = None) -> dict:
-    from core.prelaunch import site_phase
-    base = _base_url()
-    label = category.replace("-", " ").title() if category else None
-    path = "/operatori" + (f"/{category}" if category else "")
-    # RT5 — fase rete: /operatori e' la landing della rete, il title
-    # coincide con quello della pagina (NetworkOperatorsPage). Anche le
-    # varianti /operatori/{cat} rendono la stessa landing: canonical
-    # sulla radice.
-    if site_phase() == "network":
-        # GS3 (25/8) — anche questa landing era un body vuoto (46
-        # caratteri inglesi). Il corpo: il racconto + i LINK ai profili
-        # dei membri (/o/{slug}) — la corsia dei crawler verso le
-        # pagine che nessun elenco puo' replicare. Stesso perimetro di
-        # /public/network/members.
-        descr = ("Costruiamo una rete di professionisti del "
-                 "benessere, una persona alla volta. Ogni "
-                 "profilo nasce da una conversazione vera.")
-        membri_html = ""
-        try:
-            from database import organizations_collection
-            orgs = await organizations_collection.find(
-                {"network_member": True, "is_active": {"$ne": False},
-                 "is_sample": {"$ne": True},
-                 "exclude_from_listings": {"$ne": True},
-                 "public_slug": {"$nin": [None, ""]}},
-                {"_id": 0, "name": 1, "public_slug": 1},
-            ).sort("name", 1).to_list(100)
-            if orgs:
-                voci = "".join(
-                    f'<li><a href="/o/{_html.escape(o["public_slug"])}">'
-                    f'{_html.escape(o.get("name") or o["public_slug"])}'
-                    f"</a></li>" for o in orgs)
-                membri_html = f"<ul>{voci}</ul>"
-        except Exception:   # noqa: BLE001 — senza DB resta il racconto
-            pass
-        body = ("<div><h1>La rete Aurya</h1>"
-                f"<p>{_html.escape(descr)}</p>"
-                f"{membri_html}"
-                '<p><a href="/esplora-operatori">Vedi i professionisti '
-                "della rete</a> · "
-                '<a href="/entra-nella-rete">Sei un professionista '
-                "del benessere? Entra nella rete</a></p>"
-                f"{_BRAND_BODY_LINKS}</div>")
-        return {
-            # OF3 — "operatori" e' il nome interno, "professionisti"
-            # quello che il sito usa da agosto. E la vecchia descrizione
-            # prometteva interviste e racconti al plurale su una rete
-            # che oggi ha una persona sola: promettere a Google piu' di
-            # quello che si trova arrivando e' il modo piu' rapido di
-            # far rimbalzare chi arriva.
-            "title": "La rete Aurya | I professionisti che stiamo conoscendo",
-            "description": descr,
-            "canonical": f"{base}/operatori",
-            "hreflang": _hub_hreflang(f"{base}/operatori"),
-            "content_html": body,
-            "image": f"{base}/og-cover.jpg",
-        }
-    return {
-        "title": (f"Professionisti di {label} | Aurya" if label
-                  else "Tutti i professionisti del benessere | Aurya"),
-        "description": ("Scopri i professionisti del benessere su Aurya: "
-                        "pratiche, esperienze e percorsi, con profili, "
-                        "prossime date e prenotazione online."),
-        "canonical": f"{base}{path}",
-        "hreflang": _hub_hreflang(f"{base}{path}"),
-        "image": f"{base}/og-cover.jpg",
-    }
+    # RT5 → SR1 (3/9/2026, piano SITO IMMEDIATO): in fase rete
+    # /operatori era la landing del racconto («presto potrai
+    # conoscere...») con i membri in coda; con 8 professionisti veri
+    # pubblicati, /operatori E' la directory in ogni fase — la stessa
+    # che serviva /esplora-operatori (che ora rimanda qui). Un solo
+    # documento, un solo canonico, lo stesso title della SPA.
+    return await _meta_esplora_operatori(category)
 
 
 async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
@@ -1672,7 +1610,9 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
     """
     from database import organizations_collection
     base = _base_url()
-    canonical = f"{base}/esplora-operatori"
+    # SR1 — la directory vive su /operatori: canonico unico anche per
+    # chi arriva ancora da /esplora-operatori (la SPA rimanda)
+    canonical = f"{base}/operatori"
     titolo = "Professionisti del benessere in Italia | Aurya"
     descr = ("Scopri i professionisti del benessere su Aurya: pratiche, "
              "discipline e percorsi, raccontati uno a uno.")
@@ -1702,10 +1642,10 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
     except Exception:   # noqa: BLE001 — la shell non muore mai per il DB
         pass
 
-    corpo = (f"<div><h1>Professionisti del benessere</h1>"
+    corpo = (f"<div><h1>I professionisti della rete Aurya</h1>"
              f"<p>{_html.escape(descr)}</p>"
              + (f"<ul>{voci}</ul>" if voci else "")
-             + '<p><a href="/operatori">Come funziona la rete Aurya</a> · '
+             + '<p><a href="/manifesto">Come nasce la rete</a> · '
                '<a href="/blog">Il Magazine</a></p></div>')
     return {
         "title": titolo,
@@ -1747,7 +1687,7 @@ async def _meta_esplora_ritiri(categoria: Optional[str] = None,
              + ("" if quanti else
                 "<p>Non ci sono ancora ritiri in calendario. "
                 "Intanto puoi conoscere i professionisti della rete.</p>")
-             + '<p><a href="/esplora-operatori">I professionisti</a> · '
+             + '<p><a href="/operatori">I professionisti</a> · '
                '<a href="/blog">Il Magazine</a></p></div>')
     return {
         "title": "Ritiri ed esperienze di benessere in Italia | Aurya",
@@ -1949,7 +1889,7 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     dove = ", ".join(x for x in (city, region) if x)
     if dove:
         pezzi.append(f"<p>Dove: {_html.escape(dove)}</p>")
-    pezzi.append('<p><a href="/esplora-operatori">Tutti i professionisti '
+    pezzi.append('<p><a href="/operatori">Tutti i professionisti '
                  'della rete Aurya</a> · <a href="/blog">Il Magazine</a>'
                  '</p></div>')
 

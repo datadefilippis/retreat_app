@@ -126,11 +126,15 @@ class TestNetworkPhaseRT5:
 
     @pytest.mark.asyncio
     async def test_operators_index_network_meta(self, monkeypatch):
+        """RT5 → SR1 (3/9/2026): in fase rete /operatori non e' piu' il
+        racconto («La rete Aurya | ...») ma la DIRECTORY dei
+        professionisti, con lo stesso title della SPA."""
         monkeypatch.setenv("SITE_PHASE", "network")
         meta = await shell._meta_operators_index()
-        assert "rete" in meta["title"].lower()
-        # le varianti /operatori/{cat} rendono la stessa landing:
-        # canonical sulla radice
+        assert meta["title"] == "Professionisti del benessere in Italia | Aurya"
+        assert "rete aurya |" not in meta["title"].lower()
+        # le varianti /operatori/{cat} mostrano un sottoinsieme della
+        # stessa lista: canonical sulla radice
         meta_cat = await shell._meta_operators_index("yoga")
         assert meta_cat["canonical"].endswith("/operatori")
 
@@ -475,8 +479,14 @@ class TestSbloccoIndicizzazioneGs:
             assert "noindex: isPreview," not in src, \
                 f"{nome}: il client rimette noindex e annulla la shell"
             assert "isPreview || (!loading" not in src, nome
-            assert "isPreview ? '/esplora-" in src, \
-                f"{nome}: su esplora il canonico dev'essere se stessa"
+        # ritiri: su esplora il canonico e' se stessa (regola ES 25/8)
+        assert "isPreview ? '/esplora-" in rit, \
+            "ritiri: su esplora il canonico dev'essere se stessa"
+        # SR1 (3/9/2026): la directory dei professionisti vive su
+        # /operatori in ogni fase (esplora rimanda): canonico = /operatori,
+        # niente piu' isPreview nella pagina
+        assert "isPreview" not in ops, "operatori: la directory non e' piu' un'anteprima"
+        assert "canonicalPath: categoria ? `/operatori/${categoria}` : '/operatori'" in ops
         # e il vuoto resta governato dai dati, in entrambe
         assert "!loading && items.length === 0" in ops
         assert "!loading && (data?.items || []).length === 0" in rit
@@ -569,9 +579,13 @@ class TestSbloccoIndicizzazioneGs:
         vale quanto un documento che non esiste. Ora la linkano la
         home, il racconto della rete e ogni profilo."""
         src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        # la home (blocco _home_content_html) e la pagina rete
-        assert src.count('href="/esplora-operatori"') >= 3, \
+        # SR1 (3/9/2026): la directory vive su /operatori (esplora
+        # rimanda li'): sono i link a /operatori a contare, e nessun
+        # corpo della shell deve linkare ancora la rotta vecchia
+        assert src.count('href="/operatori"') >= 3, \
             "la directory deve avere piu' di una porta interna"
+        assert 'href="/esplora-operatori"' not in src, \
+            "la shell linka ancora la rotta vecchia della directory"
 
     def test_i_profili_veri_sono_dichiarati_in_sitemap(self):
         """ES (25/8) — restavano fuori da ogni sitemap perche' il
@@ -744,8 +758,10 @@ class TestSbloccoIndicizzazioneGs:
         caratteri inglesi: ora un corpo italiano con h1 e link."""
         monkeypatch.setenv("SITE_PHASE", "network")
         ops = await shell.resolve_meta("/operatori")
-        assert "<h1>La rete Aurya</h1>" in (ops.get("content_html") or "")
-        assert 'href="/entra-nella-rete"' in ops["content_html"]
+        # SR1 (3/9/2026): il corpo di /operatori e' la directory (h1
+        # = titolo della SPA) col link «Come nasce la rete» al Manifesto
+        assert "<h1>I professionisti della rete Aurya</h1>" in (ops.get("content_html") or "")
+        assert 'href="/manifesto"' in ops["content_html"]
         man = await shell.resolve_meta("/manifesto")
         assert "<h1>" in (man.get("content_html") or "")
         assert 'href="/blog"' in man["content_html"]

@@ -94,7 +94,7 @@ async def update(order_id: str, org_id: str, updates: dict) -> bool:
     return result.matched_count > 0
 
 
-async def get_next_order_number(org_id: str) -> str:
+async def get_next_order_number(org_id: str, skip: int = 0) -> str:
     """Generate the next canonical order number for an org.
 
     Returns a string in the canonical form ``ORD-{N:04d}`` (see module
@@ -133,22 +133,37 @@ async def get_next_order_number(org_id: str) -> str:
     and the service retry loop converges on the next available number
     in at most 1-2 retries even under contention.
     """
-    cursor = orders_collection.find(
+    # SR1 (3/9/2026) — il MAX era LESSICOGRAFICO (sort sulla stringa):
+    # dopo «ORD-9999» il successivo «ORD-10000» ordina PRIMA di
+    # «ORD-9999», il massimo resta 9999 e ogni conferma ripropone lo
+    # stesso numero → «Impossibile assegnare numero ordine dopo 3
+    # tentativi», per sempre (visto in locale creando ordini). Lo
+    # stesso capita con prefissi misti («ORD-2024-007» > «ORD-0042»).
+    # Ora il massimo e' NUMERICO sulla coda di cifre di TUTTI i numeri
+    # dell'org (pochi per org, proiezione minima), e `skip` fa avanzare
+    # il numero a ogni tentativo del retry del servizio.
+    docs = await orders_collection.find(
         {"organization_id": org_id, "order_number": {"$ne": None}},
         {"_id": 0, "order_number": 1},
-    ).sort("order_number", -1).limit(1)
-    docs = await cursor.to_list(length=1)
+    ).to_list(length=20000)
 
     # Layer 3: bootstrap — empty org.
     if not docs:
-        return "ORD-0001"
+        return f"ORD-{1 + skip:04d}"
 
-    # Layer 1: extract the last digit-run from the MAX.
-    last = docs[0].get("order_number") or ""
-    m = _ORDER_NUMBER_TAIL_DIGITS.search(last)
-    if m:
+    # Layer 1: the numeric MAX of every digit tail.
+    tails = []
+    for d in docs:
+        m = _ORDER_NUMBER_TAIL_DIGITS.search(d.get("order_number") or "")
+        if m:
+            try:
+                tails.append(int(m.group(1)))
+            except (ValueError, OverflowError):
+                continue
+    last = max((d.get("order_number") or "" for d in docs), default="")
+    if tails:
         try:
-            num = int(m.group(1)) + 1
+            num = max(tails) + 1 + skip
             return f"ORD-{num:04d}"
         except (ValueError, OverflowError):
             # Extremely unlikely (regex matched digits) but guard anyway.
@@ -174,4 +189,4 @@ async def get_next_order_number(org_id: str) -> str:
     count = await orders_collection.count_documents(
         {"organization_id": org_id, "order_number": {"$ne": None}},
     )
-    return f"ORD-{count + 1:04d}"
+    return f"ORD-{count + 1 + skip:04d}"

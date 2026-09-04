@@ -111,7 +111,7 @@ export default function OperatorInterviewPage() {
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1,
-          name: t('landings:marketplace.navNetworkMembers', { defaultValue: 'Operatori' }),
+          name: t('landings:operators.heading', { defaultValue: 'Professionisti' }),
           item: `${window.location.origin}/operatori` },
         { '@type': 'ListItem', position: 2, name: data.name,
           item: `${window.location.origin}/o/${org_slug}` },
@@ -164,7 +164,7 @@ export default function OperatorInterviewPage() {
         <div className="max-w-6xl mx-auto px-4 h-11 flex items-center justify-between gap-3">
           <nav className="text-xs text-gray-500 truncate" aria-label="breadcrumb">
             <Link to="/operatori" className="hover:text-primary hover:underline">
-              {t('landings:marketplace.navNetworkMembers', { defaultValue: 'Operatori' })}
+              {t('landings:operators.heading', { defaultValue: 'Professionisti' })}
             </Link>
             <span className="mx-1.5" aria-hidden>›</span>
             <Link to={`/o/${org_slug}`} className="hover:text-primary hover:underline">

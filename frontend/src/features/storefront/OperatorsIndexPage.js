@@ -13,10 +13,10 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
-import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
 import Redacted from '../prelaunch/Redacted';
 import GeoSearchBar from './components/GeoSearchBar';
 import useSeoMeta from './lib/useSeoMeta';
+import BrandPayoff from '../../components/BrandPayoff';
 
 const OperatorsMapView = React.lazy(() => import('./components/OperatorsMapView'));
 
@@ -25,7 +25,6 @@ import { Skeleton } from '../../components/ui/skeleton';
 import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
 // DI — tassonomia discipline (specchio backend)
 import { disciplineLabel, DISCIPLINE_FAMILIES } from '../../lib/disciplines';
-import BrandPayoff from '../../components/BrandPayoff';
 
 // LM3 — l'URL parla italiano (?ordina=), l'API il gergo suo (sort=):
 // la mappa e' l'unico punto di traduzione.
@@ -297,14 +296,11 @@ function OperatorCard({ op, t, lang }) {
 export default function OperatorsIndexPage() {
   const { t, i18n } = useTranslation('landings');
   const { categoria } = useParams();
-  // PN/LM — anteprima pubblica non linkata: la stessa pagina risponde
-  // anche su /esplora-operatori (il menu resta sulla pagina rete)
-  const basePath = window.location.pathname.startsWith('/esplora-operatori')
-    ? '/esplora-operatori' : '/operatori';
-  // PN — su /esplora-operatori l'anteprima e' VERA: preview=1 al
-  // backend (bypass PL8, operatori reali come al lancio) e noindex
-  // (rotta non linkata, mai in SERP prima del lancio).
-  const isPreview = basePath === '/esplora-operatori';
+  // PN/LM → SR1 (3/9/2026): questa pagina nacque come anteprima non
+  // linkata su /esplora-operatori; ora E' la directory dei
+  // professionisti e vive su /operatori (l'URL canonico, in sitemap,
+  // con la shell SSR). /esplora-operatori rimanda qui (App.js).
+  const basePath = '/operatori';
   const navigate = useNavigate();
   // OP4 — le bio degli operatori parlano la lingua attiva (refetch al cambio)
   const uiLang = (i18n.language || 'it').slice(0, 2);
@@ -372,13 +368,16 @@ export default function OperatorsIndexPage() {
     if (SORT_PARAM[ordina]) q.sort = SORT_PARAM[ordina];
     if (disciplina) q.discipline = disciplina;   // DI
     if (uiLang !== 'it') q.lang = uiLang;
-    if (isPreview) q.preview = 1;   // PN — dati veri sulla rotta esplora
+    // PN → SR1 — preview=1 spegne lo specchio di fase PL8 (che in fase
+    // rete svuota l'aggregatore): la directory e' VIVA, mostra i
+    // professionisti veri pubblicati e non esclusi, in ogni fase.
+    q.preview = 1;
     api.get('/public/operators', { params: q })
       .then(res => { if (mounted) setData(res.data); })
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [categoria, geoLat, geoLng, geoRadius, ordina, disciplina, uiLang, isPreview]);
+  }, [categoria, geoLat, geoLng, geoRadius, ordina, disciplina, uiLang]);
 
   const items = data?.items || [];
   const categories = useMemo(
@@ -398,31 +397,22 @@ export default function OperatorsIndexPage() {
   useSeoMeta({
     // il titolo dev'essere lo STESSO che serve la shell: due writer
     // che dicono due cose sono due verita' per la stessa URL
-    title: isPreview
-      ? 'Professionisti del benessere in Italia | Aurya'
-      : categoria
-        ? t('landings:operators.seoTitleCat', {
-            cat: catLabel, defaultValue: 'Operatori di {{cat}} | Aurya' })
-        : t('landings:operators.seoTitle', {
-            defaultValue: 'Tutti i professionisti del benessere | Aurya' }),
+    // SR1 — lo STESSO title che serve la shell SSR per /operatori
+    // (_meta_esplora_operatori): due writer che dicono due cose sono
+    // due verita' per la stessa URL
+    title: categoria
+      ? t('landings:operators.seoTitleCat', {
+          cat: catLabel, defaultValue: 'Professionisti di {{cat}} | Aurya' })
+      : 'Professionisti del benessere in Italia | Aurya',
     description: t('landings:operators.seoDesc', {
-      defaultValue: 'Scopri i professionisti del benessere su Aurya: pratiche, esperienze e percorsi, con profili, prossime date e prenotazione online.',
+      defaultValue: 'Scopri i professionisti del benessere su Aurya: pratiche, discipline e percorsi, raccontati uno a uno.',
     }),
-    // ES (25/8) — su /esplora-operatori il canonico e' SE STESSA. Prima
-    // puntava a /operatori, che in fase rete e' un'ALTRA pagina (il
-    // racconto della rete, non l'elenco): dichiarare canonico un
-    // documento diverso e' il modo piu' rapido per farsi ignorare
-    // entrambi.
-    canonicalPath: isPreview ? '/esplora-operatori'
-      : (categoria ? `/operatori/${categoria}` : '/operatori'),
+    // ES (25/8) → SR1: il canonico e' la pagina stessa, su /operatori.
+    canonicalPath: categoria ? `/operatori/${categoria}` : '/operatori',
     // 0 risultati = pagina indice vuota: mai in SERP (regola S5).
-    // ES (25/8) — CADE il `noindex: isPreview`. Nacque quando qui
-    // dentro c'erano i campioni del pre-lancio; rimossi quelli, questa
-    // e' la directory dei professionisti VERI ed e' la pagina che
-    // vogliamo in SERP. ATTENZIONE: questa riga governa il DOM
-    // renderizzato, ed e' quello che Google legge davvero — con
-    // `isPreview` qui, tutto il lavoro server-side della shell
-    // verrebbe annullato al primo rendering.
+    // ATTENZIONE: questa riga governa il DOM renderizzato, ed e' quello
+    // che Google legge davvero — un noindex qui annullerebbe tutto il
+    // lavoro server-side della shell al primo rendering.
     noindex: !loading && items.length === 0,
     jsonLd: items.length > 0 ? {
       '@context': 'https://schema.org',
@@ -446,10 +436,9 @@ export default function OperatorsIndexPage() {
        si confondeva coi filtri veri della pagina. Stessa scelta gia'
        fatta sul calendario ritiri. */
     <MarketplaceShell noSearch>
-      {/* PN — sulla rotta anteprima i dati sono VERI: niente banner
-          "d'esempio" (su /operatori marketplace si spegne da solo) */}
-      {!isPreview && <PrelaunchBanner audience="operator" />}
-      <header className="relative text-white overflow-hidden">
+      {/* PN → SR1 — i dati sono VERI in ogni fase: niente banner
+          «d'esempio» (PrelaunchBanner) su questa pagina */}
+      <header className="relative text-white overflow-hidden" data-testid="operators-hero">
         {/* le mani in mudra del founder: chi organizza è il volto della pagina */}
         <img aria-hidden src="/media/hero-organizer.webp" alt="" fetchpriority="high"
              className="absolute inset-0 w-full h-full object-cover" />
@@ -473,6 +462,12 @@ export default function OperatorsIndexPage() {
               </span>
             )}
           </nav>
+          {/* SR1 (founder 3/9): la copertina dice cosa stiamo
+              costruendo — la rete — senza ripetere il Manifesto: il
+              payoff di brand (regola RB, sopra ogni hero), il titolo
+              che nomina la rete, una frase, un link discreto. Il
+              criterio (Verificato, ★, citta') si vede nelle schede,
+              non si dichiara. */}
           <BrandPayoff tone="hero" size="sm" className="mb-2" />
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow">
             {/* il titolo dice il mestiere per intero; il breadcrumb e il
@@ -480,13 +475,17 @@ export default function OperatorsIndexPage() {
             {categoria
               ? t('landings:operators.headingCat', {
                   cat: catLabel, defaultValue: 'Professionisti di {{cat}}' })
-              : t('landings:operators.pageTitle', { defaultValue: 'Professionisti del benessere' })}
+              : t('landings:operators.pageTitle', { defaultValue: 'I professionisti della rete Aurya' })}
           </h1>
           <p className="mt-2.5 text-white/90 max-w-2xl text-hero-shadow">
             {t('landings:operators.subtitle', {
-              defaultValue: 'Scopri chi si prende cura del tuo benessere: professionisti, operatori e centri, le loro pratiche, esperienze e percorsi.',
+              defaultValue: 'Persone che conosciamo una per una: la loro storia, il modo in cui lavorano e, quando vuoi, una sessione, un evento o un ritiro da prenotare qui.',
             })}
           </p>
+          <Link to="/manifesto" data-testid="operators-how-born"
+                className="mt-3 inline-flex items-center gap-1 text-sm text-white/80 hover:text-white underline-offset-4 hover:underline">
+            {t('landings:operators.howBorn', { defaultValue: 'Come nasce la rete' })} →
+          </Link>
 
         </div>
       </header>

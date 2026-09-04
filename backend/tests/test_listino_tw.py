@@ -1202,13 +1202,14 @@ class TestCardOperatoreLM2:
         assert righe, "voce footer verso /operatori assente"
         assert all("isNetwork &&" not in l and "prelaunch &&" not in l
                    for l in righe), "la voce non deve sparire in una fase"
-        assert "marketplace.footerExploreOperators" in shell, \
-            "etichetta marketplace mancante"
-        # LC8 — l'etichetta di fase rete oggi e' la stessa del menu
-        # ("La Rete", marketplace.navNetwork): navNetworkMembers e'
-        # uscita con la riscrittura founder del 2/8.
-        assert "marketplace.navNetwork" in shell, \
-            "etichetta fase rete mancante"
+        # LC8 → SR1 (3/9/2026): /operatori E' la directory in ogni
+        # fase, quindi UNA etichetta sola, la stessa del menu
+        # («Professionisti», marketplace.navOperators). «La Rete»
+        # (navNetwork) e «Esplora operatori» sono uscite.
+        assert "marketplace.navOperators" in shell, \
+            "etichetta della directory mancante"
+        assert "marketplace.navNetwork'" not in shell and "navNetwork'" not in shell, \
+            "«La Rete» e' tornata nel menu: la directory si chiama Professionisti"
 
 
 class TestRicercaLM3:
@@ -1265,10 +1266,13 @@ class TestRicercaLM3:
         # URL fonte di verita': ?ordina= + categoria come path segment
         assert "SORT_PARAM" in page
         assert "params.get('ordina')" in page
-        # 28992cf — la stessa pagina risponde anche su /esplora-operatori:
-        # la categoria resta path segment ma sul basePath dinamico
+        # 28992cf → SR1 (3/9/2026): la pagina vive SOLO su /operatori
+        # (/esplora-operatori rimanda in App.js); la categoria resta
+        # path segment sul basePath, che ora e' fisso
         assert "${basePath}/${next}" in page
-        assert "'/esplora-operatori'" in page
+        assert "const basePath = '/operatori'" in page
+        assert "'/esplora-operatori'" not in page, \
+            "la directory non deve piu' leggere la rotta vecchia"
         # Dove dentro la barra, in versione fluida
         assert "<GeoSearchBar value={geoValue} onChange={setGeo} fluid />" in page
         # Distanza offerta solo con geo attivo (come il backend)
@@ -5865,13 +5869,14 @@ class TestHomeHp2:
     # ── 6. il footer della fase rete: cinque voci ────────────────────
 
     # LC8 — l'ordine e le etichette sono quelli della riscrittura
-    # founder del 2/8: Magazine prima del Manifesto, "La Rete"
-    # (navNetwork) al posto di navNetworkMembers, la Lettera nella
+    # founder del 2/8: Magazine prima del Manifesto, la Lettera nella
     # colonna Risorse (footer-nw-lettera, navLetter).
+    # SR1 (3/9/2026): la voce /operatori si chiama «Professionisti»
+    # (navOperators) in ogni fase — e' la directory, non piu' «La Rete».
     _FOOTER_NETWORK = (
         ("footer-nw-magazine", "/blog", "navBlog"),
         ("footer-nw-manifesto", "/manifesto", "navManifesto"),
-        ("footer-nw-operatori", "/operatori", "navNetwork"),
+        ("footer-nw-operatori", "/operatori", "navOperators"),
         ("footer-nw-chisiamo", "/chi-siamo", "footerAbout"),
         ("footer-nw-lettera", "/newsletter", "navLetter"),
     )

@@ -602,7 +602,7 @@ export default function BlogIndexPage() {
           </Lede>
           <p className="mt-8">
             <EditorialCta to="/operatori" variant="quiet">
-              {t('blog.peopleBridgeCta', { defaultValue: 'Conosci la rete' })}
+              {t('blog.peopleBridgeCta', { defaultValue: 'Scopri i professionisti' })}
             </EditorialCta>
           </p>
         </Section>

@@ -108,7 +108,6 @@ const ManifestoPage = lazy(() => import("./features/network/ManifestoPage"));
 // posizione, Chi siamo sono le persone (sostituisce AboutAuryaPage,
 // rimossa dal repo con la sua voce vecchia).
 const ChiSiamoPage = lazy(() => import("./features/network/ChiSiamoPage"));
-const NetworkOperatorsPage = lazy(() => import("./features/network/NetworkOperatorsPage"));
 const CashflowDataPage = lazy(() => import("./features/cashflow/CashflowDataPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
 import StorefrontPage from "./features/storefront/StorefrontPage";
@@ -414,14 +413,24 @@ function RitiriCategoryGate() {
   return <RetreatsCalendarPage />;
 }
 
-// PL23→RT3 — in fase network /operatori E' la landing della rete:
-// cos'e', con che criterio si entra, le schede dei membri. In
-// marketplace torna l'aggregatore pieno con mappa e filtri.
+// PL23→RT3 — in fase network /operatori era la landing della rete
+// (NetworkOperatorsPage: il racconto, «presto potrai conoscere...»).
+// SR1 (3/9/2026, piano SITO IMMEDIATO): con 8 professionisti veri
+// pubblicati, /operatori E' la directory in ogni fase — le persone
+// prima delle parole. NetworkOperatorsPage resta nel codice, spenta.
+// Il gate resta come punto unico di decisione (guardie PL).
 function OperatorsGate() {
-  const { sitePhase, loading } = useSiteConfig();
+  const { loading } = useSiteConfig();
   if (loading) return null;
-  if (sitePhase === 'network') return <NetworkOperatorsPage />;
   return <OperatorsIndexPage />;
+}
+
+// SR1 — /esplora-operatori era l'anteprima non linkata della directory:
+// ora la directory vive su /operatori, la vecchia rotta rimanda li'
+// (categoria compresa) cosi' nessun link o segnalibro muore.
+function EsploraOperatoriRedirect() {
+  const { categoria } = useParams();
+  return <Navigate to={categoria ? `/operatori/${categoria}` : '/operatori'} replace />;
 }
 
 function DestinationsGate() {
@@ -626,8 +635,8 @@ function AppRoutes() {
       {/* LM3+ — anteprima pubblica del marketplace operatori, NON
           linkata nei menu (richiesta founder 29/7): stessa pagina
           della fase marketplace, raggiungibile solo via URL diretto */}
-      <Route path="/esplora-operatori" element={<OperatorsIndexPage />} />
-      <Route path="/esplora-operatori/:categoria" element={<OperatorsIndexPage />} />
+      <Route path="/esplora-operatori" element={<EsploraOperatoriRedirect />} />
+      <Route path="/esplora-operatori/:categoria" element={<EsploraOperatoriRedirect />} />
       {/* PN (richiesta founder 29/7) — anteprima non linkata della
           directory ritiri: stessa pagina di /ritiri (marketplace) in
           OGNI fase, con dati veri via ?preview=1 e noindex. Nessuna

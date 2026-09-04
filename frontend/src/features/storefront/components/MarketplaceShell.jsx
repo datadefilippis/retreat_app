@@ -342,16 +342,21 @@ const NAV_ITEMS = [
 //
 // "La Rete" non porta piu' l'etichetta «in arrivo» (founder, 26/8):
 // in produzione ci sono i primi professionisti, la rete e' arrivata.
+//
+// SR1+SR3 (3/9/2026, piano SITO IMMEDIATO — founder: «troppe
+// informazioni, uno si stanca»): da sette voci a QUATTRO, una per
+// intento. «La Rete» diventa «Professionisti» e va per prima: e' la
+// directory (/operatori), le persone prima delle parole. Meditazioni
+// vive dentro Sound (la passerella Sound la porta gia'), Manifesto
+// dentro Chi siamo e nel footer: le pagine restano vive e indicizzate,
+// escono solo dal menu.
 const NETWORK_NAV_ITEMS = [
+  { to: '/operatori', key: 'marketplace.navOperators', fallback: 'Professionisti' },
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
   // SP4 — la biblioteca educativa sul suono e' contenuto pubblico come
   // il Magazine: voce propria («Sound» e' un nome, resta cosi' in ogni
   // lingua)
   { to: '/sound', key: 'marketplace.navSound', fallback: 'Sound' },
-  // le esperienze gia' composte dagli operatori: la sorella di Sound
-  { to: '/meditazioni', key: 'marketplace.navMeditations', fallback: 'Meditazioni' },
-  { to: '/manifesto', key: 'marketplace.navManifesto', fallback: 'Manifesto' },
-  { to: '/operatori', key: 'marketplace.navNetwork', fallback: 'La Rete' },
   { to: '/chi-siamo', key: 'marketplace.navAbout', fallback: 'Chi siamo' },
 ];
 
@@ -742,16 +747,12 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
                 {isNetwork && <li><Link to="/blog" className="hover:text-white" data-testid="footer-nw-magazine">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
                 {isNetwork && <li><Link to="/sound" className="hover:text-white" data-testid="footer-nw-sound">Aurya Sound</Link></li>}
                 {isNetwork && <li><Link to="/manifesto" className="hover:text-white" data-testid="footer-nw-manifesto">{t('marketplace.navManifesto', { defaultValue: 'Manifesto' })}</Link></li>}
-                {/* LM2 — la voce operatori vive in ENTRAMBE le fasi: in
-                    rete porta alla pagina della rete, al flip diventa
-                    la ricerca completa senza altri interventi.
-                    HP2: in rete si chiama "Operatori" come da specifica
-                    ("Esplora operatori" prometteva una ricerca che in
-                    fase rete non esiste ancora). */}
+                {/* LM2 — la voce operatori vive in ENTRAMBE le fasi.
+                    SR1 (3/9/2026): /operatori E' la directory in ogni
+                    fase, quindi una sola etichetta, la stessa del menu:
+                    «Professionisti» (era «La Rete» / «Esplora operatori»). */}
                 <li><Link to="/operatori" className="hover:text-white" data-testid="footer-nw-operatori">
-                  {isNetwork
-                    ? t('marketplace.navNetwork', { defaultValue: 'La Rete' })
-                    : t('marketplace.footerExploreOperators', { defaultValue: 'Esplora operatori' })}
+                  {t('marketplace.navOperators', { defaultValue: 'Professionisti' })}
                 </Link></li>
                 {/* HP2 → SW3 — "Chi siamo". La nota di direzione
                     creativa che stava qui e' rientrata: il founder ha

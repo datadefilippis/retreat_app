@@ -629,7 +629,10 @@ async def confirm_order(org_id: str, order_id: str, skip_payment_check: bool = F
     now = utc_now()
     order_number = None
     for _attempt in range(3):
-        order_number = await order_repository.get_next_order_number(org_id)
+        # SR1 (3/9/2026) — a ogni collisione il numero AVANZA (skip):
+        # prima si rileggeva lo stesso massimo e si riproponeva lo
+        # stesso numero tre volte
+        order_number = await order_repository.get_next_order_number(org_id, skip=_attempt)
         updates = {
             "status": OrderStatus.CONFIRMED.value,
             "order_number": order_number,
