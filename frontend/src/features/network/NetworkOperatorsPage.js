@@ -342,7 +342,7 @@ export default function NetworkOperatorsPage() {
                   <div className="mt-10">
                     <EditorialCta to="/newsletter" variant="light"
                                   data-testid="nw-soon-cta">
-                      {t('nwOps.letterCta', { defaultValue: 'Ricevi la Lettera' })}
+                      {t('nwOps.letterCta', { defaultValue: 'Entra nel Cerchio di Aurya' })}
                     </EditorialCta>
                   </div>
                 </div>
@@ -471,7 +471,7 @@ export default function NetworkOperatorsPage() {
               <div className="mt-9">
                 <EditorialCta to="/newsletter" variant="quiet"
                               data-testid="nw-letter-cta">
-                  {t('nwOps.letterCta', { defaultValue: 'Ricevi la Lettera' })}
+                  {t('nwOps.letterCta', { defaultValue: 'Entra nel Cerchio di Aurya' })}
                 </EditorialCta>
               </div>
             </div>

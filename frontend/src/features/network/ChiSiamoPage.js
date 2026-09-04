@@ -519,7 +519,7 @@ export default function ChiSiamoPage() {
                   delle due persone) e chiudeva con Magazine e rete ma
                   senza il funnel dei lettori. */}
               <EditorialCta to="/newsletter" variant="quiet" data-testid="cs-cta-letter">
-                {t('aboutPage.ctaLetter', { defaultValue: 'Ricevi la Lettera' })}
+                {t('aboutPage.ctaLetter', { defaultValue: 'Entra nel Cerchio di Aurya' })}
               </EditorialCta>
             </div>
 

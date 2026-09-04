@@ -719,49 +719,46 @@ export default function NetworkHomePage() {
           <div data-testid="hp-letter" className="flex flex-col items-center">
             <DisplayTitle as="h2" id="hp-letter-title" size="section" measure="title"
                           className="text-hero-shadow">
-              {t('nwHome.letterTitle', { defaultValue: "Ricevi la Lettera di Aurya." })}
+              {t('nwHome.letterTitle', { defaultValue: "Entra nel Cerchio di Aurya." })}
             </DisplayTitle>
-            <Lede size="lead" tone="inherit" className="mt-6 max-w-[38ch] text-hero-shadow">
-              {t('nwHome.letterP1', { defaultValue: "Di tanto in tanto, qualcosa che vale la pena leggere." })}
+            {/* CN3 (3/9/2026, piano IL CERCHIO): la sezione vende
+                l'appartenenza, non «una lettera ogni tanto»: le tre
+                cose vere che ricevi, il form, una riga di fiducia. */}
+            <Lede size="lead" tone="inherit" className="mt-6 max-w-[40ch] text-hero-shadow">
+              {t('nwHome.letterP1', { defaultValue: "Meditazioni riservate, ritiri in anteprima e una lettera quando vale la pena. Gratis." })}
             </Lede>
             <ul className="mt-7 list-none space-y-2 p-0 font-display text-[1.3rem] leading-[1.35]
                            tracking-[-0.015em] text-hero-shadow sm:text-[1.55rem]">
-              <li>{t('nwHome.letterP2', { defaultValue: "Una pratica da comprendere." })}</li>
-              <li>{t('nwHome.letterP3', { defaultValue: "Una persona da conoscere." })}</li>
-              <li>{t('nwHome.letterP4', { defaultValue: "Un luogo da scoprire." })}</li>
+              <li>{t('nwHome.letterP2', { defaultValue: "Meditazioni riservate." })}</li>
+              <li>{t('nwHome.letterP3', { defaultValue: "Ritiri ed esperienze in anteprima." })}</li>
+              <li>{t('nwHome.letterP4', { defaultValue: "La Lettera, ogni due settimane." })}</li>
             </ul>
             <div aria-hidden className="gold-rule mt-8 w-24" />
             <Lede size="body" tone="inherit" className="mt-7 max-w-[46ch] text-hero-shadow opacity-90">
               <TitleLine>
-                {t('nwHome.letterP5', { defaultValue: "Niente rumore." })}
-              </TitleLine>
-              <TitleLine>
-                {t('nwHome.letterP6', { defaultValue: "Solo contenuti scelti con cura, da ricevere con calma e leggere con attenzione." })}
+                {t('nwHome.letterP6', { defaultValue: "Una conferma via email, poi sei dentro. Ti cancelli con un clic." })}
               </TitleLine>
             </Lede>
-            {/* LC5 — il form al posto del link. La sezione prometteva
-                la Lettera e poi mandava su un'altra pagina a chiederla:
-                un passo in piu' per l'azione a minor attrito del sito
-                (le pagine articolo il form inline ce l'hanno gia').
-                Pannello crema pieno: gli input bianchi e il consenso
-                grigio sono disegnati per fondo chiaro, non per la
-                fotografia. Il link quieto sotto resta per chi vuole
-                leggere cos'e' la Lettera prima di dare l'email. */}
+            {/* LC5 — il form al posto del link: un passo in meno per
+                l'azione a minor attrito del sito. Pannello crema pieno:
+                gli input bianchi e il consenso grigio sono disegnati per
+                fondo chiaro, non per la fotografia. CN3: preferenza
+                ritiri accesa, con la citta' (variante leggera). */}
             <div className="mt-9 w-full max-w-md rounded-2xl bg-[#f6f2e8]/95 p-5 text-left
                             shadow-[0_18px_48px_-28px_rgba(14,26,21,0.6)] sm:p-6"
                  data-testid="hp-letter-form">
               <LeadForm
-                type="traveler" compact subscribe showName accent={SAGE}
-                experiencesOptIn
+                type="traveler" compact subscribe showName={false} accent={SAGE}
+                experiencesOptIn experiencesDefault experiencesLight
                 context="home_letter"
-                consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
-                ctaLabel={t('nwHome.letterCta', { defaultValue: 'Iscrivimi alla Lettera' })}
-                thanksBody={t('blogCta.thanksDoi', { defaultValue: 'Quasi fatto: controlla la tua casella e clicca il link di conferma che ti abbiamo appena inviato.' })}
+                consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya.' })}
+                ctaLabel={t('nwHome.letterCta', { defaultValue: 'Entra nel Cerchio' })}
+                thanksBody={t('blogCta.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e clicca «Entro nel Cerchio» nell’email che ti abbiamo appena mandato.' })}
               />
             </div>
             <p className="mt-5">
               <EditorialCta to="/newsletter" variant="light" data-testid="hp-letter-cta">
-                {t('nwHome.letterMore', { defaultValue: "Scopri cos'è la Lettera" })}
+                {t('nwHome.letterMore', { defaultValue: "Scopri cos'è il Cerchio" })}
               </EditorialCta>
             </p>
           </div>

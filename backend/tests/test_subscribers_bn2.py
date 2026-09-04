@@ -243,7 +243,8 @@ class TestAccessMagicLink:
         caso «gia' iscritto» e offre un'azione sua."""
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "BlogArticlePage.js").read_text()
-        assert "già iscritto" in page.lower()
+        # CN3 (3/9/2026): il nome dell'appartenenza e' «il Cerchio»
+        assert "già nel cerchio" in page.lower()
         assert 'data-testid="blog-gate-already"' in page
         # SB1: lo sblocco passa dal posto unico lib/cerchio, che
         # chiama /public/newsletter/unlock e salva la prova per tutti

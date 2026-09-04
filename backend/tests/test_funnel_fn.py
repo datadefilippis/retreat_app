@@ -42,12 +42,17 @@ class TestFn2CancelloInChiaro:
                 f"{pagina} non monta il cancello condiviso"
 
     def test_il_copy_dice_valore_e_prezzo_in_chiaro(self):
+        """FN2 → CN3 (3/9/2026, piano IL CERCHIO): il cancello parla di
+        appartenenza — cosa ottieni (la meditazione completa), cosa
+        costa (entrare nel Cerchio: gratis), cos'altro arriva
+        (anteprime, la Lettera). «Il Cerchio» e' il nome, «la Lettera»
+        una delle cose che ricevi; «newsletter» non compare piu'."""
         c = (FQ / "CancelloLettera.jsx").read_text()
-        assert "riservata agli iscritti" in c
-        assert "gratuita" in c
-        # il brand e' apposizione, non premessa (30/8: senza trattini,
-        # per volere del founder, la frase usa le virgole)
-        assert "newsletter di Aurya, la Lettera" in c
+        assert "per chi è nel Cerchio di Aurya" in c
+        assert "<b>gratis</b>" in c
+        assert "meditazioni riservate" in c and "la Lettera" in c
+        assert "newsletter di Aurya" not in c and "ricevere la newsletter" not in c, \
+            "il cancello non deve piu' chiamarla newsletter"
 
     def test_le_tre_porte_restano(self):
         """Iscriviti / gia' iscritto / account: nessuna via persa."""

@@ -81,12 +81,24 @@ export default function NewsletterConfirmPage() {
                   style={{ backgroundColor: GOLD }}>
               <Check className="h-7 w-7 text-white" />
             </span>
+            {/* CN2 (3/9/2026): la conferma dice cosa si e' sbloccato e
+                apre subito la porta piu' preziosa (le meditazioni) */}
             <h1 className="mt-5 font-brand text-3xl text-gray-900">
-              {t('nlConfirm.title', { defaultValue: 'Iscrizione confermata' })}
+              {t('nlConfirm.title', { defaultValue: 'Sei nel Cerchio di Aurya' })}
             </h1>
             <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-gray-600">
-              {t('nlConfirm.body', { defaultValue: 'Benvenuto nella lettera di Aurya. La prossima arriva anche a te: una pratica raccontata bene, una persona della rete, zero rumore.' })}
+              {t('nlConfirm.body', { defaultValue: 'Da adesso: le meditazioni riservate sono aperte, i ritiri e le esperienze ti arrivano in anteprima, e la Lettera ogni due settimane.' })}
             </p>
+            {!next && (
+              <div className="mt-6">
+                <Link to="/meditazioni"
+                      className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white"
+                      style={{ backgroundColor: '#376254' }}
+                      data-testid="nl-confirm-meditazioni">
+                  {t('nlConfirm.toMeditazioni', { defaultValue: 'Ascolta le meditazioni riservate' })} →
+                </Link>
+              </div>
+            )}
             {leadMagnetUrl && (
               <a href={leadMagnetUrl} target="_blank" rel="noopener noreferrer"
                  onClick={() => trackEvent('lead_magnet_download', { source: 'confirm' })}
@@ -132,12 +144,12 @@ export default function NewsletterConfirmPage() {
                 : t('nlConfirm.invalid', { defaultValue: 'Questo link non è valido' })}
             </h1>
             <p className="mx-auto mt-3 max-w-md text-sm text-gray-600">
-              {t('nlConfirm.retry', { defaultValue: 'Nessun problema: iscriviti di nuovo dalla pagina della newsletter e ti invieremo un link fresco.' })}
+              {t('nlConfirm.retry', { defaultValue: 'Nessun problema: rimetti la tua email nella pagina del Cerchio e ti mandiamo un link nuovo.' })}
             </p>
             <Link to="/newsletter"
                   className="mt-6 inline-flex rounded-full px-6 py-3 text-sm font-semibold text-white"
                   style={{ backgroundColor: GOLD }}>
-              {t('nlConfirm.toNewsletter', { defaultValue: 'Vai alla newsletter' })}
+              {t('nlConfirm.toNewsletter', { defaultValue: 'Vai al Cerchio di Aurya' })}
             </Link>
           </div>
         )}

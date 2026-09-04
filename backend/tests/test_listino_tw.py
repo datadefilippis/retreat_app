@@ -7782,10 +7782,13 @@ class TestLinkPageLk5:
         src = self._page_src()
         assert "Sei un professionista del benessere?" in src, \
             "sparito il footer Aurya: e' il loop di crescita (LK2)"
-        # Founder 14/8: la CTA porta al login (chi si riconosce entra
-        # o si iscrive da li') col gesto "Crea il tuo profilo".
-        # ID (20/8): la porta e' /accedi.
-        assert 'to="/accedi"' in src, "la CTA footer non porta piu' alla porta"
+        # Founder 14/8: la CTA porta al login; ID (20/8): /accedi.
+        # CN4 (founder 3/9/2026): la porta del loop e' la landing
+        # /entra-nella-rete — chi arriva dal link di un collega deve
+        # prima capire cos'e' Aurya, non trovarsi davanti un login.
+        i = src.index('data-testid="link-page-join"')
+        assert 'to="/entra-nella-rete"' in src[i - 120:i], \
+            "la CTA footer deve portare a /entra-nella-rete"
         assert "Crea il tuo profilo" in src
 
     def test_quattro_temi_registrati(self):

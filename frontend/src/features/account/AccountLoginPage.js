@@ -599,7 +599,7 @@ export default function AccountLoginPage() {
                   data-testid="signup-letter"
                 />
                 <span className="text-xs text-gray-600">
-                  {t('landings:account.signupLetter', { defaultValue: 'Iscrivimi anche alla Lettera di Aurya (guide e racconti, quando escono)' })}
+                  {t('landings:account.signupLetter', { defaultValue: 'Entra anche nel Cerchio di Aurya (meditazioni riservate, ritiri in anteprima, la Lettera)' })}
                 </span>
               </label>
               {/* AP-L — riga consenso: link ai documenti Aurya, spunta

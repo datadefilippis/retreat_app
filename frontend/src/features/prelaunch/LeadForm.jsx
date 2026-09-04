@@ -74,7 +74,17 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                                    consentText = null, subscribe = false,
                                    returnTo = null, showName = null,
                                    onSbloccato = null,
-                                   experiencesOptIn = false }) {
+                                   experiencesOptIn = false,
+                                   // CN1 (founder 3/9/2026): sulla landing del Cerchio la
+                                   // preferenza «ritiri ed esperienze» parte ACCESA — e'
+                                   // una preferenza dentro lo stesso consenso, non un
+                                   // secondo consenso (che resta esplicito e spento)
+                                   experiencesDefault = false,
+                                   // CN1 — nel primo schermo della landing il blocco
+                                   // esperienze mostra SOLO la citta' (la cosa che rende
+                                   // «nella tua zona» vero): raggio e interessi si
+                                   // scelgono dopo, dalle preferenze
+                                   experiencesLight = false }) {
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
 
@@ -114,7 +124,8 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   const [consent, setConsent] = useState(false);
   const [state, setState] = useState('idle');   // idle | sending | done | error
   // NW2 — il blocco esperienze del form progressivo
-  const [wantsExperiences, setWantsExperiences] = useState(false);
+  const [wantsExperiences, setWantsExperiences] = useState(
+    Boolean(experiencesOptIn && experiencesDefault));
   const [expInterests, setExpInterests] = useState([]);
   const [expCity, setExpCity] = useState('');
   const [expTravel, setExpTravel] = useState('');
@@ -441,6 +452,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                 placeholder={t('form.expCity', { defaultValue: 'Dove vivi? Città o zona' })}
                 className={inputCls} style={ringStyle}
               />
+              {!experiencesLight && (<>
               <div>
                 <p className="mb-1.5 text-xs font-medium text-muted-foreground">
                   {t('form.expTravelLabel', { defaultValue: 'Quanto lontano ti sposteresti?' })}
@@ -479,6 +491,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                   })}
                 </div>
               </div>
+              </>)}
             </div>
           )}
         </div>

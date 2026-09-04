@@ -117,7 +117,7 @@ export default function MeditazioniPage() {
   const [attesaConferma, setAttesaConferma] = useState(false);
   const subscribe = async (e) => {
     e.preventDefault();
-    if (!consent) { setMsg('Serve il consenso alla Lettera'); return; }
+    if (!consent) { setMsg('Serve il consenso alle email del Cerchio'); return; }
     setBusy(true); setMsg('');
     try {
       const esito = await iscriviESblocca({
@@ -162,15 +162,15 @@ export default function MeditazioniPage() {
               {teaserCount > 0
                 ? <>Qui dentro {teaserCount === 1 ? "c'è una sessione composta" : `ci sono ${teaserCount} sessioni composte`} dagli operatori di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>
                 : <>Qui vivranno le sessioni composte dagli operatori di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>}
-              {' '}<b>L'ascolto è riservato a chi fa parte del cerchio</b>: chi riceve
-              la Lettera o ha un account Aurya.
+              {' '}<b>L'ascolto completo è per chi è nel Cerchio di Aurya</b>:
+              entrare è gratis, e ti apre anche i ritiri in anteprima e la Lettera.
             </p>
             {attesaConferma && (
               /* NL-septies — prima iscrizione: il cancello si apre col
                  clic nell'email, come per le guide del Magazine */
               <div className="warnbox" style={{ maxWidth: 440, margin: '18px auto 0', textAlign: 'left' }}
                 data-testid="med-attesa-conferma">
-                Ti abbiamo scritto: apri l’email e clicca il link di conferma.
+                Ti abbiamo scritto: apri l’email e clicca «Entro nel Cerchio».
                 Il link ti riporta qui, con le meditazioni sbloccate.
               </div>
             )}
@@ -180,7 +180,7 @@ export default function MeditazioniPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   style={{ flex: 1, minWidth: 200 }} />
                 <button type="submit" className="primary" disabled={busy}>
-                  {busy ? 'Un attimo…' : 'Iscriviti e sblocca'}
+                  {busy ? 'Un attimo…' : 'Entra nel Cerchio e sblocca'}
                 </button>
               </div>
               <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start',
@@ -188,15 +188,15 @@ export default function MeditazioniPage() {
                               textAlign: 'left', cursor: 'pointer' }}>
                 <input type="checkbox" checked={consent}
                   onChange={(e) => setConsent(e.target.checked)} />
-                <span>Acconsento a ricevere la Lettera di Aurya, pratiche,
-                  ritiri e nuove meditazioni, senza rumore. Disiscrizione in un
-                  click. <a href="/privacy" target="_blank" rel="noreferrer"
+                <span>Acconsento a ricevere le email del Cerchio di Aurya:
+                  meditazioni, ritiri in anteprima e la Lettera. Ti cancelli
+                  con un clic. <a href="/privacy" target="_blank" rel="noreferrer"
                     style={{ color: 'var(--water)' }}>Privacy</a></span>
               </label>
             </form>
             {msg && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 10 }}>{msg}</p>}
             <p style={{ fontSize: 13, color: 'var(--dim)', marginTop: 18 }}>
-              Sei già iscritto alla Lettera?{' '}
+              Sei già nel Cerchio?{' '}
               <button type="button" className="readmore" style={{ display: 'inline' }}
                 onClick={async () => {
                   if (!email) { setMsg('Scrivi la tua email qui sopra e ripremi'); return; }
@@ -229,7 +229,7 @@ export default function MeditazioniPage() {
           <a href="/">← Torna su Aurya</a>
           <a href="/sound">Aurya Sound</a>
           <a href="/blog">Magazine</a>
-          <a href="/newsletter">La Lettera</a>
+          <a href="/newsletter">Il Cerchio</a>
         </footer>
       </div>
     );
@@ -366,7 +366,7 @@ export default function MeditazioniPage() {
         <a href="/">← Torna su Aurya</a>
         <a href="/sound">Aurya Sound</a>
         <a href="/blog">Magazine</a>
-        <a href="/newsletter">La Lettera</a>
+        <a href="/newsletter">Il Cerchio</a>
       </footer>
 
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}

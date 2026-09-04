@@ -829,7 +829,7 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
                     {t('marketplace.footerResources', { defaultValue: 'Risorse' })}
                   </p>
                   <ul className="space-y-1.5 text-white/70">
-                    <li><Link to="/newsletter" className="hover:text-white" data-testid="footer-nw-lettera">{t('marketplace.navLetter', { defaultValue: 'La Lettera di Aurya' })}</Link></li>
+                    <li><Link to="/newsletter" className="hover:text-white" data-testid="footer-nw-lettera">{t('marketplace.navLetter', { defaultValue: 'Il Cerchio di Aurya' })}</Link></li>
                     {/* la guida gratuita e' scesa qui dall'header */}
                     <li><Link to="/blog/kit-pratiche-quotidiane-15-minuti" className="hover:text-white">{t('marketplace.navFreeGuide', { defaultValue: 'Guida gratuita' })}</Link></li>
                   </ul>

@@ -51,8 +51,8 @@ export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro'
       <p className={chiaro ? 'text-sm text-muted-foreground' : 'fqz-invito-sound'}
         data-testid="invito-sound-grazie">
         {stato === 'dentro'
-          ? 'Sei dentro: la Lettera ti raggiunge alla prossima uscita.'
-          : 'Ti abbiamo scritto: conferma dall’email che ti arriva e sei dentro.'}
+          ? 'Sei nel Cerchio: la Lettera ti raggiunge alla prossima uscita.'
+          : 'Ti abbiamo scritto: clicca «Entro nel Cerchio» nell’email che ti arriva e sei dentro.'}
       </p>
     );
   }

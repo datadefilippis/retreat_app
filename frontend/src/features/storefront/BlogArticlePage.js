@@ -406,7 +406,7 @@ export default function BlogArticlePage() {
                       sola per tutti i contenuti riservati. */}
                   <div className="mt-6 max-w-md" data-testid="blog-gate-already">
                     <p className="text-sm text-foreground/70">
-                      {t('blog.gateAlready2', { defaultValue: 'Sei già iscritto alla Lettera? Non serve rifarlo: scrivi la tua email e riapri l’accesso, anche da un nuovo dispositivo.' })}
+                      {t('blog.gateAlready2', { defaultValue: 'Sei già nel Cerchio di Aurya? Non serve rifarlo: scrivi la tua email e riapri l’accesso, anche da un nuovo dispositivo.' })}
                     </p>
                     <form className="mt-3 flex flex-wrap gap-2"
                       onSubmit={async (e) => {

@@ -141,7 +141,7 @@ export default function SoundLandingPage() {
       <footer className="fqzfoot" data-testid="fqz-foot">
         <a href="/">← Torna su Aurya</a>
         <a href="/blog">Magazine</a>
-        <a href="/newsletter">La Lettera</a>
+        <a href="/newsletter">Il Cerchio</a>
         <a href="/meditazioni">Meditazioni</a>
       </footer>
     </div>

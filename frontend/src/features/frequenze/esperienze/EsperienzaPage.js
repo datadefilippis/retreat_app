@@ -123,8 +123,8 @@ export default function EsperienzaPage({ id }) {
                   riceve inviti a entrarci. */}
               {!prova() && (
                 <p className="esp-lettera" data-testid="esp-invito-lettera">
-                  Ti è rimasta addosso? Una volta al mese raccontiamo
-                  il suono nella <Link to="/newsletter">Lettera</Link>.
+                  Ti è rimasta addosso? Nel <Link to="/newsletter">Cerchio di Aurya</Link> trovi
+                  le meditazioni riservate e, ogni due settimane, la Lettera.
                 </p>
               )}
               <button type="button" className="esp-inizia"

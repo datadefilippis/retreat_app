@@ -177,19 +177,25 @@ def _send_confirm_email(email: str, name: Optional[str], token: str,
         if return_to:
             url += f"?next={quote(return_to, safe='')}"
         saluto = f"Ciao {name.strip()}," if (name or "").strip() else "Ciao,"
+        # CN2 (3/9/2026, piano IL CERCHIO) — il doppio opt-in VENDE, non
+        # chiede: in prod 6 iscritti su 9 non confermavano mai, e l'email
+        # parlava solo «della lettera». Ora dice cosa si sblocca col clic.
         html = _wrap_template(f"""
             <p>{saluto}</p>
-            <p>manca un solo passo: conferma la tua iscrizione alla
-            <strong>lettera di Aurya</strong>. Ogni due settimane una pratica
-            raccontata bene e una persona della rete. Niente rumore, mai spam.</p>
+            <p>un clic e sei nel <strong>Cerchio di Aurya</strong>. Da subito:</p>
+            <ul>
+                <li>le <strong>meditazioni riservate</strong>, gratis;</li>
+                <li>i <strong>ritiri e le esperienze in anteprima</strong>, prima che siano pieni;</li>
+                <li>la <strong>Lettera</strong>, ogni due settimane: una pratica raccontata bene e una persona della rete.</li>
+            </ul>
             <p style="text-align: center;">
-                <a href="{url}" class="btn">Confermo l'iscrizione</a>
+                <a href="{url}" class="btn">Entro nel Cerchio</a>
             </p>
             {_link_block(url)}
             <p>Se non ti sei iscritto tu, ignora questa email: senza
             conferma non riceverai nulla.</p>
         """)
-        send_email(email, "Conferma la tua iscrizione alla lettera di Aurya",
+        send_email(email, "Un clic e sei nel Cerchio di Aurya",
                    html, bypass_gate=True)
     except Exception as exc:                # noqa: BLE001
         logger.warning("subscriber confirm email failed for %s: %s",
@@ -216,10 +222,10 @@ def _send_access_email(email: str, name: Optional[str], token: str,
                 if return_to else "su questo dispositivo")
         html = _wrap_template(f"""
             <p>{saluto}</p>
-            <p>sei gia' dei nostri: questa email e' iscritta alla
-            <strong>lettera di Aurya</strong>. Usa il bottone qui sotto per
-            riaprire il tuo accesso {dove}: sblocca le guide riservate e la
-            pagina delle preferenze, senza doverti iscrivere di nuovo.</p>
+            <p>sei gia' nel <strong>Cerchio di Aurya</strong> con questa
+            email. Usa il bottone qui sotto per riaprire il tuo accesso
+            {dove}: meditazioni riservate, guide e preferenze, senza doverti
+            iscrivere di nuovo.</p>
             <p style="text-align: center;">
                 <a href="{url}" class="btn">Riapri il mio accesso</a>
             </p>
@@ -227,7 +233,7 @@ def _send_access_email(email: str, name: Optional[str], token: str,
             <p>Se non hai richiesto tu questo link, ignora l'email: nessuno
             puo' usare il tuo accesso senza aprire questo messaggio.</p>
         """)
-        send_email(email, "Il tuo accesso alla lettera di Aurya",
+        send_email(email, "Il tuo accesso al Cerchio di Aurya",
                    html, bypass_gate=True)
     except Exception as exc:                # noqa: BLE001
         logger.warning("subscriber access email failed for %s: %s",

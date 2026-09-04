@@ -1133,6 +1133,28 @@ async def _run_addon_consistency_audit() -> dict:
     }
 
 
+# ── Il promemoria del Cerchio (CN2, 3/9/2026) ────────────────────────────────
+# Ogni 6 ore: ai «pending» da 48h-7g UNA email «ti manca un clic»
+# (services/cerchio_reminder.py). In prod 6 iscritti su 9 non
+# confermavano mai: e' la leva piu' economica del funnel.
+
+async def _cerchio_reminder_job() -> None:
+    interval_seconds = 6 * 3600
+    await asyncio.sleep(_INITIAL_DELAY_SECONDS + 180)
+    while True:
+        try:
+            from services.cerchio_reminder import run_cerchio_reminder_sweep
+            await run_cerchio_reminder_sweep()
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            logger.error("background_service: cerchio reminder error: %s", exc, exc_info=True)
+        try:
+            await asyncio.sleep(interval_seconds)
+        except asyncio.CancelledError:
+            raise
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def start() -> List[asyncio.Task]:
@@ -1156,6 +1178,8 @@ def start() -> List[asyncio.Task]:
         asyncio.create_task(_orphan_subs_audit_job(), name="orphan_subs_audit_job"),
         # Onda 24 Phase G — addon DB↔Stripe consistency audit
         asyncio.create_task(_addon_consistency_audit_job(), name="addon_consistency_audit_job"),
+        # CN2 — il promemoria del Cerchio ai non confermati
+        asyncio.create_task(_cerchio_reminder_job(), name="cerchio_reminder_job"),
     ]
     return tasks
 

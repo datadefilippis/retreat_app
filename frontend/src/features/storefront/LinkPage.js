@@ -383,7 +383,10 @@ export default function LinkPage({ handle }) {
             tua pagina»). Chi non e' operatore la ignora; chi lo e'
             ha un bottone vero sotto il pollice. */}
         <footer className="lk-rise mt-auto pt-12" style={rise(9)}>
-          <Link to="/accedi" data-testid="link-page-join"
+          {/* CN4 (founder 3/9/2026): la porta del loop e' la landing
+              «Entra nella rete», non il login — chi arriva da un link
+              di un collega deve prima capire cos'e' Aurya */}
+          <Link to="/entra-nella-rete" data-testid="link-page-join"
                 className={`group block rounded-3xl px-6 py-6 text-center transition-all duration-200 active:scale-[0.98] ${theme.cta}`}>
             {/* size xs = solo glifo + wordmark: il payoff vive gia'
                 sotto la card, due taglines nella stessa vista stonano */}

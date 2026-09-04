@@ -300,7 +300,7 @@ export default function ManifestoPage() {
               </p>
               <div className="mt-9">
                 <EditorialCta to="/newsletter" variant="quiet" data-testid="mf-cta-letter-top">
-                  {t('manifesto.ctaLetter', { defaultValue: 'Ricevi la Lettera di Aurya' })}
+                  {t('manifesto.ctaLetter', { defaultValue: 'Entra nel Cerchio di Aurya' })}
                 </EditorialCta>
               </div>
             </div>
@@ -462,7 +462,7 @@ export default function ManifestoPage() {
             </p>
             <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
               <EditorialCta to="/newsletter" variant="solid" data-testid="mf-cta-letter">
-                {t('manifesto.ctaLetterPrimary', { defaultValue: 'Iscriviti alla Lettera di Aurya' })}
+                {t('manifesto.ctaLetterPrimary', { defaultValue: 'Entra nel Cerchio di Aurya' })}
               </EditorialCta>
               <EditorialCta to="/blog" variant="quiet" data-testid="mf-cta-magazine">
                 {t('manifesto.ctaMagazine', { defaultValue: 'Esplora il Magazine' })}

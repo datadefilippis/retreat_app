@@ -308,9 +308,10 @@ _HOME_COPY = {
                 "uno sguardo aperto, concreto e curioso."),
     "prosTitle": "Per chi dedica la propria vita al benessere degli altri.",
     "prosP5": "Se sei un professionista del benessere, ci piacerebbe conoscerti.",
-    "letterTitle": "Ricevi la Lettera di Aurya.",
-    "letterP6": ("Solo contenuti scelti con cura, da ricevere con calma e "
-                 "leggere con attenzione."),
+    # CN3 — la sezione vende l'appartenenza (il Cerchio), non «una
+    # lettera ogni tanto»: stessa pila di valore della pagina
+    "letterTitle": "Entra nel Cerchio di Aurya.",
+    "letterP6": "Una conferma via email, poi sei dentro. Ti cancelli con un clic.",
 }
 
 
@@ -372,7 +373,7 @@ async def _home_content_html() -> str:
         "<p><a href=\"/entra-nella-rete\">Entra nella rete</a></p>",
         f"<h2>{c['letterTitle']}</h2>",
         f"<p>{c['letterP6']}</p>",
-        "<p><a href=\"/newsletter\">Scopri la Lettera</a> · "
+        "<p><a href=\"/newsletter\">Entra nel Cerchio di Aurya</a> · "
         "<a href=\"/sound\">Aurya Sound</a></p>",
         "</div>",
     ]
@@ -478,11 +479,16 @@ _BRAND_PAGES = {
     # blog di nuovo quindicinale). Vale quella del founder, che e'
     # anche l'unica che non diventa un debito il giorno in cui saltiamo
     # un'uscita: si scrive quando c'e' qualcosa da dire.
+    # CN1 (3/9/2026, piano IL CERCHIO) — da «La Lettera» ad appartenenza:
+    # stesso title della SPA (NewsletterLandingPage), la pila di valore
+    # vera (meditazioni riservate, anteprime, la Lettera).
     "newsletter": {
-        "title": "La Lettera di Aurya | Una lettera, ogni tanto",
-        "description": ("Pratiche, persone e idee del benessere, una "
-                        "lettera alla volta. La scriviamo solo quando "
-                        "abbiamo qualcosa che vale il tuo tempo."),
+        "title": ("Il Cerchio di Aurya | Meditazioni riservate, ritiri in "
+                  "anteprima, una lettera quando vale"),
+        "description": ("Entra nel Cerchio di Aurya: meditazioni riservate "
+                        "gratuite, ritiri ed esperienze olistiche in "
+                        "anteprima nella tua zona e la Lettera, ogni due "
+                        "settimane. Ti cancelli con un clic."),
     },
     # OF3 — tre bugie in due righe: la pagina non si chiama piu' cosi'
     # ("Per i professionisti del benessere"), non usa mai la parola
@@ -546,7 +552,7 @@ _BRAND_PAGES = {
 _BRAND_BODY_LINKS = (
     '<p><a href="/">Aurya</a> · <a href="/blog">Il Magazine</a> · '
     '<a href="/operatori">La rete dei professionisti</a> · '
-    '<a href="/newsletter">La Lettera</a></p>')
+    '<a href="/newsletter">Il Cerchio di Aurya</a></p>')
 
 
 async def _meta_brand_page(slug: str) -> Optional[dict]:

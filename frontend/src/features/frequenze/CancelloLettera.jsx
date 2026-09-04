@@ -35,7 +35,7 @@ export default function CancelloLettera({
 
   const iscrivi = async (e) => {
     e.preventDefault();
-    if (!consent) { setMsg('Serve il consenso alla newsletter'); return; }
+    if (!consent) { setMsg('Serve il consenso alle email del Cerchio'); return; }
     setInvio(true); setMsg('');
     try {
       const esito = await iscriviESblocca({
@@ -70,21 +70,26 @@ export default function CancelloLettera({
 
   return (
     <div data-testid="cancello-lettera">
+      {/* CN3 (3/9/2026, piano IL CERCHIO): il cancello parla di
+          appartenenza, non di newsletter — cosa ottieni (la meditazione
+          completa), cosa costa (entrare nel Cerchio: gratis), cos'altro
+          arriva (anteprime e Lettera). «Il Cerchio» e' il nome, «la
+          Lettera» una delle cose che ricevi. */}
       <h2 className={chiaro ? S.titolo : undefined}>
-        La meditazione completa è riservata agli iscritti.
+        La meditazione completa è per chi è nel Cerchio di Aurya.
       </h2>
       <p className={chiaro ? S.corpo : undefined}>
         {durataSec > 120 && <>Sono {fmtMin(durataSec)} in tutto. </>}
-        L&rsquo;iscrizione alla newsletter di Aurya, la Lettera, è
-        <b> gratuita</b>: pratiche, esperienze e nuove meditazioni,
-        ogni tanto. Ti sblocchi una volta e ascolti tutto.
+        Entrare è <b>gratis</b>: lasci l&rsquo;email, confermi, e da
+        quel momento ascolti tutte le meditazioni riservate, ricevi i
+        ritiri in anteprima e la Lettera ogni due settimane.
       </p>
       {attesa && (
         <div className={chiaro ? S.warn : 'warnbox'}
           style={chiaro ? undefined : { margin: '12px 0', textAlign: 'left' }}
           data-testid="cancello-attesa">
-          Ti abbiamo scritto: apri l&rsquo;email e clicca il link di
-          conferma. Ti riporta qui, con la meditazione intera sbloccata.
+          Ti abbiamo scritto: apri l&rsquo;email e clicca «Entro nel
+          Cerchio». Ti riporta qui, con la meditazione intera sbloccata.
         </div>
       )}
       <form onSubmit={iscrivi} className={chiaro ? 'mt-5' : undefined}>
@@ -98,7 +103,7 @@ export default function CancelloLettera({
             className={chiaro ? S.bottone : 'primary'}
             style={chiaro ? { background: '#14212b', color: '#f6f2e8' } : undefined}
             data-testid="cancello-iscriviti">
-            {invio ? 'Un attimo…' : 'Iscriviti e continua l’ascolto →'}
+            {invio ? 'Un attimo…' : 'Entra nel Cerchio e continua l’ascolto →'}
           </button>
         </div>
         <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start',
@@ -106,9 +111,9 @@ export default function CancelloLettera({
           className={chiaro ? 'text-muted-foreground' : undefined}>
           <input type="checkbox" checked={consent}
             onChange={(e) => setConsent(e.target.checked)} />
-          <span>Acconsento a ricevere la newsletter (la Lettera di
-            Aurya). Confermerai dall&rsquo;email che ti arriva;
-            disiscrizione in un click.
+          <span>Acconsento a ricevere le email del Cerchio di Aurya
+            (meditazioni, anteprime, la Lettera). Confermerai
+            dall&rsquo;email che ti arriva; ti cancelli con un clic.
             {' '}<a href="/privacy" target="_blank" rel="noreferrer"
               style={chiaro ? undefined : { color: 'var(--water)' }}
               className={chiaro ? 'underline' : undefined}>Privacy</a></span>

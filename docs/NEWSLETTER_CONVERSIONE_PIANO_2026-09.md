@@ -157,7 +157,28 @@ Target: ≤ 300 parole, form visibile senza scroll su mobile.
 Ordine: CN4 (subito) → CN1 → CN2 → CN3 → CN5; CN0 cresce in parallelo
 (contenuto del founder). Deploy in un giro col go del founder.
 
-## 4 · Decisioni da prendere prima di partire
+## 3b · Stato al 3/9/2026 sera (founder: «1. il cerchio di aurya 2. sì accesa di default 3. sì. procedi»)
+
+- **CN4 FATTO**: footer pagina link → /entra-nella-rete (guardia LK5 evoluta).
+- **CN1 FATTO**: landing rigenerata (form nel primo schermo + in fondo,
+  pila di valore vera, chi scrive, 268 parole); LeadForm con
+  `experiencesDefault` + `experiencesLight` (solo città); consenso
+  esplicito e spento. Meccanica invariata.
+- **CN2 FATTO**: email di conferma «Un clic e sei nel Cerchio di Aurya»
+  (dice cosa si sblocca, bottone «Entro nel Cerchio»); pagina di
+  conferma «Sei nel Cerchio» + «Ascolta le meditazioni riservate»;
+  promemoria unico a 48h-7g (services/cerchio_reminder.py, job ogni 6h,
+  marcato prima dell'invio).
+- **CN3 FATTO**: ribrand delle porte (home, cancello meditazioni,
+  MeditazioniPage, Sound, Manifesto, Chi siamo, footer, account,
+  Magazine, shell SEO, email di accesso). Regola: «il Cerchio» è
+  l'appartenenza, «la Lettera» resta il nome dell'email.
+- **CN5 FATTO**: tests/test_cerchio_cn.py; metriche GA da leggere a 30
+  giorni (generate_lead landing vs confirm).
+- **CN0** cresce in parallelo (contenuto del founder), nessun numero in pagina.
+- Deploy: col go del founder, dopo il build di audit.
+
+## 4 · Decisioni da prendere prima di partire (PRESE il 3/9)
 1. **Il nome**: «Il Cerchio di Aurya» (consigliato) / «Dentro Aurya» /
    altro.
 2. ~~Quante meditazioni prima del lancio~~ — PRESA: in pagina solo
