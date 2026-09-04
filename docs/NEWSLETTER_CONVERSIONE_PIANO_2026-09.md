@@ -108,10 +108,10 @@ cosa non faremo. Una frase per idea, niente aggettivi doppi.
    non un secondo consenso), bottone **«Entra nel Cerchio»** · sotto,
    micro-riga di fiducia: «Una conferma via email, poi sei dentro. Ti
    cancelli con un clic.»
-2. **Cosa ricevi** — tre card con la prova: «N meditazioni riservate»
-   (ascolta un'anteprima da 90 secondi qui, senza iscriverti: il
-   pedaggio FN già esiste) · «Ritiri ed esperienze in anteprima» (la
-   prossima data, se c'è) · «La Lettera, ogni due settimane».
+2. **Cosa ricevi** — tre card: «Meditazioni riservate» (ascolta
+   un'anteprima da 90 secondi qui, senza iscriverti: il pedaggio FN
+   già esiste) · «Ritiri ed esperienze in anteprima» (la prossima
+   data, se c'è) · «La Lettera, ogni due settimane». Niente conteggi.
 3. **Per chi è** — 3 righe del founder (tenere il tono di oggi: «per
    chi preferisce capire prima di scegliere»).
 4. **Chi scrive** — Davide e Valentina, foto, due righe, firma.
@@ -124,10 +124,9 @@ Target: ≤ 300 parole, form visibile senza scroll su mobile.
 
 - **CN0 — Lo scaffale (founder, contenuto)** — *decisione founder 3/9:
   «parliamo di meditazioni riservate anche se solo 1 disponibile, a
-  breve ne faccio altre»*. Quindi NON blocca: la landing dice la
-  verità col numero vero dal catalogo («1 meditazione riservata pronta,
-  le prossime in arrivo» → «N meditazioni riservate» man mano che
-  crescono, senza toccare codice). Nessuna data promessa.
+  breve ne faccio altre... meno dettagli inutili»*. Quindi NON blocca e
+  in pagina si dice solo **«meditazioni riservate»**: niente conteggi,
+  niente «la prima è pronta», niente date. Lo scaffale cresce dietro.
 - **CN1 — La landing** (mezza giornata): struttura sopra, LeadForm
   invariato nella meccanica (stesso endpoint, stesso doppio opt-in),
   esperienze accese di default sulla landing, numeri veri dal
@@ -161,8 +160,8 @@ Ordine: CN4 (subito) → CN1 → CN2 → CN3 → CN5; CN0 cresce in parallelo
 ## 4 · Decisioni da prendere prima di partire
 1. **Il nome**: «Il Cerchio di Aurya» (consigliato) / «Dentro Aurya» /
    altro.
-2. ~~Quante meditazioni prima del lancio~~ — PRESA: si parte con 1,
-   il numero vero in pagina, «le prossime in arrivo».
+2. ~~Quante meditazioni prima del lancio~~ — PRESA: in pagina solo
+   «meditazioni riservate», senza numeri né «in arrivo».
 3. **Preferenza esperienze accesa di default** sulla landing (sì,
    consigliato: è una preferenza, il consenso resta esplicito).
 4. **Il promemoria a 48 h** ai non confermati (sì, consigliato: una
