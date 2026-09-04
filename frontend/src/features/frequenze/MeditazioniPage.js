@@ -165,6 +165,15 @@ export default function MeditazioniPage() {
               {' '}<b>L'ascolto completo è per chi è nel Cerchio di Aurya</b>:
               entrare è gratis, e ti apre anche i ritiri in anteprima e la Lettera.
             </p>
+            {/* founder 3/9 sera: mai una strada chiusa — chi non vuole
+                ancora entrare puo' prima ascoltare l'assaggio da 90
+                secondi su Aurya Sound */}
+            <p style={{ fontSize: 14, marginTop: 10 }} data-testid="med-assaggio">
+              Vuoi prima un assaggio?{' '}
+              <a href="/sound" style={{ color: 'var(--water)' }}>
+                Ascolta novanta secondi su Aurya Sound, senza iscriverti →
+              </a>
+            </p>
             {attesaConferma && (
               /* NL-septies — prima iscrizione: il cancello si apre col
                  clic nell'email, come per le guide del Magazine */

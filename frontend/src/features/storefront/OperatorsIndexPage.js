@@ -477,14 +477,18 @@ export default function OperatorsIndexPage() {
                   cat: catLabel, defaultValue: 'Professionisti di {{cat}}' })
               : t('landings:operators.pageTitle', { defaultValue: 'I professionisti della rete Aurya' })}
           </h1>
+          {/* founder 3/9 sera: qui mostriamo i professionisti di Aurya —
+              gente che pratica con passione — e cosa puo' fare chi
+              cerca; il link sotto e' l'invito a ENTRARE nella rete,
+              non il Manifesto. */}
           <p className="mt-2.5 text-white/90 max-w-2xl text-hero-shadow">
             {t('landings:operators.subtitle', {
-              defaultValue: 'Persone che conosciamo una per una: la loro storia, il modo in cui lavorano e, quando vuoi, una sessione, un evento o un ritiro da prenotare qui.',
+              defaultValue: 'Professionisti del benessere che praticano con passione, raccontati uno a uno. Cerca per disciplina o per zona, leggi la loro storia e prenota una sessione, un evento o un ritiro.',
             })}
           </p>
-          <Link to="/manifesto" data-testid="operators-how-born"
+          <Link to="/entra-nella-rete" data-testid="operators-join"
                 className="mt-3 inline-flex items-center gap-1 text-sm text-white/80 hover:text-white underline-offset-4 hover:underline">
-            {t('landings:operators.howBorn', { defaultValue: 'Come nasce la rete' })} →
+            {t('landings:operators.joinCta', { defaultValue: 'Sei un professionista? Entra nella rete' })} →
           </Link>
 
         </div>

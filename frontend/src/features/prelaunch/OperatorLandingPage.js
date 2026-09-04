@@ -216,8 +216,11 @@ export default function OperatorLandingPage() {
     {
       // SP3 — Aurya Sound e' uno strumento gia' vero: la CTA della
       // biblioteca pubblica (#sound) atterra su questo registro
-      title: t('opPro.v6t', { defaultValue: 'Componi esperienze sonore.' }),
-      body: t('opPro.v6b', { defaultValue: 'Con Aurya Sound combini frequenze, metodi e la tua voce in una sessione, e la pubblichi con un link.' }),
+      title: t('opPro.v6t', { defaultValue: 'Componi meditazioni con la tua voce.' }),
+      body: t('opPro.v6b', { defaultValue: 'Con Crea Studio, l’atelier di Aurya Sound, combini frequenze, metodi e la tua voce in una sessione e la pubblichi con un link.' }),
+      to: '/sound/studio',
+      toLabel: t('opPro.v6cta', { defaultValue: 'Scopri Crea Studio' }),
+      testid: 'ol-voice-studio',
     },
     {
       title: t('opPro.v5t', { defaultValue: 'Condividi un unico link.' }),
@@ -530,6 +533,17 @@ export default function OperatorLandingPage() {
                       6,26:1 e la gerarchia col titolo si legge lo stesso */}
                   <p className="max-w-[52ch] text-base leading-relaxed opacity-90 sm:text-lg lg:col-span-7 lg:pt-1">
                     {v.body}
+                    {/* founder 3/9 sera: la voce che presenta lo Studio
+                        deve portarci — era l'unico strumento senza porta */}
+                    {v.to && (
+                      <>
+                        {' '}
+                        <Link to={v.to} data-testid={v.testid}
+                              className="font-semibold underline underline-offset-4 hover:opacity-100">
+                          {v.toLabel} →
+                        </Link>
+                      </>
+                    )}
                   </p>
                 </li>
               ))}
@@ -539,8 +553,11 @@ export default function OperatorLandingPage() {
                 per una di loro. Il tono e' quello della FAQ sulle agende
                 esterne ("quello che ancora non c'e' e'..."): i limiti si
                 dicono con le stesse parole ovunque. */}
+            {/* OF2 → SR1 (3/9/2026): la parte pubblica E' aperta (la
+                directory /operatori mostra i profili pubblicati): la
+                frase «ancora non c'e'» era diventata falsa. */}
             <Lede size="body" tone="inherit" className="mt-12 opacity-90 sm:mt-14">
-              {t('opPro.goSoon', { defaultValue: 'Quello che ancora non c’è è la parte pubblica: quella in cui sono le persone a cercare un ritiro e ad arrivare a te. L’apriamo quando la rete sarà abbastanza viva da reggerla.' })}
+              {t('opPro.goSoon', { defaultValue: 'E la parte pubblica è aperta: chi cerca un professionista ti trova nella directory di Aurya, con i tuoi servizi, i tuoi eventi e i tuoi ritiri.' })}
             </Lede>
           </Section>
         </section>

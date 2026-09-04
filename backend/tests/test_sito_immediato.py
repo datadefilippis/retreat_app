@@ -53,10 +53,16 @@ class TestSr1Directory:
         page = (STORE / "OperatorsIndexPage.js").read_text()
         it = json.loads((FE / "locales" / "it" / "landings.json").read_text())["operators"]
         assert it["pageTitle"] == "I professionisti della rete Aurya"
-        assert "una per una" in it["subtitle"]
+        # founder 3/9 sera: «gente che pratica con passione», e cosa puo'
+        # fare chi cerca (cercare, leggere, prenotare)
+        assert "passione" in it["subtitle"] and "prenota" in it["subtitle"]
+        assert it["joinCta"] == "Sei un professionista? Entra nella rete"
         assert "stiamo costruendo" not in it["subtitle"].lower(), \
             "il «stiamo costruendo» vive nel Manifesto, non qui"
-        assert 'data-testid="operators-how-born"' in page and 'to="/manifesto"' in page
+        # founder 3/9 sera: il link sotto la copertina invita a ENTRARE
+        # nella rete (non al Manifesto): e' la porta dei professionisti
+        assert 'data-testid="operators-join"' in page and 'to="/entra-nella-rete"' in page
+        assert 'data-testid="operators-how-born"' not in page
         assert "<BrandPayoff" in page, "il payoff di brand resta sopra ogni hero (regola RB)"
 
     def test_il_menu_dice_professionisti_non_la_rete(self):
@@ -109,6 +115,25 @@ class TestSr1Directory:
         assert "<details" in blocco and "<summary" in blocco, \
             "le FAQ restano nel DOM ma si aprono una alla volta"
         assert "{f.a}" in blocco, "la risposta deve restare nel DOM per i crawler"
+
+    def test_nessuna_strada_chiusa_nei_funnel(self):
+        """Founder 3/9 sera: «nessun funnel porta a una strada chiusa».
+        Misurato: /meditazioni chiedeva subito di entrare (nessun assaggio),
+        la card «assaggio» della landing ci portava dritto; la landing
+        professionisti non nominava mai Crea Studio e diceva che «la parte
+        pubblica ancora non c'e'» (falso dal SR1)."""
+        med = (FE / "features" / "frequenze" / "MeditazioniPage.js").read_text()
+        assert 'data-testid="med-assaggio"' in med and 'href="/sound"' in med
+        nl = (FE / "features" / "prelaunch" / "NewsletterLandingPage.js").read_text()
+        i = nl.index("Ascolta un assaggio")
+        assert "to: '/sound'" in nl[i - 600:i], "l'assaggio senza iscrizione vive su Aurya Sound"
+        landing = (FE / "features" / "prelaunch" / "OperatorLandingPage.js").read_text()
+        assert "to: '/sound/studio'" in landing and 'data-testid={v.testid}' in landing
+        assert "ancora non c" not in landing.split("opPro.goSoon")[1][:200]
+        it = json.loads((FE / "locales" / "it" / "prelaunch.json").read_text())
+        assert "aperta" in it["opPro"]["goSoon"]
+        assert it["nl"]["a1c"] == "Vai su Aurya Sound"
+        assert "non a scadenza" not in it["nl"]["r3b"]
 
     def test_nessun_link_interno_dice_ancora_la_rete_come_destinazione(self):
         """I link a /operatori restano (l'URL e' stabile): cambiano le

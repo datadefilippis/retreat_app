@@ -185,6 +185,26 @@ Ordine: CN4 (subito) → CN1 → CN2 → CN3 → CN5; CN0 cresce in parallelo
   (novanta secondi di meditazione riservata; chi c'è nella rete).
 - Deploy: col go del founder, dopo il build di audit.
 
+## 3c · Revisione dei funnel (founder: «nessuna strada chiusa»)
+
+Mappa misurata pagina per pagina (porte verso newsletter,
+professionisti, entra-nella-rete, Sound, meditazioni, Studio). Le
+cinque azioni: iscriversi al Cerchio · cercare un professionista ·
+farsi professionista · andare su Sound/meditazioni · scoprire Studio.
+Vicoli ciechi trovati e chiusi:
+- /meditazioni chiedeva subito di entrare, senza assaggio (e la card
+  «assaggio» della landing ci portava dritto): riga «Vuoi prima un
+  assaggio? Novanta secondi su Aurya Sound» + card della landing →
+  /sound, dove l'anteprima vive davvero;
+- /operatori: testo ad alto valore + link «Sei un professionista?
+  Entra nella rete» (non al Manifesto);
+- /entra-nella-rete: zero link a Sound/Studio → la voce «Componi
+  meditazioni con la tua voce» presenta e linka Crea Studio; «la parte
+  pubblica ancora non c'è» era falso dal SR1 → «è aperta».
+- Regole di testo: nessuna cadenza, nessuna frase che non porta valore
+  («non a scadenza»), nessuna promessa che poi si scontra con un
+  cancello.
+
 ## 4 · Decisioni da prendere prima di partire (PRESE il 3/9)
 1. **Il nome**: «Il Cerchio di Aurya» (consigliato) / «Dentro Aurya» /
    altro.

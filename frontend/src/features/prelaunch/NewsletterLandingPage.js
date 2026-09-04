@@ -115,7 +115,7 @@ export default function NewsletterLandingPage() {
       // founder 3/9 sera: nessuna cadenza dichiarata (una frequenza
       // promessa e' un vincolo, non un valore): arriva quando vale la pena
       title: t('nl.r3t', { defaultValue: 'La Lettera' }),
-      body: t('nl.r3b', { defaultValue: 'Una pratica raccontata bene e una persona della rete da conoscere. Arriva quando vale la pena leggerla, non a scadenza.' }),
+      body: t('nl.r3b', { defaultValue: 'Una pratica raccontata bene e una persona della rete da conoscere.' }),
     },
   ];
 
@@ -124,10 +124,13 @@ export default function NewsletterLandingPage() {
      FARE prima di entrare: due assaggi veri, che sono la prova migliore. */
   const assaggi = [
     {
-      to: '/meditazioni',
+      // founder 3/9 sera: l'assaggio deve essere DAVVERO senza
+      // iscrizione — vive su Aurya Sound (l'anteprima da 90 secondi),
+      // non su /meditazioni che chiede subito di entrare
+      to: '/sound',
       title: t('nl.a1t', { defaultValue: 'Ascolta un assaggio' }),
-      body: t('nl.a1b', { defaultValue: 'Novanta secondi di una meditazione riservata, senza iscriverti. Se ti fa bene, il resto è dentro.' }),
-      cta: t('nl.a1c', { defaultValue: 'Vai alle meditazioni' }),
+      body: t('nl.a1b', { defaultValue: 'Su Aurya Sound ascolti novanta secondi di una meditazione riservata, senza iscriverti. Se ti fa bene, il resto è dentro.' }),
+      cta: t('nl.a1c', { defaultValue: 'Vai su Aurya Sound' }),
     },
     {
       to: '/operatori',
