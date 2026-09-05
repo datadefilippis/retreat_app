@@ -78,8 +78,8 @@ PILASTRI: List[Tuple[str, str, str]] = [
      "Meditazioni riservate, ritiri ed esperienze in anteprima e una lettera quando "
      "vale la pena. Gratis, una conferma via email."),
     ("/entra-nella-rete", "Per i professionisti",
-     "Come entrare nella rete: profilo raccontato con cura, gestionale gratuito, "
-     "vendita online di sessioni, eventi e ritiri."),
+     "Come entrare nella rete: profilo raccontato con cura, gestionale per listino, "
+     "appuntamenti, eventi e ritiri, vendita online dal profilo."),
     ("/manifesto", "Il Manifesto",
      "Perché esistiamo, in cosa crediamo, i cinque principi."),
     ("/chi-siamo", "Chi siamo",

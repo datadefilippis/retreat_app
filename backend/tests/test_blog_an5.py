@@ -269,8 +269,12 @@ def test_seo6_shell_hard_404_and_organization():
     assert "status = 404" in src, \
         "regressione: gli URL inesistenti tornerebbero soft-404 (200)"
     assert "status_code=status" in src
-    assert '"@type": "Organization"' in src
-    assert '"founder"' in src
+    # LX2 (5/9/2026): l'entita' Organization vive in services/identita.py
+    # (una fonte per JSON-LD, llms.txt e renderer); la home la monta da li'
+    ident = (BACKEND_DIR / "services" / "identita.py").read_text(encoding="utf-8")
+    assert "_identita.organization_jsonld(base)" in src
+    assert '"@type": "Organization"' in ident
+    assert '"founder"' in ident
 
 
 def test_ga2_csp_allows_google_analytics():
