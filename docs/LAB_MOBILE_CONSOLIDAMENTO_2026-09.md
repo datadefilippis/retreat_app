@@ -187,6 +187,27 @@ adeguata; testi mono che non spingono la larghezza.
 ripete i tre gesti (campana forte, riascolto, scroll) e mi manda WAV e
 screenshot: chiusura del ciclo sui dati veri.
 
+## Stato (5/9/2026, sera)
+
+- **LM0 FATTO**: «⤓ Scarica la registrazione (WAV)» sotto il pulsante
+  di registrazione, dopo ogni presa (anche quando il verdetto è
+  soffio/melodia/niente); avviso di saturazione con picco in dBFS.
+- **LM1 PARZIALE**: `clipping`, `piccoDb` e `percussivo` nel ritratto;
+  la melodia di un suono che decade dice «campana forte, colpisci più
+  piano» e non più «voce». Banco seedato in `lab/banco` (node),
+  guardia pytest: 6 casi pretesi verdi, 6 casi «lm1:» in attesa dei
+  WAV veri (5 campane forti → melodia, voce sintetica con vibrato →
+  modi per le bande laterali sul cancello armonico).
+- **LM2 FATTO**: analyser sul master durante l'A/B e mic ripristinato a
+  suono finito (naturale o fermato); `setAggancio` solo al cambio.
+- **LM3 FATTO**: `economia()` / `dprTela()` / `forzaEconomia()` nel
+  quadro; le sei tele prendono il dpr dal quadro e il bagliore solo
+  fuori economia. Misura: 1,23 → 0,54 ms/frame (dpr 2, economia).
+- **LM4 FATTO**: sonda a 375 px = 375 (era 499); tabella nel suo
+  scorrimento, gesti a griglia, chip a capo.
+- **LM5/LM6 DA FARE**: sonda automatica 320-768 sulle sei stanze;
+  verifica sul telefono del founder coi WAV.
+
 ## Cosa NON cambia
 - Il contratto dei pannelli (un solo rAF nel quadro, niente nodi
   audio nei visual, il mic mai verso l'uscita).
