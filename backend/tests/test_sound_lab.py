@@ -2018,6 +2018,40 @@ class TestLabMobileLM:
         assert ".fqz .lab-fonderia-gesti .lab-freeze{width:100%;min-height:44px;" in css
         assert ".fqz .lab-quaderno-riga b{flex-basis:100%;white-space:normal" in css
 
+    def test_nessun_setter_orfano_nei_pannelli_del_lab(self):
+        """Il silenzio del 5/9 (founder: «non esce nessun messaggio»):
+        potando il download era rimasto `setHaPresa(true)` senza il suo
+        useState — ReferenceError a ogni registrazione, inghiottito dal
+        catch. L'eslint del progetto e' spento e la build non lo vede:
+        questa guardia si', in ogni pannello del Lab."""
+        import re
+        orfani = []
+        for f in sorted(LAB.glob("*.jsx")):
+            src = f.read_text()
+            dich = set(re.findall(r"const \[\w+, (set\w+)\] = useState", src))
+            # non i metodi (localStorage.setItem, map.set…): solo chiamate nude
+            usati = set(re.findall(r"(?<![.\w])(set[A-Z]\w+)\(", src))
+            for s in sorted(usati - dich - {"setTimeout", "setInterval"}):
+                # setter passati come prop (es. setSuona) sono dichiarati altrove
+                if re.search(r"\b" + s + r"\b\s*[,}=]", src.split("return (")[0]):
+                    continue
+                orfani.append(f"{f.name}: {s}")
+        assert not orfani, "setter senza useState: " + ", ".join(orfani)
+
+    def test_il_catch_della_registrazione_parla(self):
+        """Uno strumento che fallisce lo dice: il catch di `registra`
+        scrive il referto nel messaggio, mai piu' un fallimento muto."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "L’analisi non è riuscita: riprova." in src
+        assert "console.error('[ritratto] analisi fallita', e)" in src
+
+    def test_lm1_la_fondamentale_del_tracker_deve_esistere_nello_spettro(self):
+        """Campana a tre modi con rumore di stanza (fuzz 5/9): il tracker
+        agganciava un sottoperiodo (63 Hz per 187/507/960) che nello
+        spettro non c'e' e la via armonica diceva «melodia»."""
+        src = (LAB / "ritrattista.js").read_text()
+        assert "!picchiFft.some((p) => Math.abs(p.hz - f0) <= f0 * 0.12)" in src
+
     def test_lm5_tap_da_pollice_in_tutte_le_stanze(self):
         """Sonda a 320/375/414/768 sulle sei stanze: niente fuori
         schermo, ma chip, ▶ e cursori erano da mouse (30 px, pomello

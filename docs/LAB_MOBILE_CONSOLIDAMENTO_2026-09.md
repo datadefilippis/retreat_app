@@ -218,6 +218,19 @@ screenshot: chiusura del ciclo sui dati veri.
 - **LM6 DA FARE**: verifica sul telefono del founder (a voce, senza
   file: campana forte e piano, riascolto, scroll).
 
+**Regressione del 5/9 (prod-2026-09-05) e cura.** Il founder: «ora non
+esce nessun messaggio, nessun output, il sistema è peggiorato».
+Causa: togliendo il download della registrazione era rimasto
+`setHaPresa(true)` senza il suo stato: ReferenceError a ogni
+registrazione, inghiottito dal `catch` che non scriveva nulla.
+L'eslint del progetto è spento e la build non lo vede. Cure: setter
+tolto; il catch ora scrive «L'analisi non è riuscita: riprova» col
+referto tecnico; guardia che cerca setter senza `useState` in ogni
+pannello del Lab. Nello stesso giro, dal fuzz del ritrattista: una
+campana a tre modi con rumore di stanza faceva agganciare al tracker
+un sottoperiodo (63 Hz) assente nello spettro → «melodia»; ora la
+fondamentale del tracker deve esistere fra i parziali (±12%).
+
 ## Cosa NON cambia
 - Il contratto dei pannelli (un solo rAF nel quadro, niente nodi
   audio nei visual, il mic mai verso l'uscita).

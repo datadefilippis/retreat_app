@@ -158,7 +158,6 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
       await new Promise((r) => setTimeout(r, 30));
       const r = analizza(campioni, sampleRate);
       presaRef.current = campioni; srRef.current = sampleRate;
-      setHaPresa(true);
       setEsito(r); setNiente(!r);
       /* LM1 (5/9): la saturazione si DICE, con la cura — la tabella
          c'e' ma porta l'asterisco */
@@ -178,9 +177,19 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
           : 'Ho sentito qualcosa ma troppo piano o troppo breve per un ritratto: riprova più vicino al microfono, con un suono tenuto.');
       }
       setFase('pronto');
-    } catch {
+    } catch (e) {
+      /* IL SILENZIO DEL 5/9 (founder, dal telefono: «non esce nessun
+         messaggio, nessun output»): un errore qui dentro veniva
+         INGHIOTTITO senza una parola — era un setter rimasto senza
+         stato dopo la potatura del download, e ogni registrazione
+         moriva muta. Uno strumento che fallisce lo DICE, col referto
+         tecnico tra parentesi, come il microfono. */
       clearInterval(contoRef.current);
       setNiente(true); setFase('pronto');
+      setMsg('L’analisi non è riuscita: riprova. ('
+        + ((e && (e.name || 'Errore')) + (e && e.message ? ' · ' + String(e.message).slice(0, 80) : ''))
+        + ')');
+      try { console.error('[ritratto] analisi fallita', e); } catch { /* niente */ }
     }
   };
 
@@ -274,7 +283,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     setEsito(voce.esito);
     setSpenti(voce.spenti || []);
     setRespiro(voce.respiro ?? 1);
-    setNiente(false); presaRef.current = null; setHaPresa(false); setAvviso('');
+    setNiente(false); presaRef.current = null; setAvviso('');
     setMsg(`Ritratto «${voce.etichetta || 'senza nome'}» aperto dal quaderno, l’originale registrato non c’è: il quaderno ricorda la tabella, non la voce.`);
   };
 

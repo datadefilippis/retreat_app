@@ -578,6 +578,17 @@ function _viaArmonica(campioni, da, L, sampleRate, picchiFft) {
   const ordinati = [...intonati].sort((a, b) => a - b);
   const f0 = ordinati[Math.floor(ordinati.length / 2)];
   if (!f0 || f0 < 40) return null;
+  /* LA FONDAMENTALE DEVE ESISTERE (LM1-bis, 5/9, campana con tre modi
+     e rumore di stanza, misurata): su una campana l'accordatore puo'
+     agganciare un SOTTOPERIODO comune ai modi (63 Hz per 187/507/960)
+     che nello spettro non c'e'. Se fra i parziali della FFT non ce
+     n'e' uno entro il 12% di cio' che il tracker chiama fondamentale,
+     il tracker sta leggendo un periodo di comodo, non una nota: la
+     via armonica non vale, si torna ai modi. Una voce e una corda
+     hanno sempre la fondamentale nello spettro. */
+  if (picchiFft.length && !picchiFft.some((p) => Math.abs(p.hz - f0) <= f0 * 0.12)) {
+    return null;
+  }
 
   /* LA MELODIA: se la fondamentale VIAGGIA (piu' del 12%: ben oltre
      ogni vibrato) non e' una nota tenuta — e' una melodia o un
