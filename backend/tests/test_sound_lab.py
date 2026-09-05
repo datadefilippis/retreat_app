@@ -1918,13 +1918,15 @@ class TestLabMobileLM:
     docs/LAB_MOBILE_CONSOLIDAMENTO_2026-09.md.
     """
 
-    def test_lm0_la_registrazione_cruda_si_scarica(self):
-        """Il referto dal telefono vero: i sei secondi crudi in WAV
-        (wavDaCampioni della fonderia, niente rifusione), e la
-        saturazione del microfono si DICE con la cura."""
+    def test_lm0_niente_file_da_scaricare_la_saturazione_si_dice(self):
+        """Founder (5/9): «siamo live, non voglio che l'utente scarichi
+        file, siamo professionali». Il pulsante «scarica la
+        registrazione» (primo giro di LM0) e' USCITO: il sistema deve
+        capire da solo. Resta la saturazione del microfono detta con
+        la cura (allontanare il telefono)."""
         src = (LAB / "Ritratto.jsx").read_text()
-        assert "wavDaCampioni" in src
-        assert 'data-testid="lab-ritratto-scarica-presa"' in src
+        assert "lab-ritratto-scarica-presa" not in src
+        assert "wavDaCampioni" not in src, "nessun WAV della registrazione all'utente"
         assert 'data-testid="lab-ritratto-avviso"' in src
         assert "r.clipping" in src and "ha saturato" in src
 
@@ -1936,6 +1938,16 @@ class TestLabMobileLM:
         src = (LAB / "ritrattista.js").read_text()
         assert "const clipping = saturi > N0 * 0.0005" in src
         assert "function _decade(" in src
+        # LM1 sera: le tre regole fisiche che tolgono «voce» alla campana
+        # forte — continuita' del tracker (ripiegata nell'ottava),
+        # simultaneita' dei gradini (Goertzel), bande laterali del
+        # vibrato raggruppate e tolleranza che cresce con k
+        assert "function _notaCheViaggia(" in src
+        assert "function _gradiniSimultanei(" in src
+        assert "function _raggruppa(" in src
+        assert "if (!_notaCheViaggia(traccia)) return null;" in src
+        assert "if (_gradiniSimultanei(campioni, da, L, sampleRate, intonati)) return null;" in src
+        assert "+ k * larghezzaVib" in src
         assert "percussivo," in src and "clipping," in src and "piccoDb," in src
         rit = (LAB / "Ritratto.jsx").read_text()
         assert "esito.percussivo" in rit
@@ -1943,8 +1955,9 @@ class TestLabMobileLM:
     def test_lm1_il_banco_del_ritrattista_gira_in_node(self):
         """Il banco sintetico seedato (lab/banco) collauda il
         ritrattista VERO senza browser: i casi pretesi devono passare,
-        i casi «lm1:» (campane forti → melodia) sono il bug riprodotto
-        in attesa della cura sui WAV veri. Senza node si salta."""
+        dal 5/9 sera TUTTI i casi sono pretesi (sei campane forti,
+        voce con vibrato, glissando, parlato, bicchiere, corda).
+        Senza node si salta."""
         import shutil, subprocess
         node = shutil.which("node")
         if not node:
@@ -1954,7 +1967,7 @@ class TestLabMobileLM:
         esito = subprocess.run([node, "banco.mjs"], cwd=LAB / "banco",
                                capture_output=True, text=True, timeout=300)
         assert esito.returncode == 0, esito.stdout + esito.stderr
-        assert "pretesi giusti" in esito.stdout
+        assert "12/12 pretesi giusti" in esito.stdout, esito.stdout
 
     def test_lm2_l_analyser_torna_sul_master_durante_l_ab(self):
         """Registrare apre il mic e lo lascia aperto → l'analyser

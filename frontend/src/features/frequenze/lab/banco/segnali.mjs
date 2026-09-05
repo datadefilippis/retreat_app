@@ -78,8 +78,10 @@ export function corda({ forza = 0.5, f0 = 110 }) {
   }
   return x;
 }
-export function casi() {
-  const fabbrica = (f) => { riseminaRnd(); return f(); };
+/* `seme` diverso = rumore diverso, stessi segnali: la cura non deve
+   dipendere da UN rumore (sweep di semi al collaudo) */
+export function casi(seme = 20260905) {
+  const fabbrica = (f) => { riseminaRnd(seme); return f(); };
   return {
     'campana delicata + doppietti': fabbrica(() => campana({ forza: 0.12, acuti: [0.2, 0.05, 0.02], batti: [2.3, 4, 6, 0] })),
     'campana FORTE + doppietti': fabbrica(() => campana({ forza: 0.7, batti: [2.3, 4, 6, 0] })),
@@ -95,12 +97,10 @@ export function casi() {
     'corda pizzicata': fabbrica(() => corda({})),
   };
 }
-/* il verdetto atteso; «lm1:» = oggi sbaglia, la cura arriva coi WAV veri */
+/* il verdetto atteso — tutti PRETESI dal 5/9 sera (continuita', simultaneita', bande laterali); «lm1:» resta il prefisso per un caso nuovo che il banco riproduce ma non cura ancora */
 export const ATTESO = {
-  'campana delicata + doppietti': 'modi', 'campana FORTE + doppietti': 'lm1:modi', 'campana forte + limiter mic': 'lm1:modi',
-  'campana fortissima clip + wah': 'lm1:modi', 'campana acuti dominanti': 'lm1:modi', 'campana grave 110 Hz forte': 'lm1:modi',
-  /* la voce sintetica con vibrato cade sul cancello armonico (le bande
-     laterali contano come picchi «forti»): anche questa e' materia LM1 */
-  'voce tenuta con vibrato': 'lm1:intonato', 'voce tenuta forte': 'intonato|modi', 'voce glissando (melodia)': 'melodia',
+  'campana delicata + doppietti': 'modi', 'campana FORTE + doppietti': 'modi', 'campana forte + limiter mic': 'modi',
+  'campana fortissima clip + wah': 'modi', 'campana acuti dominanti': 'modi', 'campana grave 110 Hz forte': 'modi',
+  'voce tenuta con vibrato': 'intonato', 'voce tenuta forte': 'intonato|modi', 'voce glissando (melodia)': 'melodia',
   'parlato': 'melodia', 'bicchiere': 'modi', 'corda pizzicata': 'intonato|modi',
 };

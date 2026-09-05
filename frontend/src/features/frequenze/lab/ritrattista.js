@@ -457,6 +457,96 @@ function _qualcosaDiFermo(campioni, da, L, sampleRate) {
     Math.abs(q.hz - p.hz) <= Math.max(3, p.hz * 0.005)) && coerente(p.hz));
 }
 
+/* Una nota che VIAGGIA cambia con continuita'; i modi di un oggetto
+   fanno saltare il tracker. Rapporto fra fotogrammi contigui,
+   ripiegato nell'ottava (2:1 e 1:2 sono errori del tracker, non
+   salti); fuori da [0,8 · 1,25] e' un salto. */
+function _notaCheViaggia(traccia) {
+  let salti = 0, coppie = 0;
+  for (let f = 1; f < traccia.length; f++) {
+    const a = traccia[f - 1], b = traccia[f];
+    if (a === null || b === null) continue;
+    coppie++;
+    let r = b / a;
+    while (r > 1.4142) r /= 2;
+    while (r < 0.7071) r *= 2;
+    if (r > 1.25 || r < 0.8) salti++;
+  }
+  return coppie === 0 || salti / coppie <= 0.25;
+}
+
+/* I due gradini piu' frequentati del tracker (gruppi entro ±6%) e
+   la loro SIMULTANEITA': Goertzel per fotogramma a entrambe le
+   frequenze, «presente» = entro 25 dB dal proprio massimo. Se in
+   almeno il 60% dei fotogrammi ci sono TUTTI E DUE, suonano insieme:
+   e' un oggetto con due modi, non una nota che cambia. Un solo
+   gradino (un glissando, un parlato che scorre) non e' giudicabile
+   qui e resta una nota che viaggia. */
+function _gradiniSimultanei(campioni, da, L, sampleRate, intonati) {
+  const ordinati = [...intonati].sort((a, b) => a - b);
+  const gruppi = [];
+  for (const v of ordinati) {
+    const u = gruppi[gruppi.length - 1];
+    if (u && v <= u.centro * 1.06) { u.n++; u.somma += v; u.centro = u.somma / u.n; }
+    else gruppi.push({ n: 1, somma: v, centro: v });
+  }
+  gruppi.sort((a, b) => b.n - a.n);
+  if (gruppi.length < 2) return false;
+  const gA = gruppi[0].centro;
+  /* il secondo gradino e' il piu' frequentato fra quelli LONTANI dal
+     primo: i passi contigui di una nota che scorre (meno di 1,25, un
+     terzo maggiore) e le letture d'ottava del tracker (2:1, 4:1) non
+     sono un secondo modo — i modi di una campana stanno a 2,7 e
+     oltre l'uno dall'altro. Le letture sparse del fondamentale di
+     una campana forte (97-114 Hz) restano cosi' un gradino solo. */
+  let gB = null;
+  for (const g of gruppi.slice(1)) {
+    const r = Math.max(gA, g.centro) / Math.min(gA, g.centro);
+    if (r < 1.25 || Math.abs(r - 2) < 0.06 || Math.abs(r - 4) < 0.12) continue;
+    gB = g; break;
+  }
+  if (!gB || gB.n < intonati.length * 0.15) return false;
+  gB = gB.centro;
+  /* un GLISSANDO passa per tutte le altezze fra i due gradini (e la
+     dispersione spettrale di un tono che scivola fa sembrare
+     «presenti» due frequenze vicine): se il tracker ha visitato la
+     zona in mezzo, non sono gradini, e' una nota che scorre */
+  const lo = Math.min(gA, gB) * 1.25, hi = Math.max(gA, gB) / 1.25;
+  if (hi > lo) {
+    const fra = intonati.filter((v) => v > lo && v < hi).length;
+    if (fra > intonati.length * 0.1) return false;
+  }
+  const finestra = 4096, passo = 2048;
+  const quanti = Math.floor((L - finestra) / passo);
+  if (quanti < 8) return false;
+  const serie = (hz) => {
+    const out = [];
+    for (let f = 0; f < quanti; f++) {
+      out.push(db(goertzel(campioni, da + f * passo, finestra, sampleRate, hz)));
+    }
+    const max = Math.max(...out);
+    return out.map((v) => v > max - 25);
+  };
+  const pA = serie(gA), pB = serie(gB);
+  let insieme = 0;
+  for (let f = 0; f < quanti; f++) if (pA[f] && pB[f]) insieme++;
+  return insieme / quanti >= 0.6;
+}
+
+/* Picchi entro `hz` l'uno dall'altro diventano UNO (resta il piu'
+   forte): e' cosi' che le bande laterali del vibrato tornano a essere
+   la loro armonica. */
+function _raggruppa(picchi, hz) {
+  const gruppi = [];
+  for (const p of [...picchi].sort((a, b) => a.hz - b.hz)) {
+    const u = gruppi[gruppi.length - 1];
+    if (u && p.hz - u.hz < hz) {
+      if (p.db > u.db) { u.hz = p.hz; u.db = p.db; }
+    } else gruppi.push({ hz: p.hz, db: p.db });
+  }
+  return gruppi;
+}
+
 /* Il decadere della coda: energia del primo terzo contro l'ultimo
    terzo, in dB. Sopra i 12 dB di caduta il suono e' stato COLPITO. */
 function _decade(campioni, da, L) {
@@ -496,17 +586,53 @@ function _viaArmonica(campioni, da, L, sampleRate, picchiFft) {
   const e5 = ordinati[Math.floor(ordinati.length * 0.05)];
   const e95 = ordinati[Math.floor(ordinati.length * 0.95)];
   if ((e95 - e5) / f0 > 0.12) {
+    /* LA CAMPANA FORTE (LM1, 5/9/2026 — referto del founder dal
+       telefono: «suonata forte dice che sembra una voce»). Riprodotto
+       al banco: con un colpo forte gli acuti valgono quanto il
+       fondamentale e i doppietti li fanno pulsare, cosi'
+       l'autocorrelazione SALTA fra i modi e i loro sottoperiodi (73,
+       214, 575 Hz) da un fotogramma all'altro — e lo spread passava
+       per «la nota si muove». Una voce o una melodia si muovono con
+       CONTINUITA': fotogrammi di 43 ms vicini l'uno all'altro (anche
+       un salto di quinta cantato e' UN salto ogni tanti fotogrammi).
+       Gli errori d'ottava del tracker si ripiegano prima di contare.
+       Se piu' di un quarto dei passi contigui e' un salto, non e' una
+       nota che viaggia: e' un oggetto con piu' modi, e si torna alla
+       via dei modi. */
+    if (!_notaCheViaggia(traccia)) return null;
+    /* LA CAMPANA GRAVE (stesso referto, misurato al banco su una
+       campana a 110 Hz): il tracker non salta a ogni fotogramma, si
+       FERMA a turno su un modo e sull'altro (110 per un po', poi 298,
+       poi 110) — otto salti in sessanta passi, e la continuita' non
+       basta. La fisica che decide e' la SIMULTANEITA': in una
+       campana i due modi suonano INSIEME in ogni istante (il 298
+       vibra mentre il 110 vibra); in una melodia le note vengono UNA
+       DOPO L'ALTRA. Si prendono i due gradini piu' frequentati del
+       tracker e si misura, fotogramma per fotogramma, se l'energia
+       c'e' a entrambe le frequenze nello stesso momento. */
+    if (_gradiniSimultanei(campioni, da, L, sampleRate, intonati)) return null;
     return { mutevole: true, f0minHz: +e5.toFixed(1), f0maxHz: +e95.toFixed(1) };
   }
 
   /* il suono deve DAVVERO stare sulla serie armonica: i picchi FFT
      forti devono cadere vicino a un multiplo di f0 (un bordone di
-     due toni scorrelati non passa di qui) */
-  const forti = picchiFft.filter((p) => p.db >= -30);
+     due toni scorrelati non passa di qui).
+     LM1 (5/9): le bande laterali del vibrato (±4-10 Hz attorno a ogni
+     armonica, forti quanto l'armonica su una FFT lunga) NON sono
+     picchi a se' — contate una per una bocciavano una voce tenuta con
+     vibrato (9 su 16 «sul posto», misurato al banco). Entro 15 Hz si
+     raggruppano e resta il piu' forte del gruppo. */
+  const forti = _raggruppa(picchiFft.filter((p) => p.db >= -30), 15);
   if (forti.length) {
+    /* LM1: il vibrato allarga la k-esima armonica di k volte la sua
+       profondita' (misurata dal tracker: (e95−e5)/2). Su una FFT
+       lunga il picco dell'armonica cade su una banda laterale, fino
+       a k·profondita' dal multiplo esatto: la tolleranza lo sa. Una
+       campana ferma ha spread quasi nullo e non ne guadagna. */
+    const larghezzaVib = (e95 - e5) / 2;
     const sopra = forti.filter((p) => {
       const k = Math.max(1, Math.round(p.hz / f0));
-      return Math.abs(p.hz - k * f0) <= Math.max(4, f0 * 0.04);
+      return Math.abs(p.hz - k * f0) <= Math.max(4, f0 * 0.04) + k * larghezzaVib;
     });
     if (sopra.length / forti.length < 0.7) return null;
   }

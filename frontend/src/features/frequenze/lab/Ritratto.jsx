@@ -21,7 +21,7 @@ import { analizza } from './ritrattista';
 import { curaMicrofono } from './microfono';
 import InvitoQuaderno from './InvitoQuaderno';
 import { sincronizza, spingi } from './quadernoRemoto';
-import { campana, renderizzaWav, wavDaCampioni, leggiRitratti, salvaRitratto,
+import { campana, renderizzaWav, leggiRitratti, salvaRitratto,
   cancellaRitratto } from './fonderia';
 import RitrattoVisual from './RitrattoVisual';
 import OndaViva from './OndaViva';
@@ -47,9 +47,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     return () => { vivo = false; };
   }, []);
   const [etichetta, setEtichetta] = useState('');
-  /* LM0 (5/9): la registrazione cruda si porta a casa (il referto
-     dal telefono vero) e la saturazione si dice */
-  const [haPresa, setHaPresa] = useState(false);
+  /* LM1 (5/9): la saturazione del microfono si dice, con la cura */
   const [avviso, setAvviso] = useState('');
   const labRef = useRef(null);
   const contoRef = useRef(null);
@@ -295,20 +293,9 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     setMsg('WAV pronto: 10 s di tenuto, per ascolto o per un ampli.');
   };
 
-  /* LM0 (5/9): i campioni CRUDI in WAV, cosi' come il microfono li ha
-     consegnati (niente rifusione). E' il referto: quando il ritratto
-     sbaglia sul telefono, il file arriva al banco e la cura si tara
-     sul suono vero, non su una campana sintetica. */
-  const scaricaRegistrazione = () => {
-    if (!presaRef.current) return;
-    const blob = wavDaCampioni(presaRef.current, srRef.current);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `registrazione-ritratto-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.wav`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
-  };
+  /* Il founder (5/9): «siamo live, l'utente non scarica file». La
+     registrazione cruda NON si porta a casa: il sistema deve capire da
+     solo (LM1), e il referto resta la saturazione detta a voce. */
 
   const alternaParziale = (hz) => setSpenti((v) => (
     v.includes(hz) ? v.filter((x) => x !== hz) : [...v, hz]));
@@ -335,15 +322,6 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
             ? 'Registro dal microfono: colpisci la campana (o il bicchiere) appena parte il conto.'
             : 'Registro ciò che il banco sta guardando: apri il microfono per ritrarre il mondo, o lascia le sorgenti per ritrarre una sintesi.'}
         </p>
-        {haPresa && (
-          <p className="lab-ritratto-presa" data-testid="lab-ritratto-presa">
-            <button type="button" className="lab-freeze"
-              data-testid="lab-ritratto-scarica-presa" onClick={scaricaRegistrazione}>
-              ⤓ Scarica la registrazione (WAV)
-            </button>
-            <span className="lab-cnote">i sei secondi crudi, come li ha sentiti il microfono: se il ritratto sbaglia, mandaceli</span>
-          </p>
-        )}
       </div>
 
       {avviso && (

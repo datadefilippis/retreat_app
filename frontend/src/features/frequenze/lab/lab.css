@@ -465,9 +465,6 @@
    tornano nello schermo. Le altre cinque stanze erano gia' pulite. */
 .fqz .lab-ritratto-colA,.fqz .lab-ritratto-colB{min-width:0}
 .fqz .lab-ritratto-scroll{-webkit-overflow-scrolling:touch}
-/* LM0: la registrazione cruda si porta a casa (il referto) */
-.fqz .lab-ritratto-presa{display:flex;flex-direction:column;align-items:center;
-  gap:6px;margin:12px auto 0;max-width:420px}
 .fqz .lab-ritratto-avviso{margin:12px 0 0;font-size:12.5px;line-height:1.55}
 @media (max-width:640px){
   .fqz .lab-ritratto-tabella th,.fqz .lab-ritratto-tabella td{padding:6px 7px}
