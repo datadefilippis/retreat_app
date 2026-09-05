@@ -16,7 +16,7 @@
  * niente nodi audio.
  */
 import React, { useEffect, useRef } from 'react';
-import { iscrivi } from './quadro';
+import { iscrivi, dprTela, economia } from './quadro';
 
 const DB_GIU = -50;              // il fondo della scala delle corde
 
@@ -37,7 +37,7 @@ export default function RitrattoVisual({ esito, ottieniAnalisi, vivo }) {
     const dipingi = () => {
       const r = esitoRef.current;
       if (!r || !r.parziali || !r.parziali.length) return;
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = dprTela();
       const W = Math.round(tela.clientWidth * dpr);
       const H = Math.round(tela.clientHeight * dpr);
       if (!W || !H) return;
@@ -127,7 +127,7 @@ export default function RitrattoVisual({ esito, ottieniAnalisi, vivo }) {
         c2d.strokeStyle = colore;
         c2d.lineWidth = Math.max(1.5, (fondamentale ? 2.2 : 1.5) * dpr);
         c2d.lineCap = 'round';
-        c2d.shadowBlur = 7 * dpr; c2d.shadowColor = colore;
+        if (!economia()) { c2d.shadowBlur = 7 * dpr; c2d.shadowColor = colore; }
         c2d.beginPath();
         c2d.moveTo(x, base); c2d.lineTo(x, y);
         c2d.stroke();

@@ -28,7 +28,7 @@
  * nodo che misura.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { iscrivi } from './quadro';
+import { iscrivi, dprTela, economia } from './quadro';
 
 const F_MIN = 20;               // sotto non c'e' udito, e la log esplode
 const MARGINE_BASSO = 18;       // spazio per le etichette dell'asse
@@ -78,7 +78,7 @@ export default function Spettro({ ottieniAnalisi, fermo }) {
     let tinte = null;
 
     const dipingi = (fermo) => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = dprTela();
       const W = Math.round(tela.clientWidth * dpr);
       const H = Math.round(tela.clientHeight * dpr);
       if (tela.width !== W || tela.height !== H) {
@@ -187,8 +187,10 @@ export default function Spettro({ ottieniAnalisi, fermo }) {
       } else {
         c2d.moveTo(0, HG); c2d.lineTo(W, HG);              // banco spento
       }
-      c2d.shadowBlur = 5 * dpr;
-      c2d.shadowColor = fermo ? tinte.fermo : tinte.traccia;
+      if (!economia()) {                     // LM3: niente bagliore sul telefono
+        c2d.shadowBlur = 5 * dpr;
+        c2d.shadowColor = fermo ? tinte.fermo : tinte.traccia;
+      }
       c2d.stroke();
       c2d.shadowBlur = 0;
       /* l'area sotto la traccia: gradiente che si spegne verso il fondo */

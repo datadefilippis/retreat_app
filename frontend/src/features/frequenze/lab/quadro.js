@@ -34,9 +34,11 @@ const testimoni = new Set();
 function giro() {
   giroId = null;
   if (!pittori.size || document.hidden) return;   // il ciclo MUORE, non gira a vuoto
+  const t0 = performance.now();
   pittori.forEach((p) => {
     try { p(tempoFermo); } catch { /* un pittore rotto non ferma il banco */ }
   });
+  misuraCosto(performance.now() - t0);
   giroId = requestAnimationFrame(giro);
 }
 
@@ -85,4 +87,49 @@ export function unGiro() {
   pittori.forEach((p) => { try { p(tempoFermo); } catch { /* come nel giro vero */ } });
 }
 
-try { window.__fqzQuadro = { unGiro, congela, eFermo }; } catch { /* SSR/test */ }
+/* ═══ LM3 (5/9/2026) — IL BUDGET DEL DISEGNO SUL TELEFONO ═══
+ *
+ * Il founder, dal telefono: «riascoltando il ritratto scattava e
+ * tremava tutto». Misurato sul banco: l'Onda viva costava il 95% del
+ * fotogramma (tre tracciati da 2048 punti, scia a piena risoluzione,
+ * shadowBlur a 8·dpr); su un telefono a dpr 3 col blur software di
+ * WebKit sono decine di millisecondi, e il ponte <audio> alimentato
+ * da un MediaStream su iOS scatta proprio quando il thread principale
+ * e' saturo.
+ *
+ * La regola vive QUI, non tre volte nei pittori: l'ECONOMIA si accende
+ * su un dispositivo a tocco (pointer: coarse) o quando il giro medio
+ * dei pittori supera i 10 ms — e resta accesa (mai un'oscillazione
+ * fra bello e leggero). In economia le tele si disegnano al massimo a
+ * dpr 1,5 (un quarto dei pixel a dpr 3) e i pittori saltano il
+ * bagliore (shadowBlur). Su desktop non cambia nulla. */
+let costoMedio = null;
+let economiaAccesa = false;
+let economiaForzata = null;               // solo collaudo: true/false/null
+function misuraCosto(ms) {
+  costoMedio = costoMedio === null ? ms : costoMedio * 0.9 + ms * 0.1;
+  if (costoMedio > 10) economiaAccesa = true;
+}
+function toccoGrosso() {
+  try { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); }
+  catch { return false; }
+}
+/** Vero quando il disegno deve stare leggero (telefono, o giro lento). */
+export function economia() {
+  if (economiaForzata !== null) return economiaForzata;
+  return economiaAccesa || toccoGrosso();
+}
+/** La densita' di pixel con cui disegnare le tele: piena su desktop,
+ *  al massimo 1,5 in economia. */
+export function dprTela() {
+  const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+  return economia() ? Math.min(dpr, 1.5) : dpr;
+}
+/** Collaudo: forza l'economia (true/false) o torna all'automatico (null). */
+export function forzaEconomia(v) { economiaForzata = v; }
+/** Il costo medio del giro, in ms (null finche' non gira). */
+export function costoGiro() { return costoMedio; }
+
+try {
+  window.__fqzQuadro = { unGiro, congela, eFermo, economia, forzaEconomia, costoGiro };
+} catch { /* SSR/test */ }

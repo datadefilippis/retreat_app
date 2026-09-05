@@ -18,7 +18,7 @@
  * Generatore: interrompere la rampa = tenere la nota).
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { iscrivi } from './quadro';
+import { iscrivi, dprTela, economia } from './quadro';
 import { goertzel } from './ritrattista';
 import { notaVicina } from './note';
 import InvitoQuaderno from './InvitoQuaderno';
@@ -251,7 +251,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
     /* il disegno della curva (solo con la via del microfono) */
     const tela = telaRef.current;
     if (!tela) return;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = dprTela();
     const W = Math.round(tela.clientWidth * dpr);
     const H = Math.round(tela.clientHeight * dpr);
     if (!W || !H) return;
@@ -281,7 +281,7 @@ export default function Risonanze({ ottieniLab, ottieniAnalisi }) {
       c2d.strokeStyle = acqua;
       c2d.lineWidth = Math.max(1.25, 1.25 * dpr);
       c2d.lineJoin = 'round';
-      c2d.shadowBlur = 4 * dpr; c2d.shadowColor = acqua;
+      if (!economia()) { c2d.shadowBlur = 4 * dpr; c2d.shadowColor = acqua; }
       c2d.beginPath();
       punti.forEach((p, i) => {
         const x = xDaHz(p.hz), y = yDaDb(p.db);

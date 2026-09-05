@@ -24,7 +24,7 @@
  * Un solo ciclo per tutto il banco: il pittore si iscrive al quadro.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { iscrivi } from './quadro';
+import { iscrivi, dprTela, economia } from './quadro';
 
 const FINESTRA = 2048;          // campioni a schermo: a 44.1k ≈ 46 ms
 const MARGINE_Y = 0.88;         // ±1 non tocca i bordi
@@ -81,7 +81,7 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo, ottieniXY = null 
 
     const dipingi = (fermo) => {
       /* la tela segue la card (responsive), in pixel veri */
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = dprTela();
       const W = Math.round(tela.clientWidth * dpr);
       const H = Math.round(tela.clientHeight * dpr);
       if (tela.width !== W || tela.height !== H) {
@@ -171,7 +171,7 @@ export default function Oscilloscopio({ ottieniAnalisi, fermo, ottieniXY = null 
         ctx2.lineWidth = spessore;
         ctx2.strokeStyle = colore;
         ctx2.lineJoin = 'round'; ctx2.lineCap = 'round';
-        if (bagliore) { ctx2.shadowBlur = 6 * dpr; ctx2.shadowColor = colore; }
+        if (bagliore && !economia()) { ctx2.shadowBlur = 6 * dpr; ctx2.shadowColor = colore; }
         ctx2.beginPath();
         if (buf) {
           const da = daRef.current;

@@ -342,6 +342,10 @@ export function creaLaboratorio(ctx) {
        dinamica — esattamente cio' che il Lab vuole misurare. */
     orecchio: {
       attivo: () => !!mic,
+      /* LM2 (5/9): il nodo del mic, per chi deve RIMETTERLO sotto
+         l'analyser dopo averlo spostato sul master (l'A/B del
+         Ritratto). Sola lettura: nessuna via nuova per il suono. */
+      nodo: () => (mic ? mic.nodo : null),
       async apri() {
         if (mic) return;
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {

@@ -21,7 +21,7 @@ import { analizza } from './ritrattista';
 import { curaMicrofono } from './microfono';
 import InvitoQuaderno from './InvitoQuaderno';
 import { sincronizza, spingi } from './quadernoRemoto';
-import { campana, renderizzaWav, leggiRitratti, salvaRitratto,
+import { campana, renderizzaWav, wavDaCampioni, leggiRitratti, salvaRitratto,
   cancellaRitratto } from './fonderia';
 import RitrattoVisual from './RitrattoVisual';
 import OndaViva from './OndaViva';
@@ -47,15 +47,44 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     return () => { vivo = false; };
   }, []);
   const [etichetta, setEtichetta] = useState('');
+  /* LM0 (5/9): la registrazione cruda si porta a casa (il referto
+     dal telefono vero) e la saturazione si dice */
+  const [haPresa, setHaPresa] = useState(false);
+  const [avviso, setAvviso] = useState('');
   const labRef = useRef(null);
   const contoRef = useRef(null);
   const presaRef = useRef(null);                  // i campioni registrati
   const srRef = useRef(44100);
   const vivoRef = useRef(null);                   // {ferma} di cio' che suona
+  const micSpostatoRef = useRef(false);           // LM2: analyser sul master
+
+  /* LM2 (5/9, «scattava e tremava» dal telefono): registrare apre il
+     microfono e lo lascia aperto, e aprirlo sposta l'analyser sul
+     mic. Poi l'A/B suonava dal master ma la sagoma e l'Onda viva
+     leggevano il MICROFONO — cio' che il telefono sente dal suo
+     altoparlante: trigger mai agganciato, sagoma che balla. Per la
+     durata dell'ascolto l'analyser torna sul master (la promessa del
+     contratto: «i campioni veri del master»), e quando il suono
+     finisce il microfono torna sotto l'analyser. Il mic resta
+     aperto: niente secondo permesso per registrare di nuovo. */
+  const perAscolto = (lab) => {
+    if (lab && lab.orecchio.attivo() && !micSpostatoRef.current) {
+      lab.analisi.sorgente(null);
+      micSpostatoRef.current = true;
+    }
+  };
+  const ripristinaMic = () => {
+    if (!micSpostatoRef.current) return;
+    micSpostatoRef.current = false;
+    const lab = labRef.current;
+    const nodo = lab && lab.orecchio.attivo() ? lab.orecchio.nodo() : null;
+    if (nodo) lab.analisi.sorgente(nodo);
+  };
 
   const zittisci = () => {
     if (vivoRef.current) { vivoRef.current.ferma(); vivoRef.current = null; }
     setInSuono(null);
+    ripristinaMic();
   };
 
   /* Gancio di collaudo (29/8): il pane di anteprima blocca il
@@ -89,7 +118,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     labRef.current = lab;
     try { await lab.ctx.resume(); } catch { /* gia' attivo */ }
     zittisci();
-    setEsito(null); setNiente(false); setSpenti([]); setMsg('');
+    setEsito(null); setNiente(false); setSpenti([]); setMsg(''); setAvviso('');
     /* IL CASO DEL FOUNDER (28/8): registrava la voce ma il microfono
        era chiuso — il banco ascoltava il silenzio delle sorgenti
        spente e rispondeva «troppo piano». Ora il Ritratto apre
@@ -131,7 +160,13 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
       await new Promise((r) => setTimeout(r, 30));
       const r = analizza(campioni, sampleRate);
       presaRef.current = campioni; srRef.current = sampleRate;
+      setHaPresa(true);
       setEsito(r); setNiente(!r);
+      /* LM1 (5/9): la saturazione si DICE, con la cura — la tabella
+         c'e' ma porta l'asterisco */
+      if (r && r.clipping) {
+        setAvviso(`Il microfono ha saturato (picco ${String(r.piccoDb).replace('.', ',')} dBFS): frequenze e forze sono indicative. Allontana il telefono dalla campana o colpisci più piano, e riprova.`);
+      }
       if (!r) {
         /* si guarda COSA e' andato storto, e lo si dice: il silenzio
            ha una cura diversa dal «troppo piano» */
@@ -155,6 +190,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
   const suonaOriginale = async () => {
     const lab = labRef.current; if (!lab || !presaRef.current) return;
     zittisci();
+    perAscolto(lab);
     try { await lab.ctx.resume(); } catch { /* attivo */ }
     await lab.ponte.avvia();
     const buf = lab.ctx.createBuffer(1, presaRef.current.length, srRef.current);
@@ -162,15 +198,21 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     const src = lab.ctx.createBufferSource();
     src.buffer = buf;
     src.connect(lab.ingresso);
-    src.onended = () => setInSuono((cosa) => (cosa === 'orig' ? null : cosa));
+    const mio = { ferma: () => { try { src.stop(); } catch { /* gia' */ } } };
+    src.onended = () => {
+      setInSuono((cosa) => (cosa === 'orig' ? null : cosa));
+      /* finito da solo (non fermato da un altro suono): il mic torna */
+      if (vivoRef.current === mio) { vivoRef.current = null; ripristinaMic(); }
+    };
     src.start();
-    vivoRef.current = { ferma: () => { try { src.stop(); } catch { /* gia' */ } } };
+    vivoRef.current = mio;
     setInSuono('orig');
   };
 
   const suonaRifusa = async (modo) => {
     const lab = labRef.current; if (!lab || !esito) return;
     zittisci();
+    perAscolto(lab);
     try { await lab.ctx.resume(); } catch { /* attivo */ }
     await lab.ponte.avvia();
     const esec = campana(lab.ctx, lab.ingresso, esito, { modo, respiro, spenti });
@@ -178,8 +220,10 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     vivoRef.current = esec;
     setInSuono(modo);
     if (modo === 'colpo') {
-      setTimeout(() => setInSuono((cosa) => (cosa === 'colpo' ? null : cosa)),
-        esec.durataSec * 1000);
+      setTimeout(() => {
+        setInSuono((cosa) => (cosa === 'colpo' ? null : cosa));
+        if (vivoRef.current === esec) { vivoRef.current = null; ripristinaMic(); }
+      }, esec.durataSec * 1000);
     }
   };
 
@@ -210,6 +254,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     const lab = ottieniLab();
     labRef.current = lab;
     zittisci();
+    perAscolto(lab);
     try { await lab.ctx.resume(); } catch { /* attivo */ }
     await lab.ponte.avvia();
     const esec = campana(lab.ctx, lab.ingresso, voce.esito,
@@ -218,8 +263,10 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     vivoRef.current = esec;
     setInSuono(chiave);
     if (modo === 'colpo') {
-      setTimeout(() => setInSuono((cosa) => (cosa === chiave ? null : cosa)),
-        esec.durataSec * 1000);
+      setTimeout(() => {
+        setInSuono((cosa) => (cosa === chiave ? null : cosa));
+        if (vivoRef.current === esec) { vivoRef.current = null; ripristinaMic(); }
+      }, esec.durataSec * 1000);
     }
   };
 
@@ -229,7 +276,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     setEsito(voce.esito);
     setSpenti(voce.spenti || []);
     setRespiro(voce.respiro ?? 1);
-    setNiente(false); presaRef.current = null;
+    setNiente(false); presaRef.current = null; setHaPresa(false); setAvviso('');
     setMsg(`Ritratto «${voce.etichetta || 'senza nome'}» aperto dal quaderno, l’originale registrato non c’è: il quaderno ricorda la tabella, non la voce.`);
   };
 
@@ -246,6 +293,21 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
     setMsg('WAV pronto: 10 s di tenuto, per ascolto o per un ampli.');
+  };
+
+  /* LM0 (5/9): i campioni CRUDI in WAV, cosi' come il microfono li ha
+     consegnati (niente rifusione). E' il referto: quando il ritratto
+     sbaglia sul telefono, il file arriva al banco e la cura si tara
+     sul suono vero, non su una campana sintetica. */
+  const scaricaRegistrazione = () => {
+    if (!presaRef.current) return;
+    const blob = wavDaCampioni(presaRef.current, srRef.current);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `registrazione-ritratto-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.wav`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
   };
 
   const alternaParziale = (hz) => setSpenti((v) => (
@@ -273,7 +335,23 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
             ? 'Registro dal microfono: colpisci la campana (o il bicchiere) appena parte il conto.'
             : 'Registro ciò che il banco sta guardando: apri il microfono per ritrarre il mondo, o lascia le sorgenti per ritrarre una sintesi.'}
         </p>
+        {haPresa && (
+          <p className="lab-ritratto-presa" data-testid="lab-ritratto-presa">
+            <button type="button" className="lab-freeze"
+              data-testid="lab-ritratto-scarica-presa" onClick={scaricaRegistrazione}>
+              ⤓ Scarica la registrazione (WAV)
+            </button>
+            <span className="lab-cnote">i sei secondi crudi, come li ha sentiti il microfono: se il ritratto sbaglia, mandaceli</span>
+          </p>
+        )}
       </div>
+
+      {avviso && (
+        <p className="lab-orecchio-errore lab-ritratto-avviso" data-testid="lab-ritratto-avviso"
+          aria-live="polite">
+          {avviso}
+        </p>
+      )}
 
       {msg && !esito && (
         <p className="lab-orecchio-errore" data-testid="lab-ritratto-vuoto">
@@ -301,10 +379,22 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
           {notaVicina(esito.f0minHz) && ` (${notaVicina(esito.f0minHz).nome})`} a{' '}
           <b>{String(esito.f0maxHz).replace('.', ',')} Hz</b>
           {notaVicina(esito.f0maxHz) && ` (${notaVicina(esito.f0maxHz).nome})`}:
-          è una melodia, o un parlato. Il ritratto fotografa <b>una</b> nota
-          tenuta, canta un suono fermo («aaah» su una sola altezza) e
-          riprova. Le melodie intere sono un altro mestiere: qui si
-          studia com&rsquo;è fatto UN suono.
+          {esito.percussivo ? (
+            <>
+              {' '}ma il suono <b>decade</b> come un oggetto colpito: se era
+              una campana o un bicchiere suonati forte, i suoi modi hanno
+              confuso la ricerca della nota. Colpisci <b>più piano</b> (o
+              allontana il telefono) e riprova: il ritratto dei modi esce
+              dal colpo leggero.
+            </>
+          ) : (
+            <>
+              è una melodia, o un parlato. Il ritratto fotografa <b>una</b> nota
+              tenuta, canta un suono fermo («aaah» su una sola altezza) e
+              riprova. Le melodie intere sono un altro mestiere: qui si
+              studia com&rsquo;è fatto UN suono.
+            </>
+          )}
         </div>
       )}
 

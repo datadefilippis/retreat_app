@@ -37,7 +37,7 @@
  * tiene gemelle.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { iscrivi } from './quadro';
+import { iscrivi, dprTela } from './quadro';
 
 const F_MIN = 20;               // come nello Spettro
 const DB_MIN = -96, DB_MAX = 0; // come nello Spettro (dBFS)
@@ -150,7 +150,7 @@ export default function Spettrogramma({ ottieniAnalisi, fermo }) {
     };
 
     const dipingi = (fermo) => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = dprTela();
       const W = Math.round(tela.clientWidth * dpr);
       const H = Math.round(tela.clientHeight * dpr);
       if (!W || !H) return;

@@ -93,6 +93,18 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
   }
   if (picco < 0.003) return null;                  // silenzio
 
+  /* LA SATURAZIONE (LM1, 5/9/2026 — la campana forte del founder al
+     telefono): un microfono che satura non lo diceva nessuno, e la
+     tabella usciva sbagliata (prodotti di intermodulazione: 120 e
+     152 Hz al posto di 214, misurato al banco). Si contano i campioni
+     al tetto: sopra lo 0,05% il ritratto porta l'asterisco, e la UI
+     dice la cura (allontanare il telefono). Mai bloccare: una misura
+     con l'asterisco vale piu' di nessuna. */
+  let saturi = 0;
+  for (let i = 0; i < N0; i++) if (Math.abs(campioni[i]) >= 0.985) saturi++;
+  const clipping = saturi > N0 * 0.0005;
+  const piccoDb = +db(picco).toFixed(1);
+
   /* il pavimento PRIMA del colpo: il rumore della stanza */
   const preN = Math.min(piccoIdx, Math.floor(sampleRate * 0.3));
   let pre = 0;
@@ -278,6 +290,13 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
      fondamentale, i picchi FFT forti che cadono sulla serie
      armonica, almeno due armoniche — un bordone inarmonico o una
      campana che sfuma non passano e restano sulla via dei modi. */
+  /* IL DECADERE (LM1, 5/9): un oggetto colpito perde energia lungo la
+     coda, una voce tenuta no. Oggi e' un DATO del verdetto (la
+     melodia di un suono che decade non dice piu' «voce»: dice campana
+     forte); la taratura dei cancelli si fa sui WAV veri del founder,
+     non su un segnale sintetico (banco del 5/9: riproduce il bug,
+     non tara la cura). */
+  const percussivo = _decade(campioni, da, L);
   {
     const armonico = _viaArmonica(campioni, da, L, sampleRate, tenuti);
     if (armonico && armonico.mutevole) {
@@ -288,6 +307,9 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
         durataSec: +(N0 / sampleRate).toFixed(2),
         f0minHz: armonico.f0minHz,
         f0maxHz: armonico.f0maxHz,
+        percussivo,
+        clipping,
+        piccoDb,
       };
     }
     if (armonico && !armonico.mutevole) {
@@ -300,6 +322,8 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
         durataSec: +(N0 / sampleRate).toFixed(2),
         codaSec: +(L / sampleRate).toFixed(2),
         rumoreFondoDb: null,
+        clipping,
+        piccoDb,
         ...armonico,
       };
     }
@@ -325,6 +349,8 @@ export function analizza(campioni, sampleRate, opzioni = {}) {
     durataSec: +(N0 / sampleRate).toFixed(2),
     codaSec: +(L / sampleRate).toFixed(2),
     continuo,
+    clipping,
+    piccoDb,
     rumoreFondoDb: (continuo || rumoreFondo === null)
       ? null : +rumoreFondo.toFixed(1),
     fondamentaleHz: +fondo.hz.toFixed(2),
@@ -429,6 +455,19 @@ function _qualcosaDiFermo(campioni, da, L, sampleRate) {
 
   return prime.some((p) => seconde.some((q) =>
     Math.abs(q.hz - p.hz) <= Math.max(3, p.hz * 0.005)) && coerente(p.hz));
+}
+
+/* Il decadere della coda: energia del primo terzo contro l'ultimo
+   terzo, in dB. Sopra i 12 dB di caduta il suono e' stato COLPITO. */
+function _decade(campioni, da, L) {
+  const terzo = Math.floor(L / 3);
+  if (terzo < 2048) return false;
+  const rms = (inizio) => {
+    let s = 0;
+    for (let i = 0; i < terzo; i++) s += campioni[inizio + i] * campioni[inizio + i];
+    return Math.sqrt(s / terzo);
+  };
+  return db(rms(da)) - db(rms(da + 2 * terzo)) > 12;
 }
 
 function _viaArmonica(campioni, da, L, sampleRate, picchiFft) {

@@ -20,7 +20,7 @@
  * non costa un fotogramma.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { iscrivi } from './quadro';
+import { iscrivi, dprTela, economia } from './quadro';
 import { trigger } from './Oscilloscopio';
 
 const FINESTRA = 2048;          // ≈46 ms a 44.1k — come l'Oscilloscopio
@@ -39,6 +39,11 @@ export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
   const acqRef = useRef(null);
   const daRef = useRef(0);
   const [aggancio, setAggancio] = useState(false);
+  /* LM2 (5/9): lo stato cambia solo quando l'aggancio cambia DAVVERO —
+     prima setAggancio partiva a ogni fotogramma e, col trigger che
+     non teneva (il mic aperto sotto), React ridisegnava il pannello
+     sessanta volte al secondo: era il «tremava» del founder. */
+  const aggRef = useRef(false);
 
   useEffect(() => {
     if (!attivo || !ottieniAnalisi) return undefined;
@@ -50,7 +55,7 @@ export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
     const sciaC2d = scia.getContext('2d');
 
     const dipingi = (fermo) => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = dprTela();
       const W = Math.round(tela.clientWidth * dpr);
       const H = Math.round(tela.clientHeight * dpr);
       if (!W || !H) return;
@@ -78,7 +83,7 @@ export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
         analisi.tempo(acqRef.current);
         const t = trigger(acqRef.current);
         daRef.current = t.da;
-        setAggancio(t.ok);
+        if (t.ok !== aggRef.current) { aggRef.current = t.ok; setAggancio(t.ok); }
       }
       const buf = acqRef.current;
       if (!buf) return;
@@ -87,6 +92,7 @@ export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
       const ampiezza = mezzo * MARGINE_Y;
       const da = daRef.current;
       const passo = W / (FINESTRA - 1);
+      const salto = economia() ? 2 : 1;     // LM3: meta' dei punti sul telefono
 
       /* la scia sbiadisce, poi accoglie la traccia di questo giro */
       sciaC2d.globalCompositeOperation = 'destination-out';
@@ -97,7 +103,7 @@ export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
       sciaC2d.strokeStyle = tinte.acqua;
       sciaC2d.globalAlpha = 0.35;
       sciaC2d.beginPath();
-      for (let i = 0; i < FINESTRA; i++) {
+      for (let i = 0; i < FINESTRA; i += salto) {
         const y = mezzo - (buf[da + i] || 0) * ampiezza;
         if (i === 0) sciaC2d.moveTo(0, y); else sciaC2d.lineTo(i * passo, y);
       }
@@ -118,7 +124,7 @@ export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
       gradiente.addColorStop(1, tinte.oro);
 
       c2d.beginPath();
-      for (let i = 0; i < FINESTRA; i++) {
+      for (let i = 0; i < FINESTRA; i += salto) {
         const y = mezzo - (buf[da + i] || 0) * ampiezza;
         if (i === 0) c2d.moveTo(0, y); else c2d.lineTo(i * passo, y);
       }
@@ -131,14 +137,16 @@ export default function OndaViva({ ottieniAnalisi, attivo, nome = null }) {
       c2d.restore();
 
       c2d.beginPath();
-      for (let i = 0; i < FINESTRA; i++) {
+      for (let i = 0; i < FINESTRA; i += salto) {
         const y = mezzo - (buf[da + i] || 0) * ampiezza;
         if (i === 0) c2d.moveTo(0, y); else c2d.lineTo(i * passo, y);
       }
       c2d.lineWidth = Math.max(1.5, 1.5 * dpr);
       c2d.strokeStyle = gradiente;
-      c2d.shadowColor = tinte.acqua;
-      c2d.shadowBlur = 8 * dpr;
+      if (!economia()) {                     // LM3: niente bagliore sul telefono
+        c2d.shadowColor = tinte.acqua;
+        c2d.shadowBlur = 8 * dpr;
+      }
       c2d.stroke();
       c2d.shadowBlur = 0;
     };

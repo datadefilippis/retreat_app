@@ -1543,8 +1543,12 @@ class TestOndaViva:
         src = (LAB / "OndaViva.jsx").read_text()
         assert "import { trigger } from './Oscilloscopio'" in src, \
             "l'aggancio deve essere UNO: si importa, non si ricopia"
-        assert "import { iscrivi } from './quadro'" in src, \
+        # LM3 (5/9/2026): l'import dal quadro porta anche dprTela ed
+        # economia (il budget del disegno sul telefono); la regola resta
+        # UNA: si iscrive al quadro, mai un rAF proprio
+        assert "import { iscrivi, dprTela, economia } from './quadro'" in src, \
             "un solo requestAnimationFrame per tutto il banco"
+        assert "requestAnimationFrame" not in src
         assert "analisi.tempo(" in src, \
             "l'onda deve venire dai campioni VERI del master"
         osc = (LAB / "Oscilloscopio.jsx").read_text()
@@ -1905,3 +1909,98 @@ class TestLaSerraturaEravamoNoi:
         voce = (LAB / "microfono.js").read_text()
         assert "navigator.audioSession" in voce, \
             "il referto senza il tipo di sessione e' cieco sul colpevole vero"
+
+
+class TestLabMobileLM:
+    """Ciclo LM (5/9/2026) — il Lab dal telefono. Referto del founder
+    (4/9): campana forte = «sembra una voce», riascolto che scatta e
+    trema, pulsanti fuori schermo. Analisi con misure in
+    docs/LAB_MOBILE_CONSOLIDAMENTO_2026-09.md.
+    """
+
+    def test_lm0_la_registrazione_cruda_si_scarica(self):
+        """Il referto dal telefono vero: i sei secondi crudi in WAV
+        (wavDaCampioni della fonderia, niente rifusione), e la
+        saturazione del microfono si DICE con la cura."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "wavDaCampioni" in src
+        assert 'data-testid="lab-ritratto-scarica-presa"' in src
+        assert 'data-testid="lab-ritratto-avviso"' in src
+        assert "r.clipping" in src and "ha saturato" in src
+
+    def test_lm1_il_ritrattista_misura_la_saturazione(self):
+        """Sopra lo 0,05% di campioni al tetto il ritratto porta
+        `clipping` e `piccoDb`; il decadere della coda e' un dato del
+        verdetto (`percussivo`): la melodia di un suono che decade non
+        dice piu' «voce». I tre cancelli storici restano."""
+        src = (LAB / "ritrattista.js").read_text()
+        assert "const clipping = saturi > N0 * 0.0005" in src
+        assert "function _decade(" in src
+        assert "percussivo," in src and "clipping," in src and "piccoDb," in src
+        rit = (LAB / "Ritratto.jsx").read_text()
+        assert "esito.percussivo" in rit
+
+    def test_lm1_il_banco_del_ritrattista_gira_in_node(self):
+        """Il banco sintetico seedato (lab/banco) collauda il
+        ritrattista VERO senza browser: i casi pretesi devono passare,
+        i casi «lm1:» (campane forti → melodia) sono il bug riprodotto
+        in attesa della cura sui WAV veri. Senza node si salta."""
+        import shutil, subprocess
+        node = shutil.which("node")
+        if not node:
+            pytest.skip("node non disponibile")
+        seg = (LAB / "banco" / "segnali.mjs").read_text()
+        assert "Math.random" not in seg, "il banco deve essere deterministico"
+        esito = subprocess.run([node, "banco.mjs"], cwd=LAB / "banco",
+                               capture_output=True, text=True, timeout=300)
+        assert esito.returncode == 0, esito.stdout + esito.stderr
+        assert "pretesi giusti" in esito.stdout
+
+    def test_lm2_l_analyser_torna_sul_master_durante_l_ab(self):
+        """Registrare apre il mic e lo lascia aperto → l'analyser
+        guardava il MICROFONO mentre l'A/B suonava dal master (sagoma
+        e Onda viva leggevano l'altoparlante: il «tremava»). Per la
+        durata dell'ascolto si osserva il master, poi il mic torna.
+        L'Onda viva cambia stato solo se l'aggancio cambia davvero."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "const perAscolto = (lab) =>" in src
+        assert "const ripristinaMic = () =>" in src
+        assert src.count("perAscolto(lab);") == 3, "orig, rifusa, quaderno"
+        assert "lab.analisi.sorgente(null);" in src
+        motore = (LAB / "motore.js").read_text()
+        assert "nodo: () => (mic ? mic.nodo : null)" in motore
+        onda = (LAB / "OndaViva.jsx").read_text()
+        assert "if (t.ok !== aggRef.current) { aggRef.current = t.ok; setAggancio(t.ok); }" in onda
+        assert "setAggancio(t.ok);\n" not in onda.replace(
+            "aggRef.current = t.ok; setAggancio(t.ok); }", "")
+
+    def test_lm3_il_budget_del_disegno_vive_nel_quadro(self):
+        """UNA regola per tutte le tele: economia() (tocco o giro >10 ms,
+        e resta accesa), dprTela() al massimo 1,5 in economia, bagliore
+        solo fuori economia. Ogni tela prende il dpr dal quadro."""
+        q = (LAB / "quadro.js").read_text()
+        for nome in ("export function economia()", "export function dprTela()",
+                     "export function forzaEconomia(", "misuraCosto(performance.now() - t0)"):
+            assert nome in q, nome
+        assert "Math.min(dpr, 1.5)" in q
+        for f in ("RitrattoVisual.jsx", "OndaViva.jsx", "Oscilloscopio.jsx",
+                  "Spettro.jsx", "Spettrogramma.jsx", "Risonanze.jsx"):
+            src = (LAB / f).read_text()
+            assert "window.devicePixelRatio || 1" not in src, f
+            assert "dprTela()" in src, f
+        for f in ("RitrattoVisual.jsx", "OndaViva.jsx", "Oscilloscopio.jsx",
+                  "Spettro.jsx", "Risonanze.jsx"):
+            src = (LAB / f).read_text()
+            assert "economia()" in src and "shadowBlur" in src, f
+        assert "const salto = economia() ? 2 : 1;" in (LAB / "OndaViva.jsx").read_text()
+
+    def test_lm4_il_ritratto_entra_nello_schermo(self):
+        """Misurato a 375 px: pagina larga 499. La colonna `1fr` della
+        griglia non scende sotto il min-content della tabella nowrap:
+        min-width:0 sulle colonne, gesti a griglia piena sotto i 640,
+        chip del quaderno che vanno a capo. La stringa desktop resta."""
+        css = (LAB / "lab.css").read_text()
+        assert ".fqz .lab-ritratto-colA,.fqz .lab-ritratto-colB{min-width:0}" in css
+        assert "grid-template-columns:minmax(320px,5fr) minmax(360px,6fr)" in css
+        assert ".fqz .lab-fonderia-gesti .lab-freeze{width:100%;min-height:44px;" in css
+        assert ".fqz .lab-quaderno-riga b{flex-basis:100%;white-space:normal" in css
