@@ -879,9 +879,10 @@ async def llms_txt():
     if hit and now - hit[1] < 3600:
         return Response(hit[0], media_type="text/plain; charset=utf-8")
 
-    from database import db as _db
+    from database import db as _db, organizations_collection
     from models.article import ARTICLE_CATEGORIES
     from services.url_builder import build_public_url
+    from services import identita as _identita
     arts = await (_db.articles
                   .find({"published": True},
                         {"_id": 0, "slug": 1, "title": 1,
@@ -891,32 +892,42 @@ async def llms_txt():
     for a in arts:
         per_cat.setdefault(a.get("category") or "altro", []).append(a)
 
-    righe = [
-        "# Aurya",
-        "",
-        "> Aurya (aurya.life) è uno spazio italiano dedicato al benessere",
-        "> olistico: guide oneste per capire le pratiche prima di sceglierle",
-        "> e una rete di professionisti del benessere raccontati uno a uno,",
-        "> con interviste verificate. Il payoff del brand: \"Ci si fida di",
-        "> qualcuno, non di qualcosa\". Contenuti in italiano, scritti senza",
-        "> promesse di guarigione e con le fonti citate.",
-        "",
-        "## Pagine principali",
-        "",
-        f"- [Il Manifesto]({build_public_url('/manifesto')}): perché esistiamo,"
-        " in cosa crediamo, i cinque principi.",
-        f"- [Chi siamo]({build_public_url('/chi-siamo')}): le due persone"
-        " dietro Aurya e come lavorano.",
-        f"- [La rete]({build_public_url('/operatori')}): i professionisti"
-        " che stiamo conoscendo, una persona alla volta.",
-        f"- [Per i professionisti]({build_public_url('/entra-nella-rete')}):"
-        " come entrare nella rete.",
-        f"- [La Lettera]({build_public_url('/newsletter')}): la newsletter"
-        " di Aurya.",
+    # LX1 (5/9/2026): prima il file conosceva solo Magazine e rete —
+    # zero menzioni di frequenze, biblioteca, meditazioni, Lab, Studio.
+    # Ora ogni pilastro ha la sua sezione, dalla stessa identita' che
+    # alimenta il JSON-LD (services/identita.py). Stesso perimetro
+    # della directory per i profili (mai cloaking).
+    base = build_public_url("/").rstrip("/")
+    profili = []
+    try:
+        from models.disciplines import DISCIPLINES
+        async for o in organizations_collection.find(
+                {"is_sample": {"$ne": True}, "is_active": {"$ne": False},
+                 "exclude_from_listings": {"$ne": True},
+                 "public_slug": {"$nin": [None, ""]}},
+                {"_id": 0, "name": 1, "public_slug": 1, "public_profile": 1}).sort("name", 1):
+            pp = dict(o.get("public_profile") or {})
+            pp["disciplines_labels"] = [DISCIPLINES[d] for d in (pp.get("disciplines") or [])
+                                        if d in DISCIPLINES]
+            profili.append({**o, "public_profile": pp})
+    except Exception:   # noqa: BLE001 — llms.txt non muore per il DB
+        profili = []
+    try:
+        from routers.seo_shell import _biblioteca_seo, _LAB_STANZE_COPIA
+        schede, stanze = _biblioteca_seo(), _LAB_STANZE_COPIA
+    except Exception:   # noqa: BLE001
+        schede, stanze = {}, {}
+
+    righe = _identita.intestazione_llms(base)
+    righe += _identita.sezione_rete_llms(base, profili)
+    righe += _identita.sezione_sound_llms(base, schede, stanze)
+    righe += _identita.sezione_meditazioni_llms(base)
+    righe += _identita.sezione_ritiri_llms(base)
+    righe += [
         "",
         "## Magazine",
         "",
-        "Guide e articoli, per argomento:",
+        f"Guide e articoli, per argomento ([tutte le categorie]({base}/blog)):",
     ]
     for cat, docs in sorted(per_cat.items()):
         label = ARTICLE_CATEGORIES.get(cat, cat.title())
@@ -973,12 +984,12 @@ async def llms_full_txt():
                          "in_breve": 1})
                   .sort("published_at", -1).limit(300).to_list(300))
 
+    from services import identita as _identita
     righe = [
-        "# Aurya — il Magazine, per intero",
+        "# Aurya — le pagine cardine e il Magazine, per intero",
         "",
-        "> Guide oneste sul benessere e i professionisti che lo praticano.",
-        "> In italiano, senza promesse di guarigione, con le fonti citate.",
-        "> Payoff del brand: \"Ci si fida di qualcuno, non di qualcosa\".",
+        "> " + _identita.IDENTITA["description"],
+        f"> Payoff del brand: \"{_identita.IDENTITA['tagline']}\".",
         f"> Indice delle pagine: {build_public_url('/llms.txt')}",
         "",
         f"Articoli inclusi: {len(arts)}.",
@@ -986,6 +997,16 @@ async def llms_full_txt():
         "---",
         "",
     ]
+    # LX1 (5/9): prima le pagine che dicono COS'E' Aurya — le stesse
+    # copie che vede la persona (services/identita.py)
+    for slug, nome in (("manifesto", "Il Manifesto"), ("chi-siamo", "Chi siamo"),
+                       ("entra-nella-rete", "Per i professionisti"),
+                       ("newsletter", "Il Cerchio di Aurya"),
+                       ("meditazioni", "Le meditazioni")):
+        corpo = _identita.CORPI.get(slug)
+        t = _identita.testo(corpo()) if corpo else ""
+        if t:
+            righe += [f"## {nome}", "", f"URL: {build_public_url('/' + slug)}", "", t, "", "---", ""]
     riservati = 0
     for a in arts:
         contenuto = (a.get("content") or "").strip()

@@ -88,3 +88,27 @@ verificati in Italia»; si confrontano le risposte prima e dopo.
 Costo: LX1 e LX2 poche ore; LX3 mezza giornata (è la stessa
 meccanica di IX2); LX4 mezza giornata; LX5 dipende dai tempi di
 ricrawl.
+
+## Stato (5/9/2026, notte)
+
+- **LX2 FATTO**: `services/identita.py` è l'unica fonte (descrizione
+  di oggi, payoff, sameAs Instagram, knowsAbout, fondatori, 2026);
+  home con WebSite + Organization da lì; `potentialAction` di ricerca
+  verso /operatori.
+- **LX3 FATTO**: `backend/assets/copia_it/` = copia dei file di
+  traduzione italiani (script `copia_locales.py`, guardia di parità);
+  il renderer costruisce Chi siamo (2.748 caratteri), Manifesto
+  (3.063), Per i professionisti (5.291 con le FAQ), il Cerchio
+  (1.309), Meditazioni (974) e l'introduzione di /operatori dalla
+  stessa copia che vede la persona.
+- **LX4 FATTO**: AboutPage, Article, FAQPage (5 domande della
+  landing), CollectionPage (/sound, /meditazioni), CreativeWork per
+  CALM, GROUND, RESPIRO, ItemList dei professionisti su /operatori.
+- **LX1 FATTO**: `/llms.txt` con «Cos'è Aurya in dieci righe», la rete
+  con i profili, Aurya Sound (esperienze, le 38 schede, fondamenta,
+  glossario, Lab, Studio, Professional), meditazioni e Cerchio, ritiri,
+  Magazine per categoria; `/llms-full.txt` apre con le cinque pagine
+  cardine per intero.
+- **Guardie**: `tests/test_llm_lx.py`. Da fare LX5 dopo il deploy.
+- **Da confermare col founder**: i profili social in `sameAs` (oggi solo
+  Instagram aurya.life, l'unico presente nel sito).

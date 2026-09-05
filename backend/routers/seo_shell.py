@@ -42,6 +42,8 @@ from fastapi import APIRouter, Response
 
 from core.prelaunch import prelaunch_mode
 
+from services import identita as _identita
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/__seo", tags=["SEO shell"])
@@ -440,32 +442,12 @@ async def _meta_home() -> dict:
         # SEO6 — WebSite + Organization: l'entita' Aurya nel Knowledge
         # Graph (logo, fondatori, contatto). sameAs si aggiunge quando
         # nascono i profili social del brand (playbook P1).
-        "jsonld": [
-            {
-                "@context": "https://schema.org",
-                "@type": "WebSite",
-                "name": "Aurya",
-                "url": f"{base}/",
-                "publisher": {"@id": f"{base}/#organization"},
-            },
-            {
-                "@context": "https://schema.org",
-                "@type": "Organization",
-                "@id": f"{base}/#organization",
-                "name": "Aurya",
-                "url": f"{base}/",
-                "logo": {"@type": "ImageObject",
-                         "url": f"{base}/logo-aurya-512.png"},
-                "description": ("La casa dei ritiri olistici italiani: "
-                                "trova e prenota ritiri ed esperienze di "
-                                "benessere con professionisti verificati."),
-                "email": "info@aurya.life",
-                "founder": [
-                    {"@type": "Person", "name": "Davide De Filippis"},
-                    {"@type": "Person", "name": "Valentina"},
-                ],
-            },
-        ],
+        # LX2 (5/9/2026): l'identita' vive in services/identita.py — UNA
+        # descrizione (quella di oggi: rete + Magazine + Sound + Cerchio),
+        # sameAs, knowsAbout, fondatori. Prima diceva ancora «la casa dei
+        # ritiri: trova e prenota», il marketplace spento a luglio.
+        "jsonld": [_identita.website_jsonld(base),
+                   _identita.organization_jsonld(base)],
     }
 
 
@@ -593,14 +575,38 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
     canonical = f"{base}/{page.get('canonical_slug', slug)}"
     # GS2 — il titolo senza il suffisso brand fa da h1
     h1 = _html.escape(page["title"].split("|")[0].strip())
-    body = (f"<div><h1>{h1}</h1>"
-            f"<p>{_html.escape(page['description'])}</p>"
-            f"{_BRAND_BODY_LINKS}</div>")
+    # LX3 (5/9): le pagine cardine rendevano ai bot titolo e una riga
+    # (Chi siamo 224 caratteri contro 432 parole). Ora il corpo e' la
+    # copia italiana VERA (services/identita.py ← assets/copia_it).
+    corpo = _identita.CORPI.get(slug)
+    pieno = corpo() if corpo else ""
+    if pieno:
+        body = (f"<div>{pieno}"
+                f"<p>{_html.escape(page['description'])}</p>"
+                f"{_BRAND_BODY_LINKS}</div>")
+    else:
+        body = (f"<div><h1>{h1}</h1>"
+                f"<p>{_html.escape(page['description'])}</p>"
+                f"{_BRAND_BODY_LINKS}</div>")
+    # LX4: il tipo giusto per ogni pagina cardine
+    nome = page["title"].split("|")[0].strip()
+    tipi = {"chi-siamo": "AboutPage", "manifesto": "Article",
+            "meditazioni": "CollectionPage", "newsletter": "WebPage",
+            "entra-nella-rete": "WebPage", "costi": "WebPage"}
+    jsonld = []
+    if slug in tipi:
+        jsonld.append(_identita.pagina_jsonld(tipi[slug], base, canonical, nome,
+                                               page["description"]))
+    if slug == "entra-nella-rete":
+        faq = _identita.faq_jsonld(_identita.faq_professionisti())
+        if faq:
+            jsonld.append(faq)
     return {
         **page,
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
         "content_html": body,
+        **({"jsonld": jsonld} if jsonld else {}),
         # immagine per-pagina se dichiarata (landing lead), altrimenti og-cover
         "image": (f"{base}{page['image']}" if page.get("image")
                   else f"{base}/og-cover.jpg"),
@@ -1293,19 +1299,34 @@ async def _meta_sound(parts: list) -> Optional[dict]:
         return {**_SOUND_PAGES["calm"], "canonical": canonical,
                 "hreflang": _hub_hreflang(canonical),
                 "image": f"{base}/og-cover.jpg",
-                "content_html": _calm_content_html()}
+                "content_html": _calm_content_html(),
+                "jsonld": [{**_identita.pagina_jsonld(
+                    "CreativeWork", base, canonical,
+                    _SOUND_PAGES["calm"]["title"].split("|")[0].strip(),
+                    _SOUND_PAGES["calm"]["description"]),
+                    "genre": "esperienza sonora", "isAccessibleForFree": True}]}
     if sub == "respiro":
         canonical = f"{base}/sound/respiro"
         return {**_SOUND_PAGES["respiro"], "canonical": canonical,
                 "hreflang": _hub_hreflang(canonical),
                 "image": f"{base}/og-cover.jpg",
-                "content_html": _respiro_content_html()}
+                "content_html": _respiro_content_html(),
+                "jsonld": [{**_identita.pagina_jsonld(
+                    "CreativeWork", base, canonical,
+                    _SOUND_PAGES["respiro"]["title"].split("|")[0].strip(),
+                    _SOUND_PAGES["respiro"]["description"]),
+                    "genre": "esperienza sonora", "isAccessibleForFree": True}]}
     if sub == "ground":
         canonical = f"{base}/sound/ground"
         return {**_SOUND_PAGES["ground"], "canonical": canonical,
                 "hreflang": _hub_hreflang(canonical),
                 "image": f"{base}/og-cover.jpg",
-                "content_html": _ground_content_html()}
+                "content_html": _ground_content_html(),
+                "jsonld": [{**_identita.pagina_jsonld(
+                    "CreativeWork", base, canonical,
+                    _SOUND_PAGES["ground"]["title"].split("|")[0].strip(),
+                    _SOUND_PAGES["ground"]["description"]),
+                    "genre": "esperienza sonora", "isAccessibleForFree": True}]}
     if sub == "lab":
         # LU (28/8) — il Lab e' una casa con le STANZE, ognuna col suo
         # indirizzo e la sua meta (la trappola di /sound/visual del
@@ -1338,6 +1359,9 @@ async def _meta_sound(parts: list) -> Optional[dict]:
                 "hreflang": _hub_hreflang(canonical),
                 "image": f"{base}/og-cover.jpg"}
         meta["content_html"] = _sound_index_html() if sub == "esplora" else _sound_home_html()
+        meta["jsonld"] = [_identita.pagina_jsonld(
+            "CollectionPage", base, canonical, meta["title"].split("|")[0].strip(),
+            meta["description"])]
         return meta
     return None
 
@@ -1992,11 +2016,29 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
     except Exception:   # noqa: BLE001 — la shell non muore mai per il DB
         pass
 
+    # LX3 (5/9): la stessa introduzione della pagina viva (landings.operators)
+    ops_copy = (_identita._copia("landings").get("operators") or {})
+    intro = _html.escape(ops_copy.get("subtitle") or "")
+    join = _html.escape(ops_copy.get("joinCta") or "")
     corpo = (f"<div><h1>I professionisti della rete Aurya</h1>"
              f"<p>{_html.escape(descr)}</p>"
+             + (f"<p>{intro}</p>" if intro else "")
              + (f"<ul>{voci}</ul>" if voci else "")
+             + (f'<p><a href="/entra-nella-rete">{join}</a></p>' if join else "")
              + '<p><a href="/manifesto">Come nasce la rete</a> · '
                '<a href="/blog">Il Magazine</a></p></div>')
+    # LX4: l'elenco come ItemList, cosi' un modello lo legge come lista
+    lista = None
+    try:
+        lista = {"@context": "https://schema.org", "@type": "ItemList",
+                 "name": "I professionisti della rete Aurya",
+                 "itemListElement": [
+                     {"@type": "ListItem", "position": i + 1,
+                      "name": o.get("name") or o["public_slug"],
+                      "url": f"{base}/o/{o['public_slug']}"}
+                     for i, o in enumerate(orgs)]}
+    except Exception:   # noqa: BLE001
+        lista = None
     return {
         "title": titolo,
         "description": descr,
@@ -2006,6 +2048,7 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/og-cover.jpg",
         "content_html": corpo,
+        **({"jsonld": [lista]} if lista else {}),
         # anti thin-content: un elenco vuoto non si indicizza. Quando
         # entra il primo professionista si accende da solo.
         "noindex": quanti == 0,
