@@ -1768,7 +1768,10 @@ class TestVitaDeiContext:
     def test_spegni_chiude_il_context(self):
         src = (LAB / "motore.js").read_text()
         blocco = src[src.index("spegni() {"):]
-        assert "ctx.close()" in blocco[:800], \
+        # 5/9: spegni() chiude anche il PONTE (pausa + elemento rimosso,
+        # il ronzio del 5/9) prima del context: si guarda tutto il corpo
+        corpo = blocco.split("delete ctx._fqzLab")[0]
+        assert "ctx.close()" in corpo, \
             "senza close i context si accumulano e iOS li uccide"
 
     def test_il_lab_morto_rinasce_al_gesto(self):
@@ -2051,6 +2054,34 @@ class TestLabMobileLM:
         spettro non c'e' e la via armonica diceva «melodia»."""
         src = (LAB / "ritrattista.js").read_text()
         assert "!picchiFft.some((p) => Math.abs(p.hz - f0) <= f0 * 0.12)" in src
+
+    def test_il_tenuto_dal_quaderno_suona_anche_a_pagina_fresca(self):
+        """Founder 5/9: «apro un ritratto salvato, clicco Tenuto e non si
+        sente; si sente solo se registro prima». I suonatori del
+        Ritratto prendevano il lab da labRef, vuoto su una pagina
+        fresca: ora lo prendono NEL GESTO (ottieniLab), come registra."""
+        src = (LAB / "Ritratto.jsx").read_text()
+        assert "const lab = labRef.current; if (!lab || !esito) return;" not in src
+        assert "const lab = labRef.current; if (!lab || !presaRef.current) return;" not in src
+        assert src.count("const lab = ottieniLab();") >= 4, "registra, originale, rifusa, quaderno"
+
+    def test_gli_ospiti_del_banco_rilasciano_il_ponte(self):
+        """Il ronzio del 5/9 (la trappola del 22/8 in un altro vestito):
+        la fonderia e le Meraviglie entrano dal lab.ingresso ma non
+        sono sorgenti del banco, e quando tacevano nessuno metteva in
+        pausa l'<audio> del ponte — su iOS lo stream muto ripete
+        l'ultimo buffer. Ora il motore espone rilasciaSeMuto(), gli
+        ospiti lo chiamano quando tacciono, e spegni() chiude il ponte
+        (pausa + elemento rimosso), non solo il context."""
+        motore = (LAB / "motore.js").read_text()
+        assert "rilasciaSeMuto() {" in motore
+        assert "if (!qualcunoSuona()) ponte.rilascia();" in motore
+        blocco = motore.split("spegni() {")[1].split("ctx._fqzLab = lab")[0]
+        assert "ponte.ferma();" in blocco and "ponte.el.remove();" in blocco
+        for f in ("Ritratto.jsx", "Meraviglie.jsx"):
+            assert "rilasciaSeMuto()" in (LAB / f).read_text(), f
+        rit = (LAB / "Ritratto.jsx").read_text()
+        assert rit.count("rilasciaSeMuto()") >= 4, "zittisci + fine naturale (orig, colpo, quaderno)"
 
     def test_lm5_tap_da_pollice_in_tutte_le_stanze(self):
         """Sonda a 320/375/414/768 sulle sei stanze: niente fuori

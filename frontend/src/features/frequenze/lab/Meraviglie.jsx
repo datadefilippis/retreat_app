@@ -31,6 +31,10 @@ export default function Meraviglie({ ottieniLab }) {
   const zittisci = () => {
     if (vivoRef.current) { vivoRef.current.ferma(); vivoRef.current = null; }
     setViva(null);
+    /* il ronzio del 5/9: anche le meraviglie sono ospiti del banco —
+       quando tacciono il ponte va rilasciato, o l'<audio> resta in play
+       su uno stream muto (loop dell'ultimo buffer su iOS) */
+    try { labRef.current?.rilasciaSeMuto(); } catch { /* via */ }
   };
   useEffect(() => () => {
     if (vivoRef.current) vivoRef.current.ferma();

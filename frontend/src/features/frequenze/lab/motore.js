@@ -582,9 +582,26 @@ export function creaLaboratorio(ctx) {
       },
     },
 
+    /* IL RONZIO DEL 5/9 (founder, dal telefono: «ho lasciato un suono in
+       play, sono uscito e un suono fastidioso non si fermava piu'»).
+       E' la trappola del 22/8 in un altro vestito: i suonatori OSPITI
+       (la fonderia del Ritratto, le Meraviglie) entrano dal lab.ingresso
+       ma non sono «sorgenti» del banco, quindi quando tacciono nessuno
+       chiama ponte.rilascia() e l'<audio> resta in play su uno stream
+       muto — su iOS ripete in loop l'ultimo buffer. Ogni ospite che
+       tace chiama QUESTO: se nessuna voce del banco suona, il ponte va
+       in pausa (900 ms dopo, per far uscire la coda). */
+    rilasciaSeMuto() {
+      if (!qualcunoSuona()) ponte.rilascia();
+    },
+
     spegni() {
       lab.orecchio.chiudi();
       sorgenti.forEach((s) => { s.ferma(); s._stacca(); });
+      /* e uscendo dalla stanza il ponte si CHIUDE, non solo il context:
+         un <audio> orfano su un context chiuso e' il ronzio perpetuo */
+      try { ponte.ferma(); } catch { /* niente */ }
+      try { ponte.el.srcObject = null; ponte.el.remove(); } catch { /* gia' via */ }
       try { master.disconnect(); } catch { /* niente */ }
       /* IL CASO DEL TELEFONO (founder 30/8, InvalidStateError su
          Safari E Brave = stesso WebKit): il context non veniva MAI

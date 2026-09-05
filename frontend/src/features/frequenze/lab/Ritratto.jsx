@@ -83,6 +83,9 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     if (vivoRef.current) { vivoRef.current.ferma(); vivoRef.current = null; }
     setInSuono(null);
     ripristinaMic();
+    /* il ronzio del 5/9: l'ospite che tace rilascia il ponte (pausa
+       dell'<audio> se nessuna voce del banco suona) */
+    try { labRef.current?.rilasciaSeMuto(); } catch { /* via */ }
   };
 
   /* Gancio di collaudo (29/8): il pane di anteprima blocca il
@@ -195,7 +198,9 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
 
   /* ── LB4: l'A/B e la rifusione ─────────────────────────────── */
   const suonaOriginale = async () => {
-    const lab = labRef.current; if (!lab || !presaRef.current) return;
+    if (!presaRef.current) return;
+    const lab = ottieniLab();                     // nel gesto: iOS lo esige
+    labRef.current = lab;
     zittisci();
     perAscolto(lab);
     try { await lab.ctx.resume(); } catch { /* attivo */ }
@@ -209,7 +214,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     src.onended = () => {
       setInSuono((cosa) => (cosa === 'orig' ? null : cosa));
       /* finito da solo (non fermato da un altro suono): il mic torna */
-      if (vivoRef.current === mio) { vivoRef.current = null; ripristinaMic(); }
+      if (vivoRef.current === mio) { vivoRef.current = null; ripristinaMic(); lab.rilasciaSeMuto(); }
     };
     src.start();
     vivoRef.current = mio;
@@ -217,7 +222,14 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
   };
 
   const suonaRifusa = async (modo) => {
-    const lab = labRef.current; if (!lab || !esito) return;
+    if (!esito) return;
+    /* IL TENUTO MUTO (founder 5/9): «apro un ritratto dal quaderno,
+       clicco Tenuto e non si sente; si sente solo se registro prima».
+       Su una pagina fresca il motore non era ancora nato (labRef
+       vuoto) e il suonatore usciva in silenzio. Il lab si prende NEL
+       GESTO, come fanno registra e il quaderno. */
+    const lab = ottieniLab();
+    labRef.current = lab;
     zittisci();
     perAscolto(lab);
     try { await lab.ctx.resume(); } catch { /* attivo */ }
@@ -229,7 +241,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     if (modo === 'colpo') {
       setTimeout(() => {
         setInSuono((cosa) => (cosa === 'colpo' ? null : cosa));
-        if (vivoRef.current === esec) { vivoRef.current = null; ripristinaMic(); }
+        if (vivoRef.current === esec) { vivoRef.current = null; ripristinaMic(); lab.rilasciaSeMuto(); }
       }, esec.durataSec * 1000);
     }
   };
@@ -272,7 +284,7 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
     if (modo === 'colpo') {
       setTimeout(() => {
         setInSuono((cosa) => (cosa === chiave ? null : cosa));
-        if (vivoRef.current === esec) { vivoRef.current = null; ripristinaMic(); }
+        if (vivoRef.current === esec) { vivoRef.current = null; ripristinaMic(); lab.rilasciaSeMuto(); }
       }, esec.durataSec * 1000);
     }
   };
