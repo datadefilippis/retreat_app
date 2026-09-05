@@ -189,15 +189,20 @@ screenshot: chiusura del ciclo sui dati veri.
 
 ## Stato (5/9/2026, sera)
 
-- **LM0 FATTO**: «⤓ Scarica la registrazione (WAV)» sotto il pulsante
-  di registrazione, dopo ogni presa (anche quando il verdetto è
-  soffio/melodia/niente); avviso di saturazione con picco in dBFS.
-- **LM1 PARZIALE**: `clipping`, `piccoDb` e `percussivo` nel ritratto;
-  la melodia di un suono che decade dice «campana forte, colpisci più
-  piano» e non più «voce». Banco seedato in `lab/banco` (node),
-  guardia pytest: 6 casi pretesi verdi, 6 casi «lm1:» in attesa dei
-  WAV veri (5 campane forti → melodia, voce sintetica con vibrato →
-  modi per le bande laterali sul cancello armonico).
+- **LM0 RIVISTO dal founder**: «siamo live, l'utente non scarica
+  file». Il pulsante di download è uscito; resta l'avviso di
+  saturazione con picco in dBFS e la cura.
+- **LM1 FATTO senza WAV veri**: tre regole fisiche nella via armonica
+  prima del verdetto «melodia»: continuità del tracker (salti fra i
+  modi, ripiegati nell'ottava), simultaneità dei gradini (Goertzel:
+  in una campana i due modi suonano insieme, in una melodia le note
+  vengono una dopo l'altra), bande laterali del vibrato raggruppate
+  con tolleranza che cresce con k. Banco deterministico `lab/banco`:
+  12/12 (sei campane forti → modi, voce con vibrato → intonato,
+  glissando e parlato → melodia); sweep su 6 semi 71/72, e l'unico
+  scarto è un glissando letto «intonato», mai una campana letta
+  «voce». `clipping`, `piccoDb`, `percussivo` nel ritratto; la melodia
+  di un suono che decade non nomina la voce.
 - **LM2 FATTO**: analyser sul master durante l'A/B e mic ripristinato a
   suono finito (naturale o fermato); `setAggancio` solo al cambio.
 - **LM3 FATTO**: `economia()` / `dprTela()` / `forzaEconomia()` nel
