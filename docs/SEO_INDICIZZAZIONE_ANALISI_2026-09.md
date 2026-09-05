@@ -106,3 +106,21 @@ richiesta di indicizzazione per le 10-15 pagine che contano.
 Costo: IX1 e IX4 un'ora e solo nginx più guardie; IX2 mezza
 giornata nel renderer; IX3 mezza giornata. Nessun cambio di
 struttura del sito.
+
+## Stato (5/9/2026, sera)
+
+- **IX1 FATTO**: registro con `solo_con_slug`, `rimandi`,
+  `rimandi_prefisso`; nginx generato con 404 delle radici e 301 veri,
+  prima del renderer; resolver e `collauda_rotte` allineati.
+- **IX2 FATTO**: `/sound` 55 → 2.447 caratteri, `/sound/impara` 60 →
+  1.950, glossario 60 → 4.076 (dati copiati da `guida.js` con guardia
+  di parità), stanze del Lab 330 → 1.100 con domanda, perché, azioni.
+- **IX3 FATTO**: `/blog` linka le 15 categorie con una riga; categoria
+  con intro e ritorno; briciola nell'articolo; otto professionisti in
+  home.
+- **IX4 FATTO**: `tests/test_indicizzazione_ix.py`, 332 verdi con le
+  guardie SEO e Lab.
+- **IX5 DA FARE**: dopo il deploy (serve il riavvio di nginx: la conf è
+  un bind-mount) rileggere Search Console con l'export delle liste,
+  «Convalida correzione» sui gruppi risolti, richiesta di
+  indicizzazione per le pagine che contano.
