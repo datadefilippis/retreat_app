@@ -210,8 +210,13 @@ screenshot: chiusura del ciclo sui dati veri.
   fuori economia. Misura: 1,23 → 0,54 ms/frame (dpr 2, economia).
 - **LM4 FATTO**: sonda a 375 px = 375 (era 499); tabella nel suo
   scorrimento, gesti a griglia, chip a capo.
-- **LM5/LM6 DA FARE**: sonda automatica 320-768 sulle sei stanze;
-  verifica sul telefono del founder coi WAV.
+- **LM5 FATTO**: sonda a 320/375/414/768 sulle sei stanze (nessun
+  elemento fuori schermo) e tap da pollice sui dispositivi a tocco
+  (`pointer: coarse`: bersagli 40 px, pomelli 22, caselle 20; col
+  mouse nulla cambia). Verifica in emulazione touch: zero bersagli
+  sotto i 36 px.
+- **LM6 DA FARE**: verifica sul telefono del founder (a voce, senza
+  file: campana forte e piano, riascolto, scroll).
 
 ## Cosa NON cambia
 - Il contratto dei pannelli (un solo rAF nel quadro, niente nodi
