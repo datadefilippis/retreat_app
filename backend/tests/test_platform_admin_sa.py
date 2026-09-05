@@ -126,7 +126,10 @@ class TestPlatformOverviewSa2:
         base = BACKEND_DIR.parent / "frontend" / "src" / "features" / "admin"
         page = (base / "AdminPage.js").read_text()
         assert "PlatformOverviewTab" in page
-        assert 'defaultValue="overview"' in page
+        # RV5 (5/9/2026): l'email della piattaforma porta alla coda delle
+        # segnalazioni con ?tab=reviews; senza query il default resta
+        # la Panoramica, che e' la regola di questa guardia
+        assert "get('tab') || \"overview\"" in page
         tab = (base / "PlatformOverviewTab.js").read_text()
         assert "/admin/platform/overview" in tab
         # riuso kit grafico condiviso, non recharts diretto
