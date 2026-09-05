@@ -49,6 +49,14 @@ FASE_NOINDEX = {"ritiri", "destinazioni", "esplora-ritiri", "esperienze"}
 # /come-funziona racconta il percorso d'acquisto: in fase rete non
 # esiste e risponde 404 apposta (LC2)
 FASE_404 = {"come-funziona"}
+# IX1 (5/9/2026): le radici che vivono solo con uno slug (/e, /p, /o...)
+# rispondono 404 apposta (erano dieci shell vuote identiche e
+# indicizzabili: i «duplicati» di Search Console); /index.html, /ritiri
+# ed /esplora-operatori sono 301 veri verso la pagina che ripetevano.
+def _ix1():
+    d = json.loads(REGISTRO.read_text(encoding="utf-8"))
+    return set(d.get("solo_con_slug", [])), {**d.get("rimandi", {}), **d.get("rimandi_prefisso", {})}
+SOLO_CON_SLUG, RIMANDI = _ix1()
 
 
 def apri(base, percorso):
@@ -59,8 +67,13 @@ def apri(base, percorso):
     req = urllib.request.Request(
         f"{base}/{percorso}",
         headers={"User-Agent": "Mozilla/5.0 (compatible; CollaudoAurya/1.0)"})
+
+    class _NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, *a, **k):      # IX1: il 301 si VEDE, non si segue
+            return None
+    opener = urllib.request.build_opener(_NoRedirect)
     try:
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with opener.open(req, timeout=20) as r:
             html = r.read().decode("utf-8", "ignore")
             hdr = r.headers.get("X-Robots-Tag", "")
             return r.status, html, ("noindex" in hdr
@@ -92,6 +105,21 @@ def main():
             code, html, noindex = apri(base, percorso)
             provate += 1
             male = None
+            if tipo == "pubblica" and seg in SOLO_CON_SLUG and percorso == seg:
+                # la radice senza slug deve essere un 404 (IX1)
+                if code != 404:
+                    male = f"radice senza slug risponde {code}, atteso 404"
+                if male:
+                    problemi.append(f"  /{percorso:<28} [{tipo}] {male}")
+                elif args.verboso:
+                    print(f"  ok  /{percorso:<28} [{tipo}] 404 (radice senza slug)")
+                continue
+            if tipo == "pubblica" and seg in RIMANDI and percorso == seg:
+                if code not in (301, 308):
+                    problemi.append(f"  /{percorso:<28} [{tipo}] risponde {code}, atteso 301 verso {RIMANDI[seg]}")
+                elif args.verboso:
+                    print(f"  ok  /{percorso:<28} [{tipo}] 301 → {RIMANDI[seg]}")
+                continue
             if code != 200 and not (tipo == "pubblica" and seg in FASE_404):
                 male = f"risponde {code}, atteso 200"
             elif tipo == "pubblica" and noindex and seg not in FASE_NOINDEX:

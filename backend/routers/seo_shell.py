@@ -366,6 +366,28 @@ async def _home_content_html() -> str:
                 f"{_html.escape(d['title'])}</a> — "
                 f"{_html.escape((d.get('description') or '')[:160])}</li>")
         parti.append("</ul>")
+    # IX3 (5/9): la home non linkava NESSUN profilo (0 link a /o/…):
+    # i professionisti erano raggiungibili solo da /operatori. Stesso
+    # perimetro della directory, otto nomi, dalla pagina col PageRank piu' alto.
+    try:
+        from database import organizations_collection
+        orgs = await organizations_collection.find(
+            {"is_sample": {"$ne": True}, "is_active": {"$ne": False},
+             "exclude_from_listings": {"$ne": True},
+             "public_slug": {"$nin": [None, ""]}},
+            {"_id": 0, "name": 1, "public_slug": 1, "public_profile": 1},
+        ).sort("name", 1).to_list(8)
+    except Exception:   # noqa: BLE001
+        orgs = []
+    if orgs:
+        parti.append("<h2>Alcuni professionisti della rete</h2><ul>")
+        for o in orgs:
+            pp = o.get("public_profile") or {}
+            dove = ", ".join(x for x in (pp.get("city"), pp.get("region")) if x)
+            parti.append(f'<li><a href="/o/{_html.escape(o["public_slug"])}">'
+                         f'{_html.escape(o.get("name") or o["public_slug"])}</a>'
+                         + (f" — {_html.escape(dove)}" if dove else "") + "</li>")
+        parti.append('</ul><p><a href="/operatori">Tutti i professionisti</a></p>')
     parti += [
         "<p><a href=\"/blog\">Tutti gli articoli del Magazine</a></p>",
         f"<h2>{c['prosTitle']}</h2>",
@@ -793,6 +815,66 @@ def _ground_content_html() -> str:
     )
 
 
+# IX2 (5/9/2026, Search Console): le stanze rendevano ai bot 330
+# caratteri (titolo e description). Il «perche'» e le tre azioni che
+# vede la persona vivono in React (LabX.jsx): qui la stessa copia, e
+# una guardia di parita' pretende che ogni frase esista nel JSX.
+_LAB_STANZE_COPIA = {
+    "banco": {
+        "domanda": "Com’è fatto un suono?",
+        "perche": ("Ogni suono che senti (una voce, una campana, il mare) è fatto di onde. "
+                   "Qui ne generi una tu, e la guardi mentre suona: è il modo più veloce per "
+                   "capire cosa significano parole come frequenza, volume, timbro. Niente "
+                   "registrazioni, niente trucchi: l’onda che senti è calcolata mentre la ascolti."),
+        "azioni": ["Genera un tono e guardalo muoversi nelle tre letture",
+                   "Accendi la Sorgente B alla stessa frequenza, porta la fase a 180° e senti le onde cancellarsi",
+                   "Passa l’oscilloscopio in XY e guarda la geometria di un intervallo"],
+    },
+    "orecchio": {
+        "domanda": "Che nota è? Che suono fa il mondo?",
+        "perche": ("Il banco può ascoltare, oltre che generare: apri il microfono e le letture ti "
+                   "mostrano il suono vero, la tua voce, un bicchiere colpito, la stanza in cui sei. "
+                   "L’accordatore ti dice la nota con la precisione di uno strumento. E il suono non "
+                   "lascia mai il tuo dispositivo: il microfono si collega solo all’analisi."),
+        "azioni": ["Canta o fischia una nota tenuta: l’accordatore la nomina, coi cents di scarto",
+                   "Colpisci un bicchiere davanti allo spettro e guarda i SUOI modi apparire",
+                   "Osserva la tua voce nello spettrogramma: le armoniche sono righe parallele"],
+    },
+    "ritratto": {
+        "domanda": "Di cosa è fatto il suono del mio oggetto?",
+        "perche": ("Una campana, un bicchiere, una corda: ogni oggetto vibra solo sui suoi modi, come "
+                   "un’impronta digitale. Qui registri sei secondi del suo suono e ne esce la carta "
+                   "d’identità: quali frequenze lo compongono, quanto vive ciascuna, dove batte lo "
+                   "«shimmer». E poi la magia onesta: il banco lo rifonde, riascolti l’originale e la "
+                   "copia sintetica, fianco a fianco, e capisci il timbro smontandolo."),
+        "azioni": ["Apri il microfono, registra il colpo di una campana o di un bicchiere",
+                   "Leggi la tabella dei suoi modi: frequenze, vite, doppietti",
+                   "Riascolta in A/B: originale contro rifusione, poi spegni un parziale e risenti"],
+    },
+    "meraviglie": {
+        "domanda": "Cosa sa fare davvero il suono, senza trucchi?",
+        "perche": ("Vortici che ti girano attorno alla testa, suoni che il tuo orecchio inventa, scale "
+                   "che scendono per sempre, geometrie che emergono dai numeri. Sono tutti fenomeni "
+                   "veri, fisica e psicoacustica documentate, e ognuno porta il suo cartellino: qui la "
+                   "meraviglia non ha bisogno di mentire. Le letture qui sotto sono la prova: quello "
+                   "che senti si misura."),
+        "azioni": ["Avvia il Vortice in cuffia e chiudi gli occhi",
+                   "Ascolta il terzo suono di Tartini, poi guarda lo spettro: nell’aria non c’è",
+                   "Avvia un Rapporto e passa l’oscilloscopio in XY: l’intervallo si disegna"],
+    },
+    "risonanze": {
+        "domanda": "A quale frequenza canta il mio oggetto?",
+        "perche": ("Ogni oggetto ha frequenze a cui risuona, dove basta pochissima energia per farlo "
+                   "vibrare forte. Qui il banco le trova da solo: uno sweep lento lo interroga, il "
+                   "microfono ascolta quando risponde, e la curva ti mostra i picchi. È il primo passo "
+                   "della cimatica: trovata la frequenza, tienila addosso all’oggetto e guarda, riso "
+                   "sulla lattina, acqua nel bicchiere."),
+        "azioni": ["Metti una bottiglia vicino ad altoparlante e microfono, avvia la misura",
+                   "Leggi i picchi in oro: sono le frequenze dove il tuo oggetto canta",
+                   "Scarica il WAV di un tono trovato e usalo su un amplificatore vero"],
+    },
+}
+
 _LAB_STANZE = {
     "banco": {
         "title": "Il Banco: genera un suono e guardalo | Aurya Sound Lab",
@@ -841,12 +923,23 @@ def _lab_content_html(stanza=None) -> str:
     (il generatore) — niente promesse spacciate per funzioni."""
     if stanza in _LAB_STANZE:
         d = _LAB_STANZE[stanza]
+        c = _LAB_STANZE_COPIA.get(stanza, {})
         titolo = d["title"].split(" | ")[0]
+        altre = "".join(
+            f'<li><a href="/sound/lab/{k}">{_html.escape(_LAB_STANZE[k]["title"].split(":")[0])}</a></li>'
+            for k in _LAB_STANZE if k != stanza)
         return (
             f"<h1>{titolo}</h1>"
+            f"<p><i>{_html.escape(c.get('domanda', ''))}</i></p>"
             f"<p>{d['description']}</p>"
+            "<h2>Perché ti interessa</h2>"
+            f"<p>{_html.escape(c.get('perche', ''))}</p>"
+            "<h2>Cosa puoi fare qui</h2><ul>"
+            + "".join(f"<li>{_html.escape(a)}</li>" for a in c.get("azioni", []))
+            + "</ul><h2>Le altre stanze</h2><ul>" + altre + "</ul>"
             "<p><a href=\"/sound/lab\">Tutte le stanze del Lab</a> · "
-            "<a href=\"/sound/impara/glossario\">Il glossario del suono</a></p>"
+            "<a href=\"/sound/impara/glossario\">Il glossario del suono</a> · "
+            "<a href=\"/sound\">Aurya Sound</a></p>"
         )
     return (
         "<h1>Aurya Sound Lab — il laboratorio del suono</h1>"
@@ -861,6 +954,204 @@ def _lab_content_html(stanza=None) -> str:
         "<li><a href=\"/sound/lab/risonanze\">Le Risonanze</a> — a quale frequenza canta il mio oggetto?</li>"
         "</ul>"
     )
+
+
+_SOUND_HOME_COPIA = {
+    "sub": "Esperienze sonore progettate per accompagnare diversi stati di presenza.",
+    "parentela": "Aurya Sound è lo studio di Aurya: qui si compone e si ascolta.",
+    "h2": "Il suono, spiegato con onestà",
+    "lead": ("Una biblioteca educativa su onde cerebrali, frequenze e metodi di "
+             "stimolazione sonora. Ogni scheda dichiara il suo livello di evidenza: "
+             "ciò che è documentato, ciò che è ricerca in corso, ciò che appartiene "
+             "alla tradizione. Si legge, si approfondisce, e si ascolta."),
+}
+
+
+def _sound_home_html() -> str:
+    """IX2 (5/9/2026): /sound rendeva ai bot 55 caratteri — la porta del
+    mondo Sound era un guscio. Qui la stessa copia della landing, le
+    esperienze, le categorie della biblioteca e le porte (Lab, Studio)."""
+    c = {k: _html.escape(v) for k, v in _SOUND_HOME_COPIA.items()}
+    parti = ["<div><h1>Aurya Sound</h1>", f"<p>{c['sub']}</p>", f"<p>{c['parentela']}</p>",
+             "<h2>Le esperienze, gratuite</h2><ul>",
+             '<li><a href="/sound/calm">CALM</a> — sei minuti per creare uno spazio di calma</li>',
+             '<li><a href="/sound/ground">GROUND</a> — otto minuti per ritrovare il peso</li>',
+             '<li><a href="/sound/respiro">RESPIRO</a> — dieci minuti a sei respiri al minuto</li>',
+             "</ul>", f"<h2>{c['h2']}</h2>", f"<p>{c['lead']}</p>", "<ul>"]
+    for cat, titles in _SOUND_CARDS.items():
+        parti.append(f'<li><a href="/sound/esplora">{_html.escape(cat)}</a>: '
+                     f'{_html.escape(", ".join(titles))}</li>')
+    parti += ["</ul>",
+              '<p><a href="/sound/esplora">Tutte le schede della biblioteca</a> · '
+              '<a href="/sound/impara">Le fondamenta</a> · '
+              '<a href="/sound/impara/glossario">Il glossario</a></p>',
+              '<p><a href="/sound/lab">Il Laboratorio: genera un segnale vero e misuralo</a> · '
+              '<a href="/sound/studio">Crea Studio, componi le tue meditazioni</a> · '
+              '<a href="/meditazioni">Le meditazioni di Aurya</a></p>',
+              "</div>"]
+    return "".join(parti)
+
+
+# IX2 (5/9/2026): /sound/impara e /sound/impara/glossario rendevano 60
+# caratteri. I DATI della guida vivono in frontend/src/features/frequenze/
+# content/guida.js (PERCORSO, BANDE, GLOSSARIO): qui la loro copia,
+# estratta da quel file; la guardia IX la ri-estrae e pretende che
+# combaci (il container del backend non vede il frontend a runtime).
+_GUIDA = {
+    "percorso": [
+        "Che cosa sono le onde cerebrali",
+        "Che cos'è l'entrainment",
+        "Binaurale, monaurale, isocronico e bilaterale",
+        "Cuffie o altoparlanti?",
+        "Come costruire una sessione",
+        "Quanto è accurato ciò che ascolti"
+    ],
+    "bande": [
+        [
+            "Delta",
+            "~0,5–4 Hz",
+            "attività lenta"
+        ],
+        [
+            "Theta",
+            "~4–8 Hz",
+            "attività lenta/intermedia"
+        ],
+        [
+            "Alpha",
+            "~8–13 Hz",
+            "ritmo tipico dello stato di veglia rilassata"
+        ],
+        [
+            "Beta",
+            "~13–30 Hz",
+            "attività più rapida"
+        ],
+        [
+            "Gamma",
+            "oltre ~30 Hz",
+            "attività ad alta frequenza"
+        ]
+    ],
+    "glossario": [
+        [
+            "Le basi",
+            [
+                [
+                    "Hz (Hertz)",
+                    "L'unità che conta quanti cicli avvengono in un secondo. 6 Hz significa sei cicli al secondo; nei suoni udibili, più Hz corrispondono a un tono più acuto."
+                ],
+                [
+                    "EEG",
+                    "Elettroencefalogramma: la registrazione dell'attività elettrica del cervello raccolta da elettrodi sul cuoio capelluto. È lo strumento con cui si osservano i ritmi cerebrali."
+                ],
+                [
+                    "Modulazione",
+                    "La variazione regolare di un parametro del suono nel tempo, tipicamente il volume. È il meccanismo con cui un tono continuo diventa una pulsazione."
+                ],
+                [
+                    "Stereo",
+                    "Due canali distinti, destro e sinistro. È la condizione che permette di inviare informazioni sonore diverse alle due orecchie."
+                ]
+            ]
+        ],
+        [
+            "Il cervello",
+            [
+                [
+                    "Banda cerebrale",
+                    "Un intervallo di frequenze usato per descrivere la distribuzione dell'attività EEG. È una categoria di analisi, non un suono e non uno stato mentale."
+                ],
+                [
+                    "Delta",
+                    "La gamma più lenta, indicativamente 0,5–4 Hz. Nell'EEG è associata soprattutto alle fasi di sonno profondo."
+                ],
+                [
+                    "Theta",
+                    "Indicativamente 4–8 Hz. Osservata nell'addormentamento, in alcune condizioni di quiete profonda e in compiti di memoria."
+                ],
+                [
+                    "Alpha",
+                    "Indicativamente 8–13 Hz. È il ritmo tipico della veglia rilassata, particolarmente evidente a occhi chiusi."
+                ],
+                [
+                    "Beta",
+                    "Indicativamente 13–30 Hz. Attività più rapida, presente in molte condizioni di veglia attiva."
+                ],
+                [
+                    "Gamma",
+                    "Oltre i 30 Hz circa. Attività ad alta frequenza, studiata in relazione a percezione e attenzione."
+                ],
+                [
+                    "Entrainment",
+                    "Termine usato in neuroscienza per descrivere fenomeni di sincronizzazione tra un'attività ritmica e uno stimolo periodico. Applicato al suono, è un campo di ricerca aperto."
+                ]
+            ]
+        ],
+        [
+            "Il suono e i metodi",
+            [
+                [
+                    "Battito binaurale",
+                    "Due toni leggermente diversi, uno per orecchio: il sistema uditivo percepisce una pulsazione pari alla loro differenza. Richiede cuffie o auricolari stereo."
+                ],
+                [
+                    "Battito monaurale",
+                    "Due toni combinati prima della riproduzione: la pulsazione è già fisicamente presente nel segnale. Non richiede cuffie."
+                ],
+                [
+                    "Tono isocronico",
+                    "Un tono singolo modulato ritmicamente, che produce impulsi regolari e chiaramente percepibili. Non richiede cuffie."
+                ],
+                [
+                    "Frequenza di battito",
+                    "La pulsazione lenta di una sessione, tipicamente tra 0,5 e 40 Hz. È il valore che nomina la banda: «theta 6 Hz» si riferisce a questo."
+                ],
+                [
+                    "Frequenza portante",
+                    "Il tono udibile che porta il battito fino all'orecchio. Nel binaurale la sua scelta incide sulla percezione del battito; negli altri metodi determina soprattutto il colore del suono."
+                ],
+                [
+                    "Tono puro",
+                    "Un suono costituito idealmente da una sola frequenza, senza pulsazione. È il punto di partenza più semplice per ascoltare una frequenza."
+                ],
+                [
+                    "Rumore rosa",
+                    "Un rumore continuo la cui energia decresce verso le frequenze acute. All'ascolto risulta più morbido del rumore bianco, e ricorda il respiro del mare."
+                ]
+            ]
+        ]
+    ]
+}
+
+
+def _impara_content_html() -> str:
+    tappe = "".join(f"<li>{_html.escape(t)}</li>" for t in _GUIDA["percorso"])
+    bande = "".join(f"<li><b>{_html.escape(t)}</b> ({_html.escape(hz)}): {_html.escape(d)}</li>"
+                    for t, hz, d in _GUIDA["bande"])
+    return (
+        "<div><h1>Le fondamenta: capire il suono prima di usarlo</h1>"
+        f"<p>{_html.escape(_SOUND_PAGES['impara']['description'])}</p>"
+        "<h2>Il percorso, in sei tappe</h2><ol>" + tappe + "</ol>"
+        "<h2>Le cinque bande cerebrali</h2>"
+        "<p>Le bande sono categorie di analisi dell'EEG, non suoni e non stati: "
+        "i confini cambiano da autore ad autore.</p><ul>" + bande + "</ul>"
+        '<p><a href="/sound/impara/glossario">Il glossario del suono</a> · '
+        '<a href="/sound/esplora">Le schede della biblioteca</a> · '
+        '<a href="/sound">Aurya Sound</a></p></div>')
+
+
+def _glossario_content_html() -> str:
+    parti = ["<div><h1>Glossario del suono</h1>",
+             f"<p>{_html.escape(_SOUND_PAGES['glossario']['description'])}</p>"]
+    for fam, voci in _GUIDA["glossario"]:
+        parti.append(f"<h2>{_html.escape(fam)}</h2><dl>")
+        parti.extend(f"<dt>{_html.escape(t)}</dt><dd>{_html.escape(d)}</dd>" for t, d in voci)
+        parti.append("</dl>")
+    parti.append('<p><a href="/sound/impara">Le fondamenta</a> · '
+                 '<a href="/sound/esplora">Le schede della biblioteca</a> · '
+                 '<a href="/sound">Aurya Sound</a></p></div>')
+    return "".join(parti)
 
 
 def _sound_index_html() -> str:
@@ -1037,15 +1328,16 @@ async def _meta_sound(parts: list) -> Optional[dict]:
         canonical = f"{base}{slug}"
         return {**_SOUND_PAGES[key], "canonical": canonical,
                 "hreflang": _hub_hreflang(canonical),
-                "image": f"{base}/og-cover.jpg"}
+                "image": f"{base}/og-cover.jpg",
+                "content_html": (_glossario_content_html() if key == "glossario"
+                                 else _impara_content_html())}
     if sub == "esplora" or sub is None:
         key = "esplora" if sub == "esplora" else None
         canonical = f"{base}/sound/esplora" if sub else f"{base}/sound"
         meta = {**_SOUND_PAGES[key], "canonical": canonical,
                 "hreflang": _hub_hreflang(canonical),
                 "image": f"{base}/og-cover.jpg"}
-        if sub == "esplora":
-            meta["content_html"] = _sound_index_html()
+        meta["content_html"] = _sound_index_html() if sub == "esplora" else _sound_home_html()
         return meta
     return None
 
@@ -1197,6 +1489,49 @@ def _articles_index_html(titolo: str, docs: list, base: str) -> str:
             f'<ul>{items}</ul></section>')
 
 
+# IX3 (5/9/2026, Search Console): le 14 pagine di categoria erano ORFANE
+# per i bot — la shell di /blog linkava gli articoli ma nessuna categoria.
+# Una riga vera per categoria, cosi' l'hub non e' solo un elenco.
+_CATEGORIE_INTRO = {
+    "ayurveda": "I tre dosha, l'alimentazione dei sei sapori e i trattamenti: l'Ayurveda raccontato da chi lo pratica.",
+    "aziendale": "Benessere in azienda: ritiri, giornate e programmi per i team, senza le parole vuote.",
+    "breathwork": "Tecniche di respiro, cosa aspettarsi da una sessione e come scegliere chi la guida.",
+    "cammini": "Camminare come pratica: cammini, natura e ritiri in movimento.",
+    "detox": "Digiuno, detox e le loro condizioni: cosa dice la ricerca e cosa serve sapere prima.",
+    "energia": "Reiki, pranoterapia e pratiche energetiche: cosa sono, cosa non promettono.",
+    "femminile": "Cerchi di donne, ciclicità e rituali: gli spazi del femminile, spiegati.",
+    "massaggio": "Massaggio e bodywork: le scuole, le differenze, come si sceglie un professionista.",
+    "meditazione": "Meditazione e mindfulness: pratiche, ritiri, e come iniziare senza illusioni.",
+    "naturopatia": "Naturopatia e rimedi naturali: cosa fa un naturopata e dove finisce il suo mestiere.",
+    "operatori": "Per chi pratica: partita IVA, assicurazione, bio professionale, come farsi trovare.",
+    "ritiri": "Il mondo dei ritiri: costi reali, cosa portare, come riconoscere un ritiro serio.",
+    "scegliere": "Scegliere e fidarsi: come valutare un professionista del benessere prima di prenotare.",
+    "suono": "Suono e sound healing: bagni di gong, frequenze, cosa e' documentato e cosa e' tradizione.",
+    "yoga": "Yoga: stili, ritiri, insegnanti, e la differenza fra una lezione e un percorso.",
+}
+
+
+async def _categorie_html(db) -> str:
+    """Le categorie con almeno un articolo, ognuna col suo link e la
+    sua riga: la corsia dalla home del Magazine agli hub."""
+    from models.article import ARTICLE_CATEGORIES
+    try:
+        pipeline = [{"$match": {"published": True}},
+                    {"$group": {"_id": "$category", "n": {"$sum": 1}}}]
+        conteggi = {d["_id"]: d["n"] async for d in db.articles.aggregate(pipeline)}
+    except Exception:   # noqa: BLE001
+        return ""
+    righe = []
+    for cat, label in ARTICLE_CATEGORIES.items():
+        n = conteggi.get(cat, 0)
+        if not n:
+            continue
+        intro = _CATEGORIE_INTRO.get(cat, "")
+        righe.append(f'<li><a href="/blog/categoria/{_html.escape(cat)}">{_html.escape(label)}</a>'
+                     f' ({n}) — {_html.escape(intro)}</li>')
+    return f"<h2>Le categorie del Magazine</h2><ul>{''.join(righe)}</ul>" if righe else ""
+
+
 async def _meta_blog_list() -> dict:
     """AN6 — hub del blog: hreflang pieno come gli altri hub."""
     from database import db
@@ -1207,6 +1542,7 @@ async def _meta_blog_list() -> dict:
                   .find({"published": True},
                         {"_id": 0, "slug": 1, "title": 1, "description": 1})
                   .sort("published_at", -1).limit(100).to_list(100))
+    categorie = await _categorie_html(db)
     return {
         # SEO1 — il title dell'hub porta le keyword di categoria, non
         # solo la parola "Blog" (che non cerca nessuno).
@@ -1218,7 +1554,7 @@ async def _meta_blog_list() -> dict:
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/og-cover.jpg",
         "jsonld": sx.breadcrumb([("Aurya", f"{base}/"), ("Blog", canonical)]),
-        "content_html": _articles_index_html(
+        "content_html": categorie + _articles_index_html(
             "Il Magazine di Aurya", docs, base),
     }
 
@@ -1260,8 +1596,11 @@ async def _meta_blog_category(cat: str) -> Optional[dict]:
         "image": f"{base}/og-cover.jpg",
         "jsonld": blocks,
         "noindex": not docs,
-        "content_html": _articles_index_html(
-            f"{label}: articoli e guide", docs, base) if docs else None,
+        "content_html": (
+            f"<p>{_html.escape(_CATEGORIE_INTRO.get(cat, ''))}</p>"
+            + _articles_index_html(f"{label}: articoli e guide", docs, base)
+            + '<p><a href="/blog">Tutte le categorie del Magazine</a></p>'
+        ) if docs else None,
     }
 
 
@@ -1456,9 +1795,15 @@ async def _meta_blog_article(slug: str) -> Optional[dict]:
         breve_html = (f'<aside><h2>In breve</h2><ul>{righe}</ul></aside>'
                       if righe else "")
 
+    # IX3 (5/9): la briciola verso la categoria, che era orfana
+    cat = doc.get("category")
+    briciola = (f'<p><a href="/blog">Magazine</a> › '
+                f'<a href="/blog/categoria/{_html.escape(cat)}">{_html.escape(ARTICLE_CATEGORIES[cat])}</a></p>'
+                if cat in ARTICLE_CATEGORIES else '')
     content_html = (
         '<article>'
-        f'<h1>{_html.escape(doc["title"])}</h1>'
+        + briciola
+        + f'<h1>{_html.escape(doc["title"])}</h1>'
         + (f'<img src="{_html.escape(image)}" alt=""/>' if image else '')
         + breve_html
         + body_html
@@ -2028,6 +2373,8 @@ def _registro() -> dict:
                 "pubblica": set(d.get("pubblica") or []),
                 "servizio": set(d.get("servizio") or []),
                 "app": set(d.get("app") or []),
+                # IX1 (5/9): le radici che vivono solo con uno slug
+                "solo_con_slug": set(d.get("solo_con_slug") or []),
             }
         except Exception as exc:   # noqa: BLE001
             # IL RIPIEGO DEVE ESSERE PERMISSIVO, non restrittivo.
@@ -2065,6 +2412,11 @@ async def resolve_meta(path: str) -> Optional[dict]:
     if head in _APP_NOINDEX_ROUTES or head in reg["servizio"] or head in reg["app"]:
         return {"title": "Aurya", "description": "",
                 "noindex": True, "canonical": None, "hreflang": None}
+    # IX1 (5/9): una radice che vive solo con uno slug (/e, /p, /o...)
+    # senza slug NON e' una pagina: 404 (nginx la ferma prima in prod,
+    # qui vale per il dev e per le guardie)
+    if head in reg.get("solo_con_slug", []) and len(parts) == 1:
+        return None
     if head == "ritiri":
         if len(parts) == 1:
             return await _meta_home()          # /ritiri redirige alla home

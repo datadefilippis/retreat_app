@@ -33,8 +33,12 @@ INIZIO_APP = "    # <<< ROTTE-APP (generato: scripts/genera_rotte_nginx.py) >>>"
 FINE_APP = "    # <<< FINE ROTTE-APP >>>"
 
 
+def carica_tutto():
+    return json.loads(REGISTRO.read_text(encoding="utf-8"))
+
+
 def carica():
-    dati = json.loads(REGISTRO.read_text(encoding="utf-8"))
+    dati = carica_tutto()
     # il renderer serve pubbliche E servizio: le prime per le meta vere,
     # le seconde per dichiarare noindex dal server (un crawler che non
     # può leggere la pagina non ne vedrebbe mai il noindex)
@@ -48,7 +52,29 @@ def carica():
 
 def blocchi():
     renderer, app = carica()
+    dati = carica_tutto()
+    solo_slug = sorted(dati.get("solo_con_slug", []))
+    rimandi = dati.get("rimandi", {})                    # solo la radice esatta
+    rimandi_prefisso = dati.get("rimandi_prefisso", {})  # radice E sottopercorsi
+    # IX1 (5/9/2026, Search Console: 34 «duplicate, canonica diversa»).
+    # Le radici dei prefissi che vivono solo con uno slug (/e, /p, /o,
+    # /s...) rispondevano 200 con la STESSA shell vuota, indicizzabile:
+    # per Google dieci pagine identiche. Vanno al 404 del renderer. E i
+    # doppioni storici (/index.html, /ritiri, /esplora-operatori) sono
+    # 301 veri, non piu' pagine che ripetono la home. Stanno PRIMA della
+    # location del renderer: fra le regex vince la prima che combacia.
+    righe_rimandi = "".join(
+        f"""    location ~ ^/{re.escape(k)}/?$ {{ return 301 {v}; }}
+""" for k, v in sorted(rimandi.items())) + "".join(
+        f"""    location ~ ^/{re.escape(k)}(/.*)?$ {{ return 301 {v}; }}
+""" for k, v in sorted(rimandi_prefisso.items()))
     b1 = f"""{INIZIO_SHELL}
+{righe_rimandi}    location ~ ^/({'|'.join(solo_slug)})/?$ {{
+        rewrite ^ /__seo/404 break;
+        proxy_pass http://backend:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }}
     # Le pagine che hanno (o devono avere) meta server-side.
     location ~ ^/({'|'.join(renderer)})(/|$) {{
         proxy_pass http://backend:8000/__seo$request_uri;
