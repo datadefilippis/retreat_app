@@ -482,6 +482,25 @@
   .fqz .lab-quaderno-riga b{flex-basis:100%;white-space:normal;overflow:visible}
 }
 
+/* ═══ LM5 (5/9/2026) — TAP DA POLLICE IN TUTTE LE STANZE ═══
+   Sonda a 320/375/414/768 px sulle sei stanze: nessun elemento fuori
+   schermo, ma i comandi erano da mouse — chip ±0,1 e ▶/▸ alti 30 px,
+   cursori con pomello da 14 px, caselle della tabella da 13 px. Sui
+   dispositivi a TOCCO (pointer: coarse, non una larghezza: vale anche
+   per il tablet) i bersagli salgono a 40 px, i pomelli a 22, le
+   caselle a 20. Su desktop col mouse non cambia un pixel. */
+@media (pointer: coarse){
+  .fqz .lab-freeze,.fqz .lab-card .chip,.fqz .lab-modo,.fqz .lab-quaderno-riga .ghost{
+    min-height:40px;padding-top:8px;padding-bottom:8px}
+  .fqz .lab-mer-riga>button{min-width:48px}
+  .fqz .lab-slider{height:36px;margin-top:4px}
+  .fqz .lab-slider::-webkit-slider-thumb{width:22px;height:22px;margin-top:-10px}
+  .fqz .lab-slider::-moz-range-thumb{width:20px;height:20px}
+  .fqz .lab-ritratto-tabella td input[type="checkbox"]{width:20px;height:20px}
+  .fqz .lab-ritratto-tabella td{padding-top:8px;padding-bottom:8px}
+  .fqz .lab-forma{min-height:64px}
+}
+
 /* FA4 (FARO) + evidenza (founder 30/8): l'invito del quaderno e'
    una CARD bordata d'oro, non una riga che si confonde col resto */
 .fqz .lab-invito-quaderno{margin:14px 0 0;padding:14px 16px;

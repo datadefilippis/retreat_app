@@ -2017,3 +2017,16 @@ class TestLabMobileLM:
         assert "grid-template-columns:minmax(320px,5fr) minmax(360px,6fr)" in css
         assert ".fqz .lab-fonderia-gesti .lab-freeze{width:100%;min-height:44px;" in css
         assert ".fqz .lab-quaderno-riga b{flex-basis:100%;white-space:normal" in css
+
+    def test_lm5_tap_da_pollice_in_tutte_le_stanze(self):
+        """Sonda a 320/375/414/768 sulle sei stanze: niente fuori
+        schermo, ma chip, ▶ e cursori erano da mouse (30 px, pomello
+        14). Sui dispositivi a tocco (pointer: coarse, vale anche per
+        il tablet) i bersagli salgono a 40 px; col mouse nulla cambia."""
+        css = (LAB / "lab.css").read_text()
+        assert "@media (pointer: coarse){" in css
+        blocco = css.split("@media (pointer: coarse){")[1].split("\n}\n")[0]
+        assert ".fqz .lab-freeze,.fqz .lab-card .chip,.fqz .lab-modo" in blocco
+        assert "min-height:40px" in blocco
+        assert ".lab-slider::-webkit-slider-thumb{width:22px;height:22px" in blocco
+        assert 'input[type="checkbox"]{width:20px;height:20px}' in blocco
