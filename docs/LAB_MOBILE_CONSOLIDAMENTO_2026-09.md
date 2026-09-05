@@ -215,8 +215,16 @@ screenshot: chiusura del ciclo sui dati veri.
   (`pointer: coarse`: bersagli 40 px, pomelli 22, caselle 20; col
   mouse nulla cambia). Verifica in emulazione touch: zero bersagli
   sotto i 36 px.
-- **LM6 DA FARE**: verifica sul telefono del founder (a voce, senza
-  file: campana forte e piano, riascolto, scroll).
+- **LM6 (5/9 pomeriggio)**: il founder ha provato dal telefono. La
+  campana ora funziona meglio; due bug nuovi, entrambi corretti:
+  «Apri» dal quaderno poi «Tenuto» muto a pagina fresca (i suonatori
+  usavano il motore da `labRef`, vuoto senza una registrazione: ora lo
+  prendono nel gesto) e il ronzio che non si fermava dopo essere
+  usciti con un suono in play (la fonderia e le Meraviglie sono ospiti
+  del banco e non rilasciavano il ponte: ora `rilasciaSeMuto()` quando
+  tacciono, e `spegni()` chiude il ponte con l'elemento audio).
+  Regola: chiunque suoni nel `lab.ingresso` rilascia il ponte quando
+  tace.
 
 **Regressione del 5/9 (prod-2026-09-05) e cura.** Il founder: «ora non
 esce nessun messaggio, nessun output, il sistema è peggiorato».
