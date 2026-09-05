@@ -169,23 +169,23 @@ async def admin_moderate(review_id: str, body: ModerateBody,
     return {"ok": True, "status": new_status}
 
 
+class FlagBody(BaseModel):
+    reason: Optional[str] = Field(default=None, max_length=500)
+
+
 @router.post("/reviews/{review_id}/flag")
-async def admin_flag(review_id: str,
+async def admin_flag(review_id: str, body: Optional[FlagBody] = None,
                      current_user: dict = Depends(require_admin),
                       _module: dict = Depends(require_module("reviews"))):
-    """Segnala un abuso: la recensione sparisce dal pubblico in attesa
-    della revisione della piattaforma (notifica interna)."""
-    from database import reviews_collection
-    from services.review_service import recompute_stats
+    """Segnala un abuso (RV5): la recensione sparisce dal pubblico e va
+    nella coda del system admin, che riceve un'email e decide; l'esito
+    torna al professionista via email. Prima era solo un log."""
+    from services.review_service import flag_review
     org_id = current_user["organization_id"]
-    res = await reviews_collection.update_one(
-        {"id": review_id, "organization_id": org_id,
-         "status": "published"},
-        {"$set": {"status": "flagged"}},
-    )
-    if res.matched_count == 0:
+    ok = await flag_review(org_id, review_id, body.reason if body else None,
+                           by_email=current_user.get("email"))
+    if not ok:
         raise HTTPException(status_code=404, detail="Recensione non trovata")
-    await recompute_stats(org_id)
     logger.warning("review flagged per revisione piattaforma: %s (org=%s)",
                    review_id, org_id)
     return {"ok": True}

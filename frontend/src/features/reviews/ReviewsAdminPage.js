@@ -34,6 +34,10 @@ function ReviewCard({ r, onReply, onModerate, onFlag, t, i18n }) {
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState(r.reply?.body || '');
   const [busy, setBusy] = useState(false);
+  /* RV5 (5/9): la segnalazione porta un motivo (lo legge Aurya) e la
+     card dice cosa succede dopo: nascosta, in revisione, esito via email */
+  const [flagOpen, setFlagOpen] = useState(false);
+  const [flagReason, setFlagReason] = useState('');
 
   const sendReply = async () => {
     setBusy(true);
@@ -116,13 +120,43 @@ function ReviewCard({ r, onReply, onModerate, onFlag, t, i18n }) {
               : t('reviews.reply', { defaultValue: 'Rispondi' })}
           </button>
         )}
-        {r.status === 'published' && (
-          <button type="button" onClick={() => onFlag(r.id)}
+        {r.status === 'published' && !flagOpen && (
+          <button type="button" onClick={() => setFlagOpen(true)}
+                  data-testid="review-flag-open"
                   className="rounded-full border border-border px-3 py-1 text-muted-foreground hover:border-red-300 hover:text-red-700">
             {t('reviews.flag', { defaultValue: 'Segnala abuso' })}
           </button>
         )}
       </div>
+      {flagOpen && r.status === 'published' && (
+        <div className="mt-3 space-y-2" data-testid="review-flag-form">
+          <label className="block text-xs text-muted-foreground">
+            {t('reviews.flagReasonLabel', { defaultValue: 'Perché la segnali? (facoltativo, lo legge Aurya)' })}
+          </label>
+          <textarea rows={2} maxLength={500} value={flagReason}
+                    onChange={e => setFlagReason(e.target.value)}
+                    placeholder={t('reviews.flagReasonPlaceholder', { defaultValue: 'es. contenuto offensivo, persona mai venuta, dati falsi' })}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+          <div className="flex gap-2">
+            <button type="button" disabled={busy}
+                    onClick={async () => { setBusy(true); try { await onFlag(r.id, flagReason); } finally { setBusy(false); setFlagOpen(false); } }}
+                    data-testid="review-flag-send"
+                    className="rounded-full bg-red-700 text-white px-4 py-1.5 text-xs font-semibold disabled:opacity-60">
+              {t('reviews.flagSend', { defaultValue: 'Invia la segnalazione' })}
+            </button>
+            <button type="button" onClick={() => setFlagOpen(false)}
+                    className="rounded-full border border-border px-4 py-1.5 text-xs">
+              {t('reviews.cancel', { defaultValue: 'Annulla' })}
+            </button>
+          </div>
+        </div>
+      )}
+      {r.status === 'flagged' && (
+        <p className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-3 py-2" data-testid="review-in-review">
+          {t('reviews.flagInReview', { defaultValue: 'In revisione da Aurya: nascosta dal pubblico. Riceverai l\'esito via email.' })}
+          {r.flag_reason && <> · {t('reviews.flagReasonShown', { defaultValue: 'Motivo indicato' })}: <i>{r.flag_reason}</i></>}
+        </p>
+      )}
     </article>
   );
 }
@@ -161,9 +195,9 @@ export default function ReviewsAdminPage() {
       load();
     } catch { toast.error(t('reviews.genericError', { defaultValue: 'Errore, riprova' })); }
   };
-  const onFlag = async (id) => {
+  const onFlag = async (id, reason) => {
     try {
-      await api.post(`/reviews/${id}/flag`);
+      await api.post(`/reviews/${id}/flag`, { reason: (reason || '').trim() || null });
       toast.success(t('reviews.flaggedOk', { defaultValue: 'Segnalata: nascosta in attesa di revisione' }));
       load();
     } catch { toast.error(t('reviews.genericError', { defaultValue: 'Errore, riprova' })); }
@@ -193,7 +227,7 @@ export default function ReviewsAdminPage() {
     <AppLayout>
       <Header
         title={t('reviews.title', { defaultValue: 'Recensioni' })}
-        subtitle={t('reviews.subtitle', { defaultValue: 'Cosa dicono di te i viaggiatori — e come rispondi.' })}
+        subtitle={t('reviews.subtitle', { defaultValue: 'Cosa dicono di te i tuoi clienti, e come rispondi.' })}
       />
       <div className="p-4 md:p-8 max-w-4xl">
 
@@ -218,17 +252,33 @@ export default function ReviewsAdminPage() {
             </div>
           ))}
         </div>
-        <label className="flex items-start gap-3 cursor-pointer max-w-[240px]">
+      </div>
+
+      {/* RV (founder 5/9): «non capisco dove l'operatore decide se riceve
+          recensioni da tutti o solo da chi fa ordine» — era una casella
+          piccola in un angolo. Ora e' una card con la regola scritta e
+          lo stato di oggi. */}
+      <section className="rounded-2xl border border-border bg-card p-5 mb-6" data-testid="reviews-settings">
+        <h2 className="text-sm font-semibold text-foreground">
+          {t('reviews.settingsTitle', { defaultValue: 'Chi può lasciarti una recensione' })}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground" data-testid="reviews-settings-state">
+          {data?.reviews_open
+            ? t('reviews.settingsOpen', { defaultValue: 'Oggi: chiunque. Chi non ha prenotato passa prima dalla tua approvazione e non ha il badge.' })
+            : t('reviews.settingsClosed', { defaultValue: 'Oggi: solo chi ha prenotato con te. La recensione esce subito, con il badge «Cliente verificato», e tu puoi rispondere.' })}
+        </p>
+        <label className="mt-3 flex items-start gap-3 cursor-pointer">
           <input type="checkbox" checked={Boolean(data?.reviews_open)} onChange={toggleOpen}
-                 className="mt-1 h-4 w-4 accent-[#376254]" />
-          <span className="text-xs text-muted-foreground">
+                 data-testid="reviews-open-toggle"
+                 className="mt-1 h-5 w-5 accent-[#376254]" />
+          <span className="text-sm text-muted-foreground">
             <span className="block font-semibold text-foreground mb-0.5">
               {t('reviews.openToggle', { defaultValue: 'Accetta recensioni da chi non ha ancora prenotato' })}
             </span>
             {t('reviews.openToggleHint', { defaultValue: 'Appariranno solo dopo la tua approvazione e senza il badge "Cliente verificato".' })}
           </span>
         </label>
-      </div>
+      </section>
 
       {/* Tab */}
       <div className="flex gap-2 mb-4">

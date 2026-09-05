@@ -112,7 +112,7 @@
   },
   "reviews": {
     "title": "Avis",
-    "subtitle": "Ce que les voyageurs disent de vous — et comment vous répondez.",
+    "subtitle": "Cosa dicono di te i tuoi clienti, e come rispondi.",
     "total_one": "{{visits}} avis",
     "total_other": "{{visits}} avis",
     "openToggle": "Accepter les avis de personnes n'ayant pas encore réservé",
@@ -141,7 +141,15 @@
     "emptyTitle": "Aucun avis ici",
     "emptyBody": "Les clients peuvent vous laisser un avis depuis votre page de profil. Partagez-la après chaque retraite : le moyen le plus rapide de créer la confiance.",
     "loadError": "Erreur de chargement",
-    "genericError": "Erreur, réessayez"
+    "genericError": "Erreur, réessayez",
+    "settingsTitle": "Chi può lasciarti una recensione",
+    "settingsClosed": "Oggi: solo chi ha prenotato con te. La recensione esce subito, con il badge «Cliente verificato», e tu puoi rispondere.",
+    "settingsOpen": "Oggi: chiunque. Chi non ha prenotato passa prima dalla tua approvazione e non ha il badge.",
+    "flagReasonLabel": "Perché la segnali? (facoltativo, lo legge Aurya)",
+    "flagReasonPlaceholder": "es. contenuto offensivo, persona mai venuta, dati falsi",
+    "flagSend": "Invia la segnalazione",
+    "flagInReview": "In revisione da Aurya: nascosta dal pubblico. Riceverai l'esito via email.",
+    "flagReasonShown": "Motivo indicato"
   },
   "charts": {
     "empty": "Pas encore de données : elles arriveront avec la première commande.",

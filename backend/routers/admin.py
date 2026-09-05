@@ -1720,7 +1720,7 @@ async def admin_reconcile_billing(
 
 # ── Controlled Access: Registration Mode & Platform Invites (v6.0) ────────────
 
-from pydantic import BaseModel as _BaseModel
+from pydantic import BaseModel as _BaseModel, Field
 
 
 class RegistrationModeBody(_BaseModel):
@@ -4030,3 +4030,33 @@ async def rebuild_availability_index(
         days = await rebuild_for_org(organization_id)
         return {"organization_id": organization_id, "days": days}
     return await rebuild_all()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Recensioni segnalate (RV5, 5/9/2026) — la coda della piattaforma
+# ══════════════════════════════════════════════════════════════════════════════
+# Un professionista che segnala un abuso non deve finire nel vuoto:
+# la recensione esce dal pubblico, arriva un'email alla piattaforma,
+# e QUI il system admin la rilegge e decide (ripubblica o rimuove).
+# L'esito torna al professionista via email (review_service).
+
+@router.get("/reviews/flagged", summary="Recensioni segnalate in attesa")
+async def admin_reviews_flagged(_: dict = Depends(require_system_admin)):
+    from services.review_service import list_flagged
+    return await list_flagged()
+
+
+class ReviewResolveBody(BaseModel):
+    action: str = Field(pattern="^(restore|remove)$")
+    note: Optional[str] = Field(default=None, max_length=500)
+
+
+@router.patch("/reviews/{review_id}/resolve", summary="Decide una segnalazione")
+async def admin_reviews_resolve(review_id: str, body: ReviewResolveBody,
+                                current_user: dict = Depends(require_system_admin)):
+    from services.review_service import resolve_flag
+    esito = await resolve_flag(review_id, body.action, body.note,
+                               by_email=current_user.get("email"))
+    if not esito:
+        raise HTTPException(status_code=404, detail="Segnalazione non trovata")
+    return {"ok": True, "status": esito}

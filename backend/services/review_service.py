@@ -190,32 +190,84 @@ def _send_review_closed_email(email: str, org: Dict[str, Any],
         logger.exception("email di cortesia recensione non inviata")
 
 
+def _base_url() -> str:
+    return (os.environ.get("PUBLIC_BASE_URL") or os.environ.get("FRONTEND_URL")
+            or "https://aurya.life").rstrip("/")
+
+
+async def _operator_recipient(org_id: str) -> Optional[str]:
+    """Chi riceve le email del professionista: notification_email dello
+    store, poi il primo admin attivo (stessa risoluzione delle email
+    di quota). Proiezione a lista: la guardia RB2 vieta il letterale
+    `"email":` vicino alla proiezione pubblica, e ha ragione."""
+    from database import organizations_collection, users_collection
+    org_doc = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "store_settings": 1}) or {}
+    to = (org_doc.get("store_settings") or {}).get("notification_email")
+    if not to:
+        admin = await users_collection.find_one(
+            {"organization_id": org_id, "role": {"$in": ["admin"]},
+             "is_active": True},
+            ["email"], sort=[("created_at", 1)])
+        to = (admin or {}).get("email")
+    return to
+
+
+def _bottone(link: str, testo: str) -> str:
+    return (f'<p><a href="{link}" style="display:inline-block;background:#2f5e58;'
+            f'color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">'
+            f'{testo}</a></p>')
+
+
+def _send_reviewer_receipt(email: str, org: Dict[str, Any],
+                           review: Dict[str, Any], locale: str = "it") -> None:
+    """RV (5/9): chi scrive non si perde. L'email in chiaro esiste solo
+    ADESSO, al submit (a DB resta l'hash): e' l'unico momento in cui si
+    puo' dire «grazie, e' pubblica» o «e' in attesa del professionista».
+    Le tappe successive (approvazione, risposta) non possono
+    raggiungerlo senza un consenso a conservare l'email (RV6, decisione
+    del founder)."""
+    from services.email_service import send_email, _wrap_template
+    nome = _nome_org(org)
+    slug = org.get("public_slug") or org.get("slug") or review.get("org_slug")
+    link = f"{_base_url()}/o/{slug}#recensioni"
+    if review.get("verified"):
+        subject = f"La tua recensione per {nome} è pubblica"
+        content = f"""
+        <p>Grazie: la tua recensione per <b>{nome}</b> &egrave; gi&agrave;
+        visibile sul suo profilo, con il badge «Cliente verificato».
+        Se il professionista risponde, la risposta comparir&agrave;
+        sotto la tua recensione.</p>
+        {_bottone(link, 'Vedi la tua recensione')}
+        """
+    else:
+        subject = f"Recensione per {nome} ricevuta: in attesa di approvazione"
+        content = f"""
+        <p>Grazie: la tua recensione per <b>{nome}</b> &egrave; arrivata.
+        Con questa email non risulta una prenotazione, quindi la
+        legger&agrave; prima il professionista: se la approva, comparir&agrave;
+        sul suo profilo senza il badge «Cliente verificato».</p>
+        {_bottone(link, 'Vai al profilo')}
+        """
+    try:
+        send_email(email, subject, _wrap_template(content, locale), bypass_gate=True)
+    except Exception:
+        logger.exception("ricevuta recensione non inviata")
+
+
 async def _notify_operator_new_review(org_id: str, review: Dict[str, Any]) -> None:
     """RV2 (5/9/2026): il professionista lo viene a sapere. Una email
-    per recensione all'admin dell'organizzazione (stessa risoluzione
-    del destinatario delle email di quota: notification_email dello
-    store, poi il primo admin attivo). Verificata → e' gia' pubblica,
-    «rispondi»; non verificata → «aspetta la tua approvazione».
-    Best-effort: un fallimento qui non tocca la recensione."""
-    from database import organizations_collection, users_collection
+    per recensione all'admin dell'organizzazione. Verificata → e' gia'
+    pubblica, «rispondi»; non verificata → «aspetta la tua
+    approvazione». Best-effort: un fallimento qui non tocca la
+    recensione."""
     from services.email_service import send_email, _wrap_template
     try:
-        org_doc = await organizations_collection.find_one(
-            {"id": org_id}, {"_id": 0, "name": 1, "store_settings": 1}) or {}
-        to = (org_doc.get("store_settings") or {}).get("notification_email")
-        if not to:
-            # proiezione a lista: la guardia RB2 vieta il letterale
-            # `"email":` vicino alla proiezione pubblica, e ha ragione
-            admin = await users_collection.find_one(
-                {"organization_id": org_id, "role": {"$in": ["admin"]},
-                 "is_active": True},
-                ["email"], sort=[("created_at", 1)])
-            to = (admin or {}).get("email")
+        to = await _operator_recipient(org_id)
         if not to:
             logger.warning("review notify: nessun destinatario per org=%s", org_id)
             return
-        base = (os.environ.get("PUBLIC_BASE_URL") or os.environ.get("FRONTEND_URL")
-                or "https://aurya.life").rstrip("/")
+        base = _base_url()
         stelle = "★" * int(review.get("rating") or 0)
         autore = review.get("author_name") or "Un cliente"
         estratto = (review.get("body") or "")[:240]
@@ -369,7 +421,114 @@ async def submit_review(*, org_slug: str, email: str, code: str,
 
     await recompute_stats(org_id)
     await _notify_operator_new_review(org_id, doc)      # RV2, best-effort
+    _send_reviewer_receipt(email, org, doc, lang)       # chi scrive sa dov'e'
     return {k: v for k, v in doc.items() if k != "author_email_hash"}
+
+
+# ── Segnalazioni: operatore → piattaforma → operatore (RV5) ──────────────────
+
+async def flag_review(org_id: str, review_id: str, reason: Optional[str],
+                      by_email: Optional[str] = None) -> bool:
+    """L'operatore segnala: la recensione esce dal pubblico e va nella
+    CODA della piattaforma (system admin), che decide. Prima (PR3) era
+    un log e basta: nessuno la rileggeva. Chi la revisiona lo sa via
+    email (ADMIN_EMAIL), l'operatore vede «in revisione» nella sua tab."""
+    from database import reviews_collection, organizations_collection
+    from services.email_service import send_email, _wrap_template, ADMIN_EMAIL
+    now_iso = _iso(utc_now())
+    res = await reviews_collection.update_one(
+        {"id": review_id, "organization_id": org_id, "status": "published"},
+        {"$set": {"status": "flagged", "flagged_at": now_iso,
+                  "flag_reason": (reason or "").strip()[:500] or None,
+                  "flagged_by": by_email, "resolution": None}},
+    )
+    if res.matched_count == 0:
+        return False
+    await recompute_stats(org_id)
+    try:
+        org = await organizations_collection.find_one(
+            {"id": org_id}, {"_id": 0, "name": 1, "public_slug": 1, "slug": 1}) or {}
+        r = await reviews_collection.find_one(
+            {"id": review_id}, {"_id": 0, "author_email_hash": 0}) or {}
+        content = f"""
+        <p><b>{_nome_org(org)}</b> ha segnalato una recensione come abuso.</p>
+        <p><b>{r.get('author_name')}</b> · {'★' * int(r.get('rating') or 0)}</p>
+        <p style="color:#3b4440;border-left:3px solid #c9b37e;padding-left:12px">{(r.get('body') or '')[:600]}</p>
+        <p>Motivo: {r.get('flag_reason') or 'non indicato'}</p>
+        {_bottone(_base_url() + '/admin?tab=reviews', 'Apri la coda delle segnalazioni')}
+        """
+        send_email(ADMIN_EMAIL, f"Recensione segnalata da {_nome_org(org)}",
+                   _wrap_template(content, "it"), bypass_gate=True)
+    except Exception:
+        logger.exception("segnalazione: email alla piattaforma non inviata")
+    return True
+
+
+async def list_flagged() -> Dict[str, Any]:
+    """La coda del system admin: tutte le segnalate, con il nome
+    dell'organizzazione, dalla piu' vecchia."""
+    from database import reviews_collection, organizations_collection
+    items = await reviews_collection.find(
+        {"status": "flagged"}, {"_id": 0, "author_email_hash": 0},
+    ).sort("flagged_at", 1).to_list(200)
+    org_ids = list({r["organization_id"] for r in items})
+    nomi = {}
+    async for o in organizations_collection.find(
+            {"id": {"$in": org_ids}}, {"_id": 0, "id": 1, "name": 1, "public_slug": 1}):
+        nomi[o["id"]] = o
+    for r in items:
+        o = nomi.get(r["organization_id"], {})
+        r["org_name"] = o.get("name")
+        r["org_public_slug"] = o.get("public_slug")
+    return {"items": items, "total": len(items)}
+
+
+async def resolve_flag(review_id: str, action: str, note: Optional[str],
+                       by_email: Optional[str]) -> Optional[str]:
+    """La piattaforma decide: `restore` la ripubblica, `remove` la
+    toglie per sempre (resta a DB per l'audit). In entrambi i casi il
+    professionista riceve l'esito via email: nessuna segnalazione
+    finisce nel vuoto."""
+    from database import reviews_collection
+    from services.email_service import send_email, _wrap_template
+    if action not in ("restore", "remove"):
+        return None
+    new_status = "published" if action == "restore" else "removed"
+    now_iso = _iso(utc_now())
+    r = await reviews_collection.find_one_and_update(
+        {"id": review_id, "status": "flagged"},
+        {"$set": {"status": new_status,
+                  "resolution": {"action": action, "note": (note or "").strip()[:500] or None,
+                                 "at": now_iso, "by": by_email}}},
+    )
+    if not r:
+        return None
+    org_id = r["organization_id"]
+    await recompute_stats(org_id)
+    try:
+        to = await _operator_recipient(org_id)
+        if to:
+            if action == "restore":
+                subject = "Segnalazione esaminata: la recensione torna pubblica"
+                testa = ("Abbiamo esaminato la recensione che avevi segnalato e non "
+                         "abbiamo trovato una violazione: torna visibile sul tuo "
+                         "profilo. Puoi sempre risponderle pubblicamente.")
+            else:
+                subject = "Segnalazione accolta: la recensione è stata rimossa"
+                testa = ("Abbiamo esaminato la recensione che avevi segnalato e "
+                         "l'abbiamo rimossa dal tuo profilo.")
+            nota = f"<p>Nota di Aurya: {r['resolution']['note']}</p>" if note else ""
+            content = f"""
+            <p>Ciao,</p><p>{testa}</p>
+            <p><b>{r.get('author_name')}</b> · {'★' * int(r.get('rating') or 0)}</p>
+            <p style="color:#3b4440;border-left:3px solid #c9b37e;padding-left:12px">{(r.get('body') or '')[:240]}</p>
+            {nota}
+            {_bottone(_base_url() + '/reviews', 'Vai alle recensioni')}
+            """
+            send_email(to, subject, _wrap_template(content, "it"), bypass_gate=True)
+    except Exception:
+        logger.exception("esito segnalazione: email al professionista non inviata")
+    return new_status
 
 
 # ── Stats ────────────────────────────────────────────────────────────────────

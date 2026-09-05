@@ -112,7 +112,7 @@
   },
   "reviews": {
     "title": "Recensioni",
-    "subtitle": "Cosa dicono di te i viaggiatori — e come rispondi.",
+    "subtitle": "Cosa dicono di te i tuoi clienti, e come rispondi.",
     "total_one": "{{visits}} recensione",
     "total_other": "{{visits}} recensioni",
     "openToggle": "Accetta recensioni da chi non ha ancora prenotato",
@@ -141,7 +141,15 @@
     "emptyTitle": "Nessuna recensione qui",
     "emptyBody": "I clienti possono recensirti dalla tua pagina profilo. Condividila dopo ogni ritiro: è il modo più veloce per costruire fiducia.",
     "loadError": "Errore nel caricamento",
-    "genericError": "Errore, riprova"
+    "genericError": "Errore, riprova",
+    "settingsTitle": "Chi può lasciarti una recensione",
+    "settingsClosed": "Oggi: solo chi ha prenotato con te. La recensione esce subito, con il badge «Cliente verificato», e tu puoi rispondere.",
+    "settingsOpen": "Oggi: chiunque. Chi non ha prenotato passa prima dalla tua approvazione e non ha il badge.",
+    "flagReasonLabel": "Perché la segnali? (facoltativo, lo legge Aurya)",
+    "flagReasonPlaceholder": "es. contenuto offensivo, persona mai venuta, dati falsi",
+    "flagSend": "Invia la segnalazione",
+    "flagInReview": "In revisione da Aurya: nascosta dal pubblico. Riceverai l'esito via email.",
+    "flagReasonShown": "Motivo indicato"
   },
   "charts": {
     "empty": "Ancora nessun dato: arriverà col primo ordine.",

@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppLayout, Header } from '../../components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Building2, Users, UserRound, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2, Sparkles, Newspaper, Inbox, Mic } from 'lucide-react';
+import { Building2, Users, UserRound, ScrollText, AlertTriangle, Package, MailPlus, TrendingUp, Zap, Globe2, Sparkles, Newspaper, Inbox, Mic, ShieldAlert } from 'lucide-react';
 import PlatformOverviewTab from './PlatformOverviewTab';
 import DirectoryAdminTab from './DirectoryAdminTab';
 import SignalsTab from './SignalsTab';
@@ -16,6 +16,7 @@ import BlogAdminTab from './BlogAdminTab';
 import LeadsTab from './LeadsTab';
 import InterviewsTab from './InterviewsTab';
 import PlatformUsersTab from './PlatformUsersTab';
+import FlaggedReviewsTab from './FlaggedReviewsTab';
 
 /**
  * AdminPage — System Admin Control Panel.
@@ -48,7 +49,7 @@ const AdminPage = () => {
         {/* Tabs list — becomes horizontally scrollable on phones so all
             tabs stay reachable without wrapping into a jagged multi-row
             block. scrollbar-hide is defined in index.css. */}
-        <Tabs defaultValue="overview">
+        <Tabs defaultValue={new URLSearchParams(window.location.search).get('tab') || "overview"}>
           <TabsList className="mb-6 w-full sm:w-auto overflow-x-auto scrollbar-hide justify-start">
             <TabsTrigger value="overview" className="flex items-center gap-2 shrink-0">
               <TrendingUp className="h-4 w-4" />
@@ -107,6 +108,11 @@ const AdminPage = () => {
               <Mic className="h-4 w-4" />
               Interviste
             </TabsTrigger>
+            {/* RV5 — la coda delle recensioni segnalate */}
+            <TabsTrigger value="reviews" className="flex items-center gap-2 shrink-0" data-testid="admin-tab-reviews">
+              <ShieldAlert className="h-4 w-4" />
+              Segnalazioni
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -163,6 +169,10 @@ const AdminPage = () => {
 
           <TabsContent value="interviews">
             <InterviewsTab />
+          </TabsContent>
+
+          <TabsContent value="reviews">
+            <FlaggedReviewsTab />
           </TabsContent>
         </Tabs>
       </div>

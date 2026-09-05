@@ -119,9 +119,42 @@ l'email». Fatti:
   cortesia con la cura; il profilo pubblico lo dice prima di chiedere
   l'email (copy diverso se le recensioni sono aperte). Risposta HTTP
   sempre 202: nulla trapela.
-- Guardie in `tests/test_recensioni_rv.py` (statiche + live sulla demo).
-- **RV4, RV5, RV6 da fare** (invito post-esperienza, coda
-  segnalazioni, avviso a chi scrive).
+- **RV5** (secondo giro, stessa sera): segnalare porta un motivo
+  (facoltativo, lo legge Aurya); la recensione esce dal pubblico e va
+  nella coda del system admin (`/admin?tab=reviews`, endpoint
+  `/admin/reviews/flagged` e `/admin/reviews/{id}/resolve`), la
+  piattaforma riceve un'email; la decisione («ripubblica» o «rimuovi»)
+  torna al professionista via email e la card nella sua tab Segnalate
+  dice «in revisione da Aurya, riceverai l'esito». Le decisioni restano
+  a DB (`resolution`).
+- **Chi scrive non si perde**: al momento dell'invio (l'unico in cui
+  l'email è in chiaro) riceve una ricevuta: «è pubblica» oppure «in
+  attesa dell'approvazione del professionista». Le tappe successive
+  (approvazione, risposta) non lo raggiungono senza RV6.
+- **Impostazioni leggibili**: la scelta «solo clienti / chiunque» è una
+  card con la regola scritta e lo stato di oggi, non più una casella in
+  un angolo.
+- Collaudo end-to-end sulla demo (script nello scratchpad, 30 passi:
+  porta chiusa, cliente verificato, codice bruciato una volta sola,
+  testo corto che non brucia il codice, risposta, nuova versione,
+  segnalazione, coda, ripubblica/rimuovi, org aperta con approva e
+  rifiuta, richiusura). Guardie in `tests/test_recensioni_rv.py`.
+
+### La matrice delle notifiche (chi sa cosa)
+| evento | chi scrive | professionista | piattaforma |
+|---|---|---|---|
+| chiede il codice, non cliente, org chiusa | email di cortesia (no codice) | – | – |
+| chiede il codice, ammesso | codice a 6 cifre | – | – |
+| recensione verificata pubblicata | ricevuta «è pubblica» | email «nuova recensione, rispondi» | – |
+| recensione non verificata in attesa | ricevuta «in attesa» | email «aspetta la tua approvazione» | – |
+| approva / rifiuta | – (RV6) | esito a schermo | – |
+| risponde | – (RV6) | – | – |
+| segnala abuso | – | «in revisione» nella tab | email con motivo + coda |
+| ripubblica / rimuove | – | email con l'esito | – |
+
+- **RV4 e RV6 da fare** (invito post-esperienza; avviso a chi scrive
+  sulle tappe successive, che richiede un consenso a conservare
+  l'email).
 
 ## Ordine e stima
 RV1 e RV3 sono solo frontend e chiudono la domanda del founder (la
