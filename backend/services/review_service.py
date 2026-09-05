@@ -69,6 +69,23 @@ async def request_review_otp(org_slug: str, email: str,
     if not email_n or "@" not in email_n:
         return
 
+    # RV3 (founder, 5/9/2026): «se l'operatore ha disabilitato le
+    # recensioni da chi non ha ordinato, chi non ha ordinato non deve
+    # nemmeno ricevere l'email». La porta si chiude QUI, prima del
+    # codice: se l'organizzazione accetta solo clienti e questa email
+    # non ha prenotazioni, niente codice — arriva una riga di cortesia
+    # che dice la cura (usa l'email della prenotazione). La risposta
+    # HTTP resta 202 per tutti: verso l'esterno non trapela nulla, la
+    # verita' la legge solo il proprietario della casella.
+    try:
+        from routers.public import _resolve_org
+        org = await _resolve_org(org_slug)
+    except Exception:
+        return                                   # org non pubblica: silenzio
+    if not await _org_accetta(org, email_n):
+        _send_review_closed_email(email_n, org, locale)
+        return
+
     code = f"{secrets.randbelow(1_000_000):06d}"
     await review_otps_collection.insert_one({
         "id": generate_id(),
@@ -133,6 +150,98 @@ async def _consume_otp(org_slug: str, email: str, code: str) -> bool:
         return True
     await review_otps_collection.update_many(base, {"$inc": {"attempts": 1}})
     return False
+
+
+async def _org_accetta(org: Dict[str, Any], email_n: str) -> bool:
+    """Vero se questa email puo' recensire l'organizzazione: ha un
+    ordine, oppure l'organizzazione accetta anche chi non ha prenotato."""
+    from database import organizations_collection
+    if await has_orders_with_org(org["id"], email_n):
+        return True
+    org_doc = await organizations_collection.find_one(
+        {"id": org["id"]}, {"_id": 0, "reviews_open": 1})
+    return bool((org_doc or {}).get("reviews_open"))
+
+
+def _nome_org(org: Dict[str, Any]) -> str:
+    return (org.get("name") or org.get("public_slug") or org.get("slug")
+            or "questo professionista")
+
+
+def _send_review_closed_email(email: str, org: Dict[str, Any],
+                              locale: str) -> None:
+    """La riga di cortesia al posto del codice (RV3): nessuna
+    prenotazione con questa email, le recensioni sono riservate a chi
+    ha prenotato."""
+    from services.email_service import send_email, _wrap_template
+    nome = _nome_org(org)
+    content = f"""
+    <p>Ciao,</p>
+    <p>hai chiesto di recensire <b>{nome}</b> su Aurya, ma con questa
+    email non risulta nessuna prenotazione: le recensioni di questo
+    professionista sono riservate a chi ha prenotato con lui.</p>
+    <p>Se hai prenotato con un&rsquo;altra email, riprova con quella:
+    il codice arriva l&igrave;.</p>
+    """
+    try:
+        send_email(email, f"Recensione per {nome}: serve l’email della prenotazione",
+                   _wrap_template(content, locale), bypass_gate=True)
+    except Exception:
+        logger.exception("email di cortesia recensione non inviata")
+
+
+async def _notify_operator_new_review(org_id: str, review: Dict[str, Any]) -> None:
+    """RV2 (5/9/2026): il professionista lo viene a sapere. Una email
+    per recensione all'admin dell'organizzazione (stessa risoluzione
+    del destinatario delle email di quota: notification_email dello
+    store, poi il primo admin attivo). Verificata → e' gia' pubblica,
+    «rispondi»; non verificata → «aspetta la tua approvazione».
+    Best-effort: un fallimento qui non tocca la recensione."""
+    from database import organizations_collection, users_collection
+    from services.email_service import send_email, _wrap_template
+    try:
+        org_doc = await organizations_collection.find_one(
+            {"id": org_id}, {"_id": 0, "name": 1, "store_settings": 1}) or {}
+        to = (org_doc.get("store_settings") or {}).get("notification_email")
+        if not to:
+            # proiezione a lista: la guardia RB2 vieta il letterale
+            # `"email":` vicino alla proiezione pubblica, e ha ragione
+            admin = await users_collection.find_one(
+                {"organization_id": org_id, "role": {"$in": ["admin"]},
+                 "is_active": True},
+                ["email"], sort=[("created_at", 1)])
+            to = (admin or {}).get("email")
+        if not to:
+            logger.warning("review notify: nessun destinatario per org=%s", org_id)
+            return
+        base = (os.environ.get("PUBLIC_BASE_URL") or os.environ.get("FRONTEND_URL")
+                or "https://aurya.life").rstrip("/")
+        stelle = "★" * int(review.get("rating") or 0)
+        autore = review.get("author_name") or "Un cliente"
+        estratto = (review.get("body") or "")[:240]
+        if review.get("verified"):
+            subject = f"Nuova recensione da {autore} ({stelle})"
+            testa = ("Una persona che ha prenotato con te ha lasciato una "
+                     "recensione: &egrave; gi&agrave; pubblica sul tuo profilo. "
+                     "Puoi rispondere dal gestionale.")
+            link = f"{base}/reviews"
+        else:
+            subject = f"Una recensione aspetta la tua approvazione ({stelle})"
+            testa = ("Una persona che non risulta fra le tue prenotazioni ha "
+                     "scritto una recensione: resta in attesa finch&eacute; "
+                     "non la approvi o la rifiuti.")
+            link = f"{base}/reviews?status=pending"
+        content = f"""
+        <p>Ciao,</p>
+        <p>{testa}</p>
+        <p style="margin:14px 0 4px"><b>{autore}</b> · {stelle}</p>
+        <p style="color:#3b4440;border-left:3px solid #c9b37e;padding-left:12px">{estratto}</p>
+        <p><a href="{link}" style="display:inline-block;background:#2f5e58;color:#fff;
+        padding:10px 18px;border-radius:999px;text-decoration:none">Vai alle recensioni</a></p>
+        """
+        send_email(to, subject, _wrap_template(content, "it"), bypass_gate=True)
+    except Exception:
+        logger.exception("review notify: email al professionista non inviata")
 
 
 def _send_review_otp_email(email: str, code: str, org_slug: str,
@@ -259,6 +368,7 @@ async def submit_review(*, org_slug: str, email: str, code: str,
     doc.pop("_id", None)
 
     await recompute_stats(org_id)
+    await _notify_operator_new_review(org_id, doc)      # RV2, best-effort
     return {k: v for k, v in doc.items() if k != "author_email_hash"}
 
 

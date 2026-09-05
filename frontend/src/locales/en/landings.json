@@ -703,7 +703,10 @@
     "edited": "updated",
     "operatorReply": "Reply from the organizer",
     "showMore": "Show more",
-    "genericError": "Something went wrong, please try again."
+    "genericError": "Something went wrong, please try again.",
+    "emailIntroOpen": "Ti mandiamo un codice per verificare che sia tu. Se non hai prenotato con questo professionista, la recensione sarà pubblicata dopo la sua approvazione e senza il badge «Cliente verificato».",
+    "emailIntroClosed": "Le recensioni di questo professionista sono riservate a chi ha prenotato. Usa l'email della prenotazione: ti mandiamo un codice per verificare che sia tu.",
+    "emptyOpen": "Ancora nessuna recensione. Racconta com'è andata: se hai prenotato, la tua avrà il badge «Cliente verificato»."
   },
   "brandHome": {
     "howTitle": "How it works",

@@ -707,12 +707,15 @@
     "basedOn_other": "su {{count}} recensioni",
     "countShort_one": "{{count}} recensione",
     "countShort_other": "{{count}} recensioni",
-    "empty": "Ancora nessuna recensione. Hai prenotato con questo operatore? Racconta com'è andata.",
+    "empty": "Ancora nessuna recensione. Hai prenotato con questo professionista? Racconta com'è andata.",
     "verified": "Cliente verificato",
     "edited": "aggiornata",
     "operatorReply": "Risposta del professionista",
     "showMore": "Mostra altre",
-    "genericError": "Qualcosa non ha funzionato, riprova."
+    "genericError": "Qualcosa non ha funzionato, riprova.",
+    "emailIntroOpen": "Ti mandiamo un codice per verificare che sia tu. Se non hai prenotato con questo professionista, la recensione sarà pubblicata dopo la sua approvazione e senza il badge «Cliente verificato».",
+    "emailIntroClosed": "Le recensioni di questo professionista sono riservate a chi ha prenotato. Usa l'email della prenotazione: ti mandiamo un codice per verificare che sia tu.",
+    "emptyOpen": "Ancora nessuna recensione. Racconta com'è andata: se hai prenotato, la tua avrà il badge «Cliente verificato»."
   },
   "brandHome": {
     "howTitle": "Come funziona",

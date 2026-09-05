@@ -703,7 +703,10 @@
     "edited": "mis à jour",
     "operatorReply": "Réponse de l’organisateur",
     "showMore": "Afficher plus",
-    "genericError": "Quelque chose n’a pas fonctionné, réessayez."
+    "genericError": "Quelque chose n’a pas fonctionné, réessayez.",
+    "emailIntroOpen": "Ti mandiamo un codice per verificare che sia tu. Se non hai prenotato con questo professionista, la recensione sarà pubblicata dopo la sua approvazione e senza il badge «Cliente verificato».",
+    "emailIntroClosed": "Le recensioni di questo professionista sono riservate a chi ha prenotato. Usa l'email della prenotazione: ti mandiamo un codice per verificare che sia tu.",
+    "emptyOpen": "Ancora nessuna recensione. Racconta com'è andata: se hai prenotato, la tua avrà il badge «Cliente verificato»."
   },
   "brandHome": {
     "howTitle": "Comment ça marche",

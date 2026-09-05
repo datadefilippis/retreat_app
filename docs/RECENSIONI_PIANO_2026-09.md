@@ -103,6 +103,26 @@ professionista risponde: servirebbe conservare l'email cifrata con un
 consenso esplicito nel modulo. Cambia la promessa di privacy: solo se
 il founder lo vuole.
 
+## Stato (5/9/2026, sera)
+
+Decisione del founder: «se l'operatore ha disabilitato le recensioni da
+chi non ha ordinato, chi non ha ordinato non deve nemmeno ricevere
+l'email». Fatti:
+- **RV1**: voce «Recensioni» nel menu del mondo snello dopo Profilo
+  pubblico (verificato nel gestionale demo).
+- **RV2**: email al professionista a ogni recensione (verificata →
+  «rispondi», non verificata → «aspetta la tua approvazione» con link
+  alla coda), destinatario come le email di quota (notification_email
+  dello store, poi il primo admin attivo). Best-effort.
+- **RV3**: la porta si chiude prima del codice: org riservata ai
+  clienti + email senza prenotazioni = niente codice, una riga di
+  cortesia con la cura; il profilo pubblico lo dice prima di chiedere
+  l'email (copy diverso se le recensioni sono aperte). Risposta HTTP
+  sempre 202: nulla trapela.
+- Guardie in `tests/test_recensioni_rv.py` (statiche + live sulla demo).
+- **RV4, RV5, RV6 da fare** (invito post-esperienza, coda
+  segnalazioni, avviso a chi scrive).
+
 ## Ordine e stima
 RV1 e RV3 sono solo frontend e chiudono la domanda del founder (la
 pagina c'è e si vede, la porta è onesta): un ciclo. RV2 e RV5 sono

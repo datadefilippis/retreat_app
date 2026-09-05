@@ -97,7 +97,7 @@ function Gallery({ photos, name, t }) {
 
 // ── Recensioni (PR4) ─────────────────────────────────────────────────────────
 
-function WriteReviewModal({ orgSlug, onClose, onDone, t, i18n }) {
+function WriteReviewModal({ orgSlug, reviewsOpen = false, onClose, onDone, t, i18n }) {
   const [step, setStep] = useState('email');   // email → code → form → done
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -149,8 +149,11 @@ function WriteReviewModal({ orgSlug, onClose, onDone, t, i18n }) {
 
         {step === 'email' && (
           <form onSubmit={requestOtp} className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {t('landings:reviews.emailIntro', { defaultValue: 'Usa l\'email con cui hai prenotato: ti mandiamo un codice per verificare che sia tu.' })}
+            {/* RV3 (5/9): la porta si chiude PRIMA del codice, con onesta' */}
+            <p className="text-sm text-muted-foreground" data-testid="review-email-intro">
+              {reviewsOpen
+                ? t('landings:reviews.emailIntroOpen', { defaultValue: 'Ti mandiamo un codice per verificare che sia tu. Se non hai prenotato con questo professionista, la recensione sarà pubblicata dopo la sua approvazione e senza il badge «Cliente verificato».' })
+                : t('landings:reviews.emailIntroClosed', { defaultValue: 'Le recensioni di questo professionista sono riservate a chi ha prenotato. Usa l\'email della prenotazione: ti mandiamo un codice per verificare che sia tu.' })}
             </p>
             <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
                    placeholder="la-tua@email.com"
@@ -224,7 +227,7 @@ function WriteReviewModal({ orgSlug, onClose, onDone, t, i18n }) {
   );
 }
 
-function ReviewsSection({ orgSlug, stats, onWrite, refreshKey, t, i18n }) {
+function ReviewsSection({ orgSlug, stats, reviewsOpen = false, onWrite, refreshKey, t, i18n }) {
   const [data, setData] = useState(null);
   const [page, setPage] = useState(1);
 
@@ -283,8 +286,10 @@ function ReviewsSection({ orgSlug, stats, onWrite, refreshKey, t, i18n }) {
       )}
 
       {items.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          {t('landings:reviews.empty', { defaultValue: 'Ancora nessuna recensione. Hai prenotato con questo operatore? Racconta com\'è andata.' })}
+        <p className="text-muted-foreground text-sm" data-testid="reviews-empty">
+          {reviewsOpen
+            ? t('landings:reviews.emptyOpen', { defaultValue: 'Ancora nessuna recensione. Racconta com\'è andata: se hai prenotato, la tua avrà il badge «Cliente verificato».' })
+            : t('landings:reviews.empty', { defaultValue: 'Ancora nessuna recensione. Hai prenotato con questo professionista? Racconta com\'è andata.' })}
         </p>
       ) : (
         <div className="space-y-4">
@@ -709,6 +714,7 @@ export default function OperatorProfilePage() {
           <MiniCalendario upcoming={data.upcoming} t={t} />
 
           <ReviewsSection orgSlug={org_slug} stats={rs}
+                          reviewsOpen={!!data?.reviews_open}
                           onWrite={() => setWriteOpen(true)}
                           refreshKey={reviewsKey} t={t} i18n={i18n} />
         </div>
@@ -802,6 +808,7 @@ export default function OperatorProfilePage() {
 
       {writeOpen && (
         <WriteReviewModal orgSlug={org_slug} t={t} i18n={i18n}
+                          reviewsOpen={!!data?.reviews_open}
                           onClose={() => setWriteOpen(false)}
                           onDone={() => setReviewsKey(k => k + 1)} />
       )}

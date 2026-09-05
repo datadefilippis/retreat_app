@@ -226,6 +226,12 @@ export const Sidebar = () => {
         ? [{ nameKey: 'nav.customers', href: '/modules/customers-light', icon: UserRound, end: false }]
         : []),
       { nameKey: 'nav.public_profile', href: '/public-profile', icon: UserCircle, end: true },
+      /* RV1 (founder, 5/9/2026): «non vedo nel gestionale dove
+         l'operatore legge le sue recensioni e risponde». La plancia
+         /reviews c'era dal ciclo PR3 ma la voce viveva solo nel menu
+         legacy: nel mondo snello ci si arrivava solo dal «Da fare»
+         della home, e solo con una recensione in attesa. */
+      { nameKey: 'nav.reviews', href: '/reviews', icon: Star, end: true },
     );
   }
   if (activeSet.has('commerce') && legacyCommerce) {
