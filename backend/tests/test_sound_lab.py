@@ -1982,7 +1982,13 @@ class TestLabMobileLM:
         assert "const perAscolto = (lab) =>" in src
         assert "const ripristinaMic = () =>" in src
         assert src.count("perAscolto(lab);") == 3, "orig, rifusa, quaderno"
-        assert "lab.analisi.sorgente(null);" in src
+        # LM2-bis (founder, stesso giorno: «il microfono attivo crea
+        # scatti»): durante l'ascolto il mic si CHIUDE davvero, non si
+        # sposta solo l'analyser; il prossimo Registra lo riapre da se'
+        blocco = src.split("const perAscolto = (lab) =>")[1].split("const ripristinaMic")[0]
+        assert "lab.orecchio.chiudi();" in blocco
+        assert "lab.analisi.sorgente(null);" not in blocco
+        assert 'data-testid="lab-ritratto-mic-pausa"' in src
         motore = (LAB / "motore.js").read_text()
         assert "nodo: () => (mic ? mic.nodo : null)" in motore
         onda = (LAB / "OndaViva.jsx").read_text()

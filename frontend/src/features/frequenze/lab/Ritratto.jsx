@@ -54,29 +54,31 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
   const presaRef = useRef(null);                  // i campioni registrati
   const srRef = useRef(44100);
   const vivoRef = useRef(null);                   // {ferma} di cio' che suona
-  const micSpostatoRef = useRef(false);           // LM2: analyser sul master
+  const [micInPausa, setMicInPausa] = useState(false);   // LM2-bis
 
   /* LM2 (5/9, «scattava e tremava» dal telefono): registrare apre il
      microfono e lo lascia aperto, e aprirlo sposta l'analyser sul
      mic. Poi l'A/B suonava dal master ma la sagoma e l'Onda viva
-     leggevano il MICROFONO — cio' che il telefono sente dal suo
-     altoparlante: trigger mai agganciato, sagoma che balla. Per la
-     durata dell'ascolto l'analyser torna sul master (la promessa del
-     contratto: «i campioni veri del master»), e quando il suono
-     finisce il microfono torna sotto l'analyser. Il mic resta
-     aperto: niente secondo permesso per registrare di nuovo. */
+     leggevano il MICROFONO. Primo giro: analyser sul master per la
+     durata dell'ascolto, mic aperto. Non bastava (founder, stesso
+     giorno: «c'e' il microfono attivo che ascolta e si creano degli
+     scatti»): col mic aperto iOS tiene la sessione in play-and-record
+     (uscita e qualita' da chiamata) e l'accordatore dell'Orecchio
+     continua a calcolare a ogni giro. LM2-bis: per tutta la durata
+     dell'ascolto il microfono si CHIUDE davvero (chiudi(): stream
+     fermo, analyser sul master, sessione di nuovo «playback»). Non si
+     riapre da solo a fine ascolto — riaprirlo vuole un gesto — ma il
+     prossimo «Registra» lo riapre da se', come ha sempre fatto. */
   const perAscolto = (lab) => {
-    if (lab && lab.orecchio.attivo() && !micSpostatoRef.current) {
-      lab.analisi.sorgente(null);
-      micSpostatoRef.current = true;
+    if (lab && lab.orecchio.attivo()) {
+      lab.orecchio.chiudi();
+      setMicInPausa(true);
     }
   };
   const ripristinaMic = () => {
-    if (!micSpostatoRef.current) return;
-    micSpostatoRef.current = false;
-    const lab = labRef.current;
-    const nodo = lab && lab.orecchio.attivo() ? lab.orecchio.nodo() : null;
-    if (nodo) lab.analisi.sorgente(nodo);
+    /* niente riapertura automatica (serve il gesto): si spegne solo
+       l'avviso quando il suono finisce */
+    setMicInPausa(false);
   };
 
   const zittisci = () => {
@@ -498,6 +500,11 @@ export default function Ritratto({ ottieniLab, ottieniAnalisi = null }) {
                 vera dal master, trigger dell'Oscilloscopio, scia al
                 fosforo. Si apre solo col suono (di QUESTA fonderia:
                 il quaderno ha la sua tela, accanto alle sue chip). */}
+            {micInPausa && (
+              <p className="lab-volume" data-testid="lab-ritratto-mic-pausa" aria-live="polite">
+                Microfono in pausa mentre ascolti: si riapre da solo al prossimo «Registra».
+              </p>
+            )}
             <OndaViva ottieniAnalisi={ottieniAnalisi}
               attivo={['orig', 'colpo', 'tenuto'].includes(inSuono) ? inSuono : null} />
             <div className="lab-fonderia-gesti">
