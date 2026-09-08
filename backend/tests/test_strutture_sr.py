@@ -46,8 +46,14 @@ class TestIsolamento:
         assert "strutture" not in (BACKEND_DIR / "models" / "organization.py").read_text()
 
     def test_il_menu_dei_professionisti_non_sa_delle_strutture(self):
+        """La voce «Strutture» e' una pagina PROPRIA del system admin (menu
+        System, sotto Aurya Sound: cosi' l'ha voluta il founder, non un tab
+        dell'Admin Panel). Il menu dei professionisti, sopra, non la nomina."""
         layout = (FE / "components" / "Layout.js").read_text()
-        assert "struttur" not in layout.lower()
+        prima, dopo = layout.split("{/* System Admin section")
+        assert "struttur" not in prima.lower(), "il menu dei professionisti nomina le strutture"
+        assert 'data-testid="nav-admin-strutture"' in dopo and 'to="/admin/strutture"' in dopo
+        assert dopo.index('data-testid="nav-admin-sound"') < dopo.index('data-testid="nav-admin-strutture"'), "Strutture sta sotto Aurya Sound"
 
     def test_in_fase_0_non_esiste_una_pagina_pubblica(self):
         """Niente /strutture ne' /struttura finche' App.js non ha le rotte
@@ -178,11 +184,17 @@ class TestFlussoLive:
 
 
 class TestPannello:
-    def test_il_tab_e_la_scheda_esistono(self):
+    def test_la_pagina_e_la_scheda_esistono(self):
         page = (FE / "features" / "admin" / "AdminPage.js").read_text()
-        assert 'value="strutture"' in page and "StruttureTab" in page
+        assert "strutture" not in page.lower(), "niente tab nell'Admin Panel: e' una pagina propria"
         app = (FE / "App.js").read_text()
-        assert 'path="/admin/strutture/:id"' in app and "SystemAdminRoute" in app.split('path="/admin/strutture/:id"')[1][:200]
+        for rotta in ('path="/admin/strutture"', 'path="/admin/strutture/:id"'):
+            assert rotta in app and "SystemAdminRoute" in app.split(rotta)[1][:200], rotta
+        pagina = (FE / "features" / "admin" / "strutture" / "StrutturePage.js").read_text()
+        assert "<AppLayout>" in pagina and 'title="Strutture"' in pagina and "vista=richieste" in pagina
+        assert "'tab'" not in pagina, "la pagina non porta piu' ?tab= nell'URL"
+        assert "/admin/strutture" in (BACKEND_DIR / "services" / "strutture_email.py").read_text()
+        assert "admin?tab=strutture" not in (FE / "features" / "admin" / "strutture" / "StrutturaScheda.js").read_text()
         scheda = (FE / "features" / "admin" / "strutture" / "StrutturaScheda.js").read_text()
         for n in range(1, 12):
             assert f'titolo="{n} ·' in scheda, f"manca la sezione {n}"

@@ -17,7 +17,6 @@ import LeadsTab from './LeadsTab';
 import InterviewsTab from './InterviewsTab';
 import PlatformUsersTab from './PlatformUsersTab';
 import FlaggedReviewsTab from './FlaggedReviewsTab';
-import StruttureTab from './strutture/StruttureTab';
 
 /**
  * AdminPage — System Admin Control Panel.
@@ -114,11 +113,6 @@ const AdminPage = () => {
               <ShieldAlert className="h-4 w-4" />
               Segnalazioni
             </TabsTrigger>
-            {/* SR fase 0 — le strutture ricettive per i ritiri */}
-            <TabsTrigger value="strutture" className="flex items-center gap-2 shrink-0" data-testid="admin-tab-strutture">
-              <Building2 className="h-4 w-4" />
-              Strutture
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -179,10 +173,6 @@ const AdminPage = () => {
 
           <TabsContent value="reviews">
             <FlaggedReviewsTab />
-          </TabsContent>
-
-          <TabsContent value="strutture">
-            <StruttureTab />
           </TabsContent>
         </Tabs>
       </div>

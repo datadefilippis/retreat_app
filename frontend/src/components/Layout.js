@@ -37,7 +37,7 @@ import { ListChecks,
   UserCircle,
   Star,
   Wallet,
-  Eye, Music } from 'lucide-react';
+  Eye, Music, Building2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Separator } from '../components/ui/separator';
@@ -475,6 +475,15 @@ export const Sidebar = () => {
                   >
                     <Music className="h-4 w-4" />
                     Aurya Sound
+                  </NavLink>
+                  {/* SR fase 0 — le strutture ricettive per i ritiri: pagina propria */}
+                  <NavLink
+                    to="/admin/strutture"
+                    data-testid="nav-admin-strutture"
+                    className={navLinkClass}
+                  >
+                    <Building2 className="h-4 w-4" />
+                    Strutture
                   </NavLink>
                 </nav>
               </>

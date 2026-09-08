@@ -43,7 +43,7 @@ def avvisa_piattaforma_richiesta(r: dict) -> None:
         from services.email_service import ADMIN_EMAIL, _wrap_template, send_email
         content = (f"<p><b>{r.get('organization_nome') or 'Un professionista'}</b> cerca una "
                    f"struttura per un ritiro.</p><ul>{_riassunto(r)}</ul>"
-                   f'<p><a href="{_base()}/admin?tab=strutture" style="display:inline-block;'
+                   f'<p><a href="{_base()}/admin/strutture" style="display:inline-block;'
                    'background:#2f5e58;color:#fff;padding:10px 18px;border-radius:999px;'
                    'text-decoration:none">Apri le richieste</a></p>')
         send_email(ADMIN_EMAIL, f"Richiesta struttura da {r.get('organization_nome') or 'un professionista'}",

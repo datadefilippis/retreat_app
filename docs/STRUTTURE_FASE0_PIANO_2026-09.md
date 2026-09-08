@@ -153,9 +153,9 @@ service, non nel router.
   **riserva** `strutture` (pubblica, fase 1) e `struttura` (app,
   fase 1) senza collegarle: la guardia del registro le conosce già.
 
-## 4. Il pannello (`frontend/src/features/admin/StruttureTab.js` + sottocomponenti)
+## 4. Il pannello (`frontend/src/features/admin/strutture/StrutturePage.js` + sottocomponenti)
 
-Nuovo tab «Strutture» in `AdminPage` (deep link `?tab=strutture`).
+Pagina PROPRIA `/admin/strutture` nel menu System, sotto Aurya Sound (voluta cosi' dal founder l'8/9 sera: non un tab dell'Admin Panel).
 
 **Lista** (`StruttureLista.jsx`):
 - barra filtri sempre visibile: ricerca testo, regione (multi), tipo,
@@ -250,7 +250,8 @@ Implementato e collaudato nel browser e con le guardie
   (solo system admin: 403 all'operatore), `routers/strutture.py`
   (richieste dell'operatore), `services/strutture_email.py`, indici in
   `database.py` (testo italiano su nome/comune/descrizione);
-- pannello: tab «Strutture» in `/admin?tab=strutture` (lista, filtri
+- pannello: pagina propria `/admin/strutture` (voce «Strutture» nel menu
+  System sotto Aurya Sound; lista, filtri
   nell'URL, facet per regione/tipo/stato, crea) e scheda a pagina
   intera `/admin/strutture/{id}` con 11 sezioni e salvataggio per
   sezione; collaudata anche a 375px (nessuno scorrimento orizzontale);

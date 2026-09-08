@@ -159,6 +159,7 @@ const AscoltaPage = lazy(() => import("./features/frequenze/AscoltaPage"));
 const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
 const AdminPage = lazy(() => import("./features/admin/AdminPage"));
 const SoundAccessPage = lazy(() => import("./features/admin/SoundAccessPage"));
+const StrutturePage = lazy(() => import("./features/admin/strutture/StrutturePage"));
 const StrutturaScheda = lazy(() => import("./features/admin/strutture/StrutturaScheda"));
 const PlansPage = lazy(() => import("./pages/PlansPage"));
 const StrumentiPage = lazy(() => import("./pages/StrumentiPage"));
@@ -1109,7 +1110,16 @@ function AppRoutes() {
         }
       />
 
-      {/* SR fase 0 — la scheda di una struttura ricettiva, a pagina intera */}
+      {/* SR fase 0 — pagina PROPRIA del system admin (menu System, sotto Aurya Sound):
+          le strutture ricettive per i ritiri, e la scheda di una struttura a pagina intera */}
+      <Route
+        path="/admin/strutture"
+        element={
+          <SystemAdminRoute>
+            <StrutturePage />
+          </SystemAdminRoute>
+        }
+      />
       <Route
         path="/admin/strutture/:id"
         element={

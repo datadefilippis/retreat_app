@@ -84,7 +84,7 @@ export default function StrutturaScheda() {
   const aggiungiNota = async () => { if (!nota.trim()) return; try { setDoc(await aggiungiStoria(id, nota.trim())); setNota(''); } catch { toast.error('Errore'); } };
   const eliminaScheda = async () => {
     if (!window.confirm('Eliminare questa struttura? Se è mai stata pubblica viene solo sospesa.')) return;
-    try { const r = await elimina(id); toast.success(r.esito === 'eliminata' ? 'Eliminata' : 'Sospesa'); window.location.assign('/admin?tab=strutture'); } catch { toast.error('Errore'); }
+    try { const r = await elimina(id); toast.success(r.esito === 'eliminata' ? 'Eliminata' : 'Sospesa'); window.location.assign('/admin/strutture'); } catch { toast.error('Errore'); }
   };
 
   const derivati = doc?.derivati || {};
@@ -102,7 +102,7 @@ export default function StrutturaScheda() {
               subtitle={[etichetta(schema, 'tipi_struttura', doc.identita?.tipo), doc.luogo?.comune, doc.luogo?.regione].filter(Boolean).join(' · ')} />
       <div className="p-4 md:p-8 max-w-4xl space-y-4" data-testid="struttura-scheda">
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <Link to="/admin?tab=strutture" className="underline">← Tutte le strutture</Link>
+          <Link to="/admin/strutture" className="underline">← Tutte le strutture</Link>
           <span className="text-muted-foreground">·</span>
           <span>Posti letto <b>{derivati.posti_letto_totali ?? '—'}</b></span>
           <span>Da <b>{derivati.prezzo_da != null ? `${derivati.prezzo_da} €` : '—'}</b> a persona a notte</span>

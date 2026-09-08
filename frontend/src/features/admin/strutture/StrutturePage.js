@@ -1,15 +1,18 @@
 /**
- * Tab «Strutture» del pannello di sistema (SR, fase 0).
+ * La pagina «Strutture» del system admin (SR, fase 0): /admin/strutture.
  *
- * La lista con i filtri sempre visibili e nell'URL (una ricerca si
- * condivide con un link), i conteggi vivi per regione, tipo e stato,
- * la creazione in due campi (nome e regione) e il sotto-tab con le
- * richieste degli operatori. La scheda vive in una pagina intera:
+ * Pagina PROPRIA nel menu System, sotto Aurya Sound (voluta cosi' dal
+ * founder: non un tab dell'Admin Panel). La lista con i filtri sempre
+ * visibili e nell'URL (una ricerca si condivide con un link), i
+ * conteggi vivi per regione, tipo e stato, la creazione in due campi
+ * (nome e regione) e la vista con le richieste degli operatori
+ * (?vista=richieste). La scheda vive in una pagina intera:
  * /admin/strutture/{id} (e' lunga, non sta in un modale).
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { AppLayout, Header } from '../../../components/Layout';
 import { Button } from '../../../components/ui/button';
 import { caricaSchema, crea, etichetta, lista, richieste, salvaRichiesta } from './api';
 import { cls } from './campi';
@@ -43,7 +46,6 @@ function Lista({ schema }) {
 
   const setFiltro = (k, v) => {
     const next = new URLSearchParams(sp);
-    next.set('tab', 'strutture');
     next.delete(k); next.delete('pagina');
     if (Array.isArray(v)) v.forEach((x) => next.append(k, x));
     else if (v === true) next.set(k, '1');
@@ -145,7 +147,7 @@ function Lista({ schema }) {
               <option value="aggiornato">Ultima modifica</option><option value="nome">Nome</option>
               <option value="prezzo">Prezzo da</option><option value="posti">Posti letto</option>
             </select>
-            {nFiltri > 0 && <button type="button" onClick={() => setSp(new URLSearchParams({ tab: 'strutture' }), { replace: true })} className="underline">Azzera</button>}
+            {nFiltri > 0 && <button type="button" onClick={() => setSp(new URLSearchParams(), { replace: true })} className="underline">Azzera</button>}
           </div>
         </div>
       </div>
@@ -222,14 +224,16 @@ function Richieste({ schema }) {
   );
 }
 
-export default function StruttureTab() {
+export default function StrutturePage() {
   const [schema, setSchema] = useState(null);
   const [sp, setSp] = useSearchParams();
   const vista = sp.get('vista') === 'richieste' ? 'richieste' : 'lista';
   useEffect(() => { caricaSchema().then(setSchema).catch(() => toast.error('Schema non caricato')); }, []);
-  const cambiaVista = (v) => { const next = new URLSearchParams({ tab: 'strutture' }); if (v === 'richieste') next.set('vista', 'richieste'); setSp(next, { replace: true }); };
+  const cambiaVista = (v) => { const next = new URLSearchParams(); if (v === 'richieste') next.set('vista', 'richieste'); setSp(next, { replace: true }); };
   return (
-    <div className="space-y-4">
+    <AppLayout>
+      <Header title="Strutture" subtitle="Le strutture ricettive per i ritiri: schede, filtri e richieste degli operatori" />
+      <div className="p-4 md:p-8 space-y-4" data-testid="strutture-pagina">
       <div className="flex gap-2">
         {[['lista', 'Strutture'], ['richieste', 'Richieste degli operatori']].map(([v, t]) => (
           <button key={v} type="button" onClick={() => cambiaVista(v)}
@@ -237,6 +241,7 @@ export default function StruttureTab() {
         ))}
       </div>
       {vista === 'lista' ? <Lista schema={schema} /> : <Richieste schema={schema} />}
-    </div>
+      </div>
+    </AppLayout>
   );
 }
