@@ -241,6 +241,35 @@ cancello della fase 1.
 Totale: tre giornate e mezzo di sviluppo, deploy con il go. Nessun
 tocco a professionisti, ordini, calendario, Sound, Magazine, Cerchio.
 
+## 9. Stato (8/9/2026 sera) — SR0.1-SR0.6 FATTI in locale
+
+Implementato e collaudato nel browser e con le guardie
+(`tests/test_strutture_sr.py`, 11 verdi):
+- backend: `models/struttura.py` (liste chiuse, sezioni, derivati),
+  `repositories/struttura_repository.py`, `routers/admin_strutture.py`
+  (solo system admin: 403 all'operatore), `routers/strutture.py`
+  (richieste dell'operatore), `services/strutture_email.py`, indici in
+  `database.py` (testo italiano su nome/comune/descrizione);
+- pannello: tab «Strutture» in `/admin?tab=strutture` (lista, filtri
+  nell'URL, facet per regione/tipo/stato, crea) e scheda a pagina
+  intera `/admin/strutture/{id}` con 11 sezioni e salvataggio per
+  sezione; collaudata anche a 375px (nessuno scorrimento orizzontale);
+- gestionale: solo il pulsante «Cerco una struttura» in Ritiri →
+  modulo → email a voi e ricevuta all'operatore → vista «Richieste
+  degli operatori» con stato e nota interna (che l'operatore non vede).
+
+Scelte fatte strada facendo:
+- una tariffa senza prezzo (vuota o 0) non conta nel «prezzo da»: il
+  modulo nasce vuoto, non a 0 €;
+- i segmenti `/struttura` e `/strutture` NON stanno nel registro delle
+  rotte finché App.js non ha le pagine (fase 1): la guardia «il
+  registro non inventa rotte» vieta le porte su stanze vuote, oggi
+  l'ignoto fa 404 ed è giusto. La prenotazione vive nella nota del
+  registro. Conseguenza pratica: nginx NON cambia con questo ciclo.
+
+Resta: SR0.7 (la Masseria come prima scheda, coi dati veri) e il
+deploy col go del founder (backend + frontend, niente nginx).
+
 ## 8. Cosa serve dal founder prima di partire
 
 - Conferma delle liste chiuse (tipi di struttura, tipologie camera,

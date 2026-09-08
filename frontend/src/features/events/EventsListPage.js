@@ -20,12 +20,16 @@ import EventsGrid from './components/EventsGrid';
 // creazione dentro EventWizard). Stato condiviso via useDpaStatus.
 import DpaPactBanner from '../../components/legal/DpaPactBanner';
 import DpaPactDialog from '../../components/legal/DpaPactDialog';
+// SR fase 0 — «Cerco una struttura per un ritiro»: l'unica cosa che il
+// gestionale sa delle strutture; la risposta arriva a mano da Aurya.
+import RichiestaStrutturaDialog from './components/RichiestaStrutturaDialog';
 
 
 export default function EventsListPage() {
   const navigate = useNavigate();
   const { t } = useTranslation('products');
   const [pactOpen, setPactOpen] = useState(false);
+  const [strutturaOpen, setStrutturaOpen] = useState(false);
   return (
     <AppLayout>
       <Header
@@ -37,7 +41,12 @@ export default function EventsListPage() {
       <div className="p-4 md:p-8" data-testid="events-home">
         <DpaPactBanner className="mb-3" onRead={() => setPactOpen(true)} />
         <DpaPactDialog open={pactOpen} onOpenChange={setPactOpen} />
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end gap-2 mb-2">
+          <Button size="sm" variant="outline" onClick={() => setStrutturaOpen(true)}
+                  data-testid="events-cerca-struttura">
+            Cerco una struttura
+          </Button>
+          <RichiestaStrutturaDialog aperto={strutturaOpen} onClose={() => setStrutturaOpen(false)} />
           <Button size="sm" onClick={() => navigate('/events/new')}
                   data-testid="events-new-cta">
             <Plus className="mr-1.5 h-4 w-4" />

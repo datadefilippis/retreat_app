@@ -52,6 +52,9 @@ consent_audit_collection = db.consent_audit
 # ── Phase-1 new collections (additive, zero breaking change) ──────────────────
 # Canonical business entities
 customers_collection = db.customers
+# SR (8/9/2026) — le strutture ricettive per i ritiri e le richieste degli operatori
+strutture_collection = db.strutture
+richieste_struttura_collection = db.richieste_struttura
 suppliers_collection = db.suppliers
 products_collection = db.products
 
@@ -437,6 +440,22 @@ async def create_indexes():
     - Existing indexes are listed first and must never be removed.
     - Phase-1 additions are clearly marked and append-only.
     """
+
+    # ── SR (8/9/2026) — strutture ricettive: cio' che si filtra e' indicizzato ──
+    await strutture_collection.create_index("id", unique=True)
+    await strutture_collection.create_index("slug", unique=True)
+    await strutture_collection.create_index("organization_id", sparse=True)
+    await strutture_collection.create_index([("derivati.regione", 1), ("derivati.stato_pipeline", 1)])
+    await strutture_collection.create_index("derivati.posti_letto_totali")
+    await strutture_collection.create_index("derivati.prezzo_da")
+    await strutture_collection.create_index("derivati.adatta_a")
+    await strutture_collection.create_index("aggiornato_il")
+    await strutture_collection.create_index(
+        [("identita.nome", "text"), ("luogo.comune", "text"), ("identita.descrizione", "text")],
+        default_language="italian", name="strutture_testo")
+    await richieste_struttura_collection.create_index("id", unique=True)
+    await richieste_struttura_collection.create_index([("organization_id", 1), ("creato_il", -1)])
+    await richieste_struttura_collection.create_index([("stato", 1), ("creato_il", -1)])
 
     # ── Fase 5 (retreat) — indici del calendario pubblico ────────────────────
     # Decisi ORA perché costosi da cambiare dopo (master plan §note scalabilità):
