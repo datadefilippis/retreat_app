@@ -662,6 +662,45 @@ class _StaticsConRange(StaticFiles):
 app.mount("/uploads", _StaticsConRange(directory=_uploads_dir), name="uploads")
 app.add_middleware(_UploadsCacheControlMiddleware)
 
+
+# AI1 (8/9/2026, segnalazione founder) — «ChatGPT e Claude dicono che
+# non riescono ad accedere ad aurya.life». Il sito ai loro fetcher
+# rispondeva 200 in un quarto di secondo con robots aperto e testo vero:
+# ma a una HEAD (la richiesta «dimmi cosa sei senza mandarmi il corpo»
+# che molti fetcher e link-checker fanno PRIMA della GET) rispondeva
+# 405 «Allow: GET» — su tutto: home, profili, Magazine, sitemap,
+# llms.txt. FastAPI registra solo i metodi dichiarati, e nessuna rotta
+# dichiara HEAD. Regola HTTP: una HEAD e' una GET senza corpo, con gli
+# stessi header. Qui la si serve cosi', per tutto il sito, prima del
+# routing.
+class _HeadComeGetMiddleware:
+    """HEAD → la rotta GET, stessi header e status, corpo vuoto."""
+
+    def __init__(self, app):
+        self._app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http" or scope.get("method") != "HEAD":
+            return await self._app(scope, receive, send)
+        scope = dict(scope)
+        scope["method"] = "GET"
+        chiuso = False
+
+        async def _senza_corpo(message):
+            nonlocal chiuso
+            if message.get("type") == "http.response.body":
+                if chiuso:
+                    return
+                chiuso = True
+                await send({"type": "http.response.body", "body": b"", "more_body": False})
+                return
+            await send(message)
+
+        await self._app(scope, receive, _senza_corpo)
+
+
+app.add_middleware(_HeadComeGetMiddleware)
+
 # ── Legacy routes (prefix /api — do not change) ───────────────────────────────
 app.include_router(auth.router, prefix="/api")
 app.include_router(organizations.router, prefix="/api")
