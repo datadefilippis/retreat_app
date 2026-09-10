@@ -162,7 +162,7 @@ def converti(md, out):
 
     def piede(canvas, d):
         canvas.saveState(); canvas.setFont("Corpo", 8); canvas.setFillColor(GRIGIO)
-        canvas.drawString(20 * mm, 11 * mm, "Aurya · Strategia di rebranding e funnel · settembre 2026")
+        canvas.drawString(20 * mm, 11 * mm, "Aurya · settembre 2026")
         canvas.drawRightString(A4[0] - 20 * mm, 11 * mm, str(d.page)); canvas.restoreState()
 
     doc.build(story, onFirstPage=piede, onLaterPages=piede)
