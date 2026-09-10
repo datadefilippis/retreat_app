@@ -319,6 +319,9 @@ class PublicEventLanding(BaseModel):
     # False when cancelled / closed / sold-out globally; the storefront
     # uses it to render the "buy" CTA vs an "esaurito" badge.
     is_buyable: bool = True
+    # P2 (10/9/2026): l'operatore ha l'IBAN → «su richiesta» la caparra si
+    # chiede con bonifico (mai l'IBAN qui: viaggia solo nell'email)
+    bank_transfer: bool = False
 
 
 class OrderRequestItem(BaseModel):
@@ -1414,6 +1417,7 @@ async def get_public_event_landing(org_slug: str, slug: str,
     return PublicEventLanding(
         org_slug=org_slug,
         org_name=org.get("name", ""),
+        bank_transfer=bool((org.get("bank_iban") or "").strip()),
         # AN7 — il rating verificato nel momento della decisione
         org_rating=({"avg": _rs.get("avg"), "count": _rs.get("count")}
                     if _rs.get("count") else None),

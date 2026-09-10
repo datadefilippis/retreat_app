@@ -312,6 +312,7 @@ export default function EventWizard() {
   // in Impostazioni → Condizioni di vendita): il wizard la eredita e
   // la offre come preset "Le mie condizioni"
   const [orgPolicy, setOrgPolicy] = useState(null);
+  const [orgIban, setOrgIban] = useState(null);   // P2: null = non caricato, '' = assente
   useEffect(() => {
     let mounted = true;
     import('../../api/client').then(({ default: api }) =>
@@ -319,6 +320,7 @@ export default function EventWizard() {
         .then(res => {
           if (!mounted) return;
           setLegacySlug(res.data?.public_slug || null);
+          setOrgIban(res.data?.bank_iban || '');
           const pol = res.data?.settings?.default_cancellation_policy;
           if (Array.isArray(pol) && pol.length) {
             setOrgPolicy(pol);
@@ -1419,7 +1421,9 @@ export default function EventWizard() {
                 {t('wizards.event.payments.modeHeading')}
               </p>
               <div className="space-y-2">
-                {['full', 'deposit_balance', 'deposit_installments'].map(m => (
+                {/* P2: le rate con promemoria esistono solo online; su richiesta
+                    restano «tutto in una volta» e «caparra + saldo» col bonifico */}
+                {(base.transaction_mode === 'direct' ? ['full', 'deposit_balance', 'deposit_installments'] : ['full', 'deposit_balance']).map(m => (
                   <label
                     key={m}
                     className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
@@ -1446,6 +1450,16 @@ export default function EventWizard() {
                   </label>
                 ))}
               </div>
+              {base.transaction_mode !== 'direct' && orgIban !== null && (
+                <p className={`mt-3 text-xs ${orgIban ? 'text-[#2f5749]' : 'text-amber-800'}`} data-testid="wizard-bonifico-hint">
+                  {orgIban
+                    ? t('wizards.event.payments.bonificoHintOk', { iban: orgIban.replace(/(.{4})/g, '$1 ').trim() })
+                    : t('wizards.event.payments.bonificoHintMissing')}
+                  {!orgIban && (
+                    <>{' '}<Link to="/settings" className="font-semibold underline">{t('wizards.event.payments.bonificoHintCta', { defaultValue: 'Vai alle Impostazioni' })}</Link></>
+                  )}
+                </p>
+              )}
             </div>
 
             {/* Config caparra/saldo/rate */}

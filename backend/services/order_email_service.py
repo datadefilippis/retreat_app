@@ -728,6 +728,20 @@ async def _dati_bonifico(order: dict, org_id: str) -> Optional[dict]:
             start_at = None
     days = int(org.get("deposit_days") or 5)
     now = datetime.now(timezone.utc)
+    # la STESSA regola della pagina e di Stripe: a ridosso dell'inizio (meno
+    # dei giorni del saldo) o con importi sotto soglia, niente caparra —
+    # si chiede tutto in una volta (effective_mode + MIN_CHARGE_MINOR)
+    if plan is not None:
+        try:
+            from services.payment_schedule_service import effective_mode, MIN_CHARGE_MINOR
+            from models.payment_plan import PaymentPlanMode
+            collassa = (start_at is not None and effective_mode(plan, start_at, now) == PaymentPlanMode.FULL) \
+                or int(round(deposit * 100)) < MIN_CHARGE_MINOR \
+                or int(round((total - deposit) * 100)) < MIN_CHARGE_MINOR
+            if collassa:
+                deposit, plan = total, None
+        except Exception:  # noqa: BLE001
+            pass
     scadenza_saldo = None
     if plan is not None and start_at is not None:
         scadenza_saldo = start_at - timedelta(days=int(getattr(plan, "balance_due_days_before", 30) or 30))
@@ -761,15 +775,18 @@ async def _bank_transfer_block(order: dict, org_id: str, order_ref: str,
             return ""
         from services.currency_service import get_currency_for_order
         cur = get_currency_for_order(order)
+        # senza caparra (piano «tutto in una volta») si chiede l'importo intero
+        chiave = "order_bank_body_full" if d["deposit"] >= d["total"] else "order_bank_body"
         righe = [
             f"<p><strong>{_t('order_bank_title', locale)}</strong><br>",
-            _t("order_bank_body", locale, amount=_fmt_total(d["deposit"], cur, locale),
+            _t(chiave, locale, amount=_fmt_total(d["deposit"], cur, locale),
                deadline=d["scadenza_caparra"].strftime("%d/%m/%Y")) + "</p>",
             "<p>" + _t("order_bank_iban", locale, iban=d["iban_txt"]) + "<br>",
         ]
         if d["holder"]:
             righe.append(_t("order_bank_holder", locale, holder=d["holder"]) + "<br>")
-        righe.append(_t("order_bank_reason", locale, reason=f"Caparra {d['causale_base']}") + "</p>")
+        parola = "Pagamento" if d["deposit"] >= d["total"] else "Caparra"
+        righe.append(_t("order_bank_reason", locale, reason=f"{parola} {d['causale_base']}") + "</p>")
         righe.append(f"<p>{_t('order_bank_note', locale)}</p>")
         return "\n".join(righe)
     except Exception as exc:  # noqa: BLE001
@@ -807,6 +824,39 @@ async def _saldo_block(order: dict, org_id: str, locale: str) -> str:
         return ""
 
 
+async def _pagamento_concordare_block(order: dict, org_id: str, store_name: str, locale: str) -> str:
+    """P2 — su richiesta SENZA IBAN: l'email dice come si va avanti (chi
+    organizza conferma e concorda il pagamento), con gli importi in chiaro."""
+    try:
+        from database import organizations_collection, products_collection
+        org = await organizations_collection.find_one({"id": org_id}, {"_id": 0, "bank_iban": 1}) or {}
+        if (org.get("bank_iban") or "").strip():
+            return ""
+        ritiri = [it for it in (order.get("items") or []) if it.get("item_type") == "event_ticket"]
+        if not ritiri:
+            return ""
+        total = float(order.get("total") or 0)
+        prod = await products_collection.find_one(
+            {"id": ritiri[0]["product_id"]}, {"_id": 0, "metadata.payment_plan": 1}) or {}
+        plan_raw = (prod.get("metadata") or {}).get("payment_plan") or {}
+        from services.currency_service import get_currency_for_order
+        cur = get_currency_for_order(order)
+        caparra = ""
+        if isinstance(plan_raw, dict) and plan_raw.get("mode") and plan_raw.get("mode") != "full" and total > 0:
+            try:
+                from models.payment_plan import PaymentPlan
+                from services.payment_schedule_service import compute_deposit_minor
+                dep = compute_deposit_minor(PaymentPlan(**plan_raw), int(round(total * 100))) / 100
+                caparra = " " + _t("order_agree_deposit", locale, deposit=_fmt_total(dep, cur, locale))
+            except Exception:  # noqa: BLE001
+                caparra = ""
+        return (f"<p><strong>{_t('order_bank_title', locale)}</strong><br>"
+                + _t("order_agree_body", locale, store_name=store_name) + caparra + "</p>")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("order_email: agree block failed (order %s): %s", order.get("id"), exc)
+        return ""
+
+
 async def notify_customer_order_received(order: dict, org_id: str) -> None:
     """Send "your request has been received" email to the customer.
 
@@ -836,6 +886,8 @@ async def notify_customer_order_received(order: dict, org_id: str) -> None:
         # caparra: se l'operatore ha messo l'IBAN, le istruzioni partono
         # con questa stessa email (importo, IBAN, causale, scadenza).
         bank_block = await _bank_transfer_block(order, org_id, order_ref, locale)
+        if not bank_block:
+            bank_block = await _pagamento_concordare_block(order, org_id, store_name, locale)
 
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>

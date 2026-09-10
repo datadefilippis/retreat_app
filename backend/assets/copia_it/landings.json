@@ -300,16 +300,23 @@
     "deposit": {
       "payNow": "Oggi paghi solo la caparra: {{amount}}",
       "restBalance": "Il resto ({{amount}}) entro il {{date}}, con promemoria via email.",
-      "restInstallments": "Il resto ({{amount}}) in {{count}} rate, ultima entro il {{date}}, con promemoria via email."
+      "restInstallments": "Il resto ({{amount}}) in {{count}} rate, ultima entro il {{date}}, con promemoria via email.",
+      "requestBank": "Caparra di {{amount}} con bonifico, dopo la conferma del posto.",
+      "requestBankRest": "Il resto ({{amount}}) entro il {{date}}, sempre con bonifico.",
+      "requestAgree": "È prevista una caparra di {{amount}}: come pagarla lo concordi con chi organizza, dopo la conferma."
     },
     "paymentPlan": {
-      "heading": "Come paghi",
+      "heading": "Come si prenota e come si paga",
       "depositPercent": "Prenoti con una caparra del {{percent}}%; il saldo entro {{days}} giorni dall'inizio.",
       "depositFixed": "Prenoti con una caparra di {{amount}}; il saldo entro {{days}} giorni dall'inizio.",
       "installmentsNote": "Il saldo è suddiviso in {{count}} rate con promemoria automatici.",
       "policyHeading": "Politica di cancellazione",
       "policyTier": "Fino a {{days}} giorni prima: rimborso {{percent}}%",
-      "policyLast": "Oltre: rimborso {{percent}}%"
+      "policyLast": "Oltre: rimborso {{percent}}%",
+      "methodOnline": "Prenoti e paghi online, con carta.",
+      "methodBank": "Chiedi un posto senza pagare adesso. Dopo la conferma paghi con bonifico: le istruzioni arrivano via email.",
+      "methodAgree": "Chiedi un posto senza pagare adesso. Il pagamento lo concordi direttamente con chi organizza, dopo la conferma.",
+      "fullNote": "Nessuna caparra: l’importo si paga in una volta sola."
     },
     "program": {
       "heading": "Il programma"
@@ -344,7 +351,7 @@
     "verifiedBadge": "Cliente verificato",
     "faqHeading": "Domande frequenti",
     "faqDepositQ": "Come funziona la caparra?",
-    "faqDepositA": "Dove prevista, la caparra blocca il tuo posto: paghi ora solo una parte e saldi il resto secondo gli accordi con chi organizza. Il pagamento avviene direttamente online, mai di mano in mano.",
+    "faqDepositA": "Dove prevista, la caparra blocca il tuo posto: paghi prima solo una parte e saldi il resto entro la data indicata. Online con carta, oppure con bonifico dopo la conferma se il ritiro è su richiesta.",
     "faqAfterQ": "Cosa succede dopo la prenotazione?",
     "faqAfterA": "Ricevi subito il biglietto via email, con i dettagli del ritiro e i contatti di chi lo organizza. Tutte le tue esperienze restano raccolte nel tuo account Aurya.",
     "faqWhoQ": "Con chi posso parlare prima di prenotare?",
@@ -353,7 +360,9 @@
     "verifiedReviews_other": "{{count}} recensioni verificate",
     "breadcrumbRetreats": "Ritiri",
     "ctaRequest": "Chiedi un posto",
-    "inlineRequestHint": "Nessun pagamento adesso: ricevi un’email con come confermare il posto."
+    "inlineRequestHint": "Nessun pagamento adesso: ricevi un’email con come confermare il posto.",
+    "trustRequest": "Nessun pagamento online: confermi con chi organizza. Se è prevista una caparra, la versi con bonifico dopo la conferma.",
+    "faqAfterRequestA": "Chi organizza riceve la tua richiesta e ti scrive per confermare il posto. Il biglietto arriva via email con la conferma, e tutte le tue esperienze restano nel tuo account Aurya."
   },
   "product": {
     "loading": "Caricamento…",

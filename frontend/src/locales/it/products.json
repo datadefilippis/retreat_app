@@ -1804,19 +1804,19 @@
         "enrichLaterCue": "Qui crei il ritiro con le informazioni essenziali. Il programma giorno per giorno, la galleria foto e le FAQ li aggiungi SUBITO DOPO: al salvataggio ti portiamo nella pagina del ritiro, sezione \"Pagina di vendita\"."
       },
       "payments": {
-        "modeHeading": "Come vuoi incassare questo ritiro?",
+        "modeHeading": "Caparra e saldo",
         "modes": {
           "full": {
-            "title": "Pagamento unico",
-            "desc": "Il partecipante paga l'intero importo alla prenotazione."
+            "title": "Nessuna caparra: tutto in una volta",
+            "desc": "Il partecipante paga l’intero importo: online alla prenotazione, oppure con bonifico dopo la conferma se il ritiro è su richiesta."
           },
           "deposit_balance": {
             "title": "Caparra + saldo",
-            "desc": "Caparra alla prenotazione, saldo automatico entro la scadenza che decidi tu. Promemoria inclusi."
+            "desc": "Caparra alla prenotazione, saldo entro la scadenza che decidi tu. Online con promemoria automatici; su richiesta, con bonifico."
           },
           "deposit_installments": {
             "title": "Caparra + rate",
-            "desc": "Caparra alla prenotazione, il resto in rate con promemoria automatici."
+            "desc": "Solo con la prenotazione online: caparra e rate con promemoria automatici."
           }
         },
         "depositType": "Tipo di caparra",
@@ -1842,7 +1842,10 @@
           "balanceDaysRange": "I giorni devono essere tra 1 e 180",
           "installmentsRange": "Le rate devono essere tra 2 e 6",
           "policyOrder": "Gli scaglioni devono avere giorni decrescenti e rimborsi non crescenti"
-        }
+        },
+        "bonificoHintOk": "Su richiesta, la caparra si chiede con bonifico: le istruzioni (importo, IBAN, causale, scadenza) partono da sole con l’email della richiesta. IBAN: {{iban}}.",
+        "bonificoHintMissing": "Su richiesta, senza IBAN il cliente riceve solo «ti contatteremo» e il pagamento lo concordi tu a mano. Metti l’IBAN nelle Impostazioni e le istruzioni per la caparra partiranno da sole.",
+        "bonificoHintCta": "Vai alle Impostazioni"
       },
       "program": {
         "title": "Programma e pagina di vendita",

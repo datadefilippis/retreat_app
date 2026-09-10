@@ -264,7 +264,7 @@ function ReviewsSnippet({ orgSlug, rating, t }) {
 }
 
 
-function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, plainQty, currency }) {
+function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, plainQty, currency, bankTransfer = false }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('landings');
 
@@ -420,6 +420,27 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
           const ep = effectivePlan(
             product?.payment_plan, totalPrice, occurrence.start_at);
           if (ep.mode !== 'deposit' || totalPrice <= 0) return null;
+          // P2 (10/9/2026): su richiesta la caparra non si paga adesso —
+          // con bonifico dopo la conferma (IBAN in Impostazioni) o da concordare
+          if (product?.transaction_mode !== 'direct') {
+            return (
+              <div className="mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-900" data-testid="deposit-request-box">
+                <p className="font-semibold">
+                  {bankTransfer
+                    ? t('landings:event.deposit.requestBank', { amount: formatPrice(ep.depositMinor / 100, currency, i18n.language) })
+                    : t('landings:event.deposit.requestAgree', { amount: formatPrice(ep.depositMinor / 100, currency, i18n.language) })}
+                </p>
+                {bankTransfer && !ep.installments && (
+                  <p className="text-xs mt-0.5">
+                    {t('landings:event.deposit.requestBankRest', {
+                      amount: formatPrice(ep.balanceMinor / 100, currency, i18n.language),
+                      date: ep.balanceDueDate.toLocaleDateString(i18n.language),
+                    })}
+                  </p>
+                )}
+              </div>
+            );
+          }
           return (
             <div className="mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-900">
               <p className="font-semibold">
@@ -692,6 +713,8 @@ export default function EventLandingPage() {
   }
 
   const { product, occurrence, is_buyable: isBuyable, store_info: storeInfo, org_name: orgName, org_rating: orgRating, currency } = data;
+  // P2 (10/9/2026): online (Stripe) o su richiesta — governa i testi su come si paga
+  const isDirectMode = product?.transaction_mode === 'direct';
   const effectiveCurrency = product.currency || 'EUR';
   const heroImage = occurrence.cover_image_url || product.image_url;
   // M2 — le foto vendono i ritiri: cover + galleria in un'unica griglia
@@ -1044,16 +1067,27 @@ export default function EventLandingPage() {
               configurato sul prodotto; la policy si mostra SEMPRE quando
               presente, anche in modalità pagamento unico: guida i rimborsi) */}
           {(() => {
-            const plan = product?.payment_plan;
-            if (!plan) return null;
+            const plan = product?.payment_plan || {};
             const showDeposit = plan.mode && plan.mode !== 'full';
             const policy = plan.cancellation_policy || [];
-            if (!showDeposit && policy.length === 0) return null;
+            // P2 (10/9/2026): la sezione c'e' SEMPRE e dice il metodo —
+            // online con carta, bonifico dopo la conferma, o da concordare
+            const metodo = isDirectMode
+              ? t('landings:event.paymentPlan.methodOnline', { defaultValue: 'Prenoti e paghi online, con carta.' })
+              : data.bank_transfer
+                ? t('landings:event.paymentPlan.methodBank', { defaultValue: 'Chiedi un posto senza pagare adesso. Dopo la conferma paghi con bonifico: le istruzioni arrivano via email.' })
+                : t('landings:event.paymentPlan.methodAgree', { defaultValue: 'Chiedi un posto senza pagare adesso. Il pagamento lo concordi direttamente con chi organizza, dopo la conferma.' });
             return (
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm" data-testid="come-si-paga">
                 <h2 className="text-base font-semibold text-gray-900 mb-3">
-                  {t('landings:event.paymentPlan.heading')}
+                  {t('landings:event.paymentPlan.heading', { defaultValue: 'Come si prenota e come si paga' })}
                 </h2>
+                <p className="text-sm text-gray-700 mb-3">{metodo}</p>
+                {!showDeposit && (
+                  <p className="text-sm text-gray-700 mb-3">
+                    {t('landings:event.paymentPlan.fullNote', { defaultValue: 'Nessuna caparra: l’importo si paga in una volta sola.' })}
+                  </p>
+                )}
                 {showDeposit && (
                   <p className="text-sm text-gray-700 mb-3">
                     {plan.deposit_type === 'percent'
@@ -1156,6 +1190,7 @@ export default function EventLandingPage() {
                   location.state, and the storefront hydrates its cart
                   and opens the existing checkout dialog. */}
               <ProceedToCheckoutBar
+                bankTransfer={!!data.bank_transfer}
                 orgSlug={orgSlug}
                 product={product}
                 occurrence={occurrence}
@@ -1168,12 +1203,16 @@ export default function EventLandingPage() {
               <ul className="rounded-xl border border-gray-200 bg-white p-4 space-y-2 text-xs text-gray-600">
                 <li className="flex items-start gap-2">
                   <ShieldCheck className="h-4 w-4 shrink-0 text-[#376254]" aria-hidden />
-                  <span>{t('landings:event.trustSecure', { defaultValue: 'Pagamento sicuro con carta. I tuoi dati non passano mai dall\'professionista.' })}</span>
+                  <span>{isDirectMode
+                    ? t('landings:event.trustSecure', { defaultValue: 'Pagamento sicuro con carta. I tuoi dati non passano mai dall\'professionista.' })
+                    : t('landings:event.trustRequest', { defaultValue: 'Nessun pagamento online: confermi con chi organizza. Se è prevista una caparra, la versi con bonifico dopo la conferma.' })}</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Sprout className="h-4 w-4 shrink-0 text-[#376254]" aria-hidden />
-                  <span>{t('landings:event.trustDeposit', { defaultValue: 'Dove previsto, blocchi il posto con la caparra e saldi più avanti.' })}</span>
-                </li>
+                {product?.payment_plan?.mode && product.payment_plan.mode !== 'full' && (
+                  <li className="flex items-start gap-2">
+                    <Sprout className="h-4 w-4 shrink-0 text-[#376254]" aria-hidden />
+                    <span>{t('landings:event.trustDeposit', { defaultValue: 'Dove previsto, blocchi il posto con la caparra e saldi più avanti.' })}</span>
+                  </li>
+                )}
                 <li className="flex items-start gap-2">
                   <MailCheck className="h-4 w-4 shrink-0 text-[#376254]" aria-hidden />
                   <span>{t('landings:event.trustTicket', { defaultValue: 'Biglietto e promemoria via email, subito dopo la prenotazione.' })}</span>
@@ -1185,22 +1224,24 @@ export default function EventLandingPage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
                   {t('landings:event.faqHeading', { defaultValue: 'Domande frequenti' })}
                 </p>
+                {product?.payment_plan?.mode && product.payment_plan.mode !== 'full' && (
                 <details className="group border-b border-gray-100 pb-2 mb-2">
                   <summary className="cursor-pointer text-sm font-medium text-gray-800 list-none flex justify-between items-center">
                     {t('landings:event.faqDepositQ', { defaultValue: 'Come funziona la caparra?' })}
                     <span className="text-gray-400 group-open:rotate-180 transition-transform" aria-hidden>⌄</span>
                   </summary>
                   <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">
-                    {t('landings:event.faqDepositA', { defaultValue: 'Dove prevista, la caparra blocca il tuo posto: paghi ora solo una parte e saldi il resto secondo gli accordi con chi organizza. Il pagamento avviene direttamente online, mai di mano in mano.' })}
+                    {t('landings:event.faqDepositA', { defaultValue: 'Dove prevista, la caparra blocca il tuo posto: paghi prima solo una parte e saldi il resto entro la data indicata. Online con carta, oppure con bonifico dopo la conferma se il ritiro è su richiesta.' })}
                   </p>
                 </details>
+                )}
                 <details className="group border-b border-gray-100 pb-2 mb-2">
                   <summary className="cursor-pointer text-sm font-medium text-gray-800 list-none flex justify-between items-center">
                     {t('landings:event.faqAfterQ', { defaultValue: 'Cosa succede dopo la prenotazione?' })}
                     <span className="text-gray-400 group-open:rotate-180 transition-transform" aria-hidden>⌄</span>
                   </summary>
                   <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">
-                    {t('landings:event.faqAfterA', { defaultValue: 'Ricevi subito il biglietto via email, con i dettagli del ritiro e i contatti di chi lo organizza. Tutte le tue esperienze restano raccolte nel tuo account Aurya.' })}
+                    {isDirectMode ? t('landings:event.faqAfterA', { defaultValue: 'Ricevi subito il biglietto via email, con i dettagli del ritiro e i contatti di chi lo organizza. Tutte le tue esperienze restano raccolte nel tuo account Aurya.' }) : t('landings:event.faqAfterRequestA', { defaultValue: 'Chi organizza riceve la tua richiesta e ti scrive per confermare il posto. Il biglietto arriva via email con la conferma, e tutte le tue esperienze restano nel tuo account Aurya.' })}
                   </p>
                 </details>
                 <details className="group">

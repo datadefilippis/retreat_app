@@ -399,7 +399,7 @@ class TestP2IlBonificoElaStradaPrincipale:
         assert "async def _bank_transfer_block(" in src and "async def _saldo_block(" in src
         assert "compute_deposit_minor" in src, "la caparra segue il piano del ritiro come con Stripe"
         assert 'it.get("item_type") == "event_ticket"' in src, "la caparra via email solo per i ritiri, non per un massaggio"
-        assert 'f"Caparra {d[\'causale_base\']}"' in src, "causale leggibile: ritiro e cognome, non un codice"
+        assert 'f"{parola} {d[\'causale_base\']}"' in src, "causale leggibile: ritiro e cognome, non un codice"
         assert "{saldo_html}" in src and '"manual_deposit_received": True' in (BACKEND_DIR / "services" / "order_service.py").read_text()
         i = src.index("async def notify_customer_order_received(")
         corpo = src[i:i + 3000]
@@ -411,9 +411,12 @@ class TestP2IlBonificoElaStradaPrincipale:
             assert em.count(f'"{k}"') >= 2, f"{k}: it + en"
 
     def test_l_iban_non_esce_dalle_risposte_pubbliche(self):
-        for rel in ("routers/public.py", "routers/seo_shell.py",
-                    "routers/fondatori.py"):
+        for rel in ("routers/seo_shell.py", "routers/fondatori.py"):
             assert "bank_iban" not in (BACKEND_DIR / rel).read_text(), rel
+        # public.py legge l'IBAN solo per dire «c'e' il bonifico» (bool): mai nel payload
+        pub = (BACKEND_DIR / "routers" / "public.py").read_text()
+        assert '"bank_iban": 1' not in pub and 'bank_iban=' not in pub
+        assert pub.count("bank_iban") == pub.count('org.get("bank_iban")')
 
     def test_la_scheda_nelle_impostazioni_dopo_stripe(self):
         page = (FE / "features" / "settings" / "SettingsPage.js").read_text()
@@ -707,3 +710,44 @@ class TestP4IlCatalogoDel2027:
         pricing = (BACKEND_DIR / "services" / "seed_pricing.py").read_text()
         assert "async def migrate_stripe_prezzi_2027_v1" in pricing and 'startswith("sk_live_")' in pricing
         assert "price_1UE819RL6JKSLFw8BZRkQlLX" in pricing and "price_1UE81ZRL6JKSLFw8H0XyEHbD" in pricing
+
+
+class TestP2TerEventiCoerenti:
+    """Founder (10/9 sera): «l'utente e' libero di impostare un evento anche
+    senza caparra? le informazioni sulla caparra appaiono? consolidiamo».
+    Un ritiro puo' non avere caparra (piano «tutto in una volta», il
+    default); la pagina pubblica dice SEMPRE come si prenota e come si
+    paga (online con carta / bonifico dopo la conferma / da concordare)
+    e nomina la caparra solo se c'e'; l'email segue le stesse regole."""
+
+    def test_il_payload_pubblico_dice_se_c_e_il_bonifico_ma_mai_l_iban(self):
+        pub = (BACKEND_DIR / "routers" / "public.py").read_text()
+        assert "bank_transfer: bool = False" in pub
+        assert 'bank_transfer=bool((org.get("bank_iban") or "").strip())' in pub
+
+    def test_la_pagina_del_ritiro_dice_come_si_paga_in_ogni_caso(self):
+        page = (FE / "features" / "storefront" / "EventLandingPage.js").read_text()
+        assert 'data-testid="come-si-paga"' in page and "paymentPlan.methodOnline" in page
+        assert "paymentPlan.methodBank" in page and "paymentPlan.methodAgree" in page
+        assert "deposit.requestBank" in page and "deposit.requestAgree" in page
+        assert "bankTransfer={!!data.bank_transfer}" in page
+        assert page.count("product.payment_plan.mode !== 'full'") >= 2, "la caparra si nomina solo se c'e'"
+        assert "faqAfterRequestA" in page and "trustRequest" in page
+
+    def test_l_email_segue_il_piano_e_l_iban(self):
+        src = (BACKEND_DIR / "services" / "order_email_service.py").read_text()
+        assert 'chiave = "order_bank_body_full" if d["deposit"] >= d["total"] else "order_bank_body"' in src
+        assert "async def _pagamento_concordare_block(" in src
+        assert "effective_mode(plan, start_at, now) == PaymentPlanMode.FULL" in src, "l'email segue la regola last-minute della pagina e di Stripe"
+        em = (BACKEND_DIR / "services" / "email_service.py").read_text()
+        for k in ("order_bank_body_full", "order_agree_body", "order_agree_deposit"):
+            assert em.count(f'"{k}"') >= 2, k
+
+    def test_il_wizard_e_chiaro_sulla_caparra_e_sull_iban(self):
+        it = json.loads((FE / "locales" / "it" / "products.json").read_text())["wizards"]["event"]["payments"]
+        assert it["modeHeading"] == "Caparra e saldo"
+        assert it["modes"]["full"]["title"].startswith("Nessuna caparra")
+        assert "Solo con la prenotazione online" in it["modes"]["deposit_installments"]["desc"]
+        wiz = (FE / "features" / "events" / "EventWizard.js").read_text()
+        assert 'data-testid="wizard-bonifico-hint"' in wiz and "setOrgIban(res.data?.bank_iban || '')" in wiz
+        assert "['full', 'deposit_balance']" in wiz, "su richiesta niente rate"
