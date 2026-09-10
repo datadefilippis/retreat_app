@@ -348,3 +348,61 @@ class TestP3MarketplaceApertoAPrimaFila:
         ragioni = prod["grids"]["event"]["directory"]["reason"]
         assert "Ritiri ed esperienze" in ragioni["mode_request"]
         assert "su richiesta" in ragioni["stripe_not_ready"]
+
+
+class TestP2IlBonificoElaStradaPrincipale:
+    """P2 (10/9/2026, piano di business, decisione founder): i primi
+    operatori trovano Stripe complesso e preferiscono il bonifico. Il
+    bonifico e' la strada principale della caparra, Stripe resta
+    facoltativo e silenzioso. Tre campi sull'organizzazione, le
+    istruzioni nella stessa email della richiesta, «caparra ricevuta»
+    gia' esistente (settle-manual). L'IBAN non esce MAI da /public."""
+
+    def test_i_tre_campi_esistono_e_l_iban_si_valida(self):
+        sys.path.insert(0, str(BACKEND_DIR))
+        from routers.organizations import OrganizationUpdate
+        dto = OrganizationUpdate(bank_iban="it60 x054 2811 1010 0000 0123 456",
+                                 bank_holder=" Giulia Serra ", deposit_days=7)
+        assert dto.bank_iban == "IT60X0542811101000000123456"
+        assert dto.bank_holder == "Giulia Serra" and dto.deposit_days == 7
+        assert OrganizationUpdate(bank_iban="  ").bank_iban == ""   # svuota
+        import pytest
+        with pytest.raises(ValueError):
+            OrganizationUpdate(bank_iban="1234")
+        with pytest.raises(ValueError):
+            OrganizationUpdate(deposit_days=0)
+        model = (BACKEND_DIR / "models" / "organization.py").read_text()
+        for campo in ("bank_iban", "bank_holder", "deposit_days"):
+            assert f"    {campo}: Optional" in model, campo
+
+    def test_le_istruzioni_partono_con_l_email_della_richiesta(self):
+        src = (BACKEND_DIR / "services" / "order_email_service.py").read_text()
+        assert "async def _bank_transfer_block(" in src
+        assert "compute_deposit_minor" in src, "la caparra segue il piano del ritiro come con Stripe"
+        i = src.index("async def notify_customer_order_received(")
+        corpo = src[i:i + 3000]
+        assert "_bank_transfer_block(order, org_id, order_ref, locale)" in corpo
+        assert "{bank_block}" in corpo
+        em = (BACKEND_DIR / "services" / "email_service.py").read_text()
+        for k in ("order_bank_title", "order_bank_body", "order_bank_iban",
+                  "order_bank_reason", "order_bank_note"):
+            assert em.count(f'"{k}"') >= 2, f"{k}: it + en"
+
+    def test_l_iban_non_esce_dalle_risposte_pubbliche(self):
+        for rel in ("routers/public.py", "routers/seo_shell.py",
+                    "routers/fondatori.py"):
+            assert "bank_iban" not in (BACKEND_DIR / rel).read_text(), rel
+
+    def test_la_scheda_nelle_impostazioni_dopo_stripe(self):
+        page = (FE / "features" / "settings" / "SettingsPage.js").read_text()
+        assert page.index("<PaymentConnectionsCard") < page.index("<BonificoCard />")
+        card = (FE / "features" / "settings" / "sections" / "BonificoCard.jsx").read_text()
+        for tid in ("bonifico-card", "bonifico-iban", "bonifico-intestatario",
+                    "bonifico-giorni", "bonifico-salva", "bonifico-stato"):
+            assert f'data-testid="{tid}"' in card, tid
+        assert "organizationsAPI.updateCurrent(" in card
+        assert "caparra ricevuta" in card and "senza commissioni" in card
+
+    def test_un_ritiro_nuovo_nasce_su_richiesta(self):
+        wiz = (FE / "features" / "events" / "EventWizard.js").read_text()
+        assert "transaction_mode: p.transaction_mode || (prefillRef.current?.product ? 'direct' : 'request')" in wiz

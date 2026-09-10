@@ -277,7 +277,9 @@ export default function EventWizard() {
       description: p.description || '',
       image_url: p.image_url || '',
       unit_price: toInput(p.unit_price),
-      transaction_mode: p.transaction_mode || 'direct',
+      // P2 (10/9/2026): un ritiro NUOVO nasce «su richiesta» (bonifico,
+      // la strada principale); chi ha Stripe sceglie online in un click.
+      transaction_mode: p.transaction_mode || (prefillRef.current?.product ? 'direct' : 'request'),
     };
   });
 

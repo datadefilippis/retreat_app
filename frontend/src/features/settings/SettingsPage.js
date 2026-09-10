@@ -16,6 +16,7 @@ import { useBilling } from '../../hooks/useBilling';
 import { useEntitlements } from '../../hooks/useEntitlements';
 import BillingSection from '../../components/BillingSection';
 import PaymentConnectionsCard from './PaymentConnectionsCard';
+import BonificoCard from './sections/BonificoCard';   // P2
 import PaymentMethodsSection from './sections/PaymentMethodsSection';
 import SalesConditionsCard from './sections/SalesConditionsCard';
 import LetterCard from './sections/LetterCard';   // CP2
@@ -473,6 +474,9 @@ export const SettingsPage = () => {
 
         {/* ── Payment Connections ── */}
         <PaymentConnectionsCard isAdmin={isAdmin} />
+
+        {/* P2 (10/9/2026) — il bonifico e' la strada principale della caparra */}
+        {isAdmin ? <BonificoCard /> : null}
 
         {/* ── CH compliance v1: Payment methods preflight (Stripe capabilities) ── */}
         {isAdmin ? <PaymentMethodsSection /> : null}

@@ -311,6 +311,17 @@ class Organization(OrganizationBase):
     # data-entry typo can't accidentally drain a merchant's revenue.
     application_fee_percent: float = Field(default=0.0, ge=0, le=10)
 
+    # ── P2 (10/9/2026, piano di business): il BONIFICO e' la strada
+    # principale della caparra. Se l'operatore mette l'IBAN, chi chiede
+    # un posto in un ritiro «su richiesta» riceve subito le istruzioni
+    # (importo, IBAN, causale, scadenza); l'operatore poi segna
+    # «caparra ricevuta» sull'ordine (settle-manual, scope deposit).
+    # MAI in nessuna risposta pubblica: i serializzatori di /public/*
+    # scelgono i campi uno per uno (guardia in test_rebranding_rb).
+    bank_iban: Optional[str] = None
+    bank_holder: Optional[str] = None
+    deposit_days: Optional[int] = None       # giorni per la caparra (default 5)
+
     # ── v3.0: org suspension (default True -> zero breaking change) ----------
     is_active: bool = True                  # False = suspended by system admin
 

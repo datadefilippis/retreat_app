@@ -683,6 +683,67 @@ def _render_items_typecount_line(order: dict, locale: str) -> str:
 
 # ── Customer: Order/Request Received ─────────────────────────────────────────
 
+async def _bank_transfer_block(order: dict, org_id: str, order_ref: str,
+                               locale: str) -> str:
+    """P2 — le istruzioni per la caparra con bonifico, o stringa vuota.
+
+    L'importo segue il piano di pagamento del ritiro (caparra in
+    percentuale o fissa, la STESSA regola di compute_deposit_minor per
+    Stripe); senza piano e' il totale. La scadenza sono i giorni scelti
+    dall'operatore (default 5). Mai un errore: l'email parte comunque.
+    """
+    try:
+        from datetime import datetime, timedelta, timezone
+        from database import organizations_collection, products_collection
+        org = await organizations_collection.find_one(
+            {"id": org_id},
+            {"_id": 0, "bank_iban": 1, "bank_holder": 1, "deposit_days": 1},
+        ) or {}
+        iban = (org.get("bank_iban") or "").strip()
+        if not iban:
+            return ""
+        total = float(order.get("total") or 0)
+        if total <= 0:
+            return ""
+        amount = total
+        pids = [it.get("product_id") for it in (order.get("items") or [])
+                if it.get("product_id")]
+        plan_doc = await products_collection.find_one(
+            {"id": {"$in": pids}, "metadata.payment_plan": {"$exists": True}},
+            {"_id": 0, "metadata.payment_plan": 1},
+        ) if pids else None
+        plan_raw = ((plan_doc or {}).get("metadata") or {}).get("payment_plan")
+        if isinstance(plan_raw, dict) and plan_raw:
+            try:
+                from models.payment_plan import PaymentPlan, PaymentPlanMode
+                from services.payment_schedule_service import compute_deposit_minor
+                plan = PaymentPlan(**plan_raw)
+                if plan.mode != PaymentPlanMode.FULL:
+                    amount = compute_deposit_minor(plan, int(round(total * 100))) / 100
+            except Exception as exc:  # noqa: BLE001 — piano invalido: totale
+                logger.warning("order_email: payment_plan invalido (order %s): %s",
+                               order.get("id"), exc)
+        days = int(org.get("deposit_days") or 5)
+        deadline = (datetime.now(timezone.utc) + timedelta(days=days)).strftime("%d/%m/%Y")
+        from services.currency_service import get_currency_for_order
+        amount_txt = _fmt_total(amount, get_currency_for_order(order), locale)
+        iban_txt = " ".join(iban[i:i + 4] for i in range(0, len(iban), 4))
+        holder = (org.get("bank_holder") or "").strip()
+        righe = [
+            f"<p><strong>{_t('order_bank_title', locale)}</strong><br>",
+            _t("order_bank_body", locale, amount=amount_txt, deadline=deadline) + "</p>",
+            "<p>" + _t("order_bank_iban", locale, iban=iban_txt) + "<br>",
+        ]
+        if holder:
+            righe.append(_t("order_bank_holder", locale, holder=holder) + "<br>")
+        righe.append(_t("order_bank_reason", locale, reason=f"Caparra {order_ref}") + "</p>")
+        righe.append(f"<p>{_t('order_bank_note', locale)}</p>")
+        return "\n".join(righe)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("order_email: bank block failed (order %s): %s", order.get("id"), exc)
+        return ""
+
+
 async def notify_customer_order_received(order: dict, org_id: str) -> None:
     """Send "your request has been received" email to the customer.
 
@@ -708,12 +769,18 @@ async def notify_customer_order_received(order: dict, org_id: str) -> None:
 
         account_url = await _build_customer_account_url(order, org_id, "/account")
 
+        # P2 (10/9/2026) — il bonifico e' la strada principale della
+        # caparra: se l'operatore ha messo l'IBAN, le istruzioni partono
+        # con questa stessa email (importo, IBAN, causale, scadenza).
+        bank_block = await _bank_transfer_block(order, org_id, order_ref, locale)
+
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>
             <p>{_t("order_received_body", locale)}</p>
             <p>{_t("order_received_ref", locale, order_ref=order_ref)}</p>
             <p>{typecount_line}<br>
                {_t("order_received_total", locale, total=total)}</p>
+            {bank_block}
             <p style="text-align: center;">
                 <a href="{account_url}" class="btn">{_t("order_received_cta", locale)}</a>
             </p>

@@ -28,6 +28,29 @@ class OrganizationUpdate(BaseModel):
     # il wizard ritiro la eredita come preset "Le mie condizioni".
     # Scaglioni {days_before, refund_percent} come models/payment_plan.
     default_cancellation_policy: Optional[List[dict]] = None
+    # P2 (10/9/2026) — bonifico: IBAN, intestatario, giorni per la caparra.
+    # Stringa vuota = cancella (exclude_none non la tocca).
+    bank_iban: Optional[str] = Field(default=None, max_length=48)
+    bank_holder: Optional[str] = Field(default=None, max_length=120)
+    deposit_days: Optional[int] = Field(default=None, ge=1, le=30)
+
+    @field_validator('bank_iban')
+    @classmethod
+    def validate_iban(cls, v):
+        if v is None:
+            return v
+        clean = ''.join(v.split()).upper()
+        if clean == '':
+            return ''
+        if not (15 <= len(clean) <= 34) or not clean[:2].isalpha() \
+                or not clean[2:4].isdigit() or not clean.isalnum():
+            raise ValueError('IBAN non valido: controlla le lettere e le cifre')
+        return clean
+
+    @field_validator('bank_holder')
+    @classmethod
+    def validate_holder(cls, v):
+        return None if v is None else v.strip()
 
     @field_validator('default_cancellation_policy')
     @classmethod
