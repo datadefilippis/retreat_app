@@ -362,9 +362,9 @@ def test_operator_landing_transparency_and_direct_contact():
     # che oggi non si paga.
     risposta = " ".join(
         op_faq.get(k) or "" for k in ("faq1b1", "faq1b2", "faq1b3"))
-    assert "sempre gratuito" in risposta, \
+    assert "non prende commissioni" in risposta, \
         "la risposta sul costo deve dire in chiaro che oggi non si paga"
-    assert "non ha alcun costo" in risposta, \
+    assert "sempre gratuito" in risposta, \
         "sparita la promessa zero costi fino alla data detta dal founder"
 
 

@@ -541,9 +541,10 @@ _BRAND_PAGES = {
     # l'offerta in chiaro, la data, il racconto come premio dopo.
     "entra-nella-rete": {
         "title": "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya",
-        "description": ("Profilo pubblico, prenotazioni, eventi e ritiri con "
-                        "caparra, un link solo. Gratis fino al 31 dicembre 2026. "
-                        "Poi il racconto del tuo lavoro lo scriviamo insieme."),
+        # RB2-bis (10/9 sera): la stessa frase della landing
+        "description": ("Profilo pubblico, servizi, prenotazioni, eventi e ritiri "
+                        "con iscrizioni online. Tutto in un unico posto, con un solo "
+                        "link da condividere. Gratis per sempre, senza commissioni."),
         "image": "/media/hero-organizer.webp",
     },
     # SW3 — /chi-siamo e' di nuovo una pagina propria (le persone dietro

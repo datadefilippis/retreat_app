@@ -589,7 +589,8 @@ class TestAbPrezziCoerenti:
         a /costi. La data promessa (31 dicembre 2026) e' scritta li'."""
         src = (self.FRONTEND / "src" / "features" / "prelaunch"
                / "OperatorLandingPage.js").read_text()
-        assert "31 dicembre 2026" in src
+        # RB2-bis (10/9 sera): il gratis non ha piu' una data (P1: per sempre)
+        assert "31 dicembre 2026" not in src
         assert 'Link to="/costi"' in src
         assert "sempre gratuito" in src
 

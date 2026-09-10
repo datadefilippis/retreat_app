@@ -172,7 +172,7 @@ export default function PricingPage() {
               {t('pricing.foundersTitle', { defaultValue: 'I fondatori.' })}
             </p>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {t('pricing.foundersBody', { defaultValue: 'I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 hanno il Club regalato per tutto il 2027, il badge permanente e il prezzo del Pro bloccato per sempre.' })}
+              {t('pricing.foundersBody', { defaultValue: 'I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 hanno il Club regalato fino al 30 giugno 2027, il badge permanente, il prezzo del Pro bloccato per sempre e la prima chiamata quando la rete lavora.' })}
             </p>
           </div>
           <div className="rounded-2xl border bg-card px-5 py-4">

@@ -119,7 +119,7 @@ class TestRb2LaLandingDellOperatore:
     def test_il_trittico_nell_ordine(self):
         src = LANDING.read_text()
         pos = -1
-        for tid in ("ol-hero", "ol-go", "ol-now", "ol-join", "ol-faq", "ol-who", "ol-form", "ol-end"):
+        for tid in ("ol-hero", "ol-go", "ol-prezzi", "ol-rete", "ol-now", "ol-join", "ol-faq", "ol-who", "ol-form", "ol-end"):
             here = src.index(f'data-testid="{tid}"')
             assert here > pos, f"{tid}: fuori ordine"
             pos = here
@@ -129,10 +129,14 @@ class TestRb2LaLandingDellOperatore:
         op = json.loads(PRELAUNCH.read_text())["opPro"]
         assert "operatori olistici" in op["seoTitle"] and "operatrici olistiche" in op["heroEyebrow"]
         assert op["heroTitle"] == "Il tuo spazio professionale, pronto oggi."
-        for parola in ("prenotazione", "ritiri", "caparra", "Instagram"):
+        # RB2-bis (10/9 sera): l'offerta in una frase, la frase-marchio senza data
+        for parola in ("prenotazioni", "ritiri", "un solo link"):
             assert parola in op["heroP1"], f"l'offerta in chiaro nomina: {parola}"
-        assert "31 dicembre 2026" in op["heroP3"] and "senza commissioni" in op["heroP3"], "il prezzo ha una data e la frase-marchio"
+        assert op["heroP3"] == "Gratis per sempre, senza commissioni."
         assert "31 ottobre 2026" in op["nowP1"] and "venti" in op["nowP1"], "il patto fondatori ha tetto e data"
+        assert "30 giugno 2027" in op["nowB1b"] and "post al mese" not in json.dumps(op), "il Club fondatori ha una fine e niente post mensile"
+        for k in ("v1k", "v6k", "reteTitle", "nowB4t", "nowCta"):
+            assert op.get(k), k
         assert op["ctaOpen"] == "Apri il tuo spazio"
         testo = " ".join(str(v) for v in op.values()).lower()
         for frase in ANTI_URGENZA:
@@ -146,7 +150,10 @@ class TestRb2LaLandingDellOperatore:
         for vecchio in ("Compila il modulo", "candidatura", "Non è una selezione", "non fa per te", "Stiamo iniziando con calma"):
             assert vecchio not in src, f"tornato il cancello: {vecchio}"
         op = json.loads(PRELAUNCH.read_text())["opPro"]
-        assert "Valentina ti scrive" in op["j3t"] and "Verificato Aurya" in op["j3b"]
+        # founder 10/9 sera: niente attesa di una chiamata, il gruppo Telegram
+        assert "Telegram" in op["j3t"] and "Verificato Aurya" in op["j3b"]
+        assert "Valentina ti scrive" not in json.dumps(op), "il processo non aspetta nessuno"
+        assert op["prezziP1"] == "Gratis per sempre, senza commissioni." and "19 €" in op["prezzi1t"]
         assert "Nessuna carta" in op["j1b"]
 
     def test_il_contatore_dei_fondatori_e_vero(self):
@@ -167,10 +174,11 @@ class TestRb2LaLandingDellOperatore:
     def test_la_shell_e_il_corpo_dicono_la_stessa_landing(self):
         shell = SHELL.read_text()
         assert "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya" in shell
-        assert "il racconto del tuo lavoro lo scriviamo insieme" in shell
+        assert "Gratis per sempre, senza commissioni." in shell   # RB2-bis: la frase-marchio, senza data
         from services.identita import corpo_professionisti, faq_professionisti
         corpo = corpo_professionisti()
-        for frase in ("Il tuo spazio professionale, pronto oggi.", "Cosa hai da subito.", "Perché ora.", "Come si entra."):
+        for frase in ("Il tuo spazio professionale, pronto oggi.", "Tutto il tuo lavoro, in un unico spazio.",
+                      "Entra nella rete di Aurya.", "Perché entrare ora.", "Come si comincia."):
             assert frase in corpo
         assert "non fa per te" not in corpo and "con calma" not in corpo
         assert len(faq_professionisti()) == 6
@@ -278,7 +286,7 @@ class TestP1LeParoleSuiSoldi:
         for frase in ("Aurya non prende commissioni. Mai.", "Gratis per sempre, senza commissioni",
                       "I prezzi dal 1° gennaio 2027", 'testid="plan-spinta"', 'testid="plan-club"',
                       "Il Club si accende quando la fila c’è.", "300 iscritti confermati", "10 ritiri", "1.000 visite",
-                      "I fondatori.", "Club regalato per tutto il 2027", "La garanzia.", "E Stripe?"):
+                      "I fondatori.", "Club regalato fino al 30 giugno 2027", "La garanzia.", "E Stripe?"):
             assert frase in src, frase
         assert "5%" not in src and "sugli incassi online" not in src.split("E Stripe?")[0].replace("senza commissioni", "")
 
@@ -296,8 +304,8 @@ class TestP1LeParoleSuiSoldi:
         it = json.loads(LOCALE.read_text())["nwHome"]
         assert "senza commissioni" in it["doorOpText"] and "senza commissioni" in it["prosOffer"]
         op = json.loads(PRELAUNCH.read_text())["opPro"]
-        assert "non prende commissioni" in op["faq1b1"] and "Club regalato per tutto il 2027" in op["nowP2"]
-        assert "19 €" in op["faq1b3"] and "49 €" in op["faq1b3"] and "119 €" in op["faq1b3"]
+        assert "non prende commissioni" in op["faq1b1"] and "Club Fondatori regalato fino al 30 giugno 2027" in op["nowP2"]
+        assert "19 €" in op["faq1b2"] and "49 €" in op["faq1b2"] and "119 €" in op["faq1b2"]   # RB2-bis: i prezzi nel secondo punto
         sett = json.loads((FE / "locales" / "it" / "settings.json").read_text())["billing"]["retreat"]
         assert "non prende commissioni" in sett["subtitle"]
         llms = (BACKEND_DIR / "assets" / "llms.txt").read_text()
@@ -550,7 +558,7 @@ class TestRb9StrisciaEFondatore:
         src = (FE / "features" / "onboarding" / "OnboardingStrip.js").read_text()
         assert "api.get('/public/fondatori')" in src
         assert 'data-testid="strip-fondatori"' in src and "fondatori?.aperto" in src
-        assert "Club regalato per tutto il 2027" in src and "Ne restano {fondatori.rimasti}" in src
+        assert "Club regalato fino al 30 giugno 2027" in src and "Ne restano {fondatori.rimasti}" in src
 
     def test_il_badge_fondatore_viene_dal_backend(self):
         fon = (BACKEND_DIR / "routers" / "fondatori.py").read_text()

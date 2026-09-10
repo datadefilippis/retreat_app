@@ -196,9 +196,16 @@ def corpo_professionisti() -> str:
         f"<h1>{_t(s, 'heroTitle')}</h1>",
         _p(s, "heroP1", "heroP2", "heroP3", "heroNote"),
         _p(s, "heroP4", "heroP5"),
-        _h2(s, "goTitle"), _p(s, "goP1", "goP2", "goP3", "goP4"), _coppie(s, "v", 6, "t", "b"),
+        # RB2-bis (10/9 sera): sei schede con la frase-vantaggio (v*k), la rete,
+        # il patto in quattro schede (nowB*)
+        _h2(s, "goTitle"), "<ul>" + "".join(
+            f"<li><b>{_t(s, f'v{i}t')}</b> {_t(s, f'v{i}b')} <b>{_t(s, f'v{i}k')}</b></li>"
+            for i in range(1, 7) if _t(s, f'v{i}t')) + "</ul>",
         _p(s, "goSoon"),
-        _h2(s, "nowTitle"), _p(s, "nowP1", "nowP2", "nowCountFallback"), _p(s, "nowCloseA2", "nowCloseB2"),
+        _h2(s, "prezziTitle"), _p(s, "prezziP1", "prezziP2"), _coppie(s, "prezzi", 3, "t", "b"),
+        _h2(s, "reteTitle"), _p(s, "reteP1", "reteP2", "reteP3"),
+        _h2(s, "nowTitle"), _p(s, "nowP1", "nowP2"), _coppie(s, "nowB", 4, "t", "b"),
+        _p(s, "nowCountFallback"), _p(s, "nowCloseA2", "nowCloseB2"),
         _h2(s, "joinTitle"), _coppie(s, "j", 3, "t", "b"),
         _h2(s, "faqTitle"), faq,
         _h2(s, "whoEyebrow"), _p(s, "whoLead"), _p(s, "whoV", "whoD", "whoP"),

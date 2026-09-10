@@ -141,7 +141,7 @@ def _contenuto(passo: str, nome: str, org: dict, stato: dict, fondatori: Optiona
         except Exception:  # noqa: BLE001
             data = fondatori.get("scadenza", "")
         righe.append(f"<p>E i fondatori: i primi {fondatori['tetto']} profili pubblicati entro il "
-                     f"{data} hanno il Club regalato per tutto il 2027. Ne restano "
+                     f"{data} hanno il Club regalato fino al 30 giugno 2027. Ne restano "
                      f"{fondatori['rimasti']}.</p>")
     righe.append("<p>Grazie di esserci. Valentina e Davide</p>")
     return ("Come va, dopo un mese?", "".join(righe))

@@ -130,7 +130,7 @@ export default function OnboardingStrip({ step, refreshKey = 0, className = '' }
         {fondatori?.aperto && (
           <p className="mt-1 text-xs text-[#2f5749]" data-testid="strip-fondatori">
             Profilo online entro il {new Date(fondatori.scadenza).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}:
-            sei tra i primi {fondatori.tetto} fondatori, con il Club regalato per tutto il 2027. Ne restano {fondatori.rimasti}.
+            sei tra i primi {fondatori.tetto} fondatori, con il Club regalato fino al 30 giugno 2027. Ne restano {fondatori.rimasti}.
           </p>
         )}
       </div>

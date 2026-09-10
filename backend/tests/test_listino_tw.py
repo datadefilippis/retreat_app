@@ -6215,7 +6215,8 @@ class TestLandingOperatoriOl1:
         assert 'id="presentati"' in page, "manca l'ancora del form"
         assert "InlineSignupForm" in page, \
             "all'ancora deve vivere la registrazione incorporata"
-        assert "ctaContact2" in page, \
+        # RB2-bis (10/9 sera): il bottone «Crea il tuo account» vive nel form condiviso
+        assert "ctaContact2" in (__import__("pathlib").Path(__file__).resolve().parents[2] / "frontend" / "src" / "features" / "prelaunch" / "InlineSignupForm.js").read_text(), \
             "manca la chiave del bottone «Crea il tuo account»"
 
     def test_ol1_i18n_x4_e_niente_trattini_lunghi(self):

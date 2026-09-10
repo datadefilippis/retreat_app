@@ -19,6 +19,12 @@ router = APIRouter(prefix="/public/fondatori", tags=["fondatori"])
 
 TETTO = 20
 SCADENZA = date(2026, 10, 31)
+# founder 10/9 sera («il Club gratis per tutto il 2027 mi sembra troppo»):
+# il Club Fondatori e' gratuito fino al 30 giugno 2027 — il semestre in
+# cui il Club diventa vero (Lettera per zona, prima fila); a luglio 2027
+# il Club si vende e i fondatori decidono sapendo cosa vale. Niente
+# «post al mese»: e' il costo che non scala. Un posto solo per cambiarli.
+CLUB_FINO = date(2027, 6, 30)
 
 
 @router.get("")
@@ -57,6 +63,7 @@ async def conteggio() -> dict:
     aperto = date.today() <= SCADENZA and n < TETTO
     return {
         "tetto": TETTO,
+        "club_fino": CLUB_FINO.isoformat(),
         "presi": min(n, TETTO),
         "rimasti": max(0, TETTO - n),
         "scadenza": SCADENZA.isoformat(),

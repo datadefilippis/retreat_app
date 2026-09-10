@@ -1,6 +1,15 @@
 /**
  * OperatorLandingPage — /entra-nella-rete, la landing dell'OPERATORE OLISTICO.
  *
+ * RB2-bis (10/9/2026 sera, founder): «l'operatore chiede una chiamata,
+ * chiede i prezzi, dice che si iscrive e si prende tempo». Meno sforzo
+ * cognitivo: sei schede con un titolo-verbo e una frase in grassetto
+ * che dice il vantaggio, la rete, il patto fondatori in quattro
+ * schede col contatore vero, tre passi, sei domande, i volti, il form.
+ * Il patto: 20 fondatori entro il 31/10/2026, Club Fondatori gratis
+ * fino al 30/6/2027 (routers/fondatori.py e' la fonte delle date),
+ * niente «post al mese». Tono: quello della proposta del founder.
+ *
  * RB2 (10/9/2026, REBRANDING — docs/REBRANDING_STRATEGIA_2026-09.md).
  * Dal 4/8 questa pagina parlava di «rete», «presenza» e «conversazione»
  * e si contraddiceva sul come si entra (candidatura + «account in un
@@ -101,7 +110,7 @@ export default function OperatorLandingPage() {
 
   useSeoMeta({
     title: t('opPro.seoTitle', { defaultValue: 'Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya' }),
-    description: t('opPro.seoDesc', { defaultValue: 'Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo. Gratis fino al 31 dicembre 2026. Poi il racconto del tuo lavoro lo scriviamo insieme.' }),
+    description: t('opPro.seoDesc', { defaultValue: 'Profilo pubblico, servizi, prenotazioni, eventi e ritiri con iscrizioni online. Tutto in un unico posto, con un solo link da condividere. Gratis per sempre, senza commissioni.' }),
     canonicalPath: '/entra-nella-rete',
   });
 
@@ -113,7 +122,6 @@ export default function OperatorLandingPage() {
 
   const prefersReducedMotion = () => typeof window.matchMedia === 'function'
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
   const scrollToForm = (e) => {
     e.preventDefault();
     document.getElementById('presentati')?.scrollIntoView({
@@ -122,57 +130,30 @@ export default function OperatorLandingPage() {
     });
   };
 
-  /* Come si entra: tre passi, tre schede. */
+  /* Come si comincia: tre passi, tre schede. */
   const cards = [
-    {
-      numeral: '01',
-      title: t('opPro.j1t', { defaultValue: 'Ti registri in un minuto.' }),
-      body: t('opPro.j1b', { defaultValue: 'Nome, email, password. Nessuna carta, nessuna attesa: il tuo spazio si apre subito.' }),
-    },
-    {
-      numeral: '02',
-      title: t('opPro.j2t', { defaultValue: 'Pubblichi il profilo.' }),
-      body: t('opPro.j2b', { defaultValue: 'Una foto, due righe, il primo servizio. Sei online, nella directory di Aurya, con un link da mettere nella bio.' }),
-    },
-    {
-      numeral: '03',
-      title: t('opPro.j3t', { defaultValue: 'Valentina ti scrive entro due giorni.' }),
-      body: t('opPro.j3b', { defaultValue: 'Se vuoi, il racconto del tuo lavoro lo scriviamo insieme e lo pubblichiamo con la tua storia: è il badge Verificato Aurya.' }),
-    },
+    { numeral: '01',
+      title: t('opPro.j1t', { defaultValue: 'Crea il tuo account.' }),
+      body: t('opPro.j1b', { defaultValue: 'Nome, email e password. Un minuto. Nessuna carta.' }) },
+    { numeral: '02',
+      title: t('opPro.j2t', { defaultValue: 'Pubblica il tuo profilo.' }),
+      body: t('opPro.j2b', { defaultValue: 'Aggiungi foto, storia e primo servizio. Sei online e hai già il tuo link da condividere.' }) },
+    { numeral: '03',
+      // founder 10/9 sera: niente attesa di una chiamata — il gruppo Telegram
+      title: t('opPro.j3t', { defaultValue: 'Entra nel gruppo Telegram.' }),
+      body: t('opPro.j3b', { defaultValue: 'Appena il profilo è online ti aggiungiamo al gruppo Telegram degli operatori Aurya: le novità, le richieste che arrivano, noi a un messaggio di distanza. Il racconto del tuo lavoro e il badge Verificato Aurya li costruiamo lì, quando vuoi tu.' }) },
   ];
 
-  /* Cosa hai da subito: sei voci, al presente. Ogni voce e' una cosa
-     che il prodotto fa OGGI (OF2: mai il futuro in questa sezione). */
-  const voices = [
-    {
-      title: t('opPro.v1t', { defaultValue: 'Ti trovano.' }),
-      body: t('opPro.v1b', { defaultValue: 'Un profilo pubblico indicizzato su Google, con la tua storia, le discipline, le foto e le recensioni verificate di chi c’è stato.' }),
-    },
-    {
-      title: t('opPro.v2t', { defaultValue: 'Ti prenotano.' }),
-      body: t('opPro.v2b', { defaultValue: 'Il listino con richiesta di appuntamento e un calendario che blocca gli orari occupati.' }),
-    },
-    {
-      title: t('opPro.v3t', { defaultValue: 'Riempi eventi e ritiri.' }),
-      body: t('opPro.v3b', { defaultValue: 'Iscrizioni online con caparra e saldo, promemoria automatici, partecipanti in un posto solo.' }),
-    },
-    {
-      title: t('opPro.v4t', { defaultValue: 'Un link solo.' }),
-      body: t('opPro.v4b', { defaultValue: 'La tua pagina per la bio di Instagram: servizi, eventi, ritiri, recensioni, la tua storia. Tutto nello stesso posto.' }),
-    },
-    {
-      title: t('opPro.v5t', { defaultValue: 'Tutto il resto.' }),
-      body: t('opPro.v5b', { defaultValue: 'Clienti, ordini, incassi, team. Il tempo dei messaggi e dei fogli di calcolo torna alle persone.' }),
-    },
-    {
-      // SP3 — Aurya Sound e' uno strumento gia' vero
-      title: t('opPro.v6t', { defaultValue: 'Componi meditazioni con la tua voce.' }),
-      body: t('opPro.v6b', { defaultValue: 'Con Crea Studio, l’atelier di Aurya Sound, combini frequenze, metodi e la tua voce in una sessione e la pubblichi con un link.' }),
-      to: '/sound/studio',
-      toLabel: t('opPro.v6cta', { defaultValue: 'Scopri Crea Studio' }),
-      testid: 'ol-voice-studio',
-    },
-  ];
+  /* Tutto il tuo lavoro: sei schede, un verbo, una frase che resta.
+     OF2: tutto al presente, solo cio' che il prodotto fa OGGI. */
+  const voices = [1, 2, 3, 4, 5, 6].map((i) => ({
+    title: t(`opPro.v${i}t`), body: t(`opPro.v${i}b`), key: t(`opPro.v${i}k`),
+  }));
+
+  /* Perche' entrare ora: quattro vantaggi da fondatore. */
+  const patto = [1, 2, 3, 4].map((i) => ({
+    title: t(`opPro.nowB${i}t`), body: t(`opPro.nowB${i}b`),
+  }));
 
   /* Sei domande, risposte brevi e oneste, una alla volta (SR5). */
   const faq = [
@@ -180,10 +161,10 @@ export default function OperatorLandingPage() {
       q: t('opPro.faq1q', { defaultValue: 'Quanto costa?' }),
       a: (
         <ul className="list-disc space-y-2 pl-5">
-          <li>{t('opPro.faq1b1', { defaultValue: 'L’utilizzo della piattaforma è sempre gratuito, e Aurya non prende commissioni: quello che incassi è tuo.' })}</li>
-          <li>{t('opPro.faq1b2', { defaultValue: 'Fino al 31 dicembre 2026 Aurya non ha alcun costo, di nessun tipo.' })}</li>
+          <li>{t('opPro.faq1b1', { defaultValue: 'L’utilizzo di Aurya è sempre gratuito, e Aurya non prende commissioni: quello che incassi è tuo.' })}</li>
+          <li>{t('opPro.faq1b2', { defaultValue: 'Dal 2027 si paga solo la promozione, se la vuoi: la Spinta per un ritiro (19 €), il Club (49 € l’anno) o il Pro (119 € l’anno).' })}</li>
           <li>
-            {t('opPro.faq1b3', { defaultValue: 'Dal 2027 si paga solo la prima fila: la Spinta per un ritiro (19 €) o il Club (49 € l’anno); il Pro (119 € l’anno) aggiunge la tua voce e noi accanto. I primi venti hanno il Club regalato per tutto il 2027. ' })}
+            {t('opPro.faq1b3', { defaultValue: 'Gli operatori fondatori hanno il Club regalato fino al 30 giugno 2027 e il prezzo del Pro bloccato per sempre. ' })}
             <Link to="/costi" className="font-semibold text-primary underline underline-offset-2">
               {t('opPro.faq1b3cta', { defaultValue: 'Guarda i piani e i costi' })}
             </Link>
@@ -191,86 +172,55 @@ export default function OperatorLandingPage() {
         </ul>
       ),
     },
-    {
-      q: t('opPro.faq2q', { defaultValue: 'Come funziona?' }),
-      a: t('opPro.faq2a3', { defaultValue: 'Ti registri, confermi l’email e metti foto, due righe e il primo servizio: il profilo è online. Poi Valentina ti scrive: se vuoi, il racconto del tuo lavoro lo costruiamo insieme, con le tue parole.' }),
-    },
-    {
-      q: t('opPro.faq3q', { defaultValue: 'Quando arriveranno le nuove funzionalità?' }),
-      a: t('opPro.faq3a2', { defaultValue: 'Le costruiamo con i primi operatori che entrano: le priorità le decidono loro, e chi c’è dall’inizio le prova per primo.' }),
-    },
-    {
-      q: t('opPro.faq4q', { defaultValue: 'Posso usare Aurya anche se ho già un sito?' }),
-      a: t('opPro.faq4a', { defaultValue: 'Sì, e non devi scegliere. Il profilo Aurya non sostituisce il tuo sito: dal profilo puoi linkare il sito e i tuoi canali, così chi ti trova qui arriva anche lì. Molti lo usano come pagina da condividere nei messaggi e sui social, dove serve un link solo.' }),
-    },
-    {
-      q: t('opPro.faq5q', { defaultValue: 'Posso gestire prenotazioni esterne?' }),
-      a: t('opPro.faq5a2', { defaultValue: 'Oggi puoi bloccare gli orari in cui sei già occupato e vedere in un unico calendario gli appuntamenti nati qui. Il collegamento con un’agenda esterna è in lavorazione: te lo diciamo quando c’è.' }),
-    },
-    {
-      q: t('opPro.faq6q', { defaultValue: 'Posso uscire quando voglio?' }),
-      a: t('opPro.faq6a', { defaultValue: 'Sì. Puoi spegnere il profilo o cancellare l’account dalle impostazioni, quando vuoi. I tuoi clienti restano tuoi, sempre.' }),
-    },
+    { q: t('opPro.faq4q'), a: t('opPro.faq4a') },
+    { q: t('opPro.faq3q'), a: t('opPro.faq3a2') },
+    { q: t('opPro.faq5q'), a: t('opPro.faq5a2') },
+    { q: t('opPro.faq6q'), a: t('opPro.faq6a') },
+    { q: t('opPro.faq2q'), a: t('opPro.faq2a3') },
   ];
 
   const ctaOpen = t('opPro.ctaOpen', { defaultValue: 'Apri il tuo spazio' });
   const ctaJoin = t('opPro.ctaJoin', { defaultValue: 'Apri il tuo spazio' });
-  const ctaContact = t('opPro.ctaContact2', { defaultValue: 'Crea il tuo account' });   // il bottone del form
-
   const rimasti = fondatori && Number.isFinite(fondatori.rimasti) ? fondatori.rimasti : null;
 
   return (
     <MarketplaceShell noSearch>
       <div className="bg-background">
 
-        {/* ── 1. HERO — il tuo spazio, pronto oggi ─────────────────
-            Stessa scena di prima (foto hero-organizer, colonna scura +
-            foto nuda da lg, veli misurati sotto lg): cambia cio' che
-            dice. Prima frase: l'offerta. Seconda: il prezzo, con la
-            data. Poi il bottone. Chi arriva convinto ha l'azione nel
-            primo campo visivo (LC4). */}
+        {/* ── 1. HERO — il tuo spazio, pronto oggi ───────────────── */}
         <section data-testid="ol-hero" aria-labelledby="ol-hero-title">
           <div className="relative isolate overflow-hidden bg-[#0e1a15] text-[#f6f2e8]">
-            <img
-              src={HERO_PHOTO}
-              alt=""
-              width="1920"
-              height="1280"
-              fetchPriority="high"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-cover object-[50%_38%]
-                         lg:left-auto lg:right-0 lg:w-[46%] lg:object-[38%_45%]"
-            />
-            <div aria-hidden
-                 className="absolute inset-0 bg-gradient-to-b from-[#0e1a15]/[0.78] via-[#0e1a15]/[0.62] to-[#0e1a15]/[0.90] lg:hidden" />
-            <div aria-hidden
-                 className="absolute inset-0 bg-[radial-gradient(ellipse_92%_74%_at_36%_50%,rgba(14,26,21,0.52)_0%,rgba(14,26,21,0.34)_58%,rgba(14,26,21,0)_100%)] lg:hidden" />
-            <div aria-hidden
-                 className="hidden lg:block absolute inset-y-0 left-[54%] w-44 bg-gradient-to-r from-[#0e1a15] to-transparent" />
+            <img src={HERO_PHOTO} alt="" width="1920" height="1280" fetchPriority="high" decoding="async"
+                 className="absolute inset-0 h-full w-full object-cover object-[50%_38%]
+                            lg:left-auto lg:right-0 lg:w-[46%] lg:object-[38%_45%]" />
+            <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#0e1a15]/[0.78] via-[#0e1a15]/[0.62] to-[#0e1a15]/[0.90] lg:hidden" />
+            <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_92%_74%_at_36%_50%,rgba(14,26,21,0.52)_0%,rgba(14,26,21,0.34)_58%,rgba(14,26,21,0)_100%)] lg:hidden" />
+            <div aria-hidden className="hidden lg:block absolute inset-y-0 left-[54%] w-44 bg-gradient-to-r from-[#0e1a15] to-transparent" />
             <div className="relative mx-auto w-full max-w-5xl px-6 py-16 sm:px-8 sm:py-24
                             lg:flex lg:min-h-[38rem] lg:flex-col lg:justify-center lg:py-24">
               <div className="lg:max-w-[30rem]">
-                <p className="eyebrow eyebrow-light mb-6 text-hero-shadow">
+                {/* founder 10/9 sera: l'occhiello era troppo piccolo — ora e' una
+                    riga in oro, leggibile, che dice a chi parla la pagina */}
+                <p className="mb-5 text-lg font-semibold uppercase tracking-[0.16em] text-[#e6d7ad] text-hero-shadow sm:text-xl"
+                   data-testid="ol-hero-eyebrow">
                   {t('opPro.heroEyebrow', { defaultValue: 'Per operatori e operatrici olistiche' })}
                 </p>
-                <DisplayTitle as="h1" id="ol-hero-title" size="heroLines" measure="lines"
-                              className="text-hero-shadow">
+                <DisplayTitle as="h1" id="ol-hero-title" size="heroLines" measure="lines" className="text-hero-shadow">
                   {t('opPro.heroTitle', { defaultValue: 'Il tuo spazio professionale, pronto oggi.' })}
                 </DisplayTitle>
                 <div className="mt-7 space-y-4 sm:mt-9 sm:space-y-5">
-                  <Lede size="body" tone="inherit" className="text-hero-shadow">
-                    {t('opPro.heroP1', { defaultValue: 'Profilo pubblico, listino con prenotazione, eventi e ritiri con iscrizioni online e caparra, un link solo per Instagram.' })}
+                  <Lede size="body" tone="inherit" className="text-hero-shadow font-semibold">
+                    {t('opPro.heroP1')}
                   </Lede>
                   <Lede size="body" tone="inherit" className="text-hero-shadow">
-                    {t('opPro.heroP2', { defaultValue: 'Ci metti tempo, studio, esperienza, presenza. Online, tutto questo merita più di una scheda.' })}
+                    {t('opPro.heroP2')}
                   </Lede>
-                  <Lede size="body" tone="inherit" className="text-hero-shadow">
-                    {t('opPro.heroP3', { defaultValue: 'Gratis per sempre, senza commissioni. Fino al 31 dicembre 2026 non costa niente di niente.' })}
+                  <Lede size="body" tone="inherit" className="text-hero-shadow font-semibold">
+                    {t('opPro.heroP3', { defaultValue: 'Gratis per sempre, senza commissioni.' })}
                   </Lede>
                 </div>
                 <div className="mt-9 sm:mt-10">
-                  <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
-                                tone="dark" variant="solid"
+                  <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} tone="dark" variant="solid"
                                 data-testid="ol-hero-cta-top">
                     {ctaOpen}
                   </EditorialCta>
@@ -281,21 +231,15 @@ export default function OperatorLandingPage() {
               </div>
             </div>
           </div>
-
-          {/* la soglia: la prova, sul chiaro. Un profilo VERO da vedere
-              vale piu' di qualsiasi promessa: e' la differenza fra un
-              elenco e una persona con recensioni ed eventi. */}
+          {/* la prova, sul chiaro: un profilo VERO vale piu' di ogni promessa */}
           <Section tone="sand" rhythm="flow" width="max-w-5xl">
             <DisplayTitle as="p" size="section" measure="lines"
                           className="text-[1.6rem] leading-[1.18] sm:text-[2rem] lg:text-[2.3rem]">
-              {t('opPro.heroP4', { defaultValue: 'Non è una promessa: è già così per chi è dentro.' })}
+              {t('opPro.heroP4')}
             </DisplayTitle>
-            <Lede size="lead" className="mt-6">
-              {t('opPro.heroP5', { defaultValue: 'Guarda un profilo vero: listino, recensioni verificate e un evento in programma, sulla stessa pagina.' })}
-            </Lede>
+            <Lede size="lead" className="mt-6">{t('opPro.heroP5')}</Lede>
             <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
-                            variant="solid" data-testid="ol-hero-cta">
+              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-hero-cta">
                 {ctaOpen}
               </EditorialCta>
               <EditorialCta to={PROOF_PROFILE} variant="quiet" data-testid="ol-hero-cta-alt">
@@ -305,117 +249,124 @@ export default function OperatorLandingPage() {
           </Section>
         </section>
 
-        {/* ── 2. COSA HAI DA SUBITO — il trattamento piu' forte ────
-            OF2: tutto al presente. La fascia a tutta larghezza col
-            titolo dentro la foto (r05, il cairn), poi l'ancora verde col
-            registro delle sei voci. Sul verde il crema sta a 7,28:1. */}
-        <section id="sound" data-testid="ol-go" aria-labelledby="ol-go-title">
-          <PhotoBand as="div" image={HORIZON_PHOTO} focus="50% 40%" width="max-w-3xl">
-            <DisplayTitle as="h2" id="ol-go-title" size="section" measure="title"
-                          className="text-hero-shadow">
-              {t('opPro.goTitle', { defaultValue: 'Cosa hai da subito.' })}
+        {/* ── 2. TUTTO IL TUO LAVORO — sei schede, un verbo, una frase ──
+            Bianco su crema: si legge a colpo d'occhio, niente registro
+            da studiare. Il grassetto e' il vantaggio, non la funzione. */}
+        <Section tone="cream" rhythm="screen" labelledBy="ol-go-title" width="max-w-6xl">
+          <div id="sound" data-testid="ol-go">
+            <DisplayTitle as="h2" id="ol-go-title" size="section" measure="title">
+              {t('opPro.goTitle')}
             </DisplayTitle>
-            <Lede size="lead" tone="inherit" className="mt-7 text-hero-shadow">
-              {t('opPro.goP1', { defaultValue: 'Sono strumenti che esistono oggi, non un programma.' })}
-            </Lede>
-            <Lede size="lead" tone="inherit" className="mt-4 text-hero-shadow">
-              {t('opPro.goP2', { defaultValue: 'Li usi dal primo giorno, dal telefono.' })}
-            </Lede>
-          </PhotoBand>
-
-          <Section tone="sage" rhythm="screen" as="div" width="max-w-5xl">
-            <DisplayTitle as="p" size="section" measure="lines"
-                          className="text-[1.6rem] leading-[1.18] sm:text-[2rem] lg:text-[2.3rem]">
-              <TitleLine>
-                {t('opPro.goP3', { defaultValue: 'Senza cambiare piattaforma.' })}
-              </TitleLine>
-              <TitleLine>
-                {t('opPro.goP4', { defaultValue: 'Senza ricominciare da zero.' })}
-              </TitleLine>
-            </DisplayTitle>
-            <ul className="mt-11 list-none p-0 sm:mt-14">
-              {voices.map((v, i) => (
-                <li
-                  key={v.title}
-                  className={`grid gap-2 py-6 lg:grid-cols-12 lg:gap-10 ${
-                    i > 0 ? 'border-t border-[#f6f2e8]/20' : 'pt-0'}`}
-                >
-                  <h3 className="font-display text-[1.3rem] leading-snug sm:text-[1.55rem] lg:col-span-5">
-                    {v.title}
-                  </h3>
-                  <p className="max-w-[52ch] text-base leading-relaxed opacity-90 sm:text-lg lg:col-span-7 lg:pt-1">
-                    {v.body}
-                    {v.to && (
-                      <>
-                        {' '}
-                        <Link to={v.to} data-testid={v.testid}
-                              className="font-semibold underline underline-offset-4 hover:opacity-100">
-                          {v.toLabel} →
-                        </Link>
-                      </>
-                    )}
-                  </p>
+            <ul className="mt-10 grid list-none gap-6 p-0 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3">
+              {voices.map((v) => (
+                <li key={v.title}
+                    className="flex h-full flex-col rounded-[1.75rem] bg-white p-7 ring-1 ring-[#1e2f28]/[0.07]
+                               shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)]">
+                  <h3 className="font-display text-[1.45rem] leading-tight text-foreground sm:text-2xl">{v.title}</h3>
+                  <p className="mt-3 text-[0.975rem] leading-relaxed text-foreground/75">{v.body}</p>
+                  <p className="mt-auto pt-5 text-[0.975rem] font-semibold leading-snug text-[#2f5749]">{v.key}</p>
                 </li>
               ))}
             </ul>
-            <Lede size="body" tone="inherit" className="mt-12 opacity-90 sm:mt-14">
-              {t('opPro.goSoon', { defaultValue: 'E la parte pubblica è aperta: chi cerca un professionista ti trova nella directory di Aurya, con i tuoi servizi, i tuoi eventi e i tuoi ritiri.' })}
+            {/* SP3 — Aurya Sound e' uno strumento gia' vero */}
+            <Lede size="body" className="mt-10 max-w-[70ch]">
+              {t('opPro.goSoon')}{' '}
+              <Link to="/sound/studio" data-testid="ol-voice-studio"
+                    className="font-semibold text-[#2f5749] underline underline-offset-4">
+                {t('opPro.goSoonCta', { defaultValue: 'Scopri Crea Studio' })} →
+              </Link>
             </Lede>
             <div className="mt-9">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
-                            variant="solid" tone="dark" data-testid="ol-go-cta">
+              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-go-cta">
                 {ctaOpen}
               </EditorialCta>
             </div>
-          </Section>
+          </div>
+        </Section>
+
+        {/* ── 2b. QUANTO COSTA — in alto, in chiaro (founder 10/9 sera):
+            il base e' per sempre e tutto gratuito, si paga solo il piu'. */}
+        <Section tone="sand" rhythm="screen" labelledBy="ol-prezzi-title" width="max-w-5xl">
+          <div data-testid="ol-prezzi">
+            <DisplayTitle as="h2" id="ol-prezzi-title" size="section" measure="title">
+              {t('opPro.prezziTitle', { defaultValue: 'Quanto costa.' })}
+            </DisplayTitle>
+            <p className="mt-6 font-display text-[1.6rem] leading-tight text-[#2f5749] sm:text-[2rem]">
+              {t('opPro.prezziP1', { defaultValue: 'Gratis per sempre, senza commissioni.' })}
+            </p>
+            <Lede size="lead" className="mt-4 max-w-[62ch]">
+              {t('opPro.prezziP2', { defaultValue: 'Tutto quello che hai letto sopra è il piano base: non scade, non ha limiti nascosti e non prende una percentuale su quello che incassi. Si paga solo il più, se lo vuoi, dal 2027.' })}
+            </Lede>
+            <ul className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <li key={i} className="rounded-2xl bg-white p-5 ring-1 ring-[#1e2f28]/[0.07]" data-testid={`ol-prezzi-${i}`}>
+                  <p className="font-display text-[1.2rem] leading-tight text-foreground">{t(`opPro.prezzi${i}t`)}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/75">{t(`opPro.prezzi${i}b`)}</p>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-7">
+              <EditorialCta to="/costi" variant="quiet" data-testid="ol-prezzi-cta">
+                {t('opPro.prezziCta', { defaultValue: 'Tutti i piani, riga per riga' })}
+              </EditorialCta>
+            </div>
+          </div>
+        </Section>
+
+        {/* ── 3. LA RETE — il profilo non vive da solo ─────────────── */}
+        <section data-testid="ol-rete" aria-labelledby="ol-rete-title">
+          <PhotoBand as="div" image={HORIZON_PHOTO} focus="50% 40%" width="max-w-3xl">
+            <DisplayTitle as="h2" id="ol-rete-title" size="section" measure="title" className="text-hero-shadow">
+              {t('opPro.reteTitle')}
+            </DisplayTitle>
+            <Lede size="lead" tone="inherit" className="mt-7 text-hero-shadow">{t('opPro.reteP1')}</Lede>
+            <Lede size="lead" tone="inherit" className="mt-3 text-hero-shadow font-semibold">{t('opPro.reteP2')}</Lede>
+            <Lede size="body" tone="inherit" className="mt-4 text-hero-shadow">{t('opPro.reteP3')}</Lede>
+            <div className="mt-8">
+              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-rete-cta">
+                {ctaOpen}
+              </EditorialCta>
+            </div>
+          </PhotoBand>
         </section>
 
-        {/* ── 3. PERCHE' ORA — il patto fondatori ─────────────────
-            Urgenza onesta: un tetto, una data, un contatore vero. Sul
-            crema accanto a r02, l'unica foto al plurale del magazzino:
-            e' la sezione che parla dei primi venti, insieme. */}
-        <PhotoSplit
-          image={TOGETHER_PHOTO}
-          side="left"
-          tone="cream"
-          focus="50% 45%"
-          imageWidth="900"
-          imageHeight="599"
-          labelledBy="ol-now-title"
-          data-testid="ol-now"
-        >
+        {/* ── 4. PERCHE' ENTRARE ORA — il patto fondatori ───────────
+            Un tetto, una data, un contatore vero, quattro schede. */}
+        <PhotoSplit image={TOGETHER_PHOTO} side="left" tone="sand" focus="50% 45%"
+                    imageWidth="900" imageHeight="599" labelledBy="ol-now-title" data-testid="ol-now">
           <DisplayTitle as="h2" id="ol-now-title" size="section" measure="title">
-            {t('opPro.nowTitle', { defaultValue: 'Perché ora.' })}
+            {t('opPro.nowTitle')}
           </DisplayTitle>
-          <Lede size="lead" className="mt-7">
-            {t('opPro.nowP1', { defaultValue: 'I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 entrano come fondatori.' })}
-          </Lede>
-          <Lede size="body" className="mt-5">
-            {t('opPro.nowP2', { defaultValue: 'Il Club regalato per tutto il 2027 (la prima fila su ogni tuo ritiro, la Lettera alla tua zona, un post al mese), il badge permanente, il prezzo del Pro bloccato per sempre, la precedenza nella selezione dei ritiri di primavera 2027.' })}
-          </Lede>
-          <p className="mt-6 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]"
+          <Lede size="lead" className="mt-7">{t('opPro.nowP1')}</Lede>
+          <ul className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-2" data-testid="ol-now-patto">
+            {patto.map((b) => (
+              <li key={b.title} className="rounded-2xl bg-white/80 p-5 ring-1 ring-[#1e2f28]/[0.07]">
+                <p className="font-display text-[1.2rem] leading-tight text-foreground">{b.title}</p>
+                <p className="mt-2 text-sm font-semibold leading-snug text-[#2f5749]">{b.body}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-7 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]"
              data-testid="ol-fondatori-contatore">
             {rimasti !== null
-              ? t('opPro.nowCount', { defaultValue: '{{rimasti}} posti su {{tetto}} ancora liberi.', rimasti, tetto: fondatori.tetto })
+              ? t('opPro.nowCount', { defaultValue: '{{rimasti}} posti su {{tetto}} ancora disponibili.', rimasti, tetto: fondatori.tetto })
               : t('opPro.nowCountFallback', { defaultValue: 'Venti posti, poi la parola fondatori sparisce da questa pagina.' })}
           </p>
-          <DisplayTitle as="p" size="section" measure="lines"
-                        className="mt-10 text-[1.5rem] leading-[1.2] sm:text-[1.8rem] lg:text-[2.05rem]">
-            <TitleLine>
-              {t('opPro.nowCloseA2', { defaultValue: 'Non cerchiamo numeri.' })}
-            </TitleLine>
-            <TitleLine>
-              {t('opPro.nowCloseB2', { defaultValue: 'Cerchiamo i primi venti con cui costruire Aurya.' })}
-            </TitleLine>
-          </DisplayTitle>
+          <p className="mt-6 max-w-[52ch] text-base font-semibold leading-relaxed text-foreground">
+            {t('opPro.nowCloseA2')} {t('opPro.nowCloseB2')}
+          </p>
+          <div className="mt-8">
+            <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-now-cta">
+              {t('opPro.nowCta', { defaultValue: 'Diventa operatore fondatore' })}
+            </EditorialCta>
+          </div>
         </PhotoSplit>
 
-        {/* ── 4. COME SI ENTRA — tre passi, tre schede ─────────────
-            Fondo sabbia: le schede sono bianche. Tre colonne da lg. */}
-        <Section tone="sand" rhythm="screen" labelledBy="ol-join-title" width="max-w-6xl">
+        {/* ── 5. COME SI COMINCIA — tre passi, tre schede ──────────── */}
+        <Section tone="cream" rhythm="screen" labelledBy="ol-join-title" width="max-w-6xl">
           <div data-testid="ol-join">
             <DisplayTitle as="h2" id="ol-join-title" size="section" measure="title">
-              {t('opPro.joinTitle', { defaultValue: 'Come si entra.' })}
+              {t('opPro.joinTitle')}
             </DisplayTitle>
             <ul className="mt-10 grid list-none gap-7 p-0 sm:mt-12 sm:gap-8 lg:grid-cols-3">
               {cards.map((c) => (
@@ -427,7 +378,7 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 5. DOMANDE — l'elenco leggibile, una alla volta (SR5) ── */}
+        {/* ── 6. DOMANDE — una alla volta (SR5) ──────────────────── */}
         <Section tone="paper" rhythm="screen" labelledBy="ol-faq-title" width="max-w-3xl">
           <div data-testid="ol-faq">
             <DisplayTitle as="h2" id="ol-faq-title" size="section" measure="title">
@@ -435,69 +386,43 @@ export default function OperatorLandingPage() {
             </DisplayTitle>
             <div className="mt-10 sm:mt-12" data-testid="ol-faq-list">
               {faq.map((f, i) => (
-                <details key={f.q}
-                         className={`group py-5 ${i > 0 ? 'border-t border-[#1e2f28]/[0.10]' : 'pt-0'}`}>
+                <details key={f.q} className={`group py-5 ${i > 0 ? 'border-t border-[#1e2f28]/[0.10]' : 'pt-0'}`}>
                   <summary className="flex cursor-pointer list-none items-start justify-between gap-4
                                       font-display text-[1.2rem] leading-snug text-foreground sm:text-[1.4rem]
                                       [&::-webkit-details-marker]:hidden">
                     <span>{f.q}</span>
-                    <span aria-hidden
-                          className="mt-1 shrink-0 text-[#8a7440] transition-transform group-open:rotate-45">+</span>
+                    <span aria-hidden className="mt-1 shrink-0 text-[#8a7440] transition-transform group-open:rotate-45">+</span>
                   </summary>
-                  <div className="mt-3 max-w-[62ch] text-base leading-relaxed text-foreground/75 sm:text-lg">
-                    {f.a}
-                  </div>
+                  <div className="mt-3 max-w-[62ch] text-base leading-relaxed text-foreground/75 sm:text-lg">{f.a}</div>
                 </details>
               ))}
             </div>
           </div>
         </Section>
 
-        {/* ── 6. CHI C'E' DIETRO AURYA — i volti veri ──────────────
-            LC4: il payoff del brand al posto delle negazioni; la foto
-            vera dei fondatori in taglio ritratto. */}
+        {/* ── 7. CHI C'E' DIETRO AURYA — i volti veri ──────────────── */}
         <Section tone="sand" rhythm="screen" labelledBy="ol-who-title" width="max-w-6xl">
           <div data-testid="ol-who">
-            <p className="eyebrow mb-5">
-              {t('opPro.whoEyebrow', { defaultValue: 'Chi c’è dietro Aurya' })}
-            </p>
+            <p className="eyebrow mb-5">{t('opPro.whoEyebrow', { defaultValue: 'Chi c’è dietro Aurya' })}</p>
             <DisplayTitle as="h2" id="ol-who-title" size="section" measure="lines"
                           className="text-[1.9rem] leading-[1.14] sm:text-[2.4rem] lg:text-[2.9rem]">
-              <TitleLine>
-                {t('opPro.whoLine1', { defaultValue: 'Pratiche, eventi e ritiri' })}
-              </TitleLine>
-              <TitleLine>
-                {t('opPro.whoLine2', { defaultValue: 'di benessere' })}
-              </TitleLine>
+              <TitleLine>{t('opPro.whoLine1', { defaultValue: 'Pratiche, eventi e ritiri' })}</TitleLine>
+              <TitleLine>{t('opPro.whoLine2', { defaultValue: 'di benessere' })}</TitleLine>
             </DisplayTitle>
-            <Lede size="lead" className="mt-7">
-              {t('opPro.whoLead', { defaultValue: 'Siamo due persone che hanno deciso di costruire lo spazio che avrebbero voluto trovare.' })}
-            </Lede>
-
+            <Lede size="lead" className="mt-7">{t('opPro.whoLead')}</Lede>
             <div className="mt-12 grid gap-9 sm:mt-14 lg:grid-cols-12 lg:items-center lg:gap-14">
               <div className="lg:col-span-5">
-                <img
-                  src={FOUNDERS_PHOTO}
-                  alt={tl('aboutPage.facesAlt', { defaultValue: 'Davide e Valentina, i fondatori di Aurya, in riva al mare' })}
-                  width="900"
-                  height="1125"
-                  loading="lazy"
-                  decoding="async"
-                  className="aspect-[4/5] w-full rounded-[1.75rem] object-cover shadow-[0_18px_48px_-28px_rgba(30,47,40,0.45)]"
-                />
+                <img src={FOUNDERS_PHOTO}
+                     alt={tl('aboutPage.facesAlt', { defaultValue: 'Davide e Valentina, i fondatori di Aurya, in riva al mare' })}
+                     width="900" height="1125" loading="lazy" decoding="async"
+                     className="aspect-[4/5] w-full rounded-[1.75rem] object-cover shadow-[0_18px_48px_-28px_rgba(30,47,40,0.45)]" />
               </div>
               <div className="lg:col-span-7">
                 <p className="font-display text-[1.5rem] leading-snug text-foreground sm:text-[1.85rem]">
-                  <span className="block">
-                    {t('opPro.whoV', { defaultValue: 'Valentina vive il mondo del benessere ogni giorno.' })}
-                  </span>
-                  <span className="mt-3 block">
-                    {t('opPro.whoD', { defaultValue: 'Davide costruisce prodotti digitali da anni.' })}
-                  </span>
+                  <span className="block">{t('opPro.whoV')}</span>
+                  <span className="mt-3 block">{t('opPro.whoD')}</span>
                 </p>
-                <Lede size="body" className="mt-6">
-                  {t('opPro.whoP', { defaultValue: 'Aurya nasce dall’incontro tra queste due esperienze.' })}
-                </Lede>
+                <Lede size="body" className="mt-6">{t('opPro.whoP')}</Lede>
                 <div className="mt-8">
                   <EditorialCta to="/chi-siamo" variant="quiet" data-testid="ol-who-cta">
                     {t('opPro.whoCta', { defaultValue: 'Conosci la nostra storia' })}
@@ -508,31 +433,18 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 7. LA REGISTRAZIONE — si comincia da te ──────────────
-            UN solo form in tutta la pagina, con l'ancora #presentati.
-            InlineSignupForm: la STESSA signup() di AuthContext. */}
+        {/* ── 8. LA REGISTRAZIONE — si comincia da te ──────────────── */}
         <Section tone="cream" rhythm="screen" labelledBy="ol-form-title" width="max-w-6xl"
                  id="presentati" className="scroll-mt-20">
-          <div data-testid="ol-form"
-               className="grid gap-10 lg:grid-cols-12 lg:items-start lg:gap-16">
+          <div data-testid="ol-form" className="grid gap-10 lg:grid-cols-12 lg:items-start lg:gap-16">
             <div className="lg:col-span-5">
               <DisplayTitle as="h2" id="ol-form-title" size="section" measure="title"
                             className="text-[1.9rem] leading-[1.12] sm:text-[2.4rem] lg:text-[2.6rem]">
                 {t('opPro.formTitle2', { defaultValue: 'Si comincia da te.' })}
               </DisplayTitle>
-              <Lede size="lead" className="mt-7">
-                {t('opPro.formA3', { defaultValue: 'Crei il tuo account in un minuto e pubblichi il tuo profilo.' })}
-              </Lede>
-              <Lede size="lead" className="mt-6">
-                {t('opPro.formC3', { defaultValue: 'Poi Valentina ti scrive.' })}
-              </Lede>
-              <Lede size="body" className="mt-4">
-                {t('opPro.formD3', { defaultValue: 'Entro due giorni, per una conversazione dedicata: il tuo percorso, cosa rende unico il tuo lavoro.' })}
-              </Lede>
-              <Lede size="body" className="mt-4">
-                {t('opPro.formE3', { defaultValue: 'Da quella conversazione nasce il tuo racconto su Aurya. Con la tua voce.' })}
-              </Lede>
-
+              <Lede size="lead" className="mt-7 font-semibold">{t('opPro.formA3')}</Lede>
+              <Lede size="body" className="mt-5">{t('opPro.formC3')}</Lede>
+              <Lede size="body" className="mt-3">{t('opPro.formD3')}</Lede>
               <p className="mt-8 flex flex-wrap items-center gap-1.5 text-sm text-foreground/70">
                 <Mail className="h-4 w-4 shrink-0 text-[#2f5749]" aria-hidden />
                 {t('op.directT', { defaultValue: 'Preferisci parlarne senza form?' })}{' '}
@@ -550,39 +462,25 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 8. CHIUSURA — seconda ancora verde ───────────────────
-            Le due frasi del founder restano; la chiusa non dice piu'
-            «con calma»: dice che lo spazio e' pronto. */}
+        {/* ── 9. CHIUSURA — l'ancora verde ─────────────────────────── */}
         <Section tone="sage" rhythm="screen" labelledBy="ol-end-title" width="max-w-5xl">
           <div data-testid="ol-end">
             <DisplayTitle as="h2" id="ol-end-title" size="section" measure="lines">
-              <TitleLine>
-                {t('opPro.endA', { defaultValue: 'Le reti non nascono da una piattaforma.' })}
-              </TitleLine>
-              <TitleLine>
-                {t('opPro.endB', { defaultValue: 'Nascono dalle persone.' })}
-              </TitleLine>
+              <TitleLine>{t('opPro.endA')}</TitleLine>
+              <TitleLine>{t('opPro.endB')}</TitleLine>
             </DisplayTitle>
             <Lede size="lead" tone="inherit" className="mt-7">
-              <span className="block">
-                {t('opPro.endC2', { defaultValue: 'Il tuo spazio è pronto.' })}
-              </span>
-              <span className="block">
-                {t('opPro.endD2', { defaultValue: 'Il resto lo costruiamo insieme.' })}
-              </span>
+              <span className="block">{t('opPro.endC2')}</span>
+              <span className="block">{t('opPro.endD2')}</span>
             </Lede>
-            <Lede size="body" tone="inherit" className="mt-5 opacity-90">
-              {t('opPro.endBody2', { defaultValue: 'Se senti che Aurya rappresenta anche il tuo modo di vedere il benessere, apri il tuo spazio oggi.' })}
-            </Lede>
+            <Lede size="body" tone="inherit" className="mt-5 opacity-90">{t('opPro.endBody2')}</Lede>
             <div className="mt-9">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm}
-                            variant="solid" tone="dark" data-testid="ol-end-cta">
+              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-end-cta">
                 {ctaJoin}
               </EditorialCta>
             </div>
           </div>
         </Section>
-
       </div>
     </MarketplaceShell>
   );
