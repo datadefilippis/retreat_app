@@ -799,7 +799,7 @@ class TestOnda3LeSorgentiELaMisura:
         assert "sitePhase === 'network' && BOOKABLE_CATS.has(article.category) ? (" in page
         assert 'data-testid="art-porta-cerca"' in page
         assert "/cerca-ritiro?tema=${article.category}&porta=magazine" in page
-        assert "/esperienze?porta=magazine" in page
+        assert "/esperienze?porta=magazine" not in page, "NV (10/9 sera): dal Magazine si va solo alla landing"
         assert page.count("<BlogNewsletterCTA") == 1, "la Lettera resta per le categorie editoriali"
         tl = (FE / "features" / "prelaunch" / "TravelerLandingPage.js").read_text()
         assert "initialInterests={temaIniziale()}" in tl and "TEMA_TO_CHIP" in tl
