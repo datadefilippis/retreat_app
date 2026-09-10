@@ -755,6 +755,8 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
                 {isNetwork && <li><Link to="/blog" className="hover:text-white" data-testid="footer-nw-magazine">{t('marketplace.navBlog', { defaultValue: 'Magazine' })}</Link></li>}
                 {isNetwork && <li><Link to="/sound" className="hover:text-white" data-testid="footer-nw-sound">Aurya Sound</Link></li>}
                 {isNetwork && <li><Link to="/manifesto" className="hover:text-white" data-testid="footer-nw-manifesto">{t('marketplace.navManifesto', { defaultValue: 'Manifesto' })}</Link></li>}
+                {/* P13 (10/9/2026) — il team building alla Masseria */}
+                {isNetwork && <li><Link to="/aziende" className="hover:text-white" data-testid="footer-nw-aziende">Aurya per le aziende</Link></li>}
                 {/* LM2 — la voce operatori vive in ENTRAMBE le fasi.
                     SR1 (3/9/2026): /operatori E' la directory in ogni
                     fase, quindi una sola etichetta, la stessa del menu:

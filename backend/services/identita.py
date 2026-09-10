@@ -259,7 +259,47 @@ def corpo_meditazioni() -> str:
         '<a href="/sound/studio">Crea Studio</a></p>')
 
 
+def corpo_aziende() -> str:
+    """P13 (10/9/2026, piano §3.1 B) — «Aurya per le aziende»: il team
+    building alla Masseria. La copia vive in
+    frontend/src/features/network/AziendePage.js (solo italiano, niente
+    locale): qui la stessa sostanza per i crawler e i modelli."""
+    return "".join([
+        "<p><i>Aurya per le aziende</i></p>",
+        "<h1>Una giornata fuori, con persone vere a condurla.</h1>",
+        "<p>Un team building alla Masseria: respiro, suono, un cammino, un pranzo "
+        "lungo. Lo conducono Valentina e i professionisti della rete Aurya, pagati "
+        "per il loro lavoro. Niente slide, niente giochi di ruolo.</p>",
+        "<h2>Due formati, e il su misura</h2><ul>",
+        "<li><b>Giornata «Respiro», 6 ore</b>: accoglienza, respiro e suono con "
+        "Valentina e un professionista della rete, pranzo, cerchio di chiusura. "
+        "Da 130 € a persona, minimo 12 persone.</li>",
+        "<li><b>Due giorni «Rientro»</b>: pernotto, yoga al mattino, un cammino, "
+        "il suono la sera, i pasti. Da 320 € a persona.</li>",
+        "<li><b>Su misura</b>: oltre le 25 persone, o un programma vostro. Preventivo.</li></ul>",
+        "<h2>Chi conduce</h2><p>Valentina, che ha fondato Aurya, e i professionisti "
+        "della rete: insegnanti di yoga e respiro, operatori del suono, guide di "
+        "cammino. Persone che fanno questo lavoro ogni giorno, con nome e volto.</p>",
+        "<h2>Dove</h2><p>La Masseria: una sala a volta per il lavoro insieme, la "
+        "campagna intorno per camminare, una cucina per il pranzo.</p>",
+        "<h2>Come funziona</h2><ol><li>Ci scrivete: persone, periodo, formato.</li>",
+        "<li>Vi rispondiamo entro due giorni lavorativi con un preventivo che dice "
+        "tutto: programma, chi conduce, cosa comprende.</li>",
+        "<li>Fissiamo la data. Conferma con una caparra con bonifico, saldo dopo la "
+        "giornata, una fattura sola, di Aurya.</li></ol>",
+    ])
+
+
+def sezione_aziende_llms(base: str) -> List[str]:
+    return ["", "## Aurya per le aziende", "",
+            "Team building alla Masseria condotti da Valentina e dai professionisti "
+            "della rete: giornata «Respiro» (6 ore, da 130 € a persona, minimo 12) e "
+            "due giorni «Rientro» (da 320 € a persona); oltre le 25 persone su misura. "
+            f"Preventivo entro due giorni lavorativi: [{base}/aziende]({base}/aziende)."]
+
+
 CORPI = {
+    "aziende": corpo_aziende,
     "chi-siamo": corpo_chi_siamo,
     "manifesto": corpo_manifesto,
     "entra-nella-rete": corpo_professionisti,

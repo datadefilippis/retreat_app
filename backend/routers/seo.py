@@ -123,6 +123,8 @@ async def build_core() -> str:
         # resta la pagina di posizione.
         _url(f"{base}/chi-siamo", priority="0.6"),
         _url(f"{base}/entra-nella-rete", priority="0.7"),
+        # P13 (10/9/2026) — «Aurya per le aziende»: il team building
+        _url(f"{base}/aziende", priority="0.6"),
         _url(f"{base}/newsletter", priority="0.7"),
         # SP5 — Aurya Sound pubblico: solo le pagine editoriali
         # (crea/tracce sono workspace: noindex e fuori di qui)

@@ -53,6 +53,7 @@ from routers import admin_sound as admin_sound_router
 from routers import admin_platform as admin_platform_router
 from routers import admin_strutture as admin_strutture_router
 from routers import strutture as strutture_router
+from routers import aziende as aziende_router
 from routers import fondatori as fondatori_router
 from routers import articles as articles_router
 from routers import tracking as tracking_router
@@ -746,6 +747,7 @@ app.include_router(admin_sound_router.router, prefix="/api")  # /api/admin/sound
 app.include_router(admin_platform_router.router, prefix="/api")  # /api/admin/platform/* (SA2/SA3)
 app.include_router(admin_strutture_router.router, prefix="/api")  # /api/admin/strutture/* (SR, fase 0)
 app.include_router(strutture_router.router, prefix="/api")  # /api/strutture/richieste (SR: la richiesta dell'operatore)
+app.include_router(aziende_router.router, prefix="/api")    # /api/public/aziende/richiesta (P13: il team building)
 app.include_router(fondatori_router.router, prefix="/api")  # RB2: il contatore vero dei fondatori
 app.include_router(articles_router.router, prefix="/api")  # /api/public/articles + /api/admin/articles (AN5 blog)
 app.include_router(tracking_router.router, prefix="/api")  # /api/public/track (VT visibilita)
@@ -974,6 +976,7 @@ async def llms_txt():
     righe += _identita.sezione_sound_llms(base, schede, stanze)
     righe += _identita.sezione_meditazioni_llms(base)
     righe += _identita.sezione_ritiri_llms(base)
+    righe += _identita.sezione_aziende_llms(base)   # P13
     righe += [
         "",
         "## Magazine",

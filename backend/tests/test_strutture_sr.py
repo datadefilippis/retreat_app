@@ -38,7 +38,9 @@ class TestIsolamento:
     def test_nessun_file_dei_professionisti_importa_le_strutture(self):
         vietati = ["struttura_repository", "models.struttura", "admin_strutture", "strutture_email"]
         for f in (BACKEND_DIR / "routers").glob("*.py"):
-            if f.name in ("admin_strutture.py", "strutture.py"):
+            # P13 (10/9/2026): aziende.py e' la porta pubblica della stessa
+            # cassetta delle richieste (team building): sta nel mondo strutture
+            if f.name in ("admin_strutture.py", "strutture.py", "aziende.py"):
                 continue
             src = f.read_text()
             for v in vietati:

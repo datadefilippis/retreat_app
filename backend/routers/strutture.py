@@ -5,7 +5,7 @@ un modulo breve che crea una richiesta. La lista delle strutture non
 si vede da qui (e' riservata a voi in fase 0). Tutto il resto vive nel
 pannello di sistema.
 """
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -24,6 +24,11 @@ class RichiestaCrea(BaseModel):
     budget_persona: Optional[float] = Field(default=None, ge=0, le=100000)
     esigenze: Optional[str] = Field(default=None, max_length=2000)
     tipo_ritiro: Optional[str] = Field(default=None, max_length=80)
+    # P13 (10/9/2026, piano di business §3.1 A) — la stessa scheda chiede
+    # anche la REGIA del ritiro (leggera 290 €, completa 690 € + 40 € a
+    # partecipante oltre il sesto). Il tipo distingue la richiesta.
+    tipo: Literal["struttura", "regia"] = "struttura"
+    formula: Optional[Literal["leggera", "completa", "non_so"]] = None
 
 
 @router.post("/richieste", status_code=201)

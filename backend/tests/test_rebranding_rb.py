@@ -406,3 +406,68 @@ class TestP2IlBonificoElaStradaPrincipale:
     def test_un_ritiro_nuovo_nasce_su_richiesta(self):
         wiz = (FE / "features" / "events" / "EventWizard.js").read_text()
         assert "transaction_mode: p.transaction_mode || (prefillRef.current?.product ? 'direct' : 'request')" in wiz
+
+
+class TestP13AuryaPerLeAziendeEChiediLaRegia:
+    """P13 (10/9/2026, piano di business §3.1 A e B): i servizi fanno i
+    primi soldi veri. «Aurya per le aziende» e' una landing con un
+    modulo (team building alla Masseria, due formati con prezzo «da»);
+    «Chiedi la regia» allarga la scheda «Cerco una struttura» del
+    gestionale. Le richieste finiscono tutte nel pannello, con un tipo."""
+
+    def test_la_rotta_e_registrata_con_meta_e_in_sitemap(self):
+        reg = json.loads((BACKEND_DIR / "config" / "rotte.json").read_text())
+        assert "aziende" in reg["pubblica"]
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        assert '"aziende": {' in shell and '"aziende": "WebPage"' in shell
+        assert 'f"{base}/aziende"' in (BACKEND_DIR / "routers" / "seo.py").read_text()
+        ident = (BACKEND_DIR / "services" / "identita.py").read_text()
+        assert '"aziende": corpo_aziende' in ident and "def sezione_aziende_llms" in ident
+        assert "sezione_aziende_llms(base)" in (BACKEND_DIR / "server.py").read_text()
+        nginx = (REPO / "deploy" / "nginx" / "nginx.conf").read_text()
+        assert "|aziende|" in nginx, "rigenera nginx: scripts/genera_rotte_nginx.py --scrivi"
+
+    def test_la_pagina_dice_i_due_formati_e_niente_che_non_abbiamo(self):
+        app = (FE / "App.js").read_text()
+        assert 'path="/aziende" element={<AziendePage />}' in app
+        page = (FE / "features" / "network" / "AziendePage.js").read_text()
+        testo = re.sub(r"/\*.*?\*/", "", page, flags=re.S)
+        for tid in ("az-formati", "az-formato-giornata", "az-formato-due_giorni",
+                    "az-formato-su_misura", "az-chi-dove", "az-come", "az-form",
+                    "az-invia", "az-fatto", "az-faq"):
+            assert f'data-testid="{tid}"' in testo or f"data-testid={{`{tid.rsplit('-', 1)[0]}-" in testo, tid
+        assert "da 130 € a persona" in testo and "da 320 € a persona" in testo
+        assert "minimo 12 persone" in testo
+        assert "/public/aziende/richiesta" in testo
+        assert "BRAND_EMAIL" in testo
+        for frase in ANTI_URGENZA + ("ultimi posti", "affrettat", "solo per oggi"):
+            assert frase not in testo.lower(), frase
+        assert "<img" not in testo, "niente foto finche' non ci sono quelle vere della sala a volta"
+        assert "in sede" not in testo and "da voi" not in testo, "il team building e' alla Masseria, non altrove"
+        shell = (FE / "features" / "storefront" / "components" / "MarketplaceShell.jsx").read_text()
+        assert 'data-testid="footer-nw-aziende"' in shell
+
+    def test_il_modulo_pubblico_ha_il_limite_e_il_tipo(self):
+        src = (BACKEND_DIR / "routers" / "aziende.py").read_text()
+        assert 'prefix="/public/aziende"' in src and '@limiter.limit("5/hour")' in src
+        assert 'dati["tipo"] = "team_building"' in src
+        assert "honeypot" not in src.lower() and "website" not in src, "niente esca: l'autofill la riempiva (28/8)"
+        assert "aziende_router.router" in (BACKEND_DIR / "server.py").read_text()
+        rs = (BACKEND_DIR / "routers" / "strutture.py").read_text()
+        assert 'tipo: Literal["struttura", "regia"] = "struttura"' in rs
+        em = (BACKEND_DIR / "services" / "strutture_email.py").read_text()
+        for s in ("Richiesta di regia da", "Richiesta team building da", "Richiesta struttura da",
+                  "La tua richiesta di regia è arrivata", "Aurya per le aziende"):
+            assert s in em, s
+
+    def test_la_scheda_del_gestionale_chiede_anche_la_regia(self):
+        events = (FE / "features" / "events" / "EventsListPage.js").read_text()
+        assert 'data-testid="events-chiedi-regia"' in events and "tipoIniziale={strutturaTipo}" in events
+        dialog = (FE / "features" / "events" / "components" / "RichiestaStrutturaDialog.jsx").read_text()
+        for tid in ("richiesta-tab-struttura", "richiesta-tab-regia", "richiesta-regia-intro", "richiesta-formula"):
+            assert f'data-testid="{tid}"' in dialog or f"data-testid={{`richiesta-tab-" in dialog, tid
+        assert "Regia leggera, 290 €" in dialog and "Regia completa, 690 €" in dialog
+        assert "40 € a partecipante oltre il sesto" in dialog
+        assert "tipo, formula: tipo === 'regia' ? formula : null" in dialog
+        admin = (FE / "features" / "admin" / "strutture" / "StrutturePage.js").read_text()
+        assert 'data-testid="strutture-richiesta-tipo"' in admin and "team_building" in admin

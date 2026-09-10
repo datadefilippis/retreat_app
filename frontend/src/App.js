@@ -100,6 +100,7 @@ const PricingPage = lazy(() => import("./features/prelaunch/PricingPage"));
 // contatti «cerco un ritiro» — la porta torna, si chiama con l'oggetto
 // («Trovami il mio ritiro») e ISCRIVE al Cerchio con i ritiri accesi.
 const TravelerLandingPage = lazy(() => import("./features/prelaunch/TravelerLandingPage"));
+const AziendePage = lazy(() => import("./features/network/AziendePage"));   // P13 — il team building
 const NewsletterLandingPage = lazy(() => import("./features/prelaunch/NewsletterLandingPage"));
 const NewsletterConfirmPage = lazy(() => import("./features/prelaunch/NewsletterConfirmPage"));
 const NewsletterPreferencesPage = lazy(() => import("./features/prelaunch/NewsletterPreferencesPage"));
@@ -567,6 +568,7 @@ function AppRoutes() {
       {/* redirect permanenti dei vecchi percorsi */}
       <Route path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />} />
       <Route path="/cerca-ritiro" element={<TravelerLandingPage />} />
+      <Route path="/aziende" element={<AziendePage />} />
       {/* ID (20/8) — LA PORTA UNICA. Una email, una password: il server
           decide il mondo (operatore/cliente) e col legame dei cappelli
           rilascia entrambi i token (SSO). /login e /account/accedi

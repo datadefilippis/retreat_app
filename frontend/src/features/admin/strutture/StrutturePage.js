@@ -208,7 +208,13 @@ function Richieste({ schema }) {
             <b>{r.organization_nome || 'Professionista'}</b>
             <span className="text-xs text-muted-foreground">{(r.creato_il || '').slice(0, 10)} · {r.email}</span>
           </div>
+          {/* P13 — il tipo (struttura, regia, team building) e i contatti dell'azienda */}
+          <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-[#2f5749]" data-testid="strutture-richiesta-tipo">
+            {({ regia: 'Regia', team_building: 'Team building' })[r.tipo] || 'Struttura'}{r.formula ? ` · ${r.formula}` : ''}{r.formato ? ` · ${r.formato}` : ''}
+          </p>
+          {r.tipo === 'team_building' && <p className="mt-1 text-sm">{r.nome}{r.telefono ? ` · ${r.telefono}` : ''}</p>}
           <p className="mt-1 text-sm">{r.zona} · {r.periodo} · {r.persone} persone{r.notti ? ` · ${r.notti} notti` : ''}{r.budget_persona ? ` · ${r.budget_persona} € a persona` : ''}{r.tipo_ritiro ? ` · ${r.tipo_ritiro}` : ''}</p>
+          {r.messaggio && <p className="mt-1 text-sm text-muted-foreground">{r.messaggio}</p>}
           {r.esigenze && <p className="mt-1 text-sm text-muted-foreground">{r.esigenze}</p>}
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <select value={r.stato} onChange={(e) => cambia(r.id, { stato: e.target.value })} className="rounded-md border border-input bg-background px-2 py-1.5 text-sm">

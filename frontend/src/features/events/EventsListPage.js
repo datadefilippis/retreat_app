@@ -30,6 +30,7 @@ export default function EventsListPage() {
   const { t } = useTranslation('products');
   const [pactOpen, setPactOpen] = useState(false);
   const [strutturaOpen, setStrutturaOpen] = useState(false);
+  const [strutturaTipo, setStrutturaTipo] = useState('struttura');   // P13: struttura | regia
   return (
     <AppLayout>
       <Header
@@ -42,11 +43,16 @@ export default function EventsListPage() {
         <DpaPactBanner className="mb-3" onRead={() => setPactOpen(true)} />
         <DpaPactDialog open={pactOpen} onOpenChange={setPactOpen} />
         <div className="flex justify-end gap-2 mb-2">
-          <Button size="sm" variant="outline" onClick={() => setStrutturaOpen(true)}
+          <Button size="sm" variant="outline" onClick={() => { setStrutturaTipo('struttura'); setStrutturaOpen(true); }}
                   data-testid="events-cerca-struttura">
             Cerco una struttura
           </Button>
-          <RichiestaStrutturaDialog aperto={strutturaOpen} onClose={() => setStrutturaOpen(false)} />
+          {/* P13 (10/9/2026) — la regia del ritiro, stessa scheda */}
+          <Button size="sm" variant="outline" onClick={() => { setStrutturaTipo('regia'); setStrutturaOpen(true); }}
+                  data-testid="events-chiedi-regia">
+            Chiedi la regia
+          </Button>
+          <RichiestaStrutturaDialog aperto={strutturaOpen} tipoIniziale={strutturaTipo} onClose={() => setStrutturaOpen(false)} />
           <Button size="sm" onClick={() => navigate('/events/new')}
                   data-testid="events-new-cta">
             <Plus className="mr-1.5 h-4 w-4" />
