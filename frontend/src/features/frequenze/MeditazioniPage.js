@@ -154,14 +154,14 @@ export default function MeditazioniPage() {
           <header style={{ display: 'block', textAlign: 'center' }}>
             <h1>Le <em>meditazioni</em> di Aurya</h1>
             <div className="sub" style={{ marginTop: 6 }}>
-              sessioni vibrazionali composte dagli operatori della rete
+              sessioni vibrazionali composte dai professionisti della rete
             </div>
           </header>
           <section className="bib" style={{ textAlign: 'center', marginTop: 10 }}>
             <p style={{ fontSize: 15, lineHeight: 1.7 }}>
               {teaserCount > 0
-                ? <>Qui dentro {teaserCount === 1 ? "c'è una sessione composta" : `ci sono ${teaserCount} sessioni composte`} dagli operatori di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>
-                : <>Qui vivranno le sessioni composte dagli operatori di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>}
+                ? <>Qui dentro {teaserCount === 1 ? "c'è una sessione composta" : `ci sono ${teaserCount} sessioni composte`} dai professionisti di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>
+                : <>Qui vivranno le sessioni composte dai professionisti di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>}
               {' '}<b>L'ascolto completo è per chi è nel Cerchio di Aurya</b>:
               entrare è gratis, e ti apre anche i ritiri in anteprima e la Lettera.
             </p>
@@ -276,7 +276,7 @@ export default function MeditazioniPage() {
       <header>
         <div>
           <h1>Le <em>meditazioni</em> di Aurya</h1>
-          <div className="sub">sessioni vibrazionali degli operatori della rete</div>
+          <div className="sub">sessioni vibrazionali dei professionisti della rete</div>
         </div>
         {hasAccount && (
           <button type="button" className="backcard"

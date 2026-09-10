@@ -58,10 +58,10 @@ export default function ChiSiamoPage() {
 
   /* I quattro tempi. L'ordine e' il contenuto. */
   const steps = [
-    t('aboutPage.step1', { defaultValue: 'Prima i contenuti.' }),
-    t('aboutPage.step2', { defaultValue: 'Poi le persone.' }),
-    t('aboutPage.step3', { defaultValue: 'Poi le esperienze.' }),
-    t('aboutPage.step4', { defaultValue: 'Infine gli strumenti.' }),
+    t('aboutPage.step1', { defaultValue: 'Abbiamo cominciato dai contenuti.' }),
+    t('aboutPage.step2', { defaultValue: 'Poi sono arrivate le persone.' }),
+    t('aboutPage.step3', { defaultValue: 'Oggi ci sono gli strumenti.' }),
+    t('aboutPage.step4', { defaultValue: 'Ora arrivano le esperienze.' }),
   ];
 
   return (
@@ -167,7 +167,7 @@ export default function ChiSiamoPage() {
             </DisplayTitle>
             <p className="mt-8 max-w-[24ch] font-display text-balance text-[1.5rem] font-medium
                           leading-[1.22] tracking-[-0.015em] sm:text-[1.9rem] lg:text-[2.05rem]">
-              {t('aboutPage.longP3', { defaultValue: 'Per questo abbiamo deciso di partire lentamente.' })}
+              {t('aboutPage.longP3', { defaultValue: 'Per questo abbiamo cominciato dalle fondamenta.' })}
             </p>
 
             <ol className="mt-14 grid list-none gap-9 p-0 sm:mt-16 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4 lg:gap-7">

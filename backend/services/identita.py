@@ -243,8 +243,8 @@ def corpo_meditazioni() -> str:
     in MeditazioniPage.js (la guardia LX ne verifica le frasi)."""
     return (
         "<h1>Le meditazioni di Aurya</h1>"
-        "<p><i>sessioni vibrazionali composte dagli operatori della rete</i></p>"
-        "<p>Qui vivranno le sessioni composte dagli operatori di Aurya, per dormire, "
+        "<p><i>sessioni vibrazionali composte dai professionisti della rete</i></p>"
+        "<p>Qui vivranno le sessioni composte dai professionisti di Aurya, per dormire, "
         "meditare, rilassarsi, concentrarsi. L'ascolto completo è per chi è nel "
         "Cerchio di Aurya: entrare è gratis, e ti apre anche i ritiri in anteprima "
         "e la Lettera.</p>"

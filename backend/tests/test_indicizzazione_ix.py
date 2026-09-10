@@ -54,7 +54,8 @@ class TestIx1LePorteChiuse:
 
     def test_il_registro_dichiara_le_radici_e_i_rimandi(self):
         assert set(REGISTRO["solo_con_slug"]) == {"co", "dg", "e", "frequenze", "l", "o", "p", "ph", "r", "s"}
-        assert REGISTRO["rimandi"] == {"index.html": "/", "ritiri": "/"}
+        # RB7 (10/9/2026): /come-funziona (guscio vuoto in fase rete) e' un 301 come /ritiri
+        assert REGISTRO["rimandi"] == {"index.html": "/", "ritiri": "/", "come-funziona": "/manifesto"}
         assert REGISTRO["rimandi_prefisso"] == {"esplora-operatori": "/operatori"}
         for seg in REGISTRO["solo_con_slug"]:
             assert seg in REGISTRO["pubblica"], f"{seg} deve restare pubblica (con slug)"

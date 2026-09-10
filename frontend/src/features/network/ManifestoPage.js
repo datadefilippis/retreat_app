@@ -295,8 +295,8 @@ export default function ManifestoPage() {
                 </Lede>
               </div>
               <p className="mt-10 max-w-[26ch] font-display text-balance text-[1.35rem] font-medium leading-[1.24] tracking-[-0.015em] sm:text-[1.7rem] lg:text-[1.85rem]">
-                <span className="block">{t('manifesto.howClose1', { defaultValue: 'Preferiamo crescere lentamente.' })}</span>
-                <span className="block">{t('manifesto.howClose2', { defaultValue: 'Ma costruire qualcosa che possa durare.' })}</span>
+                <span className="block">{t('manifesto.howClose1', { defaultValue: 'Preferiamo crescere bene.' })}</span>
+                <span className="block">{t('manifesto.howClose2', { defaultValue: 'E costruire qualcosa che possa durare.' })}</span>
               </p>
               {/* SR4 (3/9/2026): qui c'era un secondo invito al Cerchio;
                   la porta si offre una volta sola, nella firma */}
@@ -380,8 +380,8 @@ export default function ManifestoPage() {
               ))}
             </ol>
             <p className="mt-14 max-w-[24ch] font-display text-balance text-[1.5rem] font-medium leading-[1.22] tracking-[-0.015em] sm:text-[1.9rem] lg:text-[2.1rem]">
-              <span className="block">{t('manifesto.buildingClose1', { defaultValue: 'Non vogliamo costruire tutto subito.' })}</span>
-              <span className="block">{t('manifesto.buildingClose2', { defaultValue: 'Vogliamo costruirlo nel modo giusto.' })}</span>
+              <span className="block">{t('manifesto.buildingClose1', { defaultValue: 'Costruiamo una cosa alla volta.' })}</span>
+              <span className="block">{t('manifesto.buildingClose2', { defaultValue: 'E la costruiamo nel modo giusto.' })}</span>
             </p>
           </div>
         </Section>

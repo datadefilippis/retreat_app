@@ -87,7 +87,7 @@ class TestLx3LaCopiaVeraAiBot:
     def test_le_meditazioni_dicono_le_frasi_della_pagina_viva(self):
         from services.identita import corpo_meditazioni
         jsx = re.sub(r"\s+", " ", (REPO / "frontend/src/features/frequenze/MeditazioniPage.js").read_text())
-        for frase in ("sessioni vibrazionali composte dagli operatori della rete",
+        for frase in ("sessioni vibrazionali composte dai professionisti della rete",   # RB7: lessico per chi cerca
                       "entrare è gratis, e ti apre anche i ritiri in anteprima"):
             assert frase in jsx and frase in corpo_meditazioni()
 

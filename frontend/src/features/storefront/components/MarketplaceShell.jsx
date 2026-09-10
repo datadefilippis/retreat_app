@@ -400,9 +400,12 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
 
   /* founder 4/9/2026: la voce evidenziata dice il GESTO, non la
      categoria («Diventa professionista Aurya» invece di «Per i
-     professionisti»): chi legge capisce cosa succede se clicca. */
+     professionisti»): chi legge capisce cosa succede se clicca.
+     RB6 (10/9/2026, REBRANDING): lo stesso gesto delle due porte e
+     della landing — «Apri il tuo spazio» — cosi' header, home e landing
+     dicono UNA cosa sola all'operatore olistico. */
   const operatorLabel = isNetwork
-    ? t('marketplace.forProfessionals', { defaultValue: 'Diventa professionista Aurya' })
+    ? t('marketplace.forProfessionals', { defaultValue: 'Apri il tuo spazio' })
     : t('marketplace.forOrganizers', { defaultValue: 'Sei un professionista?' });
   const navigate = useNavigate();
   const { pathname } = useLocation();

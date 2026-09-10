@@ -5539,7 +5539,8 @@ class TestLoginRegia:
         # professionista Aurya»), non piu' la categoria. Il DISPOSITIVO
         # difeso resta lo stesso: un link testuale al funnel, che segue
         # la fase — il testo lo decide il founder, non il test.
-        assert "'Diventa professionista Aurya'" in src
+        # RB6 (10/9/2026): lo stesso gesto delle due porte e della landing
+        assert "'Apri il tuo spazio'" in src
         assert "const operatorTo = isNetwork" in src, \
             "il link deve seguire la fase (operatorTo)"
 

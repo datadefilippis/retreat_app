@@ -218,3 +218,36 @@ class TestRb4LaPortaDiChiCerca:
         for frase in ("C’è un ritiro che ti sta aspettando.", "Cosa succede dopo, detto prima.", "15 gennaio 2027", "Persone, non annunci."):
             assert frase in corpo, frase
         assert "al lancio" not in corpo.lower()
+
+
+class TestRb6Rb7HeaderEPotature:
+    """RB6: l'header dice all'operatore lo stesso gesto delle porte.
+    RB7: Manifesto e Chi siamo senza «lentamente / tutto subito»,
+    Meditazioni col lessico di chi cerca, /come-funziona un 301 vero."""
+
+    def test_l_header_dice_apri_il_tuo_spazio(self):
+        shell = (FE / "features" / "storefront" / "components" / "MarketplaceShell.jsx").read_text()
+        assert "defaultValue: 'Apri il tuo spazio'" in shell
+        it = json.loads(LOCALE.read_text())
+        assert it["marketplace"]["forProfessionals"] == "Apri il tuo spazio"
+        assert it["nwHome"]["doorOpCta"] == it["marketplace"]["forProfessionals"], "header e porta dicono lo stesso gesto"
+
+    def test_manifesto_e_chi_siamo_senza_anti_urgenza(self):
+        it = json.loads(LOCALE.read_text())
+        testo = " ".join(str(v) for k in ("manifesto", "aboutPage") for v in it[k].values()).lower()
+        for frase in ("lentamente", "tutto subito", "infine gli strumenti"):
+            assert frase not in testo, f"tornata l'anti-urgenza: «{frase}»"
+        assert it["aboutPage"]["step3"] == "Oggi ci sono gli strumenti.", "i quattro tempi sono al passato/presente"
+
+    def test_meditazioni_parlano_di_professionisti(self):
+        med = (FE / "features" / "frequenze" / "MeditazioniPage.js").read_text()
+        assert "operatori della rete" not in med and "operatori di Aurya" not in med
+        from services.identita import corpo_meditazioni
+        assert "professionisti della rete" in corpo_meditazioni()
+
+    def test_come_funziona_e_un_rimando_vero(self):
+        reg = json.loads((BACKEND_DIR / "config" / "rotte.json").read_text())
+        # come /ritiri: resta classificata (il gate SPA esiste) ma nginx fa 301
+        assert "come-funziona" in reg["pubblica"] and reg["rimandi"]["come-funziona"] == "/manifesto"
+        nginx = (REPO / "deploy" / "nginx" / "nginx.conf").read_text()
+        assert "return 301 /manifesto" in nginx
