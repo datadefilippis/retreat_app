@@ -129,8 +129,8 @@ class TestRv5LaCodaDelleSegnalazioni:
         assert "ADMIN_EMAIL" in svc_src, "la piattaforma deve ricevere la segnalazione"
         adm = (BACKEND_DIR / "routers" / "admin.py").read_text()
         assert '"/reviews/flagged"' in adm and '"/reviews/{review_id}/resolve"' in adm
-        page = (FRONTEND_SRC / "features" / "admin" / "AdminPage.js").read_text()
-        assert "FlaggedReviewsTab" in page and 'value="reviews"' in page
+        page = (FRONTEND_SRC / "features" / "admin" / "OperatoriPage.js").read_text()   # SA-R
+        assert "FlaggedReviewsTab" in page and "value: 'segnalazioni'" in page
         plancia = (FRONTEND_SRC / "features" / "reviews" / "ReviewsAdminPage.js").read_text()
         assert 'data-testid="review-flag-form"' in plancia
         assert 'data-testid="reviews-settings"' in plancia, "l'interruttore e' una card leggibile"

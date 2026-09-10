@@ -445,60 +445,147 @@ async def newsletter_stats(
     }
 
 
-@router.get("/admin/subscribers")
-async def list_subscribers(
-        status: Optional[str] = None,
-        source: Optional[str] = None,
-        q: Optional[str] = None,
-        experiences: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 50,
-        current_user: dict = Depends(require_system_admin)):
-    """NW3 — la lista iscritti che mancava: ogni riga con FONTE, stato,
-    preferenze esperienziali e date. La fonte c'e' sempre: e' il modo
-    in cui l'admin sa da dove arriva ogni persona."""
-    from database import db
+def _riga_iscritto(d: dict) -> dict:
+    """SA-R (10/9/2026 sera) — TUTTO quello che sappiamo di una persona,
+    per il pannello «Iscritti al Cerchio»: stato e date, porta e fonte,
+    le vie, la citta', il raggio, il budget, l'avviso ritiri, i temi, le
+    email delle sequenze ricevute."""
+    from services.sequenze import porta_cerchio
+    prefs = d.get("preferences") or {}
+    profile = d.get("profile") or {}
+    return {
+        "email": d["email"],
+        "name": d.get("name"),
+        "status": d.get("status") or "pending",
+        "source": d.get("source") or "(sconosciuta)",
+        "porta": porta_cerchio(d.get("source")),
+        "language": d.get("language"),
+        "created_at": d.get("created_at"),
+        "confirmed_at": d.get("confirmed_at"),
+        "unsubscribed_at": d.get("unsubscribed_at"),
+        "unsubscribed_by": d.get("unsubscribed_by"),
+        "reminder_sent_at": d.get("reminder_sent_at"),
+        "topics": _clean_topics(prefs.get("topics")),
+        "format": prefs.get("format") if prefs.get("format") in SUBSCRIBER_FORMATS else "all",
+        "retreat_alert": _clean_alert(prefs.get("retreat_alert")),
+        "interests": _clean_interests(profile.get("interests")),
+        "city": profile.get("city"),
+        "travel": profile.get("travel") if profile.get("travel") in TRAVEL_OPTIONS else None,
+        "budget": profile.get("budget"),
+        "sequenza": [k for k, v in (d.get("sequenza") or {}).items() if v and not str(v).startswith("saltato")],
+    }
 
+
+_PORTE_MEDITAZIONI_RX = r"^(meditazioni|gate_meditazione|cancello:|frequenze|sound|guardia-fq|invito)"
+
+
+def _query_iscritti(status: Optional[str], source: Optional[str], q: Optional[str],
+                    experiences: Optional[str], region: Optional[str], interest: Optional[str],
+                    porta: Optional[str]) -> dict:
+    import re as _re
     query: dict = {}
     if status in ("pending", "confirmed", "unsubscribed"):
         query["status"] = status
     if source:
         query["source"] = source[:60]
     if q:
-        import re as _re
         query["email"] = {"$regex": _re.escape(q.strip()[:80]), "$options": "i"}
     if experiences == "yes":
         query["preferences.retreat_alert.enabled"] = True
+    elif experiences == "no":
+        query["preferences.retreat_alert.enabled"] = {"$ne": True}
+    if region in ITALIAN_REGIONS:
+        query["preferences.retreat_alert.regions"] = region
+    if interest in EXPERIENCE_INTERESTS:
+        query["profile.interests"] = interest
+    if porta == "meditazioni":
+        query["source"] = {"$regex": _PORTE_MEDITAZIONI_RX, "$options": "i"}
+    elif porta == "altro":
+        query["$or"] = [{"source": {"$not": _re.compile(_PORTE_MEDITAZIONI_RX, _re.I)}}, {"source": None}]
+    return query
 
+
+_PROIEZIONE_ISCRITTO = {"_id": 0, "email": 1, "name": 1, "status": 1, "source": 1, "language": 1,
+                        "created_at": 1, "confirmed_at": 1, "unsubscribed_at": 1, "unsubscribed_by": 1,
+                        "reminder_sent_at": 1, "preferences": 1, "profile": 1, "sequenza": 1}
+
+
+@router.get("/admin/subscribers")
+async def list_subscribers(
+        status: Optional[str] = None,
+        source: Optional[str] = None,
+        q: Optional[str] = None,
+        experiences: Optional[str] = None,
+        region: Optional[str] = None,
+        interest: Optional[str] = None,
+        porta: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 50,
+        current_user: dict = Depends(require_system_admin)):
+    """NW3 — la lista iscritti con FONTE, stato, preferenze e date.
+    SA-R (10/9 sera): tutti i campi, i filtri per porta / regione / via /
+    «vuole i ritiri», e le fonti distinte per il filtro."""
+    from database import db
+    query = _query_iscritti(status, source, q, experiences, region, interest, porta)
     limit = max(1, min(int(limit or 50), 200))
     skip = max(0, int(skip or 0))
     total = await db.aurya_subscribers.count_documents(query)
-    rows = []
-    async for d in (db.aurya_subscribers
-                    .find(query, {"_id": 0, "email": 1, "name": 1,
-                                  "status": 1, "source": 1, "language": 1,
-                                  "created_at": 1, "confirmed_at": 1,
-                                  "unsubscribed_at": 1, "preferences": 1,
-                                  "profile": 1})
-                    .sort("created_at", -1).skip(skip).limit(limit)):
-        prefs = d.get("preferences") or {}
-        profile = d.get("profile") or {}
-        rows.append({
-            "email": d["email"],
-            "name": d.get("name"),
-            "status": d.get("status") or "pending",
-            "source": d.get("source") or "(sconosciuta)",
-            "language": d.get("language"),
-            "created_at": d.get("created_at"),
-            "confirmed_at": d.get("confirmed_at"),
-            "unsubscribed_at": d.get("unsubscribed_at"),
-            "wants_experiences": bool(
-                (prefs.get("retreat_alert") or {}).get("enabled")),
-            "interests": _clean_interests(profile.get("interests")),
-            "city": profile.get("city"),
-            "travel": profile.get("travel"),
-        })
-    return {"total": total, "skip": skip, "limit": limit, "rows": rows}
+    rows = [_riga_iscritto(d) async for d in (db.aurya_subscribers
+                                               .find(query, _PROIEZIONE_ISCRITTO)
+                                               .sort("created_at", -1).skip(skip).limit(limit))]
+    fonti = sorted(f for f in await db.aurya_subscribers.distinct("source") if f)
+    return {"total": total, "items": rows, "skip": skip, "limit": limit, "sources": fonti}
+
+
+@router.get("/admin/subscribers/export.csv")
+async def export_subscribers(
+        status: Optional[str] = None, source: Optional[str] = None, q: Optional[str] = None,
+        experiences: Optional[str] = None, region: Optional[str] = None,
+        interest: Optional[str] = None, porta: Optional[str] = None,
+        current_user: dict = Depends(require_system_admin)):
+    """SA-R — lo stesso elenco, in CSV (max 5000 righe), con gli stessi filtri."""
+    import csv, io
+    from fastapi.responses import Response
+    from database import db
+    query = _query_iscritti(status, source, q, experiences, region, interest, porta)
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";")
+    w.writerow(["email", "nome", "stato", "porta", "fonte", "iscritto_il", "confermato_il", "disiscritto_il",
+                "vie", "citta", "dove", "budget", "avviso_ritiri", "regioni", "temi", "email_ricevute"])
+    async for d in db.aurya_subscribers.find(query, _PROIEZIONE_ISCRITTO).sort("created_at", -1).limit(5000):
+        r = _riga_iscritto(d)
+        a = r["retreat_alert"]
+        w.writerow([r["email"], r["name"] or "", r["status"], r["porta"], r["source"],
+                    r["created_at"] or "", r["confirmed_at"] or "", r["unsubscribed_at"] or "",
+                    " ".join(r["interests"]), r["city"] or "", r["travel"] or "", r["budget"] or "",
+                    "si" if a.get("enabled") else "no", " ".join(a.get("regions") or []),
+                    " ".join(r["topics"]), " ".join(r["sequenza"])])
+    return Response(content="\ufeff" + buf.getvalue(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": 'attachment; filename="iscritti-cerchio.csv"'})
+
+
+class DisiscriviPayload(BaseModel):
+    email: EmailStr
+
+
+@router.post("/admin/subscribers/disiscrivi")
+async def disiscrivi_da_admin(payload: DisiscriviPayload,
+                              current_user: dict = Depends(require_system_admin)):
+    """SA-R — la disiscrizione fatta da noi (richiesta a voce o via email):
+    stesso effetto del link nelle email, con la traccia di chi l'ha fatta."""
+    from database import db
+    email = payload.email.lower().strip()
+    now = datetime.now(timezone.utc)
+    r = await db.aurya_subscribers.find_one_and_update(
+        {"email": email},
+        {"$set": {"status": "unsubscribed", "unsubscribed_at": now, "unsubscribed_by": "admin",
+                  "updated_at": now}},
+        projection=_PROIEZIONE_ISCRITTO, return_document=True)
+    if not r:
+        raise HTTPException(status_code=404, detail="Questo indirizzo non e' fra gli iscritti.")
+    from services.subscriber_brevo_sync import sync_subscriber_background
+    sync_subscriber_background(email)
+    return _riga_iscritto(r)
 
 
 @router.get("/public/newsletter/preferences/{token}")

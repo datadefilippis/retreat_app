@@ -455,7 +455,7 @@ async def flag_review(org_id: str, review_id: str, reason: Optional[str],
         <p><b>{r.get('author_name')}</b> · {'★' * int(r.get('rating') or 0)}</p>
         <p style="color:#3b4440;border-left:3px solid #c9b37e;padding-left:12px">{(r.get('body') or '')[:600]}</p>
         <p>Motivo: {r.get('flag_reason') or 'non indicato'}</p>
-        {_bottone(_base_url() + '/admin?tab=reviews', 'Apri la coda delle segnalazioni')}
+        {_bottone(_base_url() + '/admin/operatori?tab=segnalazioni', 'Apri la coda delle segnalazioni')}
         """
         # FV6 — le segnalazioni arrivano alla casella di Aurya
         send_email(CASELLA_AURYA, f"Recensione segnalata da {_nome_org(org)}",

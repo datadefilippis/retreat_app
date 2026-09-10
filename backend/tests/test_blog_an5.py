@@ -122,7 +122,7 @@ class TestBlogFrontend:
 
     def test_admin_tab_wired(self):
         admin = (FRONTEND_SRC / "features" / "admin"
-                 / "AdminPage.js").read_text()
+                 / "MagazinePage.js").read_text()   # SA-R: il Magazine ha la sua pagina
         assert "BlogAdminTab" in admin
         tab = (FRONTEND_SRC / "features" / "admin"
                / "BlogAdminTab.js").read_text()

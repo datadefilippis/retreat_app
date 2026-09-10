@@ -54,8 +54,9 @@ class TestIsolamento:
         layout = (FE / "components" / "Layout.js").read_text()
         prima, dopo = layout.split("{/* System Admin section")
         assert "struttur" not in prima.lower(), "il menu dei professionisti nomina le strutture"
-        assert 'data-testid="nav-admin-strutture"' in dopo and 'to="/admin/strutture"' in dopo
-        assert dopo.index('data-testid="nav-admin-sound"') < dopo.index('data-testid="nav-admin-strutture"'), "Strutture sta sotto Aurya Sound"
+        # SA-R (10/9 sera): il menu System e' una lista di voci [to, label, Icon, testid]
+        assert "'nav-admin-strutture'" in dopo and "'/admin/strutture'" in dopo
+        assert dopo.index("'nav-admin-sound'") < dopo.index("'nav-admin-strutture'"), "Strutture sta sotto Aurya Sound"
 
     def test_in_fase_0_non_esiste_una_pagina_pubblica(self):
         """Niente /strutture ne' /struttura finche' App.js non ha le rotte

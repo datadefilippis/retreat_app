@@ -129,7 +129,7 @@ class TestPlatformOverviewSa2:
         # RV5 (5/9/2026): l'email della piattaforma porta alla coda delle
         # segnalazioni con ?tab=reviews; senza query il default resta
         # la Panoramica, che e' la regola di questa guardia
-        assert "get('tab') || \"overview\"" in page
+        assert "value: 'overview'" in page   # SA-R: i tab sono dati, la Dashboard apre sulla Panoramica
         tab = (base / "PlatformOverviewTab.js").read_text()
         assert "/admin/platform/overview" in tab
         # riuso kit grafico condiviso, non recharts diretto
@@ -147,7 +147,7 @@ class TestDirectoryTabSa3:
 
     def test_directory_tab_wired_with_reason_labels(self):
         base = BACKEND_DIR.parent / "frontend" / "src" / "features" / "admin"
-        page = (base / "AdminPage.js").read_text()
+        page = (base / "OperatoriPage.js").read_text()   # SA-R: la Directory sta in Operatori
         assert "DirectoryAdminTab" in page
         tab = (base / "DirectoryAdminTab.js").read_text()
         assert "/admin/platform/directory" in tab
@@ -215,7 +215,7 @@ class TestSignalsSa5:
 
     def test_signals_tab_wired(self):
         base = BACKEND_DIR.parent / "frontend" / "src" / "features" / "admin"
-        page = (base / "AdminPage.js").read_text()
+        page = (base / "TecnicoPage.js").read_text()   # SA-R: i Segnali stanno in Tecnico
         assert "SignalsTab" in page
         tab = (base / "SignalsTab.js").read_text()
         assert "/admin/platform/signals" in tab
@@ -240,12 +240,16 @@ class TestAdminCleanupSa6:
                    / "admin.js").read_text()
         assert "setOrgPlan" not in api_src
 
-    def test_ai_tab_renamed(self):
-        """Il tab dice cosa fa OGGI: il consumo AI e' quasi solo
-        traduzione LLM."""
-        page = (BACKEND_DIR.parent / "frontend" / "src" / "features"
-                / "admin" / "AdminPage.js").read_text()
-        assert "AI & Traduzioni" in page
+    def test_ai_tab_tolta(self):
+        """SA-R (10/9/2026 sera, founder): «togliere cio' che non serve,
+        come la sezione AI e traduzioni». La tab e il file non ci sono piu',
+        e il vecchio link /admin?tab=ai-governance viene rinviato."""
+        base = BACKEND_DIR.parent / "frontend" / "src" / "features" / "admin"
+        assert not (base / "AIGovernanceTab.js").exists()
+        for f in base.glob("*.js"):
+            assert "AIGovernanceTab" not in f.read_text(), f.name
+        page = (base / "AdminPage.js").read_text()
+        assert "'ai-governance': '/admin/tecnico'" in page
 
     def test_trial_history_exposed_in_dialog(self):
         dlg = (BACKEND_DIR.parent / "frontend" / "src" / "features"
@@ -297,26 +301,8 @@ class TestAdminPanelConsolidationAdm:
         assert '"updated_at": now_iso' in src
 
     def test_ai_tab_only_calls_existing_endpoints(self):
-        """La tab AI & Traduzioni usa SOLO le tre fonti ai-usage che
-        esistono nel backend; budgets/kill-switch/governance-audit/
-        conversazioni sono stati potati (R4) e non vanno reintrodotti
-        lato client senza backend."""
-        api_src = (self.FRONTEND_DIR / "api" / "admin.js").read_text()
-        for dead in ("ai-budgets", "ai-governance/kill-switch",
-                     "ai-governance/audit-log", "ai-usage/top-conversations",
-                     "ai-usage/failed-events"):
-            assert dead not in api_src, dead
-        tab_src = (self.FRONTEND_DIR / "features" / "admin"
-                   / "AIGovernanceTab.js").read_text()
-        for gone in ("AIGovernanceBudgetsSection", "AIGovernanceAuditTab",
-                     "getAITopConversations", "getAIFailedEvents",
-                     "getAIConversationDetail"):
-            assert gone not in tab_src, gone
-        assert not (self.FRONTEND_DIR / "features" / "admin"
-                    / "AIGovernanceBudgetsSection.js").exists()
-        assert not (self.FRONTEND_DIR / "features" / "admin"
-                    / "AIGovernanceAuditTab.js").exists()
-
+        """SA-R: la tab AI & Traduzioni non esiste piu' (vedi test_ai_tab_tolta)."""
+        assert not (BACKEND_DIR.parent / "frontend" / "src" / "features" / "admin" / "AIGovernanceTab.js").exists()
 
 class TestAuryaOnlyCatalogAu:
     """Ciclo AU (16/7/2026) — il pannello e il catalogo parlano SOLO

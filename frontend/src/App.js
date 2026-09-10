@@ -162,6 +162,11 @@ const AscoltaPage = lazy(() => import("./features/frequenze/AscoltaPage"));
 const IniziaPage = lazy(() => import("./features/onboarding/IniziaPage"));
 const AdminPage = lazy(() => import("./features/admin/AdminPage"));
 const SoundAccessPage = lazy(() => import("./features/admin/SoundAccessPage"));
+// SA-R (10/9/2026 sera) — le pagine del menu System
+const CerchioPage = lazy(() => import("./features/admin/CerchioPage"));
+const OperatoriPage = lazy(() => import("./features/admin/OperatoriPage"));
+const MagazinePage = lazy(() => import("./features/admin/MagazinePage"));
+const TecnicoPage = lazy(() => import("./features/admin/TecnicoPage"));
 const StrutturePage = lazy(() => import("./features/admin/strutture/StrutturePage"));
 const StrutturaScheda = lazy(() => import("./features/admin/strutture/StrutturaScheda"));
 const PlansPage = lazy(() => import("./pages/PlansPage"));
@@ -1142,6 +1147,12 @@ function AppRoutes() {
           </SystemAdminRoute>
         }
       />
+
+      {/* SA-R — Iscritti al Cerchio, Operatori, Magazine, Tecnico: pagine proprie */}
+      <Route path="/admin/cerchio" element={<SystemAdminRoute><CerchioPage /></SystemAdminRoute>} />
+      <Route path="/admin/operatori" element={<SystemAdminRoute><OperatoriPage /></SystemAdminRoute>} />
+      <Route path="/admin/magazine" element={<SystemAdminRoute><MagazinePage /></SystemAdminRoute>} />
+      <Route path="/admin/tecnico" element={<SystemAdminRoute><TecnicoPage /></SystemAdminRoute>} />
 
       {/* PC3 — pagina SEPARATA (non tab): chi puo' comporre in Aurya Sound */}
       <Route

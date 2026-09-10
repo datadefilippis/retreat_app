@@ -819,3 +819,65 @@ async def sequenze_anteprima(
         return await anteprima(pubblico, passo, email)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+
+
+# ── Gli ordini di tutta la piattaforma (SA-R, 10/9/2026 sera) ───────────────
+# «controllo sugli ordini degli utenti, quali operatori»: gli ultimi
+# ordini con operatore, cliente, righe, totale, stati; e il riepilogo per
+# operatore degli ultimi 30 giorni. Sola lettura.
+
+@router.get("/ordini")
+async def ordini_piattaforma(
+    limit: int = Query(default=100, ge=1, le=500),
+    org_id: Optional[str] = Query(default=None, max_length=64),
+    stato: Optional[str] = Query(default=None, max_length=20),
+    current_user: dict = Depends(require_system_admin),
+) -> Dict[str, Any]:
+    from datetime import timedelta
+    from database import (customers_collection, orders_collection, organizations_collection)
+    from models.common import utc_now
+    now = utc_now()
+    d30 = now - timedelta(days=30)
+    campioni = {o["id"] async for o in organizations_collection.find({"is_sample": True}, {"_id": 0, "id": 1})}
+    q: Dict[str, Any] = {"organization_id": {"$nin": list(campioni)}}
+    if org_id:
+        q["organization_id"] = org_id
+    if stato in ("draft", "confirmed", "completed", "cancelled"):
+        q["status"] = stato
+    rows = await orders_collection.find(
+        q, {"_id": 0, "id": 1, "order_number": 1, "organization_id": 1, "customer_id": 1,
+            "total": 1, "currency": 1, "status": 1, "payment_status": 1, "source": 1,
+            "created_at": 1, "items.product_name": 1, "items.quantity": 1},
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    org_ids = {r["organization_id"] for r in rows}
+    nomi = {o["id"]: o.get("name") or "" async for o in organizations_collection.find(
+        {"id": {"$in": list(org_ids)}}, {"_id": 0, "id": 1, "name": 1})}
+    clienti = {}
+    async for c in customers_collection.find(
+            {"id": {"$in": [r.get("customer_id") for r in rows if r.get("customer_id")]}},
+            {"_id": 0, "id": 1, "email": 1, "name": 1, "first_name": 1, "last_name": 1, "full_name": 1}):
+        nome = c.get("full_name") or c.get("name") or " ".join(x for x in (c.get("first_name"), c.get("last_name")) if x)
+        clienti[c["id"]] = {"nome": nome or None, "email": c.get("email")}
+    items = [{
+        "id": r["id"], "order_number": r.get("order_number"),
+        "org": {"id": r["organization_id"], "nome": nomi.get(r["organization_id"], "")},
+        "customer": clienti.get(r.get("customer_id"), {"nome": None, "email": None}),
+        "righe": [{"nome": it.get("product_name"), "qty": it.get("quantity")} for it in (r.get("items") or [])],
+        "total": r.get("total"), "currency": r.get("currency") or "EUR",
+        "status": r.get("status"), "payment_status": r.get("payment_status"),
+        "source": r.get("source"), "created_at": r.get("created_at"),
+    } for r in rows]
+    # il riepilogo per operatore: 30 giorni, senza gli annullati
+    per_op: Dict[str, Dict[str, Any]] = {}
+    async for r in orders_collection.aggregate([
+            {"$match": {"organization_id": {"$nin": list(campioni)}, "status": {"$ne": "cancelled"},
+                        "$or": [{"created_at": {"$gte": d30}}, {"created_at": {"$gte": d30.isoformat()}}]}},
+            {"$group": {"_id": "$organization_id", "ordini": {"$sum": 1}, "totale": {"$sum": "$total"}}},
+            {"$sort": {"ordini": -1}}]):
+        per_op[r["_id"]] = {"org_id": r["_id"], "ordini": r["ordini"], "totale": round(float(r["totale"] or 0), 2)}
+    if per_op:
+        async for o in organizations_collection.find({"id": {"$in": list(per_op)}}, {"_id": 0, "id": 1, "name": 1}):
+            per_op[o["id"]]["nome"] = o.get("name") or o["id"][:8]
+    operatori = [{"id": k, "nome": v} for k, v in sorted(nomi.items(), key=lambda kv: kv[1].lower())]
+    return {"items": items, "per_operatore": list(per_op.values()), "operatori": operatori,
+            "generated_at": now.isoformat()}

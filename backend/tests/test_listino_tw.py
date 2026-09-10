@@ -4303,9 +4303,9 @@ class TestProfiloPv2:
         assert "setOrgInterview" in tab
         assert "ytVideoId" in tab                     # anteprima ID video
         admin_page = (FRONTEND_SRC / "features" / "admin"
-                      / "AdminPage.js").read_text()
+                      / "OperatoriPage.js").read_text()   # SA-R: le interviste stanno in Operatori
         assert "InterviewsTab" in admin_page
-        assert 'value="interviews"' in admin_page
+        assert "value: 'interviste'" in admin_page
 
     def test_invite_panel_i18n_x4(self):
         import json

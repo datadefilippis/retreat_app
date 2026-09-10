@@ -37,7 +37,7 @@ import { ListChecks,
   UserCircle,
   Star,
   Wallet,
-  Eye, Music, Building2 } from 'lucide-react';
+  Eye, Music, Building2, HeartHandshake, Briefcase, Newspaper, Wrench } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Separator } from '../components/ui/separator';
@@ -460,33 +460,23 @@ export const Sidebar = () => {
                 <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
                   System
                 </p>
+                {/* SA-R (10/9/2026 sera) — sette pagine, una per lavoro:
+                    niente piu' Admin Panel a quindici tab */}
                 <nav className="space-y-1">
-                  <NavLink
-                    to="/admin"
-                    data-testid="nav-admin"
-                    className={navLinkClass}
-                  >
-                    <ShieldAlert className="h-4 w-4" />
-                    Admin Panel
-                  </NavLink>
-                  {/* PC3 — il privilegio del comporre: pagina propria */}
-                  <NavLink
-                    to="/admin/sound"
-                    data-testid="nav-admin-sound"
-                    className={navLinkClass}
-                  >
-                    <Music className="h-4 w-4" />
-                    Aurya Sound
-                  </NavLink>
-                  {/* SR fase 0 — le strutture ricettive per i ritiri: pagina propria */}
-                  <NavLink
-                    to="/admin/strutture"
-                    data-testid="nav-admin-strutture"
-                    className={navLinkClass}
-                  >
-                    <Building2 className="h-4 w-4" />
-                    Strutture
-                  </NavLink>
+                  {[
+                    ['/admin', 'Dashboard', LayoutDashboard, 'nav-admin'],
+                    ['/admin/cerchio', 'Iscritti al Cerchio', HeartHandshake, 'nav-admin-cerchio'],
+                    ['/admin/operatori', 'Operatori', Briefcase, 'nav-admin-operatori'],
+                    ['/admin/magazine', 'Magazine', Newspaper, 'nav-admin-magazine'],
+                    ['/admin/sound', 'Aurya Sound', Music, 'nav-admin-sound'],
+                    ['/admin/strutture', 'Strutture', Building2, 'nav-admin-strutture'],
+                    ['/admin/tecnico', 'Tecnico', Wrench, 'nav-admin-tecnico'],
+                  ].map(([to, label, Icon, tid]) => (
+                    <NavLink key={to} to={to} end={to === '/admin'} data-testid={tid} className={navLinkClass}>
+                      <Icon className="h-4 w-4" />
+                      {label}
+                    </NavLink>
+                  ))}
                 </nav>
               </>
             )}
