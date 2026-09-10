@@ -315,8 +315,10 @@ export const Sidebar = () => {
       return activeSet.has('cashflow_monitor') && canUse('cashflow_monitor', 'data_quality');
     }
     if (item.href === '/modules') {
-      // piani retreat fissi: l'operatore non deve (ri)attivare moduli a mano
-      return user?.role === 'system_admin';
+      // piani retreat fissi: l'operatore non deve (ri)attivare moduli a mano.
+      // Founder (10/9/2026 sera): la voce «Moduli» sparisce dal menu anche
+      // per il system admin — la pagina resta viva per URL (/modules).
+      return false;
     }
     if (item.href === '/team') {
       // CS3b (founder, 13/8) — nel mondo snello l'operatore olistico
