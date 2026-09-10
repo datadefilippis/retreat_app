@@ -2,7 +2,7 @@
 
 ## Chi paga, cosa, quanto, quando. Il modello definitivo.
 
-Piano di monetizzazione · 10 settembre 2026 (versione integrata) · Davide, Valentina, Claude
+Piano di monetizzazione · 10 settembre 2026 (versione integrata; la roadmap completa con i servizi è in AURYA_ROADMAP_ZERO_AL_GUADAGNO_2026-09.md) · Davide, Valentina, Claude
 
 ---
 
@@ -97,12 +97,13 @@ Il conto che fanno tutti, senza dirlo: **«mi porta persone?»**. Finché la ris
 | Profilo pubblico nella directory, listino, richieste, calendario, clienti, recensioni, pagina link | ✓ | ✓ | ✓ | ✓ |
 | Eventi e ritiri sul tuo profilo e sul tuo link, con caparra via bonifico o con Stripe | ✓ | ✓ | ✓ | ✓ |
 | Commissioni Aurya | **nessuna** | nessuna | nessuna | nessuna |
-| Il ritiro in Ritiri ed esperienze e nella selezione | – | quel ritiro | tutti | tutti |
+| Il ritiro in Ritiri ed esperienze (il marketplace, in ordine di data, coi filtri) | ✓ | ✓ | ✓ | ✓ |
+| In prima fila: nella selezione in cima al marketplace e nelle selezioni di stagione | – | quel ritiro | tutti | tutti |
 | Il ritiro nella Lettera del Cerchio agli iscritti della tua zona e dei tuoi temi | – | quel ritiro | tutti | tutti |
 | Un post su Instagram per ritiro (max uno al mese) | – | quel ritiro | ✓ | ✓ |
 | Badge e precedenza nella directory della tua zona | – | – | ✓ | ✓ |
 | Crea Studio: componi e pubblichi meditazioni con la tua voce | – | – | – | ✓ |
-| Il racconto (intervista) con precedenza, una pagina nel Magazine | su invito | su invito | su invito | ✓ |
+| Il racconto (intervista): per chi pubblica il profilo, gratis per sempre ai primi cinquanta | ✓ in coda | ✓ | ✓ | ✓ con precedenza, più una pagina nel Magazine |
 | Assistenza | email, automatica | email | risposta entro 2 giorni | WhatsApp con Valentina |
 | Team (collaboratori), quando servirà | – | – | – | ✓ |
 
