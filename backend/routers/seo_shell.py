@@ -476,15 +476,16 @@ _BRAND_PAGES = {
     # P3 (10/9/2026, piano di business) — /esperienze torna: tutti i
     # ritiri pubblicati, gratis, con la fascia in prima fila. In fase
     # rete resta noindex (_PHASE_NOINDEX_HEADS) e fuori dalla sitemap.
-    # P13 (10/9/2026, piano §3.1 B) — il team building alla Masseria:
-    # una landing, un modulo, due formati con prezzo «da».
+    # P13 (10/9/2026, piano §3.1 B; founder 10/9 sera: su misura, niente
+    # formati ne' prezzi finche' non li abbiamo studiati) — team building
+    # e ritiri aziendali costruiti ad hoc con la rete: una landing, un modulo.
     "aziende": {
-        "title": "Aurya per le aziende | Team building alla Masseria, con professionisti veri",
-        "description": ("Una giornata fuori per il vostro team: respiro, suono, un "
-                        "cammino, un pranzo lungo. Alla Masseria, condotta da "
-                        "Valentina e dai professionisti della rete Aurya. Giornata "
-                        "da 130 € a persona, due giorni da 320 €. Preventivo entro "
-                        "due giorni lavorativi."),
+        "title": "Aurya per le aziende | Team building e ritiri aziendali su misura",
+        "description": ("Esperienze di team building e ritiri aziendali costruiti "
+                        "su misura per il vostro team: respiro, suono, yoga, cammini, "
+                        "cerchi. Con la rete Aurya di professionisti del benessere e di "
+                        "strutture, condotti da persone vere. Prezzo pattuito su quello "
+                        "che volete. Risposta entro due giorni lavorativi."),
     },
     "esperienze": {
         "title": "Ritiri ed esperienze in programma | Aurya",

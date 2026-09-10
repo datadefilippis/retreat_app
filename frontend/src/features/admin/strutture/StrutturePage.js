@@ -210,7 +210,7 @@ function Richieste({ schema }) {
           </div>
           {/* P13 — il tipo (struttura, regia, team building) e i contatti dell'azienda */}
           <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-[#2f5749]" data-testid="strutture-richiesta-tipo">
-            {({ regia: 'Regia', team_building: 'Team building' })[r.tipo] || 'Struttura'}{r.formula ? ` · ${r.formula}` : ''}{r.formato ? ` · ${r.formato}` : ''}
+            {({ regia: 'Regia', team_building: 'Team building' })[r.tipo] || 'Struttura'}{r.formula ? ` · ${r.formula}` : ''}
           </p>
           {r.tipo === 'team_building' && <p className="mt-1 text-sm">{r.nome}{r.telefono ? ` · ${r.telefono}` : ''}</p>}
           <p className="mt-1 text-sm">{r.zona} · {r.periodo} · {r.persone} persone{r.notti ? ` · ${r.notti} notti` : ''}{r.budget_persona ? ` · ${r.budget_persona} € a persona` : ''}{r.tipo_ritiro ? ` · ${r.tipo_ritiro}` : ''}</p>

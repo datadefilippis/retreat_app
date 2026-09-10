@@ -427,23 +427,35 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
         nginx = (REPO / "deploy" / "nginx" / "nginx.conf").read_text()
         assert "|aziende|" in nginx, "rigenera nginx: scripts/genera_rotte_nginx.py --scrivi"
 
-    def test_la_pagina_dice_i_due_formati_e_niente_che_non_abbiamo(self):
+    def test_la_pagina_e_su_misura_senza_prezzi_ne_formati(self):
+        """Founder (10/9 sera): «non voglio sponsorizzare solo la Masseria,
+        niente formati gia' fatti: non li abbiamo e vanno studiati». Il
+        servizio e' on demand, il prezzo pattuito su cio' che l'azienda vuole."""
         app = (FE / "App.js").read_text()
         assert 'path="/aziende" element={<AziendePage />}' in app
         page = (FE / "features" / "network" / "AziendePage.js").read_text()
         testo = re.sub(r"/\*.*?\*/", "", page, flags=re.S)
-        for tid in ("az-formati", "az-formato-giornata", "az-formato-due_giorni",
-                    "az-formato-su_misura", "az-chi-dove", "az-come", "az-form",
+        for tid in ("az-cosa", "az-chi-rete", "az-come", "az-form", "az-messaggio",
                     "az-invia", "az-fatto", "az-faq"):
-            assert f'data-testid="{tid}"' in testo or f"data-testid={{`{tid.rsplit('-', 1)[0]}-" in testo, tid
-        assert "da 130 € a persona" in testo and "da 320 € a persona" in testo
-        assert "minimo 12 persone" in testo
-        assert "/public/aziende/richiesta" in testo
-        assert "BRAND_EMAIL" in testo
+            assert f'data-testid="{tid}"' in testo, tid
+        assert "su misura" in testo and "pattuito" in testo
+        assert "rete" in testo and "strutture" in testo, "la rete di operatori E di strutture"
+        assert "€" not in testo and "prezzo «da»" not in testo, "nessun prezzo: non abbiamo formati"
+        assert "Masseria" not in testo and "sala a volta" not in testo, "non solo la Masseria"
+        assert "formato" not in testo.lower(), "niente formati pre-fatti"
+        assert "/public/aziende/richiesta" in testo and "BRAND_EMAIL" in testo
         for frase in ANTI_URGENZA + ("ultimi posti", "affrettat", "solo per oggi"):
             assert frase not in testo.lower(), frase
-        assert "<img" not in testo, "niente foto finche' non ci sono quelle vere della sala a volta"
-        assert "in sede" not in testo and "da voi" not in testo, "il team building e' alla Masseria, non altrove"
+        assert "<img" not in testo, "niente foto finche' non ci sono quelle vere"
+        shell_src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        blocco = shell_src[shell_src.index('"aziende": {'):shell_src.index('"esperienze": {')]
+        assert "€" not in blocco and "Masseria" not in blocco and "su misura" in blocco
+        em = (BACKEND_DIR / "services" / "strutture_email.py").read_text()
+        assert "Masseria" not in em and "FORMATI" not in em
+        assert "formato" not in (BACKEND_DIR / "routers" / "aziende.py").read_text()
+        ident = (BACKEND_DIR / "services" / "identita.py").read_text()
+        corpo = ident[ident.index("def corpo_aziende"):ident.index("CORPI = {")]
+        assert "€" not in corpo and "Masseria" not in corpo and "su misura" in corpo
         shell = (FE / "features" / "storefront" / "components" / "MarketplaceShell.jsx").read_text()
         assert 'data-testid="footer-nw-aziende"' in shell
 

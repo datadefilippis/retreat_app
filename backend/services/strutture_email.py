@@ -3,8 +3,8 @@
 Tre tipi di richiesta, una macchina sola:
 - «struttura»: l'operatore cerca una struttura per un ritiro (SR);
 - «regia»: l'operatore chiede la regia del ritiro (P13, piano §3.1 A);
-- «team_building»: un'azienda chiede una giornata alla Masseria dalla
-  pagina /aziende (P13, piano §3.1 B).
+- «team_building»: un'azienda chiede un team building o un ritiro
+  aziendale su misura dalla pagina /aziende (P13, piano §3.1 B).
 Chi chiede riceve una ricevuta e un aggiornamento a ogni cambio di
 stato; la piattaforma (ADMIN_EMAIL) riceve ogni richiesta nuova con il
 link al pannello. Best-effort: un'email che non parte non blocca mai.
@@ -29,12 +29,6 @@ STATI_TESTO_SERVIZIO = {
 FORMULE = {"leggera": "Regia leggera (290 €)",
            "completa": "Regia completa (690 € + 40 € a partecipante oltre il sesto)",
            "non_so": "da capire insieme"}
-FORMATI = {"giornata": "Giornata «Respiro» (6 ore)",
-           "due_giorni": "Due giorni «Rientro»",
-           "su_misura": "Su misura",
-           "non_so": "da capire insieme"}
-
-
 def _base() -> str:
     return (os.environ.get("PUBLIC_BASE_URL") or os.environ.get("FRONTEND_URL")
             or "https://aurya.life").rstrip("/")
@@ -52,7 +46,6 @@ def _riassunto(r: dict) -> str:
                   f"Referente: {r.get('nome')} — {r.get('email')}"]
         if r.get("telefono"):
             righe.append(f"Telefono: {r['telefono']}")
-        righe.append(f"Formato: {FORMATI.get(r.get('formato'), r.get('formato') or 'da capire insieme')}")
     else:
         righe.append(f"Zona: {r.get('zona')}")
     righe += [f"Periodo: {r.get('periodo')}", f"Persone: {r.get('persone')}"]
@@ -80,7 +73,7 @@ def avvisa_piattaforma_richiesta(r: dict) -> None:
             testa = f"<p><b>{chi}</b> chiede la regia di un ritiro.</p>"
             oggetto = f"Richiesta di regia da {chi}"
         elif tipo == "team_building":
-            testa = f"<p><b>{chi}</b> chiede un team building alla Masseria.</p>"
+            testa = f"<p><b>{chi}</b> chiede un team building o un ritiro aziendale su misura.</p>"
             oggetto = f"Richiesta team building da {chi}"
         else:
             testa = f"<p><b>{chi}</b> cerca una struttura per un ritiro.</p>"
@@ -107,9 +100,10 @@ def ricevuta_operatore(r: dict) -> None:
             oggetto = "La tua richiesta di regia è arrivata"
         elif tipo == "team_building":
             corpo = (f"<p>Ciao {r.get('nome') or ''},</p><p>abbiamo ricevuto la richiesta di "
-                     f"<b>{r.get('azienda') or r.get('organization_nome')}</b> per una giornata alla Masseria. "
-                     "Vi scriviamo entro due giorni lavorativi con un preventivo che dice tutto: "
-                     "programma, chi conduce, cosa comprende.</p>")
+                     f"<b>{r.get('azienda') or r.get('organization_nome')}</b> per un'esperienza su misura. "
+                     "Vi scriviamo entro due giorni lavorativi: prima una chiamata per capire cosa "
+                     "volete portare a casa, poi una proposta scritta con programma, chi conduce, "
+                     "dove, e il prezzo pattuito su quello.</p>")
             oggetto = "La vostra richiesta è arrivata — Aurya per le aziende"
         else:
             corpo = ("<p>Ciao,</p><p>abbiamo ricevuto la tua richiesta di una struttura per un "
