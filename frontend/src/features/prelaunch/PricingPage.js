@@ -72,7 +72,7 @@ const CLUB = [
 const PRO = [
   ['Tutto il Club, per primo', 'Primo tra i Club in prima fila; fino a tre invii al mese.'],
   ['L’intervista completa', 'Una conversazione con Valentina, il badge Verificato Aurya, una pagina nel Magazine.'],
-  ['Crea Studio', 'Componi meditazioni con la tua voce, basi e frequenze; le pubblichi con un link e le condividi coi tuoi clienti.'],
+  ['Aurya Sound Studio', 'Crea Studio: componi meditazioni con la tua voce, basi e frequenze; le pubblichi con un link e le condividi coi tuoi clienti.'],
   ['WhatsApp con Valentina', 'Con orari scritti.'],
 ];
 
