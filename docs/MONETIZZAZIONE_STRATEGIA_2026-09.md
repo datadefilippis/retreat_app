@@ -18,6 +18,8 @@ Analisi e piano · 10 settembre 2026 · Davide, Valentina, Claude
 
 **Quando.** Fino al 31/12/2026 tutto gratis come promesso. Dal 1° gennaio 2027 i piani esistono e sono scritti, ma **il Club si vende solo quando la fila c'è**: tre numeri pubblici che devono essere veri prima di chiedere un euro per la visibilità (300 iscritti confermati al Cerchio, 10 ritiri in programma, 1.000 visite al mese). I fondatori (i primi venti entro il 31/10/2026) hanno il Club regalato per tutto il 2027.
 
+**Il mercato conferma e corregge.** Treatwell, Fresha e Booksy vendono il cliente nuovo (20-30% del primo appuntamento, poi zero), BookRetreats e Tripaneer il 15-30% sull'intero ritiro con la classifica in vendita, Momoyoga il nostro «gratis col 5% online» che lì regge perché lì si paga online. Nessuno vende il software. La promessa che convince è sempre «il tuo cliente è tuo»: noi la diciamo fino in fondo, «Aurya non prende commissioni, mai», e teniamo in cassaforte per il 2028 l'unica commissione che il mercato dimostra accettata, quella sul primo cliente portato. Dal confronto entrano due cose: la **Spinta per un ritiro a 19 €** (la porta piccola di chi fa un ritiro l'anno) e il no definitivo al pay-to-rank.
+
 **Quanto vale.** Nel 2027, con 60 operatori, i piani rendono circa 2.000-3.000 € e le commissioni altri 2.000-4.000: non ci vive nessuno. Il loro valore nel 2027 è un altro: rendono la rete auto-selezionante (chi paga 49 € è serio), pagano gli strumenti, e mettono in piedi la macchina che nell'anno 2 del piano strategico vale 8.900 € di Club e 4.000 di commissioni. I soldi veri restano dove il piano li aveva messi: chi cerca (abbonamento alle meditazioni, esperienze) e il corso.
 
 ---
@@ -54,7 +56,33 @@ Il conto che tutti e quattro fanno, senza dirlo: **«mi porta persone?»**. Finc
 
 ---
 
-## 3. Le alternative, una per una
+## 3. Il mercato: come si fanno pagare gli altri (rilevazione 10/9/2026)
+
+| Chi | Modello | Numeri | Cosa insegna |
+|---|---|---|---|
+| **Treatwell** (beauty, Italia) | commissione sul **nuovo cliente** portato dalla vetrina + 0% su chi ritorna + 2% sui prepagamenti online; software con contratto minimo 12 mesi | 25% del primo servizio; canone non pubblicato | il mercato accetta di pagare **molto** per il nuovo cliente, purché sia una volta sola e il cliente diventi suo |
+| **Fresha** (beauty, mondo) | software a canone (il piano gratuito è stato chiuso nel 2026) + 20% sul primo appuntamento di un nuovo cliente dal marketplace; «le prenotazioni dal tuo link non pagano mai» | 19,95 €/mese; 20% (min 6 $) una tantum; incassi 1,29% + 0,20 € | la promessa che vende è **«il tuo link è tuo»**; e il gratis per sempre non ha retto nemmeno a loro |
+| **Booksy** | canone + «Boost»: 20-30% sul primo appuntamento del nuovo cliente | 25-80 €/mese; pagamenti 1,89% + 0,49 | stesso schema: software + successo sul nuovo cliente |
+| **BookRetreats** (ritiri) | listare è gratis; **15%** sull'intero ritiro quando il cliente paga tramite loro; 20-30% per salire in classifica; caparra minima 15%; 3% di elaborazione | 15-30% + 3% | «ci paghi solo se ti paghiamo» funziona, ma il pay-to-rank è il contrario del nostro criterio invisibile |
+| **Tripaneer / BookYogaRetreats** | commissione quando il primo contatto nasce sulla piattaforma; caparra minima decisa da loro; recensioni di organizzatori spinti dal 14 al 20% per la classifica | 15-30% | idem, con la rabbia degli organizzatori documentata |
+| **Momoyoga** (yoga, Europa) | gratis con **5% di piattaforma** su ogni pagamento online; a canone senza commissione | 0 / 29 / 59 / 179 €/mese | è esattamente il nostro modello di oggi, e lì funziona perché chi paga online è la regola, non l'eccezione |
+| **Momence** (studi, USA) | gratis con 5% + 4% al cliente; 60 $/mese col 2,5%; 199 $ senza | | «paghi per togliere la commissione»: il nostro Pro, in un mercato che incassa online |
+| **Eventbrite** (eventi) | commissione a biglietto, di solito pagata da chi compra | 3,5% + 0,49 € a biglietto (Italia) | la commissione la paga il partecipante, non l'organizzatore: un'idea per la caparra online |
+| **MioDottore** (medici) | canone personalizzato per il profilo premium + agenda | non pubblicato (decine di euro al mese) | la directory professionale in Italia si vende a canone, e cara |
+| **Linktree** | pagina link gratis; a canone per togliere il marchio e i limiti | 4,50 / 10,50 / 27,50 €/mese | il nostro «link solo» vale già come un Linktree Starter (54 €/anno) |
+| **Italia Olistica / ROOI** | directory gratuita / registro a 80 € una tantum | | l'operatore olistico italiano è abituato a pagare poco o niente per «esserci» |
+| **Gestionali italiani a canone** (Biutify) | canone fisso, zero commissioni | 600-1.200 €/anno; sotto 100 €/anno per i freelance | il nostro Club e il nostro Pro stanno nella fascia freelance, bassa e giusta |
+| **Satispay / SumUp** (incassi) | solo commissione per transazione | 0,95% (Satispay sopra 10 €; SumUp carte consumer) | ricevere pagamenti costa poco e non spaventa quando non serve «collegare» niente |
+
+**Le cinque lezioni.**
+
+1. **Nessuno vende il software: tutti vendono il cliente nuovo.** Treatwell, Fresha e Booksy fanno pagare il 20-30% del primo appuntamento di un cliente che hanno portato loro, e zero su tutto il resto. Gli operatori lo pagano perché è un costo di acquisizione con un nome e un volto, non una tassa. È il modello più solido del settore servizi, e vale la pena tenerlo pronto per quando la fila esiste (§4.7).
+2. **Il «gratis con il 5% online» è il nostro modello di oggi, ed è di Momoyoga.** Lì regge perché nello yoga digitale si paga online per abitudine. Da noi, con operatori che preferiscono il bonifico, è una commissione su una minoranza di incassi: rende poco e crea il furbo. Il mercato ci dice che non è sbagliato, è **prematuro e nel posto sbagliato**.
+3. **Il pay-to-rank dei ritiri (BookRetreats, Tripaneer) è il nostro anti-modello.** Vendere la posizione in classifica contro commissioni più alte contraddice «il criterio è invisibile» e produce le recensioni furiose che si leggono su Trustpilot. Il Club non vende un posto più alto: vende una fila in più (Lettera, selezione, Instagram).
+4. **Il gratis per sempre non regge nemmeno ai grandi**: Fresha ha chiuso il piano gratuito nel 2026. Il nostro Gratis è sostenibile solo perché non facciamo assistenza a mano a chi non paga (§7): questa regola è la vera condizione del gratis.
+5. **La promessa che convince è sempre la stessa, detta in tre modi**: «0% sui clienti che ritornano» (Treatwell), «le prenotazioni dal tuo link non pagano mai» (Fresha), «ci paghi solo se ti paghiamo» (BookRetreats). Tutte dicono: **il tuo cliente è tuo.** La nostra la dice fino in fondo: «Aurya non prende commissioni. Mai.»
+
+## 3.1 Le alternative, una per una
 
 | Modello | Come funziona | Perché sì | Perché no | Verdetto |
 |---|---|---|---|---|
@@ -96,7 +124,7 @@ Il conto che tutti e quattro fanno, senza dirlo: **«mi porta persone?»**. Finc
 | Risposta entro due giorni lavorativi | |
 | Le commissioni restano: 5% solo sulle prenotazioni online che la fila ti porta | il Club è il biglietto per la fila, il 5% la quota su ciò che la fila porta |
 
-**Perché 49 e annuale**: è il prezzo di un weekend, si paga una volta e non si pensa più; un canone mensile da 4-9 € si disdice al primo mese vuoto, un annuale si giudica sull'anno. Per Chiara: se il Club le porta due iscritte a 180 € ha guadagnato sette volte la quota.
+**Perché 49 e annuale**: è il prezzo di un weekend, si paga una volta e non si pensa più; un canone mensile da 4-9 € si disdice al primo mese vuoto, un annuale si giudica sull'anno. Per Chiara: se il Club le porta due iscritte a 180 € ha guadagnato sette volte la quota. Nel mercato sta esattamente dove deve stare: come un Linktree Starter (54 €/anno), sotto il registro ROOI (80 € una tantum), nella fascia «sotto 100 €/anno» dei gestionali per freelance, e a un decimo di quello che Treatwell prende su un solo cliente nuovo da 200 €.
 
 **Perché non lo vendiamo prima che la fila esista**: sarebbe una promessa falsa. Vedi §6.
 
@@ -112,7 +140,7 @@ Il conto che tutti e quattro fanno, senza dirlo: **«mi porta persone?»**. Finc
 
 **Perché 119 e non 19 al mese**: 228 € l'anno è troppo per chi incassa 5-10 mila; 119 è «meno di 10 al mese» e si decide una volta. Per Marco è irrilevante (lo paga in un ritiro), per Silvia è la soglia giusta. Il mensile a 12 € resta per chi vuole provare.
 
-**Il tuo 99 €**: possibile, ma 99 è troppo vicino a 49 per due cose diverse (visibilità vs. esenzione + Studio); 119 tiene la distanza e resta sotto la soglia psicologica dei 10 al mese. Decidi tu fra 99 e 119: cambia il seed, non il modello.
+**Il tuo 99 €**: possibile, ma 99 è troppo vicino a 49 per due cose diverse (visibilità vs. Studio + Valentina); 119 tiene la distanza e resta sotto la soglia psicologica dei 10 al mese. Nel mercato è quasi regalato: Momoyoga Standard costa 348 €/anno, Fresha 239, Treatwell Connect circa 230; potremmo salire a 149 nel 2028 senza uscire dalla fascia bassa. Decidi tu fra 99 e 119: cambia il seed, non il modello.
 
 ### 4.5 La caparra e la domanda «Stripe senza commissione?»
 
@@ -123,6 +151,12 @@ Il conto che tutti e quattro fanno, senza dirlo: **«mi porta persone?»**. Finc
 > **Il 5% si paga solo sulle prenotazioni che ti porta Aurya.** Una prenotazione arrivata dal tuo profilo o dalla tua pagina link è tua: 0%, con o senza Stripe. Una prenotazione arrivata da Ritiri ed esperienze, dalla selezione, dalla Lettera o dalla directory l'ha portata Aurya: 5%, solo se incassata online. Il Pro azzera anche quella.
 
 Tre effetti. Nessuno ha più motivo di evitare Stripe: sulle prenotazioni sue non paga nulla, e la caparra online gli conviene. Il 5% diventa una success fee sulla fila, cioè sulla cosa che il Club compra: il Club è il biglietto per la fila, il 5% è la quota su ciò che la fila porta, e chi non vuole pensarci prende il Pro. E Aurya smette di difendere una commissione aggirabile: difende la provenienza, che si misura (ogni ordine porta da dove è arrivato: profilo, link, marketplace, Lettera). Costo tecnico: registrare la provenienza sull'ordine e applicare la fee solo a quelle (M8, una giornata). **È la variante che raccomando.**
+
+### 4.7 Due aggiunte che il mercato suggerisce
+
+**La Spinta per un ritiro, 19 € una tantum.** Chiara fa un ritiro l'anno e non compra un abbonamento «per vedere». Il mercato lo sa (Eventbrite vende la promozione per evento, BookRetreats la classifica per ritiro): la porta piccola è **«metti in prima fila questo ritiro»**, 19 € una volta, stessa fila del Club (selezione, Lettera per zona, un post) per quel ritiro soltanto. È il trigger n. 1 del wizard con un prezzo che si decide in dieci secondi, e chi la compra due volte ha già pagato quasi un Club: il passaggio lo propone il prodotto. Costo tecnico: un pagamento una tantum sul nostro Stripe (quello degli abbonamenti, che esiste) e il flag prima fila sul singolo ritiro: mezza giornata.
+
+**Il modello «nuovo cliente», in cassaforte per la fase 2.** Quando la fila esiste (i tre cancelli) e il marketplace porta prenotazioni misurabili, il settore dice che gli operatori pagano volentieri il **primo cliente** che gli portiamo, una volta sola, qualunque sia il modo in cui incassano: Fresha e Treatwell lo fanno con la carta dell'operatore registrata e un addebito al primo appuntamento. Per noi sarebbe: nessuna commissione sui ritiri, ma «il primo cliente dalla fila costa X» in alternativa al Club. Non ora, e forse mai: si decide nel 2028 sui numeri, e resta scritto qui perché è l'unica commissione che il mercato dimostra accettata. Fino ad allora la frase resta **«Aurya non prende commissioni. Mai.»**, e se un giorno cambiasse, cambierebbe per i nuovi iscritti, con la data scritta.
 
 ### 4.4 Fondatori e Partner (le leve, non piani in vendita)
 
@@ -144,6 +178,7 @@ Dopo aver letto §4.5 il founder ha chiuso così: «Stripe mi dà fastidio: ci v
 | Gratis | 0, per sempre | tutto per lavorare: profilo, listino, richieste, calendario, clienti, recensioni, pagina link, eventi e ritiri sul tuo profilo (su richiesta o online con Stripe). **Aurya non prende commissioni, mai.** Restano solo quelle di Stripe, che non sono nostre |
 | Club Aurya | 49 €/anno | la fila: i tuoi ritiri ed eventi in Ritiri ed esperienze e nella selezione, nella Lettera agli iscritti della tua zona e dei tuoi temi, un post su Instagram per ritiro (max uno al mese), badge, precedenza nella directory della tua zona, risposta in due giorni |
 | Pro | 119 €/anno (o 12/mese) | il Club, più Crea Studio (componi e pubblichi meditazioni con la tua voce), WhatsApp con Valentina, il racconto con precedenza e una pagina nel Magazine, team quando servirà |
+| Spinta | 19 € per un ritiro | la fila del Club per quel ritiro soltanto: selezione, Lettera per zona, un post (§4.7) |
 
 Cosa perde Aurya: la commissione, che nel 2027 valeva 1.500-3.000 € nello scenario più ottimista e che gli operatori avrebbero aggirato comunque. Cosa guadagna: una frase che si capisce in un secondo («Aurya non prende commissioni»), nessun incentivo perverso, nessun controllo da fare, e la differenza netta rispetto a BookRetreats e Tripaneer (15-20%): non «costiamo meno», ma «non costiamo sul tuo lavoro».
 
@@ -259,6 +294,7 @@ Con la metà dei ritiri o un quarto degli abbonati: 2.300 €. Con Marco che por
 | M6 | Lettera per zona/temi coi ritiri Club: la query esiste (retreat_alert, città, interessi), manca l'invio; template + job | 1 giornata |
 | M7 | Il cruscotto dei tre numeri (iscritti confermati, ritiri in programma, visite) in system admin e su /costi | mezza giornata |
 | M9 | Il contatore «{N} persone nel Cerchio vicino a te che hanno chiesto i tuoi temi» nel wizard del ritiro e nel gestionale (query sulle preferenze del Cerchio) | mezza giornata |
+| M10 | La Spinta per un ritiro (19 € una tantum sul nostro Stripe, flag prima fila sul singolo ritiro, proposta nel wizard e nel cruscotto) | mezza giornata |
 
 Tutto sopra il motore di billing che c'è già (piani per modulo, abbonamenti Stripe, flag per organizzazione). Nessun rifacimento.
 
@@ -269,12 +305,12 @@ Tutto sopra il motore di billing che c'è già (piani per modulo, abbonamenti St
 | # | Decisione | Proposta |
 |---|---|---|
 | 1 | Togliere il vincolo Stripe per il marketplace; il bonifico con caparra è la strada principale, Stripe l'opzione (decisione founder 10/9 sera) | sì |
-| 2 | Tre piani annuali: Gratis / Club 49 / Pro 119 (mensile 12) | sì; 99 se preferisci, ma non sotto |
+| 2 | Tre piani annuali: Gratis / Club 49 / Pro 119 (mensile 12), più la Spinta per un ritiro a 19 € | sì; 99 se preferisci, ma non sotto |
 | 3 | **Zero commissioni Aurya, sempre** (decisione founder 10/9 sera, §4.6); Stripe è uno strumento, restano solo le sue commissioni | sì |
 | 4 | Dal 1/1/2027 i piani sono pubblici; il Club si vende solo coi tre cancelli veri; il trigger nel wizard compare solo se il numero è vero | sì |
 | 5 | Fondatori: Club gratis per il 2027 e Pro bloccato | sì |
 | 6 | Il nostro tempo: Gratis = email automatiche; Club = risposta in due giorni + un post per ritiro; Pro = WhatsApp | sì |
-| 7 | Mai merchant of record nel 2027 | sì |
+| 7 | Mai merchant of record nel 2027; mai pay-to-rank; il modello «nuovo cliente» resta in cassaforte per il 2028, sui numeri | sì |
 | 8 | Scrivere da subito, in landing e in /costi, cosa succede a gennaio | sì, nell'onda 1 del rebranding |
 
 Con il sì, M3 e M8 (le parole) entrano subito nel rebranding; M1-M2-M5-M7 sono una settimana; M4 e M6 stanno nell'onda 2.
