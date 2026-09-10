@@ -904,6 +904,15 @@ async def verify_email(request: Request, body: VerifyEmailRequest):
     user_doc = await user_repository.find_by_verification_token_hash(token_hash)
 
     if not user_doc:
+        # FV8 (10/9/2026 sera) — il token resta MONOUSO (l'hash vivo si
+        # azzera), ma l'hash CONSUMATO si ricorda: il secondo clic sullo
+        # stesso link (dal telefono, un giorno dopo) dice «era gia'
+        # verificata» invece di «link non valido». Non apre niente.
+        from database import users_collection
+        gia = await users_collection.find_one(
+            {"verification_token_used_hash": token_hash, "email_verified": True}, {"_id": 1})
+        if gia:
+            return VerifyEmailResponse(message="Email già verificata.")
         # Track S Step 2.3 — detection log (same rationale as reset).
         logger.info(
             "admin verify_email: token consumption failed (invalid, "
@@ -947,8 +956,9 @@ async def verify_email(request: Request, body: VerifyEmailRequest):
         user_doc["id"],
         {
             "email_verified": True,
-            "verification_token_hash": None,
+            "verification_token_hash": None,          # monouso (SEC S2.3)
             "verification_token_expires": None,
+            "verification_token_used_hash": token_hash,   # FV8: il secondo clic si riconosce
             "updated_at": now_iso,
         },
     )

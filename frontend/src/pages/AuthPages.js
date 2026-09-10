@@ -1139,8 +1139,13 @@ export const VerifyEmailPage = () => {
   const token = searchParams.get('token');
   useLangParam();
 
-  const [status, setStatus] = useState('loading'); // loading | success | error
+  const [status, setStatus] = useState('loading'); // loading | success | gia | error
   const { adottaSessione } = useAuth();
+  // FV8 (10/9/2026 sera) — la pagina «Verifica fallita» era un vicolo
+  // cieco (solo «Entra in Aurya»): chi ha chiesto un nuovo link e apre
+  // il vecchio, o arriva dopo 24 ore, deve poter rimandarlo DA QUI.
+  const [emailRimando, setEmailRimando] = useState('');
+  const [rimando, setRimando] = useState('idle'); // idle | sending | done
 
   useEffect(() => {
     if (!token) {
@@ -1151,12 +1156,14 @@ export const VerifyEmailPage = () => {
     const verify = async () => {
       try {
         const res = await authAPI.verifyEmail(token);
-        setStatus('success');
         // FV1 (10/9/2026) — il clic FA ENTRARE: la sessione arriva col
         // verify e si atterra sul benvenuto, senza secondo login
         const dati = res?.data || res || {};
         if (dati.access_token && adottaSessione(dati)) {
+          setStatus('success');
           setTimeout(() => navigate('/benvenuto', { replace: true }), 900);
+        } else {
+          setStatus('gia');   // secondo clic sullo stesso link: era gia' verificata
         }
       } catch (err) {
         setStatus('error');
@@ -1178,19 +1185,44 @@ export const VerifyEmailPage = () => {
           <CardTitle>
             {status === 'loading' && t('verify_email.verifying')}
             {status === 'success' && t('verify_email.verified_title')}
+            {status === 'gia' && t('verify_email.gia_title', { defaultValue: 'Era già verificata' })}
             {status === 'error' && t('verify_email.error_title')}
           </CardTitle>
           <CardDescription>
             {status === 'success' && t('verify_email.success')}
+            {status === 'gia' && t('verify_email.gia', { defaultValue: 'La tua email era già confermata: entra con la tua password.' })}
             {status === 'error' && (!token ? t('verify_email.invalid_link') : t('verify_email.error'))}
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center">
+        <CardContent className="text-center space-y-3">
+          {/* FV8 — dal link non valido si rimanda l'email, senza cercare il login */}
+          {status === 'error' && rimando !== 'done' && (
+            <form className="space-y-2 text-left" data-testid="verify-resend"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!emailRimando.trim()) return;
+                    setRimando('sending');
+                    try { await authAPI.resendVerification(emailRimando.trim()); } catch { /* risposta uniforme comunque */ }
+                    setRimando('done');
+                  }}>
+              <input type="email" value={emailRimando} onChange={(e) => setEmailRimando(e.target.value)} required
+                     placeholder={t('verify_email.resend_email', { defaultValue: 'La tua email' })}
+                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" data-testid="verify-resend-email" />
+              <Button type="submit" variant="outline" className="w-full" disabled={rimando === 'sending'} data-testid="verify-resend-btn">
+                {rimando === 'sending' ? t('verify_email.resending', { defaultValue: 'Rimando…' }) : t('verify_email.resend', { defaultValue: 'Rimandami il link' })}
+              </Button>
+            </form>
+          )}
+          {status === 'error' && rimando === 'done' && (
+            <p className="text-sm text-muted-foreground" data-testid="verify-resend-done">
+              {t('verify_email.resend_done', { defaultValue: 'Se l’indirizzo è tra i nostri, hai una nuova email: vale quella, l’ultima.' })}
+            </p>
+          )}
           {/* ID-octies (20/8) — dopo la verifica si va al secondo passo
               (benvenuto), non al login nudo: era il motivo per cui
               /benvenuto non lo vedeva nessuno. */}
-          {status !== 'loading' && (
-            <Button onClick={() => navigate(`/accedi?next=%2Fbenvenuto&lang=${i18n.language}`)} className="w-full">
+          {(status === 'gia' || status === 'error') && (
+            <Button onClick={() => navigate(`/accedi?next=%2Fbenvenuto&lang=${i18n.language}`)} className="w-full" variant={status === 'error' ? 'ghost' : 'default'}>
               {t('verify_email.go_to_welcome', 'Entra in Aurya')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

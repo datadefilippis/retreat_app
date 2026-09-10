@@ -940,3 +940,46 @@ class TestFv1IlMuroDellaVerifica:
             assert frase not in seq
         svc = (BACKEND_DIR / "services" / "auth_service.py").read_text()
         assert "benvenuto_operatore(user.email, user.name, verification_token, user_locale)" in svc
+
+
+class TestFv8IlPercorsoSenzaVicoliCiechi:
+    """FV8 (10/9/2026 sera, founder: «verifica che iscrizione, account,
+    verifica e accesso siano snelli, senza bug»). Giro fatto da utente
+    vero nel browser: operatore dalla landing e da /accedi, Cerchio da
+    /cerca-ritiro e dalle meditazioni, disiscrizione e re-iscrizione.
+    Quattro vicoli ciechi chiusi: il link scaduto non offriva niente; il
+    secondo clic diceva «link non valido»; «prima conferma la tua email»
+    al login non rimandava; la schermata dopo la registrazione mostrava
+    il testo vecchio (le chiavi del locale vincono sul defaultValue)."""
+
+    def test_dal_link_scaduto_si_rimanda_e_il_secondo_clic_dice_la_verita(self):
+        pages = (FE / "pages" / "AuthPages.js").read_text()
+        assert 'data-testid="verify-resend"' in pages and "authAPI.resendVerification(emailRimando.trim())" in pages
+        assert "setStatus('gia')" in pages and "Era già verificata" in pages
+        auth = (BACKEND_DIR / "routers" / "auth.py").read_text()
+        corpo = auth[auth.index("async def verify_email("):auth.index("@router.", auth.index("async def verify_email("))]
+        assert '"verification_token_hash": None' in corpo, "il token resta MONOUSO (SEC S2.3)"
+        assert '"verification_token_used_hash": token_hash' in corpo and '"verification_token_used_hash": token_hash, "email_verified": True' in corpo
+        assert corpo.count('message="Email già verificata."') == 2, "il secondo clic si riconosce dall'hash consumato"
+
+    def test_al_login_non_verificato_si_rimanda_da_li(self):
+        login = (FE / "features" / "account" / "AccountLoginPage.js").read_text()
+        assert 'data-testid="login-rimanda-verifica"' in login and "authAPI.resendVerification(email.trim())" in login
+        assert "setNonVerificata(true)" in login
+
+    def test_la_schermata_dopo_la_registrazione_dice_le_parole_nuove(self):
+        import json
+        auth = json.loads((FE / "locales" / "it" / "auth.json").read_text())
+        assert auth["signup"]["verify_email_title"] == "Apri la tua email: un clic e sei dentro"
+        assert "{{email}}" in auth["signup"]["verify_email_message"]
+        assert auth["verify_email"]["error_title"] == "Questo link non vale più"
+
+    def test_chi_torna_dopo_la_disiscrizione_riparte_da_zero(self):
+        subs = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
+        corpo = subs[subs.index("async def subscribe("):subs.index("async def confirm(")]
+        assert '"$unset": {"sequenza": "", "unsubscribed_at": "", "unsubscribed_by": ""}' in corpo
+
+    def test_il_mondo_sound_parte_in_italiano(self):
+        i18n = (FE / "i18n.js").read_text()
+        for via in ("meditazioni", "frequenze", "newsletter", "entra-nella-rete", "accedi", "verify-email"):
+            assert f"|{via}" in i18n, via

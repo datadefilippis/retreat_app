@@ -25,6 +25,7 @@ import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import api from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { extractApiError } from '../../pages/AuthPages';
+import { authAPI } from '../../api/auth';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import { salvaProva, emailDellaProva } from '../../lib/cerchio';
@@ -123,6 +124,16 @@ export default function AccountLoginPage() {
   const [name, setName] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+  // FV8 (10/9/2026 sera) — l'operatore non ancora verificato che prova a
+  // entrare leggeva «prima conferma la tua email» e basta: se l'email e'
+  // persa o scaduta (24 ore) era un vicolo cieco. Da qui la rimanda.
+  const [nonVerificata, setNonVerificata] = useState(false);
+  const [rimando, setRimando] = useState('idle'); // idle | sending | done
+  const rimandaVerifica = async () => {
+    setRimando('sending');
+    try { await authAPI.resendVerification(email.trim()); } catch { /* risposta uniforme comunque */ }
+    setRimando('done');
+  };
   // AP-L — consenso a Termini + Privacy di Aurya: obbligatorio al signup,
   // timbrato sull'account (aurya_legal) e nell'audit consensi.
   const [signupConsent, setSignupConsent] = useState(false);
@@ -162,7 +173,7 @@ export default function AccountLoginPage() {
   // entrambi i token (SSO). Le chiavi restano quelle di sempre.
   const passwordLogin = async (e) => {
     e.preventDefault();
-    setSending(true); setError(null);
+    setSending(true); setError(null); setNonVerificata(false); setRimando('idle');
     try {
       const res = await platformApi.post('/auth/entra',
         { email: email.trim(), password });
@@ -208,6 +219,7 @@ export default function AccountLoginPage() {
         }));
       } else if (status === 403 && (detail === 'EMAIL_NOT_VERIFIED'
           || detail === 'Email not verified')) {
+        setNonVerificata(true);
         setError(t('landings:account.loginNotVerified', {
           defaultValue: 'Prima conferma la tua email: controlla la posta (anche lo spam).',
         }));
@@ -474,6 +486,15 @@ export default function AccountLoginPage() {
                 className={inputCls}
               />
               {error && <p className="text-xs text-red-600">{error}</p>}
+              {error && nonVerificata && (
+                <p className="text-xs" data-testid="login-rimanda-verifica">
+                  {rimando === 'done'
+                    ? t('landings:account.verificaRimandata', { defaultValue: 'Rimandata: vale l’ultima email che ricevi. Apri quella.' })
+                    : <button type="button" onClick={rimandaVerifica} disabled={rimando === 'sending'} className="underline underline-offset-2 text-[#2f5749]">
+                        {rimando === 'sending' ? t('landings:account.rimando', { defaultValue: 'Rimando…' }) : t('landings:account.rimandaVerifica', { defaultValue: 'Non la trovi? Rimandami il link di verifica' })}
+                      </button>}
+                </p>
+              )}
               <button type="submit" disabled={sending} className={btnCls} data-testid="password-login-submit">
                 {sending
                   ? t('landings:account.entering', { defaultValue: 'Un attimo…' })
@@ -517,6 +538,15 @@ export default function AccountLoginPage() {
                 className={inputCls}
               />
               {error && <p className="text-xs text-red-600">{error}</p>}
+              {error && nonVerificata && (
+                <p className="text-xs" data-testid="login-rimanda-verifica">
+                  {rimando === 'done'
+                    ? t('landings:account.verificaRimandata', { defaultValue: 'Rimandata: vale l’ultima email che ricevi. Apri quella.' })
+                    : <button type="button" onClick={rimandaVerifica} disabled={rimando === 'sending'} className="underline underline-offset-2 text-[#2f5749]">
+                        {rimando === 'sending' ? t('landings:account.rimando', { defaultValue: 'Rimando…' }) : t('landings:account.rimandaVerifica', { defaultValue: 'Non la trovi? Rimandami il link di verifica' })}
+                      </button>}
+                </p>
+              )}
               <button type="submit" disabled={sending} className={btnCls}>
                 {sending
                   ? t('landings:account.sending', { defaultValue: 'Invio…' })
@@ -548,6 +578,15 @@ export default function AccountLoginPage() {
                 autoFocus
               />
               {error && <p className="text-xs text-red-600">{error}</p>}
+              {error && nonVerificata && (
+                <p className="text-xs" data-testid="login-rimanda-verifica">
+                  {rimando === 'done'
+                    ? t('landings:account.verificaRimandata', { defaultValue: 'Rimandata: vale l’ultima email che ricevi. Apri quella.' })
+                    : <button type="button" onClick={rimandaVerifica} disabled={rimando === 'sending'} className="underline underline-offset-2 text-[#2f5749]">
+                        {rimando === 'sending' ? t('landings:account.rimando', { defaultValue: 'Rimando…' }) : t('landings:account.rimandaVerifica', { defaultValue: 'Non la trovi? Rimandami il link di verifica' })}
+                      </button>}
+                </p>
+              )}
               <button type="submit" disabled={verifyingCode || code.length !== 6} className={btnCls}>
                 {verifyingCode
                   ? t('landings:account.verifyingCode', { defaultValue: 'Verifico…' })
@@ -574,6 +613,15 @@ export default function AccountLoginPage() {
                 className={inputCls}
               />
               {error && <p className="text-xs text-red-600">{error}</p>}
+              {error && nonVerificata && (
+                <p className="text-xs" data-testid="login-rimanda-verifica">
+                  {rimando === 'done'
+                    ? t('landings:account.verificaRimandata', { defaultValue: 'Rimandata: vale l’ultima email che ricevi. Apri quella.' })
+                    : <button type="button" onClick={rimandaVerifica} disabled={rimando === 'sending'} className="underline underline-offset-2 text-[#2f5749]">
+                        {rimando === 'sending' ? t('landings:account.rimando', { defaultValue: 'Rimando…' }) : t('landings:account.rimandaVerifica', { defaultValue: 'Non la trovi? Rimandami il link di verifica' })}
+                      </button>}
+                </p>
+              )}
               <button type="submit" disabled={sending} className={btnCls} data-testid="reset-request-submit">
                 {sending
                   ? t('landings:account.sending', { defaultValue: 'Invio…' })
@@ -738,6 +786,15 @@ export default function AccountLoginPage() {
                 </span>
               </label>
               {error && <p className="text-xs text-red-600">{error}</p>}
+              {error && nonVerificata && (
+                <p className="text-xs" data-testid="login-rimanda-verifica">
+                  {rimando === 'done'
+                    ? t('landings:account.verificaRimandata', { defaultValue: 'Rimandata: vale l’ultima email che ricevi. Apri quella.' })
+                    : <button type="button" onClick={rimandaVerifica} disabled={rimando === 'sending'} className="underline underline-offset-2 text-[#2f5749]">
+                        {rimando === 'sending' ? t('landings:account.rimando', { defaultValue: 'Rimando…' }) : t('landings:account.rimandaVerifica', { defaultValue: 'Non la trovi? Rimandami il link di verifica' })}
+                      </button>}
+                </p>
+              )}
               <button type="submit" disabled={sending || !pwOk} className={btnCls} data-testid="signup-submit">
                 {sending
                   ? t('landings:account.sending', { defaultValue: 'Invio…' })

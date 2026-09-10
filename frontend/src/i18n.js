@@ -138,7 +138,10 @@ function _detectColdStartLanguage() {
     // sono la faccia della piattaforma → partono in ITALIANO (fallback),
     // mai nella lingua del browser; lo switcher è a un click e la scelta
     // viene ricordata (aurya_lang). Admin e portali restano browser-first.
-    isMarketplaceRoute = /^\/(?:$|ritiri|o\/|account|operatori|destinazioni|esperienze|blog|chi-siamo|come-funziona|cerca-ritiro|per-operatori|privacy|termini)/.test(window.location.pathname);
+    // FV8 (10/9/2026 sera): anche il mondo Sound e le porte del Cerchio
+    // sono la faccia pubblica (in italiano): /meditazioni mostrava il
+    // banner cookie in inglese a chi ha il browser in inglese
+    isMarketplaceRoute = /^\/(?:$|ritiri|o\/|account|operatori|destinazioni|esperienze|blog|chi-siamo|come-funziona|cerca-ritiro|per-operatori|privacy|termini|meditazioni|sound|frequenze|newsletter|entra-nella-rete|accedi|verify-email|aziende|strutture|manifesto|costi|@)/.test(window.location.pathname);
   } catch {
     // pathname unavailable — fall through.
   }

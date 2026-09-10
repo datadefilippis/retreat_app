@@ -311,7 +311,12 @@ async def subscribe(request: Request, payload: SubscribePayload):
             set_on_insert["preferences.topics"] = []
         await db.aurya_subscribers.update_one(
             {"email": email},
-            {"$set": doc_set, "$setOnInsert": set_on_insert},
+            {"$set": doc_set, "$setOnInsert": set_on_insert,
+             # FV8 (10/9/2026 sera) — chi si era cancellato e torna riparte
+             # da zero: via le marcature delle sequenze (il benvenuto
+             # arriva di nuovo alla conferma) e la traccia della
+             # disiscrizione. Il promemoria 48h resta «una volta sola».
+             "$unset": {"sequenza": "", "unsubscribed_at": "", "unsubscribed_by": ""}},
             upsert=True,
         )
     except Exception as exc:                # noqa: BLE001
