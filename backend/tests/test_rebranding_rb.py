@@ -493,10 +493,14 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
 
     def test_la_scheda_del_gestionale_chiede_anche_la_regia(self):
         events = (FE / "features" / "events" / "EventsListPage.js").read_text()
-        assert 'data-testid="events-chiedi-regia"' in events and "tipoIniziale={strutturaTipo}" in events
+        assert 'data-testid="events-chiedi-regia"' in events and 'tipoIniziale="regia"' in events
+        assert 'data-testid="events-cerca-struttura"' not in events, "founder 10/9 sera: gratis non si vende, il pulsante esce"
         dialog = (FE / "features" / "events" / "components" / "RichiestaStrutturaDialog.jsx").read_text()
-        for tid in ("richiesta-tab-struttura", "richiesta-tab-regia", "richiesta-regia-intro", "richiesta-formula"):
-            assert f'data-testid="{tid}"' in dialog or f"data-testid={{`richiesta-tab-" in dialog, tid
+        # founder 10/9 sera: solo la regia dal gestionale, niente linguette
+        assert "richiesta-tab-" not in dialog and "tipoIniziale = 'regia'" in dialog
+        for tid in ("richiesta-regia-intro", "richiesta-formula"):
+            assert f'data-testid="{tid}"' in dialog, tid
+        assert "parte a ottobre 2026" in dialog
         assert "Regia leggera, 290 €" in dialog and "Regia completa, 690 €" in dialog
         assert "40 € a partecipante oltre il sesto" in dialog
         assert "tipo, formula: tipo === 'regia' ? formula : null" in dialog

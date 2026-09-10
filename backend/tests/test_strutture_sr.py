@@ -207,6 +207,8 @@ class TestPannello:
 
     def test_il_gestionale_ha_solo_il_pulsante_della_richiesta(self):
         events = (FE / "features" / "events" / "EventsListPage.js").read_text()
-        assert 'data-testid="events-cerca-struttura"' in events and "RichiestaStrutturaDialog" in events
+        # founder 10/9 sera: via «Cerco una struttura» (gratis non si vende), resta la regia
+        assert 'data-testid="events-cerca-struttura"' not in events
+        assert 'data-testid="events-chiedi-regia"' in events and "RichiestaStrutturaDialog" in events
         dialog = (FE / "features" / "events" / "components" / "RichiestaStrutturaDialog.jsx").read_text()
         assert "/strutture/richieste" in dialog and "/admin/strutture" not in dialog

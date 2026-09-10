@@ -149,6 +149,16 @@ PROMISE_ENFORCEMENT = {
     "billing.features.retreat_founding_feedback":  ("process", "canale feedback founder"),
     "billing.features.retreat_zero_fee":           ("code", "transaction_fee_percent 0 (Stripe omette application_fee)"),
     "billing.features.retreat_no_monthly":         ("code", "price_monthly 0 sul piano partner"),
+    # ── P4 (10/9/2026): il catalogo del 2027 — Club, Pro, Club Fondatori ──
+    "billing.features.retreat_everything_club":    ("code", "module_plans superset + i vantaggi Club qui sotto"),
+    "billing.features.retreat_club_prima_fila":    ("code", "products.prima_fila + ordinamento /public/retreats (P3); l'interruttore arriva con P5"),
+    "billing.features.retreat_club_lettera_zona":  ("process", "invio manuale della Lettera per zona fino a P7 (Cerchio ≥ 50 in zona)"),
+    "billing.features.retreat_club_rete_lavoro":   ("process", "richieste team building/regia nel pannello: chiamati per primi Club e Pro"),
+    "billing.features.retreat_club_racconto_breve": ("process", "questionario + redazione 250 parole (45 min nostri)"),
+    "billing.features.retreat_pro_racconto":       ("process", "intervista completa + pagina Magazine (tab Interviste)"),
+    "billing.features.retreat_pro_whatsapp":       ("process", "canale WhatsApp con Valentina e Davide"),
+    "billing.features.retreat_founding_badge":     ("code", "routers.fondatori.ids_fondatori + badge «Fondatore» sul profilo (RB9)"),
+    "billing.features.retreat_founding_pro_bloccato": ("process", "prezzo Pro riservato ai fondatori, fissato in Stripe quando la vendita si accende"),
 }
 
 
