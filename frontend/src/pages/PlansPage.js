@@ -226,6 +226,9 @@ export const PlansPage = () => {
 
   const [loadingSlug, setLoadingSlug] = useState(null);
   const [interval, setInterval] = useState('month');
+  // P4 (10/9/2026): available_from = quando si accende la vendita
+  const nonAncoraInVendita = (plan) => !!(plan?.available_from && new Date(plan.available_from) > new Date());
+  const dataItaliana = (iso) => new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
   const [error, setError] = useState(null);
   const [confirmPlan, setConfirmPlan] = useState(null);
 
@@ -240,6 +243,7 @@ export const PlansPage = () => {
 
   const handleSelect = async (planSlug) => {
     if (planSlug === currentPlan || planSlug === 'free') return;
+    if (nonAncoraInVendita(plans.find((p) => p.slug === planSlug))) return;
     setError(null);
     setConfirmPlan(null);
 
@@ -262,7 +266,8 @@ export const PlansPage = () => {
 
     setLoadingSlug(planSlug);
     try {
-      const { url } = await billingAPI.createCheckoutSession(planSlug, interval);
+      const cadenza = (selectedPlan?.intervals && !selectedPlan.intervals.includes(interval)) ? selectedPlan.intervals[0] : interval;
+      const { url } = await billingAPI.createCheckoutSession(planSlug, cadenza);
       if (url) {
         window.location.href = url;
         return;
@@ -329,15 +334,19 @@ export const PlansPage = () => {
   };
 
   const formatPrice = (plan) => {
-    if (!plan || plan.price_monthly === 0) return t('billing.free_label', 'Gratis');
-    const price = interval === 'year' && plan.price_yearly ? plan.price_yearly : plan.price_monthly;
-    const period = interval === 'year' ? t('billing.year_short', 'anno') : t('billing.month_short', 'mese');
+    // P4: il Club e' solo annuale (price_monthly 0, price_yearly 49)
+    const soloAnnuale = plan && Array.isArray(plan.intervals) && !plan.intervals.includes('month');
+    if (!plan || (plan.price_monthly === 0 && !(soloAnnuale && plan.price_yearly))) return t('billing.free_label', 'Gratis');
+    const price = ((interval === 'year' || soloAnnuale) && plan.price_yearly) ? plan.price_yearly : plan.price_monthly;
+    const period = (interval === 'year' || soloAnnuale) ? t('billing.year_short', 'anno') : t('billing.month_short', 'mese');
     return { amount: price, period };
   };
 
   const getButtonLabel = (plan) => {
     if (plan.slug === currentPlan) return t('billing.current_plan', 'Piano attuale');
     if (plan.slug === 'free') return t('billing.free_label', 'Gratis');
+    // P4: i piani del 2027 si vedono, si comprano dalla loro data
+    if (nonAncoraInVendita(plan)) return t('billing.available_from_label', { date: dataItaliana(plan.available_from), defaultValue: 'Dal {{date}}' });
     if (!plan.is_self_serve) return t('billing.contact_sales', 'Contattaci');
     if (isPaid && hasStripeCustomer) {
       return isDowngrade(plan.slug)
@@ -600,8 +609,9 @@ export const PlansPage = () => {
                       isRecommended && !isCurrent ? 'shadow-md' : ''
                     }`}
                     variant={isCurrent || plan.slug === 'free' ? 'outline' : theme.buttonVariant}
-                    disabled={isCurrent || plan.slug === 'free' || loadingSlug !== null}
+                    disabled={isCurrent || plan.slug === 'free' || loadingSlug !== null || nonAncoraInVendita(plan)}
                     onClick={() => handleSelect(plan.slug)}
+                    data-testid={`plan-cta-${plan.slug}`}
                   >
                     {loadingSlug === plan.slug && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

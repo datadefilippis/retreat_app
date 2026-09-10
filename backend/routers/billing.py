@@ -434,6 +434,24 @@ async def create_checkout(
             detail="User is not associated with an organization",
         )
 
+    # P4 (10/9/2026) — i piani del 2027 si vedono da oggi e si comprano
+    # dalla loro data (available_from): prima, la porta e' chiusa.
+    from database import commercial_plans_collection
+    piano = await commercial_plans_collection.find_one(
+        {"slug": body.plan_slug}, {"_id": 0, "available_from": 1, "intervals": 1}) or {}
+    dal = piano.get("available_from")
+    if dal and __import__("datetime").date.today().isoformat() < dal:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"code": "non_in_vendita", "available_from": dal,
+                    "message": "I piani si accendono il 1° gennaio 2027."},
+        )
+    cadenze = piano.get("intervals") or ["month", "year"]
+    if body.interval not in cadenze:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "cadenza_non_disponibile", "intervals": cadenze},
+        )
     try:
         result = await stripe_service.create_checkout_session(
             org_id=org_id,

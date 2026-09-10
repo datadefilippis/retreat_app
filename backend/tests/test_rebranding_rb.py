@@ -653,3 +653,46 @@ class TestOnda3LeSorgentiELaMisura:
         assert "api.get('/organizations/current/cerchio-vicino'" in wiz
         assert 'data-testid="wizard-cerchio-contatore"' in wiz
         assert "La Lettera per zona parte da" in wiz, "il cancello scritto in chiaro"
+
+
+class TestP4IlCatalogoDel2027:
+    """P4 (10/9/2026, founder: «impostiamoli gia' correttamente e
+    consolidiamo»): il catalogo del 2027 vive nel codice da oggi — Club
+    49/anno (solo annuale), Pro 119/anno o 12/mese, Club Fondatori — e
+    la VENDITA si accende il 1° gennaio 2027. Il Pro da 19/190 e' ritirato."""
+
+    def test_il_catalogo_e_la_migrazione(self):
+        seed = (BACKEND_DIR / "services" / "seed_commercial_plans.py").read_text()
+        assert 'VENDITA_PIANI_DAL = "2027-01-01"' in seed
+        assert '"slug": "retreat_club"' in seed and '"name": "Club Fondatori"' in seed
+        blocco = seed[seed.index("RETREAT_COMMERCIAL_PLANS: List[dict] = ["):]
+        assert '"price_monthly": 19.0' not in blocco and '"price_yearly": 190.0' not in blocco, "il Pro di agosto e' ritirato"
+        pricing = (BACKEND_DIR / "services" / "seed_pricing.py").read_text()
+        assert "async def migrate_catalogo_2027_v1" in pricing
+        assert 'aggiorna["stripe_price_id_monthly"] = None' in pricing, "i price id di agosto (19/190) escono"
+        assert "await migrate_catalogo_2027_v1()" in (BACKEND_DIR / "server.py").read_text()
+        model = (BACKEND_DIR / "models" / "commercial_plan.py").read_text()
+        assert "available_from: Optional[str] = None" in model and 'intervals: List[str] = ["month", "year"]' in model
+
+    def test_la_vendita_e_chiusa_fino_alla_data(self):
+        bill = (BACKEND_DIR / "routers" / "billing.py").read_text()
+        assert '"code": "non_in_vendita"' in bill and "date.today().isoformat() < dal" in bill
+        assert '"code": "cadenza_non_disponibile"' in bill
+        page = (FE / "pages" / "PlansPage.js").read_text()
+        assert "nonAncoraInVendita(plan)" in page and "billing.available_from_label" in page
+        assert "soloAnnuale" in page, "il Club e' solo annuale"
+        assert "retreat_club" in (FE / "features" / "admin" / "pianiAurya.js").read_text()
+        rp = (FE / "pages" / "RetreatPlansPage.js").read_text()
+        assert "example_title" not in rp and "feeExample" not in rp, "founder 10/9: via gli esempi sui 100 €"
+        assert 'data-testid={`plans-cta-${plan.slug}`}' in rp and "nonAncoraInVendita(plan)" in rp
+        assert "md:grid-cols-3" in rp, "tre schede: Gratis, Club, Pro"
+
+    def test_le_parole_dentro_dicono_le_stesse_del_fuori(self):
+        it = json.loads((FE / "locales" / "it" / "settings.json").read_text())["billing"]
+        assert "1° gennaio 2027" in it["retreat"]["subtitle"] and "gratuito per sempre" in it["retreat"]["subtitle"]
+        assert "30 giugno 2027" in it["retreat"]["founding_note"]
+        for k in ("retreat_club_prima_fila", "retreat_club_lettera_zona", "retreat_club_rete_lavoro",
+                  "retreat_pro_racconto", "retreat_pro_whatsapp", "retreat_founding_badge"):
+            assert it["features"].get(k), k
+        src = (FE / "features" / "prelaunch" / "PricingPage.js").read_text()
+        assert "PRICING_2027 = { spinta: 19, club: 49, pro: 119, pro_monthly: 12 }" in src

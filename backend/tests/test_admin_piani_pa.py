@@ -20,8 +20,10 @@ ADMIN = FE / "features" / "admin"
 class TestPa1FonteUnica:
     def test_i_quattro_piani_col_loro_nome(self):
         src = (ADMIN / "pianiAurya.js").read_text()
-        for slug, nome in (("retreat_free", "Gratis"), ("retreat_pro", "Pro"),
-                           ("retreat_founding", "Founding"),
+        # P4 (10/9/2026): il Club entra, Founding diventa «Club Fondatori»
+        for slug, nome in (("retreat_free", "Gratis"), ("retreat_club", "Club"),
+                           ("retreat_pro", "Pro"),
+                           ("retreat_founding", "Club Fondatori"),
                            ("retreat_partner", "Partner")):
             assert slug in src and f"'{nome}'" in src
         # i riservati portano il cartellino

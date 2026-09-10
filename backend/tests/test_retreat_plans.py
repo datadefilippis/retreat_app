@@ -56,8 +56,8 @@ def _plan(slug: str) -> dict:
 class TestRetreatPlansPresence:
     def test_all_retreat_plans_seeded(self):
         slugs = {p["slug"] for p in RETREAT_COMMERCIAL_PLANS}
-        assert slugs == {"retreat_free", "retreat_pro",
-                         "retreat_founding", "retreat_partner"}
+        assert slugs == {"retreat_free", "retreat_club", "retreat_pro",
+                         "retreat_founding", "retreat_partner"}   # P4: il Club
 
     def test_retreat_slugs_do_not_collide_with_legacy(self):
         legacy = {p["slug"] for p in COMMERCIAL_PLANS + ADDON_PLANS}
@@ -143,7 +143,7 @@ class TestKillList:
 class TestPricingPositioning:
     def test_free_costs_zero_pro_costs_29(self):
         assert _plan("retreat_free")["price_monthly"] == 0.0
-        assert _plan("retreat_pro")["price_monthly"] == 19.0
+        assert _plan("retreat_pro")["price_monthly"] == 12.0   # P4: 12/mese, 119/anno
 
     def test_free_is_baseline_not_checkout_target(self):
         free = _plan("retreat_free")
@@ -173,10 +173,11 @@ class TestRetreatBusinessModel:
         # il canone tiene tutto il transato.
         pro = _plan("retreat_pro")
         assert pro["transaction_fee_percent"] == 0.0
-        assert pro["price_monthly"] == 19.0
-        assert pro["price_yearly"] == 190.0
+        assert pro["price_monthly"] == 12.0
+        assert pro["price_yearly"] == 119.0
         assert pro["is_self_serve"] is True
-        assert "billing.features.retreat_zero_fee" in pro["features_display"]
+        # P1: la commissione zero e' di tutti, non un vantaggio del Pro
+        assert "billing.features.retreat_sound_studio" in pro["features_display"]
 
     def test_founding_is_dedicated_hidden_plan(self):
         f = _plan("retreat_founding")
@@ -552,13 +553,17 @@ class TestAbPrezziCoerenti:
         return next(p for p in RETREAT_COMMERCIAL_PLANS
                     if p["slug"] == "retreat_pro")
 
-    def test_pro_costa_19_e_190(self):
+    def test_pro_costa_12_e_119(self):
+        """P4 (10/9/2026): Pro 119/anno o 12/mese, Club 49/anno solo
+        annuale, vendita dal 1° gennaio 2027 — gli stessi numeri di
+        /costi (PRICING_2027) e della landing."""
+        from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS, VENDITA_PIANI_DAL
         pro = self._pro()
-        assert pro["price_monthly"] == 19.0
-        assert pro["price_yearly"] == 190.0
-        # annuale = 10 mensilita' (2 mesi in regalo): se uno dei due
-        # numeri cambia da solo, la promessa "2 mesi gratis" salta
-        assert pro["price_yearly"] == pro["price_monthly"] * 10
+        assert pro["price_monthly"] == 12.0 and pro["price_yearly"] == 119.0
+        club = next(p for p in RETREAT_COMMERCIAL_PLANS if p["slug"] == "retreat_club")
+        assert club["price_yearly"] == 49.0 and club["intervals"] == ["year"]
+        assert VENDITA_PIANI_DAL == "2027-01-01"
+        assert pro["available_from"] == VENDITA_PIANI_DAL and club["available_from"] == VENDITA_PIANI_DAL
 
     def test_pagina_costi_allineata_al_seed(self):
         """P1 (10/9/2026, piano di business): AURYA NON PRENDE COMMISSIONI.

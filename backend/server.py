@@ -195,8 +195,9 @@ async def lifespan(app: FastAPI):
         logging.error(f"Failed to run plan voices migration: {e}")
     # One-time migration: zero commissioni, sempre (P1 10/9/2026, flag-gated)
     try:
-        from services.seed_pricing import migrate_zero_commissioni_v1
+        from services.seed_pricing import migrate_zero_commissioni_v1, migrate_catalogo_2027_v1
         await migrate_zero_commissioni_v1()
+        await migrate_catalogo_2027_v1()   # P4: il catalogo del 2027, vendita dal 1/1/2027
     except Exception as e:
         logging.error(f"Failed to run zero commissioni migration: {e}")
     # One-time migration: trial only on Core plan

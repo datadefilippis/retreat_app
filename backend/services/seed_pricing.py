@@ -1091,6 +1091,11 @@ async def migrate_retreat_pro_zero_fee() -> None:
     application_fee_percent (l'UNICO campo letto dal checkout):
     tutti e tre vanno migrati qui. Idempotente."""
     from database import db
+    # P4 (10/9/2026): col catalogo 2027 la commissione zero e' di tutti i
+    # piani, non un vantaggio del Pro — questa migrazione senza flag non
+    # deve piu' rimettere la voce nel Pro a ogni avvio.
+    if await db["migrations"].find_one({"_id": "catalogo_2027_v1"}):
+        return
 
     # 1. descrizione dei piani (campo protetto dall'upsert)
     await db.commercial_plans.update_one(
@@ -1137,6 +1142,41 @@ async def migrate_retreat_pro_features_md3() -> None:
     )
     if result.modified_count:
         logger.info("MD3: retreat_customers_pro rimossa da %d piani", result.modified_count)
+
+
+async def migrate_catalogo_2027_v1() -> None:
+    """P4 (founder, 10/9/2026): il catalogo del 2027 consolidato — Club
+    49/anno, Pro 119/anno o 12/mese, Club Fondatori, vendita dal
+    1° gennaio 2027. Il seed non tocca i campi admin (nome, descrizione,
+    prezzi, feature): qui si allineano UNA volta al catalogo del codice,
+    e sul Pro si tolgono i price id Stripe di agosto (19/190): quelli
+    nuovi si mettono dal pannello quando la vendita si accende. In
+    produzione nessuno ha mai comprato il Pro da 19: nessun abbonato da
+    migrare. Flag-gated, idempotente."""
+    from database import db
+    from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS
+
+    migrations = db["migrations"]
+    if await migrations.find_one({"_id": "catalogo_2027_v1"}):
+        return
+    logger.info("migrate_catalogo_2027_v1: applying...")
+    campi = ("name", "description", "tagline", "price_monthly", "price_yearly",
+             "features_display", "sort_order", "is_public", "is_self_serve",
+             "available_from", "intervals")
+    for piano in RETREAT_COMMERCIAL_PLANS:
+        if piano["slug"] not in ("retreat_club", "retreat_pro", "retreat_founding", "retreat_partner"):
+            continue
+        aggiorna = {k: piano.get(k) for k in campi if k in piano}
+        if piano["slug"] == "retreat_pro":
+            aggiorna["stripe_price_id_monthly"] = None
+            aggiorna["stripe_price_id_yearly"] = None
+        await db["commercial_plans"].update_one({"slug": piano["slug"]}, {"$set": aggiorna})
+        logger.info("  - %s allineato al catalogo 2027", piano["slug"])
+    await migrations.insert_one({
+        "_id": "catalogo_2027_v1",
+        "applied_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc),
+    })
+    logger.info("migrate_catalogo_2027_v1: done")
 
 
 async def migrate_zero_commissioni_v1() -> None:

@@ -63,6 +63,11 @@ class CommercialPlan(BaseModel):
     # -- Human-readable features for pricing UI ---------------------------------
     # Translation keys or plain strings. Frontend renders these as bullet points.
     features_display: List[str] = []
+    # P4 (10/9/2026, piano di business): il catalogo del 2027 vive gia'
+    # nel codice, la VENDITA si accende a una data (ISO, None = in vendita)
+    available_from: Optional[str] = None
+    # cadenze acquistabili: il Club e' solo annuale
+    intervals: List[str] = ["month", "year"]
 
     # -- Add-on extension (v5.8 / Onda 3) ---------------------------------------
     # An "add-on" is a CommercialPlan with `is_addon=True` that does NOT replace

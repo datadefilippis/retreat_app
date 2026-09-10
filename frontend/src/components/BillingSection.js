@@ -331,7 +331,7 @@ export default function BillingSection() {
 
           {(() => {
             const isYearly = billing.billingInterval === 'year';
-            const showPrice = planDetails && planDetails.price_monthly > 0;
+            const showPrice = planDetails && (planDetails.price_monthly > 0 || planDetails.price_yearly > 0);   // P4: il Club e' solo annuale
             const priceAmount = isYearly && planDetails?.price_yearly
               ? planDetails.price_yearly
               : planDetails?.price_monthly;

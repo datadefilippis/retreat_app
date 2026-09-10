@@ -351,6 +351,31 @@ ADDON_PLANS: List[dict] = [
 # compatibilità con fallback e test; la loro rimozione dalla pagina pricing
 # è pianificata in Fase 6.2 del RETREAT_MASTER_PLAN.
 
+# P4 (10/9/2026, piano di business §3.2, founder: «impostiamoli gia'
+# correttamente e consolidiamo la monetizzazione»). La scala: Gratis per
+# sempre (gli strumenti), Club 49 €/anno (la fila: prima fila, Lettera
+# per zona, lavoro dalla rete), Pro 119 €/anno o 12 €/mese (la voce:
+# Crea Studio, racconto completo, WhatsApp). La VENDITA si accende il
+# 1° gennaio 2027 (available_from): fino ad allora i piani si vedono e
+# non si comprano. Il Pro da 19/190 di agosto e' stato ritirato prima di
+# vendere un solo abbonamento (migrate_catalogo_2027_v1).
+VENDITA_PIANI_DAL = "2027-01-01"
+
+_TIERS_BASE = {
+    "cashflow_monitor": "cashflow_monitor_retreat",
+    "ai_assistant": "ai_assistant_disabled",
+    "product_catalog": "product_catalog_retreat_free",
+    "commerce": "commerce_retreat",
+    "customers_light": "customers_light_free",
+}
+_TIERS_PRO = {
+    "cashflow_monitor": "cashflow_monitor_retreat",
+    "ai_assistant": "ai_assistant_disabled",
+    "product_catalog": "product_catalog_retreat_pro",
+    "commerce": "commerce_retreat_pro",
+    "customers_light": "customers_light_pro",
+}
+
 RETREAT_COMMERCIAL_PLANS: List[dict] = [
     {
         "slug": "retreat_free",
@@ -366,16 +391,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "sort_order": 10,
         "transaction_fee_percent": 0.0,   # P1 10/9/2026: zero commissioni, sempre
         "platform_limits": {"team_members": 2},
-        "module_plans": {
-            "cashflow_monitor": "cashflow_monitor_retreat",
-            "ai_assistant": "ai_assistant_disabled",
-            "product_catalog": "product_catalog_retreat_free",
-            "commerce": "commerce_retreat",
-            "customers_light": "customers_light_free",
-        },
-        # Inventario olistico funzionalita' (4/7/2026, richiesta founder):
-        # TUTTO cio' che il piano include, senza omissioni fuorvianti —
-        # incluso l'e-commerce, che prima non era menzionato.
+        "module_plans": dict(_TIERS_BASE),
         "features_display": [
             "billing.features.retreat_unlimited_listings",
             "billing.features.retreat_ecommerce",
@@ -387,87 +403,62 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
             "billing.features.retreat_newsletter",
             "billing.features.retreat_cashflow",
             "billing.features.retreat_customers",
-            # AB5 (founder, 13/8): via coupon (pagina nascosta nel
-            # mondo snello), via il tetto 100 (listino senza limiti
-            # anche nel Gratis), via team (pagina nascosta, CS3b) e la
-            # voce-doppione del profilo. Solo cio' che si puo' USARE.
         ],
     },
     {
-        "slug": "retreat_pro",
-        "name": "Pro",
-        "description": "Zero commissioni sul transato, evidenza nel calendario pubblico e limiti estesi.",
-        "tagline": "Per chi organizza più ritiri l'anno",
-        # AB1 (founder, 13/8): 29 -> 19 €/mese; annuale = 10 mensilita'
-        "price_monthly": 19.0,
-        "price_yearly": 190.0,
+        "slug": "retreat_club",
+        "name": "Club",
+        "description": "La prima fila su tutti i tuoi ritiri, la Lettera di Aurya alla tua zona, e sei tra i primi che chiamiamo quando la rete lavora.",
+        "tagline": "Voglio persone e lavoro, tutto l'anno",
+        "price_monthly": 0.0,           # solo annuale
+        "price_yearly": 49.0,
+        "intervals": ["year"],
+        "available_from": VENDITA_PIANI_DAL,
         "currency": "EUR",
         "trial_days": 0,
         "is_public": True,
         "is_self_serve": True,
         "sort_order": 11,
         "transaction_fee_percent": 0.0,
-        "platform_limits": {"team_members": 5},
-        "module_plans": {
-            "cashflow_monitor": "cashflow_monitor_retreat",
-            "ai_assistant": "ai_assistant_disabled",
-            "product_catalog": "product_catalog_retreat_pro",
-            "commerce": "commerce_retreat_pro",
-            "customers_light": "customers_light_pro",
-        },
+        "platform_limits": {"team_members": 2},
+        "module_plans": dict(_TIERS_BASE),
         "features_display": [
             "billing.features.retreat_everything_free",
-            "billing.features.retreat_zero_fee",
-            "billing.features.retreat_featured",
-            # TR6 (27/8) — Crea Studio incluso nel Pro
+            "billing.features.retreat_club_prima_fila",
+            "billing.features.retreat_club_lettera_zona",
+            "billing.features.retreat_club_rete_lavoro",
+            "billing.features.retreat_club_racconto_breve",
+        ],
+    },
+    {
+        "slug": "retreat_pro",
+        "name": "Pro",
+        "description": "Tutto il Club, più la tua voce e noi accanto: Crea Studio, il racconto completo con la pagina nel Magazine, assistenza diretta su WhatsApp.",
+        "tagline": "La mia voce, il mio racconto, qualcuno accanto",
+        "price_monthly": 12.0,
+        "price_yearly": 119.0,
+        "available_from": VENDITA_PIANI_DAL,
+        "currency": "EUR",
+        "trial_days": 0,
+        "is_public": True,
+        "is_self_serve": True,
+        "sort_order": 12,
+        "transaction_fee_percent": 0.0,
+        "platform_limits": {"team_members": 5},
+        "module_plans": dict(_TIERS_PRO),
+        "features_display": [
+            "billing.features.retreat_everything_club",
             "billing.features.retreat_sound_studio",
-            # AB5: via catalogo/vetrine/team — o non sono differenze
-            # vere (listino senza limiti su entrambi) o le pagine sono
-            # nascoste nel mondo snello. Il Pro si vende su tre cose.
+            "billing.features.retreat_pro_racconto",
+            "billing.features.retreat_pro_whatsapp",
             "billing.features.retreat_priority_support",
         ],
     },
-    # Founding — piano DEDICATO per i primi organizzatori (decisione founder
-    # 4/7/2026: niente coupon, piano a sé). Tutto Pro a 0€, assegnato solo
-    # dall'admin (non pubblico, non self-serve); la scadenza dei 3 mesi si
-    # gestisce con trial_ends_at/notes al momento dell'assegnazione admin.
     {
         "slug": "retreat_founding",
-        "name": "Founding",
-        "description": "Piano riservato ai primi organizzatori: tutto Pro, gratis per 3 mesi.",
-        "tagline": "Per chi costruisce la piattaforma con noi",
-        "price_monthly": 0.0,
-        "price_yearly": None,
-        "currency": "EUR",
-        "trial_days": 0,
-        "is_public": False,
-        "is_self_serve": False,
-        "sort_order": 12,
-        "transaction_fee_percent": 0.0,   # trattamento Pro (zero fee)
-        "platform_limits": {"team_members": 5},
-        "module_plans": {
-            "cashflow_monitor": "cashflow_monitor_retreat",
-            "ai_assistant": "ai_assistant_disabled",
-            "product_catalog": "product_catalog_retreat_pro",
-            "commerce": "commerce_retreat_pro",
-            "customers_light": "customers_light_pro",
-        },
-        "features_display": [
-            "billing.features.retreat_everything_pro",
-            "billing.features.retreat_founding_free",
-            "billing.features.retreat_founding_feedback",
-        ],
-    },
-    # Partner — piano 0% fee (richiesta founder 5/7/2026): NASCOSTO dal
-    # pricing pubblico e assegnabile SOLO dal system admin, on demand
-    # (org proprie come la Masseria, partnership strategiche). Tutto Pro,
-    # nessuna fee piattaforma: il provider Stripe omette
-    # application_fee_amount quando la fee e' 0 (gia' gestito, testato).
-    {
-        "slug": "retreat_partner",
-        "name": "Partner",
-        "description": "Piano riservato assegnato dall'admin: tutto Pro, 0% di fee piattaforma.",
-        "tagline": "Per le strutture partner della piattaforma",
+        "name": "Club Fondatori",
+        "description": "Il patto dei primi venti: il Club regalato fino al 30 giugno 2027, il badge Fondatore per sempre, il prezzo del Pro bloccato, i primi chiamati quando la rete lavora.",
+        "tagline": "Per chi costruisce la rete con noi",
         "price_monthly": 0.0,
         "price_yearly": None,
         "currency": "EUR",
@@ -475,15 +466,31 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_public": False,
         "is_self_serve": False,
         "sort_order": 13,
+        "transaction_fee_percent": 0.0,   # trattamento Pro (zero fee)
+        "platform_limits": {"team_members": 5},
+        "module_plans": dict(_TIERS_PRO),   # i limiti del Pro: chi c'era prima li aveva
+        "features_display": [
+            "billing.features.retreat_everything_club",
+            "billing.features.retreat_founding_badge",
+            "billing.features.retreat_founding_pro_bloccato",
+            "billing.features.retreat_club_rete_lavoro",
+        ],
+    },
+    {
+        "slug": "retreat_partner",
+        "name": "Partner",
+        "description": "Piano riservato assegnato dall'admin: tutto Pro, senza canone.",
+        "tagline": "Per le strutture partner della piattaforma",
+        "price_monthly": 0.0,
+        "price_yearly": None,
+        "currency": "EUR",
+        "trial_days": 0,
+        "is_public": False,
+        "is_self_serve": False,
+        "sort_order": 14,
         "transaction_fee_percent": 0.0,
         "platform_limits": {"team_members": 5},
-        "module_plans": {
-            "cashflow_monitor": "cashflow_monitor_retreat",
-            "ai_assistant": "ai_assistant_disabled",
-            "product_catalog": "product_catalog_retreat_pro",
-            "commerce": "commerce_retreat_pro",
-            "customers_light": "customers_light_pro",
-        },
+        "module_plans": dict(_TIERS_PRO),
         "features_display": [
             "billing.features.retreat_everything_pro",
             "billing.features.retreat_zero_fee",
