@@ -31,6 +31,16 @@ import { Headphones, Mail, CalendarHeart, Leaf, ShieldCheck, MapPin } from 'luci
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import LeadForm from './LeadForm';
+
+// RB12 (10/9/2026) — dal Magazine si arriva con ?tema=<categoria>: il
+// chip corrispondente parte acceso (vocabolario dei chip di LeadForm).
+const TEMA_TO_CHIP = { yoga: 'yoga', meditazione: 'meditation', breathwork: 'breathwork',
+  suono: 'sound', femminile: 'women', cammini: 'mixed', detox: 'mixed', massaggio: 'mixed' };
+function temaIniziale() {
+  if (typeof window === 'undefined') return [];
+  const tema = new URLSearchParams(window.location.search).get('tema');
+  return TEMA_TO_CHIP[tema] ? [TEMA_TO_CHIP[tema]] : [];
+}
 import {
   Section, DisplayTitle, Lede, PhotoOpener, EditorialCta,
 } from '../../components/editorial';
@@ -57,6 +67,7 @@ function SchedaForm({ t, id, context, titolo }) {
         subscribe
         showName
         wantsExperiencesAlways
+        initialInterests={temaIniziale()}
         accent={SAGE}
         context={context === 'hero' ? 'cerca-ritiro' : 'cerca-ritiro_fondo'}
         ctaLabel={t('tr.cta', { defaultValue: 'Trovami il mio ritiro' })}

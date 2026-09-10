@@ -28,6 +28,7 @@
  * where the merchant can see the dashboard they just created.
  */
 
+import api from '../../api/client';   // P6 — il contatore del Cerchio
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 // RS2 — il wizard vive FUORI da AppLayout: al deep-link diretto su
 // /events/new i bundle i18n del back-office non sono ancora caricati
@@ -471,6 +472,16 @@ export default function EventWizard() {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [where.address, where.city, where.postal_code, where.country]);
+  // P6 (10/9/2026) — il contatore del Cerchio per la regione scelta:
+  // il primo innesco («in Puglia 12 persone aspettano un ritiro»)
+  const [cerchio, setCerchio] = useState(null);
+  useEffect(() => {
+    let vivo = true;
+    api.get('/organizations/current/cerchio-vicino', { params: { region: where.region || '' } })
+      .then(r => { if (vivo) setCerchio(r.data); })
+      .catch(() => { if (vivo) setCerchio(null); });
+    return () => { vivo = false; };
+  }, [where.region]);
   const [publishNow, setPublishNow] = useState(false);
   // F4: store assignment — which storefronts carry this event product
   const [storeIds, setStoreIds] = useState(() =>
@@ -1091,6 +1102,16 @@ export default function EventWizard() {
                       <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
+                  {/* P6 — il Cerchio per questa regione: numeri veri, mai stime */}
+                  {cerchio && (
+                    <p className="mt-1.5 text-xs text-[#2f5749]" data-testid="wizard-cerchio-contatore">
+                      {where.region && cerchio.in_zona > 0
+                        ? `Nel Cerchio: ${cerchio.in_zona} ${cerchio.in_zona === 1 ? 'persona aspetta' : 'persone aspettano'} un ritiro in ${where.region}, ${cerchio.ovunque} ovunque in Italia.`
+                        : where.region
+                          ? `Il Cerchio in ${where.region} è ancora piccolo (${cerchio.ovunque} persone cercano un ritiro ovunque in Italia). La Lettera per zona parte da ${cerchio.soglia_lettera} iscritti; intanto il ritiro compare in Ritiri ed esperienze.`
+                          : `Nel Cerchio ${cerchio.totale_ritiri} persone aspettano un ritiro: scegli la regione e vedi quante sono vicine.`}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.where.postalCodeLabel')}</label>

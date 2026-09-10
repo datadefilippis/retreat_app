@@ -96,8 +96,18 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                                    // modulo pieno di luglio (citta', interessi, raggio, budget)
                                    // iscrive al Cerchio con la preferenza ritiri SEMPRE accesa,
                                    // senza il flag: chi chiede un ritiro vuole essere avvisato
-                                   wantsExperiencesAlways = false }) {
+                                   wantsExperiencesAlways = false,
+                                   // RB12 — il tema dell'articolo preseleziona il chip
+                                   initialInterests = [] }) {
   const { t, i18n } = useTranslation('prelaunch');
+  // RB13 (10/9/2026, onda 3) — la PORTA da cui si e' arrivati (home,
+  // magazine, esperienze) viaggia nell'URL e finisce nella fonte
+  // dell'iscritto («cerca-ritiro:magazine»): il cruscotto del lunedi'
+  // e la lista iscritti dicono quale porta lavora.
+  const porta = (typeof window !== 'undefined'
+    ? (new URLSearchParams(window.location.search).get('porta') || '') : '')
+    .replace(/[^a-z0-9_-]/gi, '').slice(0, 20);
+  const fonte = [context || 'landing', porta].filter(Boolean).join(':').slice(0, 60);
   const isOperator = type === 'operator';
 
   /* NL-bis (20/8) — chi e' loggato non deve ridigitare la sua email, e
@@ -127,7 +137,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
     if (!isOperator && accountEmail) setEmail((cur) => cur || accountEmail);
   }, [isOperator, accountEmail]);
   const [city, setCity] = useState('');
-  const [interests, setInterests] = useState([]);
+  const [interests, setInterests] = useState(() => initialInterests || []);
   const [travel, setTravel] = useState('');
   const [budget, setBudget] = useState('');
   const [activity, setActivity] = useState('');
@@ -168,7 +178,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         await api.post('/public/newsletter/subscribe', {
           email: email.trim(), name: name.trim() || null,
           language: (i18n.language || 'it').slice(0, 2),
-          source: context || 'landing',
+          source: fonte,
           return_to: returnTo,
           topics: interests.length
             ? interests.map((i) => INTEREST_TO_TOPIC[i]).filter(Boolean)
@@ -185,7 +195,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           // con la chiamata successiva: niente magic link ridondante
           unlock_flow: !!onSbloccato,
         });
-        trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: context || 'landing' });
+        trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: context || 'landing', porta: porta || '(nessuna)' });
         // SB2 (20/8) — gia' confermato? La prova arriva subito e il
         // grazie dice la verita' («sei gia' dei nostri»), invece di
         // rimandare a una conferma gia' fatta.

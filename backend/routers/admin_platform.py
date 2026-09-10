@@ -74,6 +74,112 @@ async def platform_overview(
     return payload
 
 
+@router.get("/lunedi")
+async def numeri_del_lunedi(
+    current_user: dict = Depends(require_system_admin),
+) -> Dict[str, Any]:
+    """RB14 (10/9/2026, rebranding onda 3; piano di business §7.8) — i
+    numeri di ogni lunedi', in un posto solo e senza stime: il Cerchio
+    (e quanti con la citta'), i ritiri in programma, le visite, gli
+    operatori attivi negli ultimi 90 giorni, le richieste di regia e
+    team building, gli euro per motore. Cache 60s come la panoramica."""
+    cached = _cached("lunedi")
+    if cached:
+        return cached
+    from datetime import timedelta
+    from database import (db, organizations_collection, products_collection,
+                          event_occurrences_collection, users_collection,
+                          richieste_struttura_collection)
+    from models.common import utc_now
+    from services.platform_insights import gmv_aggregates
+
+    now = utc_now()
+    iso = lambda d: d.isoformat()          # noqa: E731
+    d7, d30, d90 = (now - timedelta(days=n) for n in (7, 30, 90))
+    giorno7 = (now - timedelta(days=7)).strftime("%Y-%m-%d")
+    giorno14 = (now - timedelta(days=14)).strftime("%Y-%m-%d")
+
+    # 1. Il Cerchio (la fila): confermati, con la citta', nuovi in 7 giorni,
+    #    quanti vogliono i ritiri, e le porte da cui sono entrati (RB13)
+    sub_ = db.aurya_subscribers
+    confermati = await sub_.count_documents({"status": "confirmed"})
+    con_citta = await sub_.count_documents(
+        {"status": "confirmed", "profile.city": {"$nin": [None, ""]}})
+    con_ritiri = await sub_.count_documents(
+        {"status": "confirmed", "preferences.retreat_alert.enabled": True})
+    nuovi_7g = await sub_.count_documents(
+        {"status": "confirmed",
+         "$or": [{"confirmed_at": {"$gte": d7}}, {"confirmed_at": {"$gte": iso(d7)}}]})
+    porte = {}
+    async for row in sub_.aggregate([
+            {"$match": {"$or": [{"created_at": {"$gte": d30}}, {"created_at": {"$gte": iso(d30)}}]}},
+            {"$group": {"_id": "$source", "n": {"$sum": 1}}}]):
+        porte[row["_id"] or "(sconosciuta)"] = row["n"]
+
+    # 2. I ritiri in programma (pubblicati, futuri, online o su richiesta)
+    prods = await products_collection.find(
+        {"item_type": "event_ticket", "is_active": True, "is_published": True,
+         "transaction_mode": {"$in": ["direct", "request"]}},
+        {"_id": 0, "id": 1, "transaction_mode": 1, "organization_id": 1}).to_list(2000)
+    campioni = {o["id"] async for o in organizations_collection.find(
+        {"is_sample": True}, {"_id": 0, "id": 1})}
+    prods = [p for p in prods if p["organization_id"] not in campioni]
+    modo = {p["id"]: p.get("transaction_mode") for p in prods}
+    occs = await event_occurrences_collection.find(
+        {"product_id": {"$in": list(modo)}, "status": "published",
+         "start_at": {"$gte": iso(now)}},
+        {"_id": 0, "product_id": 1}).to_list(2000)
+    ritiri = {"in_programma": len(occs),
+              "online": sum(1 for o in occs if modo.get(o["product_id"]) == "direct"),
+              "su_richiesta": sum(1 for o in occs if modo.get(o["product_id"]) == "request")}
+
+    # 3. Le visite ai profili (page_views), 7 giorni contro i 7 prima
+    visite = {"ultimi_7g": 0, "precedenti_7g": 0}
+    async for row in db.page_views.aggregate([
+            {"$match": {"day": {"$gte": giorno14}}},
+            {"$group": {"_id": {"$gte": ["$day", giorno7]}, "hits": {"$sum": "$hits"}}}]):
+        visite["ultimi_7g" if row["_id"] else "precedenti_7g"] = row["hits"]
+
+    # 4. Gli operatori: quanti, quanti nella rete, quanti attivi (login 90g)
+    orgs = await organizations_collection.find(
+        {"is_sample": {"$ne": True}, "is_active": {"$ne": False},
+         "legacy_commerce": {"$ne": True}, "deactivated_at": None},
+        {"_id": 0, "id": 1, "network_member": 1, "public_profile": 1}).to_list(5000)
+    org_ids = [o["id"] for o in orgs]
+    attivi = set()
+    async for u in users_collection.find(
+            {"organization_id": {"$in": org_ids},
+             "$or": [{"last_login_at": {"$gte": d90}}, {"last_login_at": {"$gte": iso(d90)}}]},
+            {"_id": 0, "organization_id": 1}):
+        attivi.add(u["organization_id"])
+    from routers.fondatori import conteggio
+    fond = await conteggio()
+    operatori = {"totali": len(orgs),
+                 "attivi_90g": len(attivi),
+                 "nella_rete": sum(1 for o in orgs if o.get("network_member")),
+                 "fondatori_presi": fond["presi"], "fondatori_tetto": fond["tetto"]}
+
+    # 5. Le richieste (struttura, regia, team building): 30 giorni e aperte
+    richieste = {"struttura": 0, "regia": 0, "team_building": 0, "aperte": 0}
+    async for r in richieste_struttura_collection.find(
+            {"creato_il": {"$gte": iso(d30)}}, {"_id": 0, "tipo": 1}):
+        richieste[r.get("tipo") or "struttura"] = richieste.get(r.get("tipo") or "struttura", 0) + 1
+    richieste["aperte"] = await richieste_struttura_collection.count_documents(
+        {"stato": {"$in": ["nuova", "in_lavorazione"]}})
+
+    # 6. Gli euro per motore: piattaforma (transato dei ritiri, 30g);
+    #    i servizi non passano da qui finche' sono ordini manuali
+    gmv = await gmv_aggregates()
+    euro = {"ritiri_30g": round(sum(float(v.get("gmv") or 0) for v in gmv["by_channel_30d"].values()), 2)}
+
+    payload = {"cerchio": {"confermati": confermati, "con_citta": con_citta,
+                           "con_ritiri": con_ritiri, "nuovi_7g": nuovi_7g, "porte_30g": porte},
+               "ritiri": ritiri, "visite": visite, "operatori": operatori,
+               "richieste": richieste, "euro": euro, "generated_at": iso(now)}
+    _cache["lunedi"] = (time.monotonic(), payload)
+    return payload
+
+
 @router.get("/directory")
 async def platform_directory(
     current_user: dict = Depends(require_system_admin),

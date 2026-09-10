@@ -326,7 +326,8 @@ class TestP3MarketplaceApertoAPrimaFila:
                     "esp-cta-cerca", "esp-cta-op", "esp-prima-fila"):
             assert f'data-testid="{tid}"' in page, tid
         assert "su richiesta" in page and "prenotazione online" in page
-        assert 'to="/cerca-ritiro"' in page and 'to="/entra-nella-rete"' in page
+        # RB13 (onda 3): le porte portano il parametro ?porta=esperienze
+        assert 'to="/cerca-ritiro?porta=esperienze"' in page and 'to="/entra-nella-rete?porta=esperienze"' in page
         assert "senza commissioni" in page
         assert "noSearch" in page, "niente ricerca ne' mappa: quelle sono della fase marketplace"
 
@@ -583,3 +584,54 @@ class TestCodaBadgeERecensioni:
         assert "rounded-full" in hdr[i:i + 900] and "text-2xl" not in hdr[i:i + 900]
         page = (FE / "features" / "storefront" / "OperatorProfilePage.js").read_text()
         assert 'id="recensioni"' in page and "scroll-mt-20" in page
+
+
+class TestOnda3LeSorgentiELaMisura:
+    """Rebranding onda 3 (10/9/2026): RB12 il box di fine articolo per
+    categoria porta alla porta di chi cerca; RB13 la porta viaggia
+    nell'URL, finisce nella fonte dell'iscritto e negli eventi GA4;
+    RB14 i numeri del lunedi' nel pannello di sistema; P6 il contatore
+    del Cerchio nel wizard del ritiro (il primo innesco)."""
+
+    def test_rb12_il_magazine_apre_la_porta_di_chi_cerca(self):
+        page = (FE / "features" / "storefront" / "BlogArticlePage.js").read_text()
+        assert "sitePhase === 'network' && BOOKABLE_CATS.has(article.category) ? (" in page
+        assert 'data-testid="art-porta-cerca"' in page
+        assert "/cerca-ritiro?tema=${article.category}&porta=magazine" in page
+        assert "/esperienze?porta=magazine" in page
+        assert page.count("<BlogNewsletterCTA") == 1, "la Lettera resta per le categorie editoriali"
+        tl = (FE / "features" / "prelaunch" / "TravelerLandingPage.js").read_text()
+        assert "initialInterests={temaIniziale()}" in tl and "TEMA_TO_CHIP" in tl
+
+    def test_rb13_la_porta_finisce_nella_fonte_e_negli_eventi(self):
+        lf = (FE / "features" / "prelaunch" / "LeadForm.jsx").read_text()
+        assert "get('porta')" in lf and "source: fonte," in lf
+        assert "[context || 'landing', porta].filter(Boolean).join(':')" in lf
+        home = HOME.read_text()
+        assert "`${CERCA_PATH}?porta=home`" in home and "`${OPERATORI_PATH}?porta=home`" in home
+        assert "trackEvent('porta', { porta: 'cerca', da: 'home' })" in home
+        esp = (FE / "features" / "storefront" / "EsperienzePage.js").read_text()
+        assert "/cerca-ritiro?porta=esperienze" in esp and "trackEvent('porta'" in esp
+
+    def test_rb14_i_numeri_del_lunedi(self):
+        src = (BACKEND_DIR / "routers" / "admin_platform.py").read_text()
+        assert '@router.get("/lunedi")' in src
+        for chiave in ('"confermati"', '"con_citta"', '"in_programma"', '"ultimi_7g"',
+                       '"attivi_90g"', '"team_building"', '"ritiri_30g"', '"porte_30g"'):
+            assert chiave in src, chiave
+        assert "_cached(\"lunedi\")" in src, "cache 60s come la panoramica"
+        tab = (FE / "features" / "admin" / "PlatformOverviewTab.js").read_text()
+        assert 'data-testid="numeri-lunedi"' in tab and "api.get('/admin/platform/lunedi')" in tab
+        assert tab.index('data-testid="numeri-lunedi"') < tab.index("Riga 1 — i miei soldi"), \
+            "prima la fila, poi i soldi"
+
+    def test_p6_il_contatore_del_cerchio_nel_wizard(self):
+        org = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        assert '@router.get("/current/cerchio-vicino")' in org
+        assert '"preferences.retreat_alert.regions": slug' in org and '"soglia_lettera": 50' in org
+        corpo = org[org.index("async def cerchio_vicino"):org.index('@router.get("/current/onboarding-status")')]
+        assert '"email"' not in corpo and "email\": 1" not in corpo, "mai email: solo conteggi"
+        wiz = (FE / "features" / "events" / "EventWizard.js").read_text()
+        assert "api.get('/organizations/current/cerchio-vicino'" in wiz
+        assert 'data-testid="wizard-cerchio-contatore"' in wiz
+        assert "La Lettera per zona parte da" in wiz, "il cancello scritto in chiaro"

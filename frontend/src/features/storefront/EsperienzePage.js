@@ -18,6 +18,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
+import { trackEvent } from '../../lib/analytics';   // RB13
 import MarketplaceShell from './components/MarketplaceShell';
 import useSeoMeta from './lib/useSeoMeta';
 import { Section, DisplayTitle, Lede, EditorialCta } from '../../components/editorial';
@@ -117,8 +118,10 @@ export default function EsperienzePage() {
                 I professionisti della rete li stanno pubblicando. Dicci cosa cerchi e dove: ti avvisiamo appena c’è un ritiro vicino a te.
               </p>
               <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-6">
-                <EditorialCta to="/cerca-ritiro" variant="solid" data-testid="esp-cta-cerca">Trovami il mio ritiro</EditorialCta>
-                <EditorialCta to="/entra-nella-rete" variant="quiet" data-testid="esp-cta-op">Organizzi ritiri? Apri il tuo spazio</EditorialCta>
+                <EditorialCta to="/cerca-ritiro?porta=esperienze" variant="solid" data-testid="esp-cta-cerca"
+                              onClick={() => trackEvent('porta', { porta: 'cerca', da: 'esperienze' })}>Trovami il mio ritiro</EditorialCta>
+                <EditorialCta to="/entra-nella-rete?porta=esperienze" variant="quiet" data-testid="esp-cta-op"
+                              onClick={() => trackEvent('porta', { porta: 'operatore', da: 'esperienze' })}>Organizzi ritiri? Apri il tuo spazio</EditorialCta>
               </div>
             </div>
           </Section>
@@ -149,8 +152,8 @@ export default function EsperienzePage() {
         {dati !== null && items.length > 0 && (
           <Section tone="cream" rhythm="flow" width="max-w-4xl">
             <p className="text-sm text-muted-foreground">
-              Non trovi il tuo? <Link to="/cerca-ritiro" className="underline">Dicci cosa cerchi</Link> e ti avvisiamo.
-              {' '}Organizzi ritiri? <Link to="/entra-nella-rete" className="underline">Apri il tuo spazio</Link>: pubblicare è gratis, senza commissioni.
+              Non trovi il tuo? <Link to="/cerca-ritiro?porta=esperienze" className="underline">Dicci cosa cerchi</Link> e ti avvisiamo.
+              {' '}Organizzi ritiri? <Link to="/entra-nella-rete?porta=esperienze" className="underline">Apri il tuo spazio</Link>: pubblicare è gratis, senza commissioni.
             </p>
           </Section>
         )}

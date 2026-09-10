@@ -97,6 +97,7 @@
  * (HomeGate → RetreatsCalendarPage): quella e' un'altra pagina e non
  * viene toccata qui.
  */
+import { trackEvent } from '../../lib/analytics';   // RB13 — eventi per porta
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
@@ -353,7 +354,8 @@ export default function NetworkHomePage() {
                   {t('nwHome.doorSeekText', { defaultValue: "Dicci cosa cerchi e dove. Ti avvisiamo quando c’è, vicino a te. Intanto ascolti le meditazioni riservate." })}
                 </Lede>
                 <div className="mt-auto pt-6">
-                  <EditorialCta to={CERCA_PATH} variant="solid" tone="dark" data-testid="hp-door-seek-cta">
+                  <EditorialCta to={`${CERCA_PATH}?porta=home`} variant="solid" tone="dark" data-testid="hp-door-seek-cta"
+                                onClick={() => trackEvent('porta', { porta: 'cerca', da: 'home' })}>
                     {t('nwHome.doorSeekCta', { defaultValue: "Trovami il mio ritiro" })}
                   </EditorialCta>
                 </div>
@@ -368,7 +370,8 @@ export default function NetworkHomePage() {
                   {t('nwHome.doorOpText', { defaultValue: "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo. Gratis per sempre, senza commissioni." })}
                 </Lede>
                 <div className="mt-auto pt-6">
-                  <EditorialCta to={OPERATORI_PATH} variant="solid" tone="dark" data-testid="hp-door-op-cta">
+                  <EditorialCta to={`${OPERATORI_PATH}?porta=home`} variant="solid" tone="dark" data-testid="hp-door-op-cta"
+                                onClick={() => trackEvent('porta', { porta: 'operatore', da: 'home' })}>
                     {t('nwHome.doorOpCta', { defaultValue: "Apri il tuo spazio" })}
                   </EditorialCta>
                 </div>

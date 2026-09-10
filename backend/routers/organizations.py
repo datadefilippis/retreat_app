@@ -2287,6 +2287,25 @@ async def mark_welcome_seen(current_user: dict = Depends(get_current_user)):
     return {"ok": True}
 
 
+@router.get("/current/cerchio-vicino")
+async def cerchio_vicino(region: str = "", current_user: dict = Depends(require_admin)):
+    """P6 (10/9/2026, piano di business §5.2, il primo innesco): mentre
+    l'operatore sceglie la regione del ritiro, il wizard dice quante
+    persone del Cerchio aspettano un ritiro li' (alert per regione) e
+    quante ovunque in Italia. Numeri veri, solo confermati; mai email."""
+    from database import db
+    slug = (region or "").strip().lower().replace("'", "-").replace(" ", "-")
+    base = {"status": "confirmed", "preferences.retreat_alert.enabled": True}
+    in_zona = await db.aurya_subscribers.count_documents(
+        {**base, "preferences.retreat_alert.regions": slug}) if slug else 0
+    ovunque = await db.aurya_subscribers.count_documents(
+        {**base, "$or": [{"preferences.retreat_alert.scope": "italy"},
+                         {"profile.travel": "anywhere"}]})
+    totale = await db.aurya_subscribers.count_documents(base)
+    return {"regione": region, "in_zona": in_zona, "ovunque": ovunque,
+            "totale_ritiri": totale, "soglia_lettera": 50}
+
+
 @router.get("/current/onboarding-status")
 async def onboarding_status(current_user: dict = Depends(require_admin)):
     from database import (

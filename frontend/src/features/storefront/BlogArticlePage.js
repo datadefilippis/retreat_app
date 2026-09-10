@@ -62,6 +62,7 @@
  * MOVIMENTO: solo la dissolvenza d'ingresso del kit e lo zoom lentissimo
  * delle copertine al passaggio del mouse, entrambi in motion-safe.
  */
+import { trackEvent } from '../../lib/analytics';   // RB13
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -481,6 +482,39 @@ export default function BlogArticlePage() {
                    cosa fatta. SB6: ma se non ha un account, il passo
                    naturale e' finalizzarlo — una riga, non un muro. */
                 ponteIscritto
+              ) : sitePhase === 'network' && BOOKABLE_CATS.has(article.category) ? (
+                /* RB12 (10/9/2026, rebranding onda 3) — il Magazine e'
+                   l'unica sorgente che porta gia' persone, e in fondo a
+                   una guida di yoga offriva la Lettera generica. Ora la
+                   porta e' quella di chi cerca, con il tema dell'articolo
+                   e la porta segnata nella fonte (RB13). */
+                <Section tone="sage" rhythm="flow" width="max-w-3xl"
+                         labelledBy="art-porta-title">
+                  <div data-testid="art-porta-cerca">
+                    <DisplayTitle as="h2" id="art-porta-title" size="section" measure="title"
+                                  className="text-[1.8rem] sm:text-[2.2rem] lg:text-[2.5rem]">
+                      {t('blog.portaCercaTitle', {
+                        cat: catLabel(article.category),
+                        defaultValue: 'Cerchi un ritiro di {{cat}}?' })}
+                    </DisplayTitle>
+                    <Lede size="lead" tone="inherit" className="mt-6 opacity-90">
+                      {t('blog.portaCercaBody', {
+                        cat: catLabel(article.category),
+                        defaultValue: 'Dicci dove e quando: ti avvisiamo appena c’è un ritiro di {{cat}} vicino a te, e intanto ti apriamo le meditazioni riservate. Quelli già in programma sono in «Ritiri ed esperienze».' })}
+                    </Lede>
+                    <p className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                      <EditorialCta to={`/cerca-ritiro?tema=${article.category}&porta=magazine`} variant="light"
+                                    onClick={() => trackEvent('porta', { porta: 'cerca', da: 'magazine', tema: article.category })}
+                                    data-testid="art-porta-cerca-cta">
+                        {t('blog.portaCercaCta', { defaultValue: 'Trovami il mio ritiro' })}
+                      </EditorialCta>
+                      <EditorialCta to="/esperienze?porta=magazine" variant="quiet" tone="dark"
+                                    onClick={() => trackEvent('porta', { porta: 'esperienze', da: 'magazine', tema: article.category })}>
+                        {t('blog.portaEsperienzeCta', { defaultValue: 'I ritiri in programma' })}
+                      </EditorialCta>
+                    </p>
+                  </div>
+                </Section>
               ) : (
                 <Section tone="sand" rhythm="flow" width="max-w-2xl">
                   <BlogNewsletterCTA category={article.category} />
