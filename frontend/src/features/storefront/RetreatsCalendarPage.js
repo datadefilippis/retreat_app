@@ -28,10 +28,9 @@ const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'))
 // (GeoSearchBar); il param backend `region` resta per i vecchi link SEO.
 
 // DS2 — icone categoria professionali (lucide), mappa unica condivisa.
-import { Globe2 } from 'lucide-react';
+import { Globe2, CalendarDays } from 'lucide-react';
 import { CategoryIcon } from './lib/categoryIcons';
 import BrandPayoff from '../../components/BrandPayoff';
-import HeroVideo from '../../components/HeroVideo';
 
 function fmtPrice(n) {
   if (n === null || n === undefined) return null;
@@ -221,158 +220,140 @@ export default function RetreatsCalendarPage() {
   });
 
   const anyFilter = category || region || month || query;
-  const selCls = 'rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm focus:border-primary focus:outline-none';
 
   return (
     <MarketplaceShell noSearch>
     <div className="bg-background">
-      {/* PL6 — avviso anteprima lancio (solo in pre-lancio). Su
-          /esplora-ritiri i dati sono VERI: il banner "ritiri d'esempio"
-          direbbe il falso, quindi resta fuori dalla rotta anteprima. */}
-      {/* ── Hero (DS: il tramonto di Aurya in sottofondo) ────────────── */}
-      <header className="relative bg-gradient-sidebar text-white overflow-hidden">
-        {/* HP4 — poster sotto + video dopo il primo rendering: la
-            sequenza vive in components/HeroVideo.jsx, condivisa con lo
-            splash di prelancio e con la home della fase rete. Qui
-            prima il video era sempre nel DOM con preload="metadata":
-            adesso non tocca affatto il primo rendering. */}
-        <HeroVideo src="/media/aurya-hero.mp4" poster="/media/aurya-hero-poster.jpg" />
-        {/* scrim salvia: il tramonto è oro acceso, i testi restano leggibili */}
-        <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#14231d]/85 via-[#14231d]/55 to-[#0e1a15]/90" />
-        <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
-          {/* RB4 — il motto in font-brand, il filo d'oro del wordmark */}
-          <BrandPayoff tone="hero" size="hero" rules className="mb-4" />
-          <h1 className="font-display text-4xl md:text-6xl font-medium tracking-tight leading-tight text-hero-shadow" data-testid="esp-title">
+      {/* RE-bis (10/9/2026 sera, founder: «lo stesso stile di
+          esplora-operatori»): testata compatta con foto ferma e velatura
+          a sinistra, briciole, payoff piccolo, titolo, una frase, un link
+          discreto; niente video, niente chip nel cielo: i filtri stanno
+          nella barra sotto, come nella directory dei professionisti. */}
+      <header className="relative text-white overflow-hidden" data-testid="esp-hero">
+        <img aria-hidden src="/media/aurya-hero-poster.jpg" alt="" fetchpriority="high"
+             className="absolute inset-0 w-full h-full object-cover object-[50%_40%]" />
+        <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#14231d]/90 via-[#14231d]/65 to-[#14231d]/35" />
+        <div className="relative max-w-6xl mx-auto px-4 pt-12 pb-8 md:pt-16 md:pb-12">
+          <nav aria-label="breadcrumb" className="text-xs text-white/70 mb-3">
+            <Link to="/" className="hover:text-white hover:underline">Aurya</Link>
+            <span className="mx-1.5" aria-hidden>›</span>
+            {category ? (
+              <>
+                <Link to={basePath} className="hover:text-white hover:underline">Ritiri ed esperienze</Link>
+                <span className="mx-1.5" aria-hidden>›</span>
+                {region ? (
+                  <>
+                    <Link to={`${basePath}/${category}`} className="hover:text-white hover:underline">{catLabel || category}</Link>
+                    <span className="mx-1.5" aria-hidden>›</span>
+                    <span className="text-white">{region}</span>
+                  </>
+                ) : <span className="text-white">{catLabel || category}</span>}
+              </>
+            ) : (
+              <span className="text-white">Ritiri ed esperienze</span>
+            )}
+          </nav>
+          <BrandPayoff tone="hero" size="sm" className="mb-2" />
+          <h1 className="font-display text-3xl md:text-5xl font-semibold text-hero-shadow" data-testid="esp-title">
             {catLabel || region ? seoHeading : t('landings:calendar.title', { defaultValue: 'I prossimi ritiri ed esperienze.' })}
           </h1>
-          <p className="text-white/95 mt-4 max-w-xl mx-auto text-base md:text-lg text-hero-shadow">{t('landings:calendar.subtitle', { defaultValue: 'I ritiri e le esperienze dei professionisti della rete, per data. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.' })}</p>
-
-          {<div className="mt-7 max-w-xl mx-auto">
-            <input
-              type="search"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder={t('landings:calendar.searchPlaceholder', { defaultValue: 'Cerca un ritiro, un luogo, un professionista…' })}
-              className="w-full rounded-full border-0 bg-white/95 backdrop-blur px-6 py-3.5 md:py-4 text-base text-gray-900 shadow-2xl focus:outline-none focus:ring-2 focus:ring-[#d6c49a]"
-            />
-          </div>}
-
-          {/* Categorie visuali — dalle categorie REALI del backend.
-              L1: niente strip a scorrimento (era overflow-x-auto, con
-              jank ai reload): riga statica che va a capo. */}
-          {categories.length > 0 && (
-            <div className="mt-7 flex flex-wrap gap-2 justify-center">
-              <button
-                onClick={() => setFilter('categoria', '')}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors backdrop-blur-sm ${
-                  !category ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'
-                }`}
-              >
-                {t('landings:calendar.allCategories')}
-              </button>
-              {categories.map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => setFilter('categoria', key)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors backdrop-blur-sm ${
-                    category === key ? 'bg-white text-gray-900 shadow-lg' : 'bg-black/25 border border-white/25 text-white hover:bg-black/40'
-                  }`}
-                >
-                  <CategoryIcon category={key} className="h-4 w-4 mr-1.5 inline-block align-[-2px]" />
-                  {/* T3 — label categoria via i18n (fallback: label backend) */}
-                  {t(`landings:categories.${key}`, { defaultValue: label })}
-                </button>
-              ))}
-            </div>
-          )}
+          <p className="mt-2.5 text-white/90 max-w-2xl text-hero-shadow">
+            {t('landings:calendar.subtitle', { defaultValue: 'I ritiri e le esperienze dei professionisti della rete, per data. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.' })}
+          </p>
+          <Link to="/entra-nella-rete?porta=esperienze" data-testid="esp-join"
+                onClick={() => trackEvent('porta', { porta: 'operatore', da: 'esperienze' })}
+                className="mt-3 inline-flex items-center gap-1 text-sm text-white/80 hover:text-white underline-offset-4 hover:underline">
+            Organizzi ritiri? Apri il tuo spazio →
+          </Link>
         </div>
       </header>
 
-      {/* SEO3 — breadcrumb navigabile + regioni come LINK crawlabili sulle
-          pagine categoria: i motori raggiungono /ritiri/{cat}/{regione} dai
-          link interni, non solo dal sitemap. */}
-      {(category || region) && (
+      {/* SEO3 — sulle pagine categoria, le regioni con ritiri come LINK
+          crawlabili: i motori raggiungono /esperienze/{cat}/{regione}
+          dai link interni, non solo dalla sitemap. */}
+      {category && !region && regionsForCategory.length > 0 && (
         <div className="border-b border-border bg-background">
-          <div className="max-w-6xl mx-auto px-4 py-3">
-            <nav aria-label="breadcrumb" className="text-xs text-muted-foreground">
-              <Link to="/" className="hover:text-primary hover:underline">Aurya</Link>
-              <span className="mx-1.5" aria-hidden>›</span>
-              {category ? (
-                <Link to={`${basePath}/${category}`} className="hover:text-primary hover:underline">
-                  {catLabel || category}
-                </Link>
-              ) : (
-                <span className="text-foreground">{t('landings:calendar.title', { defaultValue: 'Ritiri' })}</span>
-              )}
-              {region && (<>
-                <span className="mx-1.5" aria-hidden>›</span>
-                <span className="text-foreground">{region}</span>
-              </>)}
-            </nav>
-            {regionsForCategory.length > 0 && (
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {t('landings:calendar.byRegion', { defaultValue: 'Per regione:' })}
-                </span>
-                {regionsForCategory.map(rg => (
-                  <Link key={rg} to={`${basePath}/${category}/${rg}`}
-                        className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors">
-                    {rg}
-                  </Link>
-                ))}
-              </div>
-            )}
+          <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground">
+              {t('landings:calendar.byRegion', { defaultValue: 'Per regione:' })}
+            </span>
+            {regionsForCategory.map(rg => (
+              <Link key={rg} to={`${basePath}/${category}/${rg}`}
+                    className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground hover:border-primary hover:text-primary transition-colors">
+                {rg}
+              </Link>
+            ))}
           </div>
         </div>
       )}
 
-      {/* ── Barra filtri sticky (nascosta in pre-lancio: PL22) ───────── */}
-      {<div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-2">
-          {/* G3 — "Dove?" con autocomplete+raggio al posto delle regioni
-              (gli eventi possono essere in tutto il mondo) */}
-          <GeoSearchBar value={geoValue} onChange={setGeo} />
-          <input
-            type="month"
-            value={month}
-            onChange={e => setFilter('mese', e.target.value)}
-            className={selCls}
-          />
-          {/* V3 — la ricerca segue lo scroll (era solo nell'hero) */}
-          <input
-            type="search"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder={t('landings:calendar.searchShort', { defaultValue: 'Cerca…' })}
-            className="rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm w-32 focus:w-48 transition-all focus:border-primary focus:outline-none"
-          />
-          {anyFilter && (
+      {/* La barra dei filtri: la stessa della directory dei professionisti
+          (Dove a tutta larghezza su mobile, il resto in una riga
+          scrollabile; da lg una riga sola). L'URL resta la verita'. */}
+      {<div data-testid="esp-search-bar" className="sticky top-14 z-30 border-b border-gray-200 bg-white/95 backdrop-blur shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-2.5">
+          <div className="w-full lg:w-auto lg:flex-1 lg:min-w-[280px]">
+            <GeoSearchBar value={geoValue} onChange={setGeo} fluid />
+          </div>
+          <div className="flex w-full lg:w-auto items-center gap-2 lg:gap-2.5 overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0 lg:overflow-visible">
+            <select
+              value={category}
+              onChange={e => (routeParams.categoria
+                ? navigate(e.target.value ? `${basePath}/${e.target.value}` : basePath)
+                : setFilter('categoria', e.target.value))}
+              aria-label={t('landings:calendar.allCategories')}
+              data-testid="esp-f-categoria"
+              className="flex-none w-44 lg:w-52 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+            >
+              <option value="">{t('landings:calendar.allCategories')}</option>
+              {categories.map(([key, label]) => (
+                <option key={key} value={key}>{t(`landings:categories.${key}`, { defaultValue: label })}</option>
+              ))}
+            </select>
+            <input
+              type="month"
+              value={month}
+              onChange={e => setFilter('mese', e.target.value)}
+              aria-label={t('landings:calendar.monthLabel', { defaultValue: 'Mese' })}
+              data-testid="esp-f-mese"
+              className="flex-none w-40 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+            />
+            <input
+              type="search"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder={t('landings:calendar.searchShort', { defaultValue: 'Cerca…' })}
+              aria-label={t('landings:calendar.searchPlaceholder', { defaultValue: 'Cerca un ritiro, un luogo, un professionista…' })}
+              data-testid="esp-f-cerca"
+              className="flex-none w-36 lg:w-44 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+            />
             <button
               type="button"
-              onClick={() => { setParams({}, { replace: true }); setQuery(''); }}
-              className="text-sm text-muted-foreground underline px-1"
+              onClick={() => setFilter('vista', view === 'mappa' ? '' : 'mappa')}
+              aria-pressed={view === 'mappa'}
+              className={`flex-none rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
+                view === 'mappa'
+                  ? 'bg-[#376254] border-[#376254] text-white shadow'
+                  : 'bg-white border-gray-300 text-gray-700 hover:border-primary hover:text-primary'
+              }`}
             >
-              {t('landings:calendar.clearFilters')}
+              {t('landings:calendar.viewMap', { defaultValue: 'Mappa' })}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={() => setFilter('vista', view === 'mappa' ? '' : 'mappa')}
-            className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === 'mappa'
-                ? 'bg-primary text-white'
-                : 'border border-gray-300 bg-white text-gray-700 hover:border-primary'
-            }`}
-          >
-            {view === 'mappa'
-              ? t('landings:calendar.viewList', { defaultValue: '☰ Lista' })
-              : t('landings:calendar.viewMap', { defaultValue: 'Mappa' })}
-          </button>
-          {!loading && (
-            <span className="ml-auto text-xs text-muted-foreground">
-              {t('landings:calendar.resultsCount', { count: items.length, defaultValue: '{{count}} ritiri' })}
-            </span>
-          )}
+            {anyFilter && (
+              <button
+                type="button"
+                onClick={() => { navigate(basePath, { replace: true }); setQuery(''); }}
+                className="flex-none text-sm text-muted-foreground underline px-1 whitespace-nowrap"
+              >
+                {t('landings:calendar.clearFilters')}
+              </button>
+            )}
+            {!loading && (
+              <span className="flex-none lg:ml-auto text-xs text-muted-foreground whitespace-nowrap" data-testid="esp-conteggio">
+                {t('landings:calendar.resultsCount', { count: items.length, defaultValue: '{{count}} ritiri' })}
+              </span>
+            )}
+          </div>
         </div>
         {/* L1 — nota filtro lingua: in lingua ≠ it la vista è filtrata
             ai ritiri TENUTI in quella lingua; va detto, o l'elenco
@@ -418,22 +399,25 @@ export default function RetreatsCalendarPage() {
           ) : (
             /* P3 → RE (10/9/2026): lo stato vuoto onesto, con le parole del
                founder e le due porte. Niente «torna presto». */
-            <div data-testid="esp-vuoto" className="mx-auto max-w-3xl rounded-[1.75rem] border border-dashed border-border p-8 text-center">
-              <p className="font-display text-2xl text-foreground">
+            <div data-testid="esp-vuoto" className="text-center py-16 max-w-md mx-auto">
+              <div className="mx-auto h-16 w-16 rounded-full bg-secondary flex items-center justify-center">
+                <CalendarDays className="h-7 w-7 text-[#376254]" aria-hidden />
+              </div>
+              <p className="mt-4 font-display text-2xl text-foreground">
                 {t('landings:calendar.emptyTitle', { defaultValue: 'I primi ritiri stanno arrivando.' })}
               </p>
               <p className="mt-3 text-base text-muted-foreground">
                 {t('landings:calendar.emptyBody', { defaultValue: 'I professionisti della rete li stanno pubblicando. Dicci cosa cerchi e dove: ti avvisiamo appena c’è un ritiro vicino a te.' })}
               </p>
-              <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-6">
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
                 <Link to="/cerca-ritiro?porta=esperienze" data-testid="esp-cta-cerca"
                       onClick={() => trackEvent('porta', { porta: 'cerca', da: 'esperienze' })}
-                      className="rounded-full bg-[#2f5749] px-6 py-3 text-sm font-semibold text-white shadow hover:bg-[#25463a] transition-colors">
+                      className="rounded-full bg-primary text-white px-5 py-1.5 text-sm font-semibold hover:opacity-90 transition-opacity">
                   Trovami il mio ritiro
                 </Link>
                 <Link to="/entra-nella-rete?porta=esperienze" data-testid="esp-cta-op"
                       onClick={() => trackEvent('porta', { porta: 'operatore', da: 'esperienze' })}
-                      className="text-sm font-medium underline underline-offset-4 text-[#2f5749]">
+                      className="rounded-full border border-[#376254] text-[#376254] bg-white px-4 py-1.5 text-sm font-semibold hover:bg-[#376254]/5 transition-colors">
                   Organizzi ritiri? Apri il tuo spazio
                 </Link>
               </div>
@@ -459,9 +443,9 @@ export default function RetreatsCalendarPage() {
                   key={`${item.org_slug}/${item.slug}`}
                   to={item.sample ? '#' : item.url}
                   onClick={item.sample ? (e) => e.preventDefault() : undefined}
-                  className={`group card-lift rounded-2xl border border-border bg-card overflow-hidden shadow-sm ${item.sample ? 'pointer-events-none select-none' : ''}`}
+                  className={`group rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col ${item.sample ? 'pointer-events-none select-none' : ''}`}
                 >
-                  <div className="relative h-56 bg-muted overflow-hidden">
+                  <div className="relative aspect-[16/9] bg-muted overflow-hidden">
                     {/* PL6 — anteprima lancio: card campione sfocata e non cliccabile */}
                     {item.sample && (
                       <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#1e2b26]/25 backdrop-blur-[1px]">

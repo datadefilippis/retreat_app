@@ -352,7 +352,11 @@ class TestP3MarketplaceApertoAPrimaFila:
         assert "su richiesta" in page and "prenotazione online" in page
         assert 'to="/cerca-ritiro?porta=esperienze"' in page and 'to="/entra-nella-rete?porta=esperienze"' in page
         assert "senza commissioni" in page and "I primi ritiri stanno arrivando." in page
-        assert "HeroVideo" in page and "GeoSearchBar" in page, "la copertina e la ricerca del calendario"
+        # RE-bis (10/9 sera, founder): lo stile della directory dei professionisti
+        # — foto ferma con velatura, barra filtri sticky, schede 16/9
+        assert "HeroVideo" not in page and "aurya-hero-poster.jpg" in page
+        assert 'data-testid="esp-search-bar"' in page and "GeoSearchBar" in page and 'fluid' in page
+        assert 'data-testid="esp-f-categoria"' in page and 'data-testid="esp-f-mese"' in page
         assert "const basePath = '/esperienze';" in page
 
     def test_il_gate_e_i_rimandi(self):

@@ -368,12 +368,15 @@ class TestDsBrandGlow:
         sempre sotto, il movimento e' gated su reduced-motion e il
         testo sul video ha la sua ombra. Cambia solo DOVE guardare il
         gate: nel componente condiviso invece che nella pagina."""
+        # RE-bis (10/9/2026 sera, founder): il calendario non ha piu' il video
+        # (segue la directory dei professionisti: foto ferma + velatura); il
+        # pattern poster+video vive nel componente e nella home della rete
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "RetreatsCalendarPage.js").read_text()
-        assert "<HeroVideo" in page
-        assert "aurya-hero.mp4" in page
-        assert "aurya-hero-poster.jpg" in page       # fallback sempre sotto
-        assert "text-hero-shadow" in page            # leggibilita' sul tramonto
+        assert "<HeroVideo" not in page and "aurya-hero-poster.jpg" in page
+        assert "text-hero-shadow" in page            # leggibilita' sulla foto
+        hv = (FRONTEND_SRC / "components" / "HeroVideo.jsx").read_text()
+        assert "poster" in hv and "prefers-reduced-motion" in hv.replace("reduced-motion", "prefers-reduced-motion")
         comp = (FRONTEND_SRC / "components" / "HeroVideo.jsx").read_text()
         assert "hero-video" in comp                  # gate reduced-motion (CSS)
         assert "prefers-reduced-motion" in comp      # e anche lato JS: non si monta
@@ -457,10 +460,14 @@ class TestDs2Polish:
         """HP1 — l'occhiello dell'hero resta prominente e coi fili
         d'oro, ma ora e' il payoff (una frase): il corpo lo decide
         BrandPayoff con size="hero", non piu' classi sparse."""
+        # RE-bis (10/9 sera): il calendario ha l'occhiello piccolo della
+        # directory (size="sm"); quello grande coi fili resta in home
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "RetreatsCalendarPage.js").read_text()
-        assert 'size="hero"' in page and "rules" in page, \
-            "l'hero del calendario ha perso l'occhiello grande coi fili"
+        assert '<BrandPayoff tone="hero" size="sm"' in page
+        # l'occhiello grande coi fili resta disponibile nel componente
+        comp = (FRONTEND_SRC / "components" / "BrandPayoff.jsx").read_text()
+        assert "hero" in comp[comp.index("const SIZES"):] and "rules" in comp
         payoff = (FRONTEND_SRC / "components" / "BrandPayoff.jsx").read_text()
         idx = payoff.index("const SIZES")
         # non una micro-etichetta: cresce fino a text-xl sui grandi
