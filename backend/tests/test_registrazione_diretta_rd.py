@@ -78,9 +78,12 @@ class TestRegistrazioneDirettaRd:
                       "Entriamo in contatto",
                       "Non stiamo cercando iscritti"):
             assert frase not in src, f"testo incoerente sopravvissuto: «{frase}»"
-        # e le sostituzioni ci sono
-        for frase in ("Si comincia da te", "Crei il tuo account in un minuto",
-                      "Non cerchiamo numeri"):
+        # e le sostituzioni ci sono. RB2-ter (10/9/2026 sera): la landing
+        # e' il testo del founder parola per parola: tre passi «Crei il
+        # tuo account / Crei la tua pagina / Entri nella rete» e «Non
+        # cerchiamo semplicemente iscritti».
+        for frase in ("Crei il tuo account.", "Crei la tua pagina.", "Entri nella rete.",
+                      "Non cerchiamo semplicemente iscritti"):
             assert frase in src, f"manca la sostituzione: «{frase}»"
 
     def test_rete_e_shell_allineate(self):
@@ -94,7 +97,8 @@ class TestRegistrazioneDirettaRd:
         assert "raccontata attraverso una conversazione vera" in rete
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
         assert "Non è una selezione" not in shell
-        assert "il racconto del tuo lavoro lo scriviamo insieme" in shell
+        # RB2-bis (10/9/2026 sera): la shell dice la stessa frase della landing
+        assert "Gratis per sempre, senza commissioni" in shell
 
     def test_rotta_benvenuto_protetta(self):
         app = (FRONTEND_SRC / "App.js").read_text()

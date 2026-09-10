@@ -161,6 +161,16 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // FV1 (10/9/2026) — la pagina di verifica riceve la sessione dal server
+  // e la adotta: chi clicca il link e' dentro, senza rifare il login.
+  const adottaSessione = useCallback(({ access_token, user: userData }) => {
+    if (!access_token || !userData) return false;
+    localStorage.setItem('token', access_token);
+    setToken(access_token);
+    setUser(userData);
+    return true;
+  }, []);
+
   const value = useMemo(() => ({
     user,
     token,
@@ -170,7 +180,8 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     refreshUser,
-  }), [user, token, loading, login, signup, logout, refreshUser]);
+    adottaSessione,
+  }), [user, token, loading, login, signup, logout, refreshUser, adottaSessione]);
 
   return (
     <AuthContext.Provider value={value}>

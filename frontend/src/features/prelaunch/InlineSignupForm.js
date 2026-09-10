@@ -20,6 +20,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { authAPI } from '../../api/auth';
 import { validatePassword, extractApiError } from '../../pages/AuthPages';
 
 const FIELD_CLS = 'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm '
@@ -44,6 +45,8 @@ export default function InlineSignupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [verificationRequired, setVerificationRequired] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -76,14 +79,30 @@ export default function InlineSignupForm() {
   };
 
   if (verificationRequired) {
+    // FV1 (10/9/2026) — dopo la registrazione: un'email, un clic, sei dentro.
+    // Il reinvio e' qui, non in una pagina a parte.
     return (
       <div className="text-center py-6" data-testid="ol-signup-verify">
         <p className="font-display text-xl text-[#2e4b3f] mb-3">
-          {t('signup.verify_email_title', { defaultValue: 'Controlla la tua email' })}
+          {t('signup.verify_email_title', { defaultValue: 'Apri la tua email: un clic e sei dentro' })}
         </p>
         <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
-          {t('signup.verify_email_message', { defaultValue: 'Ti abbiamo inviato un link di verifica. Clicca il link per attivare il tuo account.' })}
+          {t('signup.verify_email_message', { defaultValue: 'Ti abbiamo scritto a {{email}}. Il bottone nell’email conferma l’indirizzo e ti porta nel tuo spazio, senza rifare il login. Se non la vedi, guarda nello spam.', email })}
         </p>
+        <button type="button" data-testid="ol-signup-resend" disabled={resending || resent}
+                onClick={async () => {
+                  setResending(true);
+                  try { await authAPI.resendVerification(email); setResent(true); }
+                  catch { setError(t('signup.resend_error', { defaultValue: 'Non siamo riusciti a rimandarla: riprova tra un minuto.' })); }
+                  finally { setResending(false); }
+                }}
+                className="mt-5 text-sm font-medium text-[#2f5749] underline underline-offset-4 disabled:opacity-60">
+          {resent
+            ? t('signup.resend_done', { defaultValue: 'Rimandata. Controlla la posta.' })
+            : resending ? t('signup.resending', { defaultValue: 'Rimando…' })
+              : t('signup.resend', { defaultValue: 'Non è arrivata? Rimandala' })}
+        </button>
+        {error && <p className="mt-2 text-xs text-red-700">{error}</p>}
       </div>
     );
   }

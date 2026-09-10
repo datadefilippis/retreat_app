@@ -200,8 +200,11 @@ async def signup(
         )
 
     # Welcome email with verification link (non-blocking — failure must not abort signup)
+    # FV1 (10/9/2026): il giorno zero dell'operatore — un'email scritta,
+    # con UN bottone che verifica ed entra (services/email_sequenze.py)
     try:
-        send_welcome(user.email, user.name, verification_token=verification_token, locale=user_locale)
+        from services.email_sequenze import benvenuto_operatore
+        benvenuto_operatore(user.email, user.name, verification_token, user_locale)
     except Exception:
         pass
 

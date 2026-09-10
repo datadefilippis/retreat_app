@@ -751,3 +751,39 @@ class TestP2TerEventiCoerenti:
         wiz = (FE / "features" / "events" / "EventWizard.js").read_text()
         assert 'data-testid="wizard-bonifico-hint"' in wiz and "setOrgIban(res.data?.bank_iban || '')" in wiz
         assert "['full', 'deposit_balance']" in wiz, "su richiesta niente rate"
+
+
+class TestFv1IlMuroDellaVerifica:
+    """FV1 (10/9/2026, audit del funnel): l'operatore si registrava, leggeva
+    «controlla la tua email», cliccava, e trovava un bottone «Accedi» per
+    rifare il login. Ora il clic sul link di verifica FA ENTRARE (la
+    risposta porta la sessione) e atterra sul benvenuto; la schermata dopo
+    la registrazione dice «apri l'email» e rimanda il link da li'. La
+    risposta 202 uniforme alla registrazione resta: e' l'anti-enumerazione."""
+
+    def test_la_verifica_porta_la_sessione(self):
+        m = (BACKEND_DIR / "models" / "auth.py").read_text()
+        assert "access_token: Optional[str] = None" in m[m.index("class VerifyEmailResponse"):]
+        r = (BACKEND_DIR / "routers" / "auth.py").read_text()
+        i = r.index("async def verify_email(")
+        corpo = r[i:r.index("@router.", i)]
+        assert "access_token=sessione, user=utente" in corpo
+        assert '"status": "verification_required"' in r, "la 202 uniforme resta"
+
+    def test_il_clic_entra_da_solo_e_la_schermata_rimanda(self):
+        pages = (FE / "pages" / "AuthPages.js").read_text()
+        assert "adottaSessione(dati)" in pages and "navigate('/benvenuto', { replace: true })" in pages
+        ctx = (FE / "context" / "AuthContext.js").read_text()
+        assert "const adottaSessione = useCallback" in ctx
+        form = (FE / "features" / "prelaunch" / "InlineSignupForm.js").read_text()
+        assert 'data-testid="ol-signup-resend"' in form and "authAPI.resendVerification(email)" in form
+        assert "un clic e sei dentro" in form
+
+    def test_il_giorno_zero_e_scritto(self):
+        seq = (BACKEND_DIR / "services" / "email_sequenze.py").read_text()
+        assert "def benvenuto_operatore(" in seq and "Entra nel tuo spazio" in seq
+        assert "reply_to=ADMIN_EMAIL" in seq and "Telegram" in seq
+        for frase in ("Cordiali saluti", "affrettati", "ultimi posti"):
+            assert frase not in seq
+        svc = (BACKEND_DIR / "services" / "auth_service.py").read_text()
+        assert "benvenuto_operatore(user.email, user.name, verification_token, user_locale)" in svc

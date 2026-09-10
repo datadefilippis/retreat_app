@@ -44,6 +44,11 @@ class VerifyEmailRequest(BaseModel):
 
 class VerifyEmailResponse(BaseModel):
     message: str
+    # FV1 (10/9/2026, funnel): il clic sul link di verifica FA ENTRARE —
+    # niente secondo login. Presenti solo alla prima verifica riuscita.
+    access_token: Optional[str] = None
+    token_type: str = "bearer"
+    user: Optional[UserResponse] = None
 
 
 class ResendVerificationRequest(BaseModel):

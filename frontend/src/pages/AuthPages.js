@@ -1140,6 +1140,7 @@ export const VerifyEmailPage = () => {
   useLangParam();
 
   const [status, setStatus] = useState('loading'); // loading | success | error
+  const { adottaSessione } = useAuth();
 
   useEffect(() => {
     if (!token) {
@@ -1149,8 +1150,14 @@ export const VerifyEmailPage = () => {
 
     const verify = async () => {
       try {
-        await authAPI.verifyEmail(token);
+        const res = await authAPI.verifyEmail(token);
         setStatus('success');
+        // FV1 (10/9/2026) — il clic FA ENTRARE: la sessione arriva col
+        // verify e si atterra sul benvenuto, senza secondo login
+        const dati = res?.data || res || {};
+        if (dati.access_token && adottaSessione(dati)) {
+          setTimeout(() => navigate('/benvenuto', { replace: true }), 900);
+        }
       } catch (err) {
         setStatus('error');
       }

@@ -954,6 +954,21 @@ async def verify_email(request: Request, body: VerifyEmailRequest):
     )
 
     # Audit log (non-blocking)
+    # FV1 (10/9/2026) — la sessione parte qui: chi clicca e' dentro
+    from auth import create_access_token
+    sessione = create_access_token({
+        "sub": user_doc["id"],
+        "org_id": user_doc.get("organization_id"),
+        "role": user_doc.get("role"),
+        "email": user_doc["email"],
+    })
+    utente = UserResponse(
+        id=user_doc["id"], email=user_doc["email"], name=user_doc.get("name", ""),
+        role=user_doc.get("role"), organization_id=user_doc.get("organization_id"),
+        created_at=user_doc.get("created_at") or datetime.now(timezone.utc),
+        is_active=user_doc.get("is_active", True), email_verified=True,
+        locale=user_doc.get("locale") or "it",
+    )
     try:
         await audit_repository.create(AuditLog(
             organization_id=user_doc.get("organization_id"),
@@ -974,7 +989,7 @@ async def verify_email(request: Request, body: VerifyEmailRequest):
     except Exception:
         logger.warning("verify_email: auto-link fallito", exc_info=True)
 
-    return VerifyEmailResponse(message="Email verificata con successo!")
+    return VerifyEmailResponse(message="Email verificata con successo!", access_token=sessione, user=utente)
 
 
 @router.post("/resend-verification", response_model=ResendVerificationResponse)
