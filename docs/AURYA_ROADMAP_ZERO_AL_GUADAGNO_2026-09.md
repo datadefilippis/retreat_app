@@ -6,6 +6,9 @@
 
 ---
 
+> **Nota (10/9/2026, sera)**: questo documento è integrato in `AURYA_PIANO_BUSINESS_2026-09.md` (PDF `AURYA_Piano_Business_2026-09.pdf`), che è il riferimento. Resta qui come storia del ragionamento.
+
+
 ## 0. In una pagina
 
 **Dove siamo.** Dodici operatori, otto profili, zero ritiri, tre iscritti confermati al Cerchio, quattro ordini, zero euro. Un prodotto completo, un sito che da oggi ha di nuovo le due porte, e due persone con dieci-quindici ore a settimana in due.

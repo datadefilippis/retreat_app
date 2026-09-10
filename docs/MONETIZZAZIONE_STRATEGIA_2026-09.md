@@ -6,6 +6,9 @@ Piano di monetizzazione · 10 settembre 2026 (versione integrata; la roadmap com
 
 ---
 
+> **Nota (10/9/2026, sera)**: questo documento è integrato in `AURYA_PIANO_BUSINESS_2026-09.md` (PDF `AURYA_Piano_Business_2026-09.pdf`), che è il riferimento. Resta qui come storia del ragionamento.
+
+
 ## 0. Il business in una pagina
 
 Aurya guadagna da tre lati, in quest'ordine di tempo:
