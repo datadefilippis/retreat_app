@@ -1043,3 +1043,15 @@ class TestTxUnaTassonomiaSola:
         for k in RETREAT_CATEGORIES:
             assert k in cats, f"etichetta mancante per {k}"
         assert "migrate_vie_femminile_v1()" in (BACKEND_DIR / "server.py").read_text()
+
+
+class TestSiSoloItalianoNelWizard:
+    """SI (10/9/2026 sera, founder): «dalla creazione ritiri togliamo la
+    possibilita' di creare un ritiro in piu' lingue: solo italiano»."""
+
+    def test_il_wizard_non_ha_piu_lingue(self):
+        wiz = (FE / "features" / "events" / "EventWizard.js").read_text()
+        assert "MultiLangSection" not in wiz
+        for morto in ("trName", "trDescription", "trLong"):
+            assert morto not in wiz, morto
+        assert "translations: (() =>" not in wiz

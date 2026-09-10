@@ -34,7 +34,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 // /events/new i bundle i18n del back-office non sono ancora caricati
 // (li porta Layout). Import esplicito, altrimenti chiavi crude.
 import '../../i18n-admin';
-import MultiLangSection from '../../components/MultiLangSection';
 import RetreatContentEditor from './components/RetreatContentEditor';
 import LocationPickerMap from '../../components/LocationPickerMap';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -284,26 +283,9 @@ export default function EventWizard() {
     };
   });
 
-  // Multilingua manuale (6/7) — {en: testo, de: ...} per campo;
-  // prefill dal product.translations su modifica/duplica
-  const [trName, setTrName] = useState(() => {
-    const tr = prefillRef.current?.product?.translations || {};
-    const out = {};
-    Object.entries(tr).forEach(([l, f]) => { if (f?.name) out[l] = f.name; });
-    return out;
-  });
-  const [trDescription, setTrDescription] = useState(() => {
-    const tr = prefillRef.current?.product?.translations || {};
-    const out = {};
-    Object.entries(tr).forEach(([l, f]) => { if (f?.description !== undefined) out[l] = f.description; });
-    return out;
-  });
-  const [trLong, setTrLong] = useState(() => {
-    const tr = prefillRef.current?.product?.translations || {};
-    const out = {};
-    Object.entries(tr).forEach(([l, f]) => { if (f?.long_description !== undefined) out[l] = f.long_description; });
-    return out;
-  });
+  // SI (10/9/2026 sera, founder): il ritiro nasce SOLO in italiano. Le
+  // sezioni multilingua (nome, descrizione, descrizione lunga) sono uscite
+  // dal wizard; le traduzioni salvate in passato non si toccano da qui.
 
   // Store-first (fix 5/7) — stesso criterio del backend
   // (_org_has_public_home): store attivo O public_slug legacy.
@@ -704,19 +686,6 @@ export default function EventWizard() {
         product: {
           name: base.name.trim(),
           category: base.category,
-          // Multilingua manuale: le lingue compilate = lingue offerte
-          translations: (() => {
-            const langs = new Set([...Object.keys(trName), ...Object.keys(trDescription), ...Object.keys(trLong)]);
-            const out = {};
-            langs.forEach(l => {
-              const entry = {};
-              if ((trName[l] || '').trim()) entry.name = trName[l].trim();
-              if ((trDescription[l] || '').trim()) entry.description = trDescription[l].trim();
-              if ((trLong[l] || '').trim()) entry.long_description = trLong[l].trim();
-              if (Object.keys(entry).length) out[l] = entry;
-            });
-            return Object.keys(out).length ? out : null;
-          })(),
           description: base.description?.trim() || null,
           image_url: base.image_url?.trim() || null,
           unit_price: base.unit_price !== '' ? Number(base.unit_price) : null,
@@ -981,12 +950,6 @@ export default function EventWizard() {
               </p>
             </div>
 
-            <MultiLangSection fields={[
-              { key: 'name', label: t('wizards.event.base.nameLabel'), it: base.name,
-                value: trName, onChange: setTrName, input: true, maxLength: 255 },
-              { key: 'description', label: t('wizards.event.base.descriptionLabel'), it: base.description,
-                value: trDescription, onChange: setTrDescription, rows: 2, maxLength: 2000 },
-            ]}>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">{t('wizards.event.base.nameLabel')}</label>
               <input
@@ -1009,7 +972,6 @@ export default function EventWizard() {
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none resize-none"
               />
             </div>
-            </MultiLangSection>
 
 
             {/* UX round 5/7 — categoria OBBLIGATORIA dalla tassonomia
@@ -1697,10 +1659,6 @@ export default function EventWizard() {
                 {t('wizards.event.publish.longDescDescPrefix')}<code>##</code>{t('wizards.event.publish.longDescDescSuffix')}
                 <code> {t('wizards.event.publish.longDescBoldNote')}</code>, <code>{t('wizards.event.publish.longDescItalicNote')}</code>, <code>{t('wizards.event.publish.longDescListNote')}</code>.
               </p>
-              <MultiLangSection fields={[
-                { key: 'long_description', label: null, it: longDescription,
-                  value: trLong, onChange: setTrLong, rows: 6, maxLength: 5000 },
-              ]}>
               <textarea
                 value={longDescription}
                 onChange={e => setLongDescription(e.target.value)}
@@ -1708,7 +1666,6 @@ export default function EventWizard() {
                 placeholder={t('wizards.event.publish.longDescPlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:border-gray-900 focus:outline-none resize-y"
               />
-              </MultiLangSection>
             </div>
 
             {/* RS2 — le foto vivono qui: facoltative, aggiungibili dopo */}
