@@ -352,8 +352,8 @@
       "directory": {
         "notListed": "Non in directory",
         "reason": {
-          "mode_request": "Modalità su richiesta: la directory elenca solo ritiri prenotabili online",
-          "stripe_not_ready": "Stripe non attivo: collega i pagamenti nelle Impostazioni",
+          "mode_request": "Su richiesta: compare in Ritiri ed esperienze, la richiesta ti arriva via email",
+          "stripe_not_ready": "Prenotazione online senza Stripe: collega i pagamenti o scegli «su richiesta»",
           "product_not_published": "Prodotto non pubblicato",
           "occurrence_not_published": "Data non pubblicata",
           "no_public_page": "Nessuna pagina pubblica: completa il tuo profilo pubblico"

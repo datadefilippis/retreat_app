@@ -486,26 +486,31 @@ class TestDs2Polish:
 
 
 class TestDs3EsperienzeOut:
-    """DS3 (decisione founder 7/7) — /esperienze fuori dal pubblico per
-    ora: niente menu, footer, sitemap né SEO shell. La pagina resta nel
-    repo pronta a tornare; il vecchio URL redirige alla home."""
+    """DS3 (decisione founder 7/7) teneva /esperienze fuori dal pubblico.
+    P3 (10/9/2026, piano di business, decisione founder): torna come
+    «I prossimi ritiri ed esperienze» (EsperienzePage, nuova e semplice),
+    nel menu della fase rete; la VECCHIA ExperiencesPage resta fuori,
+    /esperienze/* rimanda ancora alla home, la sitemap non la elenca e
+    la shell la serve come pagina cardine (noindex in fase rete)."""
 
-    def test_esperienze_not_in_nav_or_footer(self):
+    def test_esperienze_nel_menu_della_rete(self):
         shell = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "MarketplaceShell.jsx").read_text()
-        assert "'/esperienze'" not in shell
-        assert '"/esperienze"' not in shell
+        assert "{ to: '/esperienze', key: 'marketplace.navEsperienze'" in shell
 
-    def test_esperienze_route_redirects(self):
+    def test_esperienze_route_nuova_e_vecchia_fuori(self):
         app = (FRONTEND_SRC / "App.js").read_text()
-        assert "ExperiencesPage" not in app          # niente route attiva
-        assert '"/esperienze/*"' in app              # redirect esplicito
+        assert "ExperiencesPage" not in app          # la vecchia resta fuori
+        assert 'path="/esperienze" element={<EsperienzeGate />}' in app
+        assert '"/esperienze/*"' in app              # sottopercorsi → home
 
-    def test_esperienze_out_of_seo(self):
+    def test_esperienze_fuori_dalla_sitemap_noindex_in_rete(self):
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
         assert 'f"{base}/esperienze"' not in seo
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        assert 'head == "esperienze"' not in shell
+        assert 'head == "esperienze"' not in shell   # passa da _BRAND_PAGES
+        assert '"esperienze": {' in shell
+        assert '"esperienze")' in shell[shell.index("_PHASE_NOINDEX_HEADS = ("):][:80]
 
 
 class TestPlaceFilterCoherence:

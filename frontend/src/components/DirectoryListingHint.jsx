@@ -1,19 +1,21 @@
 /**
- * DirectoryListingHint — GT7: accanto al selettore "modalità" dei
- * RITIRI spiega quando l'evento non comparirà nel calendario
- * pubblico (/ritiri), che dal GT1b elenca SOLO ritiri prenotabili
- * online all'istante (transaction_mode=direct + Stripe pronto).
+ * DirectoryListingHint — GT7: accanto al selettore «Come si prenota»
+ * dei RITIRI dice cosa succede nel marketplace pubblico.
  *
- * Due casi, mai insieme:
- *   - mode 'request'          → il ritiro resta sullo store, ma è
- *                               fuori dalla directory: lo diciamo
- *                               SUBITO, non a pubblicazione avvenuta.
+ * Storia: dal GT1b (luglio) la directory elencava SOLO ritiri
+ * prenotabili online con Stripe, e questo avviso spiegava l'esclusione.
+ * P3 (10/9/2026, piano di business, decisione founder): il marketplace
+ * «Ritiri ed esperienze» e' GRATIS per tutti i ritiri pubblicati, con o
+ * senza Stripe. L'avviso ora racconta il percorso, non un'esclusione:
+ *   - mode 'request'          → il ritiro compare; la richiesta arriva
+ *                               via email e la caparra si chiede con un
+ *                               bonifico (P2).
  *   - mode 'direct' + !ready  → una riga complementare a
- *                               StripeRequiredAlert (che ha già la
- *                               CTA di configurazione): esplicita la
- *                               conseguenza-directory.
+ *                               StripeRequiredAlert: senza Stripe il
+ *                               pagamento sul sito non parte, il ritiro
+ *                               compare comunque.
  *
- * Solo per prodotti evento: gli altri tipi non vivono nel calendario.
+ * Solo per prodotti evento: gli altri tipi non vivono nel marketplace.
  */
 
 import React from 'react';
@@ -28,11 +30,11 @@ export default function DirectoryListingHint({ mode, className = '' }) {
   let message = null;
   if (mode === 'request') {
     message = t('directoryHint.request', {
-      defaultValue: 'Con la prenotazione su richiesta questo ritiro NON comparirà nel calendario pubblico: la directory elenca solo ritiri prenotabili online all’istante. Resta comunque visibile e prenotabile dal tuo profilo pubblico.',
+      defaultValue: 'Su richiesta: il ritiro compare in Ritiri ed esperienze e sul tuo profilo pubblico. La richiesta ti arriva via email, e la caparra la chiedi con un bonifico (le istruzioni partono da sole se hai messo l’IBAN nelle Impostazioni).',
     });
   } else if (mode === 'direct' && !loading && !ready) {
     message = t('directoryHint.stripeNote', {
-      defaultValue: 'Finché Stripe non è attivo questo ritiro non comparirà nel calendario pubblico, anche se pubblicato.',
+      defaultValue: 'Prenotazione online: finché Stripe non è attivo il pagamento sul sito non parte. Scegli «su richiesta» oppure collega Stripe nelle Impostazioni. Il ritiro compare comunque in Ritiri ed esperienze.',
     });
   }
   if (!message) return null;

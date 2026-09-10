@@ -352,6 +352,8 @@ const NAV_ITEMS = [
 // escono solo dal menu.
 const NETWORK_NAV_ITEMS = [
   { to: '/operatori', key: 'marketplace.navOperators', fallback: 'I nostri professionisti' },
+  // P3 (10/9/2026): i ritiri ed esperienze in programma, aperti a tutti
+  { to: '/esperienze', key: 'marketplace.navEsperienze', fallback: 'Ritiri ed esperienze' },
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
   // SP4 — la biblioteca educativa sul suono e' contenuto pubblico come
   // il Magazine: voce propria («Sound» e' un nome, resta cosi' in ogni

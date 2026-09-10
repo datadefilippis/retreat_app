@@ -411,10 +411,14 @@ class TestProfileFirstGt6:
     def test_gt7_admin_sees_directory_eligibility(self):
         """GT7 — l'operatore vede in admin perche' un ritiro non e' nel
         calendario: admin/list calcola directory_listed + reasons con
-        le STESSE condizioni del gate GT1b."""
+        le STESSE condizioni del listing. P3 (10/9/2026): il ritiro «su
+        richiesta» STA nel marketplace, mode_request non e' piu' una
+        ragione; Stripe conta solo per la prenotazione online."""
         src = (BACKEND_DIR / "routers" / "event_occurrences.py").read_text()
         assert '"directory_listed"' in src
-        for code in ("mode_request", "stripe_not_ready",
+        assert 'directory_reasons.append("mode_request")' not in src
+        assert 'prod.get("transaction_mode") == "direct" and not stripe_ready' in src
+        for code in ("stripe_not_ready",
                      "product_not_published", "occurrence_not_published",
                      "no_public_page"):
             assert f'"{code}"' in src, f"reason {code} mancante"

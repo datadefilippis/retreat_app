@@ -495,9 +495,9 @@ async def list_events_admin(
         # Per gli eventi passati il flag e' rumore: si omette.
         directory_reasons = []
         if (occ.get("start_at") or "") >= now_iso:
-            if prod.get("transaction_mode") != "direct":
-                directory_reasons.append("mode_request")
-            if not stripe_ready:
+            # P3 (10/9/2026): il ritiro «su richiesta» STA nel marketplace;
+            # Stripe conta solo per la prenotazione online
+            if prod.get("transaction_mode") == "direct" and not stripe_ready:
                 directory_reasons.append("stripe_not_ready")
             if not (prod.get("is_published") and prod.get("is_active", True)):
                 directory_reasons.append("product_not_published")

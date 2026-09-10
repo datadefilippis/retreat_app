@@ -70,8 +70,9 @@ class TestSr1Directory:
         i = shell.index("const NETWORK_NAV_ITEMS")
         blocco = shell[i:shell.index("];", i)]
         voci = [l for l in blocco.splitlines() if l.strip().startswith("{ to:")]
-        assert [v.split("'")[1] for v in voci] == ["/operatori", "/blog", "/sound", "/chi-siamo"], \
-            "SR3: quattro voci, Professionisti per prima"
+        # P3 (10/9/2026): «Ritiri ed esperienze» entra come seconda voce
+        assert [v.split("'")[1] for v in voci] == ["/operatori", "/esperienze", "/blog", "/sound", "/chi-siamo"], \
+            "SR3+P3: cinque voci, Professionisti per prima, poi i ritiri"
         assert "navNetwork'" not in shell and "'La Rete'" not in shell
         assert "footer-nw-operatori" in shell
         j = shell.index('data-testid="footer-nw-operatori"')

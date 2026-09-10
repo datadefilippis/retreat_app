@@ -52,27 +52,28 @@ const GRATIS = [
    'La tua pagina /@nome: servizi, eventi, ritiri, recensioni, la tua storia. Tutto nello stesso posto.'],
 ];
 
+/* I vantaggi dei piani a pagamento: SOLO quelli che sappiamo consegnare
+   da gennaio (founder 10/9: «non proponiamo ciò che non abbiamo»). Il
+   resto (la rete che lavora, la quota sugli ascolti, i 45 minuti) vive
+   nel piano di business e arriva in pagina quando e' vero. */
 const SPINTA = [
   ['Il ritiro in prima fila', 'In cima a Ritiri ed esperienze, sopra l’elenco per data, fino al giorno del ritiro.'],
-  ['Un invio nella Lettera', 'Un’email agli iscritti del Cerchio della tua zona e dei tuoi temi, con la scheda del ritiro. Vedi a quante persone è arrivata.'],
+  ['Un invio nella Lettera', 'Un’email agli iscritti del Cerchio della tua zona e dei tuoi temi, con la scheda del ritiro.'],
   ['Un post su Instagram', 'Sull’account di Aurya, con il link al ritiro.'],
-  ['Nella selezione di stagione', 'Se la data cade nella stagione, il ritiro entra nella selezione che spediamo a tutto il Cerchio.'],
 ];
 
 const CLUB = [
   ['La prima fila su tutti i tuoi ritiri, tutto l’anno', 'Selezione in cima, un invio nella Lettera per ogni ritiro (fino a due al mese), un post al mese.'],
-  ['La rete che lavora', 'Sei tra chi chiamiamo, pagato, per condurre i team building alla Masseria, i ritiri Aurya e le regie in partnership.'],
   ['Badge e precedenza nella tua zona', 'Nella directory, a parità di profilo, vieni prima.'],
-  ['Il racconto breve', 'Otto domande, e scriviamo noi la tua storia sul profilo, entro trenta giorni.'],
+  ['Il racconto breve', 'Otto domande, e scriviamo noi la tua storia sul profilo.'],
   ['Risposta entro due giorni', 'Via email, da Valentina.'],
 ];
 
 const PRO = [
-  ['Tutto il Club, per primo', 'Chiamato per primo quando la rete lavora; primo tra i Club in prima fila; fino a tre invii al mese.'],
-  ['L’intervista completa', 'Una conversazione con Valentina, il badge Verificato Aurya, una pagina nel Magazine. A parte costerebbe 190 €.'],
+  ['Tutto il Club, per primo', 'Primo tra i Club in prima fila; fino a tre invii al mese.'],
+  ['L’intervista completa', 'Una conversazione con Valentina, il badge Verificato Aurya, una pagina nel Magazine.'],
   ['Crea Studio', 'Componi meditazioni con la tua voce, basi e frequenze; le pubblichi con un link e le condividi coi tuoi clienti.'],
-  ['Il tuo primo ritiro', 'Quarantacinque minuti l’anno con Valentina o Davide: programma, prezzo, struttura, promozione.'],
-  ['WhatsApp con Valentina', 'Con orari scritti. E i collaboratori nel gestionale, quando servono.'],
+  ['WhatsApp con Valentina', 'Con orari scritti.'],
 ];
 
 function Scheda({ nome, prezzo, sotto, voci, evidenza, testid, domanda }) {
@@ -114,7 +115,7 @@ export default function PricingPage() {
     t('pricing.v1', { defaultValue: 'Aurya non prende commissioni. Mai. Né sui ritiri, né sui servizi, né online né offline: quello che incassi è tuo.' }),
     t('pricing.v2', { defaultValue: 'Gli strumenti sono gratis per sempre: profilo, listino, richieste, calendario, clienti, recensioni, eventi e ritiri con la caparra, la pagina link.' }),
     t('pricing.v3', { defaultValue: 'Fino al 31 dicembre 2026 Aurya non ha alcun costo, di nessun tipo.' }),
-    t('pricing.v4', { defaultValue: 'Dal 1° gennaio 2027 si paga solo la prima fila, cioè le persone che ti portiamo, e la tua voce. Qui sotto trovi i prezzi, da oggi, così sai cosa succede a gennaio.' }),
+    t('pricing.v4', { defaultValue: 'Dal 1° gennaio 2027 si paga solo la prima fila, cioè le persone che ti portiamo, e la tua voce. Qui sotto trovi i prezzi, da oggi, così sai cosa succede a gennaio. Oggi non c’è niente da comprare: i piani si accendono a gennaio, e i vantaggi li scriviamo per intero a dicembre, quando saranno veri.' }),
   ];
 
   return (

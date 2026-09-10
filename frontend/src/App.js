@@ -49,6 +49,7 @@ const EventDashboardPage = lazy(() => import("./features/events/EventDashboardPa
 const EventsListPage = lazy(() => import("./features/events/EventsListPage"));
 const EventWizard = lazy(() => import("./features/events/EventWizard"));
 import RetreatsCalendarPage from "./features/storefront/RetreatsCalendarPage";
+const EsperienzePage = lazy(() => import("./features/storefront/EsperienzePage"));   // P3
 import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
 // LK2 — la pagina link per la bio di Instagram (/@slug e /l/slug)
 import LinkPage from "./features/storefront/LinkPage";
@@ -397,6 +398,13 @@ function HomeGate() {
 // per il visitatore: niente anteprima di campioni, il valore lo danno
 // Magazine, Manifesto e (RT3) i profili della rete. In fase marketplace
 // resta il redirect S0 alla home (la home È la directory).
+function EsperienzeGate() {
+  const { sitePhase, loading } = useSiteConfig();
+  if (loading) return null;
+  if (sitePhase === 'network') return <EsperienzePage />;
+  return <RedirectPreservingQuery to="/" />;
+}
+
 function RitiriGate() {
   const { loading } = useSiteConfig();
   if (loading) return null;   // evita il redirect prima di sapere la fase
@@ -650,8 +658,11 @@ function AppRoutes() {
       <Route path="/operatori/:categoria" element={<OperatorsGate />} />
       <Route path="/destinazioni" element={<DestinationsGate />} />
       <Route path="/destinazioni/:luogo" element={<DestinationsGate />} />
-      {/* DS3 (decisione founder 7/7): /esperienze fuori per ora — la
-          pagina resta nel repo (storefront/), pronta a tornare */}
+      {/* DS3 (7/7) teneva /esperienze fuori. P3 (10/9/2026, piano di
+          business): in fase rete /esperienze e' «I prossimi ritiri ed
+          esperienze» — tutti i ritiri pubblicati, gratis, con la fascia
+          in prima fila; in fase marketplace la directory e' la home. */}
+      <Route path="/esperienze" element={<EsperienzeGate />} />
       <Route path="/esperienze/*" element={<Navigate to="/" replace />} />
       <Route path="/o/:org_slug" element={<OperatorProfilePage />} />
       {/* LK2 — pagina link per la bio di Instagram: /l/{slug} e' la

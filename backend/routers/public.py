@@ -3508,20 +3508,21 @@ async def list_public_retreats(
         return {"items": [], "total": 0, "categories": RETREAT_CATEGORIES}
 
     # prodotti (categoria + prezzo + nome) — solo vendibili.
-    # GT1b (decisione founder) — il calendario pubblico elenca SOLO
-    # ritiri prenotabili online all'istante (transaction_mode=direct):
-    # ogni card è denaro prenotabile subito, l'esperienza è Booking-like
-    # e la fee si cattura al momento della transazione. Il flusso
-    # "richiesta prima" resta disponibile sullo store PROPRIO.
+    # GT1b (luglio) elencava SOLO i ritiri prenotabili online con Stripe
+    # (transaction_mode=direct): il marketplace restava vuoto e la fee
+    # si aggirava. P3 (10/9/2026, piano di business, decisione founder):
+    # IL MARKETPLACE E' GRATIS PER TUTTI I RITIRI PUBBLICATI, con o senza
+    # Stripe — si paga la promozione (prima_fila), non la presenza. Il
+    # ritiro «su richiesta» porta la richiesta all'operatore via email.
     product_ids = list({o["product_id"] for o in occs})
     prods = await products_collection.find(
         {"id": {"$in": product_ids}, "is_active": True, "is_published": True,
          "item_type": "event_ticket",
-         "transaction_mode": "direct",
+         "transaction_mode": {"$in": ["direct", "request"]},
          **({"category": category} if category else {})},
         {"_id": 0, "id": 1, "name": 1, "category": 1, "unit_price": 1,
          "image_url": 1, "organization_id": 1, "metadata.payment_plan": 1,
-         "translations": 1},
+         "translations": 1, "transaction_mode": 1, "prima_fila": 1},
     ).to_list(1000)
 
     # Multilingua manuale (6/7) — vista in lingua X: SOLO i ritiri che
@@ -3631,6 +3632,9 @@ async def list_public_retreats(
             # PL3 — il frontend sfoca e disabilita la prenotazione sui sample
             "sample": _smp,
             "slug": occ["slug"],
+            # P3 — come si prenota e la prima fila (Spinta/Club, P5/P2)
+            "booking": prod.get("transaction_mode") or "direct",
+            "prima_fila": bool(prod.get("prima_fila")),
             "url": f"/e/{slug_org}/{occ['slug']}",
             "start_at": occ.get("start_at"),
             "end_at": occ.get("end_at"),
@@ -3658,6 +3662,9 @@ async def list_public_retreats(
                                   i["distance_km"] or 0,
                                   not i.get("featured"),
                                   i["start_at"] or ""))
+
+    # P3 — la prima fila sta in cima, il resto nell'ordine di prima (stabile)
+    items.sort(key=lambda i: not i.get("prima_fila"))
 
     total = len(items)
     page_items = items[offset:offset + limit]

@@ -473,6 +473,17 @@ _BRAND_PAGES = {
     # devono avere titolo/descrizione/immagine social impeccabili.
     # RB4 (10/9/2026, REBRANDING) — la porta di chi cerca torna viva:
     # l'oggetto (il ritiro), la promessa datata, la ricompensa subito.
+    # P3 (10/9/2026, piano di business) — /esperienze torna: tutti i
+    # ritiri pubblicati, gratis, con la fascia in prima fila. In fase
+    # rete resta noindex (_PHASE_NOINDEX_HEADS) e fuori dalla sitemap.
+    "esperienze": {
+        "title": "Ritiri ed esperienze in programma | Aurya",
+        "description": ("I ritiri e le esperienze olistiche dei professionisti "
+                        "della rete Aurya, per data: yoga, meditazione, respiro, "
+                        "suono, cammini. Ogni scheda dice chi conduce, dove, "
+                        "quando, il prezzo e come si prenota, online o con "
+                        "bonifico."),
+    },
     "cerca-ritiro": {
         "title": "Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya",
         "description": ("Dicci cosa cerchi e dove: ti avvisiamo quando c’è un "
@@ -613,7 +624,7 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
     tipi = {"chi-siamo": "AboutPage", "manifesto": "Article",
             "meditazioni": "CollectionPage", "newsletter": "WebPage",
             "entra-nella-rete": "WebPage", "costi": "WebPage",
-            "cerca-ritiro": "WebPage"}
+            "cerca-ritiro": "WebPage", "esperienze": "CollectionPage"}
     jsonld = []
     if slug in tipi:
         jsonld.append(_identita.pagina_jsonld(tipi[slug], base, canonical, nome,
@@ -2508,7 +2519,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
             parts[2] if len(parts) > 2 else None)
     if head == "destinazioni":
         return await _meta_destination(parts[1] if len(parts) > 1 else None)
-    # DS3: /esperienze fuori per ora (redirect alla home lato SPA)
+    # DS3 teneva /esperienze fuori; P3 (10/9/2026) la serve come pagina
+    # cardine (_BRAND_PAGES), noindex finche' la fase e' rete.
     if head == "o" and len(parts) >= 2:
         return await _meta_operator(parts[1])
     # LK2 — pagina link: /@slug (l'URL da bio Instagram) e /l/slug

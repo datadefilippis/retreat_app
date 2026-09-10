@@ -299,3 +299,52 @@ class TestP1LeParoleSuiSoldi:
         nessun tipo» (Spinta/Club/Pro dal 2027)."""
         it = json.loads(LOCALE.read_text())["nwHome"]
         assert "fino al 31 dicembre" not in it["doorOpText"].lower()
+
+
+class TestP3MarketplaceApertoAPrimaFila:
+    """P3 (10/9/2026, piano di business §3, decisione founder): «un
+    marketplace vuoto non vende». Il marketplace e' GRATIS per tutti i
+    ritiri pubblicati, con o senza Stripe; si paga la PROMOZIONE (la
+    prima fila), non la presenza. /esperienze torna come pagina semplice
+    con la fascia «In prima fila» e lo stato vuoto che porta alle porte."""
+
+    def test_il_listing_elenca_anche_i_ritiri_su_richiesta(self):
+        src = (BACKEND_DIR / "routers" / "public.py").read_text()
+        i = src.index("async def list_public_retreats(")
+        corpo = src[i:i + 12000]
+        assert '"transaction_mode": {"$in": ["direct", "request"]}' in corpo
+        assert '"transaction_mode": "direct",' not in corpo, "GT1b non filtra piu' i ritiri su richiesta"
+        assert '"booking": prod.get("transaction_mode") or "direct",' in corpo
+        assert '"prima_fila": bool(prod.get("prima_fila")),' in corpo
+        # la prima fila sta in cima, PRIMA del conteggio e della pagina
+        assert corpo.index('items.sort(key=lambda i: not i.get("prima_fila"))') < corpo.index("total = len(items)")
+
+    def test_la_pagina_esperienze_e_semplice_e_onesta(self):
+        page = (FE / "features" / "storefront" / "EsperienzePage.js").read_text()
+        assert "api.get('/public/retreats'" in page
+        for tid in ("esp-fascia-prima-fila", "esp-tutti", "esp-vuoto",
+                    "esp-cta-cerca", "esp-cta-op", "esp-prima-fila"):
+            assert f'data-testid="{tid}"' in page, tid
+        assert "su richiesta" in page and "prenotazione online" in page
+        assert 'to="/cerca-ritiro"' in page and 'to="/entra-nella-rete"' in page
+        assert "senza commissioni" in page
+        assert "noSearch" in page, "niente ricerca ne' mappa: quelle sono della fase marketplace"
+
+    def test_il_gate_segue_la_fase(self):
+        app = (FE / "App.js").read_text()
+        i = app.index("function EsperienzeGate()")
+        gate = app[i:i + 400]
+        assert "sitePhase === 'network'" in gate and "<EsperienzePage />" in gate
+        assert 'to="/"' in gate, "in fase marketplace la directory e' la home"
+
+    def test_l_hint_in_admin_non_dice_piu_che_su_richiesta_resta_fuori(self):
+        hint = (FE / "components" / "DirectoryListingHint.jsx").read_text()
+        it = json.loads((FE / "locales" / "it" / "common.json").read_text())["directoryHint"]
+        for testo in (hint, it["request"], it["stripeNote"]):
+            assert "NON comparir" not in testo and "non comparir" not in testo
+            assert "Ritiri ed esperienze" in testo
+        assert "bonifico" in it["request"]
+        prod = json.loads((FE / "locales" / "it" / "products.json").read_text())
+        ragioni = prod["grids"]["event"]["directory"]["reason"]
+        assert "Ritiri ed esperienze" in ragioni["mode_request"]
+        assert "su richiesta" in ragioni["stripe_not_ready"]
