@@ -85,7 +85,8 @@ class TestNw2Form:
                / "LeadForm.jsx").read_text()
         assert "experiencesOptIn" in src
         assert "wants_experiences" in src
-        assert "EXP_INTERESTS" in src
+        # FV5 (10/9/2026 sera): un blocco solo per tutti i form
+        assert "PreferenzeRitiri" in src
         # l'errore del subscribe si mostra, niente grazie finto
         assert "setState('error')" in src
 

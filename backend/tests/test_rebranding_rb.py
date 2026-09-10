@@ -516,20 +516,20 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
 
 
 class TestFv2LeSequenze:
-    """RB8 (10/9/2026) → FV2 (10/9 sera, audit del funnel): un motore
-    solo per due pubblici (services/sequenze.py), passi come dati,
-    testi in services/email_sequenze.py. Il founder: «se uno si e'
-    registrato ma non ha creato il profilo, dopo 5, 10, 15 giorni; e
-    tutte le email ben scritte, non casuali». Ogni passo solo nella sua
-    finestra, mai due volte, mai un'urgenza; il Cerchio dopo la conferma
-    riceve «Sei dentro», una meditazione, cosa c'e' vicino (o niente),
-    come va."""
+    """RB8 (10/9/2026) → FV2 (10/9 sera, audit del funnel) → FV5 (stessa
+    sera, founder): un motore solo per due pubblici (services/sequenze.py),
+    passi come dati, testi in services/email_sequenze.py. Operatore:
+    5/10/15 senza pagina, pagina online, primo ritiro; VIA il «come va»
+    a 30 giorni. Cerchio: UNA sola email, il benvenuto, che si adatta a
+    come e da dove ci si e' iscritti, e parte alla conferma. L'email a
+    noi dice Telegram. Le risposte arrivano al Reply-To."""
 
     def test_i_passi_partono_solo_nella_loro_finestra(self):
         sys.path.insert(0, str(BACKEND_DIR))
         from services.sequenze import passi_dovuti, PASSI, passo_dovuto
-        assert [p.nome for p in PASSI["operatore"]] == ["g2", "profilo_online", "np5", "np10", "np15", "r14", "g30"]
-        assert [p.nome for p in PASSI["cerchio"]] == ["c1", "c3", "c10", "c30"]
+        assert [p.nome for p in PASSI["operatore"]] == ["g2", "profilo_online", "np5", "np10", "np15", "r14"], \
+            "via g30 (founder 10/9 sera)"
+        assert [p.nome for p in PASSI["cerchio"]] == ["benvenuto_ritiri", "benvenuto_meditazioni", "benvenuto_altro"]
         nomi = lambda g, s, m={}: [p.nome for p in passi_dovuti("operatore", g, s, m)]   # noqa: E731
         spento = {"online": False, "ritiro": False}
         acceso = {"online": True, "ritiro": False}
@@ -537,33 +537,45 @@ class TestFv2LeSequenze:
         assert nomi(2, spento) == ["g2"] and nomi(4, spento) == ["g2"]
         assert nomi(5, spento) == ["np5"] and nomi(9, spento) == ["np5"]
         assert nomi(10, spento) == ["np10"] and nomi(15, spento) == ["np15"] and nomi(21, spento) == ["np15"]
-        assert nomi(25, spento) == [], "chi si e' registrato mesi fa non riceve tre email in un colpo"
-        assert nomi(30, spento) == ["g30"] and nomi(37, spento) == []
-        # la pagina online: l'evento, poi il primo ritiro, mai i «non online»
+        assert nomi(25, spento) == [] and nomi(30, spento) == [], "niente email a 30 giorni"
         assert nomi(5, acceso) == ["profilo_online"]
-        assert nomi(5, acceso, {"profilo_online": "x"}) == []
         assert nomi(14, acceso, {"profilo_online": "x"}) == ["r14"]
         assert nomi(14, {"online": True, "ritiro": True}, {"profilo_online": "x"}) == []
-        # le marcature vecchie di RB8 valgono
-        assert nomi(7, spento, {"g7": "x"}) == []
-        assert passo_dovuto(2) == "g2" and passo_dovuto(30) == "g30" and passo_dovuto(25) is None
-        assert [p.nome for p in passi_dovuti("cerchio", 1, {}, {})] == ["c1"]
-        assert [p.nome for p in passi_dovuti("cerchio", 3, {}, {"c1": "x"})] == ["c3"]
-        assert [p.nome for p in passi_dovuti("cerchio", 12, {}, {})] == ["c10"]
-        assert passi_dovuti("cerchio", 20, {}, {}) == []
+        assert nomi(7, spento, {"g7": "x"}) == [], "le marcature vecchie di RB8 valgono"
+        assert passo_dovuto(2) == "g2" and passo_dovuto(30) is None
+
+    def test_il_benvenuto_del_cerchio_sceglie_la_variante(self):
+        sys.path.insert(0, str(BACKEND_DIR))
+        from services.sequenze import passi_dovuti, stato_cerchio, porta_cerchio
+        nomi = lambda sub, m={}: [p.nome for p in passi_dovuti("cerchio", 0, stato_cerchio(sub), m)]   # noqa: E731
+        ritiri = {"source": "cerca-ritiro", "profile": {"interests": ["yoga"]}, "preferences": {}}
+        flag = {"source": "home_letter", "profile": {}, "preferences": {"retreat_alert": {"enabled": True}}}
+        med = {"source": "meditazioni", "profile": {}, "preferences": {}}
+        cancello = {"source": "cancello:respiro", "profile": {}, "preferences": {}}
+        altro = {"source": "blog_yoga", "profile": {}, "preferences": {}}
+        assert nomi(ritiri) == ["benvenuto_ritiri"] and nomi(flag) == ["benvenuto_ritiri"]
+        assert nomi(med) == ["benvenuto_meditazioni"] and nomi(cancello) == ["benvenuto_meditazioni"]
+        assert nomi(altro) == ["benvenuto_altro"]
+        assert nomi({**med, "profile": {"interests": ["suono"]}}) == ["benvenuto_ritiri"], \
+            "dalle meditazioni ma con le vie scelte: parla di ritiri"
+        assert nomi(ritiri, {"benvenuto_altro": "x"}) == [] and nomi(ritiri, {"c1": "x"}) == []
+        assert passi_dovuti("cerchio", 2, stato_cerchio(ritiri), {}) == [], "solo appena confermati"
+        assert porta_cerchio("gate_meditazione") == "meditazioni" and porta_cerchio(None) == "altro"
 
     def test_si_marca_prima_di_inviare_e_il_job_esiste(self):
         src = (BACKEND_DIR / "services" / "sequenze.py").read_text()
-        for giro in ("_giro_operatore", "_giro_cerchio"):
-            corpo = src[src.index(f"async def {giro}"):]
-            corpo = corpo[:corpo.index("async def ", 10)]
-            assert corpo.index("await _marca(") < corpo.index("_manda(passo, ctx)"), giro
+        corpo = src[src.index("async def _esegui"):src.index("async def _giro_operatore")]
+        assert corpo.index("await _marca(") < corpo.index("_manda(passo, ctx)")
         assert '"is_sample": {"$ne": True}' in src and '"legacy_commerce": {"$ne": True}' in src
         assert '"status": "confirmed", "consent": True' in src, "il Cerchio scrive solo ai confermati"
-        assert "saltato" in src, "un passo senza niente da dire si salta, non si manda vuoto"
+        assert "saltato" in src
         bg = (BACKEND_DIR / "services" / "background_service.py").read_text()
         assert 'name="sequenze_job"' in bg and "sequenza_operatore" not in bg
         assert not (BACKEND_DIR / "services" / "sequenza_operatore.py").exists()
+        subs = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
+        corpo = subs[subs.index("async def confirm("):subs.index("@router.", subs.index("async def confirm("))]
+        assert "ReturnDocument.BEFORE" in corpo and 'await invia_subito("cerchio", email)' in corpo
+        assert 'prima.get("status") != "confirmed"' in corpo
 
     def test_le_email_sono_scritte_e_fanno_una_cosa(self):
         sys.path.insert(0, str(BACKEND_DIR))
@@ -571,57 +583,74 @@ class TestFv2LeSequenze:
         testo = (BACKEND_DIR / "services" / "email_sequenze.py").read_text().lower()
         for frase in ANTI_URGENZA + ("ultimi posti", "affrettati", "solo per oggi", "cordiali saluti"):
             assert frase not in testo, frase
+        assert "whatsapp" not in testo, "a noi si dice Telegram (founder 10/9 sera)"
+        assert "def op_g30" not in testo
         ctx = {"nome": "Giulia Serra", "email": "g@esempio.it", "org": {"name": "Studio"},
-               "stato": {"online": False, "ritiro": False, "slug": None, "iban": False},
-               "fondatori": {"aperto": True, "tetto": 20, "rimasti": 17, "scadenza": "2026-10-31"}}
+               "stato": {"online": False, "ritiro": False, "slug": None, "iban": False}, "fondatori": None}
         oggetti = set()
         for fn in (T.op_np5, T.op_np10, T.op_np15):
             o, c = fn(ctx)
             oggetti.add(o)
             assert "Ciao Giulia," in c and c.count('class="btn"') == 1 and "/public-profile" in c
-            assert "Valentina" in c, "si risponde, e legge Valentina"
-        assert len(oggetti) == 3, "tre email diverse, non la stessa tre volte"
+            assert "Valentina" in c
+        assert len(oggetti) == 3
         _, c15 = T.op_np15(ctx)
         assert "ultima email" in c15 and "resta aperto" in c15 and "chiamami" in c15
         ctx_on = {**ctx, "stato": {"online": True, "ritiro": False, "slug": "giulia", "iban": False}}
-        o, c = T.op_profilo_online(ctx_on)
+        _, c = T.op_profilo_online(ctx_on)
         assert "/o/giulia" in c and "Telegram" in c and "IBAN" in c
         _, c_iban = T.op_profilo_online({**ctx_on, "stato": {**ctx_on["stato"], "iban": True}})
-        assert "IBAN" not in c_iban, "l'avvertenza sull'IBAN solo a chi non ce l'ha"
+        assert "IBAN" not in c_iban
         _, c14 = T.op_r14(ctx_on)
         assert "senza commissioni" in c14 and "bonifico" in c14 and "/events/new" in c14
-        _, c30 = T.op_g30(ctx_on)
-        assert "Rispondi a questa email" in c30 and "31/10/2026" in c30 and "Ne restano 17" in c30
-        _, c30b = T.op_g30({**ctx_on, "fondatori": {"aperto": False}})
-        assert "fondatori" not in c30b
         o2, c2 = T.op_g2_admin(ctx)
-        assert "WhatsApp" in c2 and "Studio" in o2
+        assert "Telegram" in c2 and "Studio" in o2
 
-    def test_il_cerchio_dopo_la_conferma(self):
+    def test_il_benvenuto_del_cerchio_parla_solo_di_quello_che_ha_chiesto(self):
         sys.path.insert(0, str(BACKEND_DIR))
         from services import email_sequenze as T
-        base = {"nome": "Giulia", "email": "g@esempio.it", "token": "tok", "citta": "", "interessi": ["yoga", "suono"],
-                "meditazione": None, "ritiri": [], "ritiri_in_zona": False, "professionisti": []}
-        o1, c1 = T.c1_sei_dentro(base)
-        assert o1.startswith("Sei dentro") and "/meditazioni" in c1 and "lo yoga e il suono" in c1
-        assert "la tua città" in c1 and "/newsletter/preferenze/tok" in c1, "senza citta' la chiede"
-        _, c1b = T.c1_sei_dentro({**base, "citta": "Bari"})
-        assert "sei a Bari" in c1b and "Una cosa sola ci manca" not in c1b
-        assert T.c3_meditazione(base) is None, "senza una traccia pubblicata niente email"
-        o3, c3 = T.c3_meditazione({**base, "meditazione": {"titolo": "Rinascita", "url": "https://aurya.life/frequenze/rinascita"}})
-        assert "Rinascita" in o3 and "/frequenze/rinascita" in c3 and c3.count('class="btn"') == 1
-        assert T.c10_vicino(base) is None, "niente ritiri e niente professionisti: si salta"
-        o10, c10 = T.c10_vicino({**base, "citta": "Bari", "ritiri_in_zona": True,
-                                 "ritiri": [{"title": "Respiro al mare", "url": "/e/studio/respiro", "start_at": "2026-10-03T09:00:00+00:00", "city": "Bari", "org_name": "Studio"}]})
-        assert "vicino a Bari" in o10 and "Respiro al mare" in c10 and "3 ottobre" in c10 and "/esperienze" in c10
-        o10b, c10b = T.c10_vicino({**base, "citta": "Bari", "professionisti": [{"nome": "Anna", "slug": "anna", "discipline": "yoga"}]})
-        assert "Bari" in o10b and "/o/anna" in c10b and "/operatori" in c10b
-        _, c30 = T.c30_come_va(base)
-        assert "cosa stai cercando" in c30 and "la tua città" in c30
-        for c in (c1, c3, c10, c30):
-            assert "/newsletter/preferenze/tok" in c, "ci si cancella da ogni email"
-        sub = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
-        assert "Benvenuto nel Cerchio: un clic e sei dentro" in sub
+        base = {"nome": "Giulia", "email": "g@esempio.it", "token": "tok", "citta": "", "interessi": [],
+                "travel": "", "porta": "altro", "vuole_ritiri": False}
+        o, c = T.benvenuto_cerchio_ritiri({**base, "citta": "Bari", "interessi": ["yoga", "suono"], "travel": "near", "vuole_ritiri": True})
+        assert o == "Benvenuto nel Cerchio di Aurya" and "lo yoga e il suono" in c and "vicino a Bari" in c
+        assert "te lo scriviamo" in c and "/meditazioni" in c and "dicci le tue vie" not in c
+        _, c_vuoto = T.benvenuto_cerchio_ritiri({**base, "vuole_ritiri": True})
+        assert "dicci le tue vie e dove vivi" in c_vuoto and "/newsletter/preferenze/tok" in c_vuoto
+        o_m, c_m = T.benvenuto_cerchio_meditazioni({**base, "porta": "meditazioni"})
+        assert "meditazioni" in o_m and "/meditazioni" in c_m and c_m.count('class="btn"') == 1
+        assert "ritir" not in c_m.lower(), "dalle meditazioni, senza preferenze: nessuna parola sui ritiri"
+        _, c_a = T.benvenuto_cerchio_generico(base)
+        assert "/meditazioni" in c_a and "Lettera" in c_a and "/newsletter/preferenze/tok" in c_a
+        for corpo in (c, c_m, c_a):
+            assert "/newsletter/preferenze/tok" in corpo, "ci si cancella da ogni email"
+        subs = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
+        assert "Benvenuto nel Cerchio: un clic e sei dentro" in subs
+
+    def test_le_risposte_arrivano_a_una_casella_vera(self):
+        seq = (BACKEND_DIR / "services" / "email_sequenze.py").read_text()
+        assert "def risposte_a()" in seq and 'os.environ.get("REPLY_TO_EMAIL")' in seq
+        assert "reply_to=risposte_a()" in seq
+        motore = (BACKEND_DIR / "services" / "sequenze.py").read_text()
+        assert "reply_to=risposte" in motore
+        assert "REPLY_TO_EMAIL" in (BACKEND_DIR / ".env.example").read_text()
+
+    def test_l_iscrizione_ha_una_struttura_sola(self):
+        """founder 10/9 sera: stessa struttura dell'iscrizione della landing
+        principale ovunque (form della Lettera, preferenze), e l'avviso
+        ritiri acceso SOLO dove un form lo chiede."""
+        pref = (FE / "features" / "prelaunch" / "PreferenzeRitiri.jsx").read_text()
+        assert "export const VIE" in pref
+        assert "export const BASE_TO_EXP" in pref and "export const TRAVELS = ['near', 'italy', 'abroad']" in pref
+        form = (FE / "features" / "prelaunch" / "LeadForm.jsx").read_text()
+        assert form.count("<PreferenzeRitiri") == 2, "modulo pieno e blocco «avvisami»: lo stesso componente"
+        for morto in ("expInterests", "expCity", "expTravel", "EXP_INTERESTS"):
+            assert morto not in form, f"doppione sopravvissuto: {morto}"
+        pagina = (FE / "features" / "prelaunch" / "NewsletterPreferencesPage.js").read_text()
+        assert "<PreferenzeRitiri" in pagina and "interests: versoBackend(interests)" in pagina
+        cerchio = (FE / "lib" / "cerchio.js").read_text()
+        assert "wantsExperiences = null" in cerchio and "typeof wantsExperiences === 'boolean'" in cerchio
+        assert (BACKEND_DIR / "services" / "migrazioni_cerchio.py").exists()
+        assert "migrate_cerchio_alert_esplicito_v1()" in (BACKEND_DIR / "server.py").read_text()
 
     def test_l_anteprima_nel_pannello_e_i_numeri(self):
         ap = (BACKEND_DIR / "routers" / "admin_platform.py").read_text()
@@ -855,7 +884,8 @@ class TestFv1IlMuroDellaVerifica:
     def test_il_giorno_zero_e_scritto(self):
         seq = (BACKEND_DIR / "services" / "email_sequenze.py").read_text()
         assert "def benvenuto_operatore(" in seq and "Entra nel tuo spazio" in seq
-        assert "reply_to=ADMIN_EMAIL" in seq and "Telegram" in seq
+        # FV5 (10/9 sera): le risposte vanno al Reply-To (REPLY_TO_EMAIL o ADMIN_EMAIL)
+        assert "reply_to=risposte_a()" in seq and "Telegram" in seq
         for frase in ("Cordiali saluti", "affrettati", "ultimi posti"):
             assert frase not in seq
         svc = (BACKEND_DIR / "services" / "auth_service.py").read_text()

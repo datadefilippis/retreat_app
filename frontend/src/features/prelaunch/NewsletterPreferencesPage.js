@@ -14,6 +14,7 @@ import api from '../../api/client';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import useItalianOnly from '../../lib/useItalianOnly';
 import { salvaProva } from '../../lib/cerchio';
+import PreferenzeRitiri, { versoBackend, dalBackend } from './PreferenzeRitiri';
 
 const GREEN = '#376254';
 
@@ -40,6 +41,10 @@ export default function NewsletterPreferencesPage() {
   const [topics, setTopics] = useState([]);
   const [format, setFormat] = useState('all');
   const [alert, setAlert] = useState({ enabled: false, scope: 'italy', regions: [] });
+  // FV5 — le stesse tre cose del modulo di /cerca-ritiro: vie, citta', dove
+  const [interests, setInterests] = useState([]);
+  const [city, setCity] = useState('');
+  const [travel, setTravel] = useState('');
 
   useSeoMeta({
     title: t('nlPrefs.seoTitle', { defaultValue: 'Le tue preferenze | Aurya' }),
@@ -56,12 +61,17 @@ export default function NewsletterPreferencesPage() {
         setTopics(res.data.topics || []);
         setFormat(res.data.format || 'all');
         setAlert(res.data.retreat_alert || { enabled: false, scope: 'italy', regions: [] });
+        setInterests(dalBackend(res.data.interests || []));
+        setCity(res.data.city || '');
+        setTravel(res.data.travel || '');
         setState('ready');
       })
       .catch(() => { if (mounted) setState('gone'); });
     return () => { mounted = false; };
   }, [token]);
 
+  const toggleInterest = (k) => setInterests(prev =>
+    prev.includes(k) ? prev.filter(x => x !== k) : [...prev, k]);
   const toggleTopic = (slug) => setTopics(prev =>
     prev.includes(slug) ? prev.filter(x => x !== slug) : [...prev, slug]);
   const toggleRegion = (slug) => setAlert(prev => ({
@@ -84,7 +94,8 @@ export default function NewsletterPreferencesPage() {
     setState('saving');
     try {
       await api.put('/public/newsletter/preferences',
-        { token, topics, format, retreat_alert: alert });
+        { token, topics, format, retreat_alert: alert,
+          interests: versoBackend(interests), city: city.trim(), travel: travel || null });
       setState('saved');
       setTimeout(indietro, 900);
     } catch { setState('error'); }
@@ -182,12 +193,23 @@ export default function NewsletterPreferencesPage() {
             </div>
           </section>
 
+          <section className="mt-4 rounded-2xl border border-gray-200 bg-white p-5" data-testid="nl-prefs-ritiri">
+            <h2 className="font-heading text-sm font-semibold text-gray-900">
+              {t('nlPrefs.ritiri', { defaultValue: 'Il ritiro che cerchi' })}
+            </h2>
+            <p className="mt-0.5 mb-3 text-xs text-gray-500">
+              {t('nlPrefs.ritiriHint', { defaultValue: 'Le stesse tre cose che chiediamo a chi cerca un ritiro: da qui partono le proposte.' })}
+            </p>
+            <PreferenzeRitiri accent={GREEN} interests={interests} onToggleInterest={toggleInterest}
+                              city={city} setCity={setCity} travel={travel} setTravel={setTravel} />
+          </section>
+
           <section className="mt-4 rounded-2xl border border-gray-200 bg-white p-5">
             <h2 className="font-heading text-sm font-semibold text-gray-900">
               {t('nlPrefs.alert', { defaultValue: 'Avvisami sui ritiri' })}
             </h2>
             <p className="mt-0.5 text-xs text-gray-500">
-              {t('nlPrefs.alertHint', { defaultValue: 'Le prenotazioni su Aurya non sono ancora aperte: raccogliamo la tua preferenza ora e ti avviseremo solo quando ci saranno ritiri veri da mostrarti.' })}
+              {t('nlPrefs.alertHint2', { defaultValue: 'Ti scriviamo quando c’è un ritiro o un’esperienza che corrisponde alle tue vie e alla tua zona. Mai un elenco per riempire una email.' })}
             </p>
             <label className="mt-3 flex items-center gap-2 text-sm text-gray-700">
               <input type="checkbox" checked={alert.enabled}

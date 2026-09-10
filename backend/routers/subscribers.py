@@ -335,19 +335,31 @@ async def confirm(request: Request, payload: TokenPayload):
     il token stesso come chiave della pagina preferenze."""
     from database import db
 
+    from pymongo import ReturnDocument
+
     email = _decode_or_http(payload.token)
     now = datetime.now(timezone.utc)
-    await db.aurya_subscribers.update_one(
+    prima = await db.aurya_subscribers.find_one_and_update(
         {"email": email},
         {"$set": {"status": "confirmed", "confirmed_at": now,
                   "updated_at": now},
          "$setOnInsert": {"email": email, "created_at": now,
                           "consent": True, "consent_at": now,
                           "preferences.topics": []}},
-        upsert=True,
+        upsert=True, return_document=ReturnDocument.BEFORE,
+        projection={"_id": 0, "status": 1},
     )
     from services.subscriber_brevo_sync import sync_subscriber_background
     sync_subscriber_background(email)     # BN6 — riflesso su Brevo
+    # FV5 (10/9/2026 sera) — UN benvenuto, al momento della conferma, che
+    # si adatta a come e da dove ci si e' iscritti (services/sequenze.py).
+    # Solo alla PRIMA conferma: il clic ripetuto non rimanda niente.
+    if not prima or prima.get("status") != "confirmed":
+        try:
+            from services.sequenze import invia_subito
+            await invia_subito("cerchio", email)
+        except Exception as exc:            # noqa: BLE001 — la conferma non si rompe per un'email
+            logger.warning("benvenuto Cerchio non inviato a %s: %s", _mask_email(email), exc)
     return {"ok": True, "status": "confirmed"}
 
 

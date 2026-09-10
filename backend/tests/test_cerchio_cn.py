@@ -55,7 +55,9 @@ class TestCn1Landing:
         assert "showName\n" in src[i:i + 400] or "showName " in src[i:i + 400], "il nome resta nel form"
         form = (PRE / "LeadForm.jsx").read_text()
         assert "useState(\n    Boolean(experiencesOptIn && experiencesDefault))" in form
-        assert "{!experiencesLight && (<>" in form, "la variante leggera mostra solo la citta'"
+        # FV5 (10/9 sera): la variante leggera vive nel blocco condiviso
+        assert "light={experiencesLight}" in form, "la variante leggera mostra solo la citta'"
+        assert "{!light && (" in (PRE / "PreferenzeRitiri.jsx").read_text()
         # il consenso resta esplicito e SPENTO (e' un consenso, non una preferenza)
         assert "const [consent, setConsent] = useState(false);" in form
 

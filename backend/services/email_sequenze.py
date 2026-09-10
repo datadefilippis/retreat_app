@@ -11,17 +11,23 @@ come dati, finestre, marcature). Qui ci sono solo le parole.
 
 Ogni funzione «passo» riceve un contesto (dict) e restituisce
 (oggetto, corpo_html) oppure None quando non c'e' niente di onesto da
-dire (es. nessun ritiro in zona): il motore allora salta il passo.
+dire: il motore allora salta il passo.
+
+DA CHI PARTONO E DOVE SI RISPONDE (domanda del founder, 10/9 sera):
+il mittente e' SMTP_FROM_EMAIL (in prod noreply@aurya.life, «Aurya»);
+ogni email che dice «rispondi» porta il Reply-To = risposte_a(), cioe'
+REPLY_TO_EMAIL se impostata nell'ambiente, altrimenti ADMIN_EMAIL. Il
+client di posta risponde al Reply-To, non al mittente: la risposta
+arriva nella casella vera, e il piede dell'email lo dice.
 
 Contesto operatore: nome, email, org (dict), stato {online, ritiro,
 slug, iban}, fondatori (conteggio() o None).
-Contesto Cerchio: nome, email, sub (dict), token (per preferenze e
-disiscrizione), meditazione {titolo, url} o None, ritiri [..],
-ritiri_in_zona (bool), professionisti [..], citta, interessi [slug..].
+Contesto Cerchio: nome, email, token (preferenze e disiscrizione),
+citta, interessi [slug..], travel, porta ('meditazioni' | 'altro'),
+vuole_ritiri (bool).
 """
 import logging
 import os
-from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -32,6 +38,13 @@ APP_URL = (os.environ.get("FRONTEND_URL") or os.environ.get("PUBLIC_BASE_URL") o
 # Telegram»). Il link lo mette il founder nell'ambiente; finche' manca,
 # l'email dice come chiederlo, senza promettere un bottone che non c'e'.
 TELEGRAM_GRUPPO_URL = (os.environ.get("TELEGRAM_GRUPPO_URL") or "").strip()
+
+
+def risposte_a() -> str:
+    """La casella dove arrivano le risposte (Reply-To)."""
+    from services.email_service import ADMIN_EMAIL
+    return (os.environ.get("REPLY_TO_EMAIL") or "").strip() or ADMIN_EMAIL
+
 
 # Le quattordici vie della landing /cerca-ritiro, dette bene
 ETICHETTE_VIE: Dict[str, str] = {
@@ -56,18 +69,6 @@ def _firma() -> str:
     return "<p>A presto,<br>Valentina e Davide</p>"
 
 
-def _data_it(iso: Optional[str]) -> str:
-    if not iso:
-        return ""
-    try:
-        d = datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
-        mesi = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio",
-                "agosto", "settembre", "ottobre", "novembre", "dicembre"]
-        return f"{d.day} {mesi[d.month - 1]}"
-    except (ValueError, IndexError):
-        return str(iso)[:10]
-
-
 def _lista_vie(interessi: List[str]) -> str:
     voci = [ETICHETTE_VIE[i] for i in (interessi or []) if i in ETICHETTE_VIE and i != "misto"]
     if not voci:
@@ -85,7 +86,7 @@ def benvenuto_operatore(email: str, nome: str, verification_token: str, locale: 
     """Giorno zero: un saluto, UN bottone che verifica ed entra, i tre passi,
     cosa succede dopo. Sostituisce «Benvenuto su Aurya — Verifica la tua email»."""
     try:
-        from services.email_service import _link_block, _wrap_template, send_email, ADMIN_EMAIL
+        from services.email_service import _link_block, _wrap_template, send_email
         url = f"{APP_URL}/verify-email?token={verification_token}&lang={locale or 'it'}"
         html = _wrap_template(f"""
             <p>{_saluto(nome)}</p>
@@ -107,9 +108,9 @@ def benvenuto_operatore(email: str, nome: str, verification_token: str, locale: 
             </ol>
             <p>Se qualcosa non torna, rispondi a questa email: la legge Valentina.</p>
             {_firma()}
-        """, locale or "it", reply_to=ADMIN_EMAIL)
+        """, locale or "it", reply_to=risposte_a())
         send_email(email, "Il tuo spazio su Aurya è aperto: un clic e sei dentro",
-                   html, reply_to=ADMIN_EMAIL)
+                   html, reply_to=risposte_a())
         return True
     except Exception as exc:  # noqa: BLE001 — la registrazione non si blocca mai per un'email
         logger.warning("benvenuto_operatore: email non inviata a %s: %s", email[:2] + "***", exc)
@@ -121,15 +122,16 @@ def benvenuto_operatore(email: str, nome: str, verification_token: str, locale: 
 # ─────────────────────────────────────────────────────────────────────────────
 
 def op_g2_admin(ctx: dict) -> Tuple[str, str]:
-    """Il promemoria a Valentina: un messaggio vero, da persona a persona."""
+    """Il promemoria a noi: aggiungilo al gruppo Telegram e scrivigli due righe."""
     org = ctx.get("org") or {}
     nome_org = org.get("name") or "Un professionista"
     stato = ctx.get("stato") or {}
     dove = "ha già la pagina online" if stato.get("online") else "non ha ancora la pagina online"
     return (f"Da 2 giorni su Aurya: {nome_org}",
-            f"<p><b>{nome_org}</b> si è registrato due giorni fa ({ctx.get('email')}) e {dove}. "
-            "È il momento del WhatsApp: due righe, senza copione, per chiedere come va e se "
-            "serve una mano.</p>"
+            f"<p><b>{nome_org}</b> si è registrato due giorni fa ({ctx.get('email')}) e {dove}.</p>"
+            "<p>Due cose da fare: <strong>aggiungerlo al gruppo Telegram</strong> degli operatori "
+            "Aurya, e scrivergli due righe senza copione, per chiedere come va e se serve una "
+            "mano con la pagina.</p>"
             + _bottone(f"{APP_URL}/admin", "Apri il pannello"))
 
 
@@ -240,30 +242,16 @@ def op_r14(ctx: dict) -> Optional[Tuple[str, str]]:
             + _firma())
 
 
-def op_g30(ctx: dict) -> Tuple[str, str]:
-    """Giorno 30: come va. Si risponde. L'intervista, e i fondatori finche' sono aperti."""
-    fondatori = ctx.get("fondatori") or {}
-    righe = [f"<p>{_saluto(ctx.get('nome'))}</p>",
-             "<p>è un mese che sei su Aurya. Come va? Cosa ti manca, cosa non torna, cosa "
-             "vorresti che facessimo? Rispondi a questa email: la legge Valentina, e risponde lei.</p>",
-             "<p>Due cose che forse non sai. L'intervista: per i primi cinquanta professionisti "
-             "della rete è gratuita, per sempre; è il modo in cui Aurya ti racconta a chi cerca. "
-             "Se la vuoi, rispondi «intervista».</p>"]
-    if fondatori.get("aperto"):
-        try:
-            data = datetime.fromisoformat(fondatori["scadenza"]).strftime("%d/%m/%Y")
-        except Exception:  # noqa: BLE001
-            data = str(fondatori.get("scadenza", ""))
-        righe.append(f"<p>E i fondatori: i primi {fondatori['tetto']} profili pubblicati entro il "
-                     f"{data} hanno il Club regalato fino al 30 giugno 2027. Ne restano "
-                     f"{fondatori['rimasti']}.</p>")
-    righe.append("<p>Grazie di esserci.</p>")
-    righe.append(_firma())
-    return ("Come va, dopo un mese?", "".join(righe))
-
-
 # ─────────────────────────────────────────────────────────────────────────────
-# IL CERCHIO — i passi dopo la conferma
+# IL CERCHIO — UN benvenuto, che si adatta a come e da dove ci si iscrive
+# (founder 10/9 sera: «un'email che si adatta in base al tipo di
+# iscrizione al Cerchio dell'utente, da dove lo fa e come lo fa»).
+#   - vuole_ritiri (ha detto le vie o acceso l'avviso ritiri): benvenuto,
+#     «appena c'è un ritiro adatto te lo scriviamo», le meditazioni se vuole;
+#   - dalle meditazioni, senza preferenze sui ritiri: solo le meditazioni,
+#     nessuna parola sui ritiri;
+#   - da un'altra porta (home, Magazine, account), senza preferenze: cosa
+#     c'è nel Cerchio, e «se cerchi un ritiro dicci le tue vie».
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _url_preferenze(ctx: dict) -> str:
@@ -276,119 +264,81 @@ def _piede_cerchio(ctx: dict) -> str:
             f'<a href="{_url_preferenze(ctx)}">Le tue preferenze</a>, e da lì ti cancelli con un clic.</p>')
 
 
-def c1_sei_dentro(ctx: dict) -> Tuple[str, str]:
-    """Il giorno dopo la conferma: cosa c'e' da subito, cosa arriva, e
-    una domanda sola (la citta') se manca."""
-    interessi = _lista_vie(ctx.get("interessi") or [])
+def _dove(ctx: dict) -> str:
     citta = (ctx.get("citta") or "").strip()
-    url_med = f"{APP_URL}/meditazioni"
-    personale = ""
-    if interessi and citta:
-        personale = (f"<p>Ci hai detto che ti interessano {interessi}, e che sei a {citta}: "
-                     "i ritiri e le esperienze che ti manderemo partono da lì.</p>")
-    elif interessi:
-        personale = (f"<p>Ci hai detto che ti interessano {interessi}: i ritiri e le esperienze "
-                     "che ti manderemo partono da lì.</p>")
-    elif citta:
-        personale = f"<p>Ci hai detto che sei a {citta}: quello che ti manderemo parte da lì.</p>"
+    travel = ctx.get("travel") or ""
+    if travel == "abroad":
+        return "in Italia o all'estero"
+    if travel in ("italy", "anywhere"):
+        return "in Italia"
+    if citta:
+        return f"vicino a {citta}"
+    return ""
+
+
+def _meditazioni_riga() -> str:
+    return ("<p>Nel frattempo, se ti va, ci sono le <strong>meditazioni gratuite</strong> del "
+            "Cerchio: si ascoltano dal telefono, con le cuffie, senza nessuna app.</p>"
+            + _bottone(f"{APP_URL}/meditazioni", "Ascolta le meditazioni"))
+
+
+def benvenuto_cerchio_ritiri(ctx: dict) -> Tuple[str, str]:
+    """Chi cerca un ritiro: te lo scriviamo appena c'e', sulle tue preferenze."""
+    vie = _lista_vie(ctx.get("interessi") or [])
+    dove = _dove(ctx)
+    if vie and dove:
+        cosa = f"ci hai detto che ti chiamano {vie}, e che lo cerchi {dove}"
+    elif vie:
+        cosa = f"ci hai detto che ti chiamano {vie}"
+    elif dove:
+        cosa = f"ci hai detto che lo cerchi {dove}"
+    else:
+        cosa = "ci hai detto che cerchi un ritiro o un'esperienza"
     manca = ""
-    if not citta:
-        manca = (f"<p>Una cosa sola ci manca: <a href=\"{_url_preferenze(ctx)}\">la tua città</a>. "
-                 "Serve per dirti cosa c'è vicino a te, e per niente altro.</p>")
-    return ("Sei dentro. Ecco cosa c'è da subito",
+    if not vie or not (ctx.get("citta") or ctx.get("travel")):
+        manca = (f"<p>Per proporti solo cose adatte a te, <a href=\"{_url_preferenze(ctx)}\">dicci le "
+                 "tue vie e dove vivi</a>: un minuto, e da lì in poi ricevi solo quello che ti somiglia.</p>")
+    return ("Benvenuto nel Cerchio di Aurya",
             f"<p>{_saluto(ctx.get('nome'))}</p>"
-            "<p>sei nel Cerchio di Aurya. Da subito hai le <strong>meditazioni riservate</strong>: "
-            "si ascoltano dal telefono, con le cuffie, e non serve nessuna app.</p>"
-            + _bottone(url_med, "Ascolta le meditazioni")
+            f"<p>sei nel Cerchio di Aurya. Cerchi un ritiro: {cosa}.</p>"
+            "<p><strong>Come funziona.</strong> Appena c'è un ritiro o un'esperienza che corrisponde "
+            "a quello che ci hai detto, te lo scriviamo. Non un elenco per riempire una email: una "
+            "proposta, quando c'è.</p>"
+            + manca
+            + _meditazioni_riga()
+            + "<p>Se vuoi dirci di più su quello che cerchi, rispondi a questa email: la legge Valentina.</p>"
+            + _firma()
+            + _piede_cerchio(ctx))
+
+
+def benvenuto_cerchio_meditazioni(ctx: dict) -> Tuple[str, str]:
+    """Dalle meditazioni, senza preferenze sui ritiri: solo le meditazioni."""
+    url = f"{APP_URL}/meditazioni"
+    return ("Benvenuto nel Cerchio: le tue meditazioni",
+            f"<p>{_saluto(ctx.get('nome'))}</p>"
+            "<p>sei nel Cerchio di Aurya, e le <strong>meditazioni</strong> si sono aperte.</p>"
+            + _bottone(url, "Ascolta le meditazioni")
+            + "<p>Come ascoltarle: le cuffie, dieci minuti in cui nessuno ti cerca, il telefono "
+              "a faccia in giù. Non c'è niente da fare bene; se la mente va via, torna.</p>"
             + "<p>Se le apri da un altro dispositivo e trovi il lucchetto, metti la tua email: "
               "si riapre senza iscriverti di nuovo.</p>"
-            + personale
-            + "<p><strong>Cosa arriva, e quando.</strong> Fra qualche giorno una meditazione "
-              "scelta per te. Poi i ritiri e le esperienze vicino a te, quando ce ne sono: mai "
-              "un elenco per riempire una email. E la Lettera, quando vale la pena: una pratica "
-              "raccontata bene e una persona della rete.</p>"
-            + manca
+            + "<p>Se vuoi dirci com'è stata, rispondi a questa email con una parola: le leggiamo tutte.</p>"
+            + _firma()
+            + _piede_cerchio(ctx))
+
+
+def benvenuto_cerchio_generico(ctx: dict) -> Tuple[str, str]:
+    """Da un'altra porta (home, Magazine, account), senza preferenze."""
+    return ("Benvenuto nel Cerchio di Aurya",
+            f"<p>{_saluto(ctx.get('nome'))}</p>"
+            "<p>sei nel Cerchio di Aurya. Ecco cosa c'è.</p>"
+            "<p><strong>Le meditazioni gratuite.</strong> Si ascoltano dal telefono, con le cuffie, "
+            "senza nessuna app.</p>"
+            + _bottone(f"{APP_URL}/meditazioni", "Ascolta le meditazioni")
+            + "<p><strong>La Lettera.</strong> Quando vale la pena: una pratica raccontata bene e una "
+              "persona della rete. Mai per riempire una casella.</p>"
+            + f"<p><strong>I ritiri, se li cerchi.</strong> <a href=\"{_url_preferenze(ctx)}\">Dicci "
+              "le tue vie e dove vivi</a>, e appena c'è un ritiro o un'esperienza adatta te lo scriviamo.</p>"
             + "<p>Se vuoi dirci cosa cerchi, rispondi a questa email: la legge Valentina.</p>"
-            + _firma()
-            + _piede_cerchio(ctx))
-
-
-def c3_meditazione(ctx: dict) -> Optional[Tuple[str, str]]:
-    """Giorno 3: UNA meditazione, e come ascoltarla. Senza una traccia
-    pubblicata non si manda niente."""
-    med = ctx.get("meditazione") or {}
-    if not med.get("url"):
-        return None
-    titolo = med.get("titolo") or "Una meditazione"
-    return (f"Una meditazione per questa settimana: {titolo}",
-            f"<p>{_saluto(ctx.get('nome'))}</p>"
-            f"<p>ti proponiamo una meditazione sola, per questa settimana: "
-            f"<strong>{titolo}</strong>.</p>"
-            "<p>Come ascoltarla: le cuffie, dieci minuti in cui nessuno ti cerca, il telefono "
-            "a faccia in giù. Non c'è niente da fare bene; se la mente va via, torna.</p>"
-            + _bottone(med["url"], "Ascolta")
-            + "<p>Quando l'hai ascoltata, se ti va, rispondi con una parola: com'è stata. "
-              "Le leggiamo tutte.</p>"
-            + _firma()
-            + _piede_cerchio(ctx))
-
-
-def _riga_ritiro(r: dict) -> str:
-    dove = ", ".join(x for x in (r.get("city"), r.get("region")) if x)
-    quando = _data_it(r.get("start_at"))
-    con = f" · con {r['org_name']}" if r.get("org_name") else ""
-    testo = " · ".join(x for x in (quando, dove) if x)
-    return (f'<li><a href="{APP_URL}{r["url"]}"><strong>{r.get("title")}</strong></a>'
-            f'{" · " + testo if testo else ""}{con}</li>')
-
-
-def c10_vicino(ctx: dict) -> Optional[Tuple[str, str]]:
-    """Giorno 10: i ritiri in programma per te (zona o ovunque), oppure i
-    professionisti nella tua citta'. Se non c'e' niente di vero, niente."""
-    ritiri = ctx.get("ritiri") or []
-    prof = ctx.get("professionisti") or []
-    citta = (ctx.get("citta") or "").strip()
-    if ritiri:
-        dove = f"vicino a {citta}" if citta and ctx.get("ritiri_in_zona") else "in programma"
-        return (f"I ritiri {dove}, oggi",
-                f"<p>{_saluto(ctx.get('nome'))}</p>"
-                f"<p>questi sono i ritiri e le esperienze {dove} pubblicati dai professionisti della "
-                "rete. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.</p>"
-                "<ul>" + "".join(_riga_ritiro(r) for r in ritiri[:5]) + "</ul>"
-                + _bottone(f"{APP_URL}/esperienze", "Tutti i ritiri, per data")
-                + "<p>Se cerchi qualcosa di diverso, rispondi qui e dicci cosa: la legge Valentina.</p>"
-                + _firma()
-                + _piede_cerchio(ctx))
-    if prof and citta:
-        righe = "".join(
-            f'<li><a href="{APP_URL}/o/{p["slug"]}"><strong>{p["nome"]}</strong></a>'
-            f'{" · " + p["discipline"] if p.get("discipline") else ""}</li>' for p in prof[:5])
-        return (f"Chi c'è a {citta}, nella rete",
-                f"<p>{_saluto(ctx.get('nome'))}</p>"
-                f"<p>di ritiri vicino a te per ora non ce ne sono in programma. Ma a {citta} ci sono "
-                "professionisti della rete Aurya, con la loro pagina e i loro servizi:</p>"
-                f"<ul>{righe}</ul>"
-                + _bottone(f"{APP_URL}/operatori", "Tutti i professionisti")
-                + "<p>Appena c'è un ritiro nella tua zona, te lo scriviamo.</p>"
-                + _firma()
-                + _piede_cerchio(ctx))
-    return None
-
-
-def c30_come_va(ctx: dict) -> Tuple[str, str]:
-    """Giorno 30: come va, cosa cerchi. La citta' se manca."""
-    citta = (ctx.get("citta") or "").strip()
-    manca = ""
-    if not citta:
-        manca = (f"<p>E se ci dici <a href=\"{_url_preferenze(ctx)}\">la tua città</a>, quello che "
-                 "ti mandiamo diventa più preciso.</p>")
-    return ("Come va, dopo un mese nel Cerchio?",
-            f"<p>{_saluto(ctx.get('nome'))}</p>"
-            "<p>è un mese che sei nel Cerchio. Ti chiediamo una cosa sola: cosa stai cercando, "
-            "adesso? Un ritiro, una persona con cui lavorare, una pratica da imparare, o solo "
-            "un momento tuo ogni tanto.</p>"
-            "<p>Rispondi a questa email con due righe: la legge Valentina, e se nella rete c'è la "
-            "persona giusta te la presenta lei.</p>"
-            + manca
             + _firma()
             + _piede_cerchio(ctx))

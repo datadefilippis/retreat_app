@@ -28,13 +28,10 @@ import { trackEvent } from '../../lib/analytics';
 import { creaAccount } from '../../utils/authLinks';
 import { sblocca } from '../../lib/cerchio';
 
-// Chiavi stabili salvate nel DB (le etichette sono i18n)
-// founder 10/9 sera: quattordici vie (le etichette in prelaunch.json form.interests)
-const INTERESTS = ['yoga', 'meditation', 'breathwork', 'sound', 'reiki', 'constellations',
-                   'astrology', 'ayurveda', 'tantra', 'detox', 'nature', 'women',
-                   'growth', 'mixed'];
-const BUDGETS = ['under500', '500to1000', 'over1000', 'flexible'];
-const TRAVELS = ['near', 'italy', 'abroad'];
+// FV5 (10/9/2026 sera) — le vie, il raggio, il budget e la mappa verso
+// il vocabolario del backend vivono in PreferenzeRitiri: UN blocco per
+// tutti i form (BASE_TO_EXP e' quella).
+import PreferenzeRitiri, { BASE_TO_EXP, versoBackend } from './PreferenzeRitiri';
 const ACTIVITIES = ['teacher', 'center', 'venue', 'organizer', 'therapist', 'other'];
 
 // BN2 — mappa chip interessi (chiavi lead storiche) → topics della
@@ -43,32 +40,6 @@ const INTEREST_TO_TOPIC = {
   yoga: 'yoga', meditation: 'meditazione', breathwork: 'breathwork',
   sound: 'suono', detox: 'detox', nature: 'cammini', women: 'femminile',
 };
-// RB4 (10/9/2026) — la porta «Trovami il mio ritiro» usa i chip storici
-// (INTERESTS) e li salva anche come interessi ESPERIENZIALI, nel
-// vocabolario del backend, cosi' le preferenze li mostrano accesi
-const BASE_TO_EXP = {
-  yoga: 'yoga', meditation: 'meditazione', breathwork: 'breathwork',
-  sound: 'suono', reiki: 'reiki', constellations: 'costellazioni',
-  astrology: 'astrologia', ayurveda: 'ayurveda', tantra: 'tantra',
-  detox: 'detox', nature: 'cammini', women: 'cerchi', growth: 'crescita',
-  mixed: 'misto',
-};
-
-// NW2 — interessi ESPERIENZIALI (vocabolario del backend, non i topics
-// editoriali): servono alle proposte di ritiri/esperienze
-const EXP_INTERESTS = ['yoga', 'meditazione', 'breathwork', 'suono', 'reiki',
-  'costellazioni', 'astrologia', 'ayurveda', 'tantra', 'detox', 'cammini',
-  'cerchi', 'crescita', 'misto'];
-const EXP_INTEREST_LABELS = {
-  yoga: 'Yoga & movimento', meditazione: 'Meditazione & mindfulness',
-  breathwork: 'Respiro & breathwork', suono: 'Suono & sound healing',
-  reiki: 'Reiki & pratiche energetiche', costellazioni: 'Costellazioni familiari',
-  astrologia: 'Astrologia & tarocchi', ayurveda: 'Ayurveda & discipline orientali',
-  tantra: 'Tantra & relazioni', detox: 'Detox & digiuno', cammini: 'Cammini & natura',
-  cerchi: 'Cerchi & femminile', crescita: 'Crescita personale',
-  misto: 'Esperienza mista, più operatori',
-};
-
 // BN1 — compact: la variante da fine articolo (blog). Solo email +
 // consenso: nel flusso di lettura ogni campo in piu' e' attrito. La
 // profilazione arriva dopo, dalle preferenze (BN2), non dal form.
@@ -158,14 +129,11 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   // NW2 — il blocco esperienze del form progressivo
   const [wantsExperiences, setWantsExperiences] = useState(
     Boolean(experiencesOptIn && experiencesDefault));
-  const [expInterests, setExpInterests] = useState([]);
-  const [expCity, setExpCity] = useState('');
-  const [expTravel, setExpTravel] = useState('');
-
+  // FV5 — il blocco «avvisami» usa gli STESSI campi del modulo pieno
+  // (interests, city, travel): un vocabolario, una struttura, ovunque
   const toggle = (setter) => (key) => setter((prev) =>
     prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]);
   const toggleInterest = toggle(setInterests);
-  const toggleExpInterest = toggle(setExpInterests);
 
   const withName = showName === null ? !compact : Boolean(showName);
 
@@ -194,11 +162,12 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
             ? interests.map((i) => INTEREST_TO_TOPIC[i]).filter(Boolean)
             : null,
           wants_experiences: experiencesOptIn ? wantsExperiences : (wantsExperiencesAlways || null),
-          interests: (wantsExperiences && expInterests.length) ? expInterests
-            : (wantsExperiencesAlways && interests.length
-              ? [...new Set(interests.map((i) => BASE_TO_EXP[i]).filter(Boolean))] : null),
-          city: (wantsExperiences ? expCity.trim() : city.trim()) || null,
-          travel: (wantsExperiences ? expTravel : travel) || null,
+          // FV5 — le vie viaggiano solo se l'iscritto ha ACCESO i ritiri
+          // (modulo pieno di /cerca-ritiro o flag «avvisami»): mai di passaggio
+          interests: ((experiencesOptIn ? wantsExperiences : wantsExperiencesAlways) && interests.length)
+            ? versoBackend(interests) : null,
+          city: city.trim() || null,
+          travel: travel || null,
           budget: budget || null,
           consent: true,
           // il cancello di una guida (onSbloccato presente) sblocca
@@ -305,26 +274,6 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   const ringStyle = { '--tw-ring-color': accent };
   const selectCls = (val) => `${inputCls} ${val ? 'text-gray-900' : 'text-gray-400'}`;
 
-  const Chips = ({ options, active, onToggle, i18nPrefix }) => (
-    <div className="flex flex-wrap gap-1.5">
-      {options.map((k) => {
-        const on = active.includes(k);
-        return (
-          <button
-            key={k} type="button" onClick={() => onToggle(k)}
-            aria-pressed={on}
-            className="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
-            style={on
-              ? { background: accent, borderColor: accent, color: '#fff' }
-              : { borderColor: `${accent}44`, color: '#4b5563', background: '#fff' }}
-          >
-            {t(`${i18nPrefix}.${k}`, { defaultValue: k })}
-          </button>
-        );
-      })}
-    </div>
-  );
-
   return (
     <form onSubmit={submit} className="space-y-3">
       {withName && (
@@ -421,41 +370,10 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         </>
       ) : (
         <>
-          <input
-            type="text" value={city} onChange={(e) => setCity(e.target.value)}
-            placeholder={t('form.trCity', { defaultValue: 'Dove vivi? Città o zona' })}
-            className={inputCls} style={ringStyle}
-          />
-          <div>
-            <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-              {t('form.interestsLabel', { defaultValue: 'Cosa ti chiama? Scegli pure più di una via' })}
-            </p>
-            <Chips options={INTERESTS} active={interests}
-                   onToggle={toggleInterest} i18nPrefix="form.interests" />
-          </div>
-          {/* PL13 — raggio del viaggio: vicino casa, Italia o anche estero */}
-          <select
-            value={travel} onChange={(e) => setTravel(e.target.value)}
-            className={selectCls(travel)} style={ringStyle}
-          >
-            <option value="">{t('form.travelLabel', { defaultValue: 'Dove ti immagini il tuo ritiro?' })}</option>
-            {TRAVELS.map((k) => (
-              <option key={k} value={k}>
-                {t(`form.travel.${k}`, { defaultValue: k })}
-              </option>
-            ))}
-          </select>
-          <select
-            value={budget} onChange={(e) => setBudget(e.target.value)}
-            className={selectCls(budget)} style={ringStyle}
-          >
-            <option value="">{t('form.budgetLabel', { defaultValue: 'Quanto vorresti investire in un ritiro?' })}</option>
-            {BUDGETS.map((k) => (
-              <option key={k} value={k}>
-                {t(`form.budget.${k}`, { defaultValue: k })}
-              </option>
-            ))}
-          </select>
+          <PreferenzeRitiri accent={accent} interests={interests} onToggleInterest={toggleInterest}
+                            city={city} setCity={setCity} travel={travel} setTravel={setTravel}
+                            budget={budget} setBudget={setBudget} showBudget
+                            inputCls={inputCls} selectCls={selectCls} ringStyle={ringStyle} />
         </>
       )}
 
@@ -478,54 +396,11 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
             </span>
           </label>
           {wantsExperiences && (
-            <div className="mt-3 space-y-3 duration-300 animate-in fade-in slide-in-from-top-2">
-              <input
-                type="text" value={expCity}
-                onChange={(e) => setExpCity(e.target.value)} maxLength={120}
-                aria-label={t('form.expCity', { defaultValue: 'Dove vivi? Città o zona' })}
-                placeholder={t('form.expCity', { defaultValue: 'Dove vivi? Città o zona' })}
-                className={inputCls} style={ringStyle}
-              />
-              {!experiencesLight && (<>
-              <div>
-                <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                  {t('form.expTravelLabel', { defaultValue: 'Quanto lontano ti sposteresti?' })}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {[['near', t('form.expTravel.near', { defaultValue: 'Vicino a dove vivo' })],
-                    ['anywhere', t('form.expTravel.anywhere', { defaultValue: 'Anche lontano' })]].map(([k, label]) => (
-                    <button key={k} type="button" aria-pressed={expTravel === k}
-                      onClick={() => setExpTravel(expTravel === k ? '' : k)}
-                      className="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
-                      style={expTravel === k
-                        ? { background: accent, borderColor: accent, color: '#fff' }
-                        : { borderColor: `${accent}44`, color: '#4b5563', background: '#fff' }}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                  {t('form.expInterestsLabel', { defaultValue: 'Cosa ti chiama? Scegli pure più di una via' })}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {EXP_INTERESTS.map((k) => {
-                    const on = expInterests.includes(k);
-                    return (
-                      <button key={k} type="button" aria-pressed={on}
-                        onClick={() => toggleExpInterest(k)}
-                        className="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
-                        style={on
-                          ? { background: accent, borderColor: accent, color: '#fff' }
-                          : { borderColor: `${accent}44`, color: '#4b5563', background: '#fff' }}>
-                        {EXP_INTEREST_LABELS[k]}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              </>)}
+            <div className="mt-3 duration-300 animate-in fade-in slide-in-from-top-2">
+              <PreferenzeRitiri accent={accent} interests={interests} onToggleInterest={toggleInterest}
+                                city={city} setCity={setCity} travel={travel} setTravel={setTravel}
+                                light={experiencesLight}
+                                inputCls={inputCls} selectCls={selectCls} ringStyle={ringStyle} />
             </div>
           )}
         </div>
