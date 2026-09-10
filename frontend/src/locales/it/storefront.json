@@ -43,11 +43,11 @@
       "inquiryToggle": "Richiedi info"
     },
     "request": {
-      "headerCta": "Richiedi ordine",
-      "modalTitle": "Richiedi ordine",
-      "modalDesc": "Questa è una richiesta d'ordine. Riceverai conferma prima della finalizzazione.",
-      "submitBtn": "Invia richiesta",
-      "inquiryToggle": "Richiedi info"
+      "headerCta": "Chiedi un posto",
+      "modalTitle": "Chiedi un posto",
+      "modalDesc": "Nessun pagamento adesso. Chi organizza riceve la tua richiesta e ti risponde via email; se è prevista una caparra, nell’email trovi come versarla con un bonifico.",
+      "submitBtn": "Invia la richiesta",
+      "inquiryToggle": "Chiedi un posto"
     },
     "approval": {
       "headerCta": "Richiedi disponibilità",
@@ -170,7 +170,7 @@
       "body": "La registrazione non è stata completata. L'ordine è stato inviato come ospite. Puoi provare a registrarti più tardi."
     },
     "body": {
-      "request": "Richiesta inviata. Sarai contattato per la conferma.",
+      "request": "Richiesta inviata. Controlla l’email: trovi come confermare il posto e, se prevista, la caparra da versare.",
       "direct": "Ordine ricevuto. Sarai contattato a breve.",
       "approval": "Richiesta inviata. Verificheremo la disponibilità e ti contatteremo."
     }

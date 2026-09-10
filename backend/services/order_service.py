@@ -1524,6 +1524,15 @@ async def settle_order_manual(
 
     note = note.strip()
 
+    # P2 (10/9/2026) — «caparra ricevuta» col bonifico: si scrive sull'ordine
+    # PRIMA della conferma, cosi' l'email di conferma sa dire il saldo.
+    if scope == "deposit":
+        await order_repository.update(order_id, org_id, {
+            "manual_deposit_received": True,
+            "manual_deposit_note": note,
+            "manual_deposit_at": utc_now(),
+        })
+
     # 1. Conferma (se serve) — riserva posti, emette biglietti, email.
     if order.get("status") == "draft":
         order = await confirm_order(org_id, order_id, skip_payment_check=True)

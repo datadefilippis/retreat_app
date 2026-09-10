@@ -351,7 +351,9 @@
     "faqWhoA": "Ogni ritiro ha un volto: trovi la presentazione e il profilo di chi organizza qui sotto, con la sua storia e le recensioni di chi ha già partecipato.",
     "verifiedReviews_one": "1 recensione verificata",
     "verifiedReviews_other": "{{count}} recensioni verificate",
-    "breadcrumbRetreats": "Ritiri"
+    "breadcrumbRetreats": "Ritiri",
+    "ctaRequest": "Chiedi un posto",
+    "inlineRequestHint": "Nessun pagamento adesso: ricevi un’email con come confermare il posto."
   },
   "product": {
     "loading": "Caricamento…",

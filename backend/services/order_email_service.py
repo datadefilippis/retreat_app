@@ -683,6 +683,68 @@ def _render_items_typecount_line(order: dict, locale: str) -> str:
 
 # ── Customer: Order/Request Received ─────────────────────────────────────────
 
+async def _dati_bonifico(order: dict, org_id: str) -> Optional[dict]:
+    """P2 — tutto cio' che serve per parlare di caparra e saldo col
+    bonifico: IBAN dell'operatore, piano del ritiro, importi, date.
+    None se l'operatore non ha l'IBAN o l'ordine non contiene un ritiro
+    (per un massaggio non si chiede una caparra via email)."""
+    from datetime import datetime, timedelta, timezone
+    from database import organizations_collection, products_collection, event_occurrences_collection
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "bank_iban": 1, "bank_holder": 1, "deposit_days": 1}) or {}
+    iban = (org.get("bank_iban") or "").strip()
+    if not iban:
+        return None
+    righe = [it for it in (order.get("items") or []) if it.get("product_id")]
+    ritiri = [it for it in righe if it.get("item_type") == "event_ticket"]
+    if not ritiri:
+        return None
+    total = float(order.get("total") or 0)
+    if total <= 0:
+        return None
+    prod = await products_collection.find_one(
+        {"id": ritiri[0]["product_id"]}, {"_id": 0, "name": 1, "metadata.payment_plan": 1}) or {}
+    plan_raw = (prod.get("metadata") or {}).get("payment_plan")
+    plan, deposit = None, total
+    if isinstance(plan_raw, dict) and plan_raw:
+        try:
+            from models.payment_plan import PaymentPlan, PaymentPlanMode
+            from services.payment_schedule_service import compute_deposit_minor
+            plan = PaymentPlan(**plan_raw)
+            if plan.mode != PaymentPlanMode.FULL:
+                deposit = compute_deposit_minor(plan, int(round(total * 100))) / 100
+        except Exception as exc:  # noqa: BLE001 — piano invalido: tutto il totale
+            logger.warning("order_email: payment_plan invalido (order %s): %s", order.get("id"), exc)
+            plan = None
+    start_at = None
+    occ_id = ritiri[0].get("occurrence_id")
+    if occ_id:
+        occ = await event_occurrences_collection.find_one({"id": occ_id}, {"_id": 0, "start_at": 1}) or {}
+        try:
+            start_at = datetime.fromisoformat(str(occ.get("start_at")).replace("Z", "+00:00"))
+            if start_at.tzinfo is None:
+                start_at = start_at.replace(tzinfo=timezone.utc)
+        except Exception:  # noqa: BLE001
+            start_at = None
+    days = int(org.get("deposit_days") or 5)
+    now = datetime.now(timezone.utc)
+    scadenza_saldo = None
+    if plan is not None and start_at is not None:
+        scadenza_saldo = start_at - timedelta(days=int(getattr(plan, "balance_due_days_before", 30) or 30))
+        if scadenza_saldo <= now:
+            scadenza_saldo = start_at
+    cognome = (order.get("customer_name") or "").strip().split(" ")[-1] if order.get("customer_name") else ""
+    causale_base = f"{prod.get('name') or 'ritiro'} {cognome}".strip()[:90]
+    return {
+        "iban": iban, "iban_txt": " ".join(iban[i:i + 4] for i in range(0, len(iban), 4)),
+        "holder": (org.get("bank_holder") or "").strip(),
+        "total": total, "deposit": deposit, "balance": round(total - deposit, 2),
+        "scadenza_caparra": now + timedelta(days=days),
+        "scadenza_saldo": scadenza_saldo, "start_at": start_at,
+        "causale_base": causale_base,
+    }
+
+
 async def _bank_transfer_block(order: dict, org_id: str, order_ref: str,
                                locale: str) -> str:
     """P2 — le istruzioni per la caparra con bonifico, o stringa vuota.
@@ -690,57 +752,58 @@ async def _bank_transfer_block(order: dict, org_id: str, order_ref: str,
     L'importo segue il piano di pagamento del ritiro (caparra in
     percentuale o fissa, la STESSA regola di compute_deposit_minor per
     Stripe); senza piano e' il totale. La scadenza sono i giorni scelti
-    dall'operatore (default 5). Mai un errore: l'email parte comunque.
+    dall'operatore (default 5). La causale e' leggibile (nome del ritiro
+    e cognome), non un codice. Mai un errore: l'email parte comunque.
     """
     try:
-        from datetime import datetime, timedelta, timezone
-        from database import organizations_collection, products_collection
-        org = await organizations_collection.find_one(
-            {"id": org_id},
-            {"_id": 0, "bank_iban": 1, "bank_holder": 1, "deposit_days": 1},
-        ) or {}
-        iban = (org.get("bank_iban") or "").strip()
-        if not iban:
+        d = await _dati_bonifico(order, org_id)
+        if not d:
             return ""
-        total = float(order.get("total") or 0)
-        if total <= 0:
-            return ""
-        amount = total
-        pids = [it.get("product_id") for it in (order.get("items") or [])
-                if it.get("product_id")]
-        plan_doc = await products_collection.find_one(
-            {"id": {"$in": pids}, "metadata.payment_plan": {"$exists": True}},
-            {"_id": 0, "metadata.payment_plan": 1},
-        ) if pids else None
-        plan_raw = ((plan_doc or {}).get("metadata") or {}).get("payment_plan")
-        if isinstance(plan_raw, dict) and plan_raw:
-            try:
-                from models.payment_plan import PaymentPlan, PaymentPlanMode
-                from services.payment_schedule_service import compute_deposit_minor
-                plan = PaymentPlan(**plan_raw)
-                if plan.mode != PaymentPlanMode.FULL:
-                    amount = compute_deposit_minor(plan, int(round(total * 100))) / 100
-            except Exception as exc:  # noqa: BLE001 — piano invalido: totale
-                logger.warning("order_email: payment_plan invalido (order %s): %s",
-                               order.get("id"), exc)
-        days = int(org.get("deposit_days") or 5)
-        deadline = (datetime.now(timezone.utc) + timedelta(days=days)).strftime("%d/%m/%Y")
         from services.currency_service import get_currency_for_order
-        amount_txt = _fmt_total(amount, get_currency_for_order(order), locale)
-        iban_txt = " ".join(iban[i:i + 4] for i in range(0, len(iban), 4))
-        holder = (org.get("bank_holder") or "").strip()
+        cur = get_currency_for_order(order)
         righe = [
             f"<p><strong>{_t('order_bank_title', locale)}</strong><br>",
-            _t("order_bank_body", locale, amount=amount_txt, deadline=deadline) + "</p>",
-            "<p>" + _t("order_bank_iban", locale, iban=iban_txt) + "<br>",
+            _t("order_bank_body", locale, amount=_fmt_total(d["deposit"], cur, locale),
+               deadline=d["scadenza_caparra"].strftime("%d/%m/%Y")) + "</p>",
+            "<p>" + _t("order_bank_iban", locale, iban=d["iban_txt"]) + "<br>",
         ]
-        if holder:
-            righe.append(_t("order_bank_holder", locale, holder=holder) + "<br>")
-        righe.append(_t("order_bank_reason", locale, reason=f"Caparra {order_ref}") + "</p>")
+        if d["holder"]:
+            righe.append(_t("order_bank_holder", locale, holder=d["holder"]) + "<br>")
+        righe.append(_t("order_bank_reason", locale, reason=f"Caparra {d['causale_base']}") + "</p>")
         righe.append(f"<p>{_t('order_bank_note', locale)}</p>")
         return "\n".join(righe)
     except Exception as exc:  # noqa: BLE001
         logger.warning("order_email: bank block failed (order %s): %s", order.get("id"), exc)
+        return ""
+
+
+async def _saldo_block(order: dict, org_id: str, locale: str) -> str:
+    """P2 — nell'email di conferma, dopo «caparra ricevuta» col bonifico:
+    quanto resta e entro quando (stesso IBAN). Solo se l'operatore ha
+    segnato la caparra a mano e resta un saldo; altrimenti niente."""
+    try:
+        if not order.get("manual_deposit_received"):
+            return ""
+        if (order.get("payment_status") or "") == "paid":
+            return ""
+        d = await _dati_bonifico(order, org_id)
+        if not d or d["balance"] <= 0:
+            return ""
+        from services.currency_service import get_currency_for_order
+        cur = get_currency_for_order(order)
+        quando = d["scadenza_saldo"].strftime("%d/%m/%Y") if d["scadenza_saldo"] else _t("order_saldo_prima", locale)
+        righe = [
+            f"<p><strong>{_t('order_saldo_title', locale)}</strong><br>",
+            _t("order_saldo_body", locale, deposit=_fmt_total(d["deposit"], cur, locale),
+               balance=_fmt_total(d["balance"], cur, locale), deadline=quando) + "</p>",
+            "<p>" + _t("order_bank_iban", locale, iban=d["iban_txt"]) + "<br>",
+        ]
+        if d["holder"]:
+            righe.append(_t("order_bank_holder", locale, holder=d["holder"]) + "<br>")
+        righe.append(_t("order_bank_reason", locale, reason=f"Saldo {d['causale_base']}") + "</p>")
+        return "\n".join(righe)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("order_email: saldo block failed (order %s): %s", order.get("id"), exc)
         return ""
 
 
@@ -1776,12 +1839,15 @@ async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
         fulfillment_html = _render_fulfillment_section(order, locale, store_name)
         # Fase 2 S2 (retreat): piano pagamenti (caparra pagata + scadenze)
         payments_html = await _render_payment_schedule_section(order, org_id, locale)
+        # P2 (10/9/2026): caparra ricevuta col bonifico → il saldo, in chiaro
+        saldo_html = await _saldo_block(order, org_id, locale)
 
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>
             <p>{_t("order_confirmed_body", locale)}</p>
             <p>{_t("order_confirmed_ref", locale, order_ref=order_ref)}</p>
             {summary_html}
+            {saldo_html}
             {payments_html}
             {fulfillment_html}
             {tickets_html}

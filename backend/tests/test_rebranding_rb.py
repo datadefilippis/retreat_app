@@ -396,8 +396,11 @@ class TestP2IlBonificoElaStradaPrincipale:
 
     def test_le_istruzioni_partono_con_l_email_della_richiesta(self):
         src = (BACKEND_DIR / "services" / "order_email_service.py").read_text()
-        assert "async def _bank_transfer_block(" in src
+        assert "async def _bank_transfer_block(" in src and "async def _saldo_block(" in src
         assert "compute_deposit_minor" in src, "la caparra segue il piano del ritiro come con Stripe"
+        assert 'it.get("item_type") == "event_ticket"' in src, "la caparra via email solo per i ritiri, non per un massaggio"
+        assert 'f"Caparra {d[\'causale_base\']}"' in src, "causale leggibile: ritiro e cognome, non un codice"
+        assert "{saldo_html}" in src and '"manual_deposit_received": True' in (BACKEND_DIR / "services" / "order_service.py").read_text()
         i = src.index("async def notify_customer_order_received(")
         corpo = src[i:i + 3000]
         assert "_bank_transfer_block(order, org_id, order_ref, locale)" in corpo
@@ -500,7 +503,8 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
         assert "richiesta-tab-" not in dialog and "tipoIniziale = 'regia'" in dialog
         for tid in ("richiesta-regia-intro", "richiesta-formula"):
             assert f'data-testid="{tid}"' in dialog, tid
-        assert "parte a ottobre 2026" in dialog
+        # founder 10/9 sera: la regia e' GIA' disponibile — niente «ti scriviamo quando parte»
+        assert "quando il servizio parte" not in dialog and "entro pochi giorni" in dialog
         assert "Regia leggera, 290 €" in dialog and "Regia completa, 690 €" in dialog
         assert "40 € a partecipante oltre il sesto" in dialog
         assert "tipo, formula: tipo === 'regia' ? formula : null" in dialog

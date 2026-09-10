@@ -66,7 +66,7 @@ export default function RichiestaStrutturaDialog({ aperto, onClose, tipoIniziale
         {fatto ? (
           <div className="space-y-3">
             <p className="text-sm">{tipo === 'regia'
-              ? 'Ricevuta. Ti scriviamo noi quando il servizio parte, con una proposta chiara: cosa facciamo noi, cosa resta a te, quanto costa. Ti abbiamo mandato una ricevuta via email.'
+              ? 'Ricevuta. La leggiamo personalmente e ti scriviamo entro pochi giorni con una proposta chiara: cosa facciamo noi, cosa resta a te, quanto costa. Ti abbiamo mandato una ricevuta via email.'
               : 'Ricevuta. La leggiamo personalmente e ti scriviamo entro pochi giorni con le strutture che conosciamo e che rispondono a quello che cerchi. Ti abbiamo mandato una ricevuta via email.'}</p>
             <Button onClick={onClose}>Chiudi</Button>
           </div>
@@ -74,7 +74,7 @@ export default function RichiestaStrutturaDialog({ aperto, onClose, tipoIniziale
           <form onSubmit={invia} className="space-y-3">
             {tipo === 'regia' ? (
               <div className="space-y-2" data-testid="richiesta-regia-intro">
-                <p className="text-sm text-muted-foreground">Ti organizziamo noi il ritiro: la struttura, la scheda, le persone. Due formule, prezzo fisso. Il servizio parte a ottobre 2026: lasciaci la richiesta e ti scriviamo noi.</p>
+                <p className="text-sm text-muted-foreground">Ti organizziamo noi il ritiro: la struttura, la scheda, le persone. Due formule, prezzo fisso.</p>
                 <ul className="text-sm space-y-1">
                   <li><b>Regia leggera, 290 €</b>: tre strutture proposte dalla nostra scheda, con condizioni e contatto; la scheda del ritiro scritta insieme; il piano di promozione.</li>
                   <li><b>Regia completa, 690 €</b> + 40 € a partecipante oltre il sesto: tutto sopra, più programma e prezzo costruiti insieme, caparre e iscrizioni gestite da noi col bonifico, il riempimento. Dal 2027.</li>

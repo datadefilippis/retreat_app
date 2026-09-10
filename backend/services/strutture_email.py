@@ -95,8 +95,8 @@ def ricevuta_operatore(r: dict) -> None:
         tipo = _tipo(r)
         if tipo == "regia":
             corpo = ("<p>Ciao,</p><p>abbiamo ricevuto la tua richiesta di regia per un ritiro. "
-                     "Il servizio parte a ottobre 2026 con le prime regie pilota: ti scriviamo "
-                     "noi, con una proposta chiara: cosa facciamo noi, cosa resta a te, quanto costa.</p>")
+                     "La leggiamo personalmente e ti scriviamo entro pochi giorni con una "
+                     "proposta chiara: cosa facciamo noi, cosa resta a te, quanto costa.</p>")
             oggetto = "La tua richiesta di regia è arrivata"
         elif tipo == "team_building":
             corpo = (f"<p>Ciao {r.get('nome') or ''},</p><p>abbiamo ricevuto la richiesta di "

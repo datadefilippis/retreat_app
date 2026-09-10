@@ -455,15 +455,22 @@ function ProceedToCheckoutBar({ orgSlug, product, occurrence, tierQuantities, pl
           ? t('landings:event.ctaSelectTier')
           : (fromStore
               ? t('landings:event.ctaAdd')
-              : t('landings:event.ctaBook', { defaultValue: 'Prenota ora' }))}
+              : isDirectMode
+                ? t('landings:event.ctaBook', { defaultValue: 'Prenota ora' })
+                /* P2 (10/9/2026): su richiesta non si paga adesso — lo si dice */
+                : t('landings:event.ctaRequest', { defaultValue: 'Chiedi un posto' }))}
       </button>
 
       <p className="text-[11px] text-gray-500 text-center">
         {fromStore
           ? t('landings:event.checkoutHint')
-          : t('landings:event.inlineCheckoutHint', {
-              defaultValue: 'Completi la prenotazione qui, senza lasciare questa pagina.',
-            })}
+          : isDirectMode
+            ? t('landings:event.inlineCheckoutHint', {
+                defaultValue: 'Completi la prenotazione qui, senza lasciare questa pagina.',
+              })
+            : t('landings:event.inlineRequestHint', {
+                defaultValue: 'Nessun pagamento adesso: ricevi un’email con come confermare il posto.',
+              })}
       </p>
     </div>
     {/* PN4 — il checkout condiviso si apre in overlay SU QUESTA pagina:
@@ -1284,7 +1291,7 @@ export default function EventLandingPage() {
             onClick={() => document.getElementById('prenota')?.scrollIntoView({ block: 'start' })}
             className="rounded-full bg-accent text-accent-foreground px-6 py-2.5 text-sm font-bold shadow-md"
           >
-            {t('landings:event.mobileBook', { defaultValue: 'Prenota' })}
+            {isDirectMode ? t('landings:event.mobileBook', { defaultValue: 'Prenota' }) : t('landings:event.ctaRequest', { defaultValue: 'Chiedi un posto' })}
           </button>
         </div>
       )}
