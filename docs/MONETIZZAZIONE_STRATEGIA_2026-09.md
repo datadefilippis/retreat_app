@@ -159,7 +159,21 @@ Tutti e cinque dipendono da una cosa sola: **che nel Cerchio ci siano persone, c
 
 **Cosa cambia nei passi**: M8 (provenienza + fee) esce; M2 (flag prima fila), M6 (Lettera per zona) ed M7 (i tre numeri) diventano il cuore, più M9: il contatore «persone nel Cerchio vicino a te che hanno chiesto i tuoi temi» esposto nel wizard e nel gestionale (mezza giornata: la query è quella delle preferenze).
 
-## 5. Stripe: da vincolo a scelta
+## 5. Stripe: da vincolo a scelta (e il bonifico come strada principale)
+
+**Decisione del founder (10/9 sera)**: «I primi operatori ci hanno già dimostrato che Stripe per loro era complesso e che preferiscono i bonifici. Stripe obbligatorio sarebbe un collo di bottiglia, e comunque c'è una responsabilità da parte nostra.» Conseguenza: **il bonifico è la strada principale, Stripe è l'opzione.** Non «su richiesta» come ripiego per chi non ha Stripe, ma il flusso di prima scelta, fatto bene:
+
+- **Nelle impostazioni** l'operatore scrive una volta IBAN e intestatario.
+- **Nel wizard** «su richiesta con caparra» è il modo predefinito: quanto vale la caparra (cifra o percentuale) e entro quanti giorni.
+- **Chi prenota** riceve subito l'email con IBAN, importo, causale (nome del ritiro e suo nome) e scadenza; il posto è «in attesa della caparra».
+- **L'operatore** vede la richiesta nel gestionale e, arrivato il bonifico, conferma con un clic («caparra ricevuta il…»): parte l'email di conferma e il promemoria del saldo. È l'ordine manuale con la nota che esiste già, reso un percorso invece di un'eccezione.
+- **Scaduta la caparra** senza conferma, il posto si libera con un promemoria automatico prima.
+
+Cosa ci guadagna Aurya oltre alla semplicità: **esce dal flusso del denaro.** Con Stripe Connect la piattaforma porta una responsabilità (contestazioni, rimborsi, verifiche sul conto della piattaforma, il «responsabilità perdite = esercente» che abbiamo accettato a luglio); col bonifico i soldi passano dal partecipante all'operatore e noi non tocchiamo un euro, coerente con «zero commissioni». Stripe resta per chi lo vuole (Marco, Silvia), acceso dalle impostazioni, mai proposto nel wizard a chi non l'ha collegato.
+
+Nei passi: M4 cresce (IBAN nelle impostazioni, caparra nel wizard, email con le istruzioni, conferma con un clic, scadenza automatica: due giornate) e diventa il primo passo dell'onda 2 sul prodotto, prima di qualsiasi piano a pagamento.
+
+### 5.1 Le tre verità su Stripe, per chi lo vuole
 
 Tre verità da scrivere in una pagina propria (`/incassare-online`, linkata dal wizard e dalle impostazioni):
 
@@ -240,7 +254,7 @@ Con la metà dei ritiri o un quarto degli abbonati: 2.300 €. Con Marco che por
 | M1 | Piano `retreat_club` (49 €/anno) e Pro annuale a 119 (mensile 12) nel catalogo e in Stripe; migrazione flag-gated come per il 19 | 1 giornata |
 | M2 | Il flag «prima fila»: ritiri ed eventi in Ritiri ed esperienze / selezione / Lettera filtrati per piano (Club, Pro, Founding, Partner); i Gratis restano sul profilo | 1 giornata |
 | M3 | /costi riscritta con i tre piani, i tre cancelli pubblici (contatori veri), la pagina /incassare-online; FAQ della landing allineata | mezza giornata |
-| M4 | Il wizard: «su richiesta» predefinito senza Stripe, riga caparra con bonifico nella conferma; Impostazioni con le tre verità su Stripe | mezza giornata |
+| M4 | Il bonifico come strada principale: IBAN nelle impostazioni, caparra nel wizard (default), email con le istruzioni, conferma con un clic, scadenza automatica; Stripe opzionale dalle impostazioni con le tre verità | 2 giornate |
 | M5 | Fondatori: Club regalato per il 2027 (piano Founding = Club+Pro per 12 mesi), badge sul profilo | mezza giornata (con RB9) |
 | M6 | Lettera per zona/temi coi ritiri Club: la query esiste (retreat_alert, città, interessi), manca l'invio; template + job | 1 giornata |
 | M7 | Il cruscotto dei tre numeri (iscritti confermati, ritiri in programma, visite) in system admin e su /costi | mezza giornata |
@@ -254,7 +268,7 @@ Tutto sopra il motore di billing che c'è già (piani per modulo, abbonamenti St
 
 | # | Decisione | Proposta |
 |---|---|---|
-| 1 | Togliere il vincolo Stripe per il marketplace; «su richiesta» è un modo pieno | sì |
+| 1 | Togliere il vincolo Stripe per il marketplace; il bonifico con caparra è la strada principale, Stripe l'opzione (decisione founder 10/9 sera) | sì |
 | 2 | Tre piani annuali: Gratis / Club 49 / Pro 119 (mensile 12) | sì; 99 se preferisci, ma non sotto |
 | 3 | **Zero commissioni Aurya, sempre** (decisione founder 10/9 sera, §4.6); Stripe è uno strumento, restano solo le sue commissioni | sì |
 | 4 | Dal 1/1/2027 i piani sono pubblici; il Club si vende solo coi tre cancelli veri; il trigger nel wizard compare solo se il numero è vero | sì |
