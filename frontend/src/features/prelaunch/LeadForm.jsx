@@ -41,6 +41,13 @@ const INTEREST_TO_TOPIC = {
   yoga: 'yoga', meditation: 'meditazione', breathwork: 'breathwork',
   sound: 'suono', detox: 'detox', nature: 'cammini', women: 'femminile',
 };
+// RB4 (10/9/2026) — la porta «Trovami il mio ritiro» usa i chip storici
+// (INTERESTS) e li salva anche come interessi ESPERIENZIALI, nel
+// vocabolario del backend, cosi' le preferenze li mostrano accesi
+const BASE_TO_EXP = {
+  yoga: 'yoga', meditation: 'meditazione', breathwork: 'breathwork',
+  sound: 'suono', women: 'cerchi', mixed: 'misto',
+};
 
 // NW2 — interessi ESPERIENZIALI (vocabolario del backend, non i topics
 // editoriali): servono alle proposte di ritiri/esperienze
@@ -84,7 +91,12 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                                    // esperienze mostra SOLO la citta' (la cosa che rende
                                    // «nella tua zona» vero): raggio e interessi si
                                    // scelgono dopo, dalle preferenze
-                                   experiencesLight = false }) {
+                                   experiencesLight = false,
+                                   // RB4 (10/9/2026) — la porta «Trovami il mio ritiro»: il
+                                   // modulo pieno di luglio (citta', interessi, raggio, budget)
+                                   // iscrive al Cerchio con la preferenza ritiri SEMPRE accesa,
+                                   // senza il flag: chi chiede un ritiro vuole essere avvisato
+                                   wantsExperiencesAlways = false }) {
   const { t, i18n } = useTranslation('prelaunch');
   const isOperator = type === 'operator';
 
@@ -161,8 +173,10 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           topics: interests.length
             ? interests.map((i) => INTEREST_TO_TOPIC[i]).filter(Boolean)
             : null,
-          wants_experiences: experiencesOptIn ? wantsExperiences : null,
-          interests: wantsExperiences && expInterests.length ? expInterests : null,
+          wants_experiences: experiencesOptIn ? wantsExperiences : (wantsExperiencesAlways || null),
+          interests: (wantsExperiences && expInterests.length) ? expInterests
+            : (wantsExperiencesAlways && interests.length
+              ? [...new Set(interests.map((i) => BASE_TO_EXP[i]).filter(Boolean))] : null),
           city: (wantsExperiences ? expCity.trim() : city.trim()) || null,
           travel: (wantsExperiences ? expTravel : travel) || null,
           budget: budget || null,

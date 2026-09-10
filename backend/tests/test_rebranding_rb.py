@@ -170,3 +170,51 @@ class TestRb2LaLandingDellOperatore:
             assert frase in corpo
         assert "non fa per te" not in corpo and "con calma" not in corpo
         assert len(faq_professionisti()) == 6
+
+
+class TestRb4LaPortaDiChiCerca:
+    """/cerca-ritiro torna viva: si chiama con l'oggetto («Trovami il mio
+    ritiro»), il modulo di luglio iscrive al Cerchio con i ritiri accesi,
+    e cosa succede dopo e' detto prima (subito, quando vale la pena, il
+    15 gennaio 2027). Mai una cadenza dichiarata (regola del founder)."""
+
+    TR = FE / "features" / "prelaunch" / "TravelerLandingPage.js"
+
+    def test_la_rotta_e_viva_e_la_porta_di_casa_la_usa(self):
+        app = (FE / "App.js").read_text()
+        assert 'path="/cerca-ritiro" element={<TravelerLandingPage />}' in app
+        assert 'path="/cerca-ritiro" element={<Navigate' not in app
+        assert "const CERCA_PATH = '/cerca-ritiro'" in HOME.read_text()
+
+    def test_il_modulo_di_luglio_iscrive_al_cerchio_coi_ritiri_accesi(self):
+        src = self.TR.read_text()
+        assert src.count("<SchedaForm") == 2 and src.count("<LeadForm") == 1, \
+            "UN modulo (la scheda), montato nel primo schermo e in fondo"
+        blocco = src[src.index("<LeadForm"):src.index("/>", src.index("<LeadForm"))]
+        for prop in ("subscribe", "showName", "wantsExperiencesAlways", "context={context === 'hero' ? 'cerca-ritiro'"):
+            assert prop in blocco, f"manca {prop}"
+        assert "compact" not in blocco, "il modulo e' quello pieno: citta', interessi, raggio, budget"
+        form = (FE / "features" / "prelaunch" / "LeadForm.jsx").read_text()
+        assert "wantsExperiencesAlways = false" in form and "BASE_TO_EXP" in form
+        assert "wants_experiences: experiencesOptIn ? wantsExperiences : (wantsExperiencesAlways || null)" in form
+
+    def test_il_copy_nomina_l_oggetto_i_tre_tempi_e_nessuna_cadenza(self):
+        tr = json.loads(PRELAUNCH.read_text())["tr"]
+        assert tr["cta"] == "Trovami il mio ritiro" and "ritiro" in tr["title"].lower()
+        assert tr["d1w"] == "Subito" and "meditazioni" in tr["d1t"].lower()
+        assert "15 gennaio 2027" in tr["d3w"] and "primavera 2027" in tr["d3t"]
+        testo = " ".join(str(v) for v in tr.values()).lower()
+        for cadenza in ("ogni due settimane", "ogni settimana", "ogni mese", "al lancio"):
+            assert cadenza not in testo, f"cadenza o promessa vecchia: «{cadenza}»"
+        assert "operatore olistico" in tr["switch2"]
+
+    def test_la_shell_e_il_corpo_dicono_la_porta(self):
+        shell = SHELL.read_text()
+        assert "Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya" in shell
+        assert '"cerca-ritiro": "WebPage"' in shell
+        from services.identita import CORPI, corpo_cerca_ritiro
+        assert "cerca-ritiro" in CORPI
+        corpo = corpo_cerca_ritiro()
+        for frase in ("C’è un ritiro che ti sta aspettando.", "Cosa succede dopo, detto prima.", "15 gennaio 2027", "Persone, non annunci."):
+            assert frase in corpo, frase
+        assert "al lancio" not in corpo.lower()

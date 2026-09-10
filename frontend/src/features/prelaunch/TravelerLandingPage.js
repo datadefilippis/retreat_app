@@ -1,175 +1,270 @@
 /**
- * TravelerLandingPage — /cerca-ritiro (PL16, refinement design+contenuto).
+ * TravelerLandingPage — /cerca-ritiro: «Trovami il mio ritiro».
  *
- * Posizionamento: ad Aurya non si "cerca un annuncio", ci si affida a un
- * sistema che si prende cura del viaggio interiore dall'inizio alla fine.
- * Struttura: hero evocativo → come funziona (3 passi umani) → form (UNO)
- * + pilastri di fiducia → perché nasce Aurya. Niente gergo tecnico:
- * "pagamento diretto", mai il nome del provider. Accent salvia + oro.
+ * RB4 (10/9/2026, REBRANDING — docs/REBRANDING_STRATEGIA_2026-09.md).
+ * La porta di chi cerca. In luglio questa pagina (con zero contenuti)
+ * raccoglieva contatti «cerco un ritiro»; dal 4/8 rimandava al Cerchio
+ * e i contatti sono finiti a zero: «Entra nel Cerchio» e' un
+ * contenitore, «Trovami il mio ritiro» e' l'oggetto del desiderio.
+ *
+ * La porta si chiama con l'oggetto; il Cerchio resta il nome di cio'
+ * che ricevi. Il modulo e' quello di luglio, che funzionava (nome,
+ * email, dove vivi, cosa ti chiama, quanto lontano, quanto vorresti
+ * investire) e ISCRIVE AL CERCHIO con la preferenza «ritiri ed
+ * esperienze» accesa: stessa meccanica (LeadForm `subscribe`, doppio
+ * opt-in, consenso col suo testo), zero flussi nuovi.
+ *
+ * Cosa succede dopo, detto PRIMA: subito le meditazioni riservate;
+ * la Lettera quando vale la pena (mai una cadenza dichiarata: regola
+ * del founder, 3/9); il 15 gennaio 2027 la selezione dei ritiri di
+ * primavera 2027, scelti per quello che ci hai detto.
+ *
+ * Grammatica: la stessa del Cerchio (CN1) — form nel primo schermo e
+ * in fondo, promesse concrete una per riga, assaggi veri prima di
+ * entrare. Foto: hero-destination (l'uliveto), che e' gia' il volto
+ * della porta in home.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Leaf, ShieldCheck, MapPin, ArrowLeft, ArrowRight, Quote } from 'lucide-react';
+import { Headphones, Mail, CalendarHeart, Leaf, ShieldCheck, MapPin } from 'lucide-react';
+import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
-import useItalianOnly from '../../lib/useItalianOnly';
 import LeadForm from './LeadForm';
-import BrandPayoff from '../../components/BrandPayoff';
+import {
+  Section, DisplayTitle, Lede, PhotoOpener, EditorialCta,
+} from '../../components/editorial';
 
-const ACCENT = '#376254';
-const GOLD = '#8a7440';
+const OPENER_PHOTO = '/media/hero-destination.webp';
+const SAGE = '#2f5749';
+
+/** la scheda del modulo: bianco pieno, l'unico bianco della pagina */
+function SchedaForm({ t, id, context, titolo }) {
+  return (
+    <div id={id}
+         className="rounded-[1.75rem] bg-white p-5 ring-1 ring-[#1e2f28]/[0.07] shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)] sm:p-7"
+         data-testid={`tr-form-${context}`}>
+      {titolo && (
+        <p className="mb-4 font-display text-xl leading-tight text-foreground sm:text-2xl">
+          {titolo}
+        </p>
+      )}
+      {/* il modulo di luglio: nome, email, dove vivi, cosa ti chiama,
+          quanto lontano, quanto investire. Iscrive al Cerchio con la
+          preferenza ritiri ACCESA (wantsExperiencesAlways). */}
+      <LeadForm
+        type="traveler"
+        subscribe
+        showName
+        wantsExperiencesAlways
+        accent={SAGE}
+        context={context === 'hero' ? 'cerca-ritiro' : 'cerca-ritiro_fondo'}
+        ctaLabel={t('tr.cta', { defaultValue: 'Trovami il mio ritiro' })}
+        consentText={t('tr.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya, con i ritiri e le esperienze nella mia zona.' })}
+        thanksBody={t('tr.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e conferma. Appena confermi si aprono le meditazioni riservate, e il 15 gennaio 2027 ricevi la selezione dei ritiri di primavera scelta per te.' })}
+      />
+      <p className="mt-4 text-xs leading-relaxed text-foreground/60">
+        {t('tr.trust', { defaultValue: 'Una conferma via email, poi sei dentro. Gratis, e ti cancelli con un clic.' })}
+      </p>
+      {/* PL22 — il canale diretto resta: c'e' chi i form non li ama */}
+      <p className="mt-2 text-xs text-foreground/60">
+        {t('tr.directT', { defaultValue: 'Preferisci scriverci direttamente?' })}{' '}
+        <a href="mailto:info@aurya.life" className="font-medium underline underline-offset-2 text-[#2f5749]">info@aurya.life</a>
+      </p>
+    </div>
+  );
+}
 
 export default function TravelerLandingPage() {
-  useItalianOnly();
   const { t } = useTranslation('prelaunch');
+
   useSeoMeta({
-    title: t('tr.seoTitle', { defaultValue: 'Aurya | C’è un ritiro che ti sta aspettando' }),
-    description: t('tr.seoDesc', { defaultValue: 'Aurya sta per aprire: ritiri olistici veri, da operatori verificati, con caparra e pagamento diretto online. Raccontaci cosa cerchi e al lancio ti proponiamo ritiri scelti per te.' }),
+    title: t('tr.seoTitle', { defaultValue: 'Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya' }),
+    description: t('tr.seoDesc', { defaultValue: 'Dicci cosa cerchi e dove: ti avvisiamo quando c’è un ritiro o un’esperienza vicino a te. Subito le meditazioni riservate; il 15 gennaio 2027 la selezione dei ritiri di primavera.' }),
+    canonicalPath: '/cerca-ritiro',
   });
 
-  const steps = [
-    { n: '01', title: t('tr.s1t', { defaultValue: 'Raccontaci cosa cerchi' }),
-      body: t('tr.s1b', { defaultValue: 'Dove vivi, cosa ti chiama, quanto lontano vuoi spingerti. Trenta secondi, senza impegno.' }) },
-    { n: '02', title: t('tr.s2t', { defaultValue: 'Ricevi una selezione pensata per te' }),
-      body: t('tr.s2b', { defaultValue: 'Al lancio non ti mandiamo un catalogo: ti proponiamo i ritiri giusti per te, scelti a mano.' }) },
-    { n: '03', title: t('tr.s3t', { defaultValue: 'Prenota con serenità' }),
-      body: t('tr.s3b', { defaultValue: 'Blocchi il posto con una piccola caparra e paghi direttamente online, con regole chiare. Il resto è cammino.' }) },
+  /* cosa succede dopo, detto prima: tre tempi */
+  const dopo = [
+    {
+      Icon: Headphones,
+      when: t('tr.d1w', { defaultValue: 'Subito' }),
+      title: t('tr.d1t', { defaultValue: 'Le meditazioni riservate' }),
+      body: t('tr.d1b', { defaultValue: 'Sessioni complete di Aurya Sound che fuori dal Cerchio si possono solo assaggiare. Si aprono appena confermi l’email.' }),
+    },
+    {
+      Icon: Mail,
+      when: t('tr.d2w', { defaultValue: 'Quando vale la pena' }),
+      title: t('tr.d2t', { defaultValue: 'La Lettera' }),
+      body: t('tr.d2b', { defaultValue: 'Una pratica raccontata bene, una persona della rete da conoscere e i ritiri in anteprima nella tua zona.' }),
+    },
+    {
+      Icon: CalendarHeart,
+      when: t('tr.d3w', { defaultValue: 'Il 15 gennaio 2027' }),
+      title: t('tr.d3t', { defaultValue: 'La selezione dei ritiri di primavera 2027' }),
+      body: t('tr.d3b', { defaultValue: 'Non un catalogo: i ritiri e le esperienze scelti per quello che ci hai detto, con chi li conduce, il luogo, il prezzo e la caparra.' }),
+    },
   ];
 
-  const benefits = [
-    { icon: Leaf, title: t('tr.b1t', { defaultValue: 'Persone, non annunci' }),
-      body: t('tr.b1b', { defaultValue: 'Dietro ogni ritiro c’è un operatore con un volto, un luogo vero e recensioni di chi c’è stato davvero. Sai a chi ti affidi, prima di partire.' }) },
-    { icon: ShieldCheck, title: t('tr.b2t', { defaultValue: 'Il posto è tuo, senza pensieri' }),
-      body: t('tr.b2b', { defaultValue: 'Una piccola caparra per bloccare il posto, il pagamento diretto online, il saldo più avanti. Niente bonifici al buio, nessuna sorpresa.' }) },
-    { icon: MapPin, title: t('tr.b3t', { defaultValue: 'Vicino a dove sei' }),
+  /* le tre promesse di luglio, ancora vere */
+  const promesse = [
+    { Icon: Leaf, title: t('tr.b1t', { defaultValue: 'Scelti, non elencati' }),
+      body: t('tr.b1b', { defaultValue: 'Dietro ogni ritiro c’è una persona con un volto, un luogo vero e le recensioni di chi c’è stato davvero. Sai a chi ti affidi, prima di partire.' }) },
+    { Icon: ShieldCheck, title: t('tr.b2t', { defaultValue: 'Il posto è tuo, senza ansia' }),
+      body: t('tr.b2b', { defaultValue: 'Blocchi con una caparra, il saldo arriva dopo, regole chiare fin dall’inizio. Nessun bonifico al buio.' }) },
+    { Icon: MapPin, title: t('tr.b3t', { defaultValue: 'Vicino a dove sei' }),
       body: t('tr.b3b', { defaultValue: 'Ci dici dove vivi e ti proponiamo esperienze raggiungibili. A volte il viaggio che serve è a un’ora da casa.' }) },
   ];
 
+  /* prova prima di entrare: due cose vere che si possono fare adesso */
+  const assaggi = [
+    {
+      to: '/sound',
+      title: t('tr.a1t', { defaultValue: 'Ascolta un assaggio' }),
+      body: t('tr.a1b', { defaultValue: 'Su Aurya Sound ascolti novanta secondi di una meditazione riservata, senza iscriverti. Se ti fa bene, il resto è dentro.' }),
+      cta: t('tr.a1c', { defaultValue: 'Vai su Aurya Sound' }),
+    },
+    {
+      to: '/operatori',
+      title: t('tr.a2t', { defaultValue: 'Guarda chi c’è nella rete' }),
+      body: t('tr.a2b', { defaultValue: 'I professionisti che raccontiamo, con i loro servizi e i loro ritiri: sono loro che ti avviseremo per primi.' }),
+      cta: t('tr.a2c', { defaultValue: 'Scopri i professionisti' }),
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#f7f9f6]">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-10">
-        <Link to="/" className="font-brand text-xl tracking-[0.3em] text-[#8a7440]">AURYA</Link>
-        <div className="flex items-center gap-3">
-          <Link to="/per-operatori" className="text-sm text-muted-foreground hover:text-foreground">
-            {t('tr.switch', { defaultValue: 'Sei un operatore?' })}
-          </Link>
-        </div>
-      </header>
+    <MarketplaceShell noSearch>
+      <div className="bg-background">
 
-      {/* ── Hero ──────────────────────────────────────────────────── */}
-      <section className="relative">
-        <div className="relative mx-auto max-w-6xl overflow-hidden px-5 md:px-10">
-          <div className="rise-in relative overflow-hidden rounded-3xl">
-            <img src="/media/hero-destination.webp" alt=""
-                 className="h-[460px] w-full object-cover md:h-[540px]" />
-            {/* PL18 — velatura rinforzata: il sottotitolo deve leggersi
-                bene anche sui punti più chiari della foto */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#1e2b26]/95 via-[#1e2b26]/75 to-[#1e2b26]/35" aria-hidden />
-            <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-14">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d6c49a]">
-                {t('tr.eyebrow', { defaultValue: 'Per chi sente il bisogno di fermarsi' })}
+        {/* ── 1. APERTURA CON IL MODULO — l'oggetto e la domanda ─────
+            Titolo e promessa a sinistra, il modulo a destra; su mobile
+            il modulo segue il titolo entro il primo schermo. */}
+        <PhotoOpener
+          data-testid="tr-open"
+          image={OPENER_PHOTO}
+          focus="50% 50%"
+          height="tall"
+          align="left"
+          width="max-w-6xl"
+          labelledBy="tr-open-title"
+          eyebrow={t('tr.eyebrow', { defaultValue: 'Per chi sente il bisogno di fermarsi' })}
+        >
+          <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
+            <div className="lg:col-span-6">
+              <DisplayTitle as="h1" id="tr-open-title" size="hero" measure="title"
+                            className="text-hero-shadow">
+                {t('tr.title', { defaultValue: 'C’è un ritiro che ti sta aspettando.' })}
+              </DisplayTitle>
+              <p className="mt-6 max-w-[46ch] text-balance text-lg leading-relaxed text-hero-shadow opacity-95 sm:text-xl">
+                {t('tr.subtitle', { defaultValue: 'Il silenzio di un uliveto, un cerchio di persone vere, il respiro che torna lento. Dicci cosa cerchi e dove: ti avvisiamo quando c’è, vicino a te.' })}
               </p>
-              <h1 className="mt-4 max-w-xl font-heading text-3xl font-semibold leading-tight text-white text-hero-shadow md:text-5xl">
-                {t('tr.title', { defaultValue: 'C’è un ritiro che ti sta aspettando' })}
-              </h1>
-              <div className="mt-5 h-px w-16 bg-[#d6c49a]/70" aria-hidden />
-              <p className="mt-5 max-w-md text-base leading-relaxed text-white/90 md:text-lg">
-                {t('tr.subtitle', { defaultValue: 'Il silenzio di un uliveto al tramonto. Un cerchio di persone vere. Il respiro che finalmente rallenta. Da qualche parte c’è il ritiro che aspetti: raccontaci cosa cerchi e lo troveremo insieme.' }) }
-              </p>
-              <a href="#racconta"
-                 onClick={(e) => { e.preventDefault(); document.getElementById('racconta')?.scrollIntoView({ behavior: 'smooth' }); }}
-                 className="mt-7 inline-flex w-fit items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90"
-                 style={{ background: ACCENT }}>
-                {t('tr.heroCta', { defaultValue: 'Inizia da qui' })} <ArrowRight className="h-4 w-4" />
-              </a>
+              <ul className="mt-7 space-y-2 text-hero-shadow" data-testid="tr-open-valori">
+                {dopo.map(({ Icon, when, title }) => (
+                  <li key={title} className="flex items-center gap-2.5 text-base sm:text-lg">
+                    <Icon className="h-5 w-5 shrink-0 text-[#d6c49a]" aria-hidden />
+                    <span><span className="opacity-80">{when}:</span> {title}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="lg:col-span-6 lg:pt-2">
+              <SchedaForm t={t} id="racconta" context="hero"
+                          titolo={t('tr.formTitle', { defaultValue: 'Raccontaci cosa cerchi' })} />
             </div>
           </div>
-        </div>
-      </section>
+        </PhotoOpener>
 
-      {/* ── Come funziona: 3 passi umani ─────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-5 pt-14 md:px-10">
-        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em]" style={{ color: GOLD }}>
-          {t('tr.stepsEyebrow', { defaultValue: 'Semplice, umano' })}
-        </p>
-        <h2 className="mt-2 text-center font-heading text-2xl font-semibold text-foreground md:text-3xl">
-          {t('tr.stepsTitle', { defaultValue: 'Non un altro portale. Qualcuno che ti accompagna.' })}
-        </h2>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
-          {steps.map((s) => (
-            <div key={s.n} className="rounded-2xl border-t-2 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-                 style={{ borderTopColor: `${GOLD}88` }}>
-              <span className="font-heading text-2xl font-semibold" style={{ color: `${GOLD}` }}>{s.n}</span>
-              <p className="mt-2 font-heading text-lg font-semibold text-foreground">{s.title}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+        {/* ── 2. COSA SUCCEDE DOPO — tre tempi, detti prima ─────────── */}
+        <Section tone="cream" rhythm="screen" width="max-w-5xl" labelledBy="tr-dopo-title">
+          <div data-testid="tr-dopo">
+            <DisplayTitle as="h2" id="tr-dopo-title" size="section" measure="title">
+              {t('tr.dopoTitle', { defaultValue: 'Cosa succede dopo, detto prima.' })}
+            </DisplayTitle>
+            <div className="mt-10 grid gap-6 sm:gap-7 lg:grid-cols-3">
+              {dopo.map(({ Icon, when, title, body }) => (
+                <article key={title}
+                         className="flex h-full flex-col rounded-[1.75rem] bg-white p-7 ring-1 ring-[#1e2f28]/[0.07] shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)] sm:p-8">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]">
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <p className="eyebrow mt-5">{when}</p>
+                  <h3 className="mt-2 font-display text-[1.4rem] leading-tight text-foreground sm:text-2xl">
+                    {title}
+                  </h3>
+                  <p className="mt-3 max-w-[46ch] text-pretty text-[0.975rem] leading-relaxed text-foreground/75 sm:text-base">
+                    {body}
+                  </p>
+                </article>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Form + pilastri di fiducia ───────────────────────────── */}
-      <section id="racconta" className="mx-auto max-w-6xl scroll-mt-8 px-5 py-16 md:px-10">
-        <div className="grid gap-10 lg:grid-cols-2">
-          <div className="rise-in rise-d1 rounded-3xl border bg-white p-6 shadow-lg md:p-8"
-               style={{ borderColor: `${ACCENT}22` }}>
-            <h2 className="font-heading text-2xl font-semibold text-foreground">
-              {t('tr.formTitle', { defaultValue: 'Raccontaci cosa cerchi' }) }
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {t('tr.formBody', { defaultValue: 'Bastano trenta secondi. Ci racconti dove vivi e cosa ti chiama, e al lancio ricevi una selezione di ritiri pensata per te. Niente valanghe di email, solo quello che conta.' }) }
-            </p>
-            <div className="mt-6">
-              <LeadForm type="traveler" accent={ACCENT} />
-            </div>
-            <Link to="/ritiri" className="mt-5 inline-flex items-center gap-1 text-sm font-medium" style={{ color: ACCENT }}>
-              {t('tr.peek', { defaultValue: 'Sbircia l’anteprima dei ritiri' })} <ArrowRight className="h-4 w-4" />
-            </Link>
-            {/* PL22 — canale diretto, discreto: non tutti amano i form */}
-            <p className="mt-3 text-xs text-muted-foreground">
-              {t('tr.directT', { defaultValue: 'Preferisci scriverci direttamente?' })}{' '}
-              <a href="mailto:info@aurya.life" className="font-medium underline underline-offset-2" style={{ color: ACCENT }}>
-                info@aurya.life
-              </a>
-            </p>
           </div>
+        </Section>
 
-          <div className="flex flex-col gap-4">
-            {benefits.map((b, i) => (
-              <div key={i} className="flex gap-4 rounded-2xl border border-border bg-white p-5">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-                     style={{ background: `${ACCENT}14`, color: ACCENT }}>
-                  <b.icon className="h-5 w-5" />
+        {/* ── 3. LE TRE PROMESSE — ancora vere ─────────────────────── */}
+        <Section tone="sand" rhythm="screen" width="max-w-5xl" labelledBy="tr-promesse-title">
+          <div data-testid="tr-promesse">
+            <DisplayTitle as="h2" id="tr-promesse-title" size="section" measure="title">
+              {t('tr.promesseTitle', { defaultValue: 'Persone, non annunci.' })}
+            </DisplayTitle>
+            <div className="mt-10 grid gap-6 sm:gap-7 lg:grid-cols-3">
+              {promesse.map(({ Icon, title, body }) => (
+                <div key={title} className="flex gap-4">
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]">
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <div>
+                    <h3 className="font-display text-[1.25rem] leading-tight text-foreground sm:text-[1.4rem]">{title}</h3>
+                    <p className="mt-2 max-w-[42ch] text-[0.975rem] leading-relaxed text-foreground/75">{body}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-heading text-base font-semibold text-foreground">{b.title}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{b.body}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </Section>
 
-      {/* ── La missione, a tutta pagina (PL24): il perché di Aurya non
-          sta in una card laterale, chiude la pagina come una promessa */}
-      <section className="py-14" style={{ background: 'linear-gradient(135deg, #2b3a34 0%, #376254 100%)' }}>
-        <div className="mx-auto max-w-3xl px-5 text-center md:px-10">
-          <Quote className="mx-auto h-6 w-6 text-[#d6c49a]" aria-hidden />
-          <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d6c49a]">
-            {t('tr.missionEyebrow', { defaultValue: 'La nostra missione' })}
-          </p>
-          <p className="mx-auto mt-4 font-heading text-xl leading-relaxed text-white md:text-2xl">
-            {t('tr.why', { defaultValue: 'Crediamo che ogni trasformazione cominci da un incontro: quello tra te, le persone giuste e il luogo giusto. Aurya esiste per far accadere questi incontri. Un posto solo, curato con amore, dove trovare chi fa questo lavoro con il cuore.' })}
-          </p>
-          <BrandPayoff tone="deep" size="xs" className="mt-6" />
-        </div>
-      </section>
+        {/* ── 4. PROVA PRIMA DI ENTRARE — due assaggi veri ─────────── */}
+        <Section tone="paper" rhythm="screen" width="max-w-5xl" labelledBy="tr-prova-title">
+          <div data-testid="tr-prova">
+            <DisplayTitle as="h2" id="tr-prova-title" size="section" measure="title">
+              {t('tr.provaTitle', { defaultValue: 'Prova prima di entrare.' })}
+            </DisplayTitle>
+            <div className="mt-10 grid gap-6 sm:gap-7 lg:grid-cols-2">
+              {assaggi.map((a) => (
+                <Link key={a.to} to={a.to}
+                      className="group flex h-full flex-col rounded-[1.75rem] bg-[#f4f1ea] p-7 ring-1 ring-[#1e2f28]/[0.07] transition-shadow hover:shadow-[0_1px_2px_rgba(30,47,40,0.06),0_24px_48px_-24px_rgba(30,47,40,0.35)] sm:p-8">
+                  <h3 className="font-display text-[1.4rem] leading-tight text-foreground sm:text-2xl">{a.title}</h3>
+                  <p className="mt-3 max-w-[46ch] text-pretty text-[0.975rem] leading-relaxed text-foreground/75 sm:text-base">{a.body}</p>
+                  <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2f5749] group-hover:underline">{a.cta} →</span>
+                </Link>
+              ))}
+            </div>
+            {/* la porta dell'altro pubblico, sottovoce: chi organizza
+                ritiri e' arrivato qui per sbaglio, e ha la sua strada */}
+            <p className="mt-10 text-sm text-foreground/70">
+              {t('tr.switch2', { defaultValue: 'Organizzi ritiri o sei un operatore olistico?' })}{' '}
+              <EditorialCta to="/entra-nella-rete" variant="quiet" data-testid="tr-switch">
+                {t('tr.switchCta', { defaultValue: 'Apri il tuo spazio' })}
+              </EditorialCta>
+            </p>
+          </div>
+        </Section>
 
-      <div className="mx-auto max-w-6xl px-5 py-8 md:px-10">
-        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> {t('tr.back', { defaultValue: 'Torna alla home' })}
-        </Link>
+        {/* ── 5. IL MODULO, DI NUOVO — per chi ha letto fino in fondo ── */}
+        <Section tone="sage" rhythm="screen" width="max-w-2xl" labelledBy="tr-end-title">
+          <div data-testid="tr-end">
+            <DisplayTitle as="h2" id="tr-end-title" size="section" measure="title">
+              {t('tr.endTitle', { defaultValue: 'Raccontaci cosa cerchi.' })}
+            </DisplayTitle>
+            <Lede size="lead" tone="inherit" className="mt-6">
+              {t('tr.end1', { defaultValue: 'Trenta secondi. Ti scriviamo solo quando c’è qualcosa per te.' })}
+            </Lede>
+            <div className="mt-8">
+              <SchedaForm t={t} id="racconta-fondo" context="fondo" />
+            </div>
+          </div>
+        </Section>
+
       </div>
-    </div>
+    </MarketplaceShell>
   );
 }

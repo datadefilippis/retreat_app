@@ -280,7 +280,10 @@ def test_prelaunch_gates_operators_and_destinations_pages():
         "LC2: /come-funziona deve passare dal gate di fase"
     assert 'path="/come-funziona" element={<HowItWorksGate />}' in app
     assert 'path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />}' in app
-    assert 'path="/cerca-ritiro" element={<Navigate to="/newsletter" replace />}' in app
+    # RB4 (10/9/2026): /cerca-ritiro e' di nuovo una pagina viva — la porta
+    # «Trovami il mio ritiro» (dal 4/8 il rimando al Cerchio aveva azzerato
+    # i contatti di chi cerca un ritiro)
+    assert 'path="/cerca-ritiro" element={<TravelerLandingPage />}' in app
     # le route usano i gate, non più le pagine dirette
     assert 'path="/operatori" element={<OperatorsGate />}' in app
     assert 'path="/destinazioni" element={<DestinationsGate />}' in app

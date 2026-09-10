@@ -94,10 +94,11 @@ const OperatorLandingPage = lazy(() => import("./features/prelaunch/OperatorLand
 // RD — il secondo tempo della registrazione diretta (campi nel profilo)
 const WelcomeRetePage = lazy(() => import("./features/prelaunch/WelcomeRetePage"));
 const PricingPage = lazy(() => import("./features/prelaunch/PricingPage"));
-// RT1 — /cerca-ritiro redirige su /newsletter: il pubblico viaggiatori
-// si coltiva in newsletter finche' non c'e' nulla da prenotare. Il
-// componente TravelerLandingPage resta nel repo (il suo form torna
-// utile in RT4).
+// RT1 (luglio) mandava /cerca-ritiro su /newsletter: «il pubblico
+// viaggiatori si coltiva in newsletter». RB4 (10/9/2026): dal 4/8 zero
+// contatti «cerco un ritiro» — la porta torna, si chiama con l'oggetto
+// («Trovami il mio ritiro») e ISCRIVE al Cerchio con i ritiri accesi.
+const TravelerLandingPage = lazy(() => import("./features/prelaunch/TravelerLandingPage"));
 const NewsletterLandingPage = lazy(() => import("./features/prelaunch/NewsletterLandingPage"));
 const NewsletterConfirmPage = lazy(() => import("./features/prelaunch/NewsletterConfirmPage"));
 const NewsletterPreferencesPage = lazy(() => import("./features/prelaunch/NewsletterPreferencesPage"));
@@ -557,7 +558,7 @@ function AppRoutes() {
       <Route path="/chi-siamo" element={<ChiSiamoPage />} />
       {/* redirect permanenti dei vecchi percorsi */}
       <Route path="/per-operatori" element={<Navigate to="/entra-nella-rete" replace />} />
-      <Route path="/cerca-ritiro" element={<Navigate to="/newsletter" replace />} />
+      <Route path="/cerca-ritiro" element={<TravelerLandingPage />} />
       {/* ID (20/8) — LA PORTA UNICA. Una email, una password: il server
           decide il mondo (operatore/cliente) e col legame dei cappelli
           rilascia entrambi i token (SSO). /login e /account/accedi

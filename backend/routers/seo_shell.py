@@ -471,12 +471,14 @@ async def _meta_home() -> dict:
 _BRAND_PAGES = {
     # PL21 — le landing lead del pre-lancio: sono I link condivisi ora,
     # devono avere titolo/descrizione/immagine social impeccabili.
+    # RB4 (10/9/2026, REBRANDING) — la porta di chi cerca torna viva:
+    # l'oggetto (il ritiro), la promessa datata, la ricompensa subito.
     "cerca-ritiro": {
-        "title": "Trova il tuo ritiro olistico | Aurya",
-        "description": ("C'è un ritiro che ti sta aspettando. Raccontaci "
-                        "cosa cerchi e al lancio ricevi una selezione di "
-                        "ritiri olistici scelti per te, con caparra e "
-                        "pagamento diretto online."),
+        "title": "Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya",
+        "description": ("Dicci cosa cerchi e dove: ti avvisiamo quando c’è un "
+                        "ritiro o un’esperienza vicino a te. Subito le "
+                        "meditazioni riservate; il 15 gennaio 2027 la "
+                        "selezione dei ritiri di primavera."),
         "image": "/media/hero-destination.webp",
     },
     "per-operatori": {
@@ -609,7 +611,8 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
     nome = page["title"].split("|")[0].strip()
     tipi = {"chi-siamo": "AboutPage", "manifesto": "Article",
             "meditazioni": "CollectionPage", "newsletter": "WebPage",
-            "entra-nella-rete": "WebPage", "costi": "WebPage"}
+            "entra-nella-rete": "WebPage", "costi": "WebPage",
+            "cerca-ritiro": "WebPage"}
     jsonld = []
     if slug in tipi:
         jsonld.append(_identita.pagina_jsonld(tipi[slug], base, canonical, nome,

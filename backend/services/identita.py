@@ -219,6 +219,25 @@ def corpo_cerchio() -> str:
     ])
 
 
+def corpo_cerca_ritiro() -> str:
+    """RB4 — la porta di chi cerca: il corpo dice l'oggetto, i tre tempi
+    e le tre promesse (copia_it/prelaunch.json, chiavi tr.*)."""
+    s = _copia("prelaunch").get("tr") or {}
+    if not s:
+        return ""
+    return "".join([
+        f"<p><i>{_t(s, 'eyebrow')}</i></p>",
+        f"<h1>{_t(s, 'title')}</h1>", _p(s, "subtitle"),
+        _h2(s, "dopoTitle"),
+        "<ul>" + "".join(f"<li><b>{_t(s, f'd{i}w')}: {_t(s, f'd{i}t')}</b> {_t(s, f'd{i}b')}</li>" for i in (1, 2, 3)) + "</ul>",
+        _h2(s, "promesseTitle"), _coppie(s, "b", 3, "t", "b"),
+        _h2(s, "provaTitle"), _coppie(s, "a", 2, "t", "b"),
+        _h2(s, "endTitle"), _p(s, "end1", "trust"),
+        '<p><a href="/newsletter">Il Cerchio di Aurya</a> · <a href="/sound">Aurya Sound</a> · '
+        '<a href="/operatori">I professionisti</a> · <a href="/entra-nella-rete">Sei un operatore olistico?</a></p>',
+    ])
+
+
 def corpo_meditazioni() -> str:
     """La pagina delle meditazioni non e' tradotta: la sua copia sta
     in MeditazioniPage.js (la guardia LX ne verifica le frasi)."""
@@ -246,6 +265,7 @@ CORPI = {
     "entra-nella-rete": corpo_professionisti,
     "newsletter": corpo_cerchio,
     "meditazioni": corpo_meditazioni,
+    "cerca-ritiro": corpo_cerca_ritiro,
 }
 
 
