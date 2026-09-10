@@ -434,7 +434,7 @@ async def flag_review(org_id: str, review_id: str, reason: Optional[str],
     un log e basta: nessuno la rileggeva. Chi la revisiona lo sa via
     email (ADMIN_EMAIL), l'operatore vede «in revisione» nella sua tab."""
     from database import reviews_collection, organizations_collection
-    from services.email_service import send_email, _wrap_template, ADMIN_EMAIL
+    from services.email_service import send_email, _wrap_template, CASELLA_AURYA
     now_iso = _iso(utc_now())
     res = await reviews_collection.update_one(
         {"id": review_id, "organization_id": org_id, "status": "published"},
@@ -457,7 +457,8 @@ async def flag_review(org_id: str, review_id: str, reason: Optional[str],
         <p>Motivo: {r.get('flag_reason') or 'non indicato'}</p>
         {_bottone(_base_url() + '/admin?tab=reviews', 'Apri la coda delle segnalazioni')}
         """
-        send_email(ADMIN_EMAIL, f"Recensione segnalata da {_nome_org(org)}",
+        # FV6 — le segnalazioni arrivano alla casella di Aurya
+        send_email(CASELLA_AURYA, f"Recensione segnalata da {_nome_org(org)}",
                    _wrap_template(content, "it"), bypass_gate=True)
     except Exception:
         logger.exception("segnalazione: email alla piattaforma non inviata")

@@ -1868,7 +1868,8 @@ def send_invite_request_notification(name: str, email: str, business: str) -> bo
         </p>
         <p>Puoi inviare un invito dal pannello admin.</p>
     """, "it")
-    return send_email(ADMIN_EMAIL, f"Nuova candidatura Aurya — {name}", html)
+    # FV6 — anche questo e' un modulo verso di noi: la casella di Aurya
+    return send_email(CASELLA_AURYA, f"Nuova candidatura Aurya — {name}", html)
 
 
 def send_invite_request_confirmation(to_email: str, name: str, locale: str = "it") -> bool:
