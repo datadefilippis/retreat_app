@@ -14,7 +14,7 @@ Analisi e piano · 10 settembre 2026 · Davide, Valentina, Claude
 
 **La tesi.** Non si vende lo strumento, si vende la fila. Gli strumenti (profilo, listino, richieste, calendario, clienti, eventi e ritiri su richiesta, un link solo) restano gratis per sempre: costano zero, costruiscono la rete, e sono il motivo per cui il pagato vende. Si paga la **visibilità** (stare in Ritiri ed esperienze, nella selezione, nella Lettera del Cerchio, su Instagram) e la **libertà dalle commissioni**. La commissione del 5% resta solo dove Aurya incassa davvero, e nessuno è obbligato a Stripe per niente.
 
-**I tre piani.** Gratis (per sempre, con tutto per lavorare; 5% solo sulle prenotazioni che ti porta Aurya) · Club Aurya, 49 €/anno (la prima fila: ritiri ed eventi nel marketplace, nella selezione, nella Lettera, un post su Instagram per ritiro) · Pro, 119 €/anno (il Club, più zero commissioni, Crea Studio, WhatsApp con Valentina). Annuali, non mensili: il prezzo di un weekend, pagato una volta.
+**I tre piani (versione definitiva, decisione del founder 10/9 sera: zero commissioni, sempre).** Gratis (per sempre, con tutto per lavorare, Stripe compreso se lo vuoi: Aurya non prende mai commissioni) · Club Aurya, 49 €/anno (la prima fila: ritiri ed eventi nel marketplace, nella selezione, nella Lettera per zona, un post su Instagram per ritiro) · Pro, 119 €/anno (il Club, più Crea Studio, WhatsApp con Valentina, il racconto con precedenza). Annuali, non mensili: il prezzo di un weekend, pagato una volta. Nessuna commissione da nessuna parte: una frase sola, che si capisce e non si aggira.
 
 **Quando.** Fino al 31/12/2026 tutto gratis come promesso. Dal 1° gennaio 2027 i piani esistono e sono scritti, ma **il Club si vende solo quando la fila c'è**: tre numeri pubblici che devono essere veri prima di chiedere un euro per la visibilità (300 iscritti confermati al Cerchio, 10 ritiri in programma, 1.000 visite al mese). I fondatori (i primi venti entro il 31/10/2026) hanno il Club regalato per tutto il 2027.
 
@@ -131,6 +131,34 @@ Tre effetti. Nessuno ha più motivo di evitare Stripe: sulle prenotazioni sue no
 
 ---
 
+## 4.6 La versione definitiva: zero commissioni, e dove sta il trigger
+
+Dopo aver letto §4.5 il founder ha chiuso così: «Stripe mi dà fastidio: ci vedo comportamenti opportunistici, una caparra piccola online per pagare poco e il resto offline. Voglio tutto il più semplice possibile: abbonamento. Le commissioni non porteranno a nulla. Ma abbiamo bisogno anche di operatori gratuiti che creano ritiri: dove sta il trigger?»
+
+**Ha ragione sulla caparra piccola.** Qualunque commissione sull'incasso online invita a incassare online il meno possibile, e non c'è regola tecnica che lo impedisca senza diventare intrusivi (controllare i prezzi, imporre percentuali minime di caparra, litigare). La provenienza (§4.5) riduce il problema, non lo elimina. Un abbonamento lo elimina: non c'è niente da aggirare.
+
+**Il modello definitivo.**
+
+| Piano | Prezzo | Cosa compri |
+|---|---|---|
+| Gratis | 0, per sempre | tutto per lavorare: profilo, listino, richieste, calendario, clienti, recensioni, pagina link, eventi e ritiri sul tuo profilo (su richiesta o online con Stripe). **Aurya non prende commissioni, mai.** Restano solo quelle di Stripe, che non sono nostre |
+| Club Aurya | 49 €/anno | la fila: i tuoi ritiri ed eventi in Ritiri ed esperienze e nella selezione, nella Lettera agli iscritti della tua zona e dei tuoi temi, un post su Instagram per ritiro (max uno al mese), badge, precedenza nella directory della tua zona, risposta in due giorni |
+| Pro | 119 €/anno (o 12/mese) | il Club, più Crea Studio (componi e pubblichi meditazioni con la tua voce), WhatsApp con Valentina, il racconto con precedenza e una pagina nel Magazine, team quando servirà |
+
+Cosa perde Aurya: la commissione, che nel 2027 valeva 1.500-3.000 € nello scenario più ottimista e che gli operatori avrebbero aggirato comunque. Cosa guadagna: una frase che si capisce in un secondo («Aurya non prende commissioni»), nessun incentivo perverso, nessun controllo da fare, e la differenza netta rispetto a BookRetreats e Tripaneer (15-20%): non «costiamo meno», ma «non costiamo sul tuo lavoro».
+
+**Dove sta il trigger.** Un operatore gratuito crea ritiri perché gli serve una pagina da mandare ai suoi follower, e la nostra è gratis, bella e con la caparra: il ritiro nasce sul suo profilo, non nel marketplace. Il passaggio a pagamento non si spinge con i limiti (togliere strumenti al Gratis) ma con **cinque inneschi**, tutti fatti di domanda misurata mostrata al momento giusto:
+
+1. **All'ultimo passo del wizard del ritiro.** «Il tuo ritiro è online sul tuo profilo. Nel Cerchio ci sono **{N} persone a meno di 80 km da {luogo} che hanno chiesto {yoga}**. Vuoi che glielo mandiamo? Club, 49 € l'anno.» Il numero è vero, calcolato dalle preferenze del Cerchio (città, raggio, interessi: esistono già). Se N è piccolo, la frase non compare: non si vende una fila vuota.
+2. **Alla prima richiesta che arriva da Aurya.** Ogni richiesta dice da dove viene: «Questa richiesta arriva dalla directory Aurya». La seconda volta, la riga sotto: «Chi è nel Club riceve anche le richieste di chi cerca un ritiro nella sua zona».
+3. **Due volte l'anno, la selezione con la scadenza.** «La selezione dei ritiri di primavera 2027 parte il 15 gennaio: i ritiri del Club ci entrano. Chiusura il 10 gennaio.» Una data vera muove più di qualsiasi sconto.
+4. **Il cruscotto della visibilità nel gestionale.** Visite al profilo, da dove arrivano, e accanto: «{N} iscritti al Cerchio nella tua zona hanno chiesto i tuoi temi». Il numero cresce ogni settimana, e ogni settimana è un promemoria che non scriviamo noi.
+5. **La voce (Pro).** Quando pubblica la prima meditazione dal telefono o chiede a Valentina di scrivere il racconto: «Con il Pro Crea Studio è tuo, e Valentina risponde su WhatsApp».
+
+Tutti e cinque dipendono da una cosa sola: **che nel Cerchio ci siano persone, con città e interessi.** È per questo che la porta «Trovami il mio ritiro» (RB4) e i cinque ritiri seme vengono prima di qualsiasi prezzo: il trigger è un numero, e il numero oggi è 3.
+
+**Cosa cambia nei passi**: M8 (provenienza + fee) esce; M2 (flag prima fila), M6 (Lettera per zona) ed M7 (i tre numeri) diventano il cuore, più M9: il contatore «persone nel Cerchio vicino a te che hanno chiesto i tuoi temi» esposto nel wizard e nel gestionale (mezza giornata: la query è quella delle preferenze).
+
 ## 5. Stripe: da vincolo a scelta
 
 Tre verità da scrivere in una pagina propria (`/incassare-online`, linkata dal wizard e dalle impostazioni):
@@ -216,7 +244,7 @@ Con la metà dei ritiri o un quarto degli abbonati: 2.300 €. Con Marco che por
 | M5 | Fondatori: Club regalato per il 2027 (piano Founding = Club+Pro per 12 mesi), badge sul profilo | mezza giornata (con RB9) |
 | M6 | Lettera per zona/temi coi ritiri Club: la query esiste (retreat_alert, città, interessi), manca l'invio; template + job | 1 giornata |
 | M7 | Il cruscotto dei tre numeri (iscritti confermati, ritiri in programma, visite) in system admin e su /costi | mezza giornata |
-| M8 | La provenienza sull'ordine (profilo / link / marketplace / selezione / Lettera / directory) e la fee applicata solo alle prenotazioni portate da Aurya | 1 giornata |
+| M9 | Il contatore «{N} persone nel Cerchio vicino a te che hanno chiesto i tuoi temi» nel wizard del ritiro e nel gestionale (query sulle preferenze del Cerchio) | mezza giornata |
 
 Tutto sopra il motore di billing che c'è già (piani per modulo, abbonamenti Stripe, flag per organizzazione). Nessun rifacimento.
 
@@ -228,8 +256,8 @@ Tutto sopra il motore di billing che c'è già (piani per modulo, abbonamenti St
 |---|---|---|
 | 1 | Togliere il vincolo Stripe per il marketplace; «su richiesta» è un modo pieno | sì |
 | 2 | Tre piani annuali: Gratis / Club 49 / Pro 119 (mensile 12) | sì; 99 se preferisci, ma non sotto |
-| 3 | Il 5% solo sulle prenotazioni online portate da Aurya (provenienza registrata sull'ordine); 0% su quelle dal profilo e dal link; il Pro azzera tutto | sì (§4.5) |
-| 4 | Il 5% parte il 1/1/2027 sugli incassi online; il Club si vende solo coi tre cancelli veri | sì |
+| 3 | **Zero commissioni Aurya, sempre** (decisione founder 10/9 sera, §4.6); Stripe è uno strumento, restano solo le sue commissioni | sì |
+| 4 | Dal 1/1/2027 i piani sono pubblici; il Club si vende solo coi tre cancelli veri; il trigger nel wizard compare solo se il numero è vero | sì |
 | 5 | Fondatori: Club gratis per il 2027 e Pro bloccato | sì |
 | 6 | Il nostro tempo: Gratis = email automatiche; Club = risposta in due giorni + un post per ritiro; Pro = WhatsApp | sì |
 | 7 | Mai merchant of record nel 2027 | sì |
