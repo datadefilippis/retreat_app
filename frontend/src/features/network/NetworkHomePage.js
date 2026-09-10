@@ -8,8 +8,9 @@
  * la sezione degli operatori si prende il posto e la fotografia che
  * erano suoi.
  *
- *   1. HERO          la convinzione      video del tramonto, due CTA
- *   2. CAPIRE        la mappa            tre colonne (Magazine / Professionisti / Esperienze)
+ *   1. HERO          la convinzione      video del tramonto, le due porte
+ *   2. CAPIRE        la mappa            due colonne (Magazine / Professionisti) + striscia Sound
+ *                                        (CP 10/9 notte: via «Esperienze — Prossimamente»)
  *   3. PERCHE'       la ragione          ancora verde, CTA manifesto
  *   4. DAL MAGAZINE  la prova            gated sui dati
  *   5. OPERATORI     l'invito            foto/testo, due CTA
@@ -208,7 +209,6 @@ const SOUND_PHOTO = '/media/hp-sound.jpg';
 const PHOTO = {
   magazine: '/media/hero-blog.webp',
   pros: '/media/prelaunch/r06.jpg',
-  experiences: '/media/prelaunch/r07.jpg',
   operators: '/media/hero-organizer.webp',
   letter: '/media/hero-destination.webp',
 };
@@ -243,10 +243,13 @@ export default function NetworkHomePage() {
 
   const [lead, ...secondary] = articles;
 
-  /* Le tre colonne in un dato solo: l'ordine e' quello del founder e la
-     terza NON ha `to`, quindi PillarCard le da' l'etichetta di stato
-     ("Prossimamente") al posto del link — si accendera' al lancio del
-     marketplace.
+  /* Le colonne in un dato solo, nell'ordine del founder.
+     CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili logici»):
+     la terza colonna «Esperienze — Prossimamente» e' uscita. I ritiri
+     hanno la loro porta nel primo schermo («Trova il mio ritiro») e la
+     pagina /esperienze vive fuori dal menu finche' non ha ritiri (NV):
+     una scheda senza link che prometteva quello che la porta gia' offre.
+     Restano le due cose che oggi si possono aprire: leggere, conoscere.
      Le immagini sono DECORATIVE (alt=""): titolo e testo della scheda
      dicono gia' tutto, e un alt che ripete "una persona che medita"
      aggiungerebbe rumore a chi ascolta la pagina invece di leggerla. */
@@ -270,15 +273,6 @@ export default function NetworkHomePage() {
       text: t('nwHome.pillarProText', { defaultValue: "Persone che conosciamo una per una: la loro storia, il modo in cui lavorano, i loro servizi e i loro ritiri." }),
       to: NETWORK_PATH,
       ctaLabel: t('nwHome.pillarProCta', { defaultValue: "Scopri i professionisti" }),
-    },
-    {
-      id: 'esperienze',
-      numeral: '03',
-      image: PHOTO.experiences,
-      title: t('nwHome.pillarExpTitle', { defaultValue: "Esperienze" }),
-      text: t('nwHome.pillarExpText', { defaultValue: "Workshop, ritiri ed eventi per trasformare ciò che hai scoperto in qualcosa da vivere." }),
-      // niente `to`: la terza colonna e' una promessa, non una porta
-      badge: t('nwHome.pillarExpBadge', { defaultValue: "Prossimamente" }),
     },
   ];
 
@@ -453,7 +447,9 @@ export default function NetworkHomePage() {
             </div>
             {/* con la scheda-oggetto il gap puo' stringersi: a separarle
                 ci pensano il bordo e l'ombra, non piu' il vuoto */}
-            <ul className="mt-12 sm:mt-14 grid gap-7 sm:gap-8 lg:grid-cols-3 list-none p-0">
+            {/* CP: due schede, affiancate da `sm` (tre colonne con due
+                schede lascerebbero un buco a destra) */}
+            <ul className="mt-12 sm:mt-14 grid gap-7 sm:gap-8 sm:grid-cols-2 list-none p-0">
               {/* `id` esce dallo spread: e' la chiave della lista e il
                   nostro appiglio nei test, non un attributo da versare
                   sul DOM della scheda */}
@@ -727,23 +723,19 @@ export default function NetworkHomePage() {
                 landing /entra-nella-rete, non della home: qui resta il
                 crescendo del founder, l'invito in una riga e UNA porta
                 (il Manifesto ha gia' la sua, due sezioni sopra). */}
-            {/* RB1 — l'invito diventa l'OFFERTA in chiaro (cosa hai) e il
-                patto fondatori (perche' ora): «ci piacerebbe conoscerti»
-                era gentile e non dava una ragione per iscriversi oggi.
-                Due porte: quella piena apre lo spazio, quella sottovoce
-                spiega come funziona. Lessico: operatori olistici. */}
+            {/* RB1 — l'invito dava una ragione per iscriversi oggi: il
+                patto fondatori. CP (10/9 notte): l'OFFERTA in chiaro
+                («profilo, prenotazioni, ritiri… gratis per sempre») e'
+                uscita da qui: la porta dell'hero la dice gia' con le
+                stesse parole. Resta quello che l'hero non dice: il
+                perche' ora. UNA porta: la seconda («Come funziona»)
+                portava allo stesso indirizzo. Lessico: operatori olistici. */}
             <Lede size="body" tone="inherit" className="mt-8">
-              {t('nwHome.prosOffer', { defaultValue: "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo per Instagram. Gratis per sempre, senza commissioni." })}
-            </Lede>
-            <Lede size="body" tone="inherit" className="mt-3">
               {t('nwHome.prosFounders', { defaultValue: "I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 entrano da fondatori." })}
             </Lede>
-            <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-7">
+            <div className="mt-9">
               <EditorialCta to={OPERATORI_PATH} variant="solid" data-testid="hp-pros-cta">
                 {t('nwHome.prosCta2', { defaultValue: "Apri il tuo spazio" })}
-              </EditorialCta>
-              <EditorialCta to={OPERATORI_PATH} variant="quiet" data-testid="hp-pros-how">
-                {t('nwHome.prosHow', { defaultValue: "Come funziona" })}
               </EditorialCta>
             </div>
           </div>
@@ -782,12 +774,8 @@ export default function NetworkHomePage() {
             <Lede size="lead" tone="inherit" className="mt-6 max-w-[40ch] text-hero-shadow">
               {t('nwHome.letterP1', { defaultValue: "Meditazioni riservate, ritiri in anteprima e una lettera quando vale la pena. Gratis." })}
             </Lede>
-            <ul className="mt-7 list-none space-y-2 p-0 font-display text-[1.3rem] leading-[1.35]
-                           tracking-[-0.015em] text-hero-shadow sm:text-[1.55rem]">
-              <li>{t('nwHome.letterP2', { defaultValue: "Meditazioni riservate." })}</li>
-              <li>{t('nwHome.letterP3', { defaultValue: "Ritiri ed esperienze in anteprima." })}</li>
-              <li>{t('nwHome.letterP4', { defaultValue: "La Lettera, quando vale la pena." })}</li>
-            </ul>
+            {/* CP (10/9 notte): qui c'era l'elenco delle tre cose, cioe' la
+                frase qui sopra ripetuta a capo. Una volta basta. */}
             <div aria-hidden className="gold-rule mt-8 w-24" />
             <Lede size="body" tone="inherit" className="mt-7 max-w-[46ch] text-hero-shadow opacity-90">
               <TitleLine>

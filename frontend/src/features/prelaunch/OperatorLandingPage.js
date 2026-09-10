@@ -31,20 +31,28 @@
  * (le guardie seguono il dispositivo): cambia l'ordine e il copy.
  *
  * OTTO SEZIONI, copy in `opPro` (namespace prelaunch, solo italiano):
- *   1. HERO       il tuo spazio, pronto oggi     foto + offerta + CTA
- *   2. COSA HAI   gli strumenti, al presente     fascia foto + registro verde   (ol-go)
- *   3. PERCHE' ORA il patto fondatori            due colonne + contatore vero   (ol-now)
- *   4. COME SI ENTRA tre passi                   tre schede con foto            (ol-join)
- *   5. FAQ        sei domande                    <details>, una alla volta
- *   6. CHI SIAMO  i volti veri                   Valentina e Davide
- *   7. REGISTRAZIONE si comincia da te           #presentati, InlineSignupForm
- *   8. CHIUSURA   il tuo spazio e' pronto        ancora verde
+ *   1. HERO       il tuo spazio, pronto oggi     foto + offerta + CTA + la prova
+ *   2. COSA HAI   sei schede                     (ol-go)
+ *   3. CREA STUDIO le tue meditazioni            (ol-studio)
+ *   4. PERCHE' ORA il patto fondatori            schede + contatore vero (ol-now)
+ *   5. QUANTO COSTA base gratis, il piu' dal 2027 (ol-prezzi)
+ *   6. COME SI COMINCIA tre passi                tre schede con foto (ol-join)
+ *   7. FAQ        sei domande                    <details>, una alla volta
+ *   8. REGISTRAZIONE si comincia da te           #presentati, InlineSignupForm:
+ *                                               E' LA CHIUSURA.
  * La sezione «Per chi e' Aurya» (il no e il si') e' USCITA: respingeva
  * proprio l'operatore che vuole visibilita', cioe' quello che si iscrive.
+ * CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili logici e
+ * storytelling»): sono uscite anche la fascia «E il tuo profilo puo'
+ * essere scoperto anche su Aurya» (ripeteva la scheda «Ti possono
+ * trovare» e la voce del patto), «Chi c'e' dietro Aurya» (la foto e le
+ * due righe di /chi-siamo, che ora e' un filo di una riga nel modulo) e
+ * la chiusura verde «Il tuo lavoro merita un posto tutto suo» (l'hero
+ * parola per parola, col bottone che riportava al modulo di un
+ * centimetro sopra). Da 1.471 a ~1.050 parole, stessi argomenti.
  *
- * FONDI: dark(foto) → sabbia → FOTO A TUTTA LARGHEZZA → VERDE → crema
- * → sabbia → bianco → sabbia → crema → VERDE. Due sezioni adiacenti non
- * hanno mai lo stesso fondo; le due ancore verdi (2 e 8) non si toccano.
+ * FONDI: dark(foto) → sabbia → crema → sabbia → crema → sabbia → crema
+ * → bianco → sabbia. Due sezioni adiacenti non hanno mai lo stesso fondo.
  *
  * IL CONTATORE DEI FONDATORI e' VERO: GET /public/fondatori (tetto,
  * rimasti, scadenza). Se la rete non risponde, la frase resta senza
@@ -59,7 +67,7 @@ import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import InlineSignupForm from './InlineSignupForm';
 import {
-  Section, DisplayTitle, TitleLine, Lede, EditorialCta, PhotoBand,
+  Section, DisplayTitle, Lede, EditorialCta,
 } from '../../components/editorial';
 
 /** l'ancora del form: destinazione delle CTA interne e dei link che
@@ -71,8 +79,6 @@ const FORM_ANCHOR = '#presentati';
 const PROOF_PROFILE = '/operatori';
 
 const HERO_PHOTO = '/media/hero-organizer.webp';
-const FOUNDERS_PHOTO = '/media/chisiamo-aurya.jpg';
-const HORIZON_PHOTO = '/media/prelaunch/r05.jpg';    // il cairn: una pietra alla volta
 
 /* Le tre schede della sezione «come si entra». DECORATIVE (alt=""). */
 const CARD_PHOTOS = {
@@ -105,7 +111,6 @@ function OfferCard({ image, numeral, title, body }) {
 
 export default function OperatorLandingPage() {
   const { t } = useTranslation('prelaunch');
-  const { t: tl } = useTranslation('landings');
 
   useSeoMeta({
     title: t('opPro.seoTitle', { defaultValue: "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya" }),
@@ -201,7 +206,6 @@ export default function OperatorLandingPage() {
   ];
 
   const ctaOpen = t('opPro.ctaOpen', { defaultValue: "Apri il tuo spazio" });
-  const ctaJoin = t('opPro.ctaJoin', { defaultValue: "Apri il tuo spazio" });
   const rimasti = fondatori && Number.isFinite(fondatori.rimasti) ? fondatori.rimasti : null;
 
   return (
@@ -296,22 +300,15 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 4. LA RETE — il profilo puo' essere scoperto anche su Aurya ── */}
-        <section data-testid="ol-rete" aria-labelledby="ol-rete-title">
-          <PhotoBand as="div" image={HORIZON_PHOTO} focus="50% 40%" width="max-w-3xl">
-            <DisplayTitle as="h2" id="ol-rete-title" size="section" measure="title" className="text-hero-shadow">
-              {t('opPro.reteTitle', { defaultValue: "E il tuo profilo può essere scoperto anche su Aurya." })}
-            </DisplayTitle>
-            <Lede size="lead" tone="inherit" className="mt-7 text-hero-shadow">{t('opPro.reteP1', { defaultValue: "Quando entri in Aurya, non ottieni soltanto una pagina personale." })}</Lede>
-            <Lede size="lead" tone="inherit" className="mt-3 text-hero-shadow font-semibold">{t('opPro.reteP2', { defaultValue: "Entri nella directory degli operatori e puoi essere trovato da persone che stanno cercando una pratica, un professionista o un ritiro." })}</Lede>
-            <Lede size="body" tone="inherit" className="mt-4 text-hero-shadow">{t('opPro.reteP3', { defaultValue: "In futuro, la rete Aurya servirà anche a mettere in contatto gli operatori con richieste di esperienze, ritiri e attività per aziende." })}</Lede>
-            <div className="mt-8"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-rete-cta">{ctaOpen}</EditorialCta></div>
-          </PhotoBand>
-        </section>
+        {/* CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili
+            logici e storytelling»): qui c'era la fascia «E il tuo profilo
+            puo' essere scoperto anche su Aurya» (ol-rete). Diceva la
+            scheda «Ti possono trovare» (sopra) e la voce «Opportunita'
+            dalla rete» del patto (sotto), con una foto in mezzo. Via. */}
 
-        {/* ── 5. PERCHE' ENTRARE ORA — il patto fondatori ──────────── */}
-        {/* founder 10/9 sera: via la foto a fianco («sembra finita li' per caso»
-            sotto la fascia fotografica della rete): solo testo e schede */}
+        {/* ── 4. PERCHE' ENTRARE ORA — il patto fondatori ──────────── */}
+        {/* founder 10/9 sera: via la foto a fianco («sembra finita li' per caso»):
+            solo testo e schede */}
         <Section tone="cream" rhythm="screen" labelledBy="ol-now-title" width="max-w-5xl">
          <div data-testid="ol-now">
           <DisplayTitle as="h2" id="ol-now-title" size="section" measure="title">{t('opPro.nowTitle', { defaultValue: "Perché entrare ora." })}</DisplayTitle>
@@ -393,39 +390,13 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 9. CHI C'E' DIETRO AURYA — i volti veri ──────────────── */}
-        <Section tone="sand" rhythm="screen" labelledBy="ol-who-title" width="max-w-6xl">
-          <div data-testid="ol-who">
-            <p className="eyebrow mb-5">{t('opPro.whoEyebrow', { defaultValue: "Chi c’è dietro Aurya" })}</p>
-            <DisplayTitle as="h2" id="ol-who-title" size="section" measure="lines"
-                          className="text-[1.9rem] leading-[1.14] sm:text-[2.4rem] lg:text-[2.9rem]">
-              <TitleLine>{t('opPro.whoLine1', { defaultValue: "Pratiche, eventi e ritiri" })}</TitleLine>
-              <TitleLine>{t('opPro.whoLine2', { defaultValue: "di benessere" })}</TitleLine>
-            </DisplayTitle>
-            <Lede size="lead" className="mt-7">{t('opPro.whoLead', { defaultValue: "Siamo due persone che hanno deciso di costruire lo spazio che avremmo voluto trovare." })}</Lede>
-            <div className="mt-12 grid gap-9 sm:mt-14 lg:grid-cols-12 lg:items-center lg:gap-14">
-              <div className="lg:col-span-5">
-                <img src={FOUNDERS_PHOTO}
-                     alt={tl('aboutPage.facesAlt', { defaultValue: 'Davide e Valentina, i fondatori di Aurya, in riva al mare' })}
-                     width="900" height="1125" loading="lazy" decoding="async"
-                     className="aspect-[4/5] w-full rounded-[1.75rem] object-cover shadow-[0_18px_48px_-28px_rgba(30,47,40,0.45)]" />
-              </div>
-              <div className="lg:col-span-7">
-                <p className="font-display text-[1.5rem] leading-snug text-foreground sm:text-[1.85rem]">
-                  <span className="block">{t('opPro.whoV', { defaultValue: "Valentina vive il mondo del benessere ogni giorno." })}</span>
-                  <span className="mt-3 block">{t('opPro.whoD', { defaultValue: "Davide costruisce prodotti digitali da anni." })}</span>
-                </p>
-                <Lede size="body" className="mt-6">{t('opPro.whoP', { defaultValue: "Aurya nasce dall’incontro tra queste due esperienze: conoscere il lavoro degli operatori e creare strumenti semplici per aiutarli a presentarsi, lavorare e farsi conoscere online." })}</Lede>
-                <div className="mt-8">
-                  <EditorialCta to="/chi-siamo" variant="quiet" data-testid="ol-who-cta">{t('opPro.whoCta', { defaultValue: "Conosci la nostra storia" })}</EditorialCta>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Section>
+        {/* CP (10/9 notte): qui c'era «Chi c'e' dietro Aurya» (ol-who), la
+            stessa foto e le stesse due righe di /chi-siamo. La fiducia
+            resta come filo, in una riga dentro la registrazione. */}
 
-        {/* ── 10. LA REGISTRAZIONE — si comincia da te ─────────────── */}
-        <Section tone="cream" rhythm="screen" labelledBy="ol-form-title" width="max-w-6xl"
+        {/* ── 8. LA REGISTRAZIONE — si comincia da te. E' la chiusura:
+               la pagina finisce sull'azione, non su un'altra ancora. ── */}
+        <Section tone="sand" rhythm="screen" labelledBy="ol-form-title" width="max-w-6xl"
                  id="presentati" className="scroll-mt-20">
           <div data-testid="ol-form" className="grid gap-10 lg:grid-cols-12 lg:items-start lg:gap-16">
             <div className="lg:col-span-5">
@@ -436,7 +407,15 @@ export default function OperatorLandingPage() {
               <Lede size="lead" className="mt-7 font-semibold">{t('opPro.formA3', { defaultValue: "Crea il tuo account in un minuto e pubblica la tua pagina." })}</Lede>
               <Lede size="body" className="mt-5">{t('opPro.formC3', { defaultValue: "Quando sei online, entri nella rete degli operatori Aurya." })}</Lede>
               <Lede size="body" className="mt-3">{t('opPro.formD3', { defaultValue: "E se vuoi, possiamo aiutarti a raccontare meglio il tuo lavoro." })}</Lede>
-              <p className="mt-8 flex flex-wrap items-center gap-1.5 text-sm text-foreground/70">
+              {/* il filo della fiducia: chi c'e' dietro, in una riga */}
+              <p className="mt-6 text-sm text-foreground/70">
+                {t('opPro.formWho', { defaultValue: 'Dietro Aurya ci siamo noi, Valentina e Davide.' })}{' '}
+                <Link to="/chi-siamo" data-testid="ol-who-cta"
+                      className="font-medium text-[#2f5749] underline underline-offset-[4px] decoration-[#2f5749]/40 hover:decoration-[#2f5749]">
+                  {t('opPro.whoCta', { defaultValue: "Conosci la nostra storia" })}
+                </Link>
+              </p>
+              <p className="mt-4 flex flex-wrap items-center gap-1.5 text-sm text-foreground/70">
                 <Mail className="h-4 w-4 shrink-0 text-[#2f5749]" aria-hidden />
                 {t('op.directT', { defaultValue: 'Preferisci parlarne senza form?' })}{' '}
                 <a href="mailto:info@aurya.life"
@@ -452,16 +431,10 @@ export default function OperatorLandingPage() {
             </div>
           </div>
         </Section>
-
-        {/* ── 11. CHIUSURA — il tuo lavoro merita un posto tutto suo ── */}
-        <Section tone="sage" rhythm="screen" labelledBy="ol-end-title" width="max-w-5xl">
-          <div data-testid="ol-end">
-            <DisplayTitle as="h2" id="ol-end-title" size="section" measure="title">{t('opPro.endA', { defaultValue: "Il tuo lavoro merita un posto tutto suo." })}</DisplayTitle>
-            <Lede size="lead" tone="inherit" className="mt-7 font-semibold">{t('opPro.endC2', { defaultValue: "Presentati. Fatti trovare. Ricevi prenotazioni. Organizza eventi e ritiri." })}</Lede>
-            <Lede size="lead" tone="inherit" className="mt-3 font-semibold">{t('opPro.endD2', { defaultValue: "Gratis per sempre, senza commissioni." })}</Lede>
-            <div className="mt-9"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-end-cta">{ctaJoin}</EditorialCta></div>
-          </div>
-        </Section>
+        {/* CP (10/9 notte): qui c'era la chiusura verde «Il tuo lavoro
+            merita un posto tutto suo» (ol-end): ripeteva l'hero parola
+            per parola e il suo bottone riportava al modulo di un
+            centimetro sopra. La pagina finisce sul modulo. */}
       </div>
     </MarketplaceShell>
   );

@@ -97,7 +97,8 @@ class TestSr1Directory:
         home = (FE / "features" / "network" / "NetworkHomePage.js").read_text()
         i = home.index('data-testid="hp-hero-cta"')
         assert "NETWORK_PATH" in home[i - 200:i]
-        assert "stiamo costruendo" not in home[home.index("id: 'professionisti'"):home.index("id: 'esperienze'")].lower()
+        blocco_pro = home[home.index("id: 'professionisti'"):]
+        assert "stiamo costruendo" not in blocco_pro[:blocco_pro.index("];")].lower()
         why = home[home.index('data-testid="hp-why"'):home.index('data-testid="hp-why-cta"')]
         for k in ("whyP1", "whyP4", "whyP5", "whyP6"):
             assert f"nwHome.{k}" not in why, f"il perche' per esteso ({k}) vive nel Manifesto"
@@ -114,7 +115,7 @@ class TestSr1Directory:
 
     def test_sr5_faq_della_landing_si_aprono_una_alla_volta(self):
         landing = (FE / "features" / "prelaunch" / "OperatorLandingPage.js").read_text()
-        blocco = landing[landing.index('data-testid="ol-faq"'):landing.index('data-testid="ol-who"')]
+        blocco = landing[landing.index('data-testid="ol-faq"'):landing.index('data-testid="ol-form"')]
         assert "<details" in blocco and "<summary" in blocco, \
             "le FAQ restano nel DOM ma si aprono una alla volta"
         assert "{f.a}" in blocco, "la risposta deve restare nel DOM per i crawler"

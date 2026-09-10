@@ -8,6 +8,8 @@ come la legge un crawler, i numeri di produzione dove esistono.
 Il documento ha tre parti: **1.** com'è il sito oggi, pagina per pagina;
 **2.** i funnel e la ridondanza, con le proposte; **3.** la SEO, con quello
 che è già stato corretto stasera e quello che resta. In fondo, il piano.
+*Aggiornamento 10/9 notte: le proposte della parte 2 sono state
+applicate col go del founder (vedi §4, punto 2).*
 
 ---
 
@@ -237,11 +239,29 @@ preselezionata.
 
 1. **Ora** (fatto stasera, in locale): SEO-R, menu, tassonomia unica,
    wizard solo italiano, verifica dei funnel.
-2. **Copy** (serve il go del founder, è il suo testo): i tagli della
-   parte 2 — landing operatore (tre blocchi), `/cerca-ritiro` (secondo
-   form e seconda lista), home (riquadro «prossimamente», perché, fondatori),
-   Chi siamo/Manifesto (i quattro passi in un posto solo), e la decisione
-   su `/newsletter` (fondere o tenere).
+2. **Copy — FATTO** (go del founder, 10/9 notte: «tagliamo ma
+   mantenendo fili logici e storytelling»). Tagliato, in locale:
+   - `/cerca-ritiro`: un modulo solo, in apertura; la chiusura è un
+     bottone che ci riporta.
+   - `/newsletter`: **tenuta** (è la porta del Cerchio per chi arriva
+     dalle meditazioni e dal Magazine, con la preferenza ritiri
+     facoltativa, mentre `/cerca-ritiro` la accende sempre): un form
+     solo, via l'elenco che ripeteva la frase di apertura.
+   - Home: via la scheda «Esperienze — Prossimamente» (due schede
+     affiancate + la striscia Sound), via l'offerta ripetuta e il
+     secondo bottone «Come funziona» nella sezione operatori (resta il
+     patto fondatori: è quello che l'hero non dice), via l'elenco
+     ripetuto nel blocco del Cerchio. Il «Perché esiste Aurya» in due
+     righe RESTA: è il perno del racconto, non un doppione.
+   - Landing operatore: via i tre blocchi doppi (fascia «scoperto anche
+     su Aurya», «Chi c'è dietro» con la foto, chiusura verde uguale
+     all'hero). La pagina finisce sul modulo, con una riga «Dietro
+     Aurya ci siamo noi» verso Chi siamo. Da 1.471 a ~945 parole.
+   - Chi siamo: via «il lungo periodo» coi quattro tempi (erano i passi
+     di «Cosa stiamo costruendo» nel Manifesto). Da 518 a ~226 parole.
+   La shell SEO della home dice le stesse cose della pagina; sei guardie
+   evolute; i titoli di `/cerca-ritiro` e `/newsletter` allineati fra
+   shell e client. Verificato dal vivo pagina per pagina.
 3. **Deploy** completo (backend, frontend, nginx con force-recreate) e
    le azioni su Search Console e Bing del §3.4.
 4. **Quando i numeri lo permettono**: pagine disciplina × zona (30

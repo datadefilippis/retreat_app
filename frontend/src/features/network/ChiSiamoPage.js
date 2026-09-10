@@ -18,9 +18,12 @@
  * (un elenco di funzioni travestito da persone). Da 417 a ~200 parole.
  *
  * I MOVIMENTI: apertura (la domanda, r08) con la porta al Manifesto
- * subito sotto → i due percorsi (la foto vera, PhotoSplit) → il lungo
- * periodo (i quattro tempi, verde) → la chiusura (una frase, tre
- * porte, l'indirizzo). Fondi: foto scura → bianco+foto → verde → sabbia.
+ * subito sotto → i due percorsi (la foto vera, PhotoSplit) → la
+ * chiusura (una frase, tre porte, l'indirizzo).
+ * CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili logici e
+ * storytelling»): e' uscito «il lungo periodo» con i quattro tempi,
+ * che erano i passi di «Cosa stiamo costruendo» nel Manifesto detti
+ * una seconda volta. Fondi: foto scura → bianco+foto → sabbia.
  *
  * CONTRASTI: misurati in CS2 (git), invariati: crema sui veli di r08
  * ≥ 11:1, oro chiaro 7,2:1; crema su salvia 7,28:1; foreground su
@@ -38,15 +41,6 @@ import {
 const OPENER_PHOTO = '/media/prelaunch/r08.jpg';   // le mani di chi cura
 const FOUNDERS_PHOTO = '/media/chisiamo-aurya.jpg'; // l'unica foto nostra
 
-/* Il filo che collega i quattro tempi si fa piu' netto a ogni passo:
-   e' decorativo (aria-hidden), quindi il contrasto non lo riguarda. */
-const STEP_LINE = [
-  'bg-[#f6f2e8]/20',
-  'bg-[#f6f2e8]/35',
-  'bg-[#f6f2e8]/50',
-  'bg-[#f6f2e8]/70',
-];
-
 export default function ChiSiamoPage() {
   const { t } = useTranslation('landings');
 
@@ -55,14 +49,6 @@ export default function ChiSiamoPage() {
     description: t('aboutPage.seoDesc', { defaultValue: 'Aurya nasce da una domanda: perché è così difficile orientarsi nel mondo del benessere? Chi siamo, come lavoriamo e cosa stiamo costruendo.' }),
     canonicalPath: '/chi-siamo',
   });
-
-  /* I quattro tempi. L'ordine e' il contenuto. */
-  const steps = [
-    t('aboutPage.step1', { defaultValue: 'Abbiamo cominciato dai contenuti.' }),
-    t('aboutPage.step2', { defaultValue: 'Poi sono arrivate le persone.' }),
-    t('aboutPage.step3', { defaultValue: 'Oggi ci sono gli strumenti.' }),
-    t('aboutPage.step4', { defaultValue: 'Ora arrivano le esperienze.' }),
-  ];
 
   return (
     <MarketplaceShell noSearch>
@@ -153,51 +139,15 @@ export default function ChiSiamoPage() {
           </div>
         </PhotoSplit>
 
-        {/* ── 2. LUNGO PERIODO — l'ancora verde ────────────────────
-            Dichiarare in anticipo l'ordine dei passi e' l'unica
-            promessa che si puo' verificare. La porta a meta' pagina fa
-            vedere il gradino su cui siamo: le persone sono arrivate. */}
-        <Section tone="sage" rhythm="none" width="max-w-4xl"
-                 labelledBy="cs-long-title"
-                 innerClassName="py-24 sm:py-32 lg:py-36">
-          <div data-testid="cs-long">
-            <DisplayTitle as="h2" id="cs-long-title" size="section" measure="title"
-                          className="text-[2.1rem] sm:text-[2.9rem] lg:text-[3.4rem] lg:leading-[1.06]">
-              {t('aboutPage.longTitle', { defaultValue: 'Più che una startup, un progetto di lungo periodo.' })}
-            </DisplayTitle>
-            <p className="mt-8 max-w-[24ch] font-display text-balance text-[1.5rem] font-medium
-                          leading-[1.22] tracking-[-0.015em] sm:text-[1.9rem] lg:text-[2.05rem]">
-              {t('aboutPage.longP3', { defaultValue: 'Per questo abbiamo cominciato dalle fondamenta.' })}
-            </p>
+        {/* CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili
+            logici e storytelling»): qui c'era «Piu' che una startup, un
+            progetto di lungo periodo» con i quattro tempi (contenuti →
+            persone → strumenti → esperienze). Sono gli stessi passi di
+            «Cosa stiamo costruendo» nel Manifesto, che li dice con le
+            parole del founder e ha la porta qui sopra, nell'apertura.
+            Chi siamo tiene il suo ruolo: le persone, e dove scrivergli. */}
 
-            <ol className="mt-14 grid list-none gap-9 p-0 sm:mt-16 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4 lg:gap-7">
-              {steps.map((s, i) => (
-                <li key={s}>
-                  <div aria-hidden className="flex items-center gap-3">
-                    <span className="h-1.5 w-1.5 shrink-0 rotate-45 bg-[#d6c49a]" />
-                    <span className={`h-px w-full ${STEP_LINE[i]}`} />
-                  </div>
-                  <p className="eyebrow eyebrow-light mt-5">{`0${i + 1}`}</p>
-                  <p className="mt-3 font-display text-balance text-[1.2rem] leading-[1.28]
-                                tracking-[-0.01em] sm:text-[1.3rem]">
-                    {s}
-                  </p>
-                </li>
-              ))}
-            </ol>
-
-            <Lede size="body" tone="inherit" className="mt-12 opacity-90 sm:mt-14">
-              {t('aboutPage.stepsClose', { defaultValue: 'Ogni passo serve a costruire il successivo.' })}
-            </Lede>
-            <p className="mt-10 sm:mt-12">
-              <EditorialCta to="/operatori" variant="light" data-testid="cs-cta-mid">
-                {t('aboutPage.midCta', { defaultValue: 'Scopri i professionisti' })}
-              </EditorialCta>
-            </p>
-          </div>
-        </Section>
-
-        {/* ── 3. CHIUSURA — una frase, tre porte, l'indirizzo ──────
+        {/* ── 2. CHIUSURA — una frase, tre porte, l'indirizzo ──────
             "Sei un professionista?" porta a /entra-nella-rete e non a
             /operatori: chi legge questa domanda deve ancora candidarsi. */}
         <Section tone="sand" rhythm="screen" width="max-w-3xl"

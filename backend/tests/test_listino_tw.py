@@ -5775,9 +5775,11 @@ class TestHomeHp2:
         # decisione di design successiva a HP2.
         src = self.HOME.read_text()
         pos = -1
+        # CP (10/9/2026 notte): la terza colonna «Esperienze —
+        # Prossimamente» e' uscita (la porta «Trova il mio ritiro» e'
+        # nel primo schermo): restano due colonne, affiancate da `sm`.
         for key, titolo in (("magazine", "Magazine"),
-                            ("professionisti", "Professionisti"),
-                            ("esperienze", "Esperienze")):
+                            ("professionisti", "Professionisti")):
             marker = f"id: '{key}'"
             assert marker in src, f"colonna {key} mancante"
             here = src.index(marker)
@@ -5786,14 +5788,14 @@ class TestHomeHp2:
             assert titolo in src
 
     def test_hp2_terza_colonna_non_cliccabile(self):
-        """L'etichetta di stato (oggi 'Prossimamente') non e' un link
-        e nemmeno un bottone disabilitato."""
+        """HP2: l'etichetta di stato ('Prossimamente') non era un link.
+        CP (10/9/2026 notte): la colonna-promessa non c'e' piu' — in
+        home nessuna scheda promette senza una porta. Il ramo senza
+        `to` di PillarCard resta uno <span> per chi lo usera'."""
         src = self.HOME.read_text()
-        blocco = src[src.index("id: 'esperienze'"):src.index("];", src.index("id: 'esperienze'"))]
-        assert "to:" not in blocco, \
-            "la terza colonna non ha destinazione: e' una promessa"
-        assert "pillarExpBadge" in blocco, \
-            "la terza colonna porta l'etichetta di stato"
+        assert "id: 'esperienze'" not in src and "pillarExpBadge" not in src, \
+            "la scheda-promessa «Esperienze — Prossimamente» e' tornata"
+        assert "sm:grid-cols-2" in src[src.index('data-testid="hp-pillars"'):src.index('data-testid="hp-sound"')]
         pillar = (self.EDITORIAL / "PillarCard.jsx").read_text()
         # il ramo senza `to` rende uno <span>, non un Link/button
         ramo = pillar[pillar.index("{to ? ("):]
@@ -6076,8 +6078,11 @@ class TestHomeHp2:
         import re as _re
         home = self.HOME.read_text()
         defaults = _re.findall(r'defaultValue: "([^"]*)"', home)
-        assert len(defaults) >= 42, \
-            f"i defaultValue della home sono {len(defaults)}, ne servono 42"
+        # CP (10/9/2026 notte): da 42 a 38 — via la scheda «Esperienze»,
+        # l'offerta ripetuta e «Come funziona» nella sezione operatori,
+        # l'elenco ripetuto nel Cerchio
+        assert len(defaults) >= 38, \
+            f"i defaultValue della home sono {len(defaults)}, ne servono 38"
         for val in defaults:
             assert "—" not in val and "–" not in val, \
                 f"trattino lungo nel copy della home: {val[:40]}"
@@ -6126,8 +6131,11 @@ class TestLandingOperatoriOl1:
         # proprio chi si iscrive. L'ordine nuovo e' cosa hai (ol-go) /
         # perche' ora (ol-now) / come si entra (ol-join).
         pos = -1
+        # CP (10/9/2026 notte): via ol-rete, ol-who e ol-end (doppioni
+        # della scheda «Ti possono trovare», di /chi-siamo e dell'hero):
+        # la pagina finisce sul modulo.
         for tid in ("ol-hero", "ol-go", "ol-now", "ol-join",
-                    "ol-faq", "ol-who", "ol-form", "ol-end"):
+                    "ol-faq", "ol-form"):
             assert f'data-testid="{tid}"' in page, f"manca la sezione {tid}"
             here = page.index(f'data-testid="{tid}"')
             assert here > pos, f"{tid}: sezione fuori ordine"
@@ -6154,8 +6162,11 @@ class TestLandingOperatoriOl1:
         page = self._page()
         assert 'data-testid="ol-hero-cta-top"' in page, \
             "sparita la CTA del hero verso il form"
-        assert "Pratiche, eventi e ritiri" in page
-        assert "di benessere" in page
+        # CP (10/9/2026 notte): la sezione dei fondatori e' uscita dalla
+        # landing (era /chi-siamo ricopiata); resta il filo in una riga
+        # dentro il modulo, verso /chi-siamo
+        assert "Pratiche, eventi e ritiri" not in page
+        assert 'data-testid="ol-who-cta"' in page and 'to="/chi-siamo"' in page
         # il commento che racconta la decisione cita le negazioni:
         # si giudica solo il copy che il lettore puo' vedere
         visibile = re.sub(r"/\*.*?\*/", "", page, flags=re.DOTALL)
@@ -6636,9 +6647,12 @@ class TestChiSiamoSw3:
                                    "Verificato Aurya"):
             assert pezzo_di_manifesto not in copy, \
                 f"il Manifesto non si duplica qui: '{pezzo_di_manifesto}'"
-        # una sola ancora tonale in tutta la pagina
-        assert src.count('tone="sage"') == 1, \
-            "Chi siamo ha UNA ancora verde, non di piu'"
+        # al massimo una ancora tonale in tutta la pagina (CP 10/9 notte:
+        # l'ancora verde «lungo periodo» e' uscita, era il Manifesto
+        # ricopiato; oggi sono zero)
+        assert src.count('tone="sage"') <= 1, \
+            "Chi siamo ha al massimo UNA ancora verde"
+        assert 'data-testid="cs-long"' not in src, "i quattro tempi del Manifesto sono tornati in Chi siamo"
 
     # ── 5. la chiusura: manifesto e mail ─────────────────────────────
 

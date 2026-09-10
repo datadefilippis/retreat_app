@@ -19,10 +19,16 @@
  * del founder, 3/9); il 15 gennaio 2027 la selezione dei ritiri di
  * primavera 2027, scelti per quello che ci hai detto.
  *
- * Grammatica: la stessa del Cerchio (CN1) — form nel primo schermo e
- * in fondo, promesse concrete una per riga, assaggi veri prima di
- * entrare. Foto: hero-destination (l'uliveto), che e' gia' il volto
- * della porta in home.
+ * Grammatica: la stessa del Cerchio (CN1) — form nel primo schermo,
+ * promesse concrete una per riga, assaggi veri prima di entrare. Foto:
+ * hero-destination (l'uliveto), che e' gia' il volto della porta in home.
+ *
+ * CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili logici e
+ * storytelling»): il modulo era DUE volte (apertura e fondo) e i tre
+ * benefici del Cerchio tre volte. Ora il modulo e' uno, in apertura; la
+ * chiusura e' un bottone che ci riporta. Il filo resta: il desiderio e
+ * la domanda (1) → cosa succede dopo (2) → perche' fidarsi (3) → prova
+ * prima (4) → torna al modulo (5).
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -72,7 +78,7 @@ function SchedaForm({ t, id, context, titolo }) {
         wantsExperiencesAlways
         initialInterests={temaIniziale()}
         accent={SAGE}
-        context={context === 'hero' ? 'cerca-ritiro' : 'cerca-ritiro_fondo'}
+        context="cerca-ritiro"
         ctaLabel={t('tr.cta', { defaultValue: 'Trovami il mio ritiro' })}
         consentText={t('tr.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya, con ritiri ed esperienze selezionati in base alle mie preferenze.' })}
         thanksBody={t('tr.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e conferma. Appena confermi si aprono le meditazioni riservate, e da lì in poi ricevi ritiri ed esperienze pensati sui tuoi interessi e le tue preferenze.' })}
@@ -93,10 +99,18 @@ export default function TravelerLandingPage() {
   const { t } = useTranslation('prelaunch');
 
   useSeoMeta({
-    title: t('tr.seoTitle', { defaultValue: 'Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya' }),
+    title: t('tr.seoTitle', { defaultValue: 'Trovami il mio ritiro | Ritiri olistici vicino a te | Aurya' }),
     description: t('tr.seoDesc', { defaultValue: 'Dicci cosa cerchi e dove: ti avvisiamo quando troviamo un ritiro adatto a te, vicino a dove vuoi andare. Subito le meditazioni riservate, poi ritiri ed esperienze pensati sui tuoi interessi.' }),
     canonicalPath: '/cerca-ritiro',
   });
+
+  /* il modulo e' uno solo (in apertura): la chiusura ci riporta */
+  const scrollToForm = (e) => {
+    e.preventDefault();
+    const riduci = typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('racconta')?.scrollIntoView({ behavior: riduci ? 'auto' : 'smooth', block: 'start' });
+  };
 
   /* cosa succede dopo, detto prima: tre tempi */
   const dopo = [
@@ -266,7 +280,11 @@ export default function TravelerLandingPage() {
           </div>
         </Section>
 
-        {/* ── 5. IL MODULO, DI NUOVO — per chi ha letto fino in fondo ── */}
+        {/* ── 5. LA CHIUSURA — un bottone, non un secondo modulo ──────
+            CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili
+            logici e storytelling»): il modulo e' UNO, in apertura. Chi
+            ha letto fino in fondo ci torna con un clic; la pagina si
+            chiude con la stessa frase con cui si e' aperta. */}
         <Section tone="sage" rhythm="screen" width="max-w-2xl" labelledBy="tr-end-title">
           <div data-testid="tr-end">
             <DisplayTitle as="h2" id="tr-end-title" size="section" measure="title">
@@ -276,7 +294,9 @@ export default function TravelerLandingPage() {
               {t('tr.end1', { defaultValue: 'Trenta secondi. Ti scriviamo solo quando c’è qualcosa che può interessarti.' })}
             </Lede>
             <div className="mt-8">
-              <SchedaForm t={t} id="racconta-fondo" context="fondo" />
+              <EditorialCta href="#racconta" onClick={scrollToForm} variant="solid" tone="dark" data-testid="tr-end-cta">
+                {t('tr.cta', { defaultValue: 'Trovami il mio ritiro' })}
+              </EditorialCta>
             </div>
           </div>
         </Section>

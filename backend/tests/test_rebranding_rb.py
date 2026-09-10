@@ -79,7 +79,10 @@ class TestRb1LeDuePorteInHome:
     def test_la_sezione_operatori_dice_offerta_e_patto(self):
         src = HOME.read_text()
         pros = src[src.index('data-testid="hp-pros"'):src.index('data-testid="hp-letter"')]
-        assert "nwHome.prosOffer" in pros and "nwHome.prosFounders" in pros
+        # CP (10/9 notte): l'offerta la dice la porta dell'hero; qui
+        # resta solo il patto, e UNA porta (via «Come funziona»)
+        assert "nwHome.prosOffer" not in pros and "nwHome.prosFounders" in pros
+        assert "hp-pros-how" not in pros
         assert "nwHome.prosP5" not in pros, "«ci piacerebbe conoscerti» non e' una ragione per iscriversi oggi"
         assert "OPERATORI_PATH" in pros and "JOIN_PATH" not in pros
         it = json.loads(LOCALE.read_text())["nwHome"]
@@ -88,8 +91,9 @@ class TestRb1LeDuePorteInHome:
 
     def test_la_shell_seo_dice_quello_che_dice_la_pagina(self):
         shell = SHELL.read_text()
-        for k in ("doorSeekTitle", "doorOpTitle", "doorSeekCta", "doorOpCta", "prosOffer", "prosFounders"):
+        for k in ("doorSeekTitle", "doorOpTitle", "doorSeekCta", "doorOpCta", "prosFounders"):
             assert f'"{k}"' in shell, f"la shell non ha {k}"
+        assert '"prosOffer"' not in shell and '"pillarExpTitle"' not in shell, "la shell ripete blocchi usciti (CP)"
         html = shell[shell.index("async def _home_content_html"):shell.index("async def _home_content_html") + 3000]
         assert 'href=\\"/cerca-ritiro\\"' in html and 'href=\\"/entra-nella-rete\\"' in html
         assert "c['heroP2']" not in html and "c['heroP3']" not in html
@@ -119,7 +123,9 @@ class TestRb2LaLandingDellOperatore:
     def test_il_trittico_nell_ordine(self):
         src = LANDING.read_text()
         pos = -1
-        for tid in ("ol-hero", "ol-go", "ol-studio", "ol-rete", "ol-now", "ol-prezzi", "ol-join", "ol-faq", "ol-who", "ol-form", "ol-end"):
+        # CP (10/9 notte): via ol-rete, ol-who, ol-end; il filo a /chi-siamo
+        # resta in una riga dentro il modulo (ol-who-cta)
+        for tid in ("ol-hero", "ol-go", "ol-studio", "ol-now", "ol-prezzi", "ol-join", "ol-faq", "ol-form", "ol-who-cta"):
             here = src.index(f'data-testid="{tid}"')
             assert here > pos, f"{tid}: fuori ordine"
             pos = here
@@ -135,7 +141,7 @@ class TestRb2LaLandingDellOperatore:
         assert op["heroP3"] == "Gratis per sempre, senza commissioni."
         assert "31 ottobre 2026" in op["nowP1"] and ("venti" in op["nowP1"] or "20 operatori" in op["nowP1"]), "il patto fondatori ha tetto e data"
         assert "30 giugno 2027" in op["nowB1b"] and "post al mese" not in json.dumps(op), "il Club fondatori ha una fine e niente post mensile"
-        for k in ("v1k", "v6k", "reteTitle", "nowB4t", "nowCta"):
+        for k in ("v1k", "v6k", "nowB4t", "nowCta"):
             assert op.get(k), k
         assert op["ctaOpen"] == "Apri il tuo spazio"
         testo = " ".join(str(v) for v in op.values()).lower()
@@ -200,10 +206,14 @@ class TestRb4LaPortaDiChiCerca:
 
     def test_il_modulo_di_luglio_iscrive_al_cerchio_coi_ritiri_accesi(self):
         src = self.TR.read_text()
-        assert src.count("<SchedaForm") == 2 and src.count("<LeadForm") == 1, \
-            "UN modulo (la scheda), montato nel primo schermo e in fondo"
+        # CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili
+        # logici»): il modulo e' montato UNA volta, nel primo schermo;
+        # la chiusura e' un bottone che ci riporta (tr-end-cta)
+        assert src.count("<SchedaForm") == 1 and src.count("<LeadForm") == 1, \
+            "UN modulo (la scheda), montato solo nel primo schermo"
+        assert 'data-testid="tr-end-cta"' in src and 'href="#racconta"' in src
         blocco = src[src.index("<LeadForm"):src.index("/>", src.index("<LeadForm"))]
-        for prop in ("subscribe", "showName", "wantsExperiencesAlways", "context={context === 'hero' ? 'cerca-ritiro'"):
+        for prop in ("subscribe", "showName", "wantsExperiencesAlways", 'context="cerca-ritiro"'):
             assert prop in blocco, f"manca {prop}"
         assert "compact" not in blocco, "il modulo e' quello pieno: citta', interessi, raggio, budget"
         form = (FE / "features" / "prelaunch" / "LeadForm.jsx").read_text()
@@ -302,7 +312,7 @@ class TestP1LeParoleSuiSoldi:
 
     def test_la_frase_marchio_e_nelle_porte_e_nella_landing(self):
         it = json.loads(LOCALE.read_text())["nwHome"]
-        assert "senza commissioni" in it["doorOpText"] and "senza commissioni" in it["prosOffer"]
+        assert "senza commissioni" in it["doorOpText"]   # CP: prosOffer e' uscito dalla home
         op = json.loads(PRELAUNCH.read_text())["opPro"]
         assert "non prende commissioni" in op["faq1b1"] and "Club Fondatori regalato fino al 30 giugno 2027" in op["nowP2"]
         assert "19 €" in op["faq1b2"] and "49 €" in op["faq1b2"] and "119 €" in op["faq1b2"]   # RB2-bis: i prezzi nel secondo punto

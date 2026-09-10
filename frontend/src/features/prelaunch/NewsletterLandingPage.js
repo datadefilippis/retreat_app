@@ -25,7 +25,10 @@
  *
  * LE TRE REGOLE DI CONVERSIONE:
  *   1. il form sta nel PRIMO SCHERMO (hero a due colonne su desktop,
- *      form subito sotto il titolo su mobile) e si ripete in fondo;
+ *      form subito sotto il titolo su mobile); CP (10/9 notte): NON si
+ *      ripete piu' in fondo, la chiusura e' un bottone che ci riporta,
+ *      e l'elenco dei benefici nell'hero e' uscito (la frase di
+ *      apertura li dice gia', le tre schede li spiegano);
  *   2. una promessa concreta per riga, senza conteggi ne' date
  *      (founder: «meno dettagli inutili»);
  *   3. si dice cosa ricevi, mai cosa non faremo.
@@ -49,7 +52,7 @@ import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import LeadForm from './LeadForm';
 import {
-  Section, DisplayTitle, Lede, PhotoOpener,
+  Section, DisplayTitle, Lede, PhotoOpener, EditorialCta,
 } from '../../components/editorial';
 
 const OPENER_PHOTO = '/media/hero-destination.webp';
@@ -78,7 +81,7 @@ function SchedaForm({ t, id, context, titolo }) {
         experiencesOptIn
         experiencesDefault
         accent={SAGE}
-        context={context === 'hero' ? 'newsletter' : 'newsletter_fondo'}
+        context="newsletter"
         ctaLabel={t('nl.cta', { defaultValue: 'Entra nel Cerchio' })}
         consentText={t('nl.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya.' })}
         thanksBody={t('nl.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e clicca «Entro nel Cerchio» nell’email che ti abbiamo appena mandato.' })}
@@ -94,10 +97,18 @@ export default function NewsletterLandingPage() {
   const { t } = useTranslation('prelaunch');
 
   useSeoMeta({
-    title: t('nl.seoTitle', { defaultValue: 'Il Cerchio di Aurya | Meditazioni riservate, ritiri in anteprima, una lettera quando vale' }),
+    title: t('nl.seoTitle', { defaultValue: 'Il Cerchio di Aurya | Meditazioni gratuite e ritiri in anteprima' }),
     description: t('nl.seoDesc', { defaultValue: 'Entra nel Cerchio di Aurya: meditazioni riservate gratuite, ritiri ed esperienze olistiche in anteprima nella tua zona e la Lettera, quando vale la pena. Ti cancelli con un clic.' }),
     canonicalPath: '/newsletter',
   });
+
+  /* il form e' uno solo (nel primo schermo): la chiusura ci riporta */
+  const scrollToForm = (e) => {
+    e.preventDefault();
+    const riduci = typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('iscriviti')?.scrollIntoView({ behavior: riduci ? 'auto' : 'smooth', block: 'start' });
+  };
 
   const ricevi = [
     {
@@ -166,14 +177,9 @@ export default function NewsletterLandingPage() {
               <p className="mt-6 max-w-[46ch] text-balance text-lg leading-relaxed text-hero-shadow opacity-95 sm:text-xl">
                 {t('nl.lead', { defaultValue: 'Meditazioni riservate, ritiri ed esperienze in anteprima e una lettera quando vale la pena. Gratis.' })}
               </p>
-              <ul className="mt-7 space-y-2 text-hero-shadow" data-testid="nl-open-valori">
-                {ricevi.map(({ Icon, title }) => (
-                  <li key={title} className="flex items-center gap-2.5 text-base sm:text-lg">
-                    <Icon className="h-5 w-5 shrink-0 text-[#d6c49a]" aria-hidden />
-                    <span>{title}</span>
-                  </li>
-                ))}
-              </ul>
+              {/* CP (10/9 notte): qui c'era l'elenco delle tre cose che
+                  ricevi, cioe' la frase qui sopra ripetuta a capo: le tre
+                  schede sotto le spiegano una volta sola. */}
             </div>
             <div className="lg:col-span-6 lg:pt-2">
               <SchedaForm t={t} id="iscriviti" context="hero" />
@@ -231,7 +237,10 @@ export default function NewsletterLandingPage() {
           </div>
         </Section>
 
-        {/* ── 4. IL FORM, DI NUOVO — per chi ha letto fino in fondo ──── */}
+        {/* ── 4. LA CHIUSURA — un bottone, non un secondo form ────────
+            CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili
+            logici e storytelling»): il form e' UNO, nel primo schermo;
+            chi ha letto fino in fondo ci torna con un clic. */}
         <Section tone="sage" rhythm="screen" width="max-w-2xl" labelledBy="nl-end-title">
           <div data-testid="nl-end">
             <DisplayTitle as="h2" id="nl-end-title" size="section" measure="title">
@@ -241,7 +250,9 @@ export default function NewsletterLandingPage() {
               {t('nl.end1', { defaultValue: 'Scriviamo solo quando vale il tuo tempo. Ti cancelli con un clic.' })}
             </Lede>
             <div className="mt-8">
-              <SchedaForm t={t} id="iscriviti-fondo" context="fondo" />
+              <EditorialCta href="#iscriviti" onClick={scrollToForm} variant="solid" tone="dark" data-testid="nl-end-cta">
+                {t('nl.cta', { defaultValue: 'Entra nel Cerchio' })}
+              </EditorialCta>
             </div>
           </div>
         </Section>

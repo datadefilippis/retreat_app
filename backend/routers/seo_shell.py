@@ -301,9 +301,9 @@ _HOME_COPY = {
     "pillarProText": ("Persone che conosciamo una per una: la loro storia, "
                       "il modo in cui lavorano, i loro servizi e i loro "
                       "ritiri."),
-    "pillarExpTitle": "Esperienze",
-    "pillarExpText": ("Workshop, ritiri ed eventi per trasformare ciò che "
-                      "hai scoperto in qualcosa da vivere."),
+    # CP (10/9/2026 notte): via «Esperienze — Prossimamente» (la porta
+    # «Trova il mio ritiro» e' nel primo schermo) e via l'offerta
+    # ripetuta nella sezione operatori (la dice gia' la porta).
     "whyTitle": "Perché esiste Aurya?",
     "whyP2": "Trovare un professionista è semplice.",
     "whyP3": "Scegliere quello giusto è ciò che conta.",
@@ -312,10 +312,7 @@ _HOME_COPY = {
                 "persone e idee che aiutano a comprendere il benessere con "
                 "uno sguardo aperto, concreto e curioso."),
     "prosTitle": "Per chi dedica la propria vita al benessere degli altri.",
-    # RB1 — l'offerta in chiaro e il patto fondatori
-    "prosOffer": ("Profilo pubblico, prenotazioni, eventi e ritiri con "
-                  "caparra, un link solo per Instagram. Gratis per sempre, "
-                  "senza commissioni."),
+    # RB1 — il patto fondatori (la ragione per iscriversi oggi)
     "prosFounders": ("I primi venti operatori olistici che pubblicano il "
                      "profilo entro il 31 ottobre 2026 entrano da fondatori."),
     "prosCta2": "Apri il tuo spazio",
@@ -355,7 +352,6 @@ async def _home_content_html() -> str:
         (f"<li><a href=\"/operatori\">{c['pillarProTitle']}</a> — "
          f"{c['pillarProText']} "
          f"<a href=\"/operatori\">Vedi i professionisti</a></li>"),
-        f"<li>{c['pillarExpTitle']} — {c['pillarExpText']}</li>",
         "</ul>",
         f"<h2>{c['whyTitle']}</h2>",
         f"<p>{c['whyP2']} {c['whyP3']}</p>",
@@ -407,9 +403,8 @@ async def _home_content_html() -> str:
     parti += [
         "<p><a href=\"/blog\">Tutti gli articoli del Magazine</a></p>",
         f"<h2>{c['prosTitle']}</h2>",
-        f"<p>{c['prosOffer']} {c['prosFounders']}</p>",
-        f"<p><a href=\"/entra-nella-rete\">{c['prosCta2']}</a> · "
-        "<a href=\"/entra-nella-rete\">Come funziona</a></p>",
+        f"<p>{c['prosFounders']}</p>",
+        f"<p><a href=\"/entra-nella-rete\">{c['prosCta2']}</a></p>",
         f"<h2>{c['letterTitle']}</h2>",
         f"<p>{c['letterP6']}</p>",
         "<p><a href=\"/newsletter\">Entra nel Cerchio di Aurya</a> · "

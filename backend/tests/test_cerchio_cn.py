@@ -26,8 +26,11 @@ class TestCn1Landing:
         # il form vive nell'apertura (PhotoOpener), prima di ogni sezione
         assert src.index('id="iscriviti"') < src.index('data-testid="nl-find"')
         assert src.index("<SchedaForm") < src.index("</PhotoOpener>")
-        assert 'context="fondo"' in src and "`nl-form-${context}`" in src, \
-            "il form si ripete in fondo"
+        # CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili
+        # logici»): il form NON si ripete piu' in fondo, la chiusura e'
+        # un bottone che riporta al form del primo schermo
+        assert 'context="fondo"' not in src, "il form e' tornato due volte"
+        assert 'data-testid="nl-end-cta"' in src and 'href="#iscriviti"' in src
 
     def test_nome_e_pila_di_valore_senza_conteggi(self):
         it = json.loads((FE / "locales" / "it" / "prelaunch.json").read_text())["nl"]
@@ -65,7 +68,9 @@ class TestCn1Landing:
         shell = (BACKEND / "routers" / "seo_shell.py").read_text()
         it = json.loads((FE / "locales" / "it" / "prelaunch.json").read_text())["nl"]
         assert it["seoTitle"].split(" | ")[0] == "Il Cerchio di Aurya"
-        assert '"Il Cerchio di Aurya | Meditazioni riservate, ritiri in "' in shell
+        # SEO-R (10/9 sera): titolo entro i 60 caratteri, uguale in shell e client
+        assert '"Il Cerchio di Aurya | Meditazioni gratuite e ritiri in anteprima"' in shell
+        assert it["seoTitle"] == "Il Cerchio di Aurya | Meditazioni gratuite e ritiri in anteprima"
         assert 'href="/newsletter">Il Cerchio di Aurya</a>' in shell
         assert "Scopri la Lettera" not in shell
 

@@ -273,10 +273,13 @@ class TestStrisciaSoundInHome:
         """La fila e' larga 1088 px: tre schede da 341. A quattro
         diventerebbero 248 l'una — la griglia non si tocca."""
         src = self.HOME.read_text()
-        assert "lg:grid-cols-3" in src, "la griglia dei pilastri e' cambiata"
+        # CP (10/9/2026 notte): via la scheda «Esperienze — Prossimamente»,
+        # le schede sono DUE affiancate da `sm`; Sound resta una striscia
+        # (non una terza scheda: e' uno strumento, non un contenuto)
+        assert "sm:grid-cols-2" in src, "la griglia dei pilastri e' cambiata"
         pillars = src.split("const pillars = [")[1].split("\n  ];")[0]
-        assert pillars.count("id: '") == 3, \
-            "i pilastri non sono piu' tre: Sound doveva restare una striscia"
+        assert pillars.count("id: '") == 2, \
+            "i pilastri non sono piu' due: Sound doveva restare una striscia"
 
     def test_il_fondo_e_l_inchiostro_di_sound_non_il_salvia(self):
         """Due verdi adiacenti romperebbero l'alternanza dei fondi (la
