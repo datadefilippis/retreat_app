@@ -250,6 +250,11 @@ class TestAdminCleanupSa6:
             assert "AIGovernanceTab" not in f.read_text(), f.name
         page = (base / "AdminPage.js").read_text()
         assert "'ai-governance': '/admin/tecnico'" in page
+        # e l'app non chiede piu' /ai/access-status a un backend che non ha l'AI
+        hook = (BACKEND_DIR.parent / "frontend" / "src" / "hooks" / "useAiAccess.js").read_text()
+        assert "getAccessStatus" not in hook and "aiAPI" not in hook
+        import re as _re
+        assert not _re.search(r"include_router\(\s*ai", (BACKEND_DIR / "server.py").read_text())
 
     def test_trial_history_exposed_in_dialog(self):
         dlg = (BACKEND_DIR.parent / "frontend" / "src" / "features"

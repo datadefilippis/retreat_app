@@ -5,7 +5,6 @@
  * Exposes: plan, aiEnabled, limits, usage, loading, refresh(), canUse(), quotaExhausted().
  */
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { aiAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
 
 const AiAccessContext = createContext(null);
@@ -15,21 +14,14 @@ export function AiAccessProvider({ children }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // SA-R (10/9/2026 sera, founder: «via la sezione AI»): il backend non
+  // monta piu' nessun router /ai, e GET /ai/access-status rispondeva 404
+  // a OGNI caricamento dell'app. Niente chiamata: l'AI e' spenta, i
+  // consumatori (canUse, entitlements) leggono «no» come prima.
   const refresh = useCallback(async () => {
-    if (!isAuthenticated) {
-      setData(null);
-      setLoading(false);
-      return;
-    }
-    try {
-      const res = await aiAPI.getAccessStatus();
-      setData(res.data);
-    } catch {
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
+    setData(null);
+    setLoading(false);
+  }, [isAuthenticated]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     refresh();
