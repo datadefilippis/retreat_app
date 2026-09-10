@@ -201,7 +201,7 @@ export default function OperatorLandingPage() {
               <div className="lg:max-w-[30rem]">
                 {/* founder 10/9 sera: l'occhiello era troppo piccolo — ora e' una
                     riga in oro, leggibile, che dice a chi parla la pagina */}
-                <p className="mb-5 text-lg font-semibold uppercase tracking-[0.16em] text-[#e6d7ad] text-hero-shadow sm:text-xl"
+                <p className="mb-5 text-lg font-semibold uppercase tracking-[0.16em] text-[#d6c49a] text-hero-shadow sm:text-xl"
                    data-testid="ol-hero-eyebrow">
                   {t('opPro.heroEyebrow', { defaultValue: 'Per operatori e operatrici olistiche' })}
                 </p>
