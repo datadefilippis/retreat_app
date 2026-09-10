@@ -5749,7 +5749,8 @@ class TestHomeHp2:
             "prima chi cerca, poi chi opera"
         assert "CERCA_PATH" in porte and "OPERATORI_PATH" in porte
         assert "nwHome.doorSeekTitle" in porte and "nwHome.doorOpTitle" in porte
-        assert "JOIN_PATH" not in blocco, "la porta dell'operatore e' /per-operatori, non il vecchio rimando"
+        # decisione founder 10/9: la canonica resta /entra-nella-rete (OPERATORI_PATH)
+        assert "OPERATORI_PATH" in blocco
         for vecchio in ("nwHome.heroP2", "nwHome.heroP3", "orientarsi"):
             assert vecchio not in blocco, f"l'hero non descrive piu' un processo: {vecchio}"
         # la terza via: la directory, sottovoce, ancora nel primo schermo

@@ -387,7 +387,7 @@ Deploy alla fine di ogni onda, col go. Niente migrazioni di dati; il gestionale 
 | 3 | Il patto fondatori | 20 posti, profilo pubblicato entro il 31 ottobre 2026; badge, condizioni riservate, pagina Magazine, post IG, precedenza nella selezione |
 | 4 | L'intervista | premio dopo la registrazione, mai cancello prima |
 | 5 | Lessico | «operatore olistico» lato operatore, «professionisti del benessere» lato chi cerca |
-| 6 | URL della landing operatori | /per-operatori canonica, /entra-nella-rete in 301 |
+| 6 | URL della landing operatori | DECISO 10/9: resta /entra-nella-rete (molti link già inviati agli operatori); /per-operatori continua a rimandarci |
 | 7 | I ritiri seme | i cinque della tabella §6, entro il 31 ottobre 2026 |
 | 8 | Onde e deploy | tre onde, un deploy per onda, col go |
 

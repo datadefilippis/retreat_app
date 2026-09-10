@@ -52,7 +52,8 @@ class TestRb1LeDuePorteInHome:
             assert porta.count("<EditorialCta") == 1 and 'variant="solid"' in porta
             assert path in porta
         assert "const CERCA_PATH = '/cerca-ritiro'" in src
-        assert "const OPERATORI_PATH = '/per-operatori'" in src
+        # decisione founder 10/9: la canonica dell'operatore resta /entra-nella-rete
+        assert "const OPERATORI_PATH = '/entra-nella-rete'" in src
 
     def test_il_copy_delle_porte_nomina_l_oggetto_e_l_offerta(self):
         it = json.loads(LOCALE.read_text())["nwHome"]
@@ -87,7 +88,7 @@ class TestRb1LeDuePorteInHome:
         for k in ("doorSeekTitle", "doorOpTitle", "doorSeekCta", "doorOpCta", "prosOffer", "prosFounders"):
             assert f'"{k}"' in shell, f"la shell non ha {k}"
         html = shell[shell.index("async def _home_content_html"):shell.index("async def _home_content_html") + 3000]
-        assert 'href=\\"/cerca-ritiro\\"' in html and 'href=\\"/per-operatori\\"' in html
+        assert 'href=\\"/cerca-ritiro\\"' in html and 'href=\\"/entra-nella-rete\\"' in html
         assert "c['heroP2']" not in html and "c['heroP3']" not in html
         # la copia del backend segue il locale (copia_locales.py --scrivi)
         copia = json.loads((BACKEND_DIR / "assets" / "copia_it" / "landings.json").read_text())["nwHome"]

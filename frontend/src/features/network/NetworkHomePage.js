@@ -127,11 +127,13 @@ const MAGAZINE_PATH = '/blog';
    landing per candidarsi. Qui si segue l'intenzione, non la lettera. */
 const NETWORK_PATH = '/operatori';        // scopri la rete (i membri)
 const JOIN_PATH = '/entra-nella-rete';    // entra nella rete (candidarsi)
-/* RB1 — le due porte. Gli indirizzi sono quelli CANONICI del piano:
-   oggi /cerca-ritiro e /per-operatori rimandano (RT1, PL23) alle pagine
-   di ieri; RB2-RB4 li riempiono. Le porte non cambiano indirizzo. */
-const CERCA_PATH = '/cerca-ritiro';       // chi cerca un ritiro o un percorso
-const OPERATORI_PATH = '/per-operatori';  // chi opera: apri il tuo spazio
+/* RB1 — le due porte. /cerca-ritiro e' viva (RB4). Per l'operatore
+   la canonica RESTA /entra-nella-rete (decisione founder 10/9: «abbiamo
+   mandato molti link agli operatori con entra-nella-rete»): la porta ci
+   va dritta, senza il rimbalzo di /per-operatori, che continua a
+   rimandare qui. */
+const CERCA_PATH = '/cerca-ritiro';         // chi cerca un ritiro o un percorso
+const OPERATORI_PATH = '/entra-nella-rete'; // chi opera: apri il tuo spazio (= JOIN_PATH)
 
 /* il verde di brand del kit editoriale: accento del form della Lettera */
 const SAGE = '#2f5749';

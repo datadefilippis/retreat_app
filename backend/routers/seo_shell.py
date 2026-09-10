@@ -343,7 +343,7 @@ async def _home_content_html() -> str:
         f"<h2>{c['doorSeekTitle']}</h2><p>{c['doorSeekText']} "
         f"<a href=\"/cerca-ritiro\">{c['doorSeekCta']}</a></p>",
         f"<h2>{c['doorOpTitle']}</h2><p>{c['doorOpText']} "
-        f"<a href=\"/per-operatori\">{c['doorOpCta']}</a></p>",
+        f"<a href=\"/entra-nella-rete\">{c['doorOpCta']}</a></p>",
         f"<h2>{c['findTitle']}</h2>",
         f"<p>{c['findP1']} {c['findP2']}</p>",
         f"<p>{c['findP3']} {c['findP4']}</p>",
@@ -409,7 +409,7 @@ async def _home_content_html() -> str:
         "<p><a href=\"/blog\">Tutti gli articoli del Magazine</a></p>",
         f"<h2>{c['prosTitle']}</h2>",
         f"<p>{c['prosOffer']} {c['prosFounders']}</p>",
-        f"<p><a href=\"/per-operatori\">{c['prosCta2']}</a> · "
+        f"<p><a href=\"/entra-nella-rete\">{c['prosCta2']}</a> · "
         "<a href=\"/entra-nella-rete\">Come funziona</a></p>",
         f"<h2>{c['letterTitle']}</h2>",
         f"<p>{c['letterP6']}</p>",
