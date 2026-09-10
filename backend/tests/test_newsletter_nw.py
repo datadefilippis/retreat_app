@@ -56,7 +56,9 @@ class TestNw1Model:
 
     def test_travel_options(self):
         from routers.subscribers import TRAVEL_OPTIONS
-        assert TRAVEL_OPTIONS == ("near", "anywhere")
+        # founder 10/9 sera: la landing di chi cerca chiede «vicino a casa /
+        # ovunque in Italia / anche all'estero»; italy e abroad prima venivano scartati
+        assert TRAVEL_OPTIONS == ("near", "anywhere", "italy", "abroad")
 
     def test_payload_accepts_new_fields(self):
         from routers.subscribers import SubscribePayload

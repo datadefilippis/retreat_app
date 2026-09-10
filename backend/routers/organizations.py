@@ -2300,7 +2300,7 @@ async def cerchio_vicino(region: str = "", current_user: dict = Depends(require_
         {**base, "preferences.retreat_alert.regions": slug}) if slug else 0
     ovunque = await db.aurya_subscribers.count_documents(
         {**base, "$or": [{"preferences.retreat_alert.scope": "italy"},
-                         {"profile.travel": "anywhere"}]})
+                         {"profile.travel": {"$in": ["anywhere", "italy", "abroad"]}}]})
     totale = await db.aurya_subscribers.count_documents(base)
     return {"regione": region, "in_zona": in_zona, "ovunque": ovunque,
             "totale_ritiri": totale, "soglia_lettera": 50}

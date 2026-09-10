@@ -47,10 +47,14 @@ ALERT_SCOPES = ("italy", "regions")
 # NW1 — interessi ESPERIENZIALI dell'iscritto (per le proposte di
 # ritiri/esperienze): vocabolario suo, distinto dai topics editoriali
 # del Magazine. "misto" = mi va bene un po' di tutto.
-EXPERIENCE_INTERESTS = ("yoga", "meditazione", "breathwork", "reiki",
-                        "costellazioni", "cerchi", "suono", "misto")
+# founder 10/9 sera: quattordici vie, le stesse della landing /cerca-ritiro
+EXPERIENCE_INTERESTS = ("yoga", "meditazione", "breathwork", "suono", "reiki",
+                        "costellazioni", "astrologia", "ayurveda", "tantra",
+                        "detox", "cammini", "cerchi", "crescita", "misto")
 # NW1 — raggio di viaggio: vicino a casa o ovunque.
-TRAVEL_OPTIONS = ("near", "anywhere")
+# near = nella mia zona; anywhere/italy = ovunque in Italia; abroad = anche
+# all'estero (la landing di luglio mandava italy/abroad e venivano scartati)
+TRAVEL_OPTIONS = ("near", "anywhere", "italy", "abroad")
 
 # Le 20 regioni italiane: le zone dell'alert ritiri (stessa geografia
 # della directory). Slug stabili minuscoli, label lato frontend.

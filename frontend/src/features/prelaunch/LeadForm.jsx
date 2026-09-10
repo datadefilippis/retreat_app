@@ -29,8 +29,10 @@ import { creaAccount } from '../../utils/authLinks';
 import { sblocca } from '../../lib/cerchio';
 
 // Chiavi stabili salvate nel DB (le etichette sono i18n)
-const INTERESTS = ['yoga', 'meditation', 'breathwork', 'sound', 'detox',
-                   'nature', 'women', 'mixed'];
+// founder 10/9 sera: quattordici vie (le etichette in prelaunch.json form.interests)
+const INTERESTS = ['yoga', 'meditation', 'breathwork', 'sound', 'reiki', 'constellations',
+                   'astrology', 'ayurveda', 'tantra', 'detox', 'nature', 'women',
+                   'growth', 'mixed'];
 const BUDGETS = ['under500', '500to1000', 'over1000', 'flexible'];
 const TRAVELS = ['near', 'italy', 'abroad'];
 const ACTIVITIES = ['teacher', 'center', 'venue', 'organizer', 'therapist', 'other'];
@@ -46,17 +48,25 @@ const INTEREST_TO_TOPIC = {
 // vocabolario del backend, cosi' le preferenze li mostrano accesi
 const BASE_TO_EXP = {
   yoga: 'yoga', meditation: 'meditazione', breathwork: 'breathwork',
-  sound: 'suono', women: 'cerchi', mixed: 'misto',
+  sound: 'suono', reiki: 'reiki', constellations: 'costellazioni',
+  astrology: 'astrologia', ayurveda: 'ayurveda', tantra: 'tantra',
+  detox: 'detox', nature: 'cammini', women: 'cerchi', growth: 'crescita',
+  mixed: 'misto',
 };
 
 // NW2 — interessi ESPERIENZIALI (vocabolario del backend, non i topics
 // editoriali): servono alle proposte di ritiri/esperienze
-const EXP_INTERESTS = ['yoga', 'meditazione', 'breathwork', 'reiki',
-  'costellazioni', 'cerchi', 'suono', 'misto'];
+const EXP_INTERESTS = ['yoga', 'meditazione', 'breathwork', 'suono', 'reiki',
+  'costellazioni', 'astrologia', 'ayurveda', 'tantra', 'detox', 'cammini',
+  'cerchi', 'crescita', 'misto'];
 const EXP_INTEREST_LABELS = {
-  yoga: 'Yoga', meditazione: 'Meditazione', breathwork: 'Breathwork',
-  reiki: 'Reiki', costellazioni: 'Costellazioni familiari',
-  cerchi: 'Cerchi', suono: 'Bagni di suono', misto: "Un po' di tutto",
+  yoga: 'Yoga & movimento', meditazione: 'Meditazione & mindfulness',
+  breathwork: 'Respiro & breathwork', suono: 'Suono & sound healing',
+  reiki: 'Reiki & pratiche energetiche', costellazioni: 'Costellazioni familiari',
+  astrologia: 'Astrologia & tarocchi', ayurveda: 'Ayurveda & discipline orientali',
+  tantra: 'Tantra & relazioni', detox: 'Detox & digiuno', cammini: 'Cammini & natura',
+  cerchi: 'Cerchi & femminile', crescita: 'Crescita personale',
+  misto: 'Esperienza mista, più operatori',
 };
 
 // BN1 — compact: la variante da fine articolo (blog). Solo email +

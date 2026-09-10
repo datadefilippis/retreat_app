@@ -35,7 +35,7 @@ import LeadForm from './LeadForm';
 // RB12 (10/9/2026) — dal Magazine si arriva con ?tema=<categoria>: il
 // chip corrispondente parte acceso (vocabolario dei chip di LeadForm).
 const TEMA_TO_CHIP = { yoga: 'yoga', meditazione: 'meditation', breathwork: 'breathwork',
-  suono: 'sound', femminile: 'women', cammini: 'mixed', detox: 'mixed', massaggio: 'mixed' };
+  suono: 'sound', femminile: 'women', cammini: 'nature', detox: 'detox', massaggio: 'mixed' };
 function temaIniziale() {
   if (typeof window === 'undefined') return [];
   const tema = new URLSearchParams(window.location.search).get('tema');
@@ -71,11 +71,11 @@ function SchedaForm({ t, id, context, titolo }) {
         accent={SAGE}
         context={context === 'hero' ? 'cerca-ritiro' : 'cerca-ritiro_fondo'}
         ctaLabel={t('tr.cta', { defaultValue: 'Trovami il mio ritiro' })}
-        consentText={t('tr.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya, con i ritiri e le esperienze nella mia zona.' })}
+        consentText={t('tr.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya, con ritiri ed esperienze selezionati in base alle mie preferenze.' })}
         thanksBody={t('tr.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e conferma. Appena confermi si aprono le meditazioni riservate, e il 15 gennaio 2027 ricevi la selezione dei ritiri di primavera scelta per te.' })}
       />
       <p className="mt-4 text-xs leading-relaxed text-foreground/60">
-        {t('tr.trust', { defaultValue: 'Una conferma via email, poi sei dentro. Gratis, e ti cancelli con un clic.' })}
+        {t('tr.trust', { defaultValue: 'Una conferma via email, poi sei dentro. Gratis e puoi cancellarti con un clic.' })}
       </p>
       {/* PL22 — il canale diretto resta: c'e' chi i form non li ama */}
       <p className="mt-2 text-xs text-foreground/60">
@@ -91,7 +91,7 @@ export default function TravelerLandingPage() {
 
   useSeoMeta({
     title: t('tr.seoTitle', { defaultValue: 'Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya' }),
-    description: t('tr.seoDesc', { defaultValue: 'Dicci cosa cerchi e dove: ti avvisiamo quando c’è un ritiro o un’esperienza vicino a te. Subito le meditazioni riservate; il 15 gennaio 2027 la selezione dei ritiri di primavera.' }),
+    description: t('tr.seoDesc', { defaultValue: 'Dicci cosa cerchi e dove: ti avvisiamo quando troviamo un ritiro adatto a te, vicino a dove vuoi andare. Subito le meditazioni riservate; il 15 gennaio 2027 la selezione dei ritiri di primavera.' }),
     canonicalPath: '/cerca-ritiro',
   });
 
@@ -100,31 +100,34 @@ export default function TravelerLandingPage() {
     {
       Icon: Headphones,
       when: t('tr.d1w', { defaultValue: 'Subito' }),
+      label: t('tr.l1', { defaultValue: 'Meditazioni riservate' }),
       title: t('tr.d1t', { defaultValue: 'Le meditazioni riservate' }),
-      body: t('tr.d1b', { defaultValue: 'Sessioni complete di Aurya Sound che fuori dal Cerchio si possono solo assaggiare. Si aprono appena confermi l’email.' }),
+      body: t('tr.d1b', { defaultValue: 'Sessioni complete di Aurya Sound, disponibili gratuitamente per chi entra nel Cerchio.' }),
     },
     {
       Icon: Mail,
       when: t('tr.d2w', { defaultValue: 'Quando vale la pena' }),
+      label: t('tr.l2', { defaultValue: 'La Lettera di Aurya' }),
       title: t('tr.d2t', { defaultValue: 'La Lettera' }),
-      body: t('tr.d2b', { defaultValue: 'Una pratica raccontata bene, una persona della rete da conoscere e i ritiri in anteprima nella tua zona.' }),
+      body: t('tr.d2b', { defaultValue: 'Una pratica raccontata bene, una persona della rete da conoscere e i ritiri da scoprire in anteprima.' }),
     },
     {
       Icon: CalendarHeart,
-      when: t('tr.d3w', { defaultValue: 'Il 15 gennaio 2027' }),
+      when: t('tr.d3w', { defaultValue: '15 gennaio 2027' }),
+      label: t('tr.l3', { defaultValue: 'La selezione dei ritiri di primavera 2027' }),
       title: t('tr.d3t', { defaultValue: 'La selezione dei ritiri di primavera 2027' }),
-      body: t('tr.d3b', { defaultValue: 'Non un catalogo: i ritiri e le esperienze scelti per quello che ci hai detto, con chi li conduce, il luogo, il prezzo e la caparra.' }),
+      body: t('tr.d3b', { defaultValue: 'Il 15 gennaio ti presenteremo i ritiri selezionati in base a ciò che ci hai raccontato: chi li conduce, il luogo, il prezzo e la caparra.' }),
     },
   ];
 
   /* le tre promesse di luglio, ancora vere */
   const promesse = [
     { Icon: Leaf, title: t('tr.b1t', { defaultValue: 'Scelti, non elencati' }),
-      body: t('tr.b1b', { defaultValue: 'Dietro ogni ritiro c’è una persona con un volto, un luogo vero e le recensioni di chi c’è stato davvero. Sai a chi ti affidi, prima di partire.' }) },
+      body: t('tr.b1b', { defaultValue: 'Dietro ogni ritiro c’è una persona, un luogo vero e le recensioni di chi c’è stato davvero. Sai a chi ti affidi, prima di partire.' }) },
     { Icon: ShieldCheck, title: t('tr.b2t', { defaultValue: 'Il posto è tuo, senza ansia' }),
-      body: t('tr.b2b', { defaultValue: 'Blocchi con una caparra, il saldo arriva dopo, regole chiare fin dall’inizio. Nessun bonifico al buio.' }) },
+      body: t('tr.b2b', { defaultValue: 'Blocchi con una caparra, il saldo arriva dopo e le condizioni sono chiare fin dall’inizio.' }) },
     { Icon: MapPin, title: t('tr.b3t', { defaultValue: 'Vicino a dove sei' }),
-      body: t('tr.b3b', { defaultValue: 'Ci dici dove vivi e ti proponiamo esperienze raggiungibili. A volte il viaggio che serve è a un’ora da casa.' }) },
+      body: t('tr.b3b', { defaultValue: 'Ci dici dove vuoi andare e ti proponiamo esperienze raggiungibili. A volte il viaggio che serve è a un’ora da casa.' }) },
   ];
 
   /* prova prima di entrare: due cose vere che si possono fare adesso */
@@ -132,13 +135,13 @@ export default function TravelerLandingPage() {
     {
       to: '/sound',
       title: t('tr.a1t', { defaultValue: 'Ascolta un assaggio' }),
-      body: t('tr.a1b', { defaultValue: 'Su Aurya Sound ascolti novanta secondi di una meditazione riservata, senza iscriverti. Se ti fa bene, il resto è dentro.' }),
+      body: t('tr.a1b', { defaultValue: 'Su Aurya Sound puoi ascoltare novanta secondi di una meditazione riservata, senza iscriverti. Se vuoi continuare, il resto è dentro.' }),
       cta: t('tr.a1c', { defaultValue: 'Vai su Aurya Sound' }),
     },
     {
       to: '/operatori',
       title: t('tr.a2t', { defaultValue: 'Guarda chi c’è nella rete' }),
-      body: t('tr.a2b', { defaultValue: 'I professionisti che raccontiamo, con i loro servizi e i loro ritiri: sono loro che ti avviseremo per primi.' }),
+      body: t('tr.a2b', { defaultValue: 'I professionisti che raccontiamo, con i loro servizi e i loro ritiri.' }),
       cta: t('tr.a2c', { defaultValue: 'Scopri i professionisti' }),
     },
   ];
@@ -158,7 +161,6 @@ export default function TravelerLandingPage() {
           align="left"
           width="max-w-6xl"
           labelledBy="tr-open-title"
-          eyebrow={t('tr.eyebrow', { defaultValue: 'Per chi sente il bisogno di fermarsi' })}
         >
           <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-12">
             <div className="lg:col-span-6">
@@ -167,13 +169,13 @@ export default function TravelerLandingPage() {
                 {t('tr.title', { defaultValue: 'C’è un ritiro che ti sta aspettando.' })}
               </DisplayTitle>
               <p className="mt-6 max-w-[46ch] text-balance text-lg leading-relaxed text-hero-shadow opacity-95 sm:text-xl">
-                {t('tr.subtitle', { defaultValue: 'Il silenzio di un uliveto, un cerchio di persone vere, il respiro che torna lento. Dicci cosa cerchi e dove: ti avvisiamo quando c’è, vicino a te.' })}
+                {t('tr.subtitle', { defaultValue: 'Il silenzio di un uliveto, un cerchio di persone vere, il respiro che torna lento. Dicci cosa cerchi e dove. Ti avvisiamo quando troviamo un ritiro adatto a te, vicino a dove vuoi andare.' })}
               </p>
               <ul className="mt-7 space-y-2 text-hero-shadow" data-testid="tr-open-valori">
-                {dopo.map(({ Icon, when, title }) => (
+                {dopo.map(({ Icon, when, label, title }) => (
                   <li key={title} className="flex items-center gap-2.5 text-base sm:text-lg">
                     <Icon className="h-5 w-5 shrink-0 text-[#d6c49a]" aria-hidden />
-                    <span><span className="opacity-80">{when}:</span> {title}</span>
+                    <span><span className="opacity-80">{when}:</span> {label || title}</span>
                   </li>
                 ))}
               </ul>
@@ -267,7 +269,7 @@ export default function TravelerLandingPage() {
               {t('tr.endTitle', { defaultValue: 'Raccontaci cosa cerchi.' })}
             </DisplayTitle>
             <Lede size="lead" tone="inherit" className="mt-6">
-              {t('tr.end1', { defaultValue: 'Trenta secondi. Ti scriviamo solo quando c’è qualcosa per te.' })}
+              {t('tr.end1', { defaultValue: 'Trenta secondi. Ti scriviamo solo quando c’è qualcosa che può interessarti.' })}
             </Lede>
             <div className="mt-8">
               <SchedaForm t={t} id="racconta-fondo" context="fondo" />

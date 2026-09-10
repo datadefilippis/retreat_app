@@ -21,7 +21,10 @@ import api from '../../api/client';
 import { trackEvent } from '../../lib/analytics';   // RB13
 import MarketplaceShell from './components/MarketplaceShell';
 import useSeoMeta from './lib/useSeoMeta';
-import { Section, DisplayTitle, Lede, EditorialCta } from '../../components/editorial';
+import { Section, DisplayTitle, Lede, EditorialCta, PhotoOpener } from '../../components/editorial';
+
+// founder 10/9 sera: una copertina che chiami, dalle foto gia' in repo
+const COVER = '/media/aurya-hero-poster.jpg';
 
 function fmtDates(start, end, lang = 'it-IT') {
   if (!start) return '';
@@ -99,12 +102,15 @@ export default function EsperienzePage() {
   return (
     <MarketplaceShell noSearch>
       <div className="bg-background">
-        <Section tone="cream" rhythm="flow" width="max-w-6xl">
-          <DisplayTitle as="h1" size="section" measure="title">I prossimi ritiri ed esperienze.</DisplayTitle>
-          <Lede size="lead" className="mt-5">
+        <PhotoOpener data-testid="esp-cover" image={COVER} focus="50% 40%" height="standard"
+                     align="left" width="max-w-6xl" labelledBy="esp-title">
+          <DisplayTitle as="h1" id="esp-title" size="hero" measure="title" className="text-hero-shadow">
+            I prossimi ritiri ed esperienze.
+          </DisplayTitle>
+          <p className="mt-6 max-w-[46ch] text-balance text-lg leading-relaxed text-hero-shadow opacity-95 sm:text-xl">
             I ritiri e le esperienze dei professionisti della rete, per data. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.
-          </Lede>
-        </Section>
+          </p>
+        </PhotoOpener>
 
         {dati === null && (
           <Section tone="paper" rhythm="flow" width="max-w-6xl"><p className="text-sm text-muted-foreground">Carico…</p></Section>
