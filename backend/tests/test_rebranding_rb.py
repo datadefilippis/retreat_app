@@ -685,6 +685,13 @@ class TestFv2LeSequenze:
         es = (BACKEND_DIR / "services" / "email_service.py").read_text()
         assert 'store.get("reply_to_email") or await contatto_operatore(org_id, store)' in es
         assert "reply_to=(customer_email or None)" in oes, "l'operatore risponde al cliente, non ad Aurya"
+        # FV7-bis: l'operatore VEDE e puo' cambiare l'indirizzo, in Impostazioni
+        org = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        assert '@router.get("/current/risposte-clienti")' in org and '@router.put("/current/risposte-clienti")' in org
+        assert org.index("async def _risposte_clienti") < org.index('@router.get("/current/cerchio-vicino")'), "mai fra decoratore e funzione"
+        card = (FE / "features" / "settings" / "sections" / "RisposteCard.jsx").read_text()
+        assert "risposte-clienti" in card and 'data-testid="risposte-effettivo"' in card
+        assert "<RisposteCard />" in (FE / "features" / "settings" / "SettingsPage.js").read_text()
         # chi usa il contesto passa il suo reply_to (non lascia il default)
         for f in ("payment_email_service.py", "event_email_service.py"):
             src = (BACKEND_DIR / "services" / f).read_text()

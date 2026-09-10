@@ -2287,6 +2287,49 @@ async def mark_welcome_seen(current_user: dict = Depends(get_current_user)):
     return {"ok": True}
 
 
+async def _risposte_clienti(org_id: str) -> dict:
+    """FV7-bis (10/9/2026 sera): a quale indirizzo rispondono i clienti
+    dell'operatore, e da dove viene. La stessa catena di
+    order_email_service.contatto_operatore, con la fonte."""
+    org = await organization_repository.find_by_id(org_id) or {}
+    ss = org.get("store_settings") or {}
+    for campo, fonte in (("reply_to_email", "impostato"), ("contact_email", "contatto"),
+                         ("notification_email", "notifiche")):
+        v = (ss.get(campo) or "").strip()
+        if v:
+            return {"email": v, "fonte": fonte, "impostato": (ss.get("reply_to_email") or "").strip() or None}
+    from database import users_collection
+    u = await users_collection.find_one(
+        {"organization_id": org_id, "role": "admin", "is_active": {"$ne": False}},
+        {"_id": 0, "email": 1}, sort=[("created_at", 1)])
+    return {"email": (u or {}).get("email"), "fonte": "account", "impostato": None}
+
+
+class RisposteClientiUpdate(BaseModel):
+    email: str = Field(default="", max_length=255)
+
+
+@router.get("/current/risposte-clienti")
+async def risposte_clienti(current_user: dict = Depends(require_admin)):
+    return await _risposte_clienti(current_user["organization_id"])
+
+
+@router.put("/current/risposte-clienti")
+async def imposta_risposte_clienti(payload: RisposteClientiUpdate,
+                                   current_user: dict = Depends(require_admin)):
+    """Un indirizzo dedicato per le risposte dei clienti; vuoto = si torna
+    alla catena (contatto, notifiche, account)."""
+    import re as _re
+    from database import organizations_collection
+    email = (payload.email or "").strip().lower()
+    if email and not _re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+        raise HTTPException(status_code=400, detail="Indirizzo email non valido")
+    op = {"$set": {"store_settings.reply_to_email": email}} if email \
+        else {"$unset": {"store_settings.reply_to_email": ""}}
+    await organizations_collection.update_one({"id": current_user["organization_id"]}, op)
+    return await _risposte_clienti(current_user["organization_id"])
+
+
 @router.get("/current/cerchio-vicino")
 async def cerchio_vicino(region: str = "", current_user: dict = Depends(require_admin)):
     """P6 (10/9/2026, piano di business §5.2, il primo innesco): mentre

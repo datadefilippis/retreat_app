@@ -17,6 +17,7 @@ import { useEntitlements } from '../../hooks/useEntitlements';
 import BillingSection from '../../components/BillingSection';
 import PaymentConnectionsCard from './PaymentConnectionsCard';
 import BonificoCard from './sections/BonificoCard';   // P2
+import RisposteCard from './sections/RisposteCard';   // FV7-bis
 import PaymentMethodsSection from './sections/PaymentMethodsSection';
 import SalesConditionsCard from './sections/SalesConditionsCard';
 import LetterCard from './sections/LetterCard';   // CP2
@@ -477,6 +478,9 @@ export const SettingsPage = () => {
 
         {/* P2 (10/9/2026) — il bonifico e' la strada principale della caparra */}
         {isAdmin ? <BonificoCard /> : null}
+
+        {/* FV7-bis (10/9/2026) — dove rispondono i clienti: visibile e cambiabile */}
+        {isAdmin ? <RisposteCard /> : null}
 
         {/* ── CH compliance v1: Payment methods preflight (Stripe capabilities) ── */}
         {isAdmin ? <PaymentMethodsSection /> : null}
