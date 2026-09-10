@@ -577,6 +577,9 @@ class TestCodaBadgeERecensioni:
         assert 'data-testid="reviews-cta"' in hdr
         assert "document.getElementById('recensioni')" in hdr and "scrollIntoView" in hdr
         assert "#recensioni" in hdr, "dalla pagina intervista porta al profilo"
-        assert "Ancora nessuna: scrivi la prima" in hdr, "anche a zero recensioni la voce c'e'"
+        assert "scrivi la prima" in hdr, "anche a zero recensioni la voce c'e'"
+        # founder 10/9: «piu' in evidenza, ma lean» — resta nella fila dei badge
+        i = hdr.index('data-testid="reviews-cta"')
+        assert "rounded-full" in hdr[i:i + 900] and "text-2xl" not in hdr[i:i + 900]
         page = (FE / "features" / "storefront" / "OperatorProfilePage.js").read_text()
         assert 'id="recensioni"' in page and "scroll-mt-20" in page
