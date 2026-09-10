@@ -351,7 +351,7 @@
     "faqWhoA": "Every retreat has a face: below you find the organizer profile, with their story and reviews from people who already took part.",
     "verifiedReviews_one": "1 verified review",
     "verifiedReviews_other": "{{count}} verified reviews",
-    "breadcrumbRetreats": "Retreats"
+    "breadcrumbRetreats": "Ritiri ed esperienze"
   },
   "product": {
     "loading": "Loading…",
@@ -464,14 +464,14 @@
     "emptyFiltered": "Try widening your search: remove a filter or check another month.",
     "showAll": "Show all retreats",
     "searchShort": "Search…",
-    "title": "Holistic retreats and experiences to evolve",
-    "subtitle": "Yoga, meditation, breathwork, silence. Choose the experience that calls you and secure your spot with a protected deposit. The rest is the journey.",
+    "title": "I prossimi ritiri ed esperienze.",
+    "subtitle": "I ritiri e le esperienze dei professionisti della rete, per data. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.",
     "allCategories": "All categories",
     "allRegions": "All regions",
     "clearFilters": "Clear filters",
     "loading": "Looking for retreats…",
-    "emptyTitle": "No retreats found",
-    "emptyBody": "Try widening the filters, or come back soon: the calendar grows every week.",
+    "emptyTitle": "I primi ritiri stanno arrivando.",
+    "emptyBody": "I professionisti della rete li stanno pubblicando. Dicci cosa cerchi e dove: ti avvisiamo appena c’è un ritiro vicino a te.",
     "priceFrom": "from {{price}}",
     "depositBadge": "Book with a deposit",
     "fewLeft": "Only {{count}} spots left",
@@ -491,7 +491,8 @@
     "comingSoon": "Coming soon",
     "prelaunchPreviewNote": "This is just a preview of what Aurya will look like. The first real retreats arrive at launch.",
     "prelaunchPreviewCtaTraveler": "Notify me at launch",
-    "prelaunchPreviewCtaOperator": "Bring your retreats to Aurya"
+    "prelaunchPreviewCtaOperator": "Bring your retreats to Aurya",
+    "emptyFilteredTitle": "Nessun ritiro con questi filtri"
   },
   "operator": {
     "website": "Website",

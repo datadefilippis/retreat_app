@@ -235,23 +235,17 @@ def test_prelaunch_directory_noindex_and_honest_preview():
     # /operatori NON c'e' piu' (in fase rete e' la landing dei membri,
     # indicizzabile — guardia speculare in test_seo_shell.py).
     from routers.seo_shell import _PHASE_NOINDEX_HEADS
-    assert set(_PHASE_NOINDEX_HEADS) == {"ritiri", "destinazioni", "esperienze"}
+    assert set(_PHASE_NOINDEX_HEADS) == {"ritiri", "destinazioni"}   # RE (10/9): /esperienze decide dal dato
 
+    # RE (10/9/2026 sera): la modalita' PL22 (banner «ritiri d'esempio», sei
+    # schede, filtri spenti) e' RITIRATA dal calendario: /esperienze e' la
+    # pagina vera in ogni fase, anche col flag di pre-lancio acceso.
     frontend = Path(__file__).resolve().parent.parent.parent / "frontend" / "src"
     cal = (frontend / "features" / "storefront" / "RetreatsCalendarPage.js").read_text(
         encoding="utf-8")
-    # PN 29/7 — il flag di fase resta la fonte; sull'anteprima non
-    # linkata /esplora-ritiri (dati VERI via preview=1) la modalita'
-    # PL22 si spegne: l'anteprima onesta vale per le pagine di fase.
-    assert "const { prelaunch: sitePrelaunch } = useSiteConfig();" in cal
-    assert "const prelaunch = sitePrelaunch && !isPreview;" in cal
-    # ricerca hero, categorie e barra filtri spente in pre-lancio
-    assert cal.count("!prelaunch &&") >= 3, \
-        "regressione: filtri/ricerca tornerebbero visibili sull'anteprima"
-    # poche card bastano a raccontare il concept
-    assert "items.slice(0, 6)" in cal
-    # chiusura onesta: CTA verso le landing lead, non un finto 'mostra altri'
-    assert "prelaunchPreviewNote" in cal
+    assert "PrelaunchBanner" not in cal and "sitePrelaunch" not in cal and "items.slice(0, 6)" not in cal
+    # la chiusura del calendario oggi e' quella vera (P3 → RE): le due porte
+    assert "Non trovi il tuo?" in cal and "esp-cta-cerca" in cal
 
 
 def test_prelaunch_gates_operators_and_destinations_pages():

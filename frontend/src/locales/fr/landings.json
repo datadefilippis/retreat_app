@@ -351,7 +351,7 @@
     "faqWhoA": "Chaque retraite a un visage : tu trouves ci-dessous le profil de l'organisateur, avec son histoire et les avis de ceux qui ont déjà participé.",
     "verifiedReviews_one": "1 avis vérifié",
     "verifiedReviews_other": "{{count}} avis vérifiés",
-    "breadcrumbRetreats": "Retraites"
+    "breadcrumbRetreats": "Ritiri ed esperienze"
   },
   "product": {
     "loading": "Chargement…",
@@ -464,14 +464,14 @@
     "emptyFiltered": "Élargis ta recherche : retire un filtre ou regarde un autre mois.",
     "showAll": "Voir toutes les retraites",
     "searchShort": "Chercher…",
-    "title": "Retraites holistiques et expériences pour évoluer",
-    "subtitle": "Yoga, méditation, souffle, silence. Choisissez l'expérience qui vous appelle et bloquez votre place avec un acompte protégé. Le reste est le chemin.",
+    "title": "I prossimi ritiri ed esperienze.",
+    "subtitle": "I ritiri e le esperienze dei professionisti della rete, per data. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.",
     "allCategories": "Toutes les catégories",
     "allRegions": "Toutes les régions",
     "clearFilters": "Réinitialiser les filtres",
     "loading": "Recherche des retraites…",
-    "emptyTitle": "Aucune retraite trouvée",
-    "emptyBody": "Élargis les filtres ou reviens bientôt : le calendrier s'enrichit chaque semaine.",
+    "emptyTitle": "I primi ritiri stanno arrivando.",
+    "emptyBody": "I professionisti della rete li stanno pubblicando. Dicci cosa cerchi e dove: ti avvisiamo appena c’è un ritiro vicino a te.",
     "priceFrom": "à partir de {{price}}",
     "depositBadge": "Réserver avec acompte",
     "fewLeft": "Plus que {{count}} places",
@@ -491,7 +491,8 @@
     "comingSoon": "Bientôt disponible",
     "prelaunchPreviewNote": "Ceci n'est qu'un aperçu de ce à quoi ressemblera Aurya. Les premières retraites réelles arrivent au lancement.",
     "prelaunchPreviewCtaTraveler": "Prévenez-moi au lancement",
-    "prelaunchPreviewCtaOperator": "Amène tes retraites sur Aurya"
+    "prelaunchPreviewCtaOperator": "Amène tes retraites sur Aurya",
+    "emptyFilteredTitle": "Nessun ritiro con questi filtri"
   },
   "operator": {
     "website": "Site web",

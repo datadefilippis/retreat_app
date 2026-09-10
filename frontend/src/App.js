@@ -49,7 +49,6 @@ const EventDashboardPage = lazy(() => import("./features/events/EventDashboardPa
 const EventsListPage = lazy(() => import("./features/events/EventsListPage"));
 const EventWizard = lazy(() => import("./features/events/EventWizard"));
 import RetreatsCalendarPage from "./features/storefront/RetreatsCalendarPage";
-const EsperienzePage = lazy(() => import("./features/storefront/EsperienzePage"));   // P3
 import OperatorProfilePage from "./features/storefront/OperatorProfilePage";
 // LK2 — la pagina link per la bio di Instagram (/@slug e /l/slug)
 import LinkPage from "./features/storefront/LinkPage";
@@ -404,19 +403,23 @@ function HomeGate() {
 // per il visitatore: niente anteprima di campioni, il valore lo danno
 // Magazine, Manifesto e (RT3) i profili della rete. In fase marketplace
 // resta il redirect S0 alla home (la home È la directory).
+// RE (10/9/2026 sera, founder: «riaccendiamo»): /esperienze E' il
+// calendario dei ritiri (RetreatsCalendarPage), in ogni fase. La pagina
+// semplice di P3 (EsperienzePage) e' stata ritirata: una pagina sola.
 function EsperienzeGate() {
-  const { sitePhase, loading } = useSiteConfig();
-  if (loading) return null;
-  if (sitePhase === 'network') return <EsperienzePage />;
-  return <RedirectPreservingQuery to="/" />;
+  return <RetreatsCalendarPage />;
 }
 
 function RitiriGate() {
-  const { loading } = useSiteConfig();
-  if (loading) return null;   // evita il redirect prima di sapere la fase
-  // In entrambe le fasi /ritiri riporta alla home: in network la
-  // vetrina non esiste, in marketplace la home E' la directory (S0).
-  return <RedirectPreservingQuery to="/" />;
+  // /ritiri → /esperienze (nginx fa il 301 vero; qui vale per la SPA)
+  return <RedirectPreservingQuery to="/esperienze" />;
+}
+
+// /esplora-ritiri era l'anteprima non linkata (29/7): ora e' /esperienze
+function EsploraRitiriRedirect() {
+  const { categoria, regione } = useParams();
+  const dove = '/esperienze' + (categoria ? `/${categoria}` : '') + (regione ? `/${regione}` : '');
+  return <RedirectPreservingQuery to={dove} />;
 }
 
 // PP2 — le pagine categoria seguono la stessa regola di /ritiri: in
@@ -424,10 +427,10 @@ function RitiriGate() {
 // qui erano un residuo dell'era prelaunch), in marketplace la
 // categoria e' una pagina vera.
 function RitiriCategoryGate() {
-  const { sitePhase, loading } = useSiteConfig();
-  if (loading) return null;
-  if (sitePhase === 'network') return <RedirectPreservingQuery to="/" />;
-  return <RetreatsCalendarPage />;
+  // RE (10/9): le pagine categoria/regione vivono sotto /esperienze
+  const { categoria, regione } = useParams();
+  const dove = '/esperienze' + (categoria ? `/${categoria}` : '') + (regione ? `/${regione}` : '');
+  return <RedirectPreservingQuery to={dove} />;
 }
 
 // PL23→RT3 — in fase network /operatori era la landing della rete
@@ -659,9 +662,9 @@ function AppRoutes() {
           directory ritiri: stessa pagina di /ritiri (marketplace) in
           OGNI fase, con dati veri via ?preview=1 e noindex. Nessuna
           voce di menu: si raggiunge solo via URL diretto. */}
-      <Route path="/esplora-ritiri" element={<RetreatsCalendarPage />} />
-      <Route path="/esplora-ritiri/:categoria" element={<RetreatsCalendarPage />} />
-      <Route path="/esplora-ritiri/:categoria/:regione" element={<RetreatsCalendarPage />} />
+      <Route path="/esplora-ritiri" element={<EsploraRitiriRedirect />} />
+      <Route path="/esplora-ritiri/:categoria" element={<EsploraRitiriRedirect />} />
+      <Route path="/esplora-ritiri/:categoria/:regione" element={<EsploraRitiriRedirect />} />
       <Route path="/operatori/:categoria" element={<OperatorsGate />} />
       <Route path="/destinazioni" element={<DestinationsGate />} />
       <Route path="/destinazioni/:luogo" element={<DestinationsGate />} />
@@ -670,7 +673,8 @@ function AppRoutes() {
           esperienze» — tutti i ritiri pubblicati, gratis, con la fascia
           in prima fila; in fase marketplace la directory e' la home. */}
       <Route path="/esperienze" element={<EsperienzeGate />} />
-      <Route path="/esperienze/*" element={<Navigate to="/" replace />} />
+      <Route path="/esperienze/:categoria" element={<EsperienzeGate />} />
+      <Route path="/esperienze/:categoria/:regione" element={<EsperienzeGate />} />
       <Route path="/o/:org_slug" element={<OperatorProfilePage />} />
       {/* LK2 — pagina link per la bio di Instagram: /l/{slug} e' la
           rotta esplicita; /@{slug} vive nel catch-all in fondo (React

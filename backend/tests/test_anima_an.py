@@ -502,15 +502,18 @@ class TestDs3EsperienzeOut:
         app = (FRONTEND_SRC / "App.js").read_text()
         assert "ExperiencesPage" not in app          # la vecchia resta fuori
         assert 'path="/esperienze" element={<EsperienzeGate />}' in app
-        assert '"/esperienze/*"' in app              # sottopercorsi → home
+        # RE (10/9/2026): categoria e regione vivono sotto /esperienze
+        assert 'path="/esperienze/:categoria/:regione" element={<EsperienzeGate />}' in app
 
     def test_esperienze_fuori_dalla_sitemap_noindex_in_rete(self):
+        # RE (10/9/2026): /esperienze entra in sitemap SOLO se ha ritiri
+        # (listable_retreats), e la shell la serve dal dato, non da _BRAND_PAGES
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
-        assert 'f"{base}/esperienze"' not in seo
+        assert 'f"{base}/esperienze"' in seo and seo.index("listable_retreats()") < seo.index('f"{base}/esperienze"')
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        assert 'head == "esperienze"' not in shell   # passa da _BRAND_PAGES
-        assert '"esperienze": {' in shell
-        assert '"esperienze")' in shell[shell.index("_PHASE_NOINDEX_HEADS = ("):][:80]
+        assert 'head in ("esperienze", "ritiri", "esplora-ritiri")' in shell
+        assert '"esperienze": {' not in shell.split("_BRAND_PAGES = {")[1].split("\n}\n")[0]
+        assert '"esperienze"' not in shell.split("_PHASE_NOINDEX_HEADS = ")[1].split("\n")[0]   # RE (10/9): decide il dato, non la fase
 
 
 class TestPlaceFilterCoherence:
@@ -603,7 +606,7 @@ class TestSeo3OnPage:
         # PN 29/7 — stesso link crawlabile, sul basePath dinamico
         # (default '/ritiri'; '/esplora-ritiri' solo sull'anteprima)
         assert "${basePath}/${category}/${rg}" in page    # link crawlabile
-        assert ": '/ritiri';" in page                    # default invariato
+        assert "const basePath = '/esperienze';" in page  # RE (10/9): la base e' /esperienze
         assert 'aria-label="breadcrumb"' in page
         # niente em-dash né 'in Italia' nel title/description SEO
         assert "— prenota online" not in page

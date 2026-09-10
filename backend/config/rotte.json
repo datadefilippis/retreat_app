@@ -138,10 +138,11 @@
   ],
   "rimandi": {
     "index.html": "/",
-    "ritiri": "/",
+    "ritiri": "/esperienze",
     "come-funziona": "/manifesto"
   },
   "rimandi_prefisso": {
-    "esplora-operatori": "/operatori"
+    "esplora-operatori": "/operatori",
+    "esplora-ritiri": "/esperienze"
   }
 }

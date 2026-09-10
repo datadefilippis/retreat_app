@@ -1443,7 +1443,9 @@ class TestAnteprimaMarketplace:
         assert 'path="/esplora-operatori"' in app
         cal = (FRONTEND_SRC / "features" / "storefront"
                / "RetreatsCalendarPage.js").read_text()
-        assert "'/esplora-ritiri'" in cal
+        # RE (10/9/2026 sera): l'anteprima /esplora-ritiri rimanda a /esperienze,
+        # che E' il calendario: basePath fisso, dati veri sempre
+        assert "const basePath = '/esperienze';" in cal and "EsploraRitiriRedirect" in app
         assert "q.preview = 1" in cal
         # ES — il noindex ora dipende dai DATI, non dalla rotta.
         # Si ancora alla forma CODICE (con la virgola): i commenti qui
@@ -3698,9 +3700,9 @@ class TestPotaturaPs6:
 
     def test_ps6_breadcrumb_landing_onesto(self):
         elp = (self.SF / "EventLandingPage.js").read_text()
-        # fase network: crumb "Aurya" → home, o /esplora-ritiri se anteprima
-        assert "sitePhase === 'network'" in elp
-        assert "/esplora-ritiri" in elp
+        # RE (10/9/2026): la directory dei ritiri e' /esperienze in ogni fase
+        assert "const rootTo = '/esperienze';" in elp
+        assert "`/esperienze/${product.category}`" in elp
         assert "breadcrumbRetreats" in elp
 
     # ── 9/10. attriti: avviso doppio via, ?checkout=1 con carrello vuoto ──

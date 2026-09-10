@@ -185,7 +185,7 @@ async def build_core() -> str:
                 urls.append(_url(f"{base}/esplora-operatori", priority="0.9"))
             from services.seo_listing import listable_retreats
             if await listable_retreats():
-                urls.append(_url(f"{base}/esplora-ritiri", priority="0.9"))
+                urls.append(_url(f"{base}/esperienze", priority="0.9"))   # RE (10/9): la pagina vera
             # RS (26/8) — LE MEDITAZIONI PUBBLICATE. Sono il link che
             # l'operatore condivide coi suoi clienti, e non stavano in
             # nessuna sitemap: trovate insieme alla loro pagina muta,

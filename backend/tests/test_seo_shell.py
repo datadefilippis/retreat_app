@@ -96,7 +96,9 @@ class TestResolveRouting:
     async def test_category(self):
         meta = await shell.resolve_meta("/ritiri/yoga/toscana")
         assert "Yoga" in meta["title"] and "Toscana" in meta["title"]
-        assert meta["canonical"].endswith("/ritiri/yoga/toscana")
+        # RE (10/9/2026): la canonica delle categorie sta sotto /esperienze
+        assert meta["canonical"].endswith("/esperienze/yoga/toscana")
+        assert (await shell.resolve_meta("/esperienze/yoga/toscana"))["canonical"] == meta["canonical"]
 
     @pytest.mark.asyncio
     async def test_unknown_path_is_none(self):
@@ -140,8 +142,8 @@ class TestNetworkPhaseRT5:
 
     def test_phase_noindex_spares_operatori(self):
         assert "operatori" not in shell._PHASE_NOINDEX_HEADS
-        assert set(shell._PHASE_NOINDEX_HEADS) == {
-            "ritiri", "destinazioni", "esperienze"}
+        # RE (10/9/2026): /esperienze decide dal dato (noindex finche' vuota)
+        assert set(shell._PHASE_NOINDEX_HEADS) == {"ritiri", "destinazioni"}
 
     @pytest.mark.asyncio
     async def test_come_funziona_404_in_network_lc2(self, monkeypatch):
@@ -454,13 +456,14 @@ class TestSbloccoIndicizzazioneGs:
         il noindex il giorno del primo evento. Decide il DATO."""
         monkeypatch.setenv("SITE_PHASE", "network")
         src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        blocco = src.split("async def _meta_esplora_ritiri")[1].split("async def _meta_operator")[0]
+        # RE (10/9/2026): la funzione si chiama come la pagina, /esperienze
+        blocco = src.split("async def _meta_esperienze")[1].split("async def _meta_frequenza")[0]
         assert '"noindex": quanti == 0' in blocco, \
             "il vuoto deve decidersi dai dati, non da una costante"
         assert "listable_retreats" in blocco
         # e la sitemap segue la stessa regola
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
-        assert "esplora-ritiri" in seo and "listable_retreats" in seo
+        assert 'f"{base}/esperienze"' in seo and "listable_retreats" in seo
 
     def test_il_client_non_annulla_il_lavoro_della_shell(self):
         """LA TRAPPOLA PIU' SUBDOLA di tutto il ciclo: la shell serve
@@ -479,9 +482,10 @@ class TestSbloccoIndicizzazioneGs:
             assert "noindex: isPreview," not in src, \
                 f"{nome}: il client rimette noindex e annulla la shell"
             assert "isPreview || (!loading" not in src, nome
-        # ritiri: su esplora il canonico e' se stessa (regola ES 25/8)
-        assert "isPreview ? '/esplora-" in rit, \
-            "ritiri: su esplora il canonico dev'essere se stessa"
+        # RE (10/9/2026): niente piu' anteprima; il canonico e' /esperienze
+        # (o la pagina categoria stessa), mai la home
+        assert "isPreview" not in rit
+        assert "canonicalPath: paginaCategoria ? window.location.pathname : '/esperienze'" in rit
         # SR1 (3/9/2026): la directory dei professionisti vive su
         # /operatori in ogni fase (esplora rimanda): canonico = /operatori,
         # niente piu' isPreview nella pagina

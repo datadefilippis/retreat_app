@@ -775,15 +775,11 @@ export default function EventLandingPage() {
       {!fromStore && (() => {
         let navPrev = null;
         try { navPrev = sessionStorage.getItem('aurya:nav:prev'); } catch { /* no-op */ }
-        const fromEsplora = !!navPrev && navPrev.startsWith('/esplora-ritiri');
-        const networkPhase = sitePhase === 'network';
-        const rootTo = networkPhase ? (fromEsplora ? '/esplora-ritiri' : '/') : '/';
-        const rootLabel = networkPhase && !fromEsplora
-          ? 'Aurya'
-          : t('landings:event.breadcrumbRetreats', { defaultValue: 'Ritiri' });
-        const categoryTo = networkPhase
-          ? (fromEsplora ? `/esplora-ritiri/${product.category}` : null)
-          : `/ritiri?categoria=${product.category}`;
+        // RE (10/9/2026): la directory dei ritiri e' /esperienze in ogni fase
+        void navPrev; void sitePhase;
+        const rootTo = '/esperienze';
+        const rootLabel = t('landings:event.breadcrumbRetreats', { defaultValue: 'Ritiri ed esperienze' });
+        const categoryTo = product.category ? `/esperienze/${product.category}` : null;
         return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3 pb-1 flex items-center justify-between gap-2">
           <nav className="text-xs text-gray-500 truncate">

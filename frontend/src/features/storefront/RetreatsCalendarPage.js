@@ -14,12 +14,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import useSeoMeta from './lib/useSeoMeta';
+import { trackEvent } from '../../lib/analytics';   // RB13
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import GeoSearchBar from './components/GeoSearchBar';
 import MarketplaceShell from './components/MarketplaceShell';
-import PrelaunchBanner from '../prelaunch/PrelaunchBanner';
-import { useSiteConfig } from '../../context/SiteConfigContext';
 import Redacted from '../prelaunch/Redacted';
 import MarketplaceValueSections from './components/MarketplaceValueSections';
 // G3 — vista mappa lazy (Leaflet caricato solo quando serve)
@@ -81,13 +80,18 @@ export default function RetreatsCalendarPage() {
   // di OperatorsIndexPage). Li' i dati sono VERI (?preview=1, bypass
   // PL8 lato backend) e la pagina si comporta come in fase marketplace:
   // ricerca, filtri e card piene, niente modalita' PL22.
-  const isPreview = window.location.pathname.startsWith('/esplora-ritiri');
-  const basePath = isPreview ? '/esplora-ritiri' : '/ritiri';
+  // RE (10/9/2026 sera, founder: «riaccendiamo»): il calendario E' la
+  // pagina «Ritiri ed esperienze» su /esperienze, in ogni fase. /ritiri
+  // ed /esplora-ritiri (l'anteprima non linkata del 29/7) rimandano qui.
+  // Le pagine categoria/regione vivono sotto /esperienze e restano fuori
+  // dagli indici finche' hanno meno di dieci ritiri (decide il dato).
+  const basePath = '/esperienze';
   // PL22 — anteprima ONESTA in pre-lancio (feedback analista): niente
   // ricerca/filtri non funzionanti su dati d'esempio — solo poche card
   // sfocate che raccontano il concept, e le CTA verso le landing lead.
-  const { prelaunch: sitePrelaunch } = useSiteConfig();
-  const prelaunch = sitePrelaunch && !isPreview;
+  // RE (10/9/2026): la modalita' «anteprima onesta» del pre-lancio (PL22:
+  // banner, sei schede, niente filtri) non vale qui: /esperienze e' la
+  // pagina vera, con i ritiri veri, in ogni fase.
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
@@ -137,13 +141,13 @@ export default function RetreatsCalendarPage() {
     // offerti in X (l'italiano mostra tutto)
     const uiLang = (i18n.language || 'it').slice(0, 2);
     if (uiLang !== 'it') q.lang = uiLang;
-    if (isPreview) q.preview = 1;   // PN — dati veri sulla rotta esplora
+    q.preview = 1;   // dati veri, sempre (l'anteprima era la regola, ora e' la pagina)
     api.get('/public/retreats', { params: q })
       .then(res => { if (mounted) setData(res.data); })
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [category, region, month, geoLat, geoLng, geoRadius, i18n.language, isPreview]);
+  }, [category, region, month, geoLat, geoLng, geoRadius, i18n.language]);
 
   const setFilter = (key, value) => {
     const next = new URLSearchParams(params);
@@ -187,25 +191,21 @@ export default function RetreatsCalendarPage() {
     if (region) bits.push('in ' + region);
     return bits.join(' ');
   })();
+  const paginaCategoria = Boolean(routeParams.categoria || routeParams.regione);
   useSeoMeta({
-    title: isPreview
-      ? 'Ritiri ed esperienze di benessere in Italia | Aurya'
-      : `${seoHeading} | Aurya`,
-    description: `Trova e prenota ${catLabel ? catLabel.toLowerCase() + ' ' : ''}ritiri${region ? ' a ' + region : ''}: date, prezzi e disponibilità in tempo reale, con prenotazione e caparra online.`,
-    // ES (25/8) — su /esplora-ritiri il canonico e' SE STESSA: in fase
-    // rete la home NON e' la directory dei ritiri (e' il racconto del
-    // brand), quindi il vecchio canonical '/' mandava i crawler su un
-    // documento che non c'entra.
-    canonicalPath: isPreview ? '/esplora-ritiri'
-      : (routeParams.categoria || routeParams.regione)
-        ? window.location.pathname : '/',
-    // ES (25/8) — CADE il `noindex: isPreview`: il calendario e' vuoto
-    // perche' i campioni finti sono stati rimossi, e si riempira' con
-    // i ritiri veri. Resta fuori dagli indici finche' e' vuoto (una
-    // pagina che promette ritiri inesistenti e' un rimbalzo) e si
-    // accende DA SOLA al primo evento — la stessa regola che governa
-    // la shell e la sitemap: decide il dato, non una costante.
+    title: paginaCategoria
+      ? `${seoHeading} | Aurya`
+      : 'Ritiri ed esperienze in programma | Aurya',
+    description: paginaCategoria
+      ? `Ritiri${catLabel ? ' di ' + catLabel.toLowerCase() : ''}${region ? ' in ' + region : ''} dei professionisti della rete Aurya: date, luoghi, chi li conduce e come si prenota.`
+      : 'I ritiri e le esperienze olistiche dei professionisti della rete Aurya, per data: yoga, meditazione, respiro, suono, cammini. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.',
+    canonicalPath: paginaCategoria ? window.location.pathname : '/esperienze',
+    // ES (25/8) — la pagina resta fuori dagli indici finche' e' vuota e si
+    // accende DA SOLA al primo ritiro (decide il dato). RE (10/9): le pagine
+    // categoria/regione si accendono con almeno dieci ritiri, altrimenti
+    // sono le pagine sottili chiuse a inizio settembre (IX1).
     noindex: !loading && (data?.items || []).length === 0,
+    ...(paginaCategoria ? { noindex: !loading && (data?.items || []).length < 10 } : {}),
     // F3 — ItemList dei ritiri visibili (max 20: ai crawler serve il
     // segnale di lista, non l'inventario completo)
     jsonLd: (data?.items || []).length > 0 ? {
@@ -229,7 +229,6 @@ export default function RetreatsCalendarPage() {
       {/* PL6 — avviso anteprima lancio (solo in pre-lancio). Su
           /esplora-ritiri i dati sono VERI: il banner "ritiri d'esempio"
           direbbe il falso, quindi resta fuori dalla rotta anteprima. */}
-      {!isPreview && <PrelaunchBanner audience="traveler" />}
       {/* ── Hero (DS: il tramonto di Aurya in sottofondo) ────────────── */}
       <header className="relative bg-gradient-sidebar text-white overflow-hidden">
         {/* HP4 — poster sotto + video dopo il primo rendering: la
@@ -243,12 +242,12 @@ export default function RetreatsCalendarPage() {
         <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
           {/* RB4 — il motto in font-brand, il filo d'oro del wordmark */}
           <BrandPayoff tone="hero" size="hero" rules className="mb-4" />
-          <h1 className="font-display text-4xl md:text-6xl font-medium tracking-tight leading-tight text-hero-shadow">
-            {catLabel || region ? seoHeading : t('landings:calendar.title')}
+          <h1 className="font-display text-4xl md:text-6xl font-medium tracking-tight leading-tight text-hero-shadow" data-testid="esp-title">
+            {catLabel || region ? seoHeading : t('landings:calendar.title', { defaultValue: 'I prossimi ritiri ed esperienze.' })}
           </h1>
-          <p className="text-white/95 mt-4 max-w-xl mx-auto text-base md:text-lg text-hero-shadow">{t('landings:calendar.subtitle')}</p>
+          <p className="text-white/95 mt-4 max-w-xl mx-auto text-base md:text-lg text-hero-shadow">{t('landings:calendar.subtitle', { defaultValue: 'I ritiri e le esperienze dei professionisti della rete, per data. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.' })}</p>
 
-          {!prelaunch && <div className="mt-7 max-w-xl mx-auto">
+          {<div className="mt-7 max-w-xl mx-auto">
             <input
               type="search"
               value={query}
@@ -261,7 +260,7 @@ export default function RetreatsCalendarPage() {
           {/* Categorie visuali — dalle categorie REALI del backend.
               L1: niente strip a scorrimento (era overflow-x-auto, con
               jank ai reload): riga statica che va a capo. */}
-          {!prelaunch && categories.length > 0 && (
+          {categories.length > 0 && (
             <div className="mt-7 flex flex-wrap gap-2 justify-center">
               <button
                 onClick={() => setFilter('categoria', '')}
@@ -328,7 +327,7 @@ export default function RetreatsCalendarPage() {
       )}
 
       {/* ── Barra filtri sticky (nascosta in pre-lancio: PL22) ───────── */}
-      {!prelaunch && <div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
+      {<div className="sticky top-14 z-20 border-b border-border bg-background/95 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-2">
           {/* G3 — "Dove?" con autocomplete+raggio al posto delle regioni
               (gli eventi possono essere in tutto il mondo) */}
@@ -400,33 +399,60 @@ export default function RetreatsCalendarPage() {
             {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-20 max-w-md mx-auto">
-            <img src="/logo-aurya-128.png" alt="" aria-hidden className="mx-auto h-14 w-14 select-none opacity-80" draggable={false} />
-            <p className="mt-3 text-lg font-semibold text-foreground">
-              {t('landings:calendar.emptyTitle')}
-            </p>
-            <p className="text-muted-foreground mt-1">
-              {anyFilter
-                ? t('landings:calendar.emptyFiltered', { defaultValue: 'Prova ad allargare la ricerca: togli un filtro o guarda un altro mese.' })
-                : t('landings:calendar.emptyBody')}
-            </p>
-            {anyFilter && (
+          anyFilter ? (
+            <div className="text-center py-20 max-w-md mx-auto">
+              <img src="/logo-aurya-128.png" alt="" aria-hidden className="mx-auto h-14 w-14 select-none opacity-80" draggable={false} />
+              <p className="mt-3 text-lg font-semibold text-foreground">
+                {t('landings:calendar.emptyFilteredTitle', { defaultValue: 'Nessun ritiro con questi filtri' })}
+              </p>
+              <p className="text-muted-foreground mt-1">
+                {t('landings:calendar.emptyFiltered', { defaultValue: 'Prova ad allargare la ricerca: togli un filtro o guarda un altro mese.' })}
+              </p>
               <button
                 onClick={() => { setParams({}, { replace: true }); setQuery(''); }}
                 className="mt-4 rounded-full bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold"
               >
                 {t('landings:calendar.showAll', { defaultValue: 'Mostra tutti i ritiri' })}
               </button>
-            )}
-          </div>
+            </div>
+          ) : (
+            /* P3 → RE (10/9/2026): lo stato vuoto onesto, con le parole del
+               founder e le due porte. Niente «torna presto». */
+            <div data-testid="esp-vuoto" className="mx-auto max-w-3xl rounded-[1.75rem] border border-dashed border-border p-8 text-center">
+              <p className="font-display text-2xl text-foreground">
+                {t('landings:calendar.emptyTitle', { defaultValue: 'I primi ritiri stanno arrivando.' })}
+              </p>
+              <p className="mt-3 text-base text-muted-foreground">
+                {t('landings:calendar.emptyBody', { defaultValue: 'I professionisti della rete li stanno pubblicando. Dicci cosa cerchi e dove: ti avvisiamo appena c’è un ritiro vicino a te.' })}
+              </p>
+              <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-6">
+                <Link to="/cerca-ritiro?porta=esperienze" data-testid="esp-cta-cerca"
+                      onClick={() => trackEvent('porta', { porta: 'cerca', da: 'esperienze' })}
+                      className="rounded-full bg-[#2f5749] px-6 py-3 text-sm font-semibold text-white shadow hover:bg-[#25463a] transition-colors">
+                  Trovami il mio ritiro
+                </Link>
+                <Link to="/entra-nella-rete?porta=esperienze" data-testid="esp-cta-op"
+                      onClick={() => trackEvent('porta', { porta: 'operatore', da: 'esperienze' })}
+                      className="text-sm font-medium underline underline-offset-4 text-[#2f5749]">
+                  Organizzi ritiri? Apri il tuo spazio
+                </Link>
+              </div>
+            </div>
+          )
         ) : view === 'mappa' ? (
           /* G3 — la directory sulla mappa */
           <React.Suspense fallback={<div className="h-[520px] rounded-2xl bg-gray-100 animate-pulse" />}>
             <RetreatsMapView items={items} />
           </React.Suspense>
         ) : (
+          <>
+          {!anyFilter && items.some((it) => it.prima_fila) && (
+            <p data-testid="esp-fascia-prima-fila" className="mb-4 text-xs uppercase tracking-wide text-muted-foreground">
+              In prima fila: i ritiri promossi stanno in cima
+            </p>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {(prelaunch ? items.slice(0, 6) : items).map(item => {
+            {items.map(item => {
               const badge = dateBadge(item.start_at, i18n.language);
               return (
                 <Link
@@ -466,6 +492,10 @@ export default function RetreatsCalendarPage() {
                       <span className="absolute top-3 right-3 rounded-full bg-accent text-accent-foreground px-2.5 py-1 text-[11px] font-bold shadow">
                         {t('landings:calendar.fewLeft', { count: item.remaining })}
                       </span>
+                    )}
+                    {item.prima_fila && (
+                      <span className="absolute bottom-3 left-3 rounded-full bg-[#2f5749] px-2.5 py-1 text-[11px] font-semibold text-white shadow"
+                            data-testid="esp-prima-fila">In prima fila</span>
                     )}
                     {/* MD3 — badge dei piani "In evidenza" (promessa Pro resa vera) */}
                     {item.featured && !(item.remaining != null && item.remaining <= 5 && item.remaining > 0) && (
@@ -552,6 +582,9 @@ export default function RetreatsCalendarPage() {
                             {t('landings:calendar.depositBadge')}
                           </span>
                         )}
+                        <span className="block text-[11px] text-muted-foreground">
+                          {item.booking === 'request' ? 'su richiesta' : 'prenotazione online'}
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -559,34 +592,17 @@ export default function RetreatsCalendarPage() {
               );
             })}
           </div>
+          </>
         )}
 
-        {/* PL22 — chiusura onesta dell'anteprima: niente "mostra altri"
-            finto; diciamo cos'è e riportiamo alle landing (i lead sono
-            l'obiettivo, non far credere che la ricerca funzioni). */}
-        {prelaunch && !loading && items.length > 0 && (
-          <div className="mt-10 text-center max-w-xl mx-auto">
-            <p className="text-sm text-muted-foreground">
-              {t('landings:calendar.prelaunchPreviewNote', {
-                defaultValue: 'Questa è solo un\u2019anteprima di come apparirà Aurya. I primi ritiri reali arrivano al lancio.',
-              })}
-            </p>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                to="/cerca-ritiro"
-                className="rounded-full bg-[#376254] px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#2b4f43] transition-colors"
-              >
-                {t('landings:calendar.prelaunchPreviewCtaTraveler', { defaultValue: 'Avvisami al lancio' })}
-              </Link>
-              <Link
-                to="/per-operatori"
-                className="rounded-full border border-[#C97B5D] px-6 py-2.5 text-sm font-semibold text-[#C97B5D] hover:bg-[#C97B5D]/10 transition-colors"
-              >
-                {t('landings:calendar.prelaunchPreviewCtaOperator', { defaultValue: 'Porta i tuoi ritiri su Aurya' })}
-              </Link>
-            </div>
-          </div>
+        {/* P3 → RE — la chiusura: chi non trova il suo, e chi organizza */}
+        {!loading && items.length > 0 && !anyFilter && (
+          <p className="mt-10 text-sm text-muted-foreground">
+            Non trovi il tuo? <Link to="/cerca-ritiro?porta=esperienze" className="underline">Dicci cosa cerchi</Link> e ti avvisiamo.
+            {' '}Organizzi ritiri? <Link to="/entra-nella-rete?porta=esperienze" className="underline">Apri il tuo spazio</Link>: pubblicare è gratis, senza commissioni.
+          </p>
         )}
+
       </main>
 
       {/* AN1 — l'anima di Aurya: come funziona / perché / organizzatori.

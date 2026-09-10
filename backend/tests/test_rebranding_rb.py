@@ -337,24 +337,32 @@ class TestP3MarketplaceApertoAPrimaFila:
         # la prima fila sta in cima, PRIMA del conteggio e della pagina
         assert corpo.index('items.sort(key=lambda i: not i.get("prima_fila"))') < corpo.index("total = len(items)")
 
-    def test_la_pagina_esperienze_e_semplice_e_onesta(self):
-        page = (FE / "features" / "storefront" / "EsperienzePage.js").read_text()
+    def test_la_pagina_esperienze_e_il_calendario_con_le_parti_di_p3(self):
+        """RE (10/9/2026 sera, founder: «riaccendiamo e implementiamo»):
+        una pagina sola. Il calendario di luglio (ricerca, categorie,
+        filtri, percorsi SEO) E' /esperienze, con le tre cose buone della
+        pagina di P3: la fascia in prima fila, lo stato vuoto con le
+        parole del founder e le due porte, la copertina. EsperienzePage
+        e' stata ritirata."""
+        assert not (FE / "features" / "storefront" / "EsperienzePage.js").exists()
+        page = (FE / "features" / "storefront" / "RetreatsCalendarPage.js").read_text()
         assert "api.get('/public/retreats'" in page
-        for tid in ("esp-fascia-prima-fila", "esp-tutti", "esp-vuoto",
-                    "esp-cta-cerca", "esp-cta-op", "esp-prima-fila"):
+        for tid in ("esp-fascia-prima-fila", "esp-vuoto", "esp-cta-cerca", "esp-cta-op", "esp-prima-fila", "esp-title"):
             assert f'data-testid="{tid}"' in page, tid
         assert "su richiesta" in page and "prenotazione online" in page
-        # RB13 (onda 3): le porte portano il parametro ?porta=esperienze
         assert 'to="/cerca-ritiro?porta=esperienze"' in page and 'to="/entra-nella-rete?porta=esperienze"' in page
-        assert "senza commissioni" in page
-        assert "noSearch" in page, "niente ricerca ne' mappa: quelle sono della fase marketplace"
+        assert "senza commissioni" in page and "I primi ritiri stanno arrivando." in page
+        assert "HeroVideo" in page and "GeoSearchBar" in page, "la copertina e la ricerca del calendario"
+        assert "const basePath = '/esperienze';" in page
 
-    def test_il_gate_segue_la_fase(self):
+    def test_il_gate_e_i_rimandi(self):
         app = (FE / "App.js").read_text()
         i = app.index("function EsperienzeGate()")
-        gate = app[i:i + 400]
-        assert "sitePhase === 'network'" in gate and "<EsperienzePage />" in gate
-        assert 'to="/"' in gate, "in fase marketplace la directory e' la home"
+        gate = app[i:i + 200]
+        assert "<RetreatsCalendarPage />" in gate and "sitePhase" not in gate, "in ogni fase"
+        assert 'path="/esperienze/:categoria"' in app and 'path="/esperienze/:categoria/:regione"' in app
+        assert "function EsploraRitiriRedirect()" in app and "function RitiriCategoryGate()" in app
+        assert 'to="/esperienze"' in app[app.index("function RitiriGate()"):][:300]
 
     def test_l_hint_in_admin_non_dice_piu_che_su_richiesta_resta_fuori(self):
         hint = (FE / "components" / "DirectoryListingHint.jsx").read_text()
@@ -473,7 +481,7 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
             assert frase not in testo.lower(), frase
         assert "<img" not in testo, "niente foto finche' non ci sono quelle vere"
         shell_src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        blocco = shell_src[shell_src.index('"aziende": {'):shell_src.index('"esperienze": {')]
+        blocco = shell_src[shell_src.index('"aziende": {'):shell_src.index('"cerca-ritiro": {')]   # RE: /esperienze non e' piu' una pagina statica
         assert "€" not in blocco and "Masseria" not in blocco and "su misura" in blocco
         em = (BACKEND_DIR / "services" / "strutture_email.py").read_text()
         assert "Masseria" not in em and "FORMATI" not in em
@@ -791,7 +799,7 @@ class TestOnda3LeSorgentiELaMisura:
         home = HOME.read_text()
         assert "`${CERCA_PATH}?porta=home`" in home and "`${OPERATORI_PATH}?porta=home`" in home
         assert "trackEvent('porta', { porta: 'cerca', da: 'home' })" in home
-        esp = (FE / "features" / "storefront" / "EsperienzePage.js").read_text()
+        esp = (FE / "features" / "storefront" / "RetreatsCalendarPage.js").read_text()   # RE (10/9)
         assert "/cerca-ritiro?porta=esperienze" in esp and "trackEvent('porta'" in esp
 
     def test_rb14_i_numeri_del_lunedi(self):

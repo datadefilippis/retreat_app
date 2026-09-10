@@ -486,14 +486,6 @@ _BRAND_PAGES = {
                         "strutture, condotti da persone vere. Prezzo pattuito su quello "
                         "che volete. Risposta entro due giorni lavorativi."),
     },
-    "esperienze": {
-        "title": "Ritiri ed esperienze in programma | Aurya",
-        "description": ("I ritiri e le esperienze olistiche dei professionisti "
-                        "della rete Aurya, per data: yoga, meditazione, respiro, "
-                        "suono, cammini. Ogni scheda dice chi conduce, dove, "
-                        "quando, il prezzo e come si prenota, online o con "
-                        "bonifico."),
-    },
     "cerca-ritiro": {
         "title": "Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya",
         "description": ("Dicci cosa cerchi e dove: ti avvisiamo quando troviamo "
@@ -1416,7 +1408,8 @@ async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
     base = _base_url()
     label = cat.replace("-", " ").title()
     where = f" in {region.title()}" if region else ""
-    path = f"/ritiri/{cat}" + (f"/{region}" if region else "")
+    # RE (10/9/2026): le pagine categoria/regione vivono sotto /esperienze
+    path = f"/esperienze/{cat}" + (f"/{region}" if region else "")
     canonical = f"{base}{path}"
     try:
         retreats = await sl.listable_retreats(category=cat, place=region, limit=20)
@@ -1425,7 +1418,8 @@ async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
         retreats, empty = [], False   # deve deindicizzare una pagina buona
     crumbs = sx.breadcrumb([
         ("Aurya", f"{base}/"),
-        (f"Ritiri di {label}", f"{base}/ritiri/{cat}"),
+        ("Ritiri ed esperienze", f"{base}/esperienze"),
+        (f"Ritiri di {label}", f"{base}/esperienze/{cat}"),
         *([(region.title(), canonical)] if region else []),
     ])
     blocks = [b for b in (crumbs, sx.item_list(retreats, base)) if b]
@@ -1447,8 +1441,9 @@ async def _meta_category(cat: str, region: Optional[str] = None) -> dict:
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/og-cover.jpg",
         "jsonld": blocks or None,
-        # anti thin-content: categoria senza ritiri prenotabili → noindex
-        "noindex": empty,
+        # anti thin-content: una categoria si indicizza con almeno DIECI
+        # ritiri (RE 10/9; le pagine sottili sono il problema chiuso in IX1)
+        "noindex": empty or len(retreats) < 10,
     }
 
 
@@ -2099,8 +2094,8 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
     }
 
 
-async def _meta_esplora_ritiri(categoria: Optional[str] = None,
-                               regione: Optional[str] = None) -> dict:
+async def _meta_esperienze(categoria: Optional[str] = None,
+                           regione: Optional[str] = None) -> dict:
     """ES2 (25/8) — il calendario dei ritiri.
 
     Oggi e' VUOTO, e va bene cosi': i campioni del pre-lancio sono
@@ -2111,25 +2106,29 @@ async def _meta_esplora_ritiri(categoria: Optional[str] = None,
     dover fare niente quel giorno.
     """
     base = _base_url()
-    canonical = f"{base}/esplora-ritiri"
+    canonical = f"{base}/esperienze"   # RE (10/9): la pagina vera, non piu' l'anteprima
     quanti = 0
     try:
         from services.seo_listing import listable_retreats
         quanti = len(await listable_retreats())
     except Exception:   # noqa: BLE001
         quanti = 0
-    corpo = ("<div><h1>Ritiri ed esperienze di benessere</h1>"
-             "<p>Il calendario dei ritiri dei professionisti della rete "
-             "Aurya: date, luoghi e chi li conduce.</p>"
+    corpo = ("<div><h1>I prossimi ritiri ed esperienze</h1>"
+             "<p>I ritiri e le esperienze dei professionisti della rete "
+             "Aurya, per data: chi conduce, dove, quando, il prezzo e come "
+             "si prenota, online o con bonifico.</p>"
              + ("" if quanti else
                 "<p>Non ci sono ancora ritiri in calendario. "
                 "Intanto puoi conoscere i professionisti della rete.</p>")
              + '<p><a href="/operatori">I professionisti</a> · '
                '<a href="/blog">Il Magazine</a></p></div>')
     return {
-        "title": "Ritiri ed esperienze di benessere in Italia | Aurya",
-        "description": ("Il calendario dei ritiri dei professionisti della "
-                        "rete Aurya: date, luoghi e chi li conduce."),
+        "title": "Ritiri ed esperienze in programma | Aurya",
+        "description": ("I ritiri e le esperienze olistiche dei professionisti "
+                        "della rete Aurya, per data: yoga, meditazione, respiro, "
+                        "suono, cammini. Ogni scheda dice chi conduce, dove, "
+                        "quando, il prezzo e come si prenota, online o con "
+                        "bonifico."),
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/og-cover.jpg",
@@ -2425,7 +2424,7 @@ _PRODUCT_KINDS = ("p", "ph", "dg", "co", "r")
 # RT5 — path noindex quando il marketplace e' spento (prelaunch_mode):
 # solo il transazionale. /operatori NON c'e': in fase rete e' la landing
 # dei membri, con contenuto vero, e si indicizza.
-_PHASE_NOINDEX_HEADS = ("ritiri", "destinazioni", "esperienze")
+_PHASE_NOINDEX_HEADS = ("ritiri", "destinazioni")   # RE (10/9): /esperienze decide dal dato
 
 
 # GS5 (25/8) — le rotte APP: pagine vive per le persone, mai per gli
@@ -2504,9 +2503,12 @@ async def resolve_meta(path: str) -> Optional[dict]:
     # qui vale per il dev e per le guardie)
     if head in reg.get("solo_con_slug", []) and len(parts) == 1:
         return None
-    if head == "ritiri":
+    # RE (10/9/2026): /esperienze e' il calendario; /ritiri ed
+    # /esplora-ritiri rimandano li' (nginx 301), la shell serve lo stesso
+    # meta nel frattempo.
+    if head in ("esperienze", "ritiri", "esplora-ritiri"):
         if len(parts) == 1:
-            return await _meta_home()          # /ritiri redirige alla home
+            return await _meta_esperienze()
         return await _meta_category(parts[1], parts[2] if len(parts) > 2 else None)
     if head == "e" and len(parts) >= 3:
         return await _meta_event(parts[1], parts[2])
@@ -2525,14 +2527,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
     if head == "esplora-operatori":
         return await _meta_esplora_operatori(
             parts[1] if len(parts) > 1 else None)
-    if head == "esplora-ritiri":
-        return await _meta_esplora_ritiri(
-            parts[1] if len(parts) > 1 else None,
-            parts[2] if len(parts) > 2 else None)
     if head == "destinazioni":
         return await _meta_destination(parts[1] if len(parts) > 1 else None)
-    # DS3 teneva /esperienze fuori; P3 (10/9/2026) la serve come pagina
-    # cardine (_BRAND_PAGES), noindex finche' la fase e' rete.
     if head == "o" and len(parts) >= 2:
         return await _meta_operator(parts[1])
     # LK2 — pagina link: /@slug (l'URL da bio Instagram) e /l/slug

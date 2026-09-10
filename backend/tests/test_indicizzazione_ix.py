@@ -55,8 +55,9 @@ class TestIx1LePorteChiuse:
     def test_il_registro_dichiara_le_radici_e_i_rimandi(self):
         assert set(REGISTRO["solo_con_slug"]) == {"co", "dg", "e", "frequenze", "l", "o", "p", "ph", "r", "s"}
         # RB7 (10/9/2026): /come-funziona (guscio vuoto in fase rete) e' un 301 come /ritiri
-        assert REGISTRO["rimandi"] == {"index.html": "/", "ritiri": "/", "come-funziona": "/manifesto"}
-        assert REGISTRO["rimandi_prefisso"] == {"esplora-operatori": "/operatori"}
+        # RE (10/9/2026 sera): /ritiri ed /esplora-ritiri rimandano al calendario /esperienze
+        assert REGISTRO["rimandi"] == {"index.html": "/", "ritiri": "/esperienze", "come-funziona": "/manifesto"}
+        assert REGISTRO["rimandi_prefisso"] == {"esplora-operatori": "/operatori", "esplora-ritiri": "/esperienze"}
         for seg in REGISTRO["solo_con_slug"]:
             assert seg in REGISTRO["pubblica"], f"{seg} deve restare pubblica (con slug)"
 
@@ -68,7 +69,8 @@ class TestIx1LePorteChiuse:
     def test_nginx_ha_le_location_ix1_prima_del_renderer(self):
         blocco = NGINX.split("<<< ROTTE-RENDERER")[1].split("<<< FINE ROTTE-RENDERER")[0]
         assert "location ~ ^/index\\.html/?$ { return 301 /; }" in blocco
-        assert "location ~ ^/ritiri/?$ { return 301 /; }" in blocco
+        assert "location ~ ^/ritiri/?$ { return 301 /esperienze; }" in blocco   # RE (10/9)
+        assert "location ~ ^/esplora\\-ritiri(/.*)?$ { return 301 /esperienze; }" in blocco
         assert "location ~ ^/esplora\\-operatori(/.*)?$ { return 301 /operatori; }" in blocco
         radici = "location ~ ^/(co|dg|e|frequenze|l|o|p|ph|r|s)/?$ {"
         assert radici in blocco
