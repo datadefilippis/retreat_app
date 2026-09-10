@@ -5703,10 +5703,13 @@ class TestHomeHp2:
             assert frase in src, f"copy portante mancante: {frase[:50]}…"
 
     def test_hp2_gerarchia_titoli(self):
-        """Un solo h1 (l'hero), tutto il resto h2; le colonne h3."""
+        """Un solo h1 (l'hero), tutto il resto h2; le colonne h3.
+        RB1 (10/9/2026): le due porte dell'hero sono due domande in h2
+        (sono sezioni della pagina a tutti gli effetti, per chi la
+        ascolta): cinque sezioni + due porte = sette h2."""
         src = self.HOME.read_text()
         assert src.count('as="h1"') == 1, "l'h1 deve essere uno solo"
-        assert src.count('as="h2"') == 5, "le altre cinque sezioni sono h2"
+        assert src.count('as="h2"') == 7, "cinque sezioni + le due porte dell'hero sono h2"
         pillar = (self.EDITORIAL / "PillarCard.jsx").read_text()
         assert "<h3" in pillar, "il titolo di una colonna e' un h3"
 
@@ -5725,27 +5728,32 @@ class TestHomeHp2:
     # ── 2. hero: due azioni, di peso diverso, verso il magazine ──────
 
     def test_hp2_hero_due_cta_e_destinazioni(self):
+        """RB1 (10/9/2026, REBRANDING): l'hero ha LE DUE PORTE della
+        landing di luglio — «Cerchi un ritiro o un percorso?» →
+        /cerca-ritiro e «Sei un operatore olistico?» → /per-operatori,
+        ognuna con UN bottone pieno — piu' la directory come terza via
+        sottovoce (SR2 la voleva nel primo schermo: resta). Via la
+        secondaria «Per i professionisti» (LC6): la porta dell'operatore
+        e' ora una domanda con l'offerta, non un rimando."""
         src = self.HOME.read_text()
         blocco = src[src.index('data-testid="hp-hero"'):
                      src.index('data-testid="hp-pillars"')]
-        assert blocco.count("<EditorialCta") == 2, \
-            "l'hero ha esattamente due azioni: magazine e professionisti"
-        assert 'variant="solid"' in blocco, "la primaria e' quella piena"
+        assert blocco.count("<EditorialCta") == 3, \
+            "l'hero ha tre azioni: le due porte e la directory sottovoce"
+        assert blocco.count('variant="solid"') == 2, "una porta, un bottone pieno"
         assert blocco.count('variant="quiet"') == 1, \
-            "la secondaria e' sottovoce, non un secondo bottone pieno"
-        # LC6 — la secondaria usa la parola dell'header
-        assert "Per i professionisti" in blocco
-        assert "JOIN_PATH" in blocco, \
-            "la secondaria porta al funnel professionisti"
-        # SR2 (3/9/2026, SITO IMMEDIATO): la primaria porta alla
-        # DIRECTORY dei professionisti (NETWORK_PATH = /operatori): chi
-        # cerca qualcuno deve avere la porta nel primo schermo. Prima
-        # portava al Magazine, «l'unica cosa gia' viva» quando la rete
-        # era vuota.
-        i_solid = blocco.index('variant="solid"')
-        intorno = blocco[max(0, i_solid - 200):i_solid + 200]
-        assert "NETWORK_PATH" in intorno, \
-            "la CTA primaria dell'hero deve portare ai professionisti"
+            "la directory e' sottovoce, non un terzo bottone pieno"
+        porte = blocco[blocco.index('data-testid="hp-doors"'):blocco.index('data-testid="hp-hero-cta"')]
+        assert porte.index('data-testid="hp-door-seek"') < porte.index('data-testid="hp-door-op"'), \
+            "prima chi cerca, poi chi opera"
+        assert "CERCA_PATH" in porte and "OPERATORI_PATH" in porte
+        assert "nwHome.doorSeekTitle" in porte and "nwHome.doorOpTitle" in porte
+        assert "JOIN_PATH" not in blocco, "la porta dell'operatore e' /per-operatori, non il vecchio rimando"
+        for vecchio in ("nwHome.heroP2", "nwHome.heroP3", "orientarsi"):
+            assert vecchio not in blocco, f"l'hero non descrive piu' un processo: {vecchio}"
+        # la terza via: la directory, sottovoce, ancora nel primo schermo
+        i_quiet = blocco.index('variant="quiet"')
+        assert "NETWORK_PATH" in blocco[max(0, i_quiet - 120):i_quiet + 120]
 
     def test_hp2_payoff_occhiello_sopra_l_h1(self):
         """Il payoff di brand resta l'occhiello dell'hero, sopra l'h1."""
@@ -6108,9 +6116,18 @@ class TestLandingOperatoriOl1:
         Il copy dentro le sezioni e' del founder e cambia senza chiedere
         permesso ai test."""
         page = self._page()
-        for tid in ("ol-hero", "ol-now", "ol-join", "ol-go", "ol-for",
+        # RB2 (10/9/2026): «Per chi e' Aurya» (ol-for) e' uscita — «se
+        # vuoi solo comparire in un elenco non fa per te» respingeva
+        # proprio chi si iscrive. L'ordine nuovo e' cosa hai (ol-go) /
+        # perche' ora (ol-now) / come si entra (ol-join).
+        pos = -1
+        for tid in ("ol-hero", "ol-go", "ol-now", "ol-join",
                     "ol-faq", "ol-who", "ol-form", "ol-end"):
             assert f'data-testid="{tid}"' in page, f"manca la sezione {tid}"
+            here = page.index(f'data-testid="{tid}"')
+            assert here > pos, f"{tid}: sezione fuori ordine"
+            pos = here
+        assert 'data-testid="ol-for"' not in page, "«non fa per te» non torna"
 
     def test_ol1_quattro_blocchi_cosa_trovi(self):
         """OL3 — la sezione 'cosa significa entrare' sono TRE schede
@@ -6155,8 +6172,11 @@ class TestLandingOperatoriOl1:
             finestra = senza_commenti[max(0, m.start() - 200):m.start() + 60]
             # AB2 (13/8): la FAQ del costo e' faq1 (tre punti + link
             # /costi); l'intento resta lo stesso — la parola vive SOLO
-            # nella risposta alla domanda sul prezzo
-            assert re.search(r"faq1b|faq3", finestra), \
+            # nella risposta alla domanda sul prezzo.
+            # RB2 (10/9/2026): il prezzo con la DATA fa parte dell'offerta
+            # in chiaro («Gratis fino al 31 dicembre 2026»): non e' la
+            # promessa nuda che abbassava il valore, e' un fatto datato.
+            assert re.search(r"faq1b|faq3", finestra) or "31 dicembre 2026" in finestra, \
                 f"'gratuito' fuori dalla FAQ nella landing: ...{finestra[-90:]}"
         for lang in self.LOCALES:
             blocco = self._locale(lang).get("opNw", {})
@@ -6184,7 +6204,7 @@ class TestLandingOperatoriOl1:
         dove da RD-bis (19/8) non vive piu' un modulo di candidatura ma
         la registrazione vera: il bottone crea l'account."""
         page = self._page()
-        assert page.count("#presentati") >= 3, \
+        assert page.count("#presentati") >= 3 or page.count("href={FORM_ANCHOR}") >= 3, \
             "servono tre CTA verso l'ancora del form"
         assert 'id="presentati"' in page, "manca l'ancora del form"
         assert "InlineSignupForm" in page, \

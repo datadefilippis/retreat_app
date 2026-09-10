@@ -274,11 +274,15 @@ _HOME_COPY = {
     "heroP1": ("Trovare il professionista giusto, comprendere una pratica "
                "o scegliere un’esperienza non dovrebbe essere una "
                "questione di fortuna."),
-    "heroP2": ("Aurya è uno spazio dedicato a chi vuole orientarsi nel "
-               "mondo del benessere con maggiore consapevolezza."),
-    "heroP3": ("Attraverso contenuti, professionisti raccontati con cura "
-               "ed esperienze selezionate, aiutiamo le persone a trovare "
-               "ciò che fa davvero per loro."),
+    # RB1 (10/9/2026) — le due porte al posto dei capoversi «orientarsi»
+    "doorSeekTitle": "Cerchi un ritiro o un percorso?",
+    "doorSeekText": ("Dicci cosa cerchi e dove. Ti avvisiamo quando c’è, "
+                     "vicino a te. Intanto ascolti le meditazioni riservate."),
+    "doorSeekCta": "Trovami il mio ritiro",
+    "doorOpTitle": "Sei un operatore olistico?",
+    "doorOpText": ("Profilo pubblico, prenotazioni, eventi e ritiri con "
+                   "caparra, un link solo. Gratis fino al 31 dicembre 2026."),
+    "doorOpCta": "Apri il tuo spazio",
     "findTitle": ("Un luogo dove conoscere, confrontare e scegliere "
                   "con consapevolezza"),
     "findP1": "Il benessere non è fatto solo di discipline.",
@@ -309,7 +313,13 @@ _HOME_COPY = {
                 "persone e idee che aiutano a comprendere il benessere con "
                 "uno sguardo aperto, concreto e curioso."),
     "prosTitle": "Per chi dedica la propria vita al benessere degli altri.",
-    "prosP5": "Se sei un professionista del benessere, ci piacerebbe conoscerti.",
+    # RB1 — l'offerta in chiaro e il patto fondatori
+    "prosOffer": ("Profilo pubblico, prenotazioni, eventi e ritiri con "
+                  "caparra, un link solo per Instagram. Gratis fino al "
+                  "31 dicembre 2026."),
+    "prosFounders": ("I primi venti operatori olistici che pubblicano il "
+                     "profilo entro il 31 ottobre 2026 entrano da fondatori."),
+    "prosCta2": "Apri il tuo spazio",
     # CN3 — la sezione vende l'appartenenza (il Cerchio), non «una
     # lettera ogni tanto»: stessa pila di valore della pagina
     "letterTitle": "Entra nel Cerchio di Aurya.",
@@ -328,7 +338,12 @@ async def _home_content_html() -> str:
     parti = [
         "<div>",
         f"<h1>{c['heroTitle']}</h1>",
-        f"<p>{c['heroP1']}</p><p>{c['heroP2']}</p><p>{c['heroP3']}</p>",
+        f"<p>{c['heroP1']}</p>",
+        # RB1 — le due porte, con i loro indirizzi canonici
+        f"<h2>{c['doorSeekTitle']}</h2><p>{c['doorSeekText']} "
+        f"<a href=\"/cerca-ritiro\">{c['doorSeekCta']}</a></p>",
+        f"<h2>{c['doorOpTitle']}</h2><p>{c['doorOpText']} "
+        f"<a href=\"/per-operatori\">{c['doorOpCta']}</a></p>",
         f"<h2>{c['findTitle']}</h2>",
         f"<p>{c['findP1']} {c['findP2']}</p>",
         f"<p>{c['findP3']} {c['findP4']}</p>",
@@ -393,8 +408,9 @@ async def _home_content_html() -> str:
     parti += [
         "<p><a href=\"/blog\">Tutti gli articoli del Magazine</a></p>",
         f"<h2>{c['prosTitle']}</h2>",
-        f"<p>{c['prosP5']}</p>",
-        "<p><a href=\"/entra-nella-rete\">Entra nella rete</a></p>",
+        f"<p>{c['prosOffer']} {c['prosFounders']}</p>",
+        f"<p><a href=\"/per-operatori\">{c['prosCta2']}</a> · "
+        "<a href=\"/entra-nella-rete\">Come funziona</a></p>",
         f"<h2>{c['letterTitle']}</h2>",
         f"<p>{c['letterP6']}</p>",
         "<p><a href=\"/newsletter\">Entra nel Cerchio di Aurya</a> · "
@@ -498,13 +514,14 @@ _BRAND_PAGES = {
     # ("Per i professionisti del benessere"), non usa mai la parola
     # intervista (il profilo lo scrive la redazione), e chiudeva con
     # "Gratuitamente", che come promessa e' vietata fuori dalla FAQ.
+    # RB2 (10/9/2026, REBRANDING) — la landing dell'OPERATORE OLISTICO:
+    # l'offerta in chiaro, la data, il racconto come premio dopo.
     "entra-nella-rete": {
-        "title": "Per i professionisti del benessere | Aurya",
-        # RD — con la registrazione diretta la promessa cambia: si
-        # entra subito, la conversazione arriva dopo (ed e' il racconto)
-        "description": ("Crei il tuo account in un minuto e inizi a "
-                        "costruire il tuo profilo. Poi ci conosciamo: "
-                        "il racconto del tuo lavoro lo scriviamo insieme."),
+        "title": "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya",
+        "description": ("Profilo pubblico, prenotazioni, eventi e ritiri con "
+                        "caparra, un link solo. Gratis fino al 31 dicembre 2026. "
+                        "Poi il racconto del tuo lavoro lo scriviamo insieme."),
+        "image": "/media/hero-organizer.webp",
     },
     # SW3 — /chi-siamo e' di nuovo una pagina propria (le persone dietro
     # Aurya), quindi torna canonica di se stessa: il canonical_slug che

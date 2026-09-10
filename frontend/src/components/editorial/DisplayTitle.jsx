@@ -27,6 +27,9 @@ const SIZES = {
   heroLines: 'text-[2.1rem] leading-[1.1] sm:text-5xl sm:leading-[1.07] lg:text-[3.4rem] lg:leading-[1.06]',
   // titolo di sezione
   section: 'text-[2rem] leading-[1.1] sm:text-5xl lg:text-[3.25rem] lg:leading-[1.08]',
+  // card: il titolo di una porta dentro l'hero (RB1, 10/9/2026): una
+  // domanda, non una sezione — sta sotto l'h1 e sopra un bottone
+  card: 'text-[1.45rem] leading-[1.15] sm:text-[1.75rem] lg:text-[2rem] lg:leading-[1.12]',
   // il manifesto: una frase sola, molto vuoto attorno
   manifesto: 'text-[2.1rem] leading-[1.12] sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]',
 };

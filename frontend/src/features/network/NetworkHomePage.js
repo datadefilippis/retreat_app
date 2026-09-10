@@ -41,6 +41,19 @@
  *   LETTERA   la stessa cosa in verticale: apertura, i tre "una..."
  *             incolonnati al centro, la chiusa in due righe piu' quiete.
  *
+ * RB1 (10/9/2026, REBRANDING — docs/REBRANDING_STRATEGIA_2026-09.md):
+ * l'hero torna ad avere LE DUE PORTE della landing di luglio, che con
+ * zero contenuti convertiva piu' del sito intero: dal 4/8 zero contatti
+ * «cerco un ritiro» (la porta non esisteva piu') e operatori che si
+ * registrano ma non pubblicano. Sotto l'h1 e la constatazione: due
+ * domande («Cerchi un ritiro o un percorso?» / «Sei un operatore
+ * olistico?»), ognuna con l'oggetto, una riga e UN bottone pieno; la
+ * directory resta nel primo schermo come terza via, sottovoce. Via i
+ * due capoversi «orientarsi con consapevolezza»: descrivevano un
+ * processo, e nessuno lascia un'email per un processo. La sezione
+ * operatori in fondo dice l'offerta in chiaro e il patto fondatori.
+ * Lessico: «operatore olistico» quando si parla ALL'operatore.
+ *
  * L'HERO IN MOVIMENTO NON SI TOCCA (decisione del founder, HP4): resta
  * il video del tramonto con poster immediato e video montato dopo il
  * `load` (HeroVideo), restano i due veli misurati. Cambiano solo le
@@ -114,6 +127,11 @@ const MAGAZINE_PATH = '/blog';
    landing per candidarsi. Qui si segue l'intenzione, non la lettera. */
 const NETWORK_PATH = '/operatori';        // scopri la rete (i membri)
 const JOIN_PATH = '/entra-nella-rete';    // entra nella rete (candidarsi)
+/* RB1 — le due porte. Gli indirizzi sono quelli CANONICI del piano:
+   oggi /cerca-ritiro e /per-operatori rimandano (RT1, PL23) alle pagine
+   di ieri; RB2-RB4 li riempiono. Le porte non cambiano indirizzo. */
+const CERCA_PATH = '/cerca-ritiro';       // chi cerca un ritiro o un percorso
+const OPERATORI_PATH = '/per-operatori';  // chi opera: apri il tuo spazio
 
 /* il verde di brand del kit editoriale: accento del form della Lettera */
 const SAGE = '#2f5749';
@@ -313,38 +331,56 @@ export default function NetworkHomePage() {
                   className="mx-auto mt-6 max-w-[46ch] text-hero-shadow sm:mt-8">
               {t('nwHome.heroP1', { defaultValue: "Trovare il professionista giusto, comprendere una pratica o scegliere un’esperienza non dovrebbe essere una questione di fortuna." })}
             </Lede>
-            {/* i due capoversi paralleli. Il filo d'oro sopra non e'
-                decorazione: dice che quello che segue e' un secondo
-                movimento e non la coda del primo. */}
+            {/* RB1 — LE DUE PORTE. Il filo d'oro dice che comincia un
+                secondo movimento: la domanda «chi sei?». Due schede
+                traslucide sul video (mai bianche: sarebbero due
+                finestre in una notte), una domanda ciascuna in display,
+                una riga con l'oggetto e UN bottone pieno. Affiancate da
+                `lg`, in colonna sotto: su 375px due porte affiancate
+                sarebbero due fessure. */}
             <div aria-hidden className="gold-rule mt-8 w-24 sm:mt-10" />
-            <div className="mt-8 grid gap-6 text-center sm:mt-9 lg:grid-cols-2 lg:gap-12">
-              <Lede size="body" tone="inherit" className="mx-auto max-w-[44ch] text-hero-shadow opacity-90">
-                {t('nwHome.heroP2', { defaultValue: "Aurya è uno spazio dedicato a chi vuole orientarsi nel mondo del benessere con maggiore consapevolezza." })}
-              </Lede>
-              <Lede size="body" tone="inherit" className="mx-auto max-w-[44ch] text-hero-shadow opacity-90">
-                {t('nwHome.heroP3', { defaultValue: "Attraverso contenuti, professionisti raccontati con cura ed esperienze selezionate, aiutiamo le persone a trovare ciò che fa davvero per loro." })}
-              </Lede>
+            <div data-testid="hp-doors"
+                 className="mt-8 grid w-full max-w-4xl gap-4 sm:mt-9 lg:grid-cols-2 lg:gap-6">
+              <div data-testid="hp-door-seek"
+                   className="flex h-full flex-col items-center rounded-2xl border border-[#f6f2e8]/25
+                              bg-[#0e1a15]/45 px-6 py-7 text-center backdrop-blur-[2px] sm:px-8">
+                <DisplayTitle as="h2" id="hp-door-seek-title" size="card" measure="title" className="text-hero-shadow">
+                  {t('nwHome.doorSeekTitle', { defaultValue: "Cerchi un ritiro o un percorso?" })}
+                </DisplayTitle>
+                <Lede size="body" tone="inherit" className="mt-3 max-w-[38ch] text-hero-shadow opacity-90">
+                  {t('nwHome.doorSeekText', { defaultValue: "Dicci cosa cerchi e dove. Ti avvisiamo quando c’è, vicino a te. Intanto ascolti le meditazioni riservate." })}
+                </Lede>
+                <div className="mt-auto pt-6">
+                  <EditorialCta to={CERCA_PATH} variant="solid" tone="dark" data-testid="hp-door-seek-cta">
+                    {t('nwHome.doorSeekCta', { defaultValue: "Trovami il mio ritiro" })}
+                  </EditorialCta>
+                </div>
+              </div>
+              <div data-testid="hp-door-op"
+                   className="flex h-full flex-col items-center rounded-2xl border border-[#f6f2e8]/25
+                              bg-[#0e1a15]/45 px-6 py-7 text-center backdrop-blur-[2px] sm:px-8">
+                <DisplayTitle as="h2" id="hp-door-op-title" size="card" measure="title" className="text-hero-shadow">
+                  {t('nwHome.doorOpTitle', { defaultValue: "Sei un operatore olistico?" })}
+                </DisplayTitle>
+                <Lede size="body" tone="inherit" className="mt-3 max-w-[38ch] text-hero-shadow opacity-90">
+                  {t('nwHome.doorOpText', { defaultValue: "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo. Gratis fino al 31 dicembre 2026." })}
+                </Lede>
+                <div className="mt-auto pt-6">
+                  <EditorialCta to={OPERATORI_PATH} variant="solid" tone="dark" data-testid="hp-door-op-cta">
+                    {t('nwHome.doorOpCta', { defaultValue: "Apri il tuo spazio" })}
+                  </EditorialCta>
+                </div>
+              </div>
             </div>
-            {/* due azioni, ma di peso diverso: la prima e' la porta di
-                casa, la seconda smista l'altro pubblico senza
-                contendersela. SR2 (3/9/2026, SITO IMMEDIATO): la porta
-                di casa e' la DIRECTORY dei professionisti — quando la
-                rete era vuota era il Magazine «l'unica cosa gia' viva»;
-                ora chi cerca qualcuno lo trova dal primo schermo.
-                In colonna su mobile: affiancate, la secondaria
-                finirebbe schiacciata sotto i 375px. */}
-            <div className="mt-9 flex flex-col items-center gap-5 sm:mt-10 sm:flex-row sm:justify-center sm:gap-8">
-              <EditorialCta to={NETWORK_PATH} variant="solid" tone="dark" data-testid="hp-hero-cta">
+            {/* la terza via, sottovoce: chi cerca UNA persona (non un
+                ritiro) va alla directory. SR2 voleva la directory nel
+                primo schermo: resta, ma non contende il peso alle porte. */}
+            <p className="mt-7 text-sm text-hero-shadow opacity-90 sm:mt-8">
+              {t('nwHome.heroOr', { defaultValue: "Oppure" })}{' '}
+              <EditorialCta to={NETWORK_PATH} variant="quiet" tone="dark" data-testid="hp-hero-cta">
                 {t('nwHome.heroCta', { defaultValue: "Scopri i professionisti" })}
               </EditorialCta>
-              {/* LC6 — stessa parola dell'header: "professionisti".
-                  La stessa destinazione aveva due nomi (header "Per i
-                  professionisti", hero "Per gli operatori") e due nomi
-                  per una porta sola fanno sembrare due porte. */}
-              <EditorialCta to={JOIN_PATH} variant="quiet" tone="dark" data-testid="hp-hero-cta-alt">
-                {t('nwHome.heroCtaAlt', { defaultValue: "Per i professionisti" })}
-              </EditorialCta>
-            </div>
+            </p>
           </div>
           {/* l'invito a scendere. La prima schermata e' un video a
               tutto campo: bella, ma muta sul fatto che sotto continui.
@@ -683,12 +719,23 @@ export default function NetworkHomePage() {
                 landing /entra-nella-rete, non della home: qui resta il
                 crescendo del founder, l'invito in una riga e UNA porta
                 (il Manifesto ha gia' la sua, due sezioni sopra). */}
+            {/* RB1 — l'invito diventa l'OFFERTA in chiaro (cosa hai) e il
+                patto fondatori (perche' ora): «ci piacerebbe conoscerti»
+                era gentile e non dava una ragione per iscriversi oggi.
+                Due porte: quella piena apre lo spazio, quella sottovoce
+                spiega come funziona. Lessico: operatori olistici. */}
             <Lede size="body" tone="inherit" className="mt-8">
-              {t('nwHome.prosP5', { defaultValue: "Se sei un professionista del benessere, ci piacerebbe conoscerti." })}
+              {t('nwHome.prosOffer', { defaultValue: "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo per Instagram. Gratis fino al 31 dicembre 2026." })}
             </Lede>
-            <div className="mt-9">
-              <EditorialCta to={JOIN_PATH} variant="solid" data-testid="hp-pros-cta">
-                {t('nwHome.prosCta', { defaultValue: "Entra nella rete" })}
+            <Lede size="body" tone="inherit" className="mt-3">
+              {t('nwHome.prosFounders', { defaultValue: "I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 entrano da fondatori." })}
+            </Lede>
+            <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-7">
+              <EditorialCta to={OPERATORI_PATH} variant="solid" data-testid="hp-pros-cta">
+                {t('nwHome.prosCta2', { defaultValue: "Apri il tuo spazio" })}
+              </EditorialCta>
+              <EditorialCta to={OPERATORI_PATH} variant="quiet" data-testid="hp-pros-how">
+                {t('nwHome.prosHow', { defaultValue: "Come funziona" })}
               </EditorialCta>
             </div>
           </div>

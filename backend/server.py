@@ -53,6 +53,7 @@ from routers import admin_sound as admin_sound_router
 from routers import admin_platform as admin_platform_router
 from routers import admin_strutture as admin_strutture_router
 from routers import strutture as strutture_router
+from routers import fondatori as fondatori_router
 from routers import articles as articles_router
 from routers import tracking as tracking_router
 from routers import export as export_router
@@ -739,6 +740,7 @@ app.include_router(admin_sound_router.router, prefix="/api")  # /api/admin/sound
 app.include_router(admin_platform_router.router, prefix="/api")  # /api/admin/platform/* (SA2/SA3)
 app.include_router(admin_strutture_router.router, prefix="/api")  # /api/admin/strutture/* (SR, fase 0)
 app.include_router(strutture_router.router, prefix="/api")  # /api/strutture/richieste (SR: la richiesta dell'operatore)
+app.include_router(fondatori_router.router, prefix="/api")  # RB2: il contatore vero dei fondatori
 app.include_router(articles_router.router, prefix="/api")  # /api/public/articles + /api/admin/articles (AN5 blog)
 app.include_router(tracking_router.router, prefix="/api")  # /api/public/track (VT visibilita)
 from routers import leads as leads_router  # noqa: E402

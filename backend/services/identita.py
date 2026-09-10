@@ -173,8 +173,10 @@ def faq_professionisti() -> List[Tuple[str, str]]:
     a1 = " ".join(x for x in (s.get("faq1b1"), s.get("faq1b2"), s.get("faq1b3")) if x)
     if q1 and a1:
         coppie.append((q1, a1))
-    for i in (2, 3, 4, 5):
-        q, a = s.get(f"faq{i}q"), s.get(f"faq{i}a")
+    # RB2: le risposte riscritte vivono su chiavi nuove (faq2a3, faq3a2,
+    # faq5a2: le chiavi esistenti vincono sui defaultValue); la sesta e' nuova
+    for i, chiave in ((2, "faq2a3"), (3, "faq3a2"), (4, "faq4a"), (5, "faq5a2"), (6, "faq6a")):
+        q, a = s.get(f"faq{i}q"), s.get(chiave)
         if q and a:
             coppie.append((q, a))
     return coppie
@@ -186,21 +188,22 @@ def corpo_professionisti() -> str:
         return ""
     faq = "".join(f"<h3>{_html.escape(q)}</h3><p>{_html.escape(a)}</p>"
                   for q, a in faq_professionisti())
+    # RB2 (10/9/2026): la landing segue il trittico cosa hai / perche'
+    # ora / come si entra; il corpo per i crawler dice le stesse cose
+    # nello stesso ordine (via «Per chi e' Aurya» e la candidatura).
     return "".join([
         f"<p><i>{_t(s, 'heroEyebrow')}</i></p>",
         f"<h1>{_t(s, 'heroTitle')}</h1>",
-        _p(s, "heroP1"), _p(s, "heroBeat1", "heroBeat2", "heroBeat3", "heroBeat4"),
-        _p(s, "heroP2", "heroP3", "heroP4", "heroP5"),
-        _h2(s, "nowTitle"), _p(s, "nowP1", "nowP2", "nowP3"), _p(s, "nowCloseA", "nowCloseB"),
-        _h2(s, "joinTitle"), _coppie(s, "j", 3, "t", "b"),
-        _h2(s, "goTitle"), _p(s, "goP1", "goP2", "goP3", "goP4"), _coppie(s, "v", 5, "t", "b"),
+        _p(s, "heroP1", "heroP2", "heroP3", "heroNote"),
+        _p(s, "heroP4", "heroP5"),
+        _h2(s, "goTitle"), _p(s, "goP1", "goP2", "goP3", "goP4"), _coppie(s, "v", 6, "t", "b"),
         _p(s, "goSoon"),
-        _h2(s, "forTitle"), _p(s, "forP1", "forP2"), _p(s, "forNo"), _p(s, "forYes"),
+        _h2(s, "nowTitle"), _p(s, "nowP1", "nowP2", "nowCountFallback"), _p(s, "nowCloseA2", "nowCloseB2"),
+        _h2(s, "joinTitle"), _coppie(s, "j", 3, "t", "b"),
         _h2(s, "faqTitle"), faq,
         _h2(s, "whoEyebrow"), _p(s, "whoLead"), _p(s, "whoV", "whoD", "whoP"),
-        _h2(s, "formTitle"), _p(s, "formA", "formB", "formC"),
-        _p(s, "formD", "formE", "formF", "formG"),
-        _p(s, "endA", "endB", "endC", "endD"), _p(s, "endBody"),
+        _h2(s, "formTitle2"), _p(s, "formA3", "formC3", "formD3", "formE3"),
+        _p(s, "endA", "endB", "endC2", "endD2"), _p(s, "endBody2"),
     ])
 
 

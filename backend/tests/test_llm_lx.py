@@ -122,8 +122,11 @@ class TestLx4IDatiStrutturati:
     def test_le_faq_dei_professionisti_sono_quelle_della_landing(self):
         from services.identita import faq_professionisti
         coppie = faq_professionisti()
-        assert len(coppie) == 5
+        # RB2 (10/9/2026): sei domande — la sesta e' «Posso uscire quando
+        # voglio?», e le risposte riscritte vivono su chiavi nuove
+        assert len(coppie) == 6
         assert coppie[0][0] == "Quanto costa?" and "gratuito" in coppie[0][1]
+        assert coppie[5][0] == "Posso uscire quando voglio?"
 
 
 class TestLx1LlmsTxt:

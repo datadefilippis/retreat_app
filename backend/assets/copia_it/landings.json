@@ -983,7 +983,18 @@
     "letterP5": "Niente rumore.",
     "letterP6": "Una conferma via email, poi sei dentro. Ti cancelli con un clic.",
     "letterCta": "Entra nel Cerchio",
-    "letterMore": "Scopri cos'è il Cerchio"
+    "letterMore": "Scopri cos'è il Cerchio",
+    "doorSeekTitle": "Cerchi un ritiro o un percorso?",
+    "doorSeekText": "Dicci cosa cerchi e dove. Ti avvisiamo quando c’è, vicino a te. Intanto ascolti le meditazioni riservate.",
+    "doorSeekCta": "Trovami il mio ritiro",
+    "doorOpTitle": "Sei un operatore olistico?",
+    "doorOpText": "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo. Gratis fino al 31 dicembre 2026.",
+    "doorOpCta": "Apri il tuo spazio",
+    "heroOr": "Oppure",
+    "prosOffer": "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo per Instagram. Gratis fino al 31 dicembre 2026.",
+    "prosFounders": "I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 entrano da fondatori.",
+    "prosCta2": "Apri il tuo spazio",
+    "prosHow": "Come funziona"
   },
   "nwOps": {
     "seoTitle": "La rete Aurya | I professionisti che stiamo conoscendo",
