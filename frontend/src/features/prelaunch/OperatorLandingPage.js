@@ -59,7 +59,7 @@ import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import InlineSignupForm from './InlineSignupForm';
 import {
-  Section, DisplayTitle, TitleLine, Lede, EditorialCta, PhotoBand, PhotoSplit,
+  Section, DisplayTitle, TitleLine, Lede, EditorialCta, PhotoBand,
 } from '../../components/editorial';
 
 /** l'ancora del form: destinazione delle CTA interne e dei link che
@@ -72,7 +72,6 @@ const PROOF_PROFILE = '/operatori';
 
 const HERO_PHOTO = '/media/hero-organizer.webp';
 const FOUNDERS_PHOTO = '/media/chisiamo-aurya.jpg';
-const TOGETHER_PHOTO = '/media/prelaunch/r02.jpg';   // costruire insieme
 const HORIZON_PHOTO = '/media/prelaunch/r05.jpg';    // il cairn: una pietra alla volta
 
 /* Le tre schede della sezione «come si entra». DECORATIVE (alt=""). */
@@ -251,10 +250,14 @@ export default function OperatorLandingPage() {
             {/* founder 10/9 sera: UN bottone pieno (apri il tuo spazio), la prova
                 come voce discreta verso la directory di tutti gli operatori */}
             <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-hero-cta">{ctaOpen}</EditorialCta>
-              <EditorialCta to={PROOF_PROFILE} variant="quiet" data-testid="ol-hero-cta-alt">
+              {/* su telefono prima la prova (viene prima nel testo), poi il bottone;
+                  da sm il bottone pieno resta a sinistra */}
+              <EditorialCta to={PROOF_PROFILE} variant="quiet" data-testid="ol-hero-cta-alt"
+                            className="order-1 sm:order-2">
                 {t('opPro.ctaProof', { defaultValue: "Guarda i profili degli operatori" })}
               </EditorialCta>
+              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-hero-cta"
+                            className="order-2 sm:order-1">{ctaOpen}</EditorialCta>
             </div>
           </Section>
         </section>
@@ -307,8 +310,10 @@ export default function OperatorLandingPage() {
         </section>
 
         {/* ── 5. PERCHE' ENTRARE ORA — il patto fondatori ──────────── */}
-        <PhotoSplit image={TOGETHER_PHOTO} side="left" tone="cream" focus="50% 45%"
-                    imageWidth="900" imageHeight="599" labelledBy="ol-now-title" data-testid="ol-now">
+        {/* founder 10/9 sera: via la foto a fianco («sembra finita li' per caso»
+            sotto la fascia fotografica della rete): solo testo e schede */}
+        <Section tone="cream" rhythm="screen" labelledBy="ol-now-title" width="max-w-5xl">
+         <div data-testid="ol-now">
           <DisplayTitle as="h2" id="ol-now-title" size="section" measure="title">{t('opPro.nowTitle', { defaultValue: "Perché entrare ora." })}</DisplayTitle>
           <Lede size="lead" className="mt-7">{t('opPro.nowP1', { defaultValue: "I primi 20 operatori che pubblicano il proprio profilo entro il 31 ottobre 2026 entrano come operatori fondatori di Aurya." })}</Lede>
           <ul className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-2" data-testid="ol-now-patto">
@@ -330,7 +335,8 @@ export default function OperatorLandingPage() {
             {t('opPro.nowCloseB2', { defaultValue: "Cerchiamo i primi operatori con cui costruire la rete di Aurya." })}
           </p>
           <div className="mt-8"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-now-cta">{t('opPro.nowCta', { defaultValue: "Diventa operatore fondatore" })}</EditorialCta></div>
-        </PhotoSplit>
+         </div>
+        </Section>
 
         {/* ── 6. QUANTO COSTA — il base per sempre, il piu' dal 2027 ─── */}
         <Section tone="sand" rhythm="screen" labelledBy="ol-prezzi-title" width="max-w-5xl">
